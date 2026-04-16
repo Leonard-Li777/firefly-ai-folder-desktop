@@ -1,0 +1,212 @@
+{
+    "请求队列已满": {
+        "en-US": "Request queue is full  ",
+        "es-ES": "La cola de solicitudes está llena",
+        "ar-EG": "انتهى طابور الطلبات  ",
+        "pt-PT": "A fila de pedidos está cheia",
+        "ru-RU": "Очередь запросов заполнена  ",
+        "ja-JP": "リクエストキューがいっぱいです",
+        "de-DE": "Anfrage-Warteschlange ist voll  ",
+        "fr-FR": "File d'attente des requêtes pleine",
+        "ko-KR": "요청 대기열이 가득 찼습니다",
+        "$files": [
+            "electron/runtime-services/utils/concurrency-controller.ts(1351-1361)"
+        ],
+        "$id": 5525
+    },
+    "队列已清空": {
+        "en-US": "Queue has been cleared  ",
+        "es-ES": "La cola se ha vaciado",
+        "ar-EG": "تم تفريغ الطابور  ",
+        "pt-PT": "A fila foi esvaziada",
+        "ru-RU": "Очередь очищена  ",
+        "ja-JP": "キューはクリアされました",
+        "de-DE": "Warteschlange wurde geleert  ",
+        "fr-FR": "File d'attente vidée",
+        "ko-KR": "대기열이 비워졌습니다",
+        "$files": [
+            "electron/runtime-services/utils/concurrency-controller.ts(3233-3242)"
+        ],
+        "$id": 5526
+    },
+    "请求超时 ({timeout}ms)": {
+        "en-US": "Request timed out ({timeout}ms)  ",
+        "es-ES": "Tiempo de espera de la solicitud agotado ({timeout}ms)",
+        "ar-EG": "انتهت مهلة الطلب ({timeout}ms)  ",
+        "pt-PT": "Pedido expirado ({timeout}ms)",
+        "ru-RU": "Время ожидания запроса истекло ({timeout} мс)  ",
+        "ja-JP": "リクエストがタイムアウトしました（{timeout}ms）",
+        "de-DE": "Anfrage-Timeout ({timeout} ms)  ",
+        "fr-FR": "Requête expirée ({timeout} ms)",
+        "ko-KR": "요청 시간 초과({timeout}ms)",
+        "$files": [
+            "electron/runtime-services/utils/concurrency-controller.ts(3894-3916)"
+        ],
+        "$id": 5527
+    },
+    "任务在队列中超时": {
+        "en-US": "Task timed out in the queue  ",
+        "es-ES": "La tarea ha agotado el tiempo de espera en la cola",
+        "ar-EG": "انتهت مهلة المهمة في الطابور  ",
+        "pt-PT": "Tarefa expirou na fila",
+        "ru-RU": "Задача превысила время ожидания в очереди  ",
+        "ja-JP": "タスクがキュー内でタイムアウトしました",
+        "de-DE": "Aufgabe hat in der Warteschlange einen Timeout überschritten  ",
+        "fr-FR": "Tâche expirée dans la file d'attente",
+        "ko-KR": "작업이 대기열에서 시간 초과되었습니다",
+        "$files": [
+            "electron/runtime-services/utils/concurrency-controller.ts(5508-5520)"
+        ],
+        "$id": 5528
+    },
+    "等待连接超时": {
+        "en-US": "Connection timeout  ",
+        "es-ES": "Tiempo de espera de conexión agotado",
+        "ar-EG": "انتهت مهلة انتظار الاتصال  ",
+        "pt-PT": "Tempo limite de espera por ligação excedido",
+        "ru-RU": "Истекло время ожидания подключения  ",
+        "ja-JP": "接続待機中にタイムアウトしました",
+        "de-DE": "Timeout beim Warten auf Verbindung  ",
+        "fr-FR": "Délai d'attente de connexion dépassé",
+        "ko-KR": "연결 대기 시간 초과",
+        "$files": [
+            "electron/runtime-services/utils/connection-pool.ts(5855-5865)"
+        ],
+        "$id": 5529
+    },
+    "普通文件": {
+        "en-US": "Regular file  ",
+        "es-ES": "Archivo común",
+        "ar-EG": "ملف عادي  ",
+        "pt-PT": "Ficheiro comum",
+        "ru-RU": "Обычный файл  ",
+        "ja-JP": "通常ファイル",
+        "de-DE": "Normale Datei  ",
+        "fr-FR": "Fichier ordinaire",
+        "ko-KR": "일반 파일",
+        "$files": [
+            "electron/runtime-services/utils/minimum-unit-service.ts(960-968)"
+        ],
+        "$id": 5533
+    },
+    "存在标记文件": {
+        "en-US": "Marker file exists  ",
+        "es-ES": "Existe un archivo de marcador",
+        "ar-EG": "يوجد ملف علامة  ",
+        "pt-PT": "Ficheiro de marcação existente",
+        "ru-RU": "Существует маркерный файл  ",
+        "ja-JP": "マーカーファイルが存在します",
+        "de-DE": "Markierungsdatei vorhanden  ",
+        "fr-FR": "Fichier de marqueur présent",
+        "ko-KR": "마킹 파일 존재",
+        "$files": [
+            "electron/runtime-services/utils/minimum-unit-service.ts(1237-1247)"
+        ],
+        "$id": 5534
+    },
+    "空目录": {
+        "en-US": "Empty directory  ",
+        "es-ES": "Directorio vacío",
+        "ar-EG": "دليل فارغ  ",
+        "pt-PT": "Diretório vazio",
+        "ru-RU": "Пустая директория  ",
+        "ja-JP": "空のディレクトリ",
+        "de-DE": "Leeres Verzeichnis  ",
+        "fr-FR": "Répertoire vide",
+        "ko-KR": "빈 디렉터리",
+        "$files": [
+            "electron/runtime-services/utils/minimum-unit-service.ts(1514-1521)"
+        ],
+        "$id": 5535
+    },
+    "小文件集(<=3)且无子目录": {
+        "en-US": "Small file set (<=3) with no subdirectories  ",
+        "es-ES": "Conjunto pequeño de archivos (<=3) y sin subdirectorios",
+        "ar-EG": "مجموعة ملفات صغيرة (<=3) ولا تحتوي على أدلة فرعية  ",
+        "pt-PT": "Conjunto pequeno de ficheiros (<=3) sem subdiretórios",
+        "ru-RU": "Небольшой набор файлов (<=3) без подкаталогов  ",
+        "ja-JP": "小規模ファイルセット（<=3）かつサブディレクトリなし",
+        "de-DE": "Kleine Dateisammlung (<=3) ohne Unterverzeichnisse  ",
+        "fr-FR": "Petit ensemble de fichiers (≤3) sans sous-répertoires",
+        "ko-KR": "소규모 파일 집합(<=3)이며 하위 디렉터리 없음",
+        "$files": [
+            "electron/runtime-services/utils/minimum-unit-service.ts(1674-1692)"
+        ],
+        "$id": 5536
+    },
+    "纯图片相册(<=50)": {
+        "en-US": "Pure image album (<=50)  ",
+        "es-ES": "Álbum exclusivamente de imágenes (<=50)",
+        "ar-EG": "ألبوم صور فقط (<=50)  ",
+        "pt-PT": "Álbum exclusivamente de imagens (<=50)",
+        "ru-RU": "Альбом только с изображениями (<=50)  ",
+        "ja-JP": "純粋な画像アルバム（<=50）",
+        "de-DE": "Reines Bilderalbum (<=50)  ",
+        "fr-FR": "Album photo uniquement composé d'images (≤50)",
+        "ko-KR": "순수 이미지 앨범(<=50)",
+        "$files": [
+            "electron/runtime-services/utils/minimum-unit-service.ts(2195-2210)"
+        ],
+        "$id": 5537
+    },
+    "纯视频集合(<=50)": {
+        "en-US": "Pure video collection (<=50)  ",
+        "es-ES": "Colección exclusivamente de vídeos (<=50)",
+        "ar-EG": "مجموعة فيديوهات فقط (<=50)  ",
+        "pt-PT": "Coleção exclusivamente de vídeos (<=50)",
+        "ru-RU": "Коллекция только видеофайлов (<=50)  ",
+        "ja-JP": "純粋な動画コレクション（<=50）",
+        "de-DE": "Reine Videosammlung (<=50)  ",
+        "fr-FR": "Collection vidéo uniquement composée de vidéos (≤50)",
+        "ko-KR": "순수 동영상 컬렉션(<=50)",
+        "$files": [
+            "electron/runtime-services/utils/minimum-unit-service.ts(2317-2332)"
+        ],
+        "$id": 5538
+    },
+    "纯文档集合(<=20)": {
+        "en-US": "Pure document collection (<=20)  ",
+        "es-ES": "Colección exclusivamente de documentos (<=20)",
+        "ar-EG": "مجموعة مستندات فقط (<=20)  ",
+        "pt-PT": "Coleção exclusivamente de documentos (<=20)",
+        "ru-RU": "Коллекция только документов (<=20)  ",
+        "ja-JP": "純粋なドキュメントコレクション（<=20）",
+        "de-DE": "Reine Dokumentensammlung (<=20)  ",
+        "fr-FR": "Collection documentaire uniquement composée de documents (≤20)",
+        "ko-KR": "순수 문서 컬렉션(<=20)",
+        "$files": [
+            "electron/runtime-services/utils/minimum-unit-service.ts(2454-2469)"
+        ],
+        "$id": 5539
+    },
+    "包含子目录或类型混合": {
+        "en-US": "Contains subdirectories or mixed types",
+        "es-ES": "Contiene subdirectorios o tipos mixtos",
+        "ar-EG": "يحتوي على أدلة فرعية أو أنواع مختلطة",
+        "pt-PT": "Contém subdiretórios ou tipos mistos",
+        "ru-RU": "Содержит подкаталоги или смешанные типы",
+        "ja-JP": "サブディレクトリを含む、または複数のタイプが混在しています",
+        "de-DE": "Enthält Unterverzeichnisse oder gemischte Dateitypen",
+        "fr-FR": "Contient des sous-répertoires ou des types mixtes",
+        "ko-KR": "하위 디렉터리 포함 또는 유형 혼합",
+        "$files": [
+            "electron/runtime-services/utils/minimum-unit-service.ts(2592-2606)"
+        ],
+        "$id": 5540
+    },
+    "检查失败，按文件处理": {
+        "en-US": "Check failed, process by file",
+        "es-ES": "Fallo en la verificación, procesar por archivo",
+        "ar-EG": "فشل الفحص، معالجة حسب الملف",
+        "pt-PT": "Falha na verificação, processar por ficheiro",
+        "ru-RU": "Проверка не пройдена, обрабатывать по файлам",
+        "ja-JP": "チェック失敗、ファイル単位で処理",
+        "de-DE": "Prüfung fehlgeschlagen, dateibasiert verarbeiten",
+        "fr-FR": "Échec de la vérification, traiter par fichier",
+        "ko-KR": "검사 실패, 파일별로 처리",
+        "$files": [
+            "electron/runtime-services/utils/minimum-unit-service.ts(2712-2726)"
+        ],
+        "$id": 5541
+    }
+}

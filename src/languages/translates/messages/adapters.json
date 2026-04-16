@@ -1,0 +1,18 @@
+{
+    "没有加载的模型": {
+        "en-US": "No models loaded",
+        "es-ES": "No hay modelos cargados",
+        "ar-EG": "لا يوجد نموذج تم تحميله",
+        "pt-PT": "Nenhum modelo carregado",
+        "ru-RU": "Нет загруженной модели",
+        "ja-JP": "モデルがロードされていません",
+        "de-DE": "Keine geladenen Modelle",
+        "fr-FR": "Aucun modèle chargé",
+        "ko-KR": "로드된 모델 없음",
+        "$files": [
+            "electron/adapters/llama-runtime-adapter.ts(1252-1263)",
+            "electron/adapters/llama-runtime-adapter.ts(4104-4115)"
+        ],
+        "$id": 3540
+    }
+}

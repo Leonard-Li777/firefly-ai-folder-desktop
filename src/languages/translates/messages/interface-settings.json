@@ -1,0 +1,527 @@
+{
+    "语言已切换，正在刷新页面...": {
+        "en-US": "Language has been switched, refreshing the page...",
+        "es-ES": "El idioma ha sido cambiado, refrescando la página...",
+        "ar-EG": "تم تبديل اللغة، جاري تحديث الصفحة...",
+        "pt-PT": "Idioma alterado, a atualizar página...",
+        "ru-RU": "Язык переключен, страница обновляется...",
+        "ja-JP": "言語が切り替わりました。ページを更新しています...",
+        "de-DE": "Sprache wurde gewechselt, Seite wird aktualisiert...",
+        "fr-FR": "La langue a été changée, la page est en cours de rafraîchissement...",
+        "ko-KR": "언어가 전환되었습니다. 페이지를 새로 고치는 중...",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(2546-2565)"
+        ],
+        "$id": 2815
+    },
+    "切换语言失败,请重试": {
+        "en-US": "Failed to switch language, please try again",
+        "es-ES": "No se pudo cambiar el idioma, inténtelo de nuevo",
+        "ar-EG": "فشل تبديل اللغة، يرجى المحاولة مرة أخرى",
+        "pt-PT": "Falha ao alterar o idioma. Tente novamente",
+        "ru-RU": "Не удалось переключить язык. Повторите попытку.",
+        "ja-JP": "言語を切り替えることができませんでした。もう一度お試しください。",
+        "de-DE": "Die Sprachumschaltung ist fehlgeschlagen. Bitte versuchen Sie es erneut",
+        "fr-FR": "Échec du changement de langue, veuillez réessayer",
+        "ko-KR": "언어를 전환하지 못했습니다. 다시 시도해 주세요.",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(2811-2825)"
+        ],
+        "$id": 2910
+    },
+    "浅色主题": {
+        "en-US": "Light theme  ",
+        "es-ES": "Tema claro",
+        "ar-EG": "السمة الفاتحة  ",
+        "pt-PT": "Tema claro",
+        "ru-RU": "Светлая тема",
+        "ja-JP": "ライトテーマ",
+        "de-DE": "Helles Design",
+        "fr-FR": "Thème clair",
+        "ko-KR": "라이트 테마",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3311-3319)"
+        ],
+        "$id": 3118
+    },
+    "始终使用浅色界面": {
+        "en-US": "Always use light interface  ",
+        "es-ES": "Usar siempre la interfaz clara",
+        "ar-EG": "استخدم دائمًا الواجهة الفاتحة  ",
+        "pt-PT": "Utilizar sempre a interface clara",
+        "ru-RU": "Всегда использовать светлый интерфейс",
+        "ja-JP": "常にライトインターフェースを使用",
+        "de-DE": "Immer helle Oberfläche verwenden",
+        "fr-FR": "Utiliser toujours une interface claire",
+        "ko-KR": "항상 라이트 인터페이스 사용",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3335-3347)"
+        ],
+        "$id": 3119
+    },
+    "深色主题": {
+        "en-US": "Dark theme  ",
+        "es-ES": "Tema oscuro",
+        "ar-EG": "السمة الداكنة  ",
+        "pt-PT": "Tema escuro",
+        "ru-RU": "Тёмная тема",
+        "ja-JP": "ダークテーマ",
+        "de-DE": "Dunkles Design",
+        "fr-FR": "Thème sombre",
+        "ko-KR": "다크 테마",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3381-3389)"
+        ],
+        "$id": 3120
+    },
+    "始终使用深色界面": {
+        "en-US": "Always use dark interface  ",
+        "es-ES": "Usar siempre la interfaz oscura",
+        "ar-EG": "استخدم دائمًا الواجهة الداكنة  ",
+        "pt-PT": "Utilizar sempre a interface escura",
+        "ru-RU": "Всегда использовать тёмный интерфейс",
+        "ja-JP": "常にダークインターフェースを使用",
+        "de-DE": "Immer dunkle Oberfläche verwenden",
+        "fr-FR": "Utiliser toujours une interface sombre",
+        "ko-KR": "항상 다크 인터페이스 사용",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3405-3417)"
+        ],
+        "$id": 3121
+    },
+    "跟随系统": {
+        "en-US": "Follow system  ",
+        "es-ES": "Seguir el sistema",
+        "ar-EG": "اتبع النظام  ",
+        "pt-PT": "Seguir o sistema",
+        "ru-RU": "Следовать системе",
+        "ja-JP": "システムに従う",
+        "de-DE": "Systemeinstellung folgen",
+        "fr-FR": "Suivre le système",
+        "ko-KR": "시스템 설정 따르기",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3451-3459)"
+        ],
+        "$id": 3122
+    },
+    "根据系统设置自动切换": {
+        "en-US": "Automatically switch based on system settings  ",
+        "es-ES": "Cambiar automáticamente según la configuración del sistema",
+        "ar-EG": "التبديل تلقائيًا وفقًا لإعدادات النظام  ",
+        "pt-PT": "Alternar automaticamente consoante as definições do sistema",
+        "ru-RU": "Автоматически переключаться в соответствии с настройками системы",
+        "ja-JP": "システム設定に応じて自動で切り替え",
+        "de-DE": "Automatisch gemäß Systemeinstellung wechseln",
+        "fr-FR": "Basculer automatiquement selon les paramètres du système",
+        "ko-KR": "시스템 설정에 따라 자동 전환",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3475-3489)"
+        ],
+        "$id": 3123
+    },
+    "网格视图": {
+        "en-US": "Grid view  ",
+        "es-ES": "Vista en cuadrícula",
+        "ar-EG": "عرض الشبكة  ",
+        "pt-PT": "Vista em grelha",
+        "ru-RU": "Сетчатый вид",
+        "ja-JP": "グリッド表示",
+        "de-DE": "Rasteransicht",
+        "fr-FR": "Vue en grille",
+        "ko-KR": "그리드 보기",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3788-3796)"
+        ],
+        "$id": 3124
+    },
+    "以缩略图网格形式显示文件": {
+        "en-US": "Display files as thumbnail grid  ",
+        "es-ES": "Mostrar archivos en forma de cuadrícula de miniaturas",
+        "ar-EG": "عرض الملفات كشبكة من الصور المصغرة  ",
+        "pt-PT": "Mostrar ficheiros na forma de uma grelha de miniaturas",
+        "ru-RU": "Отображать файлы в виде сетки эскизов",
+        "ja-JP": "ファイルをサムネイルのグリッド形式で表示",
+        "de-DE": "Dateien als Miniaturansicht-Raster anzeigen",
+        "fr-FR": "Afficher les fichiers sous forme de grille de vignettes",
+        "ko-KR": "썸네일 그리드 형태로 파일 표시",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3812-3828)"
+        ],
+        "$id": 3125
+    },
+    "列表视图": {
+        "en-US": "List view  ",
+        "es-ES": "Vista en lista",
+        "ar-EG": "عرض القائمة  ",
+        "pt-PT": "Vista em lista",
+        "ru-RU": "Списковый вид",
+        "ja-JP": "リスト表示",
+        "de-DE": "Listenansicht",
+        "fr-FR": "Vue en liste",
+        "ko-KR": "목록 보기",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3862-3870)"
+        ],
+        "$id": 3126
+    },
+    "以详细列表形式显示文件": {
+        "en-US": "Display files as detailed list  ",
+        "es-ES": "Mostrar archivos en forma de lista detallada",
+        "ar-EG": "عرض الم files كقائمة تفصيلية  ",
+        "pt-PT": "Mostrar ficheiros na forma de uma lista detalhada",
+        "ru-RU": "Отображать файлы в виде подробного списка",
+        "ja-JP": "ファイルを詳細リスト形式で表示",
+        "de-DE": "Dateien als detaillierte Liste anzeigen",
+        "fr-FR": "Afficher les fichiers sous forme de liste détaillée",
+        "ko-KR": "자세한 목록 형태로 파일 표시",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(3886-3901)"
+        ],
+        "$id": 3127
+    },
+    "界面设置": {
+        "en-US": "Interface settings  ",
+        "es-ES": "Configuración de la interfaz",
+        "ar-EG": "إعدادات الواجهة  ",
+        "pt-PT": "Definições da interface",
+        "ru-RU": "Настройки интерфейса",
+        "ja-JP": "インターフェース設定",
+        "de-DE": "Oberflächeneinstellungen",
+        "fr-FR": "Paramètres de l'interface",
+        "ko-KR": "인터페이스 설정",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(4027-4035)"
+        ],
+        "$id": 3128
+    },
+    "自定义应用的外观和界面行为": {
+        "en-US": "Customize the app's appearance and interface behavior  ",
+        "es-ES": "Personalizar la apariencia y el comportamiento de la interfaz de la aplicación",
+        "ar-EG": "تخصيص مظهر التطبيق وسلوك واجهته  ",
+        "pt-PT": "Personalizar a aparência e o comportamento da interface da aplicação",
+        "ru-RU": "Настройка внешнего вида и поведения приложения",
+        "ja-JP": "アプリの外観とインターフェース動作をカスタマイズ",
+        "de-DE": "Aussehen und Verhalten der Anwendung anpassen",
+        "fr-FR": "Personnaliser l'apparence et le comportement de l'interface de l'application",
+        "ko-KR": "앱의 외관 및 인터페이스 동작을 사용자 정의",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(4110-4127)"
+        ],
+        "$id": 3129
+    },
+    "主题模式": {
+        "en-US": "Theme mode  ",
+        "es-ES": "Modo de tema",
+        "ar-EG": "وضع السمة  ",
+        "pt-PT": "Modo de tema",
+        "ru-RU": "Режим темы",
+        "ja-JP": "テーマモード",
+        "de-DE": "Designmodus",
+        "fr-FR": "Mode de thème",
+        "ko-KR": "테마 모드",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(4361-4369)"
+        ],
+        "$id": 3130
+    },
+    "选择应用的明暗模式": {
+        "en-US": "Choose the app's light or dark mode  ",
+        "es-ES": "Seleccionar el modo claro u oscuro de la aplicación",
+        "ar-EG": "اختر الوضع الفاتح أو الداكن للتطبيق  ",
+        "pt-PT": "Escolher o modo claro ou escuro da aplicação",
+        "ru-RU": "Выберите светлый или тёмный режим приложения",
+        "ja-JP": "アプリの明暗モードを選択",
+        "de-DE": "Hellen oder dunklen Modus für die Anwendung auswählen",
+        "fr-FR": "Choisir le mode clair ou sombre de l'application",
+        "ko-KR": "앱의 밝기/어두움 모드 선택",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(4460-4473)"
+        ],
+        "$id": 3131
+    },
+    "配色方案": {
+        "en-US": "Color scheme  ",
+        "es-ES": "Esquema de colores",
+        "ar-EG": "مخطط الألوان  ",
+        "pt-PT": "Esquema de cores",
+        "ru-RU": "Цветовая схема",
+        "ja-JP": "カラースキーム",
+        "de-DE": "Farbschema",
+        "fr-FR": "Schéma de couleurs",
+        "ko-KR": "색상 구성",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(6091-6099)"
+        ],
+        "$id": 3132
+    },
+    "选择应用的主题配色": {
+        "en-US": "Select the app's theme color  ",
+        "es-ES": "Seleccionar la combinación de colores del tema de la aplicación",
+        "ar-EG": "اختر ألوان سمة التطبيق  ",
+        "pt-PT": "Escolher a paleta de cores do tema da aplicação",
+        "ru-RU": "Выберите цветовую тему приложения",
+        "ja-JP": "アプリのテーマカラーを選択",
+        "de-DE": "Das Farbthema der Anwendung auswählen",
+        "fr-FR": "Choisir la palette de couleurs du thème de l'application",
+        "ko-KR": "앱의 테마 색상 선택",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(6190-6203)"
+        ],
+        "$id": 3133
+    },
+    "界面语言": {
+        "en-US": "Interface language  ",
+        "es-ES": "Idioma de la interfaz",
+        "ar-EG": "لغة الواجهة  ",
+        "pt-PT": "Idioma da interface",
+        "ru-RU": "Язык интерфейса",
+        "ja-JP": "インターフェース言語",
+        "de-DE": "Oberflächensprache",
+        "fr-FR": "Langue de l'interface",
+        "ko-KR": "인터페이스 언어",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(10048-10056)"
+        ],
+        "$id": 3134
+    },
+    "选择应用界面显示的语言": {
+        "en-US": "Choose the language displayed in the app interface",
+        "es-ES": "Seleccionar el idioma en que se muestra la interfaz de la aplicación",
+        "ar-EG": "اختر لغة عرض واجهة التطبيق",
+        "pt-PT": "Escolher o idioma apresentado na interface da aplicação",
+        "ru-RU": "Выберите язык отображения интерфейса приложения",
+        "ja-JP": "アプリの表示言語を選択",
+        "de-DE": "Die Sprache für die Anzeige der Benutzeroberfläche auswählen",
+        "fr-FR": "Choisir la langue d'affichage de l'interface de l'application",
+        "ko-KR": "앱 인터페이스에 표시될 언어 선택",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(10147-10162)"
+        ],
+        "$id": 3135
+    },
+    "选择语言": {
+        "en-US": "Select Language  ",
+        "es-ES": "Seleccionar idioma",
+        "ar-EG": "اختر اللغة",
+        "pt-PT": "Selecionar idioma",
+        "ru-RU": "Выбор языка",
+        "ja-JP": "言語を選択",
+        "de-DE": "Sprache auswählen",
+        "fr-FR": "Sélectionner la langue  ",
+        "ko-KR": "언어 선택",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(10455-10463)"
+        ],
+        "$id": 3137
+    },
+    "默认视图模式": {
+        "en-US": "Default View Mode  ",
+        "es-ES": "Modo de vista predeterminado",
+        "ar-EG": "وضع العرض الافتراضي",
+        "pt-PT": "Modo de visualização predefinido",
+        "ru-RU": "Режим отображения по умолчанию",
+        "ja-JP": "デフォルト表示モード",
+        "de-DE": "Standard-Ansichtsmodus",
+        "fr-FR": "Mode d’affichage par défaut  ",
+        "ko-KR": "기본 보기 모드",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(11127-11137)"
+        ],
+        "$id": 3138
+    },
+    "设置打开文件目录时的默认显示模式": {
+        "en-US": "Set the default display mode when opening a file directory  ",
+        "es-ES": "Establecer el modo de visualización predeterminado al abrir directorios de archivos",
+        "ar-EG": "تعيين وضع العرض الافتراضي عند فتح مجلد الملفات",
+        "pt-PT": "Definir o modo de exibição predefinido ao abrir diretórios de ficheiros",
+        "ru-RU": "Установить режим отображения по умолчанию при открытии каталога файлов",
+        "ja-JP": "ファイルディレクトリを開く際のデフォルト表示モードを設定",
+        "de-DE": "Den Standardanzeigemodus beim Öffnen von Dateiverzeichnissen festlegen",
+        "fr-FR": "Définir le mode d’affichage par défaut lors de l’ouverture d’un répertoire de fichiers  ",
+        "ko-KR": "파일 디렉터리를 열 때의 기본 표시 모드 설정",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(11228-11248)"
+        ],
+        "$id": 3139
+    },
+    "标签显示": {
+        "en-US": "Tag Display  ",
+        "es-ES": "Visualización de etiquetas",
+        "ar-EG": "عرض العلامات",
+        "pt-PT": "Exibição de etiquetas",
+        "ru-RU": "Отображение меток",
+        "ja-JP": "タグ表示",
+        "de-DE": "Etikettenanzeige",
+        "fr-FR": "Affichage des étiquettes  ",
+        "ko-KR": "태그 표시",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(12781-12789)"
+        ],
+        "$id": 3140
+    },
+    "控制虚拟目录中标签的显示行为": {
+        "en-US": "Control the display behavior of tags in virtual directories  ",
+        "es-ES": "Controlar el comportamiento de visualización de las etiquetas en directorios virtuales",
+        "ar-EG": "التحكم في سلوك عرض العلامات في الدليل الافتراضي",
+        "pt-PT": "Controlar o comportamento de exibição das etiquetas nos diretórios virtuais",
+        "ru-RU": "Управление поведением отображения меток в виртуальных каталогах",
+        "ja-JP": "仮想ディレクトリ内のタグの表示動作を制御",
+        "de-DE": "Das Anzeigeverhalten von Etiketten im virtuellen Verzeichnis steuern",
+        "fr-FR": "Contrôler le comportement d’affichage des étiquettes dans les répertoires virtuels  ",
+        "ko-KR": "가상 디렉터리에서 태그의 표시 방식 제어",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(12880-12898)"
+        ],
+        "$id": 3141
+    },
+    "显示空标签": {
+        "en-US": "Show Empty Tags  ",
+        "es-ES": "Mostrar etiquetas vacías",
+        "ar-EG": "عرض العلامات الفارغة",
+        "pt-PT": "Mostrar etiquetas vazias",
+        "ru-RU": "Показывать пустые метки",
+        "ja-JP": "空のタグを表示",
+        "de-DE": "Leere Etiketten anzeigen",
+        "fr-FR": "Afficher les étiquettes vides  ",
+        "ko-KR": "빈 태그 표시",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(13533-13542)"
+        ],
+        "$id": 3142
+    },
+    "在维度标签树中显示文件数为0的标签": {
+        "en-US": "Display tags with zero files in the dimension tag tree  ",
+        "es-ES": "Mostrar en el árbol de etiquetas dimensionales aquellas cuyo número de archivos sea 0",
+        "ar-EG": "عرض العلامات التي يبلغ عدد ملفاتها صفرًا في شجرة علامات الأبعاد",
+        "pt-PT": "Mostrar etiquetas com zero ficheiros na árvore de etiquetas por dimensão",
+        "ru-RU": "Отображать метки с нулевым количеством файлов в дереве меток измерений",
+        "ja-JP": "次元タグツリー内でファイル数が0のタグを表示",
+        "de-DE": "Etiketten mit einer Dateianzahl von 0 im Dimensions-Etikettenbaum anzeigen",
+        "fr-FR": "Afficher dans l’arborescence des étiquettes dimensionnelles les étiquettes dont le nombre de fichiers est égal à 0  ",
+        "ko-KR": "차원 태그 트리에서 파일 수가 0인 태그 표시",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(13669-13690)"
+        ],
+        "$id": 3143
+    },
+    "预览": {
+        "en-US": "Preview  ",
+        "es-ES": "Vista previa",
+        "ar-EG": "معاينة",
+        "pt-PT": "Pré-visualização",
+        "ru-RU": "Предварительный просмотр",
+        "ja-JP": "プレビュー",
+        "de-DE": "Vorschau",
+        "fr-FR": "Aperçu  ",
+        "ko-KR": "미리보기",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(13916-13922)"
+        ],
+        "$id": 3144
+    },
+    "当前主题:": {
+        "en-US": "Current Theme:  ",
+        "es-ES": "Tema actual:",
+        "ar-EG": "المظهر الحالي:",
+        "pt-PT": "Tema atual:",
+        "ru-RU": "Текущая тема:",
+        "ja-JP": "現在のテーマ:",
+        "de-DE": "Aktuelles Thema:",
+        "fr-FR": "Thème actuel :  ",
+        "ko-KR": "현재 테마:",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(14019-14028)"
+        ],
+        "$id": 3145
+    },
+    "当前语言:": {
+        "en-US": "Current Language:  ",
+        "es-ES": "Idioma actual:",
+        "ar-EG": "اللغة الحالية:",
+        "pt-PT": "Idioma atual:",
+        "ru-RU": "Текущий язык:",
+        "ja-JP": "現在の言語:",
+        "de-DE": "Aktuelle Sprache:",
+        "fr-FR": "Langue actuelle :  ",
+        "ko-KR": "현재 언어:",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(14163-14172)"
+        ],
+        "$id": 3146
+    },
+    "默认视图:": {
+        "en-US": "Default View:  ",
+        "es-ES": "Vista predeterminada:",
+        "ar-EG": "وضع العرض الافتراضي:",
+        "pt-PT": "Visualização predefinida:",
+        "ru-RU": "Вид по умолчанию:",
+        "ja-JP": "デフォルト表示:",
+        "de-DE": "Standardansicht:",
+        "fr-FR": "Vue par défaut :  ",
+        "ko-KR": "기본 보기:",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(14316-14325)"
+        ],
+        "$id": 3147
+    },
+    "语言变更警告": {
+        "en-US": "Language Change Warning  ",
+        "es-ES": "Advertencia de cambio de idioma",
+        "ar-EG": "تحذير تغيير اللغة",
+        "pt-PT": "Aviso de alteração de idioma",
+        "ru-RU": "Предупреждение об изменении языка",
+        "ja-JP": "言語変更の警告",
+        "de-DE": "Warnung bei Sprachwechsel",
+        "fr-FR": "Avertissement concernant le changement de langue  ",
+        "ko-KR": "언어 변경 경고",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(14941-14951)"
+        ],
+        "$id": 3148
+    },
+    "已创建的工作目录不支持语言切换，因为已分析文件的语言无法匹配新的语言环境。您可以随时切换回语言来恢复": {
+        "en-US": "The created working directory does not support language switching, because the language of the analyzed files cannot match the new language environment. You can switch back to the language at any time to restore",
+        "es-ES": "El directorio de trabajo creado no admite el cambio de idioma porque el idioma de los archivos analizados no coincide con la nueva configuración regional. Puede volver a cambiar al idioma original en cualquier momento para restaurar",
+        "ar-EG": "دليل العمل الذي تم إنشاؤه لا يدعم تبديل اللغة، لأن لغة الملفات التي تم تحليلها لا يمكن أن تتطابق مع بيئة اللغة الجديدة. يمكنك التبديل مرة أخرى إلى اللغة في أي وقت للاسترداد",
+        "pt-PT": "O diretório de trabalho criado não suporta a alteração de idioma, porque o idioma dos ficheiros analisados não corresponde à nova região. Pode sempre voltar a alternar para o idioma para restaurar",
+        "ru-RU": "Созданный рабочий каталог не поддерживает переключение языка, так как язык проанализированных файлов не может быть сопоставлен с новой языковой средой. Вы можете в любой момент переключиться обратно на язык, чтобы восстановить.",
+        "ja-JP": "作成済みの作業ディレクトリは言語の切り替えに対応していません。分析済みファイルの言語が新しい言語環境と一致しないためです。いつでも元の言語に切り替えて復元することができます。",
+        "de-DE": "Das erstellte Arbeitsverzeichnis unterstützt keinen Sprachwechsel, da die Sprache der analysierten Dateien nicht mit der neuen Sprachumgebung übereinstimmt. Sie können jederzeit zurück zur ursprünglichen Sprache wechseln, um den Zustand wiederherzustellen",
+        "fr-FR": "Le répertoire de travail créé ne prend pas en charge le changement de langue, car la langue des fichiers analysés ne correspond pas au nouveau paramètre régional. Vous pouvez à tout moment revenir à la langue précédente pour restaurer le fonctionnement.",
+        "ko-KR": "생성된 작업 디렉토리는 언어 전환을 지원하지 않습니다. 분석된 파일의 언어가 새로운 언어 환경과 일치하지 않기 때문입니다. 언제든지 언어를 다시 전환하여 복구할 수 있습니다",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(15110-15164)"
+        ],
+        "$id": 3068
+    },
+    "取消": {
+        "en-US": "Cancel",
+        "es-ES": "Cancelar",
+        "ar-EG": "إلغاء",
+        "pt-PT": "Cancelar",
+        "ru-RU": "Отмена",
+        "ja-JP": "キャンセル",
+        "de-DE": "Abbrechen",
+        "fr-FR": "Annuler",
+        "ko-KR": "취소",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(15456-15462)"
+        ],
+        "$id": 3152
+    },
+    "继续": {
+        "en-US": "Continue",
+        "es-ES": "Continuar",
+        "ar-EG": "متابعة",
+        "pt-PT": "Continuar",
+        "ru-RU": "Продолжить",
+        "ja-JP": "続行",
+        "de-DE": "Fortfahren",
+        "fr-FR": "Continuer",
+        "ko-KR": "계속",
+        "$files": [
+            "renderer/components/settings/interface-settings.tsx(15847-15853)"
+        ],
+        "$id": 3153
+    }
+}

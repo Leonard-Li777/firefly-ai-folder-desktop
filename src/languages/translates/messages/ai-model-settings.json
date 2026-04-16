@@ -1,0 +1,680 @@
+{
+    "模型删除功能暂未实现": {
+        "en-US": "Model deletion feature is not yet implemented",
+        "es-ES": "La función de eliminación de modelos aún no está implementada",
+        "ar-EG": "وظيفة حذف النموذج غير مُفعَّلة مؤقتًا  ",
+        "pt-PT": "A funcionalidade de eliminação de modelos ainda não foi implementada",
+        "ru-RU": "Функция удаления модели пока не реализована",
+        "ja-JP": "モデル削除機能はまだ実装されていません",
+        "de-DE": "Die Modelllöschfunktion ist vorerst nicht implementiert",
+        "fr-FR": "La fonction de suppression du modèle n'est pas encore implémentée.",
+        "ko-KR": "모델 삭제 기능은 아직 구현되지 않았습니다.",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(6292-6306)"
+        ],
+        "$id": 2952
+    },
+    "删除确认": {
+        "en-US": "Delete Confirmation",
+        "es-ES": "Confirmación de eliminación",
+        "ar-EG": "تأكيد الحذف  ",
+        "pt-PT": "Confirmação de eliminação",
+        "ru-RU": "Подтверждение удаления",
+        "ja-JP": "削除の確認",
+        "de-DE": "Löschbestätigung",
+        "fr-FR": "Confirmation de suppression",
+        "ko-KR": "삭제 확인",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(6460-6468)"
+        ],
+        "$id": 2953
+    },
+    "确定要删除模型 \"{model}\" 吗？": {
+        "en-US": "Are you sure you want to delete the model \"{model}\"?",
+        "es-ES": "¿Está seguro de que desea eliminar el modelo \"{model}\"?",
+        "ar-EG": "هل أنت متأكد من أنك تريد حذف النموذج \"{model}\"؟  ",
+        "pt-PT": "Tem a certeza de que deseja eliminar o modelo \"{model}\"?",
+        "ru-RU": "Вы действительно хотите удалить модель \"{model}\"?",
+        "ja-JP": "モデル「{model}」を削除してもよろしいですか？",
+        "de-DE": "Möchten Sie das Modell „{model}“ wirklich löschen?",
+        "fr-FR": "Êtes-vous sûr(e) de vouloir supprimer le modèle \"{model}\" ?",
+        "ko-KR": "모델 \"{model}\"을(를) 삭제하시겠습니까?",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(6489-6513)"
+        ],
+        "$id": 2954
+    },
+    "此操作不可逆。": {
+        "en-US": "This action is irreversible.",
+        "es-ES": "Esta acción es irreversible.",
+        "ar-EG": "هذا الإجراء لا يمكن التراجع عنه.  ",
+        "pt-PT": "Esta ação é irreversível.",
+        "ru-RU": "Это действие необратимо.",
+        "ja-JP": "この操作は取り消せません。",
+        "de-DE": "Dieser Vorgang ist nicht umkehrbar.",
+        "fr-FR": "Cette opération est irréversible.",
+        "ko-KR": "이 작업은 되돌릴 수 없습니다.",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(6556-6567)"
+        ],
+        "$id": 2955
+    },
+    "删除": {
+        "en-US": "Delete",
+        "es-ES": "Eliminar",
+        "ar-EG": "حذف  ",
+        "pt-PT": "Eliminar",
+        "ru-RU": "Удалить",
+        "ja-JP": "削除",
+        "de-DE": "Löschen",
+        "fr-FR": "Supprimer",
+        "ko-KR": "삭제",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(6589-6595)"
+        ],
+        "$id": 2956
+    },
+    "取消": {
+        "en-US": "Cancel",
+        "es-ES": "Cancelar",
+        "ar-EG": "إلغاء  ",
+        "pt-PT": "Cancelar",
+        "ru-RU": "Отмена",
+        "ja-JP": "キャンセル",
+        "de-DE": "Abbrechen",
+        "fr-FR": "Annuler",
+        "ko-KR": "취소",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(6598-6604)"
+        ],
+        "$id": 2957
+    },
+    "未知": {
+        "en-US": "Unknown",
+        "es-ES": "Desconocido",
+        "ar-EG": "مجهول  ",
+        "pt-PT": "Desconhecido",
+        "ru-RU": "Неизвестно",
+        "ja-JP": "不明",
+        "de-DE": "Unbekannt",
+        "fr-FR": "Inconnu",
+        "ko-KR": "알 수 없음",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(9335-9341)",
+            "renderer/components/settings/ai-model-settings.tsx(12905-12911)",
+            "renderer/components/settings/ai-model-settings.tsx(16229-16235)",
+            "renderer/components/settings/ai-model-settings.tsx(16448-16454)"
+        ],
+        "$id": 2958
+    },
+    "AI模型设置": {
+        "en-US": "AI Model Settings",
+        "es-ES": "Configuración del modelo de IA",
+        "ar-EG": "إعدادات نموذج الذكاء الاصطناعي  ",
+        "pt-PT": "Definições do modelo de IA",
+        "ru-RU": "Настройки ИИ-модели",
+        "ja-JP": "AIモデル設定",
+        "de-DE": "KI-Modell-Einstellungen",
+        "fr-FR": "Paramètres du modèle IA",
+        "ko-KR": "AI 모델 설정",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(10257-10267)"
+        ],
+        "$id": 2959
+    },
+    "选择本地或云端模式：2 选 1": {
+        "en-US": "Choose local or cloud mode: 2 options",
+        "es-ES": "Selecciona el modo local o en la nube: 2 elegir 1",
+        "ar-EG": "اختر الوضع المحلي أو السحابي: 2 من 1",
+        "pt-PT": "Escolha o modo local ou na nuvem: 2 em 1",
+        "ru-RU": "Выберите локальный или облачный режим: 2 из 1",
+        "ja-JP": "ローカルまたはクラウドモードを選択：2選1",
+        "de-DE": "Wählen Sie den lokalen oder Cloud-Modus: 2 aus 1",
+        "fr-FR": "Choisissez le mode local ou cloud : 2 choix possibles",
+        "ko-KR": "로컬 또는 클라우드 모드 선택: 2选1",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(10379-10398)"
+        ],
+        "$id": 2680
+    },
+    "本地模式": {
+        "en-US": "Local Mode",
+        "es-ES": "Modo local",
+        "ar-EG": "الوضع المحلي  ",
+        "pt-PT": "Modo local",
+        "ru-RU": "Локальный режим",
+        "ja-JP": "ローカルモード",
+        "de-DE": "Lokaler Modus",
+        "fr-FR": "Mode local",
+        "ko-KR": "로컬 모드",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(10792-10800)"
+        ],
+        "$id": 2961
+    },
+    "云端模式": {
+        "en-US": "Cloud Mode",
+        "es-ES": "Modo en la nube",
+        "ar-EG": "الوضع السحابي  ",
+        "pt-PT": "Modo na nuvem",
+        "ru-RU": "Облачный режим",
+        "ja-JP": "クラウドモード",
+        "de-DE": "Cloud-Modus",
+        "fr-FR": "Mode cloud",
+        "ko-KR": "클라우드 모드",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(11099-11107)"
+        ],
+        "$id": 2962
+    },
+    "有": {
+        "en-US": "Yes",
+        "es-ES": "Sí",
+        "ar-EG": "نعم  ",
+        "pt-PT": "Sim",
+        "ru-RU": "Да",
+        "ja-JP": "あり",
+        "de-DE": "Vorhanden",
+        "fr-FR": "Oui",
+        "ko-KR": "있음",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(11981-11986)"
+        ],
+        "$id": 2963
+    },
+    "无": {
+        "en-US": "No",
+        "es-ES": "No",
+        "ar-EG": "لا  ",
+        "pt-PT": "Não",
+        "ru-RU": "Нет",
+        "ja-JP": "なし",
+        "de-DE": "Nicht vorhanden",
+        "fr-FR": "Non",
+        "ko-KR": "없음",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(12019-12024)"
+        ],
+        "$id": 2964
+    },
+    "显存": {
+        "en-US": "VRAM",
+        "es-ES": "Memoria de vídeo",
+        "ar-EG": "ذاكرة الفيديو",
+        "pt-PT": "Memória de vídeo",
+        "ru-RU": "Видеопамять",
+        "ja-JP": "VRAM",
+        "de-DE": "VRAM",
+        "fr-FR": "Mémoire vidéo",
+        "ko-KR": "비디오 메모리",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(12087-12093)"
+        ],
+        "$id": 2637
+    },
+    "检测中...": {
+        "en-US": "Detecting...",
+        "es-ES": "Detectando...",
+        "ar-EG": "قيد الكشف...  ",
+        "pt-PT": "A detectar...",
+        "ru-RU": "Обнаружение...",
+        "ja-JP": "検出中...",
+        "de-DE": "Wird erkannt...",
+        "fr-FR": "Détection en cours...",
+        "ko-KR": "감지 중...",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(12344-12354)"
+        ],
+        "$id": 2966
+    },
+    "无独立显卡": {
+        "en-US": "No dedicated GPU",
+        "es-ES": "Sin tarjeta gráfica dedicada",
+        "ar-EG": "لا توجد بطاقة رسوميات منفصلة  ",
+        "pt-PT": "Sem placa gráfica dedicada",
+        "ru-RU": "Нет дискретной видеокарты",
+        "ja-JP": "独立グラフィックスカードなし",
+        "de-DE": "Keine dedizierte Grafikkarte vorhanden",
+        "fr-FR": "Aucune carte graphique dédiée",
+        "ko-KR": "독립형 그래픽 카드 없음",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(12385-12394)"
+        ],
+        "$id": 2967
+    },
+    "硬盘剩余": {
+        "en-US": "Hard disk remaining",
+        "es-ES": "Espacio restante en disco duro",
+        "ar-EG": "المساحة المتبقية على القرص الصلب",
+        "pt-PT": "Espaço restante no disco rígido",
+        "ru-RU": "Оставшееся пространство на жестком диске",
+        "ja-JP": "ハードディスクの残り容量",
+        "de-DE": "Festplatte übrig",
+        "fr-FR": "Espace disque restant",
+        "ko-KR": "하드디스크 잔여",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(12742-12750)"
+        ],
+        "$id": 6233
+    },
+    "系统可能无法获取正确的模型安装盘符，仅作参考": {
+        "en-US": "The system may be unable to retrieve the correct model installation drive letter; for reference only.",
+        "es-ES": "El sistema podría no obtener la letra de unidad de instalación correcta del modelo, únicamente como referencia",
+        "ar-EG": "قد لا يتمكن النظام من الحصول على حرف محرك تثبيت النموذج الصحيح، يُستخدم للرجوع فقط",
+        "pt-PT": "O sistema poderá não conseguir obter a letra da unidade de instalação do modelo correta; serve apenas como referência.",
+        "ru-RU": "Система может не определить правильный буквенный обозначение диска установки модели; предоставлено только для справки.",
+        "ja-JP": "システムが正しいモデルのインストールドライブ文字を取得できない可能性があり、参考用です",
+        "de-DE": "Das System kann möglicherweise nicht den korrekten Laufwerksbuchstaben des modellinstallierten Laufwerks ermitteln; dient nur als Referenz.",
+        "fr-FR": "Le système peut ne pas réussir à obtenir la lettre de lecteur correcte pour l'installation du modèle ; cette information est fournie à titre indicatif uniquement.",
+        "ko-KR": "시스템이 올바른 모델 설치 드라이브 문자를 가져오지 못할 수 있으며, 이는 용도로만 제공됩니다.",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(13023-13049)"
+        ],
+        "$id": 3309
+    },
+    "可用模型": {
+        "en-US": "Available Models",
+        "es-ES": "Modelos disponibles",
+        "ar-EG": "النماذج المتاحة  ",
+        "pt-PT": "Modelos disponíveis",
+        "ru-RU": "Доступные модели",
+        "ja-JP": "利用可能なモデル",
+        "de-DE": "Verfügbare Modelle",
+        "fr-FR": "Modèles disponibles",
+        "ko-KR": "사용 가능한 모델",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(13421-13429)"
+        ],
+        "$id": 2970
+    },
+    "下载和管理AI模型": {
+        "en-US": "Download and manage AI models",
+        "es-ES": "Descargar y gestionar modelos de IA",
+        "ar-EG": "نزِّل وأدر نماذج الذكاء الاصطناعي  ",
+        "pt-PT": "Transferir e gerir modelos de IA",
+        "ru-RU": "Загрузка и управление ИИ-моделями",
+        "ja-JP": "AIモデルのダウンロードと管理",
+        "de-DE": "KI-Modelle herunterladen und verwalten",
+        "fr-FR": "Télécharger et gérer les modèles IA",
+        "ko-KR": "AI 모델 다운로드 및 관리",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(13510-13523)"
+        ],
+        "$id": 2971
+    },
+    "建议开启VPN或游戏加速器改善下载速度": {
+        "en-US": "We recommend enabling a VPN or game booster to improve download speeds.",
+        "es-ES": "Se recomienda activar una VPN o un acelerador de juegos para mejorar la velocidad de descarga.",
+        "ar-EG": "يُوصى بتفعيل VPN أو مُسرّع الألعاب لتحسين سرعة التنزيل",
+        "pt-PT": "Sugere-se ativar a VPN ou um acelerador de jogos para melhorar a velocidade de transferência.",
+        "ru-RU": "Рекомендуется включить VPN или ускоритель игр для улучшения скорости загрузки",
+        "ja-JP": "ダウンロード速度を向上させるため、VPN またはゲームアクセラレーターの有効化をお勧めします",
+        "de-DE": "Es wird empfohlen, ein VPN oder einen Game-Booster zu aktivieren, um die Downloadgeschwindigkeit zu verbessern.",
+        "fr-FR": "Il est recommandé d'activer un VPN ou un accélérateur de jeu pour améliorer la vitesse de téléchargement.",
+        "ko-KR": "VPN 또는 게임 가속기 활성화를 통해 다운로드 속도를 개선하는 것을 권장합니다",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(13579-13602)"
+        ],
+        "$id": 3438
+    },
+    "刷新列表": {
+        "en-US": "Refresh List",
+        "es-ES": "Actualizar lista",
+        "ar-EG": "تحديث القائمة  ",
+        "pt-PT": "Actualizar lista",
+        "ru-RU": "Обновить список",
+        "ja-JP": "リストを更新",
+        "de-DE": "Liste aktualisieren",
+        "fr-FR": "Actualiser la liste",
+        "ko-KR": "목록 새로고침",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(14228-14236)"
+        ],
+        "$id": 2972
+    },
+    "暂无可用模型": {
+        "en-US": "No available models",
+        "es-ES": "No hay modelos disponibles por ahora",
+        "ar-EG": "لا توجد نماذج متاحة حاليًا  ",
+        "pt-PT": "Não há modelos disponíveis de momento",
+        "ru-RU": "Нет доступных моделей",
+        "ja-JP": "利用可能なモデルがありません",
+        "de-DE": "Derzeit keine verfügbaren Modelle",
+        "fr-FR": "Aucun modèle disponible pour le moment",
+        "ko-KR": "사용 가능한 모델이 없습니다.",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(14543-14553)"
+        ],
+        "$id": 2973
+    },
+    "请检查网络连接或稍后重试": {
+        "en-US": "Please check your network connection or try again later",
+        "es-ES": "Compruebe la conexión de red o inténtelo de nuevo más tarde",
+        "ar-EG": "يرجى التحقق من اتصال الشبكة أو إعادة المحاولة لاحقًا  ",
+        "pt-PT": "Verifique a ligação à rede ou tente novamente mais tarde",
+        "ru-RU": "Проверьте подключение к сети или повторите попытку позже",
+        "ja-JP": "ネットワーク接続を確認するか、後ほど再試行してください",
+        "de-DE": "Bitte überprüfen Sie Ihre Netzwerkverbindung oder versuchen Sie es später erneut",
+        "fr-FR": "Veuillez vérifier votre connexion réseau ou réessayer ultérieurement",
+        "ko-KR": "네트워크 연결을 확인하거나 나중에 다시 시도하세요.",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(14605-14621)"
+        ],
+        "$id": 2974
+    },
+    "未知模型": {
+        "en-US": "Unknown Model",
+        "es-ES": "Modelo desconocido",
+        "ar-EG": "نموذج غير معروف  ",
+        "pt-PT": "Modelo desconhecido",
+        "ru-RU": "Неизвестная модель",
+        "ja-JP": "不明なモデル",
+        "de-DE": "Unbekanntes Modell",
+        "fr-FR": "Modèle inconnu",
+        "ko-KR": "알 수 없는 모델",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(16045-16053)"
+        ],
+        "$id": 2975
+    },
+    "推荐": {
+        "en-US": "Recommended",
+        "es-ES": "Recomendado",
+        "ar-EG": "موصى به  ",
+        "pt-PT": "Recomendado",
+        "ru-RU": "Рекомендуется",
+        "ja-JP": "推奨",
+        "de-DE": "Empfohlen",
+        "fr-FR": "Recommandé",
+        "ko-KR": "추천",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(16687-16693)"
+        ],
+        "$id": 2976
+    },
+    "已激活": {
+        "en-US": "Activated",
+        "es-ES": "Activado",
+        "ar-EG": "مفعّل  ",
+        "pt-PT": "Activado",
+        "ru-RU": "Активировано",
+        "ja-JP": "有効化済み",
+        "de-DE": "Aktiviert",
+        "fr-FR": "Activé",
+        "ko-KR": "활성화됨",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(17048-17055)"
+        ],
+        "$id": 2977
+    },
+    "硬件不足": {
+        "en-US": "Insufficient Hardware",
+        "es-ES": "Recursos hardware insuficientes",
+        "ar-EG": "المواصفاتHardware غير كافية  ",
+        "pt-PT": "Recursos de hardware insuficientes",
+        "ru-RU": "Недостаточно ресурсов оборудования",
+        "ja-JP": "ハードウェアが不足しています",
+        "de-DE": "Unzureichende Hardware",
+        "fr-FR": "Ressources matérielles insuffisantes",
+        "ko-KR": "하드웨어 사양 부족",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(17324-17332)"
+        ],
+        "$id": 2978
+    },
+    "暂无描述": {
+        "en-US": "No description available",
+        "es-ES": "Sin descripción",
+        "ar-EG": "لا يوجد وصف  ",
+        "pt-PT": "Sem descrição disponível",
+        "ru-RU": "Описание отсутствует",
+        "ja-JP": "説明がありません",
+        "de-DE": "Keine Beschreibung verfügbar",
+        "fr-FR": "Aucune description disponible",
+        "ko-KR": "설명 없음",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(17576-17584)"
+        ],
+        "$id": 2979
+    },
+    "支持：": {
+        "en-US": "Supported:",
+        "es-ES": "Compatible:",
+        "ar-EG": "يدعم:",
+        "pt-PT": "Suportado:",
+        "ru-RU": "Поддержка:",
+        "ja-JP": "サポート：",
+        "de-DE": "Unterstützt:",
+        "fr-FR": "Prise en charge :",
+        "ko-KR": "지원:",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(18016-18023)"
+        ],
+        "$id": 2980
+    },
+    "大小: ": {
+        "en-US": "Size:  ",
+        "es-ES": "Tamaño: ",
+        "ar-EG": "الحجم:  ",
+        "pt-PT": "Tamanho: ",
+        "ru-RU": "Размер: ",
+        "ja-JP": "サイズ: ",
+        "de-DE": "Größe: ",
+        "fr-FR": "Taille : ",
+        "ko-KR": "크기: ",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(18907-18915)"
+        ],
+        "$id": 2981
+    },
+    "需要显存: ": {
+        "en-US": "VRAM Required:  ",
+        "es-ES": "Memoria VRAM requerida: ",
+        "ar-EG": "الذاكرة المطلوبة:  ",
+        "pt-PT": "Memória VRAM necessária: ",
+        "ru-RU": "Требуемая видеопамять: ",
+        "ja-JP": "必要なVRAM: ",
+        "de-DE": "Benötigter VRAM: ",
+        "fr-FR": "Mémoire VRAM requise : ",
+        "ko-KR": "필요한 VRAM: ",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(19061-19071)"
+        ],
+        "$id": 2982
+    },
+    "激活": {
+        "en-US": "Activate  ",
+        "es-ES": "Activar",
+        "ar-EG": "تفعيل  ",
+        "pt-PT": "Ativar",
+        "ru-RU": "Активировать",
+        "ja-JP": "有効化",
+        "de-DE": "Aktivieren",
+        "fr-FR": "Activer",
+        "ko-KR": "활성화",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(19895-19901)"
+        ],
+        "$id": 2983
+    },
+    "下载": {
+        "en-US": "Download  ",
+        "es-ES": "Descargar",
+        "ar-EG": "تنزيل  ",
+        "pt-PT": "Transferir",
+        "ru-RU": "Скачать",
+        "ja-JP": "ダウンロード",
+        "de-DE": "Herunterladen",
+        "fr-FR": "Télécharger",
+        "ko-KR": "다운로드",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(20947-20953)"
+        ],
+        "$id": 2984
+    },
+    "模型存储路径": {
+        "en-US": "Model Storage Path  ",
+        "es-ES": "Ruta de almacenamiento de los modelos",
+        "ar-EG": "مسار تخزين النموذج  ",
+        "pt-PT": "Caminho de armazenamento dos modelos",
+        "ru-RU": "Путь хранения моделей",
+        "ja-JP": "モデル保存パス",
+        "de-DE": "Speicherpfad für Modelle",
+        "fr-FR": "Chemin de stockage des modèles",
+        "ko-KR": "모델 저장 경로",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(22547-22557)"
+        ],
+        "$id": 2990
+    },
+    "请选择一个拥有充足磁盘空间的文件夹来保存 GGUF 模型文件。": {
+        "en-US": "Please select a folder with sufficient disk space to store GGUF model files.  ",
+        "es-ES": "Seleccione una carpeta con suficiente espacio en disco para guardar los archivos del modelo GGUF.",
+        "ar-EG": "يرجى اختيار مجلد يحتوي على مساحة قرص كافية لحفظ ملفات النموذج GGUF.  ",
+        "pt-PT": "Selecione uma pasta com espaço em disco suficiente para guardar os ficheiros do modelo GGUF.",
+        "ru-RU": "Выберите папку с достаточным объёмом дискового пространства для сохранения файлов моделей GGUF.",
+        "ja-JP": "GGUFモデルファイルを保存するため、十分なディスク容量のあるフォルダを選択してください。",
+        "de-DE": "Bitte wählen Sie einen Ordner mit ausreichend Speicherplatz, um GGUF-Modelldateien zu speichern.",
+        "fr-FR": "Veuillez choisir un dossier disposant d’un espace disque suffisant pour enregistrer les fichiers de modèle GGUF.",
+        "ko-KR": "GGUF 모델 파일을 저장할 충분한 디스크 공간이 있는 폴더를 선택해 주세요.",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(22660-22695)"
+        ],
+        "$id": 2991
+    },
+    "例如: D:\\\\AI\\\\models": {
+        "en-US": "Example: D:\\\\AI\\\\models  ",
+        "es-ES": "Por ejemplo: D:\\\\AI\\\\models",
+        "ar-EG": "مثال: D:\\\\AI\\\\models  ",
+        "pt-PT": "Por exemplo: D:\\\\AI\\\\models",
+        "ru-RU": "Например: D:\\\\AI\\\\models",
+        "ja-JP": "例: D:\\\\AI\\\\models",
+        "de-DE": "Beispiel: D:\\\\AI\\\\models",
+        "fr-FR": "Par exemple : D:\\\\AI\\\\models",
+        "ko-KR": "예: D:\\\\AI\\\\models",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(22873-22895)"
+        ],
+        "$id": 2992
+    },
+    "浏览": {
+        "en-US": "Browse  ",
+        "es-ES": "Examinar",
+        "ar-EG": "استعراض  ",
+        "pt-PT": "Procurar",
+        "ru-RU": "Обзор",
+        "ja-JP": "参照",
+        "de-DE": "Durchsuchen",
+        "fr-FR": "Parcourir",
+        "ko-KR": "찾아보기",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(23241-23247)"
+        ],
+        "$id": 2993
+    },
+    "保存": {
+        "en-US": "Save  ",
+        "es-ES": "Guardar",
+        "ar-EG": "حفظ  ",
+        "pt-PT": "Guardar",
+        "ru-RU": "Сохранить",
+        "ja-JP": "保存",
+        "de-DE": "Speichern",
+        "fr-FR": "Enregistrer",
+        "ko-KR": "저장",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(23408-23414)"
+        ],
+        "$id": 2994
+    },
+    "注意事项": {
+        "en-US": "Notes",
+        "es-ES": "Notas importantes",
+        "ar-EG": "ملاحظات",
+        "pt-PT": "Notas",
+        "ru-RU": "Примечания",
+        "ja-JP": "注意事項",
+        "de-DE": "Hinweise",
+        "fr-FR": "Remarques",
+        "ko-KR": "주의사항",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(23867-23875)"
+        ],
+        "$id": 2995
+    },
+    "• 模型文件较大，下载可能需要较长时间": {
+        "en-US": "• The model file is large; downloading may take a considerable amount of time.  ",
+        "es-ES": "• El archivo del modelo es grande; la descarga podría tardar bastante tiempo  ",
+        "ar-EG": "• ملف النموذج كبير، وقد يستغرق التنزيل وقتًا طويلاً  ",
+        "pt-PT": "• O ficheiro do modelo é grande; a transferência pode demorar algum tempo  ",
+        "ru-RU": "• Файл модели имеет большой размер, загрузка может занять длительное время  ",
+        "ja-JP": "• モデルファイルのサイズが大きいため、ダウンロードに時間がかかる場合があります  ",
+        "de-DE": "• Die Modelldatei ist groß; der Download kann einige Zeit dauern.  ",
+        "fr-FR": "• Le fichier du modèle est volumineux ; le téléchargement peut prendre du temps.  ",
+        "ko-KR": "• 모델 파일이 크기 때문에 다운로드에 시간이 오래 걸릴 수 있습니다  ",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(23965-23988)"
+        ],
+        "$id": 2996
+    },
+    "• 确保有足够的磁盘空间存储模型文件": {
+        "en-US": "• Ensure sufficient disk space is available to store the model file.  ",
+        "es-ES": "• Asegúrese de disponer de suficiente espacio en disco para almacenar el archivo del modelo  ",
+        "ar-EG": "• تأكد من توفر مساحة كافية على القرص لتخزين ملف النموذج  ",
+        "pt-PT": "• Certifique-se de que há espaço suficiente em disco para armazenar o ficheiro do modelo  ",
+        "ru-RU": "• Убедитесь, что на диске достаточно места для хранения файла модели  ",
+        "ja-JP": "• モデルファイルを保存する十分なディスク容量があることを確認してください  ",
+        "de-DE": "• Stellen Sie sicher, dass ausreichend Speicherplatz zum Speichern der Modelldatei vorhanden ist.  ",
+        "fr-FR": "• Assurez-vous de disposer d’un espace disque suffisant pour stocker le fichier du modèle.  ",
+        "ko-KR": "• 모델 파일을 저장할 충분한 디스크 공간이 있는지 확인하세요  ",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(24020-24042)"
+        ],
+        "$id": 2997
+    },
+    "• 不能删除当前激活的模型，请先激活其他模型": {
+        "en-US": "• You cannot delete the currently active model; please activate another model first.  ",
+        "es-ES": "• No se puede eliminar el modelo actualmente activo; active primero otro modelo  ",
+        "ar-EG": "• لا يمكن حذف النموذج المفعّل حاليًا، يرجى تفعيل نموذج آخر أولاً  ",
+        "pt-PT": "• Não é possível eliminar o modelo atualmente ativo; ative primeiro outro modelo  ",
+        "ru-RU": "• Нельзя удалить текущую активную модель — сначала активируйте другую модель  ",
+        "ja-JP": "• 現在アクティブなモデルは削除できません。他のモデルを先にアクティブにしてください  ",
+        "de-DE": "• Das aktuell aktivierte Modell kann nicht gelöscht werden. Bitte aktivieren Sie zuerst ein anderes Modell.  ",
+        "fr-FR": "• Vous ne pouvez pas supprimer le modèle actuellement activé ; veuillez d’abord activer un autre modèle.  ",
+        "ko-KR": "• 현재 활성화된 모델은 삭제할 수 없습니다. 먼저 다른 모델을 활성화하세요  ",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(24074-24100)"
+        ],
+        "$id": 2998
+    },
+    "• 硬件不足的模型已置灰，无法下载": {
+        "en-US": "• Models incompatible with your hardware are grayed out and cannot be downloaded.  ",
+        "es-ES": "• Los modelos cuyos requisitos superan la capacidad del hardware están atenuados y no se pueden descargar  ",
+        "ar-EG": "• تم تعطيل النماذج التي لا تتوافق مع قدرات الجهاز ولا يمكن تنزيلها  ",
+        "pt-PT": "• Os modelos cujos requisitos excedem a capacidade do hardware estão desativados e não podem ser transferidos  ",
+        "ru-RU": "• Модели, не соответствующие требованиям оборудования, недоступны для загрузки (отображаются серым цветом)  ",
+        "ja-JP": "• ハードウェア要件を満たしていないモデルはグレーアウトされており、ダウンロードできません  ",
+        "de-DE": "• Modelle, für die die Hardwareanforderungen nicht erfüllt sind, sind ausgegraut und können nicht heruntergeladen werden.  ",
+        "fr-FR": "• Les modèles incompatibles avec votre matériel sont grisés et ne peuvent pas être téléchargés.  ",
+        "ko-KR": "• 하드웨어 사양이 부족한 모델은 회색으로 표시되어 다운로드할 수 없습니다  ",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(24132-24153)"
+        ],
+        "$id": 2999
+    },
+    "• 显存大小是模型运行的关键因素": {
+        "en-US": "• VRAM capacity is a critical factor for running the model.",
+        "es-ES": "• La cantidad de memoria de vídeo (VRAM) es un factor clave para la ejecución del modelo",
+        "ar-EG": "• حجم ذاكرة الفيديو (VRAM) هو عامل حاسم لتشغيل النموذج",
+        "pt-PT": "• O tamanho da memória de vídeo (VRAM) é um fator crítico para a execução do modelo",
+        "ru-RU": "• Объем видеопамяти является ключевым фактором для запуска модели",
+        "ja-JP": "• VRAMの容量はモデル実行の重要な要素です",
+        "de-DE": "• Die Größe des Videospeichers ist ein entscheidender Faktor für den Betrieb des Modells.",
+        "fr-FR": "• La taille de la mémoire vidéo est un facteur clé pour l’exécution du modèle.",
+        "ko-KR": "• VRAM 용량은 모델 실행의 핵심 요소입니다",
+        "$files": [
+            "renderer/components/settings/ai-model-settings.tsx(24185-24205)"
+        ],
+        "$id": 3000
+    }
+}

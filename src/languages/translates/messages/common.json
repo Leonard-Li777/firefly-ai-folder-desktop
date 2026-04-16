@@ -1,0 +1,783 @@
+{
+    "应用出现错误": {
+        "en-US": "An error occurred in the application",
+        "es-ES": "La aplicación ha encontrado un error",
+        "ar-EG": "حدث خطأ في التطبيق",
+        "pt-PT": "Erro na aplicação",
+        "ru-RU": "Ошибка приложения",
+        "ja-JP": "アプリケーションエラー",
+        "de-DE": "Anwendung ist auf einen Fehler gestoßen",
+        "fr-FR": "L'application a rencontré une erreur",
+        "ko-KR": "앱에서 오류가 발생했습니다",
+        "$files": [
+            "renderer/components/common/ErrorBoundary.tsx(1159-1169)"
+        ],
+        "$id": 3888
+    },
+    "很抱歉，应用遇到了一个错误。请尝试刷新页面或重启应用。": {
+        "en-US": "We're sorry, the application encountered an error. Please try refreshing the page or restarting the application.",
+        "es-ES": "Lo sentimos, la aplicación ha encontrado un error. Por favor, intente actualizar la página o reiniciar la aplicación.",
+        "ar-EG": "عذراً، واجه التطبيق خطأً. يرجى محاولة تحديث الصفحة أو إعادة تشغيل التطبيق.",
+        "pt-PT": "Lamentamos, mas a aplicação encontrou um erro. Tente atualizar a página ou reiniciar a aplicação.",
+        "ru-RU": "Приносим свои извинения, в приложении произошла ошибка. Попробуйте обновить страницу или перезапустить приложение.",
+        "ja-JP": "申し訳ありませんが、アプリケーションでエラーが発生しました。ページを更新するか、アプリを再起動してください。",
+        "de-DE": "Es tut uns leid, die Anwendung ist auf einen Fehler gestoßen. Bitte versuchen Sie, die Seite zu aktualisieren oder die Anwendung neu zu starten.",
+        "fr-FR": "Désolé, l'application a rencontré une erreur. Veuillez essayer d'actualiser la page ou redémarrer l'application.",
+        "ko-KR": "죄송합니다. 앱에 오류가 발생했습니다. 페이지를 새로고침하거나 앱을 재시작해 보세요.",
+        "$files": [
+            "renderer/components/common/ErrorBoundary.tsx(1241-1272)"
+        ],
+        "$id": 3889
+    },
+    "错误详情": {
+        "en-US": "Error details",
+        "es-ES": "Detalles del error",
+        "ar-EG": "تفاصيل الخطأ",
+        "pt-PT": "Detalhes do erro",
+        "ru-RU": "Сведения об ошибке",
+        "ja-JP": "エラーの詳細",
+        "de-DE": "Fehlerdetails",
+        "fr-FR": "Détails de l'erreur",
+        "ko-KR": "오류 세부 정보",
+        "$files": [
+            "renderer/components/common/ErrorBoundary.tsx(1469-1477)"
+        ],
+        "$id": 3890
+    },
+    "刷新页面": {
+        "en-US": "Refresh page",
+        "es-ES": "Actualizar página",
+        "ar-EG": "تحديث الصفحة",
+        "pt-PT": "Atualizar página",
+        "ru-RU": "Обновить страницу",
+        "ja-JP": "ページを更新する",
+        "de-DE": "Seite aktualisieren",
+        "fr-FR": "Actualiser la page",
+        "ko-KR": "페이지 새로고침",
+        "$files": [
+            "renderer/components/common/ErrorBoundary.tsx(1941-1949)"
+        ],
+        "$id": 3891
+    },
+    "重试": {
+        "en-US": "Retry",
+        "es-ES": "Reintentar",
+        "ar-EG": "إعادة المحاولة",
+        "pt-PT": "Tentar novamente",
+        "ru-RU": "Повторить попытку",
+        "ja-JP": "もう一度やり直してください",
+        "de-DE": "Erneut versuchen",
+        "fr-FR": "Réessayer",
+        "ko-KR": "재시도",
+        "$files": [
+            "renderer/components/common/ErrorBoundary.tsx(2262-2268)"
+        ],
+        "$id": 3892
+    },
+    "本地": {
+        "en-US": "Local",
+        "es-ES": "Local",
+        "ar-EG": "محلي",
+        "pt-PT": "Local",
+        "ru-RU": "Локальный",
+        "ja-JP": "ローカル",
+        "de-DE": "Lokal",
+        "fr-FR": "Local",
+        "ko-KR": "로컬",
+        "$files": [
+            "renderer/components/common/Footer.tsx(2513-2519)"
+        ],
+        "$id": 3893
+    },
+    "云端": {
+        "en-US": "Cloud",
+        "es-ES": "Nube",
+        "ar-EG": "سحابة",
+        "pt-PT": "Na nuvem",
+        "ru-RU": "Облачный",
+        "ja-JP": "クラウド",
+        "de-DE": "Cloud",
+        "fr-FR": "Cloud",
+        "ko-KR": "클라우드",
+        "$files": [
+            "renderer/components/common/Footer.tsx(2523-2529)"
+        ],
+        "$id": 3894
+    },
+    "AI 服务未就绪": {
+        "en-US": "AI service is not ready",
+        "es-ES": "El servicio de IA no está listo",
+        "ar-EG": "خدمة الذكاء الاصطناعي غير جاهزة",
+        "pt-PT": "Serviço de IA não está pronto",
+        "ru-RU": "Служба ИИ не готова",
+        "ja-JP": "AIサービスは準備ができていません",
+        "de-DE": "KI-Dienst ist nicht bereit",
+        "fr-FR": "Le service AI n'est pas prêt",
+        "ko-KR": "AI 서비스가 준비되지 않았습니다",
+        "$files": [
+            "renderer/components/common/Footer.tsx(3068-3080)"
+        ],
+        "$id": 3895
+    },
+    "正在配置 AI 服务...": {
+        "en-US": "Configuring AI service...",
+        "es-ES": "Configurando el servicio de IA...",
+        "ar-EG": "جاري تهيئة خدمة الذكاء الاصطناعي...",
+        "pt-PT": "A configurar o serviço de IA...",
+        "ru-RU": "Настройка службы ИИ...",
+        "ja-JP": "AI サービスを構成しています...",
+        "de-DE": "KI-Dienst wird konfiguriert...",
+        "fr-FR": "Configuration du service AI en cours...",
+        "ko-KR": "AI 서비스를 구성하는 중입니다...",
+        "$files": [
+            "renderer/components/common/Footer.tsx(3247-3264)"
+        ],
+        "$id": 3896
+    },
+    "正在初始化 AI 引擎...": {
+        "en-US": "Initializing AI engine...",
+        "es-ES": "Iniciando el motor de IA...",
+        "ar-EG": "جاري بدء محرك الذكاء الاصطناعي...",
+        "pt-PT": "A inicializar o motor de IA...",
+        "ru-RU": "Инициализация движка ИИ...",
+        "ja-JP": "AI エンジンを初期化しています...",
+        "de-DE": "KI-Engine wird initialisiert...",
+        "fr-FR": "Initialisation du moteur AI en cours...",
+        "ko-KR": "AI 엔진을 초기화하는 중입니다...",
+        "$files": [
+            "renderer/components/common/Footer.tsx(3454-3472)"
+        ],
+        "$id": 3897
+    },
+    "正在重启 AI 服务...": {
+        "en-US": "Restarting AI service...",
+        "es-ES": "Reiniciando el servicio de IA...",
+        "ar-EG": "جاري إعادة تشغيل خدمة الذكاء الاصطناعي...",
+        "pt-PT": "A reiniciar o serviço de IA...",
+        "ru-RU": "Перезапуск службы ИИ...",
+        "ja-JP": "AI サービスを再起動しています...",
+        "de-DE": "KI-Dienst wird neu gestartet...",
+        "fr-FR": "Redémarrage du service AI en cours...",
+        "ko-KR": "AI 서비스를 재시작하는 중입니다...",
+        "$files": [
+            "renderer/components/common/Footer.tsx(3656-3673)"
+        ],
+        "$id": 3898
+    },
+    "AI 服务已停止": {
+        "en-US": "AI service has stopped",
+        "es-ES": "El servicio de IA se ha detenido",
+        "ar-EG": "خدمة الذكاء الاصطناعي متوقفة",
+        "pt-PT": "Serviço de IA parou",
+        "ru-RU": "Служба ИИ остановлена",
+        "ja-JP": "AIサービスは停止しました",
+        "de-DE": "KI-Dienst wurde gestoppt",
+        "fr-FR": "Le service AI est arrêté",
+        "ko-KR": "AI 서비스가 중지되었습니다",
+        "$files": [
+            "renderer/components/common/Footer.tsx(3863-3875)"
+        ],
+        "$id": 3899
+    },
+    "{modelInfo} 模型已就绪，等待加载": {
+        "en-US": "{modelInfo} model is ready, waiting to load",
+        "es-ES": "Modelo {modelInfo} listo, esperando carga",
+        "ar-EG": "النموذج {modelInfo} جاهز، في انتظار التحميل",
+        "pt-PT": "Modelo {modelInfo} está pronto, à espera de carregar",
+        "ru-RU": "Модель {modelInfo} готова, ожидаем загрузки",
+        "ja-JP": "{modelInfo} モデルは準備ができており、ロードされるのを待っています。",
+        "de-DE": "{modelInfo} Modell ist bereit, auf das Laden warten",
+        "fr-FR": "Le modèle {modelInfo} est prêt, en attente de chargement",
+        "ko-KR": "{modelInfo} 모델이 준비되었으며 로딩을 대기 중입니다",
+        "$files": [
+            "renderer/components/common/Footer.tsx(4079-4105)"
+        ],
+        "$id": 3900
+    },
+    "{modelInfo} 配置已加载，等待连接": {
+        "en-US": "{modelInfo} configuration loaded, waiting to connect",
+        "es-ES": "Configuración de {modelInfo} cargada, esperando conexión",
+        "ar-EG": "تم تحميل تهيئة {modelInfo}، في انتظار الاتصال",
+        "pt-PT": "Configuração {modelInfo} carregada, à espera de ligação",
+        "ru-RU": "Конфигурация {modelInfo} загружена, ожидаем подключения",
+        "ja-JP": "{modelInfo} 構成がロードされ、接続を待機しています",
+        "de-DE": "{modelInfo} Konfiguration ist geladen, auf die Verbindung warten",
+        "fr-FR": "La configuration de {modelInfo} est chargée, en attente de connexion",
+        "ko-KR": "{modelInfo} 구성이 로드되었으며 연결 대기 중입니다",
+        "$files": [
+            "renderer/components/common/Footer.tsx(4139-4165)"
+        ],
+        "$id": 3901
+    },
+    "{modelInfo} 模型资源加载中...": {
+        "en-US": "{modelInfo} model resources loading...",
+        "es-ES": "Cargando recursos del modelo {modelInfo}...",
+        "ar-EG": "جاري تحميل موارد النموذج {modelInfo}...",
+        "pt-PT": "A carregar recursos do modelo {modelInfo}...",
+        "ru-RU": "Загрузка ресурсов модели {modelInfo}...",
+        "ja-JP": "{modelInfo} モデル リソースを読み込んでいます...",
+        "de-DE": "{modelInfo} Modellressourcen werden geladen...",
+        "fr-FR": "Chargement des ressources du modèle {modelInfo} en cours...",
+        "ko-KR": "{modelInfo} 모델 리소스를 로딩하는 중입니다...",
+        "$files": [
+            "renderer/components/common/Footer.tsx(4341-4367)"
+        ],
+        "$id": 3902
+    },
+    "{modelInfo} 正在测试服务连接...": {
+        "en-US": "{modelInfo} Testing service connection...",
+        "es-ES": "{modelInfo} probando la conexión de servicio...\r",
+        "ar-EG": "{modelInfo} جاري اختبار اتصال الخدمة...\r",
+        "pt-PT": "{modelInfo} está a testar a ligação do serviço...\r",
+        "ru-RU": "{modelInfo} Проверка соединения с сервисом...\r",
+        "ja-JP": "{modelInfo} サービス接続をテストしています...",
+        "de-DE": "{modelInfo} testet Dienstverbindung...\r",
+        "fr-FR": "{modelInfo} Test de la connexion au service en cours...\r",
+        "ko-KR": "{modelInfo} 서비스 연결 테스트 중...\r",
+        "$files": [
+            "renderer/components/common/Footer.tsx(4576-4603)"
+        ],
+        "$id": 3903
+    },
+    "{modelInfo} AI 服务就绪": {
+        "en-US": "{modelInfo} AI service ready",
+        "es-ES": "{modelInfo} Servicio de IA listo\r",
+        "ar-EG": "{modelInfo} خدمة الذكاء الاصطناعي جاهزة\r",
+        "pt-PT": "{modelInfo} Serviço de IA pronto\r",
+        "ru-RU": "{modelInfo} Сервис ИИ готов\r",
+        "ja-JP": "{modelInfo} AI サービスの準備完了",
+        "de-DE": "{modelInfo} KI-Dienst bereit\r",
+        "fr-FR": "{modelInfo} Service AI prêt\r",
+        "ko-KR": "{modelInfo} AI 서비스 준비 완료\r",
+        "$files": [
+            "renderer/components/common/Footer.tsx(4806-4829)"
+        ],
+        "$id": 3904
+    },
+    "{modelInfo} AI 分析进行中...": {
+        "en-US": "{modelInfo} AI analysis in progress...",
+        "es-ES": "{modelInfo} Análisis de IA en curso...\r",
+        "ar-EG": "{modelInfo} جاري تحليل الذكاء الاصطناعي...\r",
+        "pt-PT": "{modelInfo} Análise de IA em progresso...\r",
+        "ru-RU": "{modelInfo} Выполняется анализ ИИ...\r",
+        "ja-JP": "{modelInfo} AI 分析中...",
+        "de-DE": "{modelInfo} KI-Analyse läuft...\r",
+        "fr-FR": "{modelInfo} Analyse IA en cours...\r",
+        "ko-KR": "{modelInfo} AI 분석 진행 중...\r",
+        "$files": [
+            "renderer/components/common/Footer.tsx(5001-5028)"
+        ],
+        "$id": 3905
+    },
+    "{modelInfo} 服务异常: {error}": {
+        "en-US": "{modelInfo} Service error: {error}",
+        "es-ES": "{modelInfo} Excepción de servicio: {error}\r",
+        "ar-EG": "{modelInfo} خدمة غير طبيعية: {error}\r",
+        "pt-PT": "{modelInfo} Serviço anormal: {error}\r",
+        "ru-RU": "{modelInfo} Исключение в работе сервиса: {error}\r",
+        "ja-JP": "{modelInfo} サービス例外: {error}",
+        "de-DE": "{modelInfo} Dienstfehler: {error}\r",
+        "fr-FR": "{modelInfo} Anomalie de service : {error}\r",
+        "ko-KR": "{modelInfo} 서비스 이상: {error}\r",
+        "$files": [
+            "renderer/components/common/Footer.tsx(5235-5264)"
+        ],
+        "$id": 3906
+    },
+    "未知错误": {
+        "en-US": "Unknown error",
+        "es-ES": "Error desconocido\r",
+        "ar-EG": "خطأ غير معروف\r",
+        "pt-PT": "Erro desconhecido\r",
+        "ru-RU": "Неизвестная ошибка\r",
+        "ja-JP": "不明なエラー",
+        "de-DE": "Unbekannter Fehler\r",
+        "fr-FR": "Erreur inconnue\r",
+        "ko-KR": "알 수 없는 오류\r",
+        "$files": [
+            "renderer/components/common/Footer.tsx(5325-5333)"
+        ],
+        "$id": 3907
+    },
+    "状态未知": {
+        "en-US": "Status unknown",
+        "es-ES": "Estado desconocido\r",
+        "ar-EG": "الحالة غير معروفة\r",
+        "pt-PT": "Estado desconhecido\r",
+        "ru-RU": "Состояние неизвестно\r",
+        "ja-JP": "ステータス不明",
+        "de-DE": "Status unbekannt\r",
+        "fr-FR": "Statut inconnu\r",
+        "ko-KR": "상태 알 수 없음\r",
+        "$files": [
+            "renderer/components/common/Footer.tsx(5479-5487)"
+        ],
+        "$id": 3908
+    },
+    "萤核智能文件夹 - 更新日志": {
+        "en-US": "Yinghe Smart Folder - Release Notes",
+        "es-ES": "Carpeta inteligente Yinghe - Registro de cambios",
+        "ar-EG": "萤核智能文件夹 - سجل التحديثات",
+        "pt-PT": "Pasta Inteligente Yinghe - Registo de Alterações",
+        "ru-RU": "Интеллектуальная папка Yinghe - журнал изменений",
+        "ja-JP": "萤核スマートフォルダー - 更新履歴",
+        "de-DE": "Yinghe Smart Folder - Änderungsprotokoll",
+        "fr-FR": "Yinghe Smart Folder - Notes de mise à jour",
+        "ko-KR": "형광석 스마트 폴더 - 업데이트 로그",
+        "$files": [
+            "renderer/components/common/Footer.tsx(6727-6745)"
+        ],
+        "$id": 3278
+    },
+    "最新版本: v{version}": {
+        "en-US": "Latest version: v{version}",
+        "es-ES": "Última versión: v{version}",
+        "ar-EG": "أحدث إصدار: v{version}",
+        "pt-PT": "Versão mais recente: v{version}",
+        "ru-RU": "Последняя версия: v{version}",
+        "ja-JP": "最新バージョン：v{version}",
+        "de-DE": "Neueste Version: v{version}",
+        "fr-FR": "Dernière version : v{version}",
+        "ko-KR": "최신 버전: v{version}",
+        "$files": [
+            "renderer/components/common/Footer.tsx(6943-6963)"
+        ],
+        "$id": 3279
+    },
+    "稍后再说": {
+        "en-US": "Remind me later",
+        "es-ES": "Más tarde",
+        "ar-EG": "لاحقًا",
+        "pt-PT": "Mais tarde",
+        "ru-RU": "Позже",
+        "ja-JP": "あとで",
+        "de-DE": "Später",
+        "fr-FR": "Plus tard",
+        "ko-KR": "나중에 하기",
+        "$files": [
+            "renderer/components/common/Footer.tsx(7643-7651)"
+        ],
+        "$id": 3280
+    },
+    "去官网下载新版": {
+        "en-US": "Download new version from official website",
+        "es-ES": "Ir al sitio web oficial para descargar la nueva versión",
+        "ar-EG": "تحميل الإصدار الجديد من الموقع الرسمي",
+        "pt-PT": "Transferir nova versão no sítio web oficial",
+        "ru-RU": "Перейти на официальный сайт для загрузки новой версии",
+        "ja-JP": "公式サイトから新版をダウンロード",
+        "de-DE": "Neue Version von der offiziellen Website herunterladen",
+        "fr-FR": "Télécharger la nouvelle version sur le site officiel",
+        "ko-KR": "공식 홈페이지에서 새 버전 다운로드",
+        "$files": [
+            "renderer/components/common/Footer.tsx(8056-8067)"
+        ],
+        "$id": 3283
+    },
+    "查看分析队列 - 当前: {name}": {
+        "en-US": "View analysis queue - Current: {name}",
+        "es-ES": "Ver cola de análisis - Actual: {name}\r",
+        "ar-EG": "عرض قائمة انتظار التحليل - الحالية: {name}\r",
+        "pt-PT": "Ver fila de análise - Atual: {name}\r",
+        "ru-RU": "Просмотр очереди анализа - текущий: {name}\r",
+        "ja-JP": "分析キューの表示 - 現在: {name}",
+        "de-DE": "Analysewarteschlange anzeigen - Aktuell: {name}\r",
+        "fr-FR": "Voir la file d'analyse - Actuel : {name}\r",
+        "ko-KR": "분석 대기열 보기 - 현재: {name}\r",
+        "$files": [
+            "renderer/components/common/Footer.tsx(8432-8455)"
+        ],
+        "$id": 3909
+    },
+    "查看分析队列 - {count} 个文件等待中": {
+        "en-US": "View analysis queue - {count} files waiting",
+        "es-ES": "Ver cola de análisis - {count} archivos en espera\r",
+        "ar-EG": "عرض قائمة انتظار التحليل - {count} ملف في الانتظار\r",
+        "pt-PT": "Ver fila de análise - {count} ficheiros à espera\r",
+        "ru-RU": "Просмотр очереди анализа - {count} файлов ожидает\r",
+        "ja-JP": "分析キューを表示 - {count} 個のファイルが保留中",
+        "de-DE": "Analysewarteschlange anzeigen - {count} Dateien warten\r",
+        "fr-FR": "Voir la file d'analyse - {count} fichiers en attente\r",
+        "ko-KR": "분석 대기열 보기 - {count}개 파일 대기 중\r",
+        "$files": [
+            "renderer/components/common/Footer.tsx(8500-8527)"
+        ],
+        "$id": 3910
+    },
+    "分析中: {name} · 进度: {progress}%": {
+        "en-US": "Analyzing: {name} · Progress: {progress}%",
+        "es-ES": "Analizando: {name} · Progreso: {progress}%",
+        "ar-EG": "جاري التحليل: {name} · التقدم: {progress}%",
+        "pt-PT": "Em análise: {name} · Progresso: {progress}%",
+        "ru-RU": "Анализируется: {name} · Прогресс: {progress}%",
+        "ja-JP": "分析中: {name} · 進捗状況: {progress}%",
+        "de-DE": "Analyse läuft: {name} · Fortschritt: {progress}%",
+        "fr-FR": "Analyse en cours : {name} · Progression : {progress}%",
+        "ko-KR": "분석 중: {name} · 진행률: {progress}%",
+        "$files": [
+            "renderer/components/common/Footer.tsx(8610-8643)"
+        ],
+        "$id": 3911
+    },
+    "空闲": {
+        "en-US": "Idle",
+        "es-ES": "En espera",
+        "ar-EG": "عاطل",
+        "pt-PT": "Inativo",
+        "ru-RU": "Ожидание",
+        "ja-JP": "アイドル",
+        "de-DE": "Leerlauf",
+        "fr-FR": "Inactif",
+        "ko-KR": "게으른",
+        "$files": [
+            "renderer/components/common/Footer.tsx(8804-8810)"
+        ],
+        "$id": 3912
+    },
+    "等待: {count}": {
+        "en-US": "Waiting: {count}",
+        "es-ES": "Esperando: {count}",
+        "ar-EG": "الانتظار: {count}",
+        "pt-PT": "Aguardar: {count}",
+        "ru-RU": "Ожидание: {count}",
+        "ja-JP": "待って： {count}",
+        "de-DE": "Warten: {count}",
+        "fr-FR": "En attente : {count}",
+        "ko-KR": "기다리다: {count}",
+        "$files": [
+            "renderer/components/common/Footer.tsx(8832-8847)"
+        ],
+        "$id": 3913
+    },
+    "发现新版本 v{version}": {
+        "en-US": "New version v{version} available",
+        "es-ES": "Nueva versión encontrada v{version}",
+        "ar-EG": "اكتشاف إصدار جديد v{version}",
+        "pt-PT": "Nova versão detetada v{version}",
+        "ru-RU": "Обнаружена новая версия v{version}",
+        "ja-JP": "新しいバージョン v{version} を発見",
+        "de-DE": "Neue Version v{version} entdeckt",
+        "fr-FR": "Nouvelle version détectée v{version}",
+        "ko-KR": "새 버전 감지 v{version}",
+        "$files": [
+            "renderer/components/common/Footer.tsx(9715-9735)"
+        ],
+        "$id": 3263
+    },
+    "最小化窗口": {
+        "en-US": "Minimize Window",
+        "es-ES": "Minimizar ventana",
+        "ar-EG": "تصغير النافذة",
+        "pt-PT": "Minimizar janela",
+        "ru-RU": "Свернуть окно",
+        "ja-JP": "ウィンドウを最小化する",
+        "de-DE": "Fenster minimieren",
+        "fr-FR": "Réduire la fenêtre",
+        "ko-KR": "창 최소화",
+        "$files": [
+            "renderer/components/common/Header.tsx(2223-2232)"
+        ],
+        "$id": 2929
+    },
+    "还原窗口": {
+        "en-US": "Restore Window",
+        "es-ES": "Restaurar ventana",
+        "ar-EG": "استعادة النافذة",
+        "pt-PT": "Restaurar janela",
+        "ru-RU": "Восстановить окно",
+        "ja-JP": "復元ウィンドウ",
+        "de-DE": "Fenster wiederherstellen",
+        "fr-FR": "Restaurer la fenêtre",
+        "ko-KR": "복원 창",
+        "$files": [
+            "renderer/components/common/Header.tsx(2568-2576)"
+        ],
+        "$id": 3915
+    },
+    "最大化窗口": {
+        "en-US": "Maximize Window",
+        "es-ES": "Maximizar ventana",
+        "ar-EG": "تكبير النافذة",
+        "pt-PT": "Maximizar janela",
+        "ru-RU": "Развернуть окно",
+        "ja-JP": "ウィンドウを最大化する",
+        "de-DE": "Fenster maximieren",
+        "fr-FR": "Agrandir la fenêtre",
+        "ko-KR": "창 최대화",
+        "$files": [
+            "renderer/components/common/Header.tsx(2580-2589)"
+        ],
+        "$id": 3916
+    },
+    "关闭窗口": {
+        "en-US": "Close Window",
+        "es-ES": "Cerrar ventana",
+        "ar-EG": "إغلاق النافذة",
+        "pt-PT": "Fechar janela",
+        "ru-RU": "Закрыть окно",
+        "ja-JP": "ウィンドウを閉じる",
+        "de-DE": "Fenster schließen",
+        "fr-FR": "Fermer la fenêtre",
+        "ko-KR": "창 닫기",
+        "$files": [
+            "renderer/components/common/Header.tsx(2962-2970)"
+        ],
+        "$id": 3917
+    },
+    "萤核智能文件夹": {
+        "en-US": "Yonuc AI Folder",
+        "es-ES": "Carpeta AI Yonuc",
+        "ar-EG": "مجلد Yonuc الذكي",
+        "pt-PT": "Pasta AI Yonuc",
+        "ru-RU": "Умная папка Yonuc",
+        "ja-JP": "Yonuc 智能フォルダ",
+        "de-DE": "Yonuc Intelligenter Ordner",
+        "fr-FR": "Dossier intelligent Yonuc",
+        "ko-KR": "Yonuc 스마트 폴더",
+        "$files": [
+            "renderer/components/common/Logo.tsx(387-398)"
+        ],
+        "$id": 3918
+    },
+    "请选择工作目录模式": {
+        "en-US": "Please select working directory mode",
+        "es-ES": "Seleccione el modo de directorio de trabajo",
+        "ar-EG": "الرجاء تحديد وضع دليل العمل",
+        "pt-PT": "Selecione o modo de diretório de trabalho",
+        "ru-RU": "Пожалуйста, выберите режим рабочего каталога",
+        "ja-JP": "作業ディレクトリモードを選択してください",
+        "de-DE": "Bitte wählen Sie den Arbeitsverzeichnismodus",
+        "fr-FR": "Veuillez sélectionner le mode répertoire de travail",
+        "ko-KR": "작업 디렉터리 모드를 선택하세요.",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(619-632)"
+        ],
+        "$id": 2899
+    },
+    "文件需经过AI分析才能分类，过多会比较耗时，工作模式决定了分析结果是否缓存到服务器": {
+        "en-US": "Files need to be analyzed by AI to be classified, and too many files will take a long time. The working mode determines whether the analysis results are cached on the server.",
+        "es-ES": "Los archivos deben ser analizados por IA para poder ser clasificados, si hay demasiados el proceso puede llevar bastante tiempo. El modo de funcionamiento determina si los resultados del análisis se almacenan en caché en el servidor.",
+        "ar-EG": "يحتاج الملف إلى تحليل AI ليتم تصنيفه، وسيكون هناك الكثير من الوقت إذا كان العدد كبيرًا، ووضع العمل يحدد ما إذا كانت نتائج التحليل مخزنة مؤقتًا على الخادم",
+        "pt-PT": "Os ficheiros necessitam de análise por IA para serem classificados, demasiados ficheiros podem consumir bastante tempo. O modo de trabalho determina se os resultados da análise são armazenados em cache no servidor.",
+        "ru-RU": "Файлы необходимо проанализировать с помощью ИИ для классификации, слишком большое количество файлов может занять много времени. Режим работы определяет, будут ли результаты анализа кэшироваться на сервере.",
+        "ja-JP": "ファイルはAI分析により分類されるため、多すぎると時間がかかります。動作モードによって、分析結果をサーバーにキャッシュするかどうかが決まります。",
+        "de-DE": "Die Dateien müssen durch KI analysiert werden, um klassifiziert zu werden. Zu viele Dateien können zeitaufwendig sein. Der Arbeitsmodus bestimmt, ob die Analyseergebnisse auf dem Server zwischengespeichert werden.",
+        "fr-FR": "Les fichiers doivent être analysés par l'IA pour être classifiés, trop nombreux peuvent prendre du temps, le mode de fonctionnement détermine si les résultats d'analyse sont mis en cache sur le serveur",
+        "ko-KR": "파일은 AI 분석을 거쳐야만 분류할 수 있으며, 너무 많으면 시간이 오래 걸릴 수 있습니다. 작업 모드에 따라 분석 결과를 서버에 캐시할지 여부가 결정됩니다.",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(704-749)"
+        ],
+        "$id": 6227
+    },
+    "极速目录": {
+        "en-US": "Speed ​​directory",
+        "es-ES": "directorio de velocidad",
+        "ar-EG": "دليل السرعة",
+        "pt-PT": "Diretório de velocidade",
+        "ru-RU": "Скоростной каталог",
+        "ja-JP": "スピードディレクトリ",
+        "de-DE": "Geschwindigkeitsverzeichnis",
+        "fr-FR": "Annuaire de vitesse",
+        "ko-KR": "속도 디렉토리",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1451-1459)"
+        ],
+        "$id": 2900
+    },
+    "互助共享，秒级完成": {
+        "en-US": "Mutual assistance and sharing, completed in seconds",
+        "es-ES": "Asistencia mutua e intercambio, completado en segundos",
+        "ar-EG": "المساعدة المتبادلة والمشاركة، يتم الانتهاء منها في ثوانٍ",
+        "pt-PT": "Assistência mútua e compartilhamento, concluída em segundos",
+        "ru-RU": "Взаимная помощь и обмен, завершенные за секунды",
+        "ja-JP": "相互支援と共有、数秒で完了",
+        "de-DE": "Gegenseitige Hilfe und Austausch, in Sekundenschnelle erledigt",
+        "fr-FR": "Assistance mutuelle et partage, réalisés en quelques secondes",
+        "ko-KR": "몇 초 만에 완료되는 상호 지원 및 공유",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1594-1607)"
+        ],
+        "$id": 2901
+    },
+    "如果你待分析的文件是他人分析过的，可使用服务器脱敏缓存，": {
+        "en-US": "If the file you're analyzing has already been processed by someone else, you can use the server's de-identified cache  ",
+        "es-ES": "Si el archivo que deseas analizar ya ha sido procesado por otra persona, puedes utilizar la caché desensibilizada del servidor  ",
+        "ar-EG": "إذا كان الملف الذي تريد تحليله قد قام آخرون بتحليله من قبل، فيمكنك استخدام ذاكرة التخزين المؤقت المُجرَّدة من الخادم،  ",
+        "pt-PT": "Se o ficheiro que pretende analisar já tiver sido analisado por outra pessoa, pode utilizar a cache ofuscada do servidor,  ",
+        "ru-RU": "Если файл, который вы хотите проанализировать, уже был проанализирован кем-то другим, можно использовать десенсибилизирующий кэш сервера,  ",
+        "ja-JP": "如果你待分析的文件是他人分析过的，可使用服务器脱敏缓存，",
+        "de-DE": "Wenn die von Ihnen zu analysierende Datei bereits von anderen analysiert wurde, können Sie den serverseitigen Desensibilisierungs-Cache nutzen,  ",
+        "fr-FR": "Si le fichier que vous souhaitez analyser a déjà été traité par quelqu’un d’autre, vous pouvez utiliser le cache de désensibilisation du serveur  ",
+        "ko-KR": "분석 대상 파일이 이미 다른 사람이 분석한 적 있다면 서버의 민감 정보 제거 캐시를 사용하여  ",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1774-1806)"
+        ],
+        "$id": 3380
+    },
+    "大幅提升处理速度": {
+        "en-US": "to significantly speed up processing.",
+        "es-ES": "para acelerar significativamente el procesamiento",
+        "ar-EG": "ما يحسّن سرعة المعالجة بشكل كبير",
+        "pt-PT": "aumentando significativamente a velocidade de processamento",
+        "ru-RU": "что значительно ускорит обработку",
+        "ja-JP": "大幅提升处理速度",
+        "de-DE": "um die Verarbeitungsgeschwindigkeit erheblich zu steigern.",
+        "fr-FR": "afin d’accélérer considérablement le traitement.",
+        "ko-KR": "처리 속도를 크게 향상시킬 수 있습니다",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1961-1973)"
+        ],
+        "$id": 3381
+    },
+    "适用场景：": {
+        "en-US": "Applicable scenarios:",
+        "es-ES": "Escenarios aplicables:",
+        "ar-EG": "السيناريوهات القابلة للتطبيق:",
+        "pt-PT": "Cenários aplicáveis:",
+        "ru-RU": "Применимые сценарии:",
+        "ja-JP": "該当するシナリオ:",
+        "de-DE": "Anwendbare Szenarien:",
+        "fr-FR": "Scénarios applicables :",
+        "ko-KR": "적용 가능한 시나리오:",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4749-4758)",
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5987-5996)"
+        ],
+        "$id": 2903
+    },
+    "下载目录、网络资源、电子书、漫画、音乐等公共文件。": {
+        "en-US": "Download directories, network resources, e-books, comics, music, and other public files.",
+        "es-ES": "Descargar directorios, recursos de red, libros electrónicos, cómics, música y otros archivos públicos.",
+        "ar-EG": "تحميل الدليل، والموارد الشبكية، والكتب الإلكترونية، والكوميكس، والموسيقى وغيرها من الملفات العامة.",
+        "pt-PT": "Transferir diretórios, recursos de rede, livros eletrónicos, banda desenhada, música e outros ficheiros públicos.",
+        "ru-RU": "Загрузить каталог, сетевые ресурсы, электронные книги, комиксы, музыку и другие общедоступные файлы.",
+        "ja-JP": "ダウンロードディレクトリ、ネットワークリソース、電子書籍、漫画、音楽などの公開ファイル。",
+        "de-DE": "Download-Verzeichnis, Netzwerkressourcen, E-Books, Comics, Musik und andere öffentliche Dateien.",
+        "fr-FR": "Téléchargement de répertoires, ressources réseau, livres électroniques, bandes dessinées, musique et autres fichiers publics.",
+        "ko-KR": "다운로드 디렉토리, 네트워크 리소스, 전자책, 만화, 음악 등 공개 파일입니다.",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4784-4813)"
+        ],
+        "$id": 6229
+    },
+    "私有目录": {
+        "en-US": "private directory",
+        "es-ES": "directorio privado",
+        "ar-EG": "دليل خاص",
+        "pt-PT": "diretório privado",
+        "ru-RU": "личный каталог",
+        "ja-JP": "プライベートディレクトリ",
+        "de-DE": "privates Verzeichnis",
+        "fr-FR": "répertoire privé",
+        "ko-KR": "개인 디렉토리",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5447-5455)"
+        ],
+        "$id": 2905
+    },
+    "本地分析，数据不出端": {
+        "en-US": "Local analysis, data does not come out of the source",
+        "es-ES": "Análisis local, los datos no salen de la fuente.",
+        "ar-EG": "التحليل المحلي، البيانات لا تخرج من المصدر",
+        "pt-PT": "Análise local, os dados não saem da fonte",
+        "ru-RU": "Локальный анализ, данные не поступают из источника",
+        "ja-JP": "ローカル分析、データはソースから出てこない",
+        "de-DE": "Lokale Analyse, Daten stammen nicht aus der Quelle",
+        "fr-FR": "Analyse locale, les données ne sortent pas de la source",
+        "ko-KR": "로컬 분석, 데이터가 소스에서 나오지 않음",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5590-5604)"
+        ],
+        "$id": 2906
+    },
+    "你的分析结果仅保存在本地，不缓存服务器，守护数据主权。但无法享受服务器缓存带来的提速效果。": {
+        "en-US": "Your analysis results are only saved locally and not cached on the server, protecting data sovereignty. However, you cannot enjoy the speed improvement brought by server caching.",
+        "es-ES": "Tus resultados de análisis solo se guardan localmente, no se almacenan en caché en el servidor, protegiendo así la soberanía de tus datos. Sin embargo, no podrás beneficiarte del efecto de aceleración que proporciona la caché del servidor.",
+        "ar-EG": "نتائج التحليل الخاصة بك تُحفظ محليًا فقط، ولا تُخزن مؤقتًا على الخادم، للحفاظ على سيادة البيانات. لكن لا يمكن الاستمتاع بتأثير تسريع ذاكرة التخزين المؤقتة للخادم.",
+        "pt-PT": "Os seus resultados de análise são apenas guardados localmente, não são armazenados em cache no servidor, protegendo assim a soberania dos dados. No entanto, não poderá beneficiar do aumento de velocidade proporcionado pela cache do servidor.",
+        "ru-RU": "Ваши результаты анализа сохраняются только локально, не кэшируются на сервере, защищая суверенитет данных. Однако невозможно воспользоваться эффектом ускорения от кэширования сервера.",
+        "ja-JP": "あなたの分析結果はローカルにのみ保存され、サーバーにはキャッシュされません。データ主権を守ります。ただし、サーバーキャッシュによる高速化効果は得られません。",
+        "de-DE": "Ihre Analyseergebnisse werden nur lokal gespeichert und nicht auf dem Server zwischengespeichert, um die Datenhoheit zu schützen. Allerdings können Sie nicht von der Geschwindigkeitssteigerung durch den Server-Cache profitieren.",
+        "fr-FR": "Vos résultats d'analyse ne sont sauvegardés que localement, non mis en cache sur le serveur, protégeant la souveraineté des données. Mais vous ne pouvez pas bénéficier de l'effet d'accélération apporté par le cache serveur.",
+        "ko-KR": "분석 결과는 로컬에만 저장되며 서버에는 캐시되지 않아 데이터 주권을 보호합니다. 하지만 서버 캐시가 제공하는 속도 향상 효과는 누릴 수 없습니다.",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5761-5828)"
+        ],
+        "$id": 6230
+    },
+    "个人原创作品、照片、财务报表、隐私文档。": {
+        "en-US": "Personal original works, photos, financial reports, private documents.",
+        "es-ES": "Trabajos originales personales, fotografías, estados financieros, documentos privados.",
+        "ar-EG": "الأعمال الإبداعية الشخصية، والصور، والتقارير المالية، والمستندات الخاصة.",
+        "pt-PT": "Trabalhos originais pessoais, fotografias, relatórios financeiros, documentos privados.",
+        "ru-RU": "Персональные оригинальные работы, фотографии, финансовые отчеты, конфиденциальные документы.",
+        "ja-JP": "個人のオリジナル作品、写真、財務諸表、プライバシードキュメント。",
+        "de-DE": "Persönliche Originalwerke, Fotos, Finanzberichte, vertrauliche Dokumente.",
+        "fr-FR": "Œuvres originales personnelles, photos, états financiers, documents confidentiels.",
+        "ko-KR": "개인 창작 작품, 사진, 재무제표, 개인정보 문서 등입니다.",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6022-6046)"
+        ],
+        "$id": 6231
+    },
+    "注：所有数据都是脱敏的，无IP，全匿名": {
+        "en-US": "Note: All data is desensitized, no IP addresses, fully anonymous",
+        "es-ES": "Nota: Todos los datos están desensibilizados, sin IP, completamente anónimos",
+        "ar-EG": "ملاحظة: جميع البيانات مجهولة الهوية، بدون عنوان IP، ومجهولة بالكامل",
+        "pt-PT": "Nota: Todos os dados são desidentificados, sem IP, totalmente anônimos",
+        "ru-RU": "Примечание: Все данные анонимизированы, без IP, полностью анонимны",
+        "ja-JP": "注：すべてのデータはマスキング済みで、IPアドレスは含まず、完全に匿名化されています",
+        "de-DE": "Hinweis: Alle Daten sind anonymisiert, ohne IP, vollständig anonym",
+        "fr-FR": "Remarque : Toutes les données sont anonymisées, sans IP, entièrement anonymes",
+        "ko-KR": "주석: 모든 데이터는 탈민감화되어 있으며, IP가 없고 전부 익명 처리됨",
+        "$files": [
+            "renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6207-6230)"
+        ],
+        "$id": 2746
+    },
+    "搜索...": {
+        "en-US": "Search...",
+        "es-ES": "Buscar...",
+        "ar-EG": "البحث...",
+        "pt-PT": "Pesquisa...",
+        "ru-RU": "Поиск...",
+        "ja-JP": "検索...",
+        "de-DE": "Suchen...",
+        "fr-FR": "Rechercher...",
+        "ko-KR": "찾다...",
+        "$files": [
+            "renderer/components/common/SearchBar.tsx(637-646)"
+        ],
+        "$id": 3922
+    },
+    "输入关键词进行搜索": {
+        "en-US": "Enter keywords to search",
+        "es-ES": "Introduzca palabras clave para buscar",
+        "ar-EG": "أدخل الكلمات المفتاحية للبحث",
+        "pt-PT": "Introduza palavras-chave para pesquisar",
+        "ru-RU": "Введите ключевые слова для поиска",
+        "ja-JP": "キーワードを入力して検索します",
+        "de-DE": "Stichwort eingeben, um zu suchen",
+        "fr-FR": "Saisissez des mots-clés pour effectuer une recherche",
+        "ko-KR": "검색할 키워드를 입력하세요",
+        "$files": [
+            "renderer/components/common/SearchBar.tsx(6843-6856)"
+        ],
+        "$id": 3923
+    },
+    "清除搜索内容": {
+        "en-US": "Clear Search Content",
+        "es-ES": "Borrar contenido de búsqueda",
+        "ar-EG": "مسح محتوى البحث",
+        "pt-PT": "Limpar conteúdo da pesquisa",
+        "ru-RU": "Очистить содержимое поиска",
+        "ja-JP": "検索をクリア",
+        "de-DE": "Suchinhalt löschen",
+        "fr-FR": "Effacer la recherche",
+        "ko-KR": "검색 지우기",
+        "$files": [
+            "renderer/components/common/SearchBar.tsx(7316-7326)"
+        ],
+        "$id": 3924
+    }
+}

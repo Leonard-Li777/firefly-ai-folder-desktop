@@ -1,0 +1,47 @@
+{
+    "图像": {
+        "en-US": "Image  ",
+        "es-ES": "Imagen  ",
+        "ar-EG": "صورة  ",
+        "pt-PT": "Imagem  ",
+        "ru-RU": "Изображение  ",
+        "ja-JP": "画像  ",
+        "de-DE": "Bild  ",
+        "fr-FR": "Image  ",
+        "ko-KR": "이미지",
+        "$files": [
+            "electron/runtime-services/analysis/file-analysis-router.ts(1495-1501)"
+        ],
+        "$id": 2946
+    },
+    "音频": {
+        "en-US": "Audio  ",
+        "es-ES": "Audio  ",
+        "ar-EG": "صوت  ",
+        "pt-PT": "Áudio  ",
+        "ru-RU": "Аудио  ",
+        "ja-JP": "音声  ",
+        "de-DE": "Audio  ",
+        "fr-FR": "Audio  ",
+        "ko-KR": "오디오",
+        "$files": [
+            "electron/runtime-services/analysis/file-analysis-router.ts(1637-1643)"
+        ],
+        "$id": 2947
+    },
+    "视频": {
+        "en-US": "Video  ",
+        "es-ES": "Vídeo  ",
+        "ar-EG": "فيديو  ",
+        "pt-PT": "Vídeo  ",
+        "ru-RU": "Видео  ",
+        "ja-JP": "動画  ",
+        "de-DE": "Video  ",
+        "fr-FR": "Vidéo  ",
+        "ko-KR": "비디오",
+        "$files": [
+            "electron/runtime-services/analysis/file-analysis-router.ts(1779-1785)"
+        ],
+        "$id": 2948
+    }
+}

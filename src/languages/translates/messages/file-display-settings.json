@@ -1,0 +1,546 @@
+{
+    "质量评分": {
+        "en-US": "Quality Score  ",
+        "es-ES": "Puntuación de calidad  ",
+        "ar-EG": "تقييم الجودة  ",
+        "pt-PT": "Pontuação de Qualidade  ",
+        "ru-RU": "Оценка качества  ",
+        "ja-JP": "品質スコア  ",
+        "de-DE": "Qualitätsbewertung",
+        "fr-FR": "Score de qualité  ",
+        "ko-KR": "품질 점수  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(574-582)",
+            "renderer/components/settings/file-display-settings.tsx(6016-6024)"
+        ],
+        "$id": 3070
+    },
+    "显示AI评估的文件质量分数（1-5分）": {
+        "en-US": "Displays the AI-assessed file quality score (1–5)  ",
+        "es-ES": "Muestra la puntuación de calidad del archivo evaluada por IA (1-5 puntos)  ",
+        "ar-EG": "عرض درجة جودة الملف التي قيّمها الذكاء الاصطناعي (من 1 إلى 5)  ",
+        "pt-PT": "Mostra a pontuação de qualidade do ficheiro avaliada pela IA (1-5 pontos)  ",
+        "ru-RU": "Отображает оценку качества файла по шкале от 1 до 5, выставленную ИИ  ",
+        "ja-JP": "AIが評価したファイルの品質スコア（1～5点）を表示  ",
+        "de-DE": "Zeigt die von der KI bewertete Qualitätsnote der Datei (1–5 Punkte)",
+        "fr-FR": "Affiche la note de qualité du fichier évaluée par l’IA (sur une échelle de 1 à 5)  ",
+        "ko-KR": "AI가 평가한 파일 품질 점수(1~5점)를 표시합니다.  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(605-628)"
+        ],
+        "$id": 3071
+    },
+    "文件描述": {
+        "en-US": "File Description  ",
+        "es-ES": "Descripción del archivo  ",
+        "ar-EG": "وصف الملف  ",
+        "pt-PT": "Descrição do Ficheiro  ",
+        "ru-RU": "Описание файла  ",
+        "ja-JP": "ファイル説明  ",
+        "de-DE": "Dateibeschreibung",
+        "fr-FR": "Description du fichier  ",
+        "ko-KR": "파일 설명  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(697-705)"
+        ],
+        "$id": 3072
+    },
+    "显示AI生成的文件内容描述": {
+        "en-US": "Displays the AI-generated description of the file content  ",
+        "es-ES": "Muestra la descripción del contenido del archivo generada por IA  ",
+        "ar-EG": "عرض وصف محتوى الملف الذي تم إنشاؤه بواسطة الذكاء الاصطناعي  ",
+        "pt-PT": "Mostra a descrição do conteúdo do ficheiro gerada pela IA  ",
+        "ru-RU": "Отображает описание содержимого файла, сгенерированное ИИ  ",
+        "ja-JP": "AIが生成したファイル内容の説明を表示  ",
+        "de-DE": "Zeigt die von der KI generierte Beschreibung des Dateiinhalts",
+        "fr-FR": "Affiche la description du contenu du fichier générée par l’IA  ",
+        "ko-KR": "AI가 생성한 파일 내용 설명을 표시합니다.  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(728-745)"
+        ],
+        "$id": 3073
+    },
+    "标签": {
+        "en-US": "Tags  ",
+        "es-ES": "Etiquetas  ",
+        "ar-EG": "العلامات  ",
+        "pt-PT": "Etiquetas  ",
+        "ru-RU": "Метки  ",
+        "ja-JP": "タグ  ",
+        "de-DE": "Tags",
+        "fr-FR": "Étiquettes  ",
+        "ko-KR": "태그  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(807-813)",
+            "renderer/components/settings/file-display-settings.tsx(6535-6541)"
+        ],
+        "$id": 3074
+    },
+    "显示文件的分类标签": {
+        "en-US": "Displays the file's classification tags  ",
+        "es-ES": "Muestra las etiquetas de clasificación del archivo  ",
+        "ar-EG": "عرض علامات تصنيف الملف  ",
+        "pt-PT": "Mostra as etiquetas de categorização do ficheiro  ",
+        "ru-RU": "Отображает категориальные метки файла  ",
+        "ja-JP": "ファイルの分類タグを表示  ",
+        "de-DE": "Zeigt die Klassifizierungstags der Datei",
+        "fr-FR": "Affiche les étiquettes de classification du fichier  ",
+        "ko-KR": "파일의 분류 태그를 표시합니다.  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(836-849)"
+        ],
+        "$id": 3075
+    },
+    "作者": {
+        "en-US": "Author  ",
+        "es-ES": "Autor  ",
+        "ar-EG": "المؤلف  ",
+        "pt-PT": "Autor  ",
+        "ru-RU": "Автор  ",
+        "ja-JP": "著者  ",
+        "de-DE": "Autor",
+        "fr-FR": "Auteur  ",
+        "ko-KR": "작성자  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(913-919)",
+            "renderer/components/settings/file-display-settings.tsx(6792-6798)"
+        ],
+        "$id": 3076
+    },
+    "显示文件作者信息（如果可用）": {
+        "en-US": "Displays the file author information (if available)  ",
+        "es-ES": "Muestra la información del autor del archivo (si está disponible)  ",
+        "ar-EG": "عرض معلومات مؤلف الملف (إذا كانت متاحة)  ",
+        "pt-PT": "Mostra as informações do autor do ficheiro (se disponíveis)  ",
+        "ru-RU": "Отображает информацию об авторе файла (если доступна)  ",
+        "ja-JP": "ファイルの著者情報を表示（利用可能な場合）  ",
+        "de-DE": "Zeigt die Autoreninformation der Datei (sofern verfügbar)",
+        "fr-FR": "Affiche les informations sur l’auteur du fichier (si disponibles)  ",
+        "ko-KR": "파일 작성자 정보를 표시합니다(해당 정보가 있는 경우).  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(942-960)"
+        ],
+        "$id": 3077
+    },
+    "语言": {
+        "en-US": "Language  ",
+        "es-ES": "Idioma  ",
+        "ar-EG": "اللغة  ",
+        "pt-PT": "Idioma  ",
+        "ru-RU": "Язык  ",
+        "ja-JP": "言語  ",
+        "de-DE": "Sprache",
+        "fr-FR": "Langue  ",
+        "ko-KR": "언어  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(1026-1032)",
+            "renderer/components/settings/file-display-settings.tsx(7051-7057)"
+        ],
+        "$id": 3078
+    },
+    "显示文件的语言信息": {
+        "en-US": "Displays the language information of the file  ",
+        "es-ES": "Muestra la información del idioma del archivo  ",
+        "ar-EG": "عرض معلومات لغة الملف  ",
+        "pt-PT": "Mostra as informações do idioma do ficheiro  ",
+        "ru-RU": "Отображает информацию о языке файла  ",
+        "ja-JP": "ファイルの言語情報を表示  ",
+        "de-DE": "Zeigt die Sprachinformation der Datei",
+        "fr-FR": "Affiche les informations linguistiques du fichier  ",
+        "ko-KR": "파일의 언어 정보를 표시합니다.  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(1055-1068)"
+        ],
+        "$id": 3087
+    },
+    "文件显示设置": {
+        "en-US": "File Display Settings  ",
+        "es-ES": "Configuración de visualización del archivo  ",
+        "ar-EG": "إعدادات عرض الملف  ",
+        "pt-PT": "Definições de Exibição do Ficheiro  ",
+        "ru-RU": "Настройки отображения файлов  ",
+        "ja-JP": "ファイル表示設定  ",
+        "de-DE": "Anzeigeeinstellungen für Dateien",
+        "fr-FR": "Paramètres d’affichage des fichiers  ",
+        "ko-KR": "파일 표시 설정  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(2119-2129)"
+        ],
+        "$id": 3088
+    },
+    "自定义文件列表中显示的额外信息字段": {
+        "en-US": "Customize additional information fields shown in the file list  ",
+        "es-ES": "Personaliza los campos de información adicional que se muestran en la lista de archivos  ",
+        "ar-EG": "تخصيص الحقول الإضافية للمعلومات المعروضة في قائمة الملفات  ",
+        "pt-PT": "Personalizar os campos de informação adicional exibidos na lista de ficheiros  ",
+        "ru-RU": "Настройка дополнительных полей информации, отображаемых в списке файлов  ",
+        "ja-JP": "ファイルリストに追加で表示する情報フィールドをカスタマイズ  ",
+        "de-DE": "Benutzerdefinierte zusätzliche Informationsfelder in der Dateiliste",
+        "fr-FR": "Personnaliser les champs d’informations supplémentaires affichés dans la liste des fichiers  ",
+        "ko-KR": "파일 목록에 추가로 표시할 정보 필드를 사용자 정의합니다.  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(2231-2252)"
+        ],
+        "$id": 3089
+    },
+    "文件列表额外显示字段": {
+        "en-US": "Additional Fields in File List  ",
+        "es-ES": "Campos adicionales a mostrar en la lista de archivos  ",
+        "ar-EG": "حقول العرض الإضافية في قائمة الملفات  ",
+        "pt-PT": "Campos Adicionais de Exibição na Lista de Ficheiros  ",
+        "ru-RU": "Дополнительные поля отображения в списке файлов  ",
+        "ja-JP": "ファイルリストの追加表示フィールド  ",
+        "de-DE": "Zusätzlich anzuzeigende Felder in der Dateiliste",
+        "fr-FR": "Champs d’affichage supplémentaires dans la liste des fichiers  ",
+        "ko-KR": "파일 목록 추가 표시 필드  ",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(2485-2499)"
+        ],
+        "$id": 3090
+    },
+    "选择在文件列表中额外显示的信息字段，这些字段将在文件名、大小、修改时间等基础信息之外显示": {
+        "en-US": "Select additional information fields to display in the file list; these fields will appear alongside basic information such as filename, size, and modification time",
+        "es-ES": "Selecciona los campos de información adicionales que se mostrarán en la lista de archivos, además de la información básica como nombre del archivo, tamaño y fecha de modificación",
+        "ar-EG": "اختر حقول المعلومات الإضافية التي ستُعرض في قائمة الملفات، وسيتم عرض هذه الحقول بالإضافة إلى المعلومات الأساسية مثل اسم الملف والحجم ووقت التعديل",
+        "pt-PT": "Selecione os campos de informação adicionais a exibir na lista de ficheiros; estes campos serão mostrados além das informações básicas, como nome do ficheiro, tamanho e data de modificação",
+        "ru-RU": "Выберите дополнительные поля информации для отображения в списке файлов; эти поля будут показаны помимо основной информации, такой как имя файла, размер и время изменения",
+        "ja-JP": "ファイル名、サイズ、更新日時などの基本情報に加えて、ファイルリストに追加で表示する情報フィールドを選択",
+        "de-DE": "Wählen Sie zusätzliche Informationsfelder aus, die in der Dateiliste angezeigt werden sollen. Diese Felder werden zusätzlich zu den Basisinformationen wie Dateiname, Größe und Änderungszeit angezeigt.",
+        "fr-FR": "Sélectionnez les champs d’informations supplémentaires à afficher dans la liste des fichiers, en plus des informations de base telles que le nom du fichier, la taille et la date de modification",
+        "ko-KR": "파일 이름, 크기, 수정 시간 등의 기본 정보 외에 파일 목록에 추가로 표시할 정보 필드를 선택합니다.",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(2617-2665)"
+        ],
+        "$id": 3091
+    },
+    "预览": {
+        "en-US": "Preview  ",
+        "es-ES": "Vista previa",
+        "ar-EG": "معاينة",
+        "pt-PT": "Pré-visualização",
+        "ru-RU": "Предварительный просмотр",
+        "ja-JP": "プレビュー",
+        "de-DE": "Vorschau",
+        "fr-FR": "Aperçu",
+        "ko-KR": "미리보기",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(3951-3957)"
+        ],
+        "$id": 3092
+    },
+    "已选择的额外显示字段:": {
+        "en-US": "Selected additional display fields:  ",
+        "es-ES": "Campos adicionales seleccionados para mostrar:",
+        "ar-EG": "الحقول الإضافية المعروضة المحددة:",
+        "pt-PT": "Campos adicionais selecionados para exibição:",
+        "ru-RU": "Выбранные дополнительные поля отображения:",
+        "ja-JP": "選択された追加表示フィールド:",
+        "de-DE": "Ausgewählte zusätzliche Anzeigefelder:",
+        "fr-FR": "Champs d'affichage supplémentaires sélectionnés :",
+        "ko-KR": "선택된 추가 표시 필드:",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(4121-4136)"
+        ],
+        "$id": 3093
+    },
+    "未选择任何额外字段，将只显示基础文件信息": {
+        "en-US": "No additional fields selected; only basic file information will be displayed  ",
+        "es-ES": "No se ha seleccionado ningún campo adicional; solo se mostrará la información básica del archivo.",
+        "ar-EG": "لم يتم اختيار أي حقول إضافية، وسيتم عرض معلومات الملف الأساسية فقط",
+        "pt-PT": "Nenhum campo adicional foi selecionado; apenas as informações básicas do ficheiro serão exibidas.",
+        "ru-RU": "Дополнительные поля не выбраны, будет отображаться только базовая информация о файле",
+        "ja-JP": "追加フィールドが選択されていないため、基本ファイル情報のみ表示されます",
+        "de-DE": "Keine zusätzlichen Felder ausgewählt; es werden nur grundlegende Dateiinformationen angezeigt",
+        "fr-FR": "Aucun champ supplémentaire n'a été sélectionné ; seules les informations de base du fichier seront affichées.",
+        "ko-KR": "추가 필드가 선택되지 않아 기본 파일 정보만 표시됩니다.",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(5077-5101)"
+        ],
+        "$id": 3094
+    },
+    "文件列表预览:": {
+        "en-US": "File list preview:  ",
+        "es-ES": "Vista previa de la lista de archivos:",
+        "ar-EG": "معاينة قائمة الملفات:",
+        "pt-PT": "Pré-visualização da lista de ficheiros:",
+        "ru-RU": "Предварительный просмотр списка файлов:",
+        "ja-JP": "ファイルリストプレビュー:",
+        "de-DE": "Vorschau der Dateiliste:",
+        "fr-FR": "Aperçu de la liste des fichiers :",
+        "ko-KR": "파일 목록 미리보기:",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(5475-5486)"
+        ],
+        "$id": 3095
+    },
+    "名称": {
+        "en-US": "Name  ",
+        "es-ES": "Nombre",
+        "ar-EG": "الاسم",
+        "pt-PT": "Nome",
+        "ru-RU": "Название",
+        "ja-JP": "名前",
+        "de-DE": "Name",
+        "fr-FR": "Nom",
+        "ko-KR": "이름",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(5775-5781)"
+        ],
+        "$id": 3096
+    },
+    "描述": {
+        "en-US": "Description  ",
+        "es-ES": "Descripción",
+        "ar-EG": "الوصف",
+        "pt-PT": "Descrição",
+        "ru-RU": "Описание",
+        "ja-JP": "説明",
+        "de-DE": "Beschreibung",
+        "fr-FR": "Description",
+        "ko-KR": "설명",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(6280-6286)"
+        ],
+        "$id": 3097
+    },
+    "修改日期": {
+        "en-US": "Modified Date  ",
+        "es-ES": "Fecha de modificación",
+        "ar-EG": "تاريخ التعديل",
+        "pt-PT": "Data de modificação",
+        "ru-RU": "Дата изменения",
+        "ja-JP": "更新日時",
+        "de-DE": "Änderungsdatum",
+        "fr-FR": "Date de modification",
+        "ko-KR": "수정 날짜",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(7186-7194)"
+        ],
+        "$id": 3098
+    },
+    "大小": {
+        "en-US": "Size  ",
+        "es-ES": "Tamaño",
+        "ar-EG": "الحجم",
+        "pt-PT": "Tamanho",
+        "ru-RU": "Размер",
+        "ja-JP": "サイズ",
+        "de-DE": "Größe",
+        "fr-FR": "Taille",
+        "ko-KR": "크기",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(7301-7307)"
+        ],
+        "$id": 3099
+    },
+    "示例文件.pdf": {
+        "en-US": "Example File.pdf  ",
+        "es-ES": "Ejemplo.pdf",
+        "ar-EG": "مثال_ملف.pdf",
+        "pt-PT": "Exemplo.pdf",
+        "ru-RU": "Пример файла.pdf",
+        "ja-JP": "サンプルファイル.pdf",
+        "de-DE": "Beispieldatei.pdf",
+        "fr-FR": "ExempleFichier.pdf",
+        "ko-KR": "예제 파일.pdf",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(7668-7680)"
+        ],
+        "$id": 3100
+    },
+    "技术文档，包含API使用说明": {
+        "en-US": "Technical documentation containing API usage instructions  ",
+        "es-ES": "Documento técnico que incluye instrucciones de uso de la API",
+        "ar-EG": "مستند تقني يحتوي على تعليمات استخدام الواجهة البرمجية (API)",
+        "pt-PT": "Documentação técnica contendo instruções de utilização da API",
+        "ru-RU": "Техническая документация, содержащая инструкции по использованию API",
+        "ja-JP": "API使用方法を含む技術文書",
+        "de-DE": "Technisches Dokument mit API-Nutzungshinweisen",
+        "fr-FR": "Documentation technique contenant les instructions d'utilisation de l'API",
+        "ko-KR": "API 사용 설명이 포함된 기술 문서",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(8133-8151)"
+        ],
+        "$id": 3101
+    },
+    "文档": {
+        "en-US": "Document  ",
+        "es-ES": "Documento",
+        "ar-EG": "مستند",
+        "pt-PT": "Documento",
+        "ru-RU": "Документация",
+        "ja-JP": "文書",
+        "de-DE": "Dokument",
+        "fr-FR": "Document",
+        "ko-KR": "문서",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(8499-8505)"
+        ],
+        "$id": 3102
+    },
+    "技术": {
+        "en-US": "Technical  ",
+        "es-ES": "Técnico",
+        "ar-EG": "تقني",
+        "pt-PT": "Técnico",
+        "ru-RU": "Техническое",
+        "ja-JP": "技術",
+        "de-DE": "Technik",
+        "fr-FR": "Technique",
+        "ko-KR": "기술",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(8613-8619)"
+        ],
+        "$id": 3103
+    },
+    "张三": {
+        "en-US": "Zhang San  ",
+        "es-ES": "Zhang San",
+        "ar-EG": "تشانغ سان",
+        "pt-PT": "Zhang San",
+        "ru-RU": "Чжан Сань",
+        "ja-JP": "張三",
+        "de-DE": "Zhang San",
+        "fr-FR": "Zhang San",
+        "ko-KR": "장삼",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(9002-9008)"
+        ],
+        "$id": 3105
+    },
+    "中文": {
+        "en-US": "Chinese  ",
+        "es-ES": "Chino",
+        "ar-EG": "الصينية",
+        "pt-PT": "Chinês",
+        "ru-RU": "Китайский",
+        "ja-JP": "中国語",
+        "de-DE": "Chinesisch",
+        "fr-FR": "Chinois",
+        "ko-KR": "중국어",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(9224-9230)"
+        ],
+        "$id": 3106
+    },
+    "设计图.png": {
+        "en-US": "Design Diagram.png  ",
+        "es-ES": "Diseño.png",
+        "ar-EG": "رسم_تصميم.png",
+        "pt-PT": "Desenho.png",
+        "ru-RU": "Макет дизайна.png",
+        "ja-JP": "デザイン図.png",
+        "de-DE": "Designgrafik.png",
+        "fr-FR": "SchémaConception.png",
+        "ko-KR": "디자인도.png",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(9717-9728)"
+        ],
+        "$id": 3107
+    },
+    "UI界面设计图，包含主要页面布局": {
+        "en-US": "UI interface design diagram including main page layouts  ",
+        "es-ES": "Diseño de interfaz de usuario, incluyendo el diseño de las páginas principales",
+        "ar-EG": "رسم تصميم واجهة المستخدم (UI)، يتضمن تخطيط الصفحات الرئيسية",
+        "pt-PT": "Desenho de interface UI, incluindo o esboço das principais páginas",
+        "ru-RU": "Макеты интерфейса UI, включая основные макеты страниц",
+        "ja-JP": "主要ページのレイアウトを含むUIインターフェースデザイン図",
+        "de-DE": "UI-Designgrafik mit Layouts der Hauptseiten",
+        "fr-FR": "Schéma de conception de l'interface utilisateur, incluant la disposition des pages principales",
+        "ko-KR": "주요 페이지 레이아웃을 포함한 UI 인터페이스 디자인도",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(10182-10202)"
+        ],
+        "$id": 3108
+    },
+    "设计": {
+        "en-US": "Design  ",
+        "es-ES": "Diseño",
+        "ar-EG": "تصميم",
+        "pt-PT": "Design",
+        "ru-RU": "Дизайн",
+        "ja-JP": "デザイン",
+        "de-DE": "Design",
+        "fr-FR": "Conception",
+        "ko-KR": "디자인",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(10550-10556)"
+        ],
+        "$id": 3109
+    },
+    "李四": {
+        "en-US": "Li Si  ",
+        "es-ES": "Li Si",
+        "ar-EG": "لي سي",
+        "pt-PT": "Li Si",
+        "ru-RU": "Ли Сы",
+        "ja-JP": "ジョン・ドゥ",
+        "de-DE": "Li Si",
+        "fr-FR": "Li Si",
+        "ko-KR": "이사",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(10938-10944)"
+        ],
+        "$id": 3111
+    },
+    "提示": {
+        "en-US": "Tip  ",
+        "es-ES": "Sugerencia",
+        "ar-EG": "تلميح",
+        "pt-PT": "Aviso",
+        "ru-RU": "Подсказка",
+        "ja-JP": "ヒント",
+        "de-DE": "Hinweis",
+        "fr-FR": "Remarque",
+        "ko-KR": "팁",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(11746-11752)"
+        ],
+        "$id": 3112
+    },
+    "额外字段只有在文件经过AI分析后才会显示": {
+        "en-US": "Additional fields will only be displayed after the file has been analyzed by AI  ",
+        "es-ES": "Los campos adicionales solo se mostrarán tras el análisis del archivo mediante IA.",
+        "ar-EG": "لن تظهر الحقول الإضافية إلا بعد تحليل الملف بواسطة الذكاء الاصطناعي",
+        "pt-PT": "Os campos adicionais só serão exibidos após o ficheiro ter sido analisado por IA.",
+        "ru-RU": "Дополнительные поля отображаются только после анализа файла с помощью ИИ",
+        "ja-JP": "追加フィールドはファイルがAI分析された後にのみ表示されます",
+        "de-DE": "Zusätzliche Felder werden erst angezeigt, nachdem die Datei mittels KI analysiert wurde",
+        "fr-FR": "Les champs supplémentaires ne s'affichent que si le fichier a été analysé par l'IA.",
+        "ko-KR": "추가 필드는 파일이 AI 분석을 거친 후에만 표시됩니다.",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(11835-11859)"
+        ],
+        "$id": 3113
+    },
+    "选择过多字段可能会影响文件列表的显示性能": {
+        "en-US": "Selecting too many fields may affect the display performance of the file list",
+        "es-ES": "Seleccionar demasiados campos podría afectar al rendimiento de visualización de la lista de archivos.",
+        "ar-EG": "قد يؤثر اختيار عدد كبير من الحقول على أداء عرض قائمة الملفات",
+        "pt-PT": "Selecionar demasiados campos poderá afetar o desempenho da exibição da lista de ficheiros.",
+        "ru-RU": "Выбор слишком большого количества полей может повлиять на производительность отображения списка файлов",
+        "ja-JP": "表示フィールドを多く選択すると、ファイルリストの表示パフォーマンスに影響を与える可能性があります",
+        "de-DE": "Die Auswahl zu vieler Felder kann die Anzeigeleistung der Dateiliste beeinträchtigen",
+        "fr-FR": "Sélectionner trop de champs peut affecter les performances d'affichage de la liste des fichiers.",
+        "ko-KR": "너무 많은 필드를 선택하면 파일 목록의 표시 성능에 영향을 줄 수 있습니다.",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(11889-11913)"
+        ],
+        "$id": 3114
+    },
+    "这些设置会立即应用到所有文件列表视图": {
+        "en-US": "These settings will be applied immediately to all file list views.",
+        "es-ES": "Esta configuración se aplicará inmediatamente a todas las vistas de lista de archivos.",
+        "ar-EG": "سيتم تطبيق هذه الإعدادات فورًا على جميع عروض قائمة الملفات",
+        "pt-PT": "Estas definições serão aplicadas imediatamente a todas as vistas de listas de ficheiros.",
+        "ru-RU": "Эти настройки немедленно применяются ко всем представлениям списков файлов",
+        "ja-JP": "これらの設定は、すべてのファイル一覧ビューに即座に適用されます。",
+        "de-DE": "Diese Einstellungen werden sofort auf alle Dateilistenansichten angewendet.",
+        "fr-FR": "Ces paramètres sont appliqués immédiatement à toutes les vues de liste de fichiers.",
+        "ko-KR": "이 설정은 모든 파일 목록 보기 즉시 적용됩니다.",
+        "$files": [
+            "renderer/components/settings/file-display-settings.tsx(11943-11965)"
+        ],
+        "$id": 3115
+    }
+}

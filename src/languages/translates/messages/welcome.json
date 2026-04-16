@@ -1,0 +1,2206 @@
+{
+    "请填写 API Key": {
+        "en-US": "Please fill in the API Key",
+        "es-ES": "Por favor, rellene la clave API",
+        "ar-EG": "يرجى ملء مفتاح API",
+        "pt-PT": "Por favor, preencha a API Key",
+        "ru-RU": "Пожалуйста, введите ключ API",
+        "ja-JP": "API Keyを入力してください",
+        "de-DE": "Bitte API-Schlüssel eingeben",
+        "fr-FR": "Veuillez saisir la clé API",
+        "ko-KR": "API Key를 입력해주세요",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(3431-3446)"
+        ],
+        "$id": 2685
+    },
+    "请填写 Base URL": {
+        "en-US": "Please fill in the Base URL",
+        "es-ES": "Por favor, rellene la URL base",
+        "ar-EG": "يرجى ملء عنوان URL الأساسي",
+        "pt-PT": "Por favor, preencha o Base URL",
+        "ru-RU": "Пожалуйста, введите базовый URL",
+        "ja-JP": "Base URLを入力してください",
+        "de-DE": "Bitte Base URL eingeben",
+        "fr-FR": "Veuillez saisir l'URL de base",
+        "ko-KR": "Base URL을 입력해주세요",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(3654-3670)"
+        ],
+        "$id": 2686
+    },
+    "连接测试成功，正在获取模型列表...": {
+        "en-US": "Connection test successful, retrieving model list...",
+        "es-ES": "Prueba de conexión exitosa, obteniendo lista de modelos...",
+        "ar-EG": "نجاح اختبار الاتصال، جارٍ الحصول على قائمة النماذج...",
+        "pt-PT": "Teste de ligação bem-sucedido, a obter a lista de modelos...",
+        "ru-RU": "Тест подключения успешен, получение списка моделей...",
+        "ja-JP": "接続テストに成功しました。モデルリストを取得中...",
+        "de-DE": "Verbindungstest erfolgreich, Modelle werden abgerufen...",
+        "fr-FR": "Test de connexion réussi, récupération de la liste des modèles en cours...",
+        "ko-KR": "연결 테스트 성공, 모델 목록을 가져오는 중...",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(3882-3904)"
+        ],
+        "$id": 2687
+    },
+    "成功获取模型列表（{count}个）": {
+        "en-US": "Successfully retrieved model list ({count} models)",
+        "es-ES": "Lista de modelos obtenida con éxito ({count})",
+        "ar-EG": "تم الحصول على قائمة النماذج بنجاح ({count} نموذج)",
+        "pt-PT": "Lista de modelos obtida com sucesso ({count} modelos)",
+        "ru-RU": "Список моделей успешно получен ({count})",
+        "ja-JP": "モデルリストの取得に成功しました（{count}個）",
+        "de-DE": "Modelle erfolgreich abgerufen ({count} Stück)",
+        "fr-FR": "Liste des modèles récupérée avec succès ({count} modèles)",
+        "ko-KR": "모델 목록을 성공적으로 가져왔습니다 ({count}개)",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(4355-4377)"
+        ],
+        "$id": 2688
+    },
+    "未获取到模型列表，将使用预置模型": {
+        "en-US": "Failed to retrieve model list, will use preset models",
+        "es-ES": "No se pudo obtener la lista de modelos, se utilizarán los modelos preestablecidos",
+        "ar-EG": "لم يتم الحصول على قائمة النماذج، سيتم استخدام النموذج المعد مسبقًا",
+        "pt-PT": "Não foi possível obter a lista de modelos, será utilizado o modelo pré-configurado",
+        "ru-RU": "Не удалось получить список моделей, будет использована предустановленная модель",
+        "ja-JP": "モデルリストを取得できませんでした。プリセットモデルを使用します",
+        "de-DE": "Keine Modellliste abgerufen, voreingestellte Modelle werden verwendet",
+        "fr-FR": "Impossible d'obtenir la liste des modèles, utilisation des modèles prédéfinis",
+        "ko-KR": "모델 목록을 가져오지 못했습니다, 사전 설정된 모델을 사용합니다",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(4442-4462)"
+        ],
+        "$id": 2689
+    },
+    "测试失败: {message}": {
+        "en-US": "Test failed: {message}",
+        "es-ES": "Prueba fallida: {message}",
+        "ar-EG": "فشل الاختبار: {message}",
+        "pt-PT": "Falha no teste: {message}",
+        "ru-RU": "Тест не пройден: {message}",
+        "ja-JP": "テスト失敗: {message}",
+        "de-DE": "Test fehlgeschlagen: {message}",
+        "fr-FR": "Échec du test : {message}",
+        "ko-KR": "테스트 실패: {message}",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(4627-4646)"
+        ],
+        "$id": 2690
+    },
+    "保存配置失败": {
+        "en-US": "Failed to save configuration",
+        "es-ES": "Error al guardar la configuración",
+        "ar-EG": "فشل حفظ الإعدادات",
+        "pt-PT": "Falha ao guardar a configuração",
+        "ru-RU": "Не удалось сохранить конфигурацию",
+        "ja-JP": "設定の保存に失敗しました",
+        "de-DE": "Speichern der Konfiguration fehlgeschlagen",
+        "fr-FR": "Échec de l'enregistrement de la configuration",
+        "ko-KR": "구성 저장 실패",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(5946-5956)"
+        ],
+        "$id": 2691
+    },
+    "配置云端模型": {
+        "en-US": "Configure cloud models",
+        "es-ES": "Configurar modelo en la nube",
+        "ar-EG": "إعداد نموذج السحابة",
+        "pt-PT": "Configurar modelo na nuvem",
+        "ru-RU": "Настройка облачной модели",
+        "ja-JP": "クラウドモデルの設定",
+        "de-DE": "Cloud-Modell konfigurieren",
+        "fr-FR": "Configuration des modèles cloud",
+        "ko-KR": "클라우드 모델 구성",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(6295-6305)"
+        ],
+        "$id": 2692
+    },
+    "输入您的 API 信息以连接到云端 AI 服务": {
+        "en-US": "Enter your API information to connect to cloud AI services",
+        "es-ES": "Ingrese su información de API para conectarse al servicio de IA en la nube",
+        "ar-EG": "أدخل معلومات API الخاصة بك للاتصال بخدمة الذكاء الاصطناعي السحابية",
+        "pt-PT": "Introduza as suas informações da API para ligar ao serviço de IA na nuvem",
+        "ru-RU": "Введите информацию о вашем API для подключения к облачному ИИ сервису",
+        "ja-JP": "クラウドAIサービスに接続するためのAPI情報を入力してください",
+        "de-DE": "Geben Sie Ihre API-Informationen ein, um eine Verbindung zum Cloud-KI-Dienst herzustellen",
+        "fr-FR": "Saisissez vos informations API pour vous connecter au service IA cloud",
+        "ko-KR": "클라우드 AI 서비스에 연결하려면 API 정보를 입력하세요",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(6362-6389)"
+        ],
+        "$id": 2693
+    },
+    "云服务商": {
+        "en-US": "Cloud service provider",
+        "es-ES": "Proveedor de servicios en la nube",
+        "ar-EG": "مزود الخدمة السحابية",
+        "pt-PT": "Fornecedor de serviços na nuvem",
+        "ru-RU": "Облачный провайдер",
+        "ja-JP": "クラウドサービスプロバイダー",
+        "de-DE": "Cloud-Anbieter",
+        "fr-FR": "Fournisseur cloud",
+        "ko-KR": "클라우드 서비스 제공업체",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(6953-6961)"
+        ],
+        "$id": 2694
+    },
+    "选择服务商": {
+        "en-US": "Select provider",
+        "es-ES": "Seleccionar proveedor de servicios",
+        "ar-EG": "اختر مزود الخدمة",
+        "pt-PT": "Selecionar fornecedor",
+        "ru-RU": "Выберите провайдера",
+        "ja-JP": "プロバイダーを選択",
+        "de-DE": "Anbieter auswählen",
+        "fr-FR": "Sélectionner un fournisseur",
+        "ko-KR": "서비스 제공업체 선택",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(7205-7214)"
+        ],
+        "$id": 2695
+    },
+    "Custom（OpenAI Compatible）": {
+        "en-US": "Custom (OpenAI Compatible)",
+        "es-ES": "Custom (compatible con OpenAI)",
+        "ar-EG": "Custom (متوافق مع OpenAI)",
+        "pt-PT": "Custom (Compatível com OpenAI)",
+        "ru-RU": "Custom (совместимо с OpenAI)",
+        "ja-JP": "カスタム（OpenAI互換）",
+        "de-DE": "Custom (OpenAI-kompatibel)",
+        "fr-FR": "Custom (compatible OpenAI)",
+        "ko-KR": "사용자 정의（OpenAI 호환）",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(7520-7549)"
+        ],
+        "$id": 2696
+    },
+    "Base URL（可选）": {
+        "en-US": "Base URL (optional)",
+        "es-ES": "URL base (opcional)",
+        "ar-EG": "الرابط الأساسي (اختياري)",
+        "pt-PT": "URL Base (opcional)",
+        "ru-RU": "Базовый URL (опционально)",
+        "ja-JP": "ベースURL（オプション）",
+        "de-DE": "Basis-URL (optional)",
+        "fr-FR": "URL de base (facultatif)",
+        "ko-KR": "기본 URL（선택 사항）",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(7789-7805)"
+        ],
+        "$id": 2697
+    },
+    "API Key": {
+        "en-US": "API Key",
+        "es-ES": "Clave API",
+        "ar-EG": "مفتاح API",
+        "pt-PT": "Chave API",
+        "ru-RU": "API ключ",
+        "ja-JP": "APIキー",
+        "de-DE": "API-Schlüssel",
+        "fr-FR": "Clé API",
+        "ko-KR": "API 키",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(8448-8459)"
+        ],
+        "$id": 2698
+    },
+    "测试连接并获取模型": {
+        "en-US": "Test Connection and Get Models",
+        "es-ES": "Probar conexión y obtener modelo",
+        "ar-EG": "اختبار الاتصال والحصول على النموذج",
+        "pt-PT": "Testar ligação e obter modelo",
+        "ru-RU": "Проверить соединение и получить модель",
+        "ja-JP": "接続テストおよびモデル取得",
+        "de-DE": "Verbindung testen und Modelle abrufen",
+        "fr-FR": "Tester la connexion et obtenir les modèles",
+        "ko-KR": "연결 테스트 및 모델 가져오기",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(8864-8877)"
+        ],
+        "$id": 2699
+    },
+    "选择模型": {
+        "en-US": "Select model",
+        "es-ES": "Seleccionar modelo\r",
+        "ar-EG": "اختر النموذج",
+        "pt-PT": "Escolha o modelo\r",
+        "ru-RU": "Выбрать модель\r",
+        "ja-JP": "モデルを選択",
+        "de-DE": "Modell auswählen\r",
+        "fr-FR": "Sélectionnez le modèle\r",
+        "ko-KR": "모델 선택",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(9510-9518)",
+            "renderer/components/welcome/ModelSelectionStep.tsx(11270-11278)"
+        ],
+        "$id": 4577
+    },
+    "请输入或选择模型ID": {
+        "en-US": "Please enter or select a model ID",
+        "es-ES": "Por favor, introduzca o seleccione el ID del modelo",
+        "ar-EG": "يرجى إدخال أو اختيار معرف النموذج",
+        "pt-PT": "Por favor, introduza ou selecione o ID do modelo",
+        "ru-RU": "Введите или выберите ID модели",
+        "ja-JP": "モデルIDを入力または選択してください",
+        "de-DE": "Bitte geben Sie eine Modell-ID ein oder wählen Sie eine aus",
+        "fr-FR": "Veuillez saisir ou sélectionner l'ID du modèle",
+        "ko-KR": "모델 ID를 입력하거나 선택해 주세요",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(10071-10085)"
+        ],
+        "$id": 2700
+    },
+    "返回": {
+        "en-US": "Back",
+        "es-ES": "Volver",
+        "ar-EG": "عودة",
+        "pt-PT": "Voltar",
+        "ru-RU": "Назад",
+        "ja-JP": "戻る",
+        "de-DE": "Zurück",
+        "fr-FR": "Retour",
+        "ko-KR": "돌아가기",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(12121-12127)",
+            "renderer/components/welcome/ModelDownloadStep.tsx(8061-8067)",
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(6341-6347)",
+            "renderer/components/welcome/ModelSelectionStep.tsx(15104-15110)",
+            "renderer/components/welcome/ModelStorageStep.tsx(4436-4442)",
+            "renderer/components/welcome/OllamaInstallStep.tsx(11253-11259)",
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(12537-12543)"
+        ],
+        "$id": 4555
+    },
+    "开始使用": {
+        "en-US": "Get Started",
+        "es-ES": "Comenzar a usar",
+        "ar-EG": "البدء في الاستخدام",
+        "pt-PT": "Começar a utilizar\r",
+        "ru-RU": "Начать использование",
+        "ja-JP": "ご利用開始",
+        "de-DE": "Beginnen Sie mit der Verwendung\r",
+        "fr-FR": "Commencer à utiliser",
+        "ko-KR": "사용 시작",
+        "$files": [
+            "renderer/components/welcome/CloudModelConfigStep.tsx(12454-12462)",
+            "renderer/components/welcome/DownloadCompleteStep.tsx(2449-2457)"
+        ],
+        "$id": 4538
+    },
+    "设置完成": {
+        "en-US": "Setup Complete",
+        "es-ES": "Configuración completada",
+        "ar-EG": "تم الانتهاء من الإعداد",
+        "pt-PT": "Configuração concluída\r",
+        "ru-RU": "Настройка завершена",
+        "ja-JP": "設定完了",
+        "de-DE": "Einrichtung abgeschlossen\r",
+        "fr-FR": "Configuration terminée",
+        "ko-KR": "설정 완료",
+        "$files": [
+            "renderer/components/welcome/DownloadCompleteStep.tsx(1161-1169)",
+            "renderer/components/welcome/WelcomeProgress.tsx(669-677)"
+        ],
+        "$id": 4534
+    },
+    "您已成功完成初始设置": {
+        "en-US": "You have successfully completed the initial setup",
+        "es-ES": "Ha completado con éxito la configuración inicial",
+        "ar-EG": "لقد قمت بإتمام إعدادات البداية بنجاح",
+        "pt-PT": "Concluiu com sucesso a configuração inicial\r",
+        "ru-RU": "Вы успешно завершили начальную настройку",
+        "ja-JP": "初期設定が正常に完了しました",
+        "de-DE": "Sie haben die Ersteinrichtung erfolgreich abgeschlossen\r",
+        "fr-FR": "Vous avez terminé avec succès la configuration initiale",
+        "ko-KR": "초기 설정을 성공적으로 완료하셨습니다",
+        "$files": [
+            "renderer/components/welcome/DownloadCompleteStep.tsx(1228-1242)"
+        ],
+        "$id": 4535
+    },
+    "设置成功！": {
+        "en-US": "Setup Successful!",
+        "es-ES": "¡Configuración exitosa!",
+        "ar-EG": "تم الإعداد بنجاح!",
+        "pt-PT": "Configuração bem sucedida!\r",
+        "ru-RU": "Настройка выполнена успешно!",
+        "ja-JP": "設定完了！",
+        "de-DE": "Einrichtung erfolgreich!\r",
+        "fr-FR": "Configuration réussie !",
+        "ko-KR": "설정 성공!",
+        "$files": [
+            "renderer/components/welcome/DownloadCompleteStep.tsx(1930-1939)"
+        ],
+        "$id": 4536
+    },
+    "您已成功完成所有初始设置步骤。现在可以开始使用应用程序了。": {
+        "en-US": "You have successfully completed all initial setup steps. You can now start using the application.",
+        "es-ES": "Ha completado con éxito todos los pasos de configuración inicial. Ahora puede comenzar a usar la aplicación.",
+        "ar-EG": "لقد قمت بإتمام جميع خطوات الإعداد المبدئية بنجاح. يمكنك الآن البدء في استخدام التطبيق.",
+        "pt-PT": "Concluiu com sucesso todos os passos da configuração inicial. Agora pode começar a utilizar a aplicação.\r",
+        "ru-RU": "Вы успешно завершили все этапы начальной настройки. Теперь можно начать использовать приложение.",
+        "ja-JP": "すべての初期設定ステップが正常に完了しました。これでアプリケーションをご利用いただけます。",
+        "de-DE": "Sie haben alle Schritte der Ersteinrichtung erfolgreich abgeschlossen. Sie können die Anwendung jetzt verwenden.\r",
+        "fr-FR": "Vous avez terminé avec succès toutes les étapes de la configuration initiale. Vous pouvez maintenant commencer à utiliser l'application.",
+        "ko-KR": "모든 초기 설정 단계를 성공적으로 완료하셨습니다. 이제 애플리케이션을 사용할 수 있습니다.",
+        "$files": [
+            "renderer/components/welcome/DownloadCompleteStep.tsx(2002-2035)"
+        ],
+        "$id": 4537
+    },
+    "下载AI模型": {
+        "en-US": "Download AI Model",
+        "es-ES": "Descargar modelo de IA",
+        "ar-EG": "تحميل نموذج الذكاء الاصطناعي",
+        "pt-PT": "Descarregar modelo de IA\r",
+        "ru-RU": "Скачать модель ИИ",
+        "ja-JP": "AIモデルをダウンロード",
+        "de-DE": "KI-Modell herunterladen\r",
+        "fr-FR": "Télécharger le modèle IA",
+        "ko-KR": "AI 모델 다운로드",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(4692-4702)"
+        ],
+        "$id": 4539
+    },
+    "模型将保存至：{path}": {
+        "en-US": "Model will be saved to: {path}",
+        "es-ES": "El modelo se guardará en: {path}",
+        "ar-EG": "سيتم حفظ النموذج في: {path}",
+        "pt-PT": "O modelo será guardado em: {path}\r",
+        "ru-RU": "Модель будет сохранена в: {path}",
+        "ja-JP": "モデルは以下に保存されます：{path}",
+        "de-DE": "Modell wird gespeichert unter: {path}\r",
+        "fr-FR": "Le modèle sera enregistré dans : {path}",
+        "ko-KR": "모델은 다음 위치에 저장됩니다: {path}",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(4831-4848)"
+        ],
+        "$id": 4540
+    },
+    "尚未设置存储目录": {
+        "en-US": "Storage directory not set yet",
+        "es-ES": "Aún no se ha configurado el directorio de almacenamiento",
+        "ar-EG": "لم يتم إعداد دليل التخزين",
+        "pt-PT": "Diretório de armazenamento ainda não definido\r",
+        "ru-RU": "Каталог хранения еще не настроен",
+        "ja-JP": "保存ディレクトリが設定されていません",
+        "de-DE": "Speicherverzeichnis ist noch nicht festgelegt\r",
+        "fr-FR": "Aucun répertoire de stockage n'a été configuré",
+        "ko-KR": "저장 디렉토리가 설정되지 않음",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(4901-4913)"
+        ],
+        "$id": 4541
+    },
+    "关键功能": {
+        "en-US": "Key Features",
+        "es-ES": "Funciones clave",
+        "ar-EG": "وظيفة رئيسية",
+        "pt-PT": "Funções importantes\r",
+        "ru-RU": "Ключевые функции",
+        "ja-JP": "主な機能",
+        "de-DE": "Wichtige Funktionen\r",
+        "fr-FR": "Fonctionnalités clés",
+        "ko-KR": "핵심 기능",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(5629-5637)"
+        ],
+        "$id": 4542
+    },
+    "AI智能分析": {
+        "en-US": "AI Smart Analysis",
+        "es-ES": "Análisis inteligente de IA",
+        "ar-EG": "تحليل الذكاء الاصطناعي الذكي",
+        "pt-PT": "Análise inteligente de IA\r",
+        "ru-RU": "Интеллектуальный анализ ИИ",
+        "ja-JP": "AIインテリジェント分析",
+        "de-DE": "Künstliche Intelligenz\r",
+        "fr-FR": "Analyse intelligente IA",
+        "ko-KR": "AI 지능 분석",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(5917-5927)"
+        ],
+        "$id": 4543
+    },
+    "利用先进的AI技术分析和理解您的数据": {
+        "en-US": "Utilize advanced AI technology to analyze and understand your data",
+        "es-ES": "Utiliza tecnología avanzada de IA para analizar y comprender sus datos",
+        "ar-EG": "تحليل وفهم بياناتك باستخدام التقنيات المتقدمة للذكاء الاصطناعي",
+        "pt-PT": "Utilizar tecnologia avançada de IA para analisar e compreender os seus dados\r",
+        "ru-RU": "Использование передовых технологий ИИ для анализа и понимания Ваших данных",
+        "ja-JP": "先進的なAI技術を用いてデータの分析・理解を行います",
+        "de-DE": "Analysieren und Verstehen Ihrer Daten durch fortschrittliche KI-Technologie\r",
+        "fr-FR": "Utiliser des technologies IA avancées pour analyser et comprendre vos données",
+        "ko-KR": "최첨단 AI 기술을 활용하여 데이터를 분석하고 이해",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(6039-6061)"
+        ],
+        "$id": 4544
+    },
+    "虚拟文件夹": {
+        "en-US": "Virtual Folders",
+        "es-ES": "Carpetas virtuales",
+        "ar-EG": "مجلدات وهمية",
+        "pt-PT": "Pastas virtuais\r",
+        "ru-RU": "Виртуальные папки",
+        "ja-JP": "仮想フォルダ",
+        "de-DE": "Virtueller Ordner\r",
+        "fr-FR": "Dossiers virtuels",
+        "ko-KR": "가상 폴더",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(6309-6318)"
+        ],
+        "$id": 4545
+    },
+    "整理文件生成虚拟文件夹，使用文件链接技术，不占存储空间": {
+        "en-US": "Organize files into virtual folder previews using file linking technology, without occupying storage space",
+        "es-ES": "Organiza archivos y genera vistas previas de carpetas virtuales, mediante tecnología de enlaces de archivos, sin ocupar espacio de almacenamiento",
+        "ar-EG": "تنظيم الملفات وإنشاء معاينات لمجلدات وهمية، باستخدام تقنية روابط الملفات، دون استهلاك مساحة التخزين",
+        "pt-PT": "Organizar ficheiros para gerar pré-visualizações de pastas virtuais, utilizar tecnologia de links de ficheiros, sem ocupar espaço de armazenamento\r",
+        "ru-RU": "Файл-менеджер с виртуальными папками для группировки файлов, экономия дискового пространства за счёт технологии ссылок на файлы",
+        "ja-JP": "ファイルを整理して仮想フォルダのプレビューを生成し、ファイルリンク技術を使用してストレージ容量を占有しません",
+        "de-DE": "Dateien verwalten, virtuelle Ordnervorschau erstellen, Dateiverknüpfungstechnologie verwenden, keinen Speicherplatz beanspruchen\r",
+        "fr-FR": "Organiser les fichiers et générer un aperçu de dossiers virtuels en utilisant la technologie des liens de fichiers, sans occuper d'espace de stockage",
+        "ko-KR": "파일을 정리하여 가상 폴더 미리보기를 생성하고, 파일 링크 기술을 사용하여 저장 공간을 차지하지 않음",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(6430-6461)"
+        ],
+        "$id": 4546
+    },
+    "一键整理": {
+        "en-US": "One-Click Organization",
+        "es-ES": "Organización con un clic",
+        "ar-EG": "تنظيم بضغطة واحدة",
+        "pt-PT": "Organização com um clique\r",
+        "ru-RU": "Сортировка в одно касание",
+        "ja-JP": "ワンクリック整理",
+        "de-DE": "Mit einem Klick aufräumen\r",
+        "fr-FR": "Triage en un clic",
+        "ko-KR": "원클릭 정리",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(6687-6695)"
+        ],
+        "$id": 4547
+    },
+    "快速精准分类文件和名命简化文件管理": {
+        "en-US": "Quickly and accurately classify files and simplify file management with streamlined naming",
+        "es-ES": "Clasificación rápida y precisa de archivos y simplificación de nombres para facilitar la gestión de archivos",
+        "ar-EG": "تصنيف الملفات وتبسيط إدارة الملفات بسرعة ودقة",
+        "pt-PT": "Classificação rápida e precisa de ficheiros e simplificação da gestão de ficheiros com nomes fáceis",
+        "ru-RU": "Быстрая и точная сортировка файлов и упрощение имен для упрощения управления файлами",
+        "ja-JP": "ファイルを迅速かつ正確に分類し、名前の簡略化によりファイル管理を容易にします",
+        "de-DE": "Dateien schnell und präzise kategorisieren, Dateiverwaltung vereinfachen",
+        "fr-FR": "Classer rapidement et précisément les fichiers et simplifier la gestion des fichiers avec des noms plus faciles",
+        "ko-KR": "파일을 빠르고 정확하게 분류하고 이름을 간소화하여 파일 관리 단순화",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(6787-6808)"
+        ],
+        "$id": 4548
+    },
+    "自定义整理": {
+        "en-US": "Custom Sorting",
+        "es-ES": "Personalizado",
+        "ar-EG": "تخصيص التنظيم",
+        "pt-PT": "Organização personalizada",
+        "ru-RU": "Пользовательская сортировка",
+        "ja-JP": "カスタム整理",
+        "de-DE": "Benutzerdefinierte Organisation",
+        "fr-FR": "Personnaliser l'organisation",
+        "ko-KR": "사용자 정의 정리",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(7056-7065)"
+        ],
+        "$id": 4549
+    },
+    "丰富的目录树标签助你自定义组织文件": {
+        "en-US": "Rich directory tree labels help you organize files with custom rules",
+        "es-ES": "Ricas etiquetas de árbol de directorios para ayudarte a organizar tus archivos personalizados",
+        "ar-EG": "لافتات الأشجار الغنية تساعدك في تنظيم الملفات حسب رغبتك",
+        "pt-PT": "Rótulos de árvore de diretórios ricos ajudam-no a organizar ficheiros personalizados",
+        "ru-RU": "Богатые метки дерева каталогов помогут вам настроить собственную организацию файлов",
+        "ja-JP": "リッチなディレクトリツリータグでファイルを自由に整理できます",
+        "de-DE": "Umfangreiche Verzeichnisbaum-Tags helfen Ihnen bei der benutzerdefinierten Dateiorganisation",
+        "fr-FR": "Des étiquettes d'arborescence riches pour vous aider à organiser vos fichiers selon vos préférences",
+        "ko-KR": "풍부한 디렉터리 트리 태그를 통해 파일을 사용자 정의로 조직화",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(7177-7198)"
+        ],
+        "$id": 4550
+    },
+    "隐私安全": {
+        "en-US": "Privacy and Security",
+        "es-ES": "Privacidad y seguridad",
+        "ar-EG": "الخصوصية والأمان",
+        "pt-PT": "Privacidade e segurança",
+        "ru-RU": "Конфиденциальность и безопасность",
+        "ja-JP": "プライバシーとセキュリティ",
+        "de-DE": "Datenschutz und Sicherheit",
+        "fr-FR": "Confidentialité et sécurité",
+        "ko-KR": "개인 정보 보호",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(7424-7432)"
+        ],
+        "$id": 4551
+    },
+    "本地大模型，数据不上云，稳私无忧": {
+        "en-US": "Local large models keep data off the cloud, stable and worry-free privacy",
+        "es-ES": "Modelo local grande, los datos no se suben a la nube, privacidad segura",
+        "ar-EG": "نماذج محلية كبيرة، والبيانات لا تصل إلى السحابة، خصوصية وسرية دون قلق",
+        "pt-PT": "Modelo local grande, dados não são carregados para a nuvem, privacidade segura e sem preocupações",
+        "ru-RU": "Локальная крупная модель, данные не передаются в облако, безопасность и конфиденциальность",
+        "ja-JP": "ローカルの大型モデルを使用し、データをクラウドにアップロードしないため、プライバシー保護も安心です",
+        "de-DE": "Lokales Großmodell, Daten werden nicht in die Cloud hochgeladen, Datenschutz gewährleistet",
+        "fr-FR": "Modèle local, données non envoyées sur le cloud, confidentialité garantie",
+        "ko-KR": "로컬 대형 모델, 데이터 클라우드 미보관, 안전한 개인 정보 보호",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(7524-7544)"
+        ],
+        "$id": 4552
+    },
+    "质量评分": {
+        "en-US": "Quality Rating",
+        "es-ES": "Calificación de calidad",
+        "ar-EG": "تصنيف الجودة",
+        "pt-PT": "Classificação de qualidade",
+        "ru-RU": "Оценка качества",
+        "ja-JP": "品質スコア",
+        "de-DE": "Qualitätsbewertung",
+        "fr-FR": "Évaluation de la qualité",
+        "ko-KR": "품질 평가",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(7770-7778)"
+        ],
+        "$id": 4553
+    },
+    "通过智能分析为文件质量打分": {
+        "en-US": "Intelligent analysis scores file quality",
+        "es-ES": "Calificar la calidad de los archivos mediante análisis inteligente",
+        "ar-EG": "تحديد درجة جودة الملف من خلال تحليل ذكي",
+        "pt-PT": "Atribuição de pontuação de qualidade de ficheiros através de análise inteligente",
+        "ru-RU": "Оценка качества файлов с помощью интеллектуального анализа",
+        "ja-JP": "インテリジェントな分析を通じてファイル品質にスコア付けします",
+        "de-DE": "Dateiquantität wird durch intelligente Analyse bewertet",
+        "fr-FR": "Donner une note de qualité aux fichiers via une analyse intelligente",
+        "ko-KR": "지능형 분석을 통해 파일 품질 점수 산정",
+        "$files": [
+            "renderer/components/welcome/ModelDownloadStep.tsx(7848-7865)"
+        ],
+        "$id": 4554
+    },
+    "选择运行模式": {
+        "en-US": "Select Run Mode",
+        "es-ES": "Seleccionar modo de ejecución",
+        "ar-EG": "اختيار وضع التشغيل",
+        "pt-PT": "Selecionar modo de execução",
+        "ru-RU": "Выбрать режим работы",
+        "ja-JP": "実行モードを選択",
+        "de-DE": "Wählen Sie den Ausführungsmodus",
+        "fr-FR": "Sélectionner le mode d'exécution",
+        "ko-KR": "실행 모드 선택",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(1433-1443)"
+        ],
+        "$id": 2701
+    },
+    "您可以根据隐私需求和硬件性能，选择使用本地离线模型或云端在线服务": {
+        "en-US": "You can choose to use local offline models or cloud online services based on privacy requirements and hardware performance",
+        "es-ES": "Puede elegir entre usar un modelo local sin conexión o un servicio en línea en la nube, según sus necesidades de privacidad y el rendimiento de su hardware",
+        "ar-EG": "يمكنك اختيار استخدام النموذج المحلي دون اتصال بالإنترنت أو الخدمة السحابية عبر الإنترنت بناءً على متطلبات الخصوصية وأداء الأجهزة",
+        "pt-PT": "Pode escolher entre utilizar um modelo local offline ou um serviço online na nuvem, conforme as suas necessidades de privacidade e desempenho do hardware",
+        "ru-RU": "В зависимости от требований к конфиденциальности и производительности оборудования, вы можете выбрать использование локальной автономной модели или облачного онлайн-сервиса",
+        "ja-JP": "プライバシー要件とハードウェア性能に応じて、ローカルオフラインモデルまたはクラウドオンラインサービスの使用を選択できます",
+        "de-DE": "Je nach Datenschutzanforderungen und Hardwareleistung können Sie zwischen der Verwendung eines lokalen Offline-Modells oder eines Cloud-basierten Onlinedienstes wählen",
+        "fr-FR": "Vous pouvez choisir d'utiliser un modèle local hors ligne ou un service en ligne dans le cloud selon vos besoins en matière de confidentialité et les performances de votre matériel",
+        "ko-KR": "개인 정보 보호 요구사항과 하드웨어 성능에 따라 로컬 오프라인 모델 또는 클라우드 온라인 서비스 사용을 선택할 수 있습니다",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(1542-1578)"
+        ],
+        "$id": 2702
+    },
+    "本地模式": {
+        "en-US": "Local Mode",
+        "es-ES": "Modo local",
+        "ar-EG": "الوضع المحلي",
+        "pt-PT": "Modo local",
+        "ru-RU": "Локальный режим",
+        "ja-JP": "ローカルモード",
+        "de-DE": "Lokaler Modus",
+        "fr-FR": "Mode local",
+        "ko-KR": "로컬 모드",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(2502-2510)"
+        ],
+        "$id": 2703
+    },
+    "使用本地模型分析数据，不会喂给云端大模型进行数据训练，充分保证数据安全性和隐私性": {
+        "en-US": "Use local models to analyze data, which will not be fed to cloud large models for data training, fully ensuring data security and privacy",
+        "es-ES": "Utiliza modelos locales para analizar los datos, sin enviarlos a modelos grandes en la nube para entrenamiento, garantizando así plenamente la seguridad y privacidad de los datos",
+        "ar-EG": "استخدام النموذج المحلي لتحليل البيانات، ولن يتم تغذية البيانات إلى النموذج الكبير في السحابة لتدريب البيانات، مما يضمن كفاءة أمان البيانات والخصوصية",
+        "pt-PT": "Utiliza um modelo local para analisar os dados, sem os enviar para modelos grandes na nuvem para treino de dados, garantindo assim plenamente a segurança e privacidade dos dados",
+        "ru-RU": "Использование локальной модели для анализа данных, данные не будут передаваться в облачную модель для обучения, что полностью гарантирует безопасность данных и конфиденциальность",
+        "ja-JP": "ローカルモデルを使用してデータを分析し、クラウドの大規模モデルへのデータトレーニングを行わないので、データの安全性とプライバシーを十分に保証します",
+        "de-DE": "Verwendet lokale Modelle zur Datenanalyse, ohne dass Daten an Cloud-Modelle zur Training gezogen werden, gewährleistet so die Datensicherheit und Privatsphäre",
+        "fr-FR": "Utiliser un modèle local pour analyser les données, sans les transmettre à un grand modèle dans le cloud pour l'entraînement des données, garantissant ainsi pleinement la sécurité et la confidentialité des données",
+        "ko-KR": "로컬 모델을 사용하여 데이터를 분석하며, 클라우드 대형 모델에 데이터를 제공하여 학습시키지 않아 데이터 안전성과 개인 정보 보호를 충분히 보장합니다",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(2778-2822)"
+        ],
+        "$id": 2704
+    },
+    "完全离线运行，无需网络连接": {
+        "en-US": "Runs completely offline, no network connection required",
+        "es-ES": "Funciona completamente sin conexión, no requiere conexión a internet",
+        "ar-EG": "تشغيل كامل دون اتصال بالإنترنت، بدون حاجة إلى اتصال شبكي",
+        "pt-PT": "Execução completamente offline, sem necessidade de ligação à internet",
+        "ru-RU": "Полностью автономная работа без подключения к интернету",
+        "ja-JP": "完全オフラインで動作し、ネットワーク接続が不要",
+        "de-DE": "Vollständig offline ausführen, keine Internetverbindung erforderlich",
+        "fr-FR": "Fonctionne complètement hors ligne, sans connexion réseau",
+        "ko-KR": "완전 오프라인 실행으로 네트워크 연결이 필요하지 않습니다",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(3025-3042)"
+        ],
+        "$id": 2705
+    },
+    "依赖本地硬件，建议具有高性能 GPU 显卡": {
+        "en-US": "Depends on local hardware, high-performance GPU graphics card recommended",
+        "es-ES": "Depende del hardware local, se recomienda tener una tarjeta gráfica GPU de alto rendimiento",
+        "ar-EG": "يعتمد على الأجهزة المحلية، يُوصى بوجود بطاقة رسوميات GPU عالية الأداء",
+        "pt-PT": "Depende do hardware local, recomenda-se uma placa gráfica GPU de alto desempenho",
+        "ru-RU": "Зависит от локального оборудования, рекомендуется использовать видеокарту с высокой производительностью",
+        "ja-JP": "ローカルハードウェアに依存するため、高性能GPUグラフィックカードを推奨します",
+        "de-DE": "Abhängig von der lokalen Hardware, empfohlen wird eine leistungsstarke GPU-Grafikkarte",
+        "fr-FR": "Dépend du matériel local, il est recommandé de disposer d'une carte graphique GPU haute performance",
+        "ko-KR": "로컬 하드웨어에 의존하며 고성능 GPU 그래픽 카드를 권장합니다",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(3244-3269)"
+        ],
+        "$id": 2706
+    },
+    "云端AI服务": {
+        "en-US": "Cloud AI Services",
+        "es-ES": "Servicio de IA en la nube",
+        "ar-EG": "خدمة الذكاء الاصطناعي السحابية",
+        "pt-PT": "Serviços de IA na nuvem",
+        "ru-RU": "Облачный ИИ сервис",
+        "ja-JP": "クラウドAIサービス",
+        "de-DE": "Cloud-AI-Dienste",
+        "fr-FR": "Service IA dans le cloud",
+        "ko-KR": "클라우드 AI 서비스",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(4649-4659)"
+        ],
+        "$id": 2816
+    },
+    "支持分析大文件，响应快速，分析更加准确智能": {
+        "en-US": "Supports analysis of large files with fast response and more accurate and intelligent analysis",
+        "es-ES": "Soporta el análisis de archivos grandes, con respuesta rápida y un análisis más preciso e inteligente",
+        "ar-EG": "يدعم تحليل الملفات الكبيرة، واستجابة سريعة، وتحليل أكثر دقة وذكاءً",
+        "pt-PT": "Suporta análise de ficheiros grandes, resposta rápida, análise mais precisa e inteligente",
+        "ru-RU": "Поддерживает анализ больших файлов, быстрый отклик, более точный и интеллектуальный анализ",
+        "ja-JP": "大容量ファイルの分析をサポートし、応答が迅速で、分析がより正確かつインテリジェント",
+        "de-DE": "Unterstützt die Analyse großer Dateien, schnelle Reaktion, Analyse ist genauer und intelligenter",
+        "fr-FR": "Prend en charge l'analyse de fichiers volumineux, avec une réponse rapide et une analyse plus précise et intelligente",
+        "ko-KR": "대용량 파일 분석 지원, 응답 속도가 빠르고 분석이 더욱 정확하고 지능적임",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(4917-4942)"
+        ],
+        "$id": 2708
+    },
+    "部分服务商模型需要收费": {
+        "en-US": "Some service provider models require payment",
+        "es-ES": "Algunos modelos de proveedores requieren pago",
+        "ar-EG": "بعض نماذج مقدمي الخدمة تحتاج إلى رسوم",
+        "pt-PT": "Alguns modelos de fornecedores requerem pagamento",
+        "ru-RU": "Некоторые модели поставщиков услуг требуют платы",
+        "ja-JP": "一部のサービスプロバイダーモデルは料金が必要",
+        "de-DE": "Einige Anbietermodelle sind kostenpflichtig",
+        "fr-FR": "Les modèles de certains fournisseurs de services sont payants",
+        "ko-KR": "일부 서비스 제공업체 모델은 유료임",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(5149-5164)"
+        ],
+        "$id": 2709
+    },
+    "需要上传数据至云端，无法保证绝对的数据隐私性": {
+        "en-US": "Data needs to be uploaded to the cloud, unable to guarantee absolute data privacy",
+        "es-ES": "Es necesario subir los datos a la nube, no se puede garantizar la privacidad absoluta de los datos",
+        "ar-EG": "يحتاج إلى رفع البيانات إلى السحابة، ولا يمكن ضمان خصوصية البيانات المطلقة",
+        "pt-PT": "É necessário carregar dados para a nuvem, não é possível garantir a privacidade absoluta dos dados",
+        "ru-RU": "Необходимо загрузить данные в облако, невозможно гарантировать абсолютную конфиденциальность данных",
+        "ja-JP": "データをクラウドにアップロードする必要があり、絶対的なデータプライバシーを保証できない",
+        "de-DE": "Daten müssen in die Cloud hochgeladen werden, absolute Datensicherheit kann nicht garantiert werden",
+        "fr-FR": "Nécessite le téléchargement des données vers le cloud, impossible de garantir l'intégralité de la confidentialité des données",
+        "ko-KR": "데이터를 클라우드에 업로드해야 하므로 절대적인 데이터 프라이버시를 보장할 수 없음",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(5384-5410)"
+        ],
+        "$id": 2710
+    },
+    "继续": {
+        "en-US": "Continue",
+        "es-ES": "Continuar\r",
+        "ar-EG": "متابعة",
+        "pt-PT": "Continuar\r",
+        "ru-RU": "Продолжить\r",
+        "ja-JP": "続行",
+        "de-DE": "Weiter\r",
+        "fr-FR": "Continuer\r",
+        "ko-KR": "계속",
+        "$files": [
+            "renderer/components/welcome/ModelModeSelectionStep.tsx(6599-6605)",
+            "renderer/components/welcome/ModelSelectionStep.tsx(15579-15585)",
+            "renderer/components/welcome/ModelStorageStep.tsx(4600-4606)",
+            "renderer/components/welcome/OllamaInstallStep.tsx(12387-12393)",
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(13255-13261)",
+            "renderer/components/welcome/WelcomeStep1.tsx(4951-4957)"
+        ],
+        "$id": 4583
+    },
+    "获取模型信息失败，请稍后重试": {
+        "en-US": "Failed to get model information, please try again later",
+        "es-ES": "Error al obtener la información del modelo, por favor reintente más tarde",
+        "ar-EG": "فشل الحصول على معلومات النموذج، يرجى إعادة المحاولة لاحقاً",
+        "pt-PT": "Falha ao obter informações do modelo, tente novamente mais tarde",
+        "ru-RU": "Не удалось получить информацию о модели, повторите попытку позже",
+        "ja-JP": "モデル情報の取得に失敗しました。しばらくしてから再試行してください。",
+        "de-DE": "Modellinfo-Abfrage fehlgeschlagen, bitte versuchen Sie es später erneut",
+        "fr-FR": "Échec de l'obtention des informations du modèle, veuillez réessayer plus tard",
+        "ko-KR": "모델 정보 가져오기 실패, 잠시 후 다시 시도하십시오",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(3935-3953)"
+        ],
+        "$id": 4556
+    },
+    "保存模型选择失败，请稍后重试": {
+        "en-US": "Failed to save model selection, please try again later",
+        "es-ES": "Error al guardar la selección del modelo, por favor reintente más tarde",
+        "ar-EG": "فشل حفظ اختيار النموذج، يرجى إعادة المحاولة لاحقاً",
+        "pt-PT": "Falha ao guardar seleção do modelo, tente novamente mais tarde",
+        "ru-RU": "Не удалось сохранить выбор модели, повторите попытку позже",
+        "ja-JP": "モデル選択の保存に失敗しました。しばらくしてから再試行してください。",
+        "de-DE": "Modellauswahl konnte nicht gespeichert werden, bitte versuchen Sie es später erneut",
+        "fr-FR": "Échec de l'enregistrement de la sélection du modèle, veuillez réessayer plus tard",
+        "ko-KR": "모델 선택 저장 실패, 잠시 후 다시 시도하십시오",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(5061-5079)"
+        ],
+        "$id": 4557
+    },
+    "極快": {
+        "en-US": "Extremely Fast",
+        "es-ES": "Extremadamente rápido",
+        "ar-EG": "الأسرع",
+        "pt-PT": "Extremamente rápido",
+        "ru-RU": "Сверхбыстрый",
+        "ja-JP": "非常に速い",
+        "de-DE": "Extrem schnell",
+        "fr-FR": "Très rapide",
+        "ko-KR": "매우 빠름",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(5262-5268)"
+        ],
+        "$id": 4558
+    },
+    "快速": {
+        "en-US": "Fast",
+        "es-ES": "Rápido",
+        "ar-EG": "سريع",
+        "pt-PT": "Rápido",
+        "ru-RU": "Быстрый",
+        "ja-JP": "高速",
+        "de-DE": "Schnell",
+        "fr-FR": "Rapide",
+        "ko-KR": "빠름",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(5297-5303)"
+        ],
+        "$id": 4559
+    },
+    "中等": {
+        "en-US": "Medium",
+        "es-ES": "Medio",
+        "ar-EG": "متوسط",
+        "pt-PT": "Médio",
+        "ru-RU": "Средний",
+        "ja-JP": "中程度",
+        "de-DE": "Mittel",
+        "fr-FR": "Moyen",
+        "ko-KR": "중간",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(5334-5340)"
+        ],
+        "$id": 4560
+    },
+    "缓慢": {
+        "en-US": "Slow",
+        "es-ES": "Lento",
+        "ar-EG": "بطيء",
+        "pt-PT": "Lento",
+        "ru-RU": "Медленный",
+        "ja-JP": "低速",
+        "de-DE": "Langsam",
+        "fr-FR": "Lent",
+        "ko-KR": "느림",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(5369-5375)"
+        ],
+        "$id": 4561
+    },
+    "正在加载模型信息...": {
+        "en-US": "Loading model information...",
+        "es-ES": "Cargando información del modelo...",
+        "ar-EG": "جاري تحميل معلومات النموذج...",
+        "pt-PT": "A carregar informações do modelo...",
+        "ru-RU": "Загрузка информации о модели...",
+        "ja-JP": "モデル情報を読み込んでいます...",
+        "de-DE": "Modellinformationen werden geladen...",
+        "fr-FR": "Chargement des informations du modèle…",
+        "ko-KR": "모델 정보 로드 중...",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(5845-5860)"
+        ],
+        "$id": 4562
+    },
+    "正在检测硬件信息...": {
+        "en-US": "Detecting hardware information...",
+        "es-ES": "Detectando información del hardware...",
+        "ar-EG": "جاري اكتشاف معلومات الأجهزة...",
+        "pt-PT": "A detetar informações de hardware...",
+        "ru-RU": "Обнаружение информации об оборудовании...",
+        "ja-JP": "ハードウェア情報を検出中です...",
+        "de-DE": "Hardware-Informationen werden erkannt...",
+        "fr-FR": "Détection des informations matérielles en cours...",
+        "ko-KR": "하드웨어 정보를 감지 중입니다...",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(6430-6445)"
+        ],
+        "$id": 3291
+    },
+    "请稍候，这可能需要几秒钟": {
+        "en-US": "Please wait, this may take a few seconds",
+        "es-ES": "Por favor, espere, esto podría tardar unos segundos",
+        "ar-EG": "يرجى الانتظار، قد يستغرق هذا بضع ثوانٍ",
+        "pt-PT": "Aguarde, isto pode demorar alguns segundos",
+        "ru-RU": "Пожалуйста, подождите, это может занять несколько секунд",
+        "ja-JP": "しばらくお待ちください。数秒かかる場合があります。",
+        "de-DE": "Bitte warten Sie, dies kann einige Sekunden dauern.",
+        "fr-FR": "Veuillez patienter, cela peut prendre quelques secondes",
+        "ko-KR": "잠시만 기다려 주십시오. 몇 초 정도 소요될 수 있습니다.",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(6504-6520)"
+        ],
+        "$id": 3292
+    },
+    "重试": {
+        "en-US": "Retry",
+        "es-ES": "Reintentar",
+        "ar-EG": "إعادة المحاولة",
+        "pt-PT": "Tentar novamente",
+        "ru-RU": "Повторите попытку",
+        "ja-JP": "再試行",
+        "de-DE": "Erneut versuchen",
+        "fr-FR": "Réessayer",
+        "ko-KR": "다시 시도",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(7000-7006)",
+            "renderer/components/welcome/OllamaInstallStep.tsx(10684-10690)",
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(5162-5168)",
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(6032-6038)"
+        ],
+        "$id": 4563
+    },
+    "为您硬件推荐的模型": {
+        "en-US": "Models recommended for your hardware",
+        "es-ES": "Modelo recomendado para su hardware",
+        "ar-EG": "النموذج الموصى به لجهازك",
+        "pt-PT": "Modelo recomendado para o seu hardware",
+        "ru-RU": "Модель, рекомендованная для вашего оборудования",
+        "ja-JP": "ハードウェアにおすすめのモデル",
+        "de-DE": "Für Ihre Hardware empfohlenes Modell",
+        "fr-FR": "Modèle recommandé pour votre matériel",
+        "ko-KR": "귀하의 하드웨어에 추천하는 모델",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(7536-7549)"
+        ],
+        "$id": 4564
+    },
+    "根据您的设备性能选择要安装的模型": {
+        "en-US": "Choose which model to install based on your device's performance",
+        "es-ES": "Seleccione el modelo a instalar según el rendimiento de su dispositivo",
+        "ar-EG": "اختر النموذج المراد تثبيته وفقًا لأداء جهازك",
+        "pt-PT": "Selecione o modelo a instalar com base no desempenho do seu dispositivo",
+        "ru-RU": "Выберите модель для установки в соответствии с производительностью вашего устройства",
+        "ja-JP": "お使いのデバイスの性能に合わせてインストールするモデルを選択してください",
+        "de-DE": "Wählen Sie das zu installierende Modell entsprechend der Leistung Ihres Geräts",
+        "fr-FR": "Choisissez le modèle à installer selon les performances de votre appareil",
+        "ko-KR": "귀하의 장치 성능에 따라 설치할 모델 선택",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(7608-7628)"
+        ],
+        "$id": 4565
+    },
+    "您的硬件信息": {
+        "en-US": "Your Hardware Information",
+        "es-ES": "Su información de hardware",
+        "ar-EG": "معلومات جهازك",
+        "pt-PT": "Informações do seu hardware",
+        "ru-RU": "Информация о вашем оборудовании",
+        "ja-JP": "ハードウェア情報",
+        "de-DE": "Ihre Hardwareinformationen",
+        "fr-FR": "Vos informations matérielles",
+        "ko-KR": "귀하의 하드웨어 정보",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(7908-7918)"
+        ],
+        "$id": 4566
+    },
+    "GPU支持": {
+        "en-US": "GPU Support",
+        "es-ES": "Compatibilidad con GPU",
+        "ar-EG": "دعم وحدة المعالجة الرسومية",
+        "pt-PT": "Suporte de GPU",
+        "ru-RU": "Поддержка GPU",
+        "ja-JP": "GPU対応",
+        "de-DE": "GPU-Unterstützung",
+        "fr-FR": "Prise en charge du GPU",
+        "ko-KR": "GPU 지원",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(8146-8155)",
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(6776-6785)"
+        ],
+        "$id": 4567
+    },
+    "是": {
+        "en-US": "Yes",
+        "es-ES": "Sí",
+        "ar-EG": "نعم",
+        "pt-PT": "Sim",
+        "ru-RU": "Да",
+        "ja-JP": "はい",
+        "de-DE": "Ja",
+        "fr-FR": "Oui",
+        "ko-KR": "예",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(8432-8437)"
+        ],
+        "$id": 4568
+    },
+    "否": {
+        "en-US": "No",
+        "es-ES": "No",
+        "ar-EG": "لا",
+        "pt-PT": "Não",
+        "ru-RU": "Нет",
+        "ja-JP": "いいえ",
+        "de-DE": "Nein",
+        "fr-FR": "Non",
+        "ko-KR": "아니요",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(8470-8475)"
+        ],
+        "$id": 4569
+    },
+    "显存": {
+        "en-US": "Video Memory",
+        "es-ES": "Memoria de vídeo",
+        "ar-EG": "ذاكرة الفيديو",
+        "pt-PT": "Memória de vídeo",
+        "ru-RU": "Видеопамять",
+        "ja-JP": "ビデオメモリ",
+        "de-DE": "Grafikspeicher",
+        "fr-FR": "Mémoire vidéo",
+        "ko-KR": "비디오 메모리",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(8668-8674)",
+            "renderer/components/welcome/ModelSelectionStep.tsx(11613-11619)"
+        ],
+        "$id": 4570
+    },
+    "检测中...": {
+        "en-US": "Detecting...",
+        "es-ES": "Detectando...",
+        "ar-EG": "جارٍ الكشف...",
+        "pt-PT": "A detetar...\r",
+        "ru-RU": "Идет проверка...\r",
+        "ja-JP": "検出中…",
+        "de-DE": "Wird erkannt...\r",
+        "fr-FR": "Détection en cours...\r",
+        "ko-KR": "감지 중...",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(9007-9017)",
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(7594-7604)"
+        ],
+        "$id": 4571
+    },
+    "无独立显存": {
+        "en-US": "No dedicated video memory",
+        "es-ES": "No hay memoria gráfica dedicada\r",
+        "ar-EG": "لا يوجد ذاكرة فيديو مخصصة",
+        "pt-PT": "Sem memória gráfica dedicada\r",
+        "ru-RU": "Нет отдельной видеопамяти\r",
+        "ja-JP": "独立したビデオメモリがありません",
+        "de-DE": "Kein dedizierter Grafikspeicher\r",
+        "fr-FR": "Aucune mémoire vidéo dédiée\r",
+        "ko-KR": "독립형 비디오 메모리 없음",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(9049-9058)",
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(7636-7645)"
+        ],
+        "$id": 4572
+    },
+    "存储空间": {
+        "en-US": "Storage space",
+        "es-ES": "Espacio de almacenamiento\r",
+        "ar-EG": "مساحة التخزين",
+        "pt-PT": "Espaço de armazenamento\r",
+        "ru-RU": "Хранилище\r",
+        "ja-JP": "ストレージスペース",
+        "de-DE": "Speicherplatz\r",
+        "fr-FR": "Espace de stockage\r",
+        "ko-KR": "저장 공간",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(9251-9259)"
+        ],
+        "$id": 4573
+    },
+    "可用": {
+        "en-US": "Available",
+        "es-ES": "Disponible\r",
+        "ar-EG": "متاح",
+        "pt-PT": "Disponível\r",
+        "ru-RU": "Доступно\r",
+        "ja-JP": "利用可能",
+        "de-DE": "Verfügbar\r",
+        "fr-FR": "Disponible\r",
+        "ko-KR": "사용 가능",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(9424-9430)"
+        ],
+        "$id": 4574
+    },
+    "未知": {
+        "en-US": "Unknown",
+        "es-ES": "Desconocido\r",
+        "ar-EG": "غير معروف",
+        "pt-PT": "Desconhecido\r",
+        "ru-RU": "Неизвестно\r",
+        "ja-JP": "不明",
+        "de-DE": "Unbekannt\r",
+        "fr-FR": "Inconnu\r",
+        "ko-KR": "알 수 없음",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(9436-9442)",
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(8018-8024)"
+        ],
+        "$id": 4575
+    },
+    "显存不足": {
+        "en-US": "Insufficient video memory",
+        "es-ES": "Memoria de vídeo insuficiente",
+        "ar-EG": "ذاكرة الفيديو غير كافية",
+        "pt-PT": "Memória de vídeo insuficiente",
+        "ru-RU": "Недостаточно видеопамяти",
+        "ja-JP": "ビデオメモリが不足しています",
+        "de-DE": "Nicht genügend Videospeicher",
+        "fr-FR": "Mémoire vidéo insuffisante",
+        "ko-KR": "비디오 메모리 부족",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(10409-10417)"
+        ],
+        "$id": 3293
+    },
+    "您的显存小于2GB，无法使用本地模式。建议返回上一步选择云端AI服务。": {
+        "en-US": "Your video memory is less than 2GB and local mode cannot be used. It is recommended to go back to the previous step and choose the cloud AI service.",
+        "es-ES": "Su memoria de vídeo es inferior a 2 GB; no se puede utilizar el modo local. Se recomienda volver al paso anterior y seleccionar un servicio de IA en la nube.",
+        "ar-EG": "ذاكرة الفيديو لديك أقل من 2 جيجابايت، لذا لا يمكن استخدام الوضع المحلي. نوصي بالعودة إلى الخطوة السابقة واختيار خدمة الذكاء الاصطناعي السحابية.",
+        "pt-PT": "A sua memória de vídeo é inferior a 2 GB, o que impede a utilização do modo local. Recomenda-se voltar ao passo anterior e selecionar o serviço de IA na nuvem.",
+        "ru-RU": "Объем вашей видеопамяти менее 2 ГБ, использование локального режима невозможно. Рекомендуется вернуться на предыдущий шаг и выбрать облачный сервис ИИ.",
+        "ja-JP": "お客様のビデオメモリが 2GB 未満のため、ローカルモードは使用できません。前のステップに戻り、クラウド AI サービスの選択を推奨します。",
+        "de-DE": "Ihr Videospeicher ist kleiner als 2 GB, der lokale Modus kann nicht verwendet werden. Es wird empfohlen, zum vorherigen Schritt zurückzukehren und einen Cloud-KI-Dienst auszuwählen.",
+        "fr-FR": "Votre mémoire vidéo est inférieure à 2 Go, l'utilisation du mode local est impossible. Il est recommandé de revenir à l'étape précédente pour sélectionner un service d'IA dans le cloud.",
+        "ko-KR": "비디오 메모리가 2GB 미만이라 로컬 모드를 사용할 수 없습니다. 이전 단계로 돌아가 클라우드 AI 서비스를 선택하는 것이 좋습니다.",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(10522-10561)"
+        ],
+        "$id": 3294
+    },
+    "模型名称": {
+        "en-US": "Model name",
+        "es-ES": "Nombre del modelo\r",
+        "ar-EG": "اسم النموذج",
+        "pt-PT": "Nome do modelo\r",
+        "ru-RU": "Название модели\r",
+        "ja-JP": "モデル名",
+        "de-DE": "Modellname\r",
+        "fr-FR": "Nom du modèle\r",
+        "ko-KR": "모델 이름",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(11452-11460)"
+        ],
+        "$id": 4578
+    },
+    "性能": {
+        "en-US": "Performance",
+        "es-ES": "Rendimiento\r",
+        "ar-EG": "الأداء",
+        "pt-PT": "Desempenho\r",
+        "ru-RU": "Производительность\r",
+        "ja-JP": "パフォーマンス",
+        "de-DE": "Leistung\r",
+        "fr-FR": "Performances\r",
+        "ko-KR": "성능",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(11790-11796)"
+        ],
+        "$id": 4579
+    },
+    "功能": {
+        "en-US": "Features",
+        "es-ES": "Funciones\r",
+        "ar-EG": "الميزات",
+        "pt-PT": "Funções\r",
+        "ru-RU": "Функция\r",
+        "ja-JP": "機能",
+        "de-DE": "Funktionen\r",
+        "fr-FR": "Fonctionnalités\r",
+        "ko-KR": "기능",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(11949-11955)"
+        ],
+        "$id": 4580
+    },
+    "推荐理由": {
+        "en-US": "Recommendation reason",
+        "es-ES": "Motivo de recomendación\r",
+        "ar-EG": "سبب التوصية",
+        "pt-PT": "Motivo da recomendação\r",
+        "ru-RU": "Рекомендация\r",
+        "ja-JP": "推奨理由",
+        "de-DE": "Empfehlungsgründe\r",
+        "fr-FR": "Raisons de recommandation\r",
+        "ko-KR": "추천 이유",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(12108-12116)"
+        ],
+        "$id": 4581
+    },
+    "推荐": {
+        "en-US": "Recommended",
+        "es-ES": "Recomendar\r",
+        "ar-EG": "موصى به",
+        "pt-PT": "Recomendado\r",
+        "ru-RU": "Рекомендовать\r",
+        "ja-JP": "推奨",
+        "de-DE": "Empfehlen\r",
+        "fr-FR": "Recommandé\r",
+        "ko-KR": "추천",
+        "$files": [
+            "renderer/components/welcome/ModelSelectionStep.tsx(13933-13939)",
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(11014-11020)"
+        ],
+        "$id": 4582
+    },
+    "请选择有效的模型存储目录。": {
+        "en-US": "Please select a valid model storage directory.",
+        "es-ES": "Por favor, seleccione un directorio válido para almacenar los modelos.\r",
+        "ar-EG": "يرجى اختيار مجلد تخزين نموذج صالح.",
+        "pt-PT": "Por favor selecione uma pasta válida para armazenamento do modelo\r",
+        "ru-RU": "Пожалуйста, выберите действительный каталог хранения моделей.\r",
+        "ja-JP": "有効なモデルストレージディレクトリを選択してください",
+        "de-DE": "Bitte wählen Sie ein gültiges Modell-Speicherverzeichnis aus\r",
+        "fr-FR": "Veuillez sélectionner un répertoire de stockage de modèle valide.\r",
+        "ko-KR": "유효한 모델 저장 디렉터리를 선택하십시오",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(1755-1772)",
+            "renderer/components/welcome/ModelStorageStep.tsx(1910-1927)",
+            "renderer/components/welcome/ModelStorageStep.tsx(2144-2161)"
+        ],
+        "$id": 4585
+    },
+    "选择模型存储目录": {
+        "en-US": "Select model storage directory",
+        "es-ES": "Seleccionar directorio de almacenamiento de modelos\r",
+        "ar-EG": "اختيار مجلد تخزين النموذج",
+        "pt-PT": "Escolha pasta de armazenamento do modelo\r",
+        "ru-RU": "Выберите каталог хранения моделей\r",
+        "ja-JP": "モデル保存ディレクトリの選択",
+        "de-DE": "Modell-Speicherverzeichnis auswählen\r",
+        "fr-FR": "Sélectionnez le répertoire de stockage du modèle\r",
+        "ko-KR": "모델 저장 디렉터리 선택",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(2602-2614)"
+        ],
+        "$id": 4586
+    },
+    "建议使用剩余空间充足且读写稳定的磁盘目录，以保证模型加载速度。": {
+        "en-US": "It is recommended to use a disk directory with ample remaining space and stable read/write performance to ensure model loading speed.",
+        "es-ES": "Se recomienda usar un directorio de disco con suficiente espacio libre y estable en lectura/escritura, para garantizar la velocidad de carga del modelo.\r",
+        "ar-EG": "يُوصى باستخدام مجلد على قرص يحتوي على مساحة فارغة كافية ويتميز باستقرار عالٍ في القراءة والكتابة، لضمان سرعة تحميل النموذج.",
+        "pt-PT": "Recomenda-se utilizar um diretório de disco com espaço livre suficiente e com leitura/gravação estável, para garantir a velocidade de carregamento do modelo\r",
+        "ru-RU": "Рекомендуется использовать диск с достаточным свободным местом и стабильной скоростью чтения/записи для обеспечения скорости загрузки модели.\r",
+        "ja-JP": "モデル読み込み速度を確保するため、空き容量が十分で読み書きが安定したディスクディレクトリの使用を推奨します",
+        "de-DE": "Es wird empfohlen, ein Laufwerk mit ausreichend freiem Speicherplatz und stabiler Leseschreibgeschwindigkeit zu verwenden, um die Modellladezeiten zu gewährleisten\r",
+        "fr-FR": "Il est recommandé d'utiliser un répertoire de disque possédant suffisamment d'espace libre et une vitesse de lecture/écriture stable afin de garantir la rapidité du chargement du modèle.\r",
+        "ko-KR": "모델 로딩 속도를 보장하기 위해 여유 공간이 충분하고 읽기/쓰기 성능이 안정적인 디스크 디렉터리를 사용하는 것이 좋습니다",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(2673-2708)"
+        ],
+        "$id": 4587
+    },
+    "模型存储路径": {
+        "en-US": "Model storage path",
+        "es-ES": "Ruta de almacenamiento del modelo\r",
+        "ar-EG": "مسار تخزين النموذج",
+        "pt-PT": "Caminho de armazenamento do modelo\r",
+        "ru-RU": "Путь к хранилищу модели\r",
+        "ja-JP": "モデル保存パス",
+        "de-DE": "Modell-Speicherpfad\r",
+        "fr-FR": "Chemin de stockage du modèle\r",
+        "ko-KR": "모델 저장 경로",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(3009-3019)"
+        ],
+        "$id": 4588
+    },
+    "例如 D:\\\\AI-Models": {
+        "en-US": "For example, D:\\\\AI-Models",
+        "es-ES": "Por ejemplo D:\\\\AI-Models",
+        "ar-EG": "مثل D:\\\\AI-Models",
+        "pt-PT": "Por exemplo, D:\\\\AI-Models",
+        "ru-RU": "Например D:\\\\AI-Models",
+        "ja-JP": "例：D:\\\\AI-Models",
+        "de-DE": "Zum Beispiel D:\\\\AI-Models",
+        "fr-FR": "Par exemple D:\\\\AI-Models",
+        "ko-KR": "예: D:\\\\AI-Models",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(3375-3395)"
+        ],
+        "$id": 4589
+    },
+    "浏览": {
+        "en-US": "Browse",
+        "es-ES": "Navegar",
+        "ar-EG": "تصفح  ",
+        "pt-PT": "Navegar",
+        "ru-RU": "Просмотр",
+        "ja-JP": "閲覧",
+        "de-DE": "Durchsuchen",
+        "fr-FR": "Parcourir",
+        "ko-KR": "찾아보기",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(3553-3559)"
+        ],
+        "$id": 4590
+    },
+    "模型文件体积较大，继续之前请确认该磁盘拥有足够的可用空间。": {
+        "en-US": "The model file is large in size, please ensure the disk has sufficient available space before continuing.",
+        "es-ES": "El archivo del modelo es voluminoso, asegúrese de que el disco dispone de suficiente espacio libre antes de continuar.",
+        "ar-EG": "حجم ملف النموذج كبير، يُرجى التأكد من توفر مساحة كافية على القرص قبل المتابعة.  ",
+        "pt-PT": "O ficheiro do modelo é volumoso; antes de continuar, confirme que este disco tem espaço suficiente disponível.",
+        "ru-RU": "Объем файлов модели довольно большой, перед тем, как продолжить, убедитесь в наличии достаточного количества свободного места на диске.",
+        "ja-JP": "モデルファイルは容量が大きいため、続行する前にこのディスクに十分な空き容量があることを確認してください。",
+        "de-DE": "Modelldateien sind groß. Bitte stellen Sie vor dem Fortfahren sicher, dass die Festplatte über ausreichend freien Speicherplatz verfügt.",
+        "fr-FR": "Le fichier du modèle est volumineux, veuillez vérifier que le disque dispose d'un espace suffisant avant de continuer.",
+        "ko-KR": "모델 파일 용량이 크므로, 계속하기 전에 해당 디스크에 충분한 여유 공간이 있는지 확인하십시오.",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(3682-3715)"
+        ],
+        "$id": 4591
+    },
+    "存储建议": {
+        "en-US": "Storage Recommendation",
+        "es-ES": "Sugerencias de almacenamiento",
+        "ar-EG": "توصيات التخزين  ",
+        "pt-PT": "Sugestão de armazenamento",
+        "ru-RU": "Рекомендации по хранению",
+        "ja-JP": "ストレージの推奨",
+        "de-DE": "Speicherempfehlung",
+        "fr-FR": "Suggestions de stockage",
+        "ko-KR": "저장 권장 사항",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(3995-4003)"
+        ],
+        "$id": 4592
+    },
+    "不同模型可能占用 2-8GB 甚至更多空间。": {
+        "en-US": "Different models may occupy 2-8GB or even more space.",
+        "es-ES": "Diferentes modelos pueden ocupar entre 2 y 8 GB o incluso más.",
+        "ar-EG": "قد يستهلك كل نموذج ما بين 2-8 جيجابايت أو أكثر من المساحة.  ",
+        "pt-PT": "Diferentes modelos podem ocupar de 2 a 8 GB ou até mais espaço.",
+        "ru-RU": "Разные модели могут занимать от 2 до 8 Гб и даже больше.",
+        "ja-JP": "モデルによっては2GB〜8GB、またはそれ以上の容量を占有する可能性があります。",
+        "de-DE": "Verschiedene Modelle können 2-8 GB oder sogar mehr Speicherplatz benötigen.",
+        "fr-FR": "Les différents modèles peuvent occuper 2 à 8 Go ou davantage.",
+        "ko-KR": "다양한 모델은 2~8GB 이상의 공간을 차지할 수 있습니다.",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(4121-4147)"
+        ],
+        "$id": 4593
+    },
+    "优先选择 SSD，可显著提升模型加载与推理速度。": {
+        "en-US": "Priority selection of SSD can significantly improve model loading and inference speed.",
+        "es-ES": "Prefiera SSD, ya que puede mejorar notablemente la velocidad de carga del modelo y la de inferencia.",
+        "ar-EG": "يُفضَّل اختيار محرك الأقراص ذو الحالة الصلبة (SSD)، إذ يمكنه تحسين سرعة تحميل النموذج والاستدلال بشكل ملحوظ.  ",
+        "pt-PT": "Dê preferência a um disco SSD, pois pode melhorar significativamente a velocidade de carregamento e inferência do modelo.",
+        "ru-RU": "Отдавайте предпочтение SSD, для значительного повышения скорости загрузки и вывода модели.",
+        "ja-JP": "SSDを優先的に選択すると、モデルのロードおよび推論速度が大幅に向上します。",
+        "de-DE": "Bevorzugen Sie SSDs, da diese die Lade- und Inferenzgeschwindigkeit des Modells erheblich verbessern.",
+        "fr-FR": "Préférez un SSD, cela permet d'améliorer considérablement la vitesse de chargement et d'inférence du modèle.",
+        "ko-KR": "SSD를 우선적으로 선택하면 모델 로딩 및 추론 속도를 현저히 높일 수 있습니다.",
+        "$files": [
+            "renderer/components/welcome/ModelStorageStep.tsx(4181-4209)"
+        ],
+        "$id": 4594
+    },
+    "正在安装 Ollama...": {
+        "en-US": "Installing Ollama...",
+        "es-ES": "Instalando Ollama...",
+        "ar-EG": "جاري تثبيت Ollama...",
+        "pt-PT": "A instalar o Ollama...",
+        "ru-RU": "Установка Ollama...",
+        "ja-JP": "Ollamaをインストールしています...",
+        "de-DE": "Ollama wird installiert...",
+        "fr-FR": "Installation d'Ollama en cours...",
+        "ko-KR": "Ollama 설치 중...",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(2395-2413)",
+            "renderer/components/welcome/OllamaInstallStep.tsx(8495-8513)"
+        ],
+        "$id": 2817
+    },
+    "正在安装...": {
+        "en-US": "Installing...",
+        "es-ES": "Instalando...",
+        "ar-EG": "جاري التثبيت...",
+        "pt-PT": "A instalar...",
+        "ru-RU": "Установка...",
+        "ja-JP": "インストール中...",
+        "de-DE": "Wird installiert...",
+        "fr-FR": "Installation en cours...",
+        "ko-KR": "설치 중...",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(2612-2623)"
+        ],
+        "$id": 2818
+    },
+    "安装完成，重启应用后即可使用": {
+        "en-US": "Installation completed, restart the application to use",
+        "es-ES": "Instalación completada, reinicia la aplicación para usarla",
+        "ar-EG": "اكتمل التثبيت، يمكنك الاستخدام بعد إعادة تشغيل التطبيق",
+        "pt-PT": "Instalação concluída, reinicie a aplicação para utilização",
+        "ru-RU": "Установка завершена, после перезапуска приложения можно использовать",
+        "ja-JP": "インストールが完了しました。アプリを再起動するとご利用いただけます",
+        "de-DE": "Installation abgeschlossen, nach einem Neustart der Anwendung kann es verwendet werden",
+        "fr-FR": "Installation terminée, vous pourrez l'utiliser après avoir redémarré l'application",
+        "ko-KR": "설치 완료, 앱을 재시작하면 사용 가능",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(2844-2862)"
+        ],
+        "$id": 2819
+    },
+    "安装失败": {
+        "en-US": "Installation failed",
+        "es-ES": "Error en la instalación",
+        "ar-EG": "فشل التثبيت",
+        "pt-PT": "Falha na instalação",
+        "ru-RU": "Установка не удалась",
+        "ja-JP": "インストールに失敗しました",
+        "de-DE": "Installation fehlgeschlagen",
+        "fr-FR": "Échec de l'installation",
+        "ko-KR": "설치 실패",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(3117-3125)",
+            "renderer/components/welcome/OllamaInstallStep.tsx(4370-4378)",
+            "renderer/components/welcome/OllamaInstallStep.tsx(10322-10330)"
+        ],
+        "$id": 2820
+    },
+    "正在检测 Ollama 安装状态...": {
+        "en-US": "Detecting Ollama installation status...",
+        "es-ES": "Detectando el estado de instalación de Ollama...",
+        "ar-EG": "جاري الكشف عن حالة تثبيت Ollama...",
+        "pt-PT": "A detetar o estado de instalação do Ollama...",
+        "ru-RU": "Проверка статуса установки Ollama...",
+        "ja-JP": "Ollamaのインストール状態を確認しています...",
+        "de-DE": "Ollama-Installationsstatus wird überprüft...",
+        "fr-FR": "Vérification de l'état d'installation d'Ollama en cours...",
+        "ko-KR": "Ollama 설치 상태 확인 중...",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(5175-5198)"
+        ],
+        "$id": 2821
+    },
+    "安装 AI 引擎": {
+        "en-US": "Install AI Engine",
+        "es-ES": "Instalar motor de IA",
+        "ar-EG": "تثبيت محرك الذكاء الاصطناعي",
+        "pt-PT": "Instalar motor de IA",
+        "ru-RU": "Установить ИИ движок",
+        "ja-JP": "AIエンジンをインストール",
+        "de-DE": "KI-Engine installieren",
+        "fr-FR": "Installer le moteur IA",
+        "ko-KR": "AI 엔진 설치",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(5631-5643)"
+        ],
+        "$id": 2822
+    },
+    "本应用需要社区知名开源AI引擎 Ollama 作为本地服务来处理文件分析任务": {
+        "en-US": "This application requires the well-known open-source AI engine Ollama as a local service to process file analysis tasks",
+        "es-ES": "Esta aplicación requiere el motor de IA de código abierto reconocido por la comunidad Ollama como servicio local para procesar tareas de análisis de documentos",
+        "ar-EG": "هذا التطبيق يحتاج إلى محرك الذكاء الاصطناعي مفتوح المصدر الشهير في المجتمع Ollama كخدمة محلية لمعالجة مهام تحليل الملفات",
+        "pt-PT": "Esta aplicação necessita do motor de IA de código aberto conhecido na comunidade Ollama como serviço local para processar tarefas de análise de ficheiros",
+        "ru-RU": "Для работы приложения требуется известный открытый AI-движок Ollama в качестве локального сервиса для обработки задач анализа файлов",
+        "ja-JP": "本アプリケーションは、ファイル分析タスクを処理するために、コミュニティで有名なオープンソースAIエンジンOllamaをローカルサービスとして必要とします",
+        "de-DE": "Diese Anwendung benötigt die bekannte Open-Source-KI-Engine Ollama der Community als lokalen Dienst zur Verarbeitung von Dateianalysen.",
+        "fr-FR": "Cette application nécessite le moteur open-source renommé Ollama en tant que service local pour traiter les tâches d'analyse de fichiers.",
+        "ko-KR": "이 애플리케이션은 로컬 서비스로 커뮤니티의 유명한 오픈소스 AI 엔진 Ollama을 필요로 하며, 파일 분석 작업을 처리합니다.",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(5716-5758)"
+        ],
+        "$id": 3150
+    },
+    "关于 Ollama": {
+        "en-US": "About Ollama",
+        "es-ES": "Acerca de Ollama",
+        "ar-EG": "عن Ollama",
+        "pt-PT": "Sobre o Ollama",
+        "ru-RU": "О Ollama",
+        "ja-JP": "Ollamaについて",
+        "de-DE": "Über Ollama",
+        "fr-FR": "À propos d'Ollama",
+        "ko-KR": "Ollama 정보",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(5975-5988)"
+        ],
+        "$id": 2824
+    },
+    "本地运行保护隐私": {
+        "en-US": "Run locally to protect privacy",
+        "es-ES": "Ejecución local protege la privacidad",
+        "ar-EG": "التشغيل المحلي يحمي الخصوصية",
+        "pt-PT": "Execução local protege a privacidade",
+        "ru-RU": "Локальный запуск защищает конфиденциальность",
+        "ja-JP": "ローカル実行でプライバシーを保護",
+        "de-DE": "Lokale Ausführung zum Schutz der Privatsphäre",
+        "fr-FR": "Exécution locale protégeant la vie privée",
+        "ko-KR": "로컬 실행으로 개인정보 보호",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(6400-6412)"
+        ],
+        "$id": 2825
+    },
+    "所有数据在本地处理，不会上传到云端": {
+        "en-US": "All data is processed locally and will not be uploaded to the cloud",
+        "es-ES": "Todos los datos se procesan localmente, no se cargarán a la nube",
+        "ar-EG": "يتم معالجة جميع البيانات محليًا، ولن يتم تحميلها إلى السحابة",
+        "pt-PT": "Todos os dados são processados localmente, não são carregados para a nuvem",
+        "ru-RU": "Все данные обрабатываются локально, не загружаются в облако",
+        "ja-JP": "すべてのデータはローカルで処理され、クラウドにアップロードされることはありません",
+        "de-DE": "Alle Daten werden lokal verarbeitet und nicht in die Cloud hochgeladen",
+        "fr-FR": "Toutes les données sont traitées localement, aucune donnée ne sera téléchargée vers le cloud",
+        "ko-KR": "모든 데이터는 로컬에서 처리되며 클라우드에 업로드되지 않습니다",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(6469-6490)"
+        ],
+        "$id": 2826
+    },
+    "多模态支持": {
+        "en-US": "Multimodal support",
+        "es-ES": "Soporte multimodal",
+        "ar-EG": "دعم متعدد الوسائط",
+        "pt-PT": "Suporte multimodal",
+        "ru-RU": "Мультимодальная поддержка",
+        "ja-JP": "マルチモーダル対応",
+        "de-DE": "Multimodale Unterstützung",
+        "fr-FR": "Support multimodal",
+        "ko-KR": "멀티모달 지원",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(6870-6879)"
+        ],
+        "$id": 2827
+    },
+    "支持文本和图像理解，可分析漫画、图片等": {
+        "en-US": "Supports text and image understanding, capable of analyzing comics, images, etc.",
+        "es-ES": "Compatible con comprensión de texto e imágenes, puede analizar cómics, imágenes, etc.",
+        "ar-EG": "يدعم فهم النص والصور، ويمكن تحليل الكوميكس والصور وما إلى ذلك",
+        "pt-PT": "Suporta compreensão de texto e imagens, pode analisar banda desenhada, imagens, etc.",
+        "ru-RU": "Поддержка понимания текста и изображений, можно анализировать комиксы, картинки и т.д.",
+        "ja-JP": "テキストと画像の理解をサポートし、漫画、画像などを解析できます",
+        "de-DE": "Unterstützt Text- und Bildverständnis, kann Comics, Bilder usw. analysieren",
+        "fr-FR": "Prend en charge la compréhension du texte et des images, peut analyser des bandes dessinées, des images, etc.",
+        "ko-KR": "텍스트와 이미지 이해를 지원하여 만화, 사진 등을 분석할 수 있습니다",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(6936-6959)"
+        ],
+        "$id": 2828
+    },
+    "轻量高效": {
+        "en-US": "Lightweight and efficient",
+        "es-ES": "Ligero y eficiente",
+        "ar-EG": "خفيف وفعال",
+        "pt-PT": "Leve e eficiente",
+        "ru-RU": "Легкий и эффективный",
+        "ja-JP": "軽量高效",
+        "de-DE": "Leicht und effizient",
+        "fr-FR": "Léger et efficace",
+        "ko-KR": "가볍고 효율적",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(7339-7347)"
+        ],
+        "$id": 2829
+    },
+    "优化的模型运行效率，低配置也能流畅运行": {
+        "en-US": "Optimized model runtime efficiency, runs smoothly even on low-end configurations",
+        "es-ES": "Eficiencia de ejecución del modelo optimizada, puede funcionar sin problemas incluso con configuraciones bajas",
+        "ar-EG": "كفاءة تشغيل النموذج المحسّن، يمكنه العمل بسلاسة حتى على الأجهزة ضعيفة الإعدادات",
+        "pt-PT": "Eficiência de execução do modelo otimizada, pode ser executado sem problemas mesmo em configurações básicas",
+        "ru-RU": "Оптимизирована эффективность работы модели, низкая конфигурация также может работать плавно",
+        "ja-JP": "最適化されたモデル実行効率、低スペックでもスムーズに動作",
+        "de-DE": "Optimierte Modellausführungseffizienz, auch mit geringer Konfiguration reibungslos ausführbar",
+        "fr-FR": "Efficacité d'exécution du modèle optimisée, fonctionne en douceur même avec une configuration basse",
+        "ko-KR": "최적화된 모델 실행 효율성으로, 저사양에서도 원활하게 실행 가능",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(7404-7427)"
+        ],
+        "$id": 2830
+    },
+    "国内外AI模型安装自动加速": {
+        "en-US": "Automatic acceleration for AI model installation both domestically and internationally",
+        "es-ES": "Instalación automática con aceleración de modelos de IA nacionales y extranjeros",
+        "ar-EG": "تثبيت نماذج الذكاء الاصطناعي المحلية والأجنبية مع تسريع تلقائي",
+        "pt-PT": "Instalação automática com aceleração de modelos de IA nacionais e estrangeiros",
+        "ru-RU": "Автоматическое ускорение установки AI-моделей из Китая и других стран",
+        "ja-JP": "国内外のAIモデルインストール自動加速",
+        "de-DE": "Automatische Beschleunigung der Installation von KI-Modellen im In- und Ausland",
+        "fr-FR": "Installation automatique avec accélération des modèles IA nationaux et étrangers.",
+        "ko-KR": "국내외 AI 모델 설치 자동 가속화",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(7807-7824)"
+        ],
+        "$id": 3151
+    },
+    "支持国内外主流AI模型，安装自动加速，无需手动配置": {
+        "en-US": "Supports major AI models domestically and internationally, with automatic acceleration during installation, no manual configuration required",
+        "es-ES": "Soporta los principales modelos de IA nacionales y extranjeros, instalación automática con aceleración, sin necesidad de configuración manual",
+        "ar-EG": "يدعم النماذج الرئيسية للذكاء الاصطناعي المحلية والأجنبية، التثبيت مع تسريع تلقائي، بدون الحاجة إلى إعداد يدوي",
+        "pt-PT": "Suporta os principais modelos de IA nacionais e estrangeiros, instalação automática com aceleração, sem necessidade de configuração manual",
+        "ru-RU": "Поддержка основных AI-моделей из Китая и других стран, автоматическое ускорение установки без ручной настройки",
+        "ja-JP": "国内外の主要なAIモデルをサポートし、インストール時に自動加速され、手動設定は不要です",
+        "de-DE": "Unterstützt führende KI-Modelle im In- und Ausland, automatische Beschleunigung bei der Installation, keine manuelle Konfiguration erforderlich",
+        "fr-FR": "Prise en charge des principaux modèles IA nationaux et étrangers, installation automatique avec accélération, sans configuration manuelle requise.",
+        "ko-KR": "국내외 주요 AI 모델 지원, 설치 시 자동 가속화, 수동 설정 불필요",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(7881-7910)"
+        ],
+        "$id": 3159
+    },
+    "等待日志输出...": {
+        "en-US": "Waiting for log output...",
+        "es-ES": "Esperando la salida del registro...",
+        "ar-EG": "انتظار إخراج السجل...",
+        "pt-PT": "Aguardando a saída dos registos...",
+        "ru-RU": "Ожидание вывода логов...",
+        "ja-JP": "ログ出力待ち...",
+        "de-DE": "Warten auf Protokollausgabe...",
+        "fr-FR": "En attente de la sortie des logs...",
+        "ko-KR": "로그 출력 대기 중...",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(8910-8923)"
+        ],
+        "$id": 3161
+    },
+    "安装成功！": {
+        "en-US": "Installation successful!",
+        "es-ES": "¡Instalación exitosa!",
+        "ar-EG": "تم التثبيت بنجاح!",
+        "pt-PT": "Instalação concluída com sucesso!",
+        "ru-RU": "Установка успешна!",
+        "ja-JP": "インストール成功！",
+        "de-DE": "Installation erfolgreich!",
+        "fr-FR": "Installation réussie !",
+        "ko-KR": "설치 성공!",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(9689-9698)"
+        ],
+        "$id": 2833
+    },
+    "手动下载": {
+        "en-US": "Manual download",
+        "es-ES": "Descarga manual",
+        "ar-EG": "التنزيل اليدوي",
+        "pt-PT": "Transferir manualmente",
+        "ru-RU": "Ручная загрузка",
+        "ja-JP": "手動ダウンロード",
+        "de-DE": "Manuell herunterladen",
+        "fr-FR": "Téléchargement manuel",
+        "ko-KR": "수동 다운로드",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(10564-10572)"
+        ],
+        "$id": 2834
+    },
+    "了解更多": {
+        "en-US": "Learn more",
+        "es-ES": "Más información",
+        "ar-EG": "معرفة المزيد",
+        "pt-PT": "Saiba mais",
+        "ru-RU": "Узнать больше",
+        "ja-JP": "詳しく見る",
+        "de-DE": "Mehr erfahren",
+        "fr-FR": "En savoir plus",
+        "ko-KR": "더 알아보기",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(11668-11676)"
+        ],
+        "$id": 2835
+    },
+    "开始安装": {
+        "en-US": "Start installation",
+        "es-ES": "Iniciar instalación",
+        "ar-EG": "بدء التثبيت",
+        "pt-PT": "Iniciar instalação",
+        "ru-RU": "Начать установку",
+        "ja-JP": "インストール開始",
+        "de-DE": "Installation starten",
+        "fr-FR": "Commencer l'installation",
+        "ko-KR": "설치 시작",
+        "$files": [
+            "renderer/components/welcome/OllamaInstallStep.tsx(11988-11996)"
+        ],
+        "$id": 2836
+    },
+    "正在连接 Ollama 服务...": {
+        "en-US": "Connecting to Ollama service...",
+        "es-ES": "Conectando al servicio Ollama...",
+        "ar-EG": "جارٍ الاتصال بخدمة Ollama...",
+        "pt-PT": "A ligar ao serviço Ollama...",
+        "ru-RU": "Подключение к службе Ollama...",
+        "ja-JP": "Ollamaサービスに接続中...",
+        "de-DE": "Verbinde mit Ollama-Dienst...",
+        "fr-FR": "Connexion au service Ollama en cours...",
+        "ko-KR": "Ollama 서비스에 연결 중...",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(1257-1278)"
+        ],
+        "$id": 2837
+    },
+    "下载失败，请检查网络连接": {
+        "en-US": "Download failed, please check network connection",
+        "es-ES": "Descarga fallida, por favor verifique la conexión a internet",
+        "ar-EG": "فشل التنزيل، يرجى التحقق من اتصال الشبكة",
+        "pt-PT": "Falha na transferência, verifique a ligação à internet",
+        "ru-RU": "Ошибка загрузки, проверьте сетевое подключение",
+        "ja-JP": "ダウンロード失敗、ネットワーク接続を確認してください",
+        "de-DE": "Download fehlgeschlagen, bitte überprüfen Sie die Netzwerkverbindung",
+        "fr-FR": "Échec du téléchargement, veuillez vérifier la connexion réseau",
+        "ko-KR": "다운로드 실패, 네트워크 연결을 확인해주세요",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(2318-2334)"
+        ],
+        "$id": 2838
+    },
+    "下载模型": {
+        "en-US": "Download model",
+        "es-ES": "Descargar modelo",
+        "ar-EG": "تنزيل النموذج",
+        "pt-PT": "Transferir modelo",
+        "ru-RU": "Загрузить модель",
+        "ja-JP": "モデルをダウンロード",
+        "de-DE": "Modell herunterladen",
+        "fr-FR": "Télécharger le modèle",
+        "ko-KR": "모델 다운로드",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(2926-2934)"
+        ],
+        "$id": 2839
+    },
+    "正在为您准备 AI 模型：{modelId}": {
+        "en-US": "Preparing AI model for you: {modelId}",
+        "es-ES": "Preparando el modelo de IA para usted: {modelId}",
+        "ar-EG": "جارٍ تحضير نموذج الذكاء الاصطناعي بالنسبة لك: {modelId}",
+        "pt-PT": "A preparar o modelo de IA para si: {modelId}",
+        "ru-RU": "Готовим для вас ИИ модель: {modelId}",
+        "ja-JP": "AIモデルを準備中：{modelId}",
+        "de-DE": "Bereite Ihr KI-Modell vor: {modelId}",
+        "fr-FR": "Préparation de votre modèle IA : {modelId}",
+        "ko-KR": "AI 모델 준비 중: {modelId}",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(3002-3028)"
+        ],
+        "$id": 2840
+    },
+    "正在下载中...": {
+        "en-US": "Downloading...",
+        "es-ES": "Descargando...",
+        "ar-EG": "قيد التنزيل...",
+        "pt-PT": "A transferir...",
+        "ru-RU": "Идет загрузка...",
+        "ja-JP": "ダウンロード中...",
+        "de-DE": "Wird heruntergeladen...",
+        "fr-FR": "Téléchargement en cours...",
+        "ko-KR": "다운로드 중...",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(3422-3434)"
+        ],
+        "$id": 2841
+    },
+    "如果下载慢，开启VPN或游戏加速器可以显著改善下载速度": {
+        "en-US": "If the download is slow, enabling a VPN or game accelerator can significantly improve download speed.",
+        "es-ES": "Si la descarga es lenta, activar una VPN o un acelerador de juegos puede mejorar significativamente la velocidad de descarga",
+        "ar-EG": "إذا كان التحميل بطيئًا، فإن تفعيل VPN أو مُسرّع الألعاب يمكن أن يُحسّن سرعة التحميل بشكل ملحوظ.",
+        "pt-PT": "Se a transferência for lenta, ativar a VPN ou um acelerador de jogos pode melhorar significativamente a velocidade de transferência",
+        "ru-RU": "Если скорость загрузки низкая, включение VPN или игрового акселератора может значительно улучшить скорость загрузки",
+        "ja-JP": "ダウンロードが遅い場合、VPNまたはゲームブースターをオンにすると、ダウンロード速度が大幅に改善します",
+        "de-DE": "Wenn das Herunterladen langsam ist, kann das Aktivieren eines VPNs oder eines Spielebeschleunigers die Downloadgeschwindigkeit deutlich verbessern.",
+        "fr-FR": "Si le téléchargement est lent, l'activation d'un VPN ou d'un accélérateur de jeu peut améliorer considérablement la vitesse de téléchargement.",
+        "ko-KR": "다운로드가 느린 경우, VPN이나 게임 부스터를 켜면 다운로드 속도를 크게 개선할 수 있습니다",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(3503-3534)"
+        ],
+        "$id": 3449
+    },
+    "准备中...": {
+        "en-US": "Preparing...",
+        "es-ES": "Preparando...",
+        "ar-EG": "قيد التحضير...",
+        "pt-PT": "A preparar...",
+        "ru-RU": "Подготовка...",
+        "ja-JP": "準備中...",
+        "de-DE": "Vorbereitung läuft...",
+        "fr-FR": "Préparation en cours...",
+        "ko-KR": "준비 중...",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(3703-3713)"
+        ],
+        "$id": 2843
+    },
+    "下载完成！": {
+        "en-US": "Download complete!",
+        "es-ES": "¡Descarga completada!\r",
+        "ar-EG": "تم التنزيل!",
+        "pt-PT": "Download concluído!",
+        "ru-RU": "Загрузка завершена!",
+        "ja-JP": "ダウンロード完了！",
+        "de-DE": "Download abgeschlossen!",
+        "fr-FR": "Téléchargement terminé !",
+        "ko-KR": "다운로드 완료!",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(4314-4323)"
+        ],
+        "$id": 2844
+    },
+    "模型已准备就绪": {
+        "en-US": "Model is ready",
+        "es-ES": "Modelo listo",
+        "ar-EG": "النموذج جاهز الآن",
+        "pt-PT": "Modelo pronto a usar",
+        "ru-RU": "Модель готова к работе",
+        "ja-JP": "モデルの準備が完了しました",
+        "de-DE": "Modell ist bereit",
+        "fr-FR": "Le modèle est prêt",
+        "ko-KR": "모델이 준비되었습니다",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(4387-4398)"
+        ],
+        "$id": 2845
+    },
+    "下载失败": {
+        "en-US": "Download failed",
+        "es-ES": "Descarga fallida",
+        "ar-EG": "فشل التنزيل",
+        "pt-PT": "Falha no download",
+        "ru-RU": "Ошибка загрузки",
+        "ja-JP": "ダウンロード失敗",
+        "de-DE": "Download fehlgeschlagen",
+        "fr-FR": "Échec du téléchargement",
+        "ko-KR": "다운로드 실패",
+        "$files": [
+            "renderer/components/welcome/OllamaModelDownloadStep.tsx(4979-4987)"
+        ],
+        "$id": 2846
+    },
+    "获取模型列表失败": {
+        "en-US": "Failed to get model list",
+        "es-ES": "Error al obtener la lista de modelos",
+        "ar-EG": "فشل الحصول على قائمة النماذج",
+        "pt-PT": "Falha ao obter a lista de modelos",
+        "ru-RU": "Не удалось получить список моделей",
+        "ja-JP": "モデルリストの取得に失敗しました",
+        "de-DE": "Abrufen der Modellliste fehlgeschlagen",
+        "fr-FR": "Échec de la récupération de la liste des modèles",
+        "ko-KR": "모델 목록 가져오기 실패",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(4534-4546)"
+        ],
+        "$id": 2847
+    },
+    "选择 AI 模型": {
+        "en-US": "Select AI Model",
+        "es-ES": "Seleccionar modelo de IA",
+        "ar-EG": "اختر نموذج الذكاء الاصطناعي",
+        "pt-PT": "Selecionar modelo de IA",
+        "ru-RU": "Выбор модели ИИ",
+        "ja-JP": "AIモデルを選択",
+        "de-DE": "KI-Modell auswählen",
+        "fr-FR": "Sélectionner un modèle IA",
+        "ko-KR": "AI 모델 선택",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(5363-5375)"
+        ],
+        "$id": 2848
+    },
+    "根据您的需求选择要安装的 Ollama 模型": {
+        "en-US": "Choose the Ollama model you want to install based on your needs",
+        "es-ES": "Seleccione el modelo Ollama que desea instalar según sus necesidades",
+        "ar-EG": "اختر نموذج Ollama الذي تريد تثبيته وفقًا لاحتياجاتك",
+        "pt-PT": "Escolha o modelo Ollama que deseja instalar conforme as suas necessidades",
+        "ru-RU": "Выберите модель Ollama для установки в соответствии с вашими потребностями",
+        "ja-JP": "必要に応じてインストールするOllamaモデルを選択してください",
+        "de-DE": "Wählen Sie das zu installierende Ollama-Modell entsprechend Ihren Anforderungen aus",
+        "fr-FR": "Sélectionnez le modèle Ollama à installer selon vos besoins",
+        "ko-KR": "설치할 Ollama 모델을 필요에 따라 선택하세요",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(5448-5474)"
+        ],
+        "$id": 2849
+    },
+    "正在检测硬件并加载列表...": {
+        "en-US": "Detecting hardware and loading list...",
+        "es-ES": "Detectando hardware y cargando lista...",
+        "ar-EG": "جارٍ اكتشاف الأجهزة وتحميل القائمة...",
+        "pt-PT": "A detetar hardware e a carregar a lista...",
+        "ru-RU": "Обнаружение оборудования и загрузка списка...",
+        "ja-JP": "ハードウェアを検出中、リストを読み込み中...",
+        "de-DE": "Hardware wird erkannt und Liste wird geladen...",
+        "fr-FR": "Détection du matériel et chargement de la liste en cours...",
+        "ko-KR": "하드웨어를 감지하고 목록을 로드하는 중...",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(5788-5806)"
+        ],
+        "$id": 2850
+    },
+    "您的硬件检测结果": {
+        "en-US": "Your hardware detection result",
+        "es-ES": "Resultado de detección de su hardware",
+        "ar-EG": "نتيجة اكتشاف الأجهزة الخاصة بك",
+        "pt-PT": "Resultado da deteção do seu hardware",
+        "ru-RU": "Результаты обнаружения вашего оборудования",
+        "ja-JP": "ハードウェア検出結果",
+        "de-DE": "Ihre Hardware-Ergebnisse",
+        "fr-FR": "Résultat de la détection de votre matériel",
+        "ko-KR": "귀하의 하드웨어 감지 결과",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(6501-6513)"
+        ],
+        "$id": 2851
+    },
+    "已检测到独立 GPU": {
+        "en-US": "Dedicated GPU detected",
+        "es-ES": "GPU dedicada detectada",
+        "ar-EG": "تم اكتشاف كرت شاشة مستقل",
+        "pt-PT": "GPU dedicada detetada",
+        "ru-RU": "Обнаружен дискретный графический процессор",
+        "ja-JP": "独立GPUを検出しました",
+        "de-DE": "Dedizierte GPU erkannt",
+        "fr-FR": "GPU dédié détecté",
+        "ko-KR": "독립형 GPU가 감지됨",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(7060-7074)"
+        ],
+        "$id": 2852
+    },
+    "未检测到独立 GPU": {
+        "en-US": "No dedicated GPU detected",
+        "es-ES": "No se detectó GPU dedicada",
+        "ar-EG": "لم يتم اكتشاف كرت شاشة مستقل",
+        "pt-PT": "Nenhuma GPU dedicada detetada",
+        "ru-RU": "Дискретный графический процессор не обнаружен",
+        "ja-JP": "独立GPUは検出されませんでした",
+        "de-DE": "Keine dedizierte GPU erkannt",
+        "fr-FR": "Aucun GPU dédié détecté",
+        "ko-KR": "독립형 GPU가 감지되지 않음",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(7107-7121)"
+        ],
+        "$id": 2853
+    },
+    "可用显存": {
+        "en-US": "Available VRAM",
+        "es-ES": "Memoria de video disponible",
+        "ar-EG": "ذاكرة الشاشة المتوفرة",
+        "pt-PT": "Memória disponível",
+        "ru-RU": "Доступная видеопамять",
+        "ja-JP": "利用可能なVRAM",
+        "de-DE": "Verfügbarer VRAM",
+        "fr-FR": "Mémoire vidéo disponible",
+        "ko-KR": "사용 가능한 비디오 메모리",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(7328-7336)"
+        ],
+        "$id": 2854
+    },
+    "内存总量": {
+        "en-US": "Total memory",
+        "es-ES": "Total de memoria",
+        "ar-EG": "إجمالي الذاكرة",
+        "pt-PT": "Total de memória",
+        "ru-RU": "Общий объем памяти",
+        "ja-JP": "メモリ総容量",
+        "de-DE": "Gesamtspeicher",
+        "fr-FR": "Mémoire totale",
+        "ko-KR": "총 메모리량",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(7852-7860)"
+        ],
+        "$id": 2855
+    },
+    "根据硬件为您推荐以下模型：": {
+        "en-US": "Based on your hardware, we recommend the following models:",
+        "es-ES": "Basado en su hardware, le recomendamos los siguientes modelos:",
+        "ar-EG": "نوصي بالتالي بناءً على أجهزتك:",
+        "pt-PT": "Com base no seu hardware, recomendamos os seguintes modelos:",
+        "ru-RU": "На основе вашего оборудования рекомендуем следующие модели:",
+        "ja-JP": "ハードウェアに基づいて以下のモデルを推奨します：",
+        "de-DE": "Basierend auf Ihrer Hardware empfehlen wir die folgenden Modelle:",
+        "fr-FR": "Selon votre matériel, nous vous recommandons les modèles suivants :",
+        "ko-KR": "하드웨어에 따라 다음 모델을 추천합니다:",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(8330-8347)"
+        ],
+        "$id": 2856
+    },
+    "需 {n}GB 显存": {
+        "en-US": "Requires {n}GB VRAM",
+        "es-ES": "Requiere {n}GB de memoria de video",
+        "ar-EG": "يتطلب {n} جيجابايت من ذاكرة الشاشة",
+        "pt-PT": "Requer {n}GB de memória gráfica",
+        "ru-RU": "Требуется {n} ГБ видеопамяти",
+        "ja-JP": "{n}GBのVRAMが必要です",
+        "de-DE": "Benötigt {n}GB VRAM",
+        "fr-FR": "Nécessite {n} Go de mémoire vidéo",
+        "ko-KR": "{n}GB 비디오 메모리 필요",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(10588-10602)"
+        ],
+        "$id": 2857
+    },
+    "硬件不足": {
+        "en-US": "Insufficient hardware",
+        "es-ES": "Hardware insuficiente",
+        "ar-EG": "الأجهزة غير كافية",
+        "pt-PT": "Hardware insuficiente",
+        "ru-RU": "Недостаточно оборудования",
+        "ja-JP": "ハードウェアが不足しています",
+        "de-DE": "Unzureichende Hardware",
+        "fr-FR": "Matériel insuffisant",
+        "ko-KR": "하드웨어 부족",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(11269-11277)"
+        ],
+        "$id": 2858
+    },
+    "已选择：{model}": {
+        "en-US": "Selected: {model}",
+        "es-ES": "Seleccionado: {model}",
+        "ar-EG": "تم اختيار: {model}",
+        "pt-PT": "Selecionado: {model}",
+        "ru-RU": "Выбрано: {model}",
+        "ja-JP": "選択済み：{model}",
+        "de-DE": "Ausgewählt: {model}",
+        "fr-FR": "Sélectionné : {model}",
+        "ko-KR": "선택됨: {model}",
+        "$files": [
+            "renderer/components/welcome/OllamaModelSelectionStep.tsx(12781-12796)"
+        ],
+        "$id": 2859
+    },
+    "语言选择": {
+        "en-US": "Language Selection",
+        "es-ES": "Selección de idioma",
+        "ar-EG": "اختيار اللغة  ",
+        "pt-PT": "Escolha de idioma",
+        "ru-RU": "Выбор языка",
+        "ja-JP": "言語選択",
+        "de-DE": "Sprachauswahl",
+        "fr-FR": "Sélection de la langue",
+        "ko-KR": "언어 선택",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(365-373)",
+            "renderer/components/welcome/WelcomeStep1.tsx(2545-2553)"
+        ],
+        "$id": 4595
+    },
+    "模式选择": {
+        "en-US": "Mode Selection",
+        "es-ES": "Selección de modo",
+        "ar-EG": "اختيار الوضع",
+        "pt-PT": "Seleção de modo",
+        "ru-RU": "Выбор режима",
+        "ja-JP": "モード選択",
+        "de-DE": "Modusauswahl",
+        "fr-FR": "Sélection de mode",
+        "ko-KR": "모드 선택",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(407-415)"
+        ],
+        "$id": 2711
+    },
+    "模型配置": {
+        "en-US": "Model Configuration",
+        "es-ES": "Configuración del modelo",
+        "ar-EG": "تكوين النموذج  ",
+        "pt-PT": "Configuração do modelo",
+        "ru-RU": "Настройка модели",
+        "ja-JP": "モデル構成",
+        "de-DE": "Modelleinstellungen",
+        "fr-FR": "Configuration du modèle",
+        "ko-KR": "모델 구성",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(463-471)"
+        ],
+        "$id": 4596
+    },
+    "云端配置": {
+        "en-US": "Cloud Configuration",
+        "es-ES": "Configuración en la nube",
+        "ar-EG": "تكوين السحابة",
+        "pt-PT": "Configuração da nuvem",
+        "ru-RU": "Облачная конфигурация",
+        "ja-JP": "クラウド設定",
+        "de-DE": "Cloud-Konfiguration",
+        "fr-FR": "Configuration Cloud",
+        "ko-KR": "클라우드 구성",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(519-527)"
+        ],
+        "$id": 2712
+    },
+    "模型存储目录": {
+        "en-US": "Model Storage Directory",
+        "es-ES": "Directorio de almacenamiento del modelo",
+        "ar-EG": "دليل تخزين النموذج  ",
+        "pt-PT": "Diretório de armazenamento do modelo",
+        "ru-RU": "Каталог хранения модели",
+        "ja-JP": "モデルストレージディレクトリ",
+        "de-DE": "Speicherverzeichnis für Modelle",
+        "fr-FR": "Répertoire de stockage des modèles",
+        "ko-KR": "모델 저장 디렉토리",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(567-577)"
+        ],
+        "$id": 4597
+    },
+    "资源下载": {
+        "en-US": "Resource Download",
+        "es-ES": "Descarga de recursos",
+        "ar-EG": "تنزيل الموارد  ",
+        "pt-PT": "Transferência de recursos",
+        "ru-RU": "Загрузка ресурсов",
+        "ja-JP": "リソースダウンロード",
+        "de-DE": "Ressourcen-Download",
+        "fr-FR": "Téléchargement des ressources",
+        "ko-KR": "리소스 다운로드",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(619-627)"
+        ],
+        "$id": 4598
+    },
+    "安装AI引擎": {
+        "en-US": "Install AI Engine",
+        "es-ES": "Instalar motor de IA",
+        "ar-EG": "ثبت محرك الذكاء الاصطناعي",
+        "pt-PT": "Instalar motor de IA",
+        "ru-RU": "Установить движок ИИ",
+        "ja-JP": "AIエンジンをインストール",
+        "de-DE": "KI-Engine installieren",
+        "fr-FR": "Installer le moteur IA",
+        "ko-KR": "AI 엔진 설치",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(731-741)"
+        ],
+        "$id": 2860
+    },
+    "模型选择": {
+        "en-US": "Model Selection",
+        "es-ES": "Selección de modelo",
+        "ar-EG": "اختيار النموذج",
+        "pt-PT": "Seleção de modelo",
+        "ru-RU": "Выбор модели",
+        "ja-JP": "モデル選択",
+        "de-DE": "Modellauswahl",
+        "fr-FR": "Sélection du modèle",
+        "ko-KR": "모델 선택",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(791-799)"
+        ],
+        "$id": 2861
+    },
+    "模型下载": {
+        "en-US": "Model Download",
+        "es-ES": "Descarga del modelo",
+        "ar-EG": "تحميل النموذج",
+        "pt-PT": "Transferência do modelo",
+        "ru-RU": "Загрузка модели",
+        "ja-JP": "モデルダウンロード",
+        "de-DE": "Modell herunterladen",
+        "fr-FR": "Téléchargement du modèle",
+        "ko-KR": "모델 다운로드",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(855-863)"
+        ],
+        "$id": 2862
+    },
+    "下载完成": {
+        "en-US": "Download Complete",
+        "es-ES": "Descarga completada",
+        "ar-EG": "اكتمل التحميل",
+        "pt-PT": "Transferência concluída",
+        "ru-RU": "Загрузка завершена",
+        "ja-JP": "ダウンロード完了",
+        "de-DE": "Download abgeschlossen",
+        "fr-FR": "Téléchargement terminé",
+        "ko-KR": "다운로드 완료",
+        "$files": [
+            "renderer/components/welcome/WelcomeProgress.tsx(919-927)"
+        ],
+        "$id": 2863
+    },
+    "欢迎使用 - 初始设置": {
+        "en-US": "Welcome - Initial Setup",
+        "es-ES": "Bienvenido - Configuración inicial",
+        "ar-EG": "مرحبًا بك في الاستخدام - الإعداد الأولي  ",
+        "pt-PT": "Bem-vindo - Configuração inicial",
+        "ru-RU": "Добро пожаловать – начальная настройка",
+        "ja-JP": "ようこそ - 初期設定",
+        "de-DE": "Willkommen - Erste Einrichtung",
+        "fr-FR": "Bienvenue - Configuration initiale",
+        "ko-KR": "어서오세요 - 초기 설정",
+        "$files": [
+            "renderer/components/welcome/WelcomeStep1.tsx(2017-2032)"
+        ],
+        "$id": 4599
+    },
+    "请选择您偏好的语言以继续": {
+        "en-US": "Please select your preferred language to continue",
+        "es-ES": "Por favor, seleccione su idioma preferido para continuar",
+        "ar-EG": "يرجى اختيار لغتك المفضلة للمتابعة",
+        "pt-PT": "Por favor, selecione o seu idioma preferido para continuar",
+        "ru-RU": "Пожалуйста, выберите предпочтительный язык для продолжения",
+        "ja-JP": "続行するためにご希望の言語を選択してください",
+        "de-DE": "Bitte wählen Sie Ihre bevorzugte Sprache, um fortzufahren",
+        "fr-FR": "Veuillez sélectionner la langue de votre choix pour continuer",
+        "ko-KR": "계속 진행하기 위해 사용자 선호 언어를 선택하십시오.",
+        "$files": [
+            "renderer/components/welcome/WelcomeStep1.tsx(2091-2107)"
+        ],
+        "$id": 4600
+    }
+}

@@ -1,0 +1,633 @@
+{
+    "正在准备启动应用...": {
+        "en-US": "Preparing to launch the application...",
+        "es-ES": "Preparando el inicio de la aplicación...",
+        "ar-EG": "جارٍ الاستعداد لبدء تشغيل التطبيق...",
+        "pt-PT": "A preparar o lançamento da aplicação...",
+        "ru-RU": "Подготовка к запуску приложения...",
+        "ja-JP": "アプリケーションの起動準備中...",
+        "de-DE": "Die Anwendung wird vorbereitet...",
+        "fr-FR": "Préparation du lancement de l'application...",
+        "ko-KR": "앱 시작 준비 중...",
+        "$files": [
+            "renderer/App.tsx(1804-1819)"
+        ],
+        "$id": 6219
+    },
+    "正在检测应用配置...": {
+        "en-US": "Detecting application configuration...",
+        "es-ES": "Detectando la configuración de la aplicación...",
+        "ar-EG": "جارٍ اكتشاف إعدادات التطبيق...",
+        "pt-PT": "A detetar a configuração da aplicação...",
+        "ru-RU": "Обнаружение конфигурации приложения...",
+        "ja-JP": "アプリケーション設定を検出中...",
+        "de-DE": "Die Anwendungskonfiguration wird erkannt...",
+        "fr-FR": "Détection de la configuration de l'application...",
+        "ko-KR": "앱 설정 감지 중...",
+        "$files": [
+            "renderer/App.tsx(2318-2333)"
+        ],
+        "$id": 6223
+    },
+    "正在初始化AI服务...": {
+        "en-US": "Initializing AI services...",
+        "es-ES": "Inicializando el servicio de IA...",
+        "ar-EG": "جارٍ تهيئة خدمة الذكاء الاصطناعي...",
+        "pt-PT": "A inicializar o serviço de IA...",
+        "ru-RU": "Инициализация ИИ сервиса...",
+        "ja-JP": "AIサービスを初期化中...",
+        "de-DE": "Der KI-Dienst wird initialisiert...",
+        "fr-FR": "Initialisation du service IA...",
+        "ko-KR": "AI 서비스 초기화 중...",
+        "$files": [
+            "renderer/App.tsx(10073-10089)"
+        ],
+        "$id": 6220
+    },
+    "正在加载应用配置...": {
+        "en-US": "Loading application configuration...",
+        "es-ES": "Cargando la configuración de la aplicación...",
+        "ar-EG": "جارٍ تحميل إعدادات التطبيق...",
+        "pt-PT": "A carregar a configuração da aplicação...",
+        "ru-RU": "Загрузка конфигурации приложения...",
+        "ja-JP": "アプリケーション設定を読み込み中...",
+        "de-DE": "Die Anwendungskonfiguration wird geladen...",
+        "fr-FR": "Chargement de la configuration de l'application...",
+        "ko-KR": "앱 설정 로드 중...",
+        "$files": [
+            "renderer/App.tsx(10360-10375)"
+        ],
+        "$id": 6221
+    },
+    "正在检查 AI 状态...": {
+        "en-US": "Checking AI status...",
+        "es-ES": "Comprobando el estado de la IA...",
+        "ar-EG": "جارٍ التحقق من حالة الذكاء الاصطناعي...",
+        "pt-PT": "A verificar o estado da IA...",
+        "ru-RU": "Проверка состояния ИИ...",
+        "ja-JP": "AI状態を確認中...",
+        "de-DE": "Der KI-Status wird überprüft...",
+        "fr-FR": "Vérification de l'état de l'IA...",
+        "ko-KR": "AI 상태 확인 중...",
+        "$files": [
+            "renderer/App.tsx(10428-10445)"
+        ],
+        "$id": 6222
+    },
+    "正在初始化应用": {
+        "en-US": "Initializing application",
+        "es-ES": "Inicializando la aplicación",
+        "ar-EG": "جارٍ تهيئة التطبيق",
+        "pt-PT": "A inicializar a aplicação",
+        "ru-RU": "Инициализация приложения",
+        "ja-JP": "アプリケーションを初期化中",
+        "de-DE": "Die Anwendung wird initialisiert",
+        "fr-FR": "Initialisation de l'application",
+        "ko-KR": "앱 초기화 중",
+        "$files": [
+            "renderer/App.tsx(11606-11617)",
+            "renderer/App.tsx(11717-11728)"
+        ],
+        "$id": 6224
+    },
+    "检测配置阶段...": {
+        "en-US": "Configuration detection phase...",
+        "es-ES": "Fase de detección de configuración...",
+        "ar-EG": "مرحلة اكتشاف الإعدادات...",
+        "pt-PT": "Fase de deteção de configuração...",
+        "ru-RU": "Этап обнаружения конфигурации...",
+        "ja-JP": "設定検出フェーズ...",
+        "de-DE": "Konfigurationsprüfungsphase...",
+        "fr-FR": "Phase de détection de configuration...",
+        "ko-KR": "설정 감지 단계...",
+        "$files": [
+            "renderer/App.tsx(11620-11633)"
+        ],
+        "$id": 6225
+    },
+    "准备加载文件与 AI 服务...": {
+        "en-US": "Preparing to load files and AI services...",
+        "es-ES": "Preparando la carga de archivos y servicios de IA...",
+        "ar-EG": "جارٍ الاستعداد لتحميل الملفات وخدمة الذكاء الاصطناعي...",
+        "pt-PT": "A preparar para carregar ficheiros e serviços de IA...",
+        "ru-RU": "Подготовка к загрузке файлов и ИИ сервиса...",
+        "ja-JP": "ファイルとAIサービスの読み込み準備中...",
+        "de-DE": "Das Laden von Dateien und KI-Diensten wird vorbereitet...",
+        "fr-FR": "Préparation du chargement des fichiers et du service IA...",
+        "ko-KR": "파일 및 AI 서비스 로드 준비 중...",
+        "$files": [
+            "renderer/App.tsx(11731-11751)"
+        ],
+        "$id": 6226
+    },
+    "萤核智能文件夹数据正在升级中，请耐心等待...": {
+        "en-US": "The Smart Folder data of Yinghe is being upgraded. Please wait patiently...",
+        "es-ES": "Actualizando datos de la carpeta inteligente de萤核, por favor espere...",
+        "ar-EG": "مجلد Fluorite Core الذكي يخضع حاليًا للترقية، يرجى التحلي بالصبر...",
+        "pt-PT": "A pasta inteligente de dados da Fluorite Core está a ser atualizada, queira aguardar...",
+        "ru-RU": "Данные умной папки «Yinghe» обновляются, пожалуйста, подождите...  ",
+        "ja-JP": "蛍核スマートフォルダのデータをアップグレードしています。しばらくお待ちください...",
+        "de-DE": "Die intelligenten Ordnerdaten von Yinghe werden aktualisiert, bitte haben Sie etwas Geduld...",
+        "fr-FR": "La mise à niveau des données du dossier intelligent FluorCore est en cours, veuillez patienter...",
+        "ko-KR": "형광 핵 지능형 폴더 데이터가 업그레이드 중입니다. 잠시만 기다려 주세요...",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(8840-8867)"
+        ],
+        "$id": 3268
+    },
+    "数据升级完成！": {
+        "en-US": "Data upgrade completed!",
+        "es-ES": "¡Actualización de datos completada!",
+        "ar-EG": "اكتملت ترقية البيانات!",
+        "pt-PT": "A atualização dos dados foi concluída!",
+        "ru-RU": "Обновление данных завершено!  ",
+        "ja-JP": "データのアップグレードが完了しました！",
+        "de-DE": "Die Datenaktualisierung ist abgeschlossen!",
+        "fr-FR": "Mise à niveau des données terminée !",
+        "ko-KR": "데이터 업그레이드가 완료되었습니다!",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(9313-9324)"
+        ],
+        "$id": 3285
+    },
+    "正在升级文件夹架构，请稍候...": {
+        "en-US": "Upgrading the folder architecture. Please wait...",
+        "es-ES": "Actualizando la estructura de carpetas, por favor espere...",
+        "ar-EG": "جاري ترقية بنية المجلد، يرجى الانتظار...",
+        "pt-PT": "A atualizar a estrutura de pastas, queira aguardar...",
+        "ru-RU": "Выполняется обновление структуры папки, пожалуйста, подождите...  ",
+        "ja-JP": "フォルダ構造をアップグレードしています。しばらくお待ちください...",
+        "de-DE": "Die Ordnerstruktur wird aktualisiert, bitte warten Sie einen Moment...",
+        "fr-FR": "Mise à niveau de l'architecture des dossiers en cours, veuillez patienter...",
+        "ko-KR": "폴더 아키텍처를 업그레이드 중입니다. 잠시만 기다려 주세요...",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(23836-23856)"
+        ],
+        "$id": 3286
+    },
+    "架构升级完成！": {
+        "en-US": "Architecture upgrade completed!",
+        "es-ES": "¡Actualización de estructura completada!",
+        "ar-EG": "اكتملت ترقية البنية!",
+        "pt-PT": "A atualização da estrutura foi concluída!",
+        "ru-RU": "Обновление структуры завершено!  ",
+        "ja-JP": "構造のアップグレードが完了しました！",
+        "de-DE": "Die Strukturaktualisierung ist abgeschlossen!",
+        "fr-FR": "Mise à niveau de l'architecture terminée !",
+        "ko-KR": "아키텍처 업그레이드가 완료되었습니다!",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(49244-49255)"
+        ],
+        "$id": 3287
+    },
+    "架构升级失败": {
+        "en-US": "Architecture upgrade failed!",
+        "es-ES": "Fallo en la actualización de la estructura",
+        "ar-EG": "فشلّت ترقية البنية",
+        "pt-PT": "A atualização da estrutura falhou!",
+        "ru-RU": "Обновление структуры не удалось.",
+        "ja-JP": "構造のアップグレードに失敗しました",
+        "de-DE": "Die Strukturaktualisierung ist fehlgeschlagen",
+        "fr-FR": "Échec de la mise à niveau de l'architecture",
+        "ko-KR": "아키텍처 업그레이드에 실패했습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(49655-49665)"
+        ],
+        "$id": 3288
+    },
+    "正在处理中，请等待当前任务完成": {
+        "en-US": "Processing, please wait for the current task to complete",
+        "es-ES": "Procesando, por favor espere a que se complete la tarea actual",
+        "ar-EG": "قيد المعالجة، يُرجى الانتظار حتى يكتمل المهمة الحالية",
+        "pt-PT": "A processar, aguarde até que a tarefa atual seja concluída",
+        "ru-RU": "Обработка выполняется, пожалуйста, дождитесь завершения текущей задачи",
+        "ja-JP": "処理中です。現在のタスクが完了するまでお待ちください。",
+        "de-DE": "Wird verarbeitet, bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist",
+        "fr-FR": "Traitement en cours, veuillez attendre la fin de la tâche actuelle",
+        "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
+        "$files": [
+            "electron/runtime-services/integration/file-scanner-integration.ts(3369-3388)"
+        ],
+        "$id": 2921
+    },
+    "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
+        "en-US": "Quota exhausted: {} private directory files have been analyzed; the current quota is {} files. Invite friends to unlock more capacity.",
+        "es-ES": "Cuota agotada: se han analizado {count} archivos de directorios privados; la cuota actual es de {quota} archivos. Puede invitar a amigos para desbloquear más capacidad.",
+        "ar-EG": "انتهت الحصة: تم تحليل {count} ملف من الملفات الخاصة، والحصة الحالية هي {quota} ملف. يمكنك دعوة أصدقاء لفتح حصة أكبر.",
+        "pt-PT": "Cota esgotada: foram analisados {count} arquivos do catálogo privado, sendo a cota atual de {quota} arquivos. Pode convidar amigos para desbloquear mais quota.",
+        "ru-RU": "Квота исчерпана: проанализировано {count} файлов приватного каталога, текущая квота составляет {quota} файлов. Можно разблокировать дополнительный лимит, пригласив друзей.",
+        "ja-JP": "割り当て枠が尽きました：{count} 個のプライベートディレクトリファイルを分析済みです。現在の割り当て枠は{quota} ファイルです。友人を招待して、さらに多くの枠を解放できます。",
+        "de-DE": "Kontingent erschöpft: {count} Dateien in privaten Verzeichnissen analysiert, aktuelles Kontingent beträgt {quota} Dateien. Laden Sie Freunde ein, um mehr Kontingent freizuschalten.",
+        "fr-FR": "Quota épuisé : {count} fichiers de répertoires privés ont été analysés, le quota actuel est de {quota} fichiers. Vous pouvez inviter des amis pour débloquer plus de quota.",
+        "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
+        "$files": [
+            "electron/runtime-services/invitation/invitation-service.ts(3284-3347)"
+        ],
+        "$id": 3343
+    },
+    "我发现一个超好用的开源免费AI文件整理工具，一键整理乱七八糟的桌面、下载目录等，自动分类/重命名/归档，配截图！": {
+        "en-US": "I found a super useful open-source free AI file organization tool that organizes messy desktops, download directories, etc. with one click, automatically categorizing/renaming/archiving, with screenshots!",
+        "es-ES": "¡He descubierto una herramienta gratuita de código abierto de IA súper útil para organizar archivos! Organiza con un solo clic escritorios y carpetas de descargas desordenados, con clasificación automática/cambio de nombre/archivado, ¡incluye capturas de pantalla!",
+        "ar-EG": "اكتشفت أداة ذكاء اصطناعي مفتوحة المصدر ومجانية فائقة الفائدة لتنظيم الملفات، وبضغطة واحدة تنظيم سطح المكتب الفوضوي ومجلد التنزيلات وما إلى ذلك، مع التصنيف/إعادة التسمية/الأرشفة تلقائيًا، مزودة بلقطات شاشة!",
+        "pt-PT": "Descobri uma ferramenta de IA open source e gratuita super útil para organizar ficheiros, com um clique organiza ambientes de trabalho e pastas de downloads bagunçados, classificação/renomeação/arquivo automático, com capturas de ecrã!",
+        "ru-RU": "Я нашёл супер удобный бесплатный AI-инструмент с открытым исходным кодом для организации файлов, который в один клик наводит порядок в захламлённом рабочем столе, папке загрузок и т.д., автоматически сортирует/переименовывает/архивирует, со скриншотами!",
+        "ja-JP": "超便利なオープンソースで無料のAIファイル整理ツールを発見！一键整理乱七八糟的桌面、下载目录等，自动分类/重命名/归档，配截图！",
+        "de-DE": "Ich habe ein super benutzerfreundliches, kostenloses Open-Source-KI-Tool zur Dateiorganisation entdeckt, mit einem Klick den chaotischen Schreibtisch, Download-Ordner usw. aufräumen, automatische Kategorisierung/Umbenennung/Archivierung, mit Screenshots!",
+        "fr-FR": "J'ai découvert un outil d'organisation de fichiers IA open source et gratuit super pratique, qui permet d'organiser en un clic les bureaux en désordre, les répertoires de téléchargement, etc., avec classification automatique / renommage / archivage, avec des captures d'écran !",
+        "ko-KR": "정말 유용한 오픈소스 무료 AI 파일 정리 툴을 발견했습니다, 버튼 하나로 엉망이 된 바탕화면, 다운로드 폴더 등을 정리할 수 있고, 자동 분류/이름 변경/보관까지 됩니다. 스크린샷 첨부!",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(1639-1699)"
+        ],
+        "$id": 3281
+    },
+    "邀请链接已复制": {
+        "en-US": "Invitation link copied",
+        "es-ES": "Enlace de invitación copiado",
+        "ar-EG": "تم نسخ رابط الدعوة",
+        "pt-PT": "Link de convite copiado",
+        "ru-RU": "Ссылка для приглашения скопирована",
+        "ja-JP": "招待リンクをコピーしました",
+        "de-DE": "Einladungslink wurde kopiert",
+        "fr-FR": "Lien d'invitation copié",
+        "ko-KR": "초대 링크가 복사되었습니다",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(1788-1799)"
+        ],
+        "$id": 2969
+    },
+    "复制失败": {
+        "en-US": "Copy failed",
+        "es-ES": "Error al copiar",
+        "ar-EG": "فشل النسخ",
+        "pt-PT": "Falha na cópia",
+        "ru-RU": "Ошибка копирования",
+        "ja-JP": "コピー失敗",
+        "de-DE": "Kopieren fehlgeschlagen",
+        "fr-FR": "Échec de la copie",
+        "ko-KR": "복사 실패",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(1842-1850)"
+        ],
+        "$id": 2985
+    },
+    "兑换成功！已增加 {amount} 个文件分析额度": {
+        "en-US": "Redemption successful! {} additional file analysis credits have been added.",
+        "es-ES": "¡Canje realizado con éxito! Se han añadido {amount} unidades de capacidad de análisis de archivos",
+        "ar-EG": "تم الاستبدال بنجاح! تمت إضافة {amount} حصة لتحليل الملفات",
+        "pt-PT": "Troca bem-sucedida! Foram adicionados {amount} créditos de análise de arquivos",
+        "ru-RU": "Успешно обменяно! Добавлено {amount} лимита анализа файлов",
+        "ja-JP": "交換成功！{amount} ファイル分の分析枠が追加されました",
+        "de-DE": "Erfolgreich eingelöst! Das Kontingent für die Dateianalyse wurde um {amount} Dateien erhöht",
+        "fr-FR": "Échange réussi ! {amount} crédits d'analyse de fichiers ont été ajoutés",
+        "ko-KR": "교환 성공! 파일 분석 한도가 {amount} 개 증가했습니다",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(2406-2435)"
+        ],
+        "$id": 3344
+    },
+    "兑换失败: {error}": {
+        "en-US": "Redemption failed: {error}",
+        "es-ES": "Error en el canje: {error}",
+        "ar-EG": "فشل الاستبدال: {error}",
+        "pt-PT": "Falha na troca: {error}",
+        "ru-RU": "Ошибка обмена: {error}",
+        "ja-JP": "交換に失敗しました：{error}",
+        "de-DE": "Einlösung fehlgeschlagen: {error}",
+        "fr-FR": "Échec de l'échange : {error}",
+        "ko-KR": "교환 실패: {error}",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(2661-2678)"
+        ],
+        "$id": 3345
+    },
+    "未知错误": {
+        "en-US": "Unknown Error",
+        "es-ES": "Error desconocido",
+        "ar-EG": "خطأ غير معروف",
+        "pt-PT": "Erro desconhecido",
+        "ru-RU": "Неизвестная ошибка",
+        "ja-JP": "不明なエラー",
+        "de-DE": "Unbekannter Fehler",
+        "fr-FR": "Erreur inconnue",
+        "ko-KR": "알 수 없는 오류",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(2705-2713)"
+        ],
+        "$id": 3346
+    },
+    "兑换请求失败": {
+        "en-US": "Redemption request failed",
+        "es-ES": "La solicitud de canje ha fallado",
+        "ar-EG": "فشل طلب الاستبدال",
+        "pt-PT": "Falha na solicitação de resgate",
+        "ru-RU": "Ошибка запроса на обмен",
+        "ja-JP": "交換リクエストに失敗しました",
+        "de-DE": "Einlösungsanfrage fehlgeschlagen",
+        "fr-FR": "L'échange a échoué",
+        "ko-KR": "교환 요청 실패",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(2937-2947)"
+        ],
+        "$id": 3347
+    },
+    "获取更多私有目录分析额度": {
+        "en-US": "Get more private directory analysis quota",
+        "es-ES": "Obtén más cuota de análisis para directorios privados",
+        "ar-EG": "احصل على مزيد من الحصص لتحليل المجلدات الخاصة",
+        "pt-PT": "Obter mais quota para análise de diretórios privados",
+        "ru-RU": "Получить дополнительную квоту для анализа приватных каталогов",
+        "ja-JP": "より多くのプライベートディレクトリ分析枠を取得する",
+        "de-DE": "Erhalten Sie mehr Kontingent für die Analyse privater Verzeichnisse",
+        "fr-FR": "Obtenez plus de quota d'analyse de répertoires privés",
+        "ko-KR": "더 많은 비공개 디렉터리 분석 할당량 얻기",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(3400-3416)"
+        ],
+        "$id": 3348
+    },
+    "为提倡极速目录共享分析，以及为了项目可持续发展，私有目录有一定限制：默认提供 {baseQuota} 个文件的分析。通过邀请好友或输入邀请码，您可以解锁无限额度。": {
+        "en-US": "To promote rapid directory sharing analysis and ensure the sustainable development of the project, there are certain limits on private directories: by default, {baseQuota} files are provided for analysis. By inviting friends or entering an invitation code, you can unlock unlimited quota.",
+        "es-ES": "Para fomentar el análisis ultrarrápido de directorios compartidos y garantizar la sostenibilidad del proyecto, los directorios privados tienen ciertas limitaciones: se proporciona por defecto el análisis de {baseQuota} archivos. Mediante la invitación de amigos o la introducción de un código de invitación, puede desbloquear una cuota ilimitada.",
+        "ar-EG": "لتشجيع تحليل المجلدات المشتركة بسرعة فائقة، ولضمان استمرارية المشروع، تخضع المجلدات الخاصة لبعض القيود: يتم توفير تحليل {baseQuota} ملفًا افتراضيًا. يمكنك فتح حصة غير محدودة عبر دعوة أصدقاء أو إدخال رمز دعوة.",
+        "pt-PT": "Para promover a análise rápida e partilhada de diretórios e garantir o desenvolvimento sustentável do projeto, os diretórios privados têm uma limitação: é fornecida por defeito uma quota para análise de {baseQuota} ficheiros. Ao convidar amigos ou introduzir um código de convite, poderá desbloquear quota ilimitada.",
+        "ru-RU": "Для поощрения быстрого совместного анализа каталогов, а также для устойчивого развития проекта, на приватные каталоги наложены определенные ограничения: по умолчанию предоставляется анализ для {baseQuota} файлов. Пригласив друзей или введя код приглашения, вы можете разблокировать неограниченную квоту.",
+        "ja-JP": "迅速なディレクトリ共有分析を促進し、プロジェクトの持続可能な発展を図るため、プライベートディレクトリには一定の制限があります。デフォルトでは{baseQuota} 个のファイル分析を提供します。友人を招待するか招待コードを入力することで、無制限の枠を解除できます。",
+        "de-DE": "Um die extrem schnelle Freigabe und Analyse von Verzeichnissen zu fördern und die nachhaltige Entwicklung des Projekts zu gewährleisten, unterliegen private Verzeichnisse bestimmten Beschränkungen: Standardmäßig wird die Analyse von {baseQuota} Dateien bereitgestellt. Durch das Einladen von Freunden oder die Eingabe eines Einladungscodes können Sie ein unbegrenztes Kontingent freischalten.",
+        "fr-FR": "Pour encourager le partage et l'analyse rapides des répertoires, ainsi que pour assurer la durabilité du projet, les répertoires privés sont soumis à certaines limites : {baseQuota} fichiers sont analysés par défaut. En invitant des amis ou en saisissant un code d'invitation, vous pouvez débloquer un quota illimité.",
+        "ko-KR": "빠른 디렉터리 공유 분석을 장려하고 프로젝트의 지속 가능한 발전을 위해 비공개 디렉터리에는 특정 제한이 있습니다. 기본적으로 {baseQuota}개 파일 분석을 제공합니다. 친구 초대 또는 초대 코드 입력을 통해 무제한 할당량을 잠금 해제할 수 있습니다.",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(3537-3622)"
+        ],
+        "$id": 3349
+    },
+    "当前总额度": {
+        "en-US": "Current Total Quota",
+        "es-ES": "Cuota total actual",
+        "ar-EG": "إجمالي الحصة الحالية",
+        "pt-PT": "Quota total atual",
+        "ru-RU": "Текущая общая квота",
+        "ja-JP": "現在の総利用枠",
+        "de-DE": "Aktuelles Gesamtkontingent",
+        "fr-FR": "Quota total actuel",
+        "ko-KR": "현재 총 할당량",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(3992-4001)"
+        ],
+        "$id": 3350
+    },
+    "不限数量": {
+        "en-US": "Unlimited",
+        "es-ES": "Cantidad ilimitada",
+        "ar-EG": "عدد غير محدود",
+        "pt-PT": "Sem limite",
+        "ru-RU": "Без ограничений",
+        "ja-JP": "数量無制限",
+        "de-DE": "Unbegrenzte Anzahl",
+        "fr-FR": "Nombre illimité",
+        "ko-KR": "개수 제한 없음",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(4110-4118)"
+        ],
+        "$id": 3351
+    },
+    "{count} 个文件": {
+        "en-US": "{count} files",
+        "es-ES": "{count} archivos",
+        "ar-EG": "{count} ملفًا",
+        "pt-PT": "{count} ficheiros",
+        "ru-RU": "{count} файлов",
+        "ja-JP": "{count} 个のファイル",
+        "de-DE": "{count} Dateien",
+        "fr-FR": "{count} fichiers",
+        "ko-KR": "{count}개 파일",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(4122-4137)"
+        ],
+        "$id": 3352
+    },
+    "已邀请人数": {
+        "en-US": "Number of Invited Users",
+        "es-ES": "Número de personas invitadas",
+        "ar-EG": "عدد المدعوين",
+        "pt-PT": "Número de pessoas convidadas",
+        "ru-RU": "Количество приглашенных",
+        "ja-JP": "招待済み人数",
+        "de-DE": "Anzahl der eingeladenen Personen",
+        "fr-FR": "Nombre de personnes invitées",
+        "ko-KR": "초대한 인원",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(4306-4315)"
+        ],
+        "$id": 3353
+    },
+    "基础额度": {
+        "en-US": "Base Quota",
+        "es-ES": "Cuota base",
+        "ar-EG": "الحصة الأساسية",
+        "pt-PT": "Quota base",
+        "ru-RU": "Базовая квота",
+        "ja-JP": "基本利用枠",
+        "de-DE": "Grundkontingent",
+        "fr-FR": "Quota de base",
+        "ko-KR": "기본 할당량",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(5124-5132)"
+        ],
+        "$id": 3354
+    },
+    "受邀奖励": {
+        "en-US": "Invitation Reward",
+        "es-ES": "Recompensa por invitación",
+        "ar-EG": "مكافأة الدعوة",
+        "pt-PT": "Recompensa por convite recebido",
+        "ru-RU": "Бонус за приглашение",
+        "ja-JP": "招待報酬",
+        "de-DE": "Belohnung für Eingeladene",
+        "fr-FR": "Récompense d'invitation",
+        "ko-KR": "초대 보상",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(5708-5716)"
+        ],
+        "$id": 3355
+    },
+    "邀请好友": {
+        "en-US": "Invite Friends",
+        "es-ES": "Invitar a amigos",
+        "ar-EG": "دعوة الأصدقاء",
+        "pt-PT": "Convidar amigos",
+        "ru-RU": "Пригласить друзей",
+        "ja-JP": "友人を招待",
+        "de-DE": "Freunde einladen",
+        "fr-FR": "Inviter des amis",
+        "ko-KR": "친구 초대",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(6321-6329)"
+        ],
+        "$id": 3356
+    },
+    "无限": {
+        "en-US": "Unlimited",
+        "es-ES": "Ilimitado",
+        "ar-EG": "غير محدود",
+        "pt-PT": "Ilimitado",
+        "ru-RU": "Безлимитно",
+        "ja-JP": "無制限",
+        "de-DE": "Unbegrenzt",
+        "fr-FR": "Illimité",
+        "ko-KR": "무제한",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(6868-6874)"
+        ],
+        "$id": 3357
+    },
+    "满3人解锁": {
+        "en-US": "Unlock with 3 invitees",
+        "es-ES": "Desbloquear con 3 personas",
+        "ar-EG": "يُفتح عند دعوة 3 أشخاص",
+        "pt-PT": "Desbloqueie ao atingir 3 pessoas",
+        "ru-RU": "Разблокируется при достижении 3 человек",
+        "ja-JP": "3 名で解除可能",
+        "de-DE": "Freigeschaltet bei 3 Personen",
+        "fr-FR": "Débloqué après 3 invités",
+        "ko-KR": "3인 달성 시 잠금 해제",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(6949-6958)"
+        ],
+        "$id": 3358
+    },
+    "您的专属邀请链接": {
+        "en-US": "Your Exclusive Invitation Link",
+        "es-ES": "Su enlace de invitación personalizado",
+        "ar-EG": "رابط الدعوة الخاص بك",
+        "pt-PT": "A sua ligação exclusiva de convite",
+        "ru-RU": "Ваша персональная ссылка для приглашения",
+        "ja-JP": "お客様専用の招待リンク",
+        "de-DE": "Ihr persönlicher Einladungslink",
+        "fr-FR": "Votre lien d'invitation exclusif",
+        "ko-KR": "전용 초대 링크",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(7627-7639)"
+        ],
+        "$id": 3359
+    },
+    "复制": {
+        "en-US": "Copy",
+        "es-ES": "Copiar",
+        "ar-EG": "انسخ  ",
+        "pt-PT": "Copiar",
+        "ru-RU": "Копировать",
+        "ja-JP": "コピー",
+        "de-DE": "Kopieren",
+        "fr-FR": "Copier",
+        "ko-KR": "복사",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(8087-8093)"
+        ],
+        "$id": 3360
+    },
+    "发送链接给好友，好友下载并运行应用后，您和好友都将立即获得 {bonus} 个文件的分析额度，邀请满3人即可解锁无限额度。": {
+        "en-US": "Send the link to your friend. After your friend downloads and runs the app, both you and your friend will immediately receive {bonus} file analysis credits. Invite 3 friends to unlock unlimited credits.",
+        "es-ES": "Enviar enlace a un amigo; cuando tu amigo descargue y ejecute la aplicación, tanto tú como vuestro amigo obtendréis inmediatamente una cuota de análisis de {bonus} archivos. Invita a 3 personas para desbloquear una cuota ilimitada.",
+        "ar-EG": "أرسل رابط الدعوة لصديقك، وعندما يُحمّل صديقك التطبيق ويُشغّله، ستحصل أنت وصديقك فورًا على رصيد تحليل لـ {bonus} ملف. وعند دعوتك 3 أشخاص، سيتم فتح الرصيد غير المحدود لك.  ",
+        "pt-PT": "Envie o link a um amigo; assim que o seu amigo descarregar e executar a aplicação, tanto você como o seu amigo receberão imediatamente uma quota de análise de {bonus} ficheiros. Ao convidar 3 pessoas, desbloqueará uma quota ilimitada.",
+        "ru-RU": "Отправьте ссылку другу; после того как друг скачает и запустит приложение, вы и друг немедленно получите квоту на анализ {bonus} файлов; пригласив 3 человек, вы разблокируете неограниченную квоту.",
+        "ja-JP": "友達にリンクを送り、友達がアプリをダウンロードして実行すると、あなたと友達の双方が直ちに {bonus} 個のファイル分析枠を獲得できます。3 人を招待すると、無制限枠がロック解除されます。",
+        "de-DE": "Senden Sie den Link an Freunde. Nachdem diese die App heruntergeladen und ausgeführt haben, erhalten Sie und Ihre Freunde sofort ein Analysekontingent von {bonus} Dateien. Sobald Sie 3 Personen eingeladen haben, wird das unbegrenzte Kontingent freigeschaltet.",
+        "fr-FR": "Envoyez le lien à un ami ; une fois qu'il aura téléchargé et exécuté l'application, vous et votre ami recevrez immédiatement un quota d'analyse de {bonus} fichiers. Invitez 3 personnes pour débloquer un quota illimité.",
+        "ko-KR": "링크를 친구에게 보내세요. 친구가 앱을 다운로드하고 실행하면, 귀하와 친구 모두 즉시 {bonus}개 파일 분석 한도를 얻게 되며, 3명 초대로 무제한 한도를 잠금 해제할 수 있습니다.",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(8242-8307)"
+        ],
+        "$id": 3361
+    },
+    "我有邀请码/邀请链接": {
+        "en-US": "I have an invitation code/link",
+        "es-ES": "Tengo un código de invitación/enlace de invitación",
+        "ar-EG": "لديّ رمز دعوة/رابط دعوة  ",
+        "pt-PT": "Tenho um código/link de convite",
+        "ru-RU": "У меня есть код приглашения / ссылка для приглашения",
+        "ja-JP": "招待コード／招待リンクがあります",
+        "de-DE": "Ich habe einen Einladungscode/Einladungslink",
+        "fr-FR": "J'ai un code d'invitation / un lien d'invitation",
+        "ko-KR": "초대 코드/초대 링크가 있습니다.",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(8725-8739)"
+        ],
+        "$id": 3362
+    },
+    "在此输入 16 位邀请码或链接": {
+        "en-US": "Enter the 16-character invitation code or link here",
+        "es-ES": "Introduce aquí un código de invitación de 16 dígitos o un enlace",
+        "ar-EG": "أدخل هنا رمز الدعوة المكوَّن من 16 رقمًا أو الرابط  ",
+        "pt-PT": "Introduza aqui o código de convite de 16 dígitos ou o link",
+        "ru-RU": "Введите здесь 16-значный код приглашения или ссылку",
+        "ja-JP": "ここに 16 桁の招待コードまたはリンクを入力",
+        "de-DE": "Geben Sie hier den 16-stelligen Einladungscode oder den Link ein",
+        "fr-FR": "Saisissez ici un code d'invitation ou un lien à 16 caractères",
+        "ko-KR": "여기에 16자리 초대 코드 또는 링크 입력",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(8870-8889)"
+        ],
+        "$id": 3363
+    },
+    "立即领取": {
+        "en-US": "Claim Now",
+        "es-ES": "Reclamar ahora",
+        "ar-EG": "استلم الآن  ",
+        "pt-PT": "Receber agora",
+        "ru-RU": "Получить немедленно",
+        "ja-JP": "すぐに受け取る",
+        "de-DE": "Sofort abrufen",
+        "fr-FR": "Réclamer maintenant",
+        "ko-KR": "즉시 받기",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(9484-9492)"
+        ],
+        "$id": 3364
+    },
+    "如果你知道他人的邀请码或链接，输入后双方均可立即获取 500 个分析额度。": {
+        "en-US": "If you know someone else's invitation code or link, entering it will immediately grant both parties 500 analysis credits.",
+        "es-ES": "Si conoces el código de invitación o el enlace de otra persona, tras introducirlo, ambas partes obtendrán inmediatamente 500 cuotas de análisis.",
+        "ar-EG": "إذا كنت تعرف رمز دعوة أو رابط شخص آخر، فأدخله ليحصل الطرفان فورًا على رصيد تحليل قدره 500.  ",
+        "pt-PT": "Se conhecer o código ou link de convite de outra pessoa, ao introduzi-lo ambos receberão imediatamente uma quota de 500 análises.",
+        "ru-RU": "Если вы знаете код приглашения или ссылку другого человека, после ввода обе стороны могут немедленно получить 500 единиц квоты анализа.",
+        "ja-JP": "他者の招待コードまたはリンクをご存知の場合は、入力するだけで双方が直ちに 500 個の分析枠を獲得できます。",
+        "de-DE": "Wenn Sie den Einladungscode oder Link einer anderen Person kennen, erhalten nach der Eingabe beide sofort ein Analysekontingent von 500.",
+        "fr-FR": "Si vous connaissez le code d'invitation ou le lien de quelqu'un d'autre, saisissez-le pour que les deux parties obtiennent immédiatement 500 quotas d'analyse.",
+        "ko-KR": "타인의 초대 코드 또는 링크를 알고 있다면 입력 후 양측 모두 즉시 500개 분석 한도를 얻을 수 있습니다.",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(9633-9674)"
+        ],
+        "$id": 3365
+    },
+    "刷新状态": {
+        "en-US": "Refresh Status",
+        "es-ES": "Actualizar estado",
+        "ar-EG": "تحديث الحالة  ",
+        "pt-PT": "Atualizar estado",
+        "ru-RU": "Обновить статус",
+        "ja-JP": "ステータスを更新",
+        "de-DE": "Status aktualisieren",
+        "fr-FR": "Actualiser l'état",
+        "ko-KR": "상태 새로고침",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(10023-10031)"
+        ],
+        "$id": 3366
+    },
+    "稍后再说": {
+        "en-US": "Later",
+        "es-ES": "Más tarde",
+        "ar-EG": "سأفعل ذلك لاحقًا",
+        "pt-PT": "Mais tarde",
+        "ru-RU": "Напомнить позже",
+        "ja-JP": "あとで",
+        "de-DE": "Später",
+        "fr-FR": "Plus tard",
+        "ko-KR": "나중에 하기",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(10189-10197)"
+        ],
+        "$id": 3367
+    }
+}

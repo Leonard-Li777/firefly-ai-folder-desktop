@@ -1,0 +1,259 @@
+{
+    "FFmpeg 安装失败": {
+        "en-US": "FFmpeg installation failed  ",
+        "es-ES": "Error en la instalación de FFmpeg",
+        "ar-EG": "فشل تثبيت FFmpeg",
+        "pt-PT": "Instalação do FFmpeg falhada",
+        "ru-RU": "Ошибка установки FFmpeg",
+        "ja-JP": "FFmpeg のインストールに失敗しました",
+        "de-DE": "FFmpeg-Installation fehlgeschlagen",
+        "fr-FR": "Échec de l'installation de FFmpeg",
+        "ko-KR": "FFmpeg 설치 실패",
+        "$files": [
+            "electron/runtime-services/system/ffmpeg-service.ts(10124-10139)"
+        ],
+        "$id": 3425
+    },
+    "无法自动安装音频处理组件 FFmpeg，这将导致无法进行音频文件分析。": {
+        "en-US": "Failed to automatically install the audio processing component FFmpeg, which will prevent audio file analysis.  ",
+        "es-ES": "No se puede instalar automáticamente el componente de procesamiento de audio FFmpeg, lo que provocará que no se pueda realizar el análisis de archivos de audio.",
+        "ar-EG": "تعذّر التثبيت التلقائي لمكوّن معالجة الصوت FFmpeg، مما سيؤدي إلى تعذر تحليل الملفات الصوتية.",
+        "pt-PT": "Não é possível instalar automaticamente o componente de processamento de áudio FFmpeg, o que impossibilitará a análise de ficheiros de áudio.",
+        "ru-RU": "Не удалось автоматически установить компонент обработки аудио FFmpeg, что приведет к невозможности анализа аудиофайлов.",
+        "ja-JP": "オーディオ処理コンポーネント FFmpeg を自動的にインストールできませんでした。これにより、オーディオファイルの分析ができなくなります。",
+        "de-DE": "Das Audioverarbeitungs-Komponente FFmpeg konnte nicht automatisch installiert werden, was dazu führt, dass Audiodateien nicht analysiert werden können.",
+        "fr-FR": "Impossible d'installer automatiquement le composant de traitement audio FFmpeg, ce qui empêchera l'analyse des fichiers audio.",
+        "ko-KR": "오디오 처리 구성 요소 FFmpeg를 자동으로 설치할 수 없어 오디오 파일 분석을 진행할 수 없습니다.",
+        "$files": [
+            "electron/runtime-services/system/ffmpeg-service.ts(10160-10199)"
+        ],
+        "$id": 3426
+    },
+    "建议您手动安装 FFmpeg 并将其添加到系统环境变量中，或访问 https://ffbinaries.com 下载。": {
+        "en-US": "We recommend that you manually install FFmpeg and add it to your system environment variables, or visit https://ffbinaries.com to download it.  ",
+        "es-ES": "Se recomienda instalar FFmpeg manualmente y añadirlo a las variables de entorno del sistema, o visitar https://ffbinaries.com para descargarlo.",
+        "ar-EG": "يُنصح بتثبيت FFmpeg يدويًا وإضافته إلى متغيرات بيئة النظام، أو زيارة https://ffbinaries.com للتحميل.",
+        "pt-PT": "Recomendamos que instale manualmente o FFmpeg e o adicione às variáveis de ambiente do sistema, ou visite https://ffbinaries.com para transferir.",
+        "ru-RU": "Рекомендуется вручную установить FFmpeg и добавить его в системные переменные окружения или скачать на https://ffbinaries.com.",
+        "ja-JP": "手動で FFmpeg をインストールし、システム環境変数に追加するか、https://ffbinaries.com にアクセスしてダウンロードすることをお勧めします。",
+        "de-DE": "Es wird empfohlen, FFmpeg manuell zu installieren und es den Systemumgebungsvariablen hinzuzufügen, oder https://ffbinries.com zu besuchen, um es herunterzuladen.",
+        "fr-FR": "Il est recommandé d'installer manuellement FFmpeg et de l'ajouter aux variables d'environnement système, ou de visiter https://ffbinaries.com pour le télécharger.",
+        "ko-KR": "수동으로 FFmpeg를 설치하여 시스템 환경 변수에 추가하거나 https://ffbinaries.com 에 접속하여 다운로드하시기 바랍니다.",
+        "$files": [
+            "electron/runtime-services/system/ffmpeg-service.ts(10219-10294)"
+        ],
+        "$id": 3427
+    },
+    "了解": {
+        "en-US": "Learn more  ",
+        "es-ES": "Entendido",
+        "ar-EG": "موافق",
+        "pt-PT": "Compreender",
+        "ru-RU": "Понятно",
+        "ja-JP": "了解",
+        "de-DE": "Verstanden",
+        "fr-FR": "Compris",
+        "ko-KR": "확인",
+        "$files": [
+            "electron/runtime-services/system/ffmpeg-service.ts(10326-10332)"
+        ],
+        "$id": 3428
+    },
+    "前往下载页面": {
+        "en-US": "Go to download page",
+        "es-ES": "Ir a la página de descarga",
+        "ar-EG": "الانتقال إلى صفحة التحميل",
+        "pt-PT": "Ir para a página de transferência",
+        "ru-RU": "Перейти на страницу загрузки",
+        "ja-JP": "ダウンロードページへ",
+        "de-DE": "Zur Downloadseite",
+        "fr-FR": "Accéder à la page de téléchargement",
+        "ko-KR": "다운로드 페이지로 이동",
+        "$files": [
+            "electron/runtime-services/system/ffmpeg-service.ts(10335-10345)"
+        ],
+        "$id": 3429
+    },
+    "检测到NVIDIA GPU，推荐使用CUDA加速": {
+        "en-US": "NVIDIA GPU detected, CUDA acceleration is recommended",
+        "es-ES": "Se detectó GPU NVIDIA, se recomienda usar aceleración CUDA\r",
+        "ar-EG": "تم اكتشاف وحدة معالجة الرسوميات NVIDIA، يُوصى باستخدام تسريع CUDA\r",
+        "pt-PT": "GPU da NVIDIA detetado, recomenda-se utilizar aceleração CUDA\r",
+        "ru-RU": "Обнаружена видеокарта NVIDIA, рекомендуется использовать ускорение CUDA\r",
+        "ja-JP": "NVIDIA GPUが検出されました。CUDAアクセラレーションの使用を推奨します",
+        "de-DE": "NVIDIA-GPU erkannt, CUDA-Beschleunigung wird empfohlen",
+        "fr-FR": "GPU NVIDIA détecté, utilisation de l'accélération CUDA recommandée\r",
+        "ko-KR": "NVIDIA GPU가 감지되었습니다. CUDA 가속을 사용하는 것을 권장합니다.\r",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(19549-19577)"
+        ],
+        "$id": 5970
+    },
+    "检测到支持Vulkan的GPU，推荐使用Vulkan加速": {
+        "en-US": "Vulkan-compatible GPU detected, Vulkan acceleration is recommended",
+        "es-ES": "Se detectó GPU compatible con Vulkan, se recomienda usar aceleración Vulkan\r",
+        "ar-EG": "تم اكتشاف وحدة معالجة الرسوميات المدعومة من قبل Vulkan، يُوصى باستخدام تسريع Vulkan\r",
+        "pt-PT": "GPU com suporte para Vulkan detetado, recomenda-se utilizar aceleração Vulkan\r",
+        "ru-RU": "Обнаружена видеокарта, поддерживающая Vulkan, рекомендуется использовать ускорение Vulkan\r",
+        "ja-JP": "Vulkan対応GPUが検出されました。Vulkanアクセラレーションの使用を推奨します",
+        "de-DE": "Vulkan-unterstützte GPU erkannt, Vulkan-Beschleunigung wird empfohlen",
+        "fr-FR": "GPU supportant Vulkan détecté, utilisation de l'accélération Vulkan recommandée\r",
+        "ko-KR": "Vulkan 지원 GPU가 감지되었습니다. Vulkan 가속을 사용하는 것을 권장합니다.\r",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(19708-19740)"
+        ],
+        "$id": 5971
+    },
+    "未检测到合适的GPU，使用CPU模式": {
+        "en-US": "No suitable GPU detected, using CPU mode",
+        "es-ES": "No se detectó GPU adecuada, usando modo CPU\r",
+        "ar-EG": "لم يتم اكتشاف وحدة معالجة رسوميات مناسبة، يتم استخدام وضع وحدة المعالجة المركزية\r",
+        "pt-PT": "Nenhum GPU adequado detetado, a utilizar modo CPU\r",
+        "ru-RU": "Подходящий графический процессор не обнаружен, используется режим ЦП\r",
+        "ja-JP": "適切なGPUが検出されませんでした。CPUモードを使用します",
+        "de-DE": "Keine geeignete GPU erkannt, CPU-Modus wird verwendet",
+        "fr-FR": "Aucun GPU approprié détecté, utilisation du mode CPU\r",
+        "ko-KR": "적절한 GPU가 감지되지 않아 CPU 모드를 사용합니다.\r",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(19826-19848)"
+        ],
+        "$id": 5972
+    },
+    "内存充足，可以运行大型模型": {
+        "en-US": "Sufficient memory available to run large models",
+        "es-ES": "Memoria suficiente, se puede ejecutar modelo grande\r",
+        "ar-EG": "الذاكرة كافية لتشغيل النموذج الكبير\r",
+        "pt-PT": "Memória suficiente, é possível executar modelos grandes\r",
+        "ru-RU": "Достаточно памяти для запуска больших моделей\r",
+        "ja-JP": "メモリが十分にあるため、大規模モデルを実行できます",
+        "de-DE": "Ausreichend Speicher vorhanden, um große Modelle auszuführen",
+        "fr-FR": "Mémoire suffisante disponible, possibilité d'exécuter des modèles volumineux\r",
+        "ko-KR": "메모리가 충분하므로 대형 모델을 실행할 수 있습니다.\r",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(20081-20098)"
+        ],
+        "$id": 5973
+    },
+    "内存较充足，推荐使用大型模型": {
+        "en-US": "Adequate memory available, large model is recommended",
+        "es-ES": "Memoria bastante suficiente, se recomienda usar modelo grande\r",
+        "ar-EG": "الذاكرة كافية نسبياً، يُوصى باستخدام نموذج كبير\r",
+        "pt-PT": "Memória bastante suficiente, recomenda-se utilizar modelos grandes\r",
+        "ru-RU": "Память в достаточном объеме, рекомендуется использовать большие модели\r",
+        "ja-JP": "メモリが比較的十分あるため、大規模モデルの使用を推奨します",
+        "de-DE": "Speicher relativ ausreichend, große Modelle werden empfohlen",
+        "fr-FR": "Mémoire relativement suffisante, utilisation de modèles volumineux recommandée\r",
+        "ko-KR": "메모리가 비교적 충분하므로 대형 모델을 사용하는 것을 권장합니다.\r",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(20305-20323)"
+        ],
+        "$id": 5974
+    },
+    "内存适中，推荐使用中型模型": {
+        "en-US": "Moderate memory, medium model is recommended",
+        "es-ES": "Memoria intermedia, se recomienda usar modelo mediano\r",
+        "ar-EG": "الذاكرة في المتوسط، يُوصى باستخدام نموذج متوسط\r",
+        "pt-PT": "Memória moderada, recomenda-se utilizar modelos médios\r",
+        "ru-RU": "Средний объем памяти, рекомендуется использовать модели среднего размера\r",
+        "ja-JP": "メモリが適量のため、中規模モデルの使用を推奨します",
+        "de-DE": "Speicherbedarf ist moderat, mittelgroße Modelle werden empfohlen",
+        "fr-FR": "Mémoire moyenne, utilisation de modèles de taille moyenne recommandée\r",
+        "ko-KR": "메모리가 적당하므로 중형 모델을 사용하는 것을 권장합니다.\r",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(20529-20546)"
+        ],
+        "$id": 5975
+    },
+    "内存较少，建议使用小型模型": {
+        "en-US": "Insufficient memory, small model is recommended",
+        "es-ES": "Poca memoria, se sugiere usar modelo pequeño\r",
+        "ar-EG": "الذاكرة قليلة، يُوصى باستخدام نموذج صغير\r",
+        "pt-PT": "Pouca memória, sugere-se utilizar modelos pequenos\r",
+        "ru-RU": "Мало памяти, рекомендуется использовать небольшие модели\r",
+        "ja-JP": "メモリが少ないため、小規模モデルの使用を推奨します",
+        "de-DE": "Wenig Speicher, kleine Modelle werden empfohlen",
+        "fr-FR": "Mémoire limitée, utilisation de modèles légers recommandée\r",
+        "ko-KR": "메모리가 적어 소형 모델을 사용하는 것을 권장합니다.\r",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(20707-20724)"
+        ],
+        "$id": 5976
+    },
+    "CPU核心数较少，可能影响推理速度": {
+        "en-US": "Few CPU cores, may affect inference speed",
+        "es-ES": "Pocos núcleos CPU, puede afectar la velocidad de inferencia\r",
+        "ar-EG": "عدد وحدات المعالجة المركزية قليل، قد يؤثر على سرعة الاستنتاج\r",
+        "pt-PT": "Número reduzido de núcleos da CPU, pode afetar a velocidade de inferência\r",
+        "ru-RU": "Малое количество ядер ЦП может повлиять на скорость вывода\r",
+        "ja-JP": "CPUコア数が少ないため、推論速度に影響する可能性があります",
+        "de-DE": "CPU-Kerne sind relativ wenige, dies kann die Inferenzgeschwindigkeit beeinflussen",
+        "fr-FR": "Nombre réduit de cœurs CPU, cela pourrait affecter la vitesse d'inférence\r",
+        "ko-KR": "CPU 코어 수가 적어 추론 속도에 영향을 줄 수 있습니다.\r",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(20820-20841)"
+        ],
+        "$id": 5977
+    },
+    "当前内存使用率较高，建议关闭其他应用": {
+        "en-US": "Current memory usage is high, it is recommended to close other applications",
+        "es-ES": "Uso de memoria actual elevado, se recomienda cerrar otras aplicaciones",
+        "ar-EG": "نسبة استخدام الذاكرة الحالية مرتفعة، يُوصى بإغلاق التطبيقات الأخرى",
+        "pt-PT": "Taxa de utilização atual da memória elevada, sugere-se fechar outras aplicações",
+        "ru-RU": "Высокий уровень использования памяти, рекомендуется закрыть другие приложения",
+        "ja-JP": "現在のメモリ使用率が高いため、他のアプリケーションを閉じることを推奨します",
+        "de-DE": "Aktuelle Speichernutzung ist hoch, schließen Sie andere Anwendungen",
+        "fr-FR": "Taux d'utilisation de la mémoire actuel élevé, fermeture d'autres applications recommandée",
+        "ko-KR": "현재 메모리 사용률이 높으므로 다른 응용 프로그램을 종료하는 것을 권장합니다.",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(20927-20949)"
+        ],
+        "$id": 5978
+    },
+    "可用存储空间不足，可能影响模型下载": {
+        "en-US": "Insufficient available storage space, which may affect model download",
+        "es-ES": "Espacio de almacenamiento insuficiente, lo que podría afectar la descarga del modelo",
+        "ar-EG": "مساحة التخزين غير كافية وقد تؤثر على تنزيل النموذج\r",
+        "pt-PT": "Espaço de armazenamento disponível insuficiente, pode afetar a transferência do modelo",
+        "ru-RU": "Недостаточно свободного места для хранения, что может повлиять на загрузку модели\r",
+        "ja-JP": "利用可能なストレージ容量が不足しているため、モデルのダウンロードに影響する可能性があります\r",
+        "de-DE": "Verfügbarer Speicherplatz ist unzureichend und kann die Modellherunterladung beeinflussen",
+        "fr-FR": "Espace de stockage disponible insuffisant, cela pourrait affecter le téléchargement du modèle",
+        "ko-KR": "사용 가능한 저장 공간이 부족하여 모델 다운로드에 영향을 줄 수 있음\r",
+        "$files": [
+            "electron/runtime-services/system/hardware-detection-service.ts(21052-21073)"
+        ],
+        "$id": 5979
+    },
+    "不支持的操作系统平台: {platform}": {
+        "en-US": "Unsupported operating system platform: {platform}",
+        "es-ES": "Plataforma de sistema operativo no compatible: {platform}",
+        "ar-EG": "نظام التشغيل غير مدعوم: {platform}",
+        "pt-PT": "Plataforma do sistema operativo não suportada: {platform}",
+        "ru-RU": "Неподдерживаемая операционная система: {platform}",
+        "ja-JP": "サポートされていないオペレーティングシステムプラットフォーム: {platform}",
+        "de-DE": "Nicht unterstützte Betriebssystemplattform: {platform}",
+        "fr-FR": "Plateforme système d'exploitation non prise en charge : {platform}",
+        "ko-KR": "지원되지 않는 운영 체제 플랫폼: {platform}",
+        "$files": [
+            "electron/runtime-services/system/libreoffice-detector.ts(1494-1520)"
+        ],
+        "$id": 5980
+    },
+    "未检测到 LibreOffice，请将其安装到默认路径或确保其在系统 PATH 中": {
+        "en-US": "LibreOffice not detected. Please install it to the default path or ensure it is in the system PATH.",
+        "es-ES": "No se ha detectado LibreOffice. Instálelo en la ruta predeterminada o asegúrese de que esté en la variable PATH del sistema.",
+        "ar-EG": "لم يتم اكتشاف LibreOffice، يرجى تثبيته في المسار الافتراضي أو التأكد من وجوده في مسار النظام PATH",
+        "pt-PT": "O LibreOffice não foi detetado. Por favor, instale-o no caminho predefinido ou certifique-se de que está no PATH do sistema.",
+        "ru-RU": "LibreOffice не обнаружен. Пожалуйста, установите его в путь по умолчанию или убедитесь, что он находится в системном PATH.",
+        "ja-JP": "LibreOffice が検出されませんでした。デフォルトパスにインストールするか、システム PATH 内に存在することを確認してください。",
+        "de-DE": "LibreOffice wurde nicht erkannt. Bitte installieren Sie es im Standardpfad oder stellen Sie sicher, dass es im System-PATH enthalten ist.",
+        "fr-FR": "LibreOffice n'a pas été détecté. Veuillez l'installer dans le chemin par défaut ou vous assurer qu'il se trouve dans le PATH système.",
+        "ko-KR": "LibreOffice 가 감지되지 않았습니다. 기본 경로에 설치하거나 시스템 PATH 에 포함되어 있는지 확인하십시오.",
+        "$files": [
+            "electron/runtime-services/system/libreoffice-detector.ts(4993-5038)",
+            "electron/runtime-services/system/libreoffice-detector.ts(7139-7184)",
+            "electron/runtime-services/system/libreoffice-detector.ts(10502-10547)"
+        ],
+        "$id": 3261
+    }
+}

@@ -1,0 +1,92 @@
+{
+    "经典蓝": {
+        "en-US": "Classic Blue  ",
+        "es-ES": "Azul clásico",
+        "ar-EG": "أزرق كلاسيكي  ",
+        "pt-PT": "Azul Clássico  ",
+        "ru-RU": "Классический синий  ",
+        "ja-JP": "クラシックブルー  ",
+        "de-DE": "Klassisches Blau  ",
+        "fr-FR": "Bleu classique  ",
+        "ko-KR": "클래식 블루  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(572-579)"
+        ],
+        "$id": 5453
+    },
+    "优雅紫": {
+        "en-US": "Elegant Purple  ",
+        "es-ES": "Púrpura elegante",
+        "ar-EG": "أرجواني أنيق  ",
+        "pt-PT": "Roxo Elegante  ",
+        "ru-RU": "Элегантный фиолетовый  ",
+        "ja-JP": "エレガントパープル  ",
+        "de-DE": "Elegantes Violett  ",
+        "fr-FR": "Violet élégant  ",
+        "ko-KR": "우아한 보라  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(2551-2558)"
+        ],
+        "$id": 5449
+    },
+    "自然绿": {
+        "en-US": "Natural Green  ",
+        "es-ES": "Verde natural",
+        "ar-EG": "أخضر طبيعي  ",
+        "pt-PT": "Verde Natural  ",
+        "ru-RU": "Природный зеленый  ",
+        "ja-JP": "ナチュラルグリーン  ",
+        "de-DE": "Natürliches Grün  ",
+        "fr-FR": "Vert naturel  ",
+        "ko-KR": "내추럴 그린  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(4175-4182)"
+        ],
+        "$id": 5447
+    },
+    "活力橙": {
+        "en-US": "Vibrant Orange",
+        "es-ES": "Naranja vibrante",
+        "ar-EG": "برتقالي حيوي",
+        "pt-PT": "Laranja Vibrante",
+        "ru-RU": "Энергичный оранжевый",
+        "ja-JP": "エネルギッシュオレンジ",
+        "de-DE": "Lebendiges Orange",
+        "fr-FR": "Orange dynamique",
+        "ko-KR": "활기찬 오렌지",
+        "$files": [
+            "renderer/lib/theme-config.ts(5821-5828)"
+        ],
+        "$id": 5454
+    },
+    "玫瑰红": {
+        "en-US": "Rose Red  ",
+        "es-ES": "Rosa rojo",
+        "ar-EG": "أحمر وردي  ",
+        "pt-PT": "Vermelho Rosa  ",
+        "ru-RU": "Розово-красный  ",
+        "ja-JP": "ローズレッド  ",
+        "de-DE": "Rosarot  ",
+        "fr-FR": "Rouge rosé  ",
+        "ko-KR": "로즈 레드  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(7431-7438)"
+        ],
+        "$id": 5451
+    },
+    "中性灰": {
+        "en-US": "Neutral Gray  ",
+        "es-ES": "Gris neutro",
+        "ar-EG": "رمادي محايد  ",
+        "pt-PT": "Cinza Neutro  ",
+        "ru-RU": "Нейтральный серый  ",
+        "ja-JP": "ニュートラルグレー  ",
+        "de-DE": "Neutrales Grau  ",
+        "fr-FR": "Gris neutre  ",
+        "ko-KR": "중성 회색  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(9056-9063)"
+        ],
+        "$id": 5443
+    }
+}

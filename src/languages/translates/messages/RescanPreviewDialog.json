@@ -1,0 +1,273 @@
+{
+    "请至少选择一个文件": {
+        "en-US": "Please select at least one file  ",
+        "es-ES": "Por favor, seleccione al menos un archivo",
+        "ar-EG": "يرجى اختيار ملف واحد على الأقل  ",
+        "pt-PT": "Por favor, selecione pelo menos um ficheiro",
+        "ru-RU": "Пожалуйста, выберите хотя бы один файл",
+        "ja-JP": "少なくとも1つのファイルを選択してください",
+        "de-DE": "Bitte wählen Sie mindestens eine Datei aus.",
+        "fr-FR": "Veuillez sélectionner au moins un fichier",
+        "ko-KR": "파일을 하나 이상 선택해 주세요.",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(12398-12411)"
+        ],
+        "$id": 3236
+    },
+    "{count} 个文件已加入AI分析队列": {
+        "en-US": "{count} files have been added to the AI analysis queue  ",
+        "es-ES": "{count} archivos añadidos a la cola de análisis de IA",
+        "ar-EG": "تمت إضافة {count} ملفات إلى قائمة انتظار التحليل بواسطة الذكاء الاصطناعي  ",
+        "pt-PT": "{count} ficheiros adicionados à fila de análise de IA",
+        "ru-RU": "{count} файлов добавлено в очередь анализа ИИ",
+        "ja-JP": "{count}個のファイルがAI分析キューに追加されました",
+        "de-DE": "{count} Dateien wurden der KI-Analyse-Warteschlange hinzugefügt.",
+        "fr-FR": "{count} fichiers ont été ajoutés à la file d'analyse IA",
+        "ko-KR": "{count}개의 파일이 AI 분석 대기열에 추가되었습니다.",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(12764-12788)"
+        ],
+        "$id": 3237
+    },
+    "所有变更文件已处理完成": {
+        "en-US": "All changed files have been processed  ",
+        "es-ES": "Todos los archivos modificados han sido procesados",
+        "ar-EG": "تمت معالجة جميع الملفات المُعدَّلة  ",
+        "pt-PT": "Todos os ficheiros alterados foram processados",
+        "ru-RU": "Все изменённые файлы обработаны",
+        "ja-JP": "すべての変更ファイルの処理が完了しました",
+        "de-DE": "Alle geänderten Dateien wurden verarbeitet.",
+        "fr-FR": "Tous les fichiers modifiés ont été traités",
+        "ko-KR": "모든 변경된 파일 처리가 완료되었습니다.",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(13057-13072)"
+        ],
+        "$id": 3238
+    },
+    "加入分析队列失败: {error}": {
+        "en-US": "Failed to add to analysis queue: {error}  ",
+        "es-ES": "Error al añadir a la cola de análisis: {error}",
+        "ar-EG": "فشل إضافة إلى قائمة الانتظار: {error}  ",
+        "pt-PT": "Falha ao adicionar à fila de análise: {error}",
+        "ru-RU": "Не удалось добавить в очередь анализа: {error}",
+        "ja-JP": "分析キューへの追加に失敗しました: {error}",
+        "de-DE": "Fehler beim Hinzufügen zur Analyse-Warteschlange: {error}",
+        "fr-FR": "Échec de l'ajout à la file d'analyse : {error}",
+        "ko-KR": "분석 대기열 추가 실패: {error}",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(13194-13215)"
+        ],
+        "$id": 3239
+    },
+    "发现文件变更": {
+        "en-US": "File changes detected  ",
+        "es-ES": "Se han detectado cambios en los archivos",
+        "ar-EG": "تم اكتشاف تغييرات في الملفات  ",
+        "pt-PT": "Foram detetadas alterações nos ficheiros",
+        "ru-RU": "Обнаружены изменения файлов",
+        "ja-JP": "ファイルの変更を検出しました",
+        "de-DE": "Dateiänderungen erkannt",
+        "fr-FR": "Des modifications de fichiers ont été détectées",
+        "ko-KR": "파일 변경 사항 감지됨",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(14082-14092)"
+        ],
+        "$id": 3240
+    },
+    "工作目录: ": {
+        "en-US": "Working directory:   ",
+        "es-ES": "Directorio de trabajo: ",
+        "ar-EG": "دليل العمل:   ",
+        "pt-PT": "Diretório de trabalho: ",
+        "ru-RU": "Рабочий каталог: ",
+        "ja-JP": "作業ディレクトリ: ",
+        "de-DE": "Arbeitsverzeichnis: ",
+        "fr-FR": "Répertoire de travail : ",
+        "ko-KR": "작업 디렉터리: ",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(14191-14201)"
+        ],
+        "$id": 3241
+    },
+    "所有变更已处理完成": {
+        "en-US": "All changes have been processed  ",
+        "es-ES": "Todos los cambios han sido procesados",
+        "ar-EG": "تمت معالجة جميع التغييرات  ",
+        "pt-PT": "Todas as alterações foram processadas",
+        "ru-RU": "Все изменения обработаны",
+        "ja-JP": "すべての変更の処理が完了しました",
+        "de-DE": "Alle Änderungen wurden verarbeitet.",
+        "fr-FR": "Toutes les modifications ont été traitées",
+        "ko-KR": "모든 변경 사항 처리 완료",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(14850-14863)"
+        ],
+        "$id": 3242
+    },
+    "可以关闭此对话框": {
+        "en-US": "You may close this dialog  ",
+        "es-ES": "Puede cerrar este cuadro de diálogo",
+        "ar-EG": "يمكنك إغلاق مربع الحوار هذا  ",
+        "pt-PT": "Pode fechar esta caixa de diálogo",
+        "ru-RU": "Можно закрыть это диалоговое окно",
+        "ja-JP": "このダイアログを閉じることができます",
+        "de-DE": "Sie können diesen Dialog schließen.",
+        "fr-FR": "Vous pouvez fermer cette boîte de dialogue",
+        "ko-KR": "이 대화상자를 닫으셔도 됩니다.",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(14958-14970)"
+        ],
+        "$id": 3243
+    },
+    "新增文件:": {
+        "en-US": "New files:  ",
+        "es-ES": "Archivos nuevos:",
+        "ar-EG": "ملفات جديدة:  ",
+        "pt-PT": "Ficheiros novos:",
+        "ru-RU": "Новые файлы:",
+        "ja-JP": "新規ファイル:",
+        "de-DE": "Neue Dateien:",
+        "fr-FR": "Fichiers ajoutés :",
+        "ko-KR": "새로 추가된 파일:",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(15327-15336)"
+        ],
+        "$id": 3244
+    },
+    "修改文件:": {
+        "en-US": "Modified files:  ",
+        "es-ES": "Archivos modificados:",
+        "ar-EG": "ملفات معدَّلة:  ",
+        "pt-PT": "Ficheiros modificados:",
+        "ru-RU": "Изменённые файлы:",
+        "ja-JP": "変更ファイル:",
+        "de-DE": "Geänderte Dateien:",
+        "fr-FR": "Fichiers modifiés :",
+        "ko-KR": "수정된 파일:",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(15513-15522)"
+        ],
+        "$id": 3245
+    },
+    "已选中": {
+        "en-US": "Selected  ",
+        "es-ES": "Seleccionado",
+        "ar-EG": "مُحدَّد  ",
+        "pt-PT": "Selecionado",
+        "ru-RU": "Выбрано",
+        "ja-JP": "選択済み",
+        "de-DE": "Ausgewählt",
+        "fr-FR": "Sélectionné",
+        "ko-KR": "선택됨",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(15742-15749)"
+        ],
+        "$id": 3246
+    },
+    "新增文件": {
+        "en-US": "New files  ",
+        "es-ES": "Archivos nuevos",
+        "ar-EG": "ملفات جديدة  ",
+        "pt-PT": "Ficheiros novos",
+        "ru-RU": "Новые файлы",
+        "ja-JP": "新規ファイル",
+        "de-DE": "Neue Datei",
+        "fr-FR": "Fichiers ajoutés",
+        "ko-KR": "새로 추가된 파일",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(16198-16206)"
+        ],
+        "$id": 3247
+    },
+    "修改文件": {
+        "en-US": "Modified files  ",
+        "es-ES": "Archivos modificados",
+        "ar-EG": "ملفات معدَّلة  ",
+        "pt-PT": "Ficheiros modificados",
+        "ru-RU": "Из改нённые файлы",
+        "ja-JP": "変更ファイル",
+        "de-DE": "Geänderte Datei",
+        "fr-FR": "Fichiers modifiés",
+        "ko-KR": "수정된文件",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(16424-16432)"
+        ],
+        "$id": 3248
+    },
+    "勾选目录可级联选择所有子文件": {
+        "en-US": "Checking a directory will recursively select all its subfiles  ",
+        "es-ES": "Marcar un directorio selecciona recursivamente todos sus subarchivos",
+        "ar-EG": "تحديد مجلد يؤدي إلى تحديد جميع الملفات الفرعية تلقائيًا  ",
+        "pt-PT": "Marcar uma pasta seleciona recursivamente todos os subficheiros",
+        "ru-RU": "Отметка каталога позволяет каскадно выбрать все вложенные файлы",
+        "ja-JP": "ディレクトリにチェックを入れると、すべてのサブファイルが階層的に選択されます",
+        "de-DE": "Durch Markieren eines Verzeichnisses werden rekursiv alle darin enthaltenen Dateien ausgewählt.",
+        "fr-FR": "Cochez un répertoire pour sélectionner récursivement tous ses sous-fichiers",
+        "ko-KR": "디렉터리를 선택하면 하위 모든 파일이 계층적으로 선택됩니다.",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(16659-16677)"
+        ],
+        "$id": 3249
+    },
+    "反选": {
+        "en-US": "Invert selection  ",
+        "es-ES": "Invertir selección",
+        "ar-EG": "عكس الاختيار  ",
+        "pt-PT": "Inverter seleção",
+        "ru-RU": "Инвертировать выбор",
+        "ja-JP": "選択を反転",
+        "de-DE": "Auswahl umkehren",
+        "fr-FR": "Inverser la sélection",
+        "ko-KR": "선택 반전",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(18003-18009)"
+        ],
+        "$id": 3250
+    },
+    "关闭": {
+        "en-US": "Close  ",
+        "es-ES": "Cerrar",
+        "ar-EG": "إغلاق  ",
+        "pt-PT": "Fechar",
+        "ru-RU": "Закрыть",
+        "ja-JP": "閉じる",
+        "de-DE": "Schließen",
+        "fr-FR": "Fermer",
+        "ko-KR": "닫기",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(18212-18218)",
+            "renderer/components/settings/RescanPreviewDialog.tsx(19102-19108)"
+        ],
+        "$id": 3251
+    },
+    "正在加入队列...": {
+        "en-US": "Adding to queue...  ",
+        "es-ES": "Añadiendo a la cola...",
+        "ar-EG": "جارٍ الإضافة إلى القائمة...  ",
+        "pt-PT": "A adicionar à fila...",
+        "ru-RU": "Добавление в очередь...",
+        "ja-JP": "キューに追加中...",
+        "de-DE": "Wird zur Warteschlange hinzugefügt ...",
+        "fr-FR": "Ajout en cours à la file...",
+        "ko-KR": "대기열에 추가 중...",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(18661-18674)"
+        ],
+        "$id": 3252
+    },
+    "加入队列 ({count})": {
+        "en-US": "Add to queue ({count})",
+        "es-ES": "Añadir a la cola ({count})",
+        "ar-EG": "إضافة إلى القائمة ({count})",
+        "pt-PT": "Adicionar à fila ({count})",
+        "ru-RU": "Добавить в очередь ({count})",
+        "ja-JP": "キューに追加 ({count})",
+        "de-DE": "Zur Warteschlange hinzufügen ({count})",
+        "fr-FR": "Ajouter à la file ({count})",
+        "ko-KR": "대기열에 추가 ({count})",
+        "$files": [
+            "renderer/components/settings/RescanPreviewDialog.tsx(18788-18806)"
+        ],
+        "$id": 3253
+    }
+}

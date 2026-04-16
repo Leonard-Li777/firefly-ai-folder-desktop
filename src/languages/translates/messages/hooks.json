@@ -1,0 +1,154 @@
+{
+    "IPC 接口不可用: modelDownload.checkDownloadStatus": {
+        "en-US": "IPC interface unavailable: modelDownload.checkDownloadStatus",
+        "es-ES": "Interfaz IPC no disponible: modelDownload.checkDownloadStatus",
+        "ar-EG": "واجهة IPC غير متاحة: modelDownload.checkDownloadStatus",
+        "pt-PT": "Interface IPC indisponível: modelDownload.checkDownloadStatus",
+        "ru-RU": "IPC-интерфейс недоступен: modelDownload.checkDownloadStatus",
+        "ja-JP": "IPC インターフェースが利用できません: modelDownload.checkDownloadStatus",
+        "de-DE": "IPC-Schnittstelle nicht verfügbar: modelDownload.checkDownloadStatus",
+        "fr-FR": "Interface IPC indisponible : modelDownload.checkDownloadStatus",
+        "ko-KR": "IPC 인터페이스를 사용할 수 없습니다: modelDownload.checkDownloadStatus",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(4056-4104)"
+        ],
+        "$id": 5435
+    },
+    "IPC 接口不可用: ollama.pullModel": {
+        "en-US": "IPC interface unavailable: ollama.pullModel",
+        "es-ES": "La interfaz IPC no está disponible: ollama.pullModel",
+        "ar-EG": "واجهة IPC غير متوفرة: ollama.pullModel",
+        "pt-PT": "Interface IPC não disponível: ollama.pullModel",
+        "ru-RU": "Интерфейс IPC недоступен: ollama.pullModel",
+        "ja-JP": "IPC インターフェースが利用できません: ollama.pullModel",
+        "de-DE": "IPC-Schnittstelle nicht verfügbar: ollama.pullModel",
+        "fr-FR": "L'interface IPC n'est pas disponible : ollama.pullModel",
+        "ko-KR": "IPC 인터페이스를 사용할 수 없음: ollama.pullModel",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(5812-5843)"
+        ],
+        "$id": 2813
+    },
+    "拉取 Ollama 模型失败": {
+        "en-US": "Failed to pull Ollama model",
+        "es-ES": "Error al extraer el modelo Ollama",
+        "ar-EG": "فشل سحب نموذج Ollama",
+        "pt-PT": "Falha ao puxar o modelo Ollama",
+        "ru-RU": "Не удалось загрузить модель Ollama",
+        "ja-JP": "Ollama モデルのプルに失敗しました",
+        "de-DE": "Fehler beim Herunterladen des Ollama-Modells",
+        "fr-FR": "Échec du téléchargement du modèle Ollama",
+        "ko-KR": "Ollama 모델을 가져오지 못했습니다",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(6110-6128)"
+        ],
+        "$id": 2814
+    },
+    "IPC 接口不可用: modelDownload.startDownload": {
+        "en-US": "IPC interface unavailable: modelDownload.startDownload",
+        "es-ES": "Interfaz IPC no disponible: modelDownload.startDownload",
+        "ar-EG": "واجهة IPC غير متاحة: modelDownload.startDownload",
+        "pt-PT": "Interface IPC indisponível: modelDownload.startDownload",
+        "ru-RU": "IPC-интерфейс недоступен: modelDownload.startDownload",
+        "ja-JP": "IPC インターフェースが利用できません: modelDownload.startDownload",
+        "de-DE": "IPC-Schnittstelle nicht verfügbar: modelDownload.startDownload",
+        "fr-FR": "Interface IPC indisponible : modelDownload.startDownload",
+        "ko-KR": "IPC 인터페이스를 사용할 수 없습니다: modelDownload.startDownload",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(6701-6743)"
+        ],
+        "$id": 5436
+    },
+    "下载失败": {
+        "en-US": "Download failed",
+        "es-ES": "Error al descargar",
+        "ar-EG": "فشل التنزيل",
+        "pt-PT": "Falha na transferência",
+        "ru-RU": "Ошибка загрузки",
+        "ja-JP": "ダウンロードに失敗しました",
+        "de-DE": "Download fehlgeschlagen",
+        "fr-FR": "Échec du téléchargement",
+        "ko-KR": "다운로드 실패",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(11688-11696)",
+            "renderer/hooks/use-model-download.ts(11886-11894)",
+            "renderer/hooks/use-model-download.ts(13783-13791)"
+        ],
+        "$id": 5437
+    },
+    "质量评分": {
+        "en-US": "Quality rating",
+        "es-ES": "Puntuación de calidad",
+        "ar-EG": "تقييم الجودة",
+        "pt-PT": "Avaliação de qualidade",
+        "ru-RU": "Оценка качества",
+        "ja-JP": "品質スコア",
+        "de-DE": "Qualitätsbewertung",
+        "fr-FR": "Score de qualité",
+        "ko-KR": "품질 평가 점수",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(891-899)"
+        ],
+        "$id": 5438
+    },
+    "描述": {
+        "en-US": "Description",
+        "es-ES": "Descripción",
+        "ar-EG": "الوصف",
+        "pt-PT": "Descrição",
+        "ru-RU": "Описание",
+        "ja-JP": "説明",
+        "de-DE": "Beschreibung",
+        "fr-FR": "Description",
+        "ko-KR": "설명",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(922-928)"
+        ],
+        "$id": 5439
+    },
+    "标签": {
+        "en-US": "Tags",
+        "es-ES": "Etiquetas",
+        "ar-EG": "الوسوم",
+        "pt-PT": "Etiquetas",
+        "ru-RU": "Теги",
+        "ja-JP": "タグ",
+        "de-DE": "Tags",
+        "fr-FR": "Étiquettes",
+        "ko-KR": "태그",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(944-950)"
+        ],
+        "$id": 5440
+    },
+    "作者": {
+        "en-US": "Author",
+        "es-ES": "Autor",
+        "ar-EG": "المؤلف",
+        "pt-PT": "Autor",
+        "ru-RU": "Автор",
+        "ja-JP": "著者",
+        "de-DE": "Autor",
+        "fr-FR": "Auteur",
+        "ko-KR": "작성자",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(968-974)"
+        ],
+        "$id": 5441
+    },
+    "语言": {
+        "en-US": "Language",
+        "es-ES": "Idioma",
+        "ar-EG": "اللغة",
+        "pt-PT": "Idioma",
+        "ru-RU": "Язык",
+        "ja-JP": "言語",
+        "de-DE": "Sprache",
+        "fr-FR": "Langue",
+        "ko-KR": "언어",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(994-1000)"
+        ],
+        "$id": 5442
+    }
+}

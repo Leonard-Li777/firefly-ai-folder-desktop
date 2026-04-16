@@ -1,0 +1,311 @@
+{
+    "计算中": {
+        "en-US": "Computing\r",
+        "es-ES": "Cálculo en curso",
+        "ar-EG": "جاري الحساب\r",
+        "pt-PT": "A calcular",
+        "ru-RU": "Вычисления\r",
+        "ja-JP": "計算中",
+        "de-DE": "Berechnung läuft\r",
+        "fr-FR": "Calcul en cours",
+        "ko-KR": "계산 중",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(1791-1798)",
+            "renderer/components/download/ModelDownloadProgress.tsx(2064-2071)",
+            "renderer/components/download/ModelDownloadProgress.tsx(6759-6766)"
+        ],
+        "$id": 3925
+    },
+    "请稍候...": {
+        "en-US": "Please wait...\r",
+        "es-ES": "Espere un momento...",
+        "ar-EG": "الرجاء الانتظار...\r",
+        "pt-PT": "Por favor, aguarde...",
+        "ru-RU": "Подождите...\r",
+        "ja-JP": "しばらくお待ちください...",
+        "de-DE": "Bitte warten Sie...\r",
+        "fr-FR": "Veuillez patienter...",
+        "ko-KR": "잠시 기다려 주세요...",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(1868-1878)",
+            "renderer/components/download/ModelDownloadProgress.tsx(1968-1978)",
+            "renderer/components/download/ModelDownloadProgress.tsx(2245-2255)"
+        ],
+        "$id": 3926
+    },
+    "秒": {
+        "en-US": "seconds\r",
+        "es-ES": "segundos",
+        "ar-EG": "ثانية\r",
+        "pt-PT": "segundos",
+        "ru-RU": "сек.\r",
+        "ja-JP": "2番",
+        "de-DE": "Sekunden\r",
+        "fr-FR": "secondes",
+        "ko-KR": "초",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(2395-2400)",
+            "renderer/components/download/ModelDownloadProgress.tsx(2680-2685)"
+        ],
+        "$id": 3927
+    },
+    "分钟": {
+        "en-US": "minutes\r",
+        "es-ES": "minutos",
+        "ar-EG": "دقيقة\r",
+        "pt-PT": "minutos",
+        "ru-RU": "мин.\r",
+        "ja-JP": "分",
+        "de-DE": "Minuten\r",
+        "fr-FR": "minutes",
+        "ko-KR": "분",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(2650-2656)",
+            "renderer/components/download/ModelDownloadProgress.tsx(2725-2731)",
+            "renderer/components/download/ModelDownloadProgress.tsx(2933-2939)"
+        ],
+        "$id": 3928
+    },
+    "小时": {
+        "en-US": "hours\r",
+        "es-ES": "horas",
+        "ar-EG": "ساعة\r",
+        "pt-PT": "horas",
+        "ru-RU": "час.\r",
+        "ja-JP": "時間",
+        "de-DE": "Stunden\r",
+        "fr-FR": "heures",
+        "ko-KR": "시간",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(2903-2909)",
+            "renderer/components/download/ModelDownloadProgress.tsx(2975-2981)"
+        ],
+        "$id": 3929
+    },
+    "下载出错": {
+        "en-US": "Download error\r",
+        "es-ES": "Error de descarga",
+        "ar-EG": "خطأ في التنزيل\r",
+        "pt-PT": "Erro na transferência",
+        "ru-RU": "Ошибка загрузки\r",
+        "ja-JP": "ダウンロードエラー",
+        "de-DE": "Fehler beim Herunterladen\r",
+        "fr-FR": "Erreur de téléchargement",
+        "ko-KR": "다운로드 오류",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(4322-4330)",
+            "renderer/components/download/ModelDownloadProgress.tsx(7759-7767)"
+        ],
+        "$id": 3930
+    },
+    "正在尝试恢复...": {
+        "en-US": "Attempting to resume...\r",
+        "es-ES": "Intentando recuperar...",
+        "ar-EG": "جاري محاولة الاستعادة...\r",
+        "pt-PT": "A tentar recuperar...",
+        "ru-RU": "Попытка восстановить...\r",
+        "ja-JP": "復元を試行中...",
+        "de-DE": "Versuch, wiederherzustellen...\r",
+        "fr-FR": "Tentative de récupération...",
+        "ko-KR": "복구 시도 중...",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(4371-4384)"
+        ],
+        "$id": 3931
+    },
+    "已暂停": {
+        "en-US": "Paused\r",
+        "es-ES": "Pausado",
+        "ar-EG": "موقوف\r",
+        "pt-PT": "Em pausa",
+        "ru-RU": "Пауза\r",
+        "ja-JP": "一時停止",
+        "de-DE": "Pausiert\r",
+        "fr-FR": "En pause",
+        "ko-KR": "일시 중지됨",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(4412-4419)"
+        ],
+        "$id": 3932
+    },
+    "正在下载...": {
+        "en-US": "Downloading...\r",
+        "es-ES": "Descargando...",
+        "ar-EG": "جاري التنزيل...\r",
+        "pt-PT": "A transferir...",
+        "ru-RU": "Загрузка...\r",
+        "ja-JP": "ダウンロード中...",
+        "de-DE": "Lädt herunter...\r",
+        "fr-FR": "Téléchargement en cours...",
+        "ko-KR": "다운로드 중...",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(4452-4463)"
+        ],
+        "$id": 3933
+    },
+    "下载完成": {
+        "en-US": "Download complete\r",
+        "es-ES": "Descarga completada",
+        "ar-EG": "اكتمل التنزيل\r",
+        "pt-PT": "Transferência concluída",
+        "ru-RU": "Загрузка завершена\r",
+        "ja-JP": "ダウンロード完了",
+        "de-DE": "Download abgeschlossen\r",
+        "fr-FR": "Téléchargement terminé",
+        "ko-KR": "다운로드 완료",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(4515-4523)"
+        ],
+        "$id": 3934
+    },
+    "等待开始": {
+        "en-US": "Waiting to start\r",
+        "es-ES": "Esperando para comenzar",
+        "ar-EG": "في انتظار البدء\r",
+        "pt-PT": "A aguardar o início",
+        "ru-RU": "Ожидание начала\r",
+        "ja-JP": "開始を待機中",
+        "de-DE": "Warten auf Start\r",
+        "fr-FR": "En attente du démarrage",
+        "ko-KR": "시작 대기 중",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(4537-4545)"
+        ],
+        "$id": 3935
+    },
+    "AI模型": {
+        "en-US": "AI Model\r",
+        "es-ES": "Modelo de IA",
+        "ar-EG": "نموذج الذكاء الاصطناعي\r",
+        "pt-PT": "Modelo de IA",
+        "ru-RU": "AI-модель\r",
+        "ja-JP": "AIモデル",
+        "de-DE": "KI-Modell\r",
+        "fr-FR": "Modèle IA",
+        "ko-KR": "AI 모델",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(5224-5232)"
+        ],
+        "$id": 3936
+    },
+    "重试": {
+        "en-US": "Retry\r",
+        "es-ES": "Reintentar",
+        "ar-EG": "أعد المحاولة\r",
+        "pt-PT": "Repetir",
+        "ru-RU": "Повторите попытку\r",
+        "ja-JP": "再試行",
+        "de-DE": "Erneut versuchen\r",
+        "fr-FR": "Réessayer",
+        "ko-KR": "다시 시도",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(8201-8207)"
+        ],
+        "$id": 3937
+    },
+    "手动下载提示": {
+        "en-US": "Manual Download Prompt\r",
+        "es-ES": "Sugerencia de descarga manual",
+        "ar-EG": "تلميح التنزيل اليدوي\r",
+        "pt-PT": "Sugestão de transferência manual",
+        "ru-RU": "Руководство по ручной загрузке\r",
+        "ja-JP": "手動ダウンロードの案内",
+        "de-DE": "Hinweis zum manuellen Herunterladen\r",
+        "fr-FR": "Invite de téléchargement manuel",
+        "ko-KR": "수동 다운로드 안내",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(9192-9202)"
+        ],
+        "$id": 3938
+    },
+    "如果下载不成功，请手动下载以下文件到模型存储目录：": {
+        "en-US": "If the download fails, please manually download the following file to the model storage directory:\r",
+        "es-ES": "Si la descarga no es exitosa, descargue manualmente el siguiente archivo al directorio de almacenamiento del modelo:",
+        "ar-EG": "إذا لم ينجح التنزيل، يرجى تنزيل الملف التالي يدويًا إلى دليل تخزين النموذج:\r",
+        "pt-PT": "Se a transferência não for bem-sucedida, transfira manualmente o seguinte ficheiro para o diretório de armazenamento do modelo:",
+        "ru-RU": "Если загрузка не выполнена, загрузите вручную следующие файлы в каталог хранения модели:\r",
+        "ja-JP": "ダウンロードが失敗した場合は、以下のファイルを手動でモデル保存ディレクトリにダウンロードしてください:",
+        "de-DE": "Falls der Download nicht erfolgreich ist, laden Sie bitte manuell folgende Datei in das Modell-Speicherverzeichnis herunter:\r",
+        "fr-FR": "Si le téléchargement échoue, veuillez télécharger manuellement le fichier suivant dans le répertoire de stockage du modèle :",
+        "ko-KR": "다운로드가 실패할 경우, 다음 파일을 모델 저장 디렉토리로 수동 다운로드해 주세요:",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(9249-9278)"
+        ],
+        "$id": 3939
+    },
+    "下载地址": {
+        "en-US": "Download URL\r",
+        "es-ES": "Dirección de descarga",
+        "ar-EG": "رابط التنزيل\r",
+        "pt-PT": "Endereço da transferência",
+        "ru-RU": "Ссылка на загрузку\r",
+        "ja-JP": "ダウンロードURL",
+        "de-DE": "Download-Adresse\r",
+        "fr-FR": "Adresse de téléchargement",
+        "ko-KR": "다운로드 주소",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(9455-9463)"
+        ],
+        "$id": 3940
+    },
+    "模型存储目录": {
+        "en-US": "Model storage directory\r",
+        "es-ES": "Directorio de almacenamiento del modelo",
+        "ar-EG": "دليل تخزين النموذج\r",
+        "pt-PT": "Diretório de armazenamento do modelo",
+        "ru-RU": "Каталог хранения модели\r",
+        "ja-JP": "モデル保存ディレクトリ",
+        "de-DE": "Modell-Speicherverzeichnis\r",
+        "fr-FR": "Répertoire de stockage du modèle",
+        "ko-KR": "모델 저장 디렉토리",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(9986-9996)"
+        ],
+        "$id": 3941
+    },
+    "暂停": {
+        "en-US": "Pause\r",
+        "es-ES": "Pausar",
+        "ar-EG": "إيقاف مؤقت\r",
+        "pt-PT": "Pausa",
+        "ru-RU": "Пауза\r",
+        "ja-JP": "一時停止",
+        "de-DE": "Pausieren\r",
+        "fr-FR": "Pause",
+        "ko-KR": "일시 중지",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(10802-10808)"
+        ],
+        "$id": 3942
+    },
+    "继续": {
+        "en-US": "Resume\r",
+        "es-ES": "Continuar",
+        "ar-EG": "متابع\r",
+        "pt-PT": "Continuar",
+        "ru-RU": "Продолжить\r",
+        "ja-JP": "再開",
+        "de-DE": "Fortsetzen\r",
+        "fr-FR": "Reprendre",
+        "ko-KR": "계속",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(11130-11136)"
+        ],
+        "$id": 3943
+    },
+    "取消": {
+        "en-US": "Cancel",
+        "es-ES": "Cancelar",
+        "ar-EG": "إلغاء",
+        "pt-PT": "Cancelar",
+        "ru-RU": "Отмена",
+        "ja-JP": "キャンセル",
+        "de-DE": "Abbrechen",
+        "fr-FR": "Annuler",
+        "ko-KR": "취소",
+        "$files": [
+            "renderer/components/download/ModelDownloadProgress.tsx(11518-11524)"
+        ],
+        "$id": 3944
+    }
+}

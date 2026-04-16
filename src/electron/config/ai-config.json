@@ -1,0 +1,36 @@
+{
+  "server": {
+    "port": 8172,
+    "timeout": 30000,
+    "maxRetries": 5,
+    "healthCheckInterval": 10000,
+    "startupTimeout": 60000,
+    "shutdownTimeout": 10000
+  },
+  "model": {
+    "enableWarmup": true,
+    "switchTimeout": 120000,
+    "defaultModelPath": "C:\\Users\\1\\AppData\\Roaming\\yonuc-ai-folder\\models"
+  },
+  "performance": {
+    "maxConcurrentRequests": 3,
+    "requestTimeout": 45000,
+    "enableBatching": true,
+    "batchSize": 5,
+    "batchTimeout": 5000,
+    "maxConnections": 10,
+    "connectionIdleTimeout": 30000
+  },
+  "debug": {
+    "enableLogging": true,
+    "logLevel": "info",
+    "enablePerformanceMonitoring": true,
+    "enableHealthChecks": true
+  },
+  "paths": {
+    "binaryPath": "build/extraResources/llama",
+    "modelPath": "C:\\Users\\1\\AppData\\Roaming\\yonuc-ai-folder\\models",
+    "logPath": "C:\\Users\\1\\.cache\\yonuc-ai-folder\\logs",
+    "tempPath": "temp"
+  }
+}
