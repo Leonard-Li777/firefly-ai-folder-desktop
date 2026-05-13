@@ -1,0 +1,287 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ============================================
+   Tailwind CSS v4 主题配置
+   ============================================ */
+@theme {
+  /* 自定义颜色 - 使用 CSS 变量 */
+  --color-border: hsl(var(--border) / <alpha-value>);
+  --color-input: hsl(var(--input) / <alpha-value>);
+  --color-ring: hsl(var(--ring) / <alpha-value>);
+  --color-background: hsl(var(--background) / <alpha-value>);
+  --color-foreground: hsl(var(--foreground) / <alpha-value>);
+  
+  --color-primary: hsl(var(--primary) / <alpha-value>);
+  --color-primary-foreground: hsl(var(--primary-foreground) / <alpha-value>);
+  
+  --color-secondary: hsl(var(--secondary) / <alpha-value>);
+  --color-secondary-foreground: hsl(var(--secondary-foreground) / <alpha-value>);
+  
+  --color-destructive: hsl(var(--destructive) / <alpha-value>);
+  --color-destructive-foreground: hsl(var(--destructive-foreground) / <alpha-value>);
+  
+  --color-muted: hsl(var(--muted) / <alpha-value>);
+  --color-muted-foreground: hsl(var(--muted-foreground) / <alpha-value>);
+  
+  --color-accent: hsl(var(--accent) / <alpha-value>);
+  --color-accent-foreground: hsl(var(--accent-foreground) / <alpha-value>);
+  
+  --color-popover: hsl(var(--popover) / <alpha-value>);
+  --color-popover-foreground: hsl(var(--popover-foreground) / <alpha-value>);
+  
+  --color-card: hsl(var(--card) / <alpha-value>);
+  --color-card-foreground: hsl(var(--card-foreground) / <alpha-value>);
+
+  /* 边框圆角 */
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  /* 容器 */
+  --breakpoint-2xl: 1400px;
+
+  /* 动画 */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+/* Accordion 动画定义 */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+/* ============================================
+   精致配色系统 - 亮色与暗色模式
+   设计理念：柔和舒适、层次分明、专业优雅
+   ============================================ */
+
+/* 亮色模式 - 典雅大气 */
+:root {
+  /* 背景层次 */
+  --background: 210 20% 98%; /* 微微带灰的典雅白 */
+  --card: 0 0% 100%;
+  --popover: 0 0% 100%;
+  --muted: 210 10% 94%; /* 柔和灰蓝 */
+
+  /* 前景色 */
+  --foreground: 222 47% 11%; /* 深石板色文字 */
+  --card-foreground: 222 47% 11%;
+  --popover-foreground: 222 47% 11%;
+  --muted-foreground: 215 16% 47%;
+
+  /* 主色调 - 经典蓝 (Classic Blue #0F4C81) */
+  --primary: 210 79% 28%;
+  --primary-foreground: 210 40% 98%;
+
+  /* 次要色 */
+  --secondary: 210 15% 90%;
+  --secondary-foreground: 210 79% 20%;
+
+  /* 强调色 */
+  --accent: 210 10% 94%;
+  --accent-foreground: 210 79% 28%;
+
+  /* 破坏性操作 */
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* 边框与输入 */
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 210 79% 28%;
+
+  --radius: 0.6rem; /* 稍微圆润一点更典雅 */
+}
+
+/* 暗色模式 - 沉稳优雅 */
+.dark {
+  /* 背景层次 */
+  --background: 222 47% 7%; /* 深邃石板蓝 */
+  --card: 222 47% 10%;
+  --popover: 222 47% 10%;
+  --muted: 223 47% 14%;
+
+  /* 前景色 */
+  --foreground: 210 40% 98%;
+  --card-foreground: 210 40% 98%;
+  --popover-foreground: 210 40% 98%;
+  --muted-foreground: 215 20% 65%;
+
+  /* 主色调 - 经典蓝 (暗色模式适配) */
+  --primary: 210 70% 50%;
+  --primary-foreground: 210 40% 98%;
+
+  /* 次要色 */
+  --secondary: 222 47% 15%;
+  --secondary-foreground: 210 40% 98%;
+
+  /* 强调色 */
+  --accent: 222 47% 18%;
+  --accent-foreground: 210 40% 98%;
+
+  /* 破坏性操作 */
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+
+  /* 边框 */
+  --border: 222 47% 18%;
+  --input: 222 47% 18%;
+  --ring: 210 70% 50%;
+
+  --radius: 0.6rem;
+}
+
+/* ============================================
+   全局样式
+   ============================================ */
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  font-feature-settings: "rlig" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================
+   主题切换动画过渡
+   ============================================ */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 禁用某些元素的过渡 */
+button,
+a,
+input,
+textarea,
+select {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-duration: 150ms;
+}
+
+/* 禁用动画的元素 */
+.no-transition,
+.no-transition * {
+  transition: none !important;
+}
+
+/* 主题切换时的淡入淡出 */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ============================================
+   滚动条美化
+   ============================================ */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+.dark:hover {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border: 2px solid hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+}
+
+.light:hover {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    border: 2px solid hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted) / 0.5) 50%,
+      hsl(var(--muted)) 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* ============================================
+   响应式优化
+   ============================================ */
+@media (max-width: 768px) {
+  :root {
+    --radius: 0.375rem;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+}
+
+/* ============================================
+   打印样式
+   ============================================ */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

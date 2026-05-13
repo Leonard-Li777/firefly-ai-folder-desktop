@@ -1,0 +1,304 @@
+{
+    "electronAPI.aiService.initialize 不可用": {
+        "en-US": "electronAPI.aiService.initialize not available",
+        "es-ES": "electronAPI.aiService.initialize no disponible",
+        "ar-EG": "electronAPI.aiService.initialize غير متاح  ",
+        "pt-PT": "electronAPI.aiService.initialize indisponível",
+        "ru-RU": "electronAPI.aiService.initialize недоступен  ",
+        "ja-JP": "electronAPI.aiService.initialize は利用できません  ",
+        "de-DE": "electronAPI.aiService.initialize nicht verfügbar",
+        "fr-FR": "electronAPI.aiService.initialize n'est pas disponible",
+        "ko-KR": "electronAPI.aiService.initialize를 사용할 수 없습니다",
+        "$files": [
+            "renderer/stores/ai-service-store.ts(3341-3381)",
+            "renderer/stores/ai-service-store.ts(6405-6445)"
+        ],
+        "$id": 5455
+    },
+    "AI服务初始化失败": {
+        "en-US": "AI service initialization failed",
+        "es-ES": "Fallo en la inicialización del servicio de IA",
+        "ar-EG": "فشل تهيئة خدمة الذكاء الاصطناعي  ",
+        "pt-PT": "Falha na inicialização do serviço de IA",
+        "ru-RU": "Не удалось инициализировать AI-сервис  ",
+        "ja-JP": "AIサービスの初期化に失敗しました  ",
+        "de-DE": "Initialisierung des KI-Dienstes fehlgeschlagen",
+        "fr-FR": "Échec de l'initialisation du service IA",
+        "ko-KR": "AI 서비스 초기화 실패",
+        "$files": [
+            "renderer/stores/ai-service-store.ts(4751-4764)",
+            "renderer/stores/ai-service-store.ts(7878-7891)"
+        ],
+        "$id": 5458
+    },
+    "模型切换失败": {
+        "en-US": "Model switching failed",
+        "es-ES": "Fallo al cambiar de modelo",
+        "ar-EG": "فشل تبديل النموذج  ",
+        "pt-PT": "Falha na troca de modelo",
+        "ru-RU": "Не удалось переключить модель  ",
+        "ja-JP": "モデルの切り替えに失敗しました  ",
+        "de-DE": "Modellwechsel fehlgeschlagen",
+        "fr-FR": "Échec du changement de modèle",
+        "ko-KR": "모델 전환 실패",
+        "$files": [
+            "renderer/stores/ai-service-store.ts(10918-10928)"
+        ],
+        "$id": 5462
+    },
+    "更新配置失败": {
+        "en-US": "Failed to update configuration",
+        "es-ES": "Fallo al actualizar la configuración",
+        "ar-EG": "فشل تحديث الإعدادات  ",
+        "pt-PT": "Falha na atualização da configuração",
+        "ru-RU": "Не удалось обновить конфигурацию  ",
+        "ja-JP": "設定の更新に失敗しました  ",
+        "de-DE": "Aktualisierung der Konfiguration fehlgeschlagen",
+        "fr-FR": "Échec de la mise à jour de la configuration",
+        "ko-KR": "구성 업데이트 실패",
+        "$files": [
+            "renderer/stores/config-store.ts(1936-1946)"
+        ],
+        "$id": 5465
+    },
+    "更新配置项失败": {
+        "en-US": "Failed to update configuration item",
+        "es-ES": "Fallo al actualizar los elementos de configuración",
+        "ar-EG": "فشل تحديث عنصر الإعدادات  ",
+        "pt-PT": "Falha na atualização do item de configuração",
+        "ru-RU": "Не удалось обновить параметр конфигурации  ",
+        "ja-JP": "設定項目の更新に失敗しました  ",
+        "de-DE": "Aktualisierung der Konfigurationseinstellungen fehlgeschlagen",
+        "fr-FR": "Échec de la mise à jour des paramètres de configuration",
+        "ko-KR": "구성 항목 업데이트 실패",
+        "$files": [
+            "renderer/stores/config-store.ts(2662-2673)"
+        ],
+        "$id": 5466
+    },
+    "获取配置失败": {
+        "en-US": "Failed to retrieve configuration",
+        "es-ES": "Fallo al obtener la configuración",
+        "ar-EG": "فشل الحصول على الإعدادات  ",
+        "pt-PT": "Falha ao obter a configuração",
+        "ru-RU": "Не удалось получить конфигурацию  ",
+        "ja-JP": "設定の取得に失敗しました  ",
+        "de-DE": "Abrufen der Konfiguration fehlgeschlagen",
+        "fr-FR": "Échec de la récupération de la configuration",
+        "ko-KR": "구성 가져오기 실패",
+        "$files": [
+            "renderer/stores/config-store.ts(3191-3201)"
+        ],
+        "$id": 5467
+    },
+    "工作区": {
+        "en-US": "Workspace",
+        "es-ES": "Espacio de trabajo",
+        "ar-EG": "منطقة العمل",
+        "pt-PT": "Espaço de trabalho",
+        "ru-RU": "Рабочая область",
+        "ja-JP": "ワークスペース",
+        "de-DE": "Arbeitsbereich",
+        "fr-FR": "Espace de travail",
+        "ko-KR": "작업 공간",
+        "$files": [
+            "renderer/stores/settings-store.ts(3384-3391)"
+        ],
+        "$id": 3301
+    },
+    "目录管理和自动监听": {
+        "en-US": "Directory Management and Auto-watch",
+        "es-ES": "Gestión de directorios y escucha automática",
+        "ar-EG": "إدارة الدليل والمراقبة التلقائية",
+        "pt-PT": "Gestão de diretórios e monitorização automática",
+        "ru-RU": "Управление каталогами и автоматическое отслеживание",
+        "ja-JP": "ディレクトリ管理と自動監視",
+        "de-DE": "Verzeichnisverwaltung und automatische Überwachung",
+        "fr-FR": "Gestion des répertoires et surveillance automatique",
+        "ko-KR": "디렉터리 관리 및 자동 감시",
+        "$files": [
+            "renderer/stores/settings-store.ts(3438-3451)"
+        ],
+        "$id": 3302
+    },
+    "AI 模型": {
+        "en-US": "AI Model",
+        "es-ES": "Modelos de IA",
+        "ar-EG": "نماذج الذكاء الاصطناعي",
+        "pt-PT": "Modelos de IA",
+        "ru-RU": "Модель ИИ",
+        "ja-JP": "AI モデル",
+        "de-DE": "KI-Modelle",
+        "fr-FR": "Modèle IA",
+        "ko-KR": "AI 모델",
+        "$files": [
+            "renderer/stores/settings-store.ts(3511-3520)"
+        ],
+        "$id": 3298
+    },
+    "本地/云端模型配置": {
+        "en-US": "Local/Cloud Model Configuration",
+        "es-ES": "Configuración de modelos locales/en la nube",
+        "ar-EG": "إعدادات النماذج المحلية/السحابية",
+        "pt-PT": "Configuração de modelos locais/na nuvem",
+        "ru-RU": "Конфигурация локальных и облачных моделей",
+        "ja-JP": "ローカル/クラウドモデル設定",
+        "de-DE": "Lokale/Cloud-Modellkonfiguration",
+        "fr-FR": "Configuration des modèles locaux/cloud",
+        "ko-KR": "로컬/클라우드 모델 구성",
+        "$files": [
+            "renderer/stores/settings-store.ts(3566-3579)"
+        ],
+        "$id": 3299
+    },
+    "分析设置": {
+        "en-US": "Analysis settings",
+        "es-ES": "Configuración de análisis",
+        "ar-EG": "إعدادات التحليل  ",
+        "pt-PT": "Definições de análise",
+        "ru-RU": "Настройки анализа  ",
+        "ja-JP": "分析設定",
+        "de-DE": "Analyseeinstellungen  ",
+        "fr-FR": "Paramètres d'analyse",
+        "ko-KR": "분석 설정",
+        "$files": [
+            "renderer/stores/settings-store.ts(3639-3647)"
+        ],
+        "$id": 5487
+    },
+    "忽略规则和分析参数": {
+        "en-US": "Ignore Rules and Analysis Parameters",
+        "es-ES": "Reglas de omisión y parámetros de análisis",
+        "ar-EG": "قواعد التجاهل ومعاملات التحليل",
+        "pt-PT": "Regras de ignorar e parâmetros de análise",
+        "ru-RU": "Правила игнорирования и параметры анализа",
+        "ja-JP": "無視ルールと分析パラメータ",
+        "de-DE": "Ignorierregeln und Analyseparameter",
+        "fr-FR": "Règles d'ignorance et paramètres d'analyse",
+        "ko-KR": "무시 규칙 및 분석 매개변수",
+        "$files": [
+            "renderer/stores/settings-store.ts(3692-3705)"
+        ],
+        "$id": 3300
+    },
+    "风格和语言": {
+        "en-US": "style and language",
+        "es-ES": "estilo y lenguaje",
+        "ar-EG": "الأسلوب واللغة",
+        "pt-PT": "estilo e linguagem",
+        "ru-RU": "стиль и язык",
+        "ja-JP": "スタイルと言語",
+        "de-DE": "Stil und Sprache",
+        "fr-FR": "style et langage",
+        "ko-KR": "스타일과 언어",
+        "$files": [
+            "renderer/stores/settings-store.ts(3766-3775)"
+        ],
+        "$id": 4272
+    },
+    "外观、语言和主题": {
+        "en-US": "Appearance, Language, and Theme",
+        "es-ES": "Apariencia, idioma y tema",
+        "ar-EG": "المظهر واللغة والسمات",
+        "pt-PT": "Aparência, idioma e tema",
+        "ru-RU": "Внешний вид, язык и тема",
+        "ja-JP": "外観、言語、テーマ",
+        "de-DE": "Aussehen, Sprache und Design",
+        "fr-FR": "Apparence, langue et thèmes",
+        "ko-KR": "모습, 언어 및 테마",
+        "$files": [
+            "renderer/stores/settings-store.ts(3818-3830)"
+        ],
+        "$id": 3295
+    },
+    "列表设置": {
+        "en-US": "List settings",
+        "es-ES": "Configuraciones de lista",
+        "ar-EG": "إعدادات القائمة",
+        "pt-PT": "Configurações de lista",
+        "ru-RU": "Список настроек",
+        "ja-JP": "リスト設定",
+        "de-DE": "Listeneinstellungen",
+        "fr-FR": "Paramètres de la liste",
+        "ko-KR": "목록 설정",
+        "$files": [
+            "renderer/stores/settings-store.ts(3894-3902)"
+        ],
+        "$id": 4273
+    },
+    "文件列表显示项": {
+        "en-US": "File List Display Items",
+        "es-ES": "Elementos visibles en la lista de archivos",
+        "ar-EG": "عناصر عرض قائمة الملفات",
+        "pt-PT": "Itens de exibição da lista de ficheiros",
+        "ru-RU": "Элементы отображения списка файлов",
+        "ja-JP": "ファイル一覧の表示項目",
+        "de-DE": "Anzeigeoptionen für Dateilisten",
+        "fr-FR": "Éléments affichés dans la liste des fichiers",
+        "ko-KR": "파일 목록 표시 항목",
+        "$files": [
+            "renderer/stores/settings-store.ts(3947-3958)"
+        ],
+        "$id": 3297
+    },
+    "保存设置失败": {
+        "en-US": "Failed to save settings",
+        "es-ES": "Error al guardar la configuración",
+        "ar-EG": "فشل حفظ الإعدادات",
+        "pt-PT": "Falha ao guardar as definições  ",
+        "ru-RU": "Не удалось сохранить настройки",
+        "ja-JP": "設定の保存に失敗しました",
+        "de-DE": "Speichern der Einstellungen fehlgeschlagen",
+        "fr-FR": "Échec de la sauvegarde des paramètres",
+        "ko-KR": "설정 저장 실패",
+        "$files": [
+            "renderer/stores/settings-store.ts(6829-6839)"
+        ],
+        "$id": 5491
+    },
+    "确认删除此工作目录？": {
+        "en-US": "Confirm deletion of this working directory?",
+        "es-ES": "¿Confirmar la eliminación de este directorio de trabajo?",
+        "ar-EG": "تأكيد حذف دليل العمل هذا؟",
+        "pt-PT": "Tem a certeza de que pretende eliminar este diretório de trabalho?",
+        "ru-RU": "Подтверждаете удаление этого рабочего каталога?",
+        "ja-JP": "この作業ディレクトリを削除しますか？",
+        "de-DE": "Dieses Arbeitsverzeichnis wirklich löschen?",
+        "fr-FR": "Confirmer la suppression de ce répertoire de travail ?",
+        "ko-KR": "이 작업 디렉터리를 삭제하시겠습니까?",
+        "$files": [
+            "renderer/stores/settings-store.ts(9495-9509)"
+        ],
+        "$id": 3303
+    },
+    "确认重置此工作目录？": {
+        "en-US": "Confirm reset of this working directory?",
+        "es-ES": "¿Confirmar el restablecimiento de este directorio de trabajo?",
+        "ar-EG": "تأكيد إعادة ضبط دليل العمل هذا؟",
+        "pt-PT": "Tem a certeza de que pretende repor este diretório de trabalho?",
+        "ru-RU": "Подтверждаете сброс этого рабочего каталога?",
+        "ja-JP": "この作業ディレクトリをリセットしますか？",
+        "de-DE": "Dieses Arbeitsverzeichnis wirklich zurücksetzen?",
+        "fr-FR": "Confirmer la réinitialisation de ce répertoire de travail ?",
+        "ko-KR": "이 작업 디렉터리를 재설정하시겠습니까?",
+        "$files": [
+            "renderer/stores/settings-store.ts(9797-9811)"
+        ],
+        "$id": 3304
+    },
+    "不支持的语言设置": {
+        "en-US": "Unsupported language setting",
+        "es-ES": "Configuración de idioma no soportada",
+        "ar-EG": "إعداد اللغة غير مدعوم",
+        "pt-PT": "Definição de idioma não suportada  ",
+        "ru-RU": "Неподдерживаемые языковые настройки",
+        "ja-JP": "サポートされていない言語設定です",
+        "de-DE": "Nicht unterstützte Spracheinstellung",
+        "fr-FR": "Paramètre de langue non pris en charge",
+        "ko-KR": "지원되지 않는 언어 설정",
+        "$files": [
+            "renderer/stores/settings-store.ts(10244-10256)"
+        ],
+        "$id": 5501
+    }
+}

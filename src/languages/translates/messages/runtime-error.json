@@ -1,0 +1,289 @@
+{
+    "重启关键服务": {
+        "en-US": "Restart critical services  ",
+        "es-ES": "Reiniciar servicios críticos",
+        "ar-EG": "إعادة تشغيل الخدمات الحرجة  ",
+        "pt-PT": "Reiniciar serviços críticos",
+        "ru-RU": "Перезапуск критических служб",
+        "ja-JP": "重要なサービスの再起動",
+        "de-DE": "Neustart kritischer Dienste  ",
+        "fr-FR": "Redémarrage des services critiques  ",
+        "ko-KR": "핵심 서비스 재시작",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(2134-2144)"
+        ],
+        "$id": 5506
+    },
+    "重启失败的关键服务": {
+        "en-US": "Restart failed critical services  ",
+        "es-ES": "Reiniciar servicios críticos fallidos",
+        "ar-EG": "إعادة تشغيل الخدمات الحرجة التي فشلت  ",
+        "pt-PT": "Reiniciar serviços críticos com falha",
+        "ru-RU": "Перезапуск неудачных критических служб",
+        "ja-JP": "失敗した重要なサービスの再起動",
+        "de-DE": "Neustart fehlgeschlagener kritischer Dienste  ",
+        "fr-FR": "Redémarrage des services critiques ayant échoué  ",
+        "ko-KR": "실패한 핵심 서비스 재시작",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(2167-2180)"
+        ],
+        "$id": 5507
+    },
+    "内存清理": {
+        "en-US": "Memory cleanup  ",
+        "es-ES": "Liberación de memoria",
+        "ar-EG": "تنظيف الذاكرة  ",
+        "pt-PT": "Limpeza de memória",
+        "ru-RU": "Очистка памяти",
+        "ja-JP": "メモリのクリーンアップ",
+        "de-DE": "Speicherbereinigung  ",
+        "fr-FR": "Nettoyage de la mémoire  ",
+        "ko-KR": "메모리 정리",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(2586-2594)"
+        ],
+        "$id": 5508
+    },
+    "清理系统内存": {
+        "en-US": "Clean system memory  ",
+        "es-ES": "Liberar memoria del sistema",
+        "ar-EG": "تنظيف ذاكرة النظام  ",
+        "pt-PT": "Limpar memória do sistema",
+        "ru-RU": "Очистка системной памяти",
+        "ja-JP": "システムメモリのクリーンアップ",
+        "de-DE": "Systemspeicher bereinigen  ",
+        "fr-FR": "Libération de la mémoire système  ",
+        "ko-KR": "시스템 메모리 정리",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(2617-2627)"
+        ],
+        "$id": 5509
+    },
+    "数据库重连": {
+        "en-US": "Database reconnection  ",
+        "es-ES": "Reconexión a la base de datos",
+        "ar-EG": "إعادة الاتصال بقاعدة البيانات  ",
+        "pt-PT": "Reconexão à base de dados",
+        "ru-RU": "Повторное подключение к базе данных",
+        "ja-JP": "データベースの再接続",
+        "de-DE": "Datenbankneuverbindung  ",
+        "fr-FR": "Reconnexion à la base de données  ",
+        "ko-KR": "데이터베이스 재연결",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(3004-3013)"
+        ],
+        "$id": 5510
+    },
+    "重新连接数据库": {
+        "en-US": "Reconnect to the database  ",
+        "es-ES": "Reconectar con la base de datos",
+        "ar-EG": "إعادة الاتصال بقاعدة البيانات  ",
+        "pt-PT": "Reconectar à base de dados",
+        "ru-RU": "Повторное подключение к базе данных",
+        "ja-JP": "データベースへの再接続",
+        "de-DE": "Datenbankverbindung erneut herstellen  ",
+        "fr-FR": "Reconnexion à la base de données  ",
+        "ko-KR": "데이터베이스 다시 연결",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(3036-3047)"
+        ],
+        "$id": 5511
+    },
+    "网络重连": {
+        "en-US": "Network reconnection  ",
+        "es-ES": "Reconexión de red",
+        "ar-EG": "إعادة الاتصال بالشبكة  ",
+        "pt-PT": "Reconexão de rede",
+        "ru-RU": "Повторное сетевое подключение",
+        "ja-JP": "ネットワークの再接続",
+        "de-DE": "Netzwerkneuverbindung  ",
+        "fr-FR": "Reconnexion réseau  ",
+        "ko-KR": "네트워크 재연결",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(3431-3439)"
+        ],
+        "$id": 5512
+    },
+    "重新建立网络连接": {
+        "en-US": "Re-establish network connection  ",
+        "es-ES": "Restablecer la conexión de red",
+        "ar-EG": "إعادة إنشاء اتصال الشبكة  ",
+        "pt-PT": "Restabelecer ligação de rede",
+        "ru-RU": "Восстановление сетевого соединения",
+        "ja-JP": "ネットワーク接続の再確立",
+        "de-DE": "Netzwerkverbindung erneut herstellen  ",
+        "fr-FR": "Rétablissement de la connexion réseau  ",
+        "ko-KR": "네트워크 연결 다시 설정",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(3462-3474)"
+        ],
+        "$id": 5513
+    },
+    "状态恢复": {
+        "en-US": "State recovery  ",
+        "es-ES": "Restauración del estado",
+        "ar-EG": "استعادة الحالة  ",
+        "pt-PT": "Recuperação de estado",
+        "ru-RU": "Восстановление состояния",
+        "ja-JP": "ステータスの復旧",
+        "de-DE": "Statuswiederherstellung  ",
+        "fr-FR": "Restauration de l'état  ",
+        "ko-KR": "상태 복구",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(3853-3861)"
+        ],
+        "$id": 5514
+    },
+    "恢复应用状态": {
+        "en-US": "Restore application state  ",
+        "es-ES": "Restaurar el estado de la aplicación",
+        "ar-EG": "استعادة حالة التطبيق  ",
+        "pt-PT": "Recuperar estado da aplicação",
+        "ru-RU": "Восстановление состояния приложения",
+        "ja-JP": "アプリケーション状態の復旧",
+        "de-DE": "Anwendungsstatus wiederherstellen  ",
+        "fr-FR": "Restauration de l'état de l'application  ",
+        "ko-KR": "애플리케이션 상태 복구",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(3884-3894)"
+        ],
+        "$id": 5515
+    },
+    "优雅关闭": {
+        "en-US": "Graceful shutdown  ",
+        "es-ES": "Cierre elegante",
+        "ar-EG": "إغلاق أنيق  ",
+        "pt-PT": "Encerramento elegante",
+        "ru-RU": "Грациозное завершение",
+        "ja-JP": "グレースフルシャットダウン",
+        "de-DE": "Graceful Shutdown  ",
+        "fr-FR": "Arrêt élégant  ",
+        "ko-KR": "그레이스풀 종료",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(4300-4308)",
+            "electron/runtime-services/error/error-handling-service.ts(2500-2508)"
+        ],
+        "$id": 5516
+    },
+    "优雅关闭应用": {
+        "en-US": "Gracefully shut down the application  ",
+        "es-ES": "Cerrar la aplicación de forma elegante",
+        "ar-EG": "إغلاق التطبيق بشكل أنيق  ",
+        "pt-PT": "Encerrar aplicação de forma elegante",
+        "ru-RU": "Грациозное завершение приложения",
+        "ja-JP": "アプリケーションのグレースフルシャットダウン",
+        "de-DE": "Anwendung graceful beenden  ",
+        "fr-FR": "Arrêt élégant de l'application  ",
+        "ko-KR": "애플리케이션 그레이스풀 종료",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(4331-4341)",
+            "electron/runtime-services/error/error-handling-service.ts(2533-2543)"
+        ],
+        "$id": 5517
+    },
+    "系统处于关键健康状态": {
+        "en-US": "System is in a critical health state  ",
+        "es-ES": "El sistema se encuentra en un estado crítico de salud",
+        "ar-EG": "النظام في حالة صحية حرجة  ",
+        "pt-PT": "O sistema encontra-se num estado crítico de saúde",
+        "ru-RU": "Система находится в критическом состоянии работоспособности",
+        "ja-JP": "システムは重要な健全性状態にあります",
+        "de-DE": "System befindet sich in kritischem Gesundheitszustand  ",
+        "fr-FR": "Le système est dans un état critique de santé  ",
+        "ko-KR": "시스템이 중요한 건강 상태에 있음",
+        "$files": [
+            "electron/runtime-services/error/auto-recovery-service.ts(6366-6380)"
+        ],
+        "$id": 5518
+    },
+    "重试操作": {
+        "en-US": "Retry operation  ",
+        "es-ES": "Reintentar operación",
+        "ar-EG": "إعادة المحاولة  ",
+        "pt-PT": "Repetir operação",
+        "ru-RU": "Повтор операции",
+        "ja-JP": "操作の再試行",
+        "de-DE": "Wiederholungsversuch  ",
+        "fr-FR": "Nouvelle tentative d'opération  ",
+        "ko-KR": "재시도 작업",
+        "$files": [
+            "electron/runtime-services/error/error-handling-service.ts(1243-1251)"
+        ],
+        "$id": 5519
+    },
+    "重试失败的操作": {
+        "en-US": "Retry failed operation  ",
+        "es-ES": "Reintentar la operación fallida",
+        "ar-EG": "إعادة محاولة العملية الفاشلة  ",
+        "pt-PT": "Repetir operação com falha",
+        "ru-RU": "Повтор неудачной операции",
+        "ja-JP": "失敗した操作の再試行",
+        "de-DE": "Fehlgeschlagene Operation erneut versuchen  ",
+        "fr-FR": "Nouvelle tentative des opérations ayant échoué  ",
+        "ko-KR": "실패한 작업 재시도",
+        "$files": [
+            "electron/runtime-services/error/error-handling-service.ts(1276-1287)"
+        ],
+        "$id": 5520
+    },
+    "清理缓存": {
+        "en-US": "Cache cleanup  ",
+        "es-ES": "Limpiar caché",
+        "ar-EG": "تنظيف الذاكرة المؤقتة  ",
+        "pt-PT": "Limpar cache",
+        "ru-RU": "Очистка кэша",
+        "ja-JP": "キャッシュのクリア",
+        "de-DE": "Cache bereinigen  ",
+        "fr-FR": "Vidage du cache  ",
+        "ko-KR": "캐시 정리",
+        "$files": [
+            "electron/runtime-services/error/error-handling-service.ts(1668-1676)"
+        ],
+        "$id": 5521
+    },
+    "清理应用缓存": {
+        "en-US": "Clean application cache  ",
+        "es-ES": "Limpiar la caché de la aplicación",
+        "ar-EG": "تنظيف الذاكرة المؤقتة للتطبيق  ",
+        "pt-PT": "Limpar cache da aplicação",
+        "ru-RU": "Очистка кэша приложения",
+        "ja-JP": "アプリケーションキャッシュのクリア",
+        "de-DE": "Anwendungscache bereinigen  ",
+        "fr-FR": "Vidage du cache de l'application  ",
+        "ko-KR": "애플리케이션 캐시 정리",
+        "$files": [
+            "electron/runtime-services/error/error-handling-service.ts(1701-1711)"
+        ],
+        "$id": 5522
+    },
+    "重启服务": {
+        "en-US": "Restart service  ",
+        "es-ES": "Reiniciar servicio",
+        "ar-EG": "إعادة تشغيل الخدمة  ",
+        "pt-PT": "Reiniciar serviço",
+        "ru-RU": "Перезапуск службы",
+        "ja-JP": "サービスの再起動",
+        "de-DE": "Dienst neustarten  ",
+        "fr-FR": "Redémarrage du service  ",
+        "ko-KR": "서비스 재시작",
+        "$files": [
+            "electron/runtime-services/error/error-handling-service.ts(2092-2100)"
+        ],
+        "$id": 5523
+    },
+    "重启失败的服务": {
+        "en-US": "Restart failed service",
+        "es-ES": "Reiniciar el servicio fallido",
+        "ar-EG": "إعادة تشغيل الخدمة التي فشلت",
+        "pt-PT": "Reiniciar serviço com falha",
+        "ru-RU": "Перезапуск неудачной службы",
+        "ja-JP": "失敗したサービスの再起動",
+        "de-DE": "Fehlgeschlagenen Dienst neustarten",
+        "fr-FR": "Redémarrage des services ayant échoué",
+        "ko-KR": "실패한 서비스 재시작",
+        "$files": [
+            "electron/runtime-services/error/error-handling-service.ts(2125-2136)"
+        ],
+        "$id": 5524
+    }
+}

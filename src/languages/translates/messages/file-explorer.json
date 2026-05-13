@@ -1,0 +1,3493 @@
+{
+    "无法打开链接": {
+        "en-US": "Unable to open link",
+        "es-ES": "No se puede abrir el enlace",
+        "ar-EG": "غير قادر على فتح الرابط",
+        "pt-PT": "Não foi possível abrir o link",
+        "ru-RU": "Невозможно открыть ссылку",
+        "ja-JP": "リンクを開けません",
+        "de-DE": "Link kann nicht geöffnet werden",
+        "fr-FR": "Impossible d'ouvrir le lien",
+        "ko-KR": "링크를 열 수 없습니다",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(4093-4103)"
+        ],
+        "$id": 4527
+    },
+    "最小化": {
+        "en-US": "Minimize",
+        "es-ES": "Minimizar",
+        "ar-EG": "تصغير",
+        "pt-PT": "Minimizar",
+        "ru-RU": "Свернуть",
+        "ja-JP": "最小化\r",
+        "de-DE": "Minimieren",
+        "fr-FR": "Réduire",
+        "ko-KR": "최소화",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(5541-5548)"
+        ],
+        "$id": 3945
+    },
+    "恢复": {
+        "en-US": "Restore",
+        "es-ES": "Restaurar",
+        "ar-EG": "استعادة",
+        "pt-PT": "Restaurar",
+        "ru-RU": "Восстановить",
+        "ja-JP": "復元",
+        "de-DE": "Wiederherstellen",
+        "fr-FR": "Restaurer",
+        "ko-KR": "복원",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(5920-5926)"
+        ],
+        "$id": 3946
+    },
+    "最大化": {
+        "en-US": "Maximize",
+        "es-ES": "Maximizar",
+        "ar-EG": "تكبير",
+        "pt-PT": "Maximizar",
+        "ru-RU": "Развернуть",
+        "ja-JP": "最大化\r",
+        "de-DE": "Maximieren",
+        "fr-FR": "Agrandir",
+        "ko-KR": "최대화",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(5930-5937)"
+        ],
+        "$id": 3947
+    },
+    "关闭": {
+        "en-US": "Close",
+        "es-ES": "Cerrar",
+        "ar-EG": "إغلاق",
+        "pt-PT": "Fechar",
+        "ru-RU": "Закрыть",
+        "ja-JP": "閉じる",
+        "de-DE": "Schließen",
+        "fr-FR": "Fermer",
+        "ko-KR": "닫기",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(6377-6383)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(79851-79857)"
+        ],
+        "$id": 3948
+    },
+    "萤核智能文件夹": {
+        "en-US": "Yonuc AI Folder",
+        "es-ES": "Carpeta AI Yonuc",
+        "ar-EG": "مجلد Yonuc الذكي",
+        "pt-PT": "Pasta AI Yonuc",
+        "ru-RU": "Умная папка Yonuc",
+        "ja-JP": "萤核インテリジェントフォルダ",
+        "de-DE": "Yonuc Intelligenter Ordner",
+        "fr-FR": "Dossier intelligent Yonuc",
+        "ko-KR": "형광핵 AI 파일 폴더",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(6961-6972)"
+        ],
+        "$id": 3949
+    },
+    "最新动态": {
+        "en-US": "Latest news",
+        "es-ES": "Últimas noticias",
+        "ar-EG": "آخر الأخبار",
+        "pt-PT": "Últimas notícias",
+        "ru-RU": "Последние новости",
+        "ja-JP": "最新ニュース",
+        "de-DE": "Neueste Nachrichten",
+        "fr-FR": "Dernières nouvelles",
+        "ko-KR": "최신 뉴스",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(8936-8944)"
+        ],
+        "$id": 4422
+    },
+    "AI 摘要功能已上线!": {
+        "en-US": "AI Summary feature is now available!",
+        "es-ES": "¡La función de resumen de IA ya está disponible!",
+        "ar-EG": "تم تشغيل ميزة ملخص الذكاء الاصطناعي!",
+        "pt-PT": "A funcionalidade de resumo de IA está agora disponível!",
+        "ru-RU": "Функция AI-аннотации уже запущена!",
+        "ja-JP": "AIサマリー機能がリリースされました！",
+        "de-DE": "KI-Zusammenfassungsfunktion ist jetzt verfügbar!",
+        "fr-FR": "La fonction de résumé IA est maintenant disponible !",
+        "ko-KR": "AI 요약 기능 출시!",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(10850-10865)"
+        ],
+        "$id": 3950
+    },
+    "当前工作目录: {name}，点击切换": {
+        "en-US": "Current working directory: {name}, click to switch",
+        "es-ES": "Directorio de trabajo actual: {name}, haga clic para cambiar",
+        "ar-EG": "الدليل الحالي للعمل: {name}، انقر للتبديل",
+        "pt-PT": "Diretório de trabalho atual: {name}, clique para alternar",
+        "ru-RU": "Текущий рабочий каталог: {name}, нажмите, чтобы переключить",
+        "ja-JP": "現在の作業ディレクトリ: {name}、クリックして切り替え",
+        "de-DE": "Aktuelles Arbeitsverzeichnis: {name}, klicken Sie zum Wechseln",
+        "fr-FR": "Répertoire de travail actuel : {name}, cliquez pour basculer",
+        "ko-KR": "현재 작업 디렉터리: {name}, 클릭하여 전환",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(11590-11613)"
+        ],
+        "$id": 3951
+    },
+    "未选择": {
+        "en-US": "Not selected",
+        "es-ES": "No seleccionado",
+        "ar-EG": "غير محدد",
+        "pt-PT": "Nenhum selecionado",
+        "ru-RU": "Не выбран",
+        "ja-JP": "未選択",
+        "de-DE": "Nicht ausgewählt",
+        "fr-FR": "Non sélectionné",
+        "ko-KR": "선택되지 않음",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(11673-11680)",
+            "renderer/components/file-explorer/DirectoryHeader.tsx(12346-12353)"
+        ],
+        "$id": 3952
+    },
+    "工作目录: {name}": {
+        "en-US": "Working directory: {name}",
+        "es-ES": "Directorio de trabajo: {name}",
+        "ar-EG": "دليل العمل: {name}",
+        "pt-PT": "Diretório de trabalho: {name}",
+        "ru-RU": "Рабочий каталог: {name}",
+        "ja-JP": "作業ディレクトリ: {name}",
+        "de-DE": "Arbeitsverzeichnis: {name}",
+        "fr-FR": "Répertoire de travail : {name}",
+        "ko-KR": "작업 디렉터리: {name}",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(12285-12301)"
+        ],
+        "$id": 3953
+    },
+    "暂无工作目录": {
+        "en-US": "No working directories",
+        "es-ES": "No hay directorios de trabajo",
+        "ar-EG": "لا توجد أدلة عمل حتى الآن",
+        "pt-PT": "Nenhum diretório de trabalho",
+        "ru-RU": "Нет текущего рабочего каталога",
+        "ja-JP": "作業ディレクトリがありません",
+        "de-DE": "Kein Arbeitsverzeichnis vorhanden",
+        "fr-FR": "Aucun répertoire de travail pour le moment",
+        "ko-KR": "작업 디렉터리 없음",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(12980-12990)"
+        ],
+        "$id": 3957
+    },
+    "切换到工作目录: {path}": {
+        "en-US": "Switch to working directory: {path}",
+        "es-ES": "Cambiar al directorio de trabajo: {path}",
+        "ar-EG": "التبديل إلى دليل العمل: {path}",
+        "pt-PT": "Alternar para o diretório de trabalho: {path}",
+        "ru-RU": "Переключить на рабочий каталог: {path}",
+        "ja-JP": "作業ディレクトリに切り替え: {path}",
+        "de-DE": "Zu Arbeitsverzeichnis wechseln: {path}",
+        "fr-FR": "Basculer vers le répertoire de travail : {path}",
+        "ko-KR": "작업 디렉터리로 전환: {path}",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(13695-13714)"
+        ],
+        "$id": 3958
+    },
+    "（极速）": {
+        "en-US": "(Ultra-fast)",
+        "es-ES": "(Extremadamente rápido)\r",
+        "ar-EG": "(السرعة القصوى)",
+        "pt-PT": "(Rápido)\r",
+        "ru-RU": "(Сверхбыстро)\r",
+        "ja-JP": "（極速）",
+        "de-DE": "（Extrem schnell）",
+        "fr-FR": "(ultra-rapide)",
+        "ko-KR": "(초고속)",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(14757-14765)"
+        ],
+        "$id": 3255
+    },
+    "（私有）": {
+        "en-US": "(Private)",
+        "es-ES": "(Privado)\r",
+        "ar-EG": "(خاص)",
+        "pt-PT": "(Privado)\r",
+        "ru-RU": "(Частный)\r",
+        "ja-JP": "（プライベート）",
+        "de-DE": "（Privat）",
+        "fr-FR": "(privé)",
+        "ko-KR": "(비공개)",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(15012-15020)"
+        ],
+        "$id": 3256
+    },
+    "企业版暂不支持极速目录": {
+        "en-US": "The enterprise version does not currently support speed directories.",
+        "es-ES": "Actualmente, la versión empresarial no admite directorios rápidos.",
+        "ar-EG": "لا يدعم إصدار المؤسسة حاليًا أدلة السرعة.",
+        "pt-PT": "A versão empresarial atualmente não oferece suporte a diretórios rápidos.",
+        "ru-RU": "Корпоративная версия в настоящее время не поддерживает каталоги скорости.",
+        "ja-JP": "エンタープライズ バージョンは現在、スピード ディレクトリをサポートしていません。",
+        "de-DE": "Die Enterprise-Version unterstützt derzeit keine Speed-Verzeichnisse.",
+        "fr-FR": "La version entreprise ne prend actuellement pas en charge les répertoires rapides.",
+        "ko-KR": "엔터프라이즈 버전은 현재 속도 디렉터리를 지원하지 않습니다.",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(16219-16234)"
+        ],
+        "$id": 4381
+    },
+    "创建极速目录（推荐）": {
+        "en-US": "Create a fast directory (recommended)",
+        "es-ES": "Crear un directorio rápido (recomendado)",
+        "ar-EG": "إنشاء دليل سريع (مستحسن)",
+        "pt-PT": "Crie um diretório rápido (recomendado)",
+        "ru-RU": "Создайте быстрый каталог (рекомендуется)",
+        "ja-JP": "高速ディレクトリを作成する (推奨)",
+        "de-DE": "Erstellen Sie ein Schnellverzeichnis (empfohlen)",
+        "fr-FR": "Créez un répertoire rapide (recommandé)",
+        "ko-KR": "빠른 디렉터리 생성(권장)",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(16238-16252)"
+        ],
+        "$id": 2914
+    },
+    "创建极速目录": {
+        "en-US": "Create a fast directory",
+        "es-ES": "Crear un directorio rápido",
+        "ar-EG": "إنشاء دليل سريع",
+        "pt-PT": "Crie um diretório rápido",
+        "ru-RU": "Создайте быстрый каталог",
+        "ja-JP": "高速ディレクトリを作成する",
+        "de-DE": "Erstellen Sie ein schnelles Verzeichnis",
+        "fr-FR": "Créez un répertoire rapide",
+        "ko-KR": "빠른 디렉토리 생성",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(16420-16430)"
+        ],
+        "$id": 2915
+    },
+    "创建私有目录": {
+        "en-US": "Create private directory",
+        "es-ES": "Crear directorio privado",
+        "ar-EG": "إنشاء دليل خاص",
+        "pt-PT": "Criar diretório privado",
+        "ru-RU": "Создать личный каталог",
+        "ja-JP": "プライベートディレクトリを作成する",
+        "de-DE": "Privates Verzeichnis erstellen",
+        "fr-FR": "Créer un répertoire privé",
+        "ko-KR": "개인 디렉토리 생성",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(16790-16800)",
+            "renderer/components/file-explorer/DirectoryHeader.tsx(16916-16926)"
+        ],
+        "$id": 2916
+    },
+    "切换到真实文件系统视图": {
+        "en-US": "Switch to real file system view",
+        "es-ES": "Cambiar a la vista del sistema de archivos real",
+        "ar-EG": "التبديل إلى عرض نظام الملفات الحقيقي",
+        "pt-PT": "Alternar para a vista do sistema de ficheiros real",
+        "ru-RU": "Переключить на представление реальной файловой системы",
+        "ja-JP": "実際のファイルシステムビューに切り替え",
+        "de-DE": "Zur Ansicht des echten Dateisystems wechseln",
+        "fr-FR": "Basculer vers la vue du système de fichiers réel",
+        "ko-KR": "실제 파일 시스템 보기로 전환",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(17758-17773)"
+        ],
+        "$id": 3959
+    },
+    "真实目录": {
+        "en-US": "Real directory",
+        "es-ES": "Directorio real",
+        "ar-EG": "الدليل الحقيقي",
+        "pt-PT": "Diretório real",
+        "ru-RU": "Реальный каталог",
+        "ja-JP": "実ディレクトリ",
+        "de-DE": "Echtes Verzeichnis",
+        "fr-FR": "Répertoire réel",
+        "ko-KR": "실제 디렉터리",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(17803-17811)"
+        ],
+        "$id": 3960
+    },
+    "切换到AI智能分类视图": {
+        "en-US": "Switch to AI smart classification view",
+        "es-ES": "Cambiar a la vista de clasificación inteligente de IA",
+        "ar-EG": "التبديل إلى عرض التصنيف الذكي للذكاء الاصطناعي",
+        "pt-PT": "Alternar para a vista de classificação inteligente de IA",
+        "ru-RU": "Переключить на представление AI интеллектуальной классификации",
+        "ja-JP": "AIインテリジェント分類ビューに切り替え",
+        "de-DE": "Zur KI-intelligenten Klassifizierungsansicht wechseln",
+        "fr-FR": "Basculer vers la vue de classification intelligente IA",
+        "ko-KR": "AI 지능 분류 보기로 전환",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(18410-18425)"
+        ],
+        "$id": 3961
+    },
+    "可以切换到虚拟目录查看分析后的文件": {
+        "en-US": "You can switch to the virtual directory to view the analyzed files.  ",
+        "es-ES": "Puede cambiar al directorio virtual para ver los archivos analizados",
+        "ar-EG": "يمكن التبديل إلى الدليل الافتراضي لعرض الملفات المحللة  ",
+        "pt-PT": "Pode mudar para o diretório virtual para ver os ficheiros analisados",
+        "ru-RU": "Можно переключиться на виртуальный каталог для просмотра проанализированных файлов",
+        "ja-JP": "仮想ディレクトリに切り替えて、分析後のファイルを表示できます。  ",
+        "de-DE": "Sie können zum virtuellen Verzeichnis wechseln, um die analysierten Dateien anzuzeigen.",
+        "fr-FR": "Vous pouvez passer au répertoire virtuel pour voir les fichiers analysés",
+        "ko-KR": "가상 디렉터리로 전환하여 분석된 파일을 볼 수 있습니다",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(18541-18562)"
+        ],
+        "$id": 4348
+    },
+    "虚拟目录": {
+        "en-US": "Virtual directory",
+        "es-ES": "Directorio virtual",
+        "ar-EG": "الدليل الافتراضي",
+        "pt-PT": "Diretório virtual",
+        "ru-RU": "Виртуальный каталог",
+        "ja-JP": "仮想ディレクトリ",
+        "de-DE": "Virtuelles Verzeichnis",
+        "fr-FR": "Répertoire virtuel",
+        "ko-KR": "가상 디렉터리",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(18685-18693)"
+        ],
+        "$id": 3962
+    },
+    "搜索文件、标签、作者或内容...": {
+        "en-US": "Search files, tags, authors or content...",
+        "es-ES": "Buscar archivos, etiquetas, autores o contenido...",
+        "ar-EG": "البحث عن الملفات أو العلامات أو المؤلفين أو المحتوى...",
+        "pt-PT": "Pesquisar ficheiros, etiquetas, autores ou conteúdo...",
+        "ru-RU": "Поиск файлов, тегов, авторов или содержимого...",
+        "ja-JP": "ファイル、タグ、作成者、コンテンツを検索...",
+        "de-DE": "Datei, Tags, Autoren oder Inhalt suchen...",
+        "fr-FR": "Rechercher des fichiers, des balises, des auteurs ou du contenu...",
+        "ko-KR": "파일, 태그, 저자 또는 내용 검색...",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(19726-19746)"
+        ],
+        "$id": 3963
+    },
+    "搜索标签、描述、智能文件名...": {
+        "en-US": "Search tags, descriptions, smart file names...",
+        "es-ES": "Buscar etiquetas, descripciones, nombres de archivos inteligentes...",
+        "ar-EG": "البحث عن العلامات أو الأوصاف أو أسماء الملفات الذكية...",
+        "pt-PT": "Pesquisar etiquetas, descrições, nomes de ficheiros inteligentes...",
+        "ru-RU": "Поиск тегов, описаний, интеллектуальных имен файлов...",
+        "ja-JP": "タグ、説明、インテリジェントファイル名を検索...",
+        "de-DE": "Suche nach Tags, Beschreibungen, intelligenten Dateinamen...",
+        "fr-FR": "Rechercher des balises, descriptions, noms de fichiers intelligents...",
+        "ko-KR": "태그, 설명, 지능 파일 이름 검색...",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(19767-19787)"
+        ],
+        "$id": 3964
+    },
+    "设置": {
+        "en-US": "Settings",
+        "es-ES": "Configuración",
+        "ar-EG": "الإعدادات",
+        "pt-PT": "Definições",
+        "ru-RU": "Настройки",
+        "ja-JP": "設定",
+        "de-DE": "Einstellungen",
+        "fr-FR": "Paramètres",
+        "ko-KR": "설정",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryHeader.tsx(20401-20407)"
+        ],
+        "$id": 3965
+    },
+    "目录树": {
+        "en-US": "Directory Tree",
+        "es-ES": "Árbol de directorios",
+        "ar-EG": "شجرة الدليل",
+        "pt-PT": "Árvore de diretórios",
+        "ru-RU": "Дерево каталогов",
+        "ja-JP": "ディレクトリツリー",
+        "de-DE": "Verzeichnisbaum",
+        "fr-FR": "Arborescence",
+        "ko-KR": "디렉터리 트리",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryTree.tsx(5761-5768)"
+        ],
+        "$id": 3966
+    },
+    "没有找到文件或目录": {
+        "en-US": "No files or directories found",
+        "es-ES": "No se encontraron archivos o directorios",
+        "ar-EG": "لم يتم العثور على الملف أو الدليل",
+        "pt-PT": "Ficheiro ou diretório não encontrado",
+        "ru-RU": "Файл или каталог не найден",
+        "ja-JP": "ファイルまたはディレクトリが見つかりません",
+        "de-DE": "Keine Dateien oder Verzeichnisse gefunden",
+        "fr-FR": "Aucun fichier ou répertoire trouvé",
+        "ko-KR": "파일 또는 디렉터리를 찾을 수 없음",
+        "$files": [
+            "renderer/components/file-explorer/DirectoryTree.tsx(6409-6422)"
+        ],
+        "$id": 3967
+    },
+    "收起": {
+        "en-US": "Collapse",
+        "es-ES": "Contraer",
+        "ar-EG": "طي",
+        "pt-PT": "Ocultar",
+        "ru-RU": "Свернуть",
+        "ja-JP": "折りたたむ",
+        "de-DE": "Einklappen",
+        "fr-FR": "Réduire",
+        "ko-KR": "접기",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(4602-4608)"
+        ],
+        "$id": 3968
+    },
+    "展开": {
+        "en-US": "Expand",
+        "es-ES": "Expandir",
+        "ar-EG": "توسيع",
+        "pt-PT": "Expandir",
+        "ru-RU": "Развернуть",
+        "ja-JP": "展開",
+        "de-DE": "Ausklappen",
+        "fr-FR": "Développer",
+        "ko-KR": "펼치기",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(4612-4618)"
+        ],
+        "$id": 3969
+    },
+    "分析完成": {
+        "en-US": "Analysis completed",
+        "es-ES": "Análisis completado",
+        "ar-EG": "اكتمل التحليل",
+        "pt-PT": "Análise concluída",
+        "ru-RU": "Анализ завершен",
+        "ja-JP": "分析完了",
+        "de-DE": "Analyse abgeschlossen",
+        "fr-FR": "Analyse terminée",
+        "ko-KR": "분석 완료",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(9942-9950)"
+        ],
+        "$id": 3970
+    },
+    "分析失败: {}": {
+        "en-US": "Analysis failed: {}",
+        "es-ES": "Análisis fallido: {}",
+        "ar-EG": "فشل التحليل: {}",
+        "pt-PT": "Falha na análise: {}",
+        "ru-RU": "Анализ не выполнен: {}",
+        "ja-JP": "分析失敗: {}",
+        "de-DE": "Analyse fehlgeschlagen: {}",
+        "fr-FR": "Échec de l'analyse : {}",
+        "ko-KR": "분석 실패: {}",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(10013-10025)"
+        ],
+        "$id": 3971
+    },
+    "未知错误": {
+        "en-US": "Unknown error",
+        "es-ES": "Error desconocido",
+        "ar-EG": "خطأ غير معروف",
+        "pt-PT": "Erro desconhecido",
+        "ru-RU": "Неизвестная ошибка",
+        "ja-JP": "不明なエラー",
+        "de-DE": "Unbekannter Fehler",
+        "fr-FR": "Erreur inconnue",
+        "ko-KR": "알 수 없는 오류",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(10049-10057)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(11793-11801)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(13270-13278)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(14569-14577)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(15775-15783)"
+        ],
+        "$id": 3972
+    },
+    "文件已加入分析队列，正在分析...": {
+        "en-US": "File has been added to analysis queue, analyzing...",
+        "es-ES": "Archivo agregado a la cola de análisis, analizando...",
+        "ar-EG": "تمت إضافة الملف إلى قائمة انتظار التحليل، جاري التحليل...",
+        "pt-PT": "Ficheiro adicionado à fila de análise, a analisar...",
+        "ru-RU": "Файл добавлен в очередь анализа, анализируется...",
+        "ja-JP": "ファイルが分析キューに追加され、分析中です...",
+        "de-DE": "Datei wurde zur Analysewarteschlange hinzugefügt, wird analysiert...",
+        "fr-FR": "Fichier ajouté à la file d'attente d'analyse, en cours d'analyse...",
+        "ko-KR": "파일이 분석 대기열에 추가되었으며 분석 중입니다...",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(11670-11691)"
+        ],
+        "$id": 3973
+    },
+    "分析失败，请重试": {
+        "en-US": "Analysis failed, please try again",
+        "es-ES": "Análisis fallido, inténtelo de nuevo",
+        "ar-EG": "فشل التحليل، يرجى إعادة المحاولة",
+        "pt-PT": "Falha na análise, tente novamente.",
+        "ru-RU": "Анализ не удался, пожалуйста, попробуйте снова",
+        "ja-JP": "解析に失敗しました。再試行してください",
+        "de-DE": "Analyse fehlgeschlagen, bitte erneut versuchen",
+        "fr-FR": "Échec de l'analyse, veuillez réessayer",
+        "ko-KR": "분석에 실패했습니다. 다시 시도해 주세요.",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(12130-12142)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(14908-14920)"
+        ],
+        "$id": 3382
+    },
+    "已清空分析": {
+        "en-US": "Analysis cleared",
+        "es-ES": "Análisis borrado",
+        "ar-EG": "تم تفريغ التحليل",
+        "pt-PT": "Análise limpa",
+        "ru-RU": "Очищено",
+        "ja-JP": "分析をクリアしました",
+        "de-DE": "Analyse gelöscht",
+        "fr-FR": "Analyse effacée",
+        "ko-KR": "분석이 완료되었습니다.",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(12773-12782)"
+        ],
+        "$id": 2647
+    },
+    "服务器响应失败": {
+        "en-US": "Server response failed",
+        "es-ES": "Fallo en la respuesta del servidor",
+        "ar-EG": "فشل استجابة الخادم",
+        "pt-PT": "Falha na resposta do servidor.",
+        "ru-RU": "Ошибка ответа сервера",
+        "ja-JP": "サーバーからの応答に失敗しました",
+        "de-DE": "Serverantwort fehlgeschlagen",
+        "fr-FR": "Échec de la réponse du serveur",
+        "ko-KR": "서버 응답에 실패했습니다.",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(12981-12992)"
+        ],
+        "$id": 3383
+    },
+    "清空分析失败: {error}": {
+        "en-US": "Failed to clear analysis: {error}",
+        "es-ES": "Borrado de análisis fallido: {error}",
+        "ar-EG": "فشل مسح التحليل: {error}",
+        "pt-PT": "Falha ao limpar a análise: {error}",
+        "ru-RU": "Ошибка очистки анализа: {error}",
+        "ja-JP": "分析のクリア失敗: {error}",
+        "de-DE": "Analysebereinigung fehlgeschlagen: {error}",
+        "fr-FR": "Échec du vidage de l'analyse : {error}",
+        "ko-KR": "분석 비우기 실패: {error}",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(13085-13104)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(13223-13242)"
+        ],
+        "$id": 3976
+    },
+    "无法获取目录路径，请刷新后重试": {
+        "en-US": "Unable to get directory path, please refresh and try again",
+        "es-ES": "No se puede obtener la ruta del directorio, por favor actualice y vuelva a intentarlo",
+        "ar-EG": "غير قادر على الحصول على مسار الدليل، يرجى التحديث وإعادة المحاولة",
+        "pt-PT": "Não é possível obter o caminho do diretório, recarregue e tente novamente",
+        "ru-RU": "Не удается получить путь к каталогу, обновите страницу и повторите попытку",
+        "ja-JP": "ディレクトリパスを取得できません。ページを更新して再試行してください",
+        "de-DE": "Verzeichnispfad kann nicht abgerufen werden, bitte aktualisieren und erneut versuchen",
+        "fr-FR": "Impossible d'obtenir le chemin du répertoire, veuillez rafraîchir et réessayer",
+        "ko-KR": "디렉터리 경로를 가져올 수 없습니다. 새로 고침 후 다시 시도하십시오",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(14091-14110)"
+        ],
+        "$id": 3977
+    },
+    "目录重新分析完成": {
+        "en-US": "Directory re-analysis completed",
+        "es-ES": "Reanálisis del directorio completado",
+        "ar-EG": "اكتملت إعادة تحليل الدليل",
+        "pt-PT": "Nova análise do diretório concluída",
+        "ru-RU": "Повторный анализ каталога завершен",
+        "ja-JP": "ディレクトリの再分析完了",
+        "de-DE": "Verzeichnisneuanalyse abgeschlossen",
+        "fr-FR": "Réanalyse du répertoire terminée",
+        "ko-KR": "디렉터리 재분석 완료",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(14297-14309)"
+        ],
+        "$id": 3978
+    },
+    "已清空目录分析": {
+        "en-US": "Directory analysis cleared",
+        "es-ES": "Análisis del directorio vaciado",
+        "ar-EG": "تم مسح تحليل الدليل\r",
+        "pt-PT": "Análise de diretório limpa\r",
+        "ru-RU": "Анализ каталога очищен",
+        "ja-JP": "ディレクトリ分析をクリアしました",
+        "de-DE": "Verzeichnisanalyse geleert",
+        "fr-FR": "Analyse du répertoire vidée",
+        "ko-KR": "디렉토리 분석 비우기 완료됨",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(15433-15444)"
+        ],
+        "$id": 3980
+    },
+    "清空目录分析失败: {error}": {
+        "en-US": "Failed to clear directory analysis: {error}",
+        "es-ES": "Error al vaciar el análisis del directorio: {error}",
+        "ar-EG": "فشل مسح تحليل الدليل: {error}\r",
+        "pt-PT": "Falha ao limpar a análise do diretório: {error}\r",
+        "ru-RU": "Ошибка очистки каталога: {error}",
+        "ja-JP": "ディレクトリ分析のクリアに失敗しました: {error}",
+        "de-DE": "Verzeichnisanalyse konnte nicht geleert werden: {error}",
+        "fr-FR": "Échec du vidage de l'analyse du répertoire: {error}",
+        "ko-KR": "디렉토리 분석 비우기 실패: {error}",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(15726-15747)"
+        ],
+        "$id": 3086
+    },
+    "文件类型": {
+        "en-US": "File type",
+        "es-ES": "Tipo de archivo",
+        "ar-EG": "نوع الملف\r",
+        "pt-PT": "Tipo de ficheiro\r",
+        "ru-RU": "Тип файла",
+        "ja-JP": "ファイルタイプ",
+        "de-DE": "Dateityp",
+        "fr-FR": "Type de fichier",
+        "ko-KR": "파일 유형",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(16085-16093)",
+            "renderer/components/file-explorer/FileList.tsx(72689-72697)"
+        ],
+        "$id": 3982
+    },
+    "文件用途": {
+        "en-US": "File purpose",
+        "es-ES": "Uso del archivo",
+        "ar-EG": "غرض الملف\r",
+        "pt-PT": "Utilização do ficheiro\r",
+        "ru-RU": "Назначение файла",
+        "ja-JP": "ファイル用途",
+        "de-DE": "Dateiverwendungszweck",
+        "fr-FR": "Utilisation du fichier",
+        "ko-KR": "파일 용도",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(16096-16104)"
+        ],
+        "$id": 3983
+    },
+    "来自云端缓存": {
+        "en-US": "From cloud cache",
+        "es-ES": "Procedente de la caché en la nube",
+        "ar-EG": "من ذاكرة التخزين المؤقت السحابية",
+        "pt-PT": "Proveniente da cache na nuvem.",
+        "ru-RU": "Из облачного кэша",
+        "ja-JP": "クラウドキャッシュから",
+        "de-DE": "Aus dem Cloud-Cache",
+        "fr-FR": "Provenant du cache cloud",
+        "ko-KR": "클라우드 캐시에서 제공됨",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(21970-21980)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(23682-23692)"
+        ],
+        "$id": 3384
+    },
+    "分析耗时": {
+        "en-US": "Analysis Duration  ",
+        "es-ES": "Tiempo de análisis",
+        "ar-EG": "وقت التحليل  ",
+        "pt-PT": "Tempo de análise",
+        "ru-RU": "Время анализа  ",
+        "ja-JP": "分析にかかった時間",
+        "de-DE": "Analysezeit  ",
+        "fr-FR": "Temps d'analyse",
+        "ko-KR": "분석 소요 시간",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(22253-22261)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(43706-43714)"
+        ],
+        "$id": 3417
+    },
+    "总耗时 {}": {
+        "en-US": "Total time spent {}",
+        "es-ES": "Tiempo total invertido {}",
+        "ar-EG": "إجمالي الوقت المستغرق {}",
+        "pt-PT": "Tempo total gasto {}",
+        "ru-RU": "Общее время потрачено {}",
+        "ja-JP": "費やした合計時間 {}",
+        "de-DE": "Insgesamt aufgewendete Zeit {}",
+        "fr-FR": "Temps total passé {}",
+        "ko-KR": "총 소요 시간 {}",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(23961-23971)"
+        ],
+        "$id": 4522
+    },
+    "标签分析失败，请重试或切换更强的模型": {
+        "en-US": "Tag analysis failed. Please retry or switch to a stronger model.",
+        "es-ES": "Error en el análisis de etiquetas, intente nuevamente o cambie a un modelo más potente",
+        "ar-EG": "فشل تحليل الوسوم، يرجى إعادة المحاولة أو التبديل إلى نموذج أقوى",
+        "pt-PT": "Falha na análise de etiquetas; tente novamente ou mude para um modelo mais potente.",
+        "ru-RU": "Не удалось проанализировать теги, пожалуйста, повторите попытку или переключитесь на более мощную модель",
+        "ja-JP": "タグ分析に失敗しました。再試行するか、より強力なモデルに切り替えてください",
+        "de-DE": "Tag-Analyse fehlgeschlagen, bitte versuchen Sie es erneut oder wechseln Sie zu einem leistungsstärkeren Modell",
+        "fr-FR": "Échec de l'analyse des étiquettes, veuillez réessayer ou basculer vers un modèle plus puissant",
+        "ko-KR": "태그 분석에 실패했습니다. 다시 시도하거나 더 강력한 모델로 전환해 주세요.",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(26903-26925)"
+        ],
+        "$id": 2877
+    },
+    "智能文件名:": {
+        "en-US": "Smart Filename:",
+        "es-ES": "Nombre de archivo inteligente:",
+        "ar-EG": "اسم الملف الذكي:",
+        "pt-PT": "Nome de ficheiro inteligente:",
+        "ru-RU": "Интеллектуальное имя файла:",
+        "ja-JP": "スマートファイル名:",
+        "de-DE": "Intelligenter Dateiname:",
+        "fr-FR": "Nom de fichier intelligent:",
+        "ko-KR": "스마트 파일명:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(27643-27653)"
+        ],
+        "$id": 3264
+    },
+    "路径:": {
+        "en-US": "Path:",
+        "es-ES": "Ruta:",
+        "ar-EG": "المسار:\r",
+        "pt-PT": "Caminho:\r",
+        "ru-RU": "Путь:",
+        "ja-JP": "パス:",
+        "de-DE": "Pfad:",
+        "fr-FR": "Chemin :",
+        "ko-KR": "경로:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(28588-28595)"
+        ],
+        "$id": 3985
+    },
+    "文件总数:": {
+        "en-US": "Total files:",
+        "es-ES": "Número total de archivos:",
+        "ar-EG": "إجمالي عدد الملفات:\r",
+        "pt-PT": "Número total de ficheiros:\r",
+        "ru-RU": "Всего файлов:",
+        "ja-JP": "ファイル総数:",
+        "de-DE": "Gesamtzahl der Dateien:",
+        "fr-FR": "Nombre total de fichiers :",
+        "ko-KR": "총 파일 수:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(28758-28767)"
+        ],
+        "$id": 3986
+    },
+    "个": {
+        "en-US": "pieces",
+        "es-ES": "elementos",
+        "ar-EG": "كل\r",
+        "pt-PT": "ficheiros\r",
+        "ru-RU": "шт.",
+        "ja-JP": "個",
+        "de-DE": "Stück",
+        "fr-FR": "pièces",
+        "ko-KR": "개",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(28829-28834)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(29020-29025)"
+        ],
+        "$id": 3987
+    },
+    "已分析:": {
+        "en-US": "Analyzed:",
+        "es-ES": "Analizados:",
+        "ar-EG": "تم تحليلها:\r",
+        "pt-PT": "Analisados:\r",
+        "ru-RU": "Проанализировано:",
+        "ja-JP": "分析済:",
+        "de-DE": "Bereits analysiert:",
+        "fr-FR": "Déjà analysé :",
+        "ko-KR": "분석 완료:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(28942-28950)"
+        ],
+        "$id": 3988
+    },
+    "最后扫描:": {
+        "en-US": "Last scan:",
+        "es-ES": "Última exploración:",
+        "ar-EG": "آخر مسح:\r",
+        "pt-PT": "Última verificação:\r",
+        "ru-RU": "Последнее сканирование:",
+        "ja-JP": "最終スキャン:",
+        "de-DE": "Letzte Überprüfung:",
+        "fr-FR": "Dernière analyse :",
+        "ko-KR": "최근 스캔:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(29184-29193)"
+        ],
+        "$id": 3989
+    },
+    "质量评分": {
+        "en-US": "Quality rating",
+        "es-ES": "Calificación de calidad",
+        "ar-EG": "تقييم الجودة\r",
+        "pt-PT": "Classificação de qualidade\r",
+        "ru-RU": "Оценка качества",
+        "ja-JP": "品質評価",
+        "de-DE": "Qualitätsbewertung",
+        "fr-FR": "Note de qualité",
+        "ko-KR": "품질 평점",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(29620-29628)"
+        ],
+        "$id": 3990
+    },
+    "暂无评分数据 (请点击下方\"重新分析\"获取)": {
+        "en-US": "No rating data available (please click \"Reanalyze\" below to obtain)",
+        "es-ES": "No hay datos de calificación (por favor, haga clic en \"Reanálisis\" a continuación para obtenerlos)",
+        "ar-EG": "لا توجد بيانات تقييم مؤقتًا (يرجى النقر على \"إعادة التحليل\" أدناه للحصول عليها)\r",
+        "pt-PT": "Sem dados de classificação (clique em \"Reanalisar\" abaixo para obter)\r",
+        "ru-RU": "Нет данных оценки (нажмите кнопку \"Переанализировать\" ниже)",
+        "ja-JP": "評価データがありません (下の「再分析」をクリックして取得してください)",
+        "de-DE": "Keine Bewertungsdaten vorhanden (bitte klicken Sie unten auf \"Neu analysieren\", um diese zu erhalten)",
+        "fr-FR": "Aucune note disponible (veuillez cliquer sur \"Réanalyser\" ci-dessous pour obtenir la note)",
+        "ko-KR": "평가 데이터 없음 (하단의 \"재분석\"을 클릭하여 가져오세요)",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(29820-29846)"
+        ],
+        "$id": 3991
+    },
+    "置信度: ": {
+        "en-US": "Confidence:",
+        "es-ES": "Nivel de confianza:",
+        "ar-EG": "درجة الثقة:\r",
+        "pt-PT": "Confiança: \r",
+        "ru-RU": "Уверенность: ",
+        "ja-JP": "信頼度: ",
+        "de-DE": "Vertrauenswürdigkeit: ",
+        "fr-FR": "Niveau de confiance :",
+        "ko-KR": "신뢰도:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(31120-31129)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(36017-36026)"
+        ],
+        "$id": 3992
+    },
+    "技术指标": {
+        "en-US": "Technical indicators",
+        "es-ES": "Indicadores técnicos",
+        "ar-EG": "المؤشرات الفنية\r",
+        "pt-PT": "Indicadores técnicos\r",
+        "ru-RU": "Технические показатели",
+        "ja-JP": "技術指標",
+        "de-DE": "Technische Kennzahlen",
+        "fr-FR": "Indicateurs techniques",
+        "ko-KR": "기술 지표",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(31528-31536)"
+        ],
+        "$id": 3993
+    },
+    "美学评估": {
+        "en-US": "Aesthetic evaluation",
+        "es-ES": "Evaluación estética",
+        "ar-EG": "التقييم الجمالي\r",
+        "pt-PT": "Avaliação estética\r",
+        "ru-RU": "Эстетическая оценка",
+        "ja-JP": "美学評価",
+        "de-DE": "Ästhetische Bewertung",
+        "fr-FR": "Évaluation esthétique",
+        "ko-KR": "미적 평가",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(31963-31971)"
+        ],
+        "$id": 3994
+    },
+    "内容价值": {
+        "en-US": "Content value",
+        "es-ES": "Valor del contenido",
+        "ar-EG": "قيمة المحتوى\r",
+        "pt-PT": "Valor do conteúdo\r",
+        "ru-RU": "Ценность содержимого",
+        "ja-JP": "コンテンツ価値",
+        "de-DE": "Inhaltlicher Wert",
+        "fr-FR": "Valeur du contenu",
+        "ko-KR": "내용 가치",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(32398-32406)"
+        ],
+        "$id": 3995
+    },
+    "完整性": {
+        "en-US": "Completeness",
+        "es-ES": "Integridad",
+        "ar-EG": "الكاملية\r",
+        "pt-PT": "Integridade\r",
+        "ru-RU": "Полнота",
+        "ja-JP": "完全性",
+        "de-DE": "Vollständigkeit",
+        "fr-FR": "Intégrité",
+        "ko-KR": "완전성",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(32831-32838)"
+        ],
+        "$id": 3996
+    },
+    "时效性": {
+        "en-US": "Timeliness",
+        "es-ES": "Actualidad",
+        "ar-EG": "الزمنية\r",
+        "pt-PT": "Atualidade\r",
+        "ru-RU": "Актуальность",
+        "ja-JP": "鮮度",
+        "de-DE": "Aktualität",
+        "fr-FR": "Actualité",
+        "ko-KR": "시의성",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(33268-33275)"
+        ],
+        "$id": 3997
+    },
+    "摘取内容": {
+        "en-US": "Extracted content",
+        "es-ES": "Contenido extraído",
+        "ar-EG": "استخراج المحتوى\r",
+        "pt-PT": "Extrair conteúdo\r",
+        "ru-RU": "Извлечь содержимое",
+        "ja-JP": "コンテンツ抽出",
+        "de-DE": "Inhaltszusammenfassung",
+        "fr-FR": "Contenu extrait",
+        "ko-KR": "내용 추출",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(34330-34338)"
+        ],
+        "$id": 3998
+    },
+    "多模态描述": {
+        "en-US": "Multimodal description",
+        "es-ES": "Descripción multimodal",
+        "ar-EG": "الوصف متعدد الوسائط\r",
+        "pt-PT": "Descrição multimodal\r",
+        "ru-RU": "Мультимодальное описание",
+        "ja-JP": "マルチモーダル説明",
+        "de-DE": "Multimodale Beschreibung",
+        "fr-FR": "Description multimodale",
+        "ko-KR": "다중 모드 설명",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(34813-34822)"
+        ],
+        "$id": 3999
+    },
+    "语音/歌词/图片OCR内容": {
+        "en-US": "OCR Content of Audio/Lyrics/Images",
+        "es-ES": "Contenido OCR de voz/letra/imágenes",
+        "ar-EG": "محتوى OCR للصوت/الكلمات/الصور",
+        "pt-PT": "Conteúdo OCR de áudio/letra/imagem",
+        "ru-RU": "OCR-содержимое аудио/текста песни/изображений",
+        "ja-JP": "音声/歌詞/画像OCR内容",
+        "de-DE": "OCR-Inhalt von Sprache/Text/Bildern",
+        "fr-FR": "Contenu OCR des paroles/paroles/images",
+        "ko-KR": "음성/가사/이미지 OCR 내용",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(35295-35312)"
+        ],
+        "$id": 3419
+    },
+    "AI分析策略 ": {
+        "en-US": "AI analysis strategy",
+        "es-ES": "Estrategia de análisis de IA",
+        "ar-EG": "استراتيجية التحليل بالذكاء الاصطناعي\r",
+        "pt-PT": "Estratégia de análise por IA \r",
+        "ru-RU": "Стратегия анализа ИИ ",
+        "ja-JP": "AI分析戦略 ",
+        "de-DE": "KI-Analysestrategie ",
+        "fr-FR": "Stratégie d'analyse IA",
+        "ko-KR": "AI 분석 전략",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(35816-35827)"
+        ],
+        "$id": 4000
+    },
+    "智能文件名格式": {
+        "en-US": "Smart Filename Format",
+        "es-ES": "Formato de nombre de archivo inteligente",
+        "ar-EG": "تنسيق اسم الملف الذكي",
+        "pt-PT": "Formato de nome de ficheiro inteligente",
+        "ru-RU": "Формат интеллектуального имени файла",
+        "ja-JP": "スマートファイル名形式",
+        "de-DE": "Format für intelligente Dateinamen",
+        "fr-FR": "Format de nom de fichier intelligent",
+        "ko-KR": "스마트 파일명 형식",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(36678-36689)"
+        ],
+        "$id": 3265
+    },
+    "这里决定了目录中文件的命名规则，如果对此不满意，可以点底部的重新分析按钮；【终极大招】：可以去设置页面自定义提示词来引导AI生成您想要的文件名": {
+        "en-US": "This determines the naming convention for files in the directory. If you are not satisfied, you can click the re-analyze button at the bottom; 【Ultimate Move】: You can go to the settings page to customize prompts to guide the AI to generate the file names you want.  ",
+        "es-ES": "Aquí se determina la regla de nomenclatura de los archivos en el directorio. Si no está satisfecho, puede hacer clic en el botón de reanálisis en la parte inferior; 【Movimiento final】: Puede ir a la página de configuración para personalizar las indicaciones y guiar a la IA para que genere el nombre de archivo que desee.",
+        "ar-EG": "هنا يتم تحديد قواعد تسمية الملفات في الدليل، إذا لم تكن راضيًا عنها، يمكنك النقر على زر إعادة التحليل في الأسفل؛ 【الحل النهائي】：يمكنك الذهاب إلى صفحة الإعدادات لتخصيص الكلمات التوجيهية لتوجيه الذكاء الاصطناعي لإنشاء أسماء الملفات التي تريدها  ",
+        "pt-PT": "Aqui é definida a regra de nomenclatura dos ficheiros no diretório. Se não estiver satisfeito, pode clicar no botão \"Reanalisar\" no final; 【Método definitivo】: Pode ir à página de definições para personalizar as instruções e orientar a IA a gerar os nomes de ficheiro que deseja",
+        "ru-RU": "Здесь определяются правила именования файлов в каталоге. Если они вас не устраивают, можно нажать кнопку повторного анализа внизу; 【Козырная карта】: можно перейти на страницу настроек и задать собственные подсказки, чтобы направить ИИ на создание нужных вам имен файлов",
+        "ja-JP": "ここでディレクトリ内のファイルの命名規則が決まります。気に入らない場合は、下部の「再分析」ボタンをクリックしてください。【最終手段】：設定ページでカスタムプロンプトを定義し、AIに希望のファイル名を生成させることができます。  ",
+        "de-DE": "Hier wird die Namenskonvention der Dateien im Verzeichnis festgelegt. Wenn Sie damit nicht zufrieden sind, können Sie unten auf die Schaltfläche \"Erneut analysieren\" klicken; 【Ultimativer Trick】: Sie können auf der Einstellungsseite benutzerdefinierte Aufforderungen eingeben, um die KI zu leiten, die gewünschten Dateinamen zu generieren.",
+        "fr-FR": "Ici, la règle de nommage des fichiers dans le répertoire est déterminée. Si vous n'êtes pas satisfait, vous pouvez cliquer sur le bouton 'Réanalyser' en bas ; 【Astuce ultime】: vous pouvez aller dans la page des paramètres pour personnaliser les instructions afin de guider l'IA à générer les noms de fichiers que vous souhaitez",
+        "ko-KR": "여기서 디렉터리 내 파일의 명명 규칙이 결정됩니다. 이에 만족하지 않으면 하단의 재분석 버튼을 클릭하세요; 【최종 방법】: 설정 페이지에서 사용자 정의 프롬프트를 사용하여 AI가 원하는 파일 이름을 생성하도록 유도할 수 있습니다",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(36802-36877)"
+        ],
+        "$id": 4349
+    },
+    "文件类型分布": {
+        "en-US": "File type distribution",
+        "es-ES": "Distribución de tipos de archivo",
+        "ar-EG": "توزيع نوع الملف\r",
+        "pt-PT": "Distribuição de tipos de ficheiro\r",
+        "ru-RU": "Распределение по типам файлов",
+        "ja-JP": "ファイルタイプ分布",
+        "de-DE": "Verteilung der Dateitypen",
+        "fr-FR": "Répartition des types de fichiers",
+        "ko-KR": "파일 유형 분포",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(38936-38946)"
+        ],
+        "$id": 4001
+    },
+    "特殊文件:": {
+        "en-US": "Special files:",
+        "es-ES": "Archivos especiales:",
+        "ar-EG": "الملفات الخاصة:\r",
+        "pt-PT": "Ficheiros especiais:\r",
+        "ru-RU": "Особые файлы:",
+        "ja-JP": "特殊ファイル:",
+        "de-DE": "Spezielle Dateien:",
+        "fr-FR": "Fichiers spéciaux :",
+        "ko-KR": "특수 파일:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(40886-40895)"
+        ],
+        "$id": 4002
+    },
+    "分析时间:": {
+        "en-US": "Analysis time:",
+        "es-ES": "Tiempo de análisis:",
+        "ar-EG": "زمن التحليل:\r",
+        "pt-PT": "Tempo de análise:\r",
+        "ru-RU": "Время анализа:",
+        "ja-JP": "分析時間:",
+        "de-DE": "Analysezeit:",
+        "fr-FR": "Durée d'analyse :",
+        "ko-KR": "분석 시간:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(41667-41676)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(43438-43447)"
+        ],
+        "$id": 4003
+    },
+    "元数据": {
+        "en-US": "Metadata",
+        "es-ES": "Metadatos",
+        "ar-EG": "البيانات الوصفية\r",
+        "pt-PT": "Metadados\r",
+        "ru-RU": "Метаданные",
+        "ja-JP": "メタデータ",
+        "de-DE": "Metadaten",
+        "fr-FR": "Métadonnées",
+        "ko-KR": "메타데이터",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(42117-42124)"
+        ],
+        "$id": 4004
+    },
+    "作者:": {
+        "en-US": "Author:",
+        "es-ES": "Autor:",
+        "ar-EG": "المؤلف:\r",
+        "pt-PT": "Autor:\r",
+        "ru-RU": "Автор:",
+        "ja-JP": "作成者:\r",
+        "de-DE": "Autor:",
+        "fr-FR": "Auteur :",
+        "ko-KR": "작성자:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(42335-42342)"
+        ],
+        "$id": 4005
+    },
+    "语言:": {
+        "en-US": "Language:",
+        "es-ES": "Idioma:",
+        "ar-EG": "اللغة:\r",
+        "pt-PT": "Idioma:\r",
+        "ru-RU": "Язык:",
+        "ja-JP": "言語:\r",
+        "de-DE": "Sprache:",
+        "fr-FR": "Langue :",
+        "ko-KR": "언어:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(42576-42583)"
+        ],
+        "$id": 4006
+    },
+    "MIME类型:": {
+        "en-US": "MIME type:",
+        "es-ES": "Tipo MIME:",
+        "ar-EG": "نوع MIME:",
+        "pt-PT": "Tipo MIME:",
+        "ru-RU": "Тип MIME:",
+        "ja-JP": "MIMEタイプ:",
+        "de-DE": "MIME-Typ:",
+        "fr-FR": "Type MIME :",
+        "ko-KR": "MIME 유형:",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(42819-42830)"
+        ],
+        "$id": 4007
+    },
+    "最小单元": {
+        "en-US": "Minimum unit",
+        "es-ES": "Unidad mínima",
+        "ar-EG": "الوحدة الدنيا",
+        "pt-PT": "Unidade mínima",
+        "ru-RU": "Минимальная единица",
+        "ja-JP": "最小単位",
+        "de-DE": "Mindesteinheit",
+        "fr-FR": "Unité minimale",
+        "ko-KR": "최소 유닛",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(46316-46324)"
+        ],
+        "$id": 4008
+    },
+    "分析中...": {
+        "en-US": "Analyzing...",
+        "es-ES": "Analizando...",
+        "ar-EG": "جاري التحليل...",
+        "pt-PT": "A analisar...",
+        "ru-RU": "Анализ...",
+        "ja-JP": "分析中...\r",
+        "de-DE": "Analyse läuft...",
+        "fr-FR": "Analyse en cours...",
+        "ko-KR": "분석 중...",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(47829-47839)"
+        ],
+        "$id": 4009
+    },
+    "重新分析": {
+        "en-US": "Re-analyze",
+        "es-ES": "Reanalizar",
+        "ar-EG": "إعادة التحليل",
+        "pt-PT": "Reanalisar",
+        "ru-RU": "Повторный анализ",
+        "ja-JP": "再分析",
+        "de-DE": "Erneut analysieren",
+        "fr-FR": "Réanalyser",
+        "ko-KR": "재분석",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(48149-48157)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(48221-48229)"
+        ],
+        "$id": 4010
+    },
+    "立即分析": {
+        "en-US": "Analyze immediately",
+        "es-ES": "Analizar ahora",
+        "ar-EG": "تحليل فوري",
+        "pt-PT": "Analisar imediatamente",
+        "ru-RU": "Анализировать сейчас",
+        "ja-JP": "すぐに分析",
+        "de-DE": "Jetzt analysieren",
+        "fr-FR": "Analyser immédiatement",
+        "ko-KR": "즉시 분석",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(48186-48194)",
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(48254-48262)"
+        ],
+        "$id": 4011
+    },
+    "仅分析目录，如果你要分析目录及其下子文件，请点击批量分析按钮": {
+        "en-US": "Only analyze the directory. If you want to analyze the directory and its sub-files, please click the batch analysis button.",
+        "es-ES": "Sólo analiza el directorio. Si desea analizar el directorio y sus subarchivos, haga clic en el botón de análisis por lotes.",
+        "ar-EG": "تحليل الدليل فقط. إذا كنت ترغب في تحليل الدليل وملفاته الفرعية، يرجى النقر على زر تحليل الدفعة.",
+        "pt-PT": "Analise apenas o diretório. Se você deseja analisar o diretório e seus subarquivos, clique no botão de análise em lote.",
+        "ru-RU": "Только анализируйте каталог. Если вы хотите проанализировать каталог и его подфайлы, нажмите кнопку пакетного анализа.",
+        "ja-JP": "ディレクトリのみを分析します。ディレクトリとそのサブファイルを分析したい場合は、バッチ分析ボタンをクリックしてください。",
+        "de-DE": "Analysieren Sie nur das Verzeichnis. Wenn Sie das Verzeichnis und seine Unterdateien analysieren möchten, klicken Sie bitte auf die Schaltfläche „Stapelanalyse“.",
+        "fr-FR": "Analysez uniquement le répertoire. Si vous souhaitez analyser le répertoire et ses sous-fichiers, veuillez cliquer sur le bouton d'analyse par lots.",
+        "ko-KR": "디렉토리만 분석하십시오. 디렉토리와 해당 하위 파일을 분석하려면 일괄 분석 버튼을 클릭하십시오.",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(48691-48725)"
+        ],
+        "$id": 3319
+    },
+    "清空分析结果": {
+        "en-US": "Clear analysis results",
+        "es-ES": "Borrar resultados del análisis",
+        "ar-EG": "مسح نتائج التحليل",
+        "pt-PT": "Limpar resultados da análise",
+        "ru-RU": "Очистить результаты анализа",
+        "ja-JP": "分析結果をクリア",
+        "de-DE": "Analyseergebnisse löschen",
+        "fr-FR": "Effacer les résultats d'analyse",
+        "ko-KR": "분석 결과 초기화",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(49189-49199)"
+        ],
+        "$id": 4012
+    },
+    "确认清空分析结果？": {
+        "en-US": "Confirm to clear analysis results?",
+        "es-ES": "¿Confirmar borrado de resultados del análisis?",
+        "ar-EG": "هل تؤكد مسح نتائج التحليل؟",
+        "pt-PT": "Tem a certeza de que pretende limpar os resultados da análise?",
+        "ru-RU": "Подтвердить очистку результатов анализа?",
+        "ja-JP": "分析結果をクリアしてもよろしいですか？",
+        "de-DE": "Analyseergebnisse wirklich löschen?",
+        "fr-FR": "Confirmer l'effacement des résultats d'analyse ?",
+        "ko-KR": "분석 결과를 초기화하시겠습니까?",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(49566-49579)"
+        ],
+        "$id": 4013
+    },
+    "此操作将删除该{category}的所有AI分析数据{sentens}，但不会删除{category}本身。": {
+        "en-US": "This operation will delete all AI analysis data {sentens} of this {category} but will not delete the {category} itself.",
+        "es-ES": "Esta operación eliminará todos los datos de análisis de IA de este {category}{sentens}, pero no eliminará el {category} en sí.",
+        "ar-EG": "هذا الإجراء سيحذف بيانات التحليل الذكي الاصطناعي لـ {category} {sentens}، ولكن لن يحذف {category} نفسه.",
+        "pt-PT": "Esta operação irá eliminar todos os dados de análise por IA deste {category}{sentens}, mas não irá eliminar o {category} em si.",
+        "ru-RU": "Эта операция удалит все данные искусственного интеллекта для этого {category}{sentens}, но не удалит сам {category}.",
+        "ja-JP": "この操作により、該当する{category}のすべてのAI分析データ{sentens}が削除されますが、{category}自体は削除されません。",
+        "de-DE": "Diese Aktion entfernt alle KI-Analyse-Daten für {category}{sentens}, aber {category} selbst wird nicht gelöscht.",
+        "fr-FR": "Cette opération supprimera toutes les données d'analyse AI de ce {category}{sentens}, mais ne supprimera pas le {category} lui-même.",
+        "ko-KR": "이 작업은 {category}의 모든 AI 분석 데이터{sentens}를 삭제하지만, {category} 자체는 삭제하지 않습니다.",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(49655-49713)"
+        ],
+        "$id": 4014
+    },
+    "目录": {
+        "en-US": "Directory",
+        "es-ES": "Directorio",
+        "ar-EG": "الدليل",
+        "pt-PT": "Diretório",
+        "ru-RU": "Каталог",
+        "ja-JP": "ディレクトリ",
+        "de-DE": "Verzeichnis",
+        "fr-FR": "Répertoire",
+        "ko-KR": "디렉토리",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(49758-49764)"
+        ],
+        "$id": 4015
+    },
+    "文件": {
+        "en-US": "File",
+        "es-ES": "Archivo",
+        "ar-EG": "الملف",
+        "pt-PT": "Ficheiro",
+        "ru-RU": "Файл",
+        "ja-JP": "ファイル",
+        "de-DE": "Datei",
+        "fr-FR": "Fichier",
+        "ko-KR": "파일",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(49768-49774)",
+            "renderer/components/file-explorer/FileItem.tsx(3182-3188)",
+            "renderer/components/file-explorer/FileList.tsx(20458-20464)",
+            "renderer/components/file-explorer/FileList.tsx(38409-38415)"
+        ],
+        "$id": 4016
+    },
+    "（包括目录结构分析、推荐标签等）": {
+        "en-US": "( including directory structure analysis, recommended tags, etc. )",
+        "es-ES": "(incluye análisis de estructura de directorios, etiquetas recomendadas, etc.)",
+        "ar-EG": "(يشمل تحليل هيكل الدليل، وعلامات تسمية موصى بها، إلخ)",
+        "pt-PT": "(inclui análise da estrutura do diretório, etiquetas recomendadas, etc.)",
+        "ru-RU": "(включая структуру каталогов, рекомендуемые теги и т.д.)",
+        "ja-JP": "（ディレクトリ構造分析、推奨タグなど）",
+        "de-DE": "(einschließlich Verzeichnisstrukturanalyse, empfohlene Tags usw.)",
+        "fr-FR": "(y compris l'analyse de la structure de répertoires, les étiquettes recommandées, etc.)",
+        "ko-KR": "(디렉토리 구조 분석, 추천 태그 등 포함)",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(49836-49856)"
+        ],
+        "$id": 4017
+    },
+    "（包括摘要、标签、向量索引等）": {
+        "en-US": "( including abstract, tags, vector index, etc. )",
+        "es-ES": "(incluye resumen, etiquetas, índice vectorial, etc.)",
+        "ar-EG": "(يشمل الملخص، والعلامات، وفهرس المتجهات، إلخ)",
+        "pt-PT": "(inclui resumo, etiquetas, índice vetorial, etc.)",
+        "ru-RU": "(включая резюме, теги, векторные индексы и т.д.)",
+        "ja-JP": "（要約、タグ、ベクトルインデックスなど）",
+        "de-DE": "(einschließlich Zusammenfassung, Tags, Vektorindex usw.)",
+        "fr-FR": "(y compris le résumé, les étiquettes, l'indexation vectorielle, etc.)",
+        "ko-KR": "(요약, 태그, 벡터 인덱스 등 포함)",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(49879-49898)"
+        ],
+        "$id": 4018
+    },
+    "清空后，您可以重新进行分析。": {
+        "en-US": "After clearing, you can re-analyze.",
+        "es-ES": "Después de borrar, puedes volver a realizar el análisis.",
+        "ar-EG": "بعد المسح، يمكنك إجراء التحليل مرة أخرى.",
+        "pt-PT": "Após a limpeza, poderá reanalisar.",
+        "ru-RU": "После очистки вы можете повторно провести анализ.",
+        "ja-JP": "クリア後、再分析が可能です。",
+        "de-DE": "Nach dem Löschen können Sie eine erneute Analyse durchführen.",
+        "fr-FR": "Après l'effacement, vous pourrez relancer une analyse.",
+        "ko-KR": "초기화 후 다시 분석할 수 있습니다.",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(49979-49997)"
+        ],
+        "$id": 4019
+    },
+    "取消": {
+        "en-US": "Cancel",
+        "es-ES": "Cancelar",
+        "ar-EG": "إلغاء",
+        "pt-PT": "Cancelar",
+        "ru-RU": "Отмена",
+        "ja-JP": "キャンセル",
+        "de-DE": "Abbrechen",
+        "fr-FR": "Annuler",
+        "ko-KR": "취소",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(50203-50209)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(60473-60479)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(60607-60613)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(77869-77875)"
+        ],
+        "$id": 4020
+    },
+    "确认清空": {
+        "en-US": "Confirm to clear",
+        "es-ES": "Confirmar borrado",
+        "ar-EG": "تأكيد المسح",
+        "pt-PT": "Confirmar limpeza",
+        "ru-RU": "Подтвердить очистку",
+        "ja-JP": "クリアを確認",
+        "de-DE": "Löschen bestätigen",
+        "fr-FR": "Confirmer l'effacement",
+        "ko-KR": "초기화 확인",
+        "$files": [
+            "renderer/components/file-explorer/FileDetailsPanel.tsx(50414-50422)"
+        ],
+        "$id": 4021
+    },
+    "文本文件": {
+        "en-US": "Text file",
+        "es-ES": "Archivo de texto",
+        "ar-EG": "ملف نصي",
+        "pt-PT": "Ficheiro de texto",
+        "ru-RU": "Текстовый файл",
+        "ja-JP": "テキストファイル",
+        "de-DE": "Textdatei",
+        "fr-FR": "Fichier texte",
+        "ko-KR": "텍스트 파일",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2596-2604)"
+        ],
+        "$id": 4022
+    },
+    "Markdown文档": {
+        "en-US": "Markdown document",
+        "es-ES": "Documento Markdown",
+        "ar-EG": "مستند ماركداون",
+        "pt-PT": "Documento Markdown",
+        "ru-RU": "Документ Markdown",
+        "ja-JP": "Markdownドキュメント",
+        "de-DE": "Markdown-Dokument",
+        "fr-FR": "Document Markdown",
+        "ko-KR": "Markdown 문서",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2618-2632)"
+        ],
+        "$id": 4023
+    },
+    "PDF文档": {
+        "en-US": "PDF document",
+        "es-ES": "Documento PDF",
+        "ar-EG": "مستند PDF\r",
+        "pt-PT": "Documento PDF",
+        "ru-RU": "PDF-документ",
+        "ja-JP": "PDFドキュメント",
+        "de-DE": "PDF-Dokument",
+        "fr-FR": "Document PDF",
+        "ko-KR": "PDF 문서",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2647-2656)"
+        ],
+        "$id": 4024
+    },
+    "Word文档": {
+        "en-US": "Word document",
+        "es-ES": "Documento Word",
+        "ar-EG": "مستند Word\r",
+        "pt-PT": "Documento Word",
+        "ru-RU": "Word-документ",
+        "ja-JP": "Wordドキュメント",
+        "de-DE": "Word-Dokument",
+        "fr-FR": "Document Word",
+        "ko-KR": "Word 문서",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2671-2681)",
+            "renderer/components/file-explorer/FileItem.tsx(2697-2707)"
+        ],
+        "$id": 4025
+    },
+    "Excel表格": {
+        "en-US": "Excel spreadsheet",
+        "es-ES": "Hoja de cálculo Excel",
+        "ar-EG": "جدول Excel\r",
+        "pt-PT": "Folha de cálculo Excel",
+        "ru-RU": "Excel-таблица",
+        "ja-JP": "Excelテーブル",
+        "de-DE": "Excel-Tabelle",
+        "fr-FR": "Tableur Excel",
+        "ko-KR": "Excel 시트",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2722-2733)",
+            "renderer/components/file-explorer/FileItem.tsx(2749-2760)"
+        ],
+        "$id": 4026
+    },
+    "JavaScript文件": {
+        "en-US": "JavaScript file",
+        "es-ES": "Archivo JavaScript",
+        "ar-EG": "ملف JavaScript\r",
+        "pt-PT": "Ficheiro JavaScript",
+        "ru-RU": "JavaScript-файл",
+        "ja-JP": "JavaScriptファイル",
+        "de-DE": "JavaScript-Datei",
+        "fr-FR": "Fichier JavaScript",
+        "ko-KR": "JavaScript 파일",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2827-2843)"
+        ],
+        "$id": 4028
+    },
+    "TypeScript文件": {
+        "en-US": "TypeScript file",
+        "es-ES": "Archivo TypeScript",
+        "ar-EG": "ملف TypeScript\r",
+        "pt-PT": "Ficheiro TypeScript",
+        "ru-RU": "TypeScript-файл",
+        "ja-JP": "TypeScriptファイル",
+        "de-DE": "TypeScript-Datei",
+        "fr-FR": "Fichier TypeScript",
+        "ko-KR": "TypeScript 파일",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2857-2873)"
+        ],
+        "$id": 4029
+    },
+    "React组件": {
+        "en-US": "React component",
+        "es-ES": "Componente React",
+        "ar-EG": "مكوّن React\r",
+        "pt-PT": "Componente React",
+        "ru-RU": "React-компонент",
+        "ja-JP": "Reactコンポーネント",
+        "de-DE": "React-Komponente",
+        "fr-FR": "Composant React",
+        "ko-KR": "React 컴포넌트",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2888-2899)",
+            "renderer/components/file-explorer/FileItem.tsx(2914-2925)"
+        ],
+        "$id": 4030
+    },
+    "HTML文件": {
+        "en-US": "HTML file",
+        "es-ES": "Archivo HTML",
+        "ar-EG": "ملف HTML\r",
+        "pt-PT": "Ficheiro HTML",
+        "ru-RU": "HTML-файл",
+        "ja-JP": "HTMLファイル",
+        "de-DE": "HTML-Datei",
+        "fr-FR": "Fichier HTML",
+        "ko-KR": "HTML 파일",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2941-2951)"
+        ],
+        "$id": 4031
+    },
+    "CSS样式表": {
+        "en-US": "CSS stylesheet",
+        "es-ES": "Hoja de estilos CSS",
+        "ar-EG": "ورقة أنماط CSS\r",
+        "pt-PT": "Folha de estilo CSS",
+        "ru-RU": "CSS-файл",
+        "ja-JP": "CSSスタイルシート",
+        "de-DE": "CSS-Stylesheet",
+        "fr-FR": "Feuille de style CSS",
+        "ko-KR": "CSS 스타일 시트",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2966-2976)"
+        ],
+        "$id": 4032
+    },
+    "JPEG图片": {
+        "en-US": "JPEG image",
+        "es-ES": "Imagen JPEG",
+        "ar-EG": "صورة JPEG\r",
+        "pt-PT": "Imagem JPEG",
+        "ru-RU": "JPEG-изображение",
+        "ja-JP": "JPEG画像",
+        "de-DE": "JPEG-Bild",
+        "fr-FR": "Image JPEG",
+        "ko-KR": "JPEG 이미지",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(2991-3001)"
+        ],
+        "$id": 4033
+    },
+    "PNG图片": {
+        "en-US": "PNG image",
+        "es-ES": "Imagen PNG",
+        "ar-EG": "صورة PNG\r",
+        "pt-PT": "Imagem PNG",
+        "ru-RU": "PNG-изображение",
+        "ja-JP": "PNG画像",
+        "de-DE": "PNG-Bild",
+        "fr-FR": "Image PNG",
+        "ko-KR": "PNG 이미지",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(3016-3025)"
+        ],
+        "$id": 4034
+    },
+    "GIF图片": {
+        "en-US": "GIF image",
+        "es-ES": "Imagen GIF",
+        "ar-EG": "صورة GIF\r",
+        "pt-PT": "Imagem GIF",
+        "ru-RU": "GIF-изображение",
+        "ja-JP": "GIF画像",
+        "de-DE": "GIF-Bild",
+        "fr-FR": "Image GIF",
+        "ko-KR": "GIF 이미지",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(3040-3049)"
+        ],
+        "$id": 4035
+    },
+    "MP3音频": {
+        "en-US": "MP3 audio",
+        "es-ES": "Audio MP3",
+        "ar-EG": "صوت MP3\r",
+        "pt-PT": "Áudio MP3",
+        "ru-RU": "MP3-аудио",
+        "ja-JP": "MP3音声",
+        "de-DE": "MP3-Audio",
+        "fr-FR": "Audio MP3",
+        "ko-KR": "MP3 오디오",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(3064-3073)"
+        ],
+        "$id": 4036
+    },
+    "MP4视频": {
+        "en-US": "MP4 video",
+        "es-ES": "Video MP4",
+        "ar-EG": "فيديو MP4\r",
+        "pt-PT": "Vídeo MP4",
+        "ru-RU": "MP4-видео",
+        "ja-JP": "MP4動画",
+        "de-DE": "MP4-Video",
+        "fr-FR": "Vidéo MP4",
+        "ko-KR": "MP4 비디오",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(3088-3097)"
+        ],
+        "$id": 4037
+    },
+    "压缩文件": {
+        "en-US": "Compressed file",
+        "es-ES": "Archivo comprimido",
+        "ar-EG": "ملف مضغوط\r",
+        "pt-PT": "Ficheiro compactado",
+        "ru-RU": "Архивный файл",
+        "ja-JP": "圧縮ファイル",
+        "de-DE": "Komprimierte Datei",
+        "fr-FR": "Fichier compressé",
+        "ko-KR": "압축 파일",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(3112-3120)"
+        ],
+        "$id": 4038
+    },
+    "文件夹": {
+        "en-US": "Folder",
+        "es-ES": "Carpeta",
+        "ar-EG": "مجلد\r",
+        "pt-PT": "Pasta",
+        "ru-RU": "Папка",
+        "ja-JP": "フォルダ",
+        "de-DE": "Ordner",
+        "fr-FR": "Dossier",
+        "ko-KR": "폴더",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(4665-4672)",
+            "renderer/components/file-explorer/FileList.tsx(12895-12902)",
+            "renderer/components/file-explorer/FileList.tsx(38374-38381)"
+        ],
+        "$id": 4039
+    },
+    "双击打开": {
+        "en-US": "Double-click to open",
+        "es-ES": "Doble clic para abrir",
+        "ar-EG": "انقر مرتين للفتح\r",
+        "pt-PT": "Clique duas vezes para abrir",
+        "ru-RU": "Дважды щелкните, чтобы открыть",
+        "ja-JP": "ダブルクリックで開く",
+        "de-DE": "Doppelklick zum Öffnen",
+        "fr-FR": "Double-cliquer pour ouvrir",
+        "ko-KR": "더블 클릭하여 열기",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(5963-5971)"
+        ],
+        "$id": 4040
+    },
+    "取消选择": {
+        "en-US": "Deselect",
+        "es-ES": "Cancelar selección",
+        "ar-EG": "إلغاء التحديد\r",
+        "pt-PT": "Cancelar seleção",
+        "ru-RU": "Отменить выбор",
+        "ja-JP": "選択を解除",
+        "de-DE": "Auswahl aufheben",
+        "fr-FR": "Désélectionner",
+        "ko-KR": "선택 취소",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(6405-6413)"
+        ],
+        "$id": 4041
+    },
+    "选择此项": {
+        "en-US": "Select this item",
+        "es-ES": "Seleccionar este elemento",
+        "ar-EG": "تحديد هذا العنصر\r",
+        "pt-PT": "Selecionar este item",
+        "ru-RU": "Выбрать данный элемент",
+        "ja-JP": "この項目を選択",
+        "de-DE": "Dieses Element auswählen",
+        "fr-FR": "Sélectionner cet élément",
+        "ko-KR": "이 항목 선택",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(6417-6425)"
+        ],
+        "$id": 4042
+    },
+    "等待中": {
+        "en-US": "Waiting",
+        "es-ES": "Esperando",
+        "ar-EG": "في انتظار\r",
+        "pt-PT": "Aguardando",
+        "ru-RU": "Ожидание",
+        "ja-JP": "待機中",
+        "de-DE": "Warten",
+        "fr-FR": "En attente",
+        "ko-KR": "대기 중",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(6859-6866)",
+            "renderer/components/file-explorer/FileItem.tsx(7196-7203)"
+        ],
+        "$id": 4043
+    },
+    "分析中": {
+        "en-US": "Analyzing",
+        "es-ES": "Analizando",
+        "ar-EG": "جاري التحليل\r",
+        "pt-PT": "A analisar",
+        "ru-RU": "Анализ",
+        "ja-JP": "分析中\r",
+        "de-DE": "Analysieren",
+        "fr-FR": "En cours d'analyse",
+        "ko-KR": "분석 중",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(6918-6925)",
+            "renderer/components/file-explorer/FileItem.tsx(7258-7265)",
+            "renderer/components/file-explorer/FileList.tsx(5750-5757)"
+        ],
+        "$id": 4044
+    },
+    "已完成": {
+        "en-US": "Completed",
+        "es-ES": "Completado",
+        "ar-EG": "مكتمل\r",
+        "pt-PT": "Concluído",
+        "ru-RU": "Завершено",
+        "ja-JP": "完了",
+        "de-DE": "Fertiggestellt",
+        "fr-FR": "Terminé",
+        "ko-KR": "완료됨",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(6977-6984)",
+            "renderer/components/file-explorer/FileItem.tsx(7320-7327)"
+        ],
+        "$id": 4045
+    },
+    "失败": {
+        "en-US": "Failed",
+        "es-ES": "Fallido",
+        "ar-EG": "فشل\r",
+        "pt-PT": "Falhou",
+        "ru-RU": "Сбой",
+        "ja-JP": "失敗",
+        "de-DE": "Fehlgeschlagen",
+        "fr-FR": "Échec",
+        "ko-KR": "실패",
+        "$files": [
+            "renderer/components/file-explorer/FileItem.tsx(6988-6994)",
+            "renderer/components/file-explorer/FileItem.tsx(7379-7385)",
+            "renderer/components/file-explorer/FileList.tsx(6021-6027)"
+        ],
+        "$id": 4046
+    },
+    "未知失败原因": {
+        "en-US": "Unknown failure reason",
+        "es-ES": "Causa de fallo desconocida",
+        "ar-EG": "سبب الفشل مجهول",
+        "pt-PT": "Razão de falha desconhecida",
+        "ru-RU": "Неизвестная причина сбоя",
+        "ja-JP": "未知の失敗理由",
+        "de-DE": "Unbekannter Fehlergrund",
+        "fr-FR": "Raison d'échec inconnue",
+        "ko-KR": "알 수 없는 실패 원인",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(4826-4836)"
+        ],
+        "$id": 4048
+    },
+    "已分析": {
+        "en-US": "Analyzed",
+        "es-ES": "Analizado",
+        "ar-EG": "تم التحليل",
+        "pt-PT": "Análise concluída",
+        "ru-RU": "Проанализировано",
+        "ja-JP": "分析済み",
+        "de-DE": "Analysiert\r",
+        "fr-FR": "Analysé",
+        "ko-KR": "분석 완료",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(5114-5121)"
+        ],
+        "$id": 4049
+    },
+    "分析队列中": {
+        "en-US": "In analysis queue",
+        "es-ES": "En cola de análisis",
+        "ar-EG": "في قائمة الانتظار للتحليل",
+        "pt-PT": "A aguardar na fila de análise",
+        "ru-RU": "В очереди на анализ",
+        "ja-JP": "分析キュー中",
+        "de-DE": "In der Analysewarteschlange\r",
+        "fr-FR": "En attente d'analyse",
+        "ko-KR": "분석 대기열에 있음",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(5444-5453)"
+        ],
+        "$id": 4050
+    },
+    "打开文件失败: {message}": {
+        "en-US": "Failed to open file: {message}",
+        "es-ES": "No se pudo abrir el archivo: {message}",
+        "ar-EG": "فشل في فتح الملف: {message}",
+        "pt-PT": "Falha ao abrir o arquivo: {message}",
+        "ru-RU": "Не удалось открыть файл: {message}",
+        "ja-JP": "ファイルを開けませんでした: {message}",
+        "de-DE": "Datei konnte nicht geöffnet werden: {message}",
+        "fr-FR": "Échec de l'ouverture du fichier : {message}",
+        "ko-KR": "파일을 열지 못했습니다: {message}",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(15429-15450)",
+            "renderer/components/file-explorer/FileList.tsx(16980-17001)",
+            "renderer/components/file-explorer/FileList.tsx(23976-23997)",
+            "renderer/components/file-explorer/FileList.tsx(32078-32099)",
+            "renderer/components/file-explorer/FileList.tsx(34979-35000)",
+            "renderer/components/file-explorer/FileList.tsx(62117-62138)"
+        ],
+        "$id": 3320
+    },
+    "未知文件": {
+        "en-US": "Unknown file",
+        "es-ES": "Archivo desconocido",
+        "ar-EG": "ملف غير معروف",
+        "pt-PT": "Ficheiro desconhecido",
+        "ru-RU": "Неизвестный файл",
+        "ja-JP": "不明なファイル",
+        "de-DE": "Unbekannte Datei",
+        "fr-FR": "Fichier inconnu",
+        "ko-KR": "알 수 없는 파일",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(23136-23144)",
+            "renderer/components/file-explorer/FileList.tsx(31332-31340)"
+        ],
+        "$id": 3431
+    },
+    "加载中...": {
+        "en-US": "Loading...",
+        "es-ES": "Cargando...",
+        "ar-EG": "جاري التحميل...",
+        "pt-PT": "A carregar...",
+        "ru-RU": "Загрузка...",
+        "ja-JP": "読み込み中...",
+        "de-DE": "Wird geladen...\r",
+        "fr-FR": "Chargement en cours...",
+        "ko-KR": "불러오는 중...",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(50775-50785)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(61202-61212)"
+        ],
+        "$id": 4051
+    },
+    "智能文件名": {
+        "en-US": "Smart file name",
+        "es-ES": "Nombre de archivo inteligente",
+        "ar-EG": "اسم الملف الذكي",
+        "pt-PT": "Nome de ficheiro inteligente",
+        "ru-RU": "Интеллектуальное имя файла",
+        "ja-JP": "スマートファイル名",
+        "de-DE": "Intelligenter Dateiname\r",
+        "fr-FR": "Nom de fichier intelligent",
+        "ko-KR": "스마트 파일 이름",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(54136-54145)",
+            "renderer/components/file-explorer/FileList.tsx(70048-70057)"
+        ],
+        "$id": 4055
+    },
+    "名称": {
+        "en-US": "Name",
+        "es-ES": "Nombre",
+        "ar-EG": "الاسم",
+        "pt-PT": "Nome",
+        "ru-RU": "Имя",
+        "ja-JP": "名前",
+        "de-DE": "Name\r",
+        "fr-FR": "Nom",
+        "ko-KR": "이름",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(54149-54155)",
+            "renderer/components/file-explorer/FileList.tsx(70326-70332)"
+        ],
+        "$id": 4057
+    },
+    "分析状态": {
+        "en-US": "Analysis status",
+        "es-ES": "Estado de análisis",
+        "ar-EG": "حالة التحليل",
+        "pt-PT": "Estado de análise",
+        "ru-RU": "Состояние анализа",
+        "ja-JP": "分析状態",
+        "de-DE": "Analysestatus\r",
+        "fr-FR": "Statut d'analyse",
+        "ko-KR": "분석 상태",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(55295-55303)",
+            "renderer/components/file-explorer/FileList.tsx(72245-72253)"
+        ],
+        "$id": 4060
+    },
+    "修改日期": {
+        "en-US": "Modification date",
+        "es-ES": "Fecha de modificación",
+        "ar-EG": "تاريخ التعديل",
+        "pt-PT": "Data de modificação",
+        "ru-RU": "Дата изменения",
+        "ja-JP": "修正日",
+        "de-DE": "Änderungsdatum\r",
+        "fr-FR": "Date de modification",
+        "ko-KR": "수정 날짜",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(55473-55481)",
+            "renderer/components/file-explorer/FileList.tsx(72498-72506)"
+        ],
+        "$id": 4062
+    },
+    "类型": {
+        "en-US": "Type",
+        "es-ES": "Tipo",
+        "ar-EG": "النوع",
+        "pt-PT": "Tipo",
+        "ru-RU": "Тип",
+        "ja-JP": "種類",
+        "de-DE": "Typ\r",
+        "fr-FR": "Type",
+        "ko-KR": "유형",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(55636-55642)",
+            "renderer/components/file-explorer/FileList.tsx(72731-72737)"
+        ],
+        "$id": 4064
+    },
+    "大小": {
+        "en-US": "Size",
+        "es-ES": "Tamaño",
+        "ar-EG": "الحجم",
+        "pt-PT": "Tamanho",
+        "ru-RU": "Размер",
+        "ja-JP": "サイズ",
+        "de-DE": "Größe\r",
+        "fr-FR": "Taille",
+        "ko-KR": "크기",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(55809-55815)",
+            "renderer/components/file-explorer/FileList.tsx(72962-72968)"
+        ],
+        "$id": 4066
+    },
+    "目录为空": {
+        "en-US": "Directory is empty",
+        "es-ES": "Directorio vacío",
+        "ar-EG": "المجلد فارغ",
+        "pt-PT": "Diretório vazio",
+        "ru-RU": "Папка пуста",
+        "ja-JP": "ディレクトリは空です",
+        "de-DE": "Verzeichnis ist leer",
+        "fr-FR": "Le répertoire est vide",
+        "ko-KR": "디렉터리가 비어 있습니다",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(57124-57132)",
+            "renderer/components/file-explorer/FileList.tsx(67295-67303)"
+        ],
+        "$id": 3432
+    },
+    "正在准备列表...": {
+        "en-US": "Preparing list...",
+        "es-ES": "Preparando lista...",
+        "ar-EG": "جارٍ تحضير القائمة...",
+        "pt-PT": "A preparar a lista...",
+        "ru-RU": "Подготовка списка...",
+        "ja-JP": "リストを準備中...",
+        "de-DE": "Liste wird vorbereitet...",
+        "fr-FR": "Préparation de la liste...",
+        "ko-KR": "목록 준비 중...",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(57136-57149)"
+        ],
+        "$id": 3433
+    },
+    "正在准备网格...": {
+        "en-US": "Preparing grid...",
+        "es-ES": "Preparando cuadrícula...",
+        "ar-EG": "جارٍ تحضير الشبكة...",
+        "pt-PT": "A preparar a grelha...",
+        "ru-RU": "Подготовка сетки...",
+        "ja-JP": "グリッドを準備中...",
+        "de-DE": "Raster wird vorbereitet...",
+        "fr-FR": "Préparation de la grille...",
+        "ko-KR": "그리드 준비 중...",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(67307-67320)"
+        ],
+        "$id": 3434
+    },
+    "取消全选": {
+        "en-US": "Deselect all",
+        "es-ES": "Cancelar selección completa",
+        "ar-EG": "إلغاء تحديد الكل",
+        "pt-PT": "Cancelar seleção total",
+        "ru-RU": "Отменить выделение",
+        "ja-JP": "すべての選択を解除",
+        "de-DE": "Alle abwählen\r",
+        "fr-FR": "Désélectionner tout",
+        "ko-KR": "전체 선택 취소",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(69695-69703)",
+            "renderer/components/file-explorer/RealDirectory.tsx(34782-34790)"
+        ],
+        "$id": 4052
+    },
+    "全选所有项目": {
+        "en-US": "Select all items",
+        "es-ES": "Seleccionar todos los elementos",
+        "ar-EG": "تحديد جميع العناصر",
+        "pt-PT": "Selecionar todos os itens",
+        "ru-RU": "Выделить все элементы",
+        "ja-JP": "すべての項目を選択",
+        "de-DE": "Alle Elemente vollständig auswählen\r",
+        "fr-FR": "Sélectionner tous les éléments",
+        "ko-KR": "모든 항목 전체 선택",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(69728-69738)"
+        ],
+        "$id": 4067
+    },
+    "AI生成的智能文件名": {
+        "en-US": "AI-generated smart file name",
+        "es-ES": "Nombre de archivo inteligente generado por IA",
+        "ar-EG": "اسم الملف الذكي المُنشأ بواسطة الذكاء الاصطناعي",
+        "pt-PT": "Nome de ficheiro inteligente gerado por IA",
+        "ru-RU": "Сгенерированное ИИ интеллектуальное имя файла",
+        "ja-JP": "AI生成のスマートファイル名",
+        "de-DE": "KI-generierter intelligenter Dateiname\r",
+        "fr-FR": "Nom de fichier intelligent généré par IA",
+        "ko-KR": "AI 생성 스마트 파일 이름",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(69996-70010)"
+        ],
+        "$id": 4068
+    },
+    "文件名称": {
+        "en-US": "File name",
+        "es-ES": "Nombre de archivo",
+        "ar-EG": "اسم الملف",
+        "pt-PT": "Nome do ficheiro",
+        "ru-RU": "Имя файла",
+        "ja-JP": "ファイル名",
+        "de-DE": "Dateiname\r",
+        "fr-FR": "Nom du fichier",
+        "ko-KR": "파일 이름",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(70280-70288)"
+        ],
+        "$id": 4069
+    },
+    "AI质量评分": {
+        "en-US": "AI quality rating",
+        "es-ES": "Puntuación de calidad de IA",
+        "ar-EG": "تقييم جودة الذكاء الاصطناعي",
+        "pt-PT": "Classificação de qualidade da IA",
+        "ru-RU": "Оценка качества ИИ",
+        "ja-JP": "AI品質スコア",
+        "de-DE": "KI-Qualitätsbewertung\r",
+        "fr-FR": "Note de qualité de l'IA",
+        "ko-KR": "AI 품질 점수",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(70590-70600)"
+        ],
+        "$id": 4070
+    },
+    "文件描述": {
+        "en-US": "File description",
+        "es-ES": "Descripción del archivo",
+        "ar-EG": "وصف الملف",
+        "pt-PT": "Descrição do ficheiro",
+        "ru-RU": "Описание файла",
+        "ja-JP": "ファイルの説明",
+        "de-DE": "Dateibeschreibung\r",
+        "fr-FR": "Description du fichier",
+        "ko-KR": "파일 설명",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(70923-70931)"
+        ],
+        "$id": 4071
+    },
+    "文件标签": {
+        "en-US": "File tags",
+        "es-ES": "Etiquetas del archivo",
+        "ar-EG": "وسوم الملف",
+        "pt-PT": "Etiquetas do ficheiro",
+        "ru-RU": "Теги файла",
+        "ja-JP": "ファイルタグ",
+        "de-DE": "Datei-Tags\r",
+        "fr-FR": "Étiquettes du fichier",
+        "ko-KR": "파일 태그",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(71246-71254)"
+        ],
+        "$id": 4072
+    },
+    "作者": {
+        "en-US": "Author",
+        "es-ES": "Autor",
+        "ar-EG": "المؤلف",
+        "pt-PT": "Autor",
+        "ru-RU": "Автор",
+        "ja-JP": "著者",
+        "de-DE": "Autor\r",
+        "fr-FR": "Auteur",
+        "ko-KR": "작성자",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(71564-71570)"
+        ],
+        "$id": 4073
+    },
+    "语言": {
+        "en-US": "Language",
+        "es-ES": "Idioma",
+        "ar-EG": "اللغة",
+        "pt-PT": "Idioma",
+        "ru-RU": "Язык",
+        "ja-JP": "言語",
+        "de-DE": "Sprache\r",
+        "fr-FR": "Langue",
+        "ko-KR": "언어",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(71884-71890)"
+        ],
+        "$id": 4074
+    },
+    "AI分析状态": {
+        "en-US": "AI analysis status",
+        "es-ES": "Estado de análisis de IA",
+        "ar-EG": "حالة تحليل الذكاء الاصطناعي",
+        "pt-PT": "Estado de análise da IA",
+        "ru-RU": "Состояние анализа ИИ",
+        "ja-JP": "AI分析状態",
+        "de-DE": "KI-Analysestatus\r",
+        "fr-FR": "Statut d'analyse de l'IA",
+        "ko-KR": "AI 분석 상태",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(72197-72207)"
+        ],
+        "$id": 4075
+    },
+    "最后修改时间": {
+        "en-US": "Last modification time",
+        "es-ES": "Última hora de modificación",
+        "ar-EG": "وقت آخر تعديل",
+        "pt-PT": "Última hora de modificação",
+        "ru-RU": "Время последнего изменения",
+        "ja-JP": "最終修正日時",
+        "de-DE": "Letztes Änderungsdatum\r",
+        "fr-FR": "Dernière heure de modification",
+        "ko-KR": "최종 수정 시간",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(72454-72464)"
+        ],
+        "$id": 4076
+    },
+    "文件大小": {
+        "en-US": "File size",
+        "es-ES": "Tamaño del archivo",
+        "ar-EG": "حجم الملف",
+        "pt-PT": "Tamanho do ficheiro",
+        "ru-RU": "Размер файла",
+        "ja-JP": "ファイルサイズ",
+        "de-DE": "Dateigröße\r",
+        "fr-FR": "Taille du fichier",
+        "ko-KR": "파일 크기",
+        "$files": [
+            "renderer/components/file-explorer/FileList.tsx(72920-72928)"
+        ],
+        "$id": 4077
+    },
+    "您私有目录合计已分析 {count} 个文件，已超出额度。": {
+        "en-US": "You have analyzed a total of {count} files in your private directory, exceeding the quota.",
+        "es-ES": "Se han analizado un total de {count} archivos en su directorio privado, superando el cupo.",
+        "ar-EG": "تم تحليل إجمالي {count} ملف في مجلدك الخاص، وقد تجاوزت الحد المسموح.",
+        "pt-PT": "O seu diretório privado analisou um total de {count} ficheiros, o que excede a cota.",
+        "ru-RU": "В вашем личном каталоге уже проанализировано {count} файлов, лимит превышен.",
+        "ja-JP": "あなたのプライベートディレクトリでは、これまでに{count} 個のファイルが解析済みで、制限数を超えています。",
+        "de-DE": "In Ihrem privaten Verzeichnis wurden insgesamt {count} Dateien analysiert, was das Kontingent überschreitet.",
+        "fr-FR": "Vous avez déjà analysé un total de {count} fichiers dans votre répertoire privé, dépassant ainsi votre quota.",
+        "ko-KR": "귀하의 개인 디렉터리에서 총 {count} 개의 파일을 분석하였으며, 할당량을 초과했습니다.",
+        "$files": [
+            "renderer/components/file-explorer/QuotaWarningBar.tsx(4648-4681)"
+        ],
+        "$id": 3385
+    },
+    "您私有目录合计已分析 {count} 个文件，仅剩 {remaining} 个额度。": {
+        "en-US": "You have analyzed a total of {count} files in your private directory, with only {remaining} quota remaining.",
+        "es-ES": "Se han analizado un total de {count} archivos en su directorio privado, solo quedan {remaining} cupos.",
+        "ar-EG": "تم تحليل إجمالي {count} ملف في مجلدك الخاص، ولم يتبقَّ سوى {remaining} من الحصة.",
+        "pt-PT": "O seu diretório privado analisou um total de {count} ficheiros, restando apenas {remaining} na cota.",
+        "ru-RU": "В вашем личном каталоге уже проанализировано {count} файлов, осталось {remaining} квот.",
+        "ja-JP": "あなたのプライベートディレクトリでは、これまでに{count} 個のファイルが解析済みで、残りは{remaining} 個です。",
+        "de-DE": "In Ihrem privaten Verzeichnis wurden insgesamt {count} Dateien analysiert, es verbleiben nur noch {remaining} Kontingentseinheiten.",
+        "fr-FR": "Vous avez déjà analysé un total de {count} fichiers dans votre répertoire privé, il ne vous reste plus que {remaining} crédits.",
+        "ko-KR": "귀하의 개인 디렉터리에서 총 {count} 개의 파일을 분석하였으며, 남은 할당량은 {remaining} 개입니다.",
+        "$files": [
+            "renderer/components/file-explorer/QuotaWarningBar.tsx(4752-4798)"
+        ],
+        "$id": 3386
+    },
+    "您私有目录合计已分析 {count} 个文件，还能分析 {remaining} 个文件。": {
+        "en-US": "You have analyzed a total of {count} files in your private directory, and can analyze {remaining} more files.",
+        "es-ES": "Se han analizado un total de {count} archivos en su directorio privado, aún puede analizar {remaining} archivos.",
+        "ar-EG": "تم تحليل إجمالي {count} ملف في مجلدك الخاص، ويمكنك تحليل {remaining} ملفًا إضافيًا.",
+        "pt-PT": "O seu diretório privado analisou um total de {count} ficheiros, podendo ainda analisar {remaining} ficheiros.",
+        "ru-RU": "В вашем личном каталоге уже проанализировано {count} файлов, можно проанализировать ещё {remaining} файлов.",
+        "ja-JP": "あなたのプライベートディレクトリでは、これまでに{count} 個のファイルが解析済みで、あと{remaining} 個のファイルが解析可能です。",
+        "de-DE": "In Ihrem privaten Verzeichnis wurden insgesamt {count} Dateien analysiert, es können noch {remaining} Dateien analysiert werden.",
+        "fr-FR": "Vous avez déjà analysé un total de {count} fichiers dans votre répertoire privé, vous pouvez encore analyser {remaining} fichiers.",
+        "ko-KR": "귀하의 개인 디렉터리에서 총 {count} 개의 파일을 분석하였으며, 추가로 {remaining} 개의 파일을 분석할 수 있습니다.",
+        "$files": [
+            "renderer/components/file-explorer/QuotaWarningBar.tsx(4854-4902)"
+        ],
+        "$id": 3387
+    },
+    "如何取消限制？": {
+        "en-US": "How to remove limits?",
+        "es-ES": "¿Cómo cancelar la limitación?",
+        "ar-EG": "كيف يمكن إزالة القيود؟",
+        "pt-PT": "Como cancelar a limitação?",
+        "ru-RU": "Как снять ограничения?",
+        "ja-JP": "制限を解除するには？",
+        "de-DE": "Wie kann die Einschränkung aufgehoben werden?",
+        "fr-FR": "Comment lever la limitation ?",
+        "ko-KR": "제한을 해제하려면 어떻게 해야 합니까?",
+        "$files": [
+            "renderer/components/file-explorer/QuotaWarningBar.tsx(5381-5392)"
+        ],
+        "$id": 3388
+    },
+    "读取目录失败: {message}": {
+        "en-US": "Failed to read directory: {message}",
+        "es-ES": "No se pudo leer el directorio: {message}",
+        "ar-EG": "فشل في قراءة الدليل: {message}",
+        "pt-PT": "Falha ao ler o diretório: {message}",
+        "ru-RU": "Не удалось прочитать каталог: {message}",
+        "ja-JP": "ディレクトリの読み取りに失敗しました: {message}",
+        "de-DE": "Verzeichnis konnte nicht gelesen werden: {message}",
+        "fr-FR": "Échec de la lecture du répertoire : {message}",
+        "ko-KR": "디렉터리를 읽지 못했습니다: {message}",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(13308-13329)"
+        ],
+        "$id": 3321
+    },
+    "获取工作目录失败": {
+        "en-US": "Failed to get working directory",
+        "es-ES": "No se pudo obtener el directorio de trabajo",
+        "ar-EG": "فشل في الحصول على دليل العمل",
+        "pt-PT": "Falha ao obter o diretório de trabalho",
+        "ru-RU": "Не удалось получить рабочий каталог",
+        "ja-JP": "作業ディレクトリの取得に失敗しました",
+        "de-DE": "Das Arbeitsverzeichnis konnte nicht abgerufen werden",
+        "fr-FR": "Impossible d'obtenir le répertoire de travail",
+        "ko-KR": "작업 디렉터리를 가져오지 못했습니다.",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(14979-14991)"
+        ],
+        "$id": 3322
+    },
+    "设置当前工作目录失败": {
+        "en-US": "Failed to set current working directory",
+        "es-ES": "No se pudo configurar el directorio de trabajo actual",
+        "ar-EG": "فشل في تعيين دليل العمل الحالي",
+        "pt-PT": "Falha ao definir o diretório de trabalho atual",
+        "ru-RU": "Не удалось установить текущий рабочий каталог.",
+        "ja-JP": "現在の作業ディレクトリの設定に失敗しました",
+        "de-DE": "Das aktuelle Arbeitsverzeichnis konnte nicht festgelegt werden",
+        "fr-FR": "Échec de la définition du répertoire de travail actuel",
+        "ko-KR": "현재 작업 디렉터리를 설정하지 못했습니다.",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(19226-19240)"
+        ],
+        "$id": 3327
+    },
+    "添加工作目录失败": {
+        "en-US": "Failed to add working directory",
+        "es-ES": "Fallo al añadir el directorio de trabajo",
+        "ar-EG": "فشل إضافة مجلد العمل",
+        "pt-PT": "Falha ao adicionar o diretório de trabalho.",
+        "ru-RU": "Не удалось добавить рабочий каталог",
+        "ja-JP": "作業ディレクトリの追加に失敗しました",
+        "de-DE": "Hinzufügen des Arbeitsverzeichnisses fehlgeschlagen",
+        "fr-FR": "Échec de l'ajout du répertoire de travail",
+        "ko-KR": "작업 디렉터리 추가에 실패했습니다.",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(20735-20747)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(49105-49117)"
+        ],
+        "$id": 3389
+    },
+    "刷新文件列表失败: {message}": {
+        "en-US": "Failed to refresh file list: {message}",
+        "es-ES": "No se pudo actualizar la lista de archivos: {message}",
+        "ar-EG": "فشل تحديث قائمة الملفات: {message}",
+        "pt-PT": "Falha ao atualizar a lista de arquivos: {message}",
+        "ru-RU": "Не удалось обновить список файлов: {message}",
+        "ja-JP": "ファイルリストを更新できませんでした: {message}",
+        "de-DE": "Dateiliste konnte nicht aktualisiert werden: {message}",
+        "fr-FR": "Échec de l'actualisation de la liste des fichiers : {message}",
+        "ko-KR": "파일 목록을 새로 고치지 못했습니다: {message}",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(25906-25929)"
+        ],
+        "$id": 3328
+    },
+    "后退 (Alt+Left / Backspace)": {
+        "en-US": "Back (Alt+Left / Backspace)",
+        "es-ES": "Atrás (Alt+Izquierda/Retroceso)",
+        "ar-EG": "للخلف (Alt+يسار/مسافة للخلف)",
+        "pt-PT": "Voltar (Alt+Esquerda/Backspace)",
+        "ru-RU": "Назад (Alt+Влево/Backspace)",
+        "ja-JP": "戻る (Alt+左/バックスペース)",
+        "de-DE": "Zurück (Alt+Links/Rücktaste)",
+        "fr-FR": "Retour (Alt+Gauche / Retour arrière)",
+        "ko-KR": "뒤로(Alt+왼쪽/백스페이스)",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(27776-27805)"
+        ],
+        "$id": 4297
+    },
+    "前进 (Alt+Right)": {
+        "en-US": "Forward (Alt+Right)",
+        "es-ES": "Adelante (Alt+Derecha)",
+        "ar-EG": "للأمام (Alt+يمين)",
+        "pt-PT": "Avançar (Alt + Direita)",
+        "ru-RU": "Вперед (Alt+Вправо)",
+        "ja-JP": "進む (Alt+右)",
+        "de-DE": "Vorwärts (Alt+Rechts)",
+        "fr-FR": "Suivant (Alt+Droite)",
+        "ko-KR": "앞으로(Alt+오른쪽)",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(28305-28323)"
+        ],
+        "$id": 4298
+    },
+    "向上 (Alt+Up)": {
+        "en-US": "Up (Alt+Up)",
+        "es-ES": "Arriba (Alt+Arriba)",
+        "ar-EG": "لأعلى (Alt+أعلى)",
+        "pt-PT": "Para cima (Alt+Para cima)",
+        "ru-RU": "Вверх (Alt+Вверх)",
+        "ja-JP": "上 (Alt+上)",
+        "de-DE": "Nach oben (Alt+Nach oben)",
+        "fr-FR": "Haut (Alt+Haut)",
+        "ko-KR": "위쪽(Alt+위쪽)",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(28790-28805)"
+        ],
+        "$id": 4299
+    },
+    "无法打开目录: {message}": {
+        "en-US": "Unable to open directory: {message}",
+        "es-ES": "No se puede abrir el directorio: {message}",
+        "ar-EG": "غير قادر على فتح الدليل: {message}",
+        "pt-PT": "Não foi possível abrir o diretório: {message}",
+        "ru-RU": "Невозможно открыть каталог: {message}",
+        "ja-JP": "ディレクトリを開けません: {message}",
+        "de-DE": "Verzeichnis kann nicht geöffnet werden: {message}",
+        "fr-FR": "Impossible d'ouvrir le répertoire : {message}",
+        "ko-KR": "디렉터리를 열 수 없습니다: {message}",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(29770-29791)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(26730-26751)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(38811-38832)"
+        ],
+        "$id": 3329
+    },
+    "在系统文件浏览器中打开": {
+        "en-US": "Open in system file browser",
+        "es-ES": "Abrir en el explorador de archivos del sistema",
+        "ar-EG": "فتح في مستعرض ملفات النظام",
+        "pt-PT": "Abrir no explorador de ficheiros do sistema",
+        "ru-RU": "Открыть в системном проводнике",
+        "ja-JP": "システムのファイルブラウザで開く",
+        "de-DE": "Im System-Dateibrowser öffnen",
+        "fr-FR": "Ouvrir dans l'explorateur de fichiers du système",
+        "ko-KR": "시스템 파일 탐색기에서 열기",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(29912-29927)"
+        ],
+        "$id": 3435
+    },
+    "可以切换视图模式": {
+        "en-US": "You can switch the view mode.  ",
+        "es-ES": "Puede cambiar el modo de vista",
+        "ar-EG": "يمكن التبديل بين أوضاع العرض  ",
+        "pt-PT": "Pode alternar o modo de visualização",
+        "ru-RU": "Можно переключить режим просмотра",
+        "ja-JP": "ビューモードを切り替えられます。  ",
+        "de-DE": "Sie können den Ansichtsmodus wechseln.",
+        "fr-FR": "Vous pouvez changer le mode d'affichage",
+        "ko-KR": "보기 모드를 전환할 수 있습니다",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(30345-30357)"
+        ],
+        "$id": 4350
+    },
+    "切换为缩略图视图": {
+        "en-US": "Switch to thumbnail view",
+        "es-ES": "Cambiar a vista de miniaturas",
+        "ar-EG": "تبديل إلى عرض الصور المصغرة",
+        "pt-PT": "Mudar para vista de miniaturas",
+        "ru-RU": "Переключить на просмотр эскизов",
+        "ja-JP": "サムネイル表示に切り替え",
+        "de-DE": "Zur Miniaturansicht wechseln",
+        "fr-FR": "Basculer en vue miniature",
+        "ko-KR": "썸네일 보기로 전환",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(31253-31265)"
+        ],
+        "$id": 4078
+    },
+    "切换为列表视图": {
+        "en-US": "Switch to list view",
+        "es-ES": "Cambiar a vista de lista",
+        "ar-EG": "تبديل إلى عرض القائمة",
+        "pt-PT": "Mudar para vista de lista",
+        "ru-RU": "Переключиться на вид списка",
+        "ja-JP": "リストビューに切り替える",
+        "de-DE": "Zur Listenansicht wechseln",
+        "fr-FR": "Basculer en vue Liste\r",
+        "ko-KR": "목록 보기로 전환",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(31268-31279)"
+        ],
+        "$id": 4079
+    },
+    "没有文件": {
+        "en-US": "No files",
+        "es-ES": "No hay archivos",
+        "ar-EG": "لا توجد ملفات",
+        "pt-PT": "Sem ficheiros",
+        "ru-RU": "Нет файлов",
+        "ja-JP": "ファイルがありません",
+        "de-DE": "Keine Dateien",
+        "fr-FR": "Aucun fichier",
+        "ko-KR": "파일 없음",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(33896-33904)"
+        ],
+        "$id": 3289
+    },
+    "全选当前页面": {
+        "en-US": "Select all on current page",
+        "es-ES": "Seleccionar todo en la página actual",
+        "ar-EG": "تحديد كل العناصر بالصفحة الحالية",
+        "pt-PT": "Selecionar todos na página atual",
+        "ru-RU": "Выделить текущую страницу",
+        "ja-JP": "現在のページをすべて選択",
+        "de-DE": "Aktuelle Seite vollständig auswählen\r",
+        "fr-FR": "Sélectionner tous les éléments de la page",
+        "ko-KR": "현재 페이지 전체 선택",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(34794-34804)"
+        ],
+        "$id": 4053
+    },
+    "全选": {
+        "en-US": "Select All",
+        "es-ES": "Seleccionar todo",
+        "ar-EG": "تحديد الكل",
+        "pt-PT": "Selecionar tudo",
+        "ru-RU": "Выбрать все",
+        "ja-JP": "すべて選択",
+        "de-DE": "Alle auswählen",
+        "fr-FR": "Tout sélectionner",
+        "ko-KR": "전체 선택",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(35018-35024)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(67695-67701)"
+        ],
+        "$id": 3290
+    },
+    "请先勾选要分析的文件。小技巧：你可以利用搜索过滤内容，再使用全选": {
+        "en-US": "Please check the files to analyze first. Tip: You can use search to filter content, then select all.",
+        "es-ES": "Por favor, marque primero los archivos a analizar. Sugerencia: puede utilizar la búsqueda para filtrar el contenido y luego seleccionar todo.",
+        "ar-EG": "يرجى أولًا تحديد الملفات المراد تحليلها. تلميح: يمكنك استخدام البحث لتصفية المحتوى، ثم استخدام \"تحديد الكل\"",
+        "pt-PT": "Por favor, selecione primeiro os ficheiros a analisar. Dica: pode utilizar a pesquisa para filtrar o conteúdo e, em seguida, selecionar tudo.",
+        "ru-RU": "Сначала выберите файлы для анализа. Совет: можно отфильтровать содержимое с помощью поиска, а затем выбрать всё.",
+        "ja-JP": "分析するファイルを先にチェックしてください。ヒント：検索でコンテンツをフィルタリングし、全選択を使用できます",
+        "de-DE": "Bitte wählen Sie zunächst die zu analysierenden Dateien aus. Tipp: Sie können Inhalte mithilfe der Suche filtern und anschließend „Alle auswählen\" verwenden.",
+        "fr-FR": "Veuillez d'abord cocher les fichiers à analyser. Astuce : vous pouvez utiliser la recherche pour filtrer le contenu, puis tout sélectionner.",
+        "ko-KR": "분석할 파일을 먼저 선택해 주세요. 팁: 검색으로 콘텐츠를 필터링한 후 전체 선택을 활용할 수 있습니다",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(35591-35627)"
+        ],
+        "$id": 3436
+    },
+    "分析失败：{error}": {
+        "en-US": "Analysis failed: {error}",
+        "es-ES": "Análisis fallido: {error}",
+        "ar-EG": "فشل التحليل: {error}",
+        "pt-PT": "Análise falhou: {error}",
+        "ru-RU": "Ошибка анализа: {error}",
+        "ja-JP": "分析に失敗しました：{error}",
+        "de-DE": "Analyse fehlgeschlagen: {error}",
+        "fr-FR": "Échec de l'analyse : {error}",
+        "ko-KR": "분석 실패: {error}",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(37433-37449)"
+        ],
+        "$id": 3390
+    },
+    "批量分析": {
+        "en-US": "Batch analysis",
+        "es-ES": "Análisis por lotes",
+        "ar-EG": "تحليل الدفعة",
+        "pt-PT": "Análise de lote",
+        "ru-RU": "Пакетный анализ",
+        "ja-JP": "バッチ分析",
+        "de-DE": "Chargenanalyse",
+        "fr-FR": "Analyse par lots",
+        "ko-KR": "배치 분석",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(37684-37692)"
+        ],
+        "$id": 3330
+    },
+    "查看和管理文件分析进度": {
+        "en-US": "View and manage file analysis progress.  ",
+        "es-ES": "Ver y gestionar el progreso del análisis de archivos",
+        "ar-EG": "عرض وإدارة تقدم تحليل الملفات  ",
+        "pt-PT": "Ver e gerir o progresso da análise de ficheiros",
+        "ru-RU": "Просмотр и управление ходом анализа файлов",
+        "ja-JP": "ファイル分析の進捗を表示・管理します。  ",
+        "de-DE": "Anzeigen und Verwalten des Dateianalysefortschritts.",
+        "fr-FR": "Afficher et gérer la progression de l'analyse des fichiers",
+        "ko-KR": "파일 분석 진행 상황을 확인하고 관리할 수 있습니다",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(37854-37869)"
+        ],
+        "$id": 4351
+    },
+    "分析队列 ({length}/{snapshotLength})": {
+        "en-US": "Analysis queue ({length}/{snapshotLength})",
+        "es-ES": "Analizando cola ({length}/{snapshotLength})",
+        "ar-EG": "تحليل طابور ({length}/{snapshotLength})",
+        "pt-PT": "Analisar fila ({length}/{snapshotLength})",
+        "ru-RU": "Очередь анализа ({length}/{snapshotLength})",
+        "ja-JP": "分析キュー ({length}/{snapshotLength})",
+        "de-DE": "Warteschlange analysieren ({length}/{snapshotLength})",
+        "fr-FR": "Analyse de la file d'attente ({length}/{snapshotLength})\r",
+        "ko-KR": "분석 대기열 ({length}/{snapshotLength})",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(38602-38638)"
+        ],
+        "$id": 4080
+    },
+    "恭喜！您已满足邀请条件，请重新点击创建私有目录": {
+        "en-US": "Congratulations! You have met the invitation requirements, please click to create a private directory again",
+        "es-ES": "¡Felicidades! Ha cumplido con las condiciones de invitación, por favor haga clic nuevamente para crear un directorio privado",
+        "ar-EG": "تهانينا! لقد استوفيت شروط الدعوة، يرجى النقر مجددًا لإنشاء دليل خاص",
+        "pt-PT": "Parabéns! Cumpriu as condições de convite, por favor clique novamente para criar um diretório privado",
+        "ru-RU": "Поздравляем! Вы выполнили условия приглашения, пожалуйста, нажмите снова для создания частного каталога",
+        "ja-JP": "おめでとうございます！招待条件を満たしました。再度クリックしてプライベートディレクトリを作成してください",
+        "de-DE": "Glückwunsch! Sie haben die Einladungsbedingungen erfüllt. Bitte klicken Sie erneut auf „Privates Verzeichnis erstellen“.",
+        "fr-FR": "Félicitations ! Vous avez satisfait aux conditions d'invitation, veuillez cliquer à nouveau pour créer un catalogue privé",
+        "ko-KR": "축하합니다! 초대 조건을 충족하셨습니다. 다시 클릭하여 비공개 디렉토리를 생성해주세요.",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(41734-41761)"
+        ],
+        "$id": 3117
+    },
+    "当前邀请人数：{count}/3，还需要邀请 {need} 人": {
+        "en-US": "Current number of invitations: {count}/3, need to invite {need} more people",
+        "es-ES": "Número actual de invitaciones: {count}/3, aún necesita invitar a {need} personas",
+        "ar-EG": "عدد المدعوين الحالي: {count}/3، لا يزال يتعين دعوة {need} أشخاص",
+        "pt-PT": "Número atual de convites: {count}/3, ainda precisa de convidar {need} pessoas",
+        "ru-RU": "Текущее количество приглашенных: {count}/3, необходимо еще пригласить {need} человек",
+        "ja-JP": "現在の招待者数：{count}/3、あと{need}人招待が必要です",
+        "de-DE": "Aktuelle Anzahl der Einladungen: {count}/3, Sie müssen noch {need} Personen einladen.",
+        "fr-FR": "Nombre actuel d'invitations : {count}/3, il faut encore inviter {need} personnes",
+        "ko-KR": "현재 초대 인원: {count}/3, 추가로 {need}명 더 초대해야 합니다.",
+        "$files": [
+            "renderer/components/file-explorer/RealDirectory.tsx(41851-41886)"
+        ],
+        "$id": 3136
+    },
+    "加载工作目录失败": {
+        "en-US": "Failed to load working directory",
+        "es-ES": "No se pudo cargar el directorio de trabajo",
+        "ar-EG": "فشل تحميل دليل العمل",
+        "pt-PT": "Falha ao carregar o diretório de trabalho",
+        "ru-RU": "Не удалось загрузить рабочий каталог",
+        "ja-JP": "作業ディレクトリのロードに失敗しました",
+        "de-DE": "Das Arbeitsverzeichnis konnte nicht geladen werden",
+        "fr-FR": "Échec du chargement du répertoire de travail",
+        "ko-KR": "작업 디렉터리를 로드하지 못했습니다.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(15853-15865)"
+        ],
+        "$id": 3331
+    },
+    "加载维度分组失败": {
+        "en-US": "Failed to load dimension grouping",
+        "es-ES": "No se pudo cargar la agrupación de dimensiones",
+        "ar-EG": "فشل تحميل تجميع الأبعاد",
+        "pt-PT": "Falha ao carregar o agrupamento de dimensões",
+        "ru-RU": "Не удалось загрузить группу измерений.",
+        "ja-JP": "ディメンションのグループ化のロードに失敗しました",
+        "de-DE": "Die Dimensionsgruppierung konnte nicht geladen werden",
+        "fr-FR": "Échec du chargement du regroupement de dimensions",
+        "ko-KR": "측정기준 그룹을 로드하지 못했습니다.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(19705-19717)"
+        ],
+        "$id": 3332
+    },
+    "加载文件列表失败": {
+        "en-US": "Failed to load file list",
+        "es-ES": "No se pudo cargar la lista de archivos",
+        "ar-EG": "فشل تحميل قائمة الملفات",
+        "pt-PT": "Falha ao carregar a lista de arquivos",
+        "ru-RU": "Не удалось загрузить список файлов",
+        "ja-JP": "ファイルリストのロードに失敗しました",
+        "de-DE": "Dateiliste konnte nicht geladen werden",
+        "fr-FR": "Échec du chargement de la liste des fichiers",
+        "ko-KR": "파일 목록을 로드하지 못했습니다.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(21781-21793)"
+        ],
+        "$id": 3333
+    },
+    "加载保存的虚拟目录失败": {
+        "en-US": "Failed to load saved virtual directory",
+        "es-ES": "No se pudo cargar el directorio virtual guardado",
+        "ar-EG": "فشل تحميل الدليل الظاهري المحفوظ",
+        "pt-PT": "Falha ao carregar o diretório virtual salvo",
+        "ru-RU": "Не удалось загрузить сохраненный виртуальный каталог.",
+        "ja-JP": "保存された仮想ディレクトリのロードに失敗しました",
+        "de-DE": "Das gespeicherte virtuelle Verzeichnis konnte nicht geladen werden",
+        "fr-FR": "Échec du chargement du répertoire virtuel enregistré",
+        "ko-KR": "저장된 가상 디렉터리를 로드하지 못했습니다.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(22358-22373)"
+        ],
+        "$id": 3334
+    },
+    "请先选择工作目录": {
+        "en-US": "Please select a working directory first",
+        "es-ES": "Por favor, seleccione primero el directorio de trabajo",
+        "ar-EG": "الرجاء اختيار دليل العمل أولاً",
+        "pt-PT": "Por favor, selecione primeiro o diretório de trabalho",
+        "ru-RU": "Пожалуйста, сначала выберите рабочую папку",
+        "ja-JP": "作業ディレクトリを選択してください",
+        "de-DE": "Bitte wählen Sie zuerst das Arbeitsverzeichnis aus",
+        "fr-FR": "Veuillez d'abord sélectionner le répertoire de travail\r",
+        "ko-KR": "작업 디렉터리를 먼저 선택하십시오",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(24005-24017)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(41788-41800)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(68310-68322)"
+        ],
+        "$id": 4081
+    },
+    "请至少勾选一个标签": {
+        "en-US": "Please select at least one tag",
+        "es-ES": "Por favor, seleccione al menos una etiqueta",
+        "ar-EG": "من فضلك حدد علامة واحدة على الأقل",
+        "pt-PT": "Selecione pelo menos um rótulo",
+        "ru-RU": "Пожалуйста, выберите хотя бы одну метку",
+        "ja-JP": "ラベルを少なくとも 1 つ選択してください",
+        "de-DE": "Bitte wählen Sie mindestens ein Label aus.",
+        "fr-FR": "Veuillez cocher au moins une étiquette",
+        "ko-KR": "최소 하나의 레이블을 선택해 주세요.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(24113-24126)"
+        ],
+        "$id": 2937
+    },
+    "生成虚拟目录失败: {error}": {
+        "en-US": "Failed to generate virtual directory: {error}",
+        "es-ES": "No se pudo generar el directorio virtual: {error}",
+        "ar-EG": "فشل إنشاء الدليل الظاهري: {error}",
+        "pt-PT": "Falha ao gerar o diretório virtual: {error}",
+        "ru-RU": "Не удалось создать виртуальный каталог: {error}",
+        "ja-JP": "仮想ディレクトリの生成に失敗しました: {error}",
+        "de-DE": "Das virtuelle Verzeichnis konnte nicht generiert werden: {error}",
+        "fr-FR": "Échec de la génération du répertoire virtuel : {error}",
+        "ko-KR": "가상 디렉터리 생성 실패: {error}",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(27108-27129)"
+        ],
+        "$id": 3335
+    },
+    "虚拟目录已删除": {
+        "en-US": "Virtual directory deleted",
+        "es-ES": "Directorio virtual eliminado",
+        "ar-EG": "تم حذف الدليل الظاهري",
+        "pt-PT": "Diretório virtual eliminado",
+        "ru-RU": "Виртуальный каталог удален",
+        "ja-JP": "仮想ディレクトリが削除されました",
+        "de-DE": "Virtuelles Verzeichnis wurde gelöscht",
+        "fr-FR": "Répertoire virtuel supprimé",
+        "ko-KR": "가상 디렉터리가 삭제되었습니다",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(30676-30687)",
+            "renderer/components/file-explorer/VirtualDirectory.tsx(34049-34060)"
+        ],
+        "$id": 4089
+    },
+    "删除虚拟目录失败": {
+        "en-US": "Failed to delete virtual directory",
+        "es-ES": "Error al eliminar directorio virtual",
+        "ar-EG": "فشل حذف الدليل الظاهري\r",
+        "pt-PT": "Falha ao eliminar diretório virtual\r",
+        "ru-RU": "Не удалось удалить виртуальный каталог",
+        "ja-JP": "仮想ディレクトリの削除に失敗しました",
+        "de-DE": "Virtuelles Verzeichnis konnte nicht gelöscht werden",
+        "fr-FR": "Échec de la suppression du répertoire virtuel",
+        "ko-KR": "가상 디렉터리 삭제 실패",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(30820-30832)"
+        ],
+        "$id": 4090
+    },
+    "请输入虚拟目录名称": {
+        "en-US": "Please enter virtual directory name",
+        "es-ES": "Introduzca el nombre del directorio virtual",
+        "ar-EG": "الرجاء إدخال اسم الدليل الظاهري\r",
+        "pt-PT": "Por favor, introduza o nome do diretório virtual\r",
+        "ru-RU": "Введите имя виртуального каталога",
+        "ja-JP": "仮想ディレクトリ名を入力してください",
+        "de-DE": "Bitte geben Sie den Namen des virtuellen Verzeichnisses ein",
+        "fr-FR": "Veuillez saisir le nom du répertoire virtuel",
+        "ko-KR": "가상 디렉터리 이름을 입력하십시오",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(31180-31193)"
+        ],
+        "$id": 4091
+    },
+    "重命名成功": {
+        "en-US": "Rename successful",
+        "es-ES": "Cambio de nombre correcto",
+        "ar-EG": "تمت إعادة التسمية بنجاح\r",
+        "pt-PT": "Renomeação bem sucedida\r",
+        "ru-RU": "Переименование выполнено успешно",
+        "ja-JP": "名前の変更に成功しました",
+        "de-DE": "Umbenennung erfolgreich",
+        "fr-FR": "Renommage réussi",
+        "ko-KR": "이름 변경 성공",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(31460-31469)"
+        ],
+        "$id": 4092
+    },
+    "重命名虚拟目录失败": {
+        "en-US": "Failed to rename virtual directory",
+        "es-ES": "Error al cambiar el nombre del directorio virtual",
+        "ar-EG": "فشل إعادة تسمية الدليل الظاهري\r",
+        "pt-PT": "Falha ao renomear diretório virtual\r",
+        "ru-RU": "Не удалось переименовать виртуальный каталог",
+        "ja-JP": "仮想ディレクトリの名前変更に失敗しました",
+        "de-DE": "Virtuelles Verzeichnis konnte nicht umbenannt werden",
+        "fr-FR": "Échec du renommage du répertoire virtuel",
+        "ko-KR": "가상 디렉터리 이름 변경 실패",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(31602-31615)"
+        ],
+        "$id": 4093
+    },
+    "成功移动 {count} 个文件": {
+        "en-US": "Successfully moved {count} files",
+        "es-ES": "Movidos correctamente {count} archivos",
+        "ar-EG": "تم نقل {count} ملفات بنجاح\r",
+        "pt-PT": "Mover {count} ficheiros com sucesso\r",
+        "ru-RU": "Успешно перемещено файлов: {count}",
+        "ja-JP": "{count} 個のファイルの移動に成功しました",
+        "de-DE": "{count} Dateien erfolgreich verschoben",
+        "fr-FR": "{count} fichiers déplacés avec succès",
+        "ko-KR": "{count}개 파일 이동 성공",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(33225-33245)"
+        ],
+        "$id": 4097
+    },
+    "整理完成": {
+        "en-US": "Organization completed",
+        "es-ES": "Organización completada",
+        "ar-EG": "تم الانتهاء من التنظيم\r",
+        "pt-PT": "Organização concluída\r",
+        "ru-RU": "Сортировка завершена",
+        "ja-JP": "整理が完了しました",
+        "de-DE": "Organisation abgeschlossen",
+        "fr-FR": "Organisation terminée",
+        "ko-KR": "정리 완료",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(33641-33649)"
+        ],
+        "$id": 4098
+    },
+    "整理完成！是否删除所有虚拟目录？": {
+        "en-US": "Organization completed! Delete all virtual directories?",
+        "es-ES": "¡Organización completada! ¿Desea eliminar todos los directorios virtuales?",
+        "ar-EG": "اكتمل التنظيم! هل تريد حذف جميع الأدلة الافتراضية؟\r",
+        "pt-PT": "Organização concluída! Deseja eliminar todos os diretórios virtuais?\r",
+        "ru-RU": "Сортировка завершена! Удалить все виртуальные каталоги?",
+        "ja-JP": "整理が完了しました！すべての仮想ディレクトリを削除しますか？",
+        "de-DE": "Organisation abgeschlossen! Alle virtuellen Verzeichnisse löschen?",
+        "fr-FR": "Organisation terminée ! Voulez-vous supprimer tous les répertoires virtuels ?",
+        "ko-KR": "정리 완료! 모든 가상 디렉터리를 삭제하시겠습니까?",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(33674-33694)"
+        ],
+        "$id": 4099
+    },
+    "是": {
+        "en-US": "Yes",
+        "es-ES": "Sí",
+        "ar-EG": "نعم\r",
+        "pt-PT": "Sim\r",
+        "ru-RU": "Да",
+        "ja-JP": "はい",
+        "de-DE": "Ja",
+        "fr-FR": "Oui",
+        "ko-KR": "예",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(33720-33725)"
+        ],
+        "$id": 4100
+    },
+    "否": {
+        "en-US": "No",
+        "es-ES": "No",
+        "ar-EG": "لا\r",
+        "pt-PT": "Não\r",
+        "ru-RU": "Нет",
+        "ja-JP": "いいえ",
+        "de-DE": "Nein",
+        "fr-FR": "Non",
+        "ko-KR": "아니오",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(33728-33733)"
+        ],
+        "$id": 4101
+    },
+    "整理失败: {message}": {
+        "en-US": "Organization failed: {message}",
+        "es-ES": "Error de organización: {message}",
+        "ar-EG": "فشل التنظيم: {message}\r",
+        "pt-PT": "Falha na organização: {message}\r",
+        "ru-RU": "Сортировка не выполнена: {message}",
+        "ja-JP": "整理に失敗しました: {message}",
+        "de-DE": "Organisation fehlgeschlagen: {message}",
+        "fr-FR": "Échec de l'organisation : {message}",
+        "ko-KR": "정리 실패: {message}",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(35146-35165)"
+        ],
+        "$id": 4102
+    },
+    "虚拟目录生成成功": {
+        "en-US": "Virtual directory created successfully",
+        "es-ES": "Directorio virtual generado correctamente",
+        "ar-EG": "تم إنشاء الدليل الافتراضي بنجاح",
+        "pt-PT": "Diretório virtual gerado com sucesso",
+        "ru-RU": "Создание виртуального каталога выполнено успешно",
+        "ja-JP": "仮想ディレクトリの生成に成功しました",
+        "de-DE": "Virtuelles Verzeichnis erfolgreich erstellt",
+        "fr-FR": "Génération du répertoire virtuel réussie",
+        "ko-KR": "가상 디렉터리가 성공적으로 생성되었습니다.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(38260-38272)"
+        ],
+        "$id": 3307
+    },
+    "整理为虚拟目录失败: {message}": {
+        "en-US": "Failed to organize as virtual directory: {message}",
+        "es-ES": "Error al organizar como directorio virtual: {message}",
+        "ar-EG": "فشل ترتيب الدليل الافتراضي: {message}",
+        "pt-PT": "Falha ao organizar como diretório virtual: {message}",
+        "ru-RU": "Не удалось сформировать виртуальный каталог: {message}",
+        "ja-JP": "仮想ディレクトリへの整理に失敗しました：{message}",
+        "de-DE": "Fehler beim Organisieren als virtuelles Verzeichnis: {message}",
+        "fr-FR": "Échec de l'organisation en répertoire virtuel : {message}",
+        "ko-KR": "가상 디렉터리로 정리하는 데 실패했습니다: {message}",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(39543-39567)"
+        ],
+        "$id": 3308
+    },
+    "冲突解决功能开发中，将在后续版本支持": {
+        "en-US": "Conflict resolution feature is under development and will be supported in future versions",
+        "es-ES": "La función de resolución de conflictos se encuentra en desarrollo y estará disponible en versiones posteriores",
+        "ar-EG": "وظيفة حل التعارض قيد التطوير وستُدعم في الإصدارات اللاحقة\r",
+        "pt-PT": "A funcionalidade de resolução de conflitos está em desenvolvimento e será suportada em versões posteriores\r",
+        "ru-RU": "Функция разрешения конфликта находится в стадии разработки и будет поддерживаться в следующих версиях.",
+        "ja-JP": "競合解決機能は開発中で、今後のバージョンでサポート予定です",
+        "de-DE": "Die Konfliktlösungsfunktion ist in Entwicklung und wird in zukünftigen Versionen unterstützt",
+        "fr-FR": "La fonction de résolution des conflits est en cours de développement et sera prise en charge dans les versions ultérieures",
+        "ko-KR": "충돌 해결 기능은 개발 중이며 향후 버전에서 지원 예정",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(39975-39997)"
+        ],
+        "$id": 4103
+    },
+    "已取消整理": {
+        "en-US": "Organization cancelled",
+        "es-ES": "Organización cancelada",
+        "ar-EG": "تم إلغاء التنظيم\r",
+        "pt-PT": "Organização cancelada\r",
+        "ru-RU": "Сортировка отменена",
+        "ja-JP": "整理をキャンセルしました",
+        "de-DE": "Organisation abgebrochen",
+        "fr-FR": "Organisation annulée",
+        "ko-KR": "정리 취소됨",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(40132-40141)"
+        ],
+        "$id": 4104
+    },
+    "导出错误日志": {
+        "en-US": "Export error log",
+        "es-ES": "Exportar registro de errores",
+        "ar-EG": "تصدير سجل الأخطاء\r",
+        "pt-PT": "Exportar registo de erros\r",
+        "ru-RU": "Экспорт журнала ошибок",
+        "ja-JP": "エラーログのエクスポート",
+        "de-DE": "Fehlerprotokoll exportieren",
+        "fr-FR": "Exporter le journal des erreurs",
+        "ko-KR": "오류 로그 내보내기",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(40384-40394)"
+        ],
+        "$id": 4105
+    },
+    "JSON文件": {
+        "en-US": "JSON file",
+        "es-ES": "Archivo JSON",
+        "ar-EG": "ملف JSON",
+        "pt-PT": "Ficheiro JSON",
+        "ru-RU": "Файл JSON",
+        "ja-JP": "JSONファイル",
+        "de-DE": "JSON-Datei",
+        "fr-FR": "Fichier JSON",
+        "ko-KR": "JSON 파일",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(40524-40534)"
+        ],
+        "$id": 4106
+    },
+    "所有文件": {
+        "en-US": "All files",
+        "es-ES": "Todos los archivos",
+        "ar-EG": "جميع الملفات",
+        "pt-PT": "Todos os arquivos",
+        "ru-RU": "Все файлы",
+        "ja-JP": "すべてのファイル",
+        "de-DE": "Alle Dateien",
+        "fr-FR": "Tous les fichiers\r",
+        "ko-KR": "모든 파일",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(40580-40588)"
+        ],
+        "$id": 4084
+    },
+    "错误日志已导出": {
+        "en-US": "Error log exported\r",
+        "es-ES": "Registro de errores exportado\r",
+        "ar-EG": "تم تصدير سجل الأخطاء\r",
+        "pt-PT": "Registo de erros exportado",
+        "ru-RU": "Журнал ошибок экспортирован\r",
+        "ja-JP": "エラーログがエクスポートされました",
+        "de-DE": "Fehlerprotokoll wurde exportiert",
+        "fr-FR": "Journal d'erreurs exporté",
+        "ko-KR": "오류 로그가 내보내졌습니다.\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(41347-41358)"
+        ],
+        "$id": 4107
+    },
+    "导出日志失败: {message}": {
+        "en-US": "Failed to export log: {message}\r",
+        "es-ES": "Error al exportar registro: {message}\r",
+        "ar-EG": "فشل في تصدير السجل: {message}\r",
+        "pt-PT": "Falha ao exportar o registo: {message}",
+        "ru-RU": "Ошибка экспорта журнала: {message}\r",
+        "ja-JP": "ログのエクスポートに失敗しました: {message}",
+        "de-DE": "Protokoll-Export fehlgeschlagen: {message}",
+        "fr-FR": "Échec de l'exportation du journal : {message}",
+        "ko-KR": "로그 내보내기 실패: {message}\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(41491-41512)"
+        ],
+        "$id": 4108
+    },
+    "请先勾选要整理的文件。小技巧：你可以利用搜索过滤内容，再使用全选": {
+        "en-US": "Please check the files to organize first. Tip: You can use search to filter content, then select all.",
+        "es-ES": "Por favor, marque primero los archivos a organizar. Sugerencia: puede utilizar la búsqueda para filtrar el contenido y luego seleccionar todo.",
+        "ar-EG": "يرجى أولًا تحديد الملفات المراد تنظيمها. تلميح: يمكنك استخدام البحث لتصفية المحتوى، ثم استخدام \"تحديد الكل",
+        "pt-PT": "Por favor, selecione primeiro os ficheiros a organizar. Dica: pode utilizar a pesquisa para filtrar o conteúdo e, em seguida, selecionar tudo.",
+        "ru-RU": "Сначала выберите файлы для сортировки. Совет: можно отфильтровать содержимое с помощью поиска, а затем выбрать всё.",
+        "ja-JP": "整理するファイルを先にチェックしてください。ヒント：検索でコンテンツをフィルタリングし、全選択を使用できます",
+        "de-DE": "Bitte wählen Sie zunächst die zu ordnenden Dateien aus. Tipp: Sie können Inhalte mithilfe der Suche filtern und anschließend „Alle auswählen\" verwenden.",
+        "fr-FR": "Veuillez d'abord cocher les fichiers à organiser. Astuce : vous pouvez utiliser la recherche pour filtrer le contenu, puis tout sélectionner.",
+        "ko-KR": "정리할 파일을 먼저 선택해 주세요. 팁: 검색으로 콘텐츠를 필터링한 후 전체 선택을 활용할 수 있습니다",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(41886-41922)"
+        ],
+        "$id": 3437
+    },
+    "一键整理失败: {message}": {
+        "en-US": "One-click organization failed: {message}\r",
+        "es-ES": "Error en la organización con un clic: {message}\r",
+        "ar-EG": "فشل في التنظيم بنقرة واحدة: {message}\r",
+        "pt-PT": "Falha ao organizar com um clique: {message}",
+        "ru-RU": "Ошибка однократного упорядочивания: {message}\r",
+        "ja-JP": "ワンクリック整理に失敗しました: {message}",
+        "de-DE": "Ein-Klick-Organisation fehlgeschlagen: {message}",
+        "fr-FR": "Échec de l'organisation en un clic : {message}",
+        "ko-KR": "원클릭 정리 실패: {message}\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(44495-44516)"
+        ],
+        "$id": 4109
+    },
+    "已取消 AI 整理方案生成": {
+        "en-US": "AI organization plan generation cancelled",
+        "es-ES": "Generación de la solución de organización por IA cancelada",
+        "ar-EG": "تم إلغاء توليد مخطط تنظيم الذكاء الاصطناعي",
+        "pt-PT": "Geração do plano de organização por IA cancelada",
+        "ru-RU": "Генерация плана, упорядоченного ИИ, отменена",
+        "ja-JP": "AI による整理済み計画作成をキャンセルしました",
+        "de-DE": "KI-gestützte Zusammenfassungslösung wurde abgebrochen",
+        "fr-FR": "Génération de solution de tri par IA annulée",
+        "ko-KR": "AI 정리 안 생성이 취소되었습니다.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(44915-44932)"
+        ],
+        "$id": 3284
+    },
+    "可以多选目录，然后将勾选的目录导出虚拟目录；同时勾选后也右侧会显示组合后的文件列表": {
+        "en-US": "You can select multiple directories, then export the checked directories as a virtual directory; at the same time, after checking, the combined file list will be displayed on the right.",
+        "es-ES": "Puede seleccionar varios directorios y luego exportar los directorios marcados como directorio virtual; al mismo tiempo, después de marcar, también se mostrará a la derecha la lista de archivos combinados.",
+        "ar-EG": "يمكن اختيار أدلة متعددة، ثم تصدير الأدلة المحددة كدليل افتراضي؛ عند التحديد، سيظهر أيضًا على اليمين قائمة الملفات المجمعة",
+        "pt-PT": "Pode selecionar vários diretórios e, em seguida, exportar os diretórios selecionados como diretório virtual; ao mesmo tempo, após a seleção, a lista de ficheiros combinados será exibida no lado direito",
+        "ru-RU": "Можно выбрать несколько каталогов, а затем экспортировать отмеченные каталоги как виртуальный каталог; при этом справа отобразится объединенный список файлов",
+        "ja-JP": "複数のディレクトリを選択し、チェックしたディレクトリを仮想ディレクトリとしてエクスポートできます。また、チェックを入れると右側に結合されたファイルリストが表示されます。  ",
+        "de-DE": "Sie können mehrere Verzeichnisse auswählen und dann die ausgewählten Verzeichnisse als virtuelles Verzeichnis exportieren; nach der Auswahl wird auf der rechten Seite auch die kombinierte Dateiliste angezeigt.",
+        "fr-FR": "Vous pouvez sélectionner plusieurs répertoires, puis exporter les répertoires cochés en tant que répertoire virtuel ; une fois cochés, la liste des fichiers combinés s'affiche également à droite",
+        "ko-KR": "디렉터리를 다중 선택한 후 선택한 디렉터리를 가상 디렉터리로 내보낼 수 있습니다; 동시에 선택하면 오른쪽에 결합된 파일 목록이 표시됩니다",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(58290-58335)"
+        ],
+        "$id": 4352
+    },
+    "勾选并导出虚拟目录": {
+        "en-US": "Check and export the virtual directory",
+        "es-ES": "Verifique y exporte el directorio virtual.",
+        "ar-EG": "فحص وتصدير الدليل الظاهري",
+        "pt-PT": "Verifique e exporte o diretório virtual",
+        "ru-RU": "Проверьте и экспортируйте виртуальный каталог",
+        "ja-JP": "仮想ディレクトリを確認してエクスポートする",
+        "de-DE": "Überprüfen und exportieren Sie das virtuelle Verzeichnis",
+        "fr-FR": "Vérifier et exporter le répertoire virtuel",
+        "ko-KR": "가상 디렉터리 확인 및 내보내기",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(58908-58921)"
+        ],
+        "$id": 4528
+    },
+    "勾选目录": {
+        "en-US": "Check directory",
+        "es-ES": "consultar directorio",
+        "ar-EG": "تحقق من الدليل",
+        "pt-PT": "Verifique o diretório",
+        "ru-RU": "Проверить каталог",
+        "ja-JP": "ディレクトリを確認する",
+        "de-DE": "Verzeichnis prüfen",
+        "fr-FR": "Vérifier l'annuaire",
+        "ko-KR": "디렉터리 확인",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(58971-58979)"
+        ],
+        "$id": 4529
+    },
+    "至少勾选一个标签": {
+        "en-US": "Check at least one label",
+        "es-ES": "Verifique al menos una etiqueta",
+        "ar-EG": "تحقق من تسمية واحدة على الأقل",
+        "pt-PT": "Verifique pelo menos um rótulo",
+        "ru-RU": "Проверьте хотя бы одну этикетку",
+        "ja-JP": "少なくとも 1 つのラベルを確認してください",
+        "de-DE": "Überprüfen Sie mindestens ein Etikett",
+        "fr-FR": "Vérifiez au moins une étiquette",
+        "ko-KR": "라벨을 하나 이상 확인하세요.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(59438-59450)"
+        ],
+        "$id": 4301
+    },
+    "生成 {count} 个虚拟目录": {
+        "en-US": "Generate {count} virtual directories\r",
+        "es-ES": "Generar {count} directorios virtuales\r",
+        "ar-EG": "إنشاء {count} دليل افتراضي\r",
+        "pt-PT": "Gerar {count} diretórios virtuais",
+        "ru-RU": "Создание {count} виртуальных каталогов\r",
+        "ja-JP": "{count} 個の仮想ディレクトリを生成",
+        "de-DE": "{count} virtuelle Verzeichnisse erstellen",
+        "fr-FR": "Génération de {count} répertoires virtuels",
+        "ko-KR": "{count}개의 가상 디렉토리 생성\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(59686-59706)"
+        ],
+        "$id": 4113
+    },
+    "导出勾选目录": {
+        "en-US": "Export checked directory",
+        "es-ES": "Exportar directorio marcado",
+        "ar-EG": "تصدير الدليل المحدد",
+        "pt-PT": "Exportar diretório verificado",
+        "ru-RU": "Экспортировать проверенный каталог",
+        "ja-JP": "チェックされたディレクトリをエクスポートする",
+        "de-DE": "Geprüftes Verzeichnis exportieren",
+        "fr-FR": "Exporter le répertoire vérifié",
+        "ko-KR": "확인된 디렉터리 내보내기",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(59778-59788)"
+        ],
+        "$id": 4530
+    },
+    "导出勾选": {
+        "en-US": "Export check",
+        "es-ES": "Cheque de exportación",
+        "ar-EG": "فحص التصدير",
+        "pt-PT": "Verificação de exportação",
+        "ru-RU": "Экспортный чек",
+        "ja-JP": "輸出小切手",
+        "de-DE": "Exportprüfung",
+        "fr-FR": "Chèque d'exportation",
+        "ko-KR": "수출 확인",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(59916-59924)"
+        ],
+        "$id": 4531
+    },
+    "暂无可用维度": {
+        "en-US": "No dimensions available\r",
+        "es-ES": "No hay dimensiones disponibles\r",
+        "ar-EG": "لا توجد أبعاد متاحة مؤقتًا\r",
+        "pt-PT": "Nenhuma dimensão disponível",
+        "ru-RU": "Нет доступных размеров\r",
+        "ja-JP": "利用可能なディメンションがありません",
+        "de-DE": "Keine Dimensionen verfügbar",
+        "fr-FR": "Aucune dimension disponible",
+        "ko-KR": "사용 가능한 차원이 없습니다.\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(61418-61428)"
+        ],
+        "$id": 4110
+    },
+    "所有已分析文件": {
+        "en-US": "All analyzed files\r",
+        "es-ES": "Todos los archivos analizados\r",
+        "ar-EG": "جميع الملفات المُحلّلة\r",
+        "pt-PT": "Todos os ficheiros analisados",
+        "ru-RU": "Все проанализированные файлы\r",
+        "ja-JP": "すべての分析済みファイル",
+        "de-DE": "Alle analysierten Dateien",
+        "fr-FR": "Tous les fichiers analysés",
+        "ko-KR": "모든 분석된 파일\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(62997-63008)"
+        ],
+        "$id": 4111
+    },
+    "请在左侧勾选标签...": {
+        "en-US": "Please check the label on the left...",
+        "es-ES": "Por favor revise la etiqueta a la izquierda...",
+        "ar-EG": "يرجى التحقق من الملصق الموجود على اليسار...",
+        "pt-PT": "Verifique a etiqueta à esquerda...",
+        "ru-RU": "Пожалуйста, проверьте этикетку слева...",
+        "ja-JP": "左側のラベルを確認してください...",
+        "de-DE": "Bitte überprüfen Sie das Etikett auf der linken Seite...",
+        "fr-FR": "Veuillez vérifier l'étiquette à gauche...",
+        "ko-KR": "왼쪽 라벨을 확인해주세요.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(64193-64208)"
+        ],
+        "$id": 4303
+    },
+    "取消勾选": {
+        "en-US": "Uncheck",
+        "es-ES": "Desmarcar",
+        "ar-EG": "قم بإلغاء التحديد",
+        "pt-PT": "Desmarque",
+        "ru-RU": "Снимите флажок",
+        "ja-JP": "チェックを外します",
+        "de-DE": "Deaktivieren Sie das Kontrollkästchen",
+        "fr-FR": "Décochez",
+        "ko-KR": "선택 취소",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(65272-65280)"
+        ],
+        "$id": 4304
+    },
+    "当前工作目录没有已分析的文件": {
+        "en-US": "No analyzed files in the current working directory\r",
+        "es-ES": "El directorio de trabajo actual no tiene archivos analizados\r",
+        "ar-EG": "لا توجد ملفات مُحلّلة في دليل العمل الحالي\r",
+        "pt-PT": "O diretório de trabalho atual não tem ficheiros analisados",
+        "ru-RU": "В текущем рабочем каталоге нет проанализированных файлов\r",
+        "ja-JP": "現在の作業ディレクトリには分析済みのファイルがありません",
+        "de-DE": "Aktuelles Arbeitsverzeichnis enthält keine analysierten Dateien",
+        "fr-FR": "Le répertoire de travail actuel ne contient pas de fichiers analysés",
+        "ko-KR": "현재 작업 디렉토리에 분석된 파일이 없습니다.\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(68402-68420)"
+        ],
+        "$id": 4115
+    },
+    "AI智能整理真实目录": {
+        "en-US": "AI smart organization of real directories\r",
+        "es-ES": "Organización inteligente de IA para directorios reales\r",
+        "ar-EG": "تنظيم الدليل الحقيقي باستخدام الذكاء الاصطناعي\r",
+        "pt-PT": "Organizar inteligente de diretórios reais com IA",
+        "ru-RU": "Искусственный интеллект упорядочивает реальные каталоги\r",
+        "ja-JP": "AIがディレクトリをスマートに整理",
+        "de-DE": "KI-gestützte intelligente Organisation echter Verzeichnisse",
+        "fr-FR": "Organisation intelligente par IA des répertoires réels",
+        "ko-KR": "AI 스마트 정리를 통한 실제 디렉토리 정리\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(68453-68467)"
+        ],
+        "$id": 4116
+    },
+    "一键整理": {
+        "en-US": "One-click organization\r",
+        "es-ES": "Organización con un clic\r",
+        "ar-EG": "تنظيم بنقرة واحدة\r",
+        "pt-PT": "Organizar com um clique",
+        "ru-RU": "Однократное упорядочивание\r",
+        "ja-JP": "ワンクリック整理",
+        "de-DE": "Ein-Klick-Organisation",
+        "fr-FR": "Organisation en un clic",
+        "ko-KR": "원클릭 정리\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(68629-68637)"
+        ],
+        "$id": 4117
+    },
+    "加载文件中...": {
+        "en-US": "Loading files...\r",
+        "es-ES": "Cargando archivos...\r",
+        "ar-EG": "جاري تحميل الملف...\r",
+        "pt-PT": "A carregar ficheiros...",
+        "ru-RU": "Загрузка файлов...\r",
+        "ja-JP": "ファイルを読み込み中...",
+        "de-DE": "Dateien laden...",
+        "fr-FR": "Chargement des fichiers...",
+        "ko-KR": "파일 불러오는 중...\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(69460-69472)"
+        ],
+        "$id": 4118
+    },
+    "暂无已分析文件": {
+        "en-US": "No analyzed files yet\r",
+        "es-ES": "No hay archivos analizados\r",
+        "ar-EG": "لا توجد ملفات مُحلّلة حاليًا\r",
+        "pt-PT": "Nenhum ficheiro analisado",
+        "ru-RU": "Нет проанализированных файлов\r",
+        "ja-JP": "分析済みのファイルがありません",
+        "de-DE": "Keine analysierten Dateien vorhanden",
+        "fr-FR": "Aucun fichier analysé",
+        "ko-KR": "분석된 파일이 없습니다.\r",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(70095-70106)"
+        ],
+        "$id": 4119
+    },
+    "当前工作目录还没有AI分析过的文件。请先在": {
+        "en-US": "There are no AI-analyzed files in the current working directory yet. Please first",
+        "es-ES": "El directorio de trabajo actual aún no tiene archivos analizados por IA. Por favor, primero analice en",
+        "ar-EG": "لا توجد ملفات تمت تحليلها باستخدام الذكاء الاصطناعي في دليل العمل الحالي. يرجى تحليلها أولاً في",
+        "pt-PT": "O diretório de trabalho atual ainda não tem ficheiros analisados pela IA. Por favor, primeiro em",
+        "ru-RU": "В текущем рабочем каталоге еще нет файлов, проанализированных с помощью ИИ. Сначала включите",
+        "ja-JP": "現在の作業ディレクトリにはAIが分析したファイルがありません。まず、",
+        "de-DE": "Im aktuellen Arbeitsverzeichnis befinden sich noch keine KI-analysierten Dateien. Bitte zuerst in",
+        "fr-FR": "Il n'y a pas encore de fichiers analysés par l'IA dans le répertoire de travail actuel. Veuillez d'abord le faire dans",
+        "ko-KR": "현재 작업 디렉토리에는 AI 분석된 파일이 없습니다. 먼저",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(70257-70282)"
+        ],
+        "$id": 4120
+    },
+    " 真实目录 ": {
+        "en-US": "Real Directory",
+        "es-ES": "Directorio real ",
+        "ar-EG": "الدليل الحقيقي",
+        "pt-PT": "Diretório real\r",
+        "ru-RU": "Реальный каталог",
+        "ja-JP": "実際のディレクトリ",
+        "de-DE": "Aktuelles Verzeichnis",
+        "fr-FR": "Répertoire actuel",
+        "ko-KR": "실제 디렉토리 ",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(70411-70421)"
+        ],
+        "$id": 4121
+    },
+    "页签中勾选文件，然后点击": {
+        "en-US": "Check files in the tab, then click",
+        "es-ES": "Marcar archivo en la pestaña, luego clic en",
+        "ar-EG": "حدد الملفات في علامة التبويب ثم انقر",
+        "pt-PT": "Selecione os ficheiros no separador e clique em\r",
+        "ru-RU": "Отметьте файлы на вкладке, затем нажмите",
+        "ja-JP": "タブでファイルを選択し、",
+        "de-DE": "Dateien im Tab auswählen und dann auf",
+        "fr-FR": "Cochez les fichiers dans l'onglet, puis cliquez sur",
+        "ko-KR": "탭에서 파일을 체크한 후",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(70492-70508)"
+        ],
+        "$id": 4122
+    },
+    " 批量分析 ": {
+        "en-US": "Batch analysis",
+        "es-ES": "Análisis por lotes",
+        "ar-EG": "تحليل الدفعة",
+        "pt-PT": "Análise de lote",
+        "ru-RU": "Пакетный анализ",
+        "ja-JP": "バッチ分析",
+        "de-DE": "Chargenanalyse",
+        "fr-FR": "Analyse par lots",
+        "ko-KR": "배치 분석",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(70637-70647)"
+        ],
+        "$id": 3336
+    },
+    "进行AI分析。": {
+        "en-US": "for AI analysis.",
+        "es-ES": "para análisis con IA.",
+        "ar-EG": "لإجراء تحليل الذكاء الاصطناعي.",
+        "pt-PT": "para análise por IA.\r",
+        "ru-RU": "для анализа ИИ.",
+        "ja-JP": "してAI分析を実行します。",
+        "de-DE": "klicken, um die AI-Analyse zu starten.",
+        "fr-FR": "pour lancer l'analyse par IA.",
+        "ko-KR": "를 클릭하여 AI 분석을 진행합니다.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(70718-70729)"
+        ],
+        "$id": 4124
+    },
+    "前往真实目录": {
+        "en-US": "Go to Real Directory",
+        "es-ES": "Ir al directorio real",
+        "ar-EG": "انتقل إلى الدليل الحقيقي",
+        "pt-PT": "Aceder ao diretório real\r",
+        "ru-RU": "Перейти к реальному каталогу",
+        "ja-JP": "実際のディレクトリに移動",
+        "de-DE": "Zum aktuellen Verzeichnis wechseln",
+        "fr-FR": "Aller au répertoire actuel",
+        "ko-KR": "실제 디렉토리로 이동",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(71068-71078)"
+        ],
+        "$id": 4125
+    },
+    "已显示 {count} 个文件 / 共 {total} 个": {
+        "en-US": "{count} files shown / {total} total",
+        "es-ES": "{count} archivos mostrados / {total} total",
+        "ar-EG": "{count} الملفات المعروضة / {total} الإجمالي",
+        "pt-PT": "{count} arquivos mostrados / {total} total",
+        "ru-RU": "Показано {count} файлов / всего {total}",
+        "ja-JP": "{count} 個のファイルが表示されています / 合計 {total} 個",
+        "de-DE": "{count} Dateien angezeigt / {total} insgesamt",
+        "fr-FR": "{count} fichiers affichés/{total} total",
+        "ko-KR": "표시된 파일 {count}개/총 {total}개",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(73184-73217)"
+        ],
+        "$id": 3337
+    },
+    "正在加载更多...": {
+        "en-US": "Loading more...",
+        "es-ES": "Cargando más...",
+        "ar-EG": "جارٍ تحميل المزيد...",
+        "pt-PT": "Carregando mais...",
+        "ru-RU": "Загружается еще...",
+        "ja-JP": "さらに読み込み中...",
+        "de-DE": "Mehr laden...",
+        "fr-FR": "Chargement plus...",
+        "ko-KR": "더 로드 중...",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(73699-73712)"
+        ],
+        "$id": 4305
+    },
+    "管理保存的虚拟目录": {
+        "en-US": "Manage saved virtual directories",
+        "es-ES": "Gestionar directorios virtuales guardados",
+        "ar-EG": "إدارة الأدلة الافتراضية المحفوظة",
+        "pt-PT": "Gerir diretórios virtuais guardados\r",
+        "ru-RU": "Управление сохраненными виртуальными каталогами",
+        "ja-JP": "保存した仮想ディレクトリを管理",
+        "de-DE": "Gespeicherte virtuelle Verzeichnisse verwalten",
+        "fr-FR": "Gérer les répertoires virtuels sauvegardés",
+        "ko-KR": "저장된 가상 디렉토리 관리",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(75370-75383)"
+        ],
+        "$id": 4126
+    },
+    "暂无已保存的虚拟目录": {
+        "en-US": "No saved virtual directories yet",
+        "es-ES": "No hay directorios virtuales guardados",
+        "ar-EG": "لا توجد أي أدلة افتراضية محفوظة",
+        "pt-PT": "Nenhum diretório virtual guardado\r",
+        "ru-RU": "Нет сохраненных виртуальных каталогов",
+        "ja-JP": "保存された仮想ディレクトリはありません",
+        "de-DE": "Keine gespeicherten virtuellen Verzeichnisse vorhanden",
+        "fr-FR": "Aucun répertoire virtuel sauvegardé pour le moment",
+        "ko-KR": "저장된 가상 디렉토리가 없습니다.",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(76034-76048)"
+        ],
+        "$id": 4127
+    },
+    "保存": {
+        "en-US": "Save",
+        "es-ES": "Guardar",
+        "ar-EG": "احفظ",
+        "pt-PT": "Guardar\r",
+        "ru-RU": "Сохранить",
+        "ja-JP": "保存",
+        "de-DE": "Speichern",
+        "fr-FR": "Sauvegarder",
+        "ko-KR": "저장",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(77544-77550)"
+        ],
+        "$id": 4128
+    },
+    "创建时间: {time}": {
+        "en-US": "Creation time: {time}",
+        "es-ES": "Fecha de creación: {time}",
+        "ar-EG": "وقت الإنشاء: {time}",
+        "pt-PT": "Data de criação: {time}\r",
+        "ru-RU": "Время создания: {time}",
+        "ja-JP": "作成日時: {time}",
+        "de-DE": "Erstellungszeit: {time}",
+        "fr-FR": "Date de création : {time}",
+        "ko-KR": "작성 시간: {time}",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(78217-78233)"
+        ],
+        "$id": 4129
+    },
+    "重命名": {
+        "en-US": "Rename",
+        "es-ES": "Renombrar",
+        "ar-EG": "إعادة تسمية",
+        "pt-PT": "Renomear\r",
+        "ru-RU": "Переименовать",
+        "ja-JP": "名前の変更",
+        "de-DE": "Umbenennen",
+        "fr-FR": "Renommer",
+        "ko-KR": "이름 변경",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(78690-78697)"
+        ],
+        "$id": 4130
+    },
+    "删除": {
+        "en-US": "Delete",
+        "es-ES": "Eliminar",
+        "ar-EG": "حذف",
+        "pt-PT": "Eliminar",
+        "ru-RU": "Удалить",
+        "ja-JP": "削除",
+        "de-DE": "Löschen",
+        "fr-FR": "Supprimer",
+        "ko-KR": "삭제",
+        "$files": [
+            "renderer/components/file-explorer/VirtualDirectory.tsx(79123-79129)"
+        ],
+        "$id": 4131
+    }
+}

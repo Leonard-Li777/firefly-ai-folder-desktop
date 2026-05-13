@@ -1,0 +1,440 @@
+{
+    "请先填写服务商和 API Key": {
+        "en-US": "Please fill in the service provider and API Key first.  ",
+        "es-ES": "Por favor, rellene primero el proveedor de servicios y la clave API",
+        "ar-EG": "يرجى ملء مزوّد الخدمة ومفتاح API أولًا  ",
+        "pt-PT": "Por favor, preencha primeiro o fornecedor e a Chave da API  ",
+        "ru-RU": "Сначала заполните данные поставщика услуг и API-ключ  ",
+        "ja-JP": "まずはサービスプロバイダーとAPIキーを入力してください",
+        "de-DE": "Bitte geben Sie zunächst den Anbieter und den API-Schlüssel ein.  ",
+        "fr-FR": "Veuillez d'abord renseigner le fournisseur de services et la clé API.  ",
+        "ko-KR": "먼저 서비스 제공업체와 API 키를 입력해 주세요.",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(12962-12982)"
+        ],
+        "$id": 3043
+    },
+    "请先填写Base URL或选择有默认URL的服务商": {
+        "en-US": "Please fill in the Base URL or select a service provider with a default URL.  ",
+        "es-ES": "Por favor, rellene primero la URL base o seleccione un proveedor que tenga una URL predeterminada",
+        "ar-EG": "يرجى ملء عنوان URL الأساسي أو اختيار مزوّد خدمة يحتوي على عنوان URL افتراضي  ",
+        "pt-PT": "Por favor, preencha primeiro o URL Base ou selecione um fornecedor com URL padrão  ",
+        "ru-RU": "Сначала укажите Base URL или выберите поставщика услуг с URL по умолчанию  ",
+        "ja-JP": "まずはBase URLを入力するか、デフォルトURLを持つサービスプロバイダーを選択してください",
+        "de-DE": "Bitte geben Sie zunächst die Base-URL ein oder wählen Sie einen Anbieter mit voreingestellter URL aus.  ",
+        "fr-FR": "Veuillez d'abord renseigner l'URL de base ou sélectionner un fournisseur disposant d'une URL par défaut.  ",
+        "ko-KR": "먼저 Base URL을 입력하거나 기본 URL이 있는 서비스 제공업체를 선택해 주세요.",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(13223-13252)",
+            "renderer/components/settings/cloud-model-config-settings.tsx(16569-16598)"
+        ],
+        "$id": 3044
+    },
+    "连接测试成功，正在获取模型列表...": {
+        "en-US": "Connection test succeeded; fetching model list...  ",
+        "es-ES": "Conexión probada con éxito, obteniendo la lista de modelos...",
+        "ar-EG": "تم اختبار الاتصال بنجاح، جارٍ جلب قائمة النماذج...  ",
+        "pt-PT": "Teste de ligação bem-sucedido, a obter lista de modelos...  ",
+        "ru-RU": "Тест подключения прошёл успешно, идёт получение списка моделей...  ",
+        "ja-JP": "接続テストに成功しました。モデルリストを取得中です…",
+        "de-DE": "Verbindungstest erfolgreich, Modelle werden abgerufen …  ",
+        "fr-FR": "Test de connexion réussi, récupération de la liste des modèles en cours...  ",
+        "ko-KR": "연결 테스트 성공, 모델 목록을 가져오는 중...",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(14007-14029)"
+        ],
+        "$id": 3045
+    },
+    "未获取到在线模型列表，将继续使用内置模型列表": {
+        "en-US": "Failed to retrieve the online model list; will continue using the built-in model list.  ",
+        "es-ES": "No se ha obtenido la lista de modelos en línea; se continuará utilizando la lista de modelos integrada",
+        "ar-EG": "لم يتم الحصول على قائمة النماذج المتاحة عبر الإنترنت، سيتم الاستمرار باستخدام القائمة المضمنة للنماذج  ",
+        "pt-PT": "Não foi possível obter a lista de modelos online; será utilizada a lista de modelos incorporados  ",
+        "ru-RU": "Не удалось получить список онлайн-моделей, будет использоваться встроенный список моделей  ",
+        "ja-JP": "オンラインモデルリストを取得できませんでしたので、組み込みモデルリストを引き続き使用します",
+        "de-DE": "Online-Modellliste konnte nicht abgerufen werden; stattdessen wird die integrierte Modellliste verwendet.  ",
+        "fr-FR": "Impossible d'obtenir la liste des modèles en ligne, la liste intégrée sera utilisée à la place.  ",
+        "ko-KR": "온라인 모델 목록을 가져오지 못했습니다. 내장된 모델 목록을 계속 사용합니다.",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(14271-14297)"
+        ],
+        "$id": 3046
+    },
+    "已加载并保存在线模型列表（{count}个）": {
+        "en-US": "Online model list loaded and saved ({count} models).  ",
+        "es-ES": "Se ha cargado y guardado la lista de modelos en línea ({count} modelos)",
+        "ar-EG": "تم تحميل وحفظ قائمة النماذج المتاحة عبر الإنترنت ({count} نموذجًا)  ",
+        "pt-PT": "Lista de modelos online carregada e guardada ({count} modelos)  ",
+        "ru-RU": "Онлайн-список моделей загружен и сохранён ({count} шт.)  ",
+        "ja-JP": "オンラインモデルリスト（{count}個）を読み込み、保存しました",
+        "de-DE": "Online-Modellliste wurde geladen und gespeichert ({count} Modelle).  ",
+        "fr-FR": "Liste des modèles en ligne chargée et sauvegardée ({count} éléments).  ",
+        "ko-KR": "온라인 모델 목록({count}개)을 로드하여 저장했습니다.",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(15207-15233)"
+        ],
+        "$id": 3047
+    },
+    "请填写完整的配置信息": {
+        "en-US": "Please complete all configuration fields.  ",
+        "es-ES": "Rellene toda la información de configuración",
+        "ar-EG": "يرجى ملء معلومات التهيئة الكاملة  ",
+        "pt-PT": "Preencha as informações completas da configuração  ",
+        "ru-RU": "Заполните полную информацию о конфигурации  ",
+        "ja-JP": "設定情報をすべて入力してください",
+        "de-DE": "Bitte füllen Sie alle Konfigurationsfelder vollständig aus.  ",
+        "fr-FR": "Veuillez renseigner toutes les informations de configuration.  ",
+        "ko-KR": "구성 정보를 모두 입력해 주세요.",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(16272-16286)"
+        ],
+        "$id": 3048
+    },
+    "配置未保存，请稍后重试": {
+        "en-US": "Configuration not saved; please try again later.  ",
+        "es-ES": "La configuración no se ha guardado; por favor, inténtelo de nuevo más tarde",
+        "ar-EG": "لم يتم حفظ الإعدادات، يرجى إعادة المحاولة لاحقًا  ",
+        "pt-PT": "Configuração não guardada, por favor tente novamente mais tarde  ",
+        "ru-RU": "Конфигурация не сохранена, повторите попытку позже  ",
+        "ja-JP": "設定が保存されていません。しばらくしてから再試行してください",
+        "de-DE": "Konfiguration wurde nicht gespeichert, bitte versuchen Sie es später erneut.  ",
+        "fr-FR": "La configuration n'a pas été enregistrée, veuillez réessayer ultérieurement.  ",
+        "ko-KR": "구성이 저장되지 않았습니다. 잠시 후 다시 시도해 주세요.",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(17060-17075)"
+        ],
+        "$id": 3049
+    },
+    "已设为当前云端配置": {
+        "en-US": "Set as current cloud configuration.  ",
+        "es-ES": "Se ha establecido como la configuración en la nube actual",
+        "ar-EG": "تم تعيينه كتهيئة سحابية حالية  ",
+        "pt-PT": "Definido como a configuração atual na nuvem  ",
+        "ru-RU": "Установлено как текущая облачная конфигурация  ",
+        "ja-JP": "現在のクラウド設定として設定しました",
+        "de-DE": "Wurde als aktuelle Cloud-Konfiguration festgelegt.  ",
+        "fr-FR": "Défini comme configuration cloud actuelle.  ",
+        "ko-KR": "현재 클라우드 구성으로 설정되었습니다.",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(17214-17227)"
+        ],
+        "$id": 3050
+    },
+    "无法激活为云端配置，错误信息：{message}": {
+        "en-US": "Failed to activate as cloud configuration; error message: {message}",
+        "es-ES": "No se puede activar como configuración en la nube. Mensaje de error: {message}",
+        "ar-EG": "تعذر تفعيله كتهيئة سحابية، رسالة الخطأ: {message}",
+        "pt-PT": "Não é possível ativar como configuração na nuvem, mensagem de erro: {message}",
+        "ru-RU": "Не удалось активировать облачную конфигурацию, сообщение об ошибке: {message}",
+        "ja-JP": "クラウド設定として有効化できません。エラーメッセージ：{message}",
+        "de-DE": "Kann nicht als Cloud-Konfiguration aktiviert werden. Fehlermeldung: {message}",
+        "fr-FR": "Impossible d'activer la configuration cloud. Message d'erreur : {message}",
+        "ko-KR": "클라우드 구성으로 활성화할 수 없습니다. 오류 메시지: {message}",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(17887-17915)"
+        ],
+        "$id": 3051
+    },
+    "Custom（OpenAI Compatible）": {
+        "en-US": "Custom (OpenAI Compatible)",
+        "es-ES": "Custom (Compatible con OpenAI)",
+        "ar-EG": "مخصص (متوافق مع OpenAI)  ",
+        "pt-PT": "Personalizado (Compatível com OpenAI)",
+        "ru-RU": "Custom (совместимо с OpenAI)  ",
+        "ja-JP": "カスタム（OpenAI互換）",
+        "de-DE": "Benutzerdefiniert (OpenAI-kompatibel)",
+        "fr-FR": "Personnalisé (compatible OpenAI)  ",
+        "ko-KR": "사용자 정의（OpenAI Compatible）",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(18862-18891)"
+        ],
+        "$id": 3052
+    },
+    "正在加载...": {
+        "en-US": "Loading...",
+        "es-ES": "Cargando...",
+        "ar-EG": "جارٍ التحميل...  ",
+        "pt-PT": "A carregar...",
+        "ru-RU": "Загрузка...  ",
+        "ja-JP": "読み込み中...",
+        "de-DE": "Wird geladen...",
+        "fr-FR": "Chargement en cours...  ",
+        "ko-KR": "로딩 중...",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(19966-19977)"
+        ],
+        "$id": 3055
+    },
+    "云服务商": {
+        "en-US": "Cloud Service Provider",
+        "es-ES": "Proveedor en la nube",
+        "ar-EG": "مزوّد الخدمة السحابية  ",
+        "pt-PT": "Fornecedor na nuvem",
+        "ru-RU": "Облачный провайдер  ",
+        "ja-JP": "クラウドサービスプロバイダー",
+        "de-DE": "Cloud-Anbieter",
+        "fr-FR": "Fournisseur cloud  ",
+        "ko-KR": "클라우드 서비스 제공업체",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(20206-20214)"
+        ],
+        "$id": 3056
+    },
+    "选择服务商": {
+        "en-US": "Select Provider",
+        "es-ES": "Seleccione un proveedor",
+        "ar-EG": "اختر المزوّد  ",
+        "pt-PT": "Selecionar fornecedor",
+        "ru-RU": "Выберите провайдера  ",
+        "ja-JP": "サービスプロバイダーを選択",
+        "de-DE": "Anbieter auswählen",
+        "fr-FR": "Sélectionner un fournisseur  ",
+        "ko-KR": "서비스 제공업체 선택",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(20500-20509)"
+        ],
+        "$id": 3057
+    },
+    "本地": {
+        "en-US": "local",
+        "es-ES": "local",
+        "ar-EG": "محلي",
+        "pt-PT": "local",
+        "ru-RU": "местный",
+        "ja-JP": "地元",
+        "de-DE": "lokal",
+        "fr-FR": "locale",
+        "ko-KR": "현지의",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(21131-21137)"
+        ],
+        "$id": 4391
+    },
+    "免费": {
+        "en-US": "Free",
+        "es-ES": "Gratis",
+        "ar-EG": "مجاني",
+        "pt-PT": "Grátis",
+        "ru-RU": "Бесплатно",
+        "ja-JP": "無料",
+        "de-DE": "Kostenlos",
+        "fr-FR": "Gratuit",
+        "ko-KR": "무료",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(21484-21490)",
+            "renderer/components/settings/cloud-model-config-settings.tsx(31795-31801)"
+        ],
+        "$id": 4374
+    },
+    "Base URL（可选）": {
+        "en-US": "Base URL (Optional)",
+        "es-ES": "URL base (opcional)",
+        "ar-EG": "عنوان URL الأساسي (اختياري)  ",
+        "pt-PT": "URL Base (opcional)",
+        "ru-RU": "Base URL (необязательно)  ",
+        "ja-JP": "Base URL（任意）",
+        "de-DE": "Base-URL (optional)",
+        "fr-FR": "URL de base (facultatif)  ",
+        "ko-KR": "Base URL（선택 사항）",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(21841-21857)"
+        ],
+        "$id": 3058
+    },
+    "去注册/获取密钥": {
+        "en-US": "Go to register/get key",
+        "es-ES": "Registrarse / Obtener clave",
+        "ar-EG": "اذهب للتسجيل/احصل على المفتاح",
+        "pt-PT": "Registar/Obter chave",
+        "ru-RU": "Зарегистрироваться/получить ключ",
+        "ja-JP": "登録/キーを取得",
+        "de-DE": "Registrieren/Schlüssel holen",
+        "fr-FR": "Aller s'inscrire / obtenir une clé",
+        "ko-KR": "등록/키 받기",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(23603-23615)"
+        ],
+        "$id": 4375
+    },
+    "获取模型列表": {
+        "en-US": "Get model list",
+        "es-ES": "Obtener lista de modelos",
+        "ar-EG": "الحصول على قائمة النماذج",
+        "pt-PT": "Obter lista de modelos",
+        "ru-RU": "Получить список моделей",
+        "ja-JP": "モデルリストの取得",
+        "de-DE": "Modellliste abrufen",
+        "fr-FR": "Obtenir la liste des modèles",
+        "ko-KR": "모델 목록 가져오기",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(24878-24888)",
+            "renderer/components/settings/cloud-model-config-settings.tsx(26616-26626)"
+        ],
+        "$id": 4392
+    },
+    "请下载 Ollama": {
+        "en-US": "Please download Ollama",
+        "es-ES": "Por favor descarga Ollama",
+        "ar-EG": "يرجى تحميل أولاما",
+        "pt-PT": "Baixe o Ollama",
+        "ru-RU": "Пожалуйста, загрузите Олламу",
+        "ja-JP": "オラマをダウンロードしてください",
+        "de-DE": "Bitte laden Sie Ollama herunter",
+        "fr-FR": "Veuillez télécharger Ollama",
+        "ko-KR": "올라마를 다운로드해주세요",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(25158-25172)"
+        ],
+        "$id": 4393
+    },
+    "并在Ollama中安装Qwen3.5系列模型后，点击\"获取模型列表\"": {
+        "en-US": "After installing the Qwen3.5 series model in Ollama, click \"Get Model List\"",
+        "es-ES": "Después de instalar el modelo de la serie Qwen3.5 en Ollama, haga clic en \"Obtener lista de modelos\"",
+        "ar-EG": "بعد تثبيت نموذج سلسلة Qwen3.5 في Olma، انقر فوق \"الحصول على قائمة النماذج\"",
+        "pt-PT": "Após instalar o modelo da série Qwen3.5 no Ollama, clique em \"Obter lista de modelos\"",
+        "ru-RU": "После установки модели серии Qwen3.5 в Олламе нажмите «Получить список моделей».",
+        "ja-JP": "Qwen3.5シリーズモデルをOllamaにインストール後、「モデルリストを取得」をクリックします。",
+        "de-DE": "Klicken Sie nach der Installation des Modells der Qwen3.5-Serie in Ollama auf „Modellliste abrufen“.",
+        "fr-FR": "Après avoir installé le modèle de la série Qwen3.5 dans Ollama, cliquez sur « Obtenir la liste des modèles »",
+        "ko-KR": "Ollama에 Qwen3.5 시리즈 모델을 설치한 후 \"모델 목록 가져오기\"를 클릭하세요.",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(25974-26012)"
+        ],
+        "$id": 4394
+    },
+    "模型": {
+        "en-US": "Model",
+        "es-ES": "Modelo",
+        "ar-EG": "النموذج  ",
+        "pt-PT": "Modelo",
+        "ru-RU": "Модель  ",
+        "ja-JP": "モデル",
+        "de-DE": "Modell",
+        "fr-FR": "Modèle  ",
+        "ko-KR": "모델",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(26866-26872)"
+        ],
+        "$id": 3061
+    },
+    "当前使用在线获取的模型列表": {
+        "en-US": "Currently using the online-fetched model list",
+        "es-ES": "Actualmente usando la lista de modelos obtenida en línea",
+        "ar-EG": "قائمة النماذج المستخدمة حاليًا يتم جلبها عبر الإنترنت  ",
+        "pt-PT": "A utilizar atualmente a lista de modelos obtida online",
+        "ru-RU": "В данный момент используется список моделей, получаемых онлайн  ",
+        "ja-JP": "現在オンラインで取得したモデルリストを使用中",
+        "de-DE": "Verwendet aktuell die online abgerufene Modellliste",
+        "fr-FR": "Utilise actuellement la liste des modèles obtenus en ligne  ",
+        "ko-KR": "현재 온라인에서 가져온 모델 목록 사용 중",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(27022-27039)"
+        ],
+        "$id": 3062
+    },
+    "当前使用预置模型列表": {
+        "en-US": "Currently using the preset model list",
+        "es-ES": "Actualmente usando la lista de modelos predefinidos",
+        "ar-EG": "قائمة النماذج المستخدمة حاليًا مُعدة مسبقًا  ",
+        "pt-PT": "A utilizar atualmente a lista de modelos predefinidos",
+        "ru-RU": "В данный момент используется предопределённый список моделей  ",
+        "ja-JP": "現在プリセットされたモデルリストを使用中",
+        "de-DE": "Verwendet aktuell die vordefinierte Modellliste",
+        "fr-FR": "Utilise actuellement la liste des modèles prédéfinis  ",
+        "ko-KR": "현재 사전 설정된 모델 목록 사용 중",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(27068-27082)"
+        ],
+        "$id": 3063
+    },
+    "请输入或选择模型ID": {
+        "en-US": "Please enter or select a model ID",
+        "es-ES": "Introduzca o seleccione el ID del modelo",
+        "ar-EG": "يرجى إدخال أو اختيار معرّف النموذج  ",
+        "pt-PT": "Introduza ou selecione o ID do modelo",
+        "ru-RU": "Введите или выберите ID модели  ",
+        "ja-JP": "モデルIDを入力または選択してください",
+        "de-DE": "Bitte geben Sie eine Modell-ID ein oder wählen Sie eine aus",
+        "fr-FR": "Veuillez saisir ou sélectionner un identifiant de modèle  ",
+        "ko-KR": "모델 ID를 입력하거나 선택하세요",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(28274-28288)"
+        ],
+        "$id": 3064
+    },
+    "没有找到匹配的模型": {
+        "en-US": "No matching model found",
+        "es-ES": "No se encontró ningún modelo coincidente",
+        "ar-EG": "لم يتم العثور على نموذج مطابق  ",
+        "pt-PT": "Nenhum modelo correspondente encontrado",
+        "ru-RU": "Совпадающая модель не найдена  ",
+        "ja-JP": "一致するモデルが見つかりませんでした",
+        "de-DE": "Kein passendes Modell gefunden",
+        "fr-FR": "Aucun modèle correspondant trouvé  ",
+        "ko-KR": "일치하는 모델을 찾을 수 없습니다",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(32809-32822)"
+        ],
+        "$id": 3065
+    },
+    "多模态能力": {
+        "en-US": "Multimodal Capabilities",
+        "es-ES": "Capacidad multimodal",
+        "ar-EG": "قدرات متعددة الوسائط  ",
+        "pt-PT": "Capacidade multimodal",
+        "ru-RU": "Мультимодальные возможности  ",
+        "ja-JP": "マルチモーダル機能",
+        "de-DE": "Multimodale Fähigkeiten",
+        "fr-FR": "Capacité multimodale  ",
+        "ko-KR": "멀티모달 기능",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(33609-33618)"
+        ],
+        "$id": 3066
+    },
+    "当前使用的配置（已激活）": {
+        "en-US": "Current configuration (activated)",
+        "es-ES": "La configuración actualmente en uso (activada)",
+        "ar-EG": "التكوين المستخدم حاليًا (مُفعَّل)",
+        "pt-PT": "Configuração atualmente em uso (ativada)",
+        "ru-RU": "Текущая используемая конфигурация (активирована)",
+        "ja-JP": "現在使用中の設定（アクティブ）",
+        "de-DE": "Die aktuell verwendete Konfiguration (aktiviert)",
+        "fr-FR": "Configuration actuellement utilisée (activée)",
+        "ko-KR": "현재 사용 중인 구성(활성화됨)",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(34465-34481)"
+        ],
+        "$id": 2638
+    },
+    "设为当前配置(激活)": {
+        "en-US": "Set as current configuration (activate)",
+        "es-ES": "Establecer como configuración actual (activar)",
+        "ar-EG": "تعيين كتكوين حالي (تفعيل)",
+        "pt-PT": "Definir como configuração atual (ativar)",
+        "ru-RU": "Установить как текущую конфигурацию (активировать)",
+        "ja-JP": "現在の設定に設定（アクティブ化）",
+        "de-DE": "Als aktuelle Konfiguration festlegen (aktivieren)",
+        "fr-FR": "Définir comme configuration actuelle (activer)",
+        "ko-KR": "현재 구성으로 설정(활성화)",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(34485-34499)"
+        ],
+        "$id": 2639
+    },
+    "正在加载配置...": {
+        "en-US": "Loading configuration...",
+        "es-ES": "Cargando la configuración...",
+        "ar-EG": "جارٍ تحميل الإعدادات...",
+        "pt-PT": "A carregar a configuração...",
+        "ru-RU": "Загрузка конфигурации...",
+        "ja-JP": "設定を読み込んでいます…",
+        "de-DE": "Konfiguration wird geladen...",
+        "fr-FR": "Chargement de la configuration…",
+        "ko-KR": "설정을 불러오는 중...",
+        "$files": [
+            "renderer/components/settings/cloud-model-config-settings.tsx(34675-34688)"
+        ],
+        "$id": 3069
+    }
+}

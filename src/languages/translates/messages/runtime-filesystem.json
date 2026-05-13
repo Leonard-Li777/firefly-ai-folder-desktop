@@ -1,0 +1,596 @@
+{
+    "文件记录 { fileId } 不存在": {
+        "en-US": "File record { fileId } does not exist",
+        "es-ES": "El registro del archivo { fileId } no existe",
+        "ar-EG": "سجل الملف { fileId } غير موجود",
+        "pt-PT": "O registo do ficheiro { fileId } não existe",
+        "ru-RU": "Запись файла { fileId } не существует",
+        "ja-JP": "ファイル記録 { fileId } が存在しません",
+        "de-DE": "Datei-Eintrag { fileId } existiert nicht",
+        "fr-FR": "L'entrée de fichier { fileId } n'existe pas",
+        "ko-KR": "파일 기록 { fileId }이(가) 존재하지 않습니다",
+        "$files": [
+            "electron/runtime-services/filesystem/file-cleanup-service.ts(883-906)"
+        ],
+        "$id": 3305
+    },
+    "设置可执行权限失败 {filePath}: {error}": {
+        "en-US": "Failed to set executable permission {filePath}: {error}",
+        "es-ES": "Error al establecer permisos de ejecución {filePath}: {error}",
+        "ar-EG": "فشل في تعيين صلاحيات التنفيذ {filePath}: {error}\r",
+        "pt-PT": "Falha ao definir permissões de execução {filePath}: {error}",
+        "ru-RU": "Не удалось установить разрешение на выполнение {filePath}: {error}",
+        "ja-JP": "実行可能権限の設定に失敗しました {filePath}: {error}\r",
+        "de-DE": "Fehler beim Setzen der Ausführungsberechtigung {filePath}: {error}",
+        "fr-FR": "Échec de la définition des autorisations d'exécution {filePath}: {error}",
+        "ko-KR": "실행 권한 설정 실패 {filePath}: {error}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(1576-1609)"
+        ],
+        "$id": 3079
+    },
+    "文件大小为0": {
+        "en-US": "File size is 0",
+        "es-ES": "El tamaño del archivo es 0",
+        "ar-EG": "حجم الملف 0\r",
+        "pt-PT": "O tamanho do ficheiro é 0",
+        "ru-RU": "Размер файла равен 0",
+        "ja-JP": "ファイルサイズが0です\r",
+        "de-DE": "Dateigröße ist 0",
+        "fr-FR": "La taille du fichier est 0",
+        "ko-KR": "파일 크기가 0임",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(3139-3149)"
+        ],
+        "$id": 5873
+    },
+    "文件大小可能过小，可能不是有效的二进制文件": {
+        "en-US": "File size may be too small and may not be a valid binary file",
+        "es-ES": "El tamaño del archivo podría ser demasiado pequeño, posiblemente no sea un archivo binario válido",
+        "ar-EG": "قد يكون حجم الملف صغيراً جداً، وقد لا يكون ملفاً ثنائيّاً صالحاً\r",
+        "pt-PT": "O tamanho do ficheiro pode ser demasiado pequeno e não ser um ficheiro binário válido",
+        "ru-RU": "Возможно, размер файла слишком мал, и это не является допустимым двоичным файлом",
+        "ja-JP": "ファイルサイズが小さすぎる可能性があり、有効なバイナリファイルではない可能性があります\r",
+        "de-DE": "Dateigröße ist möglicherweise zu klein und keine gültige Binärdatei",
+        "fr-FR": "La taille du fichier est peut-être trop petite, le fichier binaire n'est peut-être pas valide",
+        "ko-KR": "파일 크기가 너무 작아서 유효한 바이너리 파일이 아닐 수 있음",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(3242-3267)"
+        ],
+        "$id": 5874
+    },
+    "文件不可读": {
+        "en-US": "File is not readable",
+        "es-ES": "No se puede leer el archivo",
+        "ar-EG": "الملف غير قابل للقراءة\r",
+        "pt-PT": "Ficheiro não legível",
+        "ru-RU": "Файл недоступен для чтения",
+        "ja-JP": "ファイルが読み取り可能ではありません\r",
+        "de-DE": "Datei ist nicht lesbar",
+        "fr-FR": "Le fichier n'est pas lisible",
+        "ko-KR": "파일을 읽을 수 없음",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(3491-3500)"
+        ],
+        "$id": 5875
+    },
+    "文件不可执行，需要设置权限": {
+        "en-US": "File is not executable, need to set permissions",
+        "es-ES": "El archivo no es ejecutable, se necesita establecer permisos",
+        "ar-EG": "الملف غير قابل للتنفيذ، يجب تعيين الصلاحيات\r",
+        "pt-PT": "O ficheiro não é executável, é necessário definir permissões",
+        "ru-RU": "Файл не может быть выполнен, необходимо установить разрешения",
+        "ja-JP": "ファイルが実行可能ではなく、権限を設定する必要があります\r",
+        "de-DE": "Datei ist nicht ausführbar, Berechtigungen müssen gesetzt werden",
+        "fr-FR": "Le fichier n'est pas exécutable, permission à définir",
+        "ko-KR": "파일이 실행 가능하지 않으며 권한을 설정해야 함",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(3615-3632)"
+        ],
+        "$id": 5876
+    },
+    "文件哈希不匹配，期望: {expectedHash}, 实际: {actualHash}": {
+        "en-US": "File hash mismatch, expected: {expectedHash}, actual: {actualHash}",
+        "es-ES": "La suma de verificación del archivo no coincide, esperada: {expectedHash}, real: {actualHash}",
+        "ar-EG": "تجاوُز التحقّق من تجزئة الملف، التوقع: {expectedHash}، الحالي: {actualHash}\r",
+        "pt-PT": "O hash do ficheiro não corresponde, esperado: {expectedHash}, real: {actualHash}",
+        "ru-RU": "Хэш файла не совпадает, ожидаемый: {expectedHash}, актуальный: {actualHash}",
+        "ja-JP": "ファイルのハッシュが一致しません。期待値: {expectedHash}、実際: {actualHash}\r",
+        "de-DE": "Datei-Hash stimmt nicht überein, erwartet: {expectedHash}, tatsächlich: {actualHash}",
+        "fr-FR": "Le hachage du fichier ne correspond pas, attendu : {expectedHash}, réel : {actualHash}",
+        "ko-KR": "파일 해시가 일치하지 않음, 예상: {expectedHash}, 실제: {actualHash}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(3936-3984)"
+        ],
+        "$id": 5877
+    },
+    "无法计算文件哈希: {error}": {
+        "en-US": "Unable to calculate file hash: {error}",
+        "es-ES": "No se puede calcular la suma de verificación del archivo: {error}",
+        "ar-EG": "تعذّر حساب تجزئة الملف: {error}",
+        "pt-PT": "Impossível calcular o hash do ficheiro: {error}",
+        "ru-RU": "Не удается вычислить хэш файла: {error}",
+        "ja-JP": "ファイルハッシュを計算できません: {error}",
+        "de-DE": "Datei-Hash kann nicht berechnet werden: {error}",
+        "fr-FR": "Impossible de calculer le hachage du fichier : {error}",
+        "ko-KR": "파일 해시를 계산할 수 없음: {error}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(4178-4199)"
+        ],
+        "$id": 3080
+    },
+    "文件验证失败: {error}": {
+        "en-US": "File validation failed: {error}",
+        "es-ES": "La verificación del archivo falló: {error}\r",
+        "ar-EG": "فشل التحقق من الملف: {error}\r",
+        "pt-PT": "Falha na verificação do ficheiro: {error}\r",
+        "ru-RU": "Ошибка проверки файла: {error}",
+        "ja-JP": "ファイルの検証に失敗しました: {error}",
+        "de-DE": "Dateiüberprüfung fehlgeschlagen: {error}",
+        "fr-FR": "La validation du fichier a échoué : {error}\r",
+        "ko-KR": "파일 확인에 실패함: {error}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(4678-4697)"
+        ],
+        "$id": 3081
+    },
+    "检测到可执行文件但缺少执行权限": {
+        "en-US": "Executable file detected but execution permission is missing",
+        "es-ES": "Se detectó un archivo ejecutable pero falta el permiso de ejecución\r",
+        "ar-EG": "تم اكتشاف ملف تنفيذي ولكن تفتقر إلى صلاحيات التنفيذ\r",
+        "pt-PT": "Foi detetado um ficheiro executável, mas faltam permissões de execução\r",
+        "ru-RU": "Обнаружен исполняемый файл, но отсутствуют права на выполнение",
+        "ja-JP": "実行可能ファイルが検出されましたが、実行権限が不足しています",
+        "de-DE": "Ausführbare Datei erkannt, aber Ausführungsberechtigung fehlt",
+        "fr-FR": "Un fichier exécutable a été détecté mais les permissions d'exécution sont manquantes\r",
+        "ko-KR": "실행 파일이 감지되었지만 실행 권한이 없음",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(5238-5257)"
+        ],
+        "$id": 5880
+    },
+    "目录中未找到明显的可执行文件": {
+        "en-US": "No apparent executable file found in the directory",
+        "es-ES": "No se encontró ningún archivo ejecutable obvio en el directorio\r",
+        "ar-EG": "لا يوجد ملف تنفيذي واضح في الدليل\r",
+        "pt-PT": "Não foi encontrado nenhum ficheiro executável aparente no diretório\r",
+        "ru-RU": "В каталоге не найден очевидный исполняемый файл",
+        "ja-JP": "ディレクトリ内に明確な実行可能ファイルが見つかりません",
+        "de-DE": "Keine offensichtliche ausführbare Datei im Verzeichnis gefunden",
+        "fr-FR": "Aucun fichier exécutable évident n'a été trouvé dans le répertoire\r",
+        "ko-KR": "디렉토리에서 명확한 실행 파일을 찾을 수 없음",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(5641-5659)"
+        ],
+        "$id": 5881
+    },
+    "无法读取目录内容: {error}": {
+        "en-US": "Unable to read directory contents: {error}",
+        "es-ES": "No se puede leer el contenido del directorio: {error}\r",
+        "ar-EG": "تعذر قراءة محتوى الدليل: {error}\r",
+        "pt-PT": "Não é possível ler o conteúdo do diretório: {error}\r",
+        "ru-RU": "Невозможно прочитать содержимое каталога: {error}",
+        "ja-JP": "ディレクトリの内容を読み取れません: {error}",
+        "de-DE": "Verzeichnisinhalt konnte nicht gelesen werden: {error}",
+        "fr-FR": "Impossible de lire le contenu du répertoire : {error}\r",
+        "ko-KR": "디렉토리 내용을 읽을 수 없음: {error}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(5823-5844)",
+            "electron/runtime-services/filesystem/file-permission-manager.ts(7242-7263)"
+        ],
+        "$id": 5882
+    },
+    "文件类型可能不正确: {fileType}": {
+        "en-US": "File type may be incorrect: {fileType}",
+        "es-ES": "Es posible que el tipo de archivo no sea correcto: {fileType}\r",
+        "ar-EG": "من المحتمل أن نوع الملف غير صحيح: {fileType}\r",
+        "pt-PT": "O tipo de ficheiro pode estar incorreto: {fileType}\r",
+        "ru-RU": "Тип файла может быть неверным: {fileType}",
+        "ja-JP": "ファイル形式が正しくない可能性があります: {fileType}",
+        "de-DE": "Dateityp ist möglicherweise falsch: {fileType}",
+        "fr-FR": "Le type de fichier est peut-être incorrect : {fileType}\r",
+        "ko-KR": "파일 형식이 올바르지 않을 수 있음: {fileType}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(5930-5955)"
+        ],
+        "$id": 5883
+    },
+    "无法检查文件类型: {error}": {
+        "en-US": "Unable to check file type: {error}",
+        "es-ES": "No se puede comprobar el tipo de archivo: {error}\r",
+        "ar-EG": "يتعذر التحقق من نوع الملف: {error}\r",
+        "pt-PT": "Não é possível verificar o tipo de ficheiro: {error}\r",
+        "ru-RU": "Невозможно проверить тип файла: {error}",
+        "ja-JP": "ファイル形式を確認できません: {error}",
+        "de-DE": "Dateityp konnte nicht überprüft werden: {error}",
+        "fr-FR": "Impossible de vérifier le type de fichier : {error}\r",
+        "ko-KR": "파일 형식을 확인할 수 없음: {error}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(6117-6138)"
+        ],
+        "$id": 5884
+    },
+    "Windows系统上的无扩展名文件，可能需要.exe扩展名": {
+        "en-US": "File without extension on Windows system, may require .exe extension",
+        "es-ES": "Archivo sin extensión en el sistema Windows, quizás necesite la extensión .exe\r",
+        "ar-EG": "ملف بدون امتداد على نظام التشغيل Windows، قد يحتاج إلى امتداد .exe\r",
+        "pt-PT": "Ficheiro sem extensão no sistema Windows, pode necessitar da extensão .exe\r",
+        "ru-RU": "Файл без расширения в Windows, возможно, требует расширения .exe",
+        "ja-JP": "Windowsシステム上の拡張子なしファイルです。.exe拡張子が必要な場合があります",
+        "de-DE": "Datei ohne Erweiterung auf Windows-System, benötigt möglicherweise .exe-Erweiterung",
+        "fr-FR": "Fichier sans extension sur système Windows, l'extension .exe peut être requise\r",
+        "ko-KR": "Windows 시스템의 확장자 없는 파일은 .exe 확장자가 필요할 수 있음",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(6629-6662)"
+        ],
+        "$id": 5885
+    },
+    "目录中未找到.exe可执行文件": {
+        "en-US": "No .exe executable file found in the directory",
+        "es-ES": "No se encontró el archivo ejecutable .exe en el directorio\r",
+        "ar-EG": "لا يوجد ملف تنفيذي بامتداد .exe في الدليل\r",
+        "pt-PT": "Não foi encontrado nenhum ficheiro executável .exe no diretório\r",
+        "ru-RU": "В каталоге не найден исполняемый файл .exe",
+        "ja-JP": "ディレクトリ内に.exe実行可能ファイルが見つかりません",
+        "de-DE": "Keine .exe-Datei im Verzeichnis gefunden",
+        "fr-FR": "Aucun fichier exécutable .exe n'a été trouvé dans le répertoire\r",
+        "ko-KR": "디렉토리에서 .exe 실행 파일을 찾을 수 없음",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(7059-7078)"
+        ],
+        "$id": 5886
+    },
+    "Windows文件验证失败: {error}": {
+        "en-US": "Windows file validation failed: {error}",
+        "es-ES": "La verificación del archivo en Windows falló: {error}",
+        "ar-EG": "فشل التحقق من الملف على نظام التشغيل Windows: {error}",
+        "pt-PT": "Falha na verificação de ficheiro do Windows: {error}",
+        "ru-RU": "Ошибка проверки в Windows: {error}",
+        "ja-JP": "Windowsファイルの検証に失敗しました: {error}",
+        "de-DE": "Windows-Dateiüberprüfung fehlgeschlagen: {error}",
+        "fr-FR": "La validation du fichier Windows a échoué : {error}",
+        "ko-KR": "Windows 파일 확인에 실패함: {error}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(7447-7473)"
+        ],
+        "$id": 3082
+    },
+    "修复文件权限失败 {}: {}": {
+        "en-US": "Failed to fix file permissions {}: {}",
+        "es-ES": "Error al corregir permisos del archivo: {} {}\r",
+        "ar-EG": "فشل في إصلاح أذونات الملف: {} {}\r",
+        "pt-PT": "Falha ao corrigir permissões do ficheiro {}: {}\r",
+        "ru-RU": "Не удалось исправить разрешения файла {}: {}\r",
+        "ja-JP": "ファイルの権限修正に失敗しました {}: {}",
+        "de-DE": "Fehler beim Beheben der Dateiberechtigungen {}: {}",
+        "fr-FR": "Échec de la réparation des autorisations de fichier : {} {}\r",
+        "ko-KR": "파일 권한 수정 실패 {}: {}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(9215-9234)"
+        ],
+        "$id": 5890
+    },
+    "验证失败: {error}": {
+        "en-US": "Validation failed: {error}",
+        "es-ES": "Error de validación: {error}\r",
+        "ar-EG": "فشل التحقق: {error}\r",
+        "pt-PT": "Falha na validação: {error}\r",
+        "ru-RU": "Проверка не удалась: {error}\r",
+        "ja-JP": "検証に失敗しました: {error}",
+        "de-DE": "Validierung fehlgeschlagen: {error}",
+        "fr-FR": "Échec de la validation : {error}\r",
+        "ko-KR": "검증 실패: {error}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(9959-9976)"
+        ],
+        "$id": 5891
+    },
+    "获取文件信息失败: {error}": {
+        "en-US": "Failed to get file info: {error}",
+        "es-ES": "Error al obtener información del archivo: {error}\r",
+        "ar-EG": "فشل في الحصول على معلومات الملف: {error}\r",
+        "pt-PT": "Falha ao obter informações do ficheiro: {error}\r",
+        "ru-RU": "Не удалось получить информацию о файле: {error}\r",
+        "ja-JP": "ファイル情報の取得に失敗しました: {error}",
+        "de-DE": "Fehler beim Abrufen der Dateiinformationen: {error}",
+        "fr-FR": "Échec de l'obtention des informations sur le fichier : {error}\r",
+        "ko-KR": "파일 정보 가져오기 실패: {error}",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(10978-10999)"
+        ],
+        "$id": 3084
+    },
+    "Windows权限": {
+        "en-US": "Windows Permissions",
+        "es-ES": "Permisos de Windows\r",
+        "ar-EG": "أذونات ويندوز\r",
+        "pt-PT": "Permissões do Windows\r",
+        "ru-RU": "Разрешения Windows\r",
+        "ja-JP": "Windows権限",
+        "de-DE": "Windows-Berechtigungen",
+        "fr-FR": "Autorisations Windows\r",
+        "ko-KR": "Windows 권한",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(11178-11191)"
+        ],
+        "$id": 5893
+    },
+    "创建目录结构失败: ": {
+        "en-US": "Failed to create directory structure: ",
+        "es-ES": "Error al crear la estructura de directorios: \r",
+        "ar-EG": "فشل في إنشاء هيكل الدليل: \r",
+        "pt-PT": "Falha ao criar estrutura de diretórios: \r",
+        "ru-RU": "Не удалось создать структуру каталогов: \r",
+        "ja-JP": "ディレクトリ構造の作成に失敗しました: ",
+        "de-DE": "Fehler beim Erstellen der Verzeichnisstruktur: ",
+        "fr-FR": "Échec de la création de la structure du répertoire :\r",
+        "ko-KR": "디렉터리 구조 생성 실패: ",
+        "$files": [
+            "electron/runtime-services/filesystem/file-permission-manager.ts(12184-12198)"
+        ],
+        "$id": 5894
+    },
+    "完成": {
+        "en-US": "Completed",
+        "es-ES": "Completado\r",
+        "ar-EG": "تم الانتهاء\r",
+        "pt-PT": "Concluído\r",
+        "ru-RU": "Завершено\r",
+        "ja-JP": "完了\r",
+        "de-DE": "Abgeschlossen",
+        "fr-FR": "Terminé\r",
+        "ko-KR": "완료",
+        "$files": [
+            "electron/runtime-services/filesystem/organize-progress-tracker.ts(2581-2587)"
+        ],
+        "$id": 5895
+    },
+    "选中的文件中没有AI分析过的文件，请先进行AI分析": {
+        "en-US": "None of the selected files have been analyzed by AI; please perform AI analysis first.  ",
+        "es-ES": "No hay archivos analizados por IA en los archivos seleccionados; realice primero el análisis de IA.",
+        "ar-EG": "لا توجد ملفات تم تحليلها بواسطة الذكاء الاصطناعي في الملفات المحددة، يرجى إجراء تحليل الذكاء الاصطناعي أولاً",
+        "pt-PT": "Não há ficheiros analisados por IA nos ficheiros selecionados, por favor, realize primeiro a análise por IA",
+        "ru-RU": "В выбранных файлах нет файлов, проанализированных ИИ, сначала выполните анализ ИИ",
+        "ja-JP": "選択されたファイルにはAI分析済みのファイルが含まれていません。先にAI分析を行ってください",
+        "de-DE": "In den ausgewählten Dateien befinden sich keine von KI analysierten Dateien. Bitte führen Sie zunächst eine KI-Analyse durch.",
+        "fr-FR": "Aucun fichier sélectionné n'a été analysé par l'IA, veuillez d'abord effectuer une analyse IA",
+        "ko-KR": "선택한 파일 중 AI 분석이 완료된 파일이 없습니다. 먼저 AI 분석을 진행해 주세요.",
+        "$files": [
+            "electron/runtime-services/filesystem/organize-real-directory-service.ts(33403-33432)"
+        ],
+        "$id": 3421
+    },
+    "当前没有AI分析过的文件，请先在真实目录中勾选文件进行AI分析": {
+        "en-US": "There are currently no files analyzed by AI; please select files in the actual directory first for AI analysis.",
+        "es-ES": "Actualmente no hay archivos analizados por IA; seleccione primero archivos en el directorio real para realizar el análisis de IA.",
+        "ar-EG": "لا توجد ملفات تم تحليلها بواسطة الذكاء الاصطناعي حالياً، يرجى أولاً تحديد الملفات في الدليل الحقيقي لإجراء تحليل الذكاء الاصطناعي",
+        "pt-PT": "Não há atualmente ficheiros analisados por IA, por favor, selecione primeiro os ficheiros no diretório real para realizar a análise por IA",
+        "ru-RU": "В настоящее время нет файлов, проанализированных ИИ, сначала отметьте файлы в реальном каталоге для анализа ИИ",
+        "ja-JP": "現在、AI分析済みのファイルはありません。先に実ディレクトリでファイルを選択し、AI分析を行ってください",
+        "de-DE": "Derzeit liegen keine von KI analysierten Dateien vor. Bitte wählen Sie zunächst Dateien im echten Verzeichnis aus, um eine KI-Analyse durchzuführen.",
+        "fr-FR": "Aucun fichier analysé par l'IA n'est disponible pour le moment, veuillez d'abord sélectionner des fichiers dans le répertoire réel pour une analyse IA",
+        "ko-KR": "현재 AI 분석이 완료된 파일이 없습니다. 실제 디렉터리에서 파일을 선택하여 AI 분석을 먼저 진행해 주세요.",
+        "$files": [
+            "electron/runtime-services/filesystem/organize-real-directory-service.ts(33447-33482)"
+        ],
+        "$id": 3422
+    },
+    "找不到对应的工作空间: {path}": {
+        "en-US": "Cannot find the corresponding workspace: {path}",
+        "es-ES": "No se pudo encontrar el espacio de trabajo correspondiente: {path}",
+        "ar-EG": "لا يمكن العثور على مساحة العمل المقابلة: {path}",
+        "pt-PT": "O espaço de trabalho correspondente não foi encontrado: {path}",
+        "ru-RU": "Не удалось найти соответствующее рабочее пространство: {path}",
+        "ja-JP": "対応するワークスペースが見つかりません: {path}",
+        "de-DE": "Der entsprechende Arbeitsbereich kann nicht gefunden werden: {path}",
+        "fr-FR": "Espace de travail correspondant introuvable : {path}",
+        "ko-KR": "해당 작업 공간을 찾을 수 없습니다: {path}",
+        "$files": [
+            "electron/runtime-services/filesystem/organize-real-directory-service.ts(46212-46234)"
+        ],
+        "$id": 4280
+    },
+    "无法找到生成的缩略图文件 (prefix: {tempPrefix})": {
+        "en-US": "Cannot find generated thumbnail file (prefix: {tempPrefix})",
+        "es-ES": "No se puede encontrar el archivo de miniatura generado (prefijo: {tempPrefix})\r",
+        "ar-EG": "غير قادر على العثور على ملف الصورة المصغرة الذي تم إنشاؤه (المقدمة: {tempPrefix})\r",
+        "pt-PT": "Não foi possível encontrar o ficheiro de miniatura gerado (prefixo: {tempPrefix})\r",
+        "ru-RU": "Не удалось найти сгенерированный файл миниатюры (префикс: {tempPrefix})\r",
+        "ja-JP": "生成されたサムネイルファイルが見つかりません (プレフィックス: {tempPrefix})\r",
+        "de-DE": "Die generierte Miniaturbild-Datei konnte nicht gefunden werden (Präfix: {tempPrefix})",
+        "fr-FR": "Impossible de trouver le fichier miniature généré (préfixe : {tempPrefix})\r",
+        "ko-KR": "생성된 썸네일 파일을 찾을 수 없음 (접두사: {tempPrefix})",
+        "$files": [
+            "electron/runtime-services/filesystem/thumbnail-service.ts(13991-14030)"
+        ],
+        "$id": 5896
+    },
+    "文件不存在: {filePath}": {
+        "en-US": "File does not exist: {filePath}",
+        "es-ES": "El archivo no existe: {filePath}\r",
+        "ar-EG": "الملف غير موجود: {filePath}\r",
+        "pt-PT": "Ficheiro não existe: {filePath}\r",
+        "ru-RU": "Файл не существует: {filePath}\r",
+        "ja-JP": "ファイルが存在しません: {filePath}\r",
+        "de-DE": "Datei existiert nicht: {filePath}",
+        "fr-FR": "Le fichier n'existe pas : {filePath}\r",
+        "ko-KR": "파일이 존재하지 않음: {filePath}",
+        "$files": [
+            "electron/runtime-services/filesystem/thumbnail-service.ts(17174-17195)"
+        ],
+        "$id": 5897
+    },
+    "所有缩略图生成方法都失败": {
+        "en-US": "All thumbnail generation methods failed",
+        "es-ES": "Todos los métodos de generación de miniaturas fallaron",
+        "ar-EG": "جميع طرق إنشاء الصور المصغرة قد فشلت",
+        "pt-PT": "Todos os métodos de geração de miniaturas falharam",
+        "ru-RU": "Все методы генерации миниатюр не удались",
+        "ja-JP": "すべてのサムネイル生成方法が失敗しました",
+        "de-DE": "Alle Methoden zur Generierung von Miniaturbildern sind fehlgeschlagen",
+        "fr-FR": "Toutes les méthodes de génération des miniatures ont échoué",
+        "ko-KR": "모든 썸네일 생성 방법이 실패함",
+        "$files": [
+            "electron/runtime-services/filesystem/thumbnail-service.ts(18603-18619)"
+        ],
+        "$id": 5898
+    },
+    "视频": {
+        "en-US": "Video",
+        "es-ES": "Vídeo",
+        "ar-EG": "فيديو",
+        "pt-PT": "Vídeo",
+        "ru-RU": "Видео",
+        "ja-JP": "ビデオ",
+        "de-DE": "Videos",
+        "fr-FR": "Vidéo",
+        "ko-KR": "동영상",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(1433-1439)",
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(7447-7453)"
+        ],
+        "$id": 3369
+    },
+    "影视": {
+        "en-US": "Film & TV",
+        "es-ES": "Películas y series",
+        "ar-EG": "أفلام ومسلسلات",
+        "pt-PT": "Filmes e Séries",
+        "ru-RU": "Фильмы и сериалы",
+        "ja-JP": "映画・ドラマ",
+        "de-DE": "Filme & Serien",
+        "fr-FR": "Film et télévision",
+        "ko-KR": "영화 및 드라마",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(1481-1487)",
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(7477-7483)"
+        ],
+        "$id": 3370
+    },
+    "图片": {
+        "en-US": "Image",
+        "es-ES": "Imágenes",
+        "ar-EG": "صور",
+        "pt-PT": "Imagens",
+        "ru-RU": "Изображения",
+        "ja-JP": "画像",
+        "de-DE": "Bilder",
+        "fr-FR": "Image",
+        "ko-KR": "이미지",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(1695-1701)",
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(7588-7594)"
+        ],
+        "$id": 3371
+    },
+    "摄影照片": {
+        "en-US": "Photograph",
+        "es-ES": "Fotografía",
+        "ar-EG": "صور فوتوغرافية",
+        "pt-PT": "Fotografias",
+        "ru-RU": "Фотографии",
+        "ja-JP": "写真",
+        "de-DE": "Fotos",
+        "fr-FR": "Photo de photographie",
+        "ko-KR": "사진",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(1743-1751)",
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(7618-7626)"
+        ],
+        "$id": 3372
+    },
+    "照片": {
+        "en-US": "Photo",
+        "es-ES": "Fotos",
+        "ar-EG": "صور",
+        "pt-PT": "Fotos",
+        "ru-RU": "Фото",
+        "ja-JP": "写真",
+        "de-DE": "Fotos",
+        "fr-FR": "Photo",
+        "ko-KR": "사진",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(1793-1799)"
+        ],
+        "$id": 3373
+    },
+    "电子书": {
+        "en-US": "E-book",
+        "es-ES": "Libros electrónicos",
+        "ar-EG": "كتب إلكترونية",
+        "pt-PT": "Livros eletrónicos",
+        "ru-RU": "Электронные книги",
+        "ja-JP": "電子書籍",
+        "de-DE": "E-Books",
+        "fr-FR": "Livre électronique",
+        "ko-KR": "전자책",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(2013-2020)",
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(7783-7790)"
+        ],
+        "$id": 3374
+    },
+    "小说": {
+        "en-US": "Novel",
+        "es-ES": "Novelas",
+        "ar-EG": "روايات",
+        "pt-PT": "Romances",
+        "ru-RU": "Романы",
+        "ja-JP": "小説",
+        "de-DE": "Romane",
+        "fr-FR": "Roman",
+        "ko-KR": "소설",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(2062-2068)",
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(7814-7820)"
+        ],
+        "$id": 3375
+    },
+    "文档": {
+        "en-US": "Document",
+        "es-ES": "Documentos",
+        "ar-EG": "مستندات",
+        "pt-PT": "Documentos",
+        "ru-RU": "Документы",
+        "ja-JP": "ドキュメント",
+        "de-DE": "Dokumente",
+        "fr-FR": "Document",
+        "ko-KR": "문서",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(2276-2282)",
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(7973-7979)"
+        ],
+        "$id": 3376
+    },
+    "音频": {
+        "en-US": "Audio",
+        "es-ES": "Audio",
+        "ar-EG": "صوت",
+        "pt-PT": "Áudio",
+        "ru-RU": "Аудио",
+        "ja-JP": "音声",
+        "de-DE": "Audio",
+        "fr-FR": "Audio",
+        "ko-KR": "오디오",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(2456-2462)"
+        ],
+        "$id": 3377
+    },
+    "脚本": {
+        "en-US": "Script",
+        "es-ES": "Script",
+        "ar-EG": "سكريبت",
+        "pt-PT": "Script",
+        "ru-RU": "Скрипт",
+        "ja-JP": "スクリプト",
+        "de-DE": "Skript",
+        "fr-FR": "Script",
+        "ko-KR": "스크립트",
+        "$files": [
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(2674-2680)",
+            "electron/runtime-services/filesystem/virtual-directory-service.ts(8088-8094)"
+        ],
+        "$id": 3306
+    }
+}

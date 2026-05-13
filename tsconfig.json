@@ -1,0 +1,55 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "baseUrl": ".",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "composite": false,
+    "paths": {
+      "@/*": ["src/*"],
+      "@app/*": ["src/*"],
+      "@src/*": ["src/*"],
+      "@lib/*": ["src/renderer/lib/*"],
+      "@renderer/*": ["src/renderer/*"],
+      "@hooks/*": ["src/renderer/hooks/*"],
+      "@shared/*": ["src/shared/*"],
+      "@types/*": ["src/types/*"],
+      "@components/*": ["src/renderer/components/*"],
+      "@stores/*": ["src/renderer/stores/*"],
+      "@assets/*": ["src/renderer/assets/*"],
+      "@yonuc/core-engine": ["../../packages/core-engine/src"],
+      "@yonuc/core-engine/*": ["../../packages/core-engine/src/*"],
+      "@yonuc/electron-llamaIndex-service": ["../../packages/electron-llamaIndex-service/src"],
+      "@yonuc/electron-llamaIndex-service/*": ["../../packages/electron-llamaIndex-service/src/*"],
+      "@yonuc/types": ["../../packages/types/src"],
+      "@yonuc/types/*": ["../../packages/types/src/*"],
+      "@yonuc/shared": ["../../packages/shared/src"],
+      "@yonuc/shared/*": ["../../packages/shared/src/*"],
+      "@yonuc/shared/languages": ["../../packages/shared/languages"],
+      "@yonuc/server": ["../server/src"],
+      "@yonuc/server/*": ["../server/src/*"]
+    }
+  },
+  "include": [
+    "src/global.d.ts",
+    "src/shared/types/electron-api.d.ts",
+    "src/**/*",
+    "src/**/*.json",
+    "*.d.ts",
+    "src/shared/types/*.d.ts",
+    "../../packages/electron-llamaIndex-service/src/**/*",
+    "../server/src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "out",
+    ".vite",
+    "src/electron/runtime-services/examples/**/*",
+    "src/electron/tools/**/*",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ]
+}

@@ -1,0 +1,152 @@
+{
+    "未知错误": {
+        "en-US": "unknown error",
+        "es-ES": "error desconocido",
+        "ar-EG": "خطأ غير معروف",
+        "pt-PT": "erro desconhecido",
+        "ru-RU": "неизвестная ошибка",
+        "ja-JP": "不明なエラー",
+        "de-DE": "unbekannter Fehler",
+        "fr-FR": "erreur inconnue",
+        "ko-KR": "알 수 없는 오류",
+        "$files": [
+            "renderer/lib/external-link.ts(1857-1865)"
+        ],
+        "$id": 4463
+    },
+    "无法打开链接: {message}": {
+        "en-US": "Unable to open link: {message}",
+        "es-ES": "No se puede abrir el enlace: {message}",
+        "ar-EG": "غير قادر على فتح الرابط: {message}",
+        "pt-PT": "Não foi possível abrir o link: {message}",
+        "ru-RU": "Невозможно открыть ссылку: {message}",
+        "ja-JP": "リンクを開けません: {message}",
+        "de-DE": "Link kann nicht geöffnet werden: {message}",
+        "fr-FR": "Impossible d'ouvrir le lien : {message}",
+        "ko-KR": "링크를 열 수 없습니다: {message}",
+        "$files": [
+            "renderer/lib/external-link.ts(1962-1983)"
+        ],
+        "$id": 4464
+    },
+    "复制链接": {
+        "en-US": "Copy link",
+        "es-ES": "Copiar enlace",
+        "ar-EG": "نسخ الوصلة",
+        "pt-PT": "Copiar link",
+        "ru-RU": "Скопировать ссылку",
+        "ja-JP": "リンクをコピー",
+        "de-DE": "Link kopieren",
+        "fr-FR": "Copier le lien",
+        "ko-KR": "링크 복사",
+        "$files": [
+            "renderer/lib/external-link.ts(2075-2083)"
+        ],
+        "$id": 4465
+    },
+    "链接已复制到剪贴板": {
+        "en-US": "Link copied to clipboard",
+        "es-ES": "Enlace copiado al portapapeles",
+        "ar-EG": "تم نسخ الرابط إلى الحافظة",
+        "pt-PT": "Link copiado para a área de transferência",
+        "ru-RU": "Ссылка скопирована в буфер обмена",
+        "ja-JP": "リンクがクリップボードにコピーされました",
+        "de-DE": "Link in die Zwischenablage kopiert",
+        "fr-FR": "Lien copié dans le presse-papier",
+        "ko-KR": "링크가 클립보드에 복사되었습니다.",
+        "$files": [
+            "renderer/lib/external-link.ts(2181-2194)"
+        ],
+        "$id": 4466
+    },
+    "经典蓝": {
+        "en-US": "Classic Blue  ",
+        "es-ES": "Azul clásico",
+        "ar-EG": "أزرق كلاسيكي  ",
+        "pt-PT": "Azul Clássico  ",
+        "ru-RU": "Классический синий  ",
+        "ja-JP": "クラシックブルー  ",
+        "de-DE": "Klassisches Blau  ",
+        "fr-FR": "Bleu classique  ",
+        "ko-KR": "클래식 블루  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(600-607)"
+        ],
+        "$id": 5453
+    },
+    "优雅紫": {
+        "en-US": "Elegant Purple  ",
+        "es-ES": "Púrpura elegante",
+        "ar-EG": "أرجواني أنيق  ",
+        "pt-PT": "Roxo Elegante  ",
+        "ru-RU": "Элегантный фиолетовый  ",
+        "ja-JP": "エレガントパープル  ",
+        "de-DE": "Elegantes Violett  ",
+        "fr-FR": "Violet élégant  ",
+        "ko-KR": "우아한 보라  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(2634-2641)"
+        ],
+        "$id": 5449
+    },
+    "自然绿": {
+        "en-US": "Natural Green  ",
+        "es-ES": "Verde natural",
+        "ar-EG": "أخضر طبيعي  ",
+        "pt-PT": "Verde Natural  ",
+        "ru-RU": "Природный зеленый  ",
+        "ja-JP": "ナチュラルグリーン  ",
+        "de-DE": "Natürliches Grün  ",
+        "fr-FR": "Vert naturel  ",
+        "ko-KR": "내추럴 그린  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(4307-4314)"
+        ],
+        "$id": 5447
+    },
+    "活力橙": {
+        "en-US": "Vibrant Orange",
+        "es-ES": "Naranja vibrante",
+        "ar-EG": "برتقالي حيوي",
+        "pt-PT": "Laranja Vibrante",
+        "ru-RU": "Энергичный оранжевый",
+        "ja-JP": "エネルギッシュオレンジ",
+        "de-DE": "Lebendiges Orange",
+        "fr-FR": "Orange dynamique",
+        "ko-KR": "활기찬 오렌지",
+        "$files": [
+            "renderer/lib/theme-config.ts(6002-6009)"
+        ],
+        "$id": 5454
+    },
+    "玫瑰红": {
+        "en-US": "Rose Red  ",
+        "es-ES": "Rosa rojo",
+        "ar-EG": "أحمر وردي  ",
+        "pt-PT": "Vermelho Rosa  ",
+        "ru-RU": "Розово-красный  ",
+        "ja-JP": "ローズレッド  ",
+        "de-DE": "Rosarot  ",
+        "fr-FR": "Rouge rosé  ",
+        "ko-KR": "로즈 레드  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(7661-7668)"
+        ],
+        "$id": 5451
+    },
+    "中性灰": {
+        "en-US": "Neutral Gray  ",
+        "es-ES": "Gris neutro",
+        "ar-EG": "رمادي محايد  ",
+        "pt-PT": "Cinza Neutro  ",
+        "ru-RU": "Нейтральный серый  ",
+        "ja-JP": "ニュートラルグレー  ",
+        "de-DE": "Neutrales Grau  ",
+        "fr-FR": "Gris neutre  ",
+        "ko-KR": "중성 회색  ",
+        "$files": [
+            "renderer/lib/theme-config.ts(9335-9342)"
+        ],
+        "$id": 5443
+    }
+}

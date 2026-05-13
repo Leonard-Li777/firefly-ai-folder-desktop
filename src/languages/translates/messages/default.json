@@ -1,0 +1,1781 @@
+{
+    "AI 服务正在初始化中，请稍候再试": {
+        "en-US": "The AI ​​service is being initialized, please try again later.",
+        "es-ES": "El servicio de IA se está inicializando. Vuelva a intentarlo más tarde.",
+        "ar-EG": "جاري تهيئة خدمة الذكاء الاصطناعي، يرجى المحاولة مرة أخرى لاحقًا.",
+        "pt-PT": "O serviço AI está sendo inicializado, tente novamente mais tarde.",
+        "ru-RU": "Служба AI инициализируется, повторите попытку позже.",
+        "ja-JP": "AIサービスを初期化しています。しばらくしてからもう一度お試しください。",
+        "de-DE": "Der AI-Dienst wird initialisiert. Bitte versuchen Sie es später erneut.",
+        "fr-FR": "Le service AI est en cours d'initialisation, veuillez réessayer plus tard.",
+        "ko-KR": "AI 서비스를 초기화 중입니다. 나중에 다시 시도해 주세요.",
+        "$files": [
+            "electron/main.ts(55281-55302)",
+            "electron/main.ts(72556-72577)",
+            "electron/main.ts(78563-78584)"
+        ],
+        "$id": 4346
+    },
+    "授权校验失败，请联网或激活企业版后再执行此操作": {
+        "en-US": "Authorization verification failed. Please connect to the Internet or activate the enterprise version before performing this operation.",
+        "es-ES": "Error en la verificación de autorización. Conéctese a Internet o active la versión empresarial antes de realizar esta operación.",
+        "ar-EG": "Authorization verification failed. يرجى الاتصال بالإنترنت أو تنشيط إصدار المؤسسة قبل إجراء هذه العملية.",
+        "pt-PT": "A verificação da autorização falhou. Conecte-se à Internet ou ative a versão empresarial antes de realizar esta operação.",
+        "ru-RU": "Проверка авторизации не удалась. Перед выполнением этой операции подключитесь к Интернету или активируйте корпоративную версию.",
+        "ja-JP": "認可の検証に失敗しました。この操作を実行する前に、インターネットに接続するか、エンタープライズ バージョンをアクティベートしてください。",
+        "de-DE": "Die Autorisierungsüberprüfung ist fehlgeschlagen. Bitte stellen Sie eine Verbindung zum Internet her oder aktivieren Sie die Enterprise-Version, bevor Sie diesen Vorgang ausführen.",
+        "fr-FR": "La vérification de l'autorisation a échoué. Veuillez vous connecter à Internet ou activer la version entreprise avant d'effectuer cette opération.",
+        "ko-KR": "승인 확인에 실패했습니다. 이 작업을 수행하기 전에 인터넷에 연결하거나 기업 버전을 활성화하십시오.",
+        "$files": [
+            "electron/main.ts(66720-66747)",
+            "electron/main.ts(69060-69087)",
+            "electron/main.ts(71387-71414)",
+            "electron/main.ts(72129-72156)"
+        ],
+        "$id": 4398
+    },
+    "整理真实目录服务未初始化": {
+        "en-US": "Collate real directory service not initialized",
+        "es-ES": "Servicio de directorio real de clasificación no inicializado",
+        "ar-EG": "لم تتم تهيئة خدمة تجميع الدليل الحقيقي",
+        "pt-PT": "Agrupar serviço de diretório real não inicializado",
+        "ru-RU": "Служба каталогов по сортировке не инициализирована",
+        "ja-JP": "Collat​​e 実ディレクトリ サービスが初期化されていません",
+        "de-DE": "Der Sortierdienst für echte Verzeichnisse wurde nicht initialisiert",
+        "fr-FR": "Assembler un service d'annuaire réel non initialisé",
+        "ko-KR": "실제 디렉터리 서비스 대조가 초기화되지 않았습니다.",
+        "$files": [
+            "electron/main.ts(72710-72726)"
+        ],
+        "$id": 4347
+    },
+    "授权校验未通过，请确保已连接互联网并重试": {
+        "en-US": "Authorization verification failed, please make sure you are connected to the Internet and try again",
+        "es-ES": "La verificación de autorización falló, asegúrese de estar conectado a Internet e inténtelo nuevamente",
+        "ar-EG": "فشل التحقق من التفويض، يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى",
+        "pt-PT": "Falha na verificação de autorização. Verifique se você está conectado à Internet e tente novamente",
+        "ru-RU": "Проверка авторизации не удалась. Убедитесь, что вы подключены к Интернету, и повторите попытку.",
+        "ja-JP": "認証の検証に失敗しました。インターネットに接続していることを確認して、もう一度お試しください。",
+        "de-DE": "Die Autorisierungsüberprüfung ist fehlgeschlagen. Bitte stellen Sie sicher, dass Sie mit dem Internet verbunden sind, und versuchen Sie es erneut",
+        "fr-FR": "La vérification de l'autorisation a échoué. Veuillez vous assurer que vous êtes connecté à Internet et réessayer.",
+        "ko-KR": "승인 확인에 실패했습니다. 인터넷에 연결되어 있는지 확인한 후 다시 시도해 주세요.",
+        "$files": [
+            "electron/main.ts(76778-76802)"
+        ],
+        "$id": 4399
+    },
+    "网络连接失败": {
+        "en-US": "Network connection failed",
+        "es-ES": "La conexión de red falló",
+        "ar-EG": "فشل الاتصال بالشبكة",
+        "pt-PT": "Falha na conexão de rede",
+        "ru-RU": "Не удалось подключиться к сети",
+        "ja-JP": "ネットワーク接続に失敗しました",
+        "de-DE": "Netzwerkverbindung fehlgeschlagen",
+        "fr-FR": "La connexion réseau a échoué",
+        "ko-KR": "네트워크 연결 실패",
+        "$files": [
+            "electron/main.ts(76970-76980)"
+        ],
+        "$id": 4400
+    },
+    "正在准备启动应用...": {
+        "en-US": "Preparing to launch the application...",
+        "es-ES": "Preparando el inicio de la aplicación...",
+        "ar-EG": "جارٍ الاستعداد لبدء تشغيل التطبيق...",
+        "pt-PT": "A preparar o lançamento da aplicação...",
+        "ru-RU": "Подготовка к запуску приложения...",
+        "ja-JP": "アプリケーションの起動準備中...",
+        "de-DE": "Die Anwendung wird vorbereitet...",
+        "fr-FR": "Préparation du lancement de l'application...",
+        "ko-KR": "앱 시작 준비 중...",
+        "$files": [
+            "renderer/App.tsx(2522-2537)"
+        ],
+        "$id": 6219
+    },
+    "正在准备迁移模型...": {
+        "en-US": "Preparing to migrate model...",
+        "es-ES": "Preparándose para migrar el modelo...",
+        "ar-EG": "جارٍ التحضير لترحيل النموذج...",
+        "pt-PT": "Preparando para migrar o modelo...",
+        "ru-RU": "Подготовка к переносу модели...",
+        "ja-JP": "モデルの移行を準備しています...",
+        "de-DE": "Modellmigration wird vorbereitet...",
+        "fr-FR": "Préparation de la migration du modèle...",
+        "ko-KR": "모델 마이그레이션 준비 중...",
+        "$files": [
+            "renderer/App.tsx(3279-3294)"
+        ],
+        "$id": 3519
+    },
+    "正在迁移系统内置模型...": {
+        "en-US": "Migrating system built-in models...",
+        "es-ES": "Migrando modelos integrados del sistema...",
+        "ar-EG": "ترحيل النماذج المضمنة في النظام...",
+        "pt-PT": "Migrando modelos integrados do sistema...",
+        "ru-RU": "Миграция встроенных моделей системы...",
+        "ja-JP": "システム組み込みモデルを移行しています...",
+        "de-DE": "Im System integrierte Modelle werden migriert...",
+        "fr-FR": "Migration des modèles intégrés au système...",
+        "ko-KR": "시스템 내장 모델 마이그레이션 중...",
+        "$files": [
+            "renderer/App.tsx(3431-3448)"
+        ],
+        "$id": 3520
+    },
+    "正在优先迁移当前选中的模型...": {
+        "en-US": "Migrating the currently selected model first...",
+        "es-ES": "Migrando primero el modelo seleccionado actualmente...",
+        "ar-EG": "يتم الآن ترحيل النموذج المحدد حاليًا أولاً...",
+        "pt-PT": "Migrando primeiro o modelo atualmente selecionado...",
+        "ru-RU": "Сначала нужно перенести выбранную модель...",
+        "ja-JP": "現在選択されているモデルを最初に移行しています...",
+        "de-DE": "Zuerst wird das aktuell ausgewählte Modell migriert...",
+        "fr-FR": "Migration d'abord du modèle actuellement sélectionné...",
+        "ko-KR": "현재 선택한 모델을 먼저 마이그레이션하는 중...",
+        "$files": [
+            "renderer/App.tsx(3548-3568)"
+        ],
+        "$id": 3521
+    },
+    "核心模型迁移成功！还有 {count} 个模型将在后台继续迁移，你可以随时点击“刷新模型列表”查看状态。": {
+        "en-US": "The core model migration was successful! There are {count} models that will continue to be migrated in the background. You can click \"Refresh Model List\" to check the status at any time.",
+        "es-ES": "¡La migración del modelo central fue exitosa! Hay {count} modelos que se seguirán migrando en segundo plano. Puede hacer clic en \"Actualizar lista de modelos\" para comprobar el estado en cualquier momento.",
+        "ar-EG": "كانت عملية ترحيل النموذج الأساسي ناجحة! هناك {count} نماذج سيستمر ترحيلها في الخلفية. يمكنك النقر فوق \"تحديث قائمة النماذج\" للتحقق من الحالة في أي وقت.",
+        "pt-PT": "A migração do modelo principal foi bem-sucedida! Existem modelos {count} que continuarão a ser migrados em segundo plano. Você pode clicar em \"Atualizar lista de modelos\" para verificar o status a qualquer momento.",
+        "ru-RU": "Миграция базовой модели прошла успешно! Есть модели {count}, которые будут по-прежнему перенесены в фоновом режиме. Вы можете нажать «Обновить список моделей», чтобы проверить статус в любое время.",
+        "ja-JP": "コアモデルの移行は成功しました。バックグラウンドで引き続き移行される {count} モデルがあります。 「モデルリストを更新」をクリックすると、いつでもステータスを確認できます。",
+        "de-DE": "Die Migration des Kernmodells war erfolgreich! Es gibt {count} Modelle, die weiterhin im Hintergrund migriert werden. Sie können jederzeit auf „Modellliste aktualisieren“ klicken, um den Status zu überprüfen.",
+        "fr-FR": "La migration du modèle de base a été réussie ! Il existe {count} modèles qui continueront à être migrés en arrière-plan. Vous pouvez cliquer sur « Actualiser la liste des modèles » pour vérifier l'état à tout moment.",
+        "ko-KR": "핵심 모델 마이그레이션이 성공했습니다! 백그라운드에서 계속 마이그레이션되는 {count} 모델이 있습니다. 언제든지 \"모델 목록 새로 고침\"을 클릭하여 상태를 확인할 수 있습니다.",
+        "$files": [
+            "renderer/App.tsx(3838-3894)"
+        ],
+        "$id": 3522
+    },
+    "核心模型迁移成功！": {
+        "en-US": "The core model migration was successful!",
+        "es-ES": "¡La migración del modelo central fue exitosa!",
+        "ar-EG": "كانت عملية ترحيل النموذج الأساسي ناجحة!",
+        "pt-PT": "A migração do modelo principal foi bem-sucedida!",
+        "ru-RU": "Миграция базовой модели прошла успешно!",
+        "ja-JP": "コアモデルの移行は成功しました。",
+        "de-DE": "Die Migration des Kernmodells war erfolgreich!",
+        "fr-FR": "La migration du modèle de base a été réussie !",
+        "ko-KR": "핵심 모델 마이그레이션이 성공했습니다!",
+        "$files": [
+            "renderer/App.tsx(3958-3971)"
+        ],
+        "$id": 3523
+    },
+    "所有模型迁移任务已完成": {
+        "en-US": "All model migration tasks have been completed",
+        "es-ES": "Se han completado todas las tareas de migración del modelo.",
+        "ar-EG": "تم إكمال جميع مهام ترحيل النماذج",
+        "pt-PT": "Todas as tarefas de migração de modelo foram concluídas",
+        "ru-RU": "Все задачи по миграции модели выполнены.",
+        "ja-JP": "すべてのモデル移行タスクが完了しました",
+        "de-DE": "Alle Modellmigrationsaufgaben wurden abgeschlossen",
+        "fr-FR": "Toutes les tâches de migration du modèle ont été terminées",
+        "ko-KR": "모든 모델 마이그레이션 작업이 완료되었습니다.",
+        "$files": [
+            "renderer/App.tsx(4097-4112)"
+        ],
+        "$id": 3524
+    },
+    "模型迁移过程中发生错误，请检查磁盘空间或权限": {
+        "en-US": "An error occurred during model migration, please check disk space or permissions",
+        "es-ES": "Se produjo un error durante la migración del modelo; verifique el espacio en disco o los permisos",
+        "ar-EG": "حدث خطأ أثناء ترحيل النموذج، يرجى التحقق من مساحة القرص أو الأذونات",
+        "pt-PT": "Ocorreu um erro durante a migração do modelo. Verifique o espaço em disco ou as permissões",
+        "ru-RU": "Во время миграции модели произошла ошибка. Проверьте место на диске или разрешения.",
+        "ja-JP": "モデルの移行中にエラーが発生しました。ディスク容量または権限を確認してください。",
+        "de-DE": "Bei der Modellmigration ist ein Fehler aufgetreten. Bitte überprüfen Sie den Speicherplatz oder die Berechtigungen",
+        "fr-FR": "Une erreur s'est produite lors de la migration du modèle, veuillez vérifier l'espace disque ou les autorisations",
+        "ko-KR": "모델 마이그레이션 중 오류가 발생했습니다. 디스크 공간이나 권한을 확인하세요.",
+        "$files": [
+            "renderer/App.tsx(4216-4242)"
+        ],
+        "$id": 3525
+    },
+    "模型迁移进度：已完成 {count} 个，剩余 {remaining} 个": {
+        "en-US": "Model migration progress: {count} completed, {remaining} remaining",
+        "es-ES": "Progreso de la migración del modelo: {count} completado, {remaining} restante",
+        "ar-EG": "تقدم ترحيل النموذج: {count} اكتمل، {remaining} متبقي",
+        "pt-PT": "Progresso da migração do modelo: {count} concluído, {remaining} restante",
+        "ru-RU": "Ход миграции модели: {count} завершено, осталось {remaining}",
+        "ja-JP": "モデル移行の進行状況: {count} 完了、残り {remaining}",
+        "de-DE": "Modellmigrationsfortschritt: {count} abgeschlossen, {remaining} übrig",
+        "fr-FR": "Progression de la migration du modèle : {count} terminé, {remaining} restant",
+        "ko-KR": "모델 마이그레이션 진행률: {count} 완료, {remaining} 남음",
+        "$files": [
+            "renderer/App.tsx(4637-4678)"
+        ],
+        "$id": 3526
+    },
+    "正在检测应用配置...": {
+        "en-US": "Detecting application configuration...",
+        "es-ES": "Detectando la configuración de la aplicación...",
+        "ar-EG": "جارٍ اكتشاف إعدادات التطبيق...",
+        "pt-PT": "A detetar a configuração da aplicação...",
+        "ru-RU": "Обнаружение конфигурации приложения...",
+        "ja-JP": "アプリケーション設定を検出中...",
+        "de-DE": "Die Anwendungskonfiguration wird erkannt...",
+        "fr-FR": "Détection de la configuration de l'application...",
+        "ko-KR": "앱 설정 감지 중...",
+        "$files": [
+            "renderer/App.tsx(5039-5054)"
+        ],
+        "$id": 6223
+    },
+    "正在验证授权状态...": {
+        "en-US": "Verifying authorization status...",
+        "es-ES": "Verificando el estado de la autorización...",
+        "ar-EG": "جارٍ التحقق من حالة الترخيص...",
+        "pt-PT": "Verificando o status da autorização...",
+        "ru-RU": "Проверка статуса авторизации...",
+        "ja-JP": "認証ステータスを確認しています...",
+        "de-DE": "Autorisierungsstatus wird überprüft...",
+        "fr-FR": "Vérification de l'état d'autorisation...",
+        "ko-KR": "승인 상태 확인 중...",
+        "$files": [
+            "renderer/App.tsx(9050-9065)"
+        ],
+        "$id": 3527
+    },
+    "正在初始化应用环境...": {
+        "en-US": "Initializing application environment...",
+        "es-ES": "Inicializando el entorno de la aplicación...",
+        "ar-EG": "جارٍ تهيئة بيئة التطبيق...",
+        "pt-PT": "Inicializando o ambiente do aplicativo...",
+        "ru-RU": "Инициализация среды приложения...",
+        "ja-JP": "アプリケーション環境を初期化しています...",
+        "de-DE": "Anwendungsumgebung wird initialisiert...",
+        "fr-FR": "Initialisation de l'environnement d'application...",
+        "ko-KR": "애플리케이션 환경 초기화 중...",
+        "$files": [
+            "renderer/App.tsx(16163-16179)"
+        ],
+        "$id": 3528
+    },
+    "正在初始化AI服务...": {
+        "en-US": "Initializing AI services...",
+        "es-ES": "Inicializando el servicio de IA...",
+        "ar-EG": "جارٍ تهيئة خدمة الذكاء الاصطناعي...",
+        "pt-PT": "A inicializar o serviço de IA...",
+        "ru-RU": "Инициализация ИИ сервиса...",
+        "ja-JP": "AIサービスを初期化中...",
+        "de-DE": "Der KI-Dienst wird initialisiert...",
+        "fr-FR": "Initialisation du service IA...",
+        "ko-KR": "AI 서비스 초기화 중...",
+        "$files": [
+            "renderer/App.tsx(16326-16342)"
+        ],
+        "$id": 6220
+    },
+    "正在加载应用配置...": {
+        "en-US": "Loading application configuration...",
+        "es-ES": "Cargando la configuración de la aplicación...",
+        "ar-EG": "جارٍ تحميل إعدادات التطبيق...",
+        "pt-PT": "A carregar a configuração da aplicação...",
+        "ru-RU": "Загрузка конфигурации приложения...",
+        "ja-JP": "アプリケーション設定を読み込み中...",
+        "de-DE": "Die Anwendungskonfiguration wird geladen...",
+        "fr-FR": "Chargement de la configuration de l'application...",
+        "ko-KR": "앱 설정 로드 중...",
+        "$files": [
+            "renderer/App.tsx(16613-16628)"
+        ],
+        "$id": 6221
+    },
+    "正在检查 AI 状态...": {
+        "en-US": "Checking AI status...",
+        "es-ES": "Comprobando el estado de la IA...",
+        "ar-EG": "جارٍ التحقق من حالة الذكاء الاصطناعي...",
+        "pt-PT": "A verificar o estado da IA...",
+        "ru-RU": "Проверка состояния ИИ...",
+        "ja-JP": "AI状態を確認中...",
+        "de-DE": "Der KI-Status wird überprüft...",
+        "fr-FR": "Vérification de l'état de l'IA...",
+        "ko-KR": "AI 상태 확인 중...",
+        "$files": [
+            "renderer/App.tsx(16681-16698)"
+        ],
+        "$id": 6222
+    },
+    "正在初始化应用": {
+        "en-US": "Initializing application",
+        "es-ES": "Inicializando la aplicación",
+        "ar-EG": "جارٍ تهيئة التطبيق",
+        "pt-PT": "A inicializar a aplicação",
+        "ru-RU": "Инициализация приложения",
+        "ja-JP": "アプリケーションを初期化中",
+        "de-DE": "Die Anwendung wird initialisiert",
+        "fr-FR": "Initialisation de l'application",
+        "ko-KR": "앱 초기화 중",
+        "$files": [
+            "renderer/App.tsx(19218-19229)"
+        ],
+        "$id": 6224
+    },
+    "检测配置阶段...": {
+        "en-US": "Configuration detection phase...",
+        "es-ES": "Fase de detección de configuración...",
+        "ar-EG": "مرحلة اكتشاف الإعدادات...",
+        "pt-PT": "Fase de deteção de configuração...",
+        "ru-RU": "Этап обнаружения конфигурации...",
+        "ja-JP": "設定検出フェーズ...",
+        "de-DE": "Konfigurationsprüfungsphase...",
+        "fr-FR": "Phase de détection de configuration...",
+        "ko-KR": "설정 감지 단계...",
+        "$files": [
+            "renderer/App.tsx(19232-19245)"
+        ],
+        "$id": 6225
+    },
+    "正在迁移模型": {
+        "en-US": "Migrating model",
+        "es-ES": "Modelo migratorio",
+        "ar-EG": "نموذج الهجرة",
+        "pt-PT": "Modelo de migração",
+        "ru-RU": "Миграция модели",
+        "ja-JP": "移行モデル",
+        "de-DE": "Migrationsmodell",
+        "fr-FR": "Migration du modèle",
+        "ko-KR": "모델 마이그레이션",
+        "$files": [
+            "renderer/App.tsx(23204-23214)"
+        ],
+        "$id": 3529
+    },
+    "正在准备迁移，请稍候...": {
+        "en-US": "Preparing for migration, please wait...",
+        "es-ES": "Preparándose para la migración, espere...",
+        "ar-EG": "التحضير للترحيل، يرجى الانتظار...",
+        "pt-PT": "Preparando a migração, aguarde...",
+        "ru-RU": "Подготовка к миграции, пожалуйста, подождите...",
+        "ja-JP": "移行の準備中です。お待​​ちください...",
+        "de-DE": "Die Migration wird vorbereitet, bitte warten...",
+        "fr-FR": "Préparation de la migration, veuillez patienter...",
+        "ko-KR": "마이그레이션을 준비 중입니다. 잠시 기다려 주세요...",
+        "$files": [
+            "renderer/App.tsx(23367-23384)"
+        ],
+        "$id": 3530
+    },
+    "请勿关闭应用": {
+        "en-US": "Don't close the app",
+        "es-ES": "No cierres la aplicación",
+        "ar-EG": "لا تغلق التطبيق",
+        "pt-PT": "Não feche o aplicativo",
+        "ru-RU": "Не закрывайте приложение",
+        "ja-JP": "アプリを閉じないでください",
+        "de-DE": "Schließen Sie die App nicht",
+        "fr-FR": "Ne fermez pas l'application",
+        "ko-KR": "앱을 닫지 마세요",
+        "$files": [
+            "renderer/App.tsx(23796-23806)"
+        ],
+        "$id": 3531
+    },
+    "阿里魔搭社区（下载快，仅支持文本）": {
+        "en-US": "Ali ModelScope Community (fast download, text-only support)  ",
+        "es-ES": "Comunidad ModelScope de Alibaba (descarga rápida, solo admite texto)  ",
+        "ar-EG": "مجتمع ModelScope من علي بابا (التنزيل سريع، يدعم النصوص فقط)  ",
+        "pt-PT": "Comunidade Alibaba ModelScope (download rápido, suporta apenas texto)  ",
+        "ru-RU": "Сообщество Alibaba ModelScope (быстрая загрузка, поддерживает только текст)  ",
+        "ja-JP": "阿里魔搭コミュニティ（ダウンロードが速く、テキストのみ対応）",
+        "de-DE": "Ali Modao Community (schneller Download, nur Textunterstützung)  ",
+        "fr-FR": "Communauté Alibaba ModelScope (téléchargement rapide, supporte uniquement le texte)  ",
+        "ko-KR": "알리 마다 커뮤니티(다운로드 속도 빠름, 텍스트만 지원)",
+        "$files": [
+            "shared/utils/model-constants.ts(305-326)"
+        ],
+        "$id": 2931
+    },
+    "中国大陆地区访问速度极快，建议Ollama官方模型下载慢的国内用户优先选择。但阉割了模型的图片和音频分析能力，预计萤核v2.0.0版会致力于解决此问题": {
+        "en-US": "Extremely fast access speed within Mainland China. Recommended as the first choice for domestic users experiencing slow downloads from Ollama's official models. However, image and audio analysis capabilities of the models have been removed. It is expected that Yinghe v2.0.0 will focus on resolving this issue.  ",
+        "es-ES": "Velocidad de acceso extremadamente rápida en la región continental de China. Se recomienda a los usuarios locales que experimenten lentitud al descargar modelos oficiales de Ollama que opten por esta opción en primer lugar. Sin embargo, se han eliminado las capacidades del modelo para análisis de imágenes y audio; se prevé que la versión v2.0.0 de Yinghe aborde este problema.  ",
+        "ar-EG": "سرعة الوصول منه عالية جدًّا في مناطق الصين القارية، ويُنصح به للمستخدمين المحليين الذين يعانون من بطء تنزيل النماذج الرسمية من Ollama. لكن تم تعطيل قدرة النموذج على تحليل الصور والصوت، ومن المتوقع أن تعمل نسخة Yinghe v2.0.0 على حل هذه المشكلة.  ",
+        "pt-PT": "Acesso extremamente rápido na China continental. Recomenda-se que utilizadores na China que tenham dificuldades com downloads lentos de modelos oficiais do Ollama optem prioritariamente por esta opção. No entanto, as capacidades do modelo para análise de imagens e áudio foram removidas; espera-se que a versão v2.0.0 do Yinghe se foque em resolver este problema.  ",
+        "ru-RU": "Очень высокая скорость доступа в материковом Китае. Рекомендуется пользователям из Китая, у которых медленно скачиваются официальные модели Ollama. Однако возможности анализа изображений и аудио в моделях отключены. Ожидается, что версия Yinghe v2.0.0 будет направлена на решение этой проблемы.  ",
+        "ja-JP": "中国本土からのアクセス速度が非常に速いため、Ollama公式モデルのダウンロードが遅い国内ユーザーはまずこちらをご利用ください。ただし、モデルの画像および音声分析機能が制限されています。螢核v2.0.0版ではこの問題の解決に注力する予定です。",
+        "de-DE": "Für Nutzer in Festlandchina extrem schnelle Zugriffsgeschwindigkeit; empfohlen für chinesische Nutzer, deren Download von offiziellen Ollama-Modellen langsam ist. Allerdings wurden die Bild- und Audioanalysefunktionen des Modells entfernt. Es wird erwartet, dass die FireCore v2.0.0-Version dieses Problem lösen wird.  ",
+        "fr-FR": "Extrêmement rapide d'accès en Chine continentale ; recommandé en priorité aux utilisateurs situés en Chine qui rencontrent des vitesses de téléchargement lentes avec les modèles officiels d'Ollama. Toutefois, les capacités du modèle en analyse d'images et d'audio ont été désactivées ; la version v2.0.0 de Yinghe devrait résoudre ce problème.  ",
+        "ko-KR": "중국 본토 지역에서의 접속 속도가 매우 빠르며, Ollama 공식 모델 다운로드 속도가 느린 중국 내 사용자에게 우선적으로 추천합니다. 다만 모델의 이미지 및 오디오 분석 기능이 제거되어 있으며, 잉허(Yinghe) v2.0.0 버전에서 이 문제 해결에 집중할 예정입니다.",
+        "$files": [
+            "shared/utils/model-constants.ts(349-438)"
+        ],
+        "$id": 2932
+    },
+    "Ollama 官方（支持模型完整能力）": {
+        "en-US": "Ollama Official (full model capabilities supported)  ",
+        "es-ES": "Oficial de Ollama (admite todas las capacidades del modelo)  ",
+        "ar-EG": "Ollama الرسمي (يدعم القدرات الكاملة للنموذج)  ",
+        "pt-PT": "Ollama Oficial (suporta todas as capacidades do modelo)  ",
+        "ru-RU": "Официальный сайт Ollama (поддерживает полный функционал моделей)  ",
+        "ja-JP": "Ollama 公式（モデルのフル機能をサポート）",
+        "de-DE": "Ollama Offiziell (volle Modellfunktionalität unterstützt)  ",
+        "fr-FR": "Ollama officiel (capacités complètes du modèle prises en charge)  ",
+        "ko-KR": "Ollama 공식(모델의 전체 기능 지원)",
+        "$files": [
+            "shared/utils/model-constants.ts(484-507)"
+        ],
+        "$id": 2933
+    },
+    "Ollama 官方模型库。在中国部分地区可能需要稳定的网络连接。但支持模型的完整能力：文本、图片和音频分析": {
+        "en-US": "Ollama's official model library. May require a stable internet connection in certain regions of China. Supports full model capabilities: text, image, and audio analysis.",
+        "es-ES": "Biblioteca oficial de modelos de Ollama. Puede requerir una conexión de red estable en algunas regiones de China. Admite todas las capacidades del modelo: análisis de texto, imágenes y audio.",
+        "ar-EG": "مكتبة النماذج الرسمية من Ollama. قد تتطلب اتصالًا شبكيًّا مستقرًّا في بعض مناطق الصين. لكنها تدعم القدرات الكاملة للنموذج: تحليل النصوص والصور والصوت.",
+        "pt-PT": "Biblioteca oficial de modelos do Ollama. Pode exigir uma ligação de rede estável em algumas regiões da China. Suporta todas as capacidades do modelo: análise de texto, imagens e áudio.",
+        "ru-RU": "Официальная библиотека моделей Ollama. В некоторых регионах Китая может потребоваться стабильное сетевое соединение. Поддерживает полный функционал моделей: анализ текста, изображений и аудио.",
+        "ja-JP": "Ollama公式モデルライブラリ。中国の一部地域では安定したネットワーク接続が必要となる場合があります。ただし、テキスト・画像・音声分析などモデルのフル機能をサポートしています。",
+        "de-DE": "Offizielles Ollama-Modellverzeichnis. In einigen Regionen Chinas möglicherweise eine stabile Internetverbindung erforderlich. Unterstützt jedoch die vollständige Funktionalität der Modelle: Text-, Bild- und Audioanalyse",
+        "fr-FR": "Bibliothèque officielle des modèles Ollama. Peut nécessiter une connexion réseau stable dans certaines régions de Chine. Prend en charge toutes les fonctionnalités complètes du modèle : analyse de texte, d'images et d'audio.",
+        "ko-KR": "Ollama 공식 모델 라이브러리입니다. 중국 일부 지역에서는 안정적인 네트워크 연결이 필요할 수 있습니다. 하지만 텍스트, 이미지 및 오디오 분석 등 모델의 전체 기능을 지원합니다.",
+        "$files": [
+            "shared/utils/model-constants.ts(530-597)"
+        ],
+        "$id": 2934
+    },
+    "Hugging Face": {
+        "en-US": "Hugging Face",
+        "es-ES": "Hugging Face",
+        "ar-EG": "هوجينغ فيس  ",
+        "pt-PT": "Hugging Face",
+        "ru-RU": "Hugging Face",
+        "ja-JP": "ハギング・フェイス",
+        "de-DE": "Hugging Face",
+        "fr-FR": "Hugging Face",
+        "ko-KR": "허깅 페이스",
+        "$files": [
+            "shared/utils/model-constants.ts(648-664)"
+        ],
+        "$id": 2935
+    },
+    "全球最大的 AI 模型社区。拥有最全面的模型收藏，但部分镜像可能在特定地区访问受限。": {
+        "en-US": "The world's largest AI model community. It offers the most comprehensive collection of models, but some mirrors may be inaccessible in certain regions.",
+        "es-ES": "La comunidad de modelos de IA más grande del mundo. Cuenta con la colección de modelos más completa, aunque algunos espejos podrían tener acceso restringido en determinadas regiones.",
+        "ar-EG": "أكبر مجتمع عالمي لنماذج الذكاء الاصطناعي. يحتوي على أشمل مجموعة من النماذج، لكن قد يُحظر الوصول إلى بعض المرايا في مناطق معيّنة.",
+        "pt-PT": "A maior comunidade global de modelos de IA. Possui a coleção mais abrangente de modelos, mas alguns espelhos podem ter o acesso restrito em determinadas regiões.",
+        "ru-RU": "Крупнейшее в мире сообщество ИИ-моделей. Обладает наиболее полной коллекцией моделей, однако доступ к некоторым зеркалам может быть ограничен в определённых регионах.",
+        "ja-JP": "世界最大のAIモデルコミュニティ。最も包括的なモデルコレクションを擁していますが、一部のミラーは特定の地域でアクセス制限されている場合があります。",
+        "de-DE": "Die weltweit größte KI-Modell-Community. Bietet die umfassendste Sammlung von Modellen, aber einige Mirror-Seiten könnten in bestimmten Regionen eingeschränkt zugänglich sein.",
+        "fr-FR": "La plus grande communauté mondiale de modèles d’IA. Elle dispose de la collection de modèles la plus complète, mais certains miroirs peuvent être inaccessibles dans certaines régions.",
+        "ko-KR": "세계 최대의 AI 모델 커뮤니티. 가장 포괄적인 모델 컬렉션을 보유하고 있으나, 일부 미러는 특정 지역에서 접근이 제한될 수 있습니다.",
+        "$files": [
+            "shared/utils/model-constants.ts(687-743)"
+        ],
+        "$id": 2936
+    },
+    "检测到迁移备份文件，正在恢复...": {
+        "en-US": "Migration backup file detected, restoring...",
+        "es-ES": "Archivo de copia de seguridad de migración detectado, restaurando...",
+        "ar-EG": "تم اكتشاف ملف النسخ الاحتياطي للترحيل، جارٍ الاستعادة...",
+        "pt-PT": "Arquivo de backup de migração detectado, restaurando...",
+        "ru-RU": "Обнаружен файл резервной копии миграции, восстановление...",
+        "ja-JP": "移行バックアップ ファイルが検出されました。復元しています...",
+        "de-DE": "Migrationssicherungsdatei erkannt, wird wiederhergestellt...",
+        "fr-FR": "Fichier de sauvegarde de migration détecté, restauration...",
+        "ko-KR": "마이그레이션 백업 파일이 감지되었습니다. 복원 중...",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(1473-1494)"
+        ],
+        "$id": 3532
+    },
+    "数据库已从备份恢复": {
+        "en-US": "Database restored from backup",
+        "es-ES": "Base de datos restaurada desde la copia de seguridad",
+        "ar-EG": "تمت استعادة قاعدة البيانات من النسخة الاحتياطية",
+        "pt-PT": "Banco de dados restaurado do backup",
+        "ru-RU": "База данных восстановлена ​​из резервной копии",
+        "ja-JP": "バックアップからデータベースを復元",
+        "de-DE": "Datenbank aus Sicherung wiederhergestellt",
+        "fr-FR": "Base de données restaurée à partir d'une sauvegarde",
+        "ko-KR": "백업에서 복원된 데이터베이스",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(1972-1985)"
+        ],
+        "$id": 3533
+    },
+    "恢复备份失败": {
+        "en-US": "Restoring backup failed",
+        "es-ES": "Error al restaurar la copia de seguridad",
+        "ar-EG": "فشلت استعادة النسخة الاحتياطية",
+        "pt-PT": "Falha ao restaurar o backup",
+        "ru-RU": "Восстановление резервной копии не удалось",
+        "ja-JP": "バックアップの復元に失敗しました",
+        "de-DE": "Das Wiederherstellen des Backups ist fehlgeschlagen",
+        "fr-FR": "La restauration de la sauvegarde a échoué",
+        "ko-KR": "백업 복원 실패",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(2076-2086)"
+        ],
+        "$id": 3534
+    },
+    "数据库初始化失败": {
+        "en-US": "Database initialization failed",
+        "es-ES": "La inicialización de la base de datos falló",
+        "ar-EG": "فشلت تهيئة قاعدة البيانات",
+        "pt-PT": "Falha na inicialização do banco de dados",
+        "ru-RU": "Инициализация базы данных не удалась",
+        "ja-JP": "データベースの初期化に失敗しました",
+        "de-DE": "Die Datenbankinitialisierung ist fehlgeschlagen",
+        "fr-FR": "L'initialisation de la base de données a échoué",
+        "ko-KR": "데이터베이스 초기화 실패",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(2916-2928)"
+        ],
+        "$id": 3535
+    },
+    "删除备份文件失败": {
+        "en-US": "Failed to delete backup file",
+        "es-ES": "No se pudo eliminar el archivo de respaldo",
+        "ar-EG": "فشل في حذف ملف النسخة الاحتياطية",
+        "pt-PT": "Falha ao excluir o arquivo de backup",
+        "ru-RU": "Не удалось удалить файл резервной копии",
+        "ja-JP": "バックアップファイルの削除に失敗しました",
+        "de-DE": "Die Sicherungsdatei konnte nicht gelöscht werden",
+        "fr-FR": "Échec de la suppression du fichier de sauvegarde",
+        "ko-KR": "백업 파일을 삭제하지 못했습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(3549-3561)"
+        ],
+        "$id": 3536
+    },
+    "数据库备份已创建: {path}": {
+        "en-US": "Database backup created: {path}",
+        "es-ES": "Copia de seguridad de la base de datos creada: {path}",
+        "ar-EG": "تم إنشاء نسخة احتياطية لقاعدة البيانات: {path}",
+        "pt-PT": "Backup do banco de dados criado: {path}",
+        "ru-RU": "Резервная копия базы данных создана: {path}",
+        "ja-JP": "データベースのバックアップが作成されました: {path}",
+        "de-DE": "Datenbanksicherung erstellt: {path}",
+        "fr-FR": "Sauvegarde de base de données créée : {path}",
+        "ko-KR": "생성된 데이터베이스 백업: {path}",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(4072-4092)"
+        ],
+        "$id": 3537
+    },
+    "创建数据库备份失败": {
+        "en-US": "Failed to create database backup",
+        "es-ES": "No se pudo crear la copia de seguridad de la base de datos",
+        "ar-EG": "فشل في إنشاء نسخة احتياطية لقاعدة البيانات",
+        "pt-PT": "Falha ao criar backup do banco de dados",
+        "ru-RU": "Не удалось создать резервную копию базы данных.",
+        "ja-JP": "データベースのバックアップの作成に失敗しました",
+        "de-DE": "Datenbanksicherung konnte nicht erstellt werden",
+        "fr-FR": "Échec de la création d'une sauvegarde de la base de données",
+        "ko-KR": "데이터베이스 백업을 생성하지 못했습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(4215-4228)"
+        ],
+        "$id": 3538
+    },
+    "需要数据库迁移，正在创建备份...": {
+        "en-US": "Database migration required, creating backup...",
+        "es-ES": "Se requiere migración de base de datos, creación de copia de seguridad...",
+        "ar-EG": "مطلوب ترحيل قاعدة البيانات، وإنشاء نسخة احتياطية...",
+        "pt-PT": "Migração de banco de dados necessária, criação de backup...",
+        "ru-RU": "Требуется миграция базы данных, создание резервной копии...",
+        "ja-JP": "データベースの移行が必要です。バックアップを作成しています...",
+        "de-DE": "Datenbankmigration erforderlich, Backup erstellen...",
+        "fr-FR": "Migration de base de données requise, création de sauvegarde...",
+        "ko-KR": "데이터베이스 마이그레이션이 필요합니다. 백업을 만드는 중...",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(4681-4702)"
+        ],
+        "$id": 3539
+    },
+    "迁移成功，已删除备份": {
+        "en-US": "Migration successful, backup deleted",
+        "es-ES": "Migración exitosa, copia de seguridad eliminada",
+        "ar-EG": "تم الترحيل بنجاح، وتم حذف النسخة الاحتياطية",
+        "pt-PT": "Migração bem-sucedida, backup excluído",
+        "ru-RU": "Миграция прошла успешно, резервная копия удалена.",
+        "ja-JP": "移行は成功しました、バックアップは削除されました",
+        "de-DE": "Migration erfolgreich, Backup gelöscht",
+        "fr-FR": "Migration réussie, sauvegarde supprimée",
+        "ko-KR": "마이그레이션이 완료되었습니다. 백업이 삭제되었습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(4858-4872)"
+        ],
+        "$id": 3574
+    },
+    "数据库迁移失败": {
+        "en-US": "Database migration failed",
+        "es-ES": "La migración de la base de datos falló",
+        "ar-EG": "فشل ترحيل قاعدة البيانات",
+        "pt-PT": "Falha na migração do banco de dados",
+        "ru-RU": "Миграция базы данных не удалась",
+        "ja-JP": "データベースの移行に失敗しました",
+        "de-DE": "Die Datenbankmigration ist fehlgeschlagen",
+        "fr-FR": "La migration de la base de données a échoué",
+        "ko-KR": "데이터베이스 마이그레이션 실패",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(4957-4968)"
+        ],
+        "$id": 3878
+    },
+    "正在执行迁移版本 {version}: {name}": {
+        "en-US": "Executing migration version {version}: {name}",
+        "es-ES": "Ejecutando la versión de migración {version}: {name}",
+        "ar-EG": "تنفيذ إصدار الترحيل {version}: {name}",
+        "pt-PT": "Executando versão de migração {version}: {name}",
+        "ru-RU": "Выполнение версии миграции {version}: {name}",
+        "ja-JP": "移行バージョン {version} を実行しています: {name}",
+        "de-DE": "Migrationsversion {version} wird ausgeführt: {name}",
+        "fr-FR": "Exécution de la version de migration {version} : {name}",
+        "ko-KR": "마이그레이션 버전 {version} 실행 중: {name}",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(5527-5557)"
+        ],
+        "$id": 3914
+    },
+    "迁移版本 {version} 完成": {
+        "en-US": "Migration version {version} completed",
+        "es-ES": "Versión de migración {version} completada",
+        "ar-EG": "اكتمل إصدار الترحيل {version}.",
+        "pt-PT": "Versão de migração {version} concluída",
+        "ru-RU": "Миграция версии {version} завершена",
+        "ja-JP": "移行バージョン {version} が完了しました",
+        "de-DE": "Migrationsversion {version} abgeschlossen",
+        "fr-FR": "Version de migration {version} terminée",
+        "ko-KR": "마이그레이션 버전 {version}이(가) 완료되었습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(5862-5883)"
+        ],
+        "$id": 3919
+    },
+    "迁移版本 {version} 失败": {
+        "en-US": "Migrating version {version} failed",
+        "es-ES": "Error al migrar la versión {version}",
+        "ar-EG": "فشل ترحيل الإصدار {version}.",
+        "pt-PT": "Falha na migração da versão {version}",
+        "ru-RU": "Не удалось перенести версию {version}.",
+        "ja-JP": "バージョン {version} の移行に失敗しました",
+        "de-DE": "Die Migration der Version {version} ist fehlgeschlagen",
+        "fr-FR": "La migration de la version {version} a échoué",
+        "ko-KR": "버전 {version} 마이그레이션에 실패했습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(6012-6033)"
+        ],
+        "$id": 3920
+    },
+    "执行数据库迁移失败": {
+        "en-US": "Failed to perform database migration",
+        "es-ES": "No se pudo realizar la migración de la base de datos",
+        "ar-EG": "فشل تنفيذ ترحيل قاعدة البيانات",
+        "pt-PT": "Falha ao realizar a migração do banco de dados",
+        "ru-RU": "Не удалось выполнить миграцию базы данных",
+        "ja-JP": "データベース移行の実行に失敗しました",
+        "de-DE": "Die Datenbankmigration konnte nicht durchgeführt werden",
+        "fr-FR": "Échec de la migration de la base de données",
+        "ko-KR": "데이터베이스 마이그레이션을 수행하지 못했습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(6235-6248)"
+        ],
+        "$id": 3921
+    },
+    "数据库升级失败\\n\\n错误原因: {error}\\n\\n您的原始数据已安全备份到:\\n{path}\\n\\n请尝试重新启动，系统将自动从备份恢复并重新升级。": {
+        "en-US": "Database upgrade failed\\n\\nError reason: {error}\\n\\nYour original data has been safely backed up to:\\n{path}\\n\\nPlease try to restart, the system will automatically restore from the backup and re-upgrade.",
+        "es-ES": "Error en la actualización de la base de datos\\n\\nMotivo del error: {error}\\n\\nSe realizó una copia de seguridad de sus datos originales en:\\n{path}\\n\\nIntente reiniciar, el sistema se restaurará automáticamente a partir de la copia de seguridad y se volverá a actualizar.",
+        "ar-EG": "فشلت ترقية قاعدة البيانات\\n\\nسبب الخطأ: {error}\\n\\nتم إجراء نسخ احتياطي لبياناتك الأصلية بشكل آمن إلى:\\n{path}\\n\\nالرجاء محاولة إعادة التشغيل، وسيقوم النظام تلقائيًا باستعادة النسخة الاحتياطية وإعادة الترقية.",
+        "pt-PT": "Falha na atualização do banco de dados\\n\\nMotivo do erro: {error}\\n\\nSeus dados originais foram armazenados em backup com segurança em:\\n{path}\\n\\nTente reiniciar, o sistema restaurará automaticamente a partir do backup e atualizará novamente.",
+        "ru-RU": "Не удалось обновить базу данных.\\n\\nПричина ошибки: {error}\\n\\nВаши исходные данные были безопасно скопированы в:\\n{path}\\n\\nПожалуйста, попробуйте перезагрузить систему, система автоматически восстановится из резервной копии и повторно обновится.",
+        "ja-JP": "データベースのアップグレードに失敗しました\\n\\nエラーの理由: {error}\\n\\n元のデータは次の場所に安全にバックアップされました:\\n{path}\\n\\n再起動してください。システムは自動的にバックアップから復元され、再アップグレードされます。",
+        "de-DE": "Datenbank-Upgrade fehlgeschlagen\\n\\nFehlergrund: {error}\\n\\nIhre ursprünglichen Daten wurden sicher gesichert unter:\\n{path}\\n\\nBitte versuchen Sie einen Neustart. Das System wird automatisch aus der Sicherung wiederhergestellt und erneut aktualisiert.",
+        "fr-FR": "Échec de la mise à niveau de la base de données\\n\\nRaison de l'erreur : {error}\\n\\nVos données d'origine ont été sauvegardées en toute sécurité vers :\\n{path}\\n\\nVeuillez essayer de redémarrer, le système restaurera automatiquement à partir de la sauvegarde et effectuera une nouvelle mise à niveau.",
+        "ko-KR": "데이터베이스 업그레이드 실패\\n\\n오류 이유: {error}\\n\\n원래 데이터가 다음 위치에 안전하게 백업되었습니다.\\n{path}\\n\\n다시 시작해 보십시오. 시스템이 자동으로 백업에서 복원되고 다시 업그레이드됩니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(6632-6713)"
+        ],
+        "$id": 3954
+    },
+    "数据库升级失败": {
+        "en-US": "Database upgrade failed",
+        "es-ES": "Error en la actualización de la base de datos",
+        "ar-EG": "فشلت ترقية قاعدة البيانات",
+        "pt-PT": "Falha na atualização do banco de dados",
+        "ru-RU": "Обновление базы данных не удалось",
+        "ja-JP": "データベースのアップグレードに失敗しました",
+        "de-DE": "Das Datenbank-Upgrade ist fehlgeschlagen",
+        "fr-FR": "La mise à niveau de la base de données a échoué",
+        "ko-KR": "데이터베이스 업그레이드 실패",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(7111-7122)",
+            "electron/runtime-services/database/database-service.ts(7143-7154)"
+        ],
+        "$id": 3955
+    },
+    "重新启动": {
+        "en-US": "Restart",
+        "es-ES": "Reanudar",
+        "ar-EG": "إعادة تشغيل",
+        "pt-PT": "Reiniciar",
+        "ru-RU": "Перезапуск",
+        "ja-JP": "再起動",
+        "de-DE": "Neustart",
+        "fr-FR": "Redémarrage",
+        "ko-KR": "다시 시작",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(7201-7209)"
+        ],
+        "$id": 3956
+    },
+    "退出应用": {
+        "en-US": "Exit application",
+        "es-ES": "Salir de la aplicación",
+        "ar-EG": "الخروج من التطبيق",
+        "pt-PT": "Sair do aplicativo",
+        "ru-RU": "Выйти из приложения",
+        "ja-JP": "アプリケーションを終了する",
+        "de-DE": "Anwendung beenden",
+        "fr-FR": "Quitter l'application",
+        "ko-KR": "애플리케이션 종료",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(7212-7220)",
+            "electron/runtime-services/database/database-service.ts(8318-8326)"
+        ],
+        "$id": 3974
+    },
+    "检测到旧版数据库 (1.x.x)\\n\\n本应用 2.0 版本不再支持直接从旧版本升级数据库。\\n\\n请执行以下操作之一：\\n1. 先安装并运行 1.3.2 版本完成过渡升级，然后再安装 2.0 版本。\\n2. 手动删除旧的数据库文件（yonuc-ai-folder.db），重新启动应用以创建全新的 2.2 架构。\\n\\n应用现在将关闭。": {
+        "en-US": "Old version of database (1.x.x) detected\\n\\nVersion 2.0 of this application no longer supports upgrading the database directly from the old version. \\n\\nPlease perform one of the following operations:\\n1. Install and run version 1.3.2 first to complete the transition upgrade, and then install version 2.0. \\n2. Manually delete the old database file (yonuc-ai-folder.db) and restart the application to create a new 2.2 architecture. \\n\\nThe application will now close.",
+        "es-ES": "Se detectó una versión anterior de la base de datos (1.x.x).\\n\\nLa versión 2.0 de esta aplicación ya no admite la actualización de la base de datos directamente desde la versión anterior. \\n\\nRealice una de las siguientes operaciones:\\n1. Primero instale y ejecute la versión 1.3.2 para completar la actualización de transición y luego instale la versión 2.0. \\n2. Elimine manualmente el archivo de base de datos antiguo (yonuc-ai-folder.db) y reinicie la aplicación para crear una nueva arquitectura 2.2. \\n\\nLa aplicación se cerrará ahora.",
+        "ar-EG": "تم اكتشاف إصدار قديم من قاعدة البيانات (1.x.x)\\n\\nالإصدار 2.0 من هذا التطبيق لم يعد يدعم ترقية قاعدة البيانات مباشرة من الإصدار القديم. \\n\\nالرجاء إجراء إحدى العمليات التالية:\\n1. قم بتثبيت الإصدار 1.3.2 وتشغيله أولاً لإكمال ترقية النقل، ثم قم بتثبيت الإصدار 2.0. \\n2. احذف ملف قاعدة البيانات القديم يدويًا (yonuc-ai-folder.db) وأعد تشغيل التطبيق لإنشاء بنية 2.2 جديدة. \\n\\nسيتم إغلاق التطبيق الآن.",
+        "pt-PT": "Versão antiga do banco de dados (1.x.x) detectada\\n\\nA versão 2.0 deste aplicativo não suporta mais a atualização do banco de dados diretamente da versão antiga. \\n\\nPor favor, execute uma das seguintes operações:\\n1. Instale e execute a versão 1.3.2 primeiro para concluir a atualização de transição e, em seguida, instale a versão 2.0. \\n2. Exclua manualmente o arquivo de banco de dados antigo (yonuc-ai-folder.db) e reinicie o aplicativo para criar uma nova arquitetura 2.2. \\n\\nO aplicativo será fechado agora.",
+        "ru-RU": "Обнаружена старая версия базы данных (1.x.x).\\n\\nВерсия 2.0 этого приложения больше не поддерживает обновление базы данных непосредственно из старой версии. \\n\\nПожалуйста, выполните одну из следующих операций:\\n1. Сначала установите и запустите версию 1.3.2, чтобы завершить переходное обновление, а затем установите версию 2.0. \\n2. Вручную удалите старый файл базы данных (yonuc-ai-folder.db) и перезапустите приложение, чтобы создать новую архитектуру 2.2. \\n\\nПриложение закроется.",
+        "ja-JP": "古いバージョンのデータベース (1.x.x) が検出されました\\n\\nこのアプリケーションのバージョン 2.0 では、古いバージョンからのデータベースの直接アップグレードはサポートされなくなりました。 \\n\\n次のいずれかの操作を実行してください:\\n1.まずバージョン 1.3.2 をインストールして実行して移行アップグレードを完了し、次にバージョン 2.0 をインストールします。 \\n2.古いデータベース ファイル (yonuc-ai-folder.db) を手動で削除し、アプリケーションを再起動して新しい 2.2 アーキテクチャを作成します。 \\n\\nアプリケーションは終了します。",
+        "de-DE": "Alte Version der Datenbank (1.x.x) erkannt\\n\\nVersion 2.0 dieser Anwendung unterstützt kein direktes Upgrade der Datenbank von der alten Version mehr. \\n\\nBitte führen Sie einen der folgenden Vorgänge aus:\\n1. Installieren und führen Sie zuerst Version 1.3.2 aus, um das Übergangs-Upgrade abzuschließen, und installieren Sie dann Version 2.0. \\n2. Löschen Sie manuell die alte Datenbankdatei (yonuc-ai-folder.db) und starten Sie die Anwendung neu, um eine neue 2.2-Architektur zu erstellen. \\n\\nDie Anwendung wird jetzt geschlossen.",
+        "fr-FR": "Ancienne version de la base de données (1.x.x) détectée\\n\\nLa version 2.0 de cette application ne prend plus en charge la mise à niveau de la base de données directement à partir de l'ancienne version. \\n\\nVeuillez effectuer l'une des opérations suivantes :\\n1. Installez et exécutez d'abord la version 1.3.2 pour terminer la mise à niveau de transition, puis installez la version 2.0. \\n2. Supprimez manuellement l'ancien fichier de base de données (yonuc-ai-folder.db) et redémarrez l'application pour créer une nouvelle architecture 2.2. \\n\\nL'application va maintenant se fermer.",
+        "ko-KR": "이전 버전의 데이터베이스(1.x.x)가 감지되었습니다.\\n\\n이 애플리케이션의 버전 2.0은 더 이상 이전 버전에서 직접 데이터베이스를 업그레이드하는 것을 지원하지 않습니다. \\n\\n다음 작업 중 하나를 수행하십시오.\\n1. 먼저 버전 1.3.2를 설치하고 실행하여 전환 업그레이드를 완료한 다음 버전 2.0을 설치하세요. \\n2. 기존 데이터베이스 파일(yonuc-ai-folder.db)을 수동으로 삭제하고 애플리케이션을 다시 시작하여 새로운 2.2 아키텍처를 생성합니다. \\n\\n이제 애플리케이션이 닫힙니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(7713-7886)"
+        ],
+        "$id": 3975
+    },
+    "数据库版本不兼容": {
+        "en-US": "Database version is incompatible",
+        "es-ES": "La versión de la base de datos es incompatible",
+        "ar-EG": "إصدار قاعدة البيانات غير متوافق",
+        "pt-PT": "A versão do banco de dados é incompatível",
+        "ru-RU": "Версия базы данных несовместима",
+        "ja-JP": "データベースのバージョンに互換性がありません",
+        "de-DE": "Die Datenbankversion ist nicht kompatibel",
+        "fr-FR": "La version de la base de données est incompatible",
+        "ko-KR": "데이터베이스 버전이 호환되지 않습니다",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(8226-8238)"
+        ],
+        "$id": 3979
+    },
+    "数据库版本过旧": {
+        "en-US": "Database version is too old",
+        "es-ES": "La versión de la base de datos es demasiado antigua.",
+        "ar-EG": "إصدار قاعدة البيانات قديم جدًا",
+        "pt-PT": "A versão do banco de dados é muito antiga",
+        "ru-RU": "Версия базы данных слишком старая",
+        "ja-JP": "データベースのバージョンが古すぎます",
+        "de-DE": "Die Datenbankversion ist zu alt",
+        "fr-FR": "La version de la base de données est trop ancienne",
+        "ko-KR": "데이터베이스 버전이 너무 오래되었습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(8259-8270)"
+        ],
+        "$id": 3981
+    },
+    "清理分析队列孤儿项失败": {
+        "en-US": "Cleaning up analysis queue orphan items failed",
+        "es-ES": "Error al limpiar los elementos huérfanos de la cola de análisis",
+        "ar-EG": "فشل تنظيف العناصر اليتيمة لقائمة انتظار التحليل",
+        "pt-PT": "Falha na limpeza de itens órfãos da fila de análise",
+        "ru-RU": "Не удалось очистить потерянные элементы очереди анализа.",
+        "ja-JP": "分析キューの孤立アイテムのクリーンアップに失敗しました",
+        "de-DE": "Das Bereinigen verwaister Elemente in der Analysewarteschlange ist fehlgeschlagen",
+        "fr-FR": "Échec du nettoyage des éléments orphelins de la file d'attente d'analyse",
+        "ko-KR": "분석 대기열 고아 항목을 정리하지 못했습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(9114-9129)"
+        ],
+        "$id": 3984
+    },
+    "检测到 1.x 版本数据库，拒绝启动": {
+        "en-US": "Version 1.x database detected, startup refused",
+        "es-ES": "Se detectó la versión 1.x de la base de datos, se rechazó el inicio",
+        "ar-EG": "تم اكتشاف قاعدة بيانات الإصدار 1.x، وتم رفض بدء التشغيل",
+        "pt-PT": "Banco de dados da versão 1.x detectado, inicialização recusada",
+        "ru-RU": "Обнаружена база данных версии 1.x, в запуске отказано",
+        "ja-JP": "バージョン 1.x データベースが検出されましたが、起動は拒否されました",
+        "de-DE": "Datenbank der Version 1.x erkannt, Start verweigert",
+        "fr-FR": "Base de données version 1.x détectée, démarrage refusé",
+        "ko-KR": "버전 1.x 데이터베이스가 감지되어 시작이 거부되었습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(9760-9782)"
+        ],
+        "$id": 4027
+    },
+    "全新安装，准备执行架构初始化...": {
+        "en-US": "Fresh installation, ready to perform architecture initialization...",
+        "es-ES": "Instalación nueva, lista para realizar la inicialización de la arquitectura...",
+        "ar-EG": "تثبيت جديد، جاهز لإجراء تهيئة البنية...",
+        "pt-PT": "Nova instalação, pronta para realizar a inicialização da arquitetura...",
+        "ru-RU": "Свежая установка, готовая к инициализации архитектуры...",
+        "ja-JP": "新規インストール。アーキテクチャの初期化を実行する準備ができています...",
+        "de-DE": "Neuinstallation, bereit für die Architekturinitialisierung ...",
+        "fr-FR": "Nouvelle installation, prête à effectuer l'initialisation de l'architecture...",
+        "ko-KR": "새로 설치하고 아키텍처 초기화를 수행할 준비가 되었습니다...",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(9912-9933)"
+        ],
+        "$id": 4047
+    },
+    "检测到版本 1 数据库，拒绝启动": {
+        "en-US": "Version 1 database detected, startup refused",
+        "es-ES": "Base de datos versión 1 detectada, inicio rechazado",
+        "ar-EG": "تم اكتشاف قاعدة بيانات الإصدار 1، وتم رفض بدء التشغيل",
+        "pt-PT": "Banco de dados da versão 1 detectado, inicialização recusada",
+        "ru-RU": "Обнаружена база данных версии 1, в запуске отказано",
+        "ja-JP": "バージョン 1 データベースが検出されましたが、起動は拒否されました",
+        "de-DE": "Datenbank der Version 1 erkannt, Start verweigert",
+        "fr-FR": "Base de données version 1 détectée, démarrage refusé",
+        "ko-KR": "버전 1 데이터베이스가 감지되어 시작이 거부되었습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(10026-10046)"
+        ],
+        "$id": 4054
+    },
+    "创建数据表失败": {
+        "en-US": "Failed to create data table",
+        "es-ES": "No se pudo crear la tabla de datos",
+        "ar-EG": "فشل في إنشاء جدول البيانات",
+        "pt-PT": "Falha ao criar tabela de dados",
+        "ru-RU": "Не удалось создать таблицу данных.",
+        "ja-JP": "データテーブルの作成に失敗しました",
+        "de-DE": "Datentabelle konnte nicht erstellt werden",
+        "fr-FR": "Échec de la création de la table de données",
+        "ko-KR": "데이터 테이블을 생성하지 못했습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(10176-10187)"
+        ],
+        "$id": 4056
+    },
+    "发送前端通知失败": {
+        "en-US": "Failed to send frontend notification",
+        "es-ES": "No se pudo enviar la notificación de interfaz",
+        "ar-EG": "فشل في إرسال إشعار الواجهة الأمامية",
+        "pt-PT": "Falha ao enviar notificação de front-end",
+        "ru-RU": "Не удалось отправить уведомление о внешнем интерфейсе.",
+        "ja-JP": "フロントエンド通知の送信に失敗しました",
+        "de-DE": "Das Senden der Frontend-Benachrichtigung ist fehlgeschlagen",
+        "fr-FR": "Échec de l'envoi de la notification frontale",
+        "ko-KR": "프런트엔드 알림을 보내지 못했습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(10756-10768)"
+        ],
+        "$id": 4058
+    },
+    "所有AI分析数据已重置": {
+        "en-US": "All AI analysis data has been reset",
+        "es-ES": "Todos los datos del análisis de IA se han restablecido",
+        "ar-EG": "تمت إعادة ضبط جميع بيانات تحليل الذكاء الاصطناعي",
+        "pt-PT": "Todos os dados de análise de IA foram redefinidos",
+        "ru-RU": "Все данные анализа ИИ были сброшены.",
+        "ja-JP": "AI解析データは全てリセットされました",
+        "de-DE": "Alle KI-Analysedaten wurden zurückgesetzt",
+        "fr-FR": "Toutes les données d'analyse de l'IA ont été réinitialisées",
+        "ko-KR": "모든 AI 분석 데이터가 재설정되었습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(22901-22916)"
+        ],
+        "$id": 4059
+    },
+    "重置所有AI分析数据失败": {
+        "en-US": "Failed to reset all AI analysis data",
+        "es-ES": "No se pudieron restablecer todos los datos del análisis de IA",
+        "ar-EG": "فشل في إعادة تعيين جميع بيانات تحليل الذكاء الاصطناعي",
+        "pt-PT": "Falha ao redefinir todos os dados de análise de IA",
+        "ru-RU": "Не удалось сбросить все данные анализа ИИ.",
+        "ja-JP": "AI解析データを全てリセットできませんでした",
+        "de-DE": "Alle KI-Analysedaten konnten nicht zurückgesetzt werden",
+        "fr-FR": "Échec de la réinitialisation de toutes les données d'analyse IA",
+        "ko-KR": "모든 AI 분석 데이터를 재설정하지 못했습니다.",
+        "$files": [
+            "electron/runtime-services/database/database-service.ts(22992-23008)"
+        ],
+        "$id": 4061
+    },
+    "正在处理中，请等待当前任务完成": {
+        "en-US": "Processing, please wait for the current task to complete",
+        "es-ES": "Procesando, por favor espere a que se complete la tarea actual",
+        "ar-EG": "قيد المعالجة، يُرجى الانتظار حتى يكتمل المهمة الحالية",
+        "pt-PT": "A processar, aguarde até que a tarefa atual seja concluída",
+        "ru-RU": "Обработка выполняется, пожалуйста, дождитесь завершения текущей задачи",
+        "ja-JP": "処理中です。現在のタスクが完了するまでお待ちください。",
+        "de-DE": "Wird verarbeitet, bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist",
+        "fr-FR": "Traitement en cours, veuillez attendre la fin de la tâche actuelle",
+        "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
+        "$files": [
+            "electron/runtime-services/integration/file-scanner-integration.ts(3369-3388)"
+        ],
+        "$id": 2921
+    },
+    "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
+        "en-US": "Quota exhausted: {} private directory files have been analyzed; the current quota is {} files. Invite friends to unlock more capacity.",
+        "es-ES": "Cuota agotada: se han analizado {count} archivos de directorios privados; la cuota actual es de {quota} archivos. Puede invitar a amigos para desbloquear más capacidad.",
+        "ar-EG": "انتهت الحصة: تم تحليل {count} ملف من الملفات الخاصة، والحصة الحالية هي {quota} ملف. يمكنك دعوة أصدقاء لفتح حصة أكبر.",
+        "pt-PT": "Cota esgotada: foram analisados {count} arquivos do catálogo privado, sendo a cota atual de {quota} arquivos. Pode convidar amigos para desbloquear mais quota.",
+        "ru-RU": "Квота исчерпана: проанализировано {count} файлов приватного каталога, текущая квота составляет {quota} файлов. Можно разблокировать дополнительный лимит, пригласив друзей.",
+        "ja-JP": "割り当て枠が尽きました：{count} 個のプライベートディレクトリファイルを分析済みです。現在の割り当て枠は{quota} ファイルです。友人を招待して、さらに多くの枠を解放できます。",
+        "de-DE": "Kontingent erschöpft: {count} Dateien in privaten Verzeichnissen analysiert, aktuelles Kontingent beträgt {quota} Dateien. Laden Sie Freunde ein, um mehr Kontingent freizuschalten.",
+        "fr-FR": "Quota épuisé : {count} fichiers de répertoires privés ont été analysés, le quota actuel est de {quota} fichiers. Vous pouvez inviter des amis pour débloquer plus de quota.",
+        "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
+        "$files": [
+            "electron/runtime-services/invitation/invitation-service.ts(4089-4152)"
+        ],
+        "$id": 3343
+    },
+    "已过期": {
+        "en-US": "Expired",
+        "es-ES": "Venció",
+        "ar-EG": "منتهي الصلاحية",
+        "pt-PT": "Expirado",
+        "ru-RU": "Истекший",
+        "ja-JP": "期限切れ",
+        "de-DE": "Abgelaufen",
+        "fr-FR": "Expiré",
+        "ko-KR": "만료됨",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(1537-1544)"
+        ],
+        "$id": 4424
+    },
+    "请求码已复制到剪贴板": {
+        "en-US": "Request code copied to clipboard",
+        "es-ES": "Solicitar código copiado al portapapeles",
+        "ar-EG": "تم نسخ رمز الطلب إلى الحافظة",
+        "pt-PT": "Solicitar código copiado para a área de transferência",
+        "ru-RU": "Код запроса скопирован в буфер обмена.",
+        "ja-JP": "リクエストコードをクリップボードにコピーしました",
+        "de-DE": "Anforderungscode in Zwischenablage kopiert",
+        "fr-FR": "Code de demande copié dans le presse-papiers",
+        "ko-KR": "요청 코드가 클립보드에 복사되었습니다.",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(4982-4996)"
+        ],
+        "$id": 4063
+    },
+    "企业版授权激活成功！": {
+        "en-US": "Enterprise version license activation successful!",
+        "es-ES": "¡La activación de la licencia de la versión empresarial fue exitosa!",
+        "ar-EG": "تم تفعيل ترخيص إصدار المؤسسة بنجاح!",
+        "pt-PT": "Ativação da licença da versão Enterprise com sucesso!",
+        "ru-RU": "Активация лицензии Enterprise версии прошла успешно!",
+        "ja-JP": "Enterprise バージョンのライセンス認証が成功しました。",
+        "de-DE": "Aktivierung der Enterprise-Versionslizenz erfolgreich!",
+        "fr-FR": "Activation de la licence de la version Entreprise réussie !",
+        "ko-KR": "Enterprise 버전 라이선스 활성화에 성공했습니다!",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(5764-5778)"
+        ],
+        "$id": 4401
+    },
+    "激活失败，请检查授权码是否正确": {
+        "en-US": "Activation failed, please check whether the authorization code is correct",
+        "es-ES": "La activación falló, verifique si el código de autorización es correcto",
+        "ar-EG": "فشل التنشيط، يرجى التحقق من صحة رمز التفويض",
+        "pt-PT": "A ativação falhou, verifique se o código de autorização está correto",
+        "ru-RU": "Активация не удалась, проверьте правильность кода авторизации.",
+        "ja-JP": "アクティベーションに失敗しました。認証コードが正しいかどうかを確認してください",
+        "de-DE": "Die Aktivierung ist fehlgeschlagen. Bitte überprüfen Sie, ob der Autorisierungscode korrekt ist",
+        "fr-FR": "L'activation a échoué, veuillez vérifier si le code d'autorisation est correct",
+        "ko-KR": "활성화에 실패했습니다. 인증 코드가 올바른지 확인하세요.",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(6025-6044)"
+        ],
+        "$id": 4083
+    },
+    "激活过程中发生错误": {
+        "en-US": "An error occurred during activation",
+        "es-ES": "Se produjo un error durante la activación.",
+        "ar-EG": "حدث خطأ أثناء التنشيط",
+        "pt-PT": "Ocorreu um erro durante a ativação",
+        "ru-RU": "Произошла ошибка во время активации",
+        "ja-JP": "アクティベーション中にエラーが発生しました",
+        "de-DE": "Bei der Aktivierung ist ein Fehler aufgetreten",
+        "fr-FR": "Une erreur s'est produite lors de l'activation",
+        "ko-KR": "활성화하는 동안 오류가 발생했습니다.",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(6108-6121)"
+        ],
+        "$id": 4085
+    },
+    "正在同步授权状态...": {
+        "en-US": "Synchronizing authorization status...",
+        "es-ES": "Sincronizando el estado de la autorización...",
+        "ar-EG": "جارٍ مزامنة حالة الترخيص...",
+        "pt-PT": "Sincronizando status de autorização...",
+        "ru-RU": "Синхронизация статуса авторизации...",
+        "ja-JP": "認証ステータスを同期しています...",
+        "de-DE": "Autorisierungsstatus wird synchronisiert...",
+        "fr-FR": "Synchronisation du statut d'autorisation...",
+        "ko-KR": "승인 상태 동기화 중...",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(6512-6527)"
+        ],
+        "$id": 4402
+    },
+    "欢迎使用企业版": {
+        "en-US": "Welcome to Enterprise Edition",
+        "es-ES": "Bienvenido a la edición empresarial",
+        "ar-EG": "مرحبًا بك في إصدار Enterprise",
+        "pt-PT": "Bem-vindo à Edição Empresarial",
+        "ru-RU": "Добро пожаловать в корпоративную версию",
+        "ja-JP": "エンタープライズ版へようこそ",
+        "de-DE": "Willkommen bei der Enterprise Edition",
+        "fr-FR": "Bienvenue dans l'édition Entreprise",
+        "ko-KR": "엔터프라이즈 에디션에 오신 것을 환영합니다",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(7398-7409)"
+        ],
+        "$id": 4403
+    },
+    "授权验证成功，所有高级功能已解锁": {
+        "en-US": "Authorization verification successful, all advanced features have been unlocked",
+        "es-ES": "Verificación de autorización exitosa, todas las funciones avanzadas se han desbloqueado",
+        "ar-EG": "تم التحقق من التفويض بنجاح، وتم فتح جميع الميزات المتقدمة",
+        "pt-PT": "Verificação de autorização bem-sucedida, todos os recursos avançados foram desbloqueados",
+        "ru-RU": "Проверка авторизации прошла успешно, все расширенные функции разблокированы.",
+        "ja-JP": "認証の検証が成功し、すべての高度な機能がロック解除されました",
+        "de-DE": "Autorisierungsüberprüfung erfolgreich, alle erweiterten Funktionen wurden freigeschaltet",
+        "fr-FR": "Vérification de l'autorisation réussie, toutes les fonctionnalités avancées ont été déverrouillées",
+        "ko-KR": "승인 확인에 성공했습니다. 모든 고급 기능이 잠금 해제되었습니다.",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(7516-7536)"
+        ],
+        "$id": 4404
+    },
+    "授权有效期至：{date}": {
+        "en-US": "The authorization is valid until: {date}",
+        "es-ES": "La autorización es válida hasta: {date}",
+        "ar-EG": "التفويض صالح حتى: {date}",
+        "pt-PT": "A autorização é válida até: {date}",
+        "ru-RU": "Разрешение действительно до: {date}",
+        "ja-JP": "承認は次の期間まで有効です: {date}",
+        "de-DE": "Die Autorisierung ist gültig bis: {date}",
+        "fr-FR": "L'autorisation est valable jusqu'au : {date}",
+        "ko-KR": "승인은 다음 날짜까지 유효합니다: {date}",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(8252-8269)"
+        ],
+        "$id": 4405
+    },
+    "剩余时间：{time}": {
+        "en-US": "time left:{time}",
+        "es-ES": "tiempo restante:{time}",
+        "ar-EG": "الوقت المتبقي:{time}",
+        "pt-PT": "tempo restante:{time}",
+        "ru-RU": "оставшееся время:{time}",
+        "ja-JP": "残り時間：{time}",
+        "de-DE": "übrige Zeit:{time}",
+        "fr-FR": "temps restant:{time}",
+        "ko-KR": "남은 시간:{time}",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(8743-8758)"
+        ],
+        "$id": 4425
+    },
+    "第一步：获取机器请求码": {
+        "en-US": "Step 1: Obtain the machine request code",
+        "es-ES": "Paso 1: Obtenga el código de solicitud de la máquina",
+        "ar-EG": "الخطوة 1: الحصول على رمز طلب الجهاز",
+        "pt-PT": "Etapa 1: Obtenha o código de solicitação da máquina",
+        "ru-RU": "Шаг 1. Получите код запроса машины.",
+        "ja-JP": "ステップ 1: マシン要求コードを取得する",
+        "de-DE": "Schritt 1: Besorgen Sie sich den Maschinenanforderungscode",
+        "fr-FR": "Étape 1 : Obtenir le code de demande de la machine",
+        "ko-KR": "1단계: 기계 요청 코드 받기",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(9393-9408)"
+        ],
+        "$id": 4406
+    },
+    "了解企业版专属功能": {
+        "en-US": "Learn about Enterprise Edition exclusive features",
+        "es-ES": "Conozca las características exclusivas de Enterprise Edition",
+        "ar-EG": "تعرف على الميزات الحصرية لإصدار Enterprise",
+        "pt-PT": "Saiba mais sobre os recursos exclusivos da Enterprise Edition",
+        "ru-RU": "Узнайте об эксклюзивных функциях Enterprise Edition",
+        "ja-JP": "Enterprise Edition 限定機能について学ぶ",
+        "de-DE": "Erfahren Sie mehr über die exklusiven Funktionen der Enterprise Edition",
+        "fr-FR": "Découvrez les fonctionnalités exclusives de l'édition Enterprise",
+        "ko-KR": "Enterprise Edition 독점 기능에 대해 알아보기",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(9786-9799)"
+        ],
+        "$id": 4407
+    },
+    "复制": {
+        "en-US": "Copy",
+        "es-ES": "Copiar",
+        "ar-EG": "انسخ  ",
+        "pt-PT": "Copiar",
+        "ru-RU": "Копировать",
+        "ja-JP": "コピー",
+        "de-DE": "Kopieren",
+        "fr-FR": "Copier",
+        "ko-KR": "복사",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(10678-10684)",
+            "renderer/components/invitation/InvitationModal.tsx(8087-8093)"
+        ],
+        "$id": 3360
+    },
+    "请将此代码发送给管理员或开发者，以获取为您设备定制的企业版授权码。": {
+        "en-US": "Please send this code to your administrator or developer to obtain an Enterprise Edition authorization code customized for your device.",
+        "es-ES": "Envíe este código a su administrador o desarrollador para obtener un código de autorización de Enterprise Edition personalizado para su dispositivo.",
+        "ar-EG": "يرجى إرسال هذا الرمز إلى المسؤول أو المطور لديك للحصول على رمز ترخيص Enterprise Edition المخصص لجهازك.",
+        "pt-PT": "Envie este código ao seu administrador ou desenvolvedor para obter um código de autorização da Enterprise Edition personalizado para o seu dispositivo.",
+        "ru-RU": "Отправьте этот код своему администратору или разработчику, чтобы получить код авторизации Enterprise Edition, настроенный для вашего устройства.",
+        "ja-JP": "このコードを管理者または開発者に送信して、デバイス用にカスタマイズされた Enterprise Edition 認証コードを取得してください。",
+        "de-DE": "Bitte senden Sie diesen Code an Ihren Administrator oder Entwickler, um einen für Ihr Gerät maßgeschneiderten Enterprise Edition-Autorisierungscode zu erhalten.",
+        "fr-FR": "Veuillez envoyer ce code à votre administrateur ou développeur pour obtenir un code d'autorisation Enterprise Edition personnalisé pour votre appareil.",
+        "ko-KR": "귀하의 장치에 맞는 Enterprise Edition 인증 코드를 받으려면 이 코드를 관리자나 개발자에게 보내십시오.",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(11062-11099)"
+        ],
+        "$id": 4408
+    },
+    "第二步：输入授权码": {
+        "en-US": "Step 2: Enter the authorization code",
+        "es-ES": "Paso 2: Ingrese el código de autorización",
+        "ar-EG": "الخطوة الثانية: أدخل رمز التفويض",
+        "pt-PT": "Passo 2: Insira o código de autorização",
+        "ru-RU": "Шаг 2. Введите код авторизации.",
+        "ja-JP": "ステップ 2: 認証コードを入力する",
+        "de-DE": "Schritt 2: Geben Sie den Autorisierungscode ein",
+        "fr-FR": "Étape 2 : Entrez le code d'autorisation",
+        "ko-KR": "2단계: 인증 코드 입력",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(11461-11474)"
+        ],
+        "$id": 4409
+    },
+    "粘贴管理员发送给您的企业版授权码...": {
+        "en-US": "Paste the Enterprise Edition authorization code sent to you by your administrator...",
+        "es-ES": "Pegue el código de autorización de Enterprise Edition que le envió su administrador...",
+        "ar-EG": "الصق رمز تفويض Enterprise Edition الذي أرسله لك المسؤول...",
+        "pt-PT": "Cole o código de autorização da Enterprise Edition enviado a você pelo seu administrador...",
+        "ru-RU": "Вставьте код авторизации Enterprise Edition, отправленный вам администратором...",
+        "ja-JP": "管理者から送信された Enterprise Edition 認証コードを貼り付けます...",
+        "de-DE": "Fügen Sie den Autorisierungscode der Enterprise Edition ein, den Sie von Ihrem Administrator erhalten haben ...",
+        "fr-FR": "Collez le code d'autorisation Enterprise Edition qui vous a été envoyé par votre administrateur...",
+        "ko-KR": "관리자가 보낸 Enterprise Edition 인증 코드를 붙여넣으세요...",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(11718-11741)"
+        ],
+        "$id": 4410
+    },
+    "授权验证失败": {
+        "en-US": "Authorization verification failed",
+        "es-ES": "Error en la verificación de autorización",
+        "ar-EG": "فشل التحقق من التفويض",
+        "pt-PT": "Falha na verificação da autorização",
+        "ru-RU": "Проверка авторизации не удалась",
+        "ja-JP": "認可検証に失敗しました",
+        "de-DE": "Die Autorisierungsüberprüfung ist fehlgeschlagen",
+        "fr-FR": "La vérification de l'autorisation a échoué",
+        "ko-KR": "승인 확인 실패",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(13566-13576)",
+            "renderer/components/license/LicenseGateway.tsx(2909-2919)"
+        ],
+        "$id": 4112
+    },
+    "获取授权 / 咨询": {
+        "en-US": "Obtain authorization/consultation",
+        "es-ES": "Obtener autorización/consulta",
+        "ar-EG": "الحصول على إذن/التشاور",
+        "pt-PT": "Obter autorização/consulta",
+        "ru-RU": "Получить разрешение/консультацию",
+        "ja-JP": "許認可取得・相談",
+        "de-DE": "Holen Sie eine Genehmigung/Beratung ein",
+        "fr-FR": "Obtenir une autorisation/consultation",
+        "ko-KR": "승인/상담 받기",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(14418-14431)"
+        ],
+        "$id": 4411
+    },
+    "微信": {
+        "en-US": "WeChat",
+        "es-ES": "WeChat",
+        "ar-EG": "وي شات",
+        "pt-PT": "WeChat",
+        "ru-RU": "Вичат",
+        "ja-JP": "WeChat",
+        "de-DE": "WeChat",
+        "fr-FR": "WeChat",
+        "ko-KR": "위챗",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(14727-14733)"
+        ],
+        "$id": 4412
+    },
+    "邮箱": {
+        "en-US": "Mail",
+        "es-ES": "Correo",
+        "ar-EG": "بريد",
+        "pt-PT": "Correspondência",
+        "ru-RU": "Почта",
+        "ja-JP": "郵便",
+        "de-DE": "Post",
+        "fr-FR": "Mail",
+        "ko-KR": "우편",
+        "$files": [
+            "renderer/components/license/EnterpriseLicenseForm.tsx(15033-15039)"
+        ],
+        "$id": 4413
+    },
+    "在线验证成功！": {
+        "en-US": "Online verification successful!",
+        "es-ES": "¡Verificación en línea exitosa!",
+        "ar-EG": "تم التحقق عبر الإنترنت بنجاح!",
+        "pt-PT": "Verificação on-line bem-sucedida!",
+        "ru-RU": "Онлайн-верификация прошла успешно!",
+        "ja-JP": "オンライン認証が成功しました!",
+        "de-DE": "Online-Verifizierung erfolgreich!",
+        "fr-FR": "Vérification en ligne réussie !",
+        "ko-KR": "온라인 인증에 성공했습니다!",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(1342-1353)"
+        ],
+        "$id": 4086
+    },
+    "网络连接失败，请检查设置": {
+        "en-US": "Network connection failed, please check settings",
+        "es-ES": "La conexión de red falló, verifique la configuración",
+        "ar-EG": "فشل الاتصال بالشبكة، يرجى التحقق من الإعدادات",
+        "pt-PT": "Falha na conexão de rede. Verifique as configurações",
+        "ru-RU": "Не удалось подключиться к сети, проверьте настройки.",
+        "ja-JP": "ネットワーク接続に失敗しました。設定を確認してください",
+        "de-DE": "Netzwerkverbindung fehlgeschlagen, bitte überprüfen Sie die Einstellungen",
+        "fr-FR": "La connexion réseau a échoué, veuillez vérifier les paramètres",
+        "ko-KR": "네트워크 연결에 실패했습니다. 설정을 확인하세요.",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(1453-1469)"
+        ],
+        "$id": 4087
+    },
+    "在线验证过程中发生错误": {
+        "en-US": "An error occurred during online verification",
+        "es-ES": "Se produjo un error durante la verificación en línea.",
+        "ar-EG": "حدث خطأ أثناء التحقق عبر الإنترنت",
+        "pt-PT": "Ocorreu um erro durante a verificação on-line",
+        "ru-RU": "Произошла ошибка во время онлайн-проверки.",
+        "ja-JP": "オンライン認証中にエラーが発生しました",
+        "de-DE": "Bei der Online-Verifizierung ist ein Fehler aufgetreten",
+        "fr-FR": "Une erreur s'est produite lors de la vérification en ligne",
+        "ko-KR": "온라인 인증 중 오류가 발생했습니다.",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(1533-1548)"
+        ],
+        "$id": 4088
+    },
+    "软件授权验证": {
+        "en-US": "Software authorization verification",
+        "es-ES": "Verificación de autorización de software",
+        "ar-EG": "التحقق من ترخيص البرمجيات",
+        "pt-PT": "Verificação de autorização de software",
+        "ru-RU": "Проверка авторизации программного обеспечения",
+        "ja-JP": "ソフトウェア認証の検証",
+        "de-DE": "Überprüfung der Softwareautorisierung",
+        "fr-FR": "Vérification de l'autorisation du logiciel",
+        "ko-KR": "소프트웨어 인증 확인",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(2240-2250)"
+        ],
+        "$id": 4094
+    },
+    "检测到系统时间异常，请校准时间后再运行。": {
+        "en-US": "System time abnormality detected, please calibrate the time before running.",
+        "es-ES": "Se detectó una anomalía en la hora del sistema. Calibre la hora antes de ejecutarlo.",
+        "ar-EG": "تم اكتشاف خلل في وقت النظام، يرجى معايرة الوقت قبل التشغيل.",
+        "pt-PT": "Detectada anormalidade na hora do sistema, calibre a hora antes de executar.",
+        "ru-RU": "Обнаружено отклонение системного времени. Откалибруйте время перед запуском.",
+        "ja-JP": "システム時間の異常が検出されました。実行前に時間を調整してください。",
+        "de-DE": "Es wurde eine Systemzeitanomalie festgestellt. Bitte kalibrieren Sie die Zeit vor dem Ausführen.",
+        "fr-FR": "Anomalie de l'heure du système détectée, veuillez calibrer l'heure avant de l'exécuter.",
+        "ko-KR": "시스템 시간 이상이 감지되었습니다. 실행하기 전에 시간을 보정하십시오.",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(2425-2449)"
+        ],
+        "$id": 4095
+    },
+    "当前处于离线环境，个人需要联网，企业需要获取离线授权才能继续使用。": {
+        "en-US": "It is currently in an offline environment, individuals need to be connected to the Internet, and enterprises need to obtain offline authorization to continue using it.",
+        "es-ES": "Actualmente se encuentra en un entorno fuera de línea, las personas deben estar conectadas a Internet y las empresas deben obtener autorización fuera de línea para continuar usándolo.",
+        "ar-EG": "إنه حاليًا في بيئة غير متصلة بالإنترنت، ويحتاج الأفراد إلى الاتصال بالإنترنت، وتحتاج المؤسسات إلى الحصول على ترخيص دون اتصال لمواصلة استخدامه.",
+        "pt-PT": "Atualmente está em um ambiente offline, os indivíduos precisam estar conectados à Internet e as empresas precisam obter autorização offline para continuar a usá-lo.",
+        "ru-RU": "В настоящее время он находится в автономной среде, отдельные лица должны быть подключены к Интернету, а предприятиям необходимо получить автономную авторизацию, чтобы продолжить его использование.",
+        "ja-JP": "現在はオフライン環境にあり、個人はインターネットに接続する必要があり、企業は引き続き使用するためにオフライン認証を取得する必要があります。",
+        "de-DE": "Es befindet sich derzeit in einer Offline-Umgebung, Einzelpersonen müssen mit dem Internet verbunden sein und Unternehmen müssen eine Offline-Autorisierung erhalten, um es weiterhin verwenden zu können.",
+        "fr-FR": "Il se trouve actuellement dans un environnement hors ligne, les individus doivent être connectés à Internet et les entreprises doivent obtenir une autorisation hors ligne pour continuer à l'utiliser.",
+        "ko-KR": "현재는 오프라인 환경이므로 개인은 인터넷에 연결되어 있어야 하며, 기업은 이를 계속 사용하려면 오프라인 승인을 받아야 합니다.",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(2486-2523)"
+        ],
+        "$id": 4414
+    },
+    "个人，我已打开网络": {
+        "en-US": "Personally, I have turned on the Internet",
+        "es-ES": "Personalmente, he encendido Internet.",
+        "ar-EG": "أنا شخصياً قمت بتشغيل الإنترنت",
+        "pt-PT": "Pessoalmente, liguei a Internet",
+        "ru-RU": "Лично я включил Интернет",
+        "ja-JP": "個人的にはインターネットをオンにしました",
+        "de-DE": "Persönlich habe ich das Internet eingeschaltet",
+        "fr-FR": "Personnellement, j'ai activé Internet",
+        "ko-KR": "개인적으로 인터넷을 켰는데",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(3539-3552)"
+        ],
+        "$id": 4123
+    },
+    "企业，离线授权使用": {
+        "en-US": "Enterprise, offline authorized use",
+        "es-ES": "Uso empresarial autorizado sin conexión",
+        "ar-EG": "المؤسسة، الاستخدام المصرح به دون اتصال بالإنترنت",
+        "pt-PT": "Uso corporativo autorizado off-line",
+        "ru-RU": "Предприятие, авторизованное использование в автономном режиме",
+        "ja-JP": "エンタープライズ、オフラインでの許可された使用",
+        "de-DE": "Enterprise, autorisierte Offline-Nutzung",
+        "fr-FR": "Entreprise, utilisation autorisée hors ligne",
+        "ko-KR": "기업, 오프라인 승인 사용",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(3894-3907)"
+        ],
+        "$id": 4143
+    },
+    "返回": {
+        "en-US": "return",
+        "es-ES": "devolver",
+        "ar-EG": "يعود",
+        "pt-PT": "retornar",
+        "ru-RU": "возвращаться",
+        "ja-JP": "戻る",
+        "de-DE": "zurückkehren",
+        "fr-FR": "retour",
+        "ko-KR": "반품",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(4532-4538)"
+        ],
+        "$id": 4267
+    },
+    "本软件受版权保护。合法授权后方可解锁全部智能文件整理功能。": {
+        "en-US": "This software is protected by copyright. All intelligent file organization functions can be unlocked only with legal authorization.",
+        "es-ES": "Este software está protegido por derechos de autor. Todas las funciones de organización inteligente de archivos se pueden desbloquear sólo con autorización legal.",
+        "ar-EG": "هذا البرنامج محمي بموجب حقوق الطبع والنشر. لا يمكن فتح جميع وظائف تنظيم الملفات الذكية إلا بإذن قانوني.",
+        "pt-PT": "Este software é protegido por direitos autorais. Todas as funções inteligentes de organização de arquivos só podem ser desbloqueadas com autorização legal.",
+        "ru-RU": "Это программное обеспечение защищено авторскими правами. Все функции интеллектуальной организации файлов можно разблокировать только при наличии юридического разрешения.",
+        "ja-JP": "このソフトウェアは著作権によって保護されています。すべてのインテリジェントなファイル整理機能は、法的許可がなければロックを解除できません。",
+        "de-DE": "Diese Software ist urheberrechtlich geschützt. Alle Funktionen der intelligenten Aktenorganisation können nur mit gesetzlicher Genehmigung freigeschaltet werden.",
+        "fr-FR": "Ce logiciel est protégé par le droit d'auteur. Toutes les fonctions intelligentes d'organisation des fichiers ne peuvent être déverrouillées qu'avec une autorisation légale.",
+        "ko-KR": "이 소프트웨어는 저작권으로 보호됩니다. 모든 지능형 파일 정리 기능은 법적 승인이 있어야만 잠금 해제할 수 있습니다.",
+        "$files": [
+            "renderer/components/license/LicenseGateway.tsx(4753-4786)"
+        ],
+        "$id": 4269
+    },
+    "我发现一个超好用的开源免费AI文件整理工具，一键整理乱七八糟的桌面、下载目录等，自动分类/重命名/归档，配截图！": {
+        "en-US": "I found a super useful open-source free AI file organization tool that organizes messy desktops, download directories, etc. with one click, automatically categorizing/renaming/archiving, with screenshots!",
+        "es-ES": "¡He descubierto una herramienta gratuita de código abierto de IA súper útil para organizar archivos! Organiza con un solo clic escritorios y carpetas de descargas desordenados, con clasificación automática/cambio de nombre/archivado, ¡incluye capturas de pantalla!",
+        "ar-EG": "اكتشفت أداة ذكاء اصطناعي مفتوحة المصدر ومجانية فائقة الفائدة لتنظيم الملفات، وبضغطة واحدة تنظيم سطح المكتب الفوضوي ومجلد التنزيلات وما إلى ذلك، مع التصنيف/إعادة التسمية/الأرشفة تلقائيًا، مزودة بلقطات شاشة!",
+        "pt-PT": "Descobri uma ferramenta de IA open source e gratuita super útil para organizar ficheiros, com um clique organiza ambientes de trabalho e pastas de downloads bagunçados, classificação/renomeação/arquivo automático, com capturas de ecrã!",
+        "ru-RU": "Я нашёл супер удобный бесплатный AI-инструмент с открытым исходным кодом для организации файлов, который в один клик наводит порядок в захламлённом рабочем столе, папке загрузок и т.д., автоматически сортирует/переименовывает/архивирует, со скриншотами!",
+        "ja-JP": "超便利なオープンソースで無料のAIファイル整理ツールを発見！一键整理乱七八糟的桌面、下载目录等，自动分类/重命名/归档，配截图！",
+        "de-DE": "Ich habe ein super benutzerfreundliches, kostenloses Open-Source-KI-Tool zur Dateiorganisation entdeckt, mit einem Klick den chaotischen Schreibtisch, Download-Ordner usw. aufräumen, automatische Kategorisierung/Umbenennung/Archivierung, mit Screenshots!",
+        "fr-FR": "J'ai découvert un outil d'organisation de fichiers IA open source et gratuit super pratique, qui permet d'organiser en un clic les bureaux en désordre, les répertoires de téléchargement, etc., avec classification automatique / renommage / archivage, avec des captures d'écran !",
+        "ko-KR": "정말 유용한 오픈소스 무료 AI 파일 정리 툴을 발견했습니다, 버튼 하나로 엉망이 된 바탕화면, 다운로드 폴더 등을 정리할 수 있고, 자동 분류/이름 변경/보관까지 됩니다. 스크린샷 첨부!",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(1639-1699)"
+        ],
+        "$id": 3281
+    },
+    "邀请链接已复制": {
+        "en-US": "Invitation link copied",
+        "es-ES": "Enlace de invitación copiado",
+        "ar-EG": "تم نسخ رابط الدعوة",
+        "pt-PT": "Link de convite copiado",
+        "ru-RU": "Ссылка для приглашения скопирована",
+        "ja-JP": "招待リンクをコピーしました",
+        "de-DE": "Einladungslink wurde kopiert",
+        "fr-FR": "Lien d'invitation copié",
+        "ko-KR": "초대 링크가 복사되었습니다",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(1788-1799)"
+        ],
+        "$id": 2969
+    },
+    "复制失败": {
+        "en-US": "Copy failed",
+        "es-ES": "Error al copiar",
+        "ar-EG": "فشل النسخ",
+        "pt-PT": "Falha na cópia",
+        "ru-RU": "Ошибка копирования",
+        "ja-JP": "コピー失敗",
+        "de-DE": "Kopieren fehlgeschlagen",
+        "fr-FR": "Échec de la copie",
+        "ko-KR": "복사 실패",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(1842-1850)"
+        ],
+        "$id": 2985
+    },
+    "兑换成功！已增加 {amount} 个文件分析额度": {
+        "en-US": "Redemption successful! {} additional file analysis credits have been added.",
+        "es-ES": "¡Canje realizado con éxito! Se han añadido {amount} unidades de capacidad de análisis de archivos",
+        "ar-EG": "تم الاستبدال بنجاح! تمت إضافة {amount} حصة لتحليل الملفات",
+        "pt-PT": "Troca bem-sucedida! Foram adicionados {amount} créditos de análise de arquivos",
+        "ru-RU": "Успешно обменяно! Добавлено {amount} лимита анализа файлов",
+        "ja-JP": "交換成功！{amount} ファイル分の分析枠が追加されました",
+        "de-DE": "Erfolgreich eingelöst! Das Kontingent für die Dateianalyse wurde um {amount} Dateien erhöht",
+        "fr-FR": "Échange réussi ! {amount} crédits d'analyse de fichiers ont été ajoutés",
+        "ko-KR": "교환 성공! 파일 분석 한도가 {amount} 개 증가했습니다",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(2406-2435)"
+        ],
+        "$id": 3344
+    },
+    "兑换失败: {error}": {
+        "en-US": "Redemption failed: {error}",
+        "es-ES": "Error en el canje: {error}",
+        "ar-EG": "فشل الاستبدال: {error}",
+        "pt-PT": "Falha na troca: {error}",
+        "ru-RU": "Ошибка обмена: {error}",
+        "ja-JP": "交換に失敗しました：{error}",
+        "de-DE": "Einlösung fehlgeschlagen: {error}",
+        "fr-FR": "Échec de l'échange : {error}",
+        "ko-KR": "교환 실패: {error}",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(2661-2678)"
+        ],
+        "$id": 3345
+    },
+    "未知错误": {
+        "en-US": "Unknown Error",
+        "es-ES": "Error desconocido",
+        "ar-EG": "خطأ غير معروف",
+        "pt-PT": "Erro desconhecido",
+        "ru-RU": "Неизвестная ошибка",
+        "ja-JP": "不明なエラー",
+        "de-DE": "Unbekannter Fehler",
+        "fr-FR": "Erreur inconnue",
+        "ko-KR": "알 수 없는 오류",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(2705-2713)"
+        ],
+        "$id": 3346
+    },
+    "兑换请求失败": {
+        "en-US": "Redemption request failed",
+        "es-ES": "La solicitud de canje ha fallado",
+        "ar-EG": "فشل طلب الاستبدال",
+        "pt-PT": "Falha na solicitação de resgate",
+        "ru-RU": "Ошибка запроса на обмен",
+        "ja-JP": "交換リクエストに失敗しました",
+        "de-DE": "Einlösungsanfrage fehlgeschlagen",
+        "fr-FR": "L'échange a échoué",
+        "ko-KR": "교환 요청 실패",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(2937-2947)"
+        ],
+        "$id": 3347
+    },
+    "获取更多私有目录分析额度": {
+        "en-US": "Get more private directory analysis quota",
+        "es-ES": "Obtén más cuota de análisis para directorios privados",
+        "ar-EG": "احصل على مزيد من الحصص لتحليل المجلدات الخاصة",
+        "pt-PT": "Obter mais quota para análise de diretórios privados",
+        "ru-RU": "Получить дополнительную квоту для анализа приватных каталогов",
+        "ja-JP": "より多くのプライベートディレクトリ分析枠を取得する",
+        "de-DE": "Erhalten Sie mehr Kontingent für die Analyse privater Verzeichnisse",
+        "fr-FR": "Obtenez plus de quota d'analyse de répertoires privés",
+        "ko-KR": "더 많은 비공개 디렉터리 분석 할당량 얻기",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(3400-3416)"
+        ],
+        "$id": 3348
+    },
+    "为提倡极速目录共享分析，以及为了项目可持续发展，私有目录有一定限制：默认提供 {baseQuota} 个文件的分析。通过邀请好友或输入邀请码，您可以解锁无限额度。": {
+        "en-US": "To promote rapid directory sharing analysis and ensure the sustainable development of the project, there are certain limits on private directories: by default, {baseQuota} files are provided for analysis. By inviting friends or entering an invitation code, you can unlock unlimited quota.",
+        "es-ES": "Para fomentar el análisis ultrarrápido de directorios compartidos y garantizar la sostenibilidad del proyecto, los directorios privados tienen ciertas limitaciones: se proporciona por defecto el análisis de {baseQuota} archivos. Mediante la invitación de amigos o la introducción de un código de invitación, puede desbloquear una cuota ilimitada.",
+        "ar-EG": "لتشجيع تحليل المجلدات المشتركة بسرعة فائقة، ولضمان استمرارية المشروع، تخضع المجلدات الخاصة لبعض القيود: يتم توفير تحليل {baseQuota} ملفًا افتراضيًا. يمكنك فتح حصة غير محدودة عبر دعوة أصدقاء أو إدخال رمز دعوة.",
+        "pt-PT": "Para promover a análise rápida e partilhada de diretórios e garantir o desenvolvimento sustentável do projeto, os diretórios privados têm uma limitação: é fornecida por defeito uma quota para análise de {baseQuota} ficheiros. Ao convidar amigos ou introduzir um código de convite, poderá desbloquear quota ilimitada.",
+        "ru-RU": "Для поощрения быстрого совместного анализа каталогов, а также для устойчивого развития проекта, на приватные каталоги наложены определенные ограничения: по умолчанию предоставляется анализ для {baseQuota} файлов. Пригласив друзей или введя код приглашения, вы можете разблокировать неограниченную квоту.",
+        "ja-JP": "迅速なディレクトリ共有分析を促進し、プロジェクトの持続可能な発展を図るため、プライベートディレクトリには一定の制限があります。デフォルトでは{baseQuota} 个のファイル分析を提供します。友人を招待するか招待コードを入力することで、無制限の枠を解除できます。",
+        "de-DE": "Um die extrem schnelle Freigabe und Analyse von Verzeichnissen zu fördern und die nachhaltige Entwicklung des Projekts zu gewährleisten, unterliegen private Verzeichnisse bestimmten Beschränkungen: Standardmäßig wird die Analyse von {baseQuota} Dateien bereitgestellt. Durch das Einladen von Freunden oder die Eingabe eines Einladungscodes können Sie ein unbegrenztes Kontingent freischalten.",
+        "fr-FR": "Pour encourager le partage et l'analyse rapides des répertoires, ainsi que pour assurer la durabilité du projet, les répertoires privés sont soumis à certaines limites : {baseQuota} fichiers sont analysés par défaut. En invitant des amis ou en saisissant un code d'invitation, vous pouvez débloquer un quota illimité.",
+        "ko-KR": "빠른 디렉터리 공유 분석을 장려하고 프로젝트의 지속 가능한 발전을 위해 비공개 디렉터리에는 특정 제한이 있습니다. 기본적으로 {baseQuota}개 파일 분석을 제공합니다. 친구 초대 또는 초대 코드 입력을 통해 무제한 할당량을 잠금 해제할 수 있습니다.",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(3537-3622)"
+        ],
+        "$id": 3349
+    },
+    "当前总额度": {
+        "en-US": "Current Total Quota",
+        "es-ES": "Cuota total actual",
+        "ar-EG": "إجمالي الحصة الحالية",
+        "pt-PT": "Quota total atual",
+        "ru-RU": "Текущая общая квота",
+        "ja-JP": "現在の総利用枠",
+        "de-DE": "Aktuelles Gesamtkontingent",
+        "fr-FR": "Quota total actuel",
+        "ko-KR": "현재 총 할당량",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(3992-4001)"
+        ],
+        "$id": 3350
+    },
+    "不限数量": {
+        "en-US": "Unlimited",
+        "es-ES": "Cantidad ilimitada",
+        "ar-EG": "عدد غير محدود",
+        "pt-PT": "Sem limite",
+        "ru-RU": "Без ограничений",
+        "ja-JP": "数量無制限",
+        "de-DE": "Unbegrenzte Anzahl",
+        "fr-FR": "Nombre illimité",
+        "ko-KR": "개수 제한 없음",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(4110-4118)"
+        ],
+        "$id": 3351
+    },
+    "{count} 个文件": {
+        "en-US": "{count} files",
+        "es-ES": "{count} archivos",
+        "ar-EG": "{count} ملفًا",
+        "pt-PT": "{count} ficheiros",
+        "ru-RU": "{count} файлов",
+        "ja-JP": "{count} 个のファイル",
+        "de-DE": "{count} Dateien",
+        "fr-FR": "{count} fichiers",
+        "ko-KR": "{count}개 파일",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(4122-4137)"
+        ],
+        "$id": 3352
+    },
+    "已邀请人数": {
+        "en-US": "Number of Invited Users",
+        "es-ES": "Número de personas invitadas",
+        "ar-EG": "عدد المدعوين",
+        "pt-PT": "Número de pessoas convidadas",
+        "ru-RU": "Количество приглашенных",
+        "ja-JP": "招待済み人数",
+        "de-DE": "Anzahl der eingeladenen Personen",
+        "fr-FR": "Nombre de personnes invitées",
+        "ko-KR": "초대한 인원",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(4306-4315)"
+        ],
+        "$id": 3353
+    },
+    "基础额度": {
+        "en-US": "Base Quota",
+        "es-ES": "Cuota base",
+        "ar-EG": "الحصة الأساسية",
+        "pt-PT": "Quota base",
+        "ru-RU": "Базовая квота",
+        "ja-JP": "基本利用枠",
+        "de-DE": "Grundkontingent",
+        "fr-FR": "Quota de base",
+        "ko-KR": "기본 할당량",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(5124-5132)"
+        ],
+        "$id": 3354
+    },
+    "受邀奖励": {
+        "en-US": "Invitation Reward",
+        "es-ES": "Recompensa por invitación",
+        "ar-EG": "مكافأة الدعوة",
+        "pt-PT": "Recompensa por convite recebido",
+        "ru-RU": "Бонус за приглашение",
+        "ja-JP": "招待報酬",
+        "de-DE": "Belohnung für Eingeladene",
+        "fr-FR": "Récompense d'invitation",
+        "ko-KR": "초대 보상",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(5708-5716)"
+        ],
+        "$id": 3355
+    },
+    "邀请好友": {
+        "en-US": "Invite Friends",
+        "es-ES": "Invitar a amigos",
+        "ar-EG": "دعوة الأصدقاء",
+        "pt-PT": "Convidar amigos",
+        "ru-RU": "Пригласить друзей",
+        "ja-JP": "友人を招待",
+        "de-DE": "Freunde einladen",
+        "fr-FR": "Inviter des amis",
+        "ko-KR": "친구 초대",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(6321-6329)"
+        ],
+        "$id": 3356
+    },
+    "无限": {
+        "en-US": "Unlimited",
+        "es-ES": "Ilimitado",
+        "ar-EG": "غير محدود",
+        "pt-PT": "Ilimitado",
+        "ru-RU": "Безлимитно",
+        "ja-JP": "無制限",
+        "de-DE": "Unbegrenzt",
+        "fr-FR": "Illimité",
+        "ko-KR": "무제한",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(6868-6874)"
+        ],
+        "$id": 3357
+    },
+    "满3人解锁": {
+        "en-US": "Unlock with 3 invitees",
+        "es-ES": "Desbloquear con 3 personas",
+        "ar-EG": "يُفتح عند دعوة 3 أشخاص",
+        "pt-PT": "Desbloqueie ao atingir 3 pessoas",
+        "ru-RU": "Разблокируется при достижении 3 человек",
+        "ja-JP": "3 名で解除可能",
+        "de-DE": "Freigeschaltet bei 3 Personen",
+        "fr-FR": "Débloqué après 3 invités",
+        "ko-KR": "3인 달성 시 잠금 해제",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(6949-6958)"
+        ],
+        "$id": 3358
+    },
+    "您的专属邀请链接": {
+        "en-US": "Your Exclusive Invitation Link",
+        "es-ES": "Su enlace de invitación personalizado",
+        "ar-EG": "رابط الدعوة الخاص بك",
+        "pt-PT": "A sua ligação exclusiva de convite",
+        "ru-RU": "Ваша персональная ссылка для приглашения",
+        "ja-JP": "お客様専用の招待リンク",
+        "de-DE": "Ihr persönlicher Einladungslink",
+        "fr-FR": "Votre lien d'invitation exclusif",
+        "ko-KR": "전용 초대 링크",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(7627-7639)"
+        ],
+        "$id": 3359
+    },
+    "发送链接给好友，好友下载并运行应用后，您和好友都将立即获得 {bonus} 个文件的分析额度，邀请满3人即可解锁无限额度。": {
+        "en-US": "Send the link to your friend. After your friend downloads and runs the app, both you and your friend will immediately receive {bonus} file analysis credits. Invite 3 friends to unlock unlimited credits.",
+        "es-ES": "Enviar enlace a un amigo; cuando tu amigo descargue y ejecute la aplicación, tanto tú como vuestro amigo obtendréis inmediatamente una cuota de análisis de {bonus} archivos. Invita a 3 personas para desbloquear una cuota ilimitada.",
+        "ar-EG": "أرسل رابط الدعوة لصديقك، وعندما يُحمّل صديقك التطبيق ويُشغّله، ستحصل أنت وصديقك فورًا على رصيد تحليل لـ {bonus} ملف. وعند دعوتك 3 أشخاص، سيتم فتح الرصيد غير المحدود لك.  ",
+        "pt-PT": "Envie o link a um amigo; assim que o seu amigo descarregar e executar a aplicação, tanto você como o seu amigo receberão imediatamente uma quota de análise de {bonus} ficheiros. Ao convidar 3 pessoas, desbloqueará uma quota ilimitada.",
+        "ru-RU": "Отправьте ссылку другу; после того как друг скачает и запустит приложение, вы и друг немедленно получите квоту на анализ {bonus} файлов; пригласив 3 человек, вы разблокируете неограниченную квоту.",
+        "ja-JP": "友達にリンクを送り、友達がアプリをダウンロードして実行すると、あなたと友達の双方が直ちに {bonus} 個のファイル分析枠を獲得できます。3 人を招待すると、無制限枠がロック解除されます。",
+        "de-DE": "Senden Sie den Link an Freunde. Nachdem diese die App heruntergeladen und ausgeführt haben, erhalten Sie und Ihre Freunde sofort ein Analysekontingent von {bonus} Dateien. Sobald Sie 3 Personen eingeladen haben, wird das unbegrenzte Kontingent freigeschaltet.",
+        "fr-FR": "Envoyez le lien à un ami ; une fois qu'il aura téléchargé et exécuté l'application, vous et votre ami recevrez immédiatement un quota d'analyse de {bonus} fichiers. Invitez 3 personnes pour débloquer un quota illimité.",
+        "ko-KR": "링크를 친구에게 보내세요. 친구가 앱을 다운로드하고 실행하면, 귀하와 친구 모두 즉시 {bonus}개 파일 분석 한도를 얻게 되며, 3명 초대로 무제한 한도를 잠금 해제할 수 있습니다.",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(8242-8307)"
+        ],
+        "$id": 3361
+    },
+    "我有邀请码/邀请链接": {
+        "en-US": "I have an invitation code/link",
+        "es-ES": "Tengo un código de invitación/enlace de invitación",
+        "ar-EG": "لديّ رمز دعوة/رابط دعوة  ",
+        "pt-PT": "Tenho um código/link de convite",
+        "ru-RU": "У меня есть код приглашения / ссылка для приглашения",
+        "ja-JP": "招待コード／招待リンクがあります",
+        "de-DE": "Ich habe einen Einladungscode/Einladungslink",
+        "fr-FR": "J'ai un code d'invitation / un lien d'invitation",
+        "ko-KR": "초대 코드/초대 링크가 있습니다.",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(8725-8739)"
+        ],
+        "$id": 3362
+    },
+    "在此输入 16 位邀请码或链接": {
+        "en-US": "Enter the 16-character invitation code or link here",
+        "es-ES": "Introduce aquí un código de invitación de 16 dígitos o un enlace",
+        "ar-EG": "أدخل هنا رمز الدعوة المكوَّن من 16 رقمًا أو الرابط  ",
+        "pt-PT": "Introduza aqui o código de convite de 16 dígitos ou o link",
+        "ru-RU": "Введите здесь 16-значный код приглашения или ссылку",
+        "ja-JP": "ここに 16 桁の招待コードまたはリンクを入力",
+        "de-DE": "Geben Sie hier den 16-stelligen Einladungscode oder den Link ein",
+        "fr-FR": "Saisissez ici un code d'invitation ou un lien à 16 caractères",
+        "ko-KR": "여기에 16자리 초대 코드 또는 링크 입력",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(8870-8889)"
+        ],
+        "$id": 3363
+    },
+    "立即领取": {
+        "en-US": "Claim Now",
+        "es-ES": "Reclamar ahora",
+        "ar-EG": "استلم الآن  ",
+        "pt-PT": "Receber agora",
+        "ru-RU": "Получить немедленно",
+        "ja-JP": "すぐに受け取る",
+        "de-DE": "Sofort abrufen",
+        "fr-FR": "Réclamer maintenant",
+        "ko-KR": "즉시 받기",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(9484-9492)"
+        ],
+        "$id": 3364
+    },
+    "如果你知道他人的邀请码或链接，输入后双方均可立即获取 500 个分析额度。": {
+        "en-US": "If you know someone else's invitation code or link, entering it will immediately grant both parties 500 analysis credits.",
+        "es-ES": "Si conoces el código de invitación o el enlace de otra persona, tras introducirlo, ambas partes obtendrán inmediatamente 500 cuotas de análisis.",
+        "ar-EG": "إذا كنت تعرف رمز دعوة أو رابط شخص آخر، فأدخله ليحصل الطرفان فورًا على رصيد تحليل قدره 500.  ",
+        "pt-PT": "Se conhecer o código ou link de convite de outra pessoa, ao introduzi-lo ambos receberão imediatamente uma quota de 500 análises.",
+        "ru-RU": "Если вы знаете код приглашения или ссылку другого человека, после ввода обе стороны могут немедленно получить 500 единиц квоты анализа.",
+        "ja-JP": "他者の招待コードまたはリンクをご存知の場合は、入力するだけで双方が直ちに 500 個の分析枠を獲得できます。",
+        "de-DE": "Wenn Sie den Einladungscode oder Link einer anderen Person kennen, erhalten nach der Eingabe beide sofort ein Analysekontingent von 500.",
+        "fr-FR": "Si vous connaissez le code d'invitation ou le lien de quelqu'un d'autre, saisissez-le pour que les deux parties obtiennent immédiatement 500 quotas d'analyse.",
+        "ko-KR": "타인의 초대 코드 또는 링크를 알고 있다면 입력 후 양측 모두 즉시 500개 분석 한도를 얻을 수 있습니다.",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(9633-9674)"
+        ],
+        "$id": 3365
+    },
+    "刷新状态": {
+        "en-US": "Refresh Status",
+        "es-ES": "Actualizar estado",
+        "ar-EG": "تحديث الحالة  ",
+        "pt-PT": "Atualizar estado",
+        "ru-RU": "Обновить статус",
+        "ja-JP": "ステータスを更新",
+        "de-DE": "Status aktualisieren",
+        "fr-FR": "Actualiser l'état",
+        "ko-KR": "상태 새로고침",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(10023-10031)"
+        ],
+        "$id": 3366
+    },
+    "稍后再说": {
+        "en-US": "Later",
+        "es-ES": "Más tarde",
+        "ar-EG": "سأفعل ذلك لاحقًا",
+        "pt-PT": "Mais tarde",
+        "ru-RU": "Напомнить позже",
+        "ja-JP": "あとで",
+        "de-DE": "Später",
+        "fr-FR": "Plus tard",
+        "ko-KR": "나중에 하기",
+        "$files": [
+            "renderer/components/invitation/InvitationModal.tsx(10189-10197)"
+        ],
+        "$id": 3367
+    }
+}

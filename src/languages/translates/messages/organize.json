@@ -1,0 +1,2110 @@
+{
+    "AI正在分析整理方案...": {
+        "en-US": "AI is analyzing and organizing the plan...",
+        "es-ES": "AI está analizando y organizando el plan...\r",
+        "ar-EG": "يقوم الذكاء الاصطناعي بتحليل وتنظيم الخطة...\r",
+        "pt-PT": "A IA está a analisar e organizar o plano...",
+        "ru-RU": "ИИ анализирует и систематизирует решения...\r",
+        "ja-JP": "AIが分析および整理案を作成しています...",
+        "de-DE": "KI analysiert und organisiert den Plan...\r",
+        "fr-FR": "L'IA analyse et organise le plan...\r",
+        "ko-KR": "AI가 정리 방안을 분석 중입니다...",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(1509-1526)"
+        ],
+        "$id": 4132
+    },
+    "批次进度：": {
+        "en-US": "Batch progress:",
+        "es-ES": "Progreso del lote:\r",
+        "ar-EG": "تقدم الدفعة:\r",
+        "pt-PT": "Progresso do lote:",
+        "ru-RU": "Прогресс партии:\r",
+        "ja-JP": "バッチ処理状況：",
+        "de-DE": "Stapel-Fortschritt:\r",
+        "fr-FR": "Progression du lot :\r",
+        "ko-KR": "배치 진행 상황：",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(2408-2417)"
+        ],
+        "$id": 4133
+    },
+    "第 {currentBatch} / {totalBatches} 批": {
+        "en-US": "Batch {currentBatch} / {totalBatches}",
+        "es-ES": "Lote {currentBatch} / {totalBatches}\r",
+        "ar-EG": "الدفعة {currentBatch} / {totalBatches}\r",
+        "pt-PT": "Lote {currentBatch} / {totalBatches}",
+        "ru-RU": "{currentBatch} / {totalBatches} -я партия\r",
+        "ja-JP": "{currentBatch} / {totalBatches} バッチ",
+        "de-DE": "Stapel {currentBatch} / {totalBatches}\r",
+        "fr-FR": "Lot {currentBatch} / {totalBatches}\r",
+        "ko-KR": "{currentBatch} / {totalBatches} 배치",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(2463-2502)"
+        ],
+        "$id": 4134
+    },
+    "文件进度：": {
+        "en-US": "File progress:",
+        "es-ES": "Progreso de archivos:\r",
+        "ar-EG": "تقدم الملف:\r",
+        "pt-PT": "Progresso do ficheiro:",
+        "ru-RU": "Прогресс файла:\r",
+        "ja-JP": "ファイル処理状況：",
+        "de-DE": "Datei-Fortschritt:\r",
+        "fr-FR": "Progression du fichier :\r",
+        "ko-KR": "파일 진행 상황：",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(2780-2789)"
+        ],
+        "$id": 4135
+    },
+    "{processedFiles}/{totalFiles} 个文件": {
+        "en-US": "{processedFiles}/{totalFiles} files",
+        "es-ES": "{processedFiles}/{totalFiles} archivos\r",
+        "ar-EG": "{processedFiles}/{totalFiles} ملف\r",
+        "pt-PT": "{processedFiles}/{totalFiles} ficheiros",
+        "ru-RU": "{processedFiles}/{totalFiles} файлов\r",
+        "ja-JP": "{processedFiles}/{totalFiles} 個のファイル",
+        "de-DE": "{processedFiles}/{totalFiles} Dateien\r",
+        "fr-FR": "{processedFiles}/{totalFiles} fichiers\r",
+        "ko-KR": "{processedFiles}/{totalFiles} 개 파일",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(2835-2872)"
+        ],
+        "$id": 4136
+    },
+    "已创建 {count} 个目录分类": {
+        "en-US": "{count} directory categories have been created",
+        "es-ES": "Se han creado {count} categorías de directorios\r",
+        "ar-EG": "تم إنشاء {count} تصنيفات مجلدات\r",
+        "pt-PT": "Foram criadas {count} categorias de diretório",
+        "ru-RU": "Созданы {count} категории каталогов\r",
+        "ja-JP": "{count} 個のディレクトリ分類が作成されました",
+        "de-DE": "{count} Verzeichniskategorien wurden erstellt\r",
+        "fr-FR": "{count} répertoires classés ont été créés\r",
+        "ko-KR": "{count} 개 디렉터리 분류 생성됨",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(3556-3577)"
+        ],
+        "$id": 4137
+    },
+    "隐藏预览": {
+        "en-US": "Hide preview",
+        "es-ES": "Ocultar vista previa\r",
+        "ar-EG": "إخفاء المعاينة\r",
+        "pt-PT": "Ocultar pré-visualização",
+        "ru-RU": "Скрыть предварительный просмотр\r",
+        "ja-JP": "プレビューを隠す",
+        "de-DE": "Vorschau ausblenden\r",
+        "fr-FR": "Masquer l'aperçu\r",
+        "ko-KR": "미리보기 숨기기",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(4060-4068)"
+        ],
+        "$id": 4138
+    },
+    "显示预览": {
+        "en-US": "Show preview",
+        "es-ES": "Mostrar vista previa\r",
+        "ar-EG": "عرض المعاينة\r",
+        "pt-PT": "Mostrar pré-visualização",
+        "ru-RU": "Показать предварительный просмотр\r",
+        "ja-JP": "プレビューを表示",
+        "de-DE": "Vorschau anzeigen\r",
+        "fr-FR": "Afficher l'aperçu\r",
+        "ko-KR": "미리보기 표시",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(4072-4080)"
+        ],
+        "$id": 4139
+    },
+    "当前目录结构预览": {
+        "en-US": "Current directory structure preview",
+        "es-ES": "Vista previa de la estructura de directorios actual\r",
+        "ar-EG": "معاينة هيكل المجلد الحالي\r",
+        "pt-PT": "Pré-visualização da estrutura do diretório atual",
+        "ru-RU": "Предварительный просмотр текущей структуры каталога\r",
+        "ja-JP": "現在のディレクトリ構造プレビュー",
+        "de-DE": "Aktuelle Verzeichnisstruktur-Vorschau\r",
+        "fr-FR": "Aperçu de la structure du répertoire actuel\r",
+        "ko-KR": "현재 디렉터리 구조 미리보기",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(4579-4591)"
+        ],
+        "$id": 4140
+    },
+    "(持续更新中...)": {
+        "en-US": "(Updating continuously...)",
+        "es-ES": "(Actualización continua...)\r",
+        "ar-EG": "(تحديث مستمر...)\r",
+        "pt-PT": "(Em actualização contínua...)",
+        "ru-RU": "(Обновляется постоянно...)\r",
+        "ja-JP": "（随時更新中...）",
+        "de-DE": "(läuft aktuell weiter...)\r",
+        "fr-FR": "(Mise à jour en cours...)\r",
+        "ko-KR": "(지속적으로 업데이트 중...)",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(4707-4721)"
+        ],
+        "$id": 4141
+    },
+    "AI正在处理更多文件，请稍候...": {
+        "en-US": "AI is processing more files, please wait...",
+        "es-ES": "AI está procesando más archivos, por favor espere...",
+        "ar-EG": "يقوم الذكاء الاصطناعي بمعالجة مزيد من الملفات، يرجى الانتظار...",
+        "pt-PT": "A IA está a processar mais ficheiros, por favor aguarde...",
+        "ru-RU": "AI обрабатывает больше файлов, подождите...",
+        "ja-JP": "AIがさらに多くのファイルを処理しています。しばらくお待ちください...",
+        "de-DE": "KI verarbeitet weitere Dateien, bitte warten...",
+        "fr-FR": "L'IA traite davantage de fichiers, veuillez patienter...",
+        "ko-KR": "AI가 추가 파일을 처리 중입니다. 잠시만 기다려 주십시오...",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(5307-5328)"
+        ],
+        "$id": 4142
+    },
+    "正在生成目录结构...": {
+        "en-US": "Generating directory structure...",
+        "es-ES": "Generando estructura de directorios...",
+        "ar-EG": "جارٍ إنشاء هيكل الدليل...",
+        "pt-PT": "A gerar estrutura de diretórios...",
+        "ru-RU": "Генерация структуры каталогов...",
+        "ja-JP": "ディレクトリ構造を生成中...",
+        "de-DE": "Verzeichnisstruktur wird generiert...\r",
+        "fr-FR": "Génération de la structure du répertoire en cours...",
+        "ko-KR": "디렉토리 구조를 생성하는 중입니다...",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(5571-5586)"
+        ],
+        "$id": 3269
+    },
+    "取消分析": {
+        "en-US": "Cancel Analysis\r",
+        "es-ES": "Cancelar análisis\r",
+        "ar-EG": "إلغاء التحليل\r",
+        "pt-PT": "Cancelar análise",
+        "ru-RU": "Отменить анализ\r",
+        "ja-JP": "分析をキャンセル",
+        "de-DE": "Analyse abbrechen\r",
+        "fr-FR": "Annuler l'analyse\r",
+        "ko-KR": "분석 취소\r",
+        "$files": [
+            "renderer/components/organize/AIOrganizeProgressDialog.tsx(5854-5862)"
+        ],
+        "$id": 4144
+    },
+    "整理真实目录": {
+        "en-US": "Organize Real Directory\r",
+        "es-ES": "Organizar directorio real\r",
+        "ar-EG": "ترتيب الدليل الفعلي\r",
+        "pt-PT": "Organizar diretório real",
+        "ru-RU": "Организовать реальный каталог\r",
+        "ja-JP": "実ディレクトリを整理",
+        "de-DE": "Echtes Verzeichnis organisieren\r",
+        "fr-FR": "Organiser le répertoire réel\r",
+        "ko-KR": "실제 디렉터리 정리\r",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(2489-2499)",
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(7072-7082)"
+        ],
+        "$id": 4145
+    },
+    "如果对结果不满意？请尝试：": {
+        "en-US": "If you are not satisfied with the result? Please try:",
+        "es-ES": "¿No estás satisfecho con el resultado? Intenta:",
+        "ar-EG": "إذا لم تكن راضيًا عن النتيجة؟ يرجى المحاولة:",
+        "pt-PT": "Se não estiver satisfeito com o resultado? Tente:",
+        "ru-RU": "Не удовлетворены результатом? Попробуйте:",
+        "ja-JP": "結果に満足できませんか？お試しください：",
+        "de-DE": "Falls Sie mit dem Ergebnis nicht zufrieden sind? Bitte versuchen Sie:\r",
+        "fr-FR": "Si vous n'êtes pas satisfait du résultat ? Veuillez essayer :",
+        "ko-KR": "결과에 만족하지 않으시나요? 다음 방법을 시도해보세요:",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(2949-2966)"
+        ],
+        "$id": 3270
+    },
+    "导出虚拟目录功能": {
+        "en-US": "Generate Virtual Directory feature",
+        "es-ES": "Función de generación de directorios virtuales",
+        "ar-EG": "وظيفة إنشاء دليل افتراضي",
+        "pt-PT": "Função de geração de diretório virtual",
+        "ru-RU": "Функция генерации виртуального каталога",
+        "ja-JP": "仮想ディレクトリ生成機能",
+        "de-DE": "Virtuelle Verzeichnisfunktion generieren\r",
+        "fr-FR": "Fonction de génération de répertoire virtuel",
+        "ko-KR": "가상 디렉토리 생성 기능",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(3416-3428)"
+        ],
+        "$id": 3271
+    },
+    "在虚拟目录页面左侧标签目录树中勾选标签，点击导出虚拟目录按钮，定制化的生成你需要的目录结构，且不影响真实目录的文件结构": {
+        "en-US": "Check the tags in the tag directory tree on the left side of the virtual directory page, click the Generate Virtual Directory button to customize the directory structure you need without affecting the file structure of the real directory",
+        "es-ES": "En la página de directorios virtuales, marca las etiquetas en el árbol de directorios de la izquierda y haz clic en el botón de generar directorio virtual para crear una estructura de directorios personalizada sin afectar la estructura de archivos del directorio real",
+        "ar-EG": "في صفحة الدليل الافتراضي، قم بتحديد العلامات في شجرة دليل العلامات الموجودة على الجانب الأيسر، ثم انقر على زر \"إنشاء دليل افتراضي\" لإنشاء هيكل الدليل الذي تحتاجه بشكل مخصص، دون التأثير على هيكل ملفات الدليل الحقيقي",
+        "pt-PT": "Na árvore de diretórios de etiquetas no lado esquerdo da página de diretório virtual, selecione as etiquetas e clique no botão de gerar diretório virtual para criar personalizadamente a estrutura de diretórios que precisa, sem afetar a estrutura de ficheiros do diretório real",
+        "ru-RU": "На странице виртуального каталога в дереве тегов слева отметьте нужные теги, нажмите кнопку «Сгенерировать виртуальный каталог», чтобы создать индивидуально настроенную структуру каталогов, не влияющую на структуру файлов реального каталога.",
+        "ja-JP": "仮想ディレクトリページの左側にあるタグディレクトリツリーでタグにチェックを入れ、「仮想ディレクトリ生成」ボタンをクリックすることで、必要なディレクトリ構造をカスタマイズして生成できます。また、実際のディレクトリのファイル構造には影響しません。",
+        "de-DE": "Markieren Sie im linken Tag-Verzeichnisbaum der virtuellen Verzeichnisseite die gewünschten Tags und klicken Sie auf die Schaltfläche \"Virtuelles Verzeichnis generieren\", um eine individuell angepasste Verzeichnisstruktur zu erstellen, ohne die Dateistruktur der echten Verzeichnisse zu beeinträchtigen\r",
+        "fr-FR": "Cochez les étiquettes dans l'arborescence du répertoire sur la gauche de la page du répertoire virtuel, cliquez sur le bouton de génération du répertoire virtuel pour générer personnalisé la structure du répertoire dont vous avez besoin, sans affecter la structure des fichiers du répertoire réel",
+        "ko-KR": "가상 디렉토리 페이지의 좌측 탭 디렉토리 트리에서 레이블을 선택하고, 가상 디렉토리 생성 버튼을 클릭하여 원하는 디렉토리 구조를 맞춤형으로 생성하세요. 실제 디렉토리의 파일 구조에는 영향을 주지 않습니다.",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(3689-3752)"
+        ],
+        "$id": 3272
+    },
+    "或者": {
+        "en-US": "Or",
+        "es-ES": "O",
+        "ar-EG": "أو",
+        "pt-PT": "Ou",
+        "ru-RU": "Или",
+        "ja-JP": "または",
+        "de-DE": "Oder\r",
+        "fr-FR": "Ou",
+        "ko-KR": "또는",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(3870-3876)"
+        ],
+        "$id": 3273
+    },
+    "提示词引导AI整理": {
+        "en-US": "Prompt AI to organize with prompts",
+        "es-ES": "Guía de IA mediante indicaciones",
+        "ar-EG": "توجيه الذكاء الاصطناعي للتنظيم باستخدام الكلمات الموجهة",
+        "pt-PT": "Orientação por prompts para organizar com IA",
+        "ru-RU": "Подсказки для руководства ИИ по упорядочиванию",
+        "ja-JP": "プロンプトでAIを誘導して整理",
+        "de-DE": "KI-Organisation durch Eingabeaufforderungen\r",
+        "fr-FR": "Conseils pour guider l'IA à organiser",
+        "ko-KR": "프롬프트로 AI 정리 유도",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(4258-4271)"
+        ],
+        "$id": 3274
+    },
+    "例如：目录名最多4个字": {
+        "en-US": "For example: Directory names should be no more than 4 characters",
+        "es-ES": "Por ejemplo: nombres de directorios de máximo 4 caracteres",
+        "ar-EG": "على سبيل المثال: أسماء الدلائل لا تزيد عن 4 أحرف",
+        "pt-PT": "Por exemplo: nomes de diretórios com máximo de 4 caracteres",
+        "ru-RU": "Например: название каталога — максимум 4 символа",
+        "ja-JP": "例：ディレクトリ名は最大4文字",
+        "de-DE": "Beispiel: Verzeichnisnamen maximal 4 Zeichen\r",
+        "fr-FR": "Par exemple : nom du répertoire maximum 4 caractères",
+        "ko-KR": "예: 디렉토리명은 최대 4자",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(4494-4509)"
+        ],
+        "$id": 3275
+    },
+    "重新整理": {
+        "en-US": "Reorganize",
+        "es-ES": "Reorganizar",
+        "ar-EG": "إعادة التنظيم",
+        "pt-PT": "Reorganizar",
+        "ru-RU": "Перестроить",
+        "ja-JP": "再整理",
+        "de-DE": "Neu organisieren\r",
+        "fr-FR": "Réorganiser",
+        "ko-KR": "다시 정리",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(5001-5009)"
+        ],
+        "$id": 3276
+    },
+    "整理预览：": {
+        "en-US": "Organize Preview:\r",
+        "es-ES": "Vista previa de la organización:\r",
+        "ar-EG": "معاينة الترتيب:\r",
+        "pt-PT": "Pré-visualização da organização:",
+        "ru-RU": "Предварительный просмотр организации:\r",
+        "ja-JP": "整理プレビュー：",
+        "de-DE": "Organisierungs-Vorschau:\r",
+        "fr-FR": "Aperçu de l'organisation :",
+        "ko-KR": "정리 미리보기:\r",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(5178-5187)"
+        ],
+        "$id": 4147
+    },
+    "{fileCount} 个文件将被移动到新位置": {
+        "en-US": "{fileCount} files will be moved to new locations\r",
+        "es-ES": "{fileCount} archivos serán movidos a nuevas ubicaciones\r",
+        "ar-EG": "{fileCount} من الملفات سيتم نقلها إلى مواقع جديدة\r",
+        "pt-PT": "{fileCount} ficheiros serão movidos para novas posições",
+        "ru-RU": "Файлы {fileCount} будут перемещены в новое местоположение\r",
+        "ja-JP": "{fileCount} 個のファイルが新しい位置に移動されます",
+        "de-DE": "{fileCount} Dateien werden an neue Positionen verschoben\r",
+        "fr-FR": "{fileCount} fichiers seront déplacés vers de nouveaux emplacements\r",
+        "ko-KR": "{fileCount}개의 파일이 새 위치로 이동됩니다\r",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(5219-5246)"
+        ],
+        "$id": 4149
+    },
+    "取消": {
+        "en-US": "Cancel\r",
+        "es-ES": "Cancelar\r",
+        "ar-EG": "إلغاء\r",
+        "pt-PT": "Cancelar",
+        "ru-RU": "Отмена\r",
+        "ja-JP": "キャンセル",
+        "de-DE": "Abbrechen\r",
+        "fr-FR": "Annuler\r",
+        "ko-KR": "취소\r",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(5827-5833)",
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(25334-25340)",
+            "renderer/components/organize/UndoHistoryDialog.tsx(2380-2386)"
+        ],
+        "$id": 4150
+    },
+    "导出虚拟目录": {
+        "en-US": "Create Virtual Directory",
+        "es-ES": "Crear directorio virtual",
+        "ar-EG": "إنشاء دليل افتراضي",
+        "pt-PT": "Criar diretório virtual",
+        "ru-RU": "Создать виртуальный каталог",
+        "ja-JP": "仮想ディレクトリを作成",
+        "de-DE": "Virtuelles Verzeichnis erstellen",
+        "fr-FR": "Créer un répertoire virtuel",
+        "ko-KR": "가상 디렉터리 생성",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(6733-6743)"
+        ],
+        "$id": 4146
+    },
+    "此操作将改变真实目录的文件结构，操作不可撤销！": {
+        "en-US": "This operation will change the file structure of the real directory, and the operation is irreversible!",
+        "es-ES": "¡Esta operación cambiará la estructura de archivos del directorio real y no se puede deshacer!",
+        "ar-EG": "سيؤدي هذا الإجراء إلى تغيير هيكل ملفات الدليل الحقيقي، ولا يمكن التراجع عن العملية!",
+        "pt-PT": "Esta operação irá alterar a estrutura de ficheiros do diretório real, a operação é irreversível!",
+        "ru-RU": "Эта операция изменит структуру файлов реального каталога. Действие необратимо!",
+        "ja-JP": "この操作により実際のディレクトリのファイル構造が変更され、操作は取り消しできません！",
+        "de-DE": "Dieser Vorgang wird die Dateistruktur der echten Verzeichnisse verändern, der Vorgang ist unumkehrbar!",
+        "fr-FR": "Cette opération modifiera la structure des fichiers du répertoire réel, l'opération est irréversible !",
+        "ko-KR": "이 작업은 실제 디렉토리의 파일 구조를 변경하며, 작업 취소가 불가능합니다!",
+        "$files": [
+            "renderer/components/organize/ConfirmOrganizeDialog.tsx(7667-7694)"
+        ],
+        "$id": 3277
+    },
+    "文件冲突": {
+        "en-US": "File Conflicts\r",
+        "es-ES": "Conflicto de archivos\r",
+        "ar-EG": "تعارض الملفات\r",
+        "pt-PT": "Conflito de ficheiros",
+        "ru-RU": "Конфликт файлов\r",
+        "ja-JP": "ファイルの競合",
+        "de-DE": "Dateikonflikt\r",
+        "fr-FR": "Conflit de fichiers\r",
+        "ko-KR": "파일 충돌\r",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(1686-1694)"
+        ],
+        "$id": 4152
+    },
+    "检测到 {count} 个文件冲突。请选择如何处理这些冲突。": {
+        "en-US": "{count} file conflicts detected. Please choose how to handle these conflicts.\r",
+        "es-ES": "Se detectaron {count} conflictos de archivos. Por favor seleccione cómo manejar estos conflictos.\r",
+        "ar-EG": "تم اكتشاف {count} تعارض في الملفات. يرجى تحديد كيفية التعامل مع هذه التعارضات.\r",
+        "pt-PT": "Foi detetado {count} conflitos de ficheiros. Por favor, escolha como lidar com estes conflitos.",
+        "ru-RU": "Обнаружено {count} конфликтов файлов. Пожалуйста, выберите способ обработки этих конфликтов.\r",
+        "ja-JP": "{count} 個のファイル競合を検出しました。競合の処理方法を選択してください。",
+        "de-DE": "{count} Dateikonflikte gefunden. Bitte wählen Sie, wie mit diesen Konflikten umgegangen werden soll.\r",
+        "fr-FR": "{count} conflits de fichiers détectés. Veuillez choisir comment gérer ces conflits.\r",
+        "ko-KR": "{count}개의 파일 충돌이 감지되었습니다. 충돌 처리 방법을 선택해주세요.\r",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(1940-1974)"
+        ],
+        "$id": 4153
+    },
+    "冲突文件列表：": {
+        "en-US": "Conflicting Files List:\r",
+        "es-ES": "Lista de archivos en conflicto:\r",
+        "ar-EG": "قائمة الملفات المتعارضة:\r",
+        "pt-PT": "Lista de ficheiros em conflito:",
+        "ru-RU": "Список конфликтных файлов:\r",
+        "ja-JP": "競合ファイル一覧：",
+        "de-DE": "Liste der Konfliktdateien:\r",
+        "fr-FR": "Liste des fichiers en conflit :\r",
+        "ko-KR": "충돌 파일 목록:\r",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(2158-2169)"
+        ],
+        "$id": 4154
+    },
+    "现有文件：": {
+        "en-US": "Existing Files:\r",
+        "es-ES": "Archivo existente:\r",
+        "ar-EG": "الملفات الحالية:\r",
+        "pt-PT": "Ficheiro existente:",
+        "ru-RU": "Существующий файл:\r",
+        "ja-JP": "既存ファイル：",
+        "de-DE": "Vorhandene Dateien:\r",
+        "fr-FR": "Fichier existant :\r",
+        "ko-KR": "기존 파일:\r",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(3177-3186)"
+        ],
+        "$id": 4155
+    },
+    "新文件：": {
+        "en-US": "New Files:\r",
+        "es-ES": "Archivo nuevo:\r",
+        "ar-EG": "الملفات الجديدة:\r",
+        "pt-PT": "Novo ficheiro:",
+        "ru-RU": "Новый файл:\r",
+        "ja-JP": "新規ファイル：",
+        "de-DE": "Neue Dateien:\r",
+        "fr-FR": "Nouveau fichier :\r",
+        "ko-KR": "새 파일:\r",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(3647-3655)"
+        ],
+        "$id": 4156
+    },
+    "还有 {count} 个冲突文件未显示...": {
+        "en-US": "There are {count} more conflict files not displayed...",
+        "es-ES": "Hay {count} archivos en conflicto más no mostrados...",
+        "ar-EG": "لا يزال هناك {count} ملف تعارض لم يتم عرضها...",
+        "pt-PT": "Ainda há {count} ficheiros em conflito não mostrados...",
+        "ru-RU": "Есть еще {count} конфликтных файлов, которые не отображаются...",
+        "ja-JP": "他に {count} 個の競合ファイルが表示されていません...",
+        "de-DE": "Weitere {count} Konfliktdateien werden nicht angezeigt...",
+        "fr-FR": "{count} autres fichiers en conflit ne sont pas affichés...",
+        "ko-KR": "표시되지 않은 충돌 파일이 {count}개 더 있습니다...",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(4118-4144)"
+        ],
+        "$id": 4157
+    },
+    "选择处理方式：": {
+        "en-US": "Choose handling method:",
+        "es-ES": "Seleccionar método de procesamiento:",
+        "ar-EG": "اختر طريقة المعالجة:",
+        "pt-PT": "Escolha o método de processamento:",
+        "ru-RU": "Выберите способ обработки:",
+        "ja-JP": "処理方法を選択：",
+        "de-DE": "Auswahl der Bearbeitungsweise:",
+        "fr-FR": "Sélectionner le mode de traitement :",
+        "ko-KR": "처리 방식 선택:",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(4404-4415)"
+        ],
+        "$id": 4158
+    },
+    "重命名": {
+        "en-US": "Rename",
+        "es-ES": "Renombrar",
+        "ar-EG": "إعادة التسمية",
+        "pt-PT": "Renomear",
+        "ru-RU": "Переименовать",
+        "ja-JP": "名前を変更",
+        "de-DE": "Umbenennen",
+        "fr-FR": "Renommer",
+        "ko-KR": "이름 변경",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(5027-5034)"
+        ],
+        "$id": 4159
+    },
+    "自动为新文件重命名，保留现有文件": {
+        "en-US": "Automatically rename the new file, keeping the existing file",
+        "es-ES": "Renombrar automáticamente los nuevos archivos, mantener los archivos existentes",
+        "ar-EG": "إعادة تسمية الملفات الجديدة تلقائيًا مع الاحتفاظ بالملفات الحالية",
+        "pt-PT": "Renomeia automaticamente os novos ficheiros, mantendo os ficheiros existentes",
+        "ru-RU": "Автоматически переименовать новые файлы, оставить существующие",
+        "ja-JP": "新しいファイルの名前を自動的に変更し、既存のファイルを保持",
+        "de-DE": "Neue Datei automatisch umbenennen und bestehende Datei beibehalten",
+        "fr-FR": "Renommer automatiquement le nouveau fichier, conserver le fichier existant",
+        "ko-KR": "새 파일 자동 이름 변경, 기존 파일 보존",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(5110-5130)"
+        ],
+        "$id": 4160
+    },
+    "添加序号 (file (1).txt)": {
+        "en-US": "Add sequence number (file (1).txt)",
+        "es-ES": "Añadir número de serie (archivo (1).txt)",
+        "ar-EG": "إضافة رقم تسلسلي (ملف (1).txt)",
+        "pt-PT": "Adicionar número de série (ficheiro (1).txt)",
+        "ru-RU": "Добавить числовую маркировку (file (1).txt)",
+        "ja-JP": "番号を追加 (file (1).txt)",
+        "de-DE": "Nummerierung hinzufügen (file (1).txt)",
+        "fr-FR": "Ajouter un numéro (file (1).txt)",
+        "ko-KR": "순차 번호 추가 (file (1).txt)",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(5763-5786)"
+        ],
+        "$id": 4161
+    },
+    "添加时间戳 (file_20250120.txt)": {
+        "en-US": "Add timestamp (file_20250120.txt)",
+        "es-ES": "Añadir marca de tiempo (archivo_20250120.txt)",
+        "ar-EG": "إضافة طابع زمني (ملف_20250120.txt)",
+        "pt-PT": "Adicionar data e hora (ficheiro_20250120.txt)",
+        "ru-RU": "Добавить временную метку (file_20250120.txt)",
+        "ja-JP": "タイムスタンプを追加 (file_20250120.txt)",
+        "de-DE": "Zeitstempel hinzufügen (file_20250120.txt)",
+        "fr-FR": "Ajouter un horodatage (file_20250120.txt)",
+        "ko-KR": "타임스탬프 추가 (file_20250120.txt)",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(6346-6375)"
+        ],
+        "$id": 4162
+    },
+    "添加来源目录名 (file_OldFolder.txt)": {
+        "en-US": "Add source directory name (file_OldFolder.txt)",
+        "es-ES": "Añadir nombre del directorio de origen (archivo_CarpetaAntigua.txt)",
+        "ar-EG": "إضافة اسم المجلد المصدري (ملف_مجلدقديم.txt)",
+        "pt-PT": "Adicionar nome da pasta de origem (ficheiro_PastaAntiga.txt)",
+        "ru-RU": "Добавить имя исходной папки (file_OldFolder.txt)",
+        "ja-JP": "元のディレクトリ名を追加 (file_OldFolder.txt)",
+        "de-DE": "Quellordnername hinzufügen (file_OldFolder.txt)",
+        "fr-FR": "Ajouter le nom du répertoire source (file_OldFolder.txt)",
+        "ko-KR": "소스 디렉토리 이름 추가 (file_OldFolder.txt)",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(6929-6961)"
+        ],
+        "$id": 4163
+    },
+    "跳过": {
+        "en-US": "Skip",
+        "es-ES": "Omitir",
+        "ar-EG": "تخطي",
+        "pt-PT": "Ignorar",
+        "ru-RU": "Пропустить",
+        "ja-JP": "スキップ",
+        "de-DE": "Überspringen",
+        "fr-FR": "Ignorer",
+        "ko-KR": "건너뛰기",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(7662-7668)"
+        ],
+        "$id": 4164
+    },
+    "保留现有文件，不移动新文件": {
+        "en-US": "Keep existing file, do not move new file",
+        "es-ES": "Mantener archivos existentes, no mover nuevos archivos",
+        "ar-EG": "الاحتفاظ بالملفات الحالية وعدم نقل الملفات الجديدة",
+        "pt-PT": "Manter ficheiros existentes, não mover novos ficheiros",
+        "ru-RU": "Оставить существующие файлы, не перемещать новые файлы",
+        "ja-JP": "既存のファイルを保持し、新しいファイルは移動しない",
+        "de-DE": "Bestehende Datei beibehalten, neue Datei nicht verschieben",
+        "fr-FR": "Conserver le fichier existant, ne pas déplacer le nouveau fichier",
+        "ko-KR": "기존 파일 보존, 새 파일 이동 안 함",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(7744-7761)"
+        ],
+        "$id": 4165
+    },
+    "覆盖": {
+        "en-US": "Overwrite",
+        "es-ES": "Sobrescribir",
+        "ar-EG": "استبدال",
+        "pt-PT": "Sobrescrever",
+        "ru-RU": "Перезаписать",
+        "ja-JP": "上書き",
+        "de-DE": "Überschreiben",
+        "fr-FR": "Remplacer",
+        "ko-KR": "덮어쓰기",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(8447-8453)"
+        ],
+        "$id": 4166
+    },
+    "删除现有文件，使用新文件替换（危险操作）": {
+        "en-US": "Delete existing file, replace with new file (dangerous operation)",
+        "es-ES": "Eliminar archivos existentes, reemplazar con nuevos archivos (operación peligrosa)",
+        "ar-EG": "حذف الملفات الحالية واستبدالها بالملفات الجديدة (عملية خطرة)",
+        "pt-PT": "Eliminar ficheiros existentes e substituí-los por novos ficheiros (operação perigosa)",
+        "ru-RU": "Удалить существующие файлы и заменить новыми (опасная операция)",
+        "ja-JP": "既存のファイルを削除し、新しいファイルで置き換え（危険な操作）",
+        "de-DE": "Bestehende Datei löschen und durch neue Datei ersetzen (gefährliche Aktion)",
+        "fr-FR": "Supprimer le fichier existant et le remplacer par le nouveau fichier (opération dangereuse)",
+        "ko-KR": "기존 파일 삭제, 새 파일로 대체 (위험 작업)",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(8538-8562)"
+        ],
+        "$id": 4167
+    },
+    "应用于所有 {count} 个冲突文件": {
+        "en-US": "Apply to all {count} conflicting files",
+        "es-ES": "Aplicar a todos los {count} archivos en conflicto",
+        "ar-EG": "يتم تطبيقه على جميع الملفات المتعارضة {count}",
+        "pt-PT": "Aplicar a todos os {count} ficheiros em conflito",
+        "ru-RU": "Применить ко всем {count} конфликтующим файлам",
+        "ja-JP": "すべての {count} 個の競合ファイルに適用",
+        "de-DE": "An alle {count} Konfliktdateien anwenden",
+        "fr-FR": "S'appliquer à tous les {count} fichiers en conflit",
+        "ko-KR": "모든 {count}개의 충돌 파일에 적용",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(9051-9074)"
+        ],
+        "$id": 4168
+    },
+    "取消整理": {
+        "en-US": "Cancel organizing",
+        "es-ES": "Cancelar organización",
+        "ar-EG": "إلغاء الترتيب",
+        "pt-PT": "Cancelar organização",
+        "ru-RU": "Отменить сортировку\r",
+        "ja-JP": "整理をキャンセル",
+        "de-DE": "Sortierung abbrechen",
+        "fr-FR": "Annuler l'organisation",
+        "ko-KR": "정리 취소",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(9425-9433)",
+            "renderer/components/organize/OrganizeProgressDialog.tsx(2898-2906)"
+        ],
+        "$id": 4169
+    },
+    "确认并继续": {
+        "en-US": "Confirm and continue",
+        "es-ES": "Confirmar y continuar",
+        "ar-EG": "تأكيد ومتابعة",
+        "pt-PT": "Confirmar e continuar",
+        "ru-RU": "Подтвердить и продолжить\r",
+        "ja-JP": "確認して続行",
+        "de-DE": "Bestätigen und fortfahren",
+        "fr-FR": "Confirmer et continuer",
+        "ko-KR": "확인 및 계속",
+        "$files": [
+            "renderer/components/organize/ConflictResolutionDialog.tsx(9642-9651)"
+        ],
+        "$id": 4170
+    },
+    "暂无目录结构预览": {
+        "en-US": "No directory structure preview",
+        "es-ES": "No hay vista previa de la estructura de directorios",
+        "ar-EG": "لا توجد معاينة لهيكل الدليل",
+        "pt-PT": "Nenhuma pré-visualização da estrutura de diretórios disponível",
+        "ru-RU": "Предварительный просмотр структуры каталога отсутствует\r",
+        "ja-JP": "ディレクトリ構造のプレビューは現在ありません",
+        "de-DE": "Keine Verzeichnisstruktur-Vorschau vorhanden",
+        "fr-FR": "Aperçu de la structure du répertoire indisponible",
+        "ko-KR": "아직 디렉토리 구조 미리보기 없음",
+        "$files": [
+            "renderer/components/organize/DirectoryTreePreview.tsx(662-674)"
+        ],
+        "$id": 4171
+    },
+    "目录结构为空": {
+        "en-US": "Directory structure is empty",
+        "es-ES": "La estructura de directorios está vacía",
+        "ar-EG": "هيكل الدليل فارغ",
+        "pt-PT": "Estrutura de diretórios vazia",
+        "ru-RU": "Структура каталога пуста\r",
+        "ja-JP": "ディレクトリ構造が空です",
+        "de-DE": "Verzeichnisstruktur ist leer",
+        "fr-FR": "La structure du répertoire est vide",
+        "ko-KR": "디렉토리 구조가 비어 있음",
+        "$files": [
+            "renderer/components/organize/DirectoryTreePreview.tsx(819-829)"
+        ],
+        "$id": 4172
+    },
+    "({count}) 个文件": {
+        "en-US": "{count} files",
+        "es-ES": "({count}) archivos",
+        "ar-EG": "({count}) ملف",
+        "pt-PT": "({count}) ficheiros",
+        "ru-RU": "Файлы ({count})\r",
+        "ja-JP": "（{count}）個のファイル",
+        "de-DE": "({count}) Dateien",
+        "fr-FR": "{count} fichiers",
+        "ko-KR": "({count})개 파일",
+        "$files": [
+            "renderer/components/organize/DirectoryTreePreview.tsx(3180-3197)"
+        ],
+        "$id": 4173
+    },
+    "扫描失败: {message}": {
+        "en-US": "Scan failed: {message}",
+        "es-ES": "Error en el escaneo: {message}",
+        "ar-EG": "فشل المسح: {message}",
+        "pt-PT": "Falha na verificação: {message}",
+        "ru-RU": "Сбой сканирования: {message}\r",
+        "ja-JP": "スキャンに失敗しました：{message}",
+        "de-DE": "Scan fehlgeschlagen: {message}",
+        "fr-FR": "Échec de l'analyse : {message}",
+        "ko-KR": "스캔 실패: {message}",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(2101-2120)"
+        ],
+        "$id": 4174
+    },
+    "请至少选择一个文件夹": {
+        "en-US": "Please select at least one folder",
+        "es-ES": "Por favor, seleccione al menos una carpeta",
+        "ar-EG": "الرجاء اختيار مجلد واحد على الأقل",
+        "pt-PT": "Por favor, selecione pelo menos uma pasta",
+        "ru-RU": "Пожалуйста, выберите хотя бы одну папку\r",
+        "ja-JP": "少なくとも1つのフォルダーを選択してください",
+        "de-DE": "Bitte wählen Sie mindestens einen Ordner aus",
+        "fr-FR": "Veuillez sélectionner au moins un dossier",
+        "ko-KR": "하나 이상의 폴더를 선택하십시오",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(4594-4608)"
+        ],
+        "$id": 4175
+    },
+    "成功删除 {count} 个空文件夹": {
+        "en-US": "Successfully deleted {count} empty folders",
+        "es-ES": "Se eliminaron exitosamente {count} carpetas vacías",
+        "ar-EG": "تم حذف {count} مجلد فارغ بنجاح",
+        "pt-PT": "Eliminados com sucesso {count} pastas vazias",
+        "ru-RU": "Успешно удалено {count} пустых папок\r",
+        "ja-JP": "{count} 個の空フォルダーを削除しました",
+        "de-DE": "Erfolgreich {count} leere Ordner gelöscht",
+        "fr-FR": "Suppression réussie de {count} dossiers vides",
+        "ko-KR": "빈 폴더 {count}개 삭제 성공",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(4916-4938)"
+        ],
+        "$id": 4176
+    },
+    "删除完成: 成功 {deleted}/{total}，失败 {failed}": {
+        "en-US": "Deletion completed: Success {deleted}/{total}, Failed {failed}",
+        "es-ES": "Eliminación completada: Éxito {deleted}/{total}, Fallidos {failed}",
+        "ar-EG": "اكتمال الحذف: نجاح {deleted}/{total}، فشل {failed}",
+        "pt-PT": "Eliminação concluída: Sucesso {deleted}/{total}, Falha {failed}",
+        "ru-RU": "Удаление завершено: успешно {deleted}/{total}, не удалено {failed}\r",
+        "ja-JP": "削除完了：成功 {deleted}/{total}、失敗 {failed}",
+        "de-DE": "Löschvorgang abgeschlossen: Erfolgreich {deleted}/{total}, Fehlgeschlagen {failed}",
+        "fr-FR": "Suppression terminée : succès {deleted}/{total}, échec {failed}",
+        "ko-KR": "삭제 완료: 성공 {deleted}/{total}, 실패 {failed}",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(5026-5068)"
+        ],
+        "$id": 4177
+    },
+    "所有可删除的空文件夹已处理完成": {
+        "en-US": "All deletable empty folders have been processed",
+        "es-ES": "Se han procesado todas las carpetas vacías que se podían eliminar",
+        "ar-EG": "تم الانتهاء من معالجة جميع المجلدات الفارغة القابلة للحذف",
+        "pt-PT": "Todas as pastas vazias que podem ser eliminadas foram processadas",
+        "ru-RU": "Все доступные для удаления пустые папки обработаны\r",
+        "ja-JP": "削除可能なすべての空フォルダーの処理が完了しました",
+        "de-DE": "Alle löschbaren leeren Ordner wurden verarbeitet",
+        "fr-FR": "Tous les dossiers vides pouvant être supprimés ont été traités",
+        "ko-KR": "삭제 가능한 모든 빈 폴더 처리 완료",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(5508-5527)"
+        ],
+        "$id": 4178
+    },
+    "删除失败: {message}": {
+        "en-US": "Deletion failed: {message}",
+        "es-ES": "Error en la eliminación: {message}",
+        "ar-EG": "فشل الحذف: {message}",
+        "pt-PT": "Falha na eliminação: {message}",
+        "ru-RU": "Ошибка удаления: {message}\r",
+        "ja-JP": "削除に失敗しました：{message}",
+        "de-DE": "Löschen fehlgeschlagen: {message}",
+        "fr-FR": "Échec de la suppression : {message}",
+        "ko-KR": "삭제 실패: {message}",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(5759-5778)"
+        ],
+        "$id": 4179
+    },
+    "(非空)": {
+        "en-US": "(Not empty)",
+        "es-ES": "(No vacío)",
+        "ar-EG": "(غير فارغ)",
+        "pt-PT": "(Não vazio)",
+        "ru-RU": "(не пусто)",
+        "ja-JP": "（空ではない）",
+        "de-DE": "(Nicht leer)",
+        "fr-FR": "(Non vide)",
+        "ko-KR": "(비어 있지 않음)",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(7958-7966)"
+        ],
+        "$id": 4180
+    },
+    "清理空文件夹": {
+        "en-US": "Clean Empty Folders",
+        "es-ES": "Limpiar carpetas vacías",
+        "ar-EG": "مسح مجلدات فارغة\r",
+        "pt-PT": "Limpar pastas vazias",
+        "ru-RU": "Очистить пустые папки",
+        "ja-JP": "空フォルダをクリーンアップ\r",
+        "de-DE": "Leere Ordner bereinigen",
+        "fr-FR": "Nettoyer les dossiers vides",
+        "ko-KR": "빈 폴더 정리",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(8938-8948)"
+        ],
+        "$id": 4181
+    },
+    "检测并删除工作目录中的空文件夹": {
+        "en-US": "Detect and remove empty folders in working directory",
+        "es-ES": "Detectar y eliminar carpetas vacías en el directorio de trabajo",
+        "ar-EG": "كشف وحذف المجلدات الفارغة في دليل العمل\r",
+        "pt-PT": "Detetar e eliminar as pastas vazias do diretório de trabalho",
+        "ru-RU": "Обнаружение и удаление пустых папок в рабочем каталоге",
+        "ja-JP": "作業ディレクトリ内の空フォルダを検出して削除\r",
+        "de-DE": "Erkennen und Löschen leerer Ordner im Arbeitsverzeichnis",
+        "fr-FR": "Détecter et supprimer les dossiers vides dans le répertoire de travail",
+        "ko-KR": "작업 디렉토리에서 빈 폴더를 감지하고 삭제",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(9077-9096)"
+        ],
+        "$id": 4182
+    },
+    "扫描空文件夹中...": {
+        "en-US": "Scanning empty folders...",
+        "es-ES": "Escaneando carpetas vacías...",
+        "ar-EG": "جارٍ فحص المجلدات الفارغة ...\r",
+        "pt-PT": "A examinar as pastas vazias...",
+        "ru-RU": "Сканирование пустых папок...",
+        "ja-JP": "空フォルダをスキャン中...\r",
+        "de-DE": "Leere Ordner werden gescannt...",
+        "fr-FR": "Analyse des dossiers vides en cours...",
+        "ko-KR": "빈 폴더 스캔 중...",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(9835-9849)"
+        ],
+        "$id": 4183
+    },
+    "未发现空文件夹": {
+        "en-US": "No empty folders found",
+        "es-ES": "No se encontraron carpetas vacías",
+        "ar-EG": "لم يتم العثور على مجلدات فارغة\r",
+        "pt-PT": "Nenhuma pasta vazia encontrada",
+        "ru-RU": "Пустые папки не обнаружены",
+        "ja-JP": "空フォルダが見つかりません\r",
+        "de-DE": "Keine leeren Ordner gefunden",
+        "fr-FR": "Aucun dossier vide trouvé",
+        "ko-KR": "빈 폴더가 발견되지 않음",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(10155-10166)"
+        ],
+        "$id": 4184
+    },
+    "该目录中没有空文件夹需要清理": {
+        "en-US": "No empty folders to clean in this directory",
+        "es-ES": "No hay carpetas vacías para limpiar en este directorio",
+        "ar-EG": "لا توجد مجلدات فارغة للتنظيف في هذا الدليل\r",
+        "pt-PT": "Este diretório não contém pastas vazias para limpar",
+        "ru-RU": "В этом каталоге нет пустых папок для очистки",
+        "ja-JP": "このディレクトリにはクリーンアップが必要な空フォルダはありません\r",
+        "de-DE": "In diesem Verzeichnis gibt es keine leeren Ordner zu bereinigen",
+        "fr-FR": "Il n'y a pas de dossiers vides à nettoyer dans ce répertoire",
+        "ko-KR": "이 디렉토리에는 정리가 필요한 빈 폴더가 없음",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(10279-10297)"
+        ],
+        "$id": 4185
+    },
+    "发现 {count} 个空文件夹": {
+        "en-US": "Found {count} empty folders",
+        "es-ES": "Se encontraron {count} carpetas vacías",
+        "ar-EG": "تم العثور على {count} مجلد فارغ\r",
+        "pt-PT": "Encontradas {count} pastas vazias",
+        "ru-RU": "Обнаружено {count} пустых папок",
+        "ja-JP": "{count} 個の空フォルダが見つかりました\r",
+        "de-DE": "{count} leere Ordner gefunden",
+        "fr-FR": "{count} dossiers vides trouvés",
+        "ko-KR": "{count}개의 빈 폴더 발견",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(10657-10677)"
+        ],
+        "$id": 4186
+    },
+    "已选中 {selected} 个": {
+        "en-US": "{selected} selected",
+        "es-ES": "Se seleccionaron {selected} carpetas",
+        "ar-EG": "تم تحديد {selected}\r",
+        "pt-PT": "{selected} selecionadas",
+        "ru-RU": "Выбрано {selected}",
+        "ja-JP": "{selected} 個が選択されています\r",
+        "de-DE": "{selected} ausgewählt",
+        "fr-FR": "{selected} sélectionnés",
+        "ko-KR": "{selected}개가 선택됨",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(10844-10864)"
+        ],
+        "$id": 4187
+    },
+    "反选": {
+        "en-US": "Invert Selection",
+        "es-ES": "Invertir selección",
+        "ar-EG": "عكس التحديد\r",
+        "pt-PT": "Inverter seleção",
+        "ru-RU": "Отменить выбор",
+        "ja-JP": "選択を反転\r",
+        "de-DE": "Auswahl umkehren",
+        "fr-FR": "Inverse la sélection",
+        "ko-KR": "선택 취소",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(11856-11862)"
+        ],
+        "$id": 4188
+    },
+    "关闭": {
+        "en-US": "Close",
+        "es-ES": "Cerrar",
+        "ar-EG": "إغلاق\r",
+        "pt-PT": "Fechar",
+        "ru-RU": "Закрыть",
+        "ja-JP": "閉じる\r",
+        "de-DE": "Schließen",
+        "fr-FR": "Fermer",
+        "ko-KR": "닫기",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(12168-12174)",
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(13379-13385)",
+            "renderer/components/organize/OrganizeErrorDialog.tsx(3065-3071)",
+            "renderer/components/organize/OrganizeResultDialog.tsx(8669-8675)",
+            "renderer/components/organize/UndoHistoryDialog.tsx(9430-9436)"
+        ],
+        "$id": 4189
+    },
+    "正在删除...": {
+        "en-US": "Deleting...",
+        "es-ES": "Eliminando...",
+        "ar-EG": "جاري الحذف ...\r",
+        "pt-PT": "A eliminar...",
+        "ru-RU": "Удаление...",
+        "ja-JP": "削除中...\r",
+        "de-DE": "Wird gelöscht...",
+        "fr-FR": "Suppression en cours...",
+        "ko-KR": "삭제 중...",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(12764-12775)"
+        ],
+        "$id": 4190
+    },
+    "删除选中 ({count} 个)": {
+        "en-US": "Delete Selected ({count})",
+        "es-ES": "Eliminar seleccionadas ({count})",
+        "ar-EG": "حذف المحدد ({count})\r",
+        "pt-PT": "Eliminar selecionadas ({count})",
+        "ru-RU": "Удаление выбранных ({count})",
+        "ja-JP": "選択項目を削除 ({count} 個)\r",
+        "de-DE": "Auswahl löschen ({count})",
+        "fr-FR": "Supprimer la sélection ({count})",
+        "ko-KR": "선택 항목 삭제 ({count}개)",
+        "$files": [
+            "renderer/components/organize/EmptyFolderCleanupDialog.tsx(12947-12967)"
+        ],
+        "$id": 4191
+    },
+    "虚拟目录根": {
+        "en-US": "Virtual Directory Root",
+        "es-ES": "Raíz del directorio virtual",
+        "ar-EG": "جذر الدليل الظاهري\r",
+        "pt-PT": "Raiz do diretório virtual",
+        "ru-RU": "Корень виртуального каталога",
+        "ja-JP": "仮想ディレクトリのルート\r",
+        "de-DE": "Virtuelles Verzeichnis Stamm",
+        "fr-FR": "Racine du répertoire virtuel",
+        "ko-KR": "가상 디렉토리 루트",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6176-6185)"
+        ],
+        "$id": 4192
+    },
+    "扁平化文件列表": {
+        "en-US": "Flatten File List",
+        "es-ES": "Aplanar lista de archivos",
+        "ar-EG": "قائمة الملفات المسطحة\r",
+        "pt-PT": "Achatamento da lista de ficheiros",
+        "ru-RU": "Список файлов в плоской структуре",
+        "ja-JP": "ファイルリストをフラット化\r",
+        "de-DE": "Gekachelte Dateiliste",
+        "fr-FR": "Aplatir la liste des fichiers",
+        "ko-KR": "파일 목록 평탄화",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6235-6246)"
+        ],
+        "$id": 4193
+    },
+    "{tag}标签目录": {
+        "en-US": "{tag} Tag Directory",
+        "es-ES": "Directorio de etiquetas {tag}",
+        "ar-EG": "دليل {tag}\r",
+        "pt-PT": "Diretório da etiqueta {tag}",
+        "ru-RU": "Каталог тегов {tag}",
+        "ja-JP": "{tag}タグディレクトリ\r",
+        "de-DE": "{tag} Tag-Verzeichnis",
+        "fr-FR": "Dossier de tags {tag}",
+        "ko-KR": "{tag} 태그 디렉토리",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6854-6867)"
+        ],
+        "$id": 4194
+    },
+    "{fileCount} 个文件": {
+        "en-US": "{fileCount} Files",
+        "es-ES": "{fileCount} archivos",
+        "ar-EG": "{fileCount} ملف\r",
+        "pt-PT": "{fileCount} ficheiros",
+        "ru-RU": "Файлы: {fileCount}",
+        "ja-JP": "{fileCount} 個のファイル\r",
+        "de-DE": "{fileCount} Dateien",
+        "fr-FR": "{fileCount} fichiers",
+        "ko-KR": "{fileCount}개 파일",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(13622-13641)"
+        ],
+        "$id": 4195
+    },
+    "导出虚拟目录预览": {
+        "en-US": "Generate Virtual Directory Preview",
+        "es-ES": "Generar vista previa del directorio virtual",
+        "ar-EG": "جارٍ إنشاء معاينة للدليل الظاهري",
+        "pt-PT": "Gerar a pré-visualização do diretório virtual",
+        "ru-RU": "Создание предварительного просмотра виртуального каталога",
+        "ja-JP": "仮想ディレクトリプレビューを生成",
+        "de-DE": "Virtuelle Verzeichnisvorschau generieren",
+        "fr-FR": "Générer l'aperçu du répertoire virtuel",
+        "ko-KR": "가상 디렉토리 미리보기 생성",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(15496-15508)"
+        ],
+        "$id": 4196
+    },
+    "将创建 {count} 个虚拟目录": {
+        "en-US": "{count} virtual directories will be created\r",
+        "es-ES": "Se crearán {count} directorios virtuales\r",
+        "ar-EG": "سيتم إنشاء {count} دليل افتراضي\r",
+        "pt-PT": "Serão criados {count} diretórios virtuais\r",
+        "ru-RU": "Будет создано {count} виртуальных каталогов\r",
+        "ja-JP": "{count} 個の仮想ディレクトリが作成されます",
+        "de-DE": "Es werden {count} virtuelle Verzeichnisse erstellt\r",
+        "fr-FR": "{count} répertoires virtuels seront créés",
+        "ko-KR": "{count}개의 가상 디렉토리가 생성됩니다",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(16225-16246)"
+        ],
+        "$id": 4197
+    },
+    "共 {count} 个文件": {
+        "en-US": "{count} files in total\r",
+        "es-ES": "Total {count} archivos\r",
+        "ar-EG": "إجمالي {count} ملف\r",
+        "pt-PT": "Total de {count} ficheiros\r",
+        "ru-RU": "Всего {count} файлов\r",
+        "ja-JP": "合計 {count} 個のファイル",
+        "de-DE": "Insgesamt {count} Dateien\r",
+        "fr-FR": "{count} fichiers au total",
+        "ko-KR": "총 {count}개의 파일",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(16406-16423)"
+        ],
+        "$id": 4198
+    },
+    "文件列表预览（扁平化）：": {
+        "en-US": "File list preview (flattened):\r",
+        "es-ES": "Vista previa de la lista de archivos (aplanada):\r",
+        "ar-EG": "معاينة قائمة الملفات (مفردة):\r",
+        "pt-PT": "Pré-visualização da lista de ficheiros (achatada):\r",
+        "ru-RU": "Предварительный просмотр списка файлов (с приведением к плоской форме):\r",
+        "ja-JP": "ファイルリストプレビュー（フラット化）：",
+        "de-DE": "Vorschau der Dateiliste (geglättet):\r",
+        "fr-FR": "Aperçu de la liste des fichiers (aplati) :",
+        "ko-KR": "파일 목록 미리보기(플랫 형식)：",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(16706-16722)"
+        ],
+        "$id": 4199
+    },
+    "目录结构预览：": {
+        "en-US": "Directory structure preview:\r",
+        "es-ES": "Vista previa de la estructura de directorios:\r",
+        "ar-EG": "معاينة هيكل الدليل:\r",
+        "pt-PT": "Pré-visualização da estrutura de diretórios:\r",
+        "ru-RU": "Предварительный просмотр структуры каталогов:\r",
+        "ja-JP": "ディレクトリ構造プレビュー：",
+        "de-DE": "Vorschau der Verzeichnisstruktur:\r",
+        "fr-FR": "Aperçu de la structure des répertoires :",
+        "ko-KR": "디렉토리 구조 미리보기：",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(16726-16737)"
+        ],
+        "$id": 4200
+    },
+    "加载文件列表中...": {
+        "en-US": "Loading file list...\r",
+        "es-ES": "Cargando lista de archivos...\r",
+        "ar-EG": "جاري تحميل قائمة الملفات...\r",
+        "pt-PT": "A carregar lista de ficheiros...\r",
+        "ru-RU": "Загрузка списка файлов...\r",
+        "ja-JP": "ファイルリストを読み込み中...",
+        "de-DE": "Lade Dateiliste...\r",
+        "fr-FR": "Chargement de la liste des fichiers...",
+        "ko-KR": "파일 목록 로드 중...",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(17256-17270)"
+        ],
+        "$id": 4201
+    },
+    "平铺到虚拟目录": {
+        "en-US": "Tile to virtual directory\r",
+        "es-ES": "Mostrar en directorio virtual\r",
+        "ar-EG": "تسطيح إلى الدليل الظاهري\r",
+        "pt-PT": "Dispor nos diretórios virtuais\r",
+        "ru-RU": "Размещение файлов в виртуальные каталоги по горизонтали\r",
+        "ja-JP": "仮想ディレクトリに平滑化",
+        "de-DE": "In virtuelles Verzeichnis kacheln\r",
+        "fr-FR": "Répartir dans les répertoires virtuels",
+        "ko-KR": "가상 디렉토리로 평면화",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19332-19343)"
+        ],
+        "$id": 4202
+    },
+    "勾选后，隐藏所有目录层级，将所有文件展示为单一层级的纯文件列表（自动去重）": {
+        "en-US": "When checked, hide all directory levels and display all files as a single-level plain file list (automatic deduplication)\r",
+        "es-ES": "Si se marca, ocultará todas las jerarquías de directorios y mostrará todos los archivos como una lista simple de archivos plana (duplicados eliminados automáticamente)\r",
+        "ar-EG": "بعد تحديد المربع، ستتم إخفاء كل مستويات الدلائل، ويتم عرض كل الملفات كقائمة ملفات مفردة (التخلص التلقائي من التكرارات)\r",
+        "pt-PT": "Quando selecionado, oculta todas as hierarquias de diretórios e apresenta todos os ficheiros como uma lista simples de ficheiros de único nível (duplicados removidos automaticamente)\r",
+        "ru-RU": "После установки флажка все иерархии каталогов будут скрыты, а все файлы будут отображаться в виде простого списка файлов с одним уровнем (с автоматическим удалением дубликатов)\r",
+        "ja-JP": "チェックすると、すべてのディレクトリ階層を非表示にし、すべてのファイルを単一階層の純粋なファイルリストとして表示します（重複自動除去）\r",
+        "de-DE": "Wenn aktiviert, werden alle Verzeichnisebenen ausgeblendet und alle Dateien als einfache Einzel-Ebene-Liste angezeigt (automatische Duplikatentfernung)\r",
+        "fr-FR": "Lorsque cette case est cochée, tous les niveaux de répertoires sont masqués, et tous les fichiers sont affichés comme une liste simple sans duplication automatique",
+        "ko-KR": "선택하면 모든 디렉토리 계층을 숨기고 모든 파일을 단일 계층의 순수 파일 목록으로 표시합니다(자동 중복 제거)",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19917-19958)"
+        ],
+        "$id": 4203
+    },
+    "开启多维度分类嵌套": {
+        "en-US": "Enable multi-dimensional category nesting",
+        "es-ES": "Activar clasificación anidada multidimensional",
+        "ar-EG": "تفعيل التصنيف المتداخل متعدد الأبعاد",
+        "pt-PT": "Ativar classificação aninhada multidimensional",
+        "ru-RU": "Включить многомерную вложенную классификацию",
+        "ja-JP": "多次元分類のネストを有効にする",
+        "de-DE": "Aktivieren Sie die verschachtelte Klassifikation mit mehreren Dimensionen",
+        "fr-FR": "Activer l'imbrication multidimensionnelle des catégories",
+        "ko-KR": "다차원 분류 중첩 활성화",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(20696-20709)"
+        ],
+        "$id": 2741
+    },
+    "勾选后，点选的多个不同维度（分类）的标签将按点击顺序变成父子文件夹（如：{文件类型} > {文件用途}）。不选中时，它们将分别作为独立的一级文件夹并列显示{文件类型} {文件用途}。": {
+        "en-US": "When checked, multiple tags from different dimensions (categories) that are clicked will become parent-child folders in the order of clicking (e.g.: {File Type} > {File Purpose}). When unchecked, they will be displayed as independent first-level folders side by side {File Type} {File Purpose}.",
+        "es-ES": "Al marcar esta opción, las etiquetas de múltiples dimensiones (categorías) seleccionadas se convertirán en carpetas padre-hijo según el orden en que se hicieron clic (por ejemplo: {Tipo de archivo} > {Uso del archivo}). Cuando no está marcado, se mostrarán como carpetas independientes de primer nivel en paralelo {Tipo de archivo} {Uso del archivo}.",
+        "ar-EG": "بعد تحديد الخيار، سيتم تحويل العلامات المحددة من أبعاد (تصنيفات) مختلفة إلى مجلدات فرعية وفقاً لترتيب النقر (مثل: {نوع الملف} > {غرض الملف}). عند عدم التحديد، سيتم عرضها كمجلدات مستقلة من المستوى الأول {نوع الملف} {غرض الملف}.",
+        "pt-PT": "Quando selecionado, várias etiquetas de diferentes dimensões (categorias) clicadas serão transformadas em pastas pai-filho na ordem de clique (como: {Tipo de ficheiro} > {Utilização do ficheiro}). Quando não selecionado, elas serão exibidas como pastas de primeiro nível independentes em paralelo {Tipo de ficheiro} {Utilização do ficheiro}.",
+        "ru-RU": "После установки флажка несколько выбранных меток разных измерений (классификаций) будут преобразованы в родительские и дочерние папки в порядке кликов (например: {Тип файла} > {Назначение файла}). Если флажок не установлен, они будут отображаться параллельно как независимые папки первого уровня {Тип файла} {Назначение файла}.",
+        "ja-JP": "チェックを入れると、クリックした複数の異なる次元（分類）のタグはクリック順に親子フォルダになります（例：{ファイルタイプ} > {ファイル用途}）。チェックを入れない場合、それぞれが独立した1次フォルダとして並列表示されます{ファイルタイプ} {ファイル用途}。",
+        "de-DE": "Wenn diese Option aktiviert ist, werden die ausgewählten Tags aus verschiedenen Dimensionen (Kategorien) in der Reihenfolge des Anklickens zu übergeordneten und untergeordneten Ordnern (z. B.: {Dateityp} > {Verwendungszweck der Datei}). Wenn die Option nicht aktiviert ist, werden sie jeweils als eigenständige Ordner der ersten Ebene nebeneinander angezeigt {Dateityp} {Verwendungszweck der Datei}.",
+        "fr-FR": "Une fois cochée, les étiquettes de différentes dimensions (catégories) sélectionnées deviendront des dossiers parent-enfant selon l'ordre de clic (par exemple : {Type de fichier} > {Usage du fichier}). Si non cochée, elles seront affichées séparément comme des dossiers de premier niveau {Type de fichier} {Usage du fichier}.",
+        "ko-KR": "체크 시, 선택한 여러 개의 서로 다른 차원(분류) 태그는 클릭 순서에 따라 부모-자식 폴더로 변환됩니다 (예: {파일 유형} > {파일 용도}). 체크하지 않을 경우, 각각 독립된 1차 폴더로 나란히 표시됩니다 {파일 유형} {파일 용도}.",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(21299-21418)"
+        ],
+        "$id": 2742
+    },
+    "文件去重": {
+        "en-US": "File deduplication\r",
+        "es-ES": "Eliminar duplicados de archivos\r",
+        "ar-EG": "إزالة تكرار الملفات\r",
+        "pt-PT": "Remover duplicados de ficheiros\r",
+        "ru-RU": "Удаление дубликатов файлов\r",
+        "ja-JP": "ファイル重複除去",
+        "de-DE": "Datei-Duplikatentfernung\r",
+        "fr-FR": "Suppression des doublons de fichiers",
+        "ko-KR": "파일 중복 제거",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(22176-22184)"
+        ],
+        "$id": 4204
+    },
+    "勾选后，同一文件在整个虚拟目录树中仅出现一次。采用\"后选优先\"原则：文件归属到最后勾选的标签目录（例如：先选A后选B，文件归入B目录）。未勾选时，文件可在多个标签目录下重复显示。": {
+        "en-US": "When checked, each file will appear only once in the entire virtual directory tree. Uses \"latter selection priority\" principle: files belong to the last selected tag directory (for example: select A first then B, file goes into B directory). When unchecked, files may be displayed repeatedly under multiple tag directories.",
+        "es-ES": "Si se marca, cada archivo aparecerá solo una vez en todo el árbol de directorios virtuales. Se aplica el principio de \"prioridad a la selección posterior\": los archivos pertenecerán al último directorio de etiqueta marcado (por ejemplo, si primero se selecciona A y luego B, el archivo se incluirá en el directorio B). Cuando no está marcado, los archivos pueden mostrarse repetidamente en varios directorios de etiquetas.",
+        "ar-EG": "بعد تحديد المربع، سيظهر الملف الواحد مرة واحدة فقط في شجرة الدلائل الافتراضية. يتم تطبيق مبدأ \"الأولوية للتحديد الأخير\": يتم تجميع الملف إلى آخر دليل مسمى تم تحديده (على سبيل المثال: تحديد A أولاً ثم B، سيتم تعيين الملف إلى دليل B). إذا لم يتم التحديد، يمكن عرض الملف عدة مرات تحت عدة أدلة مسماة.",
+        "pt-PT": "Quando selecionado, cada ficheiro aparece apenas uma vez em toda a árvore de diretórios virtuais. Adota o princípio de \"última seleção tem prioridade\": os ficheiros pertencem ao último diretório de etiquetas selecionado (por exemplo: se selecionar A primeiro e depois B, o ficheiro será incluído no diretório B). Quando não selecionado, os ficheiros podem aparecer repetidamente em múltiplos diretórios de etiquetas.",
+        "ru-RU": "После установки флажка каждый файл будет встречаться только один раз во всем дереве виртуальных каталогов. Применяется принцип \"последующий выбор имеет приоритет\": файл принадлежит к последнему выбранному каталогу с пометкой (например, если сначала выбрано А, а затем В, файл перемещается в каталог В). Если флажок не установлен, файлы могут быть повторно показаны в нескольких каталогах с пометкой.",
+        "ja-JP": "チェックすると、同じファイルが仮想ディレクトリツリー全体に一度だけ表示されます。「後選択優先」の原則を採用：ファイルは最後にチェックされたタグディレクトリに所属します（例：Aを選択後Bを選択すると、ファイルはBディレクトリに含まれます）。未チェック時には、ファイルは複数のタグディレクトリで重複して表示されます。",
+        "de-DE": "Wenn aktiviert, erscheint dieselbe Datei innerhalb des gesamten virtuellen Verzeichnisbaums nur einmal. Es gilt das Prinzip \"Später Auswahl hat Vorrang\": Die Datei gehört zu dem zuletzt ausgewählten Label-Verzeichnis (z. B. wenn zuerst A und dann B ausgewählt wird, wird die Datei dem Verzeichnis B zugeordnet). Wenn deaktiviert, können Dateien in mehreren Label-Verzeichnissen mehrfach angezeigt werden.",
+        "fr-FR": "Lorsque cette case est cochée, chaque fichier n'apparaît qu'une seule fois dans l'arborescence virtuelle. Principe appliqué : « dernier choix prioritaire » : le fichier est affecté au dernier répertoire de tags coché (par exemple, si A est coché avant B, le fichier est affecté au répertoire B). Lorsque cette case n'est pas cochée, les fichiers peuvent apparaître plusieurs fois dans différents répertoires de tags.",
+        "ko-KR": "선택하면 동일한 파일이 전체 가상 디렉토리 트리에서 한 번만 나타납니다. \"후선 투표 우선\" 원칙을 따릅니다: 파일은 마지막으로 선택한 태그 디렉토리에 속합니다(예: 먼저 A를 선택하고 B를 선택하면 파일은 B 디렉토리에 포함됨). 선택하지 않은 경우 하나의 파일이 여러 태그 디렉토리에 중복 표시될 수 있습니다.",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(22774-22891)"
+        ],
+        "$id": 4205
+    },
+    "不生成空目录": {
+        "en-US": "Do not generate empty directories",
+        "es-ES": "No generar directorios vacíos",
+        "ar-EG": "عدم إنشاء مجلدات فارغة\r",
+        "pt-PT": "Não gerar diretórios vazios",
+        "ru-RU": "Не создавать пустые каталоги",
+        "ja-JP": "空のディレクトリを生成しない",
+        "de-DE": "Keine leeren Verzeichnisse erstellen",
+        "fr-FR": "Ne pas générer les répertoires vides",
+        "ko-KR": "빈 디렉토리 생성 안 함",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(23597-23607)"
+        ],
+        "$id": 4206
+    },
+    "勾选后，预览和最终生成的虚拟目录都不会包含没有文件的空目录": {
+        "en-US": "When checked, the preview and final generated virtual directory will not contain empty directories without files",
+        "es-ES": "Al marcar esta opción, los directorios virtuales de vista previa y los generados finalmente no contendrán directorios vacíos sin archivos",
+        "ar-EG": "بعد التحديد، لن تشمل المجلدات الافتراضية المعروضة في المعاينة والتوليد النهائي أي مجلدات فارغة لا تحتوي على ملفات\r",
+        "pt-PT": "Quando selecionado, os diretórios virtuais de pré-visualização e finais gerados não conterão diretórios vazios sem ficheiros",
+        "ru-RU": "После установки флажка предварительный просмотр и окончательно созданные виртуальные каталоги не будут содержать пустые каталоги без файлов",
+        "ja-JP": "チェックを入れると、プレビューおよび最終生成される仮想ディレクトリにファイルのない空のディレクトリが含まれることはありません",
+        "de-DE": "Wenn aktiviert, werden weder in der Vorschau noch im endgültigen virtuellen Verzeichnis leere Verzeichnisse ohne Dateien enthalten sein",
+        "fr-FR": "Lorsque cette case est cochée, les répertoires virtuels de prévisualisation et de génération finale n'incluront pas les répertoires vides sans fichiers",
+        "ko-KR": "체크하면 미리보기 및 최종 생성된 가상 디렉토리에 파일이 없는 빈 디렉토리가 포함되지 않습니다",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(24181-24214)"
+        ],
+        "$id": 4207
+    },
+    "生成后打开虚拟目录": {
+        "en-US": "Open virtual directory after generation",
+        "es-ES": "Abrir directorio virtual después de generar",
+        "ar-EG": "فتح المجلد الظاهري بعد الإنشاء\r",
+        "pt-PT": "Abrir diretório virtual após a geração",
+        "ru-RU": "Открыть виртуальный каталог после создания",
+        "ja-JP": "生成後に仮想ディレクトリを開く",
+        "de-DE": "Virtuelles Verzeichnis nach Erstellung öffnen",
+        "fr-FR": "Ouvrir le répertoire virtuel après la génération",
+        "ko-KR": "생성 후 가상 디렉토리 열기",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(24872-24885)"
+        ],
+        "$id": 4208
+    },
+    "确认生成": {
+        "en-US": "Confirm generation",
+        "es-ES": "Confirmar generación",
+        "ar-EG": "أكد الإنشاء\r",
+        "pt-PT": "Confirmar geração",
+        "ru-RU": "Подтвердить создание",
+        "ja-JP": "生成を確認",
+        "de-DE": "Erstellung bestätigen",
+        "fr-FR": "Confirmer la génération",
+        "ko-KR": "생성 확인",
+        "$files": [
+            "renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(25614-25622)"
+        ],
+        "$id": 4209
+    },
+    "整理过程中遇到错误": {
+        "en-US": "Error encountered during the organization process",
+        "es-ES": "Se encontraron errores durante el proceso de organización",
+        "ar-EG": "حدث خطأ أثناء عملية التنظيم\r",
+        "pt-PT": "Ocorreu um erro durante o processo de organização",
+        "ru-RU": "Во время сортировки возникла ошибка",
+        "ja-JP": "整理中にエラーが発生しました",
+        "de-DE": "Während des Organisierens ist ein Fehler aufgetreten",
+        "fr-FR": "Une erreur s'est produite pendant le tri",
+        "ko-KR": "정리 작업 중 오류 발생",
+        "$files": [
+            "renderer/components/organize/OrganizeErrorDialog.tsx(1008-1021)"
+        ],
+        "$id": 4210
+    },
+    "已完成：{count} 个文件": {
+        "en-US": "Completed: {count} files",
+        "es-ES": "Completados: {count} archivos",
+        "ar-EG": "اكتمل: {count} ملف\r",
+        "pt-PT": "Concluído: {count} ficheiros",
+        "ru-RU": "Выполнено: {count} файлов",
+        "ja-JP": "完了：{count} 個のファイル",
+        "de-DE": "Abgeschlossen: {count} Dateien",
+        "fr-FR": "Terminé : {count} fichiers",
+        "ko-KR": "완료됨: {count} 개 파일",
+        "$files": [
+            "renderer/components/organize/OrganizeErrorDialog.tsx(1240-1259)"
+        ],
+        "$id": 4211
+    },
+    "失败：{count} 个文件": {
+        "en-US": "Failed: {count} files",
+        "es-ES": "Con errores: {count} archivos",
+        "ar-EG": "فشل: {count} ملف\r",
+        "pt-PT": "Falhou: {count} ficheiros",
+        "ru-RU": "Сбой: {count} файлов",
+        "ja-JP": "失敗：{count} 個のファイル",
+        "de-DE": "Fehlgeschlagen: {count} Dateien",
+        "fr-FR": "Échec : {count} fichiers",
+        "ko-KR": "실패: {count} 개 파일",
+        "$files": [
+            "renderer/components/organize/OrganizeErrorDialog.tsx(1446-1464)"
+        ],
+        "$id": 4212
+    },
+    "失败文件列表：": {
+        "en-US": "Failed file list:",
+        "es-ES": "Lista de archivos con errores:",
+        "ar-EG": "قائمة الملفات الفاشلة:\r",
+        "pt-PT": "Lista de ficheiros com falha:",
+        "ru-RU": "Список неудачных файлов:",
+        "ja-JP": "失敗したファイルのリスト：",
+        "de-DE": "Liste der fehlgeschlagenen Dateien:",
+        "fr-FR": "Liste des fichiers en échec :",
+        "ko-KR": "실패 파일 목록:",
+        "$files": [
+            "renderer/components/organize/OrganizeErrorDialog.tsx(1629-1640)"
+        ],
+        "$id": 4213
+    },
+    "错误：": {
+        "en-US": "Error:",
+        "es-ES": "Error:",
+        "ar-EG": "خطأ:\r",
+        "pt-PT": "Erro:",
+        "ru-RU": "Ошибка:",
+        "ja-JP": "エラー：",
+        "de-DE": "Fehler:",
+        "fr-FR": "Erreur :",
+        "ko-KR": "오류:",
+        "$files": [
+            "renderer/components/organize/OrganizeErrorDialog.tsx(2118-2125)"
+        ],
+        "$id": 4214
+    },
+    "查看详细日志": {
+        "en-US": "View detailed log",
+        "es-ES": "Ver registro detallado",
+        "ar-EG": "عرض السجل التفصيلي\r",
+        "pt-PT": "Ver registo detalhado",
+        "ru-RU": "Просмотр подробных журналов",
+        "ja-JP": "詳細ログを表示",
+        "de-DE": "Detailliertes Protokoll anzeigen",
+        "fr-FR": "Voir les journaux détaillés",
+        "ko-KR": "자세한 로그 보기",
+        "$files": [
+            "renderer/components/organize/OrganizeErrorDialog.tsx(2532-2542)"
+        ],
+        "$id": 4215
+    },
+    "重试失败文件": {
+        "en-US": "Retry failed files",
+        "es-ES": "Reintentar archivos con errores",
+        "ar-EG": "إعادة المحاولة للملفات الفاشلة\r",
+        "pt-PT": "Repetir ficheiros com falha",
+        "ru-RU": "Повторить неудачные файлы",
+        "ja-JP": "失敗したファイルを再試行",
+        "de-DE": "Fehlgeschlagene Dateien erneut versuchen",
+        "fr-FR": "Réessayer les fichiers en échec",
+        "ko-KR": "실패한 파일 다시 시도",
+        "$files": [
+            "renderer/components/organize/OrganizeErrorDialog.tsx(2796-2806)"
+        ],
+        "$id": 4216
+    },
+    "约 {seconds} 秒": {
+        "en-US": "Approximately {seconds} seconds",
+        "es-ES": "Aproximadamente {seconds} segundos",
+        "ar-EG": "تقريباً {seconds} ثانية\r",
+        "pt-PT": "Cerca de {seconds} segundos",
+        "ru-RU": "Примерно {seconds} секунд",
+        "ja-JP": "約 {seconds} 秒",
+        "de-DE": "Ungefähr {seconds} Sekunden",
+        "fr-FR": "Environ {seconds} secondes",
+        "ko-KR": "약 {seconds} 초",
+        "$files": [
+            "renderer/components/organize/OrganizeProgressDialog.tsx(646-663)"
+        ],
+        "$id": 4217
+    },
+    "约 {minutes} 分钟": {
+        "en-US": "Approximately {minutes} minutes",
+        "es-ES": "Aproximadamente {minutes} minutos",
+        "ar-EG": "تقريباً {minutes} دقيقة\r",
+        "pt-PT": "Cerca de {minutes} minutos",
+        "ru-RU": "Примерно {minutes} минут",
+        "ja-JP": "約 {minutes} 分",
+        "de-DE": "Ungefähr {minutes} Minuten",
+        "fr-FR": "Environ {minutes} minutes",
+        "ko-KR": "약 {minutes} 분",
+        "$files": [
+            "renderer/components/organize/OrganizeProgressDialog.tsx(755-773)"
+        ],
+        "$id": 4218
+    },
+    "整理进度": {
+        "en-US": "Organization progress",
+        "es-ES": "Progreso de la organización",
+        "ar-EG": "تقدم التنظيم\r",
+        "pt-PT": "Progresso da organização",
+        "ru-RU": "Прогресс сортировки",
+        "ja-JP": "整理の進行状況",
+        "de-DE": "Fortschritt der Organisation",
+        "fr-FR": "Progression du tri",
+        "ko-KR": "정리 진행 상황",
+        "$files": [
+            "renderer/components/organize/OrganizeProgressDialog.tsx(1092-1100)"
+        ],
+        "$id": 4219
+    },
+    "正在处理：": {
+        "en-US": "Processing:",
+        "es-ES": "Procesando:",
+        "ar-EG": "جارٍ المعالجة:\r",
+        "pt-PT": "A processar:",
+        "ru-RU": "Обработка:",
+        "ja-JP": "処理中：",
+        "de-DE": "Wird verarbeitet:",
+        "fr-FR": "En cours de traitement :",
+        "ko-KR": "처리 중:",
+        "$files": [
+            "renderer/components/organize/OrganizeProgressDialog.tsx(1888-1897)"
+        ],
+        "$id": 4220
+    },
+    "准备中...": {
+        "en-US": "Preparing...",
+        "es-ES": "Preparando...",
+        "ar-EG": "جاري التحضير...",
+        "pt-PT": "A preparar...",
+        "ru-RU": "Подготовка...",
+        "ja-JP": "準備中...",
+        "de-DE": "Vorbereitung läuft...",
+        "fr-FR": "En préparation...",
+        "ko-KR": "준비 중...",
+        "$files": [
+            "renderer/components/organize/OrganizeProgressDialog.tsx(2006-2016)"
+        ],
+        "$id": 4221
+    },
+    "已完成：": {
+        "en-US": "Completed:",
+        "es-ES": "Completado:",
+        "ar-EG": "اكتمل:\r",
+        "pt-PT": "Concluído:",
+        "ru-RU": "Выполнено:",
+        "ja-JP": "完了：",
+        "de-DE": "Abgeschlossen:",
+        "fr-FR": "Terminé :",
+        "ko-KR": "완료됨:",
+        "$files": [
+            "renderer/components/organize/OrganizeProgressDialog.tsx(2180-2188)"
+        ],
+        "$id": 4222
+    },
+    "{processedCount} / {totalCount} 文件": {
+        "en-US": "{processedCount} / {totalCount} files",
+        "es-ES": "{processedCount} / {totalCount} archivos",
+        "ar-EG": "{processedCount} / {totalCount} ملف\r",
+        "pt-PT": "{processedCount} / {totalCount} ficheiros",
+        "ru-RU": "{processedCount} / {totalCount} файлов",
+        "ja-JP": "{processedCount} / {totalCount} ファイル",
+        "de-DE": "{processedCount} / {totalCount} Dateien",
+        "fr-FR": "{processedCount} / {totalCount} fichiers",
+        "ko-KR": "{processedCount} / {totalCount} 파일",
+        "$files": [
+            "renderer/components/organize/OrganizeProgressDialog.tsx(2234-2272)"
+        ],
+        "$id": 4223
+    },
+    "预计剩余：": {
+        "en-US": "Estimated remaining:",
+        "es-ES": "Tiempo restante estimado:",
+        "ar-EG": "الوقت المتبقي المتوقع:\r",
+        "pt-PT": "Tempo restante estimado:",
+        "ru-RU": "Осталось:",
+        "ja-JP": "予想残り：",
+        "de-DE": "Voraussichtliche Restzeit:",
+        "fr-FR": "Temps restant estimé :",
+        "ko-KR": "예상 잔여:",
+        "$files": [
+            "renderer/components/organize/OrganizeProgressDialog.tsx(2516-2525)"
+        ],
+        "$id": 4224
+    },
+    "{ms} 毫秒": {
+        "en-US": "{ms} milliseconds",
+        "es-ES": "{ms} milisegundos",
+        "ar-EG": "{ms} ميلي ثانية\r",
+        "pt-PT": "{ms} milissegundos",
+        "ru-RU": "{ms} миллисекунд",
+        "ja-JP": "{ms} ミリ秒",
+        "de-DE": "{ms} Millisekunden",
+        "fr-FR": "{ms} millisecondes",
+        "ko-KR": "{ms} 밀리초",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(737-748)"
+        ],
+        "$id": 4225
+    },
+    "{seconds} 秒": {
+        "en-US": "{seconds} seconds",
+        "es-ES": "{seconds} segundos",
+        "ar-EG": "{seconds} ثانية\r",
+        "pt-PT": "{seconds} segundos",
+        "ru-RU": "{seconds} секунд",
+        "ja-JP": "{seconds} 秒  ",
+        "de-DE": "{seconds} Sekunden",
+        "fr-FR": "{seconds} secondes",
+        "ko-KR": "{seconds} 초",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(786-801)"
+        ],
+        "$id": 4226
+    },
+    "{minutes} 分钟": {
+        "en-US": "{minutes} minutes",
+        "es-ES": "{minutes} minutos",
+        "ar-EG": "{minutes} دقيقة\r",
+        "pt-PT": "{minutes} minutos",
+        "ru-RU": "{minutes} минут",
+        "ja-JP": "{minutes} 分",
+        "de-DE": "{minutes} Minuten",
+        "fr-FR": "{minutes} minutes",
+        "ko-KR": "{minutes} 분",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(852-868)"
+        ],
+        "$id": 4227
+    },
+    "整理完成": {
+        "en-US": "Organization completed",
+        "es-ES": "Organización completada",
+        "ar-EG": "اكتمل التنظيم\r",
+        "pt-PT": "Organização concluída",
+        "ru-RU": "Сортировка завершена",
+        "ja-JP": "整理完了",
+        "de-DE": "Organisation abgeschlossen",
+        "fr-FR": "Tri terminé",
+        "ko-KR": "정리 완료",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(1528-1536)"
+        ],
+        "$id": 4228
+    },
+    "所有文件已成功整理": {
+        "en-US": "All files have been successfully organized",
+        "es-ES": "Todos los archivos se han organizado correctamente",
+        "ar-EG": "تمت عملية تنظيم جميع الملفات بنجاح\r",
+        "pt-PT": "Todos os ficheiros foram organizados com sucesso",
+        "ru-RU": "Все файлы успешно отсортированы",
+        "ja-JP": "すべてのファイルが正常に整理されました",
+        "de-DE": "Alle Dateien wurden erfolgreich organisiert",
+        "fr-FR": "Tous les fichiers ont été triés avec succès",
+        "ko-KR": "모든 파일이 성공적으로 정리됨",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(1650-1663)"
+        ],
+        "$id": 4229
+    },
+    "整理完成，部分文件失败": {
+        "en-US": "Organization completed, some files failed",
+        "es-ES": "Organización completada, algunos archivos fallaron",
+        "ar-EG": "اكتمل التنظيم، بعض الملفات فشلت\r",
+        "pt-PT": "Organização concluída, alguns ficheiros falharam",
+        "ru-RU": "Сортировка завершена, часть файлов не удалась",
+        "ja-JP": "整理完了、一部のファイルが失敗しました",
+        "de-DE": "Organisation abgeschlossen, einige Dateien fehlgeschlagen",
+        "fr-FR": "Tri terminé, certains fichiers ont échoué",
+        "ko-KR": "정리 완료, 일부 파일 실패",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(1667-1682)"
+        ],
+        "$id": 4230
+    },
+    "成功率": {
+        "en-US": "Success rate",
+        "es-ES": "Tasa de éxito",
+        "ar-EG": "نسبة النجاح\r",
+        "pt-PT": "Taxa de sucesso",
+        "ru-RU": "Процент успеха",
+        "ja-JP": "成功率",
+        "de-DE": "Erfolgsrate",
+        "fr-FR": "Taux de réussite",
+        "ko-KR": "성공률",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(1912-1919)"
+        ],
+        "$id": 4231
+    },
+    "总文件数": {
+        "en-US": "Total files",
+        "es-ES": "Número total de archivos",
+        "ar-EG": "إجمالي عدد الملفات\r",
+        "pt-PT": "Número total de ficheiros",
+        "ru-RU": "Всего файлов",
+        "ja-JP": "総ファイル数",
+        "de-DE": "Gesamtzahl der Dateien",
+        "fr-FR": "Nombre total de fichiers",
+        "ko-KR": "총 파일 수",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(2759-2767)"
+        ],
+        "$id": 4232
+    },
+    "成功移动": {
+        "en-US": "Successfully moved",
+        "es-ES": "Movidos correctamente",
+        "ar-EG": "تم نقله بنجاح\r",
+        "pt-PT": "Movidos com sucesso",
+        "ru-RU": "Успешно перемещено",
+        "ja-JP": "移動成功",
+        "de-DE": "Erfolgreich verschoben",
+        "fr-FR": "Déplacés avec succès",
+        "ko-KR": "성공적으로 이동됨",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(3327-3335)"
+        ],
+        "$id": 4233
+    },
+    "创建目录": {
+        "en-US": "Create directory",
+        "es-ES": "Crear directorio",
+        "ar-EG": "إنشاء دليل\r",
+        "pt-PT": "Criar diretório",
+        "ru-RU": "Создать каталог",
+        "ja-JP": "ディレクトリ作成",
+        "de-DE": "Verzeichnis erstellen",
+        "fr-FR": "Créer un répertoire",
+        "ko-KR": "디렉토리 생성",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(3905-3913)"
+        ],
+        "$id": 4234
+    },
+    "失败文件": {
+        "en-US": "Failed files",
+        "es-ES": "Archivos fallidos",
+        "ar-EG": "ملفات فاشلة\r",
+        "pt-PT": "Ficheiros com falha",
+        "ru-RU": "Неудавшиеся файлы",
+        "ja-JP": "失敗ファイル",
+        "de-DE": "Fehlerhafte Dateien",
+        "fr-FR": "Fichiers échoués",
+        "ko-KR": "실패한 파일",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(4694-4702)"
+        ],
+        "$id": 4235
+    },
+    "耗时：": {
+        "en-US": "Time taken:",
+        "es-ES": "Tiempo empleado:",
+        "ar-EG": "الوقت المستغرق:\r",
+        "pt-PT": "Tempo decorrido:",
+        "ru-RU": "Затраченное время:",
+        "ja-JP": "所要時間：",
+        "de-DE": "Verstrichene Zeit:",
+        "fr-FR": "Temps écoulé :",
+        "ko-KR": "소요 시간:",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(5607-5614)"
+        ],
+        "$id": 4236
+    },
+    "平均速度：": {
+        "en-US": "Average speed:",
+        "es-ES": "Velocidad media:",
+        "ar-EG": "معدل السرعة:\r",
+        "pt-PT": "Velocidade média:",
+        "ru-RU": "Средняя скорость:",
+        "ja-JP": "平均速度:",
+        "de-DE": "Durchschnittsgeschwindigkeit:",
+        "fr-FR": "Vitesse moyenne :",
+        "ko-KR": "평균 속도:",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(5958-5967)"
+        ],
+        "$id": 4237
+    },
+    "{speed} 文件/秒": {
+        "en-US": "{speed} files/second",
+        "es-ES": "{speed} archivos/segundo",
+        "ar-EG": "{speed} ملف/ثانية\r",
+        "pt-PT": "{speed} ficheiros/segundo",
+        "ru-RU": "{speed} файлов/сек",
+        "ja-JP": "{speed} ファイル/秒",
+        "de-DE": "{speed} Dateien/Sekunde",
+        "fr-FR": "{speed} fichiers/seconde",
+        "ko-KR": "{speed} 파일/초",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(6115-6131)"
+        ],
+        "$id": 4238
+    },
+    "失败文件列表": {
+        "en-US": "Failed file list",
+        "es-ES": "Lista de archivos fallidos",
+        "ar-EG": "قائمة الملفات الفاشلة\r",
+        "pt-PT": "Lista de ficheiros com falha",
+        "ru-RU": "Список неудачных файлов",
+        "ja-JP": "失敗ファイルリスト",
+        "de-DE": "Liste der fehlerhaften Dateien",
+        "fr-FR": "Liste des fichiers échoués",
+        "ko-KR": "실패한 파일 목록",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(6614-6624)"
+        ],
+        "$id": 4239
+    },
+    "还有 {count} 个错误...": {
+        "en-US": "{count} more errors...",
+        "es-ES": "Quedan {count} errores...",
+        "ar-EG": "لا يزال هناك {count} أخطاء...",
+        "pt-PT": "Ainda há {count} erros...",
+        "ru-RU": "Еще {count} ошибок...",
+        "ja-JP": "あと {count} 個のエラー...",
+        "de-DE": "Noch {count} Fehler...",
+        "fr-FR": "Encore {count} erreurs...",
+        "ko-KR": "{count}개의 오류 더 있음...",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(7419-7440)"
+        ],
+        "$id": 4240
+    },
+    "导出日志": {
+        "en-US": "Export Log",
+        "es-ES": "Exportar registros\r",
+        "ar-EG": "تصدير السجلات\r",
+        "pt-PT": "Exportar registos\r",
+        "ru-RU": "Экспортировать журнал",
+        "ja-JP": "ログをエクスポート",
+        "de-DE": "Protokolle exportieren",
+        "fr-FR": "Exporter les journaux",
+        "ko-KR": "로그 내보내기",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(8039-8047)"
+        ],
+        "$id": 4241
+    },
+    "打开目录": {
+        "en-US": "Open Directory",
+        "es-ES": "Abrir directorio\r",
+        "ar-EG": "فتح الدليل\r",
+        "pt-PT": "Abrir diretório\r",
+        "ru-RU": "Открыть папку",
+        "ja-JP": "ディレクトリを開く",
+        "de-DE": "Verzeichnis öffnen",
+        "fr-FR": "Ouvrir le répertoire",
+        "ko-KR": "디렉토리 열기",
+        "$files": [
+            "renderer/components/organize/OrganizeResultDialog.tsx(8442-8450)"
+        ],
+        "$id": 4242
+    },
+    "加载历史记录失败: {error_message}": {
+        "en-US": "Failed to load history: {error_message}",
+        "es-ES": "Error al cargar el historial: {error_message}\r",
+        "ar-EG": "فشل تحميل السجلات: {error_message}\r",
+        "pt-PT": "Falha ao carregar o histórico: {error_message}\r",
+        "ru-RU": "Ошибка загрузки истории: {error_message}",
+        "ja-JP": "履歴の読み込みに失敗しました: {error_message}",
+        "de-DE": "Laden des Verlaufs fehlgeschlagen: {error_message}",
+        "fr-FR": "Échec du chargement de l'historique : {error_message}",
+        "ko-KR": "이력 로드 실패: {error_message}",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(1456-1485)"
+        ],
+        "$id": 4243
+    },
+    "撤销成功！文件已恢复到整理前的状态": {
+        "en-US": "Undo successful! File has been restored to its state before organization",
+        "es-ES": "¡Deshacer exitoso! El archivo ha sido restaurado al estado anterior a la organización\r",
+        "ar-EG": "تم التراجع بنجاح! تم استعادة الملف إلى حالته قبل التنظيم\r",
+        "pt-PT": "Anulado com sucesso! O ficheiro foi restaurado para o estado anterior à organização\r",
+        "ru-RU": "Отмена выполнена! Файл восстановлен до состояния до сортировки",
+        "ja-JP": "元に戻すが成功しました！ファイルが整理前の状態に戻りました",
+        "de-DE": "Rückgängig erfolgreich! Datei wurde auf den Zustand vor der Organisation zurückgesetzt",
+        "fr-FR": "Annulation réussie ! Le fichier a été restauré à son état précédent",
+        "ko-KR": "되돌리기 성공! 파일이 정리 전 상태로 복원되었습니다",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(1764-1785)"
+        ],
+        "$id": 4244
+    },
+    "撤销失败: {error_message}": {
+        "en-US": "Undo failed: {error_message}",
+        "es-ES": "Deshacer fallido: {error_message}\r",
+        "ar-EG": "فشل التراجع: {error_message}\r",
+        "pt-PT": "Falha na anulação: {error_message}\r",
+        "ru-RU": "Ошибка отмены: {error_message}",
+        "ja-JP": "元に戻すに失敗しました: {error_message}",
+        "de-DE": "Rückgängig fehlgeschlagen: {error_message}",
+        "fr-FR": "Échec de l'annulation : {error_message}",
+        "ko-KR": "되돌리기 실패: {error_message}",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(1995-2020)"
+        ],
+        "$id": 4245
+    },
+    "删除会话": {
+        "en-US": "Delete Session",
+        "es-ES": "Eliminar sesión\r",
+        "ar-EG": "حذف الجلسة\r",
+        "pt-PT": "Eliminar sessão\r",
+        "ru-RU": "Удалить сеанс",
+        "ja-JP": "セッションを削除",
+        "de-DE": "Sitzung löschen",
+        "fr-FR": "Supprimer la session",
+        "ko-KR": "세션 삭제",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(2288-2296)"
+        ],
+        "$id": 4246
+    },
+    "确定要删除这个会话记录吗？删除后将无法撤销此次整理操作。": {
+        "en-US": "Are you sure you want to delete this session record? You will not be able to undo this organization operation after deletion.",
+        "es-ES": "¿Estás seguro de que deseas eliminar este registro de sesión? Después de eliminarlo, no se podrá deshacer esta operación de organización.\r",
+        "ar-EG": "هل أنت متأكد أنك تريد حذف سجل هذه الجلسة؟ بعد الحذف، لن تتمكن من التراجع عن عملية التنظيم هذه.\r",
+        "pt-PT": "Tem a certeza de que deseja eliminar este registo de sessão? Após a eliminação, não será possível anular esta operação de organização.\r",
+        "ru-RU": "Вы уверены, что хотите удалить эту запись сеанса? После удаления невозможно будет отменить текущую операцию сортировки.",
+        "ja-JP": "このセッション記録を削除してもよろしいですか？削除後はこの整理操作を元に戻すことができません。",
+        "de-DE": "Sind Sie sicher, dass Sie diesen Sitzungseintrag löschen möchten? Nach dem Löschen kann dieser Organisationsvorgang nicht rückgängig gemacht werden.",
+        "fr-FR": "Voulez-vous vraiment supprimer cet enregistrement de session ? Après la suppression, vous ne pourrez pas annuler cette opération de tri.",
+        "ko-KR": "이 세션 기록을 삭제하시겠습니까? 삭제 후에는 이 정리 작업을 되돌릴 수 없습니다.",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(2317-2349)"
+        ],
+        "$id": 4247
+    },
+    "删除": {
+        "en-US": "Delete",
+        "es-ES": "Eliminar\r",
+        "ar-EG": "حذف\r",
+        "pt-PT": "Eliminar\r",
+        "ru-RU": "Удалить",
+        "ja-JP": "削除",
+        "de-DE": "Löschen",
+        "fr-FR": "Supprimer",
+        "ko-KR": "삭제",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(2371-2377)"
+        ],
+        "$id": 4248
+    },
+    "会话记录已删除": {
+        "en-US": "Session record has been deleted",
+        "es-ES": "Registro de sesión eliminado\r",
+        "ar-EG": "تم حذف سجل الجلسة\r",
+        "pt-PT": "Registo de sessão eliminado\r",
+        "ru-RU": "Запись сеанса удалена",
+        "ja-JP": "セッション記録が削除されました",
+        "de-DE": "Sitzungseintrag wurde gelöscht",
+        "fr-FR": "L'enregistrement de session a été supprimé",
+        "ko-KR": "세션 기록이 삭제되었습니다",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(2659-2670)"
+        ],
+        "$id": 4249
+    },
+    "删除失败: {error_message}": {
+        "en-US": "Delete failed: {error_message}",
+        "es-ES": "Eliminar fallido: {error_message}\r",
+        "ar-EG": "فشل الحذف: {error_message}\r",
+        "pt-PT": "Falha na eliminação: {error_message}\r",
+        "ru-RU": "Ошибка удаления: {error_message}",
+        "ja-JP": "削除に失敗しました: {error_message}",
+        "de-DE": "Löschen fehlgeschlagen: {error_message}",
+        "fr-FR": "Échec de la suppression : {error_message}",
+        "ko-KR": "삭제 실패: {error_message}",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(2899-2924)"
+        ],
+        "$id": 4250
+    },
+    "无文件": {
+        "en-US": "No files",
+        "es-ES": "Sin archivos\r",
+        "ar-EG": "لا توجد ملفات\r",
+        "pt-PT": "Nenhum ficheiro\r",
+        "ru-RU": "Нет файлов",
+        "ja-JP": "ファイルがありません",
+        "de-DE": "Keine Dateien",
+        "fr-FR": "Aucun fichier",
+        "ko-KR": "파일 없음",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(3172-3179)"
+        ],
+        "$id": 4251
+    },
+    "{count} 个文件": {
+        "en-US": "{count} files",
+        "es-ES": "{count} archivos\r",
+        "ar-EG": "{count} ملف\r",
+        "pt-PT": "{count} ficheiros\r",
+        "ru-RU": "Файлов: {count}",
+        "ja-JP": "{count} 個のファイル",
+        "de-DE": "{count} Dateien",
+        "fr-FR": "{count} fichiers",
+        "ko-KR": "{count}개 파일",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(3193-3208)"
+        ],
+        "$id": 4252
+    },
+    "撤销历史": {
+        "en-US": "Undo History",
+        "es-ES": "Historial de deshacer",
+        "ar-EG": "سجل التراجع",
+        "pt-PT": "Histórico de anulação",
+        "ru-RU": "Отменить историю",
+        "ja-JP": "操作履歴を元に戻す",
+        "de-DE": "Verlauf rückgängig machen",
+        "fr-FR": "Historique d'annulation",
+        "ko-KR": "되돌리기 이력",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(3750-3758)"
+        ],
+        "$id": 4253
+    },
+    "加载历史记录...": {
+        "en-US": "Loading history...",
+        "es-ES": "Cargando historial...\r",
+        "ar-EG": "جاري تحميل السجلات...\r",
+        "pt-PT": "A carregar histórico...\r",
+        "ru-RU": "Загрузка истории...\r",
+        "ja-JP": "履歴を読み込み中...\r",
+        "de-DE": "Verlaufsdaten werden geladen...\r",
+        "fr-FR": "Chargement de l'historique...",
+        "ko-KR": "이력 로드 중...",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(4357-4370)"
+        ],
+        "$id": 4254
+    },
+    "暂无历史记录": {
+        "en-US": "No history records",
+        "es-ES": "No hay historial\r",
+        "ar-EG": "لا توجد سجلات\r",
+        "pt-PT": "Nenhum histórico encontrado\r",
+        "ru-RU": "Нет исторических записей\r",
+        "ja-JP": "履歴はありません\r",
+        "de-DE": "Kein Verlauf vorhanden\r",
+        "fr-FR": "Aucun historique pour le moment",
+        "ko-KR": "이력 없음",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(4745-4755)"
+        ],
+        "$id": 4255
+    },
+    "还没有执行过整理操作，或者历史记录已被清理。": {
+        "en-US": "No organization operations have been performed, or the history records have been cleared.",
+        "es-ES": "Aún no se ha realizado ninguna operación de organización o el historial ha sido limpiado.\r",
+        "ar-EG": "لم تتم أي عملية تنظيم بعد، أو تم مسح السجلات.\r",
+        "pt-PT": "Nenhuma operação de organização foi executada ainda ou o histórico foi limpo.\r",
+        "ru-RU": "Вы еще не выполняли операций упорядочивания, либо исторические записи были очищены.\r",
+        "ja-JP": "整理操作を実行したことがないか、履歴がクリーンアップされました。\r",
+        "de-DE": "Es wurden noch keine Organisationsvorgänge durchgeführt oder der Verlauf wurde bereinigt.\r",
+        "fr-FR": "Aucune opération d'organisation n'a encore été effectuée ou l'historique a été nettoyé.",
+        "ko-KR": "정리 작업을 아직 수행하지 않았거나 이력이 삭제되었습니다.",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(4834-4860)"
+        ],
+        "$id": 4256
+    },
+    "已备份": {
+        "en-US": "Backed up",
+        "es-ES": "Copia de seguridad realizada\r",
+        "ar-EG": "تم النسخ الاحتياطي\r",
+        "pt-PT": "Foi criado um backup\r",
+        "ru-RU": "Создана резервная копия\r",
+        "ja-JP": "バックアップ済み\r",
+        "de-DE": "Gesichert\r",
+        "fr-FR": "Sauvegardé",
+        "ko-KR": "백업 완료",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(5934-5941)"
+        ],
+        "$id": 4257
+    },
+    "移动了 {count}": {
+        "en-US": "Moved {count}",
+        "es-ES": "Se movieron {count}\r",
+        "ar-EG": "تم نقل {count}\r",
+        "pt-PT": "Movido {count}\r",
+        "ru-RU": "Перемещено: {count}\r",
+        "ja-JP": "{count} 件を移動しました\r",
+        "de-DE": "{count} verschoben\r",
+        "fr-FR": "{count} éléments déplacés",
+        "ko-KR": "{count}개 이동됨",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(6308-6323)"
+        ],
+        "$id": 4258
+    },
+    "备份位置: {backup_name}": {
+        "en-US": "Backup location: {backup_name}",
+        "es-ES": "Ubicación de la copia de seguridad: {backup_name}\r",
+        "ar-EG": "موضع النسخ الاحتياطي: {backup_name}\r",
+        "pt-PT": "Localização do backup: {backup_name}\r",
+        "ru-RU": "Резервное копирование: {backup_name}\r",
+        "ja-JP": "バックアップ場所: {backup_name}\r",
+        "de-DE": "Sicherungsort: {backup_name}\r",
+        "fr-FR": "Emplacement de sauvegarde : {backup_name}",
+        "ko-KR": "백업 위치: {backup_name}",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(6733-6756)"
+        ],
+        "$id": 4259
+    },
+    "撤销中...": {
+        "en-US": "Undoing...",
+        "es-ES": "Deshaciendo...\r",
+        "ar-EG": "جاري التراجع...\r",
+        "pt-PT": "A desfazer...\r",
+        "ru-RU": "Отмена...\r",
+        "ja-JP": "元に戻しています...\r",
+        "de-DE": "Wird rückgängig gemacht...\r",
+        "fr-FR": "Annulation en cours...",
+        "ko-KR": "복원 중...",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(7963-7973)"
+        ],
+        "$id": 4260
+    },
+    "撤销": {
+        "en-US": "Undo",
+        "es-ES": "Deshacer\r",
+        "ar-EG": "تراجع\r",
+        "pt-PT": "Desfazer\r",
+        "ru-RU": "Отмена\r",
+        "ja-JP": "元に戻す\r",
+        "de-DE": "Rückgängig machen\r",
+        "fr-FR": "Annuler",
+        "ko-KR": "복원",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(8181-8187)"
+        ],
+        "$id": 4261
+    },
+    "删除记录": {
+        "en-US": "Delete record",
+        "es-ES": "Eliminar registro\r",
+        "ar-EG": "حذف السجل\r",
+        "pt-PT": "Eliminar registo\r",
+        "ru-RU": "Удалить запись\r",
+        "ja-JP": "記録を削除\r",
+        "de-DE": "Datensatz löschen\r",
+        "fr-FR": "Supprimer l'enregistrement",
+        "ko-KR": "기록 삭제",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(8677-8685)"
+        ],
+        "$id": 4262
+    },
+    "撤销操作将恢复文件到整理前的位置": {
+        "en-US": "Undo operation will restore files to their original positions before organization",
+        "es-ES": "La operación de deshacer restaurará los archivos a su ubicación anterior a la organización",
+        "ar-EG": "سيؤدي التراجع إلى استعادة الملفات إلى موضعها قبل التنظيم",
+        "pt-PT": "A operação de desfazer irá restaurar os ficheiros para as suas localizações anteriores à organização",
+        "ru-RU": "Операция отмены восстановит файлы в положение до упорядочивания",
+        "ja-JP": "元に戻す操作によりファイルが整理前の位置に戻されます",
+        "de-DE": "Der Rückgängig-Vorgang stellt die Dateien an die ursprünglichen Positionen vor der Organisation wieder her",
+        "fr-FR": "L'opération d'annulation restaurera les fichiers à leur emplacement d'origine avant l'organisation",
+        "ko-KR": "복원 작업을 통해 파일이 정리 전 위치로 복구됩니다.",
+        "$files": [
+            "renderer/components/organize/UndoHistoryDialog.tsx(9212-9232)"
+        ],
+        "$id": 4263
+    }
+}

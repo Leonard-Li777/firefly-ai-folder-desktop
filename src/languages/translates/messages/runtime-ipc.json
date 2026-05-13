@@ -1,0 +1,17 @@
+{
+    "未找到工作目录 ID: {workspaceId}": {
+        "en-US": "Working directory ID not found: {workspaceId}",
+        "es-ES": "No se encontró el ID de directorio de trabajo: {workspaceId}",
+        "ar-EG": "لا يوجد دليل عمل بالمعرف: {workspaceId}",
+        "pt-PT": "ID do diretório de trabalho não encontrado: {workspaceId}",
+        "ru-RU": "Идентификатор рабочего каталога не найден: {workspaceId}",
+        "ja-JP": "作業ディレクトリ ID: {workspaceId} が見つかりません",
+        "de-DE": "Arbeitsverzeichnis ID wurde nicht gefunden: {workspaceId}",
+        "fr-FR": "ID du répertoire de travail non trouvé : {workspaceId}",
+        "ko-KR": "작업 디렉토리 ID를 찾을 수 없음: {workspaceId}",
+        "$files": [
+            "electron/runtime-services/ipc/settings-ipc-handler.ts(8593-8622)"
+        ],
+        "$id": 5969
+    }
+}

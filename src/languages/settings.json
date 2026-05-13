@@ -1,0 +1,102 @@
+{
+    "languages": [
+        {
+            "name": "zh-CN",
+            "title": "简体中文",
+            "nativeTitle": "简体中文",
+            "active": true,
+            "default": true
+        },
+        {
+            "name": "en-US",
+            "title": "English",
+            "nativeTitle": "English (United States)"
+        },
+        {
+            "name": "es-ES",
+            "title": "Español",
+            "nativeTitle": "Español (España)"
+        },
+        {
+            "name": "ar-EG",
+            "title": "العربية",
+            "nativeTitle": "العربية (مصر)"
+        },
+        {
+            "name": "pt-PT",
+            "title": "Português",
+            "nativeTitle": "Português (Portugal)"
+        },
+        {
+            "name": "ru-RU",
+            "title": "Русский",
+            "nativeTitle": "Русский (Россия)"
+        },
+        {
+            "name": "ja-JP",
+            "title": "日本語",
+            "nativeTitle": "日本語 (日本)"
+        },
+        {
+            "name": "de-DE",
+            "title": "Deutsch",
+            "nativeTitle": "Deutsch (Deutschland)"
+        },
+        {
+            "name": "fr-FR",
+            "title": "Français",
+            "nativeTitle": "Français (France)"
+        },
+        {
+            "name": "ko-KR",
+            "title": "한국어",
+            "nativeTitle": "한국어 (대한민국)"
+        }
+    ],
+    "namespaces": {
+        "adapters": "electron/adapters",
+        "config": "electron/config",
+        "runtime-ai": "electron/runtime-services/ai",
+        "runtime-analysis": "electron/runtime-services/analysis",
+        "runtime-analysis-queue": "electron/runtime-services/analysis-queue-service",
+        "runtime-error": "electron/runtime-services/error",
+        "runtime-filesystem": "electron/runtime-services/filesystem",
+        "runtime-ipc": "electron/runtime-services/ipc",
+        "runtime-llama": "electron/runtime-services/llama",
+        "runtime-system": "electron/runtime-services/system",
+        "runtime-utils": "electron/runtime-services/utils",
+        "welcome": "renderer/components/welcome",
+        "ai": "renderer/components/ai",
+        "common": "renderer/components/common",
+        "download": "renderer/components/download",
+        "ai-model-settings": "renderer/components/settings/ai-model-settings.tsx",
+        "analysis-settings": "renderer/components/settings/analysis-settings.tsx",
+        "cloud-model-config-settings": "renderer/components/settings/cloud-model-config-settings.tsx",
+        "file-display-settings": "renderer/components/settings/file-display-settings.tsx",
+        "interface-settings": "renderer/components/settings/interface-settings.tsx",
+        "RescanPreviewDialog": "renderer/components/settings/RescanPreviewDialog.tsx",
+        "settings-button": "renderer/components/settings/settings-button.tsx",
+        "settings-dialog": "renderer/components/settings/settings-dialog.tsx",
+        "settings-navigation": "renderer/components/settings/settings-navigation.tsx",
+        "workspace-settings": "renderer/components/settings/workspace-settings.tsx",
+        "analysis": "renderer/components/analysis",
+        "file-explorer": "renderer/components/file-explorer",
+        "organize": "renderer/components/organize",
+        "ui": "renderer/components/ui",
+        "hooks": "renderer/hooks",
+        "lib": "renderer/lib",
+        "stores": "renderer/stores"
+    },
+    "patterns": [
+        "!.md",
+        "!**/*demo*",
+        "!**/*test*",
+        "!**/*example*",
+        "!**/*.wraper.*"
+    ],
+    "defaultNamespace": "default",
+    "fallbackLanguage": "en-US",
+    "library": false,
+    "debug": false,
+    "autoSet": true
+}

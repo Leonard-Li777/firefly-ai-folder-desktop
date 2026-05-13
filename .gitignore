@@ -1,0 +1,6 @@
+src/languages/api.json
+src/languages/translates/*/*.bak.*.json
+**/*.wrapped.*
+sync-from-remote.ps1
+sync.bat
+build/deps-to-package.json

@@ -1,0 +1,49 @@
+{
+    "AI服务未就绪，请稍后重试": {
+        "en-US": "AI service is not ready, please try again later",
+        "es-ES": "El servicio de IA no está listo. Vuelve a intentarlo más tarde.",
+        "ar-EG": "خدمة الذكاء الاصطناعي ليست جاهزة، يرجى المحاولة مرة أخرى لاحقًا",
+        "pt-PT": "O serviço de IA não está pronto, por favor tente novamente mais tarde",
+        "ru-RU": "Служба AI не готова. Повторите попытку позже.",
+        "ja-JP": "AI サービスの準備ができていません。後でもう一度お試しください。",
+        "de-DE": "KI-Dienst nicht bereit, bitte versuchen Sie es später erneut",
+        "fr-FR": "Le service IA n'est pas prêt, veuillez réessayer plus tard",
+        "ko-KR": "AI 서비스가 준비되지 않았습니다. 나중에 다시 시도해 주세요.",
+        "$files": [
+            "electron/adapters/ai-adapter-factory.ts(2381-2398)",
+            "electron/adapters/llama-index-ai-adapter.ts(2185-2202)"
+        ],
+        "$id": 4270
+    },
+    "处理多模态文件失败 [{filePath}]: {errorMsg}": {
+        "en-US": "Failed to process multimodal file [{filePath}]: {errorMsg}",
+        "es-ES": "No se pudo procesar el archivo multimodal [{filePath}]: {errorMsg}",
+        "ar-EG": "فشلت معالجة ملف متعدد الوسائط [{filePath}]: {errorMsg}",
+        "pt-PT": "Falha ao processar o ficheiro multimodal [{filePath}]: {errorMsg}",
+        "ru-RU": "Не удалось обработать мультимодальный файл [{filePath}]: {errorMsg}",
+        "ja-JP": "マルチモーダル ファイル [{filePath}] の処理に失敗しました: {errorMsg}",
+        "de-DE": "Verarbeitung der multimodalen Datei fehlgeschlagen [{filePath}]: {errorMsg}",
+        "fr-FR": "Échec du traitement du fichier multimodal [{filePath}] : {errorMsg}",
+        "ko-KR": "멀티모달 파일 [{filePath}] 처리 실패: {errorMsg}",
+        "$files": [
+            "electron/adapters/llama-index-ai-adapter.ts(9245-9283)"
+        ],
+        "$id": 4271
+    },
+    "没有加载的模型": {
+        "en-US": "No models loaded",
+        "es-ES": "No hay modelos cargados",
+        "ar-EG": "لا يوجد نموذج تم تحميله",
+        "pt-PT": "Nenhum modelo carregado",
+        "ru-RU": "Нет загруженной модели",
+        "ja-JP": "モデルがロードされていません",
+        "de-DE": "Keine geladenen Modelle",
+        "fr-FR": "Aucun modèle chargé",
+        "ko-KR": "로드된 모델 없음",
+        "$files": [
+            "electron/adapters/llama-runtime-adapter.ts(1298-1309)",
+            "electron/adapters/llama-runtime-adapter.ts(4244-4255)"
+        ],
+        "$id": 3540
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "打开应用设置": {
+        "en-US": "Open app settings",
+        "es-ES": "Abrir la configuración de la aplicación",
+        "ar-EG": "افتح إعدادات التطبيق",
+        "pt-PT": "Abrir definições da aplicação",
+        "ru-RU": "Открыть настройки приложения",
+        "ja-JP": "アプリの設定を開く",
+        "de-DE": "App-Einstellungen öffnen",
+        "fr-FR": "Ouvrir les paramètres de l'application",
+        "ko-KR": "앱 설정 열기",
+        "$files": [
+            "renderer/components/settings/settings-button.tsx(965-975)",
+            "renderer/components/settings/settings-button.tsx(1606-1616)"
+        ],
+        "$id": 3154
+    },
+    "设置": {
+        "en-US": "Settings",
+        "es-ES": "Configuración",
+        "ar-EG": "الإعدادات",
+        "pt-PT": "Definições",
+        "ru-RU": "Настройки",
+        "ja-JP": "設定",
+        "de-DE": "Einstellungen",
+        "fr-FR": "Paramètres",
+        "ko-KR": "설정",
+        "$files": [
+            "renderer/components/settings/settings-button.tsx(1080-1086)"
+        ],
+        "$id": 3155
+    }
+}

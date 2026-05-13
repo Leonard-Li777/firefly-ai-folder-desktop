@@ -1,0 +1,347 @@
+{
+    "待处理": {
+        "en-US": "Pending",
+        "es-ES": "Pendiente",
+        "ar-EG": "قيد الانتظار",
+        "pt-PT": "Pendente",
+        "ru-RU": "В ожидании",
+        "ja-JP": "保留中",
+        "de-DE": "Ausstehend",
+        "fr-FR": "En attente",
+        "ko-KR": "처리 대기 중",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(2129-2136)"
+        ],
+        "$id": 3868
+    },
+    "分析中": {
+        "en-US": "Analyzing",
+        "es-ES": "En análisis",
+        "ar-EG": "جاري التحليل",
+        "pt-PT": "A analisar",
+        "ru-RU": "Анализируется",
+        "ja-JP": "分析中",
+        "de-DE": "Wird analysiert",
+        "fr-FR": "En analyse",
+        "ko-KR": "분석 중",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(2155-2162)"
+        ],
+        "$id": 3869
+    },
+    "已完成": {
+        "en-US": "Completed",
+        "es-ES": "Completado",
+        "ar-EG": "مكتمل",
+        "pt-PT": "Concluído",
+        "ru-RU": "Завершено",
+        "ja-JP": "完了",
+        "de-DE": "Abgeschlossen",
+        "fr-FR": "Terminé",
+        "ko-KR": "완료됨",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(2181-2188)"
+        ],
+        "$id": 3870
+    },
+    "失败": {
+        "en-US": "Failed",
+        "es-ES": "Fallido",
+        "ar-EG": "فشل",
+        "pt-PT": "Falhou",
+        "ru-RU": "Неудачно",
+        "ja-JP": "失敗",
+        "de-DE": "Fehlgeschlagen",
+        "fr-FR": "Échec",
+        "ko-KR": "실패",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(2204-2210)"
+        ],
+        "$id": 3871
+    },
+    "未知失败原因": {
+        "en-US": "Unknown failure reason",
+        "es-ES": "Motivo de fallo desconocido",
+        "ar-EG": "سبب فشل مجهول",
+        "pt-PT": "Motivo de falha desconhecido",
+        "ru-RU": "Неизвестная причина сбоя",
+        "ja-JP": "不明な失敗の理由",
+        "de-DE": "Unbekannter Fehlergrund",
+        "fr-FR": "Raison d'échec inconnue",
+        "ko-KR": "알 수 없는 실패 원인",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(2672-2682)"
+        ],
+        "$id": 3872
+    },
+    "来自云端缓存": {
+        "en-US": "From Cloud Cache",
+        "es-ES": "De la caché en la nube",
+        "ar-EG": "من ذاكرة التخزين المؤقت السحابية",
+        "pt-PT": "Da cache da nuvem",
+        "ru-RU": "Из облачного кэша",
+        "ja-JP": "クラウドキャッシュから",
+        "de-DE": "Aus Cloud-Cache",
+        "fr-FR": "Depuis le cache cloud",
+        "ko-KR": "클라우드 캐시에서",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(3439-3449)"
+        ],
+        "$id": 3378
+    },
+    "重试": {
+        "en-US": "Retry",
+        "es-ES": "Reintentar",
+        "ar-EG": "إعادة المحاولة",
+        "pt-PT": "Repetir",
+        "ru-RU": "Повторить",
+        "ja-JP": "もう一度やり直してください",
+        "de-DE": "Wiederholen",
+        "fr-FR": "Réessayer",
+        "ko-KR": "재시도",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(4565-4571)"
+        ],
+        "$id": 3873
+    },
+    "删除": {
+        "en-US": "Delete",
+        "es-ES": "Eliminar",
+        "ar-EG": "حذف",
+        "pt-PT": "Eliminar",
+        "ru-RU": "Удалить",
+        "ja-JP": "消去",
+        "de-DE": "Löschen",
+        "fr-FR": "Supprimer",
+        "ko-KR": "삭제",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(4748-4754)"
+        ],
+        "$id": 3874
+    },
+    "AI 分析队列": {
+        "en-US": "AI Analysis Queue",
+        "es-ES": "Cola de análisis de IA",
+        "ar-EG": "طابور تحليل الذكاء الاصطناعي",
+        "pt-PT": "Fila de análise de IA",
+        "ru-RU": "Очередь AI-анализа",
+        "ja-JP": "AI分析キュー",
+        "de-DE": "AI-Analyse-Warteschlange",
+        "fr-FR": "File d'attente d'analyse IA",
+        "ko-KR": "AI 분석 큐",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(5417-5428)"
+        ],
+        "$id": 3875
+    },
+    "【已暂停】": {
+        "en-US": "[Paused]",
+        "es-ES": "[En pausa]",
+        "ar-EG": "[معلق]",
+        "pt-PT": "【Em pausa】",
+        "ru-RU": "[Приостановлено]",
+        "ja-JP": "【一時停止中】",
+        "de-DE": "【Pausiert】",
+        "fr-FR": "[En pause]",
+        "ko-KR": "[일시 중지됨]",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(5513-5522)"
+        ],
+        "$id": 3876
+    },
+    "文件名": {
+        "en-US": "Filename",
+        "es-ES": "Nombre del archivo",
+        "ar-EG": "اسم الملف",
+        "pt-PT": "Nome do ficheiro",
+        "ru-RU": "Имя файла",
+        "ja-JP": "ファイル名",
+        "de-DE": "Dateiname",
+        "fr-FR": "Nom du fichier",
+        "ko-KR": "파일명",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(5869-5876)"
+        ],
+        "$id": 3877
+    },
+    "状态": {
+        "en-US": "Status",
+        "es-ES": "Estado",
+        "ar-EG": "الحالة",
+        "pt-PT": "Estado",
+        "ru-RU": "Статус",
+        "ja-JP": "州",
+        "de-DE": "Status",
+        "fr-FR": "Statut",
+        "ko-KR": "상태",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(5925-5931)"
+        ],
+        "$id": 3879
+    },
+    "失败原因": {
+        "en-US": "Failure Reason",
+        "es-ES": "Motivo del fallo",
+        "ar-EG": "سبب الفشل",
+        "pt-PT": "Motivo da falha",
+        "ru-RU": "Причина сбоя",
+        "ja-JP": "失敗の理由",
+        "de-DE": "Fehlergrund",
+        "fr-FR": "Motif de l'échec",
+        "ko-KR": "실패 원인",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(5980-5988)"
+        ],
+        "$id": 3262
+    },
+    "缓存/耗时": {
+        "en-US": "Cache / Time Consumed",
+        "es-ES": "Caché / Tiempo consumido",
+        "ar-EG": "الذاكرة المؤقتة/الوقت المستغرق",
+        "pt-PT": "Cache/Tempo gasto",
+        "ru-RU": "Кэш/время выполнения",
+        "ja-JP": "キャッシュ/所要時間",
+        "de-DE": "Cache / Laufzeit",
+        "fr-FR": "Cache / Temps écoulé",
+        "ko-KR": "캐시/소요 시간",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(6049-6058)"
+        ],
+        "$id": 3416
+    },
+    "单元": {
+        "en-US": "Units",
+        "es-ES": "Unidades",
+        "ar-EG": "الوحدة",
+        "pt-PT": "Unidades",
+        "ru-RU": "Элемент",
+        "ja-JP": "ユニット",
+        "de-DE": "Einheiten",
+        "fr-FR": "Unités",
+        "ko-KR": "단위",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(6107-6113)"
+        ],
+        "$id": 3880
+    },
+    "操作": {
+        "en-US": "Operations",
+        "es-ES": "Operación",
+        "ar-EG": "الإجراء",
+        "pt-PT": "Operação",
+        "ru-RU": "Операции",
+        "ja-JP": "操作する",
+        "de-DE": "Aktionen",
+        "fr-FR": "Opérations",
+        "ko-KR": "작업",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(6173-6179)"
+        ],
+        "$id": 3881
+    },
+    "队列 {count1} 项 · 最小单元 {count2} 项": {
+        "en-US": "Queue {count1} items · Minimum unit {count2} items",
+        "es-ES": "Cola {count1} elementos · Mínimo {count2} unidades",
+        "ar-EG": "طابور {count1} عنصر · وحدة {count2} عناصر",
+        "pt-PT": "Fila com {count1} itens · Mínimo de {count2} unidades",
+        "ru-RU": "Очередь {count1} · Минимальная единица {count2}",
+        "ja-JP": "キュー {count1} アイテム · 最小単位 {count2} アイテム",
+        "de-DE": "Warteschlange {count1} Elemente · Mindesteinheit {count2} Elemente",
+        "fr-FR": "File d'attente : {count1} éléments · Unité minimale : {count2} éléments",
+        "ko-KR": "큐 {count1}개 항목 · 최소 단위 {count2}개 항목",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(6383-6418)"
+        ],
+        "$id": 3882
+    },
+    "切为后台任务": {
+        "en-US": "Switch to background task",
+        "es-ES": "Cambiar a tarea en segundo plano",
+        "ar-EG": "تحويل إلى مهمة خلفية",
+        "pt-PT": "Converter para tarefa em segundo plano",
+        "ru-RU": "Перевести в фоновую задачу",
+        "ja-JP": "バックグラウンドタスクに切り替える",
+        "de-DE": "Zu Hintergrundaufgabe machen",
+        "fr-FR": "Passer en tâche d'arrière-plan",
+        "ko-KR": "백그라운드 작업으로 전환",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(6625-6635)"
+        ],
+        "$id": 3883
+    },
+    "清空待处理": {
+        "en-US": "Clear pending",
+        "es-ES": "Vaciar pendientes",
+        "ar-EG": "مسح العناصر المعلقة",
+        "pt-PT": "Limpar pendentes",
+        "ru-RU": "Очистить в ожидании",
+        "ja-JP": "クリア保留中",
+        "de-DE": "Ausstehende löschen",
+        "fr-FR": "Vider les éléments en attente",
+        "ko-KR": "처리 대기 중 전체 삭제",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(6712-6721)"
+        ],
+        "$id": 3884
+    },
+    "清空队列": {
+        "en-US": "Clear queue",
+        "es-ES": "Vaciar cola",
+        "ar-EG": "مسح قائمة الانتظار",
+        "pt-PT": "Limpar fila",
+        "ru-RU": "Очистить очередь",
+        "ja-JP": "キューをクリア",
+        "de-DE": "Warteschlange löschen",
+        "fr-FR": "Vider la file d'attente",
+        "ko-KR": "대기열 비우기",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(6794-6802)"
+        ],
+        "$id": 3886
+    },
+    "重新分析失败": {
+        "en-US": "Re-analyze failed",
+        "es-ES": "Volver a analizar lo fallido",
+        "ar-EG": "إعادة تحليل العناصر الفاشلة",
+        "pt-PT": "Reanalisar falhados",
+        "ru-RU": "Повторный анализ не удался",
+        "ja-JP": "再解析に失敗しました",
+        "de-DE": "Fehlgeschlagene neu analysieren",
+        "fr-FR": "Réanalyser les échecs",
+        "ko-KR": "실패 항목 재분석",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(6878-6888)"
+        ],
+        "$id": 3885
+    },
+    "暂停": {
+        "en-US": "Pause",
+        "es-ES": "Pausar",
+        "ar-EG": "إيقاف مؤقت",
+        "pt-PT": "Pausar",
+        "ru-RU": "Приостановить",
+        "ja-JP": "一時停止",
+        "de-DE": "Pausieren",
+        "fr-FR": "Suspendre",
+        "ko-KR": "일시 중지",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(7028-7034)"
+        ],
+        "$id": 3886
+    },
+    "开始": {
+        "en-US": "Start",
+        "es-ES": "Iniciar",
+        "ar-EG": "بدء",
+        "pt-PT": "Iniciar",
+        "ru-RU": "Запуск",
+        "ja-JP": "始める",
+        "de-DE": "Starten",
+        "fr-FR": "Démarrer",
+        "ko-KR": "시작",
+        "$files": [
+            "renderer/components/analysis/AnalysisQueueModal.tsx(7165-7171)"
+        ],
+        "$id": 3887
+    }
+}

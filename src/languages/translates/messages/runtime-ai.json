@@ -1,0 +1,583 @@
+{
+    "AI错误: {type} - {message}": {
+        "en-US": "AI Error: {type} - {message}",
+        "es-ES": "Error de IA: {type} - {message}",
+        "ar-EG": "خطأ في الذكاء الاصطناعي: {type} - {message}",
+        "pt-PT": "Erro de IA: {type} - {message}",
+        "ru-RU": "Ошибка AI: {type} - {message}",
+        "ja-JP": "AI エラー: {type} - {message}",
+        "de-DE": "KI-Fehler: {type} - {message}",
+        "fr-FR": "Erreur IA : {type} - {message}",
+        "ko-KR": "AI 오류: {type} - {message}",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(7717-7745)"
+        ],
+        "$id": 4512
+    },
+    "错误不可恢复或正在恢复中": {
+        "en-US": "The error is unrecoverable or recovering",
+        "es-ES": "El error es irrecuperable o se está recuperando.",
+        "ar-EG": "الخطأ غير قابل للاسترداد أو الاسترداد",
+        "pt-PT": "O erro é irrecuperável ou está em recuperação",
+        "ru-RU": "Ошибка неустранима или восстанавливается",
+        "ja-JP": "エラーは回復不能または回復中です",
+        "de-DE": "Der Fehler ist nicht behebbar oder wird behoben",
+        "fr-FR": "L'erreur est irrécupérable ou en cours de récupération",
+        "ko-KR": "오류가 복구 불가능하거나 복구 중입니다.",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(8368-8384)"
+        ],
+        "$id": 4513
+    },
+    "没有找到适用于 {type} 的恢复策略": {
+        "en-US": "No recovery policy found for {type}",
+        "es-ES": "No se encontró ninguna política de recuperación para {type}",
+        "ar-EG": "لم يتم العثور على سياسة استرداد لـ {type}",
+        "pt-PT": "Nenhuma política de recuperação encontrada para {type}",
+        "ru-RU": "Политика восстановления для {type} не найдена.",
+        "ja-JP": "{type} の回復ポリシーが見つかりませんでした",
+        "de-DE": "Keine Wiederherstellungsrichtlinie für {type} gefunden",
+        "fr-FR": "Aucune politique de récupération trouvée pour {type}",
+        "ko-KR": "{type}에 대한 복구 정책을 찾을 수 없습니다.",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(9130-9154)"
+        ],
+        "$id": 4514
+    },
+    "没有可用的恢复策略": {
+        "en-US": "No recovery strategy available",
+        "es-ES": "No hay estrategia de recuperación disponible",
+        "ar-EG": "لا توجد استراتيجية الاسترداد المتاحة",
+        "pt-PT": "Nenhuma estratégia de recuperação disponível",
+        "ru-RU": "Стратегия восстановления отсутствует.",
+        "ja-JP": "利用可能な回復戦略はありません",
+        "de-DE": "Keine Wiederherstellungsstrategie verfügbar",
+        "fr-FR": "Aucune stratégie de récupération disponible",
+        "ko-KR": "사용 가능한 복구 전략이 없습니다.",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(9251-9264)"
+        ],
+        "$id": 4515
+    },
+    "使用策略 \"{name}\" 成功恢复": {
+        "en-US": "Restored successfully using policy \"{name}\"",
+        "es-ES": "Restaurado exitosamente usando la política \"{name}\"",
+        "ar-EG": "تمت الاستعادة بنجاح باستخدام السياسة \"{name}\"",
+        "pt-PT": "Restaurado com êxito usando a política \"{name}\"",
+        "ru-RU": "Успешно восстановлено с использованием политики \"{name}\".",
+        "ja-JP": "ポリシー「{name}」を使用して正常に復元されました",
+        "de-DE": "Mit Richtlinie „{name}“ erfolgreich wiederhergestellt",
+        "fr-FR": "Restauré avec succès à l'aide de la stratégie \"{name}\"",
+        "ko-KR": "\"{name}\" 정책을 사용하여 성공적으로 복원되었습니다.",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(10100-10122)"
+        ],
+        "$id": 4516
+    },
+    "所有恢复策略都失败": {
+        "en-US": "All recovery strategies fail",
+        "es-ES": "Todas las estrategias de recuperación fallan",
+        "ar-EG": "كل استراتيجيات التعافي تفشل",
+        "pt-PT": "Todas as estratégias de recuperação falham",
+        "ru-RU": "Все стратегии восстановления терпят неудачу",
+        "ja-JP": "すべての回復戦略は失敗します",
+        "de-DE": "Alle Wiederherstellungsstrategien scheitern",
+        "fr-FR": "Toutes les stratégies de récupération échouent",
+        "ko-KR": "모든 복구 전략이 실패함",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(10560-10573)",
+            "electron/runtime-services/ai/ai-error-handler.ts(10694-10707)"
+        ],
+        "$id": 4517
+    },
+    "AI错误历史已清除": {
+        "en-US": "AI error history cleared",
+        "es-ES": "Se borró el historial de errores de IA",
+        "ar-EG": "تم مسح سجل أخطاء الذكاء الاصطناعي",
+        "pt-PT": "Histórico de erros de IA apagado",
+        "ru-RU": "История ошибок ИИ очищена.",
+        "ja-JP": "AIエラー履歴をクリア",
+        "de-DE": "AI-Fehlerhistorie gelöscht",
+        "fr-FR": "L'historique des erreurs de l'IA a été effacé",
+        "ko-KR": "AI 오류 내역이 삭제되었습니다.",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(14322-14335)"
+        ],
+        "$id": 4518
+    },
+    "恢复已在进行中": {
+        "en-US": "Recovery is already in progress",
+        "es-ES": "La recuperación ya está en marcha",
+        "ar-EG": "عملية الاسترداد قيد التقدم بالفعل",
+        "pt-PT": "A recuperação já está em andamento",
+        "ru-RU": "Восстановление уже идет",
+        "ja-JP": "復旧はすでに進行中です",
+        "de-DE": "Die Wiederherstellung ist bereits im Gange",
+        "fr-FR": "La reprise est déjà en cours",
+        "ko-KR": "복구가 이미 진행 중입니다.",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(14929-14940)"
+        ],
+        "$id": 4519
+    },
+    "前往设置": {
+        "en-US": "Go to settings",
+        "es-ES": "Ir a configuración",
+        "ar-EG": "انتقل إلى الإعدادات",
+        "pt-PT": "Vá para configurações",
+        "ru-RU": "Перейти в настройки",
+        "ja-JP": "設定に移動",
+        "de-DE": "Gehen Sie zu den Einstellungen",
+        "fr-FR": "Allez dans les paramètres",
+        "ko-KR": "설정으로 이동",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(16737-16745)"
+        ],
+        "$id": 4520
+    },
+    "已推送错误到前端: {type}": {
+        "en-US": "Error pushed to frontend: {type}",
+        "es-ES": "Error enviado a la interfaz: {type}",
+        "ar-EG": "خطأ تم دفعه إلى الواجهة الأمامية: {type}",
+        "pt-PT": "Erro enviado ao front-end: {type}",
+        "ru-RU": "Ошибка отправлена ​​во внешний интерфейс: {type}",
+        "ja-JP": "フロントエンドにプッシュされたエラー: {type}",
+        "de-DE": "Fehler an Frontend übertragen: {type}",
+        "fr-FR": "Erreur transmise au frontend : {type}",
+        "ko-KR": "프런트엔드로 푸시된 오류: {type}",
+        "$files": [
+            "electron/runtime-services/ai/ai-error-handler.ts(17859-17879)"
+        ],
+        "$id": 4467
+    },
+    "未选择本地模型": {
+        "en-US": "No local model selected",
+        "es-ES": "Modelo local no seleccionado",
+        "ar-EG": "النموذج المحلي غير محدد",
+        "pt-PT": "Nenhum modelo local selecionado",
+        "ru-RU": "Локальная модель не выбрана",
+        "ja-JP": "ローカルモデルが選択されていません",
+        "de-DE": "Lokales Modell nicht ausgewählt",
+        "fr-FR": "Aucun modèle local sélectionné",
+        "ko-KR": "로컬 모델이 선택되지 않음",
+        "$files": [
+            "electron/runtime-services/ai/ai-service-routing-manager.ts(5765-5776)"
+        ],
+        "$id": 5710
+    },
+    "未配置云端模型": {
+        "en-US": "Cloud model not configured",
+        "es-ES": "Modelo en la nube no configurado",
+        "ar-EG": "النموذج السحابي غير مهيأ",
+        "pt-PT": "Nenhum modelo de nuvem configurado",
+        "ru-RU": "Облачная модель не настроена",
+        "ja-JP": "クラウドモデルが設定されていません",
+        "de-DE": "Cloud-Modell nicht konfiguriert",
+        "fr-FR": "Aucun modèle cloud configuré",
+        "ko-KR": "클라우드 모델이 구성되지 않음",
+        "$files": [
+            "electron/runtime-services/ai/ai-service-routing-manager.ts(6320-6331)"
+        ],
+        "$id": 5711
+    },
+    "配置索引 {index} 超出范围": {
+        "en-US": "Configuration index {index} out of range",
+        "es-ES": "El índice de configuración {index} está fuera de rango",
+        "ar-EG": "مؤشر التهيئة {index} خارج النطاق",
+        "pt-PT": "O índice de configuração {index} está fora do intervalo",
+        "ru-RU": "Индекс конфигурации {index} превышает диапазон",
+        "ja-JP": "設定インデックス {index} が範囲外です\r",
+        "de-DE": "Konfigurationsindex {index} außerhalb des gültigen Bereichs",
+        "fr-FR": "L'indice de configuration {index} est hors limites",
+        "ko-KR": "구성 인덱스 {index}가 범위를 벗어났습니다",
+        "$files": [
+            "electron/runtime-services/ai/cloud-model-config-service.ts(3037-3058)",
+            "electron/runtime-services/ai/cloud-model-config-service.ts(3683-3704)",
+            "electron/runtime-services/ai/cloud-model-config-service.ts(4926-4947)"
+        ],
+        "$id": 5738
+    },
+    "baseUrl不能为空": {
+        "en-US": "baseUrl cannot be empty",
+        "es-ES": "baseUrl no puede estar vacío",
+        "ar-EG": "لا يمكن أن يكون baseUrl فارغًا",
+        "pt-PT": "baseUrl não pode estar vazio",
+        "ru-RU": "baseUrl не может быть пустым",
+        "ja-JP": "baseUrl は空にできません",
+        "de-DE": "baseUrl darf nicht leer sein",
+        "fr-FR": "baseUrl ne peut pas être vide",
+        "ko-KR": "baseUrl은 공백일 수 없습니다.",
+        "$files": [
+            "electron/runtime-services/ai/cloud-model-config-service.ts(7803-7818)",
+            "electron/runtime-services/ai/cloud-model-config-service.ts(10192-10207)",
+            "electron/runtime-services/ai/cloud-model-config-service.ts(15394-15409)"
+        ],
+        "$id": 5746
+    },
+    "API响应错误: {status} - {errorText}": {
+        "en-US": "API response error: {status} - {errorText}",
+        "es-ES": "Error en la respuesta de la API: {status} - {errorText}",
+        "ar-EG": "خطأ في استجابة واجهة برمجة التطبيقات: {status} - {errorText}",
+        "pt-PT": "Erro de resposta da API: {status} - {errorText}",
+        "ru-RU": "Ошибка ответа API: {status} - {errorText}",
+        "ja-JP": "API応答エラー: {status} - {errorText}\r",
+        "de-DE": "API-Antwortfehler: {status} - {errorText}",
+        "fr-FR": "Erreur de réponse API : {status} - {errorText}",
+        "ko-KR": "API 응답 오류: {status} - {errorText}",
+        "$files": [
+            "electron/runtime-services/ai/cloud-model-config-service.ts(9472-9507)"
+        ],
+        "$id": 5740
+    },
+    "provider 是必填项": {
+        "en-US": "provider is required",
+        "es-ES": "provider es un campo obligatorio",
+        "ar-EG": "مقدّم الخدمة إجباري",
+        "pt-PT": "provider é obrigatório",
+        "ru-RU": "Провайдер является обязательным полем",
+        "ja-JP": "provider は必須項目です",
+        "de-DE": "provider ist ein Pflichtfeld",
+        "fr-FR": "Le fournisseur est obligatoire",
+        "ko-KR": "provider는 필수 입력 항목입니다.",
+        "$files": [
+            "electron/runtime-services/ai/cloud-model-config-service.ts(13822-13839)",
+            "electron/runtime-services/ai/cloud-model-config-service.ts(14202-14219)",
+            "electron/runtime-services/ai/cloud-model-config-service.ts(14839-14856)"
+        ],
+        "$id": 5742
+    },
+    "baseUrl 格式不正确: {baseUrl}": {
+        "en-US": "baseUrl format is incorrect: {baseUrl}",
+        "es-ES": "baseUrl tiene un formato incorrecto: {baseUrl}",
+        "ar-EG": "تنسيق baseUrl غير صحيح: {baseUrl}",
+        "pt-PT": "Formato de baseUrl incorreto: {baseUrl}",
+        "ru-RU": "Неверный формат baseUrl: {baseUrl}",
+        "ja-JP": "baseUrl の形式が正しくありません: {baseUrl}",
+        "de-DE": "baseUrl hat ein ungültiges Format: {baseUrl}",
+        "fr-FR": "Le format de baseUrl est incorrect : {baseUrl}",
+        "ko-KR": "baseUrl 형식이 올바르지 않습니다: {baseUrl}",
+        "$files": [
+            "electron/runtime-services/ai/cloud-model-config-service.ts(13966-13994)",
+            "electron/runtime-services/ai/cloud-model-config-service.ts(14568-14596)",
+            "electron/runtime-services/ai/cloud-model-config-service.ts(15158-15186)"
+        ],
+        "$id": 5743
+    },
+    "apiKey 是必填项": {
+        "en-US": "apiKey is required",
+        "es-ES": "apiKey es un campo obligatorio",
+        "ar-EG": "مفتاح API إجباري",
+        "pt-PT": "apiKey é obrigatório",
+        "ru-RU": "apiKey является обязательным полем",
+        "ja-JP": "apiKey は必須項目です",
+        "de-DE": "apiKey ist ein Pflichtfeld",
+        "fr-FR": "La clé API est obligatoire",
+        "ko-KR": "apiKey는 필수 입력 항목입니다.",
+        "$files": [
+            "electron/runtime-services/ai/cloud-model-config-service.ts(14353-14368)",
+            "electron/runtime-services/ai/cloud-model-config-service.ts(14990-15005)"
+        ],
+        "$id": 5744
+    },
+    "model 是必填项": {
+        "en-US": "model is required",
+        "es-ES": "model es un campo obligatorio",
+        "ar-EG": "النموذج إجباري",
+        "pt-PT": "model é obrigatório",
+        "ru-RU": "model является обязательным полем",
+        "ja-JP": "model は必須項目です",
+        "de-DE": "model ist ein Pflichtfeld",
+        "fr-FR": "Le modèle est obligatoire",
+        "ko-KR": "model은 필수 입력 항목입니다.",
+        "$files": [
+            "electron/runtime-services/ai/cloud-model-config-service.ts(14427-14441)"
+        ],
+        "$id": 5745
+    },
+    "下载进程异常退出 (错误码: {code})，请稍后再试或选择其它模型下载": {
+        "en-US": "Download process exited unexpectedly (Error code: {code}), please try again later or select another model for download",
+        "es-ES": "La descarga del proceso se ha cerrado de forma inesperada (código de error: {code}), por favor inténtelo más tarde o elija otro modelo para descargar",
+        "ar-EG": "انقطع تحميل العملية بشكل غير متوقع (رمز الخطأ: {code})، يرجى المحاولة مرة أخرى لاحقًا أو اختر نموذجًا آخر للتحميل",
+        "pt-PT": "O processo de download terminou inesperadamente (código de erro: {code}), tente novamente mais tarde ou escolha outro modelo para descarregar.",
+        "ru-RU": "Процесс загрузки неожиданно завершился (код ошибки: {code}), попробуйте позже или выберите другую модель для загрузки",
+        "ja-JP": "ダウンロードプロセスが異常に終了しました（エラーコード: {code}），後でもう一度お試しください、または他のモデルのダウンロードを選択してください",
+        "de-DE": "Herunterladevorgang wurde unerwartet beendet (Fehlercode: {code}), bitte versuchen Sie es später erneut oder wählen Sie ein anderes Modell zum Herunterladen.",
+        "fr-FR": "Le processus de téléchargement s'est terminé de manière anormale (Code d'erreur : {code}), veuillez réessayer plus tard ou choisir un autre modèle à télécharger",
+        "ko-KR": "다운로드 프로세스가 비정상 종료되었습니다 (오류 코드: {code}), 잠시 후 다시 시도하거나 다른 모델을 선택하여 다운로드하십시오.",
+        "$files": [
+            "electron/runtime-services/ai/model-download-manager.ts(23232-23273)"
+        ],
+        "$id": 4361
+    },
+    "模型配置不存在: {modelId}": {
+        "en-US": "Model configuration does not exist: {modelId}",
+        "es-ES": "La configuración del modelo no existe: {modelId}",
+        "ar-EG": "‫نموذج التكوين غير موجود: {modelId}\r",
+        "pt-PT": "A configuração do modelo não existe: {modelId}\r",
+        "ru-RU": "Конфигурация модели не существует: {modelId}\r",
+        "ja-JP": "モデル構成が存在しません: {modelId}",
+        "de-DE": "Model-Konfiguration existiert nicht: {modelId}\r",
+        "fr-FR": "La configuration du modèle n'existe pas : {modelId}",
+        "ko-KR": "모델 구성이 존재하지 않음: {modelId}\r",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(2789-2811)"
+        ],
+        "$id": 5750
+    },
+    "大小不匹配，期望: {}, 实际: {}": {
+        "en-US": "Size mismatch, expected: {}, actual: {}",
+        "es-ES": "Tamaño no coincide, esperado: {}, actual: {}",
+        "ar-EG": "‏‫الحجم غير متطابق، المتوقع: {}، الفعلي: {}\r",
+        "pt-PT": "Tamanho não coincide, esperado: {}, real: {}\r",
+        "ru-RU": "Несоответствие размеров, ожидаемый: {}, фактический: {}\r",
+        "ja-JP": "サイズが一致しません。期待値: {}、実際: {}",
+        "de-DE": "Größe stimmt nicht überein, erwartet: {}, tatsächlich: {}\r",
+        "fr-FR": "Taille incorrecte, attendu : {}, obtenu : {}",
+        "ko-KR": "크기 불일치, 기대값: {}, 실제값: {}\r",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(4076-4100)"
+        ],
+        "$id": 5751
+    },
+    "主模型文件不存在: {error}": {
+        "en-US": "Main model file does not exist: {error}",
+        "es-ES": "El archivo principal del modelo no existe: {error}",
+        "ar-EG": "‏‫ملف النموذج الرئيسي غير موجود: {error}\r",
+        "pt-PT": "O ficheiro principal do modelo não existe: {error}\r",
+        "ru-RU": "Основной файл модели не существует: {error}\r",
+        "ja-JP": "メインモデルファイルが存在しません: {error}",
+        "de-DE": "Hauptmodell-Datei existiert nicht: {error}\r",
+        "fr-FR": "Le fichier principal du modèle n'existe pas : {error}",
+        "ko-KR": "기본 모델 파일이 존재하지 않음: {error}\r",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(4390-4411)"
+        ],
+        "$id": 5752
+    },
+    "mmproj兼容性警告: {compatibility.reason}": {
+        "en-US": "mmproj compatibility warning: {compatibility.reason}",
+        "es-ES": "Advertencia de compatibilidad mmproj: {compatibility.reason}",
+        "ar-EG": "‏‫تحذير توازن mmproj: {compatibility.reason}\r",
+        "pt-PT": "Aviso de compatibilidade mmproj: {compatibility.reason}\r",
+        "ru-RU": "Предупреждение о совместимости mmproj: {compatibility.reason}\r",
+        "ja-JP": "mmproj 互換性警告: {compatibility.reason}",
+        "de-DE": "mmproj-Kompatibilitätswarnung: {compatibility.reason}\r",
+        "fr-FR": "Avertissement de compatibilité mmproj : {compatibility.reason}",
+        "ko-KR": "mmproj 호환성 경고: {compatibility.reason}\r",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(5488-5527)"
+        ],
+        "$id": 5753
+    },
+    "mmproj文件大小不匹配": {
+        "en-US": "mmproj file size mismatch",
+        "es-ES": "El tamaño del archivo mmproj no coincide",
+        "ar-EG": "‏‫حجم ملف mmproj غير متطابق\r",
+        "pt-PT": "Tamanho do ficheiro mmproj não coincide\r",
+        "ru-RU": "Несоответствие размера файла mmproj\r",
+        "ja-JP": "mmproj ファイルサイズが一致しません",
+        "de-DE": "mmproj-Dateigröße stimmt nicht überein\r",
+        "fr-FR": "La taille du fichier mmproj ne correspond pas",
+        "ko-KR": "mmproj 파일 크기 불일치\r",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(5671-5688)"
+        ],
+        "$id": 5754
+    },
+    "mmproj文件不存在: {error}": {
+        "en-US": "mmproj file does not exist: {error}",
+        "es-ES": "El archivo mmproj no existe: {error}",
+        "ar-EG": "‏‫ملف mmproj غير موجود: {error}\r",
+        "pt-PT": "O ficheiro mmproj não existe: {error}\r",
+        "ru-RU": "Файл mmproj не существует: {error}\r",
+        "ja-JP": "mmproj ファイルが存在しません: {error}",
+        "de-DE": "mmproj-Datei existiert nicht: {error}\r",
+        "fr-FR": "Le fichier mmproj n'existe pas : {error}",
+        "ko-KR": "mmproj 파일이 존재하지 않음: {error}\r",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(5955-5979)"
+        ],
+        "$id": 5755
+    },
+    "文件大小不匹配": {
+        "en-US": "File size mismatch",
+        "es-ES": "El tamaño del archivo no coincide",
+        "ar-EG": "‏‫حجم الملف غير متطابق\r",
+        "pt-PT": "Tamanho do ficheiro não coincide\r",
+        "ru-RU": "Несоответствие размера файла\r",
+        "ja-JP": "ファイルサイズが一致しません",
+        "de-DE": "Dateigröße stimmt nicht überein\r",
+        "fr-FR": "La taille du fichier ne correspond pas",
+        "ko-KR": "파일 크기 불일치\r",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(6681-6692)",
+            "electron/runtime-services/ai/multimodal-model-service.ts(9453-9464)"
+        ],
+        "$id": 5756
+    },
+    "辅助文件 {} 大小不匹配": {
+        "en-US": "Auxiliary file {} size mismatch",
+        "es-ES": "El archivo auxiliar {} no coincide en tamaño",
+        "ar-EG": "‏‫ملف المساعدة {} حجمه غير متطابق\r",
+        "pt-PT": "O ficheiro auxiliar {} tamanho não coincide\r",
+        "ru-RU": "Вспомогательный файл {} не соответствует по размеру\r",
+        "ja-JP": "補助ファイル {} のサイズが一致しません",
+        "de-DE": "Hilfsdatei {} Größe stimmt nicht überein\r",
+        "fr-FR": "Le fichier secondaire {} a une taille incorrecte",
+        "ko-KR": "보조 파일 {} 크기 불일치\r",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(6727-6744)"
+        ],
+        "$id": 5757
+    },
+    "文件不存在: {error}": {
+        "en-US": "File does not exist: {error}",
+        "es-ES": "El archivo no existe: {error}",
+        "ar-EG": "‏‫الملف غير موجود: {error}",
+        "pt-PT": "O ficheiro não existe: {error}",
+        "ru-RU": "Файл не существует: {error}",
+        "ja-JP": "ファイルが存在しません: {error}",
+        "de-DE": "Datei existiert nicht: {error}",
+        "fr-FR": "Le fichier n'existe pas : {error}",
+        "ko-KR": "파일이 존재하지 않음: {error}",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(6948-6966)"
+        ],
+        "$id": 5758
+    },
+    "必需的辅助文件不存在:  {}": {
+        "en-US": "Required auxiliary file does not exist: {}",
+        "es-ES": "El archivo auxiliar obligatorio no existe: {}\r",
+        "ar-EG": "الملفات المساعدة المطلوبة غير موجودة:  {}",
+        "pt-PT": "Ficheiros auxiliares obrigatórios não existem:  {}",
+        "ru-RU": "Обязательный вспомогательный файл не существует: {}\r",
+        "ja-JP": "必須の補助ファイルが存在しません: {}",
+        "de-DE": "Erforderliche Hilfsdatei existiert nicht:  {}",
+        "fr-FR": "Fichier d'assistance requis absent :  {}",
+        "ko-KR": "필수 보조 파일이 존재하지 않음: {}",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(7049-7068)"
+        ],
+        "$id": 5759
+    },
+    "可选的辅助文件不存在: {}": {
+        "en-US": "Optional auxiliary file does not exist: {}",
+        "es-ES": "El archivo auxiliar opcional no existe: {}\r",
+        "ar-EG": "الملفات المساعدة الاختيارية غير موجودة: {}",
+        "pt-PT": "Ficheiros auxiliares opcionais não existem: {}",
+        "ru-RU": "Необязательный вспомогательный файл не существует: {}\r",
+        "ja-JP": "任意の補助ファイルが存在しません: {}",
+        "de-DE": "Optionale Hilfsdatei existiert nicht: {}",
+        "fr-FR": "Fichier d'assistance optionnel absent : {}",
+        "ko-KR": "선택적 보조 파일이 존재하지 않음: {}",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(7172-7190)"
+        ],
+        "$id": 5760
+    },
+    "文件不存在": {
+        "en-US": "File does not exist",
+        "es-ES": "El archivo no existe\r",
+        "ar-EG": "الملف غير موجود",
+        "pt-PT": "O ficheiro não existe",
+        "ru-RU": "Файл не существует\r",
+        "ja-JP": "ファイルが存在しません",
+        "de-DE": "Datei existiert nicht",
+        "fr-FR": "Fichier inexistant",
+        "ko-KR": "파일이 존재하지 않음",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(9761-9770)"
+        ],
+        "$id": 5761
+    },
+    "多模态模型缺少mmproj文件": {
+        "en-US": "Multimodal model is missing mmproj file",
+        "es-ES": "Al modelo multimodal le falta el archivo mmproj\r",
+        "ar-EG": "نموذج متعدد الوسائط يفتقر إلى ملف mmproj",
+        "pt-PT": "O modelo multimodal não tem o ficheiro mmproj",
+        "ru-RU": "В многомодельной модели отсутствует файл mmproj\r",
+        "ja-JP": "マルチモーダルモデルにmmprojファイルがありません",
+        "de-DE": "Der multimodalen Modelle fehlt die mmproj-Datei",
+        "fr-FR": "Le modèle multimodal n'a pas de fichier mmproj",
+        "ko-KR": "멀티모달 모델에 mmproj 파일이 없음",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(10248-10267)"
+        ],
+        "$id": 5762
+    },
+    "mmproj文件可能与主模型不兼容": {
+        "en-US": "mmproj file may be incompatible with the main model",
+        "es-ES": "El archivo mmproj podría no ser compatible con el modelo principal\r",
+        "ar-EG": "ربما يكون ملف mmproj غير متوافق مع النموذج الرئيسي",
+        "pt-PT": "O ficheiro mmproj pode ser incompatível com o modelo principal",
+        "ru-RU": "Файл mmproj может не совместим с основной моделью\r",
+        "ja-JP": "mmprojファイルがメインモデルと互換性がない可能性があります",
+        "de-DE": "Die mmproj-Datei ist möglicherweise mit dem Hauptmodell nicht kompatibel",
+        "fr-FR": "Le fichier mmproj est peut-être incompatible avec le modèle principal",
+        "ko-KR": "mmproj 파일이 주 모델과 호환되지 않을 수 있음",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(10418-10439)"
+        ],
+        "$id": 5763
+    },
+    "主模型文件为空": {
+        "en-US": "The main model file is empty",
+        "es-ES": "El archivo del modelo principal está vacío.",
+        "ar-EG": "ملف النموذج الرئيسي فارغ",
+        "pt-PT": "O arquivo do modelo principal está vazio",
+        "ru-RU": "Основной файл модели пуст.",
+        "ja-JP": "メインのモデル ファイルが空です",
+        "de-DE": "Die Hauptmodelldatei ist leer",
+        "fr-FR": "Le fichier de modèle principal est vide",
+        "ko-KR": "기본 모델 파일이 비어 있습니다.",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(13982-13993)"
+        ],
+        "$id": 2896
+    },
+    "mmproj文件为空": {
+        "en-US": "mmproj file is empty",
+        "es-ES": "El archivo mmproj está vacío.",
+        "ar-EG": "ملف mmproj فارغ",
+        "pt-PT": "arquivo mmproj está vazio",
+        "ru-RU": "файл mmproj пуст",
+        "ja-JP": "mmproj ファイルが空です",
+        "de-DE": "mmproj-Datei ist leer",
+        "fr-FR": "le fichier mmproj est vide",
+        "ko-KR": "mmproj 파일이 비어 있습니다",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(14091-14105)"
+        ],
+        "$id": 2897
+    },
+    "无法确定架构，假设兼容": {
+        "en-US": "Unable to determine architecture, assuming compatibility",
+        "es-ES": "No se puede determinar la arquitectura, asumiendo compatibilidad",
+        "ar-EG": "غير قادر على تحديد البنية، على افتراض التوافق",
+        "pt-PT": "Incapaz de determinar a arquitetura, assumindo compatibilidade",
+        "ru-RU": "Невозможно определить архитектуру, предполагая совместимость",
+        "ja-JP": "互換性を前提としてアーキテクチャを決定できません",
+        "de-DE": "Die Architektur kann nicht bestimmt werden, Kompatibilität vorausgesetzt",
+        "fr-FR": "Impossible de déterminer l'architecture, en supposant la compatibilité",
+        "ko-KR": "호환성을 가정하여 아키텍처를 결정할 수 없습니다.",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(14249-14264)"
+        ],
+        "$id": 2898
+    },
+    "兼容性检查失败: {error}": {
+        "en-US": "Compatibility check failed: {error}",
+        "es-ES": "La verificación de compatibilidad falló: {error}",
+        "ar-EG": "فشل فحص التوافق: {error}",
+        "pt-PT": "A verificação de compatibilidade falhou: {error}",
+        "ru-RU": "Проверка совместимости не удалась: {error}",
+        "ja-JP": "互換性チェックに失敗しました: {error}",
+        "de-DE": "Kompatibilitätsprüfung fehlgeschlagen: {error}",
+        "fr-FR": "Échec de la vérification de compatibilité : {error}",
+        "ko-KR": "호환성 확인 실패: {error}",
+        "$files": [
+            "electron/runtime-services/ai/multimodal-model-service.ts(14399-14419)"
+        ],
+        "$id": 5764
+    }
+}

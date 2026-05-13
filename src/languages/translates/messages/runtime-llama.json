@@ -1,0 +1,637 @@
+{
+    "删除模型失败: {error}": {
+        "en-US": "Failed to delete model: {error}",
+        "es-ES": "Error al eliminar el modelo: {error}\r",
+        "ar-EG": "فشل حذف النموذج: {error}\r",
+        "pt-PT": "Falha ao eliminar o modelo: {error}",
+        "ru-RU": "Не удалось удалить модель: {error}",
+        "ja-JP": "モデルの削除に失敗しました: {error}\r",
+        "de-DE": "Modell konnte nicht gelöscht werden: {error}",
+        "fr-FR": "Échec de la suppression du modèle : {error}\r",
+        "ko-KR": "모델 삭제 실패: {error}",
+        "$files": [
+            "electron/runtime-services/llama/llama-model-manager.ts(13769-13788)"
+        ],
+        "$id": 5913
+    },
+    "模型尚未下载完成，无法设置为当前模型": {
+        "en-US": "The model has not finished downloading and cannot be set as the current model",
+        "es-ES": "El modelo aún no ha terminado de descargarse, no se puede establecer como modelo actual",
+        "ar-EG": "لم يتم تنزيل النموذج ولا يمكن تعيينه كنموذج حالي.",
+        "pt-PT": "O modelo não foi baixado e não pode ser definido como o modelo atual.",
+        "ru-RU": "Модель не загружена и не может быть установлена ​​в качестве текущей модели.",
+        "ja-JP": "モデルはダウンロードされていないため、現在のモデルとして設定できません。",
+        "de-DE": "Das Modell wurde nicht heruntergeladen und kann nicht als aktuelles Modell festgelegt werden.",
+        "fr-FR": "Le modèle n'a pas fini d'être téléchargé, impossible de le définir comme modèle actuel",
+        "ko-KR": "모델이 아직 다운로드되지 않았습니다. 현재 모델로 설정할 수 없습니다",
+        "$files": [
+            "electron/runtime-services/llama/llama-model-manager.ts(15538-15560)"
+        ],
+        "$id": 4281
+    },
+    "不支持的文件类型": {
+        "en-US": "Unsupported file type",
+        "es-ES": "Tipo de archivo no compatible\r",
+        "ar-EG": "نوع الملف غير مدعوم\r",
+        "pt-PT": "Tipo de ficheiro não suportado",
+        "ru-RU": "Неподдерживаемый тип файла",
+        "ja-JP": "サポートされていないファイルタイプ\r",
+        "de-DE": "Nicht unterstützter Dateityp",
+        "fr-FR": "Type de fichier non pris en charge\r",
+        "ko-KR": "지원되지 않는 파일 형식",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(25246-25258)"
+        ],
+        "$id": 5919
+    },
+    "当前云端模型{modelId}不支持": {
+        "en-US": "Current cloud model {modelId} is not supported",
+        "es-ES": "El modelo en la nube actual {modelId} no es compatible\r",
+        "ar-EG": "النموذج السحابي الحالي {modelId} غير مدعوم\r",
+        "pt-PT": "Modelo na nuvem atual {modelId} não suportado",
+        "ru-RU": "Текущая облачная модель{modelId} не поддерживается",
+        "ja-JP": "現在のクラウドモデル{modelId}はサポートされていません\r",
+        "de-DE": "Aktuelles Cloud-Modell {modelId} wird nicht unterstützt",
+        "fr-FR": "Le modèle cloud actuel {modelId} n'est pas pris en charge\r",
+        "ko-KR": "현재 클라우드 모델 {modelId}는 지원되지 않음",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(28422-28444)"
+        ],
+        "$id": 5920
+    },
+    "模型不支持 {type} 类型文件": {
+        "en-US": "Model does not support {type} type files",
+        "es-ES": "El modelo no es compatible con archivos de tipo {type}",
+        "ar-EG": "النموذج لا يدعم ملفات من نوع {type}",
+        "pt-PT": "O modelo não suporta ficheiros do tipo {type}",
+        "ru-RU": "Модель не поддерживает файлы типа {type}",
+        "ja-JP": "モデルは{type}タイプのファイルをサポートしていません",
+        "de-DE": "Modell unterstützt keine Dateien vom Typ {type}",
+        "fr-FR": "Le modèle ne prend pas en charge les fichiers de type {type}",
+        "ko-KR": "모델은 {type} 유형 파일을 지원하지 않음",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(29467-29488)"
+        ],
+        "$id": 5921
+    },
+    "当前模型运行时不支持图像分析": {
+        "en-US": "Image analysis is not supported in the current model runtime",
+        "es-ES": "El entorno actual del modelo no admite el análisis de imágenes",
+        "ar-EG": "لا يدعم النموذج الحالي تحليل الصور\r",
+        "pt-PT": "A análise de imagem não é suportada pelo modelo actual em tempo de execução\r",
+        "ru-RU": "Анализ изображений не поддерживается в текущей модели\r",
+        "ja-JP": "現在のモデル実行では画像分析がサポートされていません",
+        "de-DE": "Die aktuelle Modellausführung unterstützt keine Bildanalyse\r",
+        "fr-FR": "L'analyse d'images n'est pas prise en charge par le modèle actuel en cours d'exécution",
+        "ko-KR": "현재 모델은 이미지 분석을 지원하지 않습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(30284-30302)"
+        ],
+        "$id": 5922
+    },
+    "需要加载带有多模态投影器的模型": {
+        "en-US": "A model with multimodal projector needs to be loaded",
+        "es-ES": "Se necesita cargar un modelo con proyector multimodal",
+        "ar-EG": "تحتاج إلى تحميل نموذج يحتوي على مُسقط متعدد الوسائط\r",
+        "pt-PT": "É necessário carregar um modelo multimodal com projetor multimodal\r",
+        "ru-RU": "Необходимо загрузить модель с мультимодальным проектором\r",
+        "ja-JP": "マルチモーダルプロジェクターを備えたモデルをロードする必要があります",
+        "de-DE": "Es muss ein Modell mit multimodalem Projektor geladen werden\r",
+        "fr-FR": "Un modèle doté d'un projecteur multimodal doit être chargé",
+        "ko-KR": "멀티모달 프로젝터가 포함된 모델을 로드해야 합니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(30305-30324)"
+        ],
+        "$id": 5923
+    },
+    "当前模型运行时不支持音频分析": {
+        "en-US": "Audio analysis is not supported in the current model runtime",
+        "es-ES": "El entorno actual del modelo no admite el análisis de audio",
+        "ar-EG": "لا يدعم النموذج الحالي تحليل الصوت\r",
+        "pt-PT": "A análise de áudio não é suportada pelo modelo actual em tempo de execução\r",
+        "ru-RU": "Анализ аудио не поддерживается в текущей модели\r",
+        "ja-JP": "現在のモデル実行では音声分析がサポートされていません",
+        "de-DE": "Die aktuelle Modellausführung unterstützt keine Audioanalyse\r",
+        "fr-FR": "L'analyse audio n'est pas prise en charge par le modèle actuel en cours d'exécution",
+        "ko-KR": "현재 모델은 오디오 분석을 지원하지 않습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(30731-30749)"
+        ],
+        "$id": 5924
+    },
+    "需要加载支持音频的多模态模型": {
+        "en-US": "A multimodal model that supports audio needs to be loaded",
+        "es-ES": "Se necesita cargar un modelo multimodal compatible con audio",
+        "ar-EG": "تحتاج إلى تحميل نموذج متعدد الوسائط يدعم الصوت\r",
+        "pt-PT": "É necessário carregar um modelo multimodal com suporte de áudio\r",
+        "ru-RU": "Необходимо загрузить мультимодальную модель, поддерживающую аудио\r",
+        "ja-JP": "音声をサポートするマルチモーダルモデルをロードする必要があります",
+        "de-DE": "Es muss ein multimodales Modell mit Audio-Unterstützung geladen werden\r",
+        "fr-FR": "Un modèle multimodal prenant en charge l'audio doit être chargé",
+        "ko-KR": "오디오를 지원하는 멀티모달 모델을 로드해야 합니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(30752-30770)"
+        ],
+        "$id": 5925
+    },
+    "模型配置不存在": {
+        "en-US": "Model configuration does not exist",
+        "es-ES": "La configuración del modelo no existe",
+        "ar-EG": "لا توجد إعدادات للنموذج\r",
+        "pt-PT": "A configuração do modelo não existe\r",
+        "ru-RU": "Конфигурация модели не существует\r",
+        "ja-JP": "モデル構成が存在しません",
+        "de-DE": "Modelleinstellungen nicht vorhanden\r",
+        "fr-FR": "La configuration du modèle n'existe pas",
+        "ko-KR": "모델 구성이 존재하지 않습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(31203-31214)"
+        ],
+        "$id": 5926
+    },
+    "模型配置中未找到对应能力": {
+        "en-US": "Corresponding capability not found in model configuration",
+        "es-ES": "No se encontró la capacidad correspondiente en la configuración del modelo",
+        "ar-EG": "لا توجد القدرة المقابلة في إعدادات النموذج\r",
+        "pt-PT": "Capacidade correspondente não encontrada na configuração do modelo\r",
+        "ru-RU": "Соответствующая функция не найдена в конфигурации модели\r",
+        "ja-JP": "モデル構成に該当する機能が見つかりませんでした",
+        "de-DE": "Entsprechende Funktion nicht in den Modelleinstellungen gefunden\r",
+        "fr-FR": "Aucune capacité correspondante n'a été trouvée dans la configuration du modèle",
+        "ko-KR": "모델 구성에서 해당 기능을 찾을 수 없습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(31637-31653)"
+        ],
+        "$id": 5927
+    },
+    "模型不存在": {
+        "en-US": "Model does not exist",
+        "es-ES": "El modelo no existe",
+        "ar-EG": "النموذج غير موجود\r",
+        "pt-PT": "O modelo não existe\r",
+        "ru-RU": "Модель не существует\r",
+        "ja-JP": "モデルが存在しません",
+        "de-DE": "Modell nicht vorhanden\r",
+        "fr-FR": "Le modèle n'existe pas",
+        "ko-KR": "모델이 존재하지 않습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(36036-36045)"
+        ],
+        "$id": 5928
+    },
+    "模型不支持{}类型": {
+        "en-US": "Model does not support {} type",
+        "es-ES": "El modelo no admite el tipo {}",
+        "ar-EG": "النموذج لا يدعم نوع {}\r",
+        "pt-PT": "O modelo não suporta o tipo {}\r",
+        "ru-RU": "Модель не поддерживает тип {}\r",
+        "ja-JP": "モデルは{}タイプをサポートしていません",
+        "de-DE": "Modell unterstützt {}-Typ nicht\r",
+        "fr-FR": "Le modèle ne prend pas en charge le type {}",
+        "ko-KR": "모델이 {} 유형을 지원하지 않습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(36192-36205)"
+        ],
+        "$id": 5929
+    },
+    "小型模型，处理复杂内容可能效果有限": {
+        "en-US": "Small model, may have limited effectiveness for processing complex content",
+        "es-ES": "Modelo ligero, el rendimiento puede ser limitado al procesar contenido complejo",
+        "ar-EG": "نموذج صغير، قد يكون الأثر محدودًا عند معالجة المحتوى المعقد\r",
+        "pt-PT": "Modelo pequeno, o efeito pode ser limitado ao processar conteúdos complexos\r",
+        "ru-RU": "Маленькая модель, возможны ограничения при обработке сложных материалов\r",
+        "ja-JP": "小型モデルであり、複雑なコンテンツの処理効果が限られる可能性があります",
+        "de-DE": "Kleines Modell, möglicherweise eingeschränkte Leistung bei komplexen Inhalten\r",
+        "fr-FR": "Modèle léger, les résultats peuvent être limités pour les contenus complexes",
+        "ko-KR": "소형 모델로 복잡한 내용 처리 시 효과가 제한적일 수 있습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(36407-36428)"
+        ],
+        "$id": 5930
+    },
+    "低精度量化，可能影响输出质量": {
+        "en-US": "Low precision quantization, may affect output quality",
+        "es-ES": "Cuantificación de baja precisión, podría afectar la calidad de la salida",
+        "ar-EG": "كمِّي بPRECISION منخفضة، قد يؤثر على جودة الإخراج\r",
+        "pt-PT": "Quantificação de baixa precisão, pode afetar a qualidade da saída\r",
+        "ru-RU": "Квантование с низкой точностью может повлиять на качество вывода\r",
+        "ja-JP": "低精度量子化であり、出力品質に影響を与える可能性があります",
+        "de-DE": "Niedrige Präzisionsquantisierung, kann die Ausgabegüte beeinträchtigen\r",
+        "fr-FR": "Quantification de faible précision, susceptible d'affecter la qualité de la sortie",
+        "ko-KR": "저 precision 양자화로 출력 품질에 영향을 줄 수 있습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(36534-36552)"
+        ],
+        "$id": 5931
+    },
+    "基础质量处理，适合简单任务": {
+        "en-US": "Basic quality processing, suitable for simple tasks",
+        "es-ES": "Procesamiento de calidad básica, adecuado para tareas sencillas",
+        "ar-EG": "معالجة بجودة أساسية، مناسبة للمهام البسيطة\r",
+        "pt-PT": "Processamento de qualidade básica, adequado para tarefas simples\r",
+        "ru-RU": "Обработка базового качества, подходит для простых задач\r",
+        "ja-JP": "基本品質処理、シンプルなタスク向け",
+        "de-DE": "Grundlegende Qualitätsverarbeitung, für einfache Aufgaben geeignet\r",
+        "fr-FR": "Traitement de qualité de base, adapté aux tâches simples",
+        "ko-KR": "기본 품질 처리로 간단한 작업에 적합합니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(36648-36665)"
+        ],
+        "$id": 5932
+    },
+    "中等质量处理，适合一般任务": {
+        "en-US": "Medium quality processing, suitable for general tasks",
+        "es-ES": "Procesamiento de calidad media, adecuado para tareas generales",
+        "ar-EG": "معالجة بجودة متوسطة، مناسبة للمهام العامة\r",
+        "pt-PT": "Processamento de qualidade média, adequado para tarefas gerais\r",
+        "ru-RU": "Обработка среднего качества, подходит для типичных задач\r",
+        "ja-JP": "中品質処理、一般タスク向け",
+        "de-DE": "Mittlere Qualitätsverarbeitung, für allgemeine Aufgaben geeignet\r",
+        "fr-FR": "Traitement de qualité moyenne, adapté aux tâches générales",
+        "ko-KR": "중간 품질 처리로 일반적인 작업에 적합합니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(36744-36761)"
+        ],
+        "$id": 5933
+    },
+    "需要大显存GPU支持以获得最佳性能": {
+        "en-US": "Large GPU memory support is required for optimal performance",
+        "es-ES": "Requiere GPU con gran memoria para obtener el mejor rendimiento",
+        "ar-EG": "تحتاج إلى دعم GPU بذاكرة كبيرة للحصول على الأداء الأمثل",
+        "pt-PT": "Requer suporte de GPU com memória grande para obter o melhor desempenho",
+        "ru-RU": "Для оптимальной работы требуется поддержка GPU с большой видеопамятью",
+        "ja-JP": "最適なパフォーマンスを得るには大容量GPUメモリをサポートする必要があります",
+        "de-DE": "Großer Grafikspeicher-GPU-Unterstützung erforderlich, um maximale Leistung zu erzielen",
+        "fr-FR": "Nécessite un GPU avec une grande mémoire vidéo pour des performances optimales",
+        "ko-KR": "최상의 성능을 위해서는 대용량 GPU 메모리 지원이 필요합니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(36911-36932)"
+        ],
+        "$id": 5934
+    },
+    "非多模态模型，可能不支持此类型文件": {
+        "en-US": "Non-multimodal models may not support this type of file",
+        "es-ES": "Modelo no multimodal, puede no admitir este tipo de archivo",
+        "ar-EG": "نموذج غير متعدد الوسائط، قد لا يدعم نوع الملف هذا\r",
+        "pt-PT": "Modelo não multimodal, pode não suportar este tipo de ficheiro\r",
+        "ru-RU": "Модель не мультимодальная, возможно, не поддерживает этот тип файлов\r",
+        "ja-JP": "マルチモーダルモデルではなく、このファイル形式はサポートしていない可能性があります",
+        "de-DE": "Nicht multimodales Modell, unterstützt möglicherweise diesen Dateityp nicht",
+        "fr-FR": "Modèle non multimodal, ne prend peut-être pas en charge ce type de fichier\r",
+        "ko-KR": "다중 모드 모델이 아니며, 해당 파일 형식을 지원하지 않을 수 있습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(37052-37073)"
+        ],
+        "$id": 5935
+    },
+    "文件大小限制: {maxFileSize}MB": {
+        "en-US": "File size limit: {maxFileSize}MB",
+        "es-ES": "Límite de tamaño de archivo: {maxFileSize}MB",
+        "ar-EG": "حد حجم الملف: {maxFileSize} م.ب\r",
+        "pt-PT": "Limite de tamanho de ficheiro: {maxFileSize}MB\r",
+        "ru-RU": "Ограничение на размер файла: {maxFileSize}МБ\r",
+        "ja-JP": "ファイルサイズ制限: {maxFileSize}MB",
+        "de-DE": "Dateigrößenbeschränkung: {maxFileSize}MB",
+        "fr-FR": "Limite de taille de fichier : {maxFileSize} Mo\r",
+        "ko-KR": "파일 크기 제한: {maxFileSize}MB",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(43549-43576)"
+        ],
+        "$id": 5936
+    },
+    "处理质量较低，适合简单任务": {
+        "en-US": "Lower processing quality, suitable for simple tasks",
+        "es-ES": "Calidad de procesamiento baja, adecuado para tareas simples",
+        "ar-EG": "جودة المعالجة منخفضة، مناسب للمهام البسيطة\r",
+        "pt-PT": "Qualidade de processamento mais baixa, adequada para tarefas simples\r",
+        "ru-RU": "Качество обработки низкое, подходит для простых задач\r",
+        "ja-JP": "処理品質が低く、単純なタスクに適しています",
+        "de-DE": "Niedrige Verarbeitungsqualität, geeignet für einfache Aufgaben",
+        "fr-FR": "Qualité de traitement inférieure, adaptée aux tâches simples\r",
+        "ko-KR": "처리 품질이 낮아 간단한 작업에 적합합니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(43697-43714)"
+        ],
+        "$id": 5937
+    },
+    "复杂文件处理速度较慢": {
+        "en-US": "Slower processing speed for complex files",
+        "es-ES": "Procesamiento de archivos complejos más lento",
+        "ar-EG": "معالجة الملفات المعقدة بطيئة\r",
+        "pt-PT": "Processamento de ficheiros complexos mais lento\r",
+        "ru-RU": "Обработка сложных файлов происходит медленно\r",
+        "ja-JP": "複雑なファイルの処理速度が遅い",
+        "de-DE": "Langsame Verarbeitungsgeschwindigkeit bei komplexen Dateien",
+        "fr-FR": "Traitement des fichiers complexes plus lent\r",
+        "ko-KR": "복잡한 파일의 처리 속도가 느립니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(43848-43862)"
+        ],
+        "$id": 5938
+    },
+    "需要高性能GPU支持": {
+        "en-US": "Requires high-performance GPU support",
+        "es-ES": "Requiere soporte de GPU de alto rendimiento",
+        "ar-EG": "يحتاج إلى دعم من وحدة معالجة رسومية عالية الأداء\r",
+        "pt-PT": "Requer suporte de GPU de alto desempenho\r",
+        "ru-RU": "Требуется поддержка высокопроизводительного GPU\r",
+        "ja-JP": "高性能GPUのサポートが必要",
+        "de-DE": "Benötigt leistungsstarke GPU-Unterstützung",
+        "fr-FR": "Nécessite un GPU performant\r",
+        "ko-KR": "고성능 GPU 지원이 필요합니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-capability-detector.ts(44007-44021)"
+        ],
+        "$id": 5939
+    },
+    "未选择模型": {
+        "en-US": "No model selected",
+        "es-ES": "No se ha seleccionado modelo",
+        "ar-EG": "لم يتم اختيار نموذج\r",
+        "pt-PT": "Nenhum modelo selecionado\r",
+        "ru-RU": "Модель не выбрана\r",
+        "ja-JP": "モデルが選択されていません",
+        "de-DE": "Kein Modell ausgewählt",
+        "fr-FR": "Aucun modèle sélectionné\r",
+        "ko-KR": "모델이 선택되지 않았습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(4600-4609)",
+            "electron/runtime-services/llama/model-status-service.ts(4692-4701)",
+            "electron/runtime-services/llama/model-status-service.ts(6548-6557)",
+            "electron/runtime-services/llama/model-status-service.ts(9723-9732)"
+        ],
+        "$id": 5940
+    },
+    "请先选择一个AI模型": {
+        "en-US": "Please select an AI model first",
+        "es-ES": "Por favor, seleccione primero un modelo de IA",
+        "ar-EG": "يرجى اختيار نموذج ذكاء اصطناعي أولاً\r",
+        "pt-PT": "Por favor, selecione primeiro um modelo de IA\r",
+        "ru-RU": "Пожалуйста, выберите модель ИИ\r",
+        "ja-JP": "まずAIモデルを選択してください",
+        "de-DE": "Bitte wählen Sie zunächst ein KI-Modell aus",
+        "fr-FR": "Veuillez d'abord sélectionner un modèle d'IA\r",
+        "ko-KR": "AI 모델을 선택해 주세요.",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(4640-4654)",
+            "electron/runtime-services/llama/model-status-service.ts(6588-6602)"
+        ],
+        "$id": 5941
+    },
+    "当前模型不支持 .{fileExtension} 文件": {
+        "en-US": "Current model does not support .{fileExtension} files",
+        "es-ES": "El modelo actual no admite archivos .{fileExtension}",
+        "ar-EG": "النموذج الحالي لا يدعم ملفات .{fileExtension}\r",
+        "pt-PT": "O modelo atual não suporta ficheiros .{fileExtension}\r",
+        "ru-RU": "Текущая модель не поддерживает файлы .{fileExtension}\r",
+        "ja-JP": "現在のモデルは.{fileExtension}ファイルをサポートしていません",
+        "de-DE": "Das aktuelle Modell unterstützt keine .{fileExtension}-Dateien",
+        "fr-FR": "Le modèle actuel ne prend pas en charge les fichiers .{fileExtension}\r",
+        "ko-KR": "현재 모델은 .{fileExtension} 파일을 지원하지 않습니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(5087-5118)"
+        ],
+        "$id": 5942
+    },
+    "请选择支持此文件类型的模型": {
+        "en-US": "Please select a model that supports this file type",
+        "es-ES": "Por favor, seleccione un modelo que admita este tipo de archivo",
+        "ar-EG": "يرجى اختيار نموذج يدعم نوع الملف هذا\r",
+        "pt-PT": "Por favor, selecione um modelo que suporte este tipo de ficheiro\r",
+        "ru-RU": "Пожалуйста, выберите модель, поддерживающую этот тип файлов\r",
+        "ja-JP": "このファイル形式をサポートするモデルを選択してください",
+        "de-DE": "Bitte wählen Sie ein Modell aus, das diesen Dateityp unterstützt",
+        "fr-FR": "Veuillez sélectionner un modèle prenant en charge ce type de fichier\r",
+        "ko-KR": "해당 파일 형식을 지원하는 모델을 선택해주세요.",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(5168-5185)"
+        ],
+        "$id": 5943
+    },
+    "当前模型对 .{fileExtension} 文件的支持有限": {
+        "en-US": "Current model has limited support for .{fileExtension} files",
+        "es-ES": "El soporte del modelo actual para archivos .{fileExtension} es limitado",
+        "ar-EG": "الدعم المحدود من النموذج الحالي لملفات .{fileExtension}",
+        "pt-PT": "O modelo atual tem suporte limitado para ficheiros .{fileExtension}",
+        "ru-RU": "Текущая модель имеет ограниченную поддержку файлов .{fileExtension}",
+        "ja-JP": "現在のモデルの.{fileExtension}ファイルへの対応は限定的です",
+        "de-DE": "Das aktuelle Modell unterstützt .{fileExtension}-Dateien nur eingeschränkt",
+        "fr-FR": "Le modèle actuel a une prise en charge limitée des fichiers .{fileExtension}",
+        "ko-KR": "현재 모델은 .{fileExtension} 파일에 대한 지원이 제한적입니다.",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(5355-5389)"
+        ],
+        "$id": 5944
+    },
+    "建议使用更适合的模型以获得更好效果": {
+        "en-US": "It is recommended to use a more suitable model for better results",
+        "es-ES": "Se sugiere utilizar un modelo más adecuado para obtener mejores resultados",
+        "ar-EG": "يُuggested استخدام نموذج أكثر ملاءمة للحصول على نتائج أفضل",
+        "pt-PT": "Sugere-se a utilização de um modelo mais adequado para obter melhores resultados",
+        "ru-RU": "Рекомендуется использовать более подходящую модель для достижения лучшего результата",
+        "ja-JP": "より適したモデルを使用することを推奨します\r",
+        "de-DE": "Es wird empfohlen, ein geeigneteres Modell zu verwenden, um bessere Ergebnisse zu erzielen",
+        "fr-FR": "Il est recommandé d'utiliser un modèle plus approprié pour de meilleurs résultats",
+        "ko-KR": "더 나은 결과를 위해 더 적합한 모델을 사용하시기 바랍니다",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(5439-5460)"
+        ],
+        "$id": 5945
+    },
+    "处理成功率可能较低": {
+        "en-US": "Processing success rate may be low",
+        "es-ES": "La tasa de éxito del procesamiento puede ser baja",
+        "ar-EG": "نسبة نجاح المعالجة قد تكون منخفضة",
+        "pt-PT": "A taxa de sucesso no processamento pode ser inferior",
+        "ru-RU": "Возможно, низкий уровень успеха обработки",
+        "ja-JP": "処理成功率が低くなる可能性があります\r",
+        "de-DE": "Die Verarbeitungserfolgsrate könnte niedrig sein",
+        "fr-FR": "Le taux de réussite du traitement pourrait être faible",
+        "ko-KR": "처리 성공률이 낮을 수 있습니다",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(5673-5686)"
+        ],
+        "$id": 5946
+    },
+    "建议使用更高质量的模型": {
+        "en-US": "It is recommended to use a higher quality model",
+        "es-ES": "Se recomienda utilizar un modelo de mayor calidad",
+        "ar-EG": "يُuggested استخدام نموذج عالي الجودة أكثر",
+        "pt-PT": "Sugere-se a utilização de um modelo de maior qualidade",
+        "ru-RU": "Рекомендуется использовать модель более высокого качества",
+        "ja-JP": "高品質なモデルの使用を推奨します\r",
+        "de-DE": "Es wird empfohlen, ein Modell mit höherer Qualität zu verwenden",
+        "fr-FR": "Il est recommandé d'utiliser un modèle de meilleure qualité",
+        "ko-KR": "더 높은 품질의 모델을 사용하시기 바랍니다",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(5717-5732)"
+        ],
+        "$id": 5947
+    },
+    "检查兼容性时出错：{error}": {
+        "en-US": "Error occurred while checking compatibility: {error}",
+        "es-ES": "Error al comprobar la compatibilidad: {error}",
+        "ar-EG": "حدث خطأ أثناء التحقق من التوافق: {error}",
+        "pt-PT": "Ocorreu um erro ao verificar a compatibilidade: {error}",
+        "ru-RU": "Ошибка при проверке совместимости: {error}",
+        "ja-JP": "互換性の確認中にエラーが発生しました：{error}\r",
+        "de-DE": "Fehler beim Prüfen der Kompatibilität: {error}",
+        "fr-FR": "Une erreur s'est produite lors de la vérification de la compatibilité : {error}",
+        "ko-KR": "호환성 확인 중 오류 발생: {error}",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(6060-6080)"
+        ],
+        "$id": 5948
+    },
+    "请检查模型配置": {
+        "en-US": "Please check model configuration",
+        "es-ES": "Por favor, compruebe la configuración del modelo",
+        "ar-EG": "يرجى التحقق من إعدادات النموذج",
+        "pt-PT": "Verifique a configuração do modelo",
+        "ru-RU": "Проверьте конфигурацию модели",
+        "ja-JP": "モデルの設定を確認してください\r",
+        "de-DE": "Bitte überprüfen Sie die Modellkonfiguration",
+        "fr-FR": "Veuillez vérifier la configuration du modèle",
+        "ko-KR": "모델 구성 확인하십시오",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(6178-6189)",
+            "electron/runtime-services/llama/model-status-service.ts(8067-8078)"
+        ],
+        "$id": 5949
+    },
+    "检查失败": {
+        "en-US": "Check failed",
+        "es-ES": "La comprobación falló",
+        "ar-EG": "فشل التحقق",
+        "pt-PT": "A verificação falhou",
+        "ru-RU": "Проверка не удалась",
+        "ja-JP": "確認に失敗しました\r",
+        "de-DE": "Prüfung fehlgeschlagen",
+        "fr-FR": "La vérification a échoué",
+        "ko-KR": "확인 실패",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(6227-6235)"
+        ],
+        "$id": 5950
+    },
+    "建议使用高性能GPU以获得最佳体验": {
+        "en-US": "It is recommended to use a high-performance GPU for the best experience",
+        "es-ES": "Se recomienda utilizar una GPU de alto rendimiento para obtener la mejor experiencia",
+        "ar-EG": "يُuggested استخدام وحدة معالجة رسومية عالية الأداء للحصول على تجربة مثالية",
+        "pt-PT": "Sugere-se a utilização de uma GPU de alto desempenho para uma experiência ideal",
+        "ru-RU": "Рекомендуется использовать GPU высокой производительности для наилучшего качества",
+        "ja-JP": "最高の体験を得るために高性能GPUの使用を推奨します\r",
+        "de-DE": "Es wird empfohlen, eine leistungsstarke GPU zu verwenden, um das beste Erlebnis zu gewährleisten",
+        "fr-FR": "Il est recommandé d'utiliser un GPU haute performance pour une meilleure expérience",
+        "ko-KR": "최상의 경험을 위해 고성능 GPU 사용을 권장합니다",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(7389-7410)"
+        ],
+        "$id": 5951
+    },
+    "处理大文件时请耐心等待": {
+        "en-US": "Please be patient when processing large files",
+        "es-ES": "Por favor, tenga paciencia al procesar archivos grandes",
+        "ar-EG": "يرجى التحلي بالصبر أثناء معالجة الملفات الكبيرة",
+        "pt-PT": "Por favor, aguarde pacientemente ao processar ficheiros grandes",
+        "ru-RU": "Подождите терпеливо при обработке больших файлов",
+        "ja-JP": "大ファイルを処理する際はしばらくお待ちください\r",
+        "de-DE": "Bitte haben Sie Geduld beim Verarbeiten großer Dateien",
+        "fr-FR": "Veuillez patienter lors du traitement de fichiers volumineux",
+        "ko-KR": "대용량 파일 처리 시 기다려 주십시오",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(7510-7525)"
+        ],
+        "$id": 5952
+    },
+    "当前模型仅支持文本，考虑使用多模态模型获得更多功能": {
+        "en-US": "The current model only supports text; consider using a multimodal model for more features",
+        "es-ES": "El modelo actual solo admite texto; considere utilizar un modelo multimodal para obtener más funciones",
+        "ar-EG": "النموذج الحالي يدعم النص فقط، فكر في استخدام نموذج متعدد الوسائط للحصول على مزيد من المزايا",
+        "pt-PT": "O modelo atual apenas suporta texto; considere utilizar um modelo multimodal para obter mais funcionalidades",
+        "ru-RU": "Текущая модель поддерживает только текст, для получения более широких возможностей рекомендуется использовать многомодальную модель",
+        "ja-JP": "現在のモデルはテキストのみ対応しており、多機能化にはマルチモーダルモデルの使用を検討してください\r",
+        "de-DE": "Das aktuelle Modell unterstützt nur Text. Erwägen Sie die Verwendung eines multimodalen Modells, um weitere Funktionen zu erhalten",
+        "fr-FR": "Le modèle actuel ne prend en charge que le texte, envisagez d'utiliser un modèle multimodal pour bénéficier de plus de fonctionnalités",
+        "ko-KR": "현재 모델은 텍스트만 지원하며, 더 많은 기능을 위해서는 멀티모달 모델 사용을 고려하십시오",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(7641-7670)"
+        ],
+        "$id": 5953
+    },
+    "获取能力信息失败：{error}": {
+        "en-US": "Failed to obtain capability information: {error}",
+        "es-ES": "Error al obtener la información de capacidades: {error}",
+        "ar-EG": "فشل في الحصول على معلومات القدرة: {error}",
+        "pt-PT": "Falha ao obter informações de capacidade: {error}",
+        "ru-RU": "Ошибка получения информации о возможностях: {error}",
+        "ja-JP": "機能情報の取得に失敗しました：{error}\r",
+        "de-DE": "Fehler beim Abrufen der Fähigkeitsinformationen: {error}",
+        "fr-FR": "Échec de l'obtention des informations sur les capacités : {error}",
+        "ko-KR": "기능 정보 가져오기 실패: {error}",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(7991-8011)"
+        ],
+        "$id": 5954
+    },
+    "错误率较高：{errorRatePercent}%": {
+        "en-US": "High error rate: {errorRatePercent}%",
+        "es-ES": "La tasa de errores es alta: {errorRatePercent}%",
+        "ar-EG": "معدل الخطأ مرتفع: {errorRatePercent}%",
+        "pt-PT": "Taxa de erros elevada: {errorRatePercent}%",
+        "ru-RU": "Высокий уровень ошибок: {errorRatePercent}%",
+        "ja-JP": "エラー率が高めです：{errorRatePercent}%",
+        "de-DE": "Hohe Fehlerquote: {errorRatePercent}%",
+        "fr-FR": "Taux d'erreur élevé : {errorRatePercent}%",
+        "ko-KR": "오류율이 높음: {errorRatePercent}%",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(10479-10508)"
+        ],
+        "$id": 5955
+    },
+    "内存使用率过高": {
+        "en-US": "Memory usage is too high",
+        "es-ES": "Uso de memoria demasiado alto",
+        "ar-EG": "نسبة استخدام الذاكرة مرتفعة للغاية",
+        "pt-PT": "Utilização de memória demasiado elevada",
+        "ru-RU": "Слишком высокий уровень использования памяти",
+        "ja-JP": "メモリ使用率が高すぎます\r",
+        "de-DE": "Speicherauslastung zu hoch",
+        "fr-FR": "Taux d'utilisation de la mémoire trop élevé",
+        "ko-KR": "메모리 사용률이 너무 높음\r",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(10672-10683)"
+        ],
+        "$id": 5956
+    },
+    "状态更新失败：{error}": {
+        "en-US": "Failed to update status: {error}",
+        "es-ES": "Estado de actualización fallido: {error}",
+        "ar-EG": "فشل تحديث الحالة: {error}",
+        "pt-PT": "Falha na atualização do estado: {error}",
+        "ru-RU": "Не удалось обновить состояние: {error}",
+        "ja-JP": "ステータスの更新に失敗しました：{error}\r",
+        "de-DE": "Statusaktualisierung fehlgeschlagen: {error}",
+        "fr-FR": "Échec de la mise à jour de l'état : {error}",
+        "ko-KR": "상태 업데이트 실패: {error}\r",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(11683-11701)"
+        ],
+        "$id": 5957
+    },
+    "状态获取失败": {
+        "en-US": "Failed to get status",
+        "es-ES": "Error al obtener el estado",
+        "ar-EG": "فشل في الحصول على الحالة",
+        "pt-PT": "Falha na obtenção do estado",
+        "ru-RU": "Не удалось получить состояние",
+        "ja-JP": "ステータスの取得に失敗しました",
+        "de-DE": "Statusabruf fehlgeschlagen",
+        "fr-FR": "Échec de l'obtention de l'état",
+        "ko-KR": "상태 조회 실패",
+        "$files": [
+            "electron/runtime-services/llama/model-status-service.ts(11882-11892)"
+        ],
+        "$id": 5958
+    }
+}

@@ -1,0 +1,634 @@
+{
+    "检查文件是否存在或已被移动": {
+        "en-US": "Check if the file exists or has been moved",
+        "es-ES": "Verifique si el archivo existe o si ha sido movido",
+        "ar-EG": "التحقق مما إذا كان الملف موجودًا أم تم نقله",
+        "pt-PT": "Verificar se o ficheiro existe ou foi movido",
+        "ru-RU": "Проверить, существует ли файл или был ли он перемещен",
+        "ja-JP": "ファイルが存在するか、移動されているかを確認する",
+        "de-DE": "Überprüfen Sie, ob die Datei vorhanden ist oder verschoben wurde",
+        "fr-FR": "Vérifier si le fichier existe ou s'il a été déplacé",
+        "ko-KR": "파일이 존재하는지 또는 이동되었는지 확인",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(2733-2750)"
+        ],
+        "$id": 5837
+    },
+    "检查文件访问权限": {
+        "en-US": "Check file access permissions",
+        "es-ES": "Verifique los permisos de acceso al archivo",
+        "ar-EG": "التحقق من أذونات الوصول إلى الملف",
+        "pt-PT": "Verificar as permissões de acesso ao ficheiro",
+        "ru-RU": "Проверить права доступа к файлу",
+        "ja-JP": "ファイルアクセス権限を確認する",
+        "de-DE": "Überprüfen Sie die Dateizugriffsberechtigung",
+        "fr-FR": "Vérifier les autorisations d'accès au fichier",
+        "ko-KR": "파일 접근 권한 확인",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(2817-2829)"
+        ],
+        "$id": 5838
+    },
+    "等待文件解锁后重试": {
+        "en-US": "Wait for the file to be unlocked before retrying",
+        "es-ES": "Espere a que se desbloquee el archivo y vuelva a intentarlo",
+        "ar-EG": "في انتظار فتح الملف وإعادة المحاولة",
+        "pt-PT": "Aguardar que o ficheiro seja desbloqueado e tentar novamente",
+        "ru-RU": "Дождаться разблокировки файла и повторить попытку",
+        "ja-JP": "ファイルのロック解除を待ってから再試行する",
+        "de-DE": "Warten Sie, bis die Datei entsperrt ist, und versuchen Sie es erneut",
+        "fr-FR": "Attendre que le fichier soit déverrouillé avant de réessayer",
+        "ko-KR": "파일 잠금 해제 대기 후 재시도",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(2890-2903)"
+        ],
+        "$id": 5839
+    },
+    "跳过不支持的文件格式": {
+        "en-US": "Skip unsupported file formats",
+        "es-ES": "Omitir formatos de archivo no soportados",
+        "ar-EG": "تخطي تنسيقات الملفات غير المدعومة",
+        "pt-PT": "Ignorar formatos de ficheiro não suportados",
+        "ru-RU": "Пропустить неподдерживаемый формат файла",
+        "ja-JP": "サポートされていないファイル形式はスキップする",
+        "de-DE": "Überspringen Sie nicht unterstützte Dateiformate",
+        "fr-FR": "Ignorer les formats de fichier non pris en charge",
+        "ko-KR": "지원되지 않는 파일 형식 생략",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(2971-2985)"
+        ],
+        "$id": 5840
+    },
+    "文件可能已损坏，建议跳过": {
+        "en-US": "The file may be corrupted, it is recommended to skip",
+        "es-ES": "El archivo puede estar dañado, se recomienda omitirlo",
+        "ar-EG": "ربما يكون الملف تالفًا، يوصى بتخطيه",
+        "pt-PT": "O ficheiro pode estar danificado, recomenda-se ignorar",
+        "ru-RU": "Файл может быть поврежден, рекомендуется пропустить",
+        "ja-JP": "ファイルが破損している可能性があります。スキップすることをお勧めします",
+        "de-DE": "Die Datei ist möglicherweise beschädigt, es wird empfohlen, sie zu überspringen",
+        "fr-FR": "Le fichier est peut-être corrompu, il est recommandé de le sauter",
+        "ko-KR": "파일이 손상되었을 수 있으므로 생략하는 것을 권장합니다",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(3049-3065)"
+        ],
+        "$id": 5841
+    },
+    "增加处理超时时间或跳过大文件": {
+        "en-US": "Increase processing timeout or skip large files",
+        "es-ES": "Aumentar el tiempo de espera para el procesamiento o saltar archivos grandes",
+        "ar-EG": "زيادة مهلة المعالجة أو تخطي الملفات الكبيرة",
+        "pt-PT": "Aumentar tempo limite de processamento ou ignorar ficheiros grandes",
+        "ru-RU": "Увеличить время ожидания обработки или пропустить большой файл\r",
+        "ja-JP": "タイムアウト時間を延長するか、大容量ファイルをスキップしてください",
+        "de-DE": "Vergrößerung der Bearbeitungs-Timeout oder Überspringen großer Dateien",
+        "fr-FR": "Augmenter le délai d'expiration du traitement ou ignorer les fichiers volumineux",
+        "ko-KR": "처리 시간 초과를 늘리거나 큰 파일 건너뛰기",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(3133-3151)"
+        ],
+        "$id": 5842
+    },
+    "等待AI模型加载完成": {
+        "en-US": "Wait for AI model to finish loading",
+        "es-ES": "Esperar a que se complete la carga del modelo de IA",
+        "ar-EG": "في انتظار اكتمال تحميل نموذج الذكاء الاصطناعي",
+        "pt-PT": "Aguardar que o modelo AI termine o carregamento",
+        "ru-RU": "Дождитесь полной загрузки AI-модели\r",
+        "ja-JP": "AIモデルの読み込み完了を待機してください",
+        "de-DE": "Warten, bis das AI-Modell vollständig geladen ist",
+        "fr-FR": "Attendre que le modèle AI termine son chargement",
+        "ko-KR": "AI 모델 로딩 완료 대기 중",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(3217-3231)"
+        ],
+        "$id": 5843
+    },
+    "检查AI服务状态或增加超时时间，建议切换云端模型或服务商": {
+        "en-US": "Check the AI ​​service status or increase the timeout. It is recommended to switch the cloud model or service provider.",
+        "es-ES": "Verifique el estado del servicio AI o aumente el tiempo de espera. Se recomienda cambiar el modelo de nube o el proveedor de servicios.",
+        "ar-EG": "تحقق من حالة خدمة الذكاء الاصطناعي أو قم بزيادة المهلة. يوصى بتبديل النموذج السحابي أو مزود الخدمة.",
+        "pt-PT": "Verifique o status do serviço de IA ou aumente o tempo limite. Recomenda-se mudar o modelo de nuvem ou provedor de serviços.",
+        "ru-RU": "Проверьте статус службы AI или увеличьте таймаут. Рекомендуется сменить облачную модель или поставщика услуг.",
+        "ja-JP": "AIサービスのステータスを確認するか、タイムアウトを増やしてください。クラウドモデルやサービスプロバイダーを切り替えることをお勧めします。",
+        "de-DE": "Überprüfen Sie den AI-Dienststatus oder erhöhen Sie das Timeout. Es empfiehlt sich, das Cloud-Modell oder den Dienstanbieter zu wechseln.",
+        "fr-FR": "Vérifiez l'état du service AI ou augmentez le délai d'attente. Il est recommandé de changer de modèle de cloud ou de fournisseur de services.",
+        "ko-KR": "AI 서비스 상태를 확인하거나 타임아웃을 늘려보세요. 클라우드 모델이나 서비스 제공업체를 전환하는 것이 좋습니다.",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(3450-3482)"
+        ],
+        "$id": 4390
+    },
+    "检查AI服务状态或增加超时时间，建议切换低显存需求的AI模型": {
+        "en-US": "Check the AI ​​service status or increase the timeout. It is recommended to switch to an AI model with low memory requirements.",
+        "es-ES": "Verifique el estado del servicio AI o aumente el tiempo de espera. Se recomienda cambiar a un modelo de IA con bajos requisitos de memoria.",
+        "ar-EG": "تحقق من حالة خدمة الذكاء الاصطناعي أو قم بزيادة المهلة. يوصى بالتبديل إلى نموذج الذكاء الاصطناعي بمتطلبات ذاكرة منخفضة.",
+        "pt-PT": "Verifique o status do serviço de IA ou aumente o tempo limite. Recomenda-se mudar para um modelo de IA com poucos requisitos de memória.",
+        "ru-RU": "Проверьте статус службы AI или увеличьте таймаут. Рекомендуется переключиться на модель AI с низкими требованиями к памяти.",
+        "ja-JP": "AIサービスのステータスを確認するか、タイムアウトを増やしてください。メモリ要件が低い AI モデルに切り替えることをお勧めします。",
+        "de-DE": "Überprüfen Sie den AI-Dienststatus oder erhöhen Sie das Timeout. Es empfiehlt sich, auf ein KI-Modell mit geringem Speicherbedarf umzusteigen.",
+        "fr-FR": "Vérifiez l'état du service AI ou augmentez le délai d'attente. Il est recommandé de passer à un modèle d'IA avec de faibles besoins en mémoire.",
+        "ko-KR": "AI 서비스 상태를 확인하거나 타임아웃을 늘려보세요. 메모리 요구 사항이 낮은 AI 모델로 전환하는 것이 좋습니다.",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(3511-3545)"
+        ],
+        "$id": 2975
+    },
+    "检查数据库连接状态": {
+        "en-US": "Check database connection status",
+        "es-ES": "Verificar el estado de la conexión a la base de datos",
+        "ar-EG": "التحقق من حالة اتصال قاعدة البيانات",
+        "pt-PT": "Verificar o estado da ligação à base de dados",
+        "ru-RU": "Проверьте состояние подключения к базе данных\r",
+        "ja-JP": "データベース接続状態を確認してください",
+        "de-DE": "Überprüfung des Datenbankverbindungsstatus",
+        "fr-FR": "Vérifier l'état de la connexion à la base de données",
+        "ko-KR": "데이터베이스 연결 상태 확인",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(3618-3631)"
+        ],
+        "$id": 5845
+    },
+    "检查系统状态并重试": {
+        "en-US": "Check system status and retry",
+        "es-ES": "Verificar el estado del sistema y reintentar",
+        "ar-EG": "التحقق من حالة النظام وإعادة المحاولة",
+        "pt-PT": "Verificar o estado do sistema e tentar novamente",
+        "ru-RU": "Проверьте состояние системы и повторите попытку\r",
+        "ja-JP": "システム状態を確認して再試行してください",
+        "de-DE": "Überprüfung des Systemstatus und erneuter Versuch",
+        "fr-FR": "Vérifier l'état du système et réessayer",
+        "ko-KR": "시스템 상태 확인 및 재시도",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(3665-3678)"
+        ],
+        "$id": 5846
+    },
+    "文件不存在": {
+        "en-US": "File does not exist",
+        "es-ES": "El archivo no existe",
+        "ar-EG": "الملف غير موجود",
+        "pt-PT": "Ficheiro não existe",
+        "ru-RU": "Файл не существует\r",
+        "ja-JP": "ファイルが存在しません",
+        "de-DE": "Datei existiert nicht",
+        "fr-FR": "Le fichier n'existe pas",
+        "ko-KR": "파일이 존재하지 않음",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(4045-4054)"
+        ],
+        "$id": 5847
+    },
+    "权限被拒绝": {
+        "en-US": "Permission denied",
+        "es-ES": "Permiso denegado",
+        "ar-EG": "تم رفض الإذن",
+        "pt-PT": "Permissão negada",
+        "ru-RU": "Отказано в доступе\r",
+        "ja-JP": "アクセス権限が拒否されました",
+        "de-DE": "Zugriff verweigert",
+        "fr-FR": "Permission refusée",
+        "ko-KR": "권한이 거부됨",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(4255-4264)"
+        ],
+        "$id": 5848
+    },
+    "文件被锁定": {
+        "en-US": "File is locked",
+        "es-ES": "El archivo está bloqueado",
+        "ar-EG": "الملف مغلق",
+        "pt-PT": "Ficheiro bloqueado",
+        "ru-RU": "Файл заблокирован\r",
+        "ja-JP": "ファイルがロックされています",
+        "de-DE": "Datei ist gesperrt",
+        "fr-FR": "Le fichier est verrouillé",
+        "ko-KR": "파일이 잠겨 있음",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(4464-4473)"
+        ],
+        "$id": 5849
+    },
+    "超时": {
+        "en-US": "Timeout",
+        "es-ES": "Tiempo de espera excedido",
+        "ar-EG": "مهلة",
+        "pt-PT": "Tempo limite atingido",
+        "ru-RU": "Истекло время ожидания\r",
+        "ja-JP": "タイムアウト",
+        "de-DE": "Zeitüberschreitung",
+        "fr-FR": "Délai dépassé",
+        "ko-KR": "시간 초과",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(4602-4608)"
+        ],
+        "$id": 5850
+    },
+    "不支持": {
+        "en-US": "Not supported",
+        "es-ES": "No soportado",
+        "ar-EG": "غير مدعوم",
+        "pt-PT": "Não suportado",
+        "ru-RU": "Не поддерживается\r",
+        "ja-JP": "対応していません",
+        "de-DE": "Nicht unterstützt",
+        "fr-FR": "Non pris en charge",
+        "ko-KR": "지원되지 않음",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(5236-5243)"
+        ],
+        "$id": 5852
+    },
+    "格式不支持": {
+        "en-US": "Format not supported",
+        "es-ES": "Formato no soportado",
+        "ar-EG": "التنسيق غير مدعوم",
+        "pt-PT": "Formato não suportado",
+        "ru-RU": "Формат не поддерживается\r",
+        "ja-JP": "形式に対応していません",
+        "de-DE": "Format wird nicht unterstützt",
+        "fr-FR": "Format non pris en charge",
+        "ko-KR": "지원되지 않는 형식",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(5311-5320)"
+        ],
+        "$id": 5853
+    },
+    "损坏": {
+        "en-US": "Corrupted",
+        "es-ES": "Dañado",
+        "ar-EG": "مكسور",
+        "pt-PT": "Danificado",
+        "ru-RU": "Поврежден\r",
+        "ja-JP": "破損しています",
+        "de-DE": "Beschädigt",
+        "fr-FR": "Corrompu",
+        "ko-KR": "손상됨",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(5512-5518)"
+        ],
+        "$id": 5854
+    },
+    "格式错误": {
+        "en-US": "Malformed",
+        "es-ES": "Formato incorrecto",
+        "ar-EG": "تنسيق خاطئ",
+        "pt-PT": "Formato incorrecto",
+        "ru-RU": "Неверный формат\r",
+        "ja-JP": "形式エラー",
+        "de-DE": "Falsches Format",
+        "fr-FR": "Format incorrect",
+        "ko-KR": "형식 오류",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(5581-5589)"
+        ],
+        "$id": 5855
+    },
+    "未加载": {
+        "en-US": "Not loaded",
+        "es-ES": "No cargado",
+        "ar-EG": "لم يتم التحميل",
+        "pt-PT": "Não carregado",
+        "ru-RU": "Не загружен\r",
+        "ja-JP": "読み込まれていません",
+        "de-DE": "Nicht geladen",
+        "fr-FR": "Non chargé",
+        "ko-KR": "로드되지 않음",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(5756-5763)"
+        ],
+        "$id": 5856
+    },
+    "ai服务": {
+        "en-US": "ai service",
+        "es-ES": "servicio de IA",
+        "ar-EG": "خدمة الذكاء الاصطناعي",
+        "pt-PT": "Serviço AI",
+        "ru-RU": "AI-сервис\r",
+        "ja-JP": "aiサービス",
+        "de-DE": "AI-Service",
+        "fr-FR": "service AI",
+        "ko-KR": "ai 서비스",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(5886-5894)"
+        ],
+        "$id": 5857
+    },
+    "模型错误": {
+        "en-US": "Model error",
+        "es-ES": "Error del modelo",
+        "ar-EG": "خطأ في النموذج",
+        "pt-PT": "Erro de modelo",
+        "ru-RU": "Ошибка модели\r",
+        "ja-JP": "モデルエラー",
+        "de-DE": "Modellfehler",
+        "fr-FR": "Erreur de modèle",
+        "ko-KR": "모델 오류",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(5959-5967)"
+        ],
+        "$id": 5858
+    },
+    "分类失败": {
+        "en-US": "Classification failed",
+        "es-ES": "Error de clasificación",
+        "ar-EG": "فشل التصنيف",
+        "pt-PT": "Falha na classificação",
+        "ru-RU": "Ошибка классификации\r",
+        "ja-JP": "分類に失敗しました",
+        "de-DE": "Klassifizierungsfehler",
+        "fr-FR": "Échec de la classification",
+        "ko-KR": "분류 실패",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(6100-6108)"
+        ],
+        "$id": 5859
+    },
+    "数据库": {
+        "en-US": "Database",
+        "es-ES": "Base de datos",
+        "ar-EG": "قاعدة البيانات",
+        "pt-PT": "Base de dados",
+        "ru-RU": "База данных\r",
+        "ja-JP": "データベース",
+        "de-DE": "Datenbank",
+        "fr-FR": "Base de données",
+        "ko-KR": "데이터베이스",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(6252-6259)"
+        ],
+        "$id": 5860
+    },
+    "网络": {
+        "en-US": "Network",
+        "es-ES": "Red",
+        "ar-EG": "الشبكة",
+        "pt-PT": "Rede",
+        "ru-RU": "Сеть\r",
+        "ja-JP": "ネットワーク",
+        "de-DE": "Netzwerk",
+        "fr-FR": "Réseau",
+        "ko-KR": "네트워크",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(6536-6542)"
+        ],
+        "$id": 5861
+    },
+    "连接": {
+        "en-US": "Connection",
+        "es-ES": "Conexión",
+        "ar-EG": "الاتصال",
+        "pt-PT": "Ligação",
+        "ru-RU": "Подключение\r",
+        "ja-JP": "接続",
+        "de-DE": "Verbindung",
+        "fr-FR": "Connexion",
+        "ko-KR": "연결",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(6565-6571)"
+        ],
+        "$id": 5862
+    },
+    "内存不足": {
+        "en-US": "Out of memory",
+        "es-ES": "Memoria insuficiente",
+        "ar-EG": "نقص في الذاكرة",
+        "pt-PT": "Memória insuficiente",
+        "ru-RU": "Недостаточно памяти\r",
+        "ja-JP": "メモリ不足です",
+        "de-DE": "Nicht genügend Speicher",
+        "fr-FR": "Mémoire insuffisante",
+        "ko-KR": "메모리 부족",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(6714-6722)"
+        ],
+        "$id": 5863
+    },
+    "资源耗尽": {
+        "en-US": "Resource exhausted",
+        "es-ES": "Recursos agotados",
+        "ar-EG": "استنفاد الموارد",
+        "pt-PT": "Recursos esgotados",
+        "ru-RU": "Ресурсы исчерпаны\r",
+        "ja-JP": "リソースが枯渇しました",
+        "de-DE": "Ressourcen erschöpft",
+        "fr-FR": "Ressources épuisées",
+        "ko-KR": "리소스 소진",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(6794-6802)"
+        ],
+        "$id": 5864
+    },
+    " (已重试 {retryCount} 次)": {
+        "en-US": " (Retried {retryCount} times)",
+        "es-ES": " (Reintentado {retryCount} veces)",
+        "ar-EG": " (تمت إعادة المحاولة {retryCount} مرة)",
+        "pt-PT": " (Tentado novamente {retryCount} vezes)",
+        "ru-RU": " (Повторено {retryCount} раз(а))\r",
+        "ja-JP": "（再試行 {retryCount} 回実行済み）",
+        "de-DE": " (Erneut versucht: {retryCount} mal)",
+        "fr-FR": " (Réessai {retryCount} fois)",
+        "ko-KR": " (재시도 {retryCount}회 완료)",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(11740-11765)"
+        ],
+        "$id": 5865
+    },
+    " - 建议检查系统状态": {
+        "en-US": " - Suggest checking system status",
+        "es-ES": " - Se recomienda verificar el estado del sistema",
+        "ar-EG": " - من المستحسن التحقق من حالة النظام",
+        "pt-PT": " - Recomenda-se verificar o estado do sistema",
+        "ru-RU": " - Рекомендуется проверить состояние системы",
+        "ja-JP": " - システム状態の確認を推奨します",
+        "de-DE": " - Es wird empfohlen, den Systemstatus zu überprüfen",
+        "fr-FR": " - Il est recommandé de vérifier l'état du système",
+        "ko-KR": " - 시스템 상태 점검 권장",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(11917-11932)"
+        ],
+        "$id": 5866
+    },
+    " - 可能需要人工干预": {
+        "en-US": "- Manual intervention may be required",
+        "es-ES": "- Es posible que se requiera intervención manual",
+        "ar-EG": "- قد يحتاج إلى تدخل يدوي",
+        "pt-PT": "- Pode ser necessária intervenção manual",
+        "ru-RU": "- Может потребоваться вмешательство вручную",
+        "ja-JP": "- 人的介入が必要な場合があります",
+        "de-DE": "- Manuelle Eingabe erforderlich",
+        "fr-FR": "- Une intervention manuelle pourrait être nécessaire",
+        "ko-KR": "- 수동 개입이 필요할 수 있음",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(11996-12011)"
+        ],
+        "$id": 5867
+    },
+    " - 系统将自动重试": {
+        "en-US": "- The system will automatically retry",
+        "es-ES": "- El sistema volverá a intentarlo automáticamente",
+        "ar-EG": "- سيتم أعادة المحاولة تلقائيًا",
+        "pt-PT": "- O sistema tentará automaticamente novamente",
+        "ru-RU": "- Система выполнит повторную попытку автоматически",
+        "ja-JP": "- システムが自動的に再試行します",
+        "de-DE": "- Das System wird automatisch erneut versuchen",
+        "fr-FR": "- Le système réessayera automatiquement",
+        "ko-KR": "- 시스템이 자동으로 다시 시도함",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(12077-12091)"
+        ],
+        "$id": 5868
+    },
+    " - 将跳过此文件": {
+        "en-US": "- This file will be skipped",
+        "es-ES": "- Este archivo será omitido",
+        "ar-EG": "- سيتم تخطي هذا الملف",
+        "pt-PT": "- Este ficheiro será ignorado",
+        "ru-RU": "- Этот файл будет пропущен",
+        "ja-JP": "- このファイルはスキップされます",
+        "de-DE": "- Diese Datei wird übersprungen",
+        "fr-FR": "- Ce fichier sera ignoré",
+        "ko-KR": "- 이 파일은 건너뜀",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(12154-12167)"
+        ],
+        "$id": 5869
+    },
+    " - 大文件处理，建议增加超时时间": {
+        "en-US": "- Processing large files, it is recommended to increase the timeout duration",
+        "es-ES": "- Procesamiento de archivos grandes, se recomienda aumentar el tiempo de espera",
+        "ar-EG": "- معالجة الملفات الكبيرة، يُوصى بزيادة مهلة الانتظار",
+        "pt-PT": "- Processamento de ficheiros grandes, recomenda-se aumentar o tempo limite de espera",
+        "ru-RU": "- Обработка больших файлов, рекомендуется увеличить время ожидания",
+        "ja-JP": "- 大きなファイルを処理しています。タイムアウト時間を長くすることをお勧めします",
+        "de-DE": "- Bearbeitung großer Dateien, es wird empfohlen, die Zeitüberschreitung zu verlängern",
+        "fr-FR": "- Traitement de fichiers volumineux, il est recommandé d'augmenter le délai d'expiration",
+        "ko-KR": "- 대용량 파일 처리, 타임아웃 시간 증가 권장",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/error-handler.ts(12466-12487)"
+        ],
+        "$id": 5870
+    },
+    "分析超时": {
+        "en-US": "Analysis timeout",
+        "es-ES": "Tiempo de espera del análisis",
+        "ar-EG": "مهلة التحليل",
+        "pt-PT": "Tempo limite de análise",
+        "ru-RU": "Тайм-аут анализа",
+        "ja-JP": "分析タイムアウト",
+        "de-DE": "Analyse-Timeout",
+        "fr-FR": "Délai d'analyse",
+        "ko-KR": "분석 시간 초과",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/index.ts(20234-20242)"
+        ],
+        "$id": 2976
+    },
+    "建议切换低显存需求的AI模型": {
+        "en-US": "It is recommended to switch to an AI model with low memory requirements",
+        "es-ES": "Se recomienda cambiar a un modelo de IA con bajos requisitos de memoria.",
+        "ar-EG": "يوصى بالتبديل إلى نموذج الذكاء الاصطناعي بمتطلبات ذاكرة منخفضة",
+        "pt-PT": "Recomenda-se mudar para um modelo de IA com poucos requisitos de memória",
+        "ru-RU": "Рекомендуется переключиться на модель AI с низкими требованиями к памяти.",
+        "ja-JP": "メモリ要件の低い AI モデルに切り替えることをお勧めします",
+        "de-DE": "Es empfiehlt sich, auf ein KI-Modell mit geringem Speicherbedarf umzusteigen",
+        "fr-FR": "Il est recommandé de passer à un modèle d'IA avec de faibles besoins en mémoire",
+        "ko-KR": "메모리 요구 사항이 낮은 AI 모델로 전환하는 것이 좋습니다.",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/index.ts(20261-20279)",
+            "electron/runtime-services/analysis-queue-service/index.ts(27757-27775)",
+            "electron/runtime-services/analysis-queue-service/index.ts(49840-49858)"
+        ],
+        "$id": 2977
+    },
+    "前往设置": {
+        "en-US": "Go to settings",
+        "es-ES": "Ir a configuración",
+        "ar-EG": "انتقل إلى الإعدادات",
+        "pt-PT": "Vá para configurações",
+        "ru-RU": "Перейти в настройки",
+        "ja-JP": "設定に移動",
+        "de-DE": "Gehen Sie zu den Einstellungen",
+        "fr-FR": "Allez dans les paramètres",
+        "ko-KR": "설정으로 이동",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/index.ts(20386-20394)"
+        ],
+        "$id": 4521
+    },
+    "正在等待AI引擎启动，请稍候...": {
+        "en-US": "Waiting for the AI ​​engine to start, please wait...",
+        "es-ES": "Esperando a que el motor de IA se inicie, por favor espere...",
+        "ar-EG": "جاري انتظار بدء محرك الذكاء الاصطناعي، يرجى الانتظار...",
+        "pt-PT": "A aguardar o arranque do motor de IA, por favor aguarde...",
+        "ru-RU": "Ожидание запуска AI-движка, пожалуйста, подождите...",
+        "ja-JP": "AIエンジンが起動するのを待っています、お待ちください...",
+        "de-DE": "Warten auf den Start der KI-Engine, bitte warten ...",
+        "fr-FR": "En attente du démarrage du moteur IA, veuillez patienter...",
+        "ko-KR": "AI 엔진 시작 대기 중, 잠시만 기다려 주십시오...",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/index.ts(22266-22287)"
+        ],
+        "$id": 4275
+    },
+    "分析已暂停": {
+        "en-US": "Analysis is paused",
+        "es-ES": "Análisis en pausa",
+        "ar-EG": "تم إيقاف التحليل مؤقتاً",
+        "pt-PT": "Análise pausada",
+        "ru-RU": "Анализ приостановлен",
+        "ja-JP": "分析は一時停止されています",
+        "de-DE": "Die Analyse ist pausiert",
+        "fr-FR": "Analyse en pause",
+        "ko-KR": "분석 일시 정지됨",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/index.ts(22522-22531)"
+        ],
+        "$id": 4276
+    },
+    "AI引擎已就绪，开始分析": {
+        "en-US": "The AI ​​engine is ready to start analysis",
+        "es-ES": "Motor de IA listo, comenzando el análisis",
+        "ar-EG": "محرك الذكاء الاصطناعي جاهز، بدء التحليل",
+        "pt-PT": "Motor de IA pronto, a iniciar análise",
+        "ru-RU": "AI-движок готов, начинается анализ",
+        "ja-JP": "AIエンジンが分析を開始する準備ができました",
+        "de-DE": "Die KI-Engine ist bereit, mit der Analyse zu beginnen",
+        "fr-FR": "Moteur IA prêt, démarrage de l'analyse",
+        "ko-KR": "AI 엔진 준비 완료, 분석 시작",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/index.ts(22842-22858)"
+        ],
+        "$id": 4277
+    },
+    "AI引擎启动失败，请检查配置或手动重启服务": {
+        "en-US": "The AI ​​engine failed to start. Please check the configuration or restart the service manually.",
+        "es-ES": "Fallo al iniciar el motor de IA, por favor verifique la configuración o reinicie el servicio manualmente",
+        "ar-EG": "فشل بدء محرك الذكاء الاصطناعي، يرجى التحقق من التكوين أو إعادة تشغيل الخدمة يدوياً",
+        "pt-PT": "Falha no arranque do motor de IA, por favor verifique a configuração ou reinicie manualmente o serviço",
+        "ru-RU": "Не удалось запустить AI-движок, проверьте конфигурацию или перезапустите службу вручную",
+        "ja-JP": "AIエンジンの起動に失敗しました。構成を確認するか、サービスを手動で再起動してください。",
+        "de-DE": "Die KI-Engine konnte nicht gestartet werden. Bitte überprüfen Sie die Konfiguration oder starten Sie den Dienst manuell neu.",
+        "fr-FR": "Échec du démarrage du moteur IA, veuillez vérifier la configuration ou redémarrer manuellement le service",
+        "ko-KR": "AI 엔진 시작 실패, 구성을 확인하거나 서비스를 수동으로 다시 시작하십시오",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/index.ts(23085-23110)"
+        ],
+        "$id": 4278
+    },
+    "等待AI引擎启动超时": {
+        "en-US": "Timeout waiting for AI engine to start",
+        "es-ES": "Tiempo de espera agotado para la espera del inicio del motor de IA",
+        "ar-EG": "انتهت مهلة انتظار بدء محرك الذكاء الاصطناعي",
+        "pt-PT": "Tempo limite excedido ao aguardar o arranque do motor de IA",
+        "ru-RU": "Тайм-аут ожидания запуска AI-движка",
+        "ja-JP": "AI エンジンの起動待機中にタイムアウトが発生しました",
+        "de-DE": "Zeitüberschreitung beim Warten auf den Start der KI-Engine",
+        "fr-FR": "Délai d'attente du démarrage du moteur IA dépassé",
+        "ko-KR": "AI 엔진 시작 대기 시간 초과",
+        "$files": [
+            "electron/runtime-services/analysis-queue-service/index.ts(23367-23381)"
+        ],
+        "$id": 4279
+    }
+}

@@ -1,0 +1,489 @@
+{
+    "AI模型服务不可用": {
+        "en-US": "AI model service unavailable",
+        "es-ES": "Servicio de modelo de IA no disponible",
+        "ar-EG": "خدمة نموذج الذكاء الاصطناعي غير متوفرة",
+        "pt-PT": "Serviço de modelo de IA indisponível",
+        "ru-RU": "Служба AI-модели недоступна",
+        "ja-JP": "AIモデルサービスは利用できません",
+        "de-DE": "AI-Modell-Dienst nicht verfügbar",
+        "fr-FR": "Le service de modèle IA est indisponible",
+        "ko-KR": "AI 모델 서비스를 사용할 수 없음",
+        "$files": [
+            "renderer/components/ai/AIClassificationHandler.tsx(1570-1583)"
+        ],
+        "$id": 3826
+    },
+    "AI服务初始化失败: {message}": {
+        "en-US": "AI service initialization failed: {message}",
+        "es-ES": "Error en la inicialización del servicio de IA: {message}",
+        "ar-EG": "فشل تهيئة خدمة الذكاء الاصطناعي: {message}",
+        "pt-PT": "Falha na inicialização do serviço de IA: {message}",
+        "ru-RU": "Сбой инициализации службы искусственного интеллекта: {message}",
+        "ja-JP": "AI サービスの初期化に失敗しました: {message}",
+        "de-DE": "AI-Dienst-Initialisierung fehlgeschlagen: {message}",
+        "fr-FR": "Échec de l'initialisation du service IA : {message}",
+        "ko-KR": "AI 서비스 초기화 실패: {message}",
+        "$files": [
+            "renderer/components/ai/AIClassificationHandler.tsx(2065-2089)"
+        ],
+        "$id": 3827
+    },
+    "未知错误": {
+        "en-US": "Unknown error",
+        "es-ES": "Error desconocido",
+        "ar-EG": "خطأ غير معروف",
+        "pt-PT": "Erro desconhecido",
+        "ru-RU": "Неизвестная ошибка",
+        "ja-JP": "不明なエラー",
+        "de-DE": "Unbekannter Fehler",
+        "fr-FR": "Erreur inconnue",
+        "ko-KR": "알 수 없는 오류",
+        "$files": [
+            "renderer/components/ai/AIClassificationHandler.tsx(2940-2948)",
+            "renderer/components/ai/AIClassificationHandler.tsx(5710-5718)"
+        ],
+        "$id": 3828
+    },
+    "AI分类失败: {error}": {
+        "en-US": "AI classification failed: {error}",
+        "es-ES": "Error en la clasificación de IA: {error}",
+        "ar-EG": "فشل تصنيف الذكاء الاصطناعي: {error}",
+        "pt-PT": "Falha na classificação da IA: {error}",
+        "ru-RU": "Сбой классификации AI: {error}",
+        "ja-JP": "AI 分類に失敗しました: {error}",
+        "de-DE": "AI-Klassifizierung fehlgeschlagen: {error}",
+        "fr-FR": "Échec de la classification IA : {error}",
+        "ko-KR": "AI 분류 실패: {error}",
+        "$files": [
+            "renderer/components/ai/AIClassificationHandler.tsx(5626-5645)"
+        ],
+        "$id": 3829
+    },
+    "未知": {
+        "en-US": "Unknown",
+        "es-ES": "Desconocido",
+        "ar-EG": "غير معروف",
+        "pt-PT": "Desconhecido",
+        "ru-RU": "Неизвестный",
+        "ja-JP": "不明",
+        "de-DE": "Unbekannt",
+        "fr-FR": "Inconnu",
+        "ko-KR": "알 수 없음",
+        "$files": [
+            "renderer/components/ai/AIClassificationHandler.tsx(5939-5945)",
+            "renderer/components/ai/AIClassificationHandler.tsx(7066-7072)",
+            "renderer/components/ai/AIClassificationHandler.tsx(7478-7484)",
+            "renderer/components/ai/AIClassificationHandler.tsx(7923-7929)"
+        ],
+        "$id": 3830
+    },
+    "未分类": {
+        "en-US": "Uncategorized",
+        "es-ES": "Sin clasificar",
+        "ar-EG": "غير مصنف",
+        "pt-PT": "Não classificado",
+        "ru-RU": "Без категории",
+        "ja-JP": "未分類",
+        "de-DE": "Nicht klassifiziert",
+        "fr-FR": "Non classifié",
+        "ko-KR": "분류되지 않음",
+        "$files": [
+            "renderer/components/ai/AIClassificationHandler.tsx(7137-7144)",
+            "renderer/components/ai/AIClassificationHandler.tsx(7529-7536)",
+            "renderer/components/ai/AIClassificationHandler.tsx(8362-8369)"
+        ],
+        "$id": 3831
+    },
+    "文件: {filename}": {
+        "en-US": "File: {filename}",
+        "es-ES": "Archivo: {filename}",
+        "ar-EG": "الملف: {filename}",
+        "pt-PT": "Ficheiro: {filename}",
+        "ru-RU": "Файл: {filename}",
+        "ja-JP": "ファイル: {filename}",
+        "de-DE": "Datei: {filename}",
+        "fr-FR": "Fichier : {filename}",
+        "ko-KR": "파일: {filename}",
+        "$files": [
+            "renderer/components/ai/AIClassificationHandler.tsx(7177-7195)",
+            "renderer/components/ai/AIClassificationHandler.tsx(8507-8525)"
+        ],
+        "$id": 3832
+    },
+    "无法自动分类此文件": {
+        "en-US": "Unable to automatically classify this file",
+        "es-ES": "No se puede clasificar automáticamente este archivo",
+        "ar-EG": "يتعذر تصنيف هذا الملف تلقائيًا",
+        "pt-PT": "Impossível classificar automaticamente este ficheiro",
+        "ru-RU": "Невозможно автоматически классифицировать этот файл",
+        "ja-JP": "このファイルを自動的に分類できません",
+        "de-DE": "Diese Datei kann nicht automatisch klassifiziert werden",
+        "fr-FR": "Impossible de classer automatiquement ce fichier",
+        "ko-KR": "이 파일을 자동으로 분류할 수 없음",
+        "$files": [
+            "renderer/components/ai/AIClassificationHandler.tsx(7558-7571)"
+        ],
+        "$id": 3833
+    },
+    "以 CPU 模式启动": {
+        "en-US": "Start in CPU mode",
+        "es-ES": "Iniciar en modo CPU",
+        "ar-EG": "ابدأ في وضع وحدة المعالجة المركزية",
+        "pt-PT": "Iniciar no modo CPU",
+        "ru-RU": "Запуск в режиме процессора",
+        "ja-JP": "CPUモードで起動",
+        "de-DE": "Starten Sie im CPU-Modus",
+        "fr-FR": "Démarrer en mode CPU",
+        "ko-KR": "CPU 모드에서 시작",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(3332-3346)"
+        ],
+        "$id": 4468
+    },
+    "下载最新驱动": {
+        "en-US": "Download the latest driver",
+        "es-ES": "Descargue el controlador más reciente",
+        "ar-EG": "قم بتنزيل أحدث برنامج تشغيل",
+        "pt-PT": "Baixe o driver mais recente",
+        "ru-RU": "Загрузите последнюю версию драйвера",
+        "ja-JP": "最新のドライバーをダウンロードする",
+        "de-DE": "Laden Sie den neuesten Treiber herunter",
+        "fr-FR": "Téléchargez le dernier pilote",
+        "ko-KR": "최신 드라이버 다운로드",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(3473-3483)"
+        ],
+        "$id": 4469
+    },
+    "管理设置": {
+        "en-US": "Manage settings",
+        "es-ES": "Configuración de administración",
+        "ar-EG": "إعدادات الإدارة",
+        "pt-PT": "Definições de gestão",
+        "ru-RU": "Управление настройками",
+        "ja-JP": "管理設定",
+        "de-DE": "Einstellungen verwalten",
+        "fr-FR": "Paramètres de gestion",
+        "ko-KR": "관리 설정",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(3861-3869)"
+        ],
+        "$id": 3837
+    },
+    "去配置 API 密钥": {
+        "en-US": "Go to configure API key",
+        "es-ES": "Configurar la clave de API",
+        "ar-EG": "اذهب لتكوين مفتاح API",
+        "pt-PT": "Configurar a chave da API",
+        "ru-RU": "Настроить API-ключ",
+        "ja-JP": "APIキーを設定しに行く",
+        "de-DE": "API-Schlüssel konfigurieren",
+        "fr-FR": "Aller configurer la clé API",
+        "ko-KR": "API 키를 구성하러 가기",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(3952-3966)"
+        ],
+        "$id": 4357
+    },
+    "管理模型": {
+        "en-US": "Management Model\r",
+        "es-ES": "Modelo de gestión",
+        "ar-EG": "نموذج الإدارة",
+        "pt-PT": "Modelo de Gestão",
+        "ru-RU": "Модель управления",
+        "ja-JP": "管理モデル",
+        "de-DE": "Verwaltungsmodell",
+        "fr-FR": "Modèle de gestion\r",
+        "ko-KR": "관리 모델",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(4087-4095)"
+        ],
+        "$id": 3841
+    },
+    "重试启动": {
+        "en-US": "Retry startup",
+        "es-ES": "Reintentar inicio",
+        "ar-EG": "أعد محاولة بدء التشغيل",
+        "pt-PT": "Tentar novamente a inicialização",
+        "ru-RU": "Повторить запуск",
+        "ja-JP": "起動を再試行する",
+        "de-DE": "Versuchen Sie den Start erneut",
+        "fr-FR": "Réessayez le démarrage",
+        "ko-KR": "시동 재시도",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(4394-4402)"
+        ],
+        "$id": 4470
+    },
+    "查看设置": {
+        "en-US": "View settings",
+        "es-ES": "Ver configuración",
+        "ar-EG": "عرض الإعدادات",
+        "pt-PT": "Ver configurações",
+        "ru-RU": "Посмотреть настройки",
+        "ja-JP": "設定を表示する",
+        "de-DE": "Einstellungen anzeigen",
+        "fr-FR": "Afficher les paramètres",
+        "ko-KR": "설정 보기",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(4634-4642)"
+        ],
+        "$id": 4471
+    },
+    "错误详情": {
+        "en-US": "Error details",
+        "es-ES": "Detalles del error",
+        "ar-EG": "تفاصيل الخطأ",
+        "pt-PT": "Detalhes do erro",
+        "ru-RU": "Подробности ошибки",
+        "ja-JP": "エラーの詳細",
+        "de-DE": "Fehlerdetails",
+        "fr-FR": "Détails de l'erreur",
+        "ko-KR": "오류 세부정보",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(6516-6524)"
+        ],
+        "$id": 4472
+    },
+    "详细信息: ": {
+        "en-US": "Details:\r",
+        "es-ES": "Información detallada: ",
+        "ar-EG": "تفاصيل:",
+        "pt-PT": "Detalhes:",
+        "ru-RU": "Подробная информация:",
+        "ja-JP": "詳細：",
+        "de-DE": "Details:",
+        "fr-FR": "Détails :\r",
+        "ko-KR": "자세한 정보:",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(6853-6863)"
+        ],
+        "$id": 3851
+    },
+    "系统诊断信息": {
+        "en-US": "System diagnostic information",
+        "es-ES": "Información de diagnóstico del sistema",
+        "ar-EG": "معلومات تشخيص النظام",
+        "pt-PT": "Informações de diagnóstico do sistema",
+        "ru-RU": "Диагностическая информация системы",
+        "ja-JP": "システム診断情報",
+        "de-DE": "Informationen zur Systemdiagnose",
+        "fr-FR": "Informations de diagnostic du système",
+        "ko-KR": "시스템 진단 정보",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(7360-7370)"
+        ],
+        "$id": 4473
+    },
+    "系统内存": {
+        "en-US": "system memory",
+        "es-ES": "memoria del sistema",
+        "ar-EG": "ذاكرة النظام",
+        "pt-PT": "memória do sistema",
+        "ru-RU": "системная память",
+        "ja-JP": "システムメモリ",
+        "de-DE": "Systemspeicher",
+        "fr-FR": "mémoire système",
+        "ko-KR": "시스템 메모리",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(7671-7679)"
+        ],
+        "$id": 4474
+    },
+    "可用显存": {
+        "en-US": "Available video memory",
+        "es-ES": "Memoria de vídeo disponible",
+        "ar-EG": "ذاكرة الفيديو المتاحة",
+        "pt-PT": "Memória de vídeo disponível",
+        "ru-RU": "Доступная видеопамять",
+        "ja-JP": "利用可能なビデオメモリ",
+        "de-DE": "Verfügbarer Videospeicher",
+        "fr-FR": "Mémoire vidéo disponible",
+        "ko-KR": "사용 가능한 비디오 메모리",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(8026-8034)"
+        ],
+        "$id": 4475
+    },
+    "模型文件": {
+        "en-US": "model file",
+        "es-ES": "archivo de modelo",
+        "ar-EG": "ملف النموذج",
+        "pt-PT": "arquivo de modelo",
+        "ru-RU": "файл модели",
+        "ja-JP": "モデルファイル",
+        "de-DE": "Modelldatei",
+        "fr-FR": "fichier modèle",
+        "ko-KR": "모델 파일",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(8384-8392)"
+        ],
+        "$id": 4476
+    },
+    "存在": {
+        "en-US": "Exists",
+        "es-ES": "Existe",
+        "ar-EG": "موجود",
+        "pt-PT": "Existe",
+        "ru-RU": "Существует",
+        "ja-JP": "存在する",
+        "de-DE": "Vorhanden",
+        "fr-FR": "Existant",
+        "ko-KR": "존재함",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(8620-8626)"
+        ],
+        "$id": 3856
+    },
+    "缺失": {
+        "en-US": "Missing",
+        "es-ES": "Falta",
+        "ar-EG": "مفقود",
+        "pt-PT": "Em falta",
+        "ru-RU": "Отсутствует",
+        "ja-JP": "ない",
+        "de-DE": "Fehlt",
+        "fr-FR": "Manquant",
+        "ko-KR": "누락됨",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(8630-8636)"
+        ],
+        "$id": 3857
+    },
+    "端口状态": {
+        "en-US": "port status",
+        "es-ES": "estado del puerto",
+        "ar-EG": "حالة الميناء",
+        "pt-PT": "estado da porta",
+        "ru-RU": "статус порта",
+        "ja-JP": "ポートステータス",
+        "de-DE": "Portstatus",
+        "fr-FR": "statut du port",
+        "ko-KR": "포트 상태",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(8898-8906)"
+        ],
+        "$id": 4477
+    },
+    "可用": {
+        "en-US": "Available",
+        "es-ES": "Disponible",
+        "ar-EG": "متاح",
+        "pt-PT": "Disponível",
+        "ru-RU": "Доступен",
+        "ja-JP": "利用可能",
+        "de-DE": "Verfügbar",
+        "fr-FR": "Disponible",
+        "ko-KR": "사용 가능",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(9130-9136)"
+        ],
+        "$id": 3859
+    },
+    "被占用": {
+        "en-US": "Occupied",
+        "es-ES": "Ocupado",
+        "ar-EG": "مشغول",
+        "pt-PT": "Ocupada",
+        "ru-RU": "Занят",
+        "ja-JP": "占領されている",
+        "de-DE": "Belegt",
+        "fr-FR": "Occupé",
+        "ko-KR": "사용 중",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(9140-9147)"
+        ],
+        "$id": 3860
+    },
+    "网络连接": {
+        "en-US": "network connection",
+        "es-ES": "conexión de red",
+        "ar-EG": "اتصال الشبكة",
+        "pt-PT": "conexão de rede",
+        "ru-RU": "сетевое соединение",
+        "ja-JP": "ネットワーク接続",
+        "de-DE": "Netzwerkverbindung",
+        "fr-FR": "connexion réseau",
+        "ko-KR": "네트워크 연결",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(9415-9423)"
+        ],
+        "$id": 4478
+    },
+    "正常": {
+        "en-US": "Normal",
+        "es-ES": "Normal",
+        "ar-EG": "طبيعي",
+        "pt-PT": "Normal",
+        "ru-RU": "Нормальное",
+        "ja-JP": "普通",
+        "de-DE": "Normal",
+        "fr-FR": "Normale",
+        "ko-KR": "정상",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(9659-9665)"
+        ],
+        "$id": 3862
+    },
+    "异常": {
+        "en-US": "Abnormal",
+        "es-ES": "Anómalo",
+        "ar-EG": "غير طبيعي",
+        "pt-PT": "Anormal",
+        "ru-RU": "Аномальное",
+        "ja-JP": "異常な",
+        "de-DE": "Fehlerhaft",
+        "fr-FR": "Anormale",
+        "ko-KR": "비정상",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(9669-9675)"
+        ],
+        "$id": 3863
+    },
+    "建议解决方案": {
+        "en-US": "Suggested solution",
+        "es-ES": "Solución recomendada",
+        "ar-EG": "الحلول المقترحة",
+        "pt-PT": "Solução recomendada",
+        "ru-RU": "Рекомендуемое решение",
+        "ja-JP": "提案される解決策",
+        "de-DE": "Empfohlene Lösung",
+        "fr-FR": "Solution recommandée",
+        "ko-KR": "권장 해결 방안",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(10088-10098)"
+        ],
+        "$id": 3864
+    },
+    "忽略错误": {
+        "en-US": "Ignore error",
+        "es-ES": "Ignorar error",
+        "ar-EG": "تجاهل الخطأ",
+        "pt-PT": "Ignorar erro",
+        "ru-RU": "Игнорировать ошибку",
+        "ja-JP": "エラーを無視する",
+        "de-DE": "Fehler ignorieren",
+        "fr-FR": "Ignorer l'erreur",
+        "ko-KR": "오류 무시",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(10968-10976)"
+        ],
+        "$id": 3866
+    },
+    "关闭": {
+        "en-US": "Close",
+        "es-ES": "Cerrar",
+        "ar-EG": "إغلاق",
+        "pt-PT": "Fechar",
+        "ru-RU": "Закрыть",
+        "ja-JP": "閉鎖",
+        "de-DE": "Schließen",
+        "fr-FR": "Fermer",
+        "ko-KR": "닫기",
+        "$files": [
+            "renderer/components/ai/AIServiceErrorDialog.tsx(11137-11143)"
+        ],
+        "$id": 3867
+    }
+}

@@ -1,0 +1,200 @@
+{
+    "IPC 接口不可用: modelDownload.checkDownloadStatus": {
+        "en-US": "IPC interface unavailable: modelDownload.checkDownloadStatus",
+        "es-ES": "Interfaz IPC no disponible: modelDownload.checkDownloadStatus",
+        "ar-EG": "واجهة IPC غير متاحة: modelDownload.checkDownloadStatus",
+        "pt-PT": "Interface IPC indisponível: modelDownload.checkDownloadStatus",
+        "ru-RU": "IPC-интерфейс недоступен: modelDownload.checkDownloadStatus",
+        "ja-JP": "IPC インターフェースが利用できません: modelDownload.checkDownloadStatus",
+        "de-DE": "IPC-Schnittstelle nicht verfügbar: modelDownload.checkDownloadStatus",
+        "fr-FR": "Interface IPC indisponible : modelDownload.checkDownloadStatus",
+        "ko-KR": "IPC 인터페이스를 사용할 수 없습니다: modelDownload.checkDownloadStatus",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(4102-4150)"
+        ],
+        "$id": 5435
+    },
+    "IPC 接口不可用: ollama.pullModel": {
+        "en-US": "IPC interface unavailable: ollama.pullModel",
+        "es-ES": "La interfaz IPC no está disponible: ollama.pullModel",
+        "ar-EG": "واجهة IPC غير متوفرة: ollama.pullModel",
+        "pt-PT": "Interface IPC não disponível: ollama.pullModel",
+        "ru-RU": "Интерфейс IPC недоступен: ollama.pullModel",
+        "ja-JP": "IPC インターフェースが利用できません: ollama.pullModel",
+        "de-DE": "IPC-Schnittstelle nicht verfügbar: ollama.pullModel",
+        "fr-FR": "L'interface IPC n'est pas disponible : ollama.pullModel",
+        "ko-KR": "IPC 인터페이스를 사용할 수 없음: ollama.pullModel",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(5858-5889)"
+        ],
+        "$id": 2813
+    },
+    "拉取 Ollama 模型失败": {
+        "en-US": "Failed to pull Ollama model",
+        "es-ES": "Error al extraer el modelo Ollama",
+        "ar-EG": "فشل سحب نموذج Ollama",
+        "pt-PT": "Falha ao puxar o modelo Ollama",
+        "ru-RU": "Не удалось загрузить модель Ollama",
+        "ja-JP": "Ollama モデルのプルに失敗しました",
+        "de-DE": "Fehler beim Herunterladen des Ollama-Modells",
+        "fr-FR": "Échec du téléchargement du modèle Ollama",
+        "ko-KR": "Ollama 모델을 가져오지 못했습니다",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(6156-6174)"
+        ],
+        "$id": 2814
+    },
+    "IPC 接口不可用: modelDownload.startDownload": {
+        "en-US": "IPC interface unavailable: modelDownload.startDownload",
+        "es-ES": "Interfaz IPC no disponible: modelDownload.startDownload",
+        "ar-EG": "واجهة IPC غير متاحة: modelDownload.startDownload",
+        "pt-PT": "Interface IPC indisponível: modelDownload.startDownload",
+        "ru-RU": "IPC-интерфейс недоступен: modelDownload.startDownload",
+        "ja-JP": "IPC インターフェースが利用できません: modelDownload.startDownload",
+        "de-DE": "IPC-Schnittstelle nicht verfügbar: modelDownload.startDownload",
+        "fr-FR": "Interface IPC indisponible : modelDownload.startDownload",
+        "ko-KR": "IPC 인터페이스를 사용할 수 없습니다: modelDownload.startDownload",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(6747-6789)"
+        ],
+        "$id": 5436
+    },
+    "Ollama 未安装。如果已安装，请试着重启萤核智能文件夹，以再次检测": {
+        "en-US": "Ollama is not installed. If it is already installed, please try restarting the Firecore Smart Folder to detect it again.",
+        "es-ES": "Ollama no está instalado. Si ya está instalado, intente reiniciar Firecore Smart Folder para detectarlo nuevamente.",
+        "ar-EG": "لم يتم تثبيت أولاما. إذا كان مثبتًا بالفعل، فيرجى محاولة إعادة تشغيل Firecore Smart Folder لاكتشافه مرة أخرى.",
+        "pt-PT": "Ollama não está instalado. Se já estiver instalado, tente reiniciar o Firecore Smart Folder para detectá-lo novamente.",
+        "ru-RU": "Оллама не установлена. Если она уже установлена, попробуйте перезапустить смарт-папку Firecore, чтобы обнаружить ее снова.",
+        "ja-JP": "オラマはインストールされていません。すでにインストールされている場合は、Firecore スマート フォルダーを再起動して再度検出してください。",
+        "de-DE": "Ollama ist nicht installiert. Wenn es bereits installiert ist, versuchen Sie bitte, den Firecore Smart Folder neu zu starten, um es erneut zu erkennen.",
+        "fr-FR": "Ollama n'est pas installé. S'il est déjà installé, essayez de redémarrer Firecore Smart Folder pour le détecter à nouveau.",
+        "ko-KR": "올라마가 설치되지 않았습니다. 이미 설치되어 있는 경우 Firecore Smart Folder를 다시 시작하여 다시 검색해 보세요.",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(7547-7586)"
+        ],
+        "$id": 3294
+    },
+    "开始下载失败: {message}": {
+        "en-US": "Failed to start download: {message}",
+        "es-ES": "No se pudo iniciar la descarga: {message}",
+        "ar-EG": "فشل بدء التنزيل: {message}",
+        "pt-PT": "Falha ao iniciar o download: {message}",
+        "ru-RU": "Не удалось начать загрузку: {message}",
+        "ja-JP": "ダウンロードを開始できませんでした: {message}",
+        "de-DE": "Download konnte nicht gestartet werden: {message}",
+        "fr-FR": "Échec du démarrage du téléchargement : {message}",
+        "ko-KR": "다운로드 시작 실패: {message}",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(7616-7637)"
+        ],
+        "$id": 3309
+    },
+    "下载失败": {
+        "en-US": "Download failed",
+        "es-ES": "Error al descargar",
+        "ar-EG": "فشل التنزيل",
+        "pt-PT": "Falha na transferência",
+        "ru-RU": "Ошибка загрузки",
+        "ja-JP": "ダウンロードに失敗しました",
+        "de-DE": "Download fehlgeschlagen",
+        "fr-FR": "Échec du téléchargement",
+        "ko-KR": "다운로드 실패",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(12153-12161)",
+            "renderer/hooks/use-model-download.ts(12319-12327)",
+            "renderer/hooks/use-model-download.ts(12517-12525)",
+            "renderer/hooks/use-model-download.ts(14474-14482)"
+        ],
+        "$id": 5437
+    },
+    "下载出错: {message}": {
+        "en-US": "Download error: {message}",
+        "es-ES": "Error de descarga: {message}",
+        "ar-EG": "خطأ في التنزيل: {message}",
+        "pt-PT": "Erro de download: {message}",
+        "ru-RU": "Ошибка загрузки: {message}",
+        "ja-JP": "ダウンロード エラー: {message}",
+        "de-DE": "Download-Fehler: {message}",
+        "fr-FR": "Erreur de téléchargement : {message}",
+        "ko-KR": "다운로드 오류: {message}",
+        "$files": [
+            "renderer/hooks/use-model-download.ts(14730-14749)"
+        ],
+        "$id": 3315
+    },
+    "质量评分": {
+        "en-US": "Quality rating",
+        "es-ES": "Puntuación de calidad",
+        "ar-EG": "تقييم الجودة",
+        "pt-PT": "Avaliação de qualidade",
+        "ru-RU": "Оценка качества",
+        "ja-JP": "品質スコア",
+        "de-DE": "Qualitätsbewertung",
+        "fr-FR": "Score de qualité",
+        "ko-KR": "품질 평가 점수",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(891-899)"
+        ],
+        "$id": 5438
+    },
+    "描述": {
+        "en-US": "Description",
+        "es-ES": "Descripción",
+        "ar-EG": "الوصف",
+        "pt-PT": "Descrição",
+        "ru-RU": "Описание",
+        "ja-JP": "説明",
+        "de-DE": "Beschreibung",
+        "fr-FR": "Description",
+        "ko-KR": "설명",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(922-928)"
+        ],
+        "$id": 5439
+    },
+    "标签": {
+        "en-US": "Tags",
+        "es-ES": "Etiquetas",
+        "ar-EG": "الوسوم",
+        "pt-PT": "Etiquetas",
+        "ru-RU": "Теги",
+        "ja-JP": "タグ",
+        "de-DE": "Tags",
+        "fr-FR": "Étiquettes",
+        "ko-KR": "태그",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(944-950)"
+        ],
+        "$id": 5440
+    },
+    "作者": {
+        "en-US": "Author",
+        "es-ES": "Autor",
+        "ar-EG": "المؤلف",
+        "pt-PT": "Autor",
+        "ru-RU": "Автор",
+        "ja-JP": "著者",
+        "de-DE": "Autor",
+        "fr-FR": "Auteur",
+        "ko-KR": "작성자",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(968-974)"
+        ],
+        "$id": 5441
+    },
+    "语言": {
+        "en-US": "Language",
+        "es-ES": "Idioma",
+        "ar-EG": "اللغة",
+        "pt-PT": "Idioma",
+        "ru-RU": "Язык",
+        "ja-JP": "言語",
+        "de-DE": "Sprache",
+        "fr-FR": "Langue",
+        "ko-KR": "언어",
+        "$files": [
+            "renderer/hooks/useFileDisplaySettings.ts(994-1000)"
+        ],
+        "$id": 5442
+    }
+}
