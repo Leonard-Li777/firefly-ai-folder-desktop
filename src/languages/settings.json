@@ -1,0 +1,120 @@
+{
+  "languages": [
+    {
+      "name": "zh-CN",
+      "title": "简体中文",
+      "nativeTitle": "简体中文",
+      "active": true,
+      "default": true
+    },
+    {
+      "name": "en-US",
+      "title": "English",
+      "nativeTitle": "English (United States)"
+    },
+    {
+      "name": "es-ES",
+      "title": "Español",
+      "nativeTitle": "Español (España)"
+    },
+    {
+      "name": "ar-EG",
+      "title": "العربية",
+      "nativeTitle": "العربية (مصر)"
+    },
+    {
+      "name": "pt-PT",
+      "title": "Português",
+      "nativeTitle": "Português (Portugal)"
+    },
+    {
+      "name": "ru-RU",
+      "title": "Русский",
+      "nativeTitle": "Русский (Россия)"
+    },
+    {
+      "name": "ja-JP",
+      "title": "日本語",
+      "nativeTitle": "日本語 (日本)"
+    },
+    {
+      "name": "de-DE",
+      "title": "Deutsch",
+      "nativeTitle": "Deutsch (Deutschland)"
+    },
+    {
+      "name": "fr-FR",
+      "title": "Français",
+      "nativeTitle": "Français (France)"
+    },
+    {
+      "name": "ko-KR",
+      "title": "한국어",
+      "nativeTitle": "한국어 (대한민국)"
+    }
+  ],
+  "namespaces": {
+    "file-dimension-source": "src/electron/config/file-dimension-source.ts",
+    "adapters": "src/electron/adapters",
+    "config": "src/electron/config",
+    "main": "src/electron/main",
+    "services": "src/electron/services",
+    "runtime-ai": "src/electron/runtime-services/ai",
+    "runtime-analysis": "src/electron/runtime-services/analysis",
+    "runtime-analysis-queue": "src/electron/runtime-services/analysis-queue-service",
+    "runtime-error": "src/electron/runtime-services/error",
+    "runtime-filesystem": "src/electron/runtime-services/filesystem",
+    "runtime-ipc": "src/electron/runtime-services/ipc",
+    "runtime-llama": "src/electron/runtime-services/llama",
+    "runtime-system": "src/electron/runtime-services/system",
+    "runtime-utils": "src/electron/runtime-services/utils",
+    "welcome": "src/renderer/components/welcome",
+    "ai": "src/renderer/components/ai",
+    "common": "src/renderer/components/common",
+    "invitation": "src/renderer/components/invitation",
+    "download": "src/renderer/components/download",
+    "license": "src/renderer/components/license",
+    "preview": "src/renderer/components/preview",
+    "settings": "src/renderer/components/settings",
+    "tier": "src/renderer/components/tier",
+    "constants": "src/renderer/constants",
+    "ai-model-settings": "src/renderer/components/settings/ai-model-settings.tsx",
+    "analysis-settings": "src/renderer/components/settings/analysis-settings.tsx",
+    "cloud-model-config-settings": "src/renderer/components/settings/cloud-model-config-settings.tsx",
+    "file-display-settings": "src/renderer/components/settings/file-display-settings.tsx",
+    "interface-settings": "src/renderer/components/settings/interface-settings.tsx",
+    "RescanPreviewDialog": "src/renderer/components/settings/RescanPreviewDialog.tsx",
+    "settings-button": "src/renderer/components/settings/settings-button.tsx",
+    "settings-dialog": "src/renderer/components/settings/settings-dialog.tsx",
+    "settings-navigation": "src/renderer/components/settings/settings-navigation.tsx",
+    "workspace-settings": "src/renderer/components/settings/workspace-settings.tsx",
+    "analysis": "src/renderer/components/analysis",
+    "file-explorer": "src/renderer/components/file-explorer",
+    "file-explorer-AnalyzedDirectory": "src/renderer/components/file-explorer/Organize/index.tsx",
+    "file-explorer-FileDetailsPanel": "src/renderer/components/file-explorer/FileList/index.tsx",
+    "file-explorer-FileList": "src/renderer/components/file-explorer/FileList/index.tsx",
+    "file-explorer-Organize": "src/renderer/components/file-explorer/Organize/index.tsx",
+    "file-explorer-VirtualDirectory": "src/renderer/components/file-explorer/VirtualDirectory/index.tsx",
+    "organize": "src/renderer/components/organize",
+    "ui": "src/renderer/components/ui",
+    "hooks": "src/renderer/hooks",
+    "lib": "src/renderer/lib",
+    "stores": "src/renderer/stores"
+  },
+  "patterns": [
+    "!.md",
+    "!out/**",
+    "!out_build/**",
+    "!public/**",
+    "!scripts/**",
+    "!**/*demo*",
+    "!**/*test*",
+    "!**/*example*",
+    "!**/*.wraper.*"
+  ],
+  "defaultNamespace": "default",
+  "fallbackLanguage": "en-US",
+  "library": false,
+  "debug": false,
+  "autoSet": true
+}

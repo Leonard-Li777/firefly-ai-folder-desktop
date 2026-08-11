@@ -1,0 +1,815 @@
+{
+    "工作目录 \"{}\" 已删除": {
+        "en-US": "Working directory \"{}\" has been deleted",
+        "es-ES": "El directorio de trabajo \"{}\" ha sido eliminado",
+        "ar-EG": "تم حذف دليل العمل \"{}\".",
+        "pt-PT": "O diretório de trabalho \"{}\" foi excluído",
+        "ru-RU": "Рабочий каталог \"{}\" удален.",
+        "ja-JP": "作業ディレクトリ「{}」が削除されました",
+        "de-DE": "Das Arbeitsverzeichnis „{}“ wurde gelöscht",
+        "fr-FR": "Le répertoire de travail \"{}\" a été supprimé",
+        "ko-KR": "작업 디렉터리 \"{}\"이(가) 삭제되었습니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(3807-3824)"
+        ],
+        "$id": 3171
+    },
+    "删除工作目录失败: {}": {
+        "en-US": "Failed to delete working directory: {}",
+        "es-ES": "No se pudo eliminar el directorio de trabajo: {}",
+        "ar-EG": "فشل حذف دليل العمل: {}",
+        "pt-PT": "Falha ao excluir o diretório de trabalho: {}",
+        "ru-RU": "Не удалось удалить рабочий каталог: {}",
+        "ja-JP": "作業ディレクトリの削除に失敗しました: {}",
+        "de-DE": "Arbeitsverzeichnis konnte nicht gelöscht werden: {}",
+        "fr-FR": "Échec de la suppression du répertoire de travail : {}",
+        "ko-KR": "작업 디렉터리 삭제 실패: {}",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(3935-3951)"
+        ],
+        "$id": 3172
+    },
+    "目录 \"{}\" 已重置为未分析状态": {
+        "en-US": "Directory \"{}\" has been reset to unparsed state",
+        "es-ES": "El directorio \"{}\" se ha restablecido al estado sin analizar",
+        "ar-EG": "تمت إعادة تعيين الدليل \"{}\" إلى الحالة غير المحللة",
+        "pt-PT": "O diretório \"{}\" foi redefinido para o estado não analisado",
+        "ru-RU": "Каталог \"{}\" был сброшен в неразобранное состояние.",
+        "ja-JP": "ディレクトリ「{}」は解析されていない状態にリセットされました",
+        "de-DE": "Das Verzeichnis „{}“ wurde auf den ungeparsten Zustand zurückgesetzt",
+        "fr-FR": "Le répertoire \"{}\" a été réinitialisé à l'état non analysé",
+        "ko-KR": "\"{}\" 디렉터리가 구문 분석되지 않은 상태로 재설정되었습니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(5039-5060)"
+        ],
+        "$id": 3173
+    },
+    "重置目录失败: {}": {
+        "en-US": "Failed to reset directory: {}",
+        "es-ES": "No se pudo restablecer el directorio: {}",
+        "ar-EG": "فشل إعادة تعيين الدليل: {}",
+        "pt-PT": "Falha ao redefinir o diretório: {}",
+        "ru-RU": "Не удалось сбросить каталог: {}",
+        "ja-JP": "ディレクトリをリセットできませんでした: {}",
+        "de-DE": "Verzeichnis konnte nicht zurückgesetzt werden: {}",
+        "fr-FR": "Échec de la réinitialisation du répertoire : {}",
+        "ko-KR": "디렉터리를 재설정하지 못했습니다: {}",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(5171-5185)"
+        ],
+        "$id": 3174
+    },
+    "当前目录无变更": {
+        "en-US": "No changes to the current directory",
+        "es-ES": "No hay cambios en el directorio actual.",
+        "ar-EG": "لا توجد تغييرات على الدليل الحالي",
+        "pt-PT": "Nenhuma alteração no diretório atual",
+        "ru-RU": "Никаких изменений в текущем каталоге",
+        "ja-JP": "現在のディレクトリに変更はありません",
+        "de-DE": "Keine Änderungen am aktuellen Verzeichnis",
+        "fr-FR": "Aucune modification dans le répertoire actuel",
+        "ko-KR": "현재 디렉터리에는 변경 사항이 없습니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(6309-6320)"
+        ],
+        "$id": 3175
+    },
+    "重新扫描API不可用\\n目录: {}": {
+        "en-US": "Rescan API is not available\\nDirectory: {}",
+        "es-ES": "La API de volver a escanear no está disponible\\nDirectorio: {}",
+        "ar-EG": "واجهة برمجة التطبيقات لإعادة الفحص غير متوفرة\\nالدليل: {}",
+        "pt-PT": "A API Rescan não está disponível\\nDiretório: {}",
+        "ru-RU": "API повторного сканирования недоступен\\nКаталог: {}",
+        "ja-JP": "再スキャン API は使用できません\\nディレクトリ: {}",
+        "de-DE": "Die Rescan-API ist nicht verfügbar\\nVerzeichnis: {}",
+        "fr-FR": "L'API de nouvelle analyse n'est pas disponible\\nRépertoire : {}",
+        "ko-KR": "Rescan API를 사용할 수 없습니다.\\n디렉터리: {}",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(6456-6478)"
+        ],
+        "$id": 3176
+    },
+    "重新扫描目录失败: {}": {
+        "en-US": "Failed to rescan directory: {}",
+        "es-ES": "No se pudo volver a escanear el directorio: {}",
+        "ar-EG": "فشلت إعادة فحص الدليل: {}",
+        "pt-PT": "Falha ao verificar novamente o diretório: {}",
+        "ru-RU": "Не удалось повторно просканировать каталог: {}",
+        "ja-JP": "ディレクトリの再スキャンに失敗しました: {}",
+        "de-DE": "Verzeichnis konnte nicht erneut gescannt werden: {}",
+        "fr-FR": "Échec de la nouvelle analyse du répertoire : {}",
+        "ko-KR": "디렉터리를 다시 검색하지 못했습니다: {}",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(6591-6607)"
+        ],
+        "$id": 3177
+    },
+    "未知错误": {
+        "en-US": "Unknown error",
+        "es-ES": "Error desconocido",
+        "ar-EG": "خطأ غير معروف",
+        "pt-PT": "Erro desconhecido",
+        "ru-RU": "Неизвестная ошибка",
+        "ja-JP": "不明なエラー",
+        "de-DE": "Unbekannter Fehler",
+        "fr-FR": "Erreur inconnue",
+        "ko-KR": "알 수 없는 오류",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(7331-7339)"
+        ],
+        "$id": 3392
+    },
+    "加入分析队列失败，请重试": {
+        "en-US": "Failed to join the analysis queue, please try again",
+        "es-ES": "No se ha podido unir a la cola de análisis. Inténtelo de nuevo.",
+        "ar-EG": "فشل الانضمام إلى قائمة التحليل، يرجى إعادة المحاولة",
+        "pt-PT": "Falha ao adicionar à fila de análise, tente novamente",
+        "ru-RU": "Не удалось добавить в очередь анализа, пожалуйста, повторите попытку",
+        "ja-JP": "分析キューへの追加に失敗しました。もう一度お試しください。",
+        "de-DE": "Fehler beim Hinzufügen zur Analyse-Warteschlange, bitte versuchen Sie es erneut",
+        "fr-FR": "L'ajout à la file d'analyse a échoué, veuillez réessayer",
+        "ko-KR": "분석 대기열 추가에 실패했습니다. 다시 시도해 주세요.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(7673-7689)"
+        ],
+        "$id": 3393
+    },
+    "从未扫描": {
+        "en-US": "never scanned",
+        "es-ES": "nunca escaneado",
+        "ar-EG": "لم يتم مسحها ضوئيًا أبدًا",
+        "pt-PT": "nunca digitalizado",
+        "ru-RU": "никогда не сканировал",
+        "ja-JP": "スキャンされたことがない",
+        "de-DE": "nie gescannt",
+        "fr-FR": "jamais scanné",
+        "ko-KR": "스캔한 적 없음",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(8034-8042)",
+            "renderer/components/settings/workspace-settings.tsx(11831-11839)"
+        ],
+        "$id": 3178
+    },
+    "已激活": {
+        "en-US": "Activated",
+        "es-ES": "Activado",
+        "ar-EG": "تفعيلها",
+        "pt-PT": "Ativado",
+        "ru-RU": "Активировано",
+        "ja-JP": "アクティブ化された",
+        "de-DE": "Aktiviert",
+        "fr-FR": "Activé",
+        "ko-KR": "활성화됨",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(8287-8294)"
+        ],
+        "$id": 3179
+    },
+    "加载工作目录...": {
+        "en-US": "Load working directory...",
+        "es-ES": "Cargar directorio de trabajo...",
+        "ar-EG": "تحميل دليل العمل...",
+        "pt-PT": "Carregar diretório de trabalho...",
+        "ru-RU": "Загрузить рабочий каталог...",
+        "ja-JP": "作業ディレクトリをロード...",
+        "de-DE": "Arbeitsverzeichnis laden...",
+        "fr-FR": "Charger le répertoire de travail...",
+        "ko-KR": "작업 디렉토리 로드...",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(8616-8629)"
+        ],
+        "$id": 3180
+    },
+    "工作目录管理": {
+        "en-US": "Working directory management",
+        "es-ES": "Gestión del directorio de trabajo.",
+        "ar-EG": "إدارة دليل العمل",
+        "pt-PT": "Gerenciamento de diretório de trabalho",
+        "ru-RU": "Управление рабочим каталогом",
+        "ja-JP": "作業ディレクトリの管理",
+        "de-DE": "Arbeitsverzeichnisverwaltung",
+        "fr-FR": "Gestion du répertoire de travail",
+        "ko-KR": "작업 디렉토리 관리",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(8795-8805)"
+        ],
+        "$id": 3181
+    },
+    "管理已添加的工作目录，可以删除或重置分析数据": {
+        "en-US": "Manage added working directories and can delete or reset analysis data",
+        "es-ES": "Administre directorios de trabajo agregados y pueda eliminar o restablecer datos de análisis",
+        "ar-EG": "إدارة أدلة العمل المضافة ويمكن حذف أو إعادة تعيين بيانات التحليل",
+        "pt-PT": "Gerencie diretórios de trabalho adicionados e pode excluir ou redefinir dados de análise",
+        "ru-RU": "Управляйте добавленными рабочими каталогами и можете удалять или сбрасывать данные анализа.",
+        "ja-JP": "追加された作業ディレクトリを管理し、分析データを削除またはリセットできます",
+        "de-DE": "Verwalten Sie hinzugefügte Arbeitsverzeichnisse und können Sie Analysedaten löschen oder zurücksetzen",
+        "fr-FR": "Gérer les répertoires de travail ajoutés et supprimer ou réinitialiser les données d'analyse",
+        "ko-KR": "추가된 작업 디렉터리를 관리하고 분석 데이터를 삭제하거나 재설정할 수 있습니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(8880-8906)"
+        ],
+        "$id": 3182
+    },
+    "工作目录列表": {
+        "en-US": "working directory list",
+        "es-ES": "lista del directorio de trabajo",
+        "ar-EG": "قائمة دليل العمل",
+        "pt-PT": "lista de diretórios de trabalho",
+        "ru-RU": "список рабочих каталогов",
+        "ja-JP": "作業ディレクトリのリスト",
+        "de-DE": "Arbeitsverzeichnisliste",
+        "fr-FR": "liste des répertoires de travail",
+        "ko-KR": "작업 디렉토리 목록",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(9500-9510)"
+        ],
+        "$id": 3183
+    },
+    "当前正在监控的目录及其状态": {
+        "en-US": "The directory currently being monitored and its status",
+        "es-ES": "El directorio que se está monitoreando actualmente y su estado.",
+        "ar-EG": "الدليل الذي تتم مراقبته حاليًا وحالته",
+        "pt-PT": "O diretório que está sendo monitorado atualmente e seu status",
+        "ru-RU": "Каталог, который в данный момент отслеживается, и его статус",
+        "ja-JP": "現在監視されているディレクトリとそのステータス",
+        "de-DE": "Das aktuell überwachte Verzeichnis und sein Status",
+        "fr-FR": "Le répertoire actuellement surveillé et son statut",
+        "ko-KR": "현재 모니터링 중인 디렉터리 및 해당 상태",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(9605-9622)"
+        ],
+        "$id": 3184
+    },
+    "刷新": {
+        "en-US": "refresh",
+        "es-ES": "refrescar",
+        "ar-EG": "ينعش",
+        "pt-PT": "atualizar",
+        "ru-RU": "обновить",
+        "ja-JP": "リフレッシュする",
+        "de-DE": "auffrischen",
+        "fr-FR": "rafraîchir",
+        "ko-KR": "새로 고치다",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(9952-9958)"
+        ],
+        "$id": 3185
+    },
+    "暂无工作目录": {
+        "en-US": "No working directory yet",
+        "es-ES": "Aún no hay directorio de trabajo",
+        "ar-EG": "لا يوجد دليل عمل حتى الآن",
+        "pt-PT": "Nenhum diretório de trabalho ainda",
+        "ru-RU": "Пока нет рабочего каталога",
+        "ja-JP": "まだ作業ディレクトリがありません",
+        "de-DE": "Noch kein Arbeitsverzeichnis",
+        "fr-FR": "Pas encore de répertoire de travail",
+        "ko-KR": "아직 작업 디렉터리가 없습니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(10219-10229)"
+        ],
+        "$id": 3186
+    },
+    "请先添加要监控的目录": {
+        "en-US": "Please add the directory to be monitored first",
+        "es-ES": "Por favor agregue el directorio a monitorear primero",
+        "ar-EG": "الرجاء إضافة الدليل المراد مراقبته أولا",
+        "pt-PT": "Por favor, adicione o diretório a ser monitorado primeiro",
+        "ru-RU": "Пожалуйста, сначала добавьте каталог, который будет отслеживаться",
+        "ja-JP": "最初に監視するディレクトリを追加してください",
+        "de-DE": "Bitte fügen Sie zuerst das zu überwachende Verzeichnis hinzu",
+        "fr-FR": "Veuillez d'abord ajouter le répertoire à surveiller",
+        "ko-KR": "먼저 모니터링할 디렉토리를 추가해주세요",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(10275-10289)"
+        ],
+        "$id": 3187
+    },
+    "最后扫描: {}": {
+        "en-US": "Last scan: {}",
+        "es-ES": "Último escaneo: {}",
+        "ar-EG": "الفحص الأخير: {}",
+        "pt-PT": "Última verificação: {}",
+        "ru-RU": "Последнее сканирование: {}",
+        "ja-JP": "最終スキャン: {}",
+        "de-DE": "Letzter Scan: {}",
+        "fr-FR": "Dernière analyse : {}",
+        "ko-KR": "마지막 스캔: {}",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(11758-11770)"
+        ],
+        "$id": 3188
+    },
+    "递归监控: {}": {
+        "en-US": "Recursion monitoring: {}",
+        "es-ES": "Monitoreo de recursividad: {}",
+        "ar-EG": "مراقبة العودية: {}",
+        "pt-PT": "Monitoramento de recursão: {}",
+        "ru-RU": "Мониторинг рекурсии: {}",
+        "ja-JP": "再帰モニタリング: {}",
+        "de-DE": "Rekursionsüberwachung: {}",
+        "fr-FR": "Surveillance de la récursion : {}",
+        "ko-KR": "재귀 모니터링: {}",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(12050-12062)"
+        ],
+        "$id": 3189
+    },
+    "是": {
+        "en-US": "yes",
+        "es-ES": "Sí",
+        "ar-EG": "نعم",
+        "pt-PT": "sim",
+        "ru-RU": "да",
+        "ja-JP": "はい",
+        "de-DE": "Ja",
+        "fr-FR": "Oui",
+        "ko-KR": "예",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(12087-12092)"
+        ],
+        "$id": 3190
+    },
+    "否": {
+        "en-US": "no",
+        "es-ES": "No",
+        "ar-EG": "لا",
+        "pt-PT": "não",
+        "ru-RU": "нет",
+        "ja-JP": "いいえ",
+        "de-DE": "NEIN",
+        "fr-FR": "Non",
+        "ko-KR": "아니요",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(12096-12101)"
+        ],
+        "$id": 3191
+    },
+    "创建时间: {}": {
+        "en-US": "Creation time: {}",
+        "es-ES": "Hora de creación: {}",
+        "ar-EG": "وقت الإنشاء: {}",
+        "pt-PT": "Hora de criação: {}",
+        "ru-RU": "Время создания: {}",
+        "ja-JP": "作成時間: {}",
+        "de-DE": "Erstellungszeit: {}",
+        "fr-FR": "Heure de création : {}",
+        "ko-KR": "생성 시간: {}",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(12147-12159)"
+        ],
+        "$id": 3192
+    },
+    "监听文件变化（新增文件自动加入AI分析队列）": {
+        "en-US": "Monitor file changes (new files are automatically added to the AI ​​analysis queue)",
+        "es-ES": "Supervisar los cambios de archivos (los archivos nuevos se agregan automáticamente a la cola de análisis de IA)",
+        "ar-EG": "مراقبة تغييرات الملف (تتم إضافة الملفات الجديدة تلقائيًا إلى قائمة انتظار تحليل الذكاء الاصطناعي)",
+        "pt-PT": "Monitore alterações de arquivos (novos arquivos são adicionados automaticamente à fila de análise de IA)",
+        "ru-RU": "Мониторинг изменений файлов (новые файлы автоматически добавляются в очередь анализа AI)",
+        "ja-JP": "ファイルの変更を監視（新しいファイルはAI分析キューに自動的に追加されます）",
+        "de-DE": "Dateiänderungen überwachen (neue Dateien werden automatisch zur KI-Analysewarteschlange hinzugefügt)",
+        "fr-FR": "Surveiller les modifications des fichiers (les nouveaux fichiers sont automatiquement ajoutés à la file d'attente d'analyse AI)",
+        "ko-KR": "파일 변경 모니터링(AI 분석 대기열에 새 파일이 자동으로 추가됨)",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(13531-13557)"
+        ],
+        "$id": 3193
+    },
+    "重新扫描目录": {
+        "en-US": "Rescan directory",
+        "es-ES": "Volver a escanear el directorio",
+        "ar-EG": "إعادة فحص الدليل",
+        "pt-PT": "Diretório de nova verificação",
+        "ru-RU": "Пересканировать каталог",
+        "ja-JP": "ディレクトリを再スキャンする",
+        "de-DE": "Verzeichnis erneut scannen",
+        "fr-FR": "Réanalyser le répertoire",
+        "ko-KR": "디렉터리 다시 검색",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(14035-14045)"
+        ],
+        "$id": 3194
+    },
+    "未发现空文件夹": {
+        "en-US": "Empty folder not found",
+        "es-ES": "Carpeta vacía no encontrada",
+        "ar-EG": "لم يتم العثور على مجلد فارغ",
+        "pt-PT": "Pasta vazia não encontrada",
+        "ru-RU": "Пустая папка не найдена",
+        "ja-JP": "空のフォルダーが見つかりません",
+        "de-DE": "Leerer Ordner nicht gefunden",
+        "fr-FR": "Dossier vide introuvable",
+        "ko-KR": "빈 폴더를 찾을 수 없습니다",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(14935-14946)"
+        ],
+        "$id": 3195
+    },
+    "扫描失败: {}": {
+        "en-US": "Scan failed: {}",
+        "es-ES": "Error de escaneo: {}",
+        "ar-EG": "فشل الفحص: {}",
+        "pt-PT": "Falha na verificação: {}",
+        "ru-RU": "Сканирование не удалось: {}",
+        "ja-JP": "スキャンに失敗しました: {}",
+        "de-DE": "Scan fehlgeschlagen: {}",
+        "fr-FR": "Échec de l'analyse : {}",
+        "ko-KR": "스캔 실패: {}",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(15378-15390)"
+        ],
+        "$id": 3196
+    },
+    "清理空文件夹": {
+        "en-US": "Clean empty folders",
+        "es-ES": "Limpiar carpetas vacías",
+        "ar-EG": "تنظيف المجلدات الفارغة",
+        "pt-PT": "Limpe pastas vazias",
+        "ru-RU": "Очистите пустые папки",
+        "ja-JP": "空のフォルダーをクリーンアップする",
+        "de-DE": "Bereinigen Sie leere Ordner",
+        "fr-FR": "Nettoyer les dossiers vides",
+        "ko-KR": "빈 폴더 정리",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(15553-15563)"
+        ],
+        "$id": 3197
+    },
+    "重置为未分析状态": {
+        "en-US": "Reset to unanalyzed state",
+        "es-ES": "Restablecer al estado no analizado",
+        "ar-EG": "إعادة التعيين إلى الحالة غير المحللة",
+        "pt-PT": "Redefinir para estado não analisado",
+        "ru-RU": "Сброс в непроанализированное состояние",
+        "ja-JP": "未解析状態にリセット",
+        "de-DE": "Zurücksetzen auf den nicht analysierten Zustand",
+        "fr-FR": "Réinitialiser à l'état non analysé",
+        "ko-KR": "분석되지 않은 상태로 재설정",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(15985-15997)"
+        ],
+        "$id": 3198
+    },
+    "删除工作目录": {
+        "en-US": "Delete working directory",
+        "es-ES": "Eliminar directorio de trabajo",
+        "ar-EG": "حذف دليل العمل",
+        "pt-PT": "Excluir diretório de trabalho",
+        "ru-RU": "Удалить рабочий каталог",
+        "ja-JP": "作業ディレクトリを削除する",
+        "de-DE": "Arbeitsverzeichnis löschen",
+        "fr-FR": "Supprimer le répertoire de travail",
+        "ko-KR": "작업 디렉터리 삭제",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(16419-16429)"
+        ],
+        "$id": 3199
+    },
+    "操作说明": {
+        "en-US": "Operating Instructions",
+        "es-ES": "Instrucciones de funcionamiento",
+        "ar-EG": "تعليمات التشغيل",
+        "pt-PT": "Instruções de operação",
+        "ru-RU": "Инструкция по эксплуатации",
+        "ja-JP": "取扱説明書",
+        "de-DE": "Bedienungsanleitung",
+        "fr-FR": "Mode d'emploi",
+        "ko-KR": "작동 지침",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(16898-16906)"
+        ],
+        "$id": 3200
+    },
+    "重新扫描:": {
+        "en-US": "Rescan:",
+        "es-ES": "Volver a escanear:",
+        "ar-EG": "إعادة المسح:",
+        "pt-PT": "Digitalizar novamente:",
+        "ru-RU": "Повторное сканирование:",
+        "ja-JP": "再スキャン:",
+        "de-DE": "Erneut scannen:",
+        "fr-FR": "Nouvelle analyse :",
+        "ko-KR": "다시 검색:",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(17166-17175)"
+        ],
+        "$id": 3201
+    },
+    "重新扫描目录中的文件，检测新增、删除或修改的文件": {
+        "en-US": "Rescan the files in the directory to detect new, deleted or modified files",
+        "es-ES": "Vuelva a escanear los archivos en el directorio para detectar archivos nuevos, eliminados o modificados",
+        "ar-EG": "أعد فحص الملفات الموجودة في الدليل لاكتشاف الملفات الجديدة أو المحذوفة أو المعدلة",
+        "pt-PT": "Verifique novamente os arquivos no diretório para detectar arquivos novos, excluídos ou modificados",
+        "ru-RU": "Повторно просканируйте файлы в каталоге, чтобы обнаружить новые, удаленные или измененные файлы.",
+        "ja-JP": "ディレクトリ内のファイルを再スキャンして、新しいファイル、削除されたファイル、または変更されたファイルを検出します",
+        "de-DE": "Scannen Sie die Dateien im Verzeichnis erneut, um neue, gelöschte oder geänderte Dateien zu erkennen",
+        "fr-FR": "Analysez à nouveau les fichiers du répertoire pour détecter les fichiers nouveaux, supprimés ou modifiés",
+        "ko-KR": "디렉터리의 파일을 다시 검사하여 새 파일, 삭제된 파일 또는 수정된 파일을 검색합니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(17268-17296)"
+        ],
+        "$id": 3202
+    },
+    "清理空文件夹:": {
+        "en-US": "Clean empty folders:",
+        "es-ES": "Limpiar carpetas vacías:",
+        "ar-EG": "تنظيف المجلدات الفارغة:",
+        "pt-PT": "Limpe pastas vazias:",
+        "ru-RU": "Очистите пустые папки:",
+        "ja-JP": "空のフォルダーをクリーンアップします。",
+        "de-DE": "Leere Ordner bereinigen:",
+        "fr-FR": "Nettoyer les dossiers vides :",
+        "ko-KR": "빈 폴더 정리:",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(17573-17584)"
+        ],
+        "$id": 3203
+    },
+    "扫描并删除工作目录中的空文件夹，支持树形预览和批量删除": {
+        "en-US": "Scan and delete empty folders in the working directory, support tree preview and batch deletion",
+        "es-ES": "Escanee y elimine carpetas vacías en el directorio de trabajo, admita vista previa del árbol y eliminación por lotes",
+        "ar-EG": "قم بمسح وحذف المجلدات الفارغة في دليل العمل، ودعم معاينة الشجرة وحذف الدُفعات",
+        "pt-PT": "Digitalize e exclua pastas vazias no diretório de trabalho, suporte para visualização em árvore e exclusão em lote",
+        "ru-RU": "Сканирование и удаление пустых папок в рабочем каталоге, поддержка предварительного просмотра дерева и пакетного удаления.",
+        "ja-JP": "作業ディレクトリ内の空のフォルダーをスキャンして削除し、ツリーのプレビューとバッチ削除をサポートします。",
+        "de-DE": "Leere Ordner im Arbeitsverzeichnis scannen und löschen, Baumvorschau und Stapellöschung unterstützen",
+        "fr-FR": "Analyser et supprimer les dossiers vides dans le répertoire de travail, prendre en charge l'aperçu de l'arborescence et la suppression par lots",
+        "ko-KR": "작업 디렉터리의 빈 폴더를 검색 및 삭제하고 트리 미리보기 및 일괄 삭제를 지원합니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(17677-17708)"
+        ],
+        "$id": 3204
+    },
+    "重置:": {
+        "en-US": "Reset:",
+        "es-ES": "Reiniciar:",
+        "ar-EG": "إعادة ضبط:",
+        "pt-PT": "Reiniciar:",
+        "ru-RU": "Перезагрузить:",
+        "ja-JP": "リセット:",
+        "de-DE": "Zurücksetzen:",
+        "fr-FR": "Réinitialiser:",
+        "ko-KR": "다시 놓기:",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(17984-17991)"
+        ],
+        "$id": 3205
+    },
+    "删除该目录的所有AI分析结果和标签，但保留原始文件。目录将重置为未分析状态": {
+        "en-US": "Delete all AI analysis results and tags for this directory, but keep the original files.Directory will be reset to unanalyzed state",
+        "es-ES": "Elimine todos los resultados y etiquetas del análisis de IA para este directorio, pero conserve los archivos originales.El directorio se restablecerá al estado no analizado",
+        "ar-EG": "احذف جميع نتائج وعلامات تحليل الذكاء الاصطناعي لهذا الدليل، ولكن احتفظ بالملفات الأصلية.سيتم إعادة تعيين الدليل إلى الحالة غير المُحللة",
+        "pt-PT": "Exclua todos os resultados e tags da análise de IA deste diretório, mas mantenha os arquivos originais.O diretório será redefinido para o estado não analisado",
+        "ru-RU": "Удалите все результаты и теги анализа AI для этого каталога, но сохраните исходные файлы.Каталог будет сброшен в непроанализированное состояние.",
+        "ja-JP": "このディレクトリのすべての AI 分析結果とタグを削除しますが、元のファイルは保持します。ディレクトリは未分析の状態にリセットされます",
+        "de-DE": "Löschen Sie alle AI-Analyseergebnisse und Tags für dieses Verzeichnis, behalten Sie jedoch die Originaldateien.Das Verzeichnis wird auf den nicht analysierten Zustand zurückgesetzt",
+        "fr-FR": "Supprimez tous les résultats et balises d’analyse AI pour ce répertoire, mais conservez les fichiers d’origine.Le répertoire sera réinitialisé à l'état non analysé",
+        "ko-KR": "이 디렉터리의 모든 AI 분석 결과와 태그를 삭제하고 원본 파일은 유지하세요.디렉터리가 분석되지 않은 상태로 재설정됩니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(18084-18125)"
+        ],
+        "$id": 3206
+    },
+    "删除:": {
+        "en-US": "delete:",
+        "es-ES": "borrar:",
+        "ar-EG": "يمسح:",
+        "pt-PT": "excluir:",
+        "ru-RU": "удалить:",
+        "ja-JP": "消去：",
+        "de-DE": "löschen:",
+        "fr-FR": "supprimer:",
+        "ko-KR": "삭제:",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(18402-18409)"
+        ],
+        "$id": 3207
+    },
+    "完全删除工作目录及其所有相关数据，包括文件信息、分析结果、标签等。此操作不可逆": {
+        "en-US": "Completely delete the working directory and all related data, including file information, analysis results, tags, etc.This operation is irreversible",
+        "es-ES": "Elimine completamente el directorio de trabajo y todos los datos relacionados, incluida la información del archivo, los resultados del análisis, las etiquetas, etc.Esta operación es irreversible.",
+        "ar-EG": "احذف دليل العمل بالكامل وجميع البيانات ذات الصلة، بما في ذلك معلومات الملف ونتائج التحليل والعلامات وما إلى ذلك.هذه العملية لا رجعة فيها",
+        "pt-PT": "Exclua completamente o diretório de trabalho e todos os dados relacionados, incluindo informações do arquivo, resultados de análises, tags, etc.Esta operação é irreversível",
+        "ru-RU": "Полностью удалите рабочий каталог и все связанные с ним данные, включая информацию о файлах, результаты анализа, теги и т. д. Эта операция необратима.",
+        "ja-JP": "作業ディレクトリと、ファイル情報、分析結果、タグなどを含むすべての関連データを完全に削除します。この操作は元に戻すことができません",
+        "de-DE": "Löschen Sie das Arbeitsverzeichnis und alle zugehörigen Daten vollständig, einschließlich Dateiinformationen, Analyseergebnisse, Tags usw. Dieser Vorgang ist irreversibel",
+        "fr-FR": "Supprimez complètement le répertoire de travail et toutes les données associées, y compris les informations sur les fichiers, les résultats d'analyse, les balises, etc.Cette opération est irréversible",
+        "ko-KR": "파일 정보, 분석 결과, 태그 등을 포함한 작업 디렉터리 및 모든 관련 데이터를 완전히 삭제합니다.이 작업은 되돌릴 수 없습니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(18502-18545)"
+        ],
+        "$id": 3208
+    },
+    "重要提醒": {
+        "en-US": "Important reminder",
+        "es-ES": "Recordatorio importante",
+        "ar-EG": "تذكير مهم",
+        "pt-PT": "Lembrete importante",
+        "ru-RU": "Важное напоминание",
+        "ja-JP": "重要なお知らせ",
+        "de-DE": "Wichtige Erinnerung",
+        "fr-FR": "Rappel important",
+        "ko-KR": "중요한 알림",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(18964-18972)"
+        ],
+        "$id": 3209
+    },
+    "• 删除工作目录将永久删除所有相关的AI分析数据": {
+        "en-US": "• Deleting the working directory will permanently delete all related AI analysis data",
+        "es-ES": "• Al eliminar el directorio de trabajo se eliminarán permanentemente todos los datos de análisis de IA relacionados.",
+        "ar-EG": "• سيؤدي حذف دليل العمل إلى حذف جميع بيانات تحليل الذكاء الاصطناعي ذات الصلة بشكل دائم",
+        "pt-PT": "• A exclusão do diretório de trabalho excluirá permanentemente todos os dados de análise de IA relacionados",
+        "ru-RU": "• Удаление рабочего каталога приведет к безвозвратному удалению всех связанных данных анализа ИИ.",
+        "ja-JP": "• 作業ディレクトリを削除すると、関連するすべての AI 分析データが完全に削除されます。",
+        "de-DE": "• Durch das Löschen des Arbeitsverzeichnisses werden alle zugehörigen KI-Analysedaten dauerhaft gelöscht",
+        "fr-FR": "• La suppression du répertoire de travail supprimera définitivement toutes les données d'analyse IA associées.",
+        "ko-KR": "• 작업 디렉터리를 삭제하면 관련 AI 분석 데이터가 모두 영구적으로 삭제됩니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(19054-19082)"
+        ],
+        "$id": 3210
+    },
+    "• 重置操作会清除分析结果，但不会删除原始文件": {
+        "en-US": "• A reset clears the analysis results but does not delete the original files",
+        "es-ES": "• Un reinicio borra los resultados del análisis pero no elimina los archivos originales.",
+        "ar-EG": "• تؤدي عملية إعادة الضبط إلى مسح نتائج التحليل ولكنها لا تحذف الملفات الأصلية",
+        "pt-PT": "• Uma redefinição limpa os resultados da análise, mas não exclui os arquivos originais",
+        "ru-RU": "• Сброс очищает результаты анализа, но не удаляет исходные файлы.",
+        "ja-JP": "• リセットすると分析結果はクリアされますが、元のファイルは削除されません。",
+        "de-DE": "• Durch einen Reset werden die Analyseergebnisse gelöscht, die Originaldateien werden jedoch nicht gelöscht",
+        "fr-FR": "• Une réinitialisation efface les résultats de l'analyse mais ne supprime pas les fichiers d'origine",
+        "ko-KR": "• 재설정하면 분석 결과가 지워지지만 원본 파일은 삭제되지 않습니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(19110-19137)"
+        ],
+        "$id": 3211
+    },
+    "• 重新扫描可能需要较长时间，取决于目录大小": {
+        "en-US": "• Rescan may take longer depending on directory size",
+        "es-ES": "• Volver a escanear puede tardar más dependiendo del tamaño del directorio",
+        "ar-EG": "• قد تستغرق عملية إعادة الفحص وقتًا أطول حسب حجم الدليل",
+        "pt-PT": "• A nova verificação pode demorar mais dependendo do tamanho do diretório",
+        "ru-RU": "• Повторное сканирование может занять больше времени в зависимости от размера каталога.",
+        "ja-JP": "• ディレクトリのサイズによっては再スキャンに時間がかかる場合があります",
+        "de-DE": "• Je nach Verzeichnisgröße kann der erneute Scan länger dauern",
+        "fr-FR": "• La nouvelle analyse peut prendre plus de temps en fonction de la taille du répertoire.",
+        "ko-KR": "• 디렉터리 크기에 따라 다시 검색하는 데 시간이 더 오래 걸릴 수 있습니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(19165-19191)"
+        ],
+        "$id": 3212
+    },
+    "移除工作目录": {
+        "en-US": "Remove working directory",
+        "es-ES": "Eliminar directorio de trabajo",
+        "ar-EG": "إزالة دليل العمل",
+        "pt-PT": "Remover diretório de trabalho",
+        "ru-RU": "Удалить рабочий каталог",
+        "ja-JP": "作業ディレクトリを削除する",
+        "de-DE": "Arbeitsverzeichnis entfernen",
+        "fr-FR": "Supprimer le répertoire de travail",
+        "ko-KR": "작업 디렉토리 제거",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(19465-19475)"
+        ],
+        "$id": 3214
+    },
+    "确定要移除工作目录 \"{}\" 吗？": {
+        "en-US": "Are you sure you want to remove working directory \"{}\"?",
+        "es-ES": "¿Está seguro de que desea eliminar el directorio de trabajo \"{}\"?",
+        "ar-EG": "هل أنت متأكد أنك تريد إزالة دليل العمل \"{}\"؟",
+        "pt-PT": "Tem certeza de que deseja remover o diretório de trabalho \"{}\"?",
+        "ru-RU": "Вы уверены, что хотите удалить рабочий каталог «{}»?",
+        "ja-JP": "作業ディレクトリ「{}」を削除してもよろしいですか?",
+        "de-DE": "Sind Sie sicher, dass Sie das Arbeitsverzeichnis „{}“ entfernen möchten?",
+        "fr-FR": "Êtes-vous sûr de vouloir supprimer le répertoire de travail « {} » ?",
+        "ko-KR": "정말로 \"{}\" 작업 디렉터리를 제거하시겠습니까?",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(19637-19658)"
+        ],
+        "$id": 3215
+    },
+    "此操作将完全移除工作目录，包括文件信息、分析结果、标签等。真实目录不会删除": {
+        "en-US": "This operation will completely remove the working directory, including file information, analysis results, tags, etc.The real directory will not be deleted",
+        "es-ES": "Esta operación eliminará por completo el directorio de trabajo, incluida la información del archivo, los resultados del análisis, las etiquetas, etc.El directorio real no se eliminará",
+        "ar-EG": "ستؤدي هذه العملية إلى إزالة دليل العمل بالكامل، بما في ذلك معلومات الملف ونتائج التحليل والعلامات وما إلى ذلك.ولن يتم حذف الدليل الحقيقي",
+        "pt-PT": "Esta operação removerá completamente o diretório de trabalho, incluindo informações do arquivo, resultados de análises, tags, etc.O diretório real não será excluído",
+        "ru-RU": "Эта операция полностью удалит рабочий каталог, включая информацию о файле, результаты анализа, теги и т. д. Реальный каталог не будет удален.",
+        "ja-JP": "この操作では、ファイル情報、解析結果、タグなどを含む作業ディレクトリが完全に削除されます。実際のディレクトリは削除されません。",
+        "de-DE": "Durch diesen Vorgang wird das Arbeitsverzeichnis vollständig entfernt, einschließlich Dateiinformationen, Analyseergebnissen, Tags usw. Das tatsächliche Verzeichnis wird nicht gelöscht",
+        "fr-FR": "Cette opération supprimera complètement le répertoire de travail, y compris les informations sur les fichiers, les résultats d'analyse, les balises, etc.Le répertoire réel ne sera pas supprimé",
+        "ko-KR": "이 작업을 수행하면 파일 정보, 분석 결과, 태그 등을 포함한 작업 디렉터리가 완전히 제거됩니다.실제 디렉터리는 삭제되지 않습니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(19757-19798)"
+        ],
+        "$id": 3216
+    },
+    "此操作不可逆！": {
+        "en-US": "This operation is irreversible!",
+        "es-ES": "¡Esta operación es irreversible!",
+        "ar-EG": "هذه العملية لا رجعة فيها!",
+        "pt-PT": "Esta operação é irreversível!",
+        "ru-RU": "Эта операция необратима!",
+        "ja-JP": "この操作は元に戻すことができません。",
+        "de-DE": "Dieser Vorgang ist irreversibel!",
+        "fr-FR": "Cette opération est irréversible !",
+        "ko-KR": "이 작업은 되돌릴 수 없습니다!",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(19874-19885)",
+            "renderer/components/settings/workspace-settings.tsx(21037-21048)"
+        ],
+        "$id": 3217
+    },
+    "取消": {
+        "en-US": "Cancel",
+        "es-ES": "Cancelar",
+        "ar-EG": "يلغي",
+        "pt-PT": "Cancelar",
+        "ru-RU": "Отмена",
+        "ja-JP": "キャンセル",
+        "de-DE": "Stornieren",
+        "fr-FR": "Annuler",
+        "ko-KR": "취소",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(20123-20129)",
+            "renderer/components/settings/workspace-settings.tsx(21286-21292)"
+        ],
+        "$id": 3218
+    },
+    "移除": {
+        "en-US": "Remove",
+        "es-ES": "Eliminar",
+        "ar-EG": "يزيل",
+        "pt-PT": "Remover",
+        "ru-RU": "Удалять",
+        "ja-JP": "取り除く",
+        "de-DE": "Entfernen",
+        "fr-FR": "Retirer",
+        "ko-KR": "제거하다",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(20292-20298)"
+        ],
+        "$id": 3219
+    },
+    "重置工作目录": {
+        "en-US": "Reset working directory",
+        "es-ES": "Restablecer directorio de trabajo",
+        "ar-EG": "إعادة تعيين دليل العمل",
+        "pt-PT": "Redefinir diretório de trabalho",
+        "ru-RU": "Сбросить рабочий каталог",
+        "ja-JP": "作業ディレクトリをリセットする",
+        "de-DE": "Arbeitsverzeichnis zurücksetzen",
+        "fr-FR": "Réinitialiser le répertoire de travail",
+        "ko-KR": "작업 디렉터리 재설정",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(20625-20635)"
+        ],
+        "$id": 3220
+    },
+    "确定要重置目录 \"{}\" 吗？": {
+        "en-US": "Are you sure you want to reset directory \"{}\"?",
+        "es-ES": "¿Está seguro de que desea restablecer el directorio \"{}\"?",
+        "ar-EG": "هل أنت متأكد أنك تريد إعادة تعيين الدليل \"{}\"؟",
+        "pt-PT": "Tem certeza de que deseja redefinir o diretório \"{}\"?",
+        "ru-RU": "Вы уверены, что хотите сбросить каталог «{}»?",
+        "ja-JP": "ディレクトリ「{}」をリセットしてもよろしいですか?",
+        "de-DE": "Sind Sie sicher, dass Sie das Verzeichnis „{}“ zurücksetzen möchten?",
+        "fr-FR": "Êtes-vous sûr de vouloir réinitialiser le répertoire « {} » ?",
+        "ko-KR": "정말로 \"{}\" 디렉터리를 재설정하시겠습니까?",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(20797-20816)"
+        ],
+        "$id": 3221
+    },
+    "此操作将删除该目录的所有AI分析结果和标签，但保留原始文件。目录将重置为未分析状态。": {
+        "en-US": "This operation will delete all AI analysis results and labels for the directory, but keep the original files.The directory will be reset to an unparsed state.",
+        "es-ES": "Esta operación eliminará todos los resultados y etiquetas del análisis de IA del directorio, pero conservará los archivos originales.El directorio se restablecerá a un estado sin analizar.",
+        "ar-EG": "ستؤدي هذه العملية إلى حذف جميع نتائج وتسميات تحليل الذكاء الاصطناعي للدليل، مع الاحتفاظ بالملفات الأصلية.سيتم إعادة تعيين الدليل إلى حالة غير محللة.",
+        "pt-PT": "Esta operação excluirá todos os resultados e rótulos da análise de IA do diretório, mas manterá os arquivos originais.O diretório será redefinido para um estado não analisado.",
+        "ru-RU": "Эта операция удалит все результаты и метки AI-анализа для каталога, но сохранит исходные файлы.Каталог будет сброшен в неразобранное состояние.",
+        "ja-JP": "この操作により、ディレクトリのすべての AI 分析結果とラベルが削除されますが、元のファイルは保持されます。ディレクトリは解析されていない状態にリセットされます。",
+        "de-DE": "Durch diesen Vorgang werden alle AI-Analyseergebnisse und Beschriftungen für das Verzeichnis gelöscht, die Originaldateien bleiben jedoch erhalten.Das Verzeichnis wird auf einen ungeparsten Zustand zurückgesetzt.",
+        "fr-FR": "Cette opération supprimera tous les résultats d’analyse AI et les étiquettes du répertoire, mais conservera les fichiers d’origine.Le répertoire sera réinitialisé à un état non analysé.",
+        "ko-KR": "이 작업을 수행하면 해당 디렉터리의 모든 AI 분석 결과와 라벨이 삭제되지만 원본 파일은 유지됩니다.디렉터리는 구문 분석되지 않은 상태로 재설정됩니다.",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(20915-20961)"
+        ],
+        "$id": 3222
+    },
+    "重置": {
+        "en-US": "reset",
+        "es-ES": "reiniciar",
+        "ar-EG": "إعادة ضبط",
+        "pt-PT": "reiniciar",
+        "ru-RU": "перезагрузить",
+        "ja-JP": "リセット",
+        "de-DE": "zurücksetzen",
+        "fr-FR": "réinitialiser",
+        "ko-KR": "다시 놓기",
+        "$files": [
+            "renderer/components/settings/workspace-settings.tsx(21454-21460)"
+        ],
+        "$id": 3223
+    }
+}

@@ -1,0 +1,531 @@
+import { create } from 'zustand'
+import { useShallow } from 'zustand/react/shallow'
+import { AnalysisQueueSnapshot, AnalysisQueueItem, AnalysisStatus } from '@firefly/types/types'
+import { captureEvent } from '../lib/posthog'
+import { useVirtualDirectoryStore } from './virtual-directory-store'
+
+// 使用全局定义的 AnalysisQueue 类型（来自 electron-api.d.ts）
+type AnalysisQueue = {
+  items: AnalysisQueueItem[]
+  status: import('@firefly/types').AnalysisQueueStatus
+  running: boolean
+  currentItem?: AnalysisQueueItem
+}
+
+interface AnalysisQueueState {
+  snapshot: AnalysisQueueSnapshot
+  showModal: boolean
+  backgroundMode: boolean
+  viewMode: 'split' | 'window'
+  splitHeight: number
+  isSplitOpen: boolean
+  isSplitMinimized: boolean
+  setIsSplitMinimized: (minimized: boolean) => void
+  setViewMode: (mode: 'split' | 'window') => void
+  setSplitHeight: (height: number) => void
+  setIsSplitOpen: (open: boolean) => void
+  setShowModal: (v: boolean) => void
+  openModal: () => void
+  closeModal: () => void
+  toggleQueue: () => void
+  refresh: () => Promise<void>
+  addItems: (
+    items: { path: string; name: string; size: number; type: string }[],
+    forceReanalyze?: boolean
+  ) => Promise<void>
+  retryFailed: () => Promise<void>
+  clearPending: () => Promise<void>
+  clearAll: () => Promise<void>
+  deleteItem: (id: number) => Promise<void>
+  start: () => Promise<void>
+  pause: () => Promise<void>
+  reconciliationFiles: Array<{
+    fileFingerprint: string
+    path: string
+    name: string
+    smartName: string
+    type: string
+    extensions: string[]
+    workspaceRootPath: string
+  }>
+  showReconciliationDialog: boolean
+  isCheckingReconciliation: boolean
+  setShowReconciliationDialog: (v: boolean) => void
+
+  // 批量已分析文件入队二次确认弹窗状态
+  showConfirmModal: boolean
+  confirmModalFiles: any[]
+  pendingAddItems: any[]
+  pendingForceReanalyze: boolean
+  setShowConfirmModal: (v: boolean) => void
+  handleConfirmSkip: () => Promise<void>
+  handleConfirmReanalyze: () => Promise<void>
+}
+
+const emptySnapshot: AnalysisQueueSnapshot = { items: [], running: false }
+
+const getInitialViewMode = (): 'split' | 'window' => {
+  const saved = localStorage.getItem('queue_view_mode')
+  return saved === 'window' ? 'window' : 'split'
+}
+
+const getInitialSplitHeight = (): number => {
+  const saved = localStorage.getItem('queue_split_height')
+  const parsed = saved ? parseInt(saved, 10) : 300
+  return isNaN(parsed) ? 300 : Math.max(150, Math.min(parsed, 800))
+}
+
+export const useAnalysisQueueStore = create<AnalysisQueueState>((set, get) => ({
+  snapshot: emptySnapshot,
+  showModal: false,
+  backgroundMode: false,
+  viewMode: getInitialViewMode(),
+  splitHeight: getInitialSplitHeight(),
+  isSplitOpen: false,
+  reconciliationFiles: [],
+  showReconciliationDialog: false,
+  isCheckingReconciliation: false,
+
+  // 批量已分析文件入队二次确认弹窗状态
+  showConfirmModal: false,
+  confirmModalFiles: [],
+  pendingAddItems: [],
+  pendingForceReanalyze: false,
+  setShowConfirmModal: v => {
+    if (!v) {
+      set({
+        showConfirmModal: false,
+        confirmModalFiles: [],
+        pendingAddItems: [],
+        pendingForceReanalyze: false
+      })
+    } else {
+      set({ showConfirmModal: true })
+    }
+  },
+  handleConfirmSkip: async () => {
+    const { pendingAddItems, confirmModalFiles } = get()
+    const stage4Paths = new Set(confirmModalFiles.map(f => f.path))
+    const filteredItems = pendingAddItems.filter(i => !stage4Paths.has(i.path))
+
+    // 重置状态并隐藏弹窗
+    set({
+      showConfirmModal: false,
+      confirmModalFiles: [],
+      pendingAddItems: [],
+      pendingForceReanalyze: false
+    })
+
+    if (filteredItems.length > 0) {
+      await window.electronAPI!.addToAnalysisQueue(filteredItems, false)
+      await get().refresh()
+      await get().start()
+      // 强制以 split 面板形式打开队列，确保用户可见进度
+      useAnalysisQueueStore.setState({
+        viewMode: 'split',
+        isSplitOpen: true,
+        showModal: false,
+        isSplitMinimized: false
+      })
+      window.electronAPI?.setQueueViewMode?.({ mode: 'split', isSplitOpen: true })
+    } else {
+      await get().refresh()
+    }
+  },
+  handleConfirmReanalyze: async () => {
+    const { pendingAddItems } = get()
+
+    // 重置状态并隐藏弹窗
+    set({
+      showConfirmModal: false,
+      confirmModalFiles: [],
+      pendingAddItems: [],
+      pendingForceReanalyze: false
+    })
+
+    if (pendingAddItems.length > 0) {
+      await window.electronAPI!.addToAnalysisQueue(pendingAddItems, true)
+      await get().refresh()
+      await get().start()
+      // 强制以 split 面板形式打开队列，确保用户可见进度
+      useAnalysisQueueStore.setState({
+        viewMode: 'split',
+        isSplitOpen: true,
+        showModal: false,
+        isSplitMinimized: false
+      })
+      window.electronAPI?.setQueueViewMode?.({ mode: 'split', isSplitOpen: true })
+    }
+  },
+
+  isSplitMinimized: localStorage.getItem('queue_split_minimized') === 'true',
+  setIsSplitMinimized: minimized => {
+    localStorage.setItem('queue_split_minimized', String(minimized))
+    set({ isSplitMinimized: minimized })
+  },
+
+  setViewMode: mode => {
+    localStorage.setItem('queue_view_mode', mode)
+    const isSplitOpen = mode === 'split'
+    set({ viewMode: mode, isSplitOpen, showModal: false, isSplitMinimized: false })
+    window.electronAPI?.setQueueViewMode?.({ mode, isSplitOpen })
+  },
+
+  setSplitHeight: height => {
+    const validHeight = Math.max(150, Math.min(height, window.innerHeight * 0.7))
+    localStorage.setItem('queue_split_height', String(validHeight))
+    set({ splitHeight: validHeight })
+  },
+
+  setIsSplitOpen: open => set({ isSplitOpen: open }),
+
+  setShowModal: v => set({ showModal: v, backgroundMode: !v }),
+  setShowReconciliationDialog: v => set({ showReconciliationDialog: v }),
+
+  openModal: () => {
+    const { viewMode } = get()
+    if (viewMode === 'window') {
+      window.electronAPI?.openQueueWindow?.()
+    } else {
+      set({ isSplitOpen: true, showModal: false, backgroundMode: false, isSplitMinimized: false })
+    }
+  },
+
+  closeModal: () => {
+    const { viewMode } = get()
+    if (viewMode === 'window') {
+      window.electronAPI?.closeQueueWindow?.()
+    } else {
+      set({ isSplitOpen: false, showModal: false, backgroundMode: true })
+    }
+  },
+
+  toggleQueue: () => {
+    const { viewMode, isSplitOpen, showModal } = get()
+    if (showModal) {
+      set({ showModal: false })
+      return
+    }
+    if (viewMode === 'split') {
+      const nextOpen = !isSplitOpen
+      set({ isSplitOpen: nextOpen, isSplitMinimized: false })
+    } else if (isSplitOpen) {
+      // viewMode 为 'window' 但 split 面板被强制打开（如批量分析后），
+      // 再次点击应关闭而非继续强制打开，保证「队列 x/x」按钮可正常切换显隐
+      set({ isSplitOpen: false, showModal: false, isSplitMinimized: false })
+    } else {
+      // 从工具栏/Footer 点击时，统一切换到底部分栏面板
+      // 避免用户因 viewMode 被持久化为 'window' 而无法正常切换队列面板
+      set({ viewMode: 'split', isSplitOpen: true, showModal: false, isSplitMinimized: false })
+      window.electronAPI?.setQueueViewMode?.({ mode: 'split', isSplitOpen: true })
+    }
+  },
+
+  refresh: async () => {
+    const currentWs = useVirtualDirectoryStore.getState().currentWorkspaceDirectory
+    const wsId = currentWs?.id ?? 0
+    const snap = await window.electronAPI!.getAnalysisQueue(wsId)
+    set({ snapshot: snap as any })
+  },
+
+  addItems: async (items, forceReanalyze) => {
+    captureEvent('添加分析项目', {
+      count: items.length,
+      forceReanalyze,
+      first_item_type: items[0]?.type
+    })
+
+    const checkFn =
+      window.electronAPI?.checkAlreadyAnalyzedFiles || window.electronAPI?.checkStage4Files
+    console.log(
+      '[AnalysisQueueStore] addItems 触发: items.length =',
+      items.length,
+      'forceReanalyze =',
+      forceReanalyze,
+      'hasCheckFn =',
+      !!checkFn
+    )
+
+    if (!forceReanalyze && items.length > 1 && checkFn) {
+      try {
+        const analyzedRes = await checkFn(items.map(i => i.path))
+        console.log('[AnalysisQueueStore] 检查已分析文件后端响应 count =', analyzedRes?.length)
+        if (analyzedRes && analyzedRes.length > 0) {
+          const isPathEqual =
+            window.electronAPI?.utils?.isPathEqual || ((a: string, b: string) => a === b)
+          const analyzedFiles: any[] = []
+          items.forEach(item => {
+            const hit = analyzedRes.find((res: any) => {
+              const resPath = typeof res === 'string' ? res : res?.path
+              return resPath && isPathEqual(resPath, item.path)
+            })
+            if (hit) {
+              if (typeof hit === 'object') {
+                analyzedFiles.push({ ...item, ...hit })
+              } else {
+                analyzedFiles.push(item)
+              }
+            }
+          })
+
+          console.log('[AnalysisQueueStore] 匹配到的已分析文件数量 =', analyzedFiles.length)
+          if (analyzedFiles.length > 0) {
+            set({
+              confirmModalFiles: analyzedFiles,
+              pendingAddItems: items,
+              pendingForceReanalyze: !!forceReanalyze,
+              showConfirmModal: true
+            })
+            return
+          }
+        }
+      } catch (err) {
+        console.error('[Frontend] 检查已分析文件失败:', err)
+      }
+    }
+
+    await window.electronAPI!.addToAnalysisQueue(items, forceReanalyze)
+    await get().refresh()
+  },
+
+  retryFailed: async () => {
+    captureEvent('点击重试失败分析')
+    await window.electronAPI!.retryFailedAnalysis()
+    await get().refresh()
+  },
+
+  clearPending: async () => {
+    captureEvent('点击清除待处理分析')
+    await window.electronAPI!.clearPendingAnalysis()
+    await get().refresh()
+  },
+
+  clearAll: async () => {
+    captureEvent('点击清空所有队列')
+    await window.electronAPI!.clearAllAnalysis()
+    await get().refresh()
+  },
+
+  deleteItem: async (id: number) => {
+    await window.electronAPI!.deleteAnalysisItem(String(id))
+    await get().refresh()
+  },
+
+  start: async (workspaceId?: number | unknown) => {
+    const targetWsId =
+      typeof workspaceId === 'number'
+        ? workspaceId
+        : useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.id
+    console.log('[Frontend] Store: start called for workspace', targetWsId)
+    captureEvent('开始分析')
+    await window.electronAPI!.startAnalysis(targetWsId)
+    await get().refresh()
+  },
+
+  pause: async (workspaceId?: number | unknown) => {
+    const targetWsId =
+      typeof workspaceId === 'number'
+        ? workspaceId
+        : useVirtualDirectoryStore.getState().currentWorkspaceDirectory?.id
+    console.log('[Frontend] Store: pause called for workspace', targetWsId)
+    captureEvent('暂停分析')
+    try {
+      set(state => ({ snapshot: { ...state.snapshot, running: false } }))
+      await window.electronAPI!.pauseAnalysis(targetWsId)
+      console.log('[Frontend] Store: pause API call success')
+    } catch (e) {
+      console.error('[Frontend] Store: pause API call failed', e)
+    }
+    await get().refresh()
+  }
+}))
+
+let hasInitialSnapshotLoaded = false
+
+// Subscribe to workspace directory changes
+useVirtualDirectoryStore.subscribe((state, prevState) => {
+  if (state.currentWorkspaceDirectory?.id !== prevState.currentWorkspaceDirectory?.id) {
+    console.log(
+      '[Frontend] AnalysisQueueStore: Workspace changed, refreshing queue...',
+      state.currentWorkspaceDirectory?.id
+    )
+    hasInitialSnapshotLoaded = false
+    useAnalysisQueueStore.getState().refresh()
+  }
+})
+
+// Subscribe to main-process updates once per app
+if (typeof window !== 'undefined' && window.electronAPI) {
+  let lastRunningState = false
+  let refreshTimer: NodeJS.Timeout | null = null
+
+  const triggerRefresh = (immediate = false) => {
+    if (immediate) {
+      if (refreshTimer) {
+        clearTimeout(refreshTimer)
+        refreshTimer = null
+      }
+      useAnalysisQueueStore.getState().refresh()
+      return
+    }
+    if (refreshTimer) return
+    refreshTimer = setTimeout(() => {
+      refreshTimer = null
+      useAnalysisQueueStore.getState().refresh()
+    }, 150)
+  }
+
+  const unsub = window.electronAPI!.onAnalysisQueueUpdated((snap: any) => {
+    console.log('[Frontend] Store: onAnalysisQueueUpdated', snap)
+
+    const currentWs = useVirtualDirectoryStore.getState().currentWorkspaceDirectory
+    const wsId = currentWs?.id
+
+    // 在 setState 之前保存旧快照，用于比对新增完成项
+    const prevSnapshot = useAnalysisQueueStore.getState().snapshot
+
+    const rawItems = snap.items || []
+    const filteredItems = wsId
+      ? rawItems.filter((i: any) => !i.workspaceId || String(i.workspaceId) === String(wsId))
+      : rawItems
+
+    useAnalysisQueueStore.setState({
+      snapshot: {
+        ...snap,
+        items: filteredItems
+      }
+    })
+
+    const items = snap.items || []
+    const completedItems = items.filter((i: any) => i.status === 'completed')
+
+    if (lastRunningState && !snap.running) {
+      const failedCount = items.filter((i: any) => i.status === 'failed').length
+      const completedCount = completedItems.length
+
+      captureEvent('分析会话结束', {
+        total_items: items.length,
+        completed_count: completedCount,
+        failed_count: failedCount
+      })
+
+      // 触发扩展名校准检查（带并发保护和工作区隔离）
+      const currentState = useAnalysisQueueStore.getState()
+      if (!currentState.isCheckingReconciliation) {
+        useAnalysisQueueStore.setState({ isCheckingReconciliation: true })
+        window
+          .electronAPI!.getCurrentWorkspaceDirectory()
+          .then(dir => {
+            const workspaceId = dir?.id
+            if (workspaceId) {
+              window
+                .electronAPI!.checkExtensionMismatch(workspaceId)
+                .then(files => {
+                  if (files && files.length > 0) {
+                    useAnalysisQueueStore.setState({
+                      reconciliationFiles: files,
+                      showReconciliationDialog: true
+                    })
+                  }
+                })
+                .finally(() => {
+                  useAnalysisQueueStore.setState({ isCheckingReconciliation: false })
+                })
+            } else {
+              useAnalysisQueueStore.setState({ isCheckingReconciliation: false })
+            }
+          })
+          .catch(() => {
+            useAnalysisQueueStore.setState({ isCheckingReconciliation: false })
+          })
+      }
+    }
+
+    // 检查是否有新的文件分析完成，触发虚拟目录的小红点/呼吸点提示
+    // 逻辑：用旧快照 vs 新快照比对，找出新增完成的文件项
+    // 注意：初始加载快照时不触发增量提醒，且比对必须基于工作区隔离后的 filteredItems
+    if (hasInitialSnapshotLoaded) {
+      const currentCompletedFiles = filteredItems.filter(
+        (i: any) => i.status === 'completed' && i.itemType === 'file'
+      )
+      const prevCompletedIds = new Set(
+        (prevSnapshot.items || [])
+          .filter((i: any) => i.status === 'completed' && i.itemType === 'file')
+          .map((i: any) => i.id)
+      )
+
+      const newlyCompletedItems = currentCompletedFiles.filter(
+        (i: any) => !prevCompletedIds.has(i.id)
+      )
+
+      if (newlyCompletedItems.length > 0) {
+        // 动态导入避免模块级循环依赖/打包问题
+        import('./analyzed-directory-store')
+          .then(({ useAnalyzedDirectoryStore }) => {
+            useAnalyzedDirectoryStore.getState().incrementNewFilesCount(newlyCompletedItems)
+          })
+          .catch(err => {
+            console.error('[Frontend] 无法加载已分析目录Store:', err)
+          })
+      }
+    } else {
+      hasInitialSnapshotLoaded = true
+    }
+
+    lastRunningState = snap.running
+  })
+
+  window.electronAPI.onQueueViewModeChanged(({ mode, isSplitOpen }) => {
+    localStorage.setItem('queue_view_mode', mode)
+    useAnalysisQueueStore.setState({ viewMode: mode, isSplitOpen })
+  })
+
+  // 在订阅后立即执行一次主动刷新，以确保初始状态同步
+  useAnalysisQueueStore.getState().refresh()
+
+  // Note: no cleanup here since this module is singleton
+}
+
+if (typeof window !== 'undefined') {
+  ;(window as any).useAnalysisQueueStore = useAnalysisQueueStore
+}
+
+export function useFileQueueState(itemIdOrPath: string | number, isAnalyzedOnDisk?: boolean) {
+  return useAnalysisQueueStore(
+    useShallow(state => {
+      if (itemIdOrPath === '' || itemIdOrPath === undefined || itemIdOrPath === null) {
+        return { status: undefined, error: undefined }
+      }
+
+      const isNumericId =
+        typeof itemIdOrPath === 'number' ||
+        (!isNaN(Number(itemIdOrPath)) &&
+          typeof itemIdOrPath === 'string' &&
+          itemIdOrPath.trim() !== '')
+      const numericId = isNumericId ? Number(itemIdOrPath) : null
+
+      const item = state.snapshot.items.find(i => {
+        if (numericId !== null && i.id === numericId) {
+          return true
+        }
+        const isPathEqual = window.electronAPI?.utils?.isPathEqual
+        if (typeof itemIdOrPath === 'string' && isPathEqual) {
+          return isPathEqual(i.path, itemIdOrPath)
+        }
+        return false
+      })
+
+      let status: AnalysisStatus | undefined = undefined
+      let error: string | undefined = undefined
+
+      if (item) {
+        status = item.status
+        error = item.status === 'failed' ? item.error || undefined : undefined
+      } else if (isAnalyzedOnDisk) {
+        status = 'completed'
+      }
+
+      return { status, error }
+    })
+  )
+}

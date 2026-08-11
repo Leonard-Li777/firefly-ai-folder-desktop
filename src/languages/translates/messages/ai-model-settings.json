@@ -1,0 +1,723 @@
+{
+  "已激活": {
+    "en-US": "Activated",
+    "es-ES": "Activado",
+    "ar-EG": "مُفعّل",
+    "pt-PT": "Ativado",
+    "ru-RU": "Активировано",
+    "ja-JP": "有効化済み",
+    "de-DE": "Aktiviert",
+    "fr-FR": "Activé",
+    "ko-KR": "활성화됨",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(3826-3833)"
+    ],
+    "$id": 4309
+  },
+  "显存不足": {
+    "en-US": "Insufficient video memory",
+    "es-ES": "Memoria de video insuficiente",
+    "ar-EG": "ذاكرة فيديو غير كافية",
+    "pt-PT": "Memória de vídeo insuficiente",
+    "ru-RU": "Недостаточно видеопамяти",
+    "ja-JP": "VRAM不足",
+    "de-DE": "Unzureichender Videospeicher",
+    "fr-FR": "Mémoire vidéo insuffisante",
+    "ko-KR": "비디오 메모리가 부족합니다.",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(4137-4145)"
+    ],
+    "$id": 4310
+  },
+  "最佳推荐": {
+    "en-US": "Top Recommendation",
+    "es-ES": "Mejor recomendación",
+    "ar-EG": "الأفضل توصيةً",
+    "pt-PT": "Melhor recomendação",
+    "ru-RU": "Рекомендуемый выбор",
+    "ja-JP": "推奨",
+    "de-DE": "Beste Empfehlung",
+    "fr-FR": "Meilleure recommandation  ",
+    "ko-KR": "최고 추천",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(4786-4794)"
+    ],
+    "$id": 2965
+  },
+  "来自": {
+    "en-US": "from",
+    "es-ES": "De",
+    "ar-EG": "من",
+    "pt-PT": "De",
+    "ru-RU": "от",
+    "ja-JP": "から",
+    "de-DE": "aus",
+    "fr-FR": "depuis",
+    "ko-KR": "~에서",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(5668-5674)"
+    ],
+    "$id": 4311
+  },
+  "未知": {
+    "en-US": "Unknown",
+    "es-ES": "Desconocido",
+    "ar-EG": "مجهول  ",
+    "pt-PT": "Desconhecido",
+    "ru-RU": "Неизвестно",
+    "ja-JP": "不明",
+    "de-DE": "Unbekannt",
+    "fr-FR": "Inconnu",
+    "ko-KR": "알 수 없음",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(6074-6080)",
+      "renderer/components/settings/ai-model-settings.tsx(26658-26664)"
+    ],
+    "$id": 2958
+  },
+  "建议显存": {
+    "en-US": "Recommended Video Memory",
+    "es-ES": "Memoria de vídeo recomendada",
+    "ar-EG": "الذاكرة الموصى بها",
+    "pt-PT": "Memória de vídeo recomendada",
+    "ru-RU": "Рекомендуемый объём видеопамяти",
+    "ja-JP": "推奨ビデオメモリ",
+    "de-DE": "Empfohlener VRAM",
+    "fr-FR": "Mémoire vidéo recommandée",
+    "ko-KR": "권장 VRAM",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(6590-6598)"
+    ],
+    "$id": 2967
+  },
+  "支持：": {
+    "en-US": "Supported:",
+    "es-ES": "Compatible:",
+    "ar-EG": "يدعم:",
+    "pt-PT": "Suportado:",
+    "ru-RU": "Поддержка:",
+    "ja-JP": "サポート：",
+    "de-DE": "Unterstützt:",
+    "fr-FR": "Prise en charge :",
+    "ko-KR": "지원:",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(6815-6822)"
+    ],
+    "$id": 2980
+  },
+  "激活": {
+    "en-US": "Activate  ",
+    "es-ES": "Activar",
+    "ar-EG": "تفعيل  ",
+    "pt-PT": "Ativar",
+    "ru-RU": "Активировать",
+    "ja-JP": "有効化",
+    "de-DE": "Aktivieren",
+    "fr-FR": "Activer",
+    "ko-KR": "활성화",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(7591-7597)"
+    ],
+    "$id": 2983
+  },
+  "内置": {
+    "en-US": "built-in",
+    "es-ES": "Integrado",
+    "ar-EG": "مدمج",
+    "pt-PT": "Integrado",
+    "ru-RU": "встроенный",
+    "ja-JP": "内蔵",
+    "de-DE": "eingebaut",
+    "fr-FR": "intégré",
+    "ko-KR": "내장",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(7882-7888)"
+    ],
+    "$id": 4312
+  },
+  "下载": {
+    "en-US": "Download  ",
+    "es-ES": "Descargar",
+    "ar-EG": "تنزيل  ",
+    "pt-PT": "Transferir",
+    "ru-RU": "Скачать",
+    "ja-JP": "ダウンロード",
+    "de-DE": "Herunterladen",
+    "fr-FR": "Télécharger",
+    "ko-KR": "다운로드",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(8770-8776)"
+    ],
+    "$id": 2984
+  },
+  "路径不合法": {
+    "en-US": "Invalid path",
+    "es-ES": "Ruta no válida",
+    "ar-EG": "المسار غير صالح",
+    "pt-PT": "caminho inválido",
+    "ru-RU": "Недопустимый путь",
+    "ja-JP": "パスが無効です",
+    "de-DE": "Ungültiger Pfad",
+    "fr-FR": "Chemin invalide",
+    "ko-KR": "경로가 유효하지 않습니다",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(11955-11964)"
+    ],
+    "$id": 4363
+  },
+  "正在准备迁移模型...": {
+    "en-US": "Preparing to migrate model...",
+    "es-ES": "Preparando migración del modelo...",
+    "ar-EG": "جارٍ التحضير لنقل النموذج...",
+    "pt-PT": "A preparar a migração do modelo...",
+    "ru-RU": "Подготовка к переносу модели...",
+    "ja-JP": "モデル移行を準備中...",
+    "de-DE": "Modellmigration wird vorbereitet...",
+    "fr-FR": "Préparation de la migration du modèle...",
+    "ko-KR": "모델 마이그레이션 준비 중...",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(12679-12694)"
+    ],
+    "$id": 4306
+  },
+  "模型迁移失败: {error}": {
+    "en-US": "Model migration failed: {error}",
+    "es-ES": "Error en la migración del modelo: {error}",
+    "ar-EG": "فشل نقل النموذج: {error}",
+    "pt-PT": "A migração do modelo falhou: {error}",
+    "ru-RU": "Не удалось перенести модель: {error}",
+    "ja-JP": "モデル移行に失敗しました: {error}",
+    "de-DE": "Modellmigration fehlgeschlagen: {error}",
+    "fr-FR": "Échec de la migration du modèle : {error}",
+    "ko-KR": "모델 마이그레이션 실패: {error}",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(12878-12897)"
+    ],
+    "$id": 4307
+  },
+  "操作失败: {error}": {
+    "en-US": "Operation failed: {error}",
+    "es-ES": "Operación fallida: {error}",
+    "ar-EG": "فشلت العملية: {error}",
+    "pt-PT": "A operação falhou: {error}",
+    "ru-RU": "Операция не удалась: {error}",
+    "ja-JP": "操作に失敗しました: {error}",
+    "de-DE": "Vorgang fehlgeschlagen: {error}",
+    "fr-FR": "Échec de l'opération : {error}",
+    "ko-KR": "작업 실패: {error}",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(13373-13390)"
+    ],
+    "$id": 4308
+  },
+  "模型已成功删除": {
+    "en-US": "Model deleted successfully",
+    "es-ES": "Modelo eliminado exitosamente",
+    "ar-EG": "تم حذف النموذج بنجاح",
+    "pt-PT": "Modelo excluído com sucesso",
+    "ru-RU": "Модель успешно удалена",
+    "ja-JP": "モデルは正常に削除されました",
+    "de-DE": "Modell erfolgreich gelöscht",
+    "fr-FR": "Modèle supprimé avec succès",
+    "ko-KR": "모델이 삭제되었습니다.",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(20695-20706)"
+    ],
+    "$id": 4660
+  },
+  "删除模型失败": {
+    "en-US": "Failed to delete model",
+    "es-ES": "No se pudo eliminar el modelo",
+    "ar-EG": "فشل في حذف النموذج",
+    "pt-PT": "Falha ao excluir modelo",
+    "ru-RU": "Не удалось удалить модель.",
+    "ja-JP": "モデルの削除に失敗しました",
+    "de-DE": "Modell konnte nicht gelöscht werden",
+    "fr-FR": "Échec de la suppression du modèle",
+    "ko-KR": "모델을 삭제하지 못했습니다.",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(20779-20789)"
+    ],
+    "$id": 4661
+  },
+  "正在配置高性能模式运行环境，请稍候...": {
+    "en-US": "Configuring the high-performance mode operating environment, please wait...",
+    "es-ES": "Configurando el entorno operativo del modo de alto rendimiento, espere...",
+    "ar-EG": "جارٍ تكوين بيئة التشغيل في وضع الأداء العالي، برجاء الانتظار...",
+    "pt-PT": "Configurando o ambiente operacional do modo de alto desempenho, aguarde...",
+    "ru-RU": "Настройка операционной среды высокопроизводительного режима, подождите...",
+    "ja-JP": "ハイパフォーマンス モードの動作環境を構成しています。しばらくお待ちください...",
+    "de-DE": "Die Betriebsumgebung für den Hochleistungsmodus wird konfiguriert. Bitte warten ...",
+    "fr-FR": "Configuration de l'environnement d'exploitation en mode hautes performances, veuillez patienter...",
+    "ko-KR": "고성능 모드 운영 환경을 구성하는 중입니다. 잠시 기다려 주십시오...",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(21604-21628)"
+    ],
+    "$id": 4662
+  },
+  "AI 引擎管理": {
+    "en-US": "AI engine management",
+    "es-ES": "Gestión del motor de IA",
+    "ar-EG": "إدارة محرك الذكاء الاصطناعي",
+    "pt-PT": "Gerenciamento de mecanismo de IA",
+    "ru-RU": "Управление двигателем с использованием искусственного интеллекта",
+    "ja-JP": "AIエンジン管理",
+    "de-DE": "KI-Engine-Management",
+    "fr-FR": "Gestion du moteur IA",
+    "ko-KR": "AI 엔진 관리",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(21877-21888)"
+    ],
+    "$id": 4667
+  },
+  "模型就像AI大脑，它们决定了文件分析准确率与响应速度": {
+    "en-US": "Models are like AI brains, which determine the accuracy of file analysis and response speed",
+    "es-ES": "Los modelos son como el cerebro de la IA, determinan la precisión y la velocidad de respuesta del análisis de archivos  ",
+    "ar-EG": "النماذج مثل دماغ الذكاء الاصطناعي، فهي تحدد دقة تحليل الملفات وسرعة الاستجابة  ",
+    "pt-PT": "Os modelos são como o cérebro da IA, determinando a precisão da análise de arquivos e a velocidade de resposta  ",
+    "ru-RU": "Модели похожи на мозг ИИ, они определяют точность анализа файлов и скорость ответа  ",
+    "ja-JP": "モデルはAIの脳のようです。ファイル分析の正確さと応答速度を決定します",
+    "de-DE": "Modelle sind wie das Gehirn der KI, sie bestimmen die Genauigkeit der Dateianalyse und die Reaktionsgeschwindigkeit",
+    "fr-FR": "Les modèles sont comme le cerveau de l'IA ; ils déterminent la précision de l'analyse des fichiers et la vitesse de réponse  ",
+    "ko-KR": "모델은 AI 두뇌와 같으며, 파일 분석 정확도와 응답 속도를 결정합니다  ",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(21984-22014)"
+    ],
+    "$id": 4353
+  },
+  "本地模型相当于：小学（内置）、初中、高中；云端模型：高中、大学": {
+    "en-US": "Local model is equivalent to: elementary school (built-in), junior high school, high school; cloud model: high school, university",
+    "es-ES": "El modelo local es equivalente a: escuela primaria (integrada), escuela secundaria, escuela secundaria; modelo de nube: escuela secundaria, universidad",
+    "ar-EG": "النموذج المحلي يعادل: المدرسة الابتدائية (المدمجة)، المدرسة الإعدادية، المدرسة الثانوية؛ النموذج السحابي: المدرسة الثانوية، الجامعة",
+    "pt-PT": "O modelo local equivale a: ensino fundamental (integrado), ensino fundamental, ensino médio; modelo de nuvem: ensino médio, universidade",
+    "ru-RU": "Локальная модель эквивалентна: начальной школе (встроенной), неполной средней школе, средней школе; облачная модель: средняя школа, университет",
+    "ja-JP": "ローカルモデルは、小学校（内蔵）、中学校、高等学校に相当します。クラウドモデル: 高校、大学",
+    "de-DE": "Das lokale Modell entspricht: Grundschule (eingebaut), Mittelschule, Oberschule; Wolkenmodell: Gymnasium, Universität",
+    "fr-FR": "Le modèle local est équivalent à : école primaire (intégrée), collège, lycée ; modèle cloud : lycée, université",
+    "ko-KR": "로컬 모델은 초등학교(내장), 중학교, 고등학교와 동일합니다. 클라우드 모델: 고등학교, 대학교",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(22121-22156)"
+    ],
+    "$id": 4693
+  },
+  "本地AI引擎": {
+    "en-US": "Local AI engine",
+    "es-ES": "Motor de IA local",
+    "ar-EG": "محرك الذكاء الاصطناعي المحلي",
+    "pt-PT": "Mecanismo de IA local",
+    "ru-RU": "Локальный ИИ-движок",
+    "ja-JP": "ローカルAIエンジン",
+    "de-DE": "Lokale KI-Engine",
+    "fr-FR": "Moteur d'IA local",
+    "ko-KR": "로컬 AI 엔진",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(22856-22866)"
+    ],
+    "$id": 4694
+  },
+  "云端": {
+    "en-US": "Cloud",
+    "es-ES": "En la nube",
+    "ar-EG": "سحابي",
+    "pt-PT": "Nuvem",
+    "ru-RU": "Облако",
+    "ja-JP": "クラウド",
+    "de-DE": "Cloud",
+    "fr-FR": "Cloud  ",
+    "ko-KR": "클라우드",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(23439-23445)"
+    ],
+    "$id": 2943
+  },
+  "目前使用兼容模式，能发挥您显卡70% AI算力，显卡驱动需要升级，才能发挥满血性能": {
+    "en-US": "Currently using compatibility mode, 70% of the AI ​​computing power of your graphics card can be used. The graphics card driver needs to be upgraded to achieve full performance.",
+    "es-ES": "Actualmente, al utilizar el modo de compatibilidad, se puede utilizar el 70% de la potencia informática de IA de su tarjeta gráfica. Es necesario actualizar el controlador de la tarjeta gráfica para lograr el máximo rendimiento.",
+    "ar-EG": "باستخدام وضع التوافق حاليًا، يمكن استخدام 70% من قوة حوسبة الذكاء الاصطناعي لبطاقة الرسومات الخاصة بك. يحتاج برنامج تشغيل بطاقة الرسومات إلى الترقية لتحقيق الأداء الكامل.",
+    "pt-PT": "Atualmente usando o modo de compatibilidade, 70% do poder de computação AI da sua placa gráfica pode ser usado. O driver da placa gráfica precisa ser atualizado para atingir desempenho total.",
+    "ru-RU": "В настоящее время в режиме совместимости можно использовать 70% вычислительной мощности AI вашей видеокарты. Для достижения полной производительности необходимо обновить драйвер видеокарты.",
+    "ja-JP": "現在互換モードを使用すると、グラフィックス カードの AI 計算能力の 70% を使用できます。最大限のパフォーマンスを実現するには、グラフィック カード ドライバーをアップグレードする必要があります。",
+    "de-DE": "Im Kompatibilitätsmodus können derzeit 70 % der KI-Rechenleistung Ihrer Grafikkarte genutzt werden. Um die volle Leistung zu erreichen, muss der Grafikkartentreiber aktualisiert werden.",
+    "fr-FR": "En utilisant actuellement le mode de compatibilité, 70 % de la puissance de calcul IA de votre carte graphique peut être utilisée. Le pilote de la carte graphique doit être mis à niveau pour obtenir toutes les performances.",
+    "ko-KR": "현재 호환 모드를 사용하면 그래픽 카드의 AI 컴퓨팅 성능의 70%를 사용할 수 있습니다. 완전한 성능을 얻으려면 그래픽 카드 드라이버를 업그레이드해야 합니다.",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(23908-23953)"
+    ],
+    "$id": 4668
+  },
+  "升级显卡驱动": {
+    "en-US": "Upgrade graphics card driver",
+    "es-ES": "Actualizar el controlador de la tarjeta gráfica",
+    "ar-EG": "ترقية برنامج تشغيل بطاقة الرسومات",
+    "pt-PT": "Atualizar driver da placa gráfica",
+    "ru-RU": "Обновите драйвер видеокарты",
+    "ja-JP": "グラフィックカードドライバーをアップグレードする",
+    "de-DE": "Aktualisieren Sie den Grafikkartentreiber",
+    "fr-FR": "Mettre à niveau le pilote de la carte graphique",
+    "ko-KR": "그래픽 카드 드라이버 업그레이드",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(24254-24264)"
+    ],
+    "$id": 4664
+  },
+  "我已升级驱动，立即重启": {
+    "en-US": "I have upgraded the driver and will restart now",
+    "es-ES": "He actualizado el controlador y reiniciaré ahora",
+    "ar-EG": "لقد قمت بترقية برنامج التشغيل وسوف أقوم بإعادة التشغيل الآن",
+    "pt-PT": "Eu atualizei o driver e vou reiniciar agora",
+    "ru-RU": "Я обновил драйвер и сейчас перезапущу",
+    "ja-JP": "ドライバーをアップグレードしたので再起動します",
+    "de-DE": "Ich habe den Treiber aktualisiert und werde jetzt neu starten",
+    "fr-FR": "J'ai mis à jour le pilote et je vais redémarrer maintenant",
+    "ko-KR": "드라이버를 업그레이드했으며 지금 다시 시작하겠습니다.",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(24820-24835)"
+    ],
+    "$id": 4669
+  },
+  "显卡 / 显存": {
+    "en-US": "GPU / VRAM",
+    "es-ES": "GPU / Memoria de video",
+    "ar-EG": "بطاقة الرسوميات / ذاكرة الرسوميات",
+    "pt-PT": "Placa gráfica / Memória de vídeo",
+    "ru-RU": "Видеокарта / Видеопамять",
+    "ja-JP": "GPU/VRAM",
+    "de-DE": "Grafikkarte / Grafikspeicher",
+    "fr-FR": "Carte graphique / Mémoire vidéo  ",
+    "ko-KR": "GPU / VRAM",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(25383-25394)"
+    ],
+    "$id": 2944
+  },
+  "核显": {
+    "en-US": "Integrated Graphics",
+    "es-ES": "GPU integrada",
+    "ar-EG": "رسوميات مدمجة",
+    "pt-PT": "Gráficos integrados",
+    "ru-RU": "Встроенная графика",
+    "ja-JP": "内蔵グラフィックス",
+    "de-DE": "Integrierte Grafik",
+    "fr-FR": "Graphique intégré  ",
+    "ko-KR": "통합 그래픽스",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(25549-25555)"
+    ],
+    "$id": 2945
+  },
+  "硬盘可用空间": {
+    "en-US": "Hard drive available space",
+    "es-ES": "Espacio disponible en el disco duro",
+    "ar-EG": "المساحة المتوفرة على القرص الصلب",
+    "pt-PT": "Espaço disponível no disco rígido",
+    "ru-RU": "Доступное место на жестком диске",
+    "ja-JP": "ハードドライブの空き容量",
+    "de-DE": "Verfügbarer Festplattenspeicher",
+    "fr-FR": "Espace disponible sur le disque dur",
+    "ko-KR": "하드 드라이브 사용 가능 공간",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(26462-26472)"
+    ],
+    "$id": 3339
+  },
+  "参考": {
+    "en-US": "reference",
+    "es-ES": "referencia",
+    "ar-EG": "مرجع",
+    "pt-PT": "referência",
+    "ru-RU": "ссылка",
+    "ja-JP": "参照",
+    "de-DE": "Referenz",
+    "fr-FR": "référence",
+    "ko-KR": "참고",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(26697-26703)"
+    ],
+    "$id": 3340
+  },
+  "纯 CPU 模式": {
+    "en-US": "Pure CPU mode",
+    "es-ES": "Modo CPU puro",
+    "ar-EG": "وضع وحدة المعالجة المركزية النقي",
+    "pt-PT": "Modo CPU puro",
+    "ru-RU": "Чистый режим ЦП",
+    "ja-JP": "ピュアCPUモード",
+    "de-DE": "Reiner CPU-Modus",
+    "fr-FR": "Mode CPU pur",
+    "ko-KR": "순수 CPU 모드",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(27467-27479)"
+    ],
+    "$id": 4698
+  },
+  "保底方案": {
+    "en-US": "Guaranteed plan",
+    "es-ES": "Plan garantizado",
+    "ar-EG": "خطة مضمونة",
+    "pt-PT": "Plano garantido",
+    "ru-RU": "Гарантированный план",
+    "ja-JP": "保証プラン",
+    "de-DE": "Garantierter Plan",
+    "fr-FR": "Forfait garanti",
+    "ko-KR": "보장된 플랜",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(27674-27682)"
+    ],
+    "$id": 4699
+  },
+  "开启后不使用显卡加速，性能有所下降，但可保障最大兼容性与稳定运行。": {
+    "en-US": "After turning it on, graphics card acceleration is not used and performance is reduced, but maximum compatibility and stable operation are ensured.",
+    "es-ES": "Después de encenderlo, no se utiliza la aceleración de la tarjeta gráfica y se reduce el rendimiento, pero se garantiza la máxima compatibilidad y un funcionamiento estable.",
+    "ar-EG": "بعد تشغيله، لا يتم استخدام تسريع بطاقة الرسومات ويتم تقليل الأداء، ولكن يتم ضمان الحد الأقصى من التوافق والتشغيل المستقر.",
+    "pt-PT": "Depois de ligá-lo, a aceleração da placa gráfica não é usada e o desempenho é reduzido, mas a compatibilidade máxima e a operação estável são garantidas.",
+    "ru-RU": "После его включения ускорение видеокарты не используется и производительность снижается, но обеспечивается максимальная совместимость и стабильная работа.",
+    "ja-JP": "オンにすると、グラフィックス カード アクセラレーションは使用されなくなり、パフォーマンスは低下しますが、最大限の互換性と安定した動作が保証されます。",
+    "de-DE": "Nach dem Einschalten wird die Grafikkartenbeschleunigung nicht genutzt und die Leistung reduziert, maximale Kompatibilität und stabiler Betrieb sind jedoch gewährleistet.",
+    "fr-FR": "Après l'avoir allumé, l'accélération de la carte graphique n'est pas utilisée et les performances sont réduites, mais une compatibilité maximale et un fonctionnement stable sont assurés.",
+    "ko-KR": "전원을 켠 후에는 그래픽 카드 가속이 사용되지 않아 성능이 저하되지만 최대의 호환성과 안정적인 동작이 보장됩니다.",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(27863-27900)"
+    ],
+    "$id": 4700
+  },
+  "开启后将自动切换至内置轻量模型，避免分析超时；": {
+    "en-US": "After being turned on, it will automatically switch to the built-in lightweight model to avoid analysis timeout;",
+    "es-ES": "Después de encenderlo, cambiará automáticamente al modelo liviano incorporado para evitar el tiempo de espera del análisis;",
+    "ar-EG": "بعد تشغيله، سيتحول تلقائيًا إلى النموذج المدمج خفيف الوزن لتجنب انتهاء مهلة التحليل؛",
+    "pt-PT": "Depois de ligado, ele mudará automaticamente para o modelo leve integrado para evitar o tempo limite da análise;",
+    "ru-RU": "После включения он автоматически переключится на встроенную облегченную модель, чтобы избежать тайм-аута анализа;",
+    "ja-JP": "オンにすると、分析タイムアウトを回避するために、自動的に組み込みの軽量モデルに切り替わります。",
+    "de-DE": "Nach dem Einschalten wechselt es automatisch zum integrierten Lightweight-Modell, um Zeitüberschreitungen bei der Analyse zu vermeiden.",
+    "fr-FR": "Après avoir été allumé, il passera automatiquement au modèle léger intégré pour éviter l'expiration du délai d'analyse ;",
+    "ko-KR": "켜진 후에는 분석 시간 초과를 방지하기 위해 내장된 경량 모델로 자동 전환됩니다.",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(27989-28016)"
+    ],
+    "$id": 4701
+  },
+  "推理引擎库": {
+    "en-US": "Inference Engine Library",
+    "es-ES": "Biblioteca de motores de inferencia",
+    "ar-EG": "مكتبة محرك الاستدلال",
+    "pt-PT": "Biblioteca de motores de inferência",
+    "ru-RU": "Библиотека движков инференса",
+    "ja-JP": "推論エンジンライブラリ",
+    "de-DE": "Bibliothek der Inferenz-Engines",
+    "fr-FR": "Bibliothèque du moteur d'inférence  ",
+    "ko-KR": "추론 엔진 라이브러리",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(29336-29345)"
+    ],
+    "$id": 2950
+  },
+  "管理您的本地 AI 核心能力": {
+    "en-US": "Manage your local AI core capabilities",
+    "es-ES": "Gestione sus capacidades principales de IA local",
+    "ar-EG": "أدر قدراتك الأساسية للذكاء الاصطناعي المحلي",
+    "pt-PT": "Gira as suas capacidades centrais de IA local",
+    "ru-RU": "Управление основными локальными возможностями ИИ",
+    "ja-JP": "ローカル AI コア機能を管理",
+    "de-DE": "Verwalten Sie Ihre lokalen KI-Kernfähigkeiten",
+    "fr-FR": "Gérez vos capacités IA locales essentielles  ",
+    "ko-KR": "로컬 AI 핵심 기능 관리",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(29481-29499)"
+    ],
+    "$id": 2951
+  },
+  "该来源暂无可用模型": {
+    "en-US": "No models available from this source",
+    "es-ES": "No hay modelos disponibles de esta fuente",
+    "ar-EG": "لا توجد نماذج متاحة حالياً من هذا المصدر",
+    "pt-PT": "Não há modelos disponíveis nesta fonte",
+    "ru-RU": "Модели из этого источника недоступны",
+    "ja-JP": "このソースには利用可能なモデルがありません",
+    "de-DE": "Von dieser Quelle sind derzeit keine Modelle verfügbar",
+    "fr-FR": "Aucun modèle disponible pour cette source  ",
+    "ko-KR": "이 소스에서는 사용 가능한 모델이 없습니다.",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(31744-31757)"
+    ],
+    "$id": 2960
+  },
+  "存储配置": {
+    "en-US": "Storage Configuration",
+    "es-ES": "Configuración de almacenamiento",
+    "ar-EG": "إعدادات التخزين",
+    "pt-PT": "Configuração de armazenamento",
+    "ru-RU": "Конфигурация хранилища",
+    "ja-JP": "ストレージ設定",
+    "de-DE": "Speicherkonfiguration",
+    "fr-FR": "Configuration de stockage  ",
+    "ko-KR": "저장소 구성",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(33000-33008)"
+    ],
+    "$id": 2986
+  },
+  "模型将保存在以下路径，建议选择充足空间的高速存储盘": {
+    "en-US": "The model will be saved in the following path. It is recommended to choose a high-speed storage disk with sufficient space.",
+    "es-ES": "El modelo se guardará en la siguiente ruta. Se recomienda elegir un disco de almacenamiento de alta velocidad con suficiente espacio.",
+    "ar-EG": "سيتم حفظ النموذج في المسار التالي. يوصى باختيار قرص تخزين عالي السرعة بمساحة كافية.",
+    "pt-PT": "O modelo será salvo no seguinte caminho. Recomenda-se escolher um disco de armazenamento de alta velocidade com espaço suficiente.",
+    "ru-RU": "Модель будет сохранена по следующему пути. Рекомендуется выбрать высокоскоростной накопитель с достаточным пространством.",
+    "ja-JP": "モデルは以下のパスに保存されます。十分なスペースのある高速ストレージ ディスクを選択することをお勧めします。",
+    "de-DE": "Das Modell wird im folgenden Pfad gespeichert. Es wird empfohlen, eine Hochgeschwindigkeits-Speicherfestplatte mit ausreichend Speicherplatz zu wählen.",
+    "fr-FR": "Le modèle sera enregistré dans le chemin suivant. Il est recommandé de choisir un disque de stockage haute vitesse avec suffisamment d'espace.",
+    "ko-KR": "모델은 다음 경로에 저장됩니다. 충분한 공간이 있는 고속 저장 디스크를 선택하는 것이 좋습니다.",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(33142-33171)"
+    ],
+    "$id": 4702
+  },
+  "浏览": {
+    "en-US": "Browse  ",
+    "es-ES": "Examinar",
+    "ar-EG": "استعراض  ",
+    "pt-PT": "Procurar",
+    "ru-RU": "Обзор",
+    "ja-JP": "参照",
+    "de-DE": "Durchsuchen",
+    "fr-FR": "Parcourir",
+    "ko-KR": "찾아보기",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(34400-34406)"
+    ],
+    "$id": 2993
+  },
+  "刷新模型列表": {
+    "en-US": "Refresh model list",
+    "es-ES": "Actualizar lista de modelos",
+    "ar-EG": "تحديث قائمة النماذج",
+    "pt-PT": "Atualizar lista de modelos",
+    "ru-RU": "Обновить список моделей",
+    "ja-JP": "モデルリストを更新",
+    "de-DE": "Modellliste aktualisieren",
+    "fr-FR": "Actualiser la liste des modèles",
+    "ko-KR": "모델 목록 새로 고침",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(34967-34977)"
+    ],
+    "$id": 4313
+  },
+  "确认删除": {
+    "en-US": "Confirm Deletion",
+    "es-ES": "Confirmar eliminación",
+    "ar-EG": "تأكيد الحذف",
+    "pt-PT": "Confirmar eliminação",
+    "ru-RU": "Подтверждение удаления",
+    "ja-JP": "削除の確認",
+    "de-DE": "Löschen bestätigen",
+    "fr-FR": "Confirmer la suppression  ",
+    "ko-KR": "삭제 확인",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(35704-35712)"
+    ],
+    "$id": 2938
+  },
+  "确认删除模型 \"{model}\"?": {
+    "en-US": "Confirm deletion of model \"{model}\"?",
+    "es-ES": "¿Confirmar la eliminación del modelo \"{model}\"?",
+    "ar-EG": "هل تؤكد حذف النموذج \"{model}\"؟",
+    "pt-PT": "Tem a certeza de que pretende eliminar o modelo \"{model}\"?",
+    "ru-RU": "Подтвердить удаление модели \"{model}\"?",
+    "ja-JP": "モデル「{model}」を削除してもよろしいですか？",
+    "de-DE": "Modell „{model}\" wirklich löschen?",
+    "fr-FR": "Confirmer la suppression du modèle « {model} » ?  ",
+    "ko-KR": "모델 \"{model}\" 을 (를) 삭제하시겠습니까?",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(35885-35906)"
+    ],
+    "$id": 2939
+  },
+  "取消": {
+    "en-US": "Cancel",
+    "es-ES": "Cancelar",
+    "ar-EG": "إلغاء  ",
+    "pt-PT": "Cancelar",
+    "ru-RU": "Отмена",
+    "ja-JP": "キャンセル",
+    "de-DE": "Abbrechen",
+    "fr-FR": "Annuler",
+    "ko-KR": "취소",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(36338-36344)"
+    ],
+    "$id": 2957
+  },
+  "删除": {
+    "en-US": "Delete",
+    "es-ES": "Eliminar",
+    "ar-EG": "حذف  ",
+    "pt-PT": "Eliminar",
+    "ru-RU": "Удалить",
+    "ja-JP": "削除",
+    "de-DE": "Löschen",
+    "fr-FR": "Supprimer",
+    "ko-KR": "삭제",
+    "$files": [
+      "renderer/components/settings/ai-model-settings.tsx(36632-36638)"
+    ],
+    "$id": 2956
+  },
+  "模型思考模式": {
+    "en-US": "Model Thinking Mode",
+    "es-ES": "Modo de pensamiento del modelo",
+    "ar-EG": "وضع التفكير النموذجي",
+    "pt-PT": "Modo de pensamento do modelo",
+    "ru-RU": "Режим мышления модели",
+    "ja-JP": "モデル思考モード",
+    "de-DE": "Modell-Denkmuster",
+    "fr-FR": "Mode de réflexion du modèle",
+    "ko-KR": "모델 사고 모드",
+    "$id": 4703,
+    "$files": [
+      "src/renderer/components/settings/ai-model-settings.tsx(1-1)"
+    ]
+  },
+  "可选优化": {
+    "en-US": "Optional Optimization",
+    "es-ES": "Optimización opcional",
+    "ar-EG": "تحسين اختياري",
+    "pt-PT": "Otimização opcional",
+    "ru-RU": "Необязательная оптимизация",
+    "ja-JP": "オプションの最適化",
+    "de-DE": "Optionale Optimierung",
+    "fr-FR": "Optimisation optionnelle",
+    "ko-KR": "선택적 최적화",
+    "$id": 4704,
+    "$files": [
+      "src/renderer/components/settings/ai-model-settings.tsx(1-1)"
+    ]
+  },
+  "开启后允许模型输出思考过程，可能提升分析质量但会增加响应时间。": {
+    "en-US": "When enabled, allows the model to output thinking process, which may improve analysis quality but increase response time.",
+    "es-ES": "Cuando está habilitado, permite al modelo输出思考过程，可能提升分析质量但会增加响应时间。",
+    "ar-EG": "عند التمكين، يسمح للنموذج بإخراج عملية التفكير، مما قد يحسن جودة التحليل لكنه يزيد من وقت الاستجابة.",
+    "pt-PT": "Quando ativado, permite que o modelo output思考过程，可能提升分析质量但会增加响应时间。",
+    "ru-RU": "При включении позволяет модели выводить процесс мышления, что может улучшить качество анализа, но увеличивает время ответа.",
+    "ja-JP": "有効にすると、モデルが思考過程を出力できます。分析品質が向上する可能性がありますが、応答時間が長くなります。",
+    "de-DE": "Wenn aktiviert, darf das Modell seinen Denkprozess ausgeben, was die Analysequalität verbessern, aber die Antwortzeit verlängern kann.",
+    "fr-FR": "Lorsqu'il est activé, il permet au modèle de输出思考过程，可能提升分析质量但会增加响应时间。",
+    "ko-KR": "활성화하면 모델이 사고 과정을 출력할 수 있어 분석 품질이 향상될 수 있지만 응답 시간이 증가할 수 있습니다.",
+    "$id": 4705,
+    "$files": [
+      "src/renderer/components/settings/ai-model-settings.tsx(1-1)"
+    ]
+  },
+  "仅支持具有推理能力的模型（如DeepSeek-R1、QwQ等），其他模型将忽略此设置。": {
+    "en-US": "Only supported by models with reasoning capabilities (e.g., DeepSeek-R1, QwQ). Other models will ignore this setting.",
+    "es-ES": "Solo compatible con modelos con capacidades de razonamiento (ej., DeepSeek-R1, QwQ). Otros modelos ignorarán esta configuración.",
+    "ar-EG": "مدعوم فقط من النماذج ذات قدرات الاستدلال (مثل DeepSeek-R1, QwQ). ستجاهل النماذج الأخرى هذا الإعداد.",
+    "pt-PT": "Suportado apenas por modelos com capacidades de raciocínio (ex., DeepSeek-R1, QwQ). Outros modelos ignorarão esta configuração.",
+    "ru-RU": "Поддерживается только моделями с возможностями рассуждения (например, DeepSeek-R1, QwQ). Другие модели проигнорируют эту настройку.",
+    "ja-JP": "推論機能を持つモデルのみサポートされています（例：DeepSeek-R1、QwQ）。他のモデルはこの設定を無視します。",
+    "de-DE": "Wird nur von Modellen mit Schlussfolgerungsfähigkeiten unterstützt (z.B. DeepSeek-R1, QwQ). Andere Modelle ignorieren diese Einstellung.",
+    "fr-FR": "Pris en charge uniquement par les modèles具备推理能力（如DeepSeek-R1、QwQ等），其他模型将忽略此设置。",
+    "ko-KR": "추론 기능을 가진 모델(예: DeepSeek-R1, QwQ)에서만 지원됩니다. 다른 모델은 이 설정을 무시합니다.",
+    "$id": 4706,
+    "$files": [
+      "src/renderer/components/settings/ai-model-settings.tsx(1-1)"
+    ]
+  }
+}

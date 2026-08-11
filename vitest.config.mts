@@ -1,0 +1,72 @@
+import { defineConfig } from 'vitest/config'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import react from '@vitejs/plugin-react'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+export default defineConfig({
+  plugins: [react()],
+  define: {
+    __AI_ENGINE__: JSON.stringify('llamacpp'),
+    __APP_VERSION__: JSON.stringify('0.0.0-test'),
+    __BUILD_REGION__: JSON.stringify('GLOBAL'),
+    __IS_PROD__: 'false'
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    include: ['src/**/*.test.{ts,tsx}', 'tests/**/*.test.{ts,tsx}'],
+    setupFiles: ['src/test-setup.ts'],
+    testTimeout: 60000,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      reportsDirectory: './coverage',
+      exclude: ['node_modules/', 'tests/e2e/', 'tests/integration/', 'src/shared/types/']
+    },
+    teardownTimeout: 30000,
+    server: {
+      deps: {
+        inline: [
+          '@firefly/server',
+          '@firefly/shared',
+          '@firefly/types',
+          '@firefly/core-engine',
+          '@firefly/electron-llamaIndex-service'
+        ]
+      }
+    }
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@src': resolve(__dirname, 'src'),
+      '@app': resolve(__dirname, 'src'),
+      '@/shared': resolve(__dirname, 'src/shared'),
+      '@/electron': resolve(__dirname, 'src/electron'),
+      '@/renderer': resolve(__dirname, 'src/renderer'),
+      '@components': resolve(__dirname, 'src/renderer/components'),
+      '@ui': resolve(__dirname, 'src/renderer/components/ui'),
+      '@lib': resolve(__dirname, 'src/renderer/lib'),
+      '@utils': resolve(__dirname, 'src/renderer/lib/utils'),
+      '@stores': resolve(__dirname, 'src/renderer/stores'),
+      '@hooks': resolve(__dirname, 'src/renderer/hooks'),
+      '@runtime': resolve(__dirname, 'src/electron/runtime-services'),
+      '@firefly/types': resolve(__dirname, '../../packages/types/src'),
+      '@firefly/shared': resolve(__dirname, '../../packages/shared/src'),
+      '@firefly/core-engine': resolve(__dirname, '../../packages/core-engine/src'),
+      '@firefly/server': resolve(__dirname, '../server/src'),
+      '@firefly/electron-llamaIndex-service': resolve(
+        __dirname,
+        '../../packages/electron-llamaIndex-service/src'
+      ),
+      '@app/languages': resolve(__dirname, 'src/languages'),
+      '@app/electron': resolve(__dirname, 'src/electron'),
+      react: resolve(__dirname, '../../node_modules/react'),
+      'react-dom': resolve(__dirname, '../../node_modules/react-dom'),
+      events: resolve(__dirname, '../../node_modules/events')
+    }
+  }
+})

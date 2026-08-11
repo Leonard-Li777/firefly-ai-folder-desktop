@@ -1,0 +1,843 @@
+{
+    "示例：作为整体单元的文件集合特征为：文件命名带数字后缀的文件集合，例如：1.txt, 2.txt, 3.txt": {
+        "en-US": "Example: The characteristic of a file collection as a whole unit is: a set of files named with numeric suffixes, for example: 1.txt, 2.txt, 3.txt",
+        "es-ES": "Ejemplo: La característica de una colección de archivos como unidad global es: una colección de archivos con nombres que incluyen sufijos numéricos, por ejemplo: 1.txt, 2.txt, 3.txt  ",
+        "ar-EG": "مثال: مجموعة ملفات كوحدة كلية تتميز بـ: تسمية الملفات بأرقام كلاحقة، مثل: 1.txt, 2.txt, 3.txt",
+        "pt-PT": "Exemplo: Característica de uma coleção de ficheiros como unidade global: conjunto de ficheiros com numeração no nome, por exemplo: 1.txt, 2.txt, 3.txt",
+        "ru-RU": "Пример: Коллекция файлов как единое целое характеризуется тем, что имена файлов в коллекции содержат цифровые суффиксы, например: 1.txt, 2.txt, 3.txt",
+        "ja-JP": "例：ファイル群全体としての特徴は、数字の接尾辞付きファイル名の集合です。例：1.txt, 2.txt, 3.txt",
+        "de-DE": "Beispiel: Eine Dateisammlung als Ganzes ist durch Dateien mit numerischen Suffixen gekennzeichnet, zum Beispiel: 1.txt, 2.txt, 3.txt",
+        "fr-FR": "Exemple : Caractéristique d'une collection de fichiers en tant qu'unité globale : ensemble de fichiers dont le nom est suffixé par un chiffre, par exemple : 1.txt, 2.txt, 3.txt",
+        "ko-KR": "예시: 전체 단위로 된 파일 집합의 특징은 숫자 접미사를 포함한 파일명으로 구성된 파일 집합입니다. 예를 들어: 1.txt, 2.txt, 3.txt",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(5861-5930)"
+        ],
+        "$id": 2681
+    },
+    "示例：为喜剧故事多加分；为技术指标降低权重; 多模态内容描述着重人物关系, lrc翻译为{activeLanguage}": {
+        "en-US": "Example: Add more points for comedic stories; reduce weight for technical indicators; focus multimodal content descriptions on character relationships, translate lyrics to {activeLanguage}",
+        "es-ES": "Ejemplo: aumentar la puntuación para historias cómicas; reducir el peso de los indicadores técnicos; en las descripciones de contenido multimodal, enfatizar las relaciones entre personajes. Traducir \"lrc\" al {activeLanguage}.",
+        "ar-EG": "مثال: امنح نقاطًا إضافية للقصص الكوميدية؛ قلّل من وزن المؤشرات التقنية؛ ركّز وصف المحتوى متعدد الوسائط على العلاقات بين الشخصيات، وترجم lrc إلى {activeLanguage}  ",
+        "pt-PT": "Exemplo: atribuir mais pontos a histórias cómicas; reduzir o peso dos indicadores técnicos; nas descrições multimodais, enfatizar as relações entre personagens; traduzir \"lrc\" para {activeLanguage}  ",
+        "ru-RU": "Пример: добавить больше баллов для комедийных историй; снизить вес технических показателей; в описании мультимодального контента сделать акцент на отношениях между персонажами, перевод lrc на {activeLanguage}",
+        "ja-JP": "例：コメディストーリーのスコアを上げる；技術的指標の重みを下げる；マルチモーダルコンテンツの説明では人物関係に重点を置く；lrcを{activeLanguage}に翻訳する  ",
+        "de-DE": "Beispiel: Geben Sie Comedy-Geschichten mehr Gewicht; reduzieren Sie das Gewicht technischer Indikatoren; bei multimodalen Inhaltsbeschreibungen liegt der Fokus auf Personenbeziehungen, lrc-Übersetzung in {activeLanguage}",
+        "fr-FR": "Exemple : attribuer plus de points aux histoires comiques ; réduire le poids des indicateurs techniques ; dans les descriptions multimodales, mettre l'accent sur les relations entre personnages ; traduire « lrc » en {activeLanguage}.  ",
+        "ko-KR": "예시: 코미디 스토리에 가중치를 더 부여하고, 기술 지표의 가중치는 낮추기; 멀티모달 콘텐츠 설명은 인물 관계에 중점을 두고, lrc를 {activeLanguage}로 번역  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(5962-6026)"
+        ],
+        "$id": 3067
+    },
+    "示例：智能文件名需要翻译成{activeLanguage}，格式：作者_内容描述。例如：乔治·马丁_冰与火之歌.pdf。标签最多生成20个，且每个不要超过2个字，至少从文件名提取一个标签，其它必须从此集合里提取：[开心,痛苦,愤恨,...]": {
+        "en-US": "Example: Smart filenames need to be translated to {activeLanguage}, format: Author_ContentDescription. For instance: George_R.R._Martin_A_Song_of_Ice_and_Fire.pdf. Generate at most 20 tags, each no longer than 2 characters; extract at least one tag from the filename, and extract all others from this set: [Happy, Painful, Resentful, ...]",
+        "es-ES": "Ejemplo: el nombre inteligente del archivo debe traducirse al {activeLanguage}, con el formato: autor_descripción_del_contenido. Por ejemplo: George_Martin_Canción_de_hielo_y_fuego.pdf. Generar como máximo 20 etiquetas, y cada una no debe superar los dos caracteres. Extraer al menos una etiqueta del nombre del archivo; las demás deben extraerse obligatoriamente de este conjunto: [alegría, dolor, resentimiento,...]",
+        "ar-EG": "مثال: يجب ترجمة أسماء الملفات الذكية إلى {activeLanguage}، بالصيغة التالية: مؤلف_وصف_المحتوى. مثال: جورج مارتن_أغنية الجليد والنار.pdf. يُولَّد ما لا يزيد عن 20 وسمًا، ولا يتجاوز طول كل وسم حرفين، ويجب استخراج وسم واحد على الأقل من اسم الملف، أما البقية فيجب أن تُستخرج حصريًّا من هذه المجموعة: [سعيد، معاناة، كراهية،...]",
+        "pt-PT": "Exemplo: os nomes inteligentes de ficheiros devem ser traduzidos para {activeLanguage}, no formato: autor_descrição do conteúdo. Por exemplo: George_Martin_A_Canção_de_Gelo_e_Fogo.pdf. Gerar no máximo 20 etiquetas, sendo que cada uma não deve exceder dois caracteres. Extrair pelo menos uma etiqueta do nome do ficheiro e as restantes devem ser retiradas deste conjunto: [feliz, dor, ódio,...]",
+        "ru-RU": "Пример: умное имя файла нужно перевести на {activeLanguage}, формат: Автор_Описание_содержимого. Например: Джордж_Р._Р._Мартин_Песнь_льда_и_пламени.pdf. Максимальное количество тегов — 20, каждый не более 2 символов, хотя бы один тег должен быть извлечён из имени файла, остальные — исключительно из следующего набора: [радость, боль, негодование,...]",
+        "ja-JP": "例：スマートファイル名は{activeLanguage}に翻訳する必要があり、フォーマットは「作者_内容説明」とする。例：ジョージ・R・R・マーティン_氷と炎の歌.pdf。タグは最大20個生成し、各タグは2文字以内とすること。ファイル名から少なくとも1つのタグを抽出し、その他は以下のセットから選択すること：[楽しい,苦しい,憎しみ,...]",
+        "de-DE": "Beispiel: Intelligente Dateinamen müssen in {activeLanguage} übersetzt werden, Format: Autor_Inhaltsbeschreibung. Beispiel: George_R._Martin_Eis_und_Feuer.pdf. Es werden maximal 20 Tags generiert, wobei jedes Tag nicht länger als 2 Zeichen sein darf. Mindestens ein Tag muss aus dem Dateinamen extrahiert werden, die restlichen müssen aus folgendem Set stammen: [Freude, Schmerz, Groll,...]",
+        "fr-FR": "Exemple : les noms de fichiers intelligents doivent être traduits en {activeLanguage}, au format : auteur_description_du_contenu. Par exemple : George_Martin_Le_Trône_de_fer.pdf. Générer au maximum 20 étiquettes, chacune ne dépassant pas deux caractères. Extraire au moins une étiquette du nom de fichier, les autres doivent obligatoirement provenir de cet ensemble : [joie, douleur, colère, ...]",
+        "ko-KR": "예시: 스마트 파일 이름은 {activeLanguage}로 번역되어야 하며, 형식: 작가_콘텐츠 설명. 예: 조지 R.R. 마틴_얼음과 불의 노래.pdf. 태그는 최대 20개까지 생성하며, 각 태그는 2자 이내로 제한되고, 반드시 파일 이름에서 하나 이상의 태그를 추출해야 하며, 나머지는 다음 집합에서만 추출해야 함: [기쁨, 고통, 분노,...]",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(6147-6281)"
+        ],
+        "$id": 3083
+    },
+    "文件": {
+        "en-US": "File  ",
+        "es-ES": "Archivo  ",
+        "ar-EG": "ملف  ",
+        "pt-PT": "Ficheiro",
+        "ru-RU": "Файл  ",
+        "ja-JP": "ファイル  ",
+        "de-DE": "Datei",
+        "fr-FR": "Fichier  ",
+        "ko-KR": "파일  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(7865-7871)",
+            "renderer/components/settings/analysis-settings.tsx(18691-18697)",
+            "renderer/components/settings/analysis-settings.tsx(25335-25341)"
+        ],
+        "$id": 3001
+    },
+    "目录": {
+        "en-US": "Directory  ",
+        "es-ES": "Directorio  ",
+        "ar-EG": "دليل  ",
+        "pt-PT": "Diretório",
+        "ru-RU": "Каталог  ",
+        "ja-JP": "ディレクトリ  ",
+        "de-DE": "Verzeichnis",
+        "fr-FR": "Répertoire  ",
+        "ko-KR": "디렉터리  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(7892-7898)",
+            "renderer/components/settings/analysis-settings.tsx(18769-18775)",
+            "renderer/components/settings/analysis-settings.tsx(25403-25409)"
+        ],
+        "$id": 3002
+    },
+    "扩展名": {
+        "en-US": "Extension  ",
+        "es-ES": "Extensión  ",
+        "ar-EG": "امتداد  ",
+        "pt-PT": "Extensão",
+        "ru-RU": "Расширение  ",
+        "ja-JP": "拡張子  ",
+        "de-DE": "Erweiterung",
+        "fr-FR": "Extension  ",
+        "ko-KR": "확장자  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(7919-7926)",
+            "renderer/components/settings/analysis-settings.tsx(18847-18854)",
+            "renderer/components/settings/analysis-settings.tsx(25471-25478)"
+        ],
+        "$id": 3003
+    },
+    "正则表达式": {
+        "en-US": "Regular Expression",
+        "es-ES": "Expresiones regulares",
+        "ar-EG": "التعبيرات النمطية",
+        "pt-PT": "Expressões regulares",
+        "ru-RU": "Регулярные выражения",
+        "ja-JP": "正規表現",
+        "de-DE": "Reguläre Ausdrücke",
+        "fr-FR": "Expression régulière",
+        "ko-KR": "정규식",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(7943-7952)",
+            "renderer/components/settings/analysis-settings.tsx(19000-19009)",
+            "renderer/components/settings/analysis-settings.tsx(25604-25613)"
+        ],
+        "$id": 3310
+    },
+    "通配符": {
+        "en-US": "Wildcard",
+        "es-ES": "Comodines",
+        "ar-EG": "الأحرف البدل",
+        "pt-PT": "Curingas",
+        "ru-RU": "Символы подстановки",
+        "ja-JP": "ワイルドカード",
+        "de-DE": "Platzhalter",
+        "fr-FR": "Caractère générique",
+        "ko-KR": "와일드카드",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(7972-7979)",
+            "renderer/components/settings/analysis-settings.tsx(18925-18932)",
+            "renderer/components/settings/analysis-settings.tsx(25539-25546)"
+        ],
+        "$id": 3311
+    },
+    "模式": {
+        "en-US": "Mode  ",
+        "es-ES": "Modo  ",
+        "ar-EG": "نمط  ",
+        "pt-PT": "Modo",
+        "ru-RU": "Режим  ",
+        "ja-JP": "モード  ",
+        "de-DE": "Muster",
+        "fr-FR": "Modèle  ",
+        "ko-KR": "모드  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(7998-8004)"
+        ],
+        "$id": 3004
+    },
+    "分析设置": {
+        "en-US": "Analysis Settings  ",
+        "es-ES": "Configuración de análisis  ",
+        "ar-EG": "إعدادات التحليل  ",
+        "pt-PT": "Definições de análise",
+        "ru-RU": "Настройки анализа  ",
+        "ja-JP": "分析設定  ",
+        "de-DE": "Analyseeinstellungen",
+        "fr-FR": "Paramètres d'analyse  ",
+        "ko-KR": "분석 설정  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(8176-8184)"
+        ],
+        "$id": 3005
+    },
+    "配置AI分析行为、提示词和忽略规则": {
+        "en-US": "Configure AI analysis behavior, prompts, and ignore rules  ",
+        "es-ES": "Configurar el comportamiento del análisis con IA, las indicaciones y las reglas de exclusión  ",
+        "ar-EG": "تهيئة سلوك تحليل الذكاء الاصطناعي، ونصوص المطالبة (Prompts)، وقواعد التجاهل  ",
+        "pt-PT": "Configurar o comportamento da análise por IA, prompts e regras de ignorar",
+        "ru-RU": "Настройка поведения ИИ-анализа, подсказок и правил игнорирования  ",
+        "ja-JP": "AI分析の動作、プロンプト、および無視ルールを設定します  ",
+        "de-DE": "Konfigurieren Sie das Verhalten der KI-Analyse, die Prompt-Wörter und die Ignorierregeln",
+        "fr-FR": "Configurer le comportement de l'IA, les invites et les règles d'ignorance  ",
+        "ko-KR": "AI 분석 동작, 프롬프트 및 무시 규칙 구성  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(8247-8268)"
+        ],
+        "$id": 3006
+    },
+    "插件安装：LibreOffice（Office文件转换工具）": {
+        "en-US": "Recommended installation: LibreOffice (Office file conversion tool)  ",
+        "es-ES": "Instalación recomendada: LibreOffice (herramienta de conversión de archivos de Office)  ",
+        "ar-EG": "تثبيت موصى به: LibreOffice (أداة تحويل ملفات Office)  ",
+        "pt-PT": "Instalação recomendada: LibreOffice (ferramenta de conversão de ficheiros do Office)",
+        "ru-RU": "Рекомендуется установить: LibreOffice (инструмент для конвертации Office-файлов)  ",
+        "ja-JP": "推奨インストール：LibreOffice（Officeファイル変換ツール）  ",
+        "de-DE": "Empfohlene Installation: LibreOffice (Office-Dateikonvertierungstool)",
+        "fr-FR": "Installation recommandée : LibreOffice (outil de conversion de fichiers Office)  ",
+        "ko-KR": "권장 설치: LibreOffice(Office 파일 변환 도구)  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(8588-8622)"
+        ],
+        "$id": 3007
+    },
+    "安装LibreOffice，支持Office及PDF文件预览缩略图，提升它们的分析精度": {
+        "en-US": "Install LibreOffice to enable thumbnail previews for Office and PDF files and improve their analysis accuracy  ",
+        "es-ES": "Instale LibreOffice para habilitar la vista previa en miniatura de archivos de Office y PDF, mejorando así la precisión de su análisis  ",
+        "ar-EG": "قم بتثبيت LibreOffice لدعم معاينات الصور المصغرة لملفات Office وPDF، ولتحسين دقة تحليلها  ",
+        "pt-PT": "Instale o LibreOffice para suportar a pré-visualização em miniatura de ficheiros do Office e PDF, melhorando a precisão da sua análise",
+        "ru-RU": "Установите LibreOffice для поддержки создания миниатюр Office- и PDF-файлов и повышения точности их анализа  ",
+        "ja-JP": "LibreOfficeをインストールすると、OfficeおよびPDFファイルのサムネイルプレビューがサポートされ、これらのファイルの分析精度が向上します  ",
+        "de-DE": "Installieren Sie LibreOffice, um Vorschaubilder für Office- und PDF-Dateien zu unterstützen und deren Analysegenauigkeit zu verbessern",
+        "fr-FR": "Installez LibreOffice pour activer la génération de vignettes d'aperçu des fichiers Office et PDF, améliorant ainsi leur précision d'analyse  ",
+        "ko-KR": "LibreOffice를 설치하면 Office 및 PDF 파일의 미리보기 썸네일을 지원하고 분석 정확도를 향상시킵니다.  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(8733-8780)"
+        ],
+        "$id": 3008
+    },
+    "💡 Windows用户重要提示：": {
+        "en-US": "💡 Important note for Windows users:  ",
+        "es-ES": "💡 Nota importante para usuarios de Windows:  ",
+        "ar-EG": "💡 ملاحظة هامة لمستخدمي Windows:  ",
+        "pt-PT": "💡 Aviso importante para utilizadores do Windows:",
+        "ru-RU": "💡 Важное примечание для пользователей Windows:  ",
+        "ja-JP": "💡 Windowsユーザーへの重要なお知らせ：  ",
+        "de-DE": "💡 Wichtiger Hinweis für Windows-Benutzer:",
+        "fr-FR": "💡 Conseil important pour les utilisateurs Windows :  ",
+        "ko-KR": "💡 Windows 사용자 중요 안내:  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(9261-9282)"
+        ],
+        "$id": 3009
+    },
+    "检测失败，请确保：": {
+        "en-US": "Detection failed. Please ensure:",
+        "es-ES": "Error en la detección, asegúrese de que:",
+        "ar-EG": "فشل الفحص، يرجى التأكد من:",
+        "pt-PT": "Falha na deteção, certifique-se de que:",
+        "ru-RU": "Ошибка обнаружения, убедитесь, что:",
+        "ja-JP": "検出に失敗しました。以下をご確認ください：",
+        "de-DE": "Erkennung fehlgeschlagen, bitte stellen Sie sicher:",
+        "fr-FR": "Échec de la détection, veuillez vous assurer que :",
+        "ko-KR": "감지에 실패했습니다. 다음을 확인하세요:",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(9331-9344)"
+        ],
+        "$id": 3391
+    },
+    "LibreOffice安装路径已添加到系统PATH环境变量": {
+        "en-US": "The LibreOffice installation path has been added to the system PATH environment variable",
+        "es-ES": "La ruta de instalación de LibreOffice se haya añadido a la variable de entorno PATH del sistema",
+        "ar-EG": "تمت إضافة مسار تثبيت LibreOffice إلى متغير بيئة النظام PATH",
+        "pt-PT": "O caminho de instalação do LibreOffice foi adicionado à variável de ambiente PATH do sistema",
+        "ru-RU": "Путь установки LibreOffice добавлен в системную переменную среды PATH",
+        "ja-JP": "LibreOfficeのインストールパスがシステムのPATH環境変数に追加されていること",
+        "de-DE": "Der Installationspfad von LibreOffice zur Systemumgebungsvariable PATH hinzugefügt wurde",
+        "fr-FR": "Le chemin d'installation de LibreOffice a été ajouté à la variable d'environnement PATH du système",
+        "ko-KR": "LibreOffice 설치 경로가 시스템 PATH 환경 변수에 추가되어 있는지",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(9449-9482)"
+        ],
+        "$id": 3011
+    },
+    "重启应用后再次尝试": {
+        "en-US": "Try again after restarting the app  ",
+        "es-ES": "Vuelva a intentarlo tras reiniciar la aplicación",
+        "ar-EG": "أعد تشغيل التطبيق ثم حاول مجددًا  ",
+        "pt-PT": "Tente novamente após reiniciar a aplicação",
+        "ru-RU": "Повторите попытку после перезапуска приложения  ",
+        "ja-JP": "アプリを再起動してから再度お試しください",
+        "de-DE": "Nach Neustart der App erneut versuchen  ",
+        "fr-FR": "Réessayez après avoir redémarré l'application",
+        "ko-KR": "앱을 재시작한 후 다시 시도하세요  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(9518-9531)"
+        ],
+        "$id": 3012
+    },
+    "默认路径：": {
+        "en-US": "Default path:  ",
+        "es-ES": "Ruta predeterminada:",
+        "ar-EG": "المسار الافتراضي:  ",
+        "pt-PT": "Caminho predefinido:",
+        "ru-RU": "Путь по умолчанию:  ",
+        "ja-JP": "デフォルトパス：",
+        "de-DE": "Standardpfad:  ",
+        "fr-FR": "Chemin par défaut :",
+        "ko-KR": "기본 경로:  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(9567-9576)"
+        ],
+        "$id": 3013
+    },
+    "前往下载": {
+        "en-US": "Go to Downloads  ",
+        "es-ES": "Ir a descargas",
+        "ar-EG": "الذهاب إلى التنزيلات  ",
+        "pt-PT": "Ir para transferências",
+        "ru-RU": "Перейти к загрузкам  ",
+        "ja-JP": "ダウンロードへ移動",
+        "de-DE": "Zum Download gehen  ",
+        "fr-FR": "Accéder aux téléchargements",
+        "ko-KR": "다운로드로 이동  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(9945-9953)"
+        ],
+        "$id": 3014
+    },
+    "检测中...": {
+        "en-US": "Detecting...  ",
+        "es-ES": "Detectando...",
+        "ar-EG": "قيد الكشف...  ",
+        "pt-PT": "A detetar...",
+        "ru-RU": "Идет проверка...  ",
+        "ja-JP": "検出中...",
+        "de-DE": "Wird erkannt …  ",
+        "fr-FR": "Détection en cours...",
+        "ko-KR": "감지 중...  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(10217-10227)",
+            "renderer/components/settings/analysis-settings.tsx(11201-11211)"
+        ],
+        "$id": 3015
+    },
+    "已安装": {
+        "en-US": "Installed  ",
+        "es-ES": "Instalado",
+        "ar-EG": "مُثبَّت  ",
+        "pt-PT": "Instalado",
+        "ru-RU": "Установлено  ",
+        "ja-JP": "インストール済み",
+        "de-DE": "Installiert  ",
+        "fr-FR": "Installé",
+        "ko-KR": "설치됨  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(10499-10506)"
+        ],
+        "$id": 3016
+    },
+    "未安装": {
+        "en-US": "Not installed  ",
+        "es-ES": "No instalado",
+        "ar-EG": "غير مُثبَّت  ",
+        "pt-PT": "Não instalado",
+        "ru-RU": "Не установлено  ",
+        "ja-JP": "未インストール",
+        "de-DE": "Nicht installiert  ",
+        "fr-FR": "Non installé",
+        "ko-KR": "미설치  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(10880-10887)"
+        ],
+        "$id": 3019
+    },
+    "重新检测": {
+        "en-US": "Re-detect  ",
+        "es-ES": "Volver a detectar",
+        "ar-EG": "إعادة الكشف  ",
+        "pt-PT": "Detetar novamente",
+        "ru-RU": "Повторная проверка  ",
+        "ja-JP": "再検出",
+        "de-DE": "Erneut erkennen  ",
+        "fr-FR": "Relancer la détection",
+        "ko-KR": "다시 감지  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(11215-11223)"
+        ],
+        "$id": 3020
+    },
+    "音频分析时仅截取时长": {
+        "en-US": "Duration extracted during audio analysis  ",
+        "es-ES": "Duración extraída únicamente durante el análisis de audio  ",
+        "ar-EG": "يتم اقتطاع مدة زمنية فقط عند تحليل الصوت  ",
+        "pt-PT": "Durante a análise de áudio, apenas se captura a duração",
+        "ru-RU": "При анализе аудио обрезается только длительность",
+        "ja-JP": "音声分析時は長さのみを切り取ります  ",
+        "de-DE": "Nur die Dauer beim Audio-Analysis ausschneiden  ",
+        "fr-FR": "Durée extraite uniquement lors de l'analyse audio  ",
+        "ko-KR": "오디오 분석 시 추출할 길이만",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(11641-11655)"
+        ],
+        "$id": 3411
+    },
+    "秒": {
+        "en-US": "seconds  ",
+        "es-ES": "segundos",
+        "ar-EG": "ثانية",
+        "pt-PT": "segundos",
+        "ru-RU": "сек",
+        "ja-JP": "秒  ",
+        "de-DE": "Sekunden",
+        "fr-FR": "secondes",
+        "ko-KR": "초",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(11660-11665)"
+        ],
+        "$id": 3447
+    },
+    "最大值300，越长越耗时，且会导致分析失败": {
+        "en-US": "Maximum value is 300; longer durations take more time and may cause analysis to fail",
+        "es-ES": "Valor máximo 300; cuanto más larga, más tiempo consume y puede provocar un fallo en el análisis",
+        "ar-EG": "القيمة القصوى 300، كلما زادت المدة زاد الوقت المستغرق، وقد يؤدي ذلك إلى فشل التحليل",
+        "pt-PT": "Valor máximo de 300; quanto maior, mais demorado, podendo causar falha na análise",
+        "ru-RU": "Максимальное значение 300: чем больше значение, тем больше времени это занимает, а также это может привести к сбою анализа",
+        "ja-JP": "最大値300、長ければ長いほど時間がかかり、分析が失敗する可能性があります  ",
+        "de-DE": "Maximalwert 300; je länger, desto zeitaufwändiger und führt zu Analysefehlern",
+        "fr-FR": "Valeur maximale : 300 ; plus la durée est longue, plus le traitement prend du temps et risque d'échouer",
+        "ko-KR": "최대값 300, 값이 클수록 시간이 더 소요되며 분석이 실패할 수 있습니다.",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(12233-12258)"
+        ],
+        "$id": 3412
+    },
+    "启用最小单元识别": {
+        "en-US": "Enable minimal unit recognition",
+        "es-ES": "Habilitar el reconocimiento de unidades mínimas",
+        "ar-EG": "تمكين الحد الأدنى من التعرف على الوحدة",
+        "pt-PT": "Habilitar reconhecimento de unidade mínima",
+        "ru-RU": "Включить минимальное распознавание единиц измерения",
+        "ja-JP": "最小単位の認識を有効にする",
+        "de-DE": "Aktivieren Sie die Erkennung minimaler Einheiten",
+        "fr-FR": "Activer la reconnaissance minimale des unités",
+        "ko-KR": "최소 단위 인식 활성화",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(12631-12643)"
+        ],
+        "$id": 4741
+    },
+    "启用后，识别为最小单元的目录，跳过文件逐一分析": {
+        "en-US": "When enabled, the directory is identified as the smallest unit and the files are skipped and analyzed one by one.",
+        "es-ES": "Cuando está habilitado, el directorio se identifica como la unidad más pequeña y los archivos se omiten y analizan uno por uno.",
+        "ar-EG": "عند التمكين، يتم تعريف الدليل على أنه أصغر وحدة ويتم تخطي الملفات وتحليلها واحدًا تلو الآخر.",
+        "pt-PT": "Quando habilitado, o diretório é identificado como a menor unidade e os arquivos são ignorados e analisados ​​um por um.",
+        "ru-RU": "Если этот параметр включен, каталог идентифицируется как наименьшая единица, а файлы пропускаются и анализируются один за другим.",
+        "ja-JP": "有効にすると、ディレクトリが最小単位として識別され、ファイルがスキップされて 1 つずつ分析されます。",
+        "de-DE": "Wenn diese Option aktiviert ist, wird das Verzeichnis als kleinste Einheit identifiziert und die Dateien werden übersprungen und einzeln analysiert.",
+        "fr-FR": "Lorsqu'il est activé, le répertoire est identifié comme la plus petite unité et les fichiers sont ignorés et analysés un par un.",
+        "ko-KR": "활성화되면 디렉터리가 가장 작은 단위로 식별되어 파일을 하나씩 건너뛰고 분석합니다.",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(12754-12781)"
+        ],
+        "$id": 4742
+    },
+    "最小单元是将相关联的文件作为一个整体进行AI分析，而非逐个分析单个文件。开启后，以下类型的目录将被识别为最小单元：": {
+        "en-US": "The smallest unit is to perform AI analysis on related files as a whole, rather than analyzing individual files one by one. When turned on, the following types of directories will be recognized as the smallest unit:",
+        "es-ES": "La unidad más pequeña consiste en realizar análisis de IA en archivos relacionados en su conjunto, en lugar de analizar archivos individuales uno por uno. Cuando esté activado, los siguientes tipos de directorios se reconocerán como la unidad más pequeña:",
+        "ar-EG": "أصغر وحدة هي إجراء تحليل الذكاء الاصطناعي على الملفات ذات الصلة ككل، بدلاً من تحليل الملفات الفردية واحدًا تلو الآخر. عند تشغيله، سيتم التعرف على أنواع الدلائل التالية باعتبارها أصغر وحدة:",
+        "pt-PT": "A menor unidade é realizar análises de IA em arquivos relacionados como um todo, em vez de analisar arquivos individuais um por um. Quando ativado, os seguintes tipos de diretórios serão reconhecidos como a menor unidade:",
+        "ru-RU": "Наименьшее подразделение предназначено для выполнения ИИ-анализа связанных файлов в целом, а не для анализа отдельных файлов по одному. При включении наименьшей единицей будут распознаваться следующие типы каталогов:",
+        "ja-JP": "ファイルを一つ一つ解析するのではなく、関連するファイル全体をAI解析するのが最小単位です。オンにすると、以下の種類のディレクトリが最小単位として認識されます。",
+        "de-DE": "Die kleinste Einheit besteht darin, eine KI-Analyse für zusammengehörige Dateien als Ganzes durchzuführen, anstatt einzelne Dateien einzeln zu analysieren. Wenn diese Option aktiviert ist, werden die folgenden Verzeichnistypen als kleinste Einheit erkannt:",
+        "fr-FR": "La plus petite unité consiste à effectuer une analyse IA sur les fichiers associés dans leur ensemble, plutôt que d'analyser les fichiers individuels un par un. Lorsqu'ils sont activés, les types de répertoires suivants seront reconnus comme la plus petite unité :",
+        "ko-KR": "개별 파일을 하나씩 분석하는 것이 아닌 관련 파일 전체에 대해 AI 분석을 수행하는 것이 가장 작은 단위다. 켜면 다음 유형의 디렉터리가 가장 작은 단위로 인식됩니다.",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(13363-13442)"
+        ],
+        "$id": 4743
+    },
+    "音频专辑：同一专辑的音轨文件集合（如 .flac, .mp3）": {
+        "en-US": "Audio album: a collection of audio track files of the same album (such as .flac, .mp3)",
+        "es-ES": "Álbum de audio: una colección de archivos de pistas de audio del mismo álbum (como .flac, .mp3)",
+        "ar-EG": "الألبوم الصوتي: مجموعة من ملفات المسارات الصوتية لنفس الألبوم (مثل .flac، .mp3)",
+        "pt-PT": "Álbum de áudio: uma coleção de arquivos de faixas de áudio do mesmo álbum (como .flac, .mp3)",
+        "ru-RU": "Аудиоальбом: коллекция файлов аудиодорожек одного альбома (например, .flac, .mp3).",
+        "ja-JP": "オーディオ アルバム: 同じアルバムのオーディオ トラック ファイルのコレクション (.flac、.mp3 など)",
+        "de-DE": "Audioalbum: eine Sammlung von Audiotiteldateien desselben Albums (z. B. .flac, .mp3)",
+        "fr-FR": "Album audio : une collection de fichiers de pistes audio du même album (tels que .flac, .mp3)",
+        "ko-KR": "오디오 앨범: 동일한 앨범의 오디오 트랙 파일 모음(예: .flac, .mp3)",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(13561-13596)"
+        ],
+        "$id": 4744
+    },
+    "系列文件：连续编号的文档或图片（如 01.jpg, 02.jpg, 03.jpg）": {
+        "en-US": "Series files: consecutively numbered documents or pictures (such as 01.jpg, 02.jpg, 03.jpg)",
+        "es-ES": "Archivos de serie: documentos o imágenes numerados consecutivamente (como 01.jpg, 02.jpg, 03.jpg)",
+        "ar-EG": "ملفات متسلسلة: مستندات أو صور مرقمة بشكل متتابع (مثل 01.jpg، 02.jpg، 03.jpg)",
+        "pt-PT": "Arquivos de série: documentos ou imagens numeradas consecutivamente (como 01.jpg, 02.jpg, 03.jpg)",
+        "ru-RU": "Файлы серии: последовательно пронумерованные документы или изображения (например, 01.jpg, 02.jpg, 03.jpg).",
+        "ja-JP": "シリーズ ファイル: 連続番号が付けられた文書または写真 (01.jpg、02.jpg、03.jpg など)",
+        "de-DE": "Seriendateien: fortlaufend nummerierte Dokumente oder Bilder (z. B. 01.jpg, 02.jpg, 03.jpg)",
+        "fr-FR": "Fichiers de série : documents ou images numérotés consécutivement (tels que 01.jpg, 02.jpg, 03.jpg)",
+        "ko-KR": "시리즈 파일: 연속 번호가 붙은 문서 또는 사진(예: 01.jpg, 02.jpg, 03.jpg)",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(13624-13669)"
+        ],
+        "$id": 4745
+    },
+    "工程项目：含配置文件的项目目录（如 package.json、CMakeLists.txt 等）": {
+        "en-US": "Engineering project: project directory containing configuration files (such as package.json, CMakeLists.txt, etc.)",
+        "es-ES": "Proyecto de ingeniería: directorio del proyecto que contiene archivos de configuración (como package.json, CMakeLists.txt, etc.)",
+        "ar-EG": "المشروع الهندسي: دليل المشروع الذي يحتوي على ملفات التكوين (مثل package.json، وCMakeLists.txt، وما إلى ذلك)",
+        "pt-PT": "Projeto de engenharia: diretório do projeto contendo arquivos de configuração (como package.json, CMakeLists.txt, etc.)",
+        "ru-RU": "Инженерный проект: каталог проекта, содержащий файлы конфигурации (например, package.json, CMakeLists.txt и т. д.).",
+        "ja-JP": "エンジニアリング プロジェクト: 構成ファイル (package.json、CMakeLists.txt など) を含むプロジェクト ディレクトリ",
+        "de-DE": "Engineering-Projekt: Projektverzeichnis mit Konfigurationsdateien (z. B. package.json, CMakeLists.txt usw.)",
+        "fr-FR": "Projet d'ingénierie : répertoire du projet contenant les fichiers de configuration (tels que package.json, CMakeLists.txt, etc.)",
+        "ko-KR": "엔지니어링 프로젝트: 구성 파일(예: package.json, CMakeLists.txt 등)이 포함된 프로젝트 디렉터리",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(13697-13749)"
+        ],
+        "$id": 4746
+    },
+    "提示：关闭后所有文件将独立分析，适用于需对每个文件单独生成描述和标签的场景": {
+        "en-US": "Tip: After closing, all files will be analyzed independently, which is suitable for scenarios where descriptions and labels need to be generated separately for each file.",
+        "es-ES": "Consejo: Después de cerrar, todos los archivos se analizarán de forma independiente, lo cual es adecuado para escenarios donde las descripciones y etiquetas deben generarse por separado para cada archivo.",
+        "ar-EG": "نصيحة: بعد الإغلاق، سيتم تحليل جميع الملفات بشكل مستقل، وهو ما يناسب السيناريوهات التي تحتاج إلى إنشاء الأوصاف والتسميات بشكل منفصل لكل ملف.",
+        "pt-PT": "Dica: Após o fechamento, todos os arquivos serão analisados ​​de forma independente, o que é adequado para cenários onde descrições e rótulos precisam ser gerados separadamente para cada arquivo.",
+        "ru-RU": "Совет: После закрытия все файлы будут проанализированы независимо, что подходит для сценариев, когда описания и метки необходимо генерировать отдельно для каждого файла.",
+        "ja-JP": "ヒント: 閉じた後、すべてのファイルは個別に分析されます。これは、ファイルごとに説明とラベルを個別に生成する必要があるシナリオに適しています。",
+        "de-DE": "Tipp: Nach dem Schließen werden alle Dateien unabhängig analysiert, was für Szenarien geeignet ist, in denen Beschreibungen und Beschriftungen für jede Datei separat generiert werden müssen.",
+        "fr-FR": "Astuce : Après la fermeture, tous les fichiers seront analysés indépendamment, ce qui convient aux scénarios dans lesquels les descriptions et les étiquettes doivent être générées séparément pour chaque fichier.",
+        "ko-KR": "팁: 닫은 후에는 모든 파일이 독립적으로 분석됩니다. 이는 각 파일에 대해 별도로 설명과 레이블을 생성해야 하는 시나리오에 적합합니다.",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(13845-13886)"
+        ],
+        "$id": 4747
+    },
+    "AI提示词设置": {
+        "en-US": "AI Prompt Settings  ",
+        "es-ES": "Configuración de indicaciones para IA",
+        "ar-EG": "إعداد كلمات تلميح الذكاء الاصطناعي  ",
+        "pt-PT": "Configuração de prompts de IA",
+        "ru-RU": "Настройка подсказок для ИИ  ",
+        "ja-JP": "AIプロンプト設定",
+        "de-DE": "KI-Prompt-Einstellungen  ",
+        "fr-FR": "Configuration des invites IA",
+        "ko-KR": "AI 프롬프트 설정  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(14118-14129)"
+        ],
+        "$id": 3021
+    },
+    "作为系统提示词的补充，但复杂的提示词云端模型才能更好的遵循": {
+        "en-US": "As a supplement to system prompts, complex prompts enable cloud models to adhere more effectively.",
+        "es-ES": "Como complemento de las indicaciones del sistema, los modelos en la nube siguen mejor las indicaciones complejas.",
+        "ar-EG": "كمكملة لتعليمات النظام، لكن النماذج السحابية فقط هي التي تستطيع اتباع التعليمات المعقدة بشكل أفضل",
+        "pt-PT": "Como complemento às instruções do sistema, mas modelos na nuvem conseguem seguir melhor instruções complexas.",
+        "ru-RU": "В качестве дополнения к системным подсказкам, но сложные подсказки лучше соблюдаются облачными моделями.",
+        "ja-JP": "システムプロンプトの補足として使用しますが、複雑なプロンプトはクラウドモデルの方がより適切に従うことができます。",
+        "de-DE": "Als Ergänzung zu System-Prompten, doch nur Cloud-Modelle können komplexe Prompts besser befolgen.",
+        "fr-FR": "En complément de l'invite système, mais seuls les modèles cloud complexes peuvent mieux la suivre.",
+        "ko-KR": "시스템 프롬프트의 보완으로 사용되나, 복잡한 프롬프트는 클라우드 모델이 더 잘 따를 수 있음",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(14220-14253)"
+        ],
+        "$id": 3085
+    },
+    "最小单元识别提示词": {
+        "en-US": "Minimum Unit Recognition Prompt  ",
+        "es-ES": "Indicación para reconocimiento de unidad mínima",
+        "ar-EG": "كلمات تلميح التعرف على أصغر وحدة  ",
+        "pt-PT": "Prompt de reconhecimento da unidade mínima",
+        "ru-RU": "Подсказки для распознавания минимальной единицы  ",
+        "ja-JP": "最小単位認識プロンプト",
+        "de-DE": "Prompt zur Erkennung kleinster Einheiten  ",
+        "fr-FR": "Invite pour la reconnaissance de l'unité minimale",
+        "ko-KR": "최소 단위 인식 프롬프트  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(14405-14418)"
+        ],
+        "$id": 3023
+    },
+    "/100 字符": {
+        "en-US": "/100 characters  ",
+        "es-ES": "/100 caracteres",
+        "ar-EG": "/100 حرف  ",
+        "pt-PT": "/100 caracteres",
+        "ru-RU": "/100 символов  ",
+        "ja-JP": "/100文字",
+        "de-DE": "/100 Zeichen  ",
+        "fr-FR": "/100 caractères",
+        "ko-KR": "/100자  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(15214-15225)",
+            "renderer/components/settings/analysis-settings.tsx(16222-16233)",
+            "renderer/components/settings/analysis-settings.tsx(17213-17224)"
+        ],
+        "$id": 3024
+    },
+    "质量评分提示词": {
+        "en-US": "Quality Scoring Prompt  ",
+        "es-ES": "Indicación para puntuación de calidad",
+        "ar-EG": "كلمات تلميح تقييم الجودة  ",
+        "pt-PT": "Prompt de avaliação de qualidade",
+        "ru-RU": "Подсказки для оценки качества  ",
+        "ja-JP": "品質評価プロンプト",
+        "de-DE": "Prompt zur Qualitätsbewertung  ",
+        "fr-FR": "Invite pour la notation de qualité",
+        "ko-KR": "품질 평가 프롬프트  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(15403-15414)"
+        ],
+        "$id": 3025
+    },
+    "标签、智能文件名生成提示词": {
+        "en-US": "Tags, Smart Filename Generation Prompts",
+        "es-ES": "Etiquetas, palabras clave para la generación inteligente de nombres de archivos",
+        "ar-EG": "الملصقات، وموجهات إنشاء أسماء الملفات الذكية",
+        "pt-PT": "Etiquetas, sugestões para geração inteligente de nomes de ficheiros",
+        "ru-RU": "Теги, подсказки для генерации интеллектуальных имен файлов",
+        "ja-JP": "タグ、スマートファイル名生成プロンプト",
+        "de-DE": "Tags, intelligente Dateinamengenerierung Eingabeaufforderung",
+        "fr-FR": "Étiquettes, invites de génération de noms de fichiers intelligents",
+        "ko-KR": "标签、智能 파일명 생성 프롬프트",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(16407-16424)"
+        ],
+        "$id": 2684
+    },
+    "AI分析忽略规则": {
+        "en-US": "AI Analysis Ignore Rules  ",
+        "es-ES": "Reglas de exclusión para análisis de IA",
+        "ar-EG": "قواعد تجاهل تحليل الذكاء الاصطناعي  ",
+        "pt-PT": "Regras de exclusão para análise por IA",
+        "ru-RU": "Правила игнорирования при анализе ИИ  ",
+        "ja-JP": "AI分析除外ルール",
+        "de-DE": "KI-Analyse-Ausschlussregeln  ",
+        "fr-FR": "Règles d'exclusion de l'analyse IA",
+        "ko-KR": "AI 분석 무시 규칙  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(17551-17563)"
+        ],
+        "$id": 3027
+    },
+    "设置不需要进行AI分析的文件和目录": {
+        "en-US": "Set files and directories to exclude from AI analysis  ",
+        "es-ES": "Establezca archivos y directorios que no requieran análisis de IA",
+        "ar-EG": "اضبط الملفات والمجلدات التي لا تريد تحليلها بواسطة الذكاء الاصطناعي  ",
+        "pt-PT": "Defina ficheiros e diretórios que não devem ser analisados pela IA",
+        "ru-RU": "Настройте файлы и каталоги, которые не требуют анализа ИИ  ",
+        "ja-JP": "AI分析を行わないファイルおよびディレクトリを設定",
+        "de-DE": "Dateien und Verzeichnisse festlegen, die nicht per KI analysiert werden sollen  ",
+        "fr-FR": "Définir les fichiers et répertoires à exclure de l'analyse IA",
+        "ko-KR": "AI 분석을 수행하지 않을 파일 및 디렉터리 설정  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(17658-17679)"
+        ],
+        "$id": 3028
+    },
+    "添加规则": {
+        "en-US": "Add Rule  ",
+        "es-ES": "Añadir regla",
+        "ar-EG": "إضافة قاعدة  ",
+        "pt-PT": "Adicionar regra",
+        "ru-RU": "Добавить правило  ",
+        "ja-JP": "ルールを追加",
+        "de-DE": "Regel hinzufügen  ",
+        "fr-FR": "Ajouter une règle",
+        "ko-KR": "규칙 추가  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(17856-17864)"
+        ],
+        "$id": 3029
+    },
+    "类型": {
+        "en-US": "Type  ",
+        "es-ES": "Tipo",
+        "ar-EG": "النوع  ",
+        "pt-PT": "Tipo",
+        "ru-RU": "Тип  ",
+        "ja-JP": "タイプ",
+        "de-DE": "Typ  ",
+        "fr-FR": "Type",
+        "ko-KR": "유형  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(18208-18214)"
+        ],
+        "$id": 3030
+    },
+    "值": {
+        "en-US": "Value  ",
+        "es-ES": "Valor",
+        "ar-EG": "القيمة  ",
+        "pt-PT": "Valor",
+        "ru-RU": "Значение  ",
+        "ja-JP": "値",
+        "de-DE": "Wert  ",
+        "fr-FR": "Valeur",
+        "ko-KR": "값  ",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(19201-19206)"
+        ],
+        "$id": 3031
+    },
+    "输入匹配值...": {
+        "en-US": "Enter matching value...",
+        "es-ES": "Introduzca el valor coincidente...",
+        "ar-EG": "أدخل قيمة مطابقة...",
+        "pt-PT": "Introduza o valor de correspondência...",
+        "ru-RU": "Введите значение для匹配...",
+        "ja-JP": "一致する値を入力...",
+        "de-DE": "Geben Sie einen übereinstimmenden Wert ein...",
+        "fr-FR": "Saisir une valeur correspondante...",
+        "ko-KR": "일치 값 입력...",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(19324-19336)"
+        ],
+        "$id": 3313
+    },
+    "描述（可选）": {
+        "en-US": "Description (optional)",
+        "es-ES": "Descripción (opcional)",
+        "ar-EG": "الوصف (اختياري)",
+        "pt-PT": "Descrição (opcional)",
+        "ru-RU": "Описание (необязательно)",
+        "ja-JP": "説明（任意）",
+        "de-DE": "Beschreibung (optional)",
+        "fr-FR": "Description (facultatif)",
+        "ko-KR": "설명(선택 사항)",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(19621-19631)",
+            "renderer/components/settings/analysis-settings.tsx(25949-25959)"
+        ],
+        "$id": 3033
+    },
+    "输入规则描述...": {
+        "en-US": "Enter rule description...",
+        "es-ES": "Introduzca la descripción de la regla...",
+        "ar-EG": "أدخل وصف القاعدة...",
+        "pt-PT": "Introduza a descrição da regra...",
+        "ru-RU": "Введите описание правила...",
+        "ja-JP": "入力ルールの説明...",
+        "de-DE": "Regelbeschreibung eingeben...",
+        "fr-FR": "Saisissez la description des règles...",
+        "ko-KR": "입력 규칙 설명...",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(19742-19755)"
+        ],
+        "$id": 3034
+    },
+    "保存": {
+        "en-US": "Save",
+        "es-ES": "Guardar",
+        "ar-EG": "حفظ",
+        "pt-PT": "Guardar",
+        "ru-RU": "Сохранить",
+        "ja-JP": "保存",
+        "de-DE": "Speichern",
+        "fr-FR": "Enregistrer",
+        "ko-KR": "저장",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(20178-20184)",
+            "renderer/components/settings/analysis-settings.tsx(26274-26280)"
+        ],
+        "$id": 3035
+    },
+    "取消": {
+        "en-US": "Cancel",
+        "es-ES": "Cancelar",
+        "ar-EG": "إلغاء",
+        "pt-PT": "Cancelar",
+        "ru-RU": "Отмена",
+        "ja-JP": "キャンセル",
+        "de-DE": "Abbrechen",
+        "fr-FR": "Annuler",
+        "ko-KR": "취소",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(20384-20390)",
+            "renderer/components/settings/analysis-settings.tsx(26421-26427)"
+        ],
+        "$id": 3036
+    },
+    "内置": {
+        "en-US": "Built-in",
+        "es-ES": "Incorporado",
+        "ar-EG": "مدمج",
+        "pt-PT": "Integrado",
+        "ru-RU": "Встроенный",
+        "ja-JP": "組み込み",
+        "de-DE": "Integriert",
+        "fr-FR": "Intégré",
+        "ko-KR": "내장",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(22261-22267)"
+        ],
+        "$id": 3037
+    },
+    "提示": {
+        "en-US": "Tips",
+        "es-ES": "Sugerencia",
+        "ar-EG": "تلميح",
+        "pt-PT": "Aviso",
+        "ru-RU": "Подсказка",
+        "ja-JP": "ヒント",
+        "de-DE": "Hinweis",
+        "fr-FR": "Astuce",
+        "ko-KR": "힌트",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(24008-24014)"
+        ],
+        "$id": 3038
+    },
+    "• 提示词修改后将应用到新的分析任务": {
+        "en-US": "• Modified prompts will be applied to new analysis tasks.",
+        "es-ES": "• Tras modificar el indicador, se aplicará a nuevas tareas de análisis",
+        "ar-EG": "• سيتم تطبيق تعديلات مطالبات التلميح على مهام التحليل الجديدة",
+        "pt-PT": "• As alterações nos prompts serão aplicadas às novas tarefas de análise",
+        "ru-RU": "• После изменения подсказки она будет применена к новым задачам анализа",
+        "ja-JP": "• プロンプトを変更すると、新しい分析タスクに適用されます",
+        "de-DE": "• Geänderte Hinweiswörter werden auf neue Analyseaufgaben angewendet",
+        "fr-FR": "• Les modifications apportées aux invites seront appliquées aux nouvelles tâches d'analyse",
+        "ko-KR": "• 프롬프트를 수정하면 새로운 분석 작업에 적용됩니다.",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(24081-24103)"
+        ],
+        "$id": 3039
+    },
+    "• 忽略规则可以提高分析效率，避免处理不必要的文件": {
+        "en-US": "• Ignore rules can improve analysis efficiency by avoiding unnecessary files.",
+        "es-ES": "• Las reglas de omisión pueden mejorar la eficiencia del análisis y evitar el procesamiento de archivos innecesarios",
+        "ar-EG": "• يمكن لقواعد التجاهل تحسين كفاءة التحليل وتجنب معالجة الملفات غير الضرورية",
+        "pt-PT": "• As regras de ignorar podem melhorar a eficiência da análise, evitando o processamento de ficheiros desnecessários",
+        "ru-RU": "• Правила игнорирования могут повысить эффективность анализа и избежать обработки ненужных файлов",
+        "ja-JP": "• 無視ルールにより分析効率が向上し、不要なファイルの処理を回避できます",
+        "de-DE": "• Ignorierregeln können die Analyseeffizienz verbessern und die Verarbeitung unnötiger Dateien vermeiden",
+        "fr-FR": "• Les règles d'ignorance peuvent améliorer l'efficacité de l'analyse en évitant le traitement de fichiers inutiles",
+        "ko-KR": "• 무시 규칙을 설정하면 분석 효율이 향상되고 불필요한 파일 처리를 방지할 수 있습니다.",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(24131-24160)"
+        ],
+        "$id": 3040
+    },
+    "• 系统预设的忽略规则不能删除": {
+        "en-US": "• System default ignore rules cannot be deleted",
+        "es-ES": "• Las reglas de ignorar preestablecidas del sistema no se pueden eliminar",
+        "ar-EG": "• لا يمكن حذف قواعد التجاهل الافتراضية للنظام",
+        "pt-PT": "• As regras de ignorar predefinidas do sistema não podem ser excluídas.",
+        "ru-RU": "• Системные предустановленные правила игнорирования не могут быть удалены",
+        "ja-JP": "• システムのデフォルトの無視ルールは削除できません",
+        "de-DE": "Die vom System voreingestellten Ignorierregeln können nicht gelöscht werden.",
+        "fr-FR": "• Les règles d'ignorance prédéfinies du système ne peuvent pas être supprimées",
+        "ko-KR": "시스템 기본 무시 규칙은 삭제할 수 없습니다.",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(24188-24207)"
+        ],
+        "$id": 4358
+    },
+    "• 通配符支持 * 和 ? 匹配，正则表达式支持更复杂的模式": {
+        "en-US": "• Wildcards support * and ? matching; regular expressions support more complex patterns",
+        "es-ES": "• Los comodines admiten * y ?, las expresiones regulares admiten patrones más complejos",
+        "ar-EG": "• تدعم الأحرف البدل * و؟ للمطابقة، بينما تدعم التعبيرات النمطية أنماطًا أكثر تعقيدًا",
+        "pt-PT": "• Os curingas suportam * e ?, as expressões regulares suportam padrões mais complexos",
+        "ru-RU": "• Символы подстановки поддерживают * и ?, регулярные выражения поддерживают более сложные шаблоны",
+        "ja-JP": "• ワイルドカードは * と ? のマッチングをサポートし、正規表現はより複雑なパターンをサポートします",
+        "de-DE": "• Platzhalter unterstützen * und ? für den Abgleich; reguläre Ausdrücke unterstützen komplexere Muster",
+        "fr-FR": "• Les caractères génériques prennent en charge * et ? pour la mise en correspondance, tandis que les expressions régulières prennent en charge des motifs plus complexes",
+        "ko-KR": "• 와일드카드는 * 와 ? 매칭을 지원하며, 정규식은 더 복잡한 패턴을 지원합니다",
+        "$files": [
+            "renderer/components/settings/analysis-settings.tsx(24235-24269)"
+        ],
+        "$id": 3314
+    }
+}

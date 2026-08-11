@@ -1,0 +1,180 @@
+{
+  "预览": {
+    "en-US": "Preview",
+    "es-ES": "Avance",
+    "ar-EG": "معاينة",
+    "pt-PT": "Visualização",
+    "ru-RU": "Предварительный просмотр",
+    "ja-JP": "プレビュー",
+    "de-DE": "Vorschau",
+    "fr-FR": "Aperçu",
+    "ko-KR": "시사",
+    "$files": [
+      "src/renderer/components/preview/PreviewWindow.tsx(708-714)",
+      "src/renderer/components/preview/StandalonePreview.tsx(2623-2629)"
+    ],
+    "$id": 10530
+  },
+  "未知文件": {
+    "en-US": "unknown file",
+    "es-ES": "archivo desconocido",
+    "ar-EG": "ملف غير معروف",
+    "pt-PT": "arquivo desconhecido",
+    "ru-RU": "неизвестный файл",
+    "ja-JP": "不明なファイル",
+    "de-DE": "unbekannte Datei",
+    "fr-FR": "fichier inconnu",
+    "ko-KR": "알 수 없는 파일",
+    "$files": ["src/renderer/components/preview/PreviewWindow.tsx(762-770)"],
+    "$id": 7726
+  },
+  "Flyfish Viewer 基础设施已就绪": {
+    "en-US": "Flyfish Viewer infrastructure is ready",
+    "es-ES": "La infraestructura de Flyfish Viewer está lista",
+    "ar-EG": "البنية التحتية لـFlyfish Viewer جاهزة",
+    "pt-PT": "A infraestrutura do Flyfish Viewer está pronta",
+    "ru-RU": "Инфраструктура Flyfish Viewer готова",
+    "ja-JP": "Flyfish Viewer インフラストラクチャが準備完了",
+    "de-DE": "Die Flyfish Viewer-Infrastruktur ist bereit",
+    "fr-FR": "L'infrastructure Flyfish Viewer est prête",
+    "ko-KR": "Flyfish 뷰어 인프라가 준비되었습니다",
+    "$files": ["src/renderer/components/preview/PreviewWindow.tsx(1936-1962)"],
+    "$id": 7727
+  },
+  "文件路径:": {
+    "en-US": "File path:",
+    "es-ES": "Ruta del archivo:",
+    "ar-EG": "مسار الملف:",
+    "pt-PT": "Caminho do arquivo:",
+    "ru-RU": "Путь к файлу:",
+    "ja-JP": "ファイルパス:",
+    "de-DE": "Dateipfad:",
+    "fr-FR": "Chemin du fichier :",
+    "ko-KR": "파일 경로:",
+    "$files": ["src/renderer/components/preview/PreviewWindow.tsx(2096-2105)"],
+    "$id": 7728
+  },
+  "未提供": {
+    "en-US": "Not provided",
+    "es-ES": "No proporcionado",
+    "ar-EG": "غير متوفر",
+    "pt-PT": "Não fornecido",
+    "ru-RU": "Не предусмотрено",
+    "ja-JP": "提供されません",
+    "de-DE": "Nicht bereitgestellt",
+    "fr-FR": "Non fourni",
+    "ko-KR": "제공되지 않음",
+    "$files": [
+      "src/renderer/components/preview/PreviewWindow.tsx(2128-2135)",
+      "src/renderer/components/preview/PreviewWindow.tsx(2244-2251)"
+    ],
+    "$id": 7729
+  },
+  "扩展名:": {
+    "en-US": "Extension:",
+    "es-ES": "Extensión:",
+    "ar-EG": "امتداد:",
+    "pt-PT": "Extensão:",
+    "ru-RU": "Расширение:",
+    "ja-JP": "拡大：",
+    "de-DE": "Verlängerung:",
+    "fr-FR": "Extension:",
+    "ko-KR": "확대:",
+    "$files": ["src/renderer/components/preview/PreviewWindow.tsx(2212-2220)"],
+    "$id": 7730
+  },
+  "已集成 @file-viewer/react 组件进行实际预览": {
+    "en-US": "Integrated @file-viewer/react component for actual preview",
+    "es-ES": "Componente @file-viewer/react integrado para una vista previa real",
+    "ar-EG": "مكون @file-viewer/react المتكامل للمعاينة الفعلية",
+    "pt-PT": "Componente @file-viewer/react integrado para visualização real",
+    "ru-RU": "Интегрированный компонент @file-viewer/react для фактического предварительного просмотра.",
+    "ja-JP": "実際のプレビュー用に @file-viewer/react コンポーネントを統合",
+    "de-DE": "Integrierte @file-viewer/react-Komponente für die tatsächliche Vorschau",
+    "fr-FR": "Composant @file-viewer/react intégré pour un aperçu réel",
+    "ko-KR": "실제 미리보기를 위한 통합 @file-viewer/react 구성요소",
+    "$files": ["src/renderer/components/preview/PreviewWindow.tsx(2356-2391)"],
+    "$id": 7731
+  },
+  "原文": {
+    "en-US": "original",
+    "es-ES": "original",
+    "ar-EG": "إبداعي",
+    "pt-PT": "original",
+    "ru-RU": "оригинальный",
+    "ja-JP": "オリジナル",
+    "de-DE": "Original",
+    "fr-FR": "original",
+    "ko-KR": "원래의",
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(2165-2171)"],
+    "$id": 10529
+  },
+  "默认程序打开": {
+    "en-US": "Default program opens",
+    "es-ES": "Se abre el programa predeterminado",
+    "ar-EG": "يفتح البرنامج الافتراضي",
+    "pt-PT": "O programa padrão é aberto",
+    "ru-RU": "Программа по умолчанию открывается",
+    "ja-JP": "デフォルトのプログラムが開きます",
+    "de-DE": "Das Standardprogramm wird geöffnet",
+    "fr-FR": "Le programme par défaut s'ouvre",
+    "ko-KR": "기본 프로그램이 열립니다",
+    "$files": [
+      "src/renderer/components/preview/StandalonePreview.tsx(2916-2926)",
+      "src/renderer/components/preview/StandalonePreview.tsx(3070-3080)"
+    ],
+    "$id": 10531
+  },
+  "关闭": {
+    "en-US": "closure",
+    "es-ES": "cierre",
+    "ar-EG": "إنهاء",
+    "pt-PT": "encerramento",
+    "ru-RU": "закрытие",
+    "ja-JP": "閉鎖",
+    "de-DE": "Schließung",
+    "fr-FR": "fermeture",
+    "ko-KR": "폐쇄",
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(3306-3312)"],
+    "$id": 10532
+  },
+  "无法读取文件内容": {
+    "en-US": "Unable to read file contents",
+    "es-ES": "No se puede leer el contenido del archivo",
+    "ar-EG": "غير قادر على قراءة محتويات الملف",
+    "pt-PT": "Não é possível ler o conteúdo do arquivo",
+    "ru-RU": "Невозможно прочитать содержимое файла",
+    "ja-JP": "ファイルの内容を読み取れません",
+    "de-DE": "Dateiinhalt kann nicht gelesen werden",
+    "fr-FR": "Impossible de lire le contenu du fichier",
+    "ko-KR": "파일 내용을 읽을 수 없습니다.",
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(4307-4319)"],
+    "$id": 10533
+  },
+  "当前文件类型暂不支持预览": {
+    "en-US": "The current file type does not support preview yet",
+    "es-ES": "El tipo de archivo actual aún no admite la vista previa",
+    "ar-EG": "نوع الملف الحالي لا يدعم المعاينة حتى الآن",
+    "pt-PT": "O tipo de arquivo atual ainda não suporta visualização",
+    "ru-RU": "Текущий тип файла пока не поддерживает предварительный просмотр.",
+    "ja-JP": "現在のファイル タイプはプレビューをまだサポートしていません",
+    "de-DE": "Der aktuelle Dateityp unterstützt noch keine Vorschau",
+    "fr-FR": "Le type de fichier actuel ne prend pas encore en charge l'aperçu",
+    "ko-KR": "현재 파일 형식은 아직 미리보기를 지원하지 않습니다.",
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(4927-4943)"],
+    "$id": 10534
+  },
+  "文件扩展名": {
+    "en-US": "file extension",
+    "es-ES": "extensión de archivo",
+    "ar-EG": "امتداد الملف",
+    "pt-PT": "extensão de arquivo",
+    "ru-RU": "расширение файла",
+    "ja-JP": "ファイル拡張子",
+    "de-DE": "Dateierweiterung",
+    "fr-FR": "extension de fichier",
+    "ko-KR": "파일 확장자",
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(5044-5053)"],
+    "$id": 10535
+  }
+}

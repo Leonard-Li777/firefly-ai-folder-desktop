@@ -1,0 +1,58 @@
+  /**
+   * 初始化数据库并执行迁移
+   * @param language 语言代码，用于隔离数据库
+   */
+  async initialize(language?: string): Promise<void> {
+    try {
+      if (language) {
+        const config = getDatabaseConfig(language)
+        this.dbPath = config.path
+      }
+
+      if (this._db) {
+        try {
+          this._db.close()
+        } catch (e) {
+          logger.warn(LogCategory.DATABASE_SERVICE, '关闭旧数据库连接失败', { error: e })
+        }
+        this._db = null
+      }
+
+      const dir = path.dirname(this.dbPath)
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+      }
+
+      this._db = new Database(this.dbPath)
+      logger.info(LogCategory.DATABASE_SERVICE, '数据库连接成功', { dbPath: this.dbPath })
+      await this.createTables()
+
+      // 【修复】数据一致性清洗：将 content/description 不为空但 is_analyzed=0 的记录修正为 1
+      this.repairAnalyzedStatus()
+    } catch (error) {
+      logger.error(LogCategory.DATABASE_SERVICE, '数据库初始化失败', { error, dbPath: this.dbPath })
+      throw error
+    }
+  }
+
+  /**
+   * 修复 is_analyzed 状态
+   * 如果 content, description 或 multimodal_content 不为空，但 is_analyzed 为 0，将其修正为 1
+   */
+  private repairAnalyzedStatus(): void {
+    if (!this._db) return
+    try {
+      const result = this._db.prepare(`
+        UPDATE files 
+        SET is_analyzed = 1 
+        WHERE is_analyzed = 0 
+          AND (content IS NOT NULL OR description IS NOT NULL OR multimodal_content IS NOT NULL)
+      `).run()
+      
+      if (result.changes > 0) {
+        logger.info(LogCategory.DATABASE_SERVICE, `已修复 ${result.changes} 条记录的已分析状态 (is_analyzed=1)`)
+      }
+    } catch (error) {
+      logger.error(LogCategory.DATABASE_SERVICE, '修复已分析状态失败:', error)
+    }
+  }

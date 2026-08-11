@@ -1,0 +1,59 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "../../",
+    "baseUrl": ".",
+    "ignoreDeprecations": "5.0",
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "composite": false,
+    "allowSyntheticDefaultImports": true,
+    "types": ["node", "react", "react-dom", "electron"],
+    "paths": {
+      "@/*": ["src/*"],
+      "@app/*": ["src/*"],
+      "@src/*": ["src/*"],
+      "@lib/*": ["src/renderer/lib/*"],
+      "@renderer/*": ["src/renderer/*"],
+      "@hooks/*": ["src/renderer/hooks/*"],
+      "@shared/*": ["src/shared/*"],
+      "@types/*": ["src/types/*"],
+      "@components/*": ["src/renderer/components/*"],
+      "@stores/*": ["src/renderer/stores/*"],
+      "@assets/*": ["src/renderer/assets/*"],
+      "@firefly/core-engine": ["../../packages/core-engine/src"],
+      "@firefly/core-engine/*": ["../../packages/core-engine/src/*"],
+      "@firefly/electron-llamaIndex-service": ["../../packages/electron-llamaIndex-service/src"],
+      "@firefly/electron-llamaIndex-service/*": [
+        "../../packages/electron-llamaIndex-service/src/*"
+      ],
+      "@firefly/types": ["../../packages/types/src"],
+      "@firefly/types/*": ["../../packages/types/src/*"],
+      "@firefly/shared": ["../../packages/shared/src"],
+      "@firefly/shared/*": ["../../packages/shared/src/*"],
+      "@firefly/shared/languages": ["../../packages/shared/languages"],
+      "@firefly/server": ["../server/src"],
+      "@firefly/server/*": ["../server/src/*"]
+    }
+  },
+  "include": [
+    "src/global.d.ts",
+    "src/shared/types/electron-api.d.ts",
+    "src/**/*",
+    "src/**/*.json",
+    "*.d.ts",
+    "src/shared/types/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "out",
+    ".vite",
+    "src/electron/runtime-services/examples/**/*",
+    "src/electron/tools/**/*",
+    "**/*.test.ts",
+    "**/*.test.tsx"
+  ]
+}

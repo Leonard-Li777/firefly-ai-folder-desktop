@@ -1,0 +1,1964 @@
+{
+    "缩放卡片尺寸": {
+        "en-US": "Zoom Card Size",
+        "es-ES": "Cambiar tamaño de las tarjetas",
+        "ar-EG": "تغيير حجم البطاقات",
+        "pt-PT": "Redimensionar tamanho do cartão",
+        "ru-RU": "Изменение размера карточек",
+        "ja-JP": "カードサイズを縮尺",
+        "de-DE": "Kartenabmessungen skalieren",
+        "fr-FR": "Ajuster la taille des cartes",
+        "ko-KR": "카드 크기 조정",
+        "$files": [
+            "src/renderer/components/common/CardSizePopover.tsx(2589-2599)"
+        ],
+        "$id": 7972
+    },
+    "卡片大小": {
+        "en-US": "Card Size",
+        "es-ES": "Tamaño de la tarjeta",
+        "ar-EG": "حجم البطاقة",
+        "pt-PT": "Tamanho do cartão",
+        "ru-RU": "Размер карточки",
+        "ja-JP": "カードサイズ",
+        "de-DE": "Kartengröße",
+        "fr-FR": "Taille des cartes",
+        "ko-KR": "카드 크기",
+        "$files": [
+            "src/renderer/components/common/CardSizePopover.tsx(3464-3472)"
+        ],
+        "$id": 7973
+    },
+    "重置": {
+        "en-US": "Reset",
+        "es-ES": "Restablecer",
+        "ar-EG": "إعادة تعيين",
+        "pt-PT": "Redefinir",
+        "ru-RU": "Сброс",
+        "ja-JP": "リセット",
+        "de-DE": "Zurücksetzen",
+        "fr-FR": "Réinitialiser",
+        "ko-KR": "재설정",
+        "$files": [
+            "src/renderer/components/common/CardSizePopover.tsx(3791-3797)",
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(6873-6879)"
+        ],
+        "$id": 7974
+    },
+    "缩小": {
+        "en-US": "Shrink",
+        "es-ES": "Reducir",
+        "ar-EG": "تصغير",
+        "pt-PT": "Diminuir",
+        "ru-RU": "Уменьшить",
+        "ja-JP": "縮小",
+        "de-DE": "Verkleinern",
+        "fr-FR": "Réduire",
+        "ko-KR": "축소",
+        "$files": [
+            "src/renderer/components/common/CardSizePopover.tsx(4222-4228)",
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(7359-7365)"
+        ],
+        "$id": 7975
+    },
+    "放大": {
+        "en-US": "Enlarge",
+        "es-ES": "Ampliar",
+        "ar-EG": "تكبير",
+        "pt-PT": "Ampliar",
+        "ru-RU": "Увеличить",
+        "ja-JP": "拡大",
+        "de-DE": "Vergrößern",
+        "fr-FR": "Agrandir",
+        "ko-KR": "확대",
+        "$files": [
+            "src/renderer/components/common/CardSizePopover.tsx(5111-5117)",
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8427-8433)"
+        ],
+        "$id": 7976
+    },
+    "应用出现错误": {
+        "en-US": "An error occurred in the application",
+        "es-ES": "La aplicación ha encontrado un error",
+        "ar-EG": "حدث خطأ في التطبيق",
+        "pt-PT": "Erro na aplicação",
+        "ru-RU": "Ошибка приложения",
+        "ja-JP": "アプリケーションエラー",
+        "de-DE": "Anwendung ist auf einen Fehler gestoßen",
+        "fr-FR": "L'application a rencontré une erreur",
+        "ko-KR": "앱에서 오류가 발생했습니다",
+        "$files": [
+            "src/renderer/components/common/ErrorBoundary.tsx(1117-1127)"
+        ],
+        "$id": 3888
+    },
+    "很抱歉，应用遇到了一个错误。请尝试刷新页面或重启应用。": {
+        "en-US": "We're sorry, the application encountered an error. Please try refreshing the page or restarting the application.",
+        "es-ES": "Lo sentimos, la aplicación ha encontrado un error. Por favor, intente actualizar la página o reiniciar la aplicación.",
+        "ar-EG": "عذراً، واجه التطبيق خطأً. يرجى محاولة تحديث الصفحة أو إعادة تشغيل التطبيق.",
+        "pt-PT": "Lamentamos, mas a aplicação encontrou um erro. Tente atualizar a página ou reiniciar a aplicação.",
+        "ru-RU": "Приносим свои извинения, в приложении произошла ошибка. Попробуйте обновить страницу или перезапустить приложение.",
+        "ja-JP": "申し訳ありませんが、アプリケーションでエラーが発生しました。ページを更新するか、アプリを再起動してください。",
+        "de-DE": "Es tut uns leid, die Anwendung ist auf einen Fehler gestoßen. Bitte versuchen Sie, die Seite zu aktualisieren oder die Anwendung neu zu starten.",
+        "fr-FR": "Désolé, l'application a rencontré une erreur. Veuillez essayer d'actualiser la page ou redémarrer l'application.",
+        "ko-KR": "죄송합니다. 앱에 오류가 발생했습니다. 페이지를 새로고침하거나 앱을 재시작해 보세요.",
+        "$files": [
+            "src/renderer/components/common/ErrorBoundary.tsx(1197-1228)"
+        ],
+        "$id": 3889
+    },
+    "错误详情": {
+        "en-US": "Error details",
+        "es-ES": "Detalles del error",
+        "ar-EG": "تفاصيل الخطأ",
+        "pt-PT": "Detalhes do erro",
+        "ru-RU": "Сведения об ошибке",
+        "ja-JP": "エラーの詳細",
+        "de-DE": "Fehlerdetails",
+        "fr-FR": "Détails de l'erreur",
+        "ko-KR": "오류 세부 정보",
+        "$files": [
+            "src/renderer/components/common/ErrorBoundary.tsx(1421-1429)"
+        ],
+        "$id": 3890
+    },
+    "刷新页面": {
+        "en-US": "Refresh page",
+        "es-ES": "Actualizar página",
+        "ar-EG": "تحديث الصفحة",
+        "pt-PT": "Atualizar página",
+        "ru-RU": "Обновить страницу",
+        "ja-JP": "ページを更新する",
+        "de-DE": "Seite aktualisieren",
+        "fr-FR": "Actualiser la page",
+        "ko-KR": "페이지 새로고침",
+        "$files": [
+            "src/renderer/components/common/ErrorBoundary.tsx(1882-1890)"
+        ],
+        "$id": 3891
+    },
+    "重试": {
+        "en-US": "Retry",
+        "es-ES": "Reintentar",
+        "ar-EG": "إعادة المحاولة",
+        "pt-PT": "Tentar novamente",
+        "ru-RU": "Повторить попытку",
+        "ja-JP": "もう一度やり直してください",
+        "de-DE": "Erneut versuchen",
+        "fr-FR": "Réessayer",
+        "ko-KR": "재시도",
+        "$files": [
+            "src/renderer/components/common/ErrorBoundary.tsx(2195-2201)"
+        ],
+        "$id": 3892
+    },
+    "本地": {
+        "en-US": "Local",
+        "es-ES": "Local",
+        "ar-EG": "محلي",
+        "pt-PT": "Local",
+        "ru-RU": "Локальный",
+        "ja-JP": "ローカル",
+        "de-DE": "Lokal",
+        "fr-FR": "Local",
+        "ko-KR": "로컬",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(10055-10061)"
+        ],
+        "$id": 3893
+    },
+    "云端": {
+        "en-US": "Cloud",
+        "es-ES": "Nube",
+        "ar-EG": "سحابة",
+        "pt-PT": "Na nuvem",
+        "ru-RU": "Облачный",
+        "ja-JP": "クラウド",
+        "de-DE": "Cloud",
+        "fr-FR": "Cloud",
+        "ko-KR": "클라우드",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(10065-10071)"
+        ],
+        "$id": 3894
+    },
+    "兼容模式": {
+        "en-US": "Compatibility mode",
+        "es-ES": "Modo de compatibilidad",
+        "ar-EG": "وضع التوافق",
+        "pt-PT": "Modo de compatibilidade",
+        "ru-RU": "Режим совместимости",
+        "ja-JP": "互換モード",
+        "de-DE": "Kompatibilitätsmodus",
+        "fr-FR": "Mode de compatibilité",
+        "ko-KR": "호환성 모드",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(10116-10124)",
+            "src/renderer/components/common/Footer.tsx(10171-10179)"
+        ],
+        "$id": 4655
+    },
+    "图片": {
+        "en-US": "picture",
+        "es-ES": "imagen",
+        "ar-EG": "صورة",
+        "pt-PT": "foto",
+        "ru-RU": "картина",
+        "ja-JP": "写真",
+        "de-DE": "Bild",
+        "fr-FR": "image",
+        "ko-KR": "그림",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(11203-11209)"
+        ],
+        "$id": 4290
+    },
+    "音频": {
+        "en-US": "Audio",
+        "es-ES": "Audio",
+        "ar-EG": "صوتي",
+        "pt-PT": "Áudio",
+        "ru-RU": "Аудио",
+        "ja-JP": "オーディオ",
+        "de-DE": "Audio",
+        "fr-FR": "Audio",
+        "ko-KR": "오디오",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(11270-11276)"
+        ],
+        "$id": 4291
+    },
+    "视频": {
+        "en-US": "video",
+        "es-ES": "video",
+        "ar-EG": "فيديو",
+        "pt-PT": "vídeo",
+        "ru-RU": "видео",
+        "ja-JP": "ビデオ",
+        "de-DE": "Video",
+        "fr-FR": "vidéo",
+        "ko-KR": "동영상",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(11337-11343)"
+        ],
+        "$id": 4292
+    },
+    "支持": {
+        "en-US": "support",
+        "es-ES": "apoyo",
+        "ar-EG": "يدعم",
+        "pt-PT": "apoiar",
+        "ru-RU": "поддерживать",
+        "ja-JP": "サポート",
+        "de-DE": "Unterstützung",
+        "fr-FR": "soutien",
+        "ko-KR": "지원하다",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(11410-11416)"
+        ],
+        "$id": 4293
+    },
+    "AI 服务未就绪": {
+        "en-US": "AI service is not ready",
+        "es-ES": "El servicio de IA no está listo",
+        "ar-EG": "خدمة الذكاء الاصطناعي غير جاهزة",
+        "pt-PT": "Serviço de IA não está pronto",
+        "ru-RU": "Служба ИИ не готова",
+        "ja-JP": "AIサービスは準備ができていません",
+        "de-DE": "KI-Dienst ist nicht bereit",
+        "fr-FR": "Le service AI n'est pas prêt",
+        "ko-KR": "AI 서비스가 준비되지 않았습니다",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(11562-11574)"
+        ],
+        "$id": 3895
+    },
+    "正在配置 AI 服务...": {
+        "en-US": "Configuring AI service...",
+        "es-ES": "Configurando el servicio de IA...",
+        "ar-EG": "جاري تهيئة خدمة الذكاء الاصطناعي...",
+        "pt-PT": "A configurar o serviço de IA...",
+        "ru-RU": "Настройка службы ИИ...",
+        "ja-JP": "AI サービスを構成しています...",
+        "de-DE": "KI-Dienst wird konfiguriert...",
+        "fr-FR": "Configuration du service AI en cours...",
+        "ko-KR": "AI 서비스를 구성하는 중입니다...",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(11735-11752)"
+        ],
+        "$id": 3896
+    },
+    "正在初始化 AI 引擎...": {
+        "en-US": "Initializing AI engine...",
+        "es-ES": "Iniciando el motor de IA...",
+        "ar-EG": "جاري بدء محرك الذكاء الاصطناعي...",
+        "pt-PT": "A inicializar o motor de IA...",
+        "ru-RU": "Инициализация движка ИИ...",
+        "ja-JP": "AI エンジンを初期化しています...",
+        "de-DE": "KI-Engine wird initialisiert...",
+        "fr-FR": "Initialisation du moteur AI en cours...",
+        "ko-KR": "AI 엔진을 초기화하는 중입니다...",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(11935-11953)"
+        ],
+        "$id": 3897
+    },
+    "正在重启 AI 服务...": {
+        "en-US": "Restarting AI service...",
+        "es-ES": "Reiniciando el servicio de IA...",
+        "ar-EG": "جاري إعادة تشغيل خدمة الذكاء الاصطناعي...",
+        "pt-PT": "A reiniciar o serviço de IA...",
+        "ru-RU": "Перезапуск службы ИИ...",
+        "ja-JP": "AI サービスを再起動しています...",
+        "de-DE": "KI-Dienst wird neu gestartet...",
+        "fr-FR": "Redémarrage du service AI en cours...",
+        "ko-KR": "AI 서비스를 재시작하는 중입니다...",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(12130-12147)"
+        ],
+        "$id": 3898
+    },
+    "AI 服务已停止": {
+        "en-US": "AI service has stopped",
+        "es-ES": "El servicio de IA se ha detenido",
+        "ar-EG": "خدمة الذكاء الاصطناعي متوقفة",
+        "pt-PT": "Serviço de IA parou",
+        "ru-RU": "Служба ИИ остановлена",
+        "ja-JP": "AIサービスは停止しました",
+        "de-DE": "KI-Dienst wurde gestoppt",
+        "fr-FR": "Le service AI est arrêté",
+        "ko-KR": "AI 서비스가 중지되었습니다",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(12330-12342)"
+        ],
+        "$id": 3899
+    },
+    "{modelInfo} 模型已就绪，等待加载": {
+        "en-US": "{modelInfo} model is ready, waiting to load",
+        "es-ES": "Modelo {modelInfo} listo, esperando carga",
+        "ar-EG": "النموذج {modelInfo} جاهز، في انتظار التحميل",
+        "pt-PT": "Modelo {modelInfo} está pronto, à espera de carregar",
+        "ru-RU": "Модель {modelInfo} готова, ожидаем загрузки",
+        "ja-JP": "{modelInfo} モデルは準備ができており、ロードされるのを待っています。",
+        "de-DE": "{modelInfo} Modell ist bereit, auf das Laden warten",
+        "fr-FR": "Le modèle {modelInfo} est prêt, en attente de chargement",
+        "ko-KR": "{modelInfo} 모델이 준비되었으며 로딩을 대기 중입니다",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(12538-12564)"
+        ],
+        "$id": 3900
+    },
+    "{modelInfo} 配置已加载，等待连接": {
+        "en-US": "{modelInfo} configuration loaded, waiting to connect",
+        "es-ES": "Configuración de {modelInfo} cargada, esperando conexión",
+        "ar-EG": "تم تحميل تهيئة {modelInfo}، في انتظار الاتصال",
+        "pt-PT": "Configuração {modelInfo} carregada, à espera de ligação",
+        "ru-RU": "Конфигурация {modelInfo} загружена, ожидаем подключения",
+        "ja-JP": "{modelInfo} 構成がロードされ、接続を待機しています",
+        "de-DE": "{modelInfo} Konfiguration ist geladen, auf die Verbindung warten",
+        "fr-FR": "La configuration de {modelInfo} est chargée, en attente de connexion",
+        "ko-KR": "{modelInfo} 구성이 로드되었으며 연결 대기 중입니다",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(12597-12623)"
+        ],
+        "$id": 3901
+    },
+    "{modelInfo} 模型资源加载中...": {
+        "en-US": "{modelInfo} model resources loading...",
+        "es-ES": "Cargando recursos del modelo {modelInfo}...",
+        "ar-EG": "جاري تحميل موارد النموذج {modelInfo}...",
+        "pt-PT": "A carregar recursos do modelo {modelInfo}...",
+        "ru-RU": "Загрузка ресурсов модели {modelInfo}...",
+        "ja-JP": "{modelInfo} モデル リソースを読み込んでいます...",
+        "de-DE": "{modelInfo} Modellressourcen werden geladen...",
+        "fr-FR": "Chargement des ressources du modèle {modelInfo} en cours...",
+        "ko-KR": "{modelInfo} 모델 리소스를 로딩하는 중입니다...",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(12793-12819)"
+        ],
+        "$id": 3902
+    },
+    "{modelInfo} 正在测试服务连接...": {
+        "en-US": "{modelInfo} Testing service connection...",
+        "es-ES": "{modelInfo} probando la conexión de servicio...\r",
+        "ar-EG": "{modelInfo} جاري اختبار اتصال الخدمة...\r",
+        "pt-PT": "{modelInfo} está a testar a ligação do serviço...\r",
+        "ru-RU": "{modelInfo} Проверка соединения с сервисом...\r",
+        "ja-JP": "{modelInfo} サービス接続をテストしています...",
+        "de-DE": "{modelInfo} testet Dienstverbindung...\r",
+        "fr-FR": "{modelInfo} Test de la connexion au service en cours...\r",
+        "ko-KR": "{modelInfo} 서비스 연결 테스트 중...\r",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(13021-13048)"
+        ],
+        "$id": 3903
+    },
+    "{modelInfo} AI 服务就绪": {
+        "en-US": "{modelInfo} AI service ready",
+        "es-ES": "{modelInfo} Servicio de IA listo\r",
+        "ar-EG": "{modelInfo} خدمة الذكاء الاصطناعي جاهزة\r",
+        "pt-PT": "{modelInfo} Serviço de IA pronto\r",
+        "ru-RU": "{modelInfo} Сервис ИИ готов\r",
+        "ja-JP": "{modelInfo} AI サービスの準備完了",
+        "de-DE": "{modelInfo} KI-Dienst bereit\r",
+        "fr-FR": "{modelInfo} Service AI prêt\r",
+        "ko-KR": "{modelInfo} AI 서비스 준비 완료\r",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(13244-13267)"
+        ],
+        "$id": 3904
+    },
+    "{modelInfo} AI 分析进行中...": {
+        "en-US": "{modelInfo} AI analysis in progress...",
+        "es-ES": "{modelInfo} Análisis de IA en curso...\r",
+        "ar-EG": "{modelInfo} جاري تحليل الذكاء الاصطناعي...\r",
+        "pt-PT": "{modelInfo} Análise de IA em progresso...\r",
+        "ru-RU": "{modelInfo} Выполняется анализ ИИ...\r",
+        "ja-JP": "{modelInfo} AI 分析中...",
+        "de-DE": "{modelInfo} KI-Analyse läuft...\r",
+        "fr-FR": "{modelInfo} Analyse IA en cours...\r",
+        "ko-KR": "{modelInfo} AI 분석 진행 중...\r",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(13433-13460)"
+        ],
+        "$id": 3905
+    },
+    "{modelInfo} 服务异常: {error}": {
+        "en-US": "{modelInfo} Service error: {error}",
+        "es-ES": "{modelInfo} Excepción de servicio: {error}\r",
+        "ar-EG": "{modelInfo} خدمة غير طبيعية: {error}\r",
+        "pt-PT": "{modelInfo} Serviço anormal: {error}\r",
+        "ru-RU": "{modelInfo} Исключение в работе сервиса: {error}\r",
+        "ja-JP": "{modelInfo} サービス例外: {error}",
+        "de-DE": "{modelInfo} Dienstfehler: {error}\r",
+        "fr-FR": "{modelInfo} Anomalie de service : {error}\r",
+        "ko-KR": "{modelInfo} 서비스 이상: {error}\r",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(13659-13688)"
+        ],
+        "$id": 3906
+    },
+    "未知错误": {
+        "en-US": "Unknown error",
+        "es-ES": "Error desconocido\r",
+        "ar-EG": "خطأ غير معروف\r",
+        "pt-PT": "Erro desconhecido\r",
+        "ru-RU": "Неизвестная ошибка\r",
+        "ja-JP": "不明なエラー",
+        "de-DE": "Unbekannter Fehler\r",
+        "fr-FR": "Erreur inconnue\r",
+        "ko-KR": "알 수 없는 오류\r",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(13747-13755)"
+        ],
+        "$id": 3907
+    },
+    "状态未知": {
+        "en-US": "Status unknown",
+        "es-ES": "Estado desconocido\r",
+        "ar-EG": "الحالة غير معروفة\r",
+        "pt-PT": "Estado desconhecido\r",
+        "ru-RU": "Состояние неизвестно\r",
+        "ja-JP": "ステータス不明",
+        "de-DE": "Status unbekannt\r",
+        "fr-FR": "Statut inconnu\r",
+        "ko-KR": "상태 알 수 없음\r",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(13894-13902)"
+        ],
+        "$id": 3908
+    },
+    "检测到您有高性能显卡，请切换更聪明的AI模型，立即设置": {
+        "en-US": "Detected that you have a high-performance graphics card, please switch to a smarter AI model and set it up now",
+        "es-ES": "Se detectó que tiene una tarjeta gráfica de alto rendimiento. Cambie a un modelo de IA más inteligente y configúrelo ahora.",
+        "ar-EG": "تم اكتشاف أن لديك بطاقة رسومات عالية الأداء، يرجى التبديل إلى نموذج الذكاء الاصطناعي الأكثر ذكاءً وإعداده الآن",
+        "pt-PT": "Detectado que você tem uma placa gráfica de alto desempenho, mude para um modelo de IA mais inteligente e configure-o agora",
+        "ru-RU": "Обнаружено, что у вас высокопроизводительная видеокарта. Переключитесь на более интеллектуальную модель искусственного интеллекта и настройте ее сейчас.",
+        "ja-JP": "高性能のグラフィックス カードが搭載されていることが検出されました。よりスマートな AI モデルに切り替えて、今すぐセットアップしてください。",
+        "de-DE": "Es wurde festgestellt, dass Sie über eine leistungsstarke Grafikkarte verfügen. Wechseln Sie bitte zu einem intelligenteren KI-Modell und richten Sie es jetzt ein",
+        "fr-FR": "Vous avez détecté que vous disposez d'une carte graphique hautes performances, veuillez passer à un modèle d'IA plus intelligent et le configurer maintenant",
+        "ko-KR": "고성능 그래픽 카드가 있는 것으로 감지되었습니다. 지금 더 스마트한 AI 모델로 전환하여 설정하세요.",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(17267-17298)"
+        ],
+        "$id": 4525
+    },
+    "点击切换最佳可用加速引擎": {
+        "en-US": "Click to switch to the best available acceleration engine",
+        "es-ES": "Haga clic para cambiar al motor de aceleración disponible más óptimo",
+        "ar-EG": "انقر للتبديل إلى أفضل محرك تسريع متاح",
+        "pt-PT": "Clique para mudar para o melhor mecanismo de aceleração disponível",
+        "ru-RU": "Нажмите, чтобы переключиться на лучший доступный двигатель ускорения",
+        "ja-JP": "最適な利用可能な加速エンジンに切り替えるにはクリックしてください",
+        "de-DE": "Klicken Sie, um zur besten verfügbaren Beschleunigungsmotor zu wechseln",
+        "fr-FR": "Cliquez pour changer vers le moteur d'accélération optimal disponible",
+        "ko-KR": "사용 가능한 최상의 가속 엔진으로 전환하려면 클릭하세요.",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(17593-17609)"
+        ],
+        "$id": 8146
+    },
+    "警告：{current}非最佳可用引擎，请点击切换{best}！": {
+        "en-US": "Warning: {current} is not the best available engine, please click to switch to {best}!",
+        "es-ES": "Advertencia: {current} no es el motor disponible más óptimo, ¡haga clic para cambiar a {best}!",
+        "ar-EG": "تحذير: {current} ليس المحرك الأفضل المتاح، انقر للتبديل إلى {best}!",
+        "pt-PT": "Aviso: {current} não é o melhor mecanismo disponível. Clique para trocar de {best}!",
+        "ru-RU": "Внимание: {current} не является лучшим доступным двигателем, пожалуйста, нажмите для переключения на {best}!",
+        "ja-JP": "警告：{current}は最適でないため、{best}に切り替えるにはクリックしてください！",
+        "de-DE": "Warnung: {current} ist nicht der beste verfügbare Motor, klicken Sie zum Wechseln zu {best}!",
+        "fr-FR": "Avertissement : {current} n'est pas le moteur optimal disponible, veuillez cliquer pour basculer vers {best} !",
+        "ko-KR": "경고: {current}는 사용 가능한 최고의 엔진이 아닙니다. {best}를 전환하려면 클릭하세요!",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(17653-17689)"
+        ],
+        "$id": 8147
+    },
+    "萤核智能文件夹 - 更新日志": {
+        "en-US": "Firefly AI Folder - Release Notes",
+        "es-ES": "Firefly AI Folder - Registro de cambios",
+        "ar-EG": "萤核智能文件夹 - سجل التحديثات",
+        "pt-PT": "Pasta Inteligente Firefly - Registo de Alterações",
+        "ru-RU": "Интеллектуальная папка Firefly - журнал изменений",
+        "ja-JP": "萤核スマートフォルダー - 更新履歴",
+        "de-DE": "Firefly AI Folder - Änderungsprotokoll",
+        "fr-FR": "Firefly AI Folder - Notes de mise à jour",
+        "ko-KR": "형광석 스마트 폴더 - 업데이트 로그",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(18279-18297)"
+        ],
+        "$id": 3278
+    },
+    "最新版本: v{version}": {
+        "en-US": "Latest version: v{version}",
+        "es-ES": "Última versión: v{version}",
+        "ar-EG": "أحدث إصدار: v{version}",
+        "pt-PT": "Versão mais recente: v{version}",
+        "ru-RU": "Последняя версия: v{version}",
+        "ja-JP": "最新バージョン：v{version}",
+        "de-DE": "Neueste Version: v{version}",
+        "fr-FR": "Dernière version : v{version}",
+        "ko-KR": "최신 버전: v{version}",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(18479-18499)"
+        ],
+        "$id": 3279
+    },
+    "稍后再说": {
+        "en-US": "Remind me later",
+        "es-ES": "Más tarde",
+        "ar-EG": "لاحقًا",
+        "pt-PT": "Mais tarde",
+        "ru-RU": "Позже",
+        "ja-JP": "あとで",
+        "de-DE": "Später",
+        "fr-FR": "Plus tard",
+        "ko-KR": "나중에 하기",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(19220-19228)"
+        ],
+        "$id": 3280
+    },
+    "无法打开下载页面": {
+        "en-US": "Unable to open download page",
+        "es-ES": "No se puede abrir la página de descarga",
+        "ar-EG": "غير قادر على فتح صفحة التحميل",
+        "pt-PT": "Não foi possível abrir a página de download",
+        "ru-RU": "Невозможно открыть страницу загрузки",
+        "ja-JP": "ダウンロードページを開けません",
+        "de-DE": "Download-Seite kann nicht geöffnet werden",
+        "fr-FR": "Impossible d'ouvrir la page de téléchargement",
+        "ko-KR": "다운로드 페이지를 열 수 없습니다",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(19473-19485)"
+        ],
+        "$id": 4526
+    },
+    "去官网下载新版": {
+        "en-US": "Download new version from official website",
+        "es-ES": "Ir al sitio web oficial para descargar la nueva versión",
+        "ar-EG": "تحميل الإصدار الجديد من الموقع الرسمي",
+        "pt-PT": "Transferir nova versão no sítio web oficial",
+        "ru-RU": "Перейти на официальный сайт для загрузки новой версии",
+        "ja-JP": "公式サイトから新版をダウンロード",
+        "de-DE": "Neue Version von der offiziellen Website herunterladen",
+        "fr-FR": "Télécharger la nouvelle version sur le site officiel",
+        "ko-KR": "공식 홈페이지에서 새 버전 다운로드",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(19666-19677)"
+        ],
+        "$id": 3283
+    },
+    "查看分析队列 - 当前: {ws}{name}": {
+        "en-US": "View Analysis Queue - Current: {ws}{name}",
+        "es-ES": "Ver cola de análisis - Actual: {ws}{name}",
+        "ar-EG": "عرض قائمة انتظار التحليل - الحالي: {ws}{name}",
+        "pt-PT": "Ver fila de análise - Atual: {ws}{name}",
+        "ru-RU": "Просмотр очереди анализа – текущий: {ws}{name}",
+        "ja-JP": "分析キューの表示 - 現在: {ws}{name}",
+        "de-DE": "Analysewarteschlange anzeigen – Aktuell: {ws}{name}",
+        "fr-FR": "Afficher la file d'attente d'analyse - Actuel : {ws}{name}",
+        "ko-KR": "분석 대기열 보기 - 현재: {ws}{name}",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(20043-20070)"
+        ],
+        "$id": 7806
+    },
+    "查看分析队列 - {count} 个文件等待中": {
+        "en-US": "View analysis queue - {count} files waiting",
+        "es-ES": "Ver cola de análisis - {count} archivos en espera\r",
+        "ar-EG": "عرض قائمة انتظار التحليل - {count} ملف في الانتظار\r",
+        "pt-PT": "Ver fila de análise - {count} ficheiros à espera\r",
+        "ru-RU": "Просмотр очереди анализа - {count} файлов ожидает\r",
+        "ja-JP": "分析キューを表示 - {count} 個のファイルが保留中",
+        "de-DE": "Analysewarteschlange anzeigen - {count} Dateien warten\r",
+        "fr-FR": "Voir la file d'analyse - {count} fichiers en attente\r",
+        "ko-KR": "분석 대기열 보기 - {count}개 파일 대기 중\r",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(20239-20266)"
+        ],
+        "$id": 3910
+    },
+    "{stageText}: {ws}{name} · 进度: {progress}%": {
+        "en-US": "{stageText}: {ws}{name} · Progress: {progress}%",
+        "es-ES": "{stageText}: {ws}{name} · Progreso: {progress}%",
+        "ar-EG": "{stageText}: {ws}{name} · التقدم: {progress}%",
+        "pt-PT": "{stageText}: {ws}{name} · Progresso: {progress}%",
+        "ru-RU": "{stageText}: {ws}{name} · Прогресс: {progress}%",
+        "ja-JP": "{stageText}: {ws}{name} · 進捗: {progress}%",
+        "de-DE": "{stageText}: {ws}{name} · Fortschritt: {progress}%",
+        "fr-FR": "{stageText}: {ws}{name} · Progression : {progress}%",
+        "ko-KR": "{stageText}: {ws}{name} · 진행률: {progress}%",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(20347-20392)"
+        ],
+        "$id": 7977
+    },
+    "空闲": {
+        "en-US": "Idle",
+        "es-ES": "En espera",
+        "ar-EG": "عاطل",
+        "pt-PT": "Inativo",
+        "ru-RU": "Ожидание",
+        "ja-JP": "アイドル",
+        "de-DE": "Leerlauf",
+        "fr-FR": "Inactif",
+        "ko-KR": "게으른",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(20684-20690)"
+        ],
+        "$id": 3912
+    },
+    "等待: {count}": {
+        "en-US": "Waiting: {count}",
+        "es-ES": "Esperando: {count}",
+        "ar-EG": "الانتظار: {count}",
+        "pt-PT": "Aguardar: {count}",
+        "ru-RU": "Ожидание: {count}",
+        "ja-JP": "待って： {count}",
+        "de-DE": "Warten: {count}",
+        "fr-FR": "En attente : {count}",
+        "ko-KR": "기다리다: {count}",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(20711-20726)"
+        ],
+        "$id": 3913
+    },
+    "点击打开分析设置": {
+        "en-US": "Click to open analysis settings",
+        "es-ES": "Haga clic para abrir la configuración de análisis",
+        "ar-EG": "انقر لفتح إعدادات التحليل",
+        "pt-PT": "Clique para abrir as configurações de análise",
+        "ru-RU": "Нажмите, чтобы открыть настройки анализа",
+        "ja-JP": "クリックして分析設定を開きます",
+        "de-DE": "Klicken Sie hier, um die Analyseeinstellungen zu öffnen",
+        "fr-FR": "Cliquez pour ouvrir les paramètres d'analyse",
+        "ko-KR": "분석 설정을 열려면 클릭하세요.",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(21097-21109)"
+        ],
+        "$id": 10195
+    },
+    "分析模式": {
+        "en-US": "analysis mode",
+        "es-ES": "modo de análisis",
+        "ar-EG": "وضع التحليل",
+        "pt-PT": "modo de análise",
+        "ru-RU": "режим анализа",
+        "ja-JP": "分析モード",
+        "de-DE": "Analysemodus",
+        "fr-FR": "mode d'analyse",
+        "ko-KR": "분석 모드",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(21162-21170)"
+        ],
+        "$id": 10196
+    },
+    "简单分类": {
+        "en-US": "Simple classification",
+        "es-ES": "clasificación sencilla",
+        "ar-EG": "تصنيف بسيط",
+        "pt-PT": "Classificação simples",
+        "ru-RU": "Простая классификация",
+        "ja-JP": "簡易分類",
+        "de-DE": "Einfache Klassifizierung",
+        "fr-FR": "Classement simple",
+        "ko-KR": "단순 분류",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(21490-21498)"
+        ],
+        "$id": 7818
+    },
+    "AI分析": {
+        "en-US": "AI analysis",
+        "es-ES": "análisis de IA",
+        "ar-EG": "تحليل الذكاء الاصطناعي",
+        "pt-PT": "Análise de IA",
+        "ru-RU": "ИИ-анализ",
+        "ja-JP": "AI分析",
+        "de-DE": "KI-Analyse",
+        "fr-FR": "Analyse de l'IA",
+        "ko-KR": "AI 분석",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(21502-21510)"
+        ],
+        "$id": 7852
+    },
+    "点击打开AI引擎配置": {
+        "en-US": "Click to open AI engine configuration",
+        "es-ES": "Haga clic para abrir la configuración del motor de IA",
+        "ar-EG": "انقر لفتح تكوين محرك الذكاء الاصطناعي",
+        "pt-PT": "Clique para abrir a configuração do mecanismo de IA",
+        "ru-RU": "Нажмите, чтобы открыть конфигурацию механизма AI",
+        "ja-JP": "クリックして AI エンジン構成を開きます",
+        "de-DE": "Klicken Sie hier, um die KI-Engine-Konfiguration zu öffnen",
+        "fr-FR": "Cliquez pour ouvrir la configuration du moteur AI",
+        "ko-KR": "AI 엔진 구성을 열려면 클릭하세요.",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(21887-21901)"
+        ],
+        "$id": 7683
+    },
+    "思考": {
+        "en-US": "think",
+        "es-ES": "pensar",
+        "ar-EG": "يفكر",
+        "pt-PT": "pensar",
+        "ru-RU": "думать",
+        "ja-JP": "考える",
+        "de-DE": "denken",
+        "fr-FR": "pense",
+        "ko-KR": "생각하다",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(21954-21960)"
+        ],
+        "$id": 7747
+    },
+    "发现新版本 v{version}": {
+        "en-US": "New version v{version} available",
+        "es-ES": "Nueva versión encontrada v{version}",
+        "ar-EG": "اكتشاف إصدار جديد v{version}",
+        "pt-PT": "Nova versão detetada v{version}",
+        "ru-RU": "Обнаружена новая версия v{version}",
+        "ja-JP": "新しいバージョン v{version} を発見",
+        "de-DE": "Neue Version v{version} entdeckt",
+        "fr-FR": "Nouvelle version détectée v{version}",
+        "ko-KR": "새 버전 감지 v{version}",
+        "$files": [
+            "src/renderer/components/common/Footer.tsx(23025-23045)"
+        ],
+        "$id": 3263
+    },
+    "最小化窗口": {
+        "en-US": "Minimize Window",
+        "es-ES": "Minimizar ventana",
+        "ar-EG": "تصغير النافذة",
+        "pt-PT": "Minimizar janela",
+        "ru-RU": "Свернуть окно",
+        "ja-JP": "ウィンドウを最小化する",
+        "de-DE": "Fenster minimieren",
+        "fr-FR": "Réduire la fenêtre",
+        "ko-KR": "창 최소화",
+        "$files": [
+            "src/renderer/components/common/Header.tsx(2218-2227)"
+        ],
+        "$id": 2929
+    },
+    "还原窗口": {
+        "en-US": "Restore Window",
+        "es-ES": "Restaurar ventana",
+        "ar-EG": "استعادة النافذة",
+        "pt-PT": "Restaurar janela",
+        "ru-RU": "Восстановить окно",
+        "ja-JP": "復元ウィンドウ",
+        "de-DE": "Fenster wiederherstellen",
+        "fr-FR": "Restaurer la fenêtre",
+        "ko-KR": "복원 창",
+        "$files": [
+            "src/renderer/components/common/Header.tsx(2563-2571)"
+        ],
+        "$id": 3915
+    },
+    "最大化窗口": {
+        "en-US": "Maximize Window",
+        "es-ES": "Maximizar ventana",
+        "ar-EG": "تكبير النافذة",
+        "pt-PT": "Maximizar janela",
+        "ru-RU": "Развернуть окно",
+        "ja-JP": "ウィンドウを最大化する",
+        "de-DE": "Fenster maximieren",
+        "fr-FR": "Agrandir la fenêtre",
+        "ko-KR": "창 최대화",
+        "$files": [
+            "src/renderer/components/common/Header.tsx(2575-2584)"
+        ],
+        "$id": 3916
+    },
+    "关闭窗口": {
+        "en-US": "Close Window",
+        "es-ES": "Cerrar ventana",
+        "ar-EG": "إغلاق النافذة",
+        "pt-PT": "Fechar janela",
+        "ru-RU": "Закрыть окно",
+        "ja-JP": "ウィンドウを閉じる",
+        "de-DE": "Fenster schließen",
+        "fr-FR": "Fermer la fenêtre",
+        "ko-KR": "창 닫기",
+        "$files": [
+            "src/renderer/components/common/Header.tsx(3000-3008)"
+        ],
+        "$id": 3917
+    },
+    "萤核智能文件夹": {
+        "en-US": "Firefly AI Folder",
+        "es-ES": "Carpeta AI Firefly",
+        "ar-EG": "Firefly AI Folder",
+        "pt-PT": "Pasta AI Firefly",
+        "ru-RU": "Умная папка Firefly",
+        "ja-JP": "Firefly 智能フォルダ",
+        "de-DE": "Firefly Intelligenter Ordner",
+        "fr-FR": "Firefly AI Folder",
+        "ko-KR": "Firefly AI Folder",
+        "$files": [
+            "src/renderer/components/common/Logo.tsx(397-408)",
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4573-4584)"
+        ],
+        "$id": 3918
+    },
+    "网格": {
+        "en-US": "Grid",
+        "es-ES": "Cuadrícula",
+        "ar-EG": "شبكة",
+        "pt-PT": "Grelha",
+        "ru-RU": "Сетка",
+        "ja-JP": "グリッド",
+        "de-DE": "Gitter",
+        "fr-FR": "Grille",
+        "ko-KR": "그리드",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3047-3053)"
+        ],
+        "$id": 7978
+    },
+    "列表": {
+        "en-US": "List",
+        "es-ES": "Lista",
+        "ar-EG": "قائمة",
+        "pt-PT": "Lista",
+        "ru-RU": "Список",
+        "ja-JP": "リスト",
+        "de-DE": "Liste",
+        "fr-FR": "Liste",
+        "ko-KR": "목록",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3117-3123)"
+        ],
+        "$id": 7985
+    },
+    "瀑布流": {
+        "en-US": "Waterfall",
+        "es-ES": "Mampostería",
+        "ar-EG": "توزيع مياه",
+        "pt-PT": "Cascata",
+        "ru-RU": "Плотная сетка",
+        "ja-JP": "瀑布型レイアウト",
+        "de-DE": "Kaskade",
+        "fr-FR": "Cascade",
+        "ko-KR": "워터폴",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3186-3193)"
+        ],
+        "$id": 7986
+    },
+    "视图与显示设置": {
+        "en-US": "View and Display Settings",
+        "es-ES": "Configuración de vista y visualización",
+        "ar-EG": "إعدادات العرض والظهور",
+        "pt-PT": "Definições de visualização e exibição",
+        "ru-RU": "Параметры вида и отображения",
+        "ja-JP": "ビューと表示設定",
+        "de-DE": "Ansichts- und Anzeigeeinstellungen",
+        "fr-FR": "Paramètres d'affichage et de vue",
+        "ko-KR": "뷰 및 표시 설정",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3928-3939)"
+        ],
+        "$id": 7999
+    },
+    "视图模式": {
+        "en-US": "View Mode",
+        "es-ES": "Modo de vista",
+        "ar-EG": "وضع العرض",
+        "pt-PT": "Modo de visualização",
+        "ru-RU": "Режим вида",
+        "ja-JP": "ビューモード",
+        "de-DE": "Ansichtsmodus",
+        "fr-FR": "Mode d'affichage",
+        "ko-KR": "뷰 모드",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(4898-4906)"
+        ],
+        "$id": 8000
+    },
+    "显示卡片/行尺寸": {
+        "en-US": "Show Card/Row Size",
+        "es-ES": "Mostrar tamaño de tarjetas/filas",
+        "ar-EG": "إظهار حجم البطاقة/السطر",
+        "pt-PT": "Mostrar tamanho do cartão/linha",
+        "ru-RU": "Показать размер карточек/строк",
+        "ja-JP": "カード/行サイズを表示",
+        "de-DE": "Karten-/Zeilenabmessungen anzeigen",
+        "fr-FR": "Afficher la taille des cartes/lignes",
+        "ko-KR": "카드/행 크기 표시",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(6473-6485)"
+        ],
+        "$id": 8001
+    },
+    "主要文件名显示": {
+        "en-US": "Main Filename Display",
+        "es-ES": "Mostrar nombre del archivo principal",
+        "ar-EG": "عرض اسم الملف الأساسي",
+        "pt-PT": "Exibição do nome do ficheiro principal",
+        "ru-RU": "Отображение основного имени файла",
+        "ja-JP": "主要ファイル名を表示",
+        "de-DE": "Hauptdateiname anzeigen",
+        "fr-FR": "Affichage du nom de fichier principal",
+        "ko-KR": "기본 파일명 표시",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8871-8882)"
+        ],
+        "$id": 8002
+    },
+    "智能文件名": {
+        "en-US": "Smart Filename",
+        "es-ES": "Nombre de archivo inteligente",
+        "ar-EG": "اسم الملف الذكي",
+        "pt-PT": "Nome inteligente do ficheiro",
+        "ru-RU": "Умное имя файла",
+        "ja-JP": "スマートファイル名",
+        "de-DE": "Intelligenter Dateiname",
+        "fr-FR": "Renommer intelligent",
+        "ko-KR": "스마트 파일명",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9040-9049)"
+        ],
+        "$id": 8003
+    },
+    "真实文件名": {
+        "en-US": "Real Filename",
+        "es-ES": "Nombre de archivo real",
+        "ar-EG": "اسم الملف الفعلي",
+        "pt-PT": "Nome real do ficheiro",
+        "ru-RU": "Реальное имя файла",
+        "ja-JP": "実際のファイル名",
+        "de-DE": "Echter Dateiname",
+        "fr-FR": "Nom de fichier réel",
+        "ko-KR": "실제 파일명",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9098-9107)"
+        ],
+        "$id": 8004
+    },
+    "显示完整文件名": {
+        "en-US": "Show Full Filename",
+        "es-ES": "Mostrar nombre de archivo completo",
+        "ar-EG": "إظهار اسم الملف الكامل",
+        "pt-PT": "Mostrar nome completo do ficheiro",
+        "ru-RU": "Показать полное имя файла",
+        "ja-JP": "完全なファイル名を表示",
+        "de-DE": "Vollen Dateinamen anzeigen",
+        "fr-FR": "Afficher le nom de fichier complet",
+        "ko-KR": "전체 파일명 표시",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(10542-10553)"
+        ],
+        "$id": 8005
+    },
+    "显示丢失文件": {
+        "en-US": "Show Missing Files",
+        "es-ES": "Mostrar archivos perdidos",
+        "ar-EG": "إظهار الملفات المفقودة",
+        "pt-PT": "Mostrar ficheiros em falta",
+        "ru-RU": "Показать отсутствующие файлы",
+        "ja-JP": "欠落ファイルをを表示",
+        "de-DE": "Fehlende Dateien anzeigen",
+        "fr-FR": "Afficher les fichiers manquants",
+        "ko-KR": "누락된 파일 표시",
+        "$files": [
+            "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(11045-11055)"
+        ],
+        "$id": 8006
+    },
+    "请选择您要整理的文件夹（工作目录）": {
+        "en-US": "Please select the folder you want to organize (working directory)",
+        "es-ES": "Seleccione la carpeta que desea organizar (directorio de trabajo)",
+        "ar-EG": "الرجاء تحديد المجلد الذي تريد تنظيمه (دليل العمل)",
+        "pt-PT": "Selecione a pasta que deseja organizar (diretório de trabalho)",
+        "ru-RU": "Пожалуйста, выберите папку, которую вы хотите организовать (рабочий каталог).",
+        "ja-JP": "整理したいフォルダー（作業ディレクトリ）を選択してください",
+        "de-DE": "Bitte wählen Sie den Ordner aus, den Sie organisieren möchten (Arbeitsverzeichnis).",
+        "fr-FR": "Veuillez sélectionner le dossier que vous souhaitez organiser (répertoire de travail)",
+        "ko-KR": "정리하고 싶은 폴더(작업 디렉토리)를 선택해주세요",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1050-1071)"
+        ],
+        "$id": 4457
+    },
+    "文件需经过AI分析才能分类，过多会比较耗时，工作模式决定了分析结果是否缓存到服务器": {
+        "en-US": "Files need to be analyzed by AI to be classified, and too many files will take a long time. The working mode determines whether the analysis results are cached on the server.",
+        "es-ES": "Los archivos deben ser analizados por IA para poder ser clasificados, si hay demasiados el proceso puede llevar bastante tiempo. El modo de funcionamiento determina si los resultados del análisis se almacenan en caché en el servidor.",
+        "ar-EG": "يحتاج الملف إلى تحليل AI ليتم تصنيفه، وسيكون هناك الكثير من الوقت إذا كان العدد كبيرًا، ووضع العمل يحدد ما إذا كانت نتائج التحليل مخزنة مؤقتًا على الخادم",
+        "pt-PT": "Os ficheiros necessitam de análise por IA para serem classificados, demasiados ficheiros podem consumir bastante tempo. O modo de trabalho determina se os resultados da análise são armazenados em cache no servidor.",
+        "ru-RU": "Файлы необходимо проанализировать с помощью ИИ для классификации, слишком большое количество файлов может занять много времени. Режим работы определяет, будут ли результаты анализа кэшироваться на сервере.",
+        "ja-JP": "ファイルはAI分析により分類されるため、多すぎると時間がかかります。動作モードによって、分析結果をサーバーにキャッシュするかどうかが決まります。",
+        "de-DE": "Die Dateien müssen durch KI analysiert werden, um klassifiziert zu werden. Zu viele Dateien können zeitaufwendig sein. Der Arbeitsmodus bestimmt, ob die Analyseergebnisse auf dem Server zwischengespeichert werden.",
+        "fr-FR": "Les fichiers doivent être analysés par l'IA pour être classifiés, trop nombreux peuvent prendre du temps, le mode de fonctionnement détermine si les résultats d'analyse sont mis en cache sur le serveur",
+        "ko-KR": "파일은 AI 분석을 거쳐야만 분류할 수 있으며, 너무 많으면 시간이 오래 걸릴 수 있습니다. 작업 모드에 따라 분석 결과를 서버에 캐시할지 여부가 결정됩니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1148-1193)"
+        ],
+        "$id": 6227
+    },
+    "企业版暂不支持极速目录": {
+        "en-US": "The enterprise version does not currently support speed directories.",
+        "es-ES": "Actualmente, la versión empresarial no admite directorios rápidos.",
+        "ar-EG": "لا يدعم إصدار المؤسسة حاليًا أدلة السرعة.",
+        "pt-PT": "A versão empresarial atualmente não oferece suporte a diretórios rápidos.",
+        "ru-RU": "Корпоративная версия в настоящее время не поддерживает каталоги скорости.",
+        "ja-JP": "エンタープライズ バージョンは現在、スピード ディレクトリをサポートしていません。",
+        "de-DE": "Die Enterprise-Version unterstützt derzeit keine Speed-Verzeichnisse.",
+        "fr-FR": "La version entreprise ne prend actuellement pas en charge les répertoires rapides.",
+        "ko-KR": "엔터프라이즈 버전은 현재 속도 디렉터리를 지원하지 않습니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1673-1688)"
+        ],
+        "$id": 4380
+    },
+    "极速目录": {
+        "en-US": "Speed ​​directory",
+        "es-ES": "directorio de velocidad",
+        "ar-EG": "دليل السرعة",
+        "pt-PT": "Diretório de velocidade",
+        "ru-RU": "Скоростной каталог",
+        "ja-JP": "スピードディレクトリ",
+        "de-DE": "Geschwindigkeitsverzeichnis",
+        "fr-FR": "Annuaire de vitesse",
+        "ko-KR": "속도 디렉토리",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2093-2101)"
+        ],
+        "$id": 2900
+    },
+    "互助共享，秒级完成": {
+        "en-US": "Mutual assistance and sharing, completed in seconds",
+        "es-ES": "Asistencia mutua e intercambio, completado en segundos",
+        "ar-EG": "المساعدة المتبادلة والمشاركة، يتم الانتهاء منها في ثوانٍ",
+        "pt-PT": "Assistência mútua e compartilhamento, concluída em segundos",
+        "ru-RU": "Взаимная помощь и обмен, завершенные за секунды",
+        "ja-JP": "相互支援と共有、数秒で完了",
+        "de-DE": "Gegenseitige Hilfe und Austausch, in Sekundenschnelle erledigt",
+        "fr-FR": "Assistance mutuelle et partage, réalisés en quelques secondes",
+        "ko-KR": "몇 초 만에 완료되는 상호 지원 및 공유",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2233-2246)"
+        ],
+        "$id": 2901
+    },
+    "如果你待分析的文件是他人分析过的，可使用服务器脱敏缓存，": {
+        "en-US": "If the file you're analyzing has already been processed by someone else, you can use the server's de-identified cache  ",
+        "es-ES": "Si el archivo que deseas analizar ya ha sido procesado por otra persona, puedes utilizar la caché desensibilizada del servidor  ",
+        "ar-EG": "إذا كان الملف الذي تريد تحليله قد قام آخرون بتحليله من قبل، فيمكنك استخدام ذاكرة التخزين المؤقت المُجرَّدة من الخادم،  ",
+        "pt-PT": "Se o ficheiro que pretende analisar já tiver sido analisado por outra pessoa, pode utilizar a cache ofuscada do servidor,  ",
+        "ru-RU": "Если файл, который вы хотите проанализировать, уже был проанализирован кем-то другим, можно использовать десенсибилизирующий кэш сервера,  ",
+        "ja-JP": "分析したいファイルが他の人によって分析されている場合は、サーバーの感度解除キャッシュを使用できます。",
+        "de-DE": "Wenn die von Ihnen zu analysierende Datei bereits von anderen analysiert wurde, können Sie den serverseitigen Desensibilisierungs-Cache nutzen,  ",
+        "fr-FR": "Si le fichier que vous souhaitez analyser a déjà été traité par quelqu’un d’autre, vous pouvez utiliser le cache de désensibilisation du serveur  ",
+        "ko-KR": "분석 대상 파일이 이미 다른 사람이 분석한 적 있다면 서버의 민감 정보 제거 캐시를 사용하여  ",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2408-2440)"
+        ],
+        "$id": 3380
+    },
+    "大幅提升处理速度": {
+        "en-US": "to significantly speed up processing.",
+        "es-ES": "para acelerar significativamente el procesamiento",
+        "ar-EG": "ما يحسّن سرعة المعالجة بشكل كبير",
+        "pt-PT": "aumentando significativamente a velocidade de processamento",
+        "ru-RU": "что значительно ускорит обработку",
+        "ja-JP": "処理速度が大幅に向上",
+        "de-DE": "um die Verarbeitungsgeschwindigkeit erheblich zu steigern.",
+        "fr-FR": "afin d’accélérer considérablement le traitement.",
+        "ko-KR": "처리 속도를 크게 향상시킬 수 있습니다",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2593-2605)"
+        ],
+        "$id": 3381
+    },
+    "云端共享原理说明": {
+        "en-US": "Cloud sharing principle explanation",
+        "es-ES": "Explicación del principio de uso compartido de la nube",
+        "ar-EG": "شرح مبدأ المشاركة السحابية",
+        "pt-PT": "Explicação do princípio de compartilhamento em nuvem",
+        "ru-RU": "Объяснение принципа совместного использования облака",
+        "ja-JP": "クラウド共有原理の説明",
+        "de-DE": "Erklärung des Cloud-Sharing-Prinzips",
+        "fr-FR": "Explication du principe de partage dans le cloud",
+        "ko-KR": "클라우드 공유 원리 설명",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4420-4432)"
+        ],
+        "$id": 7684
+    },
+    "始终将隐私保护作为核心设计原则，坚持": {
+        "en-US": "Always regard privacy protection as a core design principle and adhere to",
+        "es-ES": "Considere siempre la protección de la privacidad como un principio central de diseño y respete",
+        "ar-EG": "اعتبر دائمًا حماية الخصوصية مبدأً أساسيًا في التصميم والتزم به",
+        "pt-PT": "Sempre considere a proteção da privacidade como um princípio fundamental de design e siga",
+        "ru-RU": "Всегда рассматривайте защиту конфиденциальности как основной принцип проектирования и придерживайтесь",
+        "ja-JP": "常にプライバシー保護を中心的な設計原則として考慮し、次の事項を遵守してください。",
+        "de-DE": "Betrachten Sie den Schutz der Privatsphäre stets als zentralen Gestaltungsgrundsatz und halten Sie ihn ein",
+        "fr-FR": "Considérez toujours la protection de la vie privée comme un principe de conception fondamental et respectez",
+        "ko-KR": "항상 개인정보 보호를 핵심 설계 원칙으로 간주하고 이를 준수합니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4619-4641)"
+        ],
+        "$id": 7685
+    },
+    "数据本地优先": {
+        "en-US": "Data local priority",
+        "es-ES": "Prioridad local de datos",
+        "ar-EG": "الأولوية المحلية للبيانات",
+        "pt-PT": "Prioridade local dos dados",
+        "ru-RU": "Локальный приоритет данных",
+        "ja-JP": "データローカル優先度",
+        "de-DE": "Lokale Datenpriorität",
+        "fr-FR": "Priorité locale des données",
+        "ko-KR": "데이터 로컬 우선순위",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4703-4713)"
+        ],
+        "$id": 7686
+    },
+    "，切实保障用户隐私安全，其核心技术原理与行业常见的哈希（Hash）机制逻辑一致。": {
+        "en-US": ", to effectively protect user privacy and security, and its core technical principles are logically consistent with the common hash (Hash) mechanism in the industry.",
+        "es-ES": ", para proteger eficazmente la privacidad y seguridad del usuario, y sus principios técnicos básicos son lógicamente consistentes con el mecanismo hash (Hash) común en la industria.",
+        "ar-EG": "، لحماية خصوصية المستخدم وأمانه بشكل فعال، وتتوافق مبادئه التقنية الأساسية منطقيًا مع آلية التجزئة الشائعة (Hash) في الصناعة.",
+        "pt-PT": ", para proteger eficazmente a privacidade e a segurança do usuário, e seus princípios técnicos básicos são logicamente consistentes com o mecanismo de hash comum (Hash) da indústria.",
+        "ru-RU": ", чтобы эффективно защитить конфиденциальность и безопасность пользователей, а его основные технические принципы логически согласуются с распространенным в отрасли механизмом хэширования (Hash).",
+        "ja-JP": "、ユーザーのプライバシーとセキュリティを効果的に保護するためのものであり、その中心となる技術原則は業界の一般的なハッシュ (Hash) メカニズムと論理的に一致しています。",
+        "de-DE": ", um die Privatsphäre und Sicherheit der Benutzer wirksam zu schützen, und seine technischen Kernprinzipien stimmen logisch mit dem in der Branche üblichen Hash-Mechanismus (Hash) überein.",
+        "fr-FR": ", pour protéger efficacement la confidentialité et la sécurité des utilisateurs, et ses principes techniques de base sont logiquement cohérents avec le mécanisme de hachage (Hash) commun dans l'industrie.",
+        "ko-KR": ", 사용자 개인 정보 보호 및 보안을 효과적으로 보호하기 위해 핵심 기술 원칙은 업계 공통 해시(Hash) 메커니즘과 논리적으로 일치합니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4748-4817)"
+        ],
+        "$id": 7687
+    },
+    "简单来说": {
+        "en-US": "In simple terms",
+        "es-ES": "En términos simples",
+        "ar-EG": "بعبارات بسيطة",
+        "pt-PT": "Em termos simples",
+        "ru-RU": "Проще говоря",
+        "ja-JP": "簡単に言うと",
+        "de-DE": "In einfachen Worten",
+        "fr-FR": "En termes simples",
+        "ko-KR": "간단히 말해서",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5031-5039)"
+        ],
+        "$id": 7688
+    },
+    "，系统会通过加密算法为每个文件生成唯一的特征标识（长度 16-128 字符），相当于文件的专属 ID。": {
+        "en-US": ", the system will generate a unique characteristic identifier (length 16-128 characters) for each file through an encryption algorithm, which is equivalent to the unique ID of the file.",
+        "es-ES": ", el sistema generará un identificador característico único (de 16 a 128 caracteres de longitud) para cada archivo a través de un algoritmo de cifrado, que es equivalente al ID único del archivo.",
+        "ar-EG": "سيقوم النظام بإنشاء معرف مميز فريد (الطول 16-128 حرفًا) لكل ملف من خلال خوارزمية تشفير، وهو ما يعادل المعرف الفريد للملف.",
+        "pt-PT": ", o sistema irá gerar um identificador de característica exclusivo (comprimento de 16 a 128 caracteres) para cada arquivo por meio de um algoritmo de criptografia, que equivale ao ID exclusivo do arquivo.",
+        "ru-RU": ", система с помощью алгоритма шифрования сгенерирует уникальный характерный идентификатор (длиной 16–128 символов) для каждого файла, который эквивалентен уникальному идентификатору файла.",
+        "ja-JP": "の場合、システムは暗号化アルゴリズムを通じてファイルごとに一意の特性識別子 (長さ 16 ～ 128 文字) を生成します。これはファイルの一意の ID に相当します。",
+        "de-DE": ", generiert das System über einen Verschlüsselungsalgorithmus für jede Datei eine eindeutige charakteristische Kennung (Länge 16–128 Zeichen), die der eindeutigen ID der Datei entspricht.",
+        "fr-FR": ", le système générera un identifiant caractéristique unique (longueur de 16 à 128 caractères) pour chaque fichier via un algorithme de cryptage, qui est équivalent à l'identifiant unique du fichier.",
+        "ko-KR": ", 시스템은 암호화 알고리즘을 통해 각 파일에 대해 파일의 고유 ID와 동일한 고유 특성 식별자(길이 16-128자)를 생성합니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5076-5158)"
+        ],
+        "$id": 7689
+    },
+    "生成这一 ID 的": {
+        "en-US": "Generate this ID",
+        "es-ES": "Generar esta identificación",
+        "ar-EG": "قم بإنشاء هذا المعرف",
+        "pt-PT": "Gere este ID",
+        "ru-RU": "Создать этот идентификатор",
+        "ja-JP": "このIDを生成します",
+        "de-DE": "Generieren Sie diese ID",
+        "fr-FR": "Générer cet identifiant",
+        "ko-KR": "이 ID를 생성하세요",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5347-5360)"
+        ],
+        "$id": 7690
+    },
+    "唯一前提": {
+        "en-US": "The only premise",
+        "es-ES": "La única premisa",
+        "ar-EG": "الفرضية الوحيدة",
+        "pt-PT": "A única premissa",
+        "ru-RU": "Единственная предпосылка",
+        "ja-JP": "唯一の前提",
+        "de-DE": "Die einzige Voraussetzung",
+        "fr-FR": "La seule prémisse",
+        "ko-KR": "유일한 전제",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5426-5434)"
+        ],
+        "$id": 7691
+    },
+    "，是用户本地持有该文件并完成算法计算，应用不会向任何第三方泄露该文件 ID。仅凭借此 ID，才可向服务器请求对应 ID 的分析数据，无其他获取途径。": {
+        "en-US": ", the user holds the file locally and completes the algorithm calculation. The application will not disclose the file ID to any third party. Only with this ID can the analysis data of the corresponding ID be requested from the server, and there is no other way to obtain it.",
+        "es-ES": ", el usuario guarda el archivo localmente y completa el cálculo del algoritmo. La aplicación no revelará la identificación del archivo a ningún tercero. Sólo con este ID se pueden solicitar al servidor los datos de análisis del ID correspondiente, no habiendo otra forma de obtenerlos.",
+        "ar-EG": "، يحتفظ المستخدم بالملف محليًا ويكمل حساب الخوارزمية. لن يكشف التطبيق عن معرف الملف لأي طرف ثالث. فقط باستخدام هذا المعرف يمكن طلب بيانات التحليل الخاصة بالمعرف المقابل من الخادم، ولا توجد طريقة أخرى للحصول عليها.",
+        "pt-PT": ", o usuário mantém o arquivo localmente e conclui o cálculo do algoritmo. O aplicativo não divulgará o ID do arquivo a terceiros. Somente com este ID os dados de análise do ID correspondente podem ser solicitados ao servidor, não havendo outra forma de obtê-los.",
+        "ru-RU": ", пользователь сохраняет файл локально и завершает расчет алгоритма. Приложение не будет раскрывать идентификатор файла третьим лицам. Только с этим идентификатором можно запросить данные анализа соответствующего идентификатора с сервера, и другого способа их получить нет.",
+        "ja-JP": "、ユーザーはファイルをローカルに保持し、アルゴリズムの計算を完了します。アプリケーションはファイルIDを第三者に開示することはありません。このIDでのみ、該当IDの解析データをサーバーに要求することができ、それ以外に取得する方法はありません。",
+        "de-DE": ", speichert der Benutzer die Datei lokal und schließt die Algorithmusberechnung ab. Die Anwendung gibt die Datei-ID nicht an Dritte weiter. Nur mit dieser ID können die Analysedaten der entsprechenden ID vom Server angefordert werden und es gibt keine andere Möglichkeit, diese zu erhalten.",
+        "fr-FR": ", l'utilisateur conserve le fichier localement et termine le calcul de l'algorithme. L'application ne divulguera l'ID du fichier à aucun tiers. Ce n'est qu'avec cet identifiant que les données d'analyse de l'identifiant correspondant peuvent être demandées au serveur, et il n'y a aucun autre moyen de les obtenir.",
+        "ko-KR": ", 사용자는 파일을 로컬로 보유하고 알고리즘 계산을 완료합니다. 애플리케이션은 파일 ID를 제3자에게 공개하지 않습니다. 이 ID만이 해당 ID의 분석 데이터를 서버에 요청할 수 있으며, 이를 얻을 수 있는 다른 방법은 없습니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5473-5580)"
+        ],
+        "$id": 7692
+    },
+    "即便在": {
+        "en-US": "even in",
+        "es-ES": "incluso en",
+        "ar-EG": "حتى في",
+        "pt-PT": "mesmo em",
+        "ru-RU": "даже в",
+        "ja-JP": "中でも",
+        "de-DE": "sogar drin",
+        "fr-FR": "même dans",
+        "ko-KR": "심지어",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5696-5703)"
+        ],
+        "$id": 7693
+    },
+    "极端假设下": {
+        "en-US": "Under extreme assumptions",
+        "es-ES": "Bajo supuestos extremos",
+        "ar-EG": "في ظل الافتراضات المتطرفة",
+        "pt-PT": "Sob suposições extremas",
+        "ru-RU": "При крайних предположениях",
+        "ja-JP": "極端な仮定のもとでは",
+        "de-DE": "Unter extremen Annahmen",
+        "fr-FR": "Sous des hypothèses extrêmes",
+        "ko-KR": "극단적인 가정하에",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5769-5778)"
+        ],
+        "$id": 7694
+    },
+    "（服务器被突破），第三方仅能获取文件分析数据与对应 ID，且不同平台的 ID 算法完全独立，与百度网盘等平台的文件 ID 无任何关联，无法跨平台匹配原文件。": {
+        "en-US": "(The server was breached), third parties can only obtain file analysis data and corresponding IDs, and the ID algorithms of different platforms are completely independent and have no connection with the file IDs of platforms such as Baidu Netdisk, and cannot match original files across platforms.",
+        "es-ES": "(El servidor fue violado), los terceros solo pueden obtener datos de análisis de archivos y las identificaciones correspondientes, y los algoritmos de identificación de diferentes plataformas son completamente independientes y no tienen conexión con las identificaciones de archivos de plataformas como Baidu Netdisk, y no pueden hacer coincidir los archivos originales entre plataformas.",
+        "ar-EG": "(تم اختراق الخادم)، ولا يمكن للأطراف الثالثة سوى الحصول على بيانات تحليل الملفات والمعرفات المقابلة، وتكون خوارزميات المعرفات الخاصة بالأنظمة الأساسية المختلفة مستقلة تمامًا وليس لها أي اتصال بمعرفات الملفات الخاصة بالأنظمة الأساسية مثل Baidu Netdisk، ولا يمكنها مطابقة الملفات الأصلية عبر الأنظمة الأساسية.",
+        "pt-PT": "(O servidor foi violado), terceiros só podem obter dados de análise de arquivos e IDs correspondentes, e os algoritmos de ID de diferentes plataformas são completamente independentes e não têm conexão com os IDs de arquivos de plataformas como Baidu Netdisk, e não podem combinar arquivos originais entre plataformas.",
+        "ru-RU": "(Сервер был взломан), третьи лица могут получать только данные анализа файлов и соответствующие идентификаторы, а алгоритмы идентификаторов различных платформ полностью независимы и не связаны с идентификаторами файлов таких платформ, как Baidu Netdisk, и не могут сопоставлять исходные файлы на разных платформах.",
+        "ja-JP": "（サーバーが侵害された）、サードパーティはファイル分析データと対応するIDのみを取得でき、異なるプラットフォームのIDアルゴリズムは完全に独立しており、Baidu NetdiskなどのプラットフォームのファイルIDとは関係がなく、プラットフォーム間で元のファイルを照合することはできません。",
+        "de-DE": "(Der Server wurde angegriffen), Dritte können nur Dateianalysedaten und entsprechende IDs erhalten, und die ID-Algorithmen verschiedener Plattformen sind völlig unabhängig und haben keine Verbindung zu den Datei-IDs von Plattformen wie Baidu Netdisk und können Originaldateien nicht plattformübergreifend abgleichen.",
+        "fr-FR": "(Le serveur a été piraté), les tiers ne peuvent obtenir que les données d'analyse de fichiers et les identifiants correspondants, et les algorithmes d'identification des différentes plates-formes sont complètement indépendants et n'ont aucun lien avec les identifiants de fichiers de plates-formes telles que Baidu Netdisk, et ne peuvent pas correspondre aux fichiers originaux sur toutes les plates-formes.",
+        "ko-KR": "(서버가 침해됨) 제3자는 파일 분석 데이터와 해당 ID만 얻을 수 있으며, 서로 다른 플랫폼의 ID 알고리즘은 완전히 독립적이며 Baidu Netdisk와 같은 플랫폼의 파일 ID와 연결되지 않으며 플랫폼 간에 원본 파일을 일치시킬 수 없습니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5817-5928)"
+        ],
+        "$id": 7695
+    },
+    "同时，": {
+        "en-US": "at the same time,",
+        "es-ES": "al mismo tiempo,",
+        "ar-EG": "في نفس الوقت،",
+        "pt-PT": "ao mesmo tempo,",
+        "ru-RU": "в то же время,",
+        "ja-JP": "同時に、",
+        "de-DE": "gleichzeitig,",
+        "fr-FR": "en même temps,",
+        "ko-KR": "동시에,",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6044-6051)"
+        ],
+        "$id": 7696
+    },
+    "服务器仅存储分析类数据": {
+        "en-US": "The server only stores analytical data",
+        "es-ES": "El servidor solo almacena datos analíticos.",
+        "ar-EG": "يقوم الخادم بتخزين البيانات التحليلية فقط",
+        "pt-PT": "O servidor armazena apenas dados analíticos",
+        "ru-RU": "Сервер хранит только аналитические данные",
+        "ja-JP": "サーバーには分析データのみが保存されます",
+        "de-DE": "Der Server speichert nur analytische Daten",
+        "fr-FR": "Le serveur stocke uniquement les données analytiques",
+        "ko-KR": "서버는 분석 데이터만 저장합니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6117-6132)"
+        ],
+        "$id": 7697
+    },
+    "：包括智能文件名、标签、内容摘要、评分及理由、元数据等，也就是大家在右侧属性面板可见的内容，绝不会上传、存储文件本体。": {
+        "en-US": ": Including smart file names, tags, content summaries, ratings and reasons, metadata, etc., which is what you can see in the properties panel on the right. The file itself will never be uploaded or stored.",
+        "es-ES": ": Incluyendo nombres de archivos inteligentes, etiquetas, resúmenes de contenido, calificaciones y motivos, metadatos, etc., que es lo que puede ver en el panel de propiedades de la derecha. El archivo en sí nunca se cargará ni almacenará.",
+        "ar-EG": ": بما في ذلك أسماء الملفات الذكية، والعلامات، وملخصات المحتوى، والتقييمات والأسباب، والبيانات الوصفية، وما إلى ذلك، وهو ما يمكنك رؤيته في لوحة الخصائص على اليمين. لن يتم تحميل الملف نفسه أو تخزينه أبدًا.",
+        "pt-PT": ": Incluindo nomes de arquivos inteligentes, tags, resumos de conteúdo, classificações e motivos, metadados, etc., que é o que você pode ver no painel de propriedades à direita. O arquivo em si nunca será carregado ou armazenado.",
+        "ru-RU": ": включая интеллектуальные имена файлов, теги, сводку содержимого, оценки и причины, метаданные и т. д., которые вы можете увидеть на панели свойств справа. Сам файл никогда не будет загружен или сохранен.",
+        "ja-JP": ": スマート ファイル名、タグ、コンテンツの概要、評価と理由、メタデータなどが含まれます。これらは右側のプロパティ パネルに表示されます。ファイル自体がアップロードまたは保存されることはありません。",
+        "de-DE": ": Einschließlich intelligenter Dateinamen, Tags, Inhaltszusammenfassungen, Bewertungen und Gründe, Metadaten usw., die Sie im Eigenschaftenfenster rechts sehen können. Die Datei selbst wird niemals hochgeladen oder gespeichert.",
+        "fr-FR": ": Y compris les noms de fichiers intelligents, les balises, les résumés de contenu, les évaluations et les raisons, les métadonnées, etc., comme vous pouvez le voir dans le panneau des propriétés sur la droite. Le fichier lui-même ne sera jamais téléchargé ou stocké.",
+        "ko-KR": ": 스마트 파일 이름, 태그, 콘텐츠 요약, 평가 및 이유, 메타데이터 등을 포함하며, 이는 오른쪽 속성 패널에서 볼 수 있습니다. 파일 자체는 업로드되거나 저장되지 않습니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6171-6263)"
+        ],
+        "$id": 7698
+    },
+    "适用场景：": {
+        "en-US": "Applicable scenarios:",
+        "es-ES": "Escenarios aplicables:",
+        "ar-EG": "السيناريوهات القابلة للتطبيق:",
+        "pt-PT": "Cenários aplicáveis:",
+        "ru-RU": "Применимые сценарии:",
+        "ja-JP": "該当するシナリオ:",
+        "de-DE": "Anwendbare Szenarien:",
+        "fr-FR": "Scénarios applicables :",
+        "ko-KR": "적용 가능한 시나리오:",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6603-6612)",
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7812-7821)"
+        ],
+        "$id": 2903
+    },
+    "下载目录、网络资源、电子书、漫画、音乐等公共文件。": {
+        "en-US": "Download directories, network resources, e-books, comics, music, and other public files.",
+        "es-ES": "Descargar directorios, recursos de red, libros electrónicos, cómics, música y otros archivos públicos.",
+        "ar-EG": "تحميل الدليل، والموارد الشبكية، والكتب الإلكترونية، والكوميكس، والموسيقى وغيرها من الملفات العامة.",
+        "pt-PT": "Transferir diretórios, recursos de rede, livros eletrónicos, banda desenhada, música e outros ficheiros públicos.",
+        "ru-RU": "Загрузить каталог, сетевые ресурсы, электронные книги, комиксы, музыку и другие общедоступные файлы.",
+        "ja-JP": "ダウンロードディレクトリ、ネットワークリソース、電子書籍、漫画、音楽などの公開ファイル。",
+        "de-DE": "Download-Verzeichnis, Netzwerkressourcen, E-Books, Comics, Musik und andere öffentliche Dateien.",
+        "fr-FR": "Téléchargement de répertoires, ressources réseau, livres électroniques, bandes dessinées, musique et autres fichiers publics.",
+        "ko-KR": "다운로드 디렉토리, 네트워크 리소스, 전자책, 만화, 음악 등 공개 파일입니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6637-6666)"
+        ],
+        "$id": 6229
+    },
+    "私有目录": {
+        "en-US": "private directory",
+        "es-ES": "directorio privado",
+        "ar-EG": "دليل خاص",
+        "pt-PT": "diretório privado",
+        "ru-RU": "личный каталог",
+        "ja-JP": "プライベートディレクトリ",
+        "de-DE": "privates Verzeichnis",
+        "fr-FR": "répertoire privé",
+        "ko-KR": "개인 디렉토리",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7285-7293)"
+        ],
+        "$id": 2905
+    },
+    "本地分析，数据不出端": {
+        "en-US": "Local analysis, data does not come out of the source",
+        "es-ES": "Análisis local, los datos no salen de la fuente.",
+        "ar-EG": "التحليل المحلي، البيانات لا تخرج من المصدر",
+        "pt-PT": "Análise local, os dados não saem da fonte",
+        "ru-RU": "Локальный анализ, данные не поступают из источника",
+        "ja-JP": "ローカル分析、データはソースから出てこない",
+        "de-DE": "Lokale Analyse, Daten stammen nicht aus der Quelle",
+        "fr-FR": "Analyse locale, les données ne sortent pas de la source",
+        "ko-KR": "로컬 분석, 데이터가 소스에서 나오지 않음",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7425-7439)"
+        ],
+        "$id": 2906
+    },
+    "你的分析结果仅保存在本地，不缓存服务器，守护数据主权。但无法享受服务器缓存带来的提速效果。": {
+        "en-US": "Your analysis results are only saved locally and not cached on the server, protecting data sovereignty. However, you cannot enjoy the speed improvement brought by server caching.",
+        "es-ES": "Tus resultados de análisis solo se guardan localmente, no se almacenan en caché en el servidor, protegiendo así la soberanía de tus datos. Sin embargo, no podrás beneficiarte del efecto de aceleración que proporciona la caché del servidor.",
+        "ar-EG": "نتائج التحليل الخاصة بك تُحفظ محليًا فقط، ولا تُخزن مؤقتًا على الخادم، للحفاظ على سيادة البيانات. لكن لا يمكن الاستمتاع بتأثير تسريع ذاكرة التخزين المؤقتة للخادم.",
+        "pt-PT": "Os seus resultados de análise são apenas guardados localmente, não são armazenados em cache no servidor, protegendo assim a soberania dos dados. No entanto, não poderá beneficiar do aumento de velocidade proporcionado pela cache do servidor.",
+        "ru-RU": "Ваши результаты анализа сохраняются только локально, не кэшируются на сервере, защищая суверенитет данных. Однако невозможно воспользоваться эффектом ускорения от кэширования сервера.",
+        "ja-JP": "あなたの分析結果はローカルにのみ保存され、サーバーにはキャッシュされません。データ主権を守ります。ただし、サーバーキャッシュによる高速化効果は得られません。",
+        "de-DE": "Ihre Analyseergebnisse werden nur lokal gespeichert und nicht auf dem Server zwischengespeichert, um die Datenhoheit zu schützen. Allerdings können Sie nicht von der Geschwindigkeitssteigerung durch den Server-Cache profitieren.",
+        "fr-FR": "Vos résultats d'analyse ne sont sauvegardés que localement, non mis en cache sur le serveur, protégeant la souveraineté des données. Mais vous ne pouvez pas bénéficier de l'effet d'accélération apporté par le cache serveur.",
+        "ko-KR": "분석 결과는 로컬에만 저장되며 서버에는 캐시되지 않아 데이터 주권을 보호합니다. 하지만 서버 캐시가 제공하는 속도 향상 효과는 누릴 수 없습니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7591-7657)"
+        ],
+        "$id": 6230
+    },
+    "个人原创作品、照片、财务报表、隐私文档。": {
+        "en-US": "Personal original works, photos, financial reports, private documents.",
+        "es-ES": "Trabajos originales personales, fotografías, estados financieros, documentos privados.",
+        "ar-EG": "الأعمال الإبداعية الشخصية، والصور، والتقارير المالية، والمستندات الخاصة.",
+        "pt-PT": "Trabalhos originais pessoais, fotografias, relatórios financeiros, documentos privados.",
+        "ru-RU": "Персональные оригинальные работы, фотографии, финансовые отчеты, конфиденциальные документы.",
+        "ja-JP": "個人のオリジナル作品、写真、財務諸表、プライバシードキュメント。",
+        "de-DE": "Persönliche Originalwerke, Fotos, Finanzberichte, vertrauliche Dokumente.",
+        "fr-FR": "Œuvres originales personnelles, photos, états financiers, documents confidentiels.",
+        "ko-KR": "개인 창작 작품, 사진, 재무제표, 개인정보 문서 등입니다.",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7846-7870)"
+        ],
+        "$id": 6231
+    },
+    "注：所有数据都是脱敏的，无IP，全匿名": {
+        "en-US": "Note: All data is desensitized, no IP addresses, fully anonymous",
+        "es-ES": "Nota: Todos los datos están desensibilizados, sin IP, completamente anónimos",
+        "ar-EG": "ملاحظة: جميع البيانات مجهولة الهوية، بدون عنوان IP، ومجهولة بالكامل",
+        "pt-PT": "Nota: Todos os dados são desidentificados, sem IP, totalmente anônimos",
+        "ru-RU": "Примечание: Все данные анонимизированы, без IP, полностью анонимны",
+        "ja-JP": "注：すべてのデータはマスキング済みで、IPアドレスは含まず、完全に匿名化されています",
+        "de-DE": "Hinweis: Alle Daten sind anonymisiert, ohne IP, vollständig anonym",
+        "fr-FR": "Remarque : Toutes les données sont anonymisées, sans IP, entièrement anonymes",
+        "ko-KR": "주석: 모든 데이터는 탈민감화되어 있으며, IP가 없고 전부 익명 처리됨",
+        "$files": [
+            "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(8025-8048)"
+        ],
+        "$id": 2746
+    },
+    "知道了": {
+        "en-US": "knew",
+        "es-ES": "sabía",
+        "ar-EG": "عرف",
+        "pt-PT": "sabia",
+        "ru-RU": "знал",
+        "ja-JP": "知っていた",
+        "de-DE": "wusste",
+        "fr-FR": "savait",
+        "ko-KR": "알고 있었다",
+        "$files": [
+            "src/renderer/components/common/PersistentTooltip.tsx(6512-6519)"
+        ],
+        "$id": 4631
+    },
+    "取消": {
+        "en-US": "Cancel",
+        "es-ES": "Cancelar",
+        "ar-EG": "يلغي",
+        "pt-PT": "Cancelar",
+        "ru-RU": "Отмена",
+        "ja-JP": "キャンセル",
+        "de-DE": "Stornieren",
+        "fr-FR": "Annuler",
+        "ko-KR": "취소",
+        "$files": [
+            "src/renderer/components/common/PromptDialog.tsx(1519-1525)"
+        ],
+        "$id": 10201
+    },
+    "确定": {
+        "en-US": "Sure",
+        "es-ES": "Seguro",
+        "ar-EG": "بالتأكيد",
+        "pt-PT": "Claro",
+        "ru-RU": "Конечно",
+        "ja-JP": "もちろん",
+        "de-DE": "Sicher",
+        "fr-FR": "Bien sûr",
+        "ko-KR": "확신하는",
+        "$files": [
+            "src/renderer/components/common/PromptDialog.tsx(1628-1634)"
+        ],
+        "$id": 10202
+    },
+    "开通当前虚拟目录访问权限": {
+        "en-US": "Grant access to the current virtual directory",
+        "es-ES": "Conceder acceso al directorio virtual actual",
+        "ar-EG": "منح الوصول إلى الدليل الظاهري الحالي",
+        "pt-PT": "Conceda acesso ao diretório virtual atual",
+        "ru-RU": "Предоставить доступ к текущему виртуальному каталогу",
+        "ja-JP": "現在の仮想ディレクトリへのアクセスを許可します。",
+        "de-DE": "Gewähren Sie Zugriff auf das aktuelle virtuelle Verzeichnis",
+        "fr-FR": "Accorder l'accès au répertoire virtuel actuel",
+        "ko-KR": "현재 가상 디렉터리에 대한 액세스 권한 부여",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1659-1675)"
+        ],
+        "$id": 10203
+    },
+    "增加一个极速目录槽位": {
+        "en-US": "Add a fast directory slot",
+        "es-ES": "Agregar una ranura de directorio rápida",
+        "ar-EG": "أضف فتحة دليل سريعة",
+        "pt-PT": "Adicione um slot de diretório rápido",
+        "ru-RU": "Добавьте слот быстрого каталога",
+        "ja-JP": "高速ディレクトリスロットを追加する",
+        "de-DE": "Fügen Sie einen schnellen Verzeichnissteckplatz hinzu",
+        "fr-FR": "Ajouter un emplacement de répertoire rapide",
+        "ko-KR": "빠른 디렉터리 슬롯 추가",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1715-1729)",
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2578-2592)"
+        ],
+        "$id": 10204
+    },
+    "增加一个私有目录槽位": {
+        "en-US": "Add a private directory slot",
+        "es-ES": "Agregar una ranura de directorio privado",
+        "ar-EG": "أضف فتحة دليل خاصة",
+        "pt-PT": "Adicione um slot de diretório privado",
+        "ru-RU": "Добавить слот для личного каталога",
+        "ja-JP": "プライベートディレクトリスロットを追加する",
+        "de-DE": "Fügen Sie einen privaten Verzeichnissteckplatz hinzu",
+        "fr-FR": "Ajouter un emplacement de répertoire privé",
+        "ko-KR": "개인 디렉터리 슬롯 추가",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1742-1756)",
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2605-2619)"
+        ],
+        "$id": 10205
+    },
+    "一次性消费，开通当前虚拟目录。删除此目录后无法免费再建。": {
+        "en-US": "One-time consumption to activate the current virtual directory. After deleting this directory, it cannot be re-created for free.",
+        "es-ES": "Consumo único para activar el directorio virtual actual. Después de eliminar este directorio, no se puede volver a crear de forma gratuita.",
+        "ar-EG": "استهلاك لمرة واحدة لتنشيط الدليل الظاهري الحالي. بعد حذف هذا الدليل، لا يمكن إعادة إنشائه مجانًا.",
+        "pt-PT": "Consumo único para ativar o diretório virtual atual. Depois de excluir este diretório, ele não poderá ser recriado gratuitamente.",
+        "ru-RU": "Одноразовое использование для активации текущего виртуального каталога. После удаления этого каталога его невозможно бесплатно создать заново.",
+        "ja-JP": "現在の仮想ディレクトリをアクティブ化するための 1 回限りの消費。このディレクトリを削除すると、無料で再作成することはできません。",
+        "de-DE": "Einmaliger Verbrauch zur Aktivierung des aktuellen virtuellen Verzeichnisses. Nach dem Löschen dieses Verzeichnisses kann es nicht kostenlos neu erstellt werden.",
+        "fr-FR": "Consommation unique pour activer le répertoire virtuel actuel. Après avoir supprimé ce répertoire, il ne peut pas être recréé gratuitement.",
+        "ko-KR": "현재 가상 디렉터리를 활성화하기 위한 일회성 소비입니다. 이 디렉터리를 삭제한 후에는 무료로 다시 만들 수 없습니다.",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1810-1842)"
+        ],
+        "$id": 10206
+    },
+    "永久性，为您增加一个极速目录槽位，槽位空缺就可以再免费建目录。": {
+        "en-US": "Permanently, a high-speed directory slot will be added for you. If the slot is vacant, you can create another directory for free.",
+        "es-ES": "De forma permanente, se le agregará una ranura de directorio de alta velocidad. Si el espacio está vacío, puede crear otro directorio de forma gratuita.",
+        "ar-EG": "سيتم إضافة فتحة دليل عالية السرعة لك بشكل دائم. إذا كانت الفتحة شاغرة، فيمكنك إنشاء دليل آخر مجانًا.",
+        "pt-PT": "Permanentemente, um slot de diretório de alta velocidade será adicionado para você. Se a vaga estiver vaga, você pode criar outro diretório gratuitamente.",
+        "ru-RU": "На постоянной основе для вас будет добавлен высокоскоростной слот каталога. Если слот свободен, вы можете бесплатно создать еще один каталог.",
+        "ja-JP": "高速ディレクトリ スロットが永続的に追加されます。スロットが空の場合は、別のディレクトリを無料で作成できます。",
+        "de-DE": "Für Sie wird dauerhaft ein Hochgeschwindigkeits-Verzeichnissteckplatz hinzugefügt. Sollte der Steckplatz frei sein, können Sie kostenlos ein weiteres Verzeichnis erstellen.",
+        "fr-FR": "En permanence, un emplacement d'annuaire haut débit sera ajouté pour vous. Si l'emplacement est vacant, vous pouvez créer un autre répertoire gratuitement.",
+        "ko-KR": "영구적으로 고속 디렉터리 슬롯이 추가됩니다. 슬롯이 비어 있으면 무료로 다른 디렉토리를 생성할 수 있습니다.",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1882-1917)",
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2755-2790)"
+        ],
+        "$id": 10207
+    },
+    "永久性，为您增加一个私有目录槽位，槽位空缺就可以再免费建目录。": {
+        "en-US": "Permanently, a private directory slot is added for you. If the slot is vacant, you can create another directory for free.",
+        "es-ES": "De forma permanente, se agrega una ranura de directorio privado para usted. Si el espacio está vacío, puede crear otro directorio de forma gratuita.",
+        "ar-EG": "بشكل دائم، تتم إضافة فتحة دليل خاصة لك. إذا كانت الفتحة شاغرة، فيمكنك إنشاء دليل آخر مجانًا.",
+        "pt-PT": "Permanentemente, um slot de diretório privado é adicionado para você. Se a vaga estiver vaga, você pode criar outro diretório gratuitamente.",
+        "ru-RU": "На постоянной основе для вас добавляется слот частного каталога. Если слот свободен, вы можете бесплатно создать еще один каталог.",
+        "ja-JP": "プライベート ディレクトリ スロットが永続的に追加されます。スロットが空の場合は、別のディレクトリを無料で作成できます。",
+        "de-DE": "Für Sie wird dauerhaft ein privater Verzeichnisplatz hinzugefügt. Sollte der Steckplatz frei sein, können Sie kostenlos ein weiteres Verzeichnis erstellen.",
+        "fr-FR": "En permanence, un emplacement de répertoire privé est ajouté pour vous. Si l'emplacement est vacant, vous pouvez créer un autre répertoire gratuitement.",
+        "ko-KR": "영구적으로 개인 디렉터리 슬롯이 추가됩니다. 슬롯이 비어 있으면 무료로 다른 디렉토리를 생성할 수 있습니다.",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(1930-1965)",
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2803-2838)"
+        ],
+        "$id": 10208
+    },
+    "增加一个虚拟目录插槽": {
+        "en-US": "Add a virtual directory slot",
+        "es-ES": "Agregar una ranura de directorio virtual",
+        "ar-EG": "إضافة فتحة الدليل الظاهري",
+        "pt-PT": "Adicione um slot de diretório virtual",
+        "ru-RU": "Добавить слот виртуального каталога",
+        "ja-JP": "仮想ディレクトリスロットを追加する",
+        "de-DE": "Fügen Sie einen virtuellen Verzeichnissteckplatz hinzu",
+        "fr-FR": "Ajouter un emplacement de répertoire virtuel",
+        "ko-KR": "가상 디렉터리 슬롯 추가",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2524-2538)"
+        ],
+        "$id": 10209
+    },
+    "永久性，为当前工作目录增加一个虚拟目录槽位，槽位空缺就可以再免费建虚拟目录。": {
+        "en-US": "Permanent, add a virtual directory slot to the current working directory. If the slot is vacant, you can create another virtual directory for free.",
+        "es-ES": "Permanente, agregue una ranura de directorio virtual al directorio de trabajo actual. Si el espacio está vacante, puede crear otro directorio virtual de forma gratuita.",
+        "ar-EG": "دائم، قم بإضافة فتحة دليل ظاهري إلى دليل العمل الحالي. إذا كانت الفتحة شاغرة، فيمكنك إنشاء دليل ظاهري آخر مجانًا.",
+        "pt-PT": "Permanente, adicione um slot de diretório virtual ao diretório de trabalho atual. Se a vaga estiver vaga, você pode criar outro diretório virtual gratuitamente.",
+        "ru-RU": "Постоянно: добавьте слот виртуального каталога в текущий рабочий каталог. Если слот свободен, вы можете бесплатно создать еще один виртуальный каталог.",
+        "ja-JP": "永続的、仮想ディレクトリ スロットを現在の作業ディレクトリに追加します。スロットが空の場合は、別の仮想ディレクトリを無料で作成できます。",
+        "de-DE": "Permanent, fügen Sie dem aktuellen Arbeitsverzeichnis einen virtuellen Verzeichnisslot hinzu. Sollte der Steckplatz frei sein, können Sie kostenlos ein weiteres virtuelles Verzeichnis erstellen.",
+        "fr-FR": "Permanent, ajoutez un emplacement de répertoire virtuel au répertoire de travail actuel. Si l'emplacement est vacant, vous pouvez créer gratuitement un autre répertoire virtuel.",
+        "ko-KR": "영구적으로 현재 작업 디렉터리에 가상 디렉터리 슬롯을 추가합니다. 슬롯이 비어 있으면 무료로 다른 가상 디렉터리를 만들 수 있습니다.",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(2673-2715)"
+        ],
+        "$id": 10210
+    },
+    "需要激活虚拟目录「{name}」的访问权限": {
+        "en-US": "Requires activation of access rights to virtual directory \"{name}\"",
+        "es-ES": "Requiere activación de derechos de acceso al directorio virtual \"{name}\"",
+        "ar-EG": "يتطلب تفعيل حقوق الوصول إلى الدليل الظاهري \"{name}\"",
+        "pt-PT": "Requer ativação de direitos de acesso ao diretório virtual \"{name}\"",
+        "ru-RU": "Требуется активация прав доступа к виртуальному каталогу \"{name}\"",
+        "ja-JP": "仮想ディレクトリ「{name}」へのアクセス権のアクティブ化が必要です",
+        "de-DE": "Erfordert die Aktivierung der Zugriffsrechte auf das virtuelle Verzeichnis „{name}“",
+        "fr-FR": "Nécessite l'activation des droits d'accès au répertoire virtuel \"{name}\"",
+        "ko-KR": "가상 디렉터리 \"{name}\"에 대한 액세스 권한 활성화가 필요합니다.",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(3465-3490)"
+        ],
+        "$id": 10211
+    },
+    "需要激活当前工作空间「{name}」": {
+        "en-US": "Need to activate the current workspace \"{name}\"",
+        "es-ES": "Necesita activar el espacio de trabajo actual \"{name}\"",
+        "ar-EG": "بحاجة إلى تنشيط مساحة العمل الحالية \"{name}\"",
+        "pt-PT": "É necessário ativar o espaço de trabalho atual \"{name}\"",
+        "ru-RU": "Необходимо активировать текущую рабочую область \"{name}\"",
+        "ja-JP": "現在のワークスペース「{name}」をアクティブにする必要があります",
+        "de-DE": "Der aktuelle Arbeitsbereich „{name}“ muss aktiviert werden.",
+        "fr-FR": "Besoin d'activer l'espace de travail actuel \"{name}\"",
+        "ko-KR": "현재 작업공간 \"{name}\"을(를) 활성화해야 합니다",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(3527-3549)"
+        ],
+        "$id": 10212
+    },
+    "您当前的工作目录已无可用虚拟目录槽位，需要单独开通「{name}」的访问权限或购买新的槽位。": {
+        "en-US": "There is no available virtual directory slot in your current working directory. You need to separately activate access rights for \"{name}\" or purchase a new slot.",
+        "es-ES": "No hay ninguna ranura de directorio virtual disponible en su directorio de trabajo actual. Debe activar por separado los derechos de acceso para \"{name}\" o comprar una nueva ranura.",
+        "ar-EG": "لا توجد فتحة دليل ظاهري متاحة في دليل العمل الحالي لديك. تحتاج إلى تنشيط حقوق الوصول بشكل منفصل لـ \"{name}\" أو شراء فتحة جديدة.",
+        "pt-PT": "Não há slot de diretório virtual disponível em seu diretório de trabalho atual. Você precisa ativar separadamente os direitos de acesso para \"{name}\" ou adquirir um novo slot.",
+        "ru-RU": "В вашем текущем рабочем каталоге нет свободного места для виртуального каталога. Вам необходимо отдельно активировать права доступа для \"{name}\" или приобрести новый слот.",
+        "ja-JP": "現在の作業ディレクトリには使用可能な仮想ディレクトリ スロットがありません。 「{name}」のアクセス権を別途有効にするか、新しいスロットを購入する必要があります。",
+        "de-DE": "In Ihrem aktuellen Arbeitsverzeichnis ist kein virtueller Verzeichnisplatz verfügbar. Sie müssen die Zugriffsrechte für „{name}“ separat aktivieren oder einen neuen Slot erwerben.",
+        "fr-FR": "Il n'y a aucun emplacement de répertoire virtuel disponible dans votre répertoire de travail actuel. Vous devez activer séparément les droits d'accès pour \"{name}\" ou acheter un nouvel emplacement.",
+        "ko-KR": "현재 작업 디렉터리에 사용 가능한 가상 디렉터리 슬롯이 없습니다. \"{name}\"에 대한 액세스 권한을 별도로 활성화하거나 새 슬롯을 구매해야 합니다.",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(3709-3775)"
+        ],
+        "$id": 10213
+    },
+    "您已超出免费等级 {typeLabel} 目录个数限制。您可以选择开通一个新的目录槽位。": {
+        "en-US": "You have exceeded the directory limit for the free tier {typeLabel}. You can choose to open a new directory slot.",
+        "es-ES": "Ha excedido el límite de directorio para el nivel gratuito {typeLabel}. Puede optar por abrir una nueva ranura de directorio.",
+        "ar-EG": "لقد تجاوزت حد الدليل للطبقة المجانية {typeLabel}. يمكنك اختيار فتح فتحة دليل جديدة.",
+        "pt-PT": "Você excedeu o limite de diretório do nível gratuito {typeLabel}. Você pode optar por abrir um novo slot de diretório.",
+        "ru-RU": "Вы превысили лимит каталогов для уровня бесплатного пользования {typeLabel}. Вы можете открыть новый слот каталога.",
+        "ja-JP": "無料利用枠 {typeLabel} のディレクトリ制限を超えました。新しいディレクトリ スロットを開くことを選択できます。",
+        "de-DE": "Sie haben das Verzeichnislimit für das kostenlose Kontingent {typeLabel} überschritten. Sie können einen neuen Verzeichnisplatz öffnen.",
+        "fr-FR": "Vous avez dépassé la limite de répertoire pour le niveau gratuit {typeLabel}. Vous pouvez choisir d'ouvrir un nouvel emplacement de répertoire.",
+        "ko-KR": "무료 등급 {typeLabel}에 대한 디렉터리 제한을 초과했습니다. 새 디렉터리 슬롯을 열도록 선택할 수 있습니다.",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(3841-3889)"
+        ],
+        "$id": 10214
+    },
+    "极速": {
+        "en-US": "Extreme speed",
+        "es-ES": "Velocidad extrema",
+        "ar-EG": "السرعة القصوى",
+        "pt-PT": "Velocidade extrema",
+        "ru-RU": "Экстремальная скорость",
+        "ja-JP": "極限のスピード",
+        "de-DE": "Extreme Geschwindigkeit",
+        "fr-FR": "Vitesse extrême",
+        "ko-KR": "극한의 속도",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(3939-3945)"
+        ],
+        "$id": 10215
+    },
+    "私有": {
+        "en-US": "private",
+        "es-ES": "privado",
+        "ar-EG": "خاص",
+        "pt-PT": "privado",
+        "ru-RU": "частный",
+        "ja-JP": "プライベート",
+        "de-DE": "Privat",
+        "fr-FR": "privé",
+        "ko-KR": "사적인",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(3949-3955)"
+        ],
+        "$id": 10216
+    },
+    "萤火": {
+        "en-US": "fire bean",
+        "es-ES": "frijol de fuego",
+        "ar-EG": "حبة النار",
+        "pt-PT": "Fireflys",
+        "ru-RU": "огненный боб",
+        "ja-JP": "火豆",
+        "de-DE": "Feuerbohne",
+        "fr-FR": "haricot de feu",
+        "ko-KR": "Fireflys",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(5072-5078)",
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(6176-6182)"
+        ],
+        "$id": 10217
+    },
+    "管理工作目录": {
+        "en-US": "Manage work directories",
+        "es-ES": "Gestionar directorio de trabajo",
+        "ar-EG": "إدارة دليل العمل",
+        "pt-PT": "Gerir pastas de trabalho",
+        "ru-RU": "Управление рабочими директориями",
+        "ja-JP": "作業用ディレクトリの管理",
+        "de-DE": "Arbeitsverzeichnis verwalten",
+        "fr-FR": "Gérer le répertoire de travail",
+        "ko-KR": "작업 디렉토리 관리",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(6962-6972)"
+        ],
+        "$id": 10218
+    },
+    "你可以删除不需要的工作目录，以腾出槽位": {
+        "en-US": "You can delete unnecessary work directories to free up slots",
+        "es-ES": "Puedes eliminar los directorios de trabajo que no necesites para liberar espacio",
+        "ar-EG": "يمكنك حذف أدلة العمل غير الضرورية لتحرير أماكن التخزين",
+        "pt-PT": "Pode eliminar as pastas de trabalho que não necessita para libertar espaço",
+        "ru-RU": "Вы можете удалить ненужные рабочие директории, чтобы освободить слоты",
+        "ja-JP": "必要のない作業用ディレクトリを削除して、スロットを空けることができます",
+        "de-DE": "Sie können nicht benötigte Arbeitsverzeichnisse löschen, um Slots freizugeben.",
+        "fr-FR": "Vous pouvez supprimer les répertoires de travail inutiles pour libérer des emplacements",
+        "ko-KR": "필요 없는 작업 디렉토리를 삭제하여 슬롯을 확보할 수 있습니다.",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(7097-7120)"
+        ],
+        "$id": 10219
+    },
+    "打开设置": {
+        "en-US": "Open settings",
+        "es-ES": "Abrir configuración",
+        "ar-EG": "فتح الإعدادات",
+        "pt-PT": "Abrir definições",
+        "ru-RU": "Открыть настройки",
+        "ja-JP": "設定を開く",
+        "de-DE": "Einstellungen öffnen",
+        "fr-FR": "Ouvrir les paramètres",
+        "ko-KR": "설정 열기",
+        "$files": [
+            "src/renderer/components/common/RestrictedFeatureOverlay.tsx(7376-7384)"
+        ],
+        "$id": 10220
+    },
+    "搜索...": {
+        "en-US": "Search...",
+        "es-ES": "Buscar...",
+        "ar-EG": "البحث...",
+        "pt-PT": "Pesquisa...",
+        "ru-RU": "Поиск...",
+        "ja-JP": "検索...",
+        "de-DE": "Suchen...",
+        "fr-FR": "Rechercher...",
+        "ko-KR": "찾다...",
+        "$files": [
+            "src/renderer/components/common/SearchBar.tsx(698-707)",
+            "src/renderer/components/common/SearchBar.tsx(6926-6935)"
+        ],
+        "$id": 3922
+    },
+    "搜索文件名、特征描述、标签或扩展名...": {
+        "en-US": "Search file name, description, tag or extension...",
+        "es-ES": "Buscar nombre de archivo, descripción, etiqueta o extensión...",
+        "ar-EG": "ابحث عن اسم الملف أو الوصف أو العلامة أو الامتداد...",
+        "pt-PT": "Pesquise nome do arquivo, descrição, tag ou extensão...",
+        "ru-RU": "Поиск имени файла, описания, тега или расширения...",
+        "ja-JP": "ファイル名、説明、タグ、拡張子を検索...",
+        "de-DE": "Suchen Sie nach Dateinamen, Beschreibung, Tag oder Erweiterung ...",
+        "fr-FR": "Recherchez le nom du fichier, la description, la balise ou l'extension...",
+        "ko-KR": "파일 이름, 설명, 태그 또는 확장명 검색...",
+        "$files": [
+            "src/renderer/components/common/SearchBar.tsx(7005-7029)"
+        ],
+        "$id": 4684
+    },
+    "搜索已分析的文件名、特征、标签...": {
+        "en-US": "Search analyzed filenames, features, tags...",
+        "es-ES": "Busque nombres de archivos analizados, características, etiquetas...",
+        "ar-EG": "البحث في أسماء الملفات والميزات والعلامات التي تم تحليلها...",
+        "pt-PT": "Pesquise nomes de arquivos, recursos, tags analisados...",
+        "ru-RU": "Поиск проанализированных имен файлов, функций, тегов...",
+        "ja-JP": "分析されたファイル名、機能、タグを検索します...",
+        "de-DE": "Durchsuchen Sie analysierte Dateinamen, Funktionen, Tags ...",
+        "fr-FR": "Rechercher des noms de fichiers analysés, des fonctionnalités, des balises...",
+        "ko-KR": "분석된 파일 이름, 기능, 태그 검색...",
+        "$files": [
+            "src/renderer/components/common/SearchBar.tsx(7039-7061)"
+        ],
+        "$id": 4685
+    },
+    "搜索": {
+        "en-US": "search",
+        "es-ES": "buscar",
+        "ar-EG": "يبحث",
+        "pt-PT": "procurar",
+        "ru-RU": "поиск",
+        "ja-JP": "検索",
+        "de-DE": "suchen",
+        "fr-FR": "recherche",
+        "ko-KR": "찾다",
+        "$files": [
+            "src/renderer/components/common/SearchBar.tsx(7553-7559)"
+        ],
+        "$id": 4617
+    },
+    "输入关键词进行搜索": {
+        "en-US": "Enter keywords to search",
+        "es-ES": "Introduzca palabras clave para buscar",
+        "ar-EG": "أدخل الكلمات المفتاحية للبحث",
+        "pt-PT": "Introduza palavras-chave para pesquisar",
+        "ru-RU": "Введите ключевые слова для поиска",
+        "ja-JP": "キーワードを入力して検索します",
+        "de-DE": "Stichwort eingeben, um zu suchen",
+        "fr-FR": "Saisissez des mots-clés pour effectuer une recherche",
+        "ko-KR": "검색할 키워드를 입력하세요",
+        "$files": [
+            "src/renderer/components/common/SearchBar.tsx(9202-9215)"
+        ],
+        "$id": 3923
+    },
+    "清除搜索内容": {
+        "en-US": "Clear Search Content",
+        "es-ES": "Borrar contenido de búsqueda",
+        "ar-EG": "مسح محتوى البحث",
+        "pt-PT": "Limpar conteúdo da pesquisa",
+        "ru-RU": "Очистить содержимое поиска",
+        "ja-JP": "検索をクリア",
+        "de-DE": "Suchinhalt löschen",
+        "fr-FR": "Effacer la recherche",
+        "ko-KR": "검색 지우기",
+        "$files": [
+            "src/renderer/components/common/SearchBar.tsx(9755-9765)"
+        ],
+        "$id": 3924
+    },
+    "支持的格式": {
+        "en-US": "Supported formats",
+        "es-ES": "Formatos soportados",
+        "ar-EG": "التنسيقات المدعومة",
+        "pt-PT": "Formatos suportados",
+        "ru-RU": "Поддерживаемые форматы",
+        "ja-JP": "サポートされている形式",
+        "de-DE": "Unterstützte Formate",
+        "fr-FR": "Formats pris en charge",
+        "ko-KR": "지원되는 형식",
+        "$files": [
+            "src/renderer/components/common/SupportedFormats.tsx(4902-4911)"
+        ],
+        "$id": 10221
+    },
+    "支持 206 种预览格式": {
+        "en-US": "Supports 206 preview formats",
+        "es-ES": "Admite 206 formatos de vista previa",
+        "ar-EG": "يدعم 206 تنسيقات المعاينة",
+        "pt-PT": "Suporta 206 formatos de visualização",
+        "ru-RU": "Поддерживает 206 форматов предварительного просмотра.",
+        "ja-JP": "206 のプレビュー形式をサポート",
+        "de-DE": "Unterstützt 206 Vorschauformate",
+        "fr-FR": "Prend en charge 206 formats d'aperçu",
+        "ko-KR": "206개의 미리보기 형식 지원",
+        "$files": [
+            "src/renderer/components/common/SupportedFormats.tsx(5352-5368)"
+        ],
+        "$id": 10222
+    },
+    "无法加载文件预览，请检查文件权限或格式。": {
+        "en-US": "Unable to load file preview, please check file permissions or format.",
+        "es-ES": "No se puede cargar la vista previa del archivo. Verifique los permisos o el formato del archivo.",
+        "ar-EG": "غير قادر على تحميل معاينة الملف، يرجى التحقق من أذونات الملف أو تنسيقه.",
+        "pt-PT": "Não foi possível carregar a visualização do arquivo. Verifique as permissões ou o formato do arquivo.",
+        "ru-RU": "Невозможно загрузить предварительный просмотр файла. Проверьте права доступа к файлу или его формат.",
+        "ja-JP": "ファイルのプレビューを読み込めません。ファイルのアクセス許可または形式を確認してください。",
+        "de-DE": "Die Dateivorschau kann nicht geladen werden. Bitte überprüfen Sie die Dateiberechtigungen oder das Format.",
+        "fr-FR": "Impossible de charger l'aperçu du fichier, veuillez vérifier les autorisations ou le format du fichier.",
+        "ko-KR": "파일 미리보기를 로드할 수 없습니다. 파일 권한이나 형식을 확인하세요.",
+        "$files": [
+            "src/renderer/components/common/FlyfishPreview/index.tsx(3111-3135)"
+        ],
+        "$id": 10223
+    },
+    "无法加载文件预览，请检查文件路径或格式。": {
+        "en-US": "Unable to load file preview, please check file path or format.",
+        "es-ES": "No se puede cargar la vista previa del archivo. Verifique la ruta o el formato del archivo.",
+        "ar-EG": "غير قادر على تحميل معاينة الملف، يرجى التحقق من مسار الملف أو تنسيقه.",
+        "pt-PT": "Não foi possível carregar a visualização do arquivo. Verifique o caminho ou formato do arquivo.",
+        "ru-RU": "Невозможно загрузить предварительный просмотр файла. Проверьте путь или формат файла.",
+        "ja-JP": "ファイル プレビューを読み込めません。ファイル パスまたは形式を確認してください。",
+        "de-DE": "Die Dateivorschau konnte nicht geladen werden. Bitte überprüfen Sie den Dateipfad oder das Dateiformat.",
+        "fr-FR": "Impossible de charger l'aperçu du fichier, veuillez vérifier le chemin ou le format du fichier.",
+        "ko-KR": "파일 미리보기를 로드할 수 없습니다. 파일 경로나 형식을 확인하세요.",
+        "$files": [
+            "src/renderer/components/common/FlyfishPreview/index.tsx(4172-4196)"
+        ],
+        "$id": 10224
+    },
+    "无法加载预览，请检查文件格式或重试。": {
+        "en-US": "Unable to load preview, please check the file format or try again.",
+        "es-ES": "No se puede cargar la vista previa. Verifique el formato del archivo o inténtelo nuevamente.",
+        "ar-EG": "تعذر تحميل المعاينة، يرجى التحقق من تنسيق الملف أو المحاولة مرة أخرى.",
+        "pt-PT": "Não foi possível carregar a visualização. Verifique o formato do arquivo ou tente novamente.",
+        "ru-RU": "Невозможно загрузить предварительный просмотр. Проверьте формат файла или повторите попытку.",
+        "ja-JP": "プレビューを読み込めません。ファイル形式を確認するか、もう一度試してください。",
+        "de-DE": "Die Vorschau konnte nicht geladen werden. Bitte überprüfen Sie das Dateiformat oder versuchen Sie es erneut.",
+        "fr-FR": "Impossible de charger l'aperçu, veuillez vérifier le format du fichier ou réessayer.",
+        "ko-KR": "미리보기를 로드할 수 없습니다. 파일 형식을 확인하거나 다시 시도해 주세요.",
+        "$files": [
+            "src/renderer/components/common/FlyfishPreview/index.tsx(4909-4931)"
+        ],
+        "$id": 10225
+    },
+    "预览加载失败": {
+        "en-US": "Preview failed to load",
+        "es-ES": "No se pudo cargar la vista previa",
+        "ar-EG": "فشل تحميل المعاينة",
+        "pt-PT": "Falha ao carregar a visualização",
+        "ru-RU": "Не удалось загрузить предварительный просмотр",
+        "ja-JP": "プレビューの読み込みに失敗しました",
+        "de-DE": "Die Vorschau konnte nicht geladen werden",
+        "fr-FR": "L'aperçu n'a pas pu être chargé",
+        "ko-KR": "미리보기를 로드하지 못했습니다.",
+        "$files": [
+            "src/renderer/components/common/FlyfishPreview/index.tsx(6226-6236)"
+        ],
+        "$id": 10226
+    },
+    "加载预览中...": {
+        "en-US": "Loading preview...",
+        "es-ES": "Cargando vista previa...",
+        "ar-EG": "جارٍ تحميل المعاينة...",
+        "pt-PT": "Carregando visualização...",
+        "ru-RU": "Загрузка предварительного просмотра...",
+        "ja-JP": "プレビューを読み込んでいます...",
+        "de-DE": "Vorschau wird geladen...",
+        "fr-FR": "Chargement de l'aperçu...",
+        "ko-KR": "미리보기 로드 중...",
+        "$files": [
+            "src/renderer/components/common/FlyfishPreview/index.tsx(6729-6741)"
+        ],
+        "$id": 10227
+    }
+}

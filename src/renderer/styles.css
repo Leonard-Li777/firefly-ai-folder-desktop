@@ -1,0 +1,203 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.92 0.01 240);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.16 0.04 250);
+  --foreground: oklch(0.96 0.02 250);
+  --card: oklch(0.19 0.05 250);
+  --card-foreground: oklch(0.96 0.02 250);
+  --popover: oklch(0.19 0.05 250);
+  --popover-foreground: oklch(0.96 0.02 250);
+  --primary: oklch(0.62 0.16 230);
+  --primary-foreground: oklch(0.98 0.01 240);
+  --secondary: oklch(0.25 0.06 250);
+  --secondary-foreground: oklch(0.96 0.02 250);
+  --muted: oklch(0.22 0.05 250);
+  --muted-foreground: oklch(0.7 0.05 250);
+  --accent: oklch(0.28 0.07 240);
+  --accent-foreground: oklch(0.96 0.02 250);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.25 0.06 250);
+  --input: oklch(0.25 0.06 250);
+  --ring: oklch(0.62 0.16 230);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.15 0.04 250);
+  --sidebar-foreground: oklch(0.96 0.02 250);
+  --sidebar-primary: oklch(0.62 0.16 230);
+  --sidebar-primary-foreground: oklch(0.98 0.01 240);
+  --sidebar-accent: oklch(0.22 0.05 250);
+  --sidebar-accent-foreground: oklch(0.96 0.02 250);
+  --sidebar-border: oklch(0.22 0.05 250);
+  --sidebar-ring: oklch(0.62 0.16 230);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ==========================================================================
+   多语言自适应排版样式 (样式无损保留与 0 特异性)
+   ========================================================================== */
+
+/* 1. 容器查询移除说明：坚决不在全局对 button 或已有类声明 container-type，
+   因为容器查询会触发 Layout Containment，破坏内容自适应撑开宽度的能力（w-auto）
+   并造成绝对定位子元素参考基系错乱。
+*/
+
+/* 2. 长文本语言（西文）字号安全微调 (特异性为 0)
+   对于英文、德文等长文本语言，将交互文本统一微降 1px（如继承的原字号 14px 降为 13px，12px 降为 11px），
+   以极大提升其在容器受限时的容纳率，绝不造成盒模型塌陷。
+*/
+html:lang(en) :where(button span:not([class*='material-icons'])),
+html:lang(en) :where(.btn span:not([class*='material-icons'])),
+html:lang(de) :where(button span:not([class*='material-icons'])),
+html:lang(de) :where(.btn span:not([class*='material-icons'])),
+html:lang(es) :where(button span:not([class*='material-icons'])),
+html:lang(es) :where(.btn span:not([class*='material-icons'])),
+html:lang(fr) :where(button span:not([class*='material-icons'])),
+html:lang(fr) :where(.btn span:not([class*='material-icons'])),
+html:lang(en) :where(label.form-label span:not([class*='material-icons'])),
+html:lang(de) :where(label.form-label span:not([class*='material-icons'])) {
+  /* 使用 calc 对继承的原本计算字号进行微降 1px */
+  font-size: calc(1em - 1px);
+  white-space: nowrap;
+}
+
+/* 3. 针对西文字体进行轻微字间距收紧（特异性为 0） */
+html:lang(en) :where(body),
+html:lang(de) :where(body),
+html:lang(es) :where(body),
+html:lang(fr) :where(body) {
+  letter-spacing: -0.015em;
+}
+
+/* 4. 英文环境下交互按钮 of 最小宽度安全 Fallback（特异性为 0）
+   注意：
+   - 排除 role="checkbox" 的复选框按钮。
+   - 排除带有 w-8/p-0/rounded-full 类名特征的纯图标按钮，以防破坏窗口控制和导航等小控件的排版尺寸。
+*/
+html:lang(en)
+  :where(
+    button:not([role='checkbox']):not([role='switch']):not([class*='w-8']):not([class*='w-9']):not(
+        [class*='w-10']
+      ):not([class*='size-']):not([class*='p-0']):not([class*='p-1']):not([class*='p-2']):not(
+        [class*='rounded-full']
+      ):not(:has(.sr-only)):not([class*='material-icons'])
+  ),
+html:lang(de)
+  :where(
+    button:not([role='checkbox']):not([role='switch']):not([class*='w-8']):not([class*='w-9']):not(
+        [class*='w-10']
+      ):not([class*='size-']):not([class*='p-0']):not([class*='p-1']):not([class*='p-2']):not(
+        [class*='rounded-full']
+      ):not(:has(.sr-only)):not([class*='material-icons'])
+  ),
+html:lang(es)
+  :where(
+    button:not([role='checkbox']):not([role='switch']):not([class*='w-8']):not([class*='w-9']):not(
+        [class*='w-10']
+      ):not([class*='size-']):not([class*='p-0']):not([class*='p-1']):not([class*='p-2']):not(
+        [class*='rounded-full']
+      ):not(:has(.sr-only)):not([class*='material-icons'])
+  ),
+html:lang(fr)
+  :where(
+    button:not([role='checkbox']):not([role='switch']):not([class*='w-8']):not([class*='w-9']):not(
+        [class*='w-10']
+      ):not([class*='size-']):not([class*='p-0']):not([class*='p-1']):not([class*='p-2']):not(
+        [class*='rounded-full']
+      ):not(:has(.sr-only)):not([class*='material-icons'])
+  ),
+html:lang(en) :where(.btn),
+html:lang(de) :where(.btn),
+html:lang(es) :where(.btn),
+html:lang(fr) :where(.btn) {
+  min-width: 120px; /* 仅作为防挤压 fallback，不影响图标、滑动开关和复选框按钮 */
+}

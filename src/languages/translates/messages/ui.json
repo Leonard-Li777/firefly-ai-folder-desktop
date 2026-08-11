@@ -1,0 +1,28 @@
+{
+  "关闭": {
+    "en-US": "Close",
+    "es-ES": "Cerrar",
+    "ar-EG": "إغلاق",
+    "pt-PT": "Fechar",
+    "ru-RU": "Закрыть",
+    "ja-JP": "閉じる",
+    "de-DE": "Schließen",
+    "fr-FR": "Fermer",
+    "ko-KR": "닫기",
+    "$files": ["src/renderer/components/ui/dialog.tsx(2218-2224)"],
+    "$id": 5981
+  },
+  "useTheme must be used within a ThemeProvider": {
+    "en-US": "The useTheme hook must be used within a ThemeProvider",
+    "es-ES": "useTheme debe usarse dentro de un ThemeProvider",
+    "ar-EG": "يجب استخدام useTheme داخل ThemeProvider",
+    "pt-PT": "useTheme deve ser utilizado dentro de um ThemeProvider",
+    "ru-RU": "useTheme должен использоваться внутри ThemeProvider",
+    "ja-JP": "useTheme は ThemeProvider 内で使用する必要があります",
+    "de-DE": "useTheme muss innerhalb eines ThemeProvider verwendet werden",
+    "fr-FR": "useTheme doit être utilisé à l'intérieur d'un ThemeProvider",
+    "ko-KR": "useTheme는 ThemeProvider 내부에서 사용되어야 합니다",
+    "$files": ["src/renderer/components/ui/theme-provider.tsx(3633-3681)"],
+    "$id": 3415
+  }
+}
