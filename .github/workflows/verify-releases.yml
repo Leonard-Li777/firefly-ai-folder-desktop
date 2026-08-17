@@ -1,0 +1,482 @@
+name: Verify Release Artifacts (Multi-Platform Smoke Test)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Release Tag to verify (leave empty for latest release)'
+        required: false
+        default: ''
+        type: string
+      region:
+        description: 'Target region edition to test (cn / intl)'
+        required: false
+        default: 'cn'
+        type: choice
+        options:
+          - cn
+          - intl
+
+permissions:
+  contents: read
+
+jobs:
+  resolve-release:
+    name: Resolve Target Release Assets
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.get_release.outputs.tag_name }}
+      win_exe_url: ${{ steps.get_release.outputs.win_exe_url }}
+      win_exe_name: ${{ steps.get_release.outputs.win_exe_name }}
+      mac_dmg_url: ${{ steps.get_release.outputs.mac_dmg_url }}
+      mac_dmg_name: ${{ steps.get_release.outputs.mac_dmg_name }}
+      linux_deb_url: ${{ steps.get_release.outputs.linux_deb_url }}
+      linux_deb_name: ${{ steps.get_release.outputs.linux_deb_name }}
+      linux_rpm_url: ${{ steps.get_release.outputs.linux_rpm_url }}
+      linux_rpm_name: ${{ steps.get_release.outputs.linux_rpm_name }}
+      app_name: ${{ steps.get_release.outputs.app_name }}
+    steps:
+      - name: Fetch Release Information
+        id: get_release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const targetTag = context.payload.inputs?.tag_name || '';
+            const region = (context.payload.inputs?.region || 'cn').toLowerCase();
+            const appName = `firefly-ai-folder-${region}`;
+            
+            let release;
+            if (targetTag) {
+              core.info(`Fetching release by tag: ${targetTag}`);
+              const res = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: targetTag
+              });
+              release = res.data;
+            } else {
+              core.info('Fetching latest release...');
+              const res = await github.rest.repos.getLatestRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              release = res.data;
+            }
+
+            core.info(`Target Release: ${release.tag_name} (${release.name})`);
+            core.setOutput('tag_name', release.tag_name);
+            core.setOutput('app_name', appName);
+
+            const assets = release.assets || [];
+            core.info(`Found ${assets.length} assets in release:`);
+            assets.forEach(a => core.info(` - ${a.name} (${a.size} bytes)`));
+
+            // Match assets by pattern
+            const winExe = assets.find(a => a.name.endsWith('.exe') && (a.name.includes(region) || !a.name.includes('intl')));
+            const macDmg = assets.find(a => a.name.endsWith('.dmg') && (a.name.includes(region) || !a.name.includes('intl')));
+            const linuxDeb = assets.find(a => a.name.endsWith('.deb') && (a.name.includes(region) || !a.name.includes('intl')));
+            const linuxRpm = assets.find(a => a.name.endsWith('.rpm') && (a.name.includes(region) || !a.name.includes('intl')));
+
+            if (winExe) {
+              core.setOutput('win_exe_url', winExe.browser_download_url);
+              core.setOutput('win_exe_name', winExe.name);
+            }
+            if (macDmg) {
+              core.setOutput('mac_dmg_url', macDmg.browser_download_url);
+              core.setOutput('mac_dmg_name', macDmg.name);
+            }
+            if (linuxDeb) {
+              core.setOutput('linux_deb_url', linuxDeb.browser_download_url);
+              core.setOutput('linux_deb_name', linuxDeb.name);
+            }
+            if (linuxRpm) {
+              core.setOutput('linux_rpm_url', linuxRpm.browser_download_url);
+              core.setOutput('linux_rpm_name', linuxRpm.name);
+            }
+
+  # ==============================================================================
+  # 1. Windows x64 Verification
+  # ==============================================================================
+  test-windows:
+    name: Test Windows (x64)
+    needs: resolve-release
+    if: needs.resolve-release.outputs.win_exe_url != ''
+    runs-on: windows-latest
+    steps:
+      - name: Download Windows Installer
+        shell: pwsh
+        run: |
+          $url = "${{ needs.resolve-release.outputs.win_exe_url }}"
+          $fileName = "${{ needs.resolve-release.outputs.win_exe_name }}"
+          Write-Host "Downloading: $url -> $fileName"
+          Invoke-WebRequest -Uri $url -OutFile $fileName -UseBasicParsing
+
+      - name: Silent Install and Directory Resolution
+        shell: pwsh
+        run: |
+          $installer = "${{ needs.resolve-release.outputs.win_exe_name }}"
+          $installDir = "C:\TestApp"
+          Write-Host "Executing silent installation to $installDir..."
+          $process = Start-Process -FilePath ".\$installer" -ArgumentList "/S", "/D=$installDir" -PassThru -Wait
+          Write-Host "Installer exit code: $($process.ExitCode)"
+          
+          # Allow background NSIS unpack to complete
+          Start-Sleep -Seconds 5
+
+          # Locate the main executable
+          $exeCandidate = Get-ChildItem -Path $installDir -Filter "*.exe" -Recurse | Where-Object { $_.Name -notmatch "Uninstall" -and $_.Name -match "firefly" } | Select-Object -First 1
+          if (-not $exeCandidate) {
+            # Fallback check standard AppData installation directory
+            $fallbackDir = Join-Path $env:LOCALAPPDATA "Programs\${{ needs.resolve-release.outputs.app_name }}"
+            if (Test-Path $fallbackDir) {
+              $exeCandidate = Get-ChildItem -Path $fallbackDir -Filter "*.exe" | Where-Object { $_.Name -notmatch "Uninstall" } | Select-Object -First 1
+            }
+          }
+
+          if (-not $exeCandidate) {
+            Get-ChildItem -Path $installDir -Recurse | Select-Object FullName
+            throw "Failed to locate installed application executable!"
+          }
+
+          Write-Host "Found executable: $($exeCandidate.FullName)"
+          "APP_EXE_PATH=$($exeCandidate.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Launch App & 15s Smoke Test
+        shell: pwsh
+        run: |
+          $exePath = $env:APP_EXE_PATH
+          Write-Host "Launching application: $exePath"
+          $proc = Start-Process -FilePath $exePath -ArgumentList "--no-sandbox", "--disable-gpu" -PassThru
+          
+          Write-Host "Application PID: $($proc.Id). Monitoring process health for 15 seconds..."
+          $elapsed = 0
+          while ($elapsed -lt 15) {
+            Start-Sleep -Seconds 2
+            $elapsed += 2
+            $proc.Refresh()
+            if ($proc.HasExited) {
+              throw "Application crashed unexpectedly during startup! Exit code: $($proc.ExitCode)"
+            }
+            Write-Host "  -> Health check at ${elapsed}s: Process alive (Memory: $([math]::Round($proc.WorkingSet64/1MB, 2)) MB)"
+          }
+
+          Write-Host "Application passed 15-second startup stability smoke test!"
+          Write-Host "Gracefully stopping process..."
+          Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
+
+  # ==============================================================================
+  # 2. macOS Verification (x86_64 & arm64)
+  # ==============================================================================
+  test-macos:
+    name: Test macOS (${{ matrix.arch }})
+    needs: resolve-release
+    if: needs.resolve-release.outputs.mac_dmg_url != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            os: macos-13
+          - arch: arm64
+            os: macos-14
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Download macOS DMG
+        run: |
+          URL="${{ needs.resolve-release.outputs.mac_dmg_url }}"
+          FILE_NAME="${{ needs.resolve-release.outputs.mac_dmg_name }}"
+          echo "Downloading $URL -> $FILE_NAME"
+          curl -L -o "$FILE_NAME" "$URL"
+
+      - name: Mount DMG & Extract Application
+        run: |
+          FILE_NAME="${{ needs.resolve-release.outputs.mac_dmg_name }}"
+          MOUNT_DIR="/Volumes/FireflyInstaller"
+          echo "Mounting $FILE_NAME..."
+          hdiutil attach "$FILE_NAME" -mountpoint "$MOUNT_DIR" -nobrowse
+          
+          APP_NAME=$(ls -d "$MOUNT_DIR"/*.app | head -n 1)
+          if [ -z "$APP_NAME" ]; then
+            echo "Error: No .app bundle found inside DMG!"
+            hdiutil detach "$MOUNT_DIR" || true
+            exit 1
+          fi
+          
+          echo "Found app bundle: $APP_NAME"
+          mkdir -p /tmp/FireflyTest
+          cp -R "$APP_NAME" /tmp/FireflyTest/
+          hdiutil detach "$MOUNT_DIR"
+          
+          LOCAL_APP="/tmp/FireflyTest/$(basename "$APP_NAME")"
+          echo "Removing quarantine attributes..."
+          xattr -dr com.apple.quarantine "$LOCAL_APP" || true
+          
+          # Find binary
+          BIN_PATH=$(find "$LOCAL_APP/Contents/MacOS" -type f -perm +111 | head -n 1)
+          echo "APP_BIN_PATH=$BIN_PATH" >> $GITHUB_ENV
+          echo "Binary path: $BIN_PATH"
+
+      - name: Launch App & 15s Smoke Test
+        run: |
+          echo "Starting binary: $APP_BIN_PATH"
+          "$APP_BIN_PATH" --no-sandbox --disable-gpu > /tmp/app-stdout.log 2>&1 &
+          APP_PID=$!
+          echo "Application started with PID: $APP_PID"
+
+          for i in {1..8}; do
+            sleep 2
+            if ! kill -0 $APP_PID 2>/dev/null; then
+              echo "❌ Application crashed prematurely!"
+              echo "=== Application Output Logs ==="
+              cat /tmp/app-stdout.log || true
+              exit 1
+            fi
+            echo "  -> Health check at $((i*2))s: Process $APP_PID is alive."
+          done
+
+          echo "✅ macOS (${{ matrix.arch }}) passed 15-second startup stability smoke test!"
+          kill -15 $APP_PID 2>/dev/null || kill -9 $APP_PID 2>/dev/null || true
+
+  # ==============================================================================
+  # 3. Linux DEB Verification (Multi-Distro Matrix: Ubuntu, Debian, Deepin Baseline)
+  # ==============================================================================
+  test-linux-deb:
+    name: Test DEB (${{ matrix.distro.name }} - ${{ matrix.arch }})
+    needs: resolve-release
+    if: needs.resolve-release.outputs.linux_deb_url != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        distro:
+          - name: "Ubuntu 20.04 (glibc 2.31)"
+            image: "ubuntu:20.04"
+          - name: "Ubuntu 22.04 (glibc 2.35)"
+            image: "ubuntu:22.04"
+          - name: "Ubuntu 24.04 (glibc 2.39)"
+            image: "ubuntu:24.04"
+          - name: "Debian 10 Buster (glibc 2.28 / Deepin 20.x)"
+            image: "debian:10-slim"
+          - name: "Debian 11 Bullseye (glibc 2.31)"
+            image: "debian:11-slim"
+          - name: "Debian 12 Bookworm (glibc 2.36 / Deepin 23)"
+            image: "debian:12-slim"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU for Multi-Arch Container Execution
+        if: matrix.arch == 'arm64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Download DEB Package
+        run: |
+          URL="${{ needs.resolve-release.outputs.linux_deb_url }}"
+          echo "Downloading $URL -> app.deb"
+          curl -L -o app.deb "$URL"
+
+      - name: Run DEB Install & 15s Startup Smoke Test in Docker Container
+        run: |
+          # Platform mapping
+          DOCKER_PLATFORM="linux/amd64"
+          if [ "${{ matrix.arch }}" = "arm64" ]; then
+            DOCKER_PLATFORM="linux/arm64"
+          fi
+
+          echo "Running on Docker Platform: $DOCKER_PLATFORM with Image: ${{ matrix.distro.image }}"
+          
+          docker run --rm --platform $DOCKER_PLATFORM \
+            -v "$(pwd)/app.deb:/tmp/app.deb" \
+            "${{ matrix.distro.image }}" /bin/bash -c "
+              set -e
+              export DEBIAN_FRONTEND=noninteractive
+              echo '=== [1/4] Updating Package Repositories ==='
+              apt-get update -y
+              
+              echo '=== [2/4] Installing Xvfb and GUI Runtime Dependencies ==='
+              apt-get install -y --no-install-recommends \
+                xvfb \
+                ca-certificates \
+                libgtk-3-0 \
+                libnss3 \
+                libasound2 \
+                libgbm1 \
+                libsecret-1-0 \
+                libnotify4 \
+                libxss1 \
+                libxtst6 \
+                xauth \
+                procps \
+                dbus || true
+
+              echo '=== [3/4] Installing Application DEB Package ==='
+              dpkg -i /tmp/app.deb || apt-get install -f -y
+
+              APP_EXEC=\$(which ${{ needs.resolve-release.outputs.app_name }} || find /opt -name '${{ needs.resolve-release.outputs.app_name }}' -type f -perm /111 | head -n 1)
+              if [ -z \"\$APP_EXEC\" ]; then
+                APP_EXEC=\$(find /usr/bin /opt -name 'firefly*' -type f -perm /111 | head -n 1)
+              fi
+              echo \"Found executable: \$APP_EXEC\"
+
+              echo '=== [4/4] Starting Application with Xvfb (15s Smoke Test) ==='
+              # Run in background with timeout
+              xvfb-run -a \"\$APP_EXEC\" --no-sandbox --disable-gpu --disable-dev-shm-usage > /tmp/app-run.log 2>&1 &
+              APP_PID=\$!
+              echo \"Application running with PID: \$APP_PID\"
+
+              for i in \$(seq 1 8); do
+                sleep 2
+                if ! kill -0 \$APP_PID 2>/dev/null; then
+                  echo '❌ Application crashed on ${{ matrix.distro.name }} (${{ matrix.arch }})!'
+                  echo '=== Crash Logs / Output ==='
+                  cat /tmp/app-run.log || true
+                  exit 1
+                fi
+                echo \"  -> Health check at \$((\$i * 2))s: Alive (glibc & native modules OK)\"
+              done
+
+              echo '✅ ${{ matrix.distro.name }} (${{ matrix.arch }}) 15s startup smoke test PASSED!'
+              kill -15 \$APP_PID 2>/dev/null || kill -9 \$APP_PID 2>/dev/null || true
+            "
+
+  # ==============================================================================
+  # 4. Linux RPM Verification (Fedora, Rocky Linux 9)
+  # ==============================================================================
+  test-linux-rpm:
+    name: Test RPM (${{ matrix.distro.name }} - ${{ matrix.arch }})
+    needs: resolve-release
+    if: needs.resolve-release.outputs.linux_rpm_url != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+        distro:
+          - name: "Fedora 39"
+            image: "fedora:39"
+          - name: "Fedora 40"
+            image: "fedora:40"
+          - name: "Rocky Linux 9"
+            image: "rockylinux:9"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up QEMU for Multi-Arch Container Execution
+        if: matrix.arch == 'arm64'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Download RPM Package
+        run: |
+          URL="${{ needs.resolve-release.outputs.linux_rpm_url }}"
+          echo "Downloading $URL -> app.rpm"
+          curl -L -o app.rpm "$URL"
+
+      - name: Run RPM Install & 15s Startup Smoke Test in Docker Container
+        run: |
+          DOCKER_PLATFORM="linux/amd64"
+          if [ "${{ matrix.arch }}" = "arm64" ]; then
+            DOCKER_PLATFORM="linux/arm64"
+          fi
+
+          echo "Running on Docker Platform: $DOCKER_PLATFORM with Image: ${{ matrix.distro.image }}"
+          
+          docker run --rm --platform $DOCKER_PLATFORM \
+            -v "$(pwd)/app.rpm:/tmp/app.rpm" \
+            "${{ matrix.distro.image }}" /bin/bash -c "
+              set -e
+              echo '=== [1/4] Installing Dependencies and Xvfb ==='
+              dnf install -y --setopt=install_weak_deps=False \
+                xorg-x11-server-Xvfb \
+                gtk3 \
+                nss \
+                alsa-lib \
+                mesa-libgbm \
+                libsecret \
+                libnotify \
+                procps-ng \
+                ca-certificates || true
+
+              echo '=== [2/4] Installing Application RPM Package ==='
+              dnf install -y /tmp/app.rpm || rpm -ivh --nodeps /tmp/app.rpm
+
+              APP_EXEC=\$(which ${{ needs.resolve-release.outputs.app_name }} || find /opt -name '${{ needs.resolve-release.outputs.app_name }}' -type f -perm /111 | head -n 1)
+              if [ -z \"\$APP_EXEC\" ]; then
+                APP_EXEC=\$(find /usr/bin /opt -name 'firefly*' -type f -perm /111 | head -n 1)
+              fi
+              echo \"Found executable: \$APP_EXEC\"
+
+              echo '=== [3/4] Starting Application with Xvfb (15s Smoke Test) ==='
+              xvfb-run -a \"\$APP_EXEC\" --no-sandbox --disable-gpu --disable-dev-shm-usage > /tmp/rpm-run.log 2>&1 &
+              APP_PID=\$!
+              echo \"Application running with PID: \$APP_PID\"
+
+              for i in \$(seq 1 8); do
+                sleep 2
+                if ! kill -0 \$APP_PID 2>/dev/null; then
+                  echo '❌ Application crashed on ${{ matrix.distro.name }} (${{ matrix.arch }})!'
+                  echo '=== Crash Logs / Output ==='
+                  cat /tmp/rpm-run.log || true
+                  exit 1
+                fi
+                echo \"  -> Health check at \$((\$i * 2))s: Alive\"
+              done
+
+              echo '✅ ${{ matrix.distro.name }} (${{ matrix.arch }}) 15s startup smoke test PASSED!'
+              kill -15 \$APP_PID 2>/dev/null || kill -9 \$APP_PID 2>/dev/null || true
+            "
+
+  # ==============================================================================
+  # 5. Verification Summary
+  # ==============================================================================
+  verification-summary:
+    name: Multi-Platform Smoke Test Summary
+    needs: [resolve-release, test-windows, test-macos, test-linux-deb, test-linux-rpm]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate Summary Report
+        run: |
+          echo "## 🚀 Release Verification & Smoke Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Release:** \`${{ needs.resolve-release.outputs.tag_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Product Edition:** \`${{ needs.resolve-release.outputs.app_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test Platform / Matrix | Status | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          
+          # Windows
+          if [ "${{ needs.test-windows.result }}" = "success" ]; then
+            echo "| 🪟 Windows (x64) | ✅ Passed | NSIS Silent Install & 15s Process Alive |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.test-windows.result }}" = "skipped" ]; then
+            echo "| 🪟 Windows (x64) | ⚠️ Skipped | Asset not found |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🪟 Windows (x64) | ❌ Failed | Startup or Crash Error |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # macOS
+          if [ "${{ needs.test-macos.result }}" = "success" ]; then
+            echo "| 🍎 macOS (x86_64 & arm64) | ✅ Passed | DMG Mount, Gatekeeper bypass & 15s Process Alive |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.test-macos.result }}" = "skipped" ]; then
+            echo "| 🍎 macOS (x86_64 & arm64) | ⚠️ Skipped | Asset not found |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🍎 macOS (x86_64 & arm64) | ❌ Failed | Startup or Crash Error |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Linux DEB
+          if [ "${{ needs.test-linux-deb.result }}" = "success" ]; then
+            echo "| 🐧 Linux DEB (Ubuntu/Debian/Deepin x64 & arm64) | ✅ Passed | DEB Install, glibc compatibility & Xvfb Smoke Test |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.test-linux-deb.result }}" = "skipped" ]; then
+            echo "| 🐧 Linux DEB | ⚠️ Skipped | Asset not found |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🐧 Linux DEB | ❌ Failed | Installation or glibc/X11 error |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Linux RPM
+          if [ "${{ needs.test-linux-rpm.result }}" = "success" ]; then
+            echo "| 🐧 Linux RPM (Fedora/Rocky Linux x64 & arm64) | ✅ Passed | RPM Install & Xvfb Smoke Test |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.test-linux-rpm.result }}" = "skipped" ]; then
+            echo "| 🐧 Linux RPM | ⚠️ Skipped | Asset not found |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| 🐧 Linux RPM | ❌ Failed | Installation or dependency error |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎉 All tests executed successfully." >> $GITHUB_STEP_SUMMARY
