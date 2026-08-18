@@ -53,20 +53,26 @@ export class SnapshotManager {
    * 初始化/准备一套全新的测试快照工作区与 UserData 目录
    */
   public static setupEnvironment(): TestSnapshotContext {
-    console.log(
-      `[SnapshotManager] SPEEDY 源路径: ${this.repoSpeedyDir} (存在: ${fs.existsSync(this.repoSpeedyDir)})`
-    )
-    console.log(
-      `[SnapshotManager] PRIVATE 源路径: ${this.repoPrivateDir} (存在: ${fs.existsSync(this.repoPrivateDir)})`
-    )
+    console.log(`[SnapshotManager] SPEEDY 源路径: ${this.repoSpeedyDir} (存在: ${fs.existsSync(this.repoSpeedyDir)})`)
+    console.log(`[SnapshotManager] PRIVATE 源路径: ${this.repoPrivateDir} (存在: ${fs.existsSync(this.repoPrivateDir)})`)
 
-    // 1. 创建干净的独立 UserData 目录
-    if (!fs.existsSync(this.userDataDir)) {
-      fs.mkdirSync(this.userDataDir, { recursive: true })
+    // 1. 创建干净的临时根目录
+    fs.mkdirSync(this.rootTempDir, { recursive: true })
+    fs.mkdirSync(this.speedyWorkspaceDir, { recursive: true })
+    fs.mkdirSync(this.privateWorkspaceDir, { recursive: true })
+    fs.mkdirSync(this.userDataDir, { recursive: true })
+
+    // 2. 从 tests/work-folder/SPEEDY 复制样本
+    if (fs.existsSync(this.repoSpeedyDir)) {
+      this.copyDirRecursive(this.repoSpeedyDir, this.speedyWorkspaceDir)
+      console.log(`[SnapshotManager] 已成功拷贝 SPEEDY 样本到: ${this.speedyWorkspaceDir}`)
     }
 
-    // 2. 清理并重新填充 Workspace 目录
-    this.resetWorkspace()
+    // 3. 从 tests/work-folder/PRIVATE 复制样本
+    if (fs.existsSync(this.repoPrivateDir)) {
+      this.copyDirRecursive(this.repoPrivateDir, this.privateWorkspaceDir)
+      console.log(`[SnapshotManager] 已成功拷贝 PRIVATE 样本到: ${this.privateWorkspaceDir}`)
+    }
 
     return {
       workspaceDir: this.speedyWorkspaceDir,
@@ -83,12 +89,12 @@ export class SnapshotManager {
   public static resetWorkspace(): string {
     if (fs.existsSync(this.speedyWorkspaceDir)) {
       try {
-        fs.rmSync(this.speedyWorkspaceDir, { recursive: true, force: true })
+        fs.rmSync(this.speedyWorkspaceDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 400 })
       } catch {}
     }
     if (fs.existsSync(this.privateWorkspaceDir)) {
       try {
-        fs.rmSync(this.privateWorkspaceDir, { recursive: true, force: true })
+        fs.rmSync(this.privateWorkspaceDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 400 })
       } catch {}
     }
 
@@ -116,7 +122,7 @@ export class SnapshotManager {
   public static teardownEnvironment(): void {
     try {
       if (fs.existsSync(this.rootTempDir)) {
-        fs.rmSync(this.rootTempDir, { recursive: true, force: true })
+        fs.rmSync(this.rootTempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 400 })
       }
     } catch {}
   }

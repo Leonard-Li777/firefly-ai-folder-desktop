@@ -121,16 +121,13 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js & pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.18.3
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 24.15.0
 
-      - name: Install Test Dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Install E2E Test Dependencies
+        run: npm install --no-save --no-package-lock @playwright/test
 
       - name: Download Windows Installer
         shell: pwsh
@@ -165,7 +162,7 @@ jobs:
       - name: Run Playwright Golden Path E2E Test
         shell: pwsh
         run: |
-          pnpm playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          npx playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
 
       - name: Upload Windows Test Report Artifact
         if: always()
@@ -189,11 +186,8 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js & pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.18.3
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 24.15.0
 
@@ -202,8 +196,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb libgtk-3-0 libnss3 libasound2 libgbm1 libsecret-1-0 libnotify4 libxss1 libgconf-2-4
 
-      - name: Install Test Dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Install E2E Test Dependencies
+        run: npm install --no-save --no-package-lock @playwright/test
 
       - name: Download and Install DEB Package
         run: |
@@ -222,7 +216,7 @@ jobs:
 
       - name: Run Playwright Golden Path E2E Test (Xvfb)
         run: |
-          xvfb-run -a pnpm playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          xvfb-run -a npx playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
 
       - name: Upload Linux Test Report Artifact
         if: always()
@@ -246,16 +240,13 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js & pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.18.3
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 24.15.0
 
-      - name: Install Test Dependencies
-        run: pnpm install --no-frozen-lockfile
+      - name: Install E2E Test Dependencies
+        run: npm install --no-save --no-package-lock @playwright/test
 
       - name: Download & Mount macOS DMG
         run: |
@@ -268,11 +259,12 @@ jobs:
           APP_DIR=$(find /tmp/AppExtract -name "*.app" -maxdepth 1 | head -n 1)
           xattr -dr com.apple.quarantine "$APP_DIR" || true
           APP_EXEC=$(find "$APP_DIR/Contents/MacOS" -type f | head -n 1)
+          chmod +x "$APP_EXEC" || true
           echo "TEST_APP_EXECUTABLE=$APP_EXEC" >> $GITHUB_ENV
 
       - name: Run Playwright Golden Path E2E Test
         run: |
-          pnpm playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          npx playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
 
       - name: Upload macOS Test Report Artifact
         if: always()
@@ -291,16 +283,10 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout gh-pages Branch
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-        continue-on-error: true
-
       - name: Prepare Report Output Directory
         run: |
-          mkdir -p reports/${{ github.run_id }}
-          mkdir -p public
+          mkdir -p gh-pages-site/reports/${{ github.run_id }}
+          touch gh-pages-site/.nojekyll
 
       - name: Download All Report Artifacts
         uses: actions/download-artifact@v4
@@ -310,7 +296,7 @@ jobs:
 
       - name: Consolidate Multi-Platform Reports
         run: |
-          TARGET_DIR="reports/${{ github.run_id }}"
+          TARGET_DIR="gh-pages-site/reports/${{ github.run_id }}"
           mkdir -p "$TARGET_DIR"
 
           if [ -d "/tmp/all-reports/playwright-report-windows" ]; then
@@ -361,7 +347,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: ./gh-pages-site
           publish_branch: gh-pages
           keep_files: true
         continue-on-error: true
@@ -369,7 +355,9 @@ jobs:
       - name: Render Job Summary with Report URL
         shell: bash
         run: |
-          REPORT_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/reports/${{ github.run_id }}/"
+          OWNER=$(echo "${{ github.repository }}" | cut -d'/' -f1)
+          REPO=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          REPORT_URL="https://${OWNER}.github.io/${REPO}/reports/${{ github.run_id }}/"
           
           echo "## 📊 Release 安装包 E2E 全流程功能测试结果汇总" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

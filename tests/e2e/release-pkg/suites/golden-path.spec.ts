@@ -64,7 +64,7 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     expect(page).toBeDefined()
 
     await page.waitForLoadState('domcontentloaded').catch(() => {})
-    await new Promise(r => setTimeout(r, 1500))
+    await new Promise((r) => setTimeout(r, 1500))
 
     const title = await page.title().catch(() => '')
     const url = page.url()
@@ -80,21 +80,17 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     expect(hasElectronAPI).toBe(true)
 
     // 截图保存阶段健康状态
-    await page
-      .screenshot({ path: path.join(__dirname, '../reports/html/step-01-healthy-launch.png') })
-      .catch(() => {})
+    await page.screenshot({ path: path.join(__dirname, '../reports/html/step-01-healthy-launch.png') }).catch(() => {})
   })
 
   test('02. 欢迎向导与系统初始化检查 (Onboarding Check)', async () => {
     console.log('--- [Step 02] 检查欢迎向导或首屏配置 ---')
     page = await app.getPage()
-    await new Promise(r => setTimeout(r, 1500))
+    await new Promise((r) => setTimeout(r, 1500))
 
-    // 检查是否存在向导/语言选择或配置引导蒙层
+    // 检查是否存在向导/语言选择或配置引导蒙层（兼容中文与国际版英文）
     const wizardVisible = await page
-      .locator(
-        '[role="radiogroup"], button:has-text("继续"), button:has-text("开始使用"), button:has-text("下一步")'
-      )
+      .locator('[role="radiogroup"], button:has-text("继续"), button:has-text("开始使用"), button:has-text("下一步"), button:has-text("Continue"), button:has-text("Get Started"), button:has-text("Next")')
       .first()
       .isVisible()
       .catch(() => false)
@@ -103,16 +99,14 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
       console.log('[Step 02] 发现欢迎向导界面，正在完成初始配置交互...')
 
       // 尝试选择中文或默认语言
-      const zhOption = page.locator('label:has-text("简体中文"), input[value="zh-CN"]').first()
+      const zhOption = page.locator('label:has-text("简体中文"), label:has-text("English"), input[value="zh-CN"], input[value="en-US"]').first()
       if (await zhOption.isVisible().catch(() => false)) {
         await zhOption.click().catch(() => {})
-        await new Promise(r => setTimeout(r, 500))
+        await new Promise((r) => setTimeout(r, 500))
       }
 
       // 点击“继续”或“开始”
-      const nextBtn = page
-        .locator('button:has-text("继续"), button:has-text("下一步"), button:has-text("开始使用")')
-        .first()
+      const nextBtn = page.locator('button:has-text("继续"), button:has-text("下一步"), button:has-text("开始使用"), button:has-text("Continue"), button:has-text("Next"), button:has-text("Get Started")').first()
       if (await nextBtn.isVisible().catch(() => false)) {
         await nextBtn.click().catch(() => {})
       }
@@ -121,16 +115,14 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     }
 
     // 给页面初始化与授权探测预留稳定时间
-    await new Promise(r => setTimeout(r, 4000))
+    await new Promise((r) => setTimeout(r, 4000))
     page = await app.getPage()
     await page.waitForLoadState('domcontentloaded').catch(() => {})
 
     // 断言主应用界面容器已挂载
     const rootElement = page.locator('#root, body, main').first()
     await expect(rootElement).toBeVisible({ timeout: 20000 })
-    await page
-      .screenshot({ path: path.join(__dirname, '../reports/html/step-02-main-ready.png') })
-      .catch(() => {})
+    await page.screenshot({ path: path.join(__dirname, '../reports/html/step-02-main-ready.png') }).catch(() => {})
   })
 
   test('03. 挂载测试快照工作区 (Mount Golden Workspace)', async () => {
@@ -139,7 +131,7 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     await page.waitForLoadState('domcontentloaded').catch(() => {})
 
     // 通过 electronAPI 添加工作目录、设置当前工作区并触发同步
-    await page.evaluate(async wsPath => {
+    await page.evaluate(async (wsPath) => {
       const api = (window as any).electronAPI
       if (!api) throw new Error('electronAPI 未定义')
 
@@ -162,28 +154,22 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     }, workspaceDir)
 
     // 等待 UI 响应并刷新工作区
-    await new Promise(r => setTimeout(r, 3500))
+    await new Promise((r) => setTimeout(r, 3500))
     page = await app.getPage()
 
     // 验证工作区列表已成功记录
     const directories = await page.evaluate(async () => {
       const api = (window as any).electronAPI
-      return api && typeof api.getAllWorkspaceDirectories === 'function'
-        ? await api.getAllWorkspaceDirectories()
-        : []
+      return api && typeof api.getAllWorkspaceDirectories === 'function' ? await api.getAllWorkspaceDirectories() : []
     })
 
     console.log(`[Step 03] 当前已挂载工作区数量: ${directories.length}`)
     expect(directories.length).toBeGreaterThanOrEqual(1)
 
-    const currentDir = directories.find(
-      (d: any) => d.path === workspaceDir || d.path.toLowerCase() === workspaceDir.toLowerCase()
-    )
+    const currentDir = directories.find((d: any) => d.path === workspaceDir || d.path.toLowerCase() === workspaceDir.toLowerCase())
     expect(currentDir).toBeDefined()
 
-    await page
-      .screenshot({ path: path.join(__dirname, '../reports/html/step-03-workspace-mounted.png') })
-      .catch(() => {})
+    await page.screenshot({ path: path.join(__dirname, '../reports/html/step-03-workspace-mounted.png') }).catch(() => {})
   })
 
   test('04. 文件探测与列表/详情展示 (File Explorer & Details Panel)', async () => {
@@ -191,7 +177,7 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     page = await app.getPage()
 
     // 主动触发目录读取并获取快照内的文件结构
-    const dirContent = await page.evaluate(async wsPath => {
+    const dirContent = await page.evaluate(async (wsPath) => {
       const api = (window as any).electronAPI
       if (api && typeof api.readDirectory === 'function') {
         return await api.readDirectory(wsPath)
@@ -201,21 +187,17 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
 
     const scannedFiles = dirContent.files || []
     const scannedDirs = dirContent.directories || []
-    console.log(
-      `[Step 04] 后端扫描到的文件数: ${scannedFiles.length}, 子目录数: ${scannedDirs.length}`
-    )
+    console.log(`[Step 04] 后端扫描到的文件数: ${scannedFiles.length}, 子目录数: ${scannedDirs.length}`)
 
     // 验证扫描到的文件数不为 0
     expect(scannedFiles.length + scannedDirs.length).toBeGreaterThan(0)
     console.log(`[Step 04] 文件名样本: ${scannedFiles.map((f: any) => f.name).join(', ')}`)
 
     // 等待 UI 渲染
-    await new Promise(r => setTimeout(r, 2000))
+    await new Promise((r) => setTimeout(r, 2000))
 
     // 检查页面渲染的文件元素或文件名文本
-    const fileElements = page.locator(
-      'div:has-text("成都市"), div:has-text("项目模块"), span:has-text("通知"), span:has-text("需求"), [class*="truncate"], tbody tr, [class*="card"]'
-    )
+    const fileElements = page.locator('div:has-text("成都市"), div:has-text("项目模块"), span:has-text("通知"), span:has-text("需求"), [class*="truncate"], tbody tr, [class*="card"]')
     const domFileCount = await fileElements.count().catch(() => 0)
     console.log(`[Step 04] 页面匹配到的文件相关 DOM 元素数量: ${domFileCount}`)
 
@@ -223,57 +205,39 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     expect(domFileCount).toBeGreaterThan(0)
 
     // 尝试点击第一个文件项以唤起详情交互
-    await fileElements
-      .first()
-      .click()
-      .catch(() => {})
-    await new Promise(r => setTimeout(r, 1000))
+    await fileElements.first().click().catch(() => {})
+    await new Promise((r) => setTimeout(r, 1000))
 
     // 验证主视图区域可见
-    const mainView = page
-      .locator('main, [class*="fileExplorer"], [class*="layout"], [class*="content"]')
-      .first()
+    const mainView = page.locator('main, [class*="fileExplorer"], [class*="layout"], [class*="content"]').first()
     await expect(mainView).toBeVisible()
 
-    await page
-      .screenshot({ path: path.join(__dirname, '../reports/html/step-04-file-explorer.png') })
-      .catch(() => {})
+    await page.screenshot({ path: path.join(__dirname, '../reports/html/step-04-file-explorer.png') }).catch(() => {})
   })
 
   test('05. 虚拟目录与维度标签交互 (Virtual Directory & Tags Interaction)', async () => {
     console.log('--- [Step 05] 验证虚拟目录与维度筛选交互 ---')
     page = await app.getPage()
 
-    // 尝试定位并点击“虚拟目录”导航入口
-    const virtualDirNav = page
-      .locator(
-        'button:has-text("虚拟目录"), a:has-text("虚拟目录"), [data-testid="nav-virtual-directory"]'
-      )
-      .first()
+    // 尝试定位并点击“虚拟目录”导航入口（兼容中英文）
+    const virtualDirNav = page.locator('button:has-text("虚拟目录"), a:has-text("虚拟目录"), [data-testid="nav-virtual-directory"], button:has-text("Virtual"), a:has-text("Virtual")').first()
     if (await virtualDirNav.isVisible().catch(() => false)) {
       console.log('[Step 05] 点击虚拟目录导航菜单...')
       await virtualDirNav.click().catch(() => {})
-      await new Promise(r => setTimeout(r, 2000))
+      await new Promise((r) => setTimeout(r, 2000))
     }
 
     // 检查是否有维度树或标签选择器
-    const tagElements = page.locator(
-      '[class*="dimension"], [class*="tag"], [role="treeitem"], [class*="badge"], button:has-text("标签"), div:has-text("维度")'
-    )
+    const tagElements = page.locator('[class*="dimension"], [class*="tag"], [role="treeitem"], [class*="badge"], button:has-text("标签"), div:has-text("维度"), button:has-text("Tag"), div:has-text("Dimension")')
     const tagCount = await tagElements.count().catch(() => 0)
     console.log(`[Step 05] 页面检测到的维度/标签节点数量: ${tagCount}`)
 
     if (tagCount > 0) {
-      await tagElements
-        .first()
-        .click()
-        .catch(() => {})
-      await new Promise(r => setTimeout(r, 500))
+      await tagElements.first().click().catch(() => {})
+      await new Promise((r) => setTimeout(r, 500))
     }
 
-    await page
-      .screenshot({ path: path.join(__dirname, '../reports/html/step-05-virtual-directory.png') })
-      .catch(() => {})
+    await page.screenshot({ path: path.join(__dirname, '../reports/html/step-05-virtual-directory.png') }).catch(() => {})
   })
 
   test('06. 工作区重置与环境清理 (Teardown & Reset Verification)', async () => {
@@ -281,7 +245,7 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     page = await app.getPage()
 
     // 调用 electronAPI 移除工作区，验证应用能够重置到空状态
-    const removeResult = await page.evaluate(async wsPath => {
+    const removeResult = await page.evaluate(async (wsPath) => {
       const api = (window as any).electronAPI
       if (api && typeof api.deleteWorkspaceDirectory === 'function') {
         return await api.deleteWorkspaceDirectory(wsPath)
@@ -290,25 +254,19 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     }, workspaceDir)
 
     console.log('[Step 06] 移除工作区返回结果:', removeResult)
-    await new Promise(r => setTimeout(r, 1500))
+    await new Promise((r) => setTimeout(r, 1500))
 
     // 验证工作区列表已更新
     const afterDirs = await page.evaluate(async () => {
       const api = (window as any).electronAPI
-      return api && typeof api.getAllWorkspaceDirectories === 'function'
-        ? await api.getAllWorkspaceDirectories()
-        : []
+      return api && typeof api.getAllWorkspaceDirectories === 'function' ? await api.getAllWorkspaceDirectories() : []
     })
 
     console.log(`[Step 06] 移除后剩余工作区数量: ${afterDirs.length}`)
-    const stillExists = afterDirs.some(
-      (d: any) => d.path === workspaceDir || d.path.toLowerCase() === workspaceDir.toLowerCase()
-    )
+    const stillExists = afterDirs.some((d: any) => d.path === workspaceDir || d.path.toLowerCase() === workspaceDir.toLowerCase())
     expect(stillExists).toBe(false)
 
-    await page
-      .screenshot({ path: path.join(__dirname, '../reports/html/step-06-reset-clean.png') })
-      .catch(() => {})
+    await page.screenshot({ path: path.join(__dirname, '../reports/html/step-06-reset-clean.png') }).catch(() => {})
     console.log('🎉 [Step 06] 黄金主链路全套测试执行完毕并成功完成闭环！')
   })
 })

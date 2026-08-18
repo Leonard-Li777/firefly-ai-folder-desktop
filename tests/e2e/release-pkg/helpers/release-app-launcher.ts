@@ -59,19 +59,9 @@ export class ReleaseAppLauncher {
 
       const localAppData = process.env.LOCALAPPDATA || ''
       if (localAppData) {
-        const candidate1 = path.join(
-          localAppData,
-          'Programs',
-          'firefly-ai-folder',
-          'firefly-ai-folder.exe'
-        )
+        const candidate1 = path.join(localAppData, 'Programs', 'firefly-ai-folder', 'firefly-ai-folder.exe')
         if (fs.existsSync(candidate1)) return candidate1
-        const candidate2 = path.join(
-          localAppData,
-          'Programs',
-          'firefly-ai-folder-cn',
-          'firefly-ai-folder-cn.exe'
-        )
+        const candidate2 = path.join(localAppData, 'Programs', 'firefly-ai-folder-cn', 'firefly-ai-folder-cn.exe')
         if (fs.existsSync(candidate2)) return candidate2
       }
     } else if (platform === 'linux') {
@@ -147,7 +137,7 @@ export class ReleaseAppLauncher {
   private static async getWebSocketDebuggerUrl(port: number, timeoutMs = 30000): Promise<string> {
     const startTime = Date.now()
     while (Date.now() - startTime < timeoutMs) {
-      const wsUrl = await new Promise<string | null>(resolve => {
+      const wsUrl = await new Promise<string | null>((resolve) => {
         const req = http.get(
           {
             hostname: '127.0.0.1',
@@ -155,9 +145,9 @@ export class ReleaseAppLauncher {
             path: '/json/version',
             headers: { Host: `localhost:${port}` }
           },
-          res => {
+          (res) => {
             let data = ''
-            res.on('data', chunk => (data += chunk))
+            res.on('data', (chunk) => (data += chunk))
             res.on('end', () => {
               try {
                 const parsed = JSON.parse(data)
@@ -178,7 +168,7 @@ export class ReleaseAppLauncher {
       })
 
       if (wsUrl) return wsUrl
-      await new Promise(r => setTimeout(r, 400))
+      await new Promise((r) => setTimeout(r, 400))
     }
     throw new Error(`[ReleaseAppLauncher] 获取 DevTools WebSocketDebuggerUrl 超时 (端口: ${port})`)
   }
@@ -190,7 +180,7 @@ export class ReleaseAppLauncher {
     const executablePath = this.resolveExecutablePath(options.executablePath)
     const userDataDir = options.userDataDir || SnapshotManager.getUserDataDir()
     const debugPort = options.debugPort || 9333 + Math.floor(Math.random() * 500)
-    const isHeadless = options.headless ?? process.env.HEADLESS === 'true'
+    const isHeadless = options.headless ?? (process.env.HEADLESS === 'true')
 
     console.log(`[ReleaseAppLauncher] 正在启动生产包: ${executablePath}`)
     console.log(`[ReleaseAppLauncher] UserData 隔离目录: ${userDataDir}`)
@@ -200,6 +190,7 @@ export class ReleaseAppLauncher {
       `--remote-debugging-port=${debugPort}`,
       `--user-data-dir=${userDataDir}`,
       '--no-sandbox',
+      '--disable-setuid-sandbox',
       '--disable-gpu',
       '--disable-dev-shm-usage',
       '--force-device-scale-factor=1',
@@ -219,12 +210,12 @@ export class ReleaseAppLauncher {
       stdio: ['ignore', 'pipe', 'pipe']
     })
 
-    child.stdout?.on('data', data => {
+    child.stdout?.on('data', (data) => {
       const text = data.toString().trim()
       if (text) console.log(`[APP OUT]: ${text}`)
     })
 
-    child.stderr?.on('data', data => {
+    child.stderr?.on('data', (data) => {
       const text = data.toString().trim()
       if (text) console.log(`[APP LOG]: ${text}`)
     })
@@ -254,7 +245,7 @@ export class ReleaseAppLauncher {
         browser = await chromium.connectOverCDP(wsEndpoint)
         if (browser) break
       } catch {
-        await new Promise(r => setTimeout(r, 600))
+        await new Promise((r) => setTimeout(r, 600))
       }
     }
     if (!browser) {
@@ -294,15 +285,11 @@ export class ReleaseAppLauncher {
   /**
    * 智能定位主渲染窗口（跨所有 Browser Context 搜索存活页面）
    */
-  public static async waitForMainWindow(
-    browserOrContext: Browser | BrowserContext,
-    maxWaitMs = 30000
-  ): Promise<Page> {
+  public static async waitForMainWindow(browserOrContext: Browser | BrowserContext, maxWaitMs = 30000): Promise<Page> {
     const startTime = Date.now()
 
     while (Date.now() - startTime < maxWaitMs) {
-      const contexts =
-        'contexts' in browserOrContext ? browserOrContext.contexts() : [browserOrContext]
+      const contexts = 'contexts' in browserOrContext ? browserOrContext.contexts() : [browserOrContext]
       for (const ctx of contexts) {
         const pages = ctx.pages()
         for (const p of pages) {
@@ -316,18 +303,15 @@ export class ReleaseAppLauncher {
           } catch {}
         }
       }
-      await new Promise(r => setTimeout(r, 600))
+      await new Promise((r) => setTimeout(r, 600))
     }
 
-    const contexts =
-      'contexts' in browserOrContext ? browserOrContext.contexts() : [browserOrContext]
+    const contexts = 'contexts' in browserOrContext ? browserOrContext.contexts() : [browserOrContext]
     for (const ctx of contexts) {
-      const valid = ctx.pages().filter(p => !p.isClosed())
+      const valid = ctx.pages().filter((p) => !p.isClosed())
       if (valid.length > 0) return valid[0]
     }
 
-    throw new Error(
-      `[ReleaseAppLauncher] 未能找到任何存活的 Electron 主页面窗口 (超时: ${maxWaitMs}ms)`
-    )
+    throw new Error(`[ReleaseAppLauncher] 未能找到任何存活的 Electron 主页面窗口 (超时: ${maxWaitMs}ms)`)
   }
 }
