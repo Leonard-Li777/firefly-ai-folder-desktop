@@ -1,0 +1,8 @@
+{
+  "name": "firefly-release-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@playwright/test": "^1.50.0"
+  }
+}

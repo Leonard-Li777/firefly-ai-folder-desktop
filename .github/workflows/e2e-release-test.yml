@@ -99,7 +99,7 @@ jobs:
               core.setOutput('win_exe_name', winExe.name);
             }
 
-            // macOS .dmg / .pkg / .zip
+            // macOS .dmg / .pkg / .zip (ARM64)
             const macDmg = assets.find(a => {
               const n = a.name.toLowerCase();
               return (n.endsWith('.dmg') || n.endsWith('.pkg') || (n.endsWith('.zip') && (n.includes('mac') || n.includes('darwin')))) && !n.includes('blockmap') && (n.includes(region) || !n.includes('intl'));
@@ -110,10 +110,18 @@ jobs:
               core.setOutput('mac_dmg_name', macDmg.name);
             }
 
-            // Linux .deb
+            // Linux .deb (x64 / amd64 runner)
             const deb = assets.find(a => {
               const n = a.name.toLowerCase();
-              return (n.endsWith('.deb') || n.endsWith('.appimage')) && !n.includes('arm64') && (n.includes('amd64') || n.includes('x86_64') || !n.includes('arm'));
+              const isDeb = n.endsWith('.deb') || n.endsWith('.appimage');
+              const isX64 = (n.includes('amd64') || n.includes('x86_64') || n.includes('x64')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
+              return isDeb && isX64 && (n.includes(region) || !n.includes('intl'));
+            }) || assets.find(a => {
+              const n = a.name.toLowerCase();
+              return (n.endsWith('.deb') || n.endsWith('.appimage')) && (n.includes('amd64') || n.includes('x86_64') || n.includes('x64')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
+            }) || assets.find(a => {
+              const n = a.name.toLowerCase();
+              return (n.endsWith('.deb') || n.endsWith('.appimage')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
             });
             if (deb) {
               core.info(`Selected Linux DEB: ${deb.name}`);
@@ -121,10 +129,18 @@ jobs:
               core.setOutput('linux_deb_name', deb.name);
             }
 
-            // Linux .rpm
+            // Linux .rpm (x64 / amd64 runner)
             const rpm = assets.find(a => {
               const n = a.name.toLowerCase();
-              return n.endsWith('.rpm') && !n.includes('arm64') && (n.includes('amd64') || n.includes('x86_64') || !n.includes('arm'));
+              const isRpm = n.endsWith('.rpm');
+              const isX64 = (n.includes('x86_64') || n.includes('amd64') || n.includes('x64')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
+              return isRpm && isX64 && (n.includes(region) || !n.includes('intl'));
+            }) || assets.find(a => {
+              const n = a.name.toLowerCase();
+              return n.endsWith('.rpm') && (n.includes('x86_64') || n.includes('amd64') || n.includes('x64')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
+            }) || assets.find(a => {
+              const n = a.name.toLowerCase();
+              return n.endsWith('.rpm') && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
             });
             if (rpm) {
               core.info(`Selected Linux RPM: ${rpm.name}`);
@@ -151,8 +167,8 @@ jobs:
         with:
           node-version: 24.15.0
 
-      - name: Install E2E Test Dependencies Globally
-        run: npm install -g @playwright/test
+      - name: Install E2E Test Dependencies
+        run: npm --prefix tests/e2e/release-pkg install
 
       - name: Download Windows Installer
         shell: pwsh
@@ -203,7 +219,7 @@ jobs:
       - name: Run Playwright Golden Path E2E Test
         shell: pwsh
         run: |
-          npx playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
 
       - name: Upload Windows Test Report Artifact
         if: always()
@@ -237,8 +253,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1
 
-      - name: Install E2E Test Dependencies Globally
-        run: npm install -g @playwright/test
+      - name: Install E2E Test Dependencies
+        run: npm --prefix tests/e2e/release-pkg install
 
       - name: Download and Install DEB Package
         run: |
@@ -266,7 +282,7 @@ jobs:
 
       - name: Run Playwright Golden Path E2E Test (Xvfb)
         run: |
-          xvfb-run -a npx playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
 
       - name: Upload Linux DEB Test Report Artifact
         if: always()
@@ -296,8 +312,8 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Install E2E Test Dependencies Globally
-        run: npm install -g @playwright/test
+      - name: Install E2E Test Dependencies
+        run: npm --prefix tests/e2e/release-pkg install
 
       - name: Download and Install RPM Package
         run: |
@@ -324,7 +340,7 @@ jobs:
 
       - name: Run Playwright Golden Path E2E Test (Xvfb)
         run: |
-          xvfb-run -a npx playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
 
       - name: Upload Linux RPM Test Report Artifact
         if: always()
@@ -353,8 +369,8 @@ jobs:
         with:
           node-version: 24.15.0
 
-      - name: Install E2E Test Dependencies Globally
-        run: npm install -g @playwright/test
+      - name: Install E2E Test Dependencies
+        run: npm --prefix tests/e2e/release-pkg install
 
       - name: Download & Mount macOS DMG
         run: |
@@ -373,7 +389,7 @@ jobs:
 
       - name: Run Playwright Golden Path E2E Test
         run: |
-          npx playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
 
       - name: Upload macOS Test Report Artifact
         if: always()
