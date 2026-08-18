@@ -14,10 +14,9 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1, // 生产二进制单实例执行，避免端口/资源冲突
   retries: 0,
-  timeout: 180000, // 3分钟单套件超时
-
+  timeout: 300000, // 5分钟单套件超时以支持仿真运行
   expect: {
-    timeout: 20000
+    timeout: 30000
   },
 
   reporter: [

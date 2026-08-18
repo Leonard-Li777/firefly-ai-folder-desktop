@@ -240,26 +240,33 @@ export class ReleaseAppLauncher {
     console.log(`[ReleaseAppLauncher] CDP WebSocket 就绪: ${wsEndpoint}`)
 
     let browser: Browser | null = null
-    for (let attempt = 0; attempt < 5; attempt++) {
+    let lastError: any = null
+    for (let attempt = 1; attempt <= 10; attempt++) {
       try {
-        browser = await chromium.connectOverCDP(wsEndpoint)
-        if (browser) break
-      } catch {
-        await new Promise((r) => setTimeout(r, 600))
+        console.log(`[ReleaseAppLauncher] 尝试建立 CDP 连接 (第 ${attempt}/10 次)...`)
+        browser = await chromium.connectOverCDP(wsEndpoint, { timeout: 45000 })
+        if (browser) {
+          console.log(`[ReleaseAppLauncher] 成功建立 CDP 连接！`)
+          break
+        }
+      } catch (err: any) {
+        lastError = err
+        console.warn(`[ReleaseAppLauncher] CDP 连接尝试 ${attempt} 异常: ${err?.message || err}`)
+        await new Promise((r) => setTimeout(r, 1500))
       }
     }
     if (!browser) {
-      throw new Error(`[ReleaseAppLauncher] 连接 CDP 失败: ${wsEndpoint}`)
+      throw new Error(`[ReleaseAppLauncher] 连接 CDP 失败: ${wsEndpoint} (原因: ${lastError?.message || lastError})`)
     }
 
     const contexts = browser.contexts()
     const context = contexts.length > 0 ? contexts[0] : await browser.newContext()
 
-    // 智能检索主窗口
-    const page = await this.waitForMainWindow(browser, 30000)
+    // 智能检索主窗口 (放宽超时至 45 秒)
+    const page = await this.waitForMainWindow(browser, 45000)
 
     const getPage = async (): Promise<Page> => {
-      return await this.waitForMainWindow(browser, 20000)
+      return await this.waitForMainWindow(browser, 30000)
     }
 
     const close = async () => {
