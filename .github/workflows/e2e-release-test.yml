@@ -21,11 +21,11 @@ on:
       platform_scope:
         description: 'Platform scope to test'
         required: false
-        default: 'windows-only'
+        default: 'all-platforms'
         type: choice
         options:
-          - windows-only
           - all-platforms
+          - windows-only
           - linux-only
           - macos-only
 
@@ -49,6 +49,8 @@ jobs:
       mac_dmg_name: ${{ steps.get_release.outputs.mac_dmg_name }}
       linux_deb_url: ${{ steps.get_release.outputs.linux_deb_url }}
       linux_deb_name: ${{ steps.get_release.outputs.linux_deb_name }}
+      linux_rpm_url: ${{ steps.get_release.outputs.linux_rpm_url }}
+      linux_rpm_name: ${{ steps.get_release.outputs.linux_rpm_name }}
       app_name: ${{ steps.get_release.outputs.app_name }}
     steps:
       - name: Fetch Release Information
@@ -87,24 +89,47 @@ jobs:
             assets.forEach(a => core.info(` - ${a.name} (${a.size} bytes)`));
 
             // Windows .exe
-            const winExe = assets.find(a => a.name.endsWith('.exe') && (a.name.includes(region) || !a.name.includes('intl')));
+            const winExe = assets.find(a => {
+              const n = a.name.toLowerCase();
+              return n.endsWith('.exe') && !n.includes('uninstall') && !n.includes('blockmap') && (n.includes(region) || !n.includes('intl'));
+            });
             if (winExe) {
+              core.info(`Selected Windows Installer: ${winExe.name}`);
               core.setOutput('win_exe_url', winExe.browser_download_url);
               core.setOutput('win_exe_name', winExe.name);
             }
 
-            // macOS .dmg
-            const macDmg = assets.find(a => a.name.endsWith('.dmg') && (a.name.includes(region) || !a.name.includes('intl')));
+            // macOS .dmg / .pkg / .zip
+            const macDmg = assets.find(a => {
+              const n = a.name.toLowerCase();
+              return (n.endsWith('.dmg') || n.endsWith('.pkg') || (n.endsWith('.zip') && (n.includes('mac') || n.includes('darwin')))) && !n.includes('blockmap') && (n.includes(region) || !n.includes('intl'));
+            });
             if (macDmg) {
+              core.info(`Selected macOS Package: ${macDmg.name}`);
               core.setOutput('mac_dmg_url', macDmg.browser_download_url);
               core.setOutput('mac_dmg_name', macDmg.name);
             }
 
             // Linux .deb
-            const deb = assets.find(a => a.name.endsWith('.deb') && (a.name.includes('amd64') || a.name.includes('x86_64') || !a.name.includes('arm64')));
+            const deb = assets.find(a => {
+              const n = a.name.toLowerCase();
+              return (n.endsWith('.deb') || n.endsWith('.appimage')) && !n.includes('arm64') && (n.includes('amd64') || n.includes('x86_64') || !n.includes('arm'));
+            });
             if (deb) {
+              core.info(`Selected Linux DEB: ${deb.name}`);
               core.setOutput('linux_deb_url', deb.browser_download_url);
               core.setOutput('linux_deb_name', deb.name);
+            }
+
+            // Linux .rpm
+            const rpm = assets.find(a => {
+              const n = a.name.toLowerCase();
+              return n.endsWith('.rpm') && !n.includes('arm64') && (n.includes('amd64') || n.includes('x86_64') || !n.includes('arm'));
+            });
+            if (rpm) {
+              core.info(`Selected Linux RPM: ${rpm.name}`);
+              core.setOutput('linux_rpm_url', rpm.browser_download_url);
+              core.setOutput('linux_rpm_name', rpm.name);
             }
 
   # ==============================================================================
@@ -135,7 +160,7 @@ jobs:
           $url = "${{ needs.resolve-release.outputs.win_exe_url }}"
           $fileName = "${{ needs.resolve-release.outputs.win_exe_name }}"
           Write-Host "Downloading: $url -> $fileName"
-          Invoke-WebRequest -Uri $url -OutFile $fileName -UseBasicParsing
+          curl.exe -L -s -S -o $fileName $url
 
       - name: Silent Install and Locate Binary
         shell: pwsh
@@ -143,21 +168,37 @@ jobs:
           $installer = "${{ needs.resolve-release.outputs.win_exe_name }}"
           $installDir = "C:\TestApp"
           Write-Host "Executing silent installation to $installDir..."
-          $proc = Start-Process -FilePath ".\$installer" -ArgumentList "/S", "/D=$installDir" -PassThru -Wait
-          Start-Sleep -Seconds 5
+          Start-Process -FilePath ".\$installer" -ArgumentList "/S", "/D=$installDir" -Wait
+          Start-Sleep -Seconds 6
 
-          $exeCandidate = Get-ChildItem -Path $installDir -Filter "*.exe" -Recurse | Where-Object { $_.Name -notmatch "Uninstall" -and $_.Name -match "firefly" } | Select-Object -First 1
-          if (-not $exeCandidate) {
-            $fallbackDir = Join-Path $env:LOCALAPPDATA "Programs\${{ needs.resolve-release.outputs.app_name }}"
-            if (Test-Path $fallbackDir) {
-              $exeCandidate = Get-ChildItem -Path $fallbackDir -Filter "*.exe" | Where-Object { $_.Name -notmatch "Uninstall" } | Select-Object -First 1
+          # 全面扫描已安装的主程序二进制
+          $searchRoots = @(
+            $installDir,
+            (Join-Path $env:LOCALAPPDATA "Programs"),
+            $env:ProgramFiles,
+            ${env:ProgramFiles(x86)},
+            $env:TEMP
+          )
+
+          $exeCandidate = $null
+          foreach ($root in $searchRoots) {
+            if ($root -and (Test-Path $root)) {
+              $found = Get-ChildItem -Path $root -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -notmatch "Uninstall" -and $_.Name -notmatch "setup" -and $_.Name -match "firefly" } |
+                Select-Object -First 1
+              if ($found) {
+                $exeCandidate = $found
+                break
+              }
             }
           }
+
           if (-not $exeCandidate) {
-            throw "Failed to locate installed application executable!"
+            throw "Failed to locate installed application executable across standard installation directories!"
           }
+
           Write-Host "Located executable: $($exeCandidate.FullName)"
-          "TEST_APP_EXECUTABLE=$($exeCandidate.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "TEST_APP_EXECUTABLE=$($exeCandidate.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Run Playwright Golden Path E2E Test
         shell: pwsh
@@ -173,14 +214,14 @@ jobs:
           retention-days: 14
 
   # ==============================================================================
-  # 2. Linux E2E Release Test (Ubuntu with Xvfb)
+  # 2. Linux DEB E2E Release Test (Ubuntu with Xvfb)
   # ==============================================================================
-  e2e-linux:
-    name: E2E Test Linux (DEB / Xvfb)
+  e2e-linux-deb:
+    name: E2E Test Linux (DEB / Ubuntu)
     needs: resolve-release
     if: |
       needs.resolve-release.outputs.linux_deb_url != '' &&
-      (github.event.inputs.platform_scope == 'linux-only' || github.event.inputs.platform_scope == 'all-platforms')
+      (github.event_name == 'release' || github.event.inputs.platform_scope == 'linux-only' || github.event.inputs.platform_scope == 'all-platforms')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Source Code
@@ -201,40 +242,107 @@ jobs:
 
       - name: Download and Install DEB Package
         run: |
-          wget -q -O /tmp/app.deb "${{ needs.resolve-release.outputs.linux_deb_url }}"
+          curl -L -s -S -o /tmp/app.deb "${{ needs.resolve-release.outputs.linux_deb_url }}"
           sudo dpkg -i /tmp/app.deb || sudo apt-get install -f -y
 
-          # Locate installed executable
+          # 智能定位 Linux 可执行程序
+          APP_BIN=""
           if [ -f "/usr/bin/firefly-ai-folder" ]; then
-            echo "TEST_APP_EXECUTABLE=/usr/bin/firefly-ai-folder" >> $GITHUB_ENV
+            APP_BIN="/usr/bin/firefly-ai-folder"
           elif [ -f "/usr/bin/firefly-ai-folder-cn" ]; then
-            echo "TEST_APP_EXECUTABLE=/usr/bin/firefly-ai-folder-cn" >> $GITHUB_ENV
+            APP_BIN="/usr/bin/firefly-ai-folder-cn"
           elif [ -d "/opt" ]; then
-            APP_BIN=$(find /opt -name "firefly*" -type f -executable | grep -v "chrome-sandbox" | head -n 1)
-            echo "TEST_APP_EXECUTABLE=$APP_BIN" >> $GITHUB_ENV
+            APP_BIN=$(find /opt -name "firefly*" -type f -executable | grep -v "chrome-sandbox" | grep -v "uninstall" | head -n 1)
           fi
+
+          if [ -z "$APP_BIN" ]; then
+            echo "Failed to locate installed Linux DEB application!"
+            exit 1
+          fi
+
+          chmod +x "$APP_BIN" || true
+          echo "Located executable: $APP_BIN"
+          echo "TEST_APP_EXECUTABLE=$APP_BIN" >> $GITHUB_ENV
 
       - name: Run Playwright Golden Path E2E Test (Xvfb)
         run: |
           xvfb-run -a npx playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
 
-      - name: Upload Linux Test Report Artifact
+      - name: Upload Linux DEB Test Report Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-linux
+          name: playwright-report-linux-deb
           path: tests/e2e/release-pkg/reports/html
           retention-days: 14
 
   # ==============================================================================
-  # 3. macOS E2E Release Test
+  # 3. Linux RPM E2E Release Test (Fedora / RHEL Container)
+  # ==============================================================================
+  e2e-linux-rpm:
+    name: E2E Test Linux (RPM / Fedora)
+    needs: resolve-release
+    if: |
+      needs.resolve-release.outputs.linux_rpm_url != '' &&
+      (github.event_name == 'release' || github.event.inputs.platform_scope == 'linux-only' || github.event.inputs.platform_scope == 'all-platforms')
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:40
+    steps:
+      - name: Install Fedora GUI & Build Dependencies
+        run: |
+          dnf install -y git nodejs npm xorg-x11-server-Xvfb gtk3 nss alsa-lib mesa-libgbm libsecret libnotify libXScrnSaver curl procps-ng which
+
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Install E2E Test Dependencies
+        run: npm install --no-save --no-package-lock @playwright/test
+
+      - name: Download and Install RPM Package
+        run: |
+          curl -L -s -S -o /tmp/app.rpm "${{ needs.resolve-release.outputs.linux_rpm_url }}"
+          dnf install -y /tmp/app.rpm || rpm -ivh --nodeps /tmp/app.rpm
+
+          APP_BIN=""
+          if [ -f "/usr/bin/firefly-ai-folder" ]; then
+            APP_BIN="/usr/bin/firefly-ai-folder"
+          elif [ -f "/usr/bin/firefly-ai-folder-cn" ]; then
+            APP_BIN="/usr/bin/firefly-ai-folder-cn"
+          elif [ -d "/opt" ]; then
+            APP_BIN=$(find /opt -name "firefly*" -type f -executable | grep -v "chrome-sandbox" | grep -v "uninstall" | head -n 1)
+          fi
+
+          if [ -z "$APP_BIN" ]; then
+            echo "Failed to locate installed Linux RPM application!"
+            exit 1
+          fi
+
+          chmod +x "$APP_BIN" || true
+          echo "Located executable: $APP_BIN"
+          echo "TEST_APP_EXECUTABLE=$APP_BIN" >> $GITHUB_ENV
+
+      - name: Run Playwright Golden Path E2E Test (Xvfb)
+        run: |
+          xvfb-run -a npx playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+
+      - name: Upload Linux RPM Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-linux-rpm
+          path: tests/e2e/release-pkg/reports/html
+          retention-days: 14
+
+  # ==============================================================================
+  # 4. macOS E2E Release Test
   # ==============================================================================
   e2e-macos:
     name: E2E Test macOS (ARM64)
     needs: resolve-release
     if: |
       needs.resolve-release.outputs.mac_dmg_url != '' &&
-      (github.event.inputs.platform_scope == 'macos-only' || github.event.inputs.platform_scope == 'all-platforms')
+      (github.event_name == 'release' || github.event.inputs.platform_scope == 'macos-only' || github.event.inputs.platform_scope == 'all-platforms')
     runs-on: macos-latest
     steps:
       - name: Checkout Source Code
@@ -250,7 +358,7 @@ jobs:
 
       - name: Download & Mount macOS DMG
         run: |
-          curl -L -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_dmg_url }}"
+          curl -L -s -S -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_dmg_url }}"
           hdiutil attach /tmp/app.dmg -mountpoint /Volumes/FireflyApp -nobrowse
           mkdir -p /tmp/AppExtract
           cp -R /Volumes/FireflyApp/*.app /tmp/AppExtract/
@@ -260,6 +368,7 @@ jobs:
           xattr -dr com.apple.quarantine "$APP_DIR" || true
           APP_EXEC=$(find "$APP_DIR/Contents/MacOS" -type f | head -n 1)
           chmod +x "$APP_EXEC" || true
+          echo "Located executable: $APP_EXEC"
           echo "TEST_APP_EXECUTABLE=$APP_EXEC" >> $GITHUB_ENV
 
       - name: Run Playwright Golden Path E2E Test
@@ -275,11 +384,11 @@ jobs:
           retention-days: 14
 
   # ==============================================================================
-  # 4. Deploy Test Report to GitHub Pages & Summary Dashboard
+  # 5. Deploy Test Report to GitHub Pages & Summary Dashboard
   # ==============================================================================
   publish-report:
     name: Publish Test Report to GitHub Pages
-    needs: [resolve-release, e2e-windows, e2e-linux, e2e-macos]
+    needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -302,14 +411,17 @@ jobs:
           if [ -d "/tmp/all-reports/playwright-report-windows" ]; then
             cp -R /tmp/all-reports/playwright-report-windows "$TARGET_DIR/windows"
           fi
-          if [ -d "/tmp/all-reports/playwright-report-linux" ]; then
-            cp -R /tmp/all-reports/playwright-report-linux "$TARGET_DIR/linux"
+          if [ -d "/tmp/all-reports/playwright-report-linux-deb" ]; then
+            cp -R /tmp/all-reports/playwright-report-linux-deb "$TARGET_DIR/linux-deb"
+          fi
+          if [ -d "/tmp/all-reports/playwright-report-linux-rpm" ]; then
+            cp -R /tmp/all-reports/playwright-report-linux-rpm "$TARGET_DIR/linux-rpm"
           fi
           if [ -d "/tmp/all-reports/playwright-report-macos" ]; then
             cp -R /tmp/all-reports/playwright-report-macos "$TARGET_DIR/macos"
           fi
 
-          # Generate index entry page for this run
+          # 1. Generate run-specific index page
           cat << 'EOF' > "$TARGET_DIR/index.html"
           <!DOCTYPE html>
           <html lang="zh-CN">
@@ -333,7 +445,8 @@ jobs:
               <h3>查看各平台交互式 Playwright HTML 测试报告：</h3>
               <div>
                 <a class="btn" href="./windows/index.html">🪟 Windows (x64) 测试报告</a>
-                <a class="btn" href="./linux/index.html">🐧 Linux (DEB) 测试报告</a>
+                <a class="btn" href="./linux-deb/index.html">🐧 Linux (DEB) 测试报告</a>
+                <a class="btn" href="./linux-rpm/index.html">🎩 Linux (RPM) 测试报告</a>
                 <a class="btn" href="./macos/index.html">🍎 macOS (ARM64) 测试报告</a>
               </div>
             </div>
@@ -342,6 +455,23 @@ jobs:
           EOF
 
           sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" "$TARGET_DIR/index.html"
+
+          # 2. Generate root redirect index page for GitHub Pages root domain
+          cat << 'EOF' > gh-pages-site/index.html
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="refresh" content="0; url=./reports/RUN_ID_PLACEHOLDER/index.html">
+            <title>Redirecting to Latest Report...</title>
+          </head>
+          <body>
+            <p>正在跳转至最新测试报告: <a href="./reports/RUN_ID_PLACEHOLDER/index.html">点击进入</a></p>
+          </body>
+          </html>
+          EOF
+
+          sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" gh-pages-site/index.html
 
       - name: Deploy to gh-pages Branch
         uses: peaceiris/actions-gh-pages@v4
@@ -367,7 +497,8 @@ jobs:
           echo "| 平台 / 环境 | 目标测试架构 | 执行状态 | 报告子链接 |" >> $GITHUB_STEP_SUMMARY
           echo "| :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
           echo "| **Windows** | x64 (NSIS 安装) | ${{ needs.e2e-windows.result }} | [Windows 报告](${REPORT_URL}windows/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Linux** | x64 (DEB / Xvfb) | ${{ needs.e2e-linux.result }} | [Linux 报告](${REPORT_URL}linux/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (DEB)** | x64 (DEB / Xvfb) | ${{ needs.e2e-linux-deb.result }} | [Linux DEB 报告](${REPORT_URL}linux-deb/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (RPM)** | x64 (RPM / Fedora) | ${{ needs.e2e-linux-rpm.result }} | [Linux RPM 报告](${REPORT_URL}linux-rpm/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "| **macOS** | ARM64 (DMG 挂载) | ${{ needs.e2e-macos.result }} | [macOS 报告](${REPORT_URL}macos/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "💡 *注：测试报告包含完整的控制台日志、DOM 状态、各步骤截图与失败录屏。*" >> $GITHUB_STEP_SUMMARY

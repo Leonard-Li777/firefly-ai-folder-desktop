@@ -92,7 +92,7 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     const wizardVisible = await page
       .locator('[role="radiogroup"], button:has-text("继续"), button:has-text("开始使用"), button:has-text("下一步"), button:has-text("Continue"), button:has-text("Get Started"), button:has-text("Next")')
       .first()
-      .isVisible()
+      .isVisible({ timeout: 5000 })
       .catch(() => false)
 
     if (wizardVisible) {
@@ -157,11 +157,16 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     await new Promise((r) => setTimeout(r, 3500))
     page = await app.getPage()
 
-    // 验证工作区列表已成功记录
-    const directories = await page.evaluate(async () => {
-      const api = (window as any).electronAPI
-      return api && typeof api.getAllWorkspaceDirectories === 'function' ? await api.getAllWorkspaceDirectories() : []
-    })
+    // 验证工作区列表已成功记录（支持慢 IO 异步写入短轮询）
+    let directories: any[] = []
+    for (let attempt = 0; attempt < 10; attempt++) {
+      directories = await page.evaluate(async () => {
+        const api = (window as any).electronAPI
+        return api && typeof api.getAllWorkspaceDirectories === 'function' ? await api.getAllWorkspaceDirectories() : []
+      })
+      if (directories.length >= 1) break
+      await new Promise((r) => setTimeout(r, 600))
+    }
 
     console.log(`[Step 03] 当前已挂载工作区数量: ${directories.length}`)
     expect(directories.length).toBeGreaterThanOrEqual(1)
@@ -256,14 +261,20 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     console.log('[Step 06] 移除工作区返回结果:', removeResult)
     await new Promise((r) => setTimeout(r, 1500))
 
-    // 验证工作区列表已更新
-    const afterDirs = await page.evaluate(async () => {
-      const api = (window as any).electronAPI
-      return api && typeof api.getAllWorkspaceDirectories === 'function' ? await api.getAllWorkspaceDirectories() : []
-    })
+    // 验证工作区列表已更新（带短轮询重试）
+    let afterDirs: any[] = []
+    let stillExists = true
+    for (let attempt = 0; attempt < 10; attempt++) {
+      afterDirs = await page.evaluate(async () => {
+        const api = (window as any).electronAPI
+        return api && typeof api.getAllWorkspaceDirectories === 'function' ? await api.getAllWorkspaceDirectories() : []
+      })
+      stillExists = afterDirs.some((d: any) => d.path === workspaceDir || d.path.toLowerCase() === workspaceDir.toLowerCase())
+      if (!stillExists) break
+      await new Promise((r) => setTimeout(r, 600))
+    }
 
     console.log(`[Step 06] 移除后剩余工作区数量: ${afterDirs.length}`)
-    const stillExists = afterDirs.some((d: any) => d.path === workspaceDir || d.path.toLowerCase() === workspaceDir.toLowerCase())
     expect(stillExists).toBe(false)
 
     await page.screenshot({ path: path.join(__dirname, '../reports/html/step-06-reset-clean.png') }).catch(() => {})

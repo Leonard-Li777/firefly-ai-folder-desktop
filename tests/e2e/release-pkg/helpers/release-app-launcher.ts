@@ -143,7 +143,7 @@ export class ReleaseAppLauncher {
             hostname: '127.0.0.1',
             port,
             path: '/json/version',
-            headers: { Host: `localhost:${port}` }
+            headers: { Host: `127.0.0.1:${port}` }
           },
           (res) => {
             let data = ''
