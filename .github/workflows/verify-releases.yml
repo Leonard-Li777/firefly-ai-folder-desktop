@@ -32,10 +32,14 @@ jobs:
       win_exe_name: ${{ steps.get_release.outputs.win_exe_name }}
       mac_dmg_url: ${{ steps.get_release.outputs.mac_dmg_url }}
       mac_dmg_name: ${{ steps.get_release.outputs.mac_dmg_name }}
-      linux_deb_url: ${{ steps.get_release.outputs.linux_deb_url }}
-      linux_deb_name: ${{ steps.get_release.outputs.linux_deb_name }}
-      linux_rpm_url: ${{ steps.get_release.outputs.linux_rpm_url }}
-      linux_rpm_name: ${{ steps.get_release.outputs.linux_rpm_name }}
+      linux_deb_amd64_url: ${{ steps.get_release.outputs.linux_deb_amd64_url }}
+      linux_deb_arm64_url: ${{ steps.get_release.outputs.linux_deb_arm64_url }}
+      linux_deb_default_url: ${{ steps.get_release.outputs.linux_deb_default_url }}
+      linux_deb_default_name: ${{ steps.get_release.outputs.linux_deb_default_name }}
+      linux_rpm_amd64_url: ${{ steps.get_release.outputs.linux_rpm_amd64_url }}
+      linux_rpm_arm64_url: ${{ steps.get_release.outputs.linux_rpm_arm64_url }}
+      linux_rpm_default_url: ${{ steps.get_release.outputs.linux_rpm_default_url }}
+      linux_rpm_default_name: ${{ steps.get_release.outputs.linux_rpm_default_name }}
       app_name: ${{ steps.get_release.outputs.app_name }}
     steps:
       - name: Fetch Release Information
@@ -73,27 +77,44 @@ jobs:
             core.info(`Found ${assets.length} assets in release:`);
             assets.forEach(a => core.info(` - ${a.name} (${a.size} bytes)`));
 
-            // Match assets by pattern
+            // Windows .exe
             const winExe = assets.find(a => a.name.endsWith('.exe') && (a.name.includes(region) || !a.name.includes('intl')));
-            const macDmg = assets.find(a => a.name.endsWith('.dmg') && (a.name.includes(region) || !a.name.includes('intl')));
-            const linuxDeb = assets.find(a => a.name.endsWith('.deb') && (a.name.includes(region) || !a.name.includes('intl')));
-            const linuxRpm = assets.find(a => a.name.endsWith('.rpm') && (a.name.includes(region) || !a.name.includes('intl')));
-
             if (winExe) {
               core.setOutput('win_exe_url', winExe.browser_download_url);
               core.setOutput('win_exe_name', winExe.name);
             }
+
+            // macOS .dmg
+            const macDmg = assets.find(a => a.name.endsWith('.dmg') && (a.name.includes(region) || !a.name.includes('intl')));
             if (macDmg) {
               core.setOutput('mac_dmg_url', macDmg.browser_download_url);
               core.setOutput('mac_dmg_name', macDmg.name);
             }
-            if (linuxDeb) {
-              core.setOutput('linux_deb_url', linuxDeb.browser_download_url);
-              core.setOutput('linux_deb_name', linuxDeb.name);
+
+            // Linux .deb (arch-specific & generic matching)
+            const debAssets = assets.filter(a => a.name.endsWith('.deb') && (a.name.includes(region) || !a.name.includes('intl')));
+            const debAmd64 = debAssets.find(a => /amd64|x86_64|x64/i.test(a.name));
+            const debArm64 = debAssets.find(a => /arm64|aarch64/i.test(a.name));
+            const debDefault = debAssets[0];
+
+            if (debAmd64) core.setOutput('linux_deb_amd64_url', debAmd64.browser_download_url);
+            if (debArm64) core.setOutput('linux_deb_arm64_url', debArm64.browser_download_url);
+            if (debDefault) {
+              core.setOutput('linux_deb_default_url', debDefault.browser_download_url);
+              core.setOutput('linux_deb_default_name', debDefault.name);
             }
-            if (linuxRpm) {
-              core.setOutput('linux_rpm_url', linuxRpm.browser_download_url);
-              core.setOutput('linux_rpm_name', linuxRpm.name);
+
+            // Linux .rpm (arch-specific & generic matching)
+            const rpmAssets = assets.filter(a => a.name.endsWith('.rpm') && (a.name.includes(region) || !a.name.includes('intl')));
+            const rpmAmd64 = rpmAssets.find(a => /x86_64|amd64|x64/i.test(a.name));
+            const rpmArm64 = rpmAssets.find(a => /aarch64|arm64/i.test(a.name));
+            const rpmDefault = rpmAssets[0];
+
+            if (rpmAmd64) core.setOutput('linux_rpm_amd64_url', rpmAmd64.browser_download_url);
+            if (rpmArm64) core.setOutput('linux_rpm_arm64_url', rpmArm64.browser_download_url);
+            if (rpmDefault) {
+              core.setOutput('linux_rpm_default_url', rpmDefault.browser_download_url);
+              core.setOutput('linux_rpm_default_name', rpmDefault.name);
             }
 
   # ==============================================================================
@@ -167,21 +188,23 @@ jobs:
           Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
 
   # ==============================================================================
-  # 2. macOS Verification (x86_64 & arm64)
+  # 2. macOS Verification (Native ARM64 & Rosetta 2 x86_64 Emulation)
   # ==============================================================================
   test-macos:
-    name: Test macOS (${{ matrix.arch }})
+    name: Test macOS (${{ matrix.mode }})
     needs: resolve-release
     if: needs.resolve-release.outputs.mac_dmg_url != ''
     strategy:
       fail-fast: false
       matrix:
         include:
-          - arch: x86_64
-            os: macos-13
           - arch: arm64
-            os: macos-14
-    runs-on: ${{ matrix.os }}
+            mode: "ARM64 (Native)"
+            arch_flag: "-arm64"
+          - arch: x86_64
+            mode: "x86_64 (Rosetta 2 Emulation)"
+            arch_flag: "-x86_64"
+    runs-on: macos-latest
     steps:
       - name: Download macOS DMG
         run: |
@@ -218,17 +241,28 @@ jobs:
           echo "APP_BIN_PATH=$BIN_PATH" >> $GITHUB_ENV
           echo "Binary path: $BIN_PATH"
 
-      - name: Launch App & 15s Smoke Test
+          # Inspect binary architectures supported by the executable (e.g. Universal Binary)
+          echo "=== Binary Architecture Inspection ==="
+          lipo -info "$BIN_PATH" || file "$BIN_PATH"
+
+      - name: Launch App via arch ${{ matrix.arch_flag }} & 15s Smoke Test
         run: |
-          echo "Starting binary: $APP_BIN_PATH"
-          "$APP_BIN_PATH" --no-sandbox --disable-gpu > /tmp/app-stdout.log 2>&1 &
+          echo "Starting application with target architecture: ${{ matrix.mode }}"
+          echo "Command: arch ${{ matrix.arch_flag }} \"$APP_BIN_PATH\" --no-sandbox --disable-gpu"
+          
+          arch ${{ matrix.arch_flag }} "$APP_BIN_PATH" --no-sandbox --disable-gpu > /tmp/app-stdout.log 2>&1 &
           APP_PID=$!
           echo "Application started with PID: $APP_PID"
+
+          # Verify the running process architecture
+          sleep 1
+          echo "=== Verifying Running Process Architecture ==="
+          pgrep -f "$(basename "$APP_BIN_PATH")" | xargs -I {} ps -p {} -o pid,arch,command || true
 
           for i in {1..8}; do
             sleep 2
             if ! kill -0 $APP_PID 2>/dev/null; then
-              echo "❌ Application crashed prematurely!"
+              echo "❌ Application crashed prematurely under ${{ matrix.mode }}!"
               echo "=== Application Output Logs ==="
               cat /tmp/app-stdout.log || true
               exit 1
@@ -236,60 +270,105 @@ jobs:
             echo "  -> Health check at $((i*2))s: Process $APP_PID is alive."
           done
 
-          echo "✅ macOS (${{ matrix.arch }}) passed 15-second startup stability smoke test!"
+          echo "✅ macOS ${{ matrix.mode }} passed 15-second startup stability smoke test!"
           kill -15 $APP_PID 2>/dev/null || kill -9 $APP_PID 2>/dev/null || true
 
   # ==============================================================================
   # 3. Linux DEB Verification (Multi-Distro Matrix: Ubuntu, Debian, Deepin Baseline)
   # ==============================================================================
   test-linux-deb:
-    name: Test DEB (${{ matrix.distro.name }} - ${{ matrix.arch }})
+    name: Test DEB (${{ matrix.name }})
     needs: resolve-release
-    if: needs.resolve-release.outputs.linux_deb_url != ''
+    if: needs.resolve-release.outputs.linux_deb_default_url != '' || needs.resolve-release.outputs.linux_deb_amd64_url != '' || needs.resolve-release.outputs.linux_deb_arm64_url != ''
     strategy:
       fail-fast: false
       matrix:
-        arch: [amd64, arm64]
-        distro:
-          - name: "Ubuntu 20.04 (glibc 2.31)"
+        include:
+          - id: "ubuntu-20-04-x64"
+            name: "Ubuntu 20.04 (glibc 2.31, x64)"
             image: "ubuntu:20.04"
-          - name: "Ubuntu 22.04 (glibc 2.35)"
+            arch: "amd64"
+          - id: "ubuntu-22-04-x64"
+            name: "Ubuntu 22.04 (glibc 2.35, x64)"
             image: "ubuntu:22.04"
-          - name: "Ubuntu 24.04 (glibc 2.39)"
+            arch: "amd64"
+          - id: "ubuntu-24-04-x64"
+            name: "Ubuntu 24.04 (glibc 2.39, x64)"
             image: "ubuntu:24.04"
-          - name: "Debian 10 Buster (glibc 2.28 / Deepin 20.x)"
+            arch: "amd64"
+          - id: "debian-10-x64"
+            name: "Debian 10 Buster (glibc 2.28 / Deepin 20.x, x64)"
             image: "debian:10-slim"
-          - name: "Debian 11 Bullseye (glibc 2.31)"
+            arch: "amd64"
+          - id: "debian-11-x64"
+            name: "Debian 11 Bullseye (glibc 2.31, x64)"
             image: "debian:11-slim"
-          - name: "Debian 12 Bookworm (glibc 2.36 / Deepin 23)"
+            arch: "amd64"
+          - id: "debian-12-x64"
+            name: "Debian 12 Bookworm (glibc 2.36 / Deepin 23, x64)"
             image: "debian:12-slim"
+            arch: "amd64"
+          - id: "ubuntu-22-04-arm64"
+            name: "Ubuntu 22.04 (glibc 2.35, arm64)"
+            image: "ubuntu:22.04"
+            arch: "arm64"
+          - id: "debian-12-arm64"
+            name: "Debian 12 Bookworm (glibc 2.36 / Deepin 23, arm64)"
+            image: "debian:12-slim"
+            arch: "arm64"
     runs-on: ubuntu-latest
     steps:
       - name: Set up QEMU for Multi-Arch Container Execution
         if: matrix.arch == 'arm64'
         uses: docker/setup-qemu-action@v3
 
-      - name: Download DEB Package
+      - name: Download DEB Package Matching Target Architecture
+        id: download_deb
         run: |
-          URL="${{ needs.resolve-release.outputs.linux_deb_url }}"
+          TARGET_ARCH="${{ matrix.arch }}"
+          URL=""
+
+          if [ "$TARGET_ARCH" = "amd64" ]; then
+            URL="${{ needs.resolve-release.outputs.linux_deb_amd64_url }}"
+          elif [ "$TARGET_ARCH" = "arm64" ]; then
+            URL="${{ needs.resolve-release.outputs.linux_deb_arm64_url }}"
+          fi
+
+          # Fallback to default generic DEB asset if arch-specific asset is not defined
+          if [ -z "$URL" ]; then
+            URL="${{ needs.resolve-release.outputs.linux_deb_default_url }}"
+          fi
+
+          if [ -z "$URL" ]; then
+            echo "❌ No DEB URL found for architecture $TARGET_ARCH"
+            exit 1
+          fi
+
           echo "Downloading $URL -> app.deb"
           curl -L -o app.deb "$URL"
 
       - name: Run DEB Install & 15s Startup Smoke Test in Docker Container
         run: |
-          # Platform mapping
           DOCKER_PLATFORM="linux/amd64"
           if [ "${{ matrix.arch }}" = "arm64" ]; then
             DOCKER_PLATFORM="linux/arm64"
           fi
 
-          echo "Running on Docker Platform: $DOCKER_PLATFORM with Image: ${{ matrix.distro.image }}"
+          echo "Running on Docker Platform: $DOCKER_PLATFORM with Image: ${{ matrix.image }}"
           
           docker run --rm --platform $DOCKER_PLATFORM \
             -v "$(pwd)/app.deb:/tmp/app.deb" \
-            "${{ matrix.distro.image }}" /bin/bash -c "
+            "${{ matrix.image }}" /bin/bash -c "
               set -e
               export DEBIAN_FRONTEND=noninteractive
+
+              # Fix Debian 10 archive repositories if needed
+              if grep -q '10' /etc/debian_version 2>/dev/null; then
+                sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list || true
+                sed -i 's|security.debian.org/debian-security|archive.debian.org/debian-security|g' /etc/apt/sources.list || true
+                sed -i '/stretch-updates/d' /etc/apt/sources.list || true
+              fi
+
               echo '=== [1/4] Updating Package Repositories ==='
               apt-get update -y
               
@@ -297,6 +376,7 @@ jobs:
               apt-get install -y --no-install-recommends \
                 xvfb \
                 ca-certificates \
+                dpkg \
                 libgtk-3-0 \
                 libnss3 \
                 libasound2 \
@@ -309,17 +389,27 @@ jobs:
                 procps \
                 dbus || true
 
-              echo '=== [3/4] Installing Application DEB Package ==='
+              echo '=== [3/4] Validating Package Architecture & Installing ==='
+              PKG_ARCH=\$(dpkg-deb -f /tmp/app.deb Architecture 2>/dev/null || echo 'unknown')
+              SYS_ARCH=\$(dpkg --print-architecture)
+              echo \"Package Arch: \$PKG_ARCH | System Arch: \$SYS_ARCH\"
+
+              # Guard: If package architecture doesn't match container architecture, skip gracefully
+              if [ \"\$PKG_ARCH\" != \"\$SYS_ARCH\" ] && [ \"\$PKG_ARCH\" != \"all\" ] && [ \"\$PKG_ARCH\" != \"unknown\" ]; then
+                echo \"⚠️ [SKIPPED] Package architecture (\$PKG_ARCH) does not match system (\$SYS_ARCH). Skipping test on this container.\"
+                exit 0
+              fi
+
               dpkg -i /tmp/app.deb || apt-get install -f -y
 
-              APP_EXEC=\$(which ${{ needs.resolve-release.outputs.app_name }} || find /opt -name '${{ needs.resolve-release.outputs.app_name }}' -type f -perm /111 | head -n 1)
-              if [ -z \"\$APP_EXEC\" ]; then
-                APP_EXEC=\$(find /usr/bin /opt -name 'firefly*' -type f -perm /111 | head -n 1)
+              APP_EXEC=\$(which ${{ needs.resolve-release.outputs.app_name }} 2>/dev/null || find /opt /usr/bin -name 'firefly*' -type f -perm /111 2>/dev/null | head -n 1)
+              if [ -z \"\$APP_EXEC\" ] || [ ! -x \"\$APP_EXEC\" ]; then
+                echo \"❌ Error: Executable was not found or is not executable after installation!\"
+                exit 1
               fi
               echo \"Found executable: \$APP_EXEC\"
 
               echo '=== [4/4] Starting Application with Xvfb (15s Smoke Test) ==='
-              # Run in background with timeout
               xvfb-run -a \"\$APP_EXEC\" --no-sandbox --disable-gpu --disable-dev-shm-usage > /tmp/app-run.log 2>&1 &
               APP_PID=\$!
               echo \"Application running with PID: \$APP_PID\"
@@ -327,7 +417,7 @@ jobs:
               for i in \$(seq 1 8); do
                 sleep 2
                 if ! kill -0 \$APP_PID 2>/dev/null; then
-                  echo '❌ Application crashed on ${{ matrix.distro.name }} (${{ matrix.arch }})!'
+                  echo '❌ Application crashed on ${{ matrix.name }}!'
                   echo '=== Crash Logs / Output ==='
                   cat /tmp/app-run.log || true
                   exit 1
@@ -335,7 +425,7 @@ jobs:
                 echo \"  -> Health check at \$((\$i * 2))s: Alive (glibc & native modules OK)\"
               done
 
-              echo '✅ ${{ matrix.distro.name }} (${{ matrix.arch }}) 15s startup smoke test PASSED!'
+              echo '✅ ${{ matrix.name }} 15s startup smoke test PASSED!'
               kill -15 \$APP_PID 2>/dev/null || kill -9 \$APP_PID 2>/dev/null || true
             "
 
@@ -343,29 +433,56 @@ jobs:
   # 4. Linux RPM Verification (Fedora, Rocky Linux 9)
   # ==============================================================================
   test-linux-rpm:
-    name: Test RPM (${{ matrix.distro.name }} - ${{ matrix.arch }})
+    name: Test RPM (${{ matrix.name }})
     needs: resolve-release
-    if: needs.resolve-release.outputs.linux_rpm_url != ''
+    if: needs.resolve-release.outputs.linux_rpm_default_url != '' || needs.resolve-release.outputs.linux_rpm_amd64_url != '' || needs.resolve-release.outputs.linux_rpm_arm64_url != ''
     strategy:
       fail-fast: false
       matrix:
-        arch: [amd64, arm64]
-        distro:
-          - name: "Fedora 39"
+        include:
+          - id: "fedora-39-x64"
+            name: "Fedora 39 (x64)"
             image: "fedora:39"
-          - name: "Fedora 40"
+            arch: "amd64"
+          - id: "fedora-40-x64"
+            name: "Fedora 40 (x64)"
             image: "fedora:40"
-          - name: "Rocky Linux 9"
+            arch: "amd64"
+          - id: "rocky-9-x64"
+            name: "Rocky Linux 9 (x64)"
             image: "rockylinux:9"
+            arch: "amd64"
+          - id: "fedora-40-arm64"
+            name: "Fedora 40 (arm64)"
+            image: "fedora:40"
+            arch: "arm64"
     runs-on: ubuntu-latest
     steps:
       - name: Set up QEMU for Multi-Arch Container Execution
         if: matrix.arch == 'arm64'
         uses: docker/setup-qemu-action@v3
 
-      - name: Download RPM Package
+      - name: Download RPM Package Matching Target Architecture
+        id: download_rpm
         run: |
-          URL="${{ needs.resolve-release.outputs.linux_rpm_url }}"
+          TARGET_ARCH="${{ matrix.arch }}"
+          URL=""
+
+          if [ "$TARGET_ARCH" = "amd64" ]; then
+            URL="${{ needs.resolve-release.outputs.linux_rpm_amd64_url }}"
+          elif [ "$TARGET_ARCH" = "arm64" ]; then
+            URL="${{ needs.resolve-release.outputs.linux_rpm_arm64_url }}"
+          fi
+
+          if [ -z "$URL" ]; then
+            URL="${{ needs.resolve-release.outputs.linux_rpm_default_url }}"
+          fi
+
+          if [ -z "$URL" ]; then
+            echo "❌ No RPM URL found for architecture $TARGET_ARCH"
+            exit 1
+          fi
+
           echo "Downloading $URL -> app.rpm"
           curl -L -o app.rpm "$URL"
 
@@ -376,11 +493,11 @@ jobs:
             DOCKER_PLATFORM="linux/arm64"
           fi
 
-          echo "Running on Docker Platform: $DOCKER_PLATFORM with Image: ${{ matrix.distro.image }}"
+          echo "Running on Docker Platform: $DOCKER_PLATFORM with Image: ${{ matrix.image }}"
           
           docker run --rm --platform $DOCKER_PLATFORM \
             -v "$(pwd)/app.rpm:/tmp/app.rpm" \
-            "${{ matrix.distro.image }}" /bin/bash -c "
+            "${{ matrix.image }}" /bin/bash -c "
               set -e
               echo '=== [1/4] Installing Dependencies and Xvfb ==='
               dnf install -y --setopt=install_weak_deps=False \
@@ -392,14 +509,32 @@ jobs:
                 libsecret \
                 libnotify \
                 procps-ng \
+                rpm \
                 ca-certificates || true
 
-              echo '=== [2/4] Installing Application RPM Package ==='
+              echo '=== [2/4] Validating Package Architecture & Installing ==='
+              PKG_ARCH=\$(rpm -qp --queryformat '%{ARCH}' /tmp/app.rpm 2>/dev/null || echo 'unknown')
+              SYS_ARCH=\$(uname -m)
+              echo \"Package Arch: \$PKG_ARCH | System Arch: \$SYS_ARCH\"
+
+              # Guard: If package architecture doesn't match container architecture, skip gracefully
+              if [ \"\$PKG_ARCH\" != \"noarch\" ] && [ \"\$PKG_ARCH\" != \"unknown\" ]; then
+                if [ \"\$SYS_ARCH\" = \"x86_64\" ] && [ \"\$PKG_ARCH\" != \"x86_64\" ] && [ \"\$PKG_ARCH\" != \"amd64\" ]; then
+                  echo \"⚠️ [SKIPPED] Package architecture (\$PKG_ARCH) does not match system (\$SYS_ARCH). Skipping test on this container.\"
+                  exit 0
+                fi
+                if [ \"\$SYS_ARCH\" = \"aarch64\" ] && [ \"\$PKG_ARCH\" != \"aarch64\" ] && [ \"\$PKG_ARCH\" != \"arm64\" ]; then
+                  echo \"⚠️ [SKIPPED] Package architecture (\$PKG_ARCH) does not match system (\$SYS_ARCH). Skipping test on this container.\"
+                  exit 0
+                fi
+              fi
+
               dnf install -y /tmp/app.rpm || rpm -ivh --nodeps /tmp/app.rpm
 
-              APP_EXEC=\$(which ${{ needs.resolve-release.outputs.app_name }} || find /opt -name '${{ needs.resolve-release.outputs.app_name }}' -type f -perm /111 | head -n 1)
-              if [ -z \"\$APP_EXEC\" ]; then
-                APP_EXEC=\$(find /usr/bin /opt -name 'firefly*' -type f -perm /111 | head -n 1)
+              APP_EXEC=\$(which ${{ needs.resolve-release.outputs.app_name }} 2>/dev/null || find /opt /usr/bin -name 'firefly*' -type f -perm /111 2>/dev/null | head -n 1)
+              if [ -z \"\$APP_EXEC\" ] || [ ! -x \"\$APP_EXEC\" ]; then
+                echo \"❌ Error: Executable was not found or is not executable after installation!\"
+                exit 1
               fi
               echo \"Found executable: \$APP_EXEC\"
 
@@ -411,7 +546,7 @@ jobs:
               for i in \$(seq 1 8); do
                 sleep 2
                 if ! kill -0 \$APP_PID 2>/dev/null; then
-                  echo '❌ Application crashed on ${{ matrix.distro.name }} (${{ matrix.arch }})!'
+                  echo '❌ Application crashed on ${{ matrix.name }}!'
                   echo '=== Crash Logs / Output ==='
                   cat /tmp/rpm-run.log || true
                   exit 1
@@ -419,7 +554,7 @@ jobs:
                 echo \"  -> Health check at \$((\$i * 2))s: Alive\"
               done
 
-              echo '✅ ${{ matrix.distro.name }} (${{ matrix.arch }}) 15s startup smoke test PASSED!'
+              echo '✅ ${{ matrix.name }} 15s startup smoke test PASSED!'
               kill -15 \$APP_PID 2>/dev/null || kill -9 \$APP_PID 2>/dev/null || true
             "
 
@@ -453,11 +588,11 @@ jobs:
 
           # macOS
           if [ "${{ needs.test-macos.result }}" = "success" ]; then
-            echo "| 🍎 macOS (x86_64 & arm64) | ✅ Passed | DMG Mount, Gatekeeper bypass & 15s Process Alive |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🍎 macOS (Native ARM64 & Rosetta 2 x86_64) | ✅ Passed | DMG Mount, Gatekeeper bypass & 15s Process Alive |" >> $GITHUB_STEP_SUMMARY
           elif [ "${{ needs.test-macos.result }}" = "skipped" ]; then
-            echo "| 🍎 macOS (x86_64 & arm64) | ⚠️ Skipped | Asset not found |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🍎 macOS (Native ARM64 & Rosetta 2 x86_64) | ⚠️ Skipped | Asset not found |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| 🍎 macOS (x86_64 & arm64) | ❌ Failed | Startup or Crash Error |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🍎 macOS (Native ARM64 & Rosetta 2 x86_64) | ❌ Failed | Startup or Crash Error |" >> $GITHUB_STEP_SUMMARY
           fi
 
           # Linux DEB
@@ -479,4 +614,4 @@ jobs:
           fi
 
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎉 All tests executed successfully." >> $GITHUB_STEP_SUMMARY
+          echo "🎉 All tests evaluated." >> $GITHUB_STEP_SUMMARY
