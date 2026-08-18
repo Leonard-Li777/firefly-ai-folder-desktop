@@ -1,0 +1,14 @@
+{
+  "appName": "Firefly AI Folder E2E Test Suite",
+  "version": "1.0.0",
+  "environment": "e2e-release-verification",
+  "features": {
+    "localAIService": true,
+    "virtualDirectory": true,
+    "fastIndexing": true
+  },
+  "metrics": {
+    "targetFiles": 5,
+    "expectedStatus": "ready"
+  }
+}

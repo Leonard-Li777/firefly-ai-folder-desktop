@@ -1,0 +1,10 @@
+Firefly AI Folder - Meeting Notes
+Date: 2026-08-18
+Topic: Release E2E Automation Pipeline
+
+1. Install production package.
+2. Launch application with isolated user data directory.
+3. Validate welcome wizard & initial setup.
+4. Mount test workspace and verify file indexing.
+5. Filter files by virtual directory dimensions.
+6. Verify clean reset and teardown.

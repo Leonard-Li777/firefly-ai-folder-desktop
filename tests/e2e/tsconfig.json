@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "composite": false,
+    "paths": {
+      "@firefly/types": ["../../packages/types/src"],
+      "@firefly/types/*": ["../../packages/types/src/*"],
+      "@firefly/shared": ["../../packages/shared/src"],
+      "@firefly/shared/*": ["../../packages/shared/src/*"]
+    }
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
+}

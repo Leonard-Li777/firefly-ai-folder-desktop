@@ -2,7 +2,8 @@ src/languages/api.json
 src/languages/translates/*/*.bak.*.json
 **/*.wrapped.*
 sync-from-remote.ps1
-sync.bat
+sync-tests.ps1
 build/deps-to-package.json
 build/.download.lock
 build/presetResources/fastfetch
+.VirtualDirectory
