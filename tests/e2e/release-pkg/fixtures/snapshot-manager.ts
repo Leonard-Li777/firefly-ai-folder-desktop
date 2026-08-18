@@ -53,8 +53,12 @@ export class SnapshotManager {
    * 初始化/准备一套全新的测试快照工作区与 UserData 目录
    */
   public static setupEnvironment(): TestSnapshotContext {
-    console.log(`[SnapshotManager] SPEEDY 源路径: ${this.repoSpeedyDir} (存在: ${fs.existsSync(this.repoSpeedyDir)})`)
-    console.log(`[SnapshotManager] PRIVATE 源路径: ${this.repoPrivateDir} (存在: ${fs.existsSync(this.repoPrivateDir)})`)
+    console.log(
+      `[SnapshotManager] SPEEDY 源路径: ${this.repoSpeedyDir} (存在: ${fs.existsSync(this.repoSpeedyDir)})`
+    )
+    console.log(
+      `[SnapshotManager] PRIVATE 源路径: ${this.repoPrivateDir} (存在: ${fs.existsSync(this.repoPrivateDir)})`
+    )
 
     // 1. 创建干净的临时根目录
     fs.mkdirSync(this.rootTempDir, { recursive: true })
@@ -89,12 +93,22 @@ export class SnapshotManager {
   public static resetWorkspace(): string {
     if (fs.existsSync(this.speedyWorkspaceDir)) {
       try {
-        fs.rmSync(this.speedyWorkspaceDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 400 })
+        fs.rmSync(this.speedyWorkspaceDir, {
+          recursive: true,
+          force: true,
+          maxRetries: 5,
+          retryDelay: 400
+        })
       } catch {}
     }
     if (fs.existsSync(this.privateWorkspaceDir)) {
       try {
-        fs.rmSync(this.privateWorkspaceDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 400 })
+        fs.rmSync(this.privateWorkspaceDir, {
+          recursive: true,
+          force: true,
+          maxRetries: 5,
+          retryDelay: 400
+        })
       } catch {}
     }
 
@@ -122,7 +136,12 @@ export class SnapshotManager {
   public static teardownEnvironment(): void {
     try {
       if (fs.existsSync(this.rootTempDir)) {
-        fs.rmSync(this.rootTempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 400 })
+        fs.rmSync(this.rootTempDir, {
+          recursive: true,
+          force: true,
+          maxRetries: 5,
+          retryDelay: 400
+        })
       }
     } catch {}
   }
