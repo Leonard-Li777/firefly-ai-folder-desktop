@@ -134,7 +134,7 @@ export class ReleaseAppLauncher {
   /**
    * 从 CDP HTTP 接口检索精准的 WebSocket 调试 URL
    */
-  private static async getWebSocketDebuggerUrl(port: number, timeoutMs = 30000): Promise<string> {
+  private static async getWebSocketDebuggerUrl(port: number, timeoutMs = 60000): Promise<string> {
     const startTime = Date.now()
     while (Date.now() - startTime < timeoutMs) {
       const wsUrl = await new Promise<string | null>((resolve) => {
@@ -236,7 +236,7 @@ export class ReleaseAppLauncher {
 
     // 等待并获取 WebSocket URL
     console.log(`[ReleaseAppLauncher] 等待 CDP 服务在端口 ${debugPort} 就绪...`)
-    const wsEndpoint = await this.getWebSocketDebuggerUrl(debugPort, options.timeout || 30000)
+    const wsEndpoint = await this.getWebSocketDebuggerUrl(debugPort, options.timeout || 60000)
     console.log(`[ReleaseAppLauncher] CDP WebSocket 就绪: ${wsEndpoint}`)
 
     let browser: Browser | null = null

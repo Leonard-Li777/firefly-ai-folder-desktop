@@ -214,7 +214,7 @@ jobs:
           retention-days: 14
 
   # ==============================================================================
-  # 2. Linux DEB E2E Release Test (Ubuntu with Xvfb & QEMU)
+  # 2. Linux DEB E2E Release Test (Ubuntu Container with QEMU)
   # ==============================================================================
   e2e-linux-deb:
     name: E2E Test Linux (DEB / Ubuntu)
@@ -235,42 +235,42 @@ jobs:
         with:
           node-version: 24.15.0
 
-      - name: Install Linux GUI Runtime Dependencies
-        run: |
-          sudo dpkg --add-architecture arm64 || true
-          sudo apt-get update
-          sudo apt-get install -y xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1 qemu-user-static binfmt-support
-
       - name: Install E2E Test Dependencies
         run: npm --prefix tests/e2e/release-pkg install
 
-      - name: Download and Install DEB Package
+      - name: Run DEB Test inside Multi-Arch Ubuntu Container
         run: |
           curl -L -s -S -o /tmp/app.deb "${{ needs.resolve-release.outputs.linux_deb_url }}"
-          sudo dpkg -i --force-architecture /tmp/app.deb || sudo apt-get install -f -y
-
-          # 智能定位 Linux 可执行程序
-          APP_BIN=""
-          if [ -f "/usr/bin/firefly-ai-folder" ]; then
-            APP_BIN="/usr/bin/firefly-ai-folder"
-          elif [ -f "/usr/bin/firefly-ai-folder-cn" ]; then
-            APP_BIN="/usr/bin/firefly-ai-folder-cn"
-          elif [ -d "/opt" ]; then
-            APP_BIN=$(find /opt -name "firefly*" -type f -executable | grep -v "chrome-sandbox" | grep -v "uninstall" | head -n 1)
-          fi
-
-          if [ -z "$APP_BIN" ]; then
-            echo "Failed to locate installed Linux DEB application!"
-            exit 1
-          fi
-
-          chmod +x "$APP_BIN" || true
-          echo "Located executable: $APP_BIN"
-          echo "TEST_APP_EXECUTABLE=$APP_BIN" >> $GITHUB_ENV
-
-      - name: Run Playwright Golden Path E2E Test (Xvfb)
-        run: |
-          xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          
+          docker run --rm --ipc=host --shm-size=2g \
+            -v "$(pwd):/work" \
+            -v "/tmp/app.deb:/tmp/app.deb" \
+            -w /work \
+            ubuntu:22.04 bash -c '
+              export DEBIAN_FRONTEND=noninteractive
+              apt-get update && apt-get install -y curl nodejs npm xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1
+              dpkg -i --force-architecture /tmp/app.deb || apt-get install -f -y
+              
+              APP_BIN=""
+              if [ -f "/usr/bin/firefly-ai-folder" ]; then
+                APP_BIN="/usr/bin/firefly-ai-folder"
+              elif [ -f "/usr/bin/firefly-ai-folder-cn" ]; then
+                APP_BIN="/usr/bin/firefly-ai-folder-cn"
+              elif [ -d "/opt" ]; then
+                APP_BIN=$(find /opt -name "firefly*" -type f -executable | grep -v "chrome-sandbox" | grep -v "uninstall" | head -n 1)
+              fi
+              
+              if [ -z "$APP_BIN" ]; then
+                echo "Failed to locate installed Linux DEB application!"
+                exit 1
+              fi
+              
+              chmod +x "$APP_BIN" || true
+              echo "Located DEB binary: $APP_BIN"
+              export TEST_APP_EXECUTABLE="$APP_BIN"
+              
+              xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+            '
 
       - name: Upload Linux DEB Test Report Artifact
         if: always()
@@ -310,7 +310,7 @@ jobs:
           curl -L -s -S -o /tmp/app.rpm "${{ needs.resolve-release.outputs.linux_rpm_url }}"
           
           # Run container with Xvfb & Playwright
-          docker run --rm \
+          docker run --rm --ipc=host --shm-size=2g \
             -v "$(pwd):/work" \
             -v "/tmp/app.rpm:/tmp/app.rpm" \
             -w /work \
