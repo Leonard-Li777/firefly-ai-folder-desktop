@@ -151,8 +151,8 @@ jobs:
         with:
           node-version: 24.15.0
 
-      - name: Install E2E Test Dependencies
-        run: npm install --no-save --no-package-lock @playwright/test
+      - name: Install E2E Test Dependencies Globally
+        run: npm install -g @playwright/test
 
       - name: Download Windows Installer
         shell: pwsh
@@ -235,10 +235,10 @@ jobs:
       - name: Install Linux GUI Runtime Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libgtk-3-0 libnss3 libasound2 libgbm1 libsecret-1-0 libnotify4 libxss1 libgconf-2-4
+          sudo apt-get install -y xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1
 
-      - name: Install E2E Test Dependencies
-        run: npm install --no-save --no-package-lock @playwright/test
+      - name: Install E2E Test Dependencies Globally
+        run: npm install -g @playwright/test
 
       - name: Download and Install DEB Package
         run: |
@@ -296,8 +296,8 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
-      - name: Install E2E Test Dependencies
-        run: npm install --no-save --no-package-lock @playwright/test
+      - name: Install E2E Test Dependencies Globally
+        run: npm install -g @playwright/test
 
       - name: Download and Install RPM Package
         run: |
@@ -353,8 +353,8 @@ jobs:
         with:
           node-version: 24.15.0
 
-      - name: Install E2E Test Dependencies
-        run: npm install --no-save --no-package-lock @playwright/test
+      - name: Install E2E Test Dependencies Globally
+        run: npm install -g @playwright/test
 
       - name: Download & Mount macOS DMG
         run: |
