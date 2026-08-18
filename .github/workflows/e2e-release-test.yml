@@ -214,7 +214,7 @@ jobs:
           retention-days: 14
 
   # ==============================================================================
-  # 2. Linux DEB E2E Release Test (Ubuntu Container with QEMU)
+  # 2. Linux DEB E2E Release Test (Multi-Arch Container with QEMU)
   # ==============================================================================
   e2e-linux-deb:
     name: E2E Test Linux (DEB / Ubuntu)
@@ -242,14 +242,22 @@ jobs:
         run: |
           curl -L -s -S -o /tmp/app.deb "${{ needs.resolve-release.outputs.linux_deb_url }}"
           
-          docker run --rm --ipc=host --shm-size=2g \
+          # 自动检测 DEB 安装包目标架构 (amd64 / arm64)
+          PKG_ARCH=$(dpkg-deb -f /tmp/app.deb Architecture 2>/dev/null || echo "amd64")
+          DOCKER_PLATFORM="linux/amd64"
+          if [ "$PKG_ARCH" = "arm64" ] || [ "$PKG_ARCH" = "aarch64" ]; then
+            DOCKER_PLATFORM="linux/arm64"
+          fi
+          echo "Detected DEB Architecture: $PKG_ARCH -> Using Docker Platform: $DOCKER_PLATFORM"
+
+          docker run --rm --platform "$DOCKER_PLATFORM" --ipc=host --shm-size=2g \
             -v "$(pwd):/work" \
             -v "/tmp/app.deb:/tmp/app.deb" \
             -w /work \
             ubuntu:22.04 bash -c '
               export DEBIAN_FRONTEND=noninteractive
               apt-get update && apt-get install -y curl nodejs npm xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1
-              dpkg -i --force-architecture /tmp/app.deb || apt-get install -f -y
+              dpkg -i /tmp/app.deb || apt-get install -f -y
               
               APP_BIN=""
               if [ -f "/usr/bin/firefly-ai-folder" ]; then
@@ -281,7 +289,7 @@ jobs:
           retention-days: 14
 
   # ==============================================================================
-  # 3. Linux RPM E2E Release Test (Fedora Container with QEMU)
+  # 3. Linux RPM E2E Release Test (Multi-Arch Container with QEMU)
   # ==============================================================================
   e2e-linux-rpm:
     name: E2E Test Linux (RPM / Fedora)
@@ -309,14 +317,21 @@ jobs:
         run: |
           curl -L -s -S -o /tmp/app.rpm "${{ needs.resolve-release.outputs.linux_rpm_url }}"
           
-          # Run container with Xvfb & Playwright
-          docker run --rm --ipc=host --shm-size=2g \
+          # 自动检测 RPM 安装包目标架构 (x86_64 / aarch64)
+          PKG_NAME="${{ needs.resolve-release.outputs.linux_rpm_name }}"
+          DOCKER_PLATFORM="linux/amd64"
+          if echo "$PKG_NAME" | grep -qi "aarch64\|arm64"; then
+            DOCKER_PLATFORM="linux/arm64"
+          fi
+          echo "Detected RPM Architecture: $PKG_NAME -> Using Docker Platform: $DOCKER_PLATFORM"
+
+          docker run --rm --platform "$DOCKER_PLATFORM" --ipc=host --shm-size=2g \
             -v "$(pwd):/work" \
             -v "/tmp/app.rpm:/tmp/app.rpm" \
             -w /work \
             fedora:40 bash -c '
               dnf install -y git nodejs npm xorg-x11-server-Xvfb gtk3 nss alsa-lib mesa-libgbm libsecret libnotify libXScrnSaver procps-ng which
-              rpm -ivh --ignorearch --nodeps /tmp/app.rpm || dnf install -y --nogpgcheck /tmp/app.rpm
+              dnf install -y --nogpgcheck /tmp/app.rpm || rpm -ivh --nodeps /tmp/app.rpm
               
               APP_BIN=""
               if [ -f "/usr/bin/firefly-ai-folder" ]; then
@@ -510,8 +525,8 @@ jobs:
           echo "| 平台 / 环境 | 目标测试架构 | 执行状态 | 报告子链接 |" >> $GITHUB_STEP_SUMMARY
           echo "| :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
           echo "| **Windows** | x64 (NSIS 安装) | ${{ needs.e2e-windows.result }} | [Windows 报告](${REPORT_URL}windows/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Linux (DEB)** | x64 (DEB / Xvfb) | ${{ needs.e2e-linux-deb.result }} | [Linux DEB 报告](${REPORT_URL}linux-deb/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Linux (RPM)** | x64 (RPM / Fedora) | ${{ needs.e2e-linux-rpm.result }} | [Linux RPM 报告](${REPORT_URL}linux-rpm/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (DEB)** | x64/arm64 (DEB / Xvfb) | ${{ needs.e2e-linux-deb.result }} | [Linux DEB 报告](${REPORT_URL}linux-deb/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (RPM)** | x64/arm64 (RPM / Fedora) | ${{ needs.e2e-linux-rpm.result }} | [Linux RPM 报告](${REPORT_URL}linux-rpm/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "| **macOS** | ARM64 (DMG 挂载) | ${{ needs.e2e-macos.result }} | [macOS 报告](${REPORT_URL}macos/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "💡 *注：测试报告包含完整的控制台日志、DOM 状态、各步骤截图与失败录屏。*" >> $GITHUB_STEP_SUMMARY
