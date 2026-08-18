@@ -256,7 +256,9 @@ jobs:
             -w /work \
             ubuntu:22.04 bash -c '
               export DEBIAN_FRONTEND=noninteractive
-              apt-get update && apt-get install -y curl nodejs npm xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1
+              apt-get update && apt-get install -y curl ca-certificates gnupg
+              curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+              apt-get install -y nodejs xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1
               dpkg -i /tmp/app.deb || apt-get install -f -y
               
               APP_BIN=""
@@ -317,13 +319,14 @@ jobs:
         run: |
           curl -L -s -S -o /tmp/app.rpm "${{ needs.resolve-release.outputs.linux_rpm_url }}"
           
-          # 自动检测 RPM 安装包目标架构 (x86_64 / aarch64)
-          PKG_NAME="${{ needs.resolve-release.outputs.linux_rpm_name }}"
+          # 自动检测 RPM 二进制内部真实架构 (x86_64 / aarch64)
+          sudo apt-get update && sudo apt-get install -y rpm file
+          RPM_ARCH=$(rpm -qp --queryformat '%{ARCH}' /tmp/app.rpm 2>/dev/null || echo "x86_64")
           DOCKER_PLATFORM="linux/amd64"
-          if echo "$PKG_NAME" | grep -qi "aarch64\|arm64"; then
+          if [ "$RPM_ARCH" = "aarch64" ] || [ "$RPM_ARCH" = "arm64" ]; then
             DOCKER_PLATFORM="linux/arm64"
           fi
-          echo "Detected RPM Architecture: $PKG_NAME -> Using Docker Platform: $DOCKER_PLATFORM"
+          echo "Detected RPM Architecture: $RPM_ARCH -> Using Docker Platform: $DOCKER_PLATFORM"
 
           docker run --rm --platform "$DOCKER_PLATFORM" --ipc=host --shm-size=2g \
             -v "$(pwd):/work" \
