@@ -110,38 +110,22 @@ jobs:
               core.setOutput('mac_dmg_name', macDmg.name);
             }
 
-            // Linux .deb (x64 / amd64 runner)
+            // Linux .deb
             const deb = assets.find(a => {
               const n = a.name.toLowerCase();
-              const isDeb = n.endsWith('.deb') || n.endsWith('.appimage');
-              const isX64 = (n.includes('amd64') || n.includes('x86_64') || n.includes('x64')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
-              return isDeb && isX64 && (n.includes(region) || !n.includes('intl'));
-            }) || assets.find(a => {
-              const n = a.name.toLowerCase();
-              return (n.endsWith('.deb') || n.endsWith('.appimage')) && (n.includes('amd64') || n.includes('x86_64') || n.includes('x64')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
-            }) || assets.find(a => {
-              const n = a.name.toLowerCase();
-              return (n.endsWith('.deb') || n.endsWith('.appimage')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
-            });
+              return (n.endsWith('.deb') || n.endsWith('.appimage')) && (n.includes(region) || !n.includes('intl'));
+            }) || assets.find(a => a.name.toLowerCase().endsWith('.deb') || a.name.toLowerCase().endsWith('.appimage'));
             if (deb) {
               core.info(`Selected Linux DEB: ${deb.name}`);
               core.setOutput('linux_deb_url', deb.browser_download_url);
               core.setOutput('linux_deb_name', deb.name);
             }
 
-            // Linux .rpm (x64 / amd64 runner)
+            // Linux .rpm
             const rpm = assets.find(a => {
               const n = a.name.toLowerCase();
-              const isRpm = n.endsWith('.rpm');
-              const isX64 = (n.includes('x86_64') || n.includes('amd64') || n.includes('x64')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
-              return isRpm && isX64 && (n.includes(region) || !n.includes('intl'));
-            }) || assets.find(a => {
-              const n = a.name.toLowerCase();
-              return n.endsWith('.rpm') && (n.includes('x86_64') || n.includes('amd64') || n.includes('x64')) && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
-            }) || assets.find(a => {
-              const n = a.name.toLowerCase();
-              return n.endsWith('.rpm') && !n.includes('arm64') && !n.includes('aarch64') && !n.includes('arm');
-            });
+              return n.endsWith('.rpm') && (n.includes(region) || !n.includes('intl'));
+            }) || assets.find(a => a.name.toLowerCase().endsWith('.rpm'));
             if (rpm) {
               core.info(`Selected Linux RPM: ${rpm.name}`);
               core.setOutput('linux_rpm_url', rpm.browser_download_url);
@@ -230,7 +214,7 @@ jobs:
           retention-days: 14
 
   # ==============================================================================
-  # 2. Linux DEB E2E Release Test (Ubuntu with Xvfb)
+  # 2. Linux DEB E2E Release Test (Ubuntu with Xvfb & QEMU)
   # ==============================================================================
   e2e-linux-deb:
     name: E2E Test Linux (DEB / Ubuntu)
@@ -243,6 +227,9 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      - name: Set up QEMU for Multi-Arch Support
+        uses: docker/setup-qemu-action@v3
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -250,8 +237,9 @@ jobs:
 
       - name: Install Linux GUI Runtime Dependencies
         run: |
+          sudo dpkg --add-architecture arm64 || true
           sudo apt-get update
-          sudo apt-get install -y xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1
+          sudo apt-get install -y xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1 qemu-user-static binfmt-support
 
       - name: Install E2E Test Dependencies
         run: npm --prefix tests/e2e/release-pkg install
@@ -259,7 +247,7 @@ jobs:
       - name: Download and Install DEB Package
         run: |
           curl -L -s -S -o /tmp/app.deb "${{ needs.resolve-release.outputs.linux_deb_url }}"
-          sudo dpkg -i /tmp/app.deb || sudo apt-get install -f -y
+          sudo dpkg -i --force-architecture /tmp/app.deb || sudo apt-get install -f -y
 
           # 智能定位 Linux 可执行程序
           APP_BIN=""
@@ -293,7 +281,7 @@ jobs:
           retention-days: 14
 
   # ==============================================================================
-  # 3. Linux RPM E2E Release Test (Fedora / RHEL Container)
+  # 3. Linux RPM E2E Release Test (Fedora Container with QEMU)
   # ==============================================================================
   e2e-linux-rpm:
     name: E2E Test Linux (RPM / Fedora)
@@ -302,45 +290,54 @@ jobs:
       needs.resolve-release.outputs.linux_rpm_url != '' &&
       (github.event_name == 'release' || github.event.inputs.platform_scope == 'linux-only' || github.event.inputs.platform_scope == 'all-platforms')
     runs-on: ubuntu-latest
-    container:
-      image: fedora:40
     steps:
-      - name: Install Fedora GUI & Build Dependencies
-        run: |
-          dnf install -y git nodejs npm xorg-x11-server-Xvfb gtk3 nss alsa-lib mesa-libgbm libsecret libnotify libXScrnSaver curl procps-ng which
-
       - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      - name: Set up QEMU for Multi-Arch Support
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
 
       - name: Install E2E Test Dependencies
         run: npm --prefix tests/e2e/release-pkg install
 
-      - name: Download and Install RPM Package
+      - name: Run RPM Test inside Multi-Arch Fedora Container
         run: |
           curl -L -s -S -o /tmp/app.rpm "${{ needs.resolve-release.outputs.linux_rpm_url }}"
-          dnf install -y /tmp/app.rpm || rpm -ivh --nodeps /tmp/app.rpm
-
-          APP_BIN=""
-          if [ -f "/usr/bin/firefly-ai-folder" ]; then
-            APP_BIN="/usr/bin/firefly-ai-folder"
-          elif [ -f "/usr/bin/firefly-ai-folder-cn" ]; then
-            APP_BIN="/usr/bin/firefly-ai-folder-cn"
-          elif [ -d "/opt" ]; then
-            APP_BIN=$(find /opt -name "firefly*" -type f -executable | grep -v "chrome-sandbox" | grep -v "uninstall" | head -n 1)
-          fi
-
-          if [ -z "$APP_BIN" ]; then
-            echo "Failed to locate installed Linux RPM application!"
-            exit 1
-          fi
-
-          chmod +x "$APP_BIN" || true
-          echo "Located executable: $APP_BIN"
-          echo "TEST_APP_EXECUTABLE=$APP_BIN" >> $GITHUB_ENV
-
-      - name: Run Playwright Golden Path E2E Test (Xvfb)
-        run: |
-          xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          
+          # Run container with Xvfb & Playwright
+          docker run --rm \
+            -v "$(pwd):/work" \
+            -v "/tmp/app.rpm:/tmp/app.rpm" \
+            -w /work \
+            fedora:40 bash -c '
+              dnf install -y git nodejs npm xorg-x11-server-Xvfb gtk3 nss alsa-lib mesa-libgbm libsecret libnotify libXScrnSaver procps-ng which
+              rpm -ivh --ignorearch --nodeps /tmp/app.rpm || dnf install -y --nogpgcheck /tmp/app.rpm
+              
+              APP_BIN=""
+              if [ -f "/usr/bin/firefly-ai-folder" ]; then
+                APP_BIN="/usr/bin/firefly-ai-folder"
+              elif [ -f "/usr/bin/firefly-ai-folder-cn" ]; then
+                APP_BIN="/usr/bin/firefly-ai-folder-cn"
+              elif [ -d "/opt" ]; then
+                APP_BIN=$(find /opt -name "firefly*" -type f -executable | grep -v "chrome-sandbox" | grep -v "uninstall" | head -n 1)
+              fi
+              
+              if [ -z "$APP_BIN" ]; then
+                echo "Failed to locate installed Linux RPM application!"
+                exit 1
+              fi
+              
+              chmod +x "$APP_BIN" || true
+              echo "Located RPM binary: $APP_BIN"
+              export TEST_APP_EXECUTABLE="$APP_BIN"
+              
+              xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+            '
 
       - name: Upload Linux RPM Test Report Artifact
         if: always()
