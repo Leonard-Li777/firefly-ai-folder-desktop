@@ -1,0 +1,11 @@
+{"timestamp":"2026-08-20T12:16:09.488Z","level":2,"category":"MEMORY_MANAGER","message":"内存监控已启动，间隔: 5000ms"}
+{"timestamp":"2026-08-20T12:16:09.499Z","level":2,"category":"MEMORY_MANAGER","message":"内存管理服务初始化完成"}
+{"timestamp":"2026-08-20T12:16:09.508Z","level":2,"category":"RESOURCE_MANAGER","message":"资源监控已启动，间隔: 60000ms"}
+{"timestamp":"2026-08-20T12:16:09.509Z","level":2,"category":"RESOURCE_MANAGER","message":"资源管理服务初始化完成"}
+{"timestamp":"2026-08-20T12:16:14.612Z","level":2,"category":"AI_ERROR_HANDLER","message":"AI错误处理服务已启动"}
+{"timestamp":"2026-08-20T12:16:16.368Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能监控已启动，间隔: 10000ms"}
+{"timestamp":"2026-08-20T12:16:16.369Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能优化服务初始化完成"}
+{"timestamp":"2026-08-20T12:16:26.688Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"开始性能优化"}
+{"timestamp":"2026-08-20T12:16:26.747Z","level":1,"category":"PERFORMANCE_OPTIMIZER","message":"优化策略执行失败: increase-concurrency"}
+{"timestamp":"2026-08-20T12:16:26.756Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能优化完成，执行: 0，跳过: 0，错误: 1"}
+{"timestamp":"2026-08-20T12:16:36.597Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能优化完成，执行: 0，跳过: 1，错误: 0"}
