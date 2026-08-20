@@ -3,7 +3,7 @@
  * 支持 Windows, macOS, Linux 跨平台已安装二进制查找、CDP 远程调试连接、窗口定位与生命周期管理。
  */
 
-import { chromium, Browser, BrowserContext, Page } from '@playwright/test'
+import { chromium, Browser, BrowserContext, Page, TestInfo } from '@playwright/test'
 import { spawn, ChildProcess } from 'child_process'
 import path from 'path'
 import fs from 'fs'
@@ -247,60 +247,157 @@ export class ReleaseAppLauncher {
       } catch {}
     })
 
-    // 等待并获取 WebSocket URL
-    console.log(`[ReleaseAppLauncher] 等待 CDP 服务在端口 ${debugPort} 就绪...`)
-    const wsEndpoint = await this.getWebSocketDebuggerUrl(debugPort, options.timeout || 60000)
-    console.log(`[ReleaseAppLauncher] CDP WebSocket 就绪: ${wsEndpoint}`)
+    try {
+      // 等待并获取 WebSocket URL
+      console.log(`[ReleaseAppLauncher] 等待 CDP 服务在端口 ${debugPort} 就绪...`)
+      const wsEndpoint = await this.getWebSocketDebuggerUrl(debugPort, options.timeout || 60000)
+      console.log(`[ReleaseAppLauncher] CDP WebSocket 就绪: ${wsEndpoint}`)
 
-    let browser: Browser | null = null
-    let lastError: any = null
-    for (let attempt = 1; attempt <= 10; attempt++) {
-      try {
-        console.log(`[ReleaseAppLauncher] 尝试建立 CDP 连接 (第 ${attempt}/10 次)...`)
-        browser = await chromium.connectOverCDP(wsEndpoint, { timeout: 45000 })
-        if (browser) {
-          console.log(`[ReleaseAppLauncher] 成功建立 CDP 连接！`)
-          break
+      let browser: Browser | null = null
+      let lastError: any = null
+      for (let attempt = 1; attempt <= 10; attempt++) {
+        try {
+          console.log(`[ReleaseAppLauncher] 尝试建立 CDP 连接 (第 ${attempt}/10 次)...`)
+          browser = await chromium.connectOverCDP(wsEndpoint, { timeout: 45000 })
+          if (browser) {
+            console.log(`[ReleaseAppLauncher] 成功建立 CDP 连接！`)
+            break
+          }
+        } catch (err: any) {
+          lastError = err
+          console.warn(`[ReleaseAppLauncher] CDP 连接尝试 ${attempt} 异常: ${err?.message || err}`)
+          await new Promise(r => setTimeout(r, 1500))
         }
-      } catch (err: any) {
-        lastError = err
-        console.warn(`[ReleaseAppLauncher] CDP 连接尝试 ${attempt} 异常: ${err?.message || err}`)
-        await new Promise(r => setTimeout(r, 1500))
       }
+      if (!browser) {
+        throw new Error(
+          `[ReleaseAppLauncher] 连接 CDP 失败: ${wsEndpoint} (原因: ${lastError?.message || lastError})`
+        )
+      }
+
+      const contexts = browser.contexts()
+      const context = contexts.length > 0 ? contexts[0] : await browser.newContext()
+
+      // 智能检索主窗口 (放宽超时至 45 秒)
+      const page = await this.waitForMainWindow(browser, 45000)
+
+      const getPage = async (): Promise<Page> => {
+        return await this.waitForMainWindow(browser, 30000)
+      }
+
+      const close = async () => {
+        try {
+          await browser?.close().catch(() => {})
+        } catch {}
+        try {
+          child.kill()
+        } catch {}
+      }
+
+      return {
+        browser,
+        context,
+        page,
+        childProcess: child,
+        userDataDir,
+        getPage,
+        close
+      }
+    } catch (err) {
+      console.error(`❌ [ReleaseAppLauncher] 应用拉起或 CDP 连接失败，正在打印 app.log 辅助排查...`)
+      ReleaseAppLauncher.printUserDataLogs(userDataDir)
+      throw err
     }
-    if (!browser) {
-      throw new Error(
-        `[ReleaseAppLauncher] 连接 CDP 失败: ${wsEndpoint} (原因: ${lastError?.message || lastError})`
-      )
-    }
+  }
 
-    const contexts = browser.contexts()
-    const context = contexts.length > 0 ? contexts[0] : await browser.newContext()
+  /**
+   * 当 E2E 测试失败或启动异常时，打印 UserData 目录下的 app.log 以辅助诊断，
+   * 并在传入 testInfo 时附加到 Playwright HTML 报告 Attachments
+   */
+  public static printUserDataLogs(userDataDir: string, testInfo?: TestInfo): void {
+    try {
+      if (!userDataDir || !fs.existsSync(userDataDir)) {
+        console.warn(`[ReleaseAppLauncher] UserData 目录不存在，无法读取 app.log: ${userDataDir}`)
+        return
+      }
 
-    // 智能检索主窗口 (放宽超时至 45 秒)
-    const page = await this.waitForMainWindow(browser, 45000)
+      const logCandidatePaths = [
+        path.join(userDataDir, 'logs', 'app.log'),
+        path.join(userDataDir, 'logs', 'app-error.log'),
+        path.join(userDataDir, 'app.log')
+      ]
 
-    const getPage = async (): Promise<Page> => {
-      return await this.waitForMainWindow(browser, 30000)
-    }
+      let foundLog = false
 
-    const close = async () => {
-      try {
-        await browser?.close().catch(() => {})
-      } catch {}
-      try {
-        child.kill()
-      } catch {}
-    }
+      for (const logPath of logCandidatePaths) {
+        if (fs.existsSync(logPath)) {
+          const stat = fs.statSync(logPath)
+          if (stat.isFile() && stat.size > 0) {
+            foundLog = true
+            const content = fs.readFileSync(logPath, 'utf-8')
+            console.error(
+              `\n==================== [E2E FAIL DIAGNOSIS: ${path.basename(logPath)}] ====================`
+            )
+            console.error(content.length > 50000 ? content.slice(-50000) : content)
+            console.error(
+              `==================== [END OF DIAGNOSIS: ${path.basename(logPath)}] ====================\n`
+            )
 
-    return {
-      browser,
-      context,
-      page,
-      childProcess: child,
-      userDataDir,
-      getPage,
-      close
+            if (testInfo) {
+              try {
+                testInfo.attach(path.basename(logPath), {
+                  path: logPath,
+                  contentType: 'text/plain'
+                })
+                console.log(
+                  `📎 [AppLogs] 已成功将 ${path.basename(logPath)} 附加到 HTML 测试报告 Attachments`
+                )
+              } catch (attachErr) {
+                console.warn(`[AppLogs] 附加日志到 HTML 报告失败:`, attachErr)
+              }
+            }
+          }
+        }
+      }
+
+      if (!foundLog) {
+        const logsDir = path.join(userDataDir, 'logs')
+        if (fs.existsSync(logsDir)) {
+          const files = fs.readdirSync(logsDir).filter(f => f.endsWith('.log'))
+          for (const file of files) {
+            const fullPath = path.join(logsDir, file)
+            try {
+              const content = fs.readFileSync(fullPath, 'utf-8')
+              if (content.trim()) {
+                foundLog = true
+                console.error(
+                  `\n==================== [E2E FAIL DIAGNOSIS: ${file}] ====================`
+                )
+                console.error(content.length > 50000 ? content.slice(-50000) : content)
+                console.error(
+                  `==================== [END OF DIAGNOSIS: ${file}] ====================\n`
+                )
+
+                if (testInfo) {
+                  try {
+                    testInfo.attach(file, {
+                      path: fullPath,
+                      contentType: 'text/plain'
+                    })
+                    console.log(`📎 [AppLogs] 已成功将 ${file} 附加到 HTML 测试报告 Attachments`)
+                  } catch {}
+                }
+              }
+            } catch {}
+          }
+        }
+      }
+
+      if (!foundLog) {
+        console.warn(`[ReleaseAppLauncher] 在 ${userDataDir} 中未找到非空的 app.log 日志文件。`)
+      }
+    } catch (err) {
+      console.warn(`[ReleaseAppLauncher] 读取/打印 app.log 时出现异常:`, err)
     }
   }
 

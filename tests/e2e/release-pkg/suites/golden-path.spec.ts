@@ -37,6 +37,17 @@ test.describe.serial('Release 生产安装包 E2E 黄金主链路验证', () => 
     console.log('==================== [E2E SETUP COMPLETED] ====================\n')
   })
 
+  test.afterEach(async ({}, testInfo) => {
+    if (testInfo.status !== testInfo.expectedStatus) {
+      console.error(
+        `\n❌ [E2E 测试失败] 步骤 "${testInfo.title}" 未能正常完成 (状态: ${testInfo.status})`
+      )
+      const userDataDir = snapshotContext?.userDataDir || SnapshotManager.getUserDataDir()
+      console.error(`🔍 正在从用户数据目录 [${userDataDir}] 提取 app.log 日志并附加到 HTML 报告...`)
+      ReleaseAppLauncher.printUserDataLogs(userDataDir, testInfo)
+    }
+  })
+
   test.afterAll(async () => {
     console.log('\n==================== [E2E TEARDOWN START] ====================')
     try {
