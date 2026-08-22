@@ -1,0 +1,15 @@
+{"timestamp":"2026-08-22T00:03:11.097Z","level":2,"category":"MEMORY_MANAGER","message":"内存监控已启动，间隔: 5000ms"}
+{"timestamp":"2026-08-22T00:03:11.108Z","level":2,"category":"MEMORY_MANAGER","message":"内存管理服务初始化完成"}
+{"timestamp":"2026-08-22T00:03:11.115Z","level":2,"category":"RESOURCE_MANAGER","message":"资源监控已启动，间隔: 60000ms"}
+{"timestamp":"2026-08-22T00:03:11.117Z","level":2,"category":"RESOURCE_MANAGER","message":"资源管理服务初始化完成"}
+{"timestamp":"2026-08-22T00:03:12.727Z","level":2,"category":"AI_ERROR_HANDLER","message":"AI错误处理服务已启动"}
+{"timestamp":"2026-08-22T00:03:13.326Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能监控已启动，间隔: 10000ms"}
+{"timestamp":"2026-08-22T00:03:13.327Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能优化服务初始化完成"}
+{"timestamp":"2026-08-22T00:03:23.458Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"开始性能优化"}
+{"timestamp":"2026-08-22T00:03:23.467Z","level":1,"category":"PERFORMANCE_OPTIMIZER","message":"优化策略执行失败: increase-concurrency"}
+{"timestamp":"2026-08-22T00:03:23.469Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能优化完成，执行: 0，跳过: 0，错误: 1"}
+{"timestamp":"2026-08-22T00:03:33.449Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能优化完成，执行: 0，跳过: 1，错误: 0"}
+{"timestamp":"2026-08-22T00:04:10.577Z","level":0,"category":"AI_ERROR_HANDLER","message":"AI错误: MODEL_LOAD_FAILED - AI 模型加载失败","data":{"severity":"high","userMessage":"AI模型加载失败，请检查模型文件兼容性或系统资源","solutions":["重新下载模型文件或尝试切换到不同的模型","检查磁盘空间和系统显存是否充足","尝试使用更小尺寸的模型","使用云端模型","尝试手动配置引擎为 CPU 模式"],"details":"Llama Server 进程意外崩溃退出，代码: 127。触发自动降级到兼容加速层/CPU模式。"}}
+{"timestamp":"2026-08-22T00:04:10.597Z","level":2,"category":"AI_ERROR_HANDLER","message":"尝试恢复策略: 重新加载并降级"}
+{"timestamp":"2026-08-22T00:04:10.600Z","level":2,"category":"AI_ERROR_HANDLER","message":"执行模型重新加载与自动降级策略"}
+{"timestamp":"2026-08-22T00:04:10.600Z","level":1,"category":"AI_ERROR_HANDLER","message":"模型/驱动崩溃或加载失败，正在自动降级加速模式: vulkan -> cpu"}
