@@ -1,0 +1,179 @@
+/* 应用主样式 */
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.app-header {
+  text-align: center;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 300;
+}
+
+.app-header p {
+  margin: 0.5rem 0 0 0;
+  opacity: 0.9;
+  font: 1.1rem;
+}
+
+.app-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.status-section,
+.counter-section,
+.features-section,
+.files-section {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.status-section h2,
+.counter-section h2,
+.features-section h3,
+.files-section h3 {
+  margin-top: 0;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* 状态网格 */
+.status-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-item:last-child {
+  border-bottom: none;
+}
+
+.status-label {
+  font-weight: 500;
+}
+
+.status-value {
+  font-weight: 600;
+}
+
+.status-value.success {
+  color: #4caf50;
+}
+
+.status-value.warning {
+  color: #ff9800;
+}
+
+/* 按钮样式 */
+.load-model-btn,
+.increment-btn {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.load-model-btn:hover,
+.increment-btn:hover {
+  background: #45a049;
+}
+
+.load-model-btn {
+  background: #2196f3;
+}
+
+.load-model-btn:hover {
+  background: #1976d2;
+}
+
+/* 功能列表 */
+.features-section ul {
+  list-style: none;
+  padding: 0;
+}
+
+.features-section li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.features-section li:last-child {
+  border-bottom: none;
+}
+
+/* 文件网格 */
+.files-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.file-item {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.file-name {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.file-size {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.file-more {
+  text-align: center;
+  padding: 1rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .app-header h1 {
+    font-size: 2rem;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "未知错误": {
+    "en-US": "Unknown Error",
+    "es-ES": "Error desconocido",
+    "ar-EG": "خطأ غير معروف",
+    "pt-PT": "Erro desconhecido",
+    "ru-RU": "Неизвестная ошибка",
+    "ja-JP": "不明なエラー",
+    "de-DE": "Unbekannter Fehler",
+    "fr-FR": "Erreur inconnue",
+    "ko-KR": "알 수 없는 오류",
+    "$files": [
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(922-930)",
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(1421-1429)",
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(1926-1934)",
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(2509-2517)",
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(3005-3013)",
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(3503-3511)",
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(3990-3998)",
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(4515-4523)",
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(5194-5202)",
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(5822-5830)",
+      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(1596-1604)",
+      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(3883-3891)",
+      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(4262-4270)",
+      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(4710-4718)",
+      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(5106-5114)",
+      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(5394-5402)",
+      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(5640-5648)",
+      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(6116-6124)"
+    ],
+    "$id": 11058
+  },
+  "未提供目标目录": {
+    "en-US": "No target directory provided",
+    "es-ES": "No se proporciona ningún directorio de destino",
+    "ar-EG": "لم يتم توفير الدليل الهدف",
+    "pt-PT": "Nenhum diretório de destino fornecido",
+    "ru-RU": "Целевой каталог не указан",
+    "ja-JP": "ターゲット ディレクトリが指定されていません",
+    "de-DE": "Kein Zielverzeichnis angegeben",
+    "fr-FR": "Aucun répertoire cible fourni",
+    "ko-KR": "제공된 대상 디렉터리가 없습니다.",
+    "$files": ["src/electron/runtime-services/ipc/local-model-config-ipc-handler.ts(938-949)"],
+    "$id": 11060
+  },
+  "任务不存在": {
+    "en-US": "Task does not exist",
+    "es-ES": "La tarea no existe",
+    "ar-EG": "المهمة غير موجودة",
+    "pt-PT": "A tarefa não existe",
+    "ru-RU": "Задача не существует",
+    "ja-JP": "タスクが存在しません",
+    "de-DE": "Aufgabe existiert nicht",
+    "fr-FR": "La tâche n'existe pas",
+    "ko-KR": "작업이 존재하지 않습니다.",
+    "$files": ["src/electron/runtime-services/ipc/model-download-manager-ipc-handler.ts(4485-4494)"],
+    "$id": 11061
+  },
+  "未找到工作区": {
+    "en-US": "Workspace not found",
+    "es-ES": "Espacio de trabajo no encontrado",
+    "ar-EG": "لم يتم العثور على مساحة العمل",
+    "pt-PT": "Espaço de trabalho não encontrado",
+    "ru-RU": "рабочее пространство не найдено",
+    "ja-JP": "ワークスペースが見つかりません",
+    "de-DE": "Arbeitsbereich nicht gefunden",
+    "fr-FR": "Espace de travail introuvable",
+    "ko-KR": "작업공간을 찾을 수 없습니다",
+    "$files": [
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(4648-4658)",
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(7220-7230)",
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(7595-7605)"
+    ],
+    "$id": 11062
+  },
+  "删除工作目录失败，请重试": {
+    "en-US": "Failed to delete the working directory, please try again",
+    "es-ES": "Error al eliminar el directorio de trabajo, inténtelo de nuevo",
+    "ar-EG": "فشل حذف دليل العمل، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Não foi possível eliminar o diretório de trabalho, por favor tente novamente",
+    "ru-RU": "Не удалось удалить рабочую директорию. Повторите попытку",
+    "ja-JP": "作業ディレクトリの削除に失敗しました。再試行してください。",
+    "de-DE": "Löschen des Arbeitsverzeichnisses fehlgeschlagen, bitte erneut versuchen.",
+    "fr-FR": "Échec de la suppression du répertoire de travail, veuillez réessayer",
+    "ko-KR": "작업 디렉토리 삭제에 실패했습니다. 다시 시도해 주세요.",
+    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(5777-5793)"],
+    "$id": 8078
+  },
+  "未找到工作目录 ID: {workspaceId}": {
+    "en-US": "Working directory ID not found: {workspaceId}",
+    "es-ES": "No se encontró el ID de directorio de trabajo: {workspaceId}",
+    "ar-EG": "لا يوجد دليل عمل بالمعرف: {workspaceId}",
+    "pt-PT": "ID do diretório de trabalho não encontrado: {workspaceId}",
+    "ru-RU": "Идентификатор рабочего каталога не найден: {workspaceId}",
+    "ja-JP": "作業ディレクトリ ID: {workspaceId} が見つかりません",
+    "de-DE": "Arbeitsverzeichnis ID wurde nicht gefunden: {workspaceId}",
+    "fr-FR": "ID du répertoire de travail non trouvé : {workspaceId}",
+    "ko-KR": "작업 디렉토리 ID를 찾을 수 없음: {workspaceId}",
+    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(8745-8774)"],
+    "$id": 5969
+  }
+}

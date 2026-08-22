@@ -1,0 +1,60 @@
+{
+  "AI服务未就绪，请稍后重试": {
+    "en-US": "AI service is not ready, please try again later",
+    "es-ES": "El servicio de IA no está listo. Vuelve a intentarlo más tarde.",
+    "ar-EG": "خدمة الذكاء الاصطناعي ليست جاهزة، يرجى المحاولة مرة أخرى لاحقًا",
+    "pt-PT": "O serviço de IA não está pronto, por favor tente novamente mais tarde",
+    "ru-RU": "Служба AI не готова. Повторите попытку позже.",
+    "ja-JP": "AI サービスの準備ができていません。後でもう一度お試しください。",
+    "de-DE": "KI-Dienst nicht bereit, bitte versuchen Sie es später erneut",
+    "fr-FR": "Le service IA n'est pas prêt, veuillez réessayer plus tard",
+    "ko-KR": "AI 서비스가 준비되지 않았습니다. 나중에 다시 시도해 주세요.",
+    "$files": [
+      "src/electron/adapters/ai-adapter-factory.ts(2016-2033)",
+      "src/electron/adapters/llama-index-ai-adapter.ts(2302-2319)"
+    ],
+    "$id": 4270
+  },
+  "数据库未初始化": {
+    "en-US": "Database not initialized",
+    "es-ES": "Base de datos no inicializada",
+    "ar-EG": "لم تتم تهيئة قاعدة البيانات",
+    "pt-PT": "Banco de dados não inicializado",
+    "ru-RU": "База данных не инициализирована",
+    "ja-JP": "データベースが初期化されていません",
+    "de-DE": "Datenbank nicht initialisiert",
+    "fr-FR": "Base de données non initialisée",
+    "ko-KR": "데이터베이스가 초기화되지 않았습니다.",
+    "$files": ["src/electron/adapters/database-adapter.ts(669-680)"],
+    "$id": 7669
+  },
+  "处理多模态文件失败 [{filePath}]: {errorMsg}": {
+    "en-US": "Failed to process multimodal file [{filePath}]: {errorMsg}",
+    "es-ES": "No se pudo procesar el archivo multimodal [{filePath}]: {errorMsg}",
+    "ar-EG": "فشلت معالجة ملف متعدد الوسائط [{filePath}]: {errorMsg}",
+    "pt-PT": "Falha ao processar o ficheiro multimodal [{filePath}]: {errorMsg}",
+    "ru-RU": "Не удалось обработать мультимодальный файл [{filePath}]: {errorMsg}",
+    "ja-JP": "マルチモーダル ファイル [{filePath}] の処理に失敗しました: {errorMsg}",
+    "de-DE": "Verarbeitung der multimodalen Datei fehlgeschlagen [{filePath}]: {errorMsg}",
+    "fr-FR": "Échec du traitement du fichier multimodal [{filePath}] : {errorMsg}",
+    "ko-KR": "멀티모달 파일 [{filePath}] 처리 실패: {errorMsg}",
+    "$files": ["src/electron/adapters/llama-index-ai-adapter.ts(10089-10127)"],
+    "$id": 4271
+  },
+  "没有加载的模型": {
+    "en-US": "No models loaded",
+    "es-ES": "No hay modelos cargados",
+    "ar-EG": "لا يوجد نموذج تم تحميله",
+    "pt-PT": "Nenhum modelo carregado",
+    "ru-RU": "Нет загруженной модели",
+    "ja-JP": "モデルがロードされていません",
+    "de-DE": "Keine geladenen Modelle",
+    "fr-FR": "Aucun modèle chargé",
+    "ko-KR": "로드된 모델 없음",
+    "$files": [
+      "src/electron/adapters/llama-runtime-adapter.ts(1336-1347)",
+      "src/electron/adapters/llama-runtime-adapter.ts(5799-5810)"
+    ],
+    "$id": 3540
+  }
+}

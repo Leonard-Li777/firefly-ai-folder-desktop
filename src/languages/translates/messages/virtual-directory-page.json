@@ -1,0 +1,587 @@
+{
+  "目录导航": {
+    "en-US": "Directory Navigation",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5001,
+    "es-ES": "Navegación del directorio",
+    "ar-EG": "ملاحة الدليل",
+    "pt-PT": "Navegação de diretórios",
+    "ru-RU": "Навигация по каталогам",
+    "ja-JP": "ディレクトリナビゲーション",
+    "de-DE": "Verzeichnisnavigation",
+    "fr-FR": "Navigation du répertoire",
+    "ko-KR": "디렉토리 내비게이션"
+  },
+  "个子目录": {
+    "en-US": "Subdirectories",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5002,
+    "es-ES": "Un subdirectorio",
+    "ar-EG": "دليل فرعي واحد",
+    "pt-PT": "Subdiretórios",
+    "ru-RU": "Подкаталогов нет",
+    "ja-JP": "個のサブディレクトリ",
+    "de-DE": "Unterverzeichnisse",
+    "fr-FR": "Sous-répertoires",
+    "ko-KR": "개 하위 디렉토리"
+  },
+  "暂无已保存的虚拟目录": {
+    "en-US": "No saved virtual directories",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5003,
+    "es-ES": "No hay directorios virtuales guardados por el momento",
+    "ar-EG": "لا توجد أدلة افتراضية محفوظة",
+    "pt-PT": "Nenhum diretório virtual guardado",
+    "ru-RU": "Сохраненных виртуальных каталогов нет",
+    "ja-JP": "保存済みの仮想ディレクトリはありません",
+    "de-DE": "Keine gespeicherten virtuellen Verzeichnisse vorhanden",
+    "fr-FR": "Aucun répertoire virtuel enregistré",
+    "ko-KR": "저장된 가상 디렉토리 없음"
+  },
+  "请前往已分析页面勾选文件后点击立即整理": {
+    "en-US": "Please go to the Analyzed page, select files, and click Organize Now",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5004,
+    "es-ES": "Por favor, ve a la página ya analizada, selecciona los archivos y haz clic en \"Ordenar ahora\"",
+    "ar-EG": "يرجى الذهاب إلى صفحة التحليل المحدد وتحديد الملفات ثم النقر على \"تنظيف الآن\"",
+    "pt-PT": "Por favor, acesse a página analisada, selecione os ficheiros e clique em Organizar Agora",
+    "ru-RU": "Перейдите на страницу анализа, отметьте файлы и нажмите «Организовать сейчас»",
+    "ja-JP": "解析済みページに移動し、ファイルを選択してから「今すぐ整理」をクリックしてください",
+    "de-DE": "Bitte gehen Sie zur Seite „Analysiert“, markieren Sie die Dateien und klicken Sie auf „Jetzt aufräumen“.",
+    "fr-FR": "Veuillez vous rendre sur la page « Analysées », cocher les fichiers puis cliquez sur « Organiser maintenant »",
+    "ko-KR": "파일 분석 페이지로 이동하여 파일을 선택한 후 즉시 정리 버튼을 클릭하세요."
+  },
+  "返回已分析页面": {
+    "en-US": "Back to Analyzed Page",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5005,
+    "es-ES": "Volver a la página ya analizada",
+    "ar-EG": "العودة إلى صفحة التحليل المحدد",
+    "pt-PT": "Retornar à página analisada",
+    "ru-RU": "Вернуться на страницу анализа",
+    "ja-JP": "解析済みページに戻る",
+    "de-DE": "Zurück zur Seite „Analysiert“",
+    "fr-FR": "Retour à la page « Analysées »",
+    "ko-KR": "파일 분석 페이지로 돌아가기"
+  },
+  "创建虚拟目录": {
+    "en-US": "Create Virtual Directory",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5006,
+    "es-ES": "Crear directorio virtual",
+    "ar-EG": "إنشاء دليل افتراضي",
+    "pt-PT": "Criar diretório virtual",
+    "ru-RU": "Создать виртуальный каталог",
+    "ja-JP": "仮想ディレクトリの作成",
+    "de-DE": "Virtuelles Verzeichnis erstellen",
+    "fr-FR": "Créer un répertoire virtuel",
+    "ko-KR": "가상 디렉토리 만들기"
+  },
+  "重命名": {
+    "en-US": "Rename",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5007,
+    "es-ES": "Renombrar",
+    "ar-EG": "إعادة تسمية",
+    "pt-PT": "Renomear",
+    "ru-RU": "Переименовать",
+    "ja-JP": "名前の変更",
+    "de-DE": "Umbenennen",
+    "fr-FR": "Renommer",
+    "ko-KR": "이름 바꾸기"
+  },
+  "重新生成": {
+    "en-US": "Regenerate",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5008,
+    "es-ES": "Regenerar",
+    "ar-EG": "إعادة إنشاء",
+    "pt-PT": "Regenerar",
+    "ru-RU": "Сгенерировать заново",
+    "ja-JP": "再生成",
+    "de-DE": "Neu generieren",
+    "fr-FR": "Régénérer",
+    "ko-KR": "다시 생성"
+  },
+  "删除": {
+    "en-US": "Delete",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5009,
+    "es-ES": "Eliminar",
+    "ar-EG": "حذف",
+    "pt-PT": "Eliminar",
+    "ru-RU": "Удалить",
+    "ja-JP": "削除",
+    "de-DE": "Löschen",
+    "fr-FR": "Supprimer",
+    "ko-KR": "삭제"
+  },
+  "删除虚拟目录「{name}」将同时删除 `.VirtualDirectory/{name}/` 目录，此操作不可恢复，是否继续？": {
+    "en-US": "Deleting virtual directory \"{name}\" will also delete the `.VirtualDirectory/{name}/` directory. This action cannot be undone. Continue?",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5010,
+    "es-ES": "Eliminar el directorio virtual «{name}» borrará simultáneamente el directorio `.VirtualDirectory/{name}/`. Esta acción no se puede deshacer, ¿deseas continuar?",
+    "ar-EG": "سيؤدي حذف الدليل الافتراضي «{name}» أيضًا إلى حذف الدليل `.VirtualDirectory/{name}/`. لا يمكن التراجع عن هذا الإجراء، هل تريد المتابعة؟",
+    "pt-PT": "A eliminação do diretório virtual \"{name}\" também removerá o diretório `.VirtualDirectory/{name}/`, esta ação é irreversível. Deseja continuar?",
+    "ru-RU": "Удаление виртуального каталога «{name}» также удалит каталог `.VirtualDirectory/{name}/`. Это действие нельзя отменить. Продолжить?",
+    "ja-JP": "仮想ディレクトリ「{name}」を削除すると、`.VirtualDirectory/{name}/` ディレクトリも同時に削除されます。この操作は元に戻せません。続行しますか？",
+    "de-DE": "Das Löschen des virtuellen Verzeichnisses „{name}“ löscht gleichzeitig das Verzeichnis `.VirtualDirectory/{name}/`. Diese Aktion kann nicht rückgängig gemacht werden. Möchten Sie fortfahren?",
+    "fr-FR": "La suppression du répertoire virtuel « {name} » entraînera également la suppression du répertoire `.VirtualDirectory/{name}/`. Cette action est irréversible. Souhaitez-vous continuer ?",
+    "ko-KR": "가상 디렉토리 「{name}」을 삭제하면 `.VirtualDirectory/{name}/` 디렉토리도 함께 삭제됩니다. 이 작업은 되돌릴 수 없으므로 계속하시겠습니까?"
+  },
+  "重命名成功": {
+    "en-US": "Renamed successfully",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5011,
+    "es-ES": "Renombrado con éxito",
+    "ar-EG": "تمت إعادة التسمية بنجاح",
+    "pt-PT": "Renomeação bem-sucedida",
+    "ru-RU": "Переименование успешно",
+    "ja-JP": "名前の変更に成功しました",
+    "de-DE": "Umbenennung erfolgreich",
+    "fr-FR": "Renommé avec succès",
+    "ko-KR": "이름 변경 성공"
+  },
+  "重命名失败": {
+    "en-US": "Rename failed",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5012,
+    "es-ES": "Error al renombrar",
+    "ar-EG": "فشل إعادة التسمية",
+    "pt-PT": "Falha na renomeação",
+    "ru-RU": "Ошибка переименования",
+    "ja-JP": "名前の変更に失敗しました",
+    "de-DE": "Umbenennung fehlgeschlagen",
+    "fr-FR": "Échec de la renommation",
+    "ko-KR": "이름 변경 실패"
+  },
+  "已删除": {
+    "en-US": "Deleted",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5013,
+    "es-ES": "Eliminado",
+    "ar-EG": "تم الحذف",
+    "pt-PT": "Eliminado",
+    "ru-RU": "Удалено",
+    "ja-JP": "削除済み",
+    "de-DE": "Gelöscht",
+    "fr-FR": "Supprimé",
+    "ko-KR": "삭제됨"
+  },
+  "删除失败": {
+    "en-US": "Delete failed",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5014,
+    "es-ES": "Error al eliminar",
+    "ar-EG": "فشل الحذف",
+    "pt-PT": "Falha na eliminação",
+    "ru-RU": "Ошибка удаления",
+    "ja-JP": "削除に失敗しました",
+    "de-DE": "Löschvorgang fehlgeschlagen",
+    "fr-FR": "Échec de la suppression",
+    "ko-KR": "삭제 실패"
+  },
+  "正在跳转到整理页面...": {
+    "en-US": "Redirecting to organize page...",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5015,
+    "es-ES": "Redirigiendo a la página de organización...",
+    "ar-EG": "جارٍ الانتقال إلى صفحة التنظيف...",
+    "pt-PT": "A redirecionar para a página de organização...",
+    "ru-RU": "Переход на страницу организации...",
+    "ja-JP": "整理ページに遷移しています...",
+    "de-DE": "Weiterleitung zur Aufräumsite läuft...",
+    "fr-FR": "Redirection vers la page d'organisation en cours...",
+    "ko-KR": "정리 페이지로 이동 중..."
+  },
+  "正在导出虚拟目录...": {
+    "en-US": "Exporting virtual directory...",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5016,
+    "es-ES": "Exportando directorio virtual...",
+    "ar-EG": "جارٍ تصدير المجلد الافتراضي...",
+    "pt-PT": "A exportar o diretório virtual...",
+    "ja-JP": "仮想ディレクトリをエクスポートしています...",
+    "fr-FR": "Exportation du répertoire virtuel en cours...",
+    "ko-KR": "가상 디렉토리 내보내는 중...",
+    "ru-RU": "Экспорт виртуального каталога...",
+    "de-DE": "Exportiere virtuelles Verzeichnis ..."
+  },
+  "成功导出 {count} 个文件": {
+    "en-US": "Successfully exported {count} files",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5017,
+    "es-ES": "Se han exportado correctamente {count} archivos",
+    "ar-EG": "تم تصدير {count} ملف بنجاح",
+    "pt-PT": "Exportação bem-sucedida de {count} ficheiros",
+    "ja-JP": "{count} 件のファイルの書き出しに成功しました",
+    "fr-FR": "{count} fichier(s) exporté(s) avec succès",
+    "ko-KR": "{count}개 파일이 성공적으로 내보냄",
+    "ru-RU": "Успешно экспортировано {count} файлов",
+    "de-DE": "Erfolgreich {count} Dateien exportiert"
+  },
+  "部分文件导出失败": {
+    "en-US": "Some files failed to export",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5018,
+    "es-ES": "Error al exportar algunos archivos",
+    "ar-EG": "فشل تصدير بعض الملفات",
+    "pt-PT": "Falha na exportação de alguns ficheiros",
+    "ja-JP": "一部のファイルの書き出しに失敗しました",
+    "fr-FR": "Échec de l'exportation de certains fichiers",
+    "ko-KR": "일부 파일 내보내기 실패",
+    "ru-RU": "Часть файлов не удалось экспортировать",
+    "de-DE": "Teilweise fehlgeschlagener Export von Dateien"
+  },
+  "准备导出至真实目录...": {
+    "en-US": "Preparing to export to real directory...",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5019,
+    "es-ES": "Preparando la exportación al directorio real...",
+    "ar-EG": "جارٍ التجهيز للتصدير إلى المجلد الفعلي...",
+    "pt-PT": "Preparando a exportação para o diretório real...",
+    "ja-JP": "実ディレクトリへのエクスポートを準備中...",
+    "fr-FR": "Préparation à l'exportation vers le répertoire réel...",
+    "ko-KR": "실제 디렉토리로 내보내기 준비 중...",
+    "ru-RU": "Подготовка к экспорту в реальный каталог...",
+    "de-DE": "Bereite Export in reales Verzeichnis vor ..."
+  },
+  "导出成功": {
+    "en-US": "Export successful",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5020,
+    "es-ES": "Exportación completada con éxito",
+    "ar-EG": "تم التصدير بنجاح",
+    "pt-PT": "Exportação bem-sucedida",
+    "ja-JP": "エクスポート成功",
+    "fr-FR": "Exportation réussie",
+    "ko-KR": "내보내기 성공",
+    "ru-RU": "Экспорт выполнен успешно",
+    "de-DE": "Export erfolgreich"
+  },
+  "导出失败": {
+    "en-US": "Export failed",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5021,
+    "es-ES": "Error en la exportación",
+    "ar-EG": "فشل التصدير",
+    "pt-PT": "Falha na exportação",
+    "ja-JP": "エクスポート失敗",
+    "fr-FR": "Échec de l'exportation",
+    "ko-KR": "내보내기 실패",
+    "ru-RU": "Ошибка экспорта",
+    "de-DE": "Export fehlgeschlagen"
+  },
+  "重命名虚拟目录": {
+    "en-US": "Rename Virtual Directory",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5022,
+    "es-ES": "Renombrar directorio virtual",
+    "ar-EG": "إعادة تسمية المجلد الافتراضي",
+    "pt-PT": "Renomear diretório virtual",
+    "ja-JP": "仮想ディレクトリの名前を変更",
+    "fr-FR": "Renommer le répertoire virtuel",
+    "ko-KR": "가상 디렉토리 이름 바꾸기",
+    "ru-RU": "Переименовать виртуальный каталог",
+    "de-DE": "Virtuelles Verzeichnis umbenennen"
+  },
+  "请输入新的名称：": {
+    "en-US": "Please enter a new name:",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5023,
+    "es-ES": "Introduzca el nuevo nombre:",
+    "ar-EG": "الرجاء إدخال اسم جديد:",
+    "pt-PT": "Introduza um novo nome:",
+    "ja-JP": "新しい名前を入力してください：",
+    "fr-FR": "Veuillez saisir le nouveau nom :",
+    "ko-KR": "새 이름을 입력하세요:",
+    "ru-RU": "Введите новое имя:",
+    "de-DE": "Bitte geben Sie einen neuen Namen ein:"
+  },
+  "导出虚拟目录": {
+    "en-US": "Export Virtual Directory",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5024,
+    "es-ES": "Exportar directorio virtual",
+    "ar-EG": "تصدير المجلد الافتراضي",
+    "pt-PT": "Exportar diretório virtual",
+    "ja-JP": "仮想ディレクトリをエクスポート",
+    "fr-FR": "Exporter le répertoire virtuel",
+    "ko-KR": "가상 디렉토리 내보내기",
+    "ru-RU": "Экспорт виртуального каталога",
+    "de-DE": "Virtuelles Verzeichnis exportieren"
+  },
+  "导出真实目录": {
+    "en-US": "Export to Real Directory",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5025,
+    "es-ES": "Exportar directorio real",
+    "ar-EG": "تصدير المجلد الفعلي",
+    "pt-PT": "Exportar diretório real",
+    "ja-JP": "実ディレクトリをエクスポート",
+    "fr-FR": "Exporter le répertoire réel",
+    "ko-KR": "실제 디렉토리 내보내기",
+    "ru-RU": "Экспорт реального каталога",
+    "de-DE": "Reales Verzeichnis exportieren"
+  },
+  "全部文件": {
+    "en-US": "All Files",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5026,
+    "es-ES": "Todos los archivos",
+    "ar-EG": "جميع الملفات",
+    "pt-PT": "Todos os ficheiros",
+    "ja-JP": "すべてのファイル",
+    "fr-FR": "Tous les fichiers",
+    "ko-KR": "모든 파일",
+    "ru-RU": "Все файлы",
+    "de-DE": "Alle Dateien"
+  },
+  "个文件": {
+    "en-US": "Files",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5027,
+    "es-ES": "Archivos",
+    "ar-EG": "ملف",
+    "pt-PT": "Ficheiro(s)",
+    "ja-JP": "件",
+    "fr-FR": "Fichier(s)",
+    "ko-KR": "개 파일",
+    "ru-RU": "файлов",
+    "de-DE": "Dateien"
+  },
+  "点击左侧目录查看文件": {
+    "en-US": "Click a directory on the left to view files",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5028,
+    "es-ES": "Haga clic en el directorio izquierdo para ver los archivos",
+    "ar-EG": "انقر على المجلد في الجانب الأيسر لعرض الملفات",
+    "pt-PT": "Clique no diretório à esquerda para ver os ficheiros",
+    "ja-JP": "左側のディレクトリをクリックしてファイルを表示",
+    "fr-FR": "Cliquez sur le répertoire de gauche pour afficher les fichiers",
+    "ko-KR": "왼쪽의 디렉토리를 클릭하여 파일 보기",
+    "ru-RU": "Нажмите на каталог слева, чтобы просмотреть файлы",
+    "de-DE": "Klicken Sie auf das linke Verzeichnis, um die Dateien anzuzeigen"
+  },
+  "在此目录中未找到文件": {
+    "en-US": "No files found in this directory",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5029,
+    "es-ES": "No se han encontrado archivos en este directorio",
+    "ar-EG": "لم يتم العثور على ملفات في هذا المجلد",
+    "pt-PT": "Nenhum ficheiro encontrado neste diretório",
+    "ja-JP": "このディレクトリにはファイルが見つかりません",
+    "fr-FR": "Aucun fichier trouvé dans ce répertoire",
+    "ko-KR": "이 디렉토리에서 파일을 찾지 못했습니다.",
+    "ru-RU": "Файлы в этом каталоге не найдены",
+    "de-DE": "Keine Dateien in diesem Verzeichnis gefunden"
+  },
+  "文件属性": {
+    "en-US": "File Properties",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5030,
+    "es-ES": "Propiedades del archivo",
+    "ar-EG": "خصائص الملف",
+    "pt-PT": "Propriedades do ficheiro",
+    "ja-JP": "ファイルのプロパティ",
+    "fr-FR": "Propriétés du fichier",
+    "ko-KR": "파일 속성",
+    "ru-RU": "Свойства файла",
+    "de-DE": "Dateiattribute"
+  },
+  "目录信息": {
+    "en-US": "Directory Info",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5031,
+    "es-ES": "Información del directorio",
+    "ar-EG": "معلومات المجلد",
+    "pt-PT": "Informações do diretório",
+    "ja-JP": "ディレクトリ情報",
+    "fr-FR": "Informations sur le répertoire",
+    "ko-KR": "디렉토리 정보",
+    "ru-RU": "Информация о каталоге",
+    "de-DE": "Verzeichnisinformationen"
+  },
+  "目录名": {
+    "en-US": "Directory Name",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5032,
+    "es-ES": "Nombre del directorio",
+    "ar-EG": "اسم المجلد",
+    "pt-PT": "Nome do diretório",
+    "ja-JP": "ディレクトリ名",
+    "fr-FR": "Nom du répertoire",
+    "ko-KR": "디렉토리 이름",
+    "ru-RU": "Имя каталога",
+    "de-DE": "Verzeichnisname"
+  },
+  "文件数": {
+    "en-US": "File Count",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5033,
+    "es-ES": "Número de archivos",
+    "ar-EG": "عدد الملفات",
+    "pt-PT": "Número de ficheiros",
+    "ja-JP": "ファイル数",
+    "fr-FR": "Nombre de fichiers",
+    "ko-KR": "파일 수",
+    "ru-RU": "Количество файлов",
+    "de-DE": "Anzahl der Dateien"
+  },
+  "子目录": {
+    "en-US": "Subdirectories",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5034,
+    "es-ES": "Subdirectorios",
+    "ar-EG": "المجلدات الفرعية",
+    "pt-PT": "Subdiretórios",
+    "ja-JP": "サブディレクトリ",
+    "fr-FR": "Sous-répertoires",
+    "ko-KR": "하위 디렉토리",
+    "ru-RU": "Подкаталоги",
+    "de-DE": "Unterverzeichnisse"
+  },
+  "虚拟目录信息": {
+    "en-US": "Virtual Directory Info",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5035,
+    "es-ES": "Información del directorio virtual",
+    "ar-EG": "معلومات المجلد الافتراضي",
+    "pt-PT": "Informações do diretório virtual",
+    "ja-JP": "仮想ディレクトリ情報",
+    "fr-FR": "Informations sur le répertoire virtuel",
+    "ko-KR": "가상 디렉토리 정보",
+    "ru-RU": "Информация о виртуальном каталоге",
+    "de-DE": "Informationen zum virtuellen Verzeichnis"
+  },
+  "名称": {
+    "en-US": "Name",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5036,
+    "es-ES": "Nombre",
+    "ar-EG": "الاسم",
+    "pt-PT": "Nome",
+    "ja-JP": "名前",
+    "fr-FR": "Nom",
+    "ko-KR": "이름",
+    "ru-RU": "Имя",
+    "de-DE": "Name"
+  },
+  "策略": {
+    "en-US": "Strategy",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5037,
+    "es-ES": "Política",
+    "ar-EG": "السياسة",
+    "pt-PT": "Política",
+    "ja-JP": "ポリシー",
+    "fr-FR": "Stratégie",
+    "ko-KR": "정책",
+    "ru-RU": "Стратегия",
+    "de-DE": "Strategie"
+  },
+  "来源": {
+    "en-US": "Source",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5038,
+    "es-ES": "Origen",
+    "ar-EG": "المصدر",
+    "pt-PT": "Origem",
+    "ja-JP": "ソース",
+    "fr-FR": "Source",
+    "ko-KR": "출처",
+    "ru-RU": "Источник",
+    "de-DE": "Quelle"
+  },
+  "该虚拟目录暂无文件": {
+    "en-US": "This virtual directory has no files",
+    "$files": [
+      "renderer/components/file-explorer/VirtualDirectory/index.tsx"
+    ],
+    "$id": 5039,
+    "es-ES": "Actualmente no hay archivos en este directorio virtual",
+    "ar-EG": "لا توجد ملفات في هذا المجلد الافتراضي حالياً",
+    "pt-PT": "Este diretório virtual não tem ficheiros",
+    "ja-JP": "この仮想ディレクトリにはファイルがありません",
+    "fr-FR": "Ce répertoire virtuel ne contient actuellement aucun fichier",
+    "ko-KR": "이 가상 디렉토리에는 파일이 없습니다.",
+    "ru-RU": "В этом виртуальном каталоге пока нет файлов",
+    "de-DE": "Dieses virtuelle Verzeichnis enthält vorübergehend keine Dateien"
+  }
+}

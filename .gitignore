@@ -1,0 +1,92 @@
+# Dependencies & Package Managers
+node_modules/
+.pnpm-store
+
+# Electron-Forge & Vite Build Outputs
+out/
+out_build/
+dist/
+.vite/
+*.tsbuildinfo
+*.map
+electron.vite.config.*.mjs
+!electron.vite.config.mts
+
+# Environment files & Logs
+.env
+.env.*
+!.env.example
+*.log
+logs/
+forge-build.log
+build/download.log
+
+# Databases & Runtime SQLite Caches (CRITICAL)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+firefly-ai-folder*.db
+
+# Build ExtraResources & PresetResources Ignores (CRITICAL: DO NOT COMMIT DYNAMIC BINARIES/MODELS/LOGS)
+build/extraResources/bin/
+build/extraResources/models/
+build/extraResources/llama/
+build/extraResources/bundles/
+build/extraResources/bundles-static/
+build/extraResources/stubs/
+build/extraResources/temp/
+build/extraResources/logs/
+build/extraResources/.VirtualDirectory/
+build/extraResources/configs/binaries.json
+build/extraResources/configs/models.json
+build/extraResources/model/*.bak.json
+build/extraResources/model/* - 副本*.json
+build/extraResources/model/*_v2_*.json
+build/presetResources/
+build/deps-to-package.json
+build/.download.lock
+build/llama-lib-zip
+build/.package.json.bak
+bin/
+
+# Static File Viewer & Public Assets
+public/file-viewer/
+public/vendor/
+public/wasm/
+public/flyfish-viewer-assets.json
+
+# Runtime Generated JSON & Service Logs
+src/electron/runtime-services/system/fastfetch_out.json
+.download-process.json
+
+# Local Virtual Directory, Test Caches & Coverage
+.VirtualDirectory
+tests/unit/test-files/
+test-results/
+reports/
+coverage/
+
+# i18n credentials & temporary translation files
+src/languages/api.json
+src/languages/translates/*/*.bak.*.json
+**/*.wrapped.*
+*.bak.json
+
+# Enterprise Closed-Source Directory (Pro / EE & Management Scripts & Tests)
+src/pro/
+pro/
+src/ee/
+ee/
+scripts/
+design/
+tests/
+
+# System & Tooling Temporary Files
+.DS_Store
+Thumbs.db
+trusted-signing-metadata.json
+sync-from-remote.ps1
+sync-tests.ps1
+sync.bat
+NUL

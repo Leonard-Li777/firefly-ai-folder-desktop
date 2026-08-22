@@ -1,0 +1,17 @@
+{
+    "设置分类": {
+        "en-US": "Set Category",
+        "es-ES": "Configurar categorías",
+        "ar-EG": "إعداد التصنيف",
+        "pt-PT": "Definir categorias",
+        "ru-RU": "Настройка категорий",
+        "ja-JP": "カテゴリを設定",
+        "de-DE": "Kategorie festlegen",
+        "fr-FR": "Configurer la catégorie",
+        "ko-KR": "분류 설정",
+        "$files": [
+            "renderer/components/settings/settings-navigation.tsx(1038-1046)"
+        ],
+        "$id": 3170
+    }
+}

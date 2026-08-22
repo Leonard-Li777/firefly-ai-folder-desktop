@@ -1,0 +1,241 @@
+{
+  "重复的错误，已忽略": {
+    "en-US": "Duplicate error, ignored",
+    "es-ES": "Error duplicado, ignorado",
+    "ar-EG": "خطأ مكرر، تم تجاهله",
+    "pt-PT": "Erro duplicado, ignorado",
+    "ru-RU": "Повторяющаяся ошибка, игнорируется",
+    "ja-JP": "重複エラー、無視されました",
+    "de-DE": "Doppelter Fehler, ignoriert",
+    "fr-FR": "Erreur en double, ignorée",
+    "ko-KR": "중복 오류, 무시됨",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11460-11473)"],
+    "$id": 4436
+  },
+  "AI错误: {type} - {message}": {
+    "en-US": "AI Error: {type} - {message}",
+    "es-ES": "Error de IA: {type} - {message}",
+    "ar-EG": "خطأ في الذكاء الاصطناعي: {type} - {message}",
+    "pt-PT": "Erro de IA: {type} - {message}",
+    "ru-RU": "Ошибка AI: {type} - {message}",
+    "ja-JP": "AI エラー: {type} - {message}",
+    "de-DE": "KI-Fehler: {type} - {message}",
+    "fr-FR": "Erreur IA : {type} - {message}",
+    "ko-KR": "AI 오류: {type} - {message}",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11728-11756)"],
+    "$id": 4512
+  },
+  "错误不可恢复或正在恢复中": {
+    "en-US": "The error is unrecoverable or recovering",
+    "es-ES": "El error es irrecuperable o se está recuperando.",
+    "ar-EG": "الخطأ غير قابل للاسترداد أو الاسترداد",
+    "pt-PT": "O erro é irrecuperável ou está em recuperação",
+    "ru-RU": "Ошибка неустранима или восстанавливается",
+    "ja-JP": "エラーは回復不能または回復中です",
+    "de-DE": "Der Fehler ist nicht behebbar oder wird behoben",
+    "fr-FR": "L'erreur est irrécupérable ou en cours de récupération",
+    "ko-KR": "오류가 복구 불가능하거나 복구 중입니다.",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(12379-12395)"],
+    "$id": 4513
+  },
+  "没有找到适用于 {type} 的恢复策略": {
+    "en-US": "No recovery policy found for {type}",
+    "es-ES": "No se encontró ninguna política de recuperación para {type}",
+    "ar-EG": "لم يتم العثور على سياسة استرداد لـ {type}",
+    "pt-PT": "Nenhuma política de recuperação encontrada para {type}",
+    "ru-RU": "Политика восстановления для {type} не найдена.",
+    "ja-JP": "{type} の回復ポリシーが見つかりませんでした",
+    "de-DE": "Keine Wiederherstellungsrichtlinie für {type} gefunden",
+    "fr-FR": "Aucune politique de récupération trouvée pour {type}",
+    "ko-KR": "{type}에 대한 복구 정책을 찾을 수 없습니다.",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(13158-13182)"],
+    "$id": 4514
+  },
+  "没有可用的恢复策略": {
+    "en-US": "No recovery strategy available",
+    "es-ES": "No hay estrategia de recuperación disponible",
+    "ar-EG": "لا توجد استراتيجية الاسترداد المتاحة",
+    "pt-PT": "Nenhuma estratégia de recuperação disponível",
+    "ru-RU": "Стратегия восстановления отсутствует.",
+    "ja-JP": "利用可能な回復戦略はありません",
+    "de-DE": "Keine Wiederherstellungsstrategie verfügbar",
+    "fr-FR": "Aucune stratégie de récupération disponible",
+    "ko-KR": "사용 가능한 복구 전략이 없습니다.",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(13289-13302)"],
+    "$id": 4515
+  },
+  "使用策略 \"{name}\" 成功恢复": {
+    "en-US": "Restored successfully using policy \"{name}\"",
+    "es-ES": "Restaurado exitosamente usando la política \"{name}\"",
+    "ar-EG": "تمت الاستعادة بنجاح باستخدام السياسة \"{name}\"",
+    "pt-PT": "Restaurado com êxito usando a política \"{name}\"",
+    "ru-RU": "Успешно восстановлено с использованием политики \"{name}\".",
+    "ja-JP": "ポリシー「{name}」を使用して正常に復元されました",
+    "de-DE": "Mit Richtlinie „{name}“ erfolgreich wiederhergestellt",
+    "fr-FR": "Restauré avec succès à l'aide de la stratégie \"{name}\"",
+    "ko-KR": "\"{name}\" 정책을 사용하여 성공적으로 복원되었습니다.",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(14139-14161)"],
+    "$id": 4516
+  },
+  "所有恢复策略都失败": {
+    "en-US": "All recovery strategies fail",
+    "es-ES": "Todas las estrategias de recuperación fallan",
+    "ar-EG": "كل استراتيجيات التعافي تفشل",
+    "pt-PT": "Todas as estratégias de recuperação falham",
+    "ru-RU": "Все стратегии восстановления терпят неудачу",
+    "ja-JP": "すべての回復戦略は失敗します",
+    "de-DE": "Alle Wiederherstellungsstrategien scheitern",
+    "fr-FR": "Toutes les stratégies de récupération échouent",
+    "ko-KR": "모든 복구 전략이 실패함",
+    "$files": [
+      "src/electron/runtime-services/ai/ai-error-handler.ts(14651-14664)",
+      "src/electron/runtime-services/ai/ai-error-handler.ts(14785-14798)"
+    ],
+    "$id": 4517
+  },
+  "AI错误历史已清除": {
+    "en-US": "AI error history cleared",
+    "es-ES": "Se borró el historial de errores de IA",
+    "ar-EG": "تم مسح سجل أخطاء الذكاء الاصطناعي",
+    "pt-PT": "Histórico de erros de IA apagado",
+    "ru-RU": "История ошибок ИИ очищена.",
+    "ja-JP": "AIエラー履歴をクリア",
+    "de-DE": "AI-Fehlerhistorie gelöscht",
+    "fr-FR": "L'historique des erreurs de l'IA a été effacé",
+    "ko-KR": "AI 오류 내역이 삭제되었습니다.",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(18449-18462)"],
+    "$id": 4518
+  },
+  "恢复已在进行中": {
+    "en-US": "Recovery is already in progress",
+    "es-ES": "La recuperación ya está en marcha",
+    "ar-EG": "عملية الاسترداد قيد التقدم بالفعل",
+    "pt-PT": "A recuperação já está em andamento",
+    "ru-RU": "Восстановление уже идет",
+    "ja-JP": "復旧はすでに進行中です",
+    "de-DE": "Die Wiederherstellung ist bereits im Gange",
+    "fr-FR": "La reprise est déjà en cours",
+    "ko-KR": "복구가 이미 진행 중입니다.",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(19048-19059)"],
+    "$id": 4519
+  },
+  "前往设置": {
+    "en-US": "Go to settings",
+    "es-ES": "Ir a configuración",
+    "ar-EG": "انتقل إلى الإعدادات",
+    "pt-PT": "Vá para configurações",
+    "ru-RU": "Перейти в настройки",
+    "ja-JP": "設定に移動",
+    "de-DE": "Gehen Sie zu den Einstellungen",
+    "fr-FR": "Allez dans les paramètres",
+    "ko-KR": "설정으로 이동",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(20849-20857)"],
+    "$id": 4520
+  },
+  "已推送错误到前端: {type}": {
+    "en-US": "Error pushed to frontend: {type}",
+    "es-ES": "Error enviado a la interfaz: {type}",
+    "ar-EG": "خطأ تم دفعه إلى الواجهة الأمامية: {type}",
+    "pt-PT": "Erro enviado ao front-end: {type}",
+    "ru-RU": "Ошибка отправлена ​​во внешний интерфейс: {type}",
+    "ja-JP": "フロントエンドにプッシュされたエラー: {type}",
+    "de-DE": "Fehler an Frontend übertragen: {type}",
+    "fr-FR": "Erreur transmise au frontend : {type}",
+    "ko-KR": "프런트엔드로 푸시된 오류: {type}",
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(23261-23281)"],
+    "$id": 4467
+  },
+  "baseUrl不能为空": {
+    "en-US": "BaseUrl cannot be empty",
+    "es-ES": "BaseUrl no puede estar vacío",
+    "ar-EG": "لا يمكن أن يكون baseUrl فارغًا",
+    "pt-PT": "BaseUrl não pode estar vazio",
+    "ru-RU": "baseUrl не может быть пустым",
+    "ja-JP": "baseUrl は空にできません",
+    "de-DE": "BaseUrl darf nicht leer sein",
+    "fr-FR": "BaseUrl ne peut pas être vide",
+    "ko-KR": "baseUrl은 공백일 수 없습니다.",
+    "$files": [
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(3828-3843)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(6365-6380)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11833-11848)"
+    ],
+    "$id": 5746
+  },
+  "API响应错误: {status} - {errorText}": {
+    "en-US": "API response error: {status} - {errorText}",
+    "es-ES": "Error en la respuesta de la API: {status} - {errorText}",
+    "ar-EG": "خطأ في استجابة واجهة برمجة التطبيقات: {status} - {errorText}",
+    "pt-PT": "Erro de resposta da API: {status} - {errorText}",
+    "ru-RU": "Ошибка ответа API: {status} - {errorText}",
+    "ja-JP": "API応答エラー: {status} - {errorText}\r",
+    "de-DE": "API-Antwortfehler: {status} - {errorText}",
+    "fr-FR": "Erreur de réponse API : {status} - {errorText}",
+    "ko-KR": "API 응답 오류: {status} - {errorText}",
+    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(5634-5669)"],
+    "$id": 5740
+  },
+  "provider 是必填项": {
+    "en-US": "Provider is required",
+    "es-ES": "Provider es un campo obligatorio",
+    "ar-EG": "مقدّم الخدمة إجباري",
+    "pt-PT": "Provider é obrigatório",
+    "ru-RU": "Провайдер является обязательным полем",
+    "ja-JP": "provider は必須項目です",
+    "de-DE": "Provider ist ein Pflichtfeld",
+    "fr-FR": "Le fournisseur est obligatoire",
+    "ko-KR": "provider는 필수 입력 항목입니다.",
+    "$files": [
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10325-10342)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10688-10705)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11300-11317)"
+    ],
+    "$id": 5742
+  },
+  "baseUrl 格式不正确: {baseUrl}": {
+    "en-US": "BaseUrl format is incorrect: {baseUrl}",
+    "es-ES": "BaseUrl tiene un formato incorrecto: {baseUrl}",
+    "ar-EG": "تنسيق baseUrl غير صحيح: {baseUrl}",
+    "pt-PT": "Formato de baseUrl incorreto: {baseUrl}",
+    "ru-RU": "Неверный формат baseUrl: {baseUrl}",
+    "ja-JP": "baseUrl の形式が正しくありません: {baseUrl}",
+    "de-DE": "BaseUrl hat ein ungültiges Format: {baseUrl}",
+    "fr-FR": "Le format de baseUrl est incorrect : {baseUrl}",
+    "ko-KR": "baseUrl 형식이 올바르지 않습니다: {baseUrl}",
+    "$files": [
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10462-10490)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11040-11068)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11607-11635)"
+    ],
+    "$id": 5743
+  },
+  "apiKey 是必填项": {
+    "en-US": "ApiKey is required",
+    "es-ES": "ApiKey es un campo obligatorio",
+    "ar-EG": "مفتاح API إجباري",
+    "pt-PT": "ApiKey é obrigatório",
+    "ru-RU": "apiKey является обязательным полем",
+    "ja-JP": "apiKey は必須項目です",
+    "de-DE": "ApiKey ist ein Pflichtfeld",
+    "fr-FR": "La clé API est obligatoire",
+    "ko-KR": "apiKey는 필수 입력 항목입니다.",
+    "$files": [
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10835-10850)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11447-11462)"
+    ],
+    "$id": 5744
+  },
+  "model 是必填项": {
+    "en-US": "Model is required",
+    "es-ES": "Model es un campo obligatorio",
+    "ar-EG": "النموذج إجباري",
+    "pt-PT": "Model é obrigatório",
+    "ru-RU": "model является обязательным полем",
+    "ja-JP": "model は必須項目です",
+    "de-DE": "Model ist ein Pflichtfeld",
+    "fr-FR": "Le modèle est obligatoire",
+    "ko-KR": "model은 필수 입력 항목입니다.",
+    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(10906-10920)"],
+    "$id": 5745
+  }
+}
