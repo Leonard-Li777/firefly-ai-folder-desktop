@@ -180,11 +180,10 @@ export class ConfigDbManager {
       }
 
       // 2. 加载 model_[lang].json、ollama_[lang].json、providers_[lang].json
-      const modelConfigDir = this.getExtraResourcesDir('model')
       const now = new Date().toISOString()
 
       // 加载 model_[lang].json
-      const localPresetPath = path.join(modelConfigDir, `model_${language}.json`)
+      const localPresetPath = ResourceLocator.resolveModelConfig(`model_${language}.json`)
       if (fs.existsSync(localPresetPath)) {
         try {
           const content = fs.readFileSync(localPresetPath, 'utf-8')
@@ -208,7 +207,7 @@ export class ConfigDbManager {
       }
 
       // 加载 ollama_[lang].json
-      const ollamaPresetPath = path.join(modelConfigDir, `ollama_${language}.json`)
+      const ollamaPresetPath = ResourceLocator.resolveModelConfig(`ollama_${language}.json`)
       if (fs.existsSync(ollamaPresetPath)) {
         try {
           const content = fs.readFileSync(ollamaPresetPath, 'utf-8')
@@ -235,7 +234,7 @@ export class ConfigDbManager {
       }
 
       // 加载 providers_[lang].json 到 CLOUD_MODEL_CONFIGS
-      const providersPresetPath = path.join(modelConfigDir, `providers_${language}.json`)
+      const providersPresetPath = ResourceLocator.resolveModelConfig(`providers_${language}.json`)
       if (fs.existsSync(providersPresetPath)) {
         try {
           const content = fs.readFileSync(providersPresetPath, 'utf-8')
@@ -274,9 +273,7 @@ export class ConfigDbManager {
    */
   private loadInitialFileDimensionsToDb(db: Database.Database, language: string): void {
     try {
-      const fileDimensionDir = this.getExtraResourcesDir('fileDimension')
-
-      const filePath = path.join(fileDimensionDir, `fileDimension_${language}.json`)
+      const filePath = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
       if (!fs.existsSync(filePath)) {
         logger.warn(
           LogCategory.CONFIG,
@@ -429,14 +426,11 @@ export class ConfigDbManager {
   }
 
   private getExtraResourcesDir(subdir: string): string {
-    return path.join(ResourceLocator.getBaseResourceDir(), subdir)
+    return ResourceLocator.resolveResourcePath(subdir)
   }
 
   private getConfigFilePath(filename: string): string {
-    return (
-      ResourceLocator.resolveConfig(filename) ||
-      path.join(ResourceLocator.getBaseResourceDir(), 'configs', filename)
-    )
+    return ResourceLocator.resolveConfig(filename)
   }
 
   /**

@@ -75,8 +75,13 @@ export class AISkillApiService {
     while (attempts < maxAttempts) {
       try {
         await new Promise<void>((resolve, reject) => {
-          const server = http.createServer((req, res) => {
-            this.handleRequest(req, res)
+          const server = http.createServer(async (req, res) => {
+            // 处理 Skill API 路由；未匹配的路由返回 false 时兜底返回 404，
+            // 与 UnifiedWorkerServer 挂载模式下的行为保持一致
+            const handled = await this.handleRequest(req, res)
+            if (!handled && !res.writableEnded) {
+              this.sendError(res, 404, t('接口不存在'))
+            }
           })
 
           const onError = (err: any) => {

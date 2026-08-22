@@ -1,0 +1,60 @@
+{
+  "version": "b10582",
+  "updatedAt": "2026-08-22",
+  "platform": "win32",
+  "arch": "x64",
+  "mode": "all-platforms-bundle",
+  "status": "downloading",
+  "engine": "llama.cpp",
+  "files": [
+    {
+      "name": "cudart-llama-bin-win-cuda-12.4-x64.zip",
+      "size": 391443627,
+      "platform": "win32",
+      "arch": "x64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/cudart-llama-bin-win-cuda-12.4-x64.zip"
+    },
+    {
+      "name": "llama-b10582-bin-win-cuda-12.4-x64.zip",
+      "size": 250973879,
+      "platform": "win32",
+      "arch": "x64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cuda-12.4-x64.zip"
+    },
+    {
+      "name": "llama-b10582-bin-win-vulkan-x64.zip",
+      "size": 34948736,
+      "platform": "win32",
+      "arch": "x64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-vulkan-x64.zip"
+    },
+    {
+      "name": "llama-b10582-bin-win-rocm-7.14-x64.zip",
+      "size": 196956675,
+      "platform": "win32",
+      "arch": "x64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-rocm-7.14-x64.zip"
+    },
+    {
+      "name": "llama-b10582-bin-win-sycl-x64.zip",
+      "size": 119840170,
+      "platform": "win32",
+      "arch": "x64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-sycl-x64.zip"
+    },
+    {
+      "name": "llama-b10582-bin-win-openvino-2026.3-x64.zip",
+      "size": 80396131,
+      "platform": "win32",
+      "arch": "x64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-openvino-2026.3-x64.zip"
+    },
+    {
+      "name": "llama-b10582-bin-win-cpu-x64.zip",
+      "size": 18592859,
+      "platform": "win32",
+      "arch": "x64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cpu-x64.zip"
+    }
+  ]
+}
