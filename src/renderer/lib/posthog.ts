@@ -72,10 +72,13 @@ const checkServerReachability = async (): Promise<boolean> => {
 }
 
 /**
- * 初始化 PostHog — 先启动录制，再异步补充配置
+ * 初始化 PostHog
  *
- * 关键优化：将 posthog.init() 提前到同步执行，确保 session recording
- * 在页面加载后立即启动，不被后续异步操作阻塞。
+ * 优化时序：
+ * 主进程在创建窗口与渲染前已完成硬件资源探测与缓存，
+ * 因此在前端执行 posthog.init() 时即可直接读取硬件评估结果，
+ * 精准指定 disable_session_recording 状态（老核显直接禁用，高性能设备直接开启），
+ * 避免二次动态切换与启动卡顿。
  */
 export const initPostHog = async () => {
   // 只有 app.isPackaged（已打包）或显式开启 ENABLE_POSTHOG 时才允许放行
@@ -92,14 +95,47 @@ export const initPostHog = async () => {
     return
   }
 
-  // 立即初始化 PostHog（同步执行），不等待任何异步操作
+  // 1. 获取硬件检测结果（主进程在窗口加载前已检测就绪）与门控配置
+  let hardwareInfo: any = null
+  try {
+    hardwareInfo = await window.electronAPI?.getHardwareInfo?.()
+  } catch (hwErr) {
+    console.warn('PostHog: 获取硬件信息失败:', hwErr)
+  }
+
+  const isHardwareEligible = hardwareInfo?.isSessionRecordingEligible ?? false
+  const reason =
+    hardwareInfo?.sessionRecordingReason ||
+    (isHardwareEligible ? '硬件检测通过' : '未获取到硬件支持信息')
+
+  // 2. 检查遥测门控（企业版等）
+  let isTelemetryAllowed = true
+  try {
+    const tierStore = useTierStore.getState()
+    if (!tierStore.tier && !tierStore.isLoading) {
+      tierStore.fetchProfile().catch(() => {})
+    }
+    const { computed_limits } = useTierStore.getState()
+    if (computed_limits?.telemetry === false) {
+      isTelemetryAllowed = false
+    }
+  } catch {}
+
+  const enableRecording = isHardwareEligible && isTelemetryAllowed
+
+  console.log(
+    `PostHog: 初始化启动，Session 录屏状态: ${enableRecording ? '已开启' : '已禁用'} (${reason})`
+  )
+
+  // 3. 立即带入精准的录屏配置初始化 PostHog
   posthog.init(POSTHOG_KEY, {
     api_host: POSTHOG_HOST,
     // 开发环境下开启调试模式，可以在浏览器控制台看到事件发送情况
     debug: !__IS_PROD__,
     // 捕获所有点击、表单提交等行为
     autocapture: true,
-    // 开启 Session Recording — 立即生效
+    // 依据硬件检测结果精准设置录屏开关：低配老核显直接禁用，高性能设备直接开启
+    disable_session_recording: !enableRecording,
     session_recording: {
       // 不默认掩码输入框与文本
       maskAllInputs: false,
@@ -127,12 +163,12 @@ export const initPostHog = async () => {
     }
   })
 
-  // 注册全局属性，确保每个事件都带上环境标识
+  // 4. 注册全局属性，确保每个事件都带上环境标识
   posthog.register({
     运行环境: __IS_PROD__ ? '生产环境' : '开发环境'
   })
 
-  // 动态监控服务器连通性，离线时停止 PostHog 以免产生大量网络报错
+  // 5. 动态监控服务器连通性，离线时停止 PostHog 以免产生大量网络报错
   const checkConnection = async () => {
     const isReachable = await checkServerReachability()
     if (!isReachable) {
@@ -165,29 +201,8 @@ export const initPostHog = async () => {
     checkConnection()
   }
 
-  // 异步补充配置（不阻塞 session recording）：
-  // 1. telemetry 门控检查（如果是企业版，后续停用追踪）
-  // 2. 机器 ID 识别
+  // 6. 异步补充身份识别（机器 ID）
   Promise.resolve().then(async () => {
-    try {
-      // 通过 tier store 获取 computed_limits.telemetry 门控
-      const tierStore = useTierStore.getState()
-      // 确保 tier 数据已加载
-      if (!tierStore.tier || tierStore.isLoading) {
-        await tierStore.fetchProfile()
-      }
-      const { computed_limits } = useTierStore.getState()
-      if (computed_limits?.telemetry === false) {
-        console.log('PostHog: 检测到 telemetry 门控禁用，停止追踪')
-        posthog.opt_out_capturing()
-        isCapturingPaused = true
-        savePausedState(true)
-        return
-      }
-    } catch (e) {
-      console.warn('PostHog: tier 数据读取失败', e)
-    }
-
     try {
       const machineId = await window.electronAPI!.getMachineId()
       if (machineId) {
@@ -197,7 +212,9 @@ export const initPostHog = async () => {
           machine_id: machineId,
           app_version: __APP_VERSION__,
           platform: window.navigator.platform,
-          last_environment: __IS_PROD__ ? '生产环境' : '开发环境'
+          last_environment: __IS_PROD__ ? '生产环境' : '开发环境',
+          gpu_model: hardwareInfo?.gpuModel || 'unknown',
+          session_recording_enabled: enableRecording
         })
       }
     } catch (error) {

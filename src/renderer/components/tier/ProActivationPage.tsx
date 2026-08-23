@@ -8,6 +8,8 @@ import { Crown, Info, QrCode, Sparkles, X } from 'lucide-react'
 import { ActivationCodeSection } from './ActivationCodeSection'
 import { useConfigStore } from '../../stores/config-store'
 import { getLocalPrice } from '../../lib/utils'
+import { openExternalLink } from '../../lib/external-link'
+import { EmailSvg } from '../ui/EmailSvg'
 
 export const ProActivationPage: React.FC = () => {
   const navigate = useNavigate()
@@ -245,36 +247,137 @@ export const ProActivationPage: React.FC = () => {
             </div>
 
             <div
-              id="wechat-qr-section"
+              id="contact-support-section"
               className="max-w-md mx-auto px-6 pb-16 text-center space-y-5"
             >
               <Card className="border-2 border-border/40 shadow-sm">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base font-black tracking-tight">
-                    {t('联系管理员')}
-                  </CardTitle>
-                  <CardDescription className="text-xs font-medium">
-                    {t('扫码添加管理员微信，留言「开通 Pro」即可开通')}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center gap-4 pb-6">
-                  {qrSrc ? (
-                    <div className="p-3 bg-white rounded-xl shadow-inner ring-1 ring-border/10">
-                      <img
-                        src={qrSrc}
-                        alt={t('微信二维码')}
-                        className="w-48 h-48 object-contain rounded-lg"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-48 h-48 bg-muted/30 rounded-xl animate-pulse flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground">{t('加载中...')}</span>
-                    </div>
-                  )}
-                  <p className="text-xs text-muted-foreground font-medium">
-                    {t('或添加微信号：reloaded1234567')}
-                  </p>
-                </CardContent>
+                {(config as any)?.PAYMENT_INFO?.method === 'creem' ? (
+                  <>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base font-black tracking-tight">
+                        {t('官方管理员与订阅支持')}
+                      </CardTitle>
+                      <CardDescription className="text-xs font-medium">
+                        {t('如有开通、支付、发票或退款疑问，请通过官方支持渠道联系我们')}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center gap-3 pb-6 text-xs">
+                      <div className="p-4 bg-muted/30 rounded-xl w-full text-center space-y-2 border border-border/50">
+                        <div className="font-bold text-foreground space-y-1">
+                          <div className="flex items-center gap-1 justify-center">
+                            <span>{t('官方客服邮箱：')}</span>
+                            <EmailSvg
+                              email={
+                                (config as any)?.PAYMENT_INFO?.support_email ||
+                                'support@aifolder.net'
+                              }
+                              color="#3b82f6"
+                              fontSize={12}
+                            />
+                          </div>
+                          <div>
+                            {t('Telegram：')}
+                            <button
+                              type="button"
+                              onClick={() => openExternalLink('https://t.me/firefly_ai_folder')}
+                              className="text-sky-500 font-bold hover:underline ml-1"
+                            >
+                              @firefly_ai_folder
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          {(config as any)?.PAYMENT_INFO?.contact_info?.response_time ||
+                            t('承诺 24-48 小时内回复')}
+                        </p>
+                      </div>
+
+                      <div className="p-3 bg-amber-500/5 rounded-xl w-full text-center border border-amber-500/20 text-[11px]">
+                        <span className="font-bold text-amber-600 dark:text-amber-400">
+                          {(config as any)?.PAYMENT_INFO?.refund_policy_summary ||
+                            t('支持 14 天无理由退款保障')}
+                        </span>
+                      </div>
+
+                      <div className="flex flex-wrap justify-center gap-3 pt-2 text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openExternalLink(
+                              (config as any)?.PAYMENT_INFO?.cancellation_portal?.url ||
+                                'https://www.creem.io/portal'
+                            )
+                          }
+                          className="text-primary font-bold hover:underline"
+                        >
+                          {t('取消 / 管理订阅')}
+                        </button>
+                        <span className="text-muted-foreground">•</span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openExternalLink(
+                              (config as any)?.PAYMENT_INFO?.legal_urls?.privacy_policy ||
+                                'https://www.aifolder.net/en-US/privacy'
+                            )
+                          }
+                          className="text-muted-foreground hover:text-foreground hover:underline"
+                        >
+                          {t('隐私政策')}
+                        </button>
+                        <span className="text-muted-foreground">•</span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openExternalLink(
+                              (config as any)?.PAYMENT_INFO?.legal_urls?.terms_of_service ||
+                                'https://www.aifolder.net/en-US/terms'
+                            )
+                          }
+                          className="text-muted-foreground hover:text-foreground hover:underline"
+                        >
+                          {t('服务条款')}
+                        </button>
+                      </div>
+                    </CardContent>
+                  </>
+                ) : (
+                  <>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base font-black tracking-tight">
+                        {t('联系管理员')}
+                      </CardTitle>
+                      <CardDescription className="text-xs font-medium">
+                        {t('扫码添加管理员微信，留言「开通 Pro」即可开通')}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center gap-4 pb-6">
+                      {qrSrc ? (
+                        <div className="p-3 bg-white rounded-xl shadow-inner ring-1 ring-border/10">
+                          <img
+                            src={qrSrc}
+                            alt={t('微信二维码')}
+                            className="w-48 h-48 object-contain rounded-lg"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-48 h-48 bg-muted/30 rounded-xl animate-pulse flex items-center justify-center">
+                          <span className="text-xs text-muted-foreground">{t('加载中...')}</span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground font-medium flex-wrap justify-center">
+                        <span>
+                          {t('或添加微信号：reloaded1234567')} | {t('管理员邮箱：')}
+                        </span>
+                        <EmailSvg
+                          email={(config as any)?.PAYMENT_INFO?.support_email || 'support@iocn.cn'}
+                          color="#3b82f6"
+                          fontSize={12}
+                        />
+                      </div>
+                    </CardContent>
+                  </>
+                )}
               </Card>
             </div>
           </div>

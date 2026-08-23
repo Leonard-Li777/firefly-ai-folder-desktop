@@ -4,7 +4,7 @@
   "platform": "win32",
   "arch": "x64",
   "mode": "all-platforms-bundle",
-  "status": "downloading",
+  "status": "completed",
   "engine": "llama.cpp",
   "files": [
     {
@@ -55,6 +55,13 @@
       "platform": "win32",
       "arch": "x64",
       "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cpu-x64.zip"
+    },
+    {
+      "name": "llama-b10582-bin-win-hip-x64.zip",
+      "size": 196503634,
+      "platform": "win32",
+      "arch": "x64",
+      "url": ""
     }
   ]
 }

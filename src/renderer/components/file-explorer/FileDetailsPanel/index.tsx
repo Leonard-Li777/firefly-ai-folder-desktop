@@ -271,8 +271,20 @@ export const FileDetailsPanel: React.FC<any> = ({
       analysisResult.qualityReasoning
     )
       tabs.push({ id: 'quality', label: t('质量评分'), icon: 'star_rate' })
-    if (analysisResult.lrc?.trim())
-      tabs.push({ id: 'ocr', label: t('OCR/语音/歌词'), icon: 'graphic_eq' })
+
+    const isImageFile =
+      analysisResult.type === 'image' ||
+      (analysisResult.mimeType && analysisResult.mimeType.startsWith('image/'))
+    const hasOcr = Boolean(
+      analysisResult.lrc?.trim() ||
+      analysisResult.ocrContent?.trim() ||
+      (isImageFile && analysisResult.content?.trim()) ||
+      (analysisResult.content &&
+        (analysisResult.content.includes('OCR') ||
+          analysisResult.content.includes('图片内提取文字')))
+    )
+
+    if (hasOcr) tabs.push({ id: 'ocr', label: t('OCR/语音/歌词'), icon: 'graphic_eq' })
     if (analysisResult.content?.trim())
       tabs.push({ id: 'summary', label: t('内容摘要'), icon: 'summarize' })
     tabs.push({ id: 'metadata', label: t('元数据'), icon: 'analytics' })

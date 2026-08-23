@@ -17,6 +17,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { AboutDialog } from '../settings/about-dialog'
 import { FirecoresRulesDialog } from './FirecoresRulesDialog'
 import { UpgradeAccountDialog } from './UpgradeAccountDialog'
+import { AccountManagementDialog } from './AccountManagementDialog'
 import { UserTier, formatDateOnly } from '@firefly/shared'
 import { WechatQRDialog } from './WechatQRDialog'
 import { cn } from '../../lib/utils'
@@ -26,18 +27,21 @@ import { t } from '@app/languages'
 import { useLocation } from 'react-router-dom'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useTierStore } from '../../stores/tier-store'
+import { useConfigStore } from '../../stores/config-store'
 import { useAnalysisQueueStore } from '../../stores/analysis-queue-store'
 import { Button } from '../ui/button'
 
 export const UserAvatarMenu: React.FC = () => {
   const { tier, firecores, subscription, fetchProfile } = useTierStore()
   const { openSettings } = useSettingsStore()
+  const config = useConfigStore(state => state.config)
   const location = useLocation()
 
   const [isOpen, setIsOpen] = useState(false)
   const [isRulesOpen, setIsRulesOpen] = useState(false)
   const [rulesDefaultTab, setRulesDefaultTab] = useState<string | undefined>(undefined)
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
+  const [isAccountManagementOpen, setIsAccountManagementOpen] = useState(false)
   const [isAboutOpen, setIsAboutOpen] = useState(false)
   const [isWechatQROpen, setIsWechatQROpen] = useState(false)
 
@@ -233,7 +237,11 @@ export const UserAvatarMenu: React.FC = () => {
                   <Button
                     onClick={() =>
                       handleMenuClick(() => {
-                        setIsUpgradeOpen(true)
+                        if (tier !== UserTier.FREE) {
+                          setIsAccountManagementOpen(true)
+                        } else {
+                          setIsUpgradeOpen(true)
+                        }
                       })
                     }
                     style={{ whiteSpace: 'normal', height: 'auto' }}
@@ -244,7 +252,7 @@ export const UserAvatarMenu: React.FC = () => {
                       style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
                       className="min-w-0 !whitespace-normal !break-words text-center leading-tight"
                     >
-                      {t('升级帐户')}
+                      {tier !== UserTier.FREE ? t('管理帐户') : t('升级帐户')}
                     </span>
                   </Button>
                   <Button
@@ -368,32 +376,50 @@ export const UserAvatarMenu: React.FC = () => {
                 </span>
               </button>
               <div className="my-1 border-t border-border/30 mx-2" />
-              <button
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
-                onClick={() =>
-                  handleMenuClick(() => {
-                    openExternalLink('https://www.zhihu.com/ring/2019089912897478826')
-                  })
-                }
-              >
-                <MessageCircle className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all text-sky-500" />
-                <span className="font-medium whitespace-normal break-words min-w-0 text-left leading-tight">
-                  {t('知乎萤核圈子')}
-                </span>
-              </button>
-              <button
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
-                onClick={() =>
-                  handleMenuClick(() => {
-                    setIsWechatQROpen(true)
-                  })
-                }
-              >
-                <QrCode className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all text-green-500" />
-                <span className="font-medium whitespace-normal break-words min-w-0 text-left leading-tight">
-                  {t('扫码加微信群')}
-                </span>
-              </button>
+              {(config as any)?.PAYMENT_INFO?.method === 'creem' ? (
+                <button
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                  onClick={() =>
+                    handleMenuClick(() => {
+                      openExternalLink('https://t.me/firefly_ai_folder')
+                    })
+                  }
+                >
+                  <MessageCircle className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all text-sky-400" />
+                  <span className="font-medium whitespace-normal break-words min-w-0 text-left leading-tight">
+                    {t('Telegram 官方频道')}
+                  </span>
+                </button>
+              ) : (
+                <>
+                  <button
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                    onClick={() =>
+                      handleMenuClick(() => {
+                        openExternalLink('https://www.zhihu.com/ring/2019089912897478826')
+                      })
+                    }
+                  >
+                    <MessageCircle className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all text-sky-500" />
+                    <span className="font-medium whitespace-normal break-words min-w-0 text-left leading-tight">
+                      {t('知乎萤核圈子')}
+                    </span>
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                    onClick={() =>
+                      handleMenuClick(() => {
+                        setIsWechatQROpen(true)
+                      })
+                    }
+                  >
+                    <QrCode className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all text-green-500" />
+                    <span className="font-medium whitespace-normal break-words min-w-0 text-left leading-tight">
+                      {t('扫码加微信群')}
+                    </span>
+                  </button>
+                </>
+              )}
               <div className="my-1 border-t border-border/30 mx-2" />
               <button
                 className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
@@ -419,6 +445,10 @@ export const UserAvatarMenu: React.FC = () => {
         defaultTab={rulesDefaultTab}
       />
       <UpgradeAccountDialog open={isUpgradeOpen} onOpenChange={setIsUpgradeOpen} />
+      <AccountManagementDialog
+        open={isAccountManagementOpen}
+        onOpenChange={setIsAccountManagementOpen}
+      />
       <AboutDialog open={isAboutOpen} onOpenChange={setIsAboutOpen} />
       <WechatQRDialog open={isWechatQROpen} onOpenChange={setIsWechatQROpen} />
     </div>

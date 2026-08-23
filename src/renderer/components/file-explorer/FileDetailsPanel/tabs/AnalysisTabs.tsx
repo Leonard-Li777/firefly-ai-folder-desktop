@@ -255,9 +255,25 @@ export const AnalysisTabs: React.FC<any> = ({
               maskClass
             )}
           >
-            {analysisResult.lrc}
+            {(() => {
+              if (analysisResult.lrc?.trim()) return analysisResult.lrc
+              if (analysisResult.ocrContent?.trim()) return analysisResult.ocrContent
+              const isImageFile =
+                analysisResult.type === 'image' ||
+                (analysisResult.mimeType && analysisResult.mimeType.startsWith('image/'))
+              if (isImageFile && analysisResult.content?.trim()) return analysisResult.content
+              if (
+                analysisResult.content &&
+                (analysisResult.content.includes('OCR') ||
+                  analysisResult.content.includes('图片内提取文字'))
+              ) {
+                return analysisResult.content
+              }
+              return t('暂无 OCR 识别结果')
+            })()}
           </div>
         )}
+
         {activeTab === 'summary' && (
           <SummaryMarkdown content={analysisResult.content} maskClass={maskClass} />
         )}

@@ -1589,6 +1589,17 @@ export class FileProcessor {
       const cpuCompletionStage = analysisMode === 'simple' ? 1 : 2
       try {
         const metadataLyrics = getFallbackLyrics(fileInfo.metadata)
+        const isImageOrMedia =
+          enhancedFileType === 'image' ||
+          (magikaCategory?.mime_type && magikaCategory.mime_type.startsWith('image/'))
+        const ocrOrExtractedText =
+          (ocrText && ocrText.trim()) ||
+          (isImageOrMedia && contentResult.content) ||
+          (contentResult.content && contentResult.content.includes('OCR')
+            ? contentResult.content
+            : null)
+        const finalLrc = metadataLyrics ?? ocrOrExtractedText ?? null
+
         db.prepare(
           `
           INSERT INTO file_contents (file_fingerprint, content, metadata, lrc)
@@ -1605,7 +1616,7 @@ export class FileProcessor {
           fileFingerprint,
           contentResult.content ?? null,
           JSON.stringify(fileInfo.metadata),
-          metadataLyrics ?? null
+          finalLrc
         )
 
         await databaseService.updateAnalysisStage(fileFingerprint, cpuCompletionStage)
