@@ -9,7 +9,7 @@
     "de-DE": "Vorbereitungen für den ersten Installationsstart...",
     "fr-FR": "Préparation du démarrage de l'installation pour la première fois...",
     "ko-KR": "처음으로 설치 시작을 준비 중입니다...",
-    "$files": ["src/electron/main/index.ts(22413-22430)"],
+    "$files": ["src/electron/main/index.ts(22916-22933)"],
     "$id": 10169
   },
   "正在从版本 {oldVersion} 升级到 {newVersion}...": {
@@ -22,7 +22,7 @@
     "de-DE": "Upgrade von Version {oldVersion} auf {newVersion}...",
     "fr-FR": "Mise à niveau de la version {oldVersion} vers {newVersion}...",
     "ko-KR": "버전 {oldVersion}에서 {newVersion}로 업그레이드 중...",
-    "$files": ["src/electron/main/index.ts(22442-22484)"],
+    "$files": ["src/electron/main/index.ts(22945-22987)"],
     "$id": 10170
   },
   "检测到您的 {gpuName} 显卡驱动版本过低或不兼容，已为你降级AI引擎速度，建立升级驱动体验满血AI性能。": {
@@ -217,7 +217,7 @@
     "de-DE": "Die Dateiinformationen wurden im Arbeitsbereich nicht gefunden",
     "fr-FR": "Les informations du fichier sont introuvables dans l'espace de travail",
     "ko-KR": "작업공간에서 파일정보를 찾을 수 없습니다",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(7547-7564)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(7655-7672)"],
     "$id": 7671
   },
   "未找到所属的工作区目录": {
@@ -230,7 +230,7 @@
     "de-DE": "Das entsprechende Arbeitsbereichsverzeichnis wurde nicht gefunden",
     "fr-FR": "Le répertoire de l'espace de travail correspondant est introuvable",
     "ko-KR": "해당 작업공간 디렉터리를 찾을 수 없습니다.",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(7720-7735)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(7828-7843)"],
     "$id": 7672
   },
   "未知错误": {
@@ -244,7 +244,7 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(15185-15193)",
+      "src/electron/main/ipc-handlers/misc.ts(15293-15301)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(29456-29464)"
     ],
     "$id": 10180
@@ -260,8 +260,8 @@
     "fr-FR": "Service de nettoyage de fichiers non initialisé",
     "ko-KR": "파일 정리 서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(15346-15360)",
-      "src/electron/main/ipc-handlers/misc.ts(15576-15590)"
+      "src/electron/main/ipc-handlers/misc.ts(15454-15468)",
+      "src/electron/main/ipc-handlers/misc.ts(15684-15698)"
     ],
     "$id": 7673
   },
@@ -276,8 +276,8 @@
     "fr-FR": "Base de données non connectée",
     "ko-KR": "데이터베이스가 연결되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(15889-15899)",
-      "src/electron/main/ipc-handlers/misc.ts(16297-16307)"
+      "src/electron/main/ipc-handlers/misc.ts(15997-16007)",
+      "src/electron/main/ipc-handlers/misc.ts(16405-16415)"
     ],
     "$id": 7674
   },
@@ -291,7 +291,7 @@
     "de-DE": "Netzwerkverbindung fehlgeschlagen",
     "fr-FR": "La connexion réseau a échoué",
     "ko-KR": "네트워크 연결 실패",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(17236-17246)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(17344-17354)"],
     "$id": 10181
   },
   "仅允许 http: 和 https: 协议": {
@@ -304,7 +304,7 @@
     "de-DE": "Es sind nur die Protokolle http: und https: zulässig",
     "fr-FR": "Seuls les protocoles http: et https: sont autorisés",
     "ko-KR": "http: 및 https: 프로토콜만 허용됩니다.",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(22174-22199)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(22282-22307)"],
     "$id": 10182
   },
   "无效的 URL": {
@@ -317,7 +317,7 @@
     "de-DE": "Ungültige URL",
     "fr-FR": "URL invalide",
     "ko-KR": "잘못된 URL",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(22326-22337)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(22434-22445)"],
     "$id": 10183
   },
   "核心引擎未初始化": {
@@ -331,11 +331,11 @@
     "fr-FR": "Moteur principal non initialisé",
     "ko-KR": "코어 엔진이 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(22573-22585)",
-      "src/electron/main/ipc-handlers/misc.ts(22757-22769)",
-      "src/electron/main/ipc-handlers/misc.ts(22942-22954)",
-      "src/electron/main/ipc-handlers/misc.ts(23104-23116)",
-      "src/electron/main/ipc-handlers/misc.ts(23252-23264)"
+      "src/electron/main/ipc-handlers/misc.ts(22681-22693)",
+      "src/electron/main/ipc-handlers/misc.ts(22865-22877)",
+      "src/electron/main/ipc-handlers/misc.ts(23050-23062)",
+      "src/electron/main/ipc-handlers/misc.ts(23212-23224)",
+      "src/electron/main/ipc-handlers/misc.ts(23360-23372)"
     ],
     "$id": 7675
   },
@@ -350,9 +350,9 @@
     "fr-FR": "Base de données non initialisée",
     "ko-KR": "데이터베이스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(25239-25250)",
-      "src/electron/main/ipc-handlers/misc.ts(25485-25496)",
-      "src/electron/main/ipc-handlers/misc.ts(25731-25742)"
+      "src/electron/main/ipc-handlers/misc.ts(25347-25358)",
+      "src/electron/main/ipc-handlers/misc.ts(25593-25604)",
+      "src/electron/main/ipc-handlers/misc.ts(25839-25850)"
     ],
     "$id": 7676
   },

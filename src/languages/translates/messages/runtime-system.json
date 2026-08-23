@@ -94,7 +94,7 @@
     "de-DE": "Leistungsoptimierung läuft",
     "fr-FR": "L'optimisation des performances est en cours",
     "ko-KR": "성능 최적화 진행 중",
-    "$files": ["src/electron/runtime-services/system/performance-optimizer.ts(13264-13277)"],
+    "$files": ["src/electron/runtime-services/system/performance-optimizer.ts(13726-13739)"],
     "$id": 8141
   },
   "不支持的资源类型: {type}": {

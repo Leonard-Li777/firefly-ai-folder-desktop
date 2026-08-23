@@ -148,6 +148,45 @@
     ],
     "$id": 8136
   },
+  "找不到对应的工作空间: {path}": {
+    "en-US": "The corresponding workspace cannot be found: {path}",
+    "es-ES": "No se puede encontrar el espacio de trabajo correspondiente: {path}",
+    "ar-EG": "لا يمكن العثور على مساحة العمل المقابلة: {path}",
+    "pt-PT": "O espaço de trabalho correspondente não foi encontrado: {path}",
+    "ru-RU": "Соответствующее рабочее пространство не найдено: {path}",
+    "ja-JP": "対応するワークスペースが見つかりません: {path}",
+    "de-DE": "Der entsprechende Arbeitsbereich kann nicht gefunden werden: {path}",
+    "fr-FR": "L'espace de travail correspondant est introuvable : {path}",
+    "ko-KR": "해당 작업공간을 찾을 수 없습니다: {path}",
+    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/index.ts(12341-12363)"],
+    "$id": 4382
+  },
+  "选中的文件中没有AI分析过的文件，请先进行AI分析": {
+    "en-US": "None of the selected files have been analyzed by AI; please perform AI analysis first.  ",
+    "es-ES": "No hay archivos analizados por IA en los archivos seleccionados; realice primero el análisis de IA.",
+    "ar-EG": "لا توجد ملفات تم تحليلها بواسطة الذكاء الاصطناعي في الملفات المحددة، يرجى إجراء تحليل الذكاء الاصطناعي أولاً",
+    "pt-PT": "Não há ficheiros analisados por IA nos ficheiros selecionados, por favor, realize primeiro a análise por IA",
+    "ru-RU": "В выбранных файлах нет файлов, проанализированных ИИ, сначала выполните анализ ИИ",
+    "ja-JP": "選択されたファイルにはAI分析済みのファイルが含まれていません。先にAI分析を行ってください",
+    "de-DE": "In den ausgewählten Dateien befinden sich keine von KI analysierten Dateien. Bitte führen Sie zunächst eine KI-Analyse durch.",
+    "fr-FR": "Aucun fichier sélectionné n'a été analysé par l'IA, veuillez d'abord effectuer une analyse IA",
+    "ko-KR": "선택한 파일 중 AI 분석이 완료된 파일이 없습니다. 먼저 AI 분석을 진행해 주세요.",
+    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3002-3031)"],
+    "$id": 3421
+  },
+  "当前没有AI分析过的文件，请先在真实目录中勾选文件进行AI分析": {
+    "en-US": "There are currently no files analyzed by AI; please select files in the actual directory first for AI analysis.",
+    "es-ES": "Actualmente no hay archivos analizados por IA; seleccione primero archivos en el directorio real para realizar el análisis de IA.",
+    "ar-EG": "لا توجد ملفات تم تحليلها بواسطة الذكاء الاصطناعي حالياً، يرجى أولاً تحديد الملفات في الدليل الحقيقي لإجراء تحليل الذكاء الاصطناعي",
+    "pt-PT": "Não há atualmente ficheiros analisados por IA, por favor, selecione primeiro os ficheiros no diretório real para realizar a análise por IA",
+    "ru-RU": "В настоящее время нет файлов, проанализированных ИИ, сначала отметьте файлы в реальном каталоге для анализа ИИ",
+    "ja-JP": "現在、AI分析済みのファイルはありません。先に実ディレクトリでファイルを選択し、AI分析を行ってください",
+    "de-DE": "Derzeit liegen keine von KI analysierten Dateien vor. Bitte wählen Sie zunächst Dateien im echten Verzeichnis aus, um eine KI-Analyse durchzuführen.",
+    "fr-FR": "Aucun fichier analysé par l'IA n'est disponible pour le moment, veuillez d'abord sélectionner des fichiers dans le répertoire réel pour une analyse IA",
+    "ko-KR": "현재 AI 분석이 완료된 파일이 없습니다. 실제 디렉터리에서 파일을 선택하여 AI 분석을 먼저 진행해 주세요.",
+    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3047-3082)"],
+    "$id": 3422
+  },
   "核心引擎未初始化，请等待初始化完成后再试": {
     "en-US": "Core engine not initialized, please wait for initialization to complete and try again",
     "es-ES": "El motor principal no está inicializado, espere a que la inicialización se complete e inténtelo de nuevo",
@@ -202,44 +241,5 @@
     "ko-KR": "이름을 업데이트할 수 없습니다: 이름 \"{name}\"이(가) 이미 사용 중입니다",
     "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11685-11710)"],
     "$id": 8139
-  },
-  "找不到对应的工作空间: {path}": {
-    "en-US": "The corresponding workspace cannot be found: {path}",
-    "es-ES": "No se puede encontrar el espacio de trabajo correspondiente: {path}",
-    "ar-EG": "لا يمكن العثور على مساحة العمل المقابلة: {path}",
-    "pt-PT": "O espaço de trabalho correspondente não foi encontrado: {path}",
-    "ru-RU": "Соответствующее рабочее пространство не найдено: {path}",
-    "ja-JP": "対応するワークスペースが見つかりません: {path}",
-    "de-DE": "Der entsprechende Arbeitsbereich kann nicht gefunden werden: {path}",
-    "fr-FR": "L'espace de travail correspondant est introuvable : {path}",
-    "ko-KR": "해당 작업공간을 찾을 수 없습니다: {path}",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/index.ts(12341-12363)"],
-    "$id": 4382
-  },
-  "选中的文件中没有AI分析过的文件，请先进行AI分析": {
-    "en-US": "None of the selected files have been analyzed by AI; please perform AI analysis first.  ",
-    "es-ES": "No hay archivos analizados por IA en los archivos seleccionados; realice primero el análisis de IA.",
-    "ar-EG": "لا توجد ملفات تم تحليلها بواسطة الذكاء الاصطناعي في الملفات المحددة، يرجى إجراء تحليل الذكاء الاصطناعي أولاً",
-    "pt-PT": "Não há ficheiros analisados por IA nos ficheiros selecionados, por favor, realize primeiro a análise por IA",
-    "ru-RU": "В выбранных файлах нет файлов, проанализированных ИИ, сначала выполните анализ ИИ",
-    "ja-JP": "選択されたファイルにはAI分析済みのファイルが含まれていません。先にAI分析を行ってください",
-    "de-DE": "In den ausgewählten Dateien befinden sich keine von KI analysierten Dateien. Bitte führen Sie zunächst eine KI-Analyse durch.",
-    "fr-FR": "Aucun fichier sélectionné n'a été analysé par l'IA, veuillez d'abord effectuer une analyse IA",
-    "ko-KR": "선택한 파일 중 AI 분석이 완료된 파일이 없습니다. 먼저 AI 분석을 진행해 주세요.",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3002-3031)"],
-    "$id": 3421
-  },
-  "当前没有AI分析过的文件，请先在真实目录中勾选文件进行AI分析": {
-    "en-US": "There are currently no files analyzed by AI; please select files in the actual directory first for AI analysis.",
-    "es-ES": "Actualmente no hay archivos analizados por IA; seleccione primero archivos en el directorio real para realizar el análisis de IA.",
-    "ar-EG": "لا توجد ملفات تم تحليلها بواسطة الذكاء الاصطناعي حالياً، يرجى أولاً تحديد الملفات في الدليل الحقيقي لإجراء تحليل الذكاء الاصطناعي",
-    "pt-PT": "Não há atualmente ficheiros analisados por IA, por favor, selecione primeiro os ficheiros no diretório real para realizar a análise por IA",
-    "ru-RU": "В настоящее время нет файлов, проанализированных ИИ, сначала отметьте файлы в реальном каталоге для анализа ИИ",
-    "ja-JP": "現在、AI分析済みのファイルはありません。先に実ディレクトリでファイルを選択し、AI分析を行ってください",
-    "de-DE": "Derzeit liegen keine von KI analysierten Dateien vor. Bitte wählen Sie zunächst Dateien im echten Verzeichnis aus, um eine KI-Analyse durchzuführen.",
-    "fr-FR": "Aucun fichier analysé par l'IA n'est disponible pour le moment, veuillez d'abord sélectionner des fichiers dans le répertoire réel pour une analyse IA",
-    "ko-KR": "현재 AI 분석이 완료된 파일이 없습니다. 실제 디렉터리에서 파일을 선택하여 AI 분석을 먼저 진행해 주세요.",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3047-3082)"],
-    "$id": 3422
   }
 }

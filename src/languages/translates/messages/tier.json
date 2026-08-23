@@ -1,4 +1,248 @@
 {
+  "企业版": {
+    "en-US": "Enterprise Edition",
+    "es-ES": "Edición empresarial",
+    "ar-EG": "إصدار المؤسسة",
+    "pt-PT": "Edição Empresarial",
+    "ru-RU": "Корпоративная версия",
+    "ja-JP": "エンタープライズ版",
+    "de-DE": "Enterprise-Edition",
+    "fr-FR": "Édition Entreprise",
+    "ko-KR": "엔터프라이즈 에디션",
+    "$files": [
+      "src/renderer/components/tier/AccountManagementDialog.tsx(1575-1582)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(25595-25602)",
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3584-3591)",
+      "src/renderer/components/tier/UserAvatarMenu.tsx(2135-2142)",
+      "src/renderer/components/tier/UserTierBadge.tsx(920-927)"
+    ],
+    "$id": 10959
+  },
+  "代理版": {
+    "en-US": "Agent version",
+    "es-ES": "Versión del agente",
+    "ar-EG": "نسخة الوكيل",
+    "pt-PT": "Versão do agente",
+    "ru-RU": "Версия агента",
+    "ja-JP": "エージェントのバージョン",
+    "de-DE": "Agent-Version",
+    "fr-FR": "Version de l'agent",
+    "ko-KR": "에이전트 버전",
+    "$files": [
+      "src/renderer/components/tier/AccountManagementDialog.tsx(1626-1633)",
+      "src/renderer/components/tier/UserAvatarMenu.tsx(2417-2424)"
+    ],
+    "$id": 11040
+  },
+  "Pro 专业版": {
+    "en-US": "Pro Professional Edition",
+    "es-ES": "Edición profesional profesional",
+    "ar-EG": "الطبعة المهنية للمحترفين",
+    "pt-PT": "Edição Profissional Profissional",
+    "ru-RU": "Профессиональная версия Pro",
+    "ja-JP": "プロプロフェッショナル版",
+    "de-DE": "Pro Professional Edition",
+    "fr-FR": "Édition Professionnelle Pro",
+    "ko-KR": "프로 프로페셔널 에디션",
+    "$files": [
+      "src/renderer/components/tier/AccountManagementDialog.tsx(1675-1686)",
+      "src/renderer/components/tier/UpgradeAccountDialog.tsx(2948-2959)"
+    ],
+    "$id": 11022
+  },
+  "免费版": {
+    "en-US": "Free version",
+    "es-ES": "Versión gratuita",
+    "ar-EG": "نسخة مجانية",
+    "pt-PT": "Versão gratuita",
+    "ru-RU": "Бесплатная версия",
+    "ja-JP": "無料版",
+    "de-DE": "Kostenlose Version",
+    "fr-FR": "Version gratuite",
+    "ko-KR": "무료 버전",
+    "$files": [
+      "src/renderer/components/tier/AccountManagementDialog.tsx(1718-1725)",
+      "src/renderer/components/tier/FirecoresRulesDialog.tsx(25432-25439)",
+      "src/renderer/components/tier/UserAvatarMenu.tsx(2967-2974)",
+      "src/renderer/components/tier/UserTierBadge.tsx(1253-1260)"
+    ],
+    "$id": 10957
+  },
+  "账户与订阅管理": {
+    "en-US": "Account and Subscription Management",
+    "es-ES": "Gestión de cuentas y suscripciones",
+    "ar-EG": "إدارة الحسابات والاشتراكات",
+    "pt-PT": "Gerenciamento de contas e assinaturas",
+    "ru-RU": "Управление учетной записью и подпиской",
+    "ja-JP": "アカウントとサブスクリプションの管理",
+    "de-DE": "Konto- und Abonnementverwaltung",
+    "fr-FR": "Gestion des comptes et des abonnements",
+    "ko-KR": "계정 및 구독 관리",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(2461-2472)"],
+    "$id": 9522
+  },
+  "查看当前生效的计划详情与管理下期自动续订": {
+    "en-US": "View current plan details and manage automatic renewal for the next period",
+    "es-ES": "Vea los detalles del plan actual y administre la renovación automática para el próximo período",
+    "ar-EG": "عرض تفاصيل الخطة الحالية وإدارة التجديد التلقائي للفترة القادمة",
+    "pt-PT": "Veja os detalhes do plano atual e gerencie a renovação automática para o próximo período",
+    "ru-RU": "Просматривайте сведения о текущем плане и управляйте автоматическим продлением на следующий период.",
+    "ja-JP": "現在のプランの詳細を表示し、次の期間の自動更新を管理します",
+    "de-DE": "Sehen Sie sich aktuelle Plandetails an und verwalten Sie die automatische Verlängerung für den nächsten Zeitraum",
+    "fr-FR": "Afficher les détails du forfait actuel et gérer le renouvellement automatique pour la prochaine période",
+    "ko-KR": "현재 요금제 세부정보를 확인하고 다음 기간에 대한 자동 갱신을 관리하세요.",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(2595-2619)"],
+    "$id": 9523
+  },
+  "当前方案：{plan}": {
+    "en-US": "Current plan: {plan}",
+    "es-ES": "Plan actual: {plan}",
+    "ar-EG": "الخطة الحالية: {plan}",
+    "pt-PT": "Plano atual: {plan}",
+    "ru-RU": "Текущий план: {plan}",
+    "ja-JP": "現在のプラン: {plan}",
+    "de-DE": "Aktueller Plan: {plan}",
+    "fr-FR": "Forfait actuel : {plan}",
+    "ko-KR": "현재 계획: {plan}",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(3155-3170)"],
+    "$id": 9524
+  },
+  "已激活": {
+    "en-US": "Activated",
+    "es-ES": "Activado",
+    "ar-EG": "مُفعّل",
+    "pt-PT": "Ativado",
+    "ru-RU": "Активировано",
+    "ja-JP": "アクティブ化された",
+    "de-DE": "Aktiviert",
+    "fr-FR": "Activé",
+    "ko-KR": "활성화됨",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(3402-3409)"],
+    "$id": 9525
+  },
+  "订阅有效期至：": {
+    "en-US": "Subscription is valid until:",
+    "es-ES": "La suscripción es válida hasta:",
+    "ar-EG": "الاشتراك صالح حتى:",
+    "pt-PT": "A assinatura é válida até:",
+    "ru-RU": "Подписка действительна до:",
+    "ja-JP": "サブスクリプションは次の期間まで有効です。",
+    "de-DE": "Das Abonnement ist gültig bis:",
+    "fr-FR": "L'abonnement est valable jusqu'au :",
+    "ko-KR": "구독은 다음 날짜까지 유효합니다.",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(3713-3724)"],
+    "$id": 9526
+  },
+  "管理员与售后支持：": {
+    "en-US": "Administrator and after-sales support:",
+    "es-ES": "Administrador y soporte postventa:",
+    "ar-EG": "المسؤول ودعم ما بعد البيع:",
+    "pt-PT": "Administrador e suporte pós-venda:",
+    "ru-RU": "Администраторская и послепродажная поддержка:",
+    "ja-JP": "管理者およびアフターセールスサポート:",
+    "de-DE": "Administrator und Kundendienst:",
+    "fr-FR": "Administrateur et support après-vente :",
+    "ko-KR": "관리자 및 판매 후 지원:",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(4148-4161)"],
+    "$id": 9527
+  },
+  "自主取消订阅说明": {
+    "en-US": "Instructions for self-unsubscription",
+    "es-ES": "Instrucciones para darse de baja",
+    "ar-EG": "تعليمات لإلغاء الاشتراك الذاتي",
+    "pt-PT": "Instruções para cancelamento automático",
+    "ru-RU": "Инструкция по самостоятельной отписке",
+    "ja-JP": "自己購読解除の手順",
+    "de-DE": "Anleitung zur Selbstabmeldung",
+    "fr-FR": "Instructions pour l'auto-désabonnement",
+    "ko-KR": "자체 구독 취소 안내",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(5256-5268)"],
+    "$id": 9528
+  },
+  "您可以随时直接通过 Creem 客户门户取消下期自动续订。取消后，您在当前剩余计费周期内仍可正常使用全部 Pro 权益。": {
+    "en-US": "You may cancel your next automatic renewal at any time directly through the Creem Customer Portal. After cancellation, you can still use all Pro benefits normally during the remaining billing cycle.",
+    "es-ES": "Puede cancelar su próxima renovación automática en cualquier momento directamente a través del Portal del Cliente de Creem. Después de la cancelación, aún podrá utilizar todos los beneficios Pro normalmente durante el ciclo de facturación restante.",
+    "ar-EG": "يمكنك إلغاء التجديد التلقائي التالي في أي وقت مباشرةً من خلال بوابة عملاء Creem. بعد الإلغاء، لا يزال بإمكانك استخدام جميع مزايا Pro بشكل طبيعي خلال دورة الفوترة المتبقية.",
+    "pt-PT": "Você pode cancelar sua próxima renovação automática a qualquer momento diretamente através do Portal do Cliente Creem. Após o cancelamento, você ainda poderá usar todos os benefícios do Pro normalmente durante o ciclo de faturamento restante.",
+    "ru-RU": "Вы можете отменить следующее автоматическое продление в любое время непосредственно через клиентский портал Creem. После отмены вы по-прежнему сможете нормально пользоваться всеми преимуществами Pro в течение оставшегося платежного цикла.",
+    "ja-JP": "次の自動更新は、Creem カスタマー ポータルからいつでも直接キャンセルできます。キャンセル後も、残りの請求期間中はすべての Pro 特典を通常どおりご利用いただけます。",
+    "de-DE": "Sie können Ihre nächste automatische Verlängerung jederzeit direkt über das Creem-Kundenportal kündigen. Nach der Kündigung können Sie während des verbleibenden Abrechnungszeitraums weiterhin alle Pro-Vorteile normal nutzen.",
+    "fr-FR": "Vous pouvez annuler votre prochain renouvellement automatique à tout moment directement via le portail client Creem. Après l'annulation, vous pouvez toujours utiliser tous les avantages Pro normalement pendant le cycle de facturation restant.",
+    "ko-KR": "Creem 고객 포털을 통해 언제든지 직접 다음 자동 갱신을 취소할 수 있습니다. 취소 후에도 남은 청구 주기 동안 모든 Pro 혜택을 정상적으로 사용할 수 있습니다.",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(5452-5541)"],
+    "$id": 9529
+  },
+  "退订 / 取消自动续订 (Customer Portal)": {
+    "en-US": "Unsubscribe/Cancel automatic renewal (Customer Portal)",
+    "es-ES": "Darse de baja/Cancelar renovación automática (Portal del Cliente)",
+    "ar-EG": "إلغاء الاشتراك/إلغاء التجديد التلقائي (بوابة العملاء)",
+    "pt-PT": "Cancelar assinatura/Cancelar renovação automática (Portal do Cliente)",
+    "ru-RU": "Отменить подписку/отменить автоматическое продление (Портал для клиентов)",
+    "ja-JP": "自動更新の退会・キャンセル（カスタマーポータル）",
+    "de-DE": "Automatische Verlängerung abbestellen/stornieren (Kundenportal)",
+    "fr-FR": "Désabonnement/Annulation du renouvellement automatique (Portail Client)",
+    "ko-KR": "자동 갱신 구독 취소/해지(고객 포털)",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(5951-5984)"],
+    "$id": 9530
+  },
+  "授权与订阅说明": {
+    "en-US": "Authorization and Subscription Instructions",
+    "es-ES": "Instrucciones de autorización y suscripción",
+    "ar-EG": "تعليمات الترخيص والاشتراك",
+    "pt-PT": "Instruções de autorização e assinatura",
+    "ru-RU": "Инструкция по авторизации и подписке",
+    "ja-JP": "認証とサブスクリプションの手順",
+    "de-DE": "Autorisierungs- und Abonnementanweisungen",
+    "fr-FR": "Instructions d’autorisation et d’abonnement",
+    "ko-KR": "승인 및 구독 지침",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(6407-6418)"],
+    "$id": 9531
+  },
+  "国内版不支持在线支付与自动扣款续费，授权激活均由管理员人工完成。授权到期后不会发生自动扣费，如需续期请联系客服微信或管理员邮箱。": {
+    "en-US": "The domestic version does not support online payment and automatic deduction and renewal, and authorization activation is completed manually by the administrator. No automatic deduction will occur after the authorization expires. If you need to renew, please contact customer service WeChat or the administrator's email.",
+    "es-ES": "La versión nacional no admite pagos en línea ni deducciones y renovaciones automáticas, y el administrador completa manualmente la activación de la autorización. No se producirá ninguna deducción automática después de que expire la autorización. Si necesita renovar, comuníquese con el servicio de atención al cliente WeChat o el correo electrónico del administrador.",
+    "ar-EG": "النسخة المحلية لا تدعم الدفع عبر الإنترنت والخصم والتجديد التلقائي، ويتم تفعيل التفويض يدويًا من قبل المسؤول. لن يتم الخصم التلقائي بعد انتهاء التفويض. إذا كنت بحاجة إلى التجديد، فيرجى الاتصال بخدمة العملاء WeChat أو البريد الإلكتروني للمسؤول.",
+    "pt-PT": "A versão nacional não suporta pagamento online e dedução e renovação automática, e a ativação da autorização é realizada manualmente pelo administrador. Nenhuma dedução automática ocorrerá após a autorização expirar. Se precisar renovar, entre em contato com o atendimento ao cliente WeChat ou com o e-mail do administrador.",
+    "ru-RU": "Отечественная версия не поддерживает онлайн-оплату и автоматическое списание и продление, а активация авторизации выполняется администратором вручную. После истечения срока действия разрешения автоматического вычета не произойдет. Если вам необходимо продлить подписку, обратитесь в службу поддержки клиентов WeChat или по электронной почте администратору.",
+    "ja-JP": "国内版はオンライン決済や自動引き落とし・更新には対応しておらず、認証アクティベーションは管理者が手動で完了する。承認の有効期限が切れた後は、自動控除は行われません。更新する必要がある場合は、カスタマー サービス WeChat または管理者の電子メールにご連絡ください。",
+    "de-DE": "Die Inlandsversion unterstützt keine Online-Zahlung und keine automatische Abbuchung und Verlängerung, und die Aktivierung der Autorisierung wird manuell vom Administrator durchgeführt. Nach Ablauf der Autorisierung erfolgt kein automatischer Abzug. Wenn Sie eine Verlängerung benötigen, wenden Sie sich bitte an den WeChat-Kundendienst oder an die E-Mail-Adresse des Administrators.",
+    "fr-FR": "La version nationale ne prend pas en charge le paiement en ligne, ni la déduction et le renouvellement automatiques, et l'activation de l'autorisation est effectuée manuellement par l'administrateur. Aucune déduction automatique n’aura lieu après l’expiration de l’autorisation. Si vous devez renouveler, veuillez contacter le service client WeChat ou l'e-mail de l'administrateur.",
+    "ko-KR": "국내 버전은 온라인 결제와 자동 공제 및 갱신을 지원하지 않으며, 인증 활성화는 관리자가 수동으로 완료합니다. 승인이 만료된 후에는 자동 공제가 발생하지 않습니다. 갱신이 필요한 경우 고객 서비스 WeChat 또는 관리자 이메일로 문의하세요.",
+    "$files": ["src/renderer/components/tier/AccountManagementDialog.tsx(6546-6633)"],
+    "$id": 9532
+  },
+  "隐私政策": {
+    "en-US": "Privacy policy",
+    "es-ES": "Política de privacidad",
+    "ar-EG": "سياسة الخصوصية",
+    "pt-PT": "Política de Privacidade",
+    "ru-RU": "политика конфиденциальности",
+    "ja-JP": "プライバシーポリシー",
+    "de-DE": "Datenschutzrichtlinie",
+    "fr-FR": "Politique de confidentialité",
+    "ko-KR": "개인 정보 보호 정책",
+    "$files": [
+      "src/renderer/components/tier/AccountManagementDialog.tsx(6995-7003)",
+      "src/renderer/components/tier/ProActivationPage.tsx(14330-14338)"
+    ],
+    "$id": 9533
+  },
+  "服务条款": {
+    "en-US": "Terms of Service",
+    "es-ES": "Términos de servicio",
+    "ar-EG": "شروط الخدمة",
+    "pt-PT": "Termos de Serviço",
+    "ru-RU": "Условия использования",
+    "ja-JP": "利用規約",
+    "de-DE": "Nutzungsbedingungen",
+    "fr-FR": "Conditions d'utilisation",
+    "ko-KR": "서비스 약관",
+    "$files": [
+      "src/renderer/components/tier/AccountManagementDialog.tsx(7250-7258)",
+      "src/renderer/components/tier/ProActivationPage.tsx(14980-14988)"
+    ],
+    "$id": 9534
+  },
   "标识码已复制到剪贴板": {
     "en-US": "Identification code copied to clipboard",
     "es-ES": "Código de identificación copiado al portapapeles",
@@ -384,7 +628,7 @@
     "ko-KR": "자신에게 맞는 플랜을 선택하고, 관리자에게 문의하여 활성화를 완료하고, AI 파일 관리의 잠재력을 최대한 활용하세요.",
     "$files": [
       "src/renderer/components/tier/EnterpriseActivationPage.tsx(4030-4068)",
-      "src/renderer/components/tier/ProActivationPage.tsx(4570-4608)"
+      "src/renderer/components/tier/ProActivationPage.tsx(4671-4709)"
     ],
     "$id": 10900
   },
@@ -400,7 +644,7 @@
     "ko-KR": "가장 인기있는",
     "$files": [
       "src/renderer/components/tier/EnterpriseActivationPage.tsx(4890-4898)",
-      "src/renderer/components/tier/ProActivationPage.tsx(5829-5837)",
+      "src/renderer/components/tier/ProActivationPage.tsx(5930-5938)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(5870-5878)"
     ],
     "$id": 10901
@@ -417,7 +661,7 @@
     "ko-KR": "관리자에게 문의",
     "$files": [
       "src/renderer/components/tier/EnterpriseActivationPage.tsx(7444-7453)",
-      "src/renderer/components/tier/ProActivationPage.tsx(10585-10594)"
+      "src/renderer/components/tier/ProActivationPage.tsx(15311-15320)"
     ],
     "$id": 10902
   },
@@ -447,7 +691,7 @@
     "$files": [
       "src/renderer/components/tier/EnterpriseActivationPage.tsx(7983-7992)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(12380-12389)",
-      "src/renderer/components/tier/ProActivationPage.tsx(11113-11122)",
+      "src/renderer/components/tier/ProActivationPage.tsx(15883-15892)",
       "src/renderer/components/tier/WechatQRDialog.tsx(1280-1289)"
     ],
     "$id": 7732
@@ -465,7 +709,7 @@
     "$files": [
       "src/renderer/components/tier/EnterpriseActivationPage.tsx(8338-8348)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(12762-12772)",
-      "src/renderer/components/tier/ProActivationPage.tsx(11462-11472)"
+      "src/renderer/components/tier/ProActivationPage.tsx(16256-16266)"
     ],
     "$id": 10904
   },
@@ -481,7 +725,7 @@
     "ko-KR": "또는 WeChat ID 추가: reloaded1234567",
     "$files": [
       "src/renderer/components/tier/EnterpriseActivationPage.tsx(8507-8533)",
-      "src/renderer/components/tier/ProActivationPage.tsx(11627-11653)"
+      "src/renderer/components/tier/ProActivationPage.tsx(16521-16547)"
     ],
     "$id": 10905
   },
@@ -630,7 +874,7 @@
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(5912-5920)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(6244-6252)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(7922-7930)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(10868-10876)"
+      "src/renderer/components/tier/UserAvatarMenu.tsx(11341-11349)"
     ],
     "$id": 10928
   },
@@ -858,7 +1102,7 @@
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(17234-17242)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(6472-6480)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(8108-8116)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(9805-9813)"
+      "src/renderer/components/tier/UserAvatarMenu.tsx(10278-10286)"
     ],
     "$id": 10991
   },
@@ -1044,23 +1288,6 @@
     "$files": ["src/renderer/components/tier/FirecoresRulesDialog.tsx(25365-25373)"],
     "$id": 10956
   },
-  "免费版": {
-    "en-US": "Free version",
-    "es-ES": "Versión gratuita",
-    "ar-EG": "نسخة مجانية",
-    "pt-PT": "Versão gratuita",
-    "ru-RU": "Бесплатная версия",
-    "ja-JP": "無料版",
-    "de-DE": "Kostenlose Version",
-    "fr-FR": "Version gratuite",
-    "ko-KR": "무료 버전",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(25432-25439)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(2705-2712)",
-      "src/renderer/components/tier/UserTierBadge.tsx(1253-1260)"
-    ],
-    "$id": 10957
-  },
   "专业版": {
     "en-US": "Professional version",
     "es-ES": "Versión profesional",
@@ -1073,28 +1300,10 @@
     "ko-KR": "프로페셔널 버전",
     "$files": [
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(25513-25520)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(2441-2448)",
+      "src/renderer/components/tier/UserAvatarMenu.tsx(2703-2710)",
       "src/renderer/components/tier/UserTierBadge.tsx(1092-1099)"
     ],
     "$id": 10958
-  },
-  "企业版": {
-    "en-US": "Enterprise Edition",
-    "es-ES": "Edición empresarial",
-    "ar-EG": "إصدار المؤسسة",
-    "pt-PT": "Edição Empresarial",
-    "ru-RU": "Корпоративная версия",
-    "ja-JP": "エンタープライズ版",
-    "de-DE": "Enterprise-Edition",
-    "fr-FR": "Édition Entreprise",
-    "ko-KR": "엔터프라이즈 에디션",
-    "$files": [
-      "src/renderer/components/tier/FirecoresRulesDialog.tsx(25595-25602)",
-      "src/renderer/components/tier/UpgradeAccountDialog.tsx(3584-3591)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(1873-1880)",
-      "src/renderer/components/tier/UserTierBadge.tsx(920-927)"
-    ],
-    "$id": 10959
   },
   "永久": {
     "en-US": "Permanent",
@@ -1482,7 +1691,7 @@
     "ko-KR": "년도",
     "$files": [
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(35195-35200)",
-      "src/renderer/components/tier/ProActivationPage.tsx(2528-2533)"
+      "src/renderer/components/tier/ProActivationPage.tsx(2629-2634)"
     ],
     "$id": 11004
   },
@@ -1749,7 +1958,7 @@
     "de-DE": "Monatlich",
     "fr-FR": "Mensuel",
     "ko-KR": "월간 간행물",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1444-1450)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1545-1551)"],
     "$id": 10997
   },
   "月": {
@@ -1762,7 +1971,7 @@
     "de-DE": "Mond",
     "fr-FR": "Lune",
     "ko-KR": "달",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1506-1511)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1607-1612)"],
     "$id": 10998
   },
   "灵活方便，随时可换": {
@@ -1775,7 +1984,7 @@
     "de-DE": "Flexibel und komfortabel, jederzeit änderbar",
     "fr-FR": "Flexible et pratique, peut être modifié à tout moment",
     "ko-KR": "유연하고 편리하며 언제든지 변경 가능",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1619-1632)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1720-1733)"],
     "$id": 10999
   },
   "¥{amount}/月": {
@@ -1788,7 +1997,7 @@
     "de-DE": "¥{amount}/Monat",
     "fr-FR": "¥{amount}/mois",
     "ko-KR": "¥{amount}/월",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1972-1987)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2073-2088)"],
     "$id": 8211
   },
   "季度": {
@@ -1801,7 +2010,7 @@
     "de-DE": "Quartal",
     "fr-FR": "Quart",
     "ko-KR": "4분의 1",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2114-2120)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2215-2221)"],
     "$id": 11000
   },
   "季": {
@@ -1814,7 +2023,7 @@
     "de-DE": "Jahreszeit",
     "fr-FR": "Saison",
     "ko-KR": "계절",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2176-2181)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2277-2282)"],
     "$id": 11001
   },
   "首购特惠": {
@@ -1827,7 +2036,7 @@
     "de-DE": "Sonderangebot für den ersten Kauf",
     "fr-FR": "Offre spéciale premier achat",
     "ko-KR": "첫구매 특별혜택",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2314-2322)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2415-2423)"],
     "$id": 11002
   },
   "年度": {
@@ -1840,7 +2049,7 @@
     "de-DE": "Jahr",
     "fr-FR": "Année",
     "ko-KR": "년도",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2466-2472)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2567-2573)"],
     "$id": 11003
   },
   "首购特惠，最高性价比": {
@@ -1853,7 +2062,7 @@
     "de-DE": "Sonderangebot für den ersten Kauf, das beste Preis-Leistungs-Verhältnis",
     "fr-FR": "Offre spéciale premier achat, le meilleur rapport qualité/prix",
     "ko-KR": "첫구매 특별혜택, 가격대비 최고의 가치",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2667-2681)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2768-2782)"],
     "$id": 11005
   },
   "开通 Pro 专业版": {
@@ -1866,7 +2075,7 @@
     "de-DE": "Aktivieren Sie die Pro Professional Edition",
     "fr-FR": "Activer l'édition Pro Professional",
     "ko-KR": "Pro Professional Edition 활성화",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(4424-4438)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(4525-4539)"],
     "$id": 11006
   },
   "折合 {price}": {
@@ -1879,7 +2088,7 @@
     "de-DE": "Konvertieren Sie {price}",
     "fr-FR": "Convertir {price}",
     "ko-KR": "전환하다 {price}",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(6653-6667)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(6754-6768)"],
     "$id": 11007
   },
   "比月付省 {percent}": {
@@ -1892,7 +2101,7 @@
     "de-DE": "Sparen Sie {percent} im Vergleich zur monatlichen Zahlung",
     "fr-FR": "Économisez {percent} par rapport au paiement mensuel",
     "ko-KR": "월별 결제에 비해 {percent} 절약",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(8062-8080)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(8163-8181)"],
     "$id": 11008
   },
   "特权承诺": {
@@ -1905,7 +2114,7 @@
     "de-DE": "Privilegienverpflichtung",
     "fr-FR": "Engagement privilégié",
     "ko-KR": "특권 약속",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(8944-8952)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9045-9053)"],
     "$id": 7754
   },
   "注：Pro 版承诺之后开发新功能一律原价（限前100名年付用户），无续订要求": {
@@ -1918,7 +2127,7 @@
     "de-DE": "Hinweis: Die Pro-Version verspricht, dass künftig entwickelte neue Funktionen zum Originalpreis angeboten werden (beschränkt auf die ersten 100 jährlich zahlenden Benutzer) und dass keine Verlängerung erforderlich ist.",
     "fr-FR": "Remarque : La version Pro promet que les nouvelles fonctionnalités développées à l'avenir seront au prix d'origine (limité aux 100 premiers utilisateurs payants annuels) et qu'il n'y a aucune exigence de renouvellement.",
     "ko-KR": "참고: Pro 버전에서는 향후 개발되는 새로운 기능이 원래 가격으로 제공되며(연간 유료 사용자 최초 100명으로 제한) 갱신 요구 사항이 없습니다.",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9095-9137)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9196-9238)"],
     "$id": 7755
   },
   "未来规划": {
@@ -1931,7 +2140,7 @@
     "de-DE": "Zukunftspläne",
     "fr-FR": "Projets futurs",
     "ko-KR": "향후 계획",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9732-9740)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9833-9841)"],
     "$id": 7756
   },
   "开发计划：萤核官方微调模型、压缩包智能管理(智能密码、破解、预览增强，更适合漫画l图片文档等）、智能文件(AI封面、一键配音，可以听小说、文档)、文件AI知识管理.....": {
@@ -1944,8 +2153,99 @@
     "de-DE": "Entwicklungsplan: Offizielles Feinabstimmungsmodell von Firefly, intelligente Komprimierungsverwaltung (intelligentes Passwort, Knacken, Vorschauverbesserung, besser geeignet für Comics, Bilddokumente usw.), intelligente Dateien (KI-Cover, Überspielen mit einem Klick, Sie können Romane und Dokumente anhören), Datei-KI-Wissensmanagement ...",
     "fr-FR": "Plan de développement : modèle de réglage fin officiel de Firefly, gestion intelligente de la compression (mot de passe intelligent, cracking, amélioration de l'aperçu, plus adapté aux bandes dessinées, documents illustrés, etc.), fichiers intelligents (couverture IA, doublage en un clic, vous pouvez écouter des romans et des documents), gestion des connaissances IA des fichiers...",
     "ko-KR": "개발 계획: Firefly 공식 미세 조정 모델, 압축 지능형 관리(지능형 비밀번호, 크래킹, 미리보기 향상, 만화, 그림 문서 등에 더 적합), 지능형 파일(AI 표지, 원클릭 더빙, 소설 및 문서 청취 가능), 파일 AI 지식 관리...",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9887-10002)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9988-10103)"],
     "$id": 7757
+  },
+  "官方管理员与订阅支持": {
+    "en-US": "Official Admin and Subscription Support",
+    "es-ES": "Soporte oficial de administración y suscripción",
+    "ar-EG": "الدعم الرسمي للإدارة والاشتراكات",
+    "pt-PT": "Administração Oficial e Suporte de Assinatura",
+    "ru-RU": "Официальная поддержка администратора и подписки",
+    "ja-JP": "公式管理者とサブスクリプションのサポート",
+    "de-DE": "Offizieller Admin- und Abonnement-Support",
+    "fr-FR": "Support officiel d’administration et d’abonnement",
+    "ko-KR": "공식 관리 및 구독 지원",
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(10796-10810)"],
+    "$id": 9535
+  },
+  "如有开通、支付、发票或退款疑问，请通过官方支持渠道联系我们": {
+    "en-US": "If you have any questions about activation, payment, invoice or refund, please contact us through official support channels",
+    "es-ES": "Si tiene alguna pregunta sobre activación, pago, factura o reembolso, contáctenos a través de los canales de soporte oficiales.",
+    "ar-EG": "إذا كان لديك أي أسئلة حول التفعيل أو الدفع أو الفاتورة أو استرداد الأموال، يرجى الاتصال بنا عبر قنوات الدعم الرسمية",
+    "pt-PT": "Se você tiver alguma dúvida sobre ativação, pagamento, fatura ou reembolso, entre em contato conosco através dos canais oficiais de suporte",
+    "ru-RU": "Если у вас есть какие-либо вопросы по активации, оплате, выставлению счета или возврату средств, свяжитесь с нами по официальным каналам поддержки.",
+    "ja-JP": "アクティベーション、支払い、請求書、返金についてご質問がある場合は、公式サポート チャネルを通じてお問い合わせください。",
+    "de-DE": "Wenn Sie Fragen zur Aktivierung, Zahlung, Rechnung oder Rückerstattung haben, kontaktieren Sie uns bitte über die offiziellen Supportkanäle",
+    "fr-FR": "Si vous avez des questions concernant l'activation, le paiement, la facture ou le remboursement, veuillez nous contacter via les canaux d'assistance officiels.",
+    "ko-KR": "활성화, 결제, 송장, 환불에 관한 질문이 있는 경우 공식 지원 채널을 통해 문의해 주세요.",
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(10945-10978)"],
+    "$id": 9536
+  },
+  "官方客服邮箱：": {
+    "en-US": "Official customer service email:",
+    "es-ES": "Correo electrónico oficial de atención al cliente:",
+    "ar-EG": "البريد الإلكتروني الرسمي لخدمة العملاء:",
+    "pt-PT": "E-mail oficial de atendimento ao cliente:",
+    "ru-RU": "Официальная электронная почта службы поддержки клиентов:",
+    "ja-JP": "公式カスタマーサービスメール:",
+    "de-DE": "Offizielle Kundendienst-E-Mail:",
+    "fr-FR": "E-mail officiel du service client :",
+    "ko-KR": "공식 고객 서비스 이메일:",
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(11464-11475)"],
+    "$id": 9537
+  },
+  "Telegram：": {
+    "en-US": "Telegram：",
+    "es-ES": "Telegram：",
+    "ar-EG": "Telegram：",
+    "pt-PT": "Telegram：",
+    "ru-RU": "Telegram：",
+    "ja-JP": "Telegram：",
+    "de-DE": "Telegram：",
+    "fr-FR": "Telegram：",
+    "ko-KR": "Telegram：",
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(11943-11956)"],
+    "$id": 9538
+  },
+  "承诺 24-48 小时内回复": {
+    "en-US": "Promise to reply within 24-48 hours",
+    "es-ES": "Prometo responder dentro de 24-48 horas",
+    "ar-EG": "وعد بالرد خلال 24-48 ساعة",
+    "pt-PT": "Prometa responder dentro de 24-48 horas",
+    "ru-RU": "Обещайте ответить в течение 24-48 часов.",
+    "ja-JP": "24 ～ 48 時間以内に返信することを約束する",
+    "de-DE": "Versprechen Sie, innerhalb von 24–48 Stunden zu antworten",
+    "fr-FR": "Promesse de réponse sous 24 à 48 heures",
+    "ko-KR": "24~48시간 이내에 답변을 약속드립니다.",
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(12594-12612)"],
+    "$id": 9539
+  },
+  "支持 14 天无理由退款保障": {
+    "en-US": "Supports 14-day no-questions-asked money-back guarantee",
+    "es-ES": "Admite una garantía de devolución de dinero de 14 días sin preguntas",
+    "ar-EG": "يدعم ضمان استعادة الأموال لمدة 14 يومًا دون طرح أسئلة",
+    "pt-PT": "Suporta garantia de devolução do dinheiro sem perguntas por 14 dias",
+    "ru-RU": "Поддерживает 14-дневную гарантию возврата денег без вопросов",
+    "ja-JP": "14日間の無質問返金保証をサポート",
+    "de-DE": "Unterstützt eine 14-tägige Geld-zurück-Garantie ohne Fragen",
+    "fr-FR": "Prend en charge la garantie de remboursement de 14 jours sans poser de questions",
+    "ko-KR": "14일 동안 묻지도 따지지도 않는 환불 보장을 지원합니다.",
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(13001-13019)"],
+    "$id": 9540
+  },
+  "取消 / 管理订阅": {
+    "en-US": "Cancel/manage subscription",
+    "es-ES": "Cancelar/administrar suscripción",
+    "ar-EG": "إلغاء/إدارة الاشتراك",
+    "pt-PT": "Cancelar/gerenciar assinatura",
+    "ru-RU": "Отмена/управление подпиской",
+    "ja-JP": "サブスクリプションのキャンセル/管理",
+    "de-DE": "Abonnement kündigen/verwalten",
+    "fr-FR": "Annuler/gérer l'abonnement",
+    "ko-KR": "구독 취소/관리",
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(13675-13688)"],
+    "$id": 9541
   },
   "扫码添加管理员微信，留言「开通 Pro」即可开通": {
     "en-US": "Scan the QR code to add the administrator on WeChat and leave a message \"Activate Pro\" to activate it.",
@@ -1957,8 +2257,21 @@
     "de-DE": "Scannen Sie den QR-Code, um den Administrator auf WeChat hinzuzufügen, und hinterlassen Sie eine Nachricht „Pro aktivieren“, um ihn zu aktivieren.",
     "fr-FR": "Scannez le code QR pour ajouter l'administrateur sur WeChat et laissez un message \"Activer Pro\" pour l'activer.",
     "ko-KR": "QR 코드를 스캔하여 WeChat에 관리자를 추가하고 \"Pro 활성화\" 메시지를 남겨 활성화하세요.",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(10717-10745)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(15455-15483)"],
     "$id": 11010
+  },
+  "管理员邮箱：": {
+    "en-US": "Administrator email:",
+    "es-ES": "Correo electrónico del administrador:",
+    "ar-EG": "البريد الإلكتروني للمسؤول:",
+    "pt-PT": "E-mail do administrador:",
+    "ru-RU": "Электронная почта администратора:",
+    "ja-JP": "管理者の電子メール:",
+    "de-DE": "E-Mail des Administrators:",
+    "fr-FR": "E-mail de l'administrateur :",
+    "ko-KR": "관리자 이메일:",
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(16553-16563)"],
+    "$id": 9542
   },
   "基础版": {
     "en-US": "Basic version",
@@ -2109,19 +2422,6 @@
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(3987-3995)"
     ],
     "$id": 11021
-  },
-  "Pro 专业版": {
-    "en-US": "Pro Professional Edition",
-    "es-ES": "Edición profesional profesional",
-    "ar-EG": "الطبعة المهنية للمحترفين",
-    "pt-PT": "Edição Profissional Profissional",
-    "ru-RU": "Профессиональная версия Pro",
-    "ja-JP": "プロプロフェッショナル版",
-    "de-DE": "Pro Professional Edition",
-    "fr-FR": "Édition Professionnelle Pro",
-    "ko-KR": "프로 프로페셔널 에디션",
-    "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(2948-2959)"],
-    "$id": 11022
   },
   "低至 {price}/月，为生产力而生": {
     "en-US": "As low as {price}/month, built for productivity",
@@ -2344,19 +2644,6 @@
     "$files": ["src/renderer/components/tier/UpgradeAccountDialog.tsx(4992-5021)"],
     "$id": 11039
   },
-  "代理版": {
-    "en-US": "Agent version",
-    "es-ES": "Versión del agente",
-    "ar-EG": "نسخة الوكيل",
-    "pt-PT": "Versão do agente",
-    "ru-RU": "Версия агента",
-    "ja-JP": "エージェントのバージョン",
-    "de-DE": "Agent-Version",
-    "fr-FR": "Version de l'agent",
-    "ko-KR": "에이전트 버전",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(2155-2162)"],
-    "$id": 11040
-  },
   "点击查看收支流水": {
     "en-US": "Click to view the income and expenditure statement",
     "es-ES": "Haga clic para ver el estado de ingresos y gastos",
@@ -2367,7 +2654,7 @@
     "de-DE": "Klicken Sie hier, um die Einnahmen- und Ausgabenrechnung anzuzeigen",
     "fr-FR": "Cliquez pour consulter l'état des revenus et dépenses",
     "ko-KR": "클릭하시면 수입지출내역서를 보실 수 있습니다",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(7937-7949)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(8199-8211)"],
     "$id": 11041
   },
   "萤火余额": {
@@ -2380,8 +2667,21 @@
     "de-DE": "Yingdou-Gleichgewicht",
     "fr-FR": "Balance Yingdou",
     "ko-KR": "잉도우 균형",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(8519-8527)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(8781-8789)"],
     "$id": 11042
+  },
+  "管理帐户": {
+    "en-US": "Manage account",
+    "es-ES": "Administrar cuenta",
+    "ar-EG": "إدارة الحساب",
+    "pt-PT": "Gerenciar conta",
+    "ru-RU": "Управление аккаунтом",
+    "ja-JP": "アカウントの管理",
+    "de-DE": "Konto verwalten",
+    "fr-FR": "Gérer le compte",
+    "ko-KR": "계정 관리",
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(10266-10274)"],
+    "$id": 9543
   },
   "有效期至": {
     "en-US": "Valid until",
@@ -2393,7 +2693,7 @@
     "de-DE": "Gültig bis",
     "fr-FR": "Valable jusqu'au",
     "ko-KR": "유효기간",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(11613-11621)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(12086-12094)"],
     "$id": 11043
   },
   "设置": {
@@ -2406,7 +2706,7 @@
     "de-DE": "Aufstellen",
     "fr-FR": "Installation",
     "ko-KR": "설정",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(13101-13107)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(13574-13580)"],
     "$id": 11044
   },
   "分析队列": {
@@ -2419,7 +2719,7 @@
     "de-DE": "Analysewarteschlange",
     "fr-FR": "File d'attente d'analyse",
     "ko-KR": "분석 대기열",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(13814-13822)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(14287-14295)"],
     "$id": 7874
   },
   "与本地AI私密聊天": {
@@ -2432,7 +2732,7 @@
     "de-DE": "Chatten Sie privat mit lokaler KI",
     "fr-FR": "Discutez en privé avec l'IA locale",
     "ko-KR": "로컬 AI와 비공개 채팅",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(14853-14866)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(15326-15339)"],
     "$id": 7987
   },
   "重置布局": {
@@ -2445,8 +2745,21 @@
     "de-DE": "Layout zurücksetzen",
     "fr-FR": "Réinitialiser la mise en page",
     "ko-KR": "레이아웃 재설정",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(16267-16275)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(16740-16748)"],
     "$id": 11045
+  },
+  "Telegram 官方频道": {
+    "en-US": "Telegram official channel",
+    "es-ES": "Canal oficial de telegram",
+    "ar-EG": "قناة التليجرام الرسمية",
+    "pt-PT": "Canal oficial do Telegram",
+    "ru-RU": "Официальный канал Telegram",
+    "ja-JP": "テレグラム公式チャンネル",
+    "de-DE": "Offizieller Telegram-Kanal",
+    "fr-FR": "Chaîne officielle de Telegram",
+    "ko-KR": "텔레그램 공식 채널",
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(17664-17681)"],
+    "$id": 9544
   },
   "知乎萤核圈子": {
     "en-US": "Zhihu firefly circle",
@@ -2458,7 +2771,7 @@
     "de-DE": "Zhihu Feuerkernkreis",
     "fr-FR": "Cercle de noyau de feu de Zhihu",
     "ko-KR": "Zhihu 파이어 코어 서클",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(17116-17126)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(18539-18549)"],
     "$id": 11046
   },
   "扫码加微信群": {
@@ -2472,7 +2785,7 @@
     "fr-FR": "Scannez le code QR pour rejoindre le groupe WeChat",
     "ko-KR": "WeChat 그룹에 가입하려면 QR 코드를 스캔하세요.",
     "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(17849-17859)",
+      "src/renderer/components/tier/UserAvatarMenu.tsx(19324-19334)",
       "src/renderer/components/tier/WechatQRDialog.tsx(1074-1084)"
     ],
     "$id": 11047
@@ -2487,7 +2800,7 @@
     "de-DE": "Um",
     "fr-FR": "À propos",
     "ko-KR": "~에 대한",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(18632-18638)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(20152-20158)"],
     "$id": 11048
   },
   "加微信并留言：萤核，拉你进微信群交流": {
