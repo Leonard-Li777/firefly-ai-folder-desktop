@@ -1,8 +1,13 @@
 import * as path from 'node:path'
+import * as fs from 'node:fs'
+import * as cp from 'node:child_process'
+import { promisify } from 'node:util'
+import { ResourceLocator } from '@firefly/shared'
+
+const execFileAsync = promisify(cp.execFile)
 
 export class ExifToolWorkerService {
   private static instance: ExifToolWorkerService
-  private isLoaded = false
 
   private constructor() {}
 
@@ -14,17 +19,66 @@ export class ExifToolWorkerService {
   }
 
   /**
+   * 定位 ExifTool 可执行文件
+   */
+  public findExifToolExecutable(): string | null {
+    try {
+      const bin =
+        ResourceLocator.resolveBin('exiftool/exiftool') || ResourceLocator.resolveBin('exiftool')
+      if (bin && fs.existsSync(bin)) return bin
+    } catch {}
+
+    const exeName = process.platform === 'win32' ? 'exiftool.exe' : 'exiftool'
+    const root = process.cwd()
+    const candidates = [
+      path.join(root, 'apps', 'omni', 'build', 'extraResources', 'bin', 'exiftool', exeName),
+      path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'exiftool', exeName),
+      path.join(root, 'build', 'extraResources', 'bin', 'exiftool', exeName)
+    ]
+
+    for (const cand of candidates) {
+      if (cand && fs.existsSync(cand)) return cand
+    }
+
+    return null
+  }
+
+  /**
    * 提取文件全量 EXIF/元数据属性
    * @param filePath 物理文件路径
    */
   public async extractMetadata(filePath: string): Promise<Record<string, any>> {
     const tStart = Date.now()
     try {
-      const moduleName = 'exiftool-vendored'
-      const { exiftool } = (await import(/* @vite-ignore */ moduleName as any)) as any
-      const tags: Record<string, any> = await exiftool.read(filePath)
-      const cleanMetadata: Record<string, any> = {}
+      const binPath = this.findExifToolExecutable()
+      let tags: Record<string, any> = {}
 
+      if (binPath) {
+        const { env, cwd } = ResourceLocator.getBinExecutionEnv(binPath)
+        const { stdout } = await execFileAsync(binPath, ['-json', filePath], {
+          timeout: 5000,
+          maxBuffer: 10 * 1024 * 1024,
+          env,
+          cwd
+        })
+        const parsed = JSON.parse(stdout)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          tags = parsed[0]
+        }
+      } else {
+        // 全局 PATH 兜底
+        const sysExe = process.platform === 'win32' ? 'exiftool.exe' : 'exiftool'
+        const { stdout } = await execFileAsync(sysExe, ['-json', filePath], {
+          timeout: 5000,
+          maxBuffer: 10 * 1024 * 1024
+        })
+        const parsed = JSON.parse(stdout)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          tags = parsed[0]
+        }
+      }
+
+      const cleanMetadata: Record<string, any> = {}
       const totalKeys = Object.keys(tags || {}).length
 
       // 过滤辅助属性
@@ -51,6 +105,7 @@ export class ExifToolWorkerService {
           'ImageHeight',
           'CreateDate',
           'Author',
+          'Creator',
           'Title'
         ]
           .filter(k => cleanMetadata[k] !== undefined)
@@ -74,17 +129,9 @@ export class ExifToolWorkerService {
   }
 
   /**
-   * 关闭守护进程池
+   * 关闭进程池
    */
-  public async shutdown(): Promise<void> {
-    try {
-      const moduleName = 'exiftool-vendored'
-      const { exiftool } = (await import(moduleName as any)) as any
-      await exiftool.end()
-    } catch (err) {
-      console.error('[ExifToolWorkerService] 关闭 ExifTool 进程池异常:', err)
-    }
-  }
+  public async shutdown(): Promise<void> {}
 }
 
 export const exiftoolWorkerService = ExifToolWorkerService.getInstance()

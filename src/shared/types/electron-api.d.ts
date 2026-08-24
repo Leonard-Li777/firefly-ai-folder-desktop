@@ -594,6 +594,19 @@ declare global {
       // 目录上下文分析
       analyzeDirectoryContext: (dirPath: string) => Promise<DirectoryAnalysisResult>
       clearDirectoryContext: (dirPath: string) => Promise<{ success: boolean }>
+      updateDirectoryContextAnalysis: (
+        dirPath: string,
+        updates: {
+          namingPattern?: string
+          analysisStrategy?: string
+          namingTemplate?: string
+          inheritMode?: {
+            analysisStrategy?: 'inherit' | 'current_only' | 'broadcast'
+            namingPattern?: 'inherit' | 'current_only' | 'broadcast'
+            namingTemplate?: 'inherit' | 'current_only' | 'broadcast'
+          }
+        }
+      ) => Promise<any>
 
       // 文件系统操作
       readDirectory: (path: string) => Promise<ReadDirectoryResult>
@@ -627,6 +640,22 @@ declare global {
         deleteFile: (fileId: number) => Promise<void>
         batchDeleteFiles: (fileIds: number[]) => Promise<void>
       }
+
+      // 批量预处理工作台 (重命名、打标、查重、有效画像配置)
+      organizeBatch: {
+        previewRename: (template: string, files: any[]) => Promise<any[]>
+        executeRename: (template: string, files: any[]) => Promise<any>
+        getRandomTemplate: () => Promise<string>
+        applyTags: (operation: any) => Promise<any>
+        deleteTagGlobally: (dimensionId: number, tagName: string) => Promise<boolean>
+        scanDuplicates: (options: any) => Promise<any[]>
+        trashDuplicates: (filePaths: string[]) => Promise<any>
+        applyKeepRule: (groups: any[], rule: string) => Promise<any[]>
+        getEffectiveDirectoryConfig: (dirPath: string) => Promise<any>
+      }
+
+      deleteTagGlobally: (dimensionId: number, tagName: string) => Promise<boolean>
+      getEffectiveDirectoryConfig: (dirPath: string) => Promise<any>
 
       // 整理真实目录相关
       organizeRealDirectory: {

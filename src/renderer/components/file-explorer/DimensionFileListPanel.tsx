@@ -38,6 +38,8 @@ interface DimensionFileListPanelProps {
   onStartOrganize?: () => void
   isOrganizeMode?: boolean
   onOrganizeSelected?: () => void
+  onBatchRename?: () => void
+  onBatchTag?: () => void
 
   // 刷新触发器：当父级检测到新的分析完成时递增，触发文件列表重新加载
   refreshKey?: number
@@ -76,6 +78,8 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   onStartOrganize,
   isOrganizeMode = false,
   onOrganizeSelected,
+  onBatchRename,
+  onBatchTag,
   refreshKey = 0,
   currentPath,
   unionMode = 'union',
@@ -388,15 +392,35 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
                     <span className="text-sm font-medium select-none">{t('全选')}</span>
                   </label>
                   <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-2 cursor-pointer text-xs h-8 gap-1"
+                    onClick={onBatchRename}
+                  >
+                    <MaterialIcon icon="drive_file_rename_outline" className="text-sm text-primary" />
+                    <span>{t('批量更名')}</span>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-2 cursor-pointer text-xs h-8 gap-1"
+                    onClick={onBatchTag}
+                  >
+                    <MaterialIcon icon="label" className="text-sm text-emerald-500" />
+                    <span>{t('批量标签')}</span>
+                  </Button>
+                  <Button
                     variant="default"
                     size="sm"
-                    className="ml-2 cursor-pointer"
+                    className="ml-2 cursor-pointer text-xs h-8 gap-1 font-bold shadow-xs"
                     onClick={onOrganizeSelected}
                   >
-                    <MaterialIcon icon="auto_fix_normal" className="text-base mr-1" />
-                    {selectedFiles.length > 0
-                      ? t('整理勾选 ({count})', { count: selectedFiles.length })
-                      : t('整理勾选')}
+                    <MaterialIcon icon="auto_fix_normal" className="text-sm" />
+                    <span>
+                      {selectedFiles.length > 0
+                        ? t('批量整理 ({count})', { count: selectedFiles.length })
+                        : t('批量整理')}
+                    </span>
                   </Button>
                 </>
               ) : (

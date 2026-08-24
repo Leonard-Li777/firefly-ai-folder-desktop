@@ -38,6 +38,7 @@ interface DimensionTreeNodeProps {
   parentTagValue?: string
   ancestorChain?: string[]
   isExportMode: boolean
+  panDimensionIds: number[]
   collapsedDimensionGroups: Set<number>
   toggleDimensionGroupCollapsed: (groupId: number) => void
   isTagSelected: (dimensionId: number, tagValue: string, parentTagValue?: string) => boolean
@@ -65,6 +66,7 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
     parentTagValue,
     ancestorChain,
     isExportMode,
+    panDimensionIds,
     collapsedDimensionGroups,
     toggleDimensionGroupCollapsed,
     isTagSelected,
@@ -238,6 +240,36 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                       <span className="text-[10px] ml-1 shrink-0 opacity-55 text-current">
                         ({tag.fileCount})
                       </span>
+                      {isExportMode &&
+                        ((panDimensionIds || [4, 28]).includes(tag.dimensionId) ||
+                          node.name === '作者' ||
+                          node.name === 'Author' ||
+                          node.name === '内容标签' ||
+                          node.name === 'Content Tag' ||
+                          Boolean((node as any).isAIGenerated)) && (
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            title={t('直接删除该标签')}
+                            onClick={async e => {
+                              e.stopPropagation()
+                              if (window.electronAPI?.deleteTagGlobally) {
+                                const success = await window.electronAPI.deleteTagGlobally(
+                                  tag.dimensionId,
+                                  tag.tagValue
+                                )
+                                if (success) {
+                                  import('../common/Toast').then(({ toast }) => {
+                                    toast.success(t('已删除标签「{name}」', { name: tag.tagValue }))
+                                  })
+                                }
+                              }
+                            }}
+                            className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5 rounded transition-opacity shrink-0 ml-1 cursor-pointer"
+                          >
+                            <MaterialIcon icon="close" className="text-[12px]" />
+                          </span>
+                        )}
                     </button>
                   </div>
 
@@ -1057,6 +1089,36 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
                     <span className="text-[10px] ml-1 shrink-0 opacity-55 text-current">
                       ({tag.fileCount})
                     </span>
+                    {isExportMode &&
+                      ((panDimensionIds || [4, 28]).includes(tag.dimensionId) ||
+                        row.node?.name === '作者' ||
+                        row.node?.name === 'Author' ||
+                        row.node?.name === '内容标签' ||
+                        row.node?.name === 'Content Tag' ||
+                        Boolean((row.node as any)?.isAIGenerated)) && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          title={t('直接删除该标签')}
+                          onClick={async e => {
+                            e.stopPropagation()
+                            if (window.electronAPI?.deleteTagGlobally) {
+                              const success = await window.electronAPI.deleteTagGlobally(
+                                tag.dimensionId,
+                                tag.tagValue
+                              )
+                              if (success) {
+                                import('../common/Toast').then(({ toast }) => {
+                                  toast.success(t('已删除标签「{name}」', { name: tag.tagValue }))
+                                })
+                              }
+                            }
+                          }}
+                          className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5 rounded transition-opacity shrink-0 ml-1 cursor-pointer"
+                        >
+                          <MaterialIcon icon="close" className="text-[12px]" />
+                        </span>
+                      )}
                   </button>
                 </div>
               )

@@ -1182,6 +1182,169 @@ export class DatabaseService {
       })
     }
   }
+
+  /**
+   * 全局直接删除指定维度标签（清理关联关系与标签记录）
+   */
+  async deleteTagGlobally(dimensionId: number, tagName: string): Promise<boolean> {
+    if (!this._db) return false
+    try {
+      this._db.transaction(() => {
+        const tagRows = this._db!.prepare(
+          'SELECT id FROM file_tags WHERE dimension_id = ? AND name = ?'
+        ).all(dimensionId, tagName) as Array<{ id: number }>
+
+        for (const tag of tagRows) {
+          this._db!.prepare('DELETE FROM file_tag_relations WHERE tag_id = ?').run(tag.id)
+          this._db!.prepare('DELETE FROM file_tags WHERE id = ?').run(tag.id)
+        }
+
+        this._db!.prepare('DELETE FROM tag_expansions WHERE dimension_id = ? AND name = ?').run(
+          dimensionId,
+          tagName
+        )
+      })()
+
+      this.clearDimensionsCache()
+      logger.info(
+        LogCategory.DATABASE_SERVICE,
+        `全局删除标签成功: dimId=${dimensionId}, tagName=${tagName}`
+      )
+      return true
+    } catch (error) {
+      logger.error(LogCategory.DATABASE_SERVICE, `全局删除标签失败: dimId=${dimensionId}, tagName=${tagName}`, {
+        error
+      })
+      return false
+    }
+  }
+
+  /**
+   * 批量应用/解除维度标签
+   */
+  async batchApplyTags(operation: import('@firefly/types').BatchTagOperation): Promise<import('@firefly/types').BatchTagResult> {
+    if (!this._db || !operation.fileIds || operation.fileIds.length === 0) {
+      return { successCount: 0, failedCount: 0, updatedFileIds: [] }
+    }
+
+    let successCount = 0
+    let failedCount = 0
+    const updatedFileIds: number[] = []
+
+    try {
+      this._db.transaction(() => {
+        // 1. 处理结构化 addTags 与 newTags
+        const createdTagMap = new Map<string, number>()
+        const combinedAddTags = [...(operation.addTags || []), ...(operation.newTags || [])]
+
+        if (combinedAddTags.length > 0) {
+          for (const item of combinedAddTags) {
+            let dimId = item.dimensionId || 28
+            if (!item.dimensionId && item.dimensionName) {
+              if (item.dimensionName === '作者' || item.dimensionName === 'Author') {
+                dimId = 4
+              } else {
+                const dimRow = this._db!.prepare(
+                  'SELECT id FROM file_dimensions WHERE name = ?'
+                ).get(item.dimensionName) as { id: number } | undefined
+                if (dimRow) dimId = dimRow.id
+              }
+            }
+
+            const existingTag = this._db!.prepare(
+              'SELECT id FROM file_tags WHERE dimension_id = ? AND name = ?'
+            ).get(dimId, item.tagName) as { id: number } | undefined
+
+            if (existingTag) {
+              createdTagMap.set(`${dimId}:${item.tagName}`, existingTag.id)
+            } else {
+              const res = this._db!.prepare(
+                'INSERT INTO file_tags (name, dimension_id, sync_status, created_at) VALUES (?, ?, 0, CURRENT_TIMESTAMP)'
+              ).run(item.tagName, dimId)
+              createdTagMap.set(`${dimId}:${item.tagName}`, Number(res.lastInsertRowid))
+            }
+          }
+        }
+
+        // 2. 处理待移除标签 removeTags
+        const resolvedRemoveTagIds = [...(operation.removeTagIds || [])]
+        if (operation.removeTags && operation.removeTags.length > 0) {
+          for (const item of operation.removeTags) {
+            let dimId = item.dimensionId || 28
+            if (!item.dimensionId && item.dimensionName) {
+              if (item.dimensionName === '作者' || item.dimensionName === 'Author') {
+                dimId = 4
+              } else {
+                const dimRow = this._db!.prepare(
+                  'SELECT id FROM file_dimensions WHERE name = ?'
+                ).get(item.dimensionName) as { id: number } | undefined
+                if (dimRow) dimId = dimRow.id
+              }
+            }
+
+            const existingTag = this._db!.prepare(
+              'SELECT id FROM file_tags WHERE dimension_id = ? AND name = ?'
+            ).get(dimId, item.tagName) as { id: number } | undefined
+
+            if (existingTag) {
+              resolvedRemoveTagIds.push(existingTag.id)
+            }
+          }
+        }
+
+        // 3. 遍历文件应用或解绑
+        const allAddTagIds = [...(operation.addTagIds || []), ...Array.from(createdTagMap.values())]
+
+        for (const fileId of operation.fileIds) {
+          try {
+            const fileRow = this._db!.prepare(
+              'SELECT file_fingerprint FROM files WHERE id = ?'
+            ).get(fileId) as { file_fingerprint: string } | undefined
+
+            if (!fileRow?.file_fingerprint) {
+              failedCount++
+              continue
+            }
+
+            const fp = fileRow.file_fingerprint
+
+            // 添加标签关联
+            if (allAddTagIds.length > 0) {
+              const insertStmt = this._db!.prepare(
+                'INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_id, sync_status) VALUES (?, ?, 0)'
+              )
+              for (const tagId of allAddTagIds) {
+                insertStmt.run(fp, tagId)
+              }
+            }
+
+            // 移除标签关联
+            if (resolvedRemoveTagIds.length > 0) {
+              const placeholders = resolvedRemoveTagIds.map(() => '?').join(',')
+              this._db!.prepare(
+                `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND tag_id IN (${placeholders})`
+              ).run(fp, ...resolvedRemoveTagIds)
+            }
+
+            successCount++
+            updatedFileIds.push(fileId)
+          } catch {
+            failedCount++
+          }
+        }
+      })()
+
+      this.clearDimensionsCache()
+    } catch (err) {
+      logger.error(LogCategory.DATABASE_SERVICE, '批量打标签事务失败:', err)
+    }
+
+    return {
+      successCount,
+      failedCount,
+      updatedFileIds
+    }
+  }
 }
 
 export const databaseService = new DatabaseService()

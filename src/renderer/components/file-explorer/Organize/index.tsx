@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog'
 import { MaterialIcon, cn } from '../../../lib/utils'
-import React, { useRef, useMemo } from 'react'
+import React, { useRef, useMemo, useState } from 'react'
 import { WorkspaceDirectory } from '@firefly/types'
 import { useNavigate } from 'react-router-dom'
 
@@ -24,8 +24,13 @@ import { PAGE_IDS } from '../../../constants/page-ids'
 import { RestrictedFeatureOverlay } from '../../common/RestrictedFeatureOverlay'
 import { PaymentFlowDialog } from '../../tier/PaymentFlowDialog'
 
+import { useSettingsStore } from '../../../stores/settings-store'
 import { useOrganizeState } from './hooks/useOrganizeState'
 import { StageBreadcrumb } from './components/StageBreadcrumb'
+import { RootModeSelectView } from './components/RootModeSelectView'
+import { BatchRenameView } from './components/BatchRenameView'
+import { BatchTagView } from './components/BatchTagView'
+import { BatchDuplicateView } from './components/BatchDuplicateView'
 import { ModeSelectView } from './components/ModeSelectView'
 import { CandidatesView } from './components/CandidatesView'
 import { StructureView } from './components/StructureView'
@@ -37,6 +42,8 @@ export const Organize: React.FC = () => {
   useVoerkaI18n(i18nScope)
   const navigate = useNavigate()
   const { setAnalyzedDirectoryKeyword } = useSearchStore()
+  const panDimensionIds =
+    useSettingsStore(s => s.getConfigValue<number[]>('PAN_DIMENSION_IDS')) || [4, 28]
 
   const {
     currentWorkspaceDirectory,
@@ -64,16 +71,21 @@ export const Organize: React.FC = () => {
     setSelectedCandidate,
     showCustomForm,
     setShowCustomForm,
+    draftTree,
+    setDraftTree,
     draft,
     setDraft,
     progressInfo,
     isPaused,
-    draftTree,
     finalTree,
     displayTree,
+    unmatchedCount,
     hasRescueFailed,
+    currentVDir,
+    virtualDirectories,
+    options,
+    setOptions,
     showBackConfirm,
-
     setShowBackConfirm,
     showGuidanceDialog,
     setShowGuidanceDialog,
@@ -107,6 +119,7 @@ export const Organize: React.FC = () => {
     handleSave,
     handleRegenerateSaveAfterFirecoreConfirm,
     handleReorganize,
+    canGoBack,
     handleBack,
     canForward,
     handleForward,
@@ -115,10 +128,6 @@ export const Organize: React.FC = () => {
     isAutoRescuing,
     isRescuing,
     handleAutoRescue,
-    currentVDir,
-    virtualDirectories,
-    options,
-    setOptions,
     initialVDirInfo,
     fetchProfile,
     computed_limits,
@@ -132,16 +141,29 @@ export const Organize: React.FC = () => {
     handleMoveNodeOrFile,
     handleSelectDraftVDir,
     handleDeleteDraftVDir,
-    canGoBack,
     resetOrganizeState,
-    highFrequencyTags
+    highFrequencyTags,
+
+    // 批量预处理工作台操作
+    executeBatchRename,
+    isExecutingRename,
+    saveBatchTags,
+    isSavingTags,
+    deleteTagGlobally,
+    trashDuplicateFiles,
+    isTrashingDuplicates
   } = useOrganizeState()
+
+  const isStandaloneStage = stage === 'batch-rename'
+
+  const [inspectedFile, setInspectedFile] = useState<any | null>(null)
+
+  const isReadOnly = stage === 'organizing' || stage === 'done'
 
   const dropdownRef = useRef<HTMLDivElement>(null!)
   const startDropdownRef = useRef<HTMLDivElement>(null!)
   const saveDropdownRef = useRef<HTMLDivElement>(null!)
 
-  const isReadOnly = stage === 'organizing' || stage === 'done'
   const isSavedVDirOrganize =
     organizeMode === 'incremental-organize' ||
     (Boolean(currentVDir?.id) &&
@@ -227,16 +249,6 @@ export const Organize: React.FC = () => {
 
         <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b gap-2 flex-nowrap min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={resetOrganizeState}
-              className="font-bold text-xs shrink-0"
-              title={t('新建整理')}
-            >
-              <MaterialIcon icon="add_circle" className="text-sm shrink-0" />
-              <span className="truncate">{t('新建整理')}</span>
-            </Button>
             <div className="flex items-center -space-x-px shrink-0">
               <Button
                 variant="outline"
@@ -262,10 +274,71 @@ export const Organize: React.FC = () => {
               </Button>
             </div>
             <div className="w-px h-4 bg-border/50 shrink-0" />
-            <StageBreadcrumb stage={stage} />
+            <StageBreadcrumb
+              stage={stage}
+              onSelectStage={setStage}
+              hasCandidates={candidates?.length > 0}
+              hasStructure={displayTree?.length > 0 || draftTree?.length > 0 || finalTree?.length > 0}
+              hasDone={finalTree?.length > 0}
+            />
           </div>
 
           <div className="flex items-center gap-2 shrink-0 min-w-0 overflow-hidden justify-end">
+            {stage === 'batch-rename' && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  const btn = document.getElementById('btn-execute-rename-trigger')
+                  if (btn) btn.click()
+                }}
+                disabled={isExecutingRename}
+                className="text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
+              >
+                <MaterialIcon
+                  icon={isExecutingRename ? 'sync' : 'check'}
+                  className={cn('text-sm', isExecutingRename && 'animate-spin')}
+                />
+                <span>{isExecutingRename ? t('正在更名...') : t('执行更名')}</span>
+              </Button>
+            )}
+
+            {stage === 'batch-tag' && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  const btn = document.getElementById('btn-save-tags-trigger')
+                  if (btn) btn.click()
+                }}
+                disabled={isSavingTags}
+                className="text-xs gap-1.5 bg-primary hover:bg-primary/90 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
+              >
+                <MaterialIcon
+                  icon={isSavingTags ? 'sync' : 'save'}
+                  className={cn('text-sm', isSavingTags && 'animate-spin')}
+                />
+                <span>{isSavingTags ? t('正在保存...') : t('保存打标')}</span>
+              </Button>
+            )}
+
+            {stage === 'batch-duplicate' && (
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => {
+                  const btn = document.getElementById('btn-trash-duplicates-trigger')
+                  if (btn) btn.click()
+                }}
+                disabled={isTrashingDuplicates}
+                className="text-xs gap-1.5 px-4 font-bold shadow-md h-8 shrink-0"
+              >
+                <MaterialIcon
+                  icon={isTrashingDuplicates ? 'sync' : 'delete_sweep'}
+                  className={cn('text-sm', isTrashingDuplicates && 'animate-spin')}
+                />
+                <span>{isTrashingDuplicates ? t('正在清理...') : t('执行清理')}</span>
+              </Button>
+            )}
+
             {stage === 'candidates' && (
               <>
                 <PersistentTooltip
@@ -445,117 +518,168 @@ export const Organize: React.FC = () => {
         </div>
 
         <div className="flex-1 flex overflow-hidden relative">
-          <SplitPane
-            direction="horizontal"
-            storageKey="organize-main"
-            className="flex-1"
-            sections={[
-              {
-                id: 'file-list',
-                type: 'flex' as const,
-                defaultSize: 1,
-                minSize: 150,
-                content: (
-                  <FileExplorerLayout
-                    files={toOrganizeFiles}
-                    selectionEnabled={false}
-                    showDetailsPanel={false}
-                    showPreviewPanel={false}
-                    viewMode={viewMode}
-                    showsmartName={true}
-                    onViewModeChange={m => setViewMode(m as any)}
-                    renderToolbar={ctx => (
-                      <div className="p-3 border-b flex flex-col gap-2 bg-muted/10 overflow-hidden">
-                        <div className="flex items-center justify-between gap-2 flex-nowrap min-w-0 overflow-hidden">
-                          <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
-                            <span
-                              className="font-bold text-sm text-foreground shrink-0 truncate"
-                              title={t('待整理文件')}
-                            >
-                              {t('待整理文件')}
-                            </span>
-                            {Boolean(
-                              (incrementalVdId || currentVDir?.id || draft?.source === 'draft') &&
-                              hasClassifiedInTree
-                            ) && (
+          {isStandaloneStage ? (
+            <div className="flex-1 flex flex-col overflow-hidden bg-background">
+              {stage === 'batch-rename' && (
+                <BatchRenameView
+                  files={toOrganizeFiles}
+                  dimensionGroups={dimensionGroups}
+                  onExecuteRename={executeBatchRename}
+                  isExecuting={isExecutingRename}
+                />
+              )}
+            </div>
+          ) : (
+            <SplitPane
+              direction="horizontal"
+              storageKey="organize-main"
+              className="flex-1"
+              sections={[
+                {
+                  id: 'file-list',
+                  type: 'flex' as const,
+                  defaultSize: 1,
+                  minSize: 150,
+                  content: (
+                    <FileExplorerLayout
+                      files={toOrganizeFiles}
+                      selectionEnabled={false}
+                      activeItem={inspectedFile}
+                      selectedFileIds={inspectedFile?.id ? [inspectedFile.id] : []}
+                      onFileSelect={item => {
+                        const single = Array.isArray(item) ? item[0] : item
+                        setInspectedFile(single ? (single as any) : null)
+                      }}
+                      onSelectionChange={items => {
+                        const single = Array.isArray(items) && items.length > 0 ? items[0] : null
+                        setInspectedFile(single ? (single as any) : null)
+                      }}
+                      showDetailsPanel={false}
+                      showPreviewPanel={false}
+                      viewMode={viewMode}
+                      showsmartName={true}
+                      onViewModeChange={m => setViewMode(m as any)}
+                      renderToolbar={ctx => (
+                        <div className="p-3 border-b flex flex-col gap-2 bg-muted/10 overflow-hidden">
+                          <div className="flex items-center justify-between gap-2 flex-nowrap min-w-0 overflow-hidden">
+                            <div className="flex items-center gap-1.5 min-w-0 flex-1 overflow-hidden">
                               <span
-                                className="text-amber-600 dark:text-amber-400 flex items-center gap-1 text-xs font-medium shrink min-w-0 truncate"
-                                title={t('已过滤前次已整理文件')}
+                                className="font-bold text-sm text-foreground shrink-0 truncate"
+                                title={t('待整理文件')}
                               >
-                                <MaterialIcon icon="filter_alt" className="text-sm shrink-0" />
-                                <span className="truncate">{t('已过滤前次已整理文件')}</span>
+                                {t('待整理文件')}
                               </span>
-                            )}
-                          </div>
-                          {/* 视图模式与显示设置 Mini 下拉弹窗 */}
-                          <div className="shrink-0">
-                            <MiniViewDisplaySettingsPopover
-                              viewMode={ctx.viewMode}
-                              onViewModeChange={ctx.setViewMode}
-                              gridCardWidth={ctx.gridCardWidth}
-                              onGridCardWidthChange={ctx.setGridCardWidth}
-                            />
+                              {Boolean(
+                                (incrementalVdId || currentVDir?.id || draft?.source === 'draft') &&
+                                hasClassifiedInTree
+                              ) && (
+                                <span
+                                  className="text-amber-600 dark:text-amber-400 flex items-center gap-1 text-xs font-medium shrink min-w-0 truncate"
+                                  title={t('已过滤前次已整理文件')}
+                                >
+                                  <MaterialIcon icon="filter_alt" className="text-sm shrink-0" />
+                                  <span className="truncate">{t('已过滤前次已整理文件')}</span>
+                                </span>
+                              )}
+                            </div>
+                            {/* 视图模式与显示设置 Mini 下拉弹窗 */}
+                            <div className="shrink-0">
+                              <MiniViewDisplaySettingsPopover
+                                viewMode={ctx.viewMode}
+                                onViewModeChange={ctx.setViewMode}
+                                gridCardWidth={ctx.gridCardWidth}
+                                onGridCardWidthChange={ctx.setGridCardWidth}
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )}
-                    renderFooter={() => (
-                      <div className="px-3 py-1 flex items-center justify-between flex-nowrap min-w-0 overflow-hidden gap-2">
-                        <span
-                          className="text-xs text-muted-foreground truncate shrink min-w-0"
-                          title={t('待整理文件')}
+                      )}
+                      renderFooter={() => (
+                        <div className="px-3 py-1 flex items-center justify-between flex-nowrap min-w-0 overflow-hidden gap-2">
+                          <span
+                            className="text-xs text-muted-foreground truncate shrink min-w-0"
+                            title={t('待整理文件')}
+                          >
+                            {t('待整理文件')}
+                          </span>
+                          <span className="text-xs font-medium tabular-nums shrink-0">
+                            {t('{count} 个文件', { count: toOrganizeFiles.length })}
+                          </span>
+                        </div>
+                      )}
+                    />
+                  )
+                },
+                {
+                  id: 'main-content',
+                  type: 'flex' as const,
+                  defaultSize: 2,
+                  minSize: 200,
+                  content: (
+                    <div className="h-full overflow-hidden flex flex-col">
+                      {toOrganizeFiles.length === 0 &&
+                      stage === 'mode-select' &&
+                      !isSavedVDirOrganize &&
+                      !incrementalVdId &&
+                      !currentVDir?.id &&
+                      displayTree.length === 0 &&
+                      virtualDirectories.length === 0 ? (
+                        <EmptyState
+                          icon="folder_off"
+                          title={t('暂无待整理文件')}
+                          description={t('请先前往真实目录选择文件进行分析')}
                         >
-                          {t('待整理文件')}
-                        </span>
-                        <span className="text-xs font-medium tabular-nums shrink-0">
-                          {t('{count} 个文件', { count: toOrganizeFiles.length })}
-                        </span>
-                      </div>
-                    )}
-                  />
-                )
-              },
-              {
-                id: 'main-content',
-                type: 'flex' as const,
-                defaultSize: 2,
-                minSize: 200,
-                content: (
-                  <div className="h-full overflow-hidden flex flex-col">
-                    {toOrganizeFiles.length === 0 &&
-                    stage === 'mode-select' &&
-                    !isSavedVDirOrganize &&
-                    !incrementalVdId &&
-                    !currentVDir?.id &&
-                    displayTree.length === 0 &&
-                    virtualDirectories.length === 0 ? (
-                      <EmptyState
-                        icon="folder_off"
-                        title={t('暂无待整理文件')}
-                        description={t('请先前往真实目录选择文件进行分析')}
-                      >
-                        <Button
-                          variant="outline"
-                          className="rounded-xl mt-2 font-bold shadow-xs"
-                          onClick={() => navigate('/real-directory')}
-                        >
-                          <MaterialIcon icon="folder_open" className="mr-2 text-sm" />
-                          {t('返回真实目录')}
-                        </Button>
-                      </EmptyState>
-                    ) : (
-                      <>
-                        {stage === 'mode-select' && (
-                          <ModeSelectView
-                            organizeMode={organizeMode}
-                            onSelectMode={handleModeSelect}
-                            hasVirtualDirectories={virtualDirectories.length > 0}
-                            virtualDirectories={virtualDirectories}
-                            onSelectIncrementalVd={handleSelectIncrementalVd}
-                            onSelectDraftVDir={handleSelectDraftVDir}
-                            onDeleteDraftVDir={handleDeleteDraftVDir}
-                          />
-                        )}
+                          <Button
+                            variant="outline"
+                            className="rounded-xl mt-2 font-bold shadow-xs"
+                            onClick={() => navigate('/real-directory')}
+                          >
+                            <MaterialIcon icon="folder_open" className="mr-2 text-sm" />
+                            {t('返回真实目录')}
+                          </Button>
+                        </EmptyState>
+                      ) : (
+                        <>
+                          {stage === 'root-mode-select' && (
+                            <RootModeSelectView
+                              onSelectStage={setStage}
+                              totalFilesCount={toOrganizeFiles.length}
+                            />
+                          )}
+
+                          {stage === 'batch-tag' && (
+                            <BatchTagView
+                              files={toOrganizeFiles}
+                              dimensionGroups={dimensionGroups}
+                              panDimensionIds={panDimensionIds}
+                              onSaveTags={saveBatchTags}
+                              onDeleteTagGlobally={deleteTagGlobally}
+                              isSaving={isSavingTags}
+                              inspectedFile={inspectedFile}
+                              onClearInspectedFile={() => setInspectedFile(null)}
+                            />
+                          )}
+
+                          {stage === 'batch-duplicate' && (
+                            <BatchDuplicateView
+                              files={toOrganizeFiles}
+                              workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
+                              onExecuteTrash={trashDuplicateFiles}
+                              isTrashing={isTrashingDuplicates}
+                            />
+                          )}
+
+                          {stage === 'mode-select' && (
+                            <ModeSelectView
+                              organizeMode={organizeMode}
+                              onSelectMode={handleModeSelect}
+                              hasVirtualDirectories={virtualDirectories.length > 0}
+                              virtualDirectories={virtualDirectories}
+                              onSelectIncrementalVd={handleSelectIncrementalVd}
+                              onSelectDraftVDir={handleSelectDraftVDir}
+                              onDeleteDraftVDir={handleDeleteDraftVDir}
+                            />
+                          )}
 
                         {stage === 'candidates' && (
                           <CandidatesView
@@ -632,6 +756,7 @@ export const Organize: React.FC = () => {
               }
             ]}
           />
+        )}
           {!isWorkspaceActive && currentWorkspaceDirectory && (
             <RestrictedFeatureOverlay
               type={currentWorkspaceDirectory.type || 'SPEEDY'}

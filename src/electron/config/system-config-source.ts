@@ -24,7 +24,7 @@ export const SYSTEM_CONFIG_SOURCE = () => ({
     forceUpdate: false
   },
   lastUpdated: '2026-08-19T13:31:00.000Z',
-  panDimensionIds: [4, 28],
+  panDimensionIds: [4, 16, 28],
   latestNews: [
     {
       text: `V3.4 ${t('文件信息提取引擎重构，文件信息获取提速50%')}`

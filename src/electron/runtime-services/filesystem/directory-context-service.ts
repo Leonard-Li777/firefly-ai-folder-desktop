@@ -566,17 +566,36 @@ export class DirectoryContextService {
   }
 
   /**
-   * 更新目录上下文的特定字段（智能文件名格式 / AI分析策略）
-   * 仅更新 namingPattern 或 analysisStrategy，不重新运行AI分析
+   * 更新目录上下文的特定字段（智能文件名格式 / AI分析策略 / 重命名模板 / 继承模式）
    */
   async updateDirectoryContextAnalysis(
     directoryPath: string,
-    updates: { namingPattern?: string; analysisStrategy?: string }
+    updates: {
+      namingPattern?: string
+      analysisStrategy?: string
+      namingTemplate?: string
+      inheritMode?: {
+        analysisStrategy?: 'inherit' | 'current_only' | 'broadcast'
+        namingPattern?: 'inherit' | 'current_only' | 'broadcast'
+        namingTemplate?: 'inherit' | 'current_only' | 'broadcast'
+      }
+    }
   ): Promise<void> {
     try {
-      const existing = await this.getDirectoryContext(directoryPath)
+      let existing: DirectoryContextAnalysis | null = await this.getDirectoryContext(directoryPath)
       if (!existing) {
-        throw new Error(t('目录上下文分析不存在: {directoryPath}', { directoryPath }))
+        existing = {
+          directoryPath,
+          fileTypeDistribution: {},
+          recommendedTags: {},
+          specialFiles: [],
+          description: '',
+          namingPattern: '',
+          analysisStrategy: '',
+          namingTemplate: '',
+          confidence: 1.0,
+          analyzedAt: new Date()
+        }
       }
 
       if (updates.namingPattern !== undefined) {
@@ -585,6 +604,21 @@ export class DirectoryContextService {
 
       if (updates.analysisStrategy !== undefined) {
         existing.analysisStrategy = updates.analysisStrategy
+      }
+
+      if (updates.namingTemplate !== undefined) {
+        existing.namingTemplate = updates.namingTemplate
+      }
+
+      if (updates.inheritMode !== undefined) {
+        existing.inheritMode = {
+          ...(existing.inheritMode || {
+            analysisStrategy: 'inherit',
+            namingPattern: 'inherit',
+            namingTemplate: 'inherit'
+          }),
+          ...updates.inheritMode
+        }
       }
 
       await this.saveContextAnalysis(directoryPath, existing)
@@ -602,6 +636,109 @@ export class DirectoryContextService {
       throw error
     }
   }
+
+  /**
+   * 解析目录的有效生效配置（考虑自底向上的继承链）
+   */
+  async getEffectiveDirectoryConfig(directoryPath: string): Promise<DirectoryContextAnalysis | null> {
+    try {
+      const current = await this.getDirectoryContext(directoryPath)
+      if (!current) return null
+
+      const inheritMode = current.inheritMode || {
+        analysisStrategy: 'inherit',
+        namingPattern: 'inherit',
+        namingTemplate: 'inherit'
+      }
+
+      // 如果全部是 current_only 或 broadcast，直接返回自身配置
+      const needsInherit =
+        inheritMode.analysisStrategy === 'inherit' ||
+        inheritMode.namingPattern === 'inherit' ||
+        inheritMode.namingTemplate === 'inherit'
+
+      if (!needsInherit) {
+        return current
+      }
+
+      // 向上寻找祖先目录并查找 broadcast 配置
+      const effective: DirectoryContextAnalysis = {
+        ...current,
+        inheritedFrom: {}
+      }
+
+      const ancestors = this.findAncestorDirectories(directoryPath)
+      for (const ancestorPath of ancestors) {
+        const ancestorContext = await this.getDirectoryContext(ancestorPath)
+        if (!ancestorContext) continue
+
+        const ancestorMode = ancestorContext.inheritMode || {
+          analysisStrategy: 'inherit',
+          namingPattern: 'inherit',
+          namingTemplate: 'inherit'
+        }
+
+        // 检查分析策略
+        if (
+          inheritMode.analysisStrategy === 'inherit' &&
+          !effective.inheritedFrom?.analysisStrategy &&
+          ancestorMode.analysisStrategy === 'broadcast' &&
+          ancestorContext.analysisStrategy
+        ) {
+          effective.analysisStrategy = ancestorContext.analysisStrategy
+          if (!effective.inheritedFrom) effective.inheritedFrom = {}
+          effective.inheritedFrom.analysisStrategy = ancestorPath
+        }
+
+        // 检查智能文件名规则
+        if (
+          inheritMode.namingPattern === 'inherit' &&
+          !effective.inheritedFrom?.namingPattern &&
+          ancestorMode.namingPattern === 'broadcast' &&
+          ancestorContext.namingPattern
+        ) {
+          effective.namingPattern = ancestorContext.namingPattern
+          if (!effective.inheritedFrom) effective.inheritedFrom = {}
+          effective.inheritedFrom.namingPattern = ancestorPath
+        }
+
+        // 检查智能文件名重命名模板
+        if (
+          inheritMode.namingTemplate === 'inherit' &&
+          !effective.inheritedFrom?.namingTemplate &&
+          ancestorMode.namingTemplate === 'broadcast' &&
+          ancestorContext.namingTemplate
+        ) {
+          effective.namingTemplate = ancestorContext.namingTemplate
+          if (!effective.inheritedFrom) effective.inheritedFrom = {}
+          effective.inheritedFrom.namingTemplate = ancestorPath
+        }
+      }
+
+      return effective
+    } catch (err) {
+      logger.error(LogCategory.DIRECTORY_CONTEXT, `解析目录继承配置失败: ${directoryPath}`, err)
+      return this.getDirectoryContext(directoryPath)
+    }
+  }
+
+  /**
+   * 查找所有父级工作区目录（自底向上排序）
+   */
+  private findAncestorDirectories(targetPath: string): string[] {
+    try {
+      const rows = this.db.prepare('SELECT path FROM workspace_directories WHERE path != ?').all(targetPath) as Array<{ path: string }>
+      const { isSubPath } = require('@firefly/shared')
+
+      return rows
+        .map(r => r.path)
+        .filter(parentPath => isSubPath(parentPath, targetPath))
+        .sort((a, b) => b.length - a.length) // 最长路径最接近当前节点
+    } catch {
+      return []
+    }
+  }
+
   async getDirectoryContext(directoryPath: string): Promise<DirectoryContextAnalysis | null> {
     try {
       const stmt = this.db.prepare(`

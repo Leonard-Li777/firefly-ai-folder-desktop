@@ -158,6 +158,7 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
       name: t('图片细分'),
       level: 2,
       tags: [
+        t('图片扩展名'),
         t('摄影照片'),
         t('截图'),
         t('设计稿'),
@@ -166,8 +167,7 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
         t('医学影像'),
         t('图纸'),
         t('漫画'),
-        t('绘画'),
-        t('图片扩展名')
+        t('绘画')
       ],
       description: t('图像内容的专业分类'),
       applicableFileTypes: ['image'],
@@ -184,14 +184,14 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
       name: t('视频细分'),
       level: 2,
       tags: [
+        t('视频扩展名'),
         t('影视'),
         t('教学视频'),
         t('游戏互动'),
         t('录屏'),
         t('短视频'),
         t('监控录像'),
-        t('会议录像'),
-        t('视频扩展名')
+        t('会议录像')
       ],
       description: t('视频内容的专业分类'),
       applicableFileTypes: ['video'],
@@ -208,13 +208,13 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
       name: t('音频细分'),
       level: 2,
       tags: [
+        t('音频扩展名'),
         t('音乐'),
         t('播客'),
         t('有声书'),
         t('语音备忘'),
         t('音效'),
-        t('会议录音'),
-        t('音频扩展名')
+        t('会议录音')
       ],
       description: t('音频内容的专业分类'),
       applicableFileTypes: ['audio'],
@@ -245,7 +245,7 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
       id: 10,
       name: t('程序细分'),
       level: 2,
-      tags: ['Windows', 'Linux', 'macOS', 'Android', 'iOS', t('程序扩展名')],
+      tags: [t('程序扩展名'), 'Windows', 'Linux', 'macOS', 'Android', 'iOS'],
       description: t('可执行文件的分类'),
       applicableFileTypes: ['executable'],
       contextHints: [t('平台特征'), t('签名证书')],
@@ -291,7 +291,7 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
       id: 12,
       name: t('系统文件细分'),
       level: 2,
-      tags: [t('配置文件'), t('日志'), t('缓存'), t('临时文件'), t('驱动'), t('系统文件扩展名')],
+      tags: [t('系统文件扩展名'), t('配置文件'), t('日志'), t('缓存'), t('临时文件'), t('驱动')],
       description: t('系统关键文件的功能分类'),
       applicableFileTypes: ['filesystem'],
       contextHints: [t('路径位置'), t('权限特征')],
@@ -346,7 +346,7 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
       id: 14,
       name: t('数据库细分'),
       level: 2,
-      tags: ['SQLite', 'MySQL', 'MongoDB', 'Access', t('数据备份'), t('数据库扩展名')],
+      tags: [t('数据库扩展名'), 'SQLite', 'MySQL', 'MongoDB', 'Access', t('数据备份')],
       description: t('数据库文件的技术格式'),
       applicableFileTypes: ['database'],
       contextHints: [t('文件签名'), t('结构特征')],
@@ -361,7 +361,7 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
       id: 15,
       name: t('磁盘映像细分'),
       level: 2,
-      tags: [t('系统镜像'), t('数据镜像'), t('光盘镜像'), t('磁盘映像扩展名')],
+      tags: [t('磁盘映像扩展名'), t('系统镜像'), t('数据镜像'), t('光盘镜像')],
       description: t('磁盘映像的用途分类'),
       applicableFileTypes: ['diskimage'],
       contextHints: [t('卷标信息'), t('分区结构')],
@@ -636,13 +636,13 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
       name: t('电子书细分'),
       level: 2,
       tags: [
+        t('电子书扩展名'),
         t('小说'),
         t('漫画'),
         t('技术书籍'),
         t('杂志'),
         t('教材'),
-        t('公版书'),
-        t('电子书扩展名')
+        t('公版书')
       ],
       description: t('电子书的内容分类'),
       applicableFileTypes: ['ebook'],
@@ -780,7 +780,7 @@ export const FILE_DIMENSION_DATA = (): DimensionConfigSource => ({
       id: 106,
       name: t('字体细分'),
       level: 2,
-      tags: [t('英文字体'), t('中文字体'), t('图标字体'), t('字体扩展名')],
+      tags: [t('字体扩展名'), t('英文字体'), t('中文字体'), t('图标字体')],
       description: t('字体文件的分类'),
       applicableFileTypes: ['font'],
       contextHints: [t('字体格式'), t('字符集')],

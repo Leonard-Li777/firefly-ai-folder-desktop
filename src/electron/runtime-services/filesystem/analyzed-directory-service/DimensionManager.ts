@@ -1,4 +1,11 @@
-import { LogCategory, logger } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  isExtensionDimension,
+  isPanDimension,
+  filterDimensionTags,
+  DIMS_CONTAINING_TRAILING_EXTENSION_TAG
+} from '@firefly/shared'
 import {
   DimensionGroup,
   DimensionGroupsResponse,
@@ -200,12 +207,9 @@ export class DimensionManager {
         .all() as any[]
       dbQueryTime += performance.now() - dbStartTime
 
-      // 如果需要排除扩展名维度，过滤掉 L3 层级的扩展名维度
+      // 如果需要排除扩展名维度，使用 isExtensionDimension(d) 纯 ID / 结构层判定 (100% 多语言安全)
       if (excludeExtensionDimension) {
-        rawDimensions = rawDimensions.filter((d: any) => {
-          const isL3Ext = d.level === 3 && /扩展名|Extension/i.test(d.name)
-          return !isL3Ext
-        })
+        rawDimensions = rawDimensions.filter((d: any) => !isExtensionDimension(d))
       }
 
       // 创建名称到 ID 的映射
@@ -330,14 +334,14 @@ export class DimensionManager {
           .all(dim.id) as { name: string }[]
         const existingTagNames = existingTags.map(t => t.name)
 
-        const isPanDim =
-          panIdSet.has(dim.id) ||
-          dim.id === 4 ||
-          dim.id === 28 ||
-          dim.name === '作者' ||
-          dim.name === '内容标签'
+        const isPanDim = isPanDimension(dim, Array.from(panIdSet))
 
-        const presetTagsList: string[] = JSON.parse(dim.tags || '[]')
+        let presetTagsList: string[] = JSON.parse(dim.tags || '[]')
+        // 若排除扩展名维度，对于含有末尾扩展名触发标签的 L2 维度自动剔除该预设扩展名标签
+        if (excludeExtensionDimension) {
+          presetTagsList = filterDimensionTags({ id: dim.id, tags: presetTagsList })
+        }
+
         const presetTagSet = new Set(
           presetTagsList.map(t => (typeof t === 'string' ? t.toLowerCase().trim() : ''))
         )
@@ -348,10 +352,22 @@ export class DimensionManager {
           : existingTagNames.filter(t => presetTagSet.has(t.toLowerCase().trim()))
 
         const tagSet = new Set<string>(validExistingTagNames)
-        // 有子维度的维度（如 L2 "视频细分"），始终包含其完整标签列表
-        // 确保基础分析模式下 "xx扩展名" 标签能被包含并展开子标签
-        if (configShowEmptyTags || dimsWithChildren.has(dim.id)) {
-          presetTagsList.forEach((t: string) => tagSet.add(t))
+        // 有子维度的维度（如 L2 "视频细分"），或指定 includeAllPresetTags 时，始终包含其完整预设标签列表
+        // 确保批量标签等场景下所有维度（如作品来源、内容尺度等）能显示全部候选标签
+        if (configShowEmptyTags || opts.includeAllPresetTags || dimsWithChildren.has(dim.id)) {
+          presetTagsList.forEach((t: string) => {
+            if (excludeExtensionDimension && t.startsWith('.')) {
+              return
+            }
+            tagSet.add(t)
+          })
+        }
+        if (excludeExtensionDimension) {
+          for (const t of Array.from(tagSet)) {
+            if (t.startsWith('.')) {
+              tagSet.delete(t)
+            }
+          }
         }
         const tagStrings = Array.from(tagSet)
 

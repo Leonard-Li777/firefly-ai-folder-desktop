@@ -612,8 +612,33 @@ const electronAPI = {
     ipcRenderer.invoke('queue-window-control', action),
 
   // 单元查询
-  getUnitsForFile: (fileId: string) => ipcRenderer.invoke('units/get-by-file', fileId),
-  getUnitsForPath: (filePath: string) => ipcRenderer.invoke('units/get-by-path', filePath),
+  // 批量预处理工作台 (重命名、打标、查重、有效画像配置)
+  organizeBatch: {
+    previewRename: (template: string, files: any[]): Promise<any[]> =>
+      ipcRenderer.invoke('batch-rename:preview', template, files),
+    executeRename: (template: string, files: any[]): Promise<any> =>
+      ipcRenderer.invoke('batch-rename:execute', template, files),
+    getRandomTemplate: (): Promise<string> =>
+      ipcRenderer.invoke('batch-rename:random-template'),
+    applyTags: (operation: any): Promise<any> =>
+      ipcRenderer.invoke('batch-tag:apply', operation),
+    deleteTagGlobally: (dimensionId: number, tagName: string): Promise<boolean> =>
+      ipcRenderer.invoke('delete-tag-globally', dimensionId, tagName),
+    scanDuplicates: (options: any): Promise<any[]> =>
+      ipcRenderer.invoke('duplicate:scan', options),
+    trashDuplicates: (filePaths: string[]): Promise<any> =>
+      ipcRenderer.invoke('duplicate:trash', filePaths),
+    applyKeepRule: (groups: any[], rule: string): Promise<any[]> =>
+      ipcRenderer.invoke('duplicate:apply-keep-rule', groups, rule),
+    getEffectiveDirectoryConfig: (dirPath: string): Promise<any> =>
+      ipcRenderer.invoke('get-effective-directory-config', dirPath)
+  },
+
+  deleteTagGlobally: (dimensionId: number, tagName: string): Promise<boolean> =>
+    ipcRenderer.invoke('delete-tag-globally', dimensionId, tagName),
+
+  getEffectiveDirectoryConfig: (dirPath: string): Promise<any> =>
+    ipcRenderer.invoke('get-effective-directory-config', dirPath),
 
   // 多虚拟目录相关
   virtualDirectory: {
@@ -756,10 +781,19 @@ const electronAPI = {
   clearDirectoryContext: (dirPath: string): Promise<any> =>
     ipcRenderer.invoke('clear-directory-context', dirPath),
 
-  // 更新目录上下文分析字段（智能文件名格式 / AI分析策略）
+  // 更新目录上下文分析字段（智能文件名格式 / AI分析策略 / 继承模式）
   updateDirectoryContextAnalysis: (
     dirPath: string,
-    updates: { namingPattern?: string; analysisStrategy?: string }
+    updates: {
+      namingPattern?: string
+      analysisStrategy?: string
+      namingTemplate?: string
+      inheritMode?: {
+        analysisStrategy?: 'inherit' | 'current_only' | 'broadcast'
+        namingPattern?: 'inherit' | 'current_only' | 'broadcast'
+        namingTemplate?: 'inherit' | 'current_only' | 'broadcast'
+      }
+    }
   ): Promise<any> => ipcRenderer.invoke('update-directory-context-analysis', dirPath, updates),
 
   // 文件系统操作
@@ -778,6 +812,7 @@ const electronAPI = {
             virtualDirectoryId?: number
             selectedTags?: any[]
             unionMode?: 'union' | 'intersection'
+            includeAllPresetTags?: boolean
           }
         | string,
       language?: string

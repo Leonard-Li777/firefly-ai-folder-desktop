@@ -35,6 +35,31 @@ export const DirectoryProfileSection: React.FC<{
   const [analysisStrategyValue, setAnalysisStrategyValue] = useState('')
   const [savingAnalysisStrategy, setSavingAnalysisStrategy] = useState(false)
 
+  // 继承模式
+  const inheritMode = ctx?.inheritMode || {
+    analysisStrategy: 'inherit',
+    namingPattern: 'inherit',
+    namingTemplate: 'inherit'
+  }
+  const inheritedFrom = ctx?.inheritedFrom || {}
+
+  const handleUpdateInheritMode = async (
+    field: 'analysisStrategy' | 'namingPattern' | 'namingTemplate',
+    mode: 'inherit' | 'current_only' | 'broadcast'
+  ) => {
+    try {
+      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+        inheritMode: {
+          [field]: mode
+        }
+      })
+      toast.success(t('继承模式已更新'))
+      if (onRefresh) onRefresh()
+    } catch {
+      toast.error(t('更新继承模式失败'))
+    }
+  }
+
   // 当 ctx 变化时同步编辑框的值
   useEffect(() => {
     if (ctx?.namingPattern) setNamingPatternValue(ctx.namingPattern)
@@ -120,7 +145,7 @@ export const DirectoryProfileSection: React.FC<{
             <div className="bg-primary/10 rounded-lg px-4 py-3 -mx-4 space-y-5">
               {ctx?.analysisStrategy && (
                 <>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm font-semibold text-foreground">
                       {t('AI分析策略')}{' '}
                       {ctx.confidence !== undefined && ctx.confidence !== null && (
@@ -144,6 +169,33 @@ export const DirectoryProfileSection: React.FC<{
                       />
                       <span>{editingAnalysisStrategy ? t('取消') : t('编辑')}</span>
                     </button>
+                  </div>
+
+                  {/* 三档继承模式控制 */}
+                  <div className="flex items-center gap-3 text-xs mb-2">
+                    {[
+                      { key: 'inherit', label: t('继承父级') },
+                      { key: 'current_only', label: t('仅当前生效') },
+                      { key: 'broadcast', label: t('广播到子目录') }
+                    ].map(item => (
+                      <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
+                        <input
+                          type="radio"
+                          name="inherit_analysis_strategy"
+                          checked={inheritMode.analysisStrategy === item.key}
+                          onChange={() => handleUpdateInheritMode('analysisStrategy', item.key as any)}
+                          className="accent-primary w-3 h-3"
+                        />
+                        <span className={cn(inheritMode.analysisStrategy === item.key ? 'text-primary font-medium' : 'text-muted-foreground')}>
+                          {item.label}
+                        </span>
+                      </label>
+                    ))}
+                    {inheritMode.analysisStrategy === 'inherit' && inheritedFrom?.analysisStrategy && (
+                      <span className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]" title={inheritedFrom.analysisStrategy}>
+                        ({t('源: {src}', { src: inheritedFrom.analysisStrategy.split(/[\\/]/).pop() })})
+                      </span>
+                    )}
                   </div>
 
                   {editingAnalysisStrategy ? (
@@ -208,7 +260,7 @@ export const DirectoryProfileSection: React.FC<{
               )}
               {ctx?.namingPattern && (
                 <>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1">
                       <h3 className="text-sm font-semibold text-foreground">
                         {t('智能文件名格式')}
@@ -238,6 +290,33 @@ export const DirectoryProfileSection: React.FC<{
                       />
                       <span>{editingNamingPattern ? t('取消') : t('编辑')}</span>
                     </button>
+                  </div>
+
+                  {/* 三档继承模式控制 */}
+                  <div className="flex items-center gap-3 text-xs mb-2">
+                    {[
+                      { key: 'inherit', label: t('继承父级') },
+                      { key: 'current_only', label: t('仅当前生效') },
+                      { key: 'broadcast', label: t('广播到子目录') }
+                    ].map(item => (
+                      <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
+                        <input
+                          type="radio"
+                          name="inherit_naming_pattern"
+                          checked={inheritMode.namingPattern === item.key}
+                          onChange={() => handleUpdateInheritMode('namingPattern', item.key as any)}
+                          className="accent-primary w-3 h-3"
+                        />
+                        <span className={cn(inheritMode.namingPattern === item.key ? 'text-primary font-medium' : 'text-muted-foreground')}>
+                          {item.label}
+                        </span>
+                      </label>
+                    ))}
+                    {inheritMode.namingPattern === 'inherit' && inheritedFrom?.namingPattern && (
+                      <span className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]" title={inheritedFrom.namingPattern}>
+                        ({t('源: {src}', { src: inheritedFrom.namingPattern.split(/[\\/]/).pop() })})
+                      </span>
+                    )}
                   </div>
 
                   {editingNamingPattern ? (

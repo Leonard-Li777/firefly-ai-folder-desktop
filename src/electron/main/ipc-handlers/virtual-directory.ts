@@ -187,6 +187,7 @@ export function registerVirtualDirectoryIPCHandlers() {
             virtualDirectoryId?: number
             selectedTags?: SelectedTag[]
             unionMode?: 'union' | 'intersection'
+            includeAllPresetTags?: boolean
           }
         | string
     ) => {
@@ -204,7 +205,8 @@ export function registerVirtualDirectoryIPCHandlers() {
         removeEmptyTags: opts.removeEmptyTags,
         virtualDirectoryId: opts.virtualDirectoryId,
         selectedTags: opts.selectedTags,
-        unionMode: opts.unionMode
+        unionMode: opts.unionMode,
+        includeAllPresetTags: opts.includeAllPresetTags
       })
     }
   )
@@ -993,7 +995,16 @@ export function registerVirtualDirectoryIPCHandlers() {
     async (
       event,
       dirPath: string,
-      updates: { namingPattern?: string; analysisStrategy?: string }
+      updates: {
+        namingPattern?: string
+        analysisStrategy?: string
+        namingTemplate?: string
+        inheritMode?: {
+          analysisStrategy?: 'inherit' | 'current_only' | 'broadcast'
+          namingPattern?: 'inherit' | 'current_only' | 'broadcast'
+          namingTemplate?: 'inherit' | 'current_only' | 'broadcast'
+        }
+      }
     ) => {
       let activeContextService = directoryContextService
       if (!activeContextService && globalLlamaIndexService) {
@@ -1008,4 +1019,65 @@ export function registerVirtualDirectoryIPCHandlers() {
       return { success: true }
     }
   )
+
+  ipcMain.handle('get-effective-directory-config', async (event, dirPath: string) => {
+    let activeContextService = directoryContextService
+    if (!activeContextService && globalLlamaIndexService) {
+      const { DirectoryContextService } =
+        await import('../../runtime-services/filesystem/directory-context-service')
+      activeContextService = new DirectoryContextService(globalLlamaIndexService)
+      setDirectoryContextService(activeContextService)
+    }
+
+    if (!activeContextService) return null
+    return await activeContextService.getEffectiveDirectoryConfig(dirPath)
+  })
+
+  // ─── 批量重命名 IPC 处理程序 ─────────────────────────────────────────────
+  ipcMain.handle('batch-rename:preview', async (event, template: string, files: any[]) => {
+    const { NamingDSLEngine } = await import('../../runtime-services/filesystem/naming-dsl-engine')
+    return NamingDSLEngine.generatePreview(template, files)
+  })
+
+  ipcMain.handle('batch-rename:execute', async (event, template: string, files: any[]) => {
+    const { NamingDSLEngine } = await import('../../runtime-services/filesystem/naming-dsl-engine')
+    return await NamingDSLEngine.executeBatchRename(template, files)
+  })
+
+  ipcMain.handle('batch-rename:random-template', async () => {
+    const { NamingDSLEngine } = await import('../../runtime-services/filesystem/naming-dsl-engine')
+    return NamingDSLEngine.getRandomTemplate()
+  })
+
+  // ─── 批量打标签 & 标签全局删除 IPC ───────────────────────────────────────
+  ipcMain.handle('batch-tag:apply', async (event, operation: any) => {
+    return await databaseService.batchApplyTags(operation)
+  })
+
+  ipcMain.handle('delete-tag-globally', async (event, dimensionId: number, tagName: string) => {
+    return await databaseService.deleteTagGlobally(dimensionId, tagName)
+  })
+
+  // ─── 批量查重与安全清理 IPC ───────────────────────────────────────────────
+  ipcMain.handle('duplicate:scan', async (event, options: any) => {
+    const { duplicateDetectionService } = await import(
+      '../../runtime-services/filesystem/duplicate-detection-service'
+    )
+    return await duplicateDetectionService.scanDuplicates(options)
+  })
+
+  ipcMain.handle('duplicate:trash', async (event, filePaths: string[]) => {
+    const { duplicateDetectionService } = await import(
+      '../../runtime-services/filesystem/duplicate-detection-service'
+    )
+    return await duplicateDetectionService.trashDuplicateFiles(filePaths)
+  })
+
+  ipcMain.handle('duplicate:apply-keep-rule', async (event, groups: any[], rule: any) => {
+    const { duplicateDetectionService } = await import(
+      '../../runtime-services/filesystem/duplicate-detection-service'
+    )
+    duplicateDetectionService.applySmartRecommendKeep(groups, rule)
+    return groups
+  })
 }

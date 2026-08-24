@@ -187,24 +187,6 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         })
       }
 
-      // 如果是本地服务启动、引擎缺失、驱动过旧、显存不足等本地引擎加载/运行故障
-      const isLocalEngineFailure =
-        aiError.code === AIErrorType.SERVER_START_FAILED ||
-        aiError.code === AIErrorType.ENGINE_NOT_FOUND ||
-        aiError.code === AIErrorType.GPU_DRIVER_OUTDATED ||
-        aiError.code === AIErrorType.INSUFFICIENT_VRAM
-
-      if (isLocalEngineFailure) {
-        actions.push({
-          label: t('配置引擎'),
-          action: () => {
-            useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
-            onClose()
-          },
-          variant: actions.length === 0 ? 'default' : 'secondary'
-        })
-      }
-
       // 如果是驱动过旧、显存不足或模型加载失败，提供自动降级启动（由后端策略控制）
       if (
         aiError.code === AIErrorType.GPU_DRIVER_OUTDATED ||
@@ -248,17 +230,16 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         })
       }
 
-      // 如果可以重试，提供重试按钮
-      if (aiError.canRetry) {
-        actions.push({
-          label: t('重试启动'),
-          action: handleRetry,
-          variant: actions.length === 0 ? 'default' : 'secondary'
-        })
-      }
-
       // 兜底按钮：如果没有其他按钮，显示查看设置
       if (actions.length === 0) {
+        // 如果可以重试，提供重试按钮
+        if (aiError.canRetry) {
+          actions.push({
+            label: t('重试启动'),
+            action: handleRetry,
+            variant: actions.length === 0 ? 'default' : 'secondary'
+          })
+        }
         actions.push({
           label: t('查看设置'),
           action: () => onOpenSettings?.(),
@@ -268,7 +249,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
 
       // 始终提供切换到简单分类模式的选项
       actions.push({
-        label: t('使用简单分类模式'),
+        label: t('切换简单分类'),
         action: handleSwitchToSimple,
         variant: 'secondary'
       })

@@ -560,13 +560,36 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                         showOrganizeButton={!isOrganizeMode}
                         onStartOrganize={() => setIsOrganizeMode(true)}
                         isOrganizeMode={isOrganizeMode}
+                        onBatchRename={() => {
+                          if (selectedFiles.length === 0) {
+                            toast.warning(t('至少勾选一个文件'))
+                            return
+                          }
+                          const stateParams = {
+                            selectedFileIds: selectedFiles.map(f => f.id),
+                            initialStage: 'batch-rename'
+                          }
+                          navigate('/organize', { state: stateParams })
+                        }}
+                        onBatchTag={() => {
+                          if (selectedFiles.length === 0) {
+                            toast.warning(t('至少勾选一个文件'))
+                            return
+                          }
+                          const stateParams = {
+                            selectedFileIds: selectedFiles.map(f => f.id),
+                            initialStage: 'batch-tag'
+                          }
+                          navigate('/organize', { state: stateParams })
+                        }}
                         onOrganizeSelected={() => {
                           if (selectedFiles.length === 0) {
                             toast.warning(t('至少勾选一个文件'))
                             return
                           }
                           const stateParams = {
-                            selectedFileIds: selectedFiles.map(f => f.id)
+                            selectedFileIds: selectedFiles.map(f => f.id),
+                            initialStage: 'root-mode-select'
                           }
                           navigate('/organize', { state: stateParams })
                         }}

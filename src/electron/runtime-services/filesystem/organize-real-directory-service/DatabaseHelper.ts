@@ -206,13 +206,18 @@ export class DatabaseHelper {
           )
           .all(file.id) as any[]
 
+        const allTagNames = [
+          ...contentTags.map(t => t.name),
+          ...dimensionTagsArray.map(t => t.tag)
+        ]
+
         filesWithTags.push({
           id: file.id,
           name: file.name,
           smartName: file.smartName,
           path: file.path,
           type: file.type || '',
-          tags: contentTags.map(t => t.name),
+          tags: allTagNames,
           dimensionTags: dimensionTagsArray.map(t => ({
             dimension: t.dimension,
             tag: t.tag

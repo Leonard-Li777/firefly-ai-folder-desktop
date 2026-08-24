@@ -193,55 +193,56 @@ export function useOrganizeState() {
   const [allWorkspaceFiles, setAllWorkspaceFiles] = useState<any[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
 
-  // 挂载时自动恢复工作目录并拉取已分析文件；工作区变化时重新拉取
-  useEffect(() => {
-    const initAndFetch = async () => {
-      // 如果工作目录尚未恢复，先尝试从后端获取
-      let workspace = currentWorkspaceDirectory
-      if (!workspace?.id || !workspace?.path) {
-        try {
-          const currentDir = await window.electronAPI!.getCurrentWorkspaceDirectory()
-          if (currentDir) {
-            useAnalyzedDirectoryStore.getState().setCurrentWorkspaceDirectory(currentDir)
-            workspace = currentDir
-          }
-        } catch (e) {
-          logger.error(LogCategory.FILE_ORGANIZATION, '初始化获取工作目录失败:', e)
-        }
-      }
-
-      if (!workspace?.path) {
-        setAllWorkspaceFiles([])
-        return
-      }
-
-      setIsLoadingFiles(true)
+  const loadFilesToOrganize = useCallback(async () => {
+    // 如果工作目录尚未恢复，先尝试从后端获取
+    let workspace = currentWorkspaceDirectory
+    if (!workspace?.id || !workspace?.path) {
       try {
-        const result = await window.electronAPI!.organizeRealDirectory.getAnalyzedFiles(
-          workspace.path
-        )
-        const formatted = (result || []).map((f: any) => {
-          let ext = f.extension
-          if (!ext && f.path) {
-            const parts = f.path.split(/[\\/]/).pop()?.split('.')
-            if (parts && parts.length > 1) {
-              ext = parts.pop()?.toLowerCase()
-            }
-          }
-          return {
-            ...f,
-            extension: ext || ''
-          }
-        })
-        setAllWorkspaceFiles(formatted)
-      } catch (err) {
-        logger.error(LogCategory.FILE_ORGANIZATION, '获取工作区文件列表失败:', err)
-        toast.error(t('获取待整理文件列表失败，请查看日志确认'))
-      } finally {
-        setIsLoadingFiles(false)
+        const currentDir = await window.electronAPI!.getCurrentWorkspaceDirectory()
+        if (currentDir) {
+          useAnalyzedDirectoryStore.getState().setCurrentWorkspaceDirectory(currentDir)
+          workspace = currentDir
+        }
+      } catch (e) {
+        logger.error(LogCategory.FILE_ORGANIZATION, '初始化获取工作目录失败:', e)
       }
     }
-    initAndFetch()
+
+    if (!workspace?.path) {
+      setAllWorkspaceFiles([])
+      return
+    }
+
+    setIsLoadingFiles(true)
+    try {
+      const result = await window.electronAPI!.organizeRealDirectory.getAnalyzedFiles(
+        workspace.path
+      )
+      const formatted = (result || []).map((f: any) => {
+        let ext = f.extension
+        if (!ext && f.path) {
+          const parts = f.path.split(/[\\/]/).pop()?.split('.')
+          if (parts && parts.length > 1) {
+            ext = parts.pop()?.toLowerCase()
+          }
+        }
+        return {
+          ...f,
+          extension: ext || ''
+        }
+      })
+      setAllWorkspaceFiles(formatted)
+    } catch (err) {
+      logger.error(LogCategory.FILE_ORGANIZATION, '获取工作区文件列表失败:', err)
+      toast.error(t('获取待整理文件列表失败，请查看日志确认'))
+    } finally {
+      setIsLoadingFiles(false)
+    }
+  }, [currentWorkspaceDirectory])
+
+  // 挂载时自动恢复工作目录并拉取已分析文件；工作区变化时重新拉取
+  useEffect(() => {
+    loadFilesToOrganize()
 
     // 如果有勾选状态带入（从已分析页面跳转过来），彻底清除 Keep-Alive 旧状态并复位到选择整理模式
     const selectedFileIdsFromState = location.state?.selectedFileIds
@@ -254,7 +255,7 @@ export function useOrganizeState() {
         '[Organize State] 从已分析页面带入 selectedFileIds，重置 Keep-Alive 状态，文件数:',
         selectedFileIdsFromState.length
       )
-      setStage('mode-select')
+      setStage(location.state?.initialStage || 'root-mode-select')
       setIncrementalVdId(null)
       setIncrementalFiles([])
       setCurrentVDir(null)
@@ -2365,7 +2366,7 @@ export function useOrganizeState() {
           organizeMode !== 'fine-organize'))
     )
 
-    const result = !isDirectDone
+    const result = !isDirectDone && stage !== 'root-mode-select'
 
     return result
   }, [stage, vdIdParam, searchParams, currentVDir, organizeMode])
@@ -2375,6 +2376,15 @@ export function useOrganizeState() {
     if (!canGoBack) return
     if (stage === 'organizing') {
       setShowBackConfirm(true)
+      return
+    }
+    if (
+      stage === 'batch-rename' ||
+      stage === 'batch-tag' ||
+      stage === 'batch-duplicate' ||
+      stage === 'mode-select'
+    ) {
+      setStage('root-mode-select')
       return
     }
     if (stage === 'candidates') {
@@ -2406,6 +2416,119 @@ export function useOrganizeState() {
       return
     }
   }, [canGoBack, stage, organizeMode, searchParams, vdIdParam, currentVDir, draft])
+
+  // ─── 批量重命名执行 ─────────────────────────────────────────────────────────
+  const [isExecutingRename, setIsExecutingRename] = useState(false)
+  const executeBatchRename = useCallback(
+    async (template: string) => {
+      if (!toOrganizeFiles || toOrganizeFiles.length === 0) {
+        toast.warning(t('暂无待重命名文件'))
+        return
+      }
+      setIsExecutingRename(true)
+      try {
+        if (window.electronAPI?.organizeBatch?.executeRename) {
+          const res = await window.electronAPI.organizeBatch.executeRename(template, toOrganizeFiles)
+          if (res && res.successCount > 0) {
+            toast.success(t('成功重命名 {count} 个文件', { count: res.successCount }))
+            if (res.failedCount > 0) {
+              toast.warning(t('{count} 个文件重命名失败', { count: res.failedCount }))
+            }
+            // 刷新文件列表
+            await loadFilesToOrganize()
+          } else {
+            toast.error(t('重命名失败'))
+          }
+        }
+      } catch (err: any) {
+        toast.error(err?.message || t('执行重命名异常'))
+      } finally {
+        setIsExecutingRename(false)
+      }
+    },
+    [toOrganizeFiles]
+  )
+
+  // ─── 批量保存打标 ─────────────────────────────────────────────────────────
+  const [isSavingTags, setIsSavingTags] = useState(false)
+  const saveBatchTags = useCallback(
+    async (changes: import('@firefly/types').BatchTagOperation) => {
+      const fileIds = changes.fileIds && changes.fileIds.length > 0
+        ? changes.fileIds
+        : toOrganizeFiles.map(f => f.id).filter(Boolean)
+      if (fileIds.length === 0) {
+        toast.warning(t('暂无目标文件'))
+        return
+      }
+      setIsSavingTags(true)
+      try {
+        if (window.electronAPI?.organizeBatch?.applyTags) {
+          const res = await window.electronAPI.organizeBatch.applyTags({
+            ...changes,
+            fileIds
+          })
+          if (res) {
+            toast.success(t('成功为 {count} 个文件更新标签', { count: res.successCount }))
+            await loadFilesToOrganize()
+          }
+        }
+      } catch (err: any) {
+        toast.error(err?.message || t('批量打标失败'))
+      } finally {
+        setIsSavingTags(false)
+      }
+    },
+    [toOrganizeFiles]
+  )
+
+  // ─── 全局删除标签 ─────────────────────────────────────────────────────────
+  const deleteTagGlobally = useCallback(
+    async (dimensionId: number, tagName: string): Promise<boolean> => {
+      try {
+        if (window.electronAPI?.organizeBatch?.deleteTagGlobally) {
+          const success = await window.electronAPI.organizeBatch.deleteTagGlobally(
+            dimensionId,
+            tagName
+          )
+          if (success) {
+            await loadFilesToOrganize()
+            return true
+          }
+        }
+        return false
+      } catch (err: any) {
+        toast.error(err?.message || t('删除标签失败'))
+        return false
+      }
+    },
+    []
+  )
+
+  // ─── 查重清理文件 (移入回收站) ─────────────────────────────────────────────
+  const [isTrashingDuplicates, setIsTrashingDuplicates] = useState(false)
+  const trashDuplicateFiles = useCallback(
+    async (filePaths: string[]) => {
+      if (!filePaths || filePaths.length === 0) {
+        toast.warning(t('未选择要清理的冗余文件'))
+        return
+      }
+      setIsTrashingDuplicates(true)
+      try {
+        if (window.electronAPI?.organizeBatch?.trashDuplicates) {
+          const res = await window.electronAPI.organizeBatch.trashDuplicates(filePaths)
+          if (res) {
+            toast.success(t('已安全移入系统回收站 {count} 个文件', { count: res.deletedCount }))
+            await loadFilesToOrganize()
+          }
+        }
+      } catch (err: any) {
+        toast.error(err?.message || t('清理冗余文件失败'))
+      } finally {
+        setIsTrashingDuplicates(false)
+      }
+    },
+    []
+  )
 
   const canForward = useMemo(() => {
     if (stage === 'mode-select') {
@@ -2705,6 +2828,15 @@ export function useOrganizeState() {
     handleSelectDraftVDir,
     handleDeleteDraftVDir,
     resetOrganizeState,
-    highFrequencyTags
+    highFrequencyTags,
+
+    // 批量预处理工作台操作
+    executeBatchRename,
+    isExecutingRename,
+    saveBatchTags,
+    isSavingTags,
+    deleteTagGlobally,
+    trashDuplicateFiles,
+    isTrashingDuplicates
   }
 }

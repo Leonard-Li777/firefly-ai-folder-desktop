@@ -1,7 +1,16 @@
 import { create } from 'zustand'
 import { VirtualDirectoryNode, VirtualDirectory } from '@firefly/types'
 
-export type Stage = 'mode-select' | 'candidates' | 'structure' | 'organizing' | 'done'
+export type Stage =
+  | 'root-mode-select'
+  | 'batch-rename'
+  | 'batch-tag'
+  | 'batch-duplicate'
+  | 'mode-select'
+  | 'candidates'
+  | 'structure'
+  | 'organizing'
+  | 'done'
 export type OrganizeMode = 'fast-organize' | 'fine-organize' | 'incremental-organize' | undefined
 
 export interface OrganizeOptions {
@@ -18,8 +27,12 @@ export interface ProgressInfo {
   message: string
 }
 
+export type OrganizeBranch = 'organize' | 'batch-rename' | 'batch-tag' | 'batch-duplicate'
+
 interface OrganizeStoreState {
   stage: Stage
+  activeBranch: OrganizeBranch
+  visitedStages: Stage[]
   organizeMode: OrganizeMode
   selectedVDirId: number | null
   currentVDir: VirtualDirectory | null
@@ -43,6 +56,8 @@ interface OrganizeStoreState {
   options: OrganizeOptions
 
   setStage: (stage: Stage) => void
+  setActiveBranch: (branch: OrganizeBranch) => void
+  addVisitedStage: (stage: Stage) => void
 
   setOrganizeMode: (mode: OrganizeMode) => void
   setSelectedVDirId: (id: number | null) => void
@@ -79,7 +94,9 @@ const initialOptions: OrganizeOptions = {
 }
 
 export const useOrganizeStore = create<OrganizeStoreState>(set => ({
-  stage: 'mode-select',
+  stage: 'root-mode-select',
+  activeBranch: 'organize',
+  visitedStages: ['root-mode-select'],
   organizeMode: 'fast-organize',
   selectedVDirId: null,
   currentVDir: null,
@@ -95,7 +112,45 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
   hasRescueFailed: false,
   options: initialOptions,
 
-  setStage: stage => set({ stage }),
+  setStage: stage =>
+    set(state => {
+      let branch = state.activeBranch || 'organize'
+      if (stage === 'batch-rename') {
+        branch = 'batch-rename'
+      } else if (stage === 'batch-tag') {
+        branch = 'batch-tag'
+      } else if (stage === 'batch-duplicate') {
+        branch = 'batch-duplicate'
+      } else if (
+        stage === 'mode-select' ||
+        stage === 'candidates' ||
+        stage === 'structure' ||
+        stage === 'organizing' ||
+        stage === 'done'
+      ) {
+        branch = 'organize'
+      }
+
+      const prevVisited = state.visitedStages || ['root-mode-select']
+      const newVisited = prevVisited.includes(stage)
+        ? prevVisited
+        : [...prevVisited, stage]
+
+      return {
+        stage,
+        activeBranch: branch,
+        visitedStages: newVisited
+      }
+    }),
+
+  setActiveBranch: activeBranch => set({ activeBranch }),
+  addVisitedStage: stage =>
+    set(state => ({
+      visitedStages: (state.visitedStages || []).includes(stage)
+        ? state.visitedStages
+        : [...(state.visitedStages || []), stage]
+    })),
+
   setOrganizeMode: organizeMode => set({ organizeMode }),
   setSelectedVDirId: selectedVDirId => set({ selectedVDirId }),
   setCurrentVDir: currentVDir => set({ currentVDir }),
@@ -124,7 +179,9 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
 
   resetOrganizeState: () =>
     set({
-      stage: 'mode-select',
+      stage: 'root-mode-select',
+      activeBranch: 'organize',
+      visitedStages: ['root-mode-select'],
       organizeMode: 'fast-organize',
       selectedVDirId: null,
       currentVDir: null,
