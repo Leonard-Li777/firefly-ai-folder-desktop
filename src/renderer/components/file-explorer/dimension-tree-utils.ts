@@ -164,24 +164,32 @@ export function getSelectedTagsFromSet(
     })
   })
 
-  return Array.from(selectedTagsSet).map(key => {
+  const results: SelectedTag[] = []
+  for (const key of selectedTagsSet) {
     const parsed = parseTagKey(key)
     const { dimensionId, tagValue, parentTagValue: keyParentTagValue } = parsed
     const group = groupMap.get(dimensionId)
+    // 若维度不存在，或该维度下无此标签，视为陈旧/无效标签直接过滤
+    if (!group) continue
     const tagObj = tagObjMap.get(`${dimensionId}::${tagValue}`)
+    if (!tagObj && !group.tags.some(t => t.tagValue === tagValue)) continue
+
     const ancestorChain = parentTagMap?.get(key)
     const parentTagValue =
       keyParentTagValue ||
       (ancestorChain && ancestorChain.length > 1
         ? ancestorChain[ancestorChain.length - 2]
         : undefined)
-    return {
+
+    results.push({
       dimensionId,
-      dimensionName: group?.name || '',
+      dimensionName: group.name,
       tagValue,
       level: tagObj?.level || 0,
       ...(parentTagValue ? { parentTagValue } : {}),
       ...(ancestorChain && ancestorChain.length > 0 ? { ancestorChain } : {})
-    }
-  })
+    })
+  }
+
+  return results
 }

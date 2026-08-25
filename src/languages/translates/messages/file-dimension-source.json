@@ -885,7 +885,7 @@
     "ko-KR": "구성 파일",
     "$files": [
       "src/electron/config/file-dimension-source.ts(2480-2488)",
-      "src/electron/config/file-dimension-source.ts(6498-6506)",
+      "src/electron/config/file-dimension-source.ts(6512-6520)",
       "src/electron/config/file-dimension-source.ts(10155-10163)"
     ],
     "$id": 7257
@@ -1165,6 +1165,23 @@
     ],
     "$id": 7276
   },
+  "图片扩展名": {
+    "en-US": "Image Extensions",
+    "es-ES": "Extensión de imagen",
+    "ar-EG": "امتداد الصورة",
+    "pt-PT": "Extensão de imagem",
+    "ru-RU": "Расширение изображения",
+    "ja-JP": "画像拡張子",
+    "de-DE": "Bilderweiterung",
+    "fr-FR": "Extension d'image",
+    "ko-KR": "이미지 확장",
+    "$files": [
+      "src/electron/config/file-dimension-source.ts(3616-3625)",
+      "src/electron/config/file-dimension-source.ts(19203-19212)",
+      "src/electron/config/file-dimension-source.ts(19945-19954)"
+    ],
+    "$id": 7286
+  },
   "摄影照片": {
     "en-US": "Photography",
     "es-ES": "Fotografía",
@@ -1175,7 +1192,7 @@
     "de-DE": "Fotografie",
     "fr-FR": "Photographie",
     "ko-KR": "사진술",
-    "$files": ["src/electron/config/file-dimension-source.ts(3616-3624)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(3636-3644)"],
     "$id": 7277
   },
   "截图": {
@@ -1188,7 +1205,7 @@
     "de-DE": "Screenshot",
     "fr-FR": "Capture d'écran",
     "ko-KR": "스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(3635-3641)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(3655-3661)"],
     "$id": 7278
   },
   "设计稿": {
@@ -1201,7 +1218,7 @@
     "de-DE": "Designentwurf",
     "fr-FR": "Ébauche de conception",
     "ko-KR": "디자인 초안",
-    "$files": ["src/electron/config/file-dimension-source.ts(3652-3659)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(3672-3679)"],
     "$id": 7279
   },
   "应用图标": {
@@ -1214,7 +1231,7 @@
     "de-DE": "Anwendungssymbol",
     "fr-FR": "Icône d'application",
     "ko-KR": "애플리케이션 아이콘",
-    "$files": ["src/electron/config/file-dimension-source.ts(3670-3678)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(3690-3698)"],
     "$id": 7280
   },
   "表情包": {
@@ -1227,7 +1244,7 @@
     "de-DE": "Emoticons",
     "fr-FR": "Émoticônes",
     "ko-KR": "이모티콘",
-    "$files": ["src/electron/config/file-dimension-source.ts(3689-3696)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(3709-3716)"],
     "$id": 7281
   },
   "医学影像": {
@@ -1240,7 +1257,7 @@
     "de-DE": "Medizinische Bildgebung",
     "fr-FR": "Imagerie médicale",
     "ko-KR": "의료 영상",
-    "$files": ["src/electron/config/file-dimension-source.ts(3707-3715)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(3727-3735)"],
     "$id": 7282
   },
   "图纸": {
@@ -1253,7 +1270,7 @@
     "de-DE": "Zeichnung",
     "fr-FR": "Dessin",
     "ko-KR": "그림",
-    "$files": ["src/electron/config/file-dimension-source.ts(3726-3732)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(3746-3752)"],
     "$id": 7283
   },
   "漫画": {
@@ -1267,9 +1284,9 @@
     "fr-FR": "Bandes dessinées",
     "ko-KR": "지세도",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(3743-3749)",
+      "src/electron/config/file-dimension-source.ts(3763-3769)",
       "src/electron/config/file-dimension-source.ts(7669-7675)",
-      "src/electron/config/file-dimension-source.ts(14341-14347)",
+      "src/electron/config/file-dimension-source.ts(14362-14368)",
       "src/electron/config/file-dimension-source.ts(26117-26123)",
       "src/electron/config/file-dimension-source.ts(27549-27555)",
       "src/electron/config/file-dimension-source.ts(28556-28562)",
@@ -1289,25 +1306,8 @@
     "de-DE": "Malerei",
     "fr-FR": "Peinture",
     "ko-KR": "그림",
-    "$files": ["src/electron/config/file-dimension-source.ts(3760-3766)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(3780-3786)"],
     "$id": 7285
-  },
-  "图片扩展名": {
-    "en-US": "Image Extensions",
-    "es-ES": "Extensión de imagen",
-    "ar-EG": "امتداد الصورة",
-    "pt-PT": "Extensão de imagem",
-    "ru-RU": "Расширение изображения",
-    "ja-JP": "画像拡張子",
-    "de-DE": "Bilderweiterung",
-    "fr-FR": "Extension d'image",
-    "ko-KR": "이미지 확장",
-    "$files": [
-      "src/electron/config/file-dimension-source.ts(3777-3786)",
-      "src/electron/config/file-dimension-source.ts(19203-19212)",
-      "src/electron/config/file-dimension-source.ts(19945-19954)"
-    ],
-    "$id": 7286
   },
   "图像内容的专业分类": {
     "en-US": "Professional classification of image content",
@@ -1372,6 +1372,23 @@
     ],
     "$id": 7290
   },
+  "视频扩展名": {
+    "en-US": "Video Extensions",
+    "es-ES": "Extensión de vídeo",
+    "ar-EG": "امتداد الفيديو",
+    "pt-PT": "Extensão de vídeo",
+    "ru-RU": "расширение видео",
+    "ja-JP": "ビデオ拡張子",
+    "de-DE": "Videoerweiterung",
+    "fr-FR": "Extension vidéo",
+    "ko-KR": "비디오 확장",
+    "$files": [
+      "src/electron/config/file-dimension-source.ts(4129-4138)",
+      "src/electron/config/file-dimension-source.ts(20015-20024)",
+      "src/electron/config/file-dimension-source.ts(20572-20581)"
+    ],
+    "$id": 7298
+  },
   "影视": {
     "en-US": "Film and television",
     "es-ES": "Cine y televisión",
@@ -1383,7 +1400,7 @@
     "fr-FR": "Cinéma et télévision",
     "ko-KR": "영화와 텔레비전",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(4129-4135)",
+      "src/electron/config/file-dimension-source.ts(4149-4155)",
       "src/electron/config/file-dimension-source.ts(7484-7490)",
       "src/electron/config/file-dimension-source.ts(15684-15690)",
       "src/electron/config/file-dimension-source.ts(27355-27361)",
@@ -1405,7 +1422,7 @@
     "de-DE": "Lehrvideo",
     "fr-FR": "Vidéo pédagogique",
     "ko-KR": "교육용 비디오",
-    "$files": ["src/electron/config/file-dimension-source.ts(4146-4154)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4166-4174)"],
     "$id": 7292
   },
   "游戏互动": {
@@ -1418,7 +1435,7 @@
     "de-DE": "Spielinteraktion",
     "fr-FR": "Interaction de jeu",
     "ko-KR": "게임 상호작용",
-    "$files": ["src/electron/config/file-dimension-source.ts(4165-4173)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4185-4193)"],
     "$id": 7293
   },
   "录屏": {
@@ -1431,7 +1448,7 @@
     "de-DE": "Aufnahmebildschirm",
     "fr-FR": "Écran d'enregistrement",
     "ko-KR": "녹화 화면",
-    "$files": ["src/electron/config/file-dimension-source.ts(4184-4190)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4204-4210)"],
     "$id": 7294
   },
   "短视频": {
@@ -1444,7 +1461,7 @@
     "de-DE": "Kurzes Video",
     "fr-FR": "Courte vidéo",
     "ko-KR": "짧은 영상",
-    "$files": ["src/electron/config/file-dimension-source.ts(4201-4208)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4221-4228)"],
     "$id": 7295
   },
   "监控录像": {
@@ -1457,7 +1474,7 @@
     "de-DE": "Überwachungsvideo",
     "fr-FR": "Vidéosurveillance",
     "ko-KR": "감시 영상",
-    "$files": ["src/electron/config/file-dimension-source.ts(4219-4227)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4239-4247)"],
     "$id": 7296
   },
   "会议录像": {
@@ -1470,25 +1487,8 @@
     "de-DE": "Besprechungsvideo",
     "fr-FR": "Vidéo de la réunion",
     "ko-KR": "회의 영상",
-    "$files": ["src/electron/config/file-dimension-source.ts(4238-4246)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4258-4266)"],
     "$id": 7297
-  },
-  "视频扩展名": {
-    "en-US": "Video Extensions",
-    "es-ES": "Extensión de vídeo",
-    "ar-EG": "امتداد الفيديو",
-    "pt-PT": "Extensão de vídeo",
-    "ru-RU": "расширение видео",
-    "ja-JP": "ビデオ拡張子",
-    "de-DE": "Videoerweiterung",
-    "fr-FR": "Extension vidéo",
-    "ko-KR": "비디오 확장",
-    "$files": [
-      "src/electron/config/file-dimension-source.ts(4257-4266)",
-      "src/electron/config/file-dimension-source.ts(20015-20024)",
-      "src/electron/config/file-dimension-source.ts(20572-20581)"
-    ],
-    "$id": 7298
   },
   "视频内容的专业分类": {
     "en-US": "Professional classification of video content",
@@ -1558,6 +1558,23 @@
     ],
     "$id": 7302
   },
+  "音频扩展名": {
+    "en-US": "Audio Extensions",
+    "es-ES": "Extensión de audio",
+    "ar-EG": "تمديد الصوت",
+    "pt-PT": "Extensão de áudio",
+    "ru-RU": "аудио расширение",
+    "ja-JP": "オーディオ拡張子",
+    "de-DE": "Audio-Erweiterung",
+    "fr-FR": "Extension audio",
+    "ko-KR": "오디오 확장",
+    "$files": [
+      "src/electron/config/file-dimension-source.ts(4608-4617)",
+      "src/electron/config/file-dimension-source.ts(20642-20651)",
+      "src/electron/config/file-dimension-source.ts(21290-21299)"
+    ],
+    "$id": 7309
+  },
   "音乐": {
     "en-US": "Music",
     "es-ES": "Música",
@@ -1569,7 +1586,7 @@
     "fr-FR": "Musique",
     "ko-KR": "음악",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(4608-4614)",
+      "src/electron/config/file-dimension-source.ts(4628-4634)",
       "src/electron/config/file-dimension-source.ts(7392-7398)",
       "src/electron/config/file-dimension-source.ts(15776-15782)",
       "src/electron/config/file-dimension-source.ts(16653-16659)",
@@ -1589,7 +1606,7 @@
     "de-DE": "Podcast",
     "fr-FR": "Podcast",
     "ko-KR": "팟캐스트",
-    "$files": ["src/electron/config/file-dimension-source.ts(4625-4631)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4645-4651)"],
     "$id": 7304
   },
   "有声书": {
@@ -1603,7 +1620,7 @@
     "fr-FR": "Livre audio",
     "ko-KR": "오디오북",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(4642-4649)",
+      "src/electron/config/file-dimension-source.ts(4662-4669)",
       "src/electron/config/file-dimension-source.ts(7382-7389)",
       "src/electron/config/file-dimension-source.ts(27253-27260)",
       "src/electron/config/file-dimension-source.ts(28260-28267)",
@@ -1621,7 +1638,7 @@
     "de-DE": "Sprachnotiz",
     "fr-FR": "Mémo vocal",
     "ko-KR": "음성 메모",
-    "$files": ["src/electron/config/file-dimension-source.ts(4660-4668)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4680-4688)"],
     "$id": 7306
   },
   "音效": {
@@ -1634,7 +1651,7 @@
     "de-DE": "Soundeffekte",
     "fr-FR": "Bruitage",
     "ko-KR": "음향 효과",
-    "$files": ["src/electron/config/file-dimension-source.ts(4679-4685)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4699-4705)"],
     "$id": 7307
   },
   "会议录音": {
@@ -1647,25 +1664,8 @@
     "de-DE": "Besprechungsaufzeichnung",
     "fr-FR": "Enregistrement de la réunion",
     "ko-KR": "회의녹화",
-    "$files": ["src/electron/config/file-dimension-source.ts(4696-4704)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(4716-4724)"],
     "$id": 7308
-  },
-  "音频扩展名": {
-    "en-US": "Audio Extensions",
-    "es-ES": "Extensión de audio",
-    "ar-EG": "تمديد الصوت",
-    "pt-PT": "Extensão de áudio",
-    "ru-RU": "аудио расширение",
-    "ja-JP": "オーディオ拡張子",
-    "de-DE": "Audio-Erweiterung",
-    "fr-FR": "Extension audio",
-    "ko-KR": "오디오 확장",
-    "$files": [
-      "src/electron/config/file-dimension-source.ts(4715-4724)",
-      "src/electron/config/file-dimension-source.ts(20642-20651)",
-      "src/electron/config/file-dimension-source.ts(21290-21299)"
-    ],
-    "$id": 7309
   },
   "音频内容的专业分类": {
     "en-US": "Professional classification of audio content",
@@ -1839,7 +1839,7 @@
     "fr-FR": "Extension du programme",
     "ko-KR": "프로그램 확장",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(5483-5492)",
+      "src/electron/config/file-dimension-source.ts(5436-5445)",
       "src/electron/config/file-dimension-source.ts(24128-24137)",
       "src/electron/config/file-dimension-source.ts(24615-24624)"
     ],
@@ -2150,6 +2150,23 @@
     ],
     "$id": 7344
   },
+  "系统文件扩展名": {
+    "en-US": "System File Extensions",
+    "es-ES": "Extensión de archivo del sistema",
+    "ar-EG": "امتداد ملف النظام",
+    "pt-PT": "Extensão de arquivo do sistema",
+    "ru-RU": "Расширение системного файла",
+    "ja-JP": "システムファイル拡張子",
+    "de-DE": "Systemdateierweiterung",
+    "fr-FR": "Extension du fichier système",
+    "ko-KR": "시스템 파일 확장자",
+    "$files": [
+      "src/electron/config/file-dimension-source.ts(6498-6509)",
+      "src/electron/config/file-dimension-source.ts(17593-17604)",
+      "src/electron/config/file-dimension-source.ts(17906-17917)"
+    ],
+    "$id": 7349
+  },
   "日志": {
     "en-US": "Log",
     "es-ES": "Registro",
@@ -2160,7 +2177,7 @@
     "de-DE": "Protokoll",
     "fr-FR": "Enregistrer",
     "ko-KR": "통나무",
-    "$files": ["src/electron/config/file-dimension-source.ts(6509-6515)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(6523-6529)"],
     "$id": 7345
   },
   "缓存": {
@@ -2173,7 +2190,7 @@
     "de-DE": "Cache",
     "fr-FR": "Cache",
     "ko-KR": "은닉처",
-    "$files": ["src/electron/config/file-dimension-source.ts(6518-6524)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(6532-6538)"],
     "$id": 7346
   },
   "临时文件": {
@@ -2186,7 +2203,7 @@
     "de-DE": "Temporäre Dateien",
     "fr-FR": "Fichiers temporaires",
     "ko-KR": "임시 파일",
-    "$files": ["src/electron/config/file-dimension-source.ts(6527-6535)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(6541-6549)"],
     "$id": 7347
   },
   "驱动": {
@@ -2199,25 +2216,8 @@
     "de-DE": "Fahren",
     "fr-FR": "Conduire",
     "ko-KR": "운전하다",
-    "$files": ["src/electron/config/file-dimension-source.ts(6538-6544)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(6552-6558)"],
     "$id": 7348
-  },
-  "系统文件扩展名": {
-    "en-US": "System File Extensions",
-    "es-ES": "Extensión de archivo del sistema",
-    "ar-EG": "امتداد ملف النظام",
-    "pt-PT": "Extensão de arquivo do sistema",
-    "ru-RU": "Расширение системного файла",
-    "ja-JP": "システムファイル拡張子",
-    "de-DE": "Systemdateierweiterung",
-    "fr-FR": "Extension du fichier système",
-    "ko-KR": "시스템 파일 확장자",
-    "$files": [
-      "src/electron/config/file-dimension-source.ts(6547-6558)",
-      "src/electron/config/file-dimension-source.ts(17593-17604)",
-      "src/electron/config/file-dimension-source.ts(17906-17917)"
-    ],
-    "$id": 7349
   },
   "系统关键文件的功能分类": {
     "en-US": "Functional classification of key system files",
@@ -2460,7 +2460,7 @@
     "ko-KR": "소설",
     "$files": [
       "src/electron/config/file-dimension-source.ts(7290-7296)",
-      "src/electron/config/file-dimension-source.ts(14324-14330)",
+      "src/electron/config/file-dimension-source.ts(14345-14351)",
       "src/electron/config/file-dimension-source.ts(15869-15875)",
       "src/electron/config/file-dimension-source.ts(27161-27167)",
       "src/electron/config/file-dimension-source.ts(28168-28174)",
@@ -2484,19 +2484,6 @@
     ],
     "$id": 7368
   },
-  "数据备份": {
-    "en-US": "Data backup",
-    "es-ES": "Copia de seguridad de datos",
-    "ar-EG": "النسخ الاحتياطي للبيانات",
-    "pt-PT": "Backup de dados",
-    "ru-RU": "Резервное копирование данных",
-    "ja-JP": "データのバックアップ",
-    "de-DE": "Datensicherung",
-    "fr-FR": "Sauvegarde des données",
-    "ko-KR": "데이터 백업",
-    "$files": ["src/electron/config/file-dimension-source.ts(7816-7824)"],
-    "$id": 7369
-  },
   "数据库扩展名": {
     "en-US": "Database Extensions",
     "es-ES": "Extensión de base de datos",
@@ -2508,11 +2495,24 @@
     "fr-FR": "Extension de base de données",
     "ko-KR": "데이터베이스 확장",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(7827-7837)",
+      "src/electron/config/file-dimension-source.ts(7776-7786)",
       "src/electron/config/file-dimension-source.ts(9303-9313)",
       "src/electron/config/file-dimension-source.ts(9611-9621)"
     ],
     "$id": 7370
+  },
+  "数据备份": {
+    "en-US": "Data backup",
+    "es-ES": "Copia de seguridad de datos",
+    "ar-EG": "النسخ الاحتياطي للبيانات",
+    "pt-PT": "Backup de dados",
+    "ru-RU": "Резервное копирование данных",
+    "ja-JP": "データのバックアップ",
+    "de-DE": "Datensicherung",
+    "fr-FR": "Sauvegarde des données",
+    "ko-KR": "데이터 백업",
+    "$files": ["src/electron/config/file-dimension-source.ts(7829-7837)"],
+    "$id": 7369
   },
   "数据库文件的技术格式": {
     "en-US": "Technical format of database files",
@@ -2556,6 +2556,23 @@
     ],
     "$id": 7373
   },
+  "磁盘映像扩展名": {
+    "en-US": "Disk Image Extensions",
+    "es-ES": "Extensión de imagen de disco",
+    "ar-EG": "امتداد صورة القرص",
+    "pt-PT": "Extensão de imagem de disco",
+    "ru-RU": "расширение образа диска",
+    "ja-JP": "ディスクイメージ拡張子",
+    "de-DE": "Disk-Image-Erweiterung",
+    "fr-FR": "Extension d'image disque",
+    "ko-KR": "디스크 이미지 확장",
+    "$files": [
+      "src/electron/config/file-dimension-source.ts(8170-8181)",
+      "src/electron/config/file-dimension-source.ts(9682-9693)",
+      "src/electron/config/file-dimension-source.ts(10020-10031)"
+    ],
+    "$id": 7377
+  },
   "系统镜像": {
     "en-US": "System Image",
     "es-ES": "Imagen del sistema",
@@ -2566,7 +2583,7 @@
     "de-DE": "Systemabbild",
     "fr-FR": "Image système",
     "ko-KR": "시스템 이미지",
-    "$files": ["src/electron/config/file-dimension-source.ts(8170-8178)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(8184-8192)"],
     "$id": 7374
   },
   "数据镜像": {
@@ -2579,7 +2596,7 @@
     "de-DE": "Datenspiegelung",
     "fr-FR": "Mise en miroir des données",
     "ko-KR": "데이터 미러링",
-    "$files": ["src/electron/config/file-dimension-source.ts(8181-8189)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(8195-8203)"],
     "$id": 7375
   },
   "光盘镜像": {
@@ -2592,25 +2609,8 @@
     "de-DE": "Disc-Image",
     "fr-FR": "Image disque",
     "ko-KR": "디스크 이미지",
-    "$files": ["src/electron/config/file-dimension-source.ts(8192-8200)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(8206-8214)"],
     "$id": 7376
-  },
-  "磁盘映像扩展名": {
-    "en-US": "Disk Image Extensions",
-    "es-ES": "Extensión de imagen de disco",
-    "ar-EG": "امتداد صورة القرص",
-    "pt-PT": "Extensão de imagem de disco",
-    "ru-RU": "расширение образа диска",
-    "ja-JP": "ディスクイメージ拡張子",
-    "de-DE": "Disk-Image-Erweiterung",
-    "fr-FR": "Extension d'image disque",
-    "ko-KR": "디스크 이미지 확장",
-    "$files": [
-      "src/electron/config/file-dimension-source.ts(8203-8214)",
-      "src/electron/config/file-dimension-source.ts(9682-9693)",
-      "src/electron/config/file-dimension-source.ts(10020-10031)"
-    ],
-    "$id": 7377
   },
   "磁盘映像的用途分类": {
     "en-US": "Disk image usage classification",
@@ -3982,6 +3982,23 @@
     "$files": ["src/electron/config/file-dimension-source.ts(14093-14103)"],
     "$id": 7482
   },
+  "电子书扩展名": {
+    "en-US": "Ebook Extensions",
+    "es-ES": "Extensión de libro electrónico",
+    "ar-EG": "ملحق الكتاب الاليكتروني",
+    "pt-PT": "Extensão de e-book",
+    "ru-RU": "расширение электронной книги",
+    "ja-JP": "電子ブックの拡張子",
+    "de-DE": "E-Book-Erweiterung",
+    "fr-FR": "Extension de livre électronique",
+    "ko-KR": "전자책 확장",
+    "$files": [
+      "src/electron/config/file-dimension-source.ts(14324-14334)",
+      "src/electron/config/file-dimension-source.ts(24685-24695)",
+      "src/electron/config/file-dimension-source.ts(25016-25026)"
+    ],
+    "$id": 7487
+  },
   "技术书籍": {
     "en-US": "Technical Books",
     "es-ES": "Libros tecnicos",
@@ -3992,7 +4009,7 @@
     "de-DE": "Technische Bücher",
     "fr-FR": "Livres techniques",
     "ko-KR": "기술 서적",
-    "$files": ["src/electron/config/file-dimension-source.ts(14358-14366)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(14379-14387)"],
     "$id": 7483
   },
   "杂志": {
@@ -4005,7 +4022,7 @@
     "de-DE": "Magazin",
     "fr-FR": "Revue",
     "ko-KR": "잡지",
-    "$files": ["src/electron/config/file-dimension-source.ts(14377-14383)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(14398-14404)"],
     "$id": 7484
   },
   "教材": {
@@ -4018,7 +4035,7 @@
     "de-DE": "Lehrbuch",
     "fr-FR": "Manuel",
     "ko-KR": "교과서",
-    "$files": ["src/electron/config/file-dimension-source.ts(14394-14400)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(14415-14421)"],
     "$id": 7485
   },
   "公版书": {
@@ -4031,25 +4048,8 @@
     "de-DE": "Öffentliches Buch",
     "fr-FR": "Livre public",
     "ko-KR": "공개 도서",
-    "$files": ["src/electron/config/file-dimension-source.ts(14411-14418)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(14432-14439)"],
     "$id": 7486
-  },
-  "电子书扩展名": {
-    "en-US": "Ebook Extensions",
-    "es-ES": "Extensión de libro electrónico",
-    "ar-EG": "ملحق الكتاب الاليكتروني",
-    "pt-PT": "Extensão de e-book",
-    "ru-RU": "расширение электронной книги",
-    "ja-JP": "電子ブックの拡張子",
-    "de-DE": "E-Book-Erweiterung",
-    "fr-FR": "Extension de livre électronique",
-    "ko-KR": "전자책 확장",
-    "$files": [
-      "src/electron/config/file-dimension-source.ts(14429-14439)",
-      "src/electron/config/file-dimension-source.ts(24685-24695)",
-      "src/electron/config/file-dimension-source.ts(25016-25026)"
-    ],
-    "$id": 7487
   },
   "电子书的内容分类": {
     "en-US": "E-book content classification",
@@ -5026,6 +5026,23 @@
     ],
     "$id": 7567
   },
+  "字体扩展名": {
+    "en-US": "Font Extensions",
+    "es-ES": "Extensión de fuente",
+    "ar-EG": "امتداد الخط",
+    "pt-PT": "Extensão de fonte",
+    "ru-RU": "Расширение шрифта",
+    "ja-JP": "フォント拡張子",
+    "de-DE": "Schriftartenerweiterung",
+    "fr-FR": "Extension de police",
+    "ko-KR": "글꼴 확장",
+    "$files": [
+      "src/electron/config/file-dimension-source.ts(17268-17277)",
+      "src/electron/config/file-dimension-source.ts(25087-25096)",
+      "src/electron/config/file-dimension-source.ts(25364-25373)"
+    ],
+    "$id": 7571
+  },
   "英文字体": {
     "en-US": "English font",
     "es-ES": "Fuente inglesa",
@@ -5036,7 +5053,7 @@
     "de-DE": "Englische Schriftart",
     "fr-FR": "Police anglaise",
     "ko-KR": "영문폰트",
-    "$files": ["src/electron/config/file-dimension-source.ts(17268-17276)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(17280-17288)"],
     "$id": 7568
   },
   "中文字体": {
@@ -5049,7 +5066,7 @@
     "de-DE": "Chinesische Schriftart",
     "fr-FR": "Police chinoise",
     "ko-KR": "중국어 글꼴",
-    "$files": ["src/electron/config/file-dimension-source.ts(17279-17287)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(17291-17299)"],
     "$id": 7569
   },
   "图标字体": {
@@ -5062,25 +5079,8 @@
     "de-DE": "Symbolschriftart",
     "fr-FR": "Police d'icône",
     "ko-KR": "아이콘 글꼴",
-    "$files": ["src/electron/config/file-dimension-source.ts(17290-17298)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(17302-17310)"],
     "$id": 7570
-  },
-  "字体扩展名": {
-    "en-US": "Font Extensions",
-    "es-ES": "Extensión de fuente",
-    "ar-EG": "امتداد الخط",
-    "pt-PT": "Extensão de fonte",
-    "ru-RU": "Расширение шрифта",
-    "ja-JP": "フォント拡張子",
-    "de-DE": "Schriftartenerweiterung",
-    "fr-FR": "Extension de police",
-    "ko-KR": "글꼴 확장",
-    "$files": [
-      "src/electron/config/file-dimension-source.ts(17301-17310)",
-      "src/electron/config/file-dimension-source.ts(25087-25096)",
-      "src/electron/config/file-dimension-source.ts(25364-25373)"
-    ],
-    "$id": 7571
   },
   "字体文件的分类": {
     "en-US": "Classification of font files",

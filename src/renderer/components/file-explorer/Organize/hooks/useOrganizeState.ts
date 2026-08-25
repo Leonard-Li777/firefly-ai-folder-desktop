@@ -2468,8 +2468,33 @@ export function useOrganizeState() {
             fileIds
           })
           if (res) {
+            // 如果移除的标签属于泛维度（如作者 4、内容标签 28 等），同步清理 file_tags 库表定义
+            if (changes.removeTags && changes.removeTags.length > 0 && window.electronAPI?.organizeBatch?.deleteTagGlobally) {
+              for (const rt of changes.removeTags) {
+                if (rt.dimensionId === 4 || rt.dimensionId === 28) {
+                  try {
+                    await window.electronAPI.organizeBatch.deleteTagGlobally(rt.dimensionId, rt.tagName)
+                  } catch {
+                    /* ignore */
+                  }
+                }
+              }
+            }
+
             toast.success(t('成功为 {count} 个文件更新标签', { count: res.successCount }))
             await loadFilesToOrganize()
+            if (currentWorkspaceDirectory?.path && window.electronAPI?.analyzedDirectory?.getDimensionGroups) {
+              try {
+                const groupsRes = await window.electronAPI.analyzedDirectory.getDimensionGroups(currentWorkspaceDirectory.path)
+                if (groupsRes?.groups) {
+                  useAnalyzedDirectoryStore.getState().setDimensionGroups(groupsRes.groups)
+                }
+              } catch {
+                /* ignore */
+              }
+            }
+            window.dispatchEvent(new CustomEvent('tags-updated'))
+            window.dispatchEvent(new CustomEvent('tags:updated'))
           }
         }
       } catch (err: any) {
@@ -2478,7 +2503,7 @@ export function useOrganizeState() {
         setIsSavingTags(false)
       }
     },
-    [toOrganizeFiles]
+    [toOrganizeFiles, currentWorkspaceDirectory, loadFilesToOrganize]
   )
 
   // ─── 全局删除标签 ─────────────────────────────────────────────────────────
@@ -2492,6 +2517,18 @@ export function useOrganizeState() {
           )
           if (success) {
             await loadFilesToOrganize()
+            if (currentWorkspaceDirectory?.path && window.electronAPI?.analyzedDirectory?.getDimensionGroups) {
+              try {
+                const groupsRes = await window.electronAPI.analyzedDirectory.getDimensionGroups(currentWorkspaceDirectory.path)
+                if (groupsRes?.groups) {
+                  useAnalyzedDirectoryStore.getState().setDimensionGroups(groupsRes.groups)
+                }
+              } catch {
+                /* ignore */
+              }
+            }
+            window.dispatchEvent(new CustomEvent('tags-updated'))
+            window.dispatchEvent(new CustomEvent('tags:updated'))
             return true
           }
         }
@@ -2501,7 +2538,7 @@ export function useOrganizeState() {
         return false
       }
     },
-    []
+    [currentWorkspaceDirectory, loadFilesToOrganize]
   )
 
   // ─── 查重清理文件 (移入回收站) ─────────────────────────────────────────────

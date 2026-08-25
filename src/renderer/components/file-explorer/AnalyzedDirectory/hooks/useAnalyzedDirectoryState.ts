@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import {
   WorkspaceDirectory,
   FileItem as FileType,
@@ -30,6 +30,8 @@ export const useAnalyzedDirectoryState = (
   onAnalysisComplete?: () => void
 ) => {
   const navigate = useNavigate()
+  const location = useLocation()
+  const currentPath = location.pathname
   const {
     currentWorkspaceDirectory,
     setCurrentWorkspaceDirectory,
@@ -182,6 +184,31 @@ export const useAnalyzedDirectoryState = (
       if (unsubscribe) unsubscribe()
     }
   }, [currentWorkspaceDirectory])
+
+  // 监听路由切换到已分析页面时自动刷新维度数据与文件列表
+  useEffect(() => {
+    if (currentPath === '/analyzed-directory' && currentWorkspaceDirectory) {
+      loadDimensionGroups()
+      loadFilteredFiles()
+    }
+  }, [currentPath, currentWorkspaceDirectory])
+
+  // 监听全局标签变更事件（如批量打标保存/全局删除标签后自动刷新）
+  useEffect(() => {
+    const handleTagsChanged = () => {
+      if (currentWorkspaceDirectory) {
+        loadDimensionGroups()
+        loadFilteredFiles()
+      }
+    }
+    window.addEventListener('tags-updated', handleTagsChanged)
+    window.addEventListener('tags:updated', handleTagsChanged)
+    return () => {
+      window.removeEventListener('tags-updated', handleTagsChanged)
+      window.removeEventListener('tags:updated', handleTagsChanged)
+    }
+  }, [currentWorkspaceDirectory])
+
 
   // 记录非勾选模式下的单选状态
   useEffect(() => {

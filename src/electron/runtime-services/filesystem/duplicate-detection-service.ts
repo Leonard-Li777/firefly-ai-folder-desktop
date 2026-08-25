@@ -60,15 +60,22 @@ export class DuplicateDetectionService {
     options: DuplicateDetectionOptions
   ): Promise<DuplicateGroup[]> {
     try {
+      const targetPaths = (options.workspaceDirectoryPath && fs.existsSync(options.workspaceDirectoryPath) && (!options.fileIds || options.fileIds.length === 0))
+        ? [options.workspaceDirectoryPath]
+        : (filePaths.length > 0 ? filePaths : [options.workspaceDirectoryPath || ''])
+
       const resp = await fetch(`${this.omniApiUrl}/api/duplicate/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          paths: filePaths,
-          min_similarity: options.minSimilarity ?? 85,
-          strategies: options.strategies || ['exact_hash', 'image_phash']
+          paths: targetPaths,
+          min_similarity: options.minSimilarity !== undefined
+            ? (options.minSimilarity > 10 ? options.minSimilarity / 10 : options.minSimilarity)
+            : 7.5,
+          strategies: options.strategies || ['exact_hash', 'image_phash'],
+          name_issues_mode: options.nameIssuesMode || 'multilingual'
         }),
-        signal: AbortSignal.timeout(15000)
+        signal: AbortSignal.timeout(30000)
       })
 
       if (!resp.ok) {
@@ -85,6 +92,7 @@ export class DuplicateDetectionService {
         groupId: g.group_id || `omni_${Math.random().toString(36).substring(2, 8)}`,
         strategy: (g.strategy || 'exact_hash') as DuplicateDetectionStrategy,
         similarityPercentage: g.similarity_percentage || 100,
+        groupThreshold: g.group_threshold,
         description: g.description || '多模态特征识别组',
         files: (g.files || []).map((f: any) => ({
           fileId: 0,
@@ -115,86 +123,102 @@ export class DuplicateDetectionService {
   ): Promise<DuplicateGroup[]> {
     const groups: DuplicateGroup[] = []
 
+    const enabledStrategies = options.strategies || ['exact_hash', 'image_phash']
+
     // A. 100% 精确指纹分组 (Layer 1 兜底与快速比对)
-    const fpMap = new Map<string, any[]>()
-    for (const f of dbFiles) {
-      if (f.fingerprint && f.size > 0) {
-        if (!fpMap.has(f.fingerprint)) fpMap.set(f.fingerprint, [])
-        fpMap.get(f.fingerprint)!.push(f)
-      }
-    }
-
-    let exactIdx = 1
-    for (const [fp, files] of fpMap.entries()) {
-      if (files.length >= 2) {
-        groups.push({
-          groupId: `exact_db_${exactIdx++}`,
-          strategy: 'exact_hash',
-          similarityPercentage: 100,
-          description: `100% 内容精确一致文件 (${files.length}个)`,
-          files: files.map(f => ({
-            fileId: f.id,
-            fingerprint: fp,
-            path: f.path,
-            name: f.name,
-            size: f.size,
-            modifiedAt: f.modifiedAt,
-            qualityScore: f.qualityScore,
-            resolution: f.resolution,
-            thumbnailPath: f.thumbnailPath,
-            similarityScore: 1.0
-          }))
-        })
-      }
-    }
-
-    // B. 文档语义相似度 (Layer 4: 基于 content_text SimHash / Jaccard)
-    const docFiles = dbFiles.filter(f => f.contentText && f.contentText.length > 50)
-    if (docFiles.length >= 2) {
-      let docGroupIdx = 1
-      const visited = new Set<number>()
-
-      for (let i = 0; i < docFiles.length; i++) {
-        if (visited.has(docFiles[i].id)) continue
-        const cluster: any[] = [docFiles[i]]
-
-        for (let j = i + 1; j < docFiles.length; j++) {
-          if (visited.has(docFiles[j].id)) continue
-          const sim = this.calculateTextJaccardSimilarity(
-            docFiles[i].contentText,
-            docFiles[j].contentText
-          )
-          if (sim >= 0.82) {
-            cluster.push(docFiles[j])
-            visited.add(docFiles[j].id)
-          }
+    if (enabledStrategies.includes('exact_hash')) {
+      const fpMap = new Map<string, any[]>()
+      for (const f of dbFiles) {
+        if (f.fingerprint && f.size > 0) {
+          if (!fpMap.has(f.fingerprint)) fpMap.set(f.fingerprint, [])
+          fpMap.get(f.fingerprint)!.push(f)
         }
+      }
 
-        if (cluster.length >= 2) {
-          visited.add(docFiles[i].id)
+      let exactIdx = 1
+      for (const [fp, files] of fpMap.entries()) {
+        if (files.length >= 2) {
           groups.push({
-            groupId: `doc_sim_${docGroupIdx++}`,
-            strategy: 'text_simhash',
-            similarityPercentage: 88,
-            description: `文本语义高度相似文档 (${cluster.length}个)`,
-            files: cluster.map(f => ({
+            groupId: `exact_db_${exactIdx++}`,
+            strategy: 'exact_hash',
+            similarityPercentage: 100,
+            groupThreshold: 10.0, // 100% 精确一致踩线阈值为 10.0
+            description: `100% 内容精确一致文件 (${files.length}个)`,
+            files: files.map(f => ({
               fileId: f.id,
-              fingerprint: f.fingerprint,
+              fingerprint: fp,
               path: f.path,
               name: f.name,
               size: f.size,
               modifiedAt: f.modifiedAt,
               qualityScore: f.qualityScore,
-              similarityScore: 0.88
+              resolution: f.resolution,
+              thumbnailPath: f.thumbnailPath,
+              similarityScore: 1.0
             }))
           })
         }
       }
     }
 
+    // B. 文档语义相似度 (Layer 4: 基于 content_text SimHash / Jaccard)
+    if (enabledStrategies.includes('text_simhash')) {
+      const docFiles = dbFiles.filter(f => f.contentText && f.contentText.length > 50)
+      if (docFiles.length >= 2) {
+        let docGroupIdx = 1
+        const visited = new Set<number>()
+
+        for (let i = 0; i < docFiles.length; i++) {
+          if (visited.has(docFiles[i].id)) continue
+          const cluster: any[] = [docFiles[i]]
+          let minPairSim = 1.0
+
+          for (let j = i + 1; j < docFiles.length; j++) {
+            if (visited.has(docFiles[j].id)) continue
+            const sim = this.calculateTextJaccardSimilarity(
+              docFiles[i].contentText,
+              docFiles[j].contentText
+            )
+            if (sim >= 0.82) {
+              cluster.push(docFiles[j])
+              visited.add(docFiles[j].id)
+              if (sim < minPairSim) {
+                minPairSim = sim
+              }
+            }
+          }
+
+          if (cluster.length >= 2) {
+            visited.add(docFiles[i].id)
+            const thresholdVal = Math.round(minPairSim * 100) / 10 // 0.0 ~ 10.0
+            const simPercent = Math.round(minPairSim * 100)
+            groups.push({
+              groupId: `doc_sim_${docGroupIdx++}`,
+              strategy: 'text_simhash',
+              similarityPercentage: simPercent,
+              groupThreshold: thresholdVal, // 组内真实踩线阈值
+              description: `文本语义相似文档 (${cluster.length}个, 最小相似度 ${simPercent}%)`,
+              files: cluster.map(f => ({
+                fileId: f.id,
+                fingerprint: f.fingerprint,
+                path: f.path,
+                name: f.name,
+                size: f.size,
+                modifiedAt: f.modifiedAt,
+                qualityScore: f.qualityScore,
+                similarityScore: minPairSim
+              }))
+            })
+          }
+        }
+      }
+    }
+
     // C. 文件名副本启发式检测 (Layer 5: _copy, (1), 副本)
-    const copyGroups = this.detectFilenameCopies(dbFiles)
-    groups.push(...copyGroups)
+    if (enabledStrategies.includes('filename_heuristic')) {
+      const copyGroups = this.detectFilenameCopies(dbFiles)
+      groups.push(...copyGroups)
+    }
 
     return groups
   }
@@ -240,6 +264,7 @@ export class DuplicateDetectionService {
           groupId: `copy_name_${groupIdx++}`,
           strategy: 'filename_heuristic',
           similarityPercentage: 90,
+          groupThreshold: 9.0, // 启发式规则真实对应 9.0 阈值
           description: `文件名副本/衍生版本 (${files.length}个)`,
           files: files.map(f => ({
             fileId: f.id,

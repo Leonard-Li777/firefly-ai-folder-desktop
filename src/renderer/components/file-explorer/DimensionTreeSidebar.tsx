@@ -240,36 +240,6 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                       <span className="text-[10px] ml-1 shrink-0 opacity-55 text-current">
                         ({tag.fileCount})
                       </span>
-                      {isExportMode &&
-                        ((panDimensionIds || [4, 28]).includes(tag.dimensionId) ||
-                          node.name === '作者' ||
-                          node.name === 'Author' ||
-                          node.name === '内容标签' ||
-                          node.name === 'Content Tag' ||
-                          Boolean((node as any).isAIGenerated)) && (
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            title={t('直接删除该标签')}
-                            onClick={async e => {
-                              e.stopPropagation()
-                              if (window.electronAPI?.deleteTagGlobally) {
-                                const success = await window.electronAPI.deleteTagGlobally(
-                                  tag.dimensionId,
-                                  tag.tagValue
-                                )
-                                if (success) {
-                                  import('../common/Toast').then(({ toast }) => {
-                                    toast.success(t('已删除标签「{name}」', { name: tag.tagValue }))
-                                  })
-                                }
-                              }
-                            }}
-                            className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5 rounded transition-opacity shrink-0 ml-1 cursor-pointer"
-                          >
-                            <MaterialIcon icon="close" className="text-[12px]" />
-                          </span>
-                        )}
                     </button>
                   </div>
 
@@ -333,7 +303,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 }) => {
   // 1. Internal states
   const [selectedTags, setSelectedTags] = useState<Set<string>>(() => {
-    if (storageKey) {
+    if (storageKey && isExportMode) {
       try {
         const saved = localStorage.getItem(`${storageKey}_selectedTags`)
         if (saved) return new Set(JSON.parse(saved))
@@ -345,7 +315,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   })
 
   const [selectionStack, setSelectionStack] = useState<string[]>(() => {
-    if (storageKey) {
+    if (storageKey && isExportMode) {
       try {
         const saved = localStorage.getItem(`${storageKey}_selectionStack`)
         if (saved) return JSON.parse(saved)
@@ -357,7 +327,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   })
 
   const [parentTagMap, setParentTagMap] = useState<Map<string, string[]>>(() => {
-    if (storageKey) {
+    if (storageKey && isExportMode) {
       try {
         const saved = localStorage.getItem(`${storageKey}_parentTagMap`)
         if (saved) return new Map(JSON.parse(saved))
@@ -384,6 +354,21 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   )
   const [currentTag, setCurrentTag] = useState<SelectedTag | null>(null)
 
+  const onSelectionChangeRef = useRef(onSelectionChange)
+  useEffect(() => {
+    onSelectionChangeRef.current = onSelectionChange
+  }, [onSelectionChange])
+
+  const onTagClickRef = useRef(onTagClick)
+  useEffect(() => {
+    onTagClickRef.current = onTagClick
+  }, [onTagClick])
+
+  const onModeChangeRef = useRef(onModeChange)
+  useEffect(() => {
+    onModeChangeRef.current = onModeChange
+  }, [onModeChange])
+
   // 保存/恢复 export 模式的多选标签
   const savedExportTagsRef = useRef<{
     selectedTags: Set<string>
@@ -405,8 +390,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       setParentTagMap(new Map())
       setCurrentTag(null)
 
-      if (onSelectionChange) {
-        onSelectionChange(new Set(), 'clear', new Map())
+      if (onSelectionChangeRef.current) {
+        onSelectionChangeRef.current(new Set(), 'clear', new Map())
       }
     } else if (!prevIsExportModeRef.current && isExportMode) {
       // browse → export：恢复之前保存的多选标签
@@ -428,13 +413,13 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           )
         }
 
-        if (onSelectionChange) {
-          onSelectionChange(saved.selectedTags, 'toggle', saved.parentTagMap)
+        if (onSelectionChangeRef.current) {
+          onSelectionChangeRef.current(saved.selectedTags, 'toggle', saved.parentTagMap)
         }
       }
     }
     prevIsExportModeRef.current = isExportMode
-  }, [isExportMode, storageKey, onSelectionChange])
+  }, [isExportMode, storageKey])
 
   // 2. Reset states if workspacePath changes
   const lastWorkspacePathRef = useRef(workspacePath)
@@ -451,12 +436,12 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         localStorage.removeItem(`${storageKey}_parentTagMap`)
       }
 
-      if (onSelectionChange) {
-        onSelectionChange(new Set(), 'clear', new Map())
+      if (onSelectionChangeRef.current) {
+        onSelectionChangeRef.current(new Set(), 'clear', new Map())
       }
       lastWorkspacePathRef.current = workspacePath
     }
-  }, [workspacePath, storageKey, onSelectionChange])
+  }, [workspacePath, storageKey])
 
   // Listen for workspace reset events
   useEffect(() => {
@@ -472,8 +457,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         localStorage.removeItem(`${storageKey}_parentTagMap`)
       }
 
-      if (onSelectionChange) {
-        onSelectionChange(new Set(), 'clear', new Map())
+      if (onSelectionChangeRef.current) {
+        onSelectionChangeRef.current(new Set(), 'clear', new Map())
       }
     }
 
@@ -481,12 +466,12 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     return () => {
       window.removeEventListener('workspace-reset', handleWorkspaceReset)
     }
-  }, [storageKey, onSelectionChange])
+  }, [storageKey])
 
   // Notify parent on mount if there is any restored tag
   useEffect(() => {
-    if (onSelectionChange && selectedTags.size > 0) {
-      onSelectionChange(selectedTags, 'toggle', parentTagMap)
+    if (onSelectionChangeRef.current && isExportMode && selectedTags.size > 0) {
+      onSelectionChangeRef.current(selectedTags, 'toggle', parentTagMap)
     }
   }, [])
 
@@ -520,52 +505,50 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     (dimensionId: number, tagValue: string, parentTagValue?: string, ancestorChain?: string[]) => {
       const key = makeTagKey(dimensionId, tagValue, parentTagValue)
 
-      setSelectedTags(prevSelected => {
-        const next = new Set(prevSelected)
-        const isRemoving = next.has(key)
+      const isRemoving = selectedTags.has(key)
+      const nextSelected = new Set(selectedTags)
+      if (isRemoving) {
+        nextSelected.delete(key)
+      } else {
+        nextSelected.add(key)
+      }
 
-        if (isRemoving) {
-          next.delete(key)
-        } else {
-          next.add(key)
-        }
+      const nextStack = isRemoving
+        ? selectionStack.filter(k => k !== key)
+        : [...selectionStack, key]
 
-        setSelectionStack(prevStack => {
-          const newStack = isRemoving ? prevStack.filter(k => k !== key) : [...prevStack, key]
+      const nextParentMap = new Map(parentTagMap)
+      if (isRemoving) {
+        nextParentMap.delete(key)
+      } else if (ancestorChain) {
+        nextParentMap.set(key, ancestorChain)
+      } else if (parentTagValue) {
+        nextParentMap.set(key, [parentTagValue])
+      }
 
-          setParentTagMap(prevMap => {
-            const nextMap = new Map(prevMap)
-            if (isRemoving) {
-              nextMap.delete(key)
-            } else if (ancestorChain) {
-              nextMap.set(key, ancestorChain)
-            } else if (parentTagValue) {
-              nextMap.set(key, [parentTagValue])
-            }
+      setSelectedTags(nextSelected)
+      setSelectionStack(nextStack)
+      setParentTagMap(nextParentMap)
 
-            if (storageKey) {
-              localStorage.setItem(`${storageKey}_selectedTags`, JSON.stringify(Array.from(next)))
-              localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(newStack))
-              localStorage.setItem(
-                `${storageKey}_parentTagMap`,
-                JSON.stringify(Array.from(nextMap.entries()))
-              )
-            }
+      if (storageKey) {
+        try {
+          localStorage.setItem(
+            `${storageKey}_selectedTags`,
+            JSON.stringify(Array.from(nextSelected))
+          )
+          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(nextStack))
+          localStorage.setItem(
+            `${storageKey}_parentTagMap`,
+            JSON.stringify(Array.from(nextParentMap.entries()))
+          )
+        } catch {}
+      }
 
-            if (onSelectionChange) {
-              onSelectionChange(next, 'toggle', nextMap)
-            }
-
-            return nextMap
-          })
-
-          return newStack
-        })
-
-        return next
-      })
+      if (onSelectionChangeRef.current) {
+        onSelectionChangeRef.current(nextSelected, 'toggle', nextParentMap)
+      }
     },
-    [storageKey, onSelectionChange]
+    [selectedTags, selectionStack, parentTagMap, storageKey]
   )
 
   const handleTagClickInternal = useCallback(
@@ -599,18 +582,68 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           return isSame ? null : newTag
         })
 
-        if (onTagClick) {
-          onTagClick(newTag)
+        if (onTagClickRef.current) {
+          onTagClickRef.current(newTag)
         }
       }
     },
-    [isExportMode, onTagClick, toggleTagSelection]
+    [isExportMode, toggleTagSelection]
   )
 
   // 3. 递归构建维度树
   const visibleGroups = useMemo(() => {
     return buildDimensionTree(dimensionGroups)
   }, [dimensionGroups])
+
+  // 4. 自动清理不在当前维度树中的无效/陈旧幽灵标签键
+  useEffect(() => {
+    if (selectedTags.size === 0) return
+
+    const validKeys = new Set(getAllKeys(visibleGroups).map(i => i.key))
+    let hasInvalid = false
+    const cleanSelected = new Set<string>()
+    const cleanStack: string[] = []
+    const cleanParentMap = new Map<string, string[]>()
+
+    selectedTags.forEach(key => {
+      if (validKeys.has(key)) {
+        cleanSelected.add(key)
+      } else {
+        hasInvalid = true
+      }
+    })
+
+    if (hasInvalid) {
+      selectionStack.forEach(key => {
+        if (validKeys.has(key)) cleanStack.push(key)
+      })
+      parentTagMap.forEach((chain, key) => {
+        if (validKeys.has(key)) cleanParentMap.set(key, chain)
+      })
+
+      setSelectedTags(cleanSelected)
+      setSelectionStack(cleanStack)
+      setParentTagMap(cleanParentMap)
+
+      if (storageKey) {
+        try {
+          localStorage.setItem(
+            `${storageKey}_selectedTags`,
+            JSON.stringify(Array.from(cleanSelected))
+          )
+          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(cleanStack))
+          localStorage.setItem(
+            `${storageKey}_parentTagMap`,
+            JSON.stringify(Array.from(cleanParentMap.entries()))
+          )
+        } catch {}
+      }
+
+      if (onSelectionChangeRef.current && isExportMode) {
+        onSelectionChangeRef.current(cleanSelected, 'toggle', cleanParentMap)
+      }
+    }
+  }, [visibleGroups, isExportMode, storageKey])
 
   const handleSelectAll = useCallback(() => {
     const allItems = getAllKeys(visibleGroups)
@@ -646,10 +679,10 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       }, 0)
     }
 
-    if (onSelectionChange) {
-      onSelectionChange(newSelected, 'selectAll', newParentTagMap)
+    if (onSelectionChangeRef.current) {
+      onSelectionChangeRef.current(newSelected, 'selectAll', newParentTagMap)
     }
-  }, [visibleGroups, storageKey, onSelectionChange])
+  }, [visibleGroups, storageKey])
 
   const handleInvertSelection = useCallback(() => {
     const allItems = getAllKeys(visibleGroups)
@@ -687,10 +720,10 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       }, 0)
     }
 
-    if (onSelectionChange) {
-      onSelectionChange(newSelected, 'invert', newParentTagMap)
+    if (onSelectionChangeRef.current) {
+      onSelectionChangeRef.current(newSelected, 'invert', newParentTagMap)
     }
-  }, [visibleGroups, selectedTags, storageKey, onSelectionChange])
+  }, [visibleGroups, selectedTags, storageKey])
 
   const handleVisibleAndHiddenTags = useCallback(
     (group: DimensionGroup, childTags?: Map<string, DimensionTreeNode[]>) => {
@@ -1089,36 +1122,6 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
                     <span className="text-[10px] ml-1 shrink-0 opacity-55 text-current">
                       ({tag.fileCount})
                     </span>
-                    {isExportMode &&
-                      ((panDimensionIds || [4, 28]).includes(tag.dimensionId) ||
-                        row.node?.name === '作者' ||
-                        row.node?.name === 'Author' ||
-                        row.node?.name === '内容标签' ||
-                        row.node?.name === 'Content Tag' ||
-                        Boolean((row.node as any)?.isAIGenerated)) && (
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          title={t('直接删除该标签')}
-                          onClick={async e => {
-                            e.stopPropagation()
-                            if (window.electronAPI?.deleteTagGlobally) {
-                              const success = await window.electronAPI.deleteTagGlobally(
-                                tag.dimensionId,
-                                tag.tagValue
-                              )
-                              if (success) {
-                                import('../common/Toast').then(({ toast }) => {
-                                  toast.success(t('已删除标签「{name}」', { name: tag.tagValue }))
-                                })
-                              }
-                            }
-                          }}
-                          className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5 rounded transition-opacity shrink-0 ml-1 cursor-pointer"
-                        >
-                          <MaterialIcon icon="close" className="text-[12px]" />
-                        </span>
-                      )}
                   </button>
                 </div>
               )

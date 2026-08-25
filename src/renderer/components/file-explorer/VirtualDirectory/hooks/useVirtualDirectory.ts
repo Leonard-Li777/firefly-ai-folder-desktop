@@ -236,6 +236,20 @@ export const useVirtualDirectory = () => {
   }, [loadVDirs])
 
   useEffect(() => {
+    const handleTagsChanged = () => {
+      if (selectedId && vdirSidebarTab === 'dimensions') {
+        loadVdirDimensions()
+      }
+    }
+    window.addEventListener('tags-updated', handleTagsChanged)
+    window.addEventListener('tags:updated', handleTagsChanged)
+    return () => {
+      window.removeEventListener('tags-updated', handleTagsChanged)
+      window.removeEventListener('tags:updated', handleTagsChanged)
+    }
+  }, [selectedId, vdirSidebarTab, loadVdirDimensions])
+
+  useEffect(() => {
     setSelectedTags([])
   }, [selectedId])
 

@@ -133,10 +133,13 @@ export class DatabaseHelper {
           INNER JOIN file_tags ft${i} ON ft${i}.id = ftr${i}.tag_id
           WHERE ftr${i}.file_fingerprint = f.file_fingerprint
             AND ft${i}.dimension_id = ?
-            AND ft${i}.name = ?
+            AND (
+              LOWER(TRIM(ft${i}.name)) = LOWER(TRIM(?))
+              OR LOWER(TRIM(REPLACE(ft${i}.name, '.', ''))) = LOWER(TRIM(REPLACE(?, '.', '')))
+            )
         )
       `
-      params.push(tag.dimensionId, tag.tagValue)
+      params.push(tag.dimensionId, tag.tagValue, tag.tagValue)
     }
 
     const files = this.db.prepare(query).all(...params) as any[]
@@ -159,9 +162,17 @@ export class DatabaseHelper {
           f.smart_name as smartName,
           wf.path,
           f.type,
+          f.size,
+          f.author,
+          f.language,
+          COALESCE(f.modified_at, wf.modified_at) as modifiedAt,
+          COALESCE(f.created_at, wf.created_at) as createdAt,
+          fc.metadata,
+          fc.quality_score as qualityScore,
           f.description
         FROM workspace_files wf
         INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+        LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
         WHERE wf.is_analyzed = 1
           AND (wf.path LIKE ? OR wf.path = ?)
       `
@@ -184,10 +195,12 @@ export class DatabaseHelper {
           .prepare(
             `
           SELECT
+            fd.name as dimensionName,
             ft.dimension_id as dimension,
             ft.name as tag
           FROM file_tag_relations ftr
           INNER JOIN file_tags ft ON ft.id = ftr.tag_id
+          LEFT JOIN file_dimensions fd ON fd.id = ft.dimension_id
           WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
             AND ft.dimension_id IS NOT NULL
         `
@@ -211,17 +224,44 @@ export class DatabaseHelper {
           ...dimensionTagsArray.map(t => t.tag)
         ]
 
+        let parsedMeta: Record<string, any> = {}
+        if (file.metadata) {
+          try {
+            parsedMeta = typeof file.metadata === 'string' ? JSON.parse(file.metadata) : file.metadata
+          } catch {
+            parsedMeta = {}
+          }
+        }
+
+        const formattedDimensionTags = dimensionTagsArray.map(t => ({
+          dimension: t.dimensionName || String(t.dimension || ''),
+          tag: t.tag
+        }))
+
+        for (const ct of contentTags) {
+          if (ct && ct.name) {
+            formattedDimensionTags.push({
+              dimension: '内容标签',
+              tag: ct.name
+            })
+          }
+        }
+
         filesWithTags.push({
           id: file.id,
           name: file.name,
           smartName: file.smartName,
           path: file.path,
           type: file.type || '',
+          size: file.size,
+          author: file.author,
+          language: file.language,
+          modifiedAt: file.modifiedAt,
+          createdAt: file.createdAt,
+          metadata: parsedMeta,
+          qualityScore: file.qualityScore,
           tags: allTagNames,
-          dimensionTags: dimensionTagsArray.map(t => ({
-            dimension: t.dimension,
-            tag: t.tag
-          })),
+          dimensionTags: formattedDimensionTags,
           description: file.description
         })
       }

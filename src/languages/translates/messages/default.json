@@ -415,7 +415,7 @@
     "de-DE": "Datenbank kann nicht automatisch initialisiert werden: Es wurde keine Sprache angegeben",
     "fr-FR": "Impossible d'initialiser automatiquement la base de données : aucune langue n'a été spécifiée",
     "ko-KR": "데이터베이스를 자동 초기화할 수 없습니다. 언어가 지정되지 않았습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(1941-1962)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(2006-2027)"],
     "$id": 7771
   },
   "数据库初始化必须指定语言代码": {
@@ -428,7 +428,7 @@
     "de-DE": "Bei der Datenbankinitialisierung muss der Sprachcode angegeben werden",
     "fr-FR": "L'initialisation de la base de données doit spécifier le code de langue",
     "ko-KR": "데이터베이스 초기화에서는 언어 코드를 지정해야 합니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(2450-2468)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(2536-2554)"],
     "$id": 7772
   },
   "检测到迁移备份文件，正在恢复...": {
@@ -441,7 +441,7 @@
     "de-DE": "Migrationssicherungsdatei erkannt, wird wiederhergestellt...",
     "fr-FR": "Fichier de sauvegarde de migration détecté, restauration...",
     "ko-KR": "마이그레이션 백업 파일이 감지되었습니다. 복원 중...",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(2990-3011)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(3094-3115)"],
     "$id": 7633
   },
   "数据库已从备份恢复": {
@@ -454,7 +454,7 @@
     "de-DE": "Datenbank aus Sicherung wiederhergestellt",
     "fr-FR": "Base de données restaurée à partir d'une sauvegarde",
     "ko-KR": "백업에서 복원된 데이터베이스",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(3537-3550)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(3653-3666)"],
     "$id": 7634
   },
   "恢复备份失败": {
@@ -467,7 +467,7 @@
     "de-DE": "Das Wiederherstellen des Backups ist fehlgeschlagen",
     "fr-FR": "La restauration de la sauvegarde a échoué",
     "ko-KR": "백업 복원 실패",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(3643-3653)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(3761-3771)"],
     "$id": 7635
   },
   "数据库初始化失败": {
@@ -480,7 +480,7 @@
     "de-DE": "Die Datenbankinitialisierung ist fehlgeschlagen",
     "fr-FR": "L'initialisation de la base de données a échoué",
     "ko-KR": "데이터베이스 초기화 실패",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(5020-5032)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(5174-5186)"],
     "$id": 7636
   },
   "删除备份文件失败": {
@@ -493,7 +493,7 @@
     "de-DE": "Die Sicherungsdatei konnte nicht gelöscht werden",
     "fr-FR": "Échec de la suppression du fichier de sauvegarde",
     "ko-KR": "백업 파일을 삭제하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(5902-5914)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(6093-6105)"],
     "$id": 7637
   },
   "数据库备份已创建: {path}": {
@@ -506,7 +506,7 @@
     "de-DE": "Datenbanksicherung erstellt: {path}",
     "fr-FR": "Sauvegarde de base de données créée : {path}",
     "ko-KR": "생성된 데이터베이스 백업: {path}",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(6427-6447)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(6634-6654)"],
     "$id": 7638
   },
   "创建数据库备份失败": {
@@ -519,7 +519,7 @@
     "de-DE": "Datenbanksicherung konnte nicht erstellt werden",
     "fr-FR": "Échec de la création d'une sauvegarde de la base de données",
     "ko-KR": "데이터베이스 백업을 생성하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(6567-6580)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(6777-6790)"],
     "$id": 7639
   },
   "需要数据库迁移，正在创建备份...": {
@@ -532,7 +532,7 @@
     "de-DE": "Datenbankmigration erforderlich, Backup erstellen...",
     "fr-FR": "Migration de base de données requise, création de sauvegarde...",
     "ko-KR": "데이터베이스 마이그레이션이 필요합니다. 백업을 만드는 중...",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(7016-7037)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(7243-7264)"],
     "$id": 7640
   },
   "迁移成功，已删除备份": {
@@ -545,7 +545,7 @@
     "de-DE": "Migration erfolgreich, Backup gelöscht",
     "fr-FR": "Migration réussie, sauvegarde supprimée",
     "ko-KR": "마이그레이션이 완료되었습니다. 백업이 삭제되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(7187-7201)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(7420-7434)"],
     "$id": 7641
   },
   "数据库迁移失败": {
@@ -558,7 +558,7 @@
     "de-DE": "Die Datenbankmigration ist fehlgeschlagen",
     "fr-FR": "La migration de la base de données a échoué",
     "ko-KR": "데이터베이스 마이그레이션 실패",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(7284-7295)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(7519-7530)"],
     "$id": 7642
   },
   "正在执行迁移版本 {version}: {name}": {
@@ -571,7 +571,7 @@
     "de-DE": "Migrationsversion {version} wird ausgeführt: {name}",
     "fr-FR": "Exécution de la version de migration {version} : {name}",
     "ko-KR": "마이그레이션 버전 {version} 실행 중: {name}",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(7871-7901)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(8126-8156)"],
     "$id": 7643
   },
   "迁移版本 {version} 完成": {
@@ -584,7 +584,7 @@
     "de-DE": "Migrationsversion {version} abgeschlossen",
     "fr-FR": "Version de migration {version} terminée",
     "ko-KR": "마이그레이션 버전 {version}이(가) 완료되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(8517-8538)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(8792-8813)"],
     "$id": 7644
   },
   "执行数据库迁移失败": {
@@ -597,7 +597,7 @@
     "de-DE": "Die Datenbankmigration konnte nicht durchgeführt werden",
     "fr-FR": "Échec de la migration de la base de données",
     "ko-KR": "데이터베이스 마이그레이션을 수행하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(8673-8686)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(8953-8966)"],
     "$id": 7645
   },
   "数据库升级失败\\n\\n错误原因: {error}\\n\\n您的原始数据已安全备份到:\\n{path}\\n\\n请尝试重新启动，系统将自动从备份恢复并重新升级。": {
@@ -610,7 +610,7 @@
     "de-DE": "Datenbank-Upgrade fehlgeschlagen\\n\\nFehlergrund: {error}\\n\\nIhre ursprünglichen Daten wurden sicher gesichert unter:\\n{path}\\n\\nBitte versuchen Sie einen Neustart. Das System wird automatisch aus der Sicherung wiederhergestellt und erneut aktualisiert.",
     "fr-FR": "Échec de la mise à niveau de la base de données\\n\\nRaison de l'erreur : {error}\\n\\nVos données d'origine ont été sauvegardées en toute sécurité vers :\\n{path}\\n\\nVeuillez essayer de redémarrer, le système restaurera automatiquement à partir de la sauvegarde et effectuera une nouvelle mise à niveau.",
     "ko-KR": "데이터베이스 업그레이드 실패\\n\\n오류 이유: {error}\\n\\n원래 데이터가 다음 위치에 안전하게 백업되었습니다.\\n{path}\\n\\n다시 시작해 보십시오. 시스템이 자동으로 백업에서 복원되고 다시 업그레이드됩니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(12288-12378)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(12687-12778)"],
     "$id": 7646
   },
   "数据库升级失败": {
@@ -624,8 +624,8 @@
     "fr-FR": "La mise à niveau de la base de données a échoué",
     "ko-KR": "데이터베이스 업그레이드 실패",
     "$files": [
-      "src/electron/runtime-services/database/database-service.ts(12780-12791)",
-      "src/electron/runtime-services/database/database-service.ts(12811-12822)"
+      "src/electron/runtime-services/database/database-service.ts(13193-13204)",
+      "src/electron/runtime-services/database/database-service.ts(13225-13236)"
     ],
     "$id": 7647
   },
@@ -639,7 +639,7 @@
     "de-DE": "Neustart",
     "fr-FR": "Redémarrage",
     "ko-KR": "다시 시작",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(12867-12875)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(13283-13291)"],
     "$id": 7648
   },
   "退出应用": {
@@ -653,8 +653,8 @@
     "fr-FR": "Quitter l'application",
     "ko-KR": "애플리케이션 종료",
     "$files": [
-      "src/electron/runtime-services/database/database-service.ts(12878-12886)",
-      "src/electron/runtime-services/database/database-service.ts(14290-14298)"
+      "src/electron/runtime-services/database/database-service.ts(13294-13302)",
+      "src/electron/runtime-services/database/database-service.ts(14754-14762)"
     ],
     "$id": 7649
   },
@@ -668,7 +668,7 @@
     "de-DE": "Alte Version der Datenbank (1.x.x) erkannt\\n\\nDiese Anwendungsversion 2.0 unterstützt kein direktes Upgrade der Datenbank von der alten Version mehr. \\n\\nBitte führen Sie einen der folgenden Vorgänge aus:\\n1. Installieren und führen Sie zuerst Version 1.3.2 aus, um das Übergangs-Upgrade abzuschließen, und installieren Sie dann Version 2.0. \\n2. Löschen Sie die alte Datenbankdatei (firefly-ai-folder.db) manuell und starten Sie die Anwendung neu, um eine neue 2.2-Architektur zu erstellen. \\n\\nDie Anwendung wird jetzt geschlossen.",
     "fr-FR": "Ancienne version de la base de données (1.x.x) détectée\\n\\nCette application version 2.0 ne prend plus en charge la mise à niveau de la base de données directement à partir de l'ancienne version. \\n\\nVeuillez effectuer l'une des opérations suivantes :\\n1. Installez et exécutez d'abord la version 1.3.2 pour terminer la mise à niveau de transition, puis installez la version 2.0. \\n2. Supprimez manuellement l'ancien fichier de base de données (firefly-ai-folder.db) et redémarrez l'application pour créer une nouvelle architecture 2.2. \\n\\nL'application va maintenant se fermer.",
     "ko-KR": "이전 버전의 데이터베이스(1.x.x)가 감지되었습니다.\\n\\n이 애플리케이션 버전 2.0은 더 이상 이전 버전에서 직접 데이터베이스를 업그레이드하는 것을 지원하지 않습니다. \\n\\n다음 작업 중 하나를 수행하십시오.\\n1. 먼저 버전 1.3.2를 설치하고 실행하여 전환 업그레이드를 완료한 다음 버전 2.0을 설치하세요. \\n2. 기존 데이터베이스 파일(firefly-ai-folder.db)을 수동으로 삭제하고 애플리케이션을 다시 시작하여 새로운 2.2 아키텍처를 생성합니다. \\n\\n이제 애플리케이션이 닫힙니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(13681-13865)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(14129-14314)"],
     "$id": 7650
   },
   "数据库版本不兼容": {
@@ -681,7 +681,7 @@
     "de-DE": "Die Datenbankversion ist nicht kompatibel",
     "fr-FR": "La version de la base de données est incompatible",
     "ko-KR": "데이터베이스 버전이 호환되지 않습니다",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(14201-14213)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(14662-14674)"],
     "$id": 7651
   },
   "数据库版本过旧": {
@@ -694,7 +694,7 @@
     "de-DE": "Die Datenbankversion ist zu alt",
     "fr-FR": "La version de la base de données est trop ancienne",
     "ko-KR": "데이터베이스 버전이 너무 오래되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(14233-14244)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(14695-14706)"],
     "$id": 7652
   },
   "清理分析队列孤儿项失败": {
@@ -707,7 +707,7 @@
     "de-DE": "Das Bereinigen verwaister Elemente in der Analysewarteschlange ist fehlgeschlagen",
     "fr-FR": "Échec du nettoyage des éléments orphelins de la file d'attente d'analyse",
     "ko-KR": "분석 대기열 고아 항목을 정리하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(15094-15109)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(15593-15608)"],
     "$id": 7653
   },
   "检测到 1.x 版本数据库，拒绝启动": {
@@ -720,7 +720,7 @@
     "de-DE": "Datenbank der Version 1.x erkannt, Start verweigert",
     "fr-FR": "Base de données version 1.x détectée, refus de démarrer",
     "ko-KR": "버전 1.x 데이터베이스가 감지되어 시작이 거부되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(15755-15777)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(16275-16297)"],
     "$id": 7654
   },
   "全新安装，准备执行架构初始化...": {
@@ -733,7 +733,7 @@
     "de-DE": "Neuinstallation, bereit für die Architekturinitialisierung ...",
     "fr-FR": "Nouvelle installation, prête à effectuer l'initialisation de l'architecture...",
     "ko-KR": "새로 설치하고 아키텍처 초기화를 수행할 준비가 되었습니다...",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(15903-15924)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(16427-16448)"],
     "$id": 7655
   },
   "检测到版本 1 数据库，拒绝启动": {
@@ -746,7 +746,7 @@
     "de-DE": "Datenbank der Version 1 erkannt, Start verweigert",
     "fr-FR": "Base de données version 1 détectée, démarrage refusé",
     "ko-KR": "버전 1 데이터베이스가 감지되어 시작이 거부되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(16015-16035)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(16541-16561)"],
     "$id": 7656
   },
   "创建数据表失败": {
@@ -759,7 +759,7 @@
     "de-DE": "Datentabelle konnte nicht erstellt werden",
     "fr-FR": "Échec de la création de la table de données",
     "ko-KR": "데이터 테이블을 생성하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(16161-16172)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(16691-16702)"],
     "$id": 7657
   },
   "发送前端通知失败": {
@@ -772,7 +772,7 @@
     "de-DE": "Das Senden der Frontend-Benachrichtigung ist fehlgeschlagen",
     "fr-FR": "Échec de l'envoi de la notification frontale",
     "ko-KR": "프런트엔드 알림을 보내지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(16840-16852)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(17395-17407)"],
     "$id": 7658
   },
   "所有AI分析数据已重置": {
@@ -785,7 +785,7 @@
     "de-DE": "Alle KI-Analysedaten wurden zurückgesetzt",
     "fr-FR": "Toutes les données d'analyse de l'IA ont été réinitialisées",
     "ko-KR": "모든 AI 분석 데이터가 재설정되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(36164-36179)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(37310-37325)"],
     "$id": 7659
   },
   "重置所有AI分析数据失败": {
@@ -798,7 +798,7 @@
     "de-DE": "Alle KI-Analysedaten konnten nicht zurückgesetzt werden",
     "fr-FR": "Échec de la réinitialisation de toutes les données d'analyse IA",
     "ko-KR": "모든 AI 분석 데이터를 재설정하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(36253-36269)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(37401-37417)"],
     "$id": 7660
   },
   "getDatabaseConfig 必须显式指定语言代码 (language)": {
@@ -814,19 +814,6 @@
     "$files": ["src/electron/runtime-services/database/database.ts(26072-26115)"],
     "$id": 8122
   },
-  "正在处理中，请等待当前任务完成": {
-    "en-US": "Processing, please wait for the current task to be completed",
-    "es-ES": "Procesando, espere a que se complete la tarea actual",
-    "ar-EG": "جاري المعالجة، يرجى الانتظار حتى تكتمل المهمة الحالية",
-    "pt-PT": "Processando, aguarde a conclusão da tarefa atual",
-    "ru-RU": "Обработка, пожалуйста, дождитесь завершения текущей задачи",
-    "ja-JP": "処理しています。現在のタスクが完了するまでお待ちください",
-    "de-DE": "Wird verarbeitet. Bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist",
-    "fr-FR": "Traitement en cours, veuillez attendre que la tâche en cours soit terminée",
-    "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
-    "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3263-3282)"],
-    "$id": 7661
-  },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
     "en-US": "Quota exhausted: {count} private directory files analyzed, current quota is {quota} files. You can unlock more credits by inviting friends.",
     "es-ES": "Cuota agotada: {count} archivos del directorio privado analizados, la cuota actual es {quota} archivos. Puedes desbloquear más créditos invitando a amigos.",
@@ -839,6 +826,19 @@
     "ko-KR": "할당량 소진: {count}개의 개인 디렉터리 파일이 분석되었으며, 현재 할당량은 {quota}개 파일입니다. 친구를 초대하면 더 많은 크레딧을 잠금 해제할 수 있습니다.",
     "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(5865-5939)"],
     "$id": 7662
+  },
+  "正在处理中，请等待当前任务完成": {
+    "en-US": "Processing, please wait for the current task to be completed",
+    "es-ES": "Procesando, espere a que se complete la tarea actual",
+    "ar-EG": "جاري المعالجة، يرجى الانتظار حتى تكتمل المهمة الحالية",
+    "pt-PT": "Processando, aguarde a conclusão da tarefa atual",
+    "ru-RU": "Обработка, пожалуйста, дождитесь завершения текущей задачи",
+    "ja-JP": "処理しています。現在のタスクが完了するまでお待ちください",
+    "de-DE": "Wird verarbeitet. Bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist",
+    "fr-FR": "Traitement en cours, veuillez attendre que la tâche en cours soit terminée",
+    "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
+    "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3263-3282)"],
+    "$id": 7661
   },
   "云端执行失败": {
     "en-US": "Cloud execution failed",

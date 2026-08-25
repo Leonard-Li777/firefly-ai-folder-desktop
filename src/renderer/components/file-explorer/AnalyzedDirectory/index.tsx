@@ -5,6 +5,16 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Button } from '../../ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../../ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from '../../ui/alert-dialog'
 import { DimensionTreeSidebar } from '../DimensionTreeSidebar'
 import { DimensionFileListPanel } from '../DimensionFileListPanel'
 import { DirectoryHeader } from '../DirectoryHeader'
@@ -88,6 +98,8 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
   const [showInvitationModal, setShowInvitationModal] = useState(false)
   const [showThresholdDialog, setShowThresholdDialog] = useState(false)
   const [showGenerateAnalyzedDirDialog, setShowGenerateAnalyzedDirDialog] = useState(false)
+  const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState(false)
+  const [isDeletingBatchTags, setIsDeletingBatchTags] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
   const handleConfirmGenerateAnalyzedDirectories = useCallback(async (options: any) => {
@@ -346,6 +358,49 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     setUnionMode(mode)
   }, [])
 
+  const handleExecuteBatchDeleteTags = useCallback(async () => {
+    if (selectedTags.length === 0) return
+    setIsDeletingBatchTags(true)
+    let deletedCount = 0
+    try {
+      const deleteFn =
+        window.electronAPI?.deleteTagGlobally ||
+        (window.electronAPI as any)?.organizeBatch?.deleteTagGlobally
+      if (deleteFn) {
+        const results = await Promise.allSettled(
+          selectedTags.map(tag => deleteFn(tag.dimensionId, tag.tagValue))
+        )
+        for (const res of results) {
+          if (res.status === 'fulfilled' && res.value) {
+            deletedCount++
+          }
+        }
+      }
+      toast.success(
+        t('已成功删除 {count} 个勾选的标签', { count: deletedCount || selectedTags.length })
+      )
+      clearSelectedTags()
+      setShowBatchDeleteDialog(false)
+      // 广播标签变更事件并刷新分类维度树与文件列表
+      window.dispatchEvent(new CustomEvent('tags-updated'))
+      window.dispatchEvent(new CustomEvent('tags:updated'))
+      if (currentWorkspaceDirectory) {
+        await loadDimensionGroups()
+        await loadFilteredFiles()
+      }
+    } catch (error: any) {
+      toast.error(error?.message || t('批量删除标签失败'))
+    } finally {
+      setIsDeletingBatchTags(false)
+    }
+  }, [
+    selectedTags,
+    clearSelectedTags,
+    currentWorkspaceDirectory,
+    loadDimensionGroups,
+    loadFilteredFiles
+  ])
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-300 slide-in-from-bottom-1">
       <div>
@@ -441,19 +496,41 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                     }
                   >
                     {/* 侧边栏头部 - 始终固定显示 */}
-                    <div className="px-3 border-b border-border/80 flex items-center justify-between flex-shrink-0 h-[44px]">
-                      <span className="font-semibold text-sm text-foreground flex items-center gap-1.5">
-                        <MaterialIcon icon="category" className="text-primary text-sm" />
-                        {t('分类维度')}
-                      </span>
+                    <div className="px-3 border-b border-border/80 flex items-center justify-between flex-shrink-0 h-[44px] gap-1.5">
+                      {!isMultiSelectMode ? (
+                        <span className="font-semibold text-sm text-foreground flex items-center gap-1.5 truncate">
+                          <MaterialIcon icon="category" className="text-primary text-sm shrink-0" />
+                          {t('分类维度')}
+                        </span>
+                      ) : (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          disabled={selectedTags.length === 0 || isDeletingBatchTags}
+                          onClick={() => setShowBatchDeleteDialog(true)}
+                          className="h-7 px-2 text-xs font-semibold flex items-center gap-1 shrink-0 animate-in fade-in duration-150"
+                        >
+                          <MaterialIcon icon="delete" className="text-xs shrink-0" />
+                          <span>{t('批量删除标签')}</span>
+                          {selectedTags.length > 0 && (
+                            <span className="bg-black/20 text-destructive-foreground px-1.5 py-0.2 rounded-full text-[10px] font-bold shrink-0">
+                              {selectedTags.length}
+                            </span>
+                          )}
+                        </Button>
+                      )}
 
                       {/* 多选开关 - 独立控制维度标签的多选行为 */}
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 shrink-0">
                         <span className="text-[11px] text-muted-foreground">{t('多选')}</span>
                         <button
                           role="switch"
                           aria-checked={isMultiSelectMode}
-                          onClick={() => setIsMultiSelectMode(!isMultiSelectMode)}
+                          onClick={() => {
+                            const next = !isMultiSelectMode
+                            setIsMultiSelectMode(next)
+                            clearSelectedTags()
+                          }}
                           className={cn(
                             'relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
                             isMultiSelectMode ? 'bg-primary' : 'bg-muted-foreground/30'
@@ -560,28 +637,6 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                         showOrganizeButton={!isOrganizeMode}
                         onStartOrganize={() => setIsOrganizeMode(true)}
                         isOrganizeMode={isOrganizeMode}
-                        onBatchRename={() => {
-                          if (selectedFiles.length === 0) {
-                            toast.warning(t('至少勾选一个文件'))
-                            return
-                          }
-                          const stateParams = {
-                            selectedFileIds: selectedFiles.map(f => f.id),
-                            initialStage: 'batch-rename'
-                          }
-                          navigate('/organize', { state: stateParams })
-                        }}
-                        onBatchTag={() => {
-                          if (selectedFiles.length === 0) {
-                            toast.warning(t('至少勾选一个文件'))
-                            return
-                          }
-                          const stateParams = {
-                            selectedFileIds: selectedFiles.map(f => f.id),
-                            initialStage: 'batch-tag'
-                          }
-                          navigate('/organize', { state: stateParams })
-                        }}
                         onOrganizeSelected={() => {
                           if (selectedFiles.length === 0) {
                             toast.warning(t('至少勾选一个文件'))
@@ -786,6 +841,62 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* 批量删除标签确认弹窗 */}
+      <AlertDialog open={showBatchDeleteDialog} onOpenChange={setShowBatchDeleteDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+              <MaterialIcon icon="warning" className="text-lg" />
+              {t('批量删除标签确认')}
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="text-sm text-muted-foreground space-y-2 pt-2">
+                <p className="font-medium text-foreground">
+                  {t('确定要删除选中的 {count} 个标签吗？', { count: selectedTags.length })}
+                </p>
+                <p className="text-xs text-muted-foreground/80">
+                  {t('此操作将永久删除所选标签并清理所有文件的关联关系，不可撤销。')}
+                </p>
+                <div className="max-h-32 overflow-y-auto p-2 bg-muted/50 rounded border border-border/40 text-xs flex flex-wrap gap-1.5 mt-2">
+                  {selectedTags.map(tag => (
+                    <span
+                      key={`${tag.dimensionId}-${tag.tagValue}`}
+                      className="px-1.5 py-0.5 bg-background rounded border border-border/60 text-foreground text-[11px]"
+                    >
+                      {tag.tagValue}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-4 flex items-center justify-end gap-2">
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={isDeletingBatchTags}>
+                {t('取消')}
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onClick={handleExecuteBatchDeleteTags}
+                disabled={isDeletingBatchTags}
+                className="dark:text-foreground"
+              >
+                {isDeletingBatchTags ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="inline-block animate-spin rounded-full h-3.5 w-3.5 border-2 border-current border-t-transparent" />
+                    {t('删除中...')}
+                  </span>
+                ) : (
+                  t('确认删除')
+                )}
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

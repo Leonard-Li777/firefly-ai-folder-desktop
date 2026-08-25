@@ -31,10 +31,17 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   onExecuteTrash,
   isTrashing = false
 }) => {
+  const [minSimilarity, setMinSimilarity] = useState<number>(7.5)
   const [duplicateGroups, setDuplicateGroups] = useState<DuplicateGroup[]>([])
   const [isScanning, setIsScanning] = useState(false)
   const [activeStrategyFilter, setActiveStrategyFilter] = useState<string>('all')
-  const [checkVideo, setCheckVideo] = useState(false)
+  const [enabledStrategies, setEnabledStrategies] = useState<string[]>([
+    'exact_hash',
+    'image_phash',
+    'audio_hash',
+    'text_simhash',
+    'filename_heuristic'
+  ])
   const [recommendRule, setRecommendRule] = useState<RecommendRule>('highest_resolution')
 
   // 格式化文件大小
@@ -46,23 +53,19 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     return `${bytes} B`
   }
 
-  // 执行双轨扫描
-  const handleScan = async () => {
+  // 执行双轨扫描 (支持全 14 种策略调度)
+  const handleScan = async (overrideSimilarity?: number, overrideStrategies?: string[]) => {
     setIsScanning(true)
+    setDuplicateGroups([])
+    const sim = overrideSimilarity ?? minSimilarity
+    const currentStrategies = overrideStrategies ?? enabledStrategies
+
     try {
       if (window.electronAPI?.organizeBatch?.scanDuplicates) {
-        const fileIds = files.map(f => f.id).filter(Boolean)
         const groups = await window.electronAPI.organizeBatch.scanDuplicates({
           workspaceDirectoryPath,
-          fileIds: fileIds.length > 0 ? fileIds : undefined,
-          minSimilarity: 85,
-          strategies: [
-            'exact_hash',
-            'image_phash',
-            'text_simhash',
-            'filename_heuristic',
-            ...(checkVideo ? (['video_keyframes'] as DuplicateDetectionStrategy[]) : [])
-          ]
+          minSimilarity: sim,
+          strategies: currentStrategies as DuplicateDetectionStrategy[]
         })
         setDuplicateGroups(groups || [])
         toast.success(t('查重扫描完成，发现 {count} 个相似组', { count: groups?.length || 0 }))
@@ -77,7 +80,15 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   // 组件挂载时自动扫描
   useEffect(() => {
     handleScan()
-  }, [workspaceDirectoryPath, files.length, checkVideo])
+  }, [workspaceDirectoryPath])
+
+  const toggleStrategy = (stratKey: string) => {
+    const updated = enabledStrategies.includes(stratKey)
+      ? enabledStrategies.filter(s => s !== stratKey)
+      : [...enabledStrategies, stratKey]
+    setEnabledStrategies(updated)
+    handleScan(minSimilarity, updated)
+  }
 
   // 切换保留规则
   const handleApplyRule = (rule: RecommendRule) => {
@@ -126,6 +137,26 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     }
   }, [duplicateGroups])
 
+  // 14 大核心策略定义表
+  const STRATEGY_DEFINITIONS = useMemo(() => [
+    { key: 'exact_hash', label: t('精确内容一致 (Duplicates)'), icon: 'fingerprint' },
+    { key: 'image_phash', label: t('相似图片 (Similar Images)'), icon: 'image' },
+    { key: 'audio_hash', label: t('相似音乐 (Same Music)'), icon: 'audiotrack' },
+    { key: 'video_phash', label: t('相似视频 (Similar Videos)'), icon: 'videocam', warning: t('耗时较长') },
+    { key: 'empty_folders', label: t('空文件夹 (Empty Folders)'), icon: 'folder_open' },
+    { key: 'big_files', label: t('超大文件 (Big Files)'), icon: 'save' },
+    { key: 'empty_files', label: t('空文件 (Empty Files)'), icon: 'draft' },
+    { key: 'temporary_files', label: t('临时缓存 (Temporary Files)'), icon: 'auto_delete' },
+    { key: 'invalid_symlinks', label: t('断裂软链接 (Invalid Symlinks)'), icon: 'link_off' },
+    { key: 'broken_files', label: t('损坏文件 (Broken Files)'), icon: 'broken_image' },
+    { key: 'bad_extensions', label: t('错误扩展名 (Bad Extensions)'), icon: 'extension_off' },
+    { key: 'bad_names', label: t('异常文件名 (Bad Names)'), icon: 'edit_attributes' },
+    { key: 'exif_remover', label: t('Exif隐私清理 (Exif Remover)'), icon: 'privacy_tip' },
+    { key: 'video_optimizer', label: t('视频优化转换 (Video Optimizer)'), icon: 'smart_display' },
+    { key: 'text_simhash', label: t('文本语义相似 (Text SimHash)'), icon: 'article' },
+    { key: 'filename_heuristic', label: t('副本衍生文件 (Copy Heuristics)'), icon: 'copy_all' }
+  ], [])
+
   // 过滤后的组
   const filteredGroups = useMemo(() => {
     if (activeStrategyFilter === 'all') return duplicateGroups
@@ -148,7 +179,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   return (
     <div className="flex-1 flex overflow-hidden bg-background">
       {/* ─── 左栏：统计面板与策略筛选器 ────────────────────────────────────────── */}
-      <div className="w-72 border-r border-border/60 flex flex-col bg-muted/10 shrink-0">
+      <div className="w-80 border-r border-border/60 flex flex-col bg-muted/10 shrink-0">
         <div className="p-4 border-b border-border/50 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -158,7 +189,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={handleScan}
+              onClick={() => handleScan()}
               disabled={isScanning}
               className="h-7 text-xs gap-1 rounded-lg border-primary/30 text-primary hover:bg-primary/10"
             >
@@ -170,7 +201,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
           {/* 空间与文件统计看板 */}
           <div className="grid grid-cols-2 gap-2">
             <div className="p-2.5 rounded-xl border border-border/50 bg-card">
-              <div className="text-[10px] text-muted-foreground">{t('发现重复组')}</div>
+              <div className="text-[10px] text-muted-foreground">{t('发现清理/冗余组')}</div>
               <div className="text-base font-bold text-foreground tabular-nums">
                 {statistics.totalGroups}
               </div>
@@ -183,66 +214,119 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
             </div>
           </div>
 
-          {/* 视频查重选项 */}
-          <div className="flex items-center space-x-2 pt-1">
-            <Checkbox
-              id="check_video_opt"
-              checked={checkVideo}
-              onCheckedChange={val => setCheckVideo(Boolean(val))}
+          {/* 最小相似度阈值滑块与预设 (0.0 ~ 10.0 动态平滑映射) */}
+          <div className="pt-2 border-t border-border/40 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground font-medium">{t('最小相似度阈值')}</span>
+              <span className="font-bold text-primary tabular-nums">{minSimilarity.toFixed(1)}</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={10}
+              step={0.1}
+              value={minSimilarity}
+              onChange={e => setMinSimilarity(Number(e.target.value))}
+              onMouseUp={() => handleScan(minSimilarity)}
+              onTouchEnd={() => handleScan(minSimilarity)}
+              className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
             />
-            <label
-              htmlFor="check_video_opt"
-              className="text-xs text-foreground cursor-pointer select-none flex items-center gap-1"
-            >
-              <span>{t('开启视频深度查重')}</span>
-              <Badge variant="outline" className="text-[9px] px-1 py-0 h-3.5 text-amber-600">
-                {t('耗时较长')}
-              </Badge>
-            </label>
+            <div className="flex gap-1">
+              {[
+                { label: t('最大容差(0.0)'), val: 0.0 },
+                { label: t('连拍微移(5.0)'), val: 5.0 },
+                { label: t('标准(7.5)'), val: 7.5 },
+                { label: t('严苛(9.0)'), val: 9.0 },
+                { label: t('精确(10.0)'), val: 10.0 }
+              ].map(preset => (
+                <button
+                  key={preset.val}
+                  type="button"
+                  onClick={() => {
+                    setMinSimilarity(preset.val)
+                    handleScan(preset.val)
+                  }}
+                  className={cn(
+                    'flex-1 py-1 rounded-md text-[10px] font-medium border transition-colors',
+                    Math.abs(minSimilarity - preset.val) < 0.01
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-card text-muted-foreground border-border hover:bg-accent'
+                  )}
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* 策略分类筛选 */}
-        <div className="p-3 border-b border-border/40 text-xs font-semibold text-muted-foreground">
-          {t('查重策略分类')}
+        {/* 策略分类筛选与启用列表 */}
+        <div className="p-3 border-b border-border/40 flex items-center justify-between">
+          <span className="text-xs font-semibold text-muted-foreground">{t('清理与查重策略')}</span>
+          <span className="text-[10px] text-muted-foreground/80">{t('勾选以启用扫描')}</span>
         </div>
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
-          {[
-            { key: 'all', label: t('全部发现'), icon: 'list_alt' },
-            { key: 'exact_hash', label: t('100% 精确一致'), icon: 'fingerprint' },
-            { key: 'image_phash', label: t('视觉相似图片'), icon: 'image' },
-            { key: 'text_simhash', label: t('文本语义相似'), icon: 'article' },
-            { key: 'filename_heuristic', label: t('文件名副本衍生'), icon: 'copy_all' },
-            { key: 'audio_match', label: t('音频相似'), icon: 'audiotrack' },
-            { key: 'video_keyframes', label: t('视频关键帧'), icon: 'videocam' }
-          ].map(strat => {
-            const count =
-              strat.key === 'all'
-                ? duplicateGroups.length
-                : duplicateGroups.filter(g => g.strategy === strat.key).length
+          <button
+            type="button"
+            onClick={() => setActiveStrategyFilter('all')}
+            className={cn(
+              'w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150',
+              activeStrategyFilter === 'all'
+                ? 'bg-primary/10 text-primary border border-primary/30 font-semibold'
+                : 'text-muted-foreground hover:bg-muted/30 hover:text-foreground border border-transparent'
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <MaterialIcon icon="list_alt" className="text-sm" />
+              <span>{t('全部发现结果')}</span>
+            </div>
+            <Badge variant={activeStrategyFilter === 'all' ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0 h-4">
+              {duplicateGroups.length}
+            </Badge>
+          </button>
 
+          {STRATEGY_DEFINITIONS.map(strat => {
+            const count = duplicateGroups.filter(g => g.strategy === strat.key).length
             const isActive = activeStrategyFilter === strat.key
+            const isEnabled = enabledStrategies.includes(strat.key)
 
             return (
-              <button
+              <div
                 key={strat.key}
-                type="button"
-                onClick={() => setActiveStrategyFilter(strat.key)}
                 className={cn(
-                  'w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150',
+                  'w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-150 group border',
                   isActive
-                    ? 'bg-primary/10 text-primary border border-primary/30 font-semibold'
-                    : 'text-muted-foreground hover:bg-muted/30 hover:text-foreground border border-transparent'
+                    ? 'bg-primary/10 text-primary border-primary/30 font-semibold'
+                    : 'text-muted-foreground hover:bg-muted/30 hover:text-foreground border-transparent'
                 )}
               >
-                <div className="flex items-center gap-2">
-                  <MaterialIcon icon={strat.icon} className="text-sm" />
-                  <span>{strat.label}</span>
+                <div
+                  className="flex items-center gap-2 cursor-pointer flex-1 min-w-0"
+                  onClick={() => setActiveStrategyFilter(strat.key)}
+                >
+                  <Checkbox
+                    checked={isEnabled}
+                    onCheckedChange={() => toggleStrategy(strat.key)}
+                    onClick={e => e.stopPropagation()}
+                    className="h-3.5 w-3.5"
+                  />
+                  <MaterialIcon icon={strat.icon} className="text-sm flex-shrink-0" />
+                  <span className="truncate">{strat.label}</span>
                 </div>
-                <Badge variant={isActive ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0 h-4">
-                  {count}
-                </Badge>
-              </button>
+
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {strat.warning && (
+                    <Badge variant="outline" className="text-[8px] px-1 py-0 h-3.5 text-amber-600 border-amber-600/30">
+                      {strat.warning}
+                    </Badge>
+                  )}
+                  {count > 0 && (
+                    <Badge variant={isActive ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0 h-4">
+                      {count}
+                    </Badge>
+                  )}
+                </div>
+              </div>
             )
           })}
         </div>
@@ -300,17 +384,48 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                         ? t('100% 精确一致')
                         : group.strategy === 'image_phash'
                           ? t('视觉相似图片')
-                          : group.strategy === 'text_simhash'
-                            ? t('文档语义相似')
-                            : t('副本衍生文件')}
+                          : group.strategy === 'audio_hash' || group.strategy === 'audio_match'
+                            ? t('相似音乐')
+                            : group.strategy === 'video_phash' || group.strategy === 'video_keyframes'
+                              ? t('相似视频')
+                              : group.strategy === 'empty_folders'
+                                ? t('空文件夹')
+                                : group.strategy === 'big_files'
+                                  ? t('超大文件')
+                                  : group.strategy === 'empty_files'
+                                    ? t('空文件')
+                                    : group.strategy === 'temporary_files'
+                                      ? t('临时缓存')
+                                      : group.strategy === 'invalid_symlinks'
+                                        ? t('断裂软链接')
+                                        : group.strategy === 'broken_files'
+                                          ? t('损坏文件')
+                                          : group.strategy === 'bad_extensions'
+                                            ? t('错误扩展名')
+                                            : group.strategy === 'bad_names'
+                                              ? t('异常文件名')
+                                              : group.strategy === 'exif_remover'
+                                                ? t('Exif隐私清理')
+                                                : group.strategy === 'video_optimizer'
+                                                  ? t('视频优化')
+                                                  : group.strategy === 'text_simhash'
+                                                    ? t('文档语义相似')
+                                                    : t('副本衍生文件')}
                     </Badge>
                     <span className="text-xs font-semibold text-foreground">
                       {group.description}
                     </span>
                   </div>
-                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
-                    {t('相似度 {percent}%', { percent: Math.round(group.similarityPercentage) })}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {group.groupThreshold !== undefined && group.groupThreshold !== null && (
+                      <Badge variant="outline" className="text-[10px] font-mono border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/5">
+                        {t('踩线阈值 ≥ {thresh}', { thresh: group.groupThreshold.toFixed(1) })}
+                      </Badge>
+                    )}
+                    <span className="text-xs text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+                      {t('相似度 {percent}%', { percent: Math.round(group.similarityPercentage) })}
+                    </span>
+                  </div>
                 </div>
 
                 {/* 并排比对卡片 */}

@@ -295,7 +295,7 @@ export default defineConfig(({ command, mode }) => {
                   '**/packages/shared/src/languages/messages/**',
                   '**/apps/desktop/src/languages/messages/**',
                   '**/pro/scripts/**',
-                  '**/pro/extraResources/**'
+                  '**/pro/build/extraResources/**'
                 ]
               }
             },

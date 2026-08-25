@@ -94,12 +94,14 @@ export class FileFilter {
     // 优化：当选择较多标签且为并集模式 (OR) 时，合并为单条 JOIN 关系判定子查询，提升 SQLite 执行计划性能
     if (unionMode === 'union' && selectedTags.length > 15) {
       const tagPairs = selectedTags.map(() => '(?, ?)').join(',')
-      selectedTags.forEach(t => queryParams.push(t.dimensionId, t.tagValue))
+      selectedTags.forEach(t =>
+        queryParams.push(t.dimensionId, t.tagValue.replace(/^\./, '').toLowerCase().trim())
+      )
       whereClauses.push(`f.file_fingerprint IN (
         SELECT ftr_sub.file_fingerprint
         FROM file_tag_relations ftr_sub
         JOIN file_tags ft_sub ON ft_sub.id = ftr_sub.tag_id
-        WHERE (ft_sub.dimension_id, ft_sub.name) IN (VALUES ${tagPairs})
+        WHERE (ft_sub.dimension_id, LOWER(TRIM(REPLACE(ft_sub.name, '.', '')))) IN (VALUES ${tagPairs})
       )`)
       return
     }
@@ -110,9 +112,12 @@ export class FileFilter {
         SELECT ftr_sub.file_fingerprint
         FROM file_tag_relations ftr_sub
         JOIN file_tags ft_sub ON ft_sub.id = ftr_sub.tag_id
-        WHERE ft_sub.dimension_id = ? AND ft_sub.name = ?`
+        WHERE ft_sub.dimension_id = ? AND (
+          LOWER(TRIM(ft_sub.name)) = LOWER(TRIM(?))
+          OR LOWER(TRIM(REPLACE(ft_sub.name, '.', ''))) = LOWER(TRIM(REPLACE(?, '.', '')))
+        )`
 
-      queryParams.push(tag.dimensionId, tag.tagValue)
+      queryParams.push(tag.dimensionId, tag.tagValue, tag.tagValue)
 
       // 如果标签本身来自于扩展名维度（如 Level 3 或名称包含扩展名/Extension），则标签本身已定位到扩展名，无需追加 f.type 约束
       const isExtensionTag =

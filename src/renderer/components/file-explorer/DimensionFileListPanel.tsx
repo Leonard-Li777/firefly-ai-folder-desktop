@@ -38,8 +38,6 @@ interface DimensionFileListPanelProps {
   onStartOrganize?: () => void
   isOrganizeMode?: boolean
   onOrganizeSelected?: () => void
-  onBatchRename?: () => void
-  onBatchTag?: () => void
 
   // 刷新触发器：当父级检测到新的分析完成时递增，触发文件列表重新加载
   refreshKey?: number
@@ -78,8 +76,6 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   onStartOrganize,
   isOrganizeMode = false,
   onOrganizeSelected,
-  onBatchRename,
-  onBatchTag,
   refreshKey = 0,
   currentPath,
   unionMode = 'union',
@@ -392,24 +388,6 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
                     <span className="text-sm font-medium select-none">{t('全选')}</span>
                   </label>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-2 cursor-pointer text-xs h-8 gap-1"
-                    onClick={onBatchRename}
-                  >
-                    <MaterialIcon icon="drive_file_rename_outline" className="text-sm text-primary" />
-                    <span>{t('批量更名')}</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-2 cursor-pointer text-xs h-8 gap-1"
-                    onClick={onBatchTag}
-                  >
-                    <MaterialIcon icon="label" className="text-sm text-emerald-500" />
-                    <span>{t('批量标签')}</span>
-                  </Button>
-                  <Button
                     variant="default"
                     size="sm"
                     className="ml-2 cursor-pointer text-xs h-8 gap-1 font-bold shadow-xs"
@@ -429,11 +407,11 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
                   <Button
                     variant="default"
                     size="sm"
-                    className="ml-2 cursor-pointer"
+                    className="ml-2 cursor-pointer gap-1"
                     onClick={onStartOrganize}
                   >
-                    <MaterialIcon icon="edit_note" className="text-base mr-1" />
-                    {t('整理')}
+                    <MaterialIcon icon="auto_fix_high" className="text-sm mr-0.5" />
+                    {t('批量整理')}
                   </Button>
                 )
               )}

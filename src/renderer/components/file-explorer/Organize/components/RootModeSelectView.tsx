@@ -19,7 +19,7 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
       title: t('批量更名'),
       tag: t('DSL 模板'),
       icon: 'drive_file_rename_outline',
-      description: t('基于智能文件名、修改日期、维度标签与自增序号等 DSL 属性，一键批量重命名并更新数据库。'),
+      description: t('基于智能文件名、修改日期、维度标签与自增序号等 DSL 属性，一键批量重命名智能文件名。'),
       accentColor: 'from-blue-500/10 via-indigo-500/5 to-transparent',
       iconColor: 'text-blue-500 bg-blue-500/10',
       badgeVariant: 'secondary' as const
@@ -29,7 +29,7 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
       title: t('批量标签'),
       tag: t('覆盖率三态'),
       icon: 'label',
-      description: t('横向标签流排布与覆盖率比值算法，支持全选打标、移除与初始态三态循环，快速扩充分类。'),
+      description: t('支持批量对文件标签进行点选新增和删除。'),
       accentColor: 'from-emerald-500/10 via-teal-500/5 to-transparent',
       iconColor: 'text-emerald-500 bg-emerald-500/10',
       badgeVariant: 'secondary' as const

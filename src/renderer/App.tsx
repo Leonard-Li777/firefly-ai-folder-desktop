@@ -1036,19 +1036,7 @@ const App: React.FC = () => {
             </div>
           )}
 
-          {/* 整理页面视图 - KeepAlive */}
-          {hasMountedOrganize && (
-            <div
-              className={cn(
-                'absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-200',
-                currentPath === '/organize'
-                  ? 'opacity-100 z-10'
-                  : 'opacity-0 pointer-events-none z-0'
-              )}
-            >
-              <Organize />
-            </div>
-          )}
+
 
           {/* Pro 开通页面 - KeepAlive */}
           {hasMountedProActivation && (

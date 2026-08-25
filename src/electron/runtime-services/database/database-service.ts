@@ -1191,7 +1191,7 @@ export class DatabaseService {
     try {
       this._db.transaction(() => {
         const tagRows = this._db!.prepare(
-          'SELECT id FROM file_tags WHERE dimension_id = ? AND name = ?'
+          'SELECT id FROM file_tags WHERE dimension_id = ? AND LOWER(TRIM(name)) = LOWER(TRIM(?))'
         ).all(dimensionId, tagName) as Array<{ id: number }>
 
         for (const tag of tagRows) {
@@ -1199,10 +1199,31 @@ export class DatabaseService {
           this._db!.prepare('DELETE FROM file_tags WHERE id = ?').run(tag.id)
         }
 
-        this._db!.prepare('DELETE FROM tag_expansions WHERE dimension_id = ? AND name = ?').run(
-          dimensionId,
-          tagName
-        )
+        this._db!.prepare(
+          'DELETE FROM tag_expansions WHERE dimension_id = ? AND LOWER(TRIM(name)) = LOWER(TRIM(?))'
+        ).run(dimensionId, tagName)
+
+        // 同时从 file_dimensions 表 tags JSON 列表中剔除该标签（若为预设标签），支持删除任意维度标签
+        const dimRow = this._db!.prepare(
+          'SELECT tags FROM file_dimensions WHERE id = ?'
+        ).get(dimensionId) as { tags?: string } | undefined
+
+        if (dimRow?.tags) {
+          try {
+            const list = JSON.parse(dimRow.tags)
+            if (Array.isArray(list)) {
+              const filtered = list.filter(
+                t => typeof t === 'string' && t.trim().toLowerCase() !== tagName.trim().toLowerCase()
+              )
+              if (filtered.length !== list.length) {
+                this._db!.prepare('UPDATE file_dimensions SET tags = ? WHERE id = ?').run(
+                  JSON.stringify(filtered),
+                  dimensionId
+                )
+              }
+            }
+          } catch {}
+        }
       })()
 
       this.clearDimensionsCache()
@@ -1297,16 +1318,45 @@ export class DatabaseService {
 
         for (const fileId of operation.fileIds) {
           try {
-            const fileRow = this._db!.prepare(
-              'SELECT file_fingerprint FROM files WHERE id = ?'
+            let fp: string | undefined
+
+            // 1. 优先从 workspace_files 按 id 查询指纹（前端文件列表的主标识通常为 workspace_files.id）
+            const wfRow = this._db!.prepare(
+              'SELECT file_fingerprint FROM workspace_files WHERE id = ?'
             ).get(fileId) as { file_fingerprint: string } | undefined
 
-            if (!fileRow?.file_fingerprint) {
+            if (wfRow?.file_fingerprint) {
+              fp = wfRow.file_fingerprint
+            } else {
+              // 2. 尝试从 files 表按 id 查询指纹
+              const fileRow = this._db!.prepare(
+                'SELECT file_fingerprint FROM files WHERE id = ?'
+              ).get(fileId) as { file_fingerprint: string } | undefined
+              if (fileRow?.file_fingerprint) {
+                fp = fileRow.file_fingerprint
+              } else {
+                // 3. 尝试作为 file_fingerprint 字符串本身查询
+                const fpRow = this._db!.prepare(
+                  'SELECT file_fingerprint FROM files WHERE file_fingerprint = ?'
+                ).get(fileId) as { file_fingerprint: string } | undefined
+                if (fpRow?.file_fingerprint) {
+                  fp = fpRow.file_fingerprint
+                } else {
+                  // 4. 尝试作为 workspace_files 路径查询
+                  const pathRow = this._db!.prepare(
+                    'SELECT file_fingerprint FROM workspace_files WHERE path = ?'
+                  ).get(fileId) as { file_fingerprint: string } | undefined
+                  if (pathRow?.file_fingerprint) {
+                    fp = pathRow.file_fingerprint
+                  }
+                }
+              }
+            }
+
+            if (!fp) {
               failedCount++
               continue
             }
-
-            const fp = fileRow.file_fingerprint
 
             // 添加标签关联
             if (allAddTagIds.length > 0) {

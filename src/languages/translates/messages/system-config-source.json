@@ -100,7 +100,7 @@
     "de-DE": "Die Engine zum Extrahieren von Dateiinformationen wird rekonstruiert und die Geschwindigkeit der Dateiinformationserfassung wird um 50 % erhöht.",
     "fr-FR": "Le moteur d'extraction des informations sur les fichiers est reconstruit et la vitesse d'acquisition des informations sur les fichiers est augmentée de 50 %.",
     "ko-KR": "파일 정보 추출 엔진이 재구성되고, 파일 정보 획득 속도가 50% 향상됩니다.",
-    "$files": ["src/electron/config/system-config-source.ts(919-945)"],
+    "$files": ["src/electron/config/system-config-source.ts(923-949)"],
     "$id": 9434
   },
   "Nanbeige4.2 性价比王，3G显存跑出超强智能，请升级至 V3.2+": {
@@ -113,7 +113,7 @@
     "de-DE": "Nanbeige 4.2 Preis-Leistungs-Sieger, 3 GB VRAM für leistungsstarke KI, bitte auf V3.2+ aktualisieren",
     "fr-FR": "Nanbeige4.2  Le roi du rapport qualité-prix, une puissance IA ultra-performante avec 3G de VRAM, veuillez passer à la version V3.2+",
     "ko-KR": "Nanbeige4.2 가성비 왕, 3G VRAM으로 초강력 AI 동작, V3.2+ 이상으로 업그레이드",
-    "$files": ["src/electron/config/system-config-source.ts(974-1016)"],
+    "$files": ["src/electron/config/system-config-source.ts(978-1020)"],
     "$id": 9894
   },
   "新增云端服务商 Agnes AI，永久免费API，国内网络可正常访问": {
@@ -126,7 +126,7 @@
     "de-DE": "Neuer Cloud-Dienst Agnes AI hinzugefügt, dauerhaft kostenlose API, aus dem Landesinneren erreichbar",
     "fr-FR": "Nouveau fournisseur cloud ajouté  Agnes AI, API gratuite à vie, accessible normalement sur les réseaux chinois",
     "ko-KR": "Agnes AI 신규 클라우드 서비스 제공, 영구 무료 API, 중국 내 네트워크에서 정상적으로 접속 가능",
-    "$files": ["src/electron/config/system-config-source.ts(1111-1149)"],
+    "$files": ["src/electron/config/system-config-source.ts(1115-1153)"],
     "$id": 9895
   },
   "功能答疑、产品交流，欢迎前往萤核知乎官方圈子参与讨论": {
@@ -139,7 +139,7 @@
     "de-DE": "Fragen zu Funktionen, Produktaustausch – willkommen im offiziellen Firefly AI Folder Zhihu Community-Forum zur Teilnahme an Diskussionen",
     "fr-FR": "Pour des questions fonctionnelles et des échanges produits, rejoignez notre communauté officielle Firefly AI Folder sur Zhihu pour participer aux discussions",
     "ko-KR": "기능 문의 및 제품 교류는 Firefly AI Folder Zhihu 공식 커뮤니티에서 참여해 주세요",
-    "$files": ["src/electron/config/system-config-source.ts(1215-1245)"],
+    "$files": ["src/electron/config/system-config-source.ts(1219-1249)"],
     "$id": 9898
   }
 }

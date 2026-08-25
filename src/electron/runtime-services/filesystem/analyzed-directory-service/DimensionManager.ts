@@ -275,20 +275,21 @@ export class DimensionManager {
       // 如果传入了 selectedTags，按标签筛选文件
       if (selectedTags.length > 0) {
         const tagConditions = selectedTags.map((tag, i) => {
-          const dimParam = `tag_dim_${i}`
-          const valParam = `tag_val_${i}`
           return `EXISTS (
             SELECT 1 FROM file_tag_relations ftr_tag
             JOIN file_tags ft_tag ON ft_tag.id = ftr_tag.tag_id
             WHERE ftr_tag.file_fingerprint = f.file_fingerprint
-            AND ft_tag.dimension_id = ? AND ft_tag.name = ?
+            AND ft_tag.dimension_id = ? AND (
+              LOWER(TRIM(ft_tag.name)) = LOWER(TRIM(?))
+              OR LOWER(TRIM(REPLACE(ft_tag.name, '.', ''))) = LOWER(TRIM(REPLACE(?, '.', '')))
+            )
           )`
         })
         const joinOperator = unionMode === 'intersection' ? ' AND ' : ' OR '
         const newWhere = `(${tagConditions.join(joinOperator)})`
         globalCountQuery += ` AND ${newWhere}`
         selectedTags.forEach(tag => {
-          globalCountParams.push(tag.dimensionId, tag.tagValue)
+          globalCountParams.push(tag.dimensionId, tag.tagValue, tag.tagValue)
         })
       }
 
@@ -342,14 +343,19 @@ export class DimensionManager {
           presetTagsList = filterDimensionTags({ id: dim.id, tags: presetTagsList })
         }
 
-        const presetTagSet = new Set(
-          presetTagsList.map(t => (typeof t === 'string' ? t.toLowerCase().trim() : ''))
-        )
+        const presetTagMap = new Map<string, string>()
+        presetTagsList.forEach(t => {
+          if (typeof t === 'string') {
+            presetTagMap.set(t.toLowerCase().trim(), t)
+          }
+        })
 
-        // 仅对泛维度展示所有动态标签；非泛维度只保留属于预设列表的标签
+        // 仅对泛维度展示所有动态标签；非泛维度只保留属于预设列表的标签（且映射至预设规范大小写，彻底杜绝 Office/office 等重复）
         const validExistingTagNames = isPanDim
           ? existingTagNames
-          : existingTagNames.filter(t => presetTagSet.has(t.toLowerCase().trim()))
+          : existingTagNames
+              .filter(t => presetTagMap.has(t.toLowerCase().trim()))
+              .map(t => presetTagMap.get(t.toLowerCase().trim())!)
 
         const tagSet = new Set<string>(validExistingTagNames)
         // 有子维度的维度（如 L2 "视频细分"），或指定 includeAllPresetTags 时，始终包含其完整预设标签列表
@@ -397,10 +403,13 @@ export class DimensionManager {
                 EXISTS (
                   SELECT 1 FROM file_tag_relations pftr
                   JOIN file_tags pft ON pft.id = pftr.tag_id
-                  WHERE pftr.file_fingerprint = f.file_fingerprint AND pft.dimension_id = ? AND pft.name = ?
+                  WHERE pftr.file_fingerprint = f.file_fingerprint AND pft.dimension_id = ? AND (
+                    LOWER(TRIM(pft.name)) = LOWER(TRIM(?))
+                    OR LOWER(TRIM(REPLACE(pft.name, '.', ''))) = LOWER(TRIM(REPLACE(?, '.', '')))
+                  )
                 )
               `
-              contextualParams.push(parentDimId, parentTagValue)
+              contextualParams.push(parentDimId, parentTagValue, parentTagValue)
 
               if (extensions.length > 0) {
                 const extPhs = extensions.map(() => '?').join(',')
@@ -504,11 +513,14 @@ export class DimensionManager {
                 WHERE f.type = ? AND pftr.file_fingerprint IN (
                   SELECT ftr.file_fingerprint FROM file_tag_relations ftr
                   JOIN file_tags ft ON ft.id = ftr.tag_id
-                  WHERE ft.dimension_id = ? AND ft.name = ?
+                  WHERE ft.dimension_id = ? AND (
+                    LOWER(TRIM(ft.name)) = LOWER(TRIM(?))
+                    OR LOWER(TRIM(REPLACE(ft.name, '.', ''))) = LOWER(TRIM(REPLACE(?, '.', '')))
+                  )
                 )
               `
                 )
-                .all(r.file_type, dim.id, r.tag_name) as Array<{ name: string }>
+                .all(r.file_type, dim.id, r.tag_name, r.tag_name) as Array<{ name: string }>
 
               const parentTagNames = fileParentTags.map(t => t.name)
               const allowed =
@@ -531,13 +543,24 @@ export class DimensionManager {
           id: dim.id,
           name: dim.name,
           level: dim.level,
-          tags: tagStrings.map(tag => ({
-            dimensionId: dim.id,
-            dimensionName: dim.name,
-            tagValue: tag,
-            fileCount: tagCounts.get(tag) || 0,
-            level: dim.level
-          })),
+          tags: tagStrings.map(tag => {
+            let count = tagCounts.get(tag) || 0
+            if (count === 0) {
+              const lower = tag.toLowerCase()
+              for (const [k, v] of tagCounts) {
+                if (k.toLowerCase() === lower) {
+                  count += v
+                }
+              }
+            }
+            return {
+              dimensionId: dim.id,
+              dimensionName: dim.name,
+              tagValue: tag,
+              fileCount: count,
+              level: dim.level
+            }
+          }),
           contextualTags: Object.keys(contextualTags).length > 0 ? contextualTags : undefined,
           parentDimensionIds: parentDimensionIds.length > 0 ? parentDimensionIds : undefined,
           triggerConditions: triggerConditions || undefined
