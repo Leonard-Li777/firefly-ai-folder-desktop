@@ -1,9 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { BatchRenamePreviewItem, BatchRenameResult } from '@firefly/types'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, isExtensionTriggerTagName } from '@firefly/shared'
 import { t } from '@app/languages'
-import { databaseService } from '../database/database-service'
 
 export interface FileRenameContext {
   id: number
@@ -170,25 +169,26 @@ export class NamingDSLEngine {
 
     let rendered = template
 
-    const dimTagsMap: Record<string, string> = {}
-    const registerTag = (dim: string, val: any) => {
+    const rawDimTagsMap: Record<string, string[]> = {}
+    const addTagToDimension = (dim: string, val: any) => {
       if (!dim || val === undefined || val === null) return
       const cleanDim = String(dim).trim()
-      let tagStr = ''
+      if (!cleanDim) return
+
+      let candidateTags: string[] = []
       if (Array.isArray(val)) {
-        tagStr = String(val[val.length - 1] || '').trim()
+        candidateTags = val.map(s => String(s || '').trim()).filter(Boolean)
       } else {
-        const parts = String(val)
+        candidateTags = String(val)
           .split(/[,，、/|]/)
           .map(s => s.trim())
           .filter(Boolean)
-        tagStr = parts.length > 0 ? parts[parts.length - 1] : String(val).trim()
       }
-      if (tagStr) {
-        dimTagsMap[cleanDim] = tagStr
-        dimTagsMap[t(cleanDim)] = tagStr
-        dimTagsMap[cleanDim.toLowerCase()] = tagStr
+
+      if (!rawDimTagsMap[cleanDim]) {
+        rawDimTagsMap[cleanDim] = []
       }
+      rawDimTagsMap[cleanDim].push(...candidateTags)
     }
 
     if (
@@ -197,14 +197,14 @@ export class NamingDSLEngine {
       !Array.isArray(context.dimensionTags)
     ) {
       for (const [dim, val] of Object.entries(context.dimensionTags)) {
-        registerTag(dim, val)
+        addTagToDimension(dim, val)
       }
     } else if (Array.isArray(context.dimensionTags)) {
       for (const item of context.dimensionTags) {
         if (item && typeof item === 'object') {
           const dim = item.dimensionName || item.dimension || item.name
           const val = item.tagName || item.tag || item.value
-          registerTag(dim, val)
+          addTagToDimension(dim, val)
         }
       }
     }
@@ -214,16 +214,29 @@ export class NamingDSLEngine {
         if (tItem && typeof tItem === 'object') {
           const dimName = tItem.dimensionName || (tItem as any).name || (tItem as any).dimension
           const tagVal = tItem.tagValue || (tItem as any).value || (tItem as any).tag
-          registerTag(dimName, tagVal)
-        } else if (typeof tItem === 'string') {
-          registerTag('内容标签', tItem)
+          addTagToDimension(dimName, tagVal)
+        } else if (typeof tItem === 'string' && tItem.trim()) {
+          addTagToDimension(t('内容标签'), tItem)
         }
       }
     }
 
     if ((context as any).dimensions && typeof (context as any).dimensions === 'object') {
       for (const [dim, val] of Object.entries((context as any).dimensions)) {
-        registerTag(dim, val)
+        addTagToDimension(dim, val)
+      }
+    }
+
+    // 过滤掉所有扩展名触发标签（如 "图片扩展名", "视频扩展名", ".png" 等），并提取最后一个有效业务标签
+    const dimTagsMap: Record<string, string> = {}
+    for (const [dim, allTags] of Object.entries(rawDimTagsMap)) {
+      const validTags = allTags.filter(tag => !isExtensionTriggerTagName(tag))
+      if (validTags.length > 0) {
+        const lastTag = validTags[validTags.length - 1]
+        dimTagsMap[dim] = lastTag
+        dimTagsMap[t(dim)] = lastTag
+        dimTagsMap[dim.toLowerCase()] = lastTag
+        dimTagsMap[t(dim).toLowerCase()] = lastTag
       }
     }
 
@@ -575,7 +588,7 @@ export class NamingDSLEngine {
         }
 
         // 构造结构化色彩渲染分段 (Segments)
-        const segments: Array<{
+        const rawSegments: Array<{
           text: string
           type: 'name' | 'date' | 'tag' | 'meta' | 'seq' | 'literal'
         }> = []
@@ -586,12 +599,73 @@ export class NamingDSLEngine {
           if (isToken) {
             const val = NamingDSLEngine.renderTemplate(p, file, idx + 1, false)
             if (val && val.trim()) {
-              segments.push({ text: val, type: cat })
+              rawSegments.push({ text: val, type: cat })
             }
           } else {
-            segments.push({ text: p, type: 'literal' })
+            rawSegments.push({ text: p, type: 'literal' })
           }
         }
+
+        // 智能折叠与清洗 segments：
+        // 1. 合并相邻的 literal 分隔符
+        const mergedSegments: Array<{
+          text: string
+          type: 'name' | 'date' | 'tag' | 'meta' | 'seq' | 'literal'
+        }> = []
+
+        for (const seg of rawSegments) {
+          if (!seg.text) continue
+          const last = mergedSegments[mergedSegments.length - 1]
+          if (last && last.type === 'literal' && seg.type === 'literal') {
+            last.text = `${last.text}${seg.text}`
+          } else {
+            mergedSegments.push({ ...seg })
+          }
+        }
+
+        // 2. 清理 literal 片段中的连续下划线/破折号与空格
+        for (const seg of mergedSegments) {
+          if (seg.type === 'literal') {
+            seg.text = seg.text
+              .replace(/_+/g, '_')
+              .replace(/-{2,}/g, '-')
+              .replace(/\s{2,}/g, ' ')
+              .replace(/_\s+/g, '_')
+              .replace(/\s+_/g, '_')
+          }
+        }
+
+        // 3. 去除首尾的多余 literal 分隔符（如前导或尾部 _ 符号）
+        while (
+          mergedSegments.length > 0 &&
+          mergedSegments[0].type === 'literal' &&
+          /^[\s_\-]+$/.test(mergedSegments[0].text)
+        ) {
+          mergedSegments.shift()
+        }
+        while (
+          mergedSegments.length > 0 &&
+          mergedSegments[mergedSegments.length - 1].type === 'literal' &&
+          /^[\s_\-]+$/.test(mergedSegments[mergedSegments.length - 1].text)
+        ) {
+          mergedSegments.pop()
+        }
+
+        // 4. 清理首部或尾部 literal 的残留边界符号
+        if (mergedSegments.length > 0 && mergedSegments[0].type === 'literal') {
+          mergedSegments[0].text = mergedSegments[0].text.replace(/^[\s_\-]+/, '')
+          if (!mergedSegments[0].text) mergedSegments.shift()
+        }
+        if (
+          mergedSegments.length > 0 &&
+          mergedSegments[mergedSegments.length - 1].type === 'literal'
+        ) {
+          const lastIdx = mergedSegments.length - 1
+          mergedSegments[lastIdx].text = mergedSegments[lastIdx].text.replace(/[\s_\-]+$/, '')
+          if (!mergedSegments[lastIdx].text) mergedSegments.pop()
+        }
+
+        const segments = mergedSegments
 
         // 如果整个模板所有变量都未命中，导致 segments 没有任何实质内容时，兜底展示智能名或原文件名
         const hasContent = segments.some(s => s.type !== 'literal' && s.text.trim().length > 0)

@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3'
 import { SavedVirtualDirectory, FileInfoForAI } from '@firefly/types'
 import { LogCategory, logger } from '@firefly/shared'
+import { t } from '@app/languages'
 import path from 'node:path'
 
 export class DatabaseHelper {
@@ -241,7 +242,7 @@ export class DatabaseHelper {
         for (const ct of contentTags) {
           if (ct && ct.name) {
             formattedDimensionTags.push({
-              dimension: '内容标签',
+              dimension: t('内容标签'),
               tag: ct.name
             })
           }
@@ -260,7 +261,7 @@ export class DatabaseHelper {
           createdAt: file.createdAt,
           metadata: parsedMeta,
           qualityScore: file.qualityScore,
-          tags: allTagNames,
+          tags: contentTags.map(t => t.name),
           dimensionTags: formattedDimensionTags,
           description: file.description
         })
