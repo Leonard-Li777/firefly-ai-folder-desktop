@@ -147,122 +147,56 @@ export class MediaConvertService {
 
       const isPdf = ext === '.pdf' || targetDocPath.toLowerCase().endsWith('.pdf')
       if (isPdf) {
-        const os = await import('node:os')
-        const tempOutDir = path.join(
-          os.tmpdir(),
-          `lo_ocr_pages_${Date.now()}_${Math.random().toString(36).slice(2)}`
-        )
-        await fs.mkdir(tempOutDir, { recursive: true })
-
-        const cp = await import('node:child_process')
-        const { promisify } = await import('node:util')
-        const execFile = promisify(cp.execFile)
-
-        let ispdftoppmSuccess = false
-
-        // A. 优先尝试使用 pdftoppm 一键批量导出多页物理 PNG 图像 (耗时 < 100ms)
+        // 纯内存/轻量多页 PDF 渲染 (使用 pdfjs-dist + Sharp)
         try {
-          const { popplerDetector } = await import('../poppler-detector')
-          const popplerInfo = await popplerDetector.detectPoppler()
-          if (popplerInfo && popplerInfo.installed && popplerInfo.path) {
-            const pdftoppmBin = popplerInfo.path
-            const { ResourceLocator } = await import('@firefly/shared')
-            const { env, cwd } = ResourceLocator.getBinExecutionEnv(pdftoppmBin)
+          const { pathToFileURL } = await import('node:url')
+          const pdfjsPath = require.resolve('pdfjs-dist/legacy/build/pdf.mjs')
+          const pdfjsLib = await import(pathToFileURL(pdfjsPath).href)
+          const pdfData = await fs.readFile(targetDocPath)
+          const pdfDoc = await pdfjsLib.getDocument({
+            data: new Uint8Array(pdfData),
+            useSystemFonts: true,
+            disableFontFace: true
+          }).promise
 
-            const prefix = path.join(tempOutDir, 'page')
-            await execFile(pdftoppmBin, ['-png', '-r', '150', targetDocPath, prefix], {
-              timeout: 30000,
-              env,
-              cwd
-            })
+          const pageCount = pdfDoc.numPages
+          const sharp = (await import('sharp')).default
+          const SVGConstructor = pdfjsLib.SVGGraphics || (pdfjsLib as any).DOMSVGFactory
 
-            const files = await fs.readdir(tempOutDir)
-            const pngFiles = files
-              .filter(f => f.toLowerCase().endsWith('.png'))
-              .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
-
-            for (const file of pngFiles) {
-              const buf = await fs.readFile(path.join(tempOutDir, file))
-              if (buf && buf.length > 1024) {
-                buffers.push(buf)
-              }
-            }
-
-            if (buffers.length > 0) {
-              ispdftoppmSuccess = true
-              console.debug(
-                `[MediaConvertService][debug] ⚡ pdftoppm 批量物理切图成功: 产出高清 PNG 张数=${buffers.length} 张, 源文件=${path.basename(filePath)}`
-              )
-            }
-          } else {
-            console.debug(
-              `[MediaConvertService][debug] pdftoppm 未就绪，尝试降级渲染: file=${path.basename(filePath)}`
-            )
-          }
-        } catch (popplerErr: any) {
-          logger.warn(
-            LogCategory.SYSTEM,
-            `[MediaConvertService] pdftoppm 批量切图失败: ${popplerErr?.message || popplerErr}`
-          )
-        }
-
-        // B. 兜底方案：如果 pdftoppm 命令行不可用，使用 pdfjs-dist / 封面提取作为保底
-        if (!ispdftoppmSuccess) {
-          console.debug(
-            `[MediaConvertService][debug] 🔄 pdftoppm 未在系统中探测到，降级启用多页渲染保底: file=${path.basename(filePath)}`
-          )
-          try {
-            const { pathToFileURL } = await import('node:url')
-            const pdfjsPath = require.resolve('pdfjs-dist/legacy/build/pdf.mjs')
-            const pdfjsLib = await import(pathToFileURL(pdfjsPath).href)
-            const pdfData = await fs.readFile(targetDocPath)
-            const pdfDoc = await pdfjsLib.getDocument({
-              data: new Uint8Array(pdfData),
-              useSystemFonts: true,
-              disableFontFace: true
-            }).promise
-
-            const pageCount = pdfDoc.numPages
-            const sharp = (await import('sharp')).default
-            const SVGConstructor = pdfjsLib.SVGGraphics || (pdfjsLib as any).DOMSVGFactory
-
-            if (SVGConstructor && typeof SVGConstructor === 'function') {
-              for (let i = 1; i <= pageCount; i++) {
-                try {
-                  const page = await pdfDoc.getPage(i)
-                  const opList = await page.getOperatorList()
-                  const svgG = new SVGConstructor(page.commonObjs, page.objs)
-                  const svgNode = await svgG.getSVG(opList, page.getViewport({ scale: 2.0 }))
-                  const svgXml = svgNode?.toString() || ''
-                  if (svgXml) {
-                    const pngBuf = await sharp(Buffer.from(svgXml)).png().toBuffer()
-                    if (pngBuf && pngBuf.length > 1024) {
-                      buffers.push(pngBuf)
-                    }
+          if (SVGConstructor && typeof SVGConstructor === 'function') {
+            for (let i = 1; i <= pageCount; i++) {
+              try {
+                const page = await pdfDoc.getPage(i)
+                const opList = await page.getOperatorList()
+                const svgG = new SVGConstructor(page.commonObjs, page.objs)
+                const svgNode = await svgG.getSVG(opList, page.getViewport({ scale: 2.0 }))
+                const svgXml = svgNode?.toString() || ''
+                if (svgXml) {
+                  const pngBuf = await sharp(Buffer.from(svgXml)).png().toBuffer()
+                  if (pngBuf && pngBuf.length > 1024) {
+                    buffers.push(pngBuf)
                   }
-                } catch {
-                  // 单页 SVG 渲染跳过
                 }
+              } catch {
+                // 单页 SVG 渲染跳过
               }
             }
-          } catch {
-            // pdfjs 渲染失败优雅容错
           }
-
-          // 如果兜底渲染仍未拿到多页 Buffer，提取第 1 页保底封面 Buffer
-          if (buffers.length === 0) {
-            const coverBuf = await this.extractDocumentCoverPngBuffer(filePath)
-            if (coverBuf && coverBuf.length > 1024) {
-              buffers.push(coverBuf)
-            }
-          }
-
-          console.debug(
-            `[MediaConvertService][debug] 📊 页面物理渲染保底完成: 成功获取 PNG 张数=${buffers.length} 张, 源文件=${path.basename(filePath)}`
-          )
-
-          await fs.rm(tempOutDir, { recursive: true, force: true }).catch(() => {})
+        } catch {
+          // pdfjs 渲染失败优雅容错
         }
+
+        // 如果兜底渲染仍未拿到多页 Buffer，提取第 1 页保底封面 Buffer
+        if (buffers.length === 0) {
+          const coverBuf = await this.extractDocumentCoverPngBuffer(filePath)
+          if (coverBuf && coverBuf.length > 1024) {
+            buffers.push(coverBuf)
+          }
+        }
+
+        console.debug(
+          `[MediaConvertService][debug] 📊 页面物理渲染保底完成: 成功获取 PNG 张数=${buffers.length} 张, 源文件=${path.basename(filePath)}`
+        )
 
         if (needCleanTarget && targetDocPath) {
           await fs.unlink(targetDocPath).catch(() => {})
@@ -461,7 +395,33 @@ export class MediaConvertService {
           }
         }
 
-        // 2. 如果为 Office / PDF 文档，且安装了 LibreOffice：优先使用 LibreOffice 直接渲染第 1 页为高保真 PNG 封面
+        // 2. 针对 PDF 文件：优先通过 Omni 微服务 (Poppler pdftoppm) 毫秒级提取高保真封面
+        if (ext === '.pdf') {
+          try {
+            const { omniService } = await import('../omni-service')
+            const pdfCoverBuf = await omniService.getPdfCover(filePath)
+            if (pdfCoverBuf && pdfCoverBuf.length > 1024) {
+              const sharp = (await import('sharp')).default
+              await sharp(pdfCoverBuf)
+                .resize(options.maxWidth || 800, options.maxHeight || 800, {
+                  fit: 'inside',
+                  withoutEnlargement: true
+                })
+                .webp({ quality: options.quality || 80 })
+                .toFile(outputCoverPath)
+
+              const durationMs = Date.now() - tStart
+              console.debug(
+                `[MediaConvertService][debug] ⚡ Omni Poppler 渲染 PDF 高保真封面成功 (耗时=${durationMs}ms): ${fileName}`
+              )
+              return { coverPath: outputCoverPath, durationMs }
+            }
+          } catch (omniErr: any) {
+            console.debug(`[MediaConvertService] Omni PDF 封面截取跳过/降级: ${omniErr?.message || omniErr}`)
+          }
+        }
+
+        // 3. 如果为 Office / PDF 文档，且安装了 LibreOffice：优先使用 LibreOffice 直接渲染第 1 页为高保真 PNG 封面
         if (isCategory(effectiveVirtualPath, FileCategory.OFFICE) || ext === '.pdf') {
           try {
             const { libreOfficeDetector } = await import('../libreoffice-detector')

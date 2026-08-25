@@ -2430,12 +2430,18 @@ export function useOrganizeState() {
         if (window.electronAPI?.organizeBatch?.executeRename) {
           const res = await window.electronAPI.organizeBatch.executeRename(template, toOrganizeFiles)
           if (res && res.successCount > 0) {
-            toast.success(t('成功重命名 {count} 个文件', { count: res.successCount }))
+            toast.success(t('成功更新 {count} 个文件智能名称', { count: res.successCount }))
             if (res.failedCount > 0) {
-              toast.warning(t('{count} 个文件重命名失败', { count: res.failedCount }))
+              toast.warning(t('{count} 个文件更新失败', { count: res.failedCount }))
             }
-            // 刷新文件列表
+            // 刷新当前整理界面的待处理文件列表
             await loadFilesToOrganize()
+
+            // 触发全应用各页面事件监听，更新智能文件名显示
+            window.dispatchEvent(new CustomEvent('smartname-updated'))
+            window.dispatchEvent(new CustomEvent('files-updated'))
+            window.dispatchEvent(new CustomEvent('tags-updated'))
+            window.dispatchEvent(new CustomEvent('tags:updated'))
           } else {
             toast.error(t('重命名失败'))
           }

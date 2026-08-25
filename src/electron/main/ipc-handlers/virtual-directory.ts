@@ -923,10 +923,13 @@ export function registerVirtualDirectoryIPCHandlers() {
       }
     }
     // 画象时也检测最小单元并创建记录，与 processDirectory 行为一致
+    // 开关关闭时跳过可选识别器（设计工程/音频专辑/系列文件），与批量分析路径保持一致
     try {
       const adapters = await createCoreEngineAdapters()
       const recognizer = new UnitRecognitionService(adapters.fileSystem, adapters.logger)
-      const unitResult = await recognizer.recognizeDirectory(dirPath)
+      const enableUnitRecognition =
+        ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_UNIT_RECOGNITION')
+      const unitResult = await recognizer.recognizeDirectory(dirPath, !enableUnitRecognition)
       if (unitResult.isUnit) {
         const existingUnit = databaseService.db
           ?.prepare('SELECT id FROM file_units WHERE path = ?')
@@ -1031,6 +1034,19 @@ export function registerVirtualDirectoryIPCHandlers() {
 
     if (!activeContextService) return null
     return await activeContextService.getEffectiveDirectoryConfig(dirPath)
+  })
+
+  ipcMain.handle('apply-directory-naming-template-to-files', async (event, dirPath: string) => {
+    let activeContextService = directoryContextService
+    if (!activeContextService && globalLlamaIndexService) {
+      const { DirectoryContextService } =
+        await import('../../runtime-services/filesystem/directory-context-service')
+      activeContextService = new DirectoryContextService(globalLlamaIndexService)
+      setDirectoryContextService(activeContextService)
+    }
+
+    if (!activeContextService) throw new Error(t('目录上下文服务未初始化'))
+    return await activeContextService.applyNamingTemplateToDirectoryFiles(dirPath)
   })
 
   // ─── 批量重命名 IPC 处理程序 ─────────────────────────────────────────────

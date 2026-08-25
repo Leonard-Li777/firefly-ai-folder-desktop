@@ -193,7 +193,7 @@ export const useAnalyzedDirectoryState = (
     }
   }, [currentPath, currentWorkspaceDirectory])
 
-  // 监听全局标签变更事件（如批量打标保存/全局删除标签后自动刷新）
+  // 监听全局标签/智能文件名变更事件（如批量更名、批量打标保存/全局删除标签后自动刷新）
   useEffect(() => {
     const handleTagsChanged = () => {
       if (currentWorkspaceDirectory) {
@@ -203,9 +203,13 @@ export const useAnalyzedDirectoryState = (
     }
     window.addEventListener('tags-updated', handleTagsChanged)
     window.addEventListener('tags:updated', handleTagsChanged)
+    window.addEventListener('smartname-updated', handleTagsChanged)
+    window.addEventListener('files-updated', handleTagsChanged)
     return () => {
       window.removeEventListener('tags-updated', handleTagsChanged)
       window.removeEventListener('tags:updated', handleTagsChanged)
+      window.removeEventListener('smartname-updated', handleTagsChanged)
+      window.removeEventListener('files-updated', handleTagsChanged)
     }
   }, [currentWorkspaceDirectory])
 

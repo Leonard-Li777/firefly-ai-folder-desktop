@@ -675,13 +675,75 @@ export class FileProcessor {
 
         this.updateItemStatus(item.id, 'analyzing', 98)
 
+        const rawCoreSmartName = dimResult?.smartName || enhancedInfo.smartName || ''
+        const origExt = path.extname(filePath).replace(/^\./, '')
+        // rawSmartName 不需要带扩展名
+        let coreSmartName = rawCoreSmartName
+        if (coreSmartName) {
+          if (origExt) {
+            coreSmartName = coreSmartName.replace(new RegExp(`\\.${origExt}$`, 'i'), '')
+          }
+          coreSmartName = coreSmartName.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
+        }
+        if (!coreSmartName) {
+          coreSmartName = path.basename(filePath, path.extname(filePath))
+        }
+        let finalSmartName = coreSmartName
+
+        // 确保 processResult.metadata 存在并持久化 raw_smart_name（保留原始未经模板包裹、无扩展名的 AI 核心名称）
+        if (!processResult.metadata) {
+          processResult.metadata = {}
+        }
+        processResult.metadata.raw_smart_name = coreSmartName
+
+        // 检查当前目录或上级继承的生效命名模板
+        try {
+          const parentDir = path.dirname(filePath)
+          const { directoryContextService } = await import('../../../main/state')
+          const effectiveDirConfig =
+            (await directoryContextService?.getEffectiveDirectoryConfig(parentDir)) ||
+            directoryContext
+          const template = effectiveDirConfig?.namingTemplate?.trim()
+          if (template) {
+            const { NamingDSLEngine } = require('../../filesystem/naming-dsl-engine')
+            const fileRenameContext = {
+              id: 0,
+              path: filePath,
+              name: path.basename(filePath),
+              smartName: coreSmartName,
+              rawSmartName: coreSmartName,
+              size: currentStats.size,
+              extension: path.extname(filePath).replace(/^\./, ''),
+              modifiedAt: currentStats.mtime,
+              createdAt: currentStats.birthtime,
+              qualityScore: processResult.qualityScore,
+              tags: dimResult?.tags || [],
+              dimensionTags:
+                dimResult?.dimensionTags || (dimResult?.dimensions ? dimResult.dimensions : {}),
+              metadata: processResult.metadata,
+              author: processResult.metadata?.author,
+              language: processResult.metadata?.language
+            }
+            const rendered = NamingDSLEngine.renderTemplate(template, fileRenameContext, 1, true)
+            if (rendered && rendered.trim()) {
+              finalSmartName = rendered.trim()
+            }
+          }
+        } catch (templateErr) {
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            `[智能命名模板] 渲染命名模板失败: ${filePath}`,
+            templateErr
+          )
+        }
+
         // 保存本地分析结果
         const { workspaceFile } = await saveLocalAnalysisResult(
           item,
           fileFingerprint,
           processResult,
           existingBasicData.category || null,
-          dimResult?.smartName || enhancedInfo.smartName,
+          finalSmartName,
           enhancedInfo.fileType,
           thumbnailRelativePath,
           currentWorkspaceId,

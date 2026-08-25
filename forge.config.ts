@@ -1117,7 +1117,7 @@ const config: ForgeConfig = {
     // ASAR 打包配置
     asar: {
       unpackDir:
-        '{node_modules/sharp,node_modules/@img,node_modules/better-sqlite3,node_modules/extract-file-icon,node_modules/@firecrawl,node_modules/exiftool-vendored,node_modules/exiftool-vendored.exe,node_modules/exiftool-vendored.pl,node_modules/onnxruntime-node}'
+        '{node_modules/sharp,node_modules/@img,node_modules/better-sqlite3,node_modules/extract-file-icon}'
     },
 
     // extraResources 配置 - 包含llama-server二进制文件和配置文件

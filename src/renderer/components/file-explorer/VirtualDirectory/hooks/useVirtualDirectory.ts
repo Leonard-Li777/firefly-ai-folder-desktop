@@ -236,20 +236,6 @@ export const useVirtualDirectory = () => {
   }, [loadVDirs])
 
   useEffect(() => {
-    const handleTagsChanged = () => {
-      if (selectedId && vdirSidebarTab === 'dimensions') {
-        loadVdirDimensions()
-      }
-    }
-    window.addEventListener('tags-updated', handleTagsChanged)
-    window.addEventListener('tags:updated', handleTagsChanged)
-    return () => {
-      window.removeEventListener('tags-updated', handleTagsChanged)
-      window.removeEventListener('tags:updated', handleTagsChanged)
-    }
-  }, [selectedId, vdirSidebarTab, loadVdirDimensions])
-
-  useEffect(() => {
     setSelectedTags([])
   }, [selectedId])
 
@@ -298,6 +284,27 @@ export const useVirtualDirectory = () => {
       setIsFilteredFilesLoading(false)
     }
   }, [selectedId, selectedTags, unionMode, virtualDirectoryKeyword])
+
+  useEffect(() => {
+    const handleTagsChanged = () => {
+      if (selectedId && vdirSidebarTab === 'dimensions') {
+        loadVdirDimensions()
+      }
+      if (selectedId && selectedTags.length > 0) {
+        loadFilteredFilesByTags()
+      }
+    }
+    window.addEventListener('tags-updated', handleTagsChanged)
+    window.addEventListener('tags:updated', handleTagsChanged)
+    window.addEventListener('smartname-updated', handleTagsChanged)
+    window.addEventListener('files-updated', handleTagsChanged)
+    return () => {
+      window.removeEventListener('tags-updated', handleTagsChanged)
+      window.removeEventListener('tags:updated', handleTagsChanged)
+      window.removeEventListener('smartname-updated', handleTagsChanged)
+      window.removeEventListener('files-updated', handleTagsChanged)
+    }
+  }, [selectedId, vdirSidebarTab, selectedTags.length, loadVdirDimensions, loadFilteredFilesByTags])
 
   useEffect(() => {
     if (selectedTags.length > 0) {

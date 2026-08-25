@@ -1,11 +1,12 @@
 /**
  * Magika Service - AI 驱动的文件类型检测服务
- * 基于 Node.js 原生 ONNX 模型 (@google/magika) 实现高精度文件识别
+ * 全面集成 firefly-omni Rust 神经网络识别，具备完整的 7 项元数据协议与扩展名降级兜底
  */
 
 import * as path from 'path'
 import { LogCategory, logger } from '@firefly/shared'
 import { FileCategory } from '@firefly/types'
+import { omniService } from './omni-service'
 
 export class MagikaService {
   private static instance: MagikaService
@@ -20,19 +21,16 @@ export class MagikaService {
   }
 
   /**
-   * 检测文件类型
+   * 检测文件类型 (优先通过 Omni 原生服务识别)
    */
   public async identifyFile(filePath: string): Promise<FileCategory> {
     try {
-      const { unifiedWorkerManager } = await import('./unified-worker-service')
-      const result = await unifiedWorkerManager.postJson<FileCategory>('/api/extract/identify', {
-        filePath
-      })
+      const result = await omniService.identifyMagika(filePath)
       if (result && result.label) {
         return result
       }
     } catch (err) {
-      logger.debug(LogCategory.SYSTEM, `[Magika] 常驻微服务识别异常: ${filePath}`, err)
+      logger.debug(LogCategory.SYSTEM, `[Magika] Omni 服务识别异常: ${filePath}`, err)
     }
 
     logger.debug(LogCategory.SYSTEM, `[Magika] 使用扩展名兜底: ${filePath}`)
@@ -65,8 +63,8 @@ export class MagikaService {
       extensions: [ext],
       group: '',
       is_text: true,
-      label: '',
-      mime_type: '',
+      label: ext || 'bin',
+      mime_type: 'application/octet-stream',
       score: 0
     }
   }

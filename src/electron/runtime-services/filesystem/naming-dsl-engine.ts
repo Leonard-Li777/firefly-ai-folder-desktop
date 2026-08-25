@@ -1,8 +1,31 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { BatchRenamePreviewItem, BatchRenameResult } from '@firefly/types'
-import { LogCategory, logger, isExtensionTriggerTagName } from '@firefly/shared'
+import { LogCategory, logger, isExtensionTriggerTagName, isDimensionApplicableToFile } from '@firefly/shared'
 import { t } from '@app/languages'
+
+/**
+ * 细分维度与适用文件类型的基础类型限制表（兜底防脏数据与跨类型误匹配）
+ * 函数形式，key 通过 [t('中文')] 动态国际化，保证语言切换后仍能匹配当前语言的维度名
+ */
+export function DEFAULT_DIMENSION_TYPE_RESTRICTIONS(): Record<string, string[]> {
+  return {
+    [t('视频细分')]: ['video'],
+    [t('图片细分')]: ['image'],
+    [t('音频细分')]: ['audio'],
+    [t('文档细分')]: ['document', 'text'],
+    [t('文本细分')]: ['text', 'document'],
+    [t('电子书细分')]: ['ebook', 'document'],
+    [t('源代码细分')]: ['code'],
+    [t('程序细分')]: ['executable'],
+    [t('应用数据细分')]: ['application'],
+    [t('数据库细分')]: ['database'],
+    [t('磁盘映像细分')]: ['diskimage', 'archive'],
+    [t('系统文件细分')]: ['filesystem'],
+    [t('压缩包细分')]: ['archive'],
+    [t('字体细分')]: ['font']
+  }
+}
 
 export interface FileRenameContext {
   id: number
@@ -22,18 +45,15 @@ export interface FileRenameContext {
   language?: string
 }
 
-/**
- * 常用/精选命名模板预置列表
- */
-export const PRESET_NAMING_TEMPLATES = (): Array<{
+const getPresetList = (): Array<{
   name: string
   template: string
   description: string
 }> => [
   {
-    name: `${t('智能文件名')} + ${t('日期')}`,
-    template: '{SMART_NAME}_{MOD:YYYY-MM-DD}',
-    description: t('标准智能文件名后追加修改日期')
+    name: `${t('文件类型')} + ${t('智能文件名')} + ${t('日期')}`,
+    template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{MOD:YYYY-MM-DD}`,
+    description: t('文件类型前置，后接智能文件名与修改日期')
   },
   {
     name: `${t('修改日期')} + ${t('智能文件名')}`,
@@ -52,12 +72,12 @@ export const PRESET_NAMING_TEMPLATES = (): Array<{
   },
   {
     name: `${t('智能文件名')} + ${t('分辨率')} + ${t('序号')}`,
-    template: `{SMART_NAME}_{META:${t('分辨率')}}_{SEQ:01}`,
+    template: `{SMART_NAME}_<{META:${t('分辨率')}}>_({SEQ:01})`,
     description: t('多模态媒体专用命名')
   },
   {
     name: `${t('创建日期')} + ${t('原文件名')} + ${t('序号')}`,
-    template: '{CRE:YYYY-MM-DD}_{ORIG_NAME}_{SEQ:001}',
+    template: '{CRE:YYYY-MM-DD}_{ORIG_NAME}_({SEQ:001})',
     description: t('保留原文件名与三位序号')
   },
   {
@@ -67,10 +87,24 @@ export const PRESET_NAMING_TEMPLATES = (): Array<{
   },
   {
     name: t('全维度属性组合'),
-    template: `[{TAG:${t('题材')}}]_{SMART_NAME}_{MOD:YYYY-MM-DD}_{SEQ:01}`,
+    template: `[{TAG:${t('题材')}}]_{SMART_NAME}_{MOD:YYYY-MM-DD}_({SEQ:01})`,
     description: t('题材、名称、日期与序号复合命名')
   }
 ]
+
+export const PRESET_NAMING_TEMPLATES: any = new Proxy(getPresetList as any, {
+  get(target, prop, receiver) {
+    const list = getPresetList()
+    if (prop in list) {
+      const val = (list as any)[prop]
+      return typeof val === 'function' ? val.bind(list) : val
+    }
+    return Reflect.get(target, prop, receiver)
+  },
+  apply(_target, _thisArg, _argArray) {
+    return getPresetList()
+  }
+})
 
 export class NamingDSLEngine {
   /**
@@ -121,12 +155,15 @@ export class NamingDSLEngine {
   public static collapseSeparators(name: string): string {
     if (!name) return ''
     let cleaned = name
-    // 1. 先清理文件名非法字符 (Windows / Unix) 并替换为空格
-    cleaned = cleaned.replace(/[\\/:*?"<>|]/g, ' ')
-    // 2. 清理空括号如 [] 或 () 或 {}
+    // 1. 清理空括号及无评分的空 [Q] 或 [q] 或 (Q) 标识
+    cleaned = cleaned.replace(/\[\s*Q?\s*\]/gi, '')
+    cleaned = cleaned.replace(/\(\s*Q?\s*\)/gi, '')
     cleaned = cleaned.replace(/\[\s*\]/g, '')
     cleaned = cleaned.replace(/\(\s*\)/g, '')
     cleaned = cleaned.replace(/\{\s*\}/g, '')
+    cleaned = cleaned.replace(/<\s*>/g, '')
+    // 2. 清理文件名非法字符 (Windows / Unix) 并替换为空格
+    cleaned = cleaned.replace(/[\\/:*?"|]/g, ' ')
     // 3. 折叠多个连续下划线、减号或连续空格（保留单个标准空格与合法「 - 」连接符）
     cleaned = cleaned.replace(/_+/g, '_')
     cleaned = cleaned.replace(/-{2,}/g, '-')
@@ -174,6 +211,18 @@ export class NamingDSLEngine {
       if (!dim || val === undefined || val === null) return
       const cleanDim = String(dim).trim()
       if (!cleanDim) return
+
+      // 验证维度是否适用于当前文件类型（防止从脏数据读取到不匹配的细分标签）
+      const filePathOrName = context.path || context.name || ''
+      if (filePathOrName) {
+        const restrictionMap = DEFAULT_DIMENSION_TYPE_RESTRICTIONS()
+        const types =
+          restrictionMap[cleanDim] ||
+          restrictionMap[cleanDim.toLowerCase()]
+        if (types && !isDimensionApplicableToFile(types, filePathOrName)) {
+          return
+        }
+      }
 
       let candidateTags: string[] = []
       if (Array.isArray(val)) {
@@ -234,9 +283,7 @@ export class NamingDSLEngine {
       if (validTags.length > 0) {
         const lastTag = validTags[validTags.length - 1]
         dimTagsMap[dim] = lastTag
-        dimTagsMap[t(dim)] = lastTag
         dimTagsMap[dim.toLowerCase()] = lastTag
-        dimTagsMap[t(dim).toLowerCase()] = lastTag
       }
     }
 
@@ -314,9 +361,20 @@ export class NamingDSLEngine {
       NamingDSLEngine.formatDate(creDate, pattern)
     )
 
-    // 6. {TAG:维度名}（多语言双向映射解析）
+    // 6. {TAG:维度名}
     rendered = rendered.replace(/\{TAG:([^}]+)\}/g, (_, dimName) => {
       const dimKey = String(dimName).trim()
+      const filePathOrName = context.path || context.name || ''
+      if (filePathOrName) {
+        const restrictionMap = DEFAULT_DIMENSION_TYPE_RESTRICTIONS()
+        const types =
+          restrictionMap[dimKey] ||
+          restrictionMap[dimKey.toLowerCase()]
+        if (types && !isDimensionApplicableToFile(types, filePathOrName)) {
+          return '' // 目标维度不适用于当前文件类型（如在图片/文档上请求视频细分）
+        }
+      }
+
       if (dimTagsMap[dimKey]) {
         return dimTagsMap[dimKey]
       }
@@ -325,14 +383,9 @@ export class NamingDSLEngine {
         return dimTagsMap[lowerKey]
       }
 
-      // 遍历维度映射表进行多语言 t() 语义模糊与双向匹配
+      // 遍历维度映射表进行不区分大小写匹配
       for (const [k, v] of Object.entries(dimTagsMap)) {
-        if (
-          k.toLowerCase() === lowerKey ||
-          t(k).toLowerCase() === lowerKey ||
-          k.toLowerCase() === t(dimKey).toLowerCase() ||
-          t(k).toLowerCase() === t(dimKey).toLowerCase()
-        ) {
+        if (k.toLowerCase() === lowerKey) {
           return v
         }
       }
@@ -350,82 +403,341 @@ export class NamingDSLEngine {
       const localizedCodec = t('编码').toLowerCase()
       const localizedCodecFormat = t('编码格式').toLowerCase()
 
-      // 分辨率 (Resolution)
-      if (key === '分辨率' || key === 'resolution' || key === 'res' || key === localizedRes) {
-        const w =
-          metaObj.width ||
-          metaObj.image_width ||
-          metaObj.video_width ||
-          metaObj[t('宽度')] ||
+      // 1. 分辨率 (Resolution)
+      if (
+        key === '分辨率' ||
+        key === 'resolution' ||
+        key === 'res' ||
+        key === 'imagesize' ||
+        key === 'image_size' ||
+        key === localizedRes
+      ) {
+        let w =
+          metaObj.ImageWidth ??
+          metaObj.imageWidth ??
+          metaObj.image_width ??
+          metaObj.SourceImageWidth ??
+          metaObj.ExifImageWidth ??
+          metaObj.VideoWidth ??
+          metaObj.videoWidth ??
+          metaObj.video_width ??
+          metaObj.width ??
+          metaObj.Width ??
+          metaObj[t('宽度')] ??
           metaObj['宽度']
-        const h =
-          metaObj.height ||
-          metaObj.image_height ||
-          metaObj.video_height ||
-          metaObj[t('高度')] ||
+
+        let h =
+          metaObj.ImageHeight ??
+          metaObj.imageHeight ??
+          metaObj.image_height ??
+          metaObj.SourceImageHeight ??
+          metaObj.ExifImageHeight ??
+          metaObj.VideoHeight ??
+          metaObj.videoHeight ??
+          metaObj.video_height ??
+          metaObj.height ??
+          metaObj.Height ??
+          metaObj[t('高度')] ??
           metaObj['高度']
-        if (w && h) return `${w}x${h}`
-        if (metaObj.resolution || metaObj[t('分辨率')] || metaObj['分辨率']) {
-          return String(metaObj.resolution || metaObj[t('分辨率')] || metaObj['分辨率'])
+
+        if (!w || !h) {
+          for (const [k, v] of Object.entries(metaObj)) {
+            const lk = k.toLowerCase()
+            if (!w && (lk === 'imagewidth' || lk === 'width' || lk === 'videowidth' || lk === 'sourceimagewidth')) {
+              w = v
+            }
+            if (!h && (lk === 'imageheight' || lk === 'height' || lk === 'videoheight' || lk === 'sourceimageheight')) {
+              h = v
+            }
+          }
+        }
+
+        if (w && h) {
+          const wNum = typeof w === 'object' ? (w.value ?? w.rawValue ?? '') : w
+          const hNum = typeof h === 'object' ? (h.value ?? h.rawValue ?? '') : h
+          if (wNum && hNum) return `${wNum}x${hNum}`
+        }
+
+        const resStr =
+          metaObj.ImageSize ??
+          metaObj.imageSize ??
+          metaObj.image_size ??
+          metaObj.Resolution ??
+          metaObj.resolution ??
+          metaObj[t('分辨率')] ??
+          metaObj['分辨率']
+
+        if (resStr) {
+          const val = typeof resStr === 'object' ? (resStr.value ?? resStr.rawValue ?? '') : resStr
+          if (val) return String(val).trim()
         }
       }
 
-      // 时长 (Duration)
-      if (key === '时长' || key === 'duration' || key === 'dur' || key === localizedDur) {
-        const dur =
-          metaObj.duration ||
-          metaObj.durationText ||
-          metaObj.duration_seconds ||
-          metaObj[t('时长')] ||
+      // 2. 时长 (Duration)
+      if (
+        key === '时长' ||
+        key === 'duration' ||
+        key === 'dur' ||
+        key === 'trackduration' ||
+        key === 'mediaduration' ||
+        key === 'playtime' ||
+        key === localizedDur
+      ) {
+        let rawDur =
+          metaObj.Duration ??
+          metaObj.duration ??
+          metaObj.durationText ??
+          metaObj.duration_seconds ??
+          metaObj.durationSeconds ??
+          metaObj.duration_ms ??
+          metaObj.durationMs ??
+          metaObj.Duration_ms ??
+          metaObj.DurationMs ??
+          metaObj.TrackDuration ??
+          metaObj.track_duration ??
+          metaObj.MediaDuration ??
+          metaObj.media_duration ??
+          metaObj.PlayTime ??
+          metaObj.play_time ??
+          metaObj.AudioDuration ??
+          metaObj.VideoDuration ??
+          metaObj.Length ??
+          metaObj.length ??
+          metaObj[t('时长')] ??
           metaObj['时长']
-        if (dur) {
-          if (typeof dur === 'number') {
-            const m = Math.floor(dur / 60)
-            const s = Math.floor(dur % 60)
+
+        // 容错：不区分大小写与嵌套对象提取
+        if (rawDur === undefined || rawDur === null) {
+          for (const [k, v] of Object.entries(metaObj)) {
+            const lk = k.toLowerCase()
+            if (
+              lk === 'duration' ||
+              lk === 'trackduration' ||
+              lk === 'mediaduration' ||
+              lk === 'playtime' ||
+              lk === 'duration_ms' ||
+              lk === 'durationms' ||
+              lk === '时长' ||
+              lk === localizedDur
+            ) {
+              rawDur = v
+              break
+            }
+          }
+        }
+
+        if (rawDur !== undefined && rawDur !== null) {
+          if (typeof rawDur === 'object') {
+            rawDur = rawDur.seconds ?? rawDur.rawValue ?? rawDur.value ?? rawDur.duration ?? ''
+          }
+
+          let totalSeconds = 0
+
+          if (typeof rawDur === 'number') {
+            totalSeconds = rawDur > 100000 ? Math.round(rawDur / 1000) : Math.round(rawDur)
+          } else {
+            const durStr = String(rawDur).trim()
+            const secMatch = durStr.match(/^([\d.]+)\s*s(?:ec(?:onds?)?)?$/i)
+            if (secMatch) {
+              totalSeconds = Math.round(parseFloat(secMatch[1]))
+            } else if (durStr.includes(':')) {
+              const parts = durStr.split(':').map(p => parseFloat(p.trim()) || 0)
+              if (parts.length === 3) {
+                totalSeconds = Math.round(parts[0] * 3600 + parts[1] * 60 + parts[2])
+              } else if (parts.length === 2) {
+                totalSeconds = Math.round(parts[0] * 60 + parts[1])
+              }
+            } else if (/^\d+(\.\d+)?$/.test(durStr)) {
+              const num = parseFloat(durStr)
+              totalSeconds = num > 100000 ? Math.round(num / 1000) : Math.round(num)
+            }
+          }
+
+          if (totalSeconds > 0) {
+            const h = Math.floor(totalSeconds / 3600)
+            const m = Math.floor((totalSeconds % 3600) / 60)
+            const s = totalSeconds % 60
             const mm = String(m).padStart(2, '0')
             const ss = String(s).padStart(2, '0')
+            if (h > 0) {
+              const hh = String(h).padStart(2, '0')
+              return t('{hh}时{mm}分{ss}秒', { hh, mm, ss })
+            }
             return t('{mm}分{ss}秒', { mm, ss })
+          } else if (typeof rawDur === 'string' && rawDur.trim()) {
+            return rawDur.trim().replace(/[\\/:*?"<>|]/g, '')
           }
-          return String(dur)
         }
       }
 
-      // 页数 (Pages)
+      // 3. 页数 (Pages / Page Count)
       if (
         key === '页数' ||
         key === 'pages' ||
         key === 'page_count' ||
+        key === 'pagecount' ||
         key === 'page' ||
         key === localizedPages
       ) {
-        const pages =
-          metaObj.pages ||
-          metaObj.page_count ||
-          metaObj.pages_count ||
-          metaObj.pageCount ||
-          metaObj[t('页数')] ||
+        let pagesVal =
+          metaObj.PageCount ??
+          metaObj.pageCount ??
+          metaObj.Pages ??
+          metaObj.pages ??
+          metaObj.page_count ??
+          metaObj.pages_count ??
+          metaObj.NumberOfPages ??
+          metaObj.number_of_pages ??
+          metaObj.SlideCount ??
+          metaObj.slide_count ??
+          metaObj.SheetCount ??
+          metaObj.sheet_count ??
+          metaObj[t('页数')] ??
           metaObj['页数']
-        if (pages !== undefined && pages !== null) {
-          return typeof pages === 'number' ? `${pages}P` : String(pages)
+
+        if (pagesVal === undefined || pagesVal === null) {
+          for (const [k, v] of Object.entries(metaObj)) {
+            const lk = k.toLowerCase()
+            if (
+              lk === 'pagecount' ||
+              lk === 'pages' ||
+              lk === 'page_count' ||
+              lk === 'numberofpages' ||
+              lk === 'slidecount' ||
+              lk === 'sheetcount' ||
+              lk === '页数' ||
+              lk === localizedPages
+            ) {
+              pagesVal = v
+              break
+            }
+          }
+        }
+
+        if (pagesVal !== undefined && pagesVal !== null) {
+          if (typeof pagesVal === 'object') {
+            pagesVal = pagesVal.value ?? pagesVal.rawValue ?? pagesVal.count ?? ''
+          }
+          const num = typeof pagesVal === 'number' ? pagesVal : parseInt(String(pagesVal), 10)
+          if (!isNaN(num) && num > 0) {
+            return `${num}P`
+          } else if (String(pagesVal).trim()) {
+            return `${String(pagesVal).trim()}P`
+          }
         }
       }
 
-      // 编码格式 (Codec / Format)
+      // 4. 编码格式 (Codec / Media Format)
       if (
         key === '编码' ||
         key === 'codec' ||
         key === '编码格式' ||
+        key === 'video_codec' ||
+        key === 'videocodec' ||
+        key === 'audio_codec' ||
+        key === 'audiocodec' ||
+        key === 'compressor' ||
         key === localizedCodec ||
         key === localizedCodecFormat
       ) {
-        const codec =
-          metaObj.codec ||
-          metaObj.video_codec ||
-          metaObj.audio_codec ||
-          metaObj.format ||
-          metaObj[t('编码')] ||
-          metaObj['编码']
-        if (codec) return String(codec).toUpperCase()
+        // 优先提取真正的音视频媒体编码字段，避免读取通用的 MIME 类型或基础压缩算法
+        let codecVal =
+          metaObj.CompressorID ??
+          metaObj.CompressorName ??
+          metaObj.VideoCodec ??
+          metaObj.videoCodec ??
+          metaObj.video_codec ??
+          metaObj.AudioCodec ??
+          metaObj.audioCodec ??
+          metaObj.audio_codec ??
+          metaObj.AudioFormat ??
+          metaObj.audio_format ??
+          metaObj.CodecID ??
+          metaObj.codecID ??
+          metaObj.codec_id ??
+          metaObj.Codec ??
+          metaObj.codec ??
+          metaObj.FourCC ??
+          metaObj.fourcc ??
+          metaObj.VideoFormat ??
+          metaObj.video_format ??
+          metaObj.Compressor ??
+          metaObj[t('编码')] ??
+          metaObj['编码'] ??
+          metaObj[t('编码格式')] ??
+          metaObj['编码格式']
+
+        if (codecVal === undefined || codecVal === null) {
+          for (const [k, v] of Object.entries(metaObj)) {
+            const lk = k.toLowerCase()
+            if (
+              lk === 'compressorid' ||
+              lk === 'compressorname' ||
+              lk === 'videocodec' ||
+              lk === 'video_codec' ||
+              lk === 'audiocodec' ||
+              lk === 'audio_codec' ||
+              lk === 'codecid' ||
+              lk === 'codec' ||
+              lk === 'fourcc' ||
+              lk === 'audioformat' ||
+              lk === 'videoformat' ||
+              lk === 'compressor'
+            ) {
+              codecVal = v
+              break
+            }
+          }
+        }
+
+        // 若仍为空，尝试 Format 与 Compression 兜底
+        if (codecVal === undefined || codecVal === null) {
+          codecVal = metaObj.Format ?? metaObj.format ?? metaObj.Compression ?? metaObj.compression
+        }
+
+        if (codecVal !== undefined && codecVal !== null) {
+          if (typeof codecVal === 'object') {
+            codecVal = codecVal.value ?? codecVal.rawValue ?? codecVal.name ?? ''
+          }
+          const cStr = String(codecVal).trim()
+          const upper = cStr.toUpperCase()
+
+          // 过滤无意义的 MIME 类型、容器类型或文件内部压缩算法（如 PDF 的 application/pdf、PNG 的 Deflate/Inflate 等）
+          const isInvalidCodec =
+            upper.includes('/') ||
+            upper.includes('APPLICATION') ||
+            upper.includes('DEFLATE') ||
+            upper.includes('INFLATE') ||
+            upper.includes('ZLIB') ||
+            upper.includes('GZIP') ||
+            upper.includes('ZIP') ||
+            upper === 'PDF' ||
+            upper === 'PNG' ||
+            upper === 'NONE' ||
+            upper === 'UNCOMPRESSED' ||
+            upper === 'UNKNOWN' ||
+            upper === 'STANDARD' ||
+            upper === 'BINARY'
+
+          if (isInvalidCodec) {
+            return ''
+          }
+
+          // 核心媒体编码名称标准化映射
+          if (upper === 'AVC1' || upper === 'H.264' || upper === 'H264' || upper === 'AVC') return 'H264'
+          if (upper === 'HEV1' || upper === 'HVC1' || upper === 'H.265' || upper === 'H265' || upper === 'HEVC') return 'H265'
+          if (upper.includes('PRORES') || upper.startsWith('AP')) return 'ProRes'
+          if (upper === 'MP4A-40-2' || upper === 'MP4A' || upper === 'AAC') return 'AAC'
+          if (upper === 'AV01' || upper === 'AV1') return 'AV1'
+          if (upper === 'VP09' || upper === 'VP9') return 'VP9'
+          if (upper === 'VP08' || upper === 'VP8') return 'VP8'
+          if (upper === 'FLAC') return 'FLAC'
+          if (upper === 'MP3' || upper === '.MP3') return 'MP3'
+          if (upper === 'OPUS') return 'Opus'
+          if (upper === 'VORBIS') return 'Vorbis'
+
+          return cStr.replace(/[\\/:*?"<>|]/g, '').trim().toUpperCase()
+        }
       }
 
       // 常规自定义元数据字段回退匹配
@@ -483,12 +795,22 @@ export class NamingDSLEngine {
             ? metaObj.quality_score
             : undefined
 
-    rendered = rendered.replace(/\{QUALITY_SCORE\}/g, () => {
-      if (qualityVal !== undefined && qualityVal !== null && !isNaN(Number(qualityVal))) {
-        return Number(qualityVal).toFixed(1)
-      }
-      return ''
-    })
+    const hasValidQuality =
+      qualityVal !== undefined &&
+      qualityVal !== null &&
+      !isNaN(Number(qualityVal)) &&
+      Number(qualityVal) > 0
+
+    if (hasValidQuality) {
+      const qScoreStr = Number(qualityVal).toFixed(1)
+      rendered = rendered.replace(/\{QUALITY_SCORE\}/g, qScoreStr)
+    } else {
+      // 如果没有有效质量评分，则将 [Q{QUALITY_SCORE}]、Q{QUALITY_SCORE}、{QUALITY_SCORE} 整体优雅移除
+      rendered = rendered.replace(/\[\s*Q\s*\{QUALITY_SCORE\}\s*\]/gi, '')
+      rendered = rendered.replace(/\(\s*Q\s*\{QUALITY_SCORE\}\s*\)/gi, '')
+      rendered = rendered.replace(/Q\s*\{QUALITY_SCORE\}/gi, '')
+      rendered = rendered.replace(/\{QUALITY_SCORE\}/g, '')
+    }
 
     // 11. {SEQ:01}, {SEQ:001}, {SEQ:03}, {SEQ:1}
     const currentSeq = seqIndex > 0 ? seqIndex : 1
@@ -506,6 +828,44 @@ export class NamingDSLEngine {
       return finalBaseName
     }
     return finalBaseName || baseSmartName || baseOrigName || 'untitled'
+  }
+
+  /**
+   * 剥离 DSL 模板中包裹在各变量外围的类型修饰符（如 []、()、<>）
+   */
+  public static stripTypeDelimiters(template: string): string {
+    if (!template) return ''
+    let res = template
+    // 1. 剥离包裹在维度与作者/质量分/语言外围的 []
+    res = res.replace(/\[\s*(\{TAG:[^}]+\})\s*\]/gi, '$1')
+    res = res.replace(/\[\s*(\{AUTHOR\})\s*\]/gi, '$1')
+    res = res.replace(/\[\s*Q?(\{QUALITY_SCORE\})\s*\]/gi, '$1')
+    res = res.replace(/\[\s*(\{LANG\})\s*\]/gi, '$1')
+    // 2. 剥离包裹在序号外围的 ()
+    res = res.replace(/\(\s*(\{SEQ(?::[^}]+)?\})\s*\)/gi, '$1')
+    // 3. 剥离包裹在元数据外围的 <>
+    res = res.replace(/<\s*(\{META:[^}]+\})\s*>/gi, '$1')
+    // 4. 清理任何孤立的空括号
+    res = res.replace(/\[\s*\]/g, '')
+    res = res.replace(/\(\s*\)/g, '')
+    res = res.replace(/<\s*>/g, '')
+    // 5. 优雅折叠多余下划线
+    res = res.replace(/__+/g, '_').replace(/^\s*[_\-]|[\-_]\s*$/g, '')
+    return res
+  }
+
+  /**
+   * 为 DSL 模板中未包裹的变量添加规范的类型修饰符（标签 []、序号 ()、元数据 <>）
+   */
+  public static applyTypeDelimiters(template: string): string {
+    if (!template) return ''
+    let res = NamingDSLEngine.stripTypeDelimiters(template)
+    res = res.replace(/\{TAG:([^}]+)\}/g, '[{TAG:$1}]')
+    res = res.replace(/\{AUTHOR\}/g, '[{AUTHOR}]')
+    res = res.replace(/\{QUALITY_SCORE\}/g, '[Q{QUALITY_SCORE}]')
+    res = res.replace(/\{SEQ(:[^}]+)?\}/g, '({SEQ$1})')
+    res = res.replace(/\{META:([^}]+)\}/g, '<{META:$1}>')
+    return res
   }
 
   /**
@@ -563,7 +923,7 @@ export class NamingDSLEngine {
     template: string,
     files: FileRenameContext[]
   ): BatchRenamePreviewItem[] {
-    const tokenRegex = /(\[[^\]]+\]|\{[^}]+\}|[^\s_{}\[\]\-]+|[\s_\-])/g
+    const tokenRegex = /(\[[^\]]+\]|\([^\)]+\)|<[^>]+>|\{[^}]+\}|[^\s_{}\[\]\(\)<>\-]+|[\s_\-])/g
     const pieces = (template || '').match(tokenRegex) || []
 
     return (files || []).map((file, idx) => {
@@ -594,7 +954,8 @@ export class NamingDSLEngine {
         }> = []
 
         for (const p of pieces) {
-          const isToken = p.startsWith('{') || p.startsWith('[')
+          const isToken =
+            p.startsWith('{') || p.startsWith('[') || p.startsWith('(') || p.startsWith('<')
           const cat = NamingDSLEngine.getTokenCategory(p)
           if (isToken) {
             const val = NamingDSLEngine.renderTemplate(p, file, idx + 1, false)
@@ -678,12 +1039,17 @@ export class NamingDSLEngine {
           segments.push({ text: dotExt, type: 'literal' })
         }
 
+        const origBaseName = (file.name || path.basename(file.path || ''))
+          .replace(new RegExp(`\\.${rawExt}$`, 'i'), '')
+          .replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
+          .trim()
+
         return {
           fileId: file.id,
           path: file.path,
           currentName: file.name,
           newName,
-          rawSmartName: smartNameValue || baseName,
+          rawSmartName: smartNameValue || origBaseName,
           segments,
           hasError: false
         }
@@ -701,7 +1067,7 @@ export class NamingDSLEngine {
   }
 
   /**
-   * 批量执行重命名并同步更新数据库
+   * 批量执行重命名（仅更新数据库中的智能文件名字段 smart_name 与元数据，不修改物理真实文件名与路径）
    */
   public static async executeBatchRename(
     template: string,
@@ -711,84 +1077,72 @@ export class NamingDSLEngine {
     let successCount = 0
     let failedCount = 0
     const items: BatchRenameResult['items'] = []
+    const affectedDirs = new Set<string>()
 
-    for (const preview of previewList) {
-      if (preview.hasError) {
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const preview = previewList[i]
+      if (!preview || preview.hasError) {
         failedCount++
         items.push({
-          fileId: preview.fileId,
-          oldPath: preview.path,
-          newPath: preview.path,
+          fileId: preview?.fileId ?? file.id,
+          oldPath: preview?.path ?? file.path,
+          newPath: preview?.path ?? file.path,
           success: false,
-          error: preview.errorMessage
-        })
-        continue
-      }
-
-      const dir = path.dirname(preview.path)
-      const targetPath = path.join(dir, preview.newName)
-
-      // 如果目标文件名与当前相同，跳过物理重命名但记录成功
-      if (preview.path === targetPath) {
-        successCount++
-        items.push({
-          fileId: preview.fileId,
-          oldPath: preview.path,
-          newPath: targetPath,
-          success: true
+          error: preview?.errorMessage || t('生成新文件名异常')
         })
         continue
       }
 
       try {
-        // 物理重命名
-        if (fs.existsSync(preview.path)) {
-          // 如果目标路径已存在其它文件，自动递增处理冲突
-          let finalTargetPath = targetPath
-          if (fs.existsSync(targetPath)) {
-            const ext = path.extname(preview.newName)
-            const base = path.basename(preview.newName, ext)
-            let counter = 1
-            while (fs.existsSync(finalTargetPath)) {
-              finalTargetPath = path.join(dir, `${base}_${counter}${ext}`)
-              counter++
-            }
-          }
-
-          fs.renameSync(preview.path, finalTargetPath)
-          const finalNewName = path.basename(finalTargetPath)
-
-          // 同步更新 SQLite
-          await NamingDSLEngine.updateFileRecordInDb(preview.fileId, finalTargetPath, finalNewName, template)
-
-          successCount++
-          items.push({
-            fileId: preview.fileId,
-            oldPath: preview.path,
-            newPath: finalTargetPath,
-            success: true
-          })
-        } else {
-          failedCount++
-          items.push({
-            fileId: preview.fileId,
-            oldPath: preview.path,
-            newPath: targetPath,
-            success: false,
-            error: t('源文件不存在')
-          })
+        if (file.path) {
+          affectedDirs.add(path.dirname(file.path))
         }
+
+        // 渲染纯智能文件名（不含扩展名）
+        const renderedSmartName = NamingDSLEngine.renderTemplate(template, file, i + 1, true)
+        const newSmartName = renderedSmartName || preview.rawSmartName || file.name
+
+        // 同步更新 SQLite 中的 files.smart_name 及 file_contents.metadata
+        await NamingDSLEngine.updateFileSmartNameInDb(file.id, newSmartName, template)
+
+        successCount++
+        items.push({
+          fileId: file.id,
+          oldPath: file.path,
+          newPath: file.path,
+          success: true
+        })
       } catch (e: any) {
-        logger.error(LogCategory.FILE_ORGANIZATION, `批量更名失败 [${preview.path} -> ${targetPath}]:`, e)
+        logger.error(
+          LogCategory.FILE_ORGANIZATION,
+          `批量更新智能文件名失败 [fileId=${file.id}]:`,
+          e
+        )
         failedCount++
         items.push({
-          fileId: preview.fileId,
-          oldPath: preview.path,
-          newPath: targetPath,
+          fileId: file.id,
+          oldPath: file.path,
+          newPath: file.path,
           success: false,
-          error: e?.message || t('文件重命名 IO 异常')
+          error: e?.message || t('更新智能文件名异常')
         })
       }
+    }
+
+    // 主进程向所有窗口发送 directory-files-updated 事件以驱动各页面刷新
+    try {
+      const { BrowserWindow } = require('electron')
+      const windows = BrowserWindow.getAllWindows()
+      for (const dir of affectedDirs) {
+        windows.forEach((win: any) => {
+          if (!win.isDestroyed()) {
+            win.webContents.send('directory-files-updated', dir)
+          }
+        })
+      }
+    } catch {
+      /* ignore if in test environment or headless */
     }
 
     return {
@@ -800,58 +1154,72 @@ export class NamingDSLEngine {
   }
 
   /**
-   * 更新 SQLite 数据库中的文件名、路径与命名模板元数据
+   * 更新 SQLite 数据库中的 smart_name 与命名模板元数据（仅更改智能文件名字段，不改变物理真实文件）
    */
-  private static async updateFileRecordInDb(
+  private static async updateFileSmartNameInDb(
     fileId: number,
-    newPath: string,
-    newName: string,
+    newSmartName: string,
     namingTemplate: string
   ): Promise<void> {
     try {
+      const { databaseService } = await import('../database/database-service')
       await databaseService.ensureInitialized()
       const db = databaseService.db
       if (!db) return
 
-      // 更新 files 表中的文件名和路径
+      // 仅更新 files 表中的 smart_name，严禁修改 path 和 name
       db.prepare(`
         UPDATE files 
-        SET path = ?, name = ?, updated_at = CURRENT_TIMESTAMP
+        SET smart_name = ?, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
-      `).run(newPath, newName, fileId)
+      `).run(newSmartName, fileId)
 
-      // 更新 workspace_files 表中的路径
-      db.prepare(`
-        UPDATE workspace_files
-        SET path = ?
-        WHERE file_id = ?
-      `).run(newPath, fileId)
+      // 读取 files 表指纹并更新 file_contents 表的 metadata（保留 raw_smart_name 并记录 naming_template）
+      const fileRow = db.prepare(`
+        SELECT file_fingerprint, name, path, smart_name FROM files WHERE id = ?
+      `).get(fileId) as { file_fingerprint: string; name: string; path: string; smart_name: string } | undefined
 
-      // 读取 file_contents 表已有元数据并合并 naming_template
-      const contentRow = db.prepare(`
-        SELECT file_fingerprint, metadata FROM file_contents 
-        WHERE file_fingerprint = (SELECT file_fingerprint FROM files WHERE id = ?)
-      `).get(fileId) as { file_fingerprint: string; metadata: string } | undefined
+      if (fileRow && fileRow.file_fingerprint) {
+        const contentRow = db.prepare(`
+          SELECT metadata FROM file_contents WHERE file_fingerprint = ?
+        `).get(fileRow.file_fingerprint) as { metadata: string } | undefined
 
-      if (contentRow) {
         let metaObj: Record<string, any> = {}
         try {
-          if (contentRow.metadata) {
+          if (contentRow?.metadata) {
             metaObj = JSON.parse(contentRow.metadata)
           }
         } catch {
           metaObj = {}
         }
+
+        // 确保 raw_smart_name 存在且不带扩展名
+        if (!metaObj.raw_smart_name) {
+          const fileExt = path.extname(fileRow.path || fileRow.name || '').replace(/^\./, '')
+          let raw = fileRow.smart_name || fileRow.name || ''
+          if (fileExt) {
+            raw = raw.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
+          }
+          raw = raw.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
+          metaObj.raw_smart_name =
+            raw ||
+            path.basename(fileRow.name || fileRow.path || '', path.extname(fileRow.name || fileRow.path || ''))
+        }
+
         metaObj.naming_template = namingTemplate
 
         db.prepare(`
-          UPDATE file_contents 
-          SET metadata = ? 
-          WHERE file_fingerprint = ?
-        `).run(JSON.stringify(metaObj), contentRow.file_fingerprint)
+          INSERT INTO file_contents (file_fingerprint, metadata, created_at, updated_at)
+          VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+          ON CONFLICT(file_fingerprint) DO UPDATE SET metadata = excluded.metadata, updated_at = CURRENT_TIMESTAMP
+        `).run(JSON.stringify(metaObj), fileRow.file_fingerprint)
       }
     } catch (err) {
-      logger.warn(LogCategory.DATABASE_SERVICE, `更新重命名数据库记录失败 fileId=${fileId}:`, err)
+      logger.warn(
+        LogCategory.DATABASE_SERVICE,
+        `更新智能文件名数据库记录失败 fileId=${fileId}:`,
+        err
+      )
     }
   }
 }

@@ -183,8 +183,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
         <div className="p-4 border-b border-border/50 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-              <MaterialIcon icon="analytics" className="text-sm text-primary" />
-              {t('查重分析统计')}
+              <MaterialIcon icon="cleaning_services" className="text-sm text-primary" />
+              {t('清理分析统计')}
             </span>
             <Button
               variant="outline"

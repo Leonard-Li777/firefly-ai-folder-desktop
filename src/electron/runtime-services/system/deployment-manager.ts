@@ -8,7 +8,7 @@ import * as fs from 'fs/promises'
 import { app } from 'electron'
 import { platformAdapter } from '@firefly/electron-llamaIndex-service'
 import { filePermissionManager } from '../filesystem/file-permission-manager'
-import { logger, LogCategory } from '@firefly/shared'
+import { logger, LogCategory, ResourceLocator } from '@firefly/shared'
 import {
   TPlatform,
   TArchitecture,
@@ -293,7 +293,7 @@ export class DeploymentManager {
    * 设置extraResources目录结构
    */
   async setupExtraResourcesStructure(): Promise<void> {
-    const extraResourcesPath = platformAdapter.getExtraResourcesPath()
+    const extraResourcesPath = ResourceLocator.getBaseResourceDir()
 
     // 创建基础目录结构
     const directories = [
@@ -386,7 +386,7 @@ export class DeploymentManager {
    */
   private async validateBinaryFiles(result: IDeploymentValidationResult): Promise<void> {
     const platformConfigs = this.getCurrentPlatformBinaryConfigs()
-    const extraResourcesPath = platformAdapter.getExtraResourcesPath()
+    const extraResourcesPath = ResourceLocator.getBaseResourceDir()
 
     for (const config of platformConfigs) {
       const binaryPath = platformAdapter.normalizePath(
@@ -532,7 +532,7 @@ export class DeploymentManager {
 
     // 计算磁盘使用量
     try {
-      const extraResourcesPath = platformAdapter.getExtraResourcesPath()
+      const extraResourcesPath = ResourceLocator.getBaseResourceDir()
       diskUsage = await this.calculateDirectorySize(extraResourcesPath)
     } catch (error) {
       logger.warn(LogCategory.DEPLOYMENT_MANAGER, '计算磁盘使用量失败:', error)

@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3'
 import { SavedVirtualDirectory, FileInfoForAI } from '@firefly/types'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, isDimensionApplicableToFile } from '@firefly/shared'
 import { t } from '@app/languages'
 import path from 'node:path'
 
@@ -198,7 +198,8 @@ export class DatabaseHelper {
           SELECT
             fd.name as dimensionName,
             ft.dimension_id as dimension,
-            ft.name as tag
+            ft.name as tag,
+            fd.applicable_file_types as applicableFileTypes
           FROM file_tag_relations ftr
           INNER JOIN file_tags ft ON ft.id = ftr.tag_id
           LEFT JOIN file_dimensions fd ON fd.id = ft.dimension_id
@@ -220,11 +221,6 @@ export class DatabaseHelper {
           )
           .all(file.id) as any[]
 
-        const allTagNames = [
-          ...contentTags.map(t => t.name),
-          ...dimensionTagsArray.map(t => t.tag)
-        ]
-
         let parsedMeta: Record<string, any> = {}
         if (file.metadata) {
           try {
@@ -234,10 +230,27 @@ export class DatabaseHelper {
           }
         }
 
-        const formattedDimensionTags = dimensionTagsArray.map(t => ({
-          dimension: t.dimensionName || String(t.dimension || ''),
-          tag: t.tag
-        }))
+        const formattedDimensionTags: Array<{ dimension: string; tag: string }> = []
+        for (const tItem of dimensionTagsArray) {
+          let applicableTypes: string[] | undefined = undefined
+          if (tItem.applicableFileTypes) {
+            try {
+              applicableTypes =
+                typeof tItem.applicableFileTypes === 'string'
+                  ? JSON.parse(tItem.applicableFileTypes)
+                  : tItem.applicableFileTypes
+            } catch {
+              applicableTypes = undefined
+            }
+          }
+
+          if (isDimensionApplicableToFile(applicableTypes, file.path || file.name)) {
+            formattedDimensionTags.push({
+              dimension: tItem.dimensionName || String(tItem.dimension || ''),
+              tag: tItem.tag
+            })
+          }
+        }
 
         for (const ct of contentTags) {
           if (ct && ct.name) {

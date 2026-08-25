@@ -792,4 +792,136 @@ export class DirectoryContextService {
       logger.error(LogCategory.DIRECTORY_CONTEXT, '清除目录上下文分析失败:', error)
     }
   }
+
+  /**
+   * 将目录（及其继承生效的）命名模板批量应用到该目录下所有已分析文件的 smart_name
+   */
+  async applyNamingTemplateToDirectoryFiles(
+    directoryPath: string
+  ): Promise<{ updatedCount: number; totalCount: number; success: boolean }> {
+    try {
+      const effectiveConfig = await this.getEffectiveDirectoryConfig(directoryPath)
+      const template = effectiveConfig?.namingTemplate?.trim() || ''
+
+      const { NamingDSLEngine } = require('./naming-dsl-engine')
+      const { isSubPath } = require('@firefly/shared')
+      const pathModule = require('path')
+
+      // 查询所有已分析的文件
+      const rows = this.db
+        .prepare(`
+          SELECT 
+            f.id, f.file_fingerprint, f.path, f.name, f.smart_name, f.type, f.author, f.language, f.size,
+            wf.created_at, wf.modified_at,
+            fc.quality_score, fc.metadata
+          FROM workspace_files wf
+          JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+          LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
+          WHERE wf.is_analyzed = 1
+        `)
+        .all() as any[]
+
+      // 筛选属于当前目录或其子目录的文件
+      const targetRows = rows.filter(
+        r => isSubPath(directoryPath, r.path) || r.path === directoryPath
+      )
+      if (targetRows.length === 0) {
+        return { updatedCount: 0, totalCount: 0, success: true }
+      }
+
+      let updatedCount = 0
+      const updateStmt = this.db.prepare(
+        'UPDATE files SET smart_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+      )
+      const updateContentStmt = this.db.prepare(
+        'UPDATE file_contents SET metadata = ? WHERE file_fingerprint = ?'
+      )
+
+      this.db.transaction(() => {
+        for (let i = 0; i < targetRows.length; i++) {
+          const row = targetRows[i]
+          let metadataObj: Record<string, any> = {}
+          try {
+            if (row.metadata) {
+              metadataObj =
+                typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata
+            }
+          } catch {
+            metadataObj = {}
+          }
+
+          // 获取原始核心智能名（rawSmartName 不需要带扩展名）
+          const fileExt = pathModule.extname(row.path || row.name || '').replace(/^\./, '')
+          let rawSmartName = metadataObj.raw_smart_name || row.smart_name || row.name || ''
+          if (fileExt) {
+            rawSmartName = rawSmartName.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
+          }
+          rawSmartName = rawSmartName.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
+          if (!rawSmartName) {
+            rawSmartName = pathModule.basename(row.name || row.path || '', pathModule.extname(row.name || row.path || ''))
+          }
+
+          // 查询该文件的标签维度
+          const tagsRows = this.db
+            .prepare(`
+              SELECT ft.name, ft.dimension_id
+              FROM file_tag_relations ftr
+              JOIN file_tags ft ON ft.id = ftr.tag_id
+              WHERE ftr.file_fingerprint = ?
+            `)
+            .all(row.file_fingerprint) as Array<{ name: string; dimension_id: string }>
+
+          const dimensionTags: Record<string, string> = {}
+          tagsRows.forEach(tr => {
+            if (tr.dimension_id && tr.name) {
+              dimensionTags[tr.dimension_id] = tr.name
+            }
+          })
+
+          const fileContext = {
+            id: row.id,
+            path: row.path,
+            name: row.name,
+            smartName: rawSmartName,
+            rawSmartName,
+            size: row.size,
+            extension: pathModule.extname(row.path).replace(/^\./, ''),
+            modifiedAt: row.modified_at,
+            createdAt: row.created_at,
+            qualityScore: row.quality_score,
+            tags: tagsRows.map(tr => ({ dimensionName: tr.dimension_id, tagValue: tr.name })),
+            dimensionTags,
+            metadata: metadataObj,
+            author: row.author,
+            language: row.language
+          }
+
+          let newSmartName = rawSmartName
+          if (template) {
+            newSmartName = NamingDSLEngine.renderTemplate(template, fileContext, i + 1, true)
+          }
+
+          // 确保 metadata 中留存无扩展名的 raw_smart_name
+          if (metadataObj.raw_smart_name !== rawSmartName) {
+            metadataObj.raw_smart_name = rawSmartName
+            updateContentStmt.run(JSON.stringify(metadataObj), row.file_fingerprint)
+          }
+
+          if (newSmartName && newSmartName !== row.smart_name) {
+            updateStmt.run(newSmartName, row.id)
+            updatedCount++
+          }
+        }
+      })()
+
+      logger.info(
+        LogCategory.DIRECTORY_CONTEXT,
+        `批量应用命名模板完成: 目录=${directoryPath}, 模板=${template}, 更新数=${updatedCount}/${targetRows.length}`
+      )
+      return { updatedCount, totalCount: targetRows.length, success: true }
+    } catch (err) {
+      logger.error(LogCategory.DIRECTORY_CONTEXT, `批量应用命名模板失败: ${directoryPath}`, err)
+      throw err
+    }
+  }
 }

@@ -1,6 +1,5 @@
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, ResourceLocator } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
-import { platformAdapter } from '@firefly/electron-llamaIndex-service'
 import fs from 'fs-extra'
 import path from 'node:path'
 
@@ -10,10 +9,8 @@ export async function copyReadmeFile(virtualDirPath: string): Promise<void> {
   try {
     const userLanguage = ConfigOrchestrator.getInstance().getValue('DEFAULT_LANGUAGE') || 'zh-CN'
     const readmeFileName = `ReadMe_${userLanguage}.txt`
-    const sourceReadmePath = path.join(
-      platformAdapter.getExtraResourcesPath(),
-      '.VirtualDirectory',
-      readmeFileName
+    const sourceReadmePath = ResourceLocator.resolveResourcePath(
+      path.join('.VirtualDirectory', readmeFileName)
     )
     const targetReadmePath = path.join(virtualDirPath, readmeFileName)
 

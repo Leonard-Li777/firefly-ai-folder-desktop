@@ -829,11 +829,16 @@ export async function initializeFullServices(): Promise<void> {
       }
     }
 
-    // 初始化常驻微服务 (UnifiedWorkerManager)
+    // 初始化常驻微服务 (UnifiedWorkerManager 与 OmniService)
     const { unifiedWorkerManager } =
       await import('../runtime-services/system/unified-worker-service')
     unifiedWorkerManager.start().catch(err => {
       logger.error(LogCategory.MAIN, '[UnifiedWorkerManager] 守护微服务启动失败:', err)
+    })
+
+    const { omniService } = await import('../runtime-services/system/omni-service')
+    omniService.start().catch(err => {
+      logger.error(LogCategory.MAIN, '[OmniService] 原生微服务启动失败:', err)
     })
 
     logger.info(LogCategory.MAIN, '正在初始化核心引擎...')

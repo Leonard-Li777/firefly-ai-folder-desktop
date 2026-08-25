@@ -459,6 +459,7 @@ export const FileDetailsPanel: React.FC<any> = ({
             formatDate={(d: any) => formatDateTime(d)}
             onRefresh={refreshAnalysis}
             isUnit={!!(item as any)?.isUnit}
+            workspaceDirectoryPath={workspaceDirectoryPath || (item as any)?.workspaceDirectoryPath}
           />
         )}
 

@@ -33,8 +33,4 @@ declare module 'react-window' {
   export const FixedSizeGrid: any
 }
 
-declare module 'exiftool-vendored'
-declare module 'pdf-poppler'
-declare module 'onnxruntime-node'
-
 export {}

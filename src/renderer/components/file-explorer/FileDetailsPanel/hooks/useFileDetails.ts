@@ -91,8 +91,22 @@ export function useFileDetails(
     currentDirectoryPath,
     workspaceDirectoryPath,
     isDirectory,
-    refreshAnalysis
   ])
+
+  // 监听智能文件名更新事件，自动刷新详情面板中的智能文件名与分析结果
+  useEffect(() => {
+    const handleSmartNameUpdated = () => {
+      if (item) {
+        refreshAnalysis()
+      }
+    }
+    window.addEventListener('smartname-updated', handleSmartNameUpdated)
+    window.addEventListener('files-updated', handleSmartNameUpdated)
+    return () => {
+      window.removeEventListener('smartname-updated', handleSmartNameUpdated)
+      window.removeEventListener('files-updated', handleSmartNameUpdated)
+    }
+  }, [item, refreshAnalysis])
 
   // 监听分析队列更新
   useEffect(() => {

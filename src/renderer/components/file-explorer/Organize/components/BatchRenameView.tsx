@@ -6,18 +6,19 @@ import { Input } from '../../../ui/input'
 import { Badge } from '../../../ui/badge'
 import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
-import { BatchRenamePreviewItem, DimensionGroup } from '@firefly/types'
+import { BatchRenamePreviewItem, DimensionGroup, FileInfoForAI } from '@firefly/types'
+import { isExtensionTriggerTagName } from '@firefly/shared'
 
 /**
  * 常用/精选命名模板预置列表（与后端 NamingDSLEngine 多语言对齐）
  */
 const getPresetNamingTemplates = () => [
   {
-    name: `${t('智能文件名')} + ${t('日期')}`,
-    template: '{SMART_NAME}_{MOD:YYYY-MM-DD}',
+    name: `${t('文件类型')} + ${t('智能文件名')} + ${t('日期')}`,
+    template: `[{TAG:${t('文件类型')}}]{SMART_NAME}_{MOD:YYYY-MM-DD}`,
     category: t('常用'),
     icon: 'auto_awesome',
-    description: t('标准智能文件名后追加修改日期，适合日常整理归档')
+    description: t('文件类型前置，后接智能文件名与修改日期，标准通用命名')
   },
   {
     name: `${t('修改日期')} + ${t('智能文件名')}`,
@@ -42,14 +43,14 @@ const getPresetNamingTemplates = () => [
   },
   {
     name: `${t('智能文件名')} + ${t('分辨率')} + ${t('序号')}`,
-    template: `{SMART_NAME}_{META:${t('分辨率')}}_{SEQ:01}`,
+    template: `{SMART_NAME}_<{META:${t('分辨率')}}>_({SEQ:01})`,
     category: t('多模态'),
     icon: 'aspect_ratio',
     description: t('多模态媒体专用命名，附带分辨率规格与两位序号')
   },
   {
     name: `${t('创建日期')} + ${t('原文件名')} + ${t('序号')}`,
-    template: '{CRE:YYYY-MM-DD}_{ORIG_NAME}_{SEQ:001}',
+    template: '{CRE:YYYY-MM-DD}_{ORIG_NAME}_({SEQ:001})',
     category: t('保留原名'),
     icon: 'history_edu',
     description: t('保留原文件名并附加创建日期与三位递增序号')
@@ -63,7 +64,7 @@ const getPresetNamingTemplates = () => [
   },
   {
     name: t('全维度属性组合'),
-    template: `[{TAG:${t('题材')}}]_{SMART_NAME}_{MOD:YYYY-MM-DD}_{SEQ:01}`,
+    template: `[{TAG:${t('题材')}}]_{SMART_NAME}_{MOD:YYYY-MM-DD}_({SEQ:01})`,
     category: t('复合'),
     icon: 'dashboard_customize',
     description: t('题材、名称、日期与序号全维度综合规范')
@@ -81,25 +82,177 @@ type ViewMode = 'card' | 'table'
 type FilterTab = 'all' | 'changed' | 'unchanged' | 'error'
 
 /**
+ * 判定某个 Token 是否已存在于当前模板中（用于在中栏过滤掉已选标签，防止重复点击插入；保证模板中绝不出现两个相同的标签）
+ */
+function isTokenInTemplate(tokenValue: string, currentTemplate: string): boolean {
+  if (!currentTemplate || !tokenValue) return false
+
+  const tpl = currentTemplate.toLowerCase()
+  const cleanVal = tokenValue.replace(/^[\[\(\<]+|[\]\)\>]+$/g, '').trim()
+
+  // 1. 维度标签 {TAG:xxx}
+  if (cleanVal.startsWith('{TAG:')) {
+    const dimName = cleanVal.slice(5, -1).trim().toLowerCase()
+    return (
+      tpl.includes(`{tag:${dimName}}`) ||
+      tpl.includes(`{tag:${t(dimName).toLowerCase()}}`) ||
+      tpl.includes(`tag:${dimName}`)
+    )
+  }
+
+  // 2. 多模态元数据 {META:xxx}
+  if (cleanVal.startsWith('{META:')) {
+    const metaKey = cleanVal.slice(6, -1).trim().toLowerCase()
+    if (
+      metaKey === '分辨率' ||
+      metaKey === 'resolution' ||
+      metaKey === 'res' ||
+      metaKey === t('分辨率').toLowerCase()
+    ) {
+      return (
+        tpl.includes('{meta:分辨率') ||
+        tpl.includes('{meta:resolution') ||
+        tpl.includes('{meta:res') ||
+        tpl.includes(`{meta:${t('分辨率').toLowerCase()}`)
+      )
+    }
+    if (
+      metaKey === '时长' ||
+      metaKey === 'duration' ||
+      metaKey === 'dur' ||
+      metaKey === t('时长').toLowerCase()
+    ) {
+      return (
+        tpl.includes('{meta:时长') ||
+        tpl.includes('{meta:duration') ||
+        tpl.includes('{meta:dur') ||
+        tpl.includes(`{meta:${t('时长').toLowerCase()}`)
+      )
+    }
+    if (
+      metaKey === '页数' ||
+      metaKey === 'pages' ||
+      metaKey === 'page' ||
+      metaKey === t('页数').toLowerCase()
+    ) {
+      return (
+        tpl.includes('{meta:页数') ||
+        tpl.includes('{meta:pages') ||
+        tpl.includes('{meta:page') ||
+        tpl.includes(`{meta:${t('页数').toLowerCase()}`)
+      )
+    }
+    if (
+      metaKey === '编码' ||
+      metaKey === 'codec' ||
+      metaKey === '编码格式' ||
+      metaKey === t('编码').toLowerCase() ||
+      metaKey === t('编码格式').toLowerCase()
+    ) {
+      return (
+        tpl.includes('{meta:编码') ||
+        tpl.includes('{meta:codec') ||
+        tpl.includes(`{meta:${t('编码').toLowerCase()}`)
+      )
+    }
+    return tpl.includes(`{meta:${metaKey}`)
+  }
+
+  // 3. 时间日期 {MOD:...} 与 {CRE:...}
+  if (cleanVal.startsWith('{MOD:')) {
+    return tpl.includes('{mod:')
+  }
+  if (cleanVal.startsWith('{CRE:')) {
+    return tpl.includes('{cre:')
+  }
+
+  // 4. 序号 {SEQ:...}
+  if (cleanVal.startsWith('{SEQ:') || cleanVal.startsWith('{SEQ')) {
+    return tpl.includes('{seq:') || tpl.includes('{seq}')
+  }
+
+  // 5. 质量评分 {QUALITY_SCORE}
+  if (cleanVal.includes('QUALITY_SCORE')) {
+    return tpl.includes('{quality_score}')
+  }
+
+  // 6. 基础变量精确匹配（{SMART_NAME}, {ORIG_NAME}, {EXT}, {SIZE}, {AUTHOR}, {LANG} 等）
+  const lowerVal = cleanVal.toLowerCase()
+  return tpl.includes(lowerVal)
+}
+
+/**
+ * 剥离 DSL 模板中包裹在各变量外围的类型修饰符（如 []、()、<>）
+ */
+export function stripTypeDelimiters(tpl: string): string {
+  if (!tpl) return ''
+  let res = tpl
+  // 1. 剥离包裹在维度与作者/质量分/语言外围的 []
+  res = res.replace(/\[\s*(\{TAG:[^}]+\})\s*\]/gi, '$1')
+  res = res.replace(/\[\s*(\{AUTHOR\})\s*\]/gi, '$1')
+  res = res.replace(/\[\s*Q?(\{QUALITY_SCORE\})\s*\]/gi, '$1')
+  res = res.replace(/\[\s*(\{LANG\})\s*\]/gi, '$1')
+  // 2. 剥离包裹在序号外围的 ()
+  res = res.replace(/\(\s*(\{SEQ(?::[^}]+)?\})\s*\)/gi, '$1')
+  // 3. 剥离包裹在元数据外围的 <>
+  res = res.replace(/<\s*(\{META:[^}]+\})\s*>/gi, '$1')
+  // 4. 清理任何孤立的空括号
+  res = res.replace(/\[\s*\]/g, '')
+  res = res.replace(/\(\s*\)/g, '')
+  res = res.replace(/<\s*>/g, '')
+  // 5. 优雅折叠多余下划线
+  res = res.replace(/__+/g, '_').replace(/^\s*[_\-]|[\-_]\s*$/g, '')
+  return res
+}
+
+/**
+ * 为 DSL 模板中未包裹的变量添加规范的类型修饰符（标签 []、序号 ()、元数据 <>）
+ */
+export function applyTypeDelimiters(tpl: string): string {
+  if (!tpl) return ''
+  let res = stripTypeDelimiters(tpl)
+  res = res.replace(/\{TAG:([^}]+)\}/g, '[{TAG:$1}]')
+  res = res.replace(/\{AUTHOR\}/g, '[{AUTHOR}]')
+  res = res.replace(/\{QUALITY_SCORE\}/g, '[Q{QUALITY_SCORE}]')
+  res = res.replace(/\{SEQ(:[^}]+)?\}/g, '({SEQ$1})')
+  res = res.replace(/\{META:([^}]+)\}/g, '<{META:$1}>')
+  return res
+}
+
+/**
  * 根据所选 DSL Token 类型与语义，动态计算其最佳包裹形态与前置连接符
  */
-function getSmartTokenInsertion(tokenValue: string, currentTemplate: string): string {
+function getSmartTokenInsertion(
+  tokenValue: string,
+  currentTemplate: string,
+  useDelimiters: boolean = true
+): string {
   let mappedToken = tokenValue
 
-  // 1. 维度与作者标签默认包覆方括号前置修饰符
-  if (tokenValue.startsWith('{TAG:') && !tokenValue.startsWith('[{TAG:')) {
-    mappedToken = `[${tokenValue}]`
-  } else if (tokenValue === '{AUTHOR}') {
-    mappedToken = `[{AUTHOR}]`
-  } else if (tokenValue === '{QUALITY_SCORE}') {
-    mappedToken = `[Q{QUALITY_SCORE}]`
+  if (useDelimiters) {
+    // 1. 维度与作者、质量评分标签默认包覆方括号前置修饰符
+    if (tokenValue.startsWith('{TAG:') && !tokenValue.startsWith('[{TAG:')) {
+      mappedToken = `[${tokenValue}]`
+    } else if (tokenValue === '{AUTHOR}') {
+      mappedToken = `[{AUTHOR}]`
+    } else if (tokenValue === '{QUALITY_SCORE}') {
+      mappedToken = `[Q{QUALITY_SCORE}]`
+    } else if (tokenValue.startsWith('{SEQ') && !tokenValue.startsWith('({SEQ')) {
+      // 2. 序号自动包裹圆括号 ()
+      mappedToken = `(${tokenValue})`
+    } else if (tokenValue.startsWith('{META:') && !tokenValue.startsWith('<{META:')) {
+      // 3. 多模态元数据自动包裹尖括号 <>
+      mappedToken = `<${tokenValue}>`
+    }
+  } else {
+    mappedToken = stripTypeDelimiters(tokenValue)
   }
 
   if (!currentTemplate || !currentTemplate.trim()) {
     return mappedToken
   }
 
-  // 2. 扩展名 Token 特殊处理：动态映射为前置点号 `.{EXT}`
+  // 4. 扩展名 Token 特殊处理：动态映射为前置点号 `.{EXT}`
   if (tokenValue === '{EXT}') {
     if (currentTemplate.endsWith('.')) {
       return `${currentTemplate}{EXT}`
@@ -107,13 +260,13 @@ function getSmartTokenInsertion(tokenValue: string, currentTemplate: string): st
     return `${currentTemplate}.{EXT}`
   }
 
-  // 3. 检查当前 template 末尾是否已有连接符或括号
-  const endsWithSeparator = /[\s_\-\.\[]$/.test(currentTemplate)
+  // 5. 检查当前 template 末尾是否已有连接符或括号
+  const endsWithSeparator = /[\s_\-\.\[\(\<]$/.test(currentTemplate)
   if (endsWithSeparator) {
     return `${currentTemplate}${mappedToken}`
   }
 
-  // 4. 默认采用下划线 `_` 动态连接
+  // 6. 默认采用下划线 `_` 动态连接
   return `${currentTemplate}_${mappedToken}`
 }
 
@@ -121,8 +274,8 @@ function getSmartTokenInsertion(tokenValue: string, currentTemplate: string): st
  * 插入位置指示竖线组件
  */
 const InsertionIndicator: React.FC = () => (
-  <div className="w-1.5 h-6 bg-primary rounded-full shadow-md shadow-primary/40 -mx-1 z-20 animate-in fade-in zoom-in-75 duration-150 transition-all flex items-center justify-center pointer-events-none">
-    <div className="w-0.5 h-3.5 bg-primary-foreground/90 rounded-full" />
+  <div className="w-1.5 h-8 bg-primary rounded-full shadow-md shadow-primary/40 -mx-1 z-20 animate-in fade-in zoom-in-75 duration-150 transition-all flex items-center justify-center pointer-events-none">
+    <div className="w-0.5 h-5 bg-primary-foreground/90 rounded-full" />
   </div>
 )
 
@@ -132,9 +285,21 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
   onExecuteRename,
   isExecuting = false
 }) => {
-  const [template, setTemplate] = useState<string>('{SMART_NAME}_{MOD:YYYY-MM-DD}')
+  const [template, setTemplate] = useState<string>(`[{TAG:${t('文件类型')}}]{SMART_NAME}_{MOD:YYYY-MM-DD}`)
   const [previewList, setPreviewList] = useState<BatchRenamePreviewItem[]>([])
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+
+  // 是否添加类型包裹符（[]、()、<>等），默认开启 (true)
+  const [useTypeDelimiters, setUseTypeDelimiters] = useState<boolean>(true)
+
+  // 切换类型包裹符状态
+  const handleToggleTypeDelimiters = useCallback((enabled: boolean) => {
+    setUseTypeDelimiters(enabled)
+    setTemplate(prev => {
+      if (!prev) return prev
+      return enabled ? applyTypeDelimiters(prev) : stripTypeDelimiters(prev)
+    })
+  }, [])
 
   // 胶囊拖拽排序状态
   const [draggedChipIndex, setDraggedChipIndex] = useState<number | null>(null)
@@ -143,8 +308,9 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
   // 左栏模板搜索
   const [templateSearch, setTemplateSearch] = useState('')
 
-  // 中栏属性标签搜索
+  // 中栏属性标签搜索与分类筛选，默认选中「常用」
   const [tokenSearch, setTokenSearch] = useState('')
+  const [selectedTokenCategory, setSelectedTokenCategory] = useState<string>(t('常用'))
 
   // 右栏视图设置与筛选
   const [rightViewMode, setRightViewMode] = useState<ViewMode>('card')
@@ -166,6 +332,84 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
 
     return [
       {
+        category: t('常用'),
+        badgeColor: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
+        tokens: [
+          {
+            label: t('智能文件名'),
+            value: '{SMART_NAME}',
+            desc: t('AI 解析提取的纯净核心命名'),
+            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
+          },
+          {
+            label: t('作者/创作者'),
+            value: '{AUTHOR}',
+            desc: t('内容作者标签 (如 [{AUTHOR}])'),
+            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
+          },
+          {
+            label: t('质量评分'),
+            value: '{QUALITY_SCORE}',
+            desc: t('AI 质量分值 (如 [Q{QUALITY_SCORE}])'),
+            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
+          },
+          {
+            label: t('修改日期(年-月-日)'),
+            value: '{MOD:YYYY-MM-DD}',
+            desc: t('文件最后修改日期 (如 2024-03-15)'),
+            pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20'
+          },
+          {
+            label: t('文件类型'),
+            value: `{TAG:${t('文件类型')}}`,
+            desc: t('匹配该文件的「文件类型」维度标签'),
+            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+          },
+          {
+            label: t('文件用途'),
+            value: `{TAG:${t('文件用途')}}`,
+            desc: t('匹配该文件的「文件用途」维度标签'),
+            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+          },
+          {
+            label: t('地理位置'),
+            value: `{TAG:${t('地理位置')}}`,
+            desc: t('匹配该文件的「地理位置」维度标签'),
+            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+          },
+          {
+            label: t('压缩包细分'),
+            value: `{TAG:${t('压缩包细分')}}`,
+            desc: t('匹配该文件的未加密压缩包/加密压缩包等属性'),
+            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+          },
+          {
+            label: t('画质等级'),
+            value: `{TAG:${t('画质等级')}}`,
+            desc: t('匹配该文件的「画质等级」维度标签'),
+            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+          },
+          {
+            label: t('题材'),
+            value: `{TAG:${t('题材')}}`,
+            desc: t('匹配该文件的「题材」维度标签'),
+            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+          },
+          {
+            label: t('四位序号(0001)'),
+            value: '{SEQ:0001}',
+            desc: t('四位补零自增序号 (0001, 0002...)'),
+            pillClass: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20'
+          },
+          {
+            label: t('时长'),
+            value: `{META:${t('时长')}}`,
+            desc: t('音视频时长 (如 03分25秒)'),
+            pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
+          }
+        ]
+      },
+      {
         category: t('核心名称'),
         badgeColor: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
         tokens: [
@@ -179,6 +423,24 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
             label: t('原始文件名'),
             value: '{ORIG_NAME}',
             desc: t('文件在磁盘上的原始文件名（不含扩展名）'),
+            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
+          },
+          {
+            label: t('作者/创作者'),
+            value: '{AUTHOR}',
+            desc: t('内容作者标签 (如 [{AUTHOR}])'),
+            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
+          },
+          {
+            label: t('语言代码'),
+            value: '{LANG}',
+            desc: t('文档语言代码 (如 zh-CN, en)'),
+            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
+          },
+          {
+            label: t('质量评分'),
+            value: '{QUALITY_SCORE}',
+            desc: t('AI 质量分值 (如 [Q{QUALITY_SCORE}])'),
             pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
           },
           {
@@ -226,26 +488,12 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
         ]
       },
       {
-        category: t('分类维度与作者'),
+        category: t('分类维度'),
         badgeColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-        tokens: [
-          ...dimTokens,
-          {
-            label: t('作者/创作者'),
-            value: '{AUTHOR}',
-            desc: t('内容作者标签 (如 [{AUTHOR}])'),
-            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-          },
-          {
-            label: t('语言代码'),
-            value: '{LANG}',
-            desc: t('文档语言代码 (如 zh-CN, en)'),
-            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-          }
-        ]
+        tokens: dimTokens
       },
       {
-        category: t('多模态与序号'),
+        category: t('无数据'),
         badgeColor: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
         tokens: [
           {
@@ -271,13 +519,13 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
             value: `{META:${t('编码')}}`,
             desc: t('媒体编码格式 (如 H264, AAC)'),
             pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
-          },
-          {
-            label: t('质量评分'),
-            value: '{QUALITY_SCORE}',
-            desc: t('AI 质量分值 (如 [Q{QUALITY_SCORE}])'),
-            pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
-          },
+          }
+        ]
+      },
+      {
+        category: t('自增序号'),
+        badgeColor: 'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+        tokens: [
           {
             label: t('两位序号(01)'),
             value: '{SEQ:01}',
@@ -329,15 +577,23 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
     }
   }, [template, files])
 
-  // 插入 Token 到当前模板
-  const handleInsertToken = useCallback((tokenValue: string) => {
-    setTemplate(prev => getSmartTokenInsertion(tokenValue, prev))
-  }, [])
+  // 插入 Token 到当前模板（严禁重复插入相同 Label）
+  const handleInsertToken = useCallback(
+    (tokenValue: string) => {
+      setTemplate(prev => {
+        if (isTokenInTemplate(tokenValue, prev)) {
+          return prev
+        }
+        return getSmartTokenInsertion(tokenValue, prev, useTypeDelimiters)
+      })
+    },
+    [useTypeDelimiters]
+  )
 
   // 将 template 拆解为可视化胶囊数组 (Chip Pills)
   const parsedChips = useMemo(() => {
     if (!template) return []
-    const regex = /(\[[^\]]+\]|\{[^}]+\}|[^\s_{}\[\]\-]+|[\s_\-])/g
+    const regex = /(\[[^\]]+\]|\([^\)]+\)|<[^>]+>|\{[^}]+\}|[^\s_{}\[\]\(\)<>\-]+|[\s_\-])/g
     const matches = template.match(regex) || []
     return matches.filter(m => m.trim().length > 0 || m === ' ')
   }, [template])
@@ -356,136 +612,173 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
     updateTemplateFromChips(newChips)
   }
 
-type TokenCategoryType = 'name' | 'date' | 'tag' | 'meta' | 'seq' | 'literal'
+  type TokenCategoryType = 'name' | 'date' | 'tag' | 'meta' | 'seq' | 'literal'
 
-function getTokenCategory(tokenStr: string): TokenCategoryType {
-  const tStr = String(tokenStr || '').trim()
-  if (
-    tStr.includes('SMART_NAME') ||
-    tStr.includes('ORIG_NAME') ||
-    tStr.includes('EXT') ||
-    tStr.includes('SIZE')
-  ) {
-    return 'name'
+  function getTokenCategory(tokenStr: string): TokenCategoryType {
+    const tStr = String(tokenStr || '').trim()
+    if (
+      tStr.includes('SMART_NAME') ||
+      tStr.includes('ORIG_NAME') ||
+      tStr.includes('EXT') ||
+      tStr.includes('SIZE')
+    ) {
+      return 'name'
+    }
+    if (
+      tStr.includes('MOD:') ||
+      tStr.includes('CRE:') ||
+      tStr.includes('MOD') ||
+      tStr.includes('CRE')
+    ) {
+      return 'date'
+    }
+    if (
+      tStr.includes('TAG:') ||
+      tStr.includes('AUTHOR') ||
+      tStr.includes('LANG')
+    ) {
+      return 'tag'
+    }
+    if (tStr.includes('META:')) {
+      return 'meta'
+    }
+    if (tStr.includes('SEQ') || tStr.includes('QUALITY_SCORE')) {
+      return 'seq'
+    }
+    return 'literal'
   }
-  if (
-    tStr.includes('MOD:') ||
-    tStr.includes('CRE:') ||
-    tStr.includes('MOD') ||
-    tStr.includes('CRE')
-  ) {
-    return 'date'
-  }
-  if (
-    tStr.includes('TAG:') ||
-    tStr.includes('AUTHOR') ||
-    tStr.includes('LANG')
-  ) {
-    return 'tag'
-  }
-  if (tStr.includes('META:')) {
-    return 'meta'
-  }
-  if (tStr.includes('SEQ') || tStr.includes('QUALITY_SCORE')) {
-    return 'seq'
-  }
-  return 'literal'
-}
 
-function getChipStyle(tokenStr: string): string {
-  const cat = getTokenCategory(tokenStr)
-  switch (cat) {
-    case 'name':
-      return 'border-blue-500/35 bg-blue-500/12 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20 font-medium'
-    case 'date':
-      return 'border-purple-500/35 bg-purple-500/12 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 font-medium'
-    case 'tag':
-      return 'border-emerald-500/35 bg-emerald-500/12 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 font-medium'
-    case 'meta':
-      return 'border-amber-500/35 bg-amber-500/12 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 font-medium'
-    case 'seq':
-      return 'border-cyan-500/35 bg-cyan-500/12 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20 font-medium'
-    default:
-      return 'bg-muted/60 text-muted-foreground border border-border/40 hover:bg-muted/80 font-normal'
+  function getChipStyle(tokenStr: string): string {
+    const cat = getTokenCategory(tokenStr)
+    switch (cat) {
+      case 'name':
+        return 'border-blue-500/50 bg-blue-500/15 text-blue-800 dark:text-blue-200 ring-1 ring-blue-500/25 hover:bg-blue-500/25 hover:border-blue-500/70 font-semibold shadow-xs'
+      case 'date':
+        return 'border-purple-500/50 bg-purple-500/15 text-purple-800 dark:text-purple-200 ring-1 ring-purple-500/25 hover:bg-purple-500/25 hover:border-purple-500/70 font-semibold shadow-xs'
+      case 'tag':
+        return 'border-emerald-500/50 bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 ring-1 ring-emerald-500/25 hover:bg-emerald-500/25 hover:border-emerald-500/70 font-semibold shadow-xs'
+      case 'meta':
+        return 'border-amber-500/50 bg-amber-500/15 text-amber-800 dark:text-amber-200 ring-1 ring-amber-500/25 hover:bg-amber-500/25 hover:border-amber-500/70 font-semibold shadow-xs'
+      case 'seq':
+        return 'border-cyan-500/50 bg-cyan-500/15 text-cyan-800 dark:text-cyan-200 ring-1 ring-cyan-500/25 hover:bg-cyan-500/25 hover:border-cyan-500/70 font-semibold shadow-xs'
+      default:
+        return 'bg-muted/70 text-foreground/90 border border-border/70 hover:bg-muted/90 font-mono font-medium shadow-2xs'
+    }
   }
-}
 
-function getSegmentColorClass(type: string): string {
-  switch (type) {
-    case 'name':
-      return 'text-blue-600 dark:text-blue-400 font-semibold'
-    case 'date':
-      return 'text-purple-600 dark:text-purple-400 font-semibold'
-    case 'tag':
-      return 'text-emerald-600 dark:text-emerald-400 font-semibold'
-    case 'meta':
-      return 'text-amber-600 dark:text-amber-400 font-semibold'
-    case 'seq':
-      return 'text-cyan-600 dark:text-cyan-400 font-semibold'
-    default:
-      return 'text-muted-foreground/80 font-normal'
+  function getSegmentColorClass(type: string): string {
+    switch (type) {
+      case 'name':
+        return 'text-blue-600 dark:text-blue-400 font-semibold'
+      case 'date':
+        return 'text-purple-600 dark:text-purple-400 font-semibold'
+      case 'tag':
+        return 'text-emerald-600 dark:text-emerald-400 font-semibold'
+      case 'meta':
+        return 'text-amber-600 dark:text-amber-400 font-semibold'
+      case 'seq':
+        return 'text-cyan-600 dark:text-cyan-400 font-semibold'
+      default:
+        return 'text-muted-foreground/80 font-normal'
+    }
   }
-}
 
-/**
- * 结构化色彩渲染新文件名组件（根据 DSL 变量分组语义分段高亮）
- */
-const RenderedFilename: React.FC<{
-  segments?: Array<{ text: string; type: string }>
-  fallbackName: string
-  isChanged: boolean
-}> = ({ segments, fallbackName, isChanged }) => {
-  if (segments && segments.length > 0) {
+  /**
+   * 结构化色彩渲染新文件名组件（根据 DSL 变量分组语义分段高亮）
+   */
+  const RenderedFilename: React.FC<{
+    segments?: Array<{ text: string; type: string }>
+    fallbackName: string
+    isChanged: boolean
+  }> = ({ segments, fallbackName, isChanged }) => {
+    if (segments && segments.length > 0) {
+      return (
+        <span className="inline-flex items-center flex-wrap font-sans">
+          {segments.map((seg, sIdx) => {
+            if (!seg.text) return null
+            return (
+              <span key={sIdx} className={getSegmentColorClass(seg.type)}>
+                {seg.text}
+              </span>
+            )
+          })}
+        </span>
+      )
+    }
+
     return (
-      <span className="inline-flex items-center flex-wrap font-sans">
-        {segments.map((seg, sIdx) => {
-          if (!seg.text) return null
-          return (
-            <span key={sIdx} className={getSegmentColorClass(seg.type)}>
-              {seg.text}
-            </span>
-          )
-        })}
+      <span
+        className={cn(
+          'font-semibold font-sans',
+          isChanged ? 'text-primary' : 'text-muted-foreground'
+        )}
+      >
+        {fallbackName}
       </span>
     )
   }
 
-  return (
-    <span
-      className={cn(
-        'font-semibold font-sans',
-        isChanged ? 'text-primary' : 'text-muted-foreground'
-      )}
-    >
-      {fallbackName}
-    </span>
-  )
-}
+  /**
+   * 计算单个文件在当前模板与底层数据中具有有效值的标签/属性数量（用于更名实时对照列表由高到低排序）
+   */
+  function getItemTagScore(item: BatchRenamePreviewItem, file?: FileInfoForAI): number {
+    let matchedTokensCount = 0
+    let totalTagsCount = 0
 
-/**
- * 判定文件是否相较于智能文件名发生了变动（以智能文件名作为判定基准）
- */
-function isItemChanged(item: BatchRenamePreviewItem): boolean {
-  if (item.hasError) return false
-  const cleanSmartName = (item.rawSmartName || '').replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
-  if (!cleanSmartName) {
-    return item.currentName !== item.newName
+    // 1. 优先统计当前模板中实际命中并渲染出有效值的「标签/多模态/作者/日期」片段数量
+    if (item.segments && item.segments.length > 0) {
+      for (const seg of item.segments) {
+        if (seg.type === 'tag' || seg.type === 'meta' || seg.type === 'date') {
+          if (seg.text && seg.text.trim()) {
+            matchedTokensCount++
+          }
+        }
+      }
+    }
+
+    // 2. 统计该文件底层数据库中拥有的有效业务标签总数（排除扩展名标签）
+    if (file) {
+      if (Array.isArray(file.dimensionTags)) {
+        totalTagsCount += file.dimensionTags.filter(t => t && t.tag && !isExtensionTriggerTagName(t.tag)).length
+      }
+      if (Array.isArray(file.tags)) {
+        totalTagsCount += file.tags.filter(t => t && typeof t === 'string' && t.trim()).length
+      }
+      if (file.author && String(file.author).trim()) {
+        totalTagsCount += 1
+      }
+      if (file.metadata && typeof file.metadata === 'object' && Object.keys(file.metadata).length > 0) {
+        totalTagsCount += 1
+      }
+    }
+
+    // 模板内实际匹配生效的标签权重大（x100），加上底层有效标签总数，确保有值标签越多的文件排在越前
+    return matchedTokensCount * 100 + totalTagsCount
   }
-  const extMatch = item.currentName.match(/\.[a-zA-Z0-9]{1,10}$/i)
-  const ext = extMatch ? extMatch[0] : ''
-  const smartWithExt = `${cleanSmartName}${ext}`
 
-  return item.newName !== smartWithExt && item.newName !== cleanSmartName
-}
+  /**
+   * 判定文件是否相较于智能文件名发生了变动（以智能文件名作为判定基准）
+   */
+  function isItemChanged(item: BatchRenamePreviewItem): boolean {
+    if (item.hasError) return false
+    const cleanSmartName = (item.rawSmartName || '').replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
+    if (!cleanSmartName) {
+      return item.currentName !== item.newName
+    }
+    const extMatch = item.currentName.match(/\.[a-zA-Z0-9]{1,10}$/i)
+    const ext = extMatch ? extMatch[0] : ''
+    const smartWithExt = `${cleanSmartName}${ext}`
 
-  // 切换随机模板
+    return item.newName !== smartWithExt && item.newName !== cleanSmartName
+  }
+
   // 切换随机模板
   const handleRandomTemplate = async () => {
     try {
       if (window.electronAPI?.organizeBatch?.getRandomTemplate) {
         const rand = await window.electronAPI.organizeBatch.getRandomTemplate()
         if (rand) {
-          setTemplate(rand)
+          setTemplate(useTypeDelimiters ? rand : stripTypeDelimiters(rand))
           toast.success(t('已应用随机命名模板'))
           return
         }
@@ -495,7 +788,7 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
     }
     const presets = getPresetNamingTemplates()
     const rand = presets[Math.floor(Math.random() * presets.length)].template
-    setTemplate(rand)
+    setTemplate(useTypeDelimiters ? rand : stripTypeDelimiters(rand))
     toast.success(t('已应用随机命名模板'))
   }
 
@@ -507,7 +800,8 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
 
   // 还原默认模板
   const handleResetTemplate = () => {
-    setTemplate('{SMART_NAME}_{MOD:YYYY-MM-DD}')
+    const defaultTpl = `[{TAG:${t('文件类型')}}]{SMART_NAME}_{MOD:YYYY-MM-DD}`
+    setTemplate(useTypeDelimiters ? defaultTpl : stripTypeDelimiters(defaultTpl))
     toast.info(t('已还原默认模板'))
   }
 
@@ -531,9 +825,18 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
     )
   }, [presetList, templateSearch])
 
-  // 过滤后的预览列表
+  const fileMap = useMemo(() => {
+    const map = new Map<any, FileInfoForAI>()
+    for (const f of files || []) {
+      if (f.id !== undefined) map.set(f.id, f)
+      if (f.path) map.set(f.path, f)
+    }
+    return map
+  }, [files])
+
+  // 过滤后的预览列表（核心规则：按照标签有值的个数由高到低降序排序）
   const filteredPreviewList = useMemo(() => {
-    let list = previewList
+    let list = [...previewList]
     if (filterTab === 'changed') {
       list = list.filter(item => isItemChanged(item))
     } else if (filterTab === 'unchanged') {
@@ -551,8 +854,23 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
           (item.rawSmartName && item.rawSmartName.toLowerCase().includes(kw))
       )
     }
+
+    // 核心规则：按照标签有值的个数排序，由高到低 (降序)
+    list.sort((a, b) => {
+      const fileA = fileMap.get(a.fileId) || fileMap.get(a.path)
+      const fileB = fileMap.get(b.fileId) || fileMap.get(b.path)
+
+      const scoreA = getItemTagScore(a, fileA)
+      const scoreB = getItemTagScore(b, fileB)
+
+      if (scoreB !== scoreA) {
+        return scoreB - scoreA // 降序：高 -> 低
+      }
+      return a.currentName.localeCompare(b.currentName, 'zh-CN')
+    })
+
     return list
-  }, [previewList, filterTab, previewSearch])
+  }, [previewList, filterTab, previewSearch, fileMap])
 
   // 统计信息（以智能文件名为基准判定）
   const previewStats = useMemo(() => {
@@ -602,8 +920,8 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
             defaultSize: 245,
             minSize: 200,
             content: (
-              <div className="h-full flex flex-col bg-muted/15 border-r border-border/50 overflow-hidden select-none">
-                <div className="p-3 border-b border-border/50 space-y-2 shrink-0 bg-background/40">
+              <div className="h-full flex flex-col bg-background border-r border-border/40 overflow-hidden select-none">
+                <div className="p-3 border-b border-border/40 space-y-2 shrink-0 bg-background">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                       <MaterialIcon icon="bookmarks" className="text-sm text-primary" />
@@ -618,7 +936,7 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                       value={templateSearch}
                       onChange={e => setTemplateSearch(e.target.value)}
                       placeholder={t('搜索模板...')}
-                      className="h-7 text-xs pl-7 bg-background shadow-2xs"
+                      className="h-7 text-xs pl-7 bg-background shadow-2xs border-border/40"
                     />
                     <MaterialIcon
                       icon="search"
@@ -636,21 +954,22 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-2.5 space-y-2">
+                <div className="flex-1 overflow-y-auto p-2 space-y-1">
                   {filteredPresets.map((item, idx) => {
                     const isSelected = template === item.template
                     return (
                       <div
                         key={idx}
                         onClick={() => {
-                          setTemplate(item.template)
+                          const finalTpl = useTypeDelimiters ? item.template : stripTypeDelimiters(item.template)
+                          setTemplate(finalTpl)
                           toast.success(t('已套用模板: {name}', { name: item.name }))
                         }}
                         className={cn(
-                          'p-2.5 rounded-xl border text-left cursor-pointer transition-all duration-200 group relative',
+                          'p-2 rounded-lg border text-left cursor-pointer transition-all duration-150 group',
                           isSelected
-                            ? 'border-primary/60 bg-primary/10 text-primary shadow-xs ring-1 ring-primary/30'
-                            : 'border-border/40 hover:border-border hover:bg-muted/40 text-foreground'
+                            ? 'border-primary/40 bg-primary/10 text-primary'
+                            : 'border-transparent hover:border-border/40 hover:bg-muted/40 text-foreground'
                         )}
                       >
                         <div className="flex items-center justify-between gap-1">
@@ -658,14 +977,14 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                             <MaterialIcon icon={item.icon || 'label'} className="text-xs text-primary/70 shrink-0" />
                             <span className="font-medium text-xs truncate">{item.name}</span>
                           </div>
-                          <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-mono shrink-0">
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-muted/60 text-muted-foreground font-mono shrink-0">
                             {item.category}
                           </span>
                         </div>
-                        <div className="text-[11px] font-mono text-muted-foreground mt-1.5 truncate bg-background/80 px-2 py-0.5 rounded-lg border border-border/30 group-hover:border-primary/30 transition-colors">
+                        <div className="text-[11px] font-mono text-muted-foreground mt-1 truncate">
                           {item.template}
                         </div>
-                        <div className="text-[10px] text-muted-foreground/80 mt-1 line-clamp-1">
+                        <div className="text-[10px] text-muted-foreground/70 mt-0.5 line-clamp-1">
                           {item.description}
                         </div>
                       </div>
@@ -683,69 +1002,72 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
             defaultSize: 1.2,
             minSize: 320,
             content: (
-              <div className="h-full flex flex-col bg-card/25 border-r border-border/50 overflow-hidden">
-                {/* 中栏顶部工具与编排区 */}
-                <div className="p-3.5 border-b border-border/50 space-y-3 bg-background/60 shrink-0">
+              <div className="h-full flex flex-col bg-background border-r border-border/40 overflow-hidden">
+                <div className="p-3.5 border-b border-border/50 space-y-3 shrink-0 bg-muted/40 dark:bg-muted/25">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                      <MaterialIcon icon="tune" className="text-sm text-primary" />
-                      {t('模板可视化编排')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <MaterialIcon icon="tune" className="text-sm text-primary" />
+                        {t('模板可视化编排')}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground bg-background/80 px-1.5 py-0.2 rounded font-mono border border-border/40 shadow-2xs">
+                        DSL
+                      </span>
+                    </div>
                     <div className="flex items-center gap-1">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={handleRandomTemplate}
-                        className="h-7 text-xs gap-1 rounded-lg border-primary/30 hover:bg-primary/10 text-primary cursor-pointer shadow-2xs"
+                        className="h-6 text-xs gap-1 rounded-md border-primary/40 bg-background hover:bg-primary/10 text-primary cursor-pointer shadow-2xs"
                         title={t('随机从模板库抽取灵感')}
                       >
-                        <MaterialIcon icon="casino" className="text-sm" />
+                        <MaterialIcon icon="casino" className="text-xs" />
                         <span>{t('随机')}</span>
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleCopyTemplate}
-                        className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground cursor-pointer"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground cursor-pointer hover:bg-background/80"
                         title={t('复制当前模板表达式')}
                       >
-                        <MaterialIcon icon="content_copy" className="text-sm" />
+                        <MaterialIcon icon="content_copy" className="text-xs" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleResetTemplate}
-                        className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground cursor-pointer"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground cursor-pointer hover:bg-background/80"
                         title={t('还原默认模板')}
                       >
-                        <MaterialIcon icon="restart_alt" className="text-sm" />
+                        <MaterialIcon icon="restart_alt" className="text-xs" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={handleClearTemplate}
-                        className="h-7 text-xs px-2 text-muted-foreground hover:text-destructive cursor-pointer"
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive cursor-pointer hover:bg-background/80"
                         title={t('清空当前模板')}
                       >
-                        <MaterialIcon icon="delete_sweep" className="text-sm" />
+                        <MaterialIcon icon="delete_sweep" className="text-xs" />
                       </Button>
                     </div>
                   </div>
 
-                  {/* 胶囊编排区 (Chip Pills 流式展示，支持拖拽插入指示竖线与右上角半浮动删除) */}
+                  {/* 胶囊编排区 (Chip Pills 流式展示 - 放大、舒展、突出) */}
                   <div
                     onDragOver={e => e.preventDefault()}
                     onDrop={handleDrop}
-                    className="p-3 rounded-xl border border-border/50 bg-background/90 min-h-[58px] flex flex-wrap items-center gap-2.5 pt-3.5 transition-all shadow-inner relative"
+                    className="p-3.5 rounded-xl border border-border/60 bg-background min-h-[58px] flex flex-wrap items-center gap-2.5 relative shadow-xs"
                   >
                     {parsedChips.length === 0 ? (
-                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60 italic pl-1">
-                        <MaterialIcon icon="drag_indicator" className="text-sm opacity-50" />
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground/60 italic pl-1">
+                        <MaterialIcon icon="drag_indicator" className="text-base opacity-50" />
                         <span>{t('模板为空，请从下方点击属性标签开始智能组合...')}</span>
                       </div>
                     ) : (
                       parsedChips.map((chip, idx) => {
-                        const isToken = chip.startsWith('{') || chip.startsWith('[')
                         const isBeingDragged = draggedChipIndex === idx
 
                         const showBeforeIndicator =
@@ -784,26 +1106,26 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                                 setDropTarget(null)
                               }}
                               className={cn(
-                                'group/chip relative inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono select-none transition-all duration-150',
-                                'cursor-grab active:cursor-grabbing hover:shadow-xs',
+                                'group/chip relative inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[13px] font-mono select-none transition-all duration-150',
+                                'cursor-grab active:cursor-grabbing hover:scale-[1.02] active:scale-98',
                                 getChipStyle(chip),
                                 isBeingDragged && 'opacity-30 border-dashed border-primary scale-95'
                               )}
                             >
                               <MaterialIcon
                                 icon="drag_indicator"
-                                className="text-[11px] text-muted-foreground/50 -ml-1 shrink-0 opacity-40 group-hover/chip:opacity-100 transition-opacity"
+                                className="text-xs text-muted-foreground/50 -ml-0.5 shrink-0 opacity-40 group-hover/chip:opacity-100 transition-opacity"
                               />
-                              <span>{chip}</span>
+                              <span className="leading-snug">{chip}</span>
 
-                              {/* 右上角浮动一半在外部的删除图标 */}
+                              {/* 右上角浮动删除图标 */}
                               <button
                                 type="button"
                                 onClick={e => {
                                   e.stopPropagation()
                                   handleRemoveChip(idx)
                                 }}
-                                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center text-[11px] leading-none font-bold opacity-0 group-hover/chip:opacity-100 transition-all duration-150 shadow-md hover:scale-115 active:scale-95 cursor-pointer z-10"
+                                className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[14px] leading-none font-bold opacity-0 group-hover/chip:opacity-100 transition-all duration-150 shadow-xs scale-110 cursor-pointer z-10"
                                 title={t('移除')}
                               >
                                 ×
@@ -818,85 +1140,163 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                     )}
                   </div>
 
-                  {/* 表达式文本输入框（与胶囊实时双向同步） */}
-                  <div className="space-y-1.5">
+                  {/* 表达式文本输入框与底部开关行 */}
+                  <div className="space-y-2">
                     <Input
                       value={template}
                       onChange={e => setTemplate(e.target.value)}
                       placeholder={t('自由编辑或输入 DSL 模板表达式')}
-                      className="font-mono text-xs h-8 bg-background focus-visible:ring-primary w-full shadow-2xs"
+                      className="font-mono text-xs h-8 bg-background focus-visible:ring-primary w-full shadow-2xs border-border/50"
                     />
-                    <div className="text-[11px] text-muted-foreground flex items-center gap-1 px-1">
-                      <MaterialIcon icon="auto_fix_high" className="text-xs text-primary/70" />
-                      <span>{t('连接符已根据 DSL 语义智能生成，支持在输入框中自由修改；缺少变量时将自动折叠')}</span>
+                    <div className="flex items-center justify-between gap-2 px-0.5 pt-0.5">
+                      <div className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                        <MaterialIcon icon="auto_fix_high" className="text-xs text-primary/70 shrink-0" />
+                        <span className="truncate">{t('连接符已根据语义智能生成，缺少变量时自动折叠')}</span>
+                      </div>
+                      <label className="inline-flex items-center gap-1.5 text-xs text-foreground cursor-pointer select-none bg-background hover:bg-background/80 px-2.5 py-1 rounded-md border border-border/40 transition-colors shrink-0 shadow-2xs" title={t('勾选时自动添加 []、()、<> 等类型修饰符，取消勾选时则移除')}>
+                        <input
+                          type="checkbox"
+                          checked={useTypeDelimiters}
+                          onChange={e => handleToggleTypeDelimiters(e.target.checked)}
+                          className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5 cursor-pointer accent-primary"
+                        />
+                        <span className="font-medium text-[11px]">{t('添加类型包裹符')}</span>
+                      </label>
                     </div>
                   </div>
                 </div>
 
-                {/* 下半部分：插值 Label 分组选择区 */}
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  <div className="p-3 pb-1 flex items-center justify-between gap-2 shrink-0">
-                    <div className="text-xs font-semibold text-foreground flex items-center gap-1">
-                      <MaterialIcon icon="touch_app" className="text-xs text-primary" />
-                      {t('点击属性标签插入至模板：')}
+                {/* 2. 属性标签资源池（轻量无嵌套外边框） */}
+                <div className="flex-1 flex flex-col min-h-0 bg-background overflow-hidden">
+                  <div className="p-3 pb-2.5 border-b border-border/40 space-y-2.5 shrink-0 bg-background">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <MaterialIcon icon="touch_app" className="text-xs text-primary" />
+                        <span>{t('属性标签资源池')}</span>
+                      </div>
+                      <div className="relative w-36">
+                        <Input
+                          value={tokenSearch}
+                          onChange={e => setTokenSearch(e.target.value)}
+                          placeholder={t('过滤属性...')}
+                          className="h-6 text-[11px] pl-6 bg-background shadow-2xs border-border/40"
+                        />
+                        <MaterialIcon
+                          icon="filter_list"
+                          className="absolute left-1.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
+                        />
+                      </div>
                     </div>
-                    <div className="relative w-36">
-                      <Input
-                        value={tokenSearch}
-                        onChange={e => setTokenSearch(e.target.value)}
-                        placeholder={t('过滤属性...')}
-                        className="h-6 text-[11px] pl-6 bg-background shadow-2xs"
-                      />
-                      <MaterialIcon
-                        icon="filter_list"
-                        className="absolute left-1.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
-                      />
+
+                    {/* 属性分类快捷 Tab 过滤栏 */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
+                      {[
+                        { id: t('常用'), label: t('常用'), icon: 'star' },
+                        { id: 'all', label: t('全部'), icon: 'apps' },
+                        { id: t('核心名称'), label: t('核心与作者'), icon: 'person' },
+                        { id: t('时间日期'), label: t('时间日期'), icon: 'calendar_today' },
+                        { id: t('分类维度'), label: t('分类维度'), icon: 'category' },
+                        { id: t('无数据'), label: t('无数据'), icon: 'aspect_ratio' },
+                        { id: t('自增序号'), label: t('自增序号'), icon: 'format_list_numbered' }
+                      ].map(tab => {
+                        const isSelected = selectedTokenCategory === tab.id
+                        return (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setSelectedTokenCategory(tab.id)}
+                            className={cn(
+                              'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium shrink-0 transition-all cursor-pointer border',
+                              isSelected
+                                ? 'bg-primary text-primary-foreground border-primary shadow-2xs font-semibold'
+                                : 'bg-muted/25 text-muted-foreground hover:text-foreground hover:bg-muted/50 border-border/30'
+                            )}
+                          >
+                            <MaterialIcon icon={tab.icon} className="text-[11px]" />
+                            <span>{tab.label}</span>
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 
-                  <div className="flex-1 overflow-y-auto p-3 space-y-4">
-                    {tokenCategories.map((cat, catIdx) => {
-                      const matchedTokens = tokenSearch.trim()
-                        ? cat.tokens.filter(
-                            t =>
-                              t.label.toLowerCase().includes(tokenSearch.toLowerCase()) ||
-                              t.value.toLowerCase().includes(tokenSearch.toLowerCase())
-                          )
-                        : cat.tokens
+                  <div className="flex-1 overflow-y-auto p-3.5 space-y-4">
+                    {(() => {
+                      const visibleCategories = tokenCategories
+                        .filter(cat => {
+                          if (selectedTokenCategory === 'all') return cat.category !== t('常用')
+                          return cat.category === selectedTokenCategory
+                        })
+                        .map(cat => ({
+                          ...cat,
+                          tokens: cat.tokens
+                            .filter(t => !isTokenInTemplate(t.value, template))
+                            .filter(t =>
+                              tokenSearch.trim()
+                                ? t.label.toLowerCase().includes(tokenSearch.toLowerCase()) ||
+                                  t.value.toLowerCase().includes(tokenSearch.toLowerCase())
+                                : true
+                            )
+                        }))
+                        .filter(cat => cat.tokens.length > 0)
 
-                      if (matchedTokens.length === 0) return null
-
-                      return (
-                        <div key={catIdx} className="space-y-1.5">
-                          <div className="flex items-center gap-1.5 text-[11px] font-medium text-foreground/80">
-                            <span className={cn('px-1.5 py-0.5 rounded border text-[10px] font-bold', cat.badgeColor)}>
-                              {cat.category}
+                      if (visibleCategories.length === 0) {
+                        return (
+                          <div className="h-40 flex flex-col items-center justify-center text-xs text-muted-foreground gap-1.5 text-center px-4">
+                            <MaterialIcon icon="check_circle" className="text-2xl text-primary/60" />
+                            <span>
+                              {tokenSearch.trim()
+                                ? t('没有找到匹配的属性')
+                                : t('所有属性标签均已添加至上方模板')}
                             </span>
                           </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {matchedTokens.map((token, tIdx) => (
-                              <button
-                                key={tIdx}
-                                type="button"
-                                title={token.desc}
-                                onClick={() => handleInsertToken(token.value)}
-                                className={cn(
-                                  'inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border transition-all duration-150',
-                                  'hover:-translate-y-0.5 hover:shadow-xs active:scale-95 cursor-pointer',
-                                  token.pillClass || 'bg-muted/40 hover:bg-primary/15 border-border/50 text-foreground'
-                                )}
-                              >
-                                <MaterialIcon icon="add" className="text-[10px] opacity-70" />
-                                <span>{token.label}</span>
-                                <span className="text-[10px] font-mono opacity-60 ml-0.5">
-                                  {token.value}
-                                </span>
-                              </button>
-                            ))}
+                        )
+                      }
+
+                      return visibleCategories.map((cat, catIdx) => (
+                        <div key={catIdx} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold border', cat.badgeColor)}>
+                              {cat.category}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground/70 font-mono">
+                              {t('{count} 个可用', { count: cat.tokens.length })}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {cat.tokens.map((token, tIdx) => {
+                              const isSelfNamed =
+                                token.value.startsWith('{TAG:') || token.value.startsWith('{META:')
+
+                              return (
+                                <button
+                                  key={tIdx}
+                                  type="button"
+                                  title={token.desc}
+                                  onClick={() => handleInsertToken(token.value)}
+                                  className={cn(
+                                    'inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border transition-all duration-150',
+                                    'hover:-translate-y-0.5 hover:shadow-2xs active:scale-95 cursor-pointer',
+                                    token.pillClass || 'bg-muted/30 hover:bg-primary/15 border-border/40 text-foreground'
+                                  )}
+                                >
+                                  {isSelfNamed ? (
+                                    <span className="font-mono">{token.value}</span>
+                                  ) : (
+                                    <>
+                                      <span>{token.label}</span>
+                                      <span className="text-[10px] font-mono opacity-60 ml-0.5">
+                                        {token.value}
+                                      </span>
+                                    </>
+                                  )}
+                                </button>
+                              )
+                            })}
                           </div>
                         </div>
-                      )
-                    })}
+                      ))
+                    })()}
                   </div>
                 </div>
               </div>
@@ -912,7 +1312,7 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
             content: (
               <div className="h-full flex flex-col bg-background overflow-hidden">
                 {/* 右栏顶部看板与搜索 */}
-                <div className="p-3 border-b border-border/50 space-y-2 shrink-0 bg-background/60">
+                <div className="p-3 border-b border-border/40 space-y-2.5 shrink-0 bg-background">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
@@ -956,7 +1356,7 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
 
                   {/* 状态统计 Filter Tabs 与搜索框 */}
                   <div className="flex items-center justify-between gap-2 pt-1">
-                    <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-lg border border-border/40">
+                    <div className="flex items-center gap-1 bg-muted/30 p-0.5 rounded-md border border-border/40">
                       <button
                         type="button"
                         onClick={() => setFilterTab('all')}
@@ -1002,7 +1402,7 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                         value={previewSearch}
                         onChange={e => setPreviewSearch(e.target.value)}
                         placeholder={t('搜索文件名...')}
-                        className="h-6 text-[11px] pl-6 bg-background shadow-2xs"
+                        className="h-6 text-[11px] pl-6 bg-background shadow-2xs border-border/40"
                       />
                       <MaterialIcon
                         icon="search"
@@ -1012,16 +1412,15 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                   </div>
                 </div>
 
-                {/* 实时更名对照内容列表 */}
-                <div className="flex-1 overflow-y-auto p-3">
+                {/* 实时更名对照内容列表（单线条细分隔线，轻量化极简风格，增加内边距与行间距） */}
+                <div className="flex-1 overflow-y-auto">
                   {filteredPreviewList.length === 0 ? (
                     <div className="h-40 flex flex-col items-center justify-center text-xs text-muted-foreground gap-1.5">
                       <MaterialIcon icon="folder_open" className="text-2xl text-muted-foreground/50" />
                       <span>{t('没有符合筛选条件的待重命名文件')}</span>
                     </div>
                   ) : rightViewMode === 'card' ? (
-                    // 卡片式对照视图（全部左对齐，无多余标签，无智能名背景，无右上角新名称label）
-                    <div className="space-y-2.5">
+                    <div className="divide-y divide-border/30">
                       {filteredPreviewList.map((item, idx) => {
                         const isChanged = isItemChanged(item)
                         const cleanSmartName = (item.rawSmartName || '').replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
@@ -1029,12 +1428,8 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                           <div
                             key={item.fileId || idx}
                             className={cn(
-                              'p-3 rounded-xl border text-xs space-y-1.5 transition-all text-left',
-                              item.hasError
-                                ? 'border-destructive/40 bg-destructive/5'
-                                : isChanged
-                                  ? 'border-primary/40 bg-primary/5 hover:border-primary/60 hover:shadow-xs'
-                                  : 'border-border/50 bg-card/60 hover:border-border'
+                              'py-3 px-3.5 hover:bg-muted/25 transition-colors text-xs space-y-1.5 text-left',
+                              item.hasError && 'bg-destructive/5'
                             )}
                           >
                             {/* 1. 原文件名 */}
@@ -1042,7 +1437,7 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                               <div className="flex items-center gap-1.5 truncate max-w-full font-sans">
                                 <MaterialIcon
                                   icon="insert_drive_file"
-                                  className="text-xs shrink-0 text-muted-foreground/70"
+                                  className="text-xs shrink-0 text-muted-foreground/60"
                                 />
                                 <span className="truncate" title={item.currentName}>
                                   {item.currentName}
@@ -1055,10 +1450,10 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                               )}
                             </div>
 
-                            {/* 2. 原始智能文件名（左对齐，纯文本，无背景色框，剥离扩展名后缀） */}
+                            {/* 2. 原始智能文件名（左对齐，纯文本，无背景色框） */}
                             {cleanSmartName && (
-                              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/90 font-sans">
-                                <MaterialIcon icon="psychology" className="text-xs text-primary/80 shrink-0" />
+                              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/80 font-sans">
+                                <MaterialIcon icon="psychology" className="text-xs text-primary/70 shrink-0" />
                                 <span className="truncate" title={cleanSmartName}>
                                   {cleanSmartName}
                                 </span>
@@ -1066,12 +1461,12 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                             )}
 
                             {/* 3. 拟更名新名称（左对齐，按变量标签分组色彩结构化渲染） */}
-                            <div className="font-sans font-medium text-foreground text-xs break-all flex items-center gap-1.5 pt-0.5">
+                            <div className="font-sans font-medium text-foreground text-xs break-all flex items-center gap-1.5 pt-1">
                               <MaterialIcon
                                 icon="drive_file_rename_outline"
                                 className={cn(
                                   'text-sm shrink-0',
-                                  isChanged ? 'text-primary' : 'text-muted-foreground'
+                                  isChanged ? 'text-primary' : 'text-muted-foreground/60'
                                 )}
                               />
                               <RenderedFilename
@@ -1082,7 +1477,7 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                             </div>
 
                             {item.hasError && (
-                              <div className="text-[10px] text-destructive flex items-center gap-1 pt-0.5">
+                              <div className="text-[10px] text-destructive flex items-center gap-1 pt-1">
                                 <MaterialIcon icon="error" className="text-xs" />
                                 <span>{item.errorMessage}</span>
                               </div>
@@ -1093,36 +1488,36 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
                     </div>
                   ) : (
                     // 紧凑表格视图
-                    <div className="rounded-lg border border-border/60 overflow-hidden text-xs shadow-2xs">
+                    <div className="text-xs">
                       <table className="w-full text-left border-collapse">
-                        <thead className="bg-muted/50 border-b border-border/50 text-[11px] text-muted-foreground">
+                        <thead className="bg-muted/30 border-b border-border/40 text-[11px] text-muted-foreground">
                           <tr>
-                            <th className="p-2 font-medium">{t('原文件名')}</th>
-                            <th className="p-2 font-medium">{t('原始智能名')}</th>
-                            <th className="p-2 font-medium">{t('拟更名新名称')}</th>
-                            <th className="p-2 font-medium w-16 text-right">{t('状态')}</th>
+                            <th className="p-2.5 font-medium">{t('原文件名')}</th>
+                            <th className="p-2.5 font-medium">{t('原始智能名')}</th>
+                            <th className="p-2.5 font-medium">{t('拟更名新名称')}</th>
+                            <th className="p-2.5 font-medium w-16 text-right">{t('状态')}</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-border/40 font-mono text-[11px]">
+                        <tbody className="divide-y divide-border/30 font-mono text-[11px]">
                           {filteredPreviewList.map((item, idx) => {
                             const isChanged = isItemChanged(item)
                             const cleanSmartName = (item.rawSmartName || '').replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
                             return (
                               <tr key={item.fileId || idx} className="hover:bg-muted/20 transition-colors">
-                                <td className="p-2 truncate max-w-[120px] text-muted-foreground" title={item.currentName}>
+                                <td className="p-2.5 truncate max-w-[120px] text-muted-foreground" title={item.currentName}>
                                   {item.currentName}
                                 </td>
-                                <td className="p-2 truncate max-w-[120px] text-muted-foreground font-sans" title={cleanSmartName || '-'}>
+                                <td className="p-2.5 truncate max-w-[120px] text-muted-foreground font-sans" title={cleanSmartName || '-'}>
                                   {cleanSmartName || '-'}
                                 </td>
-                                <td className="p-2 truncate max-w-[160px]" title={item.newName}>
+                                <td className="p-2.5 truncate max-w-[160px]" title={item.newName}>
                                   <RenderedFilename
                                     segments={item.segments}
                                     fallbackName={item.newName}
                                     isChanged={isChanged}
                                   />
                                 </td>
-                                <td className="p-2 text-right">
+                                <td className="p-2.5 text-right">
                                   {item.hasError ? (
                                     <span className="text-destructive font-bold">{t('异常')}</span>
                                   ) : isChanged ? (
@@ -1157,3 +1552,4 @@ function isItemChanged(item: BatchRenamePreviewItem): boolean {
     </div>
   )
 }
+

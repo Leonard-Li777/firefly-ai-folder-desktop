@@ -607,6 +607,9 @@ declare global {
           }
         }
       ) => Promise<any>
+      applyDirectoryNamingTemplateToFiles: (
+        dirPath: string
+      ) => Promise<{ updatedCount: number; totalCount: number; success: boolean }>
 
       // 文件系统操作
       readDirectory: (path: string) => Promise<ReadDirectoryResult>

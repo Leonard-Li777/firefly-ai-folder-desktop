@@ -796,6 +796,11 @@ const electronAPI = {
     }
   ): Promise<any> => ipcRenderer.invoke('update-directory-context-analysis', dirPath, updates),
 
+  applyDirectoryNamingTemplateToFiles: (
+    dirPath: string
+  ): Promise<{ updatedCount: number; totalCount: number; success: boolean }> =>
+    ipcRenderer.invoke('apply-directory-naming-template-to-files', dirPath),
+
   // 文件系统操作
   readDirectory: (path: string): Promise<{ files: FileItem[]; directories: DirectoryItem[] }> =>
     ipcRenderer.invoke('read-directory', path),

@@ -63,6 +63,11 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
         {children}
       </p>
     ),
+    blockquote: ({ children }: any) => (
+      <blockquote className="border-l-4 border-primary/60 bg-muted/40 pl-3 py-1.5 my-2 text-sm italic text-muted-foreground rounded-r-md">
+        {children}
+      </blockquote>
+    ),
     ul: ({ children }: any) => (
       <ul className="list-disc pl-5 space-y-1 mb-2 last:mb-0">{children}</ul>
     ),
@@ -249,13 +254,8 @@ export const AnalysisTabs: React.FC<any> = ({
           </div>
         )}
         {activeTab === 'ocr' && (
-          <div
-            className={cn(
-              'text-sm text-foreground bg-muted/30 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed',
-              maskClass
-            )}
-          >
-            {(() => {
+          <SummaryMarkdown
+            content={(() => {
               if (analysisResult.lrc?.trim()) return analysisResult.lrc
               if (analysisResult.ocrContent?.trim()) return analysisResult.ocrContent
               const isImageFile =
@@ -269,9 +269,10 @@ export const AnalysisTabs: React.FC<any> = ({
               ) {
                 return analysisResult.content
               }
-              return t('暂无 OCR 识别结果')
+              return `> ${t('暂无 OCR 识别结果')}`
             })()}
-          </div>
+            maskClass={maskClass}
+          />
         )}
 
         {activeTab === 'summary' && (

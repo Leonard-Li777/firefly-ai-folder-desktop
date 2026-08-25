@@ -36,10 +36,10 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
     },
     {
       stage: 'batch-duplicate' as Stage,
-      title: t('批量查重'),
+      title: t('批量清理'),
       tag: t('双轨多模态'),
-      icon: 'content_copy',
-      description: t('Omni Rust 多模态感知哈希 + SQLite 本地文档语义双轨并行，支持智能推荐保留并安全移入回收站。'),
+      icon: 'cleaning_services',
+      description: t('基于 Omni Rust 快速多模态指纹与本地文档语义双轨并行，智能分析并安全清理重复与冗余文件。'),
       accentColor: 'from-amber-500/10 via-orange-500/5 to-transparent',
       iconColor: 'text-amber-500 bg-amber-500/10',
       badgeVariant: 'secondary' as const

@@ -546,6 +546,19 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     }
   }, [currentPath, loadDirectoryContents]) // 依赖项确保闭包内的路径是最新的
 
+  // 监听全局智能文件名与文件更新事件
+  useEffect(() => {
+    const handleSmartNameUpdated = () => {
+      loadDirectoryContents()
+    }
+    window.addEventListener('smartname-updated', handleSmartNameUpdated)
+    window.addEventListener('files-updated', handleSmartNameUpdated)
+    return () => {
+      window.removeEventListener('smartname-updated', handleSmartNameUpdated)
+      window.removeEventListener('files-updated', handleSmartNameUpdated)
+    }
+  }, [loadDirectoryContents])
+
   // 获取当前目录的文件列表
   useEffect(() => {
     loadDirectoryContents()

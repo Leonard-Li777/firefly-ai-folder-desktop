@@ -1,5 +1,5 @@
-import { toMarkdown } from '@firecrawl/anydoc'
 import { LogCategory, logger } from '@firefly/shared'
+import { omniService } from './omni-service'
 
 export interface AnydocAsset {
   path: string
@@ -27,45 +27,21 @@ export class AnydocService {
   }
 
   /**
-   * Extract markdown content and image assets from a document file using @firecrawl/anydoc
+   * 提取文档文本与 Markdown 内容 (全面由 Omni Rust 原生微服务接管)
    */
-  public async extract(filePath: string, timeoutMs: number = 60000): Promise<AnydocResult> {
-    logger.info(LogCategory.ANALYSIS_QUEUE, `[AnydocService] 开始提取: ${filePath}`)
-
+  public async extract(filePath: string, _timeoutMs: number = 60000): Promise<AnydocResult> {
     try {
-      const extractPromise = toMarkdown(filePath)
-      let timerId: NodeJS.Timeout | undefined
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        timerId = setTimeout(() => {
-          reject(new Error(`Anydoc extract timeout after ${timeoutMs}ms`))
-        }, timeoutMs)
-      })
-
-      const markdown = (await Promise.race([extractPromise, timeoutPromise]).finally(() => {
-        if (timerId) clearTimeout(timerId)
-      })) as any
-      const content = typeof markdown === 'string' ? markdown : (markdown as any)?.content || ''
-
+      const omniData = await omniService.extract(filePath)
       return {
-        content,
+        content: omniData?.markdown_content || '',
         assets: []
       }
     } catch (error: any) {
-      // anydoc 文档约定：unsupported（不支持的格式，如 .lnk 快捷方式）/ encrypted（加密文档）
-      // 属于正常跳过场景，记录 warn 即可，避免对每个不支持的文件刷 error 日志
-      const code = (error as any)?.code
-      if (code === 'unsupported' || code === 'encrypted') {
-        logger.warn(
-          LogCategory.ANALYSIS_QUEUE,
-          `[AnydocService] 跳过不支持的文件 (${filePath}): ${error?.message || code}`
-        )
-      } else {
-        logger.warn(
-          LogCategory.ANALYSIS_QUEUE,
-          `[AnydocService] 提取异常或超时 (${filePath}):`,
-          error
-        )
-      }
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[AnydocService] 提取异常 (${filePath}):`,
+        error?.message || error
+      )
       return {
         content: '',
         assets: []

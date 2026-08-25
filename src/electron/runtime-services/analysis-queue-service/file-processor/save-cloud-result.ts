@@ -100,8 +100,16 @@ export async function saveCloudResult(
     const isHit = isCloudCache ? 1 : 0
     const lastHitAt = isHit ? new Date().toISOString() : null
 
-    // 智能文件名落盘前进行重名检测：同工作区内重名时自动追加编号后缀，并清洗无意义前缀
-    const rawSmartName = cleanSmartName(data.smart_name || data.smartName || item.name, item.name)
+    // 智能文件名落盘前进行重名检测：同工作区内重名时自动追加编号后缀，并清洗无意义前缀（rawSmartName 不需要带扩展名）
+    const itemExt = path.extname(item.name || '').replace(/^\./, '')
+    let rawSmartName = cleanSmartName(data.smart_name || data.smartName || item.name, item.name)
+    if (itemExt) {
+      rawSmartName = rawSmartName.replace(new RegExp(`\\.${itemExt}$`, 'i'), '')
+    }
+    rawSmartName = rawSmartName.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
+    if (!rawSmartName) {
+      rawSmartName = path.basename(item.name || '', path.extname(item.name || ''))
+    }
     const smartName = await databaseService.resolveUniqueSmartName(
       rawSmartName,
       fileFingerprint,
