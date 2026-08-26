@@ -306,18 +306,42 @@ export const AnalysisTabs: React.FC<any> = ({
               const meta = analysisResult.metadata || {}
 
               const labelVal =
-                catObj.label || catObj.type || analysisResult.type || meta.magikaLabel || meta.type
+                catObj.label ||
+                catObj.type ||
+                analysisResult.type ||
+                meta.magikaLabel ||
+                meta.type ||
+                meta.FileType ||
+                meta.FileTypeExtension
               const descriptionVal =
-                catObj.description || meta.description || meta.magikaDescription
+                catObj.description ||
+                meta.description ||
+                meta.magikaDescription ||
+                (meta.Make && meta.Model ? `${meta.Make} ${meta.Model}` : undefined)
               const mimeVal =
                 catObj.mime_type ||
                 catObj.mimeType ||
                 analysisResult.mimeType ||
                 meta.mime_type ||
-                meta.mimeType
-              const extensionsVal = catObj.extensions || catObj.exts || meta.extensions || meta.exts
-              const groupVal = catObj.group || meta.group || meta.magikaGroup
-              const isTextVal = catObj.is_text ?? catObj.isText ?? meta.is_text ?? meta.isText
+                meta.mimeType ||
+                meta.MIMEType
+              const extensionsVal =
+                catObj.extensions ||
+                catObj.exts ||
+                meta.extensions ||
+                meta.exts ||
+                meta.FileTypeExtension
+              const groupVal =
+                catObj.group ||
+                meta.group ||
+                meta.magikaGroup ||
+                (meta.MIMEType?.startsWith('image/') ? 'image' : undefined)
+              const isTextVal =
+                catObj.is_text ??
+                catObj.isText ??
+                meta.is_text ??
+                meta.isText ??
+                (meta.MIMEType?.startsWith('text/') ? true : false)
               const scoreVal = catObj.score ?? catObj.confidence ?? meta.score ?? meta.confidence
 
               const fullItems = [
@@ -389,9 +413,18 @@ export const AnalysisTabs: React.FC<any> = ({
                       return String(val)
                     }
 
-                    // 无意义的顶级字段集合（兜底过滤旧数据）
-                    const SKIP_TOP_KEYS = new Set([
-                      'ExifToolVersion' // 工具版本号
+                    // 无意义字段集合与内部嵌套复用键名（递归全局过滤）
+                    const SKIP_KEYS = new Set([
+                      'ExifToolVersion', // 工具版本号
+                      'MakerNote', // 100KB+ 超长相机专有二进制 hex 码，避免卡顿
+                      'ThumbnailImage', // 嵌入缩略图二进制字段
+                      'basic', // 已经由顶部卡片展示的冗余对象
+                      'image', // 已经由 Exif 属性扁平展开展示的冗余对象
+                      'exiftool', // 已经由顶级 Exif 属性直接展示的冗余对象
+                      'exif', // 已经由顶级扁平 Exif 属性展示的冗余子对象
+                      'magika', // 已经由顶部 Magika 卡片展示的冗余对象
+                      'raw_smart_name', // 内部智能重命名暂存字段
+                      'naming_template'
                     ])
                     // ExifDateTime 日期对象特征：含 _ctor 或同时有 year/month/day 子字段
                     const isExifDateTimeObj = (v: any): boolean =>
@@ -422,8 +455,12 @@ export const AnalysisTabs: React.FC<any> = ({
                       if (typeof obj !== 'object' || obj === null) return []
                       return Object.entries(obj).flatMap<React.ReactNode>(([key, val]) => {
                         const fullKey = prefix ? `${prefix}.${key}` : key
-                        // 跳过无意义顶级字段
-                        if (!prefix && SKIP_TOP_KEYS.has(key)) return []
+                        // 全局过滤无意义字段或超长二进制字段（如 MakerNote / exif.MakerNote）
+                        if (SKIP_KEYS.has(key) || SKIP_KEYS.has(fullKey)) return []
+                        // 如果值是超过 500 字符的纯 Hex/Base64 二进制乱码，自动过滤
+                        if (typeof val === 'string' && val.length > 500 && /^[0-9a-fA-F\s]+$/.test(val)) {
+                          return []
+                        }
                         // ExifDateTime 对象：直接渲染格式化日期，不递归展开子字段
                         if (isExifDateTimeObj(val)) {
                           const displayDate = formatExifDateTimeObj(val)

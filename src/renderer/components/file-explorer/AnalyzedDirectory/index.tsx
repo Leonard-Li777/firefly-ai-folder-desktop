@@ -324,10 +324,6 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     // Logic handled inside DimensionFileListPanel or store
   }, [])
 
-  const handleLoadMore = useCallback(() => {
-    state.loadFilteredFiles(true)
-  }, [state.loadFilteredFiles])
-
   const handleFirstRender = useCallback(() => {
     performanceTracker.end('Component Mount to Initial Render')
     performanceTracker.end('Total Switch Time (Real to Analyzed)')

@@ -93,16 +93,34 @@ export class FileDao {
 
     // 优先通过原生路径或 ID 查询
     const isId = typeof idOrPath === 'number' || /^\d+$/.test(String(idOrPath))
-    const workspaceFile = this.db
-      .prepare(
-        `
-      SELECT
-        wf.id, wf.file_fingerprint, wf.path, wf.name, wf.is_analyzed, wf.last_analyzed_at, wf.thumbnail_path,
-        wf.created_at, wf.modified_at, wf.accessed_at
-      FROM workspace_files wf
-      WHERE ${isId ? 'wf.id = ?' : 'wf.path = ?'}`
-      )
-      .get(isId ? Number(idOrPath) : idOrPath) as any
+    let workspaceFile: any = null
+
+    if (isId) {
+      workspaceFile = this.db
+        .prepare(
+          `
+        SELECT
+          wf.id, wf.file_fingerprint, wf.path, wf.name, wf.is_analyzed, wf.last_analyzed_at, wf.thumbnail_path,
+          wf.created_at, wf.modified_at, wf.accessed_at
+        FROM workspace_files wf
+        WHERE wf.id = ?`
+        )
+        .get(Number(idOrPath)) as any
+    } else {
+      const p = String(idOrPath)
+      const pSlash = p.replace(/\\/g, '/')
+      const pBackslash = p.replace(/\//g, '\\')
+      workspaceFile = this.db
+        .prepare(
+          `
+        SELECT
+          wf.id, wf.file_fingerprint, wf.path, wf.name, wf.is_analyzed, wf.last_analyzed_at, wf.thumbnail_path,
+          wf.created_at, wf.modified_at, wf.accessed_at
+        FROM workspace_files wf
+        WHERE wf.path = ? OR wf.path = ?`
+        )
+        .get(pSlash, pBackslash) as any
+    }
 
     if (!workspaceFile) {
       logger.warn(LogCategory.DATABASE_SERVICE, '未找到文件分析结果', { idOrPath })
@@ -112,7 +130,43 @@ export class FileDao {
     AccessTimeBatchUpdater.getInstance().queueUpdate(workspaceFile.id, new Date().toISOString())
 
     let fileData: any = {}
-    const fingerprint = workspaceFile.file_fingerprint
+    let fingerprint = workspaceFile.file_fingerprint
+
+    // 指纹自愈补齐：若物理记录存在但缺少 file_fingerprint，自动根据物理文件计算真实内容哈希并关联
+    if (!fingerprint && workspaceFile.path && fs.existsSync(workspaceFile.path)) {
+      try {
+        const { calculateFileFingerprint } = await import('@firefly/shared')
+        fingerprint = await calculateFileFingerprint(workspaceFile.path)
+        if (fingerprint) {
+          const stats = fs.statSync(workspaceFile.path)
+          const ext = path.extname(workspaceFile.path).toLowerCase().replace(/^\./, '')
+          // 先确保父表 files 与 file_contents 记录存在，防止触发 SQLite 外键约束异常
+          this.db
+            .prepare(
+              `INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, type, created_at, modified_at, accessed_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`
+            )
+            .run(
+              fingerprint,
+              workspaceFile.name,
+              stats.size,
+              ext || 'unknown',
+              stats.birthtime.toISOString(),
+              stats.mtime.toISOString(),
+              stats.atime.toISOString()
+            )
+          this.db
+            .prepare(`INSERT OR IGNORE INTO file_contents (file_fingerprint) VALUES (?)`)
+            .run(fingerprint)
+
+          this.db
+            .prepare('UPDATE workspace_files SET file_fingerprint = ? WHERE id = ?')
+            .run(fingerprint, workspaceFile.id)
+        }
+      } catch (e) {
+        logger.warn(LogCategory.DATABASE_SERVICE, '自愈计算文件指纹失败:', e)
+      }
+    }
 
     if (fingerprint && !fingerprint.startsWith('temp_')) {
       const fileStmt = this.db.prepare(`
@@ -253,11 +307,24 @@ export class FileDao {
       )
       .get(dir.id) as { count: number }
 
+    let parsedContext = dir.context_analysis ? JSON.parse(dir.context_analysis) : null
+    try {
+      const { directoryContextService } = await import('../../../main/state')
+      if (directoryContextService) {
+        const effective = await directoryContextService.getEffectiveDirectoryConfig(dirPath)
+        if (effective) {
+          parsedContext = effective
+        }
+      }
+    } catch (err) {
+      logger.warn(LogCategory.DATABASE_SERVICE, `解析有效目录画像失败: ${dirPath}`, err)
+    }
+
     const result = {
       id: dir.id,
       path: dir.path,
       name: dir.name,
-      contextAnalysis: dir.context_analysis ? JSON.parse(dir.context_analysis) : null,
+      contextAnalysis: parsedContext,
       isAnalyzed: dir.is_analyzed === 1,
       lastAnalyzedAt: dir.last_analyzed_at,
       createdAt: dir.created_at,
@@ -757,14 +824,21 @@ export class FileDao {
 
     return rows.map(row => {
       const parsedCategory = row.category ? JSON.parse(row.category) : null
+      const normalizedExt = row.type
+        ? row.type.startsWith('.')
+          ? row.type
+          : `.${row.type}`
+        : row.path
+          ? path.extname(row.path).toLowerCase()
+          : ''
       return {
         id: row.id,
         name: row.name,
         path: row.path,
         smartName: row.smart_name,
         size: row.size || 0,
-        type: row.type || '',
-        extension: row.type || '',
+        type: normalizedExt,
+        extension: normalizedExt,
         category: parsedCategory ?? undefined,
         mimeType: parsedCategory?.mime_type ?? 'application/octet-stream',
         createdAt: new Date(row.created_at || Date.now()),
@@ -894,13 +968,18 @@ export class FileDao {
       if (!row || !row.is_analyzed) return null
 
       const parsedCategory = row.category ? JSON.parse(row.category) : null
+      const normalizedExt = row.type
+        ? row.type.startsWith('.')
+          ? row.type
+          : `.${row.type}`
+        : ''
       return {
         id: row.file_fingerprint,
         name: row.name,
         smartName: row.smart_name,
         contentHash: row.file_fingerprint,
         size: row.size,
-        extension: row.type,
+        extension: normalizedExt,
         category: parsedCategory ?? undefined,
         mimeType: parsedCategory?.mime_type ?? 'application/octet-stream',
         isAnalyzed: true,
@@ -950,6 +1029,14 @@ export class FileDao {
 
       const parsedCategory = fileData.category ? JSON.parse(fileData.category) : null
 
+      const normalizedExt = fileData.type
+        ? fileData.type.startsWith('.')
+          ? fileData.type
+          : `.${fileData.type}`
+        : wf.path
+          ? path.extname(wf.path).toLowerCase()
+          : ''
+
       return {
         id: wf.id,
         name: wf.name,
@@ -957,7 +1044,7 @@ export class FileDao {
         contentHash: wf.file_fingerprint,
         parentPath: path.dirname(wf.path),
         size: fileData.size || 0,
-        extension: fileData.type,
+        extension: normalizedExt,
         category: parsedCategory ?? undefined,
         mimeType: parsedCategory?.mime_type ?? 'application/octet-stream',
         createdAt: new Date(wf.created_at),
@@ -1236,6 +1323,13 @@ export class FileDao {
 
     return rows.map(row => {
       const parsedCategory = row.category ? JSON.parse(row.category) : null
+      const normalizedExt = row.type
+        ? row.type.startsWith('.')
+          ? row.type
+          : `.${row.type}`
+        : row.path
+          ? path.extname(row.path).toLowerCase()
+          : ''
       return {
         id: row.id,
         status: row.status ?? 1,
@@ -1243,8 +1337,8 @@ export class FileDao {
         name: row.name,
         smartName: row.smart_name,
         size: row.size,
-        type: row.type,
-        extension: row.type,
+        type: normalizedExt,
+        extension: normalizedExt,
         category: parsedCategory ?? undefined,
         mimeType: parsedCategory?.mime_type ?? 'application/octet-stream',
         isAnalyzed: row.is_analyzed === 1,

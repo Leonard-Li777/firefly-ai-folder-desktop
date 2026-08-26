@@ -638,7 +638,7 @@ export const GridCell = React.memo((props: GridCellProps) => {
   const showThumbnail = !!(
     fileItem &&
     typeof isImageFile === 'function' &&
-    isImageFile(fileItem.extension)
+    (isImageFile(fileItem.extension) || isImageFile(fileItem.path) || isImageFile(fileItem.name))
   )
   const safeItemName = item.name || t('未知文件')
 

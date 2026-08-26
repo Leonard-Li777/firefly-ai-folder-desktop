@@ -32,8 +32,8 @@ export async function saveCloudResult(
   if (!db) throw new Error(t('数据库未初始化'))
 
   try {
-    const filePath = (item as any).file_path || item.path
-    let fileType = item.type || path.extname(filePath).toLowerCase() || ''
+    const rawType = item.type || path.extname(filePath).toLowerCase() || ''
+    let fileType = rawType ? (rawType.startsWith('.') ? rawType : `.${rawType}`) : ''
     const stats = fs.statSync(filePath)
 
     // 使用 Magika 检测文件类型

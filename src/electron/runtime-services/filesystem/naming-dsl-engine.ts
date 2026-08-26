@@ -35,6 +35,8 @@ export interface FileRenameContext {
   rawSmartName?: string
   size?: number
   extension?: string
+  isAnalyzed?: boolean
+  is_analyzed?: number
   modifiedAt?: string | Date
   createdAt?: string | Date
   qualityScore?: number
@@ -190,17 +192,32 @@ export class NamingDSLEngine {
 
     const origExt = context.extension || path.extname(context.path).replace(/^\./, '')
     const baseOrigName = context.name ? context.name.replace(new RegExp(`\\.${origExt}$`, 'i'), '') : ''
+    
+    let metaObj: Record<string, any> = {}
+    if (context.metadata) {
+      if (typeof context.metadata === 'string') {
+        try {
+          metaObj = JSON.parse(context.metadata)
+        } catch {
+          metaObj = {}
+        }
+      } else if (typeof context.metadata === 'object') {
+        metaObj = { ...context.metadata }
+      }
+    }
+
     let rawSmartName =
       context.rawSmartName ||
+      metaObj.raw_smart_name ||
+      (context as any).raw_smart_name ||
       context.smartName ||
       (context as any).smart_name ||
-      (context as any).raw_smart_name ||
       ''
     if (rawSmartName) {
       if (origExt) {
         rawSmartName = rawSmartName.replace(new RegExp(`\\.${origExt}$`, 'i'), '')
       }
-      rawSmartName = rawSmartName.replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
+      rawSmartName = rawSmartName.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
     }
     const baseSmartName = rawSmartName || baseOrigName
 
@@ -284,19 +301,6 @@ export class NamingDSLEngine {
         const lastTag = validTags[validTags.length - 1]
         dimTagsMap[dim] = lastTag
         dimTagsMap[dim.toLowerCase()] = lastTag
-      }
-    }
-
-    let metaObj: Record<string, any> = {}
-    if (context.metadata) {
-      if (typeof context.metadata === 'string') {
-        try {
-          metaObj = JSON.parse(context.metadata)
-        } catch {
-          metaObj = {}
-        }
-      } else if (typeof context.metadata === 'object') {
-        metaObj = { ...context.metadata }
       }
     }
 
@@ -934,17 +938,31 @@ export class NamingDSLEngine {
         const newName = `${baseName}${dotExt}`
 
         const rawExt = ext.replace(/^\./, '')
+        let metaObj: Record<string, any> = {}
+        if (file.metadata) {
+          if (typeof file.metadata === 'string') {
+            try {
+              metaObj = JSON.parse(file.metadata)
+            } catch {
+              metaObj = {}
+            }
+          } else if (typeof file.metadata === 'object') {
+            metaObj = { ...file.metadata }
+          }
+        }
+
         let smartNameValue =
           file.rawSmartName ||
+          metaObj.raw_smart_name ||
+          (file as any).raw_smart_name ||
           file.smartName ||
           (file as any).smart_name ||
-          (file as any).raw_smart_name ||
           ''
         if (smartNameValue) {
           if (rawExt) {
             smartNameValue = smartNameValue.replace(new RegExp(`\\.${rawExt}$`, 'i'), '')
           }
-          smartNameValue = smartNameValue.replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
+          smartNameValue = smartNameValue.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
         }
 
         // 构造结构化色彩渲染分段 (Segments)
@@ -1073,14 +1091,18 @@ export class NamingDSLEngine {
     template: string,
     files: FileRenameContext[]
   ): Promise<BatchRenameResult> {
-    const previewList = NamingDSLEngine.generatePreview(template, files)
+    // 过滤只针对已分析文件执行更名
+    const targetFiles = (files || []).filter(
+      f => (f as any).is_analyzed !== 0 && f.isAnalyzed !== false
+    )
+    const previewList = NamingDSLEngine.generatePreview(template, targetFiles)
     let successCount = 0
     let failedCount = 0
     const items: BatchRenameResult['items'] = []
     const affectedDirs = new Set<string>()
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
+    for (let i = 0; i < targetFiles.length; i++) {
+      const file = targetFiles[i]
       const preview = previewList[i]
       if (!preview || preview.hasError) {
         failedCount++
@@ -1099,9 +1121,12 @@ export class NamingDSLEngine {
           affectedDirs.add(path.dirname(file.path))
         }
 
-        // 渲染纯智能文件名（不含扩展名）
-        const renderedSmartName = NamingDSLEngine.renderTemplate(template, file, i + 1, true)
-        const newSmartName = renderedSmartName || preview.rawSmartName || file.name
+        // 渲染完整新智能文件名（包含扩展名后缀，直接写入 files.smart_name 字段）
+        const newSmartName =
+          preview.newName ||
+          (preview.rawSmartName
+            ? `${preview.rawSmartName}${path.extname(file.path || file.name || '')}`
+            : file.name)
 
         // 同步更新 SQLite 中的 files.smart_name 及 file_contents.metadata
         await NamingDSLEngine.updateFileSmartNameInDb(file.id, newSmartName, template)
@@ -1146,7 +1171,7 @@ export class NamingDSLEngine {
     }
 
     return {
-      total: files.length,
+      total: targetFiles.length,
       successCount,
       failedCount,
       items
@@ -1167,53 +1192,59 @@ export class NamingDSLEngine {
       const db = databaseService.db
       if (!db) return
 
+      // 读取 workspace_files 表获取 file_fingerprint 与路径/名称及 is_analyzed
+      const wfRow = db.prepare(`
+        SELECT file_fingerprint, name, path, is_analyzed FROM workspace_files WHERE id = ?
+      `).get(fileId) as { file_fingerprint: string; name: string; path: string; is_analyzed?: number } | undefined
+
+      if (!wfRow || !wfRow.file_fingerprint) return
+
+      // 严格保证：只对已分析文件（is_analyzed = 1）更新智能文件名，未分析文件直接跳过
+      if (wfRow.is_analyzed !== 1) {
+        logger.info(LogCategory.FILE_ORGANIZATION, `跳过未分析文件更名: fileId=${fileId}`)
+        return
+      }
+
       // 仅更新 files 表中的 smart_name，严禁修改 path 和 name
       db.prepare(`
         UPDATE files 
-        SET smart_name = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `).run(newSmartName, fileId)
+        SET smart_name = ?, modified_at = CURRENT_TIMESTAMP
+        WHERE file_fingerprint = ?
+      `).run(newSmartName, wfRow.file_fingerprint)
 
-      // 读取 files 表指纹并更新 file_contents 表的 metadata（保留 raw_smart_name 并记录 naming_template）
-      const fileRow = db.prepare(`
-        SELECT file_fingerprint, name, path, smart_name FROM files WHERE id = ?
-      `).get(fileId) as { file_fingerprint: string; name: string; path: string; smart_name: string } | undefined
+      const contentRow = db.prepare(`
+        SELECT metadata FROM file_contents WHERE file_fingerprint = ?
+      `).get(wfRow.file_fingerprint) as { metadata: string } | undefined
 
-      if (fileRow && fileRow.file_fingerprint) {
-        const contentRow = db.prepare(`
-          SELECT metadata FROM file_contents WHERE file_fingerprint = ?
-        `).get(fileRow.file_fingerprint) as { metadata: string } | undefined
-
-        let metaObj: Record<string, any> = {}
-        try {
-          if (contentRow?.metadata) {
-            metaObj = JSON.parse(contentRow.metadata)
-          }
-        } catch {
-          metaObj = {}
+      let metaObj: Record<string, any> = {}
+      try {
+        if (contentRow?.metadata) {
+          metaObj = JSON.parse(contentRow.metadata)
         }
-
-        // 确保 raw_smart_name 存在且不带扩展名
-        if (!metaObj.raw_smart_name) {
-          const fileExt = path.extname(fileRow.path || fileRow.name || '').replace(/^\./, '')
-          let raw = fileRow.smart_name || fileRow.name || ''
-          if (fileExt) {
-            raw = raw.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
-          }
-          raw = raw.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
-          metaObj.raw_smart_name =
-            raw ||
-            path.basename(fileRow.name || fileRow.path || '', path.extname(fileRow.name || fileRow.path || ''))
-        }
-
-        metaObj.naming_template = namingTemplate
-
-        db.prepare(`
-          INSERT INTO file_contents (file_fingerprint, metadata, created_at, updated_at)
-          VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-          ON CONFLICT(file_fingerprint) DO UPDATE SET metadata = excluded.metadata, updated_at = CURRENT_TIMESTAMP
-        `).run(JSON.stringify(metaObj), fileRow.file_fingerprint)
+      } catch {
+        metaObj = {}
       }
+
+      // 确保 raw_smart_name 存在且不带扩展名
+      if (!metaObj.raw_smart_name) {
+        const fileExt = path.extname(wfRow.path || wfRow.name || '').replace(/^\./, '')
+        let raw = wfRow.name || ''
+        if (fileExt) {
+          raw = raw.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
+        }
+        raw = raw.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
+        metaObj.raw_smart_name =
+          raw ||
+          path.basename(wfRow.name || wfRow.path || '', path.extname(wfRow.name || wfRow.path || ''))
+      }
+
+      metaObj.naming_template = namingTemplate
+
+      db.prepare(`
+        INSERT INTO file_contents (file_fingerprint, metadata)
+        VALUES (?, ?)
+        ON CONFLICT(file_fingerprint) DO UPDATE SET metadata = excluded.metadata
+      `).run(JSON.stringify(metaObj), wfRow.file_fingerprint)
     } catch (err) {
       logger.warn(
         LogCategory.DATABASE_SERVICE,

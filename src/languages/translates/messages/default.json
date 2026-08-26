@@ -269,7 +269,7 @@
     "de-DE": "Download abgeschlossen",
     "fr-FR": "Téléchargement terminé",
     "ko-KR": "다운로드 완료",
-    "$files": ["src/renderer/App.tsx(40035-40043)"],
+    "$files": ["src/renderer/App.tsx(39591-39599)"],
     "$id": 7622
   },
   "{model} 模型已下载完成，是否立即激活？": {
@@ -282,7 +282,7 @@
     "de-DE": "{model} Das Modell wurde heruntergeladen. Möchten Sie es jetzt aktivieren?",
     "fr-FR": "{model} Le modèle a été téléchargé. Voulez-vous l'activer maintenant ?",
     "ko-KR": "{model} 모델이 다운로드되었습니다. 지금 활성화하시겠습니까?",
-    "$files": ["src/renderer/App.tsx(40241-40268)"],
+    "$files": ["src/renderer/App.tsx(39797-39824)"],
     "$id": 7623
   },
   "稍后再说": {
@@ -295,7 +295,7 @@
     "de-DE": "Wir sprechen später",
     "fr-FR": "On se parle plus tard",
     "ko-KR": "나중에 얘기하자",
-    "$files": ["src/renderer/App.tsx(40753-40761)"],
+    "$files": ["src/renderer/App.tsx(40309-40317)"],
     "$id": 7624
   },
   "立即激活": {
@@ -308,7 +308,7 @@
     "de-DE": "Jetzt aktivieren",
     "fr-FR": "Activer maintenant",
     "ko-KR": "지금 활성화",
-    "$files": ["src/renderer/App.tsx(41002-41010)"],
+    "$files": ["src/renderer/App.tsx(40558-40566)"],
     "$id": 7625
   },
   "正在迁移模型": {
@@ -321,7 +321,7 @@
     "de-DE": "Migrationsmodell",
     "fr-FR": "Migration du modèle",
     "ko-KR": "모델 마이그레이션",
-    "$files": ["src/renderer/App.tsx(42106-42116)"],
+    "$files": ["src/renderer/App.tsx(41662-41672)"],
     "$id": 7626
   },
   "正在准备迁移，请稍候...": {
@@ -334,7 +334,7 @@
     "de-DE": "Die Migration wird vorbereitet, bitte warten...",
     "fr-FR": "Préparation de la migration, veuillez patienter...",
     "ko-KR": "마이그레이션을 준비 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/App.tsx(42266-42283)"],
+    "$files": ["src/renderer/App.tsx(41822-41839)"],
     "$id": 7627
   },
   "请勿关闭应用": {
@@ -347,7 +347,7 @@
     "de-DE": "Schließen Sie die App nicht",
     "fr-FR": "Ne fermez pas l'application",
     "ko-KR": "앱을 닫지 마세요",
-    "$files": ["src/renderer/App.tsx(42688-42698)"],
+    "$files": ["src/renderer/App.tsx(42244-42254)"],
     "$id": 7628
   },
   "接口不存在": {
@@ -814,19 +814,6 @@
     "$files": ["src/electron/runtime-services/database/database.ts(26072-26115)"],
     "$id": 8122
   },
-  "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
-    "en-US": "Quota exhausted: {count} private directory files analyzed, current quota is {quota} files. You can unlock more credits by inviting friends.",
-    "es-ES": "Cuota agotada: {count} archivos del directorio privado analizados, la cuota actual es {quota} archivos. Puedes desbloquear más créditos invitando a amigos.",
-    "ar-EG": "تم استنفاد الحصة: {count} من ملفات الدليل الخاص التي تم تحليلها، والحصة الحالية هي {quota} من الملفات. يمكنك فتح المزيد من الاعتمادات عن طريق دعوة الأصدقاء.",
-    "pt-PT": "Cota esgotada: {count} arquivos de diretório privado analisados, a cota atual é de {quota} arquivos. Você pode desbloquear mais créditos convidando amigos.",
-    "ru-RU": "Квота исчерпана: проанализировано {count} файлов частного каталога, текущая квота — {quota} файлов. Вы можете разблокировать больше кредитов, пригласив друзей.",
-    "ja-JP": "クォータが枯渇しました: {count} 個のプライベート ディレクトリ ファイルが分析されました。現在のクォータは {quota} ファイルです。友達を招待すると、より多くのクレジットのロックを解除できます。",
-    "de-DE": "Kontingent erschöpft: {count} private Verzeichnisdateien analysiert, aktuelles Kontingent beträgt {quota} Dateien. Sie können weitere Credits freischalten, indem Sie Freunde einladen.",
-    "fr-FR": "Quota épuisé : {count} fichiers du répertoire privé analysés, le quota actuel est de {quota} fichiers. Vous pouvez débloquer plus de crédits en invitant des amis.",
-    "ko-KR": "할당량 소진: {count}개의 개인 디렉터리 파일이 분석되었으며, 현재 할당량은 {quota}개 파일입니다. 친구를 초대하면 더 많은 크레딧을 잠금 해제할 수 있습니다.",
-    "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(5865-5939)"],
-    "$id": 7662
-  },
   "正在处理中，请等待当前任务完成": {
     "en-US": "Processing, please wait for the current task to be completed",
     "es-ES": "Procesando, espere a que se complete la tarea actual",
@@ -839,6 +826,19 @@
     "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
     "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3263-3282)"],
     "$id": 7661
+  },
+  "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
+    "en-US": "Quota exhausted: {count} private directory files analyzed, current quota is {quota} files. You can unlock more credits by inviting friends.",
+    "es-ES": "Cuota agotada: {count} archivos del directorio privado analizados, la cuota actual es {quota} archivos. Puedes desbloquear más créditos invitando a amigos.",
+    "ar-EG": "تم استنفاد الحصة: {count} من ملفات الدليل الخاص التي تم تحليلها، والحصة الحالية هي {quota} من الملفات. يمكنك فتح المزيد من الاعتمادات عن طريق دعوة الأصدقاء.",
+    "pt-PT": "Cota esgotada: {count} arquivos de diretório privado analisados, a cota atual é de {quota} arquivos. Você pode desbloquear mais créditos convidando amigos.",
+    "ru-RU": "Квота исчерпана: проанализировано {count} файлов частного каталога, текущая квота — {quota} файлов. Вы можете разблокировать больше кредитов, пригласив друзей.",
+    "ja-JP": "クォータが枯渇しました: {count} 個のプライベート ディレクトリ ファイルが分析されました。現在のクォータは {quota} ファイルです。友達を招待すると、より多くのクレジットのロックを解除できます。",
+    "de-DE": "Kontingent erschöpft: {count} private Verzeichnisdateien analysiert, aktuelles Kontingent beträgt {quota} Dateien. Sie können weitere Credits freischalten, indem Sie Freunde einladen.",
+    "fr-FR": "Quota épuisé : {count} fichiers du répertoire privé analysés, le quota actuel est de {quota} fichiers. Vous pouvez débloquer plus de crédits en invitant des amis.",
+    "ko-KR": "할당량 소진: {count}개의 개인 디렉터리 파일이 분석되었으며, 현재 할당량은 {quota}개 파일입니다. 친구를 초대하면 더 많은 크레딧을 잠금 해제할 수 있습니다.",
+    "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(5865-5939)"],
+    "$id": 7662
   },
   "云端执行失败": {
     "en-US": "Cloud execution failed",
@@ -866,7 +866,7 @@
     "de-DE": "Der Dateipfad-Eintrag existiert nicht",
     "fr-FR": "L'enregistrement du chemin de fichier n'existe pas",
     "ko-KR": "파일 경로 기록이 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/database/dao/file-dao.ts(14155-14168)"],
+    "$files": ["src/electron/runtime-services/database/dao/file-dao.ts(15721-15734)"],
     "$id": 8123
   },
   "该目录已创建为{typeName}": {

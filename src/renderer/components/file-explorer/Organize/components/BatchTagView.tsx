@@ -22,7 +22,7 @@ interface BatchTagViewProps {
   dimensionGroups: DimensionGroup[]
   panDimensionIds?: number[]
   onSaveTags: (changes: BatchTagOperation) => Promise<void>
-  onDeleteTagGlobally: (dimensionId: number, tagName: string) => Promise<boolean>
+  onDeleteTagGlobally?: (dimensionId: number, tagName: string) => Promise<boolean>
   isSaving?: boolean
   inspectedFile?: any | null
   onClearInspectedFile?: () => void
@@ -39,12 +39,144 @@ export const isExtensionTag = (tagName: string) => {
   return trimmed.startsWith('.')
 }
 
+/**
+ * 单个标签胶囊组件 (React.memo)
+ * 仅在其自身状态或聚焦拥有状态变化时重绘，杜绝点击文件时全量 1000+ 标签无效重绘与动画卡顿
+ */
+interface TagPillProps {
+  dimId: number
+  tagName: string
+  tagKey: string
+  count: number
+  totalFilesCount: number
+  state: TagActionState
+  isOwnedByInspected: boolean
+  isPan: boolean
+  onToggle: (tagKey: string) => void
+  onDelete?: (dimId: number, tagName: string, e: React.MouseEvent) => void
+}
+
+const TagPill: React.FC<TagPillProps> = React.memo(
+  ({
+    dimId,
+    tagName,
+    tagKey,
+    count,
+    totalFilesCount,
+    state,
+    isOwnedByInspected,
+    isPan,
+    onToggle,
+    onDelete
+  }) => {
+    const ratio = totalFilesCount > 0 ? count / totalFilesCount : 0
+
+    // 状态与覆盖率
+    const isAllAttached = state === 'add_all'
+    const isAllRemoved = state === 'remove_all'
+    const isFullyOwned = ratio >= 1 && state === 'initial'
+    const isPartial = ratio > 0 && ratio < 1 && state === 'initial'
+
+    return (
+      <div className="group relative inline-flex">
+        <div
+          onClick={() => onToggle(tagKey)}
+          className={cn(
+            'relative overflow-hidden inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer',
+            'border select-none shadow-2xs transition-colors duration-150',
+            // 状态高亮
+            isAllAttached
+              ? 'border-emerald-600 bg-emerald-600 text-white font-semibold shadow-xs'
+              : isAllRemoved
+                ? 'border-destructive/60 bg-destructive/15 text-destructive line-through opacity-85'
+                : isFullyOwned
+                  ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs'
+                  : isPartial
+                    ? 'border-primary/40 text-foreground hover:border-primary/70'
+                    : 'border-border/60 bg-card hover:border-border text-foreground/80',
+            // 当前聚焦文件拥有时的突出展示（保持尺寸绝对恒定，无 scale 形变与新增徽章，杜绝布局回流）
+            isOwnedByInspected
+              ? 'border-primary bg-primary/20 text-primary font-semibold shadow-sm ring-1 ring-primary/40 !opacity-100 z-10'
+              : 'group-[.tags-has-inspected]/taggrid:opacity-40 group-[.tags-has-inspected]/taggrid:hover:opacity-100'
+          )}
+          style={
+            isPartial && !isOwnedByInspected
+              ? {
+                  backgroundColor: `rgba(var(--primary-rgb, 59, 130, 246), ${0.08 + ratio * 0.25})`
+                }
+              : undefined
+          }
+        >
+          {/* 部分拥有时的背景进度条 (覆盖率比值) */}
+          {isPartial && (
+            <div
+              className="absolute inset-y-0 left-0 bg-primary/20 pointer-events-none rounded-xl"
+              style={{ width: `${Math.round(ratio * 100)}%` }}
+            />
+          )}
+
+          {/* 三态状态前置小图标 */}
+          {isAllAttached && (
+            <MaterialIcon icon="add_circle" className="text-xs text-white shrink-0 relative z-10" />
+          )}
+          {isAllRemoved && (
+            <MaterialIcon icon="do_not_disturb_on" className="text-xs text-destructive shrink-0 relative z-10" />
+          )}
+
+          {/* 标签名称 */}
+          <span className="relative z-10">{tagName}</span>
+
+          {/* 数量与比例统计徽章 */}
+          <span
+            className={cn(
+              'relative z-10 text-[10px] tabular-nums font-mono px-1 rounded',
+              isAllAttached
+                ? 'bg-black/20 text-white'
+                : isAllRemoved
+                  ? 'bg-destructive/20 text-destructive'
+                  : isFullyOwned
+                    ? 'bg-black/20 text-white'
+                    : isOwnedByInspected
+                      ? 'bg-primary/20 text-primary font-semibold'
+                      : 'bg-background/80 text-muted-foreground border border-border/40'
+            )}
+          >
+            {isAllAttached
+              ? `${totalFilesCount}/${totalFilesCount}`
+              : isAllRemoved
+                ? `0/${totalFilesCount}`
+                : `${count}/${totalFilesCount}`}
+          </span>
+        </div>
+
+        {/* 仅泛维度的标签在 hover 时浮动到右上角（一半在胶囊外），不占用胶囊内部空间 */}
+        {isPan && onDelete && (
+          <button
+            type="button"
+            title={t('删除该标签')}
+            onClick={e => onDelete(dimId, tagName, e)}
+            className={cn(
+              'absolute -top-1.5 -right-1.5 z-20 w-5 h-5 rounded-full',
+              'bg-destructive text-destructive-foreground shadow-xs border border-background',
+              'opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150',
+              'flex items-center justify-center cursor-pointer hover:bg-destructive/90 hover:scale-110'
+            )}
+          >
+            <MaterialIcon icon="close" className="text-[10px]" />
+          </button>
+        )}
+      </div>
+    )
+  }
+)
+
+TagPill.displayName = 'TagPill'
+
 export const BatchTagView: React.FC<BatchTagViewProps> = ({
   files,
   dimensionGroups = [],
   panDimensionIds = [4, 28],
   onSaveTags,
-  onDeleteTagGlobally,
   isSaving = false,
   inspectedFile = null,
   onClearInspectedFile
@@ -98,7 +230,70 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     }
   }, [loadFullDimensions])
 
-  // 合并全量预设维度、传入维度以及当前待整理文件中已拥有的自定义标签（排除被用户在工作台标记删除的标签）
+  // 1. 单次快速循环：统计待整理文件中各标签的覆盖计数，并汇总各维度的自定义标签（避免重复多重扫描）
+  const { tagFileCounts, fileCustomTags } = useMemo(() => {
+    const counts: Record<string, number> = {}
+    const customTagsByDim = new Map<number, Set<string>>()
+
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i]
+      const fileTagSet = new Set<string>()
+
+      if (Array.isArray(f.dimensionTags)) {
+        for (let j = 0; j < f.dimensionTags.length; j++) {
+          const dt = f.dimensionTags[j]
+          const dimId = dt?.dimensionId ?? dt?.dimension
+          const val = dt?.tagValue ?? dt?.tag ?? dt?.name
+          if (val) {
+            const strVal = String(val).trim()
+            fileTagSet.add(strVal)
+            if (dimId) {
+              const numDimId = Number(dimId)
+              let dimSet = customTagsByDim.get(numDimId)
+              if (!dimSet) {
+                dimSet = new Set<string>()
+                customTagsByDim.set(numDimId, dimSet)
+              }
+              dimSet.add(strVal)
+            }
+          }
+        }
+      }
+
+      if (Array.isArray(f.tags)) {
+        for (let j = 0; j < f.tags.length; j++) {
+          const t = f.tags[j]
+          if (typeof t === 'string') {
+            fileTagSet.add(t.trim())
+          } else if (t && typeof t === 'object') {
+            const val = t.tagValue || t.tagName || t.name || t.value || t.tag
+            const dimId = t.dimensionId || t.dimension
+            if (val) {
+              const strVal = String(val).trim()
+              fileTagSet.add(strVal)
+              if (dimId) {
+                const numDimId = Number(dimId)
+                let dimSet = customTagsByDim.get(numDimId)
+                if (!dimSet) {
+                  dimSet = new Set<string>()
+                  customTagsByDim.set(numDimId, dimSet)
+                }
+                dimSet.add(strVal)
+              }
+            }
+          }
+        }
+      }
+
+      fileTagSet.forEach(tagVal => {
+        counts[tagVal] = (counts[tagVal] || 0) + 1
+      })
+    }
+
+    return { tagFileCounts: counts, fileCustomTags: customTagsByDim }
+  }, [files])
+
+  // 2. 合并全量预设维度、传入维度以及当前待整理文件中已拥有的自定义标签（排除被用户在工作台标记删除的标签）
   const effectiveDimensionGroups = useMemo(() => {
     const isDeletedTag = (dimId: number, tagVal: string) => {
       const valStr = String(tagVal).trim()
@@ -137,63 +332,28 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       }
     }
 
-    // 3. 将待整理文件中出现的泛维度/自定义标签补充进来，确保已有标签不遗漏
-    for (const f of files) {
-      if (Array.isArray(f.dimensionTags)) {
-        for (const dt of f.dimensionTags) {
-          const dimId = dt?.dimensionId ?? dt?.dimension
-          const val = dt?.tagValue ?? dt?.tag ?? dt?.name
-          if (dimId && val) {
-            const numDimId = Number(dimId)
-            const g = dimMap.get(numDimId)
-            if (g) {
-              const tagSet = new Set((g.tags || []).map(t => t.tagValue.toLowerCase()))
-              const strVal = String(val).trim()
-              if (strVal && !isDeletedTag(numDimId, strVal) && !tagSet.has(strVal.toLowerCase())) {
-                g.tags = [
-                  ...(g.tags || []),
-                  {
-                    dimensionId: g.id,
-                    dimensionName: g.name,
-                    tagValue: strVal,
-                    fileCount: 1,
-                    level: g.level || 2
-                  }
-                ]
+    // 3. 将待整理文件中收集到的自定义标签高效合并
+    fileCustomTags.forEach((tagSet, dimId) => {
+      const g = dimMap.get(dimId)
+      if (g) {
+        const existingTagValues = new Set((g.tags || []).map(t => t.tagValue.toLowerCase()))
+        tagSet.forEach(strVal => {
+          if (!isDeletedTag(dimId, strVal) && !existingTagValues.has(strVal.toLowerCase())) {
+            g.tags = [
+              ...(g.tags || []),
+              {
+                dimensionId: g.id,
+                dimensionName: g.name,
+                tagValue: strVal,
+                fileCount: tagFileCounts[strVal] || 1,
+                level: g.level || 2
               }
-            }
+            ]
+            existingTagValues.add(strVal.toLowerCase())
           }
-        }
+        })
       }
-      if (Array.isArray(f.tags)) {
-        for (const t of f.tags) {
-          if (t && typeof t === 'object') {
-            const dimId = t.dimensionId || t.dimension
-            const val = t.tagValue || t.tagName || t.name || t.value || t.tag
-            if (dimId && val) {
-              const numDimId = Number(dimId)
-              const g = dimMap.get(numDimId)
-              if (g) {
-                const tagSet = new Set((g.tags || []).map(item => item.tagValue.toLowerCase()))
-                const strVal = String(val).trim()
-                if (strVal && !isDeletedTag(numDimId, strVal) && !tagSet.has(strVal.toLowerCase())) {
-                  g.tags = [
-                    ...(g.tags || []),
-                    {
-                      dimensionId: g.id,
-                      dimensionName: g.name,
-                      tagValue: strVal,
-                      fileCount: 1,
-                      level: g.level || 2
-                    }
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+    })
 
     // 4. 过滤排除扩展名维度、文件类型维度以及由标签找补程序处理的规则细分维度
     const nonExtGroups = Array.from(dimMap.values()).filter(
@@ -216,17 +376,31 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
           allowedTagValues.has(t.tagValue) &&
           !isExtensionTag(t.tagValue)
       )
+
+      // 如果是泛维度，预先排序好 tags，避免每次组件渲染都重复执行 Array.sort
+      const isPan = checkIsPanDimension(group, panDimensionIds)
+      if (isPan) {
+        validTags.sort((a, b) => {
+          const countA = tagFileCounts[a.tagValue] ?? a.fileCount ?? 0
+          const countB = tagFileCounts[b.tagValue] ?? b.fileCount ?? 0
+          return countB - countA
+        })
+      }
+
       return {
         ...group,
         tags: validTags
       }
     })
-  }, [fullPresetGroups, dimensionGroups, files, deletedTagKeys])
+  }, [fullPresetGroups, dimensionGroups, fileCustomTags, tagFileCounts, deletedTagKeys, panDimensionIds])
 
   // 判断是否为泛维度（使用共享纯 ID 集合判定）
-  const isPanDimension = (group: DimensionGroup) => {
-    return checkIsPanDimension(group, panDimensionIds)
-  }
+  const isPanDimension = useCallback(
+    (group: DimensionGroup) => {
+      return checkIsPanDimension(group, panDimensionIds)
+    },
+    [panDimensionIds]
+  )
 
   // 提取选中聚焦文件所拥有的所有标签集合（兼容数组或单个对象、各种字段名与维度ID）
   const inspectedTagSet = useMemo(() => {
@@ -270,36 +444,110 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     return set
   }, [inspectedFile])
 
-  // 计算每个标签在当前待整理文件集中的拥有数量
-  const tagFileCounts = useMemo(() => {
-    const counts: Record<string, number> = {}
-    for (const f of files) {
-      const fileTagSet = new Set<string>()
+  const inspectedFileItem = Array.isArray(inspectedFile) ? inspectedFile[0] : inspectedFile
 
-      if (Array.isArray(f.dimensionTags)) {
-        for (const dt of f.dimensionTags) {
-          const val = dt?.tag ?? dt?.tagValue ?? dt?.name
-          if (val) fileTagSet.add(String(val).trim())
-        }
-      }
+  // 提取选中聚焦文件所拥有的结构化标签列表（包含归属维度名称），供顶部状态条集中展示
+  const inspectedFileTagsWithDimension = useMemo(() => {
+    if (!inspectedFileItem) return []
 
-      if (Array.isArray(f.tags)) {
-        for (const t of f.tags) {
-          if (typeof t === 'string') {
-            fileTagSet.add(t.trim())
-          } else if (t && typeof t === 'object') {
-            const val = t.tagValue || t.tagName || t.name || t.value || t.tag
-            if (val) fileTagSet.add(String(val).trim())
+    // 建立维度 ID 与维度名称字典
+    const dimIdToName = new Map<number, string>()
+    const tagToDimName = new Map<string, { dimId: number; name: string }>()
+
+    effectiveDimensionGroups.forEach(g => {
+      dimIdToName.set(g.id, g.name)
+      if (Array.isArray(g.tags)) {
+        g.tags.forEach(t => {
+          if (t?.tagValue) {
+            tagToDimName.set(t.tagValue.trim().toLowerCase(), { dimId: g.id, name: g.name })
           }
+        })
+      }
+    })
+
+    const result: Array<{ dimensionId?: number; dimensionName: string; tagValue: string }> = []
+    const seen = new Set<string>()
+
+    const addTag = (dimId: number | undefined, dimName: string | undefined, tagVal: any) => {
+      if (!tagVal) return
+      const valStr = String(tagVal).trim()
+      if (!valStr || isExtensionTag(valStr)) return
+
+      let resolvedDimId = dimId
+      let resolvedDimName = dimName
+      if (!resolvedDimName && resolvedDimId !== undefined) {
+        resolvedDimName = dimIdToName.get(Number(resolvedDimId))
+      }
+      if (!resolvedDimName) {
+        const matched = tagToDimName.get(valStr.toLowerCase())
+        if (matched) {
+          resolvedDimId = matched.dimId
+          resolvedDimName = matched.name
+        } else {
+          resolvedDimId = 28
+          resolvedDimName = t('内容标签')
         }
       }
 
-      fileTagSet.forEach(tagVal => {
-        counts[tagVal] = (counts[tagVal] || 0) + 1
-      })
+      const finalDimName = resolvedDimName || t('内容标签')
+      const key = `${finalDimName}::${valStr.toLowerCase()}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        result.push({
+          dimensionId: resolvedDimId,
+          dimensionName: finalDimName,
+          tagValue: valStr
+        })
+      }
     }
-    return counts
-  }, [files])
+
+    // 1. dimensionTags
+    if (Array.isArray(inspectedFileItem.dimensionTags)) {
+      for (const dt of inspectedFileItem.dimensionTags) {
+        const dimId = dt?.dimensionId ?? dt?.dimension
+        const dimName =
+          dt?.dimensionName ??
+          (typeof dt?.dimension === 'string' && isNaN(Number(dt.dimension))
+            ? dt.dimension
+            : undefined)
+        const val = dt?.tagValue ?? dt?.tag ?? dt?.name ?? dt?.value
+        addTag(dimId !== undefined && !isNaN(Number(dimId)) ? Number(dimId) : undefined, dimName, val)
+      }
+    }
+
+    // 2. tags
+    if (Array.isArray(inspectedFileItem.tags)) {
+      for (const t of inspectedFileItem.tags) {
+        if (typeof t === 'string') {
+          addTag(undefined, undefined, t)
+        } else if (t && typeof t === 'object') {
+          const dimId = t.dimensionId ?? t.dimension
+          const dimName =
+            t.dimensionName ??
+            (typeof t.dimension === 'string' && isNaN(Number(t.dimension))
+              ? t.dimension
+              : undefined)
+          const val = t.tagValue ?? t.tagName ?? t.name ?? t.value ?? t.tag
+          addTag(dimId !== undefined && !isNaN(Number(dimId)) ? Number(dimId) : undefined, dimName, val)
+        }
+      }
+    }
+
+    // 3. 排序：按维度名称归类，同维度按标签名称排序
+    result.sort((a, b) => {
+      if (a.dimensionName !== b.dimensionName) {
+        // 让“内容标签”排在最后
+        const isAContent = a.dimensionId === 28 || a.dimensionName === t('内容标签')
+        const isBContent = b.dimensionId === 28 || b.dimensionName === t('内容标签')
+        if (isAContent && !isBContent) return 1
+        if (!isAContent && isBContent) return -1
+        return a.dimensionName.localeCompare(b.dimensionName, 'zh-CN')
+      }
+      return a.tagValue.localeCompare(b.tagValue, 'zh-CN')
+    })
+
+    return result
+  }, [inspectedFileItem, effectiveDimensionGroups])
 
   // 统计已添加和已移除的变更数量
   const changeStats = useMemo(() => {
@@ -327,7 +575,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   }, [tagStates, newTagNames, activeInputDimId, inputVal, deletedTagKeys])
 
   // 处理标签点击三态循环 (Initial -> Add All -> Remove All -> Initial)
-  const handleToggleTag = (tagKey: string) => {
+  const handleToggleTag = useCallback((tagKey: string) => {
     setTagStates(prev => {
       const curr = prev[tagKey] || 'initial'
       let next: TagActionState = 'add_all'
@@ -342,20 +590,20 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       }
       return { ...prev, [tagKey]: next }
     })
-  }
+  }, [])
 
   // 重置全部标签变更
-  const handleResetAllChanges = () => {
+  const handleResetAllChanges = useCallback(() => {
     setTagStates({})
     setNewTagNames({})
     setDeletedTagKeys(new Set())
     setInputVal('')
     setActiveInputDimId(null)
     toast.info(t('已重置所有未保存的标签变更'))
-  }
+  }, [])
 
   // 快速全选某维度下的全部标签为全部附加
-  const handleBatchSetDimensionTags = (group: DimensionGroup, targetState: TagActionState) => {
+  const handleBatchSetDimensionTags = useCallback((group: DimensionGroup, targetState: TagActionState) => {
     setTagStates(prev => {
       const next = { ...prev }
       ;(group.tags || []).forEach(t => {
@@ -368,10 +616,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       })
       return next
     })
-  }
+  }, [])
 
   // 提交新建标签
-  const handleAddNewTag = (dimensionId: number) => {
+  const handleAddNewTag = useCallback((dimensionId: number) => {
     const trimmed = inputVal.trim()
     if (!trimmed) {
       setActiveInputDimId(null)
@@ -387,18 +635,18 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     }))
     setInputVal('')
     setActiveInputDimId(null)
-  }
+  }, [inputVal])
 
   // 删除新建标签
-  const handleRemoveNewTag = (dimensionId: number, name: string) => {
+  const handleRemoveNewTag = useCallback((dimensionId: number, name: string) => {
     setNewTagNames(prev => ({
       ...prev,
       [dimensionId]: (prev[dimensionId] || []).filter(n => n !== name)
     }))
-  }
+  }, [])
 
   // 标记泛维度中的已有标签为待删除（从当前工作台中隐藏并加入移除变更队列）
-  const handleDeleteExistingTag = (dimId: number, tagName: string, e: React.MouseEvent) => {
+  const handleDeleteExistingTag = useCallback((dimId: number, tagName: string, e: React.MouseEvent) => {
     e.stopPropagation()
     const strVal = tagName.trim()
     const key = `${dimId}::${strVal}`
@@ -420,7 +668,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     })
 
     toast.info(t('已将标签「{name}」标记为待删除，点击保存后生效', { name: tagName }))
-  }
+  }, [])
 
   // 汇总变更并提交
   const handleSave = async () => {
@@ -530,7 +778,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       .filter(Boolean) as DimensionGroup[]
   }, [effectiveDimensionGroups, searchQuery, newTagNames])
 
-  // 拆分为标准分类维度（左列）与泛维度（右列）
+  // 拆分为标准分类维度（左列）与泛维度（右列，内容标签固定置于最后）
   const { standardGroups, panGroups } = useMemo(() => {
     const std: DimensionGroup[] = []
     const pan: DimensionGroup[] = []
@@ -542,23 +790,27 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         std.push(group)
       }
     }
-    return { standardGroups: std, panGroups: pan }
-  }, [filteredDimensionGroups, panDimensionIds])
 
-  const inspectedFileItem = Array.isArray(inspectedFile) ? inspectedFile[0] : inspectedFile
+    // 泛维度标签列：将“内容标签”维度（ID=28 或名称包含“内容标签”）放置到最后
+    pan.sort((a, b) => {
+      const isAContent = a.id === 28 || a.name === '内容标签' || a.name?.includes('内容标签')
+      const isBContent = b.id === 28 || b.name === '内容标签' || b.name?.includes('内容标签')
+      if (isAContent && !isBContent) return 1
+      if (!isAContent && isBContent) return -1
+      return 0
+    })
+
+    return { standardGroups: std, panGroups: pan }
+  }, [filteredDimensionGroups, isPanDimension])
+
+  const hasInspected = Boolean(inspectedFileItem)
 
   // 渲染单个维度分组卡片
   const renderDimensionGroupCard = (group: DimensionGroup) => {
     const isPan = isPanDimension(group)
-    let groupTags = group.tags || []
-    if (isPan) {
-      groupTags = [...groupTags].sort((a, b) => {
-        const countA = tagFileCounts[a.tagValue] ?? a.fileCount ?? 0
-        const countB = tagFileCounts[b.tagValue] ?? b.fileCount ?? 0
-        return countB - countA
-      })
-    }
+    const groupTags = group.tags || []
     const groupNewTags = newTagNames[group.id] || []
+    const groupNameLower = group.name.trim().toLowerCase()
 
     return (
       <div
@@ -606,7 +858,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
         </div>
 
         {/* 标签流动排布 */}
-        <div className="flex flex-wrap gap-2 items-center">
+        <div className={cn("flex flex-wrap gap-2 items-center group/taggrid", hasInspected && "tags-has-inspected")}>
           {/* 仅泛维度允许新建标签 */}
           {isPan &&
             (activeInputDimId === group.id ? (
@@ -684,122 +936,37 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
             </span>
           ))}
 
-          {/* 已有标签列表 */}
+          {/* 已有标签列表 - 使用 React.memo 的 TagPill 极大提升交互性能 */}
           {groupTags.map((tag: DimensionTag) => {
             const tagKey = `${group.id}::${tag.tagValue}`
             const count = tagFileCounts[tag.tagValue] || 0
-            const ratio = totalFilesCount > 0 ? count / totalFilesCount : 0
             const state = tagStates[tagKey] || 'initial'
 
-            // 判断是否被当前聚焦选中的文件拥有
-            const isOwnedByInspected =
-              Boolean(inspectedFileItem) &&
-              (inspectedTagSet.has(tag.tagValue.trim().toLowerCase()) ||
-                inspectedTagSet.has(`${group.id}::${tag.tagValue.trim().toLowerCase()}`) ||
-                inspectedTagSet.has(`${group.name.trim().toLowerCase()}::${tag.tagValue.trim().toLowerCase()}`))
-
-            // 状态与覆盖率
-            const isAllAttached = state === 'add_all'
-            const isAllRemoved = state === 'remove_all'
-            const isFullyOwned = ratio >= 1 && state === 'initial'
-            const isPartial = ratio > 0 && ratio < 1 && state === 'initial'
+            const isOwnedByInspected = hasInspected
+              ? (() => {
+                  const lowerTag = tag.tagValue.trim().toLowerCase()
+                  return (
+                    inspectedTagSet.has(lowerTag) ||
+                    inspectedTagSet.has(`${group.id}::${lowerTag}`) ||
+                    inspectedTagSet.has(`${groupNameLower}::${lowerTag}`)
+                  )
+                })()
+              : false
 
             return (
-              <div key={tagKey} className="group relative inline-flex">
-                <div
-                  onClick={() => handleToggleTag(tagKey)}
-                  className={cn(
-                    'relative overflow-hidden inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer',
-                    'border transition-all duration-200 select-none shadow-2xs',
-                    // 状态高亮
-                    isAllAttached
-                      ? 'border-emerald-600 bg-emerald-600 text-white font-semibold shadow-xs'
-                      : isAllRemoved
-                        ? 'border-destructive/60 bg-destructive/15 text-destructive line-through opacity-85'
-                        : isFullyOwned
-                          ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs'
-                          : isPartial
-                            ? 'border-primary/40 text-foreground hover:border-primary/70'
-                            : 'border-border/60 bg-card hover:border-border text-foreground/80',
-                    // 当前聚焦文件拥有时的突出展示（单 border，无 ring 双边框）
-                    isOwnedByInspected &&
-                      'border-primary bg-primary/15 text-primary font-bold shadow-xs z-10',
-                    // 有聚焦文件但未被拥有时的柔和淡化
-                    inspectedFileItem && !isOwnedByInspected && 'opacity-40 hover:opacity-100 transition-opacity'
-                  )}
-                  style={
-                    isPartial && !isOwnedByInspected
-                      ? {
-                          backgroundColor: `rgba(var(--primary-rgb, 59, 130, 246), ${0.08 + ratio * 0.25})`
-                        }
-                      : undefined
-                  }
-                >
-                  {/* 部分拥有时的背景进度条 (覆盖率比值) */}
-                  {isPartial && (
-                    <div
-                      className="absolute inset-y-0 left-0 bg-primary/20 transition-all duration-300 pointer-events-none rounded-xl"
-                      style={{ width: `${Math.round(ratio * 100)}%` }}
-                    />
-                  )}
-
-                  {/* 三态状态前置小图标 */}
-                  {isAllAttached && (
-                    <MaterialIcon icon="add_circle" className="text-xs text-white shrink-0 relative z-10" />
-                  )}
-                  {isAllRemoved && (
-                    <MaterialIcon icon="do_not_disturb_on" className="text-xs text-destructive shrink-0 relative z-10" />
-                  )}
-
-                  {/* 标签名称 */}
-                  <span className="relative z-10">{tag.tagValue}</span>
-
-                  {/* 当前选中文件拥有时的 Badge 标识 */}
-                  {isOwnedByInspected && (
-                    <span className="relative z-10 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-primary text-primary-foreground text-[9px] font-bold shadow-xs">
-                      <MaterialIcon icon="check" className="text-[10px]" />
-                      <span>{t('拥有')}</span>
-                    </span>
-                  )}
-
-                  {/* 数量与比例统计徽章 */}
-                  <span
-                    className={cn(
-                      'relative z-10 text-[10px] tabular-nums font-mono px-1 rounded',
-                      isAllAttached
-                        ? 'bg-black/20 text-white'
-                        : isAllRemoved
-                          ? 'bg-destructive/20 text-destructive'
-                          : isFullyOwned
-                            ? 'bg-black/20 text-white'
-                            : 'bg-background/80 text-muted-foreground border border-border/40'
-                    )}
-                  >
-                    {isAllAttached
-                      ? `${totalFilesCount}/${totalFilesCount}`
-                      : isAllRemoved
-                        ? `0/${totalFilesCount}`
-                        : `${count}/${totalFilesCount}`}
-                  </span>
-                </div>
-
-                {/* 仅泛维度的标签在 hover 时浮动到右上角（一半在胶囊外），不占用胶囊内部空间 */}
-                {isPan && (
-                  <button
-                    type="button"
-                    title={t('删除该标签')}
-                    onClick={e => handleDeleteExistingTag(group.id, tag.tagValue, e)}
-                    className={cn(
-                      'absolute -top-1.5 -right-1.5 z-20 w-5 h-5 rounded-full',
-                      'bg-destructive text-destructive-foreground shadow-xs border border-background',
-                      'opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-150',
-                      'flex items-center justify-center cursor-pointer hover:bg-destructive/90 hover:scale-110'
-                    )}
-                  >
-                    <MaterialIcon icon="close" className="text-[10px]" />
-                  </button>
-                )}
-              </div>
+              <TagPill
+                key={tagKey}
+                dimId={group.id}
+                tagName={tag.tagValue}
+                tagKey={tagKey}
+                count={count}
+                totalFilesCount={totalFilesCount}
+                state={state}
+                isOwnedByInspected={isOwnedByInspected}
+                isPan={isPan}
+                onToggle={handleToggleTag}
+                onDelete={handleDeleteExistingTag}
+              />
             )
           })}
         </div>
@@ -809,40 +976,68 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
-      {/* 1. 选中文件聚焦联动状态条 (Inspector Banner) */}
+      {/* 1. 选中文件聚焦联动状态条 (Inspector Banner - 集中查看所有归属维度与标签) */}
       {inspectedFileItem && (
-        <div className="px-4 py-2.5 bg-primary/10 border-b border-primary/20 flex items-center justify-between gap-3 text-xs shrink-0 transition-all duration-200 animate-in fade-in slide-in-from-top-1">
-          <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-            <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
-              <MaterialIcon icon="visibility" className="text-sm" />
+        <div className="px-4 py-3 bg-primary/10 border-b border-primary/20 flex flex-col gap-2 text-xs shrink-0 transition-all duration-200 animate-in fade-in slide-in-from-top-1">
+          {/* 上部：文件信息、标签统计与取消聚焦操作 */}
+          <div className="flex items-center justify-between gap-3 min-w-0">
+            <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+              <div className="w-6 h-6 rounded-lg bg-primary/20 text-primary flex items-center justify-center shrink-0">
+                <MaterialIcon icon="visibility" className="text-sm" />
+              </div>
+              <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
+                <span className="text-muted-foreground shrink-0">{t('当前选中文件:')}</span>
+                <span
+                  className="font-bold text-foreground truncate max-w-[240px] sm:max-w-[360px]"
+                  title={inspectedFileItem.smartName || inspectedFileItem.name}
+                >
+                  {inspectedFileItem.smartName || inspectedFileItem.name}
+                </span>
+              </div>
+              <Badge variant="outline" className="bg-background/80 text-primary border-primary/30 text-[10px] h-4.5 px-1.5 shrink-0 font-mono font-medium">
+                {t('共 {count} 个标签', { count: inspectedFileTagsWithDimension.length })}
+              </Badge>
             </div>
-            <div className="flex items-center gap-1.5 min-w-0 overflow-hidden">
-              <span className="text-muted-foreground shrink-0">{t('当前选中文件:')}</span>
-              <span
-                className="font-bold text-foreground truncate max-w-[240px] sm:max-w-[320px]"
-                title={inspectedFileItem.smartName || inspectedFileItem.name}
+
+            {onClearInspectedFile && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onClearInspectedFile}
+                className="h-6 px-2 text-[11px] text-muted-foreground hover:text-foreground shrink-0 gap-1 rounded-lg cursor-pointer hover:bg-background/60"
+                title={t('清除选定文件高亮')}
               >
-                {inspectedFileItem.smartName || inspectedFileItem.name}
-              </span>
-            </div>
-            <Badge variant="outline" className="bg-background/80 text-primary border-primary/30 text-[10px] h-4.5 px-1.5 shrink-0 font-medium">
-              <MaterialIcon icon="check_circle" className="text-[11px] mr-1 text-primary" />
-              {t('已高亮展示该文件的标签')}
-            </Badge>
+                <MaterialIcon icon="close" className="text-xs" />
+                <span>{t('取消聚焦')}</span>
+              </Button>
+            )}
           </div>
 
-          {onClearInspectedFile && (
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={onClearInspectedFile}
-              className="h-6 px-2 text-[11px] text-muted-foreground hover:text-foreground shrink-0 gap-1 rounded-lg cursor-pointer"
-              title={t('清除选定文件高亮')}
-            >
-              <MaterialIcon icon="close" className="text-xs" />
-              <span>{t('取消聚焦')}</span>
-            </Button>
-          )}
+          {/* 下部：当前选中文件的所有标签（带归属维度名称），支持集中查看 */}
+          <div className="flex flex-wrap items-center gap-1.5 max-h-24 overflow-y-auto pr-1">
+            {inspectedFileTagsWithDimension.length === 0 ? (
+              <span className="text-[11px] text-muted-foreground/80 italic">
+                {t('该文件暂无归属标签')}
+              </span>
+            ) : (
+              inspectedFileTagsWithDimension.map((item, idx) => (
+                <div
+                  key={`${item.dimensionName}::${item.tagValue}::${idx}`}
+                  className="inline-flex items-center rounded-lg border border-primary/30 bg-background/90 text-xs overflow-hidden shadow-2xs select-none"
+                  title={t('归属维度: {dim}', { dim: item.dimensionName })}
+                >
+                  {/* 所属维度名称 */}
+                  <span className="px-1.5 py-0.5 bg-primary/15 text-primary text-[10px] font-semibold border-r border-primary/20 shrink-0">
+                    {item.dimensionName}
+                  </span>
+                  {/* 标签值 */}
+                  <span className="px-2 py-0.5 font-medium text-foreground text-xs">
+                    {item.tagValue}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       )}
 

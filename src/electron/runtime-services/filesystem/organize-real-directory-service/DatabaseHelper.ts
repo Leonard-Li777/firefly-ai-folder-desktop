@@ -166,6 +166,7 @@ export class DatabaseHelper {
           f.size,
           f.author,
           f.language,
+          wf.is_analyzed as isAnalyzed,
           COALESCE(f.modified_at, wf.modified_at) as modifiedAt,
           COALESCE(f.created_at, wf.created_at) as createdAt,
           fc.metadata,
@@ -175,6 +176,7 @@ export class DatabaseHelper {
         INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
         WHERE wf.is_analyzed = 1
+          AND (wf.status IS NULL OR wf.status = 1)
           AND (wf.path LIKE ? OR wf.path = ?)
       `
         )
@@ -230,6 +232,16 @@ export class DatabaseHelper {
           }
         }
 
+        const fileExt = path.extname(file.path || file.name || '').replace(/^\./, '')
+        let rawSmartName = parsedMeta.raw_smart_name || file.smartName || file.name || ''
+        if (fileExt) {
+          rawSmartName = rawSmartName.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
+        }
+        rawSmartName = rawSmartName.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
+        if (!rawSmartName) {
+          rawSmartName = path.basename(file.name || file.path || '', path.extname(file.name || file.path || ''))
+        }
+
         const formattedDimensionTags: Array<{ dimension: string; tag: string }> = []
         for (const tItem of dimensionTagsArray) {
           let applicableTypes: string[] | undefined = undefined
@@ -265,6 +277,7 @@ export class DatabaseHelper {
           id: file.id,
           name: file.name,
           smartName: file.smartName,
+          rawSmartName,
           path: file.path,
           type: file.type || '',
           size: file.size,

@@ -600,6 +600,8 @@ declare global {
           namingPattern?: string
           analysisStrategy?: string
           namingTemplate?: string
+          analysisStrategy_suggestion?: string
+          namingPattern_suggestion?: string
           inheritMode?: {
             analysisStrategy?: 'inherit' | 'current_only' | 'broadcast'
             namingPattern?: 'inherit' | 'current_only' | 'broadcast'

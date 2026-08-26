@@ -355,7 +355,7 @@ export class DirectoryProcessor {
           path: fullPath,
           name: entry.name,
           size: stat.size,
-          type: path.extname(entry.name).slice(1) || 'file'
+          type: path.extname(entry.name).toLowerCase() || 'file'
         })
       }
     }

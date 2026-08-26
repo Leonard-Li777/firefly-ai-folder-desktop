@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { FileItem, DirectoryItem, SettingsCategory } from '@firefly/types'
-import { FileCategory, isCategory, formatDateTime } from '@firefly/shared'
+import { FileCategory, isCategory, getFileCategory, formatDateTime } from '@firefly/shared'
 import { t } from '@app/languages'
 import { cn, MaterialIcon } from '../../../lib/utils'
 import { Button } from '../../ui/button'
@@ -263,7 +263,7 @@ export const FileDetailsPanel: React.FC<any> = ({
   )
 
   const availableTabs = useMemo(() => {
-    if (!analysisResult || !isFileAnalysis(analysisResult) || !analysisResult.isAnalyzed) return []
+    if (!analysisResult || !isFileAnalysis(analysisResult)) return []
     const tabs: any[] = []
     if (
       analysisResult.qualityScore != null ||
@@ -272,20 +272,35 @@ export const FileDetailsPanel: React.FC<any> = ({
     )
       tabs.push({ id: 'quality', label: t('质量评分'), icon: 'star_rate' })
 
-    const isImageFile =
-      analysisResult.type === 'image' ||
-      (analysisResult.mimeType && analysisResult.mimeType.startsWith('image/'))
-    const hasOcr = Boolean(
-      analysisResult.lrc?.trim() ||
-      analysisResult.ocrContent?.trim() ||
-      (isImageFile && analysisResult.content?.trim()) ||
-      (analysisResult.content &&
-        (analysisResult.content.includes('OCR') ||
-          analysisResult.content.includes('图片内提取文字')))
-    )
+    // 从 file-constants.ts 获取文件分类，用于判断各 tab 的显示类型
+    const fileCategory = getFileCategory(analysisResult.name || analysisResult.path || '')
+    // 文档文本类：DOCUMENT / TEXT / OFFICE / CODE / EBOOK
+    const isDocumentText = [
+      FileCategory.DOCUMENT,
+      FileCategory.TEXT,
+      FileCategory.OFFICE,
+      FileCategory.CODE,
+      FileCategory.EBOOK
+    ].includes(fileCategory)
+    // OCR/语音/歌词 支持的类型：图片（OCR）、音频（语音/歌词）
+    const isOcrSupported =
+      fileCategory === FileCategory.IMAGE || fileCategory === FileCategory.AUDIO
+
+    const isImageFile = fileCategory === FileCategory.IMAGE
+    const hasOcr =
+      isOcrSupported &&
+      Boolean(
+        analysisResult.lrc?.trim() ||
+          analysisResult.ocrContent?.trim() ||
+          (isImageFile && analysisResult.content?.trim()) ||
+          (analysisResult.content &&
+            (analysisResult.content.includes('OCR') ||
+              analysisResult.content.includes('图片内提取文字')))
+      )
 
     if (hasOcr) tabs.push({ id: 'ocr', label: t('OCR/语音/歌词'), icon: 'graphic_eq' })
-    if (analysisResult.content?.trim())
+    // 文档摘要：仅文档文本类文件显示
+    if (isDocumentText && analysisResult.content?.trim())
       tabs.push({ id: 'summary', label: t('内容摘要'), icon: 'summarize' })
     tabs.push({ id: 'metadata', label: t('元数据'), icon: 'analytics' })
     if (analysisResult.analysisStats) tabs.push({ id: 'timing', label: t('耗时'), icon: 'timer' })

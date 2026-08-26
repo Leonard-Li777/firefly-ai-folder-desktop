@@ -937,7 +937,12 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                       )
                       const isDirectory = !!item.isDirectory
                       const fileItem = !isDirectory ? (item as FileType) : null
-                      const showThumbnail = !!(fileItem && isImageFile(fileItem.extension))
+                      const showThumbnail = !!(
+                        fileItem &&
+                        (isImageFile(fileItem.extension) ||
+                          isImageFile(fileItem.path) ||
+                          isImageFile(fileItem.name))
+                      )
                       const safeItemName = item.name || t('未知文件')
 
                       return (

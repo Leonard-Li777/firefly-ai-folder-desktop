@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
 import { ProgressBar } from '../../../ui/ProgressBar'
@@ -75,358 +75,683 @@ export const DirectoryProfileSection: React.FC<{
   isUnit,
   workspaceDirectoryPath
 }) => {
-  if (!analysisResult || !isDirAnalysis(analysisResult)) return null
+    if (!analysisResult || !isDirAnalysis(analysisResult)) return null
 
-  const ctx = analysisResult.contextAnalysis
-  const dirPath = analysisResult.path
-  const presetTemplates = getPresetNamingTemplates()
+    const ctx = analysisResult.contextAnalysis
+    const dirPath = analysisResult.path
+    const presetTemplates = getPresetNamingTemplates()
 
-  const isPathEqual =
-    window.electronAPI?.utils?.isPathEqual ||
-    ((a: string, b: string) =>
-      a?.toLowerCase().replace(/[\\/]+$/, '') === b?.toLowerCase().replace(/[\\/]+$/, ''))
+    const isPathEqual =
+      window.electronAPI?.utils?.isPathEqual ||
+      ((a: string, b: string) =>
+        a?.toLowerCase().replace(/[\\/]+$/, '') === b?.toLowerCase().replace(/[\\/]+$/, ''))
 
-  const isWorkspaceRoot = Boolean(
-    workspaceDirectoryPath && dirPath && isPathEqual(dirPath, workspaceDirectoryPath)
-  )
+    const isWorkspaceRoot = Boolean(
+      workspaceDirectoryPath && dirPath && isPathEqual(dirPath, workspaceDirectoryPath)
+    )
 
-  const inheritOptions: Array<{ key: 'inherit' | 'current_only' | 'broadcast'; label: string }> =
-    isWorkspaceRoot
-      ? [
+    const inheritOptions: Array<{ key: 'inherit' | 'current_only' | 'broadcast'; label: string }> =
+      isWorkspaceRoot
+        ? [
           { key: 'broadcast', label: t('应用到子目录') },
           { key: 'current_only', label: t('仅当前生效') }
         ]
-      : [
+        : [
           { key: 'inherit', label: t('继承父级') },
           { key: 'current_only', label: t('仅当前生效') },
           { key: 'broadcast', label: t('应用到子目录') }
         ]
 
-  // 智能文件名格式编辑状态
-  const [editingNamingPattern, setEditingNamingPattern] = useState(false)
-  const [namingPatternValue, setNamingPatternValue] = useState('')
-  const [savingNamingPattern, setSavingNamingPattern] = useState(false)
+    // 智能文件名格式编辑状态
+    const [editingNamingPattern, setEditingNamingPattern] = useState(false)
+    const [namingPatternValue, setNamingPatternValue] = useState('')
+    const [savingNamingPattern, setSavingNamingPattern] = useState(false)
 
-  // AI分析策略编辑状态
-  const [editingAnalysisStrategy, setEditingAnalysisStrategy] = useState(false)
-  const [analysisStrategyValue, setAnalysisStrategyValue] = useState('')
-  const [savingAnalysisStrategy, setSavingAnalysisStrategy] = useState(false)
+    // AI分析策略编辑状态
+    const [editingAnalysisStrategy, setEditingAnalysisStrategy] = useState(false)
+    const [analysisStrategyValue, setAnalysisStrategyValue] = useState('')
+    const [savingAnalysisStrategy, setSavingAnalysisStrategy] = useState(false)
 
-  // 智能文件名附加属性（命名模板）编辑与操作状态
-  const [editingNamingTemplate, setEditingNamingTemplate] = useState(false)
-  const [namingTemplateValue, setNamingTemplateValue] = useState('')
-  const [savingNamingTemplate, setSavingNamingTemplate] = useState(false)
-  const [applyingTemplate, setApplyingTemplate] = useState(false)
+    // 智能文件名附加属性（命名模板）编辑与操作状态
+    const [editingNamingTemplate, setEditingNamingTemplate] = useState(false)
+    const [namingTemplateValue, setNamingTemplateValue] = useState('')
+    const [savingNamingTemplate, setSavingNamingTemplate] = useState(false)
+    const [applyingTemplate, setApplyingTemplate] = useState(false)
+    const templateInputRef = useRef<HTMLInputElement>(null)
 
-  // 继承模式
-  const inheritMode = ctx?.inheritMode || {
-    analysisStrategy: 'inherit',
-    namingPattern: 'inherit',
-    namingTemplate: 'inherit'
-  }
-  const inheritedFrom = ctx?.inheritedFrom || {}
-
-  const getEffectiveInheritMode = (
-    field: 'analysisStrategy' | 'namingPattern' | 'namingTemplate'
-  ): 'inherit' | 'current_only' | 'broadcast' => {
-    const rawMode = inheritMode[field]
-    if (isWorkspaceRoot) {
-      return rawMode === 'current_only' ? 'current_only' : 'broadcast'
-    }
-    return rawMode || 'inherit'
-  }
-
-  const handleUpdateInheritMode = async (
-    field: 'analysisStrategy' | 'namingPattern' | 'namingTemplate',
-    mode: 'inherit' | 'current_only' | 'broadcast'
-  ) => {
-    try {
-      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-        inheritMode: {
-          [field]: mode
-        }
-      })
-      toast.success(t('继承模式已更新'))
-      if (onRefresh) onRefresh()
-    } catch {
-      toast.error(t('更新继承模式失败'))
-    }
-  }
-
-  // 当 ctx 变化时同步编辑框的值
-  useEffect(() => {
-    if (ctx?.namingPattern) setNamingPatternValue(ctx.namingPattern)
-    if (ctx?.analysisStrategy) setAnalysisStrategyValue(ctx.analysisStrategy)
-    setNamingTemplateValue(ctx?.namingTemplate || '')
-  }, [ctx?.namingPattern, ctx?.analysisStrategy, ctx?.namingTemplate])
-
-  // 保存智能文件名格式
-  const handleSaveNamingPattern = async () => {
-    if (!dirPath || !namingPatternValue.trim()) return
-    setSavingNamingPattern(true)
-    try {
-      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-        namingPattern: namingPatternValue.trim()
-      })
-      toast.success(t('智能文件名格式已更新'))
-      setEditingNamingPattern(false)
-      if (onRefresh) onRefresh()
-    } catch (error: any) {
-      logger.error(LogCategory.FILE_ANALYSIS, '更新智能文件名格式失败:', error)
-      toast.error(t('保存失败，请重试'))
-    } finally {
-      setSavingNamingPattern(false)
-    }
-  }
-
-  // 保存AI分析策略
-  const handleSaveAnalysisStrategy = async () => {
-    if (!dirPath || !analysisStrategyValue.trim()) return
-    setSavingAnalysisStrategy(true)
-    try {
-      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-        analysisStrategy: analysisStrategyValue.trim()
-      })
-      toast.success(t('AI分析策略已更新'))
-      setEditingAnalysisStrategy(false)
-      if (onRefresh) onRefresh()
-    } catch (error: any) {
-      logger.error(LogCategory.FILE_ANALYSIS, '更新AI分析策略失败:', error)
-      toast.error(t('保存失败，请重试'))
-    } finally {
-      setSavingAnalysisStrategy(false)
-    }
-  }
-
-  // 保存智能文件名附加属性（命名模板）
-  const handleSaveNamingTemplate = async (newVal?: string) => {
-    if (!dirPath) return
-    const valToSave = (newVal !== undefined ? newVal : namingTemplateValue).trim()
-    setSavingNamingTemplate(true)
-    try {
-      await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-        namingTemplate: valToSave
-      })
-      setNamingTemplateValue(valToSave)
-      toast.success(t('智能文件名附加属性已更新'))
-      setEditingNamingTemplate(false)
-      if (onRefresh) onRefresh()
-    } catch (error: any) {
-      logger.error(LogCategory.FILE_ANALYSIS, '更新智能文件名附加属性失败:', error)
-      toast.error(t('保存失败，请重试'))
-    } finally {
-      setSavingNamingTemplate(false)
-    }
-  }
-
-  // 批量应用模板至该目录下所有已分析文件
-  const handleApplyTemplateToFiles = async () => {
-    if (!dirPath) return
-    setApplyingTemplate(true)
-    try {
-      const res = await window.electronAPI!.applyDirectoryNamingTemplateToFiles(dirPath)
-      if (res?.success) {
-        toast.success(
-          t('已成功将命名模板应用至 {count} 个已分析文件', {
-            count: res.updatedCount
-          })
-        )
-        if (onRefresh) onRefresh()
+    // 快捷插入 DSL 标签至模板输入框光标处
+    const handleInsertTagToTemplate = (tagText: string) => {
+      const input = templateInputRef.current
+      if (input) {
+        const start = input.selectionStart ?? namingTemplateValue.length
+        const end = input.selectionEnd ?? namingTemplateValue.length
+        const newVal =
+          namingTemplateValue.substring(0, start) +
+          tagText +
+          namingTemplateValue.substring(end)
+        setNamingTemplateValue(newVal)
+        setTimeout(() => {
+          input.focus()
+          const nextPos = start + tagText.length
+          input.setSelectionRange(nextPos, nextPos)
+        }, 0)
+      } else {
+        setNamingTemplateValue(prev => prev + tagText)
       }
-    } catch (err: any) {
-      logger.error(LogCategory.FILE_ANALYSIS, '批量应用命名模板失败:', err)
-      toast.error(t('批量应用失败，请重试'))
-    } finally {
-      setApplyingTemplate(false)
     }
-  }
 
-  // 编辑按钮（增强显示 — 带背景和文字标签的醒目样式）
-  const editButtonClass =
-    'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border/60 bg-muted/40 hover:bg-primary/10 hover:border-primary/30 text-muted-foreground hover:text-primary text-xs font-medium transition-all duration-200 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
+    // 继承模式
+    const inheritMode = ctx?.inheritMode || {
+      analysisStrategy: 'inherit',
+      namingPattern: 'inherit',
+      namingTemplate: 'inherit'
+    }
+    const inheritedFrom = ctx?.inheritedFrom || {}
 
-  return (
-    <>
-      {/* 目录路径信息 */}
-      <div className="border-t border-border pt-4 mb-6">
-        <div className="text-sm space-y-2 text-muted-foreground">
-          <div>
-            <strong className="font-medium text-foreground">{t('路径:')}</strong>{' '}
-            <span className="break-all">{analysisResult.path}</span>
-          </div>
-          <p>
-            <strong className="font-medium text-foreground">{t('文件总数:')}</strong>{' '}
-            {analysisResult.fileCount} {t('个')}
-          </p>
-          <p>
-            <strong className="font-medium text-foreground">{t('已分析:')}</strong>{' '}
-            {analysisResult.analyzedFileCount} {t('个')}
-          </p>
-          {analysisResult.lastScanAt && (
-            <p>
-              <strong className="font-medium text-foreground">{t('最后扫描:')}</strong>{' '}
-              {formatDate(analysisResult.lastScanAt)}
-            </p>
-          )}
-        </div>
-      </div>
+    const getEffectiveInheritMode = (
+      field: 'analysisStrategy' | 'namingPattern' | 'namingTemplate'
+    ): 'inherit' | 'current_only' | 'broadcast' => {
+      const rawMode = inheritMode[field]
+      if (isWorkspaceRoot) {
+        return rawMode === 'current_only' ? 'current_only' : 'broadcast'
+      }
+      return rawMode || 'inherit'
+    }
 
-      {/* AI 分析策略 + 智能文件名格式 + 智能文件名附加属性 — 组合可编辑区块 */}
-      {(ctx?.analysisStrategy || ctx?.namingPattern || ctx?.namingTemplate !== undefined || ctx) && !isUnit && (
-        <div className="border-t border-border pt-4 mb-6 group/tooltip">
-          <div className="relative">
-            {/* 悬浮提示 */}
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full mb-2 px-3 py-1.5 bg-popover text-popover-foreground text-xs leading-relaxed rounded-md shadow-lg border border-border hidden group-hover/tooltip:block z-50 pointer-events-none whitespace-nowrap">
-              {t('可通过目录画像再次自动生成')}
+    const handleUpdateInheritMode = async (
+      field: 'analysisStrategy' | 'namingPattern' | 'namingTemplate',
+      mode: 'inherit' | 'current_only' | 'broadcast'
+    ) => {
+      try {
+        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+          inheritMode: {
+            [field]: mode
+          }
+        })
+        toast.success(t('继承模式已更新'))
+        if (onRefresh) onRefresh()
+      } catch {
+        toast.error(t('更新继承模式失败'))
+      }
+    }
+
+    // 当 ctx 变化时同步编辑框的值
+    useEffect(() => {
+      if (ctx?.namingPattern) setNamingPatternValue(ctx.namingPattern)
+      if (ctx?.analysisStrategy) setAnalysisStrategyValue(ctx.analysisStrategy)
+      setNamingTemplateValue(ctx?.namingTemplate || '')
+    }, [ctx?.namingPattern, ctx?.analysisStrategy, ctx?.namingTemplate])
+
+    // 保存智能文件名格式
+    const handleSaveNamingPattern = async () => {
+      if (!dirPath || !namingPatternValue.trim()) return
+      setSavingNamingPattern(true)
+      try {
+        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+          namingPattern: namingPatternValue.trim()
+        })
+        toast.success(t('智能文件名格式已更新'))
+        setEditingNamingPattern(false)
+        if (onRefresh) onRefresh()
+      } catch (error: any) {
+        logger.error(LogCategory.FILE_ANALYSIS, '更新智能文件名格式失败:', error)
+        toast.error(t('保存失败，请重试'))
+      } finally {
+        setSavingNamingPattern(false)
+      }
+    }
+
+    // 保存AI分析策略
+    const handleSaveAnalysisStrategy = async () => {
+      if (!dirPath || !analysisStrategyValue.trim()) return
+      setSavingAnalysisStrategy(true)
+      try {
+        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+          analysisStrategy: analysisStrategyValue.trim()
+        })
+        toast.success(t('AI分析策略已更新'))
+        setEditingAnalysisStrategy(false)
+        if (onRefresh) onRefresh()
+      } catch (error: any) {
+        logger.error(LogCategory.FILE_ANALYSIS, '更新AI分析策略失败:', error)
+        toast.error(t('保存失败，请重试'))
+      } finally {
+        setSavingAnalysisStrategy(false)
+      }
+    }
+
+    // 一键采纳AI建议的分析策略并立即启用
+    const handleAdoptAnalysisStrategySuggestion = async (suggestion: string) => {
+      if (!dirPath || !suggestion.trim()) return
+      const val = suggestion.trim()
+      setAnalysisStrategyValue(val)
+      setSavingAnalysisStrategy(true)
+      try {
+        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+          analysisStrategy: val
+        })
+        toast.success(t('已采纳AI建议并启用'))
+        setEditingAnalysisStrategy(false)
+        if (onRefresh) onRefresh()
+      } catch (error: any) {
+        logger.error(LogCategory.FILE_ANALYSIS, '采纳AI建议失败:', error)
+        toast.error(t('采纳失败，请重试'))
+      } finally {
+        setSavingAnalysisStrategy(false)
+      }
+    }
+
+    // 一键采纳AI建议的智能文件名格式并立即启用
+    const handleAdoptNamingPatternSuggestion = async (suggestion: string) => {
+      if (!dirPath || !suggestion.trim()) return
+      const val = suggestion.trim()
+      setNamingPatternValue(val)
+      setSavingNamingPattern(true)
+      try {
+        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+          namingPattern: val
+        })
+        toast.success(t('已采纳AI建议并启用'))
+        setEditingNamingPattern(false)
+        if (onRefresh) onRefresh()
+      } catch (error: any) {
+        logger.error(LogCategory.FILE_ANALYSIS, '采纳AI建议失败:', error)
+        toast.error(t('采纳失败，请重试'))
+      } finally {
+        setSavingNamingPattern(false)
+      }
+    }
+
+    // 保存智能文件名附加属性（命名模板）
+    const handleSaveNamingTemplate = async (newVal?: string) => {
+      if (!dirPath) return
+      const valToSave = (newVal !== undefined ? newVal : namingTemplateValue).trim()
+      setSavingNamingTemplate(true)
+      try {
+        await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
+          namingTemplate: valToSave
+        })
+        setNamingTemplateValue(valToSave)
+        toast.success(t('智能文件名附加属性已更新'))
+        setEditingNamingTemplate(false)
+        if (onRefresh) onRefresh()
+
+        // 触发全应用事件更新目录配置
+        window.dispatchEvent(new CustomEvent('directory-context-updated'))
+      } catch (error: any) {
+        logger.error(LogCategory.FILE_ANALYSIS, '更新智能文件名附加属性失败:', error)
+        toast.error(t('保存失败，请重试'))
+      } finally {
+        setSavingNamingTemplate(false)
+      }
+    }
+
+    // 批量应用模板至该目录下所有已分析文件
+    const handleApplyTemplateToFiles = async () => {
+      if (!dirPath) return
+      setApplyingTemplate(true)
+      try {
+        const res = await window.electronAPI!.applyDirectoryNamingTemplateToFiles(dirPath)
+        if (res?.success) {
+          toast.success(
+            t('已成功将命名模板应用至 {count} 个已分析文件', {
+              count: res.updatedCount
+            })
+          )
+          if (onRefresh) onRefresh()
+
+          // 触发全应用各页面事件监听，立即更新所有页面的智能文件名显示与列表
+          window.dispatchEvent(new CustomEvent('smartname-updated'))
+          window.dispatchEvent(new CustomEvent('files-updated'))
+          window.dispatchEvent(new CustomEvent('tags-updated'))
+          window.dispatchEvent(new CustomEvent('tags:updated'))
+          window.dispatchEvent(new CustomEvent('directory-context-updated'))
+        }
+      } catch (err: any) {
+        logger.error(LogCategory.FILE_ANALYSIS, '批量应用命名模板失败:', err)
+        toast.error(t('批量应用失败，请重试'))
+      } finally {
+        setApplyingTemplate(false)
+      }
+    }
+
+    // 编辑按钮（增强显示 — 带背景和文字标签的醒目样式）
+    const editButtonClass =
+      'inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-border/60 bg-muted/40 hover:bg-primary/10 hover:border-primary/30 text-muted-foreground hover:text-primary text-xs font-medium transition-all duration-200 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'
+
+    return (
+      <>
+        {/* 目录路径信息 */}
+        <div className="border-t border-border pt-4 mb-6">
+          <div className="text-sm space-y-2 text-muted-foreground">
+            <div>
+              <strong className="font-medium text-foreground">{t('路径:')}</strong>{' '}
+              <span className="break-all">{analysisResult.path}</span>
             </div>
-            <div className="bg-primary/10 rounded-lg px-4 py-3 -mx-4 space-y-5">
-              {ctx?.analysisStrategy && (
-                <>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {t('AI分析策略')}{' '}
-                      {ctx.confidence !== undefined && ctx.confidence !== null && (
-                        <span className="text-xs font-light text-muted-foreground ml-2">
-                          {t('置信度: ')}
-                          {(ctx.confidence * 100).toFixed(0)}%
-                        </span>
-                      )}
-                    </h3>
-                    <button
-                      onClick={() => {
-                        setAnalysisStrategyValue(ctx.analysisStrategy)
-                        setEditingAnalysisStrategy(!editingAnalysisStrategy)
-                      }}
-                      className={editButtonClass}
-                      title={t('编辑AI分析策略')}
-                    >
-                      <MaterialIcon
-                        icon={editingAnalysisStrategy ? 'close' : 'edit'}
-                        className="text-sm"
-                      />
-                      <span>{editingAnalysisStrategy ? t('取消') : t('编辑')}</span>
-                    </button>
-                  </div>
+            <p>
+              <strong className="font-medium text-foreground">{t('文件总数:')}</strong>{' '}
+              {analysisResult.fileCount} {t('个')}
+            </p>
+            <p>
+              <strong className="font-medium text-foreground">{t('已分析:')}</strong>{' '}
+              {analysisResult.analyzedFileCount} {t('个')}
+            </p>
+            {analysisResult.lastScanAt && (
+              <p>
+                <strong className="font-medium text-foreground">{t('最后扫描:')}</strong>{' '}
+                {formatDate(analysisResult.lastScanAt)}
+              </p>
+            )}
+          </div>
+        </div>
 
-                  {/* 继承模式控制 */}
-                  <div className="flex items-center gap-3 text-xs mb-2">
-                    {inheritOptions.map(item => (
-                      <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
-                        <input
-                          type="radio"
-                          name="inherit_analysis_strategy"
-                          checked={getEffectiveInheritMode('analysisStrategy') === item.key}
-                          onChange={() => handleUpdateInheritMode('analysisStrategy', item.key)}
-                          className="accent-primary w-3 h-3"
+        {/* AI 分析策略 + 智能文件名格式 + 智能文件名附加属性 — 组合可编辑区块 */}
+        {(ctx?.analysisStrategy || ctx?.namingPattern || ctx?.namingTemplate !== undefined || ctx) && !isUnit && (
+          <div className="border-t border-border pt-4 mb-6 group/tooltip">
+            <div className="">
+              <div className="bg-primary/10 rounded-lg px-4 py-3 -mx-4 space-y-5">
+                {(ctx?.analysisStrategy !== undefined || ctx?.analysisStrategy_suggestion !== undefined) && (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-foreground">
+                        {t('AI分析策略')}{' '}
+                        {ctx.confidence !== undefined && ctx.confidence !== null && (
+                          <span className="text-xs font-light text-muted-foreground ml-2">
+                            {t('置信度: ')}
+                            {(ctx.confidence * 100).toFixed(0)}%
+                          </span>
+                        )}
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setAnalysisStrategyValue(ctx?.analysisStrategy || '')
+                          setEditingAnalysisStrategy(!editingAnalysisStrategy)
+                        }}
+                        className={editButtonClass}
+                        title={t('编辑AI分析策略')}
+                      >
+                        <MaterialIcon
+                          icon={editingAnalysisStrategy ? 'close' : 'edit'}
+                          className="text-sm"
                         />
-                        <span
-                          className={cn(
-                            getEffectiveInheritMode('analysisStrategy') === item.key
-                              ? 'text-primary font-medium'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          {item.label}
-                        </span>
-                      </label>
-                    ))}
-                    {!isWorkspaceRoot &&
-                      getEffectiveInheritMode('analysisStrategy') === 'inherit' &&
-                      inheritedFrom?.analysisStrategy && (
-                        <span
-                          className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
-                          title={inheritedFrom.analysisStrategy}
-                        >
-                          ({t('源:')} {inheritedFrom.analysisStrategy.split(/[\\/]/).pop()})
-                        </span>
-                      )}
-                  </div>
+                        <span>{editingAnalysisStrategy ? t('取消') : t('编辑')}</span>
+                      </button>
+                    </div>
 
-                  {editingAnalysisStrategy ? (
-                    <div className="space-y-2">
-                      <textarea
-                        value={analysisStrategyValue}
-                        onChange={e => setAnalysisStrategyValue(e.target.value)}
-                        className="w-full text-sm text-foreground bg-background p-3 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 whitespace-pre-wrap leading-relaxed resize-y min-h-[80px] outline-none transition-all duration-200"
-                        rows={4}
-                        autoFocus
-                      />
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground/70">
-                          <MaterialIcon
-                            icon="info"
-                            className="text-xs inline mr-1 align-text-top text-amber-500"
+                    {/* 继承模式控制 */}
+                    <div className="flex items-center gap-3 text-xs mb-2">
+                      {inheritOptions.map(item => (
+                        <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
+                          <input
+                            type="radio"
+                            name="inherit_analysis_strategy"
+                            checked={getEffectiveInheritMode('analysisStrategy') === item.key}
+                            onChange={() => handleUpdateInheritMode('analysisStrategy', item.key)}
+                            className="accent-primary w-3 h-3"
                           />
-                          {t('影响AI文件分析结果如：标签、描述等')}
-                        </span>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setEditingAnalysisStrategy(false)}
-                            disabled={savingAnalysisStrategy}
-                          >
-                            {t('取消')}
-                          </Button>
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={handleSaveAnalysisStrategy}
-                            disabled={savingAnalysisStrategy || !analysisStrategyValue.trim()}
-                          >
-                            {savingAnalysisStrategy ? (
-                              <>
-                                <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-current mr-1.5" />
-                                {t('保存中')}
-                              </>
-                            ) : (
-                              <>{t('保存')}</>
+                          <span
+                            className={cn(
+                              getEffectiveInheritMode('analysisStrategy') === item.key
+                                ? 'text-primary font-medium'
+                                : 'text-muted-foreground'
                             )}
-                          </Button>
+                          >
+                            {item.label}
+                          </span>
+                        </label>
+                      ))}
+                      {!isWorkspaceRoot &&
+                        getEffectiveInheritMode('analysisStrategy') === 'inherit' &&
+                        inheritedFrom?.analysisStrategy && (
+                          <span
+                            className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
+                            title={inheritedFrom.analysisStrategy}
+                          >
+                            ({t('源:')} {inheritedFrom.analysisStrategy.split(/[\\/]/).pop()})
+                          </span>
+                        )}
+                    </div>
+
+                    {editingAnalysisStrategy ? (
+                      <div className="space-y-2">
+                        <textarea
+                          value={analysisStrategyValue}
+                          onChange={e => setAnalysisStrategyValue(e.target.value)}
+                          placeholder={t('请输入AI分析策略，例如关注文件标签、元数据、内容大纲等要求...')}
+                          className="w-full text-sm text-foreground bg-background p-3 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 whitespace-pre-wrap leading-relaxed resize-y min-h-[80px] outline-none transition-all duration-200"
+                          rows={4}
+                          autoFocus
+                        />
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground/70">
+                            <MaterialIcon
+                              icon="info"
+                              className="text-xs inline mr-1 align-text-top text-amber-500"
+                            />
+                            {t('影响AI文件分析结果如：标签、描述等')}
+                          </span>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => setEditingAnalysisStrategy(false)}
+                              disabled={savingAnalysisStrategy}
+                            >
+                              {t('取消')}
+                            </Button>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={handleSaveAnalysisStrategy}
+                              disabled={savingAnalysisStrategy || !analysisStrategyValue.trim()}
+                            >
+                              {savingAnalysisStrategy ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-current mr-1.5" />
+                                  {t('保存中')}
+                                </>
+                              ) : (
+                                <>{t('保存')}</>
+                              )}
+                            </Button>
+                          </div>
                         </div>
                       </div>
+                    ) : (
+                      <div className="group">
+                        {ctx?.analysisStrategy ? (
+                          <p className="text-sm text-foreground bg-background dark:bg-background/50 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed">
+                            {ctx.analysisStrategy}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-muted-foreground/60 italic bg-background/50 dark:bg-background/30 p-3 rounded-md border border-dashed border-border/60 leading-relaxed">
+                            {t('未配置正式分析策略（可点击右上角编辑手动输入，或采纳下方 AI 建议）')}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* AI 分析策略建议展示与一键采纳（如果输入框/当前值与AI建议值相同，则不显示AI建议） */}
+                    {Boolean(
+                      ctx?.analysisStrategy_suggestion &&
+                      ctx.analysisStrategy_suggestion.trim() &&
+                      (editingAnalysisStrategy
+                        ? analysisStrategyValue.trim()
+                        : (ctx?.analysisStrategy || '').trim()) !== ctx.analysisStrategy_suggestion.trim()
+                    ) && (
+                      <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
+                        <div className="flex items-center justify-between relative">
+                          {/* 悬浮提示 */}
+                          <div className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full mb-2 px-3 py-1.5 bg-popover text-popover-foreground text-xs leading-relaxed rounded-md shadow-lg border border-border hidden group-hover/tooltip:block z-50 pointer-events-none whitespace-nowrap">
+                            {t('可通过目录画像再次自动生成')}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                            <MaterialIcon icon="auto_awesome" className="text-sm text-primary" />
+                            <span>{t('AI建议')}</span>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:hover:text-secondary-foreground gap-1"
+                            onClick={() =>
+                              handleAdoptAnalysisStrategySuggestion(ctx.analysisStrategy_suggestion!)
+                            }
+                            disabled={savingAnalysisStrategy}
+                            title={t('采纳此AI建议并正式启用')}
+                          >
+                            <MaterialIcon icon="check" className="text-xs" />
+                            <span>{t('采纳建议')}</span>
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground/90 leading-relaxed whitespace-pre-wrap">
+                          {ctx.analysisStrategy_suggestion}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+                {(ctx?.namingPattern !== undefined || ctx?.namingPattern_suggestion !== undefined) && (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1">
+                        <h3 className="text-sm font-semibold text-foreground">
+                          {t('智能文件名格式')}
+                        </h3>
+                        <div className="relative group/help">
+                          <MaterialIcon
+                            icon="help_outline"
+                            className="text-xs text-muted-foreground cursor-help"
+                          />
+                          {/* hover 说明：对此处配置作用的解释 */}
+                          <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover/help:block z-50 w-56 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg border border-border leading-relaxed whitespace-normal pointer-events-none">
+                            {t('此处的配置将影响该目录中文件的智能文件名命名格式')}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setNamingPatternValue(ctx?.namingPattern || '')
+                          setEditingNamingPattern(!editingNamingPattern)
+                        }}
+                        className={editButtonClass}
+                        title={t('编辑智能文件名格式')}
+                      >
+                        <MaterialIcon
+                          icon={editingNamingPattern ? 'close' : 'edit'}
+                          className="text-sm"
+                        />
+                        <span>{editingNamingPattern ? t('取消') : t('编辑')}</span>
+                      </button>
                     </div>
-                  ) : (
-                    <div className="group relative">
-                      <p className="text-sm text-foreground bg-background dark:bg-background/50  p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed">
-                        {ctx.analysisStrategy}
-                      </p>
+
+                    {/* 继承模式控制 */}
+                    <div className="flex items-center gap-3 text-xs mb-2">
+                      {inheritOptions.map(item => (
+                        <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
+                          <input
+                            type="radio"
+                            name="inherit_naming_pattern"
+                            checked={getEffectiveInheritMode('namingPattern') === item.key}
+                            onChange={() => handleUpdateInheritMode('namingPattern', item.key)}
+                            className="accent-primary w-3 h-3"
+                          />
+                          <span
+                            className={cn(
+                              getEffectiveInheritMode('namingPattern') === item.key
+                                ? 'text-primary font-medium'
+                                : 'text-muted-foreground'
+                            )}
+                          >
+                            {item.label}
+                          </span>
+                        </label>
+                      ))}
+                      {!isWorkspaceRoot &&
+                        getEffectiveInheritMode('namingPattern') === 'inherit' &&
+                        inheritedFrom?.namingPattern && (
+                          <span
+                            className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
+                            title={inheritedFrom.namingPattern}
+                          >
+                            ({t('源:')} {inheritedFrom.namingPattern.split(/[\\/]/).pop()})
+                          </span>
+                        )}
                     </div>
-                  )}
-                </>
-              )}
-              {ctx?.namingPattern && (
-                <>
+
+                    {editingNamingPattern ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={namingPatternValue}
+                          onChange={e => setNamingPatternValue(e.target.value)}
+                          placeholder={t('[领域]内容描述')}
+                          className="w-full text-sm text-foreground bg-background px-3 py-2 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-200"
+                          autoFocus
+                        />
+                        <div className="flex items-center justify-between">
+                          <div className="relative group/inputhelp cursor-help flex items-center gap-1 text-xs text-muted-foreground/70">
+                            <MaterialIcon icon="info" className="text-xs text-amber-500" />
+                            <span className="underline decoration-dotted underline-offset-2">
+                              {t('查看格式要求')}
+                            </span>
+                            <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover/inputhelp:block z-50 w-72 p-3 bg-popover text-popover-foreground text-xs rounded-md shadow-xl border border-border leading-relaxed whitespace-normal space-y-1.5 pointer-events-none">
+                              <div className="font-medium text-foreground">
+                                {t('智能文件名格式要求')}：
+                              </div>
+                              <div className="text-muted-foreground text-[11px]">
+                                {t(
+                                  '支持以下命名规则，你可以自行编写关键词，由AI生成（取决于AI的遵循能力）'
+                                )}
+                              </div>
+                              <ul className="list-disc list-inside text-[11px] text-muted-foreground/90 space-y-0.5 font-mono">
+                                <li>
+                                  [{t('系列名')}]{t('内容描述')} / [{t('领域')}]{t('内容描述')}
+                                </li>
+                                <li>
+                                  [{t('原文件名编号')}]{t('状态')}_{t('内容描述')}
+                                </li>
+                                <li>
+                                  {t('版本')}_{t('内容描述')} / {t('领域')}_{t('内容描述')}
+                                </li>
+                                <li>
+                                  {t('年份')}_{t('年份')}_{t('内容描述')}
+                                </li>
+                                <li>
+                                  {t('分类')}_{t('地名')}_{t('年份')}_{t('内容描述')}
+                                </li>
+                                <li>{t('内容描述')}</li>
+                              </ul>
+
+                              <div className="text-[10px] text-amber-500/90 pt-1 border-t border-border/40">
+                                * {t('不符合格式要求的规则将自动还原为默认值')}[{t('领域')}]
+                                {t('内容描述')}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => setEditingNamingPattern(false)}
+                              disabled={savingNamingPattern}
+                            >
+                              {t('取消')}
+                            </Button>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={handleSaveNamingPattern}
+                              disabled={savingNamingPattern || !namingPatternValue.trim()}
+                            >
+                              {savingNamingPattern ? (
+                                <>
+                                  <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-current mr-1.5" />
+                                  {t('保存中')}
+                                </>
+                              ) : (
+                                <>{t('保存')}</>
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="group relative">
+                        {ctx?.namingPattern ? (
+                          <div className="text-sm text-foreground bg-background dark:bg-background/50 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed">
+                            <PersistentTooltip
+                              id="directory_naming_pattern_hint"
+                              content={t('请优先配置，影响文件智能命名')}
+                              position="bottom"
+                              delay={1000}
+                            >
+                              {ctx.namingPattern}
+                            </PersistentTooltip>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground/60 italic bg-background/50 dark:bg-background/30 p-3 rounded-md border border-dashed border-border/60 leading-relaxed">
+                            {t('未配置正式智能文件名格式（可点击右上角编辑手动输入，或采纳下方 AI 建议）')}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 智能文件名格式建议展示与一键采纳（如果输入框/当前值与AI建议值相同，则不显示AI建议） */}
+                    {Boolean(
+                      ctx?.namingPattern_suggestion &&
+                      ctx.namingPattern_suggestion.trim() &&
+                      (editingNamingPattern
+                        ? namingPatternValue.trim()
+                        : (ctx?.namingPattern || '').trim()) !== ctx.namingPattern_suggestion.trim()
+                    ) && (
+                      <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
+                        <div className="flex items-center justify-between relative">
+                          {/* 悬浮提示 */}
+                          <div className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full mb-2 px-3 py-1.5 bg-popover text-popover-foreground text-xs leading-relaxed rounded-md shadow-lg border border-border hidden group-hover/tooltip:block z-50 pointer-events-none whitespace-nowrap">
+                            {t('可通过目录画像再次自动生成')}
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                            <MaterialIcon icon="auto_awesome" className="text-sm text-primary" />
+                            <span>{t('AI建议')}</span>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:text-secondary-foreground gap-1"
+                            onClick={() =>
+                              handleAdoptNamingPatternSuggestion(ctx.namingPattern_suggestion!)
+                            }
+                            disabled={savingNamingPattern}
+                            title={t('采纳此AI建议并正式启用')}
+                          >
+                            <MaterialIcon icon="check" className="text-xs" />
+                            <span>{t('采纳建议')}</span>
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground/90 font-mono">
+                          {ctx.namingPattern_suggestion}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* 智能文件名附加属性 (namingTemplate) */}
+                <div className="border-t border-border/40 pt-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-1">
                       <h3 className="text-sm font-semibold text-foreground">
-                        {t('智能文件名格式')}
+                        {t('智能文件名附加属性')}
                       </h3>
                       <div className="relative group/help">
                         <MaterialIcon
                           icon="help_outline"
                           className="text-xs text-muted-foreground cursor-help"
                         />
-                        {/* hover 说明：对此处配置作用的解释 */}
-                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover/help:block z-50 w-56 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg border border-border leading-relaxed whitespace-normal pointer-events-none">
-                          {t('此处的配置将影响该目录中文件的智能文件名命名格式')}
+                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover/help:block z-50 w-64 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg border border-border leading-relaxed whitespace-normal pointer-events-none">
+                          {t('在文件分析完毕后自动按该模板生成最终智能文件名，是AI生成的智能文件名的有力补充更快更可控。更多信息，请参考整理页面的批量更名功能')}
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        setNamingPatternValue(ctx.namingPattern)
-                        setEditingNamingPattern(!editingNamingPattern)
-                      }}
-                      className={editButtonClass}
-                      title={t('编辑智能文件名格式')}
-                    >
-                      <MaterialIcon
-                        icon={editingNamingPattern ? 'close' : 'edit'}
-                        className="text-sm"
-                      />
-                      <span>{editingNamingPattern ? t('取消') : t('编辑')}</span>
-                    </button>
+
+                    <div className="flex items-center gap-1.5">
+                      {/* 手动编辑/取消切换按钮 */}
+                      <button
+                        onClick={() => {
+                          setNamingTemplateValue(ctx?.namingTemplate || '')
+                          setEditingNamingTemplate(!editingNamingTemplate)
+                        }}
+                        className={editButtonClass}
+                        title={t('编辑智能文件名附加属性')}
+                      >
+                        <MaterialIcon
+                          icon={editingNamingTemplate ? 'close' : 'edit'}
+                          className="text-sm"
+                        />
+                        <span>{editingNamingTemplate ? t('取消') : t('编辑')}</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* 继承模式控制 */}
@@ -435,14 +760,14 @@ export const DirectoryProfileSection: React.FC<{
                       <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
                         <input
                           type="radio"
-                          name="inherit_naming_pattern"
-                          checked={getEffectiveInheritMode('namingPattern') === item.key}
-                          onChange={() => handleUpdateInheritMode('namingPattern', item.key)}
+                          name="inherit_naming_template"
+                          checked={getEffectiveInheritMode('namingTemplate') === item.key}
+                          onChange={() => handleUpdateInheritMode('namingTemplate', item.key)}
                           className="accent-primary w-3 h-3"
                         />
                         <span
                           className={cn(
-                            getEffectiveInheritMode('namingPattern') === item.key
+                            getEffectiveInheritMode('namingTemplate') === item.key
                               ? 'text-primary font-medium'
                               : 'text-muted-foreground'
                           )}
@@ -452,84 +777,127 @@ export const DirectoryProfileSection: React.FC<{
                       </label>
                     ))}
                     {!isWorkspaceRoot &&
-                      getEffectiveInheritMode('namingPattern') === 'inherit' &&
-                      inheritedFrom?.namingPattern && (
+                      getEffectiveInheritMode('namingTemplate') === 'inherit' &&
+                      inheritedFrom?.namingTemplate && (
                         <span
                           className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
-                          title={inheritedFrom.namingPattern}
+                          title={inheritedFrom.namingTemplate}
                         >
-                          ({t('源:')} {inheritedFrom.namingPattern.split(/[\\/]/).pop()})
+                          ({t('源:')} {inheritedFrom.namingTemplate.split(/[\\/]/).pop()})
                         </span>
                       )}
                   </div>
 
-                  {editingNamingPattern ? (
-                    <div className="space-y-2">
-                      <input
-                        type="text"
-                        value={namingPatternValue}
-                        onChange={e => setNamingPatternValue(e.target.value)}
-                        placeholder={t('[领域]内容描述')}
-                        className="w-full text-sm text-foreground bg-background px-3 py-2 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-200"
-                        autoFocus
-                      />
-                      <div className="flex items-center justify-between">
-                        <div className="relative group/inputhelp cursor-help flex items-center gap-1 text-xs text-muted-foreground/70">
-                          <MaterialIcon icon="info" className="text-xs text-amber-500" />
-                          <span className="underline decoration-dotted underline-offset-2">
-                            {t('查看格式要求')}
-                          </span>
-                          <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover/inputhelp:block z-50 w-72 p-3 bg-popover text-popover-foreground text-xs rounded-md shadow-xl border border-border leading-relaxed whitespace-normal space-y-1.5 pointer-events-none">
-                            <div className="font-medium text-foreground">
-                              {t('智能文件名格式要求')}：
-                            </div>
-                            <div className="text-muted-foreground text-[11px]">
-                              {t(
-                                '支持以下命名规则（领域/特征可为题材、作者名、系列名、年份、序号、格式、原文件名等）：'
-                              )}
-                            </div>
-                            <ul className="list-disc list-inside text-[11px] text-muted-foreground/90 space-y-0.5 font-mono">
-                              <li>
-                                [{t('作者')}]{t('内容描述')} / [{t('领域')}]{t('内容描述')}
-                              </li>
-                              <li>
-                                [{t('题材')}]{t('作者')}_{t('内容描述')}
-                              </li>
-                              <li>
-                                {t('作者')}_{t('内容描述')} / {t('领域')}_{t('内容描述')}
-                              </li>
-                              <li>
-                                {t('作者')}_{t('年份')}_{t('内容描述')}
-                              </li>
-                              <li>
-                                {t('分类')}_{t('作者')}_{t('年份')}_{t('内容描述')}
-                              </li>
-                              <li>{t('内容描述')}</li>
-                            </ul>
+                  {editingNamingTemplate ? (
+                    /* 手动编辑 DSL 模板面板 */
+                    <div className="space-y-3 p-3 bg-background/60 dark:bg-background/40 rounded-lg border border-primary/30">
+                      {/* 快速载入预设 */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">{t('载入预设:')}</span>
+                        <select
+                          onChange={e => {
+                            const val = e.target.value
+                            if (val === '__CLEAR__') {
+                              setNamingTemplateValue('')
+                            } else if (val) {
+                              setNamingTemplateValue(val)
+                            }
+                            setTimeout(() => templateInputRef.current?.focus(), 0)
+                          }}
+                          defaultValue=""
+                          className="w-full h-7 text-xs text-foreground bg-background px-2 py-0.5 rounded border border-border/60 hover:border-primary/50 focus:border-primary outline-none transition-all duration-150 cursor-pointer truncate"
+                        >
+                          <option value="" disabled>{t('选择预设模板快速填入...')}</option>
+                          <option value="__CLEAR__">{t('清空模板 (不使用附加属性)')}</option>
+                          {presetTemplates.map((preset, pIdx) => (
+                            <option key={pIdx} value={preset.template}>
+                              {preset.name} - {preset.template}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                            <div className="text-[10px] text-amber-500/90 pt-1 border-t border-border/40">
-                              * {t('不符合格式要求的规则将自动还原为默认值')}[{t('领域')}]
-                              {t('内容描述')}
-                            </div>
-                          </div>
+                      {/* 手动编辑输入框 */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-medium text-foreground">{t('模板表达式 (支持自由手动编辑)')}:</span>
+                          {namingTemplateValue && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setNamingTemplateValue('')
+                                templateInputRef.current?.focus()
+                              }}
+                              className="text-[11px] text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                            >
+                              {t('清空内容')}
+                            </button>
+                          )}
                         </div>
+                        <input
+                          ref={templateInputRef}
+                          type="text"
+                          value={namingTemplateValue}
+                          onChange={e => setNamingTemplateValue(e.target.value)}
+                          placeholder={t('例如: [{TAG:文件类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}')}
+                          className="w-full font-mono text-xs text-foreground bg-background px-3 py-2 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-200"
+                          autoFocus
+                        />
+                      </div>
 
+                      {/* 快捷插入常用 DSL 标签 */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <MaterialIcon icon="touch_app" className="text-xs text-primary" />
+                          <span>{t('点击快捷插入标签至光标处')}:</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { label: '{SMART_NAME}', desc: t('原始智能名') },
+                            { label: '{MOD:YYYY-MM-DD}', desc: t('修改日期') },
+                            { label: '{CRE:YYYY-MM-DD}', desc: t('创建日期') },
+                            { label: '({SEQ:01})', desc: t('双位序号') },
+                            { label: `[{TAG:${t('文件类型')}}]`, desc: t('文件类型标签') },
+                            { label: `[{TAG:${t('题材')}}]`, desc: t('题材标签') },
+                            { label: '[{AUTHOR}]', desc: t('作者') },
+                            { label: '{ORIG_NAME}', desc: t('原文件名') }
+                          ].map((chip, cIdx) => (
+                            <button
+                              key={cIdx}
+                              type="button"
+                              onClick={() => handleInsertTagToTemplate(chip.label)}
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-muted/60 hover:bg-primary/10 hover:text-primary hover:border-primary/40 border border-border/50 text-foreground transition-all cursor-pointer select-none"
+                              title={chip.desc}
+                            >
+                              <span className="text-primary font-bold">+</span>
+                              <span>{chip.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* 操作按钮 */}
+                      <div className="flex items-center justify-between pt-1 border-t border-border/40">
+                        <span className="text-xs text-muted-foreground/70">
+                          <MaterialIcon icon="info" className="text-xs inline mr-1 align-text-top text-amber-500" />
+                          {t('支持任意自定义前后缀、文字与 DSL 标签组合')}
+                        </span>
                         <div className="flex gap-2">
                           <Button
                             variant="secondary"
                             size="sm"
-                            onClick={() => setEditingNamingPattern(false)}
-                            disabled={savingNamingPattern}
+                            onClick={() => setEditingNamingTemplate(false)}
+                            disabled={savingNamingTemplate}
                           >
                             {t('取消')}
                           </Button>
                           <Button
                             variant="default"
                             size="sm"
-                            onClick={handleSaveNamingPattern}
-                            disabled={savingNamingPattern || !namingPatternValue.trim()}
+                            onClick={() => handleSaveNamingTemplate()}
+                            disabled={savingNamingTemplate}
                           >
-                            {savingNamingPattern ? (
+                            {savingNamingTemplate ? (
                               <>
                                 <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-current mr-1.5" />
                                 {t('保存中')}
@@ -542,302 +910,170 @@ export const DirectoryProfileSection: React.FC<{
                       </div>
                     </div>
                   ) : (
-                    <div className="group relative">
-                      <div className="text-sm text-foreground bg-background dark:bg-background/50 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed">
-                        <PersistentTooltip
-                          id="directory_naming_pattern_hint"
-                          content={t('请优先配置，影响文件智能命名')}
-                          position="bottom"
-                          delay={1000}
+                    /* 下拉选择菜单与当前模板展示 */
+                    <div className="space-y-2">
+                      <div className="relative">
+                        <select
+                          value={
+                            !namingTemplateValue
+                              ? '__NONE__'
+                              : presetTemplates.some(p => p.template === namingTemplateValue)
+                                ? namingTemplateValue
+                                : '__CUSTOM__'
+                          }
+                          onChange={e => {
+                            const sel = e.target.value
+                            if (sel === '__NONE__') {
+                              handleSaveNamingTemplate('')
+                            } else if (sel === '__CUSTOM__') {
+                              setEditingNamingTemplate(true)
+                            } else {
+                              handleSaveNamingTemplate(sel)
+                            }
+                          }}
+                          className="w-full h-9 text-xs text-foreground bg-background px-3 py-1.5 rounded-md border border-border/60 hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-150 cursor-pointer truncate"
                         >
-                          {ctx.namingPattern}
-                        </PersistentTooltip>
+                          <option value="__NONE__">{t('不使用附加模板 (仅保留原始智能名)')}</option>
+                          {presetTemplates.map((preset, pIdx) => (
+                            <option key={pIdx} value={preset.template}>
+                              {preset.name} - {preset.template}
+                            </option>
+                          ))}
+                          {namingTemplateValue &&
+                            !presetTemplates.some(p => p.template === namingTemplateValue) && (
+                              <option value="__CUSTOM__">
+                                {t('自定义')}: {namingTemplateValue}
+                              </option>
+                            )}
+                        </select>
                       </div>
+
+                      {namingTemplateValue ? (
+                        <div className="flex items-center justify-between text-[11px] font-mono px-3 py-1.5 rounded bg-muted/40 text-muted-foreground border border-border/40">
+                          <span className="truncate" title={namingTemplateValue}>
+                            {t('当前模板:')} <span className="text-foreground font-medium">{namingTemplateValue}</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="text-[11px] text-muted-foreground/60 italic px-1">
+                          {t('未启用附加模板，将直接采用 AI 输出的智能文件名')}
+                        </div>
+                      )}
+
+                      {/* 一键应用至已分析文件按钮 */}
+                      <button
+                        type="button"
+                        onClick={handleApplyTemplateToFiles}
+                        disabled={applyingTemplate}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                        title={t('为当前目录下已分析文件重新应用该命名模板')}
+                      >
+                        <MaterialIcon
+                          icon={applyingTemplate ? 'sync' : 'auto_fix_high'}
+                          className={cn('text-sm', applyingTemplate && 'animate-spin')}
+                        />
+                        <span>{applyingTemplate ? t('应用中...') : t('将附加属性应用至当前目录已分析文件')}</span>
+                      </button>
                     </div>
                   )}
-                </>
-              )}
-
-              {/* 智能文件名附加属性 (namingTemplate) */}
-              <div className="border-t border-border/40 pt-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      {t('智能文件名附加属性')}
-                    </h3>
-                    <div className="relative group/help">
-                      <MaterialIcon
-                        icon="help_outline"
-                        className="text-xs text-muted-foreground cursor-help"
-                      />
-                      <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover/help:block z-50 w-64 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg border border-border leading-relaxed whitespace-normal pointer-events-none">
-                        {t('选择批量更名预设模板，在文件分析完毕后自动按该模板渲染生成最终智能文件名')}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-
-
-                    {/* 自定义编辑切换按钮 */}
-                    <button
-                      onClick={() => {
-                        setNamingTemplateValue(ctx?.namingTemplate || '')
-                        setEditingNamingTemplate(!editingNamingTemplate)
-                      }}
-                      className={editButtonClass}
-                      title={t('手动编辑模板表达式')}
-                    >
-                      <MaterialIcon
-                        icon={editingNamingTemplate ? 'close' : 'edit'}
-                        className="text-sm"
-                      />
-                      <span>{editingNamingTemplate ? t('取消') : t('自定义')}</span>
-                    </button>
-                  </div>
                 </div>
-
-                {/* 继承模式控制 */}
-                <div className="flex items-center gap-3 text-xs mb-2">
-                  {inheritOptions.map(item => (
-                    <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
-                      <input
-                        type="radio"
-                        name="inherit_naming_template"
-                        checked={getEffectiveInheritMode('namingTemplate') === item.key}
-                        onChange={() => handleUpdateInheritMode('namingTemplate', item.key)}
-                        className="accent-primary w-3 h-3"
-                      />
-                      <span
-                        className={cn(
-                          getEffectiveInheritMode('namingTemplate') === item.key
-                            ? 'text-primary font-medium'
-                            : 'text-muted-foreground'
-                        )}
-                      >
-                        {item.label}
-                      </span>
-                    </label>
-                  ))}
-                  {!isWorkspaceRoot &&
-                    getEffectiveInheritMode('namingTemplate') === 'inherit' &&
-                    inheritedFrom?.namingTemplate && (
-                      <span
-                        className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
-                        title={inheritedFrom.namingTemplate}
-                      >
-                        ({t('源:')} {inheritedFrom.namingTemplate.split(/[\\/]/).pop()})
-                      </span>
-                    )}
-                </div>
-
-                {editingNamingTemplate ? (
-                  /* 自定义 DSL 输入编辑框 */
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={namingTemplateValue}
-                      onChange={e => setNamingTemplateValue(e.target.value)}
-                      placeholder={t('例如: [{TAG:文件类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}')}
-                      className="w-full font-mono text-xs text-foreground bg-background px-3 py-2 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-200"
-                      autoFocus
-                    />
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground/70">
-                        <MaterialIcon icon="code" className="text-xs inline mr-1 text-primary" />
-                        {t('支持 {SMART_NAME}、{TAG:xxx}、{MOD:xxx} 等 DSL 标签')}
-                      </span>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => setEditingNamingTemplate(false)}
-                          disabled={savingNamingTemplate}
-                        >
-                          {t('取消')}
-                        </Button>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => handleSaveNamingTemplate()}
-                          disabled={savingNamingTemplate}
-                        >
-                          {savingNamingTemplate ? (
-                            <>
-                              <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-current mr-1.5" />
-                              {t('保存中')}
-                            </>
-                          ) : (
-                            <>{t('保存')}</>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  /* 下拉选择菜单与当前模板展示 */
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <select
-                        value={
-                          !namingTemplateValue
-                            ? '__NONE__'
-                            : presetTemplates.some(p => p.template === namingTemplateValue)
-                            ? namingTemplateValue
-                            : '__CUSTOM__'
-                        }
-                        onChange={e => {
-                          const sel = e.target.value
-                          if (sel === '__NONE__') {
-                            handleSaveNamingTemplate('')
-                          } else if (sel === '__CUSTOM__') {
-                            setEditingNamingTemplate(true)
-                          } else {
-                            handleSaveNamingTemplate(sel)
-                          }
-                        }}
-                        className="w-full h-9 text-xs text-foreground bg-background px-3 py-1.5 rounded-md border border-border/60 hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-150 cursor-pointer truncate"
-                      >
-                        <option value="__NONE__">{t('不使用附加模板 (仅保留原始智能名)')}</option>
-                        {presetTemplates.map((preset, pIdx) => (
-                          <option key={pIdx} value={preset.template}>
-                            {preset.name} - {preset.template}
-                          </option>
-                        ))}
-                        {namingTemplateValue &&
-                          !presetTemplates.some(p => p.template === namingTemplateValue) && (
-                            <option value="__CUSTOM__">
-                              {t('自定义')}: {namingTemplateValue}
-                            </option>
-                          )}
-                      </select>
-                    </div>
-
-                    {namingTemplateValue ? (
-                      <div className="flex items-center justify-between text-[11px] font-mono px-3 py-1.5 rounded bg-muted/40 text-muted-foreground border border-border/40">
-                        <span className="truncate" title={namingTemplateValue}>
-                          {t('当前模板:')} <span className="text-foreground font-medium">{namingTemplateValue}</span>
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-muted-foreground/60 italic px-1">
-                        {t('未启用附加模板，将直接采用 AI 输出的智能文件名')}
-                      </div>
-                    )}
-                                        {/* 一键应用至已分析文件按钮 */}
-                    <button
-                      type="button"
-                      onClick={handleApplyTemplateToFiles}
-                      disabled={applyingTemplate}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-all duration-200 disabled:opacity-50 cursor-pointer"
-                      title={t('为当前目录下已分析文件重新应用该命名模板')}
-                    >
-                      <MaterialIcon
-                        icon={applyingTemplate ? 'sync' : 'auto_fix_high'}
-                        className={cn('text-sm', applyingTemplate && 'animate-spin')}
-                      />
-                      <span>{applyingTemplate ? t('应用中...') : t('应用至已分析文件')}</span>
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* 推荐标签 */}
-      {ctx?.recommendedTags && Object.keys(ctx.recommendedTags).length > 0 && (
-        <div className="border-t border-border pt-4 mb-6">
-          <h3 className="text-sm font-semibold mb-3 text-foreground">{t('推荐标签')}</h3>
-          <div className="space-y-3">
-            {Object.entries(ctx.recommendedTags).map(
-              ([dimension, tags]: [string, any], dimIdx: number) => (
-                <div key={dimIdx}>
-                  <p className="text-xs font-medium text-foreground mb-1.5">{dimension}:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {Array.isArray(tags) &&
-                      tags.map((tag: string, tagIdx: number) => (
+        {/* 推荐标签 */}
+        {ctx?.recommendedTags && Object.keys(ctx.recommendedTags).length > 0 && (
+          <div className="border-t border-border pt-4 mb-6">
+            <h3 className="text-sm font-semibold mb-3 text-foreground">{t('推荐标签')}</h3>
+            <div className="space-y-3">
+              {Object.entries(ctx.recommendedTags).map(
+                ([dimension, tags]: [string, any], dimIdx: number) => (
+                  <div key={dimIdx}>
+                    <p className="text-xs font-medium text-foreground mb-1.5">{dimension}:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {Array.isArray(tags) &&
+                        tags.map((tag: string, tagIdx: number) => (
+                          <span
+                            key={tagIdx}
+                            className={cn(
+                              'text-xs px-3 py-1.5 rounded-full font-medium',
+                              getTagColor(dimIdx * 10 + tagIdx)
+                            )}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 文件类型分布 */}
+        {ctx?.fileTypeDistribution && Object.keys(ctx.fileTypeDistribution).length > 0 && (
+          <div className="border-t border-border pt-4 mb-6">
+            <h3 className="text-sm font-semibold mb-3 text-foreground">{t('文件类型分布')}</h3>
+            <div className="space-y-2">
+              {Object.entries(ctx.fileTypeDistribution as Record<string, number>)
+                .sort(([, a], [, b]) => b - a)
+                .map(([type, count], idx) => {
+                  const total = Object.values(
+                    ctx.fileTypeDistribution as Record<string, number>
+                  ).reduce((sum: number, c: number) => sum + c, 0)
+                  const percentage = total > 0 ? (count / total) * 100 : 0
+                  return (
+                    <div key={idx} className="flex items-center text-xs text-muted-foreground">
+                      <span className="w-20 capitalize">{type}</span>
+                      <div className="flex-1 mx-2 min-w-0">
+                        <ProgressBar
+                          value={count}
+                          max={total}
+                          className="h-1.5"
+                          colorClass="bg-primary"
+                        />
+                      </div>
+                      <span className="w-16 text-right">
+                        {count} ({percentage.toFixed(0)}%)
+                      </span>
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* 目录特征 - 元数据：特殊文件、分析时间 */}
+        {ctx && (
+          <div className="border-t border-border pt-4 mb-6">
+            <div className="text-sm space-y-2 text-muted-foreground">
+              {ctx.specialFiles && ctx.specialFiles.length > 0 && (
+                <div>
+                  <strong className="font-medium text-foreground">{t('特殊文件:')}</strong>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {Array.isArray(ctx.specialFiles) &&
+                      ctx.specialFiles.map((file: string, idx: number) => (
                         <span
-                          key={tagIdx}
-                          className={cn(
-                            'text-xs px-3 py-1.5 rounded-full font-medium',
-                            getTagColor(dimIdx * 10 + tagIdx)
-                          )}
+                          key={idx}
+                          className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 px-2 py-1 rounded font-mono"
                         >
-                          {tag}
+                          {file}
                         </span>
                       ))}
                   </div>
                 </div>
-              )
-            )}
+              )}
+              {ctx.analyzedAt && (
+                <p>
+                  <strong className="font-medium text-foreground">{t('分析时间:')}</strong>{' '}
+                  {formatDate(ctx.analyzedAt)}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      )}
-
-      {/* 文件类型分布 */}
-      {ctx?.fileTypeDistribution && Object.keys(ctx.fileTypeDistribution).length > 0 && (
-        <div className="border-t border-border pt-4 mb-6">
-          <h3 className="text-sm font-semibold mb-3 text-foreground">{t('文件类型分布')}</h3>
-          <div className="space-y-2">
-            {Object.entries(ctx.fileTypeDistribution as Record<string, number>)
-              .sort(([, a], [, b]) => b - a)
-              .map(([type, count], idx) => {
-                const total = Object.values(
-                  ctx.fileTypeDistribution as Record<string, number>
-                ).reduce((sum: number, c: number) => sum + c, 0)
-                const percentage = total > 0 ? (count / total) * 100 : 0
-                return (
-                  <div key={idx} className="flex items-center text-xs text-muted-foreground">
-                    <span className="w-20 capitalize">{type}</span>
-                    <div className="flex-1 mx-2 min-w-0">
-                      <ProgressBar
-                        value={count}
-                        max={total}
-                        className="h-1.5"
-                        colorClass="bg-primary"
-                      />
-                    </div>
-                    <span className="w-16 text-right">
-                      {count} ({percentage.toFixed(0)}%)
-                    </span>
-                  </div>
-                )
-              })}
-          </div>
-        </div>
-      )}
-
-      {/* 目录特征 - 元数据：特殊文件、分析时间 */}
-      {ctx && (
-        <div className="border-t border-border pt-4 mb-6">
-          <div className="text-sm space-y-2 text-muted-foreground">
-            {ctx.specialFiles && ctx.specialFiles.length > 0 && (
-              <div>
-                <strong className="font-medium text-foreground">{t('特殊文件:')}</strong>
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {Array.isArray(ctx.specialFiles) &&
-                    ctx.specialFiles.map((file: string, idx: number) => (
-                      <span
-                        key={idx}
-                        className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-500 px-2 py-1 rounded font-mono"
-                      >
-                        {file}
-                      </span>
-                    ))}
-                </div>
-              </div>
-            )}
-            {ctx.analyzedAt && (
-              <p>
-                <strong className="font-medium text-foreground">{t('分析时间:')}</strong>{' '}
-                {formatDate(ctx.analyzedAt)}
-              </p>
-            )}
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
+        )}
+      </>
+    )
+  }

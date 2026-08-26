@@ -353,6 +353,8 @@ export default defineConfig(({ command, mode }) => {
             'extract-file-icon',
             'pdf-poppler',
             'canvas',
+            'exiftool-vendored',
+            'exiftool-vendored.exe',
             'llamaindex',
             '@llamaindex/openai',
             'node-llama-cpp',

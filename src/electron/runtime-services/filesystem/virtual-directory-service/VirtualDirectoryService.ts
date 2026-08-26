@@ -534,6 +534,13 @@ export class VirtualDirectoryService {
           } catch {
             // ignore
           }
+        } else if (currentStatus === 0 && row.originalPath && fs.existsSync(row.originalPath)) {
+          currentStatus = 1
+          try {
+            this.db.prepare('UPDATE workspace_files SET status = 1 WHERE id = ?').run(row.fileId)
+          } catch {
+            // ignore
+          }
         }
         if (!showMissing && currentStatus === 0) {
           return null

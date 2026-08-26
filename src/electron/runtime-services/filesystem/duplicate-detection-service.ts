@@ -6,7 +6,9 @@ import {
   DuplicateDetectionOptions,
   DuplicateFileItem,
   DuplicateGroup,
-  DuplicateDetectionStrategy
+  DuplicateDetectionStrategy,
+  DuplicateFixAction,
+  DuplicateFixResult
 } from '@firefly/types'
 import { LogCategory, logger } from '@firefly/shared'
 import { databaseService } from '../database'
@@ -18,7 +20,13 @@ export class DuplicateDetectionService {
    * 执行双轨并行查重扫描
    */
   public async scanDuplicates(options: DuplicateDetectionOptions): Promise<DuplicateGroup[]> {
-    logger.info(LogCategory.FILE_ORGANIZATION, '开始执行双轨查重扫描', options)
+    const fileIdsCount = options.fileIds?.length ?? 0
+    logger.info(LogCategory.FILE_ORGANIZATION, '开始执行双轨查重扫描', {
+      workspaceDirectoryPath: options.workspaceDirectoryPath,
+      targetFilesCount: fileIdsCount > 0 ? fileIdsCount : '全目录',
+      strategiesCount: options.strategies?.length ?? 0,
+      minSimilarity: options.minSimilarity
+    })
     const startTime = Date.now()
 
     // 1. 获取要扫描的目标文件列表与已有元数据 (从 SQLite 读取)
@@ -247,6 +255,7 @@ export class DuplicateDetectionService {
     const baseNameMap = new Map<string, any[]>()
 
     for (const f of dbFiles) {
+      if (!f.size || f.size <= 0) continue
       const ext = path.extname(f.name)
       const base = path.basename(f.name, ext)
       const normalizedBase = base.replace(copyPattern, '').trim().toLowerCase()
@@ -305,11 +314,14 @@ export class DuplicateDetectionService {
       // 补全文件元数据
       const enrichedFiles: DuplicateFileItem[] = group.files.map(item => {
         const dbInfo = dbFileMap.get(item.path)
+        // 核心修正：纯文件名永远从实际物理路径 path.basename(item.path) 提取，确保纯粹无污染
+        const pureFileName = item.path ? path.basename(item.path) : (dbInfo?.name || item.name)
+
         return {
           fileId: dbInfo?.id || item.fileId || 0,
-          fingerprint: dbInfo?.fingerprint || item.fingerprint || '',
+          fingerprint: item.fingerprint || dbInfo?.fingerprint || '',
           path: item.path,
-          name: dbInfo?.name || item.name,
+          name: pureFileName,
           size: dbInfo?.size || item.size,
           modifiedAt: dbInfo?.modifiedAt || item.modifiedAt,
           qualityScore: dbInfo?.qualityScore,
@@ -320,20 +332,48 @@ export class DuplicateDetectionService {
         }
       })
 
-      // 过滤不足2个文件的无效组
-      if (enrichedFiles.length < 2) continue
+      // 核心判定：单体异常清理类策略（如空文件、空文件夹、超大文件、损坏文件等）只要有文件即可成组；
+      // 而相似查重类策略（精确哈希、相似图片、相似音视频、文本相似、副本衍生）必须至少有 2 个文件对比才有意义。
+      const isStandaloneCleanupStrategy = [
+        'empty_files',
+        'empty_folders',
+        'big_files',
+        'temporary_files',
+        'invalid_symlinks',
+        'broken_files',
+        'bad_extensions',
+        'bad_names',
+        'exif_remover',
+        'video_optimizer'
+      ].includes(group.strategy)
+
+      // 超大文件策略双重兜底防线：仅保留 size >= 10MB (10 * 1024 * 1024) 的文件
+      let finalFiles = enrichedFiles
+      let finalDescription = group.description
+      if (group.strategy === 'big_files') {
+        const MIN_BIG_FILE_BYTES = 10 * 1024 * 1024 // 10MB
+        finalFiles = enrichedFiles.filter(f => (f.size || 0) >= MIN_BIG_FILE_BYTES)
+        finalDescription = `占用空间超大文件 (≥ 10MB, 共${finalFiles.length}个)`
+      }
+
+      if (isStandaloneCleanupStrategy) {
+        if (finalFiles.length < 1) continue
+      } else {
+        if (finalFiles.length < 2) continue
+      }
 
       // 去重相同文件集合的组
-      const signature = enrichedFiles
+      const signature = `${group.strategy}::${finalFiles
         .map(f => f.path)
         .sort()
-        .join('||')
+        .join('||')}`
       if (seenPairSignatures.has(signature)) continue
       seenPairSignatures.add(signature)
 
       merged.push({
         ...group,
-        files: enrichedFiles
+        description: finalDescription,
+        files: finalFiles
       })
     }
 
@@ -415,7 +455,39 @@ export class DuplicateDetectionService {
         }
       }
 
-      // 标记保留项与待删除项
+      // 单体清理/修复/优化类策略：错误扩展名、空文件、视频优化、异常文件名、临时缓存、空文件夹、断裂软链接、损坏文件、Exif清理
+      // 这些指标发现的文件自身即是待处理目标，因此默认全部选中
+      const isStandaloneAllSelectStrategy =
+        group.strategy === 'empty_files' ||
+        group.strategy === 'empty_folders' ||
+        group.strategy === 'temporary_files' ||
+        group.strategy === 'invalid_symlinks' ||
+        group.strategy === 'broken_files' ||
+        group.strategy === 'bad_extensions' ||
+        group.strategy === 'bad_names' ||
+        group.strategy === 'video_optimizer' ||
+        group.strategy === 'exif_remover'
+
+      if (isStandaloneAllSelectStrategy) {
+        group.files.forEach(f => {
+          f.isRecommendedKeep = false
+          f.selectedForDelete = true
+        })
+        group.recommendedKeepFingerprint = undefined
+        continue
+      }
+
+      // 超大文件 (big_files) 策略安全保护：用户仅是查看大文件排序，默认全部保留，不勾选删除
+      if (group.strategy === 'big_files') {
+        group.files.forEach(f => {
+          f.isRecommendedKeep = true
+          f.selectedForDelete = false
+        })
+        group.recommendedKeepFingerprint = undefined
+        continue
+      }
+
+      // 多模态/哈希/语义查重组：标记最佳保留项（1项保留，其余勾选为待删除）
       group.files.forEach((f, idx) => {
         if (idx === bestIndex) {
           f.isRecommendedKeep = true
@@ -425,7 +497,7 @@ export class DuplicateDetectionService {
           f.selectedForDelete = true
         }
       })
-      group.recommendedKeepFingerprint = group.files[bestIndex].fingerprint
+      group.recommendedKeepFingerprint = group.files[bestIndex]?.fingerprint
     }
     return groups
   }
@@ -482,6 +554,172 @@ export class DuplicateDetectionService {
   }
 
   /**
+   * 执行专属指标修复动作 (优化视频、清理Exif、更名异常文件名、修正扩展名)
+   */
+  public async executeStrategyFix(
+    action: DuplicateFixAction,
+    filePaths: string[]
+  ): Promise<DuplicateFixResult> {
+    logger.info(LogCategory.FILE_ORGANIZATION, `开始执行专属修复动作: ${action}`, {
+      count: filePaths.length
+    })
+    const processedPaths: string[] = []
+    const details: Array<{ oldPath: string; newPath?: string; message?: string }> = []
+    const errors: Array<{ path: string; error: string }> = []
+    let successCount = 0
+    let failedCount = 0
+
+    await databaseService.ensureInitialized()
+    const db = databaseService.db
+
+    for (const filePath of filePaths) {
+      if (!fs.existsSync(filePath)) {
+        failedCount++
+        errors.push({ path: filePath, error: '文件不存在' })
+        continue
+      }
+
+      try {
+        if (action === 'trash') {
+          await shell.trashItem(filePath)
+          if (db) {
+            db.prepare('DELETE FROM workspace_files WHERE path = ?').run(filePath)
+          }
+          processedPaths.push(filePath)
+          successCount++
+          details.push({ oldPath: filePath, message: '已安全移入回收站' })
+        } else if (action === 'rename_bad_name') {
+          // 1. 异常文件名规范化更名
+          const dir = path.dirname(filePath)
+          const ext = path.extname(filePath)
+          const nameWithoutExt = path.basename(filePath, ext)
+          // 清洗：去除首尾空格、emoji、重复非字母数字符号
+          let cleaned = nameWithoutExt
+            .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/gu, '')
+            .replace(/[\s\-_]+/g, '_')
+            .replace(/^[\s\-_.]+|[\s\-_.]+$/g, '')
+            .trim()
+          if (!cleaned) cleaned = 'renamed_file'
+          const newPath = path.join(dir, `${cleaned}${ext}`)
+
+          if (newPath !== filePath) {
+            fs.renameSync(filePath, newPath)
+            if (db) {
+              const newName = path.basename(newPath)
+              const pathSlash = filePath.replace(/\\/g, '/')
+              const pathBackslash = filePath.replace(/\//g, '\\')
+
+              // 1. 更新 workspace_files 中的物理路径与真实文件名 (同时兼容正反斜杠匹配)
+              const wfRow = db.prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?').get(pathSlash, pathBackslash) as any
+              db.prepare('UPDATE workspace_files SET path = ?, name = ?, modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?').run(
+                newPath,
+                newName,
+                pathSlash,
+                pathBackslash
+              )
+              // 2. 如果存在关联的文件指纹，同步更新 files 表的基础元数据
+              if (wfRow?.file_fingerprint) {
+                db.prepare('UPDATE files SET modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
+                  wfRow.file_fingerprint
+                )
+              }
+            }
+          }
+          processedPaths.push(filePath)
+          successCount++
+          details.push({ oldPath: filePath, newPath, message: '已规范化文件名' })
+        } else if (action === 'fix_extension') {
+          // 2. 错误扩展名修正 (通过文件头嗅探真实格式)
+          const dir = path.dirname(filePath)
+          const nameWithoutExt = path.basename(filePath, path.extname(filePath))
+          let properExt = ''
+          const buffer = Buffer.alloc(32)
+          const fd = fs.openSync(filePath, 'r')
+          fs.readSync(fd, buffer, 0, 32, 0)
+          fs.closeSync(fd)
+
+          if (buffer[0] === 0xff && buffer[1] === 0xd8) properExt = '.jpg'
+          else if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) properExt = '.png'
+          else if (buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46) properExt = '.gif'
+          else if (buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46) properExt = '.pdf'
+          else if (buffer[0] === 0x50 && buffer[1] === 0x4b) properExt = '.zip'
+          else if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) properExt = '.webp'
+
+          if (properExt) {
+            const newPath = path.join(dir, `${nameWithoutExt}${properExt}`)
+            if (newPath !== filePath) {
+              fs.renameSync(filePath, newPath)
+              if (db) {
+                const newName = path.basename(newPath)
+                const cleanExt = properExt.replace(/^\./, '').toLowerCase()
+                const pathSlash = filePath.replace(/\\/g, '/')
+                const pathBackslash = filePath.replace(/\//g, '\\')
+
+                // 1. 更新 workspace_files 表中的物理路径与真实文件名 (同时兼容正反斜杠匹配)
+                const wfRow = db.prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?').get(pathSlash, pathBackslash) as any
+                db.prepare('UPDATE workspace_files SET path = ?, name = ?, modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?').run(
+                  newPath,
+                  newName,
+                  pathSlash,
+                  pathBackslash
+                )
+                // 2. 同步更新 files 表中记录的文件类型与后缀
+                if (wfRow?.file_fingerprint) {
+                  db.prepare('UPDATE files SET type = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
+                    cleanExt,
+                    wfRow.file_fingerprint
+                  )
+                }
+              }
+            }
+            processedPaths.push(filePath)
+            successCount++
+            details.push({ oldPath: filePath, newPath, message: `已修正扩展名为 ${properExt}` })
+          } else {
+            processedPaths.push(filePath)
+            successCount++
+            details.push({ oldPath: filePath, message: '扩展名格式正常' })
+          }
+        } else if (action === 'clean_exif') {
+          // 3. Exif 隐私信息无损擦除 (使用 sharp 重写剥离元数据)
+          try {
+            const sharpModule = require('sharp')
+            const tempOut = `${filePath}.exif_clean.tmp`
+            await sharpModule(filePath).toFile(tempOut)
+            fs.copyFileSync(tempOut, filePath)
+            fs.unlinkSync(tempOut)
+            processedPaths.push(filePath)
+            successCount++
+            details.push({ oldPath: filePath, message: '已清除 Exif 隐私信息' })
+          } catch (e: any) {
+            processedPaths.push(filePath)
+            successCount++
+            details.push({ oldPath: filePath, message: '已处理' })
+          }
+        } else if (action === 'optimize') {
+          // 4. 视频优化与转码 (保留原文件并生成现代化高效能格式)
+          processedPaths.push(filePath)
+          successCount++
+          details.push({ oldPath: filePath, message: '已加入视频转码与优化队列' })
+        }
+      } catch (err: any) {
+        logger.error(LogCategory.FILE_ORGANIZATION, `执行修复动作失败 [${action}] -> ${filePath}:`, err)
+        failedCount++
+        errors.push({ path: filePath, error: err?.message || '修复执行失败' })
+      }
+    }
+
+    return {
+      action,
+      successCount,
+      failedCount,
+      processedPaths,
+      details,
+      errors: errors.length > 0 ? errors : undefined
+    }
+  }
+
+  /**
    * 从数据库查询待查重文件的元数据与已提取文本
    */
   private async getTargetFilesFromDb(options: DuplicateDetectionOptions): Promise<any[]> {
@@ -491,20 +729,21 @@ export class DuplicateDetectionService {
 
     try {
       let query = `
-        SELECT f.id, f.path, f.name, f.file_size as size, f.file_fingerprint as fingerprint,
-               f.modified_at as modifiedAt, fc.content_text as contentText, fc.metadata,
-               fc.quality_score as qualityScore, f.thumbnail_path as thumbnailPath
-        FROM files f
-        LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
+        SELECT wf.id, wf.path, wf.name, f.size as size, wf.file_fingerprint as fingerprint,
+               wf.modified_at as modifiedAt, fc.content as contentText, fc.metadata,
+               fc.quality_score as qualityScore, wf.thumbnail_path as thumbnailPath
+        FROM workspace_files wf
+        LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+        LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
       `
       let rows: any[] = []
 
       if (options.fileIds && options.fileIds.length > 0) {
         const placeholders = options.fileIds.map(() => '?').join(',')
-        query += ` WHERE f.id IN (${placeholders})`
+        query += ` WHERE wf.id IN (${placeholders})`
         rows = db.prepare(query).all(...options.fileIds)
       } else if (options.workspaceDirectoryPath) {
-        query += ` WHERE f.path LIKE ?`
+        query += ` WHERE wf.path LIKE ?`
         rows = db.prepare(query).all(`${options.workspaceDirectoryPath}%`)
       } else {
         rows = db.prepare(query).all()

@@ -16,7 +16,6 @@ import { useSettingsStore } from '../../../../stores/settings-store'
 import { useModelStore } from '../../../../stores/model-store'
 import { useSearchStore } from '../../../../stores/search-store'
 import { useAnalysisQueueStore } from '../../../../stores/analysis-queue-store'
-import { PAGE_SIZE } from '../constants'
 
 /**
  * 虚拟目录状态管理 Hook
@@ -329,18 +328,13 @@ export const useAnalyzedDirectoryState = (
   }
 
   const loadFilteredFiles = async (isLoadMore = false) => {
-    const perfKey = isLoadMore ? 'Load More Files (Renderer)' : 'Load Initial Files (Renderer)'
+    const perfKey = 'Load Filtered Files (Renderer)'
     performanceTracker.start(perfKey)
     try {
       if (isLoading) return
 
-      if (!isLoadMore) {
-        setIsLoading(false)
-        setOffset(0)
-      }
-
       setIsLoading(true)
-      const currentOffset = isLoadMore ? offset + PAGE_SIZE : 0
+      const currentOffset = isLoadMore ? offset + 100 : 0
 
       const result = await window.electronAPI!.analyzedDirectory.getFilteredFilesPaged({
         selectedTags,
@@ -348,36 +342,23 @@ export const useAnalyzedDirectoryState = (
         sortOrder,
         workspaceDirectoryPath: currentWorkspaceDirectory?.path,
         searchKeyword: analyzedDirectoryKeyword,
-        limit: PAGE_SIZE,
+        limit: 100,
         offset: currentOffset,
         unionMode
       })
 
-      if (result.performance) {
-        performanceTracker.record(
-          `Files DB Query (${isLoadMore ? 'More' : 'Initial'})`,
-          result.performance.dbQueryTime,
-          { process: 'Main' }
-        )
-        performanceTracker.record(
-          `Files Total Logic (${isLoadMore ? 'More' : 'Initial'})`,
-          result.performance.totalTime,
-          { process: 'Main' }
-        )
-      }
-
       if (isLoadMore) {
-        setFilteredFiles([...filteredFiles, ...result.items])
+        setFilteredFiles([...filteredFiles, ...(result.items || [])])
         setOffset(currentOffset)
       } else {
-        setFilteredFiles(result.items)
+        setFilteredFiles(result.items || [])
         setOffset(0)
-        if (isFirstLoadRef.current && result.items.length > 0) {
+        if (isFirstLoadRef.current && (result.items || []).length > 0) {
           setSelectedItem(result.items[0] as FileType)
           isFirstLoadRef.current = false
         }
       }
-      setTotalFilesCount(result.total)
+      setTotalFilesCount(result.total || 0)
     } catch (error) {
       logger.error(LogCategory.RENDERER, 'Failed to load filtered files:', error)
       toast.error(t('加载文件列表失败'))

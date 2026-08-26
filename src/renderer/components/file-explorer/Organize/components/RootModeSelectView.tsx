@@ -17,7 +17,7 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
     {
       stage: 'batch-rename' as Stage,
       title: t('批量更名'),
-      tag: t('DSL 模板'),
+      tag: t('预处理'),
       icon: 'drive_file_rename_outline',
       description: t('基于智能文件名、修改日期、维度标签与自增序号等 DSL 属性，一键批量重命名智能文件名。'),
       accentColor: 'from-blue-500/10 via-indigo-500/5 to-transparent',
@@ -27,7 +27,7 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
     {
       stage: 'batch-tag' as Stage,
       title: t('批量标签'),
-      tag: t('覆盖率三态'),
+      tag: t('预处理'),
       icon: 'label',
       description: t('支持批量对文件标签进行点选新增和删除。'),
       accentColor: 'from-emerald-500/10 via-teal-500/5 to-transparent',
@@ -37,17 +37,17 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
     {
       stage: 'batch-duplicate' as Stage,
       title: t('批量清理'),
-      tag: t('双轨多模态'),
+      tag: t('警告：真实文件操作'),
       icon: 'cleaning_services',
-      description: t('基于 Omni Rust 快速多模态指纹与本地文档语义双轨并行，智能分析并安全清理重复与冗余文件。'),
+      description: t('基于FireFly Omni智能分析并安全清理冗余文件以及执行文件修复。'),
       accentColor: 'from-amber-500/10 via-orange-500/5 to-transparent',
       iconColor: 'text-amber-500 bg-amber-500/10',
-      badgeVariant: 'secondary' as const
+      badgeVariant: 'destructive' as const
     },
     {
       stage: 'mode-select' as Stage,
       title: t('批量整理'),
-      tag: t('AI 智能重构'),
+      tag: t('AI文件整理主流程'),
       icon: 'auto_fix_high',
       description: t('基于 AI 智能多维度分析或虚拟目录规则，将勾选文件归类并输出至物理目录或新建虚拟目录。'),
       accentColor: 'from-purple-500/10 via-pink-500/5 to-transparent',
@@ -65,10 +65,10 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
             <span>{t('已勾选 {count} 个目标文件', { count: totalFilesCount })}</span>
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground">
-            {t('选择预处理或整理模式')}
+            {t('选择预处理或进入整理流程')}
           </h2>
           <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-            {t('在进入物理目录整理前，您可以先执行智能批量更名、标签批量打标或双轨查重清理。')}
+            {t('在进入虚拟文件整理前，您可以先执行智能批量更名、标签批量打标或双轨查重清理，以提高文件后续整理准确率。')}
           </p>
         </div>
 

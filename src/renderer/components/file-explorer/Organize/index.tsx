@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog'
 import { MaterialIcon, cn } from '../../../lib/utils'
-import React, { useRef, useMemo, useState } from 'react'
+import React, { useRef, useMemo, useState, useCallback } from 'react'
 import { WorkspaceDirectory } from '@firefly/types'
 import { useNavigate } from 'react-router-dom'
 
@@ -151,12 +151,18 @@ export const Organize: React.FC = () => {
     isSavingTags,
     deleteTagGlobally,
     trashDuplicateFiles,
-    isTrashingDuplicates
+    isTrashingDuplicates,
+    loadFilesToOrganize
   } = useOrganizeState()
 
   const isStandaloneStage = stage === 'batch-rename'
 
   const [inspectedFile, setInspectedFile] = useState<any | null>(null)
+  const [duplicateSelectedCount, setDuplicateSelectedCount] = useState<number>(0)
+
+  const handleClearInspectedFile = useCallback(() => {
+    setInspectedFile(null)
+  }, [])
 
   const isReadOnly = stage === 'organizing' || stage === 'done'
 
@@ -298,7 +304,7 @@ export const Organize: React.FC = () => {
                   icon={isExecutingRename ? 'sync' : 'check'}
                   className={cn('text-sm', isExecutingRename && 'animate-spin')}
                 />
-                <span>{isExecutingRename ? t('正在更名...') : t('执行更名')}</span>
+                <span>{isExecutingRename ? t('正在更名...') : t('执行批量更改智能文件名')}</span>
               </Button>
             )}
 
@@ -328,14 +334,20 @@ export const Organize: React.FC = () => {
                   const btn = document.getElementById('btn-trash-duplicates-trigger')
                   if (btn) btn.click()
                 }}
-                disabled={isTrashingDuplicates}
+                disabled={isTrashingDuplicates || duplicateSelectedCount === 0}
                 className="text-xs gap-1.5 px-4 font-bold shadow-md h-8 shrink-0"
               >
                 <MaterialIcon
                   icon={isTrashingDuplicates ? 'sync' : 'delete_sweep'}
                   className={cn('text-sm', isTrashingDuplicates && 'animate-spin')}
                 />
-                <span>{isTrashingDuplicates ? t('正在清理...') : t('执行清理')}</span>
+                <span>
+                  {isTrashingDuplicates
+                    ? t('正在删除...')
+                    : duplicateSelectedCount > 0
+                      ? t('删除到回收站 ({count})', { count: duplicateSelectedCount })
+                      : t('删除到回收站')}
+                </span>
               </Button>
             )}
 
@@ -548,11 +560,21 @@ export const Organize: React.FC = () => {
                       selectedFileIds={inspectedFile?.id ? [inspectedFile.id] : []}
                       onFileSelect={item => {
                         const single = Array.isArray(item) ? item[0] : item
-                        setInspectedFile(single ? (single as any) : null)
+                        setInspectedFile((prev: any) => {
+                          const prevId = prev?.id || prev?.fileId || prev?.path
+                          const nextId = (single as any)?.id || (single as any)?.fileId || (single as any)?.path
+                          if (prevId && nextId && prevId === nextId) return prev
+                          return single ? (single as any) : null
+                        })
                       }}
                       onSelectionChange={items => {
                         const single = Array.isArray(items) && items.length > 0 ? items[0] : null
-                        setInspectedFile(single ? (single as any) : null)
+                        setInspectedFile((prev: any) => {
+                          const prevId = prev?.id || prev?.fileId || prev?.path
+                          const nextId = (single as any)?.id || (single as any)?.fileId || (single as any)?.path
+                          if (prevId && nextId && prevId === nextId) return prev
+                          return single ? (single as any) : null
+                        })
                       }}
                       showDetailsPanel={false}
                       showPreviewPanel={false}
@@ -656,7 +678,7 @@ export const Organize: React.FC = () => {
                               onDeleteTagGlobally={deleteTagGlobally}
                               isSaving={isSavingTags}
                               inspectedFile={inspectedFile}
-                              onClearInspectedFile={() => setInspectedFile(null)}
+                              onClearInspectedFile={handleClearInspectedFile}
                             />
                           )}
 
@@ -666,6 +688,8 @@ export const Organize: React.FC = () => {
                               workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
                               onExecuteTrash={trashDuplicateFiles}
                               isTrashing={isTrashingDuplicates}
+                              onSelectedCountChange={setDuplicateSelectedCount}
+                              onFilesChanged={loadFilesToOrganize}
                             />
                           )}
 

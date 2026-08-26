@@ -58,7 +58,7 @@ interface DimensionFileListPanelProps {
   pageId?: PageId
 }
 
-const PAGE_SIZE = 50
+const PAGE_SIZE = 100
 
 export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   workspaceDirectoryPath,
@@ -89,12 +89,16 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
 }) => {
   const [filteredFiles, setFilteredFiles] = useState<FileType[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [searchKeyword, setSearchKeyword] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'size' | 'modified' | 'qualityScore'>('modified')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [offset, setOffset] = useState(0)
   const [totalFilesCount, setTotalFilesCount] = useState(0)
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'waterfall'>('grid')
+
+  const loadingRef = useRef(false)
+  const filteredFilesRef = useRef<FileType[]>([])
+  filteredFilesRef.current = filteredFiles
 
   const updateConfigValue = useConfigStore(state => state.updateConfigValue)
   const config = useConfigStore(state => state.config)
@@ -107,9 +111,18 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
 
   const loadFilteredFiles = useCallback(
     async (isLoadMore = false) => {
+      if (loadingRef.current) return
+      loadingRef.current = true
+
       try {
-        setIsLoading(true)
-        const currentOffset = isLoadMore ? offset + PAGE_SIZE : 0
+        const currentCount = filteredFilesRef.current.length
+        if (isLoadMore) {
+          setIsLoadingMore(true)
+        } else {
+          setIsLoading(true)
+        }
+
+        const currentOffset = isLoadMore ? currentCount : 0
 
         const result = await window.electronAPI!.analyzedDirectory.getFilteredFilesPaged({
           selectedTags,
@@ -124,16 +137,17 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
         })
 
         if (isLoadMore) {
-          setFilteredFiles(prev => [...prev, ...result.items])
+          setFilteredFiles(prev => [...prev, ...(result.items || [])])
         } else {
-          setFilteredFiles(result.items)
+          setFilteredFiles(result.items || [])
         }
-        setTotalFilesCount(result.total)
-        setOffset(currentOffset)
+        setTotalFilesCount(result.total || 0)
       } catch (error) {
         logger.error(LogCategory.VIRTUAL_DIRECTORY, '加载已过滤文件失败:', error)
       } finally {
+        loadingRef.current = false
         setIsLoading(false)
+        setIsLoadingMore(false)
       }
     },
     [
@@ -143,7 +157,6 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
       workspaceDirectoryPath,
       virtualDirectoryId,
       searchKeyword,
-      offset,
       unionMode
     ]
   )
@@ -166,7 +179,8 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
     searchKeyword,
     refreshKey,
     currentPath,
-    unionMode
+    unionMode,
+    loadFilteredFiles
   ])
 
   useEffect(() => {
@@ -178,13 +192,30 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
     ) {
       loadFilteredFiles(false)
     }
-  }, [currentPath])
+  }, [currentPath, loadFilteredFiles])
+
+  // 监听全局标签/智能文件名/文件变动事件，自动刷新列表
+  useEffect(() => {
+    const handleGlobalUpdate = () => {
+      loadFilteredFiles(false)
+    }
+    window.addEventListener('tags-updated', handleGlobalUpdate)
+    window.addEventListener('tags:updated', handleGlobalUpdate)
+    window.addEventListener('smartname-updated', handleGlobalUpdate)
+    window.addEventListener('files-updated', handleGlobalUpdate)
+    return () => {
+      window.removeEventListener('tags-updated', handleGlobalUpdate)
+      window.removeEventListener('tags:updated', handleGlobalUpdate)
+      window.removeEventListener('smartname-updated', handleGlobalUpdate)
+      window.removeEventListener('files-updated', handleGlobalUpdate)
+    }
+  }, [loadFilteredFiles])
 
   const handleLoadMore = useCallback(() => {
-    if (!isLoading && filteredFiles.length < totalFilesCount) {
+    if (!loadingRef.current && filteredFilesRef.current.length < totalFilesCount) {
       loadFilteredFiles(true)
     }
-  }, [filteredFiles.length, totalFilesCount, isLoading, loadFilteredFiles])
+  }, [totalFilesCount, loadFilteredFiles])
 
   const handleSortChange = useCallback((newSortBy: string, newSortOrder: 'asc' | 'desc') => {
     setSortBy(newSortBy === 'modified' ? 'modified' : (newSortBy as any))
@@ -419,11 +450,16 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
           </div>
         )}
         renderFooter={() => (
-          <div className="px-4 py-1.5 flex items-center text-xs text-muted-foreground shrink-0">
+          <div className="px-4 py-1.5 flex items-center text-xs text-muted-foreground shrink-0 border-t border-border/40 min-h-[32px]">
             <MaterialIcon icon="insert_drive_file" className="mr-1.5 text-sm" />
-            {t('{count} 个文件', {
-              count: filteredFiles.length
-            })}
+            <span>
+              {t('{count} 个文件', {
+                count: totalFilesCount
+              })}
+            </span>
+            {isLoadingMore && (
+              <span className="ml-2 inline-block animate-spin rounded-full h-3 w-3 border-t-2 border-primary"></span>
+            )}
           </div>
         )}
       />

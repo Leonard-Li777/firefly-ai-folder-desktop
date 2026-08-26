@@ -395,30 +395,28 @@ export class MediaConvertService {
           }
         }
 
-        // 2. 针对 PDF 文件：优先通过 Omni 微服务 (Poppler pdftoppm) 毫秒级提取高保真封面
-        if (ext === '.pdf') {
-          try {
-            const { omniService } = await import('../omni-service')
-            const pdfCoverBuf = await omniService.getPdfCover(filePath)
-            if (pdfCoverBuf && pdfCoverBuf.length > 1024) {
-              const sharp = (await import('sharp')).default
-              await sharp(pdfCoverBuf)
-                .resize(options.maxWidth || 800, options.maxHeight || 800, {
-                  fit: 'inside',
-                  withoutEnlargement: true
-                })
-                .webp({ quality: options.quality || 80 })
-                .toFile(outputCoverPath)
+        // 2. 针对 PDF, PSD, 视频及其他多模态文件：优先通过 Omni 引擎毫秒级提取高保真封面 (MuPDF 零拷贝 / PSD / 视频抽帧)
+        try {
+          const { omniService } = await import('../omni-service')
+          const coverBuf = await omniService.getFileCover(filePath)
+          if (coverBuf && coverBuf.length > 1024) {
+            const sharp = (await import('sharp')).default
+            await sharp(coverBuf)
+              .resize(options.maxWidth || 800, options.maxHeight || 800, {
+                fit: 'inside',
+                withoutEnlargement: true
+              })
+              .webp({ quality: options.quality || 80 })
+              .toFile(outputCoverPath)
 
-              const durationMs = Date.now() - tStart
-              console.debug(
-                `[MediaConvertService][debug] ⚡ Omni Poppler 渲染 PDF 高保真封面成功 (耗时=${durationMs}ms): ${fileName}`
-              )
-              return { coverPath: outputCoverPath, durationMs }
-            }
-          } catch (omniErr: any) {
-            console.debug(`[MediaConvertService] Omni PDF 封面截取跳过/降级: ${omniErr?.message || omniErr}`)
+            const durationMs = Date.now() - tStart
+            console.debug(
+              `[MediaConvertService][debug] ⚡ Omni 渲染多模态高保真封面成功 (耗时=${durationMs}ms): ${fileName}`
+            )
+            return { coverPath: outputCoverPath, durationMs }
           }
+        } catch (omniErr: any) {
+          console.debug(`[MediaConvertService] Omni 封面截取跳过/降级: ${omniErr?.message || omniErr}`)
         }
 
         // 3. 如果为 Office / PDF 文档，且安装了 LibreOffice：优先使用 LibreOffice 直接渲染第 1 页为高保真 PNG 封面

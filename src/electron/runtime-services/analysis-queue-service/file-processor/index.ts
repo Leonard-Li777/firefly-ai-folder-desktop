@@ -55,6 +55,7 @@ import { handleEmptyFile } from './handle-empty-file'
 import { processLocalAnalysis } from './process-local-analysis'
 import { processQuickNameAnalysis } from './process-quick-name-analysis'
 import { saveLocalAnalysisResult } from './save-local-cache-result'
+import { NamingDSLEngine } from '../../filesystem/naming-dsl-engine'
 
 /**
  * @firecrawl/anydoc 支持的文档格式扩展名（小写）
@@ -705,7 +706,6 @@ export class FileProcessor {
             directoryContext
           const template = effectiveDirConfig?.namingTemplate?.trim()
           if (template) {
-            const { NamingDSLEngine } = require('../../filesystem/naming-dsl-engine')
             const fileRenameContext = {
               id: 0,
               path: filePath,
@@ -735,6 +735,12 @@ export class FileProcessor {
             `[智能命名模板] 渲染命名模板失败: ${filePath}`,
             templateErr
           )
+        }
+
+        // 核心规范：smart_name 字段总是要保存扩展名后缀，metadata.raw_smart_name 才不包含扩展名
+        const dotExt = origExt.startsWith('.') ? origExt : origExt ? `.${origExt}` : ''
+        if (dotExt && !finalSmartName.toLowerCase().endsWith(dotExt.toLowerCase())) {
+          finalSmartName = `${finalSmartName}${dotExt}`
         }
 
         // 保存本地分析结果
@@ -956,7 +962,7 @@ export class FileProcessor {
             `[分析队列] 找到同指纹物理失联记录(ID:${lostRecord.id})，更新为新路径并恢复 status=1: ${filePath}`
           )
           db.prepare(
-            'UPDATE workspace_files SET path = ?, name = ?, workspace_id = ?, directory_id = ?, status = 1, updated_at = ? WHERE id = ?'
+            'UPDATE workspace_files SET path = ?, name = ?, workspace_id = ?, directory_id = ?, status = 1, modified_at = ? WHERE id = ?'
           ).run(
             filePath,
             path.basename(filePath),

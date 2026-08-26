@@ -549,18 +549,23 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
     ]
   }, [dimensionGroups])
 
+  // 仅针对已分析文件进行批量更名预览与操作
+  const analyzedFiles = useMemo(() => {
+    return (files || []).filter(f => (f as any).is_analyzed !== 0 && f.isAnalyzed !== false)
+  }, [files])
+
   // 实时更新重命名预览
   useEffect(() => {
     let isMounted = true
     const updatePreview = async () => {
-      if (!files || files.length === 0) {
+      if (!analyzedFiles || analyzedFiles.length === 0) {
         setPreviewList([])
         return
       }
       setIsLoadingPreview(true)
       try {
         if (window.electronAPI?.organizeBatch?.previewRename) {
-          const previews = await window.electronAPI.organizeBatch.previewRename(template, files)
+          const previews = await window.electronAPI.organizeBatch.previewRename(template, analyzedFiles)
           if (isMounted) setPreviewList(previews)
         }
       } catch (e) {
@@ -575,7 +580,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
       isMounted = false
       clearTimeout(timer)
     }
-  }, [template, files])
+  }, [template, analyzedFiles])
 
   // 插入 Token 到当前模板（严禁重复插入相同 Label）
   const handleInsertToken = useCallback(
@@ -827,12 +832,12 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
 
   const fileMap = useMemo(() => {
     const map = new Map<any, FileInfoForAI>()
-    for (const f of files || []) {
+    for (const f of analyzedFiles || []) {
       if (f.id !== undefined) map.set(f.id, f)
       if (f.path) map.set(f.path, f)
     }
     return map
-  }, [files])
+  }, [analyzedFiles])
 
   // 过滤后的预览列表（核心规则：按照标签有值的个数由高到低降序排序）
   const filteredPreviewList = useMemo(() => {
@@ -871,6 +876,14 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
 
     return list
   }, [previewList, filterTab, previewSearch, fileMap])
+
+  // 限制更名效果实时对照列表最大展示数量（避免海量文件造成前端 DOM 渲染卡顿）
+  const MAX_PREVIEW_ITEMS = 200
+
+  // 截取前 200 项用于实际列表渲染
+  const displayedPreviewList = useMemo(() => {
+    return filteredPreviewList.slice(0, MAX_PREVIEW_ITEMS)
+  }, [filteredPreviewList])
 
   // 统计信息（以智能文件名为基准判定）
   const previewStats = useMemo(() => {
@@ -1319,6 +1332,17 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                         <MaterialIcon icon="preview" className="text-sm text-primary" />
                         {t('更名效果实时对照')}
                       </span>
+                      {filteredPreviewList.length > MAX_PREVIEW_ITEMS && (
+                        <span
+                          className="text-[10px] text-amber-600 dark:text-amber-400 font-mono bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded-full"
+                          title={t('为保证性能，实时对照列表仅展示前 {max} 个文件（共 {total} 个）', {
+                            max: MAX_PREVIEW_ITEMS,
+                            total: filteredPreviewList.length
+                          })}
+                        >
+                          {t('仅展示前 {max} 项', { max: MAX_PREVIEW_ITEMS })}
+                        </span>
+                      )}
                       {previewStats.total > 0 && (
                         <span className="text-[10px] text-muted-foreground font-mono bg-muted/60 px-1.5 py-0.2 rounded-full">
                           {t('变更率: {rate}%', { rate: previewStats.changeRate })}
@@ -1414,14 +1438,14 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
 
                 {/* 实时更名对照内容列表（单线条细分隔线，轻量化极简风格，增加内边距与行间距） */}
                 <div className="flex-1 overflow-y-auto">
-                  {filteredPreviewList.length === 0 ? (
+                  {displayedPreviewList.length === 0 ? (
                     <div className="h-40 flex flex-col items-center justify-center text-xs text-muted-foreground gap-1.5">
                       <MaterialIcon icon="folder_open" className="text-2xl text-muted-foreground/50" />
                       <span>{t('没有符合筛选条件的待重命名文件')}</span>
                     </div>
                   ) : rightViewMode === 'card' ? (
                     <div className="divide-y divide-border/30">
-                      {filteredPreviewList.map((item, idx) => {
+                      {displayedPreviewList.map((item, idx) => {
                         const isChanged = isItemChanged(item)
                         const cleanSmartName = (item.rawSmartName || '').replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
                         return (
@@ -1433,7 +1457,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                             )}
                           >
                             {/* 1. 原文件名 */}
-                            <div className="flex items-center justify-between text-muted-foreground text-[11px]">
+                            <div className="flex items-center justify-between text-muted-foreground/60 text-[11px]">
                               <div className="flex items-center gap-1.5 truncate max-w-full font-sans">
                                 <MaterialIcon
                                   icon="insert_drive_file"
@@ -1450,9 +1474,9 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                               )}
                             </div>
 
-                            {/* 2. 原始智能文件名（左对齐，纯文本，无背景色框） */}
+                            {/* 2. 原始智能文件名（左对齐，纯文本，无背景色框，展示不带扩展名的 rawSmartName） */}
                             {cleanSmartName && (
-                              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/80 font-sans">
+                              <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground font-sans">
                                 <MaterialIcon icon="psychology" className="text-xs text-primary/70 shrink-0" />
                                 <span className="truncate" title={cleanSmartName}>
                                   {cleanSmartName}
@@ -1485,6 +1509,19 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                           </div>
                         )
                       })}
+
+                      {/* 超出 200 项时的底部提示条 */}
+                      {filteredPreviewList.length > MAX_PREVIEW_ITEMS && (
+                        <div className="py-3 px-3.5 bg-muted/20 text-center text-xs text-muted-foreground flex items-center justify-center gap-1.5">
+                          <MaterialIcon icon="info" className="text-xs text-amber-500 shrink-0" />
+                          <span>
+                            {t('为保证性能，实时对照列表仅展示前 {max} 个文件（共 {total} 个）', {
+                              max: MAX_PREVIEW_ITEMS,
+                              total: filteredPreviewList.length
+                            })}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     // 紧凑表格视图
@@ -1493,13 +1530,13 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                         <thead className="bg-muted/30 border-b border-border/40 text-[11px] text-muted-foreground">
                           <tr>
                             <th className="p-2.5 font-medium">{t('原文件名')}</th>
-                            <th className="p-2.5 font-medium">{t('原始智能名')}</th>
+                            <th className="p-2.5 font-medium">{t('原始智能文件名')}</th>
                             <th className="p-2.5 font-medium">{t('拟更名新名称')}</th>
                             <th className="p-2.5 font-medium w-16 text-right">{t('状态')}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/30 font-mono text-[11px]">
-                          {filteredPreviewList.map((item, idx) => {
+                          {displayedPreviewList.map((item, idx) => {
                             const isChanged = isItemChanged(item)
                             const cleanSmartName = (item.rawSmartName || '').replace(/\.[a-zA-Z0-9]{1,10}$/i, '')
                             return (
@@ -1531,6 +1568,19 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                           })}
                         </tbody>
                       </table>
+
+                      {/* 超出 200 项时的底部提示条 */}
+                      {filteredPreviewList.length > MAX_PREVIEW_ITEMS && (
+                        <div className="py-3 px-3.5 bg-muted/20 text-center text-xs text-muted-foreground border-t border-border/30 flex items-center justify-center gap-1.5">
+                          <MaterialIcon icon="info" className="text-xs text-amber-500 shrink-0" />
+                          <span>
+                            {t('为保证性能，实时对照列表仅展示前 {max} 个文件（共 {total} 个）', {
+                              max: MAX_PREVIEW_ITEMS,
+                              total: filteredPreviewList.length
+                            })}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

@@ -5,7 +5,8 @@ import { createRequire } from 'node:module'
 import { ipcMain, app, shell, BrowserWindow, clipboard } from 'electron'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../../runtime-services/database/database-service'
-import { logger, LogCategory, ResourceLocator } from '@firefly/shared'
+import { logger, LogCategory, ResourceLocator, getMimeTypeByExtension } from '@firefly/shared'
+import { omniService } from '../../runtime-services/system/omni-service'
 import { SystemIdentityService } from '../../runtime-services/system/system-identity-service'
 import { LicenseService, LicenseStatus } from '../../runtime-services/system/license-service'
 import { cloudAnalysisService } from '@firefly/server'
@@ -87,7 +88,74 @@ export function registerMiscIPCHandlers() {
       // 空路径直接返回 null，避免触发无效数据库查询与告警日志
       if (!filePath) return null
       logger.debug(LogCategory.MAIN, '[IPC] 获取文件分析结果请求:', { filePath })
-      const result = await databaseService.getFileAnalysisResult(filePath)
+      let result = await databaseService.getFileAnalysisResult(filePath)
+
+      // 即时元数据补充防护：如果数据库没有该文件记录或者 metadata 为空，但物理文件实际存在，
+      // 则统一通过 Omni 引擎提取 Exif/媒体/格式元数据，保证详情面板中元数据 Tab 永远有内容呈现
+      if (fs.existsSync(filePath)) {
+        if (!result) {
+          try {
+            const stats = fs.statSync(filePath)
+            const ext = path.extname(filePath).replace(/^\./, '').toLowerCase()
+            const mimeType = getMimeTypeByExtension(ext)
+            const metaFull = await omniService.extractMetadataFull(filePath)
+            result = {
+              path: filePath,
+              name: path.basename(filePath),
+              size: stats.size,
+              type: ext.toUpperCase(),
+              mimeType,
+              createdAt: stats.birthtime,
+              modifiedAt: stats.mtime,
+              accessedAt: stats.atime,
+              isAnalyzed: false,
+              category: {
+                label: ext,
+                mime_type: mimeType,
+                description: `${ext.toUpperCase()} File`
+              },
+              metadata: metaFull
+            }
+          } catch (e) {
+            logger.warn(LogCategory.MAIN, '动态提取未入库文件元数据失败:', e)
+          }
+        } else {
+          // 深度元数据补充：如果数据库已有 metadata，但缺乏 Exif/媒体详细属性（如仅有 raw_smart_name/naming_template 等简易字段），
+          // 则即时通过 Omni 提取并深度合并 Exif 字段，绝不丢失真实图片尺寸、相机、分辨率与媒体属性
+          const meta = result.metadata || {}
+          const hasExifDetail =
+            Boolean(
+              meta.Make ||
+              meta.Model ||
+              meta.ImageWidth ||
+              meta.ImageSize ||
+              meta.Megapixels ||
+              meta.MIMEType ||
+              meta.camera ||
+              meta.exif ||
+              meta.imageSize ||
+              meta.ExposureTime ||
+              meta.FNumber ||
+              meta.duration ||
+              meta.audio ||
+              meta.video
+            )
+          if (!hasExifDetail) {
+            try {
+              const metaFull = await omniService.extractMetadataFull(filePath)
+              if (metaFull && Object.keys(metaFull).length > 0) {
+                result.metadata = {
+                  ...metaFull,
+                  ...meta // 保留数据库中记录的智能命名模板与 raw_smart_name
+                }
+              }
+            } catch (e) {
+              logger.warn(LogCategory.MAIN, '深度合并文件 Exif 元数据失败:', e)
+            }
+          }
+        }
+      }
+
       return result
     } catch (error) {
       logger.error(LogCategory.MAIN, '[IPC] 获取文件分析结果失败:', error)
@@ -115,68 +183,7 @@ export function registerMiscIPCHandlers() {
     }
   })
 
-  // 预览即时文档内容提取
-  ipcMain.handle('preview/extract-document-content', async (event, filePath: string) => {
-    try {
-      logger.info(LogCategory.MAIN, '[IPC] 预览即时文档内容提取请求:', { filePath })
-      const fileType = path.extname(filePath).toLowerCase() || ''
-      const { fileAnalysisService } = await import('@firefly/core-engine')
-      const extractPages = ConfigOrchestrator.getInstance().getValue<number>('EXTRACT_PAGES') ?? 2
-      const enableOcr =
-        ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_DOCUMENT_OCR') ?? false
-      const ocrModelSize =
-        ConfigOrchestrator.getInstance().getValue<'tiny' | 'small' | 'medium'>('OCR_MODEL_SIZE') ??
-        'tiny'
-      const contentResult = await fileAnalysisService.process(filePath, fileType, undefined, {
-        extractPages,
-        enableOcr,
-        ocrModelSize
-      })
 
-      if (contentResult && contentResult.content) {
-        const db = databaseService.db
-        if (!db) throw new Error('数据库未连接')
-        const workspaceFile = (await db
-          .prepare(
-            `
-          SELECT wf.file_fingerprint FROM workspace_files wf WHERE wf.path = ?
-        `
-          )
-          .get(filePath)) as any
-
-        if (workspaceFile && workspaceFile.file_fingerprint) {
-          const fingerprint = workspaceFile.file_fingerprint
-          db.prepare(
-            `
-            INSERT INTO file_contents (file_fingerprint, content, metadata)
-            VALUES (?, ?, ?)
-            ON CONFLICT(file_fingerprint) DO UPDATE SET
-              content = EXCLUDED.content,
-              metadata = COALESCE(EXCLUDED.metadata, metadata)
-          `
-          ).run(
-            fingerprint,
-            contentResult.content,
-            contentResult.metadata ? JSON.stringify(contentResult.metadata) : null
-          )
-
-          db.prepare(
-            `
-            UPDATE workspace_files SET is_analyzed = 1 WHERE path = ?
-          `
-          ).run(filePath)
-
-          logger.info(LogCategory.MAIN, '[IPC] 即时转换内容已成功写入缓存并更新已分析状态:', {
-            filePath
-          })
-        }
-      }
-      return { success: true, content: contentResult?.content }
-    } catch (error) {
-      logger.error(LogCategory.MAIN, '[IPC] 预览即时文档内容提取失败:', error)
-      return { success: false, error: String(error) }
-    }
-  })
 
   // 预览即时图片转码
   ipcMain.handle('preview/get-temp-image', async (event, filePath: string) => {

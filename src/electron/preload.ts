@@ -492,11 +492,9 @@ const electronAPI = {
     close: () => ipcRenderer.invoke('window-close')
   },
 
-  // 文件预览相关（预览窗口 + 内容提取）
+  // 文件预览相关（预览窗口 + 临时图片转码 + 文本限流读取）
   preview: {
     openNewWindow: (filePath: string) => ipcRenderer.invoke('preview/open-new-window', filePath),
-    extractDocumentContent: (filePath: string) =>
-      ipcRenderer.invoke('preview/extract-document-content', filePath),
     getTempImage: (filePath: string) => ipcRenderer.invoke('preview/get-temp-image', filePath),
     readTextLimit: (filePath: string, limit?: number) =>
       ipcRenderer.invoke('preview/read-text-limit', filePath, limit)
@@ -628,6 +626,8 @@ const electronAPI = {
       ipcRenderer.invoke('duplicate:scan', options),
     trashDuplicates: (filePaths: string[]): Promise<any> =>
       ipcRenderer.invoke('duplicate:trash', filePaths),
+    executeStrategyFix: (action: any, filePaths: string[]): Promise<any> =>
+      ipcRenderer.invoke('duplicate:execute-fix', action, filePaths),
     applyKeepRule: (groups: any[], rule: string): Promise<any[]> =>
       ipcRenderer.invoke('duplicate:apply-keep-rule', groups, rule),
     getEffectiveDirectoryConfig: (dirPath: string): Promise<any> =>
@@ -788,6 +788,8 @@ const electronAPI = {
       namingPattern?: string
       analysisStrategy?: string
       namingTemplate?: string
+      analysisStrategy_suggestion?: string
+      namingPattern_suggestion?: string
       inheritMode?: {
         analysisStrategy?: 'inherit' | 'current_only' | 'broadcast'
         namingPattern?: 'inherit' | 'current_only' | 'broadcast'

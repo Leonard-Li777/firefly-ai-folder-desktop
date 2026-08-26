@@ -363,7 +363,8 @@ export class FileFilter {
       const total = totalResult?.total || 0
 
       // 数据查询
-      const sortColumn = this.getSortColumn(sortBy)
+      const sortColumn = this.getSortColumn(sortBy || 'modifiedAt')
+      const safeSortOrder = (sortOrder || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC'
       const selectQuery = `
         SELECT DISTINCT
           COALESCE(f.file_fingerprint, wf.file_fingerprint) as file_fingerprint,
@@ -393,7 +394,7 @@ export class FileFilter {
         ${baseQuery}
         ${joinClauses}
         WHERE ${whereClauses.join(' AND ')}
-        ORDER BY ${sortColumn} ${sortOrder.toUpperCase()}
+        ORDER BY ${sortColumn} ${safeSortOrder}
         LIMIT ? OFFSET ?
       `
 
@@ -434,7 +435,13 @@ export class FileFilter {
             name: file.name,
             smartName: file.smart_name || undefined,
             size: file.size,
-            extension: file.type || (file.name ? path.extname(file.name).slice(1) : ''),
+            extension: file.type
+              ? file.type.startsWith('.')
+                ? file.type
+                : `.${file.type}`
+              : file.name
+                ? path.extname(file.name).toLowerCase()
+                : '',
             mimeType: file.category,
             createdAt: file.created_at ? new Date(file.created_at) : new Date(),
             modifiedAt: file.modified_at ? new Date(file.modified_at) : new Date(),
@@ -543,7 +550,8 @@ export class FileFilter {
         queryParams.push(...clause.params)
       }
 
-      const sortColumn = this.getSortColumn(sortBy)
+      const sortColumn = this.getSortColumn(sortBy || 'modifiedAt')
+      const safeSortOrder = (sortOrder || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC'
       const selectQuery = `
         SELECT DISTINCT
           wf.id as id,
@@ -573,7 +581,7 @@ export class FileFilter {
         ${baseQuery}
         ${joinClauses}
         WHERE ${whereClauses.join(' AND ')}
-        ORDER BY ${sortColumn} ${sortOrder.toUpperCase()}
+        ORDER BY ${sortColumn} ${safeSortOrder}
       `
 
       const files = this.db.prepare(selectQuery).all(...queryParams) as any[]
@@ -618,7 +626,13 @@ export class FileFilter {
             name: file.name,
             smartName: file.smart_name || undefined,
             size: file.size,
-            extension: file.type || (file.name ? path.extname(file.name).slice(1) : ''),
+            extension: file.type
+              ? file.type.startsWith('.')
+                ? file.type
+                : `.${file.type}`
+              : file.name
+                ? path.extname(file.name).toLowerCase()
+                : '',
             mimeType: file.category,
             createdAt: file.created_at ? new Date(file.created_at) : new Date(),
             modifiedAt: file.modified_at ? new Date(file.modified_at) : new Date(),

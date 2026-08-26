@@ -282,7 +282,9 @@ export function useOrganizeState() {
     }
 
     const action = searchParams.get('action')
-    let baseFiles = allWorkspaceFiles || []
+    let baseFiles = (allWorkspaceFiles || []).filter(
+      f => (f as any).is_analyzed !== 0 && f.isAnalyzed !== false
+    )
 
     // 1. 如果是从已分析页面勾选带入的
     if (selectedFileIdsFromState && selectedFileIdsFromState.length > 0) {
@@ -964,6 +966,19 @@ export function useOrganizeState() {
       window.removeEventListener('vdir:incremental-updated', handleRefresh)
     }
   }, [loadVirtualDirectories])
+
+  // 监听全域智能文件名与文件列表更新事件，实时同步刷新待整理文件列表
+  useEffect(() => {
+    const handleFilesRefresh = () => {
+      loadFilesToOrganize()
+    }
+    window.addEventListener('smartname-updated', handleFilesRefresh)
+    window.addEventListener('files-updated', handleFilesRefresh)
+    return () => {
+      window.removeEventListener('smartname-updated', handleFilesRefresh)
+      window.removeEventListener('files-updated', handleFilesRefresh)
+    }
+  }, [loadFilesToOrganize])
 
   const [activeGuidancePrompt, setActiveGuidancePrompt] = useState<string>('')
 
@@ -2880,6 +2895,7 @@ export function useOrganizeState() {
     isSavingTags,
     deleteTagGlobally,
     trashDuplicateFiles,
-    isTrashingDuplicates
+    isTrashingDuplicates,
+    loadFilesToOrganize
   }
 }

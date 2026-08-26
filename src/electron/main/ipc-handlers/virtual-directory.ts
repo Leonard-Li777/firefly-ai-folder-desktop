@@ -25,6 +25,7 @@ import { createCoreEngineAdapters } from '../../adapters'
 import fs from 'fs-extra'
 import path from 'node:path'
 import { VIRTUAL_DIRECTORY_ROOT } from '../../runtime-services/filesystem/virtual-directory-service/utils'
+import { NamingDSLEngine } from '../../runtime-services/filesystem/naming-dsl-engine'
 
 async function exportTreeToDirectory(
   tree: any[],
@@ -1051,17 +1052,14 @@ export function registerVirtualDirectoryIPCHandlers() {
 
   // ─── 批量重命名 IPC 处理程序 ─────────────────────────────────────────────
   ipcMain.handle('batch-rename:preview', async (event, template: string, files: any[]) => {
-    const { NamingDSLEngine } = await import('../../runtime-services/filesystem/naming-dsl-engine')
     return NamingDSLEngine.generatePreview(template, files)
   })
 
   ipcMain.handle('batch-rename:execute', async (event, template: string, files: any[]) => {
-    const { NamingDSLEngine } = await import('../../runtime-services/filesystem/naming-dsl-engine')
     return await NamingDSLEngine.executeBatchRename(template, files)
   })
 
   ipcMain.handle('batch-rename:random-template', async () => {
-    const { NamingDSLEngine } = await import('../../runtime-services/filesystem/naming-dsl-engine')
     return NamingDSLEngine.getRandomTemplate()
   })
 
@@ -1087,6 +1085,13 @@ export function registerVirtualDirectoryIPCHandlers() {
       '../../runtime-services/filesystem/duplicate-detection-service'
     )
     return await duplicateDetectionService.trashDuplicateFiles(filePaths)
+  })
+
+  ipcMain.handle('duplicate:execute-fix', async (event, action: any, filePaths: string[]) => {
+    const { duplicateDetectionService } = await import(
+      '../../runtime-services/filesystem/duplicate-detection-service'
+    )
+    return await duplicateDetectionService.executeStrategyFix(action, filePaths)
   })
 
   ipcMain.handle('duplicate:apply-keep-rule', async (event, groups: any[], rule: any) => {

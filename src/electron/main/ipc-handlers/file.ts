@@ -7,7 +7,7 @@ import {
   loadIgnoreRules,
   shouldIgnoreFile
 } from '../../runtime-services/analysis/analysis-ignore-service'
-import { logger, LogCategory, getMimeTypeByExtension } from '@firefly/shared'
+import { logger, LogCategory, getMimeTypeByExtension, normalizeForCache } from '@firefly/shared'
 import { t } from '@app/languages'
 import type { FileInfo, FileItem, DirectoryItem, WorkspaceDirectory } from '@firefly/types'
 import { analyzedDirectoryService, syncedDirectories } from '../state'
@@ -179,6 +179,9 @@ export function registerFileIPCHandlers() {
             if (fileStatus === 1 && !exists) {
               fileStatus = 0
               databaseService.updateFileStatus(file.id, 0).catch(() => {})
+            } else if (fileStatus === 0 && exists) {
+              fileStatus = 1
+              databaseService.updateFileStatus(file.id, 1).catch(() => {})
             }
 
             const showMissing =

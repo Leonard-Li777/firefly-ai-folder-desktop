@@ -6,14 +6,16 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 import Database from 'better-sqlite3'
-import { DirectoryContextAnalysis } from '@firefly/types/dimension-types'
+import { DirectoryContextAnalysis, ConfigInheritMode } from '@firefly/types/dimension-types'
 import { LanguageCode } from '@firefly/types/i18n-types'
 import {
   logger,
   LogCategory,
   FileCategory,
   getFileCategory,
-  validateAndNormalizeNamingPattern
+  validateAndNormalizeNamingPattern,
+  isSubPath,
+  isPathEqual
 } from '@firefly/shared'
 import { t } from '@app/languages'
 import { magikaService } from '../system/magika-service'
@@ -24,6 +26,7 @@ import { DirectoryAnalyzer, IModelCapabilityAdapter, AIHelper } from '@firefly/c
 import { LlamaIndexAIAdapter } from '../../adapters/llama-index-ai-adapter'
 import { ILlamaIndexAIService } from '@firefly/types'
 import { databaseService } from '../database/database-service'
+import { NamingDSLEngine } from './naming-dsl-engine'
 
 /**
  * 目录上下文分析服务类
@@ -139,17 +142,26 @@ export class DirectoryContextService {
       }
 
       // 直接使用原生路径，不归一化
-      // 如果不是强制分析，尝试使用缓存
+      // 如果不是强制分析，尝试使用缓存（若已有分析策略、命名规则、模板或维度标签，则直接复用）
       if (!force) {
         const cached = await this.getDirectoryContext(directoryPath)
-        // 检查缓存是否有效（包含必要的AI分析结果）
-        if (cached && cached.analysisStrategy) {
+        // 检查缓存是否有效（包含必要的AI分析结果或用户配置）
+        if (
+          cached &&
+          (cached.analysisStrategy ||
+            cached.namingPattern ||
+            cached.namingTemplate ||
+            (cached.recommendedTags && Object.keys(cached.recommendedTags).length > 0))
+        ) {
           logger.info(LogCategory.DIRECTORY_CONTEXT, `使用缓存的目录上下文分析: ${directoryPath}`)
           return cached
         }
       }
 
       logger.info(LogCategory.DIRECTORY_CONTEXT, `开始分析目录上下文: ${directoryPath}`)
+
+      // 读取已有记录（包含用户自定义编辑内容与继承配置）
+      const existing = await this.getDirectoryContext(directoryPath)
 
       // 1. 收集目录统计信息
       const stats = await this.collectDirectoryStats(directoryPath)
@@ -195,7 +207,27 @@ export class DirectoryContextService {
         isSpeedy
       )
 
+      const isRoot = !this.findAncestorDirectories(directoryPath).length
+
+      // 继承模式：如果已有则优先保留已有设置，否则根目录默认 broadcast，子目录默认 inherit
+      const defaultMode: ConfigInheritMode = isRoot ? 'broadcast' : 'inherit'
+      const inheritMode: {
+        analysisStrategy?: ConfigInheritMode
+        namingPattern?: ConfigInheritMode
+        namingTemplate?: ConfigInheritMode
+      } = {
+        analysisStrategy: defaultMode,
+        namingPattern: defaultMode,
+        namingTemplate: defaultMode,
+        ...(existing?.inheritMode || {})
+      }
+
+      const normalizedNamingPatternSuggestion = validateAndNormalizeNamingPattern(
+        aiAnalysis.namingPattern
+      )
+
       const contextAnalysis: DirectoryContextAnalysis = {
+        ...existing,
         directoryPath: directoryPath,
         directoryType: aiAnalysis.directoryType,
         fileTypeDistribution: stats.fileTypeDistribution,
@@ -204,13 +236,26 @@ export class DirectoryContextService {
         specialFiles,
         recommendedDimensions: aiAnalysis.recommendedDimensions,
         recommendedTags: aiAnalysis.recommendedTags,
-        analysisStrategy: aiAnalysis.analysisStrategy,
-        namingPattern: aiAnalysis.namingPattern,
+        // AI 建议的新增独立子字段（每次分析均存入最新 AI 建议值）
+        analysisStrategy_suggestion: aiAnalysis.analysisStrategy || '',
+        namingPattern_suggestion: normalizedNamingPatternSuggestion || '',
+        // 正式生效的字段：默认不自动填入 AI 建议值，仅保留用户已设置/快照的值；需用户手动点击采纳
+        analysisStrategy:
+          existing?.customConfigSnapshot?.analysisStrategy ||
+          existing?.analysisStrategy ||
+          '',
+        namingPattern:
+          existing?.customConfigSnapshot?.namingPattern ||
+          existing?.namingPattern ||
+          '',
+        // 始终保留已有重命名模板
+        namingTemplate: existing?.namingTemplate !== undefined ? existing.namingTemplate : '',
+        inheritMode,
         confidence: aiAnalysis.confidence,
         analyzedAt: new Date()
       }
 
-      // 6. 保存到数据库
+      // 7. 保存到数据库
       await this.saveContextAnalysis(directoryPath, contextAnalysis)
 
       logger.info(LogCategory.DIRECTORY_CONTEXT, `目录上下文分析完成: ${directoryPath}`)
@@ -540,13 +585,50 @@ export class DirectoryContextService {
         )
       }
 
+      // 获取已有记录，进行保护性合并，严防抹除用户手动编辑的属性与继承模式
+      const existing = await this.getDirectoryContext(directoryPath)
+      const isRoot = !this.findAncestorDirectories(directoryPath).length
+
+      const defaultMode: ConfigInheritMode = isRoot ? 'broadcast' : 'inherit'
+      const mergedAnalysis: DirectoryContextAnalysis = {
+        ...existing,
+        ...analysis,
+        analysisStrategy_suggestion:
+          analysis.analysisStrategy_suggestion !== undefined
+            ? analysis.analysisStrategy_suggestion
+            : existing?.analysisStrategy_suggestion || '',
+        namingPattern_suggestion:
+          analysis.namingPattern_suggestion !== undefined
+            ? analysis.namingPattern_suggestion
+            : existing?.namingPattern_suggestion || '',
+        inheritMode: {
+          analysisStrategy: defaultMode,
+          namingPattern: defaultMode,
+          namingTemplate: defaultMode,
+          ...(existing?.inheritMode || {}),
+          ...(analysis.inheritMode || {})
+        },
+        namingTemplate:
+          analysis.namingTemplate !== undefined
+            ? analysis.namingTemplate
+            : existing?.namingTemplate || '',
+        customConfigSnapshot: {
+          ...(existing?.customConfigSnapshot || {}),
+          ...(analysis.customConfigSnapshot || {})
+        }
+      }
+
       const stmt = this.db.prepare(`
         UPDATE workspace_directories
         SET context_analysis = ?, is_analyzed = 1, last_analyzed_at = ?
         WHERE path = ?
       `)
 
-      const result = stmt.run(JSON.stringify(analysis), new Date().toISOString(), directoryPath)
+      const result = stmt.run(
+        JSON.stringify(mergedAnalysis),
+        new Date().toISOString(),
+        directoryPath
+      )
 
       if (result.changes === 0) {
         logger.warn(
@@ -574,15 +656,19 @@ export class DirectoryContextService {
       namingPattern?: string
       analysisStrategy?: string
       namingTemplate?: string
+      analysisStrategy_suggestion?: string
+      namingPattern_suggestion?: string
       inheritMode?: {
-        analysisStrategy?: 'inherit' | 'current_only' | 'broadcast'
-        namingPattern?: 'inherit' | 'current_only' | 'broadcast'
-        namingTemplate?: 'inherit' | 'current_only' | 'broadcast'
+        analysisStrategy?: ConfigInheritMode
+        namingPattern?: ConfigInheritMode
+        namingTemplate?: ConfigInheritMode
       }
     }
   ): Promise<void> {
     try {
       let existing: DirectoryContextAnalysis | null = await this.getDirectoryContext(directoryPath)
+      const isRoot = !this.findAncestorDirectories(directoryPath).length
+
       if (!existing) {
         existing = {
           directoryPath,
@@ -593,30 +679,79 @@ export class DirectoryContextService {
           namingPattern: '',
           analysisStrategy: '',
           namingTemplate: '',
+          analysisStrategy_suggestion: '',
+          namingPattern_suggestion: '',
+          inheritMode: {
+            analysisStrategy: isRoot ? 'broadcast' : 'inherit',
+            namingPattern: isRoot ? 'broadcast' : 'inherit',
+            namingTemplate: isRoot ? 'broadcast' : 'inherit'
+          },
           confidence: 1.0,
           analyzedAt: new Date()
         }
       }
 
+      if (!existing.customConfigSnapshot) {
+        existing.customConfigSnapshot = {}
+      }
+      if (!existing.inheritMode) {
+        existing.inheritMode = {
+          analysisStrategy: isRoot ? 'broadcast' : 'inherit',
+          namingPattern: isRoot ? 'broadcast' : 'inherit',
+          namingTemplate: isRoot ? 'broadcast' : 'inherit'
+        }
+      }
+
+      if (updates.analysisStrategy_suggestion !== undefined) {
+        existing.analysisStrategy_suggestion = updates.analysisStrategy_suggestion
+      }
+
+      if (updates.namingPattern_suggestion !== undefined) {
+        existing.namingPattern_suggestion = updates.namingPattern_suggestion
+      }
+
       if (updates.namingPattern !== undefined) {
         existing.namingPattern = validateAndNormalizeNamingPattern(updates.namingPattern)
+        existing.customConfigSnapshot.namingPattern = existing.namingPattern
+        // 用户手动编辑内容时，如果未显式指定继承模式且当前为继承模式，自动设为仅当前生效
+        if (
+          !isRoot &&
+          existing.inheritMode.namingPattern === 'inherit' &&
+          !updates.inheritMode?.namingPattern
+        ) {
+          existing.inheritMode.namingPattern = 'current_only'
+        }
       }
 
       if (updates.analysisStrategy !== undefined) {
         existing.analysisStrategy = updates.analysisStrategy
+        existing.customConfigSnapshot.analysisStrategy = updates.analysisStrategy
+        // 用户手动编辑内容时，如果未显式指定继承模式且当前为继承模式，自动设为仅当前生效
+        if (
+          !isRoot &&
+          existing.inheritMode.analysisStrategy === 'inherit' &&
+          !updates.inheritMode?.analysisStrategy
+        ) {
+          existing.inheritMode.analysisStrategy = 'current_only'
+        }
       }
 
       if (updates.namingTemplate !== undefined) {
         existing.namingTemplate = updates.namingTemplate
+        existing.customConfigSnapshot.namingTemplate = updates.namingTemplate
+        // 用户手动编辑内容时，如果未显式指定继承模式且当前为继承模式，自动设为仅当前生效
+        if (
+          !isRoot &&
+          existing.inheritMode.namingTemplate === 'inherit' &&
+          !updates.inheritMode?.namingTemplate
+        ) {
+          existing.inheritMode.namingTemplate = 'current_only'
+        }
       }
 
       if (updates.inheritMode !== undefined) {
         existing.inheritMode = {
-          ...(existing.inheritMode || {
-            analysisStrategy: 'inherit',
-            namingPattern: 'inherit',
-            namingTemplate: 'inherit'
-          }),
+          ...existing.inheritMode,
           ...updates.inheritMode
         }
       }
@@ -640,49 +775,67 @@ export class DirectoryContextService {
   /**
    * 解析目录的有效生效配置（考虑自底向上的继承链）
    */
-  async getEffectiveDirectoryConfig(directoryPath: string): Promise<DirectoryContextAnalysis | null> {
+  async getEffectiveDirectoryConfig(
+    directoryPath: string
+  ): Promise<DirectoryContextAnalysis | null> {
     try {
       const current = await this.getDirectoryContext(directoryPath)
       if (!current) return null
 
-      const inheritMode = current.inheritMode || {
-        analysisStrategy: 'inherit',
-        namingPattern: 'inherit',
-        namingTemplate: 'inherit'
+      const isRoot = !this.findAncestorDirectories(directoryPath).length
+      const defaultMode: ConfigInheritMode = isRoot ? 'broadcast' : 'inherit'
+      const inheritMode: {
+        analysisStrategy?: ConfigInheritMode
+        namingPattern?: ConfigInheritMode
+        namingTemplate?: ConfigInheritMode
+      } = {
+        analysisStrategy: defaultMode,
+        namingPattern: defaultMode,
+        namingTemplate: defaultMode,
+        ...(current.inheritMode || {})
       }
 
-      // 如果全部是 current_only 或 broadcast，直接返回自身配置
-      const needsInherit =
-        inheritMode.analysisStrategy === 'inherit' ||
-        inheritMode.namingPattern === 'inherit' ||
-        inheritMode.namingTemplate === 'inherit'
-
-      if (!needsInherit) {
-        return current
-      }
-
-      // 向上寻找祖先目录并查找 broadcast 配置
       const effective: DirectoryContextAnalysis = {
         ...current,
+        inheritMode,
         inheritedFrom: {}
       }
 
+      // 如果是根目录，或者全部字段是 current_only / broadcast，直接返回自身配置
+      const needsInherit =
+        !isRoot &&
+        (inheritMode.analysisStrategy === 'inherit' ||
+          inheritMode.namingPattern === 'inherit' ||
+          inheritMode.namingTemplate === 'inherit')
+
+      if (!needsInherit) {
+        return effective
+      }
+
+      // 向上寻找祖先目录并查找广播/生效配置
       const ancestors = this.findAncestorDirectories(directoryPath)
       for (const ancestorPath of ancestors) {
         const ancestorContext = await this.getDirectoryContext(ancestorPath)
         if (!ancestorContext) continue
 
-        const ancestorMode = ancestorContext.inheritMode || {
-          analysisStrategy: 'inherit',
-          namingPattern: 'inherit',
-          namingTemplate: 'inherit'
+        const isAncestorRoot = !this.findAncestorDirectories(ancestorPath).length
+        const ancestorDefaultMode: ConfigInheritMode = isAncestorRoot ? 'broadcast' : 'inherit'
+        const ancestorMode: {
+          analysisStrategy?: ConfigInheritMode
+          namingPattern?: ConfigInheritMode
+          namingTemplate?: ConfigInheritMode
+        } = {
+          analysisStrategy: ancestorDefaultMode,
+          namingPattern: ancestorDefaultMode,
+          namingTemplate: ancestorDefaultMode,
+          ...(ancestorContext.inheritMode || {})
         }
 
-        // 检查分析策略
+        // 检查分析策略：祖先未显式阻断(not current_only)且当前需要继承
         if (
           inheritMode.analysisStrategy === 'inherit' &&
           !effective.inheritedFrom?.analysisStrategy &&
-          ancestorMode.analysisStrategy === 'broadcast' &&
+          ancestorMode.analysisStrategy !== 'current_only' &&
           ancestorContext.analysisStrategy
         ) {
           effective.analysisStrategy = ancestorContext.analysisStrategy
@@ -690,11 +843,11 @@ export class DirectoryContextService {
           effective.inheritedFrom.analysisStrategy = ancestorPath
         }
 
-        // 检查智能文件名规则
+        // 检查智能文件名规则：祖先未显式阻断且当前需要继承
         if (
           inheritMode.namingPattern === 'inherit' &&
           !effective.inheritedFrom?.namingPattern &&
-          ancestorMode.namingPattern === 'broadcast' &&
+          ancestorMode.namingPattern !== 'current_only' &&
           ancestorContext.namingPattern
         ) {
           effective.namingPattern = ancestorContext.namingPattern
@@ -702,11 +855,11 @@ export class DirectoryContextService {
           effective.inheritedFrom.namingPattern = ancestorPath
         }
 
-        // 检查智能文件名重命名模板
+        // 检查智能文件名重命名模板：祖先未显式阻断且当前需要继承
         if (
           inheritMode.namingTemplate === 'inherit' &&
           !effective.inheritedFrom?.namingTemplate &&
-          ancestorMode.namingTemplate === 'broadcast' &&
+          ancestorMode.namingTemplate !== 'current_only' &&
           ancestorContext.namingTemplate
         ) {
           effective.namingTemplate = ancestorContext.namingTemplate
@@ -727,12 +880,15 @@ export class DirectoryContextService {
    */
   private findAncestorDirectories(targetPath: string): string[] {
     try {
-      const rows = this.db.prepare('SELECT path FROM workspace_directories WHERE path != ?').all(targetPath) as Array<{ path: string }>
-      const { isSubPath } = require('@firefly/shared')
+      const rows = this.db
+        .prepare('SELECT path FROM workspace_directories')
+        .all() as Array<{ path: string }>
 
       return rows
         .map(r => r.path)
-        .filter(parentPath => isSubPath(parentPath, targetPath))
+        .filter(
+          parentPath => isSubPath(parentPath, targetPath) && !isPathEqual(parentPath, targetPath)
+        )
         .sort((a, b) => b.length - a.length) // 最长路径最接近当前节点
     } catch {
       return []
@@ -741,13 +897,28 @@ export class DirectoryContextService {
 
   async getDirectoryContext(directoryPath: string): Promise<DirectoryContextAnalysis | null> {
     try {
-      const stmt = this.db.prepare(`
+      let row = this.db
+        .prepare(
+          `
         SELECT context_analysis
         FROM workspace_directories
         WHERE path = ?
-      `)
+      `
+        )
+        .get(directoryPath) as any
 
-      const row = stmt.get(directoryPath) as any
+      if (!row) {
+        // Windows 平台大小写容错回退
+        row = this.db
+          .prepare(
+            `
+          SELECT context_analysis
+          FROM workspace_directories
+          WHERE LOWER(path) = LOWER(?)
+        `
+          )
+          .get(directoryPath) as any
+      }
 
       if (row && row.context_analysis) {
         return JSON.parse(row.context_analysis) as DirectoryContextAnalysis
@@ -800,18 +971,23 @@ export class DirectoryContextService {
     directoryPath: string
   ): Promise<{ updatedCount: number; totalCount: number; success: boolean }> {
     try {
+      const currentContext = await this.getDirectoryContext(directoryPath)
       const effectiveConfig = await this.getEffectiveDirectoryConfig(directoryPath)
       const template = effectiveConfig?.namingTemplate?.trim() || ''
+      const pathModule = path
 
-      const { NamingDSLEngine } = require('./naming-dsl-engine')
-      const { isSubPath } = require('@firefly/shared')
-      const pathModule = require('path')
+      const isRoot = !this.findAncestorDirectories(directoryPath).length
+      const defaultMode: ConfigInheritMode = isRoot ? 'broadcast' : 'inherit'
+      const inheritMode: ConfigInheritMode =
+        currentContext?.inheritMode?.namingTemplate ||
+        effectiveConfig?.inheritMode?.namingTemplate ||
+        defaultMode
 
       // 查询所有已分析的文件
       const rows = this.db
         .prepare(`
           SELECT 
-            f.id, f.file_fingerprint, f.path, f.name, f.smart_name, f.type, f.author, f.language, f.size,
+            wf.id, wf.file_fingerprint, wf.path, wf.name, f.smart_name, f.type, f.author, f.language, f.size,
             wf.created_at, wf.modified_at,
             fc.quality_score, fc.metadata
           FROM workspace_files wf
@@ -821,17 +997,52 @@ export class DirectoryContextService {
         `)
         .all() as any[]
 
-      // 筛选属于当前目录或其子目录的文件
-      const targetRows = rows.filter(
-        r => isSubPath(directoryPath, r.path) || r.path === directoryPath
-      )
+      // 根据当前目录附加属性的继承模式筛选目标文件：
+      // 1. current_only（仅当前生效）：严格仅处理直接位于当前目录下的文件，排除所有子目录下的文件
+      // 2. broadcast（应用到子目录） / inherit（继承父级）：处理当前目录下直属文件，以及子目录中继承了该模板的文件
+      let targetRows: any[] = []
+      if (inheritMode === 'current_only') {
+        targetRows = rows
+          .filter(r => isPathEqual(pathModule.dirname(r.path), directoryPath))
+          .map(r => ({ ...r, resolvedTemplate: template }))
+      } else {
+        const candidates = rows.filter(
+          r => isSubPath(directoryPath, r.path) || r.path === directoryPath
+        )
+
+        const subDirConfigCache = new Map<string, DirectoryContextAnalysis | null>()
+
+        for (const row of candidates) {
+          const fileDir = pathModule.dirname(row.path)
+          if (isPathEqual(fileDir, directoryPath)) {
+            targetRows.push({ ...row, resolvedTemplate: template })
+          } else {
+            let subConfig = subDirConfigCache.get(fileDir)
+            if (subConfig === undefined) {
+              subConfig = await this.getEffectiveDirectoryConfig(fileDir)
+              subDirConfigCache.set(fileDir, subConfig)
+            }
+            // 只要子目录继承自当前目录或有效模板与当前模板一致，则应用
+            const subInheritedFrom = subConfig?.inheritedFrom?.namingTemplate
+            const subInheritMode = subConfig?.inheritMode?.namingTemplate
+            if (
+              (subInheritedFrom && isPathEqual(subInheritedFrom, directoryPath)) ||
+              subInheritMode === 'inherit' ||
+              !subConfig
+            ) {
+              targetRows.push({ ...row, resolvedTemplate: template })
+            }
+          }
+        }
+      }
+
       if (targetRows.length === 0) {
         return { updatedCount: 0, totalCount: 0, success: true }
       }
 
       let updatedCount = 0
       const updateStmt = this.db.prepare(
-        'UPDATE files SET smart_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+        'UPDATE files SET smart_name = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?'
       )
       const updateContentStmt = this.db.prepare(
         'UPDATE file_contents SET metadata = ? WHERE file_fingerprint = ?'
@@ -896,10 +1107,18 @@ export class DirectoryContextService {
             language: row.language
           }
 
+          const rowTemplate = (row as any).resolvedTemplate !== undefined ? (row as any).resolvedTemplate : template
           let newSmartName = rawSmartName
-          if (template) {
-            newSmartName = NamingDSLEngine.renderTemplate(template, fileContext, i + 1, true)
+          if (rowTemplate) {
+            newSmartName = NamingDSLEngine.renderTemplate(rowTemplate, fileContext, i + 1, true)
           }
+
+          // 核心规范：smart_name 字段总是要保存扩展名后缀
+          const dotExt = fileExt ? (fileExt.startsWith('.') ? fileExt : `.${fileExt}`) : ''
+          const finalSmartNameWithExt =
+            dotExt && !newSmartName.toLowerCase().endsWith(dotExt.toLowerCase())
+              ? `${newSmartName}${dotExt}`
+              : newSmartName
 
           // 确保 metadata 中留存无扩展名的 raw_smart_name
           if (metadataObj.raw_smart_name !== rawSmartName) {
@@ -907,8 +1126,8 @@ export class DirectoryContextService {
             updateContentStmt.run(JSON.stringify(metadataObj), row.file_fingerprint)
           }
 
-          if (newSmartName && newSmartName !== row.smart_name) {
-            updateStmt.run(newSmartName, row.id)
+          if (finalSmartNameWithExt && finalSmartNameWithExt !== row.smart_name) {
+            updateStmt.run(finalSmartNameWithExt, row.file_fingerprint)
             updatedCount++
           }
         }
