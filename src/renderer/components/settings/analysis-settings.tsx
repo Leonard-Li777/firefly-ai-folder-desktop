@@ -104,11 +104,11 @@ export const AnalysisSettings: React.FC = () => {
   const [localMaxContentSizeKb, setLocalMaxContentSizeKb] = useState<number>(
     getConfigValue<number>('MAX_CONTENT_SIZE_KB') ?? 30
   )
-  const [localMaxDocOcrMb, setLocalMaxDocOcrMb] = useState<number>(
-    getConfigValue<number>('MAX_DOCUMENT_OCR_FILE_SIZE') ?? 10
+  const [localEnableOfficeCover, setLocalEnableOfficeCover] = useState<boolean>(
+    getConfigValue<boolean>('ENABLE_OFFICE_COVER') ?? false
   )
-  const [localEnableDocumentOcr, setLocalEnableDocumentOcr] = useState<boolean>(
-    getConfigValue<boolean>('ENABLE_DOCUMENT_OCR') ?? false
+  const [localMaxDocOcrItems, setLocalMaxDocOcrItems] = useState<number>(
+    getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
   )
   const [localEnableImageOcr, setLocalEnableImageOcr] = useState<boolean>(
     getConfigValue<boolean>('ENABLE_IMAGE_OCR') ?? true
@@ -139,19 +139,20 @@ export const AnalysisSettings: React.FC = () => {
     }, [promptValue, configKey, getConfigValue, updateConfigValue])
   }
 
+  // 为每个提示词设置独立的防抖更新
   useDebouncedPromptUpdater(unitPrompt, 'UNIT_RECOGNITION_PROMPT')
   useDebouncedPromptUpdater(qualityPrompt, 'QUALITY_SCORE_PROMPT')
   useDebouncedPromptUpdater(tagPrompt, 'TAG_GENERATION_PROMPT')
 
   /**
-   * 音频时长防抖同步
+   * 音频分析截取时长防抖同步
    */
   useEffect(() => {
     const handler = setTimeout(() => {
       const currentConfigValue = getConfigValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30
       if (localAudioDuration !== currentConfigValue) {
         updateConfigValue('AUDIO_ANALYSIS_DURATION', localAudioDuration)
-        captureEvent('更新音频分析时长', {
+        captureEvent('更新音频分析截取时长', {
           duration: localAudioDuration
         })
       }
@@ -161,7 +162,7 @@ export const AnalysisSettings: React.FC = () => {
   }, [localAudioDuration])
 
   /**
-   * 内容提取页数防抖同步
+   * PDF提取页数防抖同步
    */
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -195,32 +196,32 @@ export const AnalysisSettings: React.FC = () => {
   }, [localMaxContentSizeKb])
 
   /**
-   * 文档 OCR 文件大小上限防抖同步（-1 或 0 表示不限制）
+   * 文档 OCR 识别数量防抖同步（0 表示不识别，-1 表示不限）
    */
   useEffect(() => {
     const handler = setTimeout(() => {
-      const currentConfigValue = getConfigValue<number>('MAX_DOCUMENT_OCR_FILE_SIZE') ?? 10
-      if (localMaxDocOcrMb !== currentConfigValue) {
-        updateConfigValue('MAX_DOCUMENT_OCR_FILE_SIZE', localMaxDocOcrMb)
-        captureEvent('更新文档OCR文件大小上限', {
-          sizeMb: localMaxDocOcrMb
+      const currentConfigValue = getConfigValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
+      if (localMaxDocOcrItems !== currentConfigValue) {
+        updateConfigValue('MAX_DOCUMENT_OCR_ITEMS', localMaxDocOcrItems)
+        captureEvent('更新文档OCR识别数量上限', {
+          items: localMaxDocOcrItems
         })
       }
     }, 500)
 
     return () => clearTimeout(handler)
-  }, [localMaxDocOcrMb])
+  }, [localMaxDocOcrItems])
 
   /**
-   * 文档OCR开关同步
+   * Office 封面截图开关同步
    */
   useEffect(() => {
-    const currentConfigValue = getConfigValue<boolean>('ENABLE_DOCUMENT_OCR') ?? false
-    if (localEnableDocumentOcr !== currentConfigValue) {
-      updateConfigValue('ENABLE_DOCUMENT_OCR', localEnableDocumentOcr)
-      captureEvent('切换文档OCR识别', { enabled: localEnableDocumentOcr })
+    const currentConfigValue = getConfigValue<boolean>('ENABLE_OFFICE_COVER') ?? false
+    if (localEnableOfficeCover !== currentConfigValue) {
+      updateConfigValue('ENABLE_OFFICE_COVER', localEnableOfficeCover)
+      captureEvent('切换Office封面截图', { enabled: localEnableOfficeCover })
     }
-  }, [localEnableDocumentOcr])
+  }, [localEnableOfficeCover])
 
   /**
    * 图片OCR开关同步
@@ -685,35 +686,113 @@ export const AnalysisSettings: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {/* 文档 OCR 开关与 LibreOffice 插件 */}
+              {/* 文档 OCR 识别数量上限（总是显示，0 表示不识别，-1 表示不限） */}
+              <div className="p-3.5 rounded-lg border bg-card space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor="max-doc-ocr-items" className="text-sm font-medium">
+                      {t('文档OCR识别数量')}
+                    </Label>
+                    <HelpTooltip
+                      content={t(
+                        '文档OCR识别数量上限（Office文档内嵌图片数量 / PDF文档页数），0表示不进行OCR识别，-1表示不限，默认 0'
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                      {localMaxDocOcrItems === -1
+                        ? t('不限')
+                        : localMaxDocOcrItems === 0
+                        ? t('关闭 (0)')
+                        : `${localMaxDocOcrItems} ${t('项/页')}`}
+                    </span>
+                  </div>
+                </div>
+
+                {(() => {
+                  // 0 到 30 每刻度递增 1，最后是 -1 (不限)
+                  const ticks = Array.from({ length: 31 }, (_, i) => i).concat([-1])
+                  const currentIndex =
+                    ticks.indexOf(localMaxDocOcrItems) !== -1
+                      ? ticks.indexOf(localMaxDocOcrItems)
+                      : 0 // 默认 0 (index 0)
+
+                  return (
+                    <div className="space-y-2 pt-1 pb-1 px-1">
+                      <input
+                        id="max-doc-ocr-items"
+                        type="range"
+                        min={0}
+                        max={ticks.length - 1}
+                        step={1}
+                        value={currentIndex}
+                        onChange={e => {
+                          const idx = parseInt(e.target.value, 10)
+                          const selectedValue = ticks[idx]
+                          setLocalMaxDocOcrItems(selectedValue)
+                        }}
+                        className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-secondary accent-primary"
+                      />
+                      {/* 刻度线与主要刻度值展示 (0, 5, 10, 15, 20, 25, 30, 不限) */}
+                      <div className="flex justify-between items-center text-[11px] text-muted-foreground pt-1 select-none">
+                        {[0, 5, 10, 15, 20, 25, 30, -1].map(tick => {
+                          const idx = ticks.indexOf(tick)
+                          const isActive = idx === currentIndex
+                          const isUnlimited = tick === -1
+                          return (
+                            <button
+                              key={tick}
+                              type="button"
+                              onClick={() => setLocalMaxDocOcrItems(tick)}
+                              className={`flex flex-col items-center gap-1 transition-colors hover:text-foreground ${
+                                isActive ? 'text-primary font-bold scale-110' : ''
+                              }`}
+                            >
+                              <span
+                                className={`w-0.5 h-1.5 rounded-full ${
+                                  isActive ? 'bg-primary h-2.5' : 'bg-muted-foreground/30'
+                                }`}
+                              />
+                              <span>{isUnlimited ? t('不限') : tick}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+
+              {/* 开启Office文档封面截图与 LibreOffice 插件联动 */}
               <div className="p-3 rounded-lg border bg-card space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center gap-1">
-                      <Label htmlFor="document-ocr-switch" className="text-sm font-medium">
-                        {t('启用文档OCR文字识别')}
+                      <Label htmlFor="office-cover-switch" className="text-sm font-medium">
+                        {t('开启Office文档封面截图')}
                       </Label>
                       <HelpTooltip
                         content={t(
-                          '开启后会对PDF、Office文档中的所有页图片进行OCR识别，Office缩略图提取也依赖OCR开启。'
+                          '支持Office文档首页导出为封面缩略图，但会大大增加Office内容提取耗时，PDF不受影响。需要安装LibreOffice。'
                         )}
                       />
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {localEnableDocumentOcr
-                        ? t('开启，对于Office仅OCR内部插图，PDF会OCR整页')
-                        : t('关闭，则仅提取已有文本层')}
+                      {localEnableOfficeCover
+                        ? t('开启，调用LibreOffice转首页为缩略图封面（非常耗时）')
+                        : t('关闭，跳过Office封面图提取')}
                     </p>
                   </div>
                   <Switch
-                    id="document-ocr-switch"
-                    checked={localEnableDocumentOcr}
-                    onCheckedChange={setLocalEnableDocumentOcr}
+                    id="office-cover-switch"
+                    checked={localEnableOfficeCover}
+                    onCheckedChange={setLocalEnableOfficeCover}
                   />
                 </div>
 
-                {/* 联动：开启文档 OCR 后，才显示插件安装：LibreOffice */}
-                {localEnableDocumentOcr && (
+                {/* 联动：开启 Office 封面截图后，显示插件安装：LibreOffice */}
+                {localEnableOfficeCover && (
                   <div className="pt-3 border-t border-border/50">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 pr-4">
@@ -724,7 +803,7 @@ export const AnalysisSettings: React.FC = () => {
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                           {t(
-                            '支持Office文件整页OCR识别，以及支持Office封面图的提取，增加对老旧Office格式的支持'
+                            '支持Office文件整页转换与封面图提取，增加对老旧Office格式的支持'
                           )}
                           ，
                           <span className="text-xs text-amber-600 font-medium">
@@ -807,81 +886,6 @@ export const AnalysisSettings: React.FC = () => {
                         </Button>
                       </div>
                     </div>
-
-                    {/* 只有在已检测安装 LibreOffice 时，才显示文档 OCR 最大文件限制控件 */}
-                    {!checkingLibreOffice && libreOfficeInstalled === true && (
-                      <div className="mt-3.5 pt-3 border-t border-border/50 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <Label htmlFor="max-doc-ocr-size" className="text-sm font-medium">
-                              {t('Office文档OCR跳过超大文件')}
-                            </Label>
-                            <HelpTooltip
-                              content={t(
-                                '仅对小于此大小的 Office 文档进行转 PDF 并进行 OCR 识别，超过限制将自动跳过 OCR，以防止 Office 转 PDF 过程过长引发卡顿或超时。PDF 文件不受此限制。'
-                              )}
-                            />
-                          </div>
-                          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                            {localMaxDocOcrMb === -1 || localMaxDocOcrMb === 0
-                              ? t('不限')
-                              : `${localMaxDocOcrMb} MB`}
-                          </span>
-                        </div>
-
-                        {(() => {
-                          const ticks = [10, 20, 30, 40, 50, -1]
-                          const normalizedValue = localMaxDocOcrMb === 0 ? -1 : localMaxDocOcrMb
-                          const currentIndex =
-                            ticks.indexOf(normalizedValue) !== -1
-                              ? ticks.indexOf(normalizedValue)
-                              : 0 // 默认 10MB (index 0)
-
-                          return (
-                            <div className="space-y-2 pt-1 pb-1 px-1">
-                              <input
-                                id="max-doc-ocr-size"
-                                type="range"
-                                min={0}
-                                max={ticks.length - 1}
-                                step={1}
-                                value={currentIndex}
-                                onChange={e => {
-                                  const idx = parseInt(e.target.value, 10)
-                                  const selectedValue = ticks[idx]
-                                  setLocalMaxDocOcrMb(selectedValue)
-                                }}
-                                className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-secondary accent-primary"
-                              />
-                              {/* 刻度线与刻度值展示 */}
-                              <div className="flex justify-between items-center text-[11px] text-muted-foreground pt-1 select-none">
-                                {ticks.map((tick, index) => {
-                                  const isActive = index === currentIndex
-                                  const isUnlimited = tick === -1
-                                  return (
-                                    <button
-                                      key={tick}
-                                      type="button"
-                                      onClick={() => setLocalMaxDocOcrMb(tick)}
-                                      className={`flex flex-col items-center gap-1 transition-colors hover:text-foreground ${
-                                        isActive ? 'text-primary font-bold scale-110' : ''
-                                      }`}
-                                    >
-                                      <span
-                                        className={`w-0.5 h-1.5 rounded-full ${
-                                          isActive ? 'bg-primary h-2.5' : 'bg-muted-foreground/30'
-                                        }`}
-                                      />
-                                      <span>{isUnlimited ? t('不限') : `${tick}M`}</span>
-                                    </button>
-                                  )
-                                })}
-                              </div>
-                            </div>
-                          )
-                        })()}
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
@@ -911,8 +915,8 @@ export const AnalysisSettings: React.FC = () => {
               </div>
             </div>
 
-            {/* 联动：只有当文档 OCR 或图片 OCR 至少有一个开启时，才显示 OCR 识别精度 */}
-            {(localEnableDocumentOcr || localEnableImageOcr) && (
+            {/* 联动：只有当文档 OCR 开启 (数量 != 0) 或图片 OCR 开启时，才显示 OCR 识别精度 */}
+            {(localMaxDocOcrItems !== 0 || localEnableImageOcr) && (
               <div className="pt-2">
                 <div className="flex items-center gap-1.5 mb-2.5">
                   <Label className="text-sm font-medium">{t('OCR识别精度')}</Label>

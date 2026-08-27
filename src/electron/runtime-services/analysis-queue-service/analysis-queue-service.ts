@@ -20,7 +20,7 @@ import { LogCategory, logger, PerformanceTimer } from '@firefly/shared'
 import { systemHealthService } from '../system'
 import { loadIgnoreRules } from '../analysis/analysis-ignore-service'
 import { LlamaIndexAIService } from '@firefly/electron-llamaIndex-service'
-import { ILlamaIndexAIService } from '@firefly/types'
+import { AIServiceStatus, ILlamaIndexAIService } from '@firefly/types'
 import { BrowserWindow } from 'electron'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { DirectoryContextService } from '../filesystem/directory-context-service'
@@ -826,6 +826,45 @@ export class AnalysisQueueService {
       currentAnalyzingItem,
       status: queueStatus
     }
+  }
+
+  /**
+   * 检测本地模型当前是否正忙（已有请求在进行中）
+   * 云端模型不限制并发；本地模型无法同时负载多个请求，需拒绝新的 AI 请求
+   * @returns true 表示本地模型正忙，应拒绝本次请求
+   */
+  isLocalModelBusy(): boolean {
+    try {
+      // 云端模型不限制
+      const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+      if (mode === 'cloud') return false
+
+      // 分析队列正在运行（本地模型正被队列占用）
+      if (this.running || this.isProcessingLoopActive) return true
+
+      // AI 服务正在处理请求
+      if (this.aiService && this.aiService.getServiceStatus() === AIServiceStatus.PROCESSING) {
+        return true
+      }
+
+      return false
+    } catch (error) {
+      logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 检测本地模型忙碌状态失败:', error)
+      return false
+    }
+  }
+
+  /**
+   * 通知前端：本地模型正忙，请停止当前 AI 工作后再请求
+   */
+  notifyLocalModelBusy(): void {
+    void this.notifyFrontend(
+      'warning',
+      t('当前AI已经在工作中，如：分析队列，请停止后再请求'),
+      false,
+      'local-model-busy',
+      5000
+    )
   }
 
   private emitUpdate(): void {

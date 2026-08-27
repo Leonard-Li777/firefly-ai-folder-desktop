@@ -12,6 +12,7 @@ export interface AnydocAsset {
 export interface AnydocResult {
   content: string
   assets: AnydocAsset[]
+  benchmark?: import('./omni-service').OmniBenchmarkResponse
 }
 
 export class AnydocService {
@@ -34,7 +35,8 @@ export class AnydocService {
       const omniData = await omniService.extract(filePath)
       return {
         content: omniData?.markdown_content || '',
-        assets: []
+        assets: [],
+        benchmark: omniData?.benchmark
       }
     } catch (error: any) {
       logger.warn(

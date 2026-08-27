@@ -32,6 +32,7 @@ export async function saveCloudResult(
   if (!db) throw new Error(t('数据库未初始化'))
 
   try {
+    const filePath = item.path
     const rawType = item.type || path.extname(filePath).toLowerCase() || ''
     let fileType = rawType ? (rawType.startsWith('.') ? rawType : `.${rawType}`) : ''
     const stats = fs.statSync(filePath)

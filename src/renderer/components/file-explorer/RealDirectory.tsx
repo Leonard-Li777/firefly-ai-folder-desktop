@@ -24,6 +24,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useSearchStore } from '../../stores/search-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useVirtualDirectoryStore } from '../../stores/virtual-directory-store'
+import { useOrganizeStore } from '../../stores/organize-store'
 import { PersistentTooltip } from '../common/PersistentTooltip'
 import { CardSizePopover } from '../common/CardSizePopover'
 import { MiniViewDisplaySettingsPopover } from '../common/MiniViewDisplaySettingsPopover'
@@ -1143,6 +1144,21 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
                           </PersistentTooltip>
                         )}
                       </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1 shadow-sm hover:bg-accent border-border"
+                        onClick={() => {
+                          const store = useOrganizeStore.getState()
+                          store.setActiveBranch('batch-duplicate')
+                          store.setStage('batch-duplicate')
+                          navigate('/organize')
+                        }}
+                      >
+                        <MaterialIcon icon="cleaning_services" className="text-base text-primary" />
+                        <span>{t('文件清理')}</span>
+                      </Button>
                     </div>
                   </div>
                 )}

@@ -93,8 +93,11 @@ export const RestrictedFeatureOverlay: React.FC<RestrictedFeatureOverlayProps> =
   }
 
   return (
-    <div className="absolute inset-0 bg-background/60 backdrop-blur-md z-[40] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-200">
-      <div className="p-4 rounded-full bg-muted/40 mb-4 border border-border/50 shadow-sm">
+    <div
+      style={{ backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}
+      className="absolute inset-0 bg-background/80 backdrop-blur-md z-[40] isolate flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-150 select-none"
+    >
+      <div className="p-4 rounded-full bg-muted/40 mb-4 border border-border/50 shadow-xs">
         <MaterialIcon icon="lock" className="text-4xl text-muted-foreground/80" />
       </div>
       <h3 className="text-xl font-bold mb-2 tracking-wide text-foreground">
@@ -117,9 +120,8 @@ export const RestrictedFeatureOverlay: React.FC<RestrictedFeatureOverlayProps> =
         {/* 卡片一：一次性激活 / 槽位购买 */}
         <div
           onClick={() => setPayingType('ONCE')}
-          className="group flex flex-col p-8 rounded-2xl border-2 border-border/80 bg-card hover:border-green-500/50 hover:shadow-lg hover:shadow-green-500/5 transition-all duration-300 cursor-pointer w-80 text-left relative overflow-hidden"
+          className="group flex flex-col p-8 rounded-2xl border-2 border-border/80 bg-card hover:border-green-500/50 hover:shadow-md transition-all duration-200 cursor-pointer w-80 text-left relative overflow-hidden"
         >
-          <div className="absolute -top-16 -right-16 w-32 h-32 bg-green-500/5 rounded-full blur-3xl group-hover:bg-green-500/10 transition-colors" />
           <h4 className="font-bold text-base mb-3 text-foreground group-hover:text-green-500 transition-colors">
             {onceName}
           </h4>
@@ -134,9 +136,8 @@ export const RestrictedFeatureOverlay: React.FC<RestrictedFeatureOverlayProps> =
         {type === 'VDIR' && (
           <div
             onClick={() => setPayingType('SLOT')}
-            className="group flex flex-col p-8 rounded-2xl border-2 border-border/80 bg-card hover:border-amber-400/50 hover:shadow-lg hover:shadow-amber-400/5 transition-all duration-300 cursor-pointer w-80 text-left relative overflow-hidden"
+            className="group flex flex-col p-8 rounded-2xl border-2 border-border/80 bg-card hover:border-amber-400/50 hover:shadow-md transition-all duration-200 cursor-pointer w-80 text-left relative overflow-hidden"
           >
-            <div className="absolute -top-16 -right-16 w-32 h-32 bg-amber-400/5 rounded-full blur-3xl group-hover:bg-amber-400/10 transition-colors" />
             <h4 className="font-bold text-base mb-3 text-foreground group-hover:text-amber-500 transition-colors">
               {slotName}
             </h4>
@@ -152,9 +153,8 @@ export const RestrictedFeatureOverlay: React.FC<RestrictedFeatureOverlayProps> =
         {type !== 'VDIR' && (
           <div
             onClick={() => openSettings(SettingsCategory.MONITORING)}
-            className="group flex flex-col p-8 rounded-2xl border-2 border-border/80 bg-card hover:border-blue-500/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300 cursor-pointer w-80 text-left relative overflow-hidden"
+            className="group flex flex-col p-8 rounded-2xl border-2 border-border/80 bg-card hover:border-blue-500/50 hover:shadow-md transition-all duration-200 cursor-pointer w-80 text-left relative overflow-hidden"
           >
-            <div className="absolute -top-16 -right-16 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-colors" />
             <h4 className="font-bold text-base mb-3 text-foreground group-hover:text-blue-500 transition-colors">
               {t('管理工作目录')}
             </h4>

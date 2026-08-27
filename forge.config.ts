@@ -1129,6 +1129,7 @@ const config: ForgeConfig = {
       'build/extraResources/.VirtualDirectory', // 虚拟目录说明文件模板目录
       'build/extraResources/bin', // 包含 fastfetch 等二进制文件 (由 7z 安装器处理)
       'build/extraResources/stubs', // 兼容性存根 (ggml-blas-stub.c)
+      'build/extraResources/geo', // omni-geo 地理数据集（解压即用明文 JSON）
       absAssetsDir
     ],
     ignore: (file: string) => {

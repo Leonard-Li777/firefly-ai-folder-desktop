@@ -406,6 +406,13 @@ export class AISkillApiService {
           this.sendError(res, 400, t('缺少 filePath 参数'))
           return true
         }
+        // 本地模型正忙（如分析队列进行中）时拒绝新请求，避免本地模型无法负载
+        if (autoQueue && analysisQueueService.isLocalModelBusy()) {
+          logger.warn(LogCategory.SYSTEM, '[AI Skill API] 本地模型正忙，丢弃智能分析请求')
+          analysisQueueService.notifyLocalModelBusy()
+          this.sendError(res, 429, t('当前AI已经在工作中，如：分析队列，请停止后再请求'))
+          return true
+        }
         console.debug(
           `[AISkillApiService][debug] 智能获取文件分析数据 - file: ${path.basename(filePath)}`
         )

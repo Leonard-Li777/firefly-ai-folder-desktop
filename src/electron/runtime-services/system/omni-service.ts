@@ -15,6 +15,17 @@ import { app } from 'electron'
 import { ResourceLocator, logger, LogCategory } from '@firefly/shared'
 import { FileCategory } from '@firefly/types'
 
+export interface OmniBenchmarkResponse {
+  total_ms: number
+  magika_ms?: number
+  metadata_ms?: number
+  text_ms?: number
+  document_ms?: number
+  ocr_ms?: number
+  html_ms?: number
+  thumbnail_ms?: number
+}
+
 export interface OmniExtractionResponse {
   file_path: string
   mime_type: string
@@ -23,6 +34,7 @@ export interface OmniExtractionResponse {
   metadata?: Record<string, any>
   phash?: string
   is_corrupted?: boolean
+  benchmark?: OmniBenchmarkResponse
 }
 
 export type OmniGeoReversePoint =
@@ -63,6 +75,26 @@ export class OmniService {
           this.stop()
         })
       }
+
+      // 监听 Desktop 端 OCR 与分析相关的 ConfigKey 变更，实时自动推送到 Omni
+      import('../../config/config-orchestrator').then(({ ConfigOrchestrator }) => {
+        const orchestrator = ConfigOrchestrator.getInstance()
+        const ocrKeys = [
+          'ENABLE_IMAGE_OCR',
+          'ENABLE_DOCUMENT_OCR',
+          'OCR_MODEL_SIZE',
+          'MAX_DOCUMENT_OCR_FILE_SIZE',
+          'MAX_CONTENT_SIZE_KB',
+          'MAX_FILE_SIZE',
+          'ANALYSIS_MODE',
+          'REUSE_BASIC_ANALYSIS_DATA'
+        ] as const
+        ocrKeys.forEach(key => {
+          orchestrator.onValueChange(key as any, () => {
+            this.syncConfigFromDesktop().catch(() => {})
+          })
+        })
+      }).catch(() => {})
     } catch {}
   }
 
@@ -133,9 +165,10 @@ export class OmniService {
       // 探活检查：如果 9190 端口上已有外部 omni 服务正常响应（例如开发模式独立运行的 omni:serve 或 omni:ui），则直接复用
       const isAlive = await this.checkHealth()
       if (isAlive) {
-        logger.info(LogCategory.SYSTEM, `[OmniService] 检测到已在 9190 运行的 Omni 服务 (${this.baseUrl})，直接连接复用，避免重复启动冲突`)
+        logger.info(LogCategory.SYSTEM, `[OmniService] 检测到已在 9190 运行的 Omni 服务 (${this.baseUrl})，直接连接复用，并同步最新配置`)
         this.restartAttempts = 0
         this.isStarting = false
+        this.syncConfigFromDesktop().catch(() => {})
         return true
       }
 
@@ -147,12 +180,28 @@ export class OmniService {
         windowsHide: true
       })
 
+      const isCzkawkaDump = (str: string): boolean => {
+        return (
+          str.includes('DEBUG PRINT COMMON') ||
+          str.includes('DEBUG PRINT MESSAGES') ||
+          str.includes('Included paths(before optimization)') ||
+          str.includes('Included files(optimized)') ||
+          str.includes('Directories { included_directories')
+        )
+      }
+
       child.stdout?.on('data', data => {
-        logger.debug(LogCategory.SYSTEM, `[Omni] ${data.toString().trim()}`)
+        const str = data.toString().trim()
+        if (str && !isCzkawkaDump(str)) {
+          logger.debug(LogCategory.SYSTEM, `[Omni] ${str}`)
+        }
       })
 
       child.stderr?.on('data', data => {
-        logger.debug(LogCategory.SYSTEM, `[Omni:err] ${data.toString().trim()}`)
+        const str = data.toString().trim()
+        if (str && !isCzkawkaDump(str)) {
+          logger.debug(LogCategory.SYSTEM, `[Omni:err] ${str}`)
+        }
       })
 
       child.on('error', err => {
@@ -181,6 +230,8 @@ export class OmniService {
           logger.info(LogCategory.SYSTEM, `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`)
           this.restartAttempts = 0
           this.isStarting = false
+          // 探活就绪后，立即同步一次当前配置（ENABLE_IMAGE_OCR, OCR_MODEL_SIZE 等）
+          this.syncConfigFromDesktop().catch(() => {})
           return true
         }
       }
@@ -251,9 +302,58 @@ export class OmniService {
   }
 
   /**
+   * 向 Omni 引擎同步最新配置 (ENABLE_IMAGE_OCR, ENABLE_DOCUMENT_OCR, OCR_MODEL_SIZE 等)
+   */
+  public async syncConfigFromDesktop(): Promise<boolean> {
+    try {
+      const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+      const orchestrator = ConfigOrchestrator.getInstance()
+      const enableImageOcr = orchestrator.getValue<boolean>('ENABLE_IMAGE_OCR') ?? false
+      const enableOfficeCover = orchestrator.getValue<boolean>('ENABLE_OFFICE_COVER') ?? false
+      const maxDocOcrItems = orchestrator.getValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
+      const ocrModelSize = (orchestrator.getValue<string>('OCR_MODEL_SIZE') || 'tiny').toLowerCase()
+      const maxContentSizeKb = orchestrator.getValue<number>('MAX_CONTENT_SIZE_KB') ?? 30
+      const maxFileSizeMb = orchestrator.getValue<number>('MAX_FILE_SIZE') ?? 100
+      const analysisMode = (orchestrator.getValue<string>('ANALYSIS_MODE') || 'full').toLowerCase()
+      const reuseBasic = orchestrator.getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true
+
+      const payload = JSON.stringify({
+        enable_office_cover: enableOfficeCover,
+        max_document_ocr_items: maxDocOcrItems,
+        enable_image_ocr: enableImageOcr,
+        ocr_model_size: ocrModelSize,
+        max_content_size_kb: maxContentSizeKb,
+        max_file_size_mb: maxFileSizeMb,
+        analysis_mode: analysisMode,
+        reuse_basic_analysis_data: reuseBasic
+      })
+
+      const res = await fetch(`${this.baseUrl}/api/config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        signal: AbortSignal.timeout(3000)
+      })
+
+      if (res.ok) {
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 已向 Omni 引擎同步配置: enable_office_cover=${enableOfficeCover}, max_document_ocr_items=${maxDocOcrItems}, enable_image_ocr=${enableImageOcr}, ocr_model_size=${ocrModelSize}`
+        )
+        return true
+      }
+      return false
+    } catch (err: any) {
+      logger.debug(LogCategory.SYSTEM, '[OmniService] 同步配置到 Omni 引擎失败:', err.message)
+      return false
+    }
+  }
+
+  /**
    * 提取文件全量信息 (元数据, Magika, Markdown, EXIF, 音视频标签)
    */
   public async extract(filePath: string): Promise<OmniExtractionResponse | null> {
+    const tStart = Date.now()
     try {
       const res = await fetch(`${this.baseUrl}/api/extract`, {
         method: 'POST',
@@ -263,12 +363,24 @@ export class OmniService {
       })
 
       if (!res.ok) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] extract 响应异常: ${res.status}, 耗时: ${Date.now() - tStart}ms`
+        )
         return null
       }
 
-      return (await res.json()) as OmniExtractionResponse
+      const json = (await res.json()) as OmniExtractionResponse
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] extract 完成 (${filePath}): 耗时: ${Date.now() - tStart}ms`
+      )
+      return json
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniService] extract 调用异常 (${filePath}):`, err.message)
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] extract 调用失败 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}`
+      )
       return null
     }
   }
@@ -284,11 +396,34 @@ export class OmniService {
         ...(meta.exiftool || {}),
         ...(meta.document || {}),
         ...(meta.image || {}),
+        ...(meta.image?.exif || {}),
         ...(meta.audio || {}),
         ...(meta.video || {}),
-        ...(meta.basic || {}),
-        ...meta
+        ...(meta.font || {}),
+        ...(meta.archive || {}),
+        ...(meta.database || {}),
+        ...(meta.model || {}),
+        ...(meta.text_stats ? { text_stats: meta.text_stats } : {})
       }
+
+      delete combined.exif
+
+      // 仅保留非空业务元数据字段，彻底剔除 basic / text / category / magika / errors 等冗余副本
+      delete combined.basic
+      delete combined.text
+      delete combined.category
+      delete combined.magika
+      delete combined.errors
+      delete combined.exiftool
+      delete combined.document
+      delete combined.image
+      delete combined.audio
+      delete combined.video
+      delete combined.font
+      delete combined.archive
+      delete combined.database
+      delete combined.model
+
       return combined
     }
 

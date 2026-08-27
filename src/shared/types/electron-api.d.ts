@@ -654,6 +654,7 @@ declare global {
         applyTags: (operation: any) => Promise<any>
         deleteTagGlobally: (dimensionId: number, tagName: string) => Promise<boolean>
         scanDuplicates: (options: any) => Promise<any[]>
+        onScanProgress?: (callback: (data: any) => void) => () => void
         trashDuplicates: (filePaths: string[]) => Promise<any>
         applyKeepRule: (groups: any[], rule: string) => Promise<any[]>
         getEffectiveDirectoryConfig: (dirPath: string) => Promise<any>

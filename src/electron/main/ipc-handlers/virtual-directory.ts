@@ -880,6 +880,16 @@ export function registerVirtualDirectoryIPCHandlers() {
         message: t('模型正在切换中，请等待')
       }
     }
+    // 本地模型正忙（如分析队列进行中）时拒绝新请求，避免本地模型无法负载
+    if (analysisQueueService.isLocalModelBusy()) {
+      logger.warn(LogCategory.MAIN, '[IPC] analyze-directory-context: 本地模型正忙，丢弃请求')
+      analysisQueueService.notifyLocalModelBusy()
+      return {
+        success: false,
+        status: 'LOCAL_MODEL_BUSY',
+        message: t('当前AI已经在工作中，如：分析队列，请停止后再请求')
+      }
+    }
     if (process.env.IS_INTEGRATION_TEST === 'true') {
       return { success: true, directoryType: 'SPEEDY', confidence: 0.5, status: 'MOCK' }
     }
@@ -1077,7 +1087,13 @@ export function registerVirtualDirectoryIPCHandlers() {
     const { duplicateDetectionService } = await import(
       '../../runtime-services/filesystem/duplicate-detection-service'
     )
-    return await duplicateDetectionService.scanDuplicates(options)
+    return await duplicateDetectionService.scanDuplicates(options, progressData => {
+      try {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('duplicate:scan-progress', progressData)
+        }
+      } catch {}
+    })
   })
 
   ipcMain.handle('duplicate:trash', async (event, filePaths: string[]) => {

@@ -503,8 +503,43 @@ export class FileDao {
           result.isHit !== undefined ? (result.isHit ? 1 : 0) : null,
           result.description || null,
           result.isHit !== undefined ? (result.isHit ? 1 : 0) : null,
-          now
+          result.isHit ? result.lastHitAt || now : null
         )
+
+      // 安全深度合并 metadata：保留数据库中已提取的 Exif/媒体全量元数据，防止被后续阶段的局部 metadata 冲掉
+      let finalMetadata = result.metadata
+      if (finalMetadata !== undefined) {
+        const oldContentRow = this.db
+          .prepare('SELECT metadata FROM file_contents WHERE file_fingerprint = ?')
+          .get(fileFingerprint) as { metadata?: string } | undefined
+        if (oldContentRow?.metadata) {
+          try {
+            const oldMeta = JSON.parse(oldContentRow.metadata)
+            if (oldMeta && typeof oldMeta === 'object' && Object.keys(oldMeta).length > 0) {
+              finalMetadata = {
+                ...oldMeta,
+                ...(result.metadata || {})
+              }
+            }
+          } catch {}
+        }
+        if (finalMetadata && typeof finalMetadata === 'object') {
+          delete finalMetadata.basic
+          delete finalMetadata.text
+          delete finalMetadata.category
+          delete finalMetadata.magika
+          delete finalMetadata.errors
+          delete finalMetadata.exiftool
+          delete finalMetadata.document
+          delete finalMetadata.image
+          delete finalMetadata.audio
+          delete finalMetadata.video
+          delete finalMetadata.font
+          delete finalMetadata.archive
+          delete finalMetadata.database
+          delete finalMetadata.model
+        }
+      }
 
       // 如果传入了新的 analysisStats，进行 fresh 与 archive 的深度合并与保存
       let newStatsJson: string | null = null
@@ -736,7 +771,7 @@ export class FileDao {
           result.content ?? null,
           result.multimodalContent ?? null,
           result.lrc ?? null,
-          result.metadata ? JSON.stringify(result.metadata) : null,
+          finalMetadata ? JSON.stringify(finalMetadata) : null,
           newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null),
           result.qualityScore ?? null,
           result.qualityConfidence ?? null,
@@ -753,7 +788,7 @@ export class FileDao {
           result.qualityCriteria ? JSON.stringify(result.qualityCriteria) : null,
           result.groupingReason ?? null,
           result.groupingConfidence ?? null,
-          result.metadata ? JSON.stringify(result.metadata) : null,
+          finalMetadata ? JSON.stringify(finalMetadata) : null,
           newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null)
         )
 

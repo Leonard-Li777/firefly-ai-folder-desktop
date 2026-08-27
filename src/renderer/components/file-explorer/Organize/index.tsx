@@ -155,7 +155,7 @@ export const Organize: React.FC = () => {
     loadFilesToOrganize
   } = useOrganizeState()
 
-  const isStandaloneStage = stage === 'batch-rename'
+  const isStandaloneStage = stage === 'batch-rename' || stage === 'batch-duplicate'
 
   const [inspectedFile, setInspectedFile] = useState<any | null>(null)
   const [duplicateSelectedCount, setDuplicateSelectedCount] = useState<number>(0)
@@ -327,28 +327,36 @@ export const Organize: React.FC = () => {
             )}
 
             {stage === 'batch-duplicate' && (
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => {
-                  const btn = document.getElementById('btn-trash-duplicates-trigger')
-                  if (btn) btn.click()
-                }}
-                disabled={isTrashingDuplicates || duplicateSelectedCount === 0}
-                className="text-xs gap-1.5 px-4 font-bold shadow-md h-8 shrink-0"
-              >
-                <MaterialIcon
-                  icon={isTrashingDuplicates ? 'sync' : 'delete_sweep'}
-                  className={cn('text-sm', isTrashingDuplicates && 'animate-spin')}
-                />
-                <span>
-                  {isTrashingDuplicates
-                    ? t('正在删除...')
-                    : duplicateSelectedCount > 0
-                      ? t('删除到回收站 ({count})', { count: duplicateSelectedCount })
-                      : t('删除到回收站')}
+              <>
+                <span
+                  className="text-xs text-muted-foreground font-medium px-2.5 py-1 bg-muted/30 rounded-md select-none shrink-0 truncate"
+                  title={t('本页是对真实目录物理文件处理')}
+                >
+                  {t('本页是对真实目录物理文件处理')}
                 </span>
-              </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    const btn = document.getElementById('btn-trash-duplicates-trigger')
+                    if (btn) btn.click()
+                  }}
+                  disabled={isTrashingDuplicates || duplicateSelectedCount === 0}
+                  className="text-xs gap-1.5 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
+                >
+                  <MaterialIcon
+                    icon={isTrashingDuplicates ? 'sync' : 'auto_fix_high'}
+                    className={cn('text-sm', isTrashingDuplicates && 'animate-spin')}
+                  />
+                  <span>
+                    {isTrashingDuplicates
+                      ? t('正在批量处理...')
+                      : duplicateSelectedCount > 0
+                        ? t('批量处理全部勾选 ({count})', { count: duplicateSelectedCount })
+                        : t('批量处理全部勾选')}
+                  </span>
+                </Button>
+              </>
             )}
 
             {stage === 'candidates' && (
@@ -540,6 +548,16 @@ export const Organize: React.FC = () => {
                   isExecuting={isExecutingRename}
                 />
               )}
+              {stage === 'batch-duplicate' && (
+                <BatchDuplicateView
+                  files={toOrganizeFiles}
+                  workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
+                  onExecuteTrash={trashDuplicateFiles}
+                  isTrashing={isTrashingDuplicates}
+                  onSelectedCountChange={setDuplicateSelectedCount}
+                  onFilesChanged={loadFilesToOrganize}
+                />
+              )}
             </div>
           ) : (
             <SplitPane
@@ -595,14 +613,14 @@ export const Organize: React.FC = () => {
                                 (incrementalVdId || currentVDir?.id || draft?.source === 'draft') &&
                                 hasClassifiedInTree
                               ) && (
-                                <span
-                                  className="text-amber-600 dark:text-amber-400 flex items-center gap-1 text-xs font-medium shrink min-w-0 truncate"
-                                  title={t('已过滤前次已整理文件')}
-                                >
-                                  <MaterialIcon icon="filter_alt" className="text-sm shrink-0" />
-                                  <span className="truncate">{t('已过滤前次已整理文件')}</span>
-                                </span>
-                              )}
+                                  <span
+                                    className="text-amber-600 dark:text-amber-400 flex items-center gap-1 text-xs font-medium shrink min-w-0 truncate"
+                                    title={t('已过滤前次已整理文件')}
+                                  >
+                                    <MaterialIcon icon="filter_alt" className="text-sm shrink-0" />
+                                    <span className="truncate">{t('已过滤前次已整理文件')}</span>
+                                  </span>
+                                )}
                             </div>
                             {/* 视图模式与显示设置 Mini 下拉弹窗 */}
                             <div className="shrink-0">
@@ -640,12 +658,12 @@ export const Organize: React.FC = () => {
                   content: (
                     <div className="h-full overflow-hidden flex flex-col">
                       {toOrganizeFiles.length === 0 &&
-                      stage === 'mode-select' &&
-                      !isSavedVDirOrganize &&
-                      !incrementalVdId &&
-                      !currentVDir?.id &&
-                      displayTree.length === 0 &&
-                      virtualDirectories.length === 0 ? (
+                        stage === 'mode-select' &&
+                        !isSavedVDirOrganize &&
+                        !incrementalVdId &&
+                        !currentVDir?.id &&
+                        displayTree.length === 0 &&
+                        virtualDirectories.length === 0 ? (
                         <EmptyState
                           icon="folder_off"
                           title={t('暂无待整理文件')}
@@ -682,17 +700,6 @@ export const Organize: React.FC = () => {
                             />
                           )}
 
-                          {stage === 'batch-duplicate' && (
-                            <BatchDuplicateView
-                              files={toOrganizeFiles}
-                              workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
-                              onExecuteTrash={trashDuplicateFiles}
-                              isTrashing={isTrashingDuplicates}
-                              onSelectedCountChange={setDuplicateSelectedCount}
-                              onFilesChanged={loadFilesToOrganize}
-                            />
-                          )}
-
                           {stage === 'mode-select' && (
                             <ModeSelectView
                               organizeMode={organizeMode}
@@ -705,82 +712,82 @@ export const Organize: React.FC = () => {
                             />
                           )}
 
-                        {stage === 'candidates' && (
-                          <CandidatesView
-                            candidates={candidates}
-                            isLoading={isGeneratingCandidates}
-                            organizeMode={organizeMode}
-                            onSelectCandidate={handleSelectCandidate}
-                            isLimitPredict={isLimitPredict}
-                            onRegenerate={generateCandidates}
-                          />
-                        )}
+                          {stage === 'candidates' && (
+                            <CandidatesView
+                              candidates={candidates}
+                              isLoading={isGeneratingCandidates}
+                              organizeMode={organizeMode}
+                              onSelectCandidate={handleSelectCandidate}
+                              isLimitPredict={isLimitPredict}
+                              onRegenerate={generateCandidates}
+                            />
+                          )}
 
-                        {stage === 'structure' && (
-                          <StructureView
-                            tree={displayTree}
-                            isReadOnly={isReadOnly}
-                            organizeMode={organizeMode}
-                            draft={draft}
-                            candidate={selectedCandidate}
-                            isGenerating={isGeneratingTree}
-                            onReorganize={() =>
-                              selectedCandidate && handleSelectCandidate(selectedCandidate)
-                            }
-                            onDeleteNode={handleDeleteTreeNode}
-                            onRenameNode={handleRenameTreeNode}
-                            onAddSubdir={handleAddSubdirTreeNode}
-                            onMoveNodeOrFile={handleMoveNodeOrFile}
-                            highFrequencyTags={highFrequencyTags}
-                            currentVDir={currentVDir}
-                          />
-                        )}
+                          {stage === 'structure' && (
+                            <StructureView
+                              tree={displayTree}
+                              isReadOnly={isReadOnly}
+                              organizeMode={organizeMode}
+                              draft={draft}
+                              candidate={selectedCandidate}
+                              isGenerating={isGeneratingTree}
+                              onReorganize={() =>
+                                selectedCandidate && handleSelectCandidate(selectedCandidate)
+                              }
+                              onDeleteNode={handleDeleteTreeNode}
+                              onRenameNode={handleRenameTreeNode}
+                              onAddSubdir={handleAddSubdirTreeNode}
+                              onMoveNodeOrFile={handleMoveNodeOrFile}
+                              highFrequencyTags={highFrequencyTags}
+                              currentVDir={currentVDir}
+                            />
+                          )}
 
-                        {stage === 'organizing' && (
-                          <OrganizingView
-                            tree={displayTree}
-                            progressInfo={progressInfo}
-                            isPaused={isPaused}
-                            organizeMode={organizeMode}
-                            draft={draft}
-                            candidate={selectedCandidate}
-                            toOrganizeFiles={toOrganizeFiles}
-                            highFrequencyTags={highFrequencyTags}
-                          />
-                        )}
+                          {stage === 'organizing' && (
+                            <OrganizingView
+                              tree={displayTree}
+                              progressInfo={progressInfo}
+                              isPaused={isPaused}
+                              organizeMode={organizeMode}
+                              draft={draft}
+                              candidate={selectedCandidate}
+                              toOrganizeFiles={toOrganizeFiles}
+                              highFrequencyTags={highFrequencyTags}
+                            />
+                          )}
 
-                        {stage === 'done' && (
-                          <DoneView
-                            tree={displayTree}
-                            organizeMode={organizeMode}
-                            onReorganize={handleReorganize}
-                            onRescue={() => handleRescue(true)}
-                            isRescuing={isRescuing}
-                            isAutoRescuing={isAutoRescuing}
-                            onAutoRescue={handleAutoRescue}
-                            hasRescueFailed={hasRescueFailed}
-                            progressInfo={progressInfo}
-                            draft={draft}
-                            candidate={selectedCandidate}
-                            currentVDir={currentVDir}
-                            options={options}
-                            setOptions={setOptions}
-                            onDeleteNode={handleDeleteTreeNode}
-                            onRenameNode={handleRenameTreeNode}
-                            onAddSubdir={handleAddSubdirTreeNode}
-                            onMoveNodeOrFile={handleMoveNodeOrFile}
-                            toOrganizeFiles={toOrganizeFiles}
-                            highFrequencyTags={highFrequencyTags}
-                          />
-                        )}
-                      </>
-                    )}
-                  </div>
-                )
-              }
-            ]}
-          />
-        )}
+                          {stage === 'done' && (
+                            <DoneView
+                              tree={displayTree}
+                              organizeMode={organizeMode}
+                              onReorganize={handleReorganize}
+                              onRescue={() => handleRescue(true)}
+                              isRescuing={isRescuing}
+                              isAutoRescuing={isAutoRescuing}
+                              onAutoRescue={handleAutoRescue}
+                              hasRescueFailed={hasRescueFailed}
+                              progressInfo={progressInfo}
+                              draft={draft}
+                              candidate={selectedCandidate}
+                              currentVDir={currentVDir}
+                              options={options}
+                              setOptions={setOptions}
+                              onDeleteNode={handleDeleteTreeNode}
+                              onRenameNode={handleRenameTreeNode}
+                              onAddSubdir={handleAddSubdirTreeNode}
+                              onMoveNodeOrFile={handleMoveNodeOrFile}
+                              toOrganizeFiles={toOrganizeFiles}
+                              highFrequencyTags={highFrequencyTags}
+                            />
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )
+                }
+              ]}
+            />
+          )}
           {!isWorkspaceActive && currentWorkspaceDirectory && (
             <RestrictedFeatureOverlay
               type={currentWorkspaceDirectory.type || 'SPEEDY'}

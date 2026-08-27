@@ -27,20 +27,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         className
       )}
     >
-      {/* 多层背景光晕，适配明暗模式 */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-tr from-primary/6 to-purple-500/6 dark:from-primary/12 dark:to-purple-500/12 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-gradient-to-bl from-indigo-500/4 to-cyan-500/4 dark:from-indigo-500/8 dark:to-cyan-500/8 rounded-full blur-2xl pointer-events-none" />
-
       <div className="relative z-10 text-center max-w-sm flex flex-col items-center">
         {/* 精美图标区域 */}
         <div className="relative mb-6">
-          {/* 外层光圈脉冲动画 */}
-          <div
-            className="absolute inset-0 w-20 h-20 rounded-2xl bg-gradient-to-tr from-primary/20 to-purple-500/20 dark:from-primary/30 dark:to-purple-500/30 animate-ping opacity-30"
-            style={{ animationDuration: '3s' }}
-          />
           {/* 主图标容器 */}
-          <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-tr from-primary/15 via-primary/10 to-purple-500/15 dark:from-primary/25 dark:via-primary/15 dark:to-purple-500/25 border border-primary/15 dark:border-primary/25 flex items-center justify-center shadow-lg shadow-primary/8 dark:shadow-primary/15">
+          <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-tr from-primary/15 via-primary/10 to-purple-500/15 dark:from-primary/25 dark:via-primary/15 dark:to-purple-500/25 border border-primary/15 dark:border-primary/25 flex items-center justify-center shadow-md shadow-primary/5 dark:shadow-primary/10">
             {/* 内部装饰圆点 */}
             {!isLoading && (
               <>

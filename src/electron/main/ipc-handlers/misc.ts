@@ -6,7 +6,6 @@ import { ipcMain, app, shell, BrowserWindow, clipboard } from 'electron'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { logger, LogCategory, ResourceLocator, getMimeTypeByExtension } from '@firefly/shared'
-import { omniService } from '../../runtime-services/system/omni-service'
 import { SystemIdentityService } from '../../runtime-services/system/system-identity-service'
 import { LicenseService, LicenseStatus } from '../../runtime-services/system/license-service'
 import { cloudAnalysisService } from '@firefly/server'
@@ -90,69 +89,38 @@ export function registerMiscIPCHandlers() {
       logger.debug(LogCategory.MAIN, '[IPC] 获取文件分析结果请求:', { filePath })
       let result = await databaseService.getFileAnalysisResult(filePath)
 
-      // 即时元数据补充防护：如果数据库没有该文件记录或者 metadata 为空，但物理文件实际存在，
-      // 则统一通过 Omni 引擎提取 Exif/媒体/格式元数据，保证详情面板中元数据 Tab 永远有内容呈现
-      if (fs.existsSync(filePath)) {
-        if (!result) {
-          try {
-            const stats = fs.statSync(filePath)
-            const ext = path.extname(filePath).replace(/^\./, '').toLowerCase()
-            const mimeType = getMimeTypeByExtension(ext)
-            const metaFull = await omniService.extractMetadataFull(filePath)
-            result = {
-              path: filePath,
-              name: path.basename(filePath),
-              size: stats.size,
-              type: ext.toUpperCase(),
-              mimeType,
-              createdAt: stats.birthtime,
-              modifiedAt: stats.mtime,
-              accessedAt: stats.atime,
-              isAnalyzed: false,
-              category: {
-                label: ext,
-                mime_type: mimeType,
-                description: `${ext.toUpperCase()} File`
-              },
-              metadata: metaFull
-            }
-          } catch (e) {
-            logger.warn(LogCategory.MAIN, '动态提取未入库文件元数据失败:', e)
-          }
-        } else {
-          // 深度元数据补充：如果数据库已有 metadata，但缺乏 Exif/媒体详细属性（如仅有 raw_smart_name/naming_template 等简易字段），
-          // 则即时通过 Omni 提取并深度合并 Exif 字段，绝不丢失真实图片尺寸、相机、分辨率与媒体属性
-          const meta = result.metadata || {}
-          const hasExifDetail =
-            Boolean(
-              meta.Make ||
-              meta.Model ||
-              meta.ImageWidth ||
-              meta.ImageSize ||
-              meta.Megapixels ||
-              meta.MIMEType ||
-              meta.camera ||
-              meta.exif ||
-              meta.imageSize ||
-              meta.ExposureTime ||
-              meta.FNumber ||
-              meta.duration ||
-              meta.audio ||
-              meta.video
-            )
-          if (!hasExifDetail) {
-            try {
-              const metaFull = await omniService.extractMetadataFull(filePath)
-              if (metaFull && Object.keys(metaFull).length > 0) {
-                result.metadata = {
-                  ...metaFull,
-                  ...meta // 保留数据库中记录的智能命名模板与 raw_smart_name
-                }
-              }
-            } catch (e) {
-              logger.warn(LogCategory.MAIN, '深度合并文件 Exif 元数据失败:', e)
+      // 兜底防护：如果数据库没有该文件记录，但物理文件实际存在，
+      // 仅读取基础文件系统属性返回，绝不调用 Omni 微服务消耗额外算力
+      if (!result && fs.existsSync(filePath)) {
+        try {
+          const stats = fs.statSync(filePath)
+          const ext = path.extname(filePath).replace(/^\./, '').toLowerCase()
+          const mimeType = getMimeTypeByExtension(ext)
+          result = {
+            path: filePath,
+            name: path.basename(filePath),
+            size: stats.size,
+            type: ext.toUpperCase(),
+            mimeType,
+            createdAt: stats.birthtime,
+            modifiedAt: stats.mtime,
+            accessedAt: stats.atime,
+            isAnalyzed: false,
+            category: {
+              label: ext,
+              mime_type: mimeType,
+              description: `${ext.toUpperCase()} File`
+            },
+            metadata: {
+              FileSize: stats.size,
+              FileCreateDate: stats.birthtime?.toISOString(),
+              FileModifyDate: stats.mtime?.toISOString(),
+              FileAccessDate: stats.atime?.toISOString(),
+              FileTypeExtension: ext.toUpperCase()
             }
           }
+        } catch (e) {
+          logger.warn(LogCategory.MAIN, '获取未入库物理文件基础属性失败:', e)
         }
       }
 

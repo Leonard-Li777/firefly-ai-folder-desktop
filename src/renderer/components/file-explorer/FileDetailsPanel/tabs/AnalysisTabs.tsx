@@ -413,16 +413,11 @@ export const AnalysisTabs: React.FC<any> = ({
                       return String(val)
                     }
 
-                    // 无意义字段集合与内部嵌套复用键名（递归全局过滤）
+                    // 仅过滤内部智能重命名暂存字段以及超长专有二进制 hex 码
                     const SKIP_KEYS = new Set([
                       'ExifToolVersion', // 工具版本号
                       'MakerNote', // 100KB+ 超长相机专有二进制 hex 码，避免卡顿
                       'ThumbnailImage', // 嵌入缩略图二进制字段
-                      'basic', // 已经由顶部卡片展示的冗余对象
-                      'image', // 已经由 Exif 属性扁平展开展示的冗余对象
-                      'exiftool', // 已经由顶级 Exif 属性直接展示的冗余对象
-                      'exif', // 已经由顶级扁平 Exif 属性展示的冗余子对象
-                      'magika', // 已经由顶部 Magika 卡片展示的冗余对象
                       'raw_smart_name', // 内部智能重命名暂存字段
                       'naming_template'
                     ])
@@ -498,13 +493,7 @@ export const AnalysisTabs: React.FC<any> = ({
                     }
 
                     const items = renderPairs(analysisResult.metadata)
-                    return items.length > 0 ? (
-                      items
-                    ) : (
-                      <p className="p-3 text-xs text-muted-foreground italic">
-                        {t('无有效键值对数据')}
-                      </p>
-                    )
+                    return items.length > 0 ? items : null
                   } catch (e) {
                     return (
                       <pre className="p-3 text-xs font-mono text-foreground whitespace-pre-wrap break-words">
@@ -514,11 +503,7 @@ export const AnalysisTabs: React.FC<any> = ({
                   }
                 })()}
               </div>
-            ) : (
-              <p className="text-xs text-muted-foreground italic p-3 bg-muted/20 rounded border border-border/30">
-                {t('暂无元数据')}
-              </p>
-            )}
+            ) : null}
           </div>
         )}
       </div>

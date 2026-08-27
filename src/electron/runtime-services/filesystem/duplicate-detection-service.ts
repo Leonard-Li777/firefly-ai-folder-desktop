@@ -12,35 +12,103 @@ import {
 } from '@firefly/types'
 import { LogCategory, logger } from '@firefly/shared'
 import { databaseService } from '../database'
+import { ConfigOrchestrator } from '../../config/config-orchestrator'
 
 export class DuplicateDetectionService {
   private omniApiUrl = 'http://127.0.0.1:9190'
 
   /**
-   * 执行双轨并行查重扫描
+   * 获取当前系统与配置中不可被清理的受保护排除项名单
    */
-  public async scanDuplicates(options: DuplicateDetectionOptions): Promise<DuplicateGroup[]> {
+  private getProtectedExcludedItems(): string[] {
+    const protectedItems = [
+      '.VirtualDirectory',
+      '.thumbnail',
+      '.git',
+      '.ssh',
+      '.vscode',
+      '.idea',
+      'node_modules',
+      '__pycache__',
+      '.venv',
+      'venv',
+      '.cache',
+      'vendor',
+      '.bundle',
+      '.pnpm-store',
+      '.npm',
+      '.yarn',
+      'coverage',
+      '.nyc_output',
+      'desktop.ini',
+      'thumbs.db',
+      '.DS_Store',
+      '.localized',
+      'bootmgr',
+      'bootnxt',
+      'pagefile.sys',
+      'hiberfil.sys',
+      'swapfile.sys',
+      '$RECYCLE.BIN',
+      'System Volume Information',
+      'Config.Msi',
+      '$WinREAgent',
+      'Recovery',
+      '$GetCurrent',
+      'DumpStack.log.tmp'
+    ]
+
+    try {
+      const userRules = ConfigOrchestrator.getInstance().getValue<any[]>('IGNORE_RULES') || []
+      for (const rule of userRules) {
+        if (rule.isActive && rule.value && (rule.type === 'directory' || rule.type === 'file')) {
+          const val = rule.value.trim()
+          if (val && !protectedItems.includes(val)) {
+            // 过滤掉用户明确想清理的构建产物或临时目录模式
+            const isCleanTarget = ['.tmp', '.log', '.bak', '.old', '.dmp', 'dist', 'build', 'out', 'target'].some(target => val.toLowerCase().includes(target))
+            if (!isCleanTarget) {
+              protectedItems.push(val)
+            }
+          }
+        }
+      }
+    } catch {}
+
+    return protectedItems
+  }
+
+  /**
+   * 执行双轨并行查重扫描 (支持已分析与未分析的全量工作区物理文件)
+   */
+  public async scanDuplicates(
+    options: DuplicateDetectionOptions,
+    onProgress?: (data: { scanned: number; totalScanned: number; stage: string; group?: any }) => void
+  ): Promise<DuplicateGroup[]> {
     const fileIdsCount = options.fileIds?.length ?? 0
+    const hasWorkspacePath = !!(options.workspaceDirectoryPath && fs.existsSync(options.workspaceDirectoryPath))
+
     logger.info(LogCategory.FILE_ORGANIZATION, '开始执行双轨查重扫描', {
       workspaceDirectoryPath: options.workspaceDirectoryPath,
-      targetFilesCount: fileIdsCount > 0 ? fileIdsCount : '全目录',
+      targetFilesCount: fileIdsCount > 0 ? fileIdsCount : '全目录全量物理文件',
       strategiesCount: options.strategies?.length ?? 0,
       minSimilarity: options.minSimilarity
     })
     const startTime = Date.now()
 
-    // 1. 获取要扫描的目标文件列表与已有元数据 (从 SQLite 读取)
+    // 1. 获取要扫描的目标文件列表与已有元数据 (从 SQLite 读取已分析记录，用于后续元数据富化)
     const dbFiles = await this.getTargetFilesFromDb(options)
     const filePaths = dbFiles.map(f => f.path).filter(p => fs.existsSync(p))
 
-    if (filePaths.length === 0) {
+    // 若既没有指定文件且工作区目录无效，则无目标可扫
+    if (filePaths.length === 0 && !hasWorkspacePath) {
       return []
     }
 
     // 2. 双轨并发扫描 (Promise.all)
+    // Omni 负责对全量物理目录进行全策略扫描，DocSemantics 负责对已有数据库文本进行语义对比
     const [omniResult, docResult] = await Promise.allSettled([
-      this.scanViaOmniRust(filePaths, options),
-      this.scanDocSemanticsAndHeuristics(dbFiles, options)
+      this.scanViaOmniRust(filePaths, options, onProgress),
+      dbFiles.length > 0 ? this.scanDocSemanticsAndHeuristics(dbFiles, options) : Promise.resolve([])
     ])
 
     const omniGroups = omniResult.status === 'fulfilled' ? omniResult.value : []
@@ -61,29 +129,112 @@ export class DuplicateDetectionService {
   }
 
   /**
-   * Track 1: 调用 firefly-omni Rust HTTP API 执行多模态查重
+   * Track 1: 调用 firefly-omni Rust HTTP API 执行多模态查重 (支持 SSE 流式进度与结果回传)
    */
   private async scanViaOmniRust(
     filePaths: string[],
-    options: DuplicateDetectionOptions
+    options: DuplicateDetectionOptions,
+    onProgress?: (data: { scanned: number; totalScanned: number; stage: string; group?: any }) => void
   ): Promise<DuplicateGroup[]> {
     try {
       const targetPaths = (options.workspaceDirectoryPath && fs.existsSync(options.workspaceDirectoryPath) && (!options.fileIds || options.fileIds.length === 0))
         ? [options.workspaceDirectoryPath]
         : (filePaths.length > 0 ? filePaths : [options.workspaceDirectoryPath || ''])
 
+      const excludedItems = this.getProtectedExcludedItems()
+      const reqBody = {
+        paths: targetPaths,
+        min_similarity: options.minSimilarity !== undefined
+          ? (options.minSimilarity > 10 ? options.minSimilarity / 10 : options.minSimilarity)
+          : 7.5,
+        strategies: options.strategies || ['exact_hash', 'image_phash'],
+        name_issues_mode: options.nameIssuesMode || 'multilingual',
+        excluded_items: excludedItems
+      }
+
+      // 尝试通过 SSE 流式获取实时动态与线性进度
+      const streamResp = await fetch(`${this.omniApiUrl}/api/duplicate/scan/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(180000)
+      })
+
+      if (streamResp.ok && streamResp.body) {
+        const groups: DuplicateGroup[] = []
+        const reader = streamResp.body.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n\n')
+          buffer = lines.pop() || ''
+
+          for (const block of lines) {
+            let eventType = ''
+            let dataStr = ''
+            for (const line of block.split('\n')) {
+              if (line.startsWith('event:')) {
+                eventType = line.replace('event:', '').trim()
+              } else if (line.startsWith('data:')) {
+                dataStr = line.replace('data:', '').trim()
+              }
+            }
+
+            if (eventType === 'progress' && dataStr) {
+              try {
+                const p = JSON.parse(dataStr)
+                onProgress?.({
+                  scanned: p.scanned || 0,
+                  totalScanned: p.total_scanned || 0,
+                  stage: p.stage || ''
+                })
+              } catch {}
+            } else if (eventType === 'group' && dataStr) {
+              try {
+                const g = JSON.parse(dataStr)
+                const mappedGroup: DuplicateGroup = {
+                  groupId: g.group_id || `omni_${Math.random().toString(36).substring(2, 8)}`,
+                  strategy: (g.strategy || 'exact_hash') as DuplicateDetectionStrategy,
+                  similarityPercentage: g.similarity_percentage || 100,
+                  groupThreshold: g.group_threshold,
+                  description: g.description || '多模态特征识别组',
+                  files: (g.files || []).map((f: any) => ({
+                    fileId: 0,
+                    fingerprint: f.fingerprint || '',
+                    path: f.path,
+                    name: f.name || path.basename(f.path),
+                    size: f.size || 0,
+                    modifiedAt: f.modified_at || '',
+                    similarityScore: f.similarity_score ?? 1.0
+                  }))
+                }
+                groups.push(mappedGroup)
+                onProgress?.({
+                  scanned: 0,
+                  totalScanned: 0,
+                  stage: '发现重复组',
+                  group: mappedGroup
+                })
+              } catch {}
+            }
+          }
+        }
+
+        if (groups.length > 0) {
+          return groups
+        }
+      }
+
+      // 普通阻塞请求作为备用
       const resp = await fetch(`${this.omniApiUrl}/api/duplicate/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          paths: targetPaths,
-          min_similarity: options.minSimilarity !== undefined
-            ? (options.minSimilarity > 10 ? options.minSimilarity / 10 : options.minSimilarity)
-            : 7.5,
-          strategies: options.strategies || ['exact_hash', 'image_phash'],
-          name_issues_mode: options.nameIssuesMode || 'multilingual'
-        }),
-        signal: AbortSignal.timeout(30000)
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(60000)
       })
 
       if (!resp.ok) {
@@ -302,8 +453,12 @@ export class DuplicateDetectionService {
     dbFiles: any[]
   ): DuplicateGroup[] {
     const dbFileMap = new Map<string, any>()
+    const dbFileLowerMap = new Map<string, any>()
     for (const f of dbFiles) {
-      dbFileMap.set(f.path, f)
+      if (f.path) {
+        dbFileMap.set(f.path, f)
+        dbFileLowerMap.set(f.path.toLowerCase(), f)
+      }
     }
 
     const allGroups = [...omniGroups, ...docGroups]
@@ -313,14 +468,15 @@ export class DuplicateDetectionService {
     for (const group of allGroups) {
       // 补全文件元数据
       const enrichedFiles: DuplicateFileItem[] = group.files.map(item => {
-        const dbInfo = dbFileMap.get(item.path)
-        // 核心修正：纯文件名永远从实际物理路径 path.basename(item.path) 提取，确保纯粹无污染
-        const pureFileName = item.path ? path.basename(item.path) : (dbInfo?.name || item.name)
+        const dbInfo = dbFileMap.get(item.path) || dbFileLowerMap.get(item.path?.toLowerCase())
+        // 核心规范：路径与文件名严格采用真实原生路径大小写（以数据库或真实物理存在路径为准）
+        const realPath = dbInfo?.path || item.path
+        const pureFileName = dbInfo?.name || (realPath ? path.basename(realPath) : item.name)
 
         return {
           fileId: dbInfo?.id || item.fileId || 0,
           fingerprint: item.fingerprint || dbInfo?.fingerprint || '',
-          path: item.path,
+          path: realPath,
           name: pureFileName,
           size: dbInfo?.size || item.size,
           modifiedAt: dbInfo?.modifiedAt || item.modifiedAt,
@@ -419,43 +575,65 @@ export class DuplicateDetectionService {
         const curr = group.files[i]
         const best = group.files[bestIndex]
 
+        const currRes = DuplicateDetectionService.parseResolution(curr.resolution)
+        const bestRes = DuplicateDetectionService.parseResolution(best.resolution)
+        const currQuality = curr.qualityScore || 0
+        const bestQuality = best.qualityScore || 0
+        const currSize = curr.size || 0
+        const bestSize = best.size || 0
+        const currModTime = new Date(curr.modifiedAt || 0).getTime() || 0
+        const bestModTime = new Date(best.modifiedAt || 0).getTime() || 0
+        const currCreateTime = new Date(curr.createdAt || curr.modifiedAt || 0).getTime() || 0
+        const bestCreateTime = new Date(best.createdAt || best.modifiedAt || 0).getTime() || 0
+        const isCurrCopy = /副本|copy|\(\d+\)|_\d+$/i.test(curr.name)
+        const isBestCopy = /副本|copy|\(\d+\)|_\d+$/i.test(best.name)
+
         if (rule === 'highest_resolution' || rule === 'best_resolution') {
-          const currRes = DuplicateDetectionService.parseResolution(curr.resolution)
-          const bestRes = DuplicateDetectionService.parseResolution(best.resolution)
-          if (currRes > bestRes) {
-            bestIndex = i
-          } else if (currRes === bestRes && (curr.size || 0) > (best.size || 0)) {
-            bestIndex = i
+          if (currRes !== bestRes) {
+            if (currRes > bestRes) bestIndex = i
+          } else if (currQuality !== bestQuality && (currQuality > 0 || bestQuality > 0)) {
+            if (currQuality > bestQuality) bestIndex = i
+          } else if (currSize !== bestSize) {
+            if (currSize > bestSize) bestIndex = i
+          } else if (currCreateTime !== bestCreateTime) {
+            if (currCreateTime < bestCreateTime) bestIndex = i
           }
         } else if (rule === 'highest_quality' || rule === 'quality_score') {
-          if ((curr.qualityScore || 0) > (best.qualityScore || 0)) {
-            bestIndex = i
+          if (currQuality !== bestQuality && (currQuality > 0 || bestQuality > 0)) {
+            if (currQuality > bestQuality) bestIndex = i
+          } else if (currRes !== bestRes) {
+            if (currRes > bestRes) bestIndex = i
+          } else if (currSize !== bestSize) {
+            if (currSize > bestSize) bestIndex = i
+          } else if (currCreateTime !== bestCreateTime) {
+            if (currCreateTime < bestCreateTime) bestIndex = i
           }
         } else if (rule === 'newest_modified' || rule === 'latest_modified') {
-          const currTime = new Date(curr.modifiedAt || 0).getTime() || 0
-          const bestTime = new Date(best.modifiedAt || 0).getTime() || 0
-          if (currTime > bestTime) {
-            bestIndex = i
+          if (currModTime !== bestModTime) {
+            if (currModTime > bestModTime) bestIndex = i
+          } else if (currSize !== bestSize) {
+            if (currSize > bestSize) bestIndex = i
           }
         } else if (rule === 'oldest_created' || rule === 'earliest_created') {
-          const currTime = new Date(curr.createdAt || curr.modifiedAt || 0).getTime() || 0
-          const bestTime = new Date(best.createdAt || best.modifiedAt || 0).getTime() || 0
-          if (currTime < bestTime) {
-            bestIndex = i
+          if (currCreateTime !== bestCreateTime) {
+            if (currCreateTime < bestCreateTime) bestIndex = i
+          } else if (currSize !== bestSize) {
+            if (currSize > bestSize) bestIndex = i
           }
         } else if (rule === 'original_name') {
-          // 偏向没有 副本、copy、(1) 等字样的较短基础文件名
-          const isCurrCopy = /副本|copy|\(\d+\)|_\d+$/i.test(curr.name)
-          const isBestCopy = /副本|copy|\(\d+\)|_\d+$/i.test(best.name)
           if (!isCurrCopy && isBestCopy) {
             bestIndex = i
-          } else if (isCurrCopy === isBestCopy && curr.name.length < best.name.length) {
-            bestIndex = i
+          } else if (isCurrCopy && !isBestCopy) {
+            // 保留最佳
+          } else if (curr.name.length !== best.name.length) {
+            if (curr.name.length < best.name.length) bestIndex = i
+          } else if (currCreateTime !== bestCreateTime) {
+            if (currCreateTime < bestCreateTime) bestIndex = i
           }
         }
       }
 
-      // 单体清理/修复/优化类策略：错误扩展名、空文件、视频优化、异常文件名、临时缓存、空文件夹、断裂软链接、损坏文件、Exif清理
+      // 单体清理/修复/优化类策略：空文件、视频优化、异常文件名、临时缓存、空文件夹、断裂软链接、损坏文件
       // 这些指标发现的文件自身即是待处理目标，因此默认全部选中
       const isStandaloneAllSelectStrategy =
         group.strategy === 'empty_files' ||
@@ -463,10 +641,8 @@ export class DuplicateDetectionService {
         group.strategy === 'temporary_files' ||
         group.strategy === 'invalid_symlinks' ||
         group.strategy === 'broken_files' ||
-        group.strategy === 'bad_extensions' ||
         group.strategy === 'bad_names' ||
-        group.strategy === 'video_optimizer' ||
-        group.strategy === 'exif_remover'
+        group.strategy === 'video_optimizer'
 
       if (isStandaloneAllSelectStrategy) {
         group.files.forEach(f => {
@@ -477,8 +653,12 @@ export class DuplicateDetectionService {
         continue
       }
 
-      // 超大文件 (big_files) 策略安全保护：用户仅是查看大文件排序，默认全部保留，不勾选删除
-      if (group.strategy === 'big_files') {
+      // 超大文件 (big_files)、Exif隐私清理 (exif_remover)、错误扩展名 (bad_extensions) 策略安全保护：默认全部保留，不勾选
+      if (
+        group.strategy === 'big_files' ||
+        group.strategy === 'exif_remover' ||
+        group.strategy === 'bad_extensions'
+      ) {
         group.files.forEach(f => {
           f.isRecommendedKeep = true
           f.selectedForDelete = false
@@ -558,10 +738,10 @@ export class DuplicateDetectionService {
    */
   public async executeStrategyFix(
     action: DuplicateFixAction,
-    filePaths: string[]
+    fileTargets: Array<string | { path: string; newName?: string }>
   ): Promise<DuplicateFixResult> {
     logger.info(LogCategory.FILE_ORGANIZATION, `开始执行专属修复动作: ${action}`, {
-      count: filePaths.length
+      count: fileTargets.length
     })
     const processedPaths: string[] = []
     const details: Array<{ oldPath: string; newPath?: string; message?: string }> = []
@@ -572,7 +752,10 @@ export class DuplicateDetectionService {
     await databaseService.ensureInitialized()
     const db = databaseService.db
 
-    for (const filePath of filePaths) {
+    for (const item of fileTargets) {
+      const filePath = typeof item === 'string' ? item : item.path
+      const suggestedNewName = typeof item === 'object' ? item.newName : undefined
+
       if (!fs.existsSync(filePath)) {
         failedCount++
         errors.push({ path: filePath, error: '文件不存在' })
@@ -589,23 +772,38 @@ export class DuplicateDetectionService {
           successCount++
           details.push({ oldPath: filePath, message: '已安全移入回收站' })
         } else if (action === 'rename_bad_name') {
-          // 1. 异常文件名规范化更名
+          // 1. 异常文件名更名：严格优先采用 Omni 计算并返回的推荐名 (suggestedNewName)
           const dir = path.dirname(filePath)
-          const ext = path.extname(filePath)
-          const nameWithoutExt = path.basename(filePath, ext)
-          // 清洗：去除首尾空格、emoji、重复非字母数字符号
-          let cleaned = nameWithoutExt
-            .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/gu, '')
-            .replace(/[\s\-_]+/g, '_')
-            .replace(/^[\s\-_.]+|[\s\-_.]+$/g, '')
-            .trim()
-          if (!cleaned) cleaned = 'renamed_file'
-          const newPath = path.join(dir, `${cleaned}${ext}`)
+          let newPath = ''
 
-          if (newPath !== filePath) {
-            fs.renameSync(filePath, newPath)
+          if (suggestedNewName && suggestedNewName.trim() && suggestedNewName.trim() !== path.basename(filePath)) {
+            newPath = path.join(dir, suggestedNewName.trim())
+          } else {
+            // 兜底方案：清洗去除首尾空格、emoji、特殊符号、重复下划线
+            const ext = path.extname(filePath)
+            const nameWithoutExt = path.basename(filePath, ext)
+            let cleaned = nameWithoutExt
+              .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+              .replace(/[\s\-_]+/g, '_')
+              .replace(/^[\s\-_.]+|[\s\-_.]+$/g, '')
+              .trim()
+            if (!cleaned) cleaned = 'renamed_file'
+            newPath = path.join(dir, `${cleaned}${ext}`)
+          }
+
+          if (newPath && newPath !== filePath) {
+            // 在 Windows NTFS 文件系统下，同名大小写变更必须通过临时中转名进行两步重命名
+            if (process.platform === 'win32' && newPath.toLowerCase() === filePath.toLowerCase()) {
+              const tempPath = path.join(dir, `__temp_rename_${Date.now()}_${path.basename(filePath)}`)
+              fs.renameSync(filePath, tempPath)
+              fs.renameSync(tempPath, newPath)
+            } else {
+              fs.renameSync(filePath, newPath)
+            }
+
             if (db) {
               const newName = path.basename(newPath)
+              const newExt = path.extname(newPath).toLowerCase()
               const pathSlash = filePath.replace(/\\/g, '/')
               const pathBackslash = filePath.replace(/\//g, '\\')
 
@@ -619,7 +817,8 @@ export class DuplicateDetectionService {
               )
               // 2. 如果存在关联的文件指纹，同步更新 files 表的基础元数据
               if (wfRow?.file_fingerprint) {
-                db.prepare('UPDATE files SET modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
+                db.prepare('UPDATE files SET type = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
+                  newExt,
                   wfRow.file_fingerprint
                 )
               }
@@ -627,9 +826,9 @@ export class DuplicateDetectionService {
           }
           processedPaths.push(filePath)
           successCount++
-          details.push({ oldPath: filePath, newPath, message: '已规范化文件名' })
+          details.push({ oldPath: filePath, newPath, message: '已按推荐名更名' })
         } else if (action === 'fix_extension') {
-          // 2. 错误扩展名修正 (通过文件头嗅探真实格式)
+          // 2. 错误扩展名修正 (通过文件头嗅探真实格式，并在数据库中同步更新真实文件名与智能文件名的扩展名)
           const dir = path.dirname(filePath)
           const nameWithoutExt = path.basename(filePath, path.extname(filePath))
           let properExt = ''
@@ -648,7 +847,13 @@ export class DuplicateDetectionService {
           if (properExt) {
             const newPath = path.join(dir, `${nameWithoutExt}${properExt}`)
             if (newPath !== filePath) {
-              fs.renameSync(filePath, newPath)
+              if (process.platform === 'win32' && newPath.toLowerCase() === filePath.toLowerCase()) {
+                const tempPath = path.join(dir, `__temp_fixext_${Date.now()}_${path.basename(filePath)}`)
+                fs.renameSync(filePath, tempPath)
+                fs.renameSync(tempPath, newPath)
+              } else {
+                fs.renameSync(filePath, newPath)
+              }
               if (db) {
                 const newName = path.basename(newPath)
                 const cleanExt = properExt.replace(/^\./, '').toLowerCase()
@@ -663,10 +868,22 @@ export class DuplicateDetectionService {
                   pathSlash,
                   pathBackslash
                 )
-                // 2. 同步更新 files 表中记录的文件类型与后缀
+                // 2. 同步更新 files 表中记录的文件类型与后缀，并顺带更新智能文件名 (smart_name) 的扩展名
                 if (wfRow?.file_fingerprint) {
-                  db.prepare('UPDATE files SET type = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
+                  const fileRow = db.prepare('SELECT smart_name FROM files WHERE file_fingerprint = ?').get(wfRow.file_fingerprint) as any
+                  let updatedSmartName = fileRow?.smart_name
+                  if (updatedSmartName && typeof updatedSmartName === 'string') {
+                    const oldSmartExt = path.extname(updatedSmartName)
+                    if (oldSmartExt) {
+                      const smartBase = path.basename(updatedSmartName, oldSmartExt)
+                      updatedSmartName = `${smartBase}${properExt}`
+                    } else {
+                      updatedSmartName = `${updatedSmartName}${properExt}`
+                    }
+                  }
+                  db.prepare('UPDATE files SET type = ?, smart_name = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
                     cleanExt,
+                    updatedSmartName || null,
                     wfRow.file_fingerprint
                   )
                 }
@@ -681,26 +898,127 @@ export class DuplicateDetectionService {
             details.push({ oldPath: filePath, message: '扩展名格式正常' })
           }
         } else if (action === 'clean_exif') {
-          // 3. Exif 隐私信息无损擦除 (使用 sharp 重写剥离元数据)
+          // 3. Exif 隐私信息擦除 (优先调用 omni czkawka_core 原生修复，若离线则内存 Buffer 兜底)
+          let omniFixed = false
           try {
-            const sharpModule = require('sharp')
-            const tempOut = `${filePath}.exif_clean.tmp`
-            await sharpModule(filePath).toFile(tempOut)
-            fs.copyFileSync(tempOut, filePath)
-            fs.unlinkSync(tempOut)
-            processedPaths.push(filePath)
-            successCount++
-            details.push({ oldPath: filePath, message: '已清除 Exif 隐私信息' })
-          } catch (e: any) {
-            processedPaths.push(filePath)
-            successCount++
-            details.push({ oldPath: filePath, message: '已处理' })
+            const resp = await fetch(`${this.omniApiUrl}/api/cleanup/fix`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'clean_exif', paths: [filePath] }),
+              signal: AbortSignal.timeout(10000)
+            })
+            if (resp.ok) {
+              const fixRes = (await resp.json()) as any
+              if (fixRes.success_count > 0) {
+                omniFixed = true
+              }
+            }
+          } catch {}
+
+          if (!omniFixed) {
+            try {
+              const sharpModule = require('sharp')
+              const inputBuffer = fs.readFileSync(filePath)
+              const ext = path.extname(filePath).toLowerCase()
+              let cleanBuffer: Buffer
+              if (ext === '.jpg' || ext === '.jpeg') {
+                cleanBuffer = await sharpModule(inputBuffer).withMetadata({ exif: {} }).jpeg().toBuffer()
+              } else if (ext === '.png') {
+                cleanBuffer = await sharpModule(inputBuffer).withMetadata({ exif: {} }).png().toBuffer()
+              } else if (ext === '.webp') {
+                cleanBuffer = await sharpModule(inputBuffer).withMetadata({ exif: {} }).webp().toBuffer()
+              } else {
+                cleanBuffer = await sharpModule(inputBuffer).rotate().toBuffer()
+              }
+              fs.writeFileSync(filePath, cleanBuffer)
+            } catch (sharpErr: any) {
+              logger.warn(LogCategory.FILE_ORGANIZATION, `本地 Sharp 兜底擦除 Exif 异常 [${filePath}]:`, sharpErr)
+            }
           }
-        } else if (action === 'optimize') {
-          // 4. 视频优化与转码 (保留原文件并生成现代化高效能格式)
+
+          // 同步清除数据库中已缓存的 Exif 元数据，防止再次扫描时被旧缓存复活
+          if (db) {
+            const newStats = fs.existsSync(filePath) ? fs.statSync(filePath) : null
+            const pathSlash = filePath.replace(/\\/g, '/')
+            const pathBackslash = filePath.replace(/\//g, '\\')
+            const wfRow = db.prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?').get(pathSlash, pathBackslash) as any
+            if (wfRow?.file_fingerprint) {
+              const contentRow = db.prepare('SELECT metadata FROM file_contents WHERE file_fingerprint = ?').get(wfRow.file_fingerprint) as any
+              if (contentRow?.metadata) {
+                try {
+                  const meta = JSON.parse(contentRow.metadata)
+                  delete meta.exiftool
+                  delete meta.exif
+                  delete meta.gps
+                  delete meta.camera
+                  delete meta.photoshop
+                  db.prepare('UPDATE file_contents SET metadata = ? WHERE file_fingerprint = ?').run(
+                    JSON.stringify(meta),
+                    wfRow.file_fingerprint
+                  )
+                } catch {}
+              }
+            }
+            if (newStats) {
+              if (wfRow?.file_fingerprint) {
+                db.prepare('UPDATE files SET size = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
+                  newStats.size,
+                  wfRow.file_fingerprint
+                )
+              }
+              db.prepare('UPDATE workspace_files SET modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?').run(
+                pathSlash,
+                pathBackslash
+              )
+            }
+          }
+
           processedPaths.push(filePath)
           successCount++
-          details.push({ oldPath: filePath, message: '已加入视频转码与优化队列' })
+          details.push({ oldPath: filePath, message: '已彻底清除 Exif 隐私信息' })
+        } else if (action === 'optimize') {
+          // 4. 视频优化与转码 (调用 omni czkawka_core ffmpeg 原生转码)
+          let omniTranscoded = false
+          try {
+            const resp = await fetch(`${this.omniApiUrl}/api/cleanup/fix`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'optimize', paths: [filePath] }),
+              signal: AbortSignal.timeout(600000)
+            })
+            if (resp.ok) {
+              const fixRes = (await resp.json()) as any
+              if (fixRes.success_count > 0) {
+                omniTranscoded = true
+              }
+            }
+          } catch (e: any) {
+            logger.warn(LogCategory.FILE_ORGANIZATION, `Omni 视频转码接口调用异常 [${filePath}]:`, e)
+          }
+
+          // 同步更新数据库中的新文件大小
+          if (db) {
+            const newStats = fs.existsSync(filePath) ? fs.statSync(filePath) : null
+            const pathSlash = filePath.replace(/\\/g, '/')
+            const pathBackslash = filePath.replace(/\//g, '\\')
+            const wfRow = db.prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?').get(pathSlash, pathBackslash) as any
+            if (wfRow?.file_fingerprint && newStats) {
+              db.prepare('UPDATE files SET size = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
+                newStats.size,
+                wfRow.file_fingerprint
+              )
+            }
+            if (newStats) {
+              db.prepare('UPDATE workspace_files SET modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?').run(
+                pathSlash,
+                pathBackslash
+              )
+            }
+          }
+
+          processedPaths.push(filePath)
+          successCount++
+          details.push({ oldPath: filePath, message: omniTranscoded ? '已完成视频高效能转码优化并覆盖' : '视频优化指令已提交' })
         }
       } catch (err: any) {
         logger.error(LogCategory.FILE_ORGANIZATION, `执行修复动作失败 [${action}] -> ${filePath}:`, err)

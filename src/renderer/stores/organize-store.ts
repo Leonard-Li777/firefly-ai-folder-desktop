@@ -143,7 +143,17 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
       }
     }),
 
-  setActiveBranch: activeBranch => set({ activeBranch }),
+  setActiveBranch: activeBranch =>
+    set(state => {
+      const stage = activeBranch === 'organize' ? (state.stage === 'batch-duplicate' || state.stage === 'batch-rename' || state.stage === 'batch-tag' ? 'root-mode-select' : state.stage) : activeBranch
+      const prevVisited = state.visitedStages || ['root-mode-select']
+      const newVisited = prevVisited.includes(stage) ? prevVisited : [...prevVisited, stage]
+      return {
+        activeBranch,
+        stage,
+        visitedStages: newVisited
+      }
+    }),
   addVisitedStage: stage =>
     set(state => ({
       visitedStages: (state.visitedStages || []).includes(stage)

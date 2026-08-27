@@ -624,10 +624,17 @@ const electronAPI = {
       ipcRenderer.invoke('delete-tag-globally', dimensionId, tagName),
     scanDuplicates: (options: any): Promise<any[]> =>
       ipcRenderer.invoke('duplicate:scan', options),
+    onScanProgress: (callback: (data: any) => void): (() => void) => {
+      const handler = (_: any, data: any) => callback(data)
+      ipcRenderer.on('duplicate:scan-progress', handler)
+      return () => ipcRenderer.removeListener('duplicate:scan-progress', handler)
+    },
     trashDuplicates: (filePaths: string[]): Promise<any> =>
       ipcRenderer.invoke('duplicate:trash', filePaths),
-    executeStrategyFix: (action: any, filePaths: string[]): Promise<any> =>
-      ipcRenderer.invoke('duplicate:execute-fix', action, filePaths),
+    executeStrategyFix: (
+      action: any,
+      fileTargets: Array<string | { path: string; newName?: string }>
+    ): Promise<any> => ipcRenderer.invoke('duplicate:execute-fix', action, fileTargets),
     applyKeepRule: (groups: any[], rule: string): Promise<any[]> =>
       ipcRenderer.invoke('duplicate:apply-keep-rule', groups, rule),
     getEffectiveDirectoryConfig: (dirPath: string): Promise<any> =>

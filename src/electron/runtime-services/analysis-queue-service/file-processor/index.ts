@@ -39,9 +39,9 @@ import {
   FileDimensionService,
   TextFileProcessor,
   extractPureLyrics,
-  metadataExtractionService,
   type FileInfoInput
 } from '@firefly/core-engine'
+import { omniService } from '../../system/omni-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
 import { anydocService, AnydocAsset } from '../../system/anydoc-service'
 import { cloudAnalysisService } from '@firefly/server'
@@ -589,13 +589,46 @@ export class FileProcessor {
           existingBasicData.category || null
         )
 
+        let baseMetadata = existingBasicData.metadata || {}
+        // 健壮性保障：如果数据库现有 metadata 为空或缺乏 Exif 详细属性（如历史只存了 raw_smart_name 等），通过 Omni 补捞
+        const hasExifDetail =
+          Boolean(
+            baseMetadata.Make ||
+            baseMetadata.Model ||
+            baseMetadata.ImageWidth ||
+            baseMetadata.ImageSize ||
+            baseMetadata.Megapixels ||
+            baseMetadata.MIMEType ||
+            baseMetadata.camera ||
+            baseMetadata.exif ||
+            baseMetadata.imageSize ||
+            baseMetadata.ExposureTime ||
+            baseMetadata.FNumber ||
+            baseMetadata.duration ||
+            baseMetadata.audio ||
+            baseMetadata.video
+          )
+        if (!hasExifDetail) {
+          try {
+            const extractedMeta = await omniService.extractMetadataFull(filePath)
+            if (extractedMeta && Object.keys(extractedMeta).length > 0) {
+              baseMetadata = {
+                ...extractedMeta,
+                ...baseMetadata
+              }
+            }
+          } catch (e) {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] GPU阶段补捞 Omni 元数据失败:', e)
+          }
+        }
+
         const fileInfo: FileInfoInput = {
           path: filePath,
           name: enhancedInfo.smartName,
           type: enhancedInfo.fileType,
           size: currentStats.size,
           content: existingBasicData.content || '',
-          metadata: existingBasicData.metadata || {}
+          metadata: baseMetadata
         }
 
         const thumbnailRelativePath = existingBasicData.thumbnailPath || undefined
@@ -883,23 +916,22 @@ export class FileProcessor {
             }
           })(),
 
-          // 3. ExifTool 元数据提取（带 3s 超时与空对象降级，失败不影响主流程）
+          // 3. Omni 元数据与 Exif 提取（纯粹基于高性能 Omni Rust 原生引擎）
           (async () => {
             const tStart = Date.now()
             try {
-              const res = await Promise.race([
-                metadataExtractionService.extractMetadataFull(filePath),
-                new Promise<Record<string, any>>((_, reject) =>
-                  setTimeout(() => reject(new Error('ExifTool 元数据提取超时(3s)')), 3000)
-                )
-              ])
+              const res = await omniService.extractMetadataFull(filePath)
               stage1MetadataMs = Date.now() - tStart
-              return res
+              logger.info(
+                LogCategory.ANALYSIS_QUEUE,
+                `[分析队列] Omni 元数据提取成功: ${item.name}, 耗时: ${stage1MetadataMs}ms, 字段数: ${Object.keys(res || {}).length}`
+              )
+              return res || {}
             } catch (err: any) {
               stage1MetadataMs = Date.now() - tStart
               logger.warn(
                 LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] 并行 ExifTool 提取失败或超时: ${err.message}`
+                `[分析队列] Omni 元数据提取失败: ${item.name}, 耗时: ${stage1MetadataMs}ms: ${err.message}`
               )
               return {}
             }
@@ -1121,15 +1153,15 @@ export class FileProcessor {
       if (!initialMetadata || Object.keys(initialMetadata).length === 0) {
         if (existingBasicData.metadata && Object.keys(existingBasicData.metadata).length > 0) {
           initialMetadata = existingBasicData.metadata
-        } else if (!needsNewHash) {
-          // 仅在未走 Stage 1 主路径（不需要新哈希）时尝试补捞 ExifTool
+        } else {
+          // 若数据库中无现有元数据，无条件通过 Omni 补捞完整元数据
           const tExifStart = Date.now()
-          initialMetadata = await Promise.race([
-            metadataExtractionService.extractMetadataFull(filePath),
-            new Promise<Record<string, any>>((_, reject) =>
-              setTimeout(() => reject(new Error('ExifTool fallback 超时(1.5s)')), 1500)
-            )
-          ]).catch(() => ({}))
+          try {
+            initialMetadata = (await omniService.extractMetadataFull(filePath)) || {}
+          } catch (e: any) {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, `[分析队列] Omni 补捞元数据异常: ${item.name}`, e)
+            initialMetadata = {}
+          }
           if (stage1MetadataMs === 0) {
             stage1MetadataMs = Date.now() - tExifStart
           }
@@ -1152,8 +1184,8 @@ export class FileProcessor {
       let markitdownBenchmark: MarkitdownBenchmark | undefined = undefined
 
       const extractPages = ConfigOrchestrator.getInstance().getValue<number>('EXTRACT_PAGES') ?? 2
-      const enableDocumentOcr =
-        ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_DOCUMENT_OCR') ?? false
+      const maxDocOcrItems =
+        ConfigOrchestrator.getInstance().getValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
       const enableImageOcr =
         ConfigOrchestrator.getInstance().getValue<boolean>('ENABLE_IMAGE_OCR') ?? false
       const ocrModelSize =
@@ -1266,13 +1298,13 @@ export class FileProcessor {
 
           // OCR 仅对图片与文档类生效：
           // - 图片受 ENABLE_IMAGE_OCR 控制
-          // - 文档类（DOCUMENT/OFFICE/PDF）受 ENABLE_DOCUMENT_OCR 控制
+          // - 文档类（DOCUMENT/OFFICE/PDF）受 MAX_DOCUMENT_OCR_ITEMS !== 0 控制
           // - 其它类型（应用/压缩包/音视频/电子书等）一律不请求 OCR
           const isDocumentLike =
             fileCategory === FileCategory.DOCUMENT ||
             fileCategory === FileCategory.OFFICE ||
             effectiveExt === '.pdf'
-          const useOcr = isImage ? enableImageOcr : isDocumentLike ? enableDocumentOcr : false
+          const useOcr = isImage ? enableImageOcr : isDocumentLike ? maxDocOcrItems !== 0 : false
           const serverOptions: any = {}
           const needsServerThumbnail =
             !isNativeImage && !existingBasicData.thumbnailPath && isOfficeOrPdf
@@ -1491,37 +1523,54 @@ export class FileProcessor {
         }
       }
 
-      // 重新计算与整合完整的 markitdownBenchmark (包含 Stage 1 Magika/Metadata、Anydoc 及 TextFileProcessor 细分耗时)
+      // 重新计算与整合完整的 markitdownBenchmark (优先使用 Omni 引擎高精度原生 benchmark 细分耗时)
+      const omniBm = anydocResult?.benchmark
       const serverBenchmark = extractMarkitdownBenchmark(serverResult ?? undefined)
       const phases = typeof timer?.getPhases === 'function' ? timer.getPhases() : {}
       const hashIdentifyMs =
         phases['hashAndTypeIdentification'] || phases['hashIdentify'] || phases['哈希与类型识别']
       const localTextMs = phases['contentExtraction'] || phases['文本提取']
 
-      const stage2MagikaMs = serverBenchmark?.magikaMs ?? (stage1MagikaMs > 0 ? stage1MagikaMs : 0)
+      const stage2MagikaMs =
+        omniBm?.magika_ms ??
+        serverBenchmark?.magikaMs ??
+        (stage1MagikaMs > 0 ? stage1MagikaMs : 0)
       const stage2MetadataMs =
-        serverBenchmark?.metadataMs ?? (stage1MetadataMs > 0 ? stage1MetadataMs : 0)
+        omniBm?.metadata_ms ??
+        serverBenchmark?.metadataMs ??
+        (stage1MetadataMs > 0 ? stage1MetadataMs : 0)
       const stage2TextMs =
-        anydocDurationMs > 0 ? anydocDurationMs : (serverBenchmark?.textMs ?? (localTextMs || 0))
+        omniBm?.text_ms ??
+        (anydocDurationMs > 0 ? anydocDurationMs : (serverBenchmark?.textMs ?? (localTextMs || 0)))
+      const stage2DocMs = omniBm?.document_ms ?? serverBenchmark?.documentMs
+      const stage2OcrMs =
+        omniBm?.ocr_ms ?? (serverResult?.ocrMs || serverBenchmark?.ocrMs || undefined)
       const stage2OtherMs =
         (serverResult?.officePrePdfMs || serverBenchmark?.officePrePdfMs || 0) +
-        (serverBenchmark?.documentMs || 0) +
-        (serverResult?.ocrMs || serverBenchmark?.ocrMs || 0) +
-        (serverBenchmark?.htmlMs || 0) +
-        (serverResult?.thumbnailMs || serverBenchmark?.thumbnailMs || 0)
-      const calculatedTotalMs = stage2MagikaMs + stage2MetadataMs + stage2TextMs + stage2OtherMs
+        (stage2DocMs || 0) +
+        (stage2OcrMs || 0) +
+        (omniBm?.html_ms || serverBenchmark?.htmlMs || 0) +
+        (omniBm?.thumbnail_ms || serverResult?.thumbnailMs || serverBenchmark?.thumbnailMs || 0)
+      const calculatedTotalMs =
+        omniBm?.total_ms ?? (stage2MagikaMs + stage2MetadataMs + stage2TextMs + stage2OtherMs)
 
       markitdownBenchmark = {
         totalMs: calculatedTotalMs > 0 ? calculatedTotalMs : (serverBenchmark?.totalMs ?? 0),
         officePrePdfMs: serverResult?.officePrePdfMs ?? serverBenchmark?.officePrePdfMs,
-        magikaMs: serverBenchmark?.magikaMs ?? (stage1MagikaMs > 0 ? stage1MagikaMs : undefined),
+        magikaMs:
+          omniBm?.magika_ms ??
+          serverBenchmark?.magikaMs ??
+          (stage1MagikaMs > 0 ? stage1MagikaMs : undefined),
         metadataMs:
-          serverBenchmark?.metadataMs ?? (stage1MetadataMs > 0 ? stage1MetadataMs : undefined),
+          omniBm?.metadata_ms ??
+          serverBenchmark?.metadataMs ??
+          (stage1MetadataMs > 0 ? stage1MetadataMs : undefined),
         textMs: stage2TextMs > 0 ? stage2TextMs : undefined,
-        documentMs: serverBenchmark?.documentMs,
-        ocrMs: serverResult?.ocrMs ?? serverBenchmark?.ocrMs,
-        htmlMs: serverBenchmark?.htmlMs,
-        thumbnailMs: serverResult?.thumbnailMs ?? serverBenchmark?.thumbnailMs
+        documentMs: stage2DocMs,
+        ocrMs: stage2OcrMs,
+        htmlMs: omniBm?.html_ms ?? serverBenchmark?.htmlMs,
+        thumbnailMs:
+          omniBm?.thumbnail_ms ?? (serverResult?.thumbnailMs ?? serverBenchmark?.thumbnailMs)
       }
 
       // 根据用户配置的 MAX_CONTENT_SIZE_KB 进行统一的 UTF-8 字符边界防乱码安全截断 (-1 表示不限制大小)
@@ -1548,9 +1597,9 @@ export class FileProcessor {
             : existingBasicData.metadata || {}
       }
 
-      logger.debug(
+      logger.info(
         LogCategory.ANALYSIS_QUEUE,
-        `[FileProcessor] server提取完成: combinedContentLen=${combinedContent.length} reusedContent=${!!existingBasicData.content} hasDocument=${!!serverResult?.document?.content} hasText=${!!serverResult?.text?.content} hasTextFallback=${combinedContent.length > 0 && !serverResult?.document?.content && !serverResult?.text?.content} hasOcr=${!!serverResult?.ocr?.content} hasMetadata=${!!(serverResult?.metadata || existingBasicData.metadata)}`
+        `[FileProcessor] server提取完成: file=${item.name} combinedContentLen=${combinedContent.length} hasDocument=${!!serverResult?.document?.content} hasText=${!!serverResult?.text?.content} hasOcr=${!!serverResult?.ocr?.content} hasMetadata=${!!(contentResult.metadata && Object.keys(contentResult.metadata).length > 0)} (metadataKeys=${Object.keys(contentResult.metadata || {}).length})`
       )
 
       // 处理缩略图路径
@@ -2258,7 +2307,8 @@ export class FileProcessor {
   ): Promise<{ text: string; officePrePdfMs?: number; ocrMs?: number; thumbnailMs?: number }> {
     const { ConfigOrchestrator } = await import('../../../config/config-orchestrator')
     const orchestrator = ConfigOrchestrator.getInstance()
-    const enableDocOcr = orchestrator.getValue<boolean>('ENABLE_DOCUMENT_OCR') ?? true
+    const maxDocOcrItems = orchestrator.getValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
+    const enableDocOcr = maxDocOcrItems !== 0
     const enableImgOcr = orchestrator.getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
     const maxContentSizeKb = orchestrator.getValue<number>('MAX_CONTENT_SIZE_KB') ?? 1024
     const maxLimitChars = maxContentSizeKb <= 0 ? Infinity : maxContentSizeKb * 1024
@@ -2300,11 +2350,11 @@ export class FileProcessor {
       return { text: rawText, ocrMs: totalOcrMs }
     }
 
-    // 2. 未开启文档 OCR (ENABLE_DOCUMENT_OCR = false) 时的极速轻量缩略图处理
+    // 2. 未开启文档 OCR (MAX_DOCUMENT_OCR_ITEMS == 0) 时的极速轻量缩略图处理
     if (!enableDocOcr) {
       logger.debug(
         LogCategory.ANALYSIS_QUEUE,
-        `[FileProcessor] ENABLE_DOCUMENT_OCR 为 false，跳过 LibreOffice 转换与文档 OCR 识别: ${filePath}`
+        `[FileProcessor] MAX_DOCUMENT_OCR_ITEMS 为 0，跳过 LibreOffice 转换与文档 OCR 识别: ${filePath}`
       )
       if (thumbnailOutPath) {
         try {
@@ -2327,37 +2377,6 @@ export class FileProcessor {
     const isOfficeDoc = isCategory(`file${ext}`, FileCategory.OFFICE)
     const isOfficeOrPdfDoc = isOfficeDoc || ext === '.pdf'
     if (isOfficeOrPdfDoc) {
-      // 从统一配置中心获取 Office OCR 识别的最大文件限制 (MB)，此限制仅作用于需要 LibreOffice 转 PDF 的 Office 文档，PDF 不受限
-      const maxDocOcrMb = orchestrator.getValue<number>('MAX_DOCUMENT_OCR_FILE_SIZE') ?? 10
-      const isUnlimitedDocOcr = maxDocOcrMb <= 0
-      const maxDocumentOcrSizeBytes = isUnlimitedDocOcr ? Infinity : maxDocOcrMb * 1024 * 1024
-      let fileSize = 0
-      try {
-        fileSize = fs.statSync(filePath).size
-      } catch {
-        // ignore
-      }
-
-      // 仅针对需要在后台调 LibreOffice 转 PDF 的 Office 文件且超大时触发拦截跳过
-      if (isOfficeDoc && !isUnlimitedDocOcr && fileSize > maxDocumentOcrSizeBytes) {
-        logger.info(
-          LogCategory.ANALYSIS_QUEUE,
-          `[FileProcessor] Office 文档文件大小为 ${(fileSize / (1024 * 1024)).toFixed(2)}MB (>${maxDocOcrMb}MB)，因转 PDF 转换耗时过长自动跳过 OCR 识别: ${filePath}`
-        )
-        if (thumbnailOutPath) {
-          try {
-            const thumbStart = Date.now()
-            const { mediaConvertService } =
-              await import('../../system/unified-worker-service/media-convert-service')
-            await mediaConvertService.generateDocumentPreview(filePath, thumbnailOutPath)
-            totalThumbnailMs += Date.now() - thumbStart
-          } catch {
-            // 容错
-          }
-        }
-        return { text: '', thumbnailMs: totalThumbnailMs > 0 ? totalThumbnailMs : undefined }
-      }
-
       try {
         const { mediaConvertService } =
           await import('../../system/unified-worker-service/media-convert-service')
