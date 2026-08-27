@@ -261,6 +261,7 @@ import { regionDetectionService } from '../runtime-services/system/region-detect
 import { postHogMain } from '../services/posthog-service'
 import { AIEngineFactory } from '../runtime-services/ai/adapters/ai-engine-factory'
 import { llamaModelManager } from '../runtime-services/llama/llama-model-manager'
+import { omniService } from '../runtime-services/system/omni-service'
 import { hardwareDetectionService } from '../runtime-services/system/hardware-detection-service'
 import { deploymentIntegrityVerifier } from '../runtime-services/llama/deployment-integrity-verifier'
 
@@ -814,6 +815,7 @@ app.on('before-quit', async () => {
   logger.info(LogCategory.MAIN, '应用正在退出，清理资源...')
 
   try {
+    omniService.stop()
     await fileWatcherService.cleanup()
     await systemHealthService.stop()
     databaseService.close()

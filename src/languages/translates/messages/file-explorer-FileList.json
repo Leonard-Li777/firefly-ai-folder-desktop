@@ -24,7 +24,7 @@
     "ko-KR": "스마트 파일 이름",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(23441-23450)",
-      "src/renderer/components/file-explorer/FileList/index.tsx(41519-41528)"
+      "src/renderer/components/file-explorer/FileList/index.tsx(41705-41714)"
     ],
     "$id": 8503
   },
@@ -40,7 +40,7 @@
     "ko-KR": "이름",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(23454-23460)",
-      "src/renderer/components/file-explorer/FileList/index.tsx(41532-41538)"
+      "src/renderer/components/file-explorer/FileList/index.tsx(41718-41724)"
     ],
     "$id": 8504
   },
@@ -56,7 +56,7 @@
     "ko-KR": "분석 상태",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(26899-26907)",
-      "src/renderer/components/file-explorer/FileList/index.tsx(44217-44225)"
+      "src/renderer/components/file-explorer/FileList/index.tsx(44403-44411)"
     ],
     "$id": 8505
   },
@@ -72,7 +72,7 @@
     "ko-KR": "수정 날짜",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(28038-28046)",
-      "src/renderer/components/file-explorer/FileList/index.tsx(45085-45093)"
+      "src/renderer/components/file-explorer/FileList/index.tsx(45271-45279)"
     ],
     "$id": 8506
   },
@@ -88,7 +88,7 @@
     "ko-KR": "유형",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(28506-28512)",
-      "src/renderer/components/file-explorer/FileList/index.tsx(45448-45454)"
+      "src/renderer/components/file-explorer/FileList/index.tsx(45634-45640)"
     ],
     "$id": 8507
   },
@@ -104,7 +104,7 @@
     "ko-KR": "크기",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(28972-28978)",
-      "src/renderer/components/file-explorer/FileList/index.tsx(45775-45781)"
+      "src/renderer/components/file-explorer/FileList/index.tsx(45961-45967)"
     ],
     "$id": 8508
   },
@@ -120,7 +120,7 @@
     "ko-KR": "디렉터리가 비어 있습니다",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(31111-31119)",
-      "src/renderer/components/file-explorer/FileList/index.tsx(38534-38542)"
+      "src/renderer/components/file-explorer/FileList/index.tsx(38720-38728)"
     ],
     "$id": 8509
   },
@@ -148,8 +148,8 @@
     "fr-FR": "Fichier inconnu",
     "ko-KR": "알 수 없는 파일",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/index.tsx(33665-33673)",
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(25343-25351)",
+      "src/renderer/components/file-explorer/FileList/index.tsx(33851-33859)",
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(25405-25413)",
       "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(21786-21794)"
     ],
     "$id": 8511
@@ -164,7 +164,7 @@
     "de-DE": "Raster wird vorbereitet...",
     "fr-FR": "Préparation de la grille...",
     "ko-KR": "그리드 준비 중...",
-    "$files": ["src/renderer/components/file-explorer/FileList/index.tsx(38546-38559)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/index.tsx(38732-38745)"],
     "$id": 8512
   },
   "最小单元": {

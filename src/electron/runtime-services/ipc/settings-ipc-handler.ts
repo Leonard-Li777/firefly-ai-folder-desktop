@@ -104,6 +104,12 @@ export function registerSettingsIPCHandlers(): void {
             await fileWatcherService.reloadIgnoreRules()
           }
 
+          // 向 Omni 服务同步最新排除保护清单
+          const { omniService } = await import('../system')
+          if (omniService && typeof omniService.syncConfigFromDesktop === 'function') {
+            omniService.syncConfigFromDesktop().catch(() => {})
+          }
+
           // 通知渲染进程刷新
           const windows = BrowserWindow.getAllWindows()
           windows.forEach(win => {

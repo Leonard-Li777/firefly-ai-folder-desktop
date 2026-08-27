@@ -1426,7 +1426,7 @@
     "de-DE": "Erfordert die Aktivierung der Zugriffsrechte auf das virtuelle Verzeichnis „{name}“",
     "fr-FR": "Nécessite l'activation des droits d'accès au répertoire virtuel \"{name}\"",
     "ko-KR": "가상 디렉터리 \"{name}\"에 대한 액세스 권한 활성화가 필요합니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3465-3490)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3582-3607)"],
     "$id": 10211
   },
   "需要激活当前工作空间「{name}」": {
@@ -1439,7 +1439,7 @@
     "de-DE": "Der aktuelle Arbeitsbereich „{name}“ muss aktiviert werden.",
     "fr-FR": "Besoin d'activer l'espace de travail actuel \"{name}\"",
     "ko-KR": "현재 작업공간 \"{name}\"을(를) 활성화해야 합니다",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3527-3549)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3644-3666)"],
     "$id": 10212
   },
   "您当前的工作目录已无可用虚拟目录槽位，需要单独开通「{name}」的访问权限或购买新的槽位。": {
@@ -1452,7 +1452,7 @@
     "de-DE": "In Ihrem aktuellen Arbeitsverzeichnis ist kein virtueller Verzeichnisplatz verfügbar. Sie müssen die Zugriffsrechte für „{name}“ separat aktivieren oder einen neuen Slot erwerben.",
     "fr-FR": "Il n'y a aucun emplacement de répertoire virtuel disponible dans votre répertoire de travail actuel. Vous devez activer séparément les droits d'accès pour \"{name}\" ou acheter un nouvel emplacement.",
     "ko-KR": "현재 작업 디렉터리에 사용 가능한 가상 디렉터리 슬롯이 없습니다. \"{name}\"에 대한 액세스 권한을 별도로 활성화하거나 새 슬롯을 구매해야 합니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3709-3775)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3826-3892)"],
     "$id": 10213
   },
   "您已超出免费等级 {typeLabel} 目录个数限制。您可以选择开通一个新的目录槽位。": {
@@ -1465,7 +1465,7 @@
     "de-DE": "Sie haben das Verzeichnislimit für das kostenlose Kontingent {typeLabel} überschritten. Sie können einen neuen Verzeichnisplatz öffnen.",
     "fr-FR": "Vous avez dépassé la limite de répertoire pour le niveau gratuit {typeLabel}. Vous pouvez choisir d'ouvrir un nouvel emplacement de répertoire.",
     "ko-KR": "무료 등급 {typeLabel}에 대한 디렉터리 제한을 초과했습니다. 새 디렉터리 슬롯을 열도록 선택할 수 있습니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3841-3889)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3958-4006)"],
     "$id": 10214
   },
   "极速": {
@@ -1478,7 +1478,7 @@
     "de-DE": "Extreme Geschwindigkeit",
     "fr-FR": "Vitesse extrême",
     "ko-KR": "극한의 속도",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3939-3945)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(4056-4062)"],
     "$id": 10215
   },
   "私有": {
@@ -1491,7 +1491,7 @@
     "de-DE": "Privat",
     "fr-FR": "Privé",
     "ko-KR": "사적인",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(3949-3955)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(4066-4072)"],
     "$id": 10216
   },
   "萤火": {
@@ -1505,8 +1505,8 @@
     "fr-FR": "Firecores",
     "ko-KR": "Firecores",
     "$files": [
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(5072-5078)",
-      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(6176-6182)"
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(5013-5019)",
+      "src/renderer/components/common/RestrictedFeatureOverlay.tsx(5939-5945)"
     ],
     "$id": 10217
   },
@@ -1520,7 +1520,7 @@
     "de-DE": "Arbeitsverzeichnis verwalten",
     "fr-FR": "Gérer le répertoire de travail",
     "ko-KR": "작업 디렉토리 관리",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6962-6972)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6550-6560)"],
     "$id": 10218
   },
   "你可以删除不需要的工作目录，以腾出槽位": {
@@ -1533,7 +1533,7 @@
     "de-DE": "Sie können nicht benötigte Arbeitsverzeichnisse löschen, um Slots freizugeben.",
     "fr-FR": "Vous pouvez supprimer les répertoires de travail inutiles pour libérer des emplacements",
     "ko-KR": "필요 없는 작업 디렉토리를 삭제하여 슬롯을 확보할 수 있습니다.",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(7097-7120)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6685-6708)"],
     "$id": 10219
   },
   "打开设置": {
@@ -1546,7 +1546,7 @@
     "de-DE": "Einstellungen öffnen",
     "fr-FR": "Ouvrir les paramètres",
     "ko-KR": "설정 열기",
-    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(7376-7384)"],
+    "$files": ["src/renderer/components/common/RestrictedFeatureOverlay.tsx(6964-6972)"],
     "$id": 10220
   },
   "搜索...": {

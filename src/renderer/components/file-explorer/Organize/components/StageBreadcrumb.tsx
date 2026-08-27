@@ -113,6 +113,8 @@ export function StageBreadcrumb({
         const isActive = step.key === stage
         const isLit = isStepLit(step.key)
         const isClickable = isLit
+        // 首页使用 primary 实心按钮风格，与其它面包屑步骤区分
+        const isHome = step.key === 'root-mode-select'
 
         return (
           <React.Fragment key={step.key}>
@@ -126,11 +128,13 @@ export function StageBreadcrumb({
               className={cn(
                 'flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold transition-all duration-200 min-w-0 shrink overflow-hidden select-none',
                 isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-35',
-                isActive
-                  ? 'bg-primary/20 text-primary shadow-xs ring-1 ring-primary/30 font-bold hover:bg-primary/25'
-                  : isLit
-                    ? 'bg-primary/10 text-primary/85 hover:bg-primary/20 border border-primary/20 hover:text-primary'
-                    : 'text-muted-foreground/40'
+                isHome
+                  ? 'bg-primary text-primary-foreground shadow-md ring-1 ring-primary/40 hover:bg-primary/90 hover:shadow-lg'
+                  : isActive
+                    ? 'bg-primary/20 text-primary shadow-xs ring-1 ring-primary/30 font-bold hover:bg-primary/25'
+                    : isLit
+                      ? 'bg-primary/10 text-primary/85 hover:bg-primary/20 border border-primary/20 hover:text-primary'
+                      : 'text-muted-foreground/40'
               )}
             >
               <MaterialIcon

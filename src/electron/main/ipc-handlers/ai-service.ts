@@ -7,6 +7,7 @@ import { llamaEngineService } from '../../runtime-services/llama/llama-engine-se
 import { gpuDriverComplianceService } from '../../runtime-services/llama/gpu-driver-compliance-service'
 import { deploymentIntegrityVerifier } from '../../runtime-services/llama/deployment-integrity-verifier'
 import { databaseService } from '../../runtime-services/database/database-service'
+import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
 import { llamaModelManager } from '../../runtime-services/llama/llama-model-manager'
 import { createModelCapabilityAdapter } from '../../adapters/model-capability-adapter'
 import { t } from '@app/languages'
@@ -527,6 +528,16 @@ export function registerAIServiceIPCHandlers() {
           success: false,
           status: 'SERVICE_SWITCHING',
           message: t('模型正在切换中，请等待')
+        }
+      }
+      // 本地模型正忙（如分析队列进行中）时拒绝新请求，避免本地模型无法负载；云端模型不限制
+      if (analysisQueueService.isLocalModelBusy()) {
+        logger.warn(LogCategory.MAIN, '[Main] ai-chat: 本地模型正忙，丢弃请求')
+        analysisQueueService.notifyLocalModelBusy()
+        return {
+          success: false,
+          status: 'LOCAL_MODEL_BUSY',
+          message: t('当前AI已经在工作中，如：分析队列，请停止后再请求')
         }
       }
       if (globalLlamaIndexService) {

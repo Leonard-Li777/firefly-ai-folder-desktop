@@ -633,8 +633,9 @@ const electronAPI = {
       ipcRenderer.invoke('duplicate:trash', filePaths),
     executeStrategyFix: (
       action: any,
-      fileTargets: Array<string | { path: string; newName?: string }>
-    ): Promise<any> => ipcRenderer.invoke('duplicate:execute-fix', action, fileTargets),
+      fileTargets: Array<string | { path: string; newName?: string }>,
+      workspaceDirectoryPath?: string
+    ): Promise<any> => ipcRenderer.invoke('duplicate:execute-fix', action, fileTargets, workspaceDirectoryPath),
     applyKeepRule: (groups: any[], rule: string): Promise<any[]> =>
       ipcRenderer.invoke('duplicate:apply-keep-rule', groups, rule),
     getEffectiveDirectoryConfig: (dirPath: string): Promise<any> =>

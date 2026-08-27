@@ -74,6 +74,24 @@ export class OmniService {
         app.on('will-quit', () => {
           this.stop()
         })
+        app.on('before-quit', () => {
+          this.stop()
+        })
+      }
+
+      // 注册 Node.js 进程级退出事件（针对开发模式下 Ctrl+C 或终端被杀）
+      const cleanExit = () => {
+        this.stop()
+      }
+      process.once('exit', cleanExit)
+      process.once('SIGINT', cleanExit)
+      process.once('SIGTERM', cleanExit)
+      if (process.platform === 'win32') {
+        process.once('message', (msg: any) => {
+          if (msg === 'shutdown') {
+            this.stop()
+          }
+        })
       }
 
       // 监听 Desktop 端 OCR 与分析相关的 ConfigKey 变更，实时自动推送到 Omni
@@ -249,15 +267,23 @@ export class OmniService {
    * 停止子进程
    */
   public stop(): void {
+    this.isStarting = false
     if (this.restartTimeout) {
       clearTimeout(this.restartTimeout)
       this.restartTimeout = null
     }
 
     if (this.process) {
+      const pid = this.process.pid
       try {
-        this.process.kill()
-        logger.info(LogCategory.SYSTEM, '[OmniService] 已终止 firefly-omni 子进程')
+        if (process.platform === 'win32' && pid) {
+          try {
+            const { execSync } = require('node:child_process')
+            execSync(`taskkill /pid ${pid} /T /F`, { stdio: 'ignore' })
+          } catch {}
+        }
+        this.process.kill('SIGKILL')
+        logger.info(LogCategory.SYSTEM, `[OmniService] 已彻底终止 firefly-omni 进程树 (PID=${pid})`)
       } catch {}
       this.process = null
     }
@@ -317,6 +343,10 @@ export class OmniService {
       const analysisMode = (orchestrator.getValue<string>('ANALYSIS_MODE') || 'full').toLowerCase()
       const reuseBasic = orchestrator.getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true
 
+      // 提取最新的受保护排除项清单 (来自 IGNORE_RULES 中 isCzkawka 标记)
+      const { duplicateDetectionService } = await import('../filesystem')
+      const excludedItems = duplicateDetectionService ? duplicateDetectionService.getProtectedExcludedItems() : []
+
       const payload = JSON.stringify({
         enable_office_cover: enableOfficeCover,
         max_document_ocr_items: maxDocOcrItems,
@@ -325,7 +355,8 @@ export class OmniService {
         max_content_size_kb: maxContentSizeKb,
         max_file_size_mb: maxFileSizeMb,
         analysis_mode: analysisMode,
-        reuse_basic_analysis_data: reuseBasic
+        reuse_basic_analysis_data: reuseBasic,
+        excluded_items: excludedItems
       })
 
       const res = await fetch(`${this.baseUrl}/api/config`, {
@@ -338,7 +369,7 @@ export class OmniService {
       if (res.ok) {
         logger.info(
           LogCategory.SYSTEM,
-          `[OmniService] 已向 Omni 引擎同步配置: enable_office_cover=${enableOfficeCover}, max_document_ocr_items=${maxDocOcrItems}, enable_image_ocr=${enableImageOcr}, ocr_model_size=${ocrModelSize}`
+          `[OmniService] 已向 Omni 引擎同步配置: enable_office_cover=${enableOfficeCover}, max_document_ocr_items=${maxDocOcrItems}, enable_image_ocr=${enableImageOcr}, ocr_model_size=${ocrModelSize}, excluded_items_count=${excludedItems.length}`
         )
         return true
       }

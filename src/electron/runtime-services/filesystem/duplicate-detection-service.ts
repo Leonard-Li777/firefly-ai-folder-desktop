@@ -18,12 +18,16 @@ export class DuplicateDetectionService {
   private omniApiUrl = 'http://127.0.0.1:9190'
 
   /**
-   * 获取当前系统与配置中不可被清理的受保护排除项名单
+   * 获取当前系统与配置中不可被清理的受保护排除项名单 (严格依据 IGNORE_RULES 中的 isCzkawka 配置)
    */
-  private getProtectedExcludedItems(): string[] {
-    const protectedItems = [
+  public getProtectedExcludedItems(): string[] {
+    const rawProtectedItems: string[] = [
       '.VirtualDirectory',
       '.thumbnail',
+      'desktop.ini',
+      'thumbs.db',
+      '.DS_Store',
+      '.localized',
       '.git',
       '.ssh',
       '.vscode',
@@ -40,10 +44,6 @@ export class DuplicateDetectionService {
       '.yarn',
       'coverage',
       '.nyc_output',
-      'desktop.ini',
-      'thumbs.db',
-      '.DS_Store',
-      '.localized',
       'bootmgr',
       'bootnxt',
       'pagefile.sys',
@@ -61,20 +61,50 @@ export class DuplicateDetectionService {
     try {
       const userRules = ConfigOrchestrator.getInstance().getValue<any[]>('IGNORE_RULES') || []
       for (const rule of userRules) {
-        if (rule.isActive && rule.value && (rule.type === 'directory' || rule.type === 'file')) {
-          const val = rule.value.trim()
-          if (val && !protectedItems.includes(val)) {
-            // 过滤掉用户明确想清理的构建产物或临时目录模式
-            const isCleanTarget = ['.tmp', '.log', '.bak', '.old', '.dmp', 'dist', 'build', 'out', 'target'].some(target => val.toLowerCase().includes(target))
-            if (!isCleanTarget) {
-              protectedItems.push(val)
+        if (!rule.isActive || !rule.value) continue
+        const val = String(rule.value).trim()
+        if (!val) continue
+
+        // 显式配置了 isCzkawka 字段
+        if (rule.isCzkawka === true) {
+          if (!rawProtectedItems.includes(val)) {
+            rawProtectedItems.push(val)
+          }
+        } else if (rule.isCzkawka === false) {
+          // 若用户或系统显式标记 isCzkawka = false，则从保护名单剔除
+          const idx = rawProtectedItems.indexOf(val)
+          if (idx !== -1) {
+            rawProtectedItems.splice(idx, 1)
+          }
+        } else {
+          // 老数据兼容：未设置 isCzkawka 时，非待清理扩展名/构建目录的目录与文件规则默认纳入保护
+          const isCleanTarget = ['.tmp', '.log', '.bak', '.old', '.dmp', 'dist', 'build', 'out', 'target'].some(t => val.toLowerCase().includes(t))
+          if ((rule.type === 'directory' || rule.type === 'file') && !isCleanTarget) {
+            if (!rawProtectedItems.includes(val)) {
+              rawProtectedItems.push(val)
             }
           }
         }
       }
     } catch {}
 
-    return protectedItems
+    // 将原始规则项格式化为 czkawka 所要求的双向通配符格式（确保目录、子目录与文件名均能命中）
+    const formattedPatterns = new Set<string>()
+    for (const item of rawProtectedItems) {
+      if (!item) continue
+      if (item.includes('*')) {
+        formattedPatterns.add(item)
+      } else {
+        // 对于目录和文件模式，生成标准跨平台通配符表达式
+        formattedPatterns.add(`*${item}*`)
+        formattedPatterns.add(`*/${item}/*`)
+        formattedPatterns.add(`*\\${item}\\*`)
+        formattedPatterns.add(`*/${item}`)
+        formattedPatterns.add(`*\\${item}`)
+      }
+    }
+
+    return Array.from(formattedPatterns)
   }
 
   /**
@@ -166,6 +196,9 @@ export class DuplicateDetectionService {
         const decoder = new TextDecoder()
         let buffer = ''
 
+        let maxTotalScanned = 0
+        let maxScanned = 0
+
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
@@ -187,11 +220,26 @@ export class DuplicateDetectionService {
             if (eventType === 'progress' && dataStr) {
               try {
                 const p = JSON.parse(dataStr)
+                if (p.scanned) maxScanned = Math.max(maxScanned, p.scanned)
+                if (p.total_scanned) maxTotalScanned = Math.max(maxTotalScanned, p.total_scanned)
                 onProgress?.({
-                  scanned: p.scanned || 0,
-                  totalScanned: p.total_scanned || 0,
+                  scanned: maxScanned,
+                  totalScanned: maxTotalScanned,
                   stage: p.stage || ''
                 })
+              } catch {}
+            } else if (eventType === 'done' && dataStr) {
+              try {
+                const d = JSON.parse(dataStr)
+                if (d.total_scanned) {
+                  maxTotalScanned = Math.max(maxTotalScanned, d.total_scanned)
+                  maxScanned = Math.max(maxScanned, d.total_scanned)
+                  onProgress?.({
+                    scanned: maxScanned,
+                    totalScanned: maxTotalScanned,
+                    stage: '扫描完成'
+                  })
+                }
               } catch {}
             } else if (eventType === 'group' && dataStr) {
               try {
@@ -214,8 +262,8 @@ export class DuplicateDetectionService {
                 }
                 groups.push(mappedGroup)
                 onProgress?.({
-                  scanned: 0,
-                  totalScanned: 0,
+                  scanned: maxScanned,
+                  totalScanned: maxTotalScanned,
                   stage: '发现重复组',
                   group: mappedGroup
                 })
@@ -738,16 +786,23 @@ export class DuplicateDetectionService {
    */
   public async executeStrategyFix(
     action: DuplicateFixAction,
-    fileTargets: Array<string | { path: string; newName?: string }>
+    fileTargets: Array<string | { path: string; newName?: string }>,
+    workspaceDirectoryPath?: string
   ): Promise<DuplicateFixResult> {
     logger.info(LogCategory.FILE_ORGANIZATION, `开始执行专属修复动作: ${action}`, {
-      count: fileTargets.length
+      count: fileTargets.length,
+      workspaceDirectoryPath
     })
     const processedPaths: string[] = []
     const details: Array<{ oldPath: string; newPath?: string; message?: string }> = []
     const errors: Array<{ path: string; error: string }> = []
     let successCount = 0
     let failedCount = 0
+    let targetOutputDirectory: string | undefined = undefined
+
+    // 格式化当前日期为 YYYYMMDD
+    const now = new Date()
+    const yyyymmdd = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`
 
     await databaseService.ensureInitialized()
     const db = databaseService.db
@@ -898,24 +953,57 @@ export class DuplicateDetectionService {
             details.push({ oldPath: filePath, message: '扩展名格式正常' })
           }
         } else if (action === 'clean_exif') {
-          // 3. Exif 隐私信息擦除 (优先调用 omni czkawka_core 原生修复，若离线则内存 Buffer 兜底)
-          let omniFixed = false
+          // 3. Exif 隐私信息擦除 (保存为无损副本到 .VirtualDirectory\.cleaned_exif\{YYYYMMDD}，保持原文件名，绝不修改原文件)
+          const baseWorkspace = workspaceDirectoryPath || path.dirname(filePath)
+          const outDir = path.join(baseWorkspace, '.VirtualDirectory', '.cleaned_exif', yyyymmdd)
+          targetOutputDirectory = outDir
+          if (!fs.existsSync(outDir)) {
+            fs.mkdirSync(outDir, { recursive: true })
+          }
+
+          const originalFileName = path.basename(filePath)
+          const outFilePath = path.join(outDir, originalFileName)
+
+          let cleanExifSucceeded = false
+
+          // 方式一：尝试调用 Omni 服务
           try {
             const resp = await fetch(`${this.omniApiUrl}/api/cleanup/fix`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ action: 'clean_exif', paths: [filePath] }),
-              signal: AbortSignal.timeout(10000)
+              signal: AbortSignal.timeout(15000)
             })
             if (resp.ok) {
               const fixRes = (await resp.json()) as any
               if (fixRes.success_count > 0) {
-                omniFixed = true
+                // 探测同目录下 czkawka 生成的 *.czkawka_cleaned_exif.* 副本文件
+                const srcDir = path.dirname(filePath)
+                const ext = path.extname(filePath)
+                const stem = path.basename(filePath, ext)
+                const cleanedCandidates = [
+                  path.join(srcDir, `${stem}.czkawka_cleaned_exif${ext}`),
+                  path.join(srcDir, `${stem.toLowerCase()}.czkawka_cleaned_exif${ext.toLowerCase()}`),
+                  path.join(srcDir, `${stem.toUpperCase()}.czkawka_cleaned_exif${ext.toUpperCase()}`)
+                ]
+                for (const cand of cleanedCandidates) {
+                  if (fs.existsSync(cand)) {
+                    // 若目标目录已存在同名文件，直接覆盖
+                    if (fs.existsSync(outFilePath)) {
+                      try { fs.unlinkSync(outFilePath) } catch {}
+                    }
+                    fs.copyFileSync(cand, outFilePath)
+                    try { fs.unlinkSync(cand) } catch {}
+                    cleanExifSucceeded = true
+                    break
+                  }
+                }
               }
             }
           } catch {}
 
-          if (!omniFixed) {
+          // 方式二：若 Omni 未输出，使用本地 Sharp 强力生成去 Exif 副本
+          if (!cleanExifSucceeded) {
             try {
               const sharpModule = require('sharp')
               const inputBuffer = fs.readFileSync(filePath)
@@ -930,55 +1018,45 @@ export class DuplicateDetectionService {
               } else {
                 cleanBuffer = await sharpModule(inputBuffer).rotate().toBuffer()
               }
-              fs.writeFileSync(filePath, cleanBuffer)
+              // 直接覆盖已有同名文件
+              if (fs.existsSync(outFilePath)) {
+                try { fs.unlinkSync(outFilePath) } catch {}
+              }
+              fs.writeFileSync(outFilePath, cleanBuffer)
+              cleanExifSucceeded = true
             } catch (sharpErr: any) {
-              logger.warn(LogCategory.FILE_ORGANIZATION, `本地 Sharp 兜底擦除 Exif 异常 [${filePath}]:`, sharpErr)
+              logger.warn(LogCategory.FILE_ORGANIZATION, `本地 Sharp 擦除 Exif 副本生成异常 [${filePath}]:`, sharpErr)
             }
           }
 
-          // 同步清除数据库中已缓存的 Exif 元数据，防止再次扫描时被旧缓存复活
-          if (db) {
-            const newStats = fs.existsSync(filePath) ? fs.statSync(filePath) : null
-            const pathSlash = filePath.replace(/\\/g, '/')
-            const pathBackslash = filePath.replace(/\//g, '\\')
-            const wfRow = db.prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?').get(pathSlash, pathBackslash) as any
-            if (wfRow?.file_fingerprint) {
-              const contentRow = db.prepare('SELECT metadata FROM file_contents WHERE file_fingerprint = ?').get(wfRow.file_fingerprint) as any
-              if (contentRow?.metadata) {
-                try {
-                  const meta = JSON.parse(contentRow.metadata)
-                  delete meta.exiftool
-                  delete meta.exif
-                  delete meta.gps
-                  delete meta.camera
-                  delete meta.photoshop
-                  db.prepare('UPDATE file_contents SET metadata = ? WHERE file_fingerprint = ?').run(
-                    JSON.stringify(meta),
-                    wfRow.file_fingerprint
-                  )
-                } catch {}
-              }
-            }
-            if (newStats) {
-              if (wfRow?.file_fingerprint) {
-                db.prepare('UPDATE files SET size = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
-                  newStats.size,
-                  wfRow.file_fingerprint
-                )
-              }
-              db.prepare('UPDATE workspace_files SET modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?').run(
-                pathSlash,
-                pathBackslash
-              )
-            }
+          if (cleanExifSucceeded && fs.existsSync(outFilePath)) {
+            processedPaths.push(filePath)
+            successCount++
+            details.push({ oldPath: filePath, newPath: outFilePath, message: `已成功生成去 Exif 副本至: ${outFilePath}` })
+          } else {
+            failedCount++
+            errors.push({ path: filePath, error: '生成去 Exif 副本失败' })
           }
-
-          processedPaths.push(filePath)
-          successCount++
-          details.push({ oldPath: filePath, message: '已彻底清除 Exif 隐私信息' })
         } else if (action === 'optimize') {
-          // 4. 视频优化与转码 (调用 omni czkawka_core ffmpeg 原生转码)
+          // 4. 视频优化与转码 (保存优化后的视频到 .VirtualDirectory\.video_optimizer\{YYYYMMDD}，保持原文件名，不修改原文件)
+          const baseWorkspace = workspaceDirectoryPath || path.dirname(filePath)
+          const outDir = path.join(baseWorkspace, '.VirtualDirectory', '.video_optimizer', yyyymmdd)
+          targetOutputDirectory = outDir
+          if (!fs.existsSync(outDir)) {
+            fs.mkdirSync(outDir, { recursive: true })
+          }
+
+          const ext = path.extname(filePath)
+          const stem = path.basename(filePath, ext)
+          const originalFileName = path.basename(filePath)
+          const outFilePath = path.join(outDir, originalFileName)
+
           let omniTranscoded = false
+          let finalTranscodedPath = ''
+          let failMessage = ''
+
+          // 步骤 1：直接调用 Omni Czkawka 引擎服务执行视频转码
+          logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 向 Omni 发起转码请求: ${filePath}`)
           try {
             const resp = await fetch(`${this.omniApiUrl}/api/cleanup/fix`, {
               method: 'POST',
@@ -988,37 +1066,65 @@ export class DuplicateDetectionService {
             })
             if (resp.ok) {
               const fixRes = (await resp.json()) as any
+              logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] Omni 转码返回结果:`, fixRes)
               if (fixRes.success_count > 0) {
-                omniTranscoded = true
+                // czkawka 在 overwrite_original = false 时，生成的优化视频位于同目录，名为 *.czkawka_optimized.mp4
+                const srcDir = path.dirname(filePath)
+                const ext = path.extname(filePath)
+                const stem = path.basename(filePath, ext)
+                const optimizedCandidate = path.join(srcDir, `${stem}.czkawka_optimized.mp4`)
+                const actualOutFile = path.join(outDir, `${stem}.mp4`)
+
+                if (fs.existsSync(optimizedCandidate) && fs.statSync(optimizedCandidate).size > 0) {
+                  if (fs.existsSync(actualOutFile)) {
+                    try { fs.unlinkSync(actualOutFile) } catch {}
+                  }
+                  fs.copyFileSync(optimizedCandidate, actualOutFile)
+                  try { fs.unlinkSync(optimizedCandidate) } catch {}
+                  finalTranscodedPath = actualOutFile
+                  omniTranscoded = true
+                  logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 捕获并移动优化视频成功: ${actualOutFile}`)
+                } else {
+                  // 尝试扫描同目录下以 stem 开头且不为原文件的生成文件
+                  const candFiles = fs.readdirSync(srcDir).filter(f => f.startsWith(stem) && f !== originalFileName)
+                  for (const candName of candFiles) {
+                    const candFull = path.join(srcDir, candName)
+                    if (fs.existsSync(candFull) && fs.statSync(candFull).isFile()) {
+                      const candExt = path.extname(candName) || '.mp4'
+                      const targetOut = path.join(outDir, `${stem}${candExt}`)
+                      if (fs.existsSync(targetOut)) {
+                        try { fs.unlinkSync(targetOut) } catch {}
+                      }
+                      fs.copyFileSync(candFull, targetOut)
+                      try { fs.unlinkSync(candFull) } catch {}
+                      finalTranscodedPath = targetOut
+                      omniTranscoded = true
+                      logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 捕获候选转码文件成功: ${targetOut}`)
+                      break
+                    }
+                  }
+                }
+              } else if (fixRes.errors && fixRes.errors.length > 0) {
+                failMessage = fixRes.errors.join('; ')
+                logger.warn(LogCategory.FILE_ORGANIZATION, `[视频优化] Omni 转码返回错误: ${failMessage}`)
               }
+            } else {
+              logger.warn(LogCategory.FILE_ORGANIZATION, `[视频优化] Omni 转码 HTTP 请求失败: status=${resp.status}`)
+              failMessage = `Omni 服务响应异常 (HTTP ${resp.status})`
             }
           } catch (e: any) {
-            logger.warn(LogCategory.FILE_ORGANIZATION, `Omni 视频转码接口调用异常 [${filePath}]:`, e)
+            logger.warn(LogCategory.FILE_ORGANIZATION, `[视频优化] Omni 视频转码接口调用异常 [${filePath}]:`, e)
+            failMessage = e?.message || '请求 Omni 视频转码服务超时或失败'
           }
 
-          // 同步更新数据库中的新文件大小
-          if (db) {
-            const newStats = fs.existsSync(filePath) ? fs.statSync(filePath) : null
-            const pathSlash = filePath.replace(/\\/g, '/')
-            const pathBackslash = filePath.replace(/\//g, '\\')
-            const wfRow = db.prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ? OR path = ?').get(pathSlash, pathBackslash) as any
-            if (wfRow?.file_fingerprint && newStats) {
-              db.prepare('UPDATE files SET size = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
-                newStats.size,
-                wfRow.file_fingerprint
-              )
-            }
-            if (newStats) {
-              db.prepare('UPDATE workspace_files SET modified_at = CURRENT_TIMESTAMP WHERE path = ? OR path = ?').run(
-                pathSlash,
-                pathBackslash
-              )
-            }
+          if (omniTranscoded && finalTranscodedPath && fs.existsSync(finalTranscodedPath)) {
+            processedPaths.push(filePath)
+            successCount++
+            details.push({ oldPath: filePath, newPath: finalTranscodedPath, message: `已完成视频高效能转码优化并导出至: ${finalTranscodedPath}` })
+          } else {
+            failedCount++
+            errors.push({ path: filePath, error: failMessage || 'Czkawka 视频转码未产出物理文件' })
           }
-
-          processedPaths.push(filePath)
-          successCount++
-          details.push({ oldPath: filePath, message: omniTranscoded ? '已完成视频高效能转码优化并覆盖' : '视频优化指令已提交' })
         }
       } catch (err: any) {
         logger.error(LogCategory.FILE_ORGANIZATION, `执行修复动作失败 [${action}] -> ${filePath}:`, err)
@@ -1027,11 +1133,22 @@ export class DuplicateDetectionService {
       }
     }
 
+    // 执行成功且存在输出目录时，自动使用系统文件管理器打开对应目标目录
+    if (successCount > 0 && targetOutputDirectory && fs.existsSync(targetOutputDirectory)) {
+      try {
+        await shell.openPath(targetOutputDirectory)
+        logger.info(LogCategory.FILE_ORGANIZATION, `已使用系统文件管理器打开生成目录: ${targetOutputDirectory}`)
+      } catch (openErr: any) {
+        logger.warn(LogCategory.FILE_ORGANIZATION, `自动打开输出目录失败:`, openErr)
+      }
+    }
+
     return {
       action,
       successCount,
       failedCount,
       processedPaths,
+      outputDirectory: targetOutputDirectory,
       details,
       errors: errors.length > 0 ? errors : undefined
     }

@@ -632,6 +632,39 @@ export class ConfigOrchestrator extends EventEmitter {
       }
     }
 
+    // 升级与兼容性逻辑：为老用户的 IGNORE_RULES 补齐 isCzkawka 字段
+    if (merged.analysis?.IGNORE_RULES && Array.isArray(merged.analysis.IGNORE_RULES)) {
+      const defaultRulesMap = new Map<string, any>()
+      ;(defaultUnifiedConfig.analysis?.IGNORE_RULES || []).forEach(r => {
+        defaultRulesMap.set(r.id, r)
+        if (r.value) defaultRulesMap.set(r.value.toLowerCase(), r)
+      })
+
+      let hasUpgradedCzkawka = false
+      const upgradedRules = merged.analysis.IGNORE_RULES.map(rule => {
+        if (rule.isCzkawka === undefined) {
+          hasUpgradedCzkawka = true
+          // 优先通过 ID 或 Value 匹配系统预设定义
+          const matchedDefault = defaultRulesMap.get(rule.id) || defaultRulesMap.get(rule.value?.toLowerCase())
+          if (matchedDefault && matchedDefault.isCzkawka !== undefined) {
+            return { ...rule, isCzkawka: matchedDefault.isCzkawka }
+          }
+          // 自定义规则回退策略：目录和非临时文件的系统规则默认保护，临时/扩展名/构建目录默认允许清理
+          const isCleanTarget = ['.tmp', '.log', '.bak', '.old', '.dmp', 'dist', 'build', 'out', 'target'].some(
+            t => (rule.value || '').toLowerCase().includes(t)
+          )
+          const isCzkawka = (rule.type === 'directory' || rule.type === 'file') && !isCleanTarget
+          return { ...rule, isCzkawka }
+        }
+        return rule
+      })
+
+      merged.analysis.IGNORE_RULES = upgradedRules
+      if (hasUpgradedCzkawka && this.unifiedStore.has('analysis.IGNORE_RULES')) {
+        this.unifiedStore.set('analysis.IGNORE_RULES', upgradedRules)
+      }
+    }
+
     this.cachedConfig = merged
     this.cachedFlatValues = this.buildFlatMap(merged)
     return merged

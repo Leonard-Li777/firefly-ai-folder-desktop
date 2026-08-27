@@ -734,12 +734,18 @@ export const AnalysisSettings: React.FC = () => {
                         }}
                         className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-secondary accent-primary"
                       />
-                      {/* 刻度线与主要刻度值展示 (0, 5, 10, 15, 20, 25, 30, 不限) */}
+                      {/* 刻度线与主要刻度值展示 (0, 5, 10, 15, 20, 25, 30, 不限)
+                          注意：必须渲染与滑块索引一一对应的全部占位，否则 justify-between 均分会导致
+                          刻度标签位置与滑块实际索引位置（步进 1）错位 */}
                       <div className="flex justify-between items-center text-[11px] text-muted-foreground pt-1 select-none">
-                        {[0, 5, 10, 15, 20, 25, 30, -1].map(tick => {
-                          const idx = ticks.indexOf(tick)
+                        {ticks.map((tick, idx) => {
+                          const isMajorTick = [0, 5, 10, 15, 20, 25, 30, -1].includes(tick)
                           const isActive = idx === currentIndex
                           const isUnlimited = tick === -1
+                          // 非主要刻度：渲染空占位保持 justify-between 与滑块索引对齐
+                          if (!isMajorTick) {
+                            return <span key={tick} className="flex-1" />
+                          }
                           return (
                             <button
                               key={tick}
@@ -1263,6 +1269,18 @@ export const AnalysisSettings: React.FC = () => {
                     onChange={e => setNewRule({ ...newRule, description: e.target.value })}
                   />
                 </div>
+                <div className="flex items-center space-x-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="new-rule-czkawka"
+                    checked={newRule.isCzkawka ?? false}
+                    onChange={e => setNewRule({ ...newRule, isCzkawka: e.target.checked })}
+                    className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+                  />
+                  <Label htmlFor="new-rule-czkawka" className="text-xs cursor-pointer select-none">
+                    {t('清理与查重时原生排除保护')}
+                  </Label>
+                </div>
                 <div className="flex items-center gap-2">
                   <Button size="sm" onClick={handleAddRule} disabled={!newRule.value?.trim()}>
                     <Save className="h-4 w-4 mr-1" />
@@ -1307,7 +1325,14 @@ export const AnalysisSettings: React.FC = () => {
                           </span>
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium">{rule.value}</div>
+                          <div className="font-medium flex items-center gap-2">
+                            <span>{rule.value}</span>
+                            {rule.isCzkawka && (
+                              <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-normal">
+                                {t('排除清理')}
+                              </span>
+                            )}
+                          </div>
                           {rule.description && (
                             <div className="text-sm text-muted-foreground">{rule.description}</div>
                           )}
@@ -1363,6 +1388,7 @@ export const AnalysisSettings: React.FC = () => {
               <li>{t('• 提示词修改后将应用到新的分析任务')}</li>
               <li>{t('• 忽略规则可以提高分析效率，避免处理不必要的文件')}</li>
               <li>{t('• 系统预设的忽略规则不能删除')}</li>
+              <li>{t('• 标记【排除清理】的规则会在清理查重时自动跳过，确保核心数据与工作区安全')}</li>
               <li>{t('• 通配符支持 * 和 ? 匹配，正则表达式支持更复杂的模式')}</li>
             </ul>
           </div>
@@ -1386,7 +1412,8 @@ const EditRuleForm: React.FC<EditRuleFormProps> = ({ rule, onSave, onCancel }) =
   const [editedRule, setEditedRule] = useState({
     type: rule.type,
     value: rule.value,
-    description: rule.description || ''
+    description: rule.description || '',
+    isCzkawka: rule.isCzkawka ?? false
   })
 
   const handleSave = () => {
@@ -1429,8 +1456,20 @@ const EditRuleForm: React.FC<EditRuleFormProps> = ({ rule, onSave, onCancel }) =
           onChange={e => setEditedRule({ ...editedRule, description: e.target.value })}
         />
       </div>
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id={`edit-rule-czkawka-${rule.id}`}
+          checked={editedRule.isCzkawka}
+          onChange={e => setEditedRule({ ...editedRule, isCzkawka: e.target.checked })}
+          className="rounded border-gray-300 text-primary focus:ring-primary h-4 w-4"
+        />
+        <Label htmlFor={`edit-rule-czkawka-${rule.id}`} className="text-xs cursor-pointer select-none">
+          {t('清理与查重时原生排除保护')}
+        </Label>
+      </div>
       <div className="flex items-center gap-2">
-        <Button size="sm" onClick={handleSave}>
+        <Button size="sm" onClick={handleSave} disabled={!editedRule.value?.trim()}>
           <Save className="h-4 w-4 mr-1" />
           {t('保存')}
         </Button>

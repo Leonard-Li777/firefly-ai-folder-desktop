@@ -159,6 +159,7 @@ export const Organize: React.FC = () => {
 
   const [inspectedFile, setInspectedFile] = useState<any | null>(null)
   const [duplicateSelectedCount, setDuplicateSelectedCount] = useState<number>(0)
+  const [isDuplicateProcessing, setIsDuplicateProcessing] = useState<boolean>(false)
 
   const handleClearInspectedFile = useCallback(() => {
     setInspectedFile(null)
@@ -253,7 +254,7 @@ export const Organize: React.FC = () => {
           }}
         />
 
-        <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b gap-2 flex-nowrap min-w-0 overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b gap-2 flex-nowrap min-w-0 overflow-hidden min-h-12">
           <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
             <div className="flex items-center -space-x-px shrink-0">
               <Button
@@ -261,10 +262,10 @@ export const Organize: React.FC = () => {
                 size="sm"
                 onClick={handleBack}
                 disabled={!canGoBack}
-                className="rounded-r-none gap-1 text-muted-foreground hover:text-foreground h-8 shrink-0"
+                className="rounded-r-none gap-0.5 text-muted-foreground hover:text-foreground h-6 px-1.5 text-xs shrink-0"
                 title={t('返回')}
               >
-                <MaterialIcon icon="arrow_back" className="text-sm shrink-0" />
+                <MaterialIcon icon="arrow_back" className="text-xs shrink-0" />
                 <span className="truncate">{t('返回')}</span>
               </Button>
               <Button
@@ -272,14 +273,14 @@ export const Organize: React.FC = () => {
                 size="sm"
                 onClick={handleForward}
                 disabled={!canForward}
-                className="rounded-l-none gap-1 text-muted-foreground hover:text-foreground h-8 shrink-0"
+                className="rounded-l-none gap-0.5 text-muted-foreground hover:text-foreground h-6 px-1.5 text-xs shrink-0"
                 title={t('前进')}
               >
                 <span className="truncate">{t('前进')}</span>
-                <MaterialIcon icon="arrow_forward" className="text-sm shrink-0" />
+                <MaterialIcon icon="arrow_forward" className="text-xs shrink-0" />
               </Button>
             </div>
-            <div className="w-px h-4 bg-border/50 shrink-0" />
+            <div className="w-px h-3.5 bg-border/50 shrink-0" />
             <StageBreadcrumb
               stage={stage}
               onSelectStage={setStage}
@@ -341,15 +342,15 @@ export const Organize: React.FC = () => {
                     const btn = document.getElementById('btn-trash-duplicates-trigger')
                     if (btn) btn.click()
                   }}
-                  disabled={isTrashingDuplicates || duplicateSelectedCount === 0}
+                  disabled={isTrashingDuplicates || isDuplicateProcessing || duplicateSelectedCount === 0}
                   className="text-xs gap-1.5 px-4 font-bold shadow-md shadow-primary/10 h-8 shrink-0"
                 >
                   <MaterialIcon
-                    icon={isTrashingDuplicates ? 'sync' : 'auto_fix_high'}
-                    className={cn('text-sm', isTrashingDuplicates && 'animate-spin')}
+                    icon={isTrashingDuplicates || isDuplicateProcessing ? 'sync' : 'auto_fix_high'}
+                    className={cn('text-sm', (isTrashingDuplicates || isDuplicateProcessing) && 'animate-spin')}
                   />
                   <span>
-                    {isTrashingDuplicates
+                    {isTrashingDuplicates || isDuplicateProcessing
                       ? t('正在批量处理...')
                       : duplicateSelectedCount > 0
                         ? t('批量处理全部勾选 ({count})', { count: duplicateSelectedCount })
@@ -555,6 +556,7 @@ export const Organize: React.FC = () => {
                   onExecuteTrash={trashDuplicateFiles}
                   isTrashing={isTrashingDuplicates}
                   onSelectedCountChange={setDuplicateSelectedCount}
+                  onProcessingStateChange={setIsDuplicateProcessing}
                   onFilesChanged={loadFilesToOrganize}
                 />
               )}

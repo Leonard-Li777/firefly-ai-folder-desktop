@@ -605,7 +605,7 @@ export const MonitoringSettings: React.FC = () => {
               <Button variant="outline">{t('取消')}</Button>
             </AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button variant="destructive" onClick={handleConfirmDelete}>
+              <Button variant="destructive" className='text-destructive-foreground' onClick={handleConfirmDelete}>
                 {t('移除')}
               </Button>
             </AlertDialogAction>

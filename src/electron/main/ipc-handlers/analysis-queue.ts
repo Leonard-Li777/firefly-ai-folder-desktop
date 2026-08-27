@@ -14,14 +14,7 @@ export function registerAnalysisQueueIPCHandlers() {
       forceReanalyze?: boolean
     ) => {
       try {
-        // 本地模型正忙（如分析队列进行中）时拒绝新请求，避免本地模型无法负载
-        if (analysisQueueService.isLocalModelBusy()) {
-          logger.warn(LogCategory.MAIN, '[IPC] 本地模型正忙，丢弃添加分析队列请求')
-          analysisQueueService.notifyLocalModelBusy()
-          return { success: false, busy: true }
-        }
         await analysisQueueService.addItems(items, !!forceReanalyze)
-        return { success: true }
       } catch (error) {
         logger.error(LogCategory.MAIN, '[IPC] 添加分析队列项目失败:', error)
         throw error
@@ -36,14 +29,7 @@ export function registerAnalysisQueueIPCHandlers() {
       forceReanalyze?: boolean
     ) => {
       try {
-        // 本地模型正忙（如分析队列进行中）时拒绝新请求，避免本地模型无法负载
-        if (analysisQueueService.isLocalModelBusy()) {
-          logger.warn(LogCategory.MAIN, '[IPC] 本地模型正忙，丢弃添加解析分析队列请求')
-          analysisQueueService.notifyLocalModelBusy()
-          return { success: false, busy: true }
-        }
         await analysisQueueService.addItemsResolved(items, !!forceReanalyze)
-        return { success: true }
       } catch (error) {
         logger.error(LogCategory.MAIN, '[IPC] 添加解析分析队列项目失败:', error)
         throw error
@@ -84,14 +70,7 @@ export function registerAnalysisQueueIPCHandlers() {
   })
   ipcMain.handle('analysis-queue/start', async (event, workspaceId?: number) => {
     try {
-      // 本地模型正忙（如分析队列进行中）时拒绝新请求，避免本地模型无法负载
-      if (analysisQueueService.isLocalModelBusy()) {
-        logger.warn(LogCategory.MAIN, '[IPC] 本地模型正忙，丢弃启动分析队列请求')
-        analysisQueueService.notifyLocalModelBusy()
-        return { success: false, busy: true }
-      }
       await analysisQueueService.start(workspaceId)
-      return { success: true }
     } catch (error) {
       logger.error(LogCategory.MAIN, '[IPC] 启动分析队列失败:', error)
       throw error

@@ -27,6 +27,7 @@ interface BatchDuplicateViewProps {
   onExecuteTrash: (filePaths: string[]) => Promise<void>
   isTrashing?: boolean
   onSelectedCountChange?: (count: number) => void
+  onProcessingStateChange?: (isProcessing: boolean) => void
   onFilesChanged?: () => Promise<void> | void
 }
 
@@ -80,6 +81,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   onExecuteTrash,
   isTrashing = false,
   onSelectedCountChange,
+  onProcessingStateChange,
   onFilesChanged
 }) => {
   const [minSimilarity, setMinSimilarity] = useState<number>(7.5)
@@ -112,6 +114,13 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   const [streamingScannedCount, setStreamingScannedCount] = useState<number>(0)
   const [streamingTotalCount, setStreamingTotalCount] = useState<number>(0)
   const [currentScanStage, setCurrentScanStage] = useState<string>('')
+
+  // 将批量处理执行状态即时同步给顶栏操作按钮
+  useEffect(() => {
+    if (onProcessingStateChange) {
+      onProcessingStateChange(isBatchProcessing)
+    }
+  }, [isBatchProcessing, onProcessingStateChange])
 
   // 建立由真实路径到智能文件名/元数据的快速映射索引
   const fileMetaMap = useMemo(() => {
@@ -146,14 +155,22 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
 
     // 订阅流式进度
     let cleanupProgress: (() => void) | undefined = undefined
+    let localMaxScanned = 0
+    let localMaxTotal = 0
+
     if (window.electronAPI?.organizeBatch?.onScanProgress) {
       cleanupProgress = window.electronAPI.organizeBatch.onScanProgress(data => {
         if (data.scanned !== undefined && data.scanned > 0) {
-          setStreamingScannedCount(data.scanned)
-          setScannedCount(data.scanned)
+          localMaxScanned = Math.max(localMaxScanned, data.scanned)
+          setStreamingScannedCount(localMaxScanned)
+          setScannedCount(localMaxScanned)
         }
         if (data.totalScanned !== undefined && data.totalScanned > 0) {
-          setStreamingTotalCount(data.totalScanned)
+          localMaxTotal = Math.max(localMaxTotal, data.totalScanned)
+          setStreamingTotalCount(localMaxTotal)
+          if (!localMaxScanned) {
+            setScannedCount(localMaxTotal)
+          }
         }
         if (data.stage) {
           setCurrentScanStage(data.stage)
@@ -180,7 +197,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
           files: (g.files || []).map((f: DuplicateFileItem) => ({ ...f }))
         }))
         setDuplicateGroups(normalizedGroups)
-        setScannedCount(files.length || streamingScannedCount)
+        const finalCount = localMaxScanned || localMaxTotal || streamingScannedCount || files.length
+        setScannedCount(finalCount)
         setHasScanned(true)
         toast.success(t('查重扫描完成，发现 {count} 个相似组', { count: normalizedGroups.length }))
       }
@@ -653,21 +671,39 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     }
 
     setTrashingGroupId(group.groupId || String(gIdx))
+    const isVideoOpt = group.strategy === 'video_optimizer'
+    const isExifClean = group.strategy === 'exif_remover'
+    const loadingToastId = isVideoOpt
+      ? toast.loading(t('正在对 {count} 个视频进行高效能优化转码，请稍候...', { count: targetPaths.length }))
+      : isExifClean
+      ? toast.loading(t('正在处理 {count} 个图片的 Exif 隐私信息清除...', { count: targetPaths.length }))
+      : null
+
     try {
       if (group.strategy === 'video_optimizer') {
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('optimize', targetPaths)
-        toast.success(t('已完成 {count} 个视频的高效能转码优化', { count: res?.successCount || targetPaths.length }))
+        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('optimize', targetPaths, workspaceDirectoryPath)
+        if (loadingToastId) toast.dismiss(loadingToastId)
+        if (res?.errors && res.errors.length > 0 && res.successCount === 0) {
+          toast.error(t('视频优化转码失败: {err}', { err: res.errors[0]?.error || '' }))
+          return
+        }
+        toast.success(t('已完成 {count} 个视频的高效能转码优化并导出至目录', { count: res?.successCount || targetPaths.length }))
       } else if (group.strategy === 'exif_remover') {
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('clean_exif', targetPaths)
-        toast.success(t('已成功擦除 {count} 个图片的 Exif 隐私信息', { count: res?.successCount || targetPaths.length }))
+        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('clean_exif', targetPaths, workspaceDirectoryPath)
+        if (loadingToastId) toast.dismiss(loadingToastId)
+        if (res?.errors && res.errors.length > 0 && res.successCount === 0) {
+          toast.error(t('Exif 隐私信息擦除失败: {err}', { err: res.errors[0]?.error || '' }))
+          return
+        }
+        toast.success(t('已成功生成 {count} 个无 Exif 隐私信息的图片副本至目录', { count: res?.successCount || targetPaths.length }))
       } else if (group.strategy === 'bad_names') {
         const badNameTargets = group.files
           .filter(f => f.selectedForDelete && f.path)
           .map(f => ({ path: f.path, newName: f.fingerprint || undefined }))
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('rename_bad_name', badNameTargets)
+        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('rename_bad_name', badNameTargets, workspaceDirectoryPath)
         toast.success(t('已成功按推荐名更名 {count} 个异常文件名', { count: res?.successCount || targetPaths.length }))
       } else if (group.strategy === 'bad_extensions') {
-        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('fix_extension', targetPaths)
+        const res = await window.electronAPI?.organizeBatch?.executeStrategyFix('fix_extension', targetPaths, workspaceDirectoryPath)
         toast.success(t('已成功修正 {count} 个文件的错误扩展名', { count: res?.successCount || targetPaths.length }))
       } else {
         await onExecuteTrash(targetPaths)
@@ -749,7 +785,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     { key: 'exact_hash', label: t('精确内容一致'), icon: 'fingerprint', category: 'multimodal' },
     { key: 'image_phash', label: t('相似图片'), icon: 'image', category: 'multimodal' },
     { key: 'audio_hash', label: t('相似音乐'), icon: 'audiotrack', category: 'multimodal' },
-    { key: 'video_phash', label: t('相似视频'), icon: 'videocam', category: 'multimodal', warning: t('耗时较长') },
+    { key: 'video_phash', label: t('相似视频'), icon: 'videocam', category: 'multimodal', warning: t('查找耗时较长') },
     { key: 'text_simhash', label: t('文档语义相似'), icon: 'article', category: 'multimodal', disabled: true },
     { key: 'filename_heuristic', label: t('副本衍生文件'), icon: 'copy_all', category: 'multimodal', disabled: true },
 
@@ -763,8 +799,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     { key: 'bad_extensions', label: t('错误扩展名'), icon: 'extension_off', category: 'anomaly' },
     { key: 'bad_names', label: t('异常文件名'), icon: 'edit_attributes', category: 'anomaly' },
 
-    { key: 'exif_remover', label: t('Exif隐私清理'), icon: 'privacy_tip', category: 'optimize', description: t('扫描并移除图片/视频文件中携带的 Exif 元数据（如拍摄位置、相机型号、时间戳等隐私信息），防止隐私泄露。') },
-    { key: 'video_optimizer', label: t('视频优化转换'), icon: 'smart_display', category: 'optimize', description: t('对视频进行转码压缩与格式优化，在尽量保持画质的前提下大幅减小文件体积，便于存储与分享。') }
+    { key: 'exif_remover', label: t('Exif隐私清理'), icon: 'privacy_tip', category: 'optimize', description: t('扫描图片中携带的 Exif 元数据（如 GPS 定位、拍摄器材、时间等隐私），清理后将另存为无隐私副本至 .VirtualDirectory/.cleaned_exif 目录，完全保留原文件。') },
+    { key: 'video_optimizer', label: t('视频优化转换'), icon: 'smart_display', category: 'optimize', warning: t('优化过程耗时较长'), description: t('采用 AV1/HEVC 高能效编码转码压缩视频，优化后将另存为高清轻量副本至 .VirtualDirectory/.video_optimizer 目录，完全保留原文件。') }
   ], [])
 
   // 过滤后的组 (支持策略筛选和关键词搜索)
@@ -829,6 +865,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     let totalOptimized = 0
     let totalExifCleaned = 0
     const processedPaths = new Set<string>()
+
+    const globalLoadingToastId = toast.loading(t('正在批量处理勾选的文件，请稍候...'))
 
     try {
       // 阶段 1：优先执行所有「删除到回收站」类的策略组
@@ -941,7 +979,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
         try {
           const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
             'optimize',
-            videoOptPaths
+            videoOptPaths,
+            workspaceDirectoryPath
           )
           totalOptimized += res?.successCount || videoOptPaths.length
         } catch (err: any) {
@@ -969,7 +1008,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
         try {
           const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
             'clean_exif',
-            exifPaths
+            exifPaths,
+            workspaceDirectoryPath
           )
           totalExifCleaned += res?.successCount || exifPaths.length
         } catch (err: any) {
@@ -1001,6 +1041,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
           })
       })
 
+      if (globalLoadingToastId) toast.dismiss(globalLoadingToastId)
+
       // 阶段 4：汇总反馈与提示
       const detailParts: string[] = []
       if (totalDeleted > 0) detailParts.push(t('删除 {count} 个', { count: totalDeleted }))
@@ -1027,7 +1069,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
       if (onFilesChanged) {
         await onFilesChanged()
       }
+    } catch (err: any) {
+      if (globalLoadingToastId) toast.dismiss(globalLoadingToastId)
+      toast.error(err?.message || t('批量处理执行失败'))
     } finally {
+      if (globalLoadingToastId) toast.dismiss(globalLoadingToastId)
       setIsBatchProcessing(false)
     }
   }
@@ -1277,12 +1323,12 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
 
                                   <div className="flex items-center gap-1.5 flex-shrink-0">
                                     {strat.warning && (
-                                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 font-medium text-amber-600 border-amber-600/30 bg-amber-500/5">
+                                      <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-4 font-medium text-amber-600 border-amber-600/30 bg-amber-500/5">
                                         {strat.warning}
                                       </Badge>
                                     )}
                                     {isDisabled && (
-                                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 text-muted-foreground border-border/40">
+                                      <Badge variant="outline" className="text-[11px] px-1.5 py-0 h-4 text-muted-foreground border-border/40">
                                         {t('即将推出')}
                                       </Badge>
                                     )}

@@ -19,7 +19,7 @@ interface Toast {
 
 interface ToastStore {
   toasts: Toast[]
-  addToast: (toast: Omit<Toast, 'id'> & { id?: string }) => void
+  addToast: (toast: Omit<Toast, 'id'> & { id?: string }) => string
   removeToast: (id: string) => void
 }
 
@@ -51,6 +51,8 @@ export const useToastStore = create<ToastStore>(set => ({
         }))
       }, duration)
     }
+
+    return id
   },
   removeToast: id =>
     set(state => ({
@@ -152,15 +154,15 @@ const ToastItem: React.FC<{ toast: Toast; onClose: () => void }> = ({ toast, onC
 
 // 便捷的toast函数
 export const toast = {
-  success: (message: string, duration?: number, id?: string, action?: Toast['action']) =>
+  success: (message: string, duration?: number, id?: string, action?: Toast['action']): string =>
     useToastStore.getState().addToast({ message, type: 'success', duration, id, action }),
-  error: (message: string, duration?: number, id?: string, action?: Toast['action']) =>
+  error: (message: string, duration?: number, id?: string, action?: Toast['action']): string =>
     useToastStore.getState().addToast({ message, type: 'error', duration, id, action }),
-  warning: (message: string, duration?: number, id?: string, action?: Toast['action']) =>
+  warning: (message: string, duration?: number, id?: string, action?: Toast['action']): string =>
     useToastStore.getState().addToast({ message, type: 'warning', duration, id, action }),
-  info: (message: string, duration?: number, id?: string, action?: Toast['action']) =>
+  info: (message: string, duration?: number, id?: string, action?: Toast['action']): string =>
     useToastStore.getState().addToast({ message, type: 'info', duration, id, action }),
-  loading: (message: string, duration?: number, id?: string, action?: Toast['action']) =>
-    useToastStore.getState().addToast({ message, type: 'loading', duration, id, action }),
+  loading: (message: string, duration?: number, id?: string, action?: Toast['action']): string =>
+    useToastStore.getState().addToast({ message, type: 'loading', duration: duration ?? 0, id, action }),
   dismiss: (id: string) => useToastStore.getState().removeToast(id)
 }
