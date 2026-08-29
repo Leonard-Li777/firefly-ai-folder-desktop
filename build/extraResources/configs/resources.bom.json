@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "generatedAt": "2026-08-29T01:28:00.887Z",
+  "resourcePackage": {
+    "repo": "Leonard-Li777/firefly-resources",
+    "containerTag": "resources"
+  },
+  "resources": {
+    "fastfetch": {
+      "version": "2.62.0",
+      "source": "shared",
+      "asset": {
+        "name": "fastfetch-2.62.0-win32-x64.zip",
+        "sha256": "3381c3b208f9495e7c2954784e4340833e48bfbc1e448618c87d779cc7457378",
+        "size": 2908282,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/fastfetch-2.62.0-win32-x64.zip"
+      }
+    },
+    "llama-model-download": {
+      "version": "1.0.0",
+      "source": "shared",
+      "asset": {
+        "name": "llama-model-download-1.0.0-win32-x64.zip",
+        "sha256": "50966cc8f346240d20897cee219ec51bdafb6bcf2c2f11ce50b3f7e8dfed9ec0",
+        "size": 782485,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/llama-model-download-1.0.0-win32-x64.zip"
+      }
+    },
+    "ffmpeg": {
+      "version": "master-20260827",
+      "source": "shared",
+      "asset": {
+        "name": "ffmpeg-master-20260827-win32-x64.zip",
+        "sha256": "e39f97014143737827de6f9f91c3cfc283cea620f75c3fdef5d1f505c79171ff",
+        "size": 56096345,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ffmpeg-master-20260827-win32-x64.zip"
+      }
+    },
+    "ffprobe": {
+      "version": "master-20260827",
+      "source": "shared",
+      "asset": {
+        "name": "ffprobe-master-20260827-win32-x64.zip",
+        "sha256": "04940a8c3162f5783a29cd9940e3a1296e4f148fdaef2be45eac20e8077b4ac8",
+        "size": 55987464,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ffprobe-master-20260827-win32-x64.zip"
+      }
+    },
+    "geo": {
+      "version": "20260825",
+      "source": "shared",
+      "asset": {
+        "name": "geo-20260825.tar.gz",
+        "sha256": "7c71064e7942a0391addd61ca3a313ac033a589fdfb6cf001a1e7c5e9abb5fb1",
+        "size": 8702416,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/geo-20260825.tar.gz"
+      }
+    },
+    "exiftool": {
+      "version": "13.59",
+      "source": "shared",
+      "asset": {
+        "name": "exiftool-13.59-win32-x64.zip",
+        "sha256": "40eef5c309e16b6638ad7fbeb11b980bb882f98e39759407d15ae17d4882bd48",
+        "size": 10931900,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/exiftool-13.59-win32-x64.zip"
+      }
+    }
+  },
+  "engines": {
+    "llama.cpp": {
+      "version": "b10582",
+      "source": "upstream",
+      "files": [
+        {
+          "name": "cudart-llama-bin-win-cuda-12.4-x64.zip",
+          "size": 391443627,
+          "platform": "win32",
+          "arch": "x64",
+          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/cudart-llama-bin-win-cuda-12.4-x64.zip"
+        },
+        {
+          "name": "llama-b10582-bin-win-cuda-12.4-x64.zip",
+          "size": 250973879,
+          "platform": "win32",
+          "arch": "x64",
+          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cuda-12.4-x64.zip"
+        },
+        {
+          "name": "llama-b10582-bin-win-vulkan-x64.zip",
+          "size": 34948736,
+          "platform": "win32",
+          "arch": "x64",
+          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-vulkan-x64.zip"
+        },
+        {
+          "name": "llama-b10582-bin-win-rocm-7.14-x64.zip",
+          "size": 196956675,
+          "platform": "win32",
+          "arch": "x64",
+          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-rocm-7.14-x64.zip"
+        },
+        {
+          "name": "llama-b10582-bin-win-sycl-x64.zip",
+          "size": 119840170,
+          "platform": "win32",
+          "arch": "x64",
+          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-sycl-x64.zip"
+        },
+        {
+          "name": "llama-b10582-bin-win-openvino-2026.3-x64.zip",
+          "size": 80396131,
+          "platform": "win32",
+          "arch": "x64",
+          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-openvino-2026.3-x64.zip"
+        },
+        {
+          "name": "llama-b10582-bin-win-cpu-x64.zip",
+          "size": 18592859,
+          "platform": "win32",
+          "arch": "x64",
+          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cpu-x64.zip"
+        },
+        {
+          "name": "llama-b10582-bin-win-hip-x64.zip",
+          "size": 196503634,
+          "platform": "win32",
+          "arch": "x64",
+          "url": ""
+        }
+      ]
+    }
+  }
+}
