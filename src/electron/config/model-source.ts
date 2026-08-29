@@ -730,30 +730,6 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
-      id: 'unsloth/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M',
-      dspark: 'LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M',
-      name: `LFM2.5 1.2B Instruct（${t('超快')}）`,
-      company: 'unsloth',
-      parameterSize: '1.2B',
-      totalSize: '873MB',
-      description: t('最新 LFM2.5 指令模型，文本分析高效，CPU 推理快速。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      isBuiltin: true,
-      contextLength: 32768,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'extreme',
-        quality: 'medium'
-      },
-      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('英文更佳')],
-      recommendedConfig: {
-        numCtx: 4096,
-        numPredict: 1024
-      }
-    },
-    {
       id: 'LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M',
       dspark: 'LiquidAI/LFM2.5-2.6B-DSpark-GGUF:Q4_K_M',
       name: `LFM2.5 2.6B（${t('高效')}）`,

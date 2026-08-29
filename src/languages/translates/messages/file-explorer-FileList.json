@@ -323,150 +323,6 @@
     "$files": ["src/renderer/components/file-explorer/FileList/utils.ts(7073-7080)"],
     "$id": 8524
   },
-  "原文件已在磁盘上丢失或被移动": {
-    "en-US": "The original file has been lost or moved on the disk",
-    "es-ES": "El archivo original se ha perdido o se ha movido en el disco",
-    "ar-EG": "فقد الملف الأصلي على القرص أو تم نقله",
-    "pt-PT": "O ficheiro original foi perdido ou movido no disco",
-    "ru-RU": "Исходный файл потерян или перемещён с диска",
-    "ja-JP": "元のファイルがディスク上で紛失したか、移動されました",
-    "de-DE": "Die ursprüngliche Datei ging auf der Festplatte verloren oder wurde verschoben",
-    "fr-FR": "Le fichier original a été perdu ou déplacé sur le disque",
-    "ko-KR": "원본 파일이 디스크에서 손실되거나 이동되었습니다",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/GridCell.tsx(7495-7513)"],
-    "$id": 8525
-  },
-  "打开文件失败: {message}": {
-    "en-US": "Failed to open file: {message}",
-    "es-ES": "No se pudo abrir el archivo: {message}",
-    "ar-EG": "فشل في فتح الملف: {message}",
-    "pt-PT": "Falha ao abrir o arquivo: {message}",
-    "ru-RU": "Не удалось открыть файл: {message}",
-    "ja-JP": "ファイルを開けませんでした: {message}",
-    "de-DE": "Datei konnte nicht geöffnet werden: {message}",
-    "fr-FR": "Échec de l'ouverture du fichier : {message}",
-    "ko-KR": "파일을 열지 못했습니다: {message}",
-    "$files": [
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(10230-10251)",
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(17595-17616)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(9367-9388)"
-    ],
-    "$id": 8526
-  },
-  "已丢失": {
-    "en-US": "Lost",
-    "es-ES": "Se ha perdido",
-    "ar-EG": "مفقود",
-    "pt-PT": "Perdido",
-    "ru-RU": "Потерян",
-    "ja-JP": "紛失しました",
-    "de-DE": "Verloren gegangen",
-    "fr-FR": "Perdu",
-    "ko-KR": "손실됨",
-    "$files": [
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(11352-11359)",
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(20719-20726)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(11819-11826)"
-    ],
-    "$id": 8527
-  },
-  "未知失败原因": {
-    "en-US": "Unknown failure reason",
-    "es-ES": "Causa de fallo desconocida",
-    "ar-EG": "سبب الفشل مجهول",
-    "pt-PT": "Razão de falha desconhecida",
-    "ru-RU": "Неизвестная причина сбоя",
-    "ja-JP": "未知の失敗理由",
-    "de-DE": "Unbekannter Fehlergrund",
-    "fr-FR": "Raison d'échec inconnue",
-    "ko-KR": "알 수 없는 실패 원인",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(3747-3757)"],
-    "$id": 8528
-  },
-  "已分析": {
-    "en-US": "Analyzed",
-    "es-ES": "Analizado",
-    "ar-EG": "تم التحليل",
-    "pt-PT": "Análise concluída",
-    "ru-RU": "Проанализировано",
-    "ja-JP": "分析済み",
-    "de-DE": "Analysiert\r",
-    "fr-FR": "Analysé",
-    "ko-KR": "분석 완료",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4028-4035)"],
-    "$id": 8529
-  },
-  "分析队列中": {
-    "en-US": "In analysis queue",
-    "es-ES": "En cola de análisis",
-    "ar-EG": "في قائمة الانتظار للتحليل",
-    "pt-PT": "A aguardar na fila de análise",
-    "ru-RU": "В очереди на анализ",
-    "ja-JP": "分析キュー中",
-    "de-DE": "In der Analysewarteschlange\r",
-    "fr-FR": "En attente d'analyse",
-    "ko-KR": "분석 대기열에 있음",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4348-4357)"],
-    "$id": 8530
-  },
-  "分析中": {
-    "en-US": "Analyzing",
-    "es-ES": "Analizando",
-    "ar-EG": "جاري التحليل\r",
-    "pt-PT": "A analisar",
-    "ru-RU": "Анализ",
-    "ja-JP": "分析中\r",
-    "de-DE": "Analysieren",
-    "fr-FR": "En cours d'analyse",
-    "ko-KR": "분석 중",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4647-4654)"],
-    "$id": 8531
-  },
-  "失败": {
-    "en-US": "Failed",
-    "es-ES": "Fallido",
-    "ar-EG": "فشل\r",
-    "pt-PT": "Falhou",
-    "ru-RU": "Сбой",
-    "ja-JP": "失敗",
-    "de-DE": "Fehlgeschlagen",
-    "fr-FR": "Échec",
-    "ko-KR": "실패",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4911-4917)"],
-    "$id": 8532
-  },
-  "文件夹": {
-    "en-US": "Folder",
-    "es-ES": "Carpeta",
-    "ar-EG": "مجلد\r",
-    "pt-PT": "Pasta",
-    "ru-RU": "Папка",
-    "ja-JP": "フォルダ",
-    "de-DE": "Ordner",
-    "fr-FR": "Dossier",
-    "ko-KR": "폴더",
-    "$files": [
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(14254-14261)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(17616-17623)"
-    ],
-    "$id": 8533
-  },
-  "文件": {
-    "en-US": "File",
-    "es-ES": "Archivo",
-    "ar-EG": "الملف",
-    "pt-PT": "Ficheiro",
-    "ru-RU": "Файл",
-    "ja-JP": "ファイル",
-    "de-DE": "Datei",
-    "fr-FR": "Fichier",
-    "ko-KR": "파일",
-    "$files": [
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(27281-27287)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(17650-17656)"
-    ],
-    "$id": 8534
-  },
   "预览": {
     "en-US": "Preview",
     "es-ES": "Avance",
@@ -655,5 +511,149 @@
     "ko-KR": "먼저 가상 디렉터리를 내보내십시오. (가상 디렉터리는 하드 디스크 공간을 차지하지 않습니다.)",
     "$files": ["src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(6568-6592)"],
     "$id": 8548
+  },
+  "原文件已在磁盘上丢失或被移动": {
+    "en-US": "The original file has been lost or moved on the disk",
+    "es-ES": "El archivo original se ha perdido o se ha movido en el disco",
+    "ar-EG": "فقد الملف الأصلي على القرص أو تم نقله",
+    "pt-PT": "O ficheiro original foi perdido ou movido no disco",
+    "ru-RU": "Исходный файл потерян или перемещён с диска",
+    "ja-JP": "元のファイルがディスク上で紛失したか、移動されました",
+    "de-DE": "Die ursprüngliche Datei ging auf der Festplatte verloren oder wurde verschoben",
+    "fr-FR": "Le fichier original a été perdu ou déplacé sur le disque",
+    "ko-KR": "원본 파일이 디스크에서 손실되거나 이동되었습니다",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/GridCell.tsx(7495-7513)"],
+    "$id": 8525
+  },
+  "打开文件失败: {message}": {
+    "en-US": "Failed to open file: {message}",
+    "es-ES": "No se pudo abrir el archivo: {message}",
+    "ar-EG": "فشل في فتح الملف: {message}",
+    "pt-PT": "Falha ao abrir o arquivo: {message}",
+    "ru-RU": "Не удалось открыть файл: {message}",
+    "ja-JP": "ファイルを開けませんでした: {message}",
+    "de-DE": "Datei konnte nicht geöffnet werden: {message}",
+    "fr-FR": "Échec de l'ouverture du fichier : {message}",
+    "ko-KR": "파일을 열지 못했습니다: {message}",
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(10230-10251)",
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(17595-17616)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(9367-9388)"
+    ],
+    "$id": 8526
+  },
+  "已丢失": {
+    "en-US": "Lost",
+    "es-ES": "Se ha perdido",
+    "ar-EG": "مفقود",
+    "pt-PT": "Perdido",
+    "ru-RU": "Потерян",
+    "ja-JP": "紛失しました",
+    "de-DE": "Verloren gegangen",
+    "fr-FR": "Perdu",
+    "ko-KR": "손실됨",
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(11352-11359)",
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(20719-20726)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(11819-11826)"
+    ],
+    "$id": 8527
+  },
+  "未知失败原因": {
+    "en-US": "Unknown failure reason",
+    "es-ES": "Causa de fallo desconocida",
+    "ar-EG": "سبب الفشل مجهول",
+    "pt-PT": "Razão de falha desconhecida",
+    "ru-RU": "Неизвестная причина сбоя",
+    "ja-JP": "未知の失敗理由",
+    "de-DE": "Unbekannter Fehlergrund",
+    "fr-FR": "Raison d'échec inconnue",
+    "ko-KR": "알 수 없는 실패 원인",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(3747-3757)"],
+    "$id": 8528
+  },
+  "已分析": {
+    "en-US": "Analyzed",
+    "es-ES": "Analizado",
+    "ar-EG": "تم التحليل",
+    "pt-PT": "Análise concluída",
+    "ru-RU": "Проанализировано",
+    "ja-JP": "分析済み",
+    "de-DE": "Analysiert\r",
+    "fr-FR": "Analysé",
+    "ko-KR": "분석 완료",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4028-4035)"],
+    "$id": 8529
+  },
+  "分析队列中": {
+    "en-US": "In analysis queue",
+    "es-ES": "En cola de análisis",
+    "ar-EG": "في قائمة الانتظار للتحليل",
+    "pt-PT": "A aguardar na fila de análise",
+    "ru-RU": "В очереди на анализ",
+    "ja-JP": "分析キュー中",
+    "de-DE": "In der Analysewarteschlange\r",
+    "fr-FR": "En attente d'analyse",
+    "ko-KR": "분석 대기열에 있음",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4348-4357)"],
+    "$id": 8530
+  },
+  "分析中": {
+    "en-US": "Analyzing",
+    "es-ES": "Analizando",
+    "ar-EG": "جاري التحليل\r",
+    "pt-PT": "A analisar",
+    "ru-RU": "Анализ",
+    "ja-JP": "分析中\r",
+    "de-DE": "Analysieren",
+    "fr-FR": "En cours d'analyse",
+    "ko-KR": "분석 중",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4647-4654)"],
+    "$id": 8531
+  },
+  "失败": {
+    "en-US": "Failed",
+    "es-ES": "Fallido",
+    "ar-EG": "فشل\r",
+    "pt-PT": "Falhou",
+    "ru-RU": "Сбой",
+    "ja-JP": "失敗",
+    "de-DE": "Fehlgeschlagen",
+    "fr-FR": "Échec",
+    "ko-KR": "실패",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4911-4917)"],
+    "$id": 8532
+  },
+  "文件夹": {
+    "en-US": "Folder",
+    "es-ES": "Carpeta",
+    "ar-EG": "مجلد\r",
+    "pt-PT": "Pasta",
+    "ru-RU": "Папка",
+    "ja-JP": "フォルダ",
+    "de-DE": "Ordner",
+    "fr-FR": "Dossier",
+    "ko-KR": "폴더",
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(14254-14261)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(17616-17623)"
+    ],
+    "$id": 8533
+  },
+  "文件": {
+    "en-US": "File",
+    "es-ES": "Archivo",
+    "ar-EG": "الملف",
+    "pt-PT": "Ficheiro",
+    "ru-RU": "Файл",
+    "ja-JP": "ファイル",
+    "de-DE": "Datei",
+    "fr-FR": "Fichier",
+    "ko-KR": "파일",
+    "$files": [
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(27281-27287)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(17650-17656)"
+    ],
+    "$id": 8534
   }
 }

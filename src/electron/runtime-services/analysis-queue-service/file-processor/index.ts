@@ -1279,7 +1279,7 @@ export class FileProcessor {
                 rootWorkspaceDir.path
               )
               const outPath = path.join(thumbDir, `${fileFingerprint}.webp`)
-              const success = await (thumbnailService as any).generateThumbnailFallback(filePath, outPath, String(existingBasicData?.id || ''))
+              const success = await (thumbnailService as any).generateThumbnailFallback(filePath, outPath, String(existingWorkspaceFile?.id || ''))
               if (success) {
                 return path.relative(rootWorkspaceDir.path, outPath)
               }
@@ -1298,24 +1298,20 @@ export class FileProcessor {
       directoryContext = dirContext
 
       // 提取完成，更新 Magika 分类 (优先使用 Omni 提取返回的 Magika)
-      if (anydocResult?.metadata?.magika) {
-        magikaCategory = {
-          label: anydocResult.metadata.magika.label || effectiveExt.replace('.', ''),
-          mime_type: anydocResult.metadata.magika.mime_type || anydocResult.metadata.basic?.mime_type || 'application/octet-stream',
-          group: anydocResult.metadata.magika.group || 'document',
-          description: anydocResult.metadata.magika.description || '',
-          extensions: anydocResult.metadata.magika.extensions || [effectiveExt.replace('.', '')],
-          is_text: anydocResult.metadata.magika.is_text ?? true,
-          score: anydocResult.metadata.magika.score ?? 0.99
-        }
-      } else if (!magikaCategory) {
-        magikaCategory = await magikaService.identifyFile(filePath)
+      const omniCat = anydocResult?.metadata?.category
+      if (omniCat) {
+        magikaCategory = typeof omniCat === 'string' ? JSON.parse(omniCat) : omniCat
       }
 
-      // 重新计算最终的 enhancedFileType 和 enhancedSmartName，以防没有后缀的文件被 Magika 识别后类型更新
-      const enhancedInfo = this.getEnhancedFileInfo(item.name, item.type, filePath, magikaCategory)
-      enhancedFileType = enhancedInfo.fileType
-      enhancedSmartName = enhancedInfo.smartName
+      // 净化低置信度 Magika 结果，防止误判扩展名（如将 txt 识别为 ps1）
+      magikaCategory = this.sanitizeMagikaCategory(magikaCategory, filePath)
+
+      if (magikaCategory) {
+        logger.info(
+          LogCategory.ANALYSIS_QUEUE,
+          `[FileProcessor] Magika 分类识别完成: ${item.name} (${typeof magikaCategory === 'string' ? magikaCategory : magikaCategory.label || magikaCategory.group})`
+        )
+      }
 
       // 组装内容：完全统一使用 Omni 提取的内容 (已在 Rust 原生端内完成文本层与 PP-OCRv6 融合)
       let combinedContent = anydocResult?.content?.trim() || ''
@@ -1394,7 +1390,7 @@ export class FileProcessor {
         documentMs: undefined, // 彻底移除冗余正文
         ocrMs: stage2OcrMs,
         htmlMs: omniBm?.html_ms,
-        thumbnailMs: stage2ThumbMs > 0 ? stage2ThumbMs : undefined
+        thumbnailMs: (stage2ThumbMs && stage2ThumbMs > 0) ? stage2ThumbMs : undefined
       }
 
       // 根据用户配置的 MAX_CONTENT_SIZE_KB 进行统一的 UTF-8 字符边界防乱码安全截断 (-1 表示不限制大小)
@@ -1578,23 +1574,7 @@ export class FileProcessor {
             cpuStatsWithBenchmark.performance.fresh.stage1Breakdown = stage1Benchmark
           }
 
-          // 1. 持久化 CPU 阶段提取的内容、元数据和性能指标至 files/file_contents/workspace_files
-          await this.saveBasicAnalysisData(
-            item,
-            fileFingerprint,
-            contentResult,
-            magikaCategory,
-            enhancedInfo.smartName,
-            enhancedInfo.fileType,
-            thumbnailRelativePath,
-            currentWorkspaceId,
-            timer,
-            cpuStatsWithBenchmark,
-            stage1Benchmark,
-            markitdownBenchmark
-          )
-
-          // 2. 更新 workspace_files 记录
+          // 更新 workspace_files 记录
           const wsFileRow = db
             .prepare(`SELECT id FROM workspace_files WHERE workspace_id = ? AND path = ?`)
             .get(currentWorkspaceId, filePath) as { id?: number } | undefined
@@ -1669,7 +1649,9 @@ export class FileProcessor {
           undefined,
           undefined,
           markitdownBenchmark,
-          1
+          1,
+          undefined,
+          stage1Benchmark
         )
 
         logger.info(
@@ -1776,7 +1758,8 @@ export class FileProcessor {
         dimResult?.groupingConfidence,
         markitdownBenchmark,
         analysisMode === 'quick_name' ? 3 : 4,
-        cpuSkipped
+        cpuSkipped,
+        stage1Benchmark
       )
 
       // ========== 补充写入基础 of Magika 类型与扩展名标签 ==========
@@ -1784,21 +1767,8 @@ export class FileProcessor {
 
       databaseService.syncFTSTags(fileFingerprint)
 
-      // ========== 最终统计收集 ==========
-      const analysisStats = await this.collectAnalysisStats(timer)
-      const analysisStatsWithBenchmark = applyMarkitdownBenchmark(
-        analysisStats,
-        markitdownBenchmark,
-        stage1Benchmark
-      )
-
-      await databaseService.updateFileAnalysisResult(workspaceFile.id, {
-        analysisStats: analysisStatsWithBenchmark,
-        thumbnailPath: thumbnailRelativePath || undefined
-      })
-
       // 从数据库捞取合并后的全量 analysisStats（包含 CPU 阶段 1/2 + GPU 阶段 3/4）推送给前端 UI
-      let finalMergedStats = analysisStatsWithBenchmark
+      let finalMergedStats: any = null
       try {
         const dbMergedRow = db
           .prepare('SELECT analysis_stats FROM file_contents WHERE file_fingerprint = ?')
@@ -1808,6 +1778,15 @@ export class FileProcessor {
         }
       } catch (e) {
         logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 回捞合并后的 analysis_stats 失败:', e)
+      }
+
+      if (!finalMergedStats) {
+        const analysisStats = await this.collectAnalysisStats(timer)
+        finalMergedStats = applyMarkitdownBenchmark(
+          analysisStats,
+          markitdownBenchmark,
+          stage1Benchmark
+        )
       }
 
       timer.printSummary()

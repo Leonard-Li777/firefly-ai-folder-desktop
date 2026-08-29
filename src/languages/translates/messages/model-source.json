@@ -52,10 +52,9 @@
       "src/electron/config/model-source.ts(924-930)",
       "src/electron/config/model-source.ts(16492-16498)",
       "src/electron/config/model-source.ts(20285-20291)",
-      "src/electron/config/model-source.ts(20987-20993)",
-      "src/electron/config/model-source.ts(21694-21700)",
-      "src/electron/config/model-source.ts(22915-22921)",
-      "src/electron/config/model-source.ts(25552-25558)"
+      "src/electron/config/model-source.ts(20992-20998)",
+      "src/electron/config/model-source.ts(22213-22219)",
+      "src/electron/config/model-source.ts(24850-24856)"
     ],
     "$id": 9607
   },
@@ -75,10 +74,9 @@
       "src/electron/config/model-source.ts(8490-8501)",
       "src/electron/config/model-source.ts(16509-16520)",
       "src/electron/config/model-source.ts(20294-20305)",
-      "src/electron/config/model-source.ts(20996-21007)",
-      "src/electron/config/model-source.ts(21703-21714)",
-      "src/electron/config/model-source.ts(22924-22935)",
-      "src/electron/config/model-source.ts(25561-25572)"
+      "src/electron/config/model-source.ts(21001-21012)",
+      "src/electron/config/model-source.ts(22222-22233)",
+      "src/electron/config/model-source.ts(24859-24870)"
     ],
     "$id": 9608
   },
@@ -103,13 +101,12 @@
       "src/electron/config/model-source.ts(18969-18976)",
       "src/electron/config/model-source.ts(19627-19634)",
       "src/electron/config/model-source.ts(20308-20315)",
-      "src/electron/config/model-source.ts(21010-21017)",
-      "src/electron/config/model-source.ts(21717-21724)",
-      "src/electron/config/model-source.ts(22365-22372)",
-      "src/electron/config/model-source.ts(22938-22945)",
-      "src/electron/config/model-source.ts(23633-23640)",
-      "src/electron/config/model-source.ts(25575-25582)",
-      "src/electron/config/model-source.ts(26197-26204)"
+      "src/electron/config/model-source.ts(21015-21022)",
+      "src/electron/config/model-source.ts(21663-21670)",
+      "src/electron/config/model-source.ts(22236-22243)",
+      "src/electron/config/model-source.ts(22931-22938)",
+      "src/electron/config/model-source.ts(24873-24880)",
+      "src/electron/config/model-source.ts(25495-25502)"
     ],
     "$id": 9609
   },
@@ -192,10 +189,10 @@
       "src/electron/config/model-source.ts(14243-14250)",
       "src/electron/config/model-source.ts(14881-14888)",
       "src/electron/config/model-source.ts(15704-15711)",
-      "src/electron/config/model-source.ts(24278-24285)",
-      "src/electron/config/model-source.ts(24929-24936)",
-      "src/electron/config/model-source.ts(26814-26821)",
-      "src/electron/config/model-source.ts(27439-27446)"
+      "src/electron/config/model-source.ts(23576-23583)",
+      "src/electron/config/model-source.ts(24227-24234)",
+      "src/electron/config/model-source.ts(26112-26119)",
+      "src/electron/config/model-source.ts(26737-26744)"
     ],
     "$id": 9613
   },
@@ -256,7 +253,7 @@
       "src/electron/config/model-source.ts(6610-6618)",
       "src/electron/config/model-source.ts(9185-9193)",
       "src/electron/config/model-source.ts(16412-16420)",
-      "src/electron/config/model-source.ts(26207-26215)"
+      "src/electron/config/model-source.ts(25505-25513)"
     ],
     "$id": 9617
   },
@@ -299,10 +296,10 @@
       "src/electron/config/model-source.ts(17727-17734)",
       "src/electron/config/model-source.ts(18951-18958)",
       "src/electron/config/model-source.ts(19609-19616)",
-      "src/electron/config/model-source.ts(22347-22354)",
-      "src/electron/config/model-source.ts(23606-23613)",
-      "src/electron/config/model-source.ts(24260-24267)",
-      "src/electron/config/model-source.ts(24902-24909)"
+      "src/electron/config/model-source.ts(21645-21652)",
+      "src/electron/config/model-source.ts(22904-22911)",
+      "src/electron/config/model-source.ts(23558-23565)",
+      "src/electron/config/model-source.ts(24200-24207)"
     ],
     "$id": 9619
   },
@@ -329,11 +326,11 @@
       "src/electron/config/model-source.ts(17718-17724)",
       "src/electron/config/model-source.ts(18942-18948)",
       "src/electron/config/model-source.ts(19600-19606)",
-      "src/electron/config/model-source.ts(21925-21931)",
-      "src/electron/config/model-source.ts(23160-23166)",
-      "src/electron/config/model-source.ts(23624-23630)",
-      "src/electron/config/model-source.ts(24251-24257)",
-      "src/electron/config/model-source.ts(24912-24918)"
+      "src/electron/config/model-source.ts(21223-21229)",
+      "src/electron/config/model-source.ts(22458-22464)",
+      "src/electron/config/model-source.ts(22922-22928)",
+      "src/electron/config/model-source.ts(23549-23555)",
+      "src/electron/config/model-source.ts(24210-24216)"
     ],
     "$id": 9620
   },
@@ -421,12 +418,11 @@
       "src/electron/config/model-source.ts(14930-14938)",
       "src/electron/config/model-source.ts(15753-15761)",
       "src/electron/config/model-source.ts(20318-20326)",
-      "src/electron/config/model-source.ts(21020-21028)",
-      "src/electron/config/model-source.ts(21727-21735)",
-      "src/electron/config/model-source.ts(22948-22956)",
-      "src/electron/config/model-source.ts(23643-23651)",
-      "src/electron/config/model-source.ts(26833-26841)",
-      "src/electron/config/model-source.ts(27458-27466)"
+      "src/electron/config/model-source.ts(21025-21033)",
+      "src/electron/config/model-source.ts(22246-22254)",
+      "src/electron/config/model-source.ts(22941-22949)",
+      "src/electron/config/model-source.ts(26131-26139)",
+      "src/electron/config/model-source.ts(26756-26764)"
     ],
     "$id": 9625
   },
@@ -469,7 +465,7 @@
     "$files": [
       "src/electron/config/model-source.ts(3486-3493)",
       "src/electron/config/model-source.ts(4129-4136)",
-      "src/electron/config/model-source.ts(22337-22344)"
+      "src/electron/config/model-source.ts(21635-21642)"
     ],
     "$id": 9628
   },
@@ -606,7 +602,7 @@
     "ko-KR": "비디오 메모리 부족",
     "$files": [
       "src/electron/config/model-source.ts(5395-5402)",
-      "src/electron/config/model-source.ts(24288-24295)"
+      "src/electron/config/model-source.ts(23586-23593)"
     ],
     "$id": 9638
   },
@@ -771,10 +767,10 @@
     "$files": [
       "src/electron/config/model-source.ts(8760-8766)",
       "src/electron/config/model-source.ts(9142-9148)",
-      "src/electron/config/model-source.ts(25133-25139)",
-      "src/electron/config/model-source.ts(25543-25549)",
-      "src/electron/config/model-source.ts(25762-25768)",
-      "src/electron/config/model-source.ts(26179-26185)"
+      "src/electron/config/model-source.ts(24431-24437)",
+      "src/electron/config/model-source.ts(24841-24847)",
+      "src/electron/config/model-source.ts(25060-25066)",
+      "src/electron/config/model-source.ts(25477-25483)"
     ],
     "$id": 9652
   },
@@ -803,7 +799,7 @@
     "ko-KR": "추리",
     "$files": [
       "src/electron/config/model-source.ts(9166-9172)",
-      "src/electron/config/model-source.ts(26188-26194)"
+      "src/electron/config/model-source.ts(25486-25492)"
     ],
     "$id": 9653
   },
@@ -875,7 +871,7 @@
     "ko-KR": "큰 매개변수",
     "$files": [
       "src/electron/config/model-source.ts(12978-12985)",
-      "src/electron/config/model-source.ts(24939-24946)"
+      "src/electron/config/model-source.ts(24237-24244)"
     ],
     "$id": 9662
   },
@@ -1177,10 +1173,7 @@
     "de-DE": "Super schnell",
     "fr-FR": "Super rapide",
     "ko-KR": "엄청 빠르다",
-    "$files": [
-      "src/electron/config/model-source.ts(19895-19901)",
-      "src/electron/config/model-source.ts(20576-20582)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(19895-19901)"],
     "$id": 9488
   },
   "最新 LFM2.5 指令模型，文本分析高效，CPU 推理快速。": {
@@ -1193,10 +1186,7 @@
     "de-DE": "Neuestes LFM2.5-Instruktionsmodell, effiziente Textanalyse, schnelle CPU-Inferenz.",
     "fr-FR": "Dernier modèle d'instruction LFM2.5, analyse de texte efficace, inférence rapide sur CPU.",
     "ko-KR": "최신 LFM2.5 지시 모델, 텍스트 분석 효율적, CPU 추론 빠름.",
-    "$files": [
-      "src/electron/config/model-source.ts(20008-20043)",
-      "src/electron/config/model-source.ts(20688-20723)"
-    ],
+    "$files": ["src/electron/config/model-source.ts(20008-20043)"],
     "$id": 9415
   },
   "高效": {
@@ -1209,7 +1199,7 @@
     "de-DE": "Effizient",
     "fr-FR": "Efficace",
     "ko-KR": "효율적인",
-    "$files": ["src/electron/config/model-source.ts(21257-21263)"],
+    "$files": ["src/electron/config/model-source.ts(20555-20561)"],
     "$id": 11398
   },
   "最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 CPU 专属 DSpark 加速。": {
@@ -1222,7 +1212,7 @@
     "de-DE": "Neuestes offizielles LFM2.5 2.6B Modell, balanciert effiziente Inferenz und hochwertige Analyse, unterstützt CPU-spezifische DSpark-Beschleunigung.",
     "fr-FR": "Dernier modèle officiel LFM2.5 2.6B, équilibrant inférence efficace et analyse de haute qualité, prenant en charge l'accélération DSpark exclusive au CPU.",
     "ko-KR": "최신 LFM2.5 2.6B 공식 모델은 효율적인 추론과 고품질 분석을 균형 있게 지원하며, CPU 전용 DSpark 가속을 지원합니다.",
-    "$files": ["src/electron/config/model-source.ts(21396-21453)"],
+    "$files": ["src/electron/config/model-source.ts(20694-20751)"],
     "$id": 11399
   },
   "LFM2.5 2.6B 去限制无审查版本，平衡速度与质量。": {
@@ -1235,7 +1225,7 @@
     "de-DE": "LFM2.5 2.6B ungefilterte Version ohne Zensur, ausgewogen zwischen Geschwindigkeit und Qualität.",
     "fr-FR": "Version sans restriction ni censure de LFM2.5 2.6B, équilibre entre vitesse et qualité.",
     "ko-KR": "LFM2.5 2.6B 제한 제거 무검열 버전, 속도와 품질 균형.",
-    "$files": ["src/electron/config/model-source.ts(22062-22095)"],
+    "$files": ["src/electron/config/model-source.ts(21360-21393)"],
     "$id": 9417
   },
   "英文小模型翘楚": {
@@ -1248,7 +1238,7 @@
     "de-DE": "Englischer Vorzeigeführer",
     "fr-FR": "Leader du mannequin anglais",
     "ko-KR": "영국의 모델 리더",
-    "$files": ["src/electron/config/model-source.ts(22658-22669)"],
+    "$files": ["src/electron/config/model-source.ts(21956-21967)"],
     "$id": 9436
   },
   "LFM2.5 8B A1B MoE 无审查版本，仅 1B 激活参数，速度与质量均衡。": {
@@ -1261,7 +1251,7 @@
     "de-DE": "LFM2.5 8B A1B MoE ohne Zensurversion, nur 1B aktivierte Parameter, ausgewogenes Verhältnis zwischen Geschwindigkeit und Qualität.",
     "fr-FR": "LFM2.5 8B A1B MoE Version non censurée, seulement 1B paramètres d'activation, vitesse et qualité équilibrées.",
     "ko-KR": "LFM2.5 8B A1B MoE 무수정 버전, 1B 활성화 매개변수만, 균형 잡힌 속도와 품질.",
-    "$files": ["src/electron/config/model-source.ts(23311-23357)"],
+    "$files": ["src/electron/config/model-source.ts(22609-22655)"],
     "$id": 9429
   },
   "超级压缩": {
@@ -1274,7 +1264,7 @@
     "de-DE": "Super Kompression",
     "fr-FR": "Super-compression",
     "ko-KR": "슈퍼 압축",
-    "$files": ["src/electron/config/model-source.ts(23837-23845)"],
+    "$files": ["src/electron/config/model-source.ts(23135-23143)"],
     "$id": 9489
   },
   "Bonsai 27B 一比特量化越狱版本，去对齐无审查，支持文本与图像分析。": {
@@ -1287,7 +1277,7 @@
     "de-DE": "Bonsai 27B ist eine einbit quantisierte Jailbreak-Version mit De-Alignment und zensurfreier Unterstützung für Text- und Bildanalyse.",
     "fr-FR": "Version jailbreak Bonsai 27B 1-bit quantification, désalignée sans censure, prise en charge de l'analyse de texte et d'images.",
     "ko-KR": "Bonsai 27B 1비트 양자화 제이브레이커 버전, 탈정렬 무검열, 텍스트 및 이미지 분석 지원.",
-    "$files": ["src/electron/config/model-source.ts(23953-23995)"],
+    "$files": ["src/electron/config/model-source.ts(23251-23293)"],
     "$id": 9411
   },
   "1比特": {
@@ -1300,7 +1290,7 @@
     "de-DE": "1 Bit",
     "fr-FR": "1-bit",
     "ko-KR": "1비트",
-    "$files": ["src/electron/config/model-source.ts(24241-24248)"],
+    "$files": ["src/electron/config/model-source.ts(23539-23546)"],
     "$id": 9430
   },
   "最强-越狱": {
@@ -1313,7 +1303,7 @@
     "de-DE": "Der stärkste Jailbreak",
     "fr-FR": "Le jailbreak le plus puissant",
     "ko-KR": "최강자-Jailbreak",
-    "$files": ["src/electron/config/model-source.ts(24486-24495)"],
+    "$files": ["src/electron/config/model-source.ts(23784-23793)"],
     "$id": 9490
   },
   "Qwen3.8-27B 无审查量化版本，保留 MTP 多头预测，支持文本与图像分析。": {
@@ -1326,7 +1316,7 @@
     "de-DE": "Qwen3.8-27B ist eine unzensierte quantitative Version, die lange MTP-Vorhersagen beibehält und Text- und Bildanalyse unterstützt.",
     "fr-FR": "Qwen3.8-27B est une version quantitative non censurée qui conserve les prédictions longues MTP et prend en charge l'analyse de texte et d'images.",
     "ko-KR": "Qwen3.8-27B는 MTP 긴 예측을 유지하고 텍스트 및 이미지 분석을 지원하는 무수정 정량 버전입니다.",
-    "$files": ["src/electron/config/model-source.ts(24610-24656)"],
+    "$files": ["src/electron/config/model-source.ts(23908-23954)"],
     "$id": 9413
   },
   "Qwen3.8 蒸馏版，极致运行速度，仅支持文本分析。": {
@@ -1339,7 +1329,7 @@
     "de-DE": "Qwen3.8-Distill, extrem schnelle Ausführung, nur Textanalyse.",
     "fr-FR": "Qwen3.8 version distillée, vitesse d'exécution maximale, prend uniquement en charge l'analyse de texte.",
     "ko-KR": "Qwen3.8 디스틸버전, 극한의 실행 속도, 텍스트 분석만 지원.",
-    "$files": ["src/electron/config/model-source.ts(25271-25302)"],
+    "$files": ["src/electron/config/model-source.ts(24569-24600)"],
     "$id": 11258
   },
   "Qwen3.8 蒸馏版，继承大模型深度推理能力，仅支持文本分析。": {
@@ -1352,7 +1342,7 @@
     "de-DE": "Die destillierte Version von Qwen3.8 erbt die Tiefenschlussfähigkeiten großer Modelle und unterstützt nur die Textanalyse.",
     "fr-FR": "Qwen3.8 version distillée, héritant de la capacité de raisonnement profond des grands modèles, prend uniquement en charge l'analyse de texte.",
     "ko-KR": "Qwen3.8 디스틸버전, 대규모 모델의 심층 추론 능력 계승, 텍스트 분석만 지원.",
-    "$files": ["src/electron/config/model-source.ts(25900-25936)"],
+    "$files": ["src/electron/config/model-source.ts(25198-25234)"],
     "$id": 11276
   },
   "顶级": {
@@ -1366,8 +1356,8 @@
     "fr-FR": "Haut de gamme",
     "ko-KR": "최고급",
     "$files": [
-      "src/electron/config/model-source.ts(26392-26398)",
-      "src/electron/config/model-source.ts(27018-27024)"
+      "src/electron/config/model-source.ts(25690-25696)",
+      "src/electron/config/model-source.ts(26316-26322)"
     ],
     "$id": 11242
   },
@@ -1382,8 +1372,8 @@
     "fr-FR": "Modèle multimodal Ornith 1.5, prend en charge l'analyse de texte et d'images.",
     "ko-KR": "Ornith 1.5 멀티모달 모델, 텍스트 및 이미지 분석 지원.",
     "$files": [
-      "src/electron/config/model-source.ts(26530-26561)",
-      "src/electron/config/model-source.ts(27156-27187)"
+      "src/electron/config/model-source.ts(25828-25859)",
+      "src/electron/config/model-source.ts(26454-26485)"
     ],
     "$id": 11297
   },
@@ -1398,8 +1388,8 @@
     "fr-FR": "Reconnaissance d'images",
     "ko-KR": "이미지 인식",
     "$files": [
-      "src/electron/config/model-source.ts(26824-26830)",
-      "src/electron/config/model-source.ts(27449-27455)"
+      "src/electron/config/model-source.ts(26122-26128)",
+      "src/electron/config/model-source.ts(26747-26753)"
     ],
     "$id": 11298
   }

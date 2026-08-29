@@ -3168,10 +3168,13 @@ export default  {
     "11385": "Diese Eingabeaufforderung kopieren.",
     "11387": "Das lokale Modell kann komplexe Verzeichnisplanungen möglicherweise nicht abschließen.",
     "11388": "In Doubao oder ChatGPT einfügen, von diesen die Verzeichnisstruktur erstellen lassen und anschließend direkt verwenden.",
+    "11396": "Das System sucht nach Tags",
+    "11397": "KI-Dimensionsbeschriftungen",
     "11398": "Effizient",
     "11399": "Neuestes offizielles LFM2.5 2.6B Modell, balanciert effiziente Inferenz und hochwertige Analyse, unterstützt CPU-spezifische DSpark-Beschleunigung.",
     "11400": "Bereit (CPU-Beschleunigung aktiviert)",
     "11401": "CPU-Modus beschleunigt um 30%",
     "11402": "Beschleunigungsmodell herunterladen",
-    "11403": "DSpark-Beschleunigungsmodell wird heruntergeladen..."
+    "11403": "DSpark-Beschleunigungsmodell wird heruntergeladen...",
+    "11404": "KI-Inhalts-Tags"
 }

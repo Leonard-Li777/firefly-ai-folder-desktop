@@ -1,7 +1,8 @@
 import {
   AnalysisQueueItem,
   FileCategory as MagikaCategory,
-  MarkitdownBenchmark
+  MarkitdownBenchmark,
+  Stage1Benchmark
 } from '@firefly/types'
 import {
   LogCategory,
@@ -35,7 +36,8 @@ export async function saveLocalAnalysisResult(
   groupingConfidence?: number | null,
   markitdownBenchmark?: MarkitdownBenchmark | null,
   analysisStage?: number,
-  cpuSkipped?: boolean
+  cpuSkipped?: boolean,
+  stage1Benchmark?: Stage1Benchmark | null
 ): Promise<any> {
   const db = databaseService.db
   if (!db) throw new Error(t('数据库未初始化'))
@@ -63,9 +65,16 @@ export async function saveLocalAnalysisResult(
 
   // 收集分析统计信息
   const initialStats = await collectAnalysisStats(timer)
-  const initialStatsWithBenchmark = applyMarkitdownBenchmark(initialStats, markitdownBenchmark)
+  const initialStatsWithBenchmark = applyMarkitdownBenchmark(
+    initialStats,
+    markitdownBenchmark,
+    stage1Benchmark
+  )
   if (initialStatsWithBenchmark.performance?.fresh && markitdownBenchmark) {
     initialStatsWithBenchmark.performance.fresh.contentExtractionBreakdown = markitdownBenchmark
+  }
+  if (initialStatsWithBenchmark.performance?.fresh && stage1Benchmark) {
+    initialStatsWithBenchmark.performance.fresh.stage1Breakdown = stage1Benchmark
   }
   // 本次分析跳过 CPU 提取（复用历史数据）：标记 fresh 为全新批次，供 merge 时重建
   if (initialStatsWithBenchmark.performance?.fresh && cpuSkipped) {

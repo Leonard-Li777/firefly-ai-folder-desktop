@@ -53,9 +53,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
         {/* 描述文本 */}
         {description && (
-          <p className="text-sm text-muted-foreground leading-relaxed mb-7 max-w-xs">
+          <div className="text-sm text-muted-foreground leading-relaxed mb-7 max-w-xs">
             {description}
-          </p>
+          </div>
         )}
 
         {children}

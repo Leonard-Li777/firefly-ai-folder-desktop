@@ -52,10 +52,10 @@
     "$id": 2965
   },
   "已就绪 (CPU加速已启用)": {
-    "en-US": "已就绪 (CPU加速已启用)",
+    "en-US": "Ready (CPU acceleration enabled)",
     "es-ES": "Listo (aceleración de CPU habilitada)",
     "ar-EG": "جاهز (تم تمكين تسريع المعالج)",
-    "pt-PT": "已就绪 (CPU加速已启用)",
+    "pt-PT": "Pronto (aceleração de CPU habilitada)",
     "ru-RU": "Готово (CPU-ускорение включено)",
     "ja-JP": "準備完了 (CPU加速が有効)",
     "de-DE": "Bereit (CPU-Beschleunigung aktiviert)",
@@ -120,10 +120,10 @@
     "$id": 2980
   },
   "CPU模式可加速30%": {
-    "en-US": "CPU模式可加速30%",
+    "en-US": "CPU mode can speed up by 30%",
     "es-ES": "El modo CPU puede acelerar un 30%",
     "ar-EG": "يمكن أن يسرع وضع المعالج بنسبة 30%",
-    "pt-PT": "CPU模式可加速30%",
+    "pt-PT": "O modo CPU pode acelerar em 30%",
     "ru-RU": "CPU-режим ускоряет на 30%",
     "ja-JP": "CPUモードで30%高速化可能",
     "de-DE": "CPU-Modus beschleunigt um 30%",
@@ -133,10 +133,10 @@
     "$id": 11401
   },
   "下载加速模型": {
-    "en-US": "下载加速模型",
+    "en-US": "Download acceleration model",
     "es-ES": "Descargar modelo de aceleración",
     "ar-EG": "تحميل النموذج المسرع",
-    "pt-PT": "下载加速模型",
+    "pt-PT": "Baixar modelo de aceleração",
     "ru-RU": "Загрузка ускоренной модели",
     "ja-JP": "アクセラレーションモデルをダウンロード",
     "de-DE": "Beschleunigungsmodell herunterladen",
@@ -185,10 +185,10 @@
     "$id": 2984
   },
   "DSpark 加速模型下载中...": {
-    "en-US": "DSpark 加速模型下载中...",
+    "en-US": "DSpark acceleration model is downloading...",
     "es-ES": "Descargando modelo de aceleración DSpark...",
     "ar-EG": "جارٍ تحميل نموذج DSpark المسرع...",
-    "pt-PT": "DSpark 加速模型下载中...",
+    "pt-PT": "O modelo de aceleração DSpark está sendo baixado...",
     "ru-RU": "Загрузка ускоренной модели DSpark...",
     "ja-JP": "DSpark 加速モデルをダウンロード中...",
     "de-DE": "DSpark-Beschleunigungsmodell wird heruntergeladen...",

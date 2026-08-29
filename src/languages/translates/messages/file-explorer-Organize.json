@@ -3,12 +3,12 @@
     "en-US": "Prompt copied to clipboard, please paste it into Doubao or GPT to generate the directory tree",
     "es-ES": "El prompt ha sido copiado al portapapeles, pégalo en Doubao o GPT para generar el árbol de directorios",
     "ar-EG": "تم نسخ النص التوجيهي إلى الحافظة، يرجى لصقه في Doubao أو GPT لتوليد شجرة الدليل",
-    "pt-PT": "提示词已复制到剪贴板，请粘贴至豆包或GPT生成目录树",
+    "pt-PT": "A palavra do prompt foi copiada para a área de transferência, cole-a no beanbag ou GPT para gerar a árvore de diretórios",
     "ru-RU": "Промпт скопирован в буфер обмена, вставьте его в Doubao или GPT для генерации древовидной структуры каталогов",
     "ja-JP": "プロンプトがクリップボードにコピーされました。豆包またはGPTに貼り付けてディレクトリツリーを生成してください",
     "de-DE": "Die Eingabeaufforderung wurde in die Zwischenablage kopiert. Bitte in Doubao oder GPT einfügen, um den Verzeichnisbaum zu generieren.",
     "fr-FR": "Le prompt a été copié dans le presse-papiers, veuillez le coller dans Doubao ou GPT pour générer l'arborescence des répertoires",
-    "ko-KR": "프롬프트가 클립보드에 복사되었습니다.豆包 또는 GPT에 붙여넣어 디렉토리 트리를 생성하세요.",
+    "ko-KR": "프롬프트 단어가 클립보드에 복사되었습니다. 디렉토리 트리를 생성하려면 빈백이나 GPT에 붙여넣으세요.",
     "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(8683-8713)"],
     "$id": 11380
   },
@@ -16,7 +16,7 @@
     "en-US": "Failed to generate prompt, please try again",
     "es-ES": "Error al generar el prompt, por favor inténtalo de nuevo",
     "ar-EG": "فشل في توليد النص التوجيهي، يرجى المحاولة مرة أخرى",
-    "pt-PT": "生成提示词失败，请重试",
+    "pt-PT": "Falha ao gerar prompt word, tente novamente",
     "ru-RU": "Не удалось сгенерировать промпт, попробуйте снова",
     "ja-JP": "プロンプトの生成に失敗しました。再試行してください",
     "de-DE": "Die Eingabeaufforderung konnte nicht generiert werden, bitte erneut versuchen.",
@@ -29,7 +29,7 @@
     "en-US": "Copy failed, please try again",
     "es-ES": "Error al copiar, por favor inténtalo de nuevo",
     "ar-EG": "فشل في النسخ، يرجى المحاولة مرة أخرى",
-    "pt-PT": "复制失败，请重试",
+    "pt-PT": "Falha na cópia, tente novamente",
     "ru-RU": "Не удалось скопировать, попробуйте снова",
     "ja-JP": "コピーに失敗しました。再試行してください",
     "de-DE": "Kopieren fehlgeschlagen, bitte erneut versuchen.",
@@ -48,7 +48,7 @@
     "de-DE": "Hinzufügen des Arbeitsverzeichnisses fehlgeschlagen",
     "fr-FR": "Échec de l'ajout du répertoire de travail",
     "ko-KR": "작업 디렉터리 추가에 실패했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(11146-11158)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(11197-11209)"],
     "$id": 8549
   },
   "返回": {
@@ -62,8 +62,8 @@
     "fr-FR": "Retour",
     "ko-KR": "반품",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(11953-11959)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(12105-12111)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(12004-12010)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(12156-12162)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(3128-3134)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(3360-3366)"
     ],
@@ -80,8 +80,8 @@
     "fr-FR": "Poursuivre",
     "ko-KR": "어서",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(12460-12466)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(12531-12537)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(12511-12517)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(12582-12588)"
     ],
     "$id": 8552
   },
@@ -95,7 +95,7 @@
     "de-DE": "Namen ändern...",
     "fr-FR": "Changer de nom...",
     "ko-KR": "이름 변경 중...",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(13888-13899)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(13939-13950)"],
     "$id": 9908
   },
   "执行批量更改智能文件名": {
@@ -108,7 +108,7 @@
     "de-DE": "Führen Sie Batch-Änderungen an intelligenten Dateinamen durch",
     "fr-FR": "Effectuer des modifications par lots des noms de fichiers intelligents",
     "ko-KR": "스마트 파일 이름에 대한 일괄 변경 수행",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(13903-13918)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(13954-13969)"],
     "$id": 10774
   },
   "正在保存...": {
@@ -121,7 +121,7 @@
     "de-DE": "Sparen...",
     "fr-FR": "Économie...",
     "ko-KR": "절약...",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(14650-14661)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(14701-14712)"],
     "$id": 9910
   },
   "保存打标": {
@@ -134,7 +134,7 @@
     "de-DE": "Markierung speichern",
     "fr-FR": "Enregistrer le marquage",
     "ko-KR": "표시 저장",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(14665-14673)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(14716-14724)"],
     "$id": 9911
   },
   "本页是对真实目录物理文件处理": {
@@ -148,8 +148,8 @@
     "fr-FR": "Cette page concerne le traitement des fichiers physiques du répertoire réel",
     "ko-KR": "이 페이지는 실제 디렉터리의 물리적 파일 처리에 관한 것입니다.",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(14978-14996)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(15038-15056)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(15029-15047)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(15089-15107)"
     ],
     "$id": 11315
   },
@@ -163,7 +163,7 @@
     "de-DE": "Verarbeitung in Chargen...",
     "fr-FR": "Traitement par lots...",
     "ko-KR": "일괄 처리 중...",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(15987-16000)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(16038-16051)"],
     "$id": 11316
   },
   "批量处理全部勾选 ({count})": {
@@ -176,7 +176,7 @@
     "de-DE": "Stapelverarbeitung alle überprüft ({count})",
     "fr-FR": "Processus par lots tous vérifiés ({count})",
     "ko-KR": "일괄 처리가 모두 선택됨({count})",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(16081-16103)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(16132-16154)"],
     "$id": 11317
   },
   "批量处理全部勾选": {
@@ -189,7 +189,7 @@
     "de-DE": "Stapelverarbeitung, alles überprüft",
     "fr-FR": "Traitement par lots tous vérifiés",
     "ko-KR": "일괄 처리 모두 확인됨",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(16167-16179)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(16218-16230)"],
     "$id": 11318
   },
   "不满意可以重新生成整理方案": {
@@ -202,7 +202,7 @@
     "de-DE": "Wenn Sie nicht zufrieden sind, können Sie den Endbearbeitungsplan neu erstellen.",
     "fr-FR": "Si vous n'êtes pas satisfait, vous pouvez régénérer le plan de finition.",
     "ko-KR": "만족스럽지 않으면 마무리 계획을 다시 생성할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(16446-16463)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(16497-16514)"],
     "$id": 8553
   },
   "正在生成...": {
@@ -216,8 +216,8 @@
     "fr-FR": "Générateur...",
     "ko-KR": "생성 중...",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(16869-16880)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(17211-17222)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(16920-16931)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(17262-17273)"
     ],
     "$id": 8554
   },
@@ -232,8 +232,8 @@
     "fr-FR": "Régénérer",
     "ko-KR": "재생성",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(16884-16892)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(17226-17234)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(16935-16943)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(17277-17285)"
     ],
     "$id": 8555
   },
@@ -248,9 +248,9 @@
     "fr-FR": "Génération de plan de guidage",
     "ko-KR": "지도계획 생성",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(17624-17634)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(17792-17802)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(42776-42786)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(17675-17685)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(17843-17853)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(42827-42837)"
     ],
     "$id": 8557
   },
@@ -265,8 +265,8 @@
     "fr-FR": "Arborescence de répertoires personnalisée (recommandée)",
     "ko-KR": "사용자 지정 디렉토리 트리 권장",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(18126-18140)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(18291-18305)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(18177-18191)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(18342-18356)"
     ],
     "$id": 8558
   },
@@ -281,10 +281,10 @@
     "fr-FR": "Cette page est automatiquement enregistrée",
     "ko-KR": "이 페이지는 자동으로 저장됩니다.",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(18679-18690)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(18732-18743)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(22636-22647)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(22693-22704)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(18730-18741)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(18783-18794)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(22687-22698)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(22744-22755)"
     ],
     "$id": 8559
   },
@@ -299,8 +299,8 @@
     "fr-FR": "Commencez à vous organiser",
     "ko-KR": "정리 시작",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(19253-19261)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(19420-19428)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(19304-19312)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(19471-19479)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12507-12515)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12765-12773)"
     ],
@@ -317,8 +317,8 @@
     "fr-FR": "Autoriser l'IA à créer de nouveaux répertoires pendant le processus d'organisation",
     "ko-KR": "정리 과정에서 AI가 새 디렉토리를 추가할 수 있도록 허용함",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(19740-19757)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(20311-20328)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(19791-19808)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(20362-20379)"
     ],
     "$id": 8561
   },
@@ -333,8 +333,8 @@
     "fr-FR": "Restaurer",
     "ko-KR": "복원",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(21024-21030)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(21287-21293)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(21075-21081)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(21338-21344)"
     ],
     "$id": 8562
   },
@@ -349,8 +349,8 @@
     "fr-FR": "Pause",
     "ko-KR": "정지시키다",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(21034-21040)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(21297-21303)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(21085-21091)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(21348-21354)"
     ],
     "$id": 8563
   },
@@ -365,8 +365,8 @@
     "fr-FR": "Réarranger",
     "ko-KR": "재배열하다",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(21582-21590)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(21739-21747)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(21633-21641)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(21790-21798)",
       "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(10553-10561)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12006-12014)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12300-12308)"
@@ -384,8 +384,8 @@
     "fr-FR": "Finition",
     "ko-KR": "마치다",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(22067-22073)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(22219-22225)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(22118-22124)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(22270-22276)"
     ],
     "$id": 8565
   },
@@ -400,8 +400,8 @@
     "fr-FR": "Cette page est automatiquement enregistrée et vous pouvez basculer vers la page du répertoire virtuel pour afficher les résultats à tout moment.",
     "ko-KR": "이 페이지는 자동으로 저장되며 언제든지 가상 디렉터리 페이지로 전환하여 결과를 볼 수 있습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(23311-23339)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(23436-23464)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(23362-23390)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(23487-23515)"
     ],
     "$id": 8566
   },
@@ -416,8 +416,8 @@
     "fr-FR": "Enregistrez le répertoire virtuel pour prendre en charge le tri continu et incrémentiel ultérieur",
     "ko-KR": "후속 연속 및 증분 정렬을 지원하도록 가상 디렉터리를 저장합니다.",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(23997-24021)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(24299-24323)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(24048-24072)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(24350-24374)"
     ],
     "$id": 8567
   },
@@ -432,10 +432,10 @@
     "fr-FR": "Fichiers à organiser",
     "ko-KR": "정리할 파일",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(28140-28149)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(28219-28228)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(30046-30055)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(30117-30126)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(28191-28200)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(28270-28279)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(30097-30106)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(30168-30177)"
     ],
     "$id": 8568
   },
@@ -450,8 +450,8 @@
     "fr-FR": "Fichiers préalablement organisés filtrés",
     "ko-KR": "이전에 정리된 파일을 필터링했습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(28741-28755)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(28961-28975)"
+      "src/renderer/components/file-explorer/Organize/index.tsx(28792-28806)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(29012-29026)"
     ],
     "$id": 8569
   },
@@ -465,59 +465,59 @@
     "de-DE": "{count} Dateien",
     "fr-FR": "{count} fichiers",
     "ko-KR": "{count}개 파일",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(30282-30297)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(30333-30348)"],
     "$id": 8570
   },
   "本地模型可能无法完成复杂的目录规划，": {
     "en-US": "Local models may not be able to complete complex directory planning,",
     "es-ES": "El modelo local podría no ser capaz de completar una planificación compleja de directorios,",
     "ar-EG": "قد لا يتمكن النموذج المحلي من إكمال التخطيط المعقد لل د��يل،",
-    "pt-PT": "本地模型可能无法完成复杂的目录规划，",
+    "pt-PT": "O modelo local pode não ser capaz de concluir o planejamento complexo de diretórios,",
     "ru-RU": "Локальная модель может не справиться с сложным планированием структуры каталогов,",
     "ja-JP": "ローカルモデルでは複雑なディレクトリ設計を完了できない可能性があります",
     "de-DE": "Das lokale Modell kann komplexe Verzeichnisplanungen möglicherweise nicht abschließen.",
     "fr-FR": "Le modèle local risque de ne pas pouvoir gérer une planification de répertoires complexe,",
     "ko-KR": "로컬 모델은 복잡한 디렉토리 기획을 수행하지 못할 수 있습니다,",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(31351-31373)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(31402-31424)"],
     "$id": 11387
   },
   "复制本提示词": {
     "en-US": "Copy this prompt",
     "es-ES": "Copia este prompt",
     "ar-EG": "انسخ هذا النص التوجيهي",
-    "pt-PT": "复制本提示词",
+    "pt-PT": "Copie esta palavra de prompt",
     "ru-RU": "Скопируйте этот промпт",
     "ja-JP": "このプロンプトをコピーする",
     "de-DE": "Diese Eingabeaufforderung kopieren.",
     "fr-FR": "Cliquez pour copier ce prompt",
     "ko-KR": "이 프롬프트 복사",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(31986-31996)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(32037-32047)"],
     "$id": 11385
   },
   "将它放到豆包或ChatGPT中由它们规划好目录结构后，直接使用": {
     "en-US": "Paste it into Doubao or ChatGPT, let them plan the directory structure, then use it directly",
     "es-ES": "Pégalo en Doubao o ChatGPT para que planifiquen la estructura de directorios, luego úsalo directamente",
     "ar-EG": "ضعه في Doubao أو ChatGPT، وبعد أن يخططوا هيكل الدليل بشكل جيد، استخدمه مباشرة",
-    "pt-PT": "将它放到豆包或ChatGPT中由它们规划好目录结构后，直接使用",
+    "pt-PT": "Coloque-o em Doubao ou ChatGPT e deixe-os planejar a estrutura de diretórios e usá-la diretamente.",
     "ru-RU": "Поместите его в Doubao или ChatGPT, пусть они спланируют структуру каталогов, а затем используйте готовый результат",
     "ja-JP": "豆包またはChatGPTに貼り付けてディレクトリ構造を計画させた後、そのまま使用する",
     "de-DE": "In Doubao oder ChatGPT einfügen, von diesen die Verzeichnisstruktur erstellen lassen und anschließend direkt verwenden.",
     "fr-FR": "Collez-le dans Doubao ou ChatGPT pour qu'ils planifient la structure des répertoires, puis utilisez directement",
-    "ko-KR": "豆包 또는 ChatGPT에 붙여넣어 디렉토리 구조를 기획한 후 바로 사용하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(32102-32137)"],
+    "ko-KR": "Doubao나 ChatGPT에 넣고 디렉토리 구조를 계획하고 직접 사용하게 하세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(32153-32188)"],
     "$id": 11388
   },
   "自定义目录树功能": {
     "en-US": "Custom directory tree feature",
     "es-ES": "Función de personalización del árbol de directorios",
     "ar-EG": "ميزة شجرة الدليل المخصصة",
-    "pt-PT": "自定义目录树功能",
+    "pt-PT": "Função de árvore de diretório personalizada",
     "ru-RU": "Функция пользовательской древовидной структуры каталогов",
     "ja-JP": "カスタムディレクトリツリー機能",
     "de-DE": "Eigene Verzeichnisbaum-Funktion",
     "fr-FR": "Fonctionnalité d'arborescence personnalisée",
     "ko-KR": "사용자 정의 디렉토리 트리 기능",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(32760-32772)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(32811-32823)"],
     "$id": 11384
   },
   "暂无待整理文件": {
@@ -530,7 +530,7 @@
     "de-DE": "Es sind noch keine Dateien zum Organisieren vorhanden",
     "fr-FR": "Il n'y a pas encore de fichiers à organiser",
     "ko-KR": "아직 정리할 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(33390-33401)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(33441-33452)"],
     "$id": 8571
   },
   "请先前往真实目录选择文件进行分析": {
@@ -543,7 +543,7 @@
     "de-DE": "Bitte gehen Sie zunächst in das eigentliche Verzeichnis, um Dateien für die Analyse auszuwählen.",
     "fr-FR": "Veuillez d'abord accéder au répertoire réel pour sélectionner les fichiers à analyser.",
     "ko-KR": "먼저 분석할 파일을 선택하려면 실제 디렉터리로 이동하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(33444-33464)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(33495-33515)"],
     "$id": 8572
   },
   "返回真实目录": {
@@ -556,7 +556,7 @@
     "de-DE": "Zurück zum echten Verzeichnis",
     "fr-FR": "Retour au répertoire réel",
     "ko-KR": "실제 디렉터리로 돌아가기",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(33875-33885)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(33926-33936)"],
     "$id": 8573
   },
   "停止整理并返回？": {
@@ -569,7 +569,7 @@
     "de-DE": "Mit dem Sortieren aufhören und zurückgehen?",
     "fr-FR": "Arrêter de trier et revenir en arrière ?",
     "ko-KR": "정렬을 중단하고 돌아가시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(41067-41079)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(41118-41130)"],
     "$id": 8574
   },
   "正在进行 AI 文件分类，返回上一级将停止当前的分类进程，是否继续？": {
@@ -582,7 +582,7 @@
     "de-DE": "Die AI-Dateiklassifizierung ist in Bearbeitung. Durch die Rückkehr zur vorherigen Ebene wird der aktuelle Klassifizierungsprozess gestoppt. Möchten Sie fortfahren?",
     "fr-FR": "La classification des fichiers AI est en cours. Le retour au niveau précédent arrêtera le processus de classification en cours. Voulez-vous continuer ?",
     "ko-KR": "AI 파일 분류가 진행 중입니다. 이전 수준으로 돌아가면 현재 분류 ​​프로세스가 중지됩니다. 계속하시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(41205-41243)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(41256-41294)"],
     "$id": 8575
   },
   "继续整理": {
@@ -596,8 +596,8 @@
     "fr-FR": "Continuer à organiser",
     "ko-KR": "계속해서 정리하세요",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(41412-41420)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(45918-45926)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(41463-41471)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(45969-45977)",
       "src/renderer/components/file-explorer/Organize/components/StageBreadcrumb.tsx(2475-2483)"
     ],
     "$id": 8576
@@ -612,7 +612,7 @@
     "de-DE": "Anhalten und zurückkehren",
     "fr-FR": "S'arrêter et revenir",
     "ko-KR": "멈추고 돌아오다",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(41540-41549)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(41591-41600)"],
     "$id": 8577
   },
   "确定要删除该目录吗？": {
@@ -625,7 +625,7 @@
     "de-DE": "Sind Sie sicher, dass Sie dieses Verzeichnis löschen möchten?",
     "fr-FR": "Êtes-vous sûr de vouloir supprimer ce répertoire ?",
     "ko-KR": "정말로 이 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(41895-41909)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(41946-41960)"],
     "$id": 8578
   },
   "确定要删除目录「{name}」吗？该目录下的所有文件将被移至未归类列表中。": {
@@ -638,7 +638,7 @@
     "de-DE": "Sind Sie sicher, dass Sie das Verzeichnis „{name}“ löschen möchten? Alle Dateien in diesem Verzeichnis werden in die nicht kategorisierte Liste verschoben.",
     "fr-FR": "Êtes-vous sûr de vouloir supprimer le répertoire « {name} » ? Tous les fichiers de ce répertoire seront déplacés vers la liste non classée.",
     "ko-KR": "정말로 \"{name}\" 디렉터리를 삭제하시겠습니까? 이 디렉터리의 모든 파일은 분류되지 않은 목록으로 이동됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(42051-42092)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(42102-42143)"],
     "$id": 8579
   },
   "取消": {
@@ -652,9 +652,9 @@
     "fr-FR": "Annuler",
     "ko-KR": "취소",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(42345-42351)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(43861-43867)",
-      "src/renderer/components/file-explorer/Organize/index.tsx(45424-45430)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(42396-42402)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(43912-43918)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(45475-45481)",
       "src/renderer/components/file-explorer/Organize/components/EditStrategyDialog.tsx(1775-1781)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeCustomFormDialog.tsx(6148-6154)",
       "src/renderer/components/file-explorer/Organize/components/StructureView.tsx(6629-6635)",
@@ -674,7 +674,7 @@
     "fr-FR": "Confirmer la suppression",
     "ko-KR": "삭제 확인",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(42475-42483)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(42526-42534)",
       "src/renderer/components/file-explorer/Organize/components/StructureView.tsx(6894-6902)"
     ],
     "$id": 8581
@@ -689,7 +689,7 @@
     "de-DE": "Bitte geben Sie das Eingabeaufforderungswort ein, um die KI bei der Erstellung des Plans anzuleiten. Die KI wird auf dieser Grundlage drei Organisationspläne neu erfinden und erstellen.",
     "fr-FR": "Veuillez saisir le mot d'invite pour guider l'IA afin de générer le plan. L'IA réinventera et générera 3 plans d'organisation sur cette base.",
     "ko-KR": "AI가 계획을 생성하도록 안내하는 프롬프트 단어를 입력하세요. AI는 이를 기반으로 3가지 정리 계획을 재구성하고 생성합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(42912-42958)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(42963-43009)"],
     "$id": 8582
   },
   "请描述您的整理需求，例如：以设计师视角整理素材文件": {
@@ -702,7 +702,7 @@
     "de-DE": "Bitte beschreiben Sie Ihre Aufräumungsbedürfnisse, zum Beispiel: Organisation von Materialdateien aus der Perspektive eines Designers.",
     "fr-FR": "Veuillez décrire vos besoins en matière d'organisation, par exemple : organiser les fichiers de ressources sous un angle de designer.",
     "ko-KR": "정리 요구사항을 설명해 주세요. 예를 들어 디자이너 관점에서 자료 파일 정리",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(43236-43265)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(43287-43316)"],
     "$id": 8583
   },
   "恢复示例": {
@@ -716,7 +716,7 @@
     "fr-FR": "Récupération d'exemple",
     "ko-KR": "복원 예제",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/index.tsx(43985-43993)",
+      "src/renderer/components/file-explorer/Organize/index.tsx(44036-44044)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeCustomFormDialog.tsx(6375-6383)"
     ],
     "$id": 8584
@@ -731,7 +731,7 @@
     "de-DE": "Lösung generieren",
     "fr-FR": "Générer une solution",
     "ko-KR": "솔루션 생성",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(44077-44085)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(44128-44136)"],
     "$id": 8585
   },
   "重新生成虚拟目录": {
@@ -744,7 +744,7 @@
     "de-DE": "Virtuelles Verzeichnis neu generieren",
     "fr-FR": "Régénérer le répertoire virtuel",
     "ko-KR": "가상 디렉터리 재생성",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(44411-44423)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(44462-44474)"],
     "$id": 8586
   },
   "建议减少待整理文件": {
@@ -757,7 +757,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der zu organisierenden Dateien zu reduzieren",
     "fr-FR": "Il est recommandé de réduire le nombre de fichiers à organiser",
     "ko-KR": "정리할 파일 수를 줄이는 것이 좋습니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(44948-44961)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(44999-45012)"],
     "$id": 8587
   },
   "当前文件较多。建议减少待整理文件数，否则整理耗时过长可能导致失败。": {
@@ -770,7 +770,7 @@
     "de-DE": "Derzeit gibt es viele Dateien. Es wird empfohlen, die Anzahl der zu sortierenden Dateien zu reduzieren, da die Sortierung sonst zu lange dauern und fehlschlagen kann.",
     "fr-FR": "Il existe actuellement de nombreux fichiers. Il est recommandé de réduire le nombre de fichiers à trier, sinon le tri risque de prendre trop de temps et d'échouer.",
     "ko-KR": "현재 파일이 많습니다. 정렬할 파일 수를 줄이는 것이 좋습니다. 그렇지 않으면 정렬에 시간이 너무 오래 걸리고 실패할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(45113-45150)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(45164-45201)"],
     "$id": 8588
   },
   "去选择文件": {
@@ -783,641 +783,8 @@
     "de-DE": "Gehen Sie zur Dateiauswahl",
     "fr-FR": "Allez sélectionner le fichier",
     "ko-KR": "파일 선택으로 이동",
-    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(45643-45652)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(45694-45703)"],
     "$id": 8589
-  },
-  "获取待整理文件列表失败，请查看日志确认": {
-    "en-US": "Failed to obtain the list of files to be sorted, please check the log for confirmation.",
-    "es-ES": "No se pudo obtener la lista de archivos para ordenar; consulte el registro para confirmarlo.",
-    "ar-EG": "فشل الحصول على قائمة الملفات التي سيتم فرزها، يرجى التحقق من السجل للتأكيد.",
-    "pt-PT": "Falha ao obter a lista de arquivos a serem classificados. Verifique o log para confirmação.",
-    "ru-RU": "Не удалось получить список файлов для сортировки. Проверьте журнал для подтверждения.",
-    "ja-JP": "ソート対象のファイルのリストを取得できませんでした。ログを確認してください。",
-    "de-DE": "Die Liste der zu sortierenden Dateien konnte nicht abgerufen werden. Bitte überprüfen Sie das Protokoll zur Bestätigung.",
-    "fr-FR": "Impossible d'obtenir la liste des fichiers à trier, veuillez vérifier le journal pour confirmation.",
-    "ko-KR": "정렬할 파일 목록을 가져오지 못했습니다. 확인하려면 로그를 확인하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(8526-8549)"],
-    "$id": 8700
-  },
-  "未归类": {
-    "en-US": "Uncategorized",
-    "es-ES": "Sin categoría",
-    "ar-EG": "غير مصنف",
-    "pt-PT": "Sem categoria",
-    "ru-RU": "Без категории",
-    "ja-JP": "未分類",
-    "de-DE": "Nicht kategorisiert",
-    "fr-FR": "Non classé",
-    "ko-KR": "분류되지 않음",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(11303-11310)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(14720-14727)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(14854-14861)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(19958-19965)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(20059-20066)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(21454-21461)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(32531-32538)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(32620-32627)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(71632-71639)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(71774-71781)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(2706-2713)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(2811-2818)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(3169-3176)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(3246-3253)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(5834-5841)",
-      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(12924-12931)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizingView.tsx(1780-1787)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(3152-3159)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(5253-5260)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(6094-6101)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(8610-8617)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(11397-11404)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(15261-15268)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(15598-15605)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(16014-16021)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(16446-16453)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(21545-21552)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(25432-25439)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(28878-28885)"
-    ],
-    "$id": 8605
-  },
-  "已加载已有虚拟目录完整文件结构": {
-    "en-US": "The complete file structure of the existing virtual directory has been loaded.",
-    "es-ES": "Se ha cargado la estructura de archivos completa del directorio virtual existente.",
-    "ar-EG": "تم تحميل بنية الملف الكاملة للدليل الظاهري الموجود.",
-    "pt-PT": "A estrutura completa de arquivos do diretório virtual existente foi carregada.",
-    "ru-RU": "Загружена полная файловая структура существующего виртуального каталога.",
-    "ja-JP": "既存の仮想ディレクトリの完全なファイル構造がロードされました。",
-    "de-DE": "Die komplette Dateistruktur des bestehenden virtuellen Verzeichnisses wurde geladen.",
-    "fr-FR": "La structure complète des fichiers du répertoire virtuel existant a été chargée.",
-    "ko-KR": "기존 가상 디렉터리의 전체 파일 구조가 로드되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16199-16218)"],
-    "$id": 8701
-  },
-  "已加载增量整理待处理文件与现有分类结构": {
-    "en-US": "Loaded incremental sorting files to be processed and existing classification structure",
-    "es-ES": "Archivos de clasificación incrementales cargados para procesar y estructura de clasificación existente",
-    "ar-EG": "تحميل ملفات الفرز المتزايدة لتتم معالجتها وهيكل التصنيف الحالي",
-    "pt-PT": "Arquivos de classificação incrementais carregados a serem processados ​​e estrutura de classificação existente",
-    "ru-RU": "Загруженные файлы инкрементной сортировки для обработки и существующая структура классификации.",
-    "ja-JP": "ロードされた処理対象の増分並べ替えファイルと既存の分類構造",
-    "de-DE": "Zu verarbeitende inkrementelle Sortierdateien und vorhandene Klassifizierungsstruktur werden geladen",
-    "fr-FR": "Fichiers de tri incrémentiel chargés à traiter et structure de classification existante",
-    "ko-KR": "처리할 증분 정렬 파일과 기존 분류 구조를 로드했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16297-16320)"],
-    "$id": 8702
-  },
-  "加载增量整理文件失败": {
-    "en-US": "Failed to load incremental grooming file",
-    "es-ES": "No se pudo cargar el archivo de limpieza incremental",
-    "ar-EG": "فشل تحميل ملف الاستمالة المتزايد",
-    "pt-PT": "Falha ao carregar o arquivo de preparação incremental",
-    "ru-RU": "Не удалось загрузить файл добавочной обработки.",
-    "ja-JP": "インクリメンタル グルーミング ファイルのロードに失敗しました",
-    "de-DE": "Das Laden der inkrementellen Grooming-Datei ist fehlgeschlagen",
-    "fr-FR": "Échec du chargement du fichier de nettoyage incrémentiel",
-    "ko-KR": "증분 정리 파일을 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16449-16463)"],
-    "$id": 8703
-  },
-  "加载草稿失败，请重试": {
-    "en-US": "Failed to load draft, please try again",
-    "es-ES": "No se pudo cargar el borrador. Inténtelo de nuevo.",
-    "ar-EG": "فشل تحميل المسودة، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha ao carregar o rascunho. Tente novamente",
-    "ru-RU": "Не удалось загрузить черновик. Повторите попытку.",
-    "ja-JP": "下書きをロードできませんでした。もう一度お試しください。",
-    "de-DE": "Der Entwurf konnte nicht geladen werden. Bitte versuchen Sie es erneut",
-    "fr-FR": "Échec du chargement du brouillon, veuillez réessayer",
-    "ko-KR": "초안을 로드하지 못했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34033-34047)"],
-    "$id": 8704
-  },
-  "已删除未保存的草稿": {
-    "en-US": "Unsaved draft deleted",
-    "es-ES": "Borrador no guardado eliminado",
-    "ar-EG": "تم حذف المسودة غير المحفوظة",
-    "pt-PT": "Rascunho não salvo excluído",
-    "ru-RU": "Несохраненный черновик удален.",
-    "ja-JP": "保存されていない下書きが削除されました",
-    "de-DE": "Nicht gespeicherter Entwurf gelöscht",
-    "fr-FR": "Brouillon non enregistré supprimé",
-    "ko-KR": "저장되지 않은 초안이 삭제되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34377-34390)"],
-    "$id": 8705
-  },
-  "删除草稿失败": {
-    "en-US": "Delete draft failed",
-    "es-ES": "Error al eliminar el borrador",
-    "ar-EG": "فشل حذف المسودة",
-    "pt-PT": "Falha ao excluir rascunho",
-    "ru-RU": "Удалить черновик не удалось",
-    "ja-JP": "下書きの削除に失敗しました",
-    "de-DE": "Entwurf konnte nicht gelöscht werden",
-    "fr-FR": "Échec de la suppression du brouillon",
-    "ko-KR": "초안 삭제 실패",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34547-34557)"],
-    "$id": 8706
-  },
-  "模型正在切换中，请等待": {
-    "en-US": "The model is switching, please wait",
-    "es-ES": "El modelo se está cambiando, por favor espere",
-    "ar-EG": "نموذج التبديل قيد التشغيل، يرجى الانتظار",
-    "pt-PT": "A modelo está a ser alterada, por favor aguarde",
-    "ru-RU": "Модель переключается, пожалуйста, подождите",
-    "ja-JP": "モデルの切替中です。お待ちください",
-    "de-DE": "Das Modell wird gerade umgeschaltet, bitte warten",
-    "fr-FR": "Le modèle est en cours de basculement, veuillez patienter",
-    "ko-KR": "모델 전환 중입니다. 기다려 주세요",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(36711-36726)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39443-39458)"
-    ],
-    "$id": 8707
-  },
-  "生成候选方案失败，请重试": {
-    "en-US": "Failed to generate candidate solutions, please try again",
-    "es-ES": "No se pudieron generar soluciones candidatas, inténtelo de nuevo",
-    "ar-EG": "فشل إنشاء الحلول المرشحة، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha ao gerar soluções candidatas. Tente novamente",
-    "ru-RU": "Не удалось создать возможные решения. Повторите попытку.",
-    "ja-JP": "候補ソリューションの生成に失敗しました。もう一度お試しください。",
-    "de-DE": "Kandidatenlösungen konnten nicht generiert werden. Bitte versuchen Sie es erneut",
-    "fr-FR": "Échec de la génération de solutions candidates, veuillez réessayer",
-    "ko-KR": "후보 솔루션을 생성하지 못했습니다. 다시 시도해 주세요.",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(36797-36813)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(37096-37112)"
-    ],
-    "$id": 8708
-  },
-  "生成失败，请重试": {
-    "en-US": "Generation failed, please try again",
-    "es-ES": "La generación falló, por favor inténtalo de nuevo",
-    "ar-EG": "فشل الإنشاء، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha na geração, tente novamente",
-    "ru-RU": "Генерация не удалась, попробуйте еще раз",
-    "ja-JP": "生成に失敗しました。もう一度お試しください。",
-    "de-DE": "Die Generierung ist fehlgeschlagen. Bitte versuchen Sie es erneut",
-    "fr-FR": "La génération a échoué, veuillez réessayer",
-    "ko-KR": "생성에 실패했습니다. 다시 시도해 주세요.",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39529-39541)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39824-39836)"
-    ],
-    "$id": 8709
-  },
-  "新虚拟目录": {
-    "en-US": "New virtual directory",
-    "es-ES": "Nuevo directorio virtual",
-    "ar-EG": "الدليل الظاهري الجديد",
-    "pt-PT": "Novo diretório virtual",
-    "ru-RU": "новый виртуальный каталог",
-    "ja-JP": "新しい仮想ディレクトリ",
-    "de-DE": "Neues virtuelles Verzeichnis",
-    "fr-FR": "Nouveau répertoire virtuel",
-    "ko-KR": "새 가상 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(40395-40404)"],
-    "$id": 8710
-  },
-  "目录树解析出错，已使用默认骨架树": {
-    "en-US": "Directory tree parsing error, default skeleton tree has been used",
-    "es-ES": "Error en el análisis del árbol de directorios; se ha utilizado el árbol predeterminado",
-    "ar-EG": "حدث خطأ في تحليل شجرة الأدلة، تم استخدام الهيكل العظمي الافتراضي لشجرة الأدلة",
-    "pt-PT": "Erro na análise da árvore de diretórios; foi utilizada uma árvore esqueleto padrão",
-    "ru-RU": "Ошибка при парсинге дерева каталогов, использовано дерево по умолчанию",
-    "ja-JP": "ディレクトリツリーの解析エラーが発生したため、デフォルトのスケルトントリーを使用しました",
-    "de-DE": "Fehler bei der Analyse des Verzeichnisbaums, Standard-Skelettbaum wird verwendet",
-    "fr-FR": "Erreur lors de l'analyse de l'arborescence des répertoires, utilisation de la structure squelette par défaut",
-    "ko-KR": "디렉토리 트리 분석 오류 발생. 기본 골격 트리를 사용했습니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(45593-45613)"],
-    "$id": 8711
-  },
-  "未选择工作区文件夹，无法开始整理": {
-    "en-US": "No workspace folder selected, cannot start organizing",
-    "es-ES": "No se seleccionó ninguna carpeta del espacio de trabajo, no se puede comenzar a organizar",
-    "ar-EG": "لم يتم تحديد مجلد مساحة عمل، لا يمكن بدء التنظيم",
-    "pt-PT": "Nenhuma pasta do espaço de trabalho selecionada, não é possível iniciar a organização",
-    "ru-RU": "Папка рабочей области не выбрана, невозможно начать организацию",
-    "ja-JP": "ワークスペースフォルダーが選択されていないため、整理を開始できません",
-    "de-DE": "Kein Arbeitsbereichsordner ausgewählt, Organisation kann nicht gestartet werden",
-    "fr-FR": "Aucun dossier d'espace de travail sélectionné, impossible de démarrer l'organisation",
-    "ko-KR": "작업공간 폴더가 선택되지 않아 정리를 시작할 수 없습니다.",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(48432-48452)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(49004-49024)"
-    ],
-    "$id": 8712
-  },
-  "整理失败，请重试": {
-    "en-US": "Organizing failed, please try again",
-    "es-ES": "Error al organizar, inténtelo de nuevo",
-    "ar-EG": "فشل التنظيم، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha na organização, por favor tente novamente",
-    "ru-RU": "Ошибка упорядочивания, повторите попытку",
-    "ja-JP": "整理に失敗しました。再試行してください",
-    "de-DE": "Sortieren fehlgeschlagen, bitte erneut versuchen",
-    "fr-FR": "Échec du rangement, veuillez réessayer",
-    "ko-KR": "정리하지 못했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(51279-51291)"],
-    "$id": 8713
-  },
-  "整理过程出错: {message}": {
-    "en-US": "An error occurred during the sorting process: {message}",
-    "es-ES": "Se produjo un error durante el proceso de clasificación: {message}",
-    "ar-EG": "حدث خطأ أثناء عملية الفرز: {message}",
-    "pt-PT": "Ocorreu um erro durante o processo de classificação: {message}",
-    "ru-RU": "В процессе сортировки произошла ошибка: {message}",
-    "ja-JP": "並べ替え処理中にエラーが発生しました: {message}",
-    "de-DE": "Beim Sortiervorgang ist ein Fehler aufgetreten: {message}",
-    "fr-FR": "Une erreur s'est produite lors du processus de tri : {message}",
-    "ko-KR": "정렬 프로세스 중에 오류가 발생했습니다: {message}",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(53467-53488)"],
-    "$id": 8714
-  },
-  "目录树预览正在生成中，请稍候...": {
-    "en-US": "Directory tree preview is being generated, please wait...",
-    "es-ES": "Se está generando una vista previa del árbol de directorios. Espere...",
-    "ar-EG": "يتم الآن إنشاء معاينة شجرة الدليل، يرجى الانتظار...",
-    "pt-PT": "A visualização da árvore de diretórios está sendo gerada. Aguarde...",
-    "ru-RU": "Создается предварительный просмотр дерева каталогов, подождите...",
-    "ja-JP": "ディレクトリ ツリーのプレビューを生成中です。お待​​ちください...",
-    "de-DE": "Die Vorschau des Verzeichnisbaums wird erstellt. Bitte warten ...",
-    "fr-FR": "L'aperçu de l'arborescence des répertoires est en cours de génération, veuillez patienter...",
-    "ko-KR": "디렉터리 트리 미리보기를 생성하는 중입니다. 잠시 기다려 주십시오...",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(54037-54058)"],
-    "$id": 8715
-  },
-  "目录树预览还没生成，无法开始整理": {
-    "en-US": "The directory tree preview has not been generated yet and cannot be organized.",
-    "es-ES": "La vista previa del árbol de directorios aún no se ha generado y no se puede organizar.",
-    "ar-EG": "لم يتم إنشاء معاينة شجرة الدليل بعد ولا يمكن تنظيمها.",
-    "pt-PT": "A visualização da árvore de diretórios ainda não foi gerada e não pode ser organizada.",
-    "ru-RU": "Предварительный просмотр дерева каталогов еще не создан и не может быть организован.",
-    "ja-JP": "ディレクトリ ツリーのプレビューはまだ生成されていないため、整理できません。",
-    "de-DE": "Die Verzeichnisbaumvorschau wurde noch nicht generiert und kann nicht organisiert werden.",
-    "fr-FR": "L'aperçu de l'arborescence des répertoires n'a pas encore été généré et ne peut pas être organisé.",
-    "ko-KR": "디렉터리 트리 미리보기가 아직 생성되지 않았으며 구성할 수 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(54138-54158)"],
-    "$id": 8716
-  },
-  "请先完成整理后再保存": {
-    "en-US": "Please finish organizing before saving",
-    "es-ES": "Por favor termine de organizar antes de guardar",
-    "ar-EG": "يرجى الانتهاء من التنظيم قبل الحفظ",
-    "pt-PT": "Termine de organizar antes de salvar",
-    "ru-RU": "Пожалуйста, завершите организацию перед сохранением",
-    "ja-JP": "保存する前に整理を完了してください",
-    "de-DE": "Bitte schließen Sie die Organisation ab, bevor Sie speichern",
-    "fr-FR": "Veuillez terminer l'organisation avant d'enregistrer",
-    "ko-KR": "저장하기 전에 정리를 완료하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(61537-61551)"],
-    "$id": 8717
-  },
-  "虚拟目录保存成功": {
-    "en-US": "Virtual directory saved successfully",
-    "es-ES": "Directorio virtual guardado exitosamente",
-    "ar-EG": "تم حفظ الدليل الظاهري بنجاح",
-    "pt-PT": "Diretório virtual salvo com sucesso",
-    "ru-RU": "Виртуальный каталог успешно сохранен.",
-    "ja-JP": "仮想ディレクトリが正常に保存されました",
-    "de-DE": "Virtuelles Verzeichnis erfolgreich gespeichert",
-    "fr-FR": "Répertoire virtuel enregistré avec succès",
-    "ko-KR": "가상 디렉터리가 성공적으로 저장되었습니다.",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(62710-62722)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(64433-64445)"
-    ],
-    "$id": 8718
-  },
-  "保存失败：": {
-    "en-US": "Save failed:",
-    "es-ES": "Error al guardar:",
-    "ar-EG": "فشل الحفظ:",
-    "pt-PT": "Falha ao salvar:",
-    "ru-RU": "Сохранить не удалось:",
-    "ja-JP": "保存に失敗しました:",
-    "de-DE": "Speichern fehlgeschlagen:",
-    "fr-FR": "Échec de l'enregistrement :",
-    "ko-KR": "저장 실패:",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(62960-62969)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(64683-64692)"
-    ],
-    "$id": 8719
-  },
-  "重命名目录成功": {
-    "en-US": "Directory renamed successfully",
-    "es-ES": "Directorio renombrado exitosamente",
-    "ar-EG": "تمت إعادة تسمية الدليل بنجاح",
-    "pt-PT": "Diretório renomeado com sucesso",
-    "ru-RU": "Каталог успешно переименован",
-    "ja-JP": "ディレクトリの名前が正常に変更されました",
-    "de-DE": "Verzeichnis erfolgreich umbenannt",
-    "fr-FR": "Répertoire renommé avec succès",
-    "ko-KR": "디렉터리 이름이 성공적으로 변경되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(65972-65983)"],
-    "$id": 8720
-  },
-  "创建根目录成功": {
-    "en-US": "Root directory created successfully",
-    "es-ES": "Directorio raíz creado exitosamente",
-    "ar-EG": "تم إنشاء الدليل الجذر بنجاح",
-    "pt-PT": "Diretório raiz criado com sucesso",
-    "ru-RU": "Корневой каталог успешно создан",
-    "ja-JP": "ルートディレクトリが正常に作成されました",
-    "de-DE": "Stammverzeichnis erfolgreich erstellt",
-    "fr-FR": "Répertoire racine créé avec succès",
-    "ko-KR": "루트 디렉터리가 성공적으로 생성되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(66638-66649)"],
-    "$id": 8721
-  },
-  "子目录名称已存在": {
-    "en-US": "Subdirectory name already exists",
-    "es-ES": "El nombre del subdirectorio ya existe",
-    "ar-EG": "اسم الدليل الفرعي موجود بالفعل",
-    "pt-PT": "O nome do subdiretório já existe",
-    "ru-RU": "Имя подкаталога уже существует",
-    "ja-JP": "サブディレクトリ名はすでに存在します",
-    "de-DE": "Der Name des Unterverzeichnisses existiert bereits",
-    "fr-FR": "Le nom du sous-répertoire existe déjà",
-    "ko-KR": "하위 디렉터리 이름이 이미 존재합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(67309-67321)"],
-    "$id": 8722
-  },
-  "新增子目录成功": {
-    "en-US": "Added subdirectory successfully",
-    "es-ES": "Subdirectorio agregado exitosamente",
-    "ar-EG": "تمت إضافة الدليل الفرعي بنجاح",
-    "pt-PT": "Subdiretório adicionado com sucesso",
-    "ru-RU": "Подкаталог успешно добавлен",
-    "ja-JP": "サブディレクトリが正常に追加されました",
-    "de-DE": "Unterverzeichnis erfolgreich hinzugefügt",
-    "fr-FR": "Sous-répertoire ajouté avec succès",
-    "ko-KR": "하위 디렉터리를 성공적으로 추가했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(67759-67770)"],
-    "$id": 8723
-  },
-  "已删除目录「{name}」，包含的文件已移至未归类": {
-    "en-US": "Directory '{name}' has been deleted and the files it contained have been moved to Uncategorized",
-    "es-ES": "El directorio '{name}' se ha eliminado y los archivos que contenía se han movido a Sin categoría",
-    "ar-EG": "تم حذف الدليل '{name}' وتم نقل الملفات التي يحتوي عليها إلى غير مصنف",
-    "pt-PT": "O diretório '{name}' foi excluído e os arquivos contidos nele foram movidos para Sem categoria",
-    "ru-RU": "Каталог «{name}» был удален, а содержащиеся в нем файлы были перемещены в категорию «Без категории».",
-    "ja-JP": "ディレクトリ「{name}」は削除され、ディレクトリに含まれるファイルは未分類に移動されました",
-    "de-DE": "Das Verzeichnis „{name}“ wurde gelöscht und die darin enthaltenen Dateien wurden nach „Nicht kategorisiert“ verschoben",
-    "fr-FR": "Le répertoire '{name}' a été supprimé et les fichiers qu'il contenait ont été déplacés vers Non classé",
-    "ko-KR": "'{name}' 디렉터리가 삭제되었으며 여기에 포함된 파일이 Uncategorized로 이동되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(73853-73882)"],
-    "$id": 8724
-  },
-  "已删除空目录「{name}」": {
-    "en-US": "Empty directory '{name}' deleted",
-    "es-ES": "Directorio vacío '{name}' eliminado",
-    "ar-EG": "تم حذف الدليل الفارغ '{name}'",
-    "pt-PT": "Diretório vazio '{name}' excluído",
-    "ru-RU": "Пустой каталог '{name}' удален.",
-    "ja-JP": "空のディレクトリ「{name}」が削除されました",
-    "de-DE": "Leeres Verzeichnis „{name}“ gelöscht",
-    "fr-FR": "Répertoire vide '{name}' supprimé",
-    "ko-KR": "빈 디렉터리 '{name}'이(가) 삭제되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(74690-74708)"],
-    "$id": 8725
-  },
-  "已移动文件至「{target}」": {
-    "en-US": "File moved to '{target}'",
-    "es-ES": "Archivo movido a '{target}'",
-    "ar-EG": "تم نقل الملف إلى \"{target}\"",
-    "pt-PT": "Arquivo movido para '{target}'",
-    "ru-RU": "Файл перемещен в '{target}'",
-    "ja-JP": "ファイルは「{target}」に移動されました",
-    "de-DE": "Datei nach „{target}“ verschoben",
-    "fr-FR": "Fichier déplacé vers '{target}'",
-    "ko-KR": "파일이 '{target}'로 이동되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(80502-80522)"],
-    "$id": 8726
-  },
-  "不能将父目录拖放到其子目录中": {
-    "en-US": "Cannot drag and drop a parent directory into its subdirectories",
-    "es-ES": "No se puede arrastrar y soltar un directorio principal en sus subdirectorios",
-    "ar-EG": "لا يمكن سحب وإفلات الدليل الأصلي في الدلائل الفرعية الخاصة به",
-    "pt-PT": "Não é possível arrastar e soltar um diretório pai em seus subdiretórios",
-    "ru-RU": "Невозможно перетащить родительский каталог в его подкаталоги.",
-    "ja-JP": "親ディレクトリをそのサブディレクトリにドラッグ アンド ドロップできません",
-    "de-DE": "Ein übergeordnetes Verzeichnis kann nicht per Drag & Drop in seine Unterverzeichnisse gezogen werden",
-    "fr-FR": "Impossible de glisser-déposer un répertoire parent dans ses sous-répertoires",
-    "ko-KR": "상위 디렉터리를 해당 하위 디렉터리로 끌어서 놓을 수 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(80931-80949)"],
-    "$id": 8727
-  },
-  "已将目录「{source}」放入「{target}」": {
-    "en-US": "Directory \"{source}\" has been placed into \"{target}\"",
-    "es-ES": "El directorio \"{source}\" se ha colocado en \"{target}\"",
-    "ar-EG": "تم وضع الدليل \"{source}\" في \"{target}\"",
-    "pt-PT": "O diretório \"{source}\" foi colocado em \"{target}\"",
-    "ru-RU": "Каталог \"{source}\" помещен в \"{target}\"",
-    "ja-JP": "ディレクトリ「{source}」は「{target}」に配置されました",
-    "de-DE": "Das Verzeichnis „{source}“ wurde in „{target}“ abgelegt.",
-    "fr-FR": "Le répertoire \"{source}\" a été placé dans \"{target}\"",
-    "ko-KR": "\"{source}\" 디렉터리가 \"{target}\"에 배치되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(84420-84450)"],
-    "$id": 8728
-  },
-  "暂无待重命名文件": {
-    "en-US": "There are no files to be renamed yet",
-    "es-ES": "Aún no hay archivos cuyo nombre cambiar",
-    "ar-EG": "لا توجد ملفات لإعادة تسميتها بعد",
-    "pt-PT": "Ainda não há arquivos a serem renomeados",
-    "ru-RU": "Пока нет файлов для переименования",
-    "ja-JP": "名前を変更するファイルはまだありません",
-    "de-DE": "Es sind noch keine Dateien vorhanden, die umbenannt werden müssen",
-    "fr-FR": "Il n'y a pas encore de fichiers à renommer",
-    "ko-KR": "아직 이름을 바꿀 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87422-87434)"],
-    "$id": 9991
-  },
-  "成功更新 {count} 个文件智能名称": {
-    "en-US": "Successfully updated {count} file smart names",
-    "es-ES": "{count} nombres inteligentes de archivos actualizados correctamente",
-    "ar-EG": "تم تحديث الأسماء الذكية للملفات {count} بنجاح",
-    "pt-PT": "Nomes inteligentes de arquivos {count} atualizados com êxito",
-    "ru-RU": "Успешно обновлено смарт-имена файлов {count}.",
-    "ja-JP": "{count} ファイルのスマート名が正常に更新されました",
-    "de-DE": "{count}-Datei-Smart-Namen erfolgreich aktualisiert",
-    "fr-FR": "La mise à jour réussie de {count} noms intelligents de fichiers",
-    "ko-KR": "{count} 파일 스마트 이름을 성공적으로 업데이트했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87750-87774)"],
-    "$id": 11117
-  },
-  "{count} 个文件更新失败": {
-    "en-US": "{count} files failed to update",
-    "es-ES": "{count} archivos no se pudieron actualizar",
-    "ar-EG": "{count} فشل تحديث الملفات",
-    "pt-PT": "{count} arquivos não foram atualizados",
-    "ru-RU": "{count} файлов не удалось обновить.",
-    "ja-JP": "{count} ファイルを更新できませんでした",
-    "de-DE": "{count} Dateien konnten nicht aktualisiert werden",
-    "fr-FR": "{count} fichiers n'ont pas pu être mis à jour",
-    "ko-KR": "{count} 파일을 업데이트하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87875-87894)"],
-    "$id": 11118
-  },
-  "重命名失败": {
-    "en-US": "Rename failed",
-    "es-ES": "Error al cambiar el nombre",
-    "ar-EG": "فشلت إعادة التسمية",
-    "pt-PT": "Falha ao renomear",
-    "ru-RU": "Переименование не удалось",
-    "ja-JP": "名前変更に失敗しました",
-    "de-DE": "Umbenennen fehlgeschlagen",
-    "fr-FR": "Échec du changement de nom",
-    "ko-KR": "이름 바꾸기 실패",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88374-88383)"],
-    "$id": 10043
-  },
-  "执行重命名异常": {
-    "en-US": "Execute rename exception",
-    "es-ES": "Ejecutar excepción de cambio de nombre",
-    "ar-EG": "تنفيذ استثناء إعادة التسمية",
-    "pt-PT": "Executar exceção de renomeação",
-    "ru-RU": "Выполнить исключение переименования",
-    "ja-JP": "名前変更例外の実行",
-    "de-DE": "Umbenennungsausnahme ausführen",
-    "fr-FR": "Exécuter l'exception de renommage",
-    "ko-KR": "이름 바꾸기 예외 실행",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88475-88486)"],
-    "$id": 10044
-  },
-  "暂无目标文件": {
-    "en-US": "No target file yet",
-    "es-ES": "Aún no hay archivo de destino",
-    "ar-EG": "لا يوجد ملف هدف حتى الآن",
-    "pt-PT": "Nenhum arquivo de destino ainda",
-    "ru-RU": "Целевого файла еще нет",
-    "ja-JP": "対象ファイルがまだありません",
-    "de-DE": "Noch keine Zieldatei",
-    "fr-FR": "Pas encore de fichier cible",
-    "ko-KR": "아직 대상 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(89046-89056)"],
-    "$id": 10045
-  },
-  "成功为 {count} 个文件更新标签": {
-    "en-US": "Successfully updated tags for {count} files",
-    "es-ES": "Etiquetas actualizadas correctamente para {count} archivos",
-    "ar-EG": "تم تحديث العلامات بنجاح لملفات {count}.",
-    "pt-PT": "Tags atualizadas com sucesso para arquivos {count}",
-    "ru-RU": "Теги для {count} файлов успешно обновлены.",
-    "ja-JP": "{count} ファイルのタグが正常に更新されました",
-    "de-DE": "Tags für {count}-Dateien erfolgreich aktualisiert",
-    "fr-FR": "Balises mises à jour avec succès pour {count} fichiers",
-    "ko-KR": "{count} 파일의 태그를 성공적으로 업데이트했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(89956-89979)"],
-    "$id": 10046
-  },
-  "批量打标失败": {
-    "en-US": "Batch marking failed",
-    "es-ES": "Error al marcar el lote",
-    "ar-EG": "فشل وضع علامة على الدفعة",
-    "pt-PT": "Falha na marcação do lote",
-    "ru-RU": "Маркировка партии не удалась",
-    "ja-JP": "バッチのマーキングに失敗しました",
-    "de-DE": "Die Chargenkennzeichnung ist fehlgeschlagen",
-    "fr-FR": "Échec du marquage du lot",
-    "ko-KR": "일괄 표시 실패",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(90779-90789)"],
-    "$id": 10047
-  },
-  "删除标签失败": {
-    "en-US": "Failed to delete tag",
-    "es-ES": "No se pudo eliminar la etiqueta",
-    "ar-EG": "فشل حذف العلامة",
-    "pt-PT": "Falha ao excluir tag",
-    "ru-RU": "Не удалось удалить тег",
-    "ja-JP": "タグの削除に失敗しました",
-    "de-DE": "Tag konnte nicht gelöscht werden",
-    "fr-FR": "Échec de la suppression de la balise",
-    "ko-KR": "태그를 삭제하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92196-92206)"],
-    "$id": 10048
-  },
-  "未选择要清理的冗余文件": {
-    "en-US": "No redundant files selected for cleaning",
-    "es-ES": "No se han seleccionado archivos redundantes para limpieza",
-    "ar-EG": "لم يتم تحديد أي ملفات زائدة عن الحاجة للتنظيف",
-    "pt-PT": "Nenhum arquivo redundante selecionado para limpeza",
-    "ru-RU": "Лишние файлы для очистки не выбраны.",
-    "ja-JP": "クリーニング対象として冗長なファイルが選択されていません",
-    "de-DE": "Es wurden keine redundanten Dateien zum Bereinigen ausgewählt",
-    "fr-FR": "Aucun fichier redondant sélectionné pour le nettoyage",
-    "ko-KR": "정리할 중복 파일이 선택되지 않았습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92611-92626)"],
-    "$id": 10049
-  },
-  "已安全移入系统回收站 {count} 个文件": {
-    "en-US": "{count} files have been safely moved to the system recycle bin",
-    "es-ES": "{count} archivos se han movido de forma segura a la papelera de reciclaje del sistema",
-    "ar-EG": "{count} تم نقل الملفات بأمان إلى سلة محذوفات النظام",
-    "pt-PT": "{count} arquivos foram movidos com segurança para a lixeira do sistema",
-    "ru-RU": "{count} файлов благополучно перемещены в системную корзину.",
-    "ja-JP": "{count} ファイルはシステムのごみ箱に安全に移動されました",
-    "de-DE": "{count} Dateien wurden sicher in den Systempapierkorb verschoben",
-    "fr-FR": "{count} fichiers ont été déplacés en toute sécurité vers la corbeille du système",
-    "ko-KR": "{count} 파일이 시스템 휴지통으로 안전하게 이동되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92909-92935)"],
-    "$id": 10050
-  },
-  "清理冗余文件失败": {
-    "en-US": "Cleaning up redundant files failed",
-    "es-ES": "Error al limpiar archivos redundantes",
-    "ar-EG": "فشل تنظيف الملفات الزائدة",
-    "pt-PT": "Falha na limpeza de arquivos redundantes",
-    "ru-RU": "Очистка ненужных файлов не удалась.",
-    "ja-JP": "冗長ファイルのクリーンアップに失敗しました",
-    "de-DE": "Das Bereinigen redundanter Dateien ist fehlgeschlagen",
-    "fr-FR": "Échec du nettoyage des fichiers redondants",
-    "ko-KR": "중복 파일을 정리하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(93097-93109)"],
-    "$id": 10051
-  },
-  "补救整理失败，请重试": {
-    "en-US": "Remediation failed, please try again",
-    "es-ES": "La corrección falló, inténtelo de nuevo",
-    "ar-EG": "فشل التنظيم التعويضي، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha na organização de recuperação, por favor tente novamente",
-    "ru-RU": "Ошибка восстановительного упорядочивания, повторите попытку",
-    "ja-JP": "补救整理に失敗しました。再試行してください",
-    "de-DE": "Korrektur des Sortiervorgangs fehlgeschlagen, bitte erneut versuchen",
-    "fr-FR": "Échec du rangement de rattrapage, veuillez réessayer",
-    "ko-KR": "보완 정리하지 못했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(96440-96454)"],
-    "$id": 8729
-  },
-  "AI 无法将剩余的顽固文件分配到现有目录，请创建匹配的目录": {
-    "en-US": "AI cannot allocate remaining stubborn files to an existing directory, please create a matching directory",
-    "es-ES": "AI no puede asignar los archivos rebeldes restantes a un directorio existente; cree un directorio coincidente",
-    "ar-EG": "لا يمكن لمنظمة العفو الدولية تخصيص الملفات العنيدة المتبقية إلى دليل موجود، يرجى إنشاء دليل مطابق",
-    "pt-PT": "AI não pode alocar arquivos teimosos restantes para um diretório existente, crie um diretório correspondente",
-    "ru-RU": "ИИ не может разместить оставшиеся неподатливые файлы в существующем каталоге, создайте соответствующий каталог.",
-    "ja-JP": "AI は残りの頑固なファイルを既存のディレクトリに割り当てることができません。一致するディレクトリを作成してください。",
-    "de-DE": "AI kann verbleibende hartnäckige Dateien nicht einem vorhandenen Verzeichnis zuordnen, bitte erstellen Sie ein passendes Verzeichnis",
-    "fr-FR": "L'IA ne peut pas allouer les fichiers persistants restants à un répertoire existant, veuillez créer un répertoire correspondant",
-    "ko-KR": "AI는 나머지 완고한 파일을 기존 디렉터리에 할당할 수 없습니다. 일치하는 디렉터리를 생성하십시오.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(97283-97316)"],
-    "$id": 8730
-  },
-  "自动找补完成，所有文件均已归类！": {
-    "en-US": "Automatic retrieval is completed and all files have been classified!",
-    "es-ES": "¡Se completa la recuperación automática y se han clasificado todos los archivos!",
-    "ar-EG": "اكتمل الاسترداد التلقائي وتم تصنيف جميع الملفات!",
-    "pt-PT": "A recuperação automática foi concluída e todos os arquivos foram classificados!",
-    "ru-RU": "Автоматический поиск завершен, все файлы засекречены!",
-    "ja-JP": "自動検索が完了し、すべてのファイルが分類されました。",
-    "de-DE": "Der automatische Abruf ist abgeschlossen und alle Dateien wurden klassifiziert!",
-    "fr-FR": "La récupération automatique est terminée et tous les fichiers ont été classés !",
-    "ko-KR": "자동 검색이 완료되고 모든 파일이 분류되었습니다!",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(99169-99189)"],
-    "$id": 8731
   },
   "初始化多模态引擎...": {
     "en-US": "Initializing the multimodal engine...",
@@ -5828,6 +5195,49 @@
     "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(12598-12604)"],
     "$id": 8604
   },
+  "未归类": {
+    "en-US": "Uncategorized",
+    "es-ES": "Sin categoría",
+    "ar-EG": "غير مصنف",
+    "pt-PT": "Sem categoria",
+    "ru-RU": "Без категории",
+    "ja-JP": "未分類",
+    "de-DE": "Nicht kategorisiert",
+    "fr-FR": "Non classé",
+    "ko-KR": "분류되지 않음",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(2706-2713)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(2811-2818)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(3169-3176)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(3246-3253)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(5834-5841)",
+      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(12924-12931)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizingView.tsx(1780-1787)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(11303-11310)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(14720-14727)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(14854-14861)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(19958-19965)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(20059-20066)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(21454-21461)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(32531-32538)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(32620-32627)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(71632-71639)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(71774-71781)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(3152-3159)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(5253-5260)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(6094-6101)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(8610-8617)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(11397-11404)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(15261-15268)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(15598-15605)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(16014-16021)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(16446-16453)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(21545-21552)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(25432-25439)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(28878-28885)"
+    ],
+    "$id": 8605
+  },
   "平铺到根目录": {
     "en-US": "Tile to root directory",
     "es-ES": "Mosaico al directorio raíz",
@@ -7263,6 +6673,596 @@
     "ko-KR": "디렉토리 삭제",
     "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(16745-16753)"],
     "$id": 8696
+  },
+  "获取待整理文件列表失败，请查看日志确认": {
+    "en-US": "Failed to obtain the list of files to be sorted, please check the log for confirmation.",
+    "es-ES": "No se pudo obtener la lista de archivos para ordenar; consulte el registro para confirmarlo.",
+    "ar-EG": "فشل الحصول على قائمة الملفات التي سيتم فرزها، يرجى التحقق من السجل للتأكيد.",
+    "pt-PT": "Falha ao obter a lista de arquivos a serem classificados. Verifique o log para confirmação.",
+    "ru-RU": "Не удалось получить список файлов для сортировки. Проверьте журнал для подтверждения.",
+    "ja-JP": "ソート対象のファイルのリストを取得できませんでした。ログを確認してください。",
+    "de-DE": "Die Liste der zu sortierenden Dateien konnte nicht abgerufen werden. Bitte überprüfen Sie das Protokoll zur Bestätigung.",
+    "fr-FR": "Impossible d'obtenir la liste des fichiers à trier, veuillez vérifier le journal pour confirmation.",
+    "ko-KR": "정렬할 파일 목록을 가져오지 못했습니다. 확인하려면 로그를 확인하세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(8526-8549)"],
+    "$id": 8700
+  },
+  "已加载已有虚拟目录完整文件结构": {
+    "en-US": "The complete file structure of the existing virtual directory has been loaded.",
+    "es-ES": "Se ha cargado la estructura de archivos completa del directorio virtual existente.",
+    "ar-EG": "تم تحميل بنية الملف الكاملة للدليل الظاهري الموجود.",
+    "pt-PT": "A estrutura completa de arquivos do diretório virtual existente foi carregada.",
+    "ru-RU": "Загружена полная файловая структура существующего виртуального каталога.",
+    "ja-JP": "既存の仮想ディレクトリの完全なファイル構造がロードされました。",
+    "de-DE": "Die komplette Dateistruktur des bestehenden virtuellen Verzeichnisses wurde geladen.",
+    "fr-FR": "La structure complète des fichiers du répertoire virtuel existant a été chargée.",
+    "ko-KR": "기존 가상 디렉터리의 전체 파일 구조가 로드되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16199-16218)"],
+    "$id": 8701
+  },
+  "已加载增量整理待处理文件与现有分类结构": {
+    "en-US": "Loaded incremental sorting files to be processed and existing classification structure",
+    "es-ES": "Archivos de clasificación incrementales cargados para procesar y estructura de clasificación existente",
+    "ar-EG": "تحميل ملفات الفرز المتزايدة لتتم معالجتها وهيكل التصنيف الحالي",
+    "pt-PT": "Arquivos de classificação incrementais carregados a serem processados ​​e estrutura de classificação existente",
+    "ru-RU": "Загруженные файлы инкрементной сортировки для обработки и существующая структура классификации.",
+    "ja-JP": "ロードされた処理対象の増分並べ替えファイルと既存の分類構造",
+    "de-DE": "Zu verarbeitende inkrementelle Sortierdateien und vorhandene Klassifizierungsstruktur werden geladen",
+    "fr-FR": "Fichiers de tri incrémentiel chargés à traiter et structure de classification existante",
+    "ko-KR": "처리할 증분 정렬 파일과 기존 분류 구조를 로드했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16297-16320)"],
+    "$id": 8702
+  },
+  "加载增量整理文件失败": {
+    "en-US": "Failed to load incremental grooming file",
+    "es-ES": "No se pudo cargar el archivo de limpieza incremental",
+    "ar-EG": "فشل تحميل ملف الاستمالة المتزايد",
+    "pt-PT": "Falha ao carregar o arquivo de preparação incremental",
+    "ru-RU": "Не удалось загрузить файл добавочной обработки.",
+    "ja-JP": "インクリメンタル グルーミング ファイルのロードに失敗しました",
+    "de-DE": "Das Laden der inkrementellen Grooming-Datei ist fehlgeschlagen",
+    "fr-FR": "Échec du chargement du fichier de nettoyage incrémentiel",
+    "ko-KR": "증분 정리 파일을 로드하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16449-16463)"],
+    "$id": 8703
+  },
+  "加载草稿失败，请重试": {
+    "en-US": "Failed to load draft, please try again",
+    "es-ES": "No se pudo cargar el borrador. Inténtelo de nuevo.",
+    "ar-EG": "فشل تحميل المسودة، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha ao carregar o rascunho. Tente novamente",
+    "ru-RU": "Не удалось загрузить черновик. Повторите попытку.",
+    "ja-JP": "下書きをロードできませんでした。もう一度お試しください。",
+    "de-DE": "Der Entwurf konnte nicht geladen werden. Bitte versuchen Sie es erneut",
+    "fr-FR": "Échec du chargement du brouillon, veuillez réessayer",
+    "ko-KR": "초안을 로드하지 못했습니다. 다시 시도해 주세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34033-34047)"],
+    "$id": 8704
+  },
+  "已删除未保存的草稿": {
+    "en-US": "Unsaved draft deleted",
+    "es-ES": "Borrador no guardado eliminado",
+    "ar-EG": "تم حذف المسودة غير المحفوظة",
+    "pt-PT": "Rascunho não salvo excluído",
+    "ru-RU": "Несохраненный черновик удален.",
+    "ja-JP": "保存されていない下書きが削除されました",
+    "de-DE": "Nicht gespeicherter Entwurf gelöscht",
+    "fr-FR": "Brouillon non enregistré supprimé",
+    "ko-KR": "저장되지 않은 초안이 삭제되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34377-34390)"],
+    "$id": 8705
+  },
+  "删除草稿失败": {
+    "en-US": "Delete draft failed",
+    "es-ES": "Error al eliminar el borrador",
+    "ar-EG": "فشل حذف المسودة",
+    "pt-PT": "Falha ao excluir rascunho",
+    "ru-RU": "Удалить черновик не удалось",
+    "ja-JP": "下書きの削除に失敗しました",
+    "de-DE": "Entwurf konnte nicht gelöscht werden",
+    "fr-FR": "Échec de la suppression du brouillon",
+    "ko-KR": "초안 삭제 실패",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34547-34557)"],
+    "$id": 8706
+  },
+  "模型正在切换中，请等待": {
+    "en-US": "The model is switching, please wait",
+    "es-ES": "El modelo se está cambiando, por favor espere",
+    "ar-EG": "نموذج التبديل قيد التشغيل، يرجى الانتظار",
+    "pt-PT": "A modelo está a ser alterada, por favor aguarde",
+    "ru-RU": "Модель переключается, пожалуйста, подождите",
+    "ja-JP": "モデルの切替中です。お待ちください",
+    "de-DE": "Das Modell wird gerade umgeschaltet, bitte warten",
+    "fr-FR": "Le modèle est en cours de basculement, veuillez patienter",
+    "ko-KR": "모델 전환 중입니다. 기다려 주세요",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(36711-36726)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39443-39458)"
+    ],
+    "$id": 8707
+  },
+  "生成候选方案失败，请重试": {
+    "en-US": "Failed to generate candidate solutions, please try again",
+    "es-ES": "No se pudieron generar soluciones candidatas, inténtelo de nuevo",
+    "ar-EG": "فشل إنشاء الحلول المرشحة، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha ao gerar soluções candidatas. Tente novamente",
+    "ru-RU": "Не удалось создать возможные решения. Повторите попытку.",
+    "ja-JP": "候補ソリューションの生成に失敗しました。もう一度お試しください。",
+    "de-DE": "Kandidatenlösungen konnten nicht generiert werden. Bitte versuchen Sie es erneut",
+    "fr-FR": "Échec de la génération de solutions candidates, veuillez réessayer",
+    "ko-KR": "후보 솔루션을 생성하지 못했습니다. 다시 시도해 주세요.",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(36797-36813)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(37096-37112)"
+    ],
+    "$id": 8708
+  },
+  "生成失败，请重试": {
+    "en-US": "Generation failed, please try again",
+    "es-ES": "La generación falló, por favor inténtalo de nuevo",
+    "ar-EG": "فشل الإنشاء، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha na geração, tente novamente",
+    "ru-RU": "Генерация не удалась, попробуйте еще раз",
+    "ja-JP": "生成に失敗しました。もう一度お試しください。",
+    "de-DE": "Die Generierung ist fehlgeschlagen. Bitte versuchen Sie es erneut",
+    "fr-FR": "La génération a échoué, veuillez réessayer",
+    "ko-KR": "생성에 실패했습니다. 다시 시도해 주세요.",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39529-39541)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39824-39836)"
+    ],
+    "$id": 8709
+  },
+  "新虚拟目录": {
+    "en-US": "New virtual directory",
+    "es-ES": "Nuevo directorio virtual",
+    "ar-EG": "الدليل الظاهري الجديد",
+    "pt-PT": "Novo diretório virtual",
+    "ru-RU": "новый виртуальный каталог",
+    "ja-JP": "新しい仮想ディレクトリ",
+    "de-DE": "Neues virtuelles Verzeichnis",
+    "fr-FR": "Nouveau répertoire virtuel",
+    "ko-KR": "새 가상 디렉터리",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(40395-40404)"],
+    "$id": 8710
+  },
+  "目录树解析出错，已使用默认骨架树": {
+    "en-US": "Directory tree parsing error, default skeleton tree has been used",
+    "es-ES": "Error en el análisis del árbol de directorios; se ha utilizado el árbol predeterminado",
+    "ar-EG": "حدث خطأ في تحليل شجرة الأدلة، تم استخدام الهيكل العظمي الافتراضي لشجرة الأدلة",
+    "pt-PT": "Erro na análise da árvore de diretórios; foi utilizada uma árvore esqueleto padrão",
+    "ru-RU": "Ошибка при парсинге дерева каталогов, использовано дерево по умолчанию",
+    "ja-JP": "ディレクトリツリーの解析エラーが発生したため、デフォルトのスケルトントリーを使用しました",
+    "de-DE": "Fehler bei der Analyse des Verzeichnisbaums, Standard-Skelettbaum wird verwendet",
+    "fr-FR": "Erreur lors de l'analyse de l'arborescence des répertoires, utilisation de la structure squelette par défaut",
+    "ko-KR": "디렉토리 트리 분석 오류 발생. 기본 골격 트리를 사용했습니다",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(45593-45613)"],
+    "$id": 8711
+  },
+  "未选择工作区文件夹，无法开始整理": {
+    "en-US": "No workspace folder selected, cannot start organizing",
+    "es-ES": "No se seleccionó ninguna carpeta del espacio de trabajo, no se puede comenzar a organizar",
+    "ar-EG": "لم يتم تحديد مجلد مساحة عمل، لا يمكن بدء التنظيم",
+    "pt-PT": "Nenhuma pasta do espaço de trabalho selecionada, não é possível iniciar a organização",
+    "ru-RU": "Папка рабочей области не выбрана, невозможно начать организацию",
+    "ja-JP": "ワークスペースフォルダーが選択されていないため、整理を開始できません",
+    "de-DE": "Kein Arbeitsbereichsordner ausgewählt, Organisation kann nicht gestartet werden",
+    "fr-FR": "Aucun dossier d'espace de travail sélectionné, impossible de démarrer l'organisation",
+    "ko-KR": "작업공간 폴더가 선택되지 않아 정리를 시작할 수 없습니다.",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(48432-48452)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(49004-49024)"
+    ],
+    "$id": 8712
+  },
+  "整理失败，请重试": {
+    "en-US": "Organizing failed, please try again",
+    "es-ES": "Error al organizar, inténtelo de nuevo",
+    "ar-EG": "فشل التنظيم، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha na organização, por favor tente novamente",
+    "ru-RU": "Ошибка упорядочивания, повторите попытку",
+    "ja-JP": "整理に失敗しました。再試行してください",
+    "de-DE": "Sortieren fehlgeschlagen, bitte erneut versuchen",
+    "fr-FR": "Échec du rangement, veuillez réessayer",
+    "ko-KR": "정리하지 못했습니다. 다시 시도해 주세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(51279-51291)"],
+    "$id": 8713
+  },
+  "整理过程出错: {message}": {
+    "en-US": "An error occurred during the sorting process: {message}",
+    "es-ES": "Se produjo un error durante el proceso de clasificación: {message}",
+    "ar-EG": "حدث خطأ أثناء عملية الفرز: {message}",
+    "pt-PT": "Ocorreu um erro durante o processo de classificação: {message}",
+    "ru-RU": "В процессе сортировки произошла ошибка: {message}",
+    "ja-JP": "並べ替え処理中にエラーが発生しました: {message}",
+    "de-DE": "Beim Sortiervorgang ist ein Fehler aufgetreten: {message}",
+    "fr-FR": "Une erreur s'est produite lors du processus de tri : {message}",
+    "ko-KR": "정렬 프로세스 중에 오류가 발생했습니다: {message}",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(53467-53488)"],
+    "$id": 8714
+  },
+  "目录树预览正在生成中，请稍候...": {
+    "en-US": "Directory tree preview is being generated, please wait...",
+    "es-ES": "Se está generando una vista previa del árbol de directorios. Espere...",
+    "ar-EG": "يتم الآن إنشاء معاينة شجرة الدليل، يرجى الانتظار...",
+    "pt-PT": "A visualização da árvore de diretórios está sendo gerada. Aguarde...",
+    "ru-RU": "Создается предварительный просмотр дерева каталогов, подождите...",
+    "ja-JP": "ディレクトリ ツリーのプレビューを生成中です。お待​​ちください...",
+    "de-DE": "Die Vorschau des Verzeichnisbaums wird erstellt. Bitte warten ...",
+    "fr-FR": "L'aperçu de l'arborescence des répertoires est en cours de génération, veuillez patienter...",
+    "ko-KR": "디렉터리 트리 미리보기를 생성하는 중입니다. 잠시 기다려 주십시오...",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(54037-54058)"],
+    "$id": 8715
+  },
+  "目录树预览还没生成，无法开始整理": {
+    "en-US": "The directory tree preview has not been generated yet and cannot be organized.",
+    "es-ES": "La vista previa del árbol de directorios aún no se ha generado y no se puede organizar.",
+    "ar-EG": "لم يتم إنشاء معاينة شجرة الدليل بعد ولا يمكن تنظيمها.",
+    "pt-PT": "A visualização da árvore de diretórios ainda não foi gerada e não pode ser organizada.",
+    "ru-RU": "Предварительный просмотр дерева каталогов еще не создан и не может быть организован.",
+    "ja-JP": "ディレクトリ ツリーのプレビューはまだ生成されていないため、整理できません。",
+    "de-DE": "Die Verzeichnisbaumvorschau wurde noch nicht generiert und kann nicht organisiert werden.",
+    "fr-FR": "L'aperçu de l'arborescence des répertoires n'a pas encore été généré et ne peut pas être organisé.",
+    "ko-KR": "디렉터리 트리 미리보기가 아직 생성되지 않았으며 구성할 수 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(54138-54158)"],
+    "$id": 8716
+  },
+  "请先完成整理后再保存": {
+    "en-US": "Please finish organizing before saving",
+    "es-ES": "Por favor termine de organizar antes de guardar",
+    "ar-EG": "يرجى الانتهاء من التنظيم قبل الحفظ",
+    "pt-PT": "Termine de organizar antes de salvar",
+    "ru-RU": "Пожалуйста, завершите организацию перед сохранением",
+    "ja-JP": "保存する前に整理を完了してください",
+    "de-DE": "Bitte schließen Sie die Organisation ab, bevor Sie speichern",
+    "fr-FR": "Veuillez terminer l'organisation avant d'enregistrer",
+    "ko-KR": "저장하기 전에 정리를 완료하세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(61537-61551)"],
+    "$id": 8717
+  },
+  "虚拟目录保存成功": {
+    "en-US": "Virtual directory saved successfully",
+    "es-ES": "Directorio virtual guardado exitosamente",
+    "ar-EG": "تم حفظ الدليل الظاهري بنجاح",
+    "pt-PT": "Diretório virtual salvo com sucesso",
+    "ru-RU": "Виртуальный каталог успешно сохранен.",
+    "ja-JP": "仮想ディレクトリが正常に保存されました",
+    "de-DE": "Virtuelles Verzeichnis erfolgreich gespeichert",
+    "fr-FR": "Répertoire virtuel enregistré avec succès",
+    "ko-KR": "가상 디렉터리가 성공적으로 저장되었습니다.",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(62710-62722)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(64433-64445)"
+    ],
+    "$id": 8718
+  },
+  "保存失败：": {
+    "en-US": "Save failed:",
+    "es-ES": "Error al guardar:",
+    "ar-EG": "فشل الحفظ:",
+    "pt-PT": "Falha ao salvar:",
+    "ru-RU": "Сохранить не удалось:",
+    "ja-JP": "保存に失敗しました:",
+    "de-DE": "Speichern fehlgeschlagen:",
+    "fr-FR": "Échec de l'enregistrement :",
+    "ko-KR": "저장 실패:",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(62960-62969)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(64683-64692)"
+    ],
+    "$id": 8719
+  },
+  "重命名目录成功": {
+    "en-US": "Directory renamed successfully",
+    "es-ES": "Directorio renombrado exitosamente",
+    "ar-EG": "تمت إعادة تسمية الدليل بنجاح",
+    "pt-PT": "Diretório renomeado com sucesso",
+    "ru-RU": "Каталог успешно переименован",
+    "ja-JP": "ディレクトリの名前が正常に変更されました",
+    "de-DE": "Verzeichnis erfolgreich umbenannt",
+    "fr-FR": "Répertoire renommé avec succès",
+    "ko-KR": "디렉터리 이름이 성공적으로 변경되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(65972-65983)"],
+    "$id": 8720
+  },
+  "创建根目录成功": {
+    "en-US": "Root directory created successfully",
+    "es-ES": "Directorio raíz creado exitosamente",
+    "ar-EG": "تم إنشاء الدليل الجذر بنجاح",
+    "pt-PT": "Diretório raiz criado com sucesso",
+    "ru-RU": "Корневой каталог успешно создан",
+    "ja-JP": "ルートディレクトリが正常に作成されました",
+    "de-DE": "Stammverzeichnis erfolgreich erstellt",
+    "fr-FR": "Répertoire racine créé avec succès",
+    "ko-KR": "루트 디렉터리가 성공적으로 생성되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(66638-66649)"],
+    "$id": 8721
+  },
+  "子目录名称已存在": {
+    "en-US": "Subdirectory name already exists",
+    "es-ES": "El nombre del subdirectorio ya existe",
+    "ar-EG": "اسم الدليل الفرعي موجود بالفعل",
+    "pt-PT": "O nome do subdiretório já existe",
+    "ru-RU": "Имя подкаталога уже существует",
+    "ja-JP": "サブディレクトリ名はすでに存在します",
+    "de-DE": "Der Name des Unterverzeichnisses existiert bereits",
+    "fr-FR": "Le nom du sous-répertoire existe déjà",
+    "ko-KR": "하위 디렉터리 이름이 이미 존재합니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(67309-67321)"],
+    "$id": 8722
+  },
+  "新增子目录成功": {
+    "en-US": "Added subdirectory successfully",
+    "es-ES": "Subdirectorio agregado exitosamente",
+    "ar-EG": "تمت إضافة الدليل الفرعي بنجاح",
+    "pt-PT": "Subdiretório adicionado com sucesso",
+    "ru-RU": "Подкаталог успешно добавлен",
+    "ja-JP": "サブディレクトリが正常に追加されました",
+    "de-DE": "Unterverzeichnis erfolgreich hinzugefügt",
+    "fr-FR": "Sous-répertoire ajouté avec succès",
+    "ko-KR": "하위 디렉터리를 성공적으로 추가했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(67759-67770)"],
+    "$id": 8723
+  },
+  "已删除目录「{name}」，包含的文件已移至未归类": {
+    "en-US": "Directory '{name}' has been deleted and the files it contained have been moved to Uncategorized",
+    "es-ES": "El directorio '{name}' se ha eliminado y los archivos que contenía se han movido a Sin categoría",
+    "ar-EG": "تم حذف الدليل '{name}' وتم نقل الملفات التي يحتوي عليها إلى غير مصنف",
+    "pt-PT": "O diretório '{name}' foi excluído e os arquivos contidos nele foram movidos para Sem categoria",
+    "ru-RU": "Каталог «{name}» был удален, а содержащиеся в нем файлы были перемещены в категорию «Без категории».",
+    "ja-JP": "ディレクトリ「{name}」は削除され、ディレクトリに含まれるファイルは未分類に移動されました",
+    "de-DE": "Das Verzeichnis „{name}“ wurde gelöscht und die darin enthaltenen Dateien wurden nach „Nicht kategorisiert“ verschoben",
+    "fr-FR": "Le répertoire '{name}' a été supprimé et les fichiers qu'il contenait ont été déplacés vers Non classé",
+    "ko-KR": "'{name}' 디렉터리가 삭제되었으며 여기에 포함된 파일이 Uncategorized로 이동되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(73853-73882)"],
+    "$id": 8724
+  },
+  "已删除空目录「{name}」": {
+    "en-US": "Empty directory '{name}' deleted",
+    "es-ES": "Directorio vacío '{name}' eliminado",
+    "ar-EG": "تم حذف الدليل الفارغ '{name}'",
+    "pt-PT": "Diretório vazio '{name}' excluído",
+    "ru-RU": "Пустой каталог '{name}' удален.",
+    "ja-JP": "空のディレクトリ「{name}」が削除されました",
+    "de-DE": "Leeres Verzeichnis „{name}“ gelöscht",
+    "fr-FR": "Répertoire vide '{name}' supprimé",
+    "ko-KR": "빈 디렉터리 '{name}'이(가) 삭제되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(74690-74708)"],
+    "$id": 8725
+  },
+  "已移动文件至「{target}」": {
+    "en-US": "File moved to '{target}'",
+    "es-ES": "Archivo movido a '{target}'",
+    "ar-EG": "تم نقل الملف إلى \"{target}\"",
+    "pt-PT": "Arquivo movido para '{target}'",
+    "ru-RU": "Файл перемещен в '{target}'",
+    "ja-JP": "ファイルは「{target}」に移動されました",
+    "de-DE": "Datei nach „{target}“ verschoben",
+    "fr-FR": "Fichier déplacé vers '{target}'",
+    "ko-KR": "파일이 '{target}'로 이동되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(80502-80522)"],
+    "$id": 8726
+  },
+  "不能将父目录拖放到其子目录中": {
+    "en-US": "Cannot drag and drop a parent directory into its subdirectories",
+    "es-ES": "No se puede arrastrar y soltar un directorio principal en sus subdirectorios",
+    "ar-EG": "لا يمكن سحب وإفلات الدليل الأصلي في الدلائل الفرعية الخاصة به",
+    "pt-PT": "Não é possível arrastar e soltar um diretório pai em seus subdiretórios",
+    "ru-RU": "Невозможно перетащить родительский каталог в его подкаталоги.",
+    "ja-JP": "親ディレクトリをそのサブディレクトリにドラッグ アンド ドロップできません",
+    "de-DE": "Ein übergeordnetes Verzeichnis kann nicht per Drag & Drop in seine Unterverzeichnisse gezogen werden",
+    "fr-FR": "Impossible de glisser-déposer un répertoire parent dans ses sous-répertoires",
+    "ko-KR": "상위 디렉터리를 해당 하위 디렉터리로 끌어서 놓을 수 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(80931-80949)"],
+    "$id": 8727
+  },
+  "已将目录「{source}」放入「{target}」": {
+    "en-US": "Directory \"{source}\" has been placed into \"{target}\"",
+    "es-ES": "El directorio \"{source}\" se ha colocado en \"{target}\"",
+    "ar-EG": "تم وضع الدليل \"{source}\" في \"{target}\"",
+    "pt-PT": "O diretório \"{source}\" foi colocado em \"{target}\"",
+    "ru-RU": "Каталог \"{source}\" помещен в \"{target}\"",
+    "ja-JP": "ディレクトリ「{source}」は「{target}」に配置されました",
+    "de-DE": "Das Verzeichnis „{source}“ wurde in „{target}“ abgelegt.",
+    "fr-FR": "Le répertoire \"{source}\" a été placé dans \"{target}\"",
+    "ko-KR": "\"{source}\" 디렉터리가 \"{target}\"에 배치되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(84420-84450)"],
+    "$id": 8728
+  },
+  "暂无待重命名文件": {
+    "en-US": "There are no files to be renamed yet",
+    "es-ES": "Aún no hay archivos cuyo nombre cambiar",
+    "ar-EG": "لا توجد ملفات لإعادة تسميتها بعد",
+    "pt-PT": "Ainda não há arquivos a serem renomeados",
+    "ru-RU": "Пока нет файлов для переименования",
+    "ja-JP": "名前を変更するファイルはまだありません",
+    "de-DE": "Es sind noch keine Dateien vorhanden, die umbenannt werden müssen",
+    "fr-FR": "Il n'y a pas encore de fichiers à renommer",
+    "ko-KR": "아직 이름을 바꿀 파일이 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87422-87434)"],
+    "$id": 9991
+  },
+  "成功更新 {count} 个文件智能名称": {
+    "en-US": "Successfully updated {count} file smart names",
+    "es-ES": "{count} nombres inteligentes de archivos actualizados correctamente",
+    "ar-EG": "تم تحديث الأسماء الذكية للملفات {count} بنجاح",
+    "pt-PT": "Nomes inteligentes de arquivos {count} atualizados com êxito",
+    "ru-RU": "Успешно обновлено смарт-имена файлов {count}.",
+    "ja-JP": "{count} ファイルのスマート名が正常に更新されました",
+    "de-DE": "{count}-Datei-Smart-Namen erfolgreich aktualisiert",
+    "fr-FR": "La mise à jour réussie de {count} noms intelligents de fichiers",
+    "ko-KR": "{count} 파일 스마트 이름을 성공적으로 업데이트했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87750-87774)"],
+    "$id": 11117
+  },
+  "{count} 个文件更新失败": {
+    "en-US": "{count} files failed to update",
+    "es-ES": "{count} archivos no se pudieron actualizar",
+    "ar-EG": "{count} فشل تحديث الملفات",
+    "pt-PT": "{count} arquivos não foram atualizados",
+    "ru-RU": "{count} файлов не удалось обновить.",
+    "ja-JP": "{count} ファイルを更新できませんでした",
+    "de-DE": "{count} Dateien konnten nicht aktualisiert werden",
+    "fr-FR": "{count} fichiers n'ont pas pu être mis à jour",
+    "ko-KR": "{count} 파일을 업데이트하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87875-87894)"],
+    "$id": 11118
+  },
+  "重命名失败": {
+    "en-US": "Rename failed",
+    "es-ES": "Error al cambiar el nombre",
+    "ar-EG": "فشلت إعادة التسمية",
+    "pt-PT": "Falha ao renomear",
+    "ru-RU": "Переименование не удалось",
+    "ja-JP": "名前変更に失敗しました",
+    "de-DE": "Umbenennen fehlgeschlagen",
+    "fr-FR": "Échec du changement de nom",
+    "ko-KR": "이름 바꾸기 실패",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88374-88383)"],
+    "$id": 10043
+  },
+  "执行重命名异常": {
+    "en-US": "Execute rename exception",
+    "es-ES": "Ejecutar excepción de cambio de nombre",
+    "ar-EG": "تنفيذ استثناء إعادة التسمية",
+    "pt-PT": "Executar exceção de renomeação",
+    "ru-RU": "Выполнить исключение переименования",
+    "ja-JP": "名前変更例外の実行",
+    "de-DE": "Umbenennungsausnahme ausführen",
+    "fr-FR": "Exécuter l'exception de renommage",
+    "ko-KR": "이름 바꾸기 예외 실행",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88475-88486)"],
+    "$id": 10044
+  },
+  "暂无目标文件": {
+    "en-US": "No target file yet",
+    "es-ES": "Aún no hay archivo de destino",
+    "ar-EG": "لا يوجد ملف هدف حتى الآن",
+    "pt-PT": "Nenhum arquivo de destino ainda",
+    "ru-RU": "Целевого файла еще нет",
+    "ja-JP": "対象ファイルがまだありません",
+    "de-DE": "Noch keine Zieldatei",
+    "fr-FR": "Pas encore de fichier cible",
+    "ko-KR": "아직 대상 파일이 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(89046-89056)"],
+    "$id": 10045
+  },
+  "成功为 {count} 个文件更新标签": {
+    "en-US": "Successfully updated tags for {count} files",
+    "es-ES": "Etiquetas actualizadas correctamente para {count} archivos",
+    "ar-EG": "تم تحديث العلامات بنجاح لملفات {count}.",
+    "pt-PT": "Tags atualizadas com sucesso para arquivos {count}",
+    "ru-RU": "Теги для {count} файлов успешно обновлены.",
+    "ja-JP": "{count} ファイルのタグが正常に更新されました",
+    "de-DE": "Tags für {count}-Dateien erfolgreich aktualisiert",
+    "fr-FR": "Balises mises à jour avec succès pour {count} fichiers",
+    "ko-KR": "{count} 파일의 태그를 성공적으로 업데이트했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(89956-89979)"],
+    "$id": 10046
+  },
+  "批量打标失败": {
+    "en-US": "Batch marking failed",
+    "es-ES": "Error al marcar el lote",
+    "ar-EG": "فشل وضع علامة على الدفعة",
+    "pt-PT": "Falha na marcação do lote",
+    "ru-RU": "Маркировка партии не удалась",
+    "ja-JP": "バッチのマーキングに失敗しました",
+    "de-DE": "Die Chargenkennzeichnung ist fehlgeschlagen",
+    "fr-FR": "Échec du marquage du lot",
+    "ko-KR": "일괄 표시 실패",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(90779-90789)"],
+    "$id": 10047
+  },
+  "删除标签失败": {
+    "en-US": "Failed to delete tag",
+    "es-ES": "No se pudo eliminar la etiqueta",
+    "ar-EG": "فشل حذف العلامة",
+    "pt-PT": "Falha ao excluir tag",
+    "ru-RU": "Не удалось удалить тег",
+    "ja-JP": "タグの削除に失敗しました",
+    "de-DE": "Tag konnte nicht gelöscht werden",
+    "fr-FR": "Échec de la suppression de la balise",
+    "ko-KR": "태그를 삭제하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92196-92206)"],
+    "$id": 10048
+  },
+  "未选择要清理的冗余文件": {
+    "en-US": "No redundant files selected for cleaning",
+    "es-ES": "No se han seleccionado archivos redundantes para limpieza",
+    "ar-EG": "لم يتم تحديد أي ملفات زائدة عن الحاجة للتنظيف",
+    "pt-PT": "Nenhum arquivo redundante selecionado para limpeza",
+    "ru-RU": "Лишние файлы для очистки не выбраны.",
+    "ja-JP": "クリーニング対象として冗長なファイルが選択されていません",
+    "de-DE": "Es wurden keine redundanten Dateien zum Bereinigen ausgewählt",
+    "fr-FR": "Aucun fichier redondant sélectionné pour le nettoyage",
+    "ko-KR": "정리할 중복 파일이 선택되지 않았습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92611-92626)"],
+    "$id": 10049
+  },
+  "已安全移入系统回收站 {count} 个文件": {
+    "en-US": "{count} files have been safely moved to the system recycle bin",
+    "es-ES": "{count} archivos se han movido de forma segura a la papelera de reciclaje del sistema",
+    "ar-EG": "{count} تم نقل الملفات بأمان إلى سلة محذوفات النظام",
+    "pt-PT": "{count} arquivos foram movidos com segurança para a lixeira do sistema",
+    "ru-RU": "{count} файлов благополучно перемещены в системную корзину.",
+    "ja-JP": "{count} ファイルはシステムのごみ箱に安全に移動されました",
+    "de-DE": "{count} Dateien wurden sicher in den Systempapierkorb verschoben",
+    "fr-FR": "{count} fichiers ont été déplacés en toute sécurité vers la corbeille du système",
+    "ko-KR": "{count} 파일이 시스템 휴지통으로 안전하게 이동되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92909-92935)"],
+    "$id": 10050
+  },
+  "清理冗余文件失败": {
+    "en-US": "Cleaning up redundant files failed",
+    "es-ES": "Error al limpiar archivos redundantes",
+    "ar-EG": "فشل تنظيف الملفات الزائدة",
+    "pt-PT": "Falha na limpeza de arquivos redundantes",
+    "ru-RU": "Очистка ненужных файлов не удалась.",
+    "ja-JP": "冗長ファイルのクリーンアップに失敗しました",
+    "de-DE": "Das Bereinigen redundanter Dateien ist fehlgeschlagen",
+    "fr-FR": "Échec du nettoyage des fichiers redondants",
+    "ko-KR": "중복 파일을 정리하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(93097-93109)"],
+    "$id": 10051
+  },
+  "补救整理失败，请重试": {
+    "en-US": "Remediation failed, please try again",
+    "es-ES": "La corrección falló, inténtelo de nuevo",
+    "ar-EG": "فشل التنظيم التعويضي، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha na organização de recuperação, por favor tente novamente",
+    "ru-RU": "Ошибка восстановительного упорядочивания, повторите попытку",
+    "ja-JP": "补救整理に失敗しました。再試行してください",
+    "de-DE": "Korrektur des Sortiervorgangs fehlgeschlagen, bitte erneut versuchen",
+    "fr-FR": "Échec du rangement de rattrapage, veuillez réessayer",
+    "ko-KR": "보완 정리하지 못했습니다. 다시 시도해 주세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(96440-96454)"],
+    "$id": 8729
+  },
+  "AI 无法将剩余的顽固文件分配到现有目录，请创建匹配的目录": {
+    "en-US": "AI cannot allocate remaining stubborn files to an existing directory, please create a matching directory",
+    "es-ES": "AI no puede asignar los archivos rebeldes restantes a un directorio existente; cree un directorio coincidente",
+    "ar-EG": "لا يمكن لمنظمة العفو الدولية تخصيص الملفات العنيدة المتبقية إلى دليل موجود، يرجى إنشاء دليل مطابق",
+    "pt-PT": "AI não pode alocar arquivos teimosos restantes para um diretório existente, crie um diretório correspondente",
+    "ru-RU": "ИИ не может разместить оставшиеся неподатливые файлы в существующем каталоге, создайте соответствующий каталог.",
+    "ja-JP": "AI は残りの頑固なファイルを既存のディレクトリに割り当てることができません。一致するディレクトリを作成してください。",
+    "de-DE": "AI kann verbleibende hartnäckige Dateien nicht einem vorhandenen Verzeichnis zuordnen, bitte erstellen Sie ein passendes Verzeichnis",
+    "fr-FR": "L'IA ne peut pas allouer les fichiers persistants restants à un répertoire existant, veuillez créer un répertoire correspondant",
+    "ko-KR": "AI는 나머지 완고한 파일을 기존 디렉터리에 할당할 수 없습니다. 일치하는 디렉터리를 생성하십시오.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(97283-97316)"],
+    "$id": 8730
+  },
+  "自动找补完成，所有文件均已归类！": {
+    "en-US": "Automatic retrieval is completed and all files have been classified!",
+    "es-ES": "¡Se completa la recuperación automática y se han clasificado todos los archivos!",
+    "ar-EG": "اكتمل الاسترداد التلقائي وتم تصنيف جميع الملفات!",
+    "pt-PT": "A recuperação automática foi concluída e todos os arquivos foram classificados!",
+    "ru-RU": "Автоматический поиск завершен, все файлы засекречены!",
+    "ja-JP": "自動検索が完了し、すべてのファイルが分類されました。",
+    "de-DE": "Der automatische Abruf ist abgeschlossen und alle Dateien wurden klassifiziert!",
+    "fr-FR": "La récupération automatique est terminée et tous les fichiers ont été classés !",
+    "ko-KR": "자동 검색이 완료되고 모든 파일이 분류되었습니다!",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(99169-99189)"],
+    "$id": 8731
   },
   "未知": {
     "en-US": "Unknown",

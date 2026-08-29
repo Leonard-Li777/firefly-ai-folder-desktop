@@ -3168,10 +3168,13 @@ export default  {
     "11385": "Copy this prompt",
     "11387": "Local models may not be able to complete complex directory planning,",
     "11388": "Paste it into Doubao or ChatGPT, let them plan the directory structure, then use it directly",
+    "11396": "System searches for tags",
+    "11397": "AI dimension labels",
     "11398": "Efficient",
     "11399": "Latest LFM2.5 2.6B official model, balancing efficient inference with high-quality analysis, supports exclusive DSpark acceleration for CPU.",
-    "11400": "已就绪 (CPU加速已启用)",
-    "11401": "CPU模式可加速30%",
-    "11402": "下载加速模型",
-    "11403": "DSpark 加速模型下载中..."
+    "11400": "Ready (CPU acceleration enabled)",
+    "11401": "CPU mode can speed up by 30%",
+    "11402": "Download acceleration model",
+    "11403": "DSpark acceleration model is downloading...",
+    "11404": "AI content tags"
 }

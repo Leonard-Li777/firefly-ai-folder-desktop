@@ -3168,10 +3168,13 @@ export default  {
     "11385": "Copia este prompt",
     "11387": "El modelo local podría no ser capaz de completar una planificación compleja de directorios,",
     "11388": "Pégalo en Doubao o ChatGPT para que planifiquen la estructura de directorios, luego úsalo directamente",
+    "11396": "El sistema busca etiquetas",
+    "11397": "Etiquetas de dimensiones de IA",
     "11398": "Alta eficiencia",
     "11399": "El último modelo oficial LFM2.5 2.6B equilibra la inferencia eficiente con análisis de alta calidad, compatible con aceleración DSpark exclusiva para CPU.",
     "11400": "Listo (aceleración de CPU habilitada)",
     "11401": "El modo CPU puede acelerar un 30%",
     "11402": "Descargar modelo de aceleración",
-    "11403": "Descargando modelo de aceleración DSpark..."
+    "11403": "Descargando modelo de aceleración DSpark...",
+    "11404": "Etiquetas de contenido de IA"
 }
