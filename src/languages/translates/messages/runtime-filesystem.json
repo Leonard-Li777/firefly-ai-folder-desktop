@@ -802,22 +802,6 @@
     "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(13514-13536)"],
     "$id": 11056
   },
-  "工作目录不存在: {workspaceDirectoryPath}": {
-    "en-US": "Workspace directory does not exist: {workspaceDirectoryPath}",
-    "es-ES": "El directorio de trabajo no existe: {workspaceDirectoryPath}",
-    "ar-EG": "دليل العمل غير موجود: {workspaceDirectoryPath}",
-    "pt-PT": "Diretório de trabalho não existe: {workspaceDirectoryPath}",
-    "ru-RU": "Рабочая директория не существует: {workspaceDirectoryPath}",
-    "ja-JP": "作業ディレクトリが存在しません: {workspaceDirectoryPath}",
-    "de-DE": "Arbeitsverzeichnis nicht vorhanden: {workspaceDirectoryPath}",
-    "fr-FR": "Le répertoire de travail n'existe pas : {workspaceDirectoryPath}",
-    "ko-KR": "작업 디렉터리가 존재하지 않습니다: {workspaceDirectoryPath}",
-    "$files": [
-      "src/electron/runtime-services/filesystem/analyzed-directory-service/PersistenceManager.ts(578-615)",
-      "src/electron/runtime-services/filesystem/virtual-directory-service/PersistenceManager.ts(578-615)"
-    ],
-    "$id": 8136
-  },
   "找不到对应的工作空间: {path}": {
     "en-US": "The corresponding workspace cannot be found: {path}",
     "es-ES": "No se puede encontrar el espacio de trabajo correspondiente: {path}",
@@ -856,6 +840,22 @@
     "ko-KR": "현재 AI 분석이 완료된 파일이 없습니다. 실제 디렉터리에서 파일을 선택하여 AI 분석을 먼저 진행해 주세요.",
     "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3047-3082)"],
     "$id": 3422
+  },
+  "工作目录不存在: {workspaceDirectoryPath}": {
+    "en-US": "Workspace directory does not exist: {workspaceDirectoryPath}",
+    "es-ES": "El directorio de trabajo no existe: {workspaceDirectoryPath}",
+    "ar-EG": "دليل العمل غير موجود: {workspaceDirectoryPath}",
+    "pt-PT": "Diretório de trabalho não existe: {workspaceDirectoryPath}",
+    "ru-RU": "Рабочая директория не существует: {workspaceDirectoryPath}",
+    "ja-JP": "作業ディレクトリが存在しません: {workspaceDirectoryPath}",
+    "de-DE": "Arbeitsverzeichnis nicht vorhanden: {workspaceDirectoryPath}",
+    "fr-FR": "Le répertoire de travail n'existe pas : {workspaceDirectoryPath}",
+    "ko-KR": "작업 디렉터리가 존재하지 않습니다: {workspaceDirectoryPath}",
+    "$files": [
+      "src/electron/runtime-services/filesystem/analyzed-directory-service/PersistenceManager.ts(578-615)",
+      "src/electron/runtime-services/filesystem/virtual-directory-service/PersistenceManager.ts(578-615)"
+    ],
+    "$id": 8136
   },
   "核心引擎未初始化，请等待初始化完成后再试": {
     "en-US": "Core engine not initialized, please wait for initialization to complete and try again",

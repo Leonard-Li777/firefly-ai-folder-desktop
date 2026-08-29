@@ -9,9 +9,7 @@
     "de-DE": "Aktiviert",
     "fr-FR": "Activé",
     "ko-KR": "활성화됨",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(4660-4667)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(6441-6448)"],
     "$id": 4309
   },
   "显存不足": {
@@ -24,9 +22,7 @@
     "de-DE": "Unzureichender Videospeicher",
     "fr-FR": "Mémoire vidéo insuffisante",
     "ko-KR": "비디오 메모리가 부족합니다.",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(4977-4985)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(6758-6766)"],
     "$id": 4310
   },
   "推荐": {
@@ -39,9 +35,7 @@
     "de-DE": "Empfehlen",
     "fr-FR": "Recommander",
     "ko-KR": "추천하다",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(5606-5612)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(7387-7393)"],
     "$id": 11307
   },
   "最佳推荐": {
@@ -54,10 +48,21 @@
     "de-DE": "Beste Empfehlung",
     "fr-FR": "Meilleure recommandation  ",
     "ko-KR": "최고 추천",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(5947-5955)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(7728-7736)"],
     "$id": 2965
+  },
+  "已就绪 (CPU加速已启用)": {
+    "en-US": "已就绪 (CPU加速已启用)",
+    "es-ES": "Listo (aceleración de CPU habilitada)",
+    "ar-EG": "جاهز (تم تمكين تسريع المعالج)",
+    "pt-PT": "已就绪 (CPU加速已启用)",
+    "ru-RU": "Готово (CPU-ускорение включено)",
+    "ja-JP": "準備完了 (CPU加速が有効)",
+    "de-DE": "Bereit (CPU-Beschleunigung aktiviert)",
+    "fr-FR": "Prêt (accélération CPU activée)",
+    "ko-KR": "준비 완료 (CPU 가속 활성화됨)",
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(8417-8435)"],
+    "$id": 11400
   },
   "来自": {
     "en-US": "From",
@@ -69,9 +74,7 @@
     "de-DE": "Aus",
     "fr-FR": "Depuis",
     "ko-KR": "~에서",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(6850-6856)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(9050-9056)"],
     "$id": 4311
   },
   "未知": {
@@ -85,8 +88,8 @@
     "fr-FR": "Inconnu",
     "ko-KR": "알 수 없음",
     "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(7294-7300)",
-      "src/renderer/components/settings/ai-model-settings.tsx(28409-28415)"
+      "src/renderer/components/settings/ai-model-settings.tsx(9494-9500)",
+      "src/renderer/components/settings/ai-model-settings.tsx(32655-32661)"
     ],
     "$id": 2958
   },
@@ -100,9 +103,7 @@
     "de-DE": "Empfohlener VRAM",
     "fr-FR": "Mémoire vidéo recommandée",
     "ko-KR": "권장 VRAM",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(7790-7798)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(9990-9998)"],
     "$id": 2967
   },
   "支持：": {
@@ -115,10 +116,34 @@
     "de-DE": "Unterstützt:",
     "fr-FR": "Prise en charge :",
     "ko-KR": "지원:",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(8019-8026)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(10219-10226)"],
     "$id": 2980
+  },
+  "CPU模式可加速30%": {
+    "en-US": "CPU模式可加速30%",
+    "es-ES": "El modo CPU puede acelerar un 30%",
+    "ar-EG": "يمكن أن يسرع وضع المعالج بنسبة 30%",
+    "pt-PT": "CPU模式可加速30%",
+    "ru-RU": "CPU-режим ускоряет на 30%",
+    "ja-JP": "CPUモードで30%高速化可能",
+    "de-DE": "CPU-Modus beschleunigt um 30%",
+    "fr-FR": "Le mode CPU permet une accélération de 30 %",
+    "ko-KR": "CPU 모드는 최대 30% 가속 가능",
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(11112-11127)"],
+    "$id": 11401
+  },
+  "下载加速模型": {
+    "en-US": "下载加速模型",
+    "es-ES": "Descargar modelo de aceleración",
+    "ar-EG": "تحميل النموذج المسرع",
+    "pt-PT": "下载加速模型",
+    "ru-RU": "Загрузка ускоренной модели",
+    "ja-JP": "アクセラレーションモデルをダウンロード",
+    "de-DE": "Beschleunigungsmodell herunterladen",
+    "fr-FR": "Télécharger le modèle d'accélération",
+    "ko-KR": "가속 모델 다운로드",
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(11615-11625)"],
+    "$id": 11402
   },
   "激活": {
     "en-US": "Activate  ",
@@ -130,9 +155,7 @@
     "de-DE": "Aktivieren",
     "fr-FR": "Activer",
     "ko-KR": "활성화",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(8829-8835)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(12032-12038)"],
     "$id": 2983
   },
   "内置": {
@@ -145,9 +168,7 @@
     "de-DE": "Eingebaut",
     "fr-FR": "Intégré",
     "ko-KR": "내장",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(9125-9131)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(12338-12344)"],
     "$id": 4312
   },
   "下载": {
@@ -160,10 +181,21 @@
     "de-DE": "Herunterladen",
     "fr-FR": "Télécharger",
     "ko-KR": "다운로드",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(10039-10045)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(13304-13310)"],
     "$id": 2984
+  },
+  "DSpark 加速模型下载中...": {
+    "en-US": "DSpark 加速模型下载中...",
+    "es-ES": "Descargando modelo de aceleración DSpark...",
+    "ar-EG": "جارٍ تحميل نموذج DSpark المسرع...",
+    "pt-PT": "DSpark 加速模型下载中...",
+    "ru-RU": "Загрузка ускоренной модели DSpark...",
+    "ja-JP": "DSpark 加速モデルをダウンロード中...",
+    "de-DE": "DSpark-Beschleunigungsmodell wird heruntergeladen...",
+    "fr-FR": "Téléchargement du modèle d'accélération DSpark en cours...",
+    "ko-KR": "DSPark 가속 모델 다운로드 중...",
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(14471-14492)"],
+    "$id": 11403
   },
   "路径不合法": {
     "en-US": "Invalid path",
@@ -175,9 +207,7 @@
     "de-DE": "Ungültiger Pfad",
     "fr-FR": "Chemin invalide",
     "ko-KR": "경로가 유효하지 않습니다",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(12893-12902)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(17139-17148)"],
     "$id": 4363
   },
   "所选目录没有写入权限，请选择其他有权限的目录。": {
@@ -190,9 +220,7 @@
     "de-DE": "Das ausgewählte Verzeichnis verfügt über keine Schreibberechtigung. Bitte wählen Sie ein anderes Verzeichnis mit Berechtigungen aus.",
     "fr-FR": "Le répertoire sélectionné n'a pas d'autorisation en écriture, veuillez sélectionner un autre répertoire avec autorisation.",
     "ko-KR": "선택한 디렉토리에는 쓰기 권한이 없습니다. 권한이 있는 다른 디렉토리를 선택하십시오.",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(13154-13181)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(17400-17427)"],
     "$id": 7779
   },
   "无法校验目录写权限，请检查目录是否可访问。": {
@@ -205,9 +233,7 @@
     "de-DE": "Die Schreibberechtigung für das Verzeichnis konnte nicht überprüft werden. Bitte prüfen Sie, ob auf das Verzeichnis zugegriffen werden kann.",
     "fr-FR": "Impossible de vérifier l'autorisation d'écriture du répertoire, veuillez vérifier si le répertoire est accessible.",
     "ko-KR": "디렉터리 쓰기 권한을 확인할 수 없습니다. 디렉터리에 액세스할 수 있는지 확인하세요.",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(13325-13350)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(17571-17596)"],
     "$id": 7780
   },
   "正在准备迁移模型...": {
@@ -220,9 +246,7 @@
     "de-DE": "Modellmigration wird vorbereitet...",
     "fr-FR": "Préparation de la migration du modèle...",
     "ko-KR": "모델 마이그레이션 준비 중...",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(13899-13914)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(18145-18160)"],
     "$id": 4306
   },
   "模型迁移失败: {error}": {
@@ -235,9 +259,7 @@
     "de-DE": "Modellmigration fehlgeschlagen: {error}",
     "fr-FR": "Échec de la migration du modèle : {error}",
     "ko-KR": "모델 마이그레이션 실패: {error}",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(14080-14099)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(18326-18345)"],
     "$id": 4307
   },
   "操作失败: {error}": {
@@ -250,9 +272,7 @@
     "de-DE": "Vorgang fehlgeschlagen: {error}",
     "fr-FR": "Échec de l'opération : {error}",
     "ko-KR": "작업 실패: {error}",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(14320-14337)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(18566-18583)"],
     "$id": 4308
   },
   "模型已成功删除": {
@@ -265,9 +285,7 @@
     "de-DE": "Modell erfolgreich gelöscht",
     "fr-FR": "Modèle supprimé avec succès",
     "ko-KR": "모델이 삭제되었습니다.",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(22430-22441)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(26676-26687)"],
     "$id": 4660
   },
   "删除模型失败": {
@@ -280,9 +298,7 @@
     "de-DE": "Modell konnte nicht gelöscht werden",
     "fr-FR": "Échec de la suppression du modèle",
     "ko-KR": "모델을 삭제하지 못했습니다.",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(22511-22521)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(26757-26767)"],
     "$id": 4661
   },
   "正在配置高性能模式运行环境，请稍候...": {
@@ -295,9 +311,7 @@
     "de-DE": "Die Betriebsumgebung für den Hochleistungsmodus wird konfiguriert. Bitte warten ...",
     "fr-FR": "Configuration de l'environnement d'exploitation en mode hautes performances, veuillez patienter...",
     "ko-KR": "고성능 모드 운영 환경을 구성하는 중입니다. 잠시 기다려 주십시오...",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(23871-23895)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(28117-28141)"],
     "$id": 4662
   },
   "模型管理": {
@@ -310,9 +324,7 @@
     "de-DE": "Modellmanagement",
     "fr-FR": "Gestion des modèles",
     "ko-KR": "모델 관리",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(24135-24143)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(28381-28389)"],
     "$id": 7784
   },
   "模型就像AI大脑，它们决定了文件分析准确率与响应速度": {
@@ -325,9 +337,7 @@
     "de-DE": "Modelle sind wie das Gehirn der KI, sie bestimmen die Genauigkeit der Dateianalyse und die Reaktionsgeschwindigkeit",
     "fr-FR": "Les modèles sont comme le cerveau de l'IA ; ils déterminent la précision de l'analyse des fichiers et la vitesse de réponse  ",
     "ko-KR": "모델은 AI 두뇌와 같으며, 파일 분석 정확도와 응답 속도를 결정합니다  ",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(24237-24267)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(28483-28513)"],
     "$id": 4353
   },
   "本地模型相当于：小学（内置）、初中、高中；云端模型：高中、大学": {
@@ -340,9 +350,7 @@
     "de-DE": "Das lokale Modell entspricht: Grundschule (eingebaut), Mittelschule, Oberschule; Wolkenmodell: Gymnasium, Universität",
     "fr-FR": "Le modèle local est équivalent à : école primaire (intégrée), collège, lycée ; modèle cloud : lycée, université",
     "ko-KR": "로컬 모델은 초등학교(내장), 중학교, 고등학교와 동일합니다. 클라우드 모델: 고등학교, 대학교",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(24371-24406)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(28617-28652)"],
     "$id": 4693
   },
   "本地AI引擎": {
@@ -355,9 +363,7 @@
     "de-DE": "Lokale KI-Engine",
     "fr-FR": "Moteur d'IA local",
     "ko-KR": "로컬 AI 엔진",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(25092-25102)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(29338-29348)"],
     "$id": 4694
   },
   "云端": {
@@ -370,9 +376,7 @@
     "de-DE": "Cloud",
     "fr-FR": "Cloud  ",
     "ko-KR": "클라우드",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(25663-25669)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(29909-29915)"],
     "$id": 2943
   },
   "安装过程出错，AI引擎缺失必要文件，造成兼容模式运行，严重可能造成 AI 服务崩溃。": {
@@ -385,9 +389,7 @@
     "de-DE": "Während des Installationsvorgangs ist ein Fehler aufgetreten. Der KI-Engine fehlen notwendige Dateien, sodass sie im Kompatibilitätsmodus ausgeführt wird. In schweren Fällen kann es zum Absturz des KI-Dienstes kommen.",
     "fr-FR": "Une erreur s'est produite lors du processus d'installation. Il manque au moteur d'IA les fichiers nécessaires, ce qui l'oblige à fonctionner en mode de compatibilité. Dans les cas graves, le service AI peut planter.",
     "ko-KR": "설치 과정에서 오류가 발생했습니다. AI 엔진에 필요한 파일이 없어 호환 모드에서 실행됩니다. 심한 경우 AI 서비스가 다운될 수도 있다.",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(26095-26141)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(30341-30387)"],
     "$id": 7785
   },
   "建议检查安装目录是否有写入权限。确认没问题后，重新安装应用，将不再看到此提示，并自动恢复加载全速AI引擎。": {
@@ -400,9 +402,7 @@
     "de-DE": "Es empfiehlt sich zu prüfen, ob das Installationsverzeichnis über Schreibrechte verfügt. Nachdem Sie sich vergewissert haben, dass kein Problem vorliegt, installieren Sie die Anwendung erneut. Diese Aufforderung wird nicht mehr angezeigt und die KI-Engine mit voller Geschwindigkeit wird den Ladevorgang automatisch fortsetzen.",
     "fr-FR": "Il est recommandé de vérifier si le répertoire d'installation dispose d'autorisations en écriture. Après avoir confirmé qu'il n'y a pas de problème, réinstallez l'application, vous ne verrez plus cette invite et le moteur AI à pleine vitesse reprendra automatiquement le chargement.",
     "ko-KR": "설치 디렉터리에 쓰기 권한이 있는지 확인하는 것이 좋습니다. 문제가 없음을 확인한 후 애플리케이션을 다시 설치하면 이 메시지가 더 이상 표시되지 않으며 전속 AI 엔진이 자동으로 로딩을 재개합니다.",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(26299-26373)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(30545-30619)"],
     "$id": 7786
   },
   "显卡 / 独立显存": {
@@ -415,9 +415,7 @@
     "de-DE": "Grafikkarte/diskreter Videospeicher",
     "fr-FR": "Carte graphique/mémoire vidéo discrète",
     "ko-KR": "그래픽 카드/개별 비디오 메모리",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(26914-26927)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(31160-31173)"],
     "$id": 7787
   },
   "核显": {
@@ -430,9 +428,7 @@
     "de-DE": "Integrierte Grafik",
     "fr-FR": "Graphique intégré  ",
     "ko-KR": "통합 그래픽스",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(27079-27085)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(31325-31331)"],
     "$id": 2945
   },
   "硬盘可用空间": {
@@ -445,9 +441,7 @@
     "de-DE": "Verfügbarer Festplattenspeicher",
     "fr-FR": "Espace disponible sur le disque dur",
     "ko-KR": "하드 드라이브 사용 가능 공간",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(28216-28226)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(32462-32472)"],
     "$id": 3339
   },
   "参考": {
@@ -460,9 +454,7 @@
     "de-DE": "Referenz",
     "fr-FR": "Référence",
     "ko-KR": "참고",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(28469-28475)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(32715-32721)"],
     "$id": 3340
   },
   "推理引擎库": {
@@ -475,9 +467,7 @@
     "de-DE": "Bibliothek der Inferenz-Engines",
     "fr-FR": "Bibliothèque du moteur d'inférence  ",
     "ko-KR": "추론 엔진 라이브러리",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(28896-28905)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(33142-33151)"],
     "$id": 2950
   },
   "管理您的本地 AI 核心能力": {
@@ -490,9 +480,7 @@
     "de-DE": "Verwalten Sie Ihre lokalen KI-Kernfähigkeiten",
     "fr-FR": "Gérez vos capacités IA locales essentielles  ",
     "ko-KR": "로컬 AI 핵심 기능 관리",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(29039-29057)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(33285-33303)"],
     "$id": 2951
   },
   "该来源暂无可用模型": {
@@ -505,9 +493,7 @@
     "de-DE": "Von dieser Quelle sind derzeit keine Modelle verfügbar",
     "fr-FR": "Aucun modèle disponible pour cette source  ",
     "ko-KR": "이 소스에서는 사용 가능한 모델이 없습니다.",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(31257-31270)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(35503-35516)"],
     "$id": 2960
   },
   "存储配置": {
@@ -520,9 +506,7 @@
     "de-DE": "Speicherkonfiguration",
     "fr-FR": "Configuration de stockage  ",
     "ko-KR": "저장소 구성",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(32908-32916)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(37414-37422)"],
     "$id": 2986
   },
   "模型将保存在以下路径，建议选择充足空间的高速存储盘": {
@@ -535,9 +519,7 @@
     "de-DE": "Das Modell wird im folgenden Pfad gespeichert. Es wird empfohlen, eine Hochgeschwindigkeits-Speicherfestplatte mit ausreichend Speicherplatz zu wählen.",
     "fr-FR": "Le modèle sera enregistré dans le chemin suivant. Il est recommandé de choisir un disque de stockage haute vitesse avec suffisamment d'espace.",
     "ko-KR": "모델은 다음 경로에 저장됩니다. 충분한 공간이 있는 고속 저장 디스크를 선택하는 것이 좋습니다.",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(33048-33077)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(37554-37583)"],
     "$id": 4702
   },
   "浏览": {
@@ -550,9 +532,7 @@
     "de-DE": "Durchsuchen",
     "fr-FR": "Parcourir",
     "ko-KR": "찾아보기",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(34280-34286)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(38786-38792)"],
     "$id": 2993
   },
   "刷新模型列表": {
@@ -565,9 +545,7 @@
     "de-DE": "Modellliste aktualisieren",
     "fr-FR": "Actualiser la liste des modèles",
     "ko-KR": "모델 목록 새로 고침",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(34835-34845)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(39341-39351)"],
     "$id": 4313
   },
   "确认删除": {
@@ -580,9 +558,7 @@
     "de-DE": "Löschen bestätigen",
     "fr-FR": "Confirmer la suppression  ",
     "ko-KR": "삭제 확인",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(35547-35555)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(40053-40061)"],
     "$id": 2938
   },
   "确认删除模型 \"{model}\"?": {
@@ -595,9 +571,7 @@
     "de-DE": "Modell „{model}\" wirklich löschen?",
     "fr-FR": "Confirmer la suppression du modèle « {model} » ?  ",
     "ko-KR": "모델 \"{model}\" 을 (를) 삭제하시겠습니까?",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(35725-35746)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(40231-40252)"],
     "$id": 2939
   },
   "取消": {
@@ -610,9 +584,7 @@
     "de-DE": "Abbrechen",
     "fr-FR": "Annuler",
     "ko-KR": "취소",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(36169-36175)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(40675-40681)"],
     "$id": 2957
   },
   "删除": {
@@ -625,9 +597,7 @@
     "de-DE": "Löschen",
     "fr-FR": "Supprimer",
     "ko-KR": "삭제",
-    "$files": [
-      "src/renderer/components/settings/ai-model-settings.tsx(36505-36511)"
-    ],
+    "$files": ["src/renderer/components/settings/ai-model-settings.tsx(41011-41017)"],
     "$id": 2956
   }
 }

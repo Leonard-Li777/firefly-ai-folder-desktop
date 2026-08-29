@@ -2227,7 +2227,7 @@ export default  {
     "9535": "Soporte oficial de administración y suscripción",
     "9536": "Si tiene alguna pregunta sobre activación, pago, factura o reembolso, contáctenos a través de los canales de soporte oficiales.",
     "9537": "Correo electrónico oficial de atención al cliente:",
-    "9538": "Telegram：",
+    "9538": "Telegram:",
     "9539": "Prometo responder dentro de 24-48 horas",
     "9540": "Admite una garantía de devolución de dinero de 14 días sin preguntas",
     "9541": "Cancelar/administrar suscripción",
@@ -3160,5 +3160,18 @@ export default  {
     "11371": "El proceso de optimización toma bastante tiempo",
     "11372": "Se utiliza transcodificación de codificación AV1/HEVC de alta eficiencia energética para comprimir el vídeo; tras la optimización, se guardará una copia ligera de alta definición en el directorio .VirtualDirectory/.video_optimizer, conservando el archivo original completamente.",
     "11373": "Procesando en lote los archivos seleccionados, por favor espere...",
-    "11374": "Fallo al ejecutar el procesamiento por lotes"
+    "11374": "Fallo al ejecutar el procesamiento por lotes",
+    "11380": "El prompt ha sido copiado al portapapeles, pégalo en Doubao o GPT para generar el árbol de directorios",
+    "11381": "Error al generar el prompt, por favor inténtalo de nuevo",
+    "11382": "Error al copiar, por favor inténtalo de nuevo",
+    "11384": "Función de personalización del árbol de directorios",
+    "11385": "Copia este prompt",
+    "11387": "El modelo local podría no ser capaz de completar una planificación compleja de directorios,",
+    "11388": "Pégalo en Doubao o ChatGPT para que planifiquen la estructura de directorios, luego úsalo directamente",
+    "11398": "Alta eficiencia",
+    "11399": "El último modelo oficial LFM2.5 2.6B equilibra la inferencia eficiente con análisis de alta calidad, compatible con aceleración DSpark exclusiva para CPU.",
+    "11400": "Listo (aceleración de CPU habilitada)",
+    "11401": "El modo CPU puede acelerar un 30%",
+    "11402": "Descargar modelo de aceleración",
+    "11403": "Descargando modelo de aceleración DSpark..."
 }

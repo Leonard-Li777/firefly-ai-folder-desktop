@@ -2197,13 +2197,13 @@
   },
   "Telegram：": {
     "en-US": "Telegram:",
-    "es-ES": "Telegram：",
+    "es-ES": "Telegram:",
     "ar-EG": "تيليجرام:",
     "pt-PT": "Telegram:",
     "ru-RU": "Телеграм：",
     "ja-JP": "Telegram：",
     "de-DE": "Telegram:",
-    "fr-FR": "Telegram：",
+    "fr-FR": "Telegram :",
     "ko-KR": "텔레그램：",
     "$files": ["src/renderer/components/tier/ProActivationPage.tsx(11943-11956)"],
     "$id": 9538

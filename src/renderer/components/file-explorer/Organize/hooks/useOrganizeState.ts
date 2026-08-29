@@ -38,6 +38,7 @@ import {
 import { exportTreeToFiles } from '../utils/exportTreeToFiles'
 import { getUniqueVirtualDirectoryName } from '../../VirtualDirectory/utils/vdir-naming-utils'
 import { sanitizeDirectoryName } from '../utils/helpers'
+import { calculateDirectoryLimits as calcDirectoryLimits } from '../utils/directory-limits'
 
 const DEFAULT_GUIDANCE_PROMPT = `以设计师视角，按以下目录结构整理素材文件：
 
@@ -1101,18 +1102,8 @@ export function useOrganizeState() {
     }
   }, [guidancePrompt, currentWorkspaceDirectory?.id, organizeMode, toOrganizeFiles])
 
-  // 计算目录数限制 n 和 x
-  const calculateDirectoryLimits = useCallback((totalFiles: number) => {
-    // n 算法：基于 sqrt(N)，1000 左右封顶 30
-    let n = Math.round(Math.sqrt(totalFiles))
-    if (totalFiles <= 15) n = 2
-    n = Math.min(30, Math.max(2, n))
-
-    // x 算法：n 的 25%，最少 1 个
-    const x = Math.max(1, Math.round(n * 0.25))
-
-    return { maxDirectoryCount: n, freeDirectoryReserve: x }
-  }, [])
+  // 计算目录数限制 n 和 x（逻辑委托给可测试的纯函数 calculateDirectoryLimits）
+  const calculateDirectoryLimits = useCallback((totalFiles: number) => calcDirectoryLimits(totalFiles), [])
 
   const handleSelectCandidate = useCallback(
     async (candidate: any) => {

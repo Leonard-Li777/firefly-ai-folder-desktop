@@ -610,6 +610,9 @@ export function parseStrategyToTree(strategyText: string): VirtualDirectoryNode[
   const result: VirtualDirectoryNode[] = []
   const stack: Array<{ node: VirtualDirectoryNode; indent: number }> = []
 
+  // 判断文本中是否包含标准列表标识符（- 或 * 或 树形符号 ├/└/│）
+  const hasListMarkers = lines.some(l => /^[\s]*[-*│├└|]/.test(l))
+
   for (const line of lines) {
     const trimmedLine = line.trim()
     if (!trimmedLine) continue
@@ -619,6 +622,10 @@ export function parseStrategyToTree(strategyText: string): VirtualDirectoryNode[
     if (matchMd) {
       content = matchMd[1].trim()
     } else {
+      // 如果存在列表标记，但当前行没有任何列表/树形符号（如开头的提示/视角描述文字），则跳过
+      if (hasListMarkers && !/^[│├└─|]/.test(trimmedLine)) {
+        continue
+      }
       content = trimmedLine
         .replace(/^[│\s├└─|]+/, '')
         .replace(/[/\\].*$/, '')

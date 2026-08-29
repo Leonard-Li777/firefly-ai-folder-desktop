@@ -20,7 +20,7 @@ import {
 import { checkLicenseAndNotify } from '../utils'
 import { LicenseStatus } from '../../runtime-services/system/license-service'
 import type { LanguageCode, PhysicalExportResult, SelectedTag } from '@firefly/types'
-import { UnitRecognitionService } from '@firefly/core-engine'
+import { UnitRecognitionService, loadPromptParagraph } from '@firefly/core-engine'
 import { createCoreEngineAdapters } from '../../adapters'
 import fs from 'fs-extra'
 import path from 'node:path'
@@ -410,6 +410,30 @@ export function registerVirtualDirectoryIPCHandlers() {
   ipcMain.handle('virtual-directory/check-is-limit-predict', async () => {
     return await virtualDirectoryService.checkIsLimitPredict()
   })
+  ipcMain.handle(
+    'virtual-directory/generate-external-directory-plan-prompt',
+    async (
+      _event,
+      params: {
+        fileCount: number | string
+        totalDirCount?: number | string
+        fileTypeDistribution: string
+        tagsSection?: string
+        fileStructurePreview: string
+      }
+    ) => {
+      const currentLanguage =
+        ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+      const prompt = await loadPromptParagraph('external-directory-plan-prompt', currentLanguage, {
+        fileCount: String(params.fileCount || 0),
+        totalDirCount: String(params.totalDirCount || 6),
+        fileTypeDistribution: params.fileTypeDistribution || '',
+        tagsSection: params.tagsSection || '',
+        fileStructurePreview: params.fileStructurePreview || ''
+      })
+      return prompt
+    }
+  )
   ipcMain.handle(
     'virtual-directory/estimate-reorganize-batches',
     async (_event, virtualDirectoryId: number, options: any) => {

@@ -1849,7 +1849,7 @@ export default  {
     "8451": "Extensão",
     "8452": "Agrupamento de arquivos",
     "8453": "Seja texto",
-    "8461": "OCR",
+    "8461": "Reconhecimento Óptico de Caracteres",
     "8464": "Fase 2: Extração de Conteúdo",
     "8465": "Geração de miniaturas",
     "8466": "Fase 3: Análise de Qualidade do Arquivo AI",
@@ -3160,5 +3160,18 @@ export default  {
     "11371": "O processo de otimização leva mais tempo",
     "11372": "Comprimir vídeos com codificação AV1/HEVC de alta eficiência energética e, após a otimização, salvar como cópia leve em HD para . O diretório VirtualDirectory/.video_optimizer mantém completamente o arquivo original.",
     "11373": "Processando em lote os arquivos selecionados, por favor aguarde. ..",
-    "11374": "Falha na execução do processamento em lote"
+    "11374": "Falha na execução do processamento em lote",
+    "11380": "提示词已复制到剪贴板，请粘贴至豆包或GPT生成目录树",
+    "11381": "生成提示词失败，请重试",
+    "11382": "复制失败，请重试",
+    "11384": "自定义目录树功能",
+    "11385": "复制本提示词",
+    "11387": "本地模型可能无法完成复杂的目录规划，",
+    "11388": "将它放到豆包或ChatGPT中由它们规划好目录结构后，直接使用",
+    "11398": "Eficiente",
+    "11399": "O mais recente modelo oficial LFM2.5 2.6B, equilibrando inferência eficiente e análise de alta qualidade, com suporte para aceleração DSpark exclusiva para CPU.",
+    "11400": "已就绪 (CPU加速已启用)",
+    "11401": "CPU模式可加速30%",
+    "11402": "下载加速模型",
+    "11403": "DSpark 加速模型下载中..."
 }

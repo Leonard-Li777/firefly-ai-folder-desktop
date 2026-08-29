@@ -29,7 +29,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
         speed: 'extreme',
         quality: 'medium'
       },
-      isBuiltin: true,
+      isBuiltin: false,
       tags: [t('官方'), t('轻量'), t('支持CPU运行'), t('仅文本')],
       recommendedConfig: {
         numCtx: 8192,
@@ -708,10 +708,11 @@ export const MODEL_CONFIG_SOURCE = () => ({
     },
     {
       id: 'LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M',
+      dspark: 'LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M',
       name: `LFM2.5 1.2B Instruct（${t('超快')}）`,
       company: 'LiquidAI',
       parameterSize: '1.2B',
-      totalSize: '697MB',
+      totalSize: '873MB',
       description: t('最新 LFM2.5 指令模型，文本分析高效，CPU 推理快速。'),
       source: 'huggingface',
       quantization: 'Q4_K_M',
@@ -730,14 +731,16 @@ export const MODEL_CONFIG_SOURCE = () => ({
     },
     {
       id: 'unsloth/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M',
+      dspark: 'LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M',
       name: `LFM2.5 1.2B Instruct（${t('超快')}）`,
       company: 'unsloth',
       parameterSize: '1.2B',
-      totalSize: '697MB',
+      totalSize: '873MB',
       description: t('最新 LFM2.5 指令模型，文本分析高效，CPU 推理快速。'),
       source: 'modelscope',
       quantization: 'Q4_K_M',
       isMultiModal: false,
+      isBuiltin: true,
       contextLength: 32768,
       capabilities: ['TEXT'],
       performance: {
@@ -748,6 +751,30 @@ export const MODEL_CONFIG_SOURCE = () => ({
       recommendedConfig: {
         numCtx: 4096,
         numPredict: 1024
+      }
+    },
+    {
+      id: 'LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M',
+      dspark: 'LiquidAI/LFM2.5-2.6B-DSpark-GGUF:Q4_K_M',
+      name: `LFM2.5 2.6B（${t('高效')}）`,
+      company: 'LiquidAI',
+      parameterSize: '2.6B',
+      totalSize: '1.63GB',
+      recommended: true,
+      description: t('最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 CPU 专属 DSpark 加速。'),
+      source: 'modelscope',
+      quantization: 'Q4_K_M',
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'very_fast',
+        quality: 'high'
+      },
+      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('英文更佳')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
       }
     },
     {

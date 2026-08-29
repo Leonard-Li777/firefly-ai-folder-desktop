@@ -85,6 +85,7 @@ interface ModelCardItemProps {
   isDownloaded: boolean
   isActive: boolean
   isEx: boolean
+  isCpuTier?: boolean
   onActivate: (modelId: string, source?: string) => Promise<void>
   onDelete: (modelId: string, source?: string) => Promise<void>
   onDownloadComplete: (modelId: string, source?: string) => void
@@ -94,11 +95,13 @@ interface ModelCardItemProps {
  * 单个模型卡片组件 - 用于独立管理每个模型的下载状态与 UI，支持多模型并发下载与进度展示
  */
 const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
-  ({ model, isDownloaded, isActive, isEx, onActivate, onDelete, onDownloadComplete }) => {
+  ({ model, isDownloaded, isActive, isEx, isCpuTier = false, onActivate, onDelete, onDownloadComplete }) => {
     const { activeDownloadId, setActiveDownloadId } = useModelStore()
     const compositeId = `${model.id}@${model.source}`
+    const dsparkModelId = model.dspark as string | undefined
+    const [isDsparkDownloaded, setIsDsparkDownloaded] = useState<boolean>(false)
 
-    // 为每个模型卡片独立初始化下载 Hook
+    // 为主模型独立初始化下载 Hook
     const {
       state: downloadState,
       startDownload,
@@ -124,11 +127,57 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
       }
     })
 
+    // 为 DSpark 加速模型独立初始化下载 Hook
+    const dsparkCompositeId = dsparkModelId ? `${dsparkModelId}@${model.source}` : ''
+    const {
+      state: dsparkDownloadState,
+      startDownload: startDsparkDownload,
+      cancelDownload: cancelDsparkDownload,
+      retryDownload: retryDsparkDownload
+    } = useModelDownload(dsparkModelId || '', {
+      source: model.source,
+      onDownloadComplete: () => {
+        setIsDsparkDownloaded(true)
+        if (activeDownloadId === dsparkCompositeId) {
+          setActiveDownloadId(null)
+        }
+      },
+      onDownloadError: () => {
+        if (activeDownloadId === dsparkCompositeId) {
+          setActiveDownloadId(null)
+        }
+      },
+      onDownloadCancel: () => {
+        if (activeDownloadId === dsparkCompositeId) {
+          setActiveDownloadId(null)
+        }
+      }
+    })
+
+    // 检查本地 DSpark 是否已经下载就绪
+    useEffect(() => {
+      if (!dsparkModelId || !window.electronAPI?.checkModelsStatus) return
+      window.electronAPI.checkModelsStatus().then((statusMap: any) => {
+        const dsparkKey = `${dsparkModelId}@${model.source}`
+        const status = statusMap[dsparkKey] || statusMap[dsparkModelId]
+        if (status?.isDownloaded) {
+          setIsDsparkDownloaded(true)
+        }
+      }).catch(() => {})
+    }, [dsparkModelId, model.source])
+
     const isDownloading = downloadState.isDownloading
+    const isDsparkDownloading = dsparkDownloadState.isDownloading
 
     const handleDownloadModel = async () => {
       setActiveDownloadId(compositeId)
       await startDownload(model.id, { autoRetry: true, source: model.source })
+    }
+
+    const handleDownloadDspark = async () => {
+      if (!dsparkModelId) return
+      setActiveDownloadId(dsparkCompositeId)
+      await startDsparkDownload(dsparkModelId, { autoRetry: true, source: model.source })
     }
 
     return (
@@ -173,6 +222,12 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
                 >
                   {model.parameterSize}
                 </Badge>
+                {dsparkModelId && isDsparkDownloaded && (
+                  <Badge className="text-[9px] font-black h-4 px-1.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-tighter flex items-center gap-1">
+                    <Zap className="h-2.5 w-2.5 fill-current" />
+                    {t('已就绪 (CPU加速已启用)')}
+                  </Badge>
+                )}
                 {(model.tags || []).map((tag: string) => (
                   <Badge
                     key={tag}
@@ -220,55 +275,77 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0 ml-4">
-            {isDownloaded ? (
-              <>
-                {!isActive && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onActivate(model.id, model.source)}
-                  >
-                    {t('激活')}
-                  </Button>
-                )}
-                {model.isBuiltin ? (
-                  <Badge className="text-[10px] font-black h-6 px-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                    {t('内置')}
-                  </Badge>
+          <div className="flex flex-col items-end gap-2 shrink-0 ml-4">
+            {/* 当为 CPU 模式、配置了 DSpark、主模型已就绪但 DSpark 未下载时，在激活按钮上方展示下载加速模型按钮 */}
+            {isCpuTier && dsparkModelId && isDownloaded && !isDsparkDownloaded && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownloadDspark}
+                disabled={isDsparkDownloading}
+                title={t('CPU模式可加速30%')}
+                className="h-7 text-xs px-2.5 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex items-center gap-1"
+              >
+                {isDsparkDownloading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
                 ) : (
+                  <Zap className="h-3 w-3 fill-current text-emerald-500" />
+                )}
+                <span>{t('下载加速模型')}</span>
+              </Button>
+            )}
+
+            <div className="flex items-center gap-3">
+              {isDownloaded ? (
+                <>
+                  {!isActive && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onActivate(model.id, model.source)}
+                    >
+                      {t('激活')}
+                    </Button>
+                  )}
+                  {model.isBuiltin ? (
+                    <Badge className="text-[10px] font-black h-6 px-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                      {t('内置')}
+                    </Badge>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDelete(model.id, model.source)}
+                      className="h-9 w-9 p-0 text-muted-foreground hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </>
+              ) : (
+                !isEx && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onDelete(model.id, model.source)}
-                    className="h-9 w-9 p-0 text-muted-foreground hover:text-destructive"
+                    onClick={handleDownloadModel}
+                    disabled={isDownloading}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    {isDownloading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        {t('下载')}
+                      </>
+                    )}
                   </Button>
-                )}
-              </>
-            ) : (
-              !isEx && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleDownloadModel}
-                  disabled={isDownloading}
-                >
-                  {isDownloading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Download className="h-4 w-4 mr-2" />
-                      {t('下载')}
-                    </>
-                  )}
-                </Button>
-              )
-            )}
+                )
+              )}
+            </div>
           </div>
         </div>
 
+        {/* 主模型下载进度 */}
         {(isDownloading || downloadState.status === 'error') && (
           <div className="mt-4 pt-4 border-t border-border">
             <ModelDownloadProgress
@@ -279,6 +356,26 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
               error={downloadState.error}
               onCancel={cancelDownload}
               onRetry={retryDownload}
+              className="border-none bg-transparent p-0 shadow-none"
+            />
+          </div>
+        )}
+
+        {/* DSpark 加速模型下载进度 */}
+        {(isDsparkDownloading || dsparkDownloadState.status === 'error') && (
+          <div className="mt-4 pt-4 border-t border-border">
+            <div className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 mb-1 flex items-center gap-1">
+              <Zap className="h-3 w-3 fill-current" />
+              {t('DSpark 加速模型下载中...')}
+            </div>
+            <ModelDownloadProgress
+              progress={dsparkDownloadState.downloadProgress ?? null}
+              isDownloading={dsparkDownloadState.isDownloading}
+              isPaused={dsparkDownloadState.isPaused}
+              status={dsparkDownloadState.status}
+              error={dsparkDownloadState.error}
+              onCancel={cancelDsparkDownload}
+              onRetry={retryDsparkDownload}
               className="border-none bg-transparent p-0 shadow-none"
             />
           </div>
@@ -840,6 +937,10 @@ export const AIModelSettings: React.FC = () => {
                     groupedModels[s].map(model => {
                       const downloadKey = `${model.id}@${model.source}`
                       const isActive = activeModelKey === `${model.id}@${model.source || 'default'}`
+                      const isCpuTier =
+                        !hardwareInfo?.hasGPU ||
+                        hardwareInfo?.gpuType === 'integrated' ||
+                        (hardwareInfo?.vramGB || 0) <= 2
                       return (
                         <ModelCardItem
                           key={downloadKey}
@@ -849,6 +950,7 @@ export const AIModelSettings: React.FC = () => {
                           isDownloaded={isActive ? true : modelDownloadStatus[downloadKey]}
                           isActive={isActive}
                           isEx={model.isEx || false}
+                          isCpuTier={isCpuTier}
                           onActivate={handleActivateModel}
                           onDelete={handleDeleteModel}
                           onDownloadComplete={modelId => {

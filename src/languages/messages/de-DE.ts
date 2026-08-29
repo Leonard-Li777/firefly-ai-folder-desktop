@@ -3160,5 +3160,18 @@ export default  {
     "11371": "Der Optimierungsvorgang dauert lange.",
     "11372": "Videos werden mittels AV1/HEVC-Hochleistungs-Codierung transcodiert und komprimiert. Nach der Optimierung wird eine hochauflösende, schlanke Kopie im Verzeichnis .VirtualDirectory/.video_optimizer gespeichert, während die Originaldatei vollständig erhalten bleibt.",
     "11373": "Die ausgewählten Dateien werden im Batch-Verfahren verarbeitet, bitte warten...",
-    "11374": "Die Batch-Verarbeitung ist fehlgeschlagen."
+    "11374": "Die Batch-Verarbeitung ist fehlgeschlagen.",
+    "11380": "Die Eingabeaufforderung wurde in die Zwischenablage kopiert. Bitte in Doubao oder GPT einfügen, um den Verzeichnisbaum zu generieren.",
+    "11381": "Die Eingabeaufforderung konnte nicht generiert werden, bitte erneut versuchen.",
+    "11382": "Kopieren fehlgeschlagen, bitte erneut versuchen.",
+    "11384": "Eigene Verzeichnisbaum-Funktion",
+    "11385": "Diese Eingabeaufforderung kopieren.",
+    "11387": "Das lokale Modell kann komplexe Verzeichnisplanungen möglicherweise nicht abschließen.",
+    "11388": "In Doubao oder ChatGPT einfügen, von diesen die Verzeichnisstruktur erstellen lassen und anschließend direkt verwenden.",
+    "11398": "Effizient",
+    "11399": "Neuestes offizielles LFM2.5 2.6B Modell, balanciert effiziente Inferenz und hochwertige Analyse, unterstützt CPU-spezifische DSpark-Beschleunigung.",
+    "11400": "Bereit (CPU-Beschleunigung aktiviert)",
+    "11401": "CPU-Modus beschleunigt um 30%",
+    "11402": "Beschleunigungsmodell herunterladen",
+    "11403": "DSpark-Beschleunigungsmodell wird heruntergeladen..."
 }

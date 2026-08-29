@@ -1849,7 +1849,7 @@ export default  {
     "8451": "Extension",
     "8452": "File grouping",
     "8453": "Whether text",
-    "8461": "OCR",
+    "8461": "Optical Character Recognition",
     "8464": "Stage 2: Content Extraction",
     "8465": "Thumbnail Generation",
     "8466": "Stage 3: AI File Quality Analysis",
@@ -3160,5 +3160,18 @@ export default  {
     "11371": "The optimization process takes a long time",
     "11372": "Using AV1/HEVC high-efficiency encoding to transcode and compress videos, optimize and save them as high-definition lightweight copies VirtualDirectory/. video_optizer directory, fully preserving the original files.",
     "11373": "Batch processing of selected files, please wait ..",
-    "11374": "Batch processing execution failed"
+    "11374": "Batch processing execution failed",
+    "11380": "Prompt copied to clipboard, please paste it into Doubao or GPT to generate the directory tree",
+    "11381": "Failed to generate prompt, please try again",
+    "11382": "Copy failed, please try again",
+    "11384": "Custom directory tree feature",
+    "11385": "Copy this prompt",
+    "11387": "Local models may not be able to complete complex directory planning,",
+    "11388": "Paste it into Doubao or ChatGPT, let them plan the directory structure, then use it directly",
+    "11398": "Efficient",
+    "11399": "Latest LFM2.5 2.6B official model, balancing efficient inference with high-quality analysis, supports exclusive DSpark acceleration for CPU.",
+    "11400": "已就绪 (CPU加速已启用)",
+    "11401": "CPU模式可加速30%",
+    "11402": "下载加速模型",
+    "11403": "DSpark 加速模型下载中..."
 }

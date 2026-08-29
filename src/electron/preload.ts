@@ -729,6 +729,14 @@ const electronAPI = {
         selectedFileIds
       ),
     checkIsLimitPredict: () => ipcRenderer.invoke('virtual-directory/check-is-limit-predict'),
+    generateExternalDirectoryPlanPrompt: (params: {
+      fileCount: number | string
+      totalDirCount?: number | string
+      fileTypeDistribution: string
+      tagsSection?: string
+      fileStructurePreview: string
+    }): Promise<string | null> =>
+      ipcRenderer.invoke('virtual-directory/generate-external-directory-plan-prompt', params),
     estimateReorganizeBatches: (virtualDirectoryId: number, options: any) =>
       ipcRenderer.invoke(
         'virtual-directory/estimate-reorganize-batches',

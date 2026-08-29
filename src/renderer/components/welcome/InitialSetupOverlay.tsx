@@ -84,9 +84,6 @@ export const InitialSetupOverlay: React.FC<InitialSetupOverlayProps> = ({ status
         </div>
       </Card>
 
-      {/* 背景装饰元素 */}
-      <div className="absolute top-1/4 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse"></div>
-      <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-primary/10 rounded-full blur-3xl -z-10 animate-pulse" style={{ animationDelay: '1s' }}></div>
     </div>
   )
 }

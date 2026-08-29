@@ -45,6 +45,9 @@ export const Organize: React.FC = () => {
   const panDimensionIds =
     useSettingsStore(s => s.getConfigValue<number[]>('PAN_DIMENSION_IDS')) || [4, 28]
 
+  const config = useSettingsStore(s => s.config)
+  const isLocalMode = (config?.aiServiceMode || 'local') !== 'cloud'
+
   const {
     currentWorkspaceDirectory,
     dimensionGroups,
@@ -199,6 +202,64 @@ export const Organize: React.FC = () => {
     }
     return checkNode(tree)
   }, [finalTree, draftTree])
+
+  const handleCopyPrompt = useCallback(async () => {
+    try {
+      const sampleNames: string[] = []
+      const extCounts: Record<string, number> = {}
+
+      toOrganizeFiles.forEach(f => {
+        const name = (f as any).smartName || (f as any).name || (f as any).originalPath || ''
+        const ext = name.includes('.') ? '.' + name.split('.').pop()?.toLowerCase() : 'unknown'
+        extCounts[ext] = (extCounts[ext] || 0) + 1
+      })
+
+      const shuffled = [...toOrganizeFiles].sort(() => 0.5 - Math.random())
+      shuffled.slice(0, 30).forEach(f => {
+        const n = (f as any).smartName || (f as any).name || (f as any).originalPath || ''
+        if (n) sampleNames.push(n)
+      })
+
+      const extSummary = Object.entries(extCounts)
+        .map(([ext, count]) => `${ext} (${count})`)
+        .join(', ')
+
+      const tagsArray =
+        highFrequencyTags instanceof Set
+          ? Array.from(highFrequencyTags)
+          : Array.isArray(highFrequencyTags)
+            ? highFrequencyTags
+            : []
+      const tagsList = tagsArray.slice(0, 20).join(', ')
+
+      const totalFiles = toOrganizeFiles.length
+      const totalDirCount = Math.min(30, Math.max(6, Math.round(Math.sqrt(totalFiles || 0))))
+
+      const promptText =
+        (await window.electronAPI?.virtualDirectory.generateExternalDirectoryPlanPrompt({
+          fileCount: totalFiles,
+          totalDirCount,
+          fileTypeDistribution: extSummary || '通用文件',
+          tagsSection: tagsList ? `- 核心特征与高频标签：${tagsList}` : '',
+          fileStructurePreview: sampleNames.map(name => `* ${name}`).join('\n')
+        })) || ''
+
+      if (promptText) {
+        await navigator.clipboard.writeText(promptText)
+        toast.success(t('提示词已复制到剪贴板，请粘贴至豆包或GPT生成目录树'))
+      } else {
+        toast.error(t('生成提示词失败，请重试'))
+      }
+    } catch (err) {
+      console.error('复制提示词失败:', err)
+      toast.error(t('复制失败，请重试'))
+    }
+  }, [toOrganizeFiles, highFrequencyTags])
+
+  const isShowLocalAiBanner =
+    isLocalMode &&
+    organizeMode !== 'fast-organize' &&
+    (stage === 'candidates' || stage === 'structure')
 
   return (
     <>
@@ -659,6 +720,33 @@ export const Organize: React.FC = () => {
                   minSize: 200,
                   content: (
                     <div className="h-full overflow-hidden flex flex-col">
+                      {isShowLocalAiBanner && (
+                        <div className="w-full bg-amber-500/10 dark:bg-amber-950/30 border-b border-amber-500/20 px-3 py-2 flex items-center justify-between gap-2 text-amber-900 dark:text-amber-200 shrink-0 transition-all">
+                          <div className="flex items-center gap-1.5 text-xs font-medium flex-1 min-w-0 flex-wrap sm:flex-nowrap">
+                            <MaterialIcon icon="info" className="text-amber-600 dark:text-amber-400 text-sm shrink-0" />
+                            <span className="shrink-0">{t('本地模型可能无法完成复杂的目录规划，')}</span>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={handleCopyPrompt}
+                              className="h-6 text-xs gap-1 border-amber-500/40 text-amber-900 dark:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 hover:text-amber-950 dark:hover:text-amber-100 rounded-md px-2 font-bold shrink-0 shadow-xs cursor-pointer"
+                            >
+                              <MaterialIcon icon="content_copy" className="text-xs" />
+                              <span>{t('复制本提示词')}</span>
+                            </Button>
+                            <span className="truncate">{t('将它放到豆包或ChatGPT中由它们规划好目录结构后，直接使用')}</span>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              onClick={() => setShowCustomForm(true)}
+                              className="h-6 text-xs gap-1 border-amber-500/40 text-amber-900 dark:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 hover:text-amber-950 dark:hover:text-amber-100 rounded-md px-2 font-bold shrink-0 shadow-xs cursor-pointer"
+                            >
+                              <MaterialIcon icon="edit_note" className="text-xs" />
+                              <span>{t('自定义目录树功能')}</span>
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                       {toOrganizeFiles.length === 0 &&
                         stage === 'mode-select' &&
                         !isSavedVDirOrganize &&
@@ -722,7 +810,6 @@ export const Organize: React.FC = () => {
                               onSelectCandidate={handleSelectCandidate}
                               isLimitPredict={isLimitPredict}
                               onRegenerate={generateCandidates}
-                              onOpenCustomTree={() => setShowCustomForm(true)}
                             />
                           )}
 
