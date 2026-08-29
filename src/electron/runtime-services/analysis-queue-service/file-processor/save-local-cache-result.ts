@@ -50,7 +50,8 @@ export async function saveLocalAnalysisResult(
     ? extractedContent.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
     : extractedContent
 
-  const isReadable = isHumanReadable(cleanedContent)
+  const isBinaryNulSkip = !!cleanedContent && cleanedContent.includes('[Binary File] NUL byte detected')
+  const isReadable = !isBinaryNulSkip && isHumanReadable(cleanedContent)
 
   const shouldSaveContent = isReadable
 

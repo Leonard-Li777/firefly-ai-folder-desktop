@@ -268,31 +268,25 @@ export class ThumbnailService {
   }
 
   /**
-   * 优先级2：使用 MediaConvertService 生成文档预览缩略图
+   * 优先级2：使用 Omni 原生微服务引擎生成文档/多媒体预览缩略图
    */
   private async generateThumbnailFallback(
     filePath: string,
     outputPath: string,
     _fileId: string
   ): Promise<boolean> {
-    const ext = path.extname(filePath).toLowerCase()
-    const isPDF = ext === '.pdf'
-    const isOffice = isCategory(filePath, FileCategory.OFFICE)
-
-    if (!isPDF && !isOffice) {
-      logger.info(LogCategory.FILE_PROCESSOR, `[缩略图服务] 文件类型不支持Fallback方法: ${ext}`)
-      return false
-    }
-
     try {
-      const { mediaConvertService } =
-        await import('../system/unified-worker-service/media-convert-service')
-      const res = await mediaConvertService.generateDocumentPreview(filePath, outputPath, {
-        effectiveExt: ext
-      })
-      return !!res.coverPath
+      const { omniService } = await import('../system/omni-service')
+      const coverBuffer = await omniService.getFileCover(filePath)
+      if (coverBuffer && coverBuffer.length > 0) {
+        const fs = await import('node:fs/promises')
+        await fs.mkdir(path.dirname(outputPath), { recursive: true })
+        await fs.writeFile(outputPath, coverBuffer)
+        return true
+      }
+      return false
     } catch (error) {
-      logger.warn(LogCategory.FILE_PROCESSOR, `[缩略图服务] 转换服务生成缩略图失败:`, error)
+      logger.warn(LogCategory.FILE_PROCESSOR, `[缩略图服务] Omni 微服务生成缩略图失败:`, error)
       return false
     }
   }

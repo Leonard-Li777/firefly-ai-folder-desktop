@@ -88,7 +88,7 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
       <strong className="font-bold text-foreground">{children}</strong>
     ),
     code: ({ children }: any) => (
-      <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono">{children}</code>
+      <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">{children}</code>
     ),
     a: ({ href, children }: any) => (
       <a
@@ -302,7 +302,15 @@ export const FileDetailsPanel: React.FC<any> = ({
     // 文档摘要：仅文档文本类文件显示
     if (isDocumentText && analysisResult.content?.trim())
       tabs.push({ id: 'summary', label: t('内容摘要'), icon: 'summarize' })
-    tabs.push({ id: 'metadata', label: t('元数据'), icon: 'analytics' })
+    // 元数据 tab：仅当存在元数据内容（file_contents.metadata）或 magika 类型信息（files.category）时显示，
+    // 避免清空分析数据后仍残留空 tab
+    const hasMetadataContent =
+      Boolean(analysisResult.category) ||
+      (analysisResult.metadata &&
+        typeof analysisResult.metadata === 'object' &&
+        Object.keys(analysisResult.metadata).length > 0)
+    if (hasMetadataContent)
+      tabs.push({ id: 'metadata', label: t('元数据'), icon: 'analytics' })
     if (analysisResult.analysisStats) tabs.push({ id: 'timing', label: t('耗时'), icon: 'timer' })
     return tabs
   }, [analysisResult])

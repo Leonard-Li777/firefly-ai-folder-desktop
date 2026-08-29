@@ -49,6 +49,8 @@ export interface IAIServiceState {
   isModelSwitching: boolean
   /** 是否正在切换 GPU 驱动模式（兼容模式/高性能模式） */
   isGpuSwitching: boolean
+  /** 错误详情对话框是否显示（由用户手动点击错误提示打开） */
+  isErrorDialogOpen: boolean
   /** 最后的模型切换错误 */
   lastModelSwitchError?: string
   /** 初始化尝试次数 */
@@ -75,6 +77,10 @@ export interface IAIServiceActions {
   setError: (error: AIServiceError) => void
   /** 清除错误 */
   clearError: () => void
+  /** 打开错误详情弹窗 */
+  openErrorDialog: () => void
+  /** 关闭错误详情弹窗 */
+  closeErrorDialog: () => void
   /** 设置阶段 */
   setPhase: (phase: StartupPhase) => void
   /** 设置配置 */
@@ -83,7 +89,9 @@ export interface IAIServiceActions {
   setCapabilities: (capabilities: AICapabilities | null) => void
   /** 三阶段启动流程控制 */
   enterConfigurationPhase: () => void
+  /** 进入初始化阶段 */
   enterInitializationPhase: () => Promise<void>
+  /** 进入运行时阶段 */
   enterRuntimePhase: () => void
   /** 重置所有状态 */
   resetState: () => void
@@ -134,6 +142,7 @@ export const useAIServiceStore = create<TAIServiceStore>()(
     selectedModelId: undefined,
     isModelSwitching: false,
     isGpuSwitching: false,
+    isErrorDialogOpen: false,
     lastModelSwitchError: undefined,
     initializationAttempts: 0,
     lastActivity: null,
@@ -610,9 +619,18 @@ export const useAIServiceStore = create<TAIServiceStore>()(
     clearError: () => {
       set({
         error: null,
+        isErrorDialogOpen: false,
         lastActivity: new Date()
       })
       logger.debug(LogCategory.AI_SERVICE, '[AIServiceStore] 清除错误')
+    },
+
+    openErrorDialog: () => {
+      set({ isErrorDialogOpen: true })
+    },
+
+    closeErrorDialog: () => {
+      set({ isErrorDialogOpen: false })
     },
 
     setPhase: (phase: StartupPhase) => {
@@ -679,6 +697,7 @@ export const useAIServiceStore = create<TAIServiceStore>()(
         currentConfig: null,
         capabilities: null,
         error: null,
+        isErrorDialogOpen: false,
         currentPhase: StartupPhase.CONFIGURATION,
         selectedModelId: undefined,
         isModelSwitching: false,
@@ -850,14 +869,20 @@ export const useModelSwitching = () => {
 export const useAIServiceError = () => {
   const error = useAIServiceStore(aiServiceSelectors.getError)
   const hasError = useAIServiceStore(aiServiceSelectors.getHasError)
+  const isErrorDialogOpen = useAIServiceStore(state => state.isErrorDialogOpen)
   const setError = useAIServiceStore(state => state.setError)
   const clearError = useAIServiceStore(state => state.clearError)
+  const openErrorDialog = useAIServiceStore(state => state.openErrorDialog)
+  const closeErrorDialog = useAIServiceStore(state => state.closeErrorDialog)
 
   return {
     error,
     hasError,
+    isErrorDialogOpen,
     setError,
-    clearError
+    clearError,
+    openErrorDialog,
+    closeErrorDialog
   }
 }
 

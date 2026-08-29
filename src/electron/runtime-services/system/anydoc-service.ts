@@ -12,6 +12,8 @@ export interface AnydocAsset {
 export interface AnydocResult {
   content: string
   assets: AnydocAsset[]
+  metadata?: any
+  phash?: string
   benchmark?: import('./omni-service').OmniBenchmarkResponse
 }
 
@@ -33,9 +35,13 @@ export class AnydocService {
   public async extract(filePath: string, _timeoutMs: number = 60000): Promise<AnydocResult> {
     try {
       const omniData = await omniService.extract(filePath)
+      const rawContent = omniData?.markdown_content || ''
+      const isBinaryNulSkip = rawContent.includes('[Binary File] NUL byte detected')
       return {
-        content: omniData?.markdown_content || '',
+        content: isBinaryNulSkip ? '' : rawContent,
         assets: [],
+        metadata: omniData?.metadata,
+        phash: omniData?.phash,
         benchmark: omniData?.benchmark
       }
     } catch (error: any) {

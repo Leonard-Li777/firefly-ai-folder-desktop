@@ -58,7 +58,7 @@ export async function getFileAnalysisData(
   autoQueue: boolean = true,
   priority: number = 100
 ): Promise<FileAnalysisResponse> {
-  const { databaseService } = await import('../../database/database-service')
+  const { databaseService } = await import('./database/database-service')
   const { calculateFileFingerprint } = await import('@firefly/shared')
   const nodePath = await import('path')
   const fs = await import('fs')

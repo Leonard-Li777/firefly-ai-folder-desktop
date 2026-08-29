@@ -643,133 +643,6 @@ export const AnalysisSettings: React.FC = () => {
                 })()}
               </div>
 
-              {/* 音频分析截取时长（仅AI分析模式整行呈现） */}
-              {(getConfigValue<string>('ANALYSIS_MODE') ?? 'full') === 'full' && (
-                <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-1">
-                      <Label htmlFor="audio-duration" className="text-sm font-medium">
-                        {t('音频分析截取时长')}
-                      </Label>
-                      <HelpTooltip
-                        content={t('最大值100秒，设置过大会让分析变慢或超时，仅部分大模型支持')}
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {t('仅 gemma-4 系列模型支持音频分析。超大会增加耗时甚至超时失败')}
-                    </p>
-                  </div>
-                  <div className="w-24">
-                    <Input
-                      id="audio-duration"
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={localAudioDuration}
-                      onChange={e => {
-                        const value = parseInt(e.target.value) || 0
-                        setLocalAudioDuration(value)
-                      }}
-                      className="h-8 text-xs text-right"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* 分组2：OCR 识别与处理 */}
-          <div className="p-4 rounded-lg border bg-muted/10 space-y-4">
-            <div className="flex items-center gap-2 border-b border-border/50 pb-2.5">
-              <MaterialIcon icon="article" className="text-lg text-primary h-4 w-4" />
-              <Label className="text-sm font-semibold">{t('OCR 识别与处理')}</Label>
-            </div>
-
-            <div className="space-y-4">
-              {/* 文档 OCR 识别数量上限（总是显示，0 表示不识别，-1 表示不限） */}
-              <div className="p-3.5 rounded-lg border bg-card space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5">
-                    <Label htmlFor="max-doc-ocr-items" className="text-sm font-medium">
-                      {t('文档OCR识别数量')}
-                    </Label>
-                    <HelpTooltip
-                      content={t(
-                        '文档OCR识别数量上限（Office文档内嵌图片数量 / PDF文档页数），0表示不进行OCR识别，-1表示不限，默认 0'
-                      )}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
-                      {localMaxDocOcrItems === -1
-                        ? t('不限')
-                        : localMaxDocOcrItems === 0
-                        ? t('关闭 (0)')
-                        : `${localMaxDocOcrItems} ${t('项/页')}`}
-                    </span>
-                  </div>
-                </div>
-
-                {(() => {
-                  // 0 到 30 每刻度递增 1，最后是 -1 (不限)
-                  const ticks = Array.from({ length: 31 }, (_, i) => i).concat([-1])
-                  const currentIndex =
-                    ticks.indexOf(localMaxDocOcrItems) !== -1
-                      ? ticks.indexOf(localMaxDocOcrItems)
-                      : 0 // 默认 0 (index 0)
-
-                  return (
-                    <div className="space-y-2 pt-1 pb-1 px-1">
-                      <input
-                        id="max-doc-ocr-items"
-                        type="range"
-                        min={0}
-                        max={ticks.length - 1}
-                        step={1}
-                        value={currentIndex}
-                        onChange={e => {
-                          const idx = parseInt(e.target.value, 10)
-                          const selectedValue = ticks[idx]
-                          setLocalMaxDocOcrItems(selectedValue)
-                        }}
-                        className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-secondary accent-primary"
-                      />
-                      {/* 刻度线与主要刻度值展示 (0, 5, 10, 15, 20, 25, 30, 不限)
-                          注意：必须渲染与滑块索引一一对应的全部占位，否则 justify-between 均分会导致
-                          刻度标签位置与滑块实际索引位置（步进 1）错位 */}
-                      <div className="flex justify-between items-center text-[11px] text-muted-foreground pt-1 select-none">
-                        {ticks.map((tick, idx) => {
-                          const isMajorTick = [0, 5, 10, 15, 20, 25, 30, -1].includes(tick)
-                          const isActive = idx === currentIndex
-                          const isUnlimited = tick === -1
-                          // 非主要刻度：渲染空占位保持 justify-between 与滑块索引对齐
-                          if (!isMajorTick) {
-                            return <span key={tick} className="flex-1" />
-                          }
-                          return (
-                            <button
-                              key={tick}
-                              type="button"
-                              onClick={() => setLocalMaxDocOcrItems(tick)}
-                              className={`flex flex-col items-center gap-1 transition-colors hover:text-foreground ${
-                                isActive ? 'text-primary font-bold scale-110' : ''
-                              }`}
-                            >
-                              <span
-                                className={`w-0.5 h-1.5 rounded-full ${
-                                  isActive ? 'bg-primary h-2.5' : 'bg-muted-foreground/30'
-                                }`}
-                              />
-                              <span>{isUnlimited ? t('不限') : tick}</span>
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
-
               {/* 开启Office文档封面截图与 LibreOffice 插件联动 */}
               <div className="p-3 rounded-lg border bg-card space-y-3">
                 <div className="flex items-center justify-between">
@@ -809,7 +682,7 @@ export const AnalysisSettings: React.FC = () => {
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
                           {t(
-                            '支持Office文件整页转换与封面图提取，增加对老旧Office格式的支持'
+                            '支持Office文件整页转换与封面图提取'
                           )}
                           ，
                           <span className="text-xs text-amber-600 font-medium">
@@ -896,6 +769,133 @@ export const AnalysisSettings: React.FC = () => {
                 )}
               </div>
 
+              {/* 音频分析截取时长（仅AI分析模式整行呈现） */}
+              {(getConfigValue<string>('ANALYSIS_MODE') ?? 'full') === 'full' && (
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1">
+                      <Label htmlFor="audio-duration" className="text-sm font-medium">
+                        {t('音频分析截取时长')}
+                      </Label>
+                      <HelpTooltip
+                        content={t('最大值100秒，设置过大会让分析变慢或超时，仅部分大模型支持')}
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {t('仅 gemma-4 系列模型支持音频分析。超大会增加耗时甚至超时失败')}
+                    </p>
+                  </div>
+                  <div className="w-24">
+                    <Input
+                      id="audio-duration"
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={localAudioDuration}
+                      onChange={e => {
+                        const value = parseInt(e.target.value) || 0
+                        setLocalAudioDuration(value)
+                      }}
+                      className="h-8 text-xs text-right"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 分组2：OCR 识别与处理 */}
+          <div className="p-4 rounded-lg border bg-muted/10 space-y-4">
+            <div className="flex items-center gap-2 border-b border-border/50 pb-2.5">
+              <MaterialIcon icon="article" className="text-lg text-primary h-4 w-4" />
+              <Label className="text-sm font-semibold">{t('OCR 识别与处理')}</Label>
+            </div>
+
+            <div className="space-y-4">
+              {/* 文档 OCR 识别数量上限（总是显示，0 表示不识别，-1 表示不限） */}
+              <div className="p-3.5 rounded-lg border bg-card space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor="max-doc-ocr-items" className="text-sm font-medium">
+                      {t('文档OCR识别数量')}
+                    </Label>
+                    <HelpTooltip
+                      content={t(
+                        '文档OCR识别数量上限（Office文档内嵌图片数量 / PDF文档页数）'
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary">
+                      {localMaxDocOcrItems === -1
+                        ? t('不限')
+                        : localMaxDocOcrItems === 0
+                        ? t('关闭 (0)')
+                        : `${localMaxDocOcrItems} ${t('项/页')}`}
+                    </span>
+                  </div>
+                </div>
+
+                {(() => {
+                  // 0 到 30 每刻度递增 1，最后是 -1 (不限)
+                  const ticks = Array.from({ length: 31 }, (_, i) => i).concat([-1])
+                  const currentIndex =
+                    ticks.indexOf(localMaxDocOcrItems) !== -1
+                      ? ticks.indexOf(localMaxDocOcrItems)
+                      : 0 // 默认 0 (index 0)
+
+                  return (
+                    <div className="space-y-2 pt-1 pb-1 px-1">
+                      <input
+                        id="max-doc-ocr-items"
+                        type="range"
+                        min={0}
+                        max={ticks.length - 1}
+                        step={1}
+                        value={currentIndex}
+                        onChange={e => {
+                          const idx = parseInt(e.target.value, 10)
+                          const selectedValue = ticks[idx]
+                          setLocalMaxDocOcrItems(selectedValue)
+                        }}
+                        className="w-full h-2 rounded-lg appearance-none cursor-pointer bg-secondary accent-primary"
+                      />
+                      {/* 刻度线与主要刻度值展示 (0, 5, 10, 15, 20, 25, 30, 不限)
+                          注意：必须渲染与滑块索引一一对应的全部占位，否则 justify-between 均分会导致
+                          刻度标签位置与滑块实际索引位置（步进 1）错位 */}
+                      <div className="flex justify-between items-center text-[11px] text-muted-foreground pt-1 select-none">
+                        {ticks.map((tick, idx) => {
+                          const isMajorTick = [0, 5, 10, 15, 20, 25, 30, -1].includes(tick)
+                          const isActive = idx === currentIndex
+                          const isUnlimited = tick === -1
+                          // 非主要刻度：渲染空占位保持 justify-between 与滑块索引对齐
+                          if (!isMajorTick) {
+                            return <span key={tick} className="flex-1" />
+                          }
+                          return (
+                            <button
+                              key={tick}
+                              type="button"
+                              onClick={() => setLocalMaxDocOcrItems(tick)}
+                              className={`flex flex-col items-center gap-1 transition-colors hover:text-foreground ${
+                                isActive ? 'text-primary font-bold scale-110' : ''
+                              }`}
+                            >
+                              <span
+                                className={`w-0.5 h-1.5 rounded-full ${
+                                  isActive ? 'bg-primary h-2.5' : 'bg-muted-foreground/30'
+                                }`}
+                              />
+                              <span>{isUnlimited ? t('不限') : tick}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+
               {/* 图片 OCR 开关 */}
               <div className="p-3 rounded-lg border bg-card">
                 <div className="flex items-center justify-between">
@@ -906,11 +906,11 @@ export const AnalysisSettings: React.FC = () => {
                       </Label>
                       <HelpTooltip
                         content={t(
-                          '开启后会对PNG、JPG、WebP、BMP、TIFF等图片文件进行OCR文字识别，开启会让分析变慢或超时'
+                          '开启后会对PNG、JPG、WebP、BMP、TIFF等图片文件进行OCR文字识别'
                         )}
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground">{t('建议开启，OCR识别很快')}</p>
+                    <p className="text-xs text-muted-foreground">{t('开启会让分析耗时增加1~4秒')}</p>
                   </div>
                   <Switch
                     id="image-ocr-switch"
@@ -968,7 +968,7 @@ export const AnalysisSettings: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                      {t('1~2秒内完成，适合大部分场景')}
+                      {t('单图1~2秒内完成，适合大部分场景')}
                     </p>
                   </div>
 
@@ -1004,7 +1004,7 @@ export const AnalysisSettings: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                      {t('2~4秒内完成，提高识别精度')}
+                      {t('单图2~4秒内完成，提高识别精度')}
                     </p>
                   </div>
                 </div>

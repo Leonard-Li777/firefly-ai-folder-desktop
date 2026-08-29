@@ -376,9 +376,11 @@ export class AnalysisQueueService {
         const config = ConfigOrchestrator.getInstance()
         const isForceCpu = config.getValue<boolean>('AI_ENGINE_FORCE_CPU_MODE') ?? false
         const aiServiceMode = config.getValue<string>('AI_SERVICE_MODE') ?? 'local'
-        const selectedAcc = (llamaEngineService.getSelectedAcceleration() || 'cpu').toLowerCase()
+        const savedAcc = config.getValue<string>('SELECTED_ACCELERATION')
+        const currentEngineAcc = llamaEngineService.getSelectedAcceleration()
+        const selectedAcc = (currentEngineAcc || (savedAcc && savedAcc !== 'auto' ? savedAcc : '') || 'vulkan').toLowerCase()
 
-        // 仅在明确处于 CPU 引擎模式时串行；非 CPU 引擎（GPU/云端/Ollama等）均启用并行
+        // 仅在明确处于 CPU 引擎模式时串行；非 CPU 引擎（GPU/云端/Ollama/vulkan/cuda等）均启用并行
         const isCpuEngine = aiServiceMode === 'local' && (isForceCpu || selectedAcc === 'cpu')
 
         let analysisMode = 'quick_name'
@@ -515,12 +517,12 @@ export class AnalysisQueueService {
 
                 this.updateItemStatus(item.id, 'analyzing', 10, undefined, { analysisStage: 2 })
                 await this.fileProcessor.processFile(item, signal, 'cpu')
-                logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列] CPU 提取完成: ${item.name}`)
+                logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列:CPU通道] CPU 提取完成并发出就绪通知: ${item.name} (id: ${item.id})`)
                 notifier.notify(item.id)
               } catch (err) {
                 logger.error(
                   LogCategory.ANALYSIS_QUEUE,
-                  `[并行队列] CPU 提取异常: ${item.name}`,
+                  `[并行队列:CPU通道] CPU 提取异常: ${item.name}`,
                   err
                 )
                 this.updateItemStatus(
@@ -535,9 +537,19 @@ export class AnalysisQueueService {
           }
 
           const runGPUConsumer = async () => {
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              `[并行队列:GPU通道] 启动 GPU 消费者循环，待处理文件数: ${pendingItems.length}`
+            )
             for (const item of pendingItems) {
-              if (signal.aborted || !this.running) break
-              if (!this.queueManager.hasItem(item.id)) continue
+              if (signal.aborted || !this.running) {
+                logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列:GPU通道] 收到中止或停止信号，退出 GPU 循环`)
+                break
+              }
+              if (!this.queueManager.hasItem(item.id)) {
+                logger.debug(LogCategory.ANALYSIS_QUEUE, `[并行队列:GPU通道] 队列中已无此任务: ${item.name}`)
+                continue
+              }
 
               this.current = item
 
@@ -548,12 +560,20 @@ export class AnalysisQueueService {
               }
 
               try {
+                logger.info(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[并行队列:GPU通道] 等待 CPU 提取阶段就绪: ${item.name} (id: ${item.id})`
+                )
                 await notifier.waitForStage2(item.id, () => isAlreadyStage2(item), signal)
+                logger.info(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[并行队列:GPU通道] CPU 阶段已就绪，进入 GPU AI 分析: ${item.name}`
+                )
 
                 if (item.status === 'failed') {
                   logger.warn(
                     LogCategory.ANALYSIS_QUEUE,
-                    `[并行队列] CPU 提取失败，跳过 GPU 分析: ${item.name}`
+                    `[并行队列:GPU通道] CPU 提取失败，跳过 GPU 分析: ${item.name}`
                   )
                   continue
                 }
@@ -565,16 +585,20 @@ export class AnalysisQueueService {
                   'gpu',
                   cpuSkippedIds.has(item.id)
                 )
+                logger.info(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[并行队列:GPU通道] GPU AI 分析成功完成: ${item.name}`
+                )
                 cloudSyncWorker.triggerSync(2000)
               } catch (err: any) {
                 const isAbort = err && (err.name === 'AbortError' || err.message === 'Aborted')
                 if (isAbort) {
-                  logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列] GPU 任务被中止: ${item.name}`)
+                  logger.info(LogCategory.ANALYSIS_QUEUE, `[并行队列:GPU通道] GPU 任务被中止: ${item.name}`)
                   this.updateItemStatus(item.id, 'pending', 0)
                 } else {
                   logger.error(
                     LogCategory.ANALYSIS_QUEUE,
-                    `[并行队列] GPU 分析失败: ${item.name}`,
+                    `[并行队列:GPU通道] GPU 分析失败: ${item.name}`,
                     err
                   )
                   this.updateItemStatus(

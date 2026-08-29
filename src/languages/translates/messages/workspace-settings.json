@@ -669,7 +669,7 @@
     "ko-KR": "이 작업은 되돌릴 수 없습니다!",
     "$files": [
       "src/renderer/components/settings/workspace-settings.tsx(21165-21176)",
-      "src/renderer/components/settings/workspace-settings.tsx(22418-22429)"
+      "src/renderer/components/settings/workspace-settings.tsx(22458-22469)"
     ],
     "$id": 3217
   },
@@ -685,7 +685,7 @@
     "ko-KR": "취소",
     "$files": [
       "src/renderer/components/settings/workspace-settings.tsx(21407-21413)",
-      "src/renderer/components/settings/workspace-settings.tsx(22660-22666)"
+      "src/renderer/components/settings/workspace-settings.tsx(22700-22706)"
     ],
     "$id": 3218
   },
@@ -699,7 +699,7 @@
     "de-DE": "Entfernen",
     "fr-FR": "Retirer",
     "ko-KR": "제거하다",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(21590-21596)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(21630-21636)"],
     "$id": 3219
   },
   "重置工作目录": {
@@ -712,7 +712,7 @@
     "de-DE": "Arbeitsverzeichnis zurücksetzen",
     "fr-FR": "Réinitialiser le répertoire de travail",
     "ko-KR": "작업 디렉터리 재설정",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(21928-21938)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(21968-21978)"],
     "$id": 3220
   },
   "确定要重置目录 \"{}\" 吗？": {
@@ -725,7 +725,7 @@
     "de-DE": "Sind Sie sicher, dass Sie das Verzeichnis „{}“ zurücksetzen möchten?",
     "fr-FR": "Êtes-vous sûr de vouloir réinitialiser le répertoire « {} » ?",
     "ko-KR": "정말로 \"{}\" 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22097-22116)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22137-22156)"],
     "$id": 3221
   },
   "此操作将删除该目录的所有AI分析结果和标签，但保留原始文件。目录将重置为未分析状态。": {
@@ -738,7 +738,7 @@
     "de-DE": "Durch diesen Vorgang werden alle AI-Analyseergebnisse und Beschriftungen für das Verzeichnis gelöscht, die Originaldateien bleiben jedoch erhalten.Das Verzeichnis wird auf einen ungeparsten Zustand zurückgesetzt.",
     "fr-FR": "Cette opération supprimera tous les résultats d’analyse AI et les étiquettes du répertoire, mais conservera les fichiers d’origine.Le répertoire sera réinitialisé à un état non analysé.",
     "ko-KR": "이 작업을 수행하면 해당 디렉터리의 모든 AI 분석 결과와 라벨이 삭제되지만 원본 파일은 유지됩니다.디렉터리는 구문 분석되지 않은 상태로 재설정됩니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22234-22303)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22274-22343)"],
     "$id": 3222
   },
   "重置": {
@@ -751,7 +751,7 @@
     "de-DE": "Zurücksetzen",
     "fr-FR": "Réinitialiser",
     "ko-KR": "다시 놓기",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22842-22848)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22923-22929)"],
     "$id": 3223
   }
 }

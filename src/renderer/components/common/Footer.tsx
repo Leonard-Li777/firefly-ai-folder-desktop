@@ -12,7 +12,7 @@ import { Button } from '@/renderer/components/ui/button'
 import { MaterialIcon } from '@/renderer/lib/utils'
 import { t } from '@app/languages'
 import { openExternalLink } from '@/renderer/lib/external-link'
-import { useAIServiceStatus } from '@/renderer/stores/ai-service-store'
+import { useAIServiceError, useAIServiceStatus } from '@/renderer/stores/ai-service-store'
 import { useAnalysisQueueStore } from '@/renderer/stores/analysis-queue-store'
 import { useConfigStore } from '@/renderer/stores/config-store'
 import { useShallow } from 'zustand/react/shallow'
@@ -20,8 +20,9 @@ import { useModelStore } from '@/renderer/stores/model-store'
 import { useSettingsStore } from '@/renderer/stores/settings-store'
 import { useVirtualDirectoryStore } from '@/renderer/stores/virtual-directory-store'
 import { useAnalyzedDirectoryStore } from '@/renderer/stores/analyzed-directory-store'
-import { compareVersions, LogCategory, logger } from '@firefly/shared'
+import { compareVersions, LogCategory, logger, ErrorNormalizer } from '@firefly/shared'
 import { getAccelerationTier, extractAccelerationFromBackendDisplay } from '@firefly/shared'
+import { PersistentTooltip } from '@/renderer/components/common/PersistentTooltip'
 
 import { getStageLabel } from '@/renderer/components/analysis/AnalysisQueueContent'
 
@@ -39,6 +40,7 @@ export function Footer() {
     totalSizeBytes,
     backend
   } = useModelStore()
+  const { error, openErrorDialog } = useAIServiceError()
   const toggleQueue = useAnalysisQueueStore(s => s.toggleQueue)
   const isPaused = useAnalysisQueueStore(s => s.snapshot?.status === 'paused')
   const analyzing = useAnalysisQueueStore(
@@ -64,6 +66,23 @@ export function Footer() {
   const { capabilities } = useAIServiceStatus()
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
   const [licenseType, setLicenseType] = useState<string | null>(null)
+
+  const showAiError = serviceStatus === AIServiceStatus.ERROR || !!error
+  const errorMessageDisplay = useMemo(() => {
+    if (!showAiError) return ''
+    if (error) {
+      const normalized = ErrorNormalizer.normalize(
+        error,
+        (error.code || (error as any).type) as any,
+        'Footer'
+      )
+      const completeInfo = ErrorNormalizer.getCompleteErrorInfo(
+        normalized.code || (normalized as any).type
+      )
+      return normalized.details || completeInfo.userMessage || normalized.message || t('AI服务异常')
+    }
+    return lastError || t('AI服务异常，点击查看详情')
+  }, [showAiError, error, lastError])
 
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)
@@ -464,9 +483,30 @@ export function Footer() {
                 {aiServiceInfo.text}
               </button>
               <div>
+                {showAiError && (
+                  <div className="mt-0.5">
+                    <PersistentTooltip
+                      id={`ai_footer_error_${error?.code || (error as any)?.type || 'general'}`}
+                      content={t('AI服务出现异常，点击查看详情与修复方案')}
+                      position="top"
+                      visible={true}
+                    >
+                      <button
+                        className="text-xs leading-tight text-red-500 font-medium transition-all duration-200 hover:underline cursor-pointer flex items-center gap-1 text-left"
+                        onClick={openErrorDialog}
+                        title={t('点击查看AI服务错误详情')}
+                      >
+                        <MaterialIcon icon="error_outline" className="text-xs shrink-0 animate-pulse" />
+                        <span className="truncate max-w-[320px]">
+                          {errorMessageDisplay}
+                        </span>
+                      </button>
+                    </PersistentTooltip>
+                  </div>
+                )}
                 {showRecommendation && (
                   <button
-                    className="text-xs leading-tight text-red-500/90 font-medium transition-all duration-200  hover:underline cursor-pointer"
+                    className="text-xs leading-tight text-red-500/90 font-medium transition-all duration-200  hover:underline cursor-pointer block"
                     onClick={() => openSettings(SettingsCategory.AI_MODEL)}
                   >
                     {t('检测到您有高性能显卡，请切换更聪明的AI模型，立即设置')}
@@ -475,7 +515,7 @@ export function Footer() {
                 {accelerationBelowBest && (
                   <button
                     onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
-                    className="text-yellow-500 text-xs hover:underline cursor-pointer"
+                    className="text-yellow-500 text-xs hover:underline cursor-pointer block"
                     title={t('点击前往引擎管理设置最佳可用加速引擎')}
                   >
                     {t('警告：{current}非最佳可用引擎，请点击切换{best}！', {

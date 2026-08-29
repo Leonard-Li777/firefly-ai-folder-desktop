@@ -1,4 +1,4 @@
-import { Check, Globe, HardDrive, Info, Loader2, Star, Zap } from 'lucide-react'
+import { Check, Globe, HardDrive, Info, Loader2, Sparkles, Star, Zap } from 'lucide-react'
 import { LogCategory, logger, MODEL_SOURCES } from '@firefly/shared'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
@@ -279,6 +279,12 @@ export function ModelSelectionStep({ onNext, onBack }: ModelSelectionStepProps) 
                               <h3 className="font-black text-slate-900 text-sm tracking-tight">
                                 {m.name}
                               </h3>
+                              {m.recommended && (
+                                <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-500 hover:to-indigo-600 text-white text-[9px] font-black h-4 px-1.5 uppercase tracking-tighter border-none">
+                                  <Sparkles className="w-2 h-2 mr-1 fill-current" />
+                                  {t('推荐')}
+                                </Badge>
+                              )}
                               {m.isBestInTab && (
                                 <Badge className="bg-amber-400 hover:bg-amber-400 text-slate-900 text-[9px] font-black h-4 px-1.5 uppercase tracking-tighter border-none">
                                   <Star className="w-2 h-2 mr-1 fill-current" />

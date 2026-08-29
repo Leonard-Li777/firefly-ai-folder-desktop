@@ -571,6 +571,7 @@ export class FileDao {
                 accelerator: incomingStats.accelerator || 'cpu',
                 durationMs: incomingStats.durationMs || 0,
                 phases: incomingStats.phases || {},
+                stage1Breakdown: incomingStats.stage1Breakdown,
                 contentExtractionBreakdown: incomingStats.contentExtractionBreakdown,
                 model: incomingStats.model
               }
@@ -583,6 +584,7 @@ export class FileDao {
                 accelerator: existingStats.accelerator || 'cpu',
                 durationMs: existingStats.durationMs || 0,
                 phases: existingStats.phases || {},
+                stage1Breakdown: existingStats.stage1Breakdown,
                 contentExtractionBreakdown: existingStats.contentExtractionBreakdown,
                 model: existingStats.model
               }
@@ -593,6 +595,7 @@ export class FileDao {
             ? {
                 durationMs: existingStats.durationMs || 0,
                 phases: existingStats.phases || {},
+                stage1Breakdown: existingStats.stage1Breakdown,
                 contentExtractionBreakdown: existingStats.contentExtractionBreakdown,
                 model: existingStats.model
               }
@@ -642,10 +645,16 @@ export class FileDao {
               finalArchive?.contentExtractionBreakdown,
               finalFresh.contentExtractionBreakdown
             )
+            const mergedStage1 = mergeBreakdown(
+              finalArchive?.stage1Breakdown,
+              finalFresh.stage1Breakdown
+            )
             finalArchive = {
               accelerator: finalFresh.accelerator || finalArchive?.accelerator,
               durationMs: (finalArchive?.durationMs || 0) + (finalFresh.durationMs || 0),
               phases: mergedArchivePhases,
+              stage1Breakdown:
+                Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
               contentExtractionBreakdown:
                 Object.keys(mergedBreakdown).length > 0 ? mergedBreakdown : undefined,
               model: finalFresh.model || finalArchive?.model
@@ -667,10 +676,16 @@ export class FileDao {
                   finalArchive?.contentExtractionBreakdown,
                   finalFresh.contentExtractionBreakdown
                 )
+                const mergedStage1 = mergeBreakdown(
+                  finalArchive?.stage1Breakdown,
+                  finalFresh.stage1Breakdown
+                )
                 finalArchive = {
                   accelerator: finalFresh.accelerator || finalArchive?.accelerator,
                   durationMs: (finalArchive?.durationMs || 0) + (finalFresh.durationMs || 0),
                   phases: mergedArchivePhases,
+                  stage1Breakdown:
+                    Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
                   contentExtractionBreakdown:
                     Object.keys(mergedBreakdown).length > 0 ? mergedBreakdown : undefined,
                   model: finalFresh.model || finalArchive?.model
@@ -687,6 +702,10 @@ export class FileDao {
                   finalFresh.contentExtractionBreakdown,
                   incomingFresh.contentExtractionBreakdown
                 )
+                const mergedStage1 = mergeBreakdown(
+                  finalFresh.stage1Breakdown,
+                  incomingFresh.stage1Breakdown
+                )
                 // 物理耗时修正：如果 incoming 属于重复或覆盖分析，fresh.durationMs 应该精准等于更新后的 fresh.phases 各阶段之和
                 const freshSumMs = Object.values(mergedFreshPhases).reduce(
                   (sum: number, v: any) => sum + (Number(v) || 0),
@@ -696,6 +715,8 @@ export class FileDao {
                   accelerator: incomingFresh.accelerator || finalFresh.accelerator,
                   durationMs: freshSumMs,
                   phases: mergedFreshPhases,
+                  stage1Breakdown:
+                    Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
                   contentExtractionBreakdown:
                     Object.keys(mergedBreakdown).length > 0 ? mergedBreakdown : undefined,
                   model: incomingFresh.model || finalFresh.model
@@ -717,10 +738,16 @@ export class FileDao {
             finalArchive?.contentExtractionBreakdown,
             finalFresh.contentExtractionBreakdown
           )
+          const mergedStage1 = mergeBreakdown(
+            finalArchive?.stage1Breakdown,
+            finalFresh.stage1Breakdown
+          )
           finalArchive = {
             accelerator: finalFresh.accelerator || finalArchive?.accelerator,
             durationMs: Math.max(finalArchive?.durationMs || 0, finalFresh.durationMs || 0),
             phases: mergedArchivePhases,
+            stage1Breakdown:
+              Object.keys(mergedStage1).length > 0 ? mergedStage1 : undefined,
             contentExtractionBreakdown:
               Object.keys(mergedBreakdown).length > 0 ? mergedBreakdown : undefined,
             model: finalFresh.model || finalArchive?.model
@@ -1188,13 +1215,14 @@ export class FileDao {
           )
           .run(actualId)
 
-        // 2. 清空 files 表中的分析数据
+        // 2. 清空 files 表中的分析数据（含 category 字段的 magika 类型识别信息）
         this.db
           .prepare(
             `
           UPDATE files
           SET smart_name = (SELECT name FROM workspace_files WHERE id = ?),
               description = NULL,
+              category = NULL,
               author = NULL,
               language = NULL,
               is_hit = 0,

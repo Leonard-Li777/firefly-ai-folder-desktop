@@ -966,67 +966,112 @@ export class DuplicateDetectionService {
 
           let cleanExifSucceeded = false
 
-          // 方式一：尝试调用 Omni 服务
+          // 核心方案：高保真/无损 Exif 隐私清除策略
+          // 1. 若图片存在非正向 Orientation（例如手机/相机拍摄的竖图，Orientation = 6 / 8 / 3 等），
+          //    必须先物理旋转像素至正向，再剥离元数据，否则剔除 Exif 后看图软件会倒转；
+          // 2. 若图片无需物理旋转（Orientation = 1 或普通横图），优先采用 ExifTool 进行 100% 原始字节无损剔除（不重编码像素，0 画质损失，文件体积绝不膨胀）；
+          // 3. 若使用 Sharp 重新输出，自适应合理参数，避免 quality 95 导致原低质图片体积反而膨胀。
           try {
-            const resp = await fetch(`${this.omniApiUrl}/api/cleanup/fix`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'clean_exif', paths: [filePath] }),
-              signal: AbortSignal.timeout(15000)
-            })
-            if (resp.ok) {
-              const fixRes = (await resp.json()) as any
-              if (fixRes.success_count > 0) {
-                // 探测同目录下 czkawka 生成的 *.czkawka_cleaned_exif.* 副本文件
-                const srcDir = path.dirname(filePath)
-                const ext = path.extname(filePath)
-                const stem = path.basename(filePath, ext)
-                const cleanedCandidates = [
-                  path.join(srcDir, `${stem}.czkawka_cleaned_exif${ext}`),
-                  path.join(srcDir, `${stem.toLowerCase()}.czkawka_cleaned_exif${ext.toLowerCase()}`),
-                  path.join(srcDir, `${stem.toUpperCase()}.czkawka_cleaned_exif${ext.toUpperCase()}`)
-                ]
-                for (const cand of cleanedCandidates) {
-                  if (fs.existsSync(cand)) {
-                    // 若目标目录已存在同名文件，直接覆盖
-                    if (fs.existsSync(outFilePath)) {
-                      try { fs.unlinkSync(outFilePath) } catch {}
-                    }
-                    fs.copyFileSync(cand, outFilePath)
-                    try { fs.unlinkSync(cand) } catch {}
-                    cleanExifSucceeded = true
-                    break
-                  }
+            const sharpModule = require('sharp')
+            const cp = require('child_process')
+            const ext = path.extname(filePath).toLowerCase()
+
+            // 探测内置/系统 ExifTool 二进制
+            const findExifTool = () => {
+              const isWin = process.platform === 'win32'
+              const exeName = isWin ? 'exiftool.exe' : 'exiftool'
+              const possiblePaths = [
+                path.join(process.resourcesPath || '', 'bin', 'exiftool', exeName),
+                path.join(process.resourcesPath || '', 'bin', 'exiftool', 'win32', exeName),
+                path.join(process.cwd(), 'build', 'extraResources', 'bin', 'exiftool', exeName),
+                path.join(process.cwd(), 'build', 'extraResources', 'bin', 'exiftool', 'win32', exeName),
+                path.join(process.cwd(), 'apps', 'desktop', 'build', 'extraResources', 'bin', 'exiftool', exeName),
+                path.join(process.cwd(), 'apps', 'omni', 'build', 'extraResources', 'bin', 'exiftool', exeName),
+                path.join(process.cwd(), 'node_modules', 'exiftool-vendored.exe', 'bin', 'exiftool.exe'),
+                path.join(process.cwd(), 'apps', 'desktop', 'node_modules', 'exiftool-vendored.exe', 'bin', 'exiftool.exe'),
+                exeName
+              ]
+              for (const p of possiblePaths) {
+                if (fs.existsSync(p)) return p
+              }
+              return null
+            }
+
+            const meta = await sharpModule(filePath).metadata().catch(() => null)
+            const needsRotation = meta?.orientation && meta.orientation > 1
+
+            if (!needsRotation) {
+              // 方案 A（无损优先）：图片本就是正向朝向，无需像素重编码。使用 ExifTool 直接剔除元数据
+              const exifToolPath = findExifTool()
+              if (exifToolPath) {
+                if (fs.existsSync(outFilePath)) {
+                  try { fs.unlinkSync(outFilePath) } catch {}
+                }
+                fs.copyFileSync(filePath, outFilePath)
+                const res = cp.spawnSync(exifToolPath, ['-all=', '-overwrite_original', outFilePath], { encoding: 'utf-8' })
+                if (res.status === 0 && fs.existsSync(outFilePath)) {
+                  cleanExifSucceeded = true
                 }
               }
             }
-          } catch {}
 
-          // 方式二：若 Omni 未输出，使用本地 Sharp 强力生成去 Exif 副本
-          if (!cleanExifSucceeded) {
-            try {
-              const sharpModule = require('sharp')
-              const inputBuffer = fs.readFileSync(filePath)
-              const ext = path.extname(filePath).toLowerCase()
+            // 方案 B：需要物理正向旋转，或 ExifTool 未就绪时，使用 Sharp 物理校正 + 完全清空元数据
+            if (!cleanExifSucceeded) {
+              const pipeline = sharpModule(filePath).rotate() // 物理正向校准像素，不调用 withMetadata() 从而丢弃所有元数据
+
               let cleanBuffer: Buffer
               if (ext === '.jpg' || ext === '.jpeg') {
-                cleanBuffer = await sharpModule(inputBuffer).withMetadata({ exif: {} }).jpeg().toBuffer()
+                // 使用 mozjpeg 智能压缩，既保障肉眼无损画质，又防止体积比原图膨胀
+                cleanBuffer = await pipeline.jpeg({ quality: 90, mozjpeg: true }).toBuffer()
               } else if (ext === '.png') {
-                cleanBuffer = await sharpModule(inputBuffer).withMetadata({ exif: {} }).png().toBuffer()
+                cleanBuffer = await pipeline.png({ compressionLevel: 9 }).toBuffer()
               } else if (ext === '.webp') {
-                cleanBuffer = await sharpModule(inputBuffer).withMetadata({ exif: {} }).webp().toBuffer()
+                cleanBuffer = await pipeline.webp({ quality: 90, effort: 6 }).toBuffer()
               } else {
-                cleanBuffer = await sharpModule(inputBuffer).rotate().toBuffer()
+                cleanBuffer = await pipeline.toBuffer()
               }
-              // 直接覆盖已有同名文件
+
               if (fs.existsSync(outFilePath)) {
                 try { fs.unlinkSync(outFilePath) } catch {}
               }
               fs.writeFileSync(outFilePath, cleanBuffer)
               cleanExifSucceeded = true
-            } catch (sharpErr: any) {
-              logger.warn(LogCategory.FILE_ORGANIZATION, `本地 Sharp 擦除 Exif 副本生成异常 [${filePath}]:`, sharpErr)
             }
+          } catch (sharpErr: any) {
+            logger.warn(LogCategory.FILE_ORGANIZATION, `本地物理校正与擦除 Exif 异常 [${filePath}], 尝试降级至 Omni:`, sharpErr)
+            // 降级调用 Omni 服务
+            try {
+              const resp = await fetch(`${this.omniApiUrl}/api/cleanup/fix`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'clean_exif', paths: [filePath] }),
+                signal: AbortSignal.timeout(15000)
+              })
+              if (resp.ok) {
+                const fixRes = (await resp.json()) as any
+                if (fixRes.success_count > 0) {
+                  const srcDir = path.dirname(filePath)
+                  const ext = path.extname(filePath)
+                  const stem = path.basename(filePath, ext)
+                  const cleanedCandidates = [
+                    path.join(srcDir, `${stem}.czkawka_cleaned_exif${ext}`),
+                    path.join(srcDir, `${stem.toLowerCase()}.czkawka_cleaned_exif${ext.toLowerCase()}`),
+                    path.join(srcDir, `${stem.toUpperCase()}.czkawka_cleaned_exif${ext.toUpperCase()}`)
+                  ]
+                  for (const cand of cleanedCandidates) {
+                    if (fs.existsSync(cand)) {
+                      if (fs.existsSync(outFilePath)) {
+                        try { fs.unlinkSync(outFilePath) } catch {}
+                      }
+                      fs.copyFileSync(cand, outFilePath)
+                      try { fs.unlinkSync(cand) } catch {}
+                      cleanExifSucceeded = true
+                      break
+                    }
+                  }
+                }
+              }
+            } catch {}
           }
 
           if (cleanExifSucceeded && fs.existsSync(outFilePath)) {

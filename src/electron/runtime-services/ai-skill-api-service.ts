@@ -9,8 +9,6 @@ import { databaseService } from './database/database-service'
 import { analysisQueueService } from './analysis-queue-service'
 import { organizeRealDirectoryService, virtualDirectoryService } from '../main/state'
 
-import { unifiedWorkerManager } from './system/unified-worker-service/unified-worker-manager'
-
 export class AISkillApiService {
   private server: http.Server | null = null
   private configuredPort = 28686
@@ -38,34 +36,7 @@ export class AISkillApiService {
   }
 
   async start(): Promise<void> {
-    // 1. 优先融入 UnifiedWorkerManager 统一常驻微服务
-    try {
-      const workerPort = await unifiedWorkerManager.start(this.configuredPort)
-      const workerServer = unifiedWorkerManager.getServer()
-
-      if (workerServer) {
-        this.actualPort = workerPort
-        workerServer.registerSkillHandler(async (req, res) => {
-          return await this.handleRequest(req, res)
-        })
-        logger.info(
-          LogCategory.SYSTEM,
-          `[AI Skill API] 成功挂载至统一常驻微服务，共享端口 http://127.0.0.1:${this.actualPort}`
-        )
-        await this.writeConfigFile().catch(err =>
-          logger.error(LogCategory.SYSTEM, '[AI Skill API] 写入配置文件失败', err)
-        )
-        return
-      }
-    } catch (workerErr) {
-      logger.warn(
-        LogCategory.SYSTEM,
-        '[AI Skill API] 挂载至 UnifiedWorkerManager 失败，尝试独立拉起...',
-        workerErr
-      )
-    }
-
-    // 2. 独立启动 HTTP 监听器（具备 EADDRINUSE 自愈能力）
+    // 独立启动 HTTP 监听器（具备 EADDRINUSE 自愈能力）
     if (this.server) return
 
     let currentPort = this.configuredPort
@@ -76,8 +47,6 @@ export class AISkillApiService {
       try {
         await new Promise<void>((resolve, reject) => {
           const server = http.createServer(async (req, res) => {
-            // 处理 Skill API 路由；未匹配的路由返回 false 时兜底返回 404，
-            // 与 UnifiedWorkerServer 挂载模式下的行为保持一致
             const handled = await this.handleRequest(req, res)
             if (!handled && !res.writableEnded) {
               this.sendError(res, 404, t('接口不存在'))
@@ -410,7 +379,7 @@ export class AISkillApiService {
           `[AISkillApiService][debug] 智能获取文件分析数据 - file: ${path.basename(filePath)}`
         )
         const { getFileAnalysisData } =
-          await import('./system/unified-worker-service/file-analysis-service')
+          await import('./file-analysis-service')
         const result = await getFileAnalysisData(filePath, autoQueue, priority)
         console.debug(
           `[AISkillApiService][debug] 智能获取文件分析数据返回 - belongsToWorkspace: ${result.belongsToWorkspace}, isAnalyzed: ${result.isAnalyzed}`

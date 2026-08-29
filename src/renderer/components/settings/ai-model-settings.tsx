@@ -9,6 +9,7 @@ import {
   Loader2,
   RefreshCw,
   Server,
+  Sparkles,
   Star,
   Trash2,
   Zap
@@ -156,6 +157,11 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <h4 className="font-black text-lg">{model.name}</h4>
               <div className="flex gap-1.5 flex-wrap">
+                {model.recommended && (
+                  <Badge className="text-[10px] font-black h-5 px-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-none shadow-md flex items-center gap-1">
+                    <Sparkles className="h-3.5 w-3.5 fill-current text-white" /> {t('推荐')}
+                  </Badge>
+                )}
                 {model.isBest && (
                   <Badge className="text-[10px] font-black h-5 px-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white border-none shadow-md flex items-center gap-1">
                     <Star className="h-3.5 w-3.5 fill-current text-white" /> {t('最佳推荐')}

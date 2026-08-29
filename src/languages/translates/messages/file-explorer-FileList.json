@@ -149,7 +149,7 @@
     "ko-KR": "알 수 없는 파일",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(33851-33859)",
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(25405-25413)",
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(26166-26174)",
       "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(21786-21794)"
     ],
     "$id": 8511

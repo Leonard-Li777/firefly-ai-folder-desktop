@@ -194,7 +194,7 @@ export class OmniService {
       const env = { ...process.env }
       const child = spawn(exePath, ['serve', '-a', '127.0.0.1:9190'], {
         env,
-        stdio: ['ignore', 'pipe', 'pipe'],
+        stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true
       })
 
@@ -385,18 +385,24 @@ export class OmniService {
    */
   public async extract(filePath: string): Promise<OmniExtractionResponse | null> {
     const tStart = Date.now()
+    const reqBody = { file_path: filePath }
+    logger.debug(
+      LogCategory.SYSTEM,
+      `[OmniService] >>> POST /api/extract 请求发起:`,
+      JSON.stringify(reqBody)
+    )
     try {
       const res = await fetch(`${this.baseUrl}/api/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ file_path: filePath }),
-        signal: AbortSignal.timeout(15000)
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(120000)
       })
 
       if (!res.ok) {
         logger.warn(
           LogCategory.SYSTEM,
-          `[OmniService] extract 响应异常: ${res.status}, 耗时: ${Date.now() - tStart}ms`
+          `[OmniService] <<< POST /api/extract 响应异常: status=${res.status}, 耗时: ${Date.now() - tStart}ms`
         )
         return null
       }
@@ -404,13 +410,14 @@ export class OmniService {
       const json = (await res.json()) as OmniExtractionResponse
       logger.debug(
         LogCategory.SYSTEM,
-        `[OmniService] extract 完成 (${filePath}): 耗时: ${Date.now() - tStart}ms`
+        `[OmniService] <<< POST /api/extract 响应成功 (${filePath}, 耗时: ${Date.now() - tStart}ms):`,
+        JSON.stringify(json)
       )
       return json
     } catch (err: any) {
       logger.warn(
         LogCategory.SYSTEM,
-        `[OmniService] extract 调用失败 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}`
+        `[OmniService] <<< POST /api/extract 调用失败 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}`
       )
       return null
     }
@@ -481,6 +488,7 @@ export class OmniService {
     lonOrLang?: number | string,
     optionalLang?: string
   ): Promise<OmniGeoReverseResponse | null> {
+    const tStart = Date.now()
     try {
       let points: Array<{ latitude: number; longitude: number }> = []
       let language = 'zh-CN'
@@ -500,25 +508,42 @@ export class OmniService {
 
       if (points.length === 0) return null
 
+      const reqBody = {
+        points,
+        language,
+        maxCityKm: 50,
+        maxAnyKm: 500
+      }
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] >>> POST /api/geo/reverse 请求发起:`,
+        JSON.stringify(reqBody)
+      )
+
       const res = await fetch(`${this.baseUrl}/api/geo/reverse`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          points,
-          language,
-          maxCityKm: 50,
-          maxAnyKm: 500
-        }),
+        body: JSON.stringify(reqBody),
         signal: AbortSignal.timeout(3000)
       })
 
       if (!res.ok) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] <<< POST /api/geo/reverse 响应异常: status=${res.status}, 耗时: ${Date.now() - tStart}ms`
+        )
         return null
       }
 
-      return (await res.json()) as OmniGeoReverseResponse
+      const json = (await res.json()) as OmniGeoReverseResponse
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] <<< POST /api/geo/reverse 响应成功 (耗时: ${Date.now() - tStart}ms):`,
+        JSON.stringify(json)
+      )
+      return json
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, '[OmniService] reverseGeo 调用异常:', err.message)
+      logger.debug(LogCategory.SYSTEM, `[OmniService] <<< POST /api/geo/reverse 调用异常 (耗时: ${Date.now() - tStart}ms):`, err.message)
       return null
     }
   }
@@ -554,21 +579,33 @@ export class OmniService {
    * 不支持的格式服务端返回 204，此处直接返回 null 并平滑降级
    */
   public async getFileCover(filePath: string): Promise<Buffer | null> {
+    const tStart = Date.now()
     try {
       const url = `${this.baseUrl}/api/cover?path=${encodeURIComponent(filePath)}`
+      logger.debug(LogCategory.SYSTEM, `[OmniService] >>> GET /api/cover 请求发起 (${filePath})`)
+      // Office 转换 (LibreOffice) 或复杂视频截帧可能需要一定冷启动时间，提供充足的 60 秒等待时间
       const res = await fetch(url, {
-        signal: AbortSignal.timeout(10000)
+        signal: AbortSignal.timeout(60000)
       })
 
-      // 204 表示不支持的格式或渲染不可用，静默降级
+      // 204 表示不支持的格式或未开启 Office 封面配置，静默平滑降级
       if (res.status === 204 || !res.ok) {
+        logger.debug(
+          LogCategory.SYSTEM,
+          `[OmniService] <<< GET /api/cover 响应 ${res.status} (未开启封面或不支持, 耗时: ${Date.now() - tStart}ms, ${filePath})`
+        )
         return null
       }
 
       const arrayBuffer = await res.arrayBuffer()
-      return Buffer.from(arrayBuffer)
+      const buffer = Buffer.from(arrayBuffer)
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] <<< GET /api/cover 响应成功 (${filePath}, 字节大小: ${buffer.length} B, 耗时: ${Date.now() - tStart}ms)`
+      )
+      return buffer
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniService] getFileCover 调用异常 (${filePath}):`, err.message)
+      logger.debug(LogCategory.SYSTEM, `[OmniService] <<< GET /api/cover 调用异常 (${filePath}, 耗时: ${Date.now() - tStart}ms):`, err.message)
       return null
     }
   }

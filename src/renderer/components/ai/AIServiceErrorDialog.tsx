@@ -449,41 +449,16 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
 
 /**
  * 使用AI服务错误对话框的Hook
+ * 默认不再自动弹出，由用户点击Footer错误提示触发 openDialog 打开
  */
 export const useAIServiceErrorDialog = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  const { error, hasError } = useAIServiceError()
-  const isGpuSwitching = useAIServiceStore(state => state.isGpuSwitching)
-  const isModelSwitching = useAIServiceStore(state => state.isModelSwitching)
-
-  // 使用 useMemo 缓存错误状态，避免不必要的重新计算
-  const shouldShowDialog = useMemo(() => {
-    return hasError && error !== null && !isGpuSwitching && !isModelSwitching
-  }, [hasError, error, isGpuSwitching, isModelSwitching])
-
-  // 使用 useEffect 但避免无限循环，添加更严格的条件检查
-  useEffect(() => {
-    // 只有在状态真正需要改变时才更新
-    if (shouldShowDialog && !isOpen) {
-      setIsOpen(true)
-    } else if (!shouldShowDialog && isOpen) {
-      setIsOpen(false)
-    }
-  }, [shouldShowDialog]) // 移除 isOpen 依赖，避免循环
-
-  // 使用 useCallback 缓存回调函数
-  const openDialog = useCallback(() => {
-    setIsOpen(true)
-  }, [])
-
-  const closeDialog = useCallback(() => {
-    setIsOpen(false)
-  }, [])
+  const { error, hasError, isErrorDialogOpen, openErrorDialog, closeErrorDialog } =
+    useAIServiceError()
 
   return {
-    isOpen,
-    openDialog,
-    closeDialog,
+    isOpen: isErrorDialogOpen,
+    openDialog: openErrorDialog,
+    closeDialog: closeErrorDialog,
     hasError,
     error
   }

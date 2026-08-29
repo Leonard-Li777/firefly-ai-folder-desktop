@@ -829,13 +829,7 @@ export async function initializeFullServices(): Promise<void> {
       }
     }
 
-    // 初始化常驻微服务 (UnifiedWorkerManager 与 OmniService)
-    const { unifiedWorkerManager } =
-      await import('../runtime-services/system/unified-worker-service')
-    unifiedWorkerManager.start().catch(err => {
-      logger.error(LogCategory.MAIN, '[UnifiedWorkerManager] 守护微服务启动失败:', err)
-    })
-
+    // 初始化常驻微服务 (Omni 原生微服务)
     const { omniService } = await import('../runtime-services/system/omni-service')
     omniService.start().catch(err => {
       logger.error(LogCategory.MAIN, '[OmniService] 原生微服务启动失败:', err)
@@ -924,7 +918,7 @@ export async function initializeFullServices(): Promise<void> {
     registerServiceHealthChecks()
     const orchestrator = ConfigOrchestrator.getInstance()
 
-    // 启动 AI Skill API 服务 (融合托管在常驻微服务 UnifiedWorkerManager)
+    // 启动 AI Skill API 服务
     const startApiService = async (port: number) => {
       const { AISkillApiService } = await import('../runtime-services/ai-skill-api-service')
       const apiService = new AISkillApiService(port, app.getPath('userData'))
@@ -950,9 +944,6 @@ export async function initializeFullServices(): Promise<void> {
       } else {
         if (currentApiService) {
           await currentApiService.stop()
-          const { unifiedWorkerManager } =
-            await import('../runtime-services/system/unified-worker-service/unified-worker-manager')
-          await unifiedWorkerManager.stop()
           currentApiService = null
         }
       }
@@ -961,9 +952,6 @@ export async function initializeFullServices(): Promise<void> {
     orchestrator.onValueChange('AI_SKILL_API_PORT', async port => {
       if (currentApiService) {
         await currentApiService.stop()
-        const { unifiedWorkerManager } =
-          await import('../runtime-services/system/unified-worker-service/unified-worker-manager')
-        await unifiedWorkerManager.stop()
         currentApiService = await startApiService(port as number)
       }
     })

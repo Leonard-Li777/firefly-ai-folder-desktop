@@ -138,6 +138,32 @@
     "$files": ["src/renderer/components/common/ErrorBoundary.tsx(2195-2201)"],
     "$id": 3892
   },
+  "AI服务异常": {
+    "en-US": "AI service exception",
+    "es-ES": "Excepción del servicio de IA",
+    "ar-EG": "استثناء في خدمة الذكاء الاصطناعي",
+    "pt-PT": "Exceção no serviço de IA",
+    "ru-RU": "Исключение AI-сервиса",
+    "ja-JP": "AIサービス異常",
+    "de-DE": "AI-Dienstanomalie  ",
+    "fr-FR": "Anomalie du service AI",
+    "ko-KR": "AI 서비스 이상",
+    "$files": ["src/renderer/components/common/Footer.tsx(3265-3275)"],
+    "$id": 11299
+  },
+  "AI服务异常，点击查看详情": {
+    "en-US": "AI service is abnormal, click to view details",
+    "es-ES": "El servicio de IA es anormal, haga clic para ver los detalles",
+    "ar-EG": "خدمة الذكاء الاصطناعي غير طبيعية، انقر لعرض التفاصيل",
+    "pt-PT": "O serviço de IA está anormal, clique para ver os detalhes",
+    "ru-RU": "Служба AI работает ненормально, нажмите, чтобы просмотреть подробности",
+    "ja-JP": "AI サービスが異常です。クリックして詳細を表示します",
+    "de-DE": "Der AI-Dienst ist abnormal. Klicken Sie hier, um Details anzuzeigen",
+    "fr-FR": "Le service AI est anormal, cliquez pour afficher les détails",
+    "ko-KR": "AI 서비스가 비정상입니다. 자세한 내용을 보려면 클릭하세요.",
+    "$files": ["src/renderer/components/common/Footer.tsx(3307-3324)"],
+    "$id": 11300
+  },
   "本地": {
     "en-US": "Local",
     "es-ES": "Local",
@@ -148,7 +174,7 @@
     "de-DE": "Lokal",
     "fr-FR": "Local",
     "ko-KR": "로컬",
-    "$files": ["src/renderer/components/common/Footer.tsx(9511-9517)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(10309-10315)"],
     "$id": 3893
   },
   "云端": {
@@ -161,7 +187,7 @@
     "de-DE": "Cloud",
     "fr-FR": "Cloud",
     "ko-KR": "클라우드",
-    "$files": ["src/renderer/components/common/Footer.tsx(9521-9527)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(10319-10325)"],
     "$id": 3894
   },
   "兼容模式": {
@@ -175,8 +201,8 @@
     "fr-FR": "Mode de compatibilité",
     "ko-KR": "호환성 모드",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(9572-9580)",
-      "src/renderer/components/common/Footer.tsx(9627-9635)"
+      "src/renderer/components/common/Footer.tsx(10370-10378)",
+      "src/renderer/components/common/Footer.tsx(10425-10433)"
     ],
     "$id": 4655
   },
@@ -191,7 +217,7 @@
     "fr-FR": "Image",
     "ko-KR": "그림",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(10659-10665)",
+      "src/renderer/components/common/Footer.tsx(11457-11463)",
       "src/renderer/components/common/SupportedFormats.tsx(707-713)"
     ],
     "$id": 4290
@@ -207,7 +233,7 @@
     "fr-FR": "Audio",
     "ko-KR": "오디오",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(10726-10732)",
+      "src/renderer/components/common/Footer.tsx(11524-11530)",
       "src/renderer/components/common/SupportedFormats.tsx(839-845)"
     ],
     "$id": 4291
@@ -223,7 +249,7 @@
     "fr-FR": "Vidéo",
     "ko-KR": "동영상",
     "$files": [
-      "src/renderer/components/common/Footer.tsx(10793-10799)",
+      "src/renderer/components/common/Footer.tsx(11591-11597)",
       "src/renderer/components/common/SupportedFormats.tsx(979-985)"
     ],
     "$id": 4292
@@ -238,7 +264,7 @@
     "de-DE": "Unterstützung",
     "fr-FR": "Soutien",
     "ko-KR": "지원하다",
-    "$files": ["src/renderer/components/common/Footer.tsx(10866-10872)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(11664-11670)"],
     "$id": 4293
   },
   "AI 服务未就绪": {
@@ -251,7 +277,7 @@
     "de-DE": "KI-Dienst ist nicht bereit",
     "fr-FR": "Le service AI n'est pas prêt",
     "ko-KR": "AI 서비스가 준비되지 않았습니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(11018-11030)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(11816-11828)"],
     "$id": 3895
   },
   "正在配置 AI 服务...": {
@@ -264,7 +290,7 @@
     "de-DE": "KI-Dienst wird konfiguriert...",
     "fr-FR": "Configuration du service AI en cours...",
     "ko-KR": "AI 서비스를 구성하는 중입니다...",
-    "$files": ["src/renderer/components/common/Footer.tsx(11191-11208)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(11989-12006)"],
     "$id": 3896
   },
   "正在初始化 AI 引擎...": {
@@ -277,7 +303,7 @@
     "de-DE": "KI-Engine wird initialisiert...",
     "fr-FR": "Initialisation du moteur AI en cours...",
     "ko-KR": "AI 엔진을 초기화하는 중입니다...",
-    "$files": ["src/renderer/components/common/Footer.tsx(11391-11409)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(12189-12207)"],
     "$id": 3897
   },
   "正在重启 AI 服务...": {
@@ -290,7 +316,7 @@
     "de-DE": "KI-Dienst wird neu gestartet...",
     "fr-FR": "Redémarrage du service AI en cours...",
     "ko-KR": "AI 서비스를 재시작하는 중입니다...",
-    "$files": ["src/renderer/components/common/Footer.tsx(11586-11603)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(12384-12401)"],
     "$id": 3898
   },
   "AI 服务已停止": {
@@ -303,7 +329,7 @@
     "de-DE": "KI-Dienst wurde gestoppt",
     "fr-FR": "Le service AI est arrêté",
     "ko-KR": "AI 서비스가 중지되었습니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(11786-11798)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(12584-12596)"],
     "$id": 3899
   },
   "{modelInfo} 模型已就绪，等待加载": {
@@ -316,7 +342,7 @@
     "de-DE": "{modelInfo} Modell ist bereit, auf das Laden warten",
     "fr-FR": "Le modèle {modelInfo} est prêt, en attente de chargement",
     "ko-KR": "{modelInfo} 모델이 준비되었으며 로딩을 대기 중입니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(11994-12020)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(12792-12818)"],
     "$id": 3900
   },
   "{modelInfo} 配置已加载，等待连接": {
@@ -329,7 +355,7 @@
     "de-DE": "{modelInfo} Konfiguration ist geladen, auf die Verbindung warten",
     "fr-FR": "La configuration de {modelInfo} est chargée, en attente de connexion",
     "ko-KR": "{modelInfo} 구성이 로드되었으며 연결 대기 중입니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(12053-12079)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(12851-12877)"],
     "$id": 3901
   },
   "{modelInfo} 模型资源加载中...": {
@@ -342,7 +368,7 @@
     "de-DE": "{modelInfo} Modellressourcen werden geladen...",
     "fr-FR": "Chargement des ressources du modèle {modelInfo} en cours...",
     "ko-KR": "{modelInfo} 모델 리소스를 로딩하는 중입니다...",
-    "$files": ["src/renderer/components/common/Footer.tsx(12249-12275)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(13047-13073)"],
     "$id": 3902
   },
   "{modelInfo} 正在测试服务连接...": {
@@ -355,7 +381,7 @@
     "de-DE": "{modelInfo} testet Dienstverbindung...\r",
     "fr-FR": "{modelInfo} Test de la connexion au service en cours...\r",
     "ko-KR": "{modelInfo} 서비스 연결 테스트 중...\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(12477-12504)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(13275-13302)"],
     "$id": 3903
   },
   "{modelInfo} AI 服务就绪": {
@@ -368,7 +394,7 @@
     "de-DE": "{modelInfo} KI-Dienst bereit\r",
     "fr-FR": "{modelInfo} Service AI prêt\r",
     "ko-KR": "{modelInfo} AI 서비스 준비 완료\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(12700-12723)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(13498-13521)"],
     "$id": 3904
   },
   "{modelInfo} AI 分析进行中...": {
@@ -381,7 +407,7 @@
     "de-DE": "{modelInfo} KI-Analyse läuft...\r",
     "fr-FR": "{modelInfo} Analyse IA en cours...\r",
     "ko-KR": "{modelInfo} AI 분석 진행 중...\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(12889-12916)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(13687-13714)"],
     "$id": 3905
   },
   "{modelInfo} 服务异常: {error}": {
@@ -394,7 +420,7 @@
     "de-DE": "{modelInfo} Dienstfehler: {error}\r",
     "fr-FR": "{modelInfo} Anomalie de service : {error}\r",
     "ko-KR": "{modelInfo} 서비스 이상: {error}\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(13115-13144)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(13913-13942)"],
     "$id": 3906
   },
   "未知错误": {
@@ -407,7 +433,7 @@
     "de-DE": "Unbekannter Fehler\r",
     "fr-FR": "Erreur inconnue\r",
     "ko-KR": "알 수 없는 오류\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(13203-13211)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(14001-14009)"],
     "$id": 3907
   },
   "状态未知": {
@@ -420,8 +446,34 @@
     "de-DE": "Status unbekannt\r",
     "fr-FR": "Statut inconnu\r",
     "ko-KR": "상태 알 수 없음\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(13350-13358)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(14148-14156)"],
     "$id": 3908
+  },
+  "AI服务出现异常，点击查看详情与修复方案": {
+    "en-US": "An abnormality occurs in the AI ​​service. Click to view details and repair plan.",
+    "es-ES": "Se produce una anomalía en el servicio de IA. Haga clic para ver los detalles y el plan de reparación.",
+    "ar-EG": "حدث خلل في خدمة الذكاء الاصطناعي. انقر لعرض التفاصيل وخطة الإصلاح.",
+    "pt-PT": "Ocorre uma anormalidade no serviço de IA. Clique para ver detalhes e plano de reparo.",
+    "ru-RU": "В службе AI произошла аномалия. Нажмите, чтобы просмотреть подробную информацию и план ремонта.",
+    "ja-JP": "AIサービスに異常が発生しました。クリックすると詳細と修理計画が表示されます。",
+    "de-DE": "Im KI-Dienst ist eine Anomalie aufgetreten. Klicken Sie hier, um Details und Reparaturplan anzuzeigen.",
+    "fr-FR": "Une anomalie se produit dans le service AI. Cliquez pour afficher les détails et le plan de réparation.",
+    "ko-KR": "AI 서비스에 이상이 발생합니다. 자세한 내용과 수리 계획을 보려면 클릭하세요.",
+    "$files": ["src/renderer/components/common/Footer.tsx(16801-16825)"],
+    "$id": 11301
+  },
+  "点击查看AI服务错误详情": {
+    "en-US": "Click to view AI service error details",
+    "es-ES": "Haga clic para ver los detalles del error del servicio de IA",
+    "ar-EG": "انقر لعرض تفاصيل خطأ خدمة AI",
+    "pt-PT": "Clique para ver detalhes do erro do serviço de IA",
+    "ru-RU": "Нажмите, чтобы просмотреть сведения об ошибке службы AI.",
+    "ja-JP": "クリックして AI サービスのエラーの詳細を表示します",
+    "de-DE": "Klicken Sie hier, um Details zu AI-Dienstfehlern anzuzeigen",
+    "fr-FR": "Cliquez pour afficher les détails de l'erreur du service AI",
+    "ko-KR": "AI 서비스 오류 세부정보를 보려면 클릭하세요.",
+    "$files": ["src/renderer/components/common/Footer.tsx(17211-17227)"],
+    "$id": 11302
   },
   "检测到您有高性能显卡，请切换更聪明的AI模型，立即设置": {
     "en-US": "Detected that you have a high-performance graphics card, please switch to a smarter AI model and set it up now",
@@ -433,7 +485,7 @@
     "de-DE": "Es wurde festgestellt, dass Sie über eine leistungsstarke Grafikkarte verfügen. Wechseln Sie bitte zu einem intelligenteren KI-Modell und richten Sie es jetzt ein",
     "fr-FR": "Vous avez détecté que vous disposez d'une carte graphique hautes performances, veuillez passer à un modèle d'IA plus intelligent et le configurer maintenant",
     "ko-KR": "고성능 그래픽 카드가 있는 것으로 감지되었습니다. 지금 더 스마트한 AI 모델로 전환하여 설정하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(16085-16116)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(17954-17985)"],
     "$id": 4525
   },
   "点击前往引擎管理设置最佳可用加速引擎": {
@@ -446,7 +498,7 @@
     "de-DE": "Klicken Sie hier, um zur Motorverwaltung zu gelangen und den besten verfügbaren Beschleunigungsmotor einzustellen",
     "fr-FR": "Cliquez pour accéder à la gestion du moteur pour définir le meilleur moteur d'accélération disponible",
     "ko-KR": "사용 가능한 최상의 가속 엔진을 설정하려면 클릭하여 엔진 관리로 이동하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(16434-16456)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(18309-18331)"],
     "$id": 8285
   },
   "警告：{current}非最佳可用引擎，请点击切换{best}！": {
@@ -459,7 +511,7 @@
     "de-DE": "Warnung: {current} ist nicht der beste verfügbare Motor, klicken Sie zum Wechseln zu {best}!",
     "fr-FR": "Avertissement : {current} n'est pas le moteur optimal disponible, veuillez cliquer pour basculer vers {best} !",
     "ko-KR": "경고: {current}는 사용 가능한 최고의 엔진이 아닙니다. {best}를 전환하려면 클릭하세요!",
-    "$files": ["src/renderer/components/common/Footer.tsx(16500-16536)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(18375-18411)"],
     "$id": 8147
   },
   "萤核智能文件夹 - 更新日志": {
@@ -472,7 +524,7 @@
     "de-DE": "Firefly AI Folder - Änderungsprotokoll",
     "fr-FR": "Firefly AI Folder - Notes de mise à jour",
     "ko-KR": "형광석 스마트 폴더 - 업데이트 로그",
-    "$files": ["src/renderer/components/common/Footer.tsx(17126-17144)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(19001-19019)"],
     "$id": 3278
   },
   "最新版本: v{version}": {
@@ -485,7 +537,7 @@
     "de-DE": "Neueste Version: v{version}",
     "fr-FR": "Dernière version : v{version}",
     "ko-KR": "최신 버전: v{version}",
-    "$files": ["src/renderer/components/common/Footer.tsx(17326-17346)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(19201-19221)"],
     "$id": 3279
   },
   "稍后再说": {
@@ -498,7 +550,7 @@
     "de-DE": "Später",
     "fr-FR": "Plus tard",
     "ko-KR": "나중에 하기",
-    "$files": ["src/renderer/components/common/Footer.tsx(18067-18075)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(19942-19950)"],
     "$id": 3280
   },
   "无法打开下载页面": {
@@ -511,7 +563,7 @@
     "de-DE": "Download-Seite kann nicht geöffnet werden",
     "fr-FR": "Impossible d'ouvrir la page de téléchargement",
     "ko-KR": "다운로드 페이지를 열 수 없습니다",
-    "$files": ["src/renderer/components/common/Footer.tsx(18320-18332)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(20195-20207)"],
     "$id": 4526
   },
   "去官网下载新版": {
@@ -524,7 +576,7 @@
     "de-DE": "Neue Version von der offiziellen Website herunterladen",
     "fr-FR": "Télécharger la nouvelle version sur le site officiel",
     "ko-KR": "공식 홈페이지에서 새 버전 다운로드",
-    "$files": ["src/renderer/components/common/Footer.tsx(18513-18524)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(20388-20399)"],
     "$id": 3283
   },
   "查看分析队列 - 当前: {ws}{name}": {
@@ -537,7 +589,7 @@
     "de-DE": "Analysewarteschlange anzeigen – Aktuell: {ws}{name}",
     "fr-FR": "Afficher la file d'attente d'analyse - Actuel : {ws}{name}",
     "ko-KR": "분석 대기열 보기 - 현재: {ws}{name}",
-    "$files": ["src/renderer/components/common/Footer.tsx(19069-19096)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(20944-20971)"],
     "$id": 7806
   },
   "查看分析队列 - {count} 个文件等待中": {
@@ -550,7 +602,7 @@
     "de-DE": "Analysewarteschlange anzeigen - {count} Dateien warten\r",
     "fr-FR": "Voir la file d'analyse - {count} fichiers en attente\r",
     "ko-KR": "분석 대기열 보기 - {count}개 파일 대기 중\r",
-    "$files": ["src/renderer/components/common/Footer.tsx(19265-19292)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(21140-21167)"],
     "$id": 3910
   },
   "空闲": {
@@ -563,7 +615,7 @@
     "de-DE": "Leerlauf",
     "fr-FR": "Inactif",
     "ko-KR": "게으른",
-    "$files": ["src/renderer/components/common/Footer.tsx(22564-22570)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(24439-24445)"],
     "$id": 3912
   },
   "等待: {count}": {
@@ -576,7 +628,7 @@
     "de-DE": "Warten: {count}",
     "fr-FR": "En attente : {count}",
     "ko-KR": "기다리다: {count}",
-    "$files": ["src/renderer/components/common/Footer.tsx(22739-22754)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(24614-24629)"],
     "$id": 3913
   },
   "点击打开分析设置": {
@@ -589,7 +641,7 @@
     "de-DE": "Klicken Sie hier, um die Analyseeinstellungen zu öffnen",
     "fr-FR": "Cliquez pour ouvrir les paramètres d'analyse",
     "ko-KR": "분석 설정을 열려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(23122-23134)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(24997-25009)"],
     "$id": 10195
   },
   "简单分类": {
@@ -602,7 +654,7 @@
     "de-DE": "Einfache Klassifizierung",
     "fr-FR": "Classement simple",
     "ko-KR": "단순 분류",
-    "$files": ["src/renderer/components/common/Footer.tsx(23574-23582)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(25449-25457)"],
     "$id": 8279
   },
   "快速命名": {
@@ -615,7 +667,7 @@
     "de-DE": "Schnelle Benennung",
     "fr-FR": "Dénomination rapide",
     "ko-KR": "빠른 이름 지정",
-    "$files": ["src/renderer/components/common/Footer.tsx(23656-23664)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(25531-25539)"],
     "$id": 9423
   },
   "全面分析": {
@@ -628,7 +680,7 @@
     "de-DE": "Umfassende Analyse",
     "fr-FR": "Analyse complète",
     "ko-KR": "종합적인 분석",
-    "$files": ["src/renderer/components/common/Footer.tsx(23684-23692)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(25559-25567)"],
     "$id": 9424
   },
   "点击打开AI引擎配置": {
@@ -641,7 +693,7 @@
     "de-DE": "Klicken Sie hier, um die KI-Engine-Konfiguration zu öffnen",
     "fr-FR": "Cliquez pour ouvrir la configuration du moteur AI",
     "ko-KR": "AI 엔진 구성을 열려면 클릭하세요.",
-    "$files": ["src/renderer/components/common/Footer.tsx(24028-24042)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(25903-25917)"],
     "$id": 7683
   },
   "思考": {
@@ -654,7 +706,7 @@
     "de-DE": "Denken",
     "fr-FR": "Pense",
     "ko-KR": "생각하다",
-    "$files": ["src/renderer/components/common/Footer.tsx(24095-24101)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(25970-25976)"],
     "$id": 7747
   },
   "发现新版本 v{version}": {
@@ -667,7 +719,7 @@
     "de-DE": "Neue Version v{version} entdeckt",
     "fr-FR": "Nouvelle version détectée v{version}",
     "ko-KR": "새 버전 감지 v{version}",
-    "$files": ["src/renderer/components/common/Footer.tsx(25241-25261)"],
+    "$files": ["src/renderer/components/common/Footer.tsx(27116-27136)"],
     "$id": 3263
   },
   "最小化窗口": {

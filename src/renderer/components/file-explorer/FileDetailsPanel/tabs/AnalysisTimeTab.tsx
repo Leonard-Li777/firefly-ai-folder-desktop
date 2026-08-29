@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { AnalysisStats, MarkitdownBenchmark } from '@firefly/types'
+import { AnalysisStats, MarkitdownBenchmark, Stage1Benchmark } from '@firefly/types'
 import { cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
 
@@ -10,20 +10,31 @@ const CONTENT_EXTRACTION_KEYS = [
   'textAndThumbnailExtractionSimple'
 ]
 
-/** 获取 MarkitdownServer 细分指标展示列表（动态调用 t() 确保多语言即时响应） */
+/** 获取阶段 1 细分指标展示列表 */
+function getStage1BenchmarkItems(): Array<{
+  key: keyof Stage1Benchmark
+  label: string
+  color: string
+}> {
+  return [
+    { key: 'fingerprintMs', label: t('文件指纹'), color: '#818cf8' }, // 靛蓝
+    { key: 'localReuseMs', label: t('本地复用'), color: '#38bdf8' }, // 天蓝
+    { key: 'cloudReuseMs', label: t('云端复用'), color: '#06b6d4' } // 青蓝
+  ]
+}
+
+/** 获取阶段 2 内容提取细分指标展示列表（动态调用 t() 确保多语言即时响应） */
 function getBenchmarkItems(): Array<{
   key: keyof MarkitdownBenchmark
   label: string
   color: string
 }> {
   return [
-    { key: 'magikaMs', label: t('类型识别'), color: '#06b6d4' }, // 青蓝
-    { key: 'metadataMs', label: t('元数据'), color: '#ec4899' }, // 玫红
-    { key: 'textMs', label: t('文本'), color: '#a855f7' }, // 炫紫
-    { key: 'documentMs', label: t('正文'), color: '#38bdf8' }, // 冰蓝
-    { key: 'ocrMs', label: t('OCR'), color: '#e11d48' }, // 艳红/朱红
-    { key: 'htmlMs', label: t('HTML'), color: '#84cc16' }, // 嫩绿
-    { key: 'thumbnailMs', label: t('缩略图'), color: '#d946ef' } // 品红
+    { key: 'magikaMs', label: t('类型识别'), color: '#10b981' }, // 翡翠绿 (Magika 模型)
+    { key: 'textMs', label: t('文本'), color: '#a855f7' }, // 炫紫 (原生/anydoc 文本层)
+    { key: 'ocrMs', label: t('OCR'), color: '#e11d48' }, // 艳红 (单图/分页 OCR 合计)
+    { key: 'metadataMs', label: t('元数据'), color: '#ec4899' }, // 玫红 (Exif/Lofty)
+    { key: 'thumbnailMs', label: t('封面图'), color: '#f59e0b' } // 琥珀橙 (封面/缩略图/LO 预转)
   ]
 }
 
@@ -45,7 +56,7 @@ function getPhaseLabel(key: string): string {
       return t('阶段 2: 文本与缩略图提取')
     case '哈希与类型识别':
     case 'hashAndTypeIdentification':
-      return t('阶段 1: 文件指纹与类型')
+      return t('阶段 1: 文件指纹与复用判定')
     default:
       return key
   }
@@ -55,6 +66,7 @@ interface AnalysisTimeTabProps {
   stats: {
     durationMs: number
     phases: Record<string, number>
+    stage1Breakdown?: Stage1Benchmark
     contentExtractionBreakdown?: MarkitdownBenchmark
     model?: { name?: string }
   }
@@ -74,7 +86,7 @@ function formatSeconds(ms: number): string {
 }
 
 /**
- * 分析耗时 Tab：展示分析时间、各分析阶段耗时，并对内容提取（MarkitdownServer）进行细分
+ * 分析耗时 Tab：展示分析时间、各分析阶段耗时，并对阶段 1 与阶段 2 进行细分子指标呈现
  */
 export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   stats: rawStats,
@@ -89,6 +101,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
     accelerator: (stats as any).accelerator || 'cpu',
     durationMs: stats.durationMs || 0,
     phases: stats.phases || {},
+    stage1Breakdown: stats.stage1Breakdown,
     contentExtractionBreakdown: stats.contentExtractionBreakdown,
     model: stats.model
   }
@@ -98,57 +111,123 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   const accelerator = (fresh.accelerator || 'cpu').toLowerCase()
   const isAsyncPipeline = accelerator !== 'cpu'
 
-  // fresh/archive 各自只读取自身携带的细分数据（fresh 为本次实际执行指标，archive 为历史累计指标）
-  // 不再回退到顶层兼容字段，避免复用跳过 CPU 时将历史细分指标混入本次耗时
-  const freshBreakdown = fresh.contentExtractionBreakdown
-  const archiveBreakdown = archive.contentExtractionBreakdown
+  // 细分数据解析：严格隔离 fresh 与 archive，严禁将 archive 的历史指标借给 fresh
+  const freshStage1Breakdown =
+    fresh.stage1Breakdown ||
+    stats.performance?.fresh?.stage1Breakdown ||
+    (stats.performance ? undefined : stats.stage1Breakdown)
+  const archiveStage1Breakdown =
+    archive.stage1Breakdown ||
+    stats.performance?.archive?.stage1Breakdown ||
+    stats.stage1Breakdown ||
+    stats.performance?.fresh?.stage1Breakdown
 
-  // 计算 phases 阶段之和
-  const getPhaseSum = (phases: Record<string, number>) =>
-    Object.values(phases).reduce((a, b) => a + (Number(b) || 0), 0)
+  const freshBreakdown =
+    fresh.contentExtractionBreakdown ||
+    stats.performance?.fresh?.contentExtractionBreakdown ||
+    (stats.performance ? undefined : stats.contentExtractionBreakdown)
+  const archiveBreakdown =
+    archive.contentExtractionBreakdown ||
+    stats.performance?.archive?.contentExtractionBreakdown ||
+    stats.contentExtractionBreakdown ||
+    stats.performance?.fresh?.contentExtractionBreakdown
+
+  // 计算 phases 阶段之和 (各阶段 1/2/3/4 的实际耗时求和，阶段 2 取并行最大耗时)
+  const getPhaseSum = (
+    phases: Record<string, number>,
+    p2Max?: number,
+    p1Max?: number
+  ) => {
+    let sum = 0
+    let hasStage2 = false
+    let hasStage1 = false
+
+    for (const [k, v] of Object.entries(phases)) {
+      if (CONTENT_EXTRACTION_KEYS.includes(k)) {
+        if (!hasStage2) {
+          sum += (p2Max !== undefined && p2Max > 0) ? p2Max : (Number(v) || 0)
+          hasStage2 = true
+        }
+      } else if (k === 'hashAndTypeIdentification' || k === '哈希与类型识别') {
+        if (!hasStage1) {
+          sum += (p1Max !== undefined && p1Max > 0) ? p1Max : (Number(v) || 0)
+          hasStage1 = true
+        }
+      } else if (k === 'qualityScoring' || k.includes('质量') || k === 'dimensionAnalysis' || k.includes('维度')) {
+        sum += Number(v) || 0
+      } else {
+        // 其他独立阶段
+        sum += Number(v) || 0
+      }
+    }
+    return sum
+  }
+
+  // 阶段 1 细分条目获取 (仅保留耗时 > 0 的有效条目)
+  const getStage1BreakdownItems = (breakdown?: Stage1Benchmark) => {
+    if (!breakdown) return []
+    return getStage1BenchmarkItems()
+      .map(item => ({
+        key: item.key,
+        label: item.label,
+        duration: Number(breakdown?.[item.key]) || 0,
+        color: item.color,
+        stage: 'stage1' as const
+      }))
+      .filter(item => breakdown?.[item.key] !== undefined && breakdown?.[item.key] !== null && item.duration > 0)
+  }
+
+  // 阶段 2 内容提取细分条目获取 (合并 Office pre-pdf 耗时至封面图，并仅保留耗时 > 0 的有效条目)
+  const getBreakdownItems = (breakdown?: MarkitdownBenchmark) => {
+    if (!breakdown) return []
+    return getBenchmarkItems()
+      .map(item => {
+        let mergedDuration = Number(breakdown?.[item.key]) || 0
+        if (item.key === 'thumbnailMs' && breakdown?.officePrePdfMs) {
+          mergedDuration += Number(breakdown.officePrePdfMs) || 0
+        }
+        return {
+          key: item.key,
+          label: item.label,
+          duration: mergedDuration,
+          color: item.color,
+          stage: 'stage2' as const
+        }
+      })
+      .filter(item => breakdown?.[item.key] !== undefined && breakdown?.[item.key] !== null && item.duration > 0)
+  }
+
+  const freshStage1Items = getStage1BreakdownItems(freshStage1Breakdown)
+  const archiveStage1Items = getStage1BreakdownItems(archiveStage1Breakdown)
+  const freshBreakdownItems = getBreakdownItems(freshBreakdown)
+  const archiveBreakdownItems = getBreakdownItems(archiveBreakdown)
 
   // 1. 本次物理耗时 (Fresh): 还原为测量的真实物理挂钟耗时 durationMs
   const freshPhaseEntries = Object.entries(fresh.phases || {})
-  const freshPhasesSum = getPhaseSum(fresh.phases || {})
+  const freshP1Max = freshStage1Breakdown?.totalMs || freshStage1Items.reduce((acc, it) => acc + (it.duration || 0), 0)
+  const freshP2Max = freshBreakdown?.totalMs || (freshBreakdownItems.length > 0 ? Math.max(...freshBreakdownItems.map(it => it.duration || 0), 0) : undefined)
+  const freshPhasesSum = getPhaseSum(fresh.phases || {}, freshP2Max, freshP1Max)
   const freshTotalMs = fresh.durationMs || stats.durationMs || freshPhasesSum
 
   // 2. 历史全量累计耗时 (Archive): 汇总全量阶段累计耗时
   const archivePhaseEntries = Object.entries(archive.phases || {})
-  const archivePhasesSum = getPhaseSum(archive.phases || {})
+  const archiveP1Max = archiveStage1Breakdown?.totalMs || archiveStage1Items.reduce((acc, it) => acc + (it.duration || 0), 0)
+  const archiveP2Max = archiveBreakdown?.totalMs || (archiveBreakdownItems.length > 0 ? Math.max(...archiveBreakdownItems.map(it => it.duration || 0), 0) : undefined)
+  const archivePhasesSum = getPhaseSum(archive.phases || {}, archiveP2Max, archiveP1Max)
   const archiveTotalMs =
     archive.durationMs && archive.durationMs >= archivePhasesSum
       ? archive.durationMs
       : archivePhasesSum
 
-  // 内容提取阶段细分条目获取
-  const getBreakdownItems = (breakdown?: MarkitdownBenchmark) => {
-    if (!breakdown) return []
-    return getBenchmarkItems()
-      .map(item => {
-        const mergedDuration =
-          item.key === 'ocrMs'
-            ? (Number(breakdown?.[item.key]) || 0) + (Number(breakdown?.officePrePdfMs) || 0)
-            : Number(breakdown?.[item.key]) || 0
-        return {
-          key: item.key,
-          label: item.label,
-          duration: mergedDuration,
-          color: item.color
-        }
-      })
-      .filter(item => breakdown?.[item.key] !== undefined && breakdown?.[item.key] !== null)
-  }
-
-  const freshBreakdownItems = getBreakdownItems(freshBreakdown)
-  const archiveBreakdownItems = getBreakdownItems(archiveBreakdown)
-
   // 专业高对比度调色板 (色彩全波段强区隔)
   const AI_PALETTE = ['#10b981', '#3b82f6', '#8b5cf6'] // Stage 3: 翡翠绿 (#10b981) / Stage 4: 皇家蓝 (#3b82f6)
   const CONTENT_COLOR = '#f59e0b' // 阶段 2 内容提取: 暖琥珀橙 (#f59e0b)
+  
   // 辅助函数：将 phases 记录转化为符合 Specification 的饼图/同轴轨道
   const buildTracksFromPhases = (
     phaseEntries: Array<[string, number]>,
     totalMs: number,
+    stage1Items: typeof freshStage1Items,
     breakdownItems: typeof freshBreakdownItems,
     labelPrefix: string,
     currentAccelerator: string
@@ -156,16 +235,23 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
     const isCpuMode = currentAccelerator.toLowerCase() === 'cpu'
 
     // 1. 拆解阶段数据
-    // 阶段 1: 指纹识别
+    // 阶段 1: 文件指纹与复用判定
     const p1Duration =
       phaseEntries.find(
         ([k]) => k === 'hashAndTypeIdentification' || k === '哈希与类型识别'
-      )?.[1] || 0
-    // 阶段 2: 内容提取
+      )?.[1] ??
+      (stage1Items.length > 0
+        ? stage1Items.reduce((acc, it) => acc + (it.duration || 0), 0)
+        : 0)
+    // 阶段 2: 内容提取 (严格取并行最大值，若有细分指标优先使用细分指标最大耗时)
+    const p2BreakdownMax =
+      breakdownItems.length > 0
+        ? Math.max(...breakdownItems.map(it => it.duration || 0), 0)
+        : undefined
     const p2Duration =
-      freshBreakdown?.totalMs ||
-      phaseEntries.find(([k]) => CONTENT_EXTRACTION_KEYS.includes(k))?.[1] ||
-      0
+      p2BreakdownMax !== undefined && p2BreakdownMax > 0
+        ? p2BreakdownMax
+        : (phaseEntries.find(([k]) => CONTENT_EXTRACTION_KEYS.includes(k))?.[1] ?? 0)
     // 阶段 3: AI 质量
     const p3Duration =
       phaseEntries.find(([k]) => k === 'qualityScoring' || k.includes('质量'))?.[1] || 0
@@ -193,15 +279,12 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
       }>
     }> = []
 
-    // 记录 Stage 2 的真实起始角度 startAngle 与占用的轨半径, 供第3、4、5... 轨细分指标定位
+    let stage1StartAngle = 0
+    let stage1SpanAngle = 0
     let stage2StartAngle = 0
     let stage2SpanAngle = 0
 
     if (isCpuMode) {
-      // ============================================================
-      // 分支 1：SELECTED_ACCELERATION === 'cpu' (同步模式)
-      // 饼图最内圈整圆 (R=18) 由四个阶段的各耗时部分组成 (1 -> 2 -> 3 -> 4)
-      // ============================================================
       const allPhases = [
         {
           key: 'hashAndTypeIdentification',
@@ -227,7 +310,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           duration: p4Duration,
           color: AI_PALETTE[1]
         }
-      ].filter(p => p.duration > 0)
+      ].filter(p => p.duration > 0 || (p.key === 'hashAndTypeIdentification' && stage1Items.length > 0))
 
       const sumAll = allPhases.reduce((s, p) => s + p.duration, 0)
       if (sumAll > 0) {
@@ -238,7 +321,10 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           acc += p.duration / sumAll
           const endAngle = acc * 360
 
-          if (p.key === 'contentExtraction') {
+          if (p.key === 'hashAndTypeIdentification') {
+            stage1StartAngle = startAngle
+            stage1SpanAngle = span
+          } else if (p.key === 'contentExtraction') {
             stage2StartAngle = startAngle
             stage2SpanAngle = span
           }
@@ -264,11 +350,6 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         })
       }
     } else {
-      // ============================================================
-      // 分支 2：SELECTED_ACCELERATION !== 'cpu' (GPU/并发模式)
-      // 最内圈整圆 (R=18 轨道1) = (阶段1+2) > (阶段3+4) ? (阶段1+2) : (阶段3+4)
-      // 第2轨道 (R=27) 为较小一方：也同时包含两个阶段
-      // ============================================================
       const simpleItems = [
         {
           key: 'hashAndTypeIdentification',
@@ -302,7 +383,6 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
       const isSimpleLonger = groupSimpleTotal >= groupAiTotal
       const longerGroupTotal = Math.max(groupSimpleTotal, groupAiTotal, 1)
 
-      // --- 第 1 轨道 (R=18 满圆 360°): 较大一方 ---
       const track1Items = isSimpleLonger ? simpleItems : aiItems
       const track1GroupTotal = isSimpleLonger ? groupSimpleTotal : groupAiTotal
 
@@ -314,7 +394,10 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           acc1 += p.duration / track1GroupTotal
           const endAngle = acc1 * 360
 
-          if (p.key === 'contentExtraction') {
+          if (p.key === 'hashAndTypeIdentification') {
+            stage1StartAngle = startAngle
+            stage1SpanAngle = span
+          } else if (p.key === 'contentExtraction') {
             stage2StartAngle = startAngle
             stage2SpanAngle = span
           }
@@ -340,7 +423,6 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         })
       }
 
-      // --- 第 2 轨道 (R=27 弧形): 较小一方 ---
       const track2Items = isSimpleLonger ? aiItems : simpleItems
       const track2GroupTotal = isSimpleLonger ? groupAiTotal : groupSimpleTotal
 
@@ -353,7 +435,10 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           acc2 += p.duration / track2GroupTotal
           const endAngle = acc2 * track2MaxAngle
 
-          if (p.key === 'contentExtraction') {
+          if (p.key === 'hashAndTypeIdentification') {
+            stage1StartAngle = startAngle
+            stage1SpanAngle = span
+          } else if (p.key === 'contentExtraction') {
             stage2StartAngle = startAngle
             stage2SpanAngle = span
           }
@@ -383,24 +468,24 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
       }
     }
 
-    // ============================================================
-    // 第 3、4、5... 轨道：显示 stage2 的细分指标耗时
-    // 每个指标一个轨道，起点为 stage2 的起点 (stage2StartAngle)
-    // ============================================================
-    if (breakdownItems.length > 0 && p2Duration > 0) {
-      breakdownItems.forEach((item, idx) => {
-        // 允许细分指标耗时超过内容提取 p2Duration 时显示实际延伸长度
-        const itemRatio = item.duration / p2Duration
-        const itemSpanAngle = Math.min(Math.max(itemRatio * stage2SpanAngle, 2), 360)
-        const startAngle = stage2StartAngle
+    // 阶段 1 细分指标轨道 (同轴弧线，严格对准阶段 1 在主轨道的起始角度与真实跨度)
+    let currentBreakdownRadius = 30
+    if (stage1Items.length > 0) {
+      const effectiveP1 = p1Duration > 0 ? p1Duration : 1
+      const baseSpan1 = stage1SpanAngle > 0 ? stage1SpanAngle : 360
+      stage1Items.forEach(item => {
+        if (item.duration <= 0) return
+        const itemRatio = Math.min(Math.max(item.duration / effectiveP1, 0), 1)
+        const itemSpanAngle = Math.max(itemRatio * baseSpan1, 2)
+        const startAngle = stage1StartAngle
         const endAngle = startAngle + itemSpanAngle
 
         tracksList.push({
-          key: `${labelPrefix}_breakdown_${item.key}`,
+          key: `${labelPrefix}_stage1_${item.key}`,
           label: item.label,
           duration: item.duration,
           pct: totalMs > 0 ? (item.duration / totalMs) * 100 : itemRatio * 100,
-          radius: 34 + idx * 5,
+          radius: currentBreakdownRadius,
           strokeWidth: 3,
           slices: [
             {
@@ -413,38 +498,75 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
             }
           ]
         })
+        currentBreakdownRadius += 4
+      })
+    }
+
+    // 阶段 2 细分指标轨道 (同轴弧线，严格对准阶段 2 在主轨道的起始角度与真实跨度，与阶段 2 长度完全等长)
+    if (breakdownItems.length > 0) {
+      const effectiveP2 = p2Duration > 0 ? p2Duration : 1
+      const baseSpan2 = stage2SpanAngle > 0 ? stage2SpanAngle : 360
+      breakdownItems.forEach(item => {
+        if (item.duration <= 0) return
+        const itemRatio = Math.min(Math.max(item.duration / effectiveP2, 0), 1)
+        const itemSpanAngle = Math.max(itemRatio * baseSpan2, 2)
+        const startAngle = stage2StartAngle
+        const endAngle = startAngle + itemSpanAngle
+
+        tracksList.push({
+          key: `${labelPrefix}_breakdown_${item.key}`,
+          label: item.label,
+          duration: item.duration,
+          pct: totalMs > 0 ? (item.duration / totalMs) * 100 : itemRatio * 100,
+          radius: currentBreakdownRadius,
+          strokeWidth: 3,
+          slices: [
+            {
+              key: item.key,
+              label: item.label,
+              duration: item.duration,
+              startAngle,
+              endAngle,
+              color: item.color
+            }
+          ]
+        })
+        currentBreakdownRadius += 4
       })
     }
 
     return { tracks: tracksList }
   }
 
-  // 计算 Fresh 轨道 (如实显示)
+  // 计算 Fresh 轨道
   const { tracks: freshTracks } = useMemo(
     () =>
       buildTracksFromPhases(
         freshPhaseEntries,
         freshTotalMs,
+        freshStage1Items,
         freshBreakdownItems,
         t('本次分析各阶段'),
         accelerator
       ),
-    [freshPhaseEntries, freshTotalMs, freshBreakdownItems, accelerator]
+    [freshPhaseEntries, freshTotalMs, freshStage1Items, freshBreakdownItems, accelerator]
   )
 
-  // 计算 Archive 轨道 (如实显示)
+  // 计算 Archive 轨道
   const { tracks: archiveTracks } = useMemo(
     () =>
       buildTracksFromPhases(
         archivePhaseEntries,
         archiveTotalMs,
+        archiveStage1Items,
         archiveBreakdownItems,
-        t('历史分析各阶段'),
+        t('历史全量累计'),
         accelerator
       ),
-    [archivePhaseEntries, archiveTotalMs, archiveBreakdownItems, accelerator]
+    [archivePhaseEntries, archiveTotalMs, archiveStage1Items, archiveBreakdownItems, accelerator]
   )
-  // 按照 阶段1 -> 阶段2 -> 阶段2细分 -> 阶段3 -> 阶段4 排序阶段指标列表，并标记 Stage 2 子项
+
+  // 提取阶段与细分指标并保持标准排序
   const getSortedSlices = (tracks: typeof freshTracks) => {
     const allSlices: Array<{
       key: string
@@ -453,6 +575,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
       color: string
       weight: number
       isSubItem: boolean
+      stage?: 'stage1' | 'stage2'
     }> = []
 
     const seenKeys = new Set<string>()
@@ -464,17 +587,50 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
 
         let weight = 999
         let isSubItem = false
+        let stage: 'stage1' | 'stage2' | undefined = undefined
 
         if (slice.key === 'hashAndTypeIdentification' || slice.key === '哈希与类型识别') {
           weight = 10
-        } else if (slice.key === 'contentExtraction' || slice.key === '内容与缩略图提取') {
+        } else if (slice.key === 'fingerprintMs' || slice.key === '文件指纹') {
+          weight = 11
+          isSubItem = true
+          stage = 'stage1'
+        } else if (slice.key === 'localReuseMs' || slice.key === '本地复用') {
+          weight = 12
+          isSubItem = true
+          stage = 'stage1'
+        } else if (slice.key === 'cloudReuseMs' || slice.key === '云端复用') {
+          weight = 13
+          isSubItem = true
+          stage = 'stage1'
+        } else if (CONTENT_EXTRACTION_KEYS.includes(slice.key) || slice.key === '阶段 2: 内容提取') {
           weight = 20
+        } else if (slice.key === 'magikaMs' || slice.key === '类型识别') {
+          weight = 21
+          isSubItem = true
+          stage = 'stage2'
+        } else if (slice.key === 'textMs' || slice.key === '文本') {
+          weight = 22
+          isSubItem = true
+          stage = 'stage2'
+        } else if (slice.key === 'ocrMs' || slice.key === 'OCR') {
+          weight = 23
+          isSubItem = true
+          stage = 'stage2'
+        } else if (slice.key === 'metadataMs' || slice.key === '元数据') {
+          weight = 24
+          isSubItem = true
+          stage = 'stage2'
+        } else if (slice.key === 'thumbnailMs' || slice.key === '封面图') {
+          weight = 25
+          isSubItem = true
+          stage = 'stage2'
         } else if (slice.key === 'qualityScoring' || slice.key.includes('质量')) {
           weight = 30
         } else if (slice.key === 'dimensionAnalysis' || slice.key.includes('维度')) {
           weight = 40
         } else {
-          weight = 21 + sliceIdx + trackIdx * 0.1
+          weight = 50 + sliceIdx + trackIdx * 0.1
           isSubItem = true
         }
 
@@ -484,7 +640,8 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           duration: slice.duration,
           color: slice.color,
           weight,
-          isSubItem
+          isSubItem,
+          stage
         })
       })
     })
@@ -499,10 +656,15 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
     radius: number,
     strokeWidth: number,
     color: string,
-    key: string
+    key: string,
+    label?: string,
+    durationText?: string
   ) => {
-    const pct = (endAngle - startAngle) / 360
-    if (pct >= 0.999) {
+    const sweep = endAngle - startAngle
+    const pct = sweep / 360
+    const tooltipText = label ? `${label}: ${durationText || ''}` : ''
+
+    if (pct >= 0.99 || sweep >= 359.9) {
       return (
         <circle
           key={key}
@@ -512,7 +674,10 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           fill="none"
           stroke={color}
           strokeWidth={strokeWidth}
-        />
+          className="transition-all duration-300 hover:opacity-80 cursor-pointer"
+        >
+          {tooltipText && <title>{tooltipText}</title>}
+        </circle>
       )
     }
     const startRad = ((startAngle - 90) * Math.PI) / 180
@@ -521,7 +686,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
     const y1 = 50 + radius * Math.sin(startRad)
     const x2 = 50 + radius * Math.cos(endRad)
     const y2 = 50 + radius * Math.sin(endRad)
-    const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0
+    const largeArcFlag = sweep > 180 ? 1 : 0
     const d = `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`
     return (
       <path
@@ -532,7 +697,9 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         className="transition-all duration-300 hover:opacity-80 cursor-pointer"
-      />
+      >
+        {tooltipText && <title>{tooltipText}</title>}
+      </path>
     )
   }
 
@@ -542,43 +709,51 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
 
   return (
     <div className={'text-xs space-y-3.5 @container'}>
-      {/* 1. 顶部分析时间与算力流徽章 */}
-      <div className="p-3 rounded-xl border border-border/40 bg-muted/20 flex items-center justify-between">
-        {lastAnalyzedAt && (
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-muted-foreground">{t('分析时间')}</span>
-            <span className="font-mono text-foreground font-medium">
-              {formatDate ? formatDate(lastAnalyzedAt) : lastAnalyzedAt}
+      {/* 1. 顶部分析时间/算力流徽章 与 AI 推理模型信息 组合为同一区块（上下两行） */}
+      <div className="p-3 rounded-xl border border-border/40 bg-muted/20 space-y-2">
+        {/* 第一行：分析时间 + 算力流徽章 */}
+        <div className="flex items-center justify-between gap-3">
+          {lastAnalyzedAt && (
+            <div className="flex items-center gap-2 text-xs whitespace-nowrap">
+              <span className="text-muted-foreground">{t('分析时间')}</span>
+              <span className="font-mono text-foreground font-medium">
+                {formatDate ? formatDate(lastAnalyzedAt) : lastAnalyzedAt}
+              </span>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-[11px] font-mono font-semibold text-primary shrink-0">
+            <span>{accelerator.toUpperCase()}</span>
+            {isAsyncPipeline ? (
+              <span className="flex items-center gap-1 text-emerald-500 font-sans text-[10px] font-bold">
+                <span>⚡</span>
+                <span>{t('同时')}</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-blue-500 font-sans text-[10px] font-bold">
+                <span>⚙️</span>
+                <span>{t('顺序')}</span>
+              </span>
+            )}
+          </div>
+        </div>
+        {/* 第二行：AI 推理模型信息（优先读本次 fresh.model，兼容旧数据根级 model） */}
+        {(fresh.model?.name || archive.model?.name || stats.model?.name) && (
+          <div className="flex items-center justify-between gap-2 text-xs pt-1.5 border-t border-border/40">
+            <span className="text-muted-foreground shrink-0">{t('推理模型')}</span>
+            <span className="font-mono text-primary font-medium truncate text-right max-w-[240px]">
+              {fresh.model?.name || archive.model?.name || stats.model?.name}
             </span>
           </div>
         )}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-[11px] font-mono font-semibold text-primary">
-          <span>{accelerator.toUpperCase()}</span>
-          {isAsyncPipeline ? (
-            <span className="flex items-center gap-1 text-emerald-500 font-sans text-[10px] font-bold">
-              <span>⚡</span>
-              <span>{t('同时')}</span>
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-blue-500 font-sans text-[10px] font-bold">
-              <span>⚙️</span>
-              <span>{t('顺序')}</span>
-            </span>
-          )}
-        </div>
       </div>
-
-      {/* 2. 区块一：【本次分析耗时】 */}
+      {/* 2. 区块一：【本次分析物理耗时】 */}
       <div className="rounded-xl border border-border/60 bg-muted/40 dark:bg-card/90 p-3.5 space-y-3 shadow-sm">
         <div className="text-xs font-semibold text-foreground flex items-center justify-between border-b border-border/40 pb-2">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
-            {t('本次分析耗时')}
+            {t('本次物理耗时')}
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="text-[11px] font-normal text-muted-foreground">
-              {t('本次物理耗时')}
-            </span>
             <span className="font-mono text-sm font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">
               {formatSeconds(freshTotalMs)}
             </span>
@@ -599,7 +774,9 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                       track.radius,
                       track.strokeWidth,
                       slice.color,
-                      `fresh_track_${track.key}_${slice.key}`
+                      `fresh_track_${track.key}_${slice.key}`,
+                      slice.label,
+                      formatSeconds(slice.duration)
                     )
                   )
                 )}
@@ -612,39 +789,51 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
               </div>
             </div>
 
-            {/* 精简统一图例：色彩点 指标名称 耗时s(百分比)，并按 阶段1 -> 阶段2 -> 阶段2细分 -> 阶段3 -> 阶段4 自然顺序展现 (阶段2子项层级缩进) */}
+            {/* 精简统一图例：色彩点 指标名称 耗时s(百分比)，并按 阶段1 -> 阶段1细分 -> 阶段2 -> 阶段2细分 -> 阶段3 -> 阶段4 展现 */}
             <div className="w-full flex-1 space-y-1.5">
-              {getSortedSlices(freshTracks).map(slice => (
-                <div
-                  key={`legend_fresh_${slice.key}`}
-                  className={cn(
-                    'flex items-center justify-between text-xs py-0.5 transition-all',
-                    slice.isSubItem &&
-                      'pl-4 text-[11px] opacity-90 border-l border-amber-500/30 ml-1'
-                  )}
-                >
-                  <div className="flex items-center gap-2 truncate">
-                    <span
-                      className={cn(
-                        'rounded-sm shrink-0',
-                        slice.isSubItem ? 'w-1.5 h-1.5 rounded-full' : 'w-2.5 h-2.5'
-                      )}
-                      style={{ backgroundColor: slice.color }}
-                    />
-                    <span className="text-muted-foreground truncate">
-                      {slice.isSubItem && <span className="opacity-50 mr-1 text-[10px]">└</span>}
-                      {slice.label}
+              {getSortedSlices(freshTracks).map(slice => {
+                // 阶段 2 耗时显示为并行最大耗时 (p2Duration) 而非串行累加
+                const displayDuration =
+                  slice.key === 'contentExtraction' || slice.key === 'markitdownServerExtraction'
+                    ? freshP2Max || slice.duration
+                    : slice.key === 'hashAndTypeIdentification'
+                    ? freshP1Max || slice.duration
+                    : slice.duration
+
+                return (
+                  <div
+                    key={`legend_fresh_${slice.key}`}
+                    className={cn(
+                      'flex items-center justify-between text-xs py-0.5 transition-all',
+                      slice.isSubItem &&
+                        (slice.stage === 'stage1'
+                          ? 'pl-4 text-[11px] opacity-90 border-l border-indigo-500/30 ml-1'
+                          : 'pl-4 text-[11px] opacity-90 border-l border-amber-500/30 ml-1')
+                    )}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span
+                        className={cn(
+                          'rounded-sm shrink-0',
+                          slice.isSubItem ? 'w-1.5 h-1.5 rounded-full' : 'w-2.5 h-2.5'
+                        )}
+                        style={{ backgroundColor: slice.color }}
+                      />
+                      <span className="text-muted-foreground truncate">
+                        {slice.isSubItem && <span className="opacity-50 mr-1 text-[10px]">└</span>}
+                        {slice.label}
+                      </span>
+                    </div>
+                    <span className="font-mono text-foreground font-medium">
+                      {formatSeconds(displayDuration)} (
+                      {freshPhasesSum > 0
+                        ? ((displayDuration / freshPhasesSum) * 100).toFixed(1)
+                        : '0.0'}
+                      %)
                     </span>
                   </div>
-                  <span className="font-mono text-foreground font-medium">
-                    {formatSeconds(slice.duration)} (
-                    {freshPhasesSum > 0
-                      ? ((slice.duration / freshPhasesSum) * 100).toFixed(1)
-                      : '0.0'}
-                    %)
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         ) : (
@@ -654,18 +843,15 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         )}
       </div>
 
-      {/* 3. 区块二：【历史耗时 (全量归档)】 */}
+      {/* 3. 区块二：【历史累计耗时 (全量归档)】 */}
       {archivePhaseEntries.length > 0 && (
         <div className="rounded-xl border border-border/40 bg-muted/20 p-3.5 space-y-3 shadow-sm">
           <div className="text-xs font-semibold text-foreground flex items-center justify-between border-b border-border/30 pb-2">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-primary inline-block" />
-              {t('历史耗时')}
+              {t('历史累计耗时')}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="text-[11px] font-normal text-muted-foreground">
-                {t('全量累计耗时')}
-              </span>
               <span className="font-mono text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                 {formatSeconds(archiveTotalMs)}
               </span>
@@ -684,7 +870,9 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                       track.radius,
                       track.strokeWidth,
                       slice.color,
-                      `arc_track_${track.key}_${slice.key}`
+                      `arc_track_${track.key}_${slice.key}`,
+                      slice.label,
+                      formatSeconds(slice.duration)
                     )
                   )
                 )}
@@ -703,42 +891,60 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                 // 判断是否属于 (Archive - Fresh) 差集 (即本次物理运行未执行、从历史归档复用的指标)
                 let isReused = false
                 if (slice.isSubItem) {
-                  // Stage 2 细分指标
-                  const hasFreshStage2 = CONTENT_EXTRACTION_KEYS.some(
-                    k => fresh.phases && fresh.phases[k] !== undefined && fresh.phases[k] > 0
-                  )
-                  const hasFreshBreakdownKey =
-                    freshBreakdown &&
-                    (freshBreakdown as any)[slice.key] !== undefined &&
-                    (freshBreakdown as any)[slice.key] > 0
-                  isReused = !hasFreshStage2 && !hasFreshBreakdownKey
+                  if (slice.stage === 'stage1') {
+                    const hasFreshStage1 =
+                      fresh.phases &&
+                      (fresh.phases['hashAndTypeIdentification'] !== undefined ||
+                        fresh.phases['哈希与类型识别'] !== undefined)
+                    const hasFreshKey =
+                      freshStage1Breakdown &&
+                      (freshStage1Breakdown as any)[slice.key] !== undefined &&
+                      (freshStage1Breakdown as any)[slice.key] > 0
+                    isReused = !hasFreshStage1 && !hasFreshKey
+                  } else {
+                    const hasFreshStage2 = CONTENT_EXTRACTION_KEYS.some(
+                      k => fresh.phases && fresh.phases[k] !== undefined && fresh.phases[k] > 0
+                    )
+                    const hasFreshBreakdownKey =
+                      freshBreakdown &&
+                      (freshBreakdown as any)[slice.key] !== undefined &&
+                      (freshBreakdown as any)[slice.key] > 0
+                    isReused = !hasFreshStage2 && !hasFreshBreakdownKey
+                  }
                 } else if (
                   slice.key === 'hashAndTypeIdentification' ||
                   slice.key === '哈希与类型识别'
                 ) {
-                  // 阶段 1: 文件指纹与类型
                   const p1 =
                     fresh.phases?.hashAndTypeIdentification ?? fresh.phases?.['哈希与类型识别']
                   isReused = p1 === undefined || p1 <= 0
                 } else if (CONTENT_EXTRACTION_KEYS.includes(slice.key)) {
-                  // 阶段 2: 内容提取
                   const hasFreshStage2 = CONTENT_EXTRACTION_KEYS.some(
                     k => fresh.phases && fresh.phases[k] !== undefined && fresh.phases[k] > 0
                   )
                   isReused = !hasFreshStage2
                 } else {
-                  // 阶段 3 / 阶段 4 / 其他主阶段
                   const val = fresh.phases?.[slice.key]
                   isReused = val === undefined || val <= 0
                 }
 
+                // 阶段 2 耗时显示为并行最大耗时 (p2Duration) 而非串行累加
+                const displayDuration =
+                  slice.key === 'contentExtraction' || slice.key === 'markitdownServerExtraction'
+                    ? archiveP2Max || slice.duration
+                    : slice.key === 'hashAndTypeIdentification'
+                    ? archiveP1Max || slice.duration
+                    : slice.duration
+
                 return (
                   <div
-                    key={`arc_legend_${slice.key}`}
+                    key={`legend_archive_${slice.key}`}
                     className={cn(
                       'flex items-center justify-between text-xs py-0.5 transition-all',
                       slice.isSubItem &&
-                        'pl-4 text-[11px] opacity-90 border-l border-amber-500/30 ml-1'
+                        (slice.stage === 'stage1'
+                          ? 'pl-4 text-[11px] opacity-90 border-l border-indigo-500/30 ml-1'
+                          : 'pl-4 text-[11px] opacity-90 border-l border-amber-500/30 ml-1')
                     )}
                   >
                     <div className="flex items-center gap-2 truncate">
@@ -754,16 +960,16 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                         {slice.label}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1.5 font-mono text-foreground font-medium">
-                      <span>
-                        {formatSeconds(slice.duration)} (
-                        {archiveTotalMs > 0
-                          ? ((slice.duration / archiveTotalMs) * 100).toFixed(1)
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="font-mono text-foreground font-medium">
+                        {formatSeconds(displayDuration)} (
+                        {archivePhasesSum > 0
+                          ? ((displayDuration / archivePhasesSum) * 100).toFixed(1)
                           : '0.0'}
                         %)
                       </span>
                       {isReused && (
-                        <span className="text-[9px] px-1 bg-amber-500/10 border border-amber-500/20 rounded text-amber-600 dark:text-amber-400 font-sans font-normal">
+                        <span className="text-[10px] px-1 py-0.2 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20 font-medium">
                           {t('复用')}
                         </span>
                       )}
@@ -776,15 +982,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         </div>
       )}
 
-      {/* 4. AI 推理模型信息（优先读本次 fresh.model，兼容旧数据根级 model） */}
-      {(fresh.model?.name || archive.model?.name || stats.model?.name) && (
-        <div className="p-2.5 rounded-xl border border-border/40 bg-muted/20 flex items-center justify-between text-xs">
-          <span className="text-muted-foreground">{t('推理模型')}</span>
-          <span className="font-mono text-primary font-medium truncate max-w-[180px]">
-            {fresh.model?.name || archive.model?.name || stats.model?.name}
-          </span>
-        </div>
-      )}
+
     </div>
   )
 }

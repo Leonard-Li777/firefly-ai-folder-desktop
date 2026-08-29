@@ -851,3 +851,13 @@ process.on('unhandledRejection', reason => {
     console.error('[unhandledRejection] postHogMain.captureException 失败:', e)
   }
 })
+
+// 处理终端终止信号 (Ctrl+C / 进程管理器杀进程)，确保 omni 等所有常驻子服务彻底释放
+const handleProcessTermination = () => {
+  try {
+    omniService.stop()
+  } catch {}
+  process.exit(0)
+}
+process.on('SIGINT', handleProcessTermination)
+process.on('SIGTERM', handleProcessTermination)

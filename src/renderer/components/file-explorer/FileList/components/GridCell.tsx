@@ -342,6 +342,22 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
           let baseUrl = ''
           if (fileItem.thumbnailPath) {
             const thumbPath = fileItem.thumbnailPath
+            let finalWorkspaceDirectoryPath = workspaceDirectoryPath || ''
+            if (
+              !finalWorkspaceDirectoryPath &&
+              'workspaceDirectoryPath' in fileItem &&
+              (fileItem as any).workspaceDirectoryPath
+            ) {
+              finalWorkspaceDirectoryPath = (fileItem as any).workspaceDirectoryPath as string
+            }
+            if (!finalWorkspaceDirectoryPath && fileItem.path && typeof fileItem.path === 'string') {
+              const itemPath = fileItem.path
+              const virtIdx = itemPath.indexOf('.VirtualDirectory')
+              if (virtIdx > 0) {
+                finalWorkspaceDirectoryPath = itemPath.substring(0, virtIdx).replace(/[\\/]+$/, '')
+              }
+            }
+
             const isAbs =
               /^[a-zA-Z]:[\\/]/.test(thumbPath) ||
               thumbPath.startsWith('/') ||
@@ -349,8 +365,8 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
             let absPath = ''
             if (isAbs) {
               absPath = thumbPath
-            } else if (workspaceDirectoryPath) {
-              absPath = `${workspaceDirectoryPath.replace(/[\\/]+$/, '')}/${thumbPath.replace(/^[\\/]+/, '')}`
+            } else if (finalWorkspaceDirectoryPath) {
+              absPath = `${finalWorkspaceDirectoryPath.replace(/[\\/]+$/, '')}/${thumbPath.replace(/^[\\/]+/, '')}`
             }
             if (absPath) {
               const normalized = normalizeForCache(absPath).replace(/\\/g, '/')

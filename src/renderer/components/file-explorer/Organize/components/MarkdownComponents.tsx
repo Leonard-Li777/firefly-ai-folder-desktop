@@ -20,6 +20,6 @@ export const MarkdownComponents = {
   li: ({ children }: any) => <li className="text-sm">{children}</li>,
   strong: ({ children }: any) => <strong className="font-bold text-foreground">{children}</strong>,
   code: ({ children }: any) => (
-    <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono">{children}</code>
+    <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">{children}</code>
   )
 }

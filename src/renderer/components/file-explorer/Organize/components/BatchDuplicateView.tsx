@@ -197,7 +197,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
           files: (g.files || []).map((f: DuplicateFileItem) => ({ ...f }))
         }))
         setDuplicateGroups(normalizedGroups)
-        const finalCount = localMaxScanned || localMaxTotal || streamingScannedCount || files.length
+        const finalCount = localMaxScanned || localMaxTotal || streamingScannedCount || 0
         setScannedCount(finalCount)
         setHasScanned(true)
         toast.success(t('查重扫描完成，发现 {count} 个相似组', { count: normalizedGroups.length }))
@@ -1134,12 +1134,12 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                     </Button>
                   </div>
 
-                  {/* 空间与文件统计看板 */}
+                      {/* 空间与文件统计看板 */}
                   <div className="grid grid-cols-3 gap-2">
                     <div className="p-2.5 rounded-xl border border-border/50 bg-background/80 flex flex-col justify-between shadow-2xs">
                       <div className="text-[10px] text-muted-foreground font-medium">{t('已扫描文件')}</div>
                       <div className="text-base font-extrabold text-foreground tabular-nums tracking-tight mt-1">
-                        {scannedCount || files.length}
+                        {scannedCount}
                       </div>
                     </div>
                     <div className="p-2.5 rounded-xl border border-border/50 bg-background/80 flex flex-col justify-between shadow-2xs">
@@ -1549,9 +1549,6 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                             <MaterialIcon icon="play_arrow" className="text-lg" />
                             <span>{t('开始清理分析与查重')}</span>
                           </Button>
-                          <span className="text-[11px] text-muted-foreground/80 tabular-nums">
-                            {t('共 {count} 个文件准备就绪', { count: files.length })}
-                          </span>
                         </div>
                       </div>
                     </div>

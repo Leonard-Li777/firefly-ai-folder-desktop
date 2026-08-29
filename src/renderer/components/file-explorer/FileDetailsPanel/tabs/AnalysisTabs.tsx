@@ -79,7 +79,7 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
       <strong className="font-bold text-foreground">{children}</strong>
     ),
     code: ({ children }: any) => (
-      <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono">{children}</code>
+      <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">{children}</code>
     ),
     a: ({ href, children }: any) => (
       <a
@@ -303,12 +303,13 @@ export const AnalysisTabs: React.FC<any> = ({
               }
 
               // 从 catObj 与 metadata 联合提取 7 项经典 Magika 项目
+              // 注意：仅使用 magika 数据源（files.category / file_contents.metadata），
+              // 不依赖 analysisResult.type（文件后缀名）与硬编码默认 mimeType，避免清空分析后残留展示
               const meta = analysisResult.metadata || {}
 
               const labelVal =
                 catObj.label ||
                 catObj.type ||
-                analysisResult.type ||
                 meta.magikaLabel ||
                 meta.type ||
                 meta.FileType ||
@@ -321,7 +322,6 @@ export const AnalysisTabs: React.FC<any> = ({
               const mimeVal =
                 catObj.mime_type ||
                 catObj.mimeType ||
-                analysisResult.mimeType ||
                 meta.mime_type ||
                 meta.mimeType ||
                 meta.MIMEType
@@ -341,7 +341,7 @@ export const AnalysisTabs: React.FC<any> = ({
                 catObj.isText ??
                 meta.is_text ??
                 meta.isText ??
-                (meta.MIMEType?.startsWith('text/') ? true : false)
+                (meta.MIMEType ? meta.MIMEType.startsWith('text/') : undefined)
               const scoreVal = catObj.score ?? catObj.confidence ?? meta.score ?? meta.confidence
 
               const fullItems = [
@@ -390,6 +390,44 @@ export const AnalysisTabs: React.FC<any> = ({
                 </div>
               )
             })()}
+            {/* 文本统计信息 (text_stats)，展示在 Magika 卡片下方 */}
+            {(() => {
+              const meta = analysisResult.metadata || {}
+              const ts = meta.text_stats || meta.textStats || meta.text || (analysisResult as any).text_stats
+              if (!ts || typeof ts !== 'object') return null
+
+              const encodingVal = ts.encoding ? String(ts.encoding).replace(/\s*\/\s*Smart\s+Detection/gi, '').trim() : undefined
+              const charCountVal = ts.char_count ?? ts.charCount ?? ts.character_count
+              const lineCountVal = ts.line_count ?? ts.lineCount
+              const wordCountVal = ts.word_count ?? ts.wordCount
+
+              const statsItems = [
+                { key: 'encoding', label: t('文本编码'), val: encodingVal },
+                { key: 'char_count', label: t('字符数'), val: charCountVal },
+                { key: 'line_count', label: t('行数'), val: lineCountVal },
+                { key: 'word_count', label: t('词数'), val: wordCountVal }
+              ].filter(it => it.val !== undefined && it.val !== null && it.val !== '')
+
+              if (statsItems.length === 0) return null
+
+              return (
+                <div className="rounded-lg border border-border/40 bg-muted/20 overflow-hidden divide-y divide-border/30 shadow-sm mt-3">
+                  {statsItems.map(({ key, label, val }) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between p-2.5 text-xs hover:bg-muted/40 transition-colors"
+                    >
+                      <span className="font-mono text-muted-foreground shrink-0 mr-3">
+                        {label}
+                      </span>
+                      <span className="text-foreground text-right break-all">
+                        {typeof val === 'number' ? val.toLocaleString() : String(val)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
             {analysisResult.metadata &&
             typeof analysisResult.metadata === 'object' &&
             Object.keys(analysisResult.metadata).length > 0 ? (
@@ -413,13 +451,16 @@ export const AnalysisTabs: React.FC<any> = ({
                       return String(val)
                     }
 
-                    // 仅过滤内部智能重命名暂存字段以及超长专有二进制 hex 码
+                    // 仅过滤内部智能重命名暂存字段、已专门展示的字段以及超长专有二进制 hex 码
                     const SKIP_KEYS = new Set([
                       'ExifToolVersion', // 工具版本号
                       'MakerNote', // 100KB+ 超长相机专有二进制 hex 码，避免卡顿
                       'ThumbnailImage', // 嵌入缩略图二进制字段
                       'raw_smart_name', // 内部智能重命名暂存字段
-                      'naming_template'
+                      'naming_template',
+                      'text', // 已由 text_stats 专有卡片呈现
+                      'text_stats', // 已由上方专有卡片呈现
+                      'textStats'
                     ])
                     // ExifDateTime 日期对象特征：含 _ctor 或同时有 year/month/day 子字段
                     const isExifDateTimeObj = (v: any): boolean =>

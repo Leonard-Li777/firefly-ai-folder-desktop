@@ -9,9 +9,7 @@
     "de-DE": "Vorbereitungen für den ersten Installationsstart...",
     "fr-FR": "Préparation du démarrage de l'installation pour la première fois...",
     "ko-KR": "처음으로 설치 시작을 준비 중입니다...",
-    "$files": [
-      "src/electron/main/index.ts(22916-22933)"
-    ],
+    "$files": ["src/electron/main/index.ts(22986-23003)"],
     "$id": 10169
   },
   "正在从版本 {oldVersion} 升级到 {newVersion}...": {
@@ -24,9 +22,7 @@
     "de-DE": "Upgrade von Version {oldVersion} auf {newVersion}...",
     "fr-FR": "Mise à niveau de la version {oldVersion} vers {newVersion}...",
     "ko-KR": "버전 {oldVersion}에서 {newVersion}로 업그레이드 중...",
-    "$files": [
-      "src/electron/main/index.ts(22945-22987)"
-    ],
+    "$files": ["src/electron/main/index.ts(23015-23057)"],
     "$id": 10170
   },
   "检测到您的 {gpuName} 显卡驱动版本过低或不兼容，已为你降级AI引擎速度，建立升级驱动体验满血AI性能。": {
@@ -39,9 +35,7 @@
     "de-DE": "Es wurde festgestellt, dass die Version Ihres {gpuName}-Grafikkartentreibers zu niedrig oder inkompatibel ist. Wir haben die Geschwindigkeit der KI-Engine für Sie herabgestuft und einen aktualisierten Treiber erstellt, um die volle KI-Leistung zu erleben.",
     "fr-FR": "Il a été détecté que la version du pilote de votre carte graphique {gpuName} est trop basse ou incompatible. Nous avons réduit la vitesse du moteur IA pour vous et créé un pilote mis à niveau pour bénéficier des performances complètes de l'IA.",
     "ko-KR": "{gpuName} 그래픽 카드 드라이버 버전이 너무 낮거나 호환되지 않는 것으로 감지되었습니다. 여러분을 위해 AI 엔진 속도를 다운그레이드하고, 완전한 AI 성능을 경험할 수 있도록 업그레이드된 드라이버를 만들었습니다.",
-    "$files": [
-      "src/electron/main/initialization.ts(7242-7302)"
-    ],
+    "$files": ["src/electron/main/initialization.ts(7242-7302)"],
     "$id": 10171
   },
   "Llama 引擎部署完成": {
@@ -54,9 +48,7 @@
     "de-DE": "Die Bereitstellung der Lama-Engine ist abgeschlossen",
     "fr-FR": "Déploiement du moteur Llama terminé",
     "ko-KR": "라마 엔진 배포 완료",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(3353-3369)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3353-3369)"],
     "$id": 10172
   },
   "AI服务初始化失败：无法创建实例": {
@@ -69,9 +61,7 @@
     "de-DE": "Die Initialisierung des AI-Dienstes ist fehlgeschlagen: Instanz kann nicht erstellt werden",
     "fr-FR": "Échec de l'initialisation du service AI : impossible de créer une instance",
     "ko-KR": "AI 서비스 초기화 실패: 인스턴스를 생성할 수 없습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(3741-3761)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3741-3761)"],
     "$id": 7670
   },
   "LlamaIndex AI服务初始化成功": {
@@ -84,9 +74,7 @@
     "de-DE": "Initialisierung des LlamaIndex AI-Dienstes erfolgreich",
     "fr-FR": "Initialisation réussie du service LlamaIndex AI",
     "ko-KR": "LlamaIndex AI 서비스 초기화 성공",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(5234-5258)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(5234-5258)"],
     "$id": 10173
   },
   "AI服务未创建": {
@@ -99,9 +87,7 @@
     "de-DE": "AI-Dienst nicht erstellt",
     "fr-FR": "Service IA non créé",
     "ko-KR": "AI 서비스가 생성되지 않았습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(7789-7800)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(7789-7800)"],
     "$id": 10175
   },
   "模型切换通知已处理": {
@@ -114,9 +100,7 @@
     "de-DE": "Modellwechselbenachrichtigung verarbeitet",
     "fr-FR": "Notification de changement de modèle traitée",
     "ko-KR": "모델 전환 알림 처리됨",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(8791-8804)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8791-8804)"],
     "$id": 10176
   },
   "处理失败": {
@@ -129,9 +113,7 @@
     "de-DE": "Die Verarbeitung ist fehlgeschlagen",
     "fr-FR": "Échec du traitement",
     "ko-KR": "처리 실패",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(8933-8941)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8933-8941)"],
     "$id": 10177
   },
   "AI服务初始化成功": {
@@ -144,9 +126,7 @@
     "de-DE": "Initialisierung des KI-Dienstes erfolgreich",
     "fr-FR": "Initialisation du service IA réussie",
     "ko-KR": "AI 서비스 초기화 성공",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(15915-15928)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(15915-15928)"],
     "$id": 10178
   },
   "模型正在切换中，请等待": {
@@ -179,9 +159,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(19018-19047)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(19018-19047)"],
     "$id": 11303
   },
   "AI 服务正在初始化中，请稍候再试": {
@@ -213,9 +191,7 @@
     "de-DE": "Unzureichende Berechtigungen für den Zugriff auf das Verzeichnis: {dirPath}",
     "fr-FR": "Permissions insuffisantes pour accéder au répertoire : {dirPath}",
     "ko-KR": "권한이 부족하여 디렉터리에 접근할 수 없습니다: {dirPath}",
-    "$files": [
-      "src/electron/main/ipc-handlers/file.ts(11577-11603)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/file.ts(11577-11603)"],
     "$id": 8125
   },
   "目录不存在: {dirPath}": {
@@ -228,9 +204,7 @@
     "de-DE": "Das Verzeichnis existiert nicht: {dirPath}",
     "fr-FR": "Le répertoire n'existe pas : {dirPath}",
     "ko-KR": "디렉터리가 존재하지 않습니다: {dirPath}",
-    "$files": [
-      "src/electron/main/ipc-handlers/file.ts(11674-11694)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/file.ts(11674-11694)"],
     "$id": 8126
   },
   "无法读取目录: {dirPath} ({errorDetail})": {
@@ -243,9 +217,7 @@
     "de-DE": "Verzeichnis kann nicht gelesen werden: {dirPath} ({errorDetail})",
     "fr-FR": "Impossible de lire le répertoire : {dirPath} ({errorDetail})",
     "ko-KR": "디렉터리를 읽을 수 없습니다: {dirPath} ({errorDetail})",
-    "$files": [
-      "src/electron/main/ipc-handlers/file.ts(11756-11793)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/file.ts(11756-11793)"],
     "$id": 8127
   },
   "未在工作空间找到该文件信息": {
@@ -258,9 +230,7 @@
     "de-DE": "Die Dateiinformationen wurden im Arbeitsbereich nicht gefunden",
     "fr-FR": "Les informations du fichier sont introuvables dans l'espace de travail",
     "ko-KR": "작업공간에서 파일정보를 찾을 수 없습니다",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(6606-6623)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(6606-6623)"],
     "$id": 7671
   },
   "未找到所属的工作区目录": {
@@ -273,9 +243,7 @@
     "de-DE": "Das entsprechende Arbeitsbereichsverzeichnis wurde nicht gefunden",
     "fr-FR": "Le répertoire de l'espace de travail correspondant est introuvable",
     "ko-KR": "해당 작업공간 디렉터리를 찾을 수 없습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(6779-6794)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(6779-6794)"],
     "$id": 7672
   },
   "未知错误": {
@@ -336,9 +304,7 @@
     "de-DE": "Netzwerkverbindung fehlgeschlagen",
     "fr-FR": "La connexion réseau a échoué",
     "ko-KR": "네트워크 연결 실패",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(16295-16305)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(16295-16305)"],
     "$id": 10181
   },
   "仅允许 http: 和 https: 协议": {
@@ -351,9 +317,7 @@
     "de-DE": "Es sind nur die Protokolle http: und https: zulässig",
     "fr-FR": "Seuls les protocoles http: et https: sont autorisés",
     "ko-KR": "http: 및 https: 프로토콜만 허용됩니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(21233-21258)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(21233-21258)"],
     "$id": 10182
   },
   "无效的 URL": {
@@ -366,9 +330,7 @@
     "de-DE": "Ungültige URL",
     "fr-FR": "URL invalide",
     "ko-KR": "잘못된 URL",
-    "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(21385-21396)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(21385-21396)"],
     "$id": 10183
   },
   "核心引擎未初始化": {
@@ -417,9 +379,7 @@
     "de-DE": "Der analysierte Verzeichnisdienst wurde nicht initialisiert",
     "fr-FR": "Service d'annuaire analysé non initialisé",
     "ko-KR": "구문 분석된 디렉터리 서비스가 초기화되지 않았습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(6609-6624)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(6609-6624)"],
     "$id": 7677
   },
   "虚拟目录不存在": {
@@ -432,9 +392,7 @@
     "de-DE": "Virtuelles Verzeichnis existiert nicht",
     "fr-FR": "Le répertoire virtuel n'existe pas",
     "ko-KR": "가상 디렉터리가 존재하지 않습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(10636-10647)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(10636-10647)"],
     "$id": 7508
   },
   "工作目录不存在": {
@@ -447,9 +405,7 @@
     "de-DE": "Arbeitsverzeichnis existiert nicht",
     "fr-FR": "Le répertoire de travail n'existe pas",
     "ko-KR": "작업 디렉토리가 존재하지 않습니다",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(10805-10816)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(10805-10816)"],
     "$id": 7509
   },
   "真实目录服务未初始化": {
@@ -462,9 +418,7 @@
     "de-DE": "Echter Verzeichnisdienst nicht initialisiert",
     "fr-FR": "Service d'annuaire réel non initialisé",
     "ko-KR": "실제 디렉터리 서비스가 초기화되지 않았습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(12072-12086)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(12072-12086)"],
     "$id": 7510
   },
   "虚拟目录服务未初始化": {
@@ -508,9 +462,7 @@
     "de-DE": "Kein Arbeitsverzeichnis festgelegt",
     "fr-FR": "Aucun répertoire de travail défini",
     "ko-KR": "작업 디렉터리가 설정되지 않았습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22774-22785)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(22774-22785)"],
     "$id": 7679
   },
   "授权校验失败，请联网或激活企业版后再执行此操作": {
@@ -579,9 +531,7 @@
     "de-DE": "Keine Aufgaben in Bearbeitung",
     "fr-FR": "Aucune tâche en cours",
     "ko-KR": "진행 중인 작업이 없습니다.",
-    "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30987-31000)"
-    ],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(30987-31000)"],
     "$id": 10187
   },
   "服务未初始化": {

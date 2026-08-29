@@ -3,7 +3,8 @@ import {
   DimensionExpansion,
   LanguageCode,
   FileCategory as MagikaCategory,
-  MarkitdownBenchmark
+  MarkitdownBenchmark,
+  Stage1Benchmark
 } from '@firefly/types'
 import {
   LogCategory,
@@ -43,7 +44,7 @@ import {
 } from '@firefly/core-engine'
 import { omniService } from '../../system/omni-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
-import { anydocService, AnydocAsset } from '../../system/anydoc-service'
+import { anydocService, AnydocAsset, AnydocResult } from '../../system/anydoc-service'
 import { cloudAnalysisService } from '@firefly/server'
 import { IErrorRecoveryConfig } from '../types'
 import { t } from '@app/languages'
@@ -567,14 +568,71 @@ export class FileProcessor {
           currentWorkspaceId,
           filePath
         ) as any
-        const fileFingerprint = existingWorkspaceFile?.file_fingerprint
+        let fileFingerprint = existingWorkspaceFile?.file_fingerprint
         if (!fileFingerprint) {
-          throw new Error('GPU phase started but file has no fingerprint in DB')
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            `[分析队列] GPU 阶段发现文件尚未记录指纹 (${filePath})，正在自动计算并补建基础记录...`
+          )
+          try {
+            fileFingerprint = await calculateFileFingerprint(filePath)
+            const stats = currentStats || fs.statSync(filePath)
+            const { fileType: initialFileType, smartName: initialSmartName } = this.getEnhancedFileInfo(
+              path.basename(filePath),
+              item.type,
+              filePath,
+              null
+            )
+            // 确保 files 与 workspace_files 正确关联
+            db.prepare(
+              `INSERT INTO files (file_fingerprint, smart_name, size, type, created_at, modified_at, accessed_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(file_fingerprint) DO UPDATE SET
+                 smart_name = COALESCE(files.smart_name, excluded.smart_name)`
+            ).run(
+              fileFingerprint,
+              initialSmartName,
+              stats.size,
+              initialFileType,
+              new Date(stats.birthtime).toISOString(),
+              new Date(stats.mtime).toISOString(),
+              new Date(stats.atime).toISOString()
+            )
+
+            db.prepare(
+              `INSERT INTO workspace_files (workspace_id, directory_id, path, name, file_fingerprint, is_analyzed, created_at, modified_at, accessed_at)
+               VALUES (?, (SELECT id FROM workspace_directories WHERE workspace_id = ? AND path = ?), ?, ?, ?, 0, ?, ?, ?)
+               ON CONFLICT(workspace_id, path) DO UPDATE SET
+                 file_fingerprint = excluded.file_fingerprint,
+                 modified_at = excluded.modified_at,
+                 accessed_at = excluded.accessed_at`
+            ).run(
+              currentWorkspaceId,
+              currentWorkspaceId,
+              path.dirname(filePath),
+              filePath,
+              path.basename(filePath),
+              fileFingerprint,
+              new Date().toISOString(),
+              new Date().toISOString(),
+              new Date().toISOString()
+            )
+          } catch (fpErr: any) {
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              `[分析队列] GPU 阶段自动计算指纹失败，平滑回退至 CPU 阶段提取: ${fpErr.message}`
+            )
+            return this.processFile(item, signal, 'cpu', true)
+          }
         }
 
         // 重新分析时清空原有标签：GPU 分支可能由串行队列在 initialStage >= 2 时直接进入，
         // 会跳过 CPU 阶段的标签清理（deleteTagRelationsStmt），此处补齐以确保重新分析不残留旧标签
-        this.deleteTagRelationsStmt.run(fileFingerprint)
+        try {
+          this.deleteTagRelationsStmt.run(fileFingerprint)
+        } catch {
+          // 容错
+        }
 
         const existingBasicData = this.getExistingBasicData(
           db,
@@ -631,7 +689,16 @@ export class FileProcessor {
           metadata: baseMetadata
         }
 
-        const thumbnailRelativePath = existingBasicData.thumbnailPath || undefined
+        let thumbnailRelativePath = existingBasicData.thumbnailPath || undefined
+        if (!thumbnailRelativePath && rootWorkspaceDir) {
+          try {
+            const thumbDir = await thumbnailService.ensureThumbnailDirectory(rootWorkspaceDir.path)
+            const expectedWebp = path.join(thumbDir, `${fileFingerprint}.webp`)
+            if (fs.existsSync(expectedWebp)) {
+              thumbnailRelativePath = path.relative(rootWorkspaceDir.path, expectedWebp)
+            }
+          } catch {}
+        }
 
         // 现在运行 GPU 本地 AI：快速命名直接执行 Stage 4(维度与智能命名)；全面分析从 Stage 3(质量打分)开始
         const initialGpuStage = analysisMode === 'quick_name' ? 4 : 3
@@ -854,167 +921,96 @@ export class FileProcessor {
       const needsNewHash = isTempHash || metadataMismatched || !existingWorkspaceFile
       let magikaCategory: MagikaCategory | null = null
 
-      // ========== 第一阶段：特征识别与哈希计算 ==========
+      // ========== 第一阶段：文件指纹与复用判定 ==========
       this.updateItemStatus(item.id, 'analyzing', 2, undefined, { analysisStage: 1 })
       timer.start('hashAndTypeIdentification')
+      const tStage1Start = Date.now()
 
       let initialMetadata: any = {}
       let stage1FingerprintMs = 0
-      let stage1MagikaMs = 0
-      let stage1MetadataMs = 0
+      let stage1LocalReuseMs = 0
+      let stage1CloudReuseMs = 0
 
       if (needsNewHash) {
         logger.info(
           LogCategory.ANALYSIS_QUEUE,
-          `[分析队列] 准备计算真实哈希与并行特征识别: ${item.name}${isTempHash ? ' (替换临时ID)' : ''}${metadataMismatched ? ' (元数据已变动)' : ''}`
+          `[分析队列] 准备计算真实文件指纹: ${item.name}${isTempHash ? ' (替换临时ID)' : ''}${metadataMismatched ? ' (元数据已变动)' : ''}`
         )
 
-        const tStage1Start = Date.now()
-
-        // 第一阶段并行化：哈希计算、Magika 分类识别、ExifTool 元数据提取（独立统计耗时与 3s 超时隔离）
-        const [fpResult, magikaResult, exifResult] = await Promise.all([
-          // 1. 哈希计算：文件标识基石，必须成功。3s 超时防护，失败或超时抛出异常使当前任务失败并继续下一个文件
-          (async () => {
-            const tStart = Date.now()
-            try {
-              const res = await Promise.race([
-                calculateFileFingerprint(filePath),
-                new Promise<string>((_, reject) =>
-                  setTimeout(
-                    () => reject(new Error('文件哈希计算超时(3s)，文件可能损坏或被占用')),
-                    3000
-                  )
-                )
-              ])
-              stage1FingerprintMs = Date.now() - tStart
-              return res
-            } catch (err) {
-              stage1FingerprintMs = Date.now() - tStart
-              throw err
-            }
-          })(),
-
-          // 2. Magika 文件识别（带 3s 超时与扩展名降级，Magika 超时或失败降级回退，不阻塞主流程）
-          (async () => {
-            const tStart = Date.now()
-            try {
-              const res = await Promise.race([
-                magikaService.identifyFile(filePath),
-                new Promise<MagikaCategory>((_, reject) =>
-                  setTimeout(() => reject(new Error('Magika 文件类型识别超时(3s)')), 3000)
-                )
-              ])
-              stage1MagikaMs = Date.now() - tStart
-              return res
-            } catch (err: any) {
-              stage1MagikaMs = Date.now() - tStart
-              logger.warn(
-                LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] Magika 文件识别超时或失败，降级使用扩展名推断: ${err.message}`
+        // 1. 哈希计算：文件标识基石，3s 超时防护
+        const tFpStart = Date.now()
+        try {
+          fileFingerprint = await Promise.race([
+            calculateFileFingerprint(filePath),
+            new Promise<string>((_, reject) =>
+              setTimeout(
+                () => reject(new Error('文件哈希计算超时(3s)，文件可能损坏或被占用')),
+                3000
               )
-              return magikaService.getMockCategory(filePath)
-            }
-          })(),
-
-          // 3. Omni 元数据与 Exif 提取（纯粹基于高性能 Omni Rust 原生引擎）
-          (async () => {
-            const tStart = Date.now()
-            try {
-              const res = await omniService.extractMetadataFull(filePath)
-              stage1MetadataMs = Date.now() - tStart
-              logger.info(
-                LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] Omni 元数据提取成功: ${item.name}, 耗时: ${stage1MetadataMs}ms, 字段数: ${Object.keys(res || {}).length}`
-              )
-              return res || {}
-            } catch (err: any) {
-              stage1MetadataMs = Date.now() - tStart
-              logger.warn(
-                LogCategory.ANALYSIS_QUEUE,
-                `[分析队列] Omni 元数据提取失败: ${item.name}, 耗时: ${stage1MetadataMs}ms: ${err.message}`
-              )
-              return {}
-            }
-          })()
-        ])
-
-        fileFingerprint = fpResult
-        magikaCategory = this.sanitizeMagikaCategory(magikaResult, filePath)
-        initialMetadata = exifResult
-
-        const categoryString =
-          typeof magikaCategory === 'string' ? magikaCategory : JSON.stringify(magikaCategory)
+            )
+          ])
+          stage1FingerprintMs = Date.now() - tFpStart
+        } catch (err) {
+          stage1FingerprintMs = Date.now() - tFpStart
+          throw err
+        }
 
         const { fileType: initialFileType, smartName: initialSmartName } = this.getEnhancedFileInfo(
           path.basename(filePath),
           item.type,
           filePath,
-          magikaCategory
+          null
         )
 
-        this.insertFileStmt.run(
-          fileFingerprint,
-          initialSmartName,
-          currentStats.size,
-          initialFileType || path.extname(filePath).toLowerCase() || 'unknown',
-          categoryString,
-          new Date(currentStats.birthtime).toISOString(),
-          new Date(currentStats.mtime).toISOString(),
-          new Date(currentStats.atime).toISOString(),
-          new Date().toISOString()
-        )
-
-        // 确保 workspace_files 表已更新指纹
-        const dirPath = path.dirname(filePath)
-        const directoryId = await databaseService.addDirectory(dirPath, currentWorkspaceId)
-
-        this.insertWorkspaceFileStmt.run(
-          fileFingerprint,
-          currentWorkspaceId,
-          directoryId,
-          filePath,
-          path.basename(filePath),
-          new Date(currentStats.birthtime).toISOString(),
-          new Date(currentStats.mtime).toISOString(),
-          new Date(currentStats.atime).toISOString(),
-          existingWorkspaceFile?.is_analyzed || 0,
-          new Date().toISOString()
-        )
-
-        // 校验并匹配 status = 0 的关联记录（物理文件移动/更名重绑定）
-        const lostRecord = db
-          .prepare(
-            'SELECT id, path FROM workspace_files WHERE file_fingerprint = ? AND status = 0 LIMIT 1'
+        // 更新数据库中文件的真实哈希
+        try {
+          // 1. 更新物理文件关联的真实指纹
+          db.prepare(
+            `UPDATE workspace_files SET 
+              file_fingerprint = ?, 
+              modified_at = ?,
+              accessed_at = ?
+            WHERE path = ?`
+          ).run(
+            fileFingerprint,
+            new Date().toISOString(),
+            new Date().toISOString(),
+            filePath
           )
-          .get(fileFingerprint) as { id: number; path: string } | undefined
 
-        if (lostRecord) {
+          // 2. 确保 files 表中有对应基础记录
+          db.prepare(
+            `INSERT INTO files (file_fingerprint, smart_name, size, type, created_at, modified_at, accessed_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)
+             ON CONFLICT(file_fingerprint) DO UPDATE SET
+               smart_name = COALESCE(files.smart_name, excluded.smart_name)`
+          ).run(
+            fileFingerprint,
+            initialSmartName,
+            currentStats.size,
+            initialFileType,
+            new Date(currentStats.birthtime).toISOString(),
+            new Date(currentStats.mtime).toISOString(),
+            new Date(currentStats.atime).toISOString()
+          )
+
           logger.info(
             LogCategory.ANALYSIS_QUEUE,
-            `[分析队列] 找到同指纹物理失联记录(ID:${lostRecord.id})，更新为新路径并恢复 status=1: ${filePath}`
+            `[分析队列] 阶段1完成，已更新指纹与基础信息: ${item.name} (${fileFingerprint.substring(0, 8)}...), 耗时: ${stage1FingerprintMs}ms`
           )
-          db.prepare(
-            'UPDATE workspace_files SET path = ?, name = ?, workspace_id = ?, directory_id = ?, status = 1, modified_at = ? WHERE id = ?'
-          ).run(
-            filePath,
-            path.basename(filePath),
-            currentWorkspaceId,
-            directoryId,
-            new Date().toISOString(),
-            lostRecord.id
-          )
+        } catch (updateError) {
+          logger.warn(LogCategory.ANALYSIS_QUEUE, `[分析队列] 更新哈希失败: ${updateError}`)
         }
-
+      } else {
+        // 复用已有指纹判定
+        stage1LocalReuseMs = Math.max(Date.now() - tStage1Start, 1)
         logger.info(
           LogCategory.ANALYSIS_QUEUE,
-          `[分析队列] 已同步真实哈希至数据库: ${item.name}, Hash: ${fileFingerprint}`
+          `[分析队列] 阶段1完成，复用已有指纹与基础信息: ${item.name} (${fileFingerprint.substring(0, 8)}...), 耗时: ${stage1LocalReuseMs}ms`
         )
       }
 
-      // 文件已确认需要分析，清理旧标签关系以保持一致性
-      // 后续 AI 分析（云端/本地）不再执行此删除，以保留基础分析写入的扩展名标签
-      this.deleteTagRelationsStmt.run(fileFingerprint)
-
+      // ========== 阶段 1 复用判定（本地 SQLite 查询与云端缓存查询） ==========
       let cloudCachedData: any = null
       let isCloudCache = false
 
@@ -1025,35 +1021,25 @@ export class FileProcessor {
         const shouldSkipCache =
           (item.forceReanalyze === true && isLocallyAnalyzed) || analysisMode !== 'full'
 
-        logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 缓存决策: ${item.name}`, {
-          canUseCache,
-          shouldSkipCache,
-          isLocallyAnalyzed,
-          forceReanalyze: item.forceReanalyze
-        })
-
-        if (shouldSkipCache) {
-          logger.info(
-            LogCategory.ANALYSIS_QUEUE,
-            `[分析队列] 强制重新分析，跳过缓存检查: ${item.name}`
-          )
-        } else if (canUseCache) {
-          logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 开始检查缓存: ${item.name}`)
-
+        if (!shouldSkipCache && canUseCache) {
           if (
             fileFingerprint &&
             !fileFingerprint.startsWith('temp_') &&
             fileFingerprint !== '0'.repeat(32)
           ) {
+            // 本地缓存查询
+            const tLocalStart = Date.now()
             try {
               const localCachedFile =
                 await databaseService.getAnalyzedFileByContentHash(fileFingerprint)
+              stage1LocalReuseMs = Date.now() - tLocalStart
               if (localCachedFile) {
-                logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 命中本地内容缓存: ${item.name}`)
+                logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 命中本地内容缓存: ${item.name}, 查询耗时: ${stage1LocalReuseMs}ms`)
                 const tags = await databaseService.getFileTagsByFileId(fileFingerprint)
                 cloudCachedData = { ...localCachedFile, tags }
               }
             } catch (localError) {
+              stage1LocalReuseMs = Date.now() - tLocalStart
               logger.error(
                 LogCategory.ANALYSIS_QUEUE,
                 `[分析队列] 本地缓存检查失败: ${item.name}`,
@@ -1061,7 +1047,9 @@ export class FileProcessor {
               )
             }
 
+            // 云端缓存查询 (极速目录)
             if (!cloudCachedData) {
+              const tCloudStart = Date.now()
               try {
                 cloudCachedData = await cloudAnalysisService.checkCloudCache(
                   fileFingerprint,
@@ -1135,35 +1123,6 @@ export class FileProcessor {
             } catch (e) {
               logger.warn(LogCategory.FILE_ANALYSIS, '[文件处理器] 解析 Magika 分类 JSON 失败:', e)
             }
-          }
-        }
-      }
-
-      // 如果依然没有 magikaCategory，则强制调用本地 Magika 识别完整分类信息（包含 label, description, group, score, extensions, is_text 等 7 项全量数据）
-      if (!magikaCategory) {
-        try {
-          magikaCategory = await magikaService.identifyFile(filePath)
-          magikaCategory = this.sanitizeMagikaCategory(magikaCategory, filePath)
-        } catch (e) {
-          logger.warn(LogCategory.FILE_ANALYSIS, '[文件处理器] 调用 Magika CLI 识别失败:', e)
-        }
-      }
-
-      // 确保有 initialMetadata 填充，避免缺少 metadata 时被跳过
-      if (!initialMetadata || Object.keys(initialMetadata).length === 0) {
-        if (existingBasicData.metadata && Object.keys(existingBasicData.metadata).length > 0) {
-          initialMetadata = existingBasicData.metadata
-        } else {
-          // 若数据库中无现有元数据，无条件通过 Omni 补捞完整元数据
-          const tExifStart = Date.now()
-          try {
-            initialMetadata = (await omniService.extractMetadataFull(filePath)) || {}
-          } catch (e: any) {
-            logger.warn(LogCategory.ANALYSIS_QUEUE, `[分析队列] Omni 补捞元数据异常: ${item.name}`, e)
-            initialMetadata = {}
-          }
-          if (stage1MetadataMs === 0) {
-            stage1MetadataMs = Date.now() - tExifStart
           }
         }
       }
@@ -1263,18 +1222,12 @@ export class FileProcessor {
       const isPlainTextOrCode =
         extractFileCategory === FileCategory.TEXT || extractFileCategory === FileCategory.CODE
 
-      // anydoc 仅支持 Word/PPT/Excel/ODF/RTF/EPUB/CSV/PDF 等文档格式
-      const isAnydocSupported = ANYDOC_SUPPORTED_EXTS.has(effectiveExt)
-
-      // 0. 先优先尝试 Anydoc 原生文档文本提取 (仅 anydoc 支持的文档格式触发；纯文本/代码及其它类型绕过)
+      // 0. 统一调用 Omni 原生引擎进行端到端内容与元数据提取（覆盖文档、图片、纯文本、代码、音视频、字体等所有格式并输出真实 Benchmark）
       const anydocStartTime = Date.now()
-      const anydocResult =
-        isPlainTextOrCode || !isAnydocSupported
-          ? { content: '', assets: [] }
-          : await anydocService.extract(filePath).catch(err => {
-              logger.warn(LogCategory.ANALYSIS_QUEUE, `[anydoc] 提取失败: ${err.message}`)
-              return { content: '', assets: [] }
-            })
+      const anydocResult: AnydocResult = await anydocService.extract(filePath).catch(err => {
+        logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 提取失败: ${err.message}`)
+        return { content: '', assets: [], metadata: undefined, benchmark: undefined }
+      })
       const anydocDurationMs = Date.now() - anydocStartTime
 
       const anydocTextBytes = Buffer.byteLength(
@@ -1284,139 +1237,13 @@ export class FileProcessor {
 
       let generatedThumbnailOutPath: string | undefined = undefined
 
-      const [extractResult, dirContext, thumbPath] = await Promise.all([
-        // 1. Markitdown Server / LO 多页图像 OCR (仅在图片/文档开启 OCR 且前置文本未达到 MAX_CONTENT_SIZE_KB 时触发)
-        (async () => {
-          if (isPlainTextOrCode) {
-            return { serverResult: null, missingIndicators: [] }
-          }
-
-          const isOfficeOrPdf =
-            isCategory(effectiveVirtualPath, FileCategory.OFFICE) || effectiveExt === '.pdf'
-
-          const fileCategory = getFileCategory(effectiveVirtualPath)
-
-          // OCR 仅对图片与文档类生效：
-          // - 图片受 ENABLE_IMAGE_OCR 控制
-          // - 文档类（DOCUMENT/OFFICE/PDF）受 MAX_DOCUMENT_OCR_ITEMS !== 0 控制
-          // - 其它类型（应用/压缩包/音视频/电子书等）一律不请求 OCR
-          const isDocumentLike =
-            fileCategory === FileCategory.DOCUMENT ||
-            fileCategory === FileCategory.OFFICE ||
-            effectiveExt === '.pdf'
-          const useOcr = isImage ? enableImageOcr : isDocumentLike ? maxDocOcrItems !== 0 : false
-          const serverOptions: any = {}
-          const needsServerThumbnail =
-            !isNativeImage && !existingBasicData.thumbnailPath && isOfficeOrPdf
-
-          if (needsServerThumbnail && rootWorkspaceDir) {
-            try {
-              const thumbDir = await thumbnailService.ensureThumbnailDirectory(
-                rootWorkspaceDir.path
-              )
-              generatedThumbnailOutPath = path.join(thumbDir, `${fileFingerprint}.webp`)
-              serverOptions.thumbnailOut = generatedThumbnailOutPath
-            } catch (thumbErr: any) {
-              logger.debug(
-                LogCategory.ANALYSIS_QUEUE,
-                `[FileProcessor] 缩略图路径设置跳过: ${thumbErr?.message || thumbErr}`
-              )
-            }
-          }
-
-          // 是否触发 OCR/markitdownserver 仅取决于 useOcr
-          if (!useOcr) {
-            // 关键逻辑：无论文档 OCR 参数是否开启，PDF/Office 文件若缺乏缩略图，必须保证导出第 1 页封面 WebP 缩略图
-            if (generatedThumbnailOutPath && (effectiveExt === '.pdf' || isOfficeOrPdf)) {
-              try {
-                const { mediaConvertService } =
-                  await import('../../system/unified-worker-service/media-convert-service')
-                await mediaConvertService.generateDocumentPreview(
-                  filePath,
-                  generatedThumbnailOutPath,
-                  { effectiveExt }
-                )
-              } catch (thumbErr: any) {
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[FileProcessor] PDF 独立缩略图生成跳过: ${thumbErr?.message || thumbErr}`
-                )
-              }
-            }
-            return { serverResult: null, missingIndicators: [] }
-          }
-
-          const indicators: string[] = ['ocr']
-          const missingIndicators = this.filterMissingIndicators(
-            indicators,
-            existingBasicData,
-            magikaCategory
-          )
-
-          if (missingIndicators.length === 0) {
-            return { serverResult: null, missingIndicators }
-          }
-
-          try {
-            const { unifiedWorkerManager } = await import('../../system/unified-worker-service')
-            const { ConfigOrchestrator } = await import('../../../config/config-orchestrator')
-            const ocrModelSize =
-              ConfigOrchestrator.getInstance().getValue<string>('OCR_MODEL_SIZE') ?? 'tiny'
-            const orchestrator = ConfigOrchestrator.getInstance()
-            const maxContentSizeKb = orchestrator.getValue<number>('MAX_CONTENT_SIZE_KB') ?? 1024
-            const maxLimitChars = maxContentSizeKb <= 0 ? Infinity : maxContentSizeKb * 1024
-            const existingTextLen = Buffer.byteLength(existingBasicData?.content || '', 'utf8')
-
-            let ocrText = ''
-            let officePrePdfMs: number | undefined
-            let ocrMs: number | undefined
-            let thumbnailMs: number | undefined
-            if (missingIndicators.includes('ocr')) {
-              if (maxLimitChars !== Infinity && anydocTextBytes >= maxLimitChars) {
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[FileProcessor] ⚡ 前置 anydoc/结构文本提取量 (${anydocTextBytes} B) 已达到 MAX_CONTENT_SIZE_KB (${maxContentSizeKb}KB) 上限，在 OCR 之前直接触发早停拦截，跳过耗时 OCR 识别`
-                )
-              } else {
-                const ocrRes = await this.extractDocumentCoverAndPageOCR(
-                  filePath,
-                  effectiveExt,
-                  ocrModelSize,
-                  serverOptions.thumbnailOut,
-                  anydocTextBytes
-                )
-                ocrText = ocrRes.text || ''
-                officePrePdfMs = ocrRes.officePrePdfMs
-                ocrMs = ocrRes.ocrMs
-                thumbnailMs = ocrRes.thumbnailMs
-              }
-            }
-            const serverResult: any = {
-              document: { content: ocrText },
-              ocr: { content: ocrText },
-              text: { content: ocrText },
-              officePrePdfMs,
-              ocrMs,
-              thumbnailMs,
-              magika: magikaCategory,
-              metadata: null,
-              thumbnail: null
-            }
-            return { serverResult, missingIndicators }
-          } catch (error: any) {
-            logger.warn(
-              LogCategory.ANALYSIS_QUEUE,
-              `[FileProcessor] 常驻微服务调用失败，进行降级: ${item.name}`,
-              error
-            )
-            return { serverResult: null, missingIndicators }
-          }
-        })(),
-
-        // 2. 目录上下文（已在提取前统一预获取，此处直接复用 directoryContext，无需重复分析）
+      // 1. 缩略图与目录上下文并行决策
+      const [, dirContext, thumbPath] = await Promise.all([
+        Promise.resolve(null),
+        // 目录上下文（已在提取前统一预获取，此处直接复用 directoryContext，无需重复分析）
         Promise.resolve(directoryContext),
 
-        // 3. 缩略图决策
+        // 缩略图决策：对于图片格式生成本地缩略图，文档类若已有 thumbnailPath 直接复用
         (async () => {
           if (existingBasicData.thumbnailPath) return existingBasicData.thumbnailPath
 
@@ -1445,18 +1272,43 @@ export class FileProcessor {
             }
           }
 
-          return undefined // PDF/Office 由 Server 处理，见下文
+          // PDF/Office/视频/多媒体等：统一通过 Omni 微服务获取封面缩略图
+          if (rootWorkspaceDir) {
+            try {
+              const thumbDir = await thumbnailService.ensureThumbnailDirectory(
+                rootWorkspaceDir.path
+              )
+              const outPath = path.join(thumbDir, `${fileFingerprint}.webp`)
+              const success = await (thumbnailService as any).generateThumbnailFallback(filePath, outPath, String(existingBasicData?.id || ''))
+              if (success) {
+                return path.relative(rootWorkspaceDir.path, outPath)
+              }
+            } catch (err: any) {
+              logger.debug(
+                LogCategory.ANALYSIS_QUEUE,
+                `[FileProcessor] Omni 封面缩略图生成跳过: ${err?.message || err}`
+              )
+            }
+          }
+
+          return undefined
         })()
       ])
 
-      const serverResult = extractResult?.serverResult
       directoryContext = dirContext
 
-      // 提取完成，更新 Magika 分类 (使用 Server 返回的)
-      if (serverResult?.magika) {
-        magikaCategory = serverResult.magika
+      // 提取完成，更新 Magika 分类 (优先使用 Omni 提取返回的 Magika)
+      if (anydocResult?.metadata?.magika) {
+        magikaCategory = {
+          label: anydocResult.metadata.magika.label || effectiveExt.replace('.', ''),
+          mime_type: anydocResult.metadata.magika.mime_type || anydocResult.metadata.basic?.mime_type || 'application/octet-stream',
+          group: anydocResult.metadata.magika.group || 'document',
+          description: anydocResult.metadata.magika.description || '',
+          extensions: anydocResult.metadata.magika.extensions || [effectiveExt.replace('.', '')],
+          is_text: anydocResult.metadata.magika.is_text ?? true,
+          score: anydocResult.metadata.magika.score ?? 0.99
+        }
       } else if (!magikaCategory) {
-        // 如果 Server 没有返回并且本地依然没有，作为 fallback 调用一次本地 Magika CLI
         magikaCategory = await magikaService.identifyFile(filePath)
       }
 
@@ -1465,30 +1317,10 @@ export class FileProcessor {
       enhancedFileType = enhancedInfo.fileType
       enhancedSmartName = enhancedInfo.smartName
 
-      // 组装内容：原生文本层优先在前展示，多页 OCR 识别文本补充在后
-      const anydocMarkdown = anydocResult?.content?.trim() || ''
-      const ocrText = serverResult?.ocr?.content?.trim() ?? ''
+      // 组装内容：完全统一使用 Omni 提取的内容 (已在 Rust 原生端内完成文本层与 PP-OCRv6 融合)
+      let combinedContent = anydocResult?.content?.trim() || ''
 
-      let combinedContent = ''
-      if (anydocMarkdown && ocrText) {
-        combinedContent = `### 📄 文档结构内容\n\n${anydocMarkdown}\n\n---\n\n### 🔍 多页 OCR 图像识别文本\n\n${ocrText}`
-      } else if (anydocMarkdown) {
-        combinedContent = anydocMarkdown
-      } else {
-        combinedContent = ocrText
-      }
-
-      // If anydoc did not extract content and markitdownserver did, fallback to markitdownserver content
-      if (!combinedContent && serverResult) {
-        if (serverResult.document?.content != null) {
-          combinedContent = serverResult.document.content
-        }
-        if (!combinedContent && serverResult.text?.content != null) {
-          combinedContent = serverResult.text.content
-        }
-      }
-
-      // 复用数据：server 未返回内容时（完全跳过或仅按需请求了缺失指标），回退到已有内容
+      // 复用数据：Omni 未返回内容时（完全跳过或仅按需请求了缺失指标），回退到已有内容
       if (!combinedContent.trim() && existingBasicData.content && !isImage) {
         combinedContent = existingBasicData.content
         logger.info(
@@ -1497,8 +1329,7 @@ export class FileProcessor {
         )
       }
 
-      // 文本文件降级：如果 Markitdown Server 未返回任何内容（例如服务器跳过或异常），
-      // 使用 TextFileProcessor 作为兜底
+      // 文本文件降级：如果 Omni 未返回任何内容（例如不支持的纯文本编码），使用 TextFileProcessor 作为兜底
       if (!combinedContent.trim() && !isImage) {
         try {
           const textProcessor = new TextFileProcessor()
@@ -1523,54 +1354,47 @@ export class FileProcessor {
         }
       }
 
-      // 重新计算与整合完整的 markitdownBenchmark (优先使用 Omni 引擎高精度原生 benchmark 细分耗时)
-      const omniBm = anydocResult?.benchmark
-      const serverBenchmark = extractMarkitdownBenchmark(serverResult ?? undefined)
-      const phases = typeof timer?.getPhases === 'function' ? timer.getPhases() : {}
-      const hashIdentifyMs =
-        phases['hashAndTypeIdentification'] || phases['hashIdentify'] || phases['哈希与类型识别']
-      const localTextMs = phases['contentExtraction'] || phases['文本提取']
+      // ========== 阶段 1 细分耗时整合 ==========
+      const stage1TotalMs =
+        (typeof timer?.getPhases === 'function'
+          ? timer.getPhases()['hashAndTypeIdentification']
+          : undefined) ?? (stage1FingerprintMs + stage1LocalReuseMs + stage1CloudReuseMs)
+      const stage1Benchmark: Stage1Benchmark = {
+        totalMs: stage1TotalMs > 0 ? stage1TotalMs : stage1FingerprintMs,
+        fingerprintMs: stage1FingerprintMs > 0 ? stage1FingerprintMs : undefined,
+        localReuseMs: stage1LocalReuseMs > 0 ? stage1LocalReuseMs : undefined,
+        cloudReuseMs: stage1CloudReuseMs > 0 ? stage1CloudReuseMs : undefined
+      }
 
-      const stage2MagikaMs =
-        omniBm?.magika_ms ??
-        serverBenchmark?.magikaMs ??
-        (stage1MagikaMs > 0 ? stage1MagikaMs : 0)
-      const stage2MetadataMs =
-        omniBm?.metadata_ms ??
-        serverBenchmark?.metadataMs ??
-        (stage1MetadataMs > 0 ? stage1MetadataMs : 0)
-      const stage2TextMs =
-        omniBm?.text_ms ??
-        (anydocDurationMs > 0 ? anydocDurationMs : (serverBenchmark?.textMs ?? (localTextMs || 0)))
-      const stage2DocMs = omniBm?.document_ms ?? serverBenchmark?.documentMs
-      const stage2OcrMs =
-        omniBm?.ocr_ms ?? (serverResult?.ocrMs || serverBenchmark?.ocrMs || undefined)
-      const stage2OtherMs =
-        (serverResult?.officePrePdfMs || serverBenchmark?.officePrePdfMs || 0) +
-        (stage2DocMs || 0) +
-        (stage2OcrMs || 0) +
-        (omniBm?.html_ms || serverBenchmark?.htmlMs || 0) +
-        (omniBm?.thumbnail_ms || serverResult?.thumbnailMs || serverBenchmark?.thumbnailMs || 0)
-      const calculatedTotalMs =
-        omniBm?.total_ms ?? (stage2MagikaMs + stage2MetadataMs + stage2TextMs + stage2OtherMs)
+      // ========== 阶段 2 细分耗时整合 (Omni 端到端并行提取) ==========
+      const omniBm = anydocResult?.benchmark
+      const localTextMs = typeof timer?.getPhases === 'function' ? timer.getPhases()['contentExtraction'] || timer.getPhases()['文本提取'] : 0
+
+      const stage2MagikaMs = omniBm?.magika_ms
+      const stage2MetadataMs = omniBm?.metadata_ms
+      const stage2TextMs = omniBm?.text_ms ?? (anydocDurationMs > 0 ? anydocDurationMs : (localTextMs || 0))
+      const stage2OcrMs = omniBm?.ocr_ms
+      const stage2ThumbMs = omniBm?.thumbnail_ms
+
+      // 阶段 2 耗时为各项并行任务的最大耗时
+      const calculatedMaxParallelTotalMs = Math.max(
+        stage2MagikaMs || 0,
+        stage2MetadataMs || 0,
+        stage2TextMs || 0,
+        stage2OcrMs || 0,
+        stage2ThumbMs || 0
+      )
 
       markitdownBenchmark = {
-        totalMs: calculatedTotalMs > 0 ? calculatedTotalMs : (serverBenchmark?.totalMs ?? 0),
-        officePrePdfMs: serverResult?.officePrePdfMs ?? serverBenchmark?.officePrePdfMs,
-        magikaMs:
-          omniBm?.magika_ms ??
-          serverBenchmark?.magikaMs ??
-          (stage1MagikaMs > 0 ? stage1MagikaMs : undefined),
-        metadataMs:
-          omniBm?.metadata_ms ??
-          serverBenchmark?.metadataMs ??
-          (stage1MetadataMs > 0 ? stage1MetadataMs : undefined),
+        totalMs: omniBm?.total_ms ?? (calculatedMaxParallelTotalMs > 0 ? calculatedMaxParallelTotalMs : anydocDurationMs),
+        officePrePdfMs: undefined,
+        magikaMs: stage2MagikaMs,
+        metadataMs: stage2MetadataMs,
         textMs: stage2TextMs > 0 ? stage2TextMs : undefined,
-        documentMs: stage2DocMs,
+        documentMs: undefined, // 彻底移除冗余正文
         ocrMs: stage2OcrMs,
-        htmlMs: omniBm?.html_ms ?? serverBenchmark?.htmlMs,
-        thumbnailMs:
-          omniBm?.thumbnail_ms ?? (serverResult?.thumbnailMs ?? serverBenchmark?.thumbnailMs)
+        htmlMs: omniBm?.html_ms,
+        thumbnailMs: stage2ThumbMs > 0 ? stage2ThumbMs : undefined
       }
 
       // 根据用户配置的 MAX_CONTENT_SIZE_KB 进行统一的 UTF-8 字符边界防乱码安全截断 (-1 表示不限制大小)
@@ -1589,17 +1413,24 @@ export class FileProcessor {
         }
       }
 
+      // 提取 Omni 元数据与 Magika 分类
+      const omniMetadata = anydocResult?.metadata || {}
+      if (!magikaCategory && omniMetadata.category) {
+        magikaCategory = typeof omniMetadata.category === 'string' ? JSON.parse(omniMetadata.category) : omniMetadata.category
+      }
+
       contentResult = {
         content: combinedContent,
-        metadata:
-          initialMetadata && Object.keys(initialMetadata).length > 0
-            ? initialMetadata
-            : existingBasicData.metadata || {}
+        metadata: {
+          ...(existingBasicData.metadata || {}),
+          ...(initialMetadata || {}),
+          ...omniMetadata
+        }
       }
 
       logger.info(
         LogCategory.ANALYSIS_QUEUE,
-        `[FileProcessor] server提取完成: file=${item.name} combinedContentLen=${combinedContent.length} hasDocument=${!!serverResult?.document?.content} hasText=${!!serverResult?.text?.content} hasOcr=${!!serverResult?.ocr?.content} hasMetadata=${!!(contentResult.metadata && Object.keys(contentResult.metadata).length > 0)} (metadataKeys=${Object.keys(contentResult.metadata || {}).length})`
+        `[FileProcessor] 阶段2内容与元数据提取完成: file=${item.name} combinedContentLen=${combinedContent.length} (metadataKeys=${Object.keys(contentResult.metadata || {}).length})`
       )
 
       // 处理缩略图路径
@@ -1611,13 +1442,6 @@ export class FileProcessor {
         rootWorkspaceDir
       ) {
         thumbnailRelativePath = path.relative(rootWorkspaceDir.path, generatedThumbnailOutPath)
-      } else if (serverResult?.thumbnail) {
-        // server 可能返回字符串路径或 { path: string } 对象
-        const thumbRaw = serverResult.thumbnail as string | { path?: string }
-        const thumbPathStr = typeof thumbRaw === 'string' ? thumbRaw : thumbRaw?.path
-        if (rootWorkspaceDir && typeof thumbPathStr === 'string') {
-          thumbnailRelativePath = path.relative(rootWorkspaceDir.path, thumbPathStr)
-        }
       }
 
       // 封面降级：当无 markitdownserver 封面时正确降级为 anydoc 最大图片（根据 width * height 选出尺寸最大者）
@@ -1651,6 +1475,8 @@ export class FileProcessor {
       }
 
       timer.end('markitdownServerExtraction')
+      // 记录标准 contentExtraction 阶段耗时 (取 Omni 并行最大耗时或实际耗时)
+      timer.record('contentExtraction', markitdownBenchmark.totalMs || anydocDurationMs)
 
       const fileInfo: FileInfoInput = {
         path: filePath,
@@ -1710,7 +1536,6 @@ export class FileProcessor {
           enhancedFileType === 'image' ||
           (magikaCategory?.mime_type && magikaCategory.mime_type.startsWith('image/'))
         const ocrOrExtractedText =
-          (ocrText && ocrText.trim()) ||
           (isImageOrMedia && contentResult.content) ||
           (contentResult.content && contentResult.content.includes('OCR')
             ? contentResult.content
@@ -1744,13 +1569,39 @@ export class FileProcessor {
       if (phase === 'cpu') {
         try {
           const cpuTimerStats = await this.collectAnalysisStats(timer)
-          const cpuStatsWithBenchmark = applyMarkitdownBenchmark(cpuTimerStats, markitdownBenchmark)
+          const cpuStatsWithBenchmark = applyMarkitdownBenchmark(cpuTimerStats, markitdownBenchmark, stage1Benchmark)
+          cpuStatsWithBenchmark.analysis_stage = cpuCompletionStage
+          if (cpuStatsWithBenchmark.performance?.fresh && markitdownBenchmark) {
+            cpuStatsWithBenchmark.performance.fresh.contentExtractionBreakdown = markitdownBenchmark
+          }
+          if (cpuStatsWithBenchmark.performance?.fresh && stage1Benchmark) {
+            cpuStatsWithBenchmark.performance.fresh.stage1Breakdown = stage1Benchmark
+          }
+
+          // 1. 持久化 CPU 阶段提取的内容、元数据和性能指标至 files/file_contents/workspace_files
+          await this.saveBasicAnalysisData(
+            item,
+            fileFingerprint,
+            contentResult,
+            magikaCategory,
+            enhancedInfo.smartName,
+            enhancedInfo.fileType,
+            thumbnailRelativePath,
+            currentWorkspaceId,
+            timer,
+            cpuStatsWithBenchmark,
+            stage1Benchmark,
+            markitdownBenchmark
+          )
+
+          // 2. 更新 workspace_files 记录
           const wsFileRow = db
             .prepare(`SELECT id FROM workspace_files WHERE workspace_id = ? AND path = ?`)
             .get(currentWorkspaceId, filePath) as { id?: number } | undefined
           if (wsFileRow?.id) {
             await databaseService.updateFileAnalysisResult(String(wsFileRow.id), {
-              analysisStats: cpuStatsWithBenchmark
+              analysisStats: cpuStatsWithBenchmark,
+              thumbnailPath: thumbnailRelativePath || undefined
             })
           }
         } catch (saveCpuError) {
@@ -1937,11 +1788,13 @@ export class FileProcessor {
       const analysisStats = await this.collectAnalysisStats(timer)
       const analysisStatsWithBenchmark = applyMarkitdownBenchmark(
         analysisStats,
-        markitdownBenchmark
+        markitdownBenchmark,
+        stage1Benchmark
       )
 
       await databaseService.updateFileAnalysisResult(workspaceFile.id, {
-        analysisStats: analysisStatsWithBenchmark
+        analysisStats: analysisStatsWithBenchmark,
+        thumbnailPath: thumbnailRelativePath || undefined
       })
 
       // 从数据库捞取合并后的全量 analysisStats（包含 CPU 阶段 1/2 + GPU 阶段 3/4）推送给前端 UI
@@ -2291,240 +2144,6 @@ export class FileProcessor {
       return true
     } catch (e) {
       return false
-    }
-  }
-
-  /**
-   * 参照 MarkItDown 逻辑对 PDF 和 Office 文件 (DOCX/PPTX/XLSX) 进行封面提取、渲染页与内嵌插图 OCR
-   * 缩略图 (Thumbnail) 在第 1 页 OCR 渲染时顺手复用生成，未开启 OCR 时走轻量独立抽取 (PDF 转第一页 / Office 解压 ZIP)
-   */
-  private async extractDocumentCoverAndPageOCR(
-    filePath: string,
-    ext: string,
-    ocrModelSize: string,
-    thumbnailOutPath?: string,
-    initialByteLen: number = 0
-  ): Promise<{ text: string; officePrePdfMs?: number; ocrMs?: number; thumbnailMs?: number }> {
-    const { ConfigOrchestrator } = await import('../../../config/config-orchestrator')
-    const orchestrator = ConfigOrchestrator.getInstance()
-    const maxDocOcrItems = orchestrator.getValue<number>('MAX_DOCUMENT_OCR_ITEMS') ?? 0
-    const enableDocOcr = maxDocOcrItems !== 0
-    const enableImgOcr = orchestrator.getValue<boolean>('ENABLE_IMAGE_OCR') ?? true
-    const maxContentSizeKb = orchestrator.getValue<number>('MAX_CONTENT_SIZE_KB') ?? 1024
-    const maxLimitChars = maxContentSizeKb <= 0 ? Infinity : maxContentSizeKb * 1024
-
-    const { unifiedWorkerManager } = await import('../../system/unified-worker-service')
-
-    let totalOcrMs = 0
-    let totalOfficePrePdfMs = 0
-    let totalThumbnailMs = 0
-
-    // 1. 静态图像文件处理 (受 ENABLE_IMAGE_OCR 控制)
-    const IMAGE_EXTS = new Set([
-      '.png',
-      '.jpg',
-      '.jpeg',
-      '.webp',
-      '.bmp',
-      '.tiff',
-      '.tif',
-      '.gif',
-      '.ico',
-      '.svg'
-    ])
-    if (IMAGE_EXTS.has(ext)) {
-      if (!enableImgOcr) {
-        logger.debug(
-          LogCategory.ANALYSIS_QUEUE,
-          `[FileProcessor] ENABLE_IMAGE_OCR 为 false，跳过图片 OCR: ${filePath}`
-        )
-        return { text: '' }
-      }
-      const ocrStart = Date.now()
-      const res = await unifiedWorkerManager.postJson<any>('/api/extract/ocr', {
-        filePath,
-        modelType: ocrModelSize
-      })
-      totalOcrMs += Date.now() - ocrStart
-      const rawText = res?.text || ''
-      return { text: rawText, ocrMs: totalOcrMs }
-    }
-
-    // 2. 未开启文档 OCR (MAX_DOCUMENT_OCR_ITEMS == 0) 时的极速轻量缩略图处理
-    if (!enableDocOcr) {
-      logger.debug(
-        LogCategory.ANALYSIS_QUEUE,
-        `[FileProcessor] MAX_DOCUMENT_OCR_ITEMS 为 0，跳过 LibreOffice 转换与文档 OCR 识别: ${filePath}`
-      )
-      if (thumbnailOutPath) {
-        try {
-          const thumbStart = Date.now()
-          const { mediaConvertService } =
-            await import('../../system/unified-worker-service/media-convert-service')
-          await mediaConvertService.generateDocumentPreview(filePath, thumbnailOutPath)
-          totalThumbnailMs += Date.now() - thumbStart
-        } catch {
-          // 容错
-        }
-      }
-      return { text: '', thumbnailMs: totalThumbnailMs > 0 ? totalThumbnailMs : undefined }
-    }
-
-    const docOcrTexts: string[] = []
-    let currentByteLen = initialByteLen
-
-    // 3. 多页 PDF/Office 逐页 Page-by-Page 渲染与按需补足 OCR (带字符限制极速早停)
-    const isOfficeDoc = isCategory(`file${ext}`, FileCategory.OFFICE)
-    const isOfficeOrPdfDoc = isOfficeDoc || ext === '.pdf'
-    if (isOfficeOrPdfDoc) {
-      try {
-        const { mediaConvertService } =
-          await import('../../system/unified-worker-service/media-convert-service')
-
-        // A. 使用 LibreOffice PageRange 提取文档全量 Page 1..N 页面 PNG 图像 Buffer 数组
-        const prePdfStart = Date.now()
-        const allPageBuffers = await mediaConvertService.extractDocumentAllPagePngBuffers(
-          filePath,
-          ext
-        )
-        totalOfficePrePdfMs += Date.now() - prePdfStart
-
-        if (allPageBuffers.length > 0) {
-          console.debug(
-            `[FileProcessor][debug] 🔍 开始多页 PNG 图像 OCR 识别: file=${path.basename(filePath)}, 拿到全量 PNG 图片数=${allPageBuffers.length} 张, 前置文本字节数=${initialByteLen} B, 上限=${maxLimitChars} B`
-          )
-          for (let pageIdx = 0; pageIdx < allPageBuffers.length; pageIdx++) {
-            console.debug(
-              `[FileProcessor][debug] 🔄 正在处理第 ${pageIdx + 1}/${allPageBuffers.length} 页 PNG 图像 OCR: 当前总累计字节数=${currentByteLen} B / ${maxLimitChars} B`
-            )
-
-            // ⚡ 极速早停拦截：前置文本 + 已 OCR 文本如果已达到上限，立刻终止后续所有页面的光栅化与推理
-            if (currentByteLen >= maxLimitChars) {
-              console.debug(
-                `[FileProcessor][debug] ⚡ 组合文本提取量已达 MAX_CONTENT_SIZE_KB (${currentByteLen} B / ${maxLimitChars} B) 上限，多页 OCR 早停，已在第 ${pageIdx + 1} 页停止`
-              )
-              break
-            }
-
-            const pagePngBuffer = allPageBuffers[pageIdx]
-
-            // B. 如果是第 1 页且需要生成缩略图，顺带导出 WebP 高保真封面缩略图
-            if (pageIdx === 0 && thumbnailOutPath) {
-              const thumbStart = Date.now()
-              try {
-                const fs = await import('node:fs/promises')
-                await fs.mkdir(path.dirname(thumbnailOutPath), { recursive: true })
-                const sharp = (await import('sharp')).default
-                await sharp(pagePngBuffer)
-                  .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
-                  .webp({ quality: 80 })
-                  .toFile(thumbnailOutPath)
-                totalThumbnailMs += Date.now() - thumbStart
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[FileProcessor] ⚡ 顺带生成第 1 页高保真缩略图成功: ${thumbnailOutPath}`
-                )
-              } catch (thumbErr: any) {
-                logger.debug(
-                  LogCategory.ANALYSIS_QUEUE,
-                  `[FileProcessor] 顺带生成缩略图跳过: ${thumbErr?.message || thumbErr}`
-                )
-              }
-            }
-
-            // C. 发送当前页的高保真 PNG 图像 Buffer 至 ONNX PP-OCRv6 引擎做图像级文本识别
-            const ocrStart = Date.now()
-            const ocrRes = await unifiedWorkerManager.postJson<any>('/api/extract/ocr', {
-              imageBufferBase64: pagePngBuffer.toString('base64'),
-              modelType: ocrModelSize
-            })
-            totalOcrMs += Date.now() - ocrStart
-
-            const pageText = ocrRes?.text?.trim() || ''
-            const addedBytes = Buffer.byteLength(pageText, 'utf8')
-            console.debug(
-              `[FileProcessor][debug] ✅ 第 ${pageIdx + 1} 页 PNG OCR 完成: 本页字符数=${pageText.length}, 本页字节数=${addedBytes} B`
-            )
-
-            if (pageText) {
-              docOcrTexts.push(`## Page ${pageIdx + 1}\n${pageText}`)
-              currentByteLen += addedBytes
-            }
-
-            console.debug(
-              `[FileProcessor][debug] 📈 第 ${pageIdx + 1} 页识别后总累计字节数=${currentByteLen} B / ${maxLimitChars} B`
-            )
-          }
-
-          console.debug(
-            `[FileProcessor][debug] 🏁 多页 PNG OCR 全部结束: 参与 OCR 页面数=${docOcrTexts.length}, 最终组合文本总字节数=${currentByteLen} B`
-          )
-
-          return {
-            text: docOcrTexts.join('\n\n'),
-            officePrePdfMs: totalOfficePrePdfMs > 0 ? totalOfficePrePdfMs : undefined,
-            ocrMs: totalOcrMs > 0 ? totalOcrMs : undefined,
-            thumbnailMs: totalThumbnailMs > 0 ? totalThumbnailMs : undefined
-          }
-        } else {
-          // 分支 2：未安装 LibreOffice 或 LibreOffice 转换失败 (回退提取 Office 内嵌媒体插图做图像 OCR)
-          const OFFICE_ZIP_EXTS = new Set(['.docx', '.pptx', '.xlsx'])
-          if (OFFICE_ZIP_EXTS.has(ext)) {
-            logger.debug(
-              LogCategory.ANALYSIS_QUEUE,
-              `[FileProcessor] 未安装/无法使用 LibreOffice，回退提取 Office 内嵌媒体插图做图像 OCR: ${filePath}`
-            )
-            try {
-              const fs = await import('node:fs/promises')
-              const buffer = await fs.readFile(filePath)
-              const unzipper = await import('unzipper')
-              const directory = await unzipper.Open.buffer(buffer)
-
-              const mediaFiles = directory.files.filter(
-                file => /\/media\//i.test(file.path) && /\.(png|jpe?g|webp|bmp)$/i.test(file.path)
-              )
-
-              const sampleMedia = mediaFiles.slice(0, 5)
-              for (let i = 0; i < sampleMedia.length; i++) {
-                if (currentByteLen >= maxLimitChars) break
-
-                const zipFile = sampleMedia[i]
-                const imgBuffer = await zipFile.buffer()
-                if (imgBuffer && imgBuffer.length > 1024) {
-                  const ocrStart = Date.now()
-                  const ocrRes = await unifiedWorkerManager.postJson<any>('/api/extract/ocr', {
-                    imageBufferBase64: imgBuffer.toString('base64'),
-                    modelType: ocrModelSize
-                  })
-                  totalOcrMs += Date.now() - ocrStart
-                  const imgText = ocrRes?.text?.trim() || ''
-                  if (imgText) {
-                    docOcrTexts.push(`[插图 ${i + 1} OCR]:\n${imgText}`)
-                    currentByteLen += Buffer.byteLength(imgText, 'utf8')
-                  }
-                }
-              }
-            } catch (zipErr: any) {
-              logger.debug(
-                LogCategory.ANALYSIS_QUEUE,
-                `[FileProcessor] Office 内嵌插图 OCR 跳过: ${zipErr?.message || zipErr}`
-              )
-            }
-          }
-        }
-      } catch (e: any) {
-        logger.debug(
-          LogCategory.ANALYSIS_QUEUE,
-          `[FileProcessor] 页面级 OCR 渲染提取跳过: ${e?.message || e}`
-        )
-      }
-    }
-
-    return {
-      text: docOcrTexts.join('\n\n'),
-      officePrePdfMs: totalOfficePrePdfMs > 0 ? totalOfficePrePdfMs : undefined,
-      ocrMs: totalOcrMs > 0 ? totalOcrMs : undefined,
-      thumbnailMs: totalThumbnailMs > 0 ? totalThumbnailMs : undefined
     }
   }
 }

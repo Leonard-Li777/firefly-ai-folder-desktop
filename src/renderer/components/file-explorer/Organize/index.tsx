@@ -722,6 +722,7 @@ export const Organize: React.FC = () => {
                               onSelectCandidate={handleSelectCandidate}
                               isLimitPredict={isLimitPredict}
                               onRegenerate={generateCandidates}
+                              onOpenCustomTree={() => setShowCustomForm(true)}
                             />
                           )}
 
