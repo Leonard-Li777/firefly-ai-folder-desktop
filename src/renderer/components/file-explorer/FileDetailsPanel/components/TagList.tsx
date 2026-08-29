@@ -4,8 +4,6 @@ import { t } from '@app/languages'
 import { toast } from '../../../common/Toast'
 import {
   isFileTypeDimension,
-  EXTENSION_DIMENSION_IDS,
-  RULE_SUBDIVISION_DIMENSION_IDS,
   isExtensionTag,
   isExtensionTriggerTagName
 } from '@firefly/shared'
@@ -37,6 +35,20 @@ interface TagListProps {
 interface CategorizedTag extends TagItem {
   colorIndex: number
 }
+
+/**
+ * 依据 ADR 0028: 元数据提取字段找补与清洗架构规范 (Metadata Derivation & Tag Reconciliation)
+ * 严格定义的系统找补 / 确定性规则派生维度 ID 集合
+ */
+const SYSTEM_RECONCILIATION_DIMENSION_IDS = new Set<number>([
+  1, // 文件类型 (Magika 分类组与扩展名向上映射补全)
+  5, 9, 10, 12, 14, 15, 100, 101, 105, 106, // 规则细分 (文档/文本/数据库/源码/应用数据/压缩包/程序/系统文件/磁盘映像/字体细分)
+  102, 103, 104, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, // 各类扩展名维度
+  122, // 画质等级 (基于图像/视频分辨率确定性找补)
+  123, // 内容尺度 (元数据标注找补)
+  124, // 打码程度 (元数据标注找补)
+  125 // 水印程度 (元数据标注找补)
+])
 
 interface TagCategoryGroup {
   id: 'system' | 'other' | 'content'
@@ -70,12 +82,10 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
           dimName === 'content tags' ||
           dimName === '28'
 
-        // 2. 真正的系统找补维度（文件类型 ID 1、规则细分维度、扩展名专属维度 ID 102~117）
+        // 2. 依据 ADR 0028 规范判定的系统找补维度
         const isSystemDim =
-          dimIdNum === 1 ||
           isFileTypeDimension({ id: dimIdNum }) ||
-          EXTENSION_DIMENSION_IDS.has(dimIdNum) ||
-          RULE_SUBDIVISION_DIMENSION_IDS.has(dimIdNum)
+          SYSTEM_RECONCILIATION_DIMENSION_IDS.has(dimIdNum)
 
         dimGroup.tags.forEach((tagObj: TagItem) => {
           const categorizedItem: CategorizedTag = {
