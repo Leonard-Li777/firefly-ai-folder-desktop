@@ -203,15 +203,17 @@ jobs:
             rm -f "$TEMP_ZIP"
           fi
 
-      - name: Sync Llama.cpp
+      - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
         env:
           DOWNLOAD_LATEST_LLAMA: ${{ github.event.inputs.download_latest_llama || 'true' }}
           FORCE_UPDATE: ${{ github.event.inputs.download_latest_llama || 'true' }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          echo "📥 Syncing llama.cpp engine..."
-          AI_ENGINE=llama.cpp pnpm run download:llama
+          if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "${{ github.event.inputs.download_latest_llama }}" == "true" ]]; then
+            echo "📥 Syncing llama.cpp engine..."
+            AI_ENGINE=llama.cpp pnpm run download:llama
+          fi
 
       - name: Setup Resources (Basic)
         if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
