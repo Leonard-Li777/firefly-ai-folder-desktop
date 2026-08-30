@@ -63,14 +63,26 @@ export default defineConfig({
       '@pro/*': resolve(proAliasDir, '*'),
       '../src': resolve(__dirname, 'src'),
       '../../src': resolve(__dirname, 'src'),
-      '@firefly/types': resolve(__dirname, '../../packages/types/src'),
-      '@firefly/shared': resolve(__dirname, '../../packages/shared/src'),
-      '@firefly/core-engine': resolve(__dirname, '../../packages/core-engine/src'),
-      '@firefly/server': resolve(__dirname, '../server/src'),
-      '@firefly/electron-llamaIndex-service': resolve(
-        __dirname,
-        '../../packages/electron-llamaIndex-service/src'
-      ),
+      '@firefly/types': existsSync(resolve(__dirname, 'pro/packages/types/src'))
+        ? resolve(__dirname, 'pro/packages/types/src')
+        : resolve(__dirname, '../../packages/types/src'),
+      '@firefly/shared': existsSync(resolve(__dirname, 'pro/packages/shared/src'))
+        ? resolve(__dirname, 'pro/packages/shared/src')
+        : resolve(__dirname, '../../packages/shared/src'),
+      '@firefly/core-engine': existsSync(resolve(__dirname, 'pro/packages/core-engine/src'))
+        ? resolve(__dirname, 'pro/packages/core-engine/src')
+        : resolve(__dirname, '../../packages/core-engine/src'),
+      '@firefly/server': existsSync(resolve(__dirname, 'pro/packages/server/src'))
+        ? resolve(__dirname, 'pro/packages/server/src')
+        : resolve(__dirname, '../server/src'),
+      '@firefly/i18n-content': existsSync(resolve(__dirname, 'pro/packages/i18n-content/src'))
+        ? resolve(__dirname, 'pro/packages/i18n-content/src')
+        : resolve(__dirname, '../../packages/i18n-content/src'),
+      '@firefly/electron-llamaIndex-service': existsSync(
+        resolve(__dirname, 'pro/packages/electron-llamaIndex-service/src')
+      )
+        ? resolve(__dirname, 'pro/packages/electron-llamaIndex-service/src')
+        : resolve(__dirname, '../../packages/electron-llamaIndex-service/src'),
       '@app/languages': resolve(__dirname, 'src/languages'),
       '@app/electron': resolve(__dirname, 'src/electron'),
       react: resolve(__dirname, '../../node_modules/react'),

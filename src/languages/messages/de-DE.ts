@@ -3011,7 +3011,6 @@ export default  {
     "11192": "Sehr ähnlich",
     "11193": "Genau",
     "11194": "Der Inhalt ist genau derselbe",
-    "11195": "Beste Memory-Passform",
     "11196": "Kommt bald",
     "11197": "Empfohlene Aufbewahrungsregeln:",
     "11198": "★ Höchste Auflösung zuerst (multimodale Empfehlung)",

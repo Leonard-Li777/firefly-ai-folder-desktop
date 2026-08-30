@@ -1,56 +1,851 @@
-name: Build and Package Firefly Desktop App
+name: Build Cross Platform (Desktop)
 
 on:
+  workflow_dispatch:
+    inputs:
+      platform_macos:
+        description: '构建 macOS 平台'
+        required: false
+        type: boolean
+        default: true
+      platform_windows:
+        description: '构建 Windows 平台'
+        required: false
+        type: boolean
+        default: true
+      platform_linux:
+        description: '构建 Linux 平台'
+        required: false
+        type: boolean
+        default: true
+      download_latest_llama:
+        description: '是否重新下载并更新最新的 llama.cpp 核心依赖包 (默认为 true)'
+        required: true
+        type: boolean
+        default: true
+      linux_runner:
+        description: '选择 Linux 构建的运行 Runner 环境 (默认 self-hosted)'
+        required: true
+        type: choice
+        default: 'self-hosted'
+        options:
+          - 'self-hosted'
+          - 'ubuntu-latest'
+      build_region:
+        description: '构建区域 (国际版 INTL 或 国内版 CN)'
+        required: true
+        type: choice
+        default: 'CN'
+        options:
+          - 'CN'
+          - 'INTL'
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  build:
-    name: Build (${{ matrix.target }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            target: win32-x64
-          - os: macos-latest
-            target: darwin-x64
-          - os: ubuntu-latest
-            target: linux-x64
-
+  build-macos:
+    name: Build macOS
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_macos == 'true' || github.event.inputs.platform_macos == true))
+    runs-on: macos-latest
     steps:
       - name: Checkout Open-Source Desktop Code
         uses: actions/checkout@v4
 
-      - name: Checkout Private Pro Module (If Secret Available)
-        if: ${{ secrets.PRIVATE_MONOREPO_PAT != '' }}
+      - name: Checkout Private Pro Module
         uses: actions/checkout@v4
         with:
           repository: Leonard-Li777/firefly-ai-folder-desktop-pro
           token: ${{ secrets.PRIVATE_MONOREPO_PAT }}
           path: pro
 
-      - name: Setup Node.js & pnpm
+      - name: Install macOS Dependencies
+        shell: bash
+        run: |
+          if ! command -v gh &>/dev/null; then
+            echo "🔧 gh CLI 未安装，正在安装..."
+            brew install gh
+          fi
+          echo "gh version: $(gh --version)"
+
+          if ! command -v 7z &>/dev/null; then
+            echo "🔧 7z 未安装，正在安装 p7zip..."
+            brew install p7zip
+          fi
+          echo "7z version: $(7z --help 2>&1 | head -2)"
+
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10.18.3
+          version: 11.3.0
 
-      - name: Setup Node.js Environment
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24.15.0
+          node-version: '24.15.0'
           cache: 'pnpm'
 
-      - name: Install Dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Package Desktop Executable
-        run: pnpm package
-
-      - name: Release Packages
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          files: out/make/**/*
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        env:
+          ELECTRON_MIRROR: https://github.com/electron/electron/releases/download/
+          ELECTRON_BUILDER_BINARIES_MIRROR: https://github.com/electron-userland/electron-builder-binaries/releases/download/
+
+      - name: Approve all builds
+        run: pnpm approve-builds --all
+
+      - name: Debug Electron Require
+        shell: bash
+        run: |
+          node -e "
+          try {
+            const path = require('electron');
+            const pkgVer = require('electron/package.json').version;
+            console.log('Electron Path:', path);
+            console.log('Electron Package Version:', pkgVer);
+            try {
+              const { execSync } = require('child_process');
+              const binVer = execSync('\"' + path + '\" --version').toString().trim();
+              console.log('Electron Binary Version:', binVer);
+            } catch (err) {
+              console.log('Electron Binary execution warning:', err.message);
+            }
+          } catch (e) {
+            console.error('Electron Require Failed Error:', e);
+            process.exit(1);
+          }
+          "
+        env:
+          ELECTRON_MIRROR: https://github.com/electron/electron/releases/download/
+          ELECTRON_BUILDER_BINARIES_MIRROR: https://github.com/electron-userland/electron-builder-binaries/releases/download/
+
+      - name: Rebuild native dependencies
+        run: pnpm run rebuild:all
+        env:
+          BUILD_ARCH: universal
+
+      - name: Install Sharp cross-platform dependencies
+        run: pnpm run install-sharp-cross-platform
+
+      - name: Create Production Env
+        shell: bash
+        env:
+          ENV_BASE_B64: ${{ secrets.ENV_BASE }}
+          ENV_PROD_B64: ${{ secrets.ENV_PROD }}
+        run: |
+          echo "📝 Injecting environment variables from Base64..."
+          echo "$ENV_BASE_B64" | base64 --decode > .env
+          echo "$ENV_PROD_B64" | base64 --decode > .env.production
+          echo "📄 Showing filtered .env contents:"
+          grep -E "VITE_POSTHOG_HOST|SUPABASE_URL" .env || true
+
+      - name: Cache/Restore built-in models
+        id: cache-models
+        uses: actions/cache@v4
+        with:
+          path: build/extraResources/models
+          key: llama-models-shared-v3
+
+      - name: Download Built-in LFM2.5 Model (firefly-resources)
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
+          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-20260829.zip" --repo "Leonard-Li777/firefly-resources" --dir "/tmp/lfm" --clobber; then
+            mkdir -p build/extraResources/models
+            echo "📦 解压内置模型（保留 hub/ 目录结构，与开发目录对齐）..."
+            unzip -o -q /tmp/lfm/LFM2.5-1.2B-Instruct-20260829.zip -d build/extraResources/models
+            rm -rf /tmp/lfm
+            echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
+          else
+            echo "⚠️ firefly-resources 未找到内置模型 zip，继续旧通道兜底。"
+          fi
+
+      - name: Download Model on Cache Miss
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          TEMP_ZIP=$(mktemp)
+          echo "📥 从 GitHub Release 下载 models-resources.zip..."
+          if gh release download ci-resources --pattern "models-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber; then
+            mkdir -p build/extraResources/models
+            echo "📦 解压模型文件..."
+            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models
+            rm -f "$TEMP_ZIP"
+            echo "✅ 整体模型文件 (models-resources.zip) 恢复完成。"
+          else
+            echo "⚠️ models-resources.zip 未找到，尝试拉取 magika-resources.zip 与 ppocrv6-resources.zip..."
+            mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
+            if gh release download ci-resources --pattern "magika-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber; then
+              unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
+              rm -f "$TEMP_ZIP"
+              echo "✅ magika-resources.zip 恢复完成。"
+            fi
+            if gh release download ci-resources --pattern "ppocrv6-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber; then
+              unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
+              rm -f "$TEMP_ZIP"
+              echo "✅ ppocrv6-resources.zip 恢复完成。"
+            fi
+          fi
+
+      - name: Cache/Restore preset resources (fastfetch, llama.cpp)
+        id: cache-presets
+        uses: actions/cache@v4
+        with:
+          path: build/presetResources
+          key: llama-presets-darwin-v2
+
+      - name: Sync Llama.cpp
+        shell: bash
+        env:
+          DOWNLOAD_LATEST_LLAMA: ${{ github.event.inputs.download_latest_llama || 'true' }}
+          FORCE_UPDATE: ${{ github.event.inputs.download_latest_llama || 'true' }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          echo "📥 Syncing llama.cpp engine..."
+          AI_ENGINE=llama.cpp pnpm run download:llama
+
+      - name: Setup Resources (Basic)
+        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
+        run: pnpm run setup-resources
+        env:
+          AI_ENGINE: llama.cpp
+          FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
+
+      - name: 下载 omni-geo 数据集
+        shell: bash
+        run: |
+          echo "📥 下载 omni-geo 地理数据集..."
+          gh release download geo-data --pattern "geonames-resources.tar.gz" \
+            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber || true
+          if [ -f "/tmp/geo.tar.gz" ]; then
+            mkdir -p build/extraResources/geo
+            tar xzf /tmp/geo.tar.gz -C build/extraResources/geo
+            echo "✅ omni-geo 数据集恢复完成。"
+          else
+            echo "⚠️ 未找到 geo-data release，跳过地理数据集。"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy App Icons
+        run: |
+          mkdir -p build
+          cp assets/icon.ico build/icon.ico
+          cp assets/icon.icns build/icon.icns
+          if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
+            cp assets/boot_en.jpg build/boot.jpg || cp assets/boot.jpg build/boot.jpg
+          else
+            cp assets/boot.jpg build/boot.jpg
+          fi
+          cp build/boot.jpg build/boot.gif
+
+      - name: Build macOS Application (llama.cpp)
+        run: |
+          if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
+            pnpm run make:intl
+          else
+            pnpm run make
+          fi
+        env:
+          AI_ENGINE: llama.cpp
+          BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
+          BUILD_ARCH: universal
+
+      - name: Publish to Cloudflare R2
+        shell: bash
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
+        run: |
+          echo "📤 Uploading package to Cloudflare R2..."
+          pnpm run publish:r2 || echo "⚠️ R2 发布跳过或无配置"
+
+      - name: Publish to GitHub
+        shell: bash
+        env:
+          CI: 'true'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pnpm run publish:github || echo "⚠️ GitHub 发布完成或已发布"
+
+  build-windows:
+    name: Build Windows
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_windows == 'true' || github.event.inputs.platform_windows == true))
+    runs-on: windows-2022
+    steps:
+      - name: Checkout Open-Source Desktop Code
+        uses: actions/checkout@v4
+
+      - name: Checkout Private Pro Module
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRIVATE_MONOREPO_PAT }}
+          path: pro
+
+      - name: Install gh CLI
+        shell: bash
+        run: |
+          if ! command -v gh &>/dev/null; then
+            echo "🔧 gh CLI 未安装，正在安装..."
+            choco install gh -y
+          fi
+          echo "gh version: $(gh --version)"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: 'pnpm'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        env:
+          ELECTRON_MIRROR: https://github.com/electron/electron/releases/download/
+          ELECTRON_BUILDER_BINARIES_MIRROR: https://github.com/electron-userland/electron-builder-binaries/releases/download/
+
+      - name: Approve all builds
+        run: pnpm approve-builds --all
+
+      - name: Debug Electron Require
+        shell: bash
+        run: |
+          node -e "
+          try {
+            const path = require('electron');
+            const pkgVer = require('electron/package.json').version;
+            console.log('Electron Path:', path);
+            console.log('Electron Package Version:', pkgVer);
+            try {
+              const { execSync } = require('child_process');
+              const binVer = execSync('\"' + path + '\" --version').toString().trim();
+              console.log('Electron Binary Version:', binVer);
+            } catch (err) {
+              console.log('Electron Binary execution warning:', err.message);
+            }
+          } catch (e) {
+            console.error('Electron Require Failed Error:', e);
+            process.exit(1);
+          }
+          "
+        env:
+          ELECTRON_MIRROR: https://github.com/electron/electron/releases/download/
+          ELECTRON_BUILDER_BINARIES_MIRROR: https://github.com/electron-userland/electron-builder-binaries/releases/download/
+
+      - name: Set up Visual Studio shell
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure node-gyp MSVS version
+        shell: pwsh
+        run: |
+          $vswhere = Get-Command vswhere.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source
+          if (-not $vswhere) {
+            $possiblePaths = @(
+              "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe",
+              "${env:ProgramFiles}\Microsoft Visual Studio\Installer\vswhere.exe"
+            )
+            $vswhere = $possiblePaths | Where-Object { Test-Path $_ } | Select-Object -First 1
+          }
+          if (-not $vswhere) { throw "vswhere.exe not found" }
+          $vsVer = & $vswhere -latest -property catalog_productLineVersion
+          echo "VS Product Line Version: $vsVer"
+          echo "GYP_MSVS_VERSION=$vsVer" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Rebuild native dependencies
+        run: pnpm run rebuild:all
+        env:
+          VCINSTALLDIR: ''
+
+      - name: Build extract-file-icon native module (Windows)
+        shell: bash
+        run: |
+          echo "📦 编译 extract-file-icon (面向 Electron)..."
+          pnpm run rebuild:extract-file-icon
+        env:
+          VCINSTALLDIR: ''
+
+      - name: Install Sharp cross-platform dependencies
+        run: pnpm run install-sharp-cross-platform
+
+      - name: Create Production Env
+        shell: bash
+        env:
+          ENV_BASE_B64: ${{ secrets.ENV_BASE }}
+          ENV_PROD_B64: ${{ secrets.ENV_PROD }}
+        run: |
+          echo "📝 Injecting environment variables from Base64..."
+          echo "$ENV_BASE_B64" | base64 --decode > .env
+          echo "$ENV_PROD_B64" | base64 --decode > .env.production
+          echo "📄 Showing filtered .env contents:"
+          grep -E "VITE_POSTHOG_HOST|SUPABASE_URL" .env || true
+
+      - name: Cache/Restore built-in models
+        id: cache-models
+        uses: actions/cache@v4
+        with:
+          path: build/extraResources/models
+          key: llama-models-shared-v3
+
+      - name: Download Built-in LFM2.5 Model (firefly-resources)
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
+          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-20260829.zip" --repo "Leonard-Li777/firefly-resources" --dir "/tmp/lfm" --clobber; then
+            mkdir -p build/extraResources/models
+            echo "📦 解压内置模型（保留 hub/ 目录结构，与开发目录对齐）..."
+            unzip -o -q /tmp/lfm/LFM2.5-1.2B-Instruct-20260829.zip -d build/extraResources/models
+            rm -rf /tmp/lfm
+            echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
+          else
+            echo "⚠️ firefly-resources 未找到内置模型 zip，继续旧通道兜底。"
+          fi
+
+      - name: Download Model on Cache Miss
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          TEMP_ZIP=$(mktemp)
+          echo "📥 从 GitHub Release 下载 models-resources.zip..."
+          if gh release download ci-resources --pattern "models-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber; then
+            mkdir -p build/extraResources/models
+            echo "📦 解压模型文件..."
+            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models
+            rm -f "$TEMP_ZIP"
+            echo "✅ 整体模型文件 (models-resources.zip) 恢复完成。"
+          else
+            echo "⚠️ models-resources.zip 未找到，尝试拉取 magika-resources.zip 与 ppocrv6-resources.zip..."
+            mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
+            if gh release download ci-resources --pattern "magika-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber; then
+              unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
+              rm -f "$TEMP_ZIP"
+              echo "✅ magika-resources.zip 恢复完成。"
+            fi
+            if gh release download ci-resources --pattern "ppocrv6-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber; then
+              unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
+              rm -f "$TEMP_ZIP"
+              echo "✅ ppocrv6-resources.zip 恢复完成。"
+            fi
+          fi
+
+      - name: Cache/Restore preset resources (fastfetch, llama.cpp)
+        id: cache-presets
+        uses: actions/cache@v4
+        with:
+          path: build/presetResources
+          key: llama-presets-windows-v2
+
+      - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
+        shell: bash
+        env:
+          DOWNLOAD_LATEST_LLAMA: ${{ github.event.inputs.download_latest_llama || 'true' }}
+          FORCE_UPDATE: ${{ github.event.inputs.download_latest_llama || 'true' }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "${{ github.event.inputs.download_latest_llama }}" == "true" ]]; then
+            echo "📥 Syncing llama.cpp engine..."
+            AI_ENGINE=llama.cpp pnpm run download:llama
+          fi
+
+      - name: Setup Resources (Basic)
+        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
+        run: pnpm run setup-resources
+        env:
+          AI_ENGINE: llama.cpp
+          FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
+
+      - name: 下载 omni-geo 数据集
+        shell: bash
+        run: |
+          echo "📥 下载 omni-geo 地理数据集..."
+          gh release download geo-data --pattern "geonames-resources.tar.gz" \
+            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber || true
+          if [ -f "/tmp/geo.tar.gz" ]; then
+            mkdir -p build/extraResources/geo
+            tar xzf /tmp/geo.tar.gz -C build/extraResources/geo
+            echo "✅ omni-geo 数据集恢复完成。"
+          else
+            echo "⚠️ 未找到 geo-data release，跳过地理数据集。"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy App Icons
+        shell: bash
+        run: |
+          mkdir -p build
+          cp assets/icon.ico build/icon.ico
+          cp assets/icon.icns build/icon.icns
+          if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
+            cp assets/boot_en.jpg build/boot.jpg || cp assets/boot.jpg build/boot.jpg
+          else
+            cp assets/boot.jpg build/boot.jpg
+          fi
+          cp build/boot.jpg build/boot.gif
+
+      - name: Build Windows Application (llama.cpp)
+        shell: bash
+        run: |
+          if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
+            pnpm run make:intl
+          else
+            pnpm run make
+          fi
+        env:
+          AI_ENGINE: llama.cpp
+          BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
+
+      - name: Publish to Cloudflare R2
+        shell: bash
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
+        run: |
+          echo "📤 Uploading package to Cloudflare R2..."
+          pnpm run publish:r2 || echo "⚠️ R2 发布跳过或无配置"
+
+      - name: Publish to GitHub
+        shell: bash
+        env:
+          CI: 'true'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pnpm run publish:github || echo "⚠️ GitHub 发布完成或已发布"
+
+  build-linux:
+    name: Build Linux
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_linux == 'true' || github.event.inputs.platform_linux == true))
+    runs-on: ${{ github.event.inputs.linux_runner || 'self-hosted' }}
+    container:
+      image: node:20-buster
+    env:
+      NPM_CONFIG_UNSAFE_PERM: 'true'
+      PYTHON: python3
+    steps:
+      - name: Checkout Open-Source Desktop Code
+        uses: actions/checkout@v4
+
+      - name: Checkout Private Pro Module
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRIVATE_MONOREPO_PAT }}
+          path: pro
+
+      - name: Fix buster apt sources (EOL)
+        shell: bash
+        run: |
+          rm -f /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources
+          printf '%s\n' \
+            'deb http://archive.debian.org/debian buster main contrib non-free' \
+            'deb http://archive.debian.org/debian buster-updates main contrib non-free' \
+            'deb http://archive.debian.org/debian-security buster/updates main contrib non-free' \
+            > /etc/apt/sources.list
+          echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+          cat /etc/apt/sources.list
+
+      - name: Install gh CLI
+        shell: bash
+        run: |
+          if ! command -v gh &>/dev/null; then
+            echo "🔧 gh CLI 未安装，正在通过官方静态二进制快速安装..."
+            ARCH=$(dpkg --print-architecture 2>/dev/null || uname -m)
+            case "$ARCH" in
+              aarch64|arm64) GH_ARCH="arm64" ;;
+              x86_64|amd64)  GH_ARCH="amd64" ;;
+              armv7*|armhf)  GH_ARCH="armv6" ;;
+              *)             GH_ARCH="amd64" ;;
+            esac
+
+            GH_VER="2.67.0"
+            GH_FILE="gh_${GH_VER}_linux_${GH_ARCH}.tar.gz"
+            GH_URL="https://github.com/cli/cli/releases/download/v${GH_VER}/${GH_FILE}"
+
+            INSTALLED=false
+            mkdir -p /tmp/gh-setup
+            for URL in "${GH_URL}" "https://ghfast.top/${GH_URL}" "https://ghproxy.net/${GH_URL}"; do
+              echo "📥 尝试从 ${URL} 下载 gh..."
+              if curl -fsSL -L --connect-timeout 15 --retry 2 "$URL" -o "/tmp/gh-setup/${GH_FILE}"; then
+                tar -xzf "/tmp/gh-setup/${GH_FILE}" -C /tmp/gh-setup
+                cp "/tmp/gh-setup/gh_${GH_VER}_linux_${GH_ARCH}/bin/gh" /usr/local/bin/gh 2>/dev/null || \
+                cp "/tmp/gh-setup/gh_${GH_VER}_linux_${GH_ARCH}/bin/gh" /usr/bin/gh 2>/dev/null
+                chmod +x /usr/local/bin/gh 2>/dev/null || chmod +x /usr/bin/gh 2>/dev/null
+                rm -rf /tmp/gh-setup
+                INSTALLED=true
+                echo "✅ gh CLI 静态二进制已成功安装至 PATH"
+                break
+              fi
+            done
+          fi
+          echo "gh version: $(gh --version 2>/dev/null || echo '未检测到版本')"
+
+      - name: Install System Build Dependencies (Linux)
+        run: |
+          if command -v apt-get &> /dev/null; then
+            apt-get update && apt-get install -y build-essential make g++ python3 fakeroot dpkg rpm libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 libasound2 libxshmfence1 libx11-xcb1 p7zip-full
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.18.0'
+
+      - name: Clean packageManager from package.json
+        shell: bash
+        run: |
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+            delete pkg.packageManager;
+            fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2));
+          "
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4
+          run_install: false
+
+      - name: Setup Python (python-build-standalone for buster glibc)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "🔧 下载 python-build-standalone (manylinux, 最低 glibc 2.17)..."
+          TRIPLE="$(uname -m)-unknown-linux-gnu"
+          URL="$(
+            curl -fsSL "https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest" \
+            | TRIPLE="${TRIPLE}" node -e '
+                let d = "";
+                process.stdin.on("data", (c) => (d += c));
+                process.stdin.on("end", () => {
+                  const j = JSON.parse(d);
+                  const triple = process.env.TRIPLE;
+                  const asset = j.assets.find(
+                    (a) =>
+                      /cpython-3\.11\.[0-9]+/.test(a.name) &&
+                      a.name.includes(triple) &&
+                      a.name.includes("install_only") &&
+                      !a.name.includes("stripped")
+                  );
+                  if (!asset) {
+                    console.error(`未找到 ${triple} 的 Python 3.11 install_only asset`);
+                    process.exit(1);
+                  }
+                  console.log(asset.browser_download_url);
+                });
+              '
+          )"
+          mkdir -p /opt/pybs
+          curl -fsSL "${URL}" | tar -xz -C /opt/pybs
+          echo "/opt/pybs/python/bin" >> "${GITHUB_PATH}"
+          /opt/pybs/python/bin/python3 --version
+
+      - name: Override Electron version for Linux compatibility
+        shell: bash
+        run: |
+          node -e "
+            const fs = require('fs');
+            const path = './package.json';
+            const pkg = JSON.parse(fs.readFileSync(path, 'utf8'));
+            pkg.devDependencies.electron = '32.2.0';
+            fs.writeFileSync(path, JSON.stringify(pkg, null, 2));
+          "
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+        env:
+          ELECTRON_MIRROR: https://github.com/electron/electron/releases/download/
+          ELECTRON_BUILDER_BINARIES_MIRROR: https://github.com/electron-userland/electron-builder-binaries/releases/download/
+
+      - name: Rebuild native dependencies
+        run: |
+          pnpm exec electron-rebuild -f -v 32.2.0 -w better-sqlite3
+          pnpm exec electron-rebuild -f -v 32.2.0 -w sharp
+
+      - name: Install Sharp cross-platform dependencies
+        run: pnpm run install-sharp-cross-platform
+
+      - name: Create Production Env
+        shell: bash
+        env:
+          ENV_BASE_B64: ${{ secrets.ENV_BASE }}
+          ENV_PROD_B64: ${{ secrets.ENV_PROD }}
+        run: |
+          echo "📝 Injecting environment variables from Base64..."
+          echo "$ENV_BASE_B64" | base64 --decode > .env
+          echo "$ENV_PROD_B64" | base64 --decode > .env.production
+          echo "📄 Showing filtered .env contents:"
+          grep -E "VITE_POSTHOG_HOST|SUPABASE_URL" .env || true
+
+      - name: Cache/Restore built-in models
+        id: cache-models
+        uses: actions/cache@v4
+        with:
+          path: build/extraResources/models
+          key: llama-models-shared-v3
+
+      - name: Download Built-in LFM2.5 Model (firefly-resources)
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
+          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-20260829.zip" --repo "Leonard-Li777/firefly-resources" --dir "/tmp/lfm" --clobber; then
+            mkdir -p build/extraResources/models
+            echo "📦 解压内置模型..."
+            unzip -o -q /tmp/lfm/LFM2.5-1.2B-Instruct-20260829.zip -d build/extraResources/models
+            rm -rf /tmp/lfm
+            echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
+          fi
+
+      - name: Download Model on Cache Miss
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          TEMP_ZIP=$(mktemp)
+          if gh release download ci-resources --pattern "models-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber; then
+            mkdir -p build/extraResources/models
+            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models
+            rm -f "$TEMP_ZIP"
+          else
+            mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
+            if gh release download ci-resources --pattern "magika-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber; then
+              unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
+              rm -f "$TEMP_ZIP"
+            fi
+            if gh release download ci-resources --pattern "ppocrv6-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber; then
+              unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
+              rm -f "$TEMP_ZIP"
+            fi
+          fi
+
+      - name: Cache/Restore preset resources (fastfetch, llama.cpp)
+        id: cache-presets
+        uses: actions/cache@v4
+        with:
+          path: build/presetResources
+          key: llama-presets-linux-v2
+
+      - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
+        shell: bash
+        env:
+          DOWNLOAD_LATEST_LLAMA: ${{ github.event.inputs.download_latest_llama || 'true' }}
+          FORCE_UPDATE: ${{ github.event.inputs.download_latest_llama || 'true' }}
+          GITHUB_TOKEN: ${{ github.token }}
+          AI_ENGINE: llama.cpp
+        run: |
+          if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "${{ github.event.inputs.download_latest_llama }}" == "true" ]]; then
+            pnpm run download:llama
+          fi
+
+      - name: Setup Resources (Basic)
+        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
+        run: pnpm run setup-resources
+        env:
+          AI_ENGINE: llama.cpp
+          FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
+
+      - name: 下载 omni-geo 数据集
+        shell: bash
+        run: |
+          echo "📥 下载 omni-geo 地理数据集..."
+          gh release download geo-data --pattern "geonames-resources.tar.gz" \
+            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber || true
+          if [ -f "/tmp/geo.tar.gz" ]; then
+            mkdir -p build/extraResources/geo
+            tar xzf /tmp/geo.tar.gz -C build/extraResources/geo
+            echo "✅ omni-geo 数据集恢复完成。"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy App Icons
+        run: |
+          mkdir -p build
+          cp assets/icon.ico build/icon.ico
+          cp assets/icon.icns build/icon.icns
+          if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
+            cp assets/boot_en.jpg build/boot.jpg || cp assets/boot.jpg build/boot.jpg
+          else
+            cp assets/boot.jpg build/boot.jpg
+          fi
+          cp build/boot.jpg build/boot.gif
+
+      - name: Build Linux Application
+        run: |
+          if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
+            pnpm run make:intl
+          else
+            pnpm run make
+          fi
+        env:
+          AI_ENGINE: llama.cpp
+          BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
+
+      - name: Publish to Cloudflare R2
+        shell: bash
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
+        run: |
+          echo "📤 Uploading package to Cloudflare R2..."
+          pnpm run publish:r2 || echo "⚠️ R2 发布跳过或无配置"
+
+      - name: Publish to GitHub
+        shell: bash
+        env:
+          CI: 'true'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pnpm run publish:github || echo "⚠️ GitHub 发布完成或已发布"

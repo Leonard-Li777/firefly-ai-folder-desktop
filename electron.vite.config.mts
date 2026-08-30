@@ -13,12 +13,51 @@ import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const jszipMinPath = require.resolve('jszip/dist/jszip.min.js')
 
+// 动态解析 packages 目录：优先从 pro/packages/ 解析，兼容本地与旧路径
+const resolvePackageSrc = (pkgName: string, subPath = 'src'): string => {
+  const proPkgDir = path.resolve(__dirname, `pro/packages/${pkgName}/${subPath}`)
+  if (fs.existsSync(proPkgDir)) {
+    return proPkgDir
+  }
+  const rootPkgDir = path.resolve(__dirname, `../../packages/${pkgName}/${subPath}`)
+  if (fs.existsSync(rootPkgDir)) {
+    return rootPkgDir
+  }
+  return proPkgDir
+}
+
+const resolvePackageJson = (pkgName: string): string => {
+  const proPkgJson = path.resolve(__dirname, `pro/packages/${pkgName}/package.json`)
+  if (fs.existsSync(proPkgJson)) {
+    return proPkgJson
+  }
+  return path.resolve(__dirname, `../../packages/${pkgName}/package.json`)
+}
+
+// 动态解析 node_modules 包（如 react, react-dom），优先本地 node_modules
+const resolveNodeModule = (moduleName: string): string => {
+  const localMod = path.resolve(__dirname, `node_modules/${moduleName}`)
+  if (fs.existsSync(localMod)) {
+    return localMod
+  }
+  return path.resolve(__dirname, `../../node_modules/${moduleName}`)
+}
+
 // 动态解析 jieba-wasm 的 wasm 文件路径，兼容 pnpm 不同 hoisting 策略
-const requireFromShared = createRequire(
-  path.resolve(__dirname, '../../packages/shared/package.json')
-)
-const jiebaMainPath = requireFromShared.resolve('jieba-wasm')
-const jiebaWasmPath = path.resolve(path.dirname(jiebaMainPath), 'jieba_rs_wasm_bg.wasm')
+const sharedPkgJsonPath = resolvePackageJson('shared')
+const requireFromShared = fs.existsSync(sharedPkgJsonPath)
+  ? createRequire(sharedPkgJsonPath)
+  : require
+let jiebaWasmPath = ''
+try {
+  const jiebaMainPath = requireFromShared.resolve('jieba-wasm')
+  jiebaWasmPath = path.resolve(path.dirname(jiebaMainPath), 'jieba_rs_wasm_bg.wasm')
+} catch {
+  try {
+    const fallbackPath = require.resolve('jieba-wasm')
+    jiebaWasmPath = path.resolve(path.dirname(fallbackPath), 'jieba_rs_wasm_bg.wasm')
+  } catch {}
+}
 
 /**
  * 释放指定端口上占用的进程，兼容 Windows / macOS / Linux
@@ -73,9 +112,11 @@ export default defineConfig(({ command, mode }) => {
   // voerkai18n 插件使用 INIT_CWD 或 cwd() 来查找 package.json
   process.env.INIT_CWD = __dirname
 
-  // 手动从 Monorepo 根目录加载环境变量
+  // 手动加载环境变量（优先当前 desktop 目录，回退至 monorepo 根目录）
   // 规则：.env 为基础变量，.env.${mode} 为环境专属变量并覆盖同名键
-  const envDir = path.resolve(__dirname, '../../')
+  const envDir = fs.existsSync(path.resolve(__dirname, '.env'))
+    ? __dirname
+    : path.resolve(__dirname, '../../')
   const envFiles = ['.env', `.env.${mode}`]
 
   const env: Record<string, string> = {}
@@ -163,14 +204,19 @@ export default defineConfig(({ command, mode }) => {
 
   const bundledDeps = isProd ? [...baseBundledDeps, ...productionBundledDeps] : baseBundledDeps
 
+  const assetsDir = fs.existsSync(path.resolve(__dirname, 'assets'))
+    ? path.resolve(__dirname, 'assets')
+    : path.resolve(__dirname, '../../assets')
+
   return {
     main: {
-      publicDir: path.resolve(__dirname, '../../assets'),
+      publicDir: assetsDir,
       plugins: [
         {
           name: 'copy-jieba-wasm',
           // 在 dev 和 build 模式都拷贝 wasm 文件到 out_build/main/
           configResolved() {
+            if (!jiebaWasmPath || !fs.existsSync(jiebaWasmPath)) return
             const destDir = path.resolve(__dirname, 'out_build/main')
             if (!fs.existsSync(destDir)) {
               fs.mkdirSync(destDir, { recursive: true })
@@ -182,16 +228,9 @@ export default defineConfig(({ command, mode }) => {
         },
         {
           name: 'cleanup-stale-protected',
-          // 每次构建开始前清理 out_build/main 中历史残留的 protected-* 文件
-          // 背景：build.emptyOutDir = false 导致本机反复构建时旧 chunk 不会清理，
-          // 会累积大量旧构建的 protected-*.js / protected-*.jsc（曾达 601 个 js + 44 个 jsc，
-          // 合计约 1.77GB），最终被整体打包进 app.asar 造成安装包体积异常膨胀。
-          // 此处保留当前 main.js 已引用的最新字节码文件，仅清理冗余的旧产物，
-          // 避免构建中断时应用仍可基于旧产物回退运行。
           buildStart() {
             const mainDir = path.resolve(__dirname, 'out_build/main')
             if (!fs.existsSync(mainDir)) return
-            // 收集当前 main.js 引用的 protected 文件，避免误删当前可用的字节码产物
             const referenced = new Set<string>()
             const mainJsPath = path.join(mainDir, 'main.js')
             if (fs.existsSync(mainJsPath)) {
@@ -207,15 +246,13 @@ export default defineConfig(({ command, mode }) => {
                 entry.startsWith('protected-') &&
                 (entry.endsWith('.js') || entry.endsWith('.jsc'))
               ) {
-                if (referenced.has(entry)) continue // 保留 main.js 引用的文件
+                if (referenced.has(entry)) continue
                 const filePath = path.join(mainDir, entry)
                 try {
                   removedBytes += fs.statSync(filePath).size
                   fs.unlinkSync(filePath)
                   removed++
-                } catch {
-                  // 文件可能被正在运行的进程占用，忽略单个删除失败
-                }
+                } catch {}
               }
             }
             if (removed > 0) {
@@ -258,22 +295,19 @@ export default defineConfig(({ command, mode }) => {
           '@components': path.resolve(__dirname, 'src/renderer/components'),
           '@stores': path.resolve(__dirname, 'src/renderer/stores'),
           '@assets': path.resolve(__dirname, 'src/renderer/assets'),
-          '@core': path.resolve(__dirname, '../../packages/core-engine/src'),
+          '@core': resolvePackageSrc('core-engine'),
           '@type': path.resolve(__dirname, 'src/types'),
           '@shared': path.resolve(__dirname, 'src/shared'),
           '@runtime': path.resolve(__dirname, 'src/electron/runtime-services'),
-          '@firefly/shared': path.resolve(__dirname, '../../packages/shared/src'),
-          '@firefly/types': path.resolve(__dirname, '../../packages/types/src'),
-          '@firefly/core-engine': path.resolve(__dirname, '../../packages/core-engine/src'),
-          '@firefly/electron-llamaIndex-service': path.resolve(
-            __dirname,
-            '../../packages/electron-llamaIndex-service/src'
-          ),
-          '@firefly/server': path.resolve(__dirname, '../server/src'),
+          '@firefly/shared': resolvePackageSrc('shared'),
+          '@firefly/types': resolvePackageSrc('types'),
+          '@firefly/core-engine': resolvePackageSrc('core-engine'),
+          '@firefly/electron-llamaIndex-service': resolvePackageSrc('electron-llamaIndex-service'),
+          '@firefly/server': resolvePackageSrc('server'),
           '@pro': proAliasDir,
           '@pro/*': path.resolve(proAliasDir, '*'),
-          react: path.resolve(__dirname, '../../node_modules/react'),
-          'react-dom': path.resolve(__dirname, '../../node_modules/react-dom')
+          react: resolveNodeModule('react'),
+          'react-dom': resolveNodeModule('react-dom')
         }
       },
       build: {
@@ -338,6 +372,9 @@ export default defineConfig(({ command, mode }) => {
                 id.includes('apps/server') ||
                 id.includes('packages/shared') ||
                 id.includes('packages/electron-llamaIndex-service') ||
+                id.includes('pro/packages/server') ||
+                id.includes('pro/packages/shared') ||
+                id.includes('pro/packages/electron-llamaIndex-service') ||
                 id.includes('license-service') ||
                 id.includes('license-utils')
               ) {
@@ -402,18 +439,15 @@ export default defineConfig(({ command, mode }) => {
           '@type': path.resolve(__dirname, 'src/types'),
           '@shared': path.resolve(__dirname, 'src/shared'),
           '@runtime': path.resolve(__dirname, 'src/electron/runtime-services'),
-          '@firefly/shared': path.resolve(__dirname, '../../packages/shared/src/index.browser'),
-          '@firefly/types': path.resolve(__dirname, '../../packages/types/src'),
-          '@firefly/core-engine': path.resolve(__dirname, '../../packages/core-engine/src'),
-          '@firefly/electron-llamaIndex-service': path.resolve(
-            __dirname,
-            '../../packages/electron-llamaIndex-service/src'
-          ),
-          '@firefly/server': path.resolve(__dirname, '../server/src'),
+          '@firefly/shared': resolvePackageSrc('shared', 'src/index.browser'),
+          '@firefly/types': resolvePackageSrc('types'),
+          '@firefly/core-engine': resolvePackageSrc('core-engine'),
+          '@firefly/electron-llamaIndex-service': resolvePackageSrc('electron-llamaIndex-service'),
+          '@firefly/server': resolvePackageSrc('server'),
           '@pro': proAliasDir,
           '@pro/*': path.resolve(proAliasDir, '*'),
-          react: path.resolve(__dirname, '../../node_modules/react'),
-          'react-dom': path.resolve(__dirname, '../../node_modules/react-dom')
+          react: resolveNodeModule('react'),
+          'react-dom': resolveNodeModule('react-dom')
         }
       },
       build: {
@@ -431,7 +465,7 @@ export default defineConfig(({ command, mode }) => {
                   '**/.git/**',
                   '**/languages/messages/idMap.json',
                   '**/languages/translates/**',
-                  '**/packages/shared/src/languages/messages/**',
+                  '**/pro/packages/shared/src/languages/messages/**',
                   '**/apps/desktop/src/languages/messages/**'
                 ]
               }
@@ -548,27 +582,27 @@ export default defineConfig(({ command, mode }) => {
           },
           {
             find: '@firefly/shared',
-            replacement: path.resolve(__dirname, '../../packages/shared/src/index.browser')
+            replacement: resolvePackageSrc('shared', 'src/index.browser')
           },
           {
             find: '@firefly/types',
-            replacement: path.resolve(__dirname, '../../packages/types/src')
+            replacement: resolvePackageSrc('types')
           },
           {
             find: '@firefly/core-engine',
-            replacement: path.resolve(__dirname, '../../packages/core-engine/src')
+            replacement: resolvePackageSrc('core-engine')
           },
           {
             find: '@firefly/electron-llamaIndex-service',
-            replacement: path.resolve(__dirname, '../../packages/electron-llamaIndex-service/src')
+            replacement: resolvePackageSrc('electron-llamaIndex-service')
           },
-          { find: '@firefly/server', replacement: path.resolve(__dirname, '../server/src') },
-          { find: 'react', replacement: path.resolve(__dirname, '../../node_modules/react') },
+          { find: '@firefly/server', replacement: resolvePackageSrc('server') },
+          { find: 'react', replacement: resolveNodeModule('react') },
           {
             find: 'react-dom',
-            replacement: path.resolve(__dirname, '../../node_modules/react-dom')
+            replacement: resolveNodeModule('react-dom')
           },
-          { find: 'events', replacement: path.resolve(__dirname, '../../node_modules/events') },
+          { find: 'events', replacement: resolveNodeModule('events') },
           { find: 'jszip/dist/jszip.min.js', replacement: jszipMinPath },
           { find: 'jszip/dist/jszip', replacement: jszipMinPath },
           { find: 'jszip', replacement: jszipMinPath }

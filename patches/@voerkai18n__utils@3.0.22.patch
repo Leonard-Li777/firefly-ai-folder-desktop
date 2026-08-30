@@ -1,0 +1,22 @@
+diff --git a/dist/index.js b/dist/index.js
+index a962e3f89acde436f4915eeeb11a28b49ad7b364..90ad9ed05987577d95047cd9b293ded47c8e14ac 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -3,6 +3,7 @@
+ var path8 = require('path');
+ var t2 = require('fs');
+ var axios = require('axios');
++var https = require('https');
+ 
+ function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
+ 
+@@ -256,7 +257,8 @@ async function aiQuestion(prompt, options) {
+         "Content-Type": "application/json",
+         "Authorization": `Bearer ${apiKey}`,
+         "Cache-Control": "no-cache"
+-      }
++      },
++      httpsAgent: new https.Agent({ rejectUnauthorized: true })
+     });
+     if (res.status !== 200) {
+       throw new Error(`API request failed with status ${res.status}: ${res.statusText}`);

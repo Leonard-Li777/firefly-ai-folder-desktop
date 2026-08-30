@@ -1,0 +1,122 @@
+packages:
+  - .
+  - pro/packages/*
+  - ai-folder-organize
+
+publicHoistPattern:
+  - '*plugin*'
+
+blockExoticSubdeps: false
+
+patchedDependencies:
+  better-sqlite3@12.10.0: patches/better-sqlite3@12.10.0.patch
+  macos-alias@0.2.12: patches/macos-alias.patch
+  '@voerkai18n/cli@3.0.22': patches/@voerkai18n+cli@3.0.22.patch
+  '@voerkai18n/utils@3.0.22': patches/@voerkai18n__utils@3.0.22.patch
+  extract-file-icon@0.3.2: patches/extract-file-icon@0.3.2.patch
+  '@electron/universal@2.0.1': patches/@electron__universal@2.0.1.patch
+
+overrides:
+  node-gyp: 10.1.0
+  '@flyfish-group/file-viewer-web': ^1.0.25
+
+allowBuilds:
+  '0': '@datastax/astra-db-ts'
+  '1': '@tailwindcss/oxide'
+  '2': better-sqlite3
+  '3': core-js
+  '4': core-js-pure
+  '5': cpu-features
+  '6': electron
+  '7': electron-winstaller
+  '8': esbuild
+  '9': fs-xattr
+  '10': macos-alias
+  '11': node-llama-cpp
+  '12': protobufjs
+  '13': sharp
+  '14': ssh2
+  '15': supabase
+  '16': unrs-resolver
+  better-sqlite3: true
+  core-js: true
+  core-js-pure: true
+  cpu-features: true
+  electron-winstaller: true
+  esbuild: true
+  fs-xattr: true
+  macos-alias: true
+  protobufjs: true
+  sharp: true
+  ssh2: true
+  unrs-resolver: true
+  javascript-obfuscator: true
+  electron: true
+  '@flyfish-group/file-viewer-web': true
+  '@file-viewer/web': true
+  es5-ext: true
+  extract-file-icon: false
+  ffmpeg-static: false
+  '@ffmpeg-installer/ffmpeg': true
+  '@ffmpeg-installer/darwin-arm64': true
+  '@ffmpeg-installer/darwin-x64': true
+  '@ffmpeg-installer/darwin-ia32': true
+  '@ffmpeg-installer/win32-x64': true
+  '@ffmpeg-installer/win32-ia32': true
+  '@ffmpeg-installer/win32-arm64': true
+  '@ffmpeg-installer/linux-x64': true
+  '@ffmpeg-installer/linux-arm64': true
+  '@ffmpeg-installer/linux-ia32': true
+  '@ffmpeg-installer/linux-arm': true
+  tesseract.js: true
+onlyBuiltDependencies:
+  - better-sqlite3
+  - sharp
+  - extract-file-icon
+  - macos-alias
+  - node-llama-cpp
+  - '@flyfish-group/file-viewer-web'
+  - '@ffmpeg-installer/ffmpeg'
+  - '@ffmpeg-installer/darwin-arm64'
+  - '@ffmpeg-installer/darwin-x64'
+  - '@ffmpeg-installer/darwin-ia32'
+  - '@ffmpeg-installer/win32-x64'
+  - '@ffmpeg-installer/win32-ia32'
+  - '@ffmpeg-installer/win32-arm64'
+  - '@ffmpeg-installer/linux-x64'
+  - '@ffmpeg-installer/linux-arm64'
+  - '@ffmpeg-installer/linux-ia32'
+  - '@ffmpeg-installer/linux-arm'
+minimumReleaseAgeExclude:
+  - '@file-viewer/core@2.2.9'
+  - '@file-viewer/eda-layout@2.2.9'
+  - '@file-viewer/eda-orcad@2.2.9'
+  - '@file-viewer/geometry-engine@2.2.9'
+  - '@file-viewer/pptx@2.2.9'
+  - '@file-viewer/preset-all@2.2.9'
+  - '@file-viewer/react@2.2.9'
+  - '@file-viewer/renderer-3d@2.2.9'
+  - '@file-viewer/renderer-archive@2.2.9'
+  - '@file-viewer/renderer-cad@2.2.9'
+  - '@file-viewer/renderer-data@2.2.9'
+  - '@file-viewer/renderer-drawing@2.2.9'
+  - '@file-viewer/renderer-eda@2.2.9'
+  - '@file-viewer/renderer-email@2.2.9'
+  - '@file-viewer/renderer-epub@2.2.9'
+  - '@file-viewer/renderer-geo@2.2.9'
+  - '@file-viewer/renderer-image@2.2.9'
+  - '@file-viewer/renderer-media@2.2.9'
+  - '@file-viewer/renderer-mindmap@2.2.9'
+  - '@file-viewer/renderer-ofd@2.2.9'
+  - '@file-viewer/renderer-pdf@2.2.9'
+  - '@file-viewer/renderer-presentation@2.2.9'
+  - '@file-viewer/renderer-spreadsheet@2.2.9'
+  - '@file-viewer/renderer-text@2.2.9'
+  - '@file-viewer/renderer-typst@2.2.9'
+  - '@file-viewer/renderer-word@2.2.9'
+  - '@file-viewer/vite-plugin@2.2.9'
+  - '@file-viewer/docx@0.3.15'
+  - '@file-viewer/doc@2.2.9'
+  - '@flyfish-dev/cad-viewer@0.6.6'
+
+trustLockfile: true

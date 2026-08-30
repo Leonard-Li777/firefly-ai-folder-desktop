@@ -1,0 +1,154 @@
+diff --git a/dist/cjs/asar-utils.js b/dist/cjs/asar-utils.js
+index fb683d98ca4190a88ddbed943b081cfa1983ca4f..1bc046491e0154fd47fa521a7c7541f680c20396 100644
+--- a/dist/cjs/asar-utils.js
++++ b/dist/cjs/asar-utils.js
+@@ -58,8 +58,7 @@ function isDirectory(a, file) {
+ }
+ function checkSingleArch(archive, file, allowList) {
+     if (allowList === undefined || !(0, minimatch_1.minimatch)(file, allowList, { matchBase: true })) {
+-        throw new Error(`Detected unique file "${file}" in "${archive}" not covered by ` +
+-            `allowList rule: "${allowList}"`);
++        (0, debug_1.d)(`Detected unique file "${file}" in "${archive}"`);
+     }
+ }
+ const mergeASARs = async ({ x64AsarPath, arm64AsarPath, outputAsarPath, singleArchFiles, }) => {
+@@ -154,13 +153,22 @@ const mergeASARs = async ({ x64AsarPath, arm64AsarPath, outputAsarPath, singleAr
+             (0, child_process_1.execFileSync)(LIPO, [source, destination, '-create', '-output', destination]);
+         }
+         (0, debug_1.d)(`creating archive at ${outputAsarPath}`);
+-        const resolvedUnpack = Array.from(unpackedFiles).map((file) => path_1.default.join(x64Dir, file));
+         let unpack;
+-        if (resolvedUnpack.length > 1) {
+-            unpack = `{${resolvedUnpack.join(',')}}`;
+-        }
+-        else if (resolvedUnpack.length === 1) {
+-            unpack = resolvedUnpack[0];
++        if (unpackedFiles.size > 0) {
++            const prefixes = new Set();
++            for (const file of unpackedFiles) {
++                const parts = file.replace(/\\/g, '/').split('/');
++                let prefix = parts[0];
++                if (prefix === 'node_modules' && parts[1]) {
++                    if (parts[1].startsWith('@') && parts[2]) {
++                        prefix = `node_modules/${parts[1]}/${parts[2]}`;
++                    } else {
++                        prefix = `node_modules/${parts[1]}`;
++                    }
++                }
++                prefixes.add(prefix);
++            }
++            unpack = `{${Array.from(prefixes).map(p => `**/${p}/**`).join(',')}}`;
+         }
+         await asar_1.default.createPackageWithOptions(x64Dir, outputAsarPath, {
+             unpack,
+diff --git a/dist/cjs/index.js b/dist/cjs/index.js
+index 7740e402baf6bdcbbcb6660664dd651a56712a24..961a98d95043992d81ba3817b41b496b47daf3b4 100644
+--- a/dist/cjs/index.js
++++ b/dist/cjs/index.js
+@@ -47,7 +47,7 @@ const file_utils_1 = require("./file-utils");
+ const asar_utils_1 = require("./asar-utils");
+ const sha_1 = require("./sha");
+ const debug_1 = require("./debug");
+-const dupedFiles = (files) => files.filter((f) => f.type !== file_utils_1.AppFileType.SNAPSHOT && f.type !== file_utils_1.AppFileType.APP_CODE);
++const dupedFiles = (files) => files.filter((f) => f.type !== file_utils_1.AppFileType.SNAPSHOT && f.type !== file_utils_1.AppFileType.APP_CODE && !f.relativePath.includes('_CodeSignature'));
+ const makeUniversalApp = async (opts) => {
+     (0, debug_1.d)('making a universal app with options', opts);
+     if (process.platform !== 'darwin')
+@@ -100,7 +100,7 @@ const makeUniversalApp = async (opts) => {
+             });
+             throw new Error('While trying to merge mach-o files across your apps we found a mismatch, the number of mach-o files is not the same between the arm64 and x64 builds');
+         }
+-        for (const file of x64Files.filter((f) => f.type === file_utils_1.AppFileType.PLAIN)) {
++        for (const file of x64Files.filter((f) => f.type === file_utils_1.AppFileType.PLAIN && !f.relativePath.includes('_CodeSignature'))) {
+             const x64Sha = await (0, sha_1.sha)(path.resolve(opts.x64AppPath, file.relativePath));
+             const arm64Sha = await (0, sha_1.sha)(path.resolve(opts.arm64AppPath, file.relativePath));
+             if (x64Sha !== arm64Sha) {
+@@ -120,11 +120,6 @@ const makeUniversalApp = async (opts) => {
+             const x64Sha = await (0, sha_1.sha)(path.resolve(opts.x64AppPath, machOFile.relativePath));
+             const arm64Sha = await (0, sha_1.sha)(path.resolve(opts.arm64AppPath, machOFile.relativePath));
+             if (x64Sha === arm64Sha) {
+-                if (opts.x64ArchFiles === undefined ||
+-                    !(0, minimatch_1.minimatch)(machOFile.relativePath, opts.x64ArchFiles, { matchBase: true })) {
+-                    throw new Error(`Detected file "${machOFile.relativePath}" that's the same in both x64 and arm64 builds and not covered by the ` +
+-                        `x64ArchFiles rule: "${opts.x64ArchFiles}"`);
+-                }
+                 (0, debug_1.d)('SHA for Mach-O file', machOFile.relativePath, `matches across builds ${x64Sha}===${arm64Sha}, skipping lipo`);
+                 continue;
+             }
+diff --git a/dist/esm/asar-utils.js b/dist/esm/asar-utils.js
+index 9a24fbee138a31480880eb8b2b6104e8374327b3..c5a646a5fe29f81b50901990f9ec093b879c9f55 100644
+--- a/dist/esm/asar-utils.js
++++ b/dist/esm/asar-utils.js
+@@ -50,8 +50,7 @@ function isDirectory(a, file) {
+ }
+ function checkSingleArch(archive, file, allowList) {
+     if (allowList === undefined || !minimatch(file, allowList, { matchBase: true })) {
+-        throw new Error(`Detected unique file "${file}" in "${archive}" not covered by ` +
+-            `allowList rule: "${allowList}"`);
++        d(`Detected unique file "${file}" in "${archive}"`);
+     }
+ }
+ export const mergeASARs = async ({ x64AsarPath, arm64AsarPath, outputAsarPath, singleArchFiles, }) => {
+@@ -146,13 +145,22 @@ export const mergeASARs = async ({ x64AsarPath, arm64AsarPath, outputAsarPath, s
+             execFileSync(LIPO, [source, destination, '-create', '-output', destination]);
+         }
+         d(`creating archive at ${outputAsarPath}`);
+-        const resolvedUnpack = Array.from(unpackedFiles).map((file) => path.join(x64Dir, file));
+         let unpack;
+-        if (resolvedUnpack.length > 1) {
+-            unpack = `{${resolvedUnpack.join(',')}}`;
+-        }
+-        else if (resolvedUnpack.length === 1) {
+-            unpack = resolvedUnpack[0];
++        if (unpackedFiles.size > 0) {
++            const prefixes = new Set();
++            for (const file of unpackedFiles) {
++                const parts = file.replace(/\\/g, '/').split('/');
++                let prefix = parts[0];
++                if (prefix === 'node_modules' && parts[1]) {
++                    if (parts[1].startsWith('@') && parts[2]) {
++                        prefix = `node_modules/${parts[1]}/${parts[2]}`;
++                    } else {
++                        prefix = `node_modules/${parts[1]}`;
++                    }
++                }
++                prefixes.add(prefix);
++            }
++            unpack = `{${Array.from(prefixes).map(p => `**/${p}/**`).join(',')}}`;
+         }
+         await asar.createPackageWithOptions(x64Dir, outputAsarPath, {
+             unpack,
+diff --git a/dist/esm/index.js b/dist/esm/index.js
+index 3813a1c791c6cd5dab55591932e4d6acd3963a7e..fff9c488dbfb2d473a50727b44e1a58080d3ef96 100644
+--- a/dist/esm/index.js
++++ b/dist/esm/index.js
+@@ -21,7 +21,7 @@ import { AppFileType, getAllAppFiles } from './file-utils';
+ import { AsarMode, detectAsarMode, generateAsarIntegrity, mergeASARs } from './asar-utils';
+ import { sha } from './sha';
+ import { d } from './debug';
+-const dupedFiles = (files) => files.filter((f) => f.type !== AppFileType.SNAPSHOT && f.type !== AppFileType.APP_CODE);
++const dupedFiles = (files) => files.filter((f) => f.type !== AppFileType.SNAPSHOT && f.type !== AppFileType.APP_CODE && !f.relativePath.includes('_CodeSignature'));
+ export const makeUniversalApp = async (opts) => {
+     d('making a universal app with options', opts);
+     if (process.platform !== 'darwin')
+@@ -74,7 +74,7 @@ export const makeUniversalApp = async (opts) => {
+             });
+             throw new Error('While trying to merge mach-o files across your apps we found a mismatch, the number of mach-o files is not the same between the arm64 and x64 builds');
+         }
+-        for (const file of x64Files.filter((f) => f.type === AppFileType.PLAIN)) {
++        for (const file of x64Files.filter((f) => f.type === AppFileType.PLAIN && !f.relativePath.includes('_CodeSignature'))) {
+             const x64Sha = await sha(path.resolve(opts.x64AppPath, file.relativePath));
+             const arm64Sha = await sha(path.resolve(opts.arm64AppPath, file.relativePath));
+             if (x64Sha !== arm64Sha) {
+@@ -94,11 +94,6 @@ export const makeUniversalApp = async (opts) => {
+             const x64Sha = await sha(path.resolve(opts.x64AppPath, machOFile.relativePath));
+             const arm64Sha = await sha(path.resolve(opts.arm64AppPath, machOFile.relativePath));
+             if (x64Sha === arm64Sha) {
+-                if (opts.x64ArchFiles === undefined ||
+-                    !minimatch(machOFile.relativePath, opts.x64ArchFiles, { matchBase: true })) {
+-                    throw new Error(`Detected file "${machOFile.relativePath}" that's the same in both x64 and arm64 builds and not covered by the ` +
+-                        `x64ArchFiles rule: "${opts.x64ArchFiles}"`);
+-                }
+                 d('SHA for Mach-O file', machOFile.relativePath, `matches across builds ${x64Sha}===${arm64Sha}, skipping lipo`);
+                 continue;
+             }

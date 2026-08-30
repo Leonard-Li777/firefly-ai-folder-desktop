@@ -3011,7 +3011,6 @@ export default  {
     "11192": "Highly similar",
     "11193": "Accurate",
     "11194": "The content is exactly the same",
-    "11195": "Best memory fit",
     "11196": "Coming soon",
     "11197": "Recommended retention rules:",
     "11198": "★ Highest resolution first (multi-modal recommendation)",

@@ -1,0 +1,77 @@
+diff --git a/lib/addon.cc b/lib/addon.cc
+index 80f73c0aad6923e633abc8c9fc0cba78ce412360..593b88be1346ea61dac7a5fb59c9649873011116 100644
+--- a/lib/addon.cc
++++ b/lib/addon.cc
+@@ -17,13 +17,28 @@ using std::min;
+ 
+ class ComInit {
+    public:
+-    ComInit() { CoInitializeEx(0, COINIT_MULTITHREADED); }
++    ComInit() {
++        // 记录 CoInitializeEx 的返回值：S_OK / S_FALSE 表示当前线程已完成 COM 初始化，
++        // 析构时必须用 CoUninitialize 配对；RPC_E_CHANGED_MODE 表示该线程已被其它代码
++        // （如 Electron/Chromium 主进程）以不同模式初始化，此时绝不能调用 CoUninitialize，
++        // 否则会错误释放调用方的 COM 引用计数，破坏线程 COM 状态，进而触发后续
++        // "Must be called on Chrome_UIThread" 断言崩溃（这是崩溃的根因之一）
++        m_hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
++        m_initialized = SUCCEEDED(m_hr);
++    }
+ 
+-    ~ComInit() { CoUninitialize(); }
++    ~ComInit() {
++        if (m_initialized) {
++            CoUninitialize();
++        }
++    }
+ 
+    private:
+     ComInit(const ComInit &);
+     ComInit &operator=(const ComInit &);
++
++    HRESULT m_hr = E_FAIL;
++    bool m_initialized = false;
+ };
+ 
+ class GdiPlusInit {
+@@ -95,6 +110,41 @@ std::unique_ptr<Gdiplus::Bitmap> CreateBitmapFromIcon(
+             }
+         }
+ 
++        // ── 裁剪透明边距 ──────────────────────────────────────────────
++        // 部分文件类型（如 .json 等没有 256px 图标资源的文件）在 SHIL_JUMBO
++        // 图像列表中表现为"256×256 画布 + 原始小尺寸内容绘制在左上角"，
++        // 其余区域全透明。直接生成 PNG 会导致前端显示为左上角小图标。
++        // 这里计算非透明内容的边界框并裁剪，使 PNG 尺寸与实际内容一致，
++        // 前端配合 object-contain + object-center 即可正常居中显示。
++        int minX = bm.bmWidth, minY = bm.bmHeight, maxX = -1, maxY = -1;
++        for (std::int32_t y = 0; y < bm.bmHeight; y++) {
++            for (std::int32_t x = 0; x < bm.bmWidth; x++) {
++                if ((buffer[y * bm.bmWidth + x] & 0xFF000000) != 0) {
++                    if (x < minX) minX = x;
++                    if (x > maxX) maxX = x;
++                    if (y < minY) minY = y;
++                    if (y > maxY) maxY = y;
++                }
++            }
++        }
++        if (maxX >= minX && maxY >= minY &&
++            (maxX - minX + 1 != bm.bmWidth ||
++             maxY - minY + 1 != bm.bmHeight)) {
++            const std::int32_t newWidth = maxX - minX + 1;
++            const std::int32_t newHeight = maxY - minY + 1;
++            std::vector<std::int32_t> cropped(
++                static_cast<std::size_t>(newWidth) * newHeight);
++            for (std::int32_t y = 0; y < newHeight; y++) {
++                std::copy(buffer.data() + (minY + y) * bm.bmWidth + minX,
++                          buffer.data() + (minY + y) * bm.bmWidth + minX +
++                              newWidth,
++                          cropped.data() + y * newWidth);
++            }
++            buffer.swap(cropped);
++            bm.bmWidth = newWidth;
++            bm.bmHeight = newHeight;
++        }
++
+         bitmap.reset(new Gdiplus::Bitmap(
+             bm.bmWidth, bm.bmHeight, bm.bmWidth * sizeof(std::int32_t),
+             PixelFormat32bppARGB,

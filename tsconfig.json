@@ -1,14 +1,23 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "target": "ESNext",
+    "module": "es2022",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "sourceMap": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationMap": true,
+    "composite": false,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "outDir": "dist",
-    "rootDir": "../../",
     "baseUrl": ".",
     "ignoreDeprecations": "5.0",
-    "module": "es2022",
-    "moduleResolution": "bundler",
-    "skipLibCheck": true,
-    "composite": false,
     "allowSyntheticDefaultImports": true,
     "types": ["node", "react", "react-dom", "electron"],
     "paths": {
@@ -20,22 +29,26 @@
       "@hooks/*": ["src/renderer/hooks/*"],
       "@shared/*": ["src/shared/*"],
       "@types/*": ["src/types/*"],
+      "@type": ["src/types"],
+      "@type/*": ["src/types/*"],
+      "@runtime": ["src/electron/runtime-services"],
+      "@runtime/*": ["src/electron/runtime-services/*"],
       "@components/*": ["src/renderer/components/*"],
       "@stores/*": ["src/renderer/stores/*"],
       "@assets/*": ["src/renderer/assets/*"],
-      "@firefly/core-engine": ["../../packages/core-engine/src"],
-      "@firefly/core-engine/*": ["../../packages/core-engine/src/*"],
-      "@firefly/electron-llamaIndex-service": ["../../packages/electron-llamaIndex-service/src"],
+      "@firefly/core-engine": ["pro/packages/core-engine/src"],
+      "@firefly/core-engine/*": ["pro/packages/core-engine/src/*"],
+      "@firefly/electron-llamaIndex-service": ["pro/packages/electron-llamaIndex-service/src"],
       "@firefly/electron-llamaIndex-service/*": [
-        "../../packages/electron-llamaIndex-service/src/*"
+        "pro/packages/electron-llamaIndex-service/src/*"
       ],
-      "@firefly/types": ["../../packages/types/src"],
-      "@firefly/types/*": ["../../packages/types/src/*"],
-      "@firefly/shared": ["../../packages/shared/src"],
-      "@firefly/shared/*": ["../../packages/shared/src/*"],
-      "@firefly/shared/languages": ["../../packages/shared/languages"],
-      "@firefly/server": ["../server/src"],
-      "@firefly/server/*": ["../server/src/*"],
+      "@firefly/types": ["pro/packages/types/src"],
+      "@firefly/types/*": ["pro/packages/types/src/*"],
+      "@firefly/shared": ["pro/packages/shared/src"],
+      "@firefly/shared/*": ["pro/packages/shared/src/*"],
+      "@firefly/shared/languages": ["pro/packages/shared/languages"],
+      "@firefly/server": ["pro/packages/server/src"],
+      "@firefly/server/*": ["pro/packages/server/src/*"],
       "@pro": ["pro/src/index.ts", "src/shared/pro-stub/index.ts"],
       "@pro/*": ["pro/src/*", "src/shared/pro-stub/*"]
     }
@@ -57,6 +70,7 @@
     "src/electron/runtime-services/examples/**/*",
     "src/electron/tools/**/*",
     "**/*.test.ts",
-    "**/*.test.tsx"
+    "**/*.test.tsx",
+    "pro/packages/**/__tests__/**/*"
   ]
 }

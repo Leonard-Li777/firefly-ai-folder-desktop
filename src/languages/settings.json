@@ -115,6 +115,7 @@
     "!**/*demo*",
     "!**/*test*",
     "!**/*example*",
+    "!pro/**",
     "!**/*.wraper.*"
   ],
   "defaultNamespace": "default",

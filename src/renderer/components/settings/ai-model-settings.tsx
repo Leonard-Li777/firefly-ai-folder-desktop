@@ -231,7 +231,7 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
                 )}
                 {model.isBest && (
                   <Badge className="text-[10px] font-black h-5 px-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-none shadow-md flex items-center gap-1">
-                    <Sparkles className="h-3.5 w-3.5 fill-current text-white" /> {t('显存最适配')}
+                    <Sparkles className="h-3.5 w-3.5 fill-current text-white" /> {t('最佳显存适配')}
                   </Badge>
                 )}
                 <Badge
