@@ -247,6 +247,22 @@ const App: React.FC = () => {
       try {
         // 获取模型列表以获取模型名称
         const models = await window.electronAPI.listModels()
+
+        // 检查该下载项是否属于某个主模型的草稿/加速模型（如 DSpark / MTP），若是则不弹出激活主模型弹窗
+        const isDraftOrDspark = models.some(
+          (m: any) =>
+            (m.dspark === payload.modelId || m.draftId === payload.modelId) &&
+            (!payload.source || m.source === payload.source)
+        )
+        if (isDraftOrDspark) {
+          logger.info(
+            LogCategory.RENDERER,
+            `检测到加速/草稿模型 (${payload.modelId}) 下载完成，跳过主模型激活弹窗`
+          )
+          toast.success(t('加速模型已就绪，将在 CPU 模式下自动启用加速'))
+          return
+        }
+
         const model = models.find(
           (m: any) => m.id === payload.modelId && (!payload.source || m.source === payload.source)
         )

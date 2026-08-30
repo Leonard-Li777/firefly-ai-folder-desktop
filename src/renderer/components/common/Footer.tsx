@@ -70,18 +70,27 @@ export function Footer() {
   const showAiError = serviceStatus === AIServiceStatus.ERROR || !!error
   const errorMessageDisplay = useMemo(() => {
     if (!showAiError) return ''
-    if (error) {
-      const normalized = ErrorNormalizer.normalize(
-        error,
-        (error.code || (error as any).type) as any,
-        'Footer'
-      )
-      const completeInfo = ErrorNormalizer.getCompleteErrorInfo(
-        normalized.code || (normalized as any).type
-      )
-      return normalized.details || completeInfo.userMessage || normalized.message || t('AI服务异常')
+    const candidate = error || lastError
+    if (candidate) {
+      if (typeof candidate === 'object') {
+        const normalized = ErrorNormalizer.normalize(
+          candidate,
+          (candidate.code || (candidate as any).type) as any,
+          'Footer'
+        )
+        const completeInfo = ErrorNormalizer.getCompleteErrorInfo(
+          normalized.code || (normalized as any).type
+        )
+        const msg = normalized.details || completeInfo.userMessage || normalized.message
+        if (typeof msg === 'string' && msg.trim()) return msg.trim()
+        if (msg && typeof msg === 'object') {
+          return (msg as any).message || (msg as any).details || t('AI服务异常')
+        }
+      } else if (typeof candidate === 'string' && candidate.trim()) {
+        return candidate.trim()
+      }
     }
-    return lastError || t('AI服务异常，点击查看详情')
+    return t('AI服务异常')
   }, [showAiError, error, lastError])
 
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
@@ -407,10 +416,17 @@ export function Footer() {
         }
 
       case AIServiceStatus.ERROR:
+        const safeErrorStr =
+          typeof lastError === 'string'
+            ? lastError
+            : (lastError as any)?.message ||
+              (lastError as any)?.details ||
+              (error ? ErrorNormalizer.normalize(error, (error.code || (error as any).type) as any, 'Footer').message : '') ||
+              t('未知错误')
         return {
           text: t('{modelInfo} 服务异常: {error}', {
             modelInfo,
-            error: lastError || t('未知错误')
+            error: safeErrorStr
           }),
           icon: 'error_outline',
           color: 'text-red-500'
@@ -498,7 +514,7 @@ export function Footer() {
                       >
                         <MaterialIcon icon="error_outline" className="text-xs shrink-0 animate-pulse" />
                         <span className="truncate max-w-[320px]">
-                          {errorMessageDisplay}
+                          {errorMessageDisplay}，{t('点击查看原因')}
                         </span>
                       </button>
                     </PersistentTooltip>

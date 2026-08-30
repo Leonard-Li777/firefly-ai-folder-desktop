@@ -61,7 +61,7 @@
     "de-DE": "Unbekannter Fehler",
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
-    "$files": ["src/renderer/hooks/use-model-download.ts(7681-7689)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(7741-7749)"],
     "$id": 8869
   },
   "Ollama 未安装": {
@@ -74,7 +74,7 @@
     "de-DE": "Ollama nicht installiert",
     "fr-FR": "Ollama n'est pas installé",
     "ko-KR": "Ollama 설치되지 않음",
-    "$files": ["src/renderer/hooks/use-model-download.ts(7893-7907)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(7954-7968)"],
     "$id": 8965
   },
   "Ollama 未安装。如果已安装，请试着重启萤核智能文件夹，以再次检测": {
@@ -87,7 +87,7 @@
     "de-DE": "Ollama ist nicht installiert. Wenn es bereits installiert ist, versuchen Sie bitte, den Firefly AI Folder neu zu starten, um es erneut zu erkennen.",
     "fr-FR": "Ollama n'est pas installé. S'il est déjà installé, essayez de redémarrer Firefly AI Folder pour le détecter à nouveau.",
     "ko-KR": "올라마가 설치되지 않았습니다. 이미 설치되어 있는 경우 Firefly AI Folder를 다시 시작하여 다시 검색해 보세요.",
-    "$files": ["src/renderer/hooks/use-model-download.ts(8006-8045)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(8067-8106)"],
     "$id": 3294
   },
   "开始下载失败: {message}": {
@@ -100,7 +100,7 @@
     "de-DE": "Download konnte nicht gestartet werden: {message}",
     "fr-FR": "Échec du démarrage du téléchargement : {message}",
     "ko-KR": "다운로드 시작 실패: {message}",
-    "$files": ["src/renderer/hooks/use-model-download.ts(8077-8098)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(8138-8159)"],
     "$id": 3309
   },
   "下载失败": {
@@ -114,10 +114,10 @@
     "fr-FR": "Échec du téléchargement",
     "ko-KR": "다운로드 실패",
     "$files": [
-      "src/renderer/hooks/use-model-download.ts(12519-12527)",
-      "src/renderer/hooks/use-model-download.ts(12663-12671)",
-      "src/renderer/hooks/use-model-download.ts(12889-12897)",
-      "src/renderer/hooks/use-model-download.ts(15322-15330)"
+      "src/renderer/hooks/use-model-download.ts(12580-12588)",
+      "src/renderer/hooks/use-model-download.ts(12724-12732)",
+      "src/renderer/hooks/use-model-download.ts(12950-12958)",
+      "src/renderer/hooks/use-model-download.ts(15498-15506)"
     ],
     "$id": 5437
   },
@@ -131,7 +131,7 @@
     "de-DE": "Download-Fehler: {message}",
     "fr-FR": "Erreur de téléchargement : {message}",
     "ko-KR": "다운로드 오류: {message}",
-    "$files": ["src/renderer/hooks/use-model-download.ts(15598-15617)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(15774-15793)"],
     "$id": 3315
   },
   "质量评分": {

@@ -83,6 +83,7 @@ export function resolveActiveModelKey(
 interface ModelCardItemProps {
   model: any
   isDownloaded: boolean
+  isDsparkDownloaded?: boolean
   isActive: boolean
   isEx: boolean
   isCpuTier?: boolean
@@ -95,11 +96,27 @@ interface ModelCardItemProps {
  * 单个模型卡片组件 - 用于独立管理每个模型的下载状态与 UI，支持多模型并发下载与进度展示
  */
 const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
-  ({ model, isDownloaded, isActive, isEx, isCpuTier = false, onActivate, onDelete, onDownloadComplete }) => {
+  ({
+    model,
+    isDownloaded,
+    isDsparkDownloaded: isDsparkDownloadedProp = false,
+    isActive,
+    isEx,
+    isCpuTier = false,
+    onActivate,
+    onDelete,
+    onDownloadComplete
+  }) => {
     const { activeDownloadId, setActiveDownloadId } = useModelStore()
     const compositeId = `${model.id}@${model.source}`
     const dsparkModelId = model.dspark as string | undefined
-    const [isDsparkDownloaded, setIsDsparkDownloaded] = useState<boolean>(false)
+    const [isDsparkDownloaded, setIsDsparkDownloaded] = useState<boolean>(isDsparkDownloadedProp)
+
+    useEffect(() => {
+      if (isDsparkDownloadedProp) {
+        setIsDsparkDownloaded(true)
+      }
+    }, [isDsparkDownloadedProp])
 
     // 为主模型独立初始化下载 Hook
     const {
@@ -138,6 +155,7 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
       source: model.source,
       onDownloadComplete: () => {
         setIsDsparkDownloaded(true)
+        onDownloadComplete(dsparkModelId || '', model.source)
         if (activeDownloadId === dsparkCompositeId) {
           setActiveDownloadId(null)
         }
@@ -207,13 +225,13 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
               <h4 className="font-black text-lg">{model.name}</h4>
               <div className="flex gap-1.5 flex-wrap">
                 {model.recommended && (
-                  <Badge className="text-[10px] font-black h-5 px-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-none shadow-md flex items-center gap-1">
-                    <Sparkles className="h-3.5 w-3.5 fill-current text-white" /> {t('推荐')}
+                  <Badge className="text-[10px] font-black h-5 px-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white border-none shadow-md flex items-center gap-1">
+                    <Star className="h-3.5 w-3.5 fill-current text-white" /> {t('推荐')}
                   </Badge>
                 )}
                 {model.isBest && (
-                  <Badge className="text-[10px] font-black h-5 px-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white border-none shadow-md flex items-center gap-1">
-                    <Star className="h-3.5 w-3.5 fill-current text-white" /> {t('最佳推荐')}
+                  <Badge className="text-[10px] font-black h-5 px-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-none shadow-md flex items-center gap-1">
+                    <Sparkles className="h-3.5 w-3.5 fill-current text-white" /> {t('显存最适配')}
                   </Badge>
                 )}
                 <Badge
@@ -937,10 +955,19 @@ export const AIModelSettings: React.FC = () => {
                     groupedModels[s].map(model => {
                       const downloadKey = `${model.id}@${model.source}`
                       const isActive = activeModelKey === `${model.id}@${model.source || 'default'}`
-                      const isCpuTier =
-                        !hardwareInfo?.hasGPU ||
-                        hardwareInfo?.gpuType === 'integrated' ||
-                        (hardwareInfo?.vramGB || 0) <= 2
+                      const bestAcc = String(
+                        (config as any)?.bestAcceleration ??
+                          (config as any)?.BEST_ACCELERATION ??
+                          getConfigValue<string>('BEST_ACCELERATION') ??
+                          ''
+                      ).toLowerCase()
+                      //临时测试 cpu模式
+                      const isCpuTier = bestAcc === 'cpu'
+                      const dsparkKey = model.dspark ? `${model.dspark}@${model.source}` : ''
+                      const isDsparkDownloaded = !!(
+                        model.dspark &&
+                        (modelDownloadStatus[dsparkKey] || modelDownloadStatus[model.dspark as string])
+                      )
                       return (
                         <ModelCardItem
                           key={downloadKey}
@@ -948,6 +975,7 @@ export const AIModelSettings: React.FC = () => {
                           // 已激活的模型必然已下载，强制视为已下载，
                           // 避免磁盘探测失败时同一张卡片同时显示"已激活"徽章与"下载"按钮
                           isDownloaded={isActive ? true : modelDownloadStatus[downloadKey]}
+                          isDsparkDownloaded={isDsparkDownloaded}
                           isActive={isActive}
                           isEx={model.isEx || false}
                           isCpuTier={isCpuTier}

@@ -38,6 +38,19 @@
     "$files": ["src/renderer/App.tsx(9833-9843)"],
     "$id": 7604
   },
+  "加速模型已就绪，将在 CPU 模式下自动启用加速": {
+    "en-US": "The acceleration model is ready and acceleration will be automatically enabled in CPU mode",
+    "es-ES": "El modelo de aceleración está listo y la aceleración se habilitará automáticamente en modo CPU",
+    "ar-EG": "نموذج التسريع جاهز وسيتم تمكين التسريع تلقائيًا في وضع وحدة المعالجة المركزية",
+    "pt-PT": "O modelo de aceleração está pronto e a aceleração será habilitada automaticamente no modo CPU",
+    "ru-RU": "Модель ускорения готова, и ускорение будет автоматически включено в режиме ЦП.",
+    "ja-JP": "アクセラレーション モデルの準備が完了し、CPU モードでアクセラレーションが自動的に有効になります。",
+    "de-DE": "Das Beschleunigungsmodell ist bereit und die Beschleunigung wird im CPU-Modus automatisch aktiviert",
+    "fr-FR": "Le modèle d'accélération est prêt et l'accélération sera automatiquement activée en mode CPU",
+    "ko-KR": "가속 모델이 준비되었으며 CPU 모드에서 가속이 자동으로 활성화됩니다.",
+    "$files": ["src/renderer/App.tsx(10730-10758)"],
+    "$id": 11219
+  },
   "正在准备迁移模型...": {
     "en-US": "Preparing to migrate model...",
     "es-ES": "Preparándose para migrar el modelo...",
@@ -48,7 +61,7 @@
     "de-DE": "Modellmigration wird vorbereitet...",
     "fr-FR": "Préparation de la migration du modèle...",
     "ko-KR": "모델 마이그레이션 준비 중...",
-    "$files": ["src/renderer/App.tsx(11043-11058)"],
+    "$files": ["src/renderer/App.tsx(11570-11585)"],
     "$id": 7605
   },
   "正在迁移系统内置模型...": {
@@ -61,7 +74,7 @@
     "de-DE": "Im System integrierte Modelle werden migriert...",
     "fr-FR": "Migration des modèles intégrés au système...",
     "ko-KR": "시스템 내장 모델 마이그레이션 중...",
-    "$files": ["src/renderer/App.tsx(11217-11234)"],
+    "$files": ["src/renderer/App.tsx(11744-11761)"],
     "$id": 7606
   },
   "正在优先迁移当前选中的模型...": {
@@ -74,7 +87,7 @@
     "de-DE": "Zuerst wird das aktuell ausgewählte Modell migriert...",
     "fr-FR": "Migration d'abord du modèle actuellement sélectionné...",
     "ko-KR": "현재 선택한 모델을 먼저 마이그레이션하는 중...",
-    "$files": ["src/renderer/App.tsx(11332-11352)"],
+    "$files": ["src/renderer/App.tsx(11859-11879)"],
     "$id": 7607
   },
   "核心模型迁移成功！还有 {count} 个模型将在后台继续迁移，你可以随时点击“刷新模型列表”查看状态。": {
@@ -87,7 +100,7 @@
     "de-DE": "Die Migration des Kernmodells war erfolgreich! Es gibt {count} Modelle, die weiterhin im Hintergrund migriert werden. Sie können jederzeit auf „Modellliste aktualisieren“ klicken, um den Status zu überprüfen.",
     "fr-FR": "La migration du modèle de base a été réussie ! Il existe {count} modèles qui continueront à être migrés en arrière-plan. Vous pouvez cliquer sur « Actualiser la liste des modèles » pour vérifier l'état à tout moment.",
     "ko-KR": "핵심 모델 마이그레이션이 성공했습니다! 백그라운드에서 계속 마이그레이션되는 {count} 모델이 있습니다. 언제든지 \"모델 목록 새로 고침\"을 클릭하여 상태를 확인할 수 있습니다.",
-    "$files": ["src/renderer/App.tsx(11628-11699)"],
+    "$files": ["src/renderer/App.tsx(12155-12226)"],
     "$id": 7608
   },
   "核心模型迁移成功！": {
@@ -100,7 +113,7 @@
     "de-DE": "Die Migration des Kernmodells war erfolgreich!",
     "fr-FR": "La migration du modèle de base a été réussie !",
     "ko-KR": "핵심 모델 마이그레이션이 성공했습니다!",
-    "$files": ["src/renderer/App.tsx(11811-11824)"],
+    "$files": ["src/renderer/App.tsx(12338-12351)"],
     "$id": 7609
   },
   "所有模型迁移任务已完成": {
@@ -113,7 +126,7 @@
     "de-DE": "Alle Modellmigrationsaufgaben wurden abgeschlossen",
     "fr-FR": "Toutes les tâches de migration du modèle ont été terminées",
     "ko-KR": "모든 모델 마이그레이션 작업이 완료되었습니다.",
-    "$files": ["src/renderer/App.tsx(11946-11961)"],
+    "$files": ["src/renderer/App.tsx(12473-12488)"],
     "$id": 7610
   },
   "模型迁移过程中发生错误，请检查磁盘空间或权限": {
@@ -126,7 +139,7 @@
     "de-DE": "Bei der Modellmigration ist ein Fehler aufgetreten. Bitte überprüfen Sie den Speicherplatz oder die Berechtigungen",
     "fr-FR": "Une erreur s'est produite lors de la migration du modèle, veuillez vérifier l'espace disque ou les autorisations",
     "ko-KR": "모델 마이그레이션 중 오류가 발생했습니다. 디스크 공간이나 권한을 확인하세요.",
-    "$files": ["src/renderer/App.tsx(12140-12166)"],
+    "$files": ["src/renderer/App.tsx(12667-12693)"],
     "$id": 7611
   },
   "模型迁移进度：已完成 {count} 个，剩余 {remaining} 个": {
@@ -139,7 +152,7 @@
     "de-DE": "Modellmigrationsfortschritt: {count} abgeschlossen, {remaining} übrig",
     "fr-FR": "Progression de la migration du modèle : {count} terminé, {remaining} restant",
     "ko-KR": "모델 마이그레이션 진행률: {count} 완료, {remaining} 남음",
-    "$files": ["src/renderer/App.tsx(12564-12605)"],
+    "$files": ["src/renderer/App.tsx(13091-13132)"],
     "$id": 7612
   },
   "模型迁移耗时过长（已等待 {seconds} 秒），已自动关闭蒙版。请前往日志查看详情，或检查目标目录文件是否完整。": {
@@ -152,7 +165,7 @@
     "de-DE": "Die Modellmigration hat zu lange gedauert ({seconds} Sekunden gewartet) und die Maske wurde automatisch deaktiviert. Bitte gehen Sie zum Protokoll, um Details anzuzeigen, oder überprüfen Sie, ob die Zielverzeichnisdatei vollständig ist.",
     "fr-FR": "La migration du modèle a pris trop de temps (attendu {seconds} secondes) et le masque a été automatiquement désactivé. Veuillez accéder au journal pour afficher les détails ou vérifier si le fichier du répertoire cible est complet.",
     "ko-KR": "모델 마이그레이션이 너무 오래 걸려서({seconds}초 동안 대기) 마스크가 자동으로 꺼졌습니다. 로그로 이동하여 세부정보를 보거나 대상 디렉터리 파일이 완전한지 확인하세요.",
-    "$files": ["src/renderer/App.tsx(13701-13774)"],
+    "$files": ["src/renderer/App.tsx(14228-14301)"],
     "$id": 7613
   },
   "正在检测应用配置...": {
@@ -165,7 +178,7 @@
     "de-DE": "Anwendungskonfiguration wird erkannt...",
     "fr-FR": "Détection de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성을 감지하는 중...",
-    "$files": ["src/renderer/App.tsx(15302-15317)"],
+    "$files": ["src/renderer/App.tsx(15829-15844)"],
     "$id": 7614
   },
   "正在验证授权状态...": {
@@ -178,7 +191,7 @@
     "de-DE": "Autorisierungsstatus wird überprüft...",
     "fr-FR": "Vérification de l'état d'autorisation...",
     "ko-KR": "승인 상태 확인 중...",
-    "$files": ["src/renderer/App.tsx(18270-18285)"],
+    "$files": ["src/renderer/App.tsx(18797-18812)"],
     "$id": 7615
   },
   "选中的模型文件不存在或加载失败，请在设置中重新配置。": {
@@ -191,7 +204,7 @@
     "de-DE": "Die ausgewählte Modelldatei ist nicht vorhanden oder kann nicht geladen werden. Bitte konfigurieren Sie es in den Einstellungen neu.",
     "fr-FR": "Le fichier de modèle sélectionné n'existe pas ou ne parvient pas à se charger. Veuillez le reconfigurer dans les paramètres.",
     "ko-KR": "선택한 모델 파일이 존재하지 않거나 로드에 실패했습니다. 설정에서 다시 구성해 보세요.",
-    "$files": ["src/renderer/App.tsx(23712-23742)"],
+    "$files": ["src/renderer/App.tsx(24239-24269)"],
     "$id": 7616
   },
   "去设置": {
@@ -204,7 +217,7 @@
     "de-DE": "Gehen Sie zu den Einstellungen",
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
-    "$files": ["src/renderer/App.tsx(23823-23830)"],
+    "$files": ["src/renderer/App.tsx(24350-24357)"],
     "$id": 7617
   },
   "正在初始化应用环境...": {
@@ -217,7 +230,7 @@
     "de-DE": "Anwendungsumgebung wird initialisiert...",
     "fr-FR": "Initialisation de l'environnement d'application...",
     "ko-KR": "애플리케이션 환경 초기화 중...",
-    "$files": ["src/renderer/App.tsx(29701-29717)"],
+    "$files": ["src/renderer/App.tsx(30228-30244)"],
     "$id": 7618
   },
   "正在初始化AI服务...": {
@@ -230,7 +243,7 @@
     "de-DE": "KI-Dienst wird initialisiert...",
     "fr-FR": "Initialisation du service IA...",
     "ko-KR": "AI 서비스 초기화 중...",
-    "$files": ["src/renderer/App.tsx(29859-29875)"],
+    "$files": ["src/renderer/App.tsx(30386-30402)"],
     "$id": 7619
   },
   "正在加载应用配置...": {
@@ -243,7 +256,7 @@
     "de-DE": "Anwendungskonfiguration wird geladen...",
     "fr-FR": "Chargement de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성 로드 중...",
-    "$files": ["src/renderer/App.tsx(30137-30152)"],
+    "$files": ["src/renderer/App.tsx(30664-30679)"],
     "$id": 7620
   },
   "正在检查 AI 状态...": {
@@ -256,7 +269,7 @@
     "de-DE": "AI-Status wird überprüft...",
     "fr-FR": "Vérification de l'état de l'IA...",
     "ko-KR": "AI 상태를 확인하는 중...",
-    "$files": ["src/renderer/App.tsx(30203-30220)"],
+    "$files": ["src/renderer/App.tsx(30730-30747)"],
     "$id": 7621
   },
   "下载完成": {
@@ -269,7 +282,7 @@
     "de-DE": "Download abgeschlossen",
     "fr-FR": "Téléchargement terminé",
     "ko-KR": "다운로드 완료",
-    "$files": ["src/renderer/App.tsx(39591-39599)"],
+    "$files": ["src/renderer/App.tsx(40118-40126)"],
     "$id": 7622
   },
   "{model} 模型已下载完成，是否立即激活？": {
@@ -282,7 +295,7 @@
     "de-DE": "{model} Das Modell wurde heruntergeladen. Möchten Sie es jetzt aktivieren?",
     "fr-FR": "{model} Le modèle a été téléchargé. Voulez-vous l'activer maintenant ?",
     "ko-KR": "{model} 모델이 다운로드되었습니다. 지금 활성화하시겠습니까?",
-    "$files": ["src/renderer/App.tsx(39797-39824)"],
+    "$files": ["src/renderer/App.tsx(40324-40351)"],
     "$id": 7623
   },
   "稍后再说": {
@@ -295,7 +308,7 @@
     "de-DE": "Wir sprechen später",
     "fr-FR": "On se parle plus tard",
     "ko-KR": "나중에 얘기하자",
-    "$files": ["src/renderer/App.tsx(40309-40317)"],
+    "$files": ["src/renderer/App.tsx(40836-40844)"],
     "$id": 7624
   },
   "立即激活": {
@@ -308,7 +321,7 @@
     "de-DE": "Jetzt aktivieren",
     "fr-FR": "Activer maintenant",
     "ko-KR": "지금 활성화",
-    "$files": ["src/renderer/App.tsx(40558-40566)"],
+    "$files": ["src/renderer/App.tsx(41085-41093)"],
     "$id": 7625
   },
   "正在迁移模型": {
@@ -321,7 +334,7 @@
     "de-DE": "Migrationsmodell",
     "fr-FR": "Migration du modèle",
     "ko-KR": "모델 마이그레이션",
-    "$files": ["src/renderer/App.tsx(41662-41672)"],
+    "$files": ["src/renderer/App.tsx(42189-42199)"],
     "$id": 7626
   },
   "正在准备迁移，请稍候...": {
@@ -334,7 +347,7 @@
     "de-DE": "Die Migration wird vorbereitet, bitte warten...",
     "fr-FR": "Préparation de la migration, veuillez patienter...",
     "ko-KR": "마이그레이션을 준비 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/App.tsx(41822-41839)"],
+    "$files": ["src/renderer/App.tsx(42349-42366)"],
     "$id": 7627
   },
   "请勿关闭应用": {
@@ -347,7 +360,7 @@
     "de-DE": "Schließen Sie die App nicht",
     "fr-FR": "Ne fermez pas l'application",
     "ko-KR": "앱을 닫지 마세요",
-    "$files": ["src/renderer/App.tsx(42244-42254)"],
+    "$files": ["src/renderer/App.tsx(42771-42781)"],
     "$id": 7628
   },
   "接口不存在": {

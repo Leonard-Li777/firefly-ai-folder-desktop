@@ -263,8 +263,8 @@ export function useModelDownload(
         }))
 
         options.onDownloadStart?.()
-      } catch (error) {
-        const errorMessage = t('未知错误')
+      } catch (error: any) {
+        const errorMessage = error?.message || (typeof error === 'string' ? error : t('未知错误'))
         logger.error(LogCategory.RENDERER, `[DownloadHook] '开始下载失败: ${finalModelId}`, error)
 
         // 添加 Toast 提示
@@ -505,7 +505,10 @@ export function useModelDownload(
       if (payload.modelId !== modelIdRef.current) return
       if (sourceRef.current && payload.source && payload.source !== sourceRef.current) return
 
-      const errorMessage = payload.error || t('下载失败')
+      const errorMessage =
+        typeof payload.error === 'string'
+          ? payload.error
+          : payload.error?.message || payload.error?.details || t('下载失败')
       logger.error(LogCategory.RENDERER, `[DownloadHook] 下载错误: ${modelIdRef.current}`, payload)
       captureEvent('model_download_failed', {
         modelId: modelIdRef.current,

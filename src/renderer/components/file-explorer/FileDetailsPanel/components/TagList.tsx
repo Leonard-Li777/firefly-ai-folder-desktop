@@ -38,13 +38,16 @@ interface CategorizedTag extends TagItem {
 
 /**
  * 依据 ADR 0028: 元数据提取字段找补与清洗架构规范 (Metadata Derivation & Tag Reconciliation)
- * 严格定义的系统找补 / 确定性规则派生维度 ID 集合
+ * 严格定义的系统找补 / 确定性规则派生与元数据回填维度 ID 集合
  */
 const SYSTEM_RECONCILIATION_DIMENSION_IDS = new Set<number>([
   1, // 文件类型 (Magika 分类组与扩展名向上映射补全)
+  4, // 作者 (从原生元数据 metadata.Author/creator 等找补回填)
+  11, // 语言细分 (从原生元数据 metadata.Language 等找补回填)
+  16, // 地理位置 (从原生元数据 GPS 经纬度逆地理编码找补回填)
   5, 9, 10, 12, 14, 15, 100, 101, 105, 106, // 规则细分 (文档/文本/数据库/源码/应用数据/压缩包/程序/系统文件/磁盘映像/字体细分)
   102, 103, 104, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, // 各类扩展名维度
-  122, // 画质等级 (基于图像/视频分辨率确定性找补)
+  122, // 画质等级 (基于图像/视频物理分辨率确定性找补)
   123, // 内容尺度 (元数据标注找补)
   124, // 打码程度 (元数据标注找补)
   125 // 水印程度 (元数据标注找补)
@@ -82,10 +85,18 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
           dimName === 'content tags' ||
           dimName === '28'
 
-        // 2. 依据 ADR 0028 规范判定的系统找补维度
+        // 2. 依据 ADR 0028 规范判定的系统找补维度（包含作者、语言、地理位置、文件类型、扩展名、画质及规则细分等）
         const isSystemDim =
           isFileTypeDimension({ id: dimIdNum }) ||
-          SYSTEM_RECONCILIATION_DIMENSION_IDS.has(dimIdNum)
+          SYSTEM_RECONCILIATION_DIMENSION_IDS.has(dimIdNum) ||
+          dimName === '作者' ||
+          dimName === 'author' ||
+          dimName === '地理位置' ||
+          dimName === 'geo location' ||
+          dimName === 'location' ||
+          dimName === '语言细分' ||
+          dimName === '语言' ||
+          dimName === 'language'
 
         dimGroup.tags.forEach((tagObj: TagItem) => {
           const categorizedItem: CategorizedTag = {

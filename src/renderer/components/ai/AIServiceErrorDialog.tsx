@@ -31,6 +31,7 @@ import {
   useAIServiceStatus,
   useAIServiceStore
 } from '../../stores/ai-service-store'
+import { useModelStore } from '../../stores/model-store'
 
 import { Button } from '../ui/button'
 import { openExternalLink } from '../../lib/external-link'
@@ -89,7 +90,42 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
 }) => {
   const { initializeAIService, initializeAIServiceWithCpu, initializeAIServiceWithVulkan } =
     useAIServiceStatus()
-  const { error } = useAIServiceError()
+  const { error: storeError } = useAIServiceError()
+  const lastError = useModelStore(s => s.lastError)
+
+  const error = useMemo(() => {
+    // 融合 storeError 与 lastError，优先展示包含 details 的最丰富错误信息
+    if (storeError) {
+      if (
+        (!storeError.details || storeError.code === AIErrorType.SERVER_START_FAILED) &&
+        lastError &&
+        typeof lastError === 'object'
+      ) {
+        const lastErrObj = lastError as Record<string, any>
+        return ErrorNormalizer.normalize(
+          {
+            ...lastErrObj,
+            message: lastErrObj.message || storeError.message,
+            details: lastErrObj.details || storeError.details
+          },
+          lastErrObj.code || lastErrObj.type || storeError.code,
+          'AIServiceErrorDialog'
+        )
+      }
+      return storeError
+    }
+    if (lastError) {
+      if (typeof lastError === 'object') {
+        return ErrorNormalizer.normalize(
+          lastError,
+          ((lastError as any).code || (lastError as any).type) as any,
+          'AIServiceErrorDialog'
+        )
+      }
+      return ErrorNormalizer.normalize(lastError, undefined, 'AIServiceErrorDialog')
+    }
+    return null
+  }, [storeError, lastError])
 
   /**
    * 处理以 CPU 模式启动
@@ -220,7 +256,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         let label = t('管理设置')
         if (aiError.code === AIErrorType.API_KEY_MISSING) {
           label = t('去配置 API 密钥')
-        } else if (aiError.type === 'memory' || aiError.code === AIErrorType.MODEL_LOAD_FAILED) {
+        } else if (aiError.type === 'memory') {
           label = t('管理模型')
         }
         actions.push({
@@ -310,7 +346,12 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
                       typeof detailContent === 'object'
                         ? detailContent.message || JSON.stringify(detailContent, null, 2)
                         : String(detailContent)
-                    if (!formatted || formatted === '[object Object]') return null
+                    if (
+                      !formatted ||
+                      formatted === '[object Object]' ||
+                      formatted.trim() === error.message.trim()
+                    )
+                      return null
                     return (
                       <div className="mt-2 pt-2 border-t border-destructive/10 text-xs opacity-80 italic">
                         {t('详细信息: ')}

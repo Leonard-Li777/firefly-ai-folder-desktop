@@ -13,15 +13,15 @@ export const MODEL_CONFIG_SOURCE = () => ({
   lastUpdated: '2026-05-23',
   models: [
     {
-      id: 'ggml-org/Qwen3.5-0.8B-GGUF:Q4_0',
-      name: `Qwen 3.5 0.8B (${t('基础')})`,
-      company: 'ggml-org',
+      id: 'unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL',
+      name: `Qwen 3.5 0.8B (${t('中文更佳')})`,
+      company: 'unsloth',
       parameterSize: '0.8B',
-      totalSize: '563MB',
-      recommended: false,
-      description: t('无独显可运行，极致运行速度，仅支持文本分析，欠精准。'),
-      source: 'huggingface',
-      quantization: 'Q4_0',
+      totalSize: '558MB',
+      recommended: true,
+      description: t('极速轻量文本模型，适合低配及 CPU 环境，中文分析表现均衡。'),
+      source: 'modelscope',
+      quantization: 'Q4_K_XL',
       isMultiModal: false,
       contextLength: 131072,
       capabilities: ['TEXT'],
@@ -29,8 +29,30 @@ export const MODEL_CONFIG_SOURCE = () => ({
         speed: 'extreme',
         quality: 'medium'
       },
-      isBuiltin: false,
-      tags: [t('官方'), t('轻量'), t('支持CPU运行'), t('仅文本')],
+      tags: [t('轻量'), t('支持CPU运行'), t('极速'), t('仅文本')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
+      id: 'unsloth/Qwen3.5-0.8B-GGUF:UD-Q5_K_XL',
+      name: `Qwen 3.5 0.8B (${t('中文更佳')})`,
+      company: 'unsloth',
+      parameterSize: '0.8B',
+      totalSize: '579MB',
+      recommended: false,
+      description: t('极速轻量文本模型，适合低配及 CPU 环境，中文分析表现均衡。'),
+      source: 'huggingface',
+      quantization: 'UD-Q5_K_XL',
+      isMultiModal: false,
+      contextLength: 131072,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'extreme',
+        quality: 'medium'
+      },
+      tags: [t('轻量'), t('支持CPU运行'), t('极速'), t('仅文本')],
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 2048
@@ -58,26 +80,74 @@ export const MODEL_CONFIG_SOURCE = () => ({
       capabilities: ['TEXT', 'IMAGE']
     },
     {
-      id: 'DavidAU/Qwen3.5-9B-Claude-4.6-OS-Auto-Variable-HERETIC-UNCENSORED-THINKING-MAX-NEOCODE-Imatrix-GGUF:D_AU-IQ3_M-imat',
-      name: t('Qwen 3.5 9B（Claude微调）'),
-      company: 'DavidAU',
-      parameterSize: '9B',
-      totalSize: '6.5GB',
-      recommended: false,
-      description: t('基于Claude 4.6数据集微调，在遵循指令方面表现出色。'),
-      source: 'huggingface',
-      isMultiModal: true,
-      contextLength: 131072,
+      id: 'LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M',
+      dspark: 'LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M',
+      name: `LFM2.5 1.2B Instruct（${t('英文更佳')}）`,
+      company: 'LiquidAI',
+      parameterSize: '1.2B',
+      totalSize: '873MB',
+      description: t('最新 LFM2.5 指令模型，文本分析高效，CPU 推理快速。'),
+      source: 'modelscope',
+      isBuiltin: true,
+      quantization: 'Q4_K_M',
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
       performance: {
         speed: 'extreme',
+        quality: 'medium'
+      },
+      tags: [t('超快'), t('支持CPU运行'), t('仅文本'), t('英文更佳')],
+      recommendedConfig: {
+        numCtx: 4096,
+        numPredict: 1024
+      }
+    },
+    {
+      id: 'LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M',
+      name: `LFM2.5 2.6B（${t('高效')}）`,
+      company: 'LiquidAI',
+      parameterSize: '2.6B',
+      totalSize: '1.63GB',
+      recommended: true,
+      description: t('最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 CPU 专属 DSpark 加速。'),
+      source: 'modelscope',
+      quantization: 'Q4_K_M',
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'very_fast',
         quality: 'high'
       },
-      tags: [t('微调优化'), t('Claude数据集'), t('多模态'), 'NSFW', t('无审查'), t('越狱')],
+      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('英文更佳')],
       recommendedConfig: {
         numCtx: 8192,
-        numPredict: 4096
+        numPredict: 2048
+      }
+    },
+    {
+      id: 'Abiray/LFM2.5-2.6B-Heretic-Abliterated-GGUF:Q4_K_M',
+      name: `LFM2.5 2.6B（${t('越狱')}）`,
+      company: 'Abiray',
+      parameterSize: '2.6B',
+      totalSize: '1.56GB',
+      recommended: true,
+      description: t('LFM2.5 2.6B 去限制无审查版本，平衡速度与质量。'),
+      source: 'huggingface',
+      quantization: 'Q4_K_M',
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'very_fast',
+        quality: 'high'
       },
-      capabilities: ['TEXT', 'IMAGE']
+      tags: [t('去限制'), t('无审查'), 'NSFW', t('仅文本')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
     },
     {
       id: 'unsloth/gemma-4-E4B-it-GGUF:Q4_K_S',
@@ -149,29 +219,6 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
-      id: 'unsloth/Qwen3.5-27B-GGUF:Q4_0',
-      name: `Qwen 3.5 27B（${t('最强')}）`,
-      company: 'Unsloth',
-      parameterSize: '27B',
-      totalSize: '16.63GB',
-      recommended: false,
-      description: t('超大参数模型，需要高性能显卡，支持文本和图像分析。'),
-      source: 'huggingface',
-      quantization: 'Q4_0',
-      isMultiModal: true,
-      contextLength: 131072,
-      performance: {
-        speed: 'slow',
-        quality: 'very_high'
-      },
-      tags: [t('超大参数'), t('多模态'), t('高性能GPU')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 4096
-      },
-      capabilities: ['TEXT', 'IMAGE']
-    },
-    {
       id: 'tatsuyaaaaaaa/Qwen3.5-2B-gguf:Q4_0',
       name: `Qwen 3.5 2B（${t('日语优化')}）`,
       company: 'tatsuyaaaaaaa',
@@ -218,29 +265,6 @@ export const MODEL_CONFIG_SOURCE = () => ({
       capabilities: ['TEXT']
     },
     {
-      id: 'mradermacher/Qwen3.5-2B-Polaris-HighIQ-INSTRUCT-GGUF:IQ4_XS',
-      name: `Qwen 3.5 2B Instruct（${t('高智商')}）`,
-      company: 'mradermacher',
-      parameterSize: '2B',
-      totalSize: '1.54GB',
-      recommended: false,
-      description: t('Polaris高智商微调版本，支持文本和图像分析。'),
-      source: 'huggingface',
-      quantization: 'IQ4_XS',
-      isMultiModal: true,
-      contextLength: 131072,
-      performance: {
-        speed: 'fast',
-        quality: 'high'
-      },
-      tags: [t('微调优化'), t('高智商'), t('多模态')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      },
-      capabilities: ['TEXT', 'IMAGE']
-    },
-    {
       id: 'ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M',
       name: `MiniCPM-V 4.6 (${t('识图小钢炮')})`,
       company: 'OpenBMB',
@@ -262,96 +286,6 @@ export const MODEL_CONFIG_SOURCE = () => ({
         numCtx: 8192,
         numPredict: 2048
       }
-    },
-    {
-      id: 'unsloth/Qwen3.6-27B-MTP-GGUF:UD-IQ2_XXS',
-      name: `Qwen 3.6 27B MTP(${t('较新')})`,
-      runtimeVersion: '2.1.0',
-      company: 'unsloth',
-      parameterSize: '27B',
-      totalSize: '9.77GB',
-      description: t('智商爆表的3.6版本，需要升级萤核到2.1+才能支持。'),
-      source: 'huggingface',
-      quantization: 'UD-IQ2_XXS',
-      isMultiModal: true,
-      contextLength: 131072,
-      performance: {
-        speed: 'slow',
-        quality: 'very_high'
-      },
-      tags: [t('多模态'), 'MTP', t('超大参数'), t('高性能GPU')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 3072
-      },
-      capabilities: ['TEXT', 'IMAGE']
-    },
-    {
-      id: 'unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL',
-      name: `Qwen 3.5 0.8B (${t('轻量识图')})`,
-      company: 'unsloth',
-      parameterSize: '0.8B',
-      totalSize: '762MB',
-      description: t('极致运行速度，适合极低配置环境，且支持图片分析，欠精准。'),
-      source: 'modelscope',
-      isMultiModal: true,
-      contextLength: 131072,
-      performance: {
-        speed: 'extreme',
-        quality: 'medium'
-      },
-      tags: [t('GPU极速'), t('支持CPU运行'), t('多模态'), t('迷你')],
-      recommendedConfig: {
-        numCtx: 4096,
-        numPredict: 1048
-      },
-      capabilities: ['TEXT', 'IMAGE']
-    },
-    {
-      id: 'Jackrong/Qwen3.5-9B-DeepSeek-V4-Flash-GGUF:Q4_K_M',
-      name: `Qwen 3.5 9B DeepSeek-V4(${t('蒸馏')})`,
-      company: 'Jackrong',
-      parameterSize: '9B',
-      totalSize: '6.10GB',
-      recommended: false,
-      description: t('DeepSeek-V4蒸馏版，继承深度推理和多步问题解决能力。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_M',
-      isMultiModal: true,
-      contextLength: 131072,
-      performance: {
-        speed: 'extreme',
-        quality: 'high'
-      },
-      tags: [t('蒸馏'), 'DeepSeek-V4', t('推理'), t('多模态'), t('微调优化')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 4096
-      },
-      capabilities: ['TEXT', 'IMAGE']
-    },
-    {
-      id: 'unsloth/Qwen3.6-27B-MTP-GGUF:Q4_K_M',
-      name: `Qwen 3.6 27B MTP(${t('最强')})`,
-      company: 'unsloth',
-      parameterSize: '27B',
-      totalSize: '16.79GB',
-      recommended: false,
-      description: t('超大参数模型，需要高性能显卡，支持文本和图像分析。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_M',
-      isMultiModal: true,
-      contextLength: 131072,
-      performance: {
-        speed: 'slow',
-        quality: 'very_high'
-      },
-      tags: [t('多模态'), 'MTP', t('超大参数'), t('高性能GPU')],
-      recommendedConfig: {
-        numCtx: 32768,
-        numPredict: 4096
-      },
-      capabilities: ['TEXT', 'IMAGE']
     },
     {
       id: 'OpenBMB/MiniCPM-V-4.6-gguf:Q4_K_M',
@@ -382,7 +316,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       company: 'Unsloth',
       parameterSize: '4B',
       totalSize: '5.70GB',
-      recommended: true,
+      recommended: false,
       description: t('谷歌的原版量化版本，支持文本、图像和音频分析。'),
       source: 'modelscope',
       quantization: 'UD-Q4_K_XL',
@@ -494,7 +428,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       company: 'Abiray',
       parameterSize: '2B',
       totalSize: '1.81GB',
-            recommended: false,
+      recommended: false,
       description: t('越狱版，支持图像分析。'),
       source: 'modelscope',
       quantization: 'Q4_K_M',
@@ -597,7 +531,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       company: 'Abiray',
       parameterSize: '3B',
       totalSize: '2.33GB',
-      recommended: false,
+      recommended: true,
       description: t('3B身材硬钢9B，强列推荐，但仅支持文本。'),
       source: 'modelscope',
       quantization: 'Q4_K_S',
@@ -620,7 +554,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       company: 'owao',
       parameterSize: '3B',
       totalSize: '2.40GB',
-      recommended: true,
+      recommended: false,
       description: t('3B身材硬钢9B，强列推荐，但仅支持文本。'),
       source: 'huggingface',
       quantization: 'Q4_K_M',
@@ -632,52 +566,6 @@ export const MODEL_CONFIG_SOURCE = () => ({
         quality: 'medium'
       },
       tags: [t('越狱'), t('无审查'), 'NSFW', t('仅文本')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'Abiray/Nanbeige4.2-3B-GGUF:Q8_0',
-      name: t('Nanbeige 4.2 3B（超越9B-高精度）'),
-      company: 'Abiray',
-      parameterSize: '3B',
-      totalSize: '4.13GB',
-      recommended: true,
-      description: t('3B身材硬钢9B，Q8_0最高精度量化，强列推荐，但仅支持文本。'),
-      source: 'modelscope',
-      quantization: 'Q8_0',
-      isMultiModal: false,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'fast',
-        quality: 'high'
-      },
-      tags: [t('仅文本'), t('中文更佳'), t('高精度')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'owao/Nanbeige4.2-3B-GGUF:Q8_0',
-      name: t('Nanbeige 4.2 3B（超越9B-高精度）'),
-      company: 'owao',
-      parameterSize: '3B',
-      totalSize: '4.13GB',
-      recommended: false,
-      description: t('3B身材硬钢9B，Q8_0最高精度量化，强列推荐，但仅支持文本。'),
-      source: 'huggingface',
-      quantization: 'Q8_0',
-      isMultiModal: false,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'fast',
-        quality: 'high'
-      },
-      tags: [t('越狱'), t('无审查'), 'NSFW', t('仅文本'), t('高精度')],
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 2048
@@ -701,76 +589,6 @@ export const MODEL_CONFIG_SOURCE = () => ({
         quality: 'high'
       },
       tags: [t('越狱'), t('无审查'), 'NSFW', t('仅文本'), t('高精度')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M',
-      dspark: 'LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M',
-      name: `LFM2.5 1.2B Instruct（${t('超快')}）`,
-      company: 'LiquidAI',
-      parameterSize: '1.2B',
-      totalSize: '873MB',
-      description: t('最新 LFM2.5 指令模型，文本分析高效，CPU 推理快速。'),
-      source: 'huggingface',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 32768,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'extreme',
-        quality: 'medium'
-      },
-      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('英文更佳')],
-      recommendedConfig: {
-        numCtx: 4096,
-        numPredict: 1024
-      }
-    },
-    {
-      id: 'LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M',
-      dspark: 'LiquidAI/LFM2.5-2.6B-DSpark-GGUF:Q4_K_M',
-      name: `LFM2.5 2.6B（${t('高效')}）`,
-      company: 'LiquidAI',
-      parameterSize: '2.6B',
-      totalSize: '1.63GB',
-      recommended: true,
-      description: t('最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 CPU 专属 DSpark 加速。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 32768,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'very_fast',
-        quality: 'high'
-      },
-      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('英文更佳')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'Abiray/LFM2.5-2.6B-Heretic-Abliterated-GGUF:Q4_K_M',
-      name: `LFM2.5 2.6B（${t('越狱')}）`,
-      company: 'Abiray',
-      parameterSize: '2.6B',
-      totalSize: '1.56GB',
-      recommended: true,
-      description: t('LFM2.5 2.6B 去限制无审查版本，平衡速度与质量。'),
-      source: 'huggingface',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 32768,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'very_fast',
-        quality: 'high'
-      },
-      tags: [t('去限制'), t('无审查'), 'NSFW', t('仅文本')],
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 2048

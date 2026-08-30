@@ -280,15 +280,15 @@ export function ModelSelectionStep({ onNext, onBack }: ModelSelectionStepProps) 
                                 {m.name}
                               </h3>
                               {m.recommended && (
-                                <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-500 hover:to-indigo-600 text-white text-[9px] font-black h-4 px-1.5 uppercase tracking-tighter border-none">
-                                  <Sparkles className="w-2 h-2 mr-1 fill-current" />
+                                <Badge className="bg-amber-400 hover:bg-amber-400 text-slate-900 text-[9px] font-black h-4 px-1.5 uppercase tracking-tighter border-none">
+                                  <Star className="w-2 h-2 mr-1 fill-current" />
                                   {t('推荐')}
                                 </Badge>
                               )}
                               {m.isBestInTab && (
-                                <Badge className="bg-amber-400 hover:bg-amber-400 text-slate-900 text-[9px] font-black h-4 px-1.5 uppercase tracking-tighter border-none">
-                                  <Star className="w-2 h-2 mr-1 fill-current" />
-                                  {t('最佳推荐')}
+                                <Badge className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-500 hover:to-indigo-600 text-white text-[9px] font-black h-4 px-1.5 uppercase tracking-tighter border-none">
+                                  <Sparkles className="w-2 h-2 mr-1 fill-current" />
+                                  {t('最佳显存适配')}
                                 </Badge>
                               )}
                               {m.isCpuMode && (

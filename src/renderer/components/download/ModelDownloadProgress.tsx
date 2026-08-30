@@ -257,7 +257,14 @@ export function ModelDownloadProgress({
                 <div>
                   <p className="font-medium">{t('下载出错')}</p>
                   <p className="mt-1 text-destructive/80">
-                    {t('{error}，请稍后再试或选择其它模型下载', { error })}
+                    {t('{error}，请稍后再试或选择其它模型下载', {
+                      error:
+                        typeof error === 'string'
+                          ? error
+                          : (error as any)?.message ||
+                            (error as any)?.details ||
+                            JSON.stringify(error)
+                    })}
                   </p>
                   {onRetry && (
                     <Button

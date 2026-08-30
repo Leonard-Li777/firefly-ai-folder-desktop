@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { AIServiceStatus } from '@firefly/types'
-import { isModelSwitchingActive } from './ai-service-store'
+import { isModelSwitchingActive, useAIServiceStore } from './ai-service-store'
+import { ErrorNormalizer } from '@firefly/shared'
 
 /**
  * 模型状态接口定义
@@ -132,6 +133,21 @@ if (typeof window !== 'undefined' && window.electronAPI) {
       backend: payload.backend,
       bestAcceleration: payload.bestAcceleration
     })
+
+    // 如果主进程上报了 error，且 status 是 ERROR，同步更新到 useAIServiceStore
+    if (payload.status === AIServiceStatus.ERROR && payload.error) {
+      try {
+        useAIServiceStore.getState().setError(
+          ErrorNormalizer.normalize(
+            payload.error,
+            (payload.error.code || payload.error.type) as any,
+            'ModelStore'
+          )
+        )
+      } catch (e) {
+        console.warn('[ModelStore] 同步错误到 AIServiceStore 失败:', e)
+      }
+    }
   })
 
   // 初始化时获取当前状态
@@ -149,5 +165,19 @@ if (typeof window !== 'undefined' && window.electronAPI) {
       backend: aiStatus?.backend,
       bestAcceleration: aiStatus?.bestAcceleration
     })
+
+    if (aiStatus?.status === AIServiceStatus.ERROR && aiStatus?.error) {
+      try {
+        useAIServiceStore.getState().setError(
+          ErrorNormalizer.normalize(
+            aiStatus.error,
+            (aiStatus.error.code || aiStatus.error.type) as any,
+            'ModelStore'
+          )
+        )
+      } catch (e) {
+        console.warn('[ModelStore] 初始化同步错误到 AIServiceStore 失败:', e)
+      }
+    }
   })
 }

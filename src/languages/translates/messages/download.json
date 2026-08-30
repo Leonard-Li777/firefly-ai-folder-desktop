@@ -221,7 +221,7 @@
     "de-DE": "Erneut versuchen\r",
     "fr-FR": "Réessayer",
     "ko-KR": "다시 시도",
-    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(10058-10064)"],
+    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(10345-10351)"],
     "$id": 3937
   },
   "手动下载提示": {
@@ -234,7 +234,7 @@
     "de-DE": "Hinweis zum manuellen Herunterladen\r",
     "fr-FR": "Invite de téléchargement manuel",
     "ko-KR": "수동 다운로드 안내",
-    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(11182-11192)"],
+    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(11469-11479)"],
     "$id": 3938
   },
   "如果下载不成功，请手动下载以下文件到模型存储目录：": {
@@ -247,7 +247,7 @@
     "de-DE": "Falls der Download nicht erfolgreich ist, laden Sie bitte manuell folgende Datei in das Modell-Speicherverzeichnis herunter:\r",
     "fr-FR": "Si le téléchargement échoue, veuillez télécharger manuellement le fichier suivant dans le répertoire de stockage du modèle :",
     "ko-KR": "다운로드가 실패할 경우, 다음 파일을 모델 저장 디렉토리로 수동 다운로드해 주세요:",
-    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(11238-11267)"],
+    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(11525-11554)"],
     "$id": 3939
   },
   "下载地址": {
@@ -260,7 +260,7 @@
     "de-DE": "Download-Adresse\r",
     "fr-FR": "Adresse de téléchargement",
     "ko-KR": "다운로드 주소",
-    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(11440-11448)"],
+    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(11727-11735)"],
     "$id": 3940
   },
   "模型存储目录": {
@@ -273,7 +273,7 @@
     "de-DE": "Modell-Speicherverzeichnis\r",
     "fr-FR": "Répertoire de stockage du modèle",
     "ko-KR": "모델 저장 디렉토리",
-    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(12122-12132)"],
+    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(12409-12419)"],
     "$id": 3941
   },
   "暂停": {
@@ -286,7 +286,7 @@
     "de-DE": "Pausieren\r",
     "fr-FR": "Pause",
     "ko-KR": "일시 중지",
-    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(12916-12922)"],
+    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(13203-13209)"],
     "$id": 3942
   },
   "继续": {
@@ -299,7 +299,7 @@
     "de-DE": "Fortsetzen\r",
     "fr-FR": "Reprendre",
     "ko-KR": "계속",
-    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(13234-13240)"],
+    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(13521-13527)"],
     "$id": 3943
   },
   "取消": {
@@ -312,7 +312,7 @@
     "de-DE": "Abbrechen",
     "fr-FR": "Annuler",
     "ko-KR": "취소",
-    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(13611-13617)"],
+    "$files": ["src/renderer/components/download/ModelDownloadProgress.tsx(13898-13904)"],
     "$id": 3944
   }
 }

@@ -2,7 +2,7 @@ import { useVoerkaI18n } from '@voerkai18n/react'
 import i18nScope from '@src/languages'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/tabs'
 import { Badge } from '@components/ui/badge'
-import { Globe, Star, Info, Cpu, HardDrive, Zap, Check, RefreshCw } from 'lucide-react'
+import { Globe, Star, Sparkles, Info, Cpu, HardDrive, Zap, Check, RefreshCw } from 'lucide-react'
 import { Button } from '../ui/button'
 import { MODEL_SOURCES, groupAndSortModels } from '@firefly/shared'
 import { HardwareInfo, ModelSource, TModelSource, IModelSummary } from '@firefly/types'
@@ -195,9 +195,15 @@ export function OllamaModelSelectionStep({ onNext, onBack }: OllamaModelSelectio
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <h4 className="font-black text-lg text-slate-900">{m.name}</h4>
                         <div className="flex gap-1.5 flex-wrap">
-                          {m.isBest && (
+                          {m.recommended && (
                             <Badge className="text-[10px] font-black h-5 px-2 bg-amber-500 text-white border-none shadow-md flex items-center gap-1 animate-pulse">
                               <Star className="h-3.5 w-3.5 fill-current text-white" />{' '}
+                              {t('推荐')}
+                            </Badge>
+                          )}
+                          {m.isBest && (
+                            <Badge className="text-[10px] font-black h-5 px-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-none shadow-md flex items-center gap-1">
+                              <Sparkles className="h-3.5 w-3.5 fill-current text-white" />{' '}
                               {t('最佳推荐')}
                             </Badge>
                           )}

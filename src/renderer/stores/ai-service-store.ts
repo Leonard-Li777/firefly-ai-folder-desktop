@@ -239,7 +239,7 @@ export const useAIServiceStore = create<TAIServiceStore>()(
           status: AIServiceStatus.ERROR,
           error: ErrorNormalizer.normalize(
             error,
-            AIErrorType.SERVER_START_FAILED,
+            undefined,
             'AIServiceStore'
           ),
           lastActivity: new Date()
@@ -353,7 +353,7 @@ export const useAIServiceStore = create<TAIServiceStore>()(
           status: AIServiceStatus.ERROR,
           error: ErrorNormalizer.normalize(
             error,
-            AIErrorType.SERVER_START_FAILED,
+            undefined,
             'AIServiceStore'
           ),
           lastActivity: new Date()
@@ -468,7 +468,7 @@ export const useAIServiceStore = create<TAIServiceStore>()(
           status: AIServiceStatus.ERROR,
           error: ErrorNormalizer.normalize(
             error,
-            AIErrorType.SERVER_START_FAILED,
+            undefined,
             'AIServiceStore'
           ),
           lastActivity: new Date()
