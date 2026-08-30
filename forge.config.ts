@@ -1434,44 +1434,52 @@ const config: ForgeConfig = {
     ),
 
     // Linux - DEB 安装包（Ubuntu/Debian）
-    new MakerDeb(
-      {
-        options: {
-          name: APP_NAME.toLowerCase(),
-          productName: APP_NAME,
-          bin: EXECUTABLE_NAME,
-          maintainer: 'Firefly',
-          homepage: 'https://aifolder.iocn.cn',
-          description: packageJson.description,
-          // 添加 dereference 选项，确保打包时解析符号链接
-          // 这样可以彻底解决打包后 resources/app/node_modules/@firefly 目录下的 broken symlinks 问题
-          dereference: true
-        }
-      },
-      ['linux']
-    ),
+    ...(process.env.LINUX_MAKER && process.env.LINUX_MAKER !== 'deb'
+      ? []
+      : [
+          new MakerDeb(
+            {
+              options: {
+                name: APP_NAME.toLowerCase(),
+                productName: APP_NAME,
+                bin: EXECUTABLE_NAME,
+                maintainer: 'Firefly',
+                homepage: 'https://aifolder.iocn.cn',
+                description: packageJson.description,
+                // 添加 dereference 选项，确保打包时解析符号链接
+                // 这样可以彻底解决打包后 resources/app/node_modules/@firefly 目录下的 broken symlinks 问题
+                dereference: true
+              }
+            },
+            ['linux']
+          )
+        ]),
 
     // Linux - RPM 安装包（RedHat/CentOS/Fedora）
-    new MakerRpm(
-      {
-        options: {
-          name: APP_NAME.toLowerCase(),
-          productName: APP_NAME,
-          bin: EXECUTABLE_NAME,
-          homepage: 'https://aifolder.iocn.cn',
-          description: packageJson.description,
-          // 添加 dereference 选项，确保打包时解析符号链接
-          dereference: true,
-          // 禁用二进制文件剥离 (stripping)，避免跨平台二进制文件导致的构建错误
-          // 特别是当 aarch64 的 strip 尝试处理 x64 的 fastfetch 时会报错
-          macros: {
-            __strip: '/bin/true',
-            __os_install_post: '/usr/lib/rpm/brp-compress'
-          }
-        }
-      },
-      ['linux']
-    )
+    ...(process.env.LINUX_MAKER && process.env.LINUX_MAKER !== 'rpm'
+      ? []
+      : [
+          new MakerRpm(
+            {
+              options: {
+                name: APP_NAME.toLowerCase(),
+                productName: APP_NAME,
+                bin: EXECUTABLE_NAME,
+                homepage: 'https://aifolder.iocn.cn',
+                description: packageJson.description,
+                // 添加 dereference 选项，确保打包时解析符号链接
+                dereference: true,
+                // 禁用二进制文件剥离 (stripping)，避免跨平台二进制文件导致的构建错误
+                // 特别是当 aarch64 的 strip 尝试处理 x64 的 fastfetch 时会报错
+                macros: {
+                  __strip: '/bin/true',
+                  __os_install_post: '/usr/lib/rpm/brp-compress'
+                }
+              }
+            },
+            ['linux']
+          )
+        ])
   ],
   // 插件配置
   plugins: [

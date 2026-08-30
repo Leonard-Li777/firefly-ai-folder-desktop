@@ -595,16 +595,21 @@ jobs:
           pnpm run publish:github || echo "⚠️ GitHub 发布完成或已发布"
 
   build-linux:
-    name: Build Linux
+    name: Build Linux (${{ matrix.maker }})
     if: |
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_linux == 'true' || github.event.inputs.platform_linux == true))
     runs-on: ${{ github.event.inputs.linux_runner || 'self-hosted' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        maker: [deb, rpm]
     container:
       image: node:20-buster
     env:
       NPM_CONFIG_UNSAFE_PERM: 'true'
       PYTHON: python3
+      LINUX_MAKER: ${{ matrix.maker }}
     steps:
       - name: Checkout Open-Source Desktop Code
         uses: actions/checkout@v4
@@ -894,7 +899,7 @@ jobs:
           fi
           cp build/boot.jpg build/boot.gif
 
-      - name: Build Linux Application
+      - name: Build Linux Application (${{ matrix.maker }})
         run: |
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
             pnpm run make:intl
@@ -904,6 +909,7 @@ jobs:
         env:
           AI_ENGINE: llama.cpp
           BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
+          LINUX_MAKER: ${{ matrix.maker }}
 
       - name: Publish to Cloudflare R2
         shell: bash
