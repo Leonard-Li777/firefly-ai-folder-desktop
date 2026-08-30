@@ -24,13 +24,13 @@ on:
         type: boolean
         default: true
       linux_runner:
-        description: '选择 Linux 构建的运行 Runner 环境 (默认 self-hosted)'
+        description: '选择 Linux 构建的运行 Runner 环境 (默认 ubuntu-latest)'
         required: true
         type: choice
-        default: 'self-hosted'
+        default: 'ubuntu-latest'
         options:
-          - 'self-hosted'
           - 'ubuntu-latest'
+          - 'self-hosted'
       build_region:
         description: '构建区域 (国际版 INTL 或 国内版 CN)'
         required: true
@@ -599,7 +599,7 @@ jobs:
     if: |
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_linux == 'true' || github.event.inputs.platform_linux == true))
-    runs-on: ${{ github.event.inputs.linux_runner || 'self-hosted' }}
+    runs-on: ${{ github.event.inputs.linux_runner || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
