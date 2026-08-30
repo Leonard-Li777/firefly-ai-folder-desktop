@@ -90,6 +90,7 @@ coverage/
 .eslintcache
 
 # i18n credentials & temporary translation files
+**/api.json
 src/languages/api.json
 src/languages/translates/*/*.bak.*.json
 **/*.wrapped.*
