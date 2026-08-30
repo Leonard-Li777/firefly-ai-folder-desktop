@@ -11,8 +11,8 @@
     "ko-KR": "electronAPI.aiService.initialize를 사용할 수 없습니다",
     "$files": [
       "src/renderer/stores/ai-service-store.ts(4174-4214)",
-      "src/renderer/stores/ai-service-store.ts(7168-7208)",
-      "src/renderer/stores/ai-service-store.ts(10579-10619)"
+      "src/renderer/stores/ai-service-store.ts(7146-7186)",
+      "src/renderer/stores/ai-service-store.ts(10535-10575)"
     ],
     "$id": 5455
   },
@@ -28,8 +28,8 @@
     "ko-KR": "AI 서비스 초기화 실패",
     "$files": [
       "src/renderer/stores/ai-service-store.ts(5586-5599)",
-      "src/renderer/stores/ai-service-store.ts(8945-8958)",
-      "src/renderer/stores/ai-service-store.ts(12505-12518)"
+      "src/renderer/stores/ai-service-store.ts(8923-8936)",
+      "src/renderer/stores/ai-service-store.ts(12461-12474)"
     ],
     "$id": 5458
   },
@@ -45,9 +45,9 @@
     "ko-KR": "알 수 없는 오류",
     "$files": [
       "src/renderer/stores/ai-service-store.ts(6366-6374)",
-      "src/renderer/stores/ai-service-store.ts(9731-9739)",
-      "src/renderer/stores/ai-service-store.ts(13293-13301)",
-      "src/renderer/stores/ai-service-store.ts(16730-16738)",
+      "src/renderer/stores/ai-service-store.ts(9709-9717)",
+      "src/renderer/stores/ai-service-store.ts(13249-13257)",
+      "src/renderer/stores/ai-service-store.ts(16664-16672)",
       "src/renderer/stores/tier-store.ts(3747-3755)"
     ],
     "$id": 8872
@@ -62,7 +62,7 @@
     "de-DE": "ElectronAPI.aiService.onModelChanged nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.onModelChanged n'est pas disponible",
     "ko-KR": "electronAPI.aiService.onModelChanged 사용 불가",
-    "$files": ["src/renderer/stores/ai-service-store.ts(14064-14108)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(13998-14042)"],
     "$id": 8128
   },
   "模型切换失败": {
@@ -75,7 +75,7 @@
     "de-DE": "Modellwechsel fehlgeschlagen",
     "fr-FR": "Échec du changement de modèle",
     "ko-KR": "모델 전환 실패",
-    "$files": ["src/renderer/stores/ai-service-store.ts(15909-15919)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(15843-15853)"],
     "$id": 5462
   },
   "更新配置失败": {
