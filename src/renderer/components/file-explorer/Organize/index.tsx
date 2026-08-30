@@ -645,7 +645,7 @@ export const Organize: React.FC = () => {
                       files={toOrganizeFiles}
                       selectionEnabled={false}
                       activeItem={inspectedFile}
-                      selectedFileIds={inspectedFile?.id ? [inspectedFile.id] : []}
+                      selectedFileIds={inspectedFile ? [inspectedFile.path || inspectedFile.id] : []}
                       onFileSelect={item => {
                         const single = Array.isArray(item) ? item[0] : item
                         // 以最新 inspectedFile（ref，点击前的真实选中状态）作为权威判断：

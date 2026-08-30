@@ -1,5 +1,5 @@
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
-import { llamaServerService } from '@firefly/electron-llamaIndex-service'
+import { LlamaServerService } from '@firefly/electron-llamaIndex-service'
 import {
   LogCategory,
   logger,
@@ -20,6 +20,8 @@ import {
  * 检测并提示用户切换。
  */
 export class AccelerationMemoryService {
+  private isListenerSetup = false
+
   constructor() {
     this.setupServiceStartedListener()
   }
@@ -29,24 +31,38 @@ export class AccelerationMemoryService {
    * 从实际运行的二进制路径提取加速引擎并记忆最佳可用引擎。
    */
   private setupServiceStartedListener(): void {
-    try {
-      if (llamaServerService && typeof (llamaServerService as any).on === 'function') {
-        ;(llamaServerService as any).on('service-started', (startedProcess: any) => {
-          try {
-            const binaryPath = startedProcess?.config?.binaryPath
-            if (!binaryPath || binaryPath === 'external') return
-            this.recordVerifiedAccelerationFromBinaryPath(binaryPath)
-          } catch (err) {
-            logger.warn(
-              LogCategory.AI_SERVICE,
-              '服务启动时记录最佳可用引擎发生异常（不影响主流程）:',
-              err
-            )
-          }
-        })
+    if (this.isListenerSetup) return
+
+    const attach = () => {
+      if (this.isListenerSetup) return
+      try {
+        const serverService = LlamaServerService.getInstance()
+        if (serverService && typeof (serverService as any).on === 'function') {
+          this.isListenerSetup = true
+          ;(serverService as any).on('service-started', (startedProcess: any) => {
+            try {
+              const binaryPath = startedProcess?.config?.binaryPath
+              if (!binaryPath || binaryPath === 'external') return
+              this.recordVerifiedAccelerationFromBinaryPath(binaryPath)
+            } catch (err) {
+              logger.warn(
+                LogCategory.AI_SERVICE,
+                '服务启动时记录最佳可用引擎发生异常（不影响主流程）:',
+                err
+              )
+            }
+          })
+        }
+      } catch (err) {
+        logger.warn(LogCategory.AI_SERVICE, '注册服务启动事件监听失败:', err)
       }
-    } catch (err) {
-      logger.warn(LogCategory.AI_SERVICE, '注册服务启动事件监听失败:', err)
+    }
+
+    // 延迟到事件循环下一刻度执行，避免模块加载时的 TDZ 问题
+    if (typeof setImmediate === 'function') {
+      setImmediate(attach)
+    } else {
+      setTimeout(attach, 0)
     }
   }
 
@@ -63,7 +79,8 @@ export class AccelerationMemoryService {
    */
   recordSuccessfulInferenceAcceleration(): string | null {
     try {
-      const binaryPath = llamaServerService.getProcessInfo()?.config?.binaryPath
+      const serverService = LlamaServerService.getInstance()
+      const binaryPath = serverService.getProcessInfo()?.config?.binaryPath
       if (!binaryPath || binaryPath === 'external') return null
       return this.recordVerifiedAccelerationFromBinaryPath(binaryPath)
     } catch (err) {

@@ -30,3 +30,23 @@ import { vi } from 'vitest'
 ;(globalThis as any).__AI_ENGINE__ = 'llama.cpp'
 ;(globalThis as any).__IS_DEV__ = true
 ;(globalThis as any).__IS_PROD__ = false
+
+// 捕获 EPIPE (broken pipe) 错误，防止测试中断或终端关闭时触发 Electron 弹窗崩溃
+if (typeof process !== 'undefined') {
+  process.stdout?.on?.('error', (err: any) => {
+    if (err?.code === 'EPIPE' || err?.code === 'ERR_STREAM_DESTROYED') {
+      process.exit(0)
+    }
+  })
+  process.stderr?.on?.('error', (err: any) => {
+    if (err?.code === 'EPIPE' || err?.code === 'ERR_STREAM_DESTROYED') {
+      process.exit(0)
+    }
+  })
+  process.on?.('uncaughtException', (err: any) => {
+    if (err?.code === 'EPIPE' || err?.code === 'ERR_STREAM_DESTROYED' || String(err?.message || '').includes('EPIPE')) {
+      process.exit(0)
+    }
+  })
+}
+

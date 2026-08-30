@@ -836,6 +836,9 @@ app.on('activate', () => {
 })
 
 process.on('uncaughtException', err => {
+  if ((err as any)?.code === 'EPIPE' || (err as any)?.code === 'ERR_STREAM_DESTROYED' || String(err?.message || '').includes('EPIPE')) {
+    return
+  }
   logger.error(LogCategory.MAIN, '[uncaughtException]', err)
   try {
     postHogMain.captureException(err, { source: 'uncaughtException' })
@@ -844,6 +847,9 @@ process.on('uncaughtException', err => {
   }
 })
 process.on('unhandledRejection', reason => {
+  if ((reason as any)?.code === 'EPIPE' || (reason as any)?.code === 'ERR_STREAM_DESTROYED' || String((reason as any)?.message || '').includes('EPIPE')) {
+    return
+  }
   logger.error(LogCategory.MAIN, '[unhandledRejection]', reason)
   try {
     postHogMain.captureException(reason, { source: 'unhandledRejection' })
