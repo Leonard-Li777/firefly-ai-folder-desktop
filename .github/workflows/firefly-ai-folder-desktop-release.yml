@@ -184,6 +184,25 @@ jobs:
           path: build/presetResources
           key: llama-presets-darwin-v2
 
+      - name: Download llama-model-download on Cache Miss
+        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/presetResources/llama-model-download
+          TEMP_ZIP=$(mktemp)
+          echo "📥 从 ci-resources 下载 llama-model-download..."
+          if gh release download ci-resources --pattern "llama-model-download-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+            unzip -o -q "$TEMP_ZIP" -d build/presetResources/llama-model-download
+            rm -f "$TEMP_ZIP"
+            echo "✅ llama-model-download 资源恢复完成。"
+          else
+            echo "📥 回退：尝试从 firefly-resources 下载 llama-model-download..."
+            gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
+            rm -f "$TEMP_ZIP"
+          fi
+
       - name: Sync Llama.cpp
         shell: bash
         env:
@@ -468,6 +487,25 @@ jobs:
         with:
           path: build/presetResources
           key: llama-presets-windows-v2
+
+      - name: Download llama-model-download on Cache Miss
+        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/presetResources/llama-model-download
+          TEMP_ZIP="${RUNNER_TEMP:-/tmp}/llama-model-dl.zip"
+          echo "📥 从 ci-resources 下载 llama-model-download..."
+          if gh release download ci-resources --pattern "llama-model-download-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+            unzip -o -q "$TEMP_ZIP" -d build/presetResources/llama-model-download
+            rm -f "$TEMP_ZIP"
+            echo "✅ llama-model-download 资源恢复完成。"
+          else
+            echo "📥 回退：尝试从 firefly-resources 下载 llama-model-download..."
+            gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
+            rm -f "$TEMP_ZIP"
+          fi
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -756,6 +794,25 @@ jobs:
         with:
           path: build/presetResources
           key: llama-presets-linux-v2
+
+      - name: Download llama-model-download on Cache Miss
+        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/presetResources/llama-model-download
+          TEMP_ZIP=$(mktemp)
+          echo "📥 从 ci-resources 下载 llama-model-download..."
+          if gh release download ci-resources --pattern "llama-model-download-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+            unzip -o -q "$TEMP_ZIP" -d build/presetResources/llama-model-download
+            rm -f "$TEMP_ZIP"
+            echo "✅ llama-model-download 资源恢复完成。"
+          else
+            echo "📥 回退：尝试从 firefly-resources 下载 llama-model-download..."
+            gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
+            rm -f "$TEMP_ZIP"
+          fi
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
