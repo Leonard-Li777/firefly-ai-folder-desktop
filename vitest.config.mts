@@ -91,6 +91,8 @@ export default defineConfig({
       )
         ? resolve(__dirname, 'pro/packages/electron-llamaIndex-service/src')
         : resolve(__dirname, '../../packages/electron-llamaIndex-service/src'),
+      '@tests': resolve(__dirname, '../../tests'),
+      '@desktop-tests': resolve(__dirname, 'pro/tests'),
       '@app/languages': resolve(__dirname, 'src/languages'),
       '@app/electron': resolve(__dirname, 'src/electron'),
       react: resolveNodeModule('react'),
