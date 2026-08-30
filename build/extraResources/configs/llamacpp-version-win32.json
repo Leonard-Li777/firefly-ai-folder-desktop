@@ -1,6 +1,6 @@
 {
-  "version": "b10582",
-  "updatedAt": "2026-08-22",
+  "version": "b10698",
+  "updatedAt": "2026-08-30",
   "platform": "win32",
   "arch": "x64",
   "mode": "all-platforms-bundle",
@@ -12,52 +12,52 @@
       "size": 391443627,
       "platform": "win32",
       "arch": "x64",
-      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/cudart-llama-bin-win-cuda-12.4-x64.zip"
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10698/cudart-llama-bin-win-cuda-12.4-x64.zip"
     },
     {
-      "name": "llama-b10582-bin-win-cuda-12.4-x64.zip",
-      "size": 250973879,
+      "name": "llama-b10698-bin-win-cuda-12.4-x64.zip",
+      "size": 250554357,
       "platform": "win32",
       "arch": "x64",
-      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cuda-12.4-x64.zip"
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10698/llama-b10698-bin-win-cuda-12.4-x64.zip"
     },
     {
-      "name": "llama-b10582-bin-win-vulkan-x64.zip",
-      "size": 34948736,
+      "name": "llama-b10698-bin-win-vulkan-x64.zip",
+      "size": 34918029,
       "platform": "win32",
       "arch": "x64",
-      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-vulkan-x64.zip"
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10698/llama-b10698-bin-win-vulkan-x64.zip"
     },
     {
-      "name": "llama-b10582-bin-win-rocm-7.14-x64.zip",
-      "size": 196956675,
+      "name": "llama-b10698-bin-win-rocm-7.14-x64.zip",
+      "size": 241601793,
       "platform": "win32",
       "arch": "x64",
-      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-rocm-7.14-x64.zip"
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10698/llama-b10698-bin-win-rocm-7.14-x64.zip"
     },
     {
-      "name": "llama-b10582-bin-win-sycl-x64.zip",
-      "size": 119840170,
+      "name": "llama-b10698-bin-win-sycl-x64.zip",
+      "size": 119361999,
       "platform": "win32",
       "arch": "x64",
-      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-sycl-x64.zip"
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10698/llama-b10698-bin-win-sycl-x64.zip"
     },
     {
-      "name": "llama-b10582-bin-win-openvino-2026.3-x64.zip",
-      "size": 80396131,
+      "name": "llama-b10698-bin-win-openvino-2026.3.1-x64.zip",
+      "size": 80234956,
       "platform": "win32",
       "arch": "x64",
-      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-openvino-2026.3-x64.zip"
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10698/llama-b10698-bin-win-openvino-2026.3.1-x64.zip"
     },
     {
-      "name": "llama-b10582-bin-win-cpu-x64.zip",
-      "size": 18592859,
+      "name": "llama-b10698-bin-win-cpu-x64.zip",
+      "size": 18146465,
       "platform": "win32",
       "arch": "x64",
-      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cpu-x64.zip"
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10698/llama-b10698-bin-win-cpu-x64.zip"
     },
     {
-      "name": "llama-b10582-bin-win-hip-x64.zip",
+      "name": "llama-b10698-bin-win-hip-x64.zip",
       "size": 196503634,
       "platform": "win32",
       "arch": "x64",

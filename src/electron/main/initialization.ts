@@ -910,7 +910,6 @@ export async function initializeFullServices(): Promise<void> {
     try {
       await analysisQueueService.initialize()
       logger.info(LogCategory.MAIN, '分析队列服务初始化成功')
-      void analysisQueueService.start()
     } catch (error) {
       logger.error(LogCategory.MAIN, '[analysis-queue] 分析队列服务初始化失败:', error)
     }

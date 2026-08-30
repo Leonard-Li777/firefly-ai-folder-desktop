@@ -603,7 +603,7 @@ export function AnalysisQueueContent({
           {/* 操作按钮反向顺序 */}
           {isCurrentWsRunning ? (
             <Button
-              variant="secondary"
+              variant="destructive"
               size="sm"
               className="h-7 text-xs px-2 font-semibold"
               onClick={() => pause()}

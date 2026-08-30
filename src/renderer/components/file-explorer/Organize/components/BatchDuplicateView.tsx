@@ -1546,7 +1546,6 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
                             onClick={() => handleScan()}
                             className="w-full max-w-xs h-11 text-sm font-bold gap-2.5 rounded-xl bg-gradient-to-r from-primary to-primary/90 text-primary-foreground hover:brightness-105 active:scale-[0.98] shadow-md shadow-primary/20 transition-all duration-200 cursor-pointer"
                           >
-                            <MaterialIcon icon="play_arrow" className="text-lg" />
                             <span>{t('开始清理分析与查重')}</span>
                           </Button>
                         </div>
