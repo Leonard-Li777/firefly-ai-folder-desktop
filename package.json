@@ -26,6 +26,7 @@
     "publish:r2": "node pro/scripts/run.js publish-to-r2.js",
     "publish:all": "pnpm run publish:r2 && pnpm run publish:github",
     "setup-resources": "node pro/scripts/run.js setup-extra-resources.js && node pro/scripts/run.js copy-viewer-resources.js",
+    "download:builtin-model": "node pro/scripts/run.js download-builtin-model.js",
     "start": "cross-env BUILD_REGION=CN electron-vite preview",
     "dev": "cross-env BUILD_REGION=CN electron-vite dev",
     "build": "cross-env BUILD_REGION=CN electron-vite build",
