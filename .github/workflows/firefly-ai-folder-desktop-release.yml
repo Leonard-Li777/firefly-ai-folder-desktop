@@ -643,7 +643,7 @@ jobs:
       matrix:
         maker: [deb, rpm]
     container:
-      image: node:20-bullseye
+      image: node:20-buster
     env:
       NPM_CONFIG_UNSAFE_PERM: 'true'
       PYTHON: python3
@@ -659,13 +659,41 @@ jobs:
           token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
           path: pro
 
+      - name: Fix buster apt sources (EOL)
+        shell: bash
+        run: |
+          rm -f /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources
+          printf '%s\n' \
+            'deb http://archive.debian.org/debian buster main contrib non-free' \
+            'deb http://archive.debian.org/debian buster-updates main contrib non-free' \
+            'deb http://archive.debian.org/debian-security buster/updates main contrib non-free' \
+            > /etc/apt/sources.list
+          echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+          cat /etc/apt/sources.list
+
       - name: Install System Build Dependencies (Linux)
         run: |
           apt-get update && apt-get install -y \
-            build-essential make g++ python3 python3-dev python3-pip \
-            fakeroot dpkg rpm libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 \
-            libcups2 libdrm2 libgtk-3-0 libgbm1 libasound2 libxshmfence1 libx11-xcb1 \
-            p7zip-full curl tar
+            build-essential make g++ python3 fakeroot dpkg rpm libnss3 libnspr4 \
+            libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 \
+            libasound2 libxshmfence1 libx11-xcb1 p7zip-full curl tar
+
+          # 解决 GCC 8.3 不支持 -std=c++20 (仅支持 -std=c++2a) 的兼容性 wrapper
+          cat << 'EOF' > /usr/local/bin/g++
+#!/bin/bash
+args=()
+for arg in "$@"; do
+  if [ "$arg" = "-std=c++20" ]; then
+    args+=("-std=c++2a")
+  else
+    args+=("$arg")
+  fi
+done
+exec /usr/bin/g++ "${args[@]}"
+EOF
+          chmod +x /usr/local/bin/g++
+          ln -sf /usr/local/bin/g++ /usr/local/bin/c++
+          ln -sf /usr/local/bin/g++ /usr/local/bin/x86_64-linux-gnu-g++
 
       - name: Install gh CLI
         shell: bash
@@ -722,6 +750,40 @@ jobs:
         with:
           version: 9.15.4
           run_install: false
+
+      - name: Setup Python (python-build-standalone for buster glibc)
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "🔧 下载 python-build-standalone (manylinux, 最低 glibc 2.17)..."
+          TRIPLE="$(uname -m)-unknown-linux-gnu"
+          URL="$(
+            curl -fsSL "https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest" \
+            | TRIPLE="${TRIPLE}" node -e '
+                let d = "";
+                process.stdin.on("data", (c) => (d += c));
+                process.stdin.on("end", () => {
+                  const j = JSON.parse(d);
+                  const triple = process.env.TRIPLE;
+                  const asset = j.assets.find(
+                    (a) =>
+                      /cpython-3\.11\.[0-9]+/.test(a.name) &&
+                      a.name.includes(triple) &&
+                      a.name.includes("install_only") &&
+                      !a.name.includes("stripped")
+                  );
+                  if (!asset) {
+                    console.error(`未找到 ${triple} 的 Python 3.11 install_only asset`);
+                    process.exit(1);
+                  }
+                  console.log(asset.browser_download_url);
+                });
+              '
+          )"
+          mkdir -p /opt/pybs
+          curl -fsSL "${URL}" | tar -xz -C /opt/pybs
+          echo "/opt/pybs/python/bin" >> "${GITHUB_PATH}"
+          /opt/pybs/python/bin/python3 --version
 
       - name: Override Electron version for Linux compatibility
         shell: bash
