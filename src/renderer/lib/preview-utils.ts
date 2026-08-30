@@ -168,6 +168,17 @@ const FLYFISH_EXTENSIONS = new Set([
   'kml',
   'gpx',
   'shp',
+  // DICOM (Medical)
+  'dcm',
+  'dicom',
+  // Digital Signature / Evidence Container
+  'p7m',
+  'p7s',
+  'asics',
+  'asice',
+  'jws',
+  'asc',
+  'sig',
   // XMind
   'xmind',
   // Drawing

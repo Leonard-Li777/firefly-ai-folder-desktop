@@ -54,6 +54,22 @@
     ],
     "$id": 8755
   },
+  "新虚拟目录": {
+    "en-US": "New virtual directory",
+    "es-ES": "Nuevo directorio virtual",
+    "ar-EG": "الدليل الظاهري الجديد",
+    "pt-PT": "Novo diretório virtual",
+    "ru-RU": "новый виртуальный каталог",
+    "ja-JP": "新しい仮想ディレクトリ",
+    "de-DE": "Neues virtuelles Verzeichnis",
+    "fr-FR": "Nouveau répertoire virtuel",
+    "ko-KR": "새 가상 디렉터리",
+    "$files": [
+      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(289-298)",
+      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(688-697)"
+    ],
+    "$id": 8856
+  },
   "文件目录": {
     "en-US": "File directory",
     "es-ES": "Directorio de archivos",
@@ -1188,22 +1204,6 @@
     "ko-KR": "재생성",
     "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(8754-8762)"],
     "$id": 8838
-  },
-  "新虚拟目录": {
-    "en-US": "New virtual directory",
-    "es-ES": "Nuevo directorio virtual",
-    "ar-EG": "الدليل الظاهري الجديد",
-    "pt-PT": "Novo diretório virtual",
-    "ru-RU": "новый виртуальный каталог",
-    "ja-JP": "新しい仮想ディレクトリ",
-    "de-DE": "Neues virtuelles Verzeichnis",
-    "fr-FR": "Nouveau répertoire virtuel",
-    "ko-KR": "새 가상 디렉터리",
-    "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(289-298)",
-      "src/renderer/components/file-explorer/VirtualDirectory/utils/vdir-naming-utils.ts(688-697)"
-    ],
-    "$id": 8856
   },
   "正在通过拷贝模式重试...": {
     "en-US": "Retrying via copy mode...",

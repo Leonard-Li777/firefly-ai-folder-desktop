@@ -489,23 +489,19 @@ export default defineConfig(({ command, mode }) => {
     },
     renderer: {
       root: path.resolve(__dirname),
+      worker: {
+        format: 'es'
+      },
       optimizeDeps: {
         exclude: [
           '@file-viewer/react',
           '@file-viewer/core',
-          '@file-viewer/preset-all',
+          '@file-viewer/preset-standard',
           '@file-viewer/pptx'
         ],
-        // epubjs 是纯 ESM 包但依赖多个 CJS 包（path-webpack, event-emitter, marks-pane, @xmldom/xmldom 等）
-        // preset-all 被 exclude 导致 Vite 扫描器发现不到这些依赖，必须手动声明让 esbuild 预打包
         include: [
           'jszip',
           'jszip > jszip/dist/jszip.min.js',
-          'epubjs',
-          'path-webpack',
-          'event-emitter',
-          'marks-pane',
-          '@xmldom/xmldom',
           'localforage',
           'lodash'
         ]
@@ -516,9 +512,11 @@ export default defineConfig(({ command, mode }) => {
         voerkai18nVitePlugin(),
         react(),
         fileViewerRenderers({
-          preset: 'all',
+          preset: 'standard',
           scan: true,
-          copyAssets: true,
+          copyAssets: {
+            baseDir: 'file-viewer'
+          },
           chunkStrategy: 'renderer',
           inject: false
         })

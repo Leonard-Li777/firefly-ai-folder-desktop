@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import FileViewer, { type FileViewerHandle } from '@file-viewer/react'
-import { allRenderers } from '@file-viewer/preset-all'
+import standardPreset from '@file-viewer/preset-standard'
 import { Loading } from '../Loading'
 import { ErrorBoundary } from '../ErrorBoundary'
 import { t } from '@app/languages'
@@ -8,7 +8,92 @@ import { MaterialIcon } from '../../../lib/utils'
 import { useConfigStore } from '../../../stores/config-store'
 import { logger, LogCategory } from '@firefly/shared'
 
-const configuredFileViewerRenderers = [allRenderers]
+// 定义非常见/专业格式的动态按需 import 映射表（Vite 会自动代码分割为独立异步 Chunk）
+const SPECIALIST_RENDERER_LOADERS: Record<string, () => Promise<any>> = {
+  // CAD 工程图纸
+  dwg: () => import('@file-viewer/renderer-cad').then(m => m.cadRenderer),
+  dxf: () => import('@file-viewer/renderer-cad').then(m => m.cadRenderer),
+  dwf: () => import('@file-viewer/renderer-cad').then(m => m.cadRenderer),
+  dwfx: () => import('@file-viewer/renderer-cad').then(m => m.cadRenderer),
+  xps: () => import('@file-viewer/renderer-cad').then(m => m.cadRenderer),
+
+  // 3D 工业模型与网格
+  step: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  stp: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  iges: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  igs: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  gltf: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  glb: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  obj: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  stl: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  ply: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  fbx: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  dae: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  '3ds': () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  '3mf': () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  amf: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  usd: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  usda: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  usdc: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  usdz: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  ifc: () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+  '3dm': () => import('@file-viewer/renderer-3d').then(m => m.modelRenderer),
+
+  // DICOM 医疗影像 (3.0 新特性)
+  dcm: () => import('@file-viewer/renderer-dicom').then(m => m.dicomRenderer),
+  dicom: () => import('@file-viewer/renderer-dicom').then(m => m.dicomRenderer),
+
+  // 电子签名与存证容器 (3.0 新特性)
+  p7m: () => import('@file-viewer/renderer-signature').then(m => m.signatureRenderer),
+  p7s: () => import('@file-viewer/renderer-signature').then(m => m.signatureRenderer),
+  asics: () => import('@file-viewer/renderer-signature').then(m => m.signatureRenderer),
+  asice: () => import('@file-viewer/renderer-signature').then(m => m.signatureRenderer),
+  jws: () => import('@file-viewer/renderer-signature').then(m => m.signatureRenderer),
+  asc: () => import('@file-viewer/renderer-signature').then(m => m.signatureRenderer),
+  sig: () => import('@file-viewer/renderer-signature').then(m => m.signatureRenderer),
+
+  // 地理信息 GIS
+  geojson: () => import('@file-viewer/renderer-geo').then(m => m.geoRenderer),
+  kml: () => import('@file-viewer/renderer-geo').then(m => m.geoRenderer),
+  gpx: () => import('@file-viewer/renderer-geo').then(m => m.geoRenderer),
+  shp: () => import('@file-viewer/renderer-geo').then(m => m.geoRenderer),
+
+  // 思维导图
+  xmind: () => import('@file-viewer/renderer-mindmap').then(m => m.mindmapRenderer),
+
+  // 流程图与专业绘图
+  excalidraw: () => import('@file-viewer/renderer-drawing').then(m => m.drawingRenderer),
+  drawio: () => import('@file-viewer/renderer-drawing').then(m => m.drawingRenderer),
+  dio: () => import('@file-viewer/renderer-drawing').then(m => m.drawingRenderer),
+  mermaid: () => import('@file-viewer/renderer-drawing').then(m => m.drawingRenderer),
+  mmd: () => import('@file-viewer/renderer-drawing').then(m => m.drawingRenderer),
+  plantuml: () => import('@file-viewer/renderer-drawing').then(m => m.drawingRenderer),
+  puml: () => import('@file-viewer/renderer-drawing').then(m => m.drawingRenderer),
+
+  // Typst 现代排版
+  typ: () => import('@file-viewer/renderer-typst').then(m => m.typstRenderer),
+  typst: () => import('@file-viewer/renderer-typst').then(m => m.typstRenderer),
+
+  // EDA 电子电路
+  olb: () => import('@file-viewer/renderer-eda').then(m => m.edaRenderer),
+  dra: () => import('@file-viewer/renderer-eda').then(m => m.edaRenderer),
+  gds: () => import('@file-viewer/renderer-eda').then(m => m.edaRenderer),
+  oas: () => import('@file-viewer/renderer-eda').then(m => m.edaRenderer),
+  oasis: () => import('@file-viewer/renderer-eda').then(m => m.edaRenderer),
+
+  // 数据 / 设计文件 / 电子书
+  psd: () => import('@file-viewer/renderer-data').then(m => m.dataRenderer),
+  sqlite: () => import('@file-viewer/renderer-data').then(m => m.dataRenderer),
+  parquet: () => import('@file-viewer/renderer-data').then(m => m.dataRenderer),
+  avro: () => import('@file-viewer/renderer-data').then(m => m.dataRenderer),
+  wasm: () => import('@file-viewer/renderer-data').then(m => m.dataRenderer),
+  webarchive: () => import('@file-viewer/renderer-data').then(m => m.dataRenderer),
+  epub: () => import('@file-viewer/renderer-epub').then(m => m.ebookRenderer),
+  umd: () => import('@file-viewer/renderer-epub').then(m => m.ebookRenderer)
+}
+
+// 缓存已加载的动态渲染器实例，避免重复加载
+const loadedSpecialistRenderersCache = new Map<string, any>()
 
 // 解析 file-viewer 静态资源根路径：资源目录与渲染进程入口（index.html/preview.html）同级，
 // 即 <root>/file-viewer/。必须返回绝对 URL 且指向非版本化路径（wasm/cad/），
@@ -44,22 +129,25 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
   const [fileUrl, setFileUrl] = useState<string | null>(null)
   const [fileBuffer, setFileBuffer] = useState<ArrayBuffer | null>(null)
   const [loadMode, setLoadMode] = useState<'url' | 'buffer'>('url')
+  const [specialistRenderers, setSpecialistRenderers] = useState<any[]>([])
   const viewerRef = useRef<FileViewerHandle>(null)
   const config = useConfigStore(s => s.config)
   const viewerLocale = useMemo(() => resolveViewerLocale(config?.language), [config?.language])
 
   const timeRef = useRef<number>(0)
 
-  // 1. 根据文件类型选择加载策略：归档文件通过 IPC 读取为 ArrayBuffer，其余格式使用直连 URL
+  // 1. 根据文件类型选择加载策略：归档文件通过 IPC 读取为 ArrayBuffer，其余格式使用直连 URL；并按需加载专用渲染器
   useEffect(() => {
+    let isMounted = true
     setIsLoading(true)
     setError(null)
     setFileUrl(null)
     setFileBuffer(null)
+    setSpecialistRenderers([])
     timeRef.current = performance.now()
 
-    const ext = fileName.toLowerCase().split('.').pop()
-    const isArchive = ['zip', 'cbz', 'rar', 'cbr', '7z', 'tar', 'gz'].includes(ext || '')
+    const ext = fileName.toLowerCase().split('.').pop() || ''
+    const isArchive = ['zip', 'cbz', 'rar', 'cbr', '7z', 'tar', 'gz'].includes(ext)
 
     logger.info(LogCategory.RENDERER, `[FlyfishPreview] 开始准备文件预览`, {
       filePath,
@@ -68,55 +156,82 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
       isArchive
     })
 
-    if (isArchive) {
-      logger.info(
-        LogCategory.RENDERER,
-        `[FlyfishPreview] ⏱️ 归档格式使用 IPC Buffer 模式加载: ${fileName}`
-      )
-      ;(async () => {
-        try {
+    ;(async () => {
+      try {
+        // 动态加载非常见/专业格式渲染器
+        const specialistLoader = SPECIALIST_RENDERER_LOADERS[ext]
+        if (specialistLoader) {
+          if (loadedSpecialistRenderersCache.has(ext)) {
+            if (isMounted) {
+              setSpecialistRenderers([loadedSpecialistRenderersCache.get(ext)])
+            }
+          } else {
+            logger.info(
+              LogCategory.RENDERER,
+              `[FlyfishPreview] ⏱️ 正在动态按需加载格式 [${ext}] 的专用渲染器模块...`
+            )
+            const dynamicRenderer = await specialistLoader()
+            loadedSpecialistRenderersCache.set(ext, dynamicRenderer)
+            if (isMounted) {
+              setSpecialistRenderers([dynamicRenderer])
+              logger.info(
+                LogCategory.RENDERER,
+                `[FlyfishPreview] ✅ 动态按需加载格式 [${ext}] 专用渲染器成功`
+              )
+            }
+          }
+        }
+
+        // 归档文件读取 Buffer，普通文档直接构建本地 URL
+        if (isArchive) {
+          logger.info(
+            LogCategory.RENDERER,
+            `[FlyfishPreview] ⏱️ 归档格式使用 IPC Buffer 模式加载: ${fileName}`
+          )
           const uint8Array = await window.electronAPI.utils.readFileBuffer(filePath)
+          if (!isMounted) return
           setFileBuffer(uint8Array.buffer as ArrayBuffer)
           setLoadMode('buffer')
           logger.info(
             LogCategory.RENDERER,
             `[FlyfishPreview] ⏱️ IPC 读取归档成功, 耗时: ${(performance.now() - timeRef.current).toFixed(2)}ms, byteLength=${uint8Array.buffer.byteLength}`
           )
-        } catch (e) {
-          logger.error(LogCategory.RENDERER, '读取归档二进制失败:', e)
+        } else {
+          logger.info(
+            LogCategory.RENDERER,
+            `[FlyfishPreview] ⏱️ 文档格式使用直连 URL 模式加载: ${fileName}`
+          )
+          let url = filePath.replace(/\\/g, '/')
+          if (!url.startsWith('file:///')) {
+            url = `file:///${url}`
+          }
+          // 1. 手动转义 # 和 ?，防止 file:/// URL 被 Chromium 识别为 hash 锚点或 query 参数
+          url = url.replace(/#/g, '%23').replace(/\?/g, '%3F')
+          // 2. 使用 encodeURI 对其余路径字符（如中文、空格等）进行 URI 编码
+          let encodedUrl = encodeURI(url)
+          // 3. 补充防御：如果 encodeURI 在特定引擎下保留了 [ 和 ]，对其强制转义（Chromium 解析 file:/// 未转义的 [ ] 会报 ERR_FAILED）
+          encodedUrl = encodedUrl.replace(/\[/g, '%5B').replace(/\]/g, '%5D')
+
+          logger.info(LogCategory.RENDERER, `[FlyfishPreview] 构建预览 URL 成功`, {
+            originalFilePath: filePath,
+            encodedUrl
+          })
+
+          if (!isMounted) return
+          setFileUrl(encodedUrl)
+          setLoadMode('url')
+        }
+      } catch (e) {
+        logger.error(LogCategory.RENDERER, '准备预览数据或动态加载渲染器失败:', e)
+        if (isMounted) {
           setIsLoading(false)
           setError(t('无法加载文件预览，请检查文件权限或格式。'))
         }
-      })()
-    } else {
-      logger.info(
-        LogCategory.RENDERER,
-        `[FlyfishPreview] ⏱️ 文档格式使用直连 URL 模式加载: ${fileName}`
-      )
-      try {
-        let url = filePath.replace(/\\/g, '/')
-        if (!url.startsWith('file:///')) {
-          url = `file:///${url}`
-        }
-        // 1. 手动转义 # 和 ?，防止 file:/// URL 被 Chromium 识别为 hash 锚点或 query 参数
-        url = url.replace(/#/g, '%23').replace(/\?/g, '%3F')
-        // 2. 使用 encodeURI 对其余路径字符（如中文、空格等）进行 URI 编码
-        let encodedUrl = encodeURI(url)
-        // 3. 补充防御：如果 encodeURI 在特定引擎下保留了 [ 和 ]，对其强制转义（Chromium 解析 file:/// 未转义的 [ ] 会报 ERR_FAILED）
-        encodedUrl = encodedUrl.replace(/\[/g, '%5B').replace(/\]/g, '%5D')
-
-        logger.info(LogCategory.RENDERER, `[FlyfishPreview] 构建预览 URL 成功`, {
-          originalFilePath: filePath,
-          encodedUrl
-        })
-
-        setFileUrl(encodedUrl)
-        setLoadMode('url')
-      } catch (e) {
-        logger.error(LogCategory.RENDERER, '构建文件 URL 失败:', e)
-        setIsLoading(false)
-        setError(t('无法加载文件预览，请检查文件路径或格式。'))
       }
+    })()
+
+    return () => {
+      isMounted = false
     }
   }, [filePath, fileName])
 
@@ -148,10 +263,11 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
     return {
       theme,
       locale: viewerLocale,
+      styleIsolation: 'shadow' as const,
       toolbar: { position: 'bottom-right' as const },
-      builtinRenderers: 'none' as const,
-      rendererMode: 'replace' as const,
-      renderers: configuredFileViewerRenderers as any,
+      preset: standardPreset,
+      rendererMode: 'extend' as const,
+      renderers: specialistRenderers,
       docx: { worker: false },
       spreadsheet: { worker: false },
       archive: {},
@@ -162,7 +278,7 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
         dwfWasmUrl: `${assetBaseUrl}wasm/cad/dwfv-render.wasm`
       }
     }
-  }, [theme, viewerLocale])
+  }, [theme, viewerLocale, specialistRenderers])
 
   if (error) {
     return (

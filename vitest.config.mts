@@ -11,6 +11,14 @@ const proSrcDir = resolve(__dirname, 'pro/src')
 const proStubDir = resolve(__dirname, 'src/shared/pro-stub')
 const proAliasDir = existsSync(proSrcDir) ? proSrcDir : proStubDir
 
+const resolveNodeModule = (moduleName: string): string => {
+  const localMod = resolve(__dirname, `node_modules/${moduleName}`)
+  if (existsSync(localMod)) {
+    return localMod
+  }
+  return resolve(__dirname, `../../node_modules/${moduleName}`)
+}
+
 export default defineConfig({
   plugins: [react()],
   define: {
@@ -85,9 +93,9 @@ export default defineConfig({
         : resolve(__dirname, '../../packages/electron-llamaIndex-service/src'),
       '@app/languages': resolve(__dirname, 'src/languages'),
       '@app/electron': resolve(__dirname, 'src/electron'),
-      react: resolve(__dirname, '../../node_modules/react'),
-      'react-dom': resolve(__dirname, '../../node_modules/react-dom'),
-      events: resolve(__dirname, '../../node_modules/events')
+      react: resolveNodeModule('react'),
+      'react-dom': resolveNodeModule('react-dom'),
+      events: resolveNodeModule('events')
     }
   }
 })

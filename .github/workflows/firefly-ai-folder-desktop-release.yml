@@ -1,4 +1,4 @@
-name: Build Cross Platform (Desktop)
+name: firefly-ai-folder-desktop-release
 
 on:
   workflow_dispatch:
@@ -228,18 +228,61 @@ jobs:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
 
+      - name: 下载 firefly-omni 引擎 (firefly-resources)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/extraResources/bin/omni
+          echo "📥 从 firefly-resources 下载 firefly-omni (macOS)..."
+          TMP_OMNI="/tmp/omni-pkg"
+          mkdir -p "$TMP_OMNI"
+          DOWNLOADED=false
+          for pattern in "firefly-omni-*-darwin-universal.tar.gz" "firefly-omni-*-darwin-x64.tar.gz" "firefly-omni-*-darwin-arm64.tar.gz" "firefly-omni-*-darwin-*.zip"; do
+            if gh release download resources --pattern "$pattern" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_OMNI" --clobber 2>/dev/null; then
+              ARCHIVE=$(find "$TMP_OMNI" -name "firefly-omni-*" 2>/dev/null | head -n 1)
+              if [ -n "$ARCHIVE" ] && [ -f "$ARCHIVE" ]; then
+                echo "📦 解压 $ARCHIVE 到 build/extraResources/bin/omni..."
+                if [[ "$ARCHIVE" == *.tar.gz ]]; then
+                  tar -xzf "$ARCHIVE" -C build/extraResources/bin/omni
+                else
+                  unzip -o -q "$ARCHIVE" -d build/extraResources/bin/omni
+                fi
+                chmod +x build/extraResources/bin/omni/firefly-omni 2>/dev/null || true
+                echo "✅ firefly-omni macOS 引擎部署完成。"
+                DOWNLOADED=true
+                break
+              fi
+            fi
+          done
+          rm -rf "$TMP_OMNI"
+          if [ "$DOWNLOADED" != "true" ]; then
+            echo "⚠️ firefly-resources 暂未检索到 firefly-omni macOS 资产，跳过引擎装配（不阻塞构建）。"
+          fi
+
       - name: 下载 omni-geo 数据集
         shell: bash
         run: |
           echo "📥 下载 omni-geo 地理数据集..."
           gh release download geo-data --pattern "geonames-resources.tar.gz" \
-            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber || true
+            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber 2>/dev/null || true
           if [ -f "/tmp/geo.tar.gz" ]; then
             mkdir -p build/extraResources/geo
             tar xzf /tmp/geo.tar.gz -C build/extraResources/geo
             echo "✅ omni-geo 数据集恢复完成。"
           else
-            echo "⚠️ 未找到 geo-data release，跳过地理数据集。"
+            echo "⚠️ 未找到 geo-data release，尝试从 firefly-resources 下载..."
+            gh release download resources --pattern "geo-*.zip" \
+              --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null || true
+            GEO_ZIP=$(find /tmp/geo-pkg -name "geo-*.zip" 2>/dev/null | head -n 1 || true)
+            if [ -n "$GEO_ZIP" ] && [ -f "$GEO_ZIP" ]; then
+              mkdir -p build/extraResources/geo
+              unzip -o -q "$GEO_ZIP" -d build/extraResources/geo
+              rm -rf /tmp/geo-pkg
+              echo "✅ omni-geo 数据集从 firefly-resources 恢复完成。"
+            else
+              echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
+            fi
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -492,18 +535,56 @@ jobs:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
 
+      - name: 下载 firefly-omni 引擎 (firefly-resources)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/extraResources/bin/omni
+          echo "📥 从 firefly-resources 下载 firefly-omni (Windows)..."
+          TMP_OMNI="/tmp/omni-pkg"
+          mkdir -p "$TMP_OMNI"
+          DOWNLOADED=false
+          for pattern in "firefly-omni-*-win32-x64.zip" "firefly-omni-*-win32-*.zip"; do
+            if gh release download resources --pattern "$pattern" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_OMNI" --clobber 2>/dev/null; then
+              ARCHIVE=$(find "$TMP_OMNI" -name "firefly-omni-*.zip" 2>/dev/null | head -n 1)
+              if [ -n "$ARCHIVE" ] && [ -f "$ARCHIVE" ]; then
+                echo "📦 解压 $ARCHIVE 到 build/extraResources/bin/omni..."
+                unzip -o -q "$ARCHIVE" -d build/extraResources/bin/omni
+                echo "✅ firefly-omni Windows 引擎部署完成。"
+                DOWNLOADED=true
+                break
+              fi
+            fi
+          done
+          rm -rf "$TMP_OMNI"
+          if [ "$DOWNLOADED" != "true" ]; then
+            echo "⚠️ firefly-resources 暂未检索到 firefly-omni Windows 资产，跳过引擎装配（不阻塞构建）。"
+          fi
+
       - name: 下载 omni-geo 数据集
         shell: bash
         run: |
           echo "📥 下载 omni-geo 地理数据集..."
           gh release download geo-data --pattern "geonames-resources.tar.gz" \
-            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber || true
+            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber 2>/dev/null || true
           if [ -f "/tmp/geo.tar.gz" ]; then
             mkdir -p build/extraResources/geo
             tar xzf /tmp/geo.tar.gz -C build/extraResources/geo
             echo "✅ omni-geo 数据集恢复完成。"
           else
-            echo "⚠️ 未找到 geo-data release，跳过地理数据集。"
+            echo "⚠️ 未找到 geo-data release，尝试从 firefly-resources 下载..."
+            gh release download resources --pattern "geo-*.zip" \
+              --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null || true
+            GEO_ZIP=$(find /tmp/geo-pkg -name "geo-*.zip" 2>/dev/null | head -n 1 || true)
+            if [ -n "$GEO_ZIP" ] && [ -f "$GEO_ZIP" ]; then
+              mkdir -p build/extraResources/geo
+              unzip -o -q "$GEO_ZIP" -d build/extraResources/geo
+              rm -rf /tmp/geo-pkg
+              echo "✅ omni-geo 数据集从 firefly-resources 恢复完成。"
+            else
+              echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
+            fi
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -793,16 +874,62 @@ jobs:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
 
+      - name: 下载 firefly-omni 引擎 (firefly-resources)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/extraResources/bin/omni
+          echo "📥 从 firefly-resources 下载 firefly-omni (Linux)..."
+          TMP_OMNI="/tmp/omni-pkg"
+          mkdir -p "$TMP_OMNI"
+          ARCH=$(uname -m)
+          DOWNLOADED=false
+          case "$ARCH" in
+            aarch64|arm64) PATTERNS=("firefly-omni-*-linux-arm64.tar.gz" "firefly-omni-*-linux-*.tar.gz") ;;
+            *)             PATTERNS=("firefly-omni-*-linux-x64.tar.gz" "firefly-omni-*-linux-*.tar.gz") ;;
+          esac
+          for pattern in "${PATTERNS[@]}"; do
+            if gh release download resources --pattern "$pattern" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_OMNI" --clobber 2>/dev/null; then
+              ARCHIVE=$(find "$TMP_OMNI" -name "firefly-omni-*.tar.gz" 2>/dev/null | head -n 1)
+              if [ -n "$ARCHIVE" ] && [ -f "$ARCHIVE" ]; then
+                echo "📦 解压 $ARCHIVE 到 build/extraResources/bin/omni..."
+                tar -xzf "$ARCHIVE" -C build/extraResources/bin/omni
+                chmod +x build/extraResources/bin/omni/firefly-omni 2>/dev/null || true
+                echo "✅ firefly-omni Linux 引擎部署完成。"
+                DOWNLOADED=true
+                break
+              fi
+            fi
+          done
+          rm -rf "$TMP_OMNI"
+          if [ "$DOWNLOADED" != "true" ]; then
+            echo "⚠️ firefly-resources 暂未检索到 firefly-omni Linux 资产，跳过引擎装配（不阻塞构建）。"
+          fi
+
       - name: 下载 omni-geo 数据集
         shell: bash
         run: |
           echo "📥 下载 omni-geo 地理数据集..."
           gh release download geo-data --pattern "geonames-resources.tar.gz" \
-            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber || true
+            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber 2>/dev/null || true
           if [ -f "/tmp/geo.tar.gz" ]; then
             mkdir -p build/extraResources/geo
             tar xzf /tmp/geo.tar.gz -C build/extraResources/geo
             echo "✅ omni-geo 数据集恢复完成。"
+          else
+            echo "⚠️ 未找到 geo-data release，尝试从 firefly-resources 下载..."
+            gh release download resources --pattern "geo-*.zip" \
+              --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null || true
+            GEO_ZIP=$(find /tmp/geo-pkg -name "geo-*.zip" 2>/dev/null | head -n 1 || true)
+            if [ -n "$GEO_ZIP" ] && [ -f "$GEO_ZIP" ]; then
+              mkdir -p build/extraResources/geo
+              unzip -o -q "$GEO_ZIP" -d build/extraResources/geo
+              rm -rf /tmp/geo-pkg
+              echo "✅ omni-geo 数据集从 firefly-resources 恢复完成。"
+            else
+              echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
+            fi
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

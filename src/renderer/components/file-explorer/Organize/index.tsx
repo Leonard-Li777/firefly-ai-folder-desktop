@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../ui/dialog'
 import { MaterialIcon, cn } from '../../../lib/utils'
-import React, { useRef, useMemo, useState, useCallback } from 'react'
+import React, { useRef, useMemo, useState, useCallback, useEffect } from 'react'
 import { WorkspaceDirectory } from '@firefly/types'
 import { useNavigate } from 'react-router-dom'
 
@@ -163,6 +163,13 @@ export const Organize: React.FC = () => {
   const [inspectedFile, setInspectedFile] = useState<any | null>(null)
   const [duplicateSelectedCount, setDuplicateSelectedCount] = useState<number>(0)
   const [isDuplicateProcessing, setIsDuplicateProcessing] = useState<boolean>(false)
+
+  // 始终持有最新 inspectedFile 的引用，用于“点击已选中文件则取消选中”的可靠判断，
+  // 避免依赖 FileExplorerLayout 受控 selectedIds 同步的竞态延迟
+  const inspectedFileRef = useRef<any | null>(null)
+  useEffect(() => {
+    inspectedFileRef.current = inspectedFile
+  }, [inspectedFile])
 
   const handleClearInspectedFile = useCallback(() => {
     setInspectedFile(null)
@@ -641,12 +648,18 @@ export const Organize: React.FC = () => {
                       selectedFileIds={inspectedFile?.id ? [inspectedFile.id] : []}
                       onFileSelect={item => {
                         const single = Array.isArray(item) ? item[0] : item
-                        setInspectedFile((prev: any) => {
-                          const prevId = prev?.id || prev?.fileId || prev?.path
-                          const nextId = (single as any)?.id || (single as any)?.fileId || (single as any)?.path
-                          if (prevId && nextId && prevId === nextId) return prev
-                          return single ? (single as any) : null
-                        })
+                        // 以最新 inspectedFile（ref，点击前的真实选中状态）作为权威判断：
+                        // 再次点击当前已选中的文件 → 取消选择；否则选中该文件
+                        const cur = Array.isArray(inspectedFileRef.current)
+                          ? inspectedFileRef.current[0]
+                          : inspectedFileRef.current
+                        const prevId = cur?.id ?? cur?.fileId ?? cur?.path
+                        const nextId = (single as any)?.id ?? (single as any)?.fileId ?? (single as any)?.path
+                        if (prevId && nextId && prevId === nextId) {
+                          setInspectedFile(null)
+                        } else {
+                          setInspectedFile(single ?? null)
+                        }
                       }}
                       onSelectionChange={items => {
                         const single = Array.isArray(items) && items.length > 0 ? items[0] : null

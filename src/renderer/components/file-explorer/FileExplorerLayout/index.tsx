@@ -133,6 +133,12 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
   // 优先级：优先使用外部传入的 activeItem，若无则使用内部选中的 activeItem
   const activeItem = externalActiveItem || internalActiveItem
 
+  // 受控模式下，外部 activeItem 是权威来源：其变化时同步内部 active 状态，
+  // 确保取消选择（externalActiveItem 置空）时清除残留的内部高亮背景
+  useEffect(() => {
+    setInternalActiveItem(externalActiveItem || null)
+  }, [externalActiveItem])
+
   const handleFileSelect = useCallback(
     (filesOrItem: any, isFromCheckbox?: boolean) => {
       let selectedList: any[] = []

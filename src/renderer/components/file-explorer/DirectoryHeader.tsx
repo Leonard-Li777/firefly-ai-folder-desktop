@@ -258,18 +258,18 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
             className="object-contain flex-shrink-0"
             alt="logo"
           />
-          <span className="text-base font-semibold text-foreground dark:text-foreground block xl:hidden 2xl:inline-block">
+          <span className="text-base font-semibold text-foreground dark:text-foreground block xl:hidden 2xl:inline-block whitespace-nowrap">
             {t('萤核智能文件夹')}
           </span>
         </div>
 
         {/* Unified View Control Hub Container */}
         <div
-          className="w-full xl:w-auto flex justify-start min-w-0 order-2 xl:order-2 xl:flex-1 xl:mx-4 mt-1 xl:mt-0 xl:min-w-0"
+          className="w-full xl:w-auto flex justify-start min-w-[700px] order-2 xl:order-2 xl:flex-1 xl:mx-4 mt-1 xl:mt-0 xl:min-w-[700px]"
           style={{ gridColumn: '1 / -1', gridRow: '2' }}
         >
           <div
-            className="flex items-center rounded-full min-w-0 transition-all duration-300 relative z-[95]
+            className="flex items-center rounded-full min-w-[700px] transition-all duration-300 relative z-[95]
           bg-muted/50 dark:bg-white/[0.04]
           border border-border/50 dark:border-white/[0.08]
           shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),_0_1px_3px_hsl(0_0%_0%/0.08)]
