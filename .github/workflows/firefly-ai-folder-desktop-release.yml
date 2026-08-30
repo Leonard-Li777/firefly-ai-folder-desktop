@@ -681,18 +681,18 @@ jobs:
             libasound2 libxshmfence1 libx11-xcb1 p7zip-full curl tar
 
           # 解决 GCC 8.3 不支持 -std=c++20 (仅支持 -std=c++2a) 的兼容性 wrapper
-          cat << 'EOF' > /usr/local/bin/g++
-#!/bin/bash
-args=()
-for arg in "$@"; do
-  if [ "$arg" = "-std=c++20" ]; then
-    args+=("-std=c++2a")
-  else
-    args+=("$arg")
-  fi
-done
-exec /usr/bin/g++ "${args[@]}"
-EOF
+          printf '%s\n' \
+            '#!/bin/bash' \
+            'args=()' \
+            'for arg in "$@"; do' \
+            '  if [ "$arg" = "-std=c++20" ]; then' \
+            '    args+=("-std=c++2a")' \
+            '  else' \
+            '    args+=("$arg")' \
+            '  fi' \
+            'done' \
+            'exec /usr/bin/g++ "${args[@]}"' \
+            > /usr/local/bin/g++
           chmod +x /usr/local/bin/g++
           ln -sf /usr/local/bin/g++ /usr/local/bin/c++
           ln -sf /usr/local/bin/g++ /usr/local/bin/x86_64-linux-gnu-g++
