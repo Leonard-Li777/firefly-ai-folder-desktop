@@ -156,6 +156,27 @@ jobs:
           path: build/extraResources/models
           key: llama-models-shared-v3
 
+      - name: Download Magika & PP-OCRv6 Models on Cache Miss
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
+          TEMP_ZIP=$(mktemp)
+          echo "📥 从 ci-resources 下载 magika 与 PP-OCRv6 模型..."
+          if gh release download ci-resources --pattern "magika-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
+            rm -f "$TEMP_ZIP"
+            echo "✅ magika-resources.zip 恢复完成。"
+          fi
+          if gh release download ci-resources --pattern "ppocrv6-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
+            rm -f "$TEMP_ZIP"
+            echo "✅ ppocrv6-resources.zip 恢复完成。"
+          fi
+
       - name: Cache/Restore preset resources (fastfetch, llama.cpp)
         id: cache-presets
         uses: actions/cache@v4
@@ -419,6 +440,27 @@ jobs:
         with:
           path: build/extraResources/models
           key: llama-models-shared-v3
+
+      - name: Download Magika & PP-OCRv6 Models on Cache Miss
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
+          TEMP_ZIP=$(mktemp)
+          echo "📥 从 ci-resources 下载 magika 与 PP-OCRv6 模型..."
+          if gh release download ci-resources --pattern "magika-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
+            rm -f "$TEMP_ZIP"
+            echo "✅ magika-resources.zip 恢复完成。"
+          fi
+          if gh release download ci-resources --pattern "ppocrv6-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
+            rm -f "$TEMP_ZIP"
+            echo "✅ ppocrv6-resources.zip 恢复完成。"
+          fi
 
       - name: Cache/Restore preset resources (fastfetch, llama.cpp)
         id: cache-presets
@@ -725,6 +767,27 @@ jobs:
         with:
           path: build/extraResources/models
           key: llama-models-shared-v3
+
+      - name: Download Magika & PP-OCRv6 Models on Cache Miss
+        if: steps.cache-models.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
+          TEMP_ZIP=$(mktemp)
+          echo "📥 从 ci-resources 下载 magika 与 PP-OCRv6 模型..."
+          if gh release download ci-resources --pattern "magika-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
+            rm -f "$TEMP_ZIP"
+            echo "✅ magika-resources.zip 恢复完成。"
+          fi
+          if gh release download ci-resources --pattern "ppocrv6-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
+            rm -f "$TEMP_ZIP"
+            echo "✅ ppocrv6-resources.zip 恢复完成。"
+          fi
 
       - name: Cache/Restore preset resources (fastfetch, llama.cpp)
         id: cache-presets
