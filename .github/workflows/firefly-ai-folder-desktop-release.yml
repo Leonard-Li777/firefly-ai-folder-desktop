@@ -643,7 +643,7 @@ jobs:
       matrix:
         maker: [deb, rpm]
     container:
-      image: node:20-bookworm
+      image: node:20-bullseye
     env:
       NPM_CONFIG_UNSAFE_PERM: 'true'
       PYTHON: python3
