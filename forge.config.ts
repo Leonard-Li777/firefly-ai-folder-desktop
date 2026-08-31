@@ -1409,10 +1409,7 @@ const config: ForgeConfig = {
           installerIcon: path.join(absAssetsDir, 'icon.ico'),
           uninstallerIcon: path.join(absAssetsDir, 'icon.ico'),
           artifactName: `${APP_NAME}-${packageJson.version}-setup-${process.arch}.exe`,
-          // 多语言支持配置
-          // language: "SimpChinese",
-          // 多语言支持配置
-          // language: "SimpChinese",
+          differentialPackage: false, // 禁用差分包生成，避免 2GB+ 大包构建时 makensis 内存映射 datablock 溢出
           displayLanguageSelector: false
         },
         getAppBuilderConfig: async () => ({
@@ -1432,6 +1429,7 @@ const config: ForgeConfig = {
             installerIcon: path.join(absAssetsDir, 'icon.ico'),
             uninstallerIcon: path.join(absAssetsDir, 'icon.ico'),
             artifactName: `${APP_NAME}-${packageJson.version}-setup-${process.arch}.exe`,
+            differentialPackage: false,
             displayLanguageSelector: false
           }
         })
