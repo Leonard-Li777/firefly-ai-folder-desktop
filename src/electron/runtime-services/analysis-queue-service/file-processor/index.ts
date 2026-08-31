@@ -659,6 +659,8 @@ export class FileProcessor {
             baseMetadata.MIMEType ||
             baseMetadata.camera ||
             baseMetadata.exif ||
+            baseMetadata.exiftool ||
+            baseMetadata.image ||
             baseMetadata.imageSize ||
             baseMetadata.ExposureTime ||
             baseMetadata.FNumber ||
@@ -792,10 +794,11 @@ export class FileProcessor {
         let finalSmartName = coreSmartName
 
         // 确保 processResult.metadata 存在并持久化 raw_smart_name（保留原始未经模板包裹、无扩展名的 AI 核心名称）
-        if (!processResult.metadata) {
-          processResult.metadata = {}
+        processResult.metadata = {
+          ...(fileInfo.metadata || {}),
+          ...(processResult.metadata || {}),
+          raw_smart_name: coreSmartName
         }
-        processResult.metadata.raw_smart_name = coreSmartName
 
         // 检查当前目录或上级继承的生效命名模板
         try {
@@ -1549,7 +1552,7 @@ export class FileProcessor {
         ).run(
           fileFingerprint,
           contentResult.content ?? null,
-          JSON.stringify(fileInfo.metadata),
+          JSON.stringify(contentResult.metadata || {}),
           finalLrc
         )
 

@@ -528,6 +528,21 @@ export class FileDao {
           } catch {}
         }
         if (finalMetadata && typeof finalMetadata === 'object') {
+          // 如果包含由 Omni 服务返回的命名空间嵌套容器，将其内部字段展开提升至顶层
+          const flattened: Record<string, any> = {
+            ...(finalMetadata.exiftool && typeof finalMetadata.exiftool === 'object' ? finalMetadata.exiftool : {}),
+            ...(finalMetadata.document && typeof finalMetadata.document === 'object' ? finalMetadata.document : {}),
+            ...(finalMetadata.image && typeof finalMetadata.image === 'object' ? finalMetadata.image : {}),
+            ...(finalMetadata.image?.exif && typeof finalMetadata.image.exif === 'object' ? finalMetadata.image.exif : {}),
+            ...(finalMetadata.audio && typeof finalMetadata.audio === 'object' ? finalMetadata.audio : {}),
+            ...(finalMetadata.video && typeof finalMetadata.video === 'object' ? finalMetadata.video : {}),
+            ...(finalMetadata.font && typeof finalMetadata.font === 'object' ? finalMetadata.font : {}),
+            ...(finalMetadata.archive && typeof finalMetadata.archive === 'object' ? finalMetadata.archive : {}),
+            ...(finalMetadata.database && typeof finalMetadata.database === 'object' ? finalMetadata.database : {}),
+            ...(finalMetadata.model && typeof finalMetadata.model === 'object' ? finalMetadata.model : {}),
+            ...finalMetadata
+          }
+          finalMetadata = flattened
           delete finalMetadata.basic
           delete finalMetadata.text
           delete finalMetadata.category
