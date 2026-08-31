@@ -222,6 +222,29 @@ jobs:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
 
+      - name: Download Built-in LFM2.5 Model (firefly-resources)
+        if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
+          TMP_LFM="${RUNNER_TEMP:-/tmp}/lfm"
+          mkdir -p "$TMP_LFM"
+          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-*.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
+            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-*.zip" | head -n 1)
+            if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
+              mkdir -p build/extraResources/models
+              echo "📦 解压内置模型到 build/extraResources/models..."
+              unzip -o -q "$ZIP_FILE" -d build/extraResources/models
+              echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
+            fi
+            rm -rf "$TMP_LFM"
+          else
+            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 llama-model-download 兜底。"
+          fi
+
       - name: 下载内置模型并清理投影文件 (llama-model-download)
         if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
         shell: bash
@@ -289,16 +312,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Copy App Icons
+        shell: bash
         run: |
           mkdir -p build
-          cp assets/icon.ico build/icon.ico
-          cp assets/icon.icns build/icon.icns
+          [ -f assets/icon.ico ] && cp assets/icon.ico build/icon.ico || true
+          [ -f assets/icon.icns ] && cp assets/icon.icns build/icon.icns || true
+          [ -f assets/icon.png ] && cp assets/icon.png build/icon.png || true
+          [ ! -f build/icon.icns ] && [ -f pro/extraResources/assets/icon.icns ] && cp pro/extraResources/assets/icon.icns build/icon.icns || true
+          [ ! -f build/icon.ico ] && [ -f pro/extraResources/assets/icon.ico ] && cp pro/extraResources/assets/icon.ico build/icon.ico || true
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
-            cp assets/boot_en.jpg build/boot.jpg || cp assets/boot.jpg build/boot.jpg
+            cp assets/boot_en.jpg build/boot.jpg 2>/dev/null || cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
           else
-            cp assets/boot.jpg build/boot.jpg
+            cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
           fi
-          cp build/boot.jpg build/boot.gif
+          [ -f build/boot.jpg ] && cp build/boot.jpg build/boot.gif || true
 
       - name: Build macOS Application (llama.cpp)
         run: |
@@ -528,6 +555,29 @@ jobs:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
 
+      - name: Download Built-in LFM2.5 Model (firefly-resources)
+        if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
+          TMP_LFM="${RUNNER_TEMP:-/tmp}/lfm"
+          mkdir -p "$TMP_LFM"
+          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-*.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
+            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-*.zip" | head -n 1)
+            if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
+              mkdir -p build/extraResources/models
+              echo "📦 解压内置模型到 build/extraResources/models..."
+              unzip -o -q "$ZIP_FILE" -d build/extraResources/models
+              echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
+            fi
+            rm -rf "$TMP_LFM"
+          else
+            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 llama-model-download 兜底。"
+          fi
+
       - name: 下载内置模型并清理投影文件 (llama-model-download)
         if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
         shell: bash
@@ -593,14 +643,17 @@ jobs:
         shell: bash
         run: |
           mkdir -p build
-          cp assets/icon.ico build/icon.ico
-          cp assets/icon.icns build/icon.icns
+          [ -f assets/icon.ico ] && cp assets/icon.ico build/icon.ico || true
+          [ -f assets/icon.icns ] && cp assets/icon.icns build/icon.icns || true
+          [ -f assets/icon.png ] && cp assets/icon.png build/icon.png || true
+          [ ! -f build/icon.icns ] && [ -f pro/extraResources/assets/icon.icns ] && cp pro/extraResources/assets/icon.icns build/icon.icns || true
+          [ ! -f build/icon.ico ] && [ -f pro/extraResources/assets/icon.ico ] && cp pro/extraResources/assets/icon.ico build/icon.ico || true
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
-            cp assets/boot_en.jpg build/boot.jpg || cp assets/boot.jpg build/boot.jpg
+            cp assets/boot_en.jpg build/boot.jpg 2>/dev/null || cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
           else
-            cp assets/boot.jpg build/boot.jpg
+            cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
           fi
-          cp build/boot.jpg build/boot.gif
+          [ -f build/boot.jpg ] && cp build/boot.jpg build/boot.gif || true
 
       - name: Build Windows Application (llama.cpp)
         shell: bash
@@ -897,6 +950,29 @@ jobs:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
 
+      - name: Download Built-in LFM2.5 Model (firefly-resources)
+        if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
+          TMP_LFM="${RUNNER_TEMP:-/tmp}/lfm"
+          mkdir -p "$TMP_LFM"
+          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-*.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
+            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-*.zip" | head -n 1)
+            if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
+              mkdir -p build/extraResources/models
+              echo "📦 解压内置模型到 build/extraResources/models..."
+              unzip -o -q "$ZIP_FILE" -d build/extraResources/models
+              echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
+            fi
+            rm -rf "$TMP_LFM"
+          else
+            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 llama-model-download 兜底。"
+          fi
+
       - name: 下载内置模型并清理投影文件 (llama-model-download)
         if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
         shell: bash
@@ -965,16 +1041,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Copy App Icons
+        shell: bash
         run: |
           mkdir -p build
-          cp assets/icon.ico build/icon.ico
-          cp assets/icon.icns build/icon.icns
+          [ -f assets/icon.ico ] && cp assets/icon.ico build/icon.ico || true
+          [ -f assets/icon.icns ] && cp assets/icon.icns build/icon.icns || true
+          [ -f assets/icon.png ] && cp assets/icon.png build/icon.png || true
+          [ ! -f build/icon.icns ] && [ -f pro/extraResources/assets/icon.icns ] && cp pro/extraResources/assets/icon.icns build/icon.icns || true
+          [ ! -f build/icon.ico ] && [ -f pro/extraResources/assets/icon.ico ] && cp pro/extraResources/assets/icon.ico build/icon.ico || true
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
-            cp assets/boot_en.jpg build/boot.jpg || cp assets/boot.jpg build/boot.jpg
+            cp assets/boot_en.jpg build/boot.jpg 2>/dev/null || cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
           else
-            cp assets/boot.jpg build/boot.jpg
+            cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
           fi
-          cp build/boot.jpg build/boot.gif
+          [ -f build/boot.jpg ] && cp build/boot.jpg build/boot.gif || true
 
       - name: Build Linux Application (${{ matrix.maker }})
         run: |
