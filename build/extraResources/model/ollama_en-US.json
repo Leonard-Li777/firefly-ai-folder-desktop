@@ -1,0 +1,830 @@
+{
+  "version": "1.0.0",
+  "language": "en",
+  "lastUpdated": "2026-04-19",
+  "platform": "ollama",
+  "models": [
+    {
+      "id": "huihui_ai/qwen3.5-abliterated:2b",
+      "source": "ollama",
+      "name": "Qwen 3.5 2B Abliterated (Community)",
+      "company": "Huihui AI / Alibaba",
+      "parameterSize": "2B",
+      "totalSize": "1.9GB",
+      "totalSizeBytes": 2040109465,
+      "vramRequiredGB": 4,
+      "description": "Qwen 3.5's smallest size to date, fast and capable of vision analysis. Miracle model, uncensored, supports NSFW.",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull huihui_ai/qwen3.5-abliterated:2b",
+        "installTime": "About 1-2 mins"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "medium",
+        "score": 85,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["uncensored", "abliterated", "multimodal", "text", "image", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B Uncensored (Community)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "Uncensored version of Qwen 3.5 4B by Vaultbox. Supports text and image input with no sensitive content restrictions.",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:4b",
+        "installTime": "About 2-3 mins"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["uncensored", "multimodal", "text", "image", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:9b",
+      "source": "ollama",
+      "name": "Qwen 3.5 9B Uncensored (Community)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "9B",
+      "totalSize": "6.7GB",
+      "totalSizeBytes": 7194038272,
+      "vramRequiredGB": 8,
+      "description": "Uncensored version of Qwen 3.5 9B by Vaultbox. Features strong visual understanding and long context processing, unrestricted.",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:9b",
+        "installTime": "About 3-5 mins"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["uncensored", "multimodal", "vision", "text", "image", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:27b",
+      "source": "ollama",
+      "name": "Qwen 3.5 27B Uncensored (Community)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "18GB",
+      "totalSizeBytes": 19327352832,
+      "vramRequiredGB": 20,
+      "description": "Uncensored version of Qwen 3.5 27B by Vaultbox. Highest reasoning ability and long text support, supports vision analysis without restrictions.",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:27b",
+        "installTime": "About 5-10 mins"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 95,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["uncensored", "multimodal", "text", "image", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "yolo0perris/Qwen3.5-27B-UD-IQ3_XXS:latest",
+      "source": "ollama",
+      "name": "Qwen 3.5 27B IQ3_XXS (Fast Quantized)",
+      "company": "yolo0perris / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "12GB",
+      "totalSizeBytes": 12884901888,
+      "vramRequiredGB": 14,
+      "description": "VRAM-optimized 27B quantized version, significantly reducing memory requirements while retaining most performance. Text only.",
+      "format": "safetensors",
+      "quantization": "IQ3_XXS",
+      "isMultiModal": false,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull yolo0perris/Qwen3.5-27B-UD-IQ3_XXS:latest",
+        "installTime": "About 5-8 mins"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 14,
+        "recommendedMemoryGB": 24
+      },
+      "tags": ["quantization", "text", "27B", "chinese-optimized"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "qwen3.5:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B (Original Alibaba)",
+      "company": "Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "The best price-performance model for most PCs in early 2026. Official version, supports text and image input, combining speed and quality.",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull qwen3.5:4b",
+        "installTime": "About 2-3 mins"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["text", "image", "cost-effective", "multimodal", "chinese-optimized"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "frob/qwen3.5-instruct:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B Instruct (Alibaba)",
+      "company": "Frob / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "Instruction-following version of Qwen 3.5 4B by Frob, optimized for instruction adherence, supports text and image input.",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull frob/qwen3.5-instruct:4b",
+        "installTime": "About 2-3 mins"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["text", "image", "instruct", "multimodal", "chinese-optimized"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "bjoernb/gemma4-e2b-fast",
+      "source": "ollama",
+      "name": "Gemma 4-e2b-fast (Google)",
+      "company": "Bjoernb / Google",
+      "parameterSize": "2B",
+      "totalSize": "7.2GB",
+      "totalSizeBytes": 7730941133,
+      "vramRequiredGB": 8,
+      "description": "Gemma 4-e2b-fast provided by Bjoernb, super fast response, supports 128K long context, image and audio input.",
+      "format": "safetensors",
+      "quantization": "Q2_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull bjoernb/gemma4-e2b-fast",
+        "installTime": "About 3-5 mins"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 93,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["fast", "long-context", "multimodal", "text", "image", "audio"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "bjoernb/gemma4-e4b-fast",
+      "source": "ollama",
+      "name": "Gemma 4-e4b-fast (Google)",
+      "company": "Bjoernb / Google",
+      "parameterSize": "4B",
+      "totalSize": "9.6GB",
+      "totalSizeBytes": 10307921510,
+      "vramRequiredGB": 12,
+      "description": "Gemma 4-e4b-fast provided by Bjoernb, super fast response, supports 128K long context, image and audio input.",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull bjoernb/gemma4-e4b-fast",
+        "installTime": "About 5-8 mins"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 94,
+        "minMemoryGB": 12,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["fast", "long-context", "multimodal", "text", "image", "audio"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 16384,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "aratane/gemma-4-31B-it-uncensores:latest",
+      "source": "ollama",
+      "name": "Gemma 4 31B Uncensored (Google)",
+      "company": "Aratane / Google",
+      "parameterSize": "31B",
+      "totalSize": "18GB",
+      "totalSizeBytes": 19327352832,
+      "vramRequiredGB": 20,
+      "description": "Gemma 4 31B uncensored version provided by Aratane, featuring powerful multimodal processing capabilities, supporting text, image, and audio input, 256K ultra-long context, no sensitive content restrictions.",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull aratane/gemma-4-31B-it-uncensores:latest",
+        "installTime": "About 10-15 mins"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 95,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["uncensored", "multimodal", "text", "image", "audio", "long-context", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-0.8B-GGUF:Q8_K_XL--yi",
+      "source": "modelscope",
+      "name": "Qwen 3.5 0.8B (Alibaba)",
+      "company": "LMStudio / Alibaba",
+      "parameterSize": "0.8B",
+      "totalSize": "630MB",
+      "totalSizeBytes": 660602880,
+      "vramRequiredGB": 1,
+      "description": "ModelScope's ultra-compact Qwen 3.5 0.8B version for extreme speed.",
+      "format": "gguf",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-0.8B-GGUF:Q8_K_XL--yi",
+        "installTime": "About 1 min"
+      },
+      "performance": {
+        "speed": "extreme",
+        "quality": "high",
+        "score": 85,
+        "minMemoryGB": 2,
+        "recommendedMemoryGB": 4
+      },
+      "tags": ["multimodal", "extreme-speed", "mini"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 4096,
+        "numPredict": 1048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-2B-GGUF:IQ4_NL--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 2B (Alibaba)",
+      "company": "Unsloth / Alibaba",
+      "parameterSize": "2B",
+      "totalSize": "1.21GB",
+      "totalSizeBytes": 1299227115,
+      "vramRequiredGB": 2,
+      "description": "Unsloth-optimized high-performance Qwen 3.5 2B version with visual multimodal support.",
+      "format": "gguf",
+      "quantization": "IQ4_NL",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-2B-GGUF:IQ4_NL--qwen2",
+        "installTime": "About 1 min"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 8
+      },
+      "tags": ["multimodal", "fast", "mini", "vision"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/diodel/Qwen3.5-4B-Q4_K_M-GGUF:Q4_K_M--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 4B Q4_K_M (Balanced Speed Version)",
+      "company": "Diodel / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "2.71GB",
+      "totalSizeBytes": 2909890150,
+      "vramRequiredGB": 4,
+      "description": "Standard quantized version of Qwen 3.5 4B by Diodel, using Q4_K_M quantization for excellent balance between speed and model quality.",
+      "format": "gguf",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/diodel/Qwen3.5-4B-Q4_K_M-GGUF:Q4_K_M--qwen2",
+        "installTime": "About 2 mins"
+      },
+      "performance": {
+        "speed": "extreme",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 8
+      },
+      "tags": ["extreme", "multimodal", "text", "image", "balanced"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 9B v2 Uncensored",
+      "company": "MaimaiSuirai / Alibaba",
+      "parameterSize": "9B",
+      "totalSize": "7.36GB",
+      "totalSizeBytes": 7902740480,
+      "vramRequiredGB": 8,
+      "description": "Second generation uncensored version of Qwen 3.5 9B, high quality Q6_K quantization, outstanding vision capabilities.",
+      "format": "gguf",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K--qwen2",
+        "installTime": "About 4-6 mins"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 93,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["jailbreak", "NSFW", "uncensored", "multimodal"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 27B v2 Uncensored",
+      "company": "MaimaiSuirai / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "15.57GB",
+      "totalSizeBytes": 16718345011,
+      "vramRequiredGB": 18,
+      "description": "Top-tier uncensored version of Qwen 3.5 27B, extremely strong reasoning and comprehensive vision capabilities.",
+      "format": "gguf",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S--gemma3-instruct",
+        "installTime": "About 8-12 mins"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 96,
+        "minMemoryGB": 18,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["jailbreak", "NSFW", "uncensored", "multimodal", "large-parameter"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/gemma-4-31b-it-heretic-ara-gguf:Q4_K_M--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 31B-it Uncensored",
+      "company": "MaimaiSuirai / Google",
+      "parameterSize": "31B",
+      "totalSize": "18.69GB",
+      "totalSizeBytes": 20068564992,
+      "vramRequiredGB": 20,
+      "description": "Uncensored version of Google Gemma 4 31B, Ara optimized version, ultimate multimodal experience.",
+      "format": "gguf",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/gemma-4-31b-it-heretic-ara-gguf:Q4_K_M--gemma3-instruct",
+        "installTime": "About 10-15 mins"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 97,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["jailbreak", "NSFW", "uncensored", "multimodal", "large-parameter"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 26B-it Uncensored",
+      "company": "Mudler / Google",
+      "parameterSize": "26B",
+      "totalSize": "12.98GB",
+      "totalSizeBytes": 13937208524,
+      "vramRequiredGB": 16,
+      "description": "APEX specialized uncensored version of Gemma 4 26B, optimized I-Mini quantization.",
+      "format": "gguf",
+      "quantization": "I-Mini",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF--gemma3-instruct",
+        "installTime": "About 8-12 mins"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 95,
+        "minMemoryGB": 16,
+        "recommendedMemoryGB": 24
+      },
+      "tags": ["jailbreak", "NSFW", "uncensored"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/gemma-4-E4B-it-GGUF:Q5_K_XL--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 E4B-it (Google)",
+      "company": "Unsloth / Google",
+      "parameterSize": "4B",
+      "totalSize": "6.65GB",
+      "totalSizeBytes": 7140442112,
+      "vramRequiredGB": 10,
+      "description": "Enhanced version of Gemma 4 E4B optimized by Unsloth, Q5_K_XL quantization provides excellent quality.",
+      "format": "gguf",
+      "quantization": "Q5_K_XL",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/gemma-4-E4B-it-GGUF:Q5_K_XL--gemma3-instruct",
+        "installTime": "About 3-5 mins"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 94,
+        "minMemoryGB": 10,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["multimodal", "fast"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    }
+  ]
+}

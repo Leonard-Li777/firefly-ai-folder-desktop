@@ -1,0 +1,817 @@
+{
+  "version": "1.0.0",
+  "language": "zh",
+  "lastUpdated": "2026-04-19",
+  "platform": "ollama",
+  "models": [
+    {
+      "id": "huihui_ai/qwen3.5-abliterated:2b",
+      "source": "ollama",
+      "name": "Qwen 3.5 2B 去除限制版（社区）",
+      "company": "Huihui AI / Alibaba",
+      "parameterSize": "2B",
+      "totalSize": "1.9GB",
+      "totalSizeBytes": 2040109465,
+      "vramRequiredGB": 4,
+      "description": "Qwen 3.5 迄今超小尺寸，速度快，还支持图形分析的奇迹模型，无审查，支持NSFW。",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull huihui_ai/qwen3.5-abliterated:2b",
+        "installTime": "约 1-2 分钟"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "medium",
+        "score": 85,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["uncensored", "无审查", "去除限制", "多模态", "文本", "图像", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B 无审查版 (社区)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "Vaultbox 提供的 Qwen 3.5 4B 无审查版本，支持文本和图像输入，无敏感内容限制。",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:4b",
+        "installTime": "约 2-3 分钟"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["uncensored", "无审查", "多模态", "文本", "图像", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:9b",
+      "source": "ollama",
+      "name": "Qwen 3.5 9B 无审查版 (社区)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "9B",
+      "totalSize": "6.7GB",
+      "totalSizeBytes": 7194038272,
+      "vramRequiredGB": 8,
+      "description": "Vaultbox 提供的 Qwen 3.5 9B 无审查版本，具备强大的视觉理解和长上下文处理能力，无限制。",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:9b",
+        "installTime": "约 3-5 分钟"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["uncensored", "无审查", "多模态", "视觉", "文本", "图像", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:27b",
+      "source": "ollama",
+      "name": "Qwen 3.5 27B 无审查版 (社区)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "18GB",
+      "totalSizeBytes": 19327352832,
+      "vramRequiredGB": 20,
+      "description": "Vaultbox 提供的 Qwen 3.5 27B 无审查版本，最高等级的推理能力与长文本支持，支持图像分析且无敏感限制。",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:27b",
+        "installTime": "约 5-10 分钟"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 95,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["uncensored", "无审查", "多模态", "文本", "图像", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "yolo0perris/Qwen3.5-27B-UD-IQ3_XXS:latest",
+      "source": "ollama",
+      "name": "Qwen 3.5 27B IQ3_XXS (极速量化版)",
+      "company": "yolo0perris / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "12GB",
+      "totalSizeBytes": 12884901888,
+      "vramRequiredGB": 14,
+      "description": "针对显存优化的 27B 量化版本，在保留大部分性能的同时显著降低了显存需求，仅支持文本。",
+      "format": "safetensors",
+      "quantization": "IQ3_XXS",
+      "isMultiModal": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull yolo0perris/Qwen3.5-27B-UD-IQ3_XXS:latest",
+        "installTime": "约 5-8 分钟"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 14,
+        "recommendedMemoryGB": 24
+      },
+      "tags": ["量化优化", "文本", "27B", "中文优化"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "qwen3.5:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B（阿里原版）",
+      "company": "阿里巴巴 (Alibaba)",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "2026开年大多数个人电脑本地可运行性价比最高的模型，官方原版，支持文本和图像输入，兼具速度与质量。",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull qwen3.5:4b",
+        "installTime": "约 2-3 分钟"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["文本", "图像", "性价比", "多模态", "中文优化"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "frob/qwen3.5-instruct:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B Instruct (阿里)",
+      "company": "Frob / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "Frob 提供的 Qwen 3.5 4B 指令遵循版本，优化了指令执行能力，支持文本和图像输入。",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull frob/qwen3.5-instruct:4b",
+        "installTime": "约 2-3 分钟"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["文本", "图像", "指令遵循", "多模态", "中文优化"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "bjoernb/gemma4-e2b-fast",
+      "source": "ollama",
+      "name": "Gemma 4-e2b-fast（谷歌）",
+      "company": "Bjoernb / Google",
+      "parameterSize": "2B",
+      "totalSize": "7.2GB",
+      "totalSizeBytes": 7730941133,
+      "vramRequiredGB": 8,
+      "description": "Bjoernb 提供的 Gemma 4-e2b-fast，极速响应，支持 128K 长文本、图像 and 音频输入。",
+      "format": "safetensors",
+      "quantization": "Q2_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull bjoernb/gemma4-e2b-fast",
+        "installTime": "约 3-5 分钟"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 93,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["极速", "长文本", "多模态", "文本", "图像", "音频"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "bjoernb/gemma4-e4b-fast",
+      "source": "ollama",
+      "name": "Gemma 4-e4b-fast（谷歌）",
+      "company": "Bjoernb / Google",
+      "parameterSize": "4B",
+      "totalSize": "9.6GB",
+      "totalSizeBytes": 10307921510,
+      "vramRequiredGB": 12,
+      "description": "Bjoernb 提供的 Gemma 4-e4b-fast，极速响应，支持 128K 长文本、图像 and 音频输入。",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull bjoernb/gemma4-e4b-fast",
+        "installTime": "约 5-8 分钟"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 94,
+        "minMemoryGB": 12,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["极速", "长文本", "多模态", "文本", "图像", "音频"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 16384,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "aratane/gemma-4-31B-it-uncensores:latest",
+      "source": "ollama",
+      "name": "Gemma 4 31B 无审查版（谷歌）",
+      "company": "Aratane / Google",
+      "parameterSize": "31B",
+      "totalSize": "18GB",
+      "totalSizeBytes": 19327352832,
+      "vramRequiredGB": 20,
+      "description": "Aratane 提供的 Gemma 4 31B 无审查版本，具备强大的多模态处理能力，支持文本、图像和音频输入，256K 超长上下文，无敏感内容限制。",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull aratane/gemma-4-31B-it-uncensores:latest",
+        "installTime": "约 10-15 分钟"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 95,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["uncensored", "无审查", "多模态", "文本", "图像", "音频", "长文本", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-0.8B-GGUF:Q8_K_XL--yi",
+      "source": "modelscope",
+      "name": "Qwen 3.5 0.8B（阿里）",
+      "company": "LMStudio / Alibaba",
+      "parameterSize": "0.8B",
+      "totalSize": "630MB",
+      "totalSizeBytes": 660602880,
+      "vramRequiredGB": 1,
+      "description": "ModelScope 提供的 Qwen 3.5 0.8B 极小版，极致运行速度。",
+      "format": "gguf",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "medium",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-0.8B-GGUF:Q8_K_XL--yi",
+        "installTime": "约 1 分钟"
+      },
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium",
+        "score": 80,
+        "minMemoryGB": 2,
+        "recommendedMemoryGB": 4
+      },
+      "tags": ["多模态", "极速", "迷你"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 4096,
+        "numPredict": 1048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-2B-GGUF:IQ4_NL--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 2B （阿里）",
+      "company": "Unsloth / Alibaba",
+      "parameterSize": "2B",
+      "totalSize": "1.21GB",
+      "totalSizeBytes": 1299227115,
+      "vramRequiredGB": 2,
+      "description": "Unsloth 优化的高性能 Qwen 3.5 2B 版本，支持视觉多模态。",
+      "format": "gguf",
+      "quantization": "IQ4_NL",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-2B-GGUF:IQ4_NL--qwen2",
+        "installTime": "约 1-2 分钟"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 88,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 8
+      },
+      "tags": ["多模态", "快速", "迷你"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/diodel/Qwen3.5-4B-Q4_K_M-GGUF:Q4_K_M--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 4B Q4_K_M (极速平衡版)",
+      "company": "Diodel / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "2.71GB",
+      "totalSizeBytes": 2909890150,
+      "vramRequiredGB": 4,
+      "description": "由 Diodel 提供的 Qwen 3.5 4B 标准量化版本，采用 Q4_K_M 量化，在保持极快运行速度的同时提供了极佳的模型一致性。",
+      "format": "gguf",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/diodel/Qwen3.5-4B-Q4_K_M-GGUF:Q4_K_M--qwen2",
+        "installTime": "约 2 分钟"
+      },
+      "performance": {
+        "speed": "extreme",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 8
+      },
+      "tags": ["极速", "多模态", "文本", "图像", "平衡"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 9B v2 无审查",
+      "company": "MaimaiSuirai / Alibaba",
+      "parameterSize": "9B",
+      "totalSize": "7.36GB",
+      "totalSizeBytes": 7902740480,
+      "vramRequiredGB": 8,
+      "description": "Qwen 3.5 9B 的第二代去审查版，高质量 Q6_K 量化，视觉能力出众。",
+      "format": "gguf",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K--qwen2",
+        "installTime": "约 4-6 分钟"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 93,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["越狱", "NSFW", "无审查", "多模态"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 27B v2 无审查",
+      "company": "MaimaiSuirai / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "15.57GB",
+      "totalSizeBytes": 16718345011,
+      "vramRequiredGB": 18,
+      "description": "顶级的 Qwen 3.5 27B 去审查版，极强的推理与视觉综合能力。",
+      "format": "gguf",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S--gemma3-instruct",
+        "installTime": "约 8-12 分钟"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 96,
+        "minMemoryGB": 18,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["越狱", "NSFW", "无审查", "多模态", "大参数"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/gemma-4-31b-it-heretic-ara-gguf:Q4_K_M--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 31B-it 无审查",
+      "company": "MaimaiSuirai / Google",
+      "parameterSize": "31B",
+      "totalSize": "18.69GB",
+      "totalSizeBytes": 20068564992,
+      "vramRequiredGB": 20,
+      "description": "Google Gemma 4 31B 的去审查版，Ara 优化版本，极致多模态体验。",
+      "format": "gguf",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/gemma-4-31b-it-heretic-ara-gguf:Q4_K_M--gemma3-instruct",
+        "installTime": "约 10-15 分钟"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 97,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["越狱", "NSFW", "无审查", "多模态", "大参数"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 26B-it 无审查",
+      "company": "Mudler / Google",
+      "parameterSize": "26B",
+      "totalSize": "12.98GB",
+      "totalSizeBytes": 13937208524,
+      "vramRequiredGB": 16,
+      "description": "Gemma 4 26B 的 APEX 特化去审查版，优化的 I-Mini 量化。",
+      "format": "gguf",
+      "quantization": "I-Mini",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF--gemma3-instruct",
+        "installTime": "约 8-12 分钟"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 95,
+        "minMemoryGB": 16,
+        "recommendedMemoryGB": 24
+      },
+      "tags": ["越狱", "NSFW", "无审查"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/gemma-4-E4B-it-GGUF:Q5_K_XL--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 E4B-it（谷歌）",
+      "company": "Unsloth / Google",
+      "parameterSize": "4B",
+      "totalSize": "6.65GB",
+      "totalSizeBytes": 7140442112,
+      "vramRequiredGB": 10,
+      "description": "Unsloth 优化的 Gemma 4 E4B 增强版，Q5_K_XL 量化提供极佳质量。",
+      "format": "gguf",
+      "quantization": "Q5_K_XL",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/gemma-4-E4B-it-GGUF:Q5_K_XL--gemma3-instruct",
+        "installTime": "约 3-5 分钟"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 94,
+        "minMemoryGB": 10,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["多模态", "快速"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    }
+  ]
+}

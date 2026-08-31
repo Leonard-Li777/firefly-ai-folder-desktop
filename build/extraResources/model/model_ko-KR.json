@@ -1,0 +1,1026 @@
+{
+  "version": "2.0.0",
+  "language": "zh",
+  "lastUpdated": "2026-05-23",
+  "models": [
+    {
+      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL",
+      "name": "Qwen 3.5 0.8B (중국어가 더 낫다)",
+      "company": "unsloth",
+      "parameterSize": "0.8B",
+      "totalSize": "558MB",
+      "recommended": true,
+      "description": "균형 잡힌 중국어 분석 성능을 갖춘 로우엔드 및 CPU 환경에 적합한 매우 빠르고 가벼운 텍스트 모델입니다.",
+      "source": "modelscope",
+      "quantization": "Q4_K_XL",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "경량",
+        "CPU 작동 지원",
+        "초고속",
+        "텍스트만"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q5_K_XL",
+      "name": "Qwen 3.5 0.8B (중국어가 더 낫다)",
+      "company": "unsloth",
+      "parameterSize": "0.8B",
+      "totalSize": "579MB",
+      "recommended": false,
+      "description": "균형 잡힌 중국어 분석 성능을 갖춘 로우엔드 및 CPU 환경에 적합한 매우 빠르고 가벼운 텍스트 모델입니다.",
+      "source": "huggingface",
+      "quantization": "UD-Q5_K_XL",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "경량",
+        "CPU 작동 지원",
+        "초고속",
+        "텍스트만"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q6_K_XL",
+      "name": "Qwen 3.5 0.8B (경량 이미지 인식)",
+      "company": "unsloth",
+      "parameterSize": "0.8B",
+      "totalSize": "976MB",
+      "description": "극한의 실행 속도로 구성이 매우 낮은 환경에 적합하며 정확도가 떨어지는 이미지 분석을 지원합니다.",
+      "source": "huggingface",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "매우 빠른 GPU",
+        "CPU 작동 지원",
+        "다중 모드",
+        "미니"
+      ],
+      "recommendedConfig": {
+        "numCtx": 4096,
+        "numPredict": 1048
+      },
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ]
+    },
+    {
+      "id": "LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M",
+      "dspark": "LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M",
+      "name": "LFM2.5 1.2B Instruct（영어가 더 좋아•고속）",
+      "company": "LiquidAI",
+      "parameterSize": "1.2B",
+      "totalSize": "873MB",
+      "description": "최신 LFM2.5 지시 모델, 텍스트 분석 효율적, CPU 추론 빠름.",
+      "source": "modelscope",
+      "isBuiltin": true,
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "엄청 빠르다",
+        "CPU 작동 지원",
+        "텍스트만",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 4096,
+        "numPredict": 1024
+      }
+    },
+    {
+      "id": "LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M",
+      "name": "LFM2.5 2.6B（효율적인）",
+      "company": "LiquidAI",
+      "parameterSize": "2.6B",
+      "totalSize": "1.63GB",
+      "recommended": true,
+      "description": "최신 LFM2.5 2.6B 공식 모델은 효율적인 추론과 고품질 분석을 균형 있게 지원하며, CPU 전용 DSpark 가속을 지원합니다.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "경량",
+        "CPU 작동 지원",
+        "텍스트만",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "Abiray/LFM2.5-2.6B-Heretic-Abliterated-GGUF:Q4_K_M",
+      "name": "LFM2.5 2.6B（감옥 휴식）",
+      "company": "Abiray",
+      "parameterSize": "2.6B",
+      "totalSize": "1.56GB",
+      "recommended": true,
+      "description": "LFM2.5 2.6B 제한 제거 무검열 버전, 속도와 품질 균형.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "제한하다",
+        "검열 없음",
+        "NSFW",
+        "텍스트만"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E4B-it-GGUF:Q4_K_S",
+      "name": "Gemma 4 E4B-it（오디오 지원）",
+      "company": "Unsloth",
+      "parameterSize": "4B",
+      "totalSize": "5.83GB",
+      "recommended": true,
+      "description": "텍스트, 이미지 및 오디오 분석을 지원하는 Google의 원래 수량화 버전입니다.",
+      "source": "huggingface",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "다중 모드",
+        "빠른",
+        "오디오",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "mradermacher/Qwen3.5-4B_Abliterated-GGUF:Q4_K_M",
+      "name": "Qwen 3.5 4B（균형）",
+      "company": "mradermacher",
+      "parameterSize": "4B",
+      "totalSize": "3.08GB",
+      "recommended": false,
+      "description": "축소 버전은 속도와 품질의 균형을 유지합니다.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "제한하다",
+        "검열 없음",
+        "NSFW",
+        "감옥 휴식",
+        "다중 모드"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "mradermacher/Huihui-Qwen3.5-2B-abliterated-GGUF:Q8_0",
+      "name": "Qwen 3.5 2B（더 나은）",
+      "company": "mradermacher",
+      "parameterSize": "2B",
+      "totalSize": "2.68GB",
+      "recommended": false,
+      "description": "4G 비디오 메모리가 첫 번째 선택입니다.",
+      "source": "huggingface",
+      "quantization": "Q8_0",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "제한하다",
+        "검열 없음",
+        "NSFW",
+        "감옥 휴식",
+        "다중 모드"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "tatsuyaaaaaaa/Qwen3.5-2B-gguf:Q4_0",
+      "name": "Qwen 3.5 2B（일본어 최적화）",
+      "company": "tatsuyaaaaaaa",
+      "parameterSize": "2B",
+      "totalSize": "1.2GB",
+      "recommended": false,
+      "description": "일본어 데이터 세트에 최적화된 텍스트 분석 모델은 텍스트 분석만 지원합니다.",
+      "source": "huggingface",
+      "quantization": "Q4_0",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "일본어 최적화",
+        "텍스트만",
+        "비디오 메모리 부족"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "jordanwoodson/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
+      "name": "Qwen 3.5 2B（탈옥 문자）",
+      "company": "jordanwoodson",
+      "parameterSize": "2B",
+      "totalSize": "1.27GB",
+      "recommended": false,
+      "description": "콘텐츠에 대해 어느 정도 이해하고 있는 탈옥 모델입니다.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "감옥 휴식",
+        "검열 없음",
+        "NSFW",
+        "텍스트만"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      },
+      "capabilities": [
+        "TEXT"
+      ]
+    },
+    {
+      "id": "ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M",
+      "name": "MiniCPM-V 4.6 (그림을 읽는 소형 강철 대포)",
+      "company": "OpenBMB",
+      "parameterSize": "0.8B",
+      "totalSize": "1.17GB",
+      "recommended": true,
+      "description": "최고급 다중 모드 모델은 OCR, 객체 인식 및 복잡한 장면 이해에서 매우 뛰어난 성능을 발휘합니다.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "다중 모드",
+        "OCR",
+        "장면 이해",
+        "최고의 이미지 인식"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "OpenBMB/MiniCPM-V-4.6-gguf:Q4_K_M",
+      "name": "MiniCPM-V 4.6 (그림을 읽는 소형 강철 대포)",
+      "company": "OpenBMB",
+      "parameterSize": "0.8B",
+      "totalSize": "1.53GB",
+      "recommended": true,
+      "description": "최고급 다중 모드 모델은 OCR, 객체 인식 및 복잡한 장면 이해에서 매우 뛰어난 성능을 발휘합니다.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "다중 모드",
+        "OCR",
+        "장면 이해",
+        "최고의 이미지 인식"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E4B-it-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 4 E4B-it（오디오 지원）",
+      "company": "Unsloth",
+      "parameterSize": "4B",
+      "totalSize": "5.70GB",
+      "recommended": false,
+      "description": "텍스트, 이미지 및 오디오 분석을 지원하는 Google의 원래 수량화 버전입니다.",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "다중 모드",
+        "빠른",
+        "오디오",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "unsloth/Qwen3.5-4B-MTP-GGUF:UD-Q4_K_XL",
+      "name": "Qwen 3.5 4B MTP(최신)",
+      "company": "Unsloth",
+      "parameterSize": "4B",
+      "totalSize": "3.41GB",
+      "description": "속도와 품질을 결합한 MTP 아키텍처의 수량화된 버전입니다.",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "MTP",
+        "다중 모드",
+        "빠른",
+        "중국어가 더 낫다"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K",
+      "name": "Qwen 3.5 9B v2（감옥 휴식）",
+      "company": "MaimaiSuirai",
+      "parameterSize": "9B",
+      "totalSize": "8.27GB",
+      "description": "2세대는 검열 버전으로 넘어갔고 뛰어난 성능을 가지고 있습니다.",
+      "source": "modelscope",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "high"
+      },
+      "tags": [
+        "감옥 휴식",
+        "NSFW",
+        "검열 없음",
+        "다중 모드"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S",
+      "name": "Qwen 3.5 27B v2（검열 없음）",
+      "company": "MaimaiSuirai",
+      "parameterSize": "27B",
+      "totalSize": "15.57GB",
+      "description": "강력한 추론 및 시각적 합성 기능을 갖춘 최고의 Qwen 3.5 27B 검토 버전입니다.",
+      "source": "modelscope",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "감옥 휴식",
+        "NSFW",
+        "검열 없음",
+        "다중 모드",
+        "큰 매개변수"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF",
+      "name": "Gemma 4 26B-it（전능자）",
+      "company": "Mudler",
+      "parameterSize": "26B",
+      "totalSize": "12.98GB",
+      "recommended": true,
+      "description": "APEX 전문 무검열 버전, 최적화된 I-Mini 양자화.",
+      "source": "modelscope",
+      "quantization": "I-Mini",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "감옥 휴식",
+        "NSFW",
+        "검열 없음",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "Abiray/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
+      "name": "Qwen 3.5 2B (탈옥 이미지 인식)",
+      "company": "Abiray",
+      "parameterSize": "2B",
+      "totalSize": "1.81GB",
+      "recommended": false,
+      "description": "탈옥 버전은 이미지 분석을 지원합니다.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "감옥 휴식",
+        "검열 없음",
+        "NSFW",
+        "다중 모드"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E2B-it-qat-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 4 E2B-it QAT（올마이티 - 주력）",
+      "company": "unsloth",
+      "parameterSize": "2B",
+      "totalSize": "3.61GB",
+      "recommended": true,
+      "description": "통합 다중 모드 QAT 정량화 버전인 MoE 아키텍처는 비디오 메모리를 대폭 절약하고 텍스트, 이미지 및 오디오 분석을 지원합니다.",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "다중 모드",
+        "오디오",
+        "QAT 정량화",
+        "MoE",
+        "매우 작은 비디오 메모리",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E2B-it-qat-MTP-GGUF:UD-Q4_K_XL",
+      "draftId": "NicklausCairns/gemma-4-E2B-it-qat-assistant-MTP-Q8_0",
+      "downloadId": "unsloth/gemma-4-E2B-it-qat-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 4 E2B-it QAT MTP（만능 - 고속）",
+      "company": "unsloth",
+      "parameterSize": "2B",
+      "totalSize": "3.71GB",
+      "recommended": true,
+      "description": "모든 기능과 속도를 위한 MTP 기술을 갖춘 이 제품은 단연 최고의 모델입니다.",
+      "source": "huggingface",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "다중 모드",
+        "오디오",
+        "QAT 정량화",
+        "MoE",
+        "매우 작은 비디오 메모리",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "GnLOLot/MiniCPM5-1B-Claude-Opus-Fable5-Thinking-GGUF:Q4_K_M",
+      "name": "MiniCPM5 1B Claude微调（생각의 사슬）",
+      "company": "GnLOLot",
+      "parameterSize": "1B",
+      "totalSize": "688MB",
+      "description": "Claude Opus Fable5 데이터 세트를 기반으로 미세 조정된 MiniCPM5-1B는 사고 연쇄 추론을 지원하고 프로그래밍 및 지시 따르기에 능숙합니다.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "very_high"
+      },
+      "tags": [
+        "미세 조정 최적화",
+        "클로드 데이터 세트",
+        "생각의 사슬",
+        "프로그래밍 최적화",
+        "경량",
+        "CPU 작동 지원",
+        "텍스트만"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "Abiray/Nanbeige4.2-3B-GGUF:Q4_K_S",
+      "name": "난베이지 4.2 3B (9B 이상)",
+      "company": "Abiray",
+      "parameterSize": "3B",
+      "totalSize": "2.33GB",
+      "recommended": true,
+      "description": "3B 본체 단단한 강철 9B를 적극 권장하지만 텍스트만 지원합니다.",
+      "source": "modelscope",
+      "quantization": "Q4_K_S",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "텍스트만",
+        "프로그래밍 최적화",
+        "중국어가 더 낫다"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "owao/Nanbeige4.2-3B-GGUF:Q4_K_M",
+      "name": "난베이지 4.2 3B (9B 이상)",
+      "company": "owao",
+      "parameterSize": "3B",
+      "totalSize": "2.40GB",
+      "recommended": false,
+      "description": "3B 본체 단단한 강철 9B를 적극 권장하지만 텍스트만 지원합니다.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "감옥 휴식",
+        "검열 없음",
+        "NSFW",
+        "텍스트만"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "mradermacher/Nanbeige4.2-3B-heretic-i1-GGUF:i1-Q5_K_M",
+      "name": "Nanbeige 4.2 3B（탈옥 최적화）",
+      "company": "mradermacher",
+      "parameterSize": "3B",
+      "totalSize": "2.78GB",
+      "recommended": true,
+      "description": "3B 바디 하드 스틸 9B, i1의 탈옥 버전은 양자화 정확도가 더 높지만 텍스트만 지원합니다.",
+      "source": "huggingface",
+      "quantization": "i1-Q5_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "감옥 휴식",
+        "검열 없음",
+        "NSFW",
+        "텍스트만",
+        "높은 정밀도"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-3-1b-it-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 3 1B Instruct（基础）",
+      "company": "Google",
+      "parameterSize": "1B",
+      "totalSize": "770MB",
+      "description": "영국의 모델 리더",
+      "source": "huggingface",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "경량",
+        "CPU 작동 지원",
+        "텍스트만",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 4096,
+        "numPredict": 1024
+      }
+    },
+    {
+      "id": "gaston-parravicini/LFM2.5-8B-A1B-Uncensored-Gaston-GGUF:Q4_K_M",
+      "name": "LFM2.5 8B A1B（감옥 휴식）",
+      "company": "gaston-parravicini",
+      "parameterSize": "8B-A1B",
+      "totalSize": "4.80GB",
+      "recommended": true,
+      "description": "LFM2.5 8B A1B MoE 무수정 버전, 1B 활성화 매개변수만, 균형 잡힌 속도와 품질.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "MoE",
+        "검열 없음",
+        "NSFW",
+        "감옥 휴식",
+        "텍스트만",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "dealignai/Bonsai-27b-1bit-CRACK-GGUF:Q1_0",
+      "name": "Bonsai 27B 1-bit（슈퍼 압축）",
+      "company": "dealignai",
+      "parameterSize": "27B",
+      "totalSize": "5.21GB",
+      "description": "Bonsai 27B 1비트 양자화 제이브레이커 버전, 탈정렬 무검열, 텍스트 및 이미지 분석 지원.",
+      "source": "huggingface",
+      "quantization": "Q1_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "1비트",
+        "감옥 휴식",
+        "검열 없음",
+        "NSFW",
+        "다중 모드",
+        "비디오 메모리 부족"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "JonathanColetti/Qwen3.8-27B-Uncensored-GGUF:Q4_K_M",
+      "name": "Qwen 3.8 27B（최강자-Jailbreak）",
+      "company": "JonathanColetti",
+      "parameterSize": "27B",
+      "totalSize": "16.52GB",
+      "description": "Qwen3.8-27B는 MTP 긴 예측을 유지하고 텍스트 및 이미지 분석을 지원하는 무수정 정량 버전입니다.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "slow",
+        "quality": "high"
+      },
+      "tags": [
+        "검열 없음",
+        "감옥 휴식",
+        "NSFW",
+        "다중 모드",
+        "큰 매개변수",
+        "MTP"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "empero-ai/Qwen3.8-2B-Distill-GGUF:Q4_K_M",
+      "name": "Qwen 3.8 2B（증류）",
+      "company": "empero-ai",
+      "parameterSize": "2B",
+      "totalSize": "1.22GB",
+      "recommended": true,
+      "description": "Qwen3.8 디스틸버전, 극한의 실행 속도, 텍스트 분석만 지원.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "high"
+      },
+      "tags": [
+        "증류",
+        "경량",
+        "CPU 작동 지원",
+        "텍스트만"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "empero-ai/Qwen3.8-9B-Distill-GGUF:Q4_K_M",
+      "name": "Qwen 3.8 9B（증류）",
+      "company": "empero-ai",
+      "parameterSize": "9B",
+      "totalSize": "5.38GB",
+      "recommended": true,
+      "description": "Qwen3.8 디스틸버전, 대규모 모델의 심층 추론 능력 계승, 텍스트 분석만 지원.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "증류",
+        "추리",
+        "텍스트만",
+        "미세 조정 최적화"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "ornith-ai/Ornith-1.5-9B-GGUF:Q4_K_M",
+      "name": "Ornith 1.5 9B（최고급）",
+      "company": "ornith-ai",
+      "parameterSize": "9B",
+      "totalSize": "6.24GB",
+      "recommended": true,
+      "description": "Ornith 1.5 멀티모달 모델, 텍스트 및 이미지 분석 지원.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "다중 모드",
+        "이미지 인식",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "ornith-ai/Ornith-1.5-9B-GGUF:Q4_K_M",
+      "name": "Ornith 1.5 9B（최고급）",
+      "company": "ornith-ai",
+      "parameterSize": "9B",
+      "totalSize": "6.24GB",
+      "recommended": true,
+      "description": "Ornith 1.5 멀티모달 모델, 텍스트 및 이미지 분석 지원.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "다중 모드",
+        "이미지 인식",
+        "영어가 더 좋아"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    }
+  ]
+}

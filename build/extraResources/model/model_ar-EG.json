@@ -1,0 +1,1026 @@
+{
+  "version": "2.0.0",
+  "language": "zh",
+  "lastUpdated": "2026-05-23",
+  "models": [
+    {
+      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL",
+      "name": "Qwen 3.5 0.8B (الصينية أفضل)",
+      "company": "unsloth",
+      "parameterSize": "0.8B",
+      "totalSize": "558MB",
+      "recommended": true,
+      "description": "نموذج نصي سريع للغاية وخفيف الوزن، ومناسب لبيئات وحدة المعالجة المركزية المنخفضة، مع أداء تحليل صيني متوازن.",
+      "source": "modelscope",
+      "quantization": "Q4_K_XL",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "خفيفة الوزن",
+        "دعم تشغيل وحدة المعالجة المركزية",
+        "فائق السرعة",
+        "النص فقط"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q5_K_XL",
+      "name": "Qwen 3.5 0.8B (الصينية أفضل)",
+      "company": "unsloth",
+      "parameterSize": "0.8B",
+      "totalSize": "579MB",
+      "recommended": false,
+      "description": "نموذج نصي سريع للغاية وخفيف الوزن، ومناسب لبيئات وحدة المعالجة المركزية المنخفضة، مع أداء تحليل صيني متوازن.",
+      "source": "huggingface",
+      "quantization": "UD-Q5_K_XL",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "خفيفة الوزن",
+        "دعم تشغيل وحدة المعالجة المركزية",
+        "فائق السرعة",
+        "النص فقط"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q6_K_XL",
+      "name": "Qwen 3.5 0.8B (التعرف على الصور خفيفة الوزن)",
+      "company": "unsloth",
+      "parameterSize": "0.8B",
+      "totalSize": "976MB",
+      "description": "سرعة تشغيل قصوى، مناسبة لبيئات التكوين المنخفضة للغاية، وتدعم تحليل الصور، وهو أقل دقة.",
+      "source": "huggingface",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "GPU سريع للغاية",
+        "دعم تشغيل وحدة المعالجة المركزية",
+        "الوسائط المتعددة",
+        "mini"
+      ],
+      "recommendedConfig": {
+        "numCtx": 4096,
+        "numPredict": 1048
+      },
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ]
+    },
+    {
+      "id": "LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M",
+      "dspark": "LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M",
+      "name": "LFM2.5 1.2B Instruct（اللغة الإنجليزية أفضل•سرعة عالية）",
+      "company": "LiquidAI",
+      "parameterSize": "1.2B",
+      "totalSize": "873MB",
+      "description": "أحدث نموذج تعليمات LFM2.5، تحليل نصوص فعال، واستدلال سريع على معالج CPU.",
+      "source": "modelscope",
+      "isBuiltin": true,
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "بسرعة فائقة",
+        "دعم تشغيل وحدة المعالجة المركزية",
+        "النص فقط",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 4096,
+        "numPredict": 1024
+      }
+    },
+    {
+      "id": "LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M",
+      "name": "LFM2.5 2.6B（فعال）",
+      "company": "LiquidAI",
+      "parameterSize": "2.6B",
+      "totalSize": "1.63GB",
+      "recommended": true,
+      "description": "أحدث نموذج رسمي LFM2.5 بـ 2.6B مليار معلمة، يوازن بين كفاءة الاستدلال وجودتها التحليلية، ويدعم تسريع DSpark المخصص لوحدة المعالجة المركزية (CPU).",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "خفيفة الوزن",
+        "دعم تشغيل وحدة المعالجة المركزية",
+        "النص فقط",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "Abiray/LFM2.5-2.6B-Heretic-Abliterated-GGUF:Q4_K_M",
+      "name": "LFM2.5 2.6B（كسر السجن）",
+      "company": "Abiray",
+      "parameterSize": "2.6B",
+      "totalSize": "1.56GB",
+      "recommended": true,
+      "description": "إصدار LFM2.5 2.6B بدون قيود ودون رقابة، يوازن بين السرعة والجودة.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "للحد",
+        "لا الرقابة",
+        "NSFW",
+        "النص فقط"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E4B-it-GGUF:Q4_K_S",
+      "name": "Gemma 4 E4B-it（دعم الصوت）",
+      "company": "Unsloth",
+      "parameterSize": "4B",
+      "totalSize": "5.83GB",
+      "recommended": true,
+      "description": "النسخة الكمية الأصلية من Google، تدعم تحليل النصوص والصور والصوت.",
+      "source": "huggingface",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "الوسائط المتعددة",
+        "سريع",
+        "مقطع صوتي",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "mradermacher/Qwen3.5-4B_Abliterated-GGUF:Q4_K_M",
+      "name": "Qwen 3.5 4B（توازن）",
+      "company": "mradermacher",
+      "parameterSize": "4B",
+      "totalSize": "3.08GB",
+      "recommended": false,
+      "description": "النسخة المحذوفة توازن بين السرعة والجودة.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "للحد",
+        "لا الرقابة",
+        "NSFW",
+        "كسر السجن",
+        "الوسائط المتعددة"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "mradermacher/Huihui-Qwen3.5-2B-abliterated-GGUF:Q8_0",
+      "name": "Qwen 3.5 2B（أحسن）",
+      "company": "mradermacher",
+      "parameterSize": "2B",
+      "totalSize": "2.68GB",
+      "recommended": false,
+      "description": "ذاكرة الفيديو 4G هي الخيار الأول.",
+      "source": "huggingface",
+      "quantization": "Q8_0",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "للحد",
+        "لا الرقابة",
+        "NSFW",
+        "كسر السجن",
+        "الوسائط المتعددة"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "tatsuyaaaaaaa/Qwen3.5-2B-gguf:Q4_0",
+      "name": "Qwen 3.5 2B（التحسين الياباني）",
+      "company": "tatsuyaaaaaaa",
+      "parameterSize": "2B",
+      "totalSize": "1.2GB",
+      "recommended": false,
+      "description": "نموذج تحليل النص المُحسّن لمجموعات البيانات اليابانية، يدعم تحليل النص فقط.",
+      "source": "huggingface",
+      "quantization": "Q4_0",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "التحسين الياباني",
+        "النص فقط",
+        "ذاكرة فيديو منخفضة"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "jordanwoodson/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
+      "name": "Qwen 3.5 2B（نص الهروب من السجن）",
+      "company": "jordanwoodson",
+      "parameterSize": "2B",
+      "totalSize": "1.27GB",
+      "recommended": false,
+      "description": "نموذج الهروب من السجن الذي لديه فهم معين للمحتوى.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "كسر السجن",
+        "لا الرقابة",
+        "NSFW",
+        "النص فقط"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      },
+      "capabilities": [
+        "TEXT"
+      ]
+    },
+    {
+      "id": "ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M",
+      "name": "MiniCPM-V 4.6 (قراءة الصور بمدفع فولاذي صغير)",
+      "company": "OpenBMB",
+      "parameterSize": "0.8B",
+      "totalSize": "1.17GB",
+      "recommended": true,
+      "description": "يعمل النموذج متعدد الوسائط على الجانب العلوي بشكل جيد للغاية في التعرف الضوئي على الحروف والتعرف على الكائنات وفهم المشهد المعقد.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "الوسائط المتعددة",
+        "الضبط البصري بالأحرف",
+        "فهم المشهد",
+        "أعلى التعرف على الصور"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "OpenBMB/MiniCPM-V-4.6-gguf:Q4_K_M",
+      "name": "MiniCPM-V 4.6 (قراءة الصور بمدفع فولاذي صغير)",
+      "company": "OpenBMB",
+      "parameterSize": "0.8B",
+      "totalSize": "1.53GB",
+      "recommended": true,
+      "description": "يعمل النموذج متعدد الوسائط على الجانب العلوي بشكل جيد للغاية في التعرف الضوئي على الحروف والتعرف على الكائنات وفهم المشهد المعقد.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "الوسائط المتعددة",
+        "الضبط البصري بالأحرف",
+        "فهم المشهد",
+        "أعلى التعرف على الصور"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E4B-it-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 4 E4B-it（دعم الصوت）",
+      "company": "Unsloth",
+      "parameterSize": "4B",
+      "totalSize": "5.70GB",
+      "recommended": false,
+      "description": "النسخة الكمية الأصلية من Google، تدعم تحليل النصوص والصور والصوت.",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "الوسائط المتعددة",
+        "سريع",
+        "مقطع صوتي",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "unsloth/Qwen3.5-4B-MTP-GGUF:UD-Q4_K_XL",
+      "name": "Qwen 3.5 4B MTP(أحدث)",
+      "company": "Unsloth",
+      "parameterSize": "4B",
+      "totalSize": "3.41GB",
+      "description": "نسخة كمية من بنية MTP، تجمع بين السرعة والجودة.",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "MTP",
+        "الوسائط المتعددة",
+        "سريع",
+        "الصينية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K",
+      "name": "Qwen 3.5 9B v2（كسر السجن）",
+      "company": "MaimaiSuirai",
+      "parameterSize": "9B",
+      "totalSize": "8.27GB",
+      "description": "ذهب الجيل الثاني إلى النسخة الخاضعة للرقابة ويتمتع بقدرات متميزة.",
+      "source": "modelscope",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "high"
+      },
+      "tags": [
+        "كسر السجن",
+        "NSFW",
+        "لا الرقابة",
+        "الوسائط المتعددة"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S",
+      "name": "Qwen 3.5 27B v2（لا الرقابة）",
+      "company": "MaimaiSuirai",
+      "parameterSize": "27B",
+      "totalSize": "15.57GB",
+      "description": "أفضل إصدار مراجعة Qwen 3.5 27B، مع قدرات تفكير قوية وتوليف بصري.",
+      "source": "modelscope",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "كسر السجن",
+        "NSFW",
+        "لا الرقابة",
+        "الوسائط المتعددة",
+        "معلمات كبيرة"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF",
+      "name": "Gemma 4 26B-it（سبحانه وتعالى）",
+      "company": "Mudler",
+      "parameterSize": "26B",
+      "totalSize": "12.98GB",
+      "recommended": true,
+      "description": "نسخة APEX المتخصصة غير الخاضعة للرقابة، وتكميم I-Mini الأمثل.",
+      "source": "modelscope",
+      "quantization": "I-Mini",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "كسر السجن",
+        "NSFW",
+        "لا الرقابة",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "Abiray/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
+      "name": "Qwen 3.5 2B (التعرف على الصور الهروب من السجن)",
+      "company": "Abiray",
+      "parameterSize": "2B",
+      "totalSize": "1.81GB",
+      "recommended": false,
+      "description": "نسخة Jailbroken، تدعم تحليل الصور.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "كسر السجن",
+        "لا الرقابة",
+        "NSFW",
+        "الوسائط المتعددة"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E2B-it-qat-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 4 E2B-it QAT（سبحانه وتعالى - القوة الرئيسية）",
+      "company": "unsloth",
+      "parameterSize": "2B",
+      "totalSize": "3.61GB",
+      "recommended": true,
+      "description": "نسخة موحدة متعددة الوسائط من QAT، تعمل بنية MoE على حفظ ذاكرة الفيديو بشكل كبير، وتدعم تحليل النص والصورة والصوت.",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "الوسائط المتعددة",
+        "مقطع صوتي",
+        "الكمي QAT",
+        "MoE",
+        "ذاكرة فيديو صغيرة جدًا",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E2B-it-qat-MTP-GGUF:UD-Q4_K_XL",
+      "draftId": "NicklausCairns/gemma-4-E2B-it-qat-assistant-MTP-Q8_0",
+      "downloadId": "unsloth/gemma-4-E2B-it-qat-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 4 E2B-it QAT MTP（شامل - سرعة عالية）",
+      "company": "unsloth",
+      "parameterSize": "2B",
+      "totalSize": "3.71GB",
+      "recommended": true,
+      "description": "بفضل الإمكانيات الكاملة، بالإضافة إلى تقنية MTP للسرعة، فهو أفضل طراز يمكن اختياره على الإطلاق.",
+      "source": "huggingface",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "الوسائط المتعددة",
+        "مقطع صوتي",
+        "الكمي QAT",
+        "MoE",
+        "ذاكرة فيديو صغيرة جدًا",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "GnLOLot/MiniCPM5-1B-Claude-Opus-Fable5-Thinking-GGUF:Q4_K_M",
+      "name": "MiniCPM5 1B Claude微调（سلسلة الفكر）",
+      "company": "GnLOLot",
+      "parameterSize": "1B",
+      "totalSize": "688MB",
+      "description": "MiniCPM5-1B، الذي تم ضبطه استنادًا إلى مجموعة بيانات Claude Opus Fable5، يدعم منطق سلسلة التفكير وهو جيد في البرمجة ومتابعة التعليمات.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "very_high"
+      },
+      "tags": [
+        "تحسين الضبط",
+        "مجموعة بيانات كلود",
+        "سلسلة الفكر",
+        "تحسين البرمجة",
+        "خفيفة الوزن",
+        "دعم تشغيل وحدة المعالجة المركزية",
+        "النص فقط"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "Abiray/Nanbeige4.2-3B-GGUF:Q4_K_S",
+      "name": "نانبيج 4.2 3 ب (ما بعد 9 ب)",
+      "company": "Abiray",
+      "parameterSize": "3B",
+      "totalSize": "2.33GB",
+      "recommended": true,
+      "description": "هيكل 3B مصنوع من الفولاذ الصلب 9B، موصى به للغاية، ولكنه يدعم النص فقط.",
+      "source": "modelscope",
+      "quantization": "Q4_K_S",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "النص فقط",
+        "تحسين البرمجة",
+        "الصينية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "owao/Nanbeige4.2-3B-GGUF:Q4_K_M",
+      "name": "نانبيج 4.2 3 ب (ما بعد 9 ب)",
+      "company": "owao",
+      "parameterSize": "3B",
+      "totalSize": "2.40GB",
+      "recommended": false,
+      "description": "هيكل 3B مصنوع من الفولاذ الصلب 9B، موصى به للغاية، ولكنه يدعم النص فقط.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "كسر السجن",
+        "لا الرقابة",
+        "NSFW",
+        "النص فقط"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "mradermacher/Nanbeige4.2-3B-heretic-i1-GGUF:i1-Q5_K_M",
+      "name": "Nanbeige 4.2 3B（الهروب من السجن الأمثل）",
+      "company": "mradermacher",
+      "parameterSize": "3B",
+      "totalSize": "2.78GB",
+      "recommended": true,
+      "description": "هيكل 3B من الفولاذ الصلب 9B، الإصدار المكسور من i1 يتمتع بدقة تكميم أعلى، ولكنه يدعم النص فقط.",
+      "source": "huggingface",
+      "quantization": "i1-Q5_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "كسر السجن",
+        "لا الرقابة",
+        "NSFW",
+        "النص فقط",
+        "دقة عالية"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-3-1b-it-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 3 1B Instruct（基础）",
+      "company": "Google",
+      "parameterSize": "1B",
+      "totalSize": "770MB",
+      "description": "زعيم النموذج الإنجليزي",
+      "source": "huggingface",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "خفيفة الوزن",
+        "دعم تشغيل وحدة المعالجة المركزية",
+        "النص فقط",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 4096,
+        "numPredict": 1024
+      }
+    },
+    {
+      "id": "gaston-parravicini/LFM2.5-8B-A1B-Uncensored-Gaston-GGUF:Q4_K_M",
+      "name": "LFM2.5 8B A1B（كسر السجن）",
+      "company": "gaston-parravicini",
+      "parameterSize": "8B-A1B",
+      "totalSize": "4.80GB",
+      "recommended": true,
+      "description": "LFM2.5 8B A1B MoE إصدار غير خاضع للرقابة، معلمات تنشيط 1B فقط، سرعة وجودة متوازنة.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "MoE",
+        "لا الرقابة",
+        "NSFW",
+        "كسر السجن",
+        "النص فقط",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "dealignai/Bonsai-27b-1bit-CRACK-GGUF:Q1_0",
+      "name": "Bonsai 27B 1-bit（ضغط فائق）",
+      "company": "dealignai",
+      "parameterSize": "27B",
+      "totalSize": "5.21GB",
+      "description": "نموذج Bonsai 27B بنسخة كمّمة 1-bit المخترقة، بدون رقابة، يدعم تحليل النصوص والصور.",
+      "source": "huggingface",
+      "quantization": "Q1_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "1 بت",
+        "كسر السجن",
+        "لا الرقابة",
+        "NSFW",
+        "الوسائط المتعددة",
+        "ذاكرة فيديو منخفضة"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "JonathanColetti/Qwen3.8-27B-Uncensored-GGUF:Q4_K_M",
+      "name": "Qwen 3.8 27B（أقوى الهروب من السجن）",
+      "company": "JonathanColetti",
+      "parameterSize": "27B",
+      "totalSize": "16.52GB",
+      "description": "Qwen3.8-27B هو إصدار كمي غير خاضع للرقابة يحتفظ بتنبؤات MTP الطويلة ويدعم تحليل النص والصور.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "slow",
+        "quality": "high"
+      },
+      "tags": [
+        "لا الرقابة",
+        "كسر السجن",
+        "NSFW",
+        "الوسائط المتعددة",
+        "معلمات كبيرة",
+        "MTP"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "empero-ai/Qwen3.8-2B-Distill-GGUF:Q4_K_M",
+      "name": "Qwen 3.8 2B（التقطير）",
+      "company": "empero-ai",
+      "parameterSize": "2B",
+      "totalSize": "1.22GB",
+      "recommended": true,
+      "description": "إصدار Qwen3.8 المُصغَّر، سرعة تشغيل فائقة، يدعم تحليل النصوص فقط.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "high"
+      },
+      "tags": [
+        "التقطير",
+        "خفيفة الوزن",
+        "دعم تشغيل وحدة المعالجة المركزية",
+        "النص فقط"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "empero-ai/Qwen3.8-9B-Distill-GGUF:Q4_K_M",
+      "name": "Qwen 3.8 9B（التقطير）",
+      "company": "empero-ai",
+      "parameterSize": "9B",
+      "totalSize": "5.38GB",
+      "recommended": true,
+      "description": "إصدار Qwen3.8 المُصغَّر، يرث قدرات الاستدلال العميق للنماذج الكبيرة، يدعم تحليل النصوص فقط.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "التقطير",
+        "المنطق",
+        "النص فقط",
+        "تحسين الضبط"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "ornith-ai/Ornith-1.5-9B-GGUF:Q4_K_M",
+      "name": "Ornith 1.5 9B（الممتاز）",
+      "company": "ornith-ai",
+      "parameterSize": "9B",
+      "totalSize": "6.24GB",
+      "recommended": true,
+      "description": "نموذج Ornith 1.5 متعدد الوسائط، يدعم تحليل النصوص والصور.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "الوسائط المتعددة",
+        "التعرف على الصور",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "ornith-ai/Ornith-1.5-9B-GGUF:Q4_K_M",
+      "name": "Ornith 1.5 9B（الممتاز）",
+      "company": "ornith-ai",
+      "parameterSize": "9B",
+      "totalSize": "6.24GB",
+      "recommended": true,
+      "description": "نموذج Ornith 1.5 متعدد الوسائط، يدعم تحليل النصوص والصور.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "الوسائط المتعددة",
+        "التعرف على الصور",
+        "اللغة الإنجليزية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    }
+  ]
+}

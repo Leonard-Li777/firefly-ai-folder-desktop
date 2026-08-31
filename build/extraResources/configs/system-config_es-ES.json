@@ -1,0 +1,43 @@
+{
+  "nextVersion": {
+    "version": "3.5.0",
+    "releaseNotes": [
+      "[Cambio de nombre por lotes] Admite el cambio de nombre por lotes de nombres de archivos inteligentes una vez completado el análisis",
+      "[Etiquetas por lotes] Admite agregar y eliminar etiquetas a archivos en lotes una vez completado el análisis",
+      "[Limpieza por lotes] Escanee para eliminar duplicados, identificar errores de nombres y extensiones, y optimizar y corregir",
+      "[Herencia de reglas de análisis] Las estrategias de análisis de perfiles de directorio, las reglas inteligentes de nombres de archivos y atributos adicionales admiten la herencia",
+      "[Nuevos modelos] Qwen3.8, Ornith-1.5 y otros modelos más recientes de alta puntuación de la comunidad, y se han eliminado algunos modelos obsoletos",
+      "[Modelo incorporado] Cambie al modelo de alta velocidad LFM2.5-1.2B, complete un análisis en 2 segundos",
+      "[Aceleración DSpark] El modelo integrado admite la aceleración del modelo DSpark en computadoras que solo admiten inferencia de CPU.",
+      "[Generación de estructura de directorios] Admite la copia con un solo clic de palabras solicitadas a una IA externa como Doubao para obtener una estructura de directorio de archivos de alta calidad",
+      "[Ubicación de soporte] Verifique la información del nombre del lugar según las coordenadas de los metadatos del archivo y agregue etiquetas",
+      "[Configuración simplificada] La extracción de información del archivo simplifica el archivo de configuración y obtiene información del archivo de manera más inteligente y eficiente.",
+      "[Rendimiento de la interfaz de usuario] Elimina todas las animaciones de la interfaz de usuario que ocupan la GPU",
+      "[Arquitectura estable] Elimine posibles optimizaciones incompatibles introducidas en V3.4 para varios entornos de hardware"
+    ],
+    "forceUpdate": false
+  },
+  "lastUpdated": "2026-08-31T13:31:00.000Z",
+  "panDimensionIds": [
+    4,
+    16,
+    28
+  ],
+  "latestNews": [
+    {
+      "text": "V3.5 Se agregó cambio de nombre de lotes, etiquetado de lotes y limpieza de lotes."
+    },
+    {
+      "text": "Nanbeige4.2 El rey de la relación calidad-precio, inteligencia potente con 3GB de VRAM, por favor actualiza a V3.2+",
+      "url": "https://page.om.qq.com/page/Oq2nbyVJUAaavsyDZtcbedCw0"
+    },
+    {
+      "text": "Nuevo proveedor de servicios en la nube Agnes AI, API gratuita de por vida, accesible desde redes nacionales",
+      "url": "https://www.agnes-ai.com"
+    },
+    {
+      "text": "Dudas sobre funcionalidades, intercambio de productos, te invitamos a participar en discusiones en el círculo oficial de Firefly AI Folder en Zhihu",
+      "url": "https://www.zhihu.com/ring/2019089912897478826"
+    }
+  ]
+}

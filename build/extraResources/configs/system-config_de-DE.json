@@ -1,0 +1,43 @@
+{
+  "nextVersion": {
+    "version": "3.5.0",
+    "releaseNotes": [
+      "[Batch-Umbenennung] Unterstützt die Batch-Umbenennung intelligenter Dateinamen nach Abschluss der Analyse",
+      "[Batch-Tags] Unterstützt das stapelweise Hinzufügen und Löschen von Tags zu Dateien nach Abschluss der Analyse",
+      "[Stapelbereinigung] Scannen, um Duplikate zu entfernen, Namens- und Erweiterungsfehler zu identifizieren sowie zu optimieren und zu korrigieren",
+      "[Vererbung von Analyseregeln] Analysestrategien für die Verzeichnisprofilierung, intelligente Dateinamenregeln und zusätzliche Attribute unterstützen die Vererbung",
+      "[Neue Modelle] Qwen3.8, Ornith-1.5 und andere aktuelle Community-Highscore-Modelle sowie einige veraltete Modelle wurden entfernt",
+      "[Eingebautes Modell] Wechseln Sie zum Hochgeschwindigkeitsmodell LFM2.5-1.2B und führen Sie eine Analyse in 2 Sekunden durch",
+      "[DSpark-Beschleunigung] Das integrierte Modell unterstützt die DSpark-Modellbeschleunigung auf Computern, die nur CPU-Inferenz unterstützen.",
+      "[Verzeichnisstrukturgenerierung] Unterstützt das Kopieren von Eingabeaufforderungswörtern mit einem Klick an eine externe KI wie Doubao, um eine hochwertige Dateiverzeichnisstruktur zu erhalten",
+      "[Unterstützter Standort] Überprüfen Sie Ortsnameninformationen basierend auf Dateimetadatenkoordinaten und fügen Sie Tags hinzu",
+      "[Vereinfachte Konfiguration] Durch die Extraktion von Dateiinformationen wird die Konfigurationsdatei vereinfacht und Dateiinformationen werden intelligenter und effizienter abgerufen.",
+      "[UI-Leistung] Entfernen Sie alle UI-Animationen, die die GPU belegen",
+      "[Stabile Architektur] Entfernen Sie mögliche inkompatible Optimierungen, die in V3.4 für verschiedene Hardwareumgebungen eingeführt wurden"
+    ],
+    "forceUpdate": false
+  },
+  "lastUpdated": "2026-08-31T13:31:00.000Z",
+  "panDimensionIds": [
+    4,
+    16,
+    28
+  ],
+  "latestNews": [
+    {
+      "text": "V3.5 Chargenumbenennung, Chargenkennzeichnung und Chargenreinigung hinzugefügt"
+    },
+    {
+      "text": "Nanbeige 4.2 Preis-Leistungs-Sieger, 3 GB VRAM für leistungsstarke KI, bitte auf V3.2+ aktualisieren",
+      "url": "https://page.om.qq.com/page/Oq2nbyVJUAaavsyDZtcbedCw0"
+    },
+    {
+      "text": "Neuer Cloud-Dienst Agnes AI hinzugefügt, dauerhaft kostenlose API, aus dem Landesinneren erreichbar",
+      "url": "https://www.agnes-ai.com"
+    },
+    {
+      "text": "Fragen zu Funktionen, Produktaustausch – willkommen im offiziellen Firefly AI Folder Zhihu Community-Forum zur Teilnahme an Diskussionen",
+      "url": "https://www.zhihu.com/ring/2019089912897478826"
+    }
+  ]
+}

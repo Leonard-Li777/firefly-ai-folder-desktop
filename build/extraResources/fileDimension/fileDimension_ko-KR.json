@@ -1,0 +1,2086 @@
+{
+  "file_dimensions": [
+    {
+      "id": 1,
+      "name": "파일 유형",
+      "level": 1,
+      "tags": [
+        "텍스트",
+        "문서",
+        "전자책",
+        "이미지",
+        "동영상",
+        "오디오",
+        "압축 파일",
+        "소스 코드",
+        "실행 프로그램",
+        "글꼴",
+        "3D 모델",
+        "시스템 파일",
+        "데이터베이스",
+        "디스크 이미지",
+        "응용 데이터"
+      ],
+      "description": "파일의 기본 형식 분류",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "확장자",
+        "MIME 유형",
+        "파일 서명"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 2,
+      "name": "파일 용도",
+      "level": 1,
+      "tags": [
+        "업무 문서",
+        "도구 및 유틸리티",
+        "학습 자료",
+        "게임 및 엔터테인먼트",
+        "창작 프로젝트",
+        "여행 기록",
+        "디자인 리소스",
+        "시스템 유지 관리",
+        "학술 연구",
+        "개인 메모"
+      ],
+      "description": "파일의 주요 사용 시나리오",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "저장 경로",
+        "명명 패턴",
+        "연동 애플리케이션"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 3,
+      "name": "파일 출처",
+      "level": 1,
+      "tags": [
+        "로컬 생성",
+        "웹 다운로드",
+        "기기 가져오기",
+        "메시지/통신 수신",
+        "클라우드 동기화",
+        "자동 생성됨",
+        "스캔 문서",
+        "이메일 첨부 파일"
+      ],
+      "description": "파일의 원래 수집 경로",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "경로 특징",
+        "전송 로그"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 4,
+      "name": "작가",
+      "level": 1,
+      "tags": [],
+      "description": "파일의 작성자 또는 기여자",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "code",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "메타데이터",
+        "디지털 서명",
+        "양수표"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 100,
+      "name": "텍스트 세분화",
+      "level": 2,
+      "tags": [
+        "텍스트 확장",
+        "순수 텍스트",
+        "마크다운 문서",
+        "로그 파일",
+        "구성 파일",
+        "차이 파일",
+        "자막"
+      ],
+      "description": "텍스트 파일의 세분화",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "형식 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "텍스트"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "name": "문서 세분화",
+      "level": 2,
+      "tags": [
+        "문서 확장자",
+        "Office",
+        "워드 문서",
+        "시트",
+        "프레젠테이션",
+        "WPS 문서"
+      ],
+      "description": "문서 파일의 세분화",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "형식 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "문서"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "애플리케이션 데이터 세분화",
+      "level": 2,
+      "tags": [
+        "애플리케이션 데이터 확장",
+        "지름길",
+        "재생목록",
+        "기재",
+        "도움말 문서"
+      ],
+      "description": "애플리케이션 데이터 파일 분할",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "형식 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "응용 데이터"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "이미지 분할",
+      "level": 2,
+      "tags": [
+        "이미지 확장",
+        "사진술",
+        "스크린샷",
+        "디자인 초안",
+        "애플리케이션 아이콘",
+        "이모티콘",
+        "의료 영상",
+        "그림",
+        "지세도",
+        "그림"
+      ],
+      "description": "이미지 콘텐츠의 전문적인 분류",
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "EXIF 데이터",
+        "콘텐츠 식별"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "이미지"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "비디오 분할",
+      "level": 2,
+      "tags": [
+        "비디오 확장",
+        "영화와 텔레비전",
+        "교육용 비디오",
+        "게임 상호작용",
+        "녹화 화면",
+        "짧은 영상",
+        "감시 영상",
+        "회의 영상"
+      ],
+      "description": "영상콘텐츠의 전문적인 분류",
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "지속시간 특성",
+        "키프레임 분석"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "동영상"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "오디오 분할",
+      "level": 2,
+      "tags": [
+        "오디오 확장",
+        "음악",
+        "팟캐스트",
+        "오디오북",
+        "음성 메모",
+        "음향 효과",
+        "회의녹화"
+      ],
+      "description": "오디오 콘텐츠의 전문적인 분류",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "스펙트럼 특성",
+        "메타데이터"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "오디오"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "압축된 패키지 분석",
+      "level": 2,
+      "tags": [
+        "압축 패키지 확장",
+        "암호화된 압축 패키지",
+        "암호화되지 않은 압축 패키지"
+      ],
+      "description": "압축된 패키지의 암호화 상태 및 형식 분류",
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "압축 알고리즘",
+        "파일 헤더 서명",
+        "암호화 감지"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "압축 파일"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "프로그램 세분화",
+      "level": 2,
+      "tags": [
+        "프로그램 확장",
+        "Windows",
+        "Linux",
+        "macOS",
+        "Android",
+        "iOS"
+      ],
+      "description": "실행 파일 분류",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "플랫폼 기능",
+        "서명 인증서"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "실행 프로그램"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "언어 분할",
+      "level": 2,
+      "tags": [
+        "중국인",
+        "영어",
+        "일본어",
+        "프랑스 국민",
+        "러시아인",
+        "한국인",
+        "스페인 사람",
+        "독일 사람",
+        "포르투갈 인",
+        "아라비아 말",
+        "이탈리아 사람",
+        "네덜란드 사람",
+        "태국어",
+        "베트남 사람",
+        "힌디 어"
+      ],
+      "description": "문서 내용의 자연어 분류",
+      "applicableFileTypes": [
+        "document",
+        "text",
+        "ebook",
+        "audio",
+        "video"
+      ],
+      "contextHints": [
+        "문자 인코딩",
+        "문법적 특징"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "텍스트",
+            "문서",
+            "전자책",
+            "오디오",
+            "동영상"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "시스템 파일 분석",
+      "level": 2,
+      "tags": [
+        "시스템 파일 확장자",
+        "구성 파일",
+        "통나무",
+        "은닉처",
+        "임시 파일",
+        "운전하다"
+      ],
+      "description": "주요 시스템 파일의 기능 분류",
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "경로 위치",
+        "권한 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "시스템 파일"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "출판현황",
+      "level": 2,
+      "tags": [
+        "별도의 책",
+        "직렬화 중",
+        "완전한",
+        "자르지 않은",
+        "추가의",
+        "추천",
+        "요약 버전",
+        "특별 메뉴"
+      ],
+      "description": "문서의 발행 및 공개 현황",
+      "applicableFileTypes": [
+        "ebook",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "저작권 페이지",
+        "ISBN 번호",
+        "출판 플랫폼"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "전자책 세분화",
+          "triggerTags": [
+            "소설"
+          ]
+        },
+        {
+          "parentDimension": "오디오 분할",
+          "triggerTags": [
+            "오디오북",
+            "음악"
+          ]
+        },
+        {
+          "parentDimension": "비디오 분할",
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
+        },
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "전자책"
+          ]
+        },
+        {
+          "parentDimension": "이미지 분할",
+          "triggerTags": [
+            "지세도"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "데이터베이스 세분화",
+      "level": 2,
+      "tags": [
+        "데이터베이스 확장",
+        "SQLite",
+        "MySQL",
+        "MongoDB",
+        "Access",
+        "데이터 백업"
+      ],
+      "description": "데이터베이스 파일의 기술적 형식",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "파일 서명",
+        "구조적 특징"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "데이터베이스"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "디스크 이미지 분할",
+      "level": 2,
+      "tags": [
+        "디스크 이미지 확장",
+        "시스템 이미지",
+        "데이터 미러링",
+        "디스크 이미지"
+      ],
+      "description": "디스크 이미지 사용량 분류",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "볼륨 레이블 정보",
+        "파티션 구조"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "디스크 이미지"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "name": "애플리케이션 데이터 확장",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "애플리케이션 데이터 파일 확장자",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "애플리케이션 데이터 세분화",
+          "triggerTags": [
+            "애플리케이션 데이터 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "name": "데이터베이스 확장",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "데이터베이스 파일 확장자",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "데이터베이스 세분화",
+          "triggerTags": [
+            "데이터베이스 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "name": "디스크 이미지 확장",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "디스크 이미지 파일 확장자",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "디스크 이미지 분할",
+          "triggerTags": [
+            "디스크 이미지 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "name": "소스 코드 분할",
+      "level": 2,
+      "tags": [
+        "소스 코드 확장",
+        "스크립트",
+        "구성 파일",
+        "프로그래밍 언어",
+        "프런트 엔드",
+        "후방"
+      ],
+      "description": "소스 코드 파일 분류",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "문법적 특징",
+        "인터프리터 경로"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "소스 코드"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "지리적 위치",
+      "level": 2,
+      "tags": [],
+      "description": "콘텐츠와 관련된 위치",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "GPS 좌표",
+        "랜드마크 인식"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "이미지",
+            "동영상"
+          ]
+        },
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "여행 기록",
+            "창작 프로젝트"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "보안 수준",
+      "level": 2,
+      "tags": [
+        "공공의",
+        "내부",
+        "비밀의",
+        "기밀"
+      ],
+      "description": "문서의 기밀성 수준 분류",
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "archive",
+        "database"
+      ],
+      "contextHints": [
+        "암호화 상태",
+        "권한 설정"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "업무 문서",
+            "금융 파일"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "처리상태",
+      "level": 2,
+      "tags": [
+        "초안",
+        "검토중",
+        "완전한",
+        "보관됨",
+        "보관되지 않음",
+        "개정 예정"
+      ],
+      "description": "파일의 워크플로 상태",
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "design"
+      ],
+      "contextHints": [
+        "수정 시간",
+        "버전 표시"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "업무 문서",
+            "창작 프로젝트"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "소프트웨어 성격",
+      "level": 2,
+      "tags": [
+        "공식 오리지널 버전",
+        "수정된 버전",
+        "금이 간 버전",
+        "그린 버전",
+        "휴대용 버전",
+        "라이트 버전",
+        "중국어 버전"
+      ],
+      "description": "소프트웨어의 라이센스 및 배포 특성",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "라이센스 파일",
+        "승인 ID"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "실행 프로그램"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "여행 콘텐츠",
+      "level": 2,
+      "tags": [
+        "자연 경관",
+        "도시 건축",
+        "인문학적 활동",
+        "전 세계의 음식",
+        "유적지",
+        "야외 활동"
+      ],
+      "description": "여행기록의 내용분류",
+      "applicableFileTypes": [
+        "image",
+        "video",
+        "document"
+      ],
+      "contextHints": [
+        "장면 인식",
+        "시간 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "여행 기록"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "금융 유형",
+      "level": 2,
+      "tags": [
+        "소득 바우처",
+        "지출 바우처",
+        "자산 증명",
+        "세금 서류",
+        "계약",
+        "청구서"
+      ],
+      "description": "재무 문서의 비즈니스 유형",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "청구서 식별",
+        "금액 모드"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "금융 파일"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "게임 유형",
+      "level": 3,
+      "tags": [
+        "RPG",
+        "어드벤처 게임",
+        "퍼즐 및 추리",
+        "타워 디펜스",
+        "전략 게임",
+        "경영 시뮬레이션",
+        "연애 시뮬레이션",
+        "대전 및 e스포츠",
+        "MOBA",
+        "격투 게임",
+        "슈팅 게임",
+        "액션 게임",
+        "로그라이크",
+        "전원 / 농경 시뮬레이션",
+        "육성 시뮬레이션",
+        "레이싱 게임",
+        "오토메 게임"
+      ],
+      "description": "게임의 종류",
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "게임"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "게임 및 엔터테인먼트"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "주제 영역",
+      "level": 2,
+      "tags": [
+        "수학",
+        "물리학",
+        "화학",
+        "생물학",
+        "컴퓨터 과학",
+        "언어 학습",
+        "역사",
+        "예술 및 디자인",
+        "공학 및 기술",
+        "경제학",
+        "교육"
+      ],
+      "description": "학습자료의 주제영역 분류",
+      "applicableFileTypes": [
+        "document",
+        "video",
+        "ebook",
+        "code"
+      ],
+      "contextHints": [
+        "주제 용어 밀도",
+        "교과서 장 구조",
+        "코스 플랫폼 로고"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "학습 자료"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "전자책 세분화",
+      "level": 2,
+      "tags": [
+        "전자책 확장",
+        "소설",
+        "지세도",
+        "기술 서적",
+        "잡지",
+        "교과서",
+        "공개 도서"
+      ],
+      "description": "전자책 콘텐츠 분류",
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "챕터 구조",
+        "DRM 상태"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "전자책"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "주제",
+      "level": 3,
+      "tags": [
+        "로맨스",
+        "공상 과학 소설",
+        "마법",
+        "미결",
+        "추리",
+        "시간 여행",
+        "시안샤",
+        "역사",
+        "도시",
+        "교정",
+        "직장",
+        "가족",
+        "우상",
+        "무술",
+        "구성",
+        "전기",
+        "코메디",
+        "경찰과 강도",
+        "스릴러",
+        "동화",
+        "생기",
+        "기록",
+        "자연",
+        "인문학",
+        "체육",
+        "치유법",
+        "삶",
+        "여행하다",
+        "대중과학",
+        "맛있는 음식",
+        "촌극",
+        "이상한 이야기",
+        "춘화",
+        "훈련",
+        "하렘",
+        "단메이",
+        "과부하",
+        "윤리학"
+      ],
+      "description": "주제의 전문 분류",
+      "applicableFileTypes": [
+        "video",
+        "audio",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "지속시간 특성",
+        "키프레임 분석",
+        "콘텐츠 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "비디오 분할",
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
+        },
+        {
+          "parentDimension": "오디오 분할",
+          "triggerTags": [
+            "음악"
+          ]
+        },
+        {
+          "parentDimension": "전자책 세분화",
+          "triggerTags": [
+            "소설"
+          ]
+        },
+        {
+          "parentDimension": "프로그램 세분화",
+          "triggerTags": [
+            "게임"
+          ]
+        },
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "게임 및 엔터테인먼트"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "name": "음악 유형",
+      "level": 3,
+      "tags": [
+        "팝 음악",
+        "록 음악",
+        "일렉트로닉 음악",
+        "힙합",
+        "포크 / 민요",
+        "클래식 음악",
+        "재즈",
+        "블루스",
+        "헤비메탈",
+        "펑크",
+        "컨트리 음악",
+        "랩",
+        "전통 스타일 음악",
+        "인스트루멘탈 / 연주곡",
+        "라틴 음악",
+        "교향곡 / 심포니"
+      ],
+      "description": "음악 유형",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "지속시간 특성",
+        "콘텐츠 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "오디오 분할",
+          "triggerTags": [
+            "음악"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "name": "문서 품질",
+      "level": 1,
+      "tags": [
+        "고품질",
+        "중간 품질",
+        "품질이 낮음"
+      ],
+      "description": "파일 콘텐츠의 품질 평가",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "콘텐츠 품질",
+        "기술적인 품질",
+        "미적 품질"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 28,
+      "name": "콘텐츠 태그",
+      "level": 1,
+      "tags": [],
+      "description": "문서 내용이나 다중모달 설명에서 추출된 핵심 키워드",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "텍스트 내용",
+        "시각적 설명",
+        "음성 전사"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 106,
+      "name": "글꼴 분할",
+      "level": 2,
+      "tags": [
+        "글꼴 확장",
+        "영문폰트",
+        "중국어 글꼴",
+        "아이콘 글꼴"
+      ],
+      "description": "글꼴 파일 분류",
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "글꼴 형식",
+        "문자 집합"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 107,
+      "name": "시스템 파일 확장자",
+      "level": 3,
+      "tags": [
+        "sys",
+        "drv",
+        "dll",
+        "service",
+        "socket",
+        "pid",
+        "lock"
+      ],
+      "description": "시스템 파일 확장자",
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "시스템 파일 분석",
+          "triggerTags": [
+            "시스템 파일 확장자"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 108,
+      "name": "문서 확장자",
+      "level": 3,
+      "tags": [
+        "ai",
+        "csv",
+        "doc",
+        "docm",
+        "docx",
+        "epub",
+        "f03",
+        "f90",
+        "f95",
+        "md",
+        "numbers",
+        "odp",
+        "ods",
+        "odt",
+        "one",
+        "pdf",
+        "ppt",
+        "pptm",
+        "pptx",
+        "ps",
+        "rtf",
+        "xls",
+        "xlsb",
+        "xlsm",
+        "xlsx"
+      ],
+      "description": "문서 클래스 파일 확장자",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "문서 세분화",
+          "triggerTags": [
+            "문서 확장자"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 109,
+      "name": "텍스트 확장",
+      "level": 3,
+      "tags": [
+        "txt",
+        "bib",
+        "diff",
+        "patch",
+        "tex",
+        "sty",
+        "rdf",
+        "rst",
+        "sgml",
+        "lrc",
+        "vtt",
+        "webvtt"
+      ],
+      "description": "텍스트 파일 확장자",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "텍스트 세분화",
+          "triggerTags": [
+            "텍스트 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 110,
+      "name": "이미지 확장",
+      "level": 3,
+      "tags": [
+        "avif",
+        "bmp",
+        "cr2",
+        "dcm",
+        "dng",
+        "dwg",
+        "dxf",
+        "gif",
+        "heic",
+        "heif",
+        "icns",
+        "ico",
+        "j2k",
+        "jp2",
+        "jpeg",
+        "jpg",
+        "jxl",
+        "jpx",
+        "nef",
+        "arw",
+        "pcx",
+        "png",
+        "psd",
+        "raw",
+        "stl",
+        "svg",
+        "tga",
+        "tif",
+        "tiff",
+        "webp",
+        "wmf",
+        "xcf"
+      ],
+      "description": "이미지 파일 확장자",
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "이미지 분할",
+          "triggerTags": [
+            "이미지 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 111,
+      "name": "비디오 확장",
+      "level": 3,
+      "tags": [
+        "mp4",
+        "mkv",
+        "mov",
+        "avi",
+        "wmv",
+        "flv",
+        "webm",
+        "m4v",
+        "mpeg",
+        "mpg",
+        "3gp",
+        "ogv",
+        "rm",
+        "rmvb",
+        "asf",
+        "vob",
+        "f4v",
+        "m2ts",
+        "mxf",
+        "dv"
+      ],
+      "description": "비디오 파일 확장자",
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "비디오 분할",
+          "triggerTags": [
+            "비디오 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 112,
+      "name": "오디오 확장",
+      "level": 3,
+      "tags": [
+        "mp3",
+        "wav",
+        "flac",
+        "aac",
+        "ogg",
+        "m4a",
+        "wma",
+        "aiff",
+        "opus",
+        "weba",
+        "ape",
+        "dsd",
+        "dsf",
+        "dff",
+        "mqa",
+        "ac3",
+        "dts",
+        "ra",
+        "au",
+        "snd",
+        "caf",
+        "amr",
+        "3ga",
+        "mid",
+        "midi",
+        "oga"
+      ],
+      "description": "오디오 파일 확장자",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "오디오 분할",
+          "triggerTags": [
+            "오디오 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 113,
+      "name": "압축 패키지 확장",
+      "level": 3,
+      "tags": [
+        "7z",
+        "7zip",
+        "ace",
+        "bz2",
+        "cbr",
+        "cbz",
+        "deb",
+        "dmg",
+        "ear",
+        "gz",
+        "gzip",
+        "h5",
+        "hdf5",
+        "iso",
+        "jar",
+        "klib",
+        "lha",
+        "lzh",
+        "msi",
+        "npy",
+        "npz",
+        "onnx",
+        "pkg",
+        "rar",
+        "rpm",
+        "snap",
+        "tar",
+        "tbz2",
+        "tgz",
+        "war",
+        "xar",
+        "xpi",
+        "xz",
+        "zip"
+      ],
+      "description": "압축된 패키지 파일의 확장자",
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "압축된 패키지 분석",
+          "triggerTags": [
+            "압축 패키지 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 114,
+      "name": "소스 코드 확장",
+      "level": 3,
+      "tags": [
+        "js",
+        "mjs",
+        "cjs",
+        "ts",
+        "tsx",
+        "jsx",
+        "py",
+        "java",
+        "c",
+        "cpp",
+        "cc",
+        "cxx",
+        "h",
+        "hpp",
+        "cs",
+        "csx",
+        "go",
+        "rs",
+        "php",
+        "rb",
+        "swift",
+        "kt",
+        "kts",
+        "scala",
+        "dart",
+        "zig",
+        "asm",
+        "lua",
+        "pl",
+        "pm",
+        "awk",
+        "sed",
+        "sql",
+        "sh",
+        "bash",
+        "ps1",
+        "bat",
+        "cmd",
+        "vbs",
+        "vba",
+        "vb",
+        "ahk",
+        "au3",
+        "coffee",
+        "clj",
+        "cljs",
+        "cljc",
+        "cljr",
+        "erl",
+        "hrl",
+        "hs",
+        "lhs",
+        "jl",
+        "lisp",
+        "lsp",
+        "l",
+        "cl",
+        "groovy",
+        "gradle",
+        "gemspec",
+        "cmake",
+        "bzl",
+        "twig",
+        "hbs",
+        "handlebars",
+        "jinja",
+        "jinja2",
+        "j2",
+        "erb",
+        "smali",
+        "sol",
+        "dm",
+        "m4",
+        "matlab",
+        "r",
+        "v",
+        "verilog",
+        "vlg",
+        "vh",
+        "vhd",
+        "yar",
+        "yara",
+        "json",
+        "cts",
+        "aspx",
+        "asp",
+        "cbl",
+        "cob",
+        "cpy",
+        "csproj",
+        "vcxproj",
+        "sln",
+        "ixx",
+        "cppm",
+        "bundle",
+        "bdl",
+        "css",
+        "toml",
+        "vue",
+        "ipynb",
+        "mts",
+        "xml",
+        "yaml",
+        "yml"
+      ],
+      "description": "소스 코드 파일 확장자",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "소스 코드 분할",
+          "triggerTags": [
+            "소스 코드 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 115,
+      "name": "프로그램 확장",
+      "level": 3,
+      "tags": [
+        "apk",
+        "class",
+        "crx",
+        "dex",
+        "dll",
+        "elf",
+        "exe",
+        "o",
+        "obj",
+        "pyc",
+        "pyo",
+        "swf",
+        "wasm",
+        "app",
+        "bin"
+      ],
+      "description": "실행 파일 확장자",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "프로그램 세분화",
+          "triggerTags": [
+            "프로그램 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 116,
+      "name": "전자책 확장",
+      "level": 3,
+      "tags": [
+        "epub",
+        "mobi",
+        "azw3",
+        "fb2",
+        "djvu",
+        "umd",
+        "cb7",
+        "cbt",
+        "bz2",
+        "cbr",
+        "cbz"
+      ],
+      "description": "전자책 파일 확장자",
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "전자책 세분화",
+          "triggerTags": [
+            "전자책 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 117,
+      "name": "글꼴 확장",
+      "level": 3,
+      "tags": [
+        "ttf",
+        "otf",
+        "woff",
+        "woff2"
+      ],
+      "description": "글꼴 파일 확장자",
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "글꼴 분할",
+          "triggerTags": [
+            "글꼴 확장"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 118,
+      "name": "만화 분할",
+      "level": 3,
+      "tags": [
+        "소년 만화",
+        "소녀만화",
+        "청소년 만화",
+        "성인 만화",
+        "4컷 만화",
+        "페이지 만화",
+        "웹툰",
+        "풀 컬러",
+        "검정색과 흰색",
+        "동인지",
+        "비즈니스 저널"
+      ],
+      "description": "만화 콘텐츠의 타겟층 분류",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "archive"
+      ],
+      "contextHints": [
+        "콘텐츠 특성",
+        "잠재고객 ID"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "압축된 패키지 분석",
+          "triggerTags": [
+            "암호화된 압축 패키지",
+            "암호화되지 않은 압축 패키지"
+          ]
+        },
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "전자책"
+          ]
+        },
+        {
+          "parentDimension": "이미지 분할",
+          "triggerTags": [
+            "지세도"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 119,
+      "name": "게임 플랫폼",
+      "level": 3,
+      "tags": [
+        "PC",
+        "Xbox",
+        "Switch",
+        "PS5",
+        "휴대폰",
+        "아케이드",
+        "휴대용 콘솔",
+        "Steam",
+        "Epic",
+        "GOG",
+        "Origin",
+        "Uplay",
+        "WeGame",
+        "독립 플랫폼"
+      ],
+      "description": "게임이 실행되는 하드웨어 플랫폼",
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "archive",
+        "executable"
+      ],
+      "contextHints": [
+        "플랫폼 식별",
+        "파일 형식"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "게임 및 엔터테인먼트"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 120,
+      "name": "작업 소스",
+      "level": 2,
+      "tags": [
+        "AI 생성",
+        "원래의",
+        "동인",
+        "번역하다",
+        "공식 번역",
+        "번역 팀",
+        "기계 번역"
+      ],
+      "description": "창의적 콘텐츠의 출처와 제작방법",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive"
+      ],
+      "contextHints": [
+        "창의적인 진술",
+        "디지털 워터마크",
+        "메타데이터"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "전자책 세분화",
+          "triggerTags": [
+            "소설"
+          ]
+        },
+        {
+          "parentDimension": "오디오 분할",
+          "triggerTags": [
+            "오디오북",
+            "음악"
+          ]
+        },
+        {
+          "parentDimension": "비디오 분할",
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
+        },
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "전자책",
+            "이미지"
+          ]
+        },
+        {
+          "parentDimension": "이미지 분할",
+          "triggerTags": [
+            "지세도"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 121,
+      "name": "감정 태그",
+      "level": 2,
+      "tags": [
+        "기쁨",
+        "슬픈",
+        "치유법",
+        "우울증을 일으키는",
+        "쉬운",
+        "불안한",
+        "이동하다",
+        "노스탤지어",
+        "욕구",
+        "흥분한",
+        "기를 꺾다",
+        "죄",
+        "부도덕한 느낌",
+        "창피",
+        "빼어나게 솟다"
+      ],
+      "description": "문서 내용이 불러일으키는 정서적 분위기",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "감정 분석",
+        "내용의 어조"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "전자책 세분화",
+          "triggerTags": [
+            "소설"
+          ]
+        },
+        {
+          "parentDimension": "오디오 분할",
+          "triggerTags": [
+            "오디오북",
+            "음악"
+          ]
+        },
+        {
+          "parentDimension": "비디오 분할",
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
+        },
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "전자책",
+            "이미지"
+          ]
+        },
+        {
+          "parentDimension": "이미지 분할",
+          "triggerTags": [
+            "지세도"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 122,
+      "name": "이미지 품질 수준",
+      "level": 2,
+      "tags": [
+        "부드러운 360P",
+        "SD480P",
+        "HD720P",
+        "울트라 HD 1080P",
+        "2K",
+        "4K",
+        "8K"
+      ],
+      "description": "이미지 또는 비디오의 품질 및 선명도 수준",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "해상도 감지",
+        "인코딩 매개변수"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "비디오 분할",
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
+        },
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "이미지"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 123,
+      "name": "콘텐츠 규모",
+      "level": 2,
+      "tags": [
+        "모든 연령대",
+        "소프트 포르노",
+        "고기 반",
+        "순수한 고기",
+        "특별 XP",
+        "심한 호기심",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "파일 콘텐츠의 연령 적합성 등급",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "콘텐츠 조정",
+        "등급 식별"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "전자책 세분화",
+          "triggerTags": [
+            "소설"
+          ]
+        },
+        {
+          "parentDimension": "오디오 분할",
+          "triggerTags": [
+            "오디오북",
+            "음악"
+          ]
+        },
+        {
+          "parentDimension": "비디오 분할",
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
+        },
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "전자책",
+            "이미지"
+          ]
+        },
+        {
+          "parentDimension": "이미지 분할",
+          "triggerTags": [
+            "지세도"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 124,
+      "name": "코딩 수준",
+      "level": 2,
+      "tags": [
+        "무모자이크",
+        "엷은 모자이크",
+        "모자이크 있음"
+      ],
+      "description": "파일 콘텐츠의 모자이크 처리 수준",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "콘텐츠 조정",
+        "등급 식별"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "비디오 분할",
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
+        },
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "이미지"
+          ]
+        },
+        {
+          "parentDimension": "이미지 분할",
+          "triggerTags": [
+            "지세도"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 125,
+      "name": "워터마크 수준",
+      "level": 2,
+      "tags": [
+        "워터마크 없음",
+        "라이트 워터마크",
+        "워터마크가 있습니다"
+      ],
+      "description": "파일 내용의 워터마크 정도",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "콘텐츠 조정",
+        "등급 식별",
+        "저작권 표시"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "비디오 분할",
+          "triggerTags": [
+            "영화와 텔레비전"
+          ]
+        },
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "이미지"
+          ]
+        },
+        {
+          "parentDimension": "이미지 분할",
+          "triggerTags": [
+            "지세도"
+          ]
+        }
+      ]
+    }
+  ]
+}

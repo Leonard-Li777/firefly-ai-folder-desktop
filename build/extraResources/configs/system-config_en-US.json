@@ -1,0 +1,43 @@
+{
+  "nextVersion": {
+    "version": "3.5.0",
+    "releaseNotes": [
+      "[Batch rename] Supports batch renaming of smart file names after analysis is completed",
+      "[Batch Tags] Supports adding and deleting tags to files in batches after analysis is completed",
+      "[Batch cleaning] Scan to remove duplicates, identify naming errors, extension errors, and optimize and correct",
+      "[Analysis Rule Inheritance] Directory profiling analysis strategies, intelligent file name rules, and additional attributes support inheritance",
+      "[New models] Qwen3.8, Ornith-1.5 and other latest community high-scoring models, and some outdated models have been removed",
+      "[Built-in model] Switch to high-speed model LFM2.5-1.2B, complete an analysis in 2 seconds",
+      "[DSpark Acceleration] The built-in model supports DSpark model acceleration on computers that only support CPU inference.",
+      "[Directory structure generation] Supports one-click copying of prompt words to external AI such as Doubao to obtain high-quality file directory structure",
+      "[Support location] Check place name information based on file metadata coordinates and add tags",
+      "[Simplified configuration] File information extraction simplifies the configuration file and obtains file information more intelligently and efficiently.",
+      "[UI Performance] Remove all UI animations that occupy the GPU",
+      "[Stable architecture] Remove possible incompatible optimizations introduced in V3.4 for various hardware environments"
+    ],
+    "forceUpdate": false
+  },
+  "lastUpdated": "2026-08-31T13:31:00.000Z",
+  "panDimensionIds": [
+    4,
+    16,
+    28
+  ],
+  "latestNews": [
+    {
+      "text": "V3.5 Added batch renaming, batch labeling, and batch cleaning"
+    },
+    {
+      "text": "Nanbeige 4.2 — The Ultimate Value Choice: Super intelligence with just 3GB VRAM, please upgrade to V3.2+",
+      "url": "https://page.om.qq.com/page/Oq2nbyVJUAaavsyDZtcbedCw0"
+    },
+    {
+      "text": "New cloud service provider Agnes AI added, with a permanently free API that is accessible from mainland China networks",
+      "url": "https://www.agnes-ai.com"
+    },
+    {
+      "text": "For feature Q&A and product discussions, feel free to visit the Firefly AI Folder official community on Zhihu to participate in the discussion",
+      "url": "https://www.zhihu.com/ring/2019089912897478826"
+    }
+  ]
+}

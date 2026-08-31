@@ -1,0 +1,2086 @@
+{
+  "file_dimensions": [
+    {
+      "id": 1,
+      "name": "نوع الملف",
+      "level": 1,
+      "tags": [
+        "نص",
+        "وثيقة",
+        "كتاب إلكتروني",
+        "صورة",
+        "فيديو",
+        "صوت",
+        "أرشيف مضغوط",
+        "كود المصدر",
+        "برنامج قابل للتنفيذ",
+        "خط",
+        "نموذج 3D",
+        "ملفات النظام",
+        "قاعدة بيانات",
+        "صورة القرص",
+        "بيانات التطبيقات"
+      ],
+      "description": "التصنيف الأساسي لتنسيق الملفات",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "امتداد الملف",
+        "نوع MIME",
+        "توقيع الملف"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 2,
+      "name": "الغرض من الملف",
+      "level": 1,
+      "tags": [
+        "وثائق العمل",
+        "أدوات وتطبيقات",
+        "مواد دراسية",
+        "ألعاب وترفيه",
+        "مشاريع إبداعية",
+        "سجلات السفر",
+        "مواد التصميم",
+        "صيانة النظام",
+        "بحث أكاديمي",
+        "ملاحظات شخصية"
+      ],
+      "description": "سيناريوهات الاستخدام الأساسية للملفات",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "مسار التخزين",
+        "نمط التسمية",
+        "التطبيقات المرتبطة"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 3,
+      "name": "مصدر الملف",
+      "level": 1,
+      "tags": [
+        "تم إنشاؤه محلياً",
+        "تنزيلات الإنترنت",
+        "استيراد من الجهاز",
+        "مستلم عبر الاتصالات",
+        "مزامنة سحابية",
+        "تم إنشاؤه تلقائياً",
+        "مستند ممسوح ضوئياً",
+        "مرفق البريد الإلكتروني"
+      ],
+      "description": "مصدر الحصول الأصلي على الملف",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "خصائص المسار",
+        "سجل النقل"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 4,
+      "name": "مؤلف",
+      "level": 1,
+      "tags": [],
+      "description": "منشئ الملف أو المساهم فيه",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "code",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "البيانات الوصفية",
+        "التوقيع الرقمي",
+        "العلامة المائية"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 100,
+      "name": "تقسيم النص",
+      "level": 2,
+      "tags": [
+        "امتداد النص",
+        "نص نقي",
+        "مستند مشطَّر",
+        "ملف سجل",
+        "ملف التكوين",
+        "ملف الاختلافات",
+        "التعليقات التوضيحية"
+      ],
+      "description": "تقسيم الملفات النصية",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "خصائص التنسيق"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "نص"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "name": "تجزئة المستند",
+      "level": 2,
+      "tags": [
+        "امتداد الوثيقة",
+        "Office",
+        "وثيقة كلمة",
+        "ملزمة",
+        "عرض تقديمي",
+        "وثيقة WPS"
+      ],
+      "description": "تقسيم ملفات المستندات",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "خصائص التنسيق"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "وثيقة"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "تجزئة بيانات التطبيق",
+      "level": 2,
+      "tags": [
+        "تمديد بيانات التطبيق",
+        "الاختصار",
+        "قائمة التشغيل",
+        "التسجيل",
+        "وثائق المساعدة"
+      ],
+      "description": "تجزئة ملفات بيانات التطبيق",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "خصائص التنسيق"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "بيانات التطبيقات"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "تجزئة الصورة",
+      "level": 2,
+      "tags": [
+        "امتداد الصورة",
+        "التصوير الفوتوغرافي",
+        "لقطة شاشة",
+        "مسودة التصميم",
+        "رمز التطبيق",
+        "المشاعر",
+        "التصوير الطبي",
+        "رسم",
+        "كاريكاتير",
+        "تلوين"
+      ],
+      "description": "تصنيف احترافي لمحتوى الصورة",
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "بيانات EXIF",
+        "التعرف على المحتوى"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "صورة"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "تجزئة الفيديو",
+      "level": 2,
+      "tags": [
+        "امتداد الفيديو",
+        "السينما والتلفزيون",
+        "فيديو تعليمي",
+        "تفاعل اللعبة",
+        "شاشة التسجيل",
+        "فيديو قصير",
+        "فيديو المراقبة",
+        "فيديو الاجتماع"
+      ],
+      "description": "تصنيف احترافي لمحتوى الفيديو",
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "خصائص المدة",
+        "تحليل الإطار الرئيسي"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "فيديو"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "تجزئة الصوت",
+      "level": 2,
+      "tags": [
+        "تمديد الصوت",
+        "موسيقى",
+        "بودكاست",
+        "كتاب مسموع",
+        "مذكرة صوتية",
+        "المؤثرات الصوتية",
+        "تسجيل الاجتماع"
+      ],
+      "description": "تصنيف احترافي للمحتوى الصوتي",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "الخصائص الطيفية",
+        "البيانات الوصفية"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "صوت"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "انهيار الحزمة المضغوطة",
+      "level": 2,
+      "tags": [
+        "ملحق الحزمة المضغوطة",
+        "حزمة مضغوطة مشفرة",
+        "حزمة مضغوطة غير مشفرة"
+      ],
+      "description": "حالة التشفير وتصنيف تنسيق الحزم المضغوطة",
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "خوارزمية الضغط",
+        "توقيع رأس الملف",
+        "كشف التشفير"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "أرشيف مضغوط"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "تجزئة البرنامج",
+      "level": 2,
+      "tags": [
+        "امتداد البرنامج",
+        "Windows",
+        "Linux",
+        "macOS",
+        "Android",
+        "iOS"
+      ],
+      "description": "تصنيف الملفات القابلة للتنفيذ",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "ميزات المنصة",
+        "شهادة التوقيع"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "برنامج قابل للتنفيذ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "تجزئة اللغة",
+      "level": 2,
+      "tags": [
+        "الصينية",
+        "إنجليزي",
+        "اليابانية",
+        "فرنسي",
+        "الروسية",
+        "كوري",
+        "الأسبانية",
+        "الألمانية",
+        "البرتغالية",
+        "عربي",
+        "ايطالي",
+        "هولندي",
+        "التايلاندية",
+        "الفيتنامية",
+        "الهندية"
+      ],
+      "description": "تصنيف اللغة الطبيعية لمحتوى الوثيقة",
+      "applicableFileTypes": [
+        "document",
+        "text",
+        "ebook",
+        "audio",
+        "video"
+      ],
+      "contextHints": [
+        "ترميز الأحرف",
+        "الميزات النحوية"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "نص",
+            "وثيقة",
+            "كتاب إلكتروني",
+            "صوت",
+            "فيديو"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "انهيار ملفات النظام",
+      "level": 2,
+      "tags": [
+        "امتداد ملف النظام",
+        "ملف التكوين",
+        "سجل",
+        "مخبأ",
+        "الملفات المؤقتة",
+        "يقود"
+      ],
+      "description": "التصنيف الوظيفي لملفات النظام الرئيسية",
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "موقع المسار",
+        "خصائص الإذن"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "ملفات النظام"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "حالة النشر",
+      "level": 2,
+      "tags": [
+        "كتاب منفصل",
+        "التسلسل",
+        "مكتمل",
+        "غير مختصر",
+        "إضافي",
+        "مميز",
+        "نسخة مختصرة",
+        "عرض خاص"
+      ],
+      "description": "حالة النشر والإفراج عن الوثائق",
+      "applicableFileTypes": [
+        "ebook",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "صفحة حقوق الطبع والنشر",
+        "رقم ISBN",
+        "منصة النشر"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الكتاب الإلكتروني",
+          "triggerTags": [
+            "رواية"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصوت",
+          "triggerTags": [
+            "كتاب مسموع",
+            "موسيقى"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الفيديو",
+          "triggerTags": [
+            "السينما والتلفزيون"
+          ]
+        },
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "كتاب إلكتروني"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصورة",
+          "triggerTags": [
+            "كاريكاتير"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "تجزئة قاعدة البيانات",
+      "level": 2,
+      "tags": [
+        "امتداد قاعدة البيانات",
+        "SQLite",
+        "MySQL",
+        "MongoDB",
+        "Access",
+        "النسخ الاحتياطي للبيانات"
+      ],
+      "description": "التنسيق الفني لملفات قاعدة البيانات",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "توقيع الملف",
+        "الميزات الهيكلية"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "قاعدة بيانات"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "تجزئة صورة القرص",
+      "level": 2,
+      "tags": [
+        "امتداد صورة القرص",
+        "صورة النظام",
+        "انعكاس البيانات",
+        "صورة القرص"
+      ],
+      "description": "تصنيف استخدام صورة القرص",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "معلومات تسمية الحجم",
+        "هيكل التقسيم"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "صورة القرص"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "name": "تمديد بيانات التطبيق",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "امتداد ملف بيانات التطبيق",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة بيانات التطبيق",
+          "triggerTags": [
+            "تمديد بيانات التطبيق"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "name": "امتداد قاعدة البيانات",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "امتداد ملف قاعدة البيانات",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة قاعدة البيانات",
+          "triggerTags": [
+            "امتداد قاعدة البيانات"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "name": "امتداد صورة القرص",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "امتداد ملف صورة القرص",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة صورة القرص",
+          "triggerTags": [
+            "امتداد صورة القرص"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "name": "تجزئة كود المصدر",
+      "level": 2,
+      "tags": [
+        "ملحق كود المصدر",
+        "البرنامج النصي",
+        "ملف التكوين",
+        "لغة البرمجة",
+        "الواجهة الأمامية",
+        "نهاية الطريق"
+      ],
+      "description": "تصنيف ملفات التعليمات البرمجية المصدر",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "الميزات النحوية",
+        "مسار المترجم"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "كود المصدر"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "الموقع الجغرافي",
+      "level": 2,
+      "tags": [],
+      "description": "الموقع المرتبط بالمحتوى",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "إحداثيات نظام تحديد المواقع",
+        "التعرف على المعالم"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "صورة",
+            "فيديو"
+          ]
+        },
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "سجلات السفر",
+            "مشاريع إبداعية"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "مستوى الأمان",
+      "level": 2,
+      "tags": [
+        "عام",
+        "داخلي",
+        "مؤتمن",
+        "سري للغاية"
+      ],
+      "description": "تصنيف مستويات سرية الوثائق",
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "archive",
+        "database"
+      ],
+      "contextHints": [
+        "حالة التشفير",
+        "إعدادات الأذونات"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "وثائق العمل",
+            "الملفات المالية"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "حالة المعالجة",
+      "level": 2,
+      "tags": [
+        "مسودة",
+        "قيد المراجعة",
+        "مكتمل",
+        "مؤرشف",
+        "لم يتم أرشفتها",
+        "ليتم تنقيحها"
+      ],
+      "description": "حالة سير العمل للملف",
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "design"
+      ],
+      "contextHints": [
+        "وقت التعديل",
+        "علامة الإصدار"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "وثائق العمل",
+            "مشاريع إبداعية"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "طبيعة البرمجيات",
+      "level": 2,
+      "tags": [
+        "النسخة الأصلية الرسمية",
+        "نسخة معدلة",
+        "نسخة متصدع",
+        "النسخة الخضراء",
+        "النسخة المحمولة",
+        "نسخة لايت",
+        "النسخة الصينية"
+      ],
+      "description": "طبيعة ترخيص وتوزيع البرمجيات",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "ملف الترخيص",
+        "معرف التفويض"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "برنامج قابل للتنفيذ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "محتوى السفر",
+      "level": 2,
+      "tags": [
+        "المناظر الطبيعية",
+        "العمارة الحضرية",
+        "الأنشطة الإنسانية",
+        "الطعام من جميع أنحاء العالم",
+        "المواقع التاريخية",
+        "الأنشطة في الهواء الطلق"
+      ],
+      "description": "تصنيف محتوى سجلات السفر",
+      "applicableFileTypes": [
+        "image",
+        "video",
+        "document"
+      ],
+      "contextHints": [
+        "التعرف على المشهد",
+        "خصائص الوقت"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "سجلات السفر"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "النوع المالي",
+      "level": 2,
+      "tags": [
+        "قسيمة الدخل",
+        "قسيمة الإنفاق",
+        "إثبات الأصول",
+        "المستندات الضريبية",
+        "عقد",
+        "فاتورة"
+      ],
+      "description": "نوع العمل من الوثائق المالية",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "تحديد الفاتورة",
+        "وضع المبلغ"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "الملفات المالية"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "نوع اللعبة",
+      "level": 3,
+      "tags": [
+        "RPG",
+        "لعبة مغامرة",
+        "ألغاز",
+        "الدفاع عن البرج",
+        "لعبة استراتيجية",
+        "محاكاة وإدارة",
+        "رومانسية ومواكبة",
+        "تنافسي ورياضات إلكترونية",
+        "MOBA",
+        "لعبة قتال",
+        "لعبة إطلاق النار",
+        "لعبة أكشن",
+        "روغلايك",
+        "حياة ريفية وزراعة",
+        "تربية وتطوير",
+        "لعبة سباق السيارات",
+        "لعبة أوتومي"
+      ],
+      "description": "نوع اللعبة",
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "لعبة"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "ألعاب وترفيه"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "منطقة الموضوع",
+      "level": 2,
+      "tags": [
+        "الرياضيات",
+        "الفيزياء",
+        "الكيمياء",
+        "علم الأحياء",
+        "علوم الحاسوب",
+        "تعلم اللغات",
+        "التاريخ",
+        "الفن والتصميم",
+        "الهندسة والتكنولوجيا",
+        "الاقتصاد",
+        "التعليم"
+      ],
+      "description": "تصنيف مجال الموضوع للمواد التعليمية",
+      "applicableFileTypes": [
+        "document",
+        "video",
+        "ebook",
+        "code"
+      ],
+      "contextHints": [
+        "كثافة المصطلحات الموضوعية",
+        "هيكل فصل الكتاب المدرسي",
+        "شعار منصة الدورة"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "مواد دراسية"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "تجزئة الكتاب الإلكتروني",
+      "level": 2,
+      "tags": [
+        "ملحق الكتاب الاليكتروني",
+        "رواية",
+        "كاريكاتير",
+        "الكتب التقنية",
+        "مجلة",
+        "كتاب مدرسي",
+        "كتاب عام"
+      ],
+      "description": "تصنيف محتوى الكتاب الإلكتروني",
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "هيكل الفصل",
+        "حالة إدارة الحقوق الرقمية"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "كتاب إلكتروني"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "سمة",
+      "level": 3,
+      "tags": [
+        "الرومانسية",
+        "الخيال العلمي",
+        "سحر",
+        "تشويق",
+        "المنطق",
+        "السفر عبر الزمن",
+        "شيانشيا",
+        "التاريخ",
+        "مدينة",
+        "حرم الجامعة",
+        "مكان العمل",
+        "عائلة",
+        "المعبود",
+        "فنون الدفاع عن النفس",
+        "حبكة",
+        "سيرة",
+        "كوميديا",
+        "رجال الشرطة واللصوص",
+        "إثارة",
+        "حكاية خيالية",
+        "الرسوم المتحركة",
+        "سِجِلّ",
+        "طبيعة",
+        "العلوم الإنسانية",
+        "التربية البدنية",
+        "دواء",
+        "حياة",
+        "يسافر",
+        "العلوم الشعبية",
+        "الطعام الذواقة",
+        "مسرحية هزلية",
+        "قصص غريبة",
+        "المواد الإباحية",
+        "تمرين",
+        "حريم",
+        "دانمي",
+        "أفرلورد",
+        "أخلاق مهنية"
+      ],
+      "description": "التصنيف المهني للموضوع",
+      "applicableFileTypes": [
+        "video",
+        "audio",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "خصائص المدة",
+        "تحليل الإطار الرئيسي",
+        "خصائص المحتوى"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الفيديو",
+          "triggerTags": [
+            "السينما والتلفزيون"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصوت",
+          "triggerTags": [
+            "موسيقى"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الكتاب الإلكتروني",
+          "triggerTags": [
+            "رواية"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة البرنامج",
+          "triggerTags": [
+            "لعبة"
+          ]
+        },
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "ألعاب وترفيه"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "name": "نوع الموسيقى",
+      "level": 3,
+      "tags": [
+        "موسيقى البوب",
+        "موسيقى الروك",
+        "موسيقى إلكترونية",
+        "الهيب هوب",
+        "موسيقى شعبية",
+        "موسيقى كلاسيكية",
+        "موسيقى الجاز",
+        "موسيقى البلوز",
+        "موسيقى الميتال",
+        "فاسق",
+        "موسيقى الريف (كانتري)",
+        "موسيقى الراب",
+        "موسيقى ذات نمط تقليدي",
+        "موسيقى معزوفة (بدون غناء)",
+        "موسيقى لاتينية",
+        "موسيقى سمفونية"
+      ],
+      "description": "نوع الموسيقى",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "خصائص المدة",
+        "خصائص المحتوى"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الصوت",
+          "triggerTags": [
+            "موسيقى"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "name": "جودة الوثيقة",
+      "level": 1,
+      "tags": [
+        "جودة عالية",
+        "جودة متوسطة",
+        "جودة منخفضة"
+      ],
+      "description": "تصنيف جودة محتوى الملف",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "جودة المحتوى",
+        "الجودة الفنية",
+        "الجودة الجمالية"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 28,
+      "name": "علامات المحتوى",
+      "level": 1,
+      "tags": [],
+      "description": "الكلمات الأساسية الأساسية المستخرجة من محتوى المستند أو الوصف متعدد الوسائط",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "محتوى النص",
+        "الوصف البصري",
+        "نسخ الكلام"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 106,
+      "name": "تجزئة الخط",
+      "level": 2,
+      "tags": [
+        "امتداد الخط",
+        "الخط الإنجليزي",
+        "الخط الصيني",
+        "خط الأيقونة"
+      ],
+      "description": "تصنيف ملفات الخطوط",
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "تنسيق الخط",
+        "مجموعة الأحرف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "خط"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 107,
+      "name": "امتداد ملف النظام",
+      "level": 3,
+      "tags": [
+        "sys",
+        "drv",
+        "dll",
+        "service",
+        "socket",
+        "pid",
+        "lock"
+      ],
+      "description": "امتداد ملف النظام",
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "انهيار ملفات النظام",
+          "triggerTags": [
+            "امتداد ملف النظام"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 108,
+      "name": "امتداد الوثيقة",
+      "level": 3,
+      "tags": [
+        "ai",
+        "csv",
+        "doc",
+        "docm",
+        "docx",
+        "epub",
+        "f03",
+        "f90",
+        "f95",
+        "md",
+        "numbers",
+        "odp",
+        "ods",
+        "odt",
+        "one",
+        "pdf",
+        "ppt",
+        "pptm",
+        "pptx",
+        "ps",
+        "rtf",
+        "xls",
+        "xlsb",
+        "xlsm",
+        "xlsx"
+      ],
+      "description": "امتداد ملف فئة الوثيقة",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة المستند",
+          "triggerTags": [
+            "امتداد الوثيقة"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 109,
+      "name": "امتداد النص",
+      "level": 3,
+      "tags": [
+        "txt",
+        "bib",
+        "diff",
+        "patch",
+        "tex",
+        "sty",
+        "rdf",
+        "rst",
+        "sgml",
+        "lrc",
+        "vtt",
+        "webvtt"
+      ],
+      "description": "امتداد الملف النصي",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تقسيم النص",
+          "triggerTags": [
+            "امتداد النص"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 110,
+      "name": "امتداد الصورة",
+      "level": 3,
+      "tags": [
+        "avif",
+        "bmp",
+        "cr2",
+        "dcm",
+        "dng",
+        "dwg",
+        "dxf",
+        "gif",
+        "heic",
+        "heif",
+        "icns",
+        "ico",
+        "j2k",
+        "jp2",
+        "jpeg",
+        "jpg",
+        "jxl",
+        "jpx",
+        "nef",
+        "arw",
+        "pcx",
+        "png",
+        "psd",
+        "raw",
+        "stl",
+        "svg",
+        "tga",
+        "tif",
+        "tiff",
+        "webp",
+        "wmf",
+        "xcf"
+      ],
+      "description": "امتداد ملف الصورة",
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الصورة",
+          "triggerTags": [
+            "امتداد الصورة"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 111,
+      "name": "امتداد الفيديو",
+      "level": 3,
+      "tags": [
+        "mp4",
+        "mkv",
+        "mov",
+        "avi",
+        "wmv",
+        "flv",
+        "webm",
+        "m4v",
+        "mpeg",
+        "mpg",
+        "3gp",
+        "ogv",
+        "rm",
+        "rmvb",
+        "asf",
+        "vob",
+        "f4v",
+        "m2ts",
+        "mxf",
+        "dv"
+      ],
+      "description": "امتداد ملف الفيديو",
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الفيديو",
+          "triggerTags": [
+            "امتداد الفيديو"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 112,
+      "name": "تمديد الصوت",
+      "level": 3,
+      "tags": [
+        "mp3",
+        "wav",
+        "flac",
+        "aac",
+        "ogg",
+        "m4a",
+        "wma",
+        "aiff",
+        "opus",
+        "weba",
+        "ape",
+        "dsd",
+        "dsf",
+        "dff",
+        "mqa",
+        "ac3",
+        "dts",
+        "ra",
+        "au",
+        "snd",
+        "caf",
+        "amr",
+        "3ga",
+        "mid",
+        "midi",
+        "oga"
+      ],
+      "description": "امتداد الملف الصوتي",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الصوت",
+          "triggerTags": [
+            "تمديد الصوت"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 113,
+      "name": "ملحق الحزمة المضغوطة",
+      "level": 3,
+      "tags": [
+        "7z",
+        "7zip",
+        "ace",
+        "bz2",
+        "cbr",
+        "cbz",
+        "deb",
+        "dmg",
+        "ear",
+        "gz",
+        "gzip",
+        "h5",
+        "hdf5",
+        "iso",
+        "jar",
+        "klib",
+        "lha",
+        "lzh",
+        "msi",
+        "npy",
+        "npz",
+        "onnx",
+        "pkg",
+        "rar",
+        "rpm",
+        "snap",
+        "tar",
+        "tbz2",
+        "tgz",
+        "war",
+        "xar",
+        "xpi",
+        "xz",
+        "zip"
+      ],
+      "description": "امتداد ملف الحزمة المضغوط",
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "انهيار الحزمة المضغوطة",
+          "triggerTags": [
+            "ملحق الحزمة المضغوطة"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 114,
+      "name": "ملحق كود المصدر",
+      "level": 3,
+      "tags": [
+        "js",
+        "mjs",
+        "cjs",
+        "ts",
+        "tsx",
+        "jsx",
+        "py",
+        "java",
+        "c",
+        "cpp",
+        "cc",
+        "cxx",
+        "h",
+        "hpp",
+        "cs",
+        "csx",
+        "go",
+        "rs",
+        "php",
+        "rb",
+        "swift",
+        "kt",
+        "kts",
+        "scala",
+        "dart",
+        "zig",
+        "asm",
+        "lua",
+        "pl",
+        "pm",
+        "awk",
+        "sed",
+        "sql",
+        "sh",
+        "bash",
+        "ps1",
+        "bat",
+        "cmd",
+        "vbs",
+        "vba",
+        "vb",
+        "ahk",
+        "au3",
+        "coffee",
+        "clj",
+        "cljs",
+        "cljc",
+        "cljr",
+        "erl",
+        "hrl",
+        "hs",
+        "lhs",
+        "jl",
+        "lisp",
+        "lsp",
+        "l",
+        "cl",
+        "groovy",
+        "gradle",
+        "gemspec",
+        "cmake",
+        "bzl",
+        "twig",
+        "hbs",
+        "handlebars",
+        "jinja",
+        "jinja2",
+        "j2",
+        "erb",
+        "smali",
+        "sol",
+        "dm",
+        "m4",
+        "matlab",
+        "r",
+        "v",
+        "verilog",
+        "vlg",
+        "vh",
+        "vhd",
+        "yar",
+        "yara",
+        "json",
+        "cts",
+        "aspx",
+        "asp",
+        "cbl",
+        "cob",
+        "cpy",
+        "csproj",
+        "vcxproj",
+        "sln",
+        "ixx",
+        "cppm",
+        "bundle",
+        "bdl",
+        "css",
+        "toml",
+        "vue",
+        "ipynb",
+        "mts",
+        "xml",
+        "yaml",
+        "yml"
+      ],
+      "description": "امتداد ملف التعليمات البرمجية المصدر",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة كود المصدر",
+          "triggerTags": [
+            "ملحق كود المصدر"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 115,
+      "name": "امتداد البرنامج",
+      "level": 3,
+      "tags": [
+        "apk",
+        "class",
+        "crx",
+        "dex",
+        "dll",
+        "elf",
+        "exe",
+        "o",
+        "obj",
+        "pyc",
+        "pyo",
+        "swf",
+        "wasm",
+        "app",
+        "bin"
+      ],
+      "description": "امتداد الملف القابل للتنفيذ",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة البرنامج",
+          "triggerTags": [
+            "امتداد البرنامج"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 116,
+      "name": "ملحق الكتاب الاليكتروني",
+      "level": 3,
+      "tags": [
+        "epub",
+        "mobi",
+        "azw3",
+        "fb2",
+        "djvu",
+        "umd",
+        "cb7",
+        "cbt",
+        "bz2",
+        "cbr",
+        "cbz"
+      ],
+      "description": "امتداد ملف الكتاب الإلكتروني",
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الكتاب الإلكتروني",
+          "triggerTags": [
+            "ملحق الكتاب الاليكتروني"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 117,
+      "name": "امتداد الخط",
+      "level": 3,
+      "tags": [
+        "ttf",
+        "otf",
+        "woff",
+        "woff2"
+      ],
+      "description": "امتداد ملف الخط",
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الخط",
+          "triggerTags": [
+            "امتداد الخط"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 118,
+      "name": "تجزئة هزلية",
+      "level": 3,
+      "tags": [
+        "كاريكاتير شونين",
+        "كاريكاتير البنات",
+        "كاريكاتير الشباب",
+        "كاريكاتير الكبار",
+        "مانغا 4-كوما",
+        "مانغا صفحة",
+        "ويب تون",
+        "اللون الكامل",
+        "أبيض وأسود",
+        "دوجينشي",
+        "مجلة الأعمال"
+      ],
+      "description": "تصنيف الجمهور المستهدف للمحتوى الهزلي",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "archive"
+      ],
+      "contextHints": [
+        "خصائص المحتوى",
+        "معرف الجمهور"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "انهيار الحزمة المضغوطة",
+          "triggerTags": [
+            "حزمة مضغوطة مشفرة",
+            "حزمة مضغوطة غير مشفرة"
+          ]
+        },
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "كتاب إلكتروني"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصورة",
+          "triggerTags": [
+            "كاريكاتير"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 119,
+      "name": "منصة اللعبة",
+      "level": 3,
+      "tags": [
+        "PC",
+        "Xbox",
+        "Switch",
+        "PS5",
+        "الهاتف الخلوي",
+        "أركيد",
+        "وحدة التحكم المحمولة",
+        "Steam",
+        "Epic",
+        "GOG",
+        "Origin",
+        "Uplay",
+        "WeGame",
+        "منصة مستقلة"
+      ],
+      "description": "منصة الأجهزة التي تعمل عليها اللعبة",
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "archive",
+        "executable"
+      ],
+      "contextHints": [
+        "تحديد المنصة",
+        "تنسيق الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "ألعاب وترفيه"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 120,
+      "name": "مصدر العمل",
+      "level": 2,
+      "tags": [
+        "تم إنشاء الذكاء الاصطناعي",
+        "إبداعي",
+        "دوجين",
+        "يترجم",
+        "ترجمة رسمية",
+        "فريق الترجمة",
+        "ترجمة آلية"
+      ],
+      "description": "مصادر وطرق إنتاج المحتوى الإبداعي",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive"
+      ],
+      "contextHints": [
+        "بيان إبداعي",
+        "العلامة المائية الرقمية",
+        "البيانات الوصفية"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الكتاب الإلكتروني",
+          "triggerTags": [
+            "رواية"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصوت",
+          "triggerTags": [
+            "كتاب مسموع",
+            "موسيقى"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الفيديو",
+          "triggerTags": [
+            "السينما والتلفزيون"
+          ]
+        },
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "كتاب إلكتروني",
+            "صورة"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصورة",
+          "triggerTags": [
+            "كاريكاتير"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 121,
+      "name": "العلامات العاطفية",
+      "level": 2,
+      "tags": [
+        "مرح",
+        "حزين",
+        "دواء",
+        "تسبب الاكتئاب",
+        "سهل",
+        "متوتر",
+        "يتحرك",
+        "حنين للماضي",
+        "يرغب",
+        "متحمس",
+        "خفض",
+        "الشعور بالذنب",
+        "الشعور بالفجور",
+        "عار",
+        "تهيمن"
+      ],
+      "description": "الجو العاطفي الذي يثيره محتوى الوثيقة",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "تحليل المشاعر",
+        "نغمة المحتوى"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الكتاب الإلكتروني",
+          "triggerTags": [
+            "رواية"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصوت",
+          "triggerTags": [
+            "كتاب مسموع",
+            "موسيقى"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الفيديو",
+          "triggerTags": [
+            "السينما والتلفزيون"
+          ]
+        },
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "كتاب إلكتروني",
+            "صورة"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصورة",
+          "triggerTags": [
+            "كاريكاتير"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 122,
+      "name": "مستوى جودة الصورة",
+      "level": 2,
+      "tags": [
+        "سلسة 360P",
+        "SD 480P",
+        "HD 720P",
+        "الترا اتش دي 1080 بيكسل",
+        "2K",
+        "4K",
+        "8K"
+      ],
+      "description": "مستوى الجودة والوضوح للصورة أو الفيديو",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "كشف القرار",
+        "معلمات الترميز"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الفيديو",
+          "triggerTags": [
+            "السينما والتلفزيون"
+          ]
+        },
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "صورة"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 123,
+      "name": "مقياس المحتوى",
+      "level": 2,
+      "tags": [
+        "جميع الأعمار",
+        "الإباحية الناعمة",
+        "نصف لحم",
+        "لحم نقي",
+        "XP خاص",
+        "الفضول الشديد",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "تصنيف مدى ملاءمة محتوى الملف للعمر",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "الاعتدال في المحتوى",
+        "تحديد الدرجات"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الكتاب الإلكتروني",
+          "triggerTags": [
+            "رواية"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصوت",
+          "triggerTags": [
+            "كتاب مسموع",
+            "موسيقى"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الفيديو",
+          "triggerTags": [
+            "السينما والتلفزيون"
+          ]
+        },
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "كتاب إلكتروني",
+            "صورة"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصورة",
+          "triggerTags": [
+            "كاريكاتير"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 124,
+      "name": "مستوى الترميز",
+      "level": 2,
+      "tags": [
+        "بدون رقابة / غير مشفر",
+        "تشفير خفيف",
+        "مع رقابة / مشفر"
+      ],
+      "description": "مستوى التشفير والفسيفساء لمحتوى الملف",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "الاعتدال في المحتوى",
+        "تحديد الدرجات"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الفيديو",
+          "triggerTags": [
+            "السينما والتلفزيون"
+          ]
+        },
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "صورة"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصورة",
+          "triggerTags": [
+            "كاريكاتير"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 125,
+      "name": "مستوى العلامة المائية",
+      "level": 2,
+      "tags": [
+        "لا توجد علامة مائية",
+        "علامة مائية خفيفة",
+        "هناك علامة مائية"
+      ],
+      "description": "درجة العلامة المائية في محتوى الملف",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "الاعتدال في المحتوى",
+        "تحديد الدرجات",
+        "علامة حقوق النشر"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة الفيديو",
+          "triggerTags": [
+            "السينما والتلفزيون"
+          ]
+        },
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "صورة"
+          ]
+        },
+        {
+          "parentDimension": "تجزئة الصورة",
+          "triggerTags": [
+            "كاريكاتير"
+          ]
+        }
+      ]
+    }
+  ]
+}

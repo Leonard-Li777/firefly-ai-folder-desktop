@@ -1,0 +1,43 @@
+{
+  "nextVersion": {
+    "version": "3.5.0",
+    "releaseNotes": [
+      "[Renomear em lote] Suporta renomeação em lote de nomes de arquivos inteligentes após a conclusão da análise",
+      "[Tags em lote] Suporta adição e exclusão de tags em arquivos em lotes após a conclusão da análise",
+      "[Limpeza em lote] Digitalize para remover duplicatas, identificar erros de nomenclatura, erros de extensão e otimizar e corrigir",
+      "[Herança de regras de análise] Estratégias de análise de perfil de diretório, regras inteligentes de nome de arquivo e atributos adicionais suportam herança",
+      "[Novos modelos] Qwen3.8, Ornith-1.5 e outros modelos mais recentes de alta pontuação da comunidade, e alguns modelos desatualizados foram removidos",
+      "[Modelo integrado] Mude para o modelo de alta velocidade LFM2.5-1.2B, conclua uma análise em 2 segundos",
+      "[Aceleração DSpark] O modelo integrado oferece suporte à aceleração do modelo DSpark em computadores que suportam apenas inferência de CPU.",
+      "[Geração de estrutura de diretório] Suporta cópia de palavras de prompt com um clique para IA externa, como Doubao, para obter estrutura de diretório de arquivo de alta qualidade",
+      "[Local de suporte] Verifique as informações do nome do local com base nas coordenadas dos metadados do arquivo e adicione tags",
+      "[Configuração simplificada] A extração de informações do arquivo simplifica o arquivo de configuração e obtém informações do arquivo de forma mais inteligente e eficiente.",
+      "[Desempenho da UI] Remova todas as animações da UI que ocupam a GPU",
+      "[Arquitetura estável] Remova possíveis otimizações incompatíveis introduzidas na V3.4 para vários ambientes de hardware"
+    ],
+    "forceUpdate": false
+  },
+  "lastUpdated": "2026-08-31T13:31:00.000Z",
+  "panDimensionIds": [
+    4,
+    16,
+    28
+  ],
+  "latestNews": [
+    {
+      "text": "V3.5 Adicionada renomeação de lote, rotulagem de lote e limpeza de lote"
+    },
+    {
+      "text": "Nanbeige 4.2 - O rei da relação qualidade/preço, com apenas 3GB de VRAM oferece inteligência suprema, por favor atualize para V3.2+",
+      "url": "https://page.om.qq.com/page/Oq2nbyVJUAaavsyDZtcbedCw0"
+    },
+    {
+      "text": "Novo serviço em nuvem Agnes AI, API gratuita para sempre, acessível normalmente na rede nacional",
+      "url": "https://www.agnes-ai.com"
+    },
+    {
+      "text": "Para esclarecimentos sobre funcionalidades, partilha com outros utilizadores, bem-vindos ao grupo oficial do Zhihu do Firefly AI Folder para participar na discussão",
+      "url": "https://www.zhihu.com/ring/2019089912897478826"
+    }
+  ]
+}

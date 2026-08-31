@@ -1,0 +1,830 @@
+{
+  "version": "1.0.0",
+  "language": "ja",
+  "lastUpdated": "2026-04-19",
+  "platform": "ollama",
+  "models": [
+    {
+      "id": "huihui_ai/qwen3.5-abliterated:2b",
+      "source": "ollama",
+      "name": "Qwen 3.5 2B 制限解除版（コミュニティ）",
+      "company": "Huihui AI / Alibaba",
+      "parameterSize": "2B",
+      "totalSize": "1.9GB",
+      "totalSizeBytes": 2040109465,
+      "vramRequiredGB": 4,
+      "description": "Qwen 3.5 史上最小サイズ。高速で画像解析も可能な奇跡のモデル。検閲なし、NSFW対応。",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull huihui_ai/qwen3.5-abliterated:2b",
+        "installTime": "約 1-2 分"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "medium",
+        "score": 85,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["uncensored", "無修正", "制限解除", "マルチモーダル", "テキスト", "画像", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B 制限解除版 (コミュニティ)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "Vaultbox提供のQwen 3.5 4B制限解除版。テキストと画像の入力に対応し、機密コンテンツの制限がありません。",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:4b",
+        "installTime": "約 2-3 分"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["uncensored", "無修正", "マルチモーダル", "テキスト", "画像", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:9b",
+      "source": "ollama",
+      "name": "Qwen 3.5 9B 制限解除版 (コミュニティ)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "9B",
+      "totalSize": "6.7GB",
+      "totalSizeBytes": 7194038272,
+      "vramRequiredGB": 8,
+      "description": "Vaultbox提供のQwen 3.5 9B制限解除版。強力な視覚理解と長いコンテキスト処理能力を備え、無制限です。",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:9b",
+        "installTime": "約 3-5 分"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["uncensored", "無修正", "マルチモーダル", "ビジョン", "テキスト", "画像", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:27b",
+      "source": "ollama",
+      "name": "Qwen 3.5 27B 制限解除版 (コミュニティ)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "18GB",
+      "totalSizeBytes": 19327352832,
+      "vramRequiredGB": 20,
+      "description": "Vaultbox提供のQwen 3.5 27B制限解除版。最高レベルの推論能力と長文サポート。画像解析に対応し、機密制限なし。",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:27b",
+        "installTime": "約 5-10 分"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 95,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["uncensored", "無修正", "マルチモーダル", "テキスト", "画像", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "yolo0perris/Qwen3.5-27B-UD-IQ3_XXS:latest",
+      "source": "ollama",
+      "name": "Qwen 3.5 27B IQ3_XXS (高速量子化版)",
+      "company": "yolo0perris / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "12GB",
+      "totalSizeBytes": 12884901888,
+      "vramRequiredGB": 14,
+      "description": "VRAM最適化された27B量子化版。性能を維持しつつメモリ要件を大幅に削減。テキストのみ対応。",
+      "format": "safetensors",
+      "quantization": "IQ3_XXS",
+      "isMultiModal": false,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull yolo0perris/Qwen3.5-27B-UD-IQ3_XXS:latest",
+        "installTime": "約 5-8 分"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 14,
+        "recommendedMemoryGB": 24
+      },
+      "tags": ["量子化", "テキスト", "27B", "中国語最適化"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "qwen3.5:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B（アリババ原版）",
+      "company": "アリババ (Alibaba)",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "2026年初頭、ほとんどのPCで動作可能な最高コスパのモデル。公式版。テキストと画像入力に対応し、速度と品質を両立。",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull qwen3.5:4b",
+        "installTime": "約 2-3 分"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["テキスト", "画像", "高コスパ", "マルチモーダル", "中国語最適化"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "frob/qwen3.5-instruct:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B Instruct (アリババ)",
+      "company": "Frob / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "Frob提供のQwen 3.5 4B命令追従版。命令実行能力を最適化。テキストと画像入力に対応。",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull frob/qwen3.5-instruct:4b",
+        "installTime": "約 2-3 分"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["テキスト", "画像", "命令追従", "マルチモーダル", "中国語最適化"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "bjoernb/gemma4-e2b-fast",
+      "source": "ollama",
+      "name": "Gemma 4-e2b-fast（グーグル）",
+      "company": "Bjoernb / Google",
+      "parameterSize": "2B",
+      "totalSize": "7.2GB",
+      "totalSizeBytes": 7730941133,
+      "vramRequiredGB": 8,
+      "description": "Bjoernb提供のGemma 4-e2b-fast。超高速レスポンス、128Kの長いコンテキスト、画像と音声入力に対応。",
+      "format": "safetensors",
+      "quantization": "Q2_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull bjoernb/gemma4-e2b-fast",
+        "installTime": "約 3-5 分"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 93,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["高速", "長文コンテキスト", "マルチモーダル", "テキスト", "画像", "音声"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "bjoernb/gemma4-e4b-fast",
+      "source": "ollama",
+      "name": "Gemma 4-e4b-fast（グーグル）",
+      "company": "Bjoernb / Google",
+      "parameterSize": "4B",
+      "totalSize": "9.6GB",
+      "totalSizeBytes": 10307921510,
+      "vramRequiredGB": 12,
+      "description": "Bjoernb提供のGemma 4-e4b-fast。超高速レスポンス、128Kの長いコンテキスト、画像と音声入力に対応。",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull bjoernb/gemma4-e4b-fast",
+        "installTime": "約 5-8 分"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 94,
+        "minMemoryGB": 12,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["高速", "長文コンテキスト", "マルチモーダル", "テキスト", "画像", "音声"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 16384,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "aratane/gemma-4-31B-it-uncensores:latest",
+      "source": "ollama",
+      "name": "Gemma 4 31B 制限解除版（グーグル）",
+      "company": "Aratane / Google",
+      "parameterSize": "31B",
+      "totalSize": "18GB",
+      "totalSizeBytes": 19327352832,
+      "vramRequiredGB": 20,
+      "description": "Aratane提供のGemma 4 31B制限解除版。強力なマルチモーダル処理能力を備え、テキスト、画像、音声の入力に対応。256Kの超長コンテキスト、機密コンテンツの制限なし。",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull aratane/gemma-4-31B-it-uncensores:latest",
+        "installTime": "約 10-15 分"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 95,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["uncensored", "無修正", "マルチモーダル", "テキスト", "画像", "音声", "長文コンテキスト", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-0.8B-GGUF:Q8_K_XL--yi",
+      "source": "modelscope",
+      "name": "Qwen 3.5 0.8B（アリババ）",
+      "company": "LMStudio / Alibaba",
+      "parameterSize": "0.8B",
+      "totalSize": "630MB",
+      "totalSizeBytes": 660602880,
+      "vramRequiredGB": 1,
+      "description": "ModelScopeによるQwen 3.5 0.8B超コンパクト版。極限の速度を実現。",
+      "format": "gguf",
+      "quantization": "Q8_K_XL",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-0.8B-GGUF:Q8_K_XL--yi",
+        "installTime": "約 1 分"
+      },
+      "performance": {
+        "speed": "extreme",
+        "quality": "high",
+        "score": 85,
+        "minMemoryGB": 2,
+        "recommendedMemoryGB": 4
+      },
+      "tags": ["マルチモーダル", "極速", "ミニ"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 4096,
+        "numPredict": 1048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-2B-GGUF:IQ4_NL--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 2B （アリババ）",
+      "company": "Unsloth / Alibaba",
+      "parameterSize": "2B",
+      "totalSize": "1.21GB",
+      "totalSizeBytes": 1299227115,
+      "vramRequiredGB": 2,
+      "description": "Unsloth最適化による高性能Qwen 3.5 2B版。ビジョンマルチモーダル対応。",
+      "format": "gguf",
+      "quantization": "IQ4_NL",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-2B-GGUF:IQ4_NL--qwen2",
+        "installTime": "約 1 分"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 8
+      },
+      "tags": ["マルチモーダル", "高速", "ミニ", "ビジョン"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/diodel/Qwen3.5-4B-Q4_K_M-GGUF:Q4_K_M--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 4B Q4_K_M (バランス高速版)",
+      "company": "Diodel / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "2.71GB",
+      "totalSizeBytes": 2909890150,
+      "vramRequiredGB": 4,
+      "description": "Diodel提供のQwen 3.5 4B標準量子化バージョン。Q4_K_M量子化を採用し、高速性とモデル品質のバランスを最適化。",
+      "format": "gguf",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/diodel/Qwen3.5-4B-Q4_K_M-GGUF:Q4_K_M--qwen2",
+        "installTime": "約 2 分"
+      },
+      "performance": {
+        "speed": "extreme",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 8
+      },
+      "tags": ["極速", "マルチモーダル", "テキスト", "画像", "バランス"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 9B v2 制限解除版",
+      "company": "MaimaiSuirai / Alibaba",
+      "parameterSize": "9B",
+      "totalSize": "7.36GB",
+      "totalSizeBytes": 7902740480,
+      "vramRequiredGB": 8,
+      "description": "Qwen 3.5 9Bの第二世代検閲解除版。高品質なQ6_K量子化、優れたビジョン能力。",
+      "format": "gguf",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K--qwen2",
+        "installTime": "約 4-6 分"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 93,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["脱獄", "NSFW", "無修正", "マルチモーダル"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 27B v2 制限解除版",
+      "company": "MaimaiSuirai / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "15.57GB",
+      "totalSizeBytes": 16718345011,
+      "vramRequiredGB": 18,
+      "description": "最高峰のQwen 3.5 27B検閲解除版。非常に強力な推論と総合的なビジョン能力。",
+      "format": "gguf",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S--gemma3-instruct",
+        "installTime": "約 8-12 分"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 96,
+        "minMemoryGB": 18,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["脱獄", "NSFW", "無修正", "マルチモーダル", "大パラメータ"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/gemma-4-31b-it-heretic-ara-gguf:Q4_K_M--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 31B-it 制限解除版",
+      "company": "MaimaiSuirai / Google",
+      "parameterSize": "31B",
+      "totalSize": "18.69GB",
+      "totalSizeBytes": 20068564992,
+      "vramRequiredGB": 20,
+      "description": "Google Gemma 4 31Bの検閲解除版。Ara最適化、究極のマルチモーダル体験。",
+      "format": "gguf",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/gemma-4-31b-it-heretic-ara-gguf:Q4_K_M--gemma3-instruct",
+        "installTime": "約 10-15 分"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 97,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["脱獄", "NSFW", "無修正", "マルチモーダル", "大パラメータ"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 26B-it 制限解除版",
+      "company": "Mudler / Google",
+      "parameterSize": "26B",
+      "totalSize": "12.98GB",
+      "totalSizeBytes": 13937208524,
+      "vramRequiredGB": 16,
+      "description": "Gemma 4 26BのAPEX特化検閲解除版。最適化されたI-Mini量子化。",
+      "format": "gguf",
+      "quantization": "I-Mini",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF--gemma3-instruct",
+        "installTime": "約 8-12 分"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 95,
+        "minMemoryGB": 16,
+        "recommendedMemoryGB": 24
+      },
+      "tags": ["脱獄", "NSFW", "無修正"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/gemma-4-E4B-it-GGUF:Q5_K_XL--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 E4B-it（グーグル）",
+      "company": "Unsloth / Google",
+      "parameterSize": "4B",
+      "totalSize": "6.65GB",
+      "totalSizeBytes": 7140442112,
+      "vramRequiredGB": 10,
+      "description": "Unsloth最適化によるGemma 4 E4B強化版。Q5_K_XL量子化により優れた品質を提供。",
+      "format": "gguf",
+      "quantization": "Q5_K_XL",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/gemma-4-E4B-it-GGUF:Q5_K_XL--gemma3-instruct",
+        "installTime": "約 3-5 分"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 94,
+        "minMemoryGB": 10,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["マルチモーダル", "高速"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    }
+  ]
+}

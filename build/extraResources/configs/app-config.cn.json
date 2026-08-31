@@ -1,0 +1,206 @@
+{
+  "TIER_CONSTANTS": {
+    "prices": {
+      "spend_unlock_analysis": 300,
+      "spend_extra_private_dir_slot": 200,
+      "spend_extra_speedy_dir_slot": 100,
+      "spend_extra_vdir_slot": 100,
+      "spend_access_vdir": 50,
+      "spend_export_vdir": 5,
+      "spend_export_rdir": 10,
+      "spend_download_file": 5,
+      "spend_cloud_decompress": 2,
+      "spend_get_password": 5,
+      "spend_regenerate_vdir": 20
+    },
+    "tierLimits": {
+      "free": {
+        "analysis_quota_total": 500,
+        "speedy_dir_slot_limit": 1,
+        "private_dir_slot_limit": 1,
+        "vdir_slot_limit": 1,
+        "vdir_slot_limit_by_workspace": {},
+        "invite_reward": true,
+        "can_offline": false,
+        "sync_analysis_to_cloud": true,
+        "telemetry": true,
+        "training_data_collection": true,
+        "regenerate_vdir_cost": 20,
+        "export_vdir_cost": 5,
+        "export_rdir_cost": 10
+      },
+      "pro": {
+        "analysis_quota_total": 999999999,
+        "speedy_dir_slot_limit": 999999999,
+        "private_dir_slot_limit": 999999999,
+        "vdir_slot_limit": 999999999,
+        "vdir_slot_limit_by_workspace": {},
+        "invite_reward": true,
+        "can_offline": false,
+        "sync_analysis_to_cloud": true,
+        "telemetry": true,
+        "training_data_collection": true,
+        "regenerate_vdir_cost": 0,
+        "export_vdir_cost": 0,
+        "export_rdir_cost": 0
+      },
+      "agent": {
+        "analysis_quota_total": 999999999,
+        "speedy_dir_slot_limit": 999999999,
+        "private_dir_slot_limit": 999999999,
+        "vdir_slot_limit": 999999999,
+        "vdir_slot_limit_by_workspace": {},
+        "invite_reward": false,
+        "can_offline": false,
+        "sync_analysis_to_cloud": true,
+        "telemetry": true,
+        "training_data_collection": true,
+        "regenerate_vdir_cost": 0,
+        "export_vdir_cost": 0,
+        "export_rdir_cost": 0
+      },
+      "enterprise": {
+        "analysis_quota_total": 999999999,
+        "speedy_dir_slot_limit": 999999999,
+        "private_dir_slot_limit": 999999999,
+        "vdir_slot_limit": 999999999,
+        "vdir_slot_limit_by_workspace": {},
+        "invite_reward": true,
+        "can_offline": true,
+        "sync_analysis_to_cloud": false,
+        "telemetry": false,
+        "training_data_collection": false,
+        "regenerate_vdir_cost": 0,
+        "export_vdir_cost": 0,
+        "export_rdir_cost": 0
+      }
+    },
+    "firecoreCloudFirstConfirm": {
+      "spend_unlock_analysis": true,
+      "spend_extra_private_dir_slot": true,
+      "spend_extra_speedy_dir_slot": true,
+      "spend_extra_vdir_slot": true,
+      "spend_access_vdir": true,
+      "spend_export_vdir": true,
+      "spend_export_rdir": true,
+      "spend_download_file": true,
+      "spend_cloud_decompress": true,
+      "spend_get_password": true,
+      "spend_regenerate_vdir": true
+    },
+    "freeBaseQuota": 500,
+    "welcomeGrantFirecores": 45,
+    "inviteFirecoreReward": 100,
+    "inviteFirecoreRewardInvitee": 45,
+    "inviteQuotaBonus": 500,
+    "accessWorkspaceCost": 20
+  },
+  "OPERATION_PRICES": {
+    "upgrade_pro": {
+      "monthly": {
+        "period_unit": "month",
+        "period_count": 1,
+        "prices": [
+          { "currency": "CNY", "amount": 2000 },
+          { "currency": "USD", "amount": 590 }
+        ]
+      },
+      "quarterly": {
+        "period_unit": "month",
+        "period_count": 3,
+        "prices": [
+          { "currency": "CNY", "amount": 4500 },
+          { "currency": "USD", "amount": 1290 }
+        ]
+      },
+      "yearly": {
+        "period_unit": "month",
+        "period_count": 12,
+        "prices": [
+          { "currency": "CNY", "amount": 15000 },
+          { "currency": "USD", "amount": 4200 }
+        ]
+      }
+    },
+    "upgrade_enterprise": {
+      "half_year": {
+        "period_unit": "month",
+        "period_count": 6,
+        "prices": [
+          { "currency": "CNY", "amount": 27000 },
+          { "currency": "USD", "amount": 7500 }
+        ]
+      },
+      "yearly": {
+        "period_unit": "month",
+        "period_count": 12,
+        "prices": [
+          { "currency": "CNY", "amount": 48000 },
+          { "currency": "USD", "amount": 13200 }
+        ]
+      }
+    },
+    "purchase_firecores": [
+      {
+        "firecores": 20,
+        "prices": [
+          { "currency": "CNY", "amount": 500 },
+          { "currency": "USD", "amount": 150 }
+        ]
+      },
+      {
+        "firecores": 45,
+        "prices": [
+          { "currency": "CNY", "amount": 1000 },
+          { "currency": "USD", "amount": 290 }
+        ]
+      },
+      {
+        "firecores": 150,
+        "prices": [
+          { "currency": "CNY", "amount": 3000 },
+          { "currency": "USD", "amount": 850 }
+        ]
+      },
+      {
+        "firecores": 280,
+        "prices": [
+          { "currency": "CNY", "amount": 5000 },
+          { "currency": "USD", "amount": 1390 }
+        ]
+      }
+    ]
+  },
+  "AGENT_COMMISSION_RATE": {
+    "rate": 0.2
+  },
+  "SITE_DOMAIN": "https://aifolder.iocn.cn",
+  "PAYMENT_INFO": {
+    "method": "wechat",
+    "qr_image": "assets/wechat-qr.jpg",
+    "instructions": "留言「购买萤火」即可快速开通",
+    "contact": "reloaded1234567",
+    "support_email": "support@iocn.cn",
+    "contact_info": {
+      "email": "support@iocn.cn",
+      "wechat": "reloaded1234567",
+      "company_name": "萤核智能 Firefly AI"
+    },
+    "legal_urls": {
+      "privacy_policy": "https://aifolder.iocn.cn/zh-CN/privacy",
+      "terms_of_service": "https://aifolder.iocn.cn/zh-CN/terms",
+      "refund_policy": "https://aifolder.iocn.cn/zh-CN/refund"
+    },
+    "refund_policy_summary": "支持7天无理由退款，联系管理员微信或邮件均可办理。",
+    "cancellation_portal": {
+      "url": "https://aifolder.iocn.cn/zh-CN/pricing",
+      "instructions": "可随时联系管理员微信或发送邮件取消自动续订。"
+    }
+  },
+  "FILE_CLEANUP_CONFIG": {
+    "enabled": true,
+    "base_days": 90,
+    "extra_days_per_hit": 30,
+    "schedule": "0 3 * * 0"
+  }
+}

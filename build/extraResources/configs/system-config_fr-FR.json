@@ -1,0 +1,43 @@
+{
+  "nextVersion": {
+    "version": "3.5.0",
+    "releaseNotes": [
+      "[Renommer par lots] Prend en charge le renommage par lots des noms de fichiers intelligents une fois l'analyse terminée",
+      "[Batch Tags] Prend en charge l'ajout et la suppression de balises dans les fichiers par lots une fois l'analyse terminée",
+      "[Nettoyage par lots] Analysez pour supprimer les doublons, identifier les erreurs de dénomination, les erreurs d'extension, puis optimiser et corriger",
+      "[Héritage des règles d'analyse] Les stratégies d'analyse de profilage d'annuaire, les règles de nom de fichier intelligentes et les attributs supplémentaires prennent en charge l'héritage",
+      "[Nouveaux modèles] Qwen3.8, Ornith-1.5 et d'autres derniers modèles communautaires à haut score, ainsi que certains modèles obsolètes ont été supprimés.",
+      "[Modèle intégré] Passez au modèle haute vitesse LFM2.5-1.2B, effectuez une analyse en 2 secondes",
+      "[Accélération DSpark] Le modèle intégré prend en charge l'accélération du modèle DSpark sur les ordinateurs qui prennent uniquement en charge l'inférence CPU.",
+      "[Génération de structure de répertoire] Prend en charge la copie en un clic des mots d'invite vers une IA externe telle que Doubao pour obtenir une structure de répertoire de fichiers de haute qualité",
+      "[Emplacement du support] Vérifiez les informations sur le nom du lieu en fonction des coordonnées des métadonnées du fichier et ajoutez des balises",
+      "[Configuration simplifiée] L'extraction des informations sur les fichiers simplifie le fichier de configuration et obtient les informations sur les fichiers de manière plus intelligente et efficace.",
+      "[Performances de l'interface utilisateur] Supprimez toutes les animations de l'interface utilisateur qui occupent le GPU",
+      "[Architecture stable] Supprimez les éventuelles optimisations incompatibles introduites dans la V3.4 pour divers environnements matériels"
+    ],
+    "forceUpdate": false
+  },
+  "lastUpdated": "2026-08-31T13:31:00.000Z",
+  "panDimensionIds": [
+    4,
+    16,
+    28
+  ],
+  "latestNews": [
+    {
+      "text": "V3.5 Ajout du renommage des lots, de l'étiquetage des lots et du nettoyage des lots"
+    },
+    {
+      "text": "Nanbeige4.2  Le roi du rapport qualité-prix, une puissance IA ultra-performante avec 3G de VRAM, veuillez passer à la version V3.2+",
+      "url": "https://page.om.qq.com/page/Oq2nbyVJUAaavsyDZtcbedCw0"
+    },
+    {
+      "text": "Nouveau fournisseur cloud ajouté  Agnes AI, API gratuite à vie, accessible normalement sur les réseaux chinois",
+      "url": "https://www.agnes-ai.com"
+    },
+    {
+      "text": "Pour des questions fonctionnelles et des échanges produits, rejoignez notre communauté officielle Firefly AI Folder sur Zhihu pour participer aux discussions",
+      "url": "https://www.zhihu.com/ring/2019089912897478826"
+    }
+  ]
+}

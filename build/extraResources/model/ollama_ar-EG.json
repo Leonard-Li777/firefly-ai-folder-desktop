@@ -1,0 +1,811 @@
+{
+  "version": "1.0.0",
+  "language": "ar",
+  "lastUpdated": "2026-04-17",
+  "platform": "ollama",
+  "models": [
+    {
+      "id": "huihui_ai/qwen3.5-abliterated:2b",
+      "source": "ollama",
+      "name": "Qwen 3.5 2B بدون قيود (مجتمعي)",
+      "company": "Huihui AI / Alibaba",
+      "parameterSize": "2B",
+      "totalSize": "1.9GB",
+      "totalSizeBytes": 2040109465,
+      "vramRequiredGB": 4,
+      "description": "أصغر نموذج معجزة من Qwen 3.5 حتى الآن، سريع للغاية وقادر على تحليل الصور. غير خاضع للرقابة، يدعم NSFW.",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull huihui_ai/qwen3.5-abliterated:2b",
+        "installTime": "حوالي 1-2 دقيقة"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "medium",
+        "score": 85,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["غير خاضع للرقابة", "بدون قيود", "متعدد الوسائط", "نص", "صورة", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B غير خاضع للرقابة (مجتمعي)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "نسخة غير خاضعة للرقابة من Qwen 3.5 4B مقدمة من Vaultbox. تدعم إدخال النصوص والصور بدون قيود على المحتوى.",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:4b",
+        "installTime": "حوالي 2-3 دقيقة"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["غير خاضع للرقابة", "متعدد الوسائط", "نص", "صورة", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:9b",
+      "source": "ollama",
+      "name": "Qwen 3.5 9B غير خاضع للرقابة (مجتمعي)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "9B",
+      "totalSize": "6.7GB",
+      "totalSizeBytes": 7194038272,
+      "vramRequiredGB": 8,
+      "description": "نسخة غير خاضعة للرقابة من Qwen 3.5 9B مقدمة من Vaultbox. تحليل بصري قوي ومعالجة سياق طويل بدون قيود.",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:9b",
+        "installTime": "حوالي 3-5 دقائق"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["غير خاضع للرقابة", "متعدد الوسائط", "رؤية", "نص", "صورة", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "vaultbox/qwen3.5-uncensored:27b",
+      "source": "ollama",
+      "name": "Qwen 3.5 27B غير خاضع للرقابة (مجتمعي)",
+      "company": "Vaultbox / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "18GB",
+      "totalSizeBytes": 19327352832,
+      "vramRequiredGB": 20,
+      "description": "نسخة غير خاضعة للرقابة من Qwen 3.5 27B مقدمة من Vaultbox. أعلى مستويات القدرة على الاستنتاج ودعم النصوص الطويلة بدون قيود.",
+      "format": "safetensors",
+      "quantization": "Unknown",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull vaultbox/qwen3.5-uncensored:27b",
+        "installTime": "حوالي 5-10 دقائق"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 95,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["غير خاضع للرقابة", "متعدد الوسائط", "نص", "صورة", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "yolo0perris/Qwen3.5-27B-UD-IQ3_XXS:latest",
+      "source": "ollama",
+      "name": "Qwen 3.5 27B IQ3_XXS (نسخة مكممة سريعة)",
+      "company": "yolo0perris / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "12GB",
+      "totalSizeBytes": 12884901888,
+      "vramRequiredGB": 14,
+      "description": "نسخة مكممة 27B محسنة لذاكرة الفيديو. تقلل متطلبات الذاكرة بشكل كبير مع الحفاظ على الأداء. نص فقط.",
+      "format": "safetensors",
+      "quantization": "IQ3_XXS",
+      "isMultiModal": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull yolo0perris/Qwen3.5-27B-UD-IQ3_XXS:latest",
+        "installTime": "حوالي 5-8 دقائق"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 14,
+        "recommendedMemoryGB": 24
+      },
+      "tags": ["تكميم", "نص", "27B", "محسن للصينية"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "qwen3.5:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B (نسخة علي بابا الأصلية)",
+      "company": "Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "أفضل قيمة مقابل السعر في بداية 2026 لأجهزة الكمبيوتر المحلية. النسخة الرسمية، تدعم النصوص والصور، وتجمع بين السرعة والجودة.",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull qwen3.5:4b",
+        "installTime": "حوالي 2-3 دقيقة"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["نص", "صورة", "قيمة ممتازة", "متعدد الوسائط", "محسن للصينية"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "frob/qwen3.5-instruct:4b",
+      "source": "ollama",
+      "name": "Qwen 3.5 4B Instruct (علي بابا)",
+      "company": "Frob / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.4GB",
+      "totalSizeBytes": 3650722201,
+      "vramRequiredGB": 4,
+      "description": "نسخة تتبع التعليمات من Qwen 3.5 4B من Frob، محسنة لتنفيذ الأوامر، تدعم إدخال النصوص والصور.",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull frob/qwen3.5-instruct:4b",
+        "installTime": "حوالي 2-3 دقيقة"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 92,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 6
+      },
+      "tags": ["نص", "صورة", "تعليمات", "متعدد الوسائط", "محسن للصينية"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "bjoernb/gemma4-e2b-fast",
+      "source": "ollama",
+      "name": "Gemma 4-e2b-fast (جوجل)",
+      "company": "Bjoernb / Google",
+      "parameterSize": "2B",
+      "totalSize": "7.2GB",
+      "totalSizeBytes": 7730941133,
+      "vramRequiredGB": 8,
+      "description": "Gemma 4-e2b-fast مقدم من Bjoernb، استجابة فائقة السرعة، يدعم سياق 128K، إدخال الصور والصوت.",
+      "format": "safetensors",
+      "quantization": "Q2_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull bjoernb/gemma4-e2b-fast",
+        "installTime": "حوالي 3-5 دقائق"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 93,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["سرعة فائقة", "سياق طويل", "متعدد الوسائط", "نص", "صورة", "صوت"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "bjoernb/gemma4-e4b-fast",
+      "source": "ollama",
+      "name": "Gemma 4-e4b-fast (جوجل)",
+      "company": "Bjoernb / Google",
+      "parameterSize": "4B",
+      "totalSize": "9.6GB",
+      "totalSizeBytes": 10307921510,
+      "vramRequiredGB": 12,
+      "description": "Gemma 4-e4b-fast مقدم من Bjoernb، استجابة فائقة السرعة، يدعم سياق 128K، إدخال الصور والصوت.",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull bjoernb/gemma4-e4b-fast",
+        "installTime": "حوالي 5-8 دقائق"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 94,
+        "minMemoryGB": 12,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["سرعة فائقة", "سياق طويل", "متعدد الوسائط", "نص", "صورة", "صوت"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 16384,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "aratane/gemma-4-31B-it-uncensores:latest",
+      "source": "ollama",
+      "name": "Gemma 4 31B غير خاضع للرقابة (جوجل)",
+      "company": "Aratane / Google",
+      "parameterSize": "31B",
+      "totalSize": "18GB",
+      "totalSizeBytes": 19327352832,
+      "vramRequiredGB": 20,
+      "description": "نسخة Aratane من Gemma 4 31B، غير خاضعة للرقابة مع معالجة قوية متعددة الوسائط (نص، صورة، صوت)، سياق 256K.",
+      "format": "safetensors",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        },
+        {
+          "type": "IMAGE",
+          "supportedFormats": ["jpg", "jpeg", "png", "bmp", "webp", "gif"],
+          "quality": "high",
+          "isPrimary": false
+        },
+        {
+          "type": "AUDIO",
+          "supportedFormats": ["wav", "mp3", "flac", "ogg"],
+          "quality": "high",
+          "isPrimary": false
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama pull aratane/gemma-4-31B-it-uncensores:latest",
+        "installTime": "حوالي 10-15 دقائق"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 95,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["غير خاضع للرقابة", "متعدد الوسائط", "نص", "صورة", "صوت", "سياق طويل", "NSFW"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/lmstudio-community/Qwen3.5-0.8B-GGUF:Q6_K--yi",
+      "source": "modelscope",
+      "name": "Qwen 3.5 0.8B (علي بابا)",
+      "company": "LMStudio / Alibaba",
+      "parameterSize": "0.8B",
+      "totalSize": "630MB",
+      "totalSizeBytes": 660602880,
+      "vramRequiredGB": 1,
+      "description": "نسخة ModelScope فائقة الصغر من Qwen 3.5 0.8B للسرعة القصوى.",
+      "format": "gguf",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "medium",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/lmstudio-community/Qwen3.5-0.8B-GGUF:Q6_K--yi",
+        "installTime": "حوالي 1 دقيقة"
+      },
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium",
+        "score": 80,
+        "minMemoryGB": 2,
+        "recommendedMemoryGB": 4
+      },
+      "tags": ["متعدد الوسائط", "سرعة فائقة", "مصغر"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 4096,
+        "numPredict": 1048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-2B-GGUF:IQ4_NL--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 2B (علي بابا)",
+      "company": "Unsloth / Alibaba",
+      "parameterSize": "2B",
+      "totalSize": "1.21GB",
+      "totalSizeBytes": 1299227115,
+      "vramRequiredGB": 2,
+      "description": "نسخة Qwen 3.5 2B عالية الأداء المحسنة من Unsloth مع دعم الوسائط المتعددة البصرية.",
+      "format": "gguf",
+      "quantization": "IQ4_NL",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/Qwen3.5-2B-GGUF:IQ4_NL--qwen2",
+        "installTime": "حوالي 1-2 دقيقة"
+      },
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high",
+        "score": 88,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 8
+      },
+      "tags": ["متعدد الوسائط", "سريع", "مصغر"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/Manojb/Qwen3.5-4B-heretic-imatrix-Q4_K_M.gguf:Q4_K_M--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 4B غير خاضع للرقابة",
+      "company": "Manojb / Alibaba",
+      "parameterSize": "4B",
+      "totalSize": "3.37GB",
+      "totalSizeBytes": 3614900224,
+      "vramRequiredGB": 4,
+      "description": "نسخة غير خاضعة للرقابة من Qwen 3.5 4B باستخدام تكميم imatrix لجودة أفضل.",
+      "format": "gguf",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/Manojb/Qwen3.5-4B-heretic-imatrix-Q4_K_M.gguf:Q4_K_M--qwen2",
+        "installTime": "حوالي 2-3 دقيقة"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 90,
+        "minMemoryGB": 4,
+        "recommendedMemoryGB": 8
+      },
+      "tags": ["جيلبريك", "NSFW", "غير خاضع للرقابة", "متعدد الوسائط", "معلمات صغيرة", "سريع"],
+      "recommendedConfig": {
+        "numThread": 4,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 9B v2 غير خاضع للرقابة",
+      "company": "MaimaiSuirai / Alibaba",
+      "parameterSize": "9B",
+      "totalSize": "7.97GB",
+      "totalSizeBytes": 8557252608,
+      "vramRequiredGB": 8,
+      "description": "الجيل الثاني من النسخة غير الخاضعة للرقابة من Qwen 3.5 9B، تكميم Q6_K عالي الجودة.",
+      "format": "gguf",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K--qwen2",
+        "installTime": "حوالي 4-6 دقائق"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "high",
+        "score": 93,
+        "minMemoryGB": 8,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["جيلبريك", "NSFW", "غير خاضع للرقابة", "متعدد الوسائط"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S--qwen2",
+      "source": "modelscope",
+      "name": "Qwen 3.5 27B v2 غير خاضع للرقابة",
+      "company": "MaimaiSuirai / Alibaba",
+      "parameterSize": "27B",
+      "totalSize": "16.48GB",
+      "totalSizeBytes": 17694359552,
+      "vramRequiredGB": 18,
+      "description": "نسخة غير خاضعة للرقابة من المستوى الأعلى لـ Qwen 3.5 27B، قدرات استنتاج ورؤية قوية للغاية.",
+      "format": "gguf",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S--gemma3-instruct",
+        "installTime": "حوالي 8-12 دقيقة"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 96,
+        "minMemoryGB": 18,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["جيلبريك", "NSFW", "غير خاضع للرقابة", "متعدد الوسائط", "معلمات كبيرة"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/gemma-4-31b-it-heretic-ara-gguf:Q4_K_M--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 31B-it غير خاضع للرقابة",
+      "company": "MaimaiSuirai / Google",
+      "parameterSize": "31B",
+      "totalSize": "18.69GB",
+      "totalSizeBytes": 20068564992,
+      "vramRequiredGB": 20,
+      "description": "نسخة غير خاضعة للرقابة من Google Gemma 4 31B، نسخة Ara المحسنة، تجربة فائقة في تعدد الوسائط.",
+      "format": "gguf",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 262144,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/MaimaiSuirai/gemma-4-31b-it-heretic-ara-gguf:Q4_K_M--gemma3-instruct",
+        "installTime": "حوالي 10-15 دقيقة"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 97,
+        "minMemoryGB": 20,
+        "recommendedMemoryGB": 32
+      },
+      "tags": ["جيلبريك", "NSFW", "غير خاضع للرقابة", "متعدد الوسائط", "معلمات كبيرة"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 32768,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 26B-it غير خاضع للرقابة",
+      "company": "Mudler / Google",
+      "parameterSize": "26B",
+      "totalSize": "14.17GB",
+      "totalSizeBytes": 15214804992,
+      "vramRequiredGB": 16,
+      "description": "نسخة APEX المتخصصة غير الخاضعة للرقابة من Gemma 4 26B، تكميم I-Mini المحسن.",
+      "format": "gguf",
+      "quantization": "I-Mini",
+      "isMultiModal": true,
+      "isRecommended": false,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "very_high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF--gemma3-instruct",
+        "installTime": "حوالي 8-12 دقيقة"
+      },
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high",
+        "score": 95,
+        "minMemoryGB": 16,
+        "recommendedMemoryGB": 24
+      },
+      "tags": ["جيلبريك", "NSFW", "غير خاضع للرقابة"],
+      "recommendedConfig": {
+        "numThread": 8,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "modelscope2ollama-registry.azurewebsites.net/unsloth/gemma-4-E4B-it-GGUF:Q5_K_XL--gemma3-instruct",
+      "source": "modelscope",
+      "name": "Gemma 4 E4B-it (جوجل)",
+      "company": "Unsloth / Google",
+      "parameterSize": "4B",
+      "totalSize": "7.62GB",
+      "totalSizeBytes": 8179220480,
+      "vramRequiredGB": 10,
+      "description": "النسخة المحسنة من Unsloth لـ Gemma 4 E4B، تكميم Q5_K_XL يوفر جودة ممتازة.",
+      "format": "gguf",
+      "quantization": "Q5_K_XL",
+      "isMultiModal": true,
+      "isRecommended": true,
+      "contextLength": 131072,
+      "capabilities": [
+        {
+          "type": "TEXT",
+          "supportedFormats": ["txt", "md"],
+          "quality": "high",
+          "isPrimary": true
+        }
+      ],
+      "ollama": {
+        "pullCommand": "ollama run modelscope2ollama-registry.azurewebsites.net/unsloth/gemma-4-E4B-it-GGUF:Q5_K_XL--gemma3-instruct",
+        "installTime": "حوالي 3-5 دقائق"
+      },
+      "performance": {
+        "speed": "fast",
+        "quality": "high",
+        "score": 94,
+        "minMemoryGB": 10,
+        "recommendedMemoryGB": 16
+      },
+      "tags": ["متعدد الوسائط", "سريع"],
+      "recommendedConfig": {
+        "numThread": 6,
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    }
+  ]
+}

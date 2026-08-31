@@ -1,0 +1,1026 @@
+{
+  "version": "2.0.0",
+  "language": "zh",
+  "lastUpdated": "2026-05-23",
+  "models": [
+    {
+      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL",
+      "name": "Qwen 3.5 0.8B (中国語のほうが上手い)",
+      "company": "unsloth",
+      "parameterSize": "0.8B",
+      "totalSize": "558MB",
+      "recommended": true,
+      "description": "非常に高速かつ軽量のテキスト モデルで、バランスの取れた中国語分析パフォーマンスを備え、ローエンドおよび CPU 環境に適しています。",
+      "source": "modelscope",
+      "quantization": "Q4_K_XL",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "軽量",
+        "CPU動作をサポート",
+        "超高速",
+        "テキストのみ"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q5_K_XL",
+      "name": "Qwen 3.5 0.8B (中国語のほうが上手い)",
+      "company": "unsloth",
+      "parameterSize": "0.8B",
+      "totalSize": "579MB",
+      "recommended": false,
+      "description": "非常に高速かつ軽量のテキスト モデルで、バランスの取れた中国語分析パフォーマンスを備え、ローエンドおよび CPU 環境に適しています。",
+      "source": "huggingface",
+      "quantization": "UD-Q5_K_XL",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "軽量",
+        "CPU動作をサポート",
+        "超高速",
+        "テキストのみ"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q6_K_XL",
+      "name": "Qwen 3.5 0.8B (軽量な画像認識)",
+      "company": "unsloth",
+      "parameterSize": "0.8B",
+      "totalSize": "976MB",
+      "description": "非常に低構成の環境に適した超高速な実行速度で、精度は低いが画像分析をサポートします。",
+      "source": "huggingface",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "GPU が非常に高速",
+        "CPU動作をサポート",
+        "マルチモーダル",
+        "ミニ"
+      ],
+      "recommendedConfig": {
+        "numCtx": 4096,
+        "numPredict": 1048
+      },
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ]
+    },
+    {
+      "id": "LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M",
+      "dspark": "LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M",
+      "name": "LFM2.5 1.2B Instruct（英語の方が良い•高速）",
+      "company": "LiquidAI",
+      "parameterSize": "1.2B",
+      "totalSize": "873MB",
+      "description": "最新の LFM2.5 インストラクションモデル。テキスト分析が効率的で、CPU 推論も高速。",
+      "source": "modelscope",
+      "isBuiltin": true,
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "超高速",
+        "CPU動作をサポート",
+        "テキストのみ",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 4096,
+        "numPredict": 1024
+      }
+    },
+    {
+      "id": "LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M",
+      "name": "LFM2.5 2.6B（高効率）",
+      "company": "LiquidAI",
+      "parameterSize": "2.6B",
+      "totalSize": "1.63GB",
+      "recommended": true,
+      "description": "最新のLFM2.5 2.6B公式モデル。高効率推論と高品質分析を両立し、CPU専用DSpark加速に対応。",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "軽量",
+        "CPU動作をサポート",
+        "テキストのみ",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "Abiray/LFM2.5-2.6B-Heretic-Abliterated-GGUF:Q4_K_M",
+      "name": "LFM2.5 2.6B（脱獄）",
+      "company": "Abiray",
+      "parameterSize": "2.6B",
+      "totalSize": "1.56GB",
+      "recommended": true,
+      "description": "LFM2.5 2.6B の制限なし・検閲なしバージョン。速度と品質のバランスに優れる。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "制限する",
+        "検閲なし",
+        "NSFW",
+        "テキストのみ"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E4B-it-GGUF:Q4_K_S",
+      "name": "Gemma 4 E4B-it（サポートオーディオ）",
+      "company": "Unsloth",
+      "parameterSize": "4B",
+      "totalSize": "5.83GB",
+      "recommended": true,
+      "description": "Google 独自の定量化バージョンで、テキスト、画像、音声の分析をサポートします。",
+      "source": "huggingface",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "マルチモーダル",
+        "速い",
+        "オーディオ",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "mradermacher/Qwen3.5-4B_Abliterated-GGUF:Q4_K_M",
+      "name": "Qwen 3.5 4B（バランス）",
+      "company": "mradermacher",
+      "parameterSize": "4B",
+      "totalSize": "3.08GB",
+      "recommended": false,
+      "description": "削除されたバージョンでは、速度と品質のバランスが取れています。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "制限する",
+        "検閲なし",
+        "NSFW",
+        "脱獄",
+        "マルチモーダル"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "mradermacher/Huihui-Qwen3.5-2B-abliterated-GGUF:Q8_0",
+      "name": "Qwen 3.5 2B（より良い）",
+      "company": "mradermacher",
+      "parameterSize": "2B",
+      "totalSize": "2.68GB",
+      "recommended": false,
+      "description": "4G ビデオ メモリが第一の選択肢です。",
+      "source": "huggingface",
+      "quantization": "Q8_0",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "制限する",
+        "検閲なし",
+        "NSFW",
+        "脱獄",
+        "マルチモーダル"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "tatsuyaaaaaaa/Qwen3.5-2B-gguf:Q4_0",
+      "name": "Qwen 3.5 2B（日本語の最適化）",
+      "company": "tatsuyaaaaaaa",
+      "parameterSize": "2B",
+      "totalSize": "1.2GB",
+      "recommended": false,
+      "description": "日本語データセット用に最適化されたテキスト分析モデルは、テキスト分析のみをサポートします。",
+      "source": "huggingface",
+      "quantization": "Q4_0",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "日本語の最適化",
+        "テキストのみ",
+        "ビデオメモリが少ない"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "jordanwoodson/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
+      "name": "Qwen 3.5 2B（脱獄テキスト）",
+      "company": "jordanwoodson",
+      "parameterSize": "2B",
+      "totalSize": "1.27GB",
+      "recommended": false,
+      "description": "内容をある程度理解した脱獄モデル。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "脱獄",
+        "検閲なし",
+        "NSFW",
+        "テキストのみ"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      },
+      "capabilities": [
+        "TEXT"
+      ]
+    },
+    {
+      "id": "ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M",
+      "name": "MiniCPM-V 4.6 (絵読み小型鋼鉄砲)",
+      "company": "OpenBMB",
+      "parameterSize": "0.8B",
+      "totalSize": "1.17GB",
+      "recommended": true,
+      "description": "トップエンド側のマルチモーダル モデルは、OCR、オブジェクト認識、複雑なシーンの理解において非常に優れたパフォーマンスを発揮します。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "マルチモーダル",
+        "OCR",
+        "情景理解",
+        "トップ画像認識"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "OpenBMB/MiniCPM-V-4.6-gguf:Q4_K_M",
+      "name": "MiniCPM-V 4.6 (絵読み小型鋼鉄砲)",
+      "company": "OpenBMB",
+      "parameterSize": "0.8B",
+      "totalSize": "1.53GB",
+      "recommended": true,
+      "description": "トップエンド側のマルチモーダル モデルは、OCR、オブジェクト認識、複雑なシーンの理解において非常に優れたパフォーマンスを発揮します。",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "マルチモーダル",
+        "OCR",
+        "情景理解",
+        "トップ画像認識"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E4B-it-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 4 E4B-it（サポートオーディオ）",
+      "company": "Unsloth",
+      "parameterSize": "4B",
+      "totalSize": "5.70GB",
+      "recommended": false,
+      "description": "Google 独自の定量化バージョンで、テキスト、画像、音声の分析をサポートします。",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "マルチモーダル",
+        "速い",
+        "オーディオ",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "unsloth/Qwen3.5-4B-MTP-GGUF:UD-Q4_K_XL",
+      "name": "Qwen 3.5 4B MTP(新しい)",
+      "company": "Unsloth",
+      "parameterSize": "4B",
+      "totalSize": "3.41GB",
+      "description": "速度と品質を組み合わせた MTP アーキテクチャの定量化バージョン。",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 262144,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "MTP",
+        "マルチモーダル",
+        "速い",
+        "中国語のほうが上手い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K",
+      "name": "Qwen 3.5 9B v2（脱獄）",
+      "company": "MaimaiSuirai",
+      "parameterSize": "9B",
+      "totalSize": "8.27GB",
+      "description": "第 2 世代は検閲版に移行し、優れた機能を備えています。",
+      "source": "modelscope",
+      "quantization": "Q6_K",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "high"
+      },
+      "tags": [
+        "脱獄",
+        "NSFW",
+        "検閲なし",
+        "マルチモーダル"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S",
+      "name": "Qwen 3.5 27B v2（検閲なし）",
+      "company": "MaimaiSuirai",
+      "parameterSize": "27B",
+      "totalSize": "15.57GB",
+      "description": "Qwen 3.5 27B のトップ レビュー バージョンで、強力な推論機能と視覚的合成機能を備えています。",
+      "source": "modelscope",
+      "quantization": "Q4_K_S",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "脱獄",
+        "NSFW",
+        "検閲なし",
+        "マルチモーダル",
+        "大きなパラメータ"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF",
+      "name": "Gemma 4 26B-it（万能）",
+      "company": "Mudler",
+      "parameterSize": "26B",
+      "totalSize": "12.98GB",
+      "recommended": true,
+      "description": "APEX に特化した検閲解除バージョン、最適化された I-Mini 量子化。",
+      "source": "modelscope",
+      "quantization": "I-Mini",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "脱獄",
+        "NSFW",
+        "検閲なし",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "Abiray/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
+      "name": "Qwen 3.5 2B (脱獄画像認識)",
+      "company": "Abiray",
+      "parameterSize": "2B",
+      "totalSize": "1.81GB",
+      "recommended": false,
+      "description": "ジェイルブレイク版、画像解析をサポート。",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "脱獄",
+        "検閲なし",
+        "NSFW",
+        "マルチモーダル"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E2B-it-qat-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 4 E2B-it QAT（オールマイティ - 主力）",
+      "company": "unsloth",
+      "parameterSize": "2B",
+      "totalSize": "3.61GB",
+      "recommended": true,
+      "description": "統合されたマルチモーダル QAT 定量化バージョンの MoE アーキテクチャは、ビデオ メモリを大幅に節約し、テキスト、画像、音声分析をサポートします。",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "マルチモーダル",
+        "オーディオ",
+        "QATの定量化",
+        "MoE",
+        "非常に小さいビデオメモリ",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "unsloth/gemma-4-E2B-it-qat-MTP-GGUF:UD-Q4_K_XL",
+      "draftId": "NicklausCairns/gemma-4-E2B-it-qat-assistant-MTP-Q8_0",
+      "downloadId": "unsloth/gemma-4-E2B-it-qat-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 4 E2B-it QAT MTP（オールラウンド - 高速）",
+      "company": "unsloth",
+      "parameterSize": "2B",
+      "totalSize": "3.71GB",
+      "recommended": true,
+      "description": "フル機能に加え、速度を高める MTP テクノロジーを備えた、これは選択するのに最適なモデルです。",
+      "source": "huggingface",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE",
+        "AUDIO"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "マルチモーダル",
+        "オーディオ",
+        "QATの定量化",
+        "MoE",
+        "非常に小さいビデオメモリ",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 16384,
+        "numPredict": 3072
+      }
+    },
+    {
+      "id": "GnLOLot/MiniCPM5-1B-Claude-Opus-Fable5-Thinking-GGUF:Q4_K_M",
+      "name": "MiniCPM5 1B Claude微调（思考の連鎖）",
+      "company": "GnLOLot",
+      "parameterSize": "1B",
+      "totalSize": "688MB",
+      "description": "MiniCPM5-1B は、Claude Opus Fable5 データセットに基づいて微調整されており、思考連鎖推論をサポートし、プログラミングと命令のフォローが得意です。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "very_high"
+      },
+      "tags": [
+        "最適化の微調整",
+        "クロード データセット",
+        "思考の連鎖",
+        "プログラミングの最適化",
+        "軽量",
+        "CPU動作をサポート",
+        "テキストのみ"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "Abiray/Nanbeige4.2-3B-GGUF:Q4_K_S",
+      "name": "ナンベージュ 4.2 3B(9B以上)",
+      "company": "Abiray",
+      "parameterSize": "3B",
+      "totalSize": "2.33GB",
+      "recommended": true,
+      "description": "3B ボディ硬鋼 9B、強く推奨しますが、テキストのみをサポートします。",
+      "source": "modelscope",
+      "quantization": "Q4_K_S",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "テキストのみ",
+        "プログラミングの最適化",
+        "中国語のほうが上手い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "owao/Nanbeige4.2-3B-GGUF:Q4_K_M",
+      "name": "ナンベージュ 4.2 3B(9B以上)",
+      "company": "owao",
+      "parameterSize": "3B",
+      "totalSize": "2.40GB",
+      "recommended": false,
+      "description": "3B ボディ硬鋼 9B、強く推奨しますが、テキストのみをサポートします。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "脱獄",
+        "検閲なし",
+        "NSFW",
+        "テキストのみ"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "mradermacher/Nanbeige4.2-3B-heretic-i1-GGUF:i1-Q5_K_M",
+      "name": "Nanbeige 4.2 3B（脱獄の最適化）",
+      "company": "mradermacher",
+      "parameterSize": "3B",
+      "totalSize": "2.78GB",
+      "recommended": true,
+      "description": "3B ボディの硬質鋼 9B、i1 の脱獄バージョンは量子化精度が高くなりますが、テキストのみをサポートします。",
+      "source": "huggingface",
+      "quantization": "i1-Q5_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "high"
+      },
+      "tags": [
+        "脱獄",
+        "検閲なし",
+        "NSFW",
+        "テキストのみ",
+        "高精度"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "unsloth/gemma-3-1b-it-GGUF:UD-Q4_K_XL",
+      "name": "Gemma 3 1B Instruct（基础）",
+      "company": "Google",
+      "parameterSize": "1B",
+      "totalSize": "770MB",
+      "description": "イギリス人のモデルリーダー",
+      "source": "huggingface",
+      "quantization": "UD-Q4_K_XL",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "軽量",
+        "CPU動作をサポート",
+        "テキストのみ",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 4096,
+        "numPredict": 1024
+      }
+    },
+    {
+      "id": "gaston-parravicini/LFM2.5-8B-A1B-Uncensored-Gaston-GGUF:Q4_K_M",
+      "name": "LFM2.5 8B A1B（脱獄）",
+      "company": "gaston-parravicini",
+      "parameterSize": "8B-A1B",
+      "totalSize": "4.80GB",
+      "recommended": true,
+      "description": "LFM2.5 8B A1B MoE 無審査版、アクティブパラメータは1Bのみ、速度と品質のバランス。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "MoE",
+        "検閲なし",
+        "NSFW",
+        "脱獄",
+        "テキストのみ",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "dealignai/Bonsai-27b-1bit-CRACK-GGUF:Q1_0",
+      "name": "Bonsai 27B 1-bit（超圧縮）",
+      "company": "dealignai",
+      "parameterSize": "27B",
+      "totalSize": "5.21GB",
+      "description": "Bonsai 27B 1ビット量子化 Jailbreak 版、アライメント解除・検閲なし、テキストおよび画像分析に対応。",
+      "source": "huggingface",
+      "quantization": "Q1_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "1ビット",
+        "脱獄",
+        "検閲なし",
+        "NSFW",
+        "マルチモーダル",
+        "ビデオメモリが少ない"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "JonathanColetti/Qwen3.8-27B-Uncensored-GGUF:Q4_K_M",
+      "name": "Qwen 3.8 27B（最強の脱獄）",
+      "company": "JonathanColetti",
+      "parameterSize": "27B",
+      "totalSize": "16.52GB",
+      "description": "Qwen3.8-27B は、MTP の長い予測を保持し、テキストと画像の分析をサポートする無修正の定量バージョンです。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "slow",
+        "quality": "high"
+      },
+      "tags": [
+        "検閲なし",
+        "脱獄",
+        "NSFW",
+        "マルチモーダル",
+        "大きなパラメータ",
+        "MTP"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "empero-ai/Qwen3.8-2B-Distill-GGUF:Q4_K_M",
+      "name": "Qwen 3.8 2B（蒸留）",
+      "company": "empero-ai",
+      "parameterSize": "2B",
+      "totalSize": "1.22GB",
+      "recommended": true,
+      "description": "Qwen3.8 ディスティルド版、極致の動作速度、テキスト分析のみ対応。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "high"
+      },
+      "tags": [
+        "蒸留",
+        "軽量",
+        "CPU動作をサポート",
+        "テキストのみ"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "empero-ai/Qwen3.8-9B-Distill-GGUF:Q4_K_M",
+      "name": "Qwen 3.8 9B（蒸留）",
+      "company": "empero-ai",
+      "parameterSize": "9B",
+      "totalSize": "5.38GB",
+      "recommended": true,
+      "description": "Qwen3.8 ディスティルド版、大規模モデルの深層推論能力を継承、テキスト分析のみ対応。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "蒸留",
+        "推論",
+        "テキストのみ",
+        "最適化の微調整"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "ornith-ai/Ornith-1.5-9B-GGUF:Q4_K_M",
+      "name": "Ornith 1.5 9B（トップグレード）",
+      "company": "ornith-ai",
+      "parameterSize": "9B",
+      "totalSize": "6.24GB",
+      "recommended": true,
+      "description": "Ornith 1.5 マルチモーダルモデル、テキストと画像分析に対応。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "マルチモーダル",
+        "画像認識",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "ornith-ai/Ornith-1.5-9B-GGUF:Q4_K_M",
+      "name": "Ornith 1.5 9B（トップグレード）",
+      "company": "ornith-ai",
+      "parameterSize": "9B",
+      "totalSize": "6.24GB",
+      "recommended": true,
+      "description": "Ornith 1.5 マルチモーダルモデル、テキストと画像分析に対応。",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "マルチモーダル",
+        "画像認識",
+        "英語の方が良い"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    }
+  ]
+}

@@ -1,0 +1,2741 @@
+[
+  {
+    "id": "openai",
+    "name": "OpenAI",
+    "description": "OpenAI에서 제공하는 공식 인터페이스는 GPT-4o와 같은 고성능 모델을 지원합니다.",
+    "registerUrl": "https://platform.openai.com/",
+    "baseUrl": "https://api.openai.com",
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "gpt-4o",
+        "name": "GPT-4o",
+        "description": "OpenAI의 최신 다중 모드 모델은 텍스트, 이미지 및 오디오 처리를 지원합니다.",
+        "free": false,
+        "company": "OpenAI",
+        "parameterSize": "89B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO"
+        ]
+      },
+      {
+        "id": "gpt-4o-realtime-preview",
+        "name": "GPT-4o 실시간 미리보기 버전",
+        "description": "실시간 오디오 및 비디오 처리를 지원하는 다중 모드 모델",
+        "free": false,
+        "company": "OpenAI",
+        "parameterSize": "89B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ]
+      },
+      {
+        "id": "gpt-4-turbo",
+        "name": "GPT-4 Turbo",
+        "description": "OpenAI의 효율적인 텍스트 처리 모델",
+        "free": false,
+        "company": "OpenAI",
+        "parameterSize": "89B",
+        "isMultiModal": false,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "anthropic",
+    "name": "Anthropic",
+    "description": "Anthropic에서 제공하는 공식 인터페이스는 Claude 4.5 Sonnet과 같은 업계 최고의 모델을 지원합니다.",
+    "registerUrl": "https://console.anthropic.com/",
+    "baseUrl": "https://api.anthropic.com",
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "claude-sonnet-4-5",
+        "name": "Claude Sonnet 4.5",
+        "description": "Anthropic의 고성능 다중 모드 모델",
+        "free": false,
+        "company": "Anthropic",
+        "parameterSize": "200B",
+        "isMultiModal": true,
+        "contextLength": "200k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "claude-haiku-4-5",
+        "name": "Claude Haiku 4.5",
+        "description": "인류 경량 다중 모드 모델",
+        "free": false,
+        "company": "Anthropic",
+        "parameterSize": "34B",
+        "isMultiModal": true,
+        "contextLength": "200k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "claude-opus-4-5",
+        "name": "Claude Opus 4.5",
+        "description": "Anthropic의 가장 강력한 다중 모드 모델",
+        "free": false,
+        "company": "Anthropic",
+        "parameterSize": "200B",
+        "isMultiModal": true,
+        "contextLength": "200k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "gemini",
+    "name": "Google",
+    "description": "Google Generative AI 공식 인터페이스는 Gemini 시리즈 모델을 지원합니다.",
+    "registerUrl": "https://aistudio.google.com/",
+    "baseUrl": "https://generativelanguage.googleapis.com/v1beta/",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "gemini-3-pro-preview",
+        "name": "Gemini 3 Pro 미리보기",
+        "description": "Google의 최신 다중 모드 모델",
+        "free": false,
+        "company": "Google",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "1M",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ]
+      },
+      {
+        "id": "gemini-2.5-pro",
+        "name": "Gemini 2.5 Pro",
+        "description": "성능과 비용의 균형을 맞추는 Google의 다중 모드 모델",
+        "free": true,
+        "company": "Google",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "2M",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ],
+        "maxOutput": "65K",
+        "rateLimit": "5 RPM, 100 RPD"
+      },
+      {
+        "id": "gemini-2.5-flash",
+        "name": "Gemini 2.5 Flash",
+        "description": "Google의 빠른 추론 모델",
+        "free": true,
+        "company": "Google",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "1M",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ],
+        "maxOutput": "65K",
+        "rateLimit": "10 RPM, 250 RPD"
+      },
+      {
+        "id": "gemini-2.5-flash-lite",
+        "name": "Gemini 2.5 Flash-Lite",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "65K",
+        "rateLimit": "15 RPM, 1,000 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "gemini-3-flash-preview",
+        "name": "Gemini 3 Flash (Preview)",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "65K",
+        "rateLimit": "Preview limits",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "xai",
+    "name": "xAI",
+    "description": "xAI에서 제공하는 공식 인터페이스는 Grok 시리즈 모델을 지원합니다.",
+    "registerUrl": "https://console.x.ai/",
+    "baseUrl": "https://api.x.ai",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "grok-4",
+        "name": "Grok-4",
+        "description": "xAI의 빠른 추론 모델",
+        "free": false,
+        "company": "xAI",
+        "parameterSize": "175B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "grok-3",
+        "name": "Grok-3",
+        "description": "xAI의 표준 추론 모델",
+        "free": false,
+        "company": "xAI",
+        "parameterSize": "175B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "grok-4.3",
+        "name": "grok-4.3",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "~32K",
+        "rateLimit": "Credit-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "grok-4.1-fast",
+        "name": "grok-4.1-fast",
+        "free": true,
+        "contextLength": "2M",
+        "maxOutput": "~32K",
+        "rateLimit": "Credit-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "grok-3-mini",
+        "name": "grok-3-mini",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "8K",
+        "rateLimit": "Credit-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "openrouter",
+    "name": "OpenRouter",
+    "description": "여러 AI 모델을 통합하는 서비스 제공업체입니다. 일부 새 모델은 무료 평가판을 제공합니다(과학적인 인터넷 액세스 필요).",
+    "registerUrl": "https://openrouter.ai/",
+    "baseUrl": "https://openrouter.ai/api",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "deepseek/deepseek-r1-0528:free",
+        "name": "deepseek/deepseek-r1-0528:free",
+        "free": true,
+        "contextLength": "163K",
+        "maxOutput": "~163K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek/deepseek-chat-v3.1:free",
+        "name": "deepseek/deepseek-chat-v3.1:free",
+        "free": true,
+        "contextLength": "163K",
+        "maxOutput": "163K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen/qwen3-235b-a22b:free",
+        "name": "qwen/qwen3-235b-a22b:free",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen/qwen3-coder-480b-a35b:free",
+        "name": "qwen/qwen3-coder-480b-a35b:free",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "~32K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta-llama/llama-4-scout:free",
+        "name": "meta-llama/llama-4-scout:free",
+        "free": true,
+        "contextLength": "10M",
+        "maxOutput": "16K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta-llama/llama-4-maverick:free",
+        "name": "meta-llama/llama-4-maverick:free",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "16K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta-llama/llama-3.3-70b-instruct:free",
+        "name": "meta-llama/llama-3.3-70b-instruct:free",
+        "free": true,
+        "contextLength": "65K",
+        "maxOutput": "~16K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "google/gemma-4-31b-it:free",
+        "name": "google/gemma-4-31b-it:free",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "~8K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-3-super-120b-a12b:free",
+        "name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "~32K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-oss-120b:free",
+        "name": "openai/gpt-oss-120b:free",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "131K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "minimax/minimax-m2.5:free",
+        "name": "minimax/minimax-m2.5:free",
+        "free": true,
+        "contextLength": "196K",
+        "maxOutput": "8K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/devstral-2512:free",
+        "name": "mistralai/devstral-2512:free",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "~32K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ ~16 more free models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "alibaba",
+    "name": "알리바바 클라우드",
+    "description": "Alibaba Tongyi Qianwen의 공식 인터페이스는 Qwen 시리즈 대형 모델을 지원합니다.",
+    "registerUrl": "https://www.aliyun.com/benefit/scene/codingplan",
+    "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "qwen-max",
+        "name": "퉁이 첸웬 맥스",
+        "description": "Alibaba Cloud의 가장 강력한 텍스트 처리 모델",
+        "free": false,
+        "company": "알리바바",
+        "parameterSize": "110B",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "qwen-omni",
+        "name": "통이 첸웬 옴니",
+        "description": "Alibaba Cloud 전체 모드 처리 모델",
+        "free": false,
+        "company": "알리바바",
+        "parameterSize": "110B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ]
+      },
+      {
+        "id": "qwen-vl",
+        "name": "Tongyi Qianwen VL",
+        "description": "Alibaba Cloud 시각적 언어 처리 모델",
+        "free": false,
+        "company": "알리바바",
+        "parameterSize": "110B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "volcengine",
+    "name": "화산 엔진",
+    "description": "ByteDance의 클라우드 서비스 플랫폼은 Doubao(제한된 무료 할당량 포함)와 같은 대규모 모델 서비스를 제공합니다.",
+    "registerUrl": "https://www.volcengine.com/activity/codingplan",
+    "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "doubao-seed-1-6-251015",
+        "name": "콩주머니씨앗 1.6",
+        "description": "Volcano Engine의 가장 강력한 시각 처리 모델",
+        "free": false,
+        "company": "화산 엔진",
+        "parameterSize": "389B",
+        "isMultiModal": true,
+        "contextLength": "16k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "deepseek-r1-250528",
+        "name": "Deepseek R1",
+        "description": "강력한 텍스트 처리 모델",
+        "free": false,
+        "company": "화산 엔진",
+        "parameterSize": "389B",
+        "isMultiModal": false,
+        "contextLength": "16k",
+        "capabilities": [
+          "TEXT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tencent",
+    "name": "텐센트 클라우드",
+    "description": "Tencent Hunyuan 대형 모델의 공식 인터페이스는 고성능 텍스트 및 다중 모드 분석을 지원합니다.",
+    "registerUrl": "https://console.cloud.tencent.com/hunyuan",
+    "baseUrl": "https://api.hunyuan.cloud.tencent.com",
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "hunyuan-pro",
+        "name": "훈위안 프로",
+        "description": "Tencent Cloud의 가장 강력한 텍스트 처리 모델",
+        "free": false,
+        "company": "텐센트",
+        "parameterSize": "389B",
+        "isMultiModal": false,
+        "contextLength": "16k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "hunyuan-vl",
+        "name": "훈위안 VL",
+        "description": "Tencent Cloud의 시각적 언어 처리 모델",
+        "free": false,
+        "company": "텐센트",
+        "parameterSize": "389B",
+        "isMultiModal": true,
+        "contextLength": "16k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "hunyuan-turbo",
+        "name": "훈위안 터보",
+        "description": "Tencent Cloud의 이미지 생성 모델",
+        "free": false,
+        "company": "텐센트",
+        "parameterSize": "389B",
+        "isMultiModal": true,
+        "contextLength": "16k",
+        "capabilities": [
+          "IMAGE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "siliconflow",
+    "name": "실리콘 기반 흐름",
+    "description": "다양한 주류 오픈 소스 모델에 대한 고속 추론 인터페이스를 제공하며 10B 미만의 일부 모델은 오랫동안 무료입니다.",
+    "registerUrl": "https://cloud.siliconflow.cn/",
+    "baseUrl": "https://api.siliconflow.cn/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "THUDM/GLM-4.1V-9B-Thinking",
+        "name": "GLM-4.1V-9B-Thinking",
+        "description": "실리콘 기반 흐름을 위한 전체 모드 처리 모델",
+        "free": true,
+        "company": "실리콘 기반 흐름",
+        "parameterSize": "8B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "Qwen/Qwen3-8B",
+        "name": "Qwen/Qwen3-8B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "131K",
+        "rateLimit": "30 RPM, 60K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
+        "name": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "Configurable",
+        "rateLimit": "30 RPM, 60K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-OCR",
+        "name": "deepseek-ai/DeepSeek-OCR",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 60K TPM",
+        "capabilities": [
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "modelscope",
+    "name": "매직 커뮤니티",
+    "description": "Alibaba의 오픈 소스 모델 커뮤니티는 무료 모델 추론 API를 제공합니다(500번 호출마다 모델을 교체해야 함).",
+    "registerUrl": "https://modelscope.cn/my/myaccesstoken",
+    "baseUrl": "https://api-inference.modelscope.cn/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "Qwen/Qwen2.5-72B-Instruct",
+        "name": "Qwen2.5-72B-Instruct",
+        "description": "Moda 커뮤니티의 시각적 언어 처리 모델",
+        "free": false,
+        "company": "매직 커뮤니티",
+        "parameterSize": "72B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-R1",
+        "name": "DeepSeek-R1",
+        "description": "Moda Community의 텍스트 처리 모델",
+        "free": false,
+        "company": "매직 커뮤니티",
+        "parameterSize": "175B",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "deepseek",
+    "name": "DeepSeek",
+    "description": "DeepSeek 공식 인터페이스는 비용 효율적인 DeepSeek-V3/R1 시리즈 모델을 제공합니다.",
+    "registerUrl": "https://platform.deepseek.com/",
+    "baseUrl": "https://api.deepseek.com",
+    "free": true,
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "deepseek-chat",
+        "name": "DeepSeek Chat",
+        "description": "Deepseek의 최고 추론 모델",
+        "free": true,
+        "company": "Deepseek",
+        "parameterSize": "175B",
+        "isMultiModal": false,
+        "contextLength": "128K",
+        "capabilities": [
+          "TEXT"
+        ],
+        "maxOutput": "8K",
+        "rateLimit": "Dynamic"
+      },
+      {
+        "id": "deepseek-reasoner",
+        "name": "DeepSeek Reasoner",
+        "description": "Deepseek의 희소 관심 모델",
+        "free": true,
+        "company": "Deepseek",
+        "parameterSize": "175B",
+        "isMultiModal": false,
+        "contextLength": "128K",
+        "capabilities": [
+          "TEXT"
+        ],
+        "maxOutput": "8K",
+        "rateLimit": "Dynamic"
+      }
+    ]
+  },
+  {
+    "id": "kimi",
+    "name": "Kimi",
+    "description": "Dark Side of the Moon Moonshot AI 공식 인터페이스는 매우 긴 컨텍스트 처리를 지원합니다.",
+    "registerUrl": "https://platform.moonshot.cn/",
+    "baseUrl": "https://api.moonshot.cn",
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "kimi-k2-0711-preview",
+        "name": "키미 K2 0711 미리보기",
+        "description": "Kimi의 전체 모달 처리 모델",
+        "free": false,
+        "company": "Kimi",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ]
+      },
+      {
+        "id": "moonshot-v1-auto",
+        "name": "Moonshot v1 자동",
+        "description": "키미의 최적화 버전 모델",
+        "free": false,
+        "company": "Kimi",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "zhipuai",
+    "name": "지혜 스펙트럼 AI",
+    "description": "Tsinghua University AI 실험실 배경, GLM 시리즈의 강력한 국내 대형 모델 서비스 제공.",
+    "registerUrl": "https://open.bigmodel.cn/",
+    "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "glm-4.5-flash",
+        "name": "GLM-4.5-Flash",
+        "description": "Zhipu AI의 엔터프라이즈급 텍스트 처리 모델",
+        "free": false,
+        "company": "지혜 스펙트럼 AI",
+        "parameterSize": "175B",
+        "isMultiModal": false,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "glm-4.6v",
+        "name": "GLM-4.6V",
+        "description": "Zhipu AI의 시각적 추론 모델",
+        "free": false,
+        "company": "지혜 스펙트럼 AI",
+        "parameterSize": "175B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "VIDEO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ollama",
+    "name": "Ollama",
+    "description": "대형 모델 서비스를 로컬에서 실행하기 위한 또 다른 외부 솔루션으로 Firefly의 내장 AI 엔진보다 20~40% 느리지만 하드웨어 호환성이 좋아 설치를 권장합니다.",
+    "registerUrl": "https://ollama.com/download/windows",
+    "baseUrl": "http://localhost:11434",
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": []
+  },
+  {
+    "id": "nvidia",
+    "name": "NVIDIA",
+    "description": "NVIDIA가 제공하는 모델 체험 플랫폼은 다양한 주류 대형 모델을 호스팅하며 현재 무료 평가판을 제공하고 있습니다.",
+    "registerUrl": "https://build.nvidia.com/",
+    "baseUrl": "https://integrate.api.nvidia.com/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "qwen/qwen3-coder-480b-a35b-instruct",
+        "name": "Qwen3 Coder 480B",
+        "description": "NVIDIA 호스팅 Tongyi Qianwen 3 코드 모델",
+        "free": true,
+        "company": "Alibaba Cloud",
+        "parameterSize": "480B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "nvidia/nemotron-nano-12b-v2-vl",
+        "name": "Nemotron Nano 12B VL",
+        "description": "NVIDIA 경량 시각적 언어 모델",
+        "free": true,
+        "company": "NVIDIA",
+        "parameterSize": "12B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "microsoft/phi-4-multimodal-instruct",
+        "name": "Phi-4 Multimodal",
+        "description": "Microsoft의 다중 모드 교육 모델",
+        "free": true,
+        "company": "Microsoft",
+        "parameterSize": "14B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "google/gemma-3-27b-it",
+        "name": "Gemma 3 27B IT",
+        "description": "Google의 Gemma 3 명령어 미세 조정 모델",
+        "free": true,
+        "company": "Google",
+        "parameterSize": "27B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "deepseek-ai/deepseek-r1",
+        "name": "deepseek-ai/deepseek-r1",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~163K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+        "name": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-3-super-120b-a12b",
+        "name": "nvidia/nemotron-3-super-120b-a12b",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "262K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-3-nano-30b-a3b",
+        "name": "nvidia/nemotron-3-nano-30b-a3b",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "32K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta/llama-3.1-405b-instruct",
+        "name": "meta/llama-3.1-405b-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen/qwen2.5-72b-instruct",
+        "name": "qwen/qwen2.5-72b-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "google/gemma-4-31b",
+        "name": "google/gemma-4-31b",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/mistral-large-2-instruct",
+        "name": "mistralai/mistral-large-2-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-nano-2-vl",
+        "name": "nvidia/nemotron-nano-2-vl",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "VIDEO"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "minimax/minimax-m2.7",
+        "name": "minimax/minimax-m2.7",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 90 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "VIDEO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "sensetime",
+    "name": "센스타임",
+    "description": "SenseTime의 일일 새로운 대형 모델 인터페이스는 현재 공개 베타 기간에 있으며 무료 통화 할당량을 제공합니다.",
+    "registerUrl": "https://platform.sensenova.cn/",
+    "baseUrl": "https://token.sensenova.cn/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "sensenova-6.7-flash-lite",
+        "name": "SenseNova 6.7 Flash Lite",
+        "description": "SenseTime의 고성능 경량 모델",
+        "free": false,
+        "company": "센스타임",
+        "parameterSize": "6.7B",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "sensenova-u1-fast",
+        "name": "SenseNova U1 Fast",
+        "description": "SenseTime의 매우 빠른 추론 모델",
+        "free": false,
+        "company": "센스타임",
+        "parameterSize": "알 수 없음",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "deepseek-v4-flash",
+        "name": "DeepSeek V4 Flash",
+        "description": "SenseTime에서 호스팅하는 DeepSeek 빠른 추론 모델",
+        "free": false,
+        "company": "센스타임",
+        "parameterSize": "알 수 없음",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ai21",
+    "name": "AI21 Labs",
+    "description": "가입하고 10달러 평가판을 받으세요. 신용카드는 필요하지 않습니다. 크레딧은 3개월 이내에 유효합니다. Jamba Large 및 Jamba Mini 모델이 포함됩니다.",
+    "registerUrl": "https://studio.ai21.com/account/api-key",
+    "baseUrl": "https://api.ai21.com/studio/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "이스라엘",
+    "flag": "🇮🇱",
+    "models": [
+      {
+        "id": "jamba-large",
+        "name": "Jamba Large 1.7",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "4K",
+        "rateLimit": "200 RPM, 10 RPS",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "jamba-mini",
+        "name": "Jamba Mini 2",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "4K",
+        "rateLimit": "200 RPM, 10 RPS",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "alibaba_intl",
+    "name": "Alibaba Cloud Bailian(국제 버전)",
+    "description": "등록 후 각 Tongyi Qianwen 모델은 90일 동안 유효한 100만 개의 무료 토큰을 받게 됩니다(국제/싱가포르 지역). 신용 카드가 필요하지 않습니다.",
+    "registerUrl": "https://bailian.console.alibabacloud.com/?apiKey=1",
+    "baseUrl": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "qwen3-max",
+        "name": "Qwen3-Max",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "32K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen3-plus",
+        "name": "Qwen3-Plus",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "32K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen3-vl-plus",
+        "name": "Qwen3-VL-Plus",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "qwen3-coder-plus",
+        "name": "Qwen3-Coder-Plus",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "8K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwq-plus",
+        "name": "QwQ-Plus",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "32K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "cohere",
+    "name": "Cohere",
+    "description": "무료 \"평가판\" API 키, 신용 카드가 필요하지 않습니다. 매월 1000개의 API 호출. 비상업적인 용도로만 사용하세요.",
+    "registerUrl": "https://dashboard.cohere.com/api-keys",
+    "baseUrl": "https://api.cohere.com/v2",
+    "free": true,
+    "category": "provider_api",
+    "country": "캐나다",
+    "flag": "🇨🇦",
+    "models": [
+      {
+        "id": "command-a-03-2025",
+        "name": "Command A (111B)",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "4K",
+        "rateLimit": "20 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "command-r-plus-08-2024",
+        "name": "Command R+",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "20 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "command-r-08-2024",
+        "name": "Command R",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "20 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "command-r7b-12-2024",
+        "name": "Command R7B",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "20 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "embed-v4.0",
+        "name": "Embed 4",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "2,000 inputs/min",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "rerank-v3.5",
+        "name": "Rerank 3.5",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "10 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "mistral",
+    "name": "Mistral AI",
+    "description": "무료 \"실험적\" 요금제이며 신용카드가 필요하지 않습니다. 매월 약 10억 개의 토큰. 모델을 개선하기 위해 큐 단어를 사용할 수 있습니다.",
+    "registerUrl": "https://console.mistral.ai/api-keys",
+    "baseUrl": "https://api.mistral.ai/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "프랑스",
+    "flag": "🇫🇷",
+    "models": [
+      {
+        "id": "mistral-small-2603",
+        "name": "Mistral Small 4",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "256K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "mistral-medium-2505",
+        "name": "Mistral Medium 3",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "128K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistral-large-2411",
+        "name": "Mistral Large 3",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "256K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "open-mistral-nemo",
+        "name": "Mistral Nemo (12B)",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "128K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "codestral-2501",
+        "name": "Codestral",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "256K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "pixtral-large-2411",
+        "name": "Pixtral Large",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "128K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "zhipu",
+    "name": "지푸 AI",
+    "description": "영원히 무료 모델을 제공하며 신용 카드가 필요하지 않습니다.",
+    "registerUrl": "https://open.bigmodel.cn/usercenter/apikeys",
+    "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+    "free": true,
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "glm-4.7-flash",
+        "name": "GLM-4.7-Flash",
+        "free": true,
+        "contextLength": "200K",
+        "maxOutput": "128K",
+        "rateLimit": "1 concurrent request",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "glm-4.5-flash",
+        "name": "GLM-4.5-Flash",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "1 concurrent request",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "glm-4.6v-flash",
+        "name": "GLM-4.6V-Flash",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "1 concurrent request",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "cerebras",
+    "name": "Cerebras",
+    "description": "무료이며 신용 카드가 필요하지 않습니다. 매우 빠른 추론(약 2600개 토큰/초). 일일 한도는 100만 토큰입니다. 무료 파일 8K 컨텍스트 제한. llama3.1-8b는 2026년 5월 27일에 지원 중단될 예정입니다.",
+    "registerUrl": "https://cloud.cerebras.ai/",
+    "baseUrl": "https://api.cerebras.ai/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "llama-3.3-70b",
+        "name": "llama-3.3-70b",
+        "free": true,
+        "contextLength": "128K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "gpt-oss-120b",
+        "name": "gpt-oss-120b",
+        "free": true,
+        "contextLength": "128K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen-3-235b-a22b-instruct-2507",
+        "name": "qwen-3-235b-a22b-instruct-2507",
+        "free": true,
+        "contextLength": "131K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen-3-32b",
+        "name": "qwen-3-32b",
+        "free": true,
+        "contextLength": "131K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "llama-4-scout-17b-16e-instruct",
+        "name": "llama-4-scout-17b-16e-instruct",
+        "free": true,
+        "contextLength": "128K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "zai-glm-4.7",
+        "name": "zai-glm-4.7",
+        "free": true,
+        "contextLength": "128K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "10 RPM, 100 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "cloudflare",
+    "name": "Cloudflare Workers AI",
+    "description": "매일 10,000개의 뉴런이 무료입니다. 무료 버전은 50개 이상의 모델을 제공합니다.",
+    "registerUrl": "https://dash.cloudflare.com/profile/api-tokens",
+    "baseUrl": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "name": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/meta/llama-3.2-11b-vision-instruct",
+        "name": "@cf/meta/llama-3.2-11b-vision-instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "name": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "free": true,
+        "contextLength": "Up to 10M",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+        "name": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/google/gemma-4-26b-a4b-it",
+        "name": "@cf/google/gemma-4-26b-a4b-it",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/moonshotai/kimi-k2.5",
+        "name": "@cf/moonshotai/kimi-k2.5",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+        "name": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 42 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "github",
+    "name": "GitHub Models",
+    "description": "모든 GitHub 사용자를 위한 무료 프로토타이핑 크레딧입니다. 45개 이상의 모델이 포함되어 있습니다. 단일 요청에는 제한이 있습니다(8K 입력/4K 출력).",
+    "registerUrl": "https://github.com/marketplace/models",
+    "baseUrl": "https://models.github.ai/inference",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "openai/gpt-5",
+        "name": "gpt-5",
+        "free": true,
+        "contextLength": "200K",
+        "maxOutput": "32K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-4.1",
+        "name": "gpt-4.1",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "32K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-4.1-mini",
+        "name": "gpt-4.1-mini",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "32K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-4o",
+        "name": "gpt-4o",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "16K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "openai/o4-mini",
+        "name": "o4-mini",
+        "free": true,
+        "contextLength": "200K",
+        "maxOutput": "100K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta/Llama-4-Scout-17B-16E",
+        "name": "Llama-4-Scout-17B-16E",
+        "free": true,
+        "contextLength": "512K",
+        "maxOutput": "~4K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "meta/Llama-4-Maverick-17B-128E",
+        "name": "Llama-4-Maverick-17B-128E",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "~4K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "meta/Meta-Llama-3.3-70B",
+        "name": "Meta-Llama-3.3-70B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~4K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek/DeepSeek-R1",
+        "name": "DeepSeek-R1",
+        "free": true,
+        "contextLength": "64K",
+        "maxOutput": "8K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/Mistral-Small-3.1",
+        "name": "Mistral-Small-3.1",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": null,
+        "name": "+ 35 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "Varies by tier",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "groq",
+    "name": "Groq",
+    "description": "무료이며 신용 카드가 필요하지 않습니다. 매우 빠른 LPU 추론.",
+    "registerUrl": "https://console.groq.com/keys",
+    "baseUrl": "https://api.groq.com/openai/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "llama-3.3-70b-versatile",
+        "name": "llama-3.3-70b-versatile",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "32K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "llama-3.1-8b-instant",
+        "name": "llama-3.1-8b-instant",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "131K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "llama-4-scout-17b-16e-instruct",
+        "name": "llama-4-scout-17b-16e-instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "llama-4-maverick-17b-128e-instruct",
+        "name": "llama-4-maverick-17b-128e-instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "8K",
+        "rateLimit": "15 RPM, 500 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "qwen3-32b",
+        "name": "qwen3-32b",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "131K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "gpt-oss-120b",
+        "name": "gpt-oss-120b",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "32K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "kimi-k2-instruct",
+        "name": "kimi-k2-instruct",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "262K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-r1-distill-70b",
+        "name": "deepseek-r1-distill-70b",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "whisper-large-v3",
+        "name": "whisper-large-v3",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "20 RPM, 2,000 RPD",
+        "capabilities": [
+          "TEXT",
+          "AUDIO"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "whisper-large-v3-turbo",
+        "name": "whisper-large-v3-turbo",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "20 RPM, 2,000 RPD",
+        "capabilities": [
+          "TEXT",
+          "AUDIO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "huggingface_api",
+    "name": "Hugging Face",
+    "description": "무료 사용자에게 월간 추론 서비스 할당량 100,000회를 제공합니다. Fireworks, Together, Hyperbolic, Nebius, Novita, DeepInfra 등과 같은 제공업체로 연결됩니다. 수천 개의 모델을 지원합니다.",
+    "registerUrl": "https://huggingface.co/settings/tokens",
+    "baseUrl": "https://router.huggingface.co/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "name": "Meta-Llama-3.1-8B-Instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/Mistral-7B-Instruct-v0.3",
+        "name": "Mistral-7B-Instruct-v0.3",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        "name": "Mixtral-8x7B-Instruct-v0.1",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "microsoft/Phi-3.5-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen2.5-7B-Instruct",
+        "name": "Qwen2.5-7B-Instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ thousands of community models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "100K credits/month free",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "kilocode",
+    "name": "Kilo Code",
+    "description": "무료 모델이며 신용 카드가 필요하지 않습니다. `kilo-auto/free`는 자동으로 minimax/minimax-m2.5:free(80%) 및 stepfun/step-3.5-flash:free(20%)로 라우팅됩니다.",
+    "registerUrl": "https://kilo.ai",
+    "baseUrl": "https://api.kilo.ai/api/gateway",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "x-ai/grok-code-fast-1:free",
+        "name": "x-ai/grok-code-fast-1:free",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "—",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "minimax/minimax-m2.5:free",
+        "name": "minimax/minimax-m2.5:free",
+        "free": true,
+        "contextLength": "196K",
+        "maxOutput": "8K",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "bytedance-seed/dola-seed-2.0-pro:free",
+        "name": "bytedance-seed/dola-seed-2.0-pro:free",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-3-super-120b-a12b:free",
+        "name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "32K",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "arcee-ai/trinity-large-thinking:free",
+        "name": "arcee-ai/trinity-large-thinking:free",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openrouter/free",
+        "name": "openrouter/free",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "llm7",
+    "name": "LLM7.io",
+    "description": "원활한 API 게이트웨이. 기본 액세스에는 등록이 필요하지 않습니다. 30개 이상의 모델을 지원합니다. GDPR을 준수합니다.",
+    "registerUrl": "https://token.llm7.io",
+    "baseUrl": "https://api.llm7.io/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "영국",
+    "flag": "🇬🇧",
+    "models": [
+      {
+        "id": "deepseek-r1-0528",
+        "name": "deepseek-r1-0528",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-v3-0324",
+        "name": "deepseek-v3-0324",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "gemini-2.5-flash-lite",
+        "name": "gemini-2.5-flash-lite",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "gpt-4o-mini",
+        "name": "gpt-4o-mini",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "mistral-small-3.1-24b",
+        "name": "mistral-small-3.1-24b",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen2.5-coder-32b",
+        "name": "qwen2.5-coder-32b",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ ~24 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "modelscope_api",
+    "name": "모델범위",
+    "description": "등록된 사용자에게 무료 API 추론 서비스를 제공합니다. Alibaba Cloud 계정을 바인딩하고 실명 인증을 완료해야 합니다.",
+    "registerUrl": "https://modelscope.cn/my/myaccesstoken",
+    "baseUrl": "https://api-inference.modelscope.cn/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "중국",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "Qwen/Qwen3.5-35B-A3B",
+        "name": "Qwen/Qwen3.5-35B-A3B",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "2,000 RPD total; <=500 RPD/model (dynamic)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "Qwen/Qwen3.5-27B",
+        "name": "Qwen/Qwen3.5-27B",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "2,000 RPD total; <=500 RPD/model (dynamic)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen-Image",
+        "name": "Qwen/Qwen-Image",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "2,000 RPD total; model/AIGC-specific caps",
+        "capabilities": [
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": null,
+        "name": "+ API-Inference-enabled models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "Dynamic quotas + dynamic concurrency",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "nebius",
+    "name": "Nebius",
+    "description": "가입하고 $1의 무료 크레딧을 받으세요. 신용카드는 필요하지 않습니다. OpenAI 호환 API를 통해 60개 이상의 오픈 소스 모델을 사용할 수 있습니다. EU에 본사를 두고 있습니다.",
+    "registerUrl": "https://studio.nebius.com/settings/api-keys",
+    "baseUrl": "https://api.studio.nebius.com/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "네덜란드",
+    "flag": "🇳🇱",
+    "models": [
+      {
+        "id": "meta-llama/Meta-Llama-3.3-70B-Instruct",
+        "name": "Meta-Llama-3.3-70B-Instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-V3-0324",
+        "name": "DeepSeek-V3-0324",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-R1",
+        "name": "DeepSeek-R1",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen3-235B-A22B",
+        "name": "Qwen3-235B-A22B",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-oss-120b",
+        "name": "gpt-oss-120b",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 55 more open-source models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "nscale",
+    "name": "Nscale",
+    "description": "가입하고 $5의 무료 크레딧을 받으세요. 신용카드는 필요하지 않습니다. 노르웨이에 데이터 센터를 둔 EU 주권 공급자입니다. 속도 제한도 없고 콜드 스타트도 없습니다.",
+    "registerUrl": "https://console.nscale.com/",
+    "baseUrl": "https://inference.api.nscale.com/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "영국",
+    "flag": "🇬🇧",
+    "models": [
+      {
+        "id": "meta-llama/Llama-3.3-70B-Instruct",
+        "name": "Llama-3.3-70B-Instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+        "name": "Qwen3-Coder-30B-A3B-Instruct",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "~32K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-oss-120b",
+        "name": "gpt-oss-120b",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen3-32B",
+        "name": "Qwen3-32B",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "ollama_cloud",
+    "name": "Ollama Cloud",
+    "description": "질적 사용 제한이 있는 무료입니다. Ollama 라이브러리에서 400개 이상의 모델을 제공합니다. OpenAI SDK와 호환되지 않으므로 [Ollama API](https://docs.ollama.com/cloud)를 사용하세요.",
+    "registerUrl": "https://ollama.com/settings/keys",
+    "baseUrl": "https://api.ollama.com",
+    "free": true,
+    "category": "provider_api",
+    "country": "미국",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "gpt-oss:120b-cloud",
+        "name": "gpt-oss:120b-cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-v3.1:671b-cloud",
+        "name": "deepseek-v3.1:671b-cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen3-coder:480b-cloud",
+        "name": "qwen3-coder:480b-cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "kimi-k2:1t-cloud",
+        "name": "kimi-k2:1t-cloud",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "glm-4.6:cloud",
+        "name": "glm-4.6:cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-r1:cloud",
+        "name": "deepseek-r1:cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 30 more cloud models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "ovhcloud",
+    "name": "OVHcloud AI 터미널",
+    "description": "무료 익명 프로필(API 키 없음, 등록 필요 없음): IP당 모델당 2RPM으로 제한됩니다. EU에서 40개 이상의 오픈 소스 체중 모델을 호스팅합니다. OpenAI SDK와 호환됩니다.",
+    "registerUrl": "https://endpoints.ai.cloud.ovh.net/",
+    "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "프랑스",
+    "flag": "🇫🇷",
+    "models": [
+      {
+        "id": "Meta-Llama-3_3-70B-Instruct",
+        "name": "Meta-Llama-3_3-70B-Instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Meta-Llama-3_1-8B-Instruct",
+        "name": "Meta-Llama-3_1-8B-Instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "DeepSeek-R1-Distill-Llama-70B",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen3-32B",
+        "name": "Qwen3-32B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen3-Coder-30B-A3B-Instruct",
+        "name": "Qwen3-Coder-30B-A3B-Instruct",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "~32K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen2.5-VL-72B-Instruct",
+        "name": "Qwen2.5-VL-72B-Instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "Mixtral-8x7B-Instruct-v0.1",
+        "name": "Mixtral-8x7B-Instruct-v0.1",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Mistral-Nemo-Instruct-2407",
+        "name": "Mistral-Nemo-Instruct-2407",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen3Guard-Gen-8B",
+        "name": "Qwen3Guard-Gen-8B",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen3Guard-Gen-0.6B",
+        "name": "Qwen3Guard-Gen-0.6B",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 30 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "aion",
+    "name": "Aion Labs",
+    "description": "무료 일일 토큰 할당량, 신용 카드가 필요하지 않습니다. 롤플레잉과 스토리 제작을 위해 설계되었습니다.",
+    "registerUrl": "https://www.aionlabs.ai",
+    "baseUrl": "https://api.aionlabs.ai/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "이스라엘",
+    "flag": "🇮🇱",
+    "models": [
+      {
+        "id": "aion-2.0",
+        "name": "aion-2.0",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "Daily token allowance",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "aion-1.0",
+        "name": "aion-1.0",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "Daily token allowance",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "aion-1.0-mini",
+        "name": "aion-1.0-mini",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "Daily token allowance",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "agnes",
+    "name": "Agnes AI(영원히 무료)",
+    "description": "분당 요청 수는 20개로 제한됩니다. 짧은 시간 내에 요청이 너무 빠르면 빈도 제한이 적용됩니다. (1분 정도 기다렸다가 다시 시도해야 함)",
+    "registerUrl": "https://platform.agnes-ai.com/",
+    "baseUrl": "https://apihub.agnes-ai.com/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "싱가포르",
+    "flag": "🇸🇬",
+    "models": [
+      {
+        "id": "agnes-2.5-flash",
+        "name": "Agnes 2.5 Flash",
+        "description": "Sapiens AI의 빠르고 효율적인 모델은 이미지 이해를 지원합니다.",
+        "free": true,
+        "company": "Sapiens AI",
+        "isMultiModal": true,
+        "contextLength": "256K",
+        "maxOutput": "64K",
+        "rateLimit": "20 RPM (무료 파일)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      }
+    ]
+  }
+]

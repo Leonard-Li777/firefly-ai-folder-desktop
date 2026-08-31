@@ -1,0 +1,2741 @@
+[
+  {
+    "id": "openai",
+    "name": "OpenAI",
+    "description": "The official interface provided by OpenAI supports high-performance models such as GPT-4o.",
+    "registerUrl": "https://platform.openai.com/",
+    "baseUrl": "https://api.openai.com",
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "gpt-4o",
+        "name": "GPT-4o",
+        "description": "OpenAI’s latest multi-modal model supports text, image, and audio processing",
+        "free": false,
+        "company": "OpenAI",
+        "parameterSize": "89B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO"
+        ]
+      },
+      {
+        "id": "gpt-4o-realtime-preview",
+        "name": "GPT-4o live preview version",
+        "description": "Multi-modal model supporting real-time audio and video processing",
+        "free": false,
+        "company": "OpenAI",
+        "parameterSize": "89B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ]
+      },
+      {
+        "id": "gpt-4-turbo",
+        "name": "GPT-4 Turbo",
+        "description": "OpenAI’s efficient text processing model",
+        "free": false,
+        "company": "OpenAI",
+        "parameterSize": "89B",
+        "isMultiModal": false,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "anthropic",
+    "name": "Anthropic",
+    "description": "The official interface provided by Anthropic supports industry-leading models such as Claude 4.5 Sonnet.",
+    "registerUrl": "https://console.anthropic.com/",
+    "baseUrl": "https://api.anthropic.com",
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "claude-sonnet-4-5",
+        "name": "Claude Sonnet 4.5",
+        "description": "Anthropic’s high-performance multimodal models",
+        "free": false,
+        "company": "Anthropic",
+        "parameterSize": "200B",
+        "isMultiModal": true,
+        "contextLength": "200k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "claude-haiku-4-5",
+        "name": "Claude Haiku 4.5",
+        "description": "Anthropic lightweight multimodal model",
+        "free": false,
+        "company": "Anthropic",
+        "parameterSize": "34B",
+        "isMultiModal": true,
+        "contextLength": "200k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "claude-opus-4-5",
+        "name": "Claude Opus 4.5",
+        "description": "Anthropic’s most powerful multimodal model",
+        "free": false,
+        "company": "Anthropic",
+        "parameterSize": "200B",
+        "isMultiModal": true,
+        "contextLength": "200k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "gemini",
+    "name": "Google",
+    "description": "Google Generative AI official interface supports Gemini series models.",
+    "registerUrl": "https://aistudio.google.com/",
+    "baseUrl": "https://generativelanguage.googleapis.com/v1beta/",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "gemini-3-pro-preview",
+        "name": "Gemini 3 Pro Preview",
+        "description": "Google’s latest multimodal model",
+        "free": false,
+        "company": "Google",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "1M",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ]
+      },
+      {
+        "id": "gemini-2.5-pro",
+        "name": "Gemini 2.5 Pro",
+        "description": "Google’s multimodal model balancing performance and cost",
+        "free": true,
+        "company": "Google",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "2M",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ],
+        "maxOutput": "65K",
+        "rateLimit": "5 RPM, 100 RPD"
+      },
+      {
+        "id": "gemini-2.5-flash",
+        "name": "Gemini 2.5 Flash",
+        "description": "Google’s fast inference model",
+        "free": true,
+        "company": "Google",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "1M",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ],
+        "maxOutput": "65K",
+        "rateLimit": "10 RPM, 250 RPD"
+      },
+      {
+        "id": "gemini-2.5-flash-lite",
+        "name": "Gemini 2.5 Flash-Lite",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "65K",
+        "rateLimit": "15 RPM, 1,000 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "gemini-3-flash-preview",
+        "name": "Gemini 3 Flash (Preview)",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "65K",
+        "rateLimit": "Preview limits",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "xai",
+    "name": "xAI",
+    "description": "The official interface provided by xAI supports Grok series models.",
+    "registerUrl": "https://console.x.ai/",
+    "baseUrl": "https://api.x.ai",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "grok-4",
+        "name": "Grok-4",
+        "description": "XAI’s fast inference model",
+        "free": false,
+        "company": "xAI",
+        "parameterSize": "175B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "grok-3",
+        "name": "Grok-3",
+        "description": "XAI’s standard inference model",
+        "free": false,
+        "company": "xAI",
+        "parameterSize": "175B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "grok-4.3",
+        "name": "grok-4.3",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "~32K",
+        "rateLimit": "Credit-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "grok-4.1-fast",
+        "name": "grok-4.1-fast",
+        "free": true,
+        "contextLength": "2M",
+        "maxOutput": "~32K",
+        "rateLimit": "Credit-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "grok-3-mini",
+        "name": "grok-3-mini",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "8K",
+        "rateLimit": "Credit-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "openrouter",
+    "name": "OpenRouter",
+    "description": "A service provider that aggregates multiple AI models. Some new models provide free trials (requires scientific Internet access).",
+    "registerUrl": "https://openrouter.ai/",
+    "baseUrl": "https://openrouter.ai/api",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "deepseek/deepseek-r1-0528:free",
+        "name": "deepseek/deepseek-r1-0528:free",
+        "free": true,
+        "contextLength": "163K",
+        "maxOutput": "~163K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek/deepseek-chat-v3.1:free",
+        "name": "deepseek/deepseek-chat-v3.1:free",
+        "free": true,
+        "contextLength": "163K",
+        "maxOutput": "163K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen/qwen3-235b-a22b:free",
+        "name": "qwen/qwen3-235b-a22b:free",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen/qwen3-coder-480b-a35b:free",
+        "name": "qwen/qwen3-coder-480b-a35b:free",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "~32K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta-llama/llama-4-scout:free",
+        "name": "meta-llama/llama-4-scout:free",
+        "free": true,
+        "contextLength": "10M",
+        "maxOutput": "16K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta-llama/llama-4-maverick:free",
+        "name": "meta-llama/llama-4-maverick:free",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "16K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta-llama/llama-3.3-70b-instruct:free",
+        "name": "meta-llama/llama-3.3-70b-instruct:free",
+        "free": true,
+        "contextLength": "65K",
+        "maxOutput": "~16K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "google/gemma-4-31b-it:free",
+        "name": "google/gemma-4-31b-it:free",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "~8K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-3-super-120b-a12b:free",
+        "name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "~32K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-oss-120b:free",
+        "name": "openai/gpt-oss-120b:free",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "131K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "minimax/minimax-m2.5:free",
+        "name": "minimax/minimax-m2.5:free",
+        "free": true,
+        "contextLength": "196K",
+        "maxOutput": "8K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/devstral-2512:free",
+        "name": "mistralai/devstral-2512:free",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "~32K",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ ~16 more free models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "20 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "alibaba",
+    "name": "Alibaba Cloud",
+    "description": "Alibaba Tongyi Qianwen’s official interface supports Qwen series large models.",
+    "registerUrl": "https://www.aliyun.com/benefit/scene/codingplan",
+    "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "qwen-max",
+        "name": "Tongyi Qianwen Max",
+        "description": "Alibaba Cloud’s most powerful text processing model",
+        "free": false,
+        "company": "Alibaba",
+        "parameterSize": "110B",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "qwen-omni",
+        "name": "Tongyi Qianwen Omni",
+        "description": "Alibaba Cloud full-modal processing model",
+        "free": false,
+        "company": "Alibaba",
+        "parameterSize": "110B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ]
+      },
+      {
+        "id": "qwen-vl",
+        "name": "Tongyi Qianwen VL",
+        "description": "Alibaba Cloud visual language processing model",
+        "free": false,
+        "company": "Alibaba",
+        "parameterSize": "110B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "volcengine",
+    "name": "Volcano engine",
+    "description": "ByteDance's cloud service platform provides large model services such as Doubao (including limited free quota).",
+    "registerUrl": "https://www.volcengine.com/activity/codingplan",
+    "baseUrl": "https://ark.cn-beijing.volces.com/api/v3",
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "doubao-seed-1-6-251015",
+        "name": "Bean bag Seed 1.6",
+        "description": "The most powerful visual processing model of Volcano Engine",
+        "free": false,
+        "company": "Volcano engine",
+        "parameterSize": "389B",
+        "isMultiModal": true,
+        "contextLength": "16k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "deepseek-r1-250528",
+        "name": "Deepseek R1",
+        "description": "Powerful text processing model",
+        "free": false,
+        "company": "Volcano engine",
+        "parameterSize": "389B",
+        "isMultiModal": false,
+        "contextLength": "16k",
+        "capabilities": [
+          "TEXT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tencent",
+    "name": "Tencent Cloud",
+    "description": "The official interface of Tencent's Hunyuan large model supports high-performance text and multi-modal analysis.",
+    "registerUrl": "https://console.cloud.tencent.com/hunyuan",
+    "baseUrl": "https://api.hunyuan.cloud.tencent.com",
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "hunyuan-pro",
+        "name": "Hunyuan Pro",
+        "description": "Tencent Cloud’s most powerful text processing model",
+        "free": false,
+        "company": "Tencent",
+        "parameterSize": "389B",
+        "isMultiModal": false,
+        "contextLength": "16k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "hunyuan-vl",
+        "name": "Hunyuan VL",
+        "description": "Tencent Cloud’s visual language processing model",
+        "free": false,
+        "company": "Tencent",
+        "parameterSize": "389B",
+        "isMultiModal": true,
+        "contextLength": "16k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "hunyuan-turbo",
+        "name": "Hunyuan Turbo",
+        "description": "Tencent Cloud’s image generation model",
+        "free": false,
+        "company": "Tencent",
+        "parameterSize": "389B",
+        "isMultiModal": true,
+        "contextLength": "16k",
+        "capabilities": [
+          "IMAGE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "siliconflow",
+    "name": "Silicon based flow",
+    "description": "Provides high-speed inference interfaces for a variety of mainstream open source models, and some models below 10B are free for a long time.",
+    "registerUrl": "https://cloud.siliconflow.cn/",
+    "baseUrl": "https://api.siliconflow.cn/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "THUDM/GLM-4.1V-9B-Thinking",
+        "name": "GLM-4.1V-9B-Thinking",
+        "description": "Full-modal processing model for silicon-based flows",
+        "free": true,
+        "company": "Silicon based flow",
+        "parameterSize": "8B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "Qwen/Qwen3-8B",
+        "name": "Qwen/Qwen3-8B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "131K",
+        "rateLimit": "30 RPM, 60K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
+        "name": "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "Configurable",
+        "rateLimit": "30 RPM, 60K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-OCR",
+        "name": "deepseek-ai/DeepSeek-OCR",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 60K TPM",
+        "capabilities": [
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "modelscope",
+    "name": "Magic Community",
+    "description": "Alibaba's open source model community provides a free model inference API (the model needs to be replaced every 500 calls).",
+    "registerUrl": "https://modelscope.cn/my/myaccesstoken",
+    "baseUrl": "https://api-inference.modelscope.cn/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "Qwen/Qwen2.5-72B-Instruct",
+        "name": "Qwen2.5-72B-Instruct",
+        "description": "Visual language processing model of Moda community",
+        "free": false,
+        "company": "Magic Community",
+        "parameterSize": "72B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-R1",
+        "name": "DeepSeek-R1",
+        "description": "Text processing model of Moda Community",
+        "free": false,
+        "company": "Magic Community",
+        "parameterSize": "175B",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "deepseek",
+    "name": "DeepSeek",
+    "description": "DeepSeek official interface provides cost-effective DeepSeek-V3/R1 series models.",
+    "registerUrl": "https://platform.deepseek.com/",
+    "baseUrl": "https://api.deepseek.com",
+    "free": true,
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "deepseek-chat",
+        "name": "DeepSeek Chat",
+        "description": "Deepseek’s top inference model",
+        "free": true,
+        "company": "Deepseek",
+        "parameterSize": "175B",
+        "isMultiModal": false,
+        "contextLength": "128K",
+        "capabilities": [
+          "TEXT"
+        ],
+        "maxOutput": "8K",
+        "rateLimit": "Dynamic"
+      },
+      {
+        "id": "deepseek-reasoner",
+        "name": "DeepSeek Reasoner",
+        "description": "Deepseek’s sparse attention model",
+        "free": true,
+        "company": "Deepseek",
+        "parameterSize": "175B",
+        "isMultiModal": false,
+        "contextLength": "128K",
+        "capabilities": [
+          "TEXT"
+        ],
+        "maxOutput": "8K",
+        "rateLimit": "Dynamic"
+      }
+    ]
+  },
+  {
+    "id": "kimi",
+    "name": "Kimi",
+    "description": "Dark Side of the Moon Moonshot AI official interface supports ultra-long context processing.",
+    "registerUrl": "https://platform.moonshot.cn/",
+    "baseUrl": "https://api.moonshot.cn",
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "kimi-k2-0711-preview",
+        "name": "Kimi K2 0711 Preview",
+        "description": "Kimi’s full modal processing model",
+        "free": false,
+        "company": "Kimi",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO",
+          "VIDEO"
+        ]
+      },
+      {
+        "id": "moonshot-v1-auto",
+        "name": "Moonshot v1 automatic",
+        "description": "Kimi’s optimized version model",
+        "free": false,
+        "company": "Kimi",
+        "parameterSize": "100B+",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "zhipuai",
+    "name": "Wisdom spectrum AI",
+    "description": "Tsinghua University AI laboratory background, providing GLM series of powerful domestic large model services.",
+    "registerUrl": "https://open.bigmodel.cn/",
+    "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "glm-4.5-flash",
+        "name": "GLM-4.5-Flash",
+        "description": "Zhipu AI’s enterprise-level text processing model",
+        "free": false,
+        "company": "Wisdom spectrum AI",
+        "parameterSize": "175B",
+        "isMultiModal": false,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "glm-4.6v",
+        "name": "GLM-4.6V",
+        "description": "Visual reasoning model of Zhipu AI",
+        "free": false,
+        "company": "Wisdom spectrum AI",
+        "parameterSize": "175B",
+        "isMultiModal": true,
+        "contextLength": "128k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "VIDEO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ollama",
+    "name": "Ollama",
+    "description": "Another external solution for locally running large model services, it is 20~40% slower than Firefly’s built-in AI engine, but has good hardware compatibility and is recommended for installation.",
+    "registerUrl": "https://ollama.com/download/windows",
+    "baseUrl": "http://localhost:11434",
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": []
+  },
+  {
+    "id": "nvidia",
+    "name": "NVIDIA",
+    "description": "The model experience platform provided by NVIDIA hosts a variety of mainstream large models and currently provides free trials.",
+    "registerUrl": "https://build.nvidia.com/",
+    "baseUrl": "https://integrate.api.nvidia.com/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "qwen/qwen3-coder-480b-a35b-instruct",
+        "name": "Qwen3 Coder 480B",
+        "description": "NVIDIA hosted Tongyi Qianwen 3 code model",
+        "free": true,
+        "company": "Alibaba Cloud",
+        "parameterSize": "480B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "nvidia/nemotron-nano-12b-v2-vl",
+        "name": "Nemotron Nano 12B VL",
+        "description": "NVIDIA lightweight visual language model",
+        "free": true,
+        "company": "NVIDIA",
+        "parameterSize": "12B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "microsoft/phi-4-multimodal-instruct",
+        "name": "Phi-4 Multimodal",
+        "description": "Microsoft's Multimodal Instruct Model",
+        "free": true,
+        "company": "Microsoft",
+        "parameterSize": "14B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "google/gemma-3-27b-it",
+        "name": "Gemma 3 27B IT",
+        "description": "Google’s Gemma 3 instruction fine-tuning model",
+        "free": true,
+        "company": "Google",
+        "parameterSize": "27B",
+        "isMultiModal": true,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      },
+      {
+        "id": "deepseek-ai/deepseek-r1",
+        "name": "deepseek-ai/deepseek-r1",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~163K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+        "name": "nvidia/llama-3.1-nemotron-ultra-253b-v1",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-3-super-120b-a12b",
+        "name": "nvidia/nemotron-3-super-120b-a12b",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "262K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-3-nano-30b-a3b",
+        "name": "nvidia/nemotron-3-nano-30b-a3b",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "32K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta/llama-3.1-405b-instruct",
+        "name": "meta/llama-3.1-405b-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen/qwen2.5-72b-instruct",
+        "name": "qwen/qwen2.5-72b-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "google/gemma-4-31b",
+        "name": "google/gemma-4-31b",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/mistral-large-2-instruct",
+        "name": "mistralai/mistral-large-2-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-nano-2-vl",
+        "name": "nvidia/nemotron-nano-2-vl",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "VIDEO"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "minimax/minimax-m2.7",
+        "name": "minimax/minimax-m2.7",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 90 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "~40 RPM",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "VIDEO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "sensetime",
+    "name": "SenseTime",
+    "description": "SenseTime's daily new large model interface is currently in the public beta period and provides free calling quota.",
+    "registerUrl": "https://platform.sensenova.cn/",
+    "baseUrl": "https://token.sensenova.cn/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "sensenova-6.7-flash-lite",
+        "name": "SenseNova 6.7 Flash Lite",
+        "description": "SenseTime’s high-performance lightweight model",
+        "free": false,
+        "company": "SenseTime",
+        "parameterSize": "6.7B",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "sensenova-u1-fast",
+        "name": "SenseNova U1 Fast",
+        "description": "SenseTime’s extremely fast reasoning model",
+        "free": false,
+        "company": "SenseTime",
+        "parameterSize": "Unknown",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      },
+      {
+        "id": "deepseek-v4-flash",
+        "name": "DeepSeek V4 Flash",
+        "description": "DeepSeek fast inference model hosted by SenseTime",
+        "free": false,
+        "company": "SenseTime",
+        "parameterSize": "Unknown",
+        "isMultiModal": false,
+        "contextLength": "32k",
+        "capabilities": [
+          "TEXT"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ai21",
+    "name": "AI21 Labs",
+    "description": "Sign up and get a $10 trial, no credit card required. The credit is valid within 3 months. Includes Jamba Large and Jamba Mini models.",
+    "registerUrl": "https://studio.ai21.com/account/api-key",
+    "baseUrl": "https://api.ai21.com/studio/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "Israel",
+    "flag": "🇮🇱",
+    "models": [
+      {
+        "id": "jamba-large",
+        "name": "Jamba Large 1.7",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "4K",
+        "rateLimit": "200 RPM, 10 RPS",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "jamba-mini",
+        "name": "Jamba Mini 2",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "4K",
+        "rateLimit": "200 RPM, 10 RPS",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "alibaba_intl",
+    "name": "Alibaba Cloud Bailian (International Version)",
+    "description": "After registration, each Tongyi Qianwen model will receive 1 million free tokens, valid for 90 days (international/Singapore area). No credit card required.",
+    "registerUrl": "https://bailian.console.alibabacloud.com/?apiKey=1",
+    "baseUrl": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "qwen3-max",
+        "name": "Qwen3-Max",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "32K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen3-plus",
+        "name": "Qwen3-Plus",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "32K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen3-vl-plus",
+        "name": "Qwen3-VL-Plus",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "8K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "qwen3-coder-plus",
+        "name": "Qwen3-Coder-Plus",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "8K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwq-plus",
+        "name": "QwQ-Plus",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "32K",
+        "rateLimit": "Tiered by region",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "cohere",
+    "name": "Cohere",
+    "description": "Free \"trial\" API key, no credit card required. 1000 API calls per month. For non-commercial use only.",
+    "registerUrl": "https://dashboard.cohere.com/api-keys",
+    "baseUrl": "https://api.cohere.com/v2",
+    "free": true,
+    "category": "provider_api",
+    "country": "Canada",
+    "flag": "🇨🇦",
+    "models": [
+      {
+        "id": "command-a-03-2025",
+        "name": "Command A (111B)",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "4K",
+        "rateLimit": "20 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "command-r-plus-08-2024",
+        "name": "Command R+",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "20 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "command-r-08-2024",
+        "name": "Command R",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "20 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "command-r7b-12-2024",
+        "name": "Command R7B",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "4K",
+        "rateLimit": "20 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "embed-v4.0",
+        "name": "Embed 4",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "2,000 inputs/min",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "rerank-v3.5",
+        "name": "Rerank 3.5",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "10 RPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "mistral",
+    "name": "Mistral AI",
+    "description": "Free \"Experimental\" plan, no credit card required. Approximately 1 billion Tokens per month. Cue words may be used to improve the model.",
+    "registerUrl": "https://console.mistral.ai/api-keys",
+    "baseUrl": "https://api.mistral.ai/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "France",
+    "flag": "🇫🇷",
+    "models": [
+      {
+        "id": "mistral-small-2603",
+        "name": "Mistral Small 4",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "256K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "mistral-medium-2505",
+        "name": "Mistral Medium 3",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "128K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistral-large-2411",
+        "name": "Mistral Large 3",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "256K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "open-mistral-nemo",
+        "name": "Mistral Nemo (12B)",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "128K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "codestral-2501",
+        "name": "Codestral",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "256K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "pixtral-large-2411",
+        "name": "Pixtral Large",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "128K",
+        "rateLimit": "~1 RPS, 500K TPM",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "zhipu",
+    "name": "Zhipu AI",
+    "description": "Offers forever free models, no credit card required.",
+    "registerUrl": "https://open.bigmodel.cn/usercenter/apikeys",
+    "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+    "free": true,
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "glm-4.7-flash",
+        "name": "GLM-4.7-Flash",
+        "free": true,
+        "contextLength": "200K",
+        "maxOutput": "128K",
+        "rateLimit": "1 concurrent request",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "glm-4.5-flash",
+        "name": "GLM-4.5-Flash",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "1 concurrent request",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "glm-4.6v-flash",
+        "name": "GLM-4.6V-Flash",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "1 concurrent request",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "cerebras",
+    "name": "Cerebras",
+    "description": "Free, no credit card required. Extremely fast reasoning (about 2600 token/s). Daily limit of 1 million Tokens. Free file 8K context limit. llama3.1-8b is scheduled to be deprecated on May 27, 2026.",
+    "registerUrl": "https://cloud.cerebras.ai/",
+    "baseUrl": "https://api.cerebras.ai/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "llama-3.3-70b",
+        "name": "llama-3.3-70b",
+        "free": true,
+        "contextLength": "128K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "gpt-oss-120b",
+        "name": "gpt-oss-120b",
+        "free": true,
+        "contextLength": "128K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen-3-235b-a22b-instruct-2507",
+        "name": "qwen-3-235b-a22b-instruct-2507",
+        "free": true,
+        "contextLength": "131K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen-3-32b",
+        "name": "qwen-3-32b",
+        "free": true,
+        "contextLength": "131K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "llama-4-scout-17b-16e-instruct",
+        "name": "llama-4-scout-17b-16e-instruct",
+        "free": true,
+        "contextLength": "128K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "zai-glm-4.7",
+        "name": "zai-glm-4.7",
+        "free": true,
+        "contextLength": "128K (8K on free)",
+        "maxOutput": "8K",
+        "rateLimit": "10 RPM, 100 RPD, 1M TPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "cloudflare",
+    "name": "Cloudflare Workers AI",
+    "description": "10,000 Neurons free every day. The free version offers over 50 models.",
+    "registerUrl": "https://dash.cloudflare.com/profile/api-tokens",
+    "baseUrl": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "name": "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/meta/llama-3.2-11b-vision-instruct",
+        "name": "@cf/meta/llama-3.2-11b-vision-instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "name": "@cf/meta/llama-4-scout-17b-16e-instruct",
+        "free": true,
+        "contextLength": "Up to 10M",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+        "name": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/google/gemma-4-26b-a4b-it",
+        "name": "@cf/google/gemma-4-26b-a4b-it",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "@cf/moonshotai/kimi-k2.5",
+        "name": "@cf/moonshotai/kimi-k2.5",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+        "name": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "Shared w/ context",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 42 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "10K neurons/day (shared)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "github",
+    "name": "GitHub Models",
+    "description": "Free prototyping credits for all GitHub users. Contains over 45 models. There is a limit on a single request (8K in / 4K out).",
+    "registerUrl": "https://github.com/marketplace/models",
+    "baseUrl": "https://models.github.ai/inference",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "openai/gpt-5",
+        "name": "gpt-5",
+        "free": true,
+        "contextLength": "200K",
+        "maxOutput": "32K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-4.1",
+        "name": "gpt-4.1",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "32K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-4.1-mini",
+        "name": "gpt-4.1-mini",
+        "free": true,
+        "contextLength": "1M",
+        "maxOutput": "32K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-4o",
+        "name": "gpt-4o",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "16K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "openai/o4-mini",
+        "name": "o4-mini",
+        "free": true,
+        "contextLength": "200K",
+        "maxOutput": "100K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "meta/Llama-4-Scout-17B-16E",
+        "name": "Llama-4-Scout-17B-16E",
+        "free": true,
+        "contextLength": "512K",
+        "maxOutput": "~4K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "meta/Llama-4-Maverick-17B-128E",
+        "name": "Llama-4-Maverick-17B-128E",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "~4K",
+        "rateLimit": "10 RPM, 50 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "meta/Meta-Llama-3.3-70B",
+        "name": "Meta-Llama-3.3-70B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~4K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek/DeepSeek-R1",
+        "name": "DeepSeek-R1",
+        "free": true,
+        "contextLength": "64K",
+        "maxOutput": "8K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/Mistral-Small-3.1",
+        "name": "Mistral-Small-3.1",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "15 RPM, 150 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": null,
+        "name": "+ 35 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "Varies by tier",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "groq",
+    "name": "Groq",
+    "description": "Free, no credit card required. Extremely fast LPU inference.",
+    "registerUrl": "https://console.groq.com/keys",
+    "baseUrl": "https://api.groq.com/openai/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "llama-3.3-70b-versatile",
+        "name": "llama-3.3-70b-versatile",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "32K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "llama-3.1-8b-instant",
+        "name": "llama-3.1-8b-instant",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "131K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "llama-4-scout-17b-16e-instruct",
+        "name": "llama-4-scout-17b-16e-instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "llama-4-maverick-17b-128e-instruct",
+        "name": "llama-4-maverick-17b-128e-instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "8K",
+        "rateLimit": "15 RPM, 500 RPD",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "qwen3-32b",
+        "name": "qwen3-32b",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "131K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "gpt-oss-120b",
+        "name": "gpt-oss-120b",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "32K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "kimi-k2-instruct",
+        "name": "kimi-k2-instruct",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "262K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-r1-distill-70b",
+        "name": "deepseek-r1-distill-70b",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "8K",
+        "rateLimit": "30 RPM, 14,400 RPD",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "whisper-large-v3",
+        "name": "whisper-large-v3",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "20 RPM, 2,000 RPD",
+        "capabilities": [
+          "TEXT",
+          "AUDIO"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "whisper-large-v3-turbo",
+        "name": "whisper-large-v3-turbo",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "20 RPM, 2,000 RPD",
+        "capabilities": [
+          "TEXT",
+          "AUDIO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "huggingface_api",
+    "name": "Hugging Face",
+    "description": "Provide free users with a monthly inference service quota of 100,000 times. Routes to providers such as Fireworks, Together, Hyperbolic, Nebius, Novita, DeepInfra and more. Supports thousands of models.",
+    "registerUrl": "https://huggingface.co/settings/tokens",
+    "baseUrl": "https://router.huggingface.co/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+        "name": "Meta-Llama-3.1-8B-Instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/Mistral-7B-Instruct-v0.3",
+        "name": "Mistral-7B-Instruct-v0.3",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+        "name": "Mixtral-8x7B-Instruct-v0.1",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "microsoft/Phi-3.5-mini-instruct",
+        "name": "Phi-3.5-mini-instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen2.5-7B-Instruct",
+        "name": "Qwen2.5-7B-Instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~4K",
+        "rateLimit": "Credit-metered",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ thousands of community models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "100K credits/month free",
+        "capabilities": [
+          "TEXT",
+          "IMAGE",
+          "AUDIO"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "kilocode",
+    "name": "Kilo Code",
+    "description": "Free model, no credit card required. `kilo-auto/free` automatically routes to minimax/minimax-m2.5:free (80%) and stepfun/step-3.5-flash:free (20%).",
+    "registerUrl": "https://kilo.ai",
+    "baseUrl": "https://api.kilo.ai/api/gateway",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "x-ai/grok-code-fast-1:free",
+        "name": "x-ai/grok-code-fast-1:free",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "—",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "minimax/minimax-m2.5:free",
+        "name": "minimax/minimax-m2.5:free",
+        "free": true,
+        "contextLength": "196K",
+        "maxOutput": "8K",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "bytedance-seed/dola-seed-2.0-pro:free",
+        "name": "bytedance-seed/dola-seed-2.0-pro:free",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "nvidia/nemotron-3-super-120b-a12b:free",
+        "name": "nvidia/nemotron-3-super-120b-a12b:free",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "32K",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "arcee-ai/trinity-large-thinking:free",
+        "name": "arcee-ai/trinity-large-thinking:free",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openrouter/free",
+        "name": "openrouter/free",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "~200 req/hr",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "llm7",
+    "name": "LLM7.io",
+    "description": "Seamless API gateway. No registration required for basic access. Supports more than 30 models. GDPR compliant.",
+    "registerUrl": "https://token.llm7.io",
+    "baseUrl": "https://api.llm7.io/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "U.K.",
+    "flag": "🇬🇧",
+    "models": [
+      {
+        "id": "deepseek-r1-0528",
+        "name": "deepseek-r1-0528",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-v3-0324",
+        "name": "deepseek-v3-0324",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "gemini-2.5-flash-lite",
+        "name": "gemini-2.5-flash-lite",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "gpt-4o-mini",
+        "name": "gpt-4o-mini",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "mistral-small-3.1-24b",
+        "name": "mistral-small-3.1-24b",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen2.5-coder-32b",
+        "name": "qwen2.5-coder-32b",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ ~24 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "30 RPM (120 with token)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "modelscope_api",
+    "name": "ModelScope",
+    "description": "Provides free API inference services to registered users. You need to bind your Alibaba Cloud account and complete real-name authentication.",
+    "registerUrl": "https://modelscope.cn/my/myaccesstoken",
+    "baseUrl": "https://api-inference.modelscope.cn/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "China",
+    "flag": "🇨🇳",
+    "models": [
+      {
+        "id": "Qwen/Qwen3.5-35B-A3B",
+        "name": "Qwen/Qwen3.5-35B-A3B",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "2,000 RPD total; <=500 RPD/model (dynamic)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "Qwen/Qwen3.5-27B",
+        "name": "Qwen/Qwen3.5-27B",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "2,000 RPD total; <=500 RPD/model (dynamic)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen-Image",
+        "name": "Qwen/Qwen-Image",
+        "free": true,
+        "contextLength": "—",
+        "maxOutput": "—",
+        "rateLimit": "2,000 RPD total; model/AIGC-specific caps",
+        "capabilities": [
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": null,
+        "name": "+ API-Inference-enabled models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "Dynamic quotas + dynamic concurrency",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "nebius",
+    "name": "Nebius",
+    "description": "Sign up and get $1 in free credit, no credit card required. More than 60 open source models are available through an OpenAI-compatible API. Headquartered in the EU.",
+    "registerUrl": "https://studio.nebius.com/settings/api-keys",
+    "baseUrl": "https://api.studio.nebius.com/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "Netherlands",
+    "flag": "🇳🇱",
+    "models": [
+      {
+        "id": "meta-llama/Meta-Llama-3.3-70B-Instruct",
+        "name": "Meta-Llama-3.3-70B-Instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-V3-0324",
+        "name": "DeepSeek-V3-0324",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-R1",
+        "name": "DeepSeek-R1",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen3-235B-A22B",
+        "name": "Qwen3-235B-A22B",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-oss-120b",
+        "name": "gpt-oss-120b",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 55 more open-source models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "Tier-based",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "nscale",
+    "name": "Nscale",
+    "description": "Sign up and get $5 in free credit, no credit card required. EU sovereign provider with data center located in Norway. No rate limits, no cold starts.",
+    "registerUrl": "https://console.nscale.com/",
+    "baseUrl": "https://inference.api.nscale.com/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "U.K.",
+    "flag": "🇬🇧",
+    "models": [
+      {
+        "id": "meta-llama/Llama-3.3-70B-Instruct",
+        "name": "Llama-3.3-70B-Instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+        "name": "Qwen3-Coder-30B-A3B-Instruct",
+        "free": true,
+        "contextLength": "256K",
+        "maxOutput": "~32K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "openai/gpt-oss-120b",
+        "name": "gpt-oss-120b",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen/Qwen3-32B",
+        "name": "Qwen3-32B",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~32K",
+        "rateLimit": "Fair-use",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "ollama_cloud",
+    "name": "Ollama Cloud",
+    "description": "Free with qualitative usage limits. Offers over 400 models from the Ollama library. Not compatible with OpenAI SDK, use [Ollama API](https://docs.ollama.com/cloud).",
+    "registerUrl": "https://ollama.com/settings/keys",
+    "baseUrl": "https://api.ollama.com",
+    "free": true,
+    "category": "provider_api",
+    "country": "USA",
+    "flag": "🇺🇸",
+    "models": [
+      {
+        "id": "gpt-oss:120b-cloud",
+        "name": "gpt-oss:120b-cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-v3.1:671b-cloud",
+        "name": "deepseek-v3.1:671b-cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "qwen3-coder:480b-cloud",
+        "name": "qwen3-coder:480b-cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "kimi-k2:1t-cloud",
+        "name": "kimi-k2:1t-cloud",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "glm-4.6:cloud",
+        "name": "glm-4.6:cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "deepseek-r1:cloud",
+        "name": "deepseek-r1:cloud",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "Model-dependent",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 30 more cloud models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "Session/weekly limits (unpublished)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "ovhcloud",
+    "name": "OVHcloud AI Terminal",
+    "description": "Free Anonymous Profile (no API Key, no registration required): Limit 2 RPM per model per IP. Hosting over 40 open source weight models in the EU. Compatible with OpenAI SDK.",
+    "registerUrl": "https://endpoints.ai.cloud.ovh.net/",
+    "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "France",
+    "flag": "🇫🇷",
+    "models": [
+      {
+        "id": "Meta-Llama-3_3-70B-Instruct",
+        "name": "Meta-Llama-3_3-70B-Instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Meta-Llama-3_1-8B-Instruct",
+        "name": "Meta-Llama-3_1-8B-Instruct",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "DeepSeek-R1-Distill-Llama-70B",
+        "name": "DeepSeek-R1-Distill-Llama-70B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen3-32B",
+        "name": "Qwen3-32B",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen3-Coder-30B-A3B-Instruct",
+        "name": "Qwen3-Coder-30B-A3B-Instruct",
+        "free": true,
+        "contextLength": "262K",
+        "maxOutput": "~32K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen2.5-VL-72B-Instruct",
+        "name": "Qwen2.5-VL-72B-Instruct",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~8K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      },
+      {
+        "id": "Mixtral-8x7B-Instruct-v0.1",
+        "name": "Mixtral-8x7B-Instruct-v0.1",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Mistral-Nemo-Instruct-2407",
+        "name": "Mistral-Nemo-Instruct-2407",
+        "free": true,
+        "contextLength": "128K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen3Guard-Gen-8B",
+        "name": "Qwen3Guard-Gen-8B",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "Qwen3Guard-Gen-0.6B",
+        "name": "Qwen3Guard-Gen-0.6B",
+        "free": true,
+        "contextLength": "32K",
+        "maxOutput": "~4K",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": null,
+        "name": "+ 30 more models",
+        "free": true,
+        "contextLength": "Varies",
+        "maxOutput": "Varies",
+        "rateLimit": "2 RPM (anonymous)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ],
+        "isMultiModal": true
+      }
+    ]
+  },
+  {
+    "id": "aion",
+    "name": "Aion Labs",
+    "description": "Free daily token quota, no credit card required. Designed for role-playing and story creation.",
+    "registerUrl": "https://www.aionlabs.ai",
+    "baseUrl": "https://api.aionlabs.ai/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "Israel",
+    "flag": "🇮🇱",
+    "models": [
+      {
+        "id": "aion-2.0",
+        "name": "aion-2.0",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "Daily token allowance",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "aion-1.0",
+        "name": "aion-1.0",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "Daily token allowance",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      },
+      {
+        "id": "aion-1.0-mini",
+        "name": "aion-1.0-mini",
+        "free": true,
+        "contextLength": "131K",
+        "maxOutput": "~32K",
+        "rateLimit": "Daily token allowance",
+        "capabilities": [
+          "TEXT"
+        ],
+        "isMultiModal": false
+      }
+    ]
+  },
+  {
+    "id": "agnes",
+    "name": "Agnes AI(Free forever)",
+    "description": "The number of requests per minute is limited to 20. If the request is too fast in a short period of time, the frequency limit will be triggered (you need to wait 1 minute and try again)",
+    "registerUrl": "https://platform.agnes-ai.com/",
+    "baseUrl": "https://apihub.agnes-ai.com/v1",
+    "free": true,
+    "category": "provider_api",
+    "country": "Singapore",
+    "flag": "🇸🇬",
+    "models": [
+      {
+        "id": "agnes-2.5-flash",
+        "name": "Agnes 2.5 Flash",
+        "description": "Sapiens AI’s fast and efficient model supports image understanding.",
+        "free": true,
+        "company": "Sapiens AI",
+        "isMultiModal": true,
+        "contextLength": "256K",
+        "maxOutput": "64K",
+        "rateLimit": "20 RPM (Free file)",
+        "capabilities": [
+          "TEXT",
+          "IMAGE"
+        ]
+      }
+    ]
+  }
+]

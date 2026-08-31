@@ -1,0 +1,2086 @@
+{
+  "file_dimensions": [
+    {
+      "id": 1,
+      "name": "文件类型",
+      "level": 1,
+      "tags": [
+        "文本",
+        "文档",
+        "电子书",
+        "图片",
+        "视频",
+        "音频",
+        "压缩包",
+        "源代码",
+        "程序",
+        "字体",
+        "模型",
+        "系统文件",
+        "数据库",
+        "磁盘映像",
+        "应用数据"
+      ],
+      "description": "文件的基础格式分类",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "扩展名",
+        "MIME类型",
+        "文件签名"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 2,
+      "name": "文件用途",
+      "level": 1,
+      "tags": [
+        "工作文档",
+        "工具应用",
+        "学习资料",
+        "游戏娱乐",
+        "创意项目",
+        "旅行记录",
+        "设计素材",
+        "系统维护",
+        "学术科研",
+        "个人笔记"
+      ],
+      "description": "文件的核心使用场景",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "存储路径",
+        "命名模式",
+        "关联应用"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 3,
+      "name": "文件来源",
+      "level": 1,
+      "tags": [
+        "本地创建",
+        "网络下载",
+        "设备导入",
+        "通讯接收",
+        "云同步",
+        "自动生成",
+        "扫描生成",
+        "邮件附件"
+      ],
+      "description": "文件的原始获取途径",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "路径特征",
+        "传输日志"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 4,
+      "name": "作者",
+      "level": 1,
+      "tags": [],
+      "description": "文件的创建者或贡献者",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "code",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "元数据",
+        "数字签名",
+        "水印"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 100,
+      "name": "文本细分",
+      "level": 2,
+      "tags": [
+        "文本扩展名",
+        "纯文本",
+        "标记文档",
+        "日志文件",
+        "配置文件",
+        "差异文件",
+        "字幕"
+      ],
+      "description": "文本文件的细分分类",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "格式特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "文本"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "name": "文档细分",
+      "level": 2,
+      "tags": [
+        "文档扩展名",
+        "Office",
+        "Word文档",
+        "表格",
+        "演示文稿",
+        "WPS文档"
+      ],
+      "description": "文档文件的细分分类",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "格式特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "文档"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "应用数据细分",
+      "level": 2,
+      "tags": [
+        "应用数据扩展名",
+        "快捷方式",
+        "播放列表",
+        "注册表",
+        "帮助文档"
+      ],
+      "description": "应用数据文件的细分分类",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "格式特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "应用数据"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "图片细分",
+      "level": 2,
+      "tags": [
+        "图片扩展名",
+        "摄影照片",
+        "截图",
+        "设计稿",
+        "应用图标",
+        "表情包",
+        "医学影像",
+        "图纸",
+        "漫画",
+        "绘画"
+      ],
+      "description": "图像内容的专业分类",
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "EXIF数据",
+        "内容识别"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "图片"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "视频细分",
+      "level": 2,
+      "tags": [
+        "视频扩展名",
+        "影视",
+        "教学视频",
+        "游戏互动",
+        "录屏",
+        "短视频",
+        "监控录像",
+        "会议录像"
+      ],
+      "description": "视频内容的专业分类",
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "时长特征",
+        "关键帧分析"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "视频"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "音频细分",
+      "level": 2,
+      "tags": [
+        "音频扩展名",
+        "音乐",
+        "播客",
+        "有声书",
+        "语音备忘",
+        "音效",
+        "会议录音"
+      ],
+      "description": "音频内容的专业分类",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "频谱特征",
+        "元数据"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "音频"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "压缩包细分",
+      "level": 2,
+      "tags": [
+        "压缩包扩展名",
+        "加密压缩包",
+        "未加密压缩包"
+      ],
+      "description": "压缩包的加密状态和格式分类",
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "压缩算法",
+        "文件头签名",
+        "加密检测"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "压缩包"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "程序细分",
+      "level": 2,
+      "tags": [
+        "程序扩展名",
+        "Windows",
+        "Linux",
+        "macOS",
+        "Android",
+        "iOS"
+      ],
+      "description": "可执行文件的分类",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "平台特征",
+        "签名证书"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "程序"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "语言细分",
+      "level": 2,
+      "tags": [
+        "中文",
+        "英文",
+        "日语",
+        "法语",
+        "俄语",
+        "韩语",
+        "西班牙语",
+        "德语",
+        "葡萄牙语",
+        "阿拉伯语",
+        "意大利语",
+        "荷兰语",
+        "泰语",
+        "越南语",
+        "印地语"
+      ],
+      "description": "文件内容的自然语言分类",
+      "applicableFileTypes": [
+        "document",
+        "text",
+        "ebook",
+        "audio",
+        "video"
+      ],
+      "contextHints": [
+        "字符编码",
+        "语法特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "文本",
+            "文档",
+            "电子书",
+            "音频",
+            "视频"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "系统文件细分",
+      "level": 2,
+      "tags": [
+        "系统文件扩展名",
+        "配置文件",
+        "日志",
+        "缓存",
+        "临时文件",
+        "驱动"
+      ],
+      "description": "系统关键文件的功能分类",
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "路径位置",
+        "权限特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "系统文件"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "出版状态",
+      "level": 2,
+      "tags": [
+        "单行本",
+        "连载中",
+        "已完结",
+        "未删减",
+        "番外",
+        "精选",
+        "删减版",
+        "特典"
+      ],
+      "description": "文件的出版与发布状态",
+      "applicableFileTypes": [
+        "ebook",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "版权页",
+        "ISBN号",
+        "发布平台"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "电子书细分",
+          "triggerTags": [
+            "小说"
+          ]
+        },
+        {
+          "parentDimension": "音频细分",
+          "triggerTags": [
+            "有声书",
+            "音乐"
+          ]
+        },
+        {
+          "parentDimension": "视频细分",
+          "triggerTags": [
+            "影视"
+          ]
+        },
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "电子书"
+          ]
+        },
+        {
+          "parentDimension": "图片细分",
+          "triggerTags": [
+            "漫画"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "数据库细分",
+      "level": 2,
+      "tags": [
+        "数据库扩展名",
+        "SQLite",
+        "MySQL",
+        "MongoDB",
+        "Access",
+        "数据备份"
+      ],
+      "description": "数据库文件的技术格式",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "文件签名",
+        "结构特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "数据库"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "磁盘映像细分",
+      "level": 2,
+      "tags": [
+        "磁盘映像扩展名",
+        "系统镜像",
+        "数据镜像",
+        "光盘镜像"
+      ],
+      "description": "磁盘映像的用途分类",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "卷标信息",
+        "分区结构"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "磁盘映像"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "name": "应用数据扩展名",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "应用数据文件的扩展名",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "应用数据细分",
+          "triggerTags": [
+            "应用数据扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "name": "数据库扩展名",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "数据库文件的扩展名",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "数据库细分",
+          "triggerTags": [
+            "数据库扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "name": "磁盘映像扩展名",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "磁盘映像文件的扩展名",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "磁盘映像细分",
+          "triggerTags": [
+            "磁盘映像扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "name": "源代码细分",
+      "level": 2,
+      "tags": [
+        "源代码扩展名",
+        "脚本",
+        "配置文件",
+        "编程语言",
+        "前端",
+        "后端"
+      ],
+      "description": "源代码文件的分类",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "语法特征",
+        "解释器路径"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "源代码"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "地理位置",
+      "level": 2,
+      "tags": [],
+      "description": "内容关联的地理位置",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "GPS坐标",
+        "地标识别"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "图片",
+            "视频"
+          ]
+        },
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "旅行记录",
+            "创意项目"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "安全等级",
+      "level": 2,
+      "tags": [
+        "公开",
+        "内部",
+        "机密",
+        "绝密"
+      ],
+      "description": "文件的保密级别分类",
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "archive",
+        "database"
+      ],
+      "contextHints": [
+        "加密状态",
+        "权限设置"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "工作文档",
+            "财务档案"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "处理状态",
+      "level": 2,
+      "tags": [
+        "草稿",
+        "审核中",
+        "已完成",
+        "已归档",
+        "未归档",
+        "待修订"
+      ],
+      "description": "文件的工作流状态",
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "design"
+      ],
+      "contextHints": [
+        "修改时间",
+        "版本标记"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "工作文档",
+            "创意项目"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "软件性质",
+      "level": 2,
+      "tags": [
+        "官方原版",
+        "修改版",
+        "破解版",
+        "绿色版",
+        "便携版",
+        "精简版",
+        "汉化版"
+      ],
+      "description": "软件的授权与分发性质",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "许可证文件",
+        "授权标识"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "程序"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "旅行内容",
+      "level": 2,
+      "tags": [
+        "自然景观",
+        "城市建筑",
+        "人文活动",
+        "各地美食",
+        "历史遗迹",
+        "户外活动"
+      ],
+      "description": "旅行记录的内容分类",
+      "applicableFileTypes": [
+        "image",
+        "video",
+        "document"
+      ],
+      "contextHints": [
+        "场景识别",
+        "时间特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "旅行记录"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "财务类型",
+      "level": 2,
+      "tags": [
+        "收入凭证",
+        "支出凭证",
+        "资产证明",
+        "税务文件",
+        "合同",
+        "发票"
+      ],
+      "description": "财务文件的业务类型",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "票据识别",
+        "金额模式"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "财务档案"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "游戏类型",
+      "level": 3,
+      "tags": [
+        "RPG",
+        "冒险",
+        "解谜",
+        "塔防",
+        "策略",
+        "经营",
+        "恋爱",
+        "竞技",
+        "MOBA",
+        "格斗",
+        "射击",
+        "动作",
+        "肉鸽",
+        "田园",
+        "养成",
+        "赛车",
+        "乙女"
+      ],
+      "description": "游戏的类型",
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "游戏"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "游戏娱乐"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "学科领域",
+      "level": 2,
+      "tags": [
+        "数学",
+        "物理",
+        "化学",
+        "生物",
+        "计算机科学",
+        "语言学习",
+        "历史",
+        "艺术设计",
+        "工程技术",
+        "经济学",
+        "教育"
+      ],
+      "description": "学习资料的学科领域分类",
+      "applicableFileTypes": [
+        "document",
+        "video",
+        "ebook",
+        "code"
+      ],
+      "contextHints": [
+        "学科术语密度",
+        "教材章节结构",
+        "课程平台标识"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "学习资料"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "电子书细分",
+      "level": 2,
+      "tags": [
+        "电子书扩展名",
+        "小说",
+        "漫画",
+        "技术书籍",
+        "杂志",
+        "教材",
+        "公版书"
+      ],
+      "description": "电子书的内容分类",
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "章节结构",
+        "DRM状态"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "电子书"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "题材",
+      "level": 3,
+      "tags": [
+        "言情",
+        "科幻",
+        "魔幻",
+        "悬疑",
+        "推理",
+        "穿越",
+        "仙侠",
+        "历史",
+        "都市",
+        "校园",
+        "职场",
+        "家庭",
+        "偶像",
+        "武侠",
+        "剧情",
+        "传记",
+        "喜剧",
+        "警匪",
+        "惊悚",
+        "童话",
+        "动画",
+        "纪录",
+        "自然",
+        "人文",
+        "体育",
+        "治愈",
+        "生活",
+        "旅行",
+        "科普",
+        "美食",
+        "短剧",
+        "怪谈",
+        "色情",
+        "调教",
+        "后宫",
+        "耽美",
+        "霸总",
+        "伦理"
+      ],
+      "description": "题材的专业分类",
+      "applicableFileTypes": [
+        "video",
+        "audio",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "时长特征",
+        "关键帧分析",
+        "内容特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "视频细分",
+          "triggerTags": [
+            "影视"
+          ]
+        },
+        {
+          "parentDimension": "音频细分",
+          "triggerTags": [
+            "音乐"
+          ]
+        },
+        {
+          "parentDimension": "电子书细分",
+          "triggerTags": [
+            "小说"
+          ]
+        },
+        {
+          "parentDimension": "程序细分",
+          "triggerTags": [
+            "游戏"
+          ]
+        },
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "游戏娱乐"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "name": "音乐类型",
+      "level": 3,
+      "tags": [
+        "流行",
+        "摇滚",
+        "电子",
+        "嘻哈",
+        "民谣",
+        "古典",
+        "爵士",
+        "蓝调",
+        "金属",
+        "朋克",
+        "乡村",
+        "说唱",
+        "古风",
+        "纯音",
+        "拉丁",
+        "交响"
+      ],
+      "description": "音乐类型",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "时长特征",
+        "内容特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "音频细分",
+          "triggerTags": [
+            "音乐"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "name": "文件质量",
+      "level": 1,
+      "tags": [
+        "高质量",
+        "中等质量",
+        "低质量"
+      ],
+      "description": "文件内容的质量评级",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "内容质量",
+        "技术质量",
+        "美学质量"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 28,
+      "name": "内容标签",
+      "level": 1,
+      "tags": [],
+      "description": "从文件内容或多模态描述中提取的核心关键词",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "文本内容",
+        "视觉描述",
+        "语音转录"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 106,
+      "name": "字体细分",
+      "level": 2,
+      "tags": [
+        "字体扩展名",
+        "英文字体",
+        "中文字体",
+        "图标字体"
+      ],
+      "description": "字体文件的分类",
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "字体格式",
+        "字符集"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "字体"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 107,
+      "name": "系统文件扩展名",
+      "level": 3,
+      "tags": [
+        "sys",
+        "drv",
+        "dll",
+        "service",
+        "socket",
+        "pid",
+        "lock"
+      ],
+      "description": "系统文件的扩展名",
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "系统文件细分",
+          "triggerTags": [
+            "系统文件扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 108,
+      "name": "文档扩展名",
+      "level": 3,
+      "tags": [
+        "ai",
+        "csv",
+        "doc",
+        "docm",
+        "docx",
+        "epub",
+        "f03",
+        "f90",
+        "f95",
+        "md",
+        "numbers",
+        "odp",
+        "ods",
+        "odt",
+        "one",
+        "pdf",
+        "ppt",
+        "pptm",
+        "pptx",
+        "ps",
+        "rtf",
+        "xls",
+        "xlsb",
+        "xlsm",
+        "xlsx"
+      ],
+      "description": "文档类文件的扩展名",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文档细分",
+          "triggerTags": [
+            "文档扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 109,
+      "name": "文本扩展名",
+      "level": 3,
+      "tags": [
+        "txt",
+        "bib",
+        "diff",
+        "patch",
+        "tex",
+        "sty",
+        "rdf",
+        "rst",
+        "sgml",
+        "lrc",
+        "vtt",
+        "webvtt"
+      ],
+      "description": "文本类文件的扩展名",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文本细分",
+          "triggerTags": [
+            "文本扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 110,
+      "name": "图片扩展名",
+      "level": 3,
+      "tags": [
+        "avif",
+        "bmp",
+        "cr2",
+        "dcm",
+        "dng",
+        "dwg",
+        "dxf",
+        "gif",
+        "heic",
+        "heif",
+        "icns",
+        "ico",
+        "j2k",
+        "jp2",
+        "jpeg",
+        "jpg",
+        "jxl",
+        "jpx",
+        "nef",
+        "arw",
+        "pcx",
+        "png",
+        "psd",
+        "raw",
+        "stl",
+        "svg",
+        "tga",
+        "tif",
+        "tiff",
+        "webp",
+        "wmf",
+        "xcf"
+      ],
+      "description": "图像文件的扩展名",
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "图片细分",
+          "triggerTags": [
+            "图片扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 111,
+      "name": "视频扩展名",
+      "level": 3,
+      "tags": [
+        "mp4",
+        "mkv",
+        "mov",
+        "avi",
+        "wmv",
+        "flv",
+        "webm",
+        "m4v",
+        "mpeg",
+        "mpg",
+        "3gp",
+        "ogv",
+        "rm",
+        "rmvb",
+        "asf",
+        "vob",
+        "f4v",
+        "m2ts",
+        "mxf",
+        "dv"
+      ],
+      "description": "视频文件的扩展名",
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "视频细分",
+          "triggerTags": [
+            "视频扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 112,
+      "name": "音频扩展名",
+      "level": 3,
+      "tags": [
+        "mp3",
+        "wav",
+        "flac",
+        "aac",
+        "ogg",
+        "m4a",
+        "wma",
+        "aiff",
+        "opus",
+        "weba",
+        "ape",
+        "dsd",
+        "dsf",
+        "dff",
+        "mqa",
+        "ac3",
+        "dts",
+        "ra",
+        "au",
+        "snd",
+        "caf",
+        "amr",
+        "3ga",
+        "mid",
+        "midi",
+        "oga"
+      ],
+      "description": "音频文件的扩展名",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "音频细分",
+          "triggerTags": [
+            "音频扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 113,
+      "name": "压缩包扩展名",
+      "level": 3,
+      "tags": [
+        "7z",
+        "7zip",
+        "ace",
+        "bz2",
+        "cbr",
+        "cbz",
+        "deb",
+        "dmg",
+        "ear",
+        "gz",
+        "gzip",
+        "h5",
+        "hdf5",
+        "iso",
+        "jar",
+        "klib",
+        "lha",
+        "lzh",
+        "msi",
+        "npy",
+        "npz",
+        "onnx",
+        "pkg",
+        "rar",
+        "rpm",
+        "snap",
+        "tar",
+        "tbz2",
+        "tgz",
+        "war",
+        "xar",
+        "xpi",
+        "xz",
+        "zip"
+      ],
+      "description": "压缩包文件的扩展名",
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "压缩包细分",
+          "triggerTags": [
+            "压缩包扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 114,
+      "name": "源代码扩展名",
+      "level": 3,
+      "tags": [
+        "js",
+        "mjs",
+        "cjs",
+        "ts",
+        "tsx",
+        "jsx",
+        "py",
+        "java",
+        "c",
+        "cpp",
+        "cc",
+        "cxx",
+        "h",
+        "hpp",
+        "cs",
+        "csx",
+        "go",
+        "rs",
+        "php",
+        "rb",
+        "swift",
+        "kt",
+        "kts",
+        "scala",
+        "dart",
+        "zig",
+        "asm",
+        "lua",
+        "pl",
+        "pm",
+        "awk",
+        "sed",
+        "sql",
+        "sh",
+        "bash",
+        "ps1",
+        "bat",
+        "cmd",
+        "vbs",
+        "vba",
+        "vb",
+        "ahk",
+        "au3",
+        "coffee",
+        "clj",
+        "cljs",
+        "cljc",
+        "cljr",
+        "erl",
+        "hrl",
+        "hs",
+        "lhs",
+        "jl",
+        "lisp",
+        "lsp",
+        "l",
+        "cl",
+        "groovy",
+        "gradle",
+        "gemspec",
+        "cmake",
+        "bzl",
+        "twig",
+        "hbs",
+        "handlebars",
+        "jinja",
+        "jinja2",
+        "j2",
+        "erb",
+        "smali",
+        "sol",
+        "dm",
+        "m4",
+        "matlab",
+        "r",
+        "v",
+        "verilog",
+        "vlg",
+        "vh",
+        "vhd",
+        "yar",
+        "yara",
+        "json",
+        "cts",
+        "aspx",
+        "asp",
+        "cbl",
+        "cob",
+        "cpy",
+        "csproj",
+        "vcxproj",
+        "sln",
+        "ixx",
+        "cppm",
+        "bundle",
+        "bdl",
+        "css",
+        "toml",
+        "vue",
+        "ipynb",
+        "mts",
+        "xml",
+        "yaml",
+        "yml"
+      ],
+      "description": "源代码文件的扩展名",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "源代码细分",
+          "triggerTags": [
+            "源代码扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 115,
+      "name": "程序扩展名",
+      "level": 3,
+      "tags": [
+        "apk",
+        "class",
+        "crx",
+        "dex",
+        "dll",
+        "elf",
+        "exe",
+        "o",
+        "obj",
+        "pyc",
+        "pyo",
+        "swf",
+        "wasm",
+        "app",
+        "bin"
+      ],
+      "description": "可执行文件的扩展名",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "程序细分",
+          "triggerTags": [
+            "程序扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 116,
+      "name": "电子书扩展名",
+      "level": 3,
+      "tags": [
+        "epub",
+        "mobi",
+        "azw3",
+        "fb2",
+        "djvu",
+        "umd",
+        "cb7",
+        "cbt",
+        "bz2",
+        "cbr",
+        "cbz"
+      ],
+      "description": "电子书文件的扩展名",
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "电子书细分",
+          "triggerTags": [
+            "电子书扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 117,
+      "name": "字体扩展名",
+      "level": 3,
+      "tags": [
+        "ttf",
+        "otf",
+        "woff",
+        "woff2"
+      ],
+      "description": "字体文件的扩展名",
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "字体细分",
+          "triggerTags": [
+            "字体扩展名"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 118,
+      "name": "漫画细分",
+      "level": 3,
+      "tags": [
+        "少年漫",
+        "少女漫",
+        "青年漫",
+        "成人漫",
+        "四格漫",
+        "页漫",
+        "条漫",
+        "全彩",
+        "黑白",
+        "同人本",
+        "商业志"
+      ],
+      "description": "漫画内容的目标受众分类",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "archive"
+      ],
+      "contextHints": [
+        "内容特征",
+        "受众标识"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "压缩包细分",
+          "triggerTags": [
+            "加密压缩包",
+            "未加密压缩包"
+          ]
+        },
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "电子书"
+          ]
+        },
+        {
+          "parentDimension": "图片细分",
+          "triggerTags": [
+            "漫画"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 119,
+      "name": "游戏平台",
+      "level": 3,
+      "tags": [
+        "PC",
+        "Xbox",
+        "Switch",
+        "PS5",
+        "手机",
+        "街机",
+        "掌机",
+        "Steam",
+        "Epic",
+        "GOG",
+        "Origin",
+        "Uplay",
+        "WeGame",
+        "独立平台"
+      ],
+      "description": "游戏运行的硬件平台",
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "archive",
+        "executable"
+      ],
+      "contextHints": [
+        "平台标识",
+        "文件格式"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "游戏娱乐"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 120,
+      "name": "作品来源",
+      "level": 2,
+      "tags": [
+        "AI生成",
+        "原创",
+        "同人",
+        "翻译",
+        "官翻",
+        "汉化组",
+        "机翻"
+      ],
+      "description": "创作内容的来源与生产方式",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive"
+      ],
+      "contextHints": [
+        "创作声明",
+        "数字水印",
+        "元数据"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "电子书细分",
+          "triggerTags": [
+            "小说"
+          ]
+        },
+        {
+          "parentDimension": "音频细分",
+          "triggerTags": [
+            "有声书",
+            "音乐"
+          ]
+        },
+        {
+          "parentDimension": "视频细分",
+          "triggerTags": [
+            "影视"
+          ]
+        },
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "电子书",
+            "图片"
+          ]
+        },
+        {
+          "parentDimension": "图片细分",
+          "triggerTags": [
+            "漫画"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 121,
+      "name": "情绪标签",
+      "level": 2,
+      "tags": [
+        "欢乐",
+        "悲伤",
+        "治愈",
+        "致郁",
+        "轻松",
+        "紧张",
+        "感动",
+        "怀旧",
+        "欲望",
+        "兴奋",
+        "压抑",
+        "罪恶感",
+        "背德感",
+        "羞耻",
+        "支配"
+      ],
+      "description": "文件内容唤起的情感氛围",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "情感分析",
+        "内容基调"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "电子书细分",
+          "triggerTags": [
+            "小说"
+          ]
+        },
+        {
+          "parentDimension": "音频细分",
+          "triggerTags": [
+            "有声书",
+            "音乐"
+          ]
+        },
+        {
+          "parentDimension": "视频细分",
+          "triggerTags": [
+            "影视"
+          ]
+        },
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "电子书",
+            "图片"
+          ]
+        },
+        {
+          "parentDimension": "图片细分",
+          "triggerTags": [
+            "漫画"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 122,
+      "name": "画质等级",
+      "level": 2,
+      "tags": [
+        "流畅360P",
+        "标清480P",
+        "高清720P",
+        "超清1080P",
+        "2K",
+        "4K",
+        "8K"
+      ],
+      "description": "图像或视频的画质清晰度等级",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "分辨率检测",
+        "编码参数"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "视频细分",
+          "triggerTags": [
+            "影视"
+          ]
+        },
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "图片"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 123,
+      "name": "内容尺度",
+      "level": 2,
+      "tags": [
+        "全年龄",
+        "软色情",
+        "半肉",
+        "纯肉",
+        "特殊XP",
+        "重度猎奇",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "文件内容的年龄适宜性分级",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "内容审查",
+        "分级标识"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "电子书细分",
+          "triggerTags": [
+            "小说"
+          ]
+        },
+        {
+          "parentDimension": "音频细分",
+          "triggerTags": [
+            "有声书",
+            "音乐"
+          ]
+        },
+        {
+          "parentDimension": "视频细分",
+          "triggerTags": [
+            "影视"
+          ]
+        },
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "电子书",
+            "图片"
+          ]
+        },
+        {
+          "parentDimension": "图片细分",
+          "triggerTags": [
+            "漫画"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 124,
+      "name": "打码程度",
+      "level": 2,
+      "tags": [
+        "无码",
+        "薄码",
+        "有码"
+      ],
+      "description": "文件内容的打码程度",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "内容审查",
+        "分级标识"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "视频细分",
+          "triggerTags": [
+            "影视"
+          ]
+        },
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "图片"
+          ]
+        },
+        {
+          "parentDimension": "图片细分",
+          "triggerTags": [
+            "漫画"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 125,
+      "name": "水印程度",
+      "level": 2,
+      "tags": [
+        "无水印",
+        "轻水印",
+        "有水印"
+      ],
+      "description": "文件内容的水印程度",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "内容审查",
+        "分级标识",
+        "版权标识"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "视频细分",
+          "triggerTags": [
+            "影视"
+          ]
+        },
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "图片"
+          ]
+        },
+        {
+          "parentDimension": "图片细分",
+          "triggerTags": [
+            "漫画"
+          ]
+        }
+      ]
+    }
+  ]
+}

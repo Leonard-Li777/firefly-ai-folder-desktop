@@ -57,7 +57,6 @@ build/extraResources/bundles-static/
 build/extraResources/stubs/
 build/extraResources/temp/
 build/extraResources/logs/
-build/extraResources/.VirtualDirectory/
 build/extraResources/configs/binaries.json
 build/extraResources/configs/models.json
 build/extraResources/model/*.bak.json

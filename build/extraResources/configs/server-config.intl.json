@@ -1,0 +1,8 @@
+{
+  "FILE_CLEANUP_CONFIG": {
+    "enabled": true,
+    "base_days": 90,
+    "extra_days_per_hit": 30,
+    "schedule": "0 3 * * 0"
+  }
+}

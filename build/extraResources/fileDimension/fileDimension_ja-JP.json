@@ -1,0 +1,2086 @@
+{
+  "file_dimensions": [
+    {
+      "id": 1,
+      "name": "ファイルの種類",
+      "level": 1,
+      "tags": [
+        "テキスト",
+        "ドキュメント",
+        "電子書籍",
+        "画像",
+        "動画",
+        "音声",
+        "圧縮ファイル",
+        "ソースコード",
+        "実行プログラム",
+        "フォント",
+        "3Dモデル",
+        "システムファイル",
+        "データベース",
+        "ディスクイメージ",
+        "アプリデータ"
+      ],
+      "description": "ファイルの基本フォーマット分類",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "拡張子",
+        "MIMEタイプ",
+        "マジックナンバー / シグネチャ"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 2,
+      "name": "ファイルの用途",
+      "level": 1,
+      "tags": [
+        "作業ドキュメント",
+        "ツール・ユーティリティ",
+        "学習・勉強資料",
+        "ゲーム・エンタメ",
+        "クリエイティブプロジェクト",
+        "旅行の記録",
+        "デザイン素材",
+        "システムメンテナンス",
+        "学術研究",
+        "個人メモ"
+      ],
+      "description": "ファイルの主要な利用シーン",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "保存パス",
+        "命名パターン",
+        "関連アプリケーション"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 3,
+      "name": "ファイルのソース・入手元",
+      "level": 1,
+      "tags": [
+        "ローカル作成",
+        "Webダウンロード",
+        "デバイスからの取り込み",
+        "チャット・通信受信",
+        "クラウド同期",
+        "自動生成",
+        "スキャンドキュメント",
+        "メール添付ファイル"
+      ],
+      "description": "ファイルの元の取得経路",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "パスの特性",
+        "転送ログ"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 4,
+      "name": "著者",
+      "level": 1,
+      "tags": [],
+      "description": "ファイルの作成者または寄稿者",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "code",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "メタデータ",
+        "デジタル署名",
+        "透かし"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 100,
+      "name": "テキストの細分化",
+      "level": 2,
+      "tags": [
+        "テキスト拡張子",
+        "プレーンテキスト",
+        "マークアップドキュメント",
+        "ログファイル",
+        "設定ファイル",
+        "差分ファイル",
+        "サブタイトル"
+      ],
+      "description": "テキストファイルの小分け",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "フォーマットの特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "テキスト"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "name": "ドキュメントの細分化",
+      "level": 2,
+      "tags": [
+        "文書拡張子",
+        "Office",
+        "Word文書",
+        "シート",
+        "プレゼンテーション",
+        "WPSドキュメント"
+      ],
+      "description": "文書ファイルの小分け",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "フォーマットの特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "ドキュメント"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "アプリケーションデータのセグメント化",
+      "level": 2,
+      "tags": [
+        "アプリケーションデータ拡張子",
+        "ショートカット",
+        "プレイリスト",
+        "レジストリ",
+        "ヘルプドキュメント"
+      ],
+      "description": "アプリケーションデータファイルのセグメント化",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "フォーマットの特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "アプリデータ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "画像のセグメンテーション",
+      "level": 2,
+      "tags": [
+        "画像拡張子",
+        "写真",
+        "スクリーンショット",
+        "デザイン案",
+        "アプリケーションアイコン",
+        "絵文字",
+        "医療画像処理",
+        "描画",
+        "マンガ",
+        "絵画"
+      ],
+      "description": "画像コンテンツの専門的な分類",
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "EXIFデータ",
+        "コンテンツ認識"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "画像"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "ビデオセグメンテーション",
+      "level": 2,
+      "tags": [
+        "ビデオ拡張子",
+        "映画とテレビ",
+        "説明ビデオ",
+        "ゲームのインタラクション",
+        "録画画面",
+        "短いビデオ",
+        "監視ビデオ",
+        "ミーティングビデオ"
+      ],
+      "description": "ビデオコンテンツの専門的な分類",
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "持続時間特性",
+        "キーフレーム分析"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "動画"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "オーディオセグメンテーション",
+      "level": 2,
+      "tags": [
+        "オーディオ拡張子",
+        "音楽",
+        "ポッドキャスト",
+        "オーディオブック",
+        "ボイスメモ",
+        "効果音",
+        "会議の録音"
+      ],
+      "description": "オーディオコンテンツの専門的な分類",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "分光特性",
+        "メタデータ"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "音声"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "圧縮パッケージの内訳",
+      "level": 2,
+      "tags": [
+        "圧縮されたパッケージ拡張子",
+        "暗号化された圧縮パッケージ",
+        "暗号化されていない圧縮パッケージ"
+      ],
+      "description": "圧縮パッケージの暗号化ステータスと形式分類",
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "圧縮アルゴリズム",
+        "ファイルヘッダーの署名",
+        "暗号化の検出"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "圧縮ファイル"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "プログラムの細分化",
+      "level": 2,
+      "tags": [
+        "プログラムの延長",
+        "Windows",
+        "Linux",
+        "macOS",
+        "Android",
+        "iOS"
+      ],
+      "description": "実行可能ファイルの分類",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "プラットフォームの機能",
+        "署名証明書"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "実行プログラム"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "言語のセグメンテーション",
+      "level": 2,
+      "tags": [
+        "中国語",
+        "英語",
+        "日本語",
+        "フランス語",
+        "ロシア",
+        "韓国人",
+        "スペイン語",
+        "ドイツ語",
+        "ポルトガル語",
+        "アラビア語",
+        "イタリア語",
+        "オランダ語",
+        "タイ語",
+        "ベトナム語",
+        "ヒンディー語"
+      ],
+      "description": "文書コンテンツの自然言語分類",
+      "applicableFileTypes": [
+        "document",
+        "text",
+        "ebook",
+        "audio",
+        "video"
+      ],
+      "contextHints": [
+        "文字エンコーディング",
+        "文法的特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "テキスト",
+            "ドキュメント",
+            "電子書籍",
+            "音声",
+            "動画"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "システムファイルの内訳",
+      "level": 2,
+      "tags": [
+        "システムファイル拡張子",
+        "設定ファイル",
+        "ログ",
+        "キャッシュ",
+        "一時ファイル",
+        "ドライブ"
+      ],
+      "description": "主要なシステム ファイルの機能分類",
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "パスの位置",
+        "権限の特性"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "システムファイル"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "刊行状況",
+      "level": 2,
+      "tags": [
+        "別冊",
+        "連載中",
+        "完了",
+        "ノーカット",
+        "余分な",
+        "注目の",
+        "短縮版",
+        "特別オファー"
+      ],
+      "description": "文書の発行およびリリース状況",
+      "applicableFileTypes": [
+        "ebook",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "著作権ページ",
+        "ISBN番号",
+        "出版プラットフォーム"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "電子書籍のセグメンテーション",
+          "triggerTags": [
+            "小説"
+          ]
+        },
+        {
+          "parentDimension": "オーディオセグメンテーション",
+          "triggerTags": [
+            "オーディオブック",
+            "音楽"
+          ]
+        },
+        {
+          "parentDimension": "ビデオセグメンテーション",
+          "triggerTags": [
+            "映画とテレビ"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "電子書籍"
+          ]
+        },
+        {
+          "parentDimension": "画像のセグメンテーション",
+          "triggerTags": [
+            "マンガ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "データベースのセグメント化",
+      "level": 2,
+      "tags": [
+        "データベース拡張機能",
+        "SQLite",
+        "MySQL",
+        "MongoDB",
+        "Access",
+        "データのバックアップ"
+      ],
+      "description": "データベース ファイルの技術的な形式",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "マジックナンバー / シグネチャ",
+        "構造的特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "データベース"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "ディスクイメージのセグメンテーション",
+      "level": 2,
+      "tags": [
+        "ディスクイメージ拡張子",
+        "システムイメージ",
+        "データミラーリング",
+        "ディスクイメージ"
+      ],
+      "description": "ディスクイメージの使用分類",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "ボリュームラベル情報",
+        "パーティション構造"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "ディスクイメージ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "name": "アプリケーションデータ拡張子",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "アプリケーションデータファイルの拡張子",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アプリケーションデータのセグメント化",
+          "triggerTags": [
+            "アプリケーションデータ拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "name": "データベース拡張機能",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "データベースファイル拡張子",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "データベースのセグメント化",
+          "triggerTags": [
+            "データベース拡張機能"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "name": "ディスクイメージ拡張子",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "ディスクイメージファイルの拡張子",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ディスクイメージのセグメンテーション",
+          "triggerTags": [
+            "ディスクイメージ拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "name": "ソースコードのセグメンテーション",
+      "level": 2,
+      "tags": [
+        "ソースコードの拡張子",
+        "スクリプト",
+        "設定ファイル",
+        "プログラミング言語",
+        "フロントエンド",
+        "後部"
+      ],
+      "description": "ソースコードファイルの分類",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "文法的特徴",
+        "インタプリタのパス"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "ソースコード"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "地理的位置",
+      "level": 2,
+      "tags": [],
+      "description": "コンテンツに関連付けられた場所",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "GPS座標",
+        "ランドマークの認識"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "画像",
+            "動画"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "旅行の記録",
+            "クリエイティブプロジェクト"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "セキュリティレベル",
+      "level": 2,
+      "tags": [
+        "公共",
+        "内面",
+        "機密",
+        "極秘"
+      ],
+      "description": "文書の機密レ​​ベルの分類",
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "archive",
+        "database"
+      ],
+      "contextHints": [
+        "暗号化ステータス",
+        "権限設定"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "作業ドキュメント",
+            "財務ファイル"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "処理状況",
+      "level": 2,
+      "tags": [
+        "下書き",
+        "検討中",
+        "完了",
+        "アーカイブ済み",
+        "アーカイブされていません",
+        "改訂予定"
+      ],
+      "description": "ファイルのワークフローステータス",
+      "applicableFileTypes": [
+        "document",
+        "code",
+        "design"
+      ],
+      "contextHints": [
+        "修正時間",
+        "バージョンマーク"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "作業ドキュメント",
+            "クリエイティブプロジェクト"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "ソフトウェアの性質",
+      "level": 2,
+      "tags": [
+        "公式オリジナルバージョン",
+        "修正版",
+        "クラック版",
+        "グリーンバージョン",
+        "ポータブル版",
+        "ライト版",
+        "中国語版"
+      ],
+      "description": "ソフトウェアのライセンスと配布の性質",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "ライセンスファイル",
+        "認可ID"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "実行プログラム"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "旅行の内容",
+      "level": 2,
+      "tags": [
+        "自然の風景",
+        "都市建築",
+        "人間味あふれる活動",
+        "世界中の食べ物",
+        "史跡",
+        "アウトドアアクティビティ"
+      ],
+      "description": "旅行記録の内容分類",
+      "applicableFileTypes": [
+        "image",
+        "video",
+        "document"
+      ],
+      "contextHints": [
+        "シーン認識",
+        "時間特性"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "旅行の記録"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "財務タイプ",
+      "level": 2,
+      "tags": [
+        "収入証明書",
+        "支出伝票",
+        "資産の証明",
+        "税務書類",
+        "契約",
+        "請求書"
+      ],
+      "description": "財務書類の業種",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "請求書の識別",
+        "金額モード"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "財務ファイル"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "ゲームの種類",
+      "level": 3,
+      "tags": [
+        "RPG",
+        "アドベンチャー",
+        "パズル・謎解き",
+        "タワーディフェンス",
+        "ストラテジー",
+        "経営シミュレーション",
+        "恋愛シミュレーション",
+        "対戦・eスポーツ",
+        "MOBA",
+        "格闘ゲーム",
+        "シューティングゲーム",
+        "アクションゲーム",
+        "ローグライク",
+        "スローライフ・田園",
+        "育成シミュレーション",
+        "レースゲーム",
+        "乙女ゲーム"
+      ],
+      "description": "ゲームの種類",
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "ゲーム"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "ゲーム・エンタメ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "対象分野",
+      "level": 2,
+      "tags": [
+        "数学",
+        "物理学",
+        "化学薬品",
+        "生物学",
+        "コンピュータサイエンス",
+        "語学学習",
+        "歴史",
+        "アート・デザイン",
+        "工学・技術",
+        "経済学",
+        "教育する"
+      ],
+      "description": "学習教材の分野分類",
+      "applicableFileTypes": [
+        "document",
+        "video",
+        "ebook",
+        "code"
+      ],
+      "contextHints": [
+        "主題の用語の密度",
+        "教科書の章構成",
+        "コースプラットフォームのロゴ"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "学習・勉強資料"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "電子書籍のセグメンテーション",
+      "level": 2,
+      "tags": [
+        "電子ブックの拡張子",
+        "小説",
+        "マンガ",
+        "技術書",
+        "雑誌",
+        "教科書",
+        "公共の本"
+      ],
+      "description": "電子書籍のコンテンツ分類",
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "章の構成",
+        "DRMステータス"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "電子書籍"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "テーマ",
+      "level": 3,
+      "tags": [
+        "ロマンス",
+        "SF",
+        "魔法",
+        "サスペンス",
+        "推論",
+        "タイムトラベル",
+        "仙霞",
+        "歴史",
+        "市",
+        "キャンパス",
+        "職場",
+        "家族",
+        "アイドル",
+        "武道",
+        "プロット",
+        "バイオグラフィー",
+        "コメディ",
+        "警官と強盗",
+        "スリラー",
+        "おとぎ話",
+        "アニメーション",
+        "記録",
+        "自然(しぜん)",
+        "人文科学",
+        "スポーツ",
+        "治す",
+        "人生",
+        "旅",
+        "ポピュラーサイエンス",
+        "グルメ",
+        "寸劇",
+        "奇妙な話",
+        "ポルノ",
+        "トレーニング",
+        "ハーレム",
+        "ダンメイ",
+        "オーバーロード",
+        "倫理"
+      ],
+      "description": "主題の専門的な分類",
+      "applicableFileTypes": [
+        "video",
+        "audio",
+        "ebook",
+        "executable"
+      ],
+      "contextHints": [
+        "持続時間特性",
+        "キーフレーム分析",
+        "コンテンツの特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ビデオセグメンテーション",
+          "triggerTags": [
+            "映画とテレビ"
+          ]
+        },
+        {
+          "parentDimension": "オーディオセグメンテーション",
+          "triggerTags": [
+            "音楽"
+          ]
+        },
+        {
+          "parentDimension": "電子書籍のセグメンテーション",
+          "triggerTags": [
+            "小説"
+          ]
+        },
+        {
+          "parentDimension": "プログラムの細分化",
+          "triggerTags": [
+            "ゲーム"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "ゲーム・エンタメ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "name": "音楽の種類",
+      "level": 3,
+      "tags": [
+        "ポップス",
+        "ロック",
+        "エレクトロニック / EDM",
+        "ヒップホップ",
+        "フォーク / 民謡",
+        "クラシック音楽",
+        "ジャズ",
+        "ブルース",
+        "ヘヴィメタル",
+        "パンク",
+        "カントリーミュージック",
+        "ラップ",
+        "伝統スタイル・古風音楽",
+        "インストゥルメンタル",
+        "ラテン音楽",
+        "交響曲 / シンフォニー"
+      ],
+      "description": "音楽の種類",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "持続時間特性",
+        "コンテンツの特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "オーディオセグメンテーション",
+          "triggerTags": [
+            "音楽"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "name": "文書の品質",
+      "level": 1,
+      "tags": [
+        "高品質",
+        "中品質",
+        "低品質"
+      ],
+      "description": "ファイルコンテンツの品質評価",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "コンテンツの品質",
+        "技術的品質",
+        "美的品質"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 28,
+      "name": "コンテンツタグ",
+      "level": 1,
+      "tags": [],
+      "description": "文書コンテンツまたはマルチモーダルな説明から抽出されたコアキーワード",
+      "applicableFileTypes": [
+        "*"
+      ],
+      "contextHints": [
+        "テキストコンテンツ",
+        "視覚的な説明",
+        "音声文字起こし"
+      ],
+      "triggerConditions": []
+    },
+    {
+      "id": 106,
+      "name": "フォントのセグメンテーション",
+      "level": 2,
+      "tags": [
+        "フォント拡張子",
+        "英語フォント",
+        "中国語フォント",
+        "アイコンフォント"
+      ],
+      "description": "フォントファイルの分類",
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "フォント形式",
+        "文字セット"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "フォント"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 107,
+      "name": "システムファイル拡張子",
+      "level": 3,
+      "tags": [
+        "sys",
+        "drv",
+        "dll",
+        "service",
+        "socket",
+        "pid",
+        "lock"
+      ],
+      "description": "システムファイル拡張子",
+      "applicableFileTypes": [
+        "filesystem"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "システムファイルの内訳",
+          "triggerTags": [
+            "システムファイル拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 108,
+      "name": "文書拡張子",
+      "level": 3,
+      "tags": [
+        "ai",
+        "csv",
+        "doc",
+        "docm",
+        "docx",
+        "epub",
+        "f03",
+        "f90",
+        "f95",
+        "md",
+        "numbers",
+        "odp",
+        "ods",
+        "odt",
+        "one",
+        "pdf",
+        "ppt",
+        "pptm",
+        "pptx",
+        "ps",
+        "rtf",
+        "xls",
+        "xlsb",
+        "xlsm",
+        "xlsx"
+      ],
+      "description": "ドキュメントクラスのファイル拡張子",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ドキュメントの細分化",
+          "triggerTags": [
+            "文書拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 109,
+      "name": "テキスト拡張子",
+      "level": 3,
+      "tags": [
+        "txt",
+        "bib",
+        "diff",
+        "patch",
+        "tex",
+        "sty",
+        "rdf",
+        "rst",
+        "sgml",
+        "lrc",
+        "vtt",
+        "webvtt"
+      ],
+      "description": "テキストファイルの拡張子",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "テキストの細分化",
+          "triggerTags": [
+            "テキスト拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 110,
+      "name": "画像拡張子",
+      "level": 3,
+      "tags": [
+        "avif",
+        "bmp",
+        "cr2",
+        "dcm",
+        "dng",
+        "dwg",
+        "dxf",
+        "gif",
+        "heic",
+        "heif",
+        "icns",
+        "ico",
+        "j2k",
+        "jp2",
+        "jpeg",
+        "jpg",
+        "jxl",
+        "jpx",
+        "nef",
+        "arw",
+        "pcx",
+        "png",
+        "psd",
+        "raw",
+        "stl",
+        "svg",
+        "tga",
+        "tif",
+        "tiff",
+        "webp",
+        "wmf",
+        "xcf"
+      ],
+      "description": "画像ファイルの拡張子",
+      "applicableFileTypes": [
+        "image"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "画像のセグメンテーション",
+          "triggerTags": [
+            "画像拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 111,
+      "name": "ビデオ拡張子",
+      "level": 3,
+      "tags": [
+        "mp4",
+        "mkv",
+        "mov",
+        "avi",
+        "wmv",
+        "flv",
+        "webm",
+        "m4v",
+        "mpeg",
+        "mpg",
+        "3gp",
+        "ogv",
+        "rm",
+        "rmvb",
+        "asf",
+        "vob",
+        "f4v",
+        "m2ts",
+        "mxf",
+        "dv"
+      ],
+      "description": "動画ファイルの拡張子",
+      "applicableFileTypes": [
+        "video"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ビデオセグメンテーション",
+          "triggerTags": [
+            "ビデオ拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 112,
+      "name": "オーディオ拡張子",
+      "level": 3,
+      "tags": [
+        "mp3",
+        "wav",
+        "flac",
+        "aac",
+        "ogg",
+        "m4a",
+        "wma",
+        "aiff",
+        "opus",
+        "weba",
+        "ape",
+        "dsd",
+        "dsf",
+        "dff",
+        "mqa",
+        "ac3",
+        "dts",
+        "ra",
+        "au",
+        "snd",
+        "caf",
+        "amr",
+        "3ga",
+        "mid",
+        "midi",
+        "oga"
+      ],
+      "description": "音声ファイルの拡張子",
+      "applicableFileTypes": [
+        "audio"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "オーディオセグメンテーション",
+          "triggerTags": [
+            "オーディオ拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 113,
+      "name": "圧縮されたパッケージ拡張子",
+      "level": 3,
+      "tags": [
+        "7z",
+        "7zip",
+        "ace",
+        "bz2",
+        "cbr",
+        "cbz",
+        "deb",
+        "dmg",
+        "ear",
+        "gz",
+        "gzip",
+        "h5",
+        "hdf5",
+        "iso",
+        "jar",
+        "klib",
+        "lha",
+        "lzh",
+        "msi",
+        "npy",
+        "npz",
+        "onnx",
+        "pkg",
+        "rar",
+        "rpm",
+        "snap",
+        "tar",
+        "tbz2",
+        "tgz",
+        "war",
+        "xar",
+        "xpi",
+        "xz",
+        "zip"
+      ],
+      "description": "圧縮パッケージファイルの拡張子",
+      "applicableFileTypes": [
+        "archive"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "圧縮パッケージの内訳",
+          "triggerTags": [
+            "圧縮されたパッケージ拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 114,
+      "name": "ソースコードの拡張子",
+      "level": 3,
+      "tags": [
+        "js",
+        "mjs",
+        "cjs",
+        "ts",
+        "tsx",
+        "jsx",
+        "py",
+        "java",
+        "c",
+        "cpp",
+        "cc",
+        "cxx",
+        "h",
+        "hpp",
+        "cs",
+        "csx",
+        "go",
+        "rs",
+        "php",
+        "rb",
+        "swift",
+        "kt",
+        "kts",
+        "scala",
+        "dart",
+        "zig",
+        "asm",
+        "lua",
+        "pl",
+        "pm",
+        "awk",
+        "sed",
+        "sql",
+        "sh",
+        "bash",
+        "ps1",
+        "bat",
+        "cmd",
+        "vbs",
+        "vba",
+        "vb",
+        "ahk",
+        "au3",
+        "coffee",
+        "clj",
+        "cljs",
+        "cljc",
+        "cljr",
+        "erl",
+        "hrl",
+        "hs",
+        "lhs",
+        "jl",
+        "lisp",
+        "lsp",
+        "l",
+        "cl",
+        "groovy",
+        "gradle",
+        "gemspec",
+        "cmake",
+        "bzl",
+        "twig",
+        "hbs",
+        "handlebars",
+        "jinja",
+        "jinja2",
+        "j2",
+        "erb",
+        "smali",
+        "sol",
+        "dm",
+        "m4",
+        "matlab",
+        "r",
+        "v",
+        "verilog",
+        "vlg",
+        "vh",
+        "vhd",
+        "yar",
+        "yara",
+        "json",
+        "cts",
+        "aspx",
+        "asp",
+        "cbl",
+        "cob",
+        "cpy",
+        "csproj",
+        "vcxproj",
+        "sln",
+        "ixx",
+        "cppm",
+        "bundle",
+        "bdl",
+        "css",
+        "toml",
+        "vue",
+        "ipynb",
+        "mts",
+        "xml",
+        "yaml",
+        "yml"
+      ],
+      "description": "ソースコードのファイル拡張子",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ソースコードのセグメンテーション",
+          "triggerTags": [
+            "ソースコードの拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 115,
+      "name": "プログラムの延長",
+      "level": 3,
+      "tags": [
+        "apk",
+        "class",
+        "crx",
+        "dex",
+        "dll",
+        "elf",
+        "exe",
+        "o",
+        "obj",
+        "pyc",
+        "pyo",
+        "swf",
+        "wasm",
+        "app",
+        "bin"
+      ],
+      "description": "実行ファイルの拡張子",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "プログラムの細分化",
+          "triggerTags": [
+            "プログラムの延長"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 116,
+      "name": "電子ブックの拡張子",
+      "level": 3,
+      "tags": [
+        "epub",
+        "mobi",
+        "azw3",
+        "fb2",
+        "djvu",
+        "umd",
+        "cb7",
+        "cbt",
+        "bz2",
+        "cbr",
+        "cbz"
+      ],
+      "description": "電子書籍のファイル拡張子",
+      "applicableFileTypes": [
+        "ebook"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "電子書籍のセグメンテーション",
+          "triggerTags": [
+            "電子ブックの拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 117,
+      "name": "フォント拡張子",
+      "level": 3,
+      "tags": [
+        "ttf",
+        "otf",
+        "woff",
+        "woff2"
+      ],
+      "description": "フォントファイルの拡張子",
+      "applicableFileTypes": [
+        "font"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "フォントのセグメンテーション",
+          "triggerTags": [
+            "フォント拡張子"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 118,
+      "name": "コミックのセグメンテーション",
+      "level": 3,
+      "tags": [
+        "少年漫画",
+        "少女漫画",
+        "青年漫画",
+        "アダルトコミック",
+        "4コマ漫画",
+        "ページ漫画",
+        "ウェブトゥーン",
+        "フルカラー",
+        "黒と白",
+        "同人誌",
+        "ビジネスジャーナル"
+      ],
+      "description": "コミックコンテンツの対象読者分類",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "archive"
+      ],
+      "contextHints": [
+        "コンテンツの特徴",
+        "オーディエンスID"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "圧縮パッケージの内訳",
+          "triggerTags": [
+            "暗号化された圧縮パッケージ",
+            "暗号化されていない圧縮パッケージ"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "電子書籍"
+          ]
+        },
+        {
+          "parentDimension": "画像のセグメンテーション",
+          "triggerTags": [
+            "マンガ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 119,
+      "name": "ゲームプラットフォーム",
+      "level": 3,
+      "tags": [
+        "PC",
+        "Xbox",
+        "Switch",
+        "PS5",
+        "携帯電話",
+        "アーケード",
+        "ハンドヘルドコンソール",
+        "Steam",
+        "Epic",
+        "GOG",
+        "Origin",
+        "Uplay",
+        "WeGame",
+        "独立したプラットフォーム"
+      ],
+      "description": "ゲームが動作するハードウェア プラットフォーム",
+      "applicableFileTypes": [
+        "video",
+        "ebook",
+        "archive",
+        "executable"
+      ],
+      "contextHints": [
+        "プラットフォームの識別",
+        "ファイル形式"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "ゲーム・エンタメ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 120,
+      "name": "仕事のソース",
+      "level": 2,
+      "tags": [
+        "AIが生成した",
+        "オリジナル",
+        "ファンメイド",
+        "翻訳する",
+        "公式翻訳",
+        "翻訳チーム",
+        "機械翻訳"
+      ],
+      "description": "クリエイティブコンテンツのソースと制作方法",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive"
+      ],
+      "contextHints": [
+        "クリエイティブなステートメント",
+        "電子透かし",
+        "メタデータ"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "電子書籍のセグメンテーション",
+          "triggerTags": [
+            "小説"
+          ]
+        },
+        {
+          "parentDimension": "オーディオセグメンテーション",
+          "triggerTags": [
+            "オーディオブック",
+            "音楽"
+          ]
+        },
+        {
+          "parentDimension": "ビデオセグメンテーション",
+          "triggerTags": [
+            "映画とテレビ"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "電子書籍",
+            "画像"
+          ]
+        },
+        {
+          "parentDimension": "画像のセグメンテーション",
+          "triggerTags": [
+            "マンガ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 121,
+      "name": "感情タグ",
+      "level": 2,
+      "tags": [
+        "喜び",
+        "悲しい",
+        "治す",
+        "うつ病を引き起こす",
+        "簡単",
+        "神経質",
+        "動く",
+        "ノスタルジー",
+        "欲求",
+        "興奮した",
+        "落ち込む",
+        "罪悪感",
+        "背徳感",
+        "恥",
+        "支配する"
+      ],
+      "description": "文書の内容から醸し出される感情的な雰囲気",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio"
+      ],
+      "contextHints": [
+        "感情分析",
+        "内容のトーン"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "電子書籍のセグメンテーション",
+          "triggerTags": [
+            "小説"
+          ]
+        },
+        {
+          "parentDimension": "オーディオセグメンテーション",
+          "triggerTags": [
+            "オーディオブック",
+            "音楽"
+          ]
+        },
+        {
+          "parentDimension": "ビデオセグメンテーション",
+          "triggerTags": [
+            "映画とテレビ"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "電子書籍",
+            "画像"
+          ]
+        },
+        {
+          "parentDimension": "画像のセグメンテーション",
+          "triggerTags": [
+            "マンガ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 122,
+      "name": "画質レベル",
+      "level": 2,
+      "tags": [
+        "スムーズな360P",
+        "SD480P",
+        "HD 720P",
+        "ウルトラ HD 1080P",
+        "2K",
+        "4K",
+        "8K"
+      ],
+      "description": "画像またはビデオの品質と鮮明さのレベル",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "解像度検出",
+        "エンコードパラメータ"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ビデオセグメンテーション",
+          "triggerTags": [
+            "映画とテレビ"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "画像"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 123,
+      "name": "コンテンツの規模",
+      "level": 2,
+      "tags": [
+        "すべての年齢",
+        "ソフトポルノ",
+        "ハーフ・エロ",
+        "純粋な肉",
+        "特別なXP",
+        "強い好奇心",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "ファイルコンテンツの年齢相応の評価",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "コンテンツモデレーション",
+        "グレードの識別"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "電子書籍のセグメンテーション",
+          "triggerTags": [
+            "小説"
+          ]
+        },
+        {
+          "parentDimension": "オーディオセグメンテーション",
+          "triggerTags": [
+            "オーディオブック",
+            "音楽"
+          ]
+        },
+        {
+          "parentDimension": "ビデオセグメンテーション",
+          "triggerTags": [
+            "映画とテレビ"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "電子書籍",
+            "画像"
+          ]
+        },
+        {
+          "parentDimension": "画像のセグメンテーション",
+          "triggerTags": [
+            "マンガ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 124,
+      "name": "コーディングレベル",
+      "level": 2,
+      "tags": [
+        "無修正",
+        "薄いモザイク",
+        "モザイクあり"
+      ],
+      "description": "ファイル内容のモザイク処理度",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "コンテンツモデレーション",
+        "グレードの識別"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ビデオセグメンテーション",
+          "triggerTags": [
+            "映画とテレビ"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "画像"
+          ]
+        },
+        {
+          "parentDimension": "画像のセグメンテーション",
+          "triggerTags": [
+            "マンガ"
+          ]
+        }
+      ]
+    },
+    {
+      "id": 125,
+      "name": "ウォーターマークレベル",
+      "level": 2,
+      "tags": [
+        "透かしなし",
+        "軽い透かし",
+        "透かしが入っています"
+      ],
+      "description": "ファイルコンテンツのウォーターマークの程度",
+      "applicableFileTypes": [
+        "image",
+        "video"
+      ],
+      "contextHints": [
+        "コンテンツモデレーション",
+        "グレードの識別",
+        "著作権マーク"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ビデオセグメンテーション",
+          "triggerTags": [
+            "映画とテレビ"
+          ]
+        },
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "画像"
+          ]
+        },
+        {
+          "parentDimension": "画像のセグメンテーション",
+          "triggerTags": [
+            "マンガ"
+          ]
+        }
+      ]
+    }
+  ]
+}
