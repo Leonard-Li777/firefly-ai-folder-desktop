@@ -73,6 +73,7 @@ jobs:
           repository: Leonard-Li777/firefly-ai-folder-desktop-pro
           token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
           path: pro
+          ref: master
 
       - name: Install macOS Dependencies
         shell: bash
@@ -368,6 +369,7 @@ jobs:
           repository: Leonard-Li777/firefly-ai-folder-desktop-pro
           token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
           path: pro
+          ref: master
 
       - name: Install gh CLI
         shell: bash
@@ -681,6 +683,7 @@ jobs:
           repository: Leonard-Li777/firefly-ai-folder-desktop-pro
           token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
           path: pro
+          ref: master
 
       - name: Fix buster apt sources (EOL)
         shell: bash
