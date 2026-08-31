@@ -7,7 +7,6 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import fs from 'fs'
 import { execSync, spawnSync } from 'child_process'
-import dotenv from 'dotenv'
 import { createRequire } from 'module'
 
 const require = createRequire(import.meta.url)
@@ -119,11 +118,32 @@ export default defineConfig(({ command, mode }) => {
     : path.resolve(__dirname, '../../')
   const envFiles = ['.env', `.env.${mode}`]
 
+  // 内置轻量环境配置文件解析器，避免对外部 dotenv 包的硬依赖
+  const parseEnvContent = (content: string): Record<string, string> => {
+    const result: Record<string, string> = {}
+    for (const rawLine of content.split('\n')) {
+      const line = rawLine.trim()
+      if (!line || line.startsWith('#')) continue
+      const idx = line.indexOf('=')
+      if (idx === -1) continue
+      const key = line.slice(0, idx).trim()
+      let val = line.slice(idx + 1).trim()
+      if (
+        (val.startsWith('"') && val.endsWith('"')) ||
+        (val.startsWith("'") && val.endsWith("'"))
+      ) {
+        val = val.slice(1, -1)
+      }
+      result[key] = val
+    }
+    return result
+  }
+
   const env: Record<string, string> = {}
   envFiles.forEach(file => {
     const filePath = path.resolve(envDir, file)
     if (fs.existsSync(filePath)) {
-      const parsed = dotenv.parse(fs.readFileSync(filePath))
+      const parsed = parseEnvContent(fs.readFileSync(filePath, 'utf-8'))
       Object.assign(env, parsed)
     }
   })

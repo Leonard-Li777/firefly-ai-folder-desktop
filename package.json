@@ -213,6 +213,7 @@
     "@vitest/coverage-v8": "3.2.4",
     "@voerkai18n/cli": "3.0.22",
     "@voerkai18n/plugins": "3.0.22",
+    "dotenv": "17.2.3",
     "electron": "42.2.0",
     "electron-vite": "5.0.0",
     "javascript-obfuscator": "5.1.0",
