@@ -368,26 +368,13 @@ export default defineConfig(({ command, mode }) => {
         externalizeDeps: {
           exclude: bundledDeps
         },
-        bytecode: (() => {
-          if (
-            !isProd ||
-            process.env.IS_INTEGRATION_TEST === 'true' ||
-            process.env.TEST === 'true' ||
-            process.env.DISABLE_BYTECODE === 'true'
-          ) {
-            return false
-          }
-          try {
-            const electronPath = require('electron')
-            if (typeof electronPath === 'string' && fs.existsSync(electronPath)) {
-              return {
+        bytecode:
+          isProd && process.env.IS_INTEGRATION_TEST !== 'true' && process.env.TEST !== 'true'
+            ? {
                 chunkAlias: 'protected',
                 transformArrowFunctions: false
               }
-            }
-          } catch {}
-          return false
-        })(),
+            : false,
         commonjsOptions: {
           strictRequires: true,
           defaultIsModuleExports: 'auto'
