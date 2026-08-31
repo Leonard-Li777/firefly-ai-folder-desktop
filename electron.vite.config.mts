@@ -39,7 +39,17 @@ const resolveNodeModule = (moduleName: string): string => {
   if (fs.existsSync(localMod)) {
     return localMod
   }
-  return path.resolve(__dirname, `../../node_modules/${moduleName}`)
+  const rootMod = path.resolve(__dirname, `../../node_modules/${moduleName}`)
+  if (fs.existsSync(rootMod)) {
+    return rootMod
+  }
+  try {
+    const resolved = require.resolve(moduleName)
+    if (fs.existsSync(resolved)) {
+      return fs.statSync(resolved).isDirectory() ? resolved : path.dirname(resolved)
+    }
+  } catch {}
+  return moduleName
 }
 
 // 动态解析 jieba-wasm 的 wasm 文件路径，兼容 pnpm 不同 hoisting 策略
@@ -358,13 +368,26 @@ export default defineConfig(({ command, mode }) => {
         externalizeDeps: {
           exclude: bundledDeps
         },
-        bytecode:
-          isProd && process.env.IS_INTEGRATION_TEST !== 'true' && process.env.TEST !== 'true'
-            ? {
+        bytecode: (() => {
+          if (
+            !isProd ||
+            process.env.IS_INTEGRATION_TEST === 'true' ||
+            process.env.TEST === 'true' ||
+            process.env.DISABLE_BYTECODE === 'true'
+          ) {
+            return false
+          }
+          try {
+            const electronPath = require('electron')
+            if (typeof electronPath === 'string' && fs.existsSync(electronPath)) {
+              return {
                 chunkAlias: 'protected',
                 transformArrowFunctions: false
               }
-            : false,
+            }
+          } catch {}
+          return false
+        })(),
         commonjsOptions: {
           strictRequires: true,
           defaultIsModuleExports: 'auto'
@@ -619,12 +642,12 @@ export default defineConfig(({ command, mode }) => {
           },
           { find: '@firefly/server', replacement: resolvePackageSrc('server') },
           { find: '@firefly/i18n-content', replacement: resolvePackageSrc('i18n-content') },
-          { find: 'react', replacement: resolveNodeModule('react') },
-          {
-            find: 'react-dom',
-            replacement: resolveNodeModule('react-dom')
-          },
-          { find: 'events', replacement: resolveNodeModule('events') },
+          ...(resolveNodeModule('react') !== 'react'
+            ? [{ find: 'react', replacement: resolveNodeModule('react') }]
+            : []),
+          ...(resolveNodeModule('react-dom') !== 'react-dom'
+            ? [{ find: 'react-dom', replacement: resolveNodeModule('react-dom') }]
+            : []),
           { find: 'jszip/dist/jszip.min.js', replacement: jszipMinPath },
           { find: 'jszip/dist/jszip', replacement: jszipMinPath },
           { find: 'jszip', replacement: jszipMinPath }

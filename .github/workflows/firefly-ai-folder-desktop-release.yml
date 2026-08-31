@@ -104,6 +104,12 @@ jobs:
       - name: Approve all builds
         run: pnpm approve-builds --all
 
+      - name: Ensure Electron Binary Downloaded
+        run: pnpm run rebuild:electron-binary || true
+        env:
+          ELECTRON_MIRROR: https://github.com/electron/electron/releases/download/
+          ELECTRON_BUILDER_BINARIES_MIRROR: https://github.com/electron-userland/electron-builder-binaries/releases/download/
+
       - name: Debug Electron Require
         shell: bash
         run: |
