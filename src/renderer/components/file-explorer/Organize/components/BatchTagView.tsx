@@ -975,10 +975,10 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-background">
-      {/* 1. 选中文件聚焦联动状态条 (Inspector Banner - 集中查看所有归属维度与标签) */}
+    <div className="relative flex-1 flex flex-col overflow-hidden bg-background">
+      {/* 1. 选中文件聚焦联动状态条 (Inspector Banner - 浮动显示，脱离文档流，杜绝页面回流与重绘) */}
       {inspectedFileItem && (
-        <div className="px-4 py-3 bg-primary/10 border-b border-primary/20 flex flex-col gap-2 text-xs shrink-0 transition-all duration-200 animate-in fade-in slide-in-from-top-1">
+        <div className="absolute top-3 left-4 right-4 z-30 px-4 py-3 bg-card/95 dark:bg-card/90 backdrop-blur-md border border-primary/30 rounded-2xl shadow-xl shadow-black/10 flex flex-col gap-2 text-xs transition-all duration-200 animate-in fade-in slide-in-from-top-2">
           {/* 上部：文件信息、标签统计与取消聚焦操作 */}
           <div className="flex items-center justify-between gap-3 min-w-0">
             <div className="flex items-center gap-2 min-w-0 overflow-hidden">
@@ -1002,12 +1002,12 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
             {onClearInspectedFile && (
               <Button
                 size="sm"
-                variant="ghost"
+                variant="destructive"
                 onClick={onClearInspectedFile}
-                className="h-6 px-2 text-[11px] text-muted-foreground hover:text-foreground shrink-0 gap-1 rounded-lg cursor-pointer hover:bg-background/60"
+                className="h-7 px-3 text-xs font-semibold rounded-xl shadow-xs shrink-0 gap-1.5 cursor-pointer"
                 title={t('清除选定文件高亮')}
               >
-                <MaterialIcon icon="close" className="text-xs" />
+                <MaterialIcon icon="close" className="text-sm shrink-0" />
                 <span>{t('取消聚焦')}</span>
               </Button>
             )}

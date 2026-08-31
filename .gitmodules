@@ -1,7 +1,3 @@
-[submodule "ai-folder-organize"]
-	path = ai-folder-organize
-	url = git@github.com:Leonard-Li777/ai-folder-organize.git
-
 [submodule "pro"]
 	path = pro
 	url = git@github.com:Leonard-Li777/firefly-ai-folder-desktop-pro.git

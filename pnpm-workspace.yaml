@@ -1,7 +1,6 @@
 packages:
   - .
   - pro/packages/*
-  - ai-folder-organize
 
 publicHoistPattern:
   - '*plugin*'

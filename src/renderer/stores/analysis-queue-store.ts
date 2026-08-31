@@ -454,6 +454,29 @@ if (typeof window !== 'undefined') {
   ;(window as any).useAnalysisQueueStore = useAnalysisQueueStore
 }
 
+// 维护快速 Map 缓存，加速基于 ID 和路径的 O(1) 查找，避免大型队列下的线性查找开销
+let cachedSnapshot: AnalysisQueueSnapshot | null = null
+let cachedIdMap = new Map<number, AnalysisQueueItem>()
+let cachedPathMap = new Map<string, AnalysisQueueItem>()
+
+function getQueueMaps(snapshot: AnalysisQueueSnapshot) {
+  if (cachedSnapshot === snapshot) {
+    return { idMap: cachedIdMap, pathMap: cachedPathMap }
+  }
+  cachedSnapshot = snapshot
+  cachedIdMap = new Map()
+  cachedPathMap = new Map()
+  const normalize =
+    window.electronAPI?.utils?.normalizeForCache ||
+    ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
+
+  for (const item of snapshot.items) {
+    if (item.id != null) cachedIdMap.set(item.id, item)
+    if (item.path) cachedPathMap.set(normalize(item.path), item)
+  }
+  return { idMap: cachedIdMap, pathMap: cachedPathMap }
+}
+
 export function useFileQueueState(itemIdOrPath: string | number, isAnalyzedOnDisk?: boolean) {
   return useAnalysisQueueStore(
     useShallow(state => {
@@ -468,16 +491,18 @@ export function useFileQueueState(itemIdOrPath: string | number, isAnalyzedOnDis
           itemIdOrPath.trim() !== '')
       const numericId = isNumericId ? Number(itemIdOrPath) : null
 
-      const item = state.snapshot.items.find(i => {
-        if (numericId !== null && i.id === numericId) {
-          return true
-        }
-        const isPathEqual = window.electronAPI?.utils?.isPathEqual
-        if (typeof itemIdOrPath === 'string' && isPathEqual) {
-          return isPathEqual(i.path, itemIdOrPath)
-        }
-        return false
-      })
+      const { idMap, pathMap } = getQueueMaps(state.snapshot)
+      let item: AnalysisQueueItem | undefined
+
+      if (numericId !== null) {
+        item = idMap.get(numericId)
+      }
+      if (!item && typeof itemIdOrPath === 'string') {
+        const normalize =
+          window.electronAPI?.utils?.normalizeForCache ||
+          ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
+        item = pathMap.get(normalize(itemIdOrPath))
+      }
 
       let status: AnalysisStatus | undefined = undefined
       let error: string | undefined = undefined

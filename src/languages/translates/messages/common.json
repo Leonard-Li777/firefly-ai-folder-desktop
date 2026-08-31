@@ -1929,21 +1929,8 @@
     "de-DE": "Die Dateivorschau kann nicht geladen werden. Bitte überprüfen Sie die Dateiberechtigungen oder das Format.",
     "fr-FR": "Impossible de charger l'aperçu du fichier, veuillez vérifier les autorisations ou le format du fichier.",
     "ko-KR": "파일 미리보기를 로드할 수 없습니다. 파일 권한이나 형식을 확인하세요.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(3111-3135)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(10392-10416)"],
     "$id": 10223
-  },
-  "无法加载文件预览，请检查文件路径或格式。": {
-    "en-US": "Unable to load file preview, please check file path or format.",
-    "es-ES": "No se puede cargar la vista previa del archivo. Verifique la ruta o el formato del archivo.",
-    "ar-EG": "غير قادر على تحميل معاينة الملف، يرجى التحقق من مسار الملف أو تنسيقه.",
-    "pt-PT": "Não foi possível carregar a visualização do arquivo. Verifique o caminho ou formato do arquivo.",
-    "ru-RU": "Невозможно загрузить предварительный просмотр файла. Проверьте путь или формат файла.",
-    "ja-JP": "ファイル プレビューを読み込めません。ファイル パスまたは形式を確認してください。",
-    "de-DE": "Die Dateivorschau konnte nicht geladen werden. Bitte überprüfen Sie den Dateipfad oder das Dateiformat.",
-    "fr-FR": "Impossible de charger l'aperçu du fichier, veuillez vérifier le chemin ou le format du fichier.",
-    "ko-KR": "파일 미리보기를 로드할 수 없습니다. 파일 경로나 형식을 확인하세요.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(4172-4196)"],
-    "$id": 10224
   },
   "无法加载预览，请检查文件格式或重试。": {
     "en-US": "Unable to load preview, please check the file format or try again.",
@@ -1955,7 +1942,7 @@
     "de-DE": "Die Vorschau konnte nicht geladen werden. Bitte überprüfen Sie das Dateiformat oder versuchen Sie es erneut.",
     "fr-FR": "Impossible de charger l'aperçu, veuillez vérifier le format du fichier ou réessayer.",
     "ko-KR": "미리보기를 로드할 수 없습니다. 파일 형식을 확인하거나 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(4909-4931)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(11192-11214)"],
     "$id": 10225
   },
   "预览加载失败": {
@@ -1968,7 +1955,7 @@
     "de-DE": "Die Vorschau konnte nicht geladen werden",
     "fr-FR": "L'aperçu n'a pas pu être chargé",
     "ko-KR": "미리보기를 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(6226-6236)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(12542-12552)"],
     "$id": 10226
   },
   "加载预览中...": {
@@ -1981,7 +1968,7 @@
     "de-DE": "Vorschau wird geladen...",
     "fr-FR": "Chargement de l'aperçu...",
     "ko-KR": "미리보기 로드 중...",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(6729-6741)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(13045-13057)"],
     "$id": 10227
   }
 }

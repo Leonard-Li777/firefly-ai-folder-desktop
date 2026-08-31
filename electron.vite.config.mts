@@ -157,6 +157,7 @@ export default defineConfig(({ command, mode }) => {
     '@firefly/core-engine',
     '@firefly/electron-llamaIndex-service',
     '@firefly/server',
+    '@firefly/i18n-content',
     'clsx',
     'tailwind-merge',
     '@voerkai18n/runtime',
@@ -304,6 +305,7 @@ export default defineConfig(({ command, mode }) => {
           '@firefly/core-engine': resolvePackageSrc('core-engine'),
           '@firefly/electron-llamaIndex-service': resolvePackageSrc('electron-llamaIndex-service'),
           '@firefly/server': resolvePackageSrc('server'),
+          '@firefly/i18n-content': resolvePackageSrc('i18n-content'),
           '@pro': proAliasDir,
           '@pro/*': path.resolve(proAliasDir, '*'),
           react: resolveNodeModule('react'),
@@ -444,6 +446,7 @@ export default defineConfig(({ command, mode }) => {
           '@firefly/core-engine': resolvePackageSrc('core-engine'),
           '@firefly/electron-llamaIndex-service': resolvePackageSrc('electron-llamaIndex-service'),
           '@firefly/server': resolvePackageSrc('server'),
+          '@firefly/i18n-content': resolvePackageSrc('i18n-content'),
           '@pro': proAliasDir,
           '@pro/*': path.resolve(proAliasDir, '*'),
           react: resolveNodeModule('react'),
@@ -595,6 +598,7 @@ export default defineConfig(({ command, mode }) => {
             replacement: resolvePackageSrc('electron-llamaIndex-service')
           },
           { find: '@firefly/server', replacement: resolvePackageSrc('server') },
+          { find: '@firefly/i18n-content', replacement: resolvePackageSrc('i18n-content') },
           { find: 'react', replacement: resolveNodeModule('react') },
           {
             find: 'react-dom',

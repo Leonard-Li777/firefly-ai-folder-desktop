@@ -104,16 +104,22 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   const handleFileSelect = useCallback(
     (newSelection: (string | FileType | DirectoryItem)[], isFromCheckbox = false) => {
       const { setSelectedFiles, directories, files } = useFileExplorerStore.getState()
-      const { isPathEqual } = window.electronAPI!.utils
+      const normalize =
+        window.electronAPI?.utils?.normalizeForCache ||
+        ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
 
       // 预先创建 lookup Map 提升查找性能 (O(N))
       const itemMap = new Map<string, FileType | DirectoryItem>()
-      directories.forEach(d => itemMap.set(d.path, d))
-      files.forEach(f => itemMap.set(f.path, f))
+      directories.forEach(d => {
+        if (d?.path) itemMap.set(normalize(d.path), d)
+      })
+      files.forEach(f => {
+        if (f?.path) itemMap.set(normalize(f.path), f)
+      })
 
       const toObjectEntry = (entry: string | FileType | DirectoryItem) => {
         if (entry && typeof entry === 'object') return entry as FileType | DirectoryItem
-        return entry && typeof entry === 'string' ? itemMap.get(entry) || null : null
+        return entry && typeof entry === 'string' ? itemMap.get(normalize(entry)) || null : null
       }
 
       let effectiveSelection = newSelection
@@ -122,9 +128,10 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
         const resolvedSelection = newSelection.map(toObjectEntry).filter(Boolean) as FileType[]
         setSelectedFiles(resolvedSelection)
 
-        if (resolvedSelection.length > 0) {
-          setSelectedItem(resolvedSelection[resolvedSelection.length - 1])
-        } else {
+        // 仅在单选时更新 selectedItem 触发深度预览与属性加载；全选/多选时不盲目激活末尾项
+        if (resolvedSelection.length === 1) {
+          setSelectedItem(resolvedSelection[0])
+        } else if (resolvedSelection.length === 0) {
           setSelectedItem(null)
         }
         setShowDetailsPanel(true)
@@ -134,6 +141,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
           const selectedItemObject = toObjectEntry(newSelection[0])
           if (selectedItemObject) {
             const currentSelectedFiles = useFileExplorerStore.getState().selectedFiles
+            const { isPathEqual } = window.electronAPI!.utils
             const isAlreadySelected = currentSelectedFiles.some(f =>
               isPathEqual(f.path, selectedItemObject.path)
             )
@@ -363,14 +371,18 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     const totalItems = filteredData.files.length + filteredData.directories.length
     if (totalItems === 0) return false
 
-    // 长度不等直接返回，避免昂贵的 Set 计算
+    // 长度不等直接返回 O(1) 短路，避免昂贵的 Set 计算
     if (selectedFiles.length < totalItems) return false
 
-    const { normalizeForCache } = window.electronAPI!.utils
-    const selectedPaths = new Set(selectedFiles.map(f => f.path))
+    const normalize =
+      window.electronAPI?.utils?.normalizeForCache ||
+      ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
+    const selectedPaths = new Set(
+      selectedFiles.map(f => normalize(typeof f === 'string' ? f : f?.path || ''))
+    )
 
     const allItems = [...filteredData.directories, ...filteredData.files]
-    return allItems.every(item => item.path && selectedPaths.has(item.path))
+    return allItems.every(item => item.path && selectedPaths.has(normalize(item.path)))
   }, [filteredData, selectedFiles])
 
   const isIndeterminate = useMemo(() => {
@@ -385,10 +397,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       handleFileSelect([], true)
     } else {
       const allItems = [...filteredData.directories, ...filteredData.files]
-      handleFileSelect(
-        allItems.map(item => item.path),
-        true
-      )
+      handleFileSelect(allItems, true)
     }
   }, [filteredData, isAllSelected, handleFileSelect])
 
@@ -957,9 +966,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
               <FileExplorerLayout
                 files={filteredData.files}
                 directories={filteredData.directories}
-                selectedFileIds={selectedFiles.map(f =>
-                  typeof f === 'string' ? f : f?.path || f?.id
-                )}
+                selectedFiles={selectedFiles}
                 activeItem={selectedItem}
                 onFileSelect={handleFileSelect}
                 onDirectoryChange={handleDirectoryChange}

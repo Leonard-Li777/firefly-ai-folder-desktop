@@ -664,7 +664,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
 
   // 单组执行即时专属操作 (优化/清理/更名/修正/移入回收站)
   const handleExecuteGroupAction = async (group: DuplicateGroup, gIdx: number) => {
-    const targetPaths = group.files.filter(f => f.selectedForDelete && f.path).map(f => f.path)
+    // 耗时操作（如视频优化、Exif清理）按文件大小从小到大升序排序，小文件优先秒级完成，最慢的大文件排在最后
+    const sortedFiles = [...group.files]
+      .filter(f => f.selectedForDelete && f.path)
+      .sort((a, b) => (a.size || 0) - (b.size || 0))
+    const targetPaths = sortedFiles.map(f => f.path)
     if (targetPaths.length === 0) {
       toast.warning(t('本组内未勾选任何文件'))
       return
@@ -674,9 +678,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     const isVideoOpt = group.strategy === 'video_optimizer'
     const isExifClean = group.strategy === 'exif_remover'
     const loadingToastId = isVideoOpt
-      ? toast.loading(t('正在对 {count} 个视频进行高效能优化转码，请稍候...', { count: targetPaths.length }))
+      ? toast.loading(t('正在对 {count} 个视频进行高效能优化转码，首个完成后将自动定位...', { count: targetPaths.length }))
       : isExifClean
-      ? toast.loading(t('正在处理 {count} 个图片的 Exif 隐私信息清除...', { count: targetPaths.length }))
+      ? toast.loading(t('正在处理 {count} 个图片的 Exif 隐私信息清除，首个完成后将自动定位...', { count: targetPaths.length }))
       : null
 
     try {
@@ -900,7 +904,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
         }
       }
 
-      // 阶段 2：依次执行专属修复类策略组（更名 -> 扩展名修正 -> 视频转码 -> Exif清理）
+      // 阶段 2：依次执行专属修复类策略组（更名 -> 扩展名修正 -> Exif隐私清理 -> 视频优化转码）
+      // 耗时较短的轻量级操作优先执行，耗时最长的视频转码放到所有分类分组的最后执行
       // 每次执行前检查文件是否已被删除（deletedPathsSet），避免处理已删除或不存在的文件
 
       // 2.1 异常文件名更名 (bad_names)：严格采用 Omni 计算并返回的推荐名
@@ -959,38 +964,9 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
         }
       }
 
-      // 2.3 视频优化转码 (video_optimizer)
-      const videoOptGroups = duplicateGroups.filter(g => g.strategy === 'video_optimizer')
-      const videoOptPaths: string[] = []
-      for (const group of videoOptGroups) {
-        for (const file of group.files) {
-          if (
-            file.selectedForDelete &&
-            file.path &&
-            !deletedPathsSet.has(file.path) &&
-            !processedPaths.has(file.path)
-          ) {
-            videoOptPaths.push(file.path)
-            processedPaths.add(file.path)
-          }
-        }
-      }
-      if (videoOptPaths.length > 0) {
-        try {
-          const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
-            'optimize',
-            videoOptPaths,
-            workspaceDirectoryPath
-          )
-          totalOptimized += res?.successCount || videoOptPaths.length
-        } catch (err: any) {
-          logger.error(LogCategory.RENDERER, '批量视频优化失败:', err)
-        }
-      }
-
-      // 2.4 Exif 隐私清理 (exif_remover)
+      // 2.3 Exif 隐私清理 (exif_remover) - 轻量级图片处理优先执行，按文件大小升序排列
       const exifGroups = duplicateGroups.filter(g => g.strategy === 'exif_remover')
-      const exifPaths: string[] = []
+      const exifFiles: Array<{ path: string; size: number }> = []
       for (const group of exifGroups) {
         for (const file of group.files) {
           if (
@@ -999,11 +975,14 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
             !deletedPathsSet.has(file.path) &&
             !processedPaths.has(file.path)
           ) {
-            exifPaths.push(file.path)
+            exifFiles.push({ path: file.path, size: file.size || 0 })
             processedPaths.add(file.path)
           }
         }
       }
+      exifFiles.sort((a, b) => a.size - b.size)
+      const exifPaths = exifFiles.map(f => f.path)
+
       if (exifPaths.length > 0) {
         try {
           const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
@@ -1014,6 +993,38 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
           totalExifCleaned += res?.successCount || exifPaths.length
         } catch (err: any) {
           logger.error(LogCategory.RENDERER, '批量清理Exif失败:', err)
+        }
+      }
+
+      // 2.4 视频优化转码 (video_optimizer) - 耗时最长的重量级任务放到所有分组最后压轴执行，内部按文件大小升序处理
+      const videoOptGroups = duplicateGroups.filter(g => g.strategy === 'video_optimizer')
+      const videoOptFiles: Array<{ path: string; size: number }> = []
+      for (const group of videoOptGroups) {
+        for (const file of group.files) {
+          if (
+            file.selectedForDelete &&
+            file.path &&
+            !deletedPathsSet.has(file.path) &&
+            !processedPaths.has(file.path)
+          ) {
+            videoOptFiles.push({ path: file.path, size: file.size || 0 })
+            processedPaths.add(file.path)
+          }
+        }
+      }
+      videoOptFiles.sort((a, b) => a.size - b.size)
+      const videoOptPaths = videoOptFiles.map(f => f.path)
+
+      if (videoOptPaths.length > 0) {
+        try {
+          const res = await window.electronAPI?.organizeBatch?.executeStrategyFix(
+            'optimize',
+            videoOptPaths,
+            workspaceDirectoryPath
+          )
+          totalOptimized += res?.successCount || videoOptPaths.length
+        } catch (err: any) {
+          logger.error(LogCategory.RENDERER, '批量视频优化失败:', err)
         }
       }
 

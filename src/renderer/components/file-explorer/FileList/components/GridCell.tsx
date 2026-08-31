@@ -180,20 +180,21 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
   const unitTheme = isUnit ? getUnitTheme(unitType) : undefined
   const unitTooltip = isUnit ? getUnitTooltip(unitLabel, unitReason, unitConfidence) : ''
 
+  const isItemEffectiveSelected = Boolean(finalSelected || isActive)
+
   return (
     <div
       data-index={index}
       className={cn(
-        'group relative flex flex-col items-center p-2 rounded-xl transition-all duration-200 cursor-pointer w-full select-none',
+        'group relative flex flex-col items-center p-2 rounded-xl cursor-pointer w-full select-none',
         viewMode === 'waterfall' ? 'h-auto' : 'h-full',
-        !isActive && isHovered && 'bg-primary/20',
         isLost
           ? 'bg-red-500/10 dark:bg-red-950/30 border border-red-500/30 hover:bg-red-500/20'
           : isUnit && unitTheme
             ? `${unitTheme.bg} ${unitTheme.darkBg} border ${unitTheme.border} ${unitTheme.darkBorder}`
             : 'bg-secondary/50 dark:bg-secondary',
-        finalSelected && 'ring-1 ring-primary/90 bg-primary/30 dark:bg-primary/30 ring-inset',
-        isActive && 'bg-primary/20 dark:bg-primary/20 z-10'
+        !isItemEffectiveSelected && isHovered && 'bg-primary/20',
+        isItemEffectiveSelected && 'ring-1 ring-primary/90 bg-primary/30 dark:bg-primary/30 ring-inset z-10'
       )}
       title={isLost ? t('原文件已在磁盘上丢失或被移动') : isUnit ? unitTooltip : undefined}
       onMouseEnter={() => setIsHovered(true)}
@@ -270,8 +271,8 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
       {selectionEnabled !== false && (
         <div
           className={cn(
-            'checkbox-cell absolute top-[-6px] left-[-4px] p-2 z-20 transition-opacity duration-200 cursor-pointer',
-            finalSelected || isHovered ? 'opacity-100' : 'opacity-0'
+            'checkbox-cell absolute top-[-6px] left-[-4px] p-2 z-20 cursor-pointer',
+            isItemEffectiveSelected || isHovered ? 'opacity-100' : 'opacity-0'
           )}
           onClick={e => {
             e.stopPropagation()

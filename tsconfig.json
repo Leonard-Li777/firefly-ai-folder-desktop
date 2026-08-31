@@ -49,6 +49,8 @@
       "@firefly/shared/languages": ["pro/packages/shared/languages"],
       "@firefly/server": ["pro/packages/server/src"],
       "@firefly/server/*": ["pro/packages/server/src/*"],
+      "@firefly/i18n-content": ["pro/packages/i18n-content/src"],
+      "@firefly/i18n-content/*": ["pro/packages/i18n-content/src/*"],
       "@pro": ["pro/src/index.ts", "src/shared/pro-stub/index.ts"],
       "@pro/*": ["pro/src/*", "src/shared/pro-stub/*"]
     }

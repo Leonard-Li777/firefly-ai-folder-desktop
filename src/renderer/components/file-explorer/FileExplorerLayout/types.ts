@@ -27,6 +27,8 @@ export interface FileExplorerLayoutProps {
   onViewModeChange?: (mode: ViewMode) => void
   /** 外部选中的文件列表 ID 集合 */
   selectedFileIds?: string[]
+  /** 外部选中的完整文件对象列表 (优先使用以避免重复过滤与映射) */
+  selectedFiles?: (FileItem | DirectoryItem)[]
   /** 外部指定的当前激活/高亮项目 */
   activeItem?: FileItem | DirectoryItem | null
   /** 关联页面标识 (用于 SplitPreviewPanel 状态隔离) */

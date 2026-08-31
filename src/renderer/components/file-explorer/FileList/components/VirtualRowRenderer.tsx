@@ -175,15 +175,16 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
   const unitTheme = isUnit ? getUnitTheme(unitType) : undefined
   const unitTooltip = isUnit ? getUnitTooltip(unitLabel, unitReason, unitConfidence) : ''
 
+  const isRowEffectiveSelected = Boolean(isSelected || isActive)
+
   const rowClass = cn(
-    'flex items-center border-b border-border/30 transition-colors file-row h-full select-none',
+    'flex items-center border-b border-border/30 file-row h-full select-none',
     isLost
       ? 'bg-red-500/10 dark:bg-red-950/30 hover:bg-red-500/20'
       : isUnit && unitTheme
         ? `${unitTheme.bg} ${unitTheme.darkBg} hover:bg-white/80 dark:hover:bg-gray-900/30`
-        : !isActive && 'hover:bg-secondary',
-    isSelected && 'selected bg-accent/70 dark:bg-accent/70',
-    isActive && 'active bg-primary/20 dark:bg-primary/30'
+        : !isRowEffectiveSelected && 'hover:bg-secondary',
+    isRowEffectiveSelected && 'selected active bg-primary/20 dark:bg-primary/30'
   )
 
   const listFontSize = props.listFontSize || 14
@@ -263,11 +264,11 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
           style={{ width: columnWidths.checkbox }}
           onClick={e => {
             e.stopPropagation()
-            handleToggleCheckbox(!isSelected)
+            handleToggleCheckbox(!isRowEffectiveSelected)
           }}
         >
           <Checkbox
-            checked={isSelected}
+            checked={isRowEffectiveSelected}
             onCheckedChange={checked => handleToggleCheckbox(checked as boolean)}
             onClick={e => e.stopPropagation()}
           />

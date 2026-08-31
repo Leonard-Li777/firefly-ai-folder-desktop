@@ -82,7 +82,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
     {
       id: 'LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M',
       dspark: 'LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M',
-      name: `LFM2.5 1.2B Instruct（${t('英文更佳')}）`,
+      name: `LFM2.5 1.2B Instruct（${t('英文更佳')}•${t('高速')}）`,
       company: 'LiquidAI',
       parameterSize: '1.2B',
       totalSize: '873MB',

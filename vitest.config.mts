@@ -47,7 +47,8 @@ export default defineConfig({
           '@firefly/shared',
           '@firefly/types',
           '@firefly/core-engine',
-          '@firefly/electron-llamaIndex-service'
+          '@firefly/electron-llamaIndex-service',
+          '@firefly/i18n-content'
         ]
       }
     }

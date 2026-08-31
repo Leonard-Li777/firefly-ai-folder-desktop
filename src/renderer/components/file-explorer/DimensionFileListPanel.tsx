@@ -226,32 +226,44 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
 
   const handleFileSelect = useCallback(
     (newSelection: any[], isFromCheckbox = false) => {
-      const { isPathEqual } = window.electronAPI!.utils
+      const normalize =
+        window.electronAPI?.utils?.normalizeForCache ||
+        ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
+
+      // 建立 O(1) 查找 Map，避免 O(N^2) 嵌套查找
+      const fileMap = new Map<string, FileType>()
+      filteredFiles.forEach(f => {
+        if (f?.path) fileMap.set(normalize(f.path), f)
+      })
 
       if (isFromCheckbox) {
         const resolvedSelection = newSelection
           .map(item => {
+            if (item && typeof item === 'object' && 'path' in item) return item as FileType
             const pathStr = typeof item === 'string' ? item : item?.path
-            return pathStr
-              ? filteredFiles.find(f => f.path && isPathEqual(f.path, pathStr))
-              : undefined
+            return pathStr ? fileMap.get(normalize(pathStr)) : undefined
           })
-          .filter(Boolean)
+          .filter(Boolean) as FileType[]
         setSelectedFiles(resolvedSelection)
-        if (resolvedSelection.length > 0) {
-          lastSelectedItemRef.current = resolvedSelection[resolvedSelection.length - 1]
-          setActiveItem(lastSelectedItemRef.current)
-        } else {
+        // 多选/全选时不强行修改 activeItem 触发单文件深度预览
+        if (resolvedSelection.length === 1) {
+          lastSelectedItemRef.current = resolvedSelection[0]
+          setActiveItem(resolvedSelection[0])
+        } else if (resolvedSelection.length === 0) {
           lastSelectedItemRef.current = null
           setActiveItem(null)
         }
       } else if (newSelection.length > 0) {
-        const pathStr =
-          typeof newSelection[0] === 'string' ? newSelection[0] : newSelection[0]?.path
-        const found = pathStr
-          ? filteredFiles.find(f => f.path && isPathEqual(f.path, pathStr))
-          : undefined
+        const first = newSelection[0]
+        const pathStr = typeof first === 'string' ? first : first?.path
+        const found =
+          first && typeof first === 'object' && 'path' in first
+            ? (first as FileType)
+            : pathStr
+              ? fileMap.get(normalize(pathStr))
+              : undefined
         if (found) {
+          const { isPathEqual } = window.electronAPI!.utils
           if (
             lastSelectedItemRef.current &&
             isPathEqual(lastSelectedItemRef.current.path, found.path)
@@ -276,11 +288,17 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
 
   const getSelectedFiles = useCallback(() => selectedFiles, [selectedFiles])
 
-  // Select all functionality (only for organize mode in AnalyzedDirectory)
+  // 全选状态判断：加入 O(1) 长度短路，并使用 Set 实现 O(N) 比较，彻底消除 O(N^2)
   const isAllVisibleItemsSelected = useMemo(() => {
     if (filteredFiles.length === 0) return false
-    const { isPathEqual } = window.electronAPI!.utils
-    return filteredFiles.every(f => selectedFiles.some(sf => isPathEqual(sf.path, f.path)))
+    if (selectedFiles.length < filteredFiles.length) return false
+    const normalize =
+      window.electronAPI?.utils?.normalizeForCache ||
+      ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
+    const selectedPathsSet = new Set(
+      selectedFiles.map(f => normalize(typeof f === 'string' ? f : f?.path || ''))
+    )
+    return filteredFiles.every(f => f?.path && selectedPathsSet.has(normalize(f.path)))
   }, [filteredFiles, selectedFiles])
 
   const handleToggleSelectAll = useCallback(() => {

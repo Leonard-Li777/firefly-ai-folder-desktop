@@ -24,7 +24,8 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
   selectionEnabled = true,
   viewMode: externalViewMode,
   onViewModeChange,
-  selectedFileIds = [],
+  selectedFileIds,
+  selectedFiles: externalSelectedFiles,
   activeItem: externalActiveItem = null,
   pageId,
   onFileSelect: externalOnFileSelect,
@@ -91,7 +92,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
   const [internalActiveItem, setInternalActiveItem] = useState<FileItem | DirectoryItem | null>(
     null
   )
-  const [selectedIds, setSelectedIds] = useState<string[]>(selectedFileIds)
+  const [internalSelectedFiles, setInternalSelectedFiles] = useState<FileItem[]>([])
 
   // 支持受控/非受控 viewMode
   const currentViewMode = externalViewMode !== undefined ? externalViewMode : internalViewMode
@@ -111,32 +112,29 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
     [onViewModeChange, pageViewModeKey]
   )
 
-  const resolveIds = useCallback((items: any[]): string[] => {
-    if (!Array.isArray(items)) return []
-    return items
-      .map(item => (typeof item === 'string' ? item : item?.path || item?.id))
-      .filter(Boolean)
-  }, [])
-
-  useEffect(() => {
-    if (selectedFileIds !== undefined) {
-      const incomingIds = resolveIds(selectedFileIds)
-      const isDifferent =
-        incomingIds.length !== selectedIds.length ||
-        incomingIds.some((id, idx) => id !== selectedIds[idx])
-      if (isDifferent) {
-        setSelectedIds(incomingIds)
-      }
-    }
-  }, [selectedFileIds, resolveIds])
-
   // 优先级：优先使用外部传入的 activeItem，若无则使用内部选中的 activeItem
-  const activeItem = externalActiveItem || internalActiveItem
+  const activeItem = externalActiveItem !== undefined ? externalActiveItem : internalActiveItem
 
-  // 受控模式下，外部 activeItem 是权威来源：其变化时同步内部 active 状态，
-  // 确保取消选择（externalActiveItem 置空）时清除残留的内部高亮背景
+  // 优先级：优先使用外部传入的 selectedFiles；若无则根据 selectedFileIds 计算；若均无则使用内部状态
+  const selectedFiles = useMemo(() => {
+    if (externalSelectedFiles !== undefined) {
+      return (externalSelectedFiles || []) as FileItem[]
+    }
+    if (selectedFileIds !== undefined) {
+      if (!selectedFileIds.length) return []
+      const idSet = new Set(selectedFileIds)
+      const matchedFiles = files.filter(f => idSet.has(f.id) || idSet.has(f.path))
+      const matchedDirs = directories.filter(d => d.path && idSet.has(d.path))
+      return [...matchedDirs, ...matchedFiles] as FileItem[]
+    }
+    return internalSelectedFiles
+  }, [externalSelectedFiles, selectedFileIds, files, directories, internalSelectedFiles])
+
+  // 受控模式下，外部 activeItem 是权威来源：其变化时同步内部 active 状态
   useEffect(() => {
-    setInternalActiveItem(externalActiveItem || null)
+    if (externalActiveItem !== undefined) {
+      setInternalActiveItem(externalActiveItem || null)
+    }
   }, [externalActiveItem])
 
   const handleFileSelect = useCallback(
@@ -153,16 +151,17 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
         const clickedItem = selectedList[0]
         const clickedId =
           typeof clickedItem === 'string' ? clickedItem : clickedItem?.path || clickedItem?.id
-        const isAlreadySelected = selectedIds.some(id => id === clickedId)
+        const isAlreadySelected = selectedFiles.some(
+          f => f.path === clickedId || String(f.id) === clickedId
+        )
 
         if (isAlreadySelected) {
-          setSelectedIds([])
+          setInternalSelectedFiles([])
           setInternalActiveItem(null)
 
           if (onSelectionChange) {
             onSelectionChange([])
           }
-
           if (externalOnFileSelect) {
             externalOnFileSelect([], isFromCheckbox)
           }
@@ -170,52 +169,56 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
         }
       }
 
-      if (selectedList.length > 0) {
-        const lastItem = selectedList[selectedList.length - 1]
-        setInternalActiveItem(typeof lastItem === 'object' ? lastItem : null)
-      } else {
+      if (selectedList.length === 1) {
+        const item = selectedList[0]
+        setInternalActiveItem(typeof item === 'object' ? item : null)
+      } else if (selectedList.length === 0) {
         setInternalActiveItem(null)
       }
 
-      const nextIds = resolveIds(selectedList)
-      setSelectedIds(nextIds)
+      // 将 string 转换为实际对象（如果需要）
+      const resolvedList: FileItem[] = selectedList.map(item => {
+        if (typeof item === 'object') return item as FileItem
+        const found = files.find(f => f.path === item || String(f.id) === item)
+        if (found) return found
+        const foundDir = directories.find(d => d.path === item)
+        if (foundDir) return foundDir as any
+        return { path: item, name: item.split(/[\\/]/).pop() || item } as any
+      })
+
+      setInternalSelectedFiles(resolvedList)
 
       if (onSelectionChange) {
-        const idSet = new Set(nextIds)
-        onSelectionChange(files.filter(f => idSet.has(f.id) || idSet.has(f.path)))
+        onSelectionChange(resolvedList)
       }
 
       if (externalOnFileSelect) {
         externalOnFileSelect(filesOrItem, isFromCheckbox)
       }
     },
-    [externalOnFileSelect, onSelectionChange, files, resolveIds, selectedIds]
+    [externalOnFileSelect, onSelectionChange, selectedFiles, files, directories]
   )
 
-  const getSelectedFiles = useCallback((): FileItem[] => {
-    if (!selectedIds.length) return []
-    const idSet = new Set(selectedIds)
-    const matchedFiles = files.filter(f => idSet.has(f.id) || idSet.has(f.path))
-    const matchedDirs = directories.filter(d => d.path && idSet.has(d.path))
-    return [...matchedDirs, ...matchedFiles] as FileItem[]
-  }, [files, directories, selectedIds])
-
-  const selectedFiles = useMemo(() => getSelectedFiles(), [getSelectedFiles])
-
   const currentFile = useMemo(() => {
-    const item = activeItem || (selectedFiles.length > 0 ? selectedFiles[0] : null)
+    const item = activeItem || (selectedFiles.length === 1 ? selectedFiles[0] : null)
     if (item && !('isDirectory' in item && item.isDirectory)) {
       return item as FileItem
     }
     return null
   }, [activeItem, selectedFiles])
 
+  const getSelectedFiles = useCallback((): FileItem[] => {
+    if (externalGetSelectedFiles) return externalGetSelectedFiles()
+    return selectedFiles
+  }, [externalGetSelectedFiles, selectedFiles])
+
+  // 分栏预览同步：仅在明确激活具体单文件时触发预览，避免多选/全选时触发不必要的深度预览加载
   useEffect(() => {
     if (pageId && showPreviewPanel) {
       const splitState = usePreviewOverlayStore.getState()
       const pageMode = splitState.pageStates[pageId]?.mode ?? 'split'
       if (pageMode === 'split') {
-        const item = activeItem || (selectedFiles.length > 0 ? selectedFiles[0] : null)
+        const item = activeItem
         if (
           item &&
           (item.path || (item as any).originalPath) &&
@@ -242,7 +245,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
         }
       }
     }
-  }, [pageId, showPreviewPanel, activeItem, selectedFiles])
+  }, [pageId, showPreviewPanel, activeItem])
 
   // 针对每页 & 每种视图模式单独保存卡片尺寸 (如: page_card_width_real-directory_grid)
   const pageCardWidthKey = pageId

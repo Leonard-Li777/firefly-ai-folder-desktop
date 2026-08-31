@@ -154,11 +154,12 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
     const unitTheme = isUnit ? getUnitTheme(unitType) : undefined
     const unitTooltip = isUnit ? getUnitTooltip(unitLabel, unitReason, unitConfidence) : ''
 
+    const isRowEffectiveSelected = Boolean(isSelected || isActive)
+
     const rowClass = [
-      'transition-colors file-row select-none',
-      !isActive && 'hover:bg-accent/40 dark:hover:bg-accent/40',
-      isSelected && 'selected bg-accent/70 dark:bg-accent/70',
-      isActive && 'active bg-primary/20 dark:bg-primary/30',
+      'file-row select-none',
+      !isRowEffectiveSelected && 'hover:bg-accent/40 dark:hover:bg-accent/40',
+      isRowEffectiveSelected && 'selected active bg-primary/20 dark:bg-primary/30',
       isUnit && unitTheme ? `${unitTheme.bg} ${unitTheme.darkBg}` : ''
     ]
       .filter(Boolean)
@@ -220,7 +221,7 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
             style={{ width: data.columnWidths.checkbox }}
             onClick={e => {
               e.stopPropagation()
-              const checked = !isSelected
+              const checked = !isRowEffectiveSelected
               const allChildItems = data.getAllFilesInDirectory(item.path)
               const itemsToToggle = [item as any, ...allChildItems]
               const currentSelected =
@@ -239,14 +240,14 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
               } else {
                 const pathsToRemove = itemsToToggle.map(i => i.path)
                 const newSelected = currentSelected.filter(
-                  f => !pathsToRemove.some(p => isPathEqual(p, f.path))
+                  (f: any) => !pathsToRemove.some(p => isPathEqual(p, f.path))
                 )
                 data.onFileSelect(newSelected, true)
               }
             }}
           >
             <Checkbox
-              checked={isSelected}
+              checked={isRowEffectiveSelected}
               onCheckedChange={checked => {
                 const allChildItems = data.getAllFilesInDirectory(item.path)
                 const itemsToToggle = [item as any, ...allChildItems]
@@ -266,7 +267,7 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
                 } else {
                   const pathsToRemove = itemsToToggle.map(i => i.path)
                   const newSelected = currentSelected.filter(
-                    f => !pathsToRemove.some(p => isPathEqual(p, f.path))
+                    (f: any) => !pathsToRemove.some(p => isPathEqual(p, f.path))
                   )
                   data.onFileSelect(newSelected, true)
                 }

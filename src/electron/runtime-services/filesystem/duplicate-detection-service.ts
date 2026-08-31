@@ -799,6 +799,20 @@ export class DuplicateDetectionService {
     let successCount = 0
     let failedCount = 0
     let targetOutputDirectory: string | undefined = undefined
+    let hasOpenedFirstItem = false
+
+    // 辅助工具：快速原子移动文件 (同卷优先 renameSync，跨卷降级 copyFileSync + unlinkSync)
+    const moveFileAtomically = (src: string, dest: string) => {
+      if (fs.existsSync(dest)) {
+        try { fs.unlinkSync(dest) } catch {}
+      }
+      try {
+        fs.renameSync(src, dest)
+      } catch {
+        fs.copyFileSync(src, dest)
+        try { fs.unlinkSync(src) } catch {}
+      }
+    }
 
     // 格式化当前日期为 YYYYMMDD
     const now = new Date()
@@ -807,7 +821,21 @@ export class DuplicateDetectionService {
     await databaseService.ensureInitialized()
     const db = databaseService.db
 
-    for (const item of fileTargets) {
+    // 关键优化：针对耗时较长的处理任务（如视频转码 optimize、Exif 清理 clean_exif），
+    // 采用最短作业优先（SJF）策略，将体积较小、处理较快的文件排在最前优先处理，最慢的大文件排在最后；
+    // 从而保证首个文件能够在极短时间内迅速完成并立即唤起文件管理器定位，消除等待焦虑。
+    const sortedFileTargets = [...fileTargets].sort((a, b) => {
+      if (action !== 'optimize' && action !== 'clean_exif') return 0
+      const pathA = typeof a === 'string' ? a : a.path
+      const pathB = typeof b === 'string' ? b : b.path
+      let sizeA = 0
+      let sizeB = 0
+      try { sizeA = fs.statSync(pathA).size } catch {}
+      try { sizeB = fs.statSync(pathB).size } catch {}
+      return sizeA - sizeB
+    })
+
+    for (const item of sortedFileTargets) {
       const filePath = typeof item === 'string' ? item : item.path
       const suggestedNewName = typeof item === 'object' ? item.newName : undefined
 
@@ -1078,6 +1106,20 @@ export class DuplicateDetectionService {
             processedPaths.push(filePath)
             successCount++
             details.push({ oldPath: filePath, newPath: outFilePath, message: `已成功生成去 Exif 副本至: ${outFilePath}` })
+
+            // 核心体验优化：首个文件生成后立即打开文件管理器并精准定位高亮该文件
+            if (!hasOpenedFirstItem) {
+              hasOpenedFirstItem = true
+              try {
+                shell.showItemInFolder(outFilePath)
+                logger.info(LogCategory.FILE_ORGANIZATION, `[Exif清理] 首个文件处理完成，已立即打开文件管理器并定位: ${outFilePath}`)
+              } catch (showErr: any) {
+                logger.warn(LogCategory.FILE_ORGANIZATION, `[Exif清理] 首个文件定位失败，尝试打开目录:`, showErr)
+                if (targetOutputDirectory && fs.existsSync(targetOutputDirectory)) {
+                  try { await shell.openPath(targetOutputDirectory) } catch {}
+                }
+              }
+            }
           } else {
             failedCount++
             errors.push({ path: filePath, error: '生成去 Exif 副本失败' })
@@ -1121,11 +1163,7 @@ export class DuplicateDetectionService {
                 const actualOutFile = path.join(outDir, `${stem}.mp4`)
 
                 if (fs.existsSync(optimizedCandidate) && fs.statSync(optimizedCandidate).size > 0) {
-                  if (fs.existsSync(actualOutFile)) {
-                    try { fs.unlinkSync(actualOutFile) } catch {}
-                  }
-                  fs.copyFileSync(optimizedCandidate, actualOutFile)
-                  try { fs.unlinkSync(optimizedCandidate) } catch {}
+                  moveFileAtomically(optimizedCandidate, actualOutFile)
                   finalTranscodedPath = actualOutFile
                   omniTranscoded = true
                   logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 捕获并移动优化视频成功: ${actualOutFile}`)
@@ -1137,11 +1175,7 @@ export class DuplicateDetectionService {
                     if (fs.existsSync(candFull) && fs.statSync(candFull).isFile()) {
                       const candExt = path.extname(candName) || '.mp4'
                       const targetOut = path.join(outDir, `${stem}${candExt}`)
-                      if (fs.existsSync(targetOut)) {
-                        try { fs.unlinkSync(targetOut) } catch {}
-                      }
-                      fs.copyFileSync(candFull, targetOut)
-                      try { fs.unlinkSync(candFull) } catch {}
+                      moveFileAtomically(candFull, targetOut)
                       finalTranscodedPath = targetOut
                       omniTranscoded = true
                       logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 捕获候选转码文件成功: ${targetOut}`)
@@ -1166,6 +1200,20 @@ export class DuplicateDetectionService {
             processedPaths.push(filePath)
             successCount++
             details.push({ oldPath: filePath, newPath: finalTranscodedPath, message: `已完成视频高效能转码优化并导出至: ${finalTranscodedPath}` })
+
+            // 核心体验优化：首个文件优化完成后立即打开文件管理器并精准高亮定位该文件，避免用户等待焦虑
+            if (!hasOpenedFirstItem) {
+              hasOpenedFirstItem = true
+              try {
+                shell.showItemInFolder(finalTranscodedPath)
+                logger.info(LogCategory.FILE_ORGANIZATION, `[视频优化] 首个文件优化完成，已立即打开文件管理器并定位: ${finalTranscodedPath}`)
+              } catch (showErr: any) {
+                logger.warn(LogCategory.FILE_ORGANIZATION, `[视频优化] 首个文件定位失败，尝试打开输出目录:`, showErr)
+                if (targetOutputDirectory && fs.existsSync(targetOutputDirectory)) {
+                  try { await shell.openPath(targetOutputDirectory) } catch {}
+                }
+              }
+            }
           } else {
             failedCount++
             errors.push({ path: filePath, error: failMessage || 'Czkawka 视频转码未产出物理文件' })
@@ -1178,8 +1226,8 @@ export class DuplicateDetectionService {
       }
     }
 
-    // 执行成功且存在输出目录时，自动使用系统文件管理器打开对应目标目录
-    if (successCount > 0 && targetOutputDirectory && fs.existsSync(targetOutputDirectory)) {
+    // 执行成功且存在输出目录时，若在循环中尚未成功打开（例如异常兜底），自动使用系统文件管理器打开对应目标目录
+    if (!hasOpenedFirstItem && successCount > 0 && targetOutputDirectory && fs.existsSync(targetOutputDirectory)) {
       try {
         await shell.openPath(targetOutputDirectory)
         logger.info(LogCategory.FILE_ORGANIZATION, `已使用系统文件管理器打开生成目录: ${targetOutputDirectory}`)

@@ -392,7 +392,7 @@
     "de-DE": "Pausieren",
     "fr-FR": "Suspendre",
     "ko-KR": "일시 중지",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(18349-18355)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(18351-18357)"],
     "$id": 3886
   },
   "开始": {
@@ -405,7 +405,7 @@
     "de-DE": "Starten",
     "fr-FR": "Démarrer",
     "ko-KR": "시작",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(18648-18654)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(18650-18656)"],
     "$id": 3887
   },
   "重试失败": {
@@ -418,7 +418,7 @@
     "de-DE": "Wiederholungsversuch fehlgeschlagen",
     "fr-FR": "La nouvelle tentative a échoué",
     "ko-KR": "재시도 실패",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(18854-18862)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(18856-18864)"],
     "$id": 7794
   },
   "清空队列": {
@@ -431,7 +431,7 @@
     "de-DE": "Warteschlange löschen",
     "fr-FR": "Vider la file d'attente",
     "ko-KR": "대기열 비우기",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(18993-19001)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(18995-19003)"],
     "$id": 3886
   },
   "清空待处理": {
@@ -444,7 +444,7 @@
     "de-DE": "Ausstehende löschen",
     "fr-FR": "Vider les éléments en attente",
     "ko-KR": "처리 대기 중 전체 삭제",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(19184-19193)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(19186-19195)"],
     "$id": 3884
   },
   "结果简陋？切为【快速命名】或【全面分析】": {
@@ -457,7 +457,7 @@
     "de-DE": "Das Ergebnis ist grob? Wechseln Sie zu [Schnelle Benennung] oder [Umfassende Analyse]",
     "fr-FR": "Le résultat est brut ? Basculez vers [Quick Naming] ou [Comprehensive Analysis]",
     "ko-KR": "결과는 조악하다? [빠른 이름 지정] 또는 [종합 분석]으로 전환",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(19775-19799)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(19777-19801)"],
     "$id": 9418
   },
   "需要评分描述？切为【全面分析】": {
@@ -470,7 +470,7 @@
     "de-DE": "Benötigen Sie eine Bewertungsbeschreibung? Schnitt zu 【Umfassende Analyse】",
     "fr-FR": "Besoin d'une description de la note ? Passer à 【Analyse complète】",
     "ko-KR": "등급 설명이 필요하십니까? 【종합분석】으로 이동",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(19872-19891)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(19874-19893)"],
     "$id": 9419
   },
   "分析太慢？切为【快速命名】或【简单分类】": {
@@ -483,7 +483,7 @@
     "de-DE": "Analyse zu langsam? Wechseln Sie zu [Schnellname] oder [Einfache Klassifizierung]",
     "fr-FR": "Analyse trop lente ? Basculez vers [Nom rapide] ou [Classification simple]",
     "ko-KR": "분석이 너무 느리나요? [빠른 이름] 또는 [간단 분류]로 전환",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(19915-19939)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(19917-19941)"],
     "$id": 9420
   },
   "切为独立窗口": {
@@ -496,7 +496,7 @@
     "de-DE": "Machen Sie daraus ein separates Fenster",
     "fr-FR": "Faites-en une fenêtre séparée",
     "ko-KR": "별도의 창으로 만들어주세요",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(20278-20288)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(20280-20290)"],
     "$id": 7797
   },
   "切为底部分栏": {
@@ -509,7 +509,7 @@
     "de-DE": "Auf die unterste Spalte schneiden",
     "fr-FR": "Couper à la colonne du bas",
     "ko-KR": "아래쪽 기둥까지 자르기",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(20292-20302)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(20294-20304)"],
     "$id": 7798
   },
   "独立窗口": {
@@ -522,7 +522,7 @@
     "de-DE": "Unabhängiges Fenster",
     "fr-FR": "Fenêtre indépendante",
     "ko-KR": "독립창",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(20481-20489)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(20483-20491)"],
     "$id": 7799
   },
   "底部分栏": {
@@ -535,7 +535,7 @@
     "de-DE": "Untere Spalte",
     "fr-FR": "Colonne du bas",
     "ko-KR": "하단 열",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(20660-20668)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(20662-20670)"],
     "$id": 7800
   },
   "最小化": {
@@ -549,8 +549,8 @@
     "fr-FR": "Minimiser",
     "ko-KR": "최소화하다",
     "$files": [
-      "src/renderer/components/analysis/AnalysisQueueContent.tsx(21078-21085)",
-      "src/renderer/components/analysis/AnalysisQueueContent.tsx(22016-22023)"
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(21080-21087)",
+      "src/renderer/components/analysis/AnalysisQueueContent.tsx(22018-22025)"
     ],
     "$id": 7801
   },
@@ -564,7 +564,7 @@
     "de-DE": "Maximieren",
     "fr-FR": "Maximiser",
     "ko-KR": "최대화하다",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(21407-21414)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(21409-21416)"],
     "$id": 7802
   },
   "展开": {
@@ -577,7 +577,7 @@
     "de-DE": "Expandieren",
     "fr-FR": "Développer",
     "ko-KR": "확장하다",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(22006-22012)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(22008-22014)"],
     "$id": 7803
   },
   "关闭": {
@@ -590,7 +590,7 @@
     "de-DE": "Schließung",
     "fr-FR": "Fermeture",
     "ko-KR": "폐쇄",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(22503-22509)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(22505-22511)"],
     "$id": 7804
   },
   "文件名": {
@@ -603,7 +603,7 @@
     "de-DE": "Dateiname",
     "fr-FR": "Nom du fichier",
     "ko-KR": "파일명",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(23890-23897)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(23892-23899)"],
     "$id": 3877
   },
   "处理进度": {
@@ -616,7 +616,7 @@
     "de-DE": "Bearbeitungsfortschritt",
     "fr-FR": "Progression du traitement",
     "ko-KR": "처리 진행 상황",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(24227-24235)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(24229-24237)"],
     "$id": 7971
   },
   "状态": {
@@ -629,7 +629,7 @@
     "de-DE": "Status",
     "fr-FR": "Statut",
     "ko-KR": "상태",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(24584-24590)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(24586-24592)"],
     "$id": 3879
   },
   "失败/跳过原因": {
@@ -642,7 +642,7 @@
     "de-DE": "Fehler-/Übersprungsgrund",
     "fr-FR": "Raison de l'échec/du saut",
     "ko-KR": "실패/건너뛰기 이유",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(24935-24946)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(24937-24948)"],
     "$id": 7805
   },
   "缓存/耗时": {
@@ -655,7 +655,7 @@
     "de-DE": "Cache / Laufzeit",
     "fr-FR": "Cache / Temps écoulé",
     "ko-KR": "캐시/소요 시간",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(25307-25316)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(25309-25318)"],
     "$id": 3416
   },
   "最小单元": {
@@ -668,7 +668,7 @@
     "de-DE": "Mindesteinheit",
     "fr-FR": "Unité minimale",
     "ko-KR": "최소 단위",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(25648-25656)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(25650-25658)"],
     "$id": 6232
   },
   "操作": {
@@ -681,7 +681,7 @@
     "de-DE": "Aktionen",
     "fr-FR": "Opérations",
     "ko-KR": "작업",
-    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(26014-26020)"],
+    "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(26016-26022)"],
     "$id": 3881
   },
   "智能文件名扩展名确认": {
