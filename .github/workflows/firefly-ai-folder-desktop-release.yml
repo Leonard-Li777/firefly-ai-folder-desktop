@@ -192,7 +192,6 @@ jobs:
           cat build/extraResources/configs/preset-resources.lock.json || true
 
       - name: Setup Resources (Basic)
-        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
         shell: bash
         run: |
           echo "🔍 [CI 诊断 - macOS] 执行 setup-resources 前的 build/presetResources/llama.cpp:"
@@ -502,7 +501,6 @@ jobs:
           cat build/extraResources/configs/preset-resources.lock.json || true
 
       - name: Setup Resources (Basic)
-        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
         shell: bash
         run: |
           echo "🔍 [CI 诊断 - Windows] 执行 setup-resources 前的 build/presetResources/llama.cpp:"
@@ -873,7 +871,6 @@ jobs:
           cat build/extraResources/configs/preset-resources.lock.json || true
 
       - name: Setup Resources (Basic)
-        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
         shell: bash
         run: |
           echo "🔍 [CI 诊断 - Linux] 执行 setup-resources 前的 build/presetResources/llama.cpp:"
