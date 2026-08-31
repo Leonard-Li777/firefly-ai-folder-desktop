@@ -236,13 +236,13 @@ jobs:
             ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-*.zip" | head -n 1)
             if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
               mkdir -p build/extraResources/models
-              echo "📦 解压内置模型到 build/extraResources/models..."
-              unzip -o -q "$ZIP_FILE" -d build/extraResources/models
+              echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
+              python3 -c "import zipfile, os, sys; z = zipfile.ZipFile(sys.argv[1]); [os.makedirs(os.path.dirname(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/'))), exist_ok=True) or (not m.is_dir() and not m.filename.endswith('/') and open(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/')), 'wb').write(z.read(m))) for m in z.infolist()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || unzip -o -q "$ZIP_FILE" -d build/extraResources/models || true
               echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
             fi
             rm -rf "$TMP_LFM"
           else
-            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 llama-model-download 兜底。"
+            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 download:builtin-model 兜底。"
           fi
 
       - name: 下载内置模型并清理投影文件 (llama-model-download)
@@ -569,13 +569,13 @@ jobs:
             ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-*.zip" | head -n 1)
             if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
               mkdir -p build/extraResources/models
-              echo "📦 解压内置模型到 build/extraResources/models..."
-              unzip -o -q "$ZIP_FILE" -d build/extraResources/models
+              echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
+              python3 -c "import zipfile, os, sys; z = zipfile.ZipFile(sys.argv[1]); [os.makedirs(os.path.dirname(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/'))), exist_ok=True) or (not m.is_dir() and not m.filename.endswith('/') and open(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/')), 'wb').write(z.read(m))) for m in z.infolist()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || python -c "import zipfile, os, sys; z = zipfile.ZipFile(sys.argv[1]); [os.makedirs(os.path.dirname(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/'))), exist_ok=True) or (not m.is_dir() and not m.filename.endswith('/') and open(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/')), 'wb').write(z.read(m))) for m in z.infolist()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || tar -xf "$ZIP_FILE" -C build/extraResources/models || true
               echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
             fi
             rm -rf "$TMP_LFM"
           else
-            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 llama-model-download 兜底。"
+            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 download:builtin-model 兜底。"
           fi
 
       - name: 下载内置模型并清理投影文件 (llama-model-download)
@@ -964,13 +964,13 @@ jobs:
             ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-*.zip" | head -n 1)
             if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
               mkdir -p build/extraResources/models
-              echo "📦 解压内置模型到 build/extraResources/models..."
-              unzip -o -q "$ZIP_FILE" -d build/extraResources/models
+              echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
+              python3 -c "import zipfile, os, sys; z = zipfile.ZipFile(sys.argv[1]); [os.makedirs(os.path.dirname(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/'))), exist_ok=True) or (not m.is_dir() and not m.filename.endswith('/') and open(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/')), 'wb').write(z.read(m))) for m in z.infolist()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || unzip -o -q "$ZIP_FILE" -d build/extraResources/models || true
               echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
             fi
             rm -rf "$TMP_LFM"
           else
-            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 llama-model-download 兜底。"
+            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 download:builtin-model 兜底。"
           fi
 
       - name: 下载内置模型并清理投影文件 (llama-model-download)
