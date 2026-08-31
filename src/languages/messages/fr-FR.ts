@@ -3046,6 +3046,7 @@ export default  {
     "11236": "Analyser et nettoyer les fichiers dupliqués, temporaires et volumineux",
     "11237": "Le transcodage optimisé pour une performance élevée de {count} vidéos est en cours ; une fois la première vidéo terminée, le système passera automatiquement à la suivante...",
     "11238": "Le traitement des informations de confidentialité Exif de {count} images est en cours. Une fois la première image traitée, le système passera automatiquement à la suivante...",
+    "11240": "Moteur",
     "11242": "Haut de gamme",
     "11247": "Encodage de texte",
     "11248": "Nombre de caractères",

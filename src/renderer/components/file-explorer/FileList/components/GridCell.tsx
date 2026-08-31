@@ -579,27 +579,32 @@ const gridCellAreEqual = (prevProps: GridCellProps, nextProps: GridCellProps): b
   if (prevItem.size !== nextItem.size) return false
   if (prevItem.thumbnailPath !== nextItem.thumbnailPath) return false
   if ((prevItem as any).qualityScore !== (nextItem as any).qualityScore) return false
+  // activeItem 比对：若引用一致则直接跳过路径比对
+  if (prevData.activeItem !== nextData.activeItem) {
+    const isPathEqualFn = window.electronAPI?.utils?.isPathEqual
+    const prevIsActive = !!(
+      prevData.activeItem?.path && isPathEqualFn?.(prevItem.path, prevData.activeItem.path)
+    )
+    const nextIsActive = !!(
+      nextData.activeItem?.path && isPathEqualFn?.(nextItem.path, nextData.activeItem.path)
+    )
+    if (prevIsActive !== nextIsActive) return false
+  }
 
-  const isPathEqualFn = window.electronAPI?.utils?.isPathEqual
-  const prevIsActive = !!(
-    prevData?.activeItem?.path && isPathEqualFn?.(prevItem.path, prevData.activeItem.path)
-  )
-  const nextIsActive = !!(
-    nextData?.activeItem?.path && isPathEqualFn?.(nextItem.path, nextData.activeItem.path)
-  )
-  if (prevIsActive !== nextIsActive) return false
+  // selectedPathsSet 比对：只在当前 itemPath 的选中状态发生改变时才失效
+  if (prevData.selectedPathsSet !== nextData.selectedPathsSet) {
+    const prevIsSelected = prevData.selectedPathsSet?.has(prevItem.path) ?? false
+    const nextIsSelected = nextData.selectedPathsSet?.has(nextItem.path) ?? false
+    if (prevIsSelected !== nextIsSelected) return false
+  }
 
-  const prevIsSelected = prevData?.selectedPathsSet?.has(prevItem.path) ?? false
-  const nextIsSelected = nextData?.selectedPathsSet?.has(nextItem.path) ?? false
-  if (prevIsSelected !== nextIsSelected) return false
-
-  if (prevData?.refreshKey !== nextData?.refreshKey) return false
-  if (prevData?.viewMode !== nextData?.viewMode) return false
-  if (prevData?.showsmartName !== nextData?.showsmartName) return false
-  if (prevData?.swapFileNameDisplay !== nextData?.swapFileNameDisplay) return false
-  if (prevData?.gridShowFullFileName !== nextData?.gridShowFullFileName) return false
-  if (prevData?.columnWidth !== nextData?.columnWidth) return false
-  if (prevData?.selectionEnabled !== nextData?.selectionEnabled) return false
+  if (prevData.refreshKey !== nextData.refreshKey) return false
+  if (prevData.viewMode !== nextData.viewMode) return false
+  if (prevData.showsmartName !== nextData.showsmartName) return false
+  if (prevData.swapFileNameDisplay !== nextData.swapFileNameDisplay) return false
+  if (prevData.gridShowFullFileName !== nextData.gridShowFullFileName) return false
+  if (prevData.columnWidth !== nextData.columnWidth) return false
+  if (prevData.selectionEnabled !== nextData.selectionEnabled) return false
 
   return true
 }

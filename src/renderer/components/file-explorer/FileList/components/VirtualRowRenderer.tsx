@@ -496,8 +496,13 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
     return false
   }
 
-  const prevItems = prevProps.data?.items
-  const nextItems = nextProps.data?.items
+  const prevData = prevProps.data
+  const nextData = nextProps.data
+  if (prevData === nextData) return true
+  if (!prevData || !nextData) return false
+
+  const prevItems = prevData.items
+  const nextItems = nextData.items
   if (!prevItems || !nextItems) return false
 
   const prevItem = prevItems[prevProps.index]
@@ -510,31 +515,39 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
   if (prevItem.size !== nextItem.size) return false
   if (prevItem.path !== nextItem.path) return false
 
-  const prevIsActive = !!(
-    prevProps.data?.activeItem?.path &&
-    prevProps.data?.isPathEqual?.(prevItem.path, prevProps.data.activeItem.path)
-  )
-  const nextIsActive = !!(
-    nextProps.data?.activeItem?.path &&
-    nextProps.data?.isPathEqual?.(nextItem.path, nextProps.data.activeItem.path)
-  )
-  if (prevIsActive !== nextIsActive) return false
+  // activeItem 比对：若引用一致则直接跳过路径比对
+  if (prevData.activeItem !== nextData.activeItem) {
+    const isPathEqualFn = prevData.isPathEqual || window.electronAPI?.utils?.isPathEqual
+    const prevIsActive = !!(
+      prevData.activeItem?.path &&
+      isPathEqualFn?.(prevItem.path, prevData.activeItem.path)
+    )
+    const nextIsActive = !!(
+      nextData.activeItem?.path &&
+      isPathEqualFn?.(nextItem.path, nextData.activeItem.path)
+    )
+    if (prevIsActive !== nextIsActive) return false
+  }
 
-  const prevIsSelected = prevProps.data?.selectedPathsSet?.has(prevItem.path) ?? false
-  const nextIsSelected = nextProps.data?.selectedPathsSet?.has(nextItem.path) ?? false
-  if (prevIsSelected !== nextIsSelected) return false
+  // selectedPathsSet 比对：只在当前 itemPath 的选中状态发生改变时才失效
+  if (prevData.selectedPathsSet !== nextData.selectedPathsSet) {
+    const prevIsSelected = prevData.selectedPathsSet?.has(prevItem.path) ?? false
+    const nextIsSelected = nextData.selectedPathsSet?.has(nextItem.path) ?? false
+    if (prevIsSelected !== nextIsSelected) return false
+  }
 
-  if (prevProps.data?.refreshKey !== nextProps.data?.refreshKey) return false
-  if (prevProps.data?.viewMode !== nextProps.data?.viewMode) return false
-  if (prevProps.data?.showsmartName !== nextProps.data?.showsmartName) return false
-  if (prevProps.data?.swapFileNameDisplay !== nextProps.data?.swapFileNameDisplay) return false
-  if (prevProps.data?.totalWidth !== nextProps.data?.totalWidth) return false
-  if (prevProps.data?.listRowHeight !== nextProps.data?.listRowHeight) return false
-  if (prevProps.data?.listFontSize !== nextProps.data?.listFontSize) return false
+  if (prevData.refreshKey !== nextData.refreshKey) return false
+  if (prevData.viewMode !== nextData.viewMode) return false
+  if (prevData.showsmartName !== nextData.showsmartName) return false
+  if (prevData.swapFileNameDisplay !== nextData.swapFileNameDisplay) return false
+  if (prevData.totalWidth !== nextData.totalWidth) return false
+  if (prevData.listRowHeight !== nextData.listRowHeight) return false
+  if (prevData.listFontSize !== nextData.listFontSize) return false
+  if (prevData.selectionEnabled !== nextData.selectionEnabled) return false
 
-  if (prevProps.data?.columnWidths !== nextProps.data?.columnWidths) {
-    const prevWidths = prevProps.data?.columnWidths || {}
-    const nextWidths = nextProps.data?.columnWidths || {}
+  if (prevData.columnWidths !== nextData.columnWidths) {
+    const prevWidths = prevData.columnWidths || {}
+    const nextWidths = nextData.columnWidths || {}
     const keys = Object.keys(prevWidths)
     if (keys.length !== Object.keys(nextWidths).length) return false
     for (const k of keys) {

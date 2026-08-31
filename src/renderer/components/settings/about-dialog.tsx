@@ -12,6 +12,19 @@ interface AboutDialogProps {
 }
 
 export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) => {
+  const [omniVersion, setOmniVersion] = React.useState<string>('')
+
+  React.useEffect(() => {
+    if (open && window.electronAPI?.getOmniVersion) {
+      window.electronAPI
+        .getOmniVersion()
+        .then(v => {
+          if (v) setOmniVersion(v)
+        })
+        .catch(() => {})
+    }
+  }, [open])
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -25,6 +38,9 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) 
             <h2 className="text-2xl font-bold">{t('萤核智能文件夹')}</h2>
             <p className="text-muted-foreground mt-1">
               {t('版本 {version}', { version: __APP_VERSION__ || '1.0.0' })}
+            </p>
+            <p className="text-muted-foreground/50 mt-1 text-xs">
+              Firefly Omni {t('引擎')} v{omniVersion}
             </p>
             <p className="text-muted-foreground text-sm mt-1">
               {t('本地 AI 优先的智能虚拟文件管理系统')}

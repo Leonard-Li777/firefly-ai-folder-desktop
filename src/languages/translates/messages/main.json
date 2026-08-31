@@ -363,9 +363,9 @@
     "fr-FR": "Base de données non initialisée",
     "ko-KR": "데이터베이스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(24298-24309)",
-      "src/electron/main/ipc-handlers/misc.ts(24544-24555)",
-      "src/electron/main/ipc-handlers/misc.ts(24790-24801)"
+      "src/electron/main/ipc-handlers/misc.ts(24482-24493)",
+      "src/electron/main/ipc-handlers/misc.ts(24728-24739)",
+      "src/electron/main/ipc-handlers/misc.ts(24974-24985)"
     ],
     "$id": 7676
   },

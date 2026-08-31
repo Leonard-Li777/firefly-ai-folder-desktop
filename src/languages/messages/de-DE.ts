@@ -3046,6 +3046,7 @@ export default  {
     "11236": "Doppelte, temporäre und große Dateien scannen und bereinigen",
     "11237": "Derzeit werden {count} Videos einer leistungsoptimierten Transkodierung unterzogen. Sobald das erste Video fertig ist, wird automatisch zum nächsten übergegangen...",
     "11238": "Derzeit werden die Exif-Datenschutzangaben von {count} Bildern gelöscht. Sobald das erste Bild fertig ist, wird automatisch das nächste ausgewählt...",
+    "11240": "Motor",
     "11242": "Top",
     "11247": "Textkodierung",
     "11248": "Anzahl der Zeichen",

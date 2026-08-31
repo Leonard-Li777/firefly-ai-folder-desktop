@@ -3046,6 +3046,7 @@ export default  {
     "11236": "Digitalizar e limpar ficheiros duplicados, temporários e de grandes dimensões",
     "11237": "Estamos a realizar uma transcodificação de otimização de alto desempenho em {count} vídeos; assim que o primeiro estiver concluído, será automaticamente selecionado...",
     "11238": "A limpeza das informações de privacidade Exif de {count} imagens está a ser processada; assim que a primeira estiver concluída, será automaticamente localizada...",
+    "11240": "Motor",
     "11242": "Topo",
     "11247": "Codificação de texto",
     "11248": "Número de caracteres",

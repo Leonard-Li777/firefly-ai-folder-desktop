@@ -64,6 +64,8 @@ export class OmniService {
   private process: ChildProcess | null = null
   private baseUrl = 'http://127.0.0.1:9190'
   private isStarting = false
+  private startPromise: Promise<boolean> | null = null
+  private cachedVersion: string | null = null
   private restartAttempts = 0
   private maxRestartAttempts = 10
   private restartTimeout: NodeJS.Timeout | null = null
@@ -128,6 +130,39 @@ export class OmniService {
   }
 
   /**
+   * 获取 Omni 引擎版本号
+   */
+  public async getVersion(): Promise<string> {
+    if (this.cachedVersion) {
+      return this.cachedVersion
+    }
+    try {
+      await this.ensureRunning()
+      const res = await fetch(`${this.baseUrl}/api/version`, {
+        signal: AbortSignal.timeout(2000)
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data && typeof data.version === 'string') {
+          this.cachedVersion = data.version
+          return data.version
+        }
+      }
+    } catch {}
+    return this.cachedVersion || '0.1.0'
+  }
+
+  /**
+   * 确保 Omni 服务处于运行与就绪状态（若未运行则自动按需拉起）
+   */
+  public async ensureRunning(): Promise<boolean> {
+    if (await this.checkHealth()) {
+      return true
+    }
+    return this.start()
+  }
+
+  /**
    * 定位 firefly-omni 可执行文件
    */
   public resolveOmniExecutable(): string | null {
@@ -160,17 +195,28 @@ export class OmniService {
   }
 
   /**
-   * 启动并守护 firefly-omni 子进程
+   * 启动并守护 firefly-omni 子进程（支持并发 Promise 合并）
    */
   public async start(): Promise<boolean> {
     if (this.process && !this.process.killed) {
-      return true
+      if (await this.checkHealth()) {
+        return true
+      }
     }
 
-    if (this.isStarting) {
-      return false
+    if (this.startPromise) {
+      return this.startPromise
     }
 
+    this.startPromise = this.doStart()
+    try {
+      return await this.startPromise
+    } finally {
+      this.startPromise = null
+    }
+  }
+
+  private async doStart(): Promise<boolean> {
     this.isStarting = true
     const exePath = this.resolveOmniExecutable()
     if (!exePath) {
@@ -241,8 +287,8 @@ export class OmniService {
 
       this.process = child
 
-      // 等待服务就绪探活
-      for (let i = 0; i < 20; i++) {
+      // 等待服务就绪探活 (最多 30 次 * 200ms = 6秒，容纳数据集冷启动时间)
+      for (let i = 0; i < 30; i++) {
         await new Promise(r => setTimeout(r, 200))
         if (await this.checkHealth()) {
           logger.info(LogCategory.SYSTEM, `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`)
@@ -321,7 +367,16 @@ export class OmniService {
   public async checkHealth(): Promise<boolean> {
     try {
       const res = await fetch(`${this.baseUrl}/health`, { signal: AbortSignal.timeout(1000) })
-      return res.ok
+      if (res.ok) {
+        try {
+          const data = await res.json()
+          if (data && typeof data.version === 'string') {
+            this.cachedVersion = data.version
+          }
+        } catch {}
+        return true
+      }
+      return false
     } catch {
       return false
     }
@@ -384,6 +439,7 @@ export class OmniService {
    * 提取文件全量信息 (元数据, Magika, Markdown, EXIF, 音视频标签)
    */
   public async extract(filePath: string): Promise<OmniExtractionResponse | null> {
+    await this.ensureRunning()
     const tStart = Date.now()
     const reqBody = { file_path: filePath }
     logger.debug(
@@ -391,7 +447,8 @@ export class OmniService {
       `[OmniService] >>> POST /api/extract 请求发起:`,
       JSON.stringify(reqBody)
     )
-    try {
+
+    const doFetch = async () => {
       const res = await fetch(`${this.baseUrl}/api/extract`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -414,11 +471,27 @@ export class OmniService {
         JSON.stringify(json)
       )
       return json
+    }
+
+    try {
+      return await doFetch()
     } catch (err: any) {
       logger.warn(
         LogCategory.SYSTEM,
-        `[OmniService] <<< POST /api/extract 调用失败 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}`
+        `[OmniService] <<< POST /api/extract 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}，尝试自愈拉起并重试...`
       )
+      // 若出现网络错误（如进程被外部杀死重构中），触发自愈并重试一次
+      const restarted = await this.start()
+      if (restarted) {
+        try {
+          return await doFetch()
+        } catch (retryErr: any) {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[OmniService] <<< POST /api/extract 自愈重试仍失败 (${filePath}): ${retryErr.message}`
+          )
+        }
+      }
       return null
     }
   }
@@ -488,6 +561,7 @@ export class OmniService {
     lonOrLang?: number | string,
     optionalLang?: string
   ): Promise<OmniGeoReverseResponse | null> {
+    await this.ensureRunning()
     const tStart = Date.now()
     try {
       let points: Array<{ latitude: number; longitude: number }> = []
@@ -520,28 +594,42 @@ export class OmniService {
         JSON.stringify(reqBody)
       )
 
-      const res = await fetch(`${this.baseUrl}/api/geo/reverse`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(reqBody),
-        signal: AbortSignal.timeout(3000)
-      })
+      const doFetch = async () => {
+        const res = await fetch(`${this.baseUrl}/api/geo/reverse`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reqBody),
+          signal: AbortSignal.timeout(3000)
+        })
 
-      if (!res.ok) {
-        logger.warn(
+        if (!res.ok) {
+          logger.warn(
+            LogCategory.SYSTEM,
+            `[OmniService] <<< POST /api/geo/reverse 响应异常: status=${res.status}, 耗时: ${Date.now() - tStart}ms`
+          )
+          return null
+        }
+
+        const json = (await res.json()) as OmniGeoReverseResponse
+        logger.debug(
           LogCategory.SYSTEM,
-          `[OmniService] <<< POST /api/geo/reverse 响应异常: status=${res.status}, 耗时: ${Date.now() - tStart}ms`
+          `[OmniService] <<< POST /api/geo/reverse 响应成功 (耗时: ${Date.now() - tStart}ms):`,
+          JSON.stringify(json)
         )
-        return null
+        return json
       }
 
-      const json = (await res.json()) as OmniGeoReverseResponse
-      logger.debug(
-        LogCategory.SYSTEM,
-        `[OmniService] <<< POST /api/geo/reverse 响应成功 (耗时: ${Date.now() - tStart}ms):`,
-        JSON.stringify(json)
-      )
-      return json
+      try {
+        return await doFetch()
+      } catch (fetchErr: any) {
+        const restarted = await this.start()
+        if (restarted) {
+          try {
+            return await doFetch()
+          } catch {}
+        }
+        throw fetchErr
+      }
     } catch (err: any) {
       logger.debug(LogCategory.SYSTEM, `[OmniService] <<< POST /api/geo/reverse 调用异常 (耗时: ${Date.now() - tStart}ms):`, err.message)
       return null
@@ -579,10 +667,12 @@ export class OmniService {
    * 不支持的格式服务端返回 204，此处直接返回 null 并平滑降级
    */
   public async getFileCover(filePath: string): Promise<Buffer | null> {
+    await this.ensureRunning()
     const tStart = Date.now()
-    try {
-      const url = `${this.baseUrl}/api/cover?path=${encodeURIComponent(filePath)}`
-      logger.debug(LogCategory.SYSTEM, `[OmniService] >>> GET /api/cover 请求发起 (${filePath})`)
+    const url = `${this.baseUrl}/api/cover?path=${encodeURIComponent(filePath)}`
+    logger.debug(LogCategory.SYSTEM, `[OmniService] >>> GET /api/cover 请求发起 (${filePath})`)
+
+    const doFetch = async () => {
       // Office 转换 (LibreOffice) 或复杂视频截帧可能需要一定冷启动时间，提供充足的 60 秒等待时间
       const res = await fetch(url, {
         signal: AbortSignal.timeout(60000)
@@ -604,8 +694,20 @@ export class OmniService {
         `[OmniService] <<< GET /api/cover 响应成功 (${filePath}, 字节大小: ${buffer.length} B, 耗时: ${Date.now() - tStart}ms)`
       )
       return buffer
+    }
+
+    try {
+      return await doFetch()
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniService] <<< GET /api/cover 调用异常 (${filePath}, 耗时: ${Date.now() - tStart}ms):`, err.message)
+      logger.debug(LogCategory.SYSTEM, `[OmniService] <<< GET /api/cover 首次调用异常 (${filePath}, 耗时: ${Date.now() - tStart}ms): ${err.message}，尝试自愈重试...`)
+      const restarted = await this.start()
+      if (restarted) {
+        try {
+          return await doFetch()
+        } catch (retryErr: any) {
+          logger.debug(LogCategory.SYSTEM, `[OmniService] <<< GET /api/cover 自愈重试仍异常 (${filePath}):`, retryErr.message)
+        }
+      }
       return null
     }
   }

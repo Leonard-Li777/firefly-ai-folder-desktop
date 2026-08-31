@@ -701,6 +701,9 @@ declare global {
 
       // AI Skill API — 整理方案应用
       onApplyOrganizePlan: (callback: (payload: { name: string; strategy: string; perspective?: string }) => void) => () => void
+
+      // 获取 Omni 引擎版本号
+      getOmniVersion: () => Promise<string>
     }
 
     // 其他全局对象

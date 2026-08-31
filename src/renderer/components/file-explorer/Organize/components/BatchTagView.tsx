@@ -84,20 +84,18 @@ const TagPill: React.FC<TagPillProps> = React.memo(
           className={cn(
             'relative overflow-hidden inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium cursor-pointer',
             'border select-none shadow-2xs transition-colors duration-150',
-            // 状态高亮
+            // 状态与拥有高亮
             isAllAttached
               ? 'border-emerald-600 bg-emerald-600 text-white font-semibold shadow-xs'
               : isAllRemoved
                 ? 'border-destructive/60 bg-destructive/15 text-destructive line-through opacity-85'
-                : isFullyOwned
-                  ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs'
-                  : isPartial
-                    ? 'border-primary/40 text-foreground hover:border-primary/70'
-                    : 'border-border/60 bg-card hover:border-border text-foreground/80',
-            // 当前聚焦文件拥有时的突出展示（保持尺寸绝对恒定，无 scale 形变与新增徽章，杜绝布局回流）
-            isOwnedByInspected
-              ? 'border-primary bg-primary/20 text-primary font-semibold shadow-sm ring-1 ring-primary/40 !opacity-100 z-10'
-              : 'group-[.tags-has-inspected]/taggrid:opacity-40 group-[.tags-has-inspected]/taggrid:hover:opacity-100'
+                : isOwnedByInspected
+                  ? 'border-primary bg-primary/20 text-primary font-bold shadow-xs ring-1.5 ring-primary/60 z-10'
+                  : isFullyOwned
+                    ? 'border-primary bg-primary text-primary-foreground font-semibold shadow-xs'
+                    : isPartial
+                      ? 'border-primary/40 text-foreground hover:border-primary/70'
+                      : 'border-border/60 bg-card hover:border-border text-foreground/80'
           )}
           style={
             isPartial && !isOwnedByInspected
@@ -108,7 +106,7 @@ const TagPill: React.FC<TagPillProps> = React.memo(
           }
         >
           {/* 部分拥有时的背景进度条 (覆盖率比值) */}
-          {isPartial && (
+          {isPartial && !isOwnedByInspected && (
             <div
               className="absolute inset-y-0 left-0 bg-primary/20 pointer-events-none rounded-xl"
               style={{ width: `${Math.round(ratio * 100)}%` }}
@@ -122,6 +120,9 @@ const TagPill: React.FC<TagPillProps> = React.memo(
           {isAllRemoved && (
             <MaterialIcon icon="do_not_disturb_on" className="text-xs text-destructive shrink-0 relative z-10" />
           )}
+          {isOwnedByInspected && !isAllAttached && !isAllRemoved && (
+            <MaterialIcon icon="check_circle" className="text-xs text-primary shrink-0 relative z-10" />
+          )}
 
           {/* 标签名称 */}
           <span className="relative z-10">{tagName}</span>
@@ -134,10 +135,10 @@ const TagPill: React.FC<TagPillProps> = React.memo(
                 ? 'bg-black/20 text-white'
                 : isAllRemoved
                   ? 'bg-destructive/20 text-destructive'
-                  : isFullyOwned
-                    ? 'bg-black/20 text-white'
-                    : isOwnedByInspected
-                      ? 'bg-primary/20 text-primary font-semibold'
+                  : isOwnedByInspected
+                    ? 'bg-primary/25 text-primary font-bold'
+                    : isFullyOwned
+                      ? 'bg-black/20 text-white'
                       : 'bg-background/80 text-muted-foreground border border-border/40'
             )}
           >
@@ -171,6 +172,208 @@ const TagPill: React.FC<TagPillProps> = React.memo(
 )
 
 TagPill.displayName = 'TagPill'
+
+/**
+ * 单个维度分组卡片组件 (React.memo)
+ * 仅在其自身标签、三态状态或被聚焦文件命中的标签变化时重绘，避免全量维度树重绘
+ */
+interface DimensionGroupCardProps {
+  group: DimensionGroup
+  isPan: boolean
+  groupNewTags: string[]
+  isInputActive: boolean
+  inputVal: string
+  tagStates: Record<string, TagActionState>
+  tagFileCounts: Record<string, number>
+  totalFilesCount: number
+  inspectedTagSet: Set<string>
+  hasInspected: boolean
+  onToggleTag: (tagKey: string) => void
+  onDeleteExistingTag: (dimId: number, tagName: string, e: React.MouseEvent) => void
+  onBatchSetTags: (group: DimensionGroup, state: TagActionState) => void
+  onStartAddNewTag: (dimId: number) => void
+  onCancelAddNewTag: () => void
+  onInputChange: (val: string) => void
+  onSubmitAddNewTag: (dimId: number) => void
+  onRemoveNewTag: (dimId: number, name: string) => void
+}
+
+const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
+  ({
+    group,
+    isPan,
+    groupNewTags,
+    isInputActive,
+    inputVal,
+    tagStates,
+    tagFileCounts,
+    totalFilesCount,
+    inspectedTagSet,
+    hasInspected,
+    onToggleTag,
+    onDeleteExistingTag,
+    onBatchSetTags,
+    onStartAddNewTag,
+    onCancelAddNewTag,
+    onInputChange,
+    onSubmitAddNewTag,
+    onRemoveNewTag
+  }) => {
+    const groupTags = group.tags || []
+    const groupNameLower = group.name.trim().toLowerCase()
+
+    return (
+      <div className="space-y-3 p-4 rounded-2xl bg-card/60 border border-border/50 shadow-2xs hover:border-border/80 transition-colors">
+        {/* 维度头部与快捷全选 */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-bold text-foreground/90">{group.name}</span>
+            <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-normal bg-background/80">
+              {t('{count} 个标签', {
+                count: groupTags.length + groupNewTags.length
+              })}
+            </Badge>
+            {isPan && (
+              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 bg-primary/10 text-primary border border-primary/20 font-medium">
+                {t('泛维度')}
+              </Badge>
+            )}
+          </div>
+
+          {/* 维度快捷操作 */}
+          {groupTags.length > 0 && (
+            <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
+              <button
+                type="button"
+                onClick={() => onBatchSetTags(group, 'add_all')}
+                className="text-[11px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition-colors cursor-pointer"
+                title={t('全部附加该维度下的所有标签')}
+              >
+                {t('全附')}
+              </button>
+              <span className="text-muted-foreground/30 text-xs">|</span>
+              <button
+                type="button"
+                onClick={() => onBatchSetTags(group, 'initial')}
+                className="text-[11px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded-md hover:bg-muted transition-colors cursor-pointer"
+                title={t('恢复该维度默认状态')}
+              >
+                {t('重置')}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* 标签流动排布 */}
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* 仅泛维度允许新建标签 */}
+          {isPan &&
+            (isInputActive ? (
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background rounded-xl border border-primary/60 shadow-xs animate-in zoom-in-95 duration-150">
+                <Input
+                  autoFocus
+                  value={inputVal}
+                  onChange={e => onInputChange(e.target.value)}
+                  onBlur={() => {
+                    if (inputVal.trim()) {
+                      onSubmitAddNewTag(group.id)
+                    }
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') onSubmitAddNewTag(group.id)
+                    if (e.key === 'Escape') {
+                      onCancelAddNewTag()
+                    }
+                  }}
+                  placeholder={t('输入新标签名...')}
+                  className="h-5.5 text-xs w-28 border-0 bg-transparent p-0 focus-visible:ring-0"
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-5.5 w-5.5 text-primary hover:text-primary hover:bg-primary/10 rounded-md cursor-pointer"
+                  onClick={() => onSubmitAddNewTag(group.id)}
+                >
+                  <MaterialIcon icon="check" className="text-xs" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-5.5 w-5.5 text-muted-foreground hover:text-foreground rounded-md cursor-pointer"
+                  onClick={onCancelAddNewTag}
+                >
+                  <MaterialIcon icon="close" className="text-xs" />
+                </Button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onStartAddNewTag(group.id)}
+                className={cn(
+                  'inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold',
+                  'border border-dashed border-primary/50 hover:border-primary text-primary hover:bg-primary/10',
+                  'transition-all duration-200 cursor-pointer shadow-2xs'
+                )}
+              >
+                <MaterialIcon icon="add" className="text-xs" />
+                <span>{t('新建标签')}</span>
+              </button>
+            ))}
+
+          {/* 新建标签徽章 */}
+          {groupNewTags.map((name, nIdx) => (
+            <span
+              key={nIdx}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 shadow-2xs animate-in zoom-in-95 duration-150"
+            >
+              <MaterialIcon icon="add_circle" className="text-xs" />
+              <span>{name}</span>
+              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-3.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-normal">
+                {t('待添加')}
+              </Badge>
+              <MaterialIcon
+                icon="close"
+                onClick={() => onRemoveNewTag(group.id, name)}
+                className="text-xs cursor-pointer hover:text-destructive transition-colors ml-0.5"
+              />
+            </span>
+          ))}
+
+          {/* 已有标签列表 - 使用 React.memo 的 TagPill 极大提升交互性能 */}
+          {groupTags.map((tag: DimensionTag) => {
+            const tagKey = `${group.id}::${tag.tagValue}`
+            const count = tagFileCounts[tag.tagValue] || 0
+            const state = tagStates[tagKey] || 'initial'
+
+            const isOwnedByInspected = hasInspected
+              ? inspectedTagSet.has(tag.tagValue.trim().toLowerCase()) ||
+                inspectedTagSet.has(`${group.id}::${tag.tagValue.trim().toLowerCase()}`) ||
+                inspectedTagSet.has(`${groupNameLower}::${tag.tagValue.trim().toLowerCase()}`)
+              : false
+
+            return (
+              <TagPill
+                key={tagKey}
+                dimId={group.id}
+                tagName={tag.tagValue}
+                tagKey={tagKey}
+                count={count}
+                totalFilesCount={totalFilesCount}
+                state={state}
+                isOwnedByInspected={isOwnedByInspected}
+                isPan={isPan}
+                onToggle={onToggleTag}
+                onDelete={onDeleteExistingTag}
+              />
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+)
+
+DimensionGroupCard.displayName = 'DimensionGroupCard'
 
 export const BatchTagView: React.FC<BatchTagViewProps> = ({
   files,
@@ -446,24 +649,28 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
   const inspectedFileItem = Array.isArray(inspectedFile) ? inspectedFile[0] : inspectedFile
 
-  // 提取选中聚焦文件所拥有的结构化标签列表（包含归属维度名称），供顶部状态条集中展示
-  const inspectedFileTagsWithDimension = useMemo(() => {
-    if (!inspectedFileItem) return []
-
-    // 建立维度 ID 与维度名称字典
-    const dimIdToName = new Map<number, string>()
-    const tagToDimName = new Map<string, { dimId: number; name: string }>()
+  // 建立维度 ID 与维度名称字典（基于 effectiveDimensionGroups 缓存，避免每次切换选中文件时重复全量遍历）
+  const { dimIdToName, tagToDimName } = useMemo(() => {
+    const idMap = new Map<number, string>()
+    const tagMap = new Map<string, { dimId: number; name: string }>()
 
     effectiveDimensionGroups.forEach(g => {
-      dimIdToName.set(g.id, g.name)
+      idMap.set(g.id, g.name)
       if (Array.isArray(g.tags)) {
         g.tags.forEach(t => {
           if (t?.tagValue) {
-            tagToDimName.set(t.tagValue.trim().toLowerCase(), { dimId: g.id, name: g.name })
+            tagMap.set(t.tagValue.trim().toLowerCase(), { dimId: g.id, name: g.name })
           }
         })
       }
     })
+
+    return { dimIdToName: idMap, tagToDimName: tagMap }
+  }, [effectiveDimensionGroups])
+
+  // 提取选中聚焦文件所拥有的结构化标签列表（包含归属维度名称），供顶部状态条集中展示
+  const inspectedFileTagsWithDimension = useMemo(() => {
+    if (!inspectedFileItem) return []
 
     const result: Array<{ dimensionId?: number; dimensionName: string; tagValue: string }> = []
     const seen = new Set<string>()
@@ -547,7 +754,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     })
 
     return result
-  }, [inspectedFileItem, effectiveDimensionGroups])
+  }, [inspectedFileItem, dimIdToName, tagToDimName])
 
   // 统计已添加和已移除的变更数量
   const changeStats = useMemo(() => {
@@ -803,182 +1010,25 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     return { standardGroups: std, panGroups: pan }
   }, [filteredDimensionGroups, isPanDimension])
 
+  // 开启新建标签输入
+  const handleStartAddNewTag = useCallback((dimId: number) => {
+    setActiveInputDimId(dimId)
+    setInputVal('')
+  }, [])
+
+  // 取消新建标签输入
+  const handleCancelAddNewTag = useCallback(() => {
+    setInputVal('')
+    setActiveInputDimId(null)
+  }, [])
+
   const hasInspected = Boolean(inspectedFileItem)
-
-  // 渲染单个维度分组卡片
-  const renderDimensionGroupCard = (group: DimensionGroup) => {
-    const isPan = isPanDimension(group)
-    const groupTags = group.tags || []
-    const groupNewTags = newTagNames[group.id] || []
-    const groupNameLower = group.name.trim().toLowerCase()
-
-    return (
-      <div
-        key={group.id}
-        className="space-y-3 p-4 rounded-2xl bg-card/60 border border-border/50 shadow-2xs hover:border-border/80 transition-colors"
-      >
-        {/* 维度头部与快捷全选 */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-bold text-foreground/90">{group.name}</span>
-            <Badge variant="outline" className="text-[10px] h-4.5 px-1.5 font-normal bg-background/80">
-              {t('{count} 个标签', {
-                count: groupTags.length + groupNewTags.length
-              })}
-            </Badge>
-            {isPan && (
-              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4 bg-primary/10 text-primary border border-primary/20 font-medium">
-                {t('泛维度')}
-              </Badge>
-            )}
-          </div>
-
-          {/* 维度快捷操作 */}
-          {groupTags.length > 0 && (
-            <div className="flex items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
-              <button
-                type="button"
-                onClick={() => handleBatchSetDimensionTags(group, 'add_all')}
-                className="text-[11px] text-muted-foreground hover:text-emerald-600 dark:hover:text-emerald-400 px-1.5 py-0.5 rounded-md hover:bg-emerald-500/10 transition-colors cursor-pointer"
-                title={t('全部附加该维度下的所有标签')}
-              >
-                {t('全附')}
-              </button>
-              <span className="text-muted-foreground/30 text-xs">|</span>
-              <button
-                type="button"
-                onClick={() => handleBatchSetDimensionTags(group, 'initial')}
-                className="text-[11px] text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded-md hover:bg-muted transition-colors cursor-pointer"
-                title={t('恢复该维度默认状态')}
-              >
-                {t('重置')}
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* 标签流动排布 */}
-        <div className={cn("flex flex-wrap gap-2 items-center group/taggrid", hasInspected && "tags-has-inspected")}>
-          {/* 仅泛维度允许新建标签 */}
-          {isPan &&
-            (activeInputDimId === group.id ? (
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-background rounded-xl border border-primary/60 shadow-xs animate-in zoom-in-95 duration-150">
-                <Input
-                  autoFocus
-                  value={inputVal}
-                  onChange={e => setInputVal(e.target.value)}
-                  onBlur={() => {
-                    if (inputVal.trim()) {
-                      handleAddNewTag(group.id)
-                    }
-                  }}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') handleAddNewTag(group.id)
-                    if (e.key === 'Escape') {
-                      setInputVal('')
-                      setActiveInputDimId(null)
-                    }
-                  }}
-                  placeholder={t('输入新标签名...')}
-                  className="h-5.5 text-xs w-28 border-0 bg-transparent p-0 focus-visible:ring-0"
-                />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-5.5 w-5.5 text-primary hover:text-primary hover:bg-primary/10 rounded-md cursor-pointer"
-                  onClick={() => handleAddNewTag(group.id)}
-                >
-                  <MaterialIcon icon="check" className="text-xs" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-5.5 w-5.5 text-muted-foreground hover:text-foreground rounded-md cursor-pointer"
-                  onClick={() => setActiveInputDimId(null)}
-                >
-                  <MaterialIcon icon="close" className="text-xs" />
-                </Button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveInputDimId(group.id)
-                  setInputVal('')
-                }}
-                className={cn(
-                  'inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold',
-                  'border border-dashed border-primary/50 hover:border-primary text-primary hover:bg-primary/10',
-                  'transition-all duration-200 cursor-pointer shadow-2xs'
-                )}
-              >
-                <MaterialIcon icon="add" className="text-xs" />
-                <span>{t('新建标签')}</span>
-              </button>
-            ))}
-
-          {/* 新建标签徽章 */}
-          {groupNewTags.map((name, nIdx) => (
-            <span
-              key={nIdx}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 shadow-2xs animate-in zoom-in-95 duration-150"
-            >
-              <MaterialIcon icon="add_circle" className="text-xs" />
-              <span>{name}</span>
-              <Badge variant="secondary" className="text-[9px] px-1 py-0 h-3.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-normal">
-                {t('待添加')}
-              </Badge>
-              <MaterialIcon
-                icon="close"
-                onClick={() => handleRemoveNewTag(group.id, name)}
-                className="text-xs cursor-pointer hover:text-destructive transition-colors ml-0.5"
-              />
-            </span>
-          ))}
-
-          {/* 已有标签列表 - 使用 React.memo 的 TagPill 极大提升交互性能 */}
-          {groupTags.map((tag: DimensionTag) => {
-            const tagKey = `${group.id}::${tag.tagValue}`
-            const count = tagFileCounts[tag.tagValue] || 0
-            const state = tagStates[tagKey] || 'initial'
-
-            const isOwnedByInspected = hasInspected
-              ? (() => {
-                  const lowerTag = tag.tagValue.trim().toLowerCase()
-                  return (
-                    inspectedTagSet.has(lowerTag) ||
-                    inspectedTagSet.has(`${group.id}::${lowerTag}`) ||
-                    inspectedTagSet.has(`${groupNameLower}::${lowerTag}`)
-                  )
-                })()
-              : false
-
-            return (
-              <TagPill
-                key={tagKey}
-                dimId={group.id}
-                tagName={tag.tagValue}
-                tagKey={tagKey}
-                count={count}
-                totalFilesCount={totalFilesCount}
-                state={state}
-                isOwnedByInspected={isOwnedByInspected}
-                isPan={isPan}
-                onToggle={handleToggleTag}
-                onDelete={handleDeleteExistingTag}
-              />
-            )
-          })}
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="relative flex-1 flex flex-col overflow-hidden bg-background">
       {/* 1. 选中文件聚焦联动状态条 (Inspector Banner - 浮动显示，脱离文档流，杜绝页面回流与重绘) */}
       {inspectedFileItem && (
-        <div className="absolute top-3 left-4 right-4 z-30 px-4 py-3 bg-card/95 dark:bg-card/90 backdrop-blur-md border border-primary/30 rounded-2xl shadow-xl shadow-black/10 flex flex-col gap-2 text-xs transition-all duration-200 animate-in fade-in slide-in-from-top-2">
+        <div className="absolute top-3 left-4 right-4 z-30 px-4 py-3 bg-card/95 dark:bg-card/90 backdrop-blur-md border border-primary/30 rounded-2xl shadow-xl shadow-black/10 flex flex-col gap-2 text-xs transition-all duration-200 animate-in fade-in slide-in-from-top-2 will-change-transform pointer-events-auto">
           {/* 上部：文件信息、标签统计与取消聚焦操作 */}
           <div className="flex items-center justify-between gap-3 min-w-0">
             <div className="flex items-center gap-2 min-w-0 overflow-hidden">
@@ -1157,7 +1207,29 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
                           {t('无匹配的分类维度')}
                         </div>
                       ) : (
-                        standardGroups.map(group => renderDimensionGroupCard(group))
+                        standardGroups.map(group => (
+                          <DimensionGroupCard
+                            key={group.id}
+                            group={group}
+                            isPan={false}
+                            groupNewTags={newTagNames[group.id] || []}
+                            isInputActive={activeInputDimId === group.id}
+                            inputVal={inputVal}
+                            tagStates={tagStates}
+                            tagFileCounts={tagFileCounts}
+                            totalFilesCount={totalFilesCount}
+                            inspectedTagSet={inspectedTagSet}
+                            hasInspected={hasInspected}
+                            onToggleTag={handleToggleTag}
+                            onDeleteExistingTag={handleDeleteExistingTag}
+                            onBatchSetTags={handleBatchSetDimensionTags}
+                            onStartAddNewTag={handleStartAddNewTag}
+                            onCancelAddNewTag={handleCancelAddNewTag}
+                            onInputChange={setInputVal}
+                            onSubmitAddNewTag={handleAddNewTag}
+                            onRemoveNewTag={handleRemoveNewTag}
+                          />
+                        ))
                       )}
                     </div>
                   </div>
@@ -1187,7 +1259,29 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
                           {t('无匹配的泛维度标签')}
                         </div>
                       ) : (
-                        panGroups.map(group => renderDimensionGroupCard(group))
+                        panGroups.map(group => (
+                          <DimensionGroupCard
+                            key={group.id}
+                            group={group}
+                            isPan={true}
+                            groupNewTags={newTagNames[group.id] || []}
+                            isInputActive={activeInputDimId === group.id}
+                            inputVal={inputVal}
+                            tagStates={tagStates}
+                            tagFileCounts={tagFileCounts}
+                            totalFilesCount={totalFilesCount}
+                            inspectedTagSet={inspectedTagSet}
+                            hasInspected={hasInspected}
+                            onToggleTag={handleToggleTag}
+                            onDeleteExistingTag={handleDeleteExistingTag}
+                            onBatchSetTags={handleBatchSetDimensionTags}
+                            onStartAddNewTag={handleStartAddNewTag}
+                            onCancelAddNewTag={handleCancelAddNewTag}
+                            onInputChange={setInputVal}
+                            onSubmitAddNewTag={handleAddNewTag}
+                            onRemoveNewTag={handleRemoveNewTag}
+                          />
+                        ))
                       )}
                     </div>
                   </div>

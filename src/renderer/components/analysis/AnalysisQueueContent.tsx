@@ -20,6 +20,13 @@ import {
   Minus,
   Square
 } from 'lucide-react'
+import * as ReactWindowModule from 'react-window'
+
+const ReactWindow: any = (ReactWindowModule as any).default || ReactWindowModule
+const isReactWindowV2 = Boolean(ReactWindow.List || ReactWindowModule.List)
+const ListComponent: any = isReactWindowV2
+  ? ReactWindow.List || ReactWindowModule.List
+  : ReactWindow.FixedSizeList || ReactWindowModule.FixedSizeList || ReactWindow
 
 const ROW_HEIGHT = 48
 
@@ -130,75 +137,6 @@ function ColumnResizeHandle({
   )
 }
 
-function VirtualList({
-  items,
-  colTemplate,
-  onScrollX,
-  analysisMode
-}: {
-  items: AnalysisQueueItem[]
-  colTemplate: string
-  onScrollX?: (scrollLeft: number) => void
-  analysisMode: string
-}) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [scrollTop, setScrollTop] = useState(0)
-  const [height, setHeight] = useState(300)
-
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const onScroll = () => {
-      setScrollTop(el.scrollTop)
-      if (onScrollX) onScrollX(el.scrollLeft)
-    }
-    el.addEventListener('scroll', onScroll)
-    const resize = () => setHeight(el.clientHeight)
-    resize()
-    window.addEventListener('resize', resize)
-
-    const observer = new ResizeObserver(() => {
-      if (el) setHeight(el.clientHeight)
-    })
-    observer.observe(el)
-
-    return () => {
-      el.removeEventListener('scroll', onScroll)
-      window.removeEventListener('resize', resize)
-      observer.disconnect()
-    }
-  }, [onScrollX])
-
-  const total = items.length
-  const startIndex = Math.floor(scrollTop / ROW_HEIGHT)
-  const visibleCount = Math.ceil(height / ROW_HEIGHT) + 4
-  const endIndex = Math.min(total, startIndex + visibleCount)
-  const offsetY = startIndex * ROW_HEIGHT
-  const visibleItems = items
-    .map((item, idx) => ({ item, index: idx + 1 }))
-    .slice(startIndex, endIndex)
-
-  return (
-    <div ref={containerRef} className="w-full h-full overflow-y-auto overflow-x-hidden">
-      <div
-        style={{ height: Math.max(total * ROW_HEIGHT, height), minHeight: '100%', width: '100%' }}
-      >
-        <div style={{ transform: `translateY(${offsetY}px)` }}>
-          {visibleItems.map(({ item, index }) => (
-            <Row
-              key={item.id}
-              item={item}
-              index={index}
-              colTemplate={colTemplate}
-              analysisMode={analysisMode}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export function getStageLabel(status: AnalysisQueueItem['status'], stage?: number): string {
   if (status === 'analyzing') {
     const s = stage ?? 0
@@ -279,22 +217,19 @@ function StatusBadge({ item }: { item: AnalysisQueueItem }) {
   )
 }
 
-const Row = React.memo(
-  function Row({
-    item,
-    index,
-    colTemplate,
-    analysisMode
-  }: {
-    item: AnalysisQueueItem
-    index: number
-    colTemplate: string
-    analysisMode: string
-  }) {
-    const { deleteItem, addItems } = useAnalysisQueueStore()
-    const retryOne = async () => {
-      await addItems([{ path: item.path, name: item.name, size: item.size, type: item.type }], true)
-    }
+interface RowData {
+  items: AnalysisQueueItem[]
+  colTemplate: string
+  analysisMode: string
+  totalWidth: number
+  onDeleteItem: (id: number) => void
+  onRetryItem: (item: AnalysisQueueItem) => void
+}
+
+const QueueRowRenderer = React.memo(
+  ({ index, style, data }: { index: number; style: React.CSSProperties; data: RowData }) => {
+    const item = data.items[index]
+    if (!item) return null
 
     const failedReason = item.isUnit
       ? t('已经有序，跳过分析，如需强制分析：请创建独立的工作目录')
@@ -304,14 +239,16 @@ const Row = React.memo(
 
     return (
       <div
-        className="w-full items-center px-2 border-b border-border/40 last:border-0 hover:bg-accent/40 transition-colors text-xs select-none"
+        className="w-full items-center px-2 border-b border-border/40 hover:bg-accent/40 transition-colors text-xs select-none"
         style={{
+          ...style,
           display: 'grid',
-          gridTemplateColumns: colTemplate,
+          gridTemplateColumns: data.colTemplate,
+          minWidth: data.totalWidth > 0 ? data.totalWidth : '100%',
           height: ROW_HEIGHT
         }}
       >
-        <div className="text-center font-mono text-muted-foreground/70 px-1 truncate">{index}</div>
+        <div className="text-center font-mono text-muted-foreground/70 px-1 truncate">{index + 1}</div>
         <div className="truncate text-foreground font-medium pr-2" title={item.path}>
           {item.name}
         </div>
@@ -322,7 +259,7 @@ const Row = React.memo(
           <HistoryBadge
             stage={item.analysisStage ?? (item.analysisStats as any)?.analysis_stage}
             status={item.status}
-            analysisMode={analysisMode}
+            analysisMode={data.analysisMode}
           />
         </div>
         <div
@@ -372,13 +309,16 @@ const Row = React.memo(
         </div>
         <div className="flex gap-2 justify-end pr-2 shrink-0">
           {item.status === 'failed' && (
-            <button className="text-xs text-primary hover:underline font-medium" onClick={retryOne}>
+            <button
+              className="text-xs text-primary hover:underline font-medium cursor-pointer"
+              onClick={() => data.onRetryItem(item)}
+            >
               {t('重试')}
             </button>
           )}
           <button
-            className="text-xs text-muted-foreground hover:text-destructive hover:underline transition-colors"
-            onClick={() => deleteItem(item.id)}
+            className="text-xs text-muted-foreground hover:text-destructive hover:underline transition-colors cursor-pointer"
+            onClick={() => data.onDeleteItem(item.id)}
           >
             {t('删除')}
           </button>
@@ -386,21 +326,147 @@ const Row = React.memo(
       </div>
     )
   },
-  (prev, next) => {
+  (prevProps, nextProps) => {
+    if (prevProps.index !== nextProps.index) return false
+    if (
+      prevProps.style?.top !== nextProps.style?.top ||
+      prevProps.style?.height !== nextProps.style?.height ||
+      prevProps.style?.width !== nextProps.style?.width
+    ) {
+      return false
+    }
+
+    const prevData = prevProps.data
+    const nextData = nextProps.data
+    if (prevData === nextData) return true
+    if (!prevData || !nextData) return false
+
+    if (prevData.colTemplate !== nextData.colTemplate) return false
+    if (prevData.analysisMode !== nextData.analysisMode) return false
+    if (prevData.totalWidth !== nextData.totalWidth) return false
+
+    const prevItem = prevData.items?.[prevProps.index]
+    const nextItem = nextData.items?.[nextProps.index]
+    if (prevItem === nextItem) return true
+    if (!prevItem || !nextItem) return false
+
     return (
-      prev.colTemplate === next.colTemplate &&
-      prev.analysisMode === next.analysisMode &&
-      prev.item.id === next.item.id &&
-      prev.item.status === next.item.status &&
-      prev.item.progress === next.item.progress &&
-      prev.item.error === next.item.error &&
-      prev.item.updatedAt === next.item.updatedAt &&
-      prev.item.isUnit === next.item.isUnit &&
-      prev.item.fromCache === next.item.fromCache &&
-      prev.item.analysisStage === next.item.analysisStage
+      prevItem.id === nextItem.id &&
+      prevItem.status === nextItem.status &&
+      prevItem.progress === nextItem.progress &&
+      prevItem.error === nextItem.error &&
+      prevItem.updatedAt === nextItem.updatedAt &&
+      prevItem.isUnit === nextItem.isUnit &&
+      prevItem.fromCache === nextItem.fromCache &&
+      prevItem.analysisStage === nextItem.analysisStage &&
+      (prevItem.analysisStats as any)?.analysis_stage ===
+        (nextItem.analysisStats as any)?.analysis_stage &&
+      prevItem.name === nextItem.name &&
+      prevItem.path === nextItem.path
     )
   }
 )
+
+function VirtualList({
+  items,
+  colTemplate,
+  totalWidth,
+  onScrollX,
+  analysisMode,
+  onDeleteItem,
+  onRetryItem
+}: {
+  items: AnalysisQueueItem[]
+  colTemplate: string
+  totalWidth: number
+  onScrollX?: (scrollLeft: number) => void
+  analysisMode: string
+  onDeleteItem: (id: number) => void
+  onRetryItem: (item: AnalysisQueueItem) => void
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const updateSize = () => {
+      setContainerSize({
+        width: el.clientWidth,
+        height: el.clientHeight
+      })
+    }
+    updateSize()
+
+    const observer = new ResizeObserver(entries => {
+      const entry = entries[0]
+      if (entry) {
+        setContainerSize({
+          width: Math.round(entry.contentRect.width),
+          height: Math.round(entry.contentRect.height)
+        })
+      }
+    })
+    observer.observe(el)
+
+    return () => observer.disconnect()
+  }, [])
+
+  const rowData = React.useMemo<RowData>(
+    () => ({
+      items,
+      colTemplate,
+      analysisMode,
+      totalWidth,
+      onDeleteItem,
+      onRetryItem
+    }),
+    [items, colTemplate, analysisMode, totalWidth, onDeleteItem, onRetryItem]
+  )
+
+  if (items.length === 0) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/60 select-none py-12">
+        <span className="text-xs">{t('分析队列暂无文件')}</span>
+      </div>
+    )
+  }
+
+  const { width, height } = containerSize
+  if (width <= 0 || height <= 0) {
+    return <div ref={containerRef} className="w-full h-full" />
+  }
+
+  return (
+    <div ref={containerRef} className="w-full h-full overflow-hidden">
+      {isReactWindowV2 ? (
+        <ListComponent
+          height={height}
+          rowCount={items.length}
+          rowHeight={ROW_HEIGHT}
+          width={width}
+          className="scrollbar-thin"
+          rowProps={{ data: rowData }}
+          rowComponent={QueueRowRenderer}
+          onScroll={({ scrollLeft }: { scrollLeft: number }) => onScrollX?.(scrollLeft)}
+        />
+      ) : (
+        <ListComponent
+          height={height}
+          itemCount={items.length}
+          itemSize={ROW_HEIGHT}
+          width={width}
+          className="scrollbar-thin"
+          itemData={rowData}
+          onScroll={({ scrollLeft }: { scrollLeft: number }) => onScrollX?.(scrollLeft)}
+        >
+          {QueueRowRenderer}
+        </ListComponent>
+      )}
+    </div>
+  )
+}
 
 interface AnalysisQueueContentProps {
   mode?: 'split' | 'window' | 'modal'
@@ -455,6 +521,8 @@ export function AnalysisQueueContent({
     snapshot.activeRunningWorkspaceId !== undefined &&
     String(snapshot.activeRunningWorkspaceId) === String(currentWs.id)
 
+  const unitCount = React.useMemo(() => items.filter(i => i.isUnit).length, [items])
+
   // 响应式读取分析模式：用于按分析模式判断文件完成 stage
   const analysisMode = useSettingsStore(
     s => (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'quick_name'
@@ -469,6 +537,20 @@ export function AnalysisQueueContent({
     }
     return DEFAULT_COL_WIDTHS
   })
+
+  const totalColWidth = React.useMemo(() => {
+    return (Object.values(colWidths) as number[]).reduce((a, b) => a + b, 0)
+  }, [colWidths])
+
+  const handleDeleteItem = React.useCallback((id: number) => {
+    useAnalysisQueueStore.getState().deleteItem(id)
+  }, [])
+
+  const handleRetryItem = React.useCallback(async (item: AnalysisQueueItem) => {
+    await useAnalysisQueueStore
+      .getState()
+      .addItems([{ path: item.path, name: item.name, size: item.size, type: item.type }], true)
+  }, [])
 
   const dragStartWidthsRef = useRef<{
     keyA: keyof ColumnWidths
@@ -591,7 +673,7 @@ export function AnalysisQueueContent({
           <span className="text-xs text-muted-foreground ml-2">
             {t('{count1} 项 · {count2} 单元', {
               count1: items.length,
-              count2: items.filter(i => i.isUnit).length
+              count2: unitCount
             })}
           </span>
         </div>
@@ -802,7 +884,10 @@ export function AnalysisQueueContent({
               <VirtualList
                 items={items}
                 colTemplate={colTemplate}
+                totalWidth={totalColWidth}
                 analysisMode={analysisMode}
+                onDeleteItem={handleDeleteItem}
+                onRetryItem={handleRetryItem}
                 onScrollX={scrollLeft => {
                   if (headerScrollRef.current) {
                     headerScrollRef.current.scrollLeft = scrollLeft

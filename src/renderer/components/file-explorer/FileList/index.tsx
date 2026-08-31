@@ -133,68 +133,88 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       ? validDirs.filter(dir => dir.parentPath === currentPath)
       : validDirs
     const allItems = [...dirs, ...validFiles]
-    if (disableClientSort) return allItems
+    if (disableClientSort || !sortBy) return allItems
 
-    if (sortBy) {
-      allItems.sort((a, b) => {
-        let valA: any
-        let valB: any
-
-        switch (sortBy) {
-          case 'name':
-            valA = a.name.toLowerCase()
-            valB = b.name.toLowerCase()
-            break
-          case 'size':
-            valA = 'isDirectory' in a ? 0 : (a as FileType).size || 0
-            valB = 'isDirectory' in b ? 0 : (b as FileType).size || 0
-            break
-          case 'modified':
-            valA = new Date(a.modifiedAt || 0).getTime()
-            valB = new Date(b.modifiedAt || 0).getTime()
-            break
-          case 'type':
-            valA = 'isDirectory' in a ? '00_dir' : (a as FileType).extension || ''
-            valB = 'isDirectory' in b ? '00_dir' : (b as FileType).extension || ''
-            break
-          case 'smartName':
-            valA = ('isDirectory' in a ? a.name : (a as FileType).smartName || a.name).toLowerCase()
-            valB = ('isDirectory' in b ? b.name : (b as FileType).smartName || b.name).toLowerCase()
-            break
-          case 'qualityScore':
-            valA = 'isDirectory' in a ? 0 : (a as FileType).qualityScore || 0
-            valB = 'isDirectory' in b ? 0 : (b as FileType).qualityScore || 0
-            break
-          case 'author':
-            valA = 'isDirectory' in a ? '' : (a as FileType).author || ''
-            valB = 'isDirectory' in b ? '' : (b as FileType).author || ''
-            break
-          case 'language':
-            valA = 'isDirectory' in a ? '' : (a as FileType).language || ''
-            valB = 'isDirectory' in b ? '' : (b as FileType).language || ''
-            break
-          case 'analysisStatus':
-            valA = 'isDirectory' in a ? '' : getFileAnalysisStatusNonReactive(a as FileType) || ''
-            valB = 'isDirectory' in b ? '' : getFileAnalysisStatusNonReactive(b as FileType) || ''
-            break
-          default:
-            valA = 0
-            valB = 0
+    // 如果按 analysisStatus 排序，先建立状态 Map，避免在 O(N log N) 次比较中反复 find
+    let statusMap: Map<string, string> | null = null
+    if (sortBy === 'analysisStatus') {
+      statusMap = new Map()
+      const queueItems = useAnalysisQueueStore.getState().snapshot.items
+      for (const item of queueItems) {
+        if (item?.path && item?.status) {
+          statusMap.set(item.path, item.status)
         }
-
-        if (valA < valB) return sortOrder === 'asc' ? -1 : 1
-        if (valA > valB) return sortOrder === 'asc' ? 1 : -1
-        return 0
-      })
-
-      allItems.sort((a, b) => {
-        const isDirA = 'isDirectory' in a && a.isDirectory
-        const isDirB = 'isDirectory' in b && b.isDirectory
-        if (isDirA && !isDirB) return -1
-        if (!isDirA && isDirB) return 1
-        return 0
-      })
+      }
     }
+
+    const getStatus = (file: FileType): string => {
+      if (statusMap) {
+        const s = statusMap.get(file.path)
+        if (s) return s
+      }
+      return file.isAnalyzed ? 'completed' : ''
+    }
+
+    // 单次复合排序：优先将文件夹置顶，随后按指定字段与排序方向排序
+    allItems.sort((a, b) => {
+      const isDirA = 'isDirectory' in a && Boolean(a.isDirectory)
+      const isDirB = 'isDirectory' in b && Boolean(b.isDirectory)
+
+      // 1. 文件夹始终优先于文件
+      if (isDirA !== isDirB) {
+        return isDirA ? -1 : 1
+      }
+
+      // 2. 同为文件夹或同为文件时，按 sortBy 比较
+      let valA: any = 0
+      let valB: any = 0
+
+      switch (sortBy) {
+        case 'name':
+          valA = a.name.toLowerCase()
+          valB = b.name.toLowerCase()
+          break
+        case 'size':
+          valA = isDirA ? 0 : (a as FileType).size || 0
+          valB = isDirB ? 0 : (b as FileType).size || 0
+          break
+        case 'modified':
+          valA = a.modifiedAt ? new Date(a.modifiedAt).getTime() : 0
+          valB = b.modifiedAt ? new Date(b.modifiedAt).getTime() : 0
+          break
+        case 'type':
+          valA = isDirA ? '00_dir' : (a as FileType).extension || ''
+          valB = isDirB ? '00_dir' : (b as FileType).extension || ''
+          break
+        case 'smartName':
+          valA = (isDirA ? a.name : (a as FileType).smartName || a.name).toLowerCase()
+          valB = (isDirB ? b.name : (b as FileType).smartName || b.name).toLowerCase()
+          break
+        case 'qualityScore':
+          valA = isDirA ? 0 : (a as FileType).qualityScore || 0
+          valB = isDirB ? 0 : (b as FileType).qualityScore || 0
+          break
+        case 'author':
+          valA = isDirA ? '' : (a as FileType).author || ''
+          valB = isDirB ? '' : (b as FileType).author || ''
+          break
+        case 'language':
+          valA = isDirA ? '' : (a as FileType).language || ''
+          valB = isDirB ? '' : (b as FileType).language || ''
+          break
+        case 'analysisStatus':
+          valA = isDirA ? '' : getStatus(a as FileType)
+          valB = isDirB ? '' : getStatus(b as FileType)
+          break
+        default:
+          valA = 0
+          valB = 0
+      }
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1
+      return 0
+    })
 
     return allItems
   }, [
@@ -204,7 +224,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     disableClientSort,
     sortBy,
     sortOrder,
-    getFileAnalysisStatusNonReactive,
     isRealDirectory
   ])
 
@@ -339,9 +358,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     gridShowFullFileName
   })
 
-  // 拖拽框选高亮路径集合：通过 selector 订阅，仅当集合变化时触发 FileList 重渲染
-  const dragSelectionPaths = useDragSelectStore(s => s.dragSelectionPaths)
-
   const { contextMenu, setContextMenu, handleContextMenu, contextMenuItems } =
     useFileListContextMenu({
       selectedFiles,
@@ -404,10 +420,17 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       }
     }
   }, [items, viewMode])
+
   const selectedPathsSet = useMemo(() => {
-    return new Set(
-      (selectedFiles || []).map(f => (typeof f === 'string' ? f : f?.path || f?.id)).filter(Boolean)
-    )
+    const set = new Set<string>()
+    if (Array.isArray(selectedFiles)) {
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const f = selectedFiles[i]
+        const p = typeof f === 'string' ? f : f?.path || f?.id
+        if (p) set.add(p)
+      }
+    }
+    return set
   }, [selectedFiles])
 
   const activeColumns = useMemo(() => {
@@ -462,7 +485,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       t,
       columnWidths,
       totalWidth,
-      dragSelectionPaths,
       pageId
     }),
     [
@@ -490,7 +512,6 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       viewMode,
       columnWidths,
       totalWidth,
-      dragSelectionPaths,
       pageId
     ]
   )

@@ -1394,7 +1394,10 @@ const electronAPI = {
     const handler = (_event: any, payload: any) => callback(payload)
     ipcRenderer.on('organize:apply-plan', handler)
     return () => ipcRenderer.removeListener('organize:apply-plan', handler)
-  }
+  },
+
+  // 获取 Omni 引擎版本号
+  getOmniVersion: (): Promise<string> => ipcRenderer.invoke('omni/getVersion')
 
   // FFmpeg 事件监听器
   /*

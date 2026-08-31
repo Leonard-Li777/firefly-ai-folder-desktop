@@ -629,6 +629,10 @@ export function registerMiscIPCHandlers() {
     coreEngine?.getPendingDimensionExpansions()
   )
   ipcMain.handle('core-engine-is-initialized', () => coreEngine?.isInitialized() || false)
+  ipcMain.handle('omni/getVersion', async () => {
+    const { omniService } = await import('../../runtime-services/system/omni-service')
+    return await omniService.getVersion()
+  })
 
   ipcMain.on('renderer-error', (event, errorInfo) => {
     logger.error(LogCategory.RENDERER, '渲染进程出错:', errorInfo)

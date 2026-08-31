@@ -3046,6 +3046,7 @@ export default  {
     "11236": "Scan and Clean Duplicate, Temporary, and Large Files",
     "11237": "High-performance optimization transcoding is currently being performed on {count} videos; once the first one is complete, it will automatically move on to the next...",
     "11238": "Clearing the EXIF privacy information for {count} images. Once the first one is complete, the process will automatically move on to the next one...",
+    "11240": "Engine",
     "11242": "Top-tier",
     "11247": "Text encoding",
     "11248": "Number of characters",

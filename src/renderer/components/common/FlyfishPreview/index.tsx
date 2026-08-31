@@ -182,34 +182,40 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
           }
         }
 
-        // 归档文件读取 Buffer，普通文档直接构建本地 URL
-        if (isArchive) {
+        // 在 Electron 环境下优先通过原生 IPC 读取纯净 ArrayBuffer，彻底规避 Chromium file:/// 协议沙箱限制与 URL 编码问题
+        if (window.electronAPI?.utils?.readFileBuffer) {
           logger.info(
             LogCategory.RENDERER,
-            `[FlyfishPreview] ⏱️ 归档格式使用 IPC Buffer 模式加载: ${fileName}`
+            `[FlyfishPreview] ⏱️ 使用 IPC Buffer 模式加载本地文件: ${fileName}`
           )
           const uint8Array = await window.electronAPI.utils.readFileBuffer(filePath)
           if (!isMounted) return
-          setFileBuffer(uint8Array.buffer as ArrayBuffer)
+          // 关键切片：避免 Node.js Buffer Pool 内存池切片复用导致的底层 byteOffset 脏数据污染
+          const cleanBuffer = uint8Array.buffer.slice(
+            uint8Array.byteOffset,
+            uint8Array.byteOffset + uint8Array.byteLength
+          ) as ArrayBuffer
+          setFileBuffer(cleanBuffer)
           setLoadMode('buffer')
           logger.info(
             LogCategory.RENDERER,
-            `[FlyfishPreview] ⏱️ IPC 读取归档成功, 耗时: ${(performance.now() - timeRef.current).toFixed(2)}ms, byteLength=${uint8Array.buffer.byteLength}`
+            `[FlyfishPreview] ⏱️ IPC 读取文件成功, 耗时: ${(performance.now() - timeRef.current).toFixed(2)}ms, byteLength=${cleanBuffer.byteLength}`
           )
         } else {
+          // 纯 Web / 测试降级环境：走直连 URL 模式
           logger.info(
             LogCategory.RENDERER,
-            `[FlyfishPreview] ⏱️ 文档格式使用直连 URL 模式加载: ${fileName}`
+            `[FlyfishPreview] ⏱️ Web 降级模式使用直连 URL 加载: ${fileName}`
           )
           let url = filePath.replace(/\\/g, '/')
           if (!url.startsWith('file:///')) {
             url = `file:///${url}`
           }
-          // 1. 手动转义 # 和 ?，防止 file:/// URL 被 Chromium 识别为 hash 锚点或 query 参数
+          // 1. 手动转义 # 和 ?，防止 file:/// URL 被识别为 hash 锚点或 query 参数
           url = url.replace(/#/g, '%23').replace(/\?/g, '%3F')
-          // 2. 使用 encodeURI 对其余路径字符（如中文、空格等）进行 URI 编码
+          // 2. 使用 encodeURI 对其余路径字符进行 URI 编码
           let encodedUrl = encodeURI(url)
-          // 3. 补充防御：如果 encodeURI 在特定引擎下保留了 [ 和 ]，对其强制转义（Chromium 解析 file:/// 未转义的 [ ] 会报 ERR_FAILED）
+          // 3. 补充防御：如果 encodeURI 保留了 [ 和 ]，对其强制转义
           encodedUrl = encodedUrl.replace(/\[/g, '%5B').replace(/\]/g, '%5D')
 
           logger.info(LogCategory.RENDERER, `[FlyfishPreview] 构建预览 URL 成功`, {
@@ -306,6 +312,8 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
             ref={viewerRef}
             buffer={fileBuffer}
             name={fileName}
+            filename={fileName}
+            type={fileName.toLowerCase().split('.').pop() || undefined}
             options={viewerOptions}
             onEvent={handleEvent}
             className="w-full h-full"
@@ -317,6 +325,8 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
             ref={viewerRef}
             url={fileUrl}
             name={fileName}
+            filename={fileName}
+            type={fileName.toLowerCase().split('.').pop() || undefined}
             options={viewerOptions}
             onEvent={handleEvent}
             className="w-full h-full"
