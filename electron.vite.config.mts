@@ -12,6 +12,22 @@ import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const jszipMinPath = require.resolve('jszip/dist/jszip.min.js')
 
+// 确保 electron-vite bytecode 保护插件能 100% 精准定位 Electron 二进制执行文件
+try {
+  const electronBinPath = require('electron')
+  if (typeof electronBinPath === 'string' && fs.existsSync(electronBinPath)) {
+    process.env.ELECTRON_EXEC_PATH = electronBinPath
+    const electronModuleDir = path.dirname(require.resolve('electron'))
+    const pathFile = path.join(electronModuleDir, 'path.txt')
+    if (!fs.existsSync(pathFile)) {
+      const relPath = path.relative(path.join(electronModuleDir, 'dist'), electronBinPath)
+      fs.writeFileSync(pathFile, relPath)
+    }
+  }
+} catch (e) {
+  console.warn('[electron.vite.config] 检测 Electron 执行路径时提示:', e)
+}
+
 // 动态解析 packages 目录：优先从 pro/packages/ 解析，兼容本地与旧路径
 const resolvePackageSrc = (pkgName: string, subPath = 'src'): string => {
   const proPkgDir = path.resolve(__dirname, `pro/packages/${pkgName}/${subPath}`)
