@@ -184,10 +184,21 @@ jobs:
             echo "📥 Syncing llama.cpp engine for ${{ matrix.arch }}..."
             AI_ENGINE=llama.cpp pnpm run download:llama
           fi
+          echo "🔍 [CI 诊断 - macOS] build/presetResources 内容:"
+          ls -la build/presetResources || true
+          ls -la build/presetResources/llama.cpp || true
+          echo "🔍 [CI 诊断 - macOS] build/extraResources/configs/preset-resources.lock.json:"
+          cat build/extraResources/configs/preset-resources.lock.json || true
 
       - name: Setup Resources (Basic)
         if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
-        run: pnpm run setup-resources
+        shell: bash
+        run: |
+          echo "🔍 [CI 诊断 - macOS] 执行 setup-resources 前的 build/presetResources/llama.cpp:"
+          ls -la build/presetResources/llama.cpp || true
+          pnpm run setup-resources
+          echo "🔍 [CI 诊断 - macOS] 执行 setup-resources 后的 build/extraResources/bin:"
+          ls -la build/extraResources/bin || true
         env:
           AI_ENGINE: llama.cpp
           BUILD_ARCH: ${{ matrix.arch }}
@@ -473,10 +484,21 @@ jobs:
             echo "📥 Syncing llama.cpp engine..."
             AI_ENGINE=llama.cpp pnpm run download:llama
           fi
+          echo "🔍 [CI 诊断 - Windows] build/presetResources 内容:"
+          ls -la build/presetResources || true
+          ls -la build/presetResources/llama.cpp || true
+          echo "🔍 [CI 诊断 - Windows] build/extraResources/configs/preset-resources.lock.json:"
+          cat build/extraResources/configs/preset-resources.lock.json || true
 
       - name: Setup Resources (Basic)
         if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
-        run: pnpm run setup-resources
+        shell: bash
+        run: |
+          echo "🔍 [CI 诊断 - Windows] 执行 setup-resources 前的 build/presetResources/llama.cpp:"
+          ls -la build/presetResources/llama.cpp || true
+          pnpm run setup-resources
+          echo "🔍 [CI 诊断 - Windows] 执行 setup-resources 后的 build/extraResources/bin:"
+          ls -la build/extraResources/bin || true
         env:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
@@ -824,10 +846,21 @@ jobs:
             echo "📥 Syncing llama.cpp engine..."
             AI_ENGINE=llama.cpp pnpm run download:llama
           fi
+          echo "🔍 [CI 诊断 - Linux] build/presetResources 内容:"
+          ls -la build/presetResources || true
+          ls -la build/presetResources/llama.cpp || true
+          echo "🔍 [CI 诊断 - Linux] build/extraResources/configs/preset-resources.lock.json:"
+          cat build/extraResources/configs/preset-resources.lock.json || true
 
       - name: Setup Resources (Basic)
         if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
-        run: pnpm run setup-resources
+        shell: bash
+        run: |
+          echo "🔍 [CI 诊断 - Linux] 执行 setup-resources 前的 build/presetResources/llama.cpp:"
+          ls -la build/presetResources/llama.cpp || true
+          pnpm run setup-resources
+          echo "🔍 [CI 诊断 - Linux] 执行 setup-resources 后的 build/extraResources/bin:"
+          ls -la build/extraResources/bin || true
         env:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
