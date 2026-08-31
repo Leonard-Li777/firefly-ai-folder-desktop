@@ -1,38 +1,97 @@
 {
   "schema": 1,
-  "updatedAt": "2026-08-28",
+  "updatedAt": "2026-08-31",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources",
     "branch": "main"
   },
   "resources": {
-    "fastfetch": { "version": "2.62.0" },
-    "llama-model-download": { "version": "1.0.0" },
-    "ffmpeg": { "version": "master-20260827" },
-    "ffprobe": { "version": "master-20260827" },
-    "geo": { "version": "20260825" },
-    "exiftool": { "version": "13.59" }
+    "fastfetch": {
+      "version": "2.62.0"
+    },
+    "llama-model-download": {
+      "version": "1.0.0"
+    },
+    "ffmpeg": {
+      "version": "master-20260827"
+    },
+    "ffprobe": {
+      "version": "master-20260827"
+    },
+    "geo": {
+      "version": "20260825"
+    },
+    "exiftool": {
+      "version": "13.59"
+    }
   },
   "engines": {
     "firefly-omni": {
-      "version": "v0.1.0",
+      "version": "v0.1.1",
       "platforms": {
         "win32-x64": {
           "files": [
             {
-              "name": "firefly-omni-v0.1.0-win32-x64.zip",
-              "size": 51832484,
+              "name": "firefly-omni-v0.1.1-win32-x64.zip",
+              "size": 50924985,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.0-win32-x64.zip"
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.1-win32-x64.zip"
+            }
+          ]
+        },
+        "linux-arm64": {
+          "files": [
+            {
+              "name": "firefly-omni-v0.1.1-linux-arm64.tar.gz",
+              "size": 55503341,
+              "platform": "linux",
+              "arch": "arm64",
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.1-linux-arm64.tar.gz"
+            }
+          ]
+        },
+        "linux-x64": {
+          "files": [
+            {
+              "name": "firefly-omni-v0.1.1-linux-x64.tar.gz",
+              "size": 56487893,
+              "platform": "linux",
+              "arch": "x64",
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.1-linux-x64.tar.gz"
+            }
+          ]
+        },
+        "darwin-arm64": {
+          "files": [
+            {
+              "name": "firefly-omni-v0.1.1-darwin-arm64.tar.gz",
+              "size": 51762223,
+              "platform": "darwin",
+              "arch": "arm64",
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.1-darwin-arm64.tar.gz"
+            }
+          ]
+        },
+        "darwin-x64": {
+          "files": [
+            {
+              "name": "firefly-omni-v0.1.1-darwin-x64.tar.gz",
+              "size": 54287184,
+              "platform": "darwin",
+              "arch": "x64",
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.1-darwin-x64.tar.gz"
             }
           ]
         }
       }
     },
     "llama.cpp": {
-      "version": "b10582",
+      "version": "b10719",
+      "updatedAt": "2026-08-31",
+      "mode": "sync-only",
+      "status": "completed",
       "platforms": {
         "win32-x64": {
           "files": [
@@ -41,56 +100,49 @@
               "size": 391443627,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/cudart-llama-bin-win-cuda-12.4-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/cudart-llama-bin-win-cuda-12.4-x64.zip"
             },
             {
-              "name": "llama-b10582-bin-win-cuda-12.4-x64.zip",
-              "size": 250973879,
+              "name": "llama-b10719-bin-win-cuda-12.4-x64.zip",
+              "size": 251606263,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cuda-12.4-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-cuda-12.4-x64.zip"
             },
             {
-              "name": "llama-b10582-bin-win-vulkan-x64.zip",
-              "size": 34948736,
+              "name": "llama-b10719-bin-win-vulkan-x64.zip",
+              "size": 34937624,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-vulkan-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-vulkan-x64.zip"
             },
             {
-              "name": "llama-b10582-bin-win-rocm-7.14-x64.zip",
-              "size": 196956675,
+              "name": "llama-b10719-bin-win-rocm-7.14-x64.zip",
+              "size": 243987920,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-rocm-7.14-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-rocm-7.14-x64.zip"
             },
             {
-              "name": "llama-b10582-bin-win-sycl-x64.zip",
-              "size": 119840170,
+              "name": "llama-b10719-bin-win-sycl-x64.zip",
+              "size": 119376611,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-sycl-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-sycl-x64.zip"
             },
             {
-              "name": "llama-b10582-bin-win-openvino-2026.3-x64.zip",
-              "size": 80396131,
+              "name": "llama-b10719-bin-win-openvino-2026.3.1-x64.zip",
+              "size": 80263489,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-openvino-2026.3-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-openvino-2026.3.1-x64.zip"
             },
             {
-              "name": "llama-b10582-bin-win-cpu-x64.zip",
-              "size": 18592859,
+              "name": "llama-b10719-bin-win-cpu-x64.zip",
+              "size": 18155984,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cpu-x64.zip"
-            },
-            {
-              "name": "llama-b10582-bin-win-hip-x64.zip",
-              "size": 196503634,
-              "platform": "win32",
-              "arch": "x64",
-              "url": ""
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-cpu-x64.zip"
             }
           ]
         }

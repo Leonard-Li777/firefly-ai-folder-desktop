@@ -197,17 +197,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p build/presetResources/llama-model-download
-          TEMP_ZIP=$(mktemp)
-          echo "📥 从 ci-resources 下载 llama-model-download..."
-          if gh release download ci-resources --pattern "llama-model-download-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
-            unzip -o -q "$TEMP_ZIP" -d build/presetResources/llama-model-download
-            rm -f "$TEMP_ZIP"
-            echo "✅ llama-model-download 资源恢复完成。"
-          else
-            echo "📥 回退：尝试从 firefly-resources 下载 llama-model-download..."
-            gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
-            rm -f "$TEMP_ZIP"
-          fi
+          echo "📥 从 firefly-resources 下载 llama-model-download..."
+          gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
+          echo "✅ llama-model-download 资源准备完成。"
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -323,14 +315,16 @@ jobs:
       - name: Copy App Icons
         shell: bash
         run: |
-          mkdir -p build
-          [ -f assets/icon.ico ] && cp assets/icon.ico build/icon.ico || true
-          [ -f assets/icon.icns ] && cp assets/icon.icns build/icon.icns || true
-          [ -f assets/icon.png ] && cp assets/icon.png build/icon.png || true
+          mkdir -p build assets
+          ASSETS_SRC="build/extraResources/assets"
+          [ ! -d "$ASSETS_SRC" ] && ASSETS_SRC="assets"
+          [ -f "$ASSETS_SRC/icon.ico" ] && cp "$ASSETS_SRC/icon.ico" build/icon.ico && cp "$ASSETS_SRC/icon.ico" assets/icon.ico || true
+          [ -f "$ASSETS_SRC/icon.icns" ] && cp "$ASSETS_SRC/icon.icns" build/icon.icns && cp "$ASSETS_SRC/icon.icns" assets/icon.icns || true
+          [ -f "$ASSETS_SRC/icon.png" ] && cp "$ASSETS_SRC/icon.png" build/icon.png && cp "$ASSETS_SRC/icon.png" assets/icon.png || true
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
-            cp assets/boot_en.jpg build/boot.jpg 2>/dev/null || cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
+            cp "$ASSETS_SRC/boot_en.jpg" build/boot.jpg 2>/dev/null || cp "$ASSETS_SRC/boot.jpg" build/boot.jpg 2>/dev/null || true
           else
-            cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
+            cp "$ASSETS_SRC/boot.jpg" build/boot.jpg 2>/dev/null || true
           fi
           [ -f build/boot.jpg ] && cp build/boot.jpg build/boot.gif || true
 
@@ -358,13 +352,28 @@ jobs:
           echo "📤 Uploading package to Cloudflare R2..."
           pnpm run publish:r2 || echo "⚠️ R2 发布跳过或无配置"
 
-      - name: Publish to GitHub
+      - name: Publish to GitHub Release
         shell: bash
         env:
-          CI: 'true'
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm run publish:github || echo "⚠️ GitHub 发布完成或已发布"
+          TAG="${GITHUB_REF_NAME:-v$(node -p "require('./package.json').version")}"
+          echo "🏷️ 当前发布版本 Tag: $TAG"
+          gh release view "$TAG" 2>/dev/null || gh release create "$TAG" --title "$TAG" --generate-notes || true
+
+          FILES=()
+          while IFS= read -r -d '' f; do
+            FILES+=("$f")
+          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" \) -print0 2>/dev/null)
+
+          if [ ${#FILES[@]} -gt 0 ]; then
+            echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+            echo "✅ GitHub Release 产物发布成功"
+          else
+            echo "⚠️ 未在 out/make 目录下找到匹配的安装包产物"
+          fi
 
   build-windows:
     name: Build Windows
@@ -531,17 +540,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p build/presetResources/llama-model-download
-          TEMP_ZIP="${RUNNER_TEMP:-/tmp}/llama-model-dl.zip"
-          echo "📥 从 ci-resources 下载 llama-model-download..."
-          if gh release download ci-resources --pattern "llama-model-download-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
-            unzip -o -q "$TEMP_ZIP" -d build/presetResources/llama-model-download
-            rm -f "$TEMP_ZIP"
-            echo "✅ llama-model-download 资源恢复完成。"
-          else
-            echo "📥 回退：尝试从 firefly-resources 下载 llama-model-download..."
-            gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
-            rm -f "$TEMP_ZIP"
-          fi
+          echo "📥 从 firefly-resources 下载 llama-model-download..."
+          gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
+          echo "✅ llama-model-download 资源准备完成。"
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -652,14 +653,16 @@ jobs:
       - name: Copy App Icons
         shell: bash
         run: |
-          mkdir -p build
-          [ -f assets/icon.ico ] && cp assets/icon.ico build/icon.ico || true
-          [ -f assets/icon.icns ] && cp assets/icon.icns build/icon.icns || true
-          [ -f assets/icon.png ] && cp assets/icon.png build/icon.png || true
+          mkdir -p build assets
+          ASSETS_SRC="build/extraResources/assets"
+          [ ! -d "$ASSETS_SRC" ] && ASSETS_SRC="assets"
+          [ -f "$ASSETS_SRC/icon.ico" ] && cp "$ASSETS_SRC/icon.ico" build/icon.ico && cp "$ASSETS_SRC/icon.ico" assets/icon.ico || true
+          [ -f "$ASSETS_SRC/icon.icns" ] && cp "$ASSETS_SRC/icon.icns" build/icon.icns && cp "$ASSETS_SRC/icon.icns" assets/icon.icns || true
+          [ -f "$ASSETS_SRC/icon.png" ] && cp "$ASSETS_SRC/icon.png" build/icon.png && cp "$ASSETS_SRC/icon.png" assets/icon.png || true
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
-            cp assets/boot_en.jpg build/boot.jpg 2>/dev/null || cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
+            cp "$ASSETS_SRC/boot_en.jpg" build/boot.jpg 2>/dev/null || cp "$ASSETS_SRC/boot.jpg" build/boot.jpg 2>/dev/null || true
           else
-            cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
+            cp "$ASSETS_SRC/boot.jpg" build/boot.jpg 2>/dev/null || true
           fi
           [ -f build/boot.jpg ] && cp build/boot.jpg build/boot.gif || true
 
@@ -687,13 +690,28 @@ jobs:
           echo "📤 Uploading package to Cloudflare R2..."
           pnpm run publish:r2 || echo "⚠️ R2 发布跳过或无配置"
 
-      - name: Publish to GitHub
+      - name: Publish to GitHub Release
         shell: bash
         env:
-          CI: 'true'
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm run publish:github || echo "⚠️ GitHub 发布完成或已发布"
+          TAG="${GITHUB_REF_NAME:-v$(node -p "require('./package.json').version")}"
+          echo "🏷️ 当前发布版本 Tag: $TAG"
+          gh release view "$TAG" 2>/dev/null || gh release create "$TAG" --title "$TAG" --generate-notes || true
+
+          FILES=()
+          while IFS= read -r -d '' f; do
+            FILES+=("$f")
+          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" \) -print0 2>/dev/null)
+
+          if [ ${#FILES[@]} -gt 0 ]; then
+            echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+            echo "✅ GitHub Release 产物发布成功"
+          else
+            echo "⚠️ 未在 out/make 目录下找到匹配的安装包产物"
+          fi
 
   build-linux:
     name: Build Linux (${{ matrix.maker }})
@@ -927,17 +945,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p build/presetResources/llama-model-download
-          TEMP_ZIP=$(mktemp)
-          echo "📥 从 ci-resources 下载 llama-model-download..."
-          if gh release download ci-resources --pattern "llama-model-download-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
-            unzip -o -q "$TEMP_ZIP" -d build/presetResources/llama-model-download
-            rm -f "$TEMP_ZIP"
-            echo "✅ llama-model-download 资源恢复完成。"
-          else
-            echo "📥 回退：尝试从 firefly-resources 下载 llama-model-download..."
-            gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
-            rm -f "$TEMP_ZIP"
-          fi
+          echo "📥 从 firefly-resources 下载 llama-model-download..."
+          gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
+          echo "✅ llama-model-download 资源准备完成。"
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -1054,14 +1064,16 @@ jobs:
       - name: Copy App Icons
         shell: bash
         run: |
-          mkdir -p build
-          [ -f assets/icon.ico ] && cp assets/icon.ico build/icon.ico || true
-          [ -f assets/icon.icns ] && cp assets/icon.icns build/icon.icns || true
-          [ -f assets/icon.png ] && cp assets/icon.png build/icon.png || true
+          mkdir -p build assets
+          ASSETS_SRC="build/extraResources/assets"
+          [ ! -d "$ASSETS_SRC" ] && ASSETS_SRC="assets"
+          [ -f "$ASSETS_SRC/icon.ico" ] && cp "$ASSETS_SRC/icon.ico" build/icon.ico && cp "$ASSETS_SRC/icon.ico" assets/icon.ico || true
+          [ -f "$ASSETS_SRC/icon.icns" ] && cp "$ASSETS_SRC/icon.icns" build/icon.icns && cp "$ASSETS_SRC/icon.icns" assets/icon.icns || true
+          [ -f "$ASSETS_SRC/icon.png" ] && cp "$ASSETS_SRC/icon.png" build/icon.png && cp "$ASSETS_SRC/icon.png" assets/icon.png || true
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
-            cp assets/boot_en.jpg build/boot.jpg 2>/dev/null || cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
+            cp "$ASSETS_SRC/boot_en.jpg" build/boot.jpg 2>/dev/null || cp "$ASSETS_SRC/boot.jpg" build/boot.jpg 2>/dev/null || true
           else
-            cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
+            cp "$ASSETS_SRC/boot.jpg" build/boot.jpg 2>/dev/null || true
           fi
           [ -f build/boot.jpg ] && cp build/boot.jpg build/boot.gif || true
 
@@ -1089,10 +1101,25 @@ jobs:
           echo "📤 Uploading package to Cloudflare R2..."
           pnpm run publish:r2 || echo "⚠️ R2 发布跳过或无配置"
 
-      - name: Publish to GitHub
+      - name: Publish to GitHub Release
         shell: bash
         env:
-          CI: 'true'
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          pnpm run publish:github || echo "⚠️ GitHub 发布完成或已发布"
+          TAG="${GITHUB_REF_NAME:-v$(node -p "require('./package.json').version")}"
+          echo "🏷️ 当前发布版本 Tag: $TAG"
+          gh release view "$TAG" 2>/dev/null || gh release create "$TAG" --title "$TAG" --generate-notes || true
+
+          FILES=()
+          while IFS= read -r -d '' f; do
+            FILES+=("$f")
+          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" \) -print0 2>/dev/null)
+
+          if [ ${#FILES[@]} -gt 0 ]; then
+            echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+            echo "✅ GitHub Release 产物发布成功"
+          else
+            echo "⚠️ 未在 out/make 目录下找到匹配的安装包产物"
+          fi

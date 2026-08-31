@@ -530,10 +530,20 @@ function removeCodeSignatures(targetDir: string) {
   scanAndRemove(targetDir)
 }
 
-// 资源文件存在性检查，优先 desktop 自身 assets，兜底 monorepo assets
-const absAssetsDir = fs.existsSync(path.resolve(__dirname, 'assets'))
-  ? path.resolve(__dirname, 'assets')
-  : path.resolve(__dirname, '../../assets')
+// 资源文件存在性检查，优先 build/extraResources/assets，次选 pro/build/extraResources/assets，最后回退至 assets
+function resolveAssetsDirectory(): string {
+  const candidates = [
+    path.resolve(__dirname, 'build/extraResources/assets'),
+    path.resolve(__dirname, 'pro/build/extraResources/assets'),
+    path.resolve(__dirname, 'assets'),
+    path.resolve(__dirname, '../../assets')
+  ]
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c
+  }
+  return path.resolve(__dirname, 'build/extraResources/assets')
+}
+const absAssetsDir = resolveAssetsDirectory()
 const absSetupIcon = path.join(absAssetsDir, 'icon.ico')
 const absLoadingGif = path.join(absAssetsDir, 'boot.jpg') // 使用实际存在的 boot.jpg 文件
 
@@ -680,24 +690,40 @@ const config: ForgeConfig = {
 
       const aiEngine = process.env.AI_ENGINE || 'llama.cpp'
       if (aiEngine !== 'ollama') {
-        const manifestFileName =
-          aiEngine === 'llamafile'
-            ? `llamafile-version-${process.platform}.json`
-            : `llamacpp-version-${process.platform}.json`
-        const manifestPath = resolveResourcePath(`build/extraResources/configs/${manifestFileName}`)
-        if (!fs.existsSync(manifestPath)) {
+        // 数据源统一为 preset-resources.lock.json（ADR-0029）
+        const lockPath = resolveResourcePath(
+          `build/extraResources/configs/preset-resources.lock.json`
+        )
+        if (!fs.existsSync(lockPath)) {
           throw new Error(
-            `❌ 错误: 缺少版本清单配置文件 build/extraResources/configs/${manifestFileName}，无法验证 AI 引擎二进制包完整性！请确保运行了下载流程。`
+            `❌ 错误: 缺少统一资源清单 build/extraResources/configs/preset-resources.lock.json，无法验证 AI 引擎二进制包完整性！请确保运行了下载流程。`
           )
         }
 
         try {
-          const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+          const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'))
+          const engineId = aiEngine === 'llamafile' ? 'llamafile' : 'llama.cpp'
+          const engine = lock?.engines?.[engineId]
+          if (!engine || !engine.platforms) {
+            throw new Error(`统一资源清单中缺少 ${engineId} 引擎段 (engines.${engineId}.platforms)`)
+          }
+
+          const osKey =
+            process.platform === 'darwin'
+              ? 'darwin'
+              : process.platform === 'win32'
+                ? 'win32'
+                : 'linux'
+          const key = `${osKey}-${process.arch === 'arm64' ? 'arm64' : 'x64'}`
+          const platformEntry = engine.platforms[key]
+          const files = platformEntry?.files
           const presetBundlesDir = resolveResourcePath(`build/presetResources/${aiEngine}`)
           const errors: string[] = []
 
-          if (!manifest.files || !Array.isArray(manifest.files)) {
-            throw new Error(`清单文件中未包含待验证的文件列表 (files 字段缺失或非数组)`)
+          if (!files || !Array.isArray(files) || files.length === 0) {
+            throw new Error(
+              `统一资源清单中 ${engineId} 引擎缺少当前平台 (${key}) 的文件列表 (platforms.${key}.files 缺失或为空)`
+            )
           }
 
           const isSizeMatching = (
@@ -725,7 +751,7 @@ const config: ForgeConfig = {
             return false
           }
 
-          manifest.files.forEach((file: any) => {
+          files.forEach((file: any) => {
             const filePath = path.join(presetBundlesDir, file.name)
             if (!fs.existsSync(filePath)) {
               errors.push(`缺少资源包: ${file.name}`)
@@ -745,7 +771,7 @@ const config: ForgeConfig = {
             )
           }
           console.log(
-            `[prePackage] ✅ AI 引擎二进制包完整性验证通过 (共 ${manifest.files.length} 个包)`
+            `[prePackage] ✅ AI 引擎二进制包完整性验证通过 (共 ${files.length} 个包)`
           )
 
           const binDir = resolveResourcePath('build/extraResources/bin')
@@ -1137,7 +1163,7 @@ const config: ForgeConfig = {
       'build/extraResources/bin', // 包含 fastfetch 等二进制文件 (由 7z 安装器处理)
       'build/extraResources/stubs', // 兼容性存根 (ggml-blas-stub.c)
       'build/extraResources/geo', // omni-geo 地理数据集（解压即用明文 JSON）
-      'assets'
+      'build/extraResources/assets' // 静态图标与启动画面素材
     ],
     ignore: (file: string) => {
       if (!file) return false
