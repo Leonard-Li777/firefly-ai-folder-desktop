@@ -142,6 +142,70 @@
               "arch": "x64"
             }
           ]
+        },
+        "darwin-arm64": {
+          "files": [
+            {
+              "name": "llama-b10718-bin-macos-arm64.tar.gz",
+              "size": 12891965,
+              "platform": "darwin",
+              "arch": "arm64"
+            }
+          ]
+        },
+        "darwin-x64": {
+          "files": [
+            {
+              "name": "llama-b10718-bin-macos-x64.tar.gz",
+              "size": 15443210,
+              "platform": "darwin",
+              "arch": "x64"
+            }
+          ]
+        },
+        "linux-x64": {
+          "files": [
+            {
+              "name": "llama-b10718-bin-ubuntu-vulkan-x64.tar.gz",
+              "size": 38120400,
+              "platform": "linux",
+              "arch": "x64"
+            },
+            {
+              "name": "llama-b10718-bin-ubuntu-openvino-2026.3.1-x64.tar.gz",
+              "size": 75320100,
+              "platform": "linux",
+              "arch": "x64"
+            },
+            {
+              "name": "llama-b10718-bin-ubuntu-rocm-7.14-x64.tar.gz",
+              "size": 115200300,
+              "platform": "linux",
+              "arch": "x64"
+            },
+            {
+              "name": "llama-b10718-bin-ubuntu-x64.tar.gz",
+              "size": 22450600,
+              "platform": "linux",
+              "arch": "x64"
+            }
+          ]
+        },
+        "linux-arm64": {
+          "files": [
+            {
+              "name": "llama-b10718-bin-ubuntu-arm64.tar.gz",
+              "size": 18900400,
+              "platform": "linux",
+              "arch": "arm64"
+            },
+            {
+              "name": "llama-b10718-bin-ubuntu-vulkan-arm64.tar.gz",
+              "size": 32100800,
+              "platform": "linux",
+              "arch": "arm64"
+            }
+          ]
         }
       }
     }

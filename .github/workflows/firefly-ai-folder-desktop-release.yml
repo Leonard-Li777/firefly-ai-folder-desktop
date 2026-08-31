@@ -742,7 +742,7 @@ jobs:
           echo "🔧 下载 python-build-standalone (manylinux, 最低 glibc 2.17)..."
           TRIPLE="$(uname -m)-unknown-linux-gnu"
           URL="$(
-            curl -fsSL "https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest" \
+            curl -fsSL -H "Authorization: token ${{ secrets.GITHUB_TOKEN || github.token }}" "https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest" \
             | TRIPLE="${TRIPLE}" node -e '
                 let d = "";
                 process.stdin.on("data", (c) => (d += c));
@@ -765,7 +765,7 @@ jobs:
               '
           )"
           mkdir -p /opt/pybs
-          curl -fsSL "${URL}" | tar -xz -C /opt/pybs
+          curl -fsSL -H "Authorization: token ${{ secrets.GITHUB_TOKEN || github.token }}" "${URL}" | tar -xz -C /opt/pybs
           echo "/opt/pybs/python/bin" >> "${GITHUB_PATH}"
           /opt/pybs/python/bin/python3 --version
 
