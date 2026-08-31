@@ -116,3 +116,4 @@ build/extraResources/configs/*.json
 trusted-signing-metadata.json
 build/extraResources/configs/binaries.json
 build/extraResources/configs/models.json
+build/extraResources/geo/.ready-geo-20260825
