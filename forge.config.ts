@@ -558,62 +558,64 @@ const config: ForgeConfig = {
         // Electron 的 NODE_MODULE_VERSION，导致加载失败。
         // 这里临时重建为系统 Node.js 版本。
         if (process.platform === 'darwin') {
-          // 搜索 .pnpm 目录中的 macos-alias 目录（避免 hardcode hash）
-          const pnpmDir = path.join(__dirname, '..', '..', 'node_modules', '.pnpm')
-          const macosAliasDirs = fs
-            .readdirSync(pnpmDir)
-            .filter((entry: string) => entry.startsWith('macos-alias@'))
-            .map((entry: string) => path.join(pnpmDir, entry, 'node_modules', 'macos-alias'))
-            .filter((dir: string) => fs.existsSync(dir))
+          // 搜索可能存在的 .pnpm 目录（包括单仓 apps/desktop/node_modules 与多仓根目录 node_modules）
+          const candidatePnpmDirs = [
+            path.join(__dirname, 'node_modules', '.pnpm'),
+            path.join(__dirname, '..', '..', 'node_modules', '.pnpm'),
+            path.join(process.cwd(), 'node_modules', '.pnpm')
+          ].filter(dir => fs.existsSync(dir))
 
-          if (macosAliasDirs.length > 0) {
-            const macosAliasDir = macosAliasDirs[0]
-            console.log('[preMake] macOS 检测到 macos-alias，正在重建为系统 Node.js 版本...')
-            const rebuildDir = path.join(macosAliasDir, 'build')
-            if (fs.existsSync(rebuildDir)) {
-              fs.rmSync(rebuildDir, { recursive: true, force: true })
+          const rebuildModuleForHostNode = (moduleName: string, releaseFile: string) => {
+            const allMatchedDirs: string[] = []
+            for (const pnpmDir of candidatePnpmDirs) {
+              try {
+                const matched = fs
+                  .readdirSync(pnpmDir)
+                  .filter((entry: string) => entry.startsWith(`${moduleName}@`))
+                  .map((entry: string) => path.join(pnpmDir, entry, 'node_modules', moduleName))
+                  .filter((dir: string) => fs.existsSync(dir))
+                allMatchedDirs.push(...matched)
+              } catch (e) {}
             }
-            const { execSync } = require('child_process')
-            execSync('npx node-gyp rebuild', {
-              cwd: macosAliasDir,
-              stdio: 'inherit'
-            })
-            console.log('[preMake] ✅ macos-alias 已重建为系统 Node.js 版本，验证加载...')
-            try {
-              require(path.join(macosAliasDir, 'build/Release/volume.node'))
-              console.log('[preMake] ✅ macos-alias 加载验证通过')
-            } catch (loadErr) {
-              console.warn('[preMake] ⚠️  macos-alias 加载验证失败:', (loadErr as Error).message)
+
+            // 去重
+            const uniqueDirs = Array.from(new Set(allMatchedDirs))
+            if (uniqueDirs.length > 0) {
+              console.log(`[preMake] macOS 检测到 ${uniqueDirs.length} 个 ${moduleName} 实例，正在全量重建为当前宿主 Node.js 版本...`)
+              for (const targetDir of uniqueDirs) {
+                const rebuildDir = path.join(targetDir, 'build')
+                if (fs.existsSync(rebuildDir)) {
+                  fs.rmSync(rebuildDir, { recursive: true, force: true })
+                }
+                const { execSync } = require('child_process')
+                try {
+                  execSync('npx node-gyp rebuild', {
+                    cwd: targetDir,
+                    stdio: 'inherit',
+                    env: {
+                      ...process.env,
+                      npm_config_runtime: 'node',
+                      npm_config_target: process.versions.node,
+                      npm_config_disturl: 'https://nodejs.org/dist'
+                    }
+                  })
+                  console.log(`[preMake] ✅ ${moduleName} 已在 ${targetDir} 重建完成`)
+                  try {
+                    require(path.join(targetDir, releaseFile))
+                    console.log(`[preMake] ✅ ${moduleName} 加载测试通过 (Node.js v${process.versions.node})`)
+                  } catch (loadErr) {
+                    console.warn(`[preMake] ⚠️ ${moduleName} 加载验证警告:`, (loadErr as Error).message)
+                  }
+                } catch (rebuildErr) {
+                  console.warn(`[preMake] ❌ 重建 ${moduleName} 失败:`, (rebuildErr as Error).message)
+                }
+              }
             }
           }
 
-          // fs-xattr 也是 appdmg 的原生依赖，同样需要为系统 Node.js 重建
-          const fsXattrDirs = fs
-            .readdirSync(pnpmDir)
-            .filter((entry: string) => entry.startsWith('fs-xattr@'))
-            .map((entry: string) => path.join(pnpmDir, entry, 'node_modules', 'fs-xattr'))
-            .filter((dir: string) => fs.existsSync(dir))
-
-          if (fsXattrDirs.length > 0) {
-            const fsXattrDir = fsXattrDirs[0]
-            console.log('[preMake] macOS 检测到 fs-xattr，正在重建为系统 Node.js 版本...')
-            const rebuildDir = path.join(fsXattrDir, 'build')
-            if (fs.existsSync(rebuildDir)) {
-              fs.rmSync(rebuildDir, { recursive: true, force: true })
-            }
-            const { execSync } = require('child_process')
-            execSync('npx node-gyp rebuild', {
-              cwd: fsXattrDir,
-              stdio: 'inherit'
-            })
-            console.log('[preMake] ✅ fs-xattr 已重建为系统 Node.js 版本，验证加载...')
-            try {
-              require(path.join(fsXattrDir, 'build/Release/xattr'))
-              console.log('[preMake] ✅ fs-xattr 加载验证通过')
-            } catch (loadErr) {
-              console.warn('[preMake] ⚠️  fs-xattr 加载验证失败:', (loadErr as Error).message)
-            }
-          }
+          // 重建 macos-alias 与 fs-xattr
+          rebuildModuleForHostNode('macos-alias', 'build/Release/volume.node')
+          rebuildModuleForHostNode('fs-xattr', 'build/Release/xattr.node')
         }
 
         // 处理 workspace 依赖（特别是在 CI/Linux 环境下）

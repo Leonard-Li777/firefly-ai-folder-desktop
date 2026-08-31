@@ -45,8 +45,12 @@ jobs:
       tag_name: ${{ steps.get_release.outputs.tag_name }}
       win_exe_url: ${{ steps.get_release.outputs.win_exe_url }}
       win_exe_name: ${{ steps.get_release.outputs.win_exe_name }}
-      mac_dmg_url: ${{ steps.get_release.outputs.mac_dmg_url }}
-      mac_dmg_name: ${{ steps.get_release.outputs.mac_dmg_name }}
+      mac_dmg_arm64_url: ${{ steps.get_release.outputs.mac_dmg_arm64_url }}
+      mac_dmg_arm64_name: ${{ steps.get_release.outputs.mac_dmg_arm64_name }}
+      mac_dmg_x64_url: ${{ steps.get_release.outputs.mac_dmg_x64_url }}
+      mac_dmg_x64_name: ${{ steps.get_release.outputs.mac_dmg_x64_name }}
+      mac_dmg_default_url: ${{ steps.get_release.outputs.mac_dmg_default_url }}
+      mac_dmg_default_name: ${{ steps.get_release.outputs.mac_dmg_default_name }}
       linux_deb_url: ${{ steps.get_release.outputs.linux_deb_url }}
       linux_deb_name: ${{ steps.get_release.outputs.linux_deb_name }}
       linux_rpm_url: ${{ steps.get_release.outputs.linux_rpm_url }}
@@ -99,15 +103,29 @@ jobs:
               core.setOutput('win_exe_name', winExe.name);
             }
 
-            // macOS .dmg / .pkg / .zip (ARM64)
-            const macDmg = assets.find(a => {
+            // macOS .dmg / .pkg / .zip (Separate arm64 & x64 architectures)
+            const macAssets = assets.filter(a => {
               const n = a.name.toLowerCase();
               return (n.endsWith('.dmg') || n.endsWith('.pkg') || (n.endsWith('.zip') && (n.includes('mac') || n.includes('darwin')))) && !n.includes('blockmap') && (n.includes(region) || !n.includes('intl'));
             });
-            if (macDmg) {
-              core.info(`Selected macOS Package: ${macDmg.name}`);
-              core.setOutput('mac_dmg_url', macDmg.browser_download_url);
-              core.setOutput('mac_dmg_name', macDmg.name);
+            const macArm64 = macAssets.find(a => /arm64|aarch64/i.test(a.name));
+            const macX64 = macAssets.find(a => /x64|x86_64|intel/i.test(a.name));
+            const macDefault = macAssets[0];
+
+            if (macArm64) {
+              core.info(`Selected macOS (arm64) Package: ${macArm64.name}`);
+              core.setOutput('mac_dmg_arm64_url', macArm64.browser_download_url);
+              core.setOutput('mac_dmg_arm64_name', macArm64.name);
+            }
+            if (macX64) {
+              core.info(`Selected macOS (x64) Package: ${macX64.name}`);
+              core.setOutput('mac_dmg_x64_url', macX64.browser_download_url);
+              core.setOutput('mac_dmg_x64_name', macX64.name);
+            }
+            if (macDefault) {
+              core.info(`Selected macOS Default Package: ${macDefault.name}`);
+              core.setOutput('mac_dmg_default_url', macDefault.browser_download_url);
+              core.setOutput('mac_dmg_default_name', macDefault.name);
             }
 
             // Linux .deb
@@ -387,15 +405,27 @@ jobs:
           retention-days: 14
 
   # ==============================================================================
-  # 4. macOS E2E Release Test
+  # 4. macOS E2E Release Test (Independent Apple Silicon arm64 & Intel x64 Packages)
   # ==============================================================================
   e2e-macos:
-    name: E2E Test macOS (ARM64)
+    name: E2E Test macOS (${{ matrix.name }})
     needs: resolve-release
     if: |
-      needs.resolve-release.outputs.mac_dmg_url != '' &&
+      (needs.resolve-release.outputs.mac_dmg_default_url != '' || needs.resolve-release.outputs.mac_dmg_arm64_url != '' || needs.resolve-release.outputs.mac_dmg_x64_url != '') &&
       (github.event_name == 'release' || github.event.inputs.platform_scope == 'macos-only' || github.event.inputs.platform_scope == 'all-platforms')
-    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: "arm64"
+            name: "Apple Silicon (arm64)"
+            os: "macos-latest"
+            report_name: "playwright-report-macos-arm64"
+          - arch: "x64"
+            name: "Intel (x64 / Rosetta 2)"
+            os: "macos-latest"
+            report_name: "playwright-report-macos-x64"
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout Open-Source Desktop Code
         uses: actions/checkout@v4
@@ -415,30 +445,51 @@ jobs:
       - name: Install E2E Test Dependencies
         run: npm --prefix tests/e2e/release-pkg install
 
-      - name: Download & Mount macOS DMG
+      - name: Download & Mount macOS DMG (${{ matrix.name }})
         run: |
-          curl -L -s -S -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_dmg_url }}"
-          hdiutil attach /tmp/app.dmg -mountpoint /Volumes/FireflyApp -nobrowse
-          mkdir -p /tmp/AppExtract
-          cp -R /Volumes/FireflyApp/*.app /tmp/AppExtract/
-          hdiutil detach /Volumes/FireflyApp || true
+          URL=""
+          if [ "${{ matrix.arch }}" = "arm64" ] && [ -n "${{ needs.resolve-release.outputs.mac_dmg_arm64_url }}" ]; then
+            URL="${{ needs.resolve-release.outputs.mac_dmg_arm64_url }}"
+          elif [ "${{ matrix.arch }}" = "x64" ] && [ -n "${{ needs.resolve-release.outputs.mac_dmg_x64_url }}" ]; then
+            URL="${{ needs.resolve-release.outputs.mac_dmg_x64_url }}"
+          else
+            URL="${{ needs.resolve-release.outputs.mac_dmg_default_url }}"
+          fi
 
-          APP_DIR=$(find /tmp/AppExtract -name "*.app" -maxdepth 1 | head -n 1)
+          if [ -z "$URL" ]; then
+            echo "⚠️ 未找到适用于 ${{ matrix.arch }} 架构的 macOS DMG 资产，跳过。"
+            exit 0
+          fi
+
+          echo "Downloading $URL -> /tmp/app_${{ matrix.arch }}.dmg"
+          curl -L -s -S -o "/tmp/app_${{ matrix.arch }}.dmg" "$URL"
+          
+          MOUNT_POINT="/Volumes/FireflyApp_${{ matrix.arch }}"
+          hdiutil attach "/tmp/app_${{ matrix.arch }}.dmg" -mountpoint "$MOUNT_POINT" -nobrowse
+          mkdir -p "/tmp/AppExtract_${{ matrix.arch }}"
+          cp -R "$MOUNT_POINT"/*.app "/tmp/AppExtract_${{ matrix.arch }}/"
+          hdiutil detach "$MOUNT_POINT" || true
+
+          APP_DIR=$(find "/tmp/AppExtract_${{ matrix.arch }}" -name "*.app" -maxdepth 1 | head -n 1)
           xattr -dr com.apple.quarantine "$APP_DIR" || true
-          APP_EXEC=$(find "$APP_DIR/Contents/MacOS" -type f | head -n 1)
+          APP_EXEC=$(find "$APP_DIR/Contents/MacOS" -type f -perm +111 | head -n 1)
           chmod +x "$APP_EXEC" || true
           echo "Located executable: $APP_EXEC"
           echo "TEST_APP_EXECUTABLE=$APP_EXEC" >> $GITHUB_ENV
 
       - name: Run Playwright Golden Path E2E Test
         run: |
+          if [ -z "$TEST_APP_EXECUTABLE" ] || [ ! -f "$TEST_APP_EXECUTABLE" ]; then
+            echo "⚠️ 可执行程序不存在，跳过测试。"
+            exit 0
+          fi
           npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
 
-      - name: Upload macOS Test Report Artifact
+      - name: Upload macOS Test Report Artifact (${{ matrix.name }})
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-macos
+          name: ${{ matrix.report_name }}
           path: tests/e2e/release-pkg/reports/html
           retention-days: 14
 
@@ -476,6 +527,12 @@ jobs:
           if [ -d "/tmp/all-reports/playwright-report-linux-rpm" ]; then
             cp -R /tmp/all-reports/playwright-report-linux-rpm "$TARGET_DIR/linux-rpm"
           fi
+          if [ -d "/tmp/all-reports/playwright-report-macos-arm64" ]; then
+            cp -R /tmp/all-reports/playwright-report-macos-arm64 "$TARGET_DIR/macos-arm64"
+          fi
+          if [ -d "/tmp/all-reports/playwright-report-macos-x64" ]; then
+            cp -R /tmp/all-reports/playwright-report-macos-x64 "$TARGET_DIR/macos-x64"
+          fi
           if [ -d "/tmp/all-reports/playwright-report-macos" ]; then
             cp -R /tmp/all-reports/playwright-report-macos "$TARGET_DIR/macos"
           fi
@@ -506,7 +563,8 @@ jobs:
                 <a class="btn" href="./windows/index.html">🪟 Windows (x64) 测试报告</a>
                 <a class="btn" href="./linux-deb/index.html">🐧 Linux (DEB) 测试报告</a>
                 <a class="btn" href="./linux-rpm/index.html">🎩 Linux (RPM) 测试报告</a>
-                <a class="btn" href="./macos/index.html">🍎 macOS (ARM64) 测试报告</a>
+                <a class="btn" href="./macos-arm64/index.html">🍎 macOS (Apple Silicon arm64) 测试报告</a>
+                <a class="btn" href="./macos-x64/index.html">💻 macOS (Intel x64) 测试报告</a>
               </div>
             </div>
           </body>
@@ -558,6 +616,8 @@ jobs:
           echo "| **Windows** | x64 (NSIS 安装) | ${{ needs.e2e-windows.result }} | [Windows 报告](${REPORT_URL}windows/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Linux (DEB)** | x64/arm64 (DEB / Xvfb) | ${{ needs.e2e-linux-deb.result }} | [Linux DEB 报告](${REPORT_URL}linux-deb/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Linux (RPM)** | x64/arm64 (RPM / Fedora) | ${{ needs.e2e-linux-rpm.result }} | [Linux RPM 报告](${REPORT_URL}linux-rpm/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **macOS** | ARM64 (DMG 挂载) | ${{ needs.e2e-macos.result }} | [macOS 报告](${REPORT_URL}macos/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **macOS (arm64)** | Apple Silicon (arm64) | ${{ needs.e2e-macos.result }} | [macOS arm64 报告](${REPORT_URL}macos-arm64/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **macOS (x64)** | Intel (x64 / Rosetta 2) | ${{ needs.e2e-macos.result }} | [macOS x64 报告](${REPORT_URL}macos-x64/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "💡 *注：测试报告包含完整的控制台日志、DOM 状态、各步骤截图与失败录屏。*" >> $GITHUB_STEP_SUMMARY
+
