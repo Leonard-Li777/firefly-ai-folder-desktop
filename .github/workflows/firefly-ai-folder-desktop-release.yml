@@ -155,64 +155,12 @@ jobs:
           echo "📄 Showing filtered .env contents:"
           grep -E "VITE_POSTHOG_HOST|SUPABASE_URL" .env || true
 
-      - name: Cache/Restore built-in models
-        id: cache-models
-        uses: actions/cache@v4
-        with:
-          path: build/extraResources/models
-          key: llama-models-shared-v3
-
-      - name: Download Magika & PP-OCRv6 Models on Cache Miss
-        if: steps.cache-models.outputs.cache-hit != 'true'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
-          mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
-          TEMP_ZIP=$(mktemp)
-          echo "📥 从 firefly-resources 下载 magika 与 PP-OCRv6 模型..."
-          if gh release download resources --pattern "magika-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
-            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
-            rm -f "$TEMP_ZIP"
-            echo "✅ magika-resources.zip 恢复完成。"
-          fi
-          if gh release download resources --pattern "ppocrv6-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
-            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
-            rm -f "$TEMP_ZIP"
-            echo "✅ ppocrv6-resources.zip 恢复完成。"
-          fi
-
-      - name: Cache/Restore preset resources (fastfetch, llama.cpp)
+      - name: Cache/Restore preset resources (llama.cpp)
         id: cache-presets
         uses: actions/cache@v4
         with:
           path: build/presetResources
           key: llama-presets-darwin-v2
-
-      - name: Download llama-model-download on Cache Miss
-        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p build/presetResources/llama-model-download
-          echo "📥 从 firefly-resources 下载 llama-model-download..."
-          gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
-          echo "✅ llama-model-download 资源准备完成。"
-
-      - name: Download fastfetch on Cache Miss (firefly-resources)
-        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p build/presetResources/fastfetch
-          echo "📥 从 firefly-resources 下载 fastfetch (macOS)..."
-          ffarch=arm64
-          [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ] && ffarch=x64
-          gh release download resources --pattern "fastfetch-*-darwin-$ffarch.zip" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/fastfetch" --clobber 2>/dev/null || true
-          echo "✅ fastfetch 资源准备完成。"
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -232,93 +180,6 @@ jobs:
         env:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
-
-      - name: Download Built-in LFM2.5 Model (firefly-resources)
-        if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
-          echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
-          TMP_LFM="${RUNNER_TEMP:-/tmp}/lfm"
-          mkdir -p "$TMP_LFM"
-          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
-            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" | head -n 1)
-            if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
-              mkdir -p build/extraResources/models
-              echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
-              python3 -c "import zipfile, os, sys; dest=sys.argv[2]; z=zipfile.ZipFile(sys.argv[1]); [(lambda n, t: [os.remove(t) if os.path.isfile(t) else None, os.makedirs(t, exist_ok=True)] if (m.is_dir() or n.endswith('/') or '.' not in os.path.basename(n)) else [os.remove(os.path.dirname(t)) if os.path.isfile(os.path.dirname(t)) else None, os.makedirs(os.path.dirname(t), exist_ok=True), not os.path.isdir(t) and open(t, 'wb').write(z.read(m))])(m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'), os.path.join(dest, m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'))) for m in z.infolist() if m.filename.strip()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || unzip -o -q "$ZIP_FILE" -d build/extraResources/models || true
-              echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
-            fi
-            rm -rf "$TMP_LFM"
-          else
-            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 download:builtin-model 兜底。"
-          fi
-
-      - name: 下载内置模型并清理投影文件 (llama-model-download)
-        if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          echo "📥 使用 llama-model-download 准备内置模型..."
-          pnpm run download:builtin-model
-
-      - name: 下载 firefly-omni 引擎 (firefly-resources)
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p build/extraResources/bin/omni
-          echo "📥 从 firefly-resources 下载 firefly-omni (macOS)..."
-          TMP_OMNI="/tmp/omni-pkg"
-          mkdir -p "$TMP_OMNI"
-          DOWNLOADED=false
-          for pattern in "firefly-omni-*-darwin-universal.tar.gz" "firefly-omni-*-darwin-x64.tar.gz" "firefly-omni-*-darwin-arm64.tar.gz" "firefly-omni-*-darwin-*.zip"; do
-            if gh release download resources --pattern "$pattern" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_OMNI" --clobber 2>/dev/null; then
-              ARCHIVE=$(find "$TMP_OMNI" -name "firefly-omni-*" 2>/dev/null | head -n 1)
-              if [ -n "$ARCHIVE" ] && [ -f "$ARCHIVE" ]; then
-                echo "📦 解压 $ARCHIVE 到 build/extraResources/bin/omni..."
-                if [[ "$ARCHIVE" == *.tar.gz ]]; then
-                  tar -xzf "$ARCHIVE" -C build/extraResources/bin/omni
-                else
-                  unzip -o -q "$ARCHIVE" -d build/extraResources/bin/omni
-                fi
-                chmod +x build/extraResources/bin/omni/firefly-omni 2>/dev/null || true
-                echo "✅ firefly-omni macOS 引擎部署完成。"
-                DOWNLOADED=true
-                break
-              fi
-            fi
-          done
-          rm -rf "$TMP_OMNI"
-          if [ "$DOWNLOADED" != "true" ]; then
-            echo "⚠️ firefly-resources 暂未检索到 firefly-omni macOS 资产，跳过引擎装配（不阻塞构建）。"
-          fi
-
-      - name: 下载 omni-geo 数据集
-        shell: bash
-        run: |
-          echo "📥 从 firefly-resources 下载 omni-geo 地理数据集..."
-          mkdir -p build/extraResources/geo
-          if gh release download resources --pattern "geo-*.tar.gz" \
-            --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null; then
-            GEO_ARCHIVE=$(find /tmp/geo-pkg -name "geo-*.tar.gz" 2>/dev/null | head -n 1 || true)
-            if [ -n "$GEO_ARCHIVE" ] && [ -f "$GEO_ARCHIVE" ]; then
-              tar xzf "$GEO_ARCHIVE" -C build/extraResources/geo
-              rm -rf /tmp/geo-pkg
-              echo "✅ omni-geo 数据集从 firefly-resources 恢复完成。"
-            else
-              echo "⚠️ 未在本地目录发现 geo 压缩包，跳过（不阻塞构建）。"
-              rm -rf /tmp/geo-pkg
-            fi
-          else
-            echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify extraResources (不多不少门禁)
         shell: bash
@@ -599,62 +460,12 @@ jobs:
           echo "📄 Showing filtered .env contents:"
           grep -E "VITE_POSTHOG_HOST|SUPABASE_URL" .env || true
 
-      - name: Cache/Restore built-in models
-        id: cache-models
-        uses: actions/cache@v4
-        with:
-          path: build/extraResources/models
-          key: llama-models-shared-v3
-
-      - name: Download Magika & PP-OCRv6 Models on Cache Miss
-        if: steps.cache-models.outputs.cache-hit != 'true'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
-          mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
-          TEMP_ZIP=$(mktemp)
-          echo "📥 从 firefly-resources 下载 magika 与 PP-OCRv6 模型..."
-          if gh release download resources --pattern "magika-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
-            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
-            rm -f "$TEMP_ZIP"
-            echo "✅ magika-resources.zip 恢复完成。"
-          fi
-          if gh release download resources --pattern "ppocrv6-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
-            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
-            rm -f "$TEMP_ZIP"
-            echo "✅ ppocrv6-resources.zip 恢复完成。"
-          fi
-
-      - name: Cache/Restore preset resources (fastfetch, llama.cpp)
+      - name: Cache/Restore preset resources (llama.cpp)
         id: cache-presets
         uses: actions/cache@v4
         with:
           path: build/presetResources
           key: llama-presets-windows-v2
-
-      - name: Download llama-model-download on Cache Miss
-        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p build/presetResources/llama-model-download
-          echo "📥 从 firefly-resources 下载 llama-model-download..."
-          gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
-          echo "✅ llama-model-download 资源准备完成。"
-
-      - name: Download fastfetch on Cache Miss (firefly-resources)
-        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p build/presetResources/fastfetch
-          echo "📥 从 firefly-resources 下载 fastfetch (Windows)..."
-          gh release download resources --pattern "fastfetch-*-win32-x64.zip" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/fastfetch" --clobber 2>/dev/null || true
-          echo "✅ fastfetch 资源准备完成。"
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -674,88 +485,6 @@ jobs:
         env:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
-
-      - name: Download Built-in LFM2.5 Model (firefly-resources)
-        if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
-          echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
-          TMP_LFM="${RUNNER_TEMP:-/tmp}/lfm"
-          mkdir -p "$TMP_LFM"
-          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
-            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" | head -n 1)
-            if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
-              mkdir -p build/extraResources/models
-              echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
-              python3 -c "import zipfile, os, sys; dest=sys.argv[2]; z=zipfile.ZipFile(sys.argv[1]); [(lambda n, t: [os.remove(t) if os.path.isfile(t) else None, os.makedirs(t, exist_ok=True)] if (m.is_dir() or n.endswith('/') or '.' not in os.path.basename(n)) else [os.remove(os.path.dirname(t)) if os.path.isfile(os.path.dirname(t)) else None, os.makedirs(os.path.dirname(t), exist_ok=True), not os.path.isdir(t) and open(t, 'wb').write(z.read(m))])(m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'), os.path.join(dest, m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'))) for m in z.infolist() if m.filename.strip()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || python -c "import zipfile, os, sys; dest=sys.argv[2]; z=zipfile.ZipFile(sys.argv[1]); [(lambda n, t: [os.remove(t) if os.path.isfile(t) else None, os.makedirs(t, exist_ok=True)] if (m.is_dir() or n.endswith('/') or '.' not in os.path.basename(n)) else [os.remove(os.path.dirname(t)) if os.path.isfile(os.path.dirname(t)) else None, os.makedirs(os.path.dirname(t), exist_ok=True), not os.path.isdir(t) and open(t, 'wb').write(z.read(m))])(m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'), os.path.join(dest, m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'))) for m in z.infolist() if m.filename.strip()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || tar -xf "$ZIP_FILE" -C build/extraResources/models || true
-              echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
-            fi
-            rm -rf "$TMP_LFM"
-          else
-            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 download:builtin-model 兜底。"
-          fi
-
-      - name: 下载内置模型并清理投影文件 (llama-model-download)
-        if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          echo "📥 使用 llama-model-download 准备内置模型..."
-          pnpm run download:builtin-model
-
-      - name: 下载 firefly-omni 引擎 (firefly-resources)
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p build/extraResources/bin/omni
-          echo "📥 从 firefly-resources 下载 firefly-omni (Windows)..."
-          TMP_OMNI="/tmp/omni-pkg"
-          mkdir -p "$TMP_OMNI"
-          DOWNLOADED=false
-          for pattern in "firefly-omni-*-win32-x64.zip" "firefly-omni-*-win32-*.zip"; do
-            if gh release download resources --pattern "$pattern" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_OMNI" --clobber 2>/dev/null; then
-              ARCHIVE=$(find "$TMP_OMNI" -name "firefly-omni-*.zip" 2>/dev/null | head -n 1)
-              if [ -n "$ARCHIVE" ] && [ -f "$ARCHIVE" ]; then
-                echo "📦 解压 $ARCHIVE 到 build/extraResources/bin/omni..."
-                unzip -o -q "$ARCHIVE" -d build/extraResources/bin/omni
-                echo "✅ firefly-omni Windows 引擎部署完成。"
-                DOWNLOADED=true
-                break
-              fi
-            fi
-          done
-          rm -rf "$TMP_OMNI"
-          if [ "$DOWNLOADED" != "true" ]; then
-            echo "⚠️ firefly-resources 暂未检索到 firefly-omni Windows 资产，跳过引擎装配（不阻塞构建）。"
-          fi
-
-      - name: 下载 omni-geo 数据集
-        shell: bash
-        run: |
-          echo "📥 从 firefly-resources 下载 omni-geo 地理数据集..."
-          mkdir -p build/extraResources/geo
-          if gh release download resources --pattern "geo-*.tar.gz" \
-            --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null; then
-            GEO_ARCHIVE=$(find /tmp/geo-pkg -name "geo-*.tar.gz" 2>/dev/null | head -n 1 || true)
-            if [ -n "$GEO_ARCHIVE" ] && [ -f "$GEO_ARCHIVE" ]; then
-              tar xzf "$GEO_ARCHIVE" -C build/extraResources/geo
-              rm -rf /tmp/geo-pkg
-              echo "✅ omni-geo 数据集从 firefly-resources 恢复完成。"
-            else
-              echo "⚠️ 未在本地目录发现 geo 压缩包，跳过（不阻塞构建）。"
-              rm -rf /tmp/geo-pkg
-            fi
-          else
-            echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify extraResources (不多不少门禁)
         shell: bash
@@ -1082,64 +811,12 @@ jobs:
           echo "📄 Showing filtered .env contents:"
           grep -E "VITE_POSTHOG_HOST|SUPABASE_URL" .env || true
 
-      - name: Cache/Restore built-in models
-        id: cache-models
-        uses: actions/cache@v4
-        with:
-          path: build/extraResources/models
-          key: llama-models-shared-v3
-
-      - name: Download Magika & PP-OCRv6 Models on Cache Miss
-        if: steps.cache-models.outputs.cache-hit != 'true'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
-          mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
-          TEMP_ZIP=$(mktemp)
-          echo "📥 从 firefly-resources 下载 magika 与 PP-OCRv6 模型..."
-          if gh release download resources --pattern "magika-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
-            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
-            rm -f "$TEMP_ZIP"
-            echo "✅ magika-resources.zip 恢复完成。"
-          fi
-          if gh release download resources --pattern "ppocrv6-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
-            unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
-            rm -f "$TEMP_ZIP"
-            echo "✅ ppocrv6-resources.zip 恢复完成。"
-          fi
-
-      - name: Cache/Restore preset resources (fastfetch, llama.cpp)
+      - name: Cache/Restore preset resources (llama.cpp)
         id: cache-presets
         uses: actions/cache@v4
         with:
           path: build/presetResources
           key: llama-presets-linux-v2
-
-      - name: Download llama-model-download on Cache Miss
-        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p build/presetResources/llama-model-download
-          echo "📥 从 firefly-resources 下载 llama-model-download..."
-          gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
-          echo "✅ llama-model-download 资源准备完成。"
-
-      - name: Download fastfetch on Cache Miss (firefly-resources)
-        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p build/presetResources/fastfetch
-          echo "📥 从 firefly-resources 下载 fastfetch (Linux)..."
-          ffarch=x64
-          [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ] && ffarch=arm64
-          gh release download resources --pattern "fastfetch-*-linux-$ffarch.zip" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/fastfetch" --clobber 2>/dev/null || true
-          echo "✅ fastfetch 资源准备完成。"
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -1159,94 +836,6 @@ jobs:
         env:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
-
-      - name: Download Built-in LFM2.5 Model (firefly-resources)
-        if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
-          echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
-          TMP_LFM="${RUNNER_TEMP:-/tmp}/lfm"
-          mkdir -p "$TMP_LFM"
-          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
-            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" | head -n 1)
-            if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
-              mkdir -p build/extraResources/models
-              echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
-              python3 -c "import zipfile, os, sys; dest=sys.argv[2]; z=zipfile.ZipFile(sys.argv[1]); [(lambda n, t: [os.remove(t) if os.path.isfile(t) else None, os.makedirs(t, exist_ok=True)] if (m.is_dir() or n.endswith('/') or '.' not in os.path.basename(n)) else [os.remove(os.path.dirname(t)) if os.path.isfile(os.path.dirname(t)) else None, os.makedirs(os.path.dirname(t), exist_ok=True), not os.path.isdir(t) and open(t, 'wb').write(z.read(m))])(m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'), os.path.join(dest, m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'))) for m in z.infolist() if m.filename.strip()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || unzip -o -q "$ZIP_FILE" -d build/extraResources/models || true
-              echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
-            fi
-            rm -rf "$TMP_LFM"
-          else
-            echo "⚠️ firefly-resources 未找到内置模型 zip，继续执行 download:builtin-model 兜底。"
-          fi
-
-      - name: 下载内置模型并清理投影文件 (llama-model-download)
-        if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GITHUB_TOKEN: ${{ github.token }}
-        run: |
-          echo "📥 使用 llama-model-download 准备内置模型..."
-          pnpm run download:builtin-model
-
-      - name: 下载 firefly-omni 引擎 (firefly-resources)
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          mkdir -p build/extraResources/bin/omni
-          echo "📥 从 firefly-resources 下载 firefly-omni (Linux)..."
-          TMP_OMNI="/tmp/omni-pkg"
-          mkdir -p "$TMP_OMNI"
-          ARCH=$(uname -m)
-          DOWNLOADED=false
-          case "$ARCH" in
-            aarch64|arm64) PATTERNS=("firefly-omni-*-linux-arm64.tar.gz" "firefly-omni-*-linux-*.tar.gz") ;;
-            *)             PATTERNS=("firefly-omni-*-linux-x64.tar.gz" "firefly-omni-*-linux-*.tar.gz") ;;
-          esac
-          for pattern in "${PATTERNS[@]}"; do
-            if gh release download resources --pattern "$pattern" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_OMNI" --clobber 2>/dev/null; then
-              ARCHIVE=$(find "$TMP_OMNI" -name "firefly-omni-*.tar.gz" 2>/dev/null | head -n 1)
-              if [ -n "$ARCHIVE" ] && [ -f "$ARCHIVE" ]; then
-                echo "📦 解压 $ARCHIVE 到 build/extraResources/bin/omni..."
-                tar -xzf "$ARCHIVE" -C build/extraResources/bin/omni
-                chmod +x build/extraResources/bin/omni/firefly-omni 2>/dev/null || true
-                echo "✅ firefly-omni Linux 引擎部署完成。"
-                DOWNLOADED=true
-                break
-              fi
-            fi
-          done
-          rm -rf "$TMP_OMNI"
-          if [ "$DOWNLOADED" != "true" ]; then
-            echo "⚠️ firefly-resources 暂未检索到 firefly-omni Linux 资产，跳过引擎装配（不阻塞构建）。"
-          fi
-
-      - name: 下载 omni-geo 数据集
-        shell: bash
-        run: |
-          echo "📥 从 firefly-resources 下载 omni-geo 地理数据集..."
-          mkdir -p build/extraResources/geo
-          if gh release download resources --pattern "geo-*.tar.gz" \
-            --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null; then
-            GEO_ARCHIVE=$(find /tmp/geo-pkg -name "geo-*.tar.gz" 2>/dev/null | head -n 1 || true)
-            if [ -n "$GEO_ARCHIVE" ] && [ -f "$GEO_ARCHIVE" ]; then
-              tar xzf "$GEO_ARCHIVE" -C build/extraResources/geo
-              rm -rf /tmp/geo-pkg
-              echo "✅ omni-geo 数据集从 firefly-resources 恢复完成。"
-            else
-              echo "⚠️ 未在本地目录发现 geo 压缩包，跳过（不阻塞构建）。"
-              rm -rf /tmp/geo-pkg
-            fi
-          else
-            echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify extraResources (不多不少门禁)
         shell: bash
