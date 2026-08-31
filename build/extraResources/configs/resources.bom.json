@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-08-31T19:02:43.719Z",
+  "generatedAt": "2026-08-31T23:12:33.008Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -99,15 +99,15 @@
   },
   "engines": {
     "firefly-omni": {
-      "version": "v0.1.1",
+      "version": "v0.1.2",
       "source": "upstream",
       "files": [
         {
-          "name": "firefly-omni-v0.1.1-win32-x64.zip",
-          "size": 50924985,
+          "name": "firefly-omni-v0.1.2-win32-x64.zip",
+          "size": 42501045,
           "platform": "win32",
           "arch": "x64",
-          "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.1-win32-x64.zip"
+          "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.2-win32-x64.zip"
         }
       ]
     },
