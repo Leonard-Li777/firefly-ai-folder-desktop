@@ -1,0 +1,563 @@
+name: Release Package E2E Functional Test Pipeline
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Target Release Tag (leave empty for latest release)'
+        required: false
+        default: ''
+        type: string
+      region:
+        description: 'Target region edition to test (cn / intl)'
+        required: false
+        default: 'cn'
+        type: choice
+        options:
+          - cn
+          - intl
+      platform_scope:
+        description: 'Platform scope to test'
+        required: false
+        default: 'all-platforms'
+        type: choice
+        options:
+          - all-platforms
+          - windows-only
+          - linux-only
+          - macos-only
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  # ==============================================================================
+  # 0. Resolve Target Release Assets
+  # ==============================================================================
+  resolve-release:
+    name: Resolve Target Release Assets
+    runs-on: ubuntu-latest
+    outputs:
+      tag_name: ${{ steps.get_release.outputs.tag_name }}
+      win_exe_url: ${{ steps.get_release.outputs.win_exe_url }}
+      win_exe_name: ${{ steps.get_release.outputs.win_exe_name }}
+      mac_dmg_url: ${{ steps.get_release.outputs.mac_dmg_url }}
+      mac_dmg_name: ${{ steps.get_release.outputs.mac_dmg_name }}
+      linux_deb_url: ${{ steps.get_release.outputs.linux_deb_url }}
+      linux_deb_name: ${{ steps.get_release.outputs.linux_deb_name }}
+      linux_rpm_url: ${{ steps.get_release.outputs.linux_rpm_url }}
+      linux_rpm_name: ${{ steps.get_release.outputs.linux_rpm_name }}
+      app_name: ${{ steps.get_release.outputs.app_name }}
+    steps:
+      - name: Fetch Release Information
+        id: get_release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const targetTag = context.payload.inputs?.tag_name || '';
+            const region = (context.payload.inputs?.region || 'cn').toLowerCase();
+            const appName = `firefly-ai-folder-${region}`;
+
+            let release;
+            if (targetTag) {
+              core.info(`Fetching release by tag: ${targetTag}`);
+              const res = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: targetTag
+              });
+              release = res.data;
+            } else {
+              core.info('Fetching latest release...');
+              const res = await github.rest.repos.getLatestRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              release = res.data;
+            }
+
+            core.info(`Target Release: ${release.tag_name} (${release.name})`);
+            core.setOutput('tag_name', release.tag_name);
+            core.setOutput('app_name', appName);
+
+            const assets = release.assets || [];
+            core.info(`Found ${assets.length} assets in release:`);
+            assets.forEach(a => core.info(` - ${a.name} (${a.size} bytes)`));
+
+            // Windows .exe
+            const winExe = assets.find(a => {
+              const n = a.name.toLowerCase();
+              return n.endsWith('.exe') && !n.includes('uninstall') && !n.includes('blockmap') && (n.includes(region) || !n.includes('intl'));
+            });
+            if (winExe) {
+              core.info(`Selected Windows Installer: ${winExe.name}`);
+              core.setOutput('win_exe_url', winExe.browser_download_url);
+              core.setOutput('win_exe_name', winExe.name);
+            }
+
+            // macOS .dmg / .pkg / .zip (ARM64)
+            const macDmg = assets.find(a => {
+              const n = a.name.toLowerCase();
+              return (n.endsWith('.dmg') || n.endsWith('.pkg') || (n.endsWith('.zip') && (n.includes('mac') || n.includes('darwin')))) && !n.includes('blockmap') && (n.includes(region) || !n.includes('intl'));
+            });
+            if (macDmg) {
+              core.info(`Selected macOS Package: ${macDmg.name}`);
+              core.setOutput('mac_dmg_url', macDmg.browser_download_url);
+              core.setOutput('mac_dmg_name', macDmg.name);
+            }
+
+            // Linux .deb
+            const deb = assets.find(a => {
+              const n = a.name.toLowerCase();
+              return (n.endsWith('.deb') || n.endsWith('.appimage')) && (n.includes(region) || !n.includes('intl'));
+            }) || assets.find(a => a.name.toLowerCase().endsWith('.deb') || a.name.toLowerCase().endsWith('.appimage'));
+            if (deb) {
+              core.info(`Selected Linux DEB: ${deb.name}`);
+              core.setOutput('linux_deb_url', deb.browser_download_url);
+              core.setOutput('linux_deb_name', deb.name);
+            }
+
+            // Linux .rpm
+            const rpm = assets.find(a => {
+              const n = a.name.toLowerCase();
+              return n.endsWith('.rpm') && (n.includes(region) || !n.includes('intl'));
+            }) || assets.find(a => a.name.toLowerCase().endsWith('.rpm'));
+            if (rpm) {
+              core.info(`Selected Linux RPM: ${rpm.name}`);
+              core.setOutput('linux_rpm_url', rpm.browser_download_url);
+              core.setOutput('linux_rpm_name', rpm.name);
+            }
+
+  # ==============================================================================
+  # 1. Windows E2E Release Test
+  # ==============================================================================
+  e2e-windows:
+    name: E2E Test Windows (x64)
+    needs: resolve-release
+    if: |
+      needs.resolve-release.outputs.win_exe_url != '' &&
+      (github.event_name == 'release' || github.event.inputs.platform_scope == 'windows-only' || github.event.inputs.platform_scope == 'all-platforms')
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Open-Source Desktop Code
+        uses: actions/checkout@v4
+
+      - name: Checkout Private Pro Module
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+
+      - name: Install E2E Test Dependencies
+        run: npm --prefix tests/e2e/release-pkg install
+
+      - name: Download Windows Installer
+        shell: pwsh
+        run: |
+          $url = "${{ needs.resolve-release.outputs.win_exe_url }}"
+          $fileName = "${{ needs.resolve-release.outputs.win_exe_name }}"
+          Write-Host "Downloading: $url -> $fileName"
+          curl.exe -L -s -S -o $fileName $url
+
+      - name: Silent Install and Locate Binary
+        shell: pwsh
+        run: |
+          $installer = "${{ needs.resolve-release.outputs.win_exe_name }}"
+          $installDir = "C:\TestApp"
+          Write-Host "Executing silent installation to $installDir..."
+          Start-Process -FilePath ".\$installer" -ArgumentList "/S", "/D=$installDir" -Wait
+          Start-Sleep -Seconds 6
+
+          # 全面扫描已安装的主程序二进制
+          $searchRoots = @(
+            $installDir,
+            (Join-Path $env:LOCALAPPDATA "Programs"),
+            $env:ProgramFiles,
+            ${env:ProgramFiles(x86)},
+            $env:TEMP
+          )
+
+          $exeCandidate = $null
+          foreach ($root in $searchRoots) {
+            if ($root -and (Test-Path $root)) {
+              $found = Get-ChildItem -Path $root -Filter "*.exe" -Recurse -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -notmatch "Uninstall" -and $_.Name -notmatch "setup" -and $_.Name -match "firefly" } |
+                Select-Object -First 1
+              if ($found) {
+                $exeCandidate = $found
+                break
+              }
+            }
+          }
+
+          if (-not $exeCandidate) {
+            throw "Failed to locate installed application executable across standard installation directories!"
+          }
+
+          Write-Host "Located executable: $($exeCandidate.FullName)"
+          "TEST_APP_EXECUTABLE=$($exeCandidate.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Run Playwright Golden Path E2E Test
+        shell: pwsh
+        run: |
+          npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+
+      - name: Upload Windows Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-windows
+          path: tests/e2e/release-pkg/reports/html
+          retention-days: 14
+
+  # ==============================================================================
+  # 2. Linux DEB E2E Release Test (Multi-Arch Container with QEMU)
+  # ==============================================================================
+  e2e-linux-deb:
+    name: E2E Test Linux (DEB / Ubuntu)
+    needs: resolve-release
+    if: |
+      needs.resolve-release.outputs.linux_deb_url != '' &&
+      (github.event_name == 'release' || github.event.inputs.platform_scope == 'linux-only' || github.event.inputs.platform_scope == 'all-platforms')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Open-Source Desktop Code
+        uses: actions/checkout@v4
+
+      - name: Checkout Private Pro Module
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+
+      - name: Set up QEMU for Multi-Arch Support
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+
+      - name: Install E2E Test Dependencies
+        run: npm --prefix tests/e2e/release-pkg install
+
+      - name: Run DEB Test inside Multi-Arch Ubuntu Container
+        run: |
+          curl -L -s -S -o /tmp/app.deb "${{ needs.resolve-release.outputs.linux_deb_url }}"
+          
+          # 自动检测 DEB 安装包目标架构 (amd64 / arm64)
+          PKG_ARCH=$(dpkg-deb -f /tmp/app.deb Architecture 2>/dev/null || echo "amd64")
+          DOCKER_PLATFORM="linux/amd64"
+          if [ "$PKG_ARCH" = "arm64" ] || [ "$PKG_ARCH" = "aarch64" ]; then
+            DOCKER_PLATFORM="linux/arm64"
+          fi
+          echo "Detected DEB Architecture: $PKG_ARCH -> Using Docker Platform: $DOCKER_PLATFORM"
+
+          docker run --rm --platform "$DOCKER_PLATFORM" --ipc=host --shm-size=2g \
+            -v "$(pwd):/work" \
+            -v "/tmp/app.deb:/tmp/app.deb" \
+            -w /work \
+            ubuntu:22.04 bash -c '
+              export DEBIAN_FRONTEND=noninteractive
+              apt-get update && apt-get install -y curl ca-certificates gnupg
+              curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+              apt-get install -y nodejs xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1
+              dpkg -i /tmp/app.deb || apt-get install -f -y
+              
+              APP_BIN=""
+              if [ -f "/usr/bin/firefly-ai-folder" ]; then
+                APP_BIN="/usr/bin/firefly-ai-folder"
+              elif [ -f "/usr/bin/firefly-ai-folder-cn" ]; then
+                APP_BIN="/usr/bin/firefly-ai-folder-cn"
+              elif [ -d "/opt" ]; then
+                APP_BIN=$(find /opt -name "firefly*" -type f -executable | grep -v "chrome-sandbox" | grep -v "uninstall" | head -n 1)
+              fi
+              
+              if [ -z "$APP_BIN" ]; then
+                echo "Failed to locate installed Linux DEB application!"
+                exit 1
+              fi
+              
+              chmod +x "$APP_BIN" || true
+              echo "Located DEB binary: $APP_BIN"
+              export TEST_APP_EXECUTABLE="$APP_BIN"
+              
+              xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+            '
+
+      - name: Upload Linux DEB Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-linux-deb
+          path: tests/e2e/release-pkg/reports/html
+          retention-days: 14
+
+  # ==============================================================================
+  # 3. Linux RPM E2E Release Test (Multi-Arch Container with QEMU)
+  # ==============================================================================
+  e2e-linux-rpm:
+    name: E2E Test Linux (RPM / Fedora)
+    needs: resolve-release
+    if: |
+      needs.resolve-release.outputs.linux_rpm_url != '' &&
+      (github.event_name == 'release' || github.event.inputs.platform_scope == 'linux-only' || github.event.inputs.platform_scope == 'all-platforms')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Open-Source Desktop Code
+        uses: actions/checkout@v4
+
+      - name: Checkout Private Pro Module
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+
+      - name: Set up QEMU for Multi-Arch Support
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+
+      - name: Install E2E Test Dependencies
+        run: npm --prefix tests/e2e/release-pkg install
+
+      - name: Run RPM Test inside Multi-Arch Fedora Container
+        run: |
+          curl -L -s -S -o /tmp/app.rpm "${{ needs.resolve-release.outputs.linux_rpm_url }}"
+          
+          # 自动检测 RPM 二进制内部真实架构 (x86_64 / aarch64)
+          sudo apt-get update && sudo apt-get install -y rpm file
+          RPM_ARCH=$(rpm -qp --queryformat '%{ARCH}' /tmp/app.rpm 2>/dev/null || echo "x86_64")
+          DOCKER_PLATFORM="linux/amd64"
+          if [ "$RPM_ARCH" = "aarch64" ] || [ "$RPM_ARCH" = "arm64" ]; then
+            DOCKER_PLATFORM="linux/arm64"
+          fi
+          echo "Detected RPM Architecture: $RPM_ARCH -> Using Docker Platform: $DOCKER_PLATFORM"
+
+          docker run --rm --platform "$DOCKER_PLATFORM" --ipc=host --shm-size=2g \
+            -v "$(pwd):/work" \
+            -v "/tmp/app.rpm:/tmp/app.rpm" \
+            -w /work \
+            fedora:40 bash -c '
+              dnf install -y git nodejs npm xorg-x11-server-Xvfb gtk3 nss alsa-lib mesa-libgbm libsecret libnotify libXScrnSaver procps-ng which
+              dnf install -y --nogpgcheck /tmp/app.rpm || rpm -ivh --nodeps /tmp/app.rpm
+              
+              APP_BIN=""
+              if [ -f "/usr/bin/firefly-ai-folder" ]; then
+                APP_BIN="/usr/bin/firefly-ai-folder"
+              elif [ -f "/usr/bin/firefly-ai-folder-cn" ]; then
+                APP_BIN="/usr/bin/firefly-ai-folder-cn"
+              elif [ -d "/opt" ]; then
+                APP_BIN=$(find /opt -name "firefly*" -type f -executable | grep -v "chrome-sandbox" | grep -v "uninstall" | head -n 1)
+              fi
+              
+              if [ -z "$APP_BIN" ]; then
+                echo "Failed to locate installed Linux RPM application!"
+                exit 1
+              fi
+              
+              chmod +x "$APP_BIN" || true
+              echo "Located RPM binary: $APP_BIN"
+              export TEST_APP_EXECUTABLE="$APP_BIN"
+              
+              xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+            '
+
+      - name: Upload Linux RPM Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-linux-rpm
+          path: tests/e2e/release-pkg/reports/html
+          retention-days: 14
+
+  # ==============================================================================
+  # 4. macOS E2E Release Test
+  # ==============================================================================
+  e2e-macos:
+    name: E2E Test macOS (ARM64)
+    needs: resolve-release
+    if: |
+      needs.resolve-release.outputs.mac_dmg_url != '' &&
+      (github.event_name == 'release' || github.event.inputs.platform_scope == 'macos-only' || github.event.inputs.platform_scope == 'all-platforms')
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Open-Source Desktop Code
+        uses: actions/checkout@v4
+
+      - name: Checkout Private Pro Module
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+
+      - name: Install E2E Test Dependencies
+        run: npm --prefix tests/e2e/release-pkg install
+
+      - name: Download & Mount macOS DMG
+        run: |
+          curl -L -s -S -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_dmg_url }}"
+          hdiutil attach /tmp/app.dmg -mountpoint /Volumes/FireflyApp -nobrowse
+          mkdir -p /tmp/AppExtract
+          cp -R /Volumes/FireflyApp/*.app /tmp/AppExtract/
+          hdiutil detach /Volumes/FireflyApp || true
+
+          APP_DIR=$(find /tmp/AppExtract -name "*.app" -maxdepth 1 | head -n 1)
+          xattr -dr com.apple.quarantine "$APP_DIR" || true
+          APP_EXEC=$(find "$APP_DIR/Contents/MacOS" -type f | head -n 1)
+          chmod +x "$APP_EXEC" || true
+          echo "Located executable: $APP_EXEC"
+          echo "TEST_APP_EXECUTABLE=$APP_EXEC" >> $GITHUB_ENV
+
+      - name: Run Playwright Golden Path E2E Test
+        run: |
+          npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+
+      - name: Upload macOS Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-macos
+          path: tests/e2e/release-pkg/reports/html
+          retention-days: 14
+
+  # ==============================================================================
+  # 5. Deploy Test Report to GitHub Pages & Summary Dashboard
+  # ==============================================================================
+  publish-report:
+    name: Publish Test Report to GitHub Pages
+    needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare Report Output Directory
+        run: |
+          mkdir -p gh-pages-site/reports/${{ github.run_id }}
+          touch gh-pages-site/.nojekyll
+
+      - name: Download All Report Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp/all-reports
+        continue-on-error: true
+
+      - name: Consolidate Multi-Platform Reports
+        run: |
+          TARGET_DIR="gh-pages-site/reports/${{ github.run_id }}"
+          mkdir -p "$TARGET_DIR"
+
+          if [ -d "/tmp/all-reports/playwright-report-windows" ]; then
+            cp -R /tmp/all-reports/playwright-report-windows "$TARGET_DIR/windows"
+          fi
+          if [ -d "/tmp/all-reports/playwright-report-linux-deb" ]; then
+            cp -R /tmp/all-reports/playwright-report-linux-deb "$TARGET_DIR/linux-deb"
+          fi
+          if [ -d "/tmp/all-reports/playwright-report-linux-rpm" ]; then
+            cp -R /tmp/all-reports/playwright-report-linux-rpm "$TARGET_DIR/linux-rpm"
+          fi
+          if [ -d "/tmp/all-reports/playwright-report-macos" ]; then
+            cp -R /tmp/all-reports/playwright-report-macos "$TARGET_DIR/macos"
+          fi
+
+          # 1. Generate run-specific index page
+          cat << 'EOF' > "$TARGET_DIR/index.html"
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Firefly E2E Release Test Report</title>
+            <style>
+              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; }
+              .card { background: #1e293b; border-radius: 12px; padding: 1.5rem; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+              h1 { color: #38bdf8; font-size: 1.5rem; margin-bottom: 1rem; }
+              .btn { display: inline-block; padding: 0.75rem 1.5rem; margin: 0.5rem 0.5rem 0.5rem 0; border-radius: 8px; text-decoration: none; font-weight: 600; color: #fff; background: #2563eb; transition: 0.2s; }
+              .btn:hover { background: #1d4ed8; }
+            </style>
+          </head>
+          <body>
+            <div class="card">
+              <h1>🚀 Firefly Release E2E 测试报告仪表盘</h1>
+              <p>测试运行 ID: <strong>RUN_ID_PLACEHOLDER</strong></p>
+              <hr style="border-color: #334155; margin: 1.5rem 0;">
+              <h3>查看各平台交互式 Playwright HTML 测试报告：</h3>
+              <div>
+                <a class="btn" href="./windows/index.html">🪟 Windows (x64) 测试报告</a>
+                <a class="btn" href="./linux-deb/index.html">🐧 Linux (DEB) 测试报告</a>
+                <a class="btn" href="./linux-rpm/index.html">🎩 Linux (RPM) 测试报告</a>
+                <a class="btn" href="./macos/index.html">🍎 macOS (ARM64) 测试报告</a>
+              </div>
+            </div>
+          </body>
+          </html>
+          EOF
+
+          sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" "$TARGET_DIR/index.html"
+
+          # 2. Generate root redirect index page for GitHub Pages root domain
+          cat << 'EOF' > gh-pages-site/index.html
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="refresh" content="0; url=./reports/RUN_ID_PLACEHOLDER/index.html">
+            <title>Redirecting to Latest Report...</title>
+          </head>
+          <body>
+            <p>正在跳转至最新测试报告: <a href="./reports/RUN_ID_PLACEHOLDER/index.html">点击进入</a></p>
+          </body>
+          </html>
+          EOF
+
+          sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" gh-pages-site/index.html
+
+      - name: Deploy to gh-pages Branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages-site
+          publish_branch: gh-pages
+          keep_files: true
+        continue-on-error: true
+
+      - name: Render Job Summary with Report URL
+        shell: bash
+        run: |
+          OWNER=$(echo "${{ github.repository }}" | cut -d'/' -f1)
+          REPO=$(echo "${{ github.repository }}" | cut -d'/' -f2)
+          REPORT_URL="https://${OWNER}.github.io/${REPO}/reports/${{ github.run_id }}/"
+          
+          echo "## 📊 Release 安装包 E2E 全流程功能测试结果汇总" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **在线交互式 HTML 测试报告直达链接**：" >> $GITHUB_STEP_SUMMARY
+          echo "> 🌐 [点击查看完整的 Playwright 报告与步骤追踪]($REPORT_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 平台 / 环境 | 目标测试架构 | 执行状态 | 报告子链接 |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Windows** | x64 (NSIS 安装) | ${{ needs.e2e-windows.result }} | [Windows 报告](${REPORT_URL}windows/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (DEB)** | x64/arm64 (DEB / Xvfb) | ${{ needs.e2e-linux-deb.result }} | [Linux DEB 报告](${REPORT_URL}linux-deb/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (RPM)** | x64/arm64 (RPM / Fedora) | ${{ needs.e2e-linux-rpm.result }} | [Linux RPM 报告](${REPORT_URL}linux-rpm/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **macOS** | ARM64 (DMG 挂载) | ${{ needs.e2e-macos.result }} | [macOS 报告](${REPORT_URL}macos/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "💡 *注：测试报告包含完整的控制台日志、DOM 状态、各步骤截图与失败录屏。*" >> $GITHUB_STEP_SUMMARY

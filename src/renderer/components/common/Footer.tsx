@@ -667,14 +667,22 @@ export function Footer() {
                   {displayItem.workspaceName ? `【${displayItem.workspaceName}】` : ''}
                   {displayItem.name}
                 </span>
+                <span className="text-muted-foreground/40">·</span>
+                <span className="text-muted-foreground font-normal">
+                  {t('等待: {count}', { count: waiting })}
+                </span>
               </>
+            ) : isPaused ? (
+              <span className="text-yellow-500 font-medium">{t('队列暂停')}</span>
             ) : (
-              <span className="text-muted-foreground font-medium">{t('空闲')}</span>
+              <>
+                <span className="text-muted-foreground font-medium">{t('空闲')}</span>
+                <span className="text-muted-foreground/40">·</span>
+                <span className="text-muted-foreground font-normal">
+                  {t('等待: {count}', { count: waiting })}
+                </span>
+              </>
             )}
-            <span className="text-muted-foreground/40">·</span>
-            <span className="text-muted-foreground font-normal">
-              {t('等待: {count}', { count: waiting })}
-            </span>
           </span>
         </button>
         <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>

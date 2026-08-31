@@ -542,17 +542,22 @@ export default defineConfig(({ command, mode }) => {
         format: 'es'
       },
       optimizeDeps: {
-        exclude: [
-          '@file-viewer/react',
-          '@file-viewer/core',
-          '@file-viewer/preset-standard',
-          '@file-viewer/pptx'
-        ],
         include: [
           'jszip',
           'jszip > jszip/dist/jszip.min.js',
           'localforage',
-          'lodash'
+          'lodash',
+          '@file-viewer/renderer-cad',
+          '@file-viewer/renderer-3d',
+          '@file-viewer/renderer-dicom',
+          '@file-viewer/renderer-drawing',
+          '@file-viewer/renderer-mindmap',
+          '@file-viewer/renderer-typst',
+          '@file-viewer/renderer-eda',
+          '@file-viewer/renderer-data',
+          '@file-viewer/renderer-epub',
+          '@file-viewer/renderer-geo',
+          '@file-viewer/renderer-signature'
         ]
       },
       publicDir: path.resolve(__dirname, 'public'),
@@ -562,6 +567,19 @@ export default defineConfig(({ command, mode }) => {
         react(),
         fileViewerRenderers({
           preset: 'standard',
+          renderers: [
+            'cad',
+            '3d',
+            'dicom',
+            'drawing',
+            'mindmap',
+            'typst',
+            'eda',
+            'data',
+            'epub',
+            'geo',
+            'signature'
+          ],
           scan: true,
           copyAssets: {
             baseDir: 'file-viewer'
@@ -577,6 +595,13 @@ export default defineConfig(({ command, mode }) => {
         host: '127.0.0.1',
         port: devPort,
         strictPort: true,
+        fs: {
+          allow: [
+            path.resolve(__dirname),
+            path.resolve(__dirname, '../..'),
+            path.resolve(__dirname, '../../..')
+          ]
+        },
         watch: {
           ignored: [
             '**/node_modules/**',
