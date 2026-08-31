@@ -866,16 +866,8 @@ export class FileProcessor {
         this.saveBasicMagikaTags(fileFingerprint, existingBasicData.category || null, filePath, db)
         databaseService.syncFTSTags(fileFingerprint)
 
-        const analysisStats = await this.collectAnalysisStats(timer)
-        if (cpuSkipped && analysisStats.performance?.fresh) {
-          analysisStats.performance.fresh.cpuSkipped = true
-        }
-        await databaseService.updateFileAnalysisResult(workspaceFile.id, {
-          analysisStats
-        })
-
         // 从数据库捞取合并后的全量 analysisStats（包含 CPU 阶段 1/2 + GPU 阶段 3/4）推送给前端 UI
-        let finalMergedStats = analysisStats
+        let finalMergedStats: any = null
         try {
           const dbMergedRow = db
             .prepare('SELECT analysis_stats FROM file_contents WHERE file_fingerprint = ?')
@@ -885,6 +877,10 @@ export class FileProcessor {
           }
         } catch (e) {
           logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 回捞合并后的 analysis_stats 失败:', e)
+        }
+
+        if (!finalMergedStats) {
+          finalMergedStats = await this.collectAnalysisStats(timer)
         }
 
         timer.printSummary()
@@ -1574,12 +1570,39 @@ export class FileProcessor {
             cpuStatsWithBenchmark.performance.fresh.stage1Breakdown = stage1Benchmark
           }
 
-          // 更新 workspace_files 记录
+          // 确保 workspace_files 记录存在并绑定最新指纹
+          const dirPath = path.dirname(filePath)
+          const directoryId = await databaseService.addDirectory(dirPath, currentWorkspaceId)
+          db.prepare(
+            `
+            INSERT INTO workspace_files (
+              file_fingerprint, workspace_id, directory_id, path, name,
+              created_at, modified_at, accessed_at, is_analyzed
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(workspace_id, path) DO UPDATE SET
+              file_fingerprint = excluded.file_fingerprint,
+              modified_at = excluded.modified_at,
+              accessed_at = ?
+            `
+          ).run(
+            fileFingerprint,
+            currentWorkspaceId,
+            directoryId,
+            filePath,
+            path.basename(filePath),
+            new Date(stats.birthtime).toISOString(),
+            new Date(stats.mtime).toISOString(),
+            new Date(stats.atime).toISOString(),
+            0,
+            new Date().toISOString()
+          )
+
           const wsFileRow = db
             .prepare(`SELECT id FROM workspace_files WHERE workspace_id = ? AND path = ?`)
             .get(currentWorkspaceId, filePath) as { id?: number } | undefined
           if (wsFileRow?.id) {
             await databaseService.updateFileAnalysisResult(String(wsFileRow.id), {
+              contentHash: fileFingerprint,
               analysisStats: cpuStatsWithBenchmark,
               thumbnailPath: thumbnailRelativePath || undefined
             })

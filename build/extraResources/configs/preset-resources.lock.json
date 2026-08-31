@@ -24,6 +24,15 @@
     },
     "exiftool": {
       "version": "13.59"
+    },
+    "magika": {
+      "version": "1.0"
+    },
+    "PP-OCRv6": {
+      "version": "v6"
+    },
+    "LFM2.5-1.2B-Instruct-GGUF": {
+      "version": "Q4_K_M"
     }
   },
   "engines": {
@@ -88,9 +97,9 @@
       }
     },
     "llama.cpp": {
-      "version": "b10719",
+      "version": "b10718",
       "updatedAt": "2026-08-31",
-      "mode": "sync-only",
+      "mode": "all-platforms-bundle",
       "status": "completed",
       "platforms": {
         "win32-x64": {
@@ -103,46 +112,34 @@
               "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/cudart-llama-bin-win-cuda-12.4-x64.zip"
             },
             {
-              "name": "llama-b10719-bin-win-cuda-12.4-x64.zip",
-              "size": 251606263,
+              "name": "llama-b10718-bin-win-cpu-x64.zip",
+              "size": 18155948,
               "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-cuda-12.4-x64.zip"
+              "arch": "x64"
             },
             {
-              "name": "llama-b10719-bin-win-vulkan-x64.zip",
-              "size": 34937624,
+              "name": "llama-b10718-bin-win-cuda-12.4-x64.zip",
+              "size": 251606297,
               "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-vulkan-x64.zip"
+              "arch": "x64"
             },
             {
-              "name": "llama-b10719-bin-win-rocm-7.14-x64.zip",
-              "size": 243987920,
+              "name": "llama-b10718-bin-win-openvino-2026.3.1-x64.zip",
+              "size": 80237655,
               "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-rocm-7.14-x64.zip"
+              "arch": "x64"
             },
             {
-              "name": "llama-b10719-bin-win-sycl-x64.zip",
-              "size": 119376611,
+              "name": "llama-b10718-bin-win-sycl-x64.zip",
+              "size": 119376637,
               "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-sycl-x64.zip"
+              "arch": "x64"
             },
             {
-              "name": "llama-b10719-bin-win-openvino-2026.3.1-x64.zip",
-              "size": 80263489,
+              "name": "llama-b10718-bin-win-vulkan-x64.zip",
+              "size": 34937650,
               "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-openvino-2026.3.1-x64.zip"
-            },
-            {
-              "name": "llama-b10719-bin-win-cpu-x64.zip",
-              "size": 18155984,
-              "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/llama-b10719-bin-win-cpu-x64.zip"
+              "arch": "x64"
             }
           ]
         }

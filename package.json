@@ -1,6 +1,6 @@
 {
   "name": "desktop",
-  "productName": "firefly-ai-folder",
+  "productName": "firefly-ai-folder-cn",
   "appId": "com.firefly.ai-folder",
   "version": "3.5.0",
   "description": "基于本地 AI 的智能虚拟文件管理系统。支持跨媒体元数据自动提取、多维度分类与虚拟目录管理。深度优化压缩包（如漫画归档）管理，告别文件混乱，实现一键智能化整理。",
@@ -57,6 +57,7 @@
     "verify-native-modules": "node pro/scripts/run.js verify-native-modules.js",
     "verify-dimensions": "node pro/scripts/run.js verify-dimension-system.js",
     "verify-build": "node pro/scripts/run.js verify-build-artifacts.js",
+    "verify:extra-resources": "node pro/scripts/run.js verify-extra-resources.js",
     "create-offline-installer": "node pro/scripts/run.js create-offline-installer.js",
     "fix-modules": "node pro/scripts/run.js fix-pnpm-modules.js",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",

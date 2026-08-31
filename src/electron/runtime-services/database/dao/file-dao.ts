@@ -416,7 +416,11 @@ export class FileDao {
       )
       .all(workspaceId, excludeFingerprint, pattern) as Array<{ smart_name: string }>
 
-    const existingSet = new Set(rows.map(r => r.smart_name.trim().toLowerCase()))
+    const existingSet = new Set(
+      rows
+        .map(r => r.smart_name?.trim()?.toLowerCase())
+        .filter((n): n is string => typeof n === 'string' && n.length > 0)
+    )
     // 无精确同名时直接返回原名
     if (!existingSet.has(trimmed.toLowerCase())) return trimmed
 

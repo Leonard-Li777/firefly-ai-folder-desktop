@@ -171,13 +171,13 @@ jobs:
           command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
           mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
           TEMP_ZIP=$(mktemp)
-          echo "📥 从 ci-resources 下载 magika 与 PP-OCRv6 模型..."
-          if gh release download ci-resources --pattern "magika-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+          echo "📥 从 firefly-resources 下载 magika 与 PP-OCRv6 模型..."
+          if gh release download resources --pattern "magika-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
             unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
             rm -f "$TEMP_ZIP"
             echo "✅ magika-resources.zip 恢复完成。"
           fi
-          if gh release download ci-resources --pattern "ppocrv6-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+          if gh release download resources --pattern "ppocrv6-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
             unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
             rm -f "$TEMP_ZIP"
             echo "✅ ppocrv6-resources.zip 恢复完成。"
@@ -200,6 +200,19 @@ jobs:
           echo "📥 从 firefly-resources 下载 llama-model-download..."
           gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
           echo "✅ llama-model-download 资源准备完成。"
+
+      - name: Download fastfetch on Cache Miss (firefly-resources)
+        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/presetResources/fastfetch
+          echo "📥 从 firefly-resources 下载 fastfetch (macOS)..."
+          ffarch=arm64
+          [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ] && ffarch=x64
+          gh release download resources --pattern "fastfetch-*-darwin-$ffarch.zip" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/fastfetch" --clobber 2>/dev/null || true
+          echo "✅ fastfetch 资源准备完成。"
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -230,8 +243,8 @@ jobs:
           echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
           TMP_LFM="${RUNNER_TEMP:-/tmp}/lfm"
           mkdir -p "$TMP_LFM"
-          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-*.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
-            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-*.zip" | head -n 1)
+          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
+            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" | head -n 1)
             if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
               mkdir -p build/extraResources/models
               echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
@@ -288,29 +301,57 @@ jobs:
       - name: 下载 omni-geo 数据集
         shell: bash
         run: |
-          echo "📥 下载 omni-geo 地理数据集..."
-          gh release download geo-data --pattern "geonames-resources.tar.gz" \
-            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber 2>/dev/null || true
-          if [ -f "/tmp/geo.tar.gz" ]; then
-            mkdir -p build/extraResources/geo
-            tar xzf /tmp/geo.tar.gz -C build/extraResources/geo
-            echo "✅ omni-geo 数据集恢复完成。"
-          else
-            echo "⚠️ 未找到 geo-data release，尝试从 firefly-resources 下载..."
-            gh release download resources --pattern "geo-*.zip" \
-              --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null || true
-            GEO_ZIP=$(find /tmp/geo-pkg -name "geo-*.zip" 2>/dev/null | head -n 1 || true)
-            if [ -n "$GEO_ZIP" ] && [ -f "$GEO_ZIP" ]; then
-              mkdir -p build/extraResources/geo
-              unzip -o -q "$GEO_ZIP" -d build/extraResources/geo
+          echo "📥 从 firefly-resources 下载 omni-geo 地理数据集..."
+          mkdir -p build/extraResources/geo
+          if gh release download resources --pattern "geo-*.tar.gz" \
+            --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null; then
+            GEO_ARCHIVE=$(find /tmp/geo-pkg -name "geo-*.tar.gz" 2>/dev/null | head -n 1 || true)
+            if [ -n "$GEO_ARCHIVE" ] && [ -f "$GEO_ARCHIVE" ]; then
+              tar xzf "$GEO_ARCHIVE" -C build/extraResources/geo
               rm -rf /tmp/geo-pkg
               echo "✅ omni-geo 数据集从 firefly-resources 恢复完成。"
             else
-              echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
+              echo "⚠️ 未在本地目录发现 geo 压缩包，跳过（不阻塞构建）。"
+              rm -rf /tmp/geo-pkg
             fi
+          else
+            echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 下载 ffmpeg/ffprobe/exiftool 工具 (firefly-resources)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          ffarch=arm64
+          [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ] && ffarch=x64
+          echo "📥 从 firefly-resources 下载 ffmpeg/ffprobe/exiftool (macOS/$ffarch)..."
+          mkdir -p build/extraResources/bin/ffmpeg build/extraResources/bin/ffprobe build/extraResources/bin/exiftool
+          TMP_TOOLS="${RUNNER_TEMP:-/tmp}/tools"
+          mkdir -p "$TMP_TOOLS"
+          for spec in "ffmpeg-master-20260827-darwin-$ffarch.zip:ffmpeg" "ffprobe-master-20260827-darwin-$ffarch.zip:ffprobe" "exiftool-13.59-darwin-$ffarch.zip:exiftool"; do
+            PATTERN="${spec%%:*}"; DESTDIR="${spec##*:}"
+            if gh release download resources --pattern "$PATTERN" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_TOOLS" --clobber 2>/dev/null; then
+              TOOLZIP=$(find "$TMP_TOOLS" -name "$PATTERN" | head -n 1)
+              if [ -n "$TOOLZIP" ] && [ -f "$TOOLZIP" ]; then
+                unzip -o -q "$TOOLZIP" -d "build/extraResources/bin/$DESTDIR"
+                chmod +x "build/extraResources/bin/$DESTDIR"/* 2>/dev/null || true
+                echo "✅ $DESTDIR ($PATTERN) 装配完成。"
+              fi
+            else
+              echo "⚠️ 未找到 $PATTERN，跳过（后续 verify 若缺将中断构建）。"
+            fi
+          done
+          rm -rf "$TMP_TOOLS"
+
+      - name: Verify extraResources (不多不少门禁)
+        shell: bash
+        run: |
+          echo "🔍 校验最终打包目录 build/extraResources 是否不多不少..."
+          node pro/scripts/run.js verify-extra-resources.js --prune
 
       - name: Copy App Icons
         shell: bash
@@ -514,13 +555,13 @@ jobs:
           command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
           mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
           TEMP_ZIP=$(mktemp)
-          echo "📥 从 ci-resources 下载 magika 与 PP-OCRv6 模型..."
-          if gh release download ci-resources --pattern "magika-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+          echo "📥 从 firefly-resources 下载 magika 与 PP-OCRv6 模型..."
+          if gh release download resources --pattern "magika-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
             unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
             rm -f "$TEMP_ZIP"
             echo "✅ magika-resources.zip 恢复完成。"
           fi
-          if gh release download ci-resources --pattern "ppocrv6-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+          if gh release download resources --pattern "ppocrv6-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
             unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
             rm -f "$TEMP_ZIP"
             echo "✅ ppocrv6-resources.zip 恢复完成。"
@@ -543,6 +584,17 @@ jobs:
           echo "📥 从 firefly-resources 下载 llama-model-download..."
           gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
           echo "✅ llama-model-download 资源准备完成。"
+
+      - name: Download fastfetch on Cache Miss (firefly-resources)
+        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/presetResources/fastfetch
+          echo "📥 从 firefly-resources 下载 fastfetch (Windows)..."
+          gh release download resources --pattern "fastfetch-*-win32-x64.zip" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/fastfetch" --clobber 2>/dev/null || true
+          echo "✅ fastfetch 资源准备完成。"
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -573,8 +625,8 @@ jobs:
           echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
           TMP_LFM="${RUNNER_TEMP:-/tmp}/lfm"
           mkdir -p "$TMP_LFM"
-          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-*.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
-            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-*.zip" | head -n 1)
+          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
+            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" | head -n 1)
             if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
               mkdir -p build/extraResources/models
               echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
@@ -626,29 +678,55 @@ jobs:
       - name: 下载 omni-geo 数据集
         shell: bash
         run: |
-          echo "📥 下载 omni-geo 地理数据集..."
-          gh release download geo-data --pattern "geonames-resources.tar.gz" \
-            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber 2>/dev/null || true
-          if [ -f "/tmp/geo.tar.gz" ]; then
-            mkdir -p build/extraResources/geo
-            tar xzf /tmp/geo.tar.gz -C build/extraResources/geo
-            echo "✅ omni-geo 数据集恢复完成。"
-          else
-            echo "⚠️ 未找到 geo-data release，尝试从 firefly-resources 下载..."
-            gh release download resources --pattern "geo-*.zip" \
-              --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null || true
-            GEO_ZIP=$(find /tmp/geo-pkg -name "geo-*.zip" 2>/dev/null | head -n 1 || true)
-            if [ -n "$GEO_ZIP" ] && [ -f "$GEO_ZIP" ]; then
-              mkdir -p build/extraResources/geo
-              unzip -o -q "$GEO_ZIP" -d build/extraResources/geo
+          echo "📥 从 firefly-resources 下载 omni-geo 地理数据集..."
+          mkdir -p build/extraResources/geo
+          if gh release download resources --pattern "geo-*.tar.gz" \
+            --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null; then
+            GEO_ARCHIVE=$(find /tmp/geo-pkg -name "geo-*.tar.gz" 2>/dev/null | head -n 1 || true)
+            if [ -n "$GEO_ARCHIVE" ] && [ -f "$GEO_ARCHIVE" ]; then
+              tar xzf "$GEO_ARCHIVE" -C build/extraResources/geo
               rm -rf /tmp/geo-pkg
               echo "✅ omni-geo 数据集从 firefly-resources 恢复完成。"
             else
-              echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
+              echo "⚠️ 未在本地目录发现 geo 压缩包，跳过（不阻塞构建）。"
+              rm -rf /tmp/geo-pkg
             fi
+          else
+            echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 下载 ffmpeg/ffprobe/exiftool 工具 (firefly-resources)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          echo "📥 从 firefly-resources 下载 ffmpeg/ffprobe/exiftool (Windows/win32-x64)..."
+          mkdir -p build/extraResources/bin/ffmpeg build/extraResources/bin/ffprobe build/extraResources/bin/exiftool
+          TMP_TOOLS="${RUNNER_TEMP:-/tmp}/tools"
+          mkdir -p "$TMP_TOOLS"
+          for spec in "ffmpeg-master-20260827-win32-x64.zip:ffmpeg" "ffprobe-master-20260827-win32-x64.zip:ffprobe" "exiftool-13.59-win32-x64.zip:exiftool"; do
+            PATTERN="${spec%%:*}"; DESTDIR="${spec##*:}"
+            if gh release download resources --pattern "$PATTERN" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_TOOLS" --clobber 2>/dev/null; then
+              TOOLZIP=$(find "$TMP_TOOLS" -name "$PATTERN" | head -n 1)
+              if [ -n "$TOOLZIP" ] && [ -f "$TOOLZIP" ]; then
+                unzip -o -q "$TOOLZIP" -d "build/extraResources/bin/$DESTDIR"
+                chmod +x "build/extraResources/bin/$DESTDIR"/* 2>/dev/null || true
+                echo "✅ $DESTDIR ($PATTERN) 装配完成。"
+              fi
+            else
+              echo "⚠️ 未找到 $PATTERN，跳过（后续 verify 若缺将中断构建）。"
+            fi
+          done
+          rm -rf "$TMP_TOOLS"
+
+      - name: Verify extraResources (不多不少门禁)
+        shell: bash
+        run: |
+          echo "🔍 校验最终打包目录 build/extraResources 是否不多不少..."
+          node pro/scripts/run.js verify-extra-resources.js --prune
 
       - name: Copy App Icons
         shell: bash
@@ -919,13 +997,13 @@ jobs:
           command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
           mkdir -p build/extraResources/models/magika build/extraResources/models/PP-OCRv6
           TEMP_ZIP=$(mktemp)
-          echo "📥 从 ci-resources 下载 magika 与 PP-OCRv6 模型..."
-          if gh release download ci-resources --pattern "magika-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+          echo "📥 从 firefly-resources 下载 magika 与 PP-OCRv6 模型..."
+          if gh release download resources --pattern "magika-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
             unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/magika
             rm -f "$TEMP_ZIP"
             echo "✅ magika-resources.zip 恢复完成。"
           fi
-          if gh release download ci-resources --pattern "ppocrv6-resources.zip" --repo "$GITHUB_REPOSITORY" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
+          if gh release download resources --pattern "ppocrv6-resources.zip" --repo "Leonard-Li777/firefly-resources" --output "$TEMP_ZIP" --clobber 2>/dev/null; then
             unzip -o -q "$TEMP_ZIP" -d build/extraResources/models/PP-OCRv6
             rm -f "$TEMP_ZIP"
             echo "✅ ppocrv6-resources.zip 恢复完成。"
@@ -949,16 +1027,29 @@ jobs:
           gh release download resources --pattern "llama-model-download-*" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/llama-model-download" --clobber 2>/dev/null || true
           echo "✅ llama-model-download 资源准备完成。"
 
+      - name: Download fastfetch on Cache Miss (firefly-resources)
+        if: steps.cache-presets.outputs.cache-hit != 'true' || github.event.inputs.download_latest_llama == 'true' || github.event_name == 'push'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p build/presetResources/fastfetch
+          echo "📥 从 firefly-resources 下载 fastfetch (Linux)..."
+          ffarch=x64
+          [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ] && ffarch=arm64
+          gh release download resources --pattern "fastfetch-*-linux-$ffarch.zip" --repo "Leonard-Li777/firefly-resources" --dir "build/presetResources/fastfetch" --clobber 2>/dev/null || true
+          echo "✅ fastfetch 资源准备完成。"
+
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
         env:
           DOWNLOAD_LATEST_LLAMA: ${{ github.event.inputs.download_latest_llama || 'true' }}
           FORCE_UPDATE: ${{ github.event.inputs.download_latest_llama || 'true' }}
           GITHUB_TOKEN: ${{ github.token }}
-          AI_ENGINE: llama.cpp
         run: |
           if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "${{ github.event.inputs.download_latest_llama }}" == "true" ]]; then
-            pnpm run download:llama
+            echo "📥 Syncing llama.cpp engine..."
+            AI_ENGINE=llama.cpp pnpm run download:llama
           fi
 
       - name: Setup Resources (Basic)
@@ -978,8 +1069,8 @@ jobs:
           echo "📥 从 firefly-resources 下载内置模型 LFM2.5 1.2B Instruct..."
           TMP_LFM="${RUNNER_TEMP:-/tmp}/lfm"
           mkdir -p "$TMP_LFM"
-          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-*.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
-            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-*.zip" | head -n 1)
+          if gh release download resources --pattern "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_LFM" --clobber 2>/dev/null; then
+            ZIP_FILE=$(find "$TMP_LFM" -name "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip" | head -n 1)
             if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
               mkdir -p build/extraResources/models
               echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
@@ -1037,29 +1128,58 @@ jobs:
       - name: 下载 omni-geo 数据集
         shell: bash
         run: |
-          echo "📥 下载 omni-geo 地理数据集..."
-          gh release download geo-data --pattern "geonames-resources.tar.gz" \
-            --repo "$GITHUB_REPOSITORY" --output "/tmp/geo.tar.gz" --clobber 2>/dev/null || true
-          if [ -f "/tmp/geo.tar.gz" ]; then
-            mkdir -p build/extraResources/geo
-            tar xzf /tmp/geo.tar.gz -C build/extraResources/geo
-            echo "✅ omni-geo 数据集恢复完成。"
-          else
-            echo "⚠️ 未找到 geo-data release，尝试从 firefly-resources 下载..."
-            gh release download resources --pattern "geo-*.zip" \
-              --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null || true
-            GEO_ZIP=$(find /tmp/geo-pkg -name "geo-*.zip" 2>/dev/null | head -n 1 || true)
-            if [ -n "$GEO_ZIP" ] && [ -f "$GEO_ZIP" ]; then
-              mkdir -p build/extraResources/geo
-              unzip -o -q "$GEO_ZIP" -d build/extraResources/geo
+          echo "📥 从 firefly-resources 下载 omni-geo 地理数据集..."
+          mkdir -p build/extraResources/geo
+          if gh release download resources --pattern "geo-*.tar.gz" \
+            --repo "Leonard-Li777/firefly-resources" --dir "/tmp/geo-pkg" --clobber 2>/dev/null; then
+            GEO_ARCHIVE=$(find /tmp/geo-pkg -name "geo-*.tar.gz" 2>/dev/null | head -n 1 || true)
+            if [ -n "$GEO_ARCHIVE" ] && [ -f "$GEO_ARCHIVE" ]; then
+              tar xzf "$GEO_ARCHIVE" -C build/extraResources/geo
               rm -rf /tmp/geo-pkg
               echo "✅ omni-geo 数据集从 firefly-resources 恢复完成。"
             else
-              echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
+              echo "⚠️ 未在本地目录发现 geo 压缩包，跳过（不阻塞构建）。"
+              rm -rf /tmp/geo-pkg
             fi
+          else
+            echo "⚠️ 未找到 geo 数据集，跳过（不阻塞构建）。"
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 下载 ffmpeg/ffprobe/exiftool 工具 (firefly-resources)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
+          ARCH=$(uname -m)
+          LARCH=x64
+          [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ] && LARCH=arm64
+          echo "📥 从 firefly-resources 下载 ffmpeg/ffprobe/exiftool (Linux/$LARCH)..."
+          mkdir -p build/extraResources/bin/ffmpeg build/extraResources/bin/ffprobe build/extraResources/bin/exiftool
+          TMP_TOOLS="${RUNNER_TEMP:-/tmp}/tools"
+          mkdir -p "$TMP_TOOLS"
+          for spec in "ffmpeg-master-20260827-linux-$LARCH.zip:ffmpeg" "ffprobe-master-20260827-linux-$LARCH.zip:ffprobe" "exiftool-13.59-linux-$LARCH.zip:exiftool"; do
+            PATTERN="${spec%%:*}"; DESTDIR="${spec##*:}"
+            if gh release download resources --pattern "$PATTERN" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_TOOLS" --clobber 2>/dev/null; then
+              TOOLZIP=$(find "$TMP_TOOLS" -name "$PATTERN" | head -n 1)
+              if [ -n "$TOOLZIP" ] && [ -f "$TOOLZIP" ]; then
+                unzip -o -q "$TOOLZIP" -d "build/extraResources/bin/$DESTDIR"
+                chmod +x "build/extraResources/bin/$DESTDIR"/* 2>/dev/null || true
+                echo "✅ $DESTDIR ($PATTERN) 装配完成。"
+              fi
+            else
+              echo "⚠️ 未找到 $PATTERN，跳过（后续 verify 若缺将中断构建）。"
+            fi
+          done
+          rm -rf "$TMP_TOOLS"
+
+      - name: Verify extraResources (不多不少门禁)
+        shell: bash
+        run: |
+          echo "🔍 校验最终打包目录 build/extraResources 是否不多不少..."
+          node pro/scripts/run.js verify-extra-resources.js --prune
 
       - name: Copy App Icons
         shell: bash
