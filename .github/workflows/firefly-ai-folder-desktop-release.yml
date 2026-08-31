@@ -48,11 +48,21 @@ permissions:
 
 jobs:
   build-macos:
-    name: Build macOS
+    name: Build macOS (${{ matrix.name }})
     if: |
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_macos == 'true' || github.event.inputs.platform_macos == true))
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            arch: arm64
+            name: Apple Silicon (arm64)
+          - os: macos-13
+            arch: x64
+            name: Intel (x64)
     steps:
       - name: Checkout Open-Source Desktop Code
         uses: actions/checkout@v4
@@ -138,7 +148,7 @@ jobs:
       - name: Rebuild native dependencies
         run: pnpm run rebuild:all
         env:
-          BUILD_ARCH: universal
+          BUILD_ARCH: ${{ matrix.arch }}
 
       - name: Install Sharp cross-platform dependencies
         run: pnpm run install-sharp-cross-platform
@@ -160,7 +170,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: build/presetResources
-          key: llama-presets-darwin-v2
+          key: llama-presets-darwin-${{ matrix.arch }}-v2
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -168,9 +178,10 @@ jobs:
           DOWNLOAD_LATEST_LLAMA: ${{ github.event.inputs.download_latest_llama || 'true' }}
           FORCE_UPDATE: ${{ github.event.inputs.download_latest_llama || 'true' }}
           GITHUB_TOKEN: ${{ github.token }}
+          BUILD_ARCH: ${{ matrix.arch }}
         run: |
           if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "${{ github.event.inputs.download_latest_llama }}" == "true" ]]; then
-            echo "📥 Syncing llama.cpp engine..."
+            echo "📥 Syncing llama.cpp engine for ${{ matrix.arch }}..."
             AI_ENGINE=llama.cpp pnpm run download:llama
           fi
 
@@ -179,10 +190,13 @@ jobs:
         run: pnpm run setup-resources
         env:
           AI_ENGINE: llama.cpp
+          BUILD_ARCH: ${{ matrix.arch }}
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
 
       - name: Verify extraResources (不多不少门禁)
         shell: bash
+        env:
+          BUILD_ARCH: ${{ matrix.arch }}
         run: |
           echo "🔍 校验最终打包目录 build/extraResources 是否不多不少..."
           node pro/scripts/run.js verify-extra-resources.js --prune
@@ -213,7 +227,7 @@ jobs:
         env:
           AI_ENGINE: llama.cpp
           BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
-          BUILD_ARCH: universal
+          BUILD_ARCH: ${{ matrix.arch }}
 
       - name: Verify macOS Release Artifacts (Smoke Test)
         shell: bash
@@ -259,47 +273,28 @@ jobs:
           fi
 
           echo "🎯 可执行文件路径: $BIN_PATH"
-          echo "=== [1/3] 检查二进制架构 ==="
+          echo "=== [1/2] 检查二进制架构 ==="
           lipo -info "$BIN_PATH" || file "$BIN_PATH"
 
-          # 1. 测试原生 ARM64 启动
-          echo "=== [2/3] 测试原生 ARM64 启动 (15s 烟雾测试) ==="
-          arch -arm64 "$BIN_PATH" --no-sandbox --disable-gpu > /tmp/app-arm64.log 2>&1 &
+          # 启动烟雾测试 (15s)
+          ARCH_FLAG="${{ matrix.arch == 'arm64' && '-arm64' || '-x86_64' }}"
+          echo "=== [2/2] 测试应用启动 (15s 烟雾测试: $ARCH_FLAG) ==="
+          arch $ARCH_FLAG "$BIN_PATH" --no-sandbox --disable-gpu > /tmp/app-smoke.log 2>&1 &
           APP_PID=$!
-          echo "Native ARM64 PID: $APP_PID"
+          echo "Process PID: $APP_PID"
           for i in {1..8}; do
             sleep 2
             if ! kill -0 $APP_PID 2>/dev/null; then
-              echo "❌ Native ARM64 应用启动失败或崩溃！"
-              cat /tmp/app-arm64.log || true
+              echo "❌ 应用启动失败或崩溃！"
+              cat /tmp/app-smoke.log || true
               exit 1
             fi
-            echo "  -> ARM64 运行健康检测 at $((i*2))s: 进程存活"
+            echo "  -> 运行健康检测 at $((i*2))s: 进程存活"
           done
           kill -15 $APP_PID 2>/dev/null || kill -9 $APP_PID 2>/dev/null || true
-          echo "✅ Native ARM64 15s 烟雾测试通过！"
+          echo "✅ 15s 启动烟雾测试通过！"
 
-          # 2. 如果是 Universal 二进制，测试 Rosetta 2 x86_64 仿真启动
-          IS_UNIVERSAL=$(lipo -info "$BIN_PATH" 2>/dev/null | grep -E "x86_64.*arm64|arm64.*x86_64" || true)
-          if [ -n "$IS_UNIVERSAL" ]; then
-            echo "=== [3/3] 测试 Rosetta 2 (x86_64) 仿真启动 (15s 烟雾测试) ==="
-            arch -x86_64 "$BIN_PATH" --no-sandbox --disable-gpu > /tmp/app-x86.log 2>&1 &
-            APP_PID_X86=$!
-            echo "Rosetta 2 x86_64 PID: $APP_PID_X86"
-            for i in {1..8}; do
-              sleep 2
-              if ! kill -0 $APP_PID_X86 2>/dev/null; then
-                echo "❌ Rosetta 2 x86_64 仿真启动失败或崩溃！"
-                cat /tmp/app-x86.log || true
-                exit 1
-              fi
-              echo "  -> x86_64 运行健康检测 at $((i*2))s: 进程存活"
-            done
-            kill -15 $APP_PID_X86 2>/dev/null || kill -9 $APP_PID_X86 2>/dev/null || true
-            echo "✅ Rosetta 2 x86_64 仿真 15s 烟雾测试通过！"
-          fi
-
-          echo "🎉 macOS 构建产物全部通过安装与启动验证，准备执行发布！"
+          echo "🎉 macOS (${{ matrix.arch }}) 构建产物全部通过安装与启动验证，准备执行发布！"
 
 
       - name: Publish to Cloudflare R2
