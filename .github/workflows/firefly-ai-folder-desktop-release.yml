@@ -237,7 +237,7 @@ jobs:
             if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
               mkdir -p build/extraResources/models
               echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
-              python3 -c "import zipfile, os, sys; z = zipfile.ZipFile(sys.argv[1]); [os.makedirs(os.path.dirname(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/'))), exist_ok=True) or (not m.is_dir() and not m.filename.endswith('/') and open(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/')), 'wb').write(z.read(m))) for m in z.infolist()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || unzip -o -q "$ZIP_FILE" -d build/extraResources/models || true
+              python3 -c "import zipfile, os, sys; dest=sys.argv[2]; z=zipfile.ZipFile(sys.argv[1]); [(lambda n, t: [os.remove(t) if os.path.isfile(t) else None, os.makedirs(t, exist_ok=True)] if (m.is_dir() or n.endswith('/') or '.' not in os.path.basename(n)) else [os.remove(os.path.dirname(t)) if os.path.isfile(os.path.dirname(t)) else None, os.makedirs(os.path.dirname(t), exist_ok=True), not os.path.isdir(t) and open(t, 'wb').write(z.read(m))])(m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'), os.path.join(dest, m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'))) for m in z.infolist() if m.filename.strip()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || unzip -o -q "$ZIP_FILE" -d build/extraResources/models || true
               echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
             fi
             rm -rf "$TMP_LFM"
@@ -321,8 +321,6 @@ jobs:
           [ -f assets/icon.ico ] && cp assets/icon.ico build/icon.ico || true
           [ -f assets/icon.icns ] && cp assets/icon.icns build/icon.icns || true
           [ -f assets/icon.png ] && cp assets/icon.png build/icon.png || true
-          [ ! -f build/icon.icns ] && [ -f pro/extraResources/assets/icon.icns ] && cp pro/extraResources/assets/icon.icns build/icon.icns || true
-          [ ! -f build/icon.ico ] && [ -f pro/extraResources/assets/icon.ico ] && cp pro/extraResources/assets/icon.ico build/icon.ico || true
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
             cp assets/boot_en.jpg build/boot.jpg 2>/dev/null || cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
           else
@@ -573,7 +571,7 @@ jobs:
             if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
               mkdir -p build/extraResources/models
               echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
-              python3 -c "import zipfile, os, sys; z = zipfile.ZipFile(sys.argv[1]); [os.makedirs(os.path.dirname(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/'))), exist_ok=True) or (not m.is_dir() and not m.filename.endswith('/') and open(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/')), 'wb').write(z.read(m))) for m in z.infolist()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || python -c "import zipfile, os, sys; z = zipfile.ZipFile(sys.argv[1]); [os.makedirs(os.path.dirname(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/'))), exist_ok=True) or (not m.is_dir() and not m.filename.endswith('/') and open(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/')), 'wb').write(z.read(m))) for m in z.infolist()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || tar -xf "$ZIP_FILE" -C build/extraResources/models || true
+              python3 -c "import zipfile, os, sys; dest=sys.argv[2]; z=zipfile.ZipFile(sys.argv[1]); [(lambda n, t: [os.remove(t) if os.path.isfile(t) else None, os.makedirs(t, exist_ok=True)] if (m.is_dir() or n.endswith('/') or '.' not in os.path.basename(n)) else [os.remove(os.path.dirname(t)) if os.path.isfile(os.path.dirname(t)) else None, os.makedirs(os.path.dirname(t), exist_ok=True), not os.path.isdir(t) and open(t, 'wb').write(z.read(m))])(m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'), os.path.join(dest, m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'))) for m in z.infolist() if m.filename.strip()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || python -c "import zipfile, os, sys; dest=sys.argv[2]; z=zipfile.ZipFile(sys.argv[1]); [(lambda n, t: [os.remove(t) if os.path.isfile(t) else None, os.makedirs(t, exist_ok=True)] if (m.is_dir() or n.endswith('/') or '.' not in os.path.basename(n)) else [os.remove(os.path.dirname(t)) if os.path.isfile(os.path.dirname(t)) else None, os.makedirs(os.path.dirname(t), exist_ok=True), not os.path.isdir(t) and open(t, 'wb').write(z.read(m))])(m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'), os.path.join(dest, m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'))) for m in z.infolist() if m.filename.strip()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || tar -xf "$ZIP_FILE" -C build/extraResources/models || true
               echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
             fi
             rm -rf "$TMP_LFM"
@@ -652,8 +650,6 @@ jobs:
           [ -f assets/icon.ico ] && cp assets/icon.ico build/icon.ico || true
           [ -f assets/icon.icns ] && cp assets/icon.icns build/icon.icns || true
           [ -f assets/icon.png ] && cp assets/icon.png build/icon.png || true
-          [ ! -f build/icon.icns ] && [ -f pro/extraResources/assets/icon.icns ] && cp pro/extraResources/assets/icon.icns build/icon.icns || true
-          [ ! -f build/icon.ico ] && [ -f pro/extraResources/assets/icon.ico ] && cp pro/extraResources/assets/icon.ico build/icon.ico || true
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
             cp assets/boot_en.jpg build/boot.jpg 2>/dev/null || cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
           else
@@ -971,7 +967,7 @@ jobs:
             if [ -n "$ZIP_FILE" ] && [ -f "$ZIP_FILE" ]; then
               mkdir -p build/extraResources/models
               echo "📦 跨平台安全解压内置模型到 build/extraResources/models..."
-              python3 -c "import zipfile, os, sys; z = zipfile.ZipFile(sys.argv[1]); [os.makedirs(os.path.dirname(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/'))), exist_ok=True) or (not m.is_dir() and not m.filename.endswith('/') and open(os.path.join(sys.argv[2], m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/')), 'wb').write(z.read(m))) for m in z.infolist()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || unzip -o -q "$ZIP_FILE" -d build/extraResources/models || true
+              python3 -c "import zipfile, os, sys; dest=sys.argv[2]; z=zipfile.ZipFile(sys.argv[1]); [(lambda n, t: [os.remove(t) if os.path.isfile(t) else None, os.makedirs(t, exist_ok=True)] if (m.is_dir() or n.endswith('/') or '.' not in os.path.basename(n)) else [os.remove(os.path.dirname(t)) if os.path.isfile(os.path.dirname(t)) else None, os.makedirs(os.path.dirname(t), exist_ok=True), not os.path.isdir(t) and open(t, 'wb').write(z.read(m))])(m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'), os.path.join(dest, m.filename.replace('\\\\\\\\', '/').replace('\\\\', '/').strip('/'))) for m in z.infolist() if m.filename.strip()]" "$ZIP_FILE" "build/extraResources/models" 2>/dev/null || unzip -o -q "$ZIP_FILE" -d build/extraResources/models || true
               echo "✅ 内置模型 LFM2.5 1.2B Instruct 恢复完成。"
             fi
             rm -rf "$TMP_LFM"
@@ -1056,8 +1052,6 @@ jobs:
           [ -f assets/icon.ico ] && cp assets/icon.ico build/icon.ico || true
           [ -f assets/icon.icns ] && cp assets/icon.icns build/icon.icns || true
           [ -f assets/icon.png ] && cp assets/icon.png build/icon.png || true
-          [ ! -f build/icon.icns ] && [ -f pro/extraResources/assets/icon.icns ] && cp pro/extraResources/assets/icon.icns build/icon.icns || true
-          [ ! -f build/icon.ico ] && [ -f pro/extraResources/assets/icon.ico ] && cp pro/extraResources/assets/icon.ico build/icon.ico || true
           if [ "${{ github.event.inputs.build_region }}" = "INTL" ]; then
             cp assets/boot_en.jpg build/boot.jpg 2>/dev/null || cp assets/boot.jpg build/boot.jpg 2>/dev/null || true
           else
