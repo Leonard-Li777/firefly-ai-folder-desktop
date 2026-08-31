@@ -21,10 +21,13 @@ const packageJson = require('./package.json')
 // 规则：首先加载 .env 作为基础，然后加载专属环境文件覆盖
 // Forge 通常用于 production 打包，但也可能在开发中运行
 const mode = (process.env.NODE_ENV as string) || 'development'
-dotenv.config({ path: path.resolve(__dirname, '../../.env') })
+const envRoot = fs.existsSync(path.resolve(__dirname, '../../.env'))
+  ? path.resolve(__dirname, '../..')
+  : __dirname
+dotenv.config({ path: path.resolve(envRoot, '.env') })
 const envFile =
   mode === 'production' ? '.env.production' : mode === 'canary' ? '.env.canary' : '.env.development'
-const envPath = path.resolve(__dirname, `../../${envFile}`)
+const envPath = path.resolve(envRoot, envFile)
 if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath, override: true })
 }
@@ -468,8 +471,10 @@ function computeExpandedIgnoreSet(
 // EXTERNAL_DEPENDENCIES 中的包是原生/必需运行时包，永远不能被忽略
 const KEEP_PACKAGES_SET = new Set<string>(EXTERNAL_DEPENDENCIES)
 
-// pnpm-lock.yaml 路径（Monorepo 根目录）
-const PNPM_LOCK_PATH = path.resolve(__dirname, '../../pnpm-lock.yaml')
+// pnpm-lock.yaml 路径（优先 Monorepo 根目录，兜底当前目录）
+const PNPM_LOCK_PATH = fs.existsSync(path.resolve(__dirname, '../../pnpm-lock.yaml'))
+  ? path.resolve(__dirname, '../../pnpm-lock.yaml')
+  : path.resolve(__dirname, 'pnpm-lock.yaml')
 
 // 在模块加载时同步计算扩展的前端忽略集合
 // 基于 pnpm-lock.yaml 分析，自动发现所有应被排除在 ASAR 之外的前端/工具包
@@ -525,8 +530,10 @@ function removeCodeSignatures(targetDir: string) {
   scanAndRemove(targetDir)
 }
 
-// 资源文件存在性检查，指向根目录的 assets
-const absAssetsDir = path.resolve(__dirname, '../../assets')
+// 资源文件存在性检查，优先 desktop 自身 assets，兜底 monorepo assets
+const absAssetsDir = fs.existsSync(path.resolve(__dirname, 'assets'))
+  ? path.resolve(__dirname, 'assets')
+  : path.resolve(__dirname, '../../assets')
 const absSetupIcon = path.join(absAssetsDir, 'icon.ico')
 const absLoadingGif = path.join(absAssetsDir, 'boot.jpg') // 使用实际存在的 boot.jpg 文件
 
@@ -1130,7 +1137,7 @@ const config: ForgeConfig = {
       'build/extraResources/bin', // 包含 fastfetch 等二进制文件 (由 7z 安装器处理)
       'build/extraResources/stubs', // 兼容性存根 (ggml-blas-stub.c)
       'build/extraResources/geo', // omni-geo 地理数据集（解压即用明文 JSON）
-      absAssetsDir
+      'assets'
     ],
     ignore: (file: string) => {
       if (!file) return false
