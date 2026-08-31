@@ -302,13 +302,20 @@ export const FileDetailsPanel: React.FC<any> = ({
     // 文档摘要：仅文档文本类文件显示
     if (isDocumentText && analysisResult.content?.trim())
       tabs.push({ id: 'summary', label: t('内容摘要'), icon: 'summarize' })
-    // 元数据 tab：仅当存在元数据内容（file_contents.metadata）或 magika 类型信息（files.category）时显示，
+    // 元数据 tab：仅当存在实际元数据内容（file_contents.metadata）或 Magika 类型识别信息（files.category）时显示，
     // 避免清空分析数据后仍残留空 tab
-    const hasMetadataContent =
-      Boolean(analysisResult.category) ||
-      (analysisResult.metadata &&
+    const hasCategoryContent = Boolean(
+      analysisResult.category &&
+        (typeof analysisResult.category === 'object'
+          ? Object.keys(analysisResult.category).length > 0
+          : String(analysisResult.category).trim().length > 0)
+    )
+    const hasMetadataObject = Boolean(
+      analysisResult.metadata &&
         typeof analysisResult.metadata === 'object' &&
-        Object.keys(analysisResult.metadata).length > 0)
+        Object.keys(analysisResult.metadata).length > 0
+    )
+    const hasMetadataContent = hasCategoryContent || hasMetadataObject
     if (hasMetadataContent)
       tabs.push({ id: 'metadata', label: t('元数据'), icon: 'analytics' })
     if (analysisResult.analysisStats) tabs.push({ id: 'timing', label: t('耗时'), icon: 'timer' })

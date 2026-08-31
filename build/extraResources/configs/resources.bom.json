@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-08-31T12:36:41.008Z",
+  "generatedAt": "2026-08-31T17:27:07.202Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -65,6 +65,36 @@
         "size": 10931900,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/exiftool-13.59-win32-x64.zip"
       }
+    },
+    "magika": {
+      "version": "1.0",
+      "source": "shared",
+      "asset": {
+        "name": "magika-resources.zip",
+        "sha256": "15c794093504618097b63a3fc837fdd141401b2a4e928e2bf0d82923b82f3ee3",
+        "size": 3211197,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/magika-resources.zip"
+      }
+    },
+    "PP-OCRv6": {
+      "version": "v6",
+      "source": "shared",
+      "asset": {
+        "name": "ppocrv6-resources.zip",
+        "sha256": "1acc7cab32448ce4e2e8dd294951442cc80e3b61bb1e0b4a68579df6d119c55f",
+        "size": 37586355,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ppocrv6-resources.zip"
+      }
+    },
+    "LFM2.5-1.2B-Instruct-GGUF": {
+      "version": "Q4_K_M",
+      "source": "shared",
+      "asset": {
+        "name": "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip",
+        "sha256": "2902a813b175c48b9d77259c4ebb16e21f7567fc74316d2f27641c8c7ead3d1e",
+        "size": 730895438,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip"
+      }
     }
   },
   "engines": {
@@ -82,7 +112,7 @@
       ]
     },
     "llama.cpp": {
-      "version": "b10582",
+      "version": "b10718",
       "source": "upstream",
       "files": [
         {
@@ -90,56 +120,37 @@
           "size": 391443627,
           "platform": "win32",
           "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/cudart-llama-bin-win-cuda-12.4-x64.zip"
+          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10719/cudart-llama-bin-win-cuda-12.4-x64.zip"
         },
         {
-          "name": "llama-b10582-bin-win-cuda-12.4-x64.zip",
-          "size": 250973879,
+          "name": "llama-b10718-bin-win-cpu-x64.zip",
+          "size": 18155948,
           "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cuda-12.4-x64.zip"
+          "arch": "x64"
         },
         {
-          "name": "llama-b10582-bin-win-vulkan-x64.zip",
-          "size": 34948736,
+          "name": "llama-b10718-bin-win-cuda-12.4-x64.zip",
+          "size": 251606297,
           "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-vulkan-x64.zip"
+          "arch": "x64"
         },
         {
-          "name": "llama-b10582-bin-win-rocm-7.14-x64.zip",
-          "size": 196956675,
+          "name": "llama-b10718-bin-win-openvino-2026.3.1-x64.zip",
+          "size": 80237655,
           "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-rocm-7.14-x64.zip"
+          "arch": "x64"
         },
         {
-          "name": "llama-b10582-bin-win-sycl-x64.zip",
-          "size": 119840170,
+          "name": "llama-b10718-bin-win-sycl-x64.zip",
+          "size": 119376637,
           "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-sycl-x64.zip"
+          "arch": "x64"
         },
         {
-          "name": "llama-b10582-bin-win-openvino-2026.3-x64.zip",
-          "size": 80396131,
+          "name": "llama-b10718-bin-win-vulkan-x64.zip",
+          "size": 34937650,
           "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-openvino-2026.3-x64.zip"
-        },
-        {
-          "name": "llama-b10582-bin-win-cpu-x64.zip",
-          "size": 18592859,
-          "platform": "win32",
-          "arch": "x64",
-          "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10582/llama-b10582-bin-win-cpu-x64.zip"
-        },
-        {
-          "name": "llama-b10582-bin-win-hip-x64.zip",
-          "size": 196503634,
-          "platform": "win32",
-          "arch": "x64",
-          "url": ""
+          "arch": "x64"
         }
       ]
     }

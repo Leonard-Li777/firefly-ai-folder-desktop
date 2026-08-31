@@ -320,33 +320,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 下载 ffmpeg/ffprobe/exiftool 工具 (firefly-resources)
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
-          ffarch=arm64
-          [ "$(uname -m)" = "x86_64" ] || [ "$(uname -m)" = "amd64" ] && ffarch=x64
-          echo "📥 从 firefly-resources 下载 ffmpeg/ffprobe/exiftool (macOS/$ffarch)..."
-          mkdir -p build/extraResources/bin/ffmpeg build/extraResources/bin/ffprobe build/extraResources/bin/exiftool
-          TMP_TOOLS="${RUNNER_TEMP:-/tmp}/tools"
-          mkdir -p "$TMP_TOOLS"
-          for spec in "ffmpeg-master-20260827-darwin-$ffarch.zip:ffmpeg" "ffprobe-master-20260827-darwin-$ffarch.zip:ffprobe" "exiftool-13.59-darwin-$ffarch.zip:exiftool"; do
-            PATTERN="${spec%%:*}"; DESTDIR="${spec##*:}"
-            if gh release download resources --pattern "$PATTERN" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_TOOLS" --clobber 2>/dev/null; then
-              TOOLZIP=$(find "$TMP_TOOLS" -name "$PATTERN" | head -n 1)
-              if [ -n "$TOOLZIP" ] && [ -f "$TOOLZIP" ]; then
-                unzip -o -q "$TOOLZIP" -d "build/extraResources/bin/$DESTDIR"
-                chmod +x "build/extraResources/bin/$DESTDIR"/* 2>/dev/null || true
-                echo "✅ $DESTDIR ($PATTERN) 装配完成。"
-              fi
-            else
-              echo "⚠️ 未找到 $PATTERN，跳过（后续 verify 若缺将中断构建）。"
-            fi
-          done
-          rm -rf "$TMP_TOOLS"
-
       - name: Verify extraResources (不多不少门禁)
         shell: bash
         run: |
@@ -696,31 +669,6 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 下载 ffmpeg/ffprobe/exiftool 工具 (firefly-resources)
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
-          echo "📥 从 firefly-resources 下载 ffmpeg/ffprobe/exiftool (Windows/win32-x64)..."
-          mkdir -p build/extraResources/bin/ffmpeg build/extraResources/bin/ffprobe build/extraResources/bin/exiftool
-          TMP_TOOLS="${RUNNER_TEMP:-/tmp}/tools"
-          mkdir -p "$TMP_TOOLS"
-          for spec in "ffmpeg-master-20260827-win32-x64.zip:ffmpeg" "ffprobe-master-20260827-win32-x64.zip:ffprobe" "exiftool-13.59-win32-x64.zip:exiftool"; do
-            PATTERN="${spec%%:*}"; DESTDIR="${spec##*:}"
-            if gh release download resources --pattern "$PATTERN" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_TOOLS" --clobber 2>/dev/null; then
-              TOOLZIP=$(find "$TMP_TOOLS" -name "$PATTERN" | head -n 1)
-              if [ -n "$TOOLZIP" ] && [ -f "$TOOLZIP" ]; then
-                unzip -o -q "$TOOLZIP" -d "build/extraResources/bin/$DESTDIR"
-                chmod +x "build/extraResources/bin/$DESTDIR"/* 2>/dev/null || true
-                echo "✅ $DESTDIR ($PATTERN) 装配完成。"
-              fi
-            else
-              echo "⚠️ 未找到 $PATTERN，跳过（后续 verify 若缺将中断构建）。"
-            fi
-          done
-          rm -rf "$TMP_TOOLS"
 
       - name: Verify extraResources (不多不少门禁)
         shell: bash
@@ -1146,34 +1094,6 @@ jobs:
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 下载 ffmpeg/ffprobe/exiftool 工具 (firefly-resources)
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          command -v gh &>/dev/null || { echo "❌ gh CLI 不可用"; exit 1; }
-          ARCH=$(uname -m)
-          LARCH=x64
-          [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ] && LARCH=arm64
-          echo "📥 从 firefly-resources 下载 ffmpeg/ffprobe/exiftool (Linux/$LARCH)..."
-          mkdir -p build/extraResources/bin/ffmpeg build/extraResources/bin/ffprobe build/extraResources/bin/exiftool
-          TMP_TOOLS="${RUNNER_TEMP:-/tmp}/tools"
-          mkdir -p "$TMP_TOOLS"
-          for spec in "ffmpeg-master-20260827-linux-$LARCH.zip:ffmpeg" "ffprobe-master-20260827-linux-$LARCH.zip:ffprobe" "exiftool-13.59-linux-$LARCH.zip:exiftool"; do
-            PATTERN="${spec%%:*}"; DESTDIR="${spec##*:}"
-            if gh release download resources --pattern "$PATTERN" --repo "Leonard-Li777/firefly-resources" --dir "$TMP_TOOLS" --clobber 2>/dev/null; then
-              TOOLZIP=$(find "$TMP_TOOLS" -name "$PATTERN" | head -n 1)
-              if [ -n "$TOOLZIP" ] && [ -f "$TOOLZIP" ]; then
-                unzip -o -q "$TOOLZIP" -d "build/extraResources/bin/$DESTDIR"
-                chmod +x "build/extraResources/bin/$DESTDIR"/* 2>/dev/null || true
-                echo "✅ $DESTDIR ($PATTERN) 装配完成。"
-              fi
-            else
-              echo "⚠️ 未找到 $PATTERN，跳过（后续 verify 若缺将中断构建）。"
-            fi
-          done
-          rm -rf "$TMP_TOOLS"
 
       - name: Verify extraResources (不多不少门禁)
         shell: bash
