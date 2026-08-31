@@ -693,9 +693,11 @@ const config: ForgeConfig = {
       const aiEngine = process.env.AI_ENGINE || 'llama.cpp'
       if (aiEngine !== 'ollama') {
         // 数据源统一为 preset-resources.lock.json（ADR-0029）
-        const lockPath = resolveResourcePath(
-          `build/extraResources/configs/preset-resources.lock.json`
-        )
+        // 若构建目录已存在由 download/consume 动态写入的最真实 lock，优先使用构建目录中的 lock
+        const dynamicBuildLock = path.join(__dirname, 'build/extraResources/configs/preset-resources.lock.json')
+        const lockPath = fs.existsSync(dynamicBuildLock)
+          ? dynamicBuildLock
+          : resolveResourcePath(`build/extraResources/configs/preset-resources.lock.json`)
         if (!fs.existsSync(lockPath)) {
           throw new Error(
             `❌ 错误: 缺少统一资源清单 build/extraResources/configs/preset-resources.lock.json，无法验证 AI 引擎二进制包完整性！请确保运行了下载流程。`
