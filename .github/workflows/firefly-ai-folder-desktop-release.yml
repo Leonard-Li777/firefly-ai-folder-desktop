@@ -248,6 +248,9 @@ jobs:
       - name: 下载内置模型并清理投影文件 (llama-model-download)
         if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           echo "📥 使用 llama-model-download 准备内置模型..."
           pnpm run download:builtin-model
@@ -581,6 +584,9 @@ jobs:
       - name: 下载内置模型并清理投影文件 (llama-model-download)
         if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           echo "📥 使用 llama-model-download 准备内置模型..."
           pnpm run download:builtin-model
@@ -976,6 +982,9 @@ jobs:
       - name: 下载内置模型并清理投影文件 (llama-model-download)
         if: steps.cache-models.outputs.cache-hit != 'true' || github.event_name == 'push'
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           echo "📥 使用 llama-model-download 准备内置模型..."
           pnpm run download:builtin-model
