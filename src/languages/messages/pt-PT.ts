@@ -3048,6 +3048,8 @@ export default  {
     "11238": "A limpeza das informações de privacidade Exif de {count} imagens está a ser processada; assim que a primeira estiver concluída, será automaticamente localizada...",
     "11240": "Motor",
     "11242": "Topo",
+    "11245": "Não existem ficheiros na fila de análise",
+    "11246": "Fila em pausa",
     "11247": "Codificação de texto",
     "11248": "Número de caracteres",
     "11249": "Número de linhas",

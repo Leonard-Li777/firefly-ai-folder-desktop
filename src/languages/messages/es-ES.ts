@@ -3048,6 +3048,8 @@ export default  {
     "11238": "Se está procesando la eliminación de la información de privacidad EXIF de {count} imágenes; una vez finalizada la primera, se seleccionará automáticamente la siguiente...",
     "11240": "Motor",
     "11242": "Premium",
+    "11245": "No hay archivos en la cola de análisis",
+    "11246": "Pausa en la cola",
     "11247": "Codificación de texto",
     "11248": "Número de caracteres",
     "11249": "Número de líneas",

@@ -3048,6 +3048,8 @@ export default  {
     "11238": "Le traitement des informations de confidentialité Exif de {count} images est en cours. Une fois la première image traitée, le système passera automatiquement à la suivante...",
     "11240": "Moteur",
     "11242": "Haut de gamme",
+    "11245": "Aucun fichier n'est actuellement présent dans la file d'attente d'analyse",
+    "11246": "Mise en attente de la file d'attente",
     "11247": "Encodage de texte",
     "11248": "Nombre de caractères",
     "11249": "Nombre de lignes",

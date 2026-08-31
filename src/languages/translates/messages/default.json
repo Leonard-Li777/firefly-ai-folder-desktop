@@ -798,7 +798,7 @@
     "de-DE": "Alle KI-Analysedaten wurden zurückgesetzt",
     "fr-FR": "Toutes les données d'analyse de l'IA ont été réinitialisées",
     "ko-KR": "모든 AI 분석 데이터가 재설정되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(37310-37325)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(37357-37372)"],
     "$id": 7659
   },
   "重置所有AI分析数据失败": {
@@ -811,7 +811,7 @@
     "de-DE": "Alle KI-Analysedaten konnten nicht zurückgesetzt werden",
     "fr-FR": "Échec de la réinitialisation de toutes les données d'analyse IA",
     "ko-KR": "모든 AI 분석 데이터를 재설정하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(37401-37417)"],
+    "$files": ["src/electron/runtime-services/database/database-service.ts(37448-37464)"],
     "$id": 7660
   },
   "getDatabaseConfig 必须显式指定语言代码 (language)": {
@@ -879,7 +879,7 @@
     "de-DE": "Der Dateipfad-Eintrag existiert nicht",
     "fr-FR": "L'enregistrement du chemin de fichier n'existe pas",
     "ko-KR": "파일 경로 기록이 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/database/dao/file-dao.ts(16569-16582)"],
+    "$files": ["src/electron/runtime-services/database/dao/file-dao.ts(16667-16680)"],
     "$id": 8123
   },
   "该目录已创建为{typeName}": {

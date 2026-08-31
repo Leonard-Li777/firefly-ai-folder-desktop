@@ -3048,6 +3048,8 @@ export default  {
     "11238": "Derzeit werden die Exif-Datenschutzangaben von {count} Bildern gelöscht. Sobald das erste Bild fertig ist, wird automatisch das nächste ausgewählt...",
     "11240": "Motor",
     "11242": "Top",
+    "11245": "In der Analysewarteschlange befinden sich derzeit keine Dokumente.",
+    "11246": "Warteschlange angehalten",
     "11247": "Textkodierung",
     "11248": "Anzahl der Zeichen",
     "11249": "Anzahl der Zeilen",

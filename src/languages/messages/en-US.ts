@@ -3048,6 +3048,8 @@ export default  {
     "11238": "Clearing the EXIF privacy information for {count} images. Once the first one is complete, the process will automatically move on to the next one...",
     "11240": "Engine",
     "11242": "Top-tier",
+    "11245": "There are currently no files in the analysis queue.",
+    "11246": "Queue Paused",
     "11247": "Text encoding",
     "11248": "Number of characters",
     "11249": "Number of lines",
