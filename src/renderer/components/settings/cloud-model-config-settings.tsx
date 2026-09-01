@@ -10,8 +10,9 @@ import type { CloudModelConfig, ProviderModel } from '@firefly/types'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useCloudModelConfigStore } from '../../stores/cloud-model-config-store'
 import CloudModelConfigAPI from '../../api/cloud-model-config-api'
-import { Loader2, ChevronDown, Check, AlertTriangle } from 'lucide-react'
-import { t } from '@app/languages'
+import { Loader2, ChevronDown, Check, AlertTriangle, Star } from 'lucide-react'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { openExternalLink } from '../../lib/external-link'
 import { validateCloudConfig } from '../../lib/cloud-config-validator'
 
@@ -38,6 +39,7 @@ type ProviderPreset = {
   name: string
   baseUrl?: string
   free?: boolean
+  recommended?: boolean
   description?: string
   registerUrl?: string
   models?: ProviderPresetModel[]
@@ -133,8 +135,14 @@ function formatModelInfo(model: ProviderPresetModel): { label: string; value: st
 }
 
 export const CloudModelConfigSettings: React.FC = () => {
-  const { config, getConfigValue, updateConfigValue } = useSettingsStore()
-  const language = config.language
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
+  const language = useSettingsStore(s => s.config.language)
+  const getConfigValue = useSettingsStore(s => s.getConfigValue)
+  const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
+  const activeCloudProvider = useSettingsStore(s => s.config?.aiCloudProvider)
+  const activeCloudApiKey = useSettingsStore(s => s.config?.aiCloudApiKey)
+  const activeCloudBaseUrl = useSettingsStore(s => s.config?.aiCloudBaseUrl)
+  const activeCloudModelId = useSettingsStore(s => s.config?.aiCloudSelectedModelId)
 
   // Custom Combobox state
   const [isModelListOpen, setIsModelListOpen] = useState(false)
@@ -480,6 +488,8 @@ export const CloudModelConfigSettings: React.FC = () => {
     fromPresets.sort((a, b) => {
       if (a.id === 'ollama' && b.id !== 'ollama') return -1
       if (a.id !== 'ollama' && b.id === 'ollama') return 1
+      if (a.recommended && !b.recommended) return -1
+      if (!a.recommended && b.recommended) return 1
       if (a.free && !b.free) return -1
       if (!a.free && b.free) return 1
       return 0
@@ -496,7 +506,7 @@ export const CloudModelConfigSettings: React.FC = () => {
     }
 
     return fromPresets
-  }, [providersPresets])
+  }, [providersPresets, activeLanguage])
 
   const isBusy = isInitializing || testingConfigIndex !== null || fetchingModelsProvider !== null
 
@@ -507,10 +517,10 @@ export const CloudModelConfigSettings: React.FC = () => {
 
   // 当前全局激活的云端配置信息及完整性校验结果
   const activeConfigValidation = useMemo(() => {
-    const provider = getConfigValue<string>('AI_CLOUD_PROVIDER')
-    const apiKey = getConfigValue<string>('AI_CLOUD_API_KEY')
-    const baseUrl = getConfigValue<string>('AI_CLOUD_BASE_URL')
-    const model = getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
+    const provider = activeCloudProvider ?? getConfigValue<string>('AI_CLOUD_PROVIDER')
+    const apiKey = activeCloudApiKey ?? getConfigValue<string>('AI_CLOUD_API_KEY')
+    const baseUrl = activeCloudBaseUrl ?? getConfigValue<string>('AI_CLOUD_BASE_URL')
+    const model = activeCloudModelId ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
 
     if (!provider) {
       return {
@@ -534,7 +544,14 @@ export const CloudModelConfigSettings: React.FC = () => {
       baseUrl: validation.details.baseUrl || '',
       model: model || ''
     }
-  }, [config, getConfigValue, providersPresets])
+  }, [
+    activeCloudProvider,
+    activeCloudApiKey,
+    activeCloudBaseUrl,
+    activeCloudModelId,
+    getConfigValue,
+    providersPresets
+  ])
 
   return (
     <div className="space-y-4">
@@ -548,7 +565,7 @@ export const CloudModelConfigSettings: React.FC = () => {
           ) : draft ? (
             <div className="space-y-4">
               <div className="grid grid-cols-8 gap-4">
-                <div className="grid gap-2 col-span-3">
+                <div className="grid gap-2 col-span-4">
                   <Label>{t('云服务商')}</Label>
                   <Select
                     value={draft.provider}
@@ -560,17 +577,29 @@ export const CloudModelConfigSettings: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {providerOptions.map((provider, idx) => (
-                        <SelectItem key={`${provider.id}-${idx}`} value={provider.id}>
+                        <SelectItem
+                          key={`${provider.id}-${idx}`}
+                          value={provider.id}
+                          className={
+                            provider.recommended ? 'bg-amber-500/5 focus:bg-amber-500/10' : ''
+                          }
+                        >
                           <div className="flex items-center gap-2">
-                            <span>
+                            <span className={provider.recommended ? 'font-medium' : ''}>
                               {provider.name}
                               {provider.flag && provider.country && (
-                                <span className="ml-1.5 text-muted-foreground">
+                                <span className="ml-1.5 text-muted-foreground font-normal">
                                   {provider.flag}{' '}
                                   <span className="text-[10px]">{provider.country}</span>
                                 </span>
                               )}
                             </span>
+                            {provider.recommended && (
+                              <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700/50">
+                                <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                                {t('推荐')}
+                              </span>
+                            )}
                             {provider.id === 'ollama' && (
                               <span className="inline-flex items-center rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
                                 {t('本地')}
@@ -588,7 +617,7 @@ export const CloudModelConfigSettings: React.FC = () => {
                   </Select>
                 </div>
 
-                <div className="grid gap-2 col-span-5">
+                <div className="grid gap-2 col-span-4">
                   <Label>{`Base URL（${t('可选')}）`}</Label>
                   <Input
                     value={draft.baseUrl || ''}

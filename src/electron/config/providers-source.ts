@@ -503,6 +503,7 @@ export const PROVIDERS_CONFIG_SOURCE = () => [
   {
     id: 'siliconflow',
     name: t('硅基流动'),
+    recommended: true,
     description: t('提供多种主流开源模型的高速推理接口，部分 10B 以下模型长期免费。'),
     registerUrl: 'https://cloud.siliconflow.cn/',
     baseUrl: 'https://api.siliconflow.cn/v1',
@@ -699,6 +700,7 @@ export const PROVIDERS_CONFIG_SOURCE = () => [
   {
     id: 'ollama',
     name: 'Ollama',
+    recommended: true,
     description: t(
       '本地运行的大模型服务的另一种外置方案，较之萤核内置AI引擎慢20~40%，但硬件兼容性好，推荐安装。'
     ),
@@ -2309,6 +2311,7 @@ export const PROVIDERS_CONFIG_SOURCE = () => [
   {
     id: 'agnes',
     name: `Agnes AI(${t('永久免费')})`,
+    recommended: true,
     description: t(
       '每分钟请求数限制为 20 次，若短时间内请求过快会触发频率限制（需等待1分钟后重试）'
     ),

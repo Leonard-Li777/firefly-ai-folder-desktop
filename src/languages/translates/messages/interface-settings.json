@@ -10,8 +10,8 @@
     "fr-FR": "La langue change... veuillez patienter",
     "ko-KR": "언어를 전환하는 중입니다...잠시 기다려 주십시오",
     "$files": [
-      "src/renderer/components/settings/interface-settings.tsx(2443-2460)",
-      "src/renderer/components/settings/interface-settings.tsx(19205-19222)"
+      "src/renderer/components/settings/interface-settings.tsx(2645-2662)",
+      "src/renderer/components/settings/interface-settings.tsx(19513-19530)"
     ],
     "$id": 7814
   },
@@ -25,7 +25,7 @@
     "de-DE": "Sprache wurde gewechselt, Seite wird aktualisiert...",
     "fr-FR": "La langue a été changée, la page est en cours de rafraîchissement...",
     "ko-KR": "언어가 전환되었습니다. 페이지를 새로 고치는 중...",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(2662-2681)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(2864-2883)"],
     "$id": 2815
   },
   "切换语言失败,请重试": {
@@ -38,7 +38,7 @@
     "de-DE": "Die Sprachumschaltung ist fehlgeschlagen. Bitte versuchen Sie es erneut",
     "fr-FR": "Échec du changement de langue, veuillez réessayer",
     "ko-KR": "언어를 전환하지 못했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(2878-2892)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(3080-3094)"],
     "$id": 2910
   },
   "浅色主题": {
@@ -51,7 +51,7 @@
     "de-DE": "Helles Design",
     "fr-FR": "Thème clair",
     "ko-KR": "라이트 테마",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3461-3469)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(3684-3692)"],
     "$id": 3118
   },
   "始终使用浅色界面": {
@@ -64,7 +64,7 @@
     "de-DE": "Immer helle Oberfläche verwenden",
     "fr-FR": "Utiliser toujours une interface claire",
     "ko-KR": "항상 라이트 인터페이스 사용",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3485-3497)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(3708-3720)"],
     "$id": 3119
   },
   "深色主题": {
@@ -77,7 +77,7 @@
     "de-DE": "Dunkles Design",
     "fr-FR": "Thème sombre",
     "ko-KR": "다크 테마",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3530-3538)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(3755-3763)"],
     "$id": 3120
   },
   "始终使用深色界面": {
@@ -90,7 +90,7 @@
     "de-DE": "Immer dunkle Oberfläche verwenden",
     "fr-FR": "Utiliser toujours une interface sombre",
     "ko-KR": "항상 다크 인터페이스 사용",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3554-3566)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(3779-3791)"],
     "$id": 3121
   },
   "跟随系统": {
@@ -103,7 +103,7 @@
     "de-DE": "Systemeinstellung folgen",
     "fr-FR": "Suivre le système",
     "ko-KR": "시스템 설정 따르기",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3599-3607)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(3826-3834)"],
     "$id": 3122
   },
   "根据系统设置自动切换": {
@@ -116,7 +116,7 @@
     "de-DE": "Automatisch gemäß Systemeinstellung wechseln",
     "fr-FR": "Basculer automatiquement selon les paramètres du système",
     "ko-KR": "시스템 설정에 따라 자동 전환",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3623-3637)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(3850-3864)"],
     "$id": 3123
   },
   "界面设置": {
@@ -129,7 +129,7 @@
     "de-DE": "Oberflächeneinstellungen",
     "fr-FR": "Paramètres de l'interface",
     "ko-KR": "인터페이스 설정",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(3950-3958)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(4258-4266)"],
     "$id": 3128
   },
   "自定义应用的外观和界面行为": {
@@ -142,7 +142,7 @@
     "de-DE": "Aussehen und Verhalten der Anwendung anpassen",
     "fr-FR": "Personnaliser l'apparence et le comportement de l'interface de l'application",
     "ko-KR": "앱의 외관 및 인터페이스 동작을 사용자 정의",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(4020-4037)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(4328-4345)"],
     "$id": 3129
   },
   "关闭时，最小化到托盘": {
@@ -155,7 +155,7 @@
     "de-DE": "Beim Schließen in den Tray minimieren",
     "fr-FR": "Minimiser dans la barre d'état système lors de la fermeture",
     "ko-KR": "닫혀 있으면 트레이로 최소화하세요.",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(4398-4412)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(4706-4720)"],
     "$id": 7982
   },
   "关闭主窗口时将应用隐藏到系统右下角托盘，可通过托盘图标重新打开应用": {
@@ -168,7 +168,7 @@
     "de-DE": "Bei Schließung des Hauptfensters wird die Anwendung in den Tray unten rechts ausgeblendet. Die Anwendung kann über das Tray-Symbol erneut geöffnet werden.",
     "fr-FR": "Lors de la fermeture de la fenêtre principale, l'application se cache dans la barre d'état système en bas à droite ; l'icône de la barre d'état permet de rouvrir l'application",
     "ko-KR": "메인 창이 닫히면 시스템 오른쪽 하단에 있는 트레이에 애플리케이션이 숨겨집니다. 트레이 아이콘을 통해 애플리케이션을 다시 열 수 있습니다.",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(4509-4546)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(4817-4854)"],
     "$id": 7983
   },
   "主题模式": {
@@ -181,7 +181,7 @@
     "de-DE": "Designmodus",
     "fr-FR": "Mode de thème",
     "ko-KR": "테마 모드",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(5057-5065)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(5365-5373)"],
     "$id": 3130
   },
   "选择应用的明暗视觉外观": {
@@ -194,7 +194,7 @@
     "de-DE": "Visuelles Erscheinungsbild (Hell/Dunkel) der Anwendung wählen",
     "fr-FR": "Choisir l'apparence visuelle claire ou sombre de l'application",
     "ko-KR": "앱의 밝고 어두운 시각적 모양을 선택하세요.",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(5139-5154)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(5447-5462)"],
     "$id": 7984
   },
   "配色方案": {
@@ -207,7 +207,7 @@
     "de-DE": "Farbschema",
     "fr-FR": "Schéma de couleurs",
     "ko-KR": "색상 구성",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(11118-11126)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(11426-11434)"],
     "$id": 3132
   },
   "选择应用的主题配色": {
@@ -220,7 +220,7 @@
     "de-DE": "Das Farbthema der Anwendung auswählen",
     "fr-FR": "Choisir la palette de couleurs du thème de l'application",
     "ko-KR": "앱의 테마 색상 선택",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(11200-11213)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(11508-11521)"],
     "$id": 3133
   },
   "界面语言": {
@@ -233,7 +233,7 @@
     "de-DE": "Oberflächensprache",
     "fr-FR": "Langue de l'interface",
     "ko-KR": "인터페이스 언어",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(14869-14877)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(15177-15185)"],
     "$id": 3134
   },
   "选择应用界面显示的语言": {
@@ -246,7 +246,7 @@
     "de-DE": "Die Sprache für die Anzeige der Benutzeroberfläche auswählen",
     "fr-FR": "Choisir la langue d'affichage de l'interface de l'application",
     "ko-KR": "앱 인터페이스에 표시될 언어 선택",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(14951-14966)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(15259-15274)"],
     "$id": 3135
   },
   "选择语言": {
@@ -259,7 +259,7 @@
     "de-DE": "Sprache auswählen",
     "fr-FR": "Sélectionner la langue  ",
     "ko-KR": "언어 선택",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(15237-15245)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(15545-15553)"],
     "$id": 3137
   },
   "标签显示": {
@@ -272,7 +272,7 @@
     "de-DE": "Etikettenanzeige",
     "fr-FR": "Affichage des étiquettes  ",
     "ko-KR": "태그 표시",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(15917-15925)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(16225-16233)"],
     "$id": 3140
   },
   "控制虚拟目录中标签的显示行为": {
@@ -285,7 +285,7 @@
     "de-DE": "Das Anzeigeverhalten von Etiketten im virtuellen Verzeichnis steuern",
     "fr-FR": "Contrôler le comportement d’affichage des étiquettes dans les répertoires virtuels  ",
     "ko-KR": "가상 디렉터리에서 태그의 표시 방식 제어",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(16018-16036)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(16326-16344)"],
     "$id": 3141
   },
   "显示空标签": {
@@ -298,7 +298,7 @@
     "de-DE": "Leere Etiketten anzeigen",
     "fr-FR": "Afficher les étiquettes vides  ",
     "ko-KR": "빈 태그 표시",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(16681-16690)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(16989-16998)"],
     "$id": 3142
   },
   "在维度标签树中显示文件数为0的标签": {
@@ -311,7 +311,7 @@
     "de-DE": "Etiketten mit einer Dateianzahl von 0 im Dimensions-Etikettenbaum anzeigen",
     "fr-FR": "Afficher dans l’arborescence des étiquettes dimensionnelles les étiquettes dont le nombre de fichiers est égal à 0  ",
     "ko-KR": "차원 태그 트리에서 파일 수가 0인 태그 표시",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(16821-16842)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(17129-17150)"],
     "$id": 3143
   },
   "语言变更警告": {
@@ -324,7 +324,7 @@
     "de-DE": "Warnung bei Sprachwechsel",
     "fr-FR": "Avertissement concernant le changement de langue  ",
     "ko-KR": "언어 변경 경고",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(17361-17371)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(17669-17679)"],
     "$id": 3148
   },
   "已创建的工作目录不支持语言切换，因为已分析文件的语言无法匹配新的语言环境。您可以随时切换回语言来恢复": {
@@ -337,7 +337,7 @@
     "de-DE": "Das erstellte Arbeitsverzeichnis unterstützt keinen Sprachwechsel, da die Sprache der analysierten Dateien nicht mit der neuen Sprachumgebung übereinstimmt. Sie können jederzeit zurück zur ursprünglichen Sprache wechseln, um den Zustand wiederherzustellen",
     "fr-FR": "Le répertoire de travail créé ne prend pas en charge le changement de langue, car la langue des fichiers analysés ne correspond pas au nouveau paramètre régional. Vous pouvez à tout moment revenir à la langue précédente pour restaurer le fonctionnement.",
     "ko-KR": "생성된 작업 디렉토리는 언어 전환을 지원하지 않습니다. 분석된 파일의 언어가 새로운 언어 환경과 일치하지 않기 때문입니다. 언제든지 언어를 다시 전환하여 복구할 수 있습니다",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(17527-17598)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(17835-17906)"],
     "$id": 3068
   },
   "取消": {
@@ -350,7 +350,7 @@
     "de-DE": "Abbrechen",
     "fr-FR": "Annuler",
     "ko-KR": "취소",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(17962-17968)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(18270-18276)"],
     "$id": 3152
   },
   "继续": {
@@ -363,7 +363,7 @@
     "de-DE": "Fortfahren",
     "fr-FR": "Continuer",
     "ko-KR": "계속",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(18344-18350)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(18652-18658)"],
     "$id": 3153
   },
   "正在初始化数据库与配置文件": {
@@ -376,7 +376,7 @@
     "de-DE": "Initialisieren von Datenbank- und Konfigurationsdateien",
     "fr-FR": "Initialisation de la base de données et des fichiers de configuration",
     "ko-KR": "데이터베이스 및 구성 파일 초기화",
-    "$files": ["src/renderer/components/settings/interface-settings.tsx(19305-19322)"],
+    "$files": ["src/renderer/components/settings/interface-settings.tsx(19613-19630)"],
     "$id": 8972
   }
 }

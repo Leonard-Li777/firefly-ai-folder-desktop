@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Loader2 } from 'lucide-react'
+import { Check, ChevronDown, Loader2, Star } from 'lucide-react'
 import type { CloudModelConfig, ProviderModel } from '@firefly/types'
 import { LogCategory, logger } from '@firefly/shared'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -35,6 +35,7 @@ type ProviderPreset = {
   name: string
   baseUrl?: string
   free?: boolean
+  recommended?: boolean
   description?: string
   registerUrl?: string
   models?: ProviderPresetModel[]
@@ -110,6 +111,8 @@ export function CloudModelConfigStep({ onNext, onBack }: CloudModelConfigStepPro
           sortedPresets = [...uniquePresets].sort((a, b) => {
             if (a.id === 'ollama' && b.id !== 'ollama') return -1
             if (a.id !== 'ollama' && b.id === 'ollama') return 1
+            if (a.recommended && !b.recommended) return -1
+            if (!a.recommended && b.recommended) return 1
             if (a.free && !b.free) return -1
             if (!a.free && b.free) return 1
             return 0
@@ -264,9 +267,21 @@ export function CloudModelConfigStep({ onNext, onBack }: CloudModelConfigStepPro
                       </SelectTrigger>
                       <SelectContent>
                         {providersPresets.map(p => (
-                          <SelectItem key={p.id} value={p.id}>
+                          <SelectItem
+                            key={p.id}
+                            value={p.id}
+                            className={
+                              p.recommended ? 'bg-amber-500/5 focus:bg-amber-500/10' : ''
+                            }
+                          >
                             <div className="flex items-center gap-2">
-                              <span>{p.name}</span>
+                              <span className={p.recommended ? 'font-medium' : ''}>{p.name}</span>
+                              {p.recommended && (
+                                <span className="inline-flex items-center gap-0.5 rounded bg-amber-100 dark:bg-amber-900/40 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700/50">
+                                  <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" />
+                                  {t('推荐')}
+                                </span>
+                              )}
                               {p.id === 'ollama' && (
                                 <span className="inline-flex items-center rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
                                   {t('本地')}

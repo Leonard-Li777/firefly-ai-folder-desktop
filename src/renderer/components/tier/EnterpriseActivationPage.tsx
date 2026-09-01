@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router-dom'
 import { SubscriptionPlan } from '@firefly/types'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { Check, Building2, QrCode, X } from 'lucide-react'
 import { ActivationCodeSection } from './ActivationCodeSection'
 import { useConfigStore } from '../../stores/config-store'
 import { getLocalPrice, formatPrice } from '../../lib/utils'
 
 export const EnterpriseActivationPage: React.FC = () => {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const navigate = useNavigate()
   const [qrSrc, setQrSrc] = useState<string>('')
   const config = useConfigStore(state => state.config)
@@ -62,7 +64,7 @@ export const EnterpriseActivationPage: React.FC = () => {
       plans.push({ id: key, name, price: priceStr, period, popular, features })
     }
     return plans
-  }, [enterprisePlans])
+  }, [enterprisePlans, activeLanguage])
 
   useEffect(() => {
     const loadQR = async () => {

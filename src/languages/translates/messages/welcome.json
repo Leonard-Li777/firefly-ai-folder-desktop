@@ -9,7 +9,7 @@
     "de-DE": "Bitte API-Schlüssel eingeben",
     "fr-FR": "Veuillez saisir la clé API",
     "ko-KR": "API Key를 입력해주세요",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(5232-5247)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(5379-5394)"],
     "$id": 2685
   },
   "请填写 Base URL": {
@@ -22,7 +22,7 @@
     "de-DE": "Bitte Base URL eingeben",
     "fr-FR": "Veuillez saisir l'URL de base",
     "ko-KR": "Base URL을 입력해주세요",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(5447-5463)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(5594-5610)"],
     "$id": 2686
   },
   "连接测试成功，正在获取模型列表...": {
@@ -35,7 +35,7 @@
     "de-DE": "Verbindungstest erfolgreich, Modelle werden abgerufen...",
     "fr-FR": "Test de connexion réussi, récupération de la liste des modèles en cours...",
     "ko-KR": "연결 테스트 성공, 모델 목록을 가져오는 중...",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(5660-5682)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(5807-5829)"],
     "$id": 2687
   },
   "成功获取模型列表（{count}个）": {
@@ -48,7 +48,7 @@
     "de-DE": "Modelle erfolgreich abgerufen ({count} Stück)",
     "fr-FR": "Liste des modèles récupérée avec succès ({count} modèles)",
     "ko-KR": "모델 목록을 성공적으로 가져왔습니다 ({count}개)",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(6128-6150)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(6275-6297)"],
     "$id": 2688
   },
   "未获取到模型列表，将使用预置模型": {
@@ -61,7 +61,7 @@
     "de-DE": "Keine Modellliste abgerufen, voreingestellte Modelle werden verwendet",
     "fr-FR": "Impossible d'obtenir la liste des modèles, utilisation des modèles prédéfinis",
     "ko-KR": "모델 목록을 가져오지 못했습니다, 사전 설정된 모델을 사용합니다",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(6213-6233)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(6360-6380)"],
     "$id": 2689
   },
   "未知错误": {
@@ -75,7 +75,7 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/renderer/components/welcome/CloudModelConfigStep.tsx(6354-6362)",
+      "src/renderer/components/welcome/CloudModelConfigStep.tsx(6501-6509)",
       "src/renderer/components/welcome/OllamaModelDownloadStep.tsx(2426-2434)"
     ],
     "$id": 11051
@@ -90,7 +90,7 @@
     "de-DE": "Test fehlgeschlagen: {message}",
     "fr-FR": "Échec du test : {message}",
     "ko-KR": "테스트 실패: {message}",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(6382-6401)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(6529-6548)"],
     "$id": 2690
   },
   "保存配置失败": {
@@ -103,7 +103,7 @@
     "de-DE": "Speichern der Konfiguration fehlgeschlagen",
     "fr-FR": "Échec de l'enregistrement de la configuration",
     "ko-KR": "구성 저장 실패",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(7428-7438)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(7575-7585)"],
     "$id": 2691
   },
   "配置云端模型": {
@@ -116,7 +116,7 @@
     "de-DE": "Cloud-Modell konfigurieren",
     "fr-FR": "Configuration des modèles cloud",
     "ko-KR": "클라우드 모델 구성",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(7766-7776)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(7913-7923)"],
     "$id": 2692
   },
   "输入您的 API 信息以连接 to 云端 AI 服务": {
@@ -129,7 +129,7 @@
     "de-DE": "Geben Sie Ihre API-Informationen ein, um eine Verbindung zum Cloud-KI-Dienst herzustellen",
     "fr-FR": "Entrez vos informations API pour vous connecter au service cloud AI",
     "ko-KR": "클라우드 AI 서비스에 연결하려면 API 정보를 입력하세요.",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(7832-7862)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(7979-8009)"],
     "$id": 4498
   },
   "云服务商": {
@@ -142,7 +142,7 @@
     "de-DE": "Cloud-Anbieter",
     "fr-FR": "Fournisseur cloud",
     "ko-KR": "클라우드 서비스 제공업체",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(8414-8422)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(8561-8569)"],
     "$id": 2694
   },
   "选择服务商": {
@@ -155,8 +155,25 @@
     "de-DE": "Anbieter auswählen",
     "fr-FR": "Sélectionner un fournisseur",
     "ko-KR": "서비스 제공업체 선택",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(8663-8672)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(8810-8819)"],
     "$id": 2695
+  },
+  "推荐": {
+    "en-US": "Recommend",
+    "es-ES": "Recomendar",
+    "ar-EG": "يوصي",
+    "pt-PT": "Recomendar",
+    "ru-RU": "рекомендовать",
+    "ja-JP": "おすすめ",
+    "de-DE": "Empfehlen",
+    "fr-FR": "Recommander",
+    "ko-KR": "추천하다",
+    "$files": [
+      "src/renderer/components/welcome/CloudModelConfigStep.tsx(9858-9864)",
+      "src/renderer/components/welcome/ModelSelectionStep.tsx(11834-11840)",
+      "src/renderer/components/welcome/OllamaModelSelectionStep.tsx(8905-8911)"
+    ],
+    "$id": 11314
   },
   "本地": {
     "en-US": "Local",
@@ -168,7 +185,7 @@
     "de-DE": "Lokal",
     "fr-FR": "Locale",
     "ko-KR": "현지의",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(9269-9275)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(10216-10222)"],
     "$id": 4395
   },
   "免费": {
@@ -182,8 +199,8 @@
     "fr-FR": "Gratuit",
     "ko-KR": "무료",
     "$files": [
-      "src/renderer/components/welcome/CloudModelConfigStep.tsx(9620-9626)",
-      "src/renderer/components/welcome/CloudModelConfigStep.tsx(17254-17260)"
+      "src/renderer/components/welcome/CloudModelConfigStep.tsx(10567-10573)",
+      "src/renderer/components/welcome/CloudModelConfigStep.tsx(18201-18207)"
     ],
     "$id": 4376
   },
@@ -197,7 +214,7 @@
     "de-DE": "Custom (OpenAI-kompatibel)",
     "fr-FR": "Custom (compatible OpenAI)",
     "ko-KR": "사용자 정의（OpenAI 호환）",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(9936-9965)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(10883-10912)"],
     "$id": 2696
   },
   "可选": {
@@ -210,7 +227,7 @@
     "de-DE": "Optional",
     "fr-FR": "Facultatif",
     "ko-KR": "선택 과목",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(10261-10267)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(11208-11214)"],
     "$id": 9509
   },
   "API Key": {
@@ -223,7 +240,7 @@
     "de-DE": "API-Schlüssel",
     "fr-FR": "Clé API",
     "ko-KR": "API 키",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(11299-11310)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(12246-12257)"],
     "$id": 2698
   },
   "去注册/获取密钥": {
@@ -236,7 +253,7 @@
     "de-DE": "Registrieren/Schlüssel holen",
     "fr-FR": "Allez vous inscrire/obtenir la clé",
     "ko-KR": "등록/키 획득",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(11965-11977)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(12912-12924)"],
     "$id": 4377
   },
   "测试连接并获取模型列表": {
@@ -250,8 +267,8 @@
     "fr-FR": "Testez la connexion et obtenez une liste de modèles",
     "ko-KR": "연결을 테스트하고 모델 목록을 가져옵니다.",
     "$files": [
-      "src/renderer/components/welcome/CloudModelConfigStep.tsx(13022-13037)",
-      "src/renderer/components/welcome/CloudModelConfigStep.tsx(14626-14641)"
+      "src/renderer/components/welcome/CloudModelConfigStep.tsx(13969-13984)",
+      "src/renderer/components/welcome/CloudModelConfigStep.tsx(15573-15588)"
     ],
     "$id": 4396
   },
@@ -265,7 +282,7 @@
     "de-DE": "Bitte laden Sie Ollama herunter",
     "fr-FR": "Veuillez télécharger Ollama",
     "ko-KR": "올라마를 다운로드해주세요",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(13341-13355)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(14288-14302)"],
     "$id": 4397
   },
   "并在Ollama中安装Qwen3.5系列模型后，点击": {
@@ -278,7 +295,7 @@
     "de-DE": "Klicken Sie nach der Installation des Modells der Qwen3.5-Serie in Ollama auf",
     "fr-FR": "Et après avoir installé le modèle de la série Qwen3.5 dans Ollama, cliquez sur",
     "ko-KR": "그리고 Ollama에 Qwen3.5 시리즈 모델을 설치한 후,",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(14161-14191)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(15108-15138)"],
     "$id": 4418
   },
   "选择模型": {
@@ -291,7 +308,7 @@
     "de-DE": "Modell auswählen\r",
     "fr-FR": "Sélectionnez le modèle\r",
     "ko-KR": "모델 선택",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(14864-14872)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(15811-15819)"],
     "$id": 4577
   },
   "请输入或选择模型ID": {
@@ -304,7 +321,7 @@
     "de-DE": "Bitte geben Sie eine Modell-ID ein oder wählen Sie eine aus",
     "fr-FR": "Veuillez saisir ou sélectionner l'ID du modèle",
     "ko-KR": "모델 ID를 입력하거나 선택해 주세요",
-    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(15416-15430)"],
+    "$files": ["src/renderer/components/welcome/CloudModelConfigStep.tsx(16363-16377)"],
     "$id": 2700
   },
   "返回": {
@@ -318,7 +335,7 @@
     "fr-FR": "Retour",
     "ko-KR": "돌아가기",
     "$files": [
-      "src/renderer/components/welcome/CloudModelConfigStep.tsx(18319-18325)",
+      "src/renderer/components/welcome/CloudModelConfigStep.tsx(19266-19272)",
       "src/renderer/components/welcome/ModelDownloadStep.tsx(8354-8360)",
       "src/renderer/components/welcome/ModelModeSelectionStep.tsx(6335-6341)",
       "src/renderer/components/welcome/ModelSelectionStep.tsx(16017-16023)",
@@ -339,7 +356,7 @@
     "fr-FR": "Commencer à utiliser",
     "ko-KR": "사용 시작",
     "$files": [
-      "src/renderer/components/welcome/CloudModelConfigStep.tsx(18641-18649)",
+      "src/renderer/components/welcome/CloudModelConfigStep.tsx(19588-19596)",
       "src/renderer/components/welcome/DownloadCompleteStep.tsx(3157-3165)"
     ],
     "$id": 4538
@@ -971,22 +988,6 @@
     "ko-KR": "하드디스크 공간  ",
     "$files": ["src/renderer/components/welcome/ModelSelectionStep.tsx(7979-7987)"],
     "$id": 3026
-  },
-  "推荐": {
-    "en-US": "Recommend",
-    "es-ES": "Recomendar",
-    "ar-EG": "يوصي",
-    "pt-PT": "Recomendar",
-    "ru-RU": "рекомендовать",
-    "ja-JP": "おすすめ",
-    "de-DE": "Empfehlen",
-    "fr-FR": "Recommander",
-    "ko-KR": "추천하다",
-    "$files": [
-      "src/renderer/components/welcome/ModelSelectionStep.tsx(11834-11840)",
-      "src/renderer/components/welcome/OllamaModelSelectionStep.tsx(8905-8911)"
-    ],
-    "$id": 11314
   },
   "最佳显存适配": {
     "en-US": "Best graphics memory adaptation",

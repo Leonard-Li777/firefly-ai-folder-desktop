@@ -14,6 +14,7 @@ export function useFileDetails(
 ) {
   const [analysisResult, setAnalysisResult] = useState<any>(null)
   const [reanalyzing, setReanalyzing] = useState(false)
+  const [queueStatus, setQueueStatus] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
   const lastSeenStatusRef = useRef<string | null>(null)
   const reanalyzeStartTimeRef = useRef<number>(0)
@@ -51,6 +52,7 @@ export function useFileDetails(
     const checkInitialQueueStatus = async () => {
       if (!item) {
         setReanalyzing(false)
+        setQueueStatus(null)
         return
       }
 
@@ -64,13 +66,16 @@ export function useFileDetails(
 
         if (queueItem && (queueItem.status === 'pending' || queueItem.status === 'analyzing')) {
           setReanalyzing(true)
+          setQueueStatus(queueItem.status)
           lastSeenStatusRef.current = queueItem.status
         } else {
           setReanalyzing(false)
+          setQueueStatus(null)
         }
       } catch (e) {
         logger.error(LogCategory.FILE_ANALYSIS, '检查初始分析队列状态失败:', e)
         setReanalyzing(false)
+        setQueueStatus(null)
       }
     }
 
@@ -135,6 +140,7 @@ export function useFileDetails(
           }
 
           setReanalyzing(false)
+          setQueueStatus(null)
 
           setTimeout(() => {
             refreshAnalysis()
@@ -144,12 +150,14 @@ export function useFileDetails(
           }, 200)
         } else if (queueItem.status === 'analyzing' || queueItem.status === 'pending') {
           setReanalyzing(true)
+          setQueueStatus(queueItem.status)
           lastSeenStatusRef.current = queueItem.status
         }
       } else if (lastSeenStatusRef.current) {
         const now = Date.now()
         if (now - reanalyzeStartTimeRef.current > 2000) {
           setReanalyzing(false)
+          setQueueStatus(null)
           lastSeenStatusRef.current = null
           refreshAnalysis()
         }
@@ -167,6 +175,7 @@ export function useFileDetails(
       lastSeenStatusRef.current = 'pending'
       reanalyzeStartTimeRef.current = Date.now()
       setReanalyzing(true)
+      setQueueStatus('pending')
       await window.electronAPI!.addToAnalysisQueue(
         [
           {
@@ -182,6 +191,7 @@ export function useFileDetails(
       toast.success(t('文件已加入分析队列，正在分析...'))
     } catch (error: any) {
       setReanalyzing(false)
+      setQueueStatus(null)
       lastSeenStatusRef.current = null
       let errorMsg = error?.message || t('未知错误')
       const match = errorMsg.match(/Error invoking remote method '[^']+':\s*(.*)/)
@@ -348,6 +358,7 @@ export function useFileDetails(
   return {
     analysisResult,
     reanalyzing,
+    queueStatus,
     deleting,
     isDirectory,
     handleReanalyze,

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { MaterialIcon, cn } from '../../../../lib/utils'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { Button } from '../../../ui/button'
 import { Input } from '../../../ui/input'
 import { Badge } from '../../../ui/badge'
@@ -285,6 +286,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
   onExecuteRename,
   isExecuting = false
 }) => {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const [template, setTemplate] = useState<string>(`[{TAG:${t('文件类型')}}]{SMART_NAME}_{MOD:YYYY-MM-DD}`)
   const [previewList, setPreviewList] = useState<BatchRenamePreviewItem[]>([])
   const [isLoadingPreview, setIsLoadingPreview] = useState(false)
@@ -547,7 +549,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
         ]
       }
     ]
-  }, [dimensionGroups])
+  }, [dimensionGroups, activeLanguage])
 
   // 仅针对已分析文件进行批量更名预览与操作
   const analyzedFiles = useMemo(() => {

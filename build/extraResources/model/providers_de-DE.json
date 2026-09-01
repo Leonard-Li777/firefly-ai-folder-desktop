@@ -600,6 +600,7 @@
   {
     "id": "siliconflow",
     "name": "Fluss auf Siliziumbasis",
+    "recommended": true,
     "description": "Bietet Hochgeschwindigkeits-Inferenzschnittstellen für eine Vielzahl gängiger Open-Source-Modelle, und einige Modelle unter 10 B sind lange Zeit kostenlos.",
     "registerUrl": "https://cloud.siliconflow.cn/",
     "baseUrl": "https://api.siliconflow.cn/v1",
@@ -828,6 +829,7 @@
   {
     "id": "ollama",
     "name": "Ollama",
+    "recommended": true,
     "description": "Eine weitere externe Lösung für die lokale Ausführung großer Modelldienste. Sie ist 20 bis 40 % langsamer als die integrierte KI-Engine von Firefly, verfügt jedoch über eine gute Hardwarekompatibilität und wird für die Installation empfohlen.",
     "registerUrl": "https://ollama.com/download/windows",
     "baseUrl": "http://localhost:11434",
@@ -2713,6 +2715,7 @@
   {
     "id": "agnes",
     "name": "Agnes AI(Für immer kostenlos)",
+    "recommended": true,
     "description": "Die Anzahl der Anfragen pro Minute ist auf 20 begrenzt. Wenn die Anfrage in einem kurzen Zeitraum zu schnell ist, wird die Frequenzbegrenzung ausgelöst (Sie müssen 1 Minute warten und es erneut versuchen).",
     "registerUrl": "https://platform.agnes-ai.com/",
     "baseUrl": "https://apihub.agnes-ai.com/v1",

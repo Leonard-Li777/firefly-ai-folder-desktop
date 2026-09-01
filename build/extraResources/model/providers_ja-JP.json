@@ -600,6 +600,7 @@
   {
     "id": "siliconflow",
     "name": "シリコンベースのフロー",
+    "recommended": true,
     "description": "さまざまな主流のオープンソース モデルに高速推論インターフェイスを提供し、10B 未満の一部のモデルは長期間無料です。",
     "registerUrl": "https://cloud.siliconflow.cn/",
     "baseUrl": "https://api.siliconflow.cn/v1",
@@ -828,6 +829,7 @@
   {
     "id": "ollama",
     "name": "Ollama",
+    "recommended": true,
     "description": "大規模なモデル サービスをローカルで実行するためのもう 1 つの外部ソリューションです。これは、Firefly の組み込み AI エンジンより 20 ～ 40% 遅いですが、ハードウェアの互換性が高く、インストールすることをお勧めします。",
     "registerUrl": "https://ollama.com/download/windows",
     "baseUrl": "http://localhost:11434",
@@ -2713,6 +2715,7 @@
   {
     "id": "agnes",
     "name": "Agnes AI(永久無料)",
+    "recommended": true,
     "description": "1 分あたりのリクエスト数は 20 に制限されています。リクエストが短期間に速すぎる場合は、頻度制限がトリガーされます (1 分待ってから再試行する必要があります)。",
     "registerUrl": "https://platform.agnes-ai.com/",
     "baseUrl": "https://apihub.agnes-ai.com/v1",

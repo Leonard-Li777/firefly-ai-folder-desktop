@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react'
 import { AnalysisStats, MarkitdownBenchmark, Stage1Benchmark } from '@firefly/types'
 import { cn } from '../../../../lib/utils'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 
 /** 内容提取阶段在 phases 中的键 */
 const CONTENT_EXTRACTION_KEYS = [
@@ -94,6 +95,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   lastAnalyzedAt,
   formatDate
 }) => {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const stats = rawStats as AnalysisStats
 
   // 1. 提取 fresh 与 archive 数据
@@ -549,7 +551,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         t('本次分析各阶段'),
         accelerator
       ),
-    [freshPhaseEntries, freshTotalMs, freshStage1Items, freshBreakdownItems, accelerator]
+    [freshPhaseEntries, freshTotalMs, freshStage1Items, freshBreakdownItems, accelerator, activeLanguage]
   )
 
   // 计算 Archive 轨道
@@ -563,7 +565,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         t('历史全量累计'),
         accelerator
       ),
-    [archivePhaseEntries, archiveTotalMs, archiveStage1Items, archiveBreakdownItems, accelerator]
+    [archivePhaseEntries, archiveTotalMs, archiveStage1Items, archiveBreakdownItems, accelerator, activeLanguage]
   )
 
   // 提取阶段与细分指标并保持标准排序

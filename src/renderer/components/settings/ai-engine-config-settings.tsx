@@ -1,5 +1,5 @@
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react'
 import { AlertCircle, Brain, Cpu, HardDrive } from 'lucide-react'
-import React, { useEffect, useRef, useState } from 'react'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
@@ -7,7 +7,8 @@ import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
 import { captureEvent } from '../../lib/posthog'
 import { openExternalLink } from '../../lib/external-link'
-import { t } from '@app/languages'
+import i18nScope from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { HardwareInfo } from '@firefly/types'
 import { toast } from '../common/Toast'
@@ -25,7 +26,14 @@ interface EngineRow {
  * AI引擎配置组件 - 管理CPU模式和思考模式，并以表格形式展示支持的引擎状态与切换功能
  */
 export const AIEngineConfigSettings: React.FC = () => {
-  const { config, getConfigValue, updateConfigValue } = useSettingsStore()
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
+  const aiEngine = useSettingsStore(s => s.config?.aiEngine)
+  const aiServiceMode = useSettingsStore(s => s.config?.aiServiceMode)
+  const isCloudMode = aiServiceMode === 'cloud'
+  const forceCpuMode = useSettingsStore(s => s.config?.aiEngineForceCpuMode)
+  const compatibleMode = useSettingsStore(s => s.config?.aiEngineDriverCompatibleMode)
+  const getConfigValue = useSettingsStore(s => s.getConfigValue)
+  const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
 
   const getInitialHardwareInfo = (): HardwareInfo | null => {
     try {
@@ -88,9 +96,6 @@ export const AIEngineConfigSettings: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false)
   const switchingRef = useRef(false)
 
-  const aiEngine = config?.aiEngine
-  const isCloudMode = config?.aiServiceMode === 'cloud'
-
   const loadHardwareAndStatus = async () => {
     try {
       setLoading(true)
@@ -129,7 +134,7 @@ export const AIEngineConfigSettings: React.FC = () => {
   useEffect(() => {
     if (switchingRef.current) return
     loadHardwareAndStatus()
-  }, [config?.aiServiceMode, config?.aiEngine])
+  }, [aiServiceMode, aiEngine])
 
   // 显卡提供商以主要硬件和 AI 状态后端为准
   const getGpuVendor = (): string => {
@@ -157,10 +162,10 @@ export const AIEngineConfigSettings: React.FC = () => {
     if (backendInfo?.engine) {
       return backendInfo.engine
     }
-    if (config?.aiEngineForceCpuMode) {
+    if (forceCpuMode) {
       return 'cpu'
     }
-    if (config?.aiEngineDriverCompatibleMode) {
+    if (compatibleMode) {
       return 'vulkan'
     }
     const vendor = getGpuVendor().toUpperCase()
@@ -332,11 +337,14 @@ export const AIEngineConfigSettings: React.FC = () => {
     return rows
   }
 
-  const tableRows = getEngineTableRows()
+  const tableRows = useMemo(
+    () => getEngineTableRows(),
+    [hardwareInfo, backendInfo, isDriverCompliant, aiEngine, activeLanguage]
+  )
 
   return (
     <div className="p-6 space-y-6 text-foreground">
-      <div className="w-[300px]">
+      <div className="flex-1 min-w-0">
         <h3 className="text-xl font-black tracking-tight">{t('AI引擎配置')}</h3>
         <p className="text-xs text-muted-foreground font-medium mt-1">
           {t('配置AI引擎的运行模式')}

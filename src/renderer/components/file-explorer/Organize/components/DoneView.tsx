@@ -5,7 +5,8 @@ import { SplitPane } from '../../../common/SplitPane'
 import { PlanSidebar } from './PlanSidebar'
 import { MaterialIcon } from '../../../../lib/utils'
 import { FileTypeIcon, extractFileExtension } from '../../../common/FileTypeIcon'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { Checkbox } from '../../../ui/checkbox'
 import { Button } from '../../../ui/button'
 import { VDirTree } from './VDirTree'
@@ -60,6 +61,7 @@ export function DoneView({
   currentVDir?: any
   highFrequencyTags?: Set<string>
 }) {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const [showPreviousClassified, setShowPreviousClassified] = React.useState(false)
 
   const toOrganizeSet = React.useMemo(() => {
@@ -185,7 +187,7 @@ export function DoneView({
     }
     collect(fullClassifiedTree)
     return keys
-  }, [fullClassifiedTree])
+  }, [fullClassifiedTree, activeLanguage])
 
   // 严格二次校验：若文件在实体分类目录中已归类，100% 从未归类面板中剔除，同时全维度防重！
   const unclassifiedFiles = React.useMemo(() => {

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { MaterialIcon, cn } from '../../../../lib/utils'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { Button } from '../../../ui/button'
 import { Input } from '../../../ui/input'
 import { Badge } from '../../../ui/badge'
@@ -384,6 +385,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
   inspectedFile = null,
   onClearInspectedFile
 }) => {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const totalFilesCount = files.length
 
   // 每个已有标签的状态映射: `${dimensionId}::${tagValue}` -> TagActionState
@@ -754,7 +756,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     })
 
     return result
-  }, [inspectedFileItem, dimIdToName, tagToDimName])
+  }, [inspectedFileItem, dimIdToName, tagToDimName, activeLanguage])
 
   // 统计已添加和已移除的变更数量
   const changeStats = useMemo(() => {

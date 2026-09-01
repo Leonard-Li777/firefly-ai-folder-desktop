@@ -99,7 +99,7 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
   ({
     model,
     isDownloaded,
-    isDsparkDownloaded: isDsparkDownloadedProp = false,
+    isDsparkDownloaded = false,
     isActive,
     isEx,
     isCpuTier = false,
@@ -110,13 +110,6 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
     const { activeDownloadId, setActiveDownloadId } = useModelStore()
     const compositeId = `${model.id}@${model.source}`
     const dsparkModelId = model.dspark as string | undefined
-    const [isDsparkDownloaded, setIsDsparkDownloaded] = useState<boolean>(isDsparkDownloadedProp)
-
-    useEffect(() => {
-      if (isDsparkDownloadedProp) {
-        setIsDsparkDownloaded(true)
-      }
-    }, [isDsparkDownloadedProp])
 
     // 为主模型独立初始化下载 Hook
     const {
@@ -154,7 +147,6 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
     } = useModelDownload(dsparkModelId || '', {
       source: model.source,
       onDownloadComplete: () => {
-        setIsDsparkDownloaded(true)
         onDownloadComplete(dsparkModelId || '', model.source)
         if (activeDownloadId === dsparkCompositeId) {
           setActiveDownloadId(null)
@@ -171,18 +163,6 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
         }
       }
     })
-
-    // 检查本地 DSpark 是否已经下载就绪
-    useEffect(() => {
-      if (!dsparkModelId || !window.electronAPI?.checkModelsStatus) return
-      window.electronAPI.checkModelsStatus().then((statusMap: any) => {
-        const dsparkKey = `${dsparkModelId}@${model.source}`
-        const status = statusMap[dsparkKey] || statusMap[dsparkModelId]
-        if (status?.isDownloaded) {
-          setIsDsparkDownloaded(true)
-        }
-      }).catch(() => {})
-    }, [dsparkModelId, model.source])
 
     const isDownloading = downloadState.isDownloading
     const isDsparkDownloading = dsparkDownloadState.isDownloading
@@ -407,17 +387,25 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
  * AI模型设置组件 - 支持明暗双色主题适配，优化硬件显示与列表布局
  */
 export const AIModelSettings: React.FC = () => {
-  const { config, getConfigValue, updateConfigValue, isMigrating, setMigrating } =
-    useSettingsStore()
+  const modelPath = useSettingsStore(s => s.config?.modelPath)
+  const selectedModelId = useSettingsStore(s => s.config?.selectedModelId)
+  const selectedModelSource = useSettingsStore(s => s.config?.selectedModelSource)
+  const aiServiceMode = useSettingsStore(s => s.config?.aiServiceMode)
+  const aiEngine = useSettingsStore(s => s.config?.aiEngine)
+  const isMigrating = useSettingsStore(s => s.isMigrating)
+  const setMigrating = useSettingsStore(s => s.setMigrating)
+  const getConfigValue = useSettingsStore(s => s.getConfigValue)
+  const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   const { activeLanguage } = useVoerkaI18n(i18nScope)
-  const { setModelName } = useModelStore()
+  const setModelName = useModelStore(s => s.setModelName)
+  const activeDownloadId = useModelStore(s => s.activeDownloadId)
+  const setActiveDownloadId = useModelStore(s => s.setActiveDownloadId)
 
   const [models, setModels] = useState<any[]>([])
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
   const [recommendedModelIds, setRecommendedModelIds] = useState<string[]>([])
   const [integrityFailedPackages, setIntegrityFailedPackages] = useState<string[]>([])
   const [modelDownloadStatus, setModelDownloadStatus] = useState<Record<string, boolean>>({})
-  const { activeDownloadId, setActiveDownloadId } = useModelStore()
   const [loading, setLoading] = useState<boolean>(false)
   const isGpuSwitching = useAIServiceStore(state => state.isGpuSwitching)
   const setIsGpuSwitching = useAIServiceStore(state => state.setIsGpuSwitching)
@@ -428,7 +416,7 @@ export const AIModelSettings: React.FC = () => {
     source?: string
   } | null>(null)
 
-  const [modelStoragePath, setModelStoragePath] = useState(config?.modelPath || '')
+  const [modelStoragePath, setModelStoragePath] = useState(modelPath || '')
   const [builtinModelId, setBuiltinModelId] = useState<string>('')
 
   useEffect(() => {
@@ -445,13 +433,13 @@ export const AIModelSettings: React.FC = () => {
     fetchBuiltinId()
   }, [])
 
-  const currentStoragePath = config?.modelPath || ''
+  const currentStoragePath = modelPath || ''
   useEffect(() => {
     setModelStoragePath(currentStoragePath)
   }, [currentStoragePath])
 
   const handlePathChange = async (newPath: string) => {
-    const oldPath = config?.modelPath || ''
+    const oldPath = modelPath || ''
     if (!newPath || newPath === oldPath) return
 
     const validation = validateModelPath(newPath)
@@ -484,7 +472,7 @@ export const AIModelSettings: React.FC = () => {
         builtinId = await window.electronAPI.getBuiltinModelId()
       }
 
-      const currentModelId = config?.selectedModelId
+      const currentModelId = selectedModelId
 
       if (builtinId && currentModelId !== builtinId) {
         logger.info(LogCategory.RENDERER, '迁移前自动切换到内置模型以确保稳定性')
@@ -522,8 +510,7 @@ export const AIModelSettings: React.FC = () => {
     }
   }
 
-  const isCloudMode = config?.aiServiceMode === 'cloud'
-  const aiEngine = config?.aiEngine
+  const isCloudMode = aiServiceMode === 'cloud'
   const isOllama = aiEngine === 'ollama'
 
   const loadModelsAndHardware = useCallback(
@@ -704,35 +691,53 @@ export const AIModelSettings: React.FC = () => {
     }) as any
   }, [loadModelsAndHardware])
 
-  const handleActivateModel = async (modelId: string, source?: string) => {
-    const model = models.find(m => m.id === modelId)
-    if (!model) return
-    try {
-      // 显式传入 preventAutoReload: true，防止配置写入导致冗余的服务重载，
-      // 因为下方会接着调用 onModelChanged 进行受控的模型重载
-      await updateConfigValue('SELECTED_MODEL_ID', modelId, { preventAutoReload: true })
-      // 同时保存模型来源（huggingface / modelscope / ollama），以便后端精确查询模型配置
-      await updateConfigValue('SELECTED_MODEL_SOURCE', source, { preventAutoReload: true })
-      setModelName(model.name)
-      const { notifyModelChanged } = useAIServiceStore.getState()
-      await notifyModelChanged(modelId)
-      // 激活成功后主动刷新模型列表，确保下载状态立即以真实状态展示，
-      // 避免"已激活"徽章已点亮但下载状态仍是旧值（未刷新）导致按钮错乱
-      await loadModelsAndHardware()
-    } catch (error) {
-      console.error('激活模型失败:', error)
-    }
-  }
+  const handleActivateModel = useCallback(
+    async (modelId: string, source?: string) => {
+      const model = models.find(m => m.id === modelId)
+      if (!model) return
+      try {
+        // 显式传入 preventAutoReload: true，防止配置写入导致冗余的服务重载，
+        // 因为下方会接着调用 onModelChanged 进行受控的模型重载
+        await updateConfigValue('SELECTED_MODEL_ID', modelId, { preventAutoReload: true })
+        // 同时保存模型来源（huggingface / modelscope / ollama），以便后端精确查询模型配置
+        await updateConfigValue('SELECTED_MODEL_SOURCE', source, { preventAutoReload: true })
+        setModelName(model.name)
+        const { notifyModelChanged } = useAIServiceStore.getState()
+        await notifyModelChanged(modelId)
+        // 激活成功后主动刷新模型列表，确保下载状态立即以真实状态展示，
+        // 避免"已激活"徽章已点亮但下载状态仍是旧值（未刷新）导致按钮错乱
+        await loadModelsAndHardware()
+      } catch (error) {
+        console.error('激活模型失败:', error)
+      }
+    },
+    [models, updateConfigValue, setModelName, loadModelsAndHardware]
+  )
 
-  const handleDeleteModel = async (modelId: string, source?: string) => {
-    const model = models.find(m => m.id === modelId && (!source || m.source === source))
-    if (!model) return
-    setDeleteConfirm({
-      modelId,
-      displayName: model.name,
-      source
-    })
-  }
+  const handleDeleteModel = useCallback(
+    async (modelId: string, source?: string) => {
+      const model = models.find(m => m.id === modelId && (!source || m.source === source))
+      if (!model) return
+      setDeleteConfirm({
+        modelId,
+        displayName: model.name,
+        source
+      })
+    },
+    [models]
+  )
+
+  const handleDownloadComplete = useCallback(
+    (modelId: string, source?: string) => {
+      setModelDownloadStatus(prev => ({
+        ...prev,
+        [`${modelId}@${source || 'default'}`]: true,
+        [modelId]: true
+      }))
+      loadModelsAndHardware()
+    },
+    [loadModelsAndHardware]
+  )
 
   const confirmDeleteModel = async () => {
     if (!deleteConfirm) return
@@ -764,9 +769,8 @@ export const AIModelSettings: React.FC = () => {
    * 用 (id, source) 组合 key 精确比对，避免多个同 id 模型都显示激活态。
    */
   const activeModelKey = useMemo(
-    () =>
-      resolveActiveModelKey(models as any, config?.selectedModelId, config?.selectedModelSource),
-    [models, config?.selectedModelId, config?.selectedModelSource]
+    () => resolveActiveModelKey(models as any, selectedModelId, selectedModelSource),
+    [models, selectedModelId, selectedModelSource]
   )
 
   const sourceList = useMemo(() => {
@@ -798,17 +802,17 @@ export const AIModelSettings: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6 text-foreground">
-      <div className="flex justify-between items-start">
-        <div className="w-[300px]">
+      <div className="flex justify-between items-start gap-4">
+        <div className="flex-1 min-w-0 pr-4">
           <h3 className="text-xl font-black tracking-tight">{t('模型管理')}</h3>
-          <p className="text-xs text-muted-foreground font-medium mt-1">
+          <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">
             {t('模型就像AI大脑，它们决定了文件分析准确率与响应速度')}
           </p>
-          <p className="text-xs text-muted-foreground font-medium mt-1">
+          <p className="text-xs text-muted-foreground font-medium mt-1 leading-relaxed">
             {t('本地模型相当于：小学（内置）、初中、高中；云端模型：高中、大学')}
           </p>
         </div>
-        <div className="flex items-center p-0.5 bg-muted/50 dark:bg-muted/20 rounded-xl border border-border shadow-sm">
+        <div className="flex items-center p-0.5 bg-muted/50 dark:bg-muted/20 rounded-xl border border-border shadow-sm shrink-0">
           <button
             onClick={() => updateConfigValue('AI_SERVICE_MODE', 'local')}
             className={`flex items-center gap-2 px-6 py-2 rounded-l-[9px] rounded-r-none text-sm font-bold transition-all border
@@ -956,10 +960,7 @@ export const AIModelSettings: React.FC = () => {
                       const downloadKey = `${model.id}@${model.source}`
                       const isActive = activeModelKey === `${model.id}@${model.source || 'default'}`
                       const bestAcc = String(
-                        (config as any)?.bestAcceleration ??
-                          (config as any)?.BEST_ACCELERATION ??
-                          getConfigValue<string>('BEST_ACCELERATION') ??
-                          ''
+                        getConfigValue<string>('BEST_ACCELERATION') ?? ''
                       ).toLowerCase()
                       //临时测试 cpu模式
                       const isCpuTier = bestAcc === 'cpu'
@@ -981,13 +982,7 @@ export const AIModelSettings: React.FC = () => {
                           isCpuTier={isCpuTier}
                           onActivate={handleActivateModel}
                           onDelete={handleDeleteModel}
-                          onDownloadComplete={modelId => {
-                            setModelDownloadStatus(prev => ({
-                              ...prev,
-                              [`${modelId}@${model.source}`]: true
-                            }))
-                            loadModelsAndHardware()
-                          }}
+                          onDownloadComplete={handleDownloadComplete}
                         />
                       )
                     })

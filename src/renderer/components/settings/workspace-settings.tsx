@@ -35,7 +35,10 @@ import { formatFileSize, formatDateTime } from '@firefly/shared'
  * 工作目录设置组件
  */
 export const MonitoringSettings: React.FC = () => {
-  const { deleteWorkspaceDirectory, resetWorkspaceDirectory, isLoading, error } = useSettingsStore()
+  const deleteWorkspaceDirectory = useSettingsStore(s => s.deleteWorkspaceDirectory)
+  const resetWorkspaceDirectory = useSettingsStore(s => s.resetWorkspaceDirectory)
+  const isLoading = useSettingsStore(s => s.isLoading)
+  const error = useSettingsStore(s => s.error)
   const [workspaceDirectories, setWorkspaceDirectories] = useState<WorkspaceDirectory[]>([])
   const [loadingDirectories, setLoadingDirectories] = useState(true)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)

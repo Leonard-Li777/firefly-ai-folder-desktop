@@ -367,7 +367,7 @@
     "$files": [
       "src/renderer/components/file-explorer/Organize/index.tsx(21896-21904)",
       "src/renderer/components/file-explorer/Organize/index.tsx(22053-22061)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(10553-10561)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(10687-10695)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12006-12014)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(12300-12308)"
     ],
@@ -785,6 +785,691 @@
     "ko-KR": "파일 선택으로 이동",
     "$files": ["src/renderer/components/file-explorer/Organize/index.tsx(46287-46296)"],
     "$id": 8589
+  },
+  "获取待整理文件列表失败，请查看日志确认": {
+    "en-US": "Failed to obtain the list of files to be sorted, please check the log for confirmation.",
+    "es-ES": "No se pudo obtener la lista de archivos para ordenar; consulte el registro para confirmarlo.",
+    "ar-EG": "فشل الحصول على قائمة الملفات التي سيتم فرزها، يرجى التحقق من السجل للتأكيد.",
+    "pt-PT": "Falha ao obter a lista de arquivos a serem classificados. Verifique o log para confirmação.",
+    "ru-RU": "Не удалось получить список файлов для сортировки. Проверьте журнал для подтверждения.",
+    "ja-JP": "ソート対象のファイルのリストを取得できませんでした。ログを確認してください。",
+    "de-DE": "Die Liste der zu sortierenden Dateien konnte nicht abgerufen werden. Bitte überprüfen Sie das Protokoll zur Bestätigung.",
+    "fr-FR": "Impossible d'obtenir la liste des fichiers à trier, veuillez vérifier le journal pour confirmation.",
+    "ko-KR": "정렬할 파일 목록을 가져오지 못했습니다. 확인하려면 로그를 확인하세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(8646-8669)"],
+    "$id": 8700
+  },
+  "未归类": {
+    "en-US": "Uncategorized",
+    "es-ES": "Sin categoría",
+    "ar-EG": "غير مصنف",
+    "pt-PT": "Sem categoria",
+    "ru-RU": "Без категории",
+    "ja-JP": "未分類",
+    "de-DE": "Nicht kategorisiert",
+    "fr-FR": "Non classé",
+    "ko-KR": "분류되지 않음",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(11423-11430)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(14861-14868)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(14995-15002)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(20099-20106)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(20200-20207)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(21595-21602)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(32672-32679)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(32761-32768)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(72082-72089)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(72224-72231)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(3152-3159)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(5253-5260)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(6094-6101)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(8610-8617)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(11397-11404)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(15261-15268)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(15598-15605)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(16014-16021)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(16446-16453)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(21545-21552)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(25432-25439)",
+      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(28878-28885)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(2824-2831)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(2929-2936)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(3287-3294)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(3364-3371)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(5952-5959)",
+      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(12924-12931)",
+      "src/renderer/components/file-explorer/Organize/components/OrganizingView.tsx(1780-1787)"
+    ],
+    "$id": 8605
+  },
+  "已加载已有虚拟目录完整文件结构": {
+    "en-US": "The complete file structure of the existing virtual directory has been loaded.",
+    "es-ES": "Se ha cargado la estructura de archivos completa del directorio virtual existente.",
+    "ar-EG": "تم تحميل بنية الملف الكاملة للدليل الظاهري الموجود.",
+    "pt-PT": "A estrutura completa de arquivos do diretório virtual existente foi carregada.",
+    "ru-RU": "Загружена полная файловая структура существующего виртуального каталога.",
+    "ja-JP": "既存の仮想ディレクトリの完全なファイル構造がロードされました。",
+    "de-DE": "Die komplette Dateistruktur des bestehenden virtuellen Verzeichnisses wurde geladen.",
+    "fr-FR": "La structure complète des fichiers du répertoire virtuel existant a été chargée.",
+    "ko-KR": "기존 가상 디렉터리의 전체 파일 구조가 로드되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16340-16359)"],
+    "$id": 8701
+  },
+  "已加载增量整理待处理文件与现有分类结构": {
+    "en-US": "Loaded incremental sorting files to be processed and existing classification structure",
+    "es-ES": "Archivos de clasificación incrementales cargados para procesar y estructura de clasificación existente",
+    "ar-EG": "تحميل ملفات الفرز المتزايدة لتتم معالجتها وهيكل التصنيف الحالي",
+    "pt-PT": "Arquivos de classificação incrementais carregados a serem processados ​​e estrutura de classificação existente",
+    "ru-RU": "Загруженные файлы инкрементной сортировки для обработки и существующая структура классификации.",
+    "ja-JP": "ロードされた処理対象の増分並べ替えファイルと既存の分類構造",
+    "de-DE": "Zu verarbeitende inkrementelle Sortierdateien und vorhandene Klassifizierungsstruktur werden geladen",
+    "fr-FR": "Fichiers de tri incrémentiel chargés à traiter et structure de classification existante",
+    "ko-KR": "처리할 증분 정렬 파일과 기존 분류 구조를 로드했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16438-16461)"],
+    "$id": 8702
+  },
+  "加载增量整理文件失败": {
+    "en-US": "Failed to load incremental grooming file",
+    "es-ES": "No se pudo cargar el archivo de limpieza incremental",
+    "ar-EG": "فشل تحميل ملف الاستمالة المتزايد",
+    "pt-PT": "Falha ao carregar o arquivo de preparação incremental",
+    "ru-RU": "Не удалось загрузить файл добавочной обработки.",
+    "ja-JP": "インクリメンタル グルーミング ファイルのロードに失敗しました",
+    "de-DE": "Das Laden der inkrementellen Grooming-Datei ist fehlgeschlagen",
+    "fr-FR": "Échec du chargement du fichier de nettoyage incrémentiel",
+    "ko-KR": "증분 정리 파일을 로드하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16590-16604)"],
+    "$id": 8703
+  },
+  "加载草稿失败，请重试": {
+    "en-US": "Failed to load draft, please try again",
+    "es-ES": "No se pudo cargar el borrador. Inténtelo de nuevo.",
+    "ar-EG": "فشل تحميل المسودة، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha ao carregar o rascunho. Tente novamente",
+    "ru-RU": "Не удалось загрузить черновик. Повторите попытку.",
+    "ja-JP": "下書きをロードできませんでした。もう一度お試しください。",
+    "de-DE": "Der Entwurf konnte nicht geladen werden. Bitte versuchen Sie es erneut",
+    "fr-FR": "Échec du chargement du brouillon, veuillez réessayer",
+    "ko-KR": "초안을 로드하지 못했습니다. 다시 시도해 주세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34174-34188)"],
+    "$id": 8704
+  },
+  "已删除未保存的草稿": {
+    "en-US": "Unsaved draft deleted",
+    "es-ES": "Borrador no guardado eliminado",
+    "ar-EG": "تم حذف المسودة غير المحفوظة",
+    "pt-PT": "Rascunho não salvo excluído",
+    "ru-RU": "Несохраненный черновик удален.",
+    "ja-JP": "保存されていない下書きが削除されました",
+    "de-DE": "Nicht gespeicherter Entwurf gelöscht",
+    "fr-FR": "Brouillon non enregistré supprimé",
+    "ko-KR": "저장되지 않은 초안이 삭제되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34518-34531)"],
+    "$id": 8705
+  },
+  "删除草稿失败": {
+    "en-US": "Delete draft failed",
+    "es-ES": "Error al eliminar el borrador",
+    "ar-EG": "فشل حذف المسودة",
+    "pt-PT": "Falha ao excluir rascunho",
+    "ru-RU": "Удалить черновик не удалось",
+    "ja-JP": "下書きの削除に失敗しました",
+    "de-DE": "Entwurf konnte nicht gelöscht werden",
+    "fr-FR": "Échec de la suppression du brouillon",
+    "ko-KR": "초안 삭제 실패",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34688-34698)"],
+    "$id": 8706
+  },
+  "模型正在切换中，请等待": {
+    "en-US": "The model is switching, please wait",
+    "es-ES": "El modelo se está cambiando, por favor espere",
+    "ar-EG": "نموذج التبديل قيد التشغيل، يرجى الانتظار",
+    "pt-PT": "A modelo está a ser alterada, por favor aguarde",
+    "ru-RU": "Модель переключается, пожалуйста, подождите",
+    "ja-JP": "モデルの切替中です。お待ちください",
+    "de-DE": "Das Modell wird gerade umgeschaltet, bitte warten",
+    "fr-FR": "Le modèle est en cours de basculement, veuillez patienter",
+    "ko-KR": "모델 전환 중입니다. 기다려 주세요",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(36852-36867)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39584-39599)"
+    ],
+    "$id": 8707
+  },
+  "生成候选方案失败，请重试": {
+    "en-US": "Failed to generate candidate solutions, please try again",
+    "es-ES": "No se pudieron generar soluciones candidatas, inténtelo de nuevo",
+    "ar-EG": "فشل إنشاء الحلول المرشحة، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha ao gerar soluções candidatas. Tente novamente",
+    "ru-RU": "Не удалось создать возможные решения. Повторите попытку.",
+    "ja-JP": "候補ソリューションの生成に失敗しました。もう一度お試しください。",
+    "de-DE": "Kandidatenlösungen konnten nicht generiert werden. Bitte versuchen Sie es erneut",
+    "fr-FR": "Échec de la génération de solutions candidates, veuillez réessayer",
+    "ko-KR": "후보 솔루션을 생성하지 못했습니다. 다시 시도해 주세요.",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(36938-36954)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(37237-37253)"
+    ],
+    "$id": 8708
+  },
+  "生成失败，请重试": {
+    "en-US": "Generation failed, please try again",
+    "es-ES": "La generación falló, por favor inténtalo de nuevo",
+    "ar-EG": "فشل الإنشاء، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha na geração, tente novamente",
+    "ru-RU": "Генерация не удалась, попробуйте еще раз",
+    "ja-JP": "生成に失敗しました。もう一度お試しください。",
+    "de-DE": "Die Generierung ist fehlgeschlagen. Bitte versuchen Sie es erneut",
+    "fr-FR": "La génération a échoué, veuillez réessayer",
+    "ko-KR": "생성에 실패했습니다. 다시 시도해 주세요.",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39670-39682)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39965-39977)"
+    ],
+    "$id": 8709
+  },
+  "新虚拟目录": {
+    "en-US": "New virtual directory",
+    "es-ES": "Nuevo directorio virtual",
+    "ar-EG": "الدليل الظاهري الجديد",
+    "pt-PT": "Novo diretório virtual",
+    "ru-RU": "новый виртуальный каталог",
+    "ja-JP": "新しい仮想ディレクトリ",
+    "de-DE": "Neues virtuelles Verzeichnis",
+    "fr-FR": "Nouveau répertoire virtuel",
+    "ko-KR": "새 가상 디렉터리",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(40536-40545)"],
+    "$id": 8710
+  },
+  "AI生成目录树预览失败: {message}": {
+    "en-US": "Failed to generate a directory tree preview using AI: {message}",
+    "es-ES": "Error al generar la vista previa del árbol de directorios mediante IA: {message}",
+    "ar-EG": "فشل معاينة شجرة المجلدات التي أنشأتها الذكاء الاصطناعي: {message}",
+    "pt-PT": "Falha na pré-visualização da árvore de diretórios gerada pela IA: {message}",
+    "ru-RU": "Ошибка при предварительном просмотре дерева каталогов, сгенерированного ИИ: {message}",
+    "ja-JP": "AIによるディレクトリツリーのプレビュー生成に失敗しました: {message}",
+    "de-DE": "Fehler bei der KI-generierten Vorschau der Verzeichnisstruktur: {message}",
+    "fr-FR": "Échec de la prévisualisation de l'arborescence générée par l'IA : {message}",
+    "ko-KR": "AI에 의한 디렉터리 트리 미리보기 실패: {message}",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(44609-44635)"],
+    "$id": 11275
+  },
+  "目录树解析出错，已使用默认骨架树": {
+    "en-US": "Directory tree parsing error, default skeleton tree has been used",
+    "es-ES": "Error en el análisis del árbol de directorios; se ha utilizado el árbol predeterminado",
+    "ar-EG": "حدث خطأ في تحليل شجرة الأدلة، تم استخدام الهيكل العظمي الافتراضي لشجرة الأدلة",
+    "pt-PT": "Erro na análise da árvore de diretórios; foi utilizada uma árvore esqueleto padrão",
+    "ru-RU": "Ошибка при парсинге дерева каталогов, использовано дерево по умолчанию",
+    "ja-JP": "ディレクトリツリーの解析エラーが発生したため、デフォルトのスケルトントリーを使用しました",
+    "de-DE": "Fehler bei der Analyse des Verzeichnisbaums, Standard-Skelettbaum wird verwendet",
+    "fr-FR": "Erreur lors de l'analyse de l'arborescence des répertoires, utilisation de la structure squelette par défaut",
+    "ko-KR": "디렉토리 트리 분석 오류 발생. 기본 골격 트리를 사용했습니다",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(46043-46063)"],
+    "$id": 8711
+  },
+  "未选择工作区文件夹，无法开始整理": {
+    "en-US": "No workspace folder selected, cannot start organizing",
+    "es-ES": "No se seleccionó ninguna carpeta del espacio de trabajo, no se puede comenzar a organizar",
+    "ar-EG": "لم يتم تحديد مجلد مساحة عمل، لا يمكن بدء التنظيم",
+    "pt-PT": "Nenhuma pasta do espaço de trabalho selecionada, não é possível iniciar a organização",
+    "ru-RU": "Папка рабочей области не выбрана, невозможно начать организацию",
+    "ja-JP": "ワークスペースフォルダーが選択されていないため、整理を開始できません",
+    "de-DE": "Kein Arbeitsbereichsordner ausgewählt, Organisation kann nicht gestartet werden",
+    "fr-FR": "Aucun dossier d'espace de travail sélectionné, impossible de démarrer l'organisation",
+    "ko-KR": "작업공간 폴더가 선택되지 않아 정리를 시작할 수 없습니다.",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(48882-48902)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(49454-49474)"
+    ],
+    "$id": 8712
+  },
+  "整理失败，请重试": {
+    "en-US": "Organizing failed, please try again",
+    "es-ES": "Error al organizar, inténtelo de nuevo",
+    "ar-EG": "فشل التنظيم، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha na organização, por favor tente novamente",
+    "ru-RU": "Ошибка упорядочивания, повторите попытку",
+    "ja-JP": "整理に失敗しました。再試行してください",
+    "de-DE": "Sortieren fehlgeschlagen, bitte erneut versuchen",
+    "fr-FR": "Échec du rangement, veuillez réessayer",
+    "ko-KR": "정리하지 못했습니다. 다시 시도해 주세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(51729-51741)"],
+    "$id": 8713
+  },
+  "整理过程出错: {message}": {
+    "en-US": "An error occurred during the sorting process: {message}",
+    "es-ES": "Se produjo un error durante el proceso de clasificación: {message}",
+    "ar-EG": "حدث خطأ أثناء عملية الفرز: {message}",
+    "pt-PT": "Ocorreu um erro durante o processo de classificação: {message}",
+    "ru-RU": "В процессе сортировки произошла ошибка: {message}",
+    "ja-JP": "並べ替え処理中にエラーが発生しました: {message}",
+    "de-DE": "Beim Sortiervorgang ist ein Fehler aufgetreten: {message}",
+    "fr-FR": "Une erreur s'est produite lors du processus de tri : {message}",
+    "ko-KR": "정렬 프로세스 중에 오류가 발생했습니다: {message}",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(53917-53938)"],
+    "$id": 8714
+  },
+  "目录树预览正在生成中，请稍候...": {
+    "en-US": "Directory tree preview is being generated, please wait...",
+    "es-ES": "Se está generando una vista previa del árbol de directorios. Espere...",
+    "ar-EG": "يتم الآن إنشاء معاينة شجرة الدليل، يرجى الانتظار...",
+    "pt-PT": "A visualização da árvore de diretórios está sendo gerada. Aguarde...",
+    "ru-RU": "Создается предварительный просмотр дерева каталогов, подождите...",
+    "ja-JP": "ディレクトリ ツリーのプレビューを生成中です。お待​​ちください...",
+    "de-DE": "Die Vorschau des Verzeichnisbaums wird erstellt. Bitte warten ...",
+    "fr-FR": "L'aperçu de l'arborescence des répertoires est en cours de génération, veuillez patienter...",
+    "ko-KR": "디렉터리 트리 미리보기를 생성하는 중입니다. 잠시 기다려 주십시오...",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(54487-54508)"],
+    "$id": 8715
+  },
+  "目录树预览还没生成，无法开始整理": {
+    "en-US": "The directory tree preview has not been generated yet and cannot be organized.",
+    "es-ES": "La vista previa del árbol de directorios aún no se ha generado y no se puede organizar.",
+    "ar-EG": "لم يتم إنشاء معاينة شجرة الدليل بعد ولا يمكن تنظيمها.",
+    "pt-PT": "A visualização da árvore de diretórios ainda não foi gerada e não pode ser organizada.",
+    "ru-RU": "Предварительный просмотр дерева каталогов еще не создан и не может быть организован.",
+    "ja-JP": "ディレクトリ ツリーのプレビューはまだ生成されていないため、整理できません。",
+    "de-DE": "Die Verzeichnisbaumvorschau wurde noch nicht generiert und kann nicht organisiert werden.",
+    "fr-FR": "L'aperçu de l'arborescence des répertoires n'a pas encore été généré et ne peut pas être organisé.",
+    "ko-KR": "디렉터리 트리 미리보기가 아직 생성되지 않았으며 구성할 수 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(54588-54608)"],
+    "$id": 8716
+  },
+  "请先完成整理后再保存": {
+    "en-US": "Please finish organizing before saving",
+    "es-ES": "Por favor termine de organizar antes de guardar",
+    "ar-EG": "يرجى الانتهاء من التنظيم قبل الحفظ",
+    "pt-PT": "Termine de organizar antes de salvar",
+    "ru-RU": "Пожалуйста, завершите организацию перед сохранением",
+    "ja-JP": "保存する前に整理を完了してください",
+    "de-DE": "Bitte schließen Sie die Organisation ab, bevor Sie speichern",
+    "fr-FR": "Veuillez terminer l'organisation avant d'enregistrer",
+    "ko-KR": "저장하기 전에 정리를 완료하세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(61987-62001)"],
+    "$id": 8717
+  },
+  "虚拟目录保存成功": {
+    "en-US": "Virtual directory saved successfully",
+    "es-ES": "Directorio virtual guardado exitosamente",
+    "ar-EG": "تم حفظ الدليل الظاهري بنجاح",
+    "pt-PT": "Diretório virtual salvo com sucesso",
+    "ru-RU": "Виртуальный каталог успешно сохранен.",
+    "ja-JP": "仮想ディレクトリが正常に保存されました",
+    "de-DE": "Virtuelles Verzeichnis erfolgreich gespeichert",
+    "fr-FR": "Répertoire virtuel enregistré avec succès",
+    "ko-KR": "가상 디렉터리가 성공적으로 저장되었습니다.",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(63160-63172)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(64883-64895)"
+    ],
+    "$id": 8718
+  },
+  "保存失败：": {
+    "en-US": "Save failed:",
+    "es-ES": "Error al guardar:",
+    "ar-EG": "فشل الحفظ:",
+    "pt-PT": "Falha ao salvar:",
+    "ru-RU": "Сохранить не удалось:",
+    "ja-JP": "保存に失敗しました:",
+    "de-DE": "Speichern fehlgeschlagen:",
+    "fr-FR": "Échec de l'enregistrement :",
+    "ko-KR": "저장 실패:",
+    "$files": [
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(63410-63419)",
+      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(65133-65142)"
+    ],
+    "$id": 8719
+  },
+  "重命名目录成功": {
+    "en-US": "Directory renamed successfully",
+    "es-ES": "Directorio renombrado exitosamente",
+    "ar-EG": "تمت إعادة تسمية الدليل بنجاح",
+    "pt-PT": "Diretório renomeado com sucesso",
+    "ru-RU": "Каталог успешно переименован",
+    "ja-JP": "ディレクトリの名前が正常に変更されました",
+    "de-DE": "Verzeichnis erfolgreich umbenannt",
+    "fr-FR": "Répertoire renommé avec succès",
+    "ko-KR": "디렉터리 이름이 성공적으로 변경되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(66422-66433)"],
+    "$id": 8720
+  },
+  "创建根目录成功": {
+    "en-US": "Root directory created successfully",
+    "es-ES": "Directorio raíz creado exitosamente",
+    "ar-EG": "تم إنشاء الدليل الجذر بنجاح",
+    "pt-PT": "Diretório raiz criado com sucesso",
+    "ru-RU": "Корневой каталог успешно создан",
+    "ja-JP": "ルートディレクトリが正常に作成されました",
+    "de-DE": "Stammverzeichnis erfolgreich erstellt",
+    "fr-FR": "Répertoire racine créé avec succès",
+    "ko-KR": "루트 디렉터리가 성공적으로 생성되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(67088-67099)"],
+    "$id": 8721
+  },
+  "子目录名称已存在": {
+    "en-US": "Subdirectory name already exists",
+    "es-ES": "El nombre del subdirectorio ya existe",
+    "ar-EG": "اسم الدليل الفرعي موجود بالفعل",
+    "pt-PT": "O nome do subdiretório já existe",
+    "ru-RU": "Имя подкаталога уже существует",
+    "ja-JP": "サブディレクトリ名はすでに存在します",
+    "de-DE": "Der Name des Unterverzeichnisses existiert bereits",
+    "fr-FR": "Le nom du sous-répertoire existe déjà",
+    "ko-KR": "하위 디렉터리 이름이 이미 존재합니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(67759-67771)"],
+    "$id": 8722
+  },
+  "新增子目录成功": {
+    "en-US": "Added subdirectory successfully",
+    "es-ES": "Subdirectorio agregado exitosamente",
+    "ar-EG": "تمت إضافة الدليل الفرعي بنجاح",
+    "pt-PT": "Subdiretório adicionado com sucesso",
+    "ru-RU": "Подкаталог успешно добавлен",
+    "ja-JP": "サブディレクトリが正常に追加されました",
+    "de-DE": "Unterverzeichnis erfolgreich hinzugefügt",
+    "fr-FR": "Sous-répertoire ajouté avec succès",
+    "ko-KR": "하위 디렉터리를 성공적으로 추가했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(68209-68220)"],
+    "$id": 8723
+  },
+  "已删除目录「{name}」，包含的文件已移至未归类": {
+    "en-US": "Directory '{name}' has been deleted and the files it contained have been moved to Uncategorized",
+    "es-ES": "El directorio '{name}' se ha eliminado y los archivos que contenía se han movido a Sin categoría",
+    "ar-EG": "تم حذف الدليل '{name}' وتم نقل الملفات التي يحتوي عليها إلى غير مصنف",
+    "pt-PT": "O diretório '{name}' foi excluído e os arquivos contidos nele foram movidos para Sem categoria",
+    "ru-RU": "Каталог «{name}» был удален, а содержащиеся в нем файлы были перемещены в категорию «Без категории».",
+    "ja-JP": "ディレクトリ「{name}」は削除され、ディレクトリに含まれるファイルは未分類に移動されました",
+    "de-DE": "Das Verzeichnis „{name}“ wurde gelöscht und die darin enthaltenen Dateien wurden nach „Nicht kategorisiert“ verschoben",
+    "fr-FR": "Le répertoire '{name}' a été supprimé et les fichiers qu'il contenait ont été déplacés vers Non classé",
+    "ko-KR": "'{name}' 디렉터리가 삭제되었으며 여기에 포함된 파일이 Uncategorized로 이동되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(74303-74332)"],
+    "$id": 8724
+  },
+  "已删除空目录「{name}」": {
+    "en-US": "Empty directory '{name}' deleted",
+    "es-ES": "Directorio vacío '{name}' eliminado",
+    "ar-EG": "تم حذف الدليل الفارغ '{name}'",
+    "pt-PT": "Diretório vazio '{name}' excluído",
+    "ru-RU": "Пустой каталог '{name}' удален.",
+    "ja-JP": "空のディレクトリ「{name}」が削除されました",
+    "de-DE": "Leeres Verzeichnis „{name}“ gelöscht",
+    "fr-FR": "Répertoire vide '{name}' supprimé",
+    "ko-KR": "빈 디렉터리 '{name}'이(가) 삭제되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(75140-75158)"],
+    "$id": 8725
+  },
+  "已移动文件至「{target}」": {
+    "en-US": "File moved to '{target}'",
+    "es-ES": "Archivo movido a '{target}'",
+    "ar-EG": "تم نقل الملف إلى \"{target}\"",
+    "pt-PT": "Arquivo movido para '{target}'",
+    "ru-RU": "Файл перемещен в '{target}'",
+    "ja-JP": "ファイルは「{target}」に移動されました",
+    "de-DE": "Datei nach „{target}“ verschoben",
+    "fr-FR": "Fichier déplacé vers '{target}'",
+    "ko-KR": "파일이 '{target}'로 이동되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(80952-80972)"],
+    "$id": 8726
+  },
+  "不能将父目录拖放到其子目录中": {
+    "en-US": "Cannot drag and drop a parent directory into its subdirectories",
+    "es-ES": "No se puede arrastrar y soltar un directorio principal en sus subdirectorios",
+    "ar-EG": "لا يمكن سحب وإفلات الدليل الأصلي في الدلائل الفرعية الخاصة به",
+    "pt-PT": "Não é possível arrastar e soltar um diretório pai em seus subdiretórios",
+    "ru-RU": "Невозможно перетащить родительский каталог в его подкаталоги.",
+    "ja-JP": "親ディレクトリをそのサブディレクトリにドラッグ アンド ドロップできません",
+    "de-DE": "Ein übergeordnetes Verzeichnis kann nicht per Drag & Drop in seine Unterverzeichnisse gezogen werden",
+    "fr-FR": "Impossible de glisser-déposer un répertoire parent dans ses sous-répertoires",
+    "ko-KR": "상위 디렉터리를 해당 하위 디렉터리로 끌어서 놓을 수 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(81381-81399)"],
+    "$id": 8727
+  },
+  "已将目录「{source}」放入「{target}」": {
+    "en-US": "Directory \"{source}\" has been placed into \"{target}\"",
+    "es-ES": "El directorio \"{source}\" se ha colocado en \"{target}\"",
+    "ar-EG": "تم وضع الدليل \"{source}\" في \"{target}\"",
+    "pt-PT": "O diretório \"{source}\" foi colocado em \"{target}\"",
+    "ru-RU": "Каталог \"{source}\" помещен в \"{target}\"",
+    "ja-JP": "ディレクトリ「{source}」は「{target}」に配置されました",
+    "de-DE": "Das Verzeichnis „{source}“ wurde in „{target}“ abgelegt.",
+    "fr-FR": "Le répertoire \"{source}\" a été placé dans \"{target}\"",
+    "ko-KR": "\"{source}\" 디렉터리가 \"{target}\"에 배치되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(84870-84900)"],
+    "$id": 8728
+  },
+  "暂无待重命名文件": {
+    "en-US": "There are no files to be renamed yet",
+    "es-ES": "Aún no hay archivos cuyo nombre cambiar",
+    "ar-EG": "لا توجد ملفات لإعادة تسميتها بعد",
+    "pt-PT": "Ainda não há arquivos a serem renomeados",
+    "ru-RU": "Пока нет файлов для переименования",
+    "ja-JP": "名前を変更するファイルはまだありません",
+    "de-DE": "Es sind noch keine Dateien vorhanden, die umbenannt werden müssen",
+    "fr-FR": "Il n'y a pas encore de fichiers à renommer",
+    "ko-KR": "아직 이름을 바꿀 파일이 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87872-87884)"],
+    "$id": 9991
+  },
+  "成功更新 {count} 个文件智能名称": {
+    "en-US": "Successfully updated {count} file smart names",
+    "es-ES": "{count} nombres inteligentes de archivos actualizados correctamente",
+    "ar-EG": "تم تحديث الأسماء الذكية للملفات {count} بنجاح",
+    "pt-PT": "Nomes inteligentes de arquivos {count} atualizados com êxito",
+    "ru-RU": "Успешно обновлено смарт-имена файлов {count}.",
+    "ja-JP": "{count} ファイルのスマート名が正常に更新されました",
+    "de-DE": "{count}-Datei-Smart-Namen erfolgreich aktualisiert",
+    "fr-FR": "La mise à jour réussie de {count} noms intelligents de fichiers",
+    "ko-KR": "{count} 파일 스마트 이름을 성공적으로 업데이트했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88200-88224)"],
+    "$id": 11117
+  },
+  "{count} 个文件更新失败": {
+    "en-US": "{count} files failed to update",
+    "es-ES": "{count} archivos no se pudieron actualizar",
+    "ar-EG": "{count} فشل تحديث الملفات",
+    "pt-PT": "{count} arquivos não foram atualizados",
+    "ru-RU": "{count} файлов не удалось обновить.",
+    "ja-JP": "{count} ファイルを更新できませんでした",
+    "de-DE": "{count} Dateien konnten nicht aktualisiert werden",
+    "fr-FR": "{count} fichiers n'ont pas pu être mis à jour",
+    "ko-KR": "{count} 파일을 업데이트하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88325-88344)"],
+    "$id": 11118
+  },
+  "重命名失败": {
+    "en-US": "Rename failed",
+    "es-ES": "Error al cambiar el nombre",
+    "ar-EG": "فشلت إعادة التسمية",
+    "pt-PT": "Falha ao renomear",
+    "ru-RU": "Переименование не удалось",
+    "ja-JP": "名前変更に失敗しました",
+    "de-DE": "Umbenennen fehlgeschlagen",
+    "fr-FR": "Échec du changement de nom",
+    "ko-KR": "이름 바꾸기 실패",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88824-88833)"],
+    "$id": 10043
+  },
+  "执行重命名异常": {
+    "en-US": "Execute rename exception",
+    "es-ES": "Ejecutar excepción de cambio de nombre",
+    "ar-EG": "تنفيذ استثناء إعادة التسمية",
+    "pt-PT": "Executar exceção de renomeação",
+    "ru-RU": "Выполнить исключение переименования",
+    "ja-JP": "名前変更例外の実行",
+    "de-DE": "Umbenennungsausnahme ausführen",
+    "fr-FR": "Exécuter l'exception de renommage",
+    "ko-KR": "이름 바꾸기 예외 실행",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88925-88936)"],
+    "$id": 10044
+  },
+  "暂无目标文件": {
+    "en-US": "No target file yet",
+    "es-ES": "Aún no hay archivo de destino",
+    "ar-EG": "لا يوجد ملف هدف حتى الآن",
+    "pt-PT": "Nenhum arquivo de destino ainda",
+    "ru-RU": "Целевого файла еще нет",
+    "ja-JP": "対象ファイルがまだありません",
+    "de-DE": "Noch keine Zieldatei",
+    "fr-FR": "Pas encore de fichier cible",
+    "ko-KR": "아직 대상 파일이 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(89496-89506)"],
+    "$id": 10045
+  },
+  "成功为 {count} 个文件更新标签": {
+    "en-US": "Successfully updated tags for {count} files",
+    "es-ES": "Etiquetas actualizadas correctamente para {count} archivos",
+    "ar-EG": "تم تحديث العلامات بنجاح لملفات {count}.",
+    "pt-PT": "Tags atualizadas com sucesso para arquivos {count}",
+    "ru-RU": "Теги для {count} файлов успешно обновлены.",
+    "ja-JP": "{count} ファイルのタグが正常に更新されました",
+    "de-DE": "Tags für {count}-Dateien erfolgreich aktualisiert",
+    "fr-FR": "Balises mises à jour avec succès pour {count} fichiers",
+    "ko-KR": "{count} 파일의 태그를 성공적으로 업데이트했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(90406-90429)"],
+    "$id": 10046
+  },
+  "批量打标失败": {
+    "en-US": "Batch marking failed",
+    "es-ES": "Error al marcar el lote",
+    "ar-EG": "فشل وضع علامة على الدفعة",
+    "pt-PT": "Falha na marcação do lote",
+    "ru-RU": "Маркировка партии не удалась",
+    "ja-JP": "バッチのマーキングに失敗しました",
+    "de-DE": "Die Chargenkennzeichnung ist fehlgeschlagen",
+    "fr-FR": "Échec du marquage du lot",
+    "ko-KR": "일괄 표시 실패",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(91229-91239)"],
+    "$id": 10047
+  },
+  "删除标签失败": {
+    "en-US": "Failed to delete tag",
+    "es-ES": "No se pudo eliminar la etiqueta",
+    "ar-EG": "فشل حذف العلامة",
+    "pt-PT": "Falha ao excluir tag",
+    "ru-RU": "Не удалось удалить тег",
+    "ja-JP": "タグの削除に失敗しました",
+    "de-DE": "Tag konnte nicht gelöscht werden",
+    "fr-FR": "Échec de la suppression de la balise",
+    "ko-KR": "태그를 삭제하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92646-92656)"],
+    "$id": 10048
+  },
+  "未选择要清理的冗余文件": {
+    "en-US": "No redundant files selected for cleaning",
+    "es-ES": "No se han seleccionado archivos redundantes para limpieza",
+    "ar-EG": "لم يتم تحديد أي ملفات زائدة عن الحاجة للتنظيف",
+    "pt-PT": "Nenhum arquivo redundante selecionado para limpeza",
+    "ru-RU": "Лишние файлы для очистки не выбраны.",
+    "ja-JP": "クリーニング対象として冗長なファイルが選択されていません",
+    "de-DE": "Es wurden keine redundanten Dateien zum Bereinigen ausgewählt",
+    "fr-FR": "Aucun fichier redondant sélectionné pour le nettoyage",
+    "ko-KR": "정리할 중복 파일이 선택되지 않았습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(93061-93076)"],
+    "$id": 10049
+  },
+  "已安全移入系统回收站 {count} 个文件": {
+    "en-US": "{count} files have been safely moved to the system recycle bin",
+    "es-ES": "{count} archivos se han movido de forma segura a la papelera de reciclaje del sistema",
+    "ar-EG": "{count} تم نقل الملفات بأمان إلى سلة محذوفات النظام",
+    "pt-PT": "{count} arquivos foram movidos com segurança para a lixeira do sistema",
+    "ru-RU": "{count} файлов благополучно перемещены в системную корзину.",
+    "ja-JP": "{count} ファイルはシステムのごみ箱に安全に移動されました",
+    "de-DE": "{count} Dateien wurden sicher in den Systempapierkorb verschoben",
+    "fr-FR": "{count} fichiers ont été déplacés en toute sécurité vers la corbeille du système",
+    "ko-KR": "{count} 파일이 시스템 휴지통으로 안전하게 이동되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(93359-93385)"],
+    "$id": 10050
+  },
+  "清理冗余文件失败": {
+    "en-US": "Cleaning up redundant files failed",
+    "es-ES": "Error al limpiar archivos redundantes",
+    "ar-EG": "فشل تنظيف الملفات الزائدة",
+    "pt-PT": "Falha na limpeza de arquivos redundantes",
+    "ru-RU": "Очистка ненужных файлов не удалась.",
+    "ja-JP": "冗長ファイルのクリーンアップに失敗しました",
+    "de-DE": "Das Bereinigen redundanter Dateien ist fehlgeschlagen",
+    "fr-FR": "Échec du nettoyage des fichiers redondants",
+    "ko-KR": "중복 파일을 정리하지 못했습니다.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(93547-93559)"],
+    "$id": 10051
+  },
+  "补救整理失败，请重试": {
+    "en-US": "Remediation failed, please try again",
+    "es-ES": "La corrección falló, inténtelo de nuevo",
+    "ar-EG": "فشل التنظيم التعويضي، يرجى المحاولة مرة أخرى",
+    "pt-PT": "Falha na organização de recuperação, por favor tente novamente",
+    "ru-RU": "Ошибка восстановительного упорядочивания, повторите попытку",
+    "ja-JP": "补救整理に失敗しました。再試行してください",
+    "de-DE": "Korrektur des Sortiervorgangs fehlgeschlagen, bitte erneut versuchen",
+    "fr-FR": "Échec du rangement de rattrapage, veuillez réessayer",
+    "ko-KR": "보완 정리하지 못했습니다. 다시 시도해 주세요.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(96890-96904)"],
+    "$id": 8729
+  },
+  "AI 无法将剩余的顽固文件分配到现有目录，请创建匹配的目录": {
+    "en-US": "AI cannot allocate remaining stubborn files to an existing directory, please create a matching directory",
+    "es-ES": "AI no puede asignar los archivos rebeldes restantes a un directorio existente; cree un directorio coincidente",
+    "ar-EG": "لا يمكن لمنظمة العفو الدولية تخصيص الملفات العنيدة المتبقية إلى دليل موجود، يرجى إنشاء دليل مطابق",
+    "pt-PT": "AI não pode alocar arquivos teimosos restantes para um diretório existente, crie um diretório correspondente",
+    "ru-RU": "ИИ не может разместить оставшиеся неподатливые файлы в существующем каталоге, создайте соответствующий каталог.",
+    "ja-JP": "AI は残りの頑固なファイルを既存のディレクトリに割り当てることができません。一致するディレクトリを作成してください。",
+    "de-DE": "AI kann verbleibende hartnäckige Dateien nicht einem vorhandenen Verzeichnis zuordnen, bitte erstellen Sie ein passendes Verzeichnis",
+    "fr-FR": "L'IA ne peut pas allouer les fichiers persistants restants à un répertoire existant, veuillez créer un répertoire correspondant",
+    "ko-KR": "AI는 나머지 완고한 파일을 기존 디렉터리에 할당할 수 없습니다. 일치하는 디렉터리를 생성하십시오.",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(97733-97766)"],
+    "$id": 8730
+  },
+  "自动找补完成，所有文件均已归类！": {
+    "en-US": "Automatic retrieval is completed and all files have been classified!",
+    "es-ES": "¡Se completa la recuperación automática y se han clasificado todos los archivos!",
+    "ar-EG": "اكتمل الاسترداد التلقائي وتم تصنيف جميع الملفات!",
+    "pt-PT": "A recuperação automática foi concluída e todos os arquivos foram classificados!",
+    "ru-RU": "Автоматический поиск завершен, все файлы засекречены!",
+    "ja-JP": "自動検索が完了し、すべてのファイルが分類されました。",
+    "de-DE": "Der automatische Abruf ist abgeschlossen und alle Dateien wurden klassifiziert!",
+    "fr-FR": "La récupération automatique est terminée et tous les fichiers ont été classés !",
+    "ko-KR": "자동 검색이 완료되고 모든 파일이 분류되었습니다!",
+    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(99619-99639)"],
+    "$id": 8731
+  },
+  "未知": {
+    "en-US": "Unknown",
+    "es-ES": "Desconocido",
+    "ar-EG": "مجهول",
+    "pt-PT": "Desconhecido",
+    "ru-RU": "неизвестный",
+    "ja-JP": "不明",
+    "de-DE": "Unbekannt",
+    "fr-FR": "Inconnu",
+    "ko-KR": "알려지지 않은",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(10713-10719)"],
+    "$id": 8697
+  },
+  "项目核心": {
+    "en-US": "Project core",
+    "es-ES": "Núcleo del proyecto",
+    "ar-EG": "جوهر المشروع",
+    "pt-PT": "Núcleo do projeto",
+    "ru-RU": "Ядро проекта",
+    "ja-JP": "プロジェクトのコア",
+    "de-DE": "Projektkern",
+    "fr-FR": "Noyau du projet",
+    "ko-KR": "프로젝트 핵심",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(28910-28918)"],
+    "$id": 8698
+  },
+  "核心项目": {
+    "en-US": "Core projects",
+    "es-ES": "Proyectos centrales",
+    "ar-EG": "المشاريع الأساسية",
+    "pt-PT": "Projetos principais",
+    "ru-RU": "основные проекты",
+    "ja-JP": "コアプロジェクト",
+    "de-DE": "Kernprojekte",
+    "fr-FR": "Projets de base",
+    "ko-KR": "핵심 프로젝트",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(28943-28951)"],
+    "$id": 8699
   },
   "初始化多模态引擎...": {
     "en-US": "Initializing the multimodal engine...",
@@ -2769,7 +3454,7 @@
     "ko-KR": "품질 포인트",
     "$files": [
       "src/renderer/components/file-explorer/Organize/components/BatchDuplicateView.tsx(107940-107947)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1882-1889)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1943-1950)"
     ],
     "$id": 10836
   },
@@ -2810,12 +3495,12 @@
     "fr-FR": "Type de fichier",
     "ko-KR": "파일 형식",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(650-658)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(715-723)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(8571-8579)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11466-11474)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11504-11512)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27349-27357)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(711-719)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(776-784)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(8689-8697)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11584-11592)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11622-11630)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27483-27491)"
     ],
     "$id": 10815
   },
@@ -2830,14 +3515,14 @@
     "fr-FR": "Noms de fichiers intelligents",
     "ko-KR": "스마트 파일 이름",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(665-674)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(894-903)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1088-1097)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1269-1278)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1432-1441)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1866-1875)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10443-10452)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13728-13737)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(726-735)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(955-964)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1149-1158)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1330-1339)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1493-1502)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1927-1936)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10561-10570)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13846-13855)"
     ],
     "$id": 9953
   },
@@ -2851,7 +3536,7 @@
     "de-DE": "Datum",
     "fr-FR": "Date",
     "ko-KR": "날짜",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(681-687)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(742-748)"],
     "$id": 10816
   },
   "常用": {
@@ -2865,12 +3550,12 @@
     "fr-FR": "Couramment utilisé",
     "ko-KR": "일반적으로 사용되는",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(773-779)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(9581-9587)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10291-10297)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46375-46381)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46391-46397)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(48352-48358)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(834-840)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(9699-9705)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10409-10415)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46509-46515)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46525-46531)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(48486-48492)"
     ],
     "$id": 10817
   },
@@ -2884,7 +3569,7 @@
     "de-DE": "Der Dateityp wird vorangestellt, gefolgt vom intelligenten Dateinamen und dem Änderungsdatum sowie der standardmäßigen universellen Benennung.",
     "fr-FR": "Le type de fichier est préfixé, suivi du nom de fichier intelligent et de la date de modification, ainsi que de la dénomination universelle standard.",
     "ko-KR": "파일 형식 앞에는 지능형 파일 이름, 수정 날짜, 표준 범용 이름이 붙습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(825-855)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(886-916)"],
     "$id": 10818
   },
   "修改日期": {
@@ -2897,7 +3582,7 @@
     "de-DE": "Änderungsdatum",
     "fr-FR": "Date de modification",
     "ko-KR": "수정일",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(879-887)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(940-948)"],
     "$id": 10819
   },
   "时间线": {
@@ -2910,7 +3595,7 @@
     "de-DE": "Zeitleiste",
     "fr-FR": "Chronologie",
     "ko-KR": "타임라인",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(969-976)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1030-1037)"],
     "$id": 10820
   },
   "日期前缀，便于在文件管理器中按时间正序排列": {
@@ -2923,7 +3608,7 @@
     "de-DE": "Datumspräfix für chronologische Sortierung in Dateimanagern",
     "fr-FR": "Préfixe de date pour le tri chronologique dans les gestionnaires de fichiers",
     "ko-KR": "파일 관리자의 시간순 정렬을 위한 날짜 접두사",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1024-1049)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1085-1110)"],
     "$id": 10821
   },
   "题材维度": {
@@ -2936,7 +3621,7 @@
     "de-DE": "Themendimension",
     "fr-FR": "Dimension thématique",
     "ko-KR": "테마 차원",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1073-1081)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1134-1142)"],
     "$id": 10822
   },
   "题材": {
@@ -2950,10 +3635,10 @@
     "fr-FR": "Thème",
     "ko-KR": "주제",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1125-1131)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2086-2092)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12798-12804)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12834-12840)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1186-1192)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2147-2153)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12916-12922)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12952-12958)"
     ],
     "$id": 10823
   },
@@ -2967,7 +3652,7 @@
     "de-DE": "Einstufung",
     "fr-FR": "Classification",
     "ko-KR": "분류",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1165-1171)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1226-1232)"],
     "$id": 10824
   },
   "题材标签前置，强化主题分类属性": {
@@ -2980,7 +3665,7 @@
     "de-DE": "Themen-Tags werden vorangestellt, um die Themenklassifizierungsattribute zu verstärken",
     "fr-FR": "Les balises de sujet sont placées devant pour renforcer les attributs de classification du sujet",
     "ko-KR": "주제 분류 속성을 강화하기 위해 주제 태그를 앞에 배치합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1213-1232)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1274-1293)"],
     "$id": 10825
   },
   "作者": {
@@ -2993,7 +3678,7 @@
     "de-DE": "Autor",
     "fr-FR": "Auteur",
     "ko-KR": "작가",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1256-1262)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1317-1323)"],
     "$id": 10826
   },
   "归档": {
@@ -3006,7 +3691,7 @@
     "de-DE": "Archiv",
     "fr-FR": "Archive",
     "ko-KR": "압축 파일",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1338-1344)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1399-1405)"],
     "$id": 10827
   },
   "作者或创作者前置，适合书籍、文献与作品集": {
@@ -3019,7 +3704,7 @@
     "de-DE": "Autoren- oder Erstellerpräfix, geeignet für Bücher, Dokumente und Sammlungen",
     "fr-FR": "Préfixe d'auteur ou de créateur, adapté aux livres, documents et collections",
     "ko-KR": "책, 문서 및 컬렉션에 적합한 저자 또는 작성자 접두어",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1384-1408)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1445-1469)"],
     "$id": 10828
   },
   "分辨率": {
@@ -3033,12 +3718,12 @@
     "fr-FR": "Résolution",
     "ko-KR": "해결",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1448-1455)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1510-1517)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(3363-3370)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(3557-3564)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17032-17039)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17070-17077)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1509-1516)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1571-1578)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(3424-3431)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(3618-3625)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17150-17157)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17188-17195)"
     ],
     "$id": 9980
   },
@@ -3053,8 +3738,8 @@
     "fr-FR": "Numéro de série",
     "ko-KR": "일련번호",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1462-1468)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1682-1688)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1523-1529)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1743-1749)"
     ],
     "$id": 10829
   },
@@ -3068,7 +3753,7 @@
     "de-DE": "Multimodal",
     "fr-FR": "Multimodal",
     "ko-KR": "다중 모드",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1549-1556)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1610-1617)"],
     "$id": 10830
   },
   "多模态媒体专用命名，附带分辨率规格与两位序号": {
@@ -3081,7 +3766,7 @@
     "de-DE": "Multimodale medienspezifische Benennung, mit Auflösungsangaben und zweistelliger Seriennummer",
     "fr-FR": "Dénomination multimodale spécifique au support, avec spécifications de résolution et numéro de série à deux chiffres",
     "ko-KR": "해상도 사양과 두 자리 일련 번호를 포함한 다중 모드 미디어별 이름 지정",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1602-1628)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1663-1689)"],
     "$id": 10831
   },
   "创建日期": {
@@ -3094,7 +3779,7 @@
     "de-DE": "Erstellungsdatum",
     "fr-FR": "Date de création",
     "ko-KR": "생성일",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1652-1660)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1713-1721)"],
     "$id": 10832
   },
   "原文件名": {
@@ -3108,8 +3793,8 @@
     "fr-FR": "Nom de fichier d'origine",
     "ko-KR": "원본 파일명",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1667-1675)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(63972-63980)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1728-1736)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(64106-64114)"
     ],
     "$id": 10833
   },
@@ -3123,7 +3808,7 @@
     "de-DE": "Behalten Sie den ursprünglichen Namen bei",
     "fr-FR": "Conserver le nom d'origine",
     "ko-KR": "원래 이름 유지",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1765-1773)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1826-1834)"],
     "$id": 10834
   },
   "保留原文件名并附加创建日期与三位递增序号": {
@@ -3136,7 +3821,7 @@
     "de-DE": "Behalten Sie den ursprünglichen Dateinamen bei und hängen Sie das Erstellungsdatum und die dreistellige aufsteigende Seriennummer an",
     "fr-FR": "Conservez le nom du fichier d'origine et ajoutez la date de création et le numéro de série croissant à trois chiffres.",
     "ko-KR": "원본 파일명을 유지하고 생성일자와 오름차순 일련번호 3자리를 추가합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1818-1842)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1879-1903)"],
     "$id": 10835
   },
   "质量": {
@@ -3149,7 +3834,7 @@
     "de-DE": "Qualität",
     "fr-FR": "Qualité",
     "ko-KR": "품질",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(1957-1963)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2018-2024)"],
     "$id": 10837
   },
   "标记 AI 质量评分，快速区分优选文件": {
@@ -3162,7 +3847,7 @@
     "de-DE": "Markieren Sie den AI-Qualitätsfaktor, um bevorzugte Dateien schnell zu identifizieren",
     "fr-FR": "Étiquetez le score de qualité de l'IA pour identifier rapidement les fichiers préférés",
     "ko-KR": "AI 품질 점수에 태그를 지정하여 선호하는 파일을 빠르게 식별",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2005-2028)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2066-2089)"],
     "$id": 10838
   },
   "全维度属性组合": {
@@ -3175,7 +3860,7 @@
     "de-DE": "Volldimensionale Attributkombination",
     "fr-FR": "Combinaison d'attributs pleine dimension",
     "ko-KR": "전체 차원 속성 조합",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2049-2060)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2110-2121)"],
     "$id": 10839
   },
   "复合": {
@@ -3188,7 +3873,7 @@
     "de-DE": "Komplex",
     "fr-FR": "Complexe",
     "ko-KR": "복잡한",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2154-2160)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2215-2221)"],
     "$id": 10840
   },
   "题材、名称、日期与序号全维度综合规范": {
@@ -3201,7 +3886,7 @@
     "de-DE": "Umfangreiche Angabe von Betreff, Name, Datum und Seriennummer",
     "fr-FR": "Spécification complète du sujet, du nom, de la date et du numéro de série",
     "ko-KR": "주제, 이름, 날짜 및 일련번호에 대한 포괄적인 사양",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2213-2235)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(2274-2296)"],
     "$id": 10841
   },
   "时长": {
@@ -3215,12 +3900,12 @@
     "fr-FR": "Durée",
     "ko-KR": "지속",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(3709-3715)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(3899-3905)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13313-13319)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13350-13356)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17292-17298)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17329-17335)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(3770-3776)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(3960-3966)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13431-13437)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13468-13474)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17410-17416)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17447-17453)"
     ],
     "$id": 10842
   },
@@ -3235,10 +3920,10 @@
     "fr-FR": "Nombre de pages",
     "ko-KR": "페이지 수",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4048-4054)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4236-4242)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17544-17550)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17581-17587)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4109-4115)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4297-4303)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17662-17668)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17699-17705)"
     ],
     "$id": 10843
   },
@@ -3253,9 +3938,9 @@
     "fr-FR": "Codage",
     "ko-KR": "코딩",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4385-4391)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4580-4586)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17832-17838)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4446-4452)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4641-4647)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17950-17956)"
     ],
     "$id": 10844
   },
@@ -3270,8 +3955,8 @@
     "fr-FR": "Format d'encodage",
     "ko-KR": "인코딩 형식",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4428-4436)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17793-17801)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(4489-4497)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17911-17919)"
     ],
     "$id": 10845
   },
@@ -3285,7 +3970,7 @@
     "de-DE": "Entspricht dem Dimensions-Tag „{name}“ des Dokuments",
     "fr-FR": "Correspond à la balise de dimension '{name}' du document",
     "ko-KR": "문서의 '{name}' 차원 태그와 일치합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10057-10079)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10175-10197)"],
     "$id": 9951
   },
   "AI 解析提取的纯净核心命名": {
@@ -3299,8 +3984,8 @@
     "fr-FR": "Dénomination de base pure extraite par analyse IA",
     "ko-KR": "AI 분석으로 추출한 순수 코어 네이밍",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10508-10526)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13793-13811)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10626-10644)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13911-13929)"
     ],
     "$id": 9954
   },
@@ -3315,8 +4000,8 @@
     "fr-FR": "Auteur/Créateur",
     "ko-KR": "작성자/창작자",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10686-10696)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14218-14228)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10804-10814)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14336-14346)"
     ],
     "$id": 9967
   },
@@ -3331,8 +4016,8 @@
     "fr-FR": "Balise d'auteur de contenu (par exemple [{AUTHOR}])",
     "ko-KR": "콘텐츠 작성자 태그(예: [{AUTHOR}])",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10748-10773)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14280-14305)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10866-10891)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14398-14423)"
     ],
     "$id": 10846
   },
@@ -3347,8 +4032,8 @@
     "fr-FR": "Niveau de qualité",
     "ko-KR": "품질평가점수",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(10933-10941)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14707-14715)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11051-11059)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14825-14833)"
     ],
     "$id": 9976
   },
@@ -3363,8 +4048,8 @@
     "fr-FR": "Niveau de qualité de l'IA (par exemple [Q{QUALITY_SCORE}])",
     "ko-KR": "AI 품질 점수(예: [Q{QUALITY_SCORE}])",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11000-11034)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14774-14808)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11118-11152)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14892-14926)"
     ],
     "$id": 10847
   },
@@ -3379,8 +4064,8 @@
     "fr-FR": "Date de modification (année-mois-jour)",
     "ko-KR": "수정일(년-월-일)",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11194-11209)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15616-15631)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11312-11327)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15734-15749)"
     ],
     "$id": 9960
   },
@@ -3395,8 +4080,8 @@
     "fr-FR": "La date à laquelle le fichier a été modifié pour la dernière fois (par exemple, 2024-03-15)",
     "ko-KR": "파일이 마지막으로 수정된 날짜(예: 2024-03-15)",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11269-11296)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15691-15718)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11387-11414)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15809-15836)"
     ],
     "$id": 10848
   },
@@ -3410,7 +4095,7 @@
     "de-DE": "Entspricht der Dimensionsbezeichnung „Dokumenttyp“ des Dokuments",
     "fr-FR": "Correspond à l'étiquette de dimension \"Type de document\" du document",
     "ko-KR": "문서의 \"문서 유형\" 차원 레이블과 일치합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11536-11556)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11654-11674)"],
     "$id": 10849
   },
   "文件用途": {
@@ -3424,8 +4109,8 @@
     "fr-FR": "Objectif du fichier",
     "ko-KR": "파일 목적",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11731-11739)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11769-11777)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11849-11857)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11887-11895)"
     ],
     "$id": 10850
   },
@@ -3439,7 +4124,7 @@
     "de-DE": "Entspricht der Dimensionsbezeichnung „Dokumentzweck“ des Dokuments",
     "fr-FR": "Correspond à l'étiquette de dimension « Objet du document » du document",
     "ko-KR": "문서의 \"문서 목적\" 차원 레이블과 일치합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11801-11821)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11919-11939)"],
     "$id": 10851
   },
   "地理位置": {
@@ -3453,8 +4138,8 @@
     "fr-FR": "Situation géographique",
     "ko-KR": "지리적 위치",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(11996-12004)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12034-12042)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12114-12122)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12152-12160)"
     ],
     "$id": 10852
   },
@@ -3468,7 +4153,7 @@
     "de-DE": "Entspricht der Dimensionsbeschriftung „Geo“ des Dokuments",
     "fr-FR": "Correspond à l'étiquette de dimension \"Géo\" du document",
     "ko-KR": "문서의 \"지역\" 차원 라벨과 일치합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12066-12086)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12184-12204)"],
     "$id": 10853
   },
   "压缩包细分": {
@@ -3482,8 +4167,8 @@
     "fr-FR": "Répartition du paquet compressé",
     "ko-KR": "압축된 패키지 분석",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12261-12270)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12300-12309)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12379-12388)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12418-12427)"
     ],
     "$id": 10854
   },
@@ -3497,7 +4182,7 @@
     "de-DE": "Ordnen Sie das unverschlüsselte komprimierte Paket/verschlüsselte komprimierte Paket und andere Attribute der Datei zu",
     "fr-FR": "Faites correspondre le package compressé non chiffré/le package compressé chiffré et les autres attributs du fichier",
     "ko-KR": "암호화되지 않은 압축 패키지/암호화된 압축 패키지 및 파일의 기타 속성을 일치시킵니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12333-12358)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12451-12476)"],
     "$id": 10855
   },
   "画质等级": {
@@ -3511,8 +4196,8 @@
     "fr-FR": "Niveau de qualité d'image",
     "ko-KR": "이미지 품질 수준",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12533-12541)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12571-12579)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12651-12659)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12689-12697)"
     ],
     "$id": 10856
   },
@@ -3526,7 +4211,7 @@
     "de-DE": "Entspricht der Dimensionsbezeichnung „Qualitätsstufe“ der Datei",
     "fr-FR": "Correspond à l'étiquette de dimension \"Niveau de qualité\" du fichier",
     "ko-KR": "파일의 \"품질 수준\" 차원 레이블과 일치합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12603-12623)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12721-12741)"],
     "$id": 10857
   },
   "匹配该文件的「题材」维度标签": {
@@ -3539,7 +4224,7 @@
     "de-DE": "Passen Sie die Dimensionsbezeichnung „Betreff“ des Dokuments an",
     "fr-FR": "Faire correspondre l'étiquette de dimension \"sujet\" du document",
     "ko-KR": "문서의 \"주제\" 차원 라벨과 일치",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12864-12882)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(12982-13000)"],
     "$id": 10858
   },
   "四位序号(0001)": {
@@ -3553,8 +4238,8 @@
     "fr-FR": "Numéro de série à quatre chiffres (0001)",
     "ko-KR": "4자리 일련번호(0001)",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13057-13071)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18714-18728)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13175-13189)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18832-18846)"
     ],
     "$id": 10859
   },
@@ -3569,8 +4254,8 @@
     "fr-FR": "Numéro de série à quatre chiffres, complété par des zéros, à croissance automatique (0001, 0002...)",
     "ko-KR": "4자리 제로 패딩된 자체 증가 일련 번호(0001, 0002...)",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13125-13153)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18782-18810)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13243-13271)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18900-18928)"
     ],
     "$id": 10860
   },
@@ -3585,8 +4270,8 @@
     "fr-FR": "Durée audio et vidéo (par exemple 03 minutes et 25 secondes)",
     "ko-KR": "오디오 및 비디오 길이(예: 03분 25초)",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13380-13400)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17359-17379)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13498-13518)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17477-17497)"
     ],
     "$id": 10861
   },
@@ -3601,8 +4286,8 @@
     "fr-FR": "Nom du noyau",
     "ko-KR": "핵심 이름",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13578-13586)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46515-46523)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13696-13704)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46649-46657)"
     ],
     "$id": 9952
   },
@@ -3616,7 +4301,7 @@
     "de-DE": "Originaldateiname",
     "fr-FR": "Nom du fichier d'origine",
     "ko-KR": "원본 파일 이름",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(13971-13980)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14089-14098)"],
     "$id": 9955
   },
   "文件在磁盘上的原始文件名（不含扩展名）": {
@@ -3629,7 +4314,7 @@
     "de-DE": "Der ursprüngliche Dateiname der Datei auf der Festplatte (ohne Erweiterung)",
     "fr-FR": "Le nom de fichier original du fichier sur le disque (sans extension)",
     "ko-KR": "디스크에 있는 파일의 원래 파일 이름(확장자 없음)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14035-14058)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14153-14176)"],
     "$id": 9956
   },
   "语言代码": {
@@ -3642,7 +4327,7 @@
     "de-DE": "Sprachcode",
     "fr-FR": "Code de langue",
     "ko-KR": "언어 코드",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14465-14473)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14583-14591)"],
     "$id": 9969
   },
   "文档语言代码 (如 zh-CN, en)": {
@@ -3655,7 +4340,7 @@
     "de-DE": "Dokumentsprachencode (z. B. zh-CN, en)",
     "fr-FR": "Code de langue du document (par exemple zh-CN, en)",
     "ko-KR": "문서 언어 코드(예: zh-CN, en)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14523-14547)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14641-14665)"],
     "$id": 10862
   },
   "文件扩展名": {
@@ -3668,7 +4353,7 @@
     "de-DE": "Dateierweiterung",
     "fr-FR": "Extension de fichier",
     "ko-KR": "파일 확장자",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(14968-14977)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15086-15095)"],
     "$id": 9957
   },
   "文件后缀扩展名（自动带点 .ext）": {
@@ -3681,7 +4366,7 @@
     "de-DE": "Datei-Suffix-Erweiterung (automatisch mit Punkt .ext)",
     "fr-FR": "Extension du suffixe de fichier (automatiquement avec point .ext)",
     "ko-KR": "파일 접미사 확장자(자동으로 점 .ext 사용)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15026-15048)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15144-15166)"],
     "$id": 10863
   },
   "文件大小": {
@@ -3694,7 +4379,7 @@
     "de-DE": "Dateigröße",
     "fr-FR": "Taille du fichier",
     "ko-KR": "파일 크기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15208-15216)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15326-15334)"],
     "$id": 9978
   },
   "友好文件大小 (如 12MB)": {
@@ -3707,7 +4392,7 @@
     "de-DE": "Freundliche Dateigröße (z. B. 12 MB)",
     "fr-FR": "Taille de fichier conviviale (par exemple 12 Mo)",
     "ko-KR": "친숙한 파일 크기(예: 12MB)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15266-15285)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15384-15403)"],
     "$id": 9979
   },
   "时间日期": {
@@ -3721,9 +4406,9 @@
     "fr-FR": "Heure date",
     "ko-KR": "시간 날짜",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15458-15466)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46593-46601)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46611-46619)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15576-15584)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46727-46735)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46745-46753)"
     ],
     "$id": 9959
   },
@@ -3737,7 +4422,7 @@
     "de-DE": "Änderungszeit (Jahr, Monat, Tag, Stunde und Minute)",
     "fr-FR": "Heure de modification (année, mois, jour, heure et minute)",
     "ko-KR": "수정시간(년,월,일,시,분)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15888-15903)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16006-16021)"],
     "$id": 9962
   },
   "精确修改时间戳 (如 20240315_1430)": {
@@ -3750,7 +4435,7 @@
     "de-DE": "Präziser Änderungszeitstempel (z. B. 20240315_1430)",
     "fr-FR": "Horodatage précis de la modification (tel que 20240315_1430)",
     "ko-KR": "정확한 수정 타임스탬프(예: 20240315_1430)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(15966-15995)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16084-16113)"],
     "$id": 10864
   },
   "创建日期(年-月-日)": {
@@ -3763,7 +4448,7 @@
     "de-DE": "Erstellungsdatum (Jahr-Monat-Tag)",
     "fr-FR": "Date de création (année-mois-jour)",
     "ko-KR": "생성일(년-월-일)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16165-16180)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16283-16298)"],
     "$id": 9964
   },
   "文件创建日期 (如 2024-01-01)": {
@@ -3776,7 +4461,7 @@
     "de-DE": "Erstellungsdatum der Datei (z. B. 01.01.2024)",
     "fr-FR": "Date de création du fichier (par exemple 2024-01-01)",
     "ko-KR": "파일 생성 날짜(예: 2024-01-01)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16240-16265)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16358-16383)"],
     "$id": 10865
   },
   "修改年份(YYYY)": {
@@ -3789,7 +4474,7 @@
     "de-DE": "Jahr ändern (JJJJ)",
     "fr-FR": "Modifier l'année (AAAA)",
     "ko-KR": "연도 수정(YYYY)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16435-16449)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16553-16567)"],
     "$id": 10866
   },
   "四位修改年份 (如 2024)": {
@@ -3802,7 +4487,7 @@
     "de-DE": "Vierstelliges Änderungsjahr (z. B. 2024)",
     "fr-FR": "Année de modification à quatre chiffres (par exemple 2024)",
     "ko-KR": "4자리 수정 연도(예: 2024)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16503-16522)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16621-16640)"],
     "$id": 10867
   },
   "分类维度": {
@@ -3816,10 +4501,10 @@
     "fr-FR": "Dimension de classement",
     "ko-KR": "분류 차원",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16705-16713)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46678-46686)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46696-46704)",
-      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(44078-44086)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16823-16831)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46812-46820)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46830-46838)",
+      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(44212-44220)"
     ],
     "$id": 10868
   },
@@ -3834,9 +4519,9 @@
     "fr-FR": "Aucune donnée",
     "ko-KR": "데이터 없음",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16879-16886)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46757-46764)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46774-46781)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(16997-17004)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46891-46898)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46908-46915)"
     ],
     "$id": 10869
   },
@@ -3850,7 +4535,7 @@
     "de-DE": "Bild-/Videoauflösung (z. B. 1920x1080)",
     "fr-FR": "Résolution image/vidéo (par exemple 1920 x 1080)",
     "ko-KR": "이미지/동영상 해상도(예: 1920x1080)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17101-17127)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17219-17245)"],
     "$id": 10870
   },
   "文档总页数 (如 15P)": {
@@ -3863,7 +4548,7 @@
     "de-DE": "Gesamtzahl der Seiten im Dokument (z. B. 15P)",
     "fr-FR": "Nombre total de pages dans le document (par exemple 15P)",
     "ko-KR": "문서의 총 페이지 수(예: 15P)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17611-17628)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17729-17746)"],
     "$id": 10871
   },
   "媒体编码格式 (如 H264, AAC)": {
@@ -3876,7 +4561,7 @@
     "de-DE": "Medienkodierungsformat (z. B. H264, AAC)",
     "fr-FR": "Format d'encodage multimédia (par exemple H264, AAC)",
     "ko-KR": "미디어 인코딩 형식(예: H264, AAC)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17862-17886)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(17980-18004)"],
     "$id": 10872
   },
   "自增序号": {
@@ -3890,9 +4575,9 @@
     "fr-FR": "Numéro de série auto-croissant",
     "ko-KR": "자체 증가하는 일련 번호",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18064-18072)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46838-46846)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46856-46864)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18182-18190)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46972-46980)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46990-46998)"
     ],
     "$id": 10877
   },
@@ -3906,7 +4591,7 @@
     "de-DE": "Zweistellige Seriennummer (01)",
     "fr-FR": "Numéro de série à deux chiffres (01)",
     "ko-KR": "두자리 일련번호(01)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18214-18226)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18332-18344)"],
     "$id": 10898
   },
   "两位补零自增序号 (01, 02...)": {
@@ -3919,7 +4604,7 @@
     "de-DE": "Zweistellige, mit Nullen aufgefüllte Sequenznummer für die automatische Inkrementierung (01, 02...)",
     "fr-FR": "Numéro de séquence à incrémentation automatique à deux chiffres avec zéro (01, 02...)",
     "ko-KR": "0으로 채워진 두 자리 자동 증가 시퀀스 번호(01, 02...)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18278-18302)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18396-18420)"],
     "$id": 10910
   },
   "三位序号(001)": {
@@ -3932,7 +4617,7 @@
     "de-DE": "Dreistellige Seriennummer (001)",
     "fr-FR": "Numéro de série à trois chiffres (001)",
     "ko-KR": "3자리 일련번호(001)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18462-18475)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18580-18593)"],
     "$id": 10914
   },
   "三位补零自增序号 (001, 002...)": {
@@ -3945,7 +4630,7 @@
     "de-DE": "Dreistellige, mit Nullen aufgefüllte, selbsterhöhende Seriennummer (001, 002...)",
     "fr-FR": "Numéro de série à trois chiffres à zéro et auto-croissant (001, 002...)",
     "ko-KR": "3자리 제로 패딩된 자체 증가 일련 번호(001, 002...)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18528-18554)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(18646-18672)"],
     "$id": 10915
   },
   "已应用随机命名模板": {
@@ -3959,8 +4644,8 @@
     "fr-FR": "Modèle nommé au hasard appliqué",
     "ko-KR": "무작위로 이름이 지정된 템플릿이 적용됨",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(26848-26861)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27146-27159)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(26982-26995)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27280-27293)"
     ],
     "$id": 9982
   },
@@ -3974,7 +4659,7 @@
     "de-DE": "Vorlage gelöscht",
     "fr-FR": "Modèle effacé",
     "ko-KR": "템플릿이 삭제되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27250-27259)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27384-27393)"],
     "$id": 10917
   },
   "已还原默认模板": {
@@ -3987,7 +4672,7 @@
     "de-DE": "Standardvorlage wiederhergestellt",
     "fr-FR": "Modèle par défaut restauré",
     "ko-KR": "기본 템플릿이 복원되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27489-27500)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27623-27634)"],
     "$id": 10951
   },
   "模板已复制到剪贴板": {
@@ -4000,7 +4685,7 @@
     "de-DE": "Vorlage in die Zwischenablage kopiert",
     "fr-FR": "Modèle copié dans le presse-papiers",
     "ko-KR": "템플릿이 클립보드에 복사되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27645-27658)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(27779-27792)"],
     "$id": 10955
   },
   "精选命名模板": {
@@ -4013,7 +4698,7 @@
     "de-DE": "Empfohlene Namensvorlagen",
     "fr-FR": "Modèles de dénomination présentés",
     "ko-KR": "주요 명명 템플릿",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(31962-31972)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(32096-32106)"],
     "$id": 11009
   },
   "搜索模板...": {
@@ -4026,7 +4711,7 @@
     "de-DE": "Suchvorlagen...",
     "fr-FR": "Rechercher des modèles...",
     "ko-KR": "템플릿 검색...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(32421-32432)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(32555-32566)"],
     "$id": 11023
   },
   "已套用模板: {name}": {
@@ -4039,7 +4724,7 @@
     "de-DE": "Angewandte Vorlage: {name}",
     "fr-FR": "Modèle appliqué : {name}",
     "ko-KR": "적용된 템플릿: {name}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(33745-33762)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(33879-33896)"],
     "$id": 11052
   },
   "模板可视化编排": {
@@ -4052,7 +4737,7 @@
     "de-DE": "Visuelle Anordnung der Vorlage",
     "fr-FR": "Disposition visuelle du modèle",
     "ko-KR": "템플릿 시각적 배열",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(36167-36178)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(36301-36312)"],
     "$id": 11059
   },
   "随机从模板库抽取灵感": {
@@ -4065,7 +4750,7 @@
     "de-DE": "Lassen Sie sich nach dem Zufallsprinzip von der Vorlagenbibliothek inspirieren",
     "fr-FR": "S'inspirer au hasard de la bibliothèque de modèles",
     "ko-KR": "템플릿 라이브러리에서 무작위로 영감을 얻습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(36865-36879)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(36999-37013)"],
     "$id": 11063
   },
   "随机": {
@@ -4078,7 +4763,7 @@
     "de-DE": "Zufällig",
     "fr-FR": "Aléatoire",
     "ko-KR": "무작위의",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(37012-37018)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(37146-37152)"],
     "$id": 11068
   },
   "复制当前模板表达式": {
@@ -4091,7 +4776,7 @@
     "de-DE": "Kopieren Sie den aktuellen Vorlagenausdruck",
     "fr-FR": "Copier l'expression du modèle actuel",
     "ko-KR": "현재 템플릿 표현식 복사",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(37378-37391)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(37512-37525)"],
     "$id": 11069
   },
   "还原默认模板": {
@@ -4104,7 +4789,7 @@
     "de-DE": "Standardvorlage wiederherstellen",
     "fr-FR": "Restaurer le modèle par défaut",
     "ko-KR": "기본 템플릿 복원",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(37850-37860)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(37984-37994)"],
     "$id": 11071
   },
   "清空当前模板": {
@@ -4117,7 +4802,7 @@
     "de-DE": "Aktuelle Vorlage löschen",
     "fr-FR": "Effacer le modèle actuel",
     "ko-KR": "현재 템플릿 지우기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(38319-38329)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(38453-38463)"],
     "$id": 11072
   },
   "模板为空，请从下方点击属性标签开始智能组合...": {
@@ -4130,7 +4815,7 @@
     "de-DE": "Die Vorlage ist leer. Klicken Sie bitte auf die Attributbezeichnung unten, um die intelligente Kombination zu starten ...",
     "fr-FR": "Le modèle est vide, veuillez cliquer sur l'étiquette d'attribut ci-dessous pour démarrer la combinaison intelligente...",
     "ko-KR": "템플릿이 비어 있습니다. 스마트 조합을 시작하려면 아래 속성 라벨을 클릭하세요...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(39164-39192)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(39298-39326)"],
     "$id": 11073
   },
   "移除": {
@@ -4144,8 +4829,8 @@
     "fr-FR": "Retirer",
     "ko-KR": "제거하다",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(42785-42791)",
-      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(40186-40192)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(42919-42925)",
+      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(40320-40326)"
     ],
     "$id": 10002
   },
@@ -4159,7 +4844,7 @@
     "de-DE": "Bearbeiten oder geben Sie DSL-Vorlagenausdrücke frei ein",
     "fr-FR": "Modifiez ou saisissez librement des expressions de modèle DSL",
     "ko-KR": "DSL 템플릿 표현식을 자유롭게 편집하거나 입력하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(43455-43476)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(43589-43610)"],
     "$id": 11074
   },
   "连接符已根据语义智能生成，缺少变量时自动折叠": {
@@ -4172,7 +4857,7 @@
     "de-DE": "Konnektoren wurden auf Basis semantischer Intelligenz generiert und kollabieren automatisch, wenn Variablen fehlen",
     "fr-FR": "Les connecteurs ont été générés sur la base de l'intelligence sémantique et s'effondrent automatiquement lorsque des variables sont manquantes",
     "ko-KR": "의미 지능을 기반으로 커넥터가 생성되었으며 변수가 누락되면 자동으로 축소됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(43985-44011)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(44119-44145)"],
     "$id": 11075
   },
   "勾选时自动添加 []、()、<> 等类型修饰符，取消勾选时则移除": {
@@ -4185,7 +4870,7 @@
     "de-DE": "Typmodifikatoren wie [], (), <> werden automatisch hinzugefügt, wenn sie aktiviert sind, und entfernt, wenn sie deaktiviert sind.",
     "fr-FR": "Les modificateurs de type tels que [], (), <> sont automatiquement ajoutés lorsqu'ils sont cochés et supprimés lorsqu'ils sont décochés.",
     "ko-KR": "[], (), <> 등의 유형 수식자는 선택 시 자동으로 추가되고 선택 취소 시 제거됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(44304-44340)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(44438-44474)"],
     "$id": 11076
   },
   "添加类型包裹符": {
@@ -4198,7 +4883,7 @@
     "de-DE": "Typ-Wrapper hinzufügen",
     "fr-FR": "Ajouter un wrapper de type",
     "ko-KR": "유형 래퍼 추가",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(44786-44797)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(44920-44931)"],
     "$id": 11077
   },
   "属性标签资源池": {
@@ -4211,7 +4896,7 @@
     "de-DE": "Ressourcenpool für Eigenschafts-Tags",
     "fr-FR": "Pool de ressources de balise de propriété",
     "ko-KR": "속성 태그 리소스 풀",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(45464-45475)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(45598-45609)"],
     "$id": 11078
   },
   "过滤属性...": {
@@ -4224,7 +4909,7 @@
     "de-DE": "Eigenschaften filtern...",
     "fr-FR": "Propriétés du filtre...",
     "ko-KR": "속성 필터링...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(45757-45768)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(45891-45902)"],
     "$id": 11079
   },
   "全部": {
@@ -4237,7 +4922,7 @@
     "de-DE": "Alle",
     "fr-FR": "Tous",
     "ko-KR": "모두",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46460-46466)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46594-46600)"],
     "$id": 11080
   },
   "核心与作者": {
@@ -4250,7 +4935,7 @@
     "de-DE": "Kern und Autor",
     "fr-FR": "Noyau et auteur",
     "ko-KR": "핵심 및 저자",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46533-46542)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(46667-46676)"],
     "$id": 11081
   },
   "没有找到匹配的属性": {
@@ -4263,7 +4948,7 @@
     "de-DE": "Kein passendes Attribut gefunden",
     "fr-FR": "Aucun attribut correspondant trouvé",
     "ko-KR": "일치하는 속성이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(49554-49567)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(49688-49701)"],
     "$id": 11082
   },
   "所有属性标签均已添加至上方模板": {
@@ -4276,7 +4961,7 @@
     "de-DE": "Alle Attribut-Tags wurden der obigen Vorlage hinzugefügt",
     "fr-FR": "Toutes les balises d'attribut ont été ajoutées au modèle ci-dessus",
     "ko-KR": "모든 속성 태그가 위 템플릿에 추가되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(49603-49622)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(49737-49756)"],
     "$id": 11083
   },
   "{count} 个可用": {
@@ -4289,7 +4974,7 @@
     "de-DE": "{count} verfügbar",
     "fr-FR": "{count} disponible",
     "ko-KR": "{count} 사용 가능",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(50282-50297)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(50416-50431)"],
     "$id": 11084
   },
   "更名效果实时对照": {
@@ -4302,7 +4987,7 @@
     "de-DE": "Echtzeitvergleich der Auswirkungen von Namensänderungen",
     "fr-FR": "Comparaison en temps réel des effets du changement de nom",
     "ko-KR": "이름 변경 효과 실시간 비교",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(53144-53156)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(53278-53290)"],
     "$id": 11085
   },
   "为保证性能，实时对照列表仅展示前 {max} 个文件（共 {total} 个）": {
@@ -4316,9 +5001,9 @@
     "fr-FR": "Pour garantir les performances, la liste de comparaison en temps réel affiche uniquement les {max} premiers fichiers ({total} au total)",
     "ko-KR": "성능을 보장하기 위해 실시간 비교 목록에는 첫 번째 {max} 파일(총 {total}개)만 표시됩니다.",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(53492-53535)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(63273-63316)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(66852-66895)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(53626-53669)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(63407-63450)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(66986-67029)"
     ],
     "$id": 11086
   },
@@ -4332,7 +5017,7 @@
     "de-DE": "Nur die ersten {max} Elemente anzeigen",
     "fr-FR": "Afficher uniquement les {max} premiers éléments",
     "ko-KR": "처음 {max}개 항목만 표시",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(53736-53752)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(53870-53886)"],
     "$id": 11087
   },
   "变更率: {rate}%": {
@@ -4345,7 +5030,7 @@
     "de-DE": "Änderungsrate: {rate} %",
     "fr-FR": "Taux de modification : {rate} %",
     "ko-KR": "변경률: {rate}%",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(54044-54060)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(54178-54194)"],
     "$id": 11088
   },
   "计算中...": {
@@ -4358,7 +5043,7 @@
     "de-DE": "Berechnen...",
     "fr-FR": "Calculateur...",
     "ko-KR": "계산 중...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(54434-54444)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(54568-54578)"],
     "$id": 9990
   },
   "卡片对照视图": {
@@ -4371,7 +5056,7 @@
     "de-DE": "Kartenvergleichsansicht",
     "fr-FR": "Vue de comparaison des cartes",
     "ko-KR": "카드 비교 보기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(54885-54895)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(55019-55029)"],
     "$id": 11089
   },
   "表格视图": {
@@ -4384,7 +5069,7 @@
     "de-DE": "Tabellenansicht",
     "fr-FR": "Vue du tableau",
     "ko-KR": "테이블 보기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(55360-55368)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(55494-55502)"],
     "$id": 11090
   },
   "全部 ({count})": {
@@ -4397,7 +5082,7 @@
     "de-DE": "Alle ({count})",
     "fr-FR": "Tous ({count})",
     "ko-KR": "모두 ({count})",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(56392-56408)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(56526-56542)"],
     "$id": 11091
   },
   "已变动": {
@@ -4410,7 +5095,7 @@
     "de-DE": "Geändert",
     "fr-FR": "Modifié",
     "ko-KR": "변경됨",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(57087-57094)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(57221-57228)"],
     "$id": 11092
   },
   "未改变": {
@@ -4423,7 +5108,7 @@
     "de-DE": "Unverändert",
     "fr-FR": "Inchangé",
     "ko-KR": "변하지 않은",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(57832-57839)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(57966-57973)"],
     "$id": 11093
   },
   "搜索文件名...": {
@@ -4436,7 +5121,7 @@
     "de-DE": "Dateinamen suchen...",
     "fr-FR": "Rechercher le nom du fichier...",
     "ko-KR": "파일 이름 검색...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(58244-58256)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(58378-58390)"],
     "$id": 11094
   },
   "没有符合筛选条件的待重命名文件": {
@@ -4449,7 +5134,7 @@
     "de-DE": "Es gibt keine umzubenennenden Dateien, die den Filterkriterien entsprechen",
     "fr-FR": "Il n'y a aucun fichier à renommer qui correspond aux critères de filtre",
     "ko-KR": "필터 기준과 일치하는 이름을 바꿀 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(59099-59118)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(59233-59252)"],
     "$id": 11095
   },
   "异常": {
@@ -4463,8 +5148,8 @@
     "fr-FR": "Anormale",
     "ko-KR": "비정상",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(60807-60813)",
-      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(65857-65863)"
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(60941-60947)",
+      "src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(65991-65997)"
     ],
     "$id": 11096
   },
@@ -4478,7 +5163,7 @@
     "de-DE": "Ursprünglicher Smart-Dateiname",
     "fr-FR": "Nom de fichier intelligent d'origine",
     "ko-KR": "원본 스마트 파일 이름",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(64051-64062)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(64185-64196)"],
     "$id": 11097
   },
   "拟更名新名称": {
@@ -4491,7 +5176,7 @@
     "de-DE": "Vorgeschlagene Namensänderung in neuen Namen",
     "fr-FR": "Changement de nom proposé en nouveau nom",
     "ko-KR": "새 이름으로 이름 변경 제안",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(64133-64143)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(64267-64277)"],
     "$id": 11098
   },
   "状态": {
@@ -4504,7 +5189,7 @@
     "de-DE": "Status",
     "fr-FR": "Statut",
     "ko-KR": "상태",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(64230-64236)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(64364-64370)"],
     "$id": 11099
   },
   "变更": {
@@ -4517,7 +5202,7 @@
     "de-DE": "ändern",
     "fr-FR": "Changement",
     "ko-KR": "변화",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(66007-66013)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(66141-66147)"],
     "$id": 11100
   },
   "同名": {
@@ -4530,7 +5215,7 @@
     "de-DE": "Gleicher Name",
     "fr-FR": "Même nom",
     "ko-KR": "같은 이름",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(66143-66149)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchRenameView.tsx(66277-66283)"],
     "$id": 11101
   },
   "删除该标签": {
@@ -4543,7 +5228,7 @@
     "de-DE": "Löschen Sie dieses Etikett",
     "fr-FR": "Supprimer ce libellé",
     "ko-KR": "이 라벨 삭제",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(5444-5453)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(5505-5514)"],
     "$id": 11105
   },
   "{count} 个标签": {
@@ -4556,7 +5241,7 @@
     "de-DE": "{count}-Tags",
     "fr-FR": "{count} balises",
     "ko-KR": "{count} 태그",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(7938-7953)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(7999-8014)"],
     "$id": 10012
   },
   "泛维度": {
@@ -4569,7 +5254,7 @@
     "de-DE": "Pfannenmaß",
     "fr-FR": "Dimension du panoramique",
     "ko-KR": "팬 차원",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(8242-8249)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(8303-8310)"],
     "$id": 10013
   },
   "全部附加该维度下的所有标签": {
@@ -4582,7 +5267,7 @@
     "de-DE": "Hängen Sie alle Tags unter dieser Dimension an",
     "fr-FR": "Ajouter toutes les balises sous cette dimension",
     "ko-KR": "이 차원 아래에 모든 태그를 추가합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(8807-8824)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(8868-8885)"],
     "$id": 10014
   },
   "全附": {
@@ -4595,7 +5280,7 @@
     "de-DE": "Alles beigefügt",
     "fr-FR": "Tous attachés",
     "ko-KR": "모두 첨부",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(8860-8866)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(8921-8927)"],
     "$id": 10015
   },
   "恢复该维度默认状态": {
@@ -4608,7 +5293,7 @@
     "de-DE": "Stellen Sie den Standardstatus dieser Dimension wieder her",
     "fr-FR": "Restaurer l'état par défaut de cette dimension",
     "ko-KR": "이 차원의 기본 상태를 복원합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(9264-9277)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(9325-9338)"],
     "$id": 10016
   },
   "重置": {
@@ -4622,8 +5307,8 @@
     "fr-FR": "Réinitialiser",
     "ko-KR": "재설정",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(9313-9319)",
-      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(42554-42560)"
+      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(9374-9380)",
+      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(42688-42694)"
     ],
     "$id": 10009
   },
@@ -4637,7 +5322,7 @@
     "de-DE": "Geben Sie einen neuen Tag-Namen ein...",
     "fr-FR": "Entrez le nouveau nom de la balise...",
     "ko-KR": "새 태그 이름을 입력하세요...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(10318-10331)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(10379-10392)"],
     "$id": 11104
   },
   "新建标签": {
@@ -4650,7 +5335,7 @@
     "de-DE": "Neues Etikett",
     "fr-FR": "Nouvelle étiquette",
     "ko-KR": "새 라벨",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(11779-11787)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(11840-11848)"],
     "$id": 10018
   },
   "待添加": {
@@ -4663,7 +5348,7 @@
     "de-DE": "Wird hinzugefügt",
     "fr-FR": "A ajouter",
     "ko-KR": "추가 예정",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(12472-12479)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(12533-12540)"],
     "$id": 10019
   },
   "内容标签": {
@@ -4677,10 +5362,10 @@
     "fr-FR": "Balises de contenu",
     "ko-KR": "콘텐츠 태그",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(24627-24635)",
-      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(24702-24710)",
-      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(26429-26437)",
-      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(26510-26518)"
+      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(24745-24753)",
+      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(24820-24828)",
+      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(26547-26555)",
+      "src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(26628-26636)"
     ],
     "$id": 11225
   },
@@ -4694,7 +5379,7 @@
     "de-DE": "Alle nicht gespeicherten Etikettenänderungen werden zurückgesetzt",
     "fr-FR": "Toutes les modifications d'étiquette non enregistrées sont réinitialisées",
     "ko-KR": "저장되지 않은 모든 라벨 변경사항이 재설정됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(28466-28483)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(28600-28617)"],
     "$id": 9993
   },
   "扩展名由程序自动处理，无需手动新建扩展名标签": {
@@ -4707,7 +5392,7 @@
     "de-DE": "Erweiterungen werden vom Programm automatisch verarbeitet, es ist nicht erforderlich, Erweiterungs-Tags manuell zu erstellen",
     "fr-FR": "Les extensions sont automatiquement traitées par le programme, pas besoin de créer manuellement des balises d'extension",
     "ko-KR": "확장은 프로그램에 의해 자동으로 처리되므로 확장 태그를 수동으로 생성할 필요가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(29188-29214)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(29322-29348)"],
     "$id": 9994
   },
   "已将标签「{name}」标记为待删除，点击保存后生效": {
@@ -4720,7 +5405,7 @@
     "de-DE": "Das Label „{name}“ wurde zum Löschen markiert. Es wird wirksam, nachdem Sie auf „Speichern“ geklickt haben.",
     "fr-FR": "L'étiquette \"{name}\" a été marquée pour suppression. Cela prendra effet après avoir cliqué sur Enregistrer.",
     "ko-KR": "\"{name}\" 레이블이 삭제 대상으로 표시되었습니다. 저장을 클릭하면 적용됩니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(30285-30315)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(30419-30449)"],
     "$id": 11102
   },
   "未检测到任何标签变更": {
@@ -4733,7 +5418,7 @@
     "de-DE": "Es wurden keine Etikettenänderungen festgestellt",
     "fr-FR": "Aucun changement d'étiquette détecté",
     "ko-KR": "라벨 변경사항이 감지되지 않았습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(33301-33315)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(33435-33449)"],
     "$id": 11103
   },
   "当前选中文件:": {
@@ -4746,7 +5431,7 @@
     "de-DE": "Aktuell ausgewählte Datei:",
     "fr-FR": "Fichier actuellement sélectionné :",
     "ko-KR": "현재 선택된 파일:",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(36544-36555)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(36678-36689)"],
     "$id": 9996
   },
   "共 {count} 个标签": {
@@ -4759,7 +5444,7 @@
     "de-DE": "Insgesamt {count} Tags",
     "fr-FR": "Total de {count} balises",
     "ko-KR": "총 {count} 태그",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(37073-37090)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(37207-37224)"],
     "$id": 11226
   },
   "清除选定文件高亮": {
@@ -4772,7 +5457,7 @@
     "de-DE": "Deaktivieren Sie die Hervorhebung ausgewählter Dateien",
     "fr-FR": "Effacer la mise en surbrillance du fichier sélectionné",
     "ko-KR": "선택한 파일 강조 표시 지우기",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(37493-37505)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(37627-37639)"],
     "$id": 9998
   },
   "取消聚焦": {
@@ -4785,7 +5470,7 @@
     "de-DE": "Unfokussieren",
     "fr-FR": "Flou",
     "ko-KR": "초점이 맞지 않음",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(37622-37630)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(37756-37764)"],
     "$id": 9999
   },
   "该文件暂无归属标签": {
@@ -4798,7 +5483,7 @@
     "de-DE": "Diese Datei hat noch kein Attributions-Tag",
     "fr-FR": "Ce fichier n'a pas encore de balise d'attribution",
     "ko-KR": "이 파일에는 아직 저작자표시 태그가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(37995-38008)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(38129-38142)"],
     "$id": 11227
   },
   "归属维度: {dim}": {
@@ -4811,7 +5496,7 @@
     "de-DE": "Zugehörige Dimension: {dim}",
     "fr-FR": "Dimension d'appartenance : {dim}",
     "ko-KR": "소속 차원: {dim}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(38392-38407)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(38526-38541)"],
     "$id": 11228
   },
   "批量标签工作台 (目标 {count} 个文件)": {
@@ -4824,7 +5509,7 @@
     "de-DE": "Bulk Labeling Workbench (Ziel-{count}-Dateien)",
     "fr-FR": "Workbench d'étiquetage en masse (fichiers cibles {count})",
     "ko-KR": "대량 라벨링 워크벤치(대상 {count}개 파일)",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(39493-39521)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(39627-39655)"],
     "$id": 10000
   },
   "附加": {
@@ -4837,7 +5522,7 @@
     "de-DE": "Zusätzlich",
     "fr-FR": "Supplémentaire",
     "ko-KR": "추가의",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(39903-39909)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(40037-40043)"],
     "$id": 10001
   },
   "点击标签三态循环：": {
@@ -4850,7 +5535,7 @@
     "de-DE": "Klicken Sie auf die Bezeichnung Tristate Loop:",
     "fr-FR": "Cliquez sur le label Tristate Loop :",
     "ko-KR": "Tristate Loop 라벨을 클릭하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(40409-40422)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(40543-40556)"],
     "$id": 10003
   },
   "全部附加": {
@@ -4863,7 +5548,7 @@
     "de-DE": "Alles anhängen",
     "fr-FR": "Ajouter tout",
     "ko-KR": "모두 추가",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(40635-40643)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(40769-40777)"],
     "$id": 10004
   },
   "全部移除": {
@@ -4876,7 +5561,7 @@
     "de-DE": "Alles entfernen",
     "fr-FR": "Supprimer tout",
     "ko-KR": "모두 제거",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(40910-40918)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(41044-41052)"],
     "$id": 10005
   },
   "恢复原状": {
@@ -4889,7 +5574,7 @@
     "de-DE": "Wiederherstellung",
     "fr-FR": "Restauration",
     "ko-KR": "복구",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(41018-41026)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(41152-41160)"],
     "$id": 10006
   },
   "搜索标签或维度...": {
@@ -4902,7 +5587,7 @@
     "de-DE": "Nach Beschriftungen oder Abmessungen suchen...",
     "fr-FR": "Rechercher des étiquettes ou des dimensions...",
     "ko-KR": "라벨 또는 측정기준 검색...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(41561-41575)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(41695-41709)"],
     "$id": 10007
   },
   "重置所有未保存的标签变更": {
@@ -4915,7 +5600,7 @@
     "de-DE": "Setzen Sie alle nicht gespeicherten Etikettenänderungen zurück",
     "fr-FR": "Réinitialiser toutes les modifications d'étiquette non enregistrées",
     "ko-KR": "저장되지 않은 모든 라벨 변경사항 재설정",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(42430-42446)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(42564-42580)"],
     "$id": 10008
   },
   "未找到匹配的维度或标签": {
@@ -4928,7 +5613,7 @@
     "de-DE": "Keine passende Bemaßung oder Beschriftung gefunden",
     "fr-FR": "Aucune dimension ou étiquette correspondante trouvée",
     "ko-KR": "일치하는 측정기준이나 라벨이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(43076-43091)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(43210-43225)"],
     "$id": 10010
   },
   "请尝试更换搜索词或新建标签": {
@@ -4941,7 +5626,7 @@
     "de-DE": "Versuchen Sie bitte, die Suchbegriffe zu ändern oder ein neues Tag zu erstellen",
     "fr-FR": "Veuillez essayer de modifier les termes de recherche ou de créer une nouvelle balise",
     "ko-KR": "검색어를 변경하거나 새 태그를 만들어 보세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(43160-43177)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(43294-43311)"],
     "$id": 10011
   },
   "无匹配的分类维度": {
@@ -4954,7 +5639,7 @@
     "de-DE": "Keine passenden Klassifizierungsdimensionen",
     "fr-FR": "Aucune dimension de classification correspondante",
     "ko-KR": "일치하는 분류 차원이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(44714-44726)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(44848-44860)"],
     "$id": 11106
   },
   "泛维度标签": {
@@ -4967,7 +5652,7 @@
     "de-DE": "Beschriftung der Pfannenabmessungen",
     "fr-FR": "étiquette de dimension panoramique",
     "ko-KR": "팬 차원 레이블",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(46882-46891)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(47016-47025)"],
     "$id": 11107
   },
   "无匹配的泛维度标签": {
@@ -4980,7 +5665,7 @@
     "de-DE": "Keine passende Pfannenabmessungsbezeichnung",
     "fr-FR": "Aucune étiquette de dimension de panoramique correspondante",
     "ko-KR": "일치하는 팬 차원 라벨이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(47509-47522)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/BatchTagView.tsx(47643-47656)"],
     "$id": 11108
   },
   "AI 智能推荐整理方案": {
@@ -5195,49 +5880,6 @@
     "$files": ["src/renderer/components/file-explorer/Organize/components/CandidatesView.tsx(12598-12604)"],
     "$id": 8604
   },
-  "未归类": {
-    "en-US": "Uncategorized",
-    "es-ES": "Sin categoría",
-    "ar-EG": "غير مصنف",
-    "pt-PT": "Sem categoria",
-    "ru-RU": "Без категории",
-    "ja-JP": "未分類",
-    "de-DE": "Nicht kategorisiert",
-    "fr-FR": "Non classé",
-    "ko-KR": "분류되지 않음",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(2706-2713)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(2811-2818)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(3169-3176)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(3246-3253)",
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(5834-5841)",
-      "src/renderer/components/file-explorer/Organize/components/ModeSelectView.tsx(12924-12931)",
-      "src/renderer/components/file-explorer/Organize/components/OrganizingView.tsx(1780-1787)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(11303-11310)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(14720-14727)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(14854-14861)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(19958-19965)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(20059-20066)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(21454-21461)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(32531-32538)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(32620-32627)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(71632-71639)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(71774-71781)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(3152-3159)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(5253-5260)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(6094-6101)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(8610-8617)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(11397-11404)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(15261-15268)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(15598-15605)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(16014-16021)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(16446-16453)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(21545-21552)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(25432-25439)",
-      "src/renderer/components/file-explorer/Organize/utils/helpers.ts(28878-28885)"
-    ],
-    "$id": 8605
-  },
   "平铺到根目录": {
     "en-US": "Tile to root directory",
     "es-ES": "Mosaico al directorio raíz",
@@ -5248,7 +5890,7 @@
     "de-DE": "Kachel zum Stammverzeichnis",
     "fr-FR": "Mosaïque vers le répertoire racine",
     "ko-KR": "루트 디렉토리에 타일",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(7461-7471)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(7595-7605)"],
     "$id": 8606
   },
   "不生成空目录": {
@@ -5262,7 +5904,7 @@
     "fr-FR": "Ne créez pas de répertoires vides",
     "ko-KR": "빈 디렉터리를 만들지 마세요.",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(7844-7854)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(7978-7988)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10121-10131)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10611-10621)"
     ],
@@ -5279,7 +5921,7 @@
     "fr-FR": "Déduplication de fichiers",
     "ko-KR": "파일 중복 제거",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(8260-8268)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(8394-8402)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(10686-10694)",
       "src/renderer/components/file-explorer/Organize/components/OrganizeToolbar.tsx(11166-11174)"
     ],
@@ -5295,7 +5937,7 @@
     "de-DE": "Sortierung abgeschlossen, insgesamt {count} Dateien wurden klassifiziert",
     "fr-FR": "Tri terminé, un total de {count} fichiers ont été classés",
     "ko-KR": "정렬이 완료되어 총 {count}개의 파일이 분류되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(9400-9427)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(9534-9561)"],
     "$id": 8609
   },
   "整理完成，新增 {current} 个，共计 {total} 个文件已归类": {
@@ -5308,7 +5950,7 @@
     "de-DE": "Organisation abgeschlossen, {current} neue Dateien hinzugefügt, insgesamt {total} Dateien wurden klassifiziert",
     "fr-FR": "Organisation terminée, {current} nouveaux fichiers ajoutés, un total de {total} fichiers ont été classés",
     "ko-KR": "정리가 완료되고, {current}개의 새 파일이 추가되었으며, 총 {total}개의 파일이 분류되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(9548-9589)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(9682-9723)"],
     "$id": 8610
   },
   "整理完成，共 {count} 个文件已归类": {
@@ -5321,7 +5963,7 @@
     "de-DE": "Die Organisation ist abgeschlossen, insgesamt wurden {count} Dateien klassifiziert",
     "fr-FR": "Organisation terminée, un total de {count} fichiers ont été classés",
     "ko-KR": "정리가 완료되어 총 {count}개의 파일이 분류되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(9776-9801)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(9910-9935)"],
     "$id": 8611
   },
   "其中 {unmatched} 个文件未归类": {
@@ -5334,7 +5976,7 @@
     "de-DE": "{unmatched} dieser Dateien sind nicht kategorisiert",
     "fr-FR": "{unmatched} de ces fichiers ne sont pas classés",
     "ko-KR": "이 파일 중 {unmatched}개는 분류되지 않았습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(10039-10064)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(10173-10198)"],
     "$id": 8612
   },
   "显示前次已归类文件": {
@@ -5348,7 +5990,7 @@
     "fr-FR": "Afficher les fichiers précédemment classés",
     "ko-KR": "이전에 분류된 파일 표시",
     "$files": [
-      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(12524-12537)",
+      "src/renderer/components/file-explorer/Organize/components/DoneView.tsx(12658-12671)",
       "src/renderer/components/file-explorer/Organize/components/OrganizingView.tsx(6492-6505)"
     ],
     "$id": 8613
@@ -5363,7 +6005,7 @@
     "de-DE": "Nicht kategorisierte Dateien ({count})",
     "fr-FR": "Fichiers non classés ({count})",
     "ko-KR": "분류되지 않은 파일({count})",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(13749-13768)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(13883-13902)"],
     "$id": 8614
   },
   "已尝试找补": {
@@ -5376,7 +6018,7 @@
     "de-DE": "Habe versucht, einen Ersatz zu finden",
     "fr-FR": "J'ai essayé de trouver un remplaçant",
     "ko-KR": "대체품을 찾으려고 노력함",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(14258-14267)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(14392-14401)"],
     "$id": 8615
   },
   "找补中...": {
@@ -5389,7 +6031,7 @@
     "de-DE": "Auf der Suche nach Ergänzung...",
     "fr-FR": "Vous cherchez un supplément...",
     "ko-KR": "보충제를 찾는 중...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(15244-15254)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(15378-15388)"],
     "$id": 8616
   },
   "再找补一次": {
@@ -5402,7 +6044,7 @@
     "de-DE": "Finden Sie es wieder",
     "fr-FR": "Retrouvez-le à nouveau",
     "ko-KR": "다시 찾아보세요",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(15258-15267)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(15392-15401)"],
     "$id": 8617
   },
   "自动找补中...": {
@@ -5415,7 +6057,7 @@
     "de-DE": "Den Füller automatisch finden...",
     "fr-FR": "Trouver automatiquement le remplisseur...",
     "ko-KR": "필러를 자동으로 찾아줍니다...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(16031-16043)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(16165-16177)"],
     "$id": 8618
   },
   "自动找补": {
@@ -5428,7 +6070,7 @@
     "de-DE": "Automatischer Austausch",
     "fr-FR": "Remplacement automatique",
     "ko-KR": "자동 교체",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(16047-16055)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(16181-16189)"],
     "$id": 8619
   },
   "正在执行 AI 找补归类...": {
@@ -5441,7 +6083,7 @@
     "de-DE": "Durchführen einer KI-Suche und -Klassifizierung ...",
     "fr-FR": "Exécution de la recherche et de la classification IA...",
     "ko-KR": "AI 검색 및 분류 실행 중...",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(16992-17011)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(17126-17145)"],
     "$id": 8620
   },
   "第 {current} / {total} 批次": {
@@ -5454,7 +6096,7 @@
     "de-DE": "Charge {current}/{total}",
     "fr-FR": "Lot {current}/{total}",
     "ko-KR": "일괄 {current}/{total}",
-    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(17238-17266)"],
+    "$files": ["src/renderer/components/file-explorer/Organize/components/DoneView.tsx(17372-17400)"],
     "$id": 8621
   },
   "修改整理策略": {
@@ -6673,634 +7315,5 @@
     "ko-KR": "디렉토리 삭제",
     "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(16745-16753)"],
     "$id": 8696
-  },
-  "获取待整理文件列表失败，请查看日志确认": {
-    "en-US": "Failed to obtain the list of files to be sorted, please check the log for confirmation.",
-    "es-ES": "No se pudo obtener la lista de archivos para ordenar; consulte el registro para confirmarlo.",
-    "ar-EG": "فشل الحصول على قائمة الملفات التي سيتم فرزها، يرجى التحقق من السجل للتأكيد.",
-    "pt-PT": "Falha ao obter a lista de arquivos a serem classificados. Verifique o log para confirmação.",
-    "ru-RU": "Не удалось получить список файлов для сортировки. Проверьте журнал для подтверждения.",
-    "ja-JP": "ソート対象のファイルのリストを取得できませんでした。ログを確認してください。",
-    "de-DE": "Die Liste der zu sortierenden Dateien konnte nicht abgerufen werden. Bitte überprüfen Sie das Protokoll zur Bestätigung.",
-    "fr-FR": "Impossible d'obtenir la liste des fichiers à trier, veuillez vérifier le journal pour confirmation.",
-    "ko-KR": "정렬할 파일 목록을 가져오지 못했습니다. 확인하려면 로그를 확인하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(8526-8549)"],
-    "$id": 8700
-  },
-  "已加载已有虚拟目录完整文件结构": {
-    "en-US": "The complete file structure of the existing virtual directory has been loaded.",
-    "es-ES": "Se ha cargado la estructura de archivos completa del directorio virtual existente.",
-    "ar-EG": "تم تحميل بنية الملف الكاملة للدليل الظاهري الموجود.",
-    "pt-PT": "A estrutura completa de arquivos do diretório virtual existente foi carregada.",
-    "ru-RU": "Загружена полная файловая структура существующего виртуального каталога.",
-    "ja-JP": "既存の仮想ディレクトリの完全なファイル構造がロードされました。",
-    "de-DE": "Die komplette Dateistruktur des bestehenden virtuellen Verzeichnisses wurde geladen.",
-    "fr-FR": "La structure complète des fichiers du répertoire virtuel existant a été chargée.",
-    "ko-KR": "기존 가상 디렉터리의 전체 파일 구조가 로드되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16199-16218)"],
-    "$id": 8701
-  },
-  "已加载增量整理待处理文件与现有分类结构": {
-    "en-US": "Loaded incremental sorting files to be processed and existing classification structure",
-    "es-ES": "Archivos de clasificación incrementales cargados para procesar y estructura de clasificación existente",
-    "ar-EG": "تحميل ملفات الفرز المتزايدة لتتم معالجتها وهيكل التصنيف الحالي",
-    "pt-PT": "Arquivos de classificação incrementais carregados a serem processados ​​e estrutura de classificação existente",
-    "ru-RU": "Загруженные файлы инкрементной сортировки для обработки и существующая структура классификации.",
-    "ja-JP": "ロードされた処理対象の増分並べ替えファイルと既存の分類構造",
-    "de-DE": "Zu verarbeitende inkrementelle Sortierdateien und vorhandene Klassifizierungsstruktur werden geladen",
-    "fr-FR": "Fichiers de tri incrémentiel chargés à traiter et structure de classification existante",
-    "ko-KR": "처리할 증분 정렬 파일과 기존 분류 구조를 로드했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16297-16320)"],
-    "$id": 8702
-  },
-  "加载增量整理文件失败": {
-    "en-US": "Failed to load incremental grooming file",
-    "es-ES": "No se pudo cargar el archivo de limpieza incremental",
-    "ar-EG": "فشل تحميل ملف الاستمالة المتزايد",
-    "pt-PT": "Falha ao carregar o arquivo de preparação incremental",
-    "ru-RU": "Не удалось загрузить файл добавочной обработки.",
-    "ja-JP": "インクリメンタル グルーミング ファイルのロードに失敗しました",
-    "de-DE": "Das Laden der inkrementellen Grooming-Datei ist fehlgeschlagen",
-    "fr-FR": "Échec du chargement du fichier de nettoyage incrémentiel",
-    "ko-KR": "증분 정리 파일을 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(16449-16463)"],
-    "$id": 8703
-  },
-  "加载草稿失败，请重试": {
-    "en-US": "Failed to load draft, please try again",
-    "es-ES": "No se pudo cargar el borrador. Inténtelo de nuevo.",
-    "ar-EG": "فشل تحميل المسودة، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha ao carregar o rascunho. Tente novamente",
-    "ru-RU": "Не удалось загрузить черновик. Повторите попытку.",
-    "ja-JP": "下書きをロードできませんでした。もう一度お試しください。",
-    "de-DE": "Der Entwurf konnte nicht geladen werden. Bitte versuchen Sie es erneut",
-    "fr-FR": "Échec du chargement du brouillon, veuillez réessayer",
-    "ko-KR": "초안을 로드하지 못했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34033-34047)"],
-    "$id": 8704
-  },
-  "已删除未保存的草稿": {
-    "en-US": "Unsaved draft deleted",
-    "es-ES": "Borrador no guardado eliminado",
-    "ar-EG": "تم حذف المسودة غير المحفوظة",
-    "pt-PT": "Rascunho não salvo excluído",
-    "ru-RU": "Несохраненный черновик удален.",
-    "ja-JP": "保存されていない下書きが削除されました",
-    "de-DE": "Nicht gespeicherter Entwurf gelöscht",
-    "fr-FR": "Brouillon non enregistré supprimé",
-    "ko-KR": "저장되지 않은 초안이 삭제되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34377-34390)"],
-    "$id": 8705
-  },
-  "删除草稿失败": {
-    "en-US": "Delete draft failed",
-    "es-ES": "Error al eliminar el borrador",
-    "ar-EG": "فشل حذف المسودة",
-    "pt-PT": "Falha ao excluir rascunho",
-    "ru-RU": "Удалить черновик не удалось",
-    "ja-JP": "下書きの削除に失敗しました",
-    "de-DE": "Entwurf konnte nicht gelöscht werden",
-    "fr-FR": "Échec de la suppression du brouillon",
-    "ko-KR": "초안 삭제 실패",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(34547-34557)"],
-    "$id": 8706
-  },
-  "模型正在切换中，请等待": {
-    "en-US": "The model is switching, please wait",
-    "es-ES": "El modelo se está cambiando, por favor espere",
-    "ar-EG": "نموذج التبديل قيد التشغيل، يرجى الانتظار",
-    "pt-PT": "A modelo está a ser alterada, por favor aguarde",
-    "ru-RU": "Модель переключается, пожалуйста, подождите",
-    "ja-JP": "モデルの切替中です。お待ちください",
-    "de-DE": "Das Modell wird gerade umgeschaltet, bitte warten",
-    "fr-FR": "Le modèle est en cours de basculement, veuillez patienter",
-    "ko-KR": "모델 전환 중입니다. 기다려 주세요",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(36711-36726)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39443-39458)"
-    ],
-    "$id": 8707
-  },
-  "生成候选方案失败，请重试": {
-    "en-US": "Failed to generate candidate solutions, please try again",
-    "es-ES": "No se pudieron generar soluciones candidatas, inténtelo de nuevo",
-    "ar-EG": "فشل إنشاء الحلول المرشحة، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha ao gerar soluções candidatas. Tente novamente",
-    "ru-RU": "Не удалось создать возможные решения. Повторите попытку.",
-    "ja-JP": "候補ソリューションの生成に失敗しました。もう一度お試しください。",
-    "de-DE": "Kandidatenlösungen konnten nicht generiert werden. Bitte versuchen Sie es erneut",
-    "fr-FR": "Échec de la génération de solutions candidates, veuillez réessayer",
-    "ko-KR": "후보 솔루션을 생성하지 못했습니다. 다시 시도해 주세요.",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(36797-36813)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(37096-37112)"
-    ],
-    "$id": 8708
-  },
-  "生成失败，请重试": {
-    "en-US": "Generation failed, please try again",
-    "es-ES": "La generación falló, por favor inténtalo de nuevo",
-    "ar-EG": "فشل الإنشاء، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha na geração, tente novamente",
-    "ru-RU": "Генерация не удалась, попробуйте еще раз",
-    "ja-JP": "生成に失敗しました。もう一度お試しください。",
-    "de-DE": "Die Generierung ist fehlgeschlagen. Bitte versuchen Sie es erneut",
-    "fr-FR": "La génération a échoué, veuillez réessayer",
-    "ko-KR": "생성에 실패했습니다. 다시 시도해 주세요.",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39529-39541)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(39824-39836)"
-    ],
-    "$id": 8709
-  },
-  "新虚拟目录": {
-    "en-US": "New virtual directory",
-    "es-ES": "Nuevo directorio virtual",
-    "ar-EG": "الدليل الظاهري الجديد",
-    "pt-PT": "Novo diretório virtual",
-    "ru-RU": "новый виртуальный каталог",
-    "ja-JP": "新しい仮想ディレクトリ",
-    "de-DE": "Neues virtuelles Verzeichnis",
-    "fr-FR": "Nouveau répertoire virtuel",
-    "ko-KR": "새 가상 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(40395-40404)"],
-    "$id": 8710
-  },
-  "目录树解析出错，已使用默认骨架树": {
-    "en-US": "Directory tree parsing error, default skeleton tree has been used",
-    "es-ES": "Error en el análisis del árbol de directorios; se ha utilizado el árbol predeterminado",
-    "ar-EG": "حدث خطأ في تحليل شجرة الأدلة، تم استخدام الهيكل العظمي الافتراضي لشجرة الأدلة",
-    "pt-PT": "Erro na análise da árvore de diretórios; foi utilizada uma árvore esqueleto padrão",
-    "ru-RU": "Ошибка при парсинге дерева каталогов, использовано дерево по умолчанию",
-    "ja-JP": "ディレクトリツリーの解析エラーが発生したため、デフォルトのスケルトントリーを使用しました",
-    "de-DE": "Fehler bei der Analyse des Verzeichnisbaums, Standard-Skelettbaum wird verwendet",
-    "fr-FR": "Erreur lors de l'analyse de l'arborescence des répertoires, utilisation de la structure squelette par défaut",
-    "ko-KR": "디렉토리 트리 분석 오류 발생. 기본 골격 트리를 사용했습니다",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(45593-45613)"],
-    "$id": 8711
-  },
-  "未选择工作区文件夹，无法开始整理": {
-    "en-US": "No workspace folder selected, cannot start organizing",
-    "es-ES": "No se seleccionó ninguna carpeta del espacio de trabajo, no se puede comenzar a organizar",
-    "ar-EG": "لم يتم تحديد مجلد مساحة عمل، لا يمكن بدء التنظيم",
-    "pt-PT": "Nenhuma pasta do espaço de trabalho selecionada, não é possível iniciar a organização",
-    "ru-RU": "Папка рабочей области не выбрана, невозможно начать организацию",
-    "ja-JP": "ワークスペースフォルダーが選択されていないため、整理を開始できません",
-    "de-DE": "Kein Arbeitsbereichsordner ausgewählt, Organisation kann nicht gestartet werden",
-    "fr-FR": "Aucun dossier d'espace de travail sélectionné, impossible de démarrer l'organisation",
-    "ko-KR": "작업공간 폴더가 선택되지 않아 정리를 시작할 수 없습니다.",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(48432-48452)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(49004-49024)"
-    ],
-    "$id": 8712
-  },
-  "整理失败，请重试": {
-    "en-US": "Organizing failed, please try again",
-    "es-ES": "Error al organizar, inténtelo de nuevo",
-    "ar-EG": "فشل التنظيم، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha na organização, por favor tente novamente",
-    "ru-RU": "Ошибка упорядочивания, повторите попытку",
-    "ja-JP": "整理に失敗しました。再試行してください",
-    "de-DE": "Sortieren fehlgeschlagen, bitte erneut versuchen",
-    "fr-FR": "Échec du rangement, veuillez réessayer",
-    "ko-KR": "정리하지 못했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(51279-51291)"],
-    "$id": 8713
-  },
-  "整理过程出错: {message}": {
-    "en-US": "An error occurred during the sorting process: {message}",
-    "es-ES": "Se produjo un error durante el proceso de clasificación: {message}",
-    "ar-EG": "حدث خطأ أثناء عملية الفرز: {message}",
-    "pt-PT": "Ocorreu um erro durante o processo de classificação: {message}",
-    "ru-RU": "В процессе сортировки произошла ошибка: {message}",
-    "ja-JP": "並べ替え処理中にエラーが発生しました: {message}",
-    "de-DE": "Beim Sortiervorgang ist ein Fehler aufgetreten: {message}",
-    "fr-FR": "Une erreur s'est produite lors du processus de tri : {message}",
-    "ko-KR": "정렬 프로세스 중에 오류가 발생했습니다: {message}",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(53467-53488)"],
-    "$id": 8714
-  },
-  "目录树预览正在生成中，请稍候...": {
-    "en-US": "Directory tree preview is being generated, please wait...",
-    "es-ES": "Se está generando una vista previa del árbol de directorios. Espere...",
-    "ar-EG": "يتم الآن إنشاء معاينة شجرة الدليل، يرجى الانتظار...",
-    "pt-PT": "A visualização da árvore de diretórios está sendo gerada. Aguarde...",
-    "ru-RU": "Создается предварительный просмотр дерева каталогов, подождите...",
-    "ja-JP": "ディレクトリ ツリーのプレビューを生成中です。お待​​ちください...",
-    "de-DE": "Die Vorschau des Verzeichnisbaums wird erstellt. Bitte warten ...",
-    "fr-FR": "L'aperçu de l'arborescence des répertoires est en cours de génération, veuillez patienter...",
-    "ko-KR": "디렉터리 트리 미리보기를 생성하는 중입니다. 잠시 기다려 주십시오...",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(54037-54058)"],
-    "$id": 8715
-  },
-  "目录树预览还没生成，无法开始整理": {
-    "en-US": "The directory tree preview has not been generated yet and cannot be organized.",
-    "es-ES": "La vista previa del árbol de directorios aún no se ha generado y no se puede organizar.",
-    "ar-EG": "لم يتم إنشاء معاينة شجرة الدليل بعد ولا يمكن تنظيمها.",
-    "pt-PT": "A visualização da árvore de diretórios ainda não foi gerada e não pode ser organizada.",
-    "ru-RU": "Предварительный просмотр дерева каталогов еще не создан и не может быть организован.",
-    "ja-JP": "ディレクトリ ツリーのプレビューはまだ生成されていないため、整理できません。",
-    "de-DE": "Die Verzeichnisbaumvorschau wurde noch nicht generiert und kann nicht organisiert werden.",
-    "fr-FR": "L'aperçu de l'arborescence des répertoires n'a pas encore été généré et ne peut pas être organisé.",
-    "ko-KR": "디렉터리 트리 미리보기가 아직 생성되지 않았으며 구성할 수 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(54138-54158)"],
-    "$id": 8716
-  },
-  "请先完成整理后再保存": {
-    "en-US": "Please finish organizing before saving",
-    "es-ES": "Por favor termine de organizar antes de guardar",
-    "ar-EG": "يرجى الانتهاء من التنظيم قبل الحفظ",
-    "pt-PT": "Termine de organizar antes de salvar",
-    "ru-RU": "Пожалуйста, завершите организацию перед сохранением",
-    "ja-JP": "保存する前に整理を完了してください",
-    "de-DE": "Bitte schließen Sie die Organisation ab, bevor Sie speichern",
-    "fr-FR": "Veuillez terminer l'organisation avant d'enregistrer",
-    "ko-KR": "저장하기 전에 정리를 완료하세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(61537-61551)"],
-    "$id": 8717
-  },
-  "虚拟目录保存成功": {
-    "en-US": "Virtual directory saved successfully",
-    "es-ES": "Directorio virtual guardado exitosamente",
-    "ar-EG": "تم حفظ الدليل الظاهري بنجاح",
-    "pt-PT": "Diretório virtual salvo com sucesso",
-    "ru-RU": "Виртуальный каталог успешно сохранен.",
-    "ja-JP": "仮想ディレクトリが正常に保存されました",
-    "de-DE": "Virtuelles Verzeichnis erfolgreich gespeichert",
-    "fr-FR": "Répertoire virtuel enregistré avec succès",
-    "ko-KR": "가상 디렉터리가 성공적으로 저장되었습니다.",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(62710-62722)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(64433-64445)"
-    ],
-    "$id": 8718
-  },
-  "保存失败：": {
-    "en-US": "Save failed:",
-    "es-ES": "Error al guardar:",
-    "ar-EG": "فشل الحفظ:",
-    "pt-PT": "Falha ao salvar:",
-    "ru-RU": "Сохранить не удалось:",
-    "ja-JP": "保存に失敗しました:",
-    "de-DE": "Speichern fehlgeschlagen:",
-    "fr-FR": "Échec de l'enregistrement :",
-    "ko-KR": "저장 실패:",
-    "$files": [
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(62960-62969)",
-      "src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(64683-64692)"
-    ],
-    "$id": 8719
-  },
-  "重命名目录成功": {
-    "en-US": "Directory renamed successfully",
-    "es-ES": "Directorio renombrado exitosamente",
-    "ar-EG": "تمت إعادة تسمية الدليل بنجاح",
-    "pt-PT": "Diretório renomeado com sucesso",
-    "ru-RU": "Каталог успешно переименован",
-    "ja-JP": "ディレクトリの名前が正常に変更されました",
-    "de-DE": "Verzeichnis erfolgreich umbenannt",
-    "fr-FR": "Répertoire renommé avec succès",
-    "ko-KR": "디렉터리 이름이 성공적으로 변경되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(65972-65983)"],
-    "$id": 8720
-  },
-  "创建根目录成功": {
-    "en-US": "Root directory created successfully",
-    "es-ES": "Directorio raíz creado exitosamente",
-    "ar-EG": "تم إنشاء الدليل الجذر بنجاح",
-    "pt-PT": "Diretório raiz criado com sucesso",
-    "ru-RU": "Корневой каталог успешно создан",
-    "ja-JP": "ルートディレクトリが正常に作成されました",
-    "de-DE": "Stammverzeichnis erfolgreich erstellt",
-    "fr-FR": "Répertoire racine créé avec succès",
-    "ko-KR": "루트 디렉터리가 성공적으로 생성되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(66638-66649)"],
-    "$id": 8721
-  },
-  "子目录名称已存在": {
-    "en-US": "Subdirectory name already exists",
-    "es-ES": "El nombre del subdirectorio ya existe",
-    "ar-EG": "اسم الدليل الفرعي موجود بالفعل",
-    "pt-PT": "O nome do subdiretório já existe",
-    "ru-RU": "Имя подкаталога уже существует",
-    "ja-JP": "サブディレクトリ名はすでに存在します",
-    "de-DE": "Der Name des Unterverzeichnisses existiert bereits",
-    "fr-FR": "Le nom du sous-répertoire existe déjà",
-    "ko-KR": "하위 디렉터리 이름이 이미 존재합니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(67309-67321)"],
-    "$id": 8722
-  },
-  "新增子目录成功": {
-    "en-US": "Added subdirectory successfully",
-    "es-ES": "Subdirectorio agregado exitosamente",
-    "ar-EG": "تمت إضافة الدليل الفرعي بنجاح",
-    "pt-PT": "Subdiretório adicionado com sucesso",
-    "ru-RU": "Подкаталог успешно добавлен",
-    "ja-JP": "サブディレクトリが正常に追加されました",
-    "de-DE": "Unterverzeichnis erfolgreich hinzugefügt",
-    "fr-FR": "Sous-répertoire ajouté avec succès",
-    "ko-KR": "하위 디렉터리를 성공적으로 추가했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(67759-67770)"],
-    "$id": 8723
-  },
-  "已删除目录「{name}」，包含的文件已移至未归类": {
-    "en-US": "Directory '{name}' has been deleted and the files it contained have been moved to Uncategorized",
-    "es-ES": "El directorio '{name}' se ha eliminado y los archivos que contenía se han movido a Sin categoría",
-    "ar-EG": "تم حذف الدليل '{name}' وتم نقل الملفات التي يحتوي عليها إلى غير مصنف",
-    "pt-PT": "O diretório '{name}' foi excluído e os arquivos contidos nele foram movidos para Sem categoria",
-    "ru-RU": "Каталог «{name}» был удален, а содержащиеся в нем файлы были перемещены в категорию «Без категории».",
-    "ja-JP": "ディレクトリ「{name}」は削除され、ディレクトリに含まれるファイルは未分類に移動されました",
-    "de-DE": "Das Verzeichnis „{name}“ wurde gelöscht und die darin enthaltenen Dateien wurden nach „Nicht kategorisiert“ verschoben",
-    "fr-FR": "Le répertoire '{name}' a été supprimé et les fichiers qu'il contenait ont été déplacés vers Non classé",
-    "ko-KR": "'{name}' 디렉터리가 삭제되었으며 여기에 포함된 파일이 Uncategorized로 이동되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(73853-73882)"],
-    "$id": 8724
-  },
-  "已删除空目录「{name}」": {
-    "en-US": "Empty directory '{name}' deleted",
-    "es-ES": "Directorio vacío '{name}' eliminado",
-    "ar-EG": "تم حذف الدليل الفارغ '{name}'",
-    "pt-PT": "Diretório vazio '{name}' excluído",
-    "ru-RU": "Пустой каталог '{name}' удален.",
-    "ja-JP": "空のディレクトリ「{name}」が削除されました",
-    "de-DE": "Leeres Verzeichnis „{name}“ gelöscht",
-    "fr-FR": "Répertoire vide '{name}' supprimé",
-    "ko-KR": "빈 디렉터리 '{name}'이(가) 삭제되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(74690-74708)"],
-    "$id": 8725
-  },
-  "已移动文件至「{target}」": {
-    "en-US": "File moved to '{target}'",
-    "es-ES": "Archivo movido a '{target}'",
-    "ar-EG": "تم نقل الملف إلى \"{target}\"",
-    "pt-PT": "Arquivo movido para '{target}'",
-    "ru-RU": "Файл перемещен в '{target}'",
-    "ja-JP": "ファイルは「{target}」に移動されました",
-    "de-DE": "Datei nach „{target}“ verschoben",
-    "fr-FR": "Fichier déplacé vers '{target}'",
-    "ko-KR": "파일이 '{target}'로 이동되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(80502-80522)"],
-    "$id": 8726
-  },
-  "不能将父目录拖放到其子目录中": {
-    "en-US": "Cannot drag and drop a parent directory into its subdirectories",
-    "es-ES": "No se puede arrastrar y soltar un directorio principal en sus subdirectorios",
-    "ar-EG": "لا يمكن سحب وإفلات الدليل الأصلي في الدلائل الفرعية الخاصة به",
-    "pt-PT": "Não é possível arrastar e soltar um diretório pai em seus subdiretórios",
-    "ru-RU": "Невозможно перетащить родительский каталог в его подкаталоги.",
-    "ja-JP": "親ディレクトリをそのサブディレクトリにドラッグ アンド ドロップできません",
-    "de-DE": "Ein übergeordnetes Verzeichnis kann nicht per Drag & Drop in seine Unterverzeichnisse gezogen werden",
-    "fr-FR": "Impossible de glisser-déposer un répertoire parent dans ses sous-répertoires",
-    "ko-KR": "상위 디렉터리를 해당 하위 디렉터리로 끌어서 놓을 수 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(80931-80949)"],
-    "$id": 8727
-  },
-  "已将目录「{source}」放入「{target}」": {
-    "en-US": "Directory \"{source}\" has been placed into \"{target}\"",
-    "es-ES": "El directorio \"{source}\" se ha colocado en \"{target}\"",
-    "ar-EG": "تم وضع الدليل \"{source}\" في \"{target}\"",
-    "pt-PT": "O diretório \"{source}\" foi colocado em \"{target}\"",
-    "ru-RU": "Каталог \"{source}\" помещен в \"{target}\"",
-    "ja-JP": "ディレクトリ「{source}」は「{target}」に配置されました",
-    "de-DE": "Das Verzeichnis „{source}“ wurde in „{target}“ abgelegt.",
-    "fr-FR": "Le répertoire \"{source}\" a été placé dans \"{target}\"",
-    "ko-KR": "\"{source}\" 디렉터리가 \"{target}\"에 배치되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(84420-84450)"],
-    "$id": 8728
-  },
-  "暂无待重命名文件": {
-    "en-US": "There are no files to be renamed yet",
-    "es-ES": "Aún no hay archivos cuyo nombre cambiar",
-    "ar-EG": "لا توجد ملفات لإعادة تسميتها بعد",
-    "pt-PT": "Ainda não há arquivos a serem renomeados",
-    "ru-RU": "Пока нет файлов для переименования",
-    "ja-JP": "名前を変更するファイルはまだありません",
-    "de-DE": "Es sind noch keine Dateien vorhanden, die umbenannt werden müssen",
-    "fr-FR": "Il n'y a pas encore de fichiers à renommer",
-    "ko-KR": "아직 이름을 바꿀 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87422-87434)"],
-    "$id": 9991
-  },
-  "成功更新 {count} 个文件智能名称": {
-    "en-US": "Successfully updated {count} file smart names",
-    "es-ES": "{count} nombres inteligentes de archivos actualizados correctamente",
-    "ar-EG": "تم تحديث الأسماء الذكية للملفات {count} بنجاح",
-    "pt-PT": "Nomes inteligentes de arquivos {count} atualizados com êxito",
-    "ru-RU": "Успешно обновлено смарт-имена файлов {count}.",
-    "ja-JP": "{count} ファイルのスマート名が正常に更新されました",
-    "de-DE": "{count}-Datei-Smart-Namen erfolgreich aktualisiert",
-    "fr-FR": "La mise à jour réussie de {count} noms intelligents de fichiers",
-    "ko-KR": "{count} 파일 스마트 이름을 성공적으로 업데이트했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87750-87774)"],
-    "$id": 11117
-  },
-  "{count} 个文件更新失败": {
-    "en-US": "{count} files failed to update",
-    "es-ES": "{count} archivos no se pudieron actualizar",
-    "ar-EG": "{count} فشل تحديث الملفات",
-    "pt-PT": "{count} arquivos não foram atualizados",
-    "ru-RU": "{count} файлов не удалось обновить.",
-    "ja-JP": "{count} ファイルを更新できませんでした",
-    "de-DE": "{count} Dateien konnten nicht aktualisiert werden",
-    "fr-FR": "{count} fichiers n'ont pas pu être mis à jour",
-    "ko-KR": "{count} 파일을 업데이트하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(87875-87894)"],
-    "$id": 11118
-  },
-  "重命名失败": {
-    "en-US": "Rename failed",
-    "es-ES": "Error al cambiar el nombre",
-    "ar-EG": "فشلت إعادة التسمية",
-    "pt-PT": "Falha ao renomear",
-    "ru-RU": "Переименование не удалось",
-    "ja-JP": "名前変更に失敗しました",
-    "de-DE": "Umbenennen fehlgeschlagen",
-    "fr-FR": "Échec du changement de nom",
-    "ko-KR": "이름 바꾸기 실패",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88374-88383)"],
-    "$id": 10043
-  },
-  "执行重命名异常": {
-    "en-US": "Execute rename exception",
-    "es-ES": "Ejecutar excepción de cambio de nombre",
-    "ar-EG": "تنفيذ استثناء إعادة التسمية",
-    "pt-PT": "Executar exceção de renomeação",
-    "ru-RU": "Выполнить исключение переименования",
-    "ja-JP": "名前変更例外の実行",
-    "de-DE": "Umbenennungsausnahme ausführen",
-    "fr-FR": "Exécuter l'exception de renommage",
-    "ko-KR": "이름 바꾸기 예외 실행",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(88475-88486)"],
-    "$id": 10044
-  },
-  "暂无目标文件": {
-    "en-US": "No target file yet",
-    "es-ES": "Aún no hay archivo de destino",
-    "ar-EG": "لا يوجد ملف هدف حتى الآن",
-    "pt-PT": "Nenhum arquivo de destino ainda",
-    "ru-RU": "Целевого файла еще нет",
-    "ja-JP": "対象ファイルがまだありません",
-    "de-DE": "Noch keine Zieldatei",
-    "fr-FR": "Pas encore de fichier cible",
-    "ko-KR": "아직 대상 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(89046-89056)"],
-    "$id": 10045
-  },
-  "成功为 {count} 个文件更新标签": {
-    "en-US": "Successfully updated tags for {count} files",
-    "es-ES": "Etiquetas actualizadas correctamente para {count} archivos",
-    "ar-EG": "تم تحديث العلامات بنجاح لملفات {count}.",
-    "pt-PT": "Tags atualizadas com sucesso para arquivos {count}",
-    "ru-RU": "Теги для {count} файлов успешно обновлены.",
-    "ja-JP": "{count} ファイルのタグが正常に更新されました",
-    "de-DE": "Tags für {count}-Dateien erfolgreich aktualisiert",
-    "fr-FR": "Balises mises à jour avec succès pour {count} fichiers",
-    "ko-KR": "{count} 파일의 태그를 성공적으로 업데이트했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(89956-89979)"],
-    "$id": 10046
-  },
-  "批量打标失败": {
-    "en-US": "Batch marking failed",
-    "es-ES": "Error al marcar el lote",
-    "ar-EG": "فشل وضع علامة على الدفعة",
-    "pt-PT": "Falha na marcação do lote",
-    "ru-RU": "Маркировка партии не удалась",
-    "ja-JP": "バッチのマーキングに失敗しました",
-    "de-DE": "Die Chargenkennzeichnung ist fehlgeschlagen",
-    "fr-FR": "Échec du marquage du lot",
-    "ko-KR": "일괄 표시 실패",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(90779-90789)"],
-    "$id": 10047
-  },
-  "删除标签失败": {
-    "en-US": "Failed to delete tag",
-    "es-ES": "No se pudo eliminar la etiqueta",
-    "ar-EG": "فشل حذف العلامة",
-    "pt-PT": "Falha ao excluir tag",
-    "ru-RU": "Не удалось удалить тег",
-    "ja-JP": "タグの削除に失敗しました",
-    "de-DE": "Tag konnte nicht gelöscht werden",
-    "fr-FR": "Échec de la suppression de la balise",
-    "ko-KR": "태그를 삭제하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92196-92206)"],
-    "$id": 10048
-  },
-  "未选择要清理的冗余文件": {
-    "en-US": "No redundant files selected for cleaning",
-    "es-ES": "No se han seleccionado archivos redundantes para limpieza",
-    "ar-EG": "لم يتم تحديد أي ملفات زائدة عن الحاجة للتنظيف",
-    "pt-PT": "Nenhum arquivo redundante selecionado para limpeza",
-    "ru-RU": "Лишние файлы для очистки не выбраны.",
-    "ja-JP": "クリーニング対象として冗長なファイルが選択されていません",
-    "de-DE": "Es wurden keine redundanten Dateien zum Bereinigen ausgewählt",
-    "fr-FR": "Aucun fichier redondant sélectionné pour le nettoyage",
-    "ko-KR": "정리할 중복 파일이 선택되지 않았습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92611-92626)"],
-    "$id": 10049
-  },
-  "已安全移入系统回收站 {count} 个文件": {
-    "en-US": "{count} files have been safely moved to the system recycle bin",
-    "es-ES": "{count} archivos se han movido de forma segura a la papelera de reciclaje del sistema",
-    "ar-EG": "{count} تم نقل الملفات بأمان إلى سلة محذوفات النظام",
-    "pt-PT": "{count} arquivos foram movidos com segurança para a lixeira do sistema",
-    "ru-RU": "{count} файлов благополучно перемещены в системную корзину.",
-    "ja-JP": "{count} ファイルはシステムのごみ箱に安全に移動されました",
-    "de-DE": "{count} Dateien wurden sicher in den Systempapierkorb verschoben",
-    "fr-FR": "{count} fichiers ont été déplacés en toute sécurité vers la corbeille du système",
-    "ko-KR": "{count} 파일이 시스템 휴지통으로 안전하게 이동되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(92909-92935)"],
-    "$id": 10050
-  },
-  "清理冗余文件失败": {
-    "en-US": "Cleaning up redundant files failed",
-    "es-ES": "Error al limpiar archivos redundantes",
-    "ar-EG": "فشل تنظيف الملفات الزائدة",
-    "pt-PT": "Falha na limpeza de arquivos redundantes",
-    "ru-RU": "Очистка ненужных файлов не удалась.",
-    "ja-JP": "冗長ファイルのクリーンアップに失敗しました",
-    "de-DE": "Das Bereinigen redundanter Dateien ist fehlgeschlagen",
-    "fr-FR": "Échec du nettoyage des fichiers redondants",
-    "ko-KR": "중복 파일을 정리하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(93097-93109)"],
-    "$id": 10051
-  },
-  "补救整理失败，请重试": {
-    "en-US": "Remediation failed, please try again",
-    "es-ES": "La corrección falló, inténtelo de nuevo",
-    "ar-EG": "فشل التنظيم التعويضي، يرجى المحاولة مرة أخرى",
-    "pt-PT": "Falha na organização de recuperação, por favor tente novamente",
-    "ru-RU": "Ошибка восстановительного упорядочивания, повторите попытку",
-    "ja-JP": "补救整理に失敗しました。再試行してください",
-    "de-DE": "Korrektur des Sortiervorgangs fehlgeschlagen, bitte erneut versuchen",
-    "fr-FR": "Échec du rangement de rattrapage, veuillez réessayer",
-    "ko-KR": "보완 정리하지 못했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(96440-96454)"],
-    "$id": 8729
-  },
-  "AI 无法将剩余的顽固文件分配到现有目录，请创建匹配的目录": {
-    "en-US": "AI cannot allocate remaining stubborn files to an existing directory, please create a matching directory",
-    "es-ES": "AI no puede asignar los archivos rebeldes restantes a un directorio existente; cree un directorio coincidente",
-    "ar-EG": "لا يمكن لمنظمة العفو الدولية تخصيص الملفات العنيدة المتبقية إلى دليل موجود، يرجى إنشاء دليل مطابق",
-    "pt-PT": "AI não pode alocar arquivos teimosos restantes para um diretório existente, crie um diretório correspondente",
-    "ru-RU": "ИИ не может разместить оставшиеся неподатливые файлы в существующем каталоге, создайте соответствующий каталог.",
-    "ja-JP": "AI は残りの頑固なファイルを既存のディレクトリに割り当てることができません。一致するディレクトリを作成してください。",
-    "de-DE": "AI kann verbleibende hartnäckige Dateien nicht einem vorhandenen Verzeichnis zuordnen, bitte erstellen Sie ein passendes Verzeichnis",
-    "fr-FR": "L'IA ne peut pas allouer les fichiers persistants restants à un répertoire existant, veuillez créer un répertoire correspondant",
-    "ko-KR": "AI는 나머지 완고한 파일을 기존 디렉터리에 할당할 수 없습니다. 일치하는 디렉터리를 생성하십시오.",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(97283-97316)"],
-    "$id": 8730
-  },
-  "自动找补完成，所有文件均已归类！": {
-    "en-US": "Automatic retrieval is completed and all files have been classified!",
-    "es-ES": "¡Se completa la recuperación automática y se han clasificado todos los archivos!",
-    "ar-EG": "اكتمل الاسترداد التلقائي وتم تصنيف جميع الملفات!",
-    "pt-PT": "A recuperação automática foi concluída e todos os arquivos foram classificados!",
-    "ru-RU": "Автоматический поиск завершен, все файлы засекречены!",
-    "ja-JP": "自動検索が完了し、すべてのファイルが分類されました。",
-    "de-DE": "Der automatische Abruf ist abgeschlossen und alle Dateien wurden klassifiziert!",
-    "fr-FR": "La récupération automatique est terminée et tous les fichiers ont été classés !",
-    "ko-KR": "자동 검색이 완료되고 모든 파일이 분류되었습니다!",
-    "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(99169-99189)"],
-    "$id": 8731
-  },
-  "未知": {
-    "en-US": "Unknown",
-    "es-ES": "Desconocido",
-    "ar-EG": "مجهول",
-    "pt-PT": "Desconhecido",
-    "ru-RU": "неизвестный",
-    "ja-JP": "不明",
-    "de-DE": "Unbekannt",
-    "fr-FR": "Inconnu",
-    "ko-KR": "알려지지 않은",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(10713-10719)"],
-    "$id": 8697
-  },
-  "项目核心": {
-    "en-US": "Project core",
-    "es-ES": "Núcleo del proyecto",
-    "ar-EG": "جوهر المشروع",
-    "pt-PT": "Núcleo do projeto",
-    "ru-RU": "Ядро проекта",
-    "ja-JP": "プロジェクトのコア",
-    "de-DE": "Projektkern",
-    "fr-FR": "Noyau du projet",
-    "ko-KR": "프로젝트 핵심",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(28910-28918)"],
-    "$id": 8698
-  },
-  "核心项目": {
-    "en-US": "Core projects",
-    "es-ES": "Proyectos centrales",
-    "ar-EG": "المشاريع الأساسية",
-    "pt-PT": "Projetos principais",
-    "ru-RU": "основные проекты",
-    "ja-JP": "コアプロジェクト",
-    "de-DE": "Kernprojekte",
-    "fr-FR": "Projets de base",
-    "ko-KR": "핵심 프로젝트",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(28943-28951)"],
-    "$id": 8699
   }
 }

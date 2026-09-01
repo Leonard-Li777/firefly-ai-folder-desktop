@@ -7,7 +7,8 @@ import {
   WorkspaceDirectory
 } from '@firefly/types'
 import { LogCategory, logger } from '@firefly/shared'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../../../common/Toast'
 import { useAnalyzedDirectoryStore } from '../../../../stores/analyzed-directory-store'
 import { useVirtualDirectoryStore } from '../../../../stores/virtual-directory-store'
@@ -65,6 +66,7 @@ const DEFAULT_GUIDANCE_PROMPT = `以设计师视角，按以下目录结构整�
     - 视频素材`
 
 export function useOrganizeState() {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const navigate = useNavigate()
   const location = useLocation()
   const prevPathRef = useRef(location.pathname)
@@ -340,7 +342,8 @@ export function useOrganizeState() {
     organizeMode,
     incrementalVdId,
     initialDraftTree,
-    currentVDir
+    currentVDir,
+    activeLanguage
   ])
 
   // 处理在模式选择卡片点击选择已保存虚拟目录（增量整理）
@@ -1198,6 +1201,13 @@ export function useOrganizeState() {
           freeDirectoryReserve
         })
 
+        if (result?.success === false) {
+          logger.warn(LogCategory.FILE_ORGANIZATION, 'AI生成目录树预览被拒绝或失败:', result)
+          if (result.message) {
+            toast.error(result.message)
+          }
+        }
+
         let finalOutlineTree: VirtualDirectoryNode[] = []
         if (result?.tree && result.tree.length > 0) {
           finalOutlineTree = sanitizeTree(result.tree, true)
@@ -1206,8 +1216,9 @@ export function useOrganizeState() {
         }
 
         setDraftTree(finalOutlineTree)
-      } catch (e) {
+      } catch (e: any) {
         logger.error(LogCategory.FILE_ORGANIZATION, 'AI生成目录树预览失败:', e)
+        toast.error(t('AI生成目录树预览失败: {message}', { message: e?.message || e }))
         const fallbackTree = buildSkeletonTree(dimensionGroups, organizeMode)
         setDraftTree(fallbackTree)
       } finally {

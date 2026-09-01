@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { SubscriptionPlan } from '@firefly/types'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../ui/card'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { Crown, Info, QrCode, Sparkles, X } from 'lucide-react'
 import { ActivationCodeSection } from './ActivationCodeSection'
 import { useConfigStore } from '../../stores/config-store'
@@ -12,6 +13,7 @@ import { openExternalLink } from '../../lib/external-link'
 import { EmailSvg } from '../ui/EmailSvg'
 
 export const ProActivationPage: React.FC = () => {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const navigate = useNavigate()
   const [qrSrc, setQrSrc] = useState<string>('')
   const config = useConfigStore(state => state.config)
@@ -91,7 +93,7 @@ export const ProActivationPage: React.FC = () => {
       if (p) plans.push(p)
     }
     return plans
-  }, [proPlans])
+  }, [proPlans, activeLanguage])
 
   useEffect(() => {
     const loadQR = async () => {

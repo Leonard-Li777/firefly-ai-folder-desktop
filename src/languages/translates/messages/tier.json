@@ -223,7 +223,7 @@
     "ko-KR": "개인 정보 보호 정책",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(6995-7003)",
-      "src/renderer/components/tier/ProActivationPage.tsx(14330-14338)"
+      "src/renderer/components/tier/ProActivationPage.tsx(14464-14472)"
     ],
     "$id": 9533
   },
@@ -239,7 +239,7 @@
     "ko-KR": "서비스 약관",
     "$files": [
       "src/renderer/components/tier/AccountManagementDialog.tsx(7250-7258)",
-      "src/renderer/components/tier/ProActivationPage.tsx(14980-14988)"
+      "src/renderer/components/tier/ProActivationPage.tsx(15114-15122)"
     ],
     "$id": 9534
   },
@@ -535,7 +535,7 @@
     "de-DE": "Ein halbes jahr",
     "fr-FR": "Six mois",
     "ko-KR": "반년",
-    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1664-1670)"],
+    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1784-1790)"],
     "$id": 10893
   },
   "/半年": {
@@ -548,7 +548,7 @@
     "de-DE": "/ ein halbes Jahr",
     "fr-FR": "/ six mois",
     "ko-KR": "/ 반년",
-    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1690-1697)"],
+    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1810-1817)"],
     "$id": 10894
   },
   "适合短期项目需求": {
@@ -561,7 +561,7 @@
     "de-DE": "Geeignet für kurzfristige Projektanforderungen",
     "fr-FR": "Convient aux besoins de projets à court terme",
     "ko-KR": "단기 프로젝트 요구에 적합",
-    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1722-1734)"],
+    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1842-1854)"],
     "$id": 10895
   },
   "一年": {
@@ -574,7 +574,7 @@
     "de-DE": "Ein Jahr",
     "fr-FR": "Un an",
     "ko-KR": "1년",
-    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1791-1797)"],
+    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1911-1917)"],
     "$id": 10896
   },
   "/年": {
@@ -587,7 +587,7 @@
     "de-DE": "/Jahr",
     "fr-FR": "/Année",
     "ko-KR": "/년도",
-    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1817-1823)"],
+    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(1937-1943)"],
     "$id": 10897
   },
   "立省 {saved}，最超值方案": {
@@ -600,7 +600,7 @@
     "de-DE": "Sparen Sie {saved}, den Plan mit dem besten Preis-Leistungs-Verhältnis",
     "fr-FR": "Économisez {saved}, le forfait au meilleur rapport qualité-prix",
     "ko-KR": "최고의 가치를 지닌 계획인 {saved}를 저장하세요",
-    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(2104-2124)"],
+    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(2224-2244)"],
     "$id": 7436
   },
   "开通企业版": {
@@ -613,7 +613,7 @@
     "de-DE": "Aktivieren Sie die Enterprise Edition",
     "fr-FR": "Activer l'édition Entreprise",
     "ko-KR": "엔터프라이즈 에디션 활성화",
-    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(3886-3895)"],
+    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(4022-4031)"],
     "$id": 10899
   },
   "选择适合您的方案，联系管理员完成开通，释放 AI 文件管理的全部潜力": {
@@ -627,8 +627,8 @@
     "fr-FR": "Choisissez le forfait qui vous convient, contactez l'administrateur pour finaliser l'activation et libérez tout le potentiel de la gestion de fichiers AI",
     "ko-KR": "자신에게 맞는 플랜을 선택하고, 관리자에게 문의하여 활성화를 완료하고, AI 파일 관리의 잠재력을 최대한 활용하세요.",
     "$files": [
-      "src/renderer/components/tier/EnterpriseActivationPage.tsx(4030-4068)",
-      "src/renderer/components/tier/ProActivationPage.tsx(4671-4709)"
+      "src/renderer/components/tier/EnterpriseActivationPage.tsx(4166-4204)",
+      "src/renderer/components/tier/ProActivationPage.tsx(4805-4843)"
     ],
     "$id": 10900
   },
@@ -643,8 +643,8 @@
     "fr-FR": "Le plus populaire",
     "ko-KR": "가장 인기있는",
     "$files": [
-      "src/renderer/components/tier/EnterpriseActivationPage.tsx(4890-4898)",
-      "src/renderer/components/tier/ProActivationPage.tsx(5930-5938)",
+      "src/renderer/components/tier/EnterpriseActivationPage.tsx(5026-5034)",
+      "src/renderer/components/tier/ProActivationPage.tsx(6064-6072)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(5870-5878)"
     ],
     "$id": 10901
@@ -660,8 +660,8 @@
     "fr-FR": "Contacter l'administrateur",
     "ko-KR": "관리자에게 문의",
     "$files": [
-      "src/renderer/components/tier/EnterpriseActivationPage.tsx(7444-7453)",
-      "src/renderer/components/tier/ProActivationPage.tsx(15311-15320)"
+      "src/renderer/components/tier/EnterpriseActivationPage.tsx(7580-7589)",
+      "src/renderer/components/tier/ProActivationPage.tsx(15445-15454)"
     ],
     "$id": 10902
   },
@@ -675,7 +675,7 @@
     "de-DE": "Scannen Sie den QR-Code, um den Administrator auf WeChat hinzuzufügen, und hinterlassen Sie eine Nachricht „Enterprise Edition aktivieren“, um den Autorisierungscode zu erhalten.",
     "fr-FR": "Scannez le code QR pour ajouter l'administrateur sur WeChat et laissez un message « Activer Enterprise Edition » pour obtenir le code d'autorisation.",
     "ko-KR": "QR 코드를 스캔하여 WeChat에 관리자를 추가하고 \"Enterprise Edition 활성화\" 메시지를 남겨 인증 코드를 받으세요.",
-    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(7579-7607)"],
+    "$files": ["src/renderer/components/tier/EnterpriseActivationPage.tsx(7715-7743)"],
     "$id": 10903
   },
   "微信二维码": {
@@ -689,9 +689,9 @@
     "fr-FR": "Code QR WeChat",
     "ko-KR": "위챗 QR 코드",
     "$files": [
-      "src/renderer/components/tier/EnterpriseActivationPage.tsx(7983-7992)",
+      "src/renderer/components/tier/EnterpriseActivationPage.tsx(8119-8128)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(12380-12389)",
-      "src/renderer/components/tier/ProActivationPage.tsx(15883-15892)",
+      "src/renderer/components/tier/ProActivationPage.tsx(16017-16026)",
       "src/renderer/components/tier/WechatQRDialog.tsx(1280-1289)"
     ],
     "$id": 7732
@@ -707,9 +707,9 @@
     "fr-FR": "Chargement...",
     "ko-KR": "로드 중...",
     "$files": [
-      "src/renderer/components/tier/EnterpriseActivationPage.tsx(8338-8348)",
+      "src/renderer/components/tier/EnterpriseActivationPage.tsx(8474-8484)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(12762-12772)",
-      "src/renderer/components/tier/ProActivationPage.tsx(16256-16266)"
+      "src/renderer/components/tier/ProActivationPage.tsx(16390-16400)"
     ],
     "$id": 10904
   },
@@ -724,8 +724,8 @@
     "fr-FR": "Ou ajoutez l'ID WeChat : reloaded1234567",
     "ko-KR": "또는 WeChat ID 추가: reloaded1234567",
     "$files": [
-      "src/renderer/components/tier/EnterpriseActivationPage.tsx(8507-8533)",
-      "src/renderer/components/tier/ProActivationPage.tsx(16521-16547)"
+      "src/renderer/components/tier/EnterpriseActivationPage.tsx(8643-8669)",
+      "src/renderer/components/tier/ProActivationPage.tsx(16655-16681)"
     ],
     "$id": 10905
   },
@@ -1691,7 +1691,7 @@
     "ko-KR": "년도",
     "$files": [
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(35195-35200)",
-      "src/renderer/components/tier/ProActivationPage.tsx(2629-2634)"
+      "src/renderer/components/tier/ProActivationPage.tsx(2747-2752)"
     ],
     "$id": 11004
   },
@@ -1958,7 +1958,7 @@
     "de-DE": "Monatlich",
     "fr-FR": "Mensuel",
     "ko-KR": "월간 간행물",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1545-1551)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1663-1669)"],
     "$id": 10997
   },
   "月": {
@@ -1971,7 +1971,7 @@
     "de-DE": "Mond",
     "fr-FR": "Lune",
     "ko-KR": "달",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1607-1612)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1725-1730)"],
     "$id": 10998
   },
   "灵活方便，随时可换": {
@@ -1984,7 +1984,7 @@
     "de-DE": "Flexibel und komfortabel, jederzeit änderbar",
     "fr-FR": "Flexible et pratique, peut être modifié à tout moment",
     "ko-KR": "유연하고 편리하며 언제든지 변경 가능",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1720-1733)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(1838-1851)"],
     "$id": 10999
   },
   "¥{amount}/月": {
@@ -1997,7 +1997,7 @@
     "de-DE": "¥{amount}/Monat",
     "fr-FR": "¥{amount}/mois",
     "ko-KR": "¥{amount}/월",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2073-2088)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2191-2206)"],
     "$id": 8211
   },
   "季度": {
@@ -2010,7 +2010,7 @@
     "de-DE": "Quartal",
     "fr-FR": "Quart",
     "ko-KR": "4분의 1",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2215-2221)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2333-2339)"],
     "$id": 11000
   },
   "季": {
@@ -2023,7 +2023,7 @@
     "de-DE": "Jahreszeit",
     "fr-FR": "Saison",
     "ko-KR": "계절",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2277-2282)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2395-2400)"],
     "$id": 11001
   },
   "首购特惠": {
@@ -2036,7 +2036,7 @@
     "de-DE": "Sonderangebot für den ersten Kauf",
     "fr-FR": "Offre spéciale premier achat",
     "ko-KR": "첫구매 특별혜택",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2415-2423)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2533-2541)"],
     "$id": 11002
   },
   "年度": {
@@ -2049,7 +2049,7 @@
     "de-DE": "Jahr",
     "fr-FR": "Année",
     "ko-KR": "년도",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2567-2573)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2685-2691)"],
     "$id": 11003
   },
   "首购特惠，最高性价比": {
@@ -2062,7 +2062,7 @@
     "de-DE": "Sonderangebot für den ersten Kauf, das beste Preis-Leistungs-Verhältnis",
     "fr-FR": "Offre spéciale premier achat, le meilleur rapport qualité/prix",
     "ko-KR": "첫구매 특별혜택, 가격대비 최고의 가치",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2768-2782)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(2886-2900)"],
     "$id": 11005
   },
   "开通 Pro 专业版": {
@@ -2075,7 +2075,7 @@
     "de-DE": "Aktivieren Sie die Pro Professional Edition",
     "fr-FR": "Activer l'édition Pro Professional",
     "ko-KR": "Pro Professional Edition 활성화",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(4525-4539)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(4659-4673)"],
     "$id": 11006
   },
   "折合 {price}": {
@@ -2088,7 +2088,7 @@
     "de-DE": "Konvertieren Sie {price}",
     "fr-FR": "Convertir {price}",
     "ko-KR": "전환하다 {price}",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(6754-6768)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(6888-6902)"],
     "$id": 11007
   },
   "比月付省 {percent}": {
@@ -2101,7 +2101,7 @@
     "de-DE": "Sparen Sie {percent} im Vergleich zur monatlichen Zahlung",
     "fr-FR": "Économisez {percent} par rapport au paiement mensuel",
     "ko-KR": "월별 결제에 비해 {percent} 절약",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(8163-8181)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(8297-8315)"],
     "$id": 11008
   },
   "特权承诺": {
@@ -2114,7 +2114,7 @@
     "de-DE": "Privilegienverpflichtung",
     "fr-FR": "Engagement privilégié",
     "ko-KR": "특권 약속",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9045-9053)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9179-9187)"],
     "$id": 7754
   },
   "注：Pro 版承诺之后开发新功能一律原价（限前100名年付用户），无续订要求": {
@@ -2127,7 +2127,7 @@
     "de-DE": "Hinweis: Die Pro-Version verspricht, dass künftig entwickelte neue Funktionen zum Originalpreis angeboten werden (beschränkt auf die ersten 100 jährlich zahlenden Benutzer) und dass keine Verlängerung erforderlich ist.",
     "fr-FR": "Remarque : La version Pro promet que les nouvelles fonctionnalités développées à l'avenir seront au prix d'origine (limité aux 100 premiers utilisateurs payants annuels) et qu'il n'y a aucune exigence de renouvellement.",
     "ko-KR": "참고: Pro 버전에서는 향후 개발되는 새로운 기능이 원래 가격으로 제공되며(연간 유료 사용자 최초 100명으로 제한) 갱신 요구 사항이 없습니다.",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9196-9238)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9330-9372)"],
     "$id": 7755
   },
   "未来规划": {
@@ -2140,7 +2140,7 @@
     "de-DE": "Zukunftspläne",
     "fr-FR": "Projets futurs",
     "ko-KR": "향후 계획",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9833-9841)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9967-9975)"],
     "$id": 7756
   },
   "开发计划：萤核官方微调模型、压缩包智能管理(智能密码、破解、预览增强，更适合漫画l图片文档等）、智能文件(AI封面、一键配音，可以听小说、文档)、文件AI知识管理.....": {
@@ -2153,7 +2153,7 @@
     "de-DE": "Entwicklungsplan: Offizielles Feinabstimmungsmodell von Firefly, intelligente Komprimierungsverwaltung (intelligentes Passwort, Knacken, Vorschauverbesserung, besser geeignet für Comics, Bilddokumente usw.), intelligente Dateien (KI-Cover, Überspielen mit einem Klick, Sie können Romane und Dokumente anhören), Datei-KI-Wissensmanagement ...",
     "fr-FR": "Plan de développement : modèle de réglage fin officiel de Firefly, gestion intelligente de la compression (mot de passe intelligent, cracking, amélioration de l'aperçu, plus adapté aux bandes dessinées, documents illustrés, etc.), fichiers intelligents (couverture IA, doublage en un clic, vous pouvez écouter des romans et des documents), gestion des connaissances IA des fichiers...",
     "ko-KR": "개발 계획: Firefly 공식 미세 조정 모델, 압축 지능형 관리(지능형 비밀번호, 크래킹, 미리보기 향상, 만화, 그림 문서 등에 더 적합), 지능형 파일(AI 표지, 원클릭 더빙, 소설 및 문서 청취 가능), 파일 AI 지식 관리...",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(9988-10103)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(10122-10237)"],
     "$id": 7757
   },
   "官方管理员与订阅支持": {
@@ -2166,7 +2166,7 @@
     "de-DE": "Offizieller Admin- und Abonnement-Support",
     "fr-FR": "Support officiel d’administration et d’abonnement",
     "ko-KR": "공식 관리 및 구독 지원",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(10796-10810)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(10930-10944)"],
     "$id": 9535
   },
   "如有开通、支付、发票或退款疑问，请通过官方支持渠道联系我们": {
@@ -2179,7 +2179,7 @@
     "de-DE": "Wenn Sie Fragen zur Aktivierung, Zahlung, Rechnung oder Rückerstattung haben, kontaktieren Sie uns bitte über die offiziellen Supportkanäle",
     "fr-FR": "Si vous avez des questions concernant l'activation, le paiement, la facture ou le remboursement, veuillez nous contacter via les canaux d'assistance officiels.",
     "ko-KR": "활성화, 결제, 송장, 환불에 관한 질문이 있는 경우 공식 지원 채널을 통해 문의해 주세요.",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(10945-10978)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(11079-11112)"],
     "$id": 9536
   },
   "官方客服邮箱：": {
@@ -2192,7 +2192,7 @@
     "de-DE": "Offizielle Kundendienst-E-Mail:",
     "fr-FR": "E-mail officiel du service client :",
     "ko-KR": "공식 고객 서비스 이메일:",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(11464-11475)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(11598-11609)"],
     "$id": 9537
   },
   "Telegram：": {
@@ -2205,7 +2205,7 @@
     "de-DE": "Telegram:",
     "fr-FR": "Telegram :",
     "ko-KR": "텔레그램：",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(11943-11956)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(12077-12090)"],
     "$id": 9538
   },
   "承诺 24-48 小时内回复": {
@@ -2218,7 +2218,7 @@
     "de-DE": "Versprechen Sie, innerhalb von 24–48 Stunden zu antworten",
     "fr-FR": "Promesse de réponse sous 24 à 48 heures",
     "ko-KR": "24~48시간 이내에 답변을 약속드립니다.",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(12594-12612)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(12728-12746)"],
     "$id": 9539
   },
   "支持 14 天无理由退款保障": {
@@ -2231,7 +2231,7 @@
     "de-DE": "Unterstützt eine 14-tägige Geld-zurück-Garantie ohne Fragen",
     "fr-FR": "Prend en charge la garantie de remboursement de 14 jours sans poser de questions",
     "ko-KR": "14일 동안 묻지도 따지지도 않는 환불 보장을 지원합니다.",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(13001-13019)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(13135-13153)"],
     "$id": 9540
   },
   "取消 / 管理订阅": {
@@ -2244,7 +2244,7 @@
     "de-DE": "Abonnement kündigen/verwalten",
     "fr-FR": "Annuler/gérer l'abonnement",
     "ko-KR": "구독 취소/관리",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(13675-13688)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(13809-13822)"],
     "$id": 9541
   },
   "扫码添加管理员微信，留言「开通 Pro」即可开通": {
@@ -2257,7 +2257,7 @@
     "de-DE": "Scannen Sie den QR-Code, um den Administrator auf WeChat hinzuzufügen, und hinterlassen Sie eine Nachricht „Pro aktivieren“, um ihn zu aktivieren.",
     "fr-FR": "Scannez le code QR pour ajouter l'administrateur sur WeChat et laissez un message \"Activer Pro\" pour l'activer.",
     "ko-KR": "QR 코드를 스캔하여 WeChat에 관리자를 추가하고 \"Pro 활성화\" 메시지를 남겨 활성화하세요.",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(15455-15483)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(15589-15617)"],
     "$id": 11010
   },
   "管理员邮箱：": {
@@ -2270,7 +2270,7 @@
     "de-DE": "E-Mail des Administrators:",
     "fr-FR": "E-mail de l'administrateur :",
     "ko-KR": "관리자 이메일:",
-    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(16553-16563)"],
+    "$files": ["src/renderer/components/tier/ProActivationPage.tsx(16687-16697)"],
     "$id": 9542
   },
   "基础版": {

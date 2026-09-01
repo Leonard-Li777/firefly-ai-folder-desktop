@@ -1,12 +1,13 @@
-import React from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { Card } from '../ui/card'
 import { Label } from '../ui/label'
 import { Checkbox } from '../ui/checkbox'
 import { Switch } from '../ui/switch'
 import { useSettingsStore } from '../../stores/settings-store'
 import { AppConfig } from '@firefly/types'
-import { t } from '@app/languages'
 import { cn } from '../../lib/utils'
+import i18nScope from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import {
   LayoutGrid,
   List,
@@ -23,99 +24,114 @@ import {
 } from 'lucide-react'
 
 /**
+ * 字段对应的图标与色彩
+ */
+const FIELD_META: Record<
+  AppConfig['fileListExtraFields'][0],
+  { icon: React.FC<{ className?: string }>; colorClass: string }
+> = {
+  qualityScore: { icon: Star, colorClass: 'text-amber-500 bg-amber-50 dark:bg-amber-950/60' },
+  description: { icon: FileText, colorClass: 'text-blue-500 bg-blue-50 dark:bg-blue-950/60' },
+  tags: { icon: Tag, colorClass: 'text-purple-500 bg-purple-50 dark:bg-purple-950/60' },
+  author: { icon: User, colorClass: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/60' },
+  language: { icon: Globe, colorClass: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-950/60' },
+  analyzedAt: { icon: Calendar, colorClass: 'text-orange-500 bg-orange-50 dark:bg-orange-950/60' }
+}
+
+/**
  * 文件显示设置组件
  */
 export const FileDisplaySettings: React.FC = () => {
-  const { getConfigValue, updateConfigValue } = useSettingsStore()
+  const getConfigValue = useSettingsStore(s => s.getConfigValue)
+  const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
 
   /**
    * 可选的额外显示字段
    */
-  const extraFieldOptions = [
-    {
-      value: 'qualityScore' as const,
-      label: t('质量评分'),
-      description: t('显示AI评估的文件质量分数（1-10分）')
-    },
-    {
-      value: 'description' as const,
-      label: t('文件描述'),
-      description: t('显示AI生成的文件内容摘要描述')
-    },
-    {
-      value: 'tags' as const,
-      label: t('标签'),
-      description: t('显示文件的AI分类标签')
-    },
-    {
-      value: 'author' as const,
-      label: t('作者'),
-      description: t('显示文件作者信息')
-    },
-    {
-      value: 'language' as const,
-      label: t('语言'),
-      description: t('显示文件的主要语言环境')
-    },
-    {
-      value: 'analyzedAt' as const,
-      label: t('分析日期'),
-      description: t('显示文件最近一次AI分析的时间')
-    }
-  ]
-
-  /**
-   * 字段对应的图标与色彩
-   */
-  const fieldMeta: Record<
-    AppConfig['fileListExtraFields'][0],
-    { icon: React.FC<{ className?: string }>; colorClass: string }
-  > = {
-    qualityScore: { icon: Star, colorClass: 'text-amber-500 bg-amber-50 dark:bg-amber-950/60' },
-    description: { icon: FileText, colorClass: 'text-blue-500 bg-blue-50 dark:bg-blue-950/60' },
-    tags: { icon: Tag, colorClass: 'text-purple-500 bg-purple-50 dark:bg-purple-950/60' },
-    author: { icon: User, colorClass: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-950/60' },
-    language: { icon: Globe, colorClass: 'text-cyan-500 bg-cyan-50 dark:bg-cyan-950/60' },
-    analyzedAt: { icon: Calendar, colorClass: 'text-orange-500 bg-orange-50 dark:bg-orange-950/60' }
-  }
+  const extraFieldOptions = useMemo(
+    () => [
+      {
+        value: 'qualityScore' as const,
+        label: t('质量评分'),
+        description: t('显示AI评估的文件质量分数（1-10分）')
+      },
+      {
+        value: 'description' as const,
+        label: t('文件描述'),
+        description: t('显示AI生成的文件内容摘要描述')
+      },
+      {
+        value: 'tags' as const,
+        label: t('标签'),
+        description: t('显示文件的AI分类标签')
+      },
+      {
+        value: 'author' as const,
+        label: t('作者'),
+        description: t('显示文件作者信息')
+      },
+      {
+        value: 'language' as const,
+        label: t('语言'),
+        description: t('显示文件的主要语言环境')
+      },
+      {
+        value: 'analyzedAt' as const,
+        label: t('分析日期'),
+        description: t('显示文件最近一次AI分析的时间')
+      }
+    ],
+    [activeLanguage]
+  )
 
   /**
    * 视图模式选项
    */
-  const viewModeOptions = [
-    { value: 'grid', label: t('网格视图'), description: t('以卡片网格形式高效展示文件') },
-    { value: 'list', label: t('列表视图'), description: t('以详细数据表展示全量元数据') },
-    {
-      value: 'waterfall',
-      label: t('瀑布流视图'),
-      description: t('错落有致展现多媒体图像与文件')
-    }
-  ]
+  const viewModeOptions = useMemo(
+    () => [
+      { value: 'grid', label: t('网格视图'), description: t('以卡片网格形式高效展示文件') },
+      { value: 'list', label: t('列表视图'), description: t('以详细数据表展示全量元数据') },
+      {
+        value: 'waterfall',
+        label: t('瀑布流视图'),
+        description: t('错落有致展现多媒体图像与文件')
+      }
+    ],
+    [activeLanguage]
+  )
 
   /**
    * 处理字段选择变更
    */
-  const handleFieldToggle = (field: AppConfig['fileListExtraFields'][0], checked: boolean) => {
-    const currentFields =
-      getConfigValue<AppConfig['fileListExtraFields']>('FILE_LIST_EXTRA_FIELDS') || []
+  const handleFieldToggle = useCallback(
+    (field: AppConfig['fileListExtraFields'][0], checked: boolean) => {
+      const currentFields =
+        getConfigValue<AppConfig['fileListExtraFields']>('FILE_LIST_EXTRA_FIELDS') || []
 
-    let newFields: AppConfig['fileListExtraFields']
-    if (checked) {
-      newFields = currentFields.includes(field) ? currentFields : [...currentFields, field]
-    } else {
-      newFields = currentFields.filter(f => f !== field)
-    }
+      let newFields: AppConfig['fileListExtraFields']
+      if (checked) {
+        newFields = currentFields.includes(field) ? currentFields : [...currentFields, field]
+      } else {
+        newFields = currentFields.filter(f => f !== field)
+      }
 
-    updateConfigValue('FILE_LIST_EXTRA_FIELDS', newFields)
-  }
+      updateConfigValue('FILE_LIST_EXTRA_FIELDS', newFields)
+    },
+    [getConfigValue, updateConfigValue]
+  )
 
   /**
    * 检查字段是否被选中
    */
-  const isFieldSelected = (field: AppConfig['fileListExtraFields'][0]) => {
-    const currentFields = getConfigValue<AppConfig['fileListExtraFields']>('FILE_LIST_EXTRA_FIELDS')
-    return currentFields?.includes(field) || false
-  }
+  const isFieldSelected = useCallback(
+    (field: AppConfig['fileListExtraFields'][0]) => {
+      const currentFields =
+        getConfigValue<AppConfig['fileListExtraFields']>('FILE_LIST_EXTRA_FIELDS')
+      return currentFields?.includes(field) || false
+    },
+    [getConfigValue]
+  )
 
   const currentView = getConfigValue<'grid' | 'list' | 'waterfall'>('DEFAULT_VIEW') || 'grid'
   const activeFields =
@@ -268,7 +284,7 @@ export const FileDisplaySettings: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {extraFieldOptions.map(option => {
               const selected = isFieldSelected(option.value)
-              const meta = fieldMeta[option.value]
+              const meta = FIELD_META[option.value]
               const IconComponent = meta.icon
 
               return (

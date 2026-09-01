@@ -600,6 +600,7 @@
   {
     "id": "siliconflow",
     "name": "поток на основе кремния",
+    "recommended": true,
     "description": "Предоставляет высокоскоростные интерфейсы вывода для различных основных моделей с открытым исходным кодом, а некоторые модели ниже 10B бесплатны в течение длительного времени.",
     "registerUrl": "https://cloud.siliconflow.cn/",
     "baseUrl": "https://api.siliconflow.cn/v1",
@@ -828,6 +829,7 @@
   {
     "id": "ollama",
     "name": "Ollama",
+    "recommended": true,
     "description": "Еще одно внешнее решение для локального запуска сервисов больших моделей. Оно на 20–40 % медленнее встроенного механизма искусственного интеллекта Firefly, но имеет хорошую аппаратную совместимость и рекомендуется к установке.",
     "registerUrl": "https://ollama.com/download/windows",
     "baseUrl": "http://localhost:11434",
@@ -2713,6 +2715,7 @@
   {
     "id": "agnes",
     "name": "Agnes AI(Бесплатно навсегда)",
+    "recommended": true,
     "description": "Количество запросов в минуту ограничено до 20. Если запрос будет слишком быстрым за короткий промежуток времени, сработает ограничение частоты (нужно подождать 1 минуту и ​​повторить попытку)",
     "registerUrl": "https://platform.agnes-ai.com/",
     "baseUrl": "https://apihub.agnes-ai.com/v1",

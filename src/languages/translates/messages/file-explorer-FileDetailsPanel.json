@@ -10,7 +10,7 @@
     "fr-FR": "Type de fichier",
     "ko-KR": "파일 유형",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(6122-6130)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(6257-6265)",
       "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(511-519)",
       "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(577-585)",
       "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(41538-41546)"
@@ -27,7 +27,7 @@
     "de-DE": "Dateiverwendungszweck",
     "fr-FR": "Utilisation du fichier",
     "ko-KR": "파일 용도",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(6133-6141)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(6268-6276)"],
     "$id": 8371
   },
   "质量评分": {
@@ -40,7 +40,7 @@
     "de-DE": "Qualitätsbewertung",
     "fr-FR": "Note de qualité",
     "ko-KR": "품질 평점",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(9471-9479)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(9606-9614)"],
     "$id": 8372
   },
   "OCR/语音/歌词": {
@@ -53,7 +53,7 @@
     "de-DE": "OCR/Stimme/Texte",
     "fr-FR": "OCR/voix/paroles",
     "ko-KR": "OCR/음성/가사",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(10507-10520)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(10642-10655)"],
     "$id": 8374
   },
   "内容摘要": {
@@ -66,7 +66,7 @@
     "de-DE": "Inhaltszusammenfassung",
     "fr-FR": "Résumé du contenu",
     "ko-KR": "내용 요약",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(10666-10674)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(10801-10809)"],
     "$id": 8375
   },
   "元数据": {
@@ -80,8 +80,8 @@
     "fr-FR": "Métadonnées",
     "ko-KR": "메타데이터",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(11393-11400)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1156-1163)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(11528-11535)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1217-1224)"
     ],
     "$id": 8376
   },
@@ -95,7 +95,7 @@
     "de-DE": "Zeitaufwendig",
     "fr-FR": "Durée",
     "ko-KR": "소요 시간",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(11495-11501)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(11630-11636)"],
     "$id": 8377
   },
   "原文件丢失": {
@@ -108,7 +108,7 @@
     "de-DE": "Ursprüngliche Datei verloren gegangen",
     "fr-FR": "Fichier original manquant",
     "ko-KR": "원본 파일 손실됨",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12504-12513)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12655-12664)"],
     "$id": 8378
   },
   "关闭显示所有丢失文件": {
@@ -121,7 +121,7 @@
     "de-DE": "Schließen Sie die Anzeige aller verloren gegangenen Dateien",
     "fr-FR": "Fermer pour afficher tous les fichiers perdus",
     "ko-KR": "모든 손실 파일 표시 끄기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12835-12849)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12986-13000)"],
     "$id": 8379
   },
   "最小单元": {
@@ -134,7 +134,7 @@
     "de-DE": "Kleinste Einheit",
     "fr-FR": "La plus petite unité",
     "ko-KR": "가장 작은 단위",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14129-14137)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14280-14288)"],
     "$id": 8380
   },
   "置信度": {
@@ -148,9 +148,9 @@
     "fr-FR": "Confiance",
     "ko-KR": "신뢰",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14324-14331)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14017-14024)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(7446-7453)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14475-14482)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(7446-7453)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14017-14024)"
     ],
     "$id": 8381
   },
@@ -164,7 +164,7 @@
     "de-DE": "Bereits in Ordnung, die Dateien im Verzeichnis werden nicht einzeln analysiert.",
     "fr-FR": "Déjà ordonné, les fichiers dans le répertoire ne sont pas analysés individuellement",
     "ko-KR": "정렬됨, 디렉토리 내 파일은 하나씩 분석되지 않음",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14695-14716)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14846-14867)"],
     "$id": 8382
   },
   "关闭最小单元识别": {
@@ -177,7 +177,7 @@
     "de-DE": "Deaktivieren Sie die Erkennung der Mindesteinheit",
     "fr-FR": "Désactiver l'identification de l'unité minimale",
     "ko-KR": "최소 단위 인식 끄기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(15331-15343)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(15482-15494)"],
     "$id": 8383
   },
   "目录属性": {
@@ -190,7 +190,7 @@
     "de-DE": "Verzeichniseigenschaften",
     "fr-FR": "Propriétés du répertoire",
     "ko-KR": "디렉터리 속성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(19136-19144)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(19287-19295)"],
     "$id": 8384
   },
   "目录名": {
@@ -203,7 +203,7 @@
     "de-DE": "Verzeichnisname",
     "fr-FR": "Nom du répertoire",
     "ko-KR": "디렉토리 이름",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(19374-19381)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(19525-19532)"],
     "$id": 8385
   },
   "路径": {
@@ -216,7 +216,7 @@
     "de-DE": "Weg",
     "fr-FR": "Chemin",
     "ko-KR": "길",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(19672-19678)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(19823-19829)"],
     "$id": 8386
   },
   "文件数量": {
@@ -229,7 +229,7 @@
     "de-DE": "Anzahl der Dateien",
     "fr-FR": "Nombre de fichiers",
     "ko-KR": "파일 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(20110-20118)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(20261-20269)"],
     "$id": 8387
   },
   "个": {
@@ -243,8 +243,8 @@
     "fr-FR": "Pièces",
     "ko-KR": "개",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(20213-20218)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(20587-20592)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(20364-20369)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(20738-20743)",
       "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11895-11900)",
       "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(12078-12083)"
     ],
@@ -260,7 +260,7 @@
     "de-DE": "Anzahl der Unterverzeichnisse",
     "fr-FR": "Nombre de sous-répertoires",
     "ko-KR": "하위 디렉터리 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(20473-20482)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(20624-20633)"],
     "$id": 8389
   },
   "大小": {
@@ -273,7 +273,7 @@
     "de-DE": "Größe\r",
     "fr-FR": "Taille",
     "ko-KR": "크기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(20849-20855)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(21000-21006)"],
     "$id": 8390
   },
   "分析目录特征，以指导目录中文件的后续分析": {
@@ -286,7 +286,7 @@
     "de-DE": "Analysieren Sie Verzeichniseigenschaften, um die anschließende Analyse der Dateien im Verzeichnis zu steuern",
     "fr-FR": "Analyser les caractéristiques du répertoire pour guider l'analyse ultérieure des fichiers dans le répertoire",
     "ko-KR": "디렉터리 특성을 분석하여 디렉터리에 있는 파일의 후속 분석을 안내합니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22058-22082)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22209-22233)"],
     "$id": 8391
   },
   "分析中": {
@@ -299,7 +299,7 @@
     "de-DE": "Analysieren",
     "fr-FR": "En cours d'analyse",
     "ko-KR": "분석 중",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22571-22578)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22722-22729)"],
     "$id": 8392
   },
   "目录画像": {
@@ -312,7 +312,7 @@
     "de-DE": "Katalogporträt",
     "fr-FR": "Portrait de catalogue",
     "ko-KR": "카탈로그 초상화",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22805-22813)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22956-22964)"],
     "$id": 8393
   },
   "分析整个目录中的文件": {
@@ -325,7 +325,7 @@
     "de-DE": "Analysieren Sie Dateien im gesamten Verzeichnis",
     "fr-FR": "Analyser les fichiers dans tout le répertoire",
     "ko-KR": "전체 디렉터리의 파일 분석",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(23324-23338)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(23475-23489)"],
     "$id": 8394
   },
   "重新分析": {
@@ -339,8 +339,8 @@
     "fr-FR": "Réanalyser",
     "ko-KR": "재분석",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(23980-23988)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24884-24892)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24131-24139)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25074-25082)"
     ],
     "$id": 8395
   },
@@ -355,10 +355,23 @@
     "fr-FR": "Analyser immédiatement",
     "ko-KR": "즉시 분석",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24018-24026)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24920-24928)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24169-24177)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25110-25118)"
     ],
     "$id": 8396
+  },
+  "队列中": {
+    "en-US": "In the queue",
+    "es-ES": "En la cola",
+    "ar-EG": "في قائمة الانتظار",
+    "pt-PT": "Na fila",
+    "ru-RU": "в очереди",
+    "ja-JP": "キュー内",
+    "de-DE": "In der Warteschlange",
+    "fr-FR": "Dans la file d'attente",
+    "ko-KR": "대기열에",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24771-24778)"],
+    "$id": 11279
   },
   "分析中...": {
     "en-US": "Analyzing...",
@@ -370,7 +383,7 @@
     "de-DE": "Analyse läuft...",
     "fr-FR": "Analyse en cours...",
     "ko-KR": "분석 중...",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24592-24602)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24782-24792)"],
     "$id": 8397
   },
   "清空分析结果": {
@@ -383,7 +396,7 @@
     "de-DE": "Analyseergebnisse löschen",
     "fr-FR": "Effacer les résultats d'analyse",
     "ko-KR": "분석 결과 초기화",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25451-25461)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25641-25651)"],
     "$id": 8398
   },
   "确认清空分析结果？": {
@@ -396,7 +409,7 @@
     "de-DE": "Analyseergebnisse wirklich löschen?",
     "fr-FR": "Confirmer l'effacement des résultats d'analyse ?",
     "ko-KR": "분석 결과를 초기화하시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25837-25850)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26027-26040)"],
     "$id": 8399
   },
   "此操作将删除该{category}的所有AI分析数据{sentens}，但不会删除{category}本身。": {
@@ -409,7 +422,7 @@
     "de-DE": "Diese Aktion entfernt alle KI-Analyse-Daten für {category}{sentens}, aber {category} selbst wird nicht gelöscht.",
     "fr-FR": "Cette opération supprimera toutes les données d'analyse AI de ce {category}{sentens}, mais ne supprimera pas le {category} lui-même.",
     "ko-KR": "이 작업은 {category}의 모든 AI 분석 데이터{sentens}를 삭제하지만, {category} 자체는 삭제하지 않습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25924-25982)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26114-26172)"],
     "$id": 8400
   },
   "目录": {
@@ -422,7 +435,7 @@
     "de-DE": "Verzeichnis",
     "fr-FR": "Répertoire",
     "ko-KR": "디렉토리",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26026-26032)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26216-26222)"],
     "$id": 8401
   },
   "文件": {
@@ -435,7 +448,7 @@
     "de-DE": "Datei",
     "fr-FR": "Fichier",
     "ko-KR": "파일",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26036-26042)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26226-26232)"],
     "$id": 8402
   },
   "（不包括目录内文件的分析数据）": {
@@ -448,7 +461,7 @@
     "de-DE": "(nicht einschließlich der Analyse-Daten in den Verzeichnisdateien)",
     "fr-FR": "(ne comprend pas les données d'analyse des fichiers dans les répertoires)",
     "ko-KR": "(디렉토리 내 파일의 분석 데이터 제외)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26102-26121)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26292-26311)"],
     "$id": 8403
   },
   "（包括摘要、标签、向量索引等）": {
@@ -461,7 +474,7 @@
     "de-DE": "(einschließlich Zusammenfassung, Tags, Vektorindex usw.)",
     "fr-FR": "(y compris le résumé, les étiquettes, l'indexation vectorielle, etc.)",
     "ko-KR": "(요약, 태그, 벡터 인덱스 등 포함)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26143-26162)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26333-26352)"],
     "$id": 8404
   },
   "清空后，您可以重新进行分析。": {
@@ -474,7 +487,7 @@
     "de-DE": "Nach dem Löschen können Sie eine erneute Analyse durchführen.",
     "fr-FR": "Après l'effacement, vous pourrez relancer une analyse.",
     "ko-KR": "초기화 후 다시 분석할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26239-26257)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26429-26447)"],
     "$id": 8405
   },
   "取消": {
@@ -488,7 +501,7 @@
     "fr-FR": "Annuler",
     "ko-KR": "취소",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26458-26464)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26648-26654)",
       "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(14102-14108)",
       "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(17579-17585)",
       "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23648-23654)",
@@ -508,857 +521,8 @@
     "de-DE": "Löschen bestätigen",
     "fr-FR": "Confirmer l'effacement",
     "ko-KR": "초기화 확인",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26764-26772)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(26954-26962)"],
     "$id": 8407
-  },
-  "分析完成": {
-    "en-US": "Analysis completed",
-    "es-ES": "Análisis completado",
-    "ar-EG": "اكتمل التحليل",
-    "pt-PT": "Análise concluída",
-    "ru-RU": "Анализ завершен",
-    "ja-JP": "分析完了",
-    "de-DE": "Analyse abgeschlossen",
-    "fr-FR": "Analyse terminée",
-    "ko-KR": "분석 완료",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(4391-4399)"],
-    "$id": 8487
-  },
-  "分析失败: {}": {
-    "en-US": "Analysis failed: {}",
-    "es-ES": "Análisis fallido: {}",
-    "ar-EG": "فشل التحليل: {}",
-    "pt-PT": "Falha na análise: {}",
-    "ru-RU": "Анализ не выполнен: {}",
-    "ja-JP": "分析失敗: {}",
-    "de-DE": "Analyse fehlgeschlagen: {}",
-    "fr-FR": "Échec de l'analyse : {}",
-    "ko-KR": "분석 실패: {}",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(4459-4471)"],
-    "$id": 8488
-  },
-  "未知错误": {
-    "en-US": "Unknown error",
-    "es-ES": "Error desconocido",
-    "ar-EG": "خطأ غير معروف",
-    "pt-PT": "Erro desconhecido",
-    "ru-RU": "Неизвестная ошибка",
-    "ja-JP": "不明なエラー",
-    "de-DE": "Unbekannter Fehler",
-    "fr-FR": "Erreur inconnue",
-    "ko-KR": "알 수 없는 오류",
-    "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(4495-4503)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(5955-5963)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8301-8309)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9444-9452)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10558-10566)"
-    ],
-    "$id": 8489
-  },
-  "文件已加入分析队列，正在分析...": {
-    "en-US": "File has been added to analysis queue, analyzing...",
-    "es-ES": "Archivo agregado a la cola de análisis, analizando...",
-    "ar-EG": "تمت إضافة الملف إلى قائمة انتظار التحليل، جاري التحليل...",
-    "pt-PT": "Ficheiro adicionado à fila de análise, a analisar...",
-    "ru-RU": "Файл добавлен в очередь анализа, анализируется...",
-    "ja-JP": "ファイルが分析キューに追加され、分析中です...",
-    "de-DE": "Datei wurde zur Analysewarteschlange hinzugefügt, wird analysiert...",
-    "fr-FR": "Fichier ajouté à la file d'attente d'analyse, en cours d'analyse...",
-    "ko-KR": "파일이 분석 대기열에 추가되었으며 분석 중입니다...",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(5798-5819)"],
-    "$id": 8490
-  },
-  "分析失败，请重试": {
-    "en-US": "Analysis failed, please try again",
-    "es-ES": "Análisis fallido, inténtelo de nuevo",
-    "ar-EG": "فشل التحليل، يرجى إعادة المحاولة",
-    "pt-PT": "Falha na análise, tente novamente.",
-    "ru-RU": "Анализ не удался, пожалуйста, попробуйте снова",
-    "ja-JP": "解析に失敗しました。再試行してください",
-    "de-DE": "Analyse fehlgeschlagen, bitte erneut versuchen",
-    "fr-FR": "Échec de l'analyse, veuillez réessayer",
-    "ko-KR": "분석에 실패했습니다. 다시 시도해 주세요.",
-    "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(6253-6265)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9756-9768)"
-    ],
-    "$id": 8491
-  },
-  "已将 {count} 个项目加入分析队列": {
-    "en-US": "{count} items have been added to the analysis queue",
-    "es-ES": "{count} elementos se han agregado a la cola de análisis",
-    "ar-EG": "تمت إضافة {count} عناصر إلى قائمة انتظار التحليل",
-    "pt-PT": "{count} itens foram adicionados à fila de análise",
-    "ru-RU": "{count} элементов добавлено в очередь анализа",
-    "ja-JP": "{count} 個のアイテムが分析キューに追加されました",
-    "de-DE": "{count} Elemente wurden zur Analysewarteschlange hinzugefügt",
-    "fr-FR": "{count} éléments ont été ajoutés à la file d'attente d'analyse",
-    "ko-KR": "{count} 항목이 분석 대기열에 추가되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(6986-7010)"],
-    "$id": 8492
-  },
-  "该目录下没有可分析的内容": {
-    "en-US": "There is no analyzable content in this directory",
-    "es-ES": "No hay contenido analizable en este directorio.",
-    "ar-EG": "لا يوجد محتوى قابل للتحليل في هذا الدليل",
-    "pt-PT": "Não há conteúdo analisável neste diretório",
-    "ru-RU": "В этом каталоге нет анализируемого контента.",
-    "ja-JP": "このディレクトリには分析可能なコンテンツがありません",
-    "de-DE": "In diesem Verzeichnis sind keine analysierbaren Inhalte vorhanden",
-    "fr-FR": "Il n'y a aucun contenu analysable dans ce répertoire",
-    "ko-KR": "이 디렉터리에는 분석 가능한 콘텐츠가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(7061-7077)"],
-    "$id": 8493
-  },
-  "批量分析失败: {error}": {
-    "en-US": "Batch analysis failed: {error}",
-    "es-ES": "Error en el análisis de lotes: {error}",
-    "ar-EG": "فشل التحليل الدفعي: {error}",
-    "pt-PT": "Falha na análise em lote: {error}",
-    "ru-RU": "Пакетный анализ не удался: {error}",
-    "ja-JP": "バッチ分析が失敗しました: {error}",
-    "de-DE": "Batch-Analyse fehlgeschlagen: {error}",
-    "fr-FR": "Échec de l'analyse par lots : {error}",
-    "ko-KR": "일괄 분석 실패: {error}",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(7277-7296)"],
-    "$id": 8494
-  },
-  "已清空分析": {
-    "en-US": "Analysis cleared",
-    "es-ES": "Análisis borrado",
-    "ar-EG": "تم تفريغ التحليل",
-    "pt-PT": "Análise limpa",
-    "ru-RU": "Очищено",
-    "ja-JP": "分析をクリアしました",
-    "de-DE": "Analyse gelöscht",
-    "fr-FR": "Analyse effacée",
-    "ko-KR": "분석이 완료되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(7830-7839)"],
-    "$id": 8495
-  },
-  "服务器响应失败": {
-    "en-US": "Server response failed",
-    "es-ES": "Fallo en la respuesta del servidor",
-    "ar-EG": "فشل استجابة الخادم",
-    "pt-PT": "Falha na resposta do servidor.",
-    "ru-RU": "Ошибка ответа сервера",
-    "ja-JP": "サーバーからの応答に失敗しました",
-    "de-DE": "Serverantwort fehlgeschlagen",
-    "fr-FR": "Échec de la réponse du serveur",
-    "ko-KR": "서버 응답에 실패했습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(7992-8003)"],
-    "$id": 8496
-  },
-  "清空分析失败: {error}": {
-    "en-US": "Failed to clear analysis: {error}",
-    "es-ES": "Borrado de análisis fallido: {error}",
-    "ar-EG": "فشل مسح التحليل: {error}",
-    "pt-PT": "Falha ao limpar a análise: {error}",
-    "ru-RU": "Ошибка очистки анализа: {error}",
-    "ja-JP": "分析のクリア失敗: {error}",
-    "de-DE": "Analysebereinigung fehlgeschlagen: {error}",
-    "fr-FR": "Échec du vidage de l'analyse : {error}",
-    "ko-KR": "분석 비우기 실패: {error}",
-    "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8094-8113)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8254-8273)"
-    ],
-    "$id": 8497
-  },
-  "无法获取目录路径，请刷新后重试": {
-    "en-US": "Unable to get directory path, please refresh and try again",
-    "es-ES": "No se puede obtener la ruta del directorio, por favor actualice y vuelva a intentarlo",
-    "ar-EG": "غير قادر على الحصول على مسار الدليل، يرجى التحديث وإعادة المحاولة",
-    "pt-PT": "Não é possível obter o caminho do diretório, recarregue e tente novamente",
-    "ru-RU": "Не удается получить путь к каталогу, обновите страницу и повторите попытку",
-    "ja-JP": "ディレクトリパスを取得できません。ページを更新して再試行してください",
-    "de-DE": "Verzeichnispfad kann nicht abgerufen werden, bitte aktualisieren und erneut versuchen",
-    "fr-FR": "Impossible d'obtenir le chemin du répertoire, veuillez rafraîchir et réessayer",
-    "ko-KR": "디렉터리 경로를 가져올 수 없습니다. 새로 고침 후 다시 시도하십시오",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8996-9015)"],
-    "$id": 8498
-  },
-  "目录重新分析完成": {
-    "en-US": "Directory re-analysis completed",
-    "es-ES": "Reanálisis del directorio completado",
-    "ar-EG": "اكتملت إعادة تحليل الدليل",
-    "pt-PT": "Nova análise do diretório concluída",
-    "ru-RU": "Повторный анализ каталога завершен",
-    "ja-JP": "ディレクトリの再分析完了",
-    "de-DE": "Verzeichnisneuanalyse abgeschlossen",
-    "fr-FR": "Réanalyse du répertoire terminée",
-    "ko-KR": "디렉터리 재분석 완료",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9171-9183)"],
-    "$id": 8499
-  },
-  "已清空目录分析": {
-    "en-US": "Directory analysis cleared",
-    "es-ES": "Análisis del directorio vaciado",
-    "ar-EG": "تم مسح تحليل الدليل\r",
-    "pt-PT": "Análise de diretório limpa\r",
-    "ru-RU": "Анализ каталога очищен",
-    "ja-JP": "ディレクトリ分析をクリアしました",
-    "de-DE": "Verzeichnisanalyse geleert",
-    "fr-FR": "Analyse du répertoire vidée",
-    "ko-KR": "디렉토리 분석 비우기 완료됨",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10183-10194)"],
-    "$id": 8500
-  },
-  "清空目录分析失败: {error}": {
-    "en-US": "Failed to clear directory analysis: {error}",
-    "es-ES": "Error al vaciar el análisis del directorio: {error}",
-    "ar-EG": "فشل مسح تحليل الدليل: {error}\r",
-    "pt-PT": "Falha ao limpar a análise do diretório: {error}\r",
-    "ru-RU": "Ошибка очистки каталога: {error}",
-    "ja-JP": "ディレクトリ分析のクリアに失敗しました: {error}",
-    "de-DE": "Verzeichnisanalyse konnte nicht geleert werden: {error}",
-    "fr-FR": "Échec du vidage de l'analyse du répertoire: {error}",
-    "ko-KR": "디렉토리 분석 비우기 실패: {error}",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10509-10530)"],
-    "$id": 8501
-  },
-  "置信度: ": {
-    "en-US": "Confidence:",
-    "es-ES": "Nivel de confianza:",
-    "ar-EG": "درجة الثقة:\r",
-    "pt-PT": "Confiança: \r",
-    "ru-RU": "Уверенность: ",
-    "ja-JP": "信頼度: ",
-    "de-DE": "Vertrauenswürdigkeit: ",
-    "fr-FR": "Niveau de confiance :",
-    "ko-KR": "신뢰도:",
-    "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(6303-6312)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13296-13305)"
-    ],
-    "$id": 8417
-  },
-  "技术指标": {
-    "en-US": "Technical indicators",
-    "es-ES": "Indicadores técnicos",
-    "ar-EG": "المؤشرات الفنية\r",
-    "pt-PT": "Indicadores técnicos\r",
-    "ru-RU": "Технические показатели",
-    "ja-JP": "技術指標",
-    "de-DE": "Technische Kennzahlen",
-    "fr-FR": "Indicateurs techniques",
-    "ko-KR": "기술 지표",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(6769-6777)"],
-    "$id": 8442
-  },
-  "美学评估": {
-    "en-US": "Aesthetic evaluation",
-    "es-ES": "Evaluación estética",
-    "ar-EG": "التقييم الجمالي\r",
-    "pt-PT": "Avaliação estética\r",
-    "ru-RU": "Эстетическая оценка",
-    "ja-JP": "美学評価",
-    "de-DE": "Ästhetische Bewertung",
-    "fr-FR": "Évaluation esthétique",
-    "ko-KR": "미적 평가",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(7209-7217)"],
-    "$id": 8443
-  },
-  "内容价值": {
-    "en-US": "Content value",
-    "es-ES": "Valor del contenido",
-    "ar-EG": "قيمة المحتوى\r",
-    "pt-PT": "Valor do conteúdo\r",
-    "ru-RU": "Ценность содержимого",
-    "ja-JP": "コンテンツ価値",
-    "de-DE": "Inhaltlicher Wert",
-    "fr-FR": "Valeur du contenu",
-    "ko-KR": "내용 가치",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(7649-7657)"],
-    "$id": 8444
-  },
-  "完整性": {
-    "en-US": "Completeness",
-    "es-ES": "Integridad",
-    "ar-EG": "الكاملية\r",
-    "pt-PT": "Integridade\r",
-    "ru-RU": "Полнота",
-    "ja-JP": "完全性",
-    "de-DE": "Vollständigkeit",
-    "fr-FR": "Intégrité",
-    "ko-KR": "완전성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(8087-8094)"],
-    "$id": 8445
-  },
-  "时效性": {
-    "en-US": "Timeliness",
-    "es-ES": "Actualidad",
-    "ar-EG": "الزمنية\r",
-    "pt-PT": "Atualidade\r",
-    "ru-RU": "Актуальность",
-    "ja-JP": "鮮度",
-    "de-DE": "Aktualität",
-    "fr-FR": "Actualité",
-    "ko-KR": "시의성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(8529-8536)"],
-    "$id": 8446
-  },
-  "暂无评分数据 (请点击下方\"重新分析\"获取)": {
-    "en-US": "No rating data available (please click \"Reanalyze\" below to obtain)",
-    "es-ES": "No hay datos de calificación (por favor, haga clic en \"Reanálisis\" a continuación para obtenerlos)",
-    "ar-EG": "لا توجد بيانات تقييم مؤقتًا (يرجى النقر على \"إعادة التحليل\" أدناه للحصول عليها)\r",
-    "pt-PT": "Sem dados de classificação (clique em \"Reanalisar\" abaixo para obter)\r",
-    "ru-RU": "Нет данных оценки (нажмите кнопку \"Переанализировать\" ниже)",
-    "ja-JP": "評価データがありません (下の「再分析」をクリックして取得してください)",
-    "de-DE": "Keine Bewertungsdaten vorhanden (bitte klicken Sie unten auf \"Neu analysieren\", um diese zu erhalten)",
-    "fr-FR": "Aucune note disponible (veuillez cliquer sur \"Réanalyser\" ci-dessous pour obtenir la note)",
-    "ko-KR": "평가 데이터 없음 (하단의 \"재분석\"을 클릭하여 가져오세요)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(9792-9818)"],
-    "$id": 8447
-  },
-  "暂无 OCR 识别结果": {
-    "en-US": "No OCR recognition results yet",
-    "es-ES": "Aún no hay resultados de reconocimiento OCR",
-    "ar-EG": "لا توجد نتائج للتعرف الضوئي على الحروف حتى الآن",
-    "pt-PT": "Ainda não há resultados de reconhecimento de OCR",
-    "ru-RU": "Результатов распознавания OCR пока нет.",
-    "ja-JP": "OCR認識結果はまだありません",
-    "de-DE": "Noch keine OCR-Erkennungsergebnisse",
-    "fr-FR": "Aucun résultat de reconnaissance OCR pour l'instant",
-    "ko-KR": "아직 OCR 인식 결과가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10710-10725)"],
-    "$id": 9545
-  },
-  "类型标签": {
-    "en-US": "Type Label",
-    "es-ES": "Etiqueta de tipo",
-    "ar-EG": "نوع العلامة",
-    "pt-PT": "Etiqueta de tipo",
-    "ru-RU": "Метка типа",
-    "ja-JP": "カテゴリタグ",
-    "de-DE": "Typ-Tag",
-    "fr-FR": "Étiquettes de type",
-    "ko-KR": "유형 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13588-13596)"],
-    "$id": 8448
-  },
-  "描述": {
-    "en-US": "Describe",
-    "es-ES": "Describir",
-    "ar-EG": "يصف",
-    "pt-PT": "Descrever",
-    "ru-RU": "описывать",
-    "ja-JP": "説明する",
-    "de-DE": "Beschreiben",
-    "fr-FR": "Décrire",
-    "ko-KR": "설명하다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13661-13667)"],
-    "$id": 8449
-  },
-  "MIME类型": {
-    "en-US": "MIME type",
-    "es-ES": "Tipo MIME",
-    "ar-EG": "نوع MIME",
-    "pt-PT": "Tipo MIME",
-    "ru-RU": "MIME-тип",
-    "ja-JP": "MIMEタイプ",
-    "de-DE": "MIME-Typ",
-    "fr-FR": "Type MIME",
-    "ko-KR": "MIME 유형",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13736-13746)"],
-    "$id": 8450
-  },
-  "扩展名": {
-    "en-US": "Extension",
-    "es-ES": "Extensión",
-    "ar-EG": "امتداد",
-    "pt-PT": "Extensão",
-    "ru-RU": "расширение",
-    "ja-JP": "拡大",
-    "de-DE": "Verlängerung",
-    "fr-FR": "Extension",
-    "ko-KR": "확대",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13809-13816)"],
-    "$id": 8451
-  },
-  "文件分组": {
-    "en-US": "File grouping",
-    "es-ES": "Agrupación de archivos",
-    "ar-EG": "تجميع الملفات",
-    "pt-PT": "Agrupamento de arquivos",
-    "ru-RU": "Группировка файлов",
-    "ja-JP": "ファイルのグループ化",
-    "de-DE": "Dateigruppierung",
-    "fr-FR": "Regroupement de fichiers",
-    "ko-KR": "파일 그룹화",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13880-13888)"],
-    "$id": 8452
-  },
-  "是否文本": {
-    "en-US": "Whether text",
-    "es-ES": "Ya sea texto",
-    "ar-EG": "سواء النص",
-    "pt-PT": "Seja texto",
-    "ru-RU": "Будь текст",
-    "ja-JP": "テキストかどうか",
-    "de-DE": "Ob Text",
-    "fr-FR": "Que ce soit du texte",
-    "ko-KR": "텍스트 여부",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13949-13957)"],
-    "$id": 8453
-  },
-  "是": {
-    "en-US": "Yes",
-    "es-ES": "Sí",
-    "ar-EG": "نعم\r",
-    "pt-PT": "Sim\r",
-    "ru-RU": "Да",
-    "ja-JP": "はい",
-    "de-DE": "Ja",
-    "fr-FR": "Oui",
-    "ko-KR": "예",
-    "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14782-14787)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(18786-18791)"
-    ],
-    "$id": 8454
-  },
-  "否": {
-    "en-US": "No",
-    "es-ES": "No",
-    "ar-EG": "لا\r",
-    "pt-PT": "Não\r",
-    "ru-RU": "Нет",
-    "ja-JP": "いいえ",
-    "de-DE": "Nein",
-    "fr-FR": "Non",
-    "ko-KR": "아니오",
-    "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14791-14796)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(18795-18800)"
-    ],
-    "$id": 8455
-  },
-  "文本编码": {
-    "en-US": "Text encoding",
-    "es-ES": "Codificación de texto",
-    "ar-EG": "ترميز النص",
-    "pt-PT": "Codificação de texto",
-    "ru-RU": "кодировка текста",
-    "ja-JP": "テキストエンコーディング",
-    "de-DE": "Textkodierung",
-    "fr-FR": "Encodage de texte",
-    "ko-KR": "텍스트 인코딩",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16490-16498)"],
-    "$id": 11247
-  },
-  "字符数": {
-    "en-US": "Number of characters",
-    "es-ES": "Número de caracteres",
-    "ar-EG": "عدد الشخصيات",
-    "pt-PT": "Número de caracteres",
-    "ru-RU": "Количество символов",
-    "ja-JP": "文字数",
-    "de-DE": "Anzahl der Zeichen",
-    "fr-FR": "Nombre de caractères",
-    "ko-KR": "문자 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16565-16572)"],
-    "$id": 11248
-  },
-  "行数": {
-    "en-US": "Number of lines",
-    "es-ES": "Número de líneas",
-    "ar-EG": "عدد الخطوط",
-    "pt-PT": "Número de linhas",
-    "ru-RU": "Количество строк",
-    "ja-JP": "行数",
-    "de-DE": "Anzahl der Zeilen",
-    "fr-FR": "Nombre de lignes",
-    "ko-KR": "라인 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16640-16646)"],
-    "$id": 11249
-  },
-  "词数": {
-    "en-US": "Number of words",
-    "es-ES": "Número de palabras",
-    "ar-EG": "عدد الكلمات",
-    "pt-PT": "Número de palavras",
-    "ru-RU": "Количество слов",
-    "ja-JP": "単語数",
-    "de-DE": "Anzahl der Wörter",
-    "fr-FR": "Nombre de mots",
-    "ko-KR": "단어 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16714-16720)"],
-    "$id": 11250
-  },
-  "文件指纹": {
-    "en-US": "Document Fingerprint",
-    "es-ES": "Huella digital del archivo",
-    "ar-EG": "بصمة الملف",
-    "pt-PT": "Impressão digital do ficheiro",
-    "ru-RU": "Отпечаток файла",
-    "ja-JP": "ファイルフィンガープリント",
-    "de-DE": "Datei-Fingerabdruck",
-    "fr-FR": "Empreinte de fichier",
-    "ko-KR": "파일 지문",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(536-544)"],
-    "$id": 11356
-  },
-  "本地复用": {
-    "en-US": "Local reuse",
-    "es-ES": "Reutilización local",
-    "ar-EG": "إعادة الاستخدام المحلي",
-    "pt-PT": "Reutilização local",
-    "ru-RU": "локальное повторное использование",
-    "ja-JP": "ローカルでの再利用",
-    "de-DE": "Lokale Wiederverwendung",
-    "fr-FR": "Réutilisation locale",
-    "ko-KR": "지역 재사용",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(607-615)"],
-    "$id": 11357
-  },
-  "云端复用": {
-    "en-US": "Cloud reuse",
-    "es-ES": "Reutilización de la nube",
-    "ar-EG": "إعادة استخدام السحابة",
-    "pt-PT": "Reutilização na nuvem",
-    "ru-RU": "Повторное использование облака",
-    "ja-JP": "クラウドの再利用",
-    "de-DE": "Cloud-Wiederverwendung",
-    "fr-FR": "Réutilisation du cloud",
-    "ko-KR": "클라우드 재사용",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(678-686)"],
-    "$id": 11358
-  },
-  "类型识别": {
-    "en-US": "Type identification",
-    "es-ES": "Reconocimiento de tipo",
-    "ar-EG": "تحديد النوع",
-    "pt-PT": "Identificação de tipo",
-    "ru-RU": "распознавание типа",
-    "ja-JP": "タイプ認識",
-    "de-DE": "Typerkennung",
-    "fr-FR": "Identification du type",
-    "ko-KR": "유형 식별",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(917-925)"],
-    "$id": 9407
-  },
-  "文本": {
-    "en-US": "Text",
-    "es-ES": "Texto",
-    "ar-EG": "النص",
-    "pt-PT": "Texto",
-    "ru-RU": "Текст",
-    "ja-JP": "テキスト",
-    "de-DE": "Text",
-    "fr-FR": "Texte",
-    "ko-KR": "텍스트",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(995-1001)"],
-    "$id": 8459
-  },
-  "OCR": {
-    "en-US": "Optical Character Recognition",
-    "es-ES": "Reconocimiento óptico de caracteres",
-    "ar-EG": "الضبط البصري بالأحرف",
-    "pt-PT": "Reconhecimento Óptico de Caracteres",
-    "ru-RU": "ОЦИ",
-    "ja-JP": "OCR",
-    "de-DE": "OCR",
-    "fr-FR": "Reconnaissance optique de caractères",
-    "ko-KR": "OCR",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1073-1080)"],
-    "$id": 8461
-  },
-  "封面图": {
-    "en-US": "Cover image",
-    "es-ES": "Imagen de portada",
-    "ar-EG": "صورة الغلاف",
-    "pt-PT": "Imagem da capa",
-    "ru-RU": "обложка",
-    "ja-JP": "表紙画像",
-    "de-DE": "Titelbild",
-    "fr-FR": "Image de couverture",
-    "ko-KR": "표지 이미지",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1238-1245)"],
-    "$id": 11359
-  },
-  "阶段 2: 内容提取": {
-    "en-US": "Stage 2: Content Extraction",
-    "es-ES": "Fase 2: Extracción de contenido",
-    "ar-EG": "المرحلة الثانية: استخراج المحتوى",
-    "pt-PT": "Fase 2: Extração de Conteúdo",
-    "ru-RU": "Этап 2: Извлечение контента",
-    "ja-JP": "段階 2: コンテンツ抽出",
-    "de-DE": "Schritt 2: Inhaltsextraktion",
-    "fr-FR": "Étape 2 : Extraction du contenu",
-    "ko-KR": "단계 2: 내용 추출",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1427-1441)"],
-    "$id": 8464
-  },
-  "缩略图生成": {
-    "en-US": "Thumbnail Generation",
-    "es-ES": "Generación de miniatura",
-    "ar-EG": "إنشاء الصورة المصغرة",
-    "pt-PT": "Geração de miniaturas",
-    "ru-RU": "Генерация миниатюры",
-    "ja-JP": "サムネイル生成",
-    "de-DE": "Miniaturbildgenerierung",
-    "fr-FR": "Génération de miniature",
-    "ko-KR": "썸네일 생성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1505-1514)"],
-    "$id": 8465
-  },
-  "阶段 3: AI 文件质量分析": {
-    "en-US": "Stage 3: AI File Quality Analysis",
-    "es-ES": "Fase 3: Análisis de calidad de archivos AI",
-    "ar-EG": "المرحلة الثالثة: تحليل جودة الملفات بالذكاء الاصطناعي",
-    "pt-PT": "Fase 3: Análise de Qualidade do Arquivo AI",
-    "ru-RU": "Этап 3: Анализ качества файла AI",
-    "ja-JP": "段階 3: AIファイル品質分析",
-    "de-DE": "Schritt 3: KI-Dateiqualitätsanalyse",
-    "fr-FR": "Étape 3 : Analyse de la qualité du fichier par IA",
-    "ko-KR": "단계 3: AI 파일 품질 분석",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1556-1575)"],
-    "$id": 8466
-  },
-  "AI 目录分析": {
-    "en-US": "AI Table of Contents Analysis",
-    "es-ES": "Análisis de directorio con IA",
-    "ar-EG": "تحليل دليل الذكاء الاصطناعي",
-    "pt-PT": "Análise de diretório por IA",
-    "ru-RU": "AI-анализ каталога",
-    "ja-JP": "AI ディレクトリ分析",
-    "de-DE": "KI-Kataloganalyse",
-    "fr-FR": "Analyse de répertoire par IA",
-    "ko-KR": "AI 디렉토리 분석",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1620-1631)"],
-    "$id": 8467
-  },
-  "阶段 4: AI 标签维度分析": {
-    "en-US": "Stage 4: AI Tag Dimension Analysis",
-    "es-ES": "Fase 4: Análisis de dimensiones de etiquetas AI",
-    "ar-EG": "المرحلة الرابعة: تحليل أبعاد التسميات بالذكاء الاصطناعي",
-    "pt-PT": "Fase 4: Análise de Dimensões de Etiquetas AI",
-    "ru-RU": "Этап 4: Анализ размерности тегов AI",
-    "ja-JP": "段階 4: AIタグ次元分析",
-    "de-DE": "Schritt 4: KI-Tag-Dimensionanalyse",
-    "fr-FR": "Étape 4 : Analyse dimensionnelle des étiquettes par IA",
-    "ko-KR": "단계 4: AI 태그 차원 분석",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1676-1695)"],
-    "$id": 8468
-  },
-  "阶段 2: 文本与缩略图提取": {
-    "en-US": "Stage 2: Text and Thumbnail Extraction",
-    "es-ES": "Fase 2: Extracción de texto y miniaturas",
-    "ar-EG": "المرحلة الثانية: استخراج النصوص والمصغرات",
-    "pt-PT": "Fase 2: Extração de Texto e Miniaturas",
-    "ru-RU": "Этап 2: Извлечение текста и миниатюр",
-    "ja-JP": "段階 2: テキストとサムネイル抽出",
-    "de-DE": "Schritt 2: Text- und Miniaturansichten-Extraktion",
-    "fr-FR": "Étape 2 : Extraction du texte et des vignettes",
-    "ko-KR": "단계 2: 텍스트 및 썸네일 추출",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1755-1773)"],
-    "$id": 8469
-  },
-  "阶段 1: 文件指纹与复用判定": {
-    "en-US": "Stage 1: File fingerprinting and reuse determination",
-    "es-ES": "Etapa 1: Determinación de huellas dactilares y reutilización de archivos",
-    "ar-EG": "المرحلة 1: أخذ بصمات الملف وتحديد إعادة الاستخدام",
-    "pt-PT": "Etapa 1: Impressão digital de arquivos e determinação de reutilização",
-    "ru-RU": "Этап 1. Снятие отпечатков пальцев и определение повторного использования файлов.",
-    "ja-JP": "ステージ 1: ファイルのフィンガープリントと再利用の決定",
-    "de-DE": "Stufe 1: Datei-Fingerprinting und Wiederverwendungsbestimmung",
-    "fr-FR": "Étape 1 : Prise d'empreintes digitales des fichiers et détermination de la réutilisation",
-    "ko-KR": "1단계: 파일 핑거프린팅 및 재사용 결정",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1846-1865)"],
-    "$id": 11360
-  },
-  "CPU同步全阶段": {
-    "en-US": "CPU synchronization all stages",
-    "es-ES": "Sincronización de CPU en todas las etapas.",
-    "ar-EG": "مزامنة وحدة المعالجة المركزية في جميع المراحل",
-    "pt-PT": "Sincronização da CPU em todos os estágios",
-    "ru-RU": "Синхронизация процессора на всех этапах",
-    "ja-JP": "全ステージCPU同期",
-    "de-DE": "CPU-Synchronisation aller Stufen",
-    "fr-FR": "Synchronisation du processeur à toutes les étapes",
-    "ko-KR": "CPU 동기화 모든 단계",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(11491-11503)"],
-    "$id": 8471
-  },
-  "简单分析 (阶段1+2)": {
-    "en-US": "Simple Analysis (Phase 1+2)",
-    "es-ES": "Análisis Simple (Fase 1+2)",
-    "ar-EG": "التحليل البسيط (المرحلة 1+2)",
-    "pt-PT": "Análise Simples (Fase 1+2)",
-    "ru-RU": "Простой анализ (этап 1+2)",
-    "ja-JP": "簡易分析 (フェーズ 1+2)",
-    "de-DE": "Einfache Analyse (Phase 1+2)",
-    "fr-FR": "Analyse simple (Phase 1+2)",
-    "ko-KR": "단순분석(1+2단계)",
-    "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13669-13685)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(15070-15086)"
-    ],
-    "$id": 8472
-  },
-  "AI分析 (阶段3+4)": {
-    "en-US": "AI Analysis (Phase 3+4)",
-    "es-ES": "Análisis de IA (Fase 3+4)",
-    "ar-EG": "تحليل الذكاء الاصطناعي (المرحلة 3+4)",
-    "pt-PT": "Análise de IA (Fase 3+4)",
-    "ru-RU": "Анализ ИИ (этап 3+4)",
-    "ja-JP": "AI分析（フェーズ3+4）",
-    "de-DE": "KI-Analyse (Phase 3+4)",
-    "fr-FR": "Analyse de l'IA (Phase 3+4)",
-    "ko-KR": "AI 분석(3+4단계)",
-    "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13689-13705)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(15050-15066)"
-    ],
-    "$id": 8473
-  },
-  "本次分析各阶段": {
-    "en-US": "Each stage of this analysis",
-    "es-ES": "Cada etapa de este análisis",
-    "ar-EG": "كل مرحلة من هذا التحليل",
-    "pt-PT": "Cada etapa desta análise",
-    "ru-RU": "Каждый этап этого анализа",
-    "ja-JP": "この分析の各段階",
-    "de-DE": "Jede Phase dieser Analyse",
-    "fr-FR": "Chaque étape de cette analyse",
-    "ko-KR": "이 분석의 각 단계",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(17932-17943)"],
-    "$id": 8474
-  },
-  "历史全量累计": {
-    "en-US": "Total historical accumulation",
-    "es-ES": "Acumulación histórica total",
-    "ar-EG": "مجموع التراكم التاريخي",
-    "pt-PT": "Acumulação histórica total",
-    "ru-RU": "Общее историческое накопление",
-    "ja-JP": "歴史的蓄積の合計",
-    "de-DE": "Gesamte historische Akkumulation",
-    "fr-FR": "Accumulation historique totale",
-    "ko-KR": "총 역사적 축적",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(18293-18303)"],
-    "$id": 11361
-  },
-  "分析时间": {
-    "en-US": "Analysis Time",
-    "es-ES": "Tiempo de análisis",
-    "ar-EG": "وقت التحليل",
-    "pt-PT": "Tempo de análise",
-    "ru-RU": "Время анализа",
-    "ja-JP": "分析時間",
-    "de-DE": "Analysezeit",
-    "fr-FR": "Temps d'analyse",
-    "ko-KR": "분석 시간",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(23279-23287)"],
-    "$id": 8476
-  },
-  "同时": {
-    "en-US": "At the same time",
-    "es-ES": "Al mismo tiempo",
-    "ar-EG": "في نفس الوقت",
-    "pt-PT": "Ao mesmo tempo",
-    "ru-RU": "в то же время",
-    "ja-JP": "同時に",
-    "de-DE": "Gleichzeitig",
-    "fr-FR": "En même temps",
-    "ko-KR": "동시에",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(23917-23923)"],
-    "$id": 9457
-  },
-  "顺序": {
-    "en-US": "Order",
-    "es-ES": "Orden",
-    "ar-EG": "طلب",
-    "pt-PT": "Ordem",
-    "ru-RU": "заказ",
-    "ja-JP": "注文",
-    "de-DE": "Befehl",
-    "fr-FR": "Commande",
-    "ko-KR": "주문하다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(24131-24137)"],
-    "$id": 9458
-  },
-  "推理模型": {
-    "en-US": "Inference Model",
-    "es-ES": "Modelo de inferencia",
-    "ar-EG": "نموذج الاستنتاج",
-    "pt-PT": "Modelo de inferência",
-    "ru-RU": "Модель вывода",
-    "ja-JP": "推論モデル",
-    "de-DE": "Inferenzmodell",
-    "fr-FR": "Modèle d'inférence",
-    "ko-KR": "추론 모델",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(24528-24536)"],
-    "$id": 8486
-  },
-  "本次物理耗时": {
-    "en-US": "Current Physical Duration",
-    "es-ES": "Tiempo físico de esta vez",
-    "ar-EG": "الوقت الفعلي لهذه المحاولة",
-    "pt-PT": "Duração Física Atual",
-    "ru-RU": "Фактическое время, затраченное на этот анализ",
-    "ja-JP": "今回の物理所要時間",
-    "de-DE": "Physische Zeit dieser Ausführung",
-    "fr-FR": "Temps physique de cette opération",
-    "ko-KR": "이번 물리적 소요 시간",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(25209-25219)"],
-    "$id": 8480
-  },
-  "阶段": {
-    "en-US": "Stage",
-    "es-ES": "Fase",
-    "ar-EG": "المرحلة",
-    "pt-PT": "Fase",
-    "ru-RU": "Этап",
-    "ja-JP": "段階",
-    "de-DE": "Schritt",
-    "fr-FR": "Étape",
-    "ko-KR": "단계",
-    "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(26664-26670)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(31171-31177)"
-    ],
-    "$id": 8481
-  },
-  "本次分析阶段耗时已在并行线程中完成": {
-    "en-US": "Current analysis stage duration has already been completed in parallel threads",
-    "es-ES": "El tiempo de análisis de esta fase ya se completó en hilos paralelos",
-    "ar-EG": "تم إنجاز وقت مرحلة التحليل هذه ضمن خيوط متوازية",
-    "pt-PT": "A duração da fase de análise atual foi concluída em threads paralelos",
-    "ru-RU": "Время анализа этого этапа уже выполнено в параллельных потоках",
-    "ja-JP": "今回の分析段階所要時間は並行スレッドで完了しました",
-    "de-DE": "Die Analysezeit dieses Schritts wurde parallel abgeschlossen",
-    "fr-FR": "Le temps d'analyse de cette étape a été accompli en parallèle dans les threads.",
-    "ko-KR": "이번 분석 단계 소요 시간은 병렬 스레드에서 완료되었습니다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(29273-29294)"],
-    "$id": 8482
-  },
-  "历史累计耗时": {
-    "en-US": "Historical cumulative time spent",
-    "es-ES": "Tiempo acumulado histórico invertido",
-    "ar-EG": "الوقت التراكمي التاريخي الذي قضاه",
-    "pt-PT": "Tempo acumulado histórico",
-    "ru-RU": "Историческое совокупное затраченное время",
-    "ja-JP": "過去の累積費やした時間",
-    "de-DE": "Historische kumulierte aufgewendete Zeit",
-    "fr-FR": "Temps cumulé historique passé",
-    "ko-KR": "과거 누적 소요 시간",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(29801-29811)"],
-    "$id": 11362
-  },
-  "复用": {
-    "en-US": "Reuse",
-    "es-ES": "Reutilizar",
-    "ar-EG": "إعادة الاستخدام",
-    "pt-PT": "Reutilização",
-    "ru-RU": "Повторное использование",
-    "ja-JP": "再利用",
-    "de-DE": "Wiederverwendung",
-    "fr-FR": "Réutilisation",
-    "ko-KR": "재사용",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(35913-35919)"],
-    "$id": 8485
   },
   "智能文件名": {
     "en-US": "Smart file names",
@@ -1898,6 +1062,22 @@
     "ko-KR": "AI 분석 전략",
     "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13069-13079)"],
     "$id": 8416
+  },
+  "置信度: ": {
+    "en-US": "Confidence:",
+    "es-ES": "Nivel de confianza:",
+    "ar-EG": "درجة الثقة:\r",
+    "pt-PT": "Confiança: \r",
+    "ru-RU": "Уверенность: ",
+    "ja-JP": "信頼度: ",
+    "de-DE": "Vertrauenswürdigkeit: ",
+    "fr-FR": "Niveau de confiance :",
+    "ko-KR": "신뢰도:",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13296-13305)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(6303-6312)"
+    ],
+    "$id": 8417
   },
   "编辑AI分析策略": {
     "en-US": "Edit AI Analysis Strategy",
@@ -2798,5 +1978,838 @@
     "ko-KR": "아직 태그가 없습니다. 다시 분석해 주세요.",
     "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(4848-4862)"],
     "$id": 8441
+  },
+  "分析完成": {
+    "en-US": "Analysis completed",
+    "es-ES": "Análisis completado",
+    "ar-EG": "اكتمل التحليل",
+    "pt-PT": "Análise concluída",
+    "ru-RU": "Анализ завершен",
+    "ja-JP": "分析完了",
+    "de-DE": "Analyse abgeschlossen",
+    "fr-FR": "Analyse terminée",
+    "ko-KR": "분석 완료",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(4593-4601)"],
+    "$id": 8487
+  },
+  "分析失败: {}": {
+    "en-US": "Analysis failed: {}",
+    "es-ES": "Análisis fallido: {}",
+    "ar-EG": "فشل التحليل: {}",
+    "pt-PT": "Falha na análise: {}",
+    "ru-RU": "Анализ не выполнен: {}",
+    "ja-JP": "分析失敗: {}",
+    "de-DE": "Analyse fehlgeschlagen: {}",
+    "fr-FR": "Échec de l'analyse : {}",
+    "ko-KR": "분석 실패: {}",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(4661-4673)"],
+    "$id": 8488
+  },
+  "未知错误": {
+    "en-US": "Unknown error",
+    "es-ES": "Error desconocido",
+    "ar-EG": "خطأ غير معروف",
+    "pt-PT": "Erro desconhecido",
+    "ru-RU": "Неизвестная ошибка",
+    "ja-JP": "不明なエラー",
+    "de-DE": "Unbekannter Fehler",
+    "fr-FR": "Erreur inconnue",
+    "ko-KR": "알 수 없는 오류",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(4697-4705)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(6321-6329)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8667-8675)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9810-9818)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10924-10932)"
+    ],
+    "$id": 8489
+  },
+  "文件已加入分析队列，正在分析...": {
+    "en-US": "File has been added to analysis queue, analyzing...",
+    "es-ES": "Archivo agregado a la cola de análisis, analizando...",
+    "ar-EG": "تمت إضافة الملف إلى قائمة انتظار التحليل، جاري التحليل...",
+    "pt-PT": "Ficheiro adicionado à fila de análise, a analisar...",
+    "ru-RU": "Файл добавлен в очередь анализа, анализируется...",
+    "ja-JP": "ファイルが分析キューに追加され、分析中です...",
+    "de-DE": "Datei wurde zur Analysewarteschlange hinzugefügt, wird analysiert...",
+    "fr-FR": "Fichier ajouté à la file d'attente d'analyse, en cours d'analyse...",
+    "ko-KR": "파일이 분석 대기열에 추가되었으며 분석 중입니다...",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(6137-6158)"],
+    "$id": 8490
+  },
+  "分析失败，请重试": {
+    "en-US": "Analysis failed, please try again",
+    "es-ES": "Análisis fallido, inténtelo de nuevo",
+    "ar-EG": "فشل التحليل، يرجى إعادة المحاولة",
+    "pt-PT": "Falha na análise, tente novamente.",
+    "ru-RU": "Анализ не удался, пожалуйста, попробуйте снова",
+    "ja-JP": "解析に失敗しました。再試行してください",
+    "de-DE": "Analyse fehlgeschlagen, bitte erneut versuchen",
+    "fr-FR": "Échec de l'analyse, veuillez réessayer",
+    "ko-KR": "분석에 실패했습니다. 다시 시도해 주세요.",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(6619-6631)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10122-10134)"
+    ],
+    "$id": 8491
+  },
+  "已将 {count} 个项目加入分析队列": {
+    "en-US": "{count} items have been added to the analysis queue",
+    "es-ES": "{count} elementos se han agregado a la cola de análisis",
+    "ar-EG": "تمت إضافة {count} عناصر إلى قائمة انتظار التحليل",
+    "pt-PT": "{count} itens foram adicionados à fila de análise",
+    "ru-RU": "{count} элементов добавлено в очередь анализа",
+    "ja-JP": "{count} 個のアイテムが分析キューに追加されました",
+    "de-DE": "{count} Elemente wurden zur Analysewarteschlange hinzugefügt",
+    "fr-FR": "{count} éléments ont été ajoutés à la file d'attente d'analyse",
+    "ko-KR": "{count} 항목이 분석 대기열에 추가되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(7352-7376)"],
+    "$id": 8492
+  },
+  "该目录下没有可分析的内容": {
+    "en-US": "There is no analyzable content in this directory",
+    "es-ES": "No hay contenido analizable en este directorio.",
+    "ar-EG": "لا يوجد محتوى قابل للتحليل في هذا الدليل",
+    "pt-PT": "Não há conteúdo analisável neste diretório",
+    "ru-RU": "В этом каталоге нет анализируемого контента.",
+    "ja-JP": "このディレクトリには分析可能なコンテンツがありません",
+    "de-DE": "In diesem Verzeichnis sind keine analysierbaren Inhalte vorhanden",
+    "fr-FR": "Il n'y a aucun contenu analysable dans ce répertoire",
+    "ko-KR": "이 디렉터리에는 분석 가능한 콘텐츠가 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(7427-7443)"],
+    "$id": 8493
+  },
+  "批量分析失败: {error}": {
+    "en-US": "Batch analysis failed: {error}",
+    "es-ES": "Error en el análisis de lotes: {error}",
+    "ar-EG": "فشل التحليل الدفعي: {error}",
+    "pt-PT": "Falha na análise em lote: {error}",
+    "ru-RU": "Пакетный анализ не удался: {error}",
+    "ja-JP": "バッチ分析が失敗しました: {error}",
+    "de-DE": "Batch-Analyse fehlgeschlagen: {error}",
+    "fr-FR": "Échec de l'analyse par lots : {error}",
+    "ko-KR": "일괄 분석 실패: {error}",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(7643-7662)"],
+    "$id": 8494
+  },
+  "已清空分析": {
+    "en-US": "Analysis cleared",
+    "es-ES": "Análisis borrado",
+    "ar-EG": "تم تفريغ التحليل",
+    "pt-PT": "Análise limpa",
+    "ru-RU": "Очищено",
+    "ja-JP": "分析をクリアしました",
+    "de-DE": "Analyse gelöscht",
+    "fr-FR": "Analyse effacée",
+    "ko-KR": "분석이 완료되었습니다.",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8196-8205)"],
+    "$id": 8495
+  },
+  "服务器响应失败": {
+    "en-US": "Server response failed",
+    "es-ES": "Fallo en la respuesta del servidor",
+    "ar-EG": "فشل استجابة الخادم",
+    "pt-PT": "Falha na resposta do servidor.",
+    "ru-RU": "Ошибка ответа сервера",
+    "ja-JP": "サーバーからの応答に失敗しました",
+    "de-DE": "Serverantwort fehlgeschlagen",
+    "fr-FR": "Échec de la réponse du serveur",
+    "ko-KR": "서버 응답에 실패했습니다.",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8358-8369)"],
+    "$id": 8496
+  },
+  "清空分析失败: {error}": {
+    "en-US": "Failed to clear analysis: {error}",
+    "es-ES": "Borrado de análisis fallido: {error}",
+    "ar-EG": "فشل مسح التحليل: {error}",
+    "pt-PT": "Falha ao limpar a análise: {error}",
+    "ru-RU": "Ошибка очистки анализа: {error}",
+    "ja-JP": "分析のクリア失敗: {error}",
+    "de-DE": "Analysebereinigung fehlgeschlagen: {error}",
+    "fr-FR": "Échec du vidage de l'analyse : {error}",
+    "ko-KR": "분석 비우기 실패: {error}",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8460-8479)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8620-8639)"
+    ],
+    "$id": 8497
+  },
+  "无法获取目录路径，请刷新后重试": {
+    "en-US": "Unable to get directory path, please refresh and try again",
+    "es-ES": "No se puede obtener la ruta del directorio, por favor actualice y vuelva a intentarlo",
+    "ar-EG": "غير قادر على الحصول على مسار الدليل، يرجى التحديث وإعادة المحاولة",
+    "pt-PT": "Não é possível obter o caminho do diretório, recarregue e tente novamente",
+    "ru-RU": "Не удается получить путь к каталогу, обновите страницу и повторите попытку",
+    "ja-JP": "ディレクトリパスを取得できません。ページを更新して再試行してください",
+    "de-DE": "Verzeichnispfad kann nicht abgerufen werden, bitte aktualisieren und erneut versuchen",
+    "fr-FR": "Impossible d'obtenir le chemin du répertoire, veuillez rafraîchir et réessayer",
+    "ko-KR": "디렉터리 경로를 가져올 수 없습니다. 새로 고침 후 다시 시도하십시오",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9362-9381)"],
+    "$id": 8498
+  },
+  "目录重新分析完成": {
+    "en-US": "Directory re-analysis completed",
+    "es-ES": "Reanálisis del directorio completado",
+    "ar-EG": "اكتملت إعادة تحليل الدليل",
+    "pt-PT": "Nova análise do diretório concluída",
+    "ru-RU": "Повторный анализ каталога завершен",
+    "ja-JP": "ディレクトリの再分析完了",
+    "de-DE": "Verzeichnisneuanalyse abgeschlossen",
+    "fr-FR": "Réanalyse du répertoire terminée",
+    "ko-KR": "디렉터리 재분석 완료",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9537-9549)"],
+    "$id": 8499
+  },
+  "已清空目录分析": {
+    "en-US": "Directory analysis cleared",
+    "es-ES": "Análisis del directorio vaciado",
+    "ar-EG": "تم مسح تحليل الدليل\r",
+    "pt-PT": "Análise de diretório limpa\r",
+    "ru-RU": "Анализ каталога очищен",
+    "ja-JP": "ディレクトリ分析をクリアしました",
+    "de-DE": "Verzeichnisanalyse geleert",
+    "fr-FR": "Analyse du répertoire vidée",
+    "ko-KR": "디렉토리 분석 비우기 완료됨",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10549-10560)"],
+    "$id": 8500
+  },
+  "清空目录分析失败: {error}": {
+    "en-US": "Failed to clear directory analysis: {error}",
+    "es-ES": "Error al vaciar el análisis del directorio: {error}",
+    "ar-EG": "فشل مسح تحليل الدليل: {error}\r",
+    "pt-PT": "Falha ao limpar a análise do diretório: {error}\r",
+    "ru-RU": "Ошибка очистки каталога: {error}",
+    "ja-JP": "ディレクトリ分析のクリアに失敗しました: {error}",
+    "de-DE": "Verzeichnisanalyse konnte nicht geleert werden: {error}",
+    "fr-FR": "Échec du vidage de l'analyse du répertoire: {error}",
+    "ko-KR": "디렉토리 분석 비우기 실패: {error}",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10875-10896)"],
+    "$id": 8501
+  },
+  "技术指标": {
+    "en-US": "Technical indicators",
+    "es-ES": "Indicadores técnicos",
+    "ar-EG": "المؤشرات الفنية\r",
+    "pt-PT": "Indicadores técnicos\r",
+    "ru-RU": "Технические показатели",
+    "ja-JP": "技術指標",
+    "de-DE": "Technische Kennzahlen",
+    "fr-FR": "Indicateurs techniques",
+    "ko-KR": "기술 지표",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(6769-6777)"],
+    "$id": 8442
+  },
+  "美学评估": {
+    "en-US": "Aesthetic evaluation",
+    "es-ES": "Evaluación estética",
+    "ar-EG": "التقييم الجمالي\r",
+    "pt-PT": "Avaliação estética\r",
+    "ru-RU": "Эстетическая оценка",
+    "ja-JP": "美学評価",
+    "de-DE": "Ästhetische Bewertung",
+    "fr-FR": "Évaluation esthétique",
+    "ko-KR": "미적 평가",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(7209-7217)"],
+    "$id": 8443
+  },
+  "内容价值": {
+    "en-US": "Content value",
+    "es-ES": "Valor del contenido",
+    "ar-EG": "قيمة المحتوى\r",
+    "pt-PT": "Valor do conteúdo\r",
+    "ru-RU": "Ценность содержимого",
+    "ja-JP": "コンテンツ価値",
+    "de-DE": "Inhaltlicher Wert",
+    "fr-FR": "Valeur du contenu",
+    "ko-KR": "내용 가치",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(7649-7657)"],
+    "$id": 8444
+  },
+  "完整性": {
+    "en-US": "Completeness",
+    "es-ES": "Integridad",
+    "ar-EG": "الكاملية\r",
+    "pt-PT": "Integridade\r",
+    "ru-RU": "Полнота",
+    "ja-JP": "完全性",
+    "de-DE": "Vollständigkeit",
+    "fr-FR": "Intégrité",
+    "ko-KR": "완전성",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(8087-8094)"],
+    "$id": 8445
+  },
+  "时效性": {
+    "en-US": "Timeliness",
+    "es-ES": "Actualidad",
+    "ar-EG": "الزمنية\r",
+    "pt-PT": "Atualidade\r",
+    "ru-RU": "Актуальность",
+    "ja-JP": "鮮度",
+    "de-DE": "Aktualität",
+    "fr-FR": "Actualité",
+    "ko-KR": "시의성",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(8529-8536)"],
+    "$id": 8446
+  },
+  "暂无评分数据 (请点击下方\"重新分析\"获取)": {
+    "en-US": "No rating data available (please click \"Reanalyze\" below to obtain)",
+    "es-ES": "No hay datos de calificación (por favor, haga clic en \"Reanálisis\" a continuación para obtenerlos)",
+    "ar-EG": "لا توجد بيانات تقييم مؤقتًا (يرجى النقر على \"إعادة التحليل\" أدناه للحصول عليها)\r",
+    "pt-PT": "Sem dados de classificação (clique em \"Reanalisar\" abaixo para obter)\r",
+    "ru-RU": "Нет данных оценки (нажмите кнопку \"Переанализировать\" ниже)",
+    "ja-JP": "評価データがありません (下の「再分析」をクリックして取得してください)",
+    "de-DE": "Keine Bewertungsdaten vorhanden (bitte klicken Sie unten auf \"Neu analysieren\", um diese zu erhalten)",
+    "fr-FR": "Aucune note disponible (veuillez cliquer sur \"Réanalyser\" ci-dessous pour obtenir la note)",
+    "ko-KR": "평가 데이터 없음 (하단의 \"재분석\"을 클릭하여 가져오세요)",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(9792-9818)"],
+    "$id": 8447
+  },
+  "暂无 OCR 识别结果": {
+    "en-US": "No OCR recognition results yet",
+    "es-ES": "Aún no hay resultados de reconocimiento OCR",
+    "ar-EG": "لا توجد نتائج للتعرف الضوئي على الحروف حتى الآن",
+    "pt-PT": "Ainda não há resultados de reconhecimento de OCR",
+    "ru-RU": "Результатов распознавания OCR пока нет.",
+    "ja-JP": "OCR認識結果はまだありません",
+    "de-DE": "Noch keine OCR-Erkennungsergebnisse",
+    "fr-FR": "Aucun résultat de reconnaissance OCR pour l'instant",
+    "ko-KR": "아직 OCR 인식 결과가 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10710-10725)"],
+    "$id": 9545
+  },
+  "类型标签": {
+    "en-US": "Type Label",
+    "es-ES": "Etiqueta de tipo",
+    "ar-EG": "نوع العلامة",
+    "pt-PT": "Etiqueta de tipo",
+    "ru-RU": "Метка типа",
+    "ja-JP": "カテゴリタグ",
+    "de-DE": "Typ-Tag",
+    "fr-FR": "Étiquettes de type",
+    "ko-KR": "유형 태그",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13588-13596)"],
+    "$id": 8448
+  },
+  "描述": {
+    "en-US": "Describe",
+    "es-ES": "Describir",
+    "ar-EG": "يصف",
+    "pt-PT": "Descrever",
+    "ru-RU": "описывать",
+    "ja-JP": "説明する",
+    "de-DE": "Beschreiben",
+    "fr-FR": "Décrire",
+    "ko-KR": "설명하다",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13661-13667)"],
+    "$id": 8449
+  },
+  "MIME类型": {
+    "en-US": "MIME type",
+    "es-ES": "Tipo MIME",
+    "ar-EG": "نوع MIME",
+    "pt-PT": "Tipo MIME",
+    "ru-RU": "MIME-тип",
+    "ja-JP": "MIMEタイプ",
+    "de-DE": "MIME-Typ",
+    "fr-FR": "Type MIME",
+    "ko-KR": "MIME 유형",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13736-13746)"],
+    "$id": 8450
+  },
+  "扩展名": {
+    "en-US": "Extension",
+    "es-ES": "Extensión",
+    "ar-EG": "امتداد",
+    "pt-PT": "Extensão",
+    "ru-RU": "расширение",
+    "ja-JP": "拡大",
+    "de-DE": "Verlängerung",
+    "fr-FR": "Extension",
+    "ko-KR": "확대",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13809-13816)"],
+    "$id": 8451
+  },
+  "文件分组": {
+    "en-US": "File grouping",
+    "es-ES": "Agrupación de archivos",
+    "ar-EG": "تجميع الملفات",
+    "pt-PT": "Agrupamento de arquivos",
+    "ru-RU": "Группировка файлов",
+    "ja-JP": "ファイルのグループ化",
+    "de-DE": "Dateigruppierung",
+    "fr-FR": "Regroupement de fichiers",
+    "ko-KR": "파일 그룹화",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13880-13888)"],
+    "$id": 8452
+  },
+  "是否文本": {
+    "en-US": "Whether text",
+    "es-ES": "Ya sea texto",
+    "ar-EG": "سواء النص",
+    "pt-PT": "Seja texto",
+    "ru-RU": "Будь текст",
+    "ja-JP": "テキストかどうか",
+    "de-DE": "Ob Text",
+    "fr-FR": "Que ce soit du texte",
+    "ko-KR": "텍스트 여부",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13949-13957)"],
+    "$id": 8453
+  },
+  "是": {
+    "en-US": "Yes",
+    "es-ES": "Sí",
+    "ar-EG": "نعم\r",
+    "pt-PT": "Sim\r",
+    "ru-RU": "Да",
+    "ja-JP": "はい",
+    "de-DE": "Ja",
+    "fr-FR": "Oui",
+    "ko-KR": "예",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14782-14787)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(18786-18791)"
+    ],
+    "$id": 8454
+  },
+  "否": {
+    "en-US": "No",
+    "es-ES": "No",
+    "ar-EG": "لا\r",
+    "pt-PT": "Não\r",
+    "ru-RU": "Нет",
+    "ja-JP": "いいえ",
+    "de-DE": "Nein",
+    "fr-FR": "Non",
+    "ko-KR": "아니오",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14791-14796)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(18795-18800)"
+    ],
+    "$id": 8455
+  },
+  "文本编码": {
+    "en-US": "Text encoding",
+    "es-ES": "Codificación de texto",
+    "ar-EG": "ترميز النص",
+    "pt-PT": "Codificação de texto",
+    "ru-RU": "кодировка текста",
+    "ja-JP": "テキストエンコーディング",
+    "de-DE": "Textkodierung",
+    "fr-FR": "Encodage de texte",
+    "ko-KR": "텍스트 인코딩",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16490-16498)"],
+    "$id": 11247
+  },
+  "字符数": {
+    "en-US": "Number of characters",
+    "es-ES": "Número de caracteres",
+    "ar-EG": "عدد الشخصيات",
+    "pt-PT": "Número de caracteres",
+    "ru-RU": "Количество символов",
+    "ja-JP": "文字数",
+    "de-DE": "Anzahl der Zeichen",
+    "fr-FR": "Nombre de caractères",
+    "ko-KR": "문자 수",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16565-16572)"],
+    "$id": 11248
+  },
+  "行数": {
+    "en-US": "Number of lines",
+    "es-ES": "Número de líneas",
+    "ar-EG": "عدد الخطوط",
+    "pt-PT": "Número de linhas",
+    "ru-RU": "Количество строк",
+    "ja-JP": "行数",
+    "de-DE": "Anzahl der Zeilen",
+    "fr-FR": "Nombre de lignes",
+    "ko-KR": "라인 수",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16640-16646)"],
+    "$id": 11249
+  },
+  "词数": {
+    "en-US": "Number of words",
+    "es-ES": "Número de palabras",
+    "ar-EG": "عدد الكلمات",
+    "pt-PT": "Número de palavras",
+    "ru-RU": "Количество слов",
+    "ja-JP": "単語数",
+    "de-DE": "Anzahl der Wörter",
+    "fr-FR": "Nombre de mots",
+    "ko-KR": "단어 수",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16714-16720)"],
+    "$id": 11250
+  },
+  "文件指纹": {
+    "en-US": "Document Fingerprint",
+    "es-ES": "Huella digital del archivo",
+    "ar-EG": "بصمة الملف",
+    "pt-PT": "Impressão digital do ficheiro",
+    "ru-RU": "Отпечаток файла",
+    "ja-JP": "ファイルフィンガープリント",
+    "de-DE": "Datei-Fingerabdruck",
+    "fr-FR": "Empreinte de fichier",
+    "ko-KR": "파일 지문",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(597-605)"],
+    "$id": 11356
+  },
+  "本地复用": {
+    "en-US": "Local reuse",
+    "es-ES": "Reutilización local",
+    "ar-EG": "إعادة الاستخدام المحلي",
+    "pt-PT": "Reutilização local",
+    "ru-RU": "локальное повторное использование",
+    "ja-JP": "ローカルでの再利用",
+    "de-DE": "Lokale Wiederverwendung",
+    "fr-FR": "Réutilisation locale",
+    "ko-KR": "지역 재사용",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(668-676)"],
+    "$id": 11357
+  },
+  "云端复用": {
+    "en-US": "Cloud reuse",
+    "es-ES": "Reutilización de la nube",
+    "ar-EG": "إعادة استخدام السحابة",
+    "pt-PT": "Reutilização na nuvem",
+    "ru-RU": "Повторное использование облака",
+    "ja-JP": "クラウドの再利用",
+    "de-DE": "Cloud-Wiederverwendung",
+    "fr-FR": "Réutilisation du cloud",
+    "ko-KR": "클라우드 재사용",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(739-747)"],
+    "$id": 11358
+  },
+  "类型识别": {
+    "en-US": "Type identification",
+    "es-ES": "Reconocimiento de tipo",
+    "ar-EG": "تحديد النوع",
+    "pt-PT": "Identificação de tipo",
+    "ru-RU": "распознавание типа",
+    "ja-JP": "タイプ認識",
+    "de-DE": "Typerkennung",
+    "fr-FR": "Identification du type",
+    "ko-KR": "유형 식별",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(978-986)"],
+    "$id": 9407
+  },
+  "文本": {
+    "en-US": "Text",
+    "es-ES": "Texto",
+    "ar-EG": "النص",
+    "pt-PT": "Texto",
+    "ru-RU": "Текст",
+    "ja-JP": "テキスト",
+    "de-DE": "Text",
+    "fr-FR": "Texte",
+    "ko-KR": "텍스트",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1056-1062)"],
+    "$id": 8459
+  },
+  "OCR": {
+    "en-US": "Optical Character Recognition",
+    "es-ES": "Reconocimiento óptico de caracteres",
+    "ar-EG": "الضبط البصري بالأحرف",
+    "pt-PT": "Reconhecimento Óptico de Caracteres",
+    "ru-RU": "ОЦИ",
+    "ja-JP": "OCR",
+    "de-DE": "OCR",
+    "fr-FR": "Reconnaissance optique de caractères",
+    "ko-KR": "OCR",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1134-1141)"],
+    "$id": 8461
+  },
+  "封面图": {
+    "en-US": "Cover image",
+    "es-ES": "Imagen de portada",
+    "ar-EG": "صورة الغلاف",
+    "pt-PT": "Imagem da capa",
+    "ru-RU": "обложка",
+    "ja-JP": "表紙画像",
+    "de-DE": "Titelbild",
+    "fr-FR": "Image de couverture",
+    "ko-KR": "표지 이미지",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1299-1306)"],
+    "$id": 11359
+  },
+  "阶段 2: 内容提取": {
+    "en-US": "Stage 2: Content Extraction",
+    "es-ES": "Fase 2: Extracción de contenido",
+    "ar-EG": "المرحلة الثانية: استخراج المحتوى",
+    "pt-PT": "Fase 2: Extração de Conteúdo",
+    "ru-RU": "Этап 2: Извлечение контента",
+    "ja-JP": "段階 2: コンテンツ抽出",
+    "de-DE": "Schritt 2: Inhaltsextraktion",
+    "fr-FR": "Étape 2 : Extraction du contenu",
+    "ko-KR": "단계 2: 내용 추출",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1488-1502)"],
+    "$id": 8464
+  },
+  "缩略图生成": {
+    "en-US": "Thumbnail Generation",
+    "es-ES": "Generación de miniatura",
+    "ar-EG": "إنشاء الصورة المصغرة",
+    "pt-PT": "Geração de miniaturas",
+    "ru-RU": "Генерация миниатюры",
+    "ja-JP": "サムネイル生成",
+    "de-DE": "Miniaturbildgenerierung",
+    "fr-FR": "Génération de miniature",
+    "ko-KR": "썸네일 생성",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1566-1575)"],
+    "$id": 8465
+  },
+  "阶段 3: AI 文件质量分析": {
+    "en-US": "Stage 3: AI File Quality Analysis",
+    "es-ES": "Fase 3: Análisis de calidad de archivos AI",
+    "ar-EG": "المرحلة الثالثة: تحليل جودة الملفات بالذكاء الاصطناعي",
+    "pt-PT": "Fase 3: Análise de Qualidade do Arquivo AI",
+    "ru-RU": "Этап 3: Анализ качества файла AI",
+    "ja-JP": "段階 3: AIファイル品質分析",
+    "de-DE": "Schritt 3: KI-Dateiqualitätsanalyse",
+    "fr-FR": "Étape 3 : Analyse de la qualité du fichier par IA",
+    "ko-KR": "단계 3: AI 파일 품질 분석",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1617-1636)"],
+    "$id": 8466
+  },
+  "AI 目录分析": {
+    "en-US": "AI Table of Contents Analysis",
+    "es-ES": "Análisis de directorio con IA",
+    "ar-EG": "تحليل دليل الذكاء الاصطناعي",
+    "pt-PT": "Análise de diretório por IA",
+    "ru-RU": "AI-анализ каталога",
+    "ja-JP": "AI ディレクトリ分析",
+    "de-DE": "KI-Kataloganalyse",
+    "fr-FR": "Analyse de répertoire par IA",
+    "ko-KR": "AI 디렉토리 분석",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1681-1692)"],
+    "$id": 8467
+  },
+  "阶段 4: AI 标签维度分析": {
+    "en-US": "Stage 4: AI Tag Dimension Analysis",
+    "es-ES": "Fase 4: Análisis de dimensiones de etiquetas AI",
+    "ar-EG": "المرحلة الرابعة: تحليل أبعاد التسميات بالذكاء الاصطناعي",
+    "pt-PT": "Fase 4: Análise de Dimensões de Etiquetas AI",
+    "ru-RU": "Этап 4: Анализ размерности тегов AI",
+    "ja-JP": "段階 4: AIタグ次元分析",
+    "de-DE": "Schritt 4: KI-Tag-Dimensionanalyse",
+    "fr-FR": "Étape 4 : Analyse dimensionnelle des étiquettes par IA",
+    "ko-KR": "단계 4: AI 태그 차원 분석",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1737-1756)"],
+    "$id": 8468
+  },
+  "阶段 2: 文本与缩略图提取": {
+    "en-US": "Stage 2: Text and Thumbnail Extraction",
+    "es-ES": "Fase 2: Extracción de texto y miniaturas",
+    "ar-EG": "المرحلة الثانية: استخراج النصوص والمصغرات",
+    "pt-PT": "Fase 2: Extração de Texto e Miniaturas",
+    "ru-RU": "Этап 2: Извлечение текста и миниатюр",
+    "ja-JP": "段階 2: テキストとサムネイル抽出",
+    "de-DE": "Schritt 2: Text- und Miniaturansichten-Extraktion",
+    "fr-FR": "Étape 2 : Extraction du texte et des vignettes",
+    "ko-KR": "단계 2: 텍스트 및 썸네일 추출",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1816-1834)"],
+    "$id": 8469
+  },
+  "阶段 1: 文件指纹与复用判定": {
+    "en-US": "Stage 1: File fingerprinting and reuse determination",
+    "es-ES": "Etapa 1: Determinación de huellas dactilares y reutilización de archivos",
+    "ar-EG": "المرحلة 1: أخذ بصمات الملف وتحديد إعادة الاستخدام",
+    "pt-PT": "Etapa 1: Impressão digital de arquivos e determinação de reutilização",
+    "ru-RU": "Этап 1. Снятие отпечатков пальцев и определение повторного использования файлов.",
+    "ja-JP": "ステージ 1: ファイルのフィンガープリントと再利用の決定",
+    "de-DE": "Stufe 1: Datei-Fingerprinting und Wiederverwendungsbestimmung",
+    "fr-FR": "Étape 1 : Prise d'empreintes digitales des fichiers et détermination de la réutilisation",
+    "ko-KR": "1단계: 파일 핑거프린팅 및 재사용 결정",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(1907-1926)"],
+    "$id": 11360
+  },
+  "CPU同步全阶段": {
+    "en-US": "CPU synchronization all stages",
+    "es-ES": "Sincronización de CPU en todas las etapas.",
+    "ar-EG": "مزامنة وحدة المعالجة المركزية في جميع المراحل",
+    "pt-PT": "Sincronização da CPU em todos os estágios",
+    "ru-RU": "Синхронизация процессора на всех этапах",
+    "ja-JP": "全ステージCPU同期",
+    "de-DE": "CPU-Synchronisation aller Stufen",
+    "fr-FR": "Synchronisation du processeur à toutes les étapes",
+    "ko-KR": "CPU 동기화 모든 단계",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(11609-11621)"],
+    "$id": 8471
+  },
+  "简单分析 (阶段1+2)": {
+    "en-US": "Simple Analysis (Phase 1+2)",
+    "es-ES": "Análisis Simple (Fase 1+2)",
+    "ar-EG": "التحليل البسيط (المرحلة 1+2)",
+    "pt-PT": "Análise Simples (Fase 1+2)",
+    "ru-RU": "Простой анализ (этап 1+2)",
+    "ja-JP": "簡易分析 (フェーズ 1+2)",
+    "de-DE": "Einfache Analyse (Phase 1+2)",
+    "fr-FR": "Analyse simple (Phase 1+2)",
+    "ko-KR": "단순분석(1+2단계)",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13787-13803)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(15188-15204)"
+    ],
+    "$id": 8472
+  },
+  "AI分析 (阶段3+4)": {
+    "en-US": "AI Analysis (Phase 3+4)",
+    "es-ES": "Análisis de IA (Fase 3+4)",
+    "ar-EG": "تحليل الذكاء الاصطناعي (المرحلة 3+4)",
+    "pt-PT": "Análise de IA (Fase 3+4)",
+    "ru-RU": "Анализ ИИ (этап 3+4)",
+    "ja-JP": "AI分析（フェーズ3+4）",
+    "de-DE": "KI-Analyse (Phase 3+4)",
+    "fr-FR": "Analyse de l'IA (Phase 3+4)",
+    "ko-KR": "AI 분석(3+4단계)",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13807-13823)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(15168-15184)"
+    ],
+    "$id": 8473
+  },
+  "本次分析各阶段": {
+    "en-US": "Each stage of this analysis",
+    "es-ES": "Cada etapa de este análisis",
+    "ar-EG": "كل مرحلة من هذا التحليل",
+    "pt-PT": "Cada etapa desta análise",
+    "ru-RU": "Каждый этап этого анализа",
+    "ja-JP": "この分析の各段階",
+    "de-DE": "Jede Phase dieser Analyse",
+    "fr-FR": "Chaque étape de cette analyse",
+    "ko-KR": "이 분석의 각 단계",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(18050-18061)"],
+    "$id": 8474
+  },
+  "历史全量累计": {
+    "en-US": "Total historical accumulation",
+    "es-ES": "Acumulación histórica total",
+    "ar-EG": "مجموع التراكم التاريخي",
+    "pt-PT": "Acumulação histórica total",
+    "ru-RU": "Общее историческое накопление",
+    "ja-JP": "歴史的蓄積の合計",
+    "de-DE": "Gesamte historische Akkumulation",
+    "fr-FR": "Accumulation historique totale",
+    "ko-KR": "총 역사적 축적",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(18427-18437)"],
+    "$id": 11361
+  },
+  "分析时间": {
+    "en-US": "Analysis Time",
+    "es-ES": "Tiempo de análisis",
+    "ar-EG": "وقت التحليل",
+    "pt-PT": "Tempo de análise",
+    "ru-RU": "Время анализа",
+    "ja-JP": "分析時間",
+    "de-DE": "Analysezeit",
+    "fr-FR": "Temps d'analyse",
+    "ko-KR": "분석 시간",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(23429-23437)"],
+    "$id": 8476
+  },
+  "同时": {
+    "en-US": "At the same time",
+    "es-ES": "Al mismo tiempo",
+    "ar-EG": "في نفس الوقت",
+    "pt-PT": "Ao mesmo tempo",
+    "ru-RU": "в то же время",
+    "ja-JP": "同時に",
+    "de-DE": "Gleichzeitig",
+    "fr-FR": "En même temps",
+    "ko-KR": "동시에",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(24067-24073)"],
+    "$id": 9457
+  },
+  "顺序": {
+    "en-US": "Order",
+    "es-ES": "Orden",
+    "ar-EG": "طلب",
+    "pt-PT": "Ordem",
+    "ru-RU": "заказ",
+    "ja-JP": "注文",
+    "de-DE": "Befehl",
+    "fr-FR": "Commande",
+    "ko-KR": "주문하다",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(24281-24287)"],
+    "$id": 9458
+  },
+  "推理模型": {
+    "en-US": "Inference Model",
+    "es-ES": "Modelo de inferencia",
+    "ar-EG": "نموذج الاستنتاج",
+    "pt-PT": "Modelo de inferência",
+    "ru-RU": "Модель вывода",
+    "ja-JP": "推論モデル",
+    "de-DE": "Inferenzmodell",
+    "fr-FR": "Modèle d'inférence",
+    "ko-KR": "추론 모델",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(24678-24686)"],
+    "$id": 8486
+  },
+  "本次物理耗时": {
+    "en-US": "Current Physical Duration",
+    "es-ES": "Tiempo físico de esta vez",
+    "ar-EG": "الوقت الفعلي لهذه المحاولة",
+    "pt-PT": "Duração Física Atual",
+    "ru-RU": "Фактическое время, затраченное на этот анализ",
+    "ja-JP": "今回の物理所要時間",
+    "de-DE": "Physische Zeit dieser Ausführung",
+    "fr-FR": "Temps physique de cette opération",
+    "ko-KR": "이번 물리적 소요 시간",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(25359-25369)"],
+    "$id": 8480
+  },
+  "阶段": {
+    "en-US": "Stage",
+    "es-ES": "Fase",
+    "ar-EG": "المرحلة",
+    "pt-PT": "Fase",
+    "ru-RU": "Этап",
+    "ja-JP": "段階",
+    "de-DE": "Schritt",
+    "fr-FR": "Étape",
+    "ko-KR": "단계",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(26814-26820)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(31321-31327)"
+    ],
+    "$id": 8481
+  },
+  "本次分析阶段耗时已在并行线程中完成": {
+    "en-US": "Current analysis stage duration has already been completed in parallel threads",
+    "es-ES": "El tiempo de análisis de esta fase ya se completó en hilos paralelos",
+    "ar-EG": "تم إنجاز وقت مرحلة التحليل هذه ضمن خيوط متوازية",
+    "pt-PT": "A duração da fase de análise atual foi concluída em threads paralelos",
+    "ru-RU": "Время анализа этого этапа уже выполнено в параллельных потоках",
+    "ja-JP": "今回の分析段階所要時間は並行スレッドで完了しました",
+    "de-DE": "Die Analysezeit dieses Schritts wurde parallel abgeschlossen",
+    "fr-FR": "Le temps d'analyse de cette étape a été accompli en parallèle dans les threads.",
+    "ko-KR": "이번 분석 단계 소요 시간은 병렬 스레드에서 완료되었습니다",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(29423-29444)"],
+    "$id": 8482
+  },
+  "历史累计耗时": {
+    "en-US": "Historical cumulative time spent",
+    "es-ES": "Tiempo acumulado histórico invertido",
+    "ar-EG": "الوقت التراكمي التاريخي الذي قضاه",
+    "pt-PT": "Tempo acumulado histórico",
+    "ru-RU": "Историческое совокупное затраченное время",
+    "ja-JP": "過去の累積費やした時間",
+    "de-DE": "Historische kumulierte aufgewendete Zeit",
+    "fr-FR": "Temps cumulé historique passé",
+    "ko-KR": "과거 누적 소요 시간",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(29951-29961)"],
+    "$id": 11362
+  },
+  "复用": {
+    "en-US": "Reuse",
+    "es-ES": "Reutilizar",
+    "ar-EG": "إعادة الاستخدام",
+    "pt-PT": "Reutilização",
+    "ru-RU": "Повторное использование",
+    "ja-JP": "再利用",
+    "de-DE": "Wiederverwendung",
+    "fr-FR": "Réutilisation",
+    "ko-KR": "재사용",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(36063-36069)"],
+    "$id": 8485
   }
 }

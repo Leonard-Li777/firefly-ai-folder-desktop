@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Sun, Moon, Monitor, Check, Loader2 } from 'lucide-react'
 import { Card } from '../ui/card'
 import { Label } from '../ui/label'
@@ -30,21 +30,23 @@ import { SUPPORTED_LANGUAGES } from '@firefly/shared'
  * 界面设置组件
  */
 export const InterfaceSettings: React.FC = () => {
-  const { config, getConfigValue, updateConfigValue, saveSettings } = useSettingsStore()
-  const { t, changeLanguage } = useVoerkaI18n(i18nScope)
+  const getConfigValue = useSettingsStore(s => s.getConfigValue)
+  const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
+  const themeMode = useSettingsStore(s => (s.config?.ui as any)?.theme || (s.config as any)?.theme)
+  const { t, changeLanguage, activeLanguage } = useVoerkaI18n(i18nScope)
   const { setTheme, colorScheme, setColorScheme } = useTheme()
   const [showLanguageChangeDialog, setShowLanguageChangeDialog] = useState(false)
   const [pendingLanguage, setPendingLanguage] = useState<LanguageCode | null>(null)
   const [isSwitchingLanguage, setIsSwitchingLanguage] = useState(false)
 
   // 获取可用的配色方案
-  const colorSchemes = getAvailableColorSchemes()
+  const colorSchemes = useMemo(() => getAvailableColorSchemes(), [activeLanguage])
 
   // 当主题配置变化时,应用主题
   useEffect(() => {
     const theme = getConfigValue<'light' | 'dark' | 'auto'>('THEME_MODE') || 'auto'
     setTheme(theme)
-  }, [config.theme, setTheme, getConfigValue])
+  }, [themeMode, setTheme, getConfigValue])
 
   /**
    * 处理语言变更 - 即时提醒
@@ -113,20 +115,27 @@ export const InterfaceSettings: React.FC = () => {
   /**
    * 主题选项
    */
-  const themeOptions = [
-    { value: 'light', label: t('浅色主题'), description: t('始终使用浅色界面') },
-    { value: 'dark', label: t('深色主题'), description: t('始终使用深色界面') },
-    { value: 'auto', label: t('跟随系统'), description: t('根据系统设置自动切换') }
-  ]
+  const themeOptions = useMemo(
+    () => [
+      { value: 'light', label: t('浅色主题'), description: t('始终使用浅色界面') },
+      { value: 'dark', label: t('深色主题'), description: t('始终使用深色界面') },
+      { value: 'auto', label: t('跟随系统'), description: t('根据系统设置自动切换') }
+    ],
+    [activeLanguage]
+  )
 
   /**
    * 语言选项（从 SUPPORTED_LANGUAGES 动态生成，避免硬编码）
    */
-  const languageOptions = SUPPORTED_LANGUAGES.map(lang => ({
-    value: lang.code,
-    label: lang.nativeName,
-    flag: lang.flag
-  }))
+  const languageOptions = useMemo(
+    () =>
+      SUPPORTED_LANGUAGES.map(lang => ({
+        value: lang.code,
+        label: lang.nativeName,
+        flag: lang.flag
+      })),
+    []
+  )
   return (
     <div className="p-6 space-y-6">
       <div>

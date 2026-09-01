@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '../ui/alert-dialog'
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
 import { LogCategory, logger } from '@firefly/shared'
 import React, { useState, useCallback, memo } from 'react'
 import { settingsCategories, useSettingsStore } from '../../stores/settings-store'
@@ -32,6 +32,18 @@ const MemoizedAIEngineConfigSettings = memo(AIEngineConfigSettings)
 const MemoizedAnalysisSettings = memo(AnalysisSettings)
 const MemoizedMonitoringSettings = memo(MonitoringSettings)
 
+const CATEGORY_COMPONENTS: Array<{
+  category: SettingsCategory
+  Component: React.ComponentType
+}> = [
+  { category: SettingsCategory.INTERFACE, Component: MemoizedInterfaceSettings },
+  { category: SettingsCategory.FILE_DISPLAY, Component: MemoizedFileDisplaySettings },
+  { category: SettingsCategory.AI_MODEL, Component: MemoizedAIModelSettings },
+  { category: SettingsCategory.AI_ENGINE_CONFIG, Component: MemoizedAIEngineConfigSettings },
+  { category: SettingsCategory.ANALYSIS, Component: MemoizedAnalysisSettings },
+  { category: SettingsCategory.MONITORING, Component: MemoizedMonitoringSettings }
+]
+
 /**
  * 设置对话框组件
  */
@@ -42,30 +54,25 @@ export const SettingsDialog: React.FC = () => {
   const error = useSettingsStore(s => s.error)
   const setError = useSettingsStore(s => s.setError)
   const validationResult = useSettingsStore(s => s.validationResult)
-  const config = useSettingsStore(s => s.config)
-  const originalConfig = useSettingsStore(s => s.originalConfig)
   const closeSettings = useSettingsStore(s => s.closeSettings)
   const saveSettings = useSettingsStore(s => s.saveSettings)
 
   const [showLanguageChangeDialog, setShowLanguageChangeDialog] = useState(false)
+  const [visitedCategories, setVisitedCategories] = useState<Set<SettingsCategory>>(
+    () => new Set([currentCategory])
+  )
 
-  /**
-   * 处理保存设置
-   */
-  const handleSave = useCallback(async () => {
-    // 检查语言是否变更
-    const languageChanged = config.language !== originalConfig?.language
-
-    if (languageChanged) {
-      setShowLanguageChangeDialog(true)
-      return
+  // 记录访问过的分类 Tab，实现按需挂载并 Keep-Alive 保活
+  React.useEffect(() => {
+    if (currentCategory) {
+      setVisitedCategories(prev => {
+        if (prev.has(currentCategory)) return prev
+        const next = new Set(prev)
+        next.add(currentCategory)
+        return next
+      })
     }
-
-    await saveSettings()
-    if (!useSettingsStore.getState().error) {
-      closeSettings()
-    }
-  }, [config.language, originalConfig?.language, saveSettings, closeSettings])
+  }, [currentCategory])
 
   /**
    * 确认语言变更后保存
@@ -78,36 +85,6 @@ export const SettingsDialog: React.FC = () => {
     }
   }, [saveSettings, closeSettings])
 
-  /**
-   * 处理取消设置
-   */
-  const handleCancel = useCallback(() => {
-    // 直接关闭对话框，因为更改是即时保存的
-    closeSettings()
-  }, [closeSettings])
-
-  /**
-   * 渲染当前分类的设置内容
-   */
-  const renderSettingsContent = () => {
-    switch (currentCategory) {
-      case SettingsCategory.INTERFACE:
-        return <MemoizedInterfaceSettings />
-      case SettingsCategory.FILE_DISPLAY:
-        return <MemoizedFileDisplaySettings />
-      case SettingsCategory.AI_MODEL:
-        return <MemoizedAIModelSettings />
-      case SettingsCategory.AI_ENGINE_CONFIG:
-        return <MemoizedAIEngineConfigSettings />
-      case SettingsCategory.ANALYSIS:
-        return <MemoizedAnalysisSettings />
-      case SettingsCategory.MONITORING:
-        return <MemoizedMonitoringSettings />
-      default:
-        return <div className="p-4 text-center text-muted-foreground">{t('未知的设置分类')}</div>
-    }
-  }
-
   if (!isOpen) {
     return null
   }
@@ -116,7 +93,7 @@ export const SettingsDialog: React.FC = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && closeSettings()}>
-      <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0 bg-background dark:bg-card text-primary border-4 border-border rounded-2xl shadow-2xl">
+      <DialogContent className="max-w-6xl w-[90vw] h-[85vh] flex flex-col p-0 bg-background dark:bg-card text-primary border-4 border-border rounded-2xl shadow-2xl">
         <DialogHeader className="px-6 py-4 border-b">
           <DialogTitle className="text-xl font-semibold">{t('应用设置')}</DialogTitle>
         </DialogHeader>
@@ -162,19 +139,24 @@ export const SettingsDialog: React.FC = () => {
               </div>
             )}
 
-            {/* 设置内容 */}
-            <div className="flex-1 overflow-y-auto">{renderSettingsContent()}</div>
+            {/* 设置内容 Keep-Alive 容器 */}
+            <div className="flex-1 relative overflow-hidden">
+              {CATEGORY_COMPONENTS.map(({ category, Component }) => {
+                const isVisited = visitedCategories.has(category)
+                if (!isVisited) return null
+                const isActive = currentCategory === category
+                return (
+                  <div
+                    key={category}
+                    className={`h-full w-full overflow-y-auto ${isActive ? 'block' : 'hidden'}`}
+                  >
+                    <Component />
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
-
-        {/* 底部操作按钮 */}
-        <DialogFooter className="px-6 py-4 border-t bg-muted/30 flex-shrink-0">
-          <div className="flex items-center justify-end w-full">
-            <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
-              {t('关闭')}
-            </Button>
-          </div>
-        </DialogFooter>
       </DialogContent>
 
       {/* 语言变更确认对话框 */}

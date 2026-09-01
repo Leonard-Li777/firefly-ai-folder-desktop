@@ -600,6 +600,7 @@
   {
     "id": "siliconflow",
     "name": "Silicon based flow",
+    "recommended": true,
     "description": "Provides high-speed inference interfaces for a variety of mainstream open source models, and some models below 10B are free for a long time.",
     "registerUrl": "https://cloud.siliconflow.cn/",
     "baseUrl": "https://api.siliconflow.cn/v1",
@@ -828,6 +829,7 @@
   {
     "id": "ollama",
     "name": "Ollama",
+    "recommended": true,
     "description": "Another external solution for locally running large model services, it is 20~40% slower than Firefly’s built-in AI engine, but has good hardware compatibility and is recommended for installation.",
     "registerUrl": "https://ollama.com/download/windows",
     "baseUrl": "http://localhost:11434",
@@ -2713,6 +2715,7 @@
   {
     "id": "agnes",
     "name": "Agnes AI(Free forever)",
+    "recommended": true,
     "description": "The number of requests per minute is limited to 20. If the request is too fast in a short period of time, the frequency limit will be triggered (you need to wait 1 minute and try again)",
     "registerUrl": "https://platform.agnes-ai.com/",
     "baseUrl": "https://apihub.agnes-ai.com/v1",

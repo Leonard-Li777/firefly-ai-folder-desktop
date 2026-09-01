@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { FileItem, DirectoryItem, SettingsCategory } from '@firefly/types'
 import { FileCategory, isCategory, getFileCategory, formatDateTime } from '@firefly/shared'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { cn, MaterialIcon } from '../../../lib/utils'
 import { Button } from '../../ui/button'
 import {
@@ -134,9 +135,11 @@ export const FileDetailsPanel: React.FC<any> = ({
   currentDirectoryPath,
   isRealDirectory = true
 }) => {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const {
     analysisResult,
     reanalyzing,
+    queueStatus,
     deleting,
     isDirectory,
     handleReanalyze,
@@ -320,7 +323,7 @@ export const FileDetailsPanel: React.FC<any> = ({
       tabs.push({ id: 'metadata', label: t('元数据'), icon: 'analytics' })
     if (analysisResult.analysisStats) tabs.push({ id: 'timing', label: t('耗时'), icon: 'timer' })
     return tabs
-  }, [analysisResult])
+  }, [analysisResult, activeLanguage])
 
   useEffect(() => {
     if (availableTabs.length > 0 && !availableTabs.some(t => t.id === activeTab))
@@ -609,7 +612,7 @@ export const FileDetailsPanel: React.FC<any> = ({
                   {reanalyzing ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary mr-2"></div>
-                      {t('分析中...')}
+                      {queueStatus === 'pending' ? t('队列中') : t('分析中...')}
                     </>
                   ) : (
                     <>

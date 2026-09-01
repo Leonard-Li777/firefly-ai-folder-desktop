@@ -9,7 +9,7 @@
     "de-DE": "Löschen des Arbeitsverzeichnisses fehlgeschlagen, bitte erneut versuchen",
     "fr-FR": "Échec de la suppression du répertoire de travail, veuillez réessayer",
     "ko-KR": "작업 디렉토리 삭제에 실패했습니다. 다시 시도해 주세요",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(4055-4071)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(4224-4240)"],
     "$id": 8007
   },
   "工作目录 \"{}\" 已删除": {
@@ -22,7 +22,7 @@
     "de-DE": "Das Arbeitsverzeichnis „{}“ wurde gelöscht",
     "fr-FR": "Le répertoire de travail \"{}\" a été supprimé",
     "ko-KR": "작업 디렉터리 \"{}\"이(가) 삭제되었습니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(4477-4494)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(4646-4663)"],
     "$id": 3171
   },
   "删除工作目录失败: {}": {
@@ -35,7 +35,7 @@
     "de-DE": "Arbeitsverzeichnis konnte nicht gelöscht werden: {}",
     "fr-FR": "Échec de la suppression du répertoire de travail : {}",
     "ko-KR": "작업 디렉터리 삭제 실패: {}",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(4611-4627)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(4780-4796)"],
     "$id": 3172
   },
   "未知错误": {
@@ -49,10 +49,10 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/renderer/components/settings/workspace-settings.tsx(4671-4679)",
-      "src/renderer/components/settings/workspace-settings.tsx(5847-5855)",
-      "src/renderer/components/settings/workspace-settings.tsx(7228-7236)",
-      "src/renderer/components/settings/workspace-settings.tsx(7904-7912)"
+      "src/renderer/components/settings/workspace-settings.tsx(4840-4848)",
+      "src/renderer/components/settings/workspace-settings.tsx(6016-6024)",
+      "src/renderer/components/settings/workspace-settings.tsx(7397-7405)",
+      "src/renderer/components/settings/workspace-settings.tsx(8073-8081)"
     ],
     "$id": 3392
   },
@@ -66,7 +66,7 @@
     "de-DE": "Das Verzeichnis „{}“ wurde auf den ungeparsten Zustand zurückgesetzt",
     "fr-FR": "Le répertoire \"{}\" a été réinitialisé à l'état non analysé",
     "ko-KR": "\"{}\" 디렉터리가 구문 분석되지 않은 상태로 재설정되었습니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(5660-5681)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(5829-5850)"],
     "$id": 3173
   },
   "重置目录失败: {}": {
@@ -79,7 +79,7 @@
     "de-DE": "Verzeichnis konnte nicht zurückgesetzt werden: {}",
     "fr-FR": "Échec de la réinitialisation du répertoire : {}",
     "ko-KR": "디렉터리를 재설정하지 못했습니다: {}",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(5789-5803)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(5958-5972)"],
     "$id": 3174
   },
   "当前目录无变更": {
@@ -92,7 +92,7 @@
     "de-DE": "Keine Änderungen am aktuellen Verzeichnis",
     "fr-FR": "Aucune modification dans le répertoire actuel",
     "ko-KR": "현재 디렉터리에는 변경 사항이 없습니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(6886-6897)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(7055-7066)"],
     "$id": 3175
   },
   "重新扫描API不可用\\n目录: {}": {
@@ -105,7 +105,7 @@
     "de-DE": "Die Rescan-API ist nicht verfügbar\\nVerzeichnis: {}",
     "fr-FR": "L'API de nouvelle analyse n'est pas disponible\\nRépertoire : {}",
     "ko-KR": "Rescan API를 사용할 수 없습니다.\\n디렉터리: {}",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(7028-7050)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(7197-7219)"],
     "$id": 3176
   },
   "重新扫描目录失败: {}": {
@@ -118,7 +118,7 @@
     "de-DE": "Verzeichnis konnte nicht erneut gescannt werden: {}",
     "fr-FR": "Échec de la nouvelle analyse du répertoire : {}",
     "ko-KR": "디렉터리를 다시 검색하지 못했습니다: {}",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(7168-7184)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(7337-7353)"],
     "$id": 3177
   },
   "加入分析队列失败，请重试": {
@@ -131,7 +131,7 @@
     "de-DE": "Fehler beim Hinzufügen zur Analyse-Warteschlange, bitte versuchen Sie es erneut",
     "fr-FR": "L'ajout à la file d'analyse a échoué, veuillez réessayer",
     "ko-KR": "분석 대기열 추가에 실패했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(8229-8245)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(8398-8414)"],
     "$id": 3393
   },
   "从未扫描": {
@@ -145,8 +145,8 @@
     "fr-FR": "Jamais scanné",
     "ko-KR": "스캔한 적 없음",
     "$files": [
-      "src/renderer/components/settings/workspace-settings.tsx(8571-8579)",
-      "src/renderer/components/settings/workspace-settings.tsx(13035-13043)"
+      "src/renderer/components/settings/workspace-settings.tsx(8740-8748)",
+      "src/renderer/components/settings/workspace-settings.tsx(13204-13212)"
     ],
     "$id": 3178
   },
@@ -160,7 +160,7 @@
     "de-DE": "Aktiviert",
     "fr-FR": "Activé",
     "ko-KR": "활성화됨",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(8787-8794)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(8956-8963)"],
     "$id": 3179
   },
   "加载工作目录...": {
@@ -173,7 +173,7 @@
     "de-DE": "Arbeitsverzeichnis laden...",
     "fr-FR": "Charger le répertoire de travail...",
     "ko-KR": "작업 디렉토리 로드...",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(9108-9121)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(9277-9290)"],
     "$id": 3180
   },
   "工作目录管理": {
@@ -186,7 +186,7 @@
     "de-DE": "Arbeitsverzeichnisverwaltung",
     "fr-FR": "Gestion du répertoire de travail",
     "ko-KR": "작업 디렉토리 관리",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(9278-9288)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(9447-9457)"],
     "$id": 3181
   },
   "管理已添加的工作目录，可以删除或重置分析数据": {
@@ -199,7 +199,7 @@
     "de-DE": "Verwalten Sie hinzugefügte Arbeitsverzeichnisse und können Sie Analysedaten löschen oder zurücksetzen",
     "fr-FR": "Gérer les répertoires de travail ajoutés et supprimer ou réinitialiser les données d'analyse",
     "ko-KR": "추가된 작업 디렉터리를 관리하고 분석 데이터를 삭제하거나 재설정할 수 있습니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(9361-9387)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(9530-9556)"],
     "$id": 3182
   },
   "工作目录列表": {
@@ -212,7 +212,7 @@
     "de-DE": "Arbeitsverzeichnisliste",
     "fr-FR": "Liste des répertoires de travail",
     "ko-KR": "작업 디렉토리 목록",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(9962-9972)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(10131-10141)"],
     "$id": 3183
   },
   "当前正在监控的目录及其状态": {
@@ -225,7 +225,7 @@
     "de-DE": "Das aktuell überwachte Verzeichnis und sein Status",
     "fr-FR": "Le répertoire actuellement surveillé et son statut",
     "ko-KR": "현재 모니터링 중인 디렉터리 및 해당 상태",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(10065-10082)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(10234-10251)"],
     "$id": 3184
   },
   "刷新": {
@@ -238,7 +238,7 @@
     "de-DE": "Auffrischen",
     "fr-FR": "Rafraîchir",
     "ko-KR": "새로 고치다",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(10402-10408)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(10571-10577)"],
     "$id": 3185
   },
   "暂无工作目录": {
@@ -251,7 +251,7 @@
     "de-DE": "Noch kein Arbeitsverzeichnis",
     "fr-FR": "Pas encore de répertoire de travail",
     "ko-KR": "아직 작업 디렉터리가 없습니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(10662-10672)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(10831-10841)"],
     "$id": 3186
   },
   "请先添加要监控的目录": {
@@ -264,7 +264,7 @@
     "de-DE": "Bitte fügen Sie zuerst das zu überwachende Verzeichnis hinzu",
     "fr-FR": "Veuillez d'abord ajouter le répertoire à surveiller",
     "ko-KR": "먼저 모니터링할 디렉토리를 추가해주세요",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(10717-10731)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(10886-10900)"],
     "$id": 3187
   },
   "极速": {
@@ -277,7 +277,7 @@
     "de-DE": "Blitzschnell",
     "fr-FR": "Ultra rapide",
     "ko-KR": "초고속",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(11938-11944)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(12107-12113)"],
     "$id": 8008
   },
   "私有": {
@@ -290,7 +290,7 @@
     "de-DE": "Privat",
     "fr-FR": "Privé",
     "ko-KR": "개인용",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(11948-11954)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(12117-12123)"],
     "$id": 8009
   },
   "最后扫描: {}": {
@@ -303,7 +303,7 @@
     "de-DE": "Letzter Scan: {}",
     "fr-FR": "Dernière analyse : {}",
     "ko-KR": "마지막 스캔: {}",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(12861-12873)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(13030-13042)"],
     "$id": 3188
   },
   "递归监控: {}": {
@@ -316,7 +316,7 @@
     "de-DE": "Rekursionsüberwachung: {}",
     "fr-FR": "Surveillance de la récursion : {}",
     "ko-KR": "재귀 모니터링: {}",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(13338-13350)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(13507-13519)"],
     "$id": 3189
   },
   "是": {
@@ -329,7 +329,7 @@
     "de-DE": "Ja",
     "fr-FR": "Oui",
     "ko-KR": "예",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(13375-13380)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(13544-13549)"],
     "$id": 3190
   },
   "否": {
@@ -342,7 +342,7 @@
     "de-DE": "NEIN",
     "fr-FR": "Non",
     "ko-KR": "아니요",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(13384-13389)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(13553-13558)"],
     "$id": 3191
   },
   "创建时间: {}": {
@@ -355,7 +355,7 @@
     "de-DE": "Erstellungszeit: {}",
     "fr-FR": "Heure de création : {}",
     "ko-KR": "생성 시간: {}",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(13461-13473)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(13630-13642)"],
     "$id": 3192
   },
   "监听文件变化（新增文件自动加入AI分析队列）": {
@@ -368,7 +368,7 @@
     "de-DE": "Dateiänderungen überwachen (neue Dateien werden automatisch zur KI-Analysewarteschlange hinzugefügt)",
     "fr-FR": "Surveiller les modifications des fichiers (les nouveaux fichiers sont automatiquement ajoutés à la file d'attente d'analyse AI)",
     "ko-KR": "파일 변경 모니터링(AI 분석 대기열에 새 파일이 자동으로 추가됨)",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(14902-14928)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(15071-15097)"],
     "$id": 3193
   },
   "重新扫描目录": {
@@ -381,7 +381,7 @@
     "de-DE": "Verzeichnis erneut scannen",
     "fr-FR": "Réanalyser le répertoire",
     "ko-KR": "디렉터리 다시 검색",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(15395-15405)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(15564-15574)"],
     "$id": 3194
   },
   "未发现空文件夹": {
@@ -394,7 +394,7 @@
     "de-DE": "Leerer Ordner nicht gefunden",
     "fr-FR": "Dossier vide introuvable",
     "ko-KR": "빈 폴더를 찾을 수 없습니다",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(16316-16327)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(16485-16496)"],
     "$id": 3195
   },
   "扫描失败: {}": {
@@ -407,7 +407,7 @@
     "de-DE": "Scan fehlgeschlagen: {}",
     "fr-FR": "Échec de l'analyse : {}",
     "ko-KR": "스캔 실패: {}",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(16751-16763)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(16920-16932)"],
     "$id": 3196
   },
   "清理空文件夹": {
@@ -420,7 +420,7 @@
     "de-DE": "Bereinigen Sie leere Ordner",
     "fr-FR": "Nettoyer les dossiers vides",
     "ko-KR": "빈 폴더 정리",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(16922-16932)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(17091-17101)"],
     "$id": 3197
   },
   "重置为未分析状态": {
@@ -433,7 +433,7 @@
     "de-DE": "Zurücksetzen auf den nicht analysierten Zustand",
     "fr-FR": "Réinitialiser à l'état non analysé",
     "ko-KR": "분석되지 않은 상태로 재설정",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(17320-17332)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(17489-17501)"],
     "$id": 3198
   },
   "删除工作目录": {
@@ -446,7 +446,7 @@
     "de-DE": "Arbeitsverzeichnis löschen",
     "fr-FR": "Supprimer le répertoire de travail",
     "ko-KR": "작업 디렉터리 삭제",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(17720-17730)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(17889-17899)"],
     "$id": 3199
   },
   "操作说明": {
@@ -459,7 +459,7 @@
     "de-DE": "Bedienungsanleitung",
     "fr-FR": "Mode d'emploi",
     "ko-KR": "작동 지침",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(18182-18190)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(18351-18359)"],
     "$id": 3200
   },
   "重新扫描:": {
@@ -472,7 +472,7 @@
     "de-DE": "Erneut scannen:",
     "fr-FR": "Nouvelle analyse :",
     "ko-KR": "다시 검색:",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(18434-18443)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(18603-18612)"],
     "$id": 3201
   },
   "重新扫描目录中的文件，检测新增、删除或修改的文件": {
@@ -485,7 +485,7 @@
     "de-DE": "Scannen Sie die Dateien im Verzeichnis erneut, um neue, gelöschte oder geänderte Dateien zu erkennen",
     "fr-FR": "Analysez à nouveau les fichiers du répertoire pour détecter les fichiers nouveaux, supprimés ou modifiés",
     "ko-KR": "디렉터리의 파일을 다시 검사하여 새 파일, 삭제된 파일 또는 수정된 파일을 검색합니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(18534-18562)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(18703-18731)"],
     "$id": 3202
   },
   "清理空文件夹:": {
@@ -498,7 +498,7 @@
     "de-DE": "Leere Ordner bereinigen:",
     "fr-FR": "Nettoyer les dossiers vides :",
     "ko-KR": "빈 폴더 정리:",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(18819-18830)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(18988-18999)"],
     "$id": 3203
   },
   "扫描并删除工作目录中的空文件夹，支持树形预览和批量删除": {
@@ -511,7 +511,7 @@
     "de-DE": "Leere Ordner im Arbeitsverzeichnis scannen und löschen, Baumvorschau und Stapellöschung unterstützen",
     "fr-FR": "Analyser et supprimer les dossiers vides dans le répertoire de travail, prendre en charge l'aperçu de l'arborescence et la suppression par lots",
     "ko-KR": "작업 디렉터리의 빈 폴더를 검색 및 삭제하고 트리 미리보기 및 일괄 삭제를 지원합니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(18921-18952)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(19090-19121)"],
     "$id": 3204
   },
   "重置:": {
@@ -524,7 +524,7 @@
     "de-DE": "Zurücksetzen:",
     "fr-FR": "Réinitialiser:",
     "ko-KR": "다시 놓기:",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(19208-19215)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(19377-19384)"],
     "$id": 3205
   },
   "删除该目录的所有AI分析结果和标签，但保留原始文件。目录将重置为未分析状态": {
@@ -537,7 +537,7 @@
     "de-DE": "Löschen Sie alle AI-Analyseergebnisse und Tags für dieses Verzeichnis, behalten Sie jedoch die Originaldateien.Das Verzeichnis wird auf den nicht analysierten Zustand zurückgesetzt",
     "fr-FR": "Supprimez tous les résultats et balises d’analyse AI pour ce répertoire, mais conservez les fichiers d’origine.Le répertoire sera réinitialisé à l'état non analysé",
     "ko-KR": "이 디렉터리의 모든 AI 분석 결과와 태그를 삭제하고 원본 파일은 유지하세요.디렉터리가 분석되지 않은 상태로 재설정됩니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(19306-19347)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(19475-19516)"],
     "$id": 3206
   },
   "删除:": {
@@ -550,7 +550,7 @@
     "de-DE": "Löschen:",
     "fr-FR": "Supprimer:",
     "ko-KR": "삭제:",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(19604-19611)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(19773-19780)"],
     "$id": 3207
   },
   "完全删除工作目录及其所有相关数据，包括文件信息、分析结果、标签等。此操作不可逆": {
@@ -563,7 +563,7 @@
     "de-DE": "Löschen Sie das Arbeitsverzeichnis und alle zugehörigen Daten vollständig, einschließlich Dateiinformationen, Analyseergebnisse, Tags usw. Dieser Vorgang ist irreversibel",
     "fr-FR": "Supprimez complètement le répertoire de travail et toutes les données associées, y compris les informations sur les fichiers, les résultats d'analyse, les balises, etc.Cette opération est irréversible",
     "ko-KR": "파일 정보, 분석 결과, 태그 등을 포함한 작업 디렉터리 및 모든 관련 데이터를 완전히 삭제합니다.이 작업은 되돌릴 수 없습니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(19702-19766)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(19871-19935)"],
     "$id": 3208
   },
   "重要提醒": {
@@ -576,7 +576,7 @@
     "de-DE": "Wichtige Erinnerung",
     "fr-FR": "Rappel important",
     "ko-KR": "중요한 알림",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20191-20199)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20360-20368)"],
     "$id": 3209
   },
   "• 删除工作目录将永久删除所有相关的AI分析数据": {
@@ -589,7 +589,7 @@
     "de-DE": "• Durch das Löschen des Arbeitsverzeichnisses werden alle zugehörigen KI-Analysedaten dauerhaft gelöscht",
     "fr-FR": "• La suppression du répertoire de travail supprimera définitivement toutes les données d'analyse IA associées.",
     "ko-KR": "• 작업 디렉터리를 삭제하면 관련 AI 분석 데이터가 모두 영구적으로 삭제됩니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20279-20307)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20448-20476)"],
     "$id": 3210
   },
   "• 重置操作会清除分析结果，但不会删除原始文件": {
@@ -602,7 +602,7 @@
     "de-DE": "• Durch einen Reset werden die Analyseergebnisse gelöscht, die Originaldateien werden jedoch nicht gelöscht",
     "fr-FR": "• Une réinitialisation efface les résultats de l'analyse mais ne supprime pas les fichiers d'origine",
     "ko-KR": "• 재설정하면 분석 결과가 지워지지만 원본 파일은 삭제되지 않습니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20334-20361)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20503-20530)"],
     "$id": 3211
   },
   "• 重新扫描可能需要较长时间，取决于目录大小": {
@@ -615,7 +615,7 @@
     "de-DE": "• Je nach Verzeichnisgröße kann der erneute Scan länger dauern",
     "fr-FR": "• La nouvelle analyse peut prendre plus de temps en fonction de la taille du répertoire.",
     "ko-KR": "• 디렉터리 크기에 따라 다시 검색하는 데 시간이 더 오래 걸릴 수 있습니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20388-20414)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20557-20583)"],
     "$id": 3212
   },
   "移除工作目录": {
@@ -628,7 +628,7 @@
     "de-DE": "Arbeitsverzeichnis entfernen",
     "fr-FR": "Supprimer le répertoire de travail",
     "ko-KR": "작업 디렉토리 제거",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20678-20688)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20847-20857)"],
     "$id": 3214
   },
   "确定要移除工作目录 \"{}\" 吗？": {
@@ -641,7 +641,7 @@
     "de-DE": "Sind Sie sicher, dass Sie das Arbeitsverzeichnis „{}“ entfernen möchten?",
     "fr-FR": "Êtes-vous sûr de vouloir supprimer le répertoire de travail « {} » ?",
     "ko-KR": "정말로 \"{}\" 작업 디렉터리를 제거하시겠습니까?",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20847-20868)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(21016-21037)"],
     "$id": 3215
   },
   "此操作将完全移除工作目录，包括文件信息、分析结果、标签等。真实目录不会删除": {
@@ -654,7 +654,7 @@
     "de-DE": "Durch diesen Vorgang wird das Arbeitsverzeichnis vollständig entfernt, einschließlich Dateiinformationen, Analyseergebnissen, Tags usw. Das tatsächliche Verzeichnis wird nicht gelöscht",
     "fr-FR": "Cette opération supprimera complètement le répertoire de travail, y compris les informations sur les fichiers, les résultats d'analyse, les balises, etc.Le répertoire réel ne sera pas supprimé",
     "ko-KR": "이 작업을 수행하면 파일 정보, 분석 결과, 태그 등을 포함한 작업 디렉터리가 완전히 제거됩니다.실제 디렉터리는 삭제되지 않습니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(20986-21050)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(21155-21219)"],
     "$id": 3216
   },
   "此操作不可逆！": {
@@ -668,8 +668,8 @@
     "fr-FR": "Cette opération est irréversible !",
     "ko-KR": "이 작업은 되돌릴 수 없습니다!",
     "$files": [
-      "src/renderer/components/settings/workspace-settings.tsx(21165-21176)",
-      "src/renderer/components/settings/workspace-settings.tsx(22458-22469)"
+      "src/renderer/components/settings/workspace-settings.tsx(21334-21345)",
+      "src/renderer/components/settings/workspace-settings.tsx(22627-22638)"
     ],
     "$id": 3217
   },
@@ -684,8 +684,8 @@
     "fr-FR": "Annuler",
     "ko-KR": "취소",
     "$files": [
-      "src/renderer/components/settings/workspace-settings.tsx(21407-21413)",
-      "src/renderer/components/settings/workspace-settings.tsx(22700-22706)"
+      "src/renderer/components/settings/workspace-settings.tsx(21576-21582)",
+      "src/renderer/components/settings/workspace-settings.tsx(22869-22875)"
     ],
     "$id": 3218
   },
@@ -699,7 +699,7 @@
     "de-DE": "Entfernen",
     "fr-FR": "Retirer",
     "ko-KR": "제거하다",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(21630-21636)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(21799-21805)"],
     "$id": 3219
   },
   "重置工作目录": {
@@ -712,7 +712,7 @@
     "de-DE": "Arbeitsverzeichnis zurücksetzen",
     "fr-FR": "Réinitialiser le répertoire de travail",
     "ko-KR": "작업 디렉터리 재설정",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(21968-21978)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22137-22147)"],
     "$id": 3220
   },
   "确定要重置目录 \"{}\" 吗？": {
@@ -725,7 +725,7 @@
     "de-DE": "Sind Sie sicher, dass Sie das Verzeichnis „{}“ zurücksetzen möchten?",
     "fr-FR": "Êtes-vous sûr de vouloir réinitialiser le répertoire « {} » ?",
     "ko-KR": "정말로 \"{}\" 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22137-22156)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22306-22325)"],
     "$id": 3221
   },
   "此操作将删除该目录的所有AI分析结果和标签，但保留原始文件。目录将重置为未分析状态。": {
@@ -738,7 +738,7 @@
     "de-DE": "Durch diesen Vorgang werden alle AI-Analyseergebnisse und Beschriftungen für das Verzeichnis gelöscht, die Originaldateien bleiben jedoch erhalten.Das Verzeichnis wird auf einen ungeparsten Zustand zurückgesetzt.",
     "fr-FR": "Cette opération supprimera tous les résultats d’analyse AI et les étiquettes du répertoire, mais conservera les fichiers d’origine.Le répertoire sera réinitialisé à un état non analysé.",
     "ko-KR": "이 작업을 수행하면 해당 디렉터리의 모든 AI 분석 결과와 라벨이 삭제되지만 원본 파일은 유지됩니다.디렉터리는 구문 분석되지 않은 상태로 재설정됩니다.",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22274-22343)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22443-22512)"],
     "$id": 3222
   },
   "重置": {
@@ -751,7 +751,7 @@
     "de-DE": "Zurücksetzen",
     "fr-FR": "Réinitialiser",
     "ko-KR": "다시 놓기",
-    "$files": ["src/renderer/components/settings/workspace-settings.tsx(22923-22929)"],
+    "$files": ["src/renderer/components/settings/workspace-settings.tsx(23092-23098)"],
     "$id": 3223
   }
 }

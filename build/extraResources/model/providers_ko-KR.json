@@ -600,6 +600,7 @@
   {
     "id": "siliconflow",
     "name": "실리콘 기반 흐름",
+    "recommended": true,
     "description": "다양한 주류 오픈 소스 모델에 대한 고속 추론 인터페이스를 제공하며 10B 미만의 일부 모델은 오랫동안 무료입니다.",
     "registerUrl": "https://cloud.siliconflow.cn/",
     "baseUrl": "https://api.siliconflow.cn/v1",
@@ -828,6 +829,7 @@
   {
     "id": "ollama",
     "name": "Ollama",
+    "recommended": true,
     "description": "대형 모델 서비스를 로컬에서 실행하기 위한 또 다른 외부 솔루션으로 Firefly의 내장 AI 엔진보다 20~40% 느리지만 하드웨어 호환성이 좋아 설치를 권장합니다.",
     "registerUrl": "https://ollama.com/download/windows",
     "baseUrl": "http://localhost:11434",
@@ -2713,6 +2715,7 @@
   {
     "id": "agnes",
     "name": "Agnes AI(영원히 무료)",
+    "recommended": true,
     "description": "분당 요청 수는 20개로 제한됩니다. 짧은 시간 내에 요청이 너무 빠르면 빈도 제한이 적용됩니다. (1분 정도 기다렸다가 다시 시도해야 함)",
     "registerUrl": "https://platform.agnes-ai.com/",
     "baseUrl": "https://apihub.agnes-ai.com/v1",

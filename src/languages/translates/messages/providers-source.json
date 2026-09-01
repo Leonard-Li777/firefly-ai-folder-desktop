@@ -28,15 +28,15 @@
       "src/electron/config/providers-source.ts(3038-3044)",
       "src/electron/config/providers-source.ts(4990-4996)",
       "src/electron/config/providers-source.ts(6575-6581)",
-      "src/electron/config/providers-source.ts(19023-19029)",
-      "src/electron/config/providers-source.ts(19329-19335)",
-      "src/electron/config/providers-source.ts(32503-32509)",
-      "src/electron/config/providers-source.ts(34592-34598)",
-      "src/electron/config/providers-source.ts(37835-37841)",
-      "src/electron/config/providers-source.ts(40989-40995)",
-      "src/electron/config/providers-source.ts(44115-44121)",
-      "src/electron/config/providers-source.ts(46184-46190)",
-      "src/electron/config/providers-source.ts(55502-55508)"
+      "src/electron/config/providers-source.ts(19069-19075)",
+      "src/electron/config/providers-source.ts(19375-19381)",
+      "src/electron/config/providers-source.ts(32549-32555)",
+      "src/electron/config/providers-source.ts(34638-34644)",
+      "src/electron/config/providers-source.ts(37881-37887)",
+      "src/electron/config/providers-source.ts(41035-41041)",
+      "src/electron/config/providers-source.ts(44161-44167)",
+      "src/electron/config/providers-source.ts(46230-46236)",
+      "src/electron/config/providers-source.ts(55548-55554)"
     ],
     "$id": 9685
   },
@@ -301,15 +301,15 @@
       "src/electron/config/providers-source.ts(10577-10583)",
       "src/electron/config/providers-source.ts(11771-11777)",
       "src/electron/config/providers-source.ts(12667-12673)",
-      "src/electron/config/providers-source.ts(13825-13831)",
-      "src/electron/config/providers-source.ts(15309-15315)",
-      "src/electron/config/providers-source.ts(16226-16232)",
-      "src/electron/config/providers-source.ts(17205-17211)",
-      "src/electron/config/providers-source.ts(18122-18128)",
-      "src/electron/config/providers-source.ts(23925-23931)",
-      "src/electron/config/providers-source.ts(26089-26095)",
-      "src/electron/config/providers-source.ts(31343-31349)",
-      "src/electron/config/providers-source.ts(50361-50367)"
+      "src/electron/config/providers-source.ts(13848-13854)",
+      "src/electron/config/providers-source.ts(15332-15338)",
+      "src/electron/config/providers-source.ts(16249-16255)",
+      "src/electron/config/providers-source.ts(17228-17234)",
+      "src/electron/config/providers-source.ts(18145-18151)",
+      "src/electron/config/providers-source.ts(23971-23977)",
+      "src/electron/config/providers-source.ts(26135-26141)",
+      "src/electron/config/providers-source.ts(31389-31395)",
+      "src/electron/config/providers-source.ts(50407-50413)"
     ],
     "$id": 9724
   },
@@ -610,7 +610,7 @@
     "ko-KR": "실리콘 기반 흐름",
     "$files": [
       "src/electron/config/providers-source.ts(13601-13609)",
-      "src/electron/config/providers-source.ts(14031-14039)"
+      "src/electron/config/providers-source.ts(14054-14062)"
     ],
     "$id": 9748
   },
@@ -624,7 +624,7 @@
     "de-DE": "Bietet Hochgeschwindigkeits-Inferenzschnittstellen für eine Vielzahl gängiger Open-Source-Modelle, und einige Modelle unter 10 B sind lange Zeit kostenlos.",
     "fr-FR": "Fournit des interfaces d'inférence à grande vitesse pour une variété de modèles open source grand public, et certains modèles inférieurs à 10B sont gratuits pendant une longue période.",
     "ko-KR": "다양한 주류 오픈 소스 모델에 대한 고속 추론 인터페이스를 제공하며 10B 미만의 일부 모델은 오랫동안 무료입니다.",
-    "$files": ["src/electron/config/providers-source.ts(13629-13667)"],
+    "$files": ["src/electron/config/providers-source.ts(13652-13690)"],
     "$id": 9749
   },
   "硅基流动的全模态处理模型": {
@@ -637,7 +637,7 @@
     "de-DE": "Vollmodales Verarbeitungsmodell für siliziumbasierte Flüsse",
     "fr-FR": "Modèle de traitement entièrement modal pour les flux basés sur silicium",
     "ko-KR": "실리콘 기반 흐름을 위한 전체 모드 처리 모델",
-    "$files": ["src/electron/config/providers-source.ts(13975-13991)"],
+    "$files": ["src/electron/config/providers-source.ts(13998-14014)"],
     "$id": 9750
   },
   "魔搭社区": {
@@ -651,9 +651,9 @@
     "fr-FR": "Communauté magique",
     "ko-KR": "매직 커뮤니티",
     "$files": [
-      "src/electron/config/providers-source.ts(15060-15068)",
-      "src/electron/config/providers-source.ts(15516-15524)",
-      "src/electron/config/providers-source.ts(15817-15825)"
+      "src/electron/config/providers-source.ts(15083-15091)",
+      "src/electron/config/providers-source.ts(15539-15547)",
+      "src/electron/config/providers-source.ts(15840-15848)"
     ],
     "$id": 9753
   },
@@ -667,7 +667,7 @@
     "de-DE": "Die Open-Source-Modell-Community von Alibaba bietet eine kostenlose Modell-Inferenz-API (das Modell muss alle 500 Aufrufe ersetzt werden).",
     "fr-FR": "La communauté de modèles open source d'Alibaba fournit une API d'inférence de modèle gratuite (le modèle doit être remplacé tous les 500 appels).",
     "ko-KR": "Alibaba의 오픈 소스 모델 커뮤니티는 무료 모델 추론 API를 제공합니다(500번 호출마다 모델을 교체해야 함).",
-    "$files": ["src/electron/config/providers-source.ts(15088-15133)"],
+    "$files": ["src/electron/config/providers-source.ts(15111-15156)"],
     "$id": 9754
   },
   "魔搭社区的视觉语言处理模型": {
@@ -680,7 +680,7 @@
     "de-DE": "Visuelles Sprachverarbeitungsmodell der Moda-Community",
     "fr-FR": "Modèle de traitement du langage visuel de la communauté Moda",
     "ko-KR": "Moda 커뮤니티의 시각적 언어 처리 모델",
-    "$files": ["src/electron/config/providers-source.ts(15458-15475)"],
+    "$files": ["src/electron/config/providers-source.ts(15481-15498)"],
     "$id": 9755
   },
   "魔搭社区的文本处理模型": {
@@ -693,7 +693,7 @@
     "de-DE": "Textverarbeitungsmodell der Moda Community",
     "fr-FR": "Modèle de traitement de texte de la communauté Moda",
     "ko-KR": "Moda Community의 텍스트 처리 모델",
-    "$files": ["src/electron/config/providers-source.ts(15761-15776)"],
+    "$files": ["src/electron/config/providers-source.ts(15784-15799)"],
     "$id": 9756
   },
   "深度求索官方接口，提供高性价比的 DeepSeek-V3/R1 系列模型。": {
@@ -706,7 +706,7 @@
     "de-DE": "Die offizielle DeepSeek-Schnittstelle bietet kostengünstige Modelle der DeepSeek-V3/R1-Serie.",
     "fr-FR": "L'interface officielle de DeepSeek fournit des modèles économiques de la série DeepSeek-V3/R1.",
     "ko-KR": "DeepSeek 공식 인터페이스는 비용 효율적인 DeepSeek-V3/R1 시리즈 모델을 제공합니다.",
-    "$files": ["src/electron/config/providers-source.ts(16031-16072)"],
+    "$files": ["src/electron/config/providers-source.ts(16054-16095)"],
     "$id": 9757
   },
   "Deepseek的顶级推理模型": {
@@ -719,7 +719,7 @@
     "de-DE": "Das Top-Inferenzmodell von Deepseek",
     "fr-FR": "Le meilleur modèle d'inférence de Deepseek",
     "ko-KR": "Deepseek의 최고 추론 모델",
-    "$files": ["src/electron/config/providers-source.ts(16356-16375)"],
+    "$files": ["src/electron/config/providers-source.ts(16379-16398)"],
     "$id": 9759
   },
   "Deepseek的稀疏注意力模型": {
@@ -732,7 +732,7 @@
     "de-DE": "Das spärliche Aufmerksamkeitsmodell von Deepseek",
     "fr-FR": "Le modèle d’attention clairsemée de Deepseek",
     "ko-KR": "Deepseek의 희소 관심 모델",
-    "$files": ["src/electron/config/providers-source.ts(16710-16730)"],
+    "$files": ["src/electron/config/providers-source.ts(16733-16753)"],
     "$id": 9761
   },
   "月之暗面 Moonshot AI 官方接口，支持超长上下文处理。": {
@@ -745,7 +745,7 @@
     "de-DE": "Die offizielle Benutzeroberfläche von Dark Side of the Moon Moonshot AI unterstützt die Verarbeitung extrem langer Kontexte.",
     "fr-FR": "L’interface officielle de Dark Side of the Moon Moonshot AI prend en charge le traitement de contexte ultra-long.",
     "ko-KR": "Dark Side of the Moon Moonshot AI 공식 인터페이스는 매우 긴 컨텍스트 처리를 지원합니다.",
-    "$files": ["src/electron/config/providers-source.ts(17033-17069)"],
+    "$files": ["src/electron/config/providers-source.ts(17056-17092)"],
     "$id": 9762
   },
   "Kimi K2 0711 预览版": {
@@ -758,7 +758,7 @@
     "de-DE": "Kimi K2 0711 Vorschau",
     "fr-FR": "Kimi K2 0711 Aperçu",
     "ko-KR": "키미 K2 0711 미리보기",
-    "$files": ["src/electron/config/providers-source.ts(17304-17324)"],
+    "$files": ["src/electron/config/providers-source.ts(17327-17347)"],
     "$id": 9763
   },
   "Kimi的全模态处理模型": {
@@ -771,7 +771,7 @@
     "de-DE": "Kimis vollständiges modales Verarbeitungsmodell",
     "fr-FR": "Le modèle de traitement modal complet de Kimi",
     "ko-KR": "Kimi의 전체 모달 처리 모델",
-    "$files": ["src/electron/config/providers-source.ts(17348-17364)"],
+    "$files": ["src/electron/config/providers-source.ts(17371-17387)"],
     "$id": 9764
   },
   "Moonshot v1 自动": {
@@ -784,7 +784,7 @@
     "de-DE": "Moonshot v1 Automatik",
     "fr-FR": "Moonshot v1 automatique",
     "ko-KR": "Moonshot v1 자동",
-    "$files": ["src/electron/config/providers-source.ts(17624-17642)"],
+    "$files": ["src/electron/config/providers-source.ts(17647-17665)"],
     "$id": 9765
   },
   "Kimi的优化版本模型": {
@@ -797,7 +797,7 @@
     "de-DE": "Kimis optimiertes Versionsmodell",
     "fr-FR": "Modèle de version optimisée de Kimi",
     "ko-KR": "키미의 최적화 버전 모델",
-    "$files": ["src/electron/config/providers-source.ts(17666-17681)"],
+    "$files": ["src/electron/config/providers-source.ts(17689-17704)"],
     "$id": 9766
   },
   "智谱AI": {
@@ -811,9 +811,9 @@
     "fr-FR": "IA du spectre de la sagesse",
     "ko-KR": "지혜 스펙트럼 AI",
     "$files": [
-      "src/electron/config/providers-source.ts(17912-17920)",
-      "src/electron/config/providers-source.ts(18311-18319)",
-      "src/electron/config/providers-source.ts(18588-18596)"
+      "src/electron/config/providers-source.ts(17935-17943)",
+      "src/electron/config/providers-source.ts(18334-18342)",
+      "src/electron/config/providers-source.ts(18611-18619)"
     ],
     "$id": 9767
   },
@@ -827,7 +827,7 @@
     "de-DE": "Hintergrund im KI-Labor der Tsinghua-Universität, das leistungsstarke inländische Großmodelldienste der GLM-Serie bereitstellt.",
     "fr-FR": "Expérience de laboratoire d'IA de l'Université Tsinghua, fournissant une série GLM de puissants services de grands modèles nationaux.",
     "ko-KR": "Tsinghua University AI 실험실 배경, GLM 시리즈의 강력한 국내 대형 모델 서비스 제공.",
-    "$files": ["src/electron/config/providers-source.ts(17940-17977)"],
+    "$files": ["src/electron/config/providers-source.ts(17963-18000)"],
     "$id": 9768
   },
   "智谱AI的企业级文本处理模型": {
@@ -840,7 +840,7 @@
     "de-DE": "Das Textverarbeitungsmodell von Zhipu AI auf Unternehmensebene",
     "fr-FR": "Modèle de traitement de texte au niveau de l'entreprise de Zhipu AI",
     "ko-KR": "Zhipu AI의 엔터프라이즈급 텍스트 처리 모델",
-    "$files": ["src/electron/config/providers-source.ts(18252-18270)"],
+    "$files": ["src/electron/config/providers-source.ts(18275-18293)"],
     "$id": 9769
   },
   "智谱AI的视觉推理模型": {
@@ -853,7 +853,7 @@
     "de-DE": "Visuelles Argumentationsmodell der Zhipu-KI",
     "fr-FR": "Modèle de raisonnement visuel de Zhipu AI",
     "ko-KR": "Zhipu AI의 시각적 추론 모델",
-    "$files": ["src/electron/config/providers-source.ts(18532-18547)"],
+    "$files": ["src/electron/config/providers-source.ts(18555-18570)"],
     "$id": 9770
   },
   "本地运行的大模型服务的另一种外置方案，较之萤核内置AI引擎慢20~40%，但硬件兼容性好，推荐安装。": {
@@ -866,7 +866,7 @@
     "de-DE": "Eine weitere externe Lösung für die lokale Ausführung großer Modelldienste. Sie ist 20 bis 40 % langsamer als die integrierte KI-Engine von Firefly, verfügt jedoch über eine gute Hardwarekompatibilität und wird für die Installation empfohlen.",
     "fr-FR": "Autre solution externe pour l'exécution locale de services de grands modèles, elle est 20 à 40 % plus lente que le moteur d'IA intégré de Firefly, mais offre une bonne compatibilité matérielle et est recommandée pour l'installation.",
     "ko-KR": "대형 모델 서비스를 로컬에서 실행하기 위한 또 다른 외부 솔루션으로 Firefly의 내장 AI 엔진보다 20~40% 느리지만 하드웨어 호환성이 좋아 설치를 권장합니다.",
-    "$files": ["src/electron/config/providers-source.ts(18816-18877)"],
+    "$files": ["src/electron/config/providers-source.ts(18862-18923)"],
     "$id": 9771
   },
   "NVIDIA 提供的模型体验平台，托管多种主流大模型，目前提供免费试用。": {
@@ -879,7 +879,7 @@
     "de-DE": "Die von NVIDIA bereitgestellte Model-Experience-Plattform hostet eine Vielzahl gängiger Großmodelle und bietet derzeit kostenlose Testversionen.",
     "fr-FR": "La plate-forme d'expérience de modèle fournie par NVIDIA héberge une variété de grands modèles grand public et propose actuellement des essais gratuits.",
     "ko-KR": "NVIDIA가 제공하는 모델 체험 플랫폼은 다양한 주류 대형 모델을 호스팅하며 현재 무료 평가판을 제공하고 있습니다.",
-    "$files": ["src/electron/config/providers-source.ts(19129-19169)"],
+    "$files": ["src/electron/config/providers-source.ts(19175-19215)"],
     "$id": 9772
   },
   "NVIDIA托管的通义千问3代码模型": {
@@ -892,7 +892,7 @@
     "de-DE": "NVIDIA hat das Tongyi Qianwen 3-Codemodell gehostet",
     "fr-FR": "NVIDIA a hébergé le modèle de code Tongyi Qianwen 3",
     "ko-KR": "NVIDIA 호스팅 Tongyi Qianwen 3 코드 모델",
-    "$files": ["src/electron/config/providers-source.ts(19484-19506)"],
+    "$files": ["src/electron/config/providers-source.ts(19530-19552)"],
     "$id": 9774
   },
   "NVIDIA轻量级视觉语言模型": {
@@ -905,7 +905,7 @@
     "de-DE": "NVIDIA leichtes visuelles Sprachmodell",
     "fr-FR": "Modèle de langage visuel léger NVIDIA",
     "ko-KR": "NVIDIA 경량 시각적 언어 모델",
-    "$files": ["src/electron/config/providers-source.ts(19814-19833)"],
+    "$files": ["src/electron/config/providers-source.ts(19860-19879)"],
     "$id": 9777
   },
   "Microsoft的多模态Instruct模型": {
@@ -918,7 +918,7 @@
     "de-DE": "Das multimodale Instruct-Modell von Microsoft",
     "fr-FR": "Modèle d'instruction multimodal de Microsoft",
     "ko-KR": "Microsoft의 다중 모드 교육 모델",
-    "$files": ["src/electron/config/providers-source.ts(20134-20161)"],
+    "$files": ["src/electron/config/providers-source.ts(20180-20207)"],
     "$id": 9779
   },
   "Google的Gemma 3指令微调模型": {
@@ -931,7 +931,7 @@
     "de-DE": "Das Gemma-3-Anweisungs-Feinabstimmungsmodell von Google",
     "fr-FR": "Modèle de réglage fin des instructions Gemma 3 de Google",
     "ko-KR": "Google의 Gemma 3 명령어 미세 조정 모델",
-    "$files": ["src/electron/config/providers-source.ts(20449-20473)"],
+    "$files": ["src/electron/config/providers-source.ts(20495-20519)"],
     "$id": 9781
   },
   "商汤科技": {
@@ -945,10 +945,10 @@
     "fr-FR": "SenseTime",
     "ko-KR": "센스타임",
     "$files": [
-      "src/electron/config/providers-source.ts(23706-23714)",
-      "src/electron/config/providers-source.ts(24135-24143)",
-      "src/electron/config/providers-source.ts(24429-24437)",
-      "src/electron/config/providers-source.ts(24734-24742)"
+      "src/electron/config/providers-source.ts(23752-23760)",
+      "src/electron/config/providers-source.ts(24181-24189)",
+      "src/electron/config/providers-source.ts(24475-24483)",
+      "src/electron/config/providers-source.ts(24780-24788)"
     ],
     "$id": 9784
   },
@@ -962,7 +962,7 @@
     "de-DE": "Die täglich neue Großmodellschnittstelle von SenseTime befindet sich derzeit in der öffentlichen Betaphase und bietet ein kostenloses Anrufkontingent.",
     "fr-FR": "La nouvelle interface grand modèle quotidienne de SenseTime est actuellement en période bêta publique et offre un quota d'appels gratuit.",
     "ko-KR": "SenseTime의 일일 새로운 대형 모델 인터페이스는 현재 공개 베타 기간에 있으며 무료 통화 할당량을 제공합니다.",
-    "$files": ["src/electron/config/providers-source.ts(23734-23766)"],
+    "$files": ["src/electron/config/providers-source.ts(23780-23812)"],
     "$id": 9785
   },
   "商汤科技的高性能轻量级模型": {
@@ -975,7 +975,7 @@
     "de-DE": "Das leistungsstarke Leichtbaumodell von SenseTime",
     "fr-FR": "Le modèle léger hautes performances de SenseTime",
     "ko-KR": "SenseTime의 고성능 경량 모델",
-    "$files": ["src/electron/config/providers-source.ts(24077-24094)"],
+    "$files": ["src/electron/config/providers-source.ts(24123-24140)"],
     "$id": 9787
   },
   "商汤科技的极速推理模型": {
@@ -988,7 +988,7 @@
     "de-DE": "Das extrem schnelle Argumentationsmodell von SenseTime",
     "fr-FR": "Le modèle de raisonnement extrêmement rapide de SenseTime",
     "ko-KR": "SenseTime의 매우 빠른 추론 모델",
-    "$files": ["src/electron/config/providers-source.ts(24373-24388)"],
+    "$files": ["src/electron/config/providers-source.ts(24419-24434)"],
     "$id": 9789
   },
   "未知": {
@@ -1002,8 +1002,8 @@
     "fr-FR": "Inconnu",
     "ko-KR": "알려지지 않은",
     "$files": [
-      "src/electron/config/providers-source.ts(24463-24469)",
-      "src/electron/config/providers-source.ts(24768-24774)"
+      "src/electron/config/providers-source.ts(24509-24515)",
+      "src/electron/config/providers-source.ts(24814-24820)"
     ],
     "$id": 9790
   },
@@ -1017,7 +1017,7 @@
     "de-DE": "DeepSeek-Schnellinferenzmodell, gehostet von SenseTime",
     "fr-FR": "Modèle d'inférence rapide DeepSeek hébergé par SenseTime",
     "ko-KR": "SenseTime에서 호스팅하는 DeepSeek 빠른 추론 모델",
-    "$files": ["src/electron/config/providers-source.ts(24668-24693)"],
+    "$files": ["src/electron/config/providers-source.ts(24714-24739)"],
     "$id": 9792
   },
   "注册即送 10 美元试用额度，无需信用卡。额度 3 个月内有效。包含 Jamba Large 和 Jamba Mini 模型。": {
@@ -1030,7 +1030,7 @@
     "de-DE": "Melden Sie sich an und erhalten Sie eine 10-Dollar-Testversion, keine Kreditkarte erforderlich. Die Gutschrift ist innerhalb von 3 Monaten gültig. Beinhaltet die Modelle Jamba Large und Jamba Mini.",
     "fr-FR": "Inscrivez-vous et obtenez un essai de 10 $, aucune carte de crédit requise. Le crédit est valable dans un délai de 3 mois. Comprend les modèles Jamba Large et Jamba Mini.",
     "ko-KR": "가입하고 10달러 평가판을 받으세요. 신용카드는 필요하지 않습니다. 크레딧은 3개월 이내에 유효합니다. Jamba Large 및 Jamba Mini 모델이 포함됩니다.",
-    "$files": ["src/electron/config/providers-source.ts(24946-25020)"],
+    "$files": ["src/electron/config/providers-source.ts(24992-25066)"],
     "$id": 9794
   },
   "以色列": {
@@ -1044,8 +1044,8 @@
     "fr-FR": "Israël",
     "ko-KR": "이스라엘",
     "$files": [
-      "src/electron/config/providers-source.ts(25194-25201)",
-      "src/electron/config/providers-source.ts(61248-61255)"
+      "src/electron/config/providers-source.ts(25240-25247)",
+      "src/electron/config/providers-source.ts(61294-61301)"
     ],
     "$id": 9795
   },
@@ -1059,7 +1059,7 @@
     "de-DE": "Alibaba Cloud Bailian (Internationale Version)",
     "fr-FR": "Alibaba Cloud Bailian (version internationale)",
     "ko-KR": "Alibaba Cloud Bailian(국제 버전)",
-    "$files": ["src/electron/config/providers-source.ts(25782-25797)"],
+    "$files": ["src/electron/config/providers-source.ts(25828-25843)"],
     "$id": 9800
   },
   "注册后每个通义千问模型赠送 100 万免费 Token，90 天内有效（国际/新加坡区域）。无需信用卡。": {
@@ -1072,7 +1072,7 @@
     "de-DE": "Nach der Registrierung erhält jedes Tongyi Qianwen-Modell 1 Million kostenlose Token mit einer Gültigkeit von 90 Tagen (international/Raum Singapur). Keine Kreditkarte erforderlich.",
     "fr-FR": "Après inscription, chaque modèle Tongyi Qianwen recevra 1 million de tokens gratuits, valables 90 jours (zone internationale/Singapour). Aucune carte de crédit requise.",
     "ko-KR": "등록 후 각 Tongyi Qianwen 모델은 90일 동안 유효한 100만 개의 무료 토큰을 받게 됩니다(국제/싱가포르 지역). 신용 카드가 필요하지 않습니다.",
-    "$files": ["src/electron/config/providers-source.ts(25817-25880)"],
+    "$files": ["src/electron/config/providers-source.ts(25863-25926)"],
     "$id": 9801
   },
   "免费“试用”API 密钥，无需信用卡。每月 1000 次 API 调用。仅限非商业用途。": {
@@ -1085,7 +1085,7 @@
     "de-DE": "Kostenloser „Test“-API-Schlüssel, keine Kreditkarte erforderlich. 1000 API-Aufrufe pro Monat. Nur für nicht-kommerzielle Nutzung.",
     "fr-FR": "Clé API « d'essai » gratuite, aucune carte de crédit requise. 1000 appels API par mois. Pour usage non commercial uniquement.",
     "ko-KR": "무료 \"평가판\" API 키, 신용 카드가 필요하지 않습니다. 매월 1000개의 API 호출. 비상업적인 용도로만 사용하세요.",
-    "$files": ["src/electron/config/providers-source.ts(27450-27498)"],
+    "$files": ["src/electron/config/providers-source.ts(27496-27544)"],
     "$id": 9803
   },
   "加拿大": {
@@ -1098,7 +1098,7 @@
     "de-DE": "Kanada",
     "fr-FR": "Canada",
     "ko-KR": "캐나다",
-    "$files": ["src/electron/config/providers-source.ts(27660-27667)"],
+    "$files": ["src/electron/config/providers-source.ts(27706-27713)"],
     "$id": 9804
   },
   "免费“实验”计划，无需信用卡。每月约 10 亿 Token。提示词可能会被用于改进模型。": {
@@ -1111,7 +1111,7 @@
     "de-DE": "Kostenloser „Experimental“-Plan, keine Kreditkarte erforderlich. Ungefähr 1 Milliarde Token pro Monat. Zur Verbesserung des Modells können Stichworte verwendet werden.",
     "fr-FR": "Plan « expérimental » gratuit, aucune carte de crédit requise. Environ 1 milliard de jetons par mois. Des mots indicateurs peuvent être utilisés pour améliorer le modèle.",
     "ko-KR": "무료 \"실험적\" 요금제이며 신용카드가 필요하지 않습니다. 매월 약 10억 개의 토큰. 모델을 개선하기 위해 큐 단어를 사용할 수 있습니다.",
-    "$files": ["src/electron/config/providers-source.ts(29241-29289)"],
+    "$files": ["src/electron/config/providers-source.ts(29287-29335)"],
     "$id": 9816
   },
   "法国": {
@@ -1125,8 +1125,8 @@
     "fr-FR": "France",
     "ko-KR": "프랑스",
     "$files": [
-      "src/electron/config/providers-source.ts(29449-29455)",
-      "src/electron/config/providers-source.ts(57942-57948)"
+      "src/electron/config/providers-source.ts(29495-29501)",
+      "src/electron/config/providers-source.ts(57988-57994)"
     ],
     "$id": 9817
   },
@@ -1140,7 +1140,7 @@
     "de-DE": "Zhipu KI",
     "fr-FR": "IA Zhipu",
     "ko-KR": "지푸 AI",
-    "$files": ["src/electron/config/providers-source.ts(31105-31124)"],
+    "$files": ["src/electron/config/providers-source.ts(31151-31170)"],
     "$id": 9825
   },
   "提供永久免费的模型，无需信用卡。": {
@@ -1153,7 +1153,7 @@
     "de-DE": "Bietet für immer kostenlose Modelle, keine Kreditkarte erforderlich.",
     "fr-FR": "Propose des modèles gratuits pour toujours, aucune carte de crédit requise.",
     "ko-KR": "영원히 무료 모델을 제공하며 신용 카드가 필요하지 않습니다.",
-    "$files": ["src/electron/config/providers-source.ts(31144-31164)"],
+    "$files": ["src/electron/config/providers-source.ts(31190-31210)"],
     "$id": 9826
   },
   "免费档，无需信用卡。极速推理（约 2600 token/s）。每日 100 万 Token 上限。免费档 8K 上下文限制。llama3.1-8b 计划于 2026 年 5 月 27 日废弃。": {
@@ -1166,7 +1166,7 @@
     "de-DE": "Kostenlos, keine Kreditkarte erforderlich. Extrem schnelles Denken (ca. 2600 Token/s). Tageslimit von 1 Million Token. 8K-Kontextbeschränkung für kostenlose Dateien. llama3.1-8b wird voraussichtlich am 27. Mai 2026 veraltet sein.",
     "fr-FR": "Gratuit, aucune carte de crédit requise. Raisonnement extrêmement rapide (environ 2600 token/s). Limite quotidienne de 1 million de jetons. Limite de contexte de fichier gratuit 8K. llama3.1-8b devrait être obsolète le 27 mai 2026.",
     "ko-KR": "무료이며 신용 카드가 필요하지 않습니다. 매우 빠른 추론(약 2600개 토큰/초). 일일 한도는 100만 토큰입니다. 무료 파일 8K 컨텍스트 제한. llama3.1-8b는 2026년 5월 27일에 지원 중단될 예정입니다.",
-    "$files": ["src/electron/config/providers-source.ts(32239-32346)"],
+    "$files": ["src/electron/config/providers-source.ts(32285-32392)"],
     "$id": 9829
   },
   "每日免费 10,000 Neurons。免费档提供 50 多个模型。": {
@@ -1179,7 +1179,7 @@
     "de-DE": "Täglich 10.000 Neuronen kostenlos. Die kostenlose Version bietet über 50 Modelle.",
     "fr-FR": "10 000 neurones gratuits chaque jour. La version gratuite propose plus de 50 modèles.",
     "ko-KR": "매일 10,000개의 뉴런이 무료입니다. 무료 버전은 50개 이상의 모델을 제공합니다.",
-    "$files": ["src/electron/config/providers-source.ts(34343-34381)"],
+    "$files": ["src/electron/config/providers-source.ts(34389-34427)"],
     "$id": 9835
   },
   "面向所有 GitHub 用户的免费原型设计额度。包含 45 多个模型。单次请求有限制（输入 8K / 输出 4K）。": {
@@ -1192,7 +1192,7 @@
     "de-DE": "Kostenlose Prototyping-Credits für alle GitHub-Benutzer. Enthält über 45 Modelle. Es gibt ein Limit für eine einzelne Anfrage (8K Eingang / 4K Ausgang).",
     "fr-FR": "Crédits de prototypage gratuits pour tous les utilisateurs de GitHub. Contient plus de 45 modèles. Il y a une limite pour une seule requête (8K en entrée / 4K en sortie).",
     "ko-KR": "모든 GitHub 사용자를 위한 무료 프로토타이핑 크레딧입니다. 45개 이상의 모델이 포함되어 있습니다. 단일 요청에는 제한이 있습니다(8K 입력/4K 출력).",
-    "$files": ["src/electron/config/providers-source.ts(37590-37659)"],
+    "$files": ["src/electron/config/providers-source.ts(37636-37705)"],
     "$id": 9841
   },
   "免费档，无需信用卡。极速 LPU 推理。": {
@@ -1205,7 +1205,7 @@
     "de-DE": "Kostenlos, keine Kreditkarte erforderlich. Extrem schnelle LPU-Inferenz.",
     "fr-FR": "Gratuit, aucune carte de crédit requise. Inférence LPU extrêmement rapide.",
     "ko-KR": "무료이며 신용 카드가 필요하지 않습니다. 매우 빠른 LPU 추론.",
-    "$files": ["src/electron/config/providers-source.ts(40806-40830)"],
+    "$files": ["src/electron/config/providers-source.ts(40852-40876)"],
     "$id": 9846
   },
   "为免费用户每月提供 10 万次推理服务额度。路由到 Fireworks, Together, Hyperbolic, Nebius, Novita, DeepInfra 等提供商。支持数千个模型。": {
@@ -1218,7 +1218,7 @@
     "de-DE": "Stellen Sie kostenlosen Benutzern ein monatliches Inferenzdienstkontingent von 100.000 Malen zur Verfügung. Routen zu Anbietern wie Fireworks, Together, Hyperbolic, Nebius, Novita, DeepInfra und mehr. Unterstützt Tausende von Modellen.",
     "fr-FR": "Fournissez aux utilisateurs gratuits un quota mensuel de service d'inférence de 100 000 fois. Itinéraires vers des fournisseurs tels que Fireworks, Together, Hyperbolic, Nebius, Novita, DeepInfra et plus encore. Prend en charge des milliers de modèles.",
     "ko-KR": "무료 사용자에게 월간 추론 서비스 할당량 100,000회를 제공합니다. Fireworks, Together, Hyperbolic, Nebius, Novita, DeepInfra 등과 같은 제공업체로 연결됩니다. 수천 개의 모델을 지원합니다.",
-    "$files": ["src/electron/config/providers-source.ts(43831-43940)"],
+    "$files": ["src/electron/config/providers-source.ts(43877-43986)"],
     "$id": 9851
   },
   "免费模型，无需信用卡。`kilo-auto/free` 自动路由至 minimax/minimax-m2.5:free (80%) 和 stepfun/step-3.5-flash:free (20%)。": {
@@ -1231,7 +1231,7 @@
     "de-DE": "Kostenloses Modell, keine Kreditkarte erforderlich. „kilo-auto/free“ leitet automatisch zu minimax/minimax-m2.5:free (80 %) und stepfun/step-3.5-flash:free (20 %) weiter.",
     "fr-FR": "Modèle gratuit, aucune carte de crédit requise. `kilo-auto/free` achemine automatiquement vers minimax/minimax-m2.5:free (80%) et stepfun/step-3.5-flash:free (20%).",
     "ko-KR": "무료 모델이며 신용 카드가 필요하지 않습니다. `kilo-auto/free`는 자동으로 minimax/minimax-m2.5:free(80%) 및 stepfun/step-3.5-flash:free(20%)로 라우팅됩니다.",
-    "$files": ["src/electron/config/providers-source.ts(45920-46033)"],
+    "$files": ["src/electron/config/providers-source.ts(45966-46079)"],
     "$id": 9855
   },
   "无缝 API 网关。基本访问无需注册。支持 30 多个模型。符合 GDPR 规范。": {
@@ -1244,7 +1244,7 @@
     "de-DE": "Nahtloses API-Gateway. Für den Basiszugang ist keine Registrierung erforderlich. Unterstützt mehr als 30 Modelle. DSGVO-konform.",
     "fr-FR": "Passerelle API transparente. Aucune inscription requise pour l’accès de base. Prend en charge plus de 30 modèles. Conforme au RGPD.",
     "ko-KR": "원활한 API 게이트웨이. 기본 액세스에는 등록이 필요하지 않습니다. 30개 이상의 모델을 지원합니다. GDPR을 준수합니다.",
-    "$files": ["src/electron/config/providers-source.ts(47971-48016)"],
+    "$files": ["src/electron/config/providers-source.ts(48017-48062)"],
     "$id": 9857
   },
   "英国": {
@@ -1258,8 +1258,8 @@
     "fr-FR": "ROYAUME-UNI.",
     "ko-KR": "영국",
     "$files": [
-      "src/electron/config/providers-source.ts(48159-48165)",
-      "src/electron/config/providers-source.ts(53772-53778)"
+      "src/electron/config/providers-source.ts(48205-48211)",
+      "src/electron/config/providers-source.ts(53818-53824)"
     ],
     "$id": 9858
   },
@@ -1273,7 +1273,7 @@
     "de-DE": "ModelScope",
     "fr-FR": "ModèlePortée",
     "ko-KR": "모델범위",
-    "$files": ["src/electron/config/providers-source.ts(50104-50125)"],
+    "$files": ["src/electron/config/providers-source.ts(50150-50171)"],
     "$id": 9862
   },
   "为注册用户提供免费 API 推理服务。需要绑定阿里云账号并完成实名认证。": {
@@ -1286,7 +1286,7 @@
     "de-DE": "Bietet registrierten Benutzern kostenlose API-Inferenzdienste. Sie müssen Ihr Alibaba Cloud-Konto binden und die Authentifizierung mit echtem Namen durchführen.",
     "fr-FR": "Fournit des services d'inférence API gratuits aux utilisateurs enregistrés. Vous devez lier votre compte Alibaba Cloud et effectuer une authentification par nom réel.",
     "ko-KR": "등록된 사용자에게 무료 API 추론 서비스를 제공합니다. Alibaba Cloud 계정을 바인딩하고 실명 인증을 완료해야 합니다.",
-    "$files": ["src/electron/config/providers-source.ts(50145-50185)"],
+    "$files": ["src/electron/config/providers-source.ts(50191-50231)"],
     "$id": 9863
   },
   "注册送 1 美元免费额度，无需信用卡。通过兼容 OpenAI 的 API 提供 60 多个开源模型。总部设在欧盟。": {
@@ -1299,7 +1299,7 @@
     "de-DE": "Melden Sie sich an und erhalten Sie 1 $ kostenloses Guthaben, keine Kreditkarte erforderlich. Mehr als 60 Open-Source-Modelle sind über eine OpenAI-kompatible API verfügbar. Hauptsitz in der EU.",
     "fr-FR": "Inscrivez-vous et obtenez 1 $ de crédit gratuit, aucune carte de crédit requise. Plus de 60 modèles open source sont disponibles via une API compatible OpenAI. Basée dans l'UE.",
     "ko-KR": "가입하고 $1의 무료 크레딧을 받으세요. 신용카드는 필요하지 않습니다. OpenAI 호환 API를 통해 60개 이상의 오픈 소스 모델을 사용할 수 있습니다. EU에 본사를 두고 있습니다.",
-    "$files": ["src/electron/config/providers-source.ts(51608-51676)"],
+    "$files": ["src/electron/config/providers-source.ts(51654-51722)"],
     "$id": 9868
   },
   "荷兰": {
@@ -1312,7 +1312,7 @@
     "de-DE": "Niederlande",
     "fr-FR": "Pays-Bas",
     "ko-KR": "네덜란드",
-    "$files": ["src/electron/config/providers-source.ts(51856-51862)"],
+    "$files": ["src/electron/config/providers-source.ts(51902-51908)"],
     "$id": 9869
   },
   "注册送 5 美元免费额度，无需信用卡。欧盟主权提供商，数据中心位于挪威。无速率限制，无冷启动。": {
@@ -1325,7 +1325,7 @@
     "de-DE": "Melden Sie sich an und erhalten Sie ein kostenloses Guthaben in Höhe von 5 $, keine Kreditkarte erforderlich. Souveräner EU-Anbieter mit Rechenzentrum in Norwegen. Keine Geschwindigkeitsbegrenzung, kein Kaltstart.",
     "fr-FR": "Inscrivez-vous et obtenez 5 $ de crédit gratuit, aucune carte de crédit requise. Fournisseur souverain de l’UE avec un centre de données situé en Norvège. Pas de limite de débit, pas de démarrage à froid.",
     "ko-KR": "가입하고 $5의 무료 크레딧을 받으세요. 신용카드는 필요하지 않습니다. 노르웨이에 데이터 센터를 둔 EU 주권 공급자입니다. 속도 제한도 없고 콜드 스타트도 없습니다.",
-    "$files": ["src/electron/config/providers-source.ts(53547-53605)"],
+    "$files": ["src/electron/config/providers-source.ts(53593-53651)"],
     "$id": 9872
   },
   "带有使用量定性限制的免费档。提供 Ollama 库中的 400 多个模型。不兼容 OpenAI SDK，使用 [Ollama API](https://docs.ollama.com/cloud)。": {
@@ -1338,7 +1338,7 @@
     "de-DE": "Kostenlos mit qualitativen Nutzungsbeschränkungen. Bietet über 400 Modelle aus der Ollama-Bibliothek. Nicht kompatibel mit OpenAI SDK, verwenden Sie [Ollama API](https://docs.ollama.com/cloud).",
     "fr-FR": "Gratuit avec des limites d'utilisation qualitatives. Propose plus de 400 modèles de la bibliothèque Ollama. Non compatible avec le SDK OpenAI, utilisez [API Ollama](https://docs.ollama.com/cloud).",
     "ko-KR": "질적 사용 제한이 있는 무료입니다. Ollama 라이브러리에서 400개 이상의 모델을 제공합니다. OpenAI SDK와 호환되지 않으므로 [Ollama API](https://docs.ollama.com/cloud)를 사용하세요.",
-    "$files": ["src/electron/config/providers-source.ts(55233-55343)"],
+    "$files": ["src/electron/config/providers-source.ts(55279-55389)"],
     "$id": 9874
   },
   "OVHcloud AI 终点站": {
@@ -1351,7 +1351,7 @@
     "de-DE": "OVHcloud KI-Terminal",
     "fr-FR": "Terminal IA OVHcloud",
     "ko-KR": "OVHcloud AI 터미널",
-    "$files": ["src/electron/config/providers-source.ts(57630-57649)"],
+    "$files": ["src/electron/config/providers-source.ts(57676-57695)"],
     "$id": 9877
   },
   "免费匿名档（无需 API Key，无需注册）：每个 IP 每个模型限制 2 RPM。在欧盟托管 40 多个开源权重模型。兼容 OpenAI SDK。": {
@@ -1364,7 +1364,7 @@
     "de-DE": "Kostenloses anonymes Profil (kein API-Schlüssel, keine Registrierung erforderlich): Begrenzt 2 U/min pro Modell und IP. Hosting von über 40 Open-Source-Gewichtsmodellen in der EU. Kompatibel mit OpenAI SDK.",
     "fr-FR": "Profil anonyme gratuit (pas de clé API, aucune inscription requise) : Limite de 2 RPM par modèle et par IP. Hébergement de plus de 40 modèles de pondération open source dans l'UE. Compatible avec le SDK OpenAI.",
     "ko-KR": "무료 익명 프로필(API 키 없음, 등록 필요 없음): IP당 모델당 2RPM으로 제한됩니다. EU에서 40개 이상의 오픈 소스 체중 모델을 호스팅합니다. OpenAI SDK와 호환됩니다.",
-    "$files": ["src/electron/config/providers-source.ts(57669-57754)"],
+    "$files": ["src/electron/config/providers-source.ts(57715-57800)"],
     "$id": 9878
   },
   "每日免费 Token 配额，无需信用卡。专为角色扮演和故事创作而设计。": {
@@ -1377,7 +1377,7 @@
     "de-DE": "Kostenloses tägliches Token-Kontingent, keine Kreditkarte erforderlich. Entwickelt für Rollenspiele und die Erstellung von Geschichten.",
     "fr-FR": "Quota de jetons quotidien gratuit, aucune carte de crédit requise. Conçu pour les jeux de rôle et la création d'histoires.",
     "ko-KR": "무료 일일 토큰 할당량, 신용 카드가 필요하지 않습니다. 롤플레잉과 스토리 제작을 위해 설계되었습니다.",
-    "$files": ["src/electron/config/providers-source.ts(61060-61099)"],
+    "$files": ["src/electron/config/providers-source.ts(61106-61145)"],
     "$id": 9882
   },
   "永久免费": {
@@ -1390,7 +1390,7 @@
     "de-DE": "Für immer kostenlos",
     "fr-FR": "Gratuit pour toujours",
     "ko-KR": "영원히 무료",
-    "$files": ["src/electron/config/providers-source.ts(62100-62108)"],
+    "$files": ["src/electron/config/providers-source.ts(62146-62154)"],
     "$id": 9491
   },
   "每分钟请求数限制为 20 次，若短时间内请求过快会触发频率限制（需等待1分钟后重试）": {
@@ -1403,7 +1403,7 @@
     "de-DE": "Die Anzahl der Anfragen pro Minute ist auf 20 begrenzt. Wenn die Anfrage in einem kurzen Zeitraum zu schnell ist, wird die Frequenzbegrenzung ausgelöst (Sie müssen 1 Minute warten und es erneut versuchen).",
     "fr-FR": "Le nombre de requêtes par minute est limité à 20. Si la requête est trop rapide dans un court laps de temps, la limite de fréquence sera déclenchée (vous devez attendre 1 minute et réessayer)",
     "ko-KR": "분당 요청 수는 20개로 제한됩니다. 짧은 시간 내에 요청이 너무 빠르면 빈도 제한이 적용됩니다. (1분 정도 기다렸다가 다시 시도해야 함)",
-    "$files": ["src/electron/config/providers-source.ts(62131-62184)"],
+    "$files": ["src/electron/config/providers-source.ts(62200-62253)"],
     "$id": 9885
   },
   "新加坡": {
@@ -1416,7 +1416,7 @@
     "de-DE": "Singapur",
     "fr-FR": "Singapour",
     "ko-KR": "싱가포르",
-    "$files": ["src/electron/config/providers-source.ts(62349-62356)"],
+    "$files": ["src/electron/config/providers-source.ts(62418-62425)"],
     "$id": 9886
   },
   "Sapiens AI 的快速高效模型，支持图像理解。": {
@@ -1429,7 +1429,7 @@
     "de-DE": "Das schnelle und effiziente Modell von Sapiens AI unterstützt das Bildverständnis.",
     "fr-FR": "Le modèle rapide et efficace de Sapiens AI prend en charge la compréhension des images.",
     "ko-KR": "Sapiens AI의 빠르고 효율적인 모델은 이미지 이해를 지원합니다.",
-    "$files": ["src/electron/config/providers-source.ts(62484-62514)"],
+    "$files": ["src/electron/config/providers-source.ts(62553-62583)"],
     "$id": 9889
   },
   "免费档": {
@@ -1442,7 +1442,7 @@
     "de-DE": "Kostenlose Datei",
     "fr-FR": "Fichier gratuit",
     "ko-KR": "무료 파일",
-    "$files": ["src/electron/config/providers-source.ts(62683-62690)"],
+    "$files": ["src/electron/config/providers-source.ts(62752-62759)"],
     "$id": 9492
   }
 }

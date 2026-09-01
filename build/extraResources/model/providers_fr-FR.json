@@ -600,6 +600,7 @@
   {
     "id": "siliconflow",
     "name": "Flux à base de silicium",
+    "recommended": true,
     "description": "Fournit des interfaces d'inférence à grande vitesse pour une variété de modèles open source grand public, et certains modèles inférieurs à 10B sont gratuits pendant une longue période.",
     "registerUrl": "https://cloud.siliconflow.cn/",
     "baseUrl": "https://api.siliconflow.cn/v1",
@@ -828,6 +829,7 @@
   {
     "id": "ollama",
     "name": "Ollama",
+    "recommended": true,
     "description": "Autre solution externe pour l'exécution locale de services de grands modèles, elle est 20 à 40 % plus lente que le moteur d'IA intégré de Firefly, mais offre une bonne compatibilité matérielle et est recommandée pour l'installation.",
     "registerUrl": "https://ollama.com/download/windows",
     "baseUrl": "http://localhost:11434",
@@ -2713,6 +2715,7 @@
   {
     "id": "agnes",
     "name": "Agnes AI(Gratuit pour toujours)",
+    "recommended": true,
     "description": "Le nombre de requêtes par minute est limité à 20. Si la requête est trop rapide dans un court laps de temps, la limite de fréquence sera déclenchée (vous devez attendre 1 minute et réessayer)",
     "registerUrl": "https://platform.agnes-ai.com/",
     "baseUrl": "https://apihub.agnes-ai.com/v1",

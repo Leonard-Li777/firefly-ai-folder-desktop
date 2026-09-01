@@ -10,7 +10,8 @@ import React, { useEffect, useMemo, useState, useRef } from 'react'
 
 import { Button } from '@/renderer/components/ui/button'
 import { MaterialIcon } from '@/renderer/lib/utils'
-import { t } from '@app/languages'
+import i18nScope, { t } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { openExternalLink } from '@/renderer/lib/external-link'
 import { useAIServiceError, useAIServiceStatus } from '@/renderer/stores/ai-service-store'
 import { useAnalysisQueueStore } from '@/renderer/stores/analysis-queue-store'
@@ -30,6 +31,7 @@ import { getStageLabel } from '@/renderer/components/analysis/AnalysisQueueConte
  * 应用底部状态栏组件
  */
 export function Footer() {
+  const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const {
     modelName,
     serviceStatus,
@@ -91,7 +93,7 @@ export function Footer() {
       }
     }
     return t('AI服务异常')
-  }, [showAiError, error, lastError])
+  }, [showAiError, error, lastError, activeLanguage])
 
   const workspaceDirectories = useVirtualDirectoryStore(s => s.workspaceDirectories)
   const currentWorkspaceDirectory = useVirtualDirectoryStore(s => s.currentWorkspaceDirectory)

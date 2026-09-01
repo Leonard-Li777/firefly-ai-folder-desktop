@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import i18nScope from '@app/languages'
 import { Button } from '../ui/button'
 import { useSettingsStore, settingsCategories } from '../../stores/settings-store'
@@ -6,29 +6,25 @@ import { SettingsCategory } from '@firefly/types'
 import { cn } from '../../lib/utils'
 import { useVoerkaI18n } from '@voerkai18n/react'
 
+const ICON_MAP: Record<string, string> = {
+  palette: '🎨',
+  view_list: '📋',
+  psychology: '🧠',
+  analytics: '📊',
+  folder_open: '📁'
+}
+
+function getIcon(iconName: string): string {
+  return ICON_MAP[iconName] || '⚙️'
+}
+
 /**
  * 设置导航组件
  */
-export const SettingsNavigation: React.FC = () => {
-  const { currentCategory, setCurrentCategory } = useSettingsStore()
-  const { t, changeLanguage, languages, activeLanguage } = useVoerkaI18n(i18nScope)
-
-  /**
-   * 获取图标组件
-   */
-  const getIcon = (iconName: string) => {
-    // 这里可以根据iconName返回对应的图标组件
-    // 暂时使用简单的文本表示
-    const iconMap: Record<string, string> = {
-      palette: '🎨',
-      view_list: '📋',
-      psychology: '🧠',
-      analytics: '📊',
-      folder_open: '📁'
-    }
-
-    return iconMap[iconName] || '⚙️'
-  }
+export const SettingsNavigation: React.FC = memo(() => {
+  const currentCategory = useSettingsStore(s => s.currentCategory)
+  const setCurrentCategory = useSettingsStore(s => s.setCurrentCategory)
+  const { t } = useVoerkaI18n(i18nScope)
 
   const handleCategoryClick = (categoryId: SettingsCategory) => {
     setCurrentCategory(categoryId)
@@ -69,4 +65,5 @@ export const SettingsNavigation: React.FC = () => {
       })}
     </nav>
   )
-}
+})
+SettingsNavigation.displayName = 'SettingsNavigation'

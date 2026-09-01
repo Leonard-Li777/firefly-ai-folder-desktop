@@ -56,20 +56,44 @@ const HelpTooltip: React.FC<{ content: string }> = ({ content }) => {
 }
 
 /**
+ * 防抖更新自定义提示词 Hook
+ */
+function useDebouncedPromptUpdater(
+  promptValue: string,
+  configKey: 'UNIT_RECOGNITION_PROMPT' | 'QUALITY_SCORE_PROMPT' | 'TAG_GENERATION_PROMPT',
+  getConfigValue: (key: any) => any,
+  updateConfigValue: (key: any, value: any) => Promise<any>
+) {
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (promptValue !== (getConfigValue(configKey) || '')) {
+        updateConfigValue(configKey, promptValue)
+        captureEvent('更新自定义提示词', {
+          prompt_type: configKey,
+          content: promptValue,
+          content_length: promptValue.length
+        })
+      }
+    }, 500)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [promptValue, configKey, getConfigValue, updateConfigValue])
+}
+
+/**
  * 分析设置组件
  */
 export const AnalysisSettings: React.FC = () => {
-  const {
-    config,
-    updateConfig,
-    getConfigValue,
-    updateConfigValue,
-    ignoreRules,
-    addIgnoreRule,
-    updateIgnoreRule,
-    removeIgnoreRule,
-    loadIgnoreRules
-  } = useSettingsStore()
+  const getConfigValue = useSettingsStore(s => s.getConfigValue)
+  const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
+  const audioAnalysisDuration = useSettingsStore(s => s.config?.audioAnalysisDuration)
+  const ignoreRules = useSettingsStore(s => s.ignoreRules)
+  const addIgnoreRule = useSettingsStore(s => s.addIgnoreRule)
+  const updateIgnoreRule = useSettingsStore(s => s.updateIgnoreRule)
+  const removeIgnoreRule = useSettingsStore(s => s.removeIgnoreRule)
+  const loadIgnoreRules = useSettingsStore(s => s.loadIgnoreRules)
 
   const [editingRule, setEditingRule] = useState<string | null>(null)
   const [newRule, setNewRule] = useState<Partial<IIgnoreRule>>({
@@ -116,33 +140,15 @@ export const AnalysisSettings: React.FC = () => {
   const [showAdvancedPrompts, setShowAdvancedPrompts] = useState(false)
   const [showLibreOfficeHelp, setShowLibreOfficeHelp] = useState(false)
 
-  const useDebouncedPromptUpdater = (
-    promptValue: string,
-    configKey: 'UNIT_RECOGNITION_PROMPT' | 'QUALITY_SCORE_PROMPT' | 'TAG_GENERATION_PROMPT'
-  ) => {
-    useEffect(() => {
-      const handler = setTimeout(() => {
-        if (promptValue !== (getConfigValue<string>(configKey) || '')) {
-          updateConfigValue(configKey, promptValue)
-          // 捕获自定义提示词更新
-          captureEvent('更新自定义提示词', {
-            prompt_type: configKey,
-            content: promptValue,
-            content_length: promptValue.length
-          })
-        }
-      }, 500)
-
-      return () => {
-        clearTimeout(handler)
-      }
-    }, [promptValue, configKey, getConfigValue, updateConfigValue])
-  }
-
   // 为每个提示词设置独立的防抖更新
-  useDebouncedPromptUpdater(unitPrompt, 'UNIT_RECOGNITION_PROMPT')
-  useDebouncedPromptUpdater(qualityPrompt, 'QUALITY_SCORE_PROMPT')
-  useDebouncedPromptUpdater(tagPrompt, 'TAG_GENERATION_PROMPT')
+  useDebouncedPromptUpdater(unitPrompt, 'UNIT_RECOGNITION_PROMPT', getConfigValue, updateConfigValue)
+  useDebouncedPromptUpdater(
+    qualityPrompt,
+    'QUALITY_SCORE_PROMPT',
+    getConfigValue,
+    updateConfigValue
+  )
+  useDebouncedPromptUpdater(tagPrompt, 'TAG_GENERATION_PROMPT', getConfigValue, updateConfigValue)
 
   /**
    * 音频分析截取时长防抖同步
@@ -243,7 +249,7 @@ export const AnalysisSettings: React.FC = () => {
     if (externalValue !== localAudioDuration) {
       setLocalAudioDuration(externalValue)
     }
-  }, [config.audioAnalysisDuration])
+  }, [audioAnalysisDuration])
 
   /**
    * 检测环境状态并加载规则
