@@ -1,6 +1,6 @@
 import { AIServiceStatus, ILlamaIndexAIService } from '@firefly/types'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
-import { LogCategory, logger, isTestEnvironment } from '@firefly/shared'
+import { LogCategory, logger, isTestEnvironment, shouldSkipAIServiceInTest } from '@firefly/shared'
 import { t } from '@app/languages'
 
 /**
@@ -42,14 +42,14 @@ export class AIServiceManager {
    * 等待 AI 服务就绪
    */
   async waitForAIServiceReady(): Promise<boolean> {
-    // 集成测试环境或云端模式下，跳过就绪检查
-    const isTest = isTestEnvironment()
+    // 单元/集成测试环境或云端模式下，跳过就绪检查；E2E 测试环境不跳过
+    const isTest = shouldSkipAIServiceInTest()
     const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
 
     if (isTest || mode === 'cloud') {
       logger.info(
         LogCategory.ANALYSIS_QUEUE,
-        `[分析队列] ${isTest ? '测试环境' : '云端模式'}跳过 AI 服务就绪检查`
+        `[分析队列] ${isTest ? '集成测试环境' : '云端模式'}跳过 AI 服务就绪检查`
       )
       return true
     }

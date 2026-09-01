@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '../ui/alert-dialog'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '../ui/dialog'
 import { LogCategory, logger } from '@firefly/shared'
 import React, { useState, useCallback, memo } from 'react'
 import { settingsCategories, useSettingsStore } from '../../stores/settings-store'
@@ -74,6 +74,55 @@ export const SettingsDialog: React.FC = () => {
     }
   }, [currentCategory])
 
+  // 打开弹窗后，在后台空闲时段分步预热挂载其余所有 Tab，确保用户点击任意 Tab 时 100% 瞬切、零卡顿
+  React.useEffect(() => {
+    if (!isOpen) return
+
+    let cancelled = false
+    let timeoutId: any = null
+
+    const preheatRemainingTabs = () => {
+      const allCategories = CATEGORY_COMPONENTS.map(c => c.category)
+      let index = 0
+
+      const step = () => {
+        if (cancelled || index >= allCategories.length) return
+        const cat = allCategories[index]
+        index++
+
+        setVisitedCategories(prev => {
+          if (prev.has(cat)) return prev
+          const next = new Set(prev)
+          next.add(cat)
+          return next
+        })
+
+        // 分步延时调度，每个 Tab 间隔 60ms，避免抢占主线程
+        if (index < allCategories.length) {
+          if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+            ;(window as any).requestIdleCallback(step, { timeout: 300 })
+          } else {
+            timeoutId = setTimeout(step, 60)
+          }
+        }
+      }
+
+      if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+        ;(window as any).requestIdleCallback(step, { timeout: 300 })
+      } else {
+        timeoutId = setTimeout(step, 60)
+      }
+    }
+
+    // 弹窗弹出 100ms 后启动后台静默预热
+    timeoutId = setTimeout(preheatRemainingTabs, 100)
+
+    return () => {
+      cancelled = true
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [isOpen])
+
   /**
    * 确认语言变更后保存
    */
@@ -93,14 +142,15 @@ export const SettingsDialog: React.FC = () => {
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && closeSettings()}>
-      <DialogContent className="max-w-6xl w-[90vw] h-[85vh] flex flex-col p-0 bg-background dark:bg-card text-primary border-4 border-border rounded-2xl shadow-2xl">
-        <DialogHeader className="px-6 py-4 border-b">
+      <DialogContent className="max-w-6xl w-[90vw] h-[85vh] flex flex-col p-0 bg-background dark:bg-card text-primary border-4 border-border rounded-2xl shadow-2xl transform-gpu [contain:content]">
+        <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
           <DialogTitle className="text-xl font-semibold">{t('应用设置')}</DialogTitle>
+          <DialogDescription className="sr-only">{t('应用设置管理界面')}</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-1 overflow-hidden">
           {/* 左侧导航 */}
-          <div className="w-55 border-r flex flex-col">
+          <div className="w-55 border-r flex flex-col flex-shrink-0">
             <div className="flex-1 overflow-y-auto no-scrollbar">
               <SettingsNavigation />
             </div>
@@ -140,7 +190,7 @@ export const SettingsDialog: React.FC = () => {
             )}
 
             {/* 设置内容 Keep-Alive 容器 */}
-            <div className="flex-1 relative overflow-hidden">
+            <div className="flex-1 relative overflow-hidden [contain:paint]">
               {CATEGORY_COMPONENTS.map(({ category, Component }) => {
                 const isVisited = visitedCategories.has(category)
                 if (!isVisited) return null

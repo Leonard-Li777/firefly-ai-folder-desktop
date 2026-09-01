@@ -4,6 +4,7 @@ import {
   LogCategory,
   ErrorNormalizer,
   isTestEnvironment,
+  shouldSkipAIServiceInTest,
   ResourceLocator
 } from '@firefly/shared'
 import { AIErrorType, AIServiceStatus, StartupPhase } from '@firefly/types'
@@ -769,9 +770,9 @@ export async function initializeFullServices(): Promise<void> {
     if (globalLlamaIndexService) {
       try {
         if (!globalLlamaIndexService.isInitialized()) {
-          // 测试环境下跳过 AI 服务初始化（使用 mock 数据，不需要真实 AI 服务）
-          if (isTestEnvironment()) {
-            logger.info(LogCategory.MAIN, '[Test] 测试环境跳过 AI 服务初始化')
+          // 单元/集成测试环境下跳过 AI 服务初始化（使用 mock 数据），E2E 端到端测试不跳过真实 AI 初始化
+          if (shouldSkipAIServiceInTest()) {
+            logger.info(LogCategory.MAIN, '[Test] 集成测试环境跳过 AI 服务初始化')
           } else {
             await globalLlamaIndexService.initialize()
           }

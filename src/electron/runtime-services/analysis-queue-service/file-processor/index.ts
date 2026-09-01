@@ -21,6 +21,7 @@ import {
   getMagikaGroupFromExtension,
   BROWSER_NATIVE_IMAGE_EXTS,
   isTestEnvironment,
+  shouldSkipAIServiceInTest,
   applyMarkitdownBenchmark,
   extractMarkitdownBenchmark,
   calculateFileFingerprint,
@@ -430,8 +431,8 @@ export class FileProcessor {
           LogCategory.ANALYSIS_QUEUE,
           `[测试模式] 拦截器未能从模拟库找到结果: ${item.name}`
         )
-        // 测试模式下未命中 mock 也直接标记为完成，避免因缺少真实 AI 服务导致队列卡死
-        const isTest = isTestEnvironment()
+        // 普通集成测试模式下未命中 mock 也直接标记为完成，避免因缺少真实 AI 服务导致队列卡死；E2E 测试模式正常走真实 AI
+        const isTest = shouldSkipAIServiceInTest()
         if (isTest) {
           logger.info(
             LogCategory.ANALYSIS_QUEUE,

@@ -154,6 +154,13 @@ export const useSettingsStore = create<ISettingsState>()(
       },
 
       openSettings: async (category = SettingsCategory.MONITORING) => {
+        // 立即弹出设置对话框，杜绝 IPC 串行等待导致的界面卡顿与开窗延迟
+        set({
+          isOpen: true,
+          currentCategory: category,
+          error: null
+        })
+
         try {
           if (window.electronAPI?.getConfig) {
             const latestConfig = await window.electronAPI.getConfig()
@@ -171,11 +178,6 @@ export const useSettingsStore = create<ISettingsState>()(
         } catch (error) {
           console.error('加载最新配置失败:', error)
         }
-        set({
-          isOpen: true,
-          currentCategory: category,
-          error: null
-        })
       },
 
       closeSettings: async () => {

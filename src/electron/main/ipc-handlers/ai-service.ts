@@ -1,7 +1,7 @@
 import { ipcMain, BrowserWindow } from 'electron'
 import { LlamaIndexAIService, llamaServerService } from '@firefly/electron-llamaIndex-service'
 import { AIServiceStatus, StartupPhase } from '@firefly/types'
-import { logger, LogCategory, isTestEnvironment } from '@firefly/shared'
+import { logger, LogCategory, isTestEnvironment, shouldSkipAIServiceInTest } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { llamaEngineService } from '../../runtime-services/llama/llama-engine-service'
 import { gpuDriverComplianceService } from '../../runtime-services/llama/gpu-driver-compliance-service'
@@ -30,10 +30,10 @@ export function registerAIServiceIPCHandlers() {
         )
 
         const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
-        const isTestEnv = isTestEnvironment()
+        const isTestEnv = shouldSkipAIServiceInTest()
 
         if (isTestEnv) {
-          logger.info(LogCategory.MAIN, '[IPC] 测试环境：跳过 AI 引擎部署和初始化')
+          logger.info(LogCategory.MAIN, '[IPC] 集成测试环境：跳过 AI 引擎部署和初始化')
           const { llamaModelManager } =
             await import('../../runtime-services/llama/llama-model-manager')
           llamaModelManager.clearCache()

@@ -662,8 +662,8 @@ export function registerMiscIPCHandlers() {
     }
   }
 
-  if (process.env.IS_INTEGRATION_TEST === 'true') {
-    logger.info(LogCategory.MAIN, '[IPC] 集成测试模式：注册数据库直连 IPC 处理程序')
+  if (process.env.IS_INTEGRATION_TEST === 'true' || process.env.IS_E2E_TEST === 'true') {
+    logger.info(LogCategory.MAIN, '[IPC] 测试模式：注册数据库直连 IPC 处理程序')
     ipcMain.handle('database/execute-get', async (event, sql: string, params: any[]) => {
       const db = databaseService.db
       if (!db) throw new Error(t('数据库未初始化'))
