@@ -171,7 +171,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: build/presetResources
-          key: llama-presets-darwin-${{ matrix.arch }}-v2
+          key: llama-presets-darwin-${{ matrix.arch }}-v3-${{ hashFiles('build/extraResources/configs/preset-resources.lock.json', 'pro/extraResources/configs/preset-resources.lock.json') }}
+          restore-keys: |
+            llama-presets-darwin-${{ matrix.arch }}-v3-
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -181,7 +183,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           BUILD_ARCH: ${{ matrix.arch }}
         run: |
-          if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "${{ github.event.inputs.download_latest_llama }}" == "true" ]]; then
+          if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "$DOWNLOAD_LATEST_LLAMA" == "true" || "${{ github.event_name }}" == "push" ]]; then
             echo "📥 Syncing llama.cpp engine for ${{ matrix.arch }}..."
             AI_ENGINE=llama.cpp pnpm run download:llama
           fi
@@ -481,7 +483,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: build/presetResources
-          key: llama-presets-windows-v2
+          key: llama-presets-windows-v3-${{ hashFiles('build/extraResources/configs/preset-resources.lock.json', 'pro/extraResources/configs/preset-resources.lock.json') }}
+          restore-keys: |
+            llama-presets-windows-v3-
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -490,7 +494,7 @@ jobs:
           FORCE_UPDATE: ${{ github.event.inputs.download_latest_llama || 'true' }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "${{ github.event.inputs.download_latest_llama }}" == "true" ]]; then
+          if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "$DOWNLOAD_LATEST_LLAMA" == "true" || "${{ github.event_name }}" == "push" ]]; then
             echo "📥 Syncing llama.cpp engine..."
             AI_ENGINE=llama.cpp pnpm run download:llama
           fi
@@ -851,7 +855,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: build/presetResources
-          key: llama-presets-linux-v2
+          key: llama-presets-linux-v3-${{ hashFiles('build/extraResources/configs/preset-resources.lock.json', 'pro/extraResources/configs/preset-resources.lock.json') }}
+          restore-keys: |
+            llama-presets-linux-v3-
 
       - name: Sync Llama.cpp (Bypassed if cache hit and download_latest_llama is false)
         shell: bash
@@ -860,7 +866,7 @@ jobs:
           FORCE_UPDATE: ${{ github.event.inputs.download_latest_llama || 'true' }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "${{ github.event.inputs.download_latest_llama }}" == "true" ]]; then
+          if [[ "${{ steps.cache-presets.outputs.cache-hit }}" != "true" || "$DOWNLOAD_LATEST_LLAMA" == "true" || "${{ github.event_name }}" == "push" ]]; then
             echo "📥 Syncing llama.cpp engine..."
             AI_ENGINE=llama.cpp pnpm run download:llama
           fi
