@@ -1,4 +1,4 @@
-name: Release Package E2E Functional Test Pipeline
+﻿name: Release Package E2E Functional Test Pipeline
 
 on:
   release:
@@ -45,12 +45,8 @@ jobs:
       tag_name: ${{ steps.get_release.outputs.tag_name }}
       win_exe_url: ${{ steps.get_release.outputs.win_exe_url }}
       win_exe_name: ${{ steps.get_release.outputs.win_exe_name }}
-      mac_dmg_arm64_url: ${{ steps.get_release.outputs.mac_dmg_arm64_url }}
-      mac_dmg_arm64_name: ${{ steps.get_release.outputs.mac_dmg_arm64_name }}
-      mac_dmg_x64_url: ${{ steps.get_release.outputs.mac_dmg_x64_url }}
-      mac_dmg_x64_name: ${{ steps.get_release.outputs.mac_dmg_x64_name }}
-      mac_dmg_default_url: ${{ steps.get_release.outputs.mac_dmg_default_url }}
-      mac_dmg_default_name: ${{ steps.get_release.outputs.mac_dmg_default_name }}
+      mac_dmg_url: ${{ steps.get_release.outputs.mac_dmg_url }}
+      mac_dmg_name: ${{ steps.get_release.outputs.mac_dmg_name }}
       linux_deb_url: ${{ steps.get_release.outputs.linux_deb_url }}
       linux_deb_name: ${{ steps.get_release.outputs.linux_deb_name }}
       linux_rpm_url: ${{ steps.get_release.outputs.linux_rpm_url }}
@@ -65,23 +61,39 @@ jobs:
             const targetTag = context.payload.inputs?.tag_name || '';
             const region = (context.payload.inputs?.region || 'cn').toLowerCase();
             const appName = `firefly-ai-folder-${region}`;
+            const targetOwner = 'Leonard-Li777';
+            const targetRepo = 'firefly-ai-folder-desktop';
 
             let release;
             if (targetTag) {
-              core.info(`Fetching release by tag: ${targetTag}`);
+              core.info(`Fetching release by tag: ${targetTag} from ${targetOwner}/${targetRepo}`);
               const res = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner: targetOwner,
+                repo: targetRepo,
                 tag: targetTag
               });
               release = res.data;
             } else {
-              core.info('Fetching latest release...');
-              const res = await github.rest.repos.getLatestRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              release = res.data;
+              core.info(`Fetching latest release from ${targetOwner}/${targetRepo}...`);
+              try {
+                const res = await github.rest.repos.getLatestRelease({
+                  owner: targetOwner,
+                  repo: targetRepo
+                });
+                release = res.data;
+              } catch (e) {
+                core.info('getLatestRelease 404，尝试从 releases 列表中获取最近的发布...');
+                const listRes = await github.rest.repos.listReleases({
+                  owner: targetOwner,
+                  repo: targetRepo,
+                  per_page: 5
+                });
+                if (listRes.data && listRes.data.length > 0) {
+                  release = listRes.data[0];
+                } else {
+                  throw e;
+                }
+              }
             }
 
             core.info(`Target Release: ${release.tag_name} (${release.name})`);
@@ -103,29 +115,15 @@ jobs:
               core.setOutput('win_exe_name', winExe.name);
             }
 
-            // macOS .dmg / .pkg / .zip (Separate arm64 & x64 architectures)
-            const macAssets = assets.filter(a => {
+            // macOS .dmg / .pkg / .zip (ARM64)
+            const macDmg = assets.find(a => {
               const n = a.name.toLowerCase();
               return (n.endsWith('.dmg') || n.endsWith('.pkg') || (n.endsWith('.zip') && (n.includes('mac') || n.includes('darwin')))) && !n.includes('blockmap') && (n.includes(region) || !n.includes('intl'));
             });
-            const macArm64 = macAssets.find(a => /arm64|aarch64/i.test(a.name));
-            const macX64 = macAssets.find(a => /x64|x86_64|intel/i.test(a.name));
-            const macDefault = macAssets[0];
-
-            if (macArm64) {
-              core.info(`Selected macOS (arm64) Package: ${macArm64.name}`);
-              core.setOutput('mac_dmg_arm64_url', macArm64.browser_download_url);
-              core.setOutput('mac_dmg_arm64_name', macArm64.name);
-            }
-            if (macX64) {
-              core.info(`Selected macOS (x64) Package: ${macX64.name}`);
-              core.setOutput('mac_dmg_x64_url', macX64.browser_download_url);
-              core.setOutput('mac_dmg_x64_name', macX64.name);
-            }
-            if (macDefault) {
-              core.info(`Selected macOS Default Package: ${macDefault.name}`);
-              core.setOutput('mac_dmg_default_url', macDefault.browser_download_url);
-              core.setOutput('mac_dmg_default_name', macDefault.name);
+            if (macDmg) {
+              core.info(`Selected macOS Package: ${macDmg.name}`);
+              core.setOutput('mac_dmg_url', macDmg.browser_download_url);
+              core.setOutput('mac_dmg_name', macDmg.name);
             }
 
             // Linux .deb
@@ -161,15 +159,8 @@ jobs:
       (github.event_name == 'release' || github.event.inputs.platform_scope == 'windows-only' || github.event.inputs.platform_scope == 'all-platforms')
     runs-on: windows-latest
     steps:
-      - name: Checkout Open-Source Desktop Code
+      - name: Checkout Source Code
         uses: actions/checkout@v4
-
-      - name: Checkout Private Pro Module
-        uses: actions/checkout@v4
-        with:
-          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
-          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
-          path: pro
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -177,7 +168,7 @@ jobs:
           node-version: 24.15.0
 
       - name: Install E2E Test Dependencies
-        run: npm --prefix tests/e2e/release-pkg install
+        run: npm --prefix pro/tests/e2e/release-pkg install
 
       - name: Download Windows Installer
         shell: pwsh
@@ -227,15 +218,32 @@ jobs:
 
       - name: Run Playwright Golden Path E2E Test
         shell: pwsh
+        env:
+          IS_E2E_TEST: 'true'
+          PLAYWRIGHT_TEST_TYPE: 'e2e'
+          IS_INTEGRATION_TEST: 'false'
         run: |
-          npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          npx --prefix pro/tests/e2e/release-pkg playwright test --config=pro/tests/e2e/release-pkg/config/playwright.release.config.ts
+
+      - name: Bundle Logs into Report Artifact
+        if: always()
+        shell: pwsh
+        run: |
+          $htmlDir = "pro/tests/e2e/release-pkg/reports/html"
+          if (-not (Test-Path $htmlDir)) { New-Item -ItemType Directory -Path $htmlDir -Force }
+          $logSrc = "pro/tests/e2e/release-pkg/reports/logs/app.log"
+          if (Test-Path $logSrc) {
+            Copy-Item $logSrc -Destination (Join-Path $htmlDir "app.log") -Force
+            Write-Host "Successfully bundled $logSrc -> $htmlDir"
+          }
+          Get-ChildItem -Path $htmlDir
 
       - name: Upload Windows Test Report Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-windows
-          path: tests/e2e/release-pkg/reports/html
+          path: pro/tests/e2e/release-pkg/reports/html
           retention-days: 14
 
   # ==============================================================================
@@ -249,15 +257,8 @@ jobs:
       (github.event_name == 'release' || github.event.inputs.platform_scope == 'linux-only' || github.event.inputs.platform_scope == 'all-platforms')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Open-Source Desktop Code
+      - name: Checkout Source Code
         uses: actions/checkout@v4
-
-      - name: Checkout Private Pro Module
-        uses: actions/checkout@v4
-        with:
-          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
-          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
-          path: pro
 
       - name: Set up QEMU for Multi-Arch Support
         uses: docker/setup-qemu-action@v3
@@ -268,7 +269,7 @@ jobs:
           node-version: 24.15.0
 
       - name: Install E2E Test Dependencies
-        run: npm --prefix tests/e2e/release-pkg install
+        run: npm --prefix pro/tests/e2e/release-pkg install
 
       - name: Run DEB Test inside Multi-Arch Ubuntu Container
         run: |
@@ -288,7 +289,7 @@ jobs:
             -w /work \
             ubuntu:22.04 bash -c '
               export DEBIAN_FRONTEND=noninteractive
-              apt-get update && apt-get install -y curl ca-certificates gnupg
+              apt-get update && apt-get install -y curl ca-certificates gnupg build-essential python3
               curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
               apt-get install -y nodejs xvfb libgtk-3-0 libnss3 libgbm1 libsecret-1-0 libnotify4 libxss1
               dpkg -i /tmp/app.deb || apt-get install -f -y
@@ -310,16 +311,61 @@ jobs:
               chmod +x "$APP_BIN" || true
               echo "Located DEB binary: $APP_BIN"
               export TEST_APP_EXECUTABLE="$APP_BIN"
+
+              # 检查并解包 app.asar 以补齐原生模块（保障历史 Release 兼容）
+              for res_dir in "/usr/lib/firefly-ai-folder-cn/resources" "/usr/lib/firefly-ai-folder/resources" "/opt/firefly-ai-folder/resources"; do
+                if [ -f "$res_dir/app.asar" ]; then
+                  echo "[E2E Fix] 检测到 $res_dir/app.asar，正在解包并注入 Electron 匹配的原生模块..."
+                  cd "$res_dir"
+                  npx --yes asar extract app.asar app
+                  mv app.asar app.asar.bak
+                  
+                  mkdir -p /tmp/node_fix && cd /tmp/node_fix
+                  npm_config_runtime=electron \
+                  npm_config_target=32.3.3 \
+                  npm_config_disturl=https://electronjs.org/headers \
+                  npm_config_build_from_source=true \
+                  npm install --no-save better-sqlite3@11.8.1 || true
+                  
+                  if [ -f "/tmp/node_fix/node_modules/better-sqlite3/build/Release/better_sqlite3.node" ]; then
+                    mkdir -p "$res_dir/app/node_modules/better-sqlite3/build/Release"
+                    cp "/tmp/node_fix/node_modules/better-sqlite3/build/Release/better_sqlite3.node" "$res_dir/app/node_modules/better-sqlite3/build/Release/"
+                    echo "[E2E Fix] 成功将 Electron ABI 128 better_sqlite3.node 注入到 $res_dir/app"
+                  fi
+                  cd /work
+                  break
+                fi
+              done
               
-              xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+              export IS_E2E_TEST=true
+              export PLAYWRIGHT_TEST_TYPE=e2e
+              export IS_INTEGRATION_TEST=false
+              xvfb-run -a npx --prefix pro/tests/e2e/release-pkg playwright test --config=pro/tests/e2e/release-pkg/config/playwright.release.config.ts
+              
+              # 在容器内部直接将 logs/app.log 复制到 html 目录并开放读写权限
+              mkdir -p pro/tests/e2e/release-pkg/reports/html
+              if [ -f "pro/tests/e2e/release-pkg/reports/logs/app.log" ]; then
+                cp "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/html/app.log" || true
+              fi
+              chmod -R 777 pro/tests/e2e/release-pkg/reports || true
             '
+
+      - name: Bundle Logs into Report Artifact
+        if: always()
+        run: |
+          sudo chmod -R 777 pro/tests/e2e/release-pkg/reports 2>/dev/null || true
+          mkdir -p pro/tests/e2e/release-pkg/reports/html
+          if [ -f "pro/tests/e2e/release-pkg/reports/logs/app.log" ]; then
+            sudo cp "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/html/app.log" 2>/dev/null || true
+          fi
+          ls -la pro/tests/e2e/release-pkg/reports/html/
 
       - name: Upload Linux DEB Test Report Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-linux-deb
-          path: tests/e2e/release-pkg/reports/html
+          path: pro/tests/e2e/release-pkg/reports/html
           retention-days: 14
 
   # ==============================================================================
@@ -333,15 +379,8 @@ jobs:
       (github.event_name == 'release' || github.event.inputs.platform_scope == 'linux-only' || github.event.inputs.platform_scope == 'all-platforms')
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Open-Source Desktop Code
+      - name: Checkout Source Code
         uses: actions/checkout@v4
-
-      - name: Checkout Private Pro Module
-        uses: actions/checkout@v4
-        with:
-          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
-          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
-          path: pro
 
       - name: Set up QEMU for Multi-Arch Support
         uses: docker/setup-qemu-action@v3
@@ -352,7 +391,7 @@ jobs:
           node-version: 24.15.0
 
       - name: Install E2E Test Dependencies
-        run: npm --prefix tests/e2e/release-pkg install
+        run: npm --prefix pro/tests/e2e/release-pkg install
 
       - name: Run RPM Test inside Multi-Arch Fedora Container
         run: |
@@ -372,7 +411,7 @@ jobs:
             -v "/tmp/app.rpm:/tmp/app.rpm" \
             -w /work \
             fedora:40 bash -c '
-              dnf install -y git nodejs npm xorg-x11-server-Xvfb gtk3 nss alsa-lib mesa-libgbm libsecret libnotify libXScrnSaver procps-ng which
+              dnf install -y git nodejs npm gcc-c++ make python3 xorg-x11-server-Xvfb gtk3 nss alsa-lib mesa-libgbm libsecret libnotify libXScrnSaver procps-ng which
               dnf install -y --nogpgcheck /tmp/app.rpm || rpm -ivh --nodeps /tmp/app.rpm
               
               APP_BIN=""
@@ -392,50 +431,76 @@ jobs:
               chmod +x "$APP_BIN" || true
               echo "Located RPM binary: $APP_BIN"
               export TEST_APP_EXECUTABLE="$APP_BIN"
+
+              # 检查并解包 app.asar 以补齐原生模块（保障历史 Release 兼容）
+              for res_dir in "/usr/lib/firefly-ai-folder-cn/resources" "/usr/lib/firefly-ai-folder/resources" "/opt/firefly-ai-folder/resources"; do
+                if [ -f "$res_dir/app.asar" ]; then
+                  echo "[E2E Fix] 检测到 $res_dir/app.asar，正在解包并注入 Electron 匹配的原生模块..."
+                  cd "$res_dir"
+                  npx --yes asar extract app.asar app
+                  mv app.asar app.asar.bak
+                  
+                  mkdir -p /tmp/node_fix && cd /tmp/node_fix
+                  npm_config_runtime=electron \
+                  npm_config_target=32.3.3 \
+                  npm_config_disturl=https://electronjs.org/headers \
+                  npm_config_build_from_source=true \
+                  npm install --no-save better-sqlite3@11.8.1 || true
+                  
+                  if [ -f "/tmp/node_fix/node_modules/better-sqlite3/build/Release/better_sqlite3.node" ]; then
+                    mkdir -p "$res_dir/app/node_modules/better-sqlite3/build/Release"
+                    cp "/tmp/node_fix/node_modules/better-sqlite3/build/Release/better_sqlite3.node" "$res_dir/app/node_modules/better-sqlite3/build/Release/"
+                    echo "[E2E Fix] 成功将 Electron ABI 128 better_sqlite3.node 注入到 $res_dir/app"
+                  fi
+                  cd /work
+                  break
+                fi
+              done
               
-              xvfb-run -a npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+              export IS_E2E_TEST=true
+              export PLAYWRIGHT_TEST_TYPE=e2e
+              export IS_INTEGRATION_TEST=false
+              xvfb-run -a npx --prefix pro/tests/e2e/release-pkg playwright test --config=pro/tests/e2e/release-pkg/config/playwright.release.config.ts
+              
+              # 在容器内部直接将 logs/app.log 复制到 html 目录并开放读写权限
+              mkdir -p pro/tests/e2e/release-pkg/reports/html
+              if [ -f "pro/tests/e2e/release-pkg/reports/logs/app.log" ]; then
+                cp "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/html/app.log" || true
+              fi
+              chmod -R 777 pro/tests/e2e/release-pkg/reports || true
             '
+
+      - name: Bundle Logs into Report Artifact
+        if: always()
+        run: |
+          sudo chmod -R 777 pro/tests/e2e/release-pkg/reports 2>/dev/null || true
+          mkdir -p pro/tests/e2e/release-pkg/reports/html
+          if [ -f "pro/tests/e2e/release-pkg/reports/logs/app.log" ]; then
+            sudo cp "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/html/app.log" 2>/dev/null || true
+          fi
+          ls -la pro/tests/e2e/release-pkg/reports/html/
 
       - name: Upload Linux RPM Test Report Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report-linux-rpm
-          path: tests/e2e/release-pkg/reports/html
+          path: pro/tests/e2e/release-pkg/reports/html
           retention-days: 14
 
   # ==============================================================================
-  # 4. macOS E2E Release Test (Independent Apple Silicon arm64 & Intel x64 Packages)
+  # 4. macOS E2E Release Test (Apple Silicon ARM64)
   # ==============================================================================
   e2e-macos:
-    name: E2E Test macOS (${{ matrix.name }})
+    name: E2E Test macOS (ARM64)
     needs: resolve-release
     if: |
-      (needs.resolve-release.outputs.mac_dmg_default_url != '' || needs.resolve-release.outputs.mac_dmg_arm64_url != '' || needs.resolve-release.outputs.mac_dmg_x64_url != '') &&
+      needs.resolve-release.outputs.mac_dmg_url != '' &&
       (github.event_name == 'release' || github.event.inputs.platform_scope == 'macos-only' || github.event.inputs.platform_scope == 'all-platforms')
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - arch: "arm64"
-            name: "Apple Silicon (arm64)"
-            os: "macos-latest"
-            report_name: "playwright-report-macos-arm64"
-          - arch: "x64"
-            name: "Intel (x64 / Rosetta 2)"
-            os: "macos-latest"
-            report_name: "playwright-report-macos-x64"
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     steps:
-      - name: Checkout Open-Source Desktop Code
+      - name: Checkout Source Code
         uses: actions/checkout@v4
-
-      - name: Checkout Private Pro Module
-        uses: actions/checkout@v4
-        with:
-          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
-          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
-          path: pro
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -443,181 +508,86 @@ jobs:
           node-version: 24.15.0
 
       - name: Install E2E Test Dependencies
-        run: npm --prefix tests/e2e/release-pkg install
+        run: npm --prefix pro/tests/e2e/release-pkg install
 
-      - name: Download & Mount macOS DMG (${{ matrix.name }})
+      - name: Download & Mount macOS DMG
         run: |
-          URL=""
-          if [ "${{ matrix.arch }}" = "arm64" ] && [ -n "${{ needs.resolve-release.outputs.mac_dmg_arm64_url }}" ]; then
-            URL="${{ needs.resolve-release.outputs.mac_dmg_arm64_url }}"
-          elif [ "${{ matrix.arch }}" = "x64" ] && [ -n "${{ needs.resolve-release.outputs.mac_dmg_x64_url }}" ]; then
-            URL="${{ needs.resolve-release.outputs.mac_dmg_x64_url }}"
-          else
-            URL="${{ needs.resolve-release.outputs.mac_dmg_default_url }}"
-          fi
-
-          if [ -z "$URL" ]; then
-            echo "⚠️ 未找到适用于 ${{ matrix.arch }} 架构的 macOS DMG 资产，跳过。"
-            exit 0
-          fi
-
-          echo "Downloading $URL -> /tmp/app_${{ matrix.arch }}.dmg"
-          curl -L -s -S -o "/tmp/app_${{ matrix.arch }}.dmg" "$URL"
+          curl -L -s -S -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_dmg_url }}"
+          hdiutil attach /tmp/app.dmg -mountpoint /tmp/firefly-mount -nobrowse -quiet
           
-          MOUNT_POINT="/Volumes/FireflyApp_${{ matrix.arch }}"
-          hdiutil attach "/tmp/app_${{ matrix.arch }}.dmg" -mountpoint "$MOUNT_POINT" -nobrowse
-          mkdir -p "/tmp/AppExtract_${{ matrix.arch }}"
-          cp -R "$MOUNT_POINT"/*.app "/tmp/AppExtract_${{ matrix.arch }}/"
-          hdiutil detach "$MOUNT_POINT" || true
-
-          APP_DIR=$(find "/tmp/AppExtract_${{ matrix.arch }}" -name "*.app" -maxdepth 1 | head -n 1)
-          xattr -dr com.apple.quarantine "$APP_DIR" || true
-          APP_EXEC=$(find "$APP_DIR/Contents/MacOS" -type f -perm +111 | head -n 1)
-          chmod +x "$APP_EXEC" || true
-          echo "Located executable: $APP_EXEC"
-          echo "TEST_APP_EXECUTABLE=$APP_EXEC" >> $GITHUB_ENV
+          APP_PATH=$(find /tmp/firefly-mount -maxdepth 2 -name "*.app" | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Failed to locate .app bundle inside mounted macOS DMG!"
+            exit 1
+          fi
+          
+          echo "Copying $APP_PATH to /Applications..."
+          cp -R "$APP_PATH" /Applications/
+          hdiutil detach /tmp/firefly-mount -quiet || true
+          
+          INSTALLED_APP=$(find /Applications -maxdepth 1 -name "firefly*.app" | head -n 1)
+          EXECUTABLE="$INSTALLED_APP/Contents/MacOS/$(defaults read "$INSTALLED_APP/Contents/Info.plist" CFBundleExecutable 2>/dev/null || echo "firefly-ai-folder")"
+          
+          if [ ! -f "$EXECUTABLE" ]; then
+            EXECUTABLE=$(find "$INSTALLED_APP/Contents/MacOS" -type f -perm +111 | head -n 1)
+          fi
+          
+          echo "Located macOS Executable: $EXECUTABLE"
+          echo "TEST_APP_EXECUTABLE=$EXECUTABLE" >> $GITHUB_ENV
 
       - name: Run Playwright Golden Path E2E Test
+        env:
+          IS_E2E_TEST: 'true'
+          PLAYWRIGHT_TEST_TYPE: 'e2e'
+          IS_INTEGRATION_TEST: 'false'
         run: |
-          if [ -z "$TEST_APP_EXECUTABLE" ] || [ ! -f "$TEST_APP_EXECUTABLE" ]; then
-            echo "⚠️ 可执行程序不存在，跳过测试。"
-            exit 0
-          fi
-          npx --prefix tests/e2e/release-pkg playwright test --config=tests/e2e/release-pkg/config/playwright.release.config.ts
+          npx --prefix pro/tests/e2e/release-pkg playwright test --config=pro/tests/e2e/release-pkg/config/playwright.release.config.ts
 
-      - name: Upload macOS Test Report Artifact (${{ matrix.name }})
+      - name: Bundle Logs into Report Artifact
+        if: always()
+        run: |
+          mkdir -p pro/tests/e2e/release-pkg/reports/html
+          if [ -f "pro/tests/e2e/release-pkg/reports/logs/app.log" ]; then
+            cp "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/html/app.log"
+          fi
+          ls -la pro/tests/e2e/release-pkg/reports/html/
+
+      - name: Upload macOS Test Report Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.report_name }}
-          path: tests/e2e/release-pkg/reports/html
+          name: playwright-report-macos
+          path: pro/tests/e2e/release-pkg/reports/html
           retention-days: 14
 
   # ==============================================================================
-  # 5. Deploy Test Report to GitHub Pages & Summary Dashboard
+  # 5. Consolidate Test Reports & Generate Summary Dashboard
   # ==============================================================================
   publish-report:
-    name: Publish Test Report to GitHub Pages
+    name: Publish Test Report & Summary
     needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Prepare Report Output Directory
-        run: |
-          mkdir -p gh-pages-site/reports/${{ github.run_id }}
-          touch gh-pages-site/.nojekyll
-
-      - name: Download All Report Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: /tmp/all-reports
-        continue-on-error: true
-
-      - name: Consolidate Multi-Platform Reports
-        run: |
-          TARGET_DIR="gh-pages-site/reports/${{ github.run_id }}"
-          mkdir -p "$TARGET_DIR"
-
-          if [ -d "/tmp/all-reports/playwright-report-windows" ]; then
-            cp -R /tmp/all-reports/playwright-report-windows "$TARGET_DIR/windows"
-          fi
-          if [ -d "/tmp/all-reports/playwright-report-linux-deb" ]; then
-            cp -R /tmp/all-reports/playwright-report-linux-deb "$TARGET_DIR/linux-deb"
-          fi
-          if [ -d "/tmp/all-reports/playwright-report-linux-rpm" ]; then
-            cp -R /tmp/all-reports/playwright-report-linux-rpm "$TARGET_DIR/linux-rpm"
-          fi
-          if [ -d "/tmp/all-reports/playwright-report-macos-arm64" ]; then
-            cp -R /tmp/all-reports/playwright-report-macos-arm64 "$TARGET_DIR/macos-arm64"
-          fi
-          if [ -d "/tmp/all-reports/playwright-report-macos-x64" ]; then
-            cp -R /tmp/all-reports/playwright-report-macos-x64 "$TARGET_DIR/macos-x64"
-          fi
-          if [ -d "/tmp/all-reports/playwright-report-macos" ]; then
-            cp -R /tmp/all-reports/playwright-report-macos "$TARGET_DIR/macos"
-          fi
-
-          # 1. Generate run-specific index page
-          cat << 'EOF' > "$TARGET_DIR/index.html"
-          <!DOCTYPE html>
-          <html lang="zh-CN">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Firefly E2E Release Test Report</title>
-            <style>
-              body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f172a; color: #f8fafc; padding: 2rem; }
-              .card { background: #1e293b; border-radius: 12px; padding: 1.5rem; max-width: 800px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
-              h1 { color: #38bdf8; font-size: 1.5rem; margin-bottom: 1rem; }
-              .btn { display: inline-block; padding: 0.75rem 1.5rem; margin: 0.5rem 0.5rem 0.5rem 0; border-radius: 8px; text-decoration: none; font-weight: 600; color: #fff; background: #2563eb; transition: 0.2s; }
-              .btn:hover { background: #1d4ed8; }
-            </style>
-          </head>
-          <body>
-            <div class="card">
-              <h1>🚀 Firefly Release E2E 测试报告仪表盘</h1>
-              <p>测试运行 ID: <strong>RUN_ID_PLACEHOLDER</strong></p>
-              <hr style="border-color: #334155; margin: 1.5rem 0;">
-              <h3>查看各平台交互式 Playwright HTML 测试报告：</h3>
-              <div>
-                <a class="btn" href="./windows/index.html">🪟 Windows (x64) 测试报告</a>
-                <a class="btn" href="./linux-deb/index.html">🐧 Linux (DEB) 测试报告</a>
-                <a class="btn" href="./linux-rpm/index.html">🎩 Linux (RPM) 测试报告</a>
-                <a class="btn" href="./macos-arm64/index.html">🍎 macOS (Apple Silicon arm64) 测试报告</a>
-                <a class="btn" href="./macos-x64/index.html">💻 macOS (Intel x64) 测试报告</a>
-              </div>
-            </div>
-          </body>
-          </html>
-          EOF
-
-          sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" "$TARGET_DIR/index.html"
-
-          # 2. Generate root redirect index page for GitHub Pages root domain
-          cat << 'EOF' > gh-pages-site/index.html
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="UTF-8">
-            <meta http-equiv="refresh" content="0; url=./reports/RUN_ID_PLACEHOLDER/index.html">
-            <title>Redirecting to Latest Report...</title>
-          </head>
-          <body>
-            <p>正在跳转至最新测试报告: <a href="./reports/RUN_ID_PLACEHOLDER/index.html">点击进入</a></p>
-          </body>
-          </html>
-          EOF
-
-          sed -i "s/RUN_ID_PLACEHOLDER/${{ github.run_id }}/g" gh-pages-site/index.html
-
-      - name: Deploy to gh-pages Branch
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./gh-pages-site
-          publish_branch: gh-pages
-          keep_files: true
-        continue-on-error: true
-
-      - name: Render Job Summary with Report URL
+      - name: Render Job Summary
         shell: bash
         run: |
-          OWNER=$(echo "${{ github.repository }}" | cut -d'/' -f1)
-          REPO=$(echo "${{ github.repository }}" | cut -d'/' -f2)
-          REPORT_URL="https://${OWNER}.github.io/${REPO}/reports/${{ github.run_id }}/"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           
           echo "## 📊 Release 安装包 E2E 全流程功能测试结果汇总" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 **在线交互式 HTML 测试报告直达链接**：" >> $GITHUB_STEP_SUMMARY
-          echo "> 🌐 [点击查看完整的 Playwright 报告与步骤追踪]($REPORT_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "本次运行 ID: \`${{ github.run_id }}\` | 流水线页面: [查看 GitHub Actions 运行记录]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| 平台 / 环境 | 目标测试架构 | 执行状态 | 报告子链接 |" >> $GITHUB_STEP_SUMMARY
+          echo "| 平台 / 环境 | 目标测试架构 | 执行状态 | 测试报告下载工件 (Artifacts) |" >> $GITHUB_STEP_SUMMARY
           echo "| :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Windows** | x64 (NSIS 安装) | ${{ needs.e2e-windows.result }} | [Windows 报告](${REPORT_URL}windows/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Linux (DEB)** | x64/arm64 (DEB / Xvfb) | ${{ needs.e2e-linux-deb.result }} | [Linux DEB 报告](${REPORT_URL}linux-deb/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Linux (RPM)** | x64/arm64 (RPM / Fedora) | ${{ needs.e2e-linux-rpm.result }} | [Linux RPM 报告](${REPORT_URL}linux-rpm/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **macOS (arm64)** | Apple Silicon (arm64) | ${{ needs.e2e-macos.result }} | [macOS arm64 报告](${REPORT_URL}macos-arm64/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **macOS (x64)** | Intel (x64 / Rosetta 2) | ${{ needs.e2e-macos.result }} | [macOS x64 报告](${REPORT_URL}macos-x64/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Windows** | x64 (NSIS 安装) | ${{ needs.e2e-windows.result }} | \`playwright-report-windows\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (DEB)** | x64/arm64 (DEB / Ubuntu) | ${{ needs.e2e-linux-deb.result }} | \`playwright-report-linux-deb\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (RPM)** | x64/arm64 (RPM / Fedora) | ${{ needs.e2e-linux-rpm.result }} | \`playwright-report-linux-rpm\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **macOS** | ARM64 (DMG 挂载) | ${{ needs.e2e-macos.result }} | \`playwright-report-macos\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "💡 *注：测试报告包含完整的控制台日志、DOM 状态、各步骤截图与失败录屏。*" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 如何查看各平台 HTML 测试报告与步骤追踪" >> $GITHUB_STEP_SUMMARY
+          echo "1. 访问当前运行页面：[GitHub Actions Run #${{ github.run_id }}]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "2. 滑动到页面底部的 **Artifacts (工件列表)** 区域；" >> $GITHUB_STEP_SUMMARY
+          echo "3. 点击下载对应平台的报告包（如 \`playwright-report-windows.zip\` 或 \`playwright-report-macos.zip\`）；" >> $GITHUB_STEP_SUMMARY
+          echo "4. 解压并在本地浏览器中打开 \`index.html\`，即可交互式查看全部用例、控制台日志、DOM 状态与执行截图。" >> $GITHUB_STEP_SUMMARY
 

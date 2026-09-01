@@ -92,7 +92,13 @@ export default defineConfig({
       )
         ? resolve(__dirname, 'pro/packages/electron-llamaIndex-service/src')
         : resolve(__dirname, '../../packages/electron-llamaIndex-service/src'),
-      '@tests': resolve(__dirname, '../../tests'),
+      '@tests': resolve(__dirname, 'pro/tests'),
+      '@test/mocks': resolve(__dirname, 'pro/tests/mocks'),
+      '@test/mocks/*': resolve(__dirname, 'pro/tests/mocks/*'),
+      '@test/helpers': resolve(__dirname, 'pro/tests/helpers'),
+      '@test/helpers/*': resolve(__dirname, 'pro/tests/helpers/*'),
+      '@test/fixtures': resolve(__dirname, 'pro/tests/fixtures'),
+      '@test/fixtures/*': resolve(__dirname, 'pro/tests/fixtures/*'),
       '@desktop-tests': resolve(__dirname, 'pro/tests'),
       '@app/languages': resolve(__dirname, 'src/languages'),
       '@app/electron': resolve(__dirname, 'src/electron'),

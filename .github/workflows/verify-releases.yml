@@ -30,12 +30,8 @@ jobs:
       tag_name: ${{ steps.get_release.outputs.tag_name }}
       win_exe_url: ${{ steps.get_release.outputs.win_exe_url }}
       win_exe_name: ${{ steps.get_release.outputs.win_exe_name }}
-      mac_dmg_arm64_url: ${{ steps.get_release.outputs.mac_dmg_arm64_url }}
-      mac_dmg_arm64_name: ${{ steps.get_release.outputs.mac_dmg_arm64_name }}
-      mac_dmg_x64_url: ${{ steps.get_release.outputs.mac_dmg_x64_url }}
-      mac_dmg_x64_name: ${{ steps.get_release.outputs.mac_dmg_x64_name }}
-      mac_dmg_default_url: ${{ steps.get_release.outputs.mac_dmg_default_url }}
-      mac_dmg_default_name: ${{ steps.get_release.outputs.mac_dmg_default_name }}
+      mac_dmg_url: ${{ steps.get_release.outputs.mac_dmg_url }}
+      mac_dmg_name: ${{ steps.get_release.outputs.mac_dmg_name }}
       linux_deb_amd64_url: ${{ steps.get_release.outputs.linux_deb_amd64_url }}
       linux_deb_arm64_url: ${{ steps.get_release.outputs.linux_deb_arm64_url }}
       linux_deb_default_url: ${{ steps.get_release.outputs.linux_deb_default_url }}
@@ -54,23 +50,39 @@ jobs:
             const targetTag = context.payload.inputs?.tag_name || '';
             const region = (context.payload.inputs?.region || 'cn').toLowerCase();
             const appName = `firefly-ai-folder-${region}`;
+            const targetOwner = 'Leonard-Li777';
+            const targetRepo = 'firefly-ai-folder-desktop';
             
             let release;
             if (targetTag) {
-              core.info(`Fetching release by tag: ${targetTag}`);
+              core.info(`Fetching release by tag: ${targetTag} from ${targetOwner}/${targetRepo}`);
               const res = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
+                owner: targetOwner,
+                repo: targetRepo,
                 tag: targetTag
               });
               release = res.data;
             } else {
-              core.info('Fetching latest release...');
-              const res = await github.rest.repos.getLatestRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo
-              });
-              release = res.data;
+              core.info(`Fetching latest release from ${targetOwner}/${targetRepo}...`);
+              try {
+                const res = await github.rest.repos.getLatestRelease({
+                  owner: targetOwner,
+                  repo: targetRepo
+                });
+                release = res.data;
+              } catch (e) {
+                core.info('getLatestRelease 404，尝试从 releases 列表中获取最近的发布...');
+                const listRes = await github.rest.repos.listReleases({
+                  owner: targetOwner,
+                  repo: targetRepo,
+                  per_page: 5
+                });
+                if (listRes.data && listRes.data.length > 0) {
+                  release = listRes.data[0];
+                } else {
+                  throw e;
+                }
+              }
             }
 
             core.info(`Target Release: ${release.tag_name} (${release.name})`);
@@ -88,23 +100,11 @@ jobs:
               core.setOutput('win_exe_name', winExe.name);
             }
 
-            // macOS .dmg (arch-specific & generic matching for separate arm64 / x64 architectures)
-            const macDmgAssets = assets.filter(a => a.name.endsWith('.dmg') && (a.name.includes(region) || !a.name.includes('intl')));
-            const macDmgArm64 = macDmgAssets.find(a => /arm64|aarch64/i.test(a.name));
-            const macDmgX64 = macDmgAssets.find(a => /x64|x86_64|intel/i.test(a.name));
-            const macDmgDefault = macDmgAssets[0];
-
-            if (macDmgArm64) {
-              core.setOutput('mac_dmg_arm64_url', macDmgArm64.browser_download_url);
-              core.setOutput('mac_dmg_arm64_name', macDmgArm64.name);
-            }
-            if (macDmgX64) {
-              core.setOutput('mac_dmg_x64_url', macDmgX64.browser_download_url);
-              core.setOutput('mac_dmg_x64_name', macDmgX64.name);
-            }
-            if (macDmgDefault) {
-              core.setOutput('mac_dmg_default_url', macDmgDefault.browser_download_url);
-              core.setOutput('mac_dmg_default_name', macDmgDefault.name);
+            // macOS .dmg
+            const macDmg = assets.find(a => a.name.endsWith('.dmg') && (a.name.includes(region) || !a.name.includes('intl')));
+            if (macDmg) {
+              core.setOutput('mac_dmg_url', macDmg.browser_download_url);
+              core.setOutput('mac_dmg_name', macDmg.name);
             }
 
             // Linux .deb (arch-specific & generic matching)
@@ -204,61 +204,36 @@ jobs:
           Stop-Process -Id $proc.Id -Force -ErrorAction SilentlyContinue
 
   # ==============================================================================
-  # 2. macOS Verification (Independent Apple Silicon arm64 & Intel x64 Packages)
+  # 2. macOS Verification (Native ARM64 & Rosetta 2 x86_64 Emulation)
   # ==============================================================================
   test-macos:
-    name: Test macOS (${{ matrix.name }})
+    name: Test macOS (${{ matrix.mode }})
     needs: resolve-release
-    if: needs.resolve-release.outputs.mac_dmg_default_url != '' || needs.resolve-release.outputs.mac_dmg_arm64_url != '' || needs.resolve-release.outputs.mac_dmg_x64_url != ''
+    if: needs.resolve-release.outputs.mac_dmg_url != ''
     strategy:
       fail-fast: false
       matrix:
         include:
-          - arch: "arm64"
-            name: "Apple Silicon (arm64)"
-            os: "macos-latest"
+          - arch: arm64
+            mode: "ARM64 (Native)"
             arch_flag: "-arm64"
-          - arch: "x64"
-            name: "Intel (x64 / Rosetta 2)"
-            os: "macos-latest"
+          - arch: x86_64
+            mode: "x86_64 (Rosetta 2 Emulation)"
             arch_flag: "-x86_64"
-    runs-on: ${{ matrix.os }}
+    runs-on: macos-latest
     steps:
-      - name: Download macOS DMG (${{ matrix.name }})
+      - name: Download macOS DMG
         run: |
-          # 优先使用与架构严格匹配的独立包，若无则回退至默认包
-          URL=""
-          FILE_NAME=""
-          if [ "${{ matrix.arch }}" = "arm64" ] && [ -n "${{ needs.resolve-release.outputs.mac_dmg_arm64_url }}" ]; then
-            URL="${{ needs.resolve-release.outputs.mac_dmg_arm64_url }}"
-            FILE_NAME="${{ needs.resolve-release.outputs.mac_dmg_arm64_name }}"
-          elif [ "${{ matrix.arch }}" = "x64" ] && [ -n "${{ needs.resolve-release.outputs.mac_dmg_x64_url }}" ]; then
-            URL="${{ needs.resolve-release.outputs.mac_dmg_x64_url }}"
-            FILE_NAME="${{ needs.resolve-release.outputs.mac_dmg_x64_name }}"
-          else
-            URL="${{ needs.resolve-release.outputs.mac_dmg_default_url }}"
-            FILE_NAME="${{ needs.resolve-release.outputs.mac_dmg_default_name }}"
-          fi
-
-          if [ -z "$URL" ]; then
-            echo "⚠️ 未找到适用于 ${{ matrix.arch }} 架构的 macOS DMG 资产，跳过。"
-            exit 0
-          fi
-
+          URL="${{ needs.resolve-release.outputs.mac_dmg_url }}"
+          FILE_NAME="${{ needs.resolve-release.outputs.mac_dmg_name }}"
           echo "Downloading $URL -> $FILE_NAME"
           curl -L -o "$FILE_NAME" "$URL"
-          echo "DOWNLOADED_DMG=$FILE_NAME" >> $GITHUB_ENV
 
       - name: Mount DMG & Extract Application
         run: |
-          FILE_NAME="$DOWNLOADED_DMG"
-          if [ -z "$FILE_NAME" ] || [ ! -f "$FILE_NAME" ]; then
-            echo "⚠️ 未下载到有效安装包，跳过后续步骤。"
-            exit 0
-          fi
-
-          MOUNT_DIR="/Volumes/FireflyInstaller_${{ matrix.arch }}"
-          echo "Mounting $FILE_NAME to $MOUNT_DIR..."
+          FILE_NAME="${{ needs.resolve-release.outputs.mac_dmg_name }}"
+          MOUNT_DIR="/Volumes/FireflyInstaller"
+          echo "Mounting $FILE_NAME..."
           hdiutil attach "$FILE_NAME" -mountpoint "$MOUNT_DIR" -nobrowse
           
           APP_NAME=$(ls -d "$MOUNT_DIR"/*.app | head -n 1)
@@ -269,11 +244,11 @@ jobs:
           fi
           
           echo "Found app bundle: $APP_NAME"
-          mkdir -p /tmp/FireflyTest_${{ matrix.arch }}
-          cp -R "$APP_NAME" /tmp/FireflyTest_${{ matrix.arch }}/
+          mkdir -p /tmp/FireflyTest
+          cp -R "$APP_NAME" /tmp/FireflyTest/
           hdiutil detach "$MOUNT_DIR"
           
-          LOCAL_APP="/tmp/FireflyTest_${{ matrix.arch }}/$(basename "$APP_NAME")"
+          LOCAL_APP="/tmp/FireflyTest/$(basename "$APP_NAME")"
           echo "Removing quarantine attributes..."
           xattr -dr com.apple.quarantine "$LOCAL_APP" || true
           
@@ -282,17 +257,13 @@ jobs:
           echo "APP_BIN_PATH=$BIN_PATH" >> $GITHUB_ENV
           echo "Binary path: $BIN_PATH"
 
-          echo "=== [1/2] 二进制架构信息检查 ==="
+          # Inspect binary architectures supported by the executable (e.g. Universal Binary)
+          echo "=== Binary Architecture Inspection ==="
           lipo -info "$BIN_PATH" || file "$BIN_PATH"
 
       - name: Launch App via arch ${{ matrix.arch_flag }} & 15s Smoke Test
         run: |
-          if [ -z "$APP_BIN_PATH" ] || [ ! -f "$APP_BIN_PATH" ]; then
-            echo "⚠️ 二进制未找到，跳过启动测试。"
-            exit 0
-          fi
-
-          echo "Starting application with target architecture: ${{ matrix.name }}"
+          echo "Starting application with target architecture: ${{ matrix.mode }}"
           echo "Command: arch ${{ matrix.arch_flag }} \"$APP_BIN_PATH\" --no-sandbox --disable-gpu"
           
           arch ${{ matrix.arch_flag }} "$APP_BIN_PATH" --no-sandbox --disable-gpu > /tmp/app-stdout.log 2>&1 &
@@ -301,13 +272,13 @@ jobs:
 
           # Verify the running process architecture
           sleep 1
-          echo "=== 进程实时运行架构检查 ==="
+          echo "=== Verifying Running Process Architecture ==="
           pgrep -f "$(basename "$APP_BIN_PATH")" | xargs -I {} ps -p {} -o pid,arch,command || true
 
           for i in {1..8}; do
             sleep 2
             if ! kill -0 $APP_PID 2>/dev/null; then
-              echo "❌ Application crashed prematurely under ${{ matrix.name }}!"
+              echo "❌ Application crashed prematurely under ${{ matrix.mode }}!"
               echo "=== Application Output Logs ==="
               cat /tmp/app-stdout.log || true
               exit 1
@@ -315,7 +286,7 @@ jobs:
             echo "  -> Health check at $((i*2))s: Process $APP_PID is alive."
           done
 
-          echo "✅ macOS ${{ matrix.name }} passed 15-second startup stability smoke test!"
+          echo "✅ macOS ${{ matrix.mode }} passed 15-second startup stability smoke test!"
           kill -15 $APP_PID 2>/dev/null || kill -9 $APP_PID 2>/dev/null || true
 
   # ==============================================================================
@@ -633,11 +604,11 @@ jobs:
 
           # macOS
           if [ "${{ needs.test-macos.result }}" = "success" ]; then
-            echo "| 🍎 macOS (Apple Silicon arm64 & Intel x64) | ✅ Passed | DMG Mount, Gatekeeper bypass & 15s Process Alive |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🍎 macOS (Native ARM64 & Rosetta 2 x86_64) | ✅ Passed | DMG Mount, Gatekeeper bypass & 15s Process Alive |" >> $GITHUB_STEP_SUMMARY
           elif [ "${{ needs.test-macos.result }}" = "skipped" ]; then
-            echo "| 🍎 macOS (Apple Silicon arm64 & Intel x64) | ⚠️ Skipped | Asset not found |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🍎 macOS (Native ARM64 & Rosetta 2 x86_64) | ⚠️ Skipped | Asset not found |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| 🍎 macOS (Apple Silicon arm64 & Intel x64) | ❌ Failed | Startup or Crash Error |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🍎 macOS (Native ARM64 & Rosetta 2 x86_64) | ❌ Failed | Startup or Crash Error |" >> $GITHUB_STEP_SUMMARY
           fi
 
           # Linux DEB

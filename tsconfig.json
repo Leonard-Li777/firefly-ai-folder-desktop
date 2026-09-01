@@ -51,6 +51,11 @@
       "@firefly/server/*": ["pro/packages/server/src/*"],
       "@firefly/i18n-content": ["pro/packages/i18n-content/src"],
       "@firefly/i18n-content/*": ["pro/packages/i18n-content/src/*"],
+      "@test/mocks": ["pro/tests/mocks/index.ts"],
+      "@test/mocks/*": ["pro/tests/mocks/*"],
+      "@test/helpers": ["pro/tests/helpers/index.ts"],
+      "@test/helpers/*": ["pro/tests/helpers/*"],
+      "@test/fixtures/*": ["pro/tests/fixtures/*"],
       "@pro": ["pro/src/index.ts", "src/shared/pro-stub/index.ts"],
       "@pro/*": ["pro/src/*", "src/shared/pro-stub/*"]
     }
