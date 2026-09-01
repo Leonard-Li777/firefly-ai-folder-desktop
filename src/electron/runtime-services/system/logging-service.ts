@@ -2,7 +2,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { platformAdapter } from '@firefly/electron-llamaIndex-service'
 import { LogLevel, LogEntry, AppError, ErrorType } from '@firefly/types'
-import { LogCategory, maskSensitiveInfo } from '@firefly/shared'
+import { LogCategory, maskSensitiveInfo, isE2ETestEnvironment } from '@firefly/shared'
 
 /**
  * 日志服务类
@@ -22,8 +22,22 @@ export class LoggingService {
   }
 
   private constructor() {
+    let initialLevel = LogLevel.INFO
+    const envLogLevel = process.env.LOG_LEVEL?.toLowerCase()
+    const isE2E = isE2ETestEnvironment() || process.env.IS_E2E_TEST === 'true'
+
+    if (isE2E || (envLogLevel && (envLogLevel.includes('debug') || envLogLevel.includes('all')))) {
+      initialLevel = LogLevel.DEBUG
+    } else if (envLogLevel && envLogLevel.includes('trace')) {
+      initialLevel = LogLevel.TRACE
+    } else if (envLogLevel && envLogLevel.includes('warn')) {
+      initialLevel = LogLevel.WARN
+    } else if (envLogLevel && envLogLevel.includes('error')) {
+      initialLevel = LogLevel.ERROR
+    }
+
     this.config = {
-      level: LogLevel.INFO,
+      level: initialLevel,
       maxFileSize: 10 * 1024 * 1024, // 10MB
       maxFiles: 5,
       enableConsole: false,
@@ -41,6 +55,13 @@ export class LoggingService {
 
     // 设置全局错误处理
     this.setupGlobalErrorHandling()
+  }
+
+  /**
+   * 动态设置日志过滤级别
+   */
+  public setLevel(level: LogLevel): void {
+    this.config.level = level
   }
 
   private suppressDuplicates = true

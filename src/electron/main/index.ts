@@ -346,16 +346,23 @@ logger.on(
 
     const message = parts.join(' ')
 
-    if (category === LogCategory.HTTP_CLIENT) {
-      if (level === 'debug') return
-      if (level === 'info') {
-        const upperMsg = message.toUpperCase()
-        if (upperMsg.includes('[DEBUG]') || upperMsg.includes('[INFO]')) return
-      }
-    }
+    const isDebugOrE2E =
+      process.env.IS_E2E_TEST === 'true' ||
+      process.env.LOG_LEVEL?.toLowerCase().includes('debug') ||
+      process.env.LOG_LEVEL?.toLowerCase().includes('all')
 
-    if (category === LogCategory.ANALYSIS_QUEUE) {
-      if ((level === 'debug' || level === 'info') && message.includes('发送状态更新')) return
+    if (!isDebugOrE2E) {
+      if (category === LogCategory.HTTP_CLIENT) {
+        if (level === 'debug') return
+        if (level === 'info') {
+          const upperMsg = message.toUpperCase()
+          if (upperMsg.includes('[DEBUG]') || upperMsg.includes('[INFO]')) return
+        }
+      }
+
+      if (category === LogCategory.ANALYSIS_QUEUE) {
+        if ((level === 'debug' || level === 'info') && message.includes('发送状态更新')) return
+      }
     }
 
     switch (level) {

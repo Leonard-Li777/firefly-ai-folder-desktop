@@ -964,21 +964,7 @@ export class FileProcessor {
 
         // 更新数据库中文件的真实哈希
         try {
-          // 1. 更新物理文件关联的真实指纹
-          db.prepare(
-            `UPDATE workspace_files SET 
-              file_fingerprint = ?, 
-              modified_at = ?,
-              accessed_at = ?
-            WHERE path = ?`
-          ).run(
-            fileFingerprint,
-            new Date().toISOString(),
-            new Date().toISOString(),
-            filePath
-          )
-
-          // 2. 确保 files 表中有对应基础记录
+          // 1. 确保 files 表中有对应基础记录 (必须先插入父表，满足外键约束)
           db.prepare(
             `INSERT INTO files (file_fingerprint, smart_name, size, type, created_at, modified_at, accessed_at)
              VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -992,6 +978,25 @@ export class FileProcessor {
             new Date(currentStats.birthtime).toISOString(),
             new Date(currentStats.mtime).toISOString(),
             new Date(currentStats.atime).toISOString()
+          )
+
+          // 2. 确保 file_contents 表中有对应指纹记录
+          db.prepare(`INSERT OR IGNORE INTO file_contents (file_fingerprint) VALUES (?)`).run(
+            fileFingerprint
+          )
+
+          // 3. 更新物理文件关联的真实指纹
+          db.prepare(
+            `UPDATE workspace_files SET 
+              file_fingerprint = ?, 
+              modified_at = ?,
+              accessed_at = ?
+            WHERE path = ?`
+          ).run(
+            fileFingerprint,
+            new Date().toISOString(),
+            new Date().toISOString(),
+            filePath
           )
 
           logger.info(
