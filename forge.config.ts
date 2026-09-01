@@ -1153,8 +1153,9 @@ const config: ForgeConfig = {
     executableName: EXECUTABLE_NAME,
     // ASAR 打包配置
     asar: {
+      unpack: '**/*.node',
       unpackDir:
-        '{node_modules/sharp,node_modules/@img,node_modules/better-sqlite3,node_modules/extract-file-icon}'
+        '{node_modules/sharp,node_modules/@img,node_modules/better-sqlite3,node_modules/extract-file-icon,**/node_modules/sharp/**,**/node_modules/@img/**,**/node_modules/better-sqlite3/**,**/node_modules/extract-file-icon/**}'
     },
 
     // extraResources 配置 - 包含llama-server二进制文件和配置文件
