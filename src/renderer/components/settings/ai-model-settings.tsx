@@ -32,7 +32,8 @@ import {
   formatFileSize,
   groupAndSortModels,
   logger,
-  validateModelPath
+  validateModelPath,
+  extractAccelerationFromBackendDisplay
 } from '@firefly/shared'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
@@ -400,6 +401,8 @@ export const AIModelSettings: React.FC = () => {
   const setModelName = useModelStore(s => s.setModelName)
   const activeDownloadId = useModelStore(s => s.activeDownloadId)
   const setActiveDownloadId = useModelStore(s => s.setActiveDownloadId)
+  const bestAcceleration = useModelStore(s => s.bestAcceleration)
+  const backend = useModelStore(s => s.backend)
 
   const [models, setModels] = useState<any[]>([])
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
@@ -959,11 +962,23 @@ export const AIModelSettings: React.FC = () => {
                     groupedModels[s].map(model => {
                       const downloadKey = `${model.id}@${model.source}`
                       const isActive = activeModelKey === `${model.id}@${model.source || 'default'}`
-                      const bestAcc = String(
+                      const configBestAcc = String(
                         getConfigValue<string>('BEST_ACCELERATION') ?? ''
                       ).toLowerCase()
-                      //临时测试 cpu模式
-                      const isCpuTier = bestAcc === 'cpu'
+                      const storeBestAcc = String(bestAcceleration ?? '').toLowerCase()
+                      const effectiveBestAcc =
+                        (storeBestAcc && storeBestAcc !== 'auto')
+                          ? storeBestAcc
+                          : (configBestAcc && configBestAcc !== 'auto')
+                            ? configBestAcc
+                            : ''
+                      const currentAcc = extractAccelerationFromBackendDisplay(backend)
+                      // 仅当明确的最佳加速引擎为 CPU，或者在未记录有效最佳引擎时根据当前运行后端/硬件检测无GPU加速时判定为 CPU 引擎
+                      const isCpuTier = Boolean(
+                        effectiveBestAcc === 'cpu' ||
+                        (!effectiveBestAcc && currentAcc === 'cpu') ||
+                        (!effectiveBestAcc && !currentAcc && hardwareInfo && !hardwareInfo.hasGPU)
+                      )
                       const dsparkKey = model.dspark ? `${model.dspark}@${model.source}` : ''
                       const isDsparkDownloaded = !!(
                         model.dspark &&

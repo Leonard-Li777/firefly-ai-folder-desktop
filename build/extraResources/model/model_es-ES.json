@@ -1021,6 +1021,35 @@
         "numCtx": 8192,
         "numPredict": 4096
       }
+    },
+    {
+      "id": "XHToken/Spark-X2.5-1.7B-GGUF",
+      "name": "Spark X2.5 1.7B（Ligero）",
+      "company": "XHToken",
+      "parameterSize": "1.7B",
+      "totalSize": "3.19GB",
+      "description": "Spark X2.5 1.7B 文本模型，轻量高效，仅支持文本分析。",
+      "source": "huggingface",
+      "quantization": "",
+      "disabled": true,
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "Ligero",
+        "Soporta operación de CPU",
+        "Solo texto"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
     }
   ]
 }

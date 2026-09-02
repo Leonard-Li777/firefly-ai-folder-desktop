@@ -774,6 +774,29 @@ export const MODEL_CONFIG_SOURCE = () => ({
         numCtx: 8192,
         numPredict: 4096
       }
+    },
+    {
+      id: 'XHToken/Spark-X2.5-1.7B-GGUF',
+      name: `Spark X2.5 1.7B（${t('轻量')}）`,
+      company: 'XHToken',
+      parameterSize: '1.7B',
+      totalSize: '3.19GB',
+      description: t('Spark X2.5 1.7B 文本模型，轻量高效，仅支持文本分析。'),
+      source: 'huggingface',
+      quantization: '',
+      disabled: true,
+      isMultiModal: false,
+      contextLength: 131072,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'fast',
+        quality: 'medium'
+      },
+      tags: [t('轻量'), t('支持CPU运行'), t('仅文本')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
     }
   ]
 })

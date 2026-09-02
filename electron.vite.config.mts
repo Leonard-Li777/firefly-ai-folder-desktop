@@ -580,9 +580,10 @@ export default defineConfig(({ command, mode }) => {
             'geo',
             'signature'
           ],
-          scan: true,
+          scan: false,
           copyAssets: {
-            baseDir: 'file-viewer'
+            baseDir: 'file-viewer',
+            mode: 'build'
           },
           chunkStrategy: 'renderer',
           inject: false
