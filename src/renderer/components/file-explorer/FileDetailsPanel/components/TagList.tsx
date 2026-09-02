@@ -175,22 +175,22 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
   }
 
   return (
-    <div className="border-t border-border pt-4 mb-6 space-y-3">
+    <div className="border-t border-border pt-3 mb-4 space-y-2.5">
       {tagGroups.map(group => {
         if (group.tags.length === 0) return null
 
         return (
           <div
             key={group.id}
-            className="flex items-stretch justify-between gap-2.5 py-0.5"
+            className="flex items-center justify-between gap-2"
           >
             {/* 左侧标签列表 */}
-            <div className="flex-1 flex flex-wrap gap-2 items-center min-w-0">
+            <div className="flex-1 flex flex-wrap gap-1.5 items-center min-w-0">
               {group.tags.map(tag => (
                 <span
                   key={tag.id}
                   className={cn(
-                    'group relative text-xs px-3 py-1.5 rounded-full font-medium cursor-default transition-opacity',
+                    'group relative text-xs px-2.5 py-1 rounded-full font-medium cursor-default transition-opacity',
                     deletingTagId === tag.id && 'opacity-50 pointer-events-none',
                     getTagColor(tag.colorIndex)
                   )}
@@ -212,23 +212,19 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
               ))}
             </div>
 
-            {/* 右侧垂直对称线条与置信度：上方加粗数值与下标%，下方置信度小字 */}
-            <div className="flex flex-col items-center justify-center shrink-0 select-none pl-1.5 py-0.5 min-w-[24px]">
-              <div className="flex-1 w-[1px] bg-border/40 min-h-[6px]" />
-              <div className="flex flex-col items-center my-1.5 gap-0.5">
-                <div className="flex items-baseline leading-none">
-                  <span className="text-[12px] font-bold text-muted-foreground/80 leading-none">
-                    {group.confidenceValue}
-                  </span>
-                  <span className="text-[8px] font-semibold text-muted-foreground/60 leading-none ml-[1px] translate-y-[2px]">
-                    %
-                  </span>
-                </div>
-                <span className="text-[9px] font-normal text-muted-foreground/50 leading-none tracking-wider [writing-mode:vertical-rl] whitespace-nowrap mt-0.5">
-                  {t('置信度')}
+            {/* 右侧垂直置信度：上方突出大号百分比数值，下方置信度小字 */}
+            <div className="flex flex-col items-center justify-center shrink-0 select-none pl-2 pr-1 self-center">
+              <div className="flex items-baseline leading-none">
+                <span className="text-base font-bold text-foreground/80 leading-none">
+                  {group.confidenceValue}
+                </span>
+                <span className="text-[10px] font-semibold text-muted-foreground/70 leading-none ml-[1px]">
+                  %
                 </span>
               </div>
-              <div className="flex-1 w-[1px] bg-border/40 min-h-[6px]" />
+              <span className="text-[9px] font-medium text-muted-foreground/50 leading-none tracking-tight mt-0.5 whitespace-nowrap">
+                {t('置信度')}
+              </span>
             </div>
           </div>
         )

@@ -102,6 +102,8 @@ export class OmniService {
         const ocrKeys = [
           'ENABLE_IMAGE_OCR',
           'ENABLE_DOCUMENT_OCR',
+          'MAX_DOCUMENT_OCR_ITEMS',
+          'ENABLE_OFFICE_COVER',
           'OCR_MODEL_SIZE',
           'MAX_DOCUMENT_OCR_FILE_SIZE',
           'MAX_CONTENT_SIZE_KB',
