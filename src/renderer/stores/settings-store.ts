@@ -370,12 +370,13 @@ export const useSettingsStore = create<ISettingsState>()(
       },
 
       updateConfigValue: async (key, value, options) => {
+        const state = get()
         const rendererField = configKeyToRendererFieldMap[key]
+        const updates: any = { [key]: value }
         if (rendererField) {
-          get().updateConfig({ [rendererField]: value } as Partial<AppConfig>, { internal: true })
-        } else {
-          set({ config: { ...get().config }, lastConfigUpdate: Date.now() })
+          updates[rendererField] = value
         }
+        state.updateConfig(updates as Partial<AppConfig>, { internal: true })
 
         if (typeof window.electronAPI?.updateConfigValue === 'function') {
           await window.electronAPI.updateConfigValue(key, value, options)

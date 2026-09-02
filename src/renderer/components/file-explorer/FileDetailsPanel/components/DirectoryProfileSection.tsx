@@ -58,7 +58,7 @@ const getPresetNamingTemplates = () => [
  * 当未选择文件时（item 为 undefined）或选中目录时，显示目录的 AI 画像分析结果
  * 智能文件名格式和AI分析策略支持在线编辑，编辑结果会直接影响后续文件分析
  */
-export const DirectoryProfileSection: React.FC<{
+const DirectoryProfileSectionComponent: React.FC<{
   analysisResult: any
   isDirAnalysis: (res: any) => boolean
   getTagColor: (index: number) => string
@@ -1076,4 +1076,7 @@ export const DirectoryProfileSection: React.FC<{
         )}
       </>
     )
-  }
+}
+
+// 使用 React.memo 优化渲染，避免在文件列表频繁更新或扫描时引发无谓的 DOM 突变
+export const DirectoryProfileSection = React.memo(DirectoryProfileSectionComponent)

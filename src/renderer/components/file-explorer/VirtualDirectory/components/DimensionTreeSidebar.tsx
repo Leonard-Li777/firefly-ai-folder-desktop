@@ -104,6 +104,9 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = React.m
     expandedKeys,
     setExpandedKeys
   }) => {
+    const swapFileNameDisplay =
+      useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
+
     const { handleTreeKeyDown } = useKeyboardNavigation({
       treeData,
       rootNode,
@@ -233,9 +236,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = React.m
                   const node = n as any
                   let displayName = node.name
                   if (node.isFile) {
-                    const getConfigValue = useSettingsStore.getState().getConfigValue
-                    const swap = getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
-                    displayName = swap
+                    displayName = swapFileNameDisplay
                       ? node._rawName || node._rawSmartName || displayName
                       : node._rawSmartName || node._rawName || displayName
                   }

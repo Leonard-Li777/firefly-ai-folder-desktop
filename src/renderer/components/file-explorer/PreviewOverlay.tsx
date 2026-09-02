@@ -1,10 +1,10 @@
-import React, { useEffect, useCallback, useRef, useMemo } from 'react'
+import React, { useEffect, useCallback, useRef } from 'react'
 import { t } from '@app/languages'
 import { usePreviewOverlayStore } from '../../stores/preview-overlay-store'
 import { PreviewToolbar } from './PreviewToolbar'
 import { PreviewContent } from './PreviewContent'
 import { usePreviewContent } from './hooks/usePreviewContent'
-import { needsExternalScrollbar } from '../common/FlyfishPreview/utils'
+import { useFileMultimodalContent } from './hooks/useFileMultimodalContent'
 
 /**
  * 全局文件预览覆盖层
@@ -23,7 +23,7 @@ export const PreviewOverlay: React.FC = () => {
   const { showRawText, setShowRawText, rawTextContent, isTextLoading, isTextCapable, showSwitch } =
     usePreviewContent({ filePath, fileName, extension })
 
-  const useExternalScroll = useMemo(() => needsExternalScrollbar(extension), [extension])
+  const { multimodalContent } = useFileMultimodalContent(filePath)
 
   // 处理 ESC 键关闭预览（支持 iframe 内部按 ESC）
   const handleKeyDown = useCallback(
@@ -108,10 +108,7 @@ export const PreviewOverlay: React.FC = () => {
         hint={t('ESC 返回')}
       />
 
-      <div
-        className="flex-1 relative h-full"
-        style={{ overflow: useExternalScroll ? 'auto' : 'hidden' }}
-      >
+      <div className="flex-1 relative h-full overflow-hidden">
         <PreviewContent
           filePath={filePath}
           fileName={fileName}
@@ -120,6 +117,7 @@ export const PreviewOverlay: React.FC = () => {
           rawTextContent={rawTextContent}
           isTextLoading={isTextLoading}
           isTextCapable={isTextCapable}
+          multimodalContent={multimodalContent}
         />
       </div>
     </div>

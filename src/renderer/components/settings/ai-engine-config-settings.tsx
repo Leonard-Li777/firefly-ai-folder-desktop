@@ -10,7 +10,8 @@ import { openExternalLink } from '../../lib/external-link'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { useSettingsStore } from '../../stores/settings-store'
-import { HardwareInfo } from '@firefly/types'
+import { useAIServiceStore } from '../../stores/ai-service-store'
+import { AIServiceStatus, HardwareInfo } from '@firefly/types'
 import { toast } from '../common/Toast'
 
 interface EngineRow {
@@ -95,6 +96,8 @@ export const AIEngineConfigSettings: React.FC = () => {
   const [switchingBackend, setSwitchingBackend] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(false)
   const switchingRef = useRef(false)
+  const aiServiceStatus = useAIServiceStore(s => s.status)
+  const isEngineFailed = !isCloudMode && aiServiceStatus === AIServiceStatus.ERROR
 
   const loadHardwareAndStatus = async () => {
     try {
@@ -470,7 +473,13 @@ export const AIEngineConfigSettings: React.FC = () => {
       {/* 显卡支持引擎适配表 */}
       <Card className="p-6 border-border shadow-sm rounded-3xl bg-card space-y-4 overflow-hidden">
         <div className="flex items-baseline gap-2 whitespace-nowrap">
-          <Label className="text-base font-black">{t('切换本地AI引擎')}</Label>
+          <Label
+            className={`text-base font-black ${isEngineFailed ? 'text-red-500 dark:text-red-400' : ''}`}
+          >
+            {isEngineFailed
+              ? t('切换AI引擎可以修复引擎失败')
+              : t('切换本地AI引擎')}
+          </Label>
           <span className="text-[11px] text-muted-foreground font-bold tracking-wider">
             {isCloudMode
               ? t('当前使用云端模型，切换以下引擎将自动切换回本地模式')
@@ -521,14 +530,22 @@ export const AIEngineConfigSettings: React.FC = () => {
                     key={index}
                     className={`border-b last:border-0 border-border transition-colors ${
                       row.isCurrent
-                        ? 'bg-primary/5 dark:bg-primary/10 font-semibold'
+                        ? isEngineFailed
+                          ? 'bg-red-500/5 dark:bg-red-500/10 font-semibold border-l-2 border-l-red-500'
+                          : 'bg-primary/5 dark:bg-primary/10 font-semibold'
                         : 'hover:bg-muted/10'
                     }`}
                   >
                     <td className="p-4 text-sm gap-2">
                       <div className="flex items-center">
                         <Cpu
-                          className={`h-4 w-4 pr-1 ${row.isCurrent ? 'text-primary' : 'text-muted-foreground/60'}`}
+                          className={`h-4 w-4 pr-1 ${
+                            row.isCurrent
+                              ? isEngineFailed
+                                ? 'text-red-500'
+                                : 'text-primary'
+                              : 'text-muted-foreground/60'
+                          }`}
                         />
                         <span>{row.name}</span>
                       </div>
@@ -556,15 +573,26 @@ export const AIEngineConfigSettings: React.FC = () => {
                     <td className="p-4 text-sm text-muted-foreground">{row.performance}</td>
                     <td className="p-4 text-sm text-center">
                       {row.isCurrent ? (
-                        <Badge className="bg-primary text-primary-foreground font-black px-2.5 py-0.5 rounded-full shadow-sm">
-                          {t('当前引擎')}
-                        </Badge>
+                        isEngineFailed ? (
+                          <Badge className="bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 font-black px-2.5 py-0.5 rounded-full shadow-sm">
+                            {t('引擎异常')}
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-primary text-primary-foreground font-black px-2.5 py-0.5 rounded-full shadow-sm">
+                            {t('当前引擎')}
+                          </Badge>
+                        )
                       ) : (
                         <Button
-                          variant="outline"
+                          variant={isEngineFailed ? 'destructive' : 'outline'}
                           size="sm"
                           disabled={switchingBackend !== null}
                           onClick={() => handleSwitchEngine(row.backend)}
+                          className={
+                            isEngineFailed
+                              ? 'shadow-[0_0_12px_rgba(239,68,68,0.3)] animate-pulse'
+                              : ''
+                          }
                         >
                           {switchingBackend === row.backend ? t('切换中...') : t('切换')}
                         </Button>

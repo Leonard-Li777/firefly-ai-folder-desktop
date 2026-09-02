@@ -392,25 +392,36 @@ function VirtualList({
     if (!el) return
 
     const updateSize = () => {
-      setContainerSize({
-        width: el.clientWidth,
-        height: el.clientHeight
-      })
+      const w = el.clientWidth || Math.round(el.getBoundingClientRect().width)
+      const h = el.clientHeight || Math.round(el.getBoundingClientRect().height)
+      if (w > 0 && h > 0) {
+        setContainerSize(prev => (prev.width === w && prev.height === h ? prev : { width: w, height: h }))
+      }
     }
+
     updateSize()
+
+    // 适配弹窗打开动画或布局重绘的尺寸延迟就绪
+    const rafId = requestAnimationFrame(updateSize)
+    const timerId = setTimeout(updateSize, 80)
 
     const observer = new ResizeObserver(entries => {
       const entry = entries[0]
       if (entry) {
-        setContainerSize({
-          width: Math.round(entry.contentRect.width),
-          height: Math.round(entry.contentRect.height)
-        })
+        const w = Math.round(entry.contentRect.width) || el.clientWidth
+        const h = Math.round(entry.contentRect.height) || el.clientHeight
+        if (w > 0 && h > 0) {
+          setContainerSize(prev => (prev.width === w && prev.height === h ? prev : { width: w, height: h }))
+        }
       }
     })
     observer.observe(el)
 
-    return () => observer.disconnect()
+    return () => {
+      cancelAnimationFrame(rafId)
+      clearTimeout(timerId)
+      observer.disconnect()
+    }
   }, [])
 
   const rowData = React.useMemo<RowData>(
@@ -425,45 +436,40 @@ function VirtualList({
     [items, colTemplate, analysisMode, totalWidth, onDeleteItem, onRetryItem]
   )
 
-  if (items.length === 0) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/60 select-none py-12">
-        <span className="text-xs">{t('分析队列暂无文件')}</span>
-      </div>
-    )
-  }
-
   const { width, height } = containerSize
-  if (width <= 0 || height <= 0) {
-    return <div ref={containerRef} className="w-full h-full" />
-  }
 
   return (
-    <div ref={containerRef} className="w-full h-full overflow-hidden">
-      {isReactWindowV2 ? (
-        <ListComponent
-          height={height}
-          rowCount={items.length}
-          rowHeight={ROW_HEIGHT}
-          width={width}
-          className="scrollbar-thin"
-          rowProps={{ data: rowData }}
-          rowComponent={QueueRowRenderer}
-          onScroll={({ scrollLeft }: { scrollLeft: number }) => onScrollX?.(scrollLeft)}
-        />
-      ) : (
-        <ListComponent
-          height={height}
-          itemCount={items.length}
-          itemSize={ROW_HEIGHT}
-          width={width}
-          className="scrollbar-thin"
-          itemData={rowData}
-          onScroll={({ scrollLeft }: { scrollLeft: number }) => onScrollX?.(scrollLeft)}
-        >
-          {QueueRowRenderer}
-        </ListComponent>
-      )}
+    <div ref={containerRef} className="w-full h-full overflow-hidden relative">
+      {items.length === 0 ? (
+        <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/60 select-none py-12">
+          <span className="text-xs">{t('分析队列暂无文件')}</span>
+        </div>
+      ) : width > 0 && height > 0 ? (
+        isReactWindowV2 ? (
+          <ListComponent
+            height={height}
+            rowCount={items.length}
+            rowHeight={ROW_HEIGHT}
+            width={width}
+            className="scrollbar-thin"
+            rowProps={{ data: rowData }}
+            rowComponent={QueueRowRenderer}
+            onScroll={({ scrollLeft }: { scrollLeft: number }) => onScrollX?.(scrollLeft)}
+          />
+        ) : (
+          <ListComponent
+            height={height}
+            itemCount={items.length}
+            itemSize={ROW_HEIGHT}
+            width={width}
+            className="scrollbar-thin"
+            itemData={rowData}
+            onScroll={({ scrollLeft }: { scrollLeft: number }) => onScrollX?.(scrollLeft)}
+          >
+            {QueueRowRenderer}
+          </ListComponent>
+        )
+      ) : null}
     </div>
   )
 }
@@ -510,7 +516,9 @@ export function AnalysisQueueContent({
     viewMode,
     setViewMode,
     setIsSplitOpen,
-    setShowModal
+    setShowModal,
+    isSplitMinimized,
+    setIsSplitMinimized
   } = useAnalysisQueueStore()
 
   const { items, running } = snapshot
@@ -779,14 +787,10 @@ export function AnalysisQueueContent({
           {mode === 'split' && (
             <button
               className="p-1 hover:bg-muted rounded text-muted-foreground hover:text-foreground"
-              onClick={() =>
-                useAnalysisQueueStore
-                  .getState()
-                  .setIsSplitMinimized(!useAnalysisQueueStore.getState().isSplitMinimized)
-              }
-              title={useAnalysisQueueStore.getState().isSplitMinimized ? t('展开') : t('最小化')}
+              onClick={() => setIsSplitMinimized(!isSplitMinimized)}
+              title={isSplitMinimized ? t('展开') : t('最小化')}
             >
-              {useAnalysisQueueStore.getState().isSplitMinimized ? (
+              {isSplitMinimized ? (
                 <Square className="w-3.5 h-3.5" />
               ) : (
                 <Minus className="w-3.5 h-3.5" />
@@ -806,7 +810,7 @@ export function AnalysisQueueContent({
       </div>
 
       {/* 动态列宽表头与虚拟文件列表区 - 最小化状态下隐藏 */}
-      {!useAnalysisQueueStore.getState().isSplitMinimized && (
+      {!isSplitMinimized && (
         <div className="flex-1 p-2 min-h-0 overflow-hidden flex flex-col">
           <div
             ref={tableContainerRef}

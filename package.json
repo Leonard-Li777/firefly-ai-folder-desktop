@@ -1,6 +1,6 @@
 {
   "name": "desktop",
-  "productName": "firefly-ai-folder-cn",
+  "productName": "firefly-ai-folder",
   "appId": "com.firefly.ai-folder",
   "version": "3.5.1",
   "description": "基于本地 AI 的智能虚拟文件管理系统。支持跨媒体元数据自动提取、多维度分类与虚拟目录管理。深度优化压缩包（如漫画归档）管理，告别文件混乱，实现一键智能化整理。",

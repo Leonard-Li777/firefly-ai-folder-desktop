@@ -86,6 +86,7 @@ function useDebouncedPromptUpdater(
  * 分析设置组件
  */
 export const AnalysisSettings: React.FC = () => {
+  const config = useSettingsStore(s => s.config)
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   const audioAnalysisDuration = useSettingsStore(s => s.config?.audioAnalysisDuration)

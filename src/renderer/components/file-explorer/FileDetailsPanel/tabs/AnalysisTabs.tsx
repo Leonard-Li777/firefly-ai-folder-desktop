@@ -120,7 +120,7 @@ function SummaryMarkdown({ content, maskClass }: { content: string; maskClass?: 
   )
 }
 
-export const AnalysisTabs: React.FC<any> = ({
+const AnalysisTabsComponent: React.FC<any> = ({
   availableTabs,
   activeTab,
   setActiveTab,
@@ -551,3 +551,6 @@ export const AnalysisTabs: React.FC<any> = ({
     </div>
   )
 }
+
+// 使用 React.memo 优化渲染，避免在父级频繁刷新时引起 Tab 内部 Magika 与详情视图 DOM 突变
+export const AnalysisTabs = React.memo(AnalysisTabsComponent)

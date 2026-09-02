@@ -315,14 +315,27 @@ export const VirtualDirectory: React.FC = () => {
                           defaultSize: 1,
                           minSize: 300,
                           content:
-                            vdirSidebarTab === 'dimensions' && selectedTags.length === 0 ? (
+                            vdirSidebarTab === 'dimensions' ? (
                               <DimensionFileListPanel
                                 workspaceDirectoryPath={currentWorkspaceDirectory?.path}
                                 virtualDirectoryId={selectedId || undefined}
                                 selectedTags={selectedTags}
                                 isMultiSelectMode={vdirMultiSelectMode}
-                                removeSelectedTag={dimId => {
-                                  setSelectedTags(prev => prev.filter(t => t.dimensionId !== dimId))
+                                removeSelectedTag={(dimId, tagValue, parentTagValue) => {
+                                  if (tagValue) {
+                                    setSelectedTags(prev =>
+                                      prev.filter(
+                                        t =>
+                                          !(
+                                            t.dimensionId === dimId &&
+                                            t.tagValue === tagValue &&
+                                            t.parentTagValue === parentTagValue
+                                          )
+                                      )
+                                    )
+                                  } else {
+                                    setSelectedTags(prev => prev.filter(t => t.dimensionId !== dimId))
+                                  }
                                 }}
                                 toggleTagSelection={(dimId, val, parentVal) => {
                                   setSelectedTags(prev => {

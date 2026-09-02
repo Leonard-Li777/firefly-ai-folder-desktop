@@ -56,6 +56,13 @@ const electronAPI = {
     return () => ipcRenderer.removeListener('system:log-forward-batch', handler)
   },
 
+  // 系统诊断日志
+  writeDiagnosticLog: (
+    filename: string,
+    content: string
+  ): Promise<{ success: boolean; path?: string; error?: string }> =>
+    ipcRenderer.invoke('system:write-diagnostic-log', filename, content),
+
   // 文件操作
   getAllFiles: (): Promise<FileInfo[]> => ipcRenderer.invoke('get-all-files'),
 

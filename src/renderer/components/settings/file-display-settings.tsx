@@ -42,6 +42,7 @@ const FIELD_META: Record<
  * 文件显示设置组件
  */
 export const FileDisplaySettings: React.FC = () => {
+  const config = useSettingsStore(s => s.config)
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)

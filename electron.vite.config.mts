@@ -565,29 +565,28 @@ export default defineConfig(({ command, mode }) => {
         tailwindcss(),
         voerkai18nVitePlugin(),
         react(),
-        fileViewerRenderers({
-          preset: 'standard',
-          renderers: [
-            'cad',
-            '3d',
-            'dicom',
-            'drawing',
-            'mindmap',
-            'typst',
-            'eda',
-            'data',
-            'epub',
-            'geo',
-            'signature'
-          ],
-          scan: false,
-          copyAssets: {
-            baseDir: 'file-viewer',
-            mode: 'build'
-          },
-          chunkStrategy: 'renderer',
-          inject: false
-        })
+        isProd &&
+          fileViewerRenderers({
+            preset: 'standard',
+            autoPresets: false,
+            renderers: [
+              'cad',
+              '3d',
+              'dicom',
+              'drawing',
+              'mindmap',
+              'typst',
+              'eda',
+              'data',
+              'epub',
+              'geo',
+              'signature'
+            ],
+            scan: false,
+            copyAssets: { baseDir: 'file-viewer' },
+            chunkStrategy: 'renderer',
+            inject: false
+          })
       ].filter(Boolean) as any,
       // 当 NO_MAIN_RESTART=true 时禁用 HMR 热更新
       // 强制 IPv4 地址避免 Windows 下 IPv6 (::1) 绑定权限问题

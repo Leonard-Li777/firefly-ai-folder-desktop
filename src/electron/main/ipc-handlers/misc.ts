@@ -634,6 +634,23 @@ export function registerMiscIPCHandlers() {
     return await omniService.getVersion()
   })
 
+  ipcMain.handle('system:write-diagnostic-log', async (event, filename: string, content: string) => {
+    try {
+      const { platformAdapter } = await import('@firefly/electron-llamaIndex-service')
+      const logsDir = path.join(platformAdapter.getAppDataPath(), 'logs')
+      if (!fs.existsSync(logsDir)) {
+        fs.mkdirSync(logsDir, { recursive: true })
+      }
+      const targetPath = path.join(logsDir, filename)
+      fs.writeFileSync(targetPath, content, 'utf8')
+      logger.info(LogCategory.MAIN, `[Diagnostic] DOM 变动诊断报告已成功写入本地: ${targetPath}`)
+      return { success: true, path: targetPath }
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, `[Diagnostic] 写入诊断报告失败:`, err)
+      return { success: false, error: err.message }
+    }
+  })
+
   ipcMain.on('renderer-error', (event, errorInfo) => {
     logger.error(LogCategory.RENDERER, '渲染进程出错:', errorInfo)
   })

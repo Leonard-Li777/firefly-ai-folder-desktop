@@ -74,6 +74,8 @@ const areEqual = (prevProps: GridCellInnerProps, nextProps: GridCellInnerProps) 
     prevProps.gridShowFullFileName === nextProps.gridShowFullFileName &&
     prevProps.itemPath === nextProps.itemPath &&
     prevProps.item?.name === nextProps.item?.name &&
+    prevProps.fileItem?.smartName === nextProps.fileItem?.smartName &&
+    prevProps.fileItem?.description === nextProps.fileItem?.description &&
     prevProps.item?.modifiedAt === nextProps.item?.modifiedAt &&
     prevProps.item?.size === nextProps.item?.size &&
     prevProps.fileItem?.thumbnailPath === nextProps.fileItem?.thumbnailPath &&
@@ -506,34 +508,49 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
         const isSwapped = swapFileNameDisplay
         // 网格视图是否完整显示文件名：开启按 break-all 完整换行，关闭时超出宽度省略
         const showFullName = gridShowFullFileName
-        const primaryName = isSwapped ? safeItemName : fileItem.smartName || safeItemName
-        const secondaryName = isSwapped ? fileItem.smartName || '' : safeItemName
+        const primaryName = isSwapped ? safeItemName : fileItem?.smartName || safeItemName
+        const hasDiffSmartName =
+          Boolean(fileItem?.smartName) && fileItem?.smartName !== safeItemName
+        const secondaryName = hasDiffSmartName
+          ? isSwapped
+            ? fileItem?.smartName || ''
+            : safeItemName
+          : ''
+        const nameTooltip = secondaryName
+          ? `${primaryName}\n${secondaryName}`
+          : primaryName
+        const combinedTitle = fileItem?.description
+          ? `${nameTooltip}\n\n${fileItem.description}`
+          : nameTooltip
+
         return (
-          <div className="flex flex-col items-center w-full gap-1.5 mt-0.5 pb-1.5">
+          <div
+            className="flex flex-col items-center w-full gap-1.5 mt-0.5 pb-1.5"
+            title={combinedTitle}
+          >
             <div
               className={cn(
                 'text-xs sm:text-sm font-medium text-center w-full px-0.5 transition-colors leading-tight',
                 showFullName ? 'break-all line-clamp-3 whitespace-normal' : 'truncate',
                 isHovered ? 'text-primary' : 'text-gray-700 dark:text-gray-100'
               )}
-              title={
-                isSwapped
-                  ? fileItem?.relativePathPrefix
-                    ? window.electronAPI?.utils?.normalizePath(
-                        `${fileItem.relativePathPrefix}/${safeItemName}`
-                      )
-                    : safeItemName
-                  : fileItem?.smartName || safeItemName
-              }
+              title={nameTooltip}
             >
               {primaryName}
             </div>
-            {secondaryName && (
+            {secondaryName ? (
               <div
                 className={cn(
                   'text-[10px] sm:text-xs text-muted-foreground w-full px-0.5 text-center leading-tight',
                   showFullName ? 'break-all line-clamp-1 whitespace-normal' : 'truncate'
                 )}
+                title={
+                  fileItem.relativePathPrefix
+                    ? window.electronAPI?.utils?.normalizePath(
+                        `${fileItem.relativePathPrefix}/${secondaryName}`
+                      )
+                    : secondaryName
+                }
               >
                 {fileItem.relativePathPrefix
                   ? window.electronAPI?.utils?.normalizePath(
@@ -541,7 +558,7 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
                     )
                   : secondaryName}
               </div>
-            )}
+            ) : null}
           </div>
         )
       })()}
@@ -570,10 +587,11 @@ const gridCellAreEqual = (prevProps: GridCellProps, nextProps: GridCellProps): b
   const index = nextProps.rowIndex * (nextData?.columnCount ?? 1) + nextProps.columnIndex
   const prevItem = prevData?.items?.[index]
   const nextItem = nextData?.items?.[index]
-  if (prevItem !== nextItem) return false
-  if (!prevItem || !nextItem) return true
+  if (!prevItem || !nextItem) return prevItem === nextItem
 
   if (prevItem.name !== nextItem.name) return false
+  if ((prevItem as any).smartName !== (nextItem as any).smartName) return false
+  if ((prevItem as any).description !== (nextItem as any).description) return false
   if (prevItem.path !== nextItem.path) return false
   if (prevItem.modifiedAt !== nextItem.modifiedAt) return false
   if (prevItem.size !== nextItem.size) return false

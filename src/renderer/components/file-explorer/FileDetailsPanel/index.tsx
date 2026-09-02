@@ -125,7 +125,7 @@ function MarkdownRenderer({ content, maskClass }: { content: string; maskClass?:
   )
 }
 
-export const FileDetailsPanel: React.FC<any> = ({
+const FileDetailsPanelComponent: React.FC<any> = ({
   item,
   onClose,
   onFileDeleted,
@@ -153,11 +153,29 @@ export const FileDetailsPanel: React.FC<any> = ({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const maskClass = workspaceDirectoryType === 'PRIVATE' ? 'ph-mask' : ''
   const showDirectory = !item
+  const swapFileNameDisplay =
+    useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
 
-  const isFileAnalysis = (res: any) => res && 'smartName' in res
-  const isDirAnalysis = (res: any) => res && 'fileCount' in res
+  const isFileAnalysis = React.useCallback(
+    (res: any) =>
+      res &&
+      ('smartName' in res ||
+        'isAnalyzed' in res ||
+        'dimensionTags' in res ||
+        'qualityScore' in res ||
+        'qualityReasoning' in res ||
+        'multimodalContent' in res ||
+        'analysisStats' in res ||
+        'content' in res ||
+        'metadata' in res),
+    []
+  )
+  const isDirAnalysis = React.useCallback(
+    (res: any) => res && ('fileCount' in res || 'subdirectoriesCount' in res || 'contextAnalysis' in res),
+    []
+  )
 
-  const getTagColor = (index: number) => {
+  const getTagColor = React.useCallback((index: number) => {
     const colors = [
       'bg-primary/10 text-primary',
       'bg-green-500/10 text-green-600 dark:text-green-500',
@@ -171,23 +189,36 @@ export const FileDetailsPanel: React.FC<any> = ({
       'bg-cyan-500/10 text-cyan-600 dark:text-cyan-500'
     ]
     return colors[index % colors.length]
-  }
+  }, [])
 
-  // 生成虚拟路径（基于维度标签 + 主文件名）
+  const formatDate = React.useCallback((d: any) => formatDateTime(d), [])
+
+  // 生成虚拟路径（基于维度标签 + 智能文件名）
   const generateVirtualPath = (res: any, useRealName?: boolean): string => {
     if (!res) return ''
     const parts: string[] = []
-    const dimensionOrder = [t('文件类型'), t('文件用途')]
+    // 维度顺序：1 (文件类型), 2 (文件用途)
+    const targetDimensions = [
+      { id: 1, name: t('文件类型') },
+      { id: 2, name: t('文件用途') }
+    ]
     if (Array.isArray(res.dimensionTags)) {
-      for (const dimName of dimensionOrder) {
-        const dimGroup = res.dimensionTags.find((d: any) => d.dimension === dimName)
-        if (dimGroup && dimGroup.tags.length > 0) {
+      for (const target of targetDimensions) {
+        const dimGroup = res.dimensionTags.find(
+          (d: any) =>
+            d.dimension === target.id ||
+            d.dimension === String(target.id) ||
+            d.dimension === target.name ||
+            d.name === target.name
+        )
+        if (dimGroup && dimGroup.tags && dimGroup.tags.length > 0) {
           parts.push(dimGroup.tags[0].name)
         }
       }
     }
-    const fileName = useRealName ? res.name || '' : res.smartName || res.name || ''
+    const fileName = useRealName ? res.name || '' : res.smartName || ''
     if (fileName) parts.push(fileName)
+    if (parts.length === 0) return ''
     const joined = parts.join('/')
     return window.electronAPI?.utils?.normalizePath(joined) || joined
   }
@@ -302,8 +333,8 @@ export const FileDetailsPanel: React.FC<any> = ({
       )
 
     if (hasOcr) tabs.push({ id: 'ocr', label: t('OCR/语音/歌词'), icon: 'graphic_eq' })
-    // 文档摘要：仅文档文本类文件显示
-    if (isDocumentText && analysisResult.content?.trim())
+    // 内容摘要：只要存在提取的文本内容（且非仅 OCR 图片），均显示内容摘要
+    if (analysisResult.content?.trim() && (!isImageFile || !hasOcr))
       tabs.push({ id: 'summary', label: t('内容摘要'), icon: 'summarize' })
     // 元数据 tab：仅当存在实际元数据内容（file_contents.metadata）或 Magika 类型识别信息（files.category）时显示，
     // 避免清空分析数据后仍残留空 tab
@@ -424,35 +455,43 @@ export const FileDetailsPanel: React.FC<any> = ({
             isFileAnalysis(analysisResult) &&
             analysisResult.isAnalyzed &&
             (analysisResult.smartName ||
-              (analysisResult.dimensionTags && analysisResult.dimensionTags.length > 0)) && (
+              (analysisResult.dimensionTags && analysisResult.dimensionTags.length > 0)) ? (
               <>
                 {(() => {
-                  const swap =
-                    useSettingsStore.getState().getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ??
-                    false
-                  if (swap) {
+                  const realName = item?.name || analysisResult.name || ''
+                  const smartName = analysisResult.smartName || ''
+
+                  if (smartName) {
+                    const primary = swapFileNameDisplay ? realName : smartName
+                    const secondary = swapFileNameDisplay ? smartName : realName
+
                     return (
                       <>
-                        <h2 className="font-semibold text-base mt-3 text-primary break-all">
-                          {item?.name || ''}
+                        <h2
+                          className="font-semibold text-base mt-3 text-primary break-all cursor-text"
+                          title={primary}
+                        >
+                          {primary}
                         </h2>
-                        {analysisResult.smartName && (
-                          <p className="text-xs text-muted-foreground mt-1 break-all">
-                            {generateVirtualPath(analysisResult, false)}
+                        {secondary && (
+                          <p
+                            className="text-xs text-muted-foreground mt-1 break-all cursor-text"
+                            title={secondary}
+                          >
+                            {secondary}
                           </p>
                         )}
                       </>
                     )
                   }
+
                   return (
-                    <>
-                      <h2 className="font-semibold text-base mt-3 text-primary break-all">
-                        {generateVirtualPath(analysisResult)}
-                      </h2>
-                      {item && !showDirectory && (
-                        <p className="text-xs text-muted-foreground mt-1 break-all">{item.name}</p>
-                      )}
-                    </>
+                    <h2
+                      className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
+                      title={realName}
+                    >
+                      {realName}
+                    </h2>
                   )
                 })()}
                 {analysisResult.description && (
@@ -461,7 +500,14 @@ export const FileDetailsPanel: React.FC<any> = ({
                   </div>
                 )}
               </>
-            )}
+            ) : item && !isDirectory ? (
+              <h2
+                className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
+                title={item.name}
+              >
+                {item.name}
+              </h2>
+            ) : null}
           {analysisResult && isDirAnalysis(analysisResult) && (
             <h2 className="font-semibold text-base mt-3 text-foreground break-all">
               ⭐{analysisResult.name}
@@ -489,7 +535,7 @@ export const FileDetailsPanel: React.FC<any> = ({
             analysisResult={analysisResult}
             isDirAnalysis={isDirAnalysis}
             getTagColor={getTagColor}
-            formatDate={(d: any) => formatDateTime(d)}
+            formatDate={formatDate}
             onRefresh={refreshAnalysis}
             isUnit={!!(item as any)?.isUnit}
             workspaceDirectoryPath={workspaceDirectoryPath || (item as any)?.workspaceDirectoryPath}
@@ -546,7 +592,7 @@ export const FileDetailsPanel: React.FC<any> = ({
           setActiveTab={setActiveTab}
           analysisResult={analysisResult}
           maskClass={maskClass}
-          formatDate={(d: any) => formatDateTime(d)}
+          formatDate={formatDate}
         />
       </div>
 
@@ -679,3 +725,6 @@ export const FileDetailsPanel: React.FC<any> = ({
     </aside>
   )
 }
+
+// 使用 React.memo 优化渲染，避免在父级文件列表变动时频繁导致整个侧边栏 DOM 属性突变
+export const FileDetailsPanel = React.memo(FileDetailsPanelComponent)

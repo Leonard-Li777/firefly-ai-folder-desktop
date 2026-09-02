@@ -40,10 +40,11 @@ const areRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRendererPro
 
   const prevItem = prevItems[prevProps.index]
   const nextItem = nextItems[nextProps.index]
-  if (prevItem !== nextItem) return false
-  if (!prevItem || !nextItem) return true
+  if (!prevItem || !nextItem) return prevItem === nextItem
 
   if (prevItem.name !== nextItem.name) return false
+  if ((prevItem as any).smartName !== (nextItem as any).smartName) return false
+  if ((prevItem as any).description !== (nextItem as any).description) return false
   if (prevItem.modifiedAt !== nextItem.modifiedAt) return false
   if ((prevItem as any).size !== (nextItem as any).size) return false
   if (prevItem.path !== nextItem.path) return false
@@ -130,7 +131,7 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
   const isDirectory = 'isDirectory' in item && item.isDirectory
 
   const { status: queueStatus, error: queueError } = useFileQueueState(
-    isDirectory ? '' : item.id || (item as any).fileId || item.path || '',
+    isDirectory ? '' : item.path || '',
     !isDirectory && !!(item as FileType).isAnalyzed
   )
   const { isPathEqual } = window.electronAPI!.utils
@@ -495,14 +496,27 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
       )}
       {(() => {
         const isSwapped = data.swapFileNameDisplay
+        const safeItemName = fileItem.name || ''
         const primaryName = isSwapped
-          ? fileItem.name || ''
-          : fileItem.smartName || fileItem.name || '-'
-        const secondaryName = isSwapped ? fileItem.smartName || '' : fileItem.name || ''
+          ? safeItemName
+          : fileItem.smartName || safeItemName || '-'
+        const hasDiffSmartName =
+          Boolean(fileItem.smartName) && fileItem.smartName !== safeItemName
+        const secondaryName = hasDiffSmartName
+          ? isSwapped
+            ? fileItem.smartName || ''
+            : safeItemName
+          : ''
+        const nameTooltip = secondaryName
+          ? `${primaryName}\n${secondaryName}`
+          : primaryName
+        const combinedTitle = fileItem.description
+          ? `${nameTooltip}\n\n${fileItem.description}`
+          : nameTooltip
         return (
           <td
             className="p-2 text-foreground/80 dark:text-foreground/80 whitespace-nowrap border-r border-border/30"
-            title={fileItem.description || ''}
+            title={combinedTitle}
             style={{ width: data.columnWidths.name }}
           >
             <div className="flex items-start">
@@ -518,7 +532,10 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
               />
               <div className="flex flex-col min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-medium cursor-pointer hover:text-primary dark:text-primary transition-colors truncate">
+                  <span
+                    className="font-medium cursor-pointer hover:text-primary dark:text-primary transition-colors truncate"
+                    title={nameTooltip}
+                  >
                     {primaryName}
                   </span>
                   {isLost && (
@@ -558,15 +575,24 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
                       )
                     })()}
                 </div>
-                {secondaryName && (
-                  <span className="text-xs text-muted-foreground truncate mt-0.5">
+                {secondaryName ? (
+                  <span
+                    className="text-xs text-muted-foreground truncate"
+                    title={
+                      fileItem.relativePathPrefix
+                        ? window.electronAPI?.utils?.normalizePath(
+                            `${fileItem.relativePathPrefix}/${secondaryName}`
+                          )
+                        : secondaryName
+                    }
+                  >
                     {fileItem.relativePathPrefix
                       ? window.electronAPI?.utils?.normalizePath(
                           `${fileItem.relativePathPrefix}/${secondaryName}`
                         )
                       : secondaryName}
                   </span>
-                )}
+                ) : null}
               </div>
             </div>
           </td>

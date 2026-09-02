@@ -493,15 +493,15 @@ export function useFileQueueState(itemIdOrPath: string | number, isAnalyzedOnDis
 
       const { idMap, pathMap } = getQueueMaps(state.snapshot)
       let item: AnalysisQueueItem | undefined
-
-      if (numericId !== null) {
-        item = idMap.get(numericId)
-      }
-      if (!item && typeof itemIdOrPath === 'string') {
+      if (typeof itemIdOrPath === 'string') {
         const normalize =
           window.electronAPI?.utils?.normalizeForCache ||
           ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
         item = pathMap.get(normalize(itemIdOrPath))
+      }
+
+      if (!item && numericId !== null) {
+        item = idMap.get(numericId)
       }
 
       let status: AnalysisStatus | undefined = undefined

@@ -18,7 +18,7 @@ interface SearchBarProps {
  * 搜索栏组件
  * 支持实时搜索、搜索历史、搜索建议、防抖处理
  */
-export const SearchBar: React.FC<SearchBarProps> = ({
+const SearchBarComponent: React.FC<SearchBarProps> = ({
   type,
   placeholder = t('搜索...'),
   onSearch,
@@ -370,3 +370,6 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     </div>
   )
 }
+
+// 使用 React.memo 优化渲染，避免在父级工具栏频繁更新时引发输入框 DOM 属性突变
+export const SearchBar = React.memo(SearchBarComponent)

@@ -25,8 +25,9 @@ export class LoggingService {
     let initialLevel = LogLevel.INFO
     const envLogLevel = process.env.LOG_LEVEL?.toLowerCase()
     const isE2E = isE2ETestEnvironment() || process.env.IS_E2E_TEST === 'true'
+    const isDebugMode = isE2E || !!(envLogLevel && (envLogLevel.includes('debug') || envLogLevel.includes('all')))
 
-    if (isE2E || (envLogLevel && (envLogLevel.includes('debug') || envLogLevel.includes('all')))) {
+    if (isDebugMode) {
       initialLevel = LogLevel.DEBUG
     } else if (envLogLevel && envLogLevel.includes('trace')) {
       initialLevel = LogLevel.TRACE
@@ -40,7 +41,7 @@ export class LoggingService {
       level: initialLevel,
       maxFileSize: 10 * 1024 * 1024, // 10MB
       maxFiles: 5,
-      enableConsole: false,
+      enableConsole: isDebugMode,
       enableFile: true,
       filePath: path.join(platformAdapter.getAppDataPath(), 'logs', 'app.log'),
       enableStructuredLogging: true,
@@ -315,16 +316,16 @@ export class LoggingService {
    */
   private logToConsole(logEntry: LogEntry): void {
     const levelName = LogLevel[logEntry.level]
-    const timestamp = logEntry.timestamp.toISOString()
+    const timestamp = logEntry.timestamp.toTimeString().slice(3, 8)
     const formattedData = this.formatDataForOutput(logEntry.data)
 
     if (this.config.enableStructuredLogging) {
       console.log(
-        `[${timestamp}] [${levelName}] [${logEntry.category}] ${logEntry.message}`,
+        `${timestamp} [${levelName}] [${logEntry.category}] ${logEntry.message}`,
         formattedData
       )
     } else {
-      console.log(`[${timestamp}] [${levelName}] [${logEntry.category}] ${logEntry.message}`)
+      console.log(`${timestamp} [${levelName}] [${logEntry.category}] ${logEntry.message}`)
     }
   }
 

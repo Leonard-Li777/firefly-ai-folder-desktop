@@ -19,6 +19,8 @@ interface PreviewContentProps {
   isTextLoading: boolean
   /** 是否支持文本显示 */
   isTextCapable: boolean
+  /** 多模态描述内容 */
+  multimodalContent?: string | null
 }
 
 /**
@@ -32,7 +34,8 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
   showRawText,
   rawTextContent,
   isTextLoading,
-  isTextCapable
+  isTextCapable,
+  multimodalContent
 }) => {
   const routeType = useMemo(() => {
     const res = getPreviewRouteType(extension)
@@ -66,12 +69,33 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
 
   // Flyfish 预览
   if (routeType === 'flyfish') {
-    return <FlyfishPreview filePath={filePath} fileName={fileName} extension={extension} />
+    return (
+      <div className="w-full h-full flex flex-col overflow-y-auto">
+        <div className="w-full flex-1 min-h-[300px]">
+          <FlyfishPreview filePath={filePath} fileName={fileName} extension={extension} />
+        </div>
+        {multimodalContent && (
+          <div className="w-full max-w-2xl mx-auto my-4 px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
+            <p className="text-[11px] text-muted-foreground mb-1 font-medium">{t('多模态描述')}</p>
+            <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
+              {multimodalContent}
+            </p>
+          </div>
+        )}
+      </div>
+    )
   }
 
   // 原生预览
   if (routeType === 'native') {
-    return <FilePreview filePath={filePath} fileName={fileName} extension={extension} />
+    return (
+      <FilePreview
+        filePath={filePath}
+        fileName={fileName}
+        extension={extension}
+        multimodalContent={multimodalContent}
+      />
+    )
   }
 
   // AI 分析标记为文本的文件

@@ -611,7 +611,7 @@ export function Footer() {
           {/* 背景进度条层：自适应时间与动态阻尼自平衡算法 (Self-Balancing Adaptive Progress) + 思考流光 */}
           {displayItem && (
             <div
-              className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden"
+              className="absolute inset-0 rounded-lg pointer-events-none overflow-hidden ph-no-capture"
               style={{
                 transform: `scaleX(${animScale})`,
                 transformOrigin: 'left',

@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect } from 'react'
 import { t } from '@app/languages'
 import { MaterialIcon } from '../../lib/utils'
 import { usePreviewOverlayStore } from '../../stores/preview-overlay-store'
 import { PreviewToolbar } from './PreviewToolbar'
 import { PreviewContent } from './PreviewContent'
 import { usePreviewContent } from './hooks/usePreviewContent'
+import { useFileMultimodalContent } from './hooks/useFileMultimodalContent'
 import { SupportedFormats } from '../common/SupportedFormats'
 import { PageId } from '../../constants/page-ids'
-import { needsExternalScrollbar } from '../common/FlyfishPreview/utils'
 import { logger, LogCategory } from '@firefly/shared'
 
 interface SplitPreviewPanelProps {
@@ -43,10 +43,7 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
       extension: previewExtension
     })
 
-  const useExternalScroll = useMemo(
-    () => needsExternalScrollbar(previewExtension),
-    [previewExtension]
-  )
+  const { multimodalContent } = useFileMultimodalContent(previewFilePath)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -85,10 +82,7 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
         onToggleRawText={setShowRawText}
       />
 
-      <div
-        className="flex-1 relative h-full mr-2"
-        style={{ overflow: useExternalScroll ? 'auto' : 'hidden' }}
-      >
+      <div className="flex-1 relative h-full mr-2 overflow-hidden">
         <PreviewContent
           filePath={previewFilePath}
           fileName={previewFileName}
@@ -97,6 +91,7 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
           rawTextContent={rawTextContent}
           isTextLoading={isTextLoading}
           isTextCapable={isTextCapable}
+          multimodalContent={multimodalContent}
         />
       </div>
     </div>

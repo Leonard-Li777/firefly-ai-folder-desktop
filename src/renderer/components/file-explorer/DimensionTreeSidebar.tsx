@@ -262,7 +262,205 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
     )
   }
 )
-DimensionTreeNodeComponent.displayName = 'DimensionTreeNodeComponent'
+// 单独提取的树节点渲染行组件，使用 React.memo 进行细粒度隔离
+interface DimensionTreeRowProps {
+  row: any
+  isExportMode?: boolean
+  toggleDimensionGroupCollapsed: (id: number) => void
+  toggleTagExpand: (tagValue: string) => void
+  toggleTagSelection: (
+    dimensionId: number,
+    tagValue: string,
+    parentTagValue?: string,
+    ancestorChain?: string[]
+  ) => void
+  handleTagClickInternal: (tag: any) => void
+}
+
+const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
+  ({
+    row,
+    isExportMode,
+    toggleDimensionGroupCollapsed,
+    toggleTagExpand,
+    toggleTagSelection,
+    handleTagClickInternal
+  }) => {
+    if (row.type === 'header' && row.node) {
+      return (
+        <div className="dimension-group relative mb-2">
+          {/* 维度名称向下贯穿到底部 Tag 节点的垂直竖线 (精确左移 8px，100% 绝对对齐维度名称前的箭头中心) */}
+          {!row.isCollapsed && (
+            <div
+              className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
+              style={{
+                left: '8px',
+                top: '26px',
+                bottom: '-8px'
+              }}
+            />
+          )}
+          <div className="flex items-center justify-between mb-1 relative z-10">
+            <h3
+              className="text-sm font-semibold text-primary cursor-pointer transition-colors flex items-center flex-1 py-1"
+              onClick={() => toggleDimensionGroupCollapsed(row.node!.id)}
+            >
+              <div className="w-4 h-4 flex items-center justify-center mr-1">
+                <MaterialIcon
+                  icon={row.isCollapsed ? 'chevron_right' : 'expand_more'}
+                  className="text-base text-primary transition-colors"
+                />
+              </div>
+              {row.node!.name}
+            </h3>
+          </div>
+        </div>
+      )
+    }
+
+    if (row.type === 'tag' && row.tag) {
+      const tag = row.tag
+      return (
+        <div
+          className="flex items-center group min-h-[25px] relative h-[26px]"
+          style={{ paddingLeft: `${(row.depth || 0) * 18 + 0}px` }}
+        >
+          {/* 贯穿每一个 L2 / L3 父级标签中轴线的多重深层垂直贯线 │ (8px 基准，绝对对齐维度名称前的箭头) */}
+          {(row.depth || 0) > 0 &&
+            Array.from({ length: row.depth || 0 }).map((_, d) => (
+              <div
+                key={`ancestor-v-line-${d}`}
+                className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
+                style={{
+                  left: `${d * 18 + 8}px`,
+                  top: 0,
+                  height: '100%'
+                }}
+              />
+            ))}
+
+          {/* 本层级的 ├── 树分支与贯穿线 */}
+          <div
+            className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
+            style={{
+              left: `${(row.depth || 0) * 18 + 8}px`,
+              top: 0,
+              height: row.isLastInGroup ? '13px' : '100%'
+            }}
+          />
+          {/* 分支横线 ─ */}
+          <div
+            className="absolute border-b border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
+            style={{
+              left: `${(row.depth || 0) * 18 + 8}px`,
+              top: 0,
+              width: '10px',
+              height: '13px'
+            }}
+          />
+
+          {/* 箭头与 Dot 节点的垂直统一 Icon 框 (-ml-0.5 稍微左移 2px，完美压在 8px 连线上) */}
+          <div className="w-5 h-5 flex items-center justify-center shrink-0 mr-0.5 z-10 -ml-0.5">
+            {row.hasChildDimensions ? (
+              <button
+                className="p-0.5 hover:bg-accent rounded-sm text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer w-4.5 h-4.5"
+                onClick={e => {
+                  e.stopPropagation()
+                  toggleTagExpand(tag.tagValue)
+                }}
+              >
+                <MaterialIcon
+                  icon="keyboard_arrow_right"
+                  className={cn(
+                    'text-sm text-foreground hover:text-primary transition-transform duration-200',
+                    row.isTagExpanded && 'transform rotate-90'
+                  )}
+                />
+              </button>
+            ) : row.depth > 0 ? (
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/15 shrink-0" />
+            ) : null}
+          </div>
+
+          {isExportMode && (
+            <div
+              className="p-0.5 cursor-pointer hover:bg-accent/40 rounded-sm flex-shrink-0 flex items-center mr-1"
+              onClick={e => {
+                e.stopPropagation()
+                if (!row.isDisabled) {
+                  toggleTagSelection(
+                    tag.dimensionId,
+                    tag.tagValue,
+                    row.parentTagValue,
+                    row.ancestorChain
+                  )
+                }
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={row.isSelected}
+                disabled={row.isDisabled}
+                onChange={() =>
+                  toggleTagSelection(
+                    tag.dimensionId,
+                    tag.tagValue,
+                    row.parentTagValue,
+                    row.ancestorChain
+                  )
+                }
+                className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
+                onClick={e => e.stopPropagation()}
+              />
+            </div>
+          )}
+
+          <button
+            data-selected={row.isSelected ? 'true' : 'false'}
+            className={cn(
+              'flex-1 text-xs px-1.5 py-0.5 flex items-center rounded-sm overflow-hidden border-l-2 gap-1 duration-0 select-none h-[24px]',
+              row.depth > 0 && 'text-[11px]',
+              row.isSelected
+                ? 'bg-primary/10 text-primary font-medium border-primary'
+                : 'text-foreground/80 hover:bg-accent hover:text-accent-foreground border-transparent',
+              row.isDisabled
+                ? 'text-muted-foreground/45 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground/45'
+                : 'cursor-pointer'
+            )}
+            onClick={() => {
+              if (row.isDisabled) return
+              if (isExportMode) {
+                toggleTagSelection(
+                  tag.dimensionId,
+                  tag.tagValue,
+                  row.parentTagValue,
+                  row.ancestorChain
+                )
+              } else {
+                handleTagClickInternal({
+                  dimensionId: tag.dimensionId,
+                  dimensionName: tag.dimensionName,
+                  tagValue: tag.tagValue,
+                  level: tag.level,
+                  parentTagValue: row.parentTagValue,
+                  ancestorChain: row.ancestorChain
+                })
+              }
+            }}
+            disabled={row.isDisabled}
+          >
+            <span className="flex-1 text-left truncate text-current">{tag.tagValue}</span>
+            <span className="text-[10px] ml-1 shrink-0 opacity-55 text-current">
+              ({tag.fileCount})
+            </span>
+          </button>
+        </div>
+      )
+    }
+    return null
+  }
+)
+DimensionTreeRow.displayName = 'DimensionTreeRow'
 
 // Recursive helper to find all keys in tree
 const getAllKeys = (
@@ -953,181 +1151,17 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         className="flex-1 overflow-y-auto p-4 custom-scrollbar relative"
       >
         <div style={{ paddingTop: `${paddingTop}px`, paddingBottom: `${paddingBottom}px` }}>
-          {visibleRows.map(row => {
-            if (row.type === 'header' && row.node) {
-              return (
-                <div key={row.id} className="dimension-group relative mb-2">
-                  {/* 维度名称向下贯穿到底部 Tag 节点的垂直竖线 (精确左移 8px，100% 绝对对齐维度名称前的箭头中心) */}
-                  {!row.isCollapsed && (
-                    <div
-                      className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
-                      style={{
-                        left: '8px',
-                        top: '26px',
-                        bottom: '-8px'
-                      }}
-                    />
-                  )}
-                  <div className="flex items-center justify-between mb-1 relative z-10">
-                    <h3
-                      className="text-sm font-semibold text-primary cursor-pointer transition-colors flex items-center flex-1 py-1"
-                      onClick={() => toggleDimensionGroupCollapsed(row.node!.id)}
-                    >
-                      <div className="w-4 h-4 flex items-center justify-center mr-1">
-                        <MaterialIcon
-                          icon={row.isCollapsed ? 'chevron_right' : 'expand_more'}
-                          className="text-base text-primary transition-colors"
-                        />
-                      </div>
-                      {row.node!.name}
-                    </h3>
-                  </div>
-                </div>
-              )
-            }
-
-            if (row.type === 'tag' && row.tag) {
-              const tag = row.tag
-              return (
-                <div
-                  key={row.id}
-                  className="flex items-center group min-h-[25px] relative h-[26px]"
-                  style={{ paddingLeft: `${(row.depth || 0) * 18 + 0}px` }}
-                >
-                  {/* 贯穿每一个 L2 / L3 父级标签中轴线的多重深层垂直贯线 │ (8px 基准，绝对对齐维度名称前的箭头) */}
-                  {(row.depth || 0) > 0 &&
-                    Array.from({ length: row.depth || 0 }).map((_, d) => (
-                      <div
-                        key={`ancestor-v-line-${d}`}
-                        className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
-                        style={{
-                          left: `${d * 18 + 8}px`,
-                          top: 0,
-                          height: '100%'
-                        }}
-                      />
-                    ))}
-
-                  {/* 本层级的 ├── 树分支与贯穿线 */}
-                  <div
-                    className="absolute border-l border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
-                    style={{
-                      left: `${(row.depth || 0) * 18 + 8}px`,
-                      top: 0,
-                      height: row.isLastInGroup ? '13px' : '100%'
-                    }}
-                  />
-                  {/* 分支横线 ─ */}
-                  <div
-                    className="absolute border-b border-muted-foreground/45 dark:border-muted-foreground/35 pointer-events-none z-0"
-                    style={{
-                      left: `${(row.depth || 0) * 18 + 8}px`,
-                      top: 0,
-                      width: '10px',
-                      height: '13px'
-                    }}
-                  />
-
-                  {/* 箭头与 Dot 节点的垂直统一 Icon 框 (-ml-0.5 稍微左移 2px，完美压在 8px 连线上) */}
-                  <div className="w-5 h-5 flex items-center justify-center shrink-0 mr-0.5 z-10 -ml-0.5">
-                    {row.hasChildDimensions ? (
-                      <button
-                        className="p-0.5 hover:bg-accent rounded-sm text-muted-foreground hover:text-foreground transition-colors shrink-0 flex items-center justify-center cursor-pointer w-4.5 h-4.5"
-                        onClick={e => {
-                          e.stopPropagation()
-                          toggleTagExpand(tag.tagValue)
-                        }}
-                      >
-                        <MaterialIcon
-                          icon="keyboard_arrow_right"
-                          className={cn(
-                            'text-sm text-foreground hover:text-primary transition-transform duration-200',
-                            row.isTagExpanded && 'transform rotate-90'
-                          )}
-                        />
-                      </button>
-                    ) : row.depth > 0 ? (
-                      <span className="w-1 h-1 rounded-full bg-muted-foreground/15 shrink-0" />
-                    ) : null}
-                  </div>
-
-                  {isExportMode && (
-                    <div
-                      className="p-0.5 cursor-pointer hover:bg-accent/40 rounded-sm flex-shrink-0 flex items-center mr-1"
-                      onClick={e => {
-                        e.stopPropagation()
-                        if (!row.isDisabled) {
-                          toggleTagSelection(
-                            tag.dimensionId,
-                            tag.tagValue,
-                            row.parentTagValue,
-                            row.ancestorChain
-                          )
-                        }
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={row.isSelected}
-                        disabled={row.isDisabled}
-                        onChange={() =>
-                          toggleTagSelection(
-                            tag.dimensionId,
-                            tag.tagValue,
-                            row.parentTagValue,
-                            row.ancestorChain
-                          )
-                        }
-                        className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
-                        onClick={e => e.stopPropagation()}
-                      />
-                    </div>
-                  )}
-
-                  <button
-                    data-selected={row.isSelected ? 'true' : 'false'}
-                    className={cn(
-                      'flex-1 text-xs px-1.5 py-0.5 flex items-center rounded-sm overflow-hidden border-l-2 gap-1 duration-0 select-none h-[24px]',
-                      row.depth > 0 && 'text-[11px]',
-                      row.isSelected
-                        ? 'bg-primary/10 text-primary font-medium border-primary'
-                        : 'text-foreground/80 hover:bg-accent hover:text-accent-foreground border-transparent',
-                      row.isDisabled
-                        ? 'text-muted-foreground/45 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground/45'
-                        : 'cursor-pointer'
-                    )}
-                    onClick={() => {
-                      if (row.isDisabled) return
-                      if (isExportMode) {
-                        toggleTagSelection(
-                          tag.dimensionId,
-                          tag.tagValue,
-                          row.parentTagValue,
-                          row.ancestorChain
-                        )
-                      } else {
-                        handleTagClickInternal({
-                          dimensionId: tag.dimensionId,
-                          dimensionName: tag.dimensionName,
-                          tagValue: tag.tagValue,
-                          level: tag.level,
-                          parentTagValue: row.parentTagValue,
-                          ancestorChain: row.ancestorChain
-                        })
-                      }
-                    }}
-                    disabled={row.isDisabled}
-                  >
-                    <span className="flex-1 text-left truncate text-current">{tag.tagValue}</span>
-                    <span className="text-[10px] ml-1 shrink-0 opacity-55 text-current">
-                      ({tag.fileCount})
-                    </span>
-                  </button>
-                </div>
-              )
-            }
-            return null
-          })}
+          {visibleRows.map(row => (
+            <DimensionTreeRow
+              key={row.id}
+              row={row}
+              isExportMode={isExportMode}
+              toggleDimensionGroupCollapsed={toggleDimensionGroupCollapsed}
+              toggleTagExpand={toggleTagExpand}
+              toggleTagSelection={toggleTagSelection}
+              handleTagClickInternal={handleTagClickInternal}
+            />
+          ))}
         </div>
       </div>
     </div>

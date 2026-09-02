@@ -10,9 +10,15 @@ interface FilePreviewProps {
   filePath: string
   fileName: string
   extension?: string
+  multimodalContent?: string | null
 }
 
-export const FilePreview: React.FC<FilePreviewProps> = ({ filePath, fileName, extension }) => {
+export const FilePreview: React.FC<FilePreviewProps> = ({
+  filePath,
+  fileName,
+  extension,
+  multimodalContent
+}) => {
   const category = extension ? getFileCategory('file.' + extension) : getFileCategory(fileName)
   const [textContent, setTextContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -154,29 +160,63 @@ export const FilePreview: React.FC<FilePreviewProps> = ({ filePath, fileName, ex
   switch (category) {
     case FileCategory.IMAGE:
       return (
-        <div className="flex items-center justify-center h-full p-4 ph-no-capture">
-          <img
-            src={fileUrl}
-            alt={fileName}
-            className="max-w-full max-h-full object-contain shadow-lg"
-          />
+        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center ph-no-capture preview-scrollbar">
+          <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full">
+            <div className="flex items-center justify-center max-w-full">
+              <img
+                src={fileUrl}
+                alt={fileName}
+                className="max-w-full max-h-[70vh] object-contain shadow-lg rounded"
+              />
+            </div>
+            {multimodalContent && (
+              <div className="w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
+                <p className="text-[11px] text-muted-foreground mb-1 font-medium">{t('多模态描述')}</p>
+                <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
+                  {multimodalContent}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )
     case FileCategory.VIDEO:
       return (
-        <div className="flex items-center justify-center h-full p-4 ph-no-capture">
-          <video src={fileUrl} controls className="max-w-full max-h-full shadow-lg">
-            {t('您的浏览器不支持视频播放')}
-          </video>
+        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center ph-no-capture preview-scrollbar">
+          <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full">
+            <div className="flex items-center justify-center max-w-full">
+              <video src={fileUrl} controls className="max-w-full max-h-[70vh] shadow-lg rounded">
+                {t('您的浏览器不支持视频播放')}
+              </video>
+            </div>
+            {multimodalContent && (
+              <div className="w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
+                <p className="text-[11px] text-muted-foreground mb-1 font-medium">{t('多模态描述')}</p>
+                <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
+                  {multimodalContent}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )
     case FileCategory.AUDIO:
       return (
-        <div className="flex flex-col items-center justify-center h-full p-4 ph-no-capture">
-          <MaterialIcon icon="audiotrack" className="text-8xl text-primary mb-8" />
-          <audio src={fileUrl} controls className="w-full max-w-md">
-            {t('您的浏览器不支持音频播放')}
-          </audio>
+        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center ph-no-capture preview-scrollbar">
+          <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full">
+            <MaterialIcon icon="audiotrack" className="text-8xl text-primary mb-2 shrink-0" />
+            <audio src={fileUrl} controls className="w-full max-w-md shrink-0">
+              {t('您的浏览器不支持音频播放')}
+            </audio>
+            {multimodalContent && (
+              <div className="w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
+                <p className="text-[11px] text-muted-foreground mb-1 font-medium">{t('多模态描述')}</p>
+                <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
+                  {multimodalContent}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       )
     case FileCategory.TEXT:

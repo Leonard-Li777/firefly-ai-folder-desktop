@@ -61,6 +61,8 @@ const areEqual = (
     prevProps.swapFileNameDisplay !== nextProps.swapFileNameDisplay ||
     prevProps.totalWidth !== nextProps.totalWidth ||
     prevProps.item?.name !== nextProps.item?.name ||
+    prevProps.fileItem?.smartName !== nextProps.fileItem?.smartName ||
+    prevProps.fileItem?.description !== nextProps.fileItem?.description ||
     prevProps.item?.modifiedAt !== nextProps.item?.modifiedAt ||
     prevProps.item?.size !== nextProps.item?.size ||
     prevProps.fileItem?.qualityScore !== nextProps.fileItem?.qualityScore ||
@@ -162,7 +164,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
   }
 
   const { status: queueStatus, error: queueError } = useFileQueueState(
-    isDirectory ? '' : item?.id || fileItem?.id || itemPath,
+    isDirectory ? '' : itemPath,
     !isDirectory && !!fileItem?.isAnalyzed
   )
 
@@ -209,17 +211,10 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
               item.path.split('.').pop() ||
               ''
             const routeType = getPreviewRouteType(ext)
-            logger.info(LogCategory.RENDERER, `[VirtualRowRenderer] 虚拟列表项被点击`, {
-              path: item.path,
-              ext,
-              routeType,
-              pageId,
-              pageMode
-            })
             if (routeType !== 'unsupported') {
               splitState.openPreview(item.path, fileItem.smartName || item.name, ext, pageId)
             } else {
-              logger.info(
+              logger.debug(
                 LogCategory.RENDERER,
                 `[VirtualRowRenderer] 文件类型不支持预览，触发 clearPreview`,
                 { path: item.path, ext }
@@ -275,85 +270,108 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
         </div>
       )}
 
-      <div
-        className="flex-shrink-0 flex items-center p-2 truncate border-r border-border/30 h-full"
-        style={{ width: columnWidths.name }}
-      >
-        {isDirectory ? (
-          <span
-            className={cn(
-              'material-icons mr-2 text-xl flex-shrink-0',
-              isUnit && unitTheme ? `${unitTheme.color} ${unitTheme.darkColor}` : 'text-amber-500'
-            )}
+      {(() => {
+        const isSwapped = swapFileNameDisplay
+        const primaryName = !fileItem
+          ? safeItemName
+          : isSwapped
+            ? safeItemName
+            : fileItem.smartName || safeItemName
+        const hasDiffSmartName =
+          Boolean(fileItem?.smartName) && fileItem?.smartName !== safeItemName
+        const secondaryName = hasDiffSmartName
+          ? isSwapped
+            ? fileItem?.smartName || ''
+            : safeItemName
+          : ''
+        const nameTooltip = secondaryName
+          ? `${primaryName}\n${secondaryName}`
+          : primaryName
+        const combinedTitle = fileItem?.description
+          ? `${nameTooltip}\n\n${fileItem.description}`
+          : nameTooltip
+
+        return (
+          <div
+            className="flex-shrink-0 flex items-center p-2 truncate border-r border-border/30 h-full"
+            title={combinedTitle}
+            style={{ width: columnWidths.name }}
           >
-            {isUnit && unitTheme ? unitTheme.icon : 'folder'}
-          </span>
-        ) : (
-          <SystemFileIcon
-            path={fileItem?.path}
-            extension={fileItem?.extension}
-            className="w-5 h-5 object-contain mr-2 flex-shrink-0"
-            fallback={
-              <span className="material-icons mr-2 text-xl flex-shrink-0 text-primary">
-                description
+            {isDirectory ? (
+              <span
+                className={cn(
+                  'material-icons mr-2 text-xl flex-shrink-0',
+                  isUnit && unitTheme ? `${unitTheme.color} ${unitTheme.darkColor}` : 'text-amber-500'
+                )}
+              >
+                {isUnit && unitTheme ? unitTheme.icon : 'folder'}
               </span>
-            }
-          />
-        )}
-        <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-1.5">
-            {(() => {
-              if (!fileItem) return <span className="font-medium truncate">{safeItemName}</span>
-              const isSwapped = swapFileNameDisplay
-              const primaryName = isSwapped ? safeItemName : fileItem.smartName || safeItemName
-              return (
-                <>
-                  <span className="font-medium truncate text-primary cursor-pointer transition-colors">
-                    {primaryName}
+            ) : (
+              <SystemFileIcon
+                path={fileItem?.path}
+                extension={fileItem?.extension}
+                className="w-5 h-5 object-contain mr-2 flex-shrink-0"
+                fallback={
+                  <span className="material-icons mr-2 text-xl flex-shrink-0 text-primary">
+                    description
                   </span>
-                  {isLost && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/80 px-1.5 py-0.5 rounded border border-red-300 dark:border-red-800 shrink-0">
-                      {t('已丢失')}
-                    </span>
-                  )}
-                  {isUnit && unitTheme && (
-                    <span
-                      className={cn(
-                        'inline-flex items-center gap-1 text-[10px] font-semibold',
-                        unitTheme.color,
-                        unitTheme.darkColor,
-                        'bg-white/90 dark:bg-gray-900/90',
-                        'px-1.5 py-0.5 rounded-md',
-                        'border shadow-sm backdrop-blur-sm shrink-0',
-                        unitTheme.border,
-                        unitTheme.darkBorder
-                      )}
-                      title={unitTooltip}
-                    >
-                      <span className="material-icons text-[12px]">{unitTheme.icon}</span>
-                      {t(unitLabel)}
-                    </span>
-                  )}
-                </>
-              )
-            })()}
+                }
+              />
+            )}
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="font-medium truncate text-primary cursor-pointer transition-colors"
+                  title={nameTooltip}
+                >
+                  {primaryName}
+                </span>
+                {isLost && (
+                  <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/80 px-1.5 py-0.5 rounded border border-red-300 dark:border-red-800 shrink-0">
+                    {t('已丢失')}
+                  </span>
+                )}
+                {isUnit && unitTheme && (
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-1 text-[10px] font-semibold',
+                      unitTheme.color,
+                      unitTheme.darkColor,
+                      'bg-white/90 dark:bg-gray-900/90',
+                      'px-1.5 py-0.5 rounded-md',
+                      'border shadow-sm backdrop-blur-sm shrink-0',
+                      unitTheme.border,
+                      unitTheme.darkBorder
+                    )}
+                    title={unitTooltip}
+                  >
+                    <span className="material-icons text-[12px]">{unitTheme.icon}</span>
+                    {t(unitLabel)}
+                  </span>
+                )}
+              </div>
+              {secondaryName ? (
+                <span
+                  className="text-xs text-gray-400 truncate"
+                  title={
+                    fileItem?.relativePathPrefix
+                      ? window.electronAPI?.utils?.normalizePath(
+                          `${fileItem.relativePathPrefix}/${secondaryName}`
+                        )
+                      : secondaryName
+                  }
+                >
+                  {fileItem?.relativePathPrefix
+                    ? window.electronAPI?.utils?.normalizePath(
+                        `${fileItem.relativePathPrefix}/${secondaryName}`
+                      )
+                    : secondaryName}
+                </span>
+              ) : null}
+            </div>
           </div>
-          {fileItem && (
-            <span className="text-xs text-gray-400 truncate">
-              {(() => {
-                const isSwapped = swapFileNameDisplay
-                const secondaryName = isSwapped ? fileItem.smartName || '' : safeItemName
-                if (!secondaryName) return null
-                return fileItem.relativePathPrefix
-                  ? window.electronAPI?.utils?.normalizePath(
-                      `${fileItem.relativePathPrefix}/${secondaryName}`
-                    )
-                  : secondaryName
-              })()}
-            </span>
-          )}
-        </div>
-      </div>
+        )
+      })()}
 
       {typeof shouldShowField === 'function' && shouldShowField('qualityScore') && (
         <div
@@ -507,10 +525,11 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
 
   const prevItem = prevItems[prevProps.index]
   const nextItem = nextItems[nextProps.index]
-  if (prevItem !== nextItem) return false
-  if (!prevItem || !nextItem) return true
+  if (!prevItem || !nextItem) return prevItem === nextItem
 
   if (prevItem.name !== nextItem.name) return false
+  if ((prevItem as any).smartName !== (nextItem as any).smartName) return false
+  if ((prevItem as any).description !== (nextItem as any).description) return false
   if (prevItem.modifiedAt !== nextItem.modifiedAt) return false
   if (prevItem.size !== nextItem.size) return false
   if (prevItem.path !== nextItem.path) return false

@@ -1,5 +1,6 @@
 import posthog from 'posthog-js/dist/module.full.no-external'
 import { useTierStore } from '../stores/tier-store'
+import { setupDomMutationMonitor } from './dom-mutation-monitor'
 
 /**
  * PostHog 配置和初始化模块
@@ -95,6 +96,11 @@ export const initPostHog = async () => {
     return
   }
 
+  // 开发模式下且已放行开启 ENABLE_POSTHOG 时，启动 DOM 高频突变诊断与日志导出
+  if (!IS_PACKAGED) {
+    setupDomMutationMonitor()
+  }
+
   // 1. 获取硬件检测结果（主进程在窗口加载前已检测就绪）与门控配置
   let hardwareInfo: any = null
   try {
@@ -137,6 +143,10 @@ export const initPostHog = async () => {
     // 依据硬件检测结果精准设置录屏开关：低配老核显直接禁用，高性能设备直接开启
     disable_session_recording: !enableRecording,
     session_recording: {
+      // 会话采样率：只录制 50% 的会话，降低客户端 CPU/内存开销
+      sampleRate: 0.5,
+      // 禁用 Canvas 抓取以降低主线程 CPU 和内存开销
+      captureCanvas: { recordCanvas: false },
       // 不默认掩码输入框与文本
       maskAllInputs: false,
       maskInputOptions: {
@@ -147,6 +157,8 @@ export const initPostHog = async () => {
       // 对带有这些类名的元素文本打码（录制中显示为 ***）
       maskTextClass: 'ph-mask'
     },
+    // 禁用性能指标遥测（降低客户端开销）
+    capture_performance: false,
     // 开启异常捕获
     capture_exceptions: true,
     // 自动捕获页面浏览
@@ -154,13 +166,13 @@ export const initPostHog = async () => {
     // 持久化标识
     persistence: 'localStorage+cookie',
     // 在发送前修改事件数据
-    before_send: event => {
-      // 注入环境标记，确保即便手动 capture 漏掉也会补上
-      if (event?.properties) {
-        event.properties['运行环境'] = __IS_PROD__ ? '生产环境' : '开发环境'
-      }
-      return event
-    }
+    // before_send: event => {
+    //   // 注入环境标记，确保即便手动 capture 漏掉也会补上
+    //   if (event?.properties) {
+    //     event.properties['运行环境'] = __IS_PROD__ ? '生产环境' : '开发环境'
+    //   }
+    //   return event
+    // }
   })
 
   // 4. 注册全局属性，确保每个事件都带上环境标识

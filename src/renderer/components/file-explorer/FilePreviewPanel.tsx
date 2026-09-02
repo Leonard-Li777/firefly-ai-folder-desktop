@@ -4,6 +4,7 @@ import { EmptyState } from '../common/EmptyState'
 import { PreviewToolbar } from './PreviewToolbar'
 import { PreviewContent } from './PreviewContent'
 import { usePreviewContent } from './hooks/usePreviewContent'
+import { useFileMultimodalContent } from './hooks/useFileMultimodalContent'
 
 interface FilePreviewPanelProps {
   className?: string
@@ -63,6 +64,8 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
   const { showRawText, setShowRawText, rawTextContent, isTextLoading, isTextCapable, showSwitch } =
     usePreviewContent({ filePath: filePath || '', fileName, extension: extension || '' })
 
+  const { multimodalContent } = useFileMultimodalContent(filePath || '')
+
   const handleBack = () => {
     onBack?.()
     setPreviewFile(null)
@@ -120,8 +123,8 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
             onClose={handleBack}
           />
 
-          {/* 预览内容区 - flex-1 自动填满剩余空间 */}
-          <div className="flex-1 overflow-hidden relative">
+          {/* 预览内容区 - flex-1 自动填满剩余空间，流式排版不限高度 */}
+          <div className="flex-1 relative overflow-hidden">
             <PreviewContent
               filePath={filePath}
               fileName={fileName}
@@ -130,6 +133,7 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
               rawTextContent={rawTextContent}
               isTextLoading={isTextLoading}
               isTextCapable={isTextCapable}
+              multimodalContent={multimodalContent}
             />
           </div>
         </div>

@@ -937,6 +937,302 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     }
   }, [addItems, start])
 
+  // 使用 useCallback 缓存工具栏渲染逻辑，避免父级重渲染时引起工具栏内的 SearchBar 和组件频繁重绘
+  const renderToolbar = useCallback(
+    (layoutContext: any) => (
+      <div className="flex-shrink-0 border-b border-border px-3 py-1.5 flex flex-wrap items-center justify-between bg-card gap-y-2 gap-x-3 min-h-[44px]">
+        {/* 左侧：集成式导航胶囊与面包屑 */}
+        <div className="flex items-center space-x-2 flex-1 min-w-[200px]">
+          <div className="inline-flex items-center rounded-lg border border-border/60 bg-muted/20 p-0.5 shadow-2xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-foreground/80 hover:text-foreground hover:bg-background/80 rounded-md transition-all disabled:opacity-30 cursor-pointer"
+              onClick={handleBack}
+              disabled={currentHistoryIndex <= 0}
+              title={t('后退 (Alt+Left / Backspace)')}
+            >
+              <MaterialIcon icon="arrow_back" className="text-lg" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-foreground/80 hover:text-foreground hover:bg-background/80 rounded-md transition-all disabled:opacity-30 cursor-pointer"
+              onClick={handleForward}
+              disabled={currentHistoryIndex >= navigationHistory.length - 1}
+              title={t('前进 (Alt+Right)')}
+            >
+              <MaterialIcon icon="arrow_forward" className="text-lg" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-foreground/80 hover:text-foreground hover:bg-background/80 rounded-md transition-all disabled:opacity-30 cursor-pointer"
+              onClick={handleUp}
+              disabled={isUpButtonDisabled()}
+              title={t('向上 (Alt+Up)')}
+            >
+              <MaterialIcon icon="arrow_upward" className="text-lg" />
+            </Button>
+          </div>
+
+          <div
+            className="flex items-center text-sm font-medium text-foreground dark:text-foreground ml-1 min-w-0 overflow-x-auto custom-scrollbar-hide"
+            data-breadcrumbs-container
+          >
+            <Breadcrumbs
+              currentPath={currentPath}
+              basePath={currentWorkspaceDirectory?.path || ''}
+              onNavigate={path => {
+                setCurrentPath(path)
+                clearRealDirectorySearch()
+                if (onDirectoryChange) onDirectoryChange(path)
+              }}
+            />
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors flex-shrink-0 rounded-md cursor-pointer"
+            onClick={() => {
+              if (currentPath) {
+                window
+                  .electronAPI!.utils.openPathInExplorer(currentPath)
+                  .catch((error: any) => {
+                    logger.error(
+                      LogCategory.RENDERER,
+                      '无法在资源管理器中打开目录:',
+                      error
+                    )
+                    const message =
+                      error?.message?.replace(
+                        /^Error invoking remote method.*?: Error: /,
+                        ''
+                      ) || String(error)
+                    toast.error(t('无法打开目录: {message}', { message }))
+                  })
+              }
+            }}
+            title={t('在系统文件浏览器中打开')}
+          >
+            <MaterialIcon icon="open_in_new" className="text-base" />
+          </Button>
+          <div className="flex-1" />
+        </div>
+
+        {/* 右侧：搜索、视图设置、一体化全选分析胶囊及工具 */}
+        <div className="flex items-center gap-2 text-foreground dark:text-foreground ml-auto">
+          {/* 搜索框 */}
+          <div className="flex-shrink-0 relative z-10 h-8 flex items-center">
+            <SearchBar
+              type="real-directory"
+              placeholder={t('搜索...')}
+              onSearch={handleSearch}
+              className="w-30 focus-within:w-80 transition-all duration-300"
+            />
+          </div>
+
+          {/* 视图模式与显示设置 Mini 下拉弹窗 */}
+          <MiniViewDisplaySettingsPopover
+            viewMode={layoutContext.viewMode}
+            onViewModeChange={async newMode => {
+              layoutContext.setViewMode(newMode)
+              try {
+                await updateConfigValue('DEFAULT_VIEW', newMode)
+              } catch (error) {
+                logger.error(LogCategory.RENDERER, 'Failed to update view mode:', error)
+              }
+            }}
+            gridCardWidth={layoutContext.gridCardWidth}
+            onGridCardWidthChange={layoutContext.setGridCardWidth}
+          />
+
+          {/* 分隔线 */}
+          <div className="h-4 w-px bg-border/60 mx-0.5" />
+
+          {/* 全选 + 批量分析 + 队列进度 一体化分段操作胶囊 */}
+          <div
+            className={cn(
+              'flex items-stretch h-8 rounded-lg border shadow-2xs overflow-hidden transition-all duration-200 bg-background',
+              selectedFiles.length > 0
+                ? 'border-primary/40 ring-1 ring-primary/20'
+                : 'border-border'
+            )}
+          >
+            {/* 1. 复选框与全选/已选状态标签 */}
+            <div
+              role="checkbox"
+              aria-checked={isAllSelected ? true : isIndeterminate ? 'mixed' : false}
+              onClick={toggleSelectAll}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 cursor-pointer select-none transition-colors group',
+                selectedFiles.length > 0
+                  ? 'bg-primary/5 hover:bg-primary/10 text-primary'
+                  : 'hover:bg-accent/60 text-muted-foreground hover:text-foreground',
+                filteredData.files.length + filteredData.directories.length === 0 &&
+                  'opacity-40 cursor-not-allowed pointer-events-none'
+              )}
+              title={
+                filteredData.files.length + filteredData.directories.length === 0
+                  ? t('没有文件')
+                  : isAllSelected
+                    ? t('取消全选')
+                    : t('全选当前页面 (Ctrl+A)')
+              }
+            >
+              <Checkbox
+                checked={isAllSelected ? true : isIndeterminate ? 'indeterminate' : false}
+                onCheckedChange={() => toggleSelectAll()}
+                className={cn(
+                  'transition-transform duration-150',
+                  selectedFiles.length > 0 ? 'border-primary' : 'border-muted-foreground/60'
+                )}
+              />
+              <span className="text-xs font-medium whitespace-nowrap">
+                {selectedFiles.length === 0
+                  ? t('全选')
+                  : isAllSelected
+                    ? t('已全选 ({count})', { count: selectedFiles.length })
+                    : t('已选 {count} 项', { count: selectedFiles.length })}
+              </span>
+            </div>
+
+            {/* 中部分割线 */}
+            <div
+              className={cn(
+                'w-px self-stretch',
+                selectedFiles.length > 0 ? 'bg-primary/20' : 'bg-border'
+              )}
+            />
+
+            {/* 2. 批量分析行动按钮 */}
+            <Button
+              variant={selectedFiles.length ? 'default' : 'ghost'}
+              size="sm"
+              className={cn(
+                'h-full gap-1.5 rounded-none border-0 px-3 transition-all duration-200 text-xs font-medium cursor-pointer',
+                selectedFiles.length > 0
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+              )}
+              onClick={handleBatchAnalyzeAction}
+              title={
+                selectedFiles.length === 0
+                  ? t('请先勾选或框选要分析的文件')
+                  : t('批量分析选中的 {count} 个文件', { count: selectedFiles.length })
+              }
+            >
+              <MaterialIcon
+                icon="auto_awesome"
+                className={cn('text-sm', selectedFiles.length > 0 && 'animate-pulse')}
+              />
+              <span>{t('批量分析')}</span>
+            </Button>
+
+            {/* 3. 分析队列状态（当队列有任务时无缝附加） */}
+            {snapshot.items.length > 0 && (
+              <>
+                <div
+                  className={cn(
+                    'w-px self-stretch',
+                    selectedFiles.length > 0 ? 'bg-primary/20' : 'bg-border'
+                  )}
+                />
+                <PersistentTooltip
+                  id="real_dir_analysis_queue_hint"
+                  content={t('查看和管理文件分析进度')}
+                  visible={snapshot.running}
+                  position="bottom"
+                  delay={1000}
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      'h-full gap-1.5 rounded-none border-0 px-2.5 transition-all duration-300 text-xs cursor-pointer',
+                      snapshot.running
+                        ? 'bg-primary/10 text-primary hover:bg-primary/20'
+                        : 'hover:bg-accent text-muted-foreground hover:text-foreground'
+                    )}
+                    onClick={e => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      toggleQueue()
+                    }}
+                  >
+                    {snapshot.running && (
+                      <MaterialIcon icon="sync" className="animate-spin text-xs text-primary" />
+                    )}
+                    <span className="font-semibold text-xs">
+                      {!snapshot.running
+                        ? t('队列已暂停 ({length}/{snapshotLength})', {
+                            length: snapshot.items.filter(i => i.status === 'completed')
+                              .length,
+                            snapshotLength: snapshot.items.length
+                          })
+                        : t('队列 ({length}/{snapshotLength})', {
+                            length: snapshot.items.filter(i => i.status === 'completed')
+                              .length,
+                            snapshotLength: snapshot.items.length
+                          })}
+                    </span>
+                  </Button>
+                </PersistentTooltip>
+              </>
+            )}
+          </div>
+
+          {/* 分隔线 */}
+          <div className="h-4 w-px bg-border/60 mx-0.5" />
+
+          {/* 文件清理入口按钮 */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 shadow-2xs hover:bg-accent border-border/80 text-xs font-medium rounded-lg px-2.5 transition-all hover:border-primary/40 cursor-pointer"
+            onClick={() => {
+              const store = useOrganizeStore.getState()
+              store.setActiveBranch('batch-duplicate')
+              store.setStage('batch-duplicate')
+              navigate('/organize')
+            }}
+            title={t('扫描并清理重复、临时与大文件')}
+          >
+            <MaterialIcon icon="cleaning_services" className="text-sm text-primary" />
+            <span>{t('文件清理')}</span>
+          </Button>
+        </div>
+      </div>
+    ),
+    [
+      handleBack,
+      currentHistoryIndex,
+      handleForward,
+      navigationHistory.length,
+      handleUp,
+      isUpButtonDisabled,
+      currentPath,
+      currentWorkspaceDirectory?.path,
+      setCurrentPath,
+      clearRealDirectorySearch,
+      onDirectoryChange,
+      handleSearch,
+      updateConfigValue,
+      selectedFiles.length,
+      isAllSelected,
+      isIndeterminate,
+      toggleSelectAll,
+      filteredData.files.length,
+      filteredData.directories.length,
+      handleBatchAnalyzeAction,
+      snapshot.items,
+      snapshot.running,
+      toggleQueue,
+      navigate
+    ]
+  )
+
   return (
     <div className="flex-1 flex flex-col bg-muted/30 overflow-hidden animate-in fade-in duration-300 slide-in-from-bottom-1">
       <DirectoryHeader
@@ -987,272 +1283,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
                 onCloseDetailsPanel={() => setShowDetailsPanel(false)}
                 onFileDeleted={refreshDirectoryContents}
                 onFileUpdated={refreshDirectoryContents}
-                renderToolbar={layoutContext => (
-                  <div className="flex-shrink-0 border-b border-border px-3 py-1.5 flex flex-wrap items-center justify-between bg-card gap-y-2 gap-x-3 min-h-[44px]">
-                    {/* 左侧：集成式导航胶囊与面包屑 */}
-                    <div className="flex items-center space-x-2 flex-1 min-w-[200px]">
-                      <div className="inline-flex items-center rounded-lg border border-border/60 bg-muted/20 p-0.5 shadow-2xs">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-foreground/80 hover:text-foreground hover:bg-background/80 rounded-md transition-all disabled:opacity-30 cursor-pointer"
-                          onClick={handleBack}
-                          disabled={currentHistoryIndex <= 0}
-                          title={t('后退 (Alt+Left / Backspace)')}
-                        >
-                          <MaterialIcon icon="arrow_back" className="text-lg" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-foreground/80 hover:text-foreground hover:bg-background/80 rounded-md transition-all disabled:opacity-30 cursor-pointer"
-                          onClick={handleForward}
-                          disabled={currentHistoryIndex >= navigationHistory.length - 1}
-                          title={t('前进 (Alt+Right)')}
-                        >
-                          <MaterialIcon icon="arrow_forward" className="text-lg" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 w-7 p-0 text-foreground/80 hover:text-foreground hover:bg-background/80 rounded-md transition-all disabled:opacity-30 cursor-pointer"
-                          onClick={handleUp}
-                          disabled={isUpButtonDisabled()}
-                          title={t('向上 (Alt+Up)')}
-                        >
-                          <MaterialIcon icon="arrow_upward" className="text-lg" />
-                        </Button>
-                      </div>
-
-                      <div
-                        className="flex items-center text-sm font-medium text-foreground dark:text-foreground ml-1 min-w-0 overflow-x-auto custom-scrollbar-hide"
-                        data-breadcrumbs-container
-                      >
-                        <Breadcrumbs
-                          currentPath={currentPath}
-                          basePath={currentWorkspaceDirectory?.path || ''}
-                          onNavigate={path => {
-                            setCurrentPath(path)
-                            clearRealDirectorySearch()
-                            if (onDirectoryChange) onDirectoryChange(path)
-                          }}
-                        />
-                      </div>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors flex-shrink-0 rounded-md cursor-pointer"
-                        onClick={() => {
-                          if (currentPath) {
-                            window
-                              .electronAPI!.utils.openPathInExplorer(currentPath)
-                              .catch((error: any) => {
-                                logger.error(
-                                  LogCategory.RENDERER,
-                                  '无法在资源管理器中打开目录:',
-                                  error
-                                )
-                                const message =
-                                  error?.message?.replace(
-                                    /^Error invoking remote method.*?: Error: /,
-                                    ''
-                                  ) || String(error)
-                                toast.error(t('无法打开目录: {message}', { message }))
-                              })
-                          }
-                        }}
-                        title={t('在系统文件浏览器中打开')}
-                      >
-                        <MaterialIcon icon="open_in_new" className="text-base" />
-                      </Button>
-                      <div className="flex-1" />
-                    </div>
-
-                    {/* 右侧：搜索、视图设置、一体化全选分析胶囊及工具 */}
-                    <div className="flex items-center gap-2 text-foreground dark:text-foreground ml-auto">
-                      {/* 搜索框 */}
-                      <div className="flex-shrink-0 relative z-10 h-8 flex items-center">
-                        <SearchBar
-                          type="real-directory"
-                          placeholder={t('搜索...')}
-                          onSearch={handleSearch}
-                          className="w-30 focus-within:w-80 transition-all duration-300"
-                        />
-                      </div>
-
-                      {/* 视图模式与显示设置 Mini 下拉弹窗 */}
-                      <MiniViewDisplaySettingsPopover
-                        viewMode={layoutContext.viewMode}
-                        onViewModeChange={async newMode => {
-                          layoutContext.setViewMode(newMode)
-                          try {
-                            await updateConfigValue('DEFAULT_VIEW', newMode)
-                          } catch (error) {
-                            logger.error(LogCategory.RENDERER, 'Failed to update view mode:', error)
-                          }
-                        }}
-                        gridCardWidth={layoutContext.gridCardWidth}
-                        onGridCardWidthChange={layoutContext.setGridCardWidth}
-                      />
-
-                      {/* 分隔线 */}
-                      <div className="h-4 w-px bg-border/60 mx-0.5" />
-
-                      {/* 全选 + 批量分析 + 队列进度 一体化分段操作胶囊 */}
-                      <div
-                        className={cn(
-                          'flex items-stretch h-8 rounded-lg border shadow-2xs overflow-hidden transition-all duration-200 bg-background',
-                          selectedFiles.length > 0
-                            ? 'border-primary/40 ring-1 ring-primary/20'
-                            : 'border-border'
-                        )}
-                      >
-                        {/* 1. 复选框与全选/已选状态标签 */}
-                        <div
-                          role="checkbox"
-                          aria-checked={isAllSelected ? true : isIndeterminate ? 'mixed' : false}
-                          onClick={toggleSelectAll}
-                          className={cn(
-                            'flex items-center gap-1.5 px-2.5 cursor-pointer select-none transition-colors group',
-                            selectedFiles.length > 0
-                              ? 'bg-primary/5 hover:bg-primary/10 text-primary'
-                              : 'hover:bg-accent/60 text-muted-foreground hover:text-foreground',
-                            filteredData.files.length + filteredData.directories.length === 0 &&
-                              'opacity-40 cursor-not-allowed pointer-events-none'
-                          )}
-                          title={
-                            filteredData.files.length + filteredData.directories.length === 0
-                              ? t('没有文件')
-                              : isAllSelected
-                                ? t('取消全选')
-                                : t('全选当前页面 (Ctrl+A)')
-                          }
-                        >
-                          <Checkbox
-                            checked={isAllSelected ? true : isIndeterminate ? 'indeterminate' : false}
-                            onCheckedChange={() => toggleSelectAll()}
-                            className={cn(
-                              'transition-transform duration-150',
-                              selectedFiles.length > 0 ? 'border-primary' : 'border-muted-foreground/60'
-                            )}
-                          />
-                          <span className="text-xs font-medium whitespace-nowrap">
-                            {selectedFiles.length === 0
-                              ? t('全选')
-                              : isAllSelected
-                                ? t('已全选 ({count})', { count: selectedFiles.length })
-                                : t('已选 {count} 项', { count: selectedFiles.length })}
-                          </span>
-                        </div>
-
-                        {/* 中部分割线 */}
-                        <div
-                          className={cn(
-                            'w-px self-stretch',
-                            selectedFiles.length > 0 ? 'bg-primary/20' : 'bg-border'
-                          )}
-                        />
-
-                        {/* 2. 批量分析行动按钮 */}
-                        <Button
-                          variant={selectedFiles.length ? 'default' : 'ghost'}
-                          size="sm"
-                          className={cn(
-                            'h-full gap-1.5 rounded-none border-0 px-3 transition-all duration-200 text-xs font-medium cursor-pointer',
-                            selectedFiles.length > 0
-                              ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-2xs'
-                              : 'text-muted-foreground hover:bg-accent hover:text-foreground'
-                          )}
-                          onClick={handleBatchAnalyzeAction}
-                          title={
-                            selectedFiles.length === 0
-                              ? t('请先勾选或框选要分析的文件')
-                              : t('批量分析选中的 {count} 个文件', { count: selectedFiles.length })
-                          }
-                        >
-                          <MaterialIcon
-                            icon="auto_awesome"
-                            className={cn('text-sm', selectedFiles.length > 0 && 'animate-pulse')}
-                          />
-                          <span>{t('批量分析')}</span>
-                        </Button>
-
-                        {/* 3. 分析队列状态（当队列有任务时无缝附加） */}
-                        {snapshot.items.length > 0 && (
-                          <>
-                            <div
-                              className={cn(
-                                'w-px self-stretch',
-                                selectedFiles.length > 0 ? 'bg-primary/20' : 'bg-border'
-                              )}
-                            />
-                            <PersistentTooltip
-                              id="real_dir_analysis_queue_hint"
-                              content={t('查看和管理文件分析进度')}
-                              visible={snapshot.running}
-                              position="bottom"
-                              delay={1000}
-                            >
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className={cn(
-                                  'h-full gap-1.5 rounded-none border-0 px-2.5 transition-all duration-300 text-xs cursor-pointer',
-                                  snapshot.running
-                                    ? 'bg-primary/10 text-primary hover:bg-primary/20'
-                                    : 'hover:bg-accent text-muted-foreground hover:text-foreground'
-                                )}
-                                onClick={e => {
-                                  e.preventDefault()
-                                  e.stopPropagation()
-                                  toggleQueue()
-                                }}
-                              >
-                                {snapshot.running && (
-                                  <MaterialIcon icon="sync" className="animate-spin text-xs text-primary" />
-                                )}
-                                <span className="font-semibold text-xs">
-                                  {!snapshot.running
-                                    ? t('队列已暂停 ({length}/{snapshotLength})', {
-                                        length: snapshot.items.filter(i => i.status === 'completed')
-                                          .length,
-                                        snapshotLength: snapshot.items.length
-                                      })
-                                    : t('队列 ({length}/{snapshotLength})', {
-                                        length: snapshot.items.filter(i => i.status === 'completed')
-                                          .length,
-                                        snapshotLength: snapshot.items.length
-                                      })}
-                                </span>
-                              </Button>
-                            </PersistentTooltip>
-                          </>
-                        )}
-                      </div>
-
-                      {/* 分隔线 */}
-                      <div className="h-4 w-px bg-border/60 mx-0.5" />
-
-                      {/* 文件清理入口按钮 */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 gap-1.5 shadow-2xs hover:bg-accent border-border/80 text-xs font-medium rounded-lg px-2.5 transition-all hover:border-primary/40 cursor-pointer"
-                        onClick={() => {
-                          const store = useOrganizeStore.getState()
-                          store.setActiveBranch('batch-duplicate')
-                          store.setStage('batch-duplicate')
-                          navigate('/organize')
-                        }}
-                        title={t('扫描并清理重复、临时与大文件')}
-                      >
-                        <MaterialIcon icon="cleaning_services" className="text-sm text-primary" />
-                        <span>{t('文件清理')}</span>
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                renderToolbar={renderToolbar}
               />
             </main>
             {!isWorkspaceActive && currentWorkspaceDirectory && (

@@ -62,11 +62,13 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
   className,
   id
 }) => {
-  const getConfigValue = useSettingsStore(state => state.getConfigValue)
-  const showMissingFiles = getConfigValue<boolean>('SHOW_MISSING_FILES') ?? true
-  const swapFileNameDisplay =
-    propSwapFileNameDisplay ?? getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
-  const gridShowFullFileName = getConfigValue<boolean>('GRID_SHOW_FULL_FILE_NAME') ?? false
+  const showMissingFiles =
+    useSettingsStore(s => s.getConfigValue<boolean>('SHOW_MISSING_FILES')) ?? true
+  const storeSwap =
+    useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
+  const swapFileNameDisplay = propSwapFileNameDisplay ?? storeSwap
+  const gridShowFullFileName =
+    useSettingsStore(s => s.getConfigValue<boolean>('GRID_SHOW_FULL_FILE_NAME')) ?? false
 
   const displayFiles = useMemo(() => {
     if (showMissingFiles) return files
