@@ -108,7 +108,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          # 固定使用 macOS 15 镜像：macos-latest 现已指向 macos-26-arm64，
+          # 该镜像下 hdiutil/appdmg 行为变化会导致 MakerDMG 在
+          # `hdiutil detach /Volumes/<APP>` 处失败（Intel job 使用 macos-15-intel 验证可用）
+          - os: macos-15
             arch: arm64
             name: Apple Silicon (arm64)
           - os: macos-15-intel

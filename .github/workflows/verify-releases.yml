@@ -220,7 +220,8 @@ jobs:
           - arch: x86_64
             mode: "x86_64 (Rosetta 2 Emulation)"
             arch_flag: "-x86_64"
-    runs-on: macos-latest
+    # 固定 macOS 15：macOS 26 镜像下 hdiutil 挂载/卸载行为变化，会导致 DMG 校验不稳定
+    runs-on: macos-15
     steps:
       - name: Download macOS DMG
         run: |
