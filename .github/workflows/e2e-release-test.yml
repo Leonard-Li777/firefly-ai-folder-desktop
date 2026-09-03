@@ -606,8 +606,10 @@ jobs:
         uses: actions/github-script@v7
         env:
           TARGET_TAG: ${{ needs.resolve-release.outputs.tag_name }}
-          CUSTOM_PAT: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT }}
+          HAS_CUSTOM_PAT: ${{ !!(secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT) }}
         with:
+          # github-script v7 运行时不再暴露 @octokit/rest，自定义 Token 必须通过 github-token 输入注入
+          github-token: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const targetOwner = 'Leonard-Li777';
             const targetRepo = 'firefly-ai-folder';
@@ -617,15 +619,12 @@ jobs:
             core.info(`🚀 全部平台 E2E 测试均通过！正在触发官网发布流水线: ${targetOwner}/${targetRepo} -> ${workflowId}`);
             core.info(`📌 携带 Release Tag: ${releaseTag}`);
 
-            const customToken = process.env.CUSTOM_PAT;
-            let octokitClient = github;
-            if (customToken) {
-              const { Octokit } = require('@octokit/rest');
-              octokitClient = new Octokit({ auth: customToken });
+            if (process.env.HAS_CUSTOM_PAT !== 'true') {
+              core.warning('⚠️ 未配置跨仓库 PAT（UNISOURCE_RELEASE_TOKEN / PRO_SUBMODULE_TOKEN 等），回退使用 GITHUB_TOKEN，跨仓库触发可能返回 401/403。');
             }
 
             try {
-              await octokitClient.rest.actions.createWorkflowDispatch({
+              await github.rest.actions.createWorkflowDispatch({
                 owner: targetOwner,
                 repo: targetRepo,
                 workflow_id: workflowId,

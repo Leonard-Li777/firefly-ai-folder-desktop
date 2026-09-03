@@ -818,7 +818,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.18.0'
+          node-version: '24.15.0'
 
       - name: Clean packageManager from package.json
         shell: bash
@@ -1092,9 +1092,11 @@ jobs:
       - name: 计算 Release Tag 并触发 e2e-release-test.yml
         uses: actions/github-script@v7
         env:
-          CUSTOM_PAT: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT }}
+          HAS_CUSTOM_PAT: ${{ !!(secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT) }}
           BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
         with:
+          # github-script v7 运行时不再暴露 @octokit/rest，自定义 Token 必须通过 github-token 输入注入
+          github-token: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
             let tag = '';
@@ -1118,15 +1120,12 @@ jobs:
             core.info(`🎯 桌面端发布完成！正在触发 E2E 测试: ${targetOwner}/${targetRepo} -> ${workflowId}`);
             core.info(`📌 参数: tag_name=${tag}, region=${region}`);
 
-            const customToken = process.env.CUSTOM_PAT;
-            let octokitClient = github;
-            if (customToken) {
-              const { Octokit } = require('@octokit/rest');
-              octokitClient = new Octokit({ auth: customToken });
+            if (process.env.HAS_CUSTOM_PAT !== 'true') {
+              core.warning('⚠️ 未配置跨仓库 PAT（UNISOURCE_RELEASE_TOKEN / PRO_SUBMODULE_TOKEN 等），回退使用 GITHUB_TOKEN，跨仓库触发可能返回 401/403。');
             }
 
             try {
-              await octokitClient.rest.actions.createWorkflowDispatch({
+              await github.rest.actions.createWorkflowDispatch({
                 owner: targetOwner,
                 repo: targetRepo,
                 workflow_id: workflowId,
