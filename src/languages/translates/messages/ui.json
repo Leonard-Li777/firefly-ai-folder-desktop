@@ -9,7 +9,7 @@
     "de-DE": "Schließen",
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
-    "$files": ["src/renderer/components/ui/dialog.tsx(2176-2182)"],
+    "$files": ["src/renderer/components/ui/dialog.tsx(2344-2350)"],
     "$id": 5981
   },
   "useTheme must be used within a ThemeProvider": {

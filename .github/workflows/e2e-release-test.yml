@@ -1,8 +1,6 @@
-﻿name: Release Package E2E Functional Test Pipeline
+name: Release Package E2E Functional Test Pipeline
 
 on:
-  release:
-    types: [published]
   workflow_dispatch:
     inputs:
       tag_name:
@@ -590,4 +588,56 @@ jobs:
           echo "2. 滑动到页面底部的 **Artifacts (工件列表)** 区域；" >> $GITHUB_STEP_SUMMARY
           echo "3. 点击下载对应平台的报告包（如 \`playwright-report-windows.zip\` 或 \`playwright-report-macos.zip\`）；" >> $GITHUB_STEP_SUMMARY
           echo "4. 解压并在本地浏览器中打开 \`index.html\`，即可交互式查看全部用例、控制台日志、DOM 状态与执行截图。" >> $GITHUB_STEP_SUMMARY
+
+  # ==============================================================================
+  # 6. Trigger Marketing Website Deployment (EdgeOne CN + Cloudflare INTL)
+  # ==============================================================================
+  trigger-marketing-deploy:
+    name: 触发官网全渠道发版
+    needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos]
+    if: |
+      needs.e2e-windows.result == 'success' &&
+      needs.e2e-linux-deb.result == 'success' &&
+      needs.e2e-linux-rpm.result == 'success' &&
+      needs.e2e-macos.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 触发根仓库官网发版工作流 (deploy-marketing.yml)
+        uses: actions/github-script@v7
+        env:
+          TARGET_TAG: ${{ needs.resolve-release.outputs.tag_name }}
+          CUSTOM_PAT: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT }}
+        with:
+          script: |
+            const targetOwner = 'Leonard-Li777';
+            const targetRepo = 'firefly-ai-folder';
+            const workflowId = 'deploy-marketing.yml';
+            const releaseTag = process.env.TARGET_TAG || '';
+
+            core.info(`🚀 全部平台 E2E 测试均通过！正在触发官网发布流水线: ${targetOwner}/${targetRepo} -> ${workflowId}`);
+            core.info(`📌 携带 Release Tag: ${releaseTag}`);
+
+            const customToken = process.env.CUSTOM_PAT;
+            let octokitClient = github;
+            if (customToken) {
+              const { Octokit } = require('@octokit/rest');
+              octokitClient = new Octokit({ auth: customToken });
+            }
+
+            try {
+              await octokitClient.rest.actions.createWorkflowDispatch({
+                owner: targetOwner,
+                repo: targetRepo,
+                workflow_id: workflowId,
+                ref: 'master',
+                inputs: {
+                  release_tag: releaseTag,
+                  deploy_channel: 'all'
+                }
+              });
+              core.info('✅ 成功触发根仓库官网发版工作流！');
+            } catch (error) {
+              core.setFailed(`❌ 触发官网发版工作流失败: ${error.message}`);
+            }
+
 

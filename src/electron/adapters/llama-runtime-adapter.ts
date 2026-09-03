@@ -10,6 +10,7 @@ import { modelCapabilityDetector } from '../runtime-services/llama'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { logger, LogCategory, FileCategory, isCategory } from '@firefly/shared'
 import sharp from 'sharp'
+import fs from 'node:fs'
 
 /**
  * Llama 运行时适配器
@@ -112,7 +113,45 @@ export class LlamaRuntimeAdapter implements ILlamaRuntimeAdapter {
             content: multimodalContents
           }
         }
-      })
+      }) || []
+
+      // 如果有 filePath 且为图片，并且消息中未显式包含该图片，则将图片注入到最后一条 user 消息中
+      if (request.filePath && isCategory(request.filePath, FileCategory.IMAGE)) {
+        try {
+          const base64Data = imageBuffer
+            ? `data:${imageMimeType};base64,${imageBuffer.toString('base64')}`
+            : `data:${imageMimeType};base64,${(await fs.promises.readFile(request.filePath)).toString('base64')}`
+
+          let lastUserMsgIndex = -1
+          for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].role === 'user') {
+              lastUserMsgIndex = i
+              break
+            }
+          }
+
+          if (lastUserMsgIndex !== -1) {
+            const userMsg = messages[lastUserMsgIndex]
+            if (typeof userMsg.content === 'string') {
+              messages[lastUserMsgIndex] = {
+                ...userMsg,
+                content: [
+                  { type: 'text', data: userMsg.content },
+                  { type: 'image', data: base64Data }
+                ] as any
+              }
+            } else if (Array.isArray(userMsg.content)) {
+              // 检查是否已存在该 image
+              const hasImage = userMsg.content.some((item: any) => item.type === 'image')
+              if (!hasImage) {
+                userMsg.content.push({ type: 'image', data: base64Data } as any)
+              }
+            }
+          }
+        } catch (err) {
+          logger.warn(LogCategory.AI_SERVICE, '[AI多模态] 读取注入 filePath 图片失败:', err)
+        }
+      }
 
       const response = await llamaServerService.chatCompletion({
         model: modelId,

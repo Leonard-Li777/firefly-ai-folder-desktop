@@ -39,6 +39,11 @@ on:
         options:
           - 'CN'
           - 'INTL'
+      update_omni_lock:
+        description: '是否先拉取并同步最新的 firefly-omni 引擎版本到 preset-resources.lock.json (默认 false)'
+        required: false
+        type: boolean
+        default: false
   push:
     tags:
       - 'v*'
@@ -47,11 +52,57 @@ permissions:
   contents: write
 
 jobs:
+  prepare-sync:
+    name: 同步最新引擎版本 (preset-resources.lock.json)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.update_omni_lock == 'true' || github.event.inputs.update_omni_lock == true)
+    steps:
+      - name: Checkout Open-Source Desktop Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Checkout Private Pro Module
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+          ref: master
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+
+      - name: 更新 preset-resources.lock.json 中的 firefly-omni
+        shell: bash
+        run: |
+          echo "🔄 正在检查并更新 firefly-omni 引擎到最新版本..."
+          node pro/scripts/run.js update-preset-resources-lock.js --engine firefly-omni
+
+      - name: 提交并推回更新后的 lock.json
+        shell: bash
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain build/extraResources/configs/preset-resources.lock.json)" ]; then
+            echo "📝 检测到 preset-resources.lock.json 有更新，正在提交并推送..."
+            git add build/extraResources/configs/preset-resources.lock.json
+            git commit -m "chore(resources): update firefly-omni in preset-resources.lock.json [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          else
+            echo "✅ preset-resources.lock.json 已是最新，无需提交。"
+          fi
+
   build-macos:
     name: Build macOS (${{ matrix.name }})
+    needs: [prepare-sync]
     if: |
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
-      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_macos == 'true' || github.event.inputs.platform_macos == true))
+      always() &&
+      (needs.prepare-sync.result == 'success' || needs.prepare-sync.result == 'skipped') &&
+      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+       (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_macos == 'true' || github.event.inputs.platform_macos == true)))
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -356,9 +407,12 @@ jobs:
 
   build-windows:
     name: Build Windows
+    needs: [prepare-sync]
     if: |
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
-      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_windows == 'true' || github.event.inputs.platform_windows == true))
+      always() &&
+      (needs.prepare-sync.result == 'success' || needs.prepare-sync.result == 'skipped') &&
+      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+       (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_windows == 'true' || github.event.inputs.platform_windows == true)))
     runs-on: windows-2022
     steps:
       - name: Checkout Open-Source Desktop Code
@@ -661,9 +715,12 @@ jobs:
 
   build-linux:
     name: Build Linux (${{ matrix.maker }})
+    needs: [prepare-sync]
     if: |
-      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
-      (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_linux == 'true' || github.event.inputs.platform_linux == true))
+      always() &&
+      (needs.prepare-sync.result == 'success' || needs.prepare-sync.result == 'skipped') &&
+      ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+       (github.event_name == 'workflow_dispatch' && (github.event.inputs.platform_linux == 'true' || github.event.inputs.platform_linux == true)))
     runs-on: ${{ github.event.inputs.linux_runner || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
@@ -1013,3 +1070,75 @@ jobs:
           else
             echo "⚠️ 未在 out/make 目录下找到匹配的安装包产物"
           fi
+
+  # ==============================================================================
+  # Trigger E2E Test Workflow
+  # ==============================================================================
+  trigger-e2e-test:
+    name: 联动触发 Release E2E 功能测试
+    needs: [build-macos, build-windows, build-linux]
+    if: |
+      always() &&
+      (needs.build-macos.result == 'success' || needs.build-macos.result == 'skipped') &&
+      (needs.build-windows.result == 'success' || needs.build-windows.result == 'skipped') &&
+      (needs.build-linux.result == 'success' || needs.build-linux.result == 'skipped') &&
+      !(needs.build-macos.result == 'failure' || needs.build-windows.result == 'failure' || needs.build-linux.result == 'failure') &&
+      !(needs.build-macos.result == 'cancelled' || needs.build-windows.result == 'cancelled' || needs.build-linux.result == 'cancelled')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Desktop Code (获取版本号)
+        uses: actions/checkout@v4
+
+      - name: 计算 Release Tag 并触发 e2e-release-test.yml
+        uses: actions/github-script@v7
+        env:
+          CUSTOM_PAT: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT }}
+          BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
+        with:
+          script: |
+            const fs = require('fs');
+            let tag = '';
+            const refName = process.env.GITHUB_REF_NAME || '';
+            if (refName.startsWith('v')) {
+              tag = refName;
+            } else {
+              try {
+                const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+                tag = 'v' + pkg.version.replace(/^v/, '');
+              } catch (e) {
+                core.warning(`读取 package.json 失败: ${e.message}`);
+              }
+            }
+
+            const region = (process.env.BUILD_REGION || 'CN').toLowerCase();
+            const targetOwner = context.repo.owner;
+            const targetRepo = context.repo.repo;
+            const workflowId = 'e2e-release-test.yml';
+
+            core.info(`🎯 桌面端发布完成！正在触发 E2E 测试: ${targetOwner}/${targetRepo} -> ${workflowId}`);
+            core.info(`📌 参数: tag_name=${tag}, region=${region}`);
+
+            const customToken = process.env.CUSTOM_PAT;
+            let octokitClient = github;
+            if (customToken) {
+              const { Octokit } = require('@octokit/rest');
+              octokitClient = new Octokit({ auth: customToken });
+            }
+
+            try {
+              await octokitClient.rest.actions.createWorkflowDispatch({
+                owner: targetOwner,
+                repo: targetRepo,
+                workflow_id: workflowId,
+                ref: context.ref,
+                inputs: {
+                  tag_name: tag,
+                  region: region,
+                  platform_scope: 'all-platforms'
+                }
+              });
+              core.info('✅ 成功触发 E2E 功能测试工作流！');
+            } catch (error) {
+              core.setFailed(`❌ 触发 E2E 测试工作流失败: ${error.message}`);
+            }
+

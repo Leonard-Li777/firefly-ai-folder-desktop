@@ -174,12 +174,32 @@ export default defineConfig(({ command, mode }) => {
     }
   })
 
-  const devPort = parseInt(process.env.PORT || env.PORT || '4080', 10)
-
-  // 仅在 dev 模式下，启动前自动释放 renderer 开发服务器端口，避免端口冲突
-  if (command === 'serve') {
-    killPort(devPort)
+  const isPortFreeSync = (port: number): boolean => {
+    try {
+      const net = require('net')
+      const server = net.createServer()
+      server.unref()
+      let free = false
+      server.listen({ port, host: '127.0.0.1', exclusive: true })
+      free = true
+      server.close()
+      return free
+    } catch {
+      return false
+    }
   }
+
+  const findFreeDevPort = (basePort: number, attempts = 20): number => {
+    for (let p = basePort; p < basePort + attempts; p++) {
+      if (isPortFreeSync(p)) return p
+    }
+    return basePort
+  }
+
+  const basePort = parseInt(process.env.PORT || env.PORT || '38100', 10)
+  const devPort = command === 'serve' ? findFreeDevPort(basePort) : basePort
+  process.env.PORT = String(devPort)
+  console.log(`🌐 [electron-vite] Renderer Dev Server 绑定端口: ${devPort}`)
 
   // 获取 package.json 的版本号
   const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8'))

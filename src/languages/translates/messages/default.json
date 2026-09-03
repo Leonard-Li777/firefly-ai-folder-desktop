@@ -373,7 +373,7 @@
     "de-DE": "Schnittstelle existiert nicht",
     "fr-FR": "L'interface n'existe pas",
     "ko-KR": "인터페이스가 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(1714-1723)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(1775-1784)"],
     "$id": 9521
   },
   "文件未找到": {
@@ -386,7 +386,7 @@
     "de-DE": "Datei nicht gefunden",
     "fr-FR": "Fichier introuvable",
     "ko-KR": "파일을 찾을 수 없습니다",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11027-11036)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11088-11097)"],
     "$id": 7629
   },
   "缺少 filePath 参数": {
@@ -399,7 +399,7 @@
     "de-DE": "FilePath-Parameter fehlt",
     "fr-FR": "Paramètre filePath manquant",
     "ko-KR": "filePath 매개변수가 누락되었습니다.",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11675-11693)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11736-11754)"],
     "$id": 9446
   },
   "响应序列化失败": {
@@ -413,8 +413,8 @@
     "fr-FR": "La sérialisation de la réponse a échoué",
     "ko-KR": "응답 직렬화 실패",
     "$files": [
-      "src/electron/runtime-services/ai-skill-api-service.ts(16421-16432)",
-      "src/electron/runtime-services/ai-skill-api-service.ts(17117-17128)"
+      "src/electron/runtime-services/ai-skill-api-service.ts(16482-16493)",
+      "src/electron/runtime-services/ai-skill-api-service.ts(17178-17189)"
     ],
     "$id": 7631
   },

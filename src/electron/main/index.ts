@@ -24,6 +24,15 @@ if (process.platform === 'darwin') {
 // 后续逻辑...
 import { app, BrowserWindow, ipcMain, net, dialog, shell } from 'electron'
 import * as path from 'node:path'
+import { initWorktreeEnvironment } from './worktree-env'
+import { processReaper } from './process-reaper'
+
+// 1. 初始化 Worktree 实例环境与 userData 隔离
+const worktreeInfo = initWorktreeEnvironment()
+console.log(`🚀 [Worktree] 启动实例: ${worktreeInfo.appName}, 数据目录: ${worktreeInfo.userDataDir}`)
+
+// 2. 启动前清理历史遗留的僵尸子进程
+processReaper.cleanupStaleProcesses()
 
 // 执行双应用数据目录隔离与迁移（用于改名 yonuc-ai-folder -> firefly-ai-folder 的无缝升级）
 ;(() => {
@@ -114,9 +123,9 @@ import * as path from 'node:path'
   }
 })()
 
-import { logger, LogCategory, ErrorNormalizer } from '@firefly/shared'
+import { logger, LogCategory, ErrorNormalizer, APP_PORTS, getWorktreeDebugPortBase } from '@firefly/shared'
 
-// 为不同平台或命令行指定的参数设置远程调试端口，避免冲突
+// 为不同平台或命令行指定的参数设置远程调试端口，每个 Worktree 独立专属滑动段
 const debuggingPortArg = process.argv.find(arg => arg.includes('--remote-debugging-port'))
 if (debuggingPortArg) {
   const portMatch = debuggingPortArg.match(/--remote-debugging-port=(\d+)/)
@@ -124,9 +133,32 @@ if (debuggingPortArg) {
     app.commandLine.appendSwitch('remote-debugging-port', portMatch[1])
   }
 } else if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
-  const debugPort =
-    process.platform === 'win32' ? '9222' : process.platform === 'darwin' ? '9223' : '9224' // Linux
-  app.commandLine.appendSwitch('remote-debugging-port', debugPort)
+  // 查找当前 Worktree 专属隔离段内的空闲调试端口
+  const isPortFreeSync = (port: number): boolean => {
+    try {
+      const net = require('net')
+      const server = net.createServer()
+      server.unref()
+      let free = false
+      server.listen({ port, host: '127.0.0.1', exclusive: true })
+      free = true
+      server.close()
+      return free
+    } catch {
+      return false
+    }
+  }
+
+  const worktreePortBase = getWorktreeDebugPortBase(worktreeInfo.worktreeName)
+  let debugPort = worktreePortBase
+  for (let p = worktreePortBase; p < worktreePortBase + APP_PORTS.REMOTE_DEBUGGING_SLOT_SIZE; p++) {
+    if (isPortFreeSync(p)) {
+      debugPort = p
+      break
+    }
+  }
+  app.commandLine.appendSwitch('remote-debugging-port', String(debugPort))
+  console.log(`🔍 [Chromium] Worktree: ${worktreeInfo.worktreeName} 独占远程调试端口: ${debugPort} (段: ${worktreePortBase}~${worktreePortBase + APP_PORTS.REMOTE_DEBUGGING_SLOT_SIZE - 1})`)
 }
 
 // 检测代理环境变量并配置 Electron Chromium 网络栈
@@ -832,6 +864,8 @@ app.on('before-quit', async () => {
     }
     // 确保 PostHog 挂起事件在退出前全部发送
     await postHogMain.shutdown()
+    // 精准清理所有名下登记的子进程
+    processReaper.cleanup()
     logger.info(LogCategory.MAIN, '资源清理完成')
   } catch (error) {
     logger.error(LogCategory.MAIN, '资源清理失败:', error)

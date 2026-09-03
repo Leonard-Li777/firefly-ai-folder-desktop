@@ -9,7 +9,7 @@
     "de-DE": "Vorbereitungen für den ersten Installationsstart...",
     "fr-FR": "Préparation du démarrage de l'installation pour la première fois...",
     "ko-KR": "처음으로 설치 시작을 준비 중입니다...",
-    "$files": ["src/electron/main/index.ts(22986-23003)"],
+    "$files": ["src/electron/main/index.ts(24363-24380)"],
     "$id": 10169
   },
   "正在从版本 {oldVersion} 升级到 {newVersion}...": {
@@ -22,7 +22,7 @@
     "de-DE": "Upgrade von Version {oldVersion} auf {newVersion}...",
     "fr-FR": "Mise à niveau de la version {oldVersion} vers {newVersion}...",
     "ko-KR": "버전 {oldVersion}에서 {newVersion}로 업그레이드 중...",
-    "$files": ["src/electron/main/index.ts(23015-23057)"],
+    "$files": ["src/electron/main/index.ts(24392-24434)"],
     "$id": 10170
   },
   "检测到您的 {gpuName} 显卡驱动版本过低或不兼容，已为你降级AI引擎速度，建立升级驱动体验满血AI性能。": {
@@ -35,7 +35,7 @@
     "de-DE": "Es wurde festgestellt, dass die Version Ihres {gpuName}-Grafikkartentreibers zu niedrig oder inkompatibel ist. Wir haben die Geschwindigkeit der KI-Engine für Sie herabgestuft und einen aktualisierten Treiber erstellt, um die volle KI-Leistung zu erleben.",
     "fr-FR": "Il a été détecté que la version du pilote de votre carte graphique {gpuName} est trop basse ou incompatible. Nous avons réduit la vitesse du moteur IA pour vous et créé un pilote mis à niveau pour bénéficier des performances complètes de l'IA.",
     "ko-KR": "{gpuName} 그래픽 카드 드라이버 버전이 너무 낮거나 호환되지 않는 것으로 감지되었습니다. 여러분을 위해 AI 엔진 속도를 다운그레이드하고, 완전한 AI 성능을 경험할 수 있도록 업그레이드된 드라이버를 만들었습니다.",
-    "$files": ["src/electron/main/initialization.ts(7242-7302)"],
+    "$files": ["src/electron/main/initialization.ts(7284-7344)"],
     "$id": 10171
   },
   "Llama 引擎部署完成": {
@@ -48,7 +48,7 @@
     "de-DE": "Die Bereitstellung der Lama-Engine ist abgeschlossen",
     "fr-FR": "Déploiement du moteur Llama terminé",
     "ko-KR": "라마 엔진 배포 완료",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3353-3369)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3390-3406)"],
     "$id": 10172
   },
   "AI服务初始化失败：无法创建实例": {
@@ -61,7 +61,7 @@
     "de-DE": "Die Initialisierung des AI-Dienstes ist fehlgeschlagen: Instanz kann nicht erstellt werden",
     "fr-FR": "Échec de l'initialisation du service AI : impossible de créer une instance",
     "ko-KR": "AI 서비스 초기화 실패: 인스턴스를 생성할 수 없습니다.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3741-3761)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3778-3798)"],
     "$id": 7670
   },
   "LlamaIndex AI服务初始化成功": {
@@ -74,7 +74,7 @@
     "de-DE": "Initialisierung des LlamaIndex AI-Dienstes erfolgreich",
     "fr-FR": "Initialisation réussie du service LlamaIndex AI",
     "ko-KR": "LlamaIndex AI 서비스 초기화 성공",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(5234-5258)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(5271-5295)"],
     "$id": 10173
   },
   "AI服务未创建": {
@@ -87,7 +87,7 @@
     "de-DE": "AI-Dienst nicht erstellt",
     "fr-FR": "Service IA non créé",
     "ko-KR": "AI 서비스가 생성되지 않았습니다.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(7789-7800)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(7826-7837)"],
     "$id": 10175
   },
   "模型切换通知已处理": {
@@ -100,7 +100,7 @@
     "de-DE": "Modellwechselbenachrichtigung verarbeitet",
     "fr-FR": "Notification de changement de modèle traitée",
     "ko-KR": "모델 전환 알림 처리됨",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8791-8804)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8828-8841)"],
     "$id": 10176
   },
   "处理失败": {
@@ -113,7 +113,7 @@
     "de-DE": "Die Verarbeitung ist fehlgeschlagen",
     "fr-FR": "Échec du traitement",
     "ko-KR": "처리 실패",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8933-8941)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(8970-8978)"],
     "$id": 10177
   },
   "AI服务初始化成功": {
@@ -126,7 +126,7 @@
     "de-DE": "Initialisierung des KI-Dienstes erfolgreich",
     "fr-FR": "Initialisation du service IA réussie",
     "ko-KR": "AI 서비스 초기화 성공",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(15915-15928)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(15952-15965)"],
     "$id": 10178
   },
   "模型正在切换中，请等待": {
@@ -140,8 +140,8 @@
     "fr-FR": "Le modèle est en cours de commutation, veuillez patienter",
     "ko-KR": "모델이 전환 중입니다. 기다려 주세요",
     "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(16693-16708)",
-      "src/electron/main/ipc-handlers/ai-service.ts(18658-18673)",
+      "src/electron/main/ipc-handlers/ai-service.ts(16730-16745)",
+      "src/electron/main/ipc-handlers/ai-service.ts(18695-18710)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(13843-13858)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(16291-16306)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(29713-29728)",
@@ -159,7 +159,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(19018-19047)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(19055-19084)"],
     "$id": 11303
   },
   "AI 服务正在初始化中，请稍候再试": {
@@ -173,7 +173,7 @@
     "fr-FR": "Le service AI est en cours d'initialisation, veuillez réessayer plus tard.",
     "ko-KR": "AI 서비스를 초기화 중입니다. 나중에 다시 시도해 주세요.",
     "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(19383-19404)",
+      "src/electron/main/ipc-handlers/ai-service.ts(19420-19441)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(16720-16741)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(17075-17096)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(30402-30423)",
@@ -363,9 +363,9 @@
     "fr-FR": "Base de données non initialisée",
     "ko-KR": "데이터베이스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(24482-24493)",
-      "src/electron/main/ipc-handlers/misc.ts(24728-24739)",
-      "src/electron/main/ipc-handlers/misc.ts(24974-24985)"
+      "src/electron/main/ipc-handlers/misc.ts(25308-25319)",
+      "src/electron/main/ipc-handlers/misc.ts(25554-25565)",
+      "src/electron/main/ipc-handlers/misc.ts(25800-25811)"
     ],
     "$id": 7676
   },

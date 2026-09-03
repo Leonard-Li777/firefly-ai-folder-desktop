@@ -1,6 +1,6 @@
 import child_process from 'node:child_process'
 import net from 'node:net'
-import { logger, LogCategory } from '@firefly/shared'
+import { logger, LogCategory, APP_PORTS } from '@firefly/shared'
 import { libreOfficeDetector } from './libreoffice-detector'
 
 export interface LibreOfficeDaemonStatus {
@@ -60,7 +60,7 @@ export class LibreOfficeDaemonService {
   /**
    * 在指定起始端口范围内寻找可用的 TCP 端口
    */
-  public async getFreePort(startPort: number = 2002): Promise<number> {
+  public async getFreePort(startPort: number = APP_PORTS.LIBREOFFICE_DAEMON): Promise<number> {
     return new Promise(resolve => {
       const server = net.createServer()
       server.listen(startPort, '127.0.0.1', () => {
@@ -77,7 +77,7 @@ export class LibreOfficeDaemonService {
    * 确保 LibreOffice 常驻守护服务在当前应用生命周期内稳定运行
    * 若未启动或崩溃则自动拉起，应用退出时自动彻底销毁，防范内存泄漏
    */
-  public async ensureDaemonRunning(defaultPort: number = 2002): Promise<LibreOfficeDaemonStatus> {
+  public async ensureDaemonRunning(defaultPort: number = APP_PORTS.LIBREOFFICE_DAEMON): Promise<LibreOfficeDaemonStatus> {
     // 1. 如果当前应用生命周期内已知正在运行且 PID 有效，直接复用
     if (
       this.activePort &&
@@ -132,6 +132,12 @@ export class LibreOfficeDaemonService {
       this.daemonProcess = daemonProc
       this.activePort = freePort
 
+      // 登记进全局精准进程回收器
+      try {
+        const { processReaper } = require('../../main/process-reaper')
+        processReaper.registerChild(daemonProc.pid, 'LibreOffice-Daemon')
+      } catch {}
+
       // 允许 Electron 主进程退出时不受强行绑死
       daemonProc.unref()
 
@@ -175,6 +181,10 @@ export class LibreOfficeDaemonService {
    */
   public stopDaemon(): void {
     if (this.daemonProcess && !this.daemonProcess.killed) {
+      try {
+        const { processReaper } = require('../../main/process-reaper')
+        processReaper.unregisterChild(this.daemonProcess.pid)
+      } catch {}
       try {
         this.daemonProcess.kill('SIGTERM')
         logger.info(LogCategory.PROCESS_MANAGER, '[LibreOfficeDaemon] 已停止常驻守护进程')

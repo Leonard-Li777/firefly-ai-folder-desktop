@@ -9,8 +9,25 @@
     "de-DE": "Anwendungseinstellungen",
     "fr-FR": "Paramètres de l'application",
     "ko-KR": "앱 설정",
-    "$files": ["src/renderer/components/settings/settings-dialog.tsx(3828-3836)"],
+    "$files": [
+      "src/renderer/components/settings/settings-dialog.tsx(5260-5268)"
+    ],
     "$id": 3157
+  },
+  "应用设置管理界面": {
+    "en-US": "Application settings management interface",
+    "es-ES": "Interfaz de administración de la configuración de la aplicación",
+    "ar-EG": "واجهة إدارة إعدادات التطبيق",
+    "pt-PT": "Interface de gestão das definições da aplicação",
+    "ru-RU": "Интерфейс управления настройками приложения",
+    "ja-JP": "アプリケーション設定管理インターフェイス",
+    "de-DE": "Verwaltungsschnittstelle für Anwendungseinstellungen",
+    "fr-FR": "Interface de gestion des paramètres de l'application",
+    "ko-KR": "응용 프로그램 설정 관리 인터페이스",
+    "$files": [
+      "src/renderer/components/settings/settings-dialog.tsx(5335-5347)"
+    ],
+    "$id": 11423
   },
   "设置验证失败": {
     "en-US": "Settings validation failed",
@@ -22,7 +39,9 @@
     "de-DE": "Überprüfung der Einstellungen fehlgeschlagen",
     "fr-FR": "Échec de la validation des paramètres",
     "ko-KR": "설정 검증 실패",
-    "$files": ["src/renderer/components/settings/settings-dialog.tsx(5339-5349)"],
+    "$files": [
+      "src/renderer/components/settings/settings-dialog.tsx(6870-6880)"
+    ],
     "$id": 3158
   },
   "语言变更警告": {
@@ -35,7 +54,9 @@
     "de-DE": "Sprachänderungswarnung",
     "fr-FR": "Avertissement concernant le changement de langue",
     "ko-KR": "언어 변경 경고",
-    "$files": ["src/renderer/components/settings/settings-dialog.tsx(6582-6592)"],
+    "$files": [
+      "src/renderer/components/settings/settings-dialog.tsx(8129-8139)"
+    ],
     "$id": 3166
   },
   "更改语言将重置AI分析数据库，所有AI分析结果、标签和维度数据将被清除。": {
@@ -48,7 +69,9 @@
     "de-DE": "Durch das Ändern der Sprache wird die AI-Analyse-Datenbank zurückgesetzt. Alle AI-Analyseergebnisse, Tags und Dimensionsdaten werden gelöscht.",
     "fr-FR": "Le changement de langue réinitialisera la base de données d'analyse IA ; tous les résultats d'analyse IA, les étiquettes et les données dimensionnelles seront effacés.",
     "ko-KR": "언어를 변경하면 AI 분석 데이터베이스가 재설정되며, 모든 AI 분석 결과, 태그 및 차원 데이터가 삭제됩니다.",
-    "$files": ["src/renderer/components/settings/settings-dialog.tsx(6751-6791)"],
+    "$files": [
+      "src/renderer/components/settings/settings-dialog.tsx(8298-8338)"
+    ],
     "$id": 3167
   },
   "是否继续？": {
@@ -61,7 +84,9 @@
     "de-DE": "Möchten Sie fortfahren?",
     "fr-FR": "Voulez-vous continuer ?",
     "ko-KR": "계속하시겠습니까?",
-    "$files": ["src/renderer/components/settings/settings-dialog.tsx(6859-6868)"],
+    "$files": [
+      "src/renderer/components/settings/settings-dialog.tsx(8406-8415)"
+    ],
     "$id": 3168
   },
   "取消": {
@@ -74,7 +99,9 @@
     "de-DE": "Abbrechen",
     "fr-FR": "Annuler",
     "ko-KR": "취소",
-    "$files": ["src/renderer/components/settings/settings-dialog.tsx(7076-7082)"],
+    "$files": [
+      "src/renderer/components/settings/settings-dialog.tsx(8623-8629)"
+    ],
     "$id": 3164
   },
   "继续": {
@@ -87,7 +114,9 @@
     "de-DE": "Fortfahren",
     "fr-FR": "Continuer",
     "ko-KR": "계속",
-    "$files": ["src/renderer/components/settings/settings-dialog.tsx(7267-7273)"],
+    "$files": [
+      "src/renderer/components/settings/settings-dialog.tsx(8814-8820)"
+    ],
     "$id": 3169
   }
 }

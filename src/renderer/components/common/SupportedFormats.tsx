@@ -277,7 +277,7 @@ export const SupportedFormats: React.FC<SupportedFormatsProps> = ({
   return (
     <div className={`space-y-4 ${className}`}>
       <p className="text-xs font-medium text-center text-muted-foreground/80 border-t border-border/50 pt-4">
-        {t('支持 206 种预览格式')}
+        {t('支持 240+ 种预览格式')}
       </p>
 
       <div className="space-y-2">

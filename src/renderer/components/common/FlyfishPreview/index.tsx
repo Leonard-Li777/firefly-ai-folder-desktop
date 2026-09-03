@@ -92,6 +92,8 @@ const SPECIALIST_RENDERER_LOADERS: Record<string, () => Promise<any>> = {
   umd: () => import('@file-viewer/renderer-epub').then(m => m.ebookRenderer)
 }
 
+import { setDefaultFileViewerAssetBaseUrl } from '@file-viewer/core/assets'
+
 // 缓存已加载的动态渲染器实例，避免重复加载
 const loadedSpecialistRenderersCache = new Map<string, any>()
 
@@ -100,10 +102,15 @@ const loadedSpecialistRenderersCache = new Map<string, any>()
 // 否则 cad 渲染器会按 core 默认的版本化路径（wasm/cad/0.8.0/）以及不含 file-viewer/ 前缀的
 // 基础路径解析，导致 DWG worker 加载 404 而报 "DWG worker failed"。
 function resolveFileViewerAssetBaseUrl(): string {
-  if (typeof document === 'undefined') {
-    return '/file-viewer/'
+  const url = typeof document === 'undefined'
+    ? '/file-viewer/'
+    : new URL('file-viewer/', document.baseURI).href
+  try {
+    setDefaultFileViewerAssetBaseUrl(url)
+  } catch {
+    // 忽略非浏览器环境
   }
-  return new URL('file-viewer/', document.baseURI).href
+  return url
 }
 
 function resolveViewerLocale(language: string | undefined): string {
@@ -136,18 +143,25 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
 
   const timeRef = useRef<number>(0)
 
-  // 1. 根据文件类型选择加载策略：归档文件通过 IPC 读取为 ArrayBuffer，其余格式使用直连 URL；并按需加载专用渲染器
+    // 1. 根据文件类型选择加载策略：归档文件通过 IPC 读取为 ArrayBuffer，其余格式使用直连 URL；并按需加载专用渲染器
   useEffect(() => {
     let isMounted = true
     setIsLoading(true)
     setError(null)
     setFileUrl(null)
     setFileBuffer(null)
-    setSpecialistRenderers([])
     timeRef.current = performance.now()
 
     const ext = fileName.toLowerCase().split('.').pop() || ''
     const isArchive = ['zip', 'cbz', 'rar', 'cbr', '7z', 'tar', 'gz'].includes(ext)
+
+    // 若该格式有缓存的专用渲染器，直接复用；否则先不重置或置空以待异步加载完成后统一提交
+    const cachedRenderer = loadedSpecialistRenderersCache.get(ext)
+    if (cachedRenderer) {
+      setSpecialistRenderers([cachedRenderer])
+    } else if (SPECIALIST_RENDERER_LOADERS[ext]) {
+      setSpecialistRenderers([])
+    }
 
     logger.info(LogCategory.RENDERER, `[FlyfishPreview] 开始准备文件预览`, {
       filePath,
@@ -158,29 +172,24 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
 
     ;(async () => {
       try {
-        // 动态加载非常见/专业格式渲染器
+        let loadedRenderer = cachedRenderer
+
+        // 动态加载非常见/专业格式渲染器（如 epub, psd, cad 等）
         const specialistLoader = SPECIALIST_RENDERER_LOADERS[ext]
-        if (specialistLoader) {
-          if (loadedSpecialistRenderersCache.has(ext)) {
-            if (isMounted) {
-              setSpecialistRenderers([loadedSpecialistRenderersCache.get(ext)])
-            }
-          } else {
-            logger.info(
-              LogCategory.RENDERER,
-              `[FlyfishPreview] ⏱️ 正在动态按需加载格式 [${ext}] 的专用渲染器模块...`
-            )
-            const dynamicRenderer = await specialistLoader()
-            loadedSpecialistRenderersCache.set(ext, dynamicRenderer)
-            if (isMounted) {
-              setSpecialistRenderers([dynamicRenderer])
-              logger.info(
-                LogCategory.RENDERER,
-                `[FlyfishPreview] ✅ 动态按需加载格式 [${ext}] 专用渲染器成功`
-              )
-            }
-          }
+        if (specialistLoader && !loadedRenderer) {
+          logger.info(
+            LogCategory.RENDERER,
+            `[FlyfishPreview] ⏱️ 正在动态按需加载格式 [${ext}] 的专用渲染器模块...`
+          )
+          loadedRenderer = await specialistLoader()
+          loadedSpecialistRenderersCache.set(ext, loadedRenderer)
+          logger.info(
+            LogCategory.RENDERER,
+            `[FlyfishPreview] ✅ 动态按需加载格式 [${ext}] 专用渲染器成功`
+          )
         }
+
+        if (!isMounted) return
 
         // 在 Electron 环境下优先通过原生 IPC 读取纯净 ArrayBuffer，彻底规避 Chromium file:/// 协议沙箱限制与 URL 编码问题
         if (window.electronAPI?.utils?.readFileBuffer) {
@@ -195,6 +204,11 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
             uint8Array.byteOffset,
             uint8Array.byteOffset + uint8Array.byteLength
           ) as ArrayBuffer
+
+          // 原子化更新：如果存在专用渲染器，确保专用渲染器与文件数据同时生效，避免未配置专用渲染器先挂载触发两次初始化与销毁竞态
+          if (loadedRenderer) {
+            setSpecialistRenderers([loadedRenderer])
+          }
           setFileBuffer(cleanBuffer)
           setLoadMode('buffer')
           logger.info(
@@ -224,6 +238,9 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
           })
 
           if (!isMounted) return
+          if (loadedRenderer) {
+            setSpecialistRenderers([loadedRenderer])
+          }
           setFileUrl(encodedUrl)
           setLoadMode('url')
         }
@@ -263,8 +280,6 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
   //    FileViewer 内部通过 useMemo 依赖 options 引用判断是否需要 update
   //    引用变化会触发 controller.update() → loadSource() 导致文件重新加载
   const viewerOptions = useMemo(() => {
-    // vite-plugin 将 @flyfish-dev/cad-viewer/dist/wasm 拷贝到 file-viewer/wasm/cad/（非版本化），
-    // 与 core 默认的版本化路径（wasm/cad/0.8.0/）不一致，这里显式指定绝对资源地址。
     const assetBaseUrl = resolveFileViewerAssetBaseUrl()
     return {
       theme,
@@ -276,12 +291,46 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
       renderers: specialistRenderers,
       docx: { worker: false },
       spreadsheet: { worker: false },
-      archive: {},
+      pdf: {
+        workerUrl: `${assetBaseUrl}vendor/pdf/pdf.worker.mjs`,
+        cMapUrl: `${assetBaseUrl}vendor/pdf/cmaps/`,
+        standardFontDataUrl: `${assetBaseUrl}vendor/pdf/standard_fonts/`,
+        cjkFontFallbackPath: `${assetBaseUrl}vendor/pdf/fonts/`,
+        wasmUrl: `${assetBaseUrl}vendor/pdf/wasm/`
+      },
+      archive: {
+        workerUrl: `${assetBaseUrl}vendor/libarchive/worker-bundle.js`,
+        wasmUrl: `${assetBaseUrl}vendor/libarchive/libarchive.wasm`
+      },
+      presentation: {
+        workerUrl: `${assetBaseUrl}vendor/pptx/pptx.worker.js`,
+        workerType: 'classic' as const,
+        pptModuleUrl: `${assetBaseUrl}vendor/ppt/index.mjs`,
+        pptWorkerUrl: `${assetBaseUrl}vendor/ppt/worker.mjs`,
+        pptWasmUrl: `${assetBaseUrl}vendor/ppt/ppt-native.wasm`,
+        pptFontUrl: `${assetBaseUrl}vendor/ppt/ppt-font-cjk.otf`
+      },
       cad: {
         useWorker: true,
         wasmPath: `${assetBaseUrl}wasm/cad`,
         workerUrl: `${assetBaseUrl}wasm/cad/dwg-worker.js`,
         dwfWasmUrl: `${assetBaseUrl}wasm/cad/dwfv-render.wasm`
+      },
+      typst: {
+        compilerWasmUrl: `${assetBaseUrl}wasm/typst/typst_ts_web_compiler_bg.wasm`,
+        rendererWasmUrl: `${assetBaseUrl}wasm/typst/typst_ts_renderer_bg.wasm`,
+        fontAssetsUrl: `${assetBaseUrl}wasm/typst/fonts/`
+      },
+      model: {
+        runtimeUrl: `${assetBaseUrl}wasm/model/occt-import-js.js`,
+        wasmUrl: `${assetBaseUrl}wasm/model/occt-import-js.wasm`,
+        workerUrl: `${assetBaseUrl}wasm/model/occt-worker.js`
+      },
+      data: {
+        sqlWasmUrl: `${assetBaseUrl}wasm/data/sql-wasm.wasm`
+      },
+      drawing: {
+        viewerScriptUrl: `${assetBaseUrl}vendor/drawio/viewer-static.min.js`
       }
     }
   }, [theme, viewerLocale, specialistRenderers])
@@ -296,17 +345,22 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
     )
   }
 
+  const currentExt = fileName.toLowerCase().split('.').pop() || ''
+  const isSpecialistFormat = Boolean(SPECIALIST_RENDERER_LOADERS[currentExt])
+  const isSpecialistReady = !isSpecialistFormat || specialistRenderers.length > 0
+
   return (
     <div className="relative w-full h-full bg-background ph-no-capture">
       <ErrorBoundary>
         {((loadMode === 'url' && !fileUrl) ||
           (loadMode === 'buffer' && !fileBuffer) ||
+          !isSpecialistReady ||
           isLoading) && (
           <div className="absolute inset-0 flex items-center justify-center z-10 bg-background/80 backdrop-blur-sm">
             <Loading title={t('加载预览中...')} />
           </div>
         )}
-        {loadMode === 'buffer' && fileBuffer && (
+        {loadMode === 'buffer' && fileBuffer && isSpecialistReady && (
           <FileViewer
             key={`${filePath}-${theme}`}
             ref={viewerRef}
@@ -319,7 +373,7 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
             className="w-full h-full"
           />
         )}
-        {loadMode === 'url' && fileUrl && (
+        {loadMode === 'url' && fileUrl && isSpecialistReady && (
           <FileViewer
             key={`${fileUrl}-${theme}`}
             ref={viewerRef}

@@ -10,12 +10,22 @@ import {
   DuplicateFixAction,
   DuplicateFixResult
 } from '@firefly/types'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, APP_PORTS } from '@firefly/shared'
 import { databaseService } from '../database'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 
 export class DuplicateDetectionService {
-  private omniApiUrl = 'http://127.0.0.1:9190'
+  /**
+   * Omni API 基础 URL：优先读取 omni-service 实际绑定端口（由 OMNI_ACTUAL_PORT 环境变量写入），
+   * 兜底使用统一冷门端口段基准 APP_PORTS.OMNI_SERVER (38200)。
+   * 旧端口 9190 已废弃迁移，禁止硬编码。
+   */
+  private get omniApiUrl(): string {
+    const port = process.env.OMNI_ACTUAL_PORT
+      ? Number(process.env.OMNI_ACTUAL_PORT)
+      : APP_PORTS.OMNI_SERVER
+    return `http://127.0.0.1:${port}`
+  }
 
   /**
    * 获取当前系统与配置中不可被清理的受保护排除项名单 (严格依据 IGNORE_RULES 中的 isCzkawka 配置)

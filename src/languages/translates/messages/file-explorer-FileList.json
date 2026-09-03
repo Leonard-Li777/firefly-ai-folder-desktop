@@ -149,8 +149,8 @@
     "ko-KR": "알 수 없는 파일",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(34149-34157)",
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(26371-26379)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(22181-22189)"
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(27102-27110)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(22939-22947)"
     ],
     "$id": 8511
   },
@@ -333,7 +333,7 @@
     "de-DE": "Die ursprüngliche Datei ging auf der Festplatte verloren oder wurde verschoben",
     "fr-FR": "Le fichier original a été perdu ou déplacé sur le disque",
     "ko-KR": "원본 파일이 디스크에서 손실되거나 이동되었습니다",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/GridCell.tsx(7506-7524)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/GridCell.tsx(7652-7670)"],
     "$id": 8525
   },
   "打开文件失败: {message}": {
@@ -347,9 +347,9 @@
     "fr-FR": "Échec de l'ouverture du fichier : {message}",
     "ko-KR": "파일을 열지 못했습니다: {message}",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(10241-10262)",
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(17657-17678)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(9391-9412)"
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(10387-10408)",
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(17761-17782)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(9294-9315)"
     ],
     "$id": 8526
   },
@@ -364,9 +364,9 @@
     "fr-FR": "Perdu",
     "ko-KR": "손실됨",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(11341-11348)",
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(20781-20788)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(11867-11874)"
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(11487-11494)",
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(21407-21414)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(12413-12420)"
     ],
     "$id": 8527
   },
@@ -380,7 +380,7 @@
     "de-DE": "Unbekannter Fehlergrund",
     "fr-FR": "Raison d'échec inconnue",
     "ko-KR": "알 수 없는 실패 원인",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(3747-3757)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(3886-3896)"],
     "$id": 8528
   },
   "已分析": {
@@ -393,7 +393,7 @@
     "de-DE": "Analysiert\r",
     "fr-FR": "Analysé",
     "ko-KR": "분석 완료",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4028-4035)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4167-4174)"],
     "$id": 8529
   },
   "分析队列中": {
@@ -406,7 +406,7 @@
     "de-DE": "In der Analysewarteschlange\r",
     "fr-FR": "En attente d'analyse",
     "ko-KR": "분석 대기열에 있음",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4348-4357)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4487-4496)"],
     "$id": 8530
   },
   "分析中": {
@@ -419,7 +419,7 @@
     "de-DE": "Analysieren",
     "fr-FR": "En cours d'analyse",
     "ko-KR": "분석 중",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4647-4654)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4786-4793)"],
     "$id": 8531
   },
   "失败": {
@@ -432,7 +432,7 @@
     "de-DE": "Fehlgeschlagen",
     "fr-FR": "Échec",
     "ko-KR": "실패",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(4911-4917)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(5050-5056)"],
     "$id": 8532
   },
   "文件夹": {
@@ -446,8 +446,8 @@
     "fr-FR": "Dossier",
     "ko-KR": "폴더",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(14316-14323)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(17664-17671)"
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(14420-14427)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(18283-18290)"
     ],
     "$id": 8533
   },
@@ -462,8 +462,8 @@
     "fr-FR": "Fichier",
     "ko-KR": "파일",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(27343-27349)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(17698-17704)"
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(28321-28327)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(18317-18323)"
     ],
     "$id": 8534
   },

@@ -1,6 +1,6 @@
 {
   "server": {
-    "port": 8172,
+    "port": 38400,
     "timeout": 30000,
     "maxRetries": 5,
     "healthCheckInterval": 10000,

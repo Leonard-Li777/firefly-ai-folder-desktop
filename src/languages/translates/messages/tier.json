@@ -2732,7 +2732,7 @@
     "de-DE": "Chatten Sie privat mit lokaler KI",
     "fr-FR": "Discutez en privé avec l'IA locale",
     "ko-KR": "로컬 AI와 비공개 채팅",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(15326-15339)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(15327-15340)"],
     "$id": 7987
   },
   "重置布局": {
@@ -2745,7 +2745,7 @@
     "de-DE": "Layout zurücksetzen",
     "fr-FR": "Réinitialiser la mise en page",
     "ko-KR": "레이아웃 재설정",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(16740-16748)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(16741-16749)"],
     "$id": 11045
   },
   "Telegram 官方频道": {
@@ -2758,7 +2758,7 @@
     "de-DE": "Offizieller Telegram-Kanal",
     "fr-FR": "Chaîne officielle de Telegram",
     "ko-KR": "텔레그램 공식 채널",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(17664-17681)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(17665-17682)"],
     "$id": 9544
   },
   "知乎萤核圈子": {
@@ -2771,7 +2771,7 @@
     "de-DE": "Zhihu Feuerkernkreis",
     "fr-FR": "Cercle de noyau de feu de Zhihu",
     "ko-KR": "Zhihu 파이어 코어 서클",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(18539-18549)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(18540-18550)"],
     "$id": 11046
   },
   "扫码加微信群": {
@@ -2785,7 +2785,7 @@
     "fr-FR": "Scannez le code QR pour rejoindre le groupe WeChat",
     "ko-KR": "WeChat 그룹에 가입하려면 QR 코드를 스캔하세요.",
     "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(19324-19334)",
+      "src/renderer/components/tier/UserAvatarMenu.tsx(19325-19335)",
       "src/renderer/components/tier/WechatQRDialog.tsx(1074-1084)"
     ],
     "$id": 11047
@@ -2800,7 +2800,7 @@
     "de-DE": "Um",
     "fr-FR": "À propos",
     "ko-KR": "~에 대한",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(20152-20158)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(20153-20159)"],
     "$id": 11048
   },
   "加微信并留言：萤核，拉你进微信群交流": {

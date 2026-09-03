@@ -215,7 +215,7 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
             {/* 右侧垂直置信度：上方突出大号百分比数值，下方置信度小字 */}
             <div className="flex flex-col items-center justify-center shrink-0 select-none pl-2 pr-1 self-center">
               <div className="flex items-baseline leading-none">
-                <span className="text-base font-bold text-foreground/80 leading-none">
+                <span className="text-xs font-bold text-foreground/80 leading-none">
                   {group.confidenceValue}
                 </span>
                 <span className="text-[10px] font-semibold text-muted-foreground/70 leading-none ml-[1px]">

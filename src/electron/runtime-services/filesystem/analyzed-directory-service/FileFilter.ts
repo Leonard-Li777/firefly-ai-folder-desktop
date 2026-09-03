@@ -202,6 +202,9 @@ export class FileFilter {
    * 说明：files_fts 由触发器同步所有文件（含未分析文件的基础字段），
    * 因此未分析文件仍可通过 name/smart_name/description/path/type 等命中。
    *
+   * 注意：files_fts 使用 trigram 分词器，不支持 quoted phrase 语法（"word"），
+   * 必须使用裸词搜索；特殊字符（"、*、^等）需要转义以防止 FTS 语法错误。
+   *
    * @param keyword 搜索关键词
    * @returns { sql, params }，keyword 为空时返回空条件
    */
@@ -214,7 +217,9 @@ export class FileFilter {
     const ftsClause = ftsAvailable
       ? `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (SELECT file_fingerprint FROM files_fts WHERE files_fts MATCH ?))\n        OR `
       : ''
-    const sanitizedQuery = `"${trimmed.replace(/["]/g, '""')}"`
+    // trigram 分词器不支持 quoted phrase（"word"），使用裸词搜索
+    // 转义 FTS5 特殊字符（双引号、星号、脱字符等），防止语法错误
+    const sanitizedQuery = trimmed.replace(/["*^()]/g, ' ').trim() || trimmed
     return {
       sql: `(
         ${ftsClause}wf.name LIKE ?

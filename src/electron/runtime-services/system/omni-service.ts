@@ -12,7 +12,7 @@ import { ChildProcess, spawn } from 'node:child_process'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { app } from 'electron'
-import { ResourceLocator, logger, LogCategory } from '@firefly/shared'
+import { ResourceLocator, logger, LogCategory, APP_PORTS, findAvailablePort } from '@firefly/shared'
 import { FileCategory } from '@firefly/types'
 
 export interface OmniBenchmarkResponse {
@@ -62,7 +62,9 @@ export interface OmniGeoReverseResponse {
 export class OmniService {
   private static instance: OmniService
   private process: ChildProcess | null = null
-  private baseUrl = 'http://127.0.0.1:9190'
+  private basePort: number = APP_PORTS.OMNI_SERVER
+  private actualPort: number = APP_PORTS.OMNI_SERVER
+  private baseUrl = `http://127.0.0.1:${APP_PORTS.OMNI_SERVER}`
   private isStarting = false
   private startPromise: Promise<boolean> | null = null
   private cachedVersion: string | null = null
@@ -228,23 +230,36 @@ export class OmniService {
     }
 
     try {
-      // 探活检查：如果 9190 端口上已有外部 omni 服务正常响应（例如开发模式独立运行的 omni:serve 或 omni:ui），则直接复用
+      // 寻找可用端口（支持冷门段 38200~38219 自动滑动）
+      const port = await findAvailablePort(this.basePort, APP_PORTS.MAX_ATTEMPTS)
+      this.actualPort = port
+      this.baseUrl = `http://127.0.0.1:${port}`
+      // 将实际端口写入环境变量，供 DuplicateDetectionService 等跨服务读取
+      process.env.OMNI_ACTUAL_PORT = String(port)
+
+      // 探活检查：如果该端口上已有外部 omni 服务正常响应，则直接复用
       const isAlive = await this.checkHealth()
       if (isAlive) {
-        logger.info(LogCategory.SYSTEM, `[OmniService] 检测到已在 9190 运行的 Omni 服务 (${this.baseUrl})，直接连接复用，并同步最新配置`)
+        logger.info(LogCategory.SYSTEM, `[OmniService] 检测到已在 ${port} 运行的 Omni 服务 (${this.baseUrl})，直接连接复用，并同步最新配置`)
         this.restartAttempts = 0
         this.isStarting = false
         this.syncConfigFromDesktop().catch(() => {})
         return true
       }
 
-      logger.info(LogCategory.SYSTEM, `[OmniService] 正在拉起 firefly-omni 守护进程: ${exePath}`)
-      const env = { ...process.env }
-      const child = spawn(exePath, ['serve', '-a', '127.0.0.1:9190'], {
+      logger.info(LogCategory.SYSTEM, `[OmniService] 正在拉起 firefly-omni 守护进程 (Port: ${port}): ${exePath}`)
+      const env = { ...process.env, OMNI_PORT: String(port) }
+      const child = spawn(exePath, ['serve', '-a', `127.0.0.1:${port}`], {
         env,
         stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true
       })
+
+      // 登记进全局精准进程回收器
+      try {
+        const { processReaper } = require('../../main/process-reaper')
+        processReaper.registerChild(child.pid, 'firefly-omni')
+      } catch {}
 
       const isCzkawkaDump = (str: string): boolean => {
         return (
@@ -276,11 +291,15 @@ export class OmniService {
 
       child.on('exit', async (code, signal) => {
         logger.warn(LogCategory.SYSTEM, `[OmniService] 子进程退出 (code=${code}, signal=${signal})`)
+        try {
+          const { processReaper } = require('../../main/process-reaper')
+          processReaper.unregisterChild(child.pid)
+        } catch {}
         this.process = null
-        // 子进程退出后，先检测是否 9190 上已有服务接管（如外部重启），若健康则直接接入，不触发重启
+        // 子进程退出后，先检测是否对应端口上已有服务接管，若健康则直接接入，不触发重启
         const aliveAfterExit = await this.checkHealth()
         if (aliveAfterExit) {
-          logger.info(LogCategory.SYSTEM, '[OmniService] 9190 端口已有外部服务接管，直接连接')
+          logger.info(LogCategory.SYSTEM, `[OmniService] ${this.actualPort} 端口已有外部服务接管，直接连接`)
           this.restartAttempts = 0
           return
         }
@@ -323,6 +342,10 @@ export class OmniService {
 
     if (this.process) {
       const pid = this.process.pid
+      try {
+        const { processReaper } = require('../../main/process-reaper')
+        processReaper.unregisterChild(pid)
+      } catch {}
       try {
         if (process.platform === 'win32' && pid) {
           try {

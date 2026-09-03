@@ -5,7 +5,8 @@ import {
   ErrorNormalizer,
   isTestEnvironment,
   shouldSkipAIServiceInTest,
-  ResourceLocator
+  ResourceLocator,
+  APP_PORTS
 } from '@firefly/shared'
 import { AIErrorType, AIServiceStatus, StartupPhase } from '@firefly/types'
 import type { AICapabilities, LanguageCode } from '@firefly/types'
@@ -928,7 +929,7 @@ export async function initializeFullServices(): Promise<void> {
 
     let currentApiService: any = null
     const initialEnableAiSkill = orchestrator.getValue<boolean>('ENABLE_AI_SKILL_API') ?? true
-    const initialAiSkillPort = orchestrator.getValue<number>('AI_SKILL_API_PORT') ?? 28686
+    const initialAiSkillPort = orchestrator.getValue<number>('AI_SKILL_API_PORT') ?? APP_PORTS.AI_SKILL_API
 
     if (initialEnableAiSkill) {
       currentApiService = await startApiService(initialAiSkillPort)
@@ -938,7 +939,7 @@ export async function initializeFullServices(): Promise<void> {
     orchestrator.onValueChange('ENABLE_AI_SKILL_API', async enabled => {
       if (enabled) {
         if (!currentApiService) {
-          const port = orchestrator.getValue<number>('AI_SKILL_API_PORT') ?? 28686
+          const port = orchestrator.getValue<number>('AI_SKILL_API_PORT') ?? APP_PORTS.AI_SKILL_API
           currentApiService = await startApiService(port)
         }
       } else {

@@ -339,7 +339,7 @@ export const UserAvatarMenu: React.FC = () => {
                     const runningPort = await window.electronAPI?.getLlamaServerPort?.()
                     const configPort =
                       await window.electronAPI?.getConfigValue<number>('AI_LOCAL_PORT')
-                    const port = runningPort || configPort || 8172
+                    const port = runningPort || configPort || 38400
                     openExternalLink(`http://localhost:${port}`)
                   })
                 }

@@ -3,7 +3,7 @@ import * as http from 'node:http'
 import * as fs from 'node:fs/promises'
 import * as path from 'path'
 import { BrowserWindow } from 'electron'
-import { logger, LogCategory, findAvailablePort } from '@firefly/shared'
+import { logger, LogCategory, findAvailablePort, APP_PORTS } from '@firefly/shared'
 import * as iconv from 'iconv-lite'
 import { databaseService } from './database/database-service'
 import { analysisQueueService } from './analysis-queue-service'
@@ -11,11 +11,11 @@ import { organizeRealDirectoryService, virtualDirectoryService } from '../main/s
 
 export class AISkillApiService {
   private server: http.Server | null = null
-  private configuredPort = 28686
+  private configuredPort: number = APP_PORTS.AI_SKILL_API
   private actualPort = 0
   private configFilePath = ''
 
-  constructor(port = 28686, userDataPath?: string) {
+  constructor(port: number = APP_PORTS.AI_SKILL_API, userDataPath?: string) {
     this.configuredPort = port
     if (userDataPath) {
       this.configFilePath = path.join(userDataPath, 'ai-skill-config.json')

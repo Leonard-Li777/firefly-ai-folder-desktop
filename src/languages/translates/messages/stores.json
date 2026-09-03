@@ -283,7 +283,7 @@
     "de-DE": "Speichern der Einstellungen fehlgeschlagen",
     "fr-FR": "Échec de la sauvegarde des paramètres",
     "ko-KR": "설정 저장 실패",
-    "$files": ["src/renderer/stores/settings-store.ts(6650-6660)"],
+    "$files": ["src/renderer/stores/settings-store.ts(6696-6706)"],
     "$id": 5491
   },
   "确认删除此工作目录？": {
@@ -296,7 +296,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich löschen?",
     "fr-FR": "Confirmer la suppression de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(9343-9357)"],
+    "$files": ["src/renderer/stores/settings-store.ts(9389-9403)"],
     "$id": 3303
   },
   "确认重置此工作目录？": {
@@ -309,7 +309,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich zurücksetzen?",
     "fr-FR": "Confirmer la réinitialisation de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(9654-9668)"],
+    "$files": ["src/renderer/stores/settings-store.ts(9700-9714)"],
     "$id": 3304
   },
   "不支持的语言设置": {
@@ -322,7 +322,7 @@
     "de-DE": "Nicht unterstützte Spracheinstellung",
     "fr-FR": "Paramètre de langue non pris en charge",
     "ko-KR": "지원되지 않는 언어 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(10111-10123)"],
+    "$files": ["src/renderer/stores/settings-store.ts(10157-10169)"],
     "$id": 5501
   },
   "交易失败，已归还扣币，原因：{reason}": {

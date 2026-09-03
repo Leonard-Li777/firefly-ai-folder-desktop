@@ -64,7 +64,7 @@
     "de-DE": "Dateiverzeichnis",
     "fr-FR": "Répertoire de fichiers",
     "ko-KR": "파일 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(5286-5294)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(5409-5417)"],
     "$id": 8756
   },
   "分类维度": {
@@ -77,7 +77,7 @@
     "de-DE": "Klassifizierungsdimension",
     "fr-FR": "Dimension de classement",
     "ko-KR": "분류 차원",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(5859-5867)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(5982-5990)"],
     "$id": 8757
   },
   "筛选模式": {
@@ -90,7 +90,7 @@
     "de-DE": "Filtermodus",
     "fr-FR": "Mode filtre",
     "ko-KR": "필터 모드",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(6275-6283)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(6398-6406)"],
     "$id": 8758
   },
   "多选": {
@@ -103,7 +103,7 @@
     "de-DE": "Multiple Choice",
     "fr-FR": "Choix multiple",
     "ko-KR": "객관식",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(6431-6437)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(6554-6560)"],
     "$id": 8759
   },
   "打开文件失败: {message}": {
@@ -116,7 +116,7 @@
     "de-DE": "Datei konnte nicht geöffnet werden: {message}",
     "fr-FR": "Échec de l'ouverture du fichier : {message}",
     "ko-KR": "파일을 열지 못했습니다: {message}",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(14872-14893)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(14832-14853)"],
     "$id": 8760
   },
   "加载中...": {
@@ -129,7 +129,7 @@
     "de-DE": "Wird geladen...\r",
     "fr-FR": "Chargement en cours...",
     "ko-KR": "불러오는 중...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(16303-16313)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(16263-16273)"],
     "$id": 8761
   },
   "暂无维度数据": {
@@ -142,7 +142,7 @@
     "de-DE": "Noch keine Dimensionsdaten",
     "fr-FR": "Aucune donnée de dimension pour l'instant",
     "ko-KR": "아직 측정기준 데이터가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(16494-16504)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(16454-16464)"],
     "$id": 8762
   },
   "{count} 个子目录": {
@@ -155,7 +155,7 @@
     "de-DE": "Unterverzeichnis {count}",
     "fr-FR": "{count} sous-répertoire",
     "ko-KR": "{count} 하위 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(17664-17680)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(17624-17640)"],
     "$id": 8763
   },
   "{count} 个维度组": {
@@ -168,7 +168,7 @@
     "de-DE": "{count} Dimensionsgruppen",
     "fr-FR": "{count} groupes de dimensions",
     "ko-KR": "{count} 차원 그룹",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(17726-17742)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(17686-17702)"],
     "$id": 8764
   },
   "重命名虚拟目录": {
