@@ -160,6 +160,16 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      # E2E 测试套件（pro/tests/e2e/release-pkg）位于私有仓库，必须显式检出，
+      # 否则后续 npm --prefix pro/tests/e2e/release-pkg install 会因缺少 package.json 报 ENOENT
+      - name: Checkout Private Pro Module (E2E Test Suites)
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+          ref: master
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -257,6 +267,16 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      # E2E 测试套件（pro/tests/e2e/release-pkg）位于私有仓库，必须显式检出，
+      # 否则后续 npm --prefix pro/tests/e2e/release-pkg install 会因缺少 package.json 报 ENOENT
+      - name: Checkout Private Pro Module (E2E Test Suites)
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+          ref: master
 
       - name: Set up QEMU for Multi-Arch Support
         uses: docker/setup-qemu-action@v3
@@ -380,6 +400,16 @@ jobs:
       - name: Checkout Source Code
         uses: actions/checkout@v4
 
+      # E2E 测试套件（pro/tests/e2e/release-pkg）位于私有仓库，必须显式检出，
+      # 否则后续 npm --prefix pro/tests/e2e/release-pkg install 会因缺少 package.json 报 ENOENT
+      - name: Checkout Private Pro Module (E2E Test Suites)
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+          ref: master
+
       - name: Set up QEMU for Multi-Arch Support
         uses: docker/setup-qemu-action@v3
 
@@ -500,6 +530,16 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+
+      # E2E 测试套件（pro/tests/e2e/release-pkg）位于私有仓库，必须显式检出，
+      # 否则后续 npm --prefix pro/tests/e2e/release-pkg install 会因缺少 package.json 报 ENOENT
+      - name: Checkout Private Pro Module (E2E Test Suites)
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+          ref: master
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
