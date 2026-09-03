@@ -173,6 +173,14 @@ export default defineConfig(({ command, mode }) => {
       Object.assign(env, parsed)
     }
   })
+  // 读取 .env.worktree（由 create-worktree.js 自动生成，优先级最高）
+  // 用于隔离多 Worktree 并发时的 Renderer Dev Server 端口（38100 主仓库，38110+ 各分支 Worktree）
+  const worktreeEnvPath = path.resolve(__dirname, '.env.worktree')
+  if (fs.existsSync(worktreeEnvPath)) {
+    const worktreeEnv = parseEnvContent(fs.readFileSync(worktreeEnvPath, 'utf-8'))
+    Object.assign(env, worktreeEnv)
+    console.log(`🔧 [electron-vite] 已加载 Worktree 专属配置: ${worktreeEnvPath}`)
+  }
 
   const isPortFreeSync = (port: number): boolean => {
     try {
