@@ -143,8 +143,8 @@ export const initPostHog = async () => {
     // 依据硬件检测结果精准设置录屏开关：低配老核显直接禁用，高性能设备直接开启
     disable_session_recording: !enableRecording,
     session_recording: {
-      // 会话采样率：只录制 50% 的会话，降低客户端 CPU/内存开销
-      sampleRate: 0.2,
+      // 会话采样率：录制 100% 的会话
+      sampleRate: 1,
       // 禁用 Canvas 抓取以降低主线程 CPU 和内存开销
       captureCanvas: { recordCanvas: false },
       // 不默认掩码输入框与文本
