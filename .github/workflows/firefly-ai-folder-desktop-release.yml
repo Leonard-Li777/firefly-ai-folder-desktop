@@ -766,17 +766,18 @@ jobs:
             libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 \
             libasound2 libxshmfence1 libx11-xcb1 p7zip-full curl tar
 
-          # 解决 GCC 8.3 不支持 -std=c++20 / -std=gnu++20 的兼容性 wrapper
-          # Node 22+ 的 node-gyp 默认下发 -std=gnu++20，而 buster 自带 GCC 8.3 仅识别 -std=gnu++2a，
-          # 且对 C++20 特性支持不完整，故统一降级为 C++17：与 Node 20 时代的编译标准完全一致，
-          # 既避免参数不被识别，也避免半吊子 C++20 特性引发的编译错误。
+          # 备用兼容 wrapper：buster 自带 GCC 8.3 不识别 Node 22+ 下发的 -std=c++20 / -std=gnu++20，
+          # 统一映射为 GCC 8 支持的 -std=c++2a / -std=gnu++2a。
+          # 宿主 Node 已固定为 20.18.0（下发 -std=gnu++17），正常情况下本 wrapper 不会被触发；
+          # 若将来升级宿主 Node 到 22+，必须同时换成自带 GCC 12+ 的镜像（bullseye/bookworm），
+          # 否则即便参数被识别，V8 13 头文件在 GCC 8 下依然无法编译。
           printf '%s\n' \
             '#!/bin/bash' \
             'args=()' \
             'for arg in "$@"; do' \
             '  case "$arg" in' \
-            '    -std=c++2[0-9]) arg="-std=c++17" ;;' \
-            '    -std=gnu++2[0-9]) arg="-std=gnu++17" ;;' \
+            '    -std=c++2[0-9]) arg="-std=c++2a" ;;' \
+            '    -std=gnu++2[0-9]) arg="-std=gnu++2a" ;;' \
             '  esac' \
             '  args+=("$arg")' \
             'done' \
@@ -821,10 +822,15 @@ jobs:
           fi
           echo "gh version: $(gh --version 2>/dev/null || echo '未检测到版本')"
 
+      # 宿主 Node 固定为 20.18.0，不可升级到 Node 22/24：
+      # 1) 本 job 容器为 node:20-buster（Debian 10 / GCC 8.3，glibc 2.28），better-sqlite3 的
+      #    预编译二进制要求 GLIBC_2.29，只能回退源码编译；
+      # 2) Node 24 的 V8 13 头文件要求 C++20，GCC 8.3 无法编译 better-sqlite3 等原生模块；
+      # 3) 打包目标为 Electron 32（Node 20 ABI），宿主 Node 20.18.0 与之一致，编译标准同为 C++17。
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.15.0'
+          node-version: '20.18.0'
 
       - name: Clean packageManager from package.json
         shell: bash
