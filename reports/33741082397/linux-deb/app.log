@@ -1,0 +1,384 @@
+{"timestamp":"2026-09-03T09:55:15.343Z","level":2,"category":"MEMORY_MANAGER","message":"内存监控已启动，间隔: 5000ms"}
+{"timestamp":"2026-09-03T09:55:15.344Z","level":2,"category":"MEMORY_MANAGER","message":"内存管理服务初始化完成"}
+{"timestamp":"2026-09-03T09:55:15.344Z","level":2,"category":"RESOURCE_MANAGER","message":"资源监控已启动，间隔: 60000ms"}
+{"timestamp":"2026-09-03T09:55:15.344Z","level":2,"category":"RESOURCE_MANAGER","message":"资源管理服务初始化完成"}
+{"timestamp":"2026-09-03T09:55:15.344Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"配置加载完成"}
+{"timestamp":"2026-09-03T09:55:15.405Z","level":2,"category":"AI_ERROR_HANDLER","message":"AI错误处理服务已启动"}
+{"timestamp":"2026-09-03T09:55:15.431Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能监控已启动，间隔: 10000ms"}
+{"timestamp":"2026-09-03T09:55:15.431Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能优化服务初始化完成"}
+{"timestamp":"2026-09-03T09:55:15.555Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=user changedKeys=[\"MACHINE_ID\"]"}
+{"timestamp":"2026-09-03T09:55:15.555Z","level":3,"category":"MAIN","message":"[enrichAIStatus] 配置变更，清除 AI 状态缓存及硬件后端缓存"}
+{"timestamp":"2026-09-03T09:55:15.556Z","level":2,"category":"SYSTEM_HEALTH","message":"Machine ID initialized {\n  \"machineId\": \"b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e\"\n}"}
+{"timestamp":"2026-09-03T09:55:15.558Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=runtime changedKeys=[\"USER_TIER_CACHE_DATA\"]"}
+{"timestamp":"2026-09-03T09:55:15.559Z","level":2,"category":"SYSTEM","message":"PostHog 主进程服务已初始化, ID: b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e"}
+{"timestamp":"2026-09-03T09:55:15.559Z","level":2,"category":"MAIN","message":"[App] 身份系统与追踪服务早期初始化完成"}
+{"timestamp":"2026-09-03T09:55:15.566Z","level":2,"category":"IPC","message":"注册云端模型配置IPC处理器..."}
+{"timestamp":"2026-09-03T09:55:15.566Z","level":2,"category":"IPC","message":"云端模型配置IPC处理器注册完成"}
+{"timestamp":"2026-09-03T09:55:15.566Z","level":2,"category":"IPC","message":"注册本地模型配置相关 IPC 处理器..."}
+{"timestamp":"2026-09-03T09:55:15.568Z","level":2,"category":"MAIN","message":"正在注册 FFmpeg IPC 处理器..."}
+{"timestamp":"2026-09-03T09:55:15.568Z","level":3,"category":"AI_SERVICE","message":"当前配置的 AI 引擎: lla**.cpp (构建时默认: lla**.cpp)"}
+{"timestamp":"2026-09-03T09:55:15.568Z","level":2,"category":"MAIN","message":"[IPC] 当前 AI 引擎: lla**.cpp"}
+{"timestamp":"2026-09-03T09:55:15.568Z","level":2,"category":"MAIN","message":"[IPC] 模型下载管理 IPC 处理程序注册完成"}
+{"timestamp":"2026-09-03T09:55:15.568Z","level":2,"category":"MAIN","message":"[IPC] 注册数据库直连 IPC 处理程序 (开发/测试模式)"}
+{"timestamp":"2026-09-03T09:55:15.569Z","level":2,"category":"MAIN","message":"[IPC] 所有 IPC 处理程序注册完成"}
+{"timestamp":"2026-09-03T09:55:15.569Z","level":2,"category":"MAIN","message":"[App] 启动状态检测: isFirstRun=true, isUpgrade=false (Stored: 3.5.2, Current: 3.5.2)"}
+{"timestamp":"2026-09-03T09:55:15.569Z","level":2,"category":"MAIN","message":"[App] 检测到首次运行或版本升级，提前创建窗口以显示安装遮罩"}
+{"timestamp":"2026-09-03T09:55:15.569Z","level":2,"category":"MAIN","message":"[createWindow] 开始创建主浏览器窗口..."}
+{"timestamp":"2026-09-03T09:55:15.607Z","level":2,"category":"MAIN","message":"[createWindow] 主浏览器窗口已创建，并设置为隐藏。"}
+{"timestamp":"2026-09-03T09:55:15.607Z","level":2,"category":"MAIN","message":"[createWindow] 正在加**.html..."}
+{"timestamp":"2026-09-03T09:55:15.607Z","level":2,"category":"MAIN","message":"[createWindow] 找到并**.html: /usr/lib/firefly-ai-folder-cn/resources/app/out_build/renderer/ind**.html"}
+{"timestamp":"2026-09-03T09:55:15.620Z","level":2,"category":"MAIN","message":"[createWindow] 生产环**.html加载完成。"}
+{"timestamp":"2026-09-03T09:55:15.625Z","level":2,"category":"DATABASE_SERVICE","message":"语言尚未确认 (LANGUAGE_CONFIRMED = false)，跳过 ensureInitialized 数据库自动创建"}
+{"timestamp":"2026-09-03T09:55:15.625Z","level":2,"category":"SYSTEM","message":"[Region] 正在通过探测 goo**.com 和 bai**.com 进行网络环境识别..."}
+{"timestamp":"2026-09-03T09:55:15.629Z","level":2,"category":"MAIN","message":"[App] 已将 AI 引擎配置注入 ConfigOrchestrator: lla**.cpp"}
+{"timestamp":"2026-09-03T09:55:15.629Z","level":2,"category":"MAIN","message":"[App] 身份系统与追踪服务初始化已就绪"}
+{"timestamp":"2026-09-03T09:55:15.629Z","level":2,"category":"MAIN","message":"[App] 应用启动，进入配置阶段..."}
+{"timestamp":"2026-09-03T09:55:15.630Z","level":2,"category":"SYSTEM","message":"[TrayService] 系统托盘初始化成功"}
+{"timestamp":"2026-09-03T09:55:15.892Z","level":2,"category":"MAIN","message":"[createWindow] 显示启动画面 (使用 boo**.jpg)"}
+{"timestamp":"2026-09-03T09:55:16.316Z","level":2,"category":"SYSTEM","message":"[Region] 探测完成。Google: 连通, 百度: 连通 -> 最终决策: cn"}
+{"timestamp":"2026-09-03T09:55:16.464Z","level":2,"category":"SYSTEM_HEALTH","message":"硬件资源检测: 使用 fastfetch 执行实时系统扫描..."}
+{"timestamp":"2026-09-03T09:55:16.483Z","level":2,"category":"AI_SERVICE","message":"[完整性校验] 开始校验驱动包: fastfetch-2.62.0-linux-x64 (1 个文件待检查)"}
+{"timestamp":"2026-09-03T09:55:16.484Z","level":2,"category":"AI_SERVICE","message":"[完整性校验] ✅ 驱动包 fastfetch-2.62.0-linux-x64 完整性校验通过"}
+{"timestamp":"2026-09-03T09:55:16.486Z","level":2,"category":"AI_SERVICE","message":"[完整性校验] 已写入校验通过标记: /root/.config/firefly-ai-folder-cn/.integrity-markers/.integrity-verified-fastfetch-2.62.0-linux-x64"}
+{"timestamp":"2026-09-03T09:55:16.495Z","level":2,"category":"MAIN","message":"[createWindow] 渲染进程内容已加载完毕，准备显示窗口。"}
+{"timestamp":"2026-09-03T09:55:16.504Z","level":2,"category":"MAIN","message":"__IS_PROD__: true"}
+{"timestamp":"2026-09-03T09:55:16.504Z","level":2,"category":"MAIN","message":"[createWindow] 应用窗口尺寸配置: 1600x1100"}
+{"timestamp":"2026-09-03T09:55:16.504Z","level":2,"category":"MAIN","message":"[createWindow] 窗口已显示，最终尺寸: 1279x1023"}
+{"timestamp":"2026-09-03T09:55:16.540Z","level":2,"category":"HARDWARE_DETECTION","message":"[Fastfetch] 原始检测结果数据: [\n  {\n    \"type\": \"Title\",\n    \"result\": {\n      \"userId\": 0,\n      \"userName\": \"root\",\n      \"fullUserName\": \"root\",\n      \"hostName\": \"44be139e1ec7\",\n      \"homeDir\": \"/root/\",\n      \"exePath\": \"/usr/lib/firefly-ai-folder-cn/resources/bin/fastfetch-2.62.0-linux-x64/fastfetch\",\n      \"userShell\": \"/bin/bash\",\n      \"pid\": 8911,\n      \"cwd\": \"/work/\"\n    }\n  },\n  {\n    \"type\": \"Separator\",\n    \"error\": \"Unsupported for JSON format\"\n  },\n  {\n    \"type\": \"OS\",\n    \"result\": {\n      \"buildID\": \"\",\n      \"codename\": \"jammy\",\n      \"id\": \"ubuntu\",\n      \"idLike\": \"debian\",\n      \"name\": \"Ubuntu\",\n      \"prettyName\": \"Ubuntu 22.04.5 LTS (Jammy Jellyfish)\",\n      \"variant\": \"\",\n      \"variantID\": \"\",\n      \"version\": \"22.04.5 LTS (Jammy Jellyfish)\",\n      \"versionID\": \"22.04\"\n    }\n  },\n  {\n    \"type\": \"Host\",\n    \"result\": {\n      \"family\": \"Virtual Machine\",\n      \"name\": \"Virtual Machine\",\n      \"version\": \"Hyper-V UEFI Release v4.1\",\n      \"sku\": \"\",\n      \"vendor\": \"Microsoft Corporation\",\n      \"serial\": \"0000-0002-5633-3023-0001-6810-86\",\n      \"uuid\": \"\"\n    }\n  },\n  {\n    \"type\": \"Kernel\",\n    \"result\": {\n      \"architecture\": \"x86_64\",\n      \"name\": \"Linux\",\n      \"release\": \"6.17.0-1022-azure\",\n      \"version\": \"#22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026\",\n      \"pageSize\": 4096\n    }\n  },\n  {\n    \"type\": \"Uptime\",\n    \"result\": {\n      \"uptime\": 353090,\n      \"bootTime\": \"2026-09-03T09:49:23.390+0000\"\n    }\n  },\n  {\n    \"type\": \"Packages\",\n    \"result\": {\n      \"all\": 600,\n      \"dpkg\": 600\n    }\n  },\n  {\n    \"type\": \"Shell\",\n    \"result\": {\n      \"exe\": \"/usr/bin/firefly-ai-folder-cn\",\n      \"exeName\": \"firefly-ai-folder-cn\",\n      \"exePath\": \"/usr/lib/firefly-ai-folder-cn/firefly-ai-folder-cn\",\n      \"pid\": 8720,\n      \"ppid\": 8707,\n      \"processName\": \"firefly-ai-fold\",\n      \"prettyName\": \"firefly-ai-folder-cn\",\n      \"version\": \"\",\n      \"tty\": 0\n    }\n  },\n  {\n    \"type\": \"Display\",\n    \"result\": [\n      {\n        \"id\": 0,\n        \"name\": \"screen\",\n        \"primary\": false,\n        \"output\": {\n          \"width\": 1280,\n          \"height\": 1024,\n          \"refreshRate\": null,\n          \"drrStatus\": null,\n          \"dpi\": 96\n        },\n        \"scaled\": {\n          \"width\": 1280,\n          \"height\": 1024\n        },\n        \"preferred\": {\n          \"width\": 0,\n          \"height\": 0,\n          \"refreshRate\": 0\n        },\n        \"physical\": {\n          \"width\": 0,\n          \"height\": 0\n        },\n        \"rotation\": 0,\n        \"bitDepth\": 8,\n        \"hdrStatus\": null,\n        \"type\": \"Unknown\",\n        \"manufactureDate\": null,\n        \"serial\": null,\n        \"platformApi\": \"xcb-randr-mode\"\n      }\n    ]\n  },\n  {\n    \"type\": \"DE\",\n    \"error\": \"No DE found\"\n  },\n  {\n    \"type\": \"WM\",\n    \"error\": \"No WM found\"\n  },\n  {\n    \"type\": \"WMTheme\",\n    \"error\": \"WM Theme needs successful WM detection\"\n  },\n  {\n    \"type\": \"Theme\",\n    \"result\": {\n      \"theme1\": \"\",\n      \"theme2\": \"Yaru [GTK3]\"\n    }\n  },\n  {\n    \"type\": \"Icons\",\n    \"result\": {\n      \"icons1\": \"\",\n      \"icons2\": \"Yaru [GTK3]\"\n    }\n  },\n  {\n    \"type\": \"Font\",\n    \"error\": \"No fonts found\"\n  },\n  {\n    \"type\": \"Cursor\",\n    \"result\": {\n      \"theme\": \"Adwaita\",\n      \"size\": \"\"\n    }\n  },\n  {\n    \"type\": \"Terminal\",\n    \"result\": {\n      \"processName\": \"node\",\n      \"exe\": \"/usr/bin/node\",\n      \"exeName\": \"node\",\n      \"exePath\": \"/usr/bin/node\",\n      \"pid\": 8707,\n      \"ppid\": 8694,\n      \"prettyName\": \"node\",\n      \"version\": \"\",\n      \"tty\": \"\"\n    }\n  },\n  {\n    \"type\": \"TerminalFont\",\n    \"error\": \"Unknown terminal: node\"\n  },\n  {\n    \"type\": \"CPU\",\n    \"result\": {\n      \"cpu\": \"AMD EPYC 7763 64-Core\",\n      \"vendor\": \"AuthenticAMD\",\n      \"packages\": 1,\n      \"cores\": {\n        \"physical\": 2,\n        \"logical\": 4,\n        \"online\": 4\n      },\n      \"frequency\": {\n        \"base\": 3243,\n        \"max\": 0\n      },\n      \"coreTypes\": [],\n      \"temperature\": null,\n      \"march\": \"x86_64-v3\",\n      \"numaNodes\": 1\n    }\n  },\n  {\n    \"type\": \"GPU\",\n    \"result\": [\n      {\n        \"index\": null,\n        \"coreCount\": null,\n        \"coreUsage\": null,\n        \"memory\": {\n          \"dedicated\": {\n            \"total\": 0,\n            \"used\": 0\n          },\n          \"shared\": {\n            \"total\": 0,\n            \"used\": 0\n          },\n          \"type\": null\n        },\n        \"driver\": \"\",\n        \"name\": \"llvmpipe (LLVM 15.0.7, 256 bits)\",\n        \"temperature\": null,\n        \"type\": null,\n        \"vendor\": \"Mesa\",\n        \"platformApi\": \"OpenGL 4.5 (Compatibility Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4\",\n        \"frequency\": null,\n        \"deviceId\": 0\n      }\n    ]\n  },\n  {\n    \"type\": \"Memory\",\n    \"result\": {\n      \"total\": 16766414848,\n      \"used\": 1663537152\n    }\n  },\n  {\n    \"type\": \"Swap\",\n    \"result\": [\n      {\n        \"name\": \"/swapfile\",\n        \"used\": 0,\n        \"total\": 3221221376\n      }\n    ]\n  },\n  {\n    \"type\": \"Disk\",\n    \"result\": [\n      {\n        \"bytes\": {\n          \"available\": 85443108864,\n          \"free\": 85459886080,\n          \"total\": 154894188544,\n          \"used\": 69434302464\n        },\n        \"files\": {\n          \"total\": 19529728,\n          \"used\": 1145083\n        },\n        \"filesystem\": \"overlay\",\n        \"mountpoint\": \"/\",\n        \"mountFrom\": \"overlay\",\n        \"name\": \"\",\n        \"volumeType\": [\n          \"Regular\"\n        ],\n        \"createTime\": \"2026-09-03T09:51:47.033+0000\"\n      }\n    ]\n  },\n  {\n    \"type\": \"LocalIp\",\n    \"result\": [\n      {\n        \"name\": \"eth0\",\n        \"defaultRoute\": {\n          \"ipv4\": true\n        },\n        \"ipv4\": \"172.17.0.2/16\"\n      }\n    ]\n  },\n  {\n    \"type\": \"Battery\",\n    \"result\": []\n  },\n  {\n    \"type\": \"PowerAdapter\",\n    \"result\": []\n  },\n  {\n    \"type\": \"Locale\",\n    \"result\": \"en_US.UTF-8\"\n  },\n  {\n    \"type\": \"Break\",\n    \"error\": \"Unsupported for JSON format\"\n  },\n  {\n    \"type\": \"Colors\",\n    \"error\": \"Unsupported for JSON format\"\n  }\n]"}
+{"timestamp":"2026-09-03T09:55:16.541Z","level":3,"category":"HARDWARE_DETECTION","message":"解析并去重完成的 GPU 列表: [\n  {\n    \"name\": \"llvmpipe (LLVM 15.0.7, 256 bits)\",\n    \"memory\": 0,\n    \"vendor\": \"unknown\",\n    \"isIntegrated\": false,\n    \"supportsCUDA\": false,\n    \"supportsVulkan\": true,\n    \"supportsHip\": false,\n    \"supportsMetal\": false,\n    \"supportsSycl\": false,\n    \"supportsOpenVINO\": false,\n    \"supportsCPU\": true\n  }\n]"}
+{"timestamp":"2026-09-03T09:55:16.541Z","level":2,"category":"HARDWARE_DETECTION","message":"[Fastfetch] 硬件与GPU识别结果汇总: {\n  \"cpu\": \"AMD EPYC 7763 64-Core\",\n  \"memoryTotalMB\": 15990,\n  \"gpuCount\": 1,\n  \"gpus\": [\n    {\n      \"name\": \"llvmpipe (LLVM 15.0.7, 256 bits)\",\n      \"vendor\": \"unknown\",\n      \"memoryMB\": 0,\n      \"isIntegrated\": false,\n      \"supportsCUDA\": false,\n      \"supportsHip\": false,\n      \"supportsVulkan\": true,\n      \"supportsMetal\": false,\n      \"supportsSycl\": false,\n      \"supportsOpenVINO\": false,\n      \"supportsCPU\": true\n    }\n  ]\n}"}
+{"timestamp":"2026-09-03T09:55:16.547Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=runtime changedKeys=[\"HARDWARE_CPU_INFO\",\"HARDWARE_MEMORY_INFO\",\"HARDWARE_GPU_INFO\",\"HARDWARE_STORAGE_INFO\",\"HARDWARE_FASTFETCH_RAW\"]"}
+{"timestamp":"2026-09-03T09:55:16.547Z","level":2,"category":"SYSTEM_HEALTH","message":"硬件资源检测: 已同步最新硬件信息到统一配置"}
+{"timestamp":"2026-09-03T09:55:16.643Z","level":2,"category":"MODEL_CONFIG","message":"[UnifiedModelManager Debug] localVal=undefined, ollamaVal=undefined, hasConfigDbManager=false"}
+{"timestamp":"2026-09-03T09:55:16.643Z","level":2,"category":"MODEL_CONFIG","message":"[UnifiedModelManager] 从统一配置中成功载入了 0 个模型配置"}
+{"timestamp":"2026-09-03T09:55:16.666Z","level":3,"category":"IPC","message":"[ModelDownloadManagerIPC] 检查模型下载状态: LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M undefined"}
+{"timestamp":"2026-09-03T09:55:17.167Z","level":3,"category":"CONFIG","message":"ConfigOrchestrator: 跳过对只读 DB 管理 key 的写入: NEXT_VERSION"}
+{"timestamp":"2026-09-03T09:55:17.168Z","level":3,"category":"CONFIG","message":"ConfigOrchestrator: 跳过对只读 DB 管理 key 的写入: LOCAL_MODEL_CONFIGS"}
+{"timestamp":"2026-09-03T09:55:17.168Z","level":3,"category":"CONFIG","message":"ConfigOrchestrator: 跳过对只读 DB 管理 key 的写入: LOCAL_MODEL_CONFIGS_OLLAMA"}
+{"timestamp":"2026-09-03T09:55:20.342Z","level":1,"category":"FILE_ANALYSIS","message":"[资源监控] CPU使用较高: User 809ms, System 267ms"}
+{"timestamp":"2026-09-03T09:55:20.569Z","level":2,"category":"MAIN","message":"正在初始化配置阶段所需的最小服务..."}
+{"timestamp":"2026-09-03T09:55:20.570Z","level":2,"category":"MAIN","message":"日志服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:20.570Z","level":2,"category":"MAIN","message":"错误处理服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:20.570Z","level":2,"category":"MAIN","message":"自动恢复服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:20.570Z","level":2,"category":"MAIN","message":"正在初始化系统健康检查服务..."}
+{"timestamp":"2026-09-03T09:55:20.570Z","level":2,"category":"MAIN","message":"系统健康检查服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:20.570Z","level":2,"category":"STARTUP","message":"正在同步检测系统硬件资源..."}
+{"timestamp":"2026-09-03T09:55:20.582Z","level":2,"category":"HARDWARE_DETECTION","message":"[完整性校验] ⏭️ fastfetch-2.62.0-linux-x64 之前已通过完整性校验，跳过本次检查"}
+{"timestamp":"2026-09-03T09:55:20.612Z","level":2,"category":"HARDWARE_DETECTION","message":"[Fastfetch] 原始检测结果数据: [\n  {\n    \"type\": \"Title\",\n    \"result\": {\n      \"userId\": 0,\n      \"userName\": \"root\",\n      \"fullUserName\": \"root\",\n      \"hostName\": \"44be139e1ec7\",\n      \"homeDir\": \"/root/\",\n      \"exePath\": \"/usr/lib/firefly-ai-folder-cn/resources/bin/fastfetch-2.62.0-linux-x64/fastfetch\",\n      \"userShell\": \"/bin/bash\",\n      \"pid\": 8921,\n      \"cwd\": \"/work/\"\n    }\n  },\n  {\n    \"type\": \"Separator\",\n    \"error\": \"Unsupported for JSON format\"\n  },\n  {\n    \"type\": \"OS\",\n    \"result\": {\n      \"buildID\": \"\",\n      \"codename\": \"jammy\",\n      \"id\": \"ubuntu\",\n      \"idLike\": \"debian\",\n      \"name\": \"Ubuntu\",\n      \"prettyName\": \"Ubuntu 22.04.5 LTS (Jammy Jellyfish)\",\n      \"variant\": \"\",\n      \"variantID\": \"\",\n      \"version\": \"22.04.5 LTS (Jammy Jellyfish)\",\n      \"versionID\": \"22.04\"\n    }\n  },\n  {\n    \"type\": \"Host\",\n    \"result\": {\n      \"family\": \"Virtual Machine\",\n      \"name\": \"Virtual Machine\",\n      \"version\": \"Hyper-V UEFI Release v4.1\",\n      \"sku\": \"\",\n      \"vendor\": \"Microsoft Corporation\",\n      \"serial\": \"0000-0002-5633-3023-0001-6810-86\",\n      \"uuid\": \"\"\n    }\n  },\n  {\n    \"type\": \"Kernel\",\n    \"result\": {\n      \"architecture\": \"x86_64\",\n      \"name\": \"Linux\",\n      \"release\": \"6.17.0-1022-azure\",\n      \"version\": \"#22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026\",\n      \"pageSize\": 4096\n    }\n  },\n  {\n    \"type\": \"Uptime\",\n    \"result\": {\n      \"uptime\": 357190,\n      \"bootTime\": \"2026-09-03T09:49:23.393+0000\"\n    }\n  },\n  {\n    \"type\": \"Packages\",\n    \"result\": {\n      \"all\": 600,\n      \"dpkg\": 600\n    }\n  },\n  {\n    \"type\": \"Shell\",\n    \"result\": {\n      \"exe\": \"/usr/bin/firefly-ai-folder-cn\",\n      \"exeName\": \"firefly-ai-folder-cn\",\n      \"exePath\": \"/usr/lib/firefly-ai-folder-cn/firefly-ai-folder-cn\",\n      \"pid\": 8720,\n      \"ppid\": 8707,\n      \"processName\": \"firefly-ai-fold\",\n      \"prettyName\": \"firefly-ai-folder-cn\",\n      \"version\": \"\",\n      \"tty\": 0\n    }\n  },\n  {\n    \"type\": \"Display\",\n    \"result\": [\n      {\n        \"id\": 0,\n        \"name\": \"screen\",\n        \"primary\": false,\n        \"output\": {\n          \"width\": 1280,\n          \"height\": 1024,\n          \"refreshRate\": null,\n          \"drrStatus\": null,\n          \"dpi\": 96\n        },\n        \"scaled\": {\n          \"width\": 1280,\n          \"height\": 1024\n        },\n        \"preferred\": {\n          \"width\": 0,\n          \"height\": 0,\n          \"refreshRate\": 0\n        },\n        \"physical\": {\n          \"width\": 0,\n          \"height\": 0\n        },\n        \"rotation\": 0,\n        \"bitDepth\": 8,\n        \"hdrStatus\": null,\n        \"type\": \"Unknown\",\n        \"manufactureDate\": null,\n        \"serial\": null,\n        \"platformApi\": \"xcb-randr-mode\"\n      }\n    ]\n  },\n  {\n    \"type\": \"DE\",\n    \"error\": \"No DE found\"\n  },\n  {\n    \"type\": \"WM\",\n    \"error\": \"No WM found\"\n  },\n  {\n    \"type\": \"WMTheme\",\n    \"error\": \"WM Theme needs successful WM detection\"\n  },\n  {\n    \"type\": \"Theme\",\n    \"result\": {\n      \"theme1\": \"\",\n      \"theme2\": \"Yaru [GTK3]\"\n    }\n  },\n  {\n    \"type\": \"Icons\",\n    \"result\": {\n      \"icons1\": \"\",\n      \"icons2\": \"Yaru [GTK3]\"\n    }\n  },\n  {\n    \"type\": \"Font\",\n    \"error\": \"No fonts found\"\n  },\n  {\n    \"type\": \"Cursor\",\n    \"result\": {\n      \"theme\": \"Adwaita\",\n      \"size\": \"\"\n    }\n  },\n  {\n    \"type\": \"Terminal\",\n    \"result\": {\n      \"processName\": \"node\",\n      \"exe\": \"/usr/bin/node\",\n      \"exeName\": \"node\",\n      \"exePath\": \"/usr/bin/node\",\n      \"pid\": 8707,\n      \"ppid\": 8694,\n      \"prettyName\": \"node\",\n      \"version\": \"\",\n      \"tty\": \"\"\n    }\n  },\n  {\n    \"type\": \"TerminalFont\",\n    \"error\": \"Unknown terminal: node\"\n  },\n  {\n    \"type\": \"CPU\",\n    \"result\": {\n      \"cpu\": \"AMD EPYC 7763 64-Core\",\n      \"vendor\": \"AuthenticAMD\",\n      \"packages\": 1,\n      \"cores\": {\n        \"physical\": 2,\n        \"logical\": 4,\n        \"online\": 4\n      },\n      \"frequency\": {\n        \"base\": 3077,\n        \"max\": 0\n      },\n      \"coreTypes\": [],\n      \"temperature\": null,\n      \"march\": \"x86_64-v3\",\n      \"numaNodes\": 1\n    }\n  },\n  {\n    \"type\": \"GPU\",\n    \"result\": [\n      {\n        \"index\": null,\n        \"coreCount\": null,\n        \"coreUsage\": null,\n        \"memory\": {\n          \"dedicated\": {\n            \"total\": 0,\n            \"used\": 0\n          },\n          \"shared\": {\n            \"total\": 0,\n            \"used\": 0\n          },\n          \"type\": null\n        },\n        \"driver\": \"\",\n        \"name\": \"llvmpipe (LLVM 15.0.7, 256 bits)\",\n        \"temperature\": null,\n        \"type\": null,\n        \"vendor\": \"Mesa\",\n        \"platformApi\": \"OpenGL 4.5 (Compatibility Profile) Mesa 23.2.1-1ubuntu3.1~22.04.4\",\n        \"frequency\": null,\n        \"deviceId\": 0\n      }\n    ]\n  },\n  {\n    \"type\": \"Memory\",\n    \"result\": {\n      \"total\": 16766414848,\n      \"used\": 1683873792\n    }\n  },\n  {\n    \"type\": \"Swap\",\n    \"result\": [\n      {\n        \"name\": \"/swapfile\",\n        \"used\": 0,\n        \"total\": 3221221376\n      }\n    ]\n  },\n  {\n    \"type\": \"Disk\",\n    \"result\": [\n      {\n        \"bytes\": {\n          \"available\": 85428539392,\n          \"free\": 85445316608,\n          \"total\": 154894188544,\n          \"used\": 69448871936\n        },\n        \"files\": {\n          \"total\": 19529728,\n          \"used\": 1145127\n        },\n        \"filesystem\": \"overlay\",\n        \"mountpoint\": \"/\",\n        \"mountFrom\": \"overlay\",\n        \"name\": \"\",\n        \"volumeType\": [\n          \"Regular\"\n        ],\n        \"createTime\": \"2026-09-03T09:51:47.033+0000\"\n      }\n    ]\n  },\n  {\n    \"type\": \"LocalIp\",\n    \"result\": [\n      {\n        \"name\": \"eth0\",\n        \"defaultRoute\": {\n          \"ipv4\": true\n        },\n        \"ipv4\": \"172.17.0.2/16\"\n      }\n    ]\n  },\n  {\n    \"type\": \"Battery\",\n    \"result\": []\n  },\n  {\n    \"type\": \"PowerAdapter\",\n    \"result\": []\n  },\n  {\n    \"type\": \"Locale\",\n    \"result\": \"en_US.UTF-8\"\n  },\n  {\n    \"type\": \"Break\",\n    \"error\": \"Unsupported for JSON format\"\n  },\n  {\n    \"type\": \"Colors\",\n    \"error\": \"Unsupported for JSON format\"\n  }\n]"}
+{"timestamp":"2026-09-03T09:55:20.616Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=runtime changedKeys=[\"HARDWARE_CPU_INFO\",\"HARDWARE_MEMORY_INFO\",\"HARDWARE_STORAGE_INFO\",\"HARDWARE_FASTFETCH_RAW\"]"}
+{"timestamp":"2026-09-03T09:55:20.616Z","level":2,"category":"STARTUP","message":"硬件资源检测完成，正在对比变更... {\n  \"cpu\": \"AMD EPYC 7763 64-Core\",\n  \"memory\": 15990,\n  \"gpus\": 1\n}"}
+{"timestamp":"2026-09-03T09:55:20.616Z","level":2,"category":"STARTUP","message":"检测到硬件信息变更，更新本地配置并同步云端"}
+{"timestamp":"2026-09-03T09:55:20.616Z","level":3,"category":"SUPABASE","message":"CloudAnalysisService: SyncFeatures skipped, IdentityProvider not set yet"}
+{"timestamp":"2026-09-03T09:55:20.617Z","level":2,"category":"SUPABASE","message":"CloudAnalysisService: Custom Supabase client injected"}
+{"timestamp":"2026-09-03T09:55:20.617Z","level":2,"category":"SUPABASE","message":"CloudAnalysisService: Setting identity headers {\n  \"machineId\": \"b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e\",\n  \"signature\": \"2a82f318...\"\n}"}
+{"timestamp":"2026-09-03T09:55:20.618Z","level":2,"category":"MAIN","message":"系统身份服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:20.618Z","level":3,"category":"SUPABASE","message":"CloudAnalysisService: Attempting to register device: b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e (force: false)"}
+{"timestamp":"2026-09-03T09:55:20.718Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=user changedKeys=[\"DEFAULT_LANGUAGE\"]"}
+{"timestamp":"2026-09-03T09:55:20.719Z","level":2,"category":"MAIN","message":"语言暂未确认 (LANGUAGE_CONFIRMED = false)，跳过自动创建/切换数据库 (zh-CN)"}
+{"timestamp":"2026-09-03T09:55:20.719Z","level":2,"category":"MODEL_CONFIG","message":"[UnifiedModelManager] 检测到模型相关配置或语言更新，正在重新加载..."}
+{"timestamp":"2026-09-03T09:55:20.737Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=user changedKeys=[\"LANGUAGE_CONFIRMED\"]"}
+{"timestamp":"2026-09-03T09:55:20.737Z","level":2,"category":"MAIN","message":"用户已在欢迎界面确认语言 (zh-CN)，开始建立并初始化数据库..."}
+{"timestamp":"2026-09-03T09:55:20.738Z","level":2,"category":"MAIN","message":"正在初始化数据库服务 (语言: zh-CN, 强制重新初始化)..."}
+{"timestamp":"2026-09-03T09:55:20.743Z","level":2,"category":"DATABASE_SERVICE","message":"全新安装，准备执行架构初始化..."}
+{"timestamp":"2026-09-03T09:55:20.743Z","level":2,"category":"DATABASE_SERVICE","message":"需要数据库迁移，正在创建备份..."}
+{"timestamp":"2026-09-03T09:55:20.744Z","level":2,"category":"DATABASE_SERVICE","message":"数据库备份已创建: /root/.config/firefly-ai-folder-cn/fir**.db"}
+{"timestamp":"2026-09-03T09:55:20.745Z","level":2,"category":"DATABASE_SERVICE","message":"正在执行迁移版本 2: direct_v2_2_initialization"}
+{"timestamp":"2026-09-03T09:55:20.749Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 2 批量执行成功"}
+{"timestamp":"2026-09-03T09:55:20.749Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 2 完成"}
+{"timestamp":"2026-09-03T09:55:20.749Z","level":2,"category":"DATABASE_SERVICE","message":"正在执行迁移版本 3: add_memory_cache_table"}
+{"timestamp":"2026-09-03T09:55:20.749Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 3 批量执行成功"}
+{"timestamp":"2026-09-03T09:55:20.750Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 3 完成"}
+{"timestamp":"2026-09-03T09:55:20.750Z","level":2,"category":"DATABASE_SERVICE","message":"正在执行迁移版本 4: add_analyzed_and_multi_virtual_directories"}
+{"timestamp":"2026-09-03T09:55:20.757Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 4 批量执行成功"}
+{"timestamp":"2026-09-03T09:55:20.757Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 4 完成"}
+{"timestamp":"2026-09-03T09:55:20.757Z","level":2,"category":"DATABASE_SERVICE","message":"正在执行迁移版本 5: add_workspace_files_status_column"}
+{"timestamp":"2026-09-03T09:55:20.758Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 5 批量执行成功"}
+{"timestamp":"2026-09-03T09:55:20.758Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 5 完成"}
+{"timestamp":"2026-09-03T09:55:20.758Z","level":2,"category":"DATABASE_SERVICE","message":"正在执行迁移版本 6: decouple_fts_tag_triggers"}
+{"timestamp":"2026-09-03T09:55:20.759Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 6 批量执行成功"}
+{"timestamp":"2026-09-03T09:55:20.759Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 6 完成"}
+{"timestamp":"2026-09-03T09:55:20.759Z","level":2,"category":"DATABASE_SERVICE","message":"正在执行迁移版本 7: add_workspace_files_fingerprint_analyzed_covering_index"}
+{"timestamp":"2026-09-03T09:55:20.759Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 7 批量执行成功"}
+{"timestamp":"2026-09-03T09:55:20.759Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 7 完成"}
+{"timestamp":"2026-09-03T09:55:20.760Z","level":2,"category":"DATABASE_SERVICE","message":"正在执行迁移版本 8: fix_misrouted_file_tags_to_content_dimension"}
+{"timestamp":"2026-09-03T09:55:20.760Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 8 批量执行成功"}
+{"timestamp":"2026-09-03T09:55:20.760Z","level":2,"category":"DATABASE_SERVICE","message":"迁移版本 8 完成"}
+{"timestamp":"2026-09-03T09:55:20.761Z","level":2,"category":"DATABASE_SERVICE","message":"迁移成功，已删除备份"}
+{"timestamp":"2026-09-03T09:55:20.762Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 成功导入初始 app_config 数据"}
+{"timestamp":"2026-09-03T09:55:20.762Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 成功导入初始 system_config 数据"}
+{"timestamp":"2026-09-03T09:55:20.763Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 成功导入初始 LOCAL_MODEL_CONFIGS 数据"}
+{"timestamp":"2026-09-03T09:55:20.763Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 成功导入初始 LOCAL_MODEL_CONFIGS_OLLAMA 数据"}
+{"timestamp":"2026-09-03T09:55:20.765Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 成功导入初始 CLOUD_MODEL_CONFIGS 数据 (35 个服务商)"}
+{"timestamp":"2026-09-03T09:55:20.766Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 成功导入 54 个 file_dimensions 数据"}
+{"timestamp":"2026-09-03T09:55:20.767Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 从本地 JSON 加载初始配置完成 (语言: zh-CN)"}
+{"timestamp":"2026-09-03T09:55:20.772Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 配置初始化成功 (语言: zh-CN)"}
+{"timestamp":"2026-09-03T09:55:20.773Z","level":2,"category":"MODEL_CONFIG","message":"[UnifiedModelManager Debug] localVal=defined, ollamaVal=defined, hasConfigDbManager=false"}
+{"timestamp":"2026-09-03T09:55:20.773Z","level":2,"category":"MODEL_CONFIG","message":"[UnifiedModelManager] 从统一配置中成功载入了 51 个模型配置"}
+{"timestamp":"2026-09-03T09:55:20.773Z","level":2,"category":"SYSTEM","message":"[UserTierDataManager] welcome_grant 已插入: firecores=45, txId=59d3c229-037f-d097-7f51-cc25644e41f0"}
+{"timestamp":"2026-09-03T09:55:20.774Z","level":2,"category":"SYSTEM","message":"[UserTierService] net modules keys: [\n  \"request\",\n  \"fetch\",\n  \"resolveHost\",\n  \"isOnline\"\n] isOnline type: function"}
+{"timestamp":"2026-09-03T09:55:20.774Z","level":2,"category":"SYSTEM","message":"[UserTierService] 初始化开始, machineId: b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e"}
+{"timestamp":"2026-09-03T09:55:20.774Z","level":2,"category":"SYSTEM","message":"[License] 开始授权状态校验... {\n  \"machineId\": \"b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e\",\n  \"requestCode\": \"4rWX8qFcLdpM4Dkm\",\n  \"licensePath\": \"/root/.config/firefly-ai-folder-cn/license.dat\",\n  \"isOnlineAuthorized\": false,\n  \"force\": false\n}"}
+{"timestamp":"2026-09-03T09:55:20.774Z","level":2,"category":"SYSTEM","message":"[License] 开始校验在线授权真实网络连通性..."}
+{"timestamp":"2026-09-03T09:55:20.774Z","level":3,"category":"SYSTEM","message":"[License] 使用 RegionDetectionService 的探测结果: true"}
+{"timestamp":"2026-09-03T09:55:20.774Z","level":2,"category":"SYSTEM","message":"[License] 在线连通性校验通过，授予在线授权"}
+{"timestamp":"2026-09-03T09:55:20.777Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=user changedKeys=[\"LAST_SERVER_CONNECT_TIME\",\"LAST_SERVER_CONNECT_TIME_HMAC\"]"}
+{"timestamp":"2026-09-03T09:55:20.779Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=runtime changedKeys=[\"CACHE_KEY_DATA\"]"}
+{"timestamp":"2026-09-03T09:55:20.780Z","level":2,"category":"SYSTEM","message":"[UserTierService] 初始化完成，开始后台同步"}
+{"timestamp":"2026-09-03T09:55:20.780Z","level":2,"category":"SYSTEM","message":"[UserTierService] syncLocalCacheAndNotify 开始, machineId: b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e"}
+{"timestamp":"2026-09-03T09:55:20.780Z","level":2,"category":"SYSTEM","message":"[UserTierDataManager] trySync 开始, isOnline: true"}
+{"timestamp":"2026-09-03T09:55:20.781Z","level":2,"category":"SYSTEM","message":"[UserTierDataManager] replayOfflineQueue 找到待处理操作: 1"}
+{"timestamp":"2026-09-03T09:55:20.781Z","level":2,"category":"SYSTEM","message":"[UserTierDataManager] 上报收入流水: welcome_grant, firecores: 45, id: 59d3c229-037f-d097-7f51-cc25644e41f0"}
+{"timestamp":"2026-09-03T09:55:20.782Z","level":2,"category":"SUPABASE","message":"[TierService] processIncomeTransaction 调用RPC: machineId=b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e, type=welcome_grant, firecores=45, id=59d3c229-037f-d097-7f51-cc25644e41f0"}
+{"timestamp":"2026-09-03T09:55:21.536Z","level":2,"category":"SUPABASE","message":"Device registered successfully {\n  \"machineId\": \"b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e\"\n}"}
+{"timestamp":"2026-09-03T09:55:21.537Z","level":2,"category":"SUPABASE","message":"CloudAnalysisService initialized successfully"}
+{"timestamp":"2026-09-03T09:55:21.537Z","level":2,"category":"MAIN","message":"系统身份 Supabase 注册完成"}
+{"timestamp":"2026-09-03T09:55:21.537Z","level":2,"category":"MAIN","message":"正在执行本地 Llama 引擎部署..."}
+{"timestamp":"2026-09-03T09:55:21.537Z","level":2,"category":"MAIN","message":"正在确保 Llama 引擎已就绪 (含 lla**.cpp 和 llamafile)..."}
+{"timestamp":"2026-09-03T09:55:21.537Z","level":2,"category":"AI_SERVICE","message":"Llama 静态引擎驱动包自动降级检测候选列表 (linux): vulkan -> cpu"}
+{"timestamp":"2026-09-03T09:55:21.538Z","level":2,"category":"AI_SERVICE","message":"尝试检测驱动包 tier: vulkan, 路径: /usr/lib/firefly-ai-folder-cn/resources/bin/llama-b10775-bin-ubuntu-vulkan-x64/llama-server, 是否存在: true"}
+{"timestamp":"2026-09-03T09:55:21.556Z","level":2,"category":"AI_SERVICE","message":"开始执行二进制启动/合规测试: /usr/lib/firefly-ai-folder-cn/resources/bin/llama-b10775-bin-ubuntu-vulkan-x64/llama-completion"}
+{"timestamp":"2026-09-03T09:55:21.563Z","level":2,"category":"AI_SERVICE","message":"[完整性校验] 开始校验驱动包: llama-b10775-bin-ubuntu-vulkan-x64 (61 个文件待检查)"}
+{"timestamp":"2026-09-03T09:55:21.568Z","level":2,"category":"AI_SERVICE","message":"[完整性校验] ✅ 驱动包 llama-b10775-bin-ubuntu-vulkan-x64 完整性校验通过"}
+{"timestamp":"2026-09-03T09:55:21.569Z","level":2,"category":"AI_SERVICE","message":"[完整性校验] 已写入校验通过标记: /root/.config/firefly-ai-folder-cn/.integrity-markers/.integrity-verified-llama-b10775-bin-ubuntu-vulkan-x64"}
+{"timestamp":"2026-09-03T09:55:21.617Z","level":2,"category":"AI_SERVICE","message":"启动/合规测试执行完成，输出内容:\nAvailable devices:\n  (none)\n\nnumber of models in cache: 0\n"}
+{"timestamp":"2026-09-03T09:55:21.617Z","level":2,"category":"AI_SERVICE","message":"驱动合规性及启动验证成功通过"}
+{"timestamp":"2026-09-03T09:55:21.617Z","level":2,"category":"AI_SERVICE","message":"驱动包 vulkan 合规检测结果: {\"compliant\":true}"}
+{"timestamp":"2026-09-03T09:55:21.617Z","level":2,"category":"AI_SERVICE","message":"驱动合规性检测通过，最终选用驱动包: vulkan"}
+{"timestamp":"2026-09-03T09:55:21.619Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=runtime changedKeys=[\"SELECTED_ACCELERATION\"]"}
+{"timestamp":"2026-09-03T09:55:21.621Z","level":2,"category":"AI_SERVICE","message":"Llama 静态引擎验证通过 (降级检测最终选定: vulkan)，最终可执行文件路径: /usr/lib/firefly-ai-folder-cn/resources/bin/llama-b10775-bin-ubuntu-vulkan-x64/llama-server"}
+{"timestamp":"2026-09-03T09:55:21.621Z","level":2,"category":"AI_SERVICE","message":"驱动降级信息已清除"}
+{"timestamp":"2026-09-03T09:55:21.621Z","level":2,"category":"BINARY_MANAGER","message":"已设置自定义二进制路径: /usr/lib/firefly-ai-folder-cn/resources/bin/llama-b10775-bin-ubuntu-vulkan-x64/llama-server"}
+{"timestamp":"2026-09-03T09:55:21.621Z","level":2,"category":"MAIN","message":"Llama 引擎路径已成功注入: /usr/lib/firefly-ai-folder-cn/resources/bin/llama-b10775-bin-ubuntu-vulkan-x64/llama-server"}
+{"timestamp":"2026-09-03T09:55:21.621Z","level":2,"category":"SYSTEM","message":"[FfmpegService] 正在检测自带及系统 FFmpeg..."}
+{"timestamp":"2026-09-03T09:55:21.628Z","level":1,"category":"SYSTEM","message":"[FfmpegService] 未检测到可用 FFmpeg"}
+{"timestamp":"2026-09-03T09:55:21.629Z","level":2,"category":"MAIN","message":"FFmpeg 服务初始化完成"}
+{"timestamp":"2026-09-03T09:55:21.629Z","level":2,"category":"MAIN","message":"正在初始化数据库服务 (语言: zh-CN)..."}
+{"timestamp":"2026-09-03T09:55:21.630Z","level":1,"category":"SYSTEM","message":"[UserTierDataManager] trySync 跳过: 正在同步中"}
+{"timestamp":"2026-09-03T09:55:21.630Z","level":2,"category":"SYSTEM","message":"[License] 开始授权状态校验... {\n  \"machineId\": \"b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e\",\n  \"requestCode\": \"4rWX8qFcLdpM4Dkm\",\n  \"licensePath\": \"/root/.config/firefly-ai-folder-cn/license.dat\",\n  \"isOnlineAuthorized\": true,\n  \"force\": true\n}"}
+{"timestamp":"2026-09-03T09:55:21.634Z","level":2,"category":"SYSTEM","message":"[UserTierService] 初始云端同步完成"}
+{"timestamp":"2026-09-03T09:55:21.634Z","level":2,"category":"SYSTEM","message":"[DEBUG-SYNC] syncToCache 被调用: machineId=%s b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e"}
+{"timestamp":"2026-09-03T09:55:21.635Z","level":2,"category":"FILE_WATCHER","message":"找到 0 个启用自动监听的目录"}
+{"timestamp":"2026-09-03T09:55:21.636Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 开始从云端拉取配置..."}
+{"timestamp":"2026-09-03T09:55:21.636Z","level":2,"category":"MAIN","message":"依赖数据库的业务服务初始化完成"}
+{"timestamp":"2026-09-03T09:55:21.636Z","level":2,"category":"SYSTEM","message":"[Migration] Starting user tier and firecore migration..."}
+{"timestamp":"2026-09-03T09:55:21.650Z","level":2,"category":"SUPABASE","message":"RemoteConfig: Supabase client initialized (Anon Key) with MachineID: b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e"}
+{"timestamp":"2026-09-03T09:55:21.812Z","level":2,"category":"SUPABASE","message":"[TierService] processIncomeTransaction RPC成功: firecores=45, tier=free"}
+{"timestamp":"2026-09-03T09:55:21.812Z","level":2,"category":"SYSTEM","message":"[UserTierDataManager] processIncomeTransaction 结果: {\"success\":true}"}
+{"timestamp":"2026-09-03T09:55:21.818Z","level":2,"category":"SYSTEM","message":"[UserTierDataManager] 标记操作 59d3c229-037f-d097-7f51-cc25644e41f0 为 completed"}
+{"timestamp":"2026-09-03T09:55:21.818Z","level":2,"category":"SUPABASE","message":"[UserTierQueries] getUserTierData 被调用: machineId=b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e"}
+{"timestamp":"2026-09-03T09:55:22.157Z","level":2,"category":"SUPABASE","message":"[UserTierQueries] getUserTierData 返回: machineId=b0ed7c6678a7f8e8b72ac0a15ffd449e56d921ca3af97d83a9b109cb62722b9e, firecores=45"}
+{"timestamp":"2026-09-03T09:55:22.673Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=user changedKeys=[\"INVITATION_CACHE_DATA\"]"}
+{"timestamp":"2026-09-03T09:55:22.674Z","level":2,"category":"SYSTEM","message":"[Migration] Cloud invitation count fetched: 0"}
+{"timestamp":"2026-09-03T09:55:22.675Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=user changedKeys=[\"MIGRATION_VERSION\"]"}
+{"timestamp":"2026-09-03T09:55:22.678Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=user changedKeys=[\"MIGRATION_COMPLETED\"]"}
+{"timestamp":"2026-09-03T09:55:22.679Z","level":2,"category":"SYSTEM","message":"[Migration] User tier and firecore migration completed successfully."}
+{"timestamp":"2026-09-03T09:55:22.679Z","level":2,"category":"MAIN","message":"数据库服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:22.679Z","level":2,"category":"MAIN","message":"统一模型配置初始化成功 (含云端服务商)"}
+{"timestamp":"2026-09-03T09:55:22.679Z","level":2,"category":"MAIN","message":"正在初始化配置服务..."}
+{"timestamp":"2026-09-03T09:55:22.680Z","level":2,"category":"MAIN","message":"配置服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:22.680Z","level":2,"category":"MAIN","message":"配置阶段最小服务初始化完成"}
+{"timestamp":"2026-09-03T09:55:22.683Z","level":2,"category":"MAIN","message":"[App] 初始安装/升级任务已完成"}
+{"timestamp":"2026-09-03T09:55:22.684Z","level":2,"category":"MAIN","message":"[App] 初始授权检查结果: AUTHORIZED"}
+{"timestamp":"2026-09-03T09:55:22.684Z","level":2,"category":"MAIN","message":"[App] 授权校验通过，正在加载 AI 服务模块..."}
+{"timestamp":"2026-09-03T09:55:22.684Z","level":2,"category":"STARTUP","message":"正在初始化 llama-server 服务..."}
+{"timestamp":"2026-09-03T09:55:22.684Z","level":2,"category":"STARTUP","message":"健康检查结果: {\n  \"healthy\": false,\n  \"responseTime\": 0,\n  \"error\": \"服务器未运行\",\n  \"timestamp\": \"2026-09-03T09:55:22.684Z\"\n}"}
+{"timestamp":"2026-09-03T09:55:22.684Z","level":2,"category":"STARTUP","message":"⚠️ llama-server 服务未启动，将在需要时启动"}
+{"timestamp":"2026-09-03T09:55:22.684Z","level":2,"category":"MAIN","message":"[App] AI 服务模块加载完成"}
+{"timestamp":"2026-09-03T09:55:22.684Z","level":2,"category":"MAIN","message":"[App] 初始安装已在早期创建窗口，跳过重复创建"}
+{"timestamp":"2026-09-03T09:55:22.838Z","level":2,"category":"SYSTEM","message":"[DEBUG-ENTITLE] trySync: local=%s, cloud=%s, isIdentical=%s [] [] true"}
+{"timestamp":"2026-09-03T09:55:22.838Z","level":2,"category":"SYSTEM","message":"[UserTierDataManager] replayOfflineQueue 找到待处理操作: 0"}
+{"timestamp":"2026-09-03T09:55:22.859Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=user changedKeys=[\"IS_FIRST_RUN\"]"}
+{"timestamp":"2026-09-03T09:55:22.903Z","level":2,"category":"MAIN","message":"进入初始化阶段，开始完整服务初始化..."}
+{"timestamp":"2026-09-03T09:55:22.903Z","level":2,"category":"MAIN","message":"正在初始化统一AI服务..."}
+{"timestamp":"2026-09-03T09:55:22.903Z","level":2,"category":"LLAMA_SERVER","message":"执行迁移: /usr/lib/firefly-ai-folder-cn/resources/models -> /tmp/firefly-e2e-1788429314685-405/userdata/models"}
+{"timestamp":"2026-09-03T09:55:22.904Z","level":2,"category":"LLAMA_SERVER","message":"发现预置目录，开始整体迁移: hub/models/LiquidAI/LFM2.5-1.2B-Instruct-GGUF"}
+{"timestamp":"2026-09-03T09:55:22.905Z","level":2,"category":"LLAMA_SERVER","message":"执行复制迁移: /usr/lib/firefly-ai-folder-cn/resources/models/hub/models/LiquidAI/LFM2.5-1.2B-Instruct-GGUF -> /tmp/firefly-e2e-1788429314685-405/userdata/models/hub/models/LiquidAI/LFM2.5-1.2B-Instruct-GGUF"}
+{"timestamp":"2026-09-03T09:55:23.200Z","level":2,"category":"CONFIG","message":"ConfigDbManager: 云端配置拉取与覆盖写入本地成功"}
+{"timestamp":"2026-09-03T09:55:24.185Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=user changedKeys=[\"MODEL_MIGRATION_COMPLETED\"]"}
+{"timestamp":"2026-09-03T09:55:24.187Z","level":2,"category":"LLAMA_SERVER_SERVICE","message":"[LlamaServerService] 已设置引擎适配器: lla**.cpp"}
+{"timestamp":"2026-09-03T09:55:24.187Z","level":2,"category":"AI_SERVICE","message":"[ServiceSwitchManager] 配置协调器已注入"}
+{"timestamp":"2026-09-03T09:55:24.187Z","level":2,"category":"AI_CONFIG","message":"设置AI服务配置变更监听"}
+{"timestamp":"2026-09-03T09:55:24.187Z","level":2,"category":"MAIN","message":"正在注册 AI 服务全局错误监听器 (当前监听器数: 1)"}
+{"timestamp":"2026-09-03T09:55:24.187Z","level":2,"category":"AI_SERVICE","message":"AI服务进入configuration阶段"}
+{"timestamp":"2026-09-03T09:55:24.187Z","level":2,"category":"AI_SERVICE","message":"AI服务完成configuration阶段，耗时: 0ms"}
+{"timestamp":"2026-09-03T09:55:24.188Z","level":2,"category":"AI_SERVICE","message":"AI服务进入initialization阶段"}
+{"timestamp":"2026-09-03T09:55:24.188Z","level":2,"category":"AI_CONFIG","message":"开始重新加载AI服务配置"}
+{"timestamp":"2026-09-03T09:55:24.188Z","level":2,"category":"AI_CONFIG","message":"模型官方 contextLength: 32768 (模型ID: LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M)"}
+{"timestamp":"2026-09-03T09:55:24.188Z","level":2,"category":"AI_CONFIG","message":"使用推荐 numCtx: 4096 (模型ID: LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M)"}
+{"timestamp":"2026-09-03T09:55:24.188Z","level":2,"category":"AI_CONFIG","message":"使用模型配置中的 recommendedConfig (模型ID: LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M)"}
+{"timestamp":"2026-09-03T09:55:24.188Z","level":2,"category":"AI_CONFIG","message":"Reading AI_CLOUD_API_KEY:EMPTY***"}
+{"timestamp":"2026-09-03T09:55:24.188Z","level":2,"category":"AI_CONFIG","message":"AI服务配置重新加载完成 {\n  \"mode\": \"local\",\n  \"modelId\": \"LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M\"\n}"}
+{"timestamp":"2026-09-03T09:55:24.188Z","level":2,"category":"AI_CONFIG","message":"重新加载的配置: {\n  \"mode\": \"local\",\n  \"modelId\": \"LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M\"\n}"}
+{"timestamp":"2026-09-03T09:55:24.188Z","level":2,"category":"AI_SERVICE","message":"[ServiceSwitchManager] 切换服务模式: none -> local"}
+{"timestamp":"2026-09-03T09:55:24.189Z","level":2,"category":"MODEL_SWITCHING_SERVICE","message":"服务切换开始: {\n  \"from\": null,\n  \"to\": \"local\"\n}"}
+{"timestamp":"2026-09-03T09:55:24.189Z","level":2,"category":"AI_SERVICE","message":"开始切换AI服务模式，首先停止所有当前运行的服务 {\n  \"from\": null,\n  \"to\": \"local\"\n}"}
+{"timestamp":"2026-09-03T09:55:24.389Z","level":2,"category":"MODEL_CAPABILITY_DETECTOR","message":"[模型能力检测器] 清理能力缓存"}
+{"timestamp":"2026-09-03T09:55:24.390Z","level":2,"category":"MODEL_CAPABILITY_DETECTOR","message":"[模型能力检测器] 开始检测服务能力: local:LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M"}
+{"timestamp":"2026-09-03T09:55:24.390Z","level":2,"category":"MODEL_CAPABILITY_DETECTOR","message":"[模型能力检测器] 能力检测完成并缓存: local:LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M {\n  \"supportsText\": true,\n  \"supportsImage\": false,\n  \"supportsAudio\": false,\n  \"supportsVideo\": false,\n  \"maxContextSize\": 32768,\n  \"modelName\": \"LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M\",\n  \"provider\": \"local\"\n}"}
+{"timestamp":"2026-09-03T09:55:24.391Z","level":3,"category":"MAIN","message":"[enrichAIStatus] 找到匹配模型: LFM2.5 1.2B Instruct（英文更佳•高速）, Size: 915406848"}
+{"timestamp":"2026-09-03T09:55:24.391Z","level":3,"category":"MAIN","message":"[enrichAIStatus] 增强后: mode=local, name=LFM2.5 1.2B Instruct（英文更佳•高速）, provider=local, backend=UNKNOWN(vulkan), bestAcceleration=auto"}
+{"timestamp":"2026-09-03T09:55:24.392Z","level":3,"category":"MAIN","message":"AI服务状态变更，广播给渲染进程: {\n  \"modelName\": \"LFM2.5 1.2B Instruct（英文更佳•高速）\",\n  \"modelMode\": \"local\",\n  \"provider\": \"local\",\n  \"loading\": true,\n  \"status\": \"initializing\",\n  \"capabilities\": {\n    \"supportsText\": true,\n    \"supportsImage\": false,\n    \"supportsAudio\": false,\n    \"supportsVideo\": false,\n    \"maxContextSize\": 32768,\n    \"modelName\": \"LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M\",\n    \"provider\": \"local\"\n  },\n  \"vramRequiredGB\": 2,\n  \"totalSizeBytes\": 915406848,\n  \"backend\": \"UNKNOWN(vulkan)\",\n  \"bestAcceleration\": \"auto\"\n}"}
+{"timestamp":"2026-09-03T09:55:25.189Z","level":2,"category":"AI_SERVICE","message":"启动本地AI服务 (llama-server) {\n  \"modelId\": \"LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M\",\n  \"modelStoragePath\": \"/tmp/firefly-e2e-1788429314685-405/userdata/models\",\n  \"modelPath\": \"/tmp/firefly-e2e-1788429314685-405/userdata/models/hub/models/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/LFM2.5-1.2B-Instruct-Q4_K_M.gguf\"\n}"}
+{"timestamp":"2026-09-03T09:55:25.197Z","level":2,"category":"LLAMA_SERVER","message":"llama-server 二进制路径: 完整路径: /usr/lib/firefly-ai-folder-cn/resources/bin/llama-b10775-bin-ubuntu-vulkan-x64/llama-server => 短路径: /usr/lib/firefly-ai-folder-cn/resources/bin/llama-b10775-bin-ubuntu-vulkan-x64/llama-server"}
+{"timestamp":"2026-09-03T09:55:25.197Z","level":2,"category":"AI_SERVICE","message":"LlamacppAdapter: 找到本地模型文件: /tmp/firefly-e2e-1788429314685-405/userdata/models/hub/models/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/LFM2.5-1.2B-Instruct-Q4_K_M.gguf"}
+{"timestamp":"2026-09-03T09:55:25.198Z","level":2,"category":"AI_SERVICE","message":"LlamacppAdapter: 独立显卡 (llvmpipe (LLVM 15.0.7, 256 bits), 0GB, 模型: 0.85GB, 容纳比: 0%)，自适应参数: ngl=0, batch=512, ubatch=256, ctx=4096"}
+{"timestamp":"2026-09-03T09:55:25.198Z","level":2,"category":"AI_SERVICE","message":"LlamacppAdapter: 当前为 GPU 模式，DSpark 投机采样仅在 CPU 模式下启用，跳过 DSpark 挂载"}
+{"timestamp":"2026-09-03T09:55:25.198Z","level":2,"category":"AI_SERVICE","message":"LlamacppAdapter: Flash Attention 禁用 (isCpuMode=false, backend=vulkan, FA supported=false)，注入 -fa off 并使用默认非量化 f16 缓存"}
+{"timestamp":"2026-09-03T09:55:25.198Z","level":2,"category":"AI_SERVICE","message":"LlamacppAdapter: 检测到物理核心 2，保留 2 核给系统，设置线程数 -t = 2"}
+{"timestamp":"2026-09-03T09:55:25.199Z","level":2,"category":"PROCESS_MANAGER","message":"\n================================================================================"}
+{"timestamp":"2026-09-03T09:55:25.199Z","level":2,"category":"PROCESS_MANAGER","message":"🚀 开始启动 llama-server 进程 - 2026-09-03T09:55:25.199Z"}
+{"timestamp":"2026-09-03T09:55:25.199Z","level":2,"category":"PROCESS_MANAGER","message":"📍 目标端口: 38400"}
+{"timestamp":"2026-09-03T09:55:25.199Z","level":2,"category":"PROCESS_MANAGER","message":"================================================================================\n"}
+{"timestamp":"2026-09-03T09:55:25.199Z","level":2,"category":"PROCESS_MANAGER","message":"🔍 检查端口 38400 是否可用..."}
+{"timestamp":"2026-09-03T09:55:25.205Z","level":2,"category":"DATABASE_SERVICE","message":"目录分析结果已加载: /tmp/firefly-e2e-1788429314685-405/speedy-ws, contextAnalysis: null, isAnalyzed: false"}
+{"timestamp":"2026-09-03T09:55:25.208Z","level":2,"category":"MAIN","message":"[Main] 首次访问目录，触发同步: /tmp/firefly-e2e-1788429314685-405/speedy-ws"}
+{"timestamp":"2026-09-03T09:55:25.209Z","level":2,"category":"FILE_WATCHER","message":"开始全量同步目录: /tmp/firefly-e2e-1788429314685-405/speedy-ws"}
+{"timestamp":"2026-09-03T09:55:25.211Z","level":2,"category":"FILE_WATCHER","message":"单层级扫描完成，找到 0 个文件, 0 个子目录: /tmp/firefly-e2e-1788429314685-405/speedy-ws"}
+{"timestamp":"2026-09-03T09:55:25.211Z","level":2,"category":"FILE_WATCHER","message":"目录同步完成: /tmp/firefly-e2e-1788429314685-405/speedy-ws (新增:0, 更新:0, 删除:0, 子目录:0)"}
+{"timestamp":"2026-09-03T09:55:25.304Z","level":2,"category":"PROCESS_MANAGER","message":"✅ 端口 38400 可用"}
+{"timestamp":"2026-09-03T09:55:25.305Z","level":2,"category":"PROCESS_MANAGER","message":"\n=== llama-server 启动命令 ==="}
+{"timestamp":"2026-09-03T09:55:25.305Z","level":2,"category":"PROCESS_MANAGER","message":"/usr/lib/firefly-ai-folder-cn/resources/bin/llama-b10775-bin-ubuntu-vulkan-x64/llama-server --reasoning off --reasoning-format none --reasoning-budget 0 --chat-template {% for message in messages %}{{'<|im_start|>' + message['role'] + '\\n' + message['content'] + '<|im_end|>\\n'}}{% endfor %}{% if add_generation_prompt %}{{ '<|im_start|>assistant\\n' }}{% endif %} --model /tmp/firefly-e2e-1788429314685-405/userdata/models/hub/models/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/LFM2.5-1.2B-Instruct-Q4_K_M.gguf --port 38400 --ctx-size 4096 --alias LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M --jinja --no-context-shift --load-mode auto --repeat-penalty 1.1 --parallel 1 -fa off --verbose --n-gpu-layers -1 --batch-size 512 --ubatch-size 256 -t 2"}
+{"timestamp":"2026-09-03T09:55:25.305Z","level":2,"category":"PROCESS_MANAGER","message":"=============================================="}
+{"timestamp":"2026-09-03T09:55:25.305Z","level":2,"category":"AI_SERVICE","message":"[LlamaIndexAIService] 收到本地服务状态变更: starting"}
+{"timestamp":"2026-09-03T09:55:25.306Z","level":2,"category":"PROCESS_MANAGER","message":"正在启动子进程..."}
+{"timestamp":"2026-09-03T09:55:25.314Z","level":2,"category":"PROCESS_MANAGER","message":"子进程已创建，PID: 8946"}
+{"timestamp":"2026-09-03T09:55:25.314Z","level":2,"category":"PROCESS_MANAGER","message":"进程运行正常 (PID: 8946)，开始检查服务器就绪状态..."}
+{"timestamp":"2026-09-03T09:55:25.314Z","level":2,"category":"PROCESS_MANAGER","message":"⚠️ 将检查端口 38400 是否就绪"}
+{"timestamp":"2026-09-03T09:55:25.314Z","level":2,"category":"PROCESS_MANAGER","message":"⚠️ 等待服务器启动，目标端口: 38400，超时: 120000ms (120秒)"}
+{"timestamp":"2026-09-03T09:55:25.314Z","level":2,"category":"PROCESS_MANAGER","message":"⚠️ 如果您看到端口不匹配，请检查是否有其他实例正在运行"}
+{"timestamp":"2026-09-03T09:55:25.314Z","level":2,"category":"PROCESS_MANAGER","message":"🔍 尝试连接: http://127.0.0.1:38400/health"}
+{"timestamp":"2026-09-03T09:55:25.317Z","level":2,"category":"PROCESS_MANAGER","message":"🔍 尝试连接: http://127.0.0.1:38400/v1/models"}
+{"timestamp":"2026-09-03T09:55:25.318Z","level":2,"category":"PROCESS_MANAGER","message":"[Process Manager] ⏳ 等待服务器启动... 尝试 1, 已等待 0秒, 剩余 120秒 - 错误: net::ERR_CONNECTION_REFUSED"}
+{"timestamp":"2026-09-03T09:55:25.333Z","level":2,"category":"LLAMA_SERVER","message":"0.00.012.077 D common_chat_templates_apply_jinja: using differential autoparser"}
+{"timestamp":"2026-09-03T09:55:25.334Z","level":2,"category":"LLAMA_SERVER","message":"0.00.012.091 D \u001b[1m\u001b[38;5;126m=== Starting differential analysis ==="}
+{"timestamp":"2026-09-03T09:55:25.334Z","level":2,"category":"LLAMA_SERVER","message":"\u001b[0m0.00.012.091 D \u001b[1m\u001b[38;5;214mPhase 1: Reasoning analysis"}
+{"timestamp":"2026-09-03T09:55:25.334Z","level":2,"category":"LLAMA_SERVER","message":"\u001b[0m0.00.012.506 D \u001b[1m\u001b[38;5;214mPhase 2: Content analysis"}
+{"timestamp":"2026-09-03T09:55:25.335Z","level":2,"category":"LLAMA_SERVER","message":"\u001b[0m0.00.013.544 D"}
+{"timestamp":"2026-09-03T09:55:25.335Z","level":2,"category":"LLAMA_SERVER","message":"--- Reasoning & Content Structure ---"}
+{"timestamp":"2026-09-03T09:55:25.335Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.555 D user_msg_start: <|im_start|>user"}
+{"timestamp":"2026-09-03T09:55:25.335Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.556 D assistant_msg_start: <|im_start|>assistant"}
+{"timestamp":"2026-09-03T09:55:25.335Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.559 D reasoning_mode: NONE"}
+{"timestamp":"2026-09-03T09:55:25.335Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.560 D reasoning_start: ''"}
+{"timestamp":"2026-09-03T09:55:25.335Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.560 D reasoning_end: ''"}
+{"timestamp":"2026-09-03T09:55:25.335Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.561 D content_mode: PLAIN"}
+{"timestamp":"2026-09-03T09:55:25.336Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.561 D content_start: ''"}
+{"timestamp":"2026-09-03T09:55:25.336Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.561 D content_end: ''"}
+{"timestamp":"2026-09-03T09:55:25.336Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.562 D"}
+{"timestamp":"2026-09-03T09:55:25.336Z","level":2,"category":"LLAMA_SERVER","message":"--- Tool Call Structure ---"}
+{"timestamp":"2026-09-03T09:55:25.336Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.562 D tool_mode: NONE"}
+{"timestamp":"2026-09-03T09:55:25.336Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.563 D supports_tools: false"}
+{"timestamp":"2026-09-03T09:55:25.336Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.563 D supports_parallel_calls: false"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.563 D tool_section_start: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.563 D tool_section_end: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.564 D per_call_start: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.564 D per_call_end: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.564 D func_name_prefix: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.564 D func_name_suffix: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.565 D func_args_separator: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.565 D func_close: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.565 D call_id_prefix: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.565 D call_id_suffix: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.566 D call_id_pos: 'NONE'"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.566 D args_start: ''"}
+{"timestamp":"2026-09-03T09:55:25.337Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.566 D args_end: ''"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.567 D arg_name_prefix: ''"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.567 D arg_name_suffix: ''"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.568 D arg_value_prefix: ''"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.569 D arg_value_suffix: ''"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.569 D name_field: 'name'"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.570 D args_field: 'arguments'"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.570 D id_field: ''"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.570 D gen_id_field: ''"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.571 D parameter_order: ''"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"0.00.013.571 D \u001b[1m\u001b[38;5;126m=== Differential analysis complete ==="}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"\u001b[0m0.00.014.009 D common_chat_templates_apply_jinja: generated parser:"}
+{"timestamp":"2026-09-03T09:55:25.338Z","level":2,"category":"LLAMA_SERVER","message":"Sequence(Literal(<|im_start|>assistant"}
+{"timestamp":"2026-09-03T09:55:25.339Z","level":2,"category":"LLAMA_SERVER","message":"), Epsilon, Tag(content, Until()), End)"}
+{"timestamp":"2026-09-03T09:55:25.339Z","level":2,"category":"LLAMA_SERVER","message":"parser generation prompt: <|im_start|>assistant"}
+{"timestamp":"2026-09-03T09:55:25.339Z","level":2,"category":"LLAMA_SERVER","message":"0.00.014.258 I cmn  common_param: common_params_print_info: build 10775 (67a17c17c) with GNU 11.4.0 for Linux x86_64"}
+{"timestamp":"2026-09-03T09:55:25.339Z","level":2,"category":"LLAMA_SERVER","message":"0.00.014.283 I cmn  common_param: common_params_print_info: verbosity = 2147483647 (adjust with the `-lv N` CLI arg)"}
+{"timestamp":"2026-09-03T09:55:25.339Z","level":2,"category":"LLAMA_SERVER","message":"0.00.014.284 I cmn  common_param: device_info:"}
+{"timestamp":"2026-09-03T09:55:25.339Z","level":2,"category":"LLAMA_SERVER","message":"0.00.014.302 I cmn  common_param:   - CPU     : AMD EPYC 7763 64-Core Processor (15989 MiB, 15989 MiB free)"}
+{"timestamp":"2026-09-03T09:55:25.343Z","level":1,"category":"FILE_ANALYSIS","message":"[资源监控] CPU使用较高: User 1633ms, System 1417ms"}
+{"timestamp":"2026-09-03T09:55:25.432Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"性能指标获取完成，耗时: 0.42ms","data":{"requestLatency":0,"throughput":0,"memoryUsage":0.10112570356472796,"cpuUsage":1,"errorRate":0,"queueLength":0,"activeRequests":0,"timestamp":"2026-09-03T09:55:25.432Z"}}
+{"timestamp":"2026-09-03T09:55:25.432Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"开始性能优化"}
+{"timestamp":"2026-09-03T09:55:25.433Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"性能指标获取完成，耗时: 0.15ms","data":{"requestLatency":0,"throughput":0,"memoryUsage":0.10112570356472796,"cpuUsage":0.001914,"errorRate":0,"queueLength":0,"activeRequests":0,"timestamp":"2026-09-03T09:55:25.433Z"}}
+{"timestamp":"2026-09-03T09:55:25.433Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"并发数已增加: 4 -> 5"}
+{"timestamp":"2026-09-03T09:55:25.433Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"优化策略执行成功: increase-concurrency"}
+{"timestamp":"2026-09-03T09:55:25.433Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能优化完成，执行: 1，跳过: 0，错误: 0"}
+{"timestamp":"2026-09-03T09:55:25.520Z","level":3,"category":"FILE_WATCHER","message":"发送目录更新通知: /tmp/firefly-e2e-1788429314685-405/speedy-ws"}
+{"timestamp":"2026-09-03T09:55:27.322Z","level":2,"category":"PROCESS_MANAGER","message":"服务器响应: /health -> 200"}
+{"timestamp":"2026-09-03T09:55:27.322Z","level":2,"category":"PROCESS_MANAGER","message":"🔍 验证模型可用性: http://127.0.0.1:38400/v1/chat/completions"}
+{"timestamp":"2026-09-03T09:55:27.559Z","level":2,"category":"PROCESS_MANAGER","message":"✓ 服务器启动成功！模型已就绪。尝试次数: 2, 耗时: 2005ms"}
+{"timestamp":"2026-09-03T09:55:27.559Z","level":2,"category":"AI_SERVICE","message":"[ServiceSwitchManager] 检测到本地服务后台自动恢复成功，同步更新切换状态为 local"}
+{"timestamp":"2026-09-03T09:55:27.561Z","level":2,"category":"MODEL_SWITCHING_SERVICE","message":"服务切换完成: {\n  \"mode\": \"local\",\n  \"duration\": 0\n}"}
+{"timestamp":"2026-09-03T09:55:27.561Z","level":2,"category":"AI_SERVICE","message":"[LlamaIndexAIService] 收到本地服务状态变更: running"}
+{"timestamp":"2026-09-03T09:55:27.561Z","level":2,"category":"AI_SERVICE","message":"[LlamaIndexAIService] 本地服务状态已恢复运行，清除历史错误状态"}
+{"timestamp":"2026-09-03T09:55:27.561Z","level":2,"category":"PLATFORM_ADAPTER","message":"尝试使用 Nod**.js os.setPriority 设置 Linux 进程 8946 优先级为 normal (0)"}
+{"timestamp":"2026-09-03T09:55:27.561Z","level":2,"category":"PLATFORM_ADAPTER","message":"Nod**.js os.setPriority 设置进程优先级成功"}
+{"timestamp":"2026-09-03T09:55:27.562Z","level":2,"category":"PROCESS_MANAGER","message":"✅ 进程配置已缓存，键: 38400|LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M|/tmp/firefly-e2e-1788429314685-405/userdata/models/hub/models/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/LFM2.5-1.2B-Instruct-Q4_K_M.gguf|no-mmproj|default-threads|4096|-1"}
+{"timestamp":"2026-09-03T09:55:27.565Z","level":2,"category":"CONFIG","message":"[ConfigOrchestrator] flushAndEmitChanges source=runtime changedKeys=[\"BEST_ACCELERATION\"]"}
+{"timestamp":"2026-09-03T09:55:27.566Z","level":2,"category":"AI_SERVICE","message":"成功记录最佳可用硬件加速引擎: auto -> vulkan（实际运行二进制: /usr/lib/firefly-ai-folder-cn/resources/bin/llama-b10775-bin-ubuntu-vulkan-x64/llama-server）"}
+{"timestamp":"2026-09-03T09:55:27.567Z","level":2,"category":"MODEL_SWITCHING_SERVICE","message":"服务切换完成: {\n  \"mode\": \"local\",\n  \"duration\": 3379\n}"}
+{"timestamp":"2026-09-03T09:55:27.570Z","level":2,"category":"AI_SERVICE","message":"AI服务模式切换完成 {\n  \"mode\": \"local\",\n  \"duration\": 3379\n}"}
+{"timestamp":"2026-09-03T09:55:27.570Z","level":2,"category":"AI_SERVICE","message":"AI服务完成initialization阶段，耗时: 3382ms"}
+{"timestamp":"2026-09-03T09:55:27.570Z","level":2,"category":"AI_CONFIG","message":"配置重新加载完成，初始化阶段完成"}
+{"timestamp":"2026-09-03T09:55:27.570Z","level":2,"category":"AI_CONFIG","message":"AI服务配置重载成功，当前状态: IDLE"}
+{"timestamp":"2026-09-03T09:55:27.570Z","level":3,"category":"MAIN","message":"[enrichAIStatus] 增强后: mode=local, name=LFM2.5 1.2B Instruct（英文更佳•高速）, provider=local, backend=UNKNOWN(vulkan), bestAcceleration=vulkan"}
+{"timestamp":"2026-09-03T09:55:27.570Z","level":3,"category":"MAIN","message":"AI服务状态变更，广播给渲染进程: {\n  \"modelName\": \"LFM2.5 1.2B Instruct（英文更佳•高速）\",\n  \"modelMode\": \"local\",\n  \"provider\": \"local\",\n  \"loading\": false,\n  \"status\": \"idle\",\n  \"capabilities\": {\n    \"supportsText\": true,\n    \"supportsImage\": false,\n    \"supportsAudio\": false,\n    \"supportsVideo\": false,\n    \"maxContextSize\": 32768,\n    \"modelName\": \"LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M\",\n    \"provider\": \"local\"\n  },\n  \"vramRequiredGB\": 2,\n  \"totalSizeBytes\": 915406848,\n  \"backend\": \"UNKNOWN(vulkan)\",\n  \"bestAcceleration\": \"vulkan\"\n}"}
+{"timestamp":"2026-09-03T09:55:27.570Z","level":2,"category":"AI_SERVICE","message":"AI服务进入runtime阶段"}
+{"timestamp":"2026-09-03T09:55:27.571Z","level":2,"category":"SYSTEM_HEALTH","message":"[LlamaIndexAIService] 启动健康检查，间隔: 300000ms"}
+{"timestamp":"2026-09-03T09:55:27.571Z","level":2,"category":"AI_SERVICE","message":"AI服务完成runtime阶段，耗时: 1ms"}
+{"timestamp":"2026-09-03T09:55:27.571Z","level":2,"category":"MAIN","message":"统一AI服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:27.571Z","level":3,"category":"AI_SERVICE","message":"[LlamaIndexAIAdapter] LlamaIndex AI适配器已创建"}
+{"timestamp":"2026-09-03T09:55:27.571Z","level":2,"category":"MAIN","message":"目录上下文服务已初始化 (AI 已就绪)"}
+{"timestamp":"2026-09-03T09:55:27.572Z","level":2,"category":"MAIN","message":"正在初始化核心引擎..."}
+{"timestamp":"2026-09-03T09:55:27.572Z","level":3,"category":"AI_SERVICE","message":"[AIAdapterFactory] AI适配器工厂已创建"}
+{"timestamp":"2026-09-03T09:55:27.572Z","level":3,"category":"AI_SERVICE","message":"[AIAdapterFactory] LlamaIndex AI适配器已创建"}
+{"timestamp":"2026-09-03T09:55:27.573Z","level":2,"category":"ANALYSIS_QUEUE","message":"核心引擎实例已创建"}
+{"timestamp":"2026-09-03T09:55:27.573Z","level":2,"category":"ANALYSIS_QUEUE","message":"开始初始化核心引擎..."}
+{"timestamp":"2026-09-03T09:55:27.573Z","level":2,"category":"ANALYSIS_QUEUE","message":"核心引擎初始化完成（服务由外部管理）"}
+{"timestamp":"2026-09-03T09:55:27.573Z","level":2,"category":"MAIN","message":"核心引擎初始化成功"}
+{"timestamp":"2026-09-03T09:55:27.573Z","level":2,"category":"MAIN","message":"正在初始化文件监听服务..."}
+{"timestamp":"2026-09-03T09:55:27.573Z","level":2,"category":"FILE_WATCHER","message":"初始化文件监听服务..."}
+{"timestamp":"2026-09-03T09:55:27.573Z","level":2,"category":"FILE_WATCHER","message":"已加载 70 条忽略规则"}
+{"timestamp":"2026-09-03T09:55:27.573Z","level":2,"category":"FILE_WATCHER","message":"文件监听服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:27.574Z","level":2,"category":"MAIN","message":"文件监听服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:27.574Z","level":2,"category":"MAIN","message":"正在初始化分析队列服务..."}
+{"timestamp":"2026-09-03T09:55:27.574Z","level":2,"category":"ANALYSIS_QUEUE","message":"[分析队列] 开始初始化服务..."}
+{"timestamp":"2026-09-03T09:55:27.575Z","level":2,"category":"DIMENSION_SERVICE","message":"文件维度数据库表验证完成"}
+{"timestamp":"2026-09-03T09:55:27.575Z","level":2,"category":"DIMENSION_SERVICE","message":"🔧 开始初始化/更新语言维度系统: zh-CN"}
+{"timestamp":"2026-09-03T09:55:27.575Z","level":2,"category":"LANGUAGE_CONFIG","message":"初始化语言维度配置: zh-CN"}
+{"timestamp":"2026-09-03T09:55:27.578Z","level":2,"category":"LANGUAGE_CONFIG","message":"成功加载语言配置文件: /usr/lib/firefly-ai-folder-cn/resources/fileDimension/fil**.json"}
+{"timestamp":"2026-09-03T09:55:27.579Z","level":2,"category":"DIMENSION_SERVICE","message":"✅ 成功同步/更新 54 个本地维度预设到数据库 (zh-CN)"}
+{"timestamp":"2026-09-03T09:55:27.581Z","level":2,"category":"DIMENSION_SERVICE","message":"✓ 语言维度系统同步与初始化完成: zh-CN"}
+{"timestamp":"2026-09-03T09:55:27.581Z","level":2,"category":"ANALYSIS_QUEUE","message":"[分析队列] 从数据库加载队列状态..."}
+{"timestamp":"2026-09-03T09:55:27.581Z","level":2,"category":"ANALYSIS_QUEUE","message":"[分析队列] 从数据库加载到 0 个项目"}
+{"timestamp":"2026-09-03T09:55:27.582Z","level":2,"category":"ANALYSIS_QUEUE","message":"[分析队列] 服务初始化完成"}
+{"timestamp":"2026-09-03T09:55:27.582Z","level":2,"category":"MAIN","message":"分析队列服务初始化成功"}
+{"timestamp":"2026-09-03T09:55:27.582Z","level":2,"category":"MAIN","message":"服务健康检查注册完成"}
+{"timestamp":"2026-09-03T09:55:27.586Z","level":2,"category":"SYSTEM","message":"[AI Skill API] 服务已独立启动，监听 http://127.0.0.1:38300"}
+{"timestamp":"2026-09-03T09:55:27.587Z","level":2,"category":"MAIN","message":"初始化阶段完成，所有服务已初始化"}
+{"timestamp":"2026-09-03T09:55:27.587Z","level":2,"category":"MAIN","message":"开始同步云端配置..."}
+{"timestamp":"2026-09-03T09:55:27.587Z","level":2,"category":"MAIN","message":"完整服务初始化完成"}
+{"timestamp":"2026-09-03T09:55:27.588Z","level":2,"category":"SYSTEM","message":"[AI Skill API] 已成功写出端口配置文件 (port: 38300): /root/.config/firefly-ai-folder-cn/ai-**.json"}
+{"timestamp":"2026-09-03T09:55:27.623Z","level":3,"category":"MODEL_CAPABILITY_DETECTOR","message":"[模型能力检测器] 使用缓存的能力信息: local:LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M"}
+{"timestamp":"2026-09-03T09:55:27.623Z","level":2,"category":"MAIN","message":"[getAIStatus] backend=UNKNOWN(vulkan), provider=local"}
+{"timestamp":"2026-09-03T09:55:27.684Z","level":2,"category":"SYSTEM","message":"[OmniService] 正在拉起 firefly-omni 守护进程 (Port: 38200): /usr/lib/firefly-ai-folder-cn/resources/bin/omni/firefly-omni"}
+{"timestamp":"2026-09-03T09:55:27.762Z","level":3,"category":"MAIN","message":"AI服务状态变更，广播给渲染进程: {\n  \"modelName\": \"LFM2.5 1.2B Instruct（英文更佳•高速）\",\n  \"modelMode\": \"local\",\n  \"provider\": \"local\",\n  \"loading\": false,\n  \"status\": \"idle\",\n  \"capabilities\": {\n    \"supportsText\": true,\n    \"supportsImage\": false,\n    \"supportsAudio\": false,\n    \"supportsVideo\": false,\n    \"maxContextSize\": 32768,\n    \"modelName\": \"LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M\",\n    \"provider\": \"local\"\n  },\n  \"targetModelId\": \"LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M\",\n  \"vramRequiredGB\": 2,\n  \"totalSizeBytes\": 915406848,\n  \"backend\": \"UNKNOWN(vulkan)\",\n  \"bestAcceleration\": \"vulkan\"\n}"}
+{"timestamp":"2026-09-03T09:55:29.395Z","level":1,"category":"SYSTEM","message":"[OmniService] 子进程退出 (code=127, signal=null)"}
+{"timestamp":"2026-09-03T09:55:29.399Z","level":2,"category":"SYSTEM","message":"[OmniService] 安排在 1000ms 后尝试重启 Omni 服务 (第 1 次)..."}
+{"timestamp":"2026-09-03T09:55:30.342Z","level":1,"category":"FILE_ANALYSIS","message":"[资源监控] CPU使用较高: User 2975ms, System 2192ms"}
+{"timestamp":"2026-09-03T09:55:35.342Z","level":1,"category":"FILE_ANALYSIS","message":"[资源监控] CPU使用较高: User 2327ms, System 2109ms"}
+{"timestamp":"2026-09-03T09:55:35.432Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"性能指标获取完成，耗时: 0.23ms","data":{"requestLatency":0,"throughput":0,"memoryUsage":0.13902439024390245,"cpuUsage":1,"errorRate":0,"queueLength":0,"activeRequests":0,"timestamp":"2026-09-03T09:55:35.431Z"}}
+{"timestamp":"2026-09-03T09:55:35.432Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"性能指标获取完成，耗时: 0.13ms","data":{"requestLatency":0,"throughput":0,"memoryUsage":0.13902439024390245,"cpuUsage":0.000331,"errorRate":0,"queueLength":0,"activeRequests":0,"timestamp":"2026-09-03T09:55:35.432Z"}}
+{"timestamp":"2026-09-03T09:55:35.432Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"跳过策略 increase-concurrency，仍在冷却期"}
+{"timestamp":"2026-09-03T09:55:35.432Z","level":2,"category":"PERFORMANCE_OPTIMIZER","message":"性能优化完成，执行: 0，跳过: 1，错误: 0"}
+{"timestamp":"2026-09-03T09:55:40.343Z","level":1,"category":"FILE_ANALYSIS","message":"[资源监控] CPU使用较高: User 2267ms, System 2022ms"}
+{"timestamp":"2026-09-03T09:55:45.343Z","level":1,"category":"FILE_ANALYSIS","message":"[资源监控] CPU使用较高: User 2290ms, System 2065ms"}
+{"timestamp":"2026-09-03T09:55:45.432Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"性能指标获取完成，耗时: 0.27ms","data":{"requestLatency":0,"throughput":0,"memoryUsage":0.13208255159474672,"cpuUsage":1,"errorRate":0,"queueLength":0,"activeRequests":0,"timestamp":"2026-09-03T09:55:45.432Z"}}
+{"timestamp":"2026-09-03T09:55:45.432Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"性能指标获取完成，耗时: 0.11ms","data":{"requestLatency":0,"throughput":0,"memoryUsage":0.13208255159474672,"cpuUsage":0.000342,"errorRate":0,"queueLength":0,"activeRequests":0,"timestamp":"2026-09-03T09:55:45.432Z"}}
+{"timestamp":"2026-09-03T09:55:50.343Z","level":1,"category":"FILE_ANALYSIS","message":"[资源监控] CPU使用较高: User 2354ms, System 2064ms"}
+{"timestamp":"2026-09-03T09:55:55.344Z","level":1,"category":"FILE_ANALYSIS","message":"[资源监控] CPU使用较高: User 2227ms, System 2074ms"}
+{"timestamp":"2026-09-03T09:55:55.432Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"性能指标获取完成，耗时: 0.24ms","data":{"requestLatency":0,"throughput":0,"memoryUsage":0.13026891807379612,"cpuUsage":1,"errorRate":0,"queueLength":0,"activeRequests":0,"timestamp":"2026-09-03T09:55:55.432Z"}}
+{"timestamp":"2026-09-03T09:55:55.432Z","level":3,"category":"PERFORMANCE_OPTIMIZER","message":"性能指标获取完成，耗时: 0.08ms","data":{"requestLatency":0,"throughput":0,"memoryUsage":0.13026891807379612,"cpuUsage":0.0003,"errorRate":0,"queueLength":0,"activeRequests":0,"timestamp":"2026-09-03T09:55:55.432Z"}}

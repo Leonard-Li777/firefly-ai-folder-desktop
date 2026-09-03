@@ -1,0 +1,226 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: golden-path.spec.ts >> Release 生产安装包 E2E 黄金主链路验证 >> 04. 文件探测与列表/详情展示 (File Explorer & Details Panel)
+- Location: pro/tests/e2e/release-pkg/suites/golden-path.spec.ts:250:7
+
+# Error details
+
+```
+Error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 0
+Received:   0
+```
+
+# Test source
+
+```ts
+  170 |         )
+  171 |         .first()
+  172 |       if (await nextBtn.isVisible().catch(() => false)) {
+  173 |         await nextBtn.click().catch(() => {})
+  174 |       }
+  175 |     } else {
+  176 |       console.log('[Step 02] 无向导蒙层或已直接进入主界面。')
+  177 |     }
+  178 | 
+  179 |     // 给页面初始化与授权探测预留稳定时间
+  180 |     await new Promise(r => setTimeout(r, 4000))
+  181 |     page = await app.getPage()
+  182 |     await page.waitForLoadState('domcontentloaded').catch(() => {})
+  183 | 
+  184 |     // 断言主应用界面容器已挂载
+  185 |     const rootElement = page.locator('#root, body, main').first()
+  186 |     await expect(rootElement).toBeVisible({ timeout: 20000 })
+  187 |     await page
+  188 |       .screenshot({ path: path.join(__dirname, '../reports/html/step-02-main-ready.png') })
+  189 |       .catch(() => {})
+  190 |   })
+  191 | 
+  192 |   test('03. 挂载测试快照工作区 (Mount Golden Workspace)', async () => {
+  193 |     console.log(`--- [Step 03] 挂载测试快照工作区: ${workspaceDir} ---`)
+  194 |     page = await app.getPage()
+  195 |     await page.waitForLoadState('domcontentloaded').catch(() => {})
+  196 | 
+  197 |     // 通过 electronAPI 添加工作目录、设置当前工作区并触发同步
+  198 |     await page.evaluate(async wsPath => {
+  199 |       const api = (window as any).electronAPI
+  200 |       if (!api) throw new Error('electronAPI 未定义')
+  201 | 
+  202 |       // 1. 添加工作区
+  203 |       if (typeof api.addWorkspaceDirectory === 'function') {
+  204 |         await api.addWorkspaceDirectory({
+  205 |           name: 'SPEEDY-Golden-Workspace',
+  206 |           path: wsPath,
+  207 |           type: 'SPEEDY'
+  208 |         })
+  209 |       }
+  210 | 
+  211 |       // 2. 切换当前工作区
+  212 |       if (typeof api.setCurrentWorkspaceDirectory === 'function') {
+  213 |         await api.setCurrentWorkspaceDirectory(wsPath)
+  214 |       }
+  215 | 
+  216 |       // 3. 广播前端更新事件
+  217 |       window.dispatchEvent(new CustomEvent('workspace-directories-updated'))
+  218 |     }, workspaceDir)
+  219 | 
+  220 |     // 等待 UI 响应并刷新工作区
+  221 |     await new Promise(r => setTimeout(r, 3500))
+  222 |     page = await app.getPage()
+  223 | 
+  224 |     // 验证工作区列表已成功记录（支持慢 IO 异步写入短轮询）
+  225 |     let directories: any[] = []
+  226 |     for (let attempt = 0; attempt < 10; attempt++) {
+  227 |       directories = await page.evaluate(async () => {
+  228 |         const api = (window as any).electronAPI
+  229 |         return api && typeof api.getAllWorkspaceDirectories === 'function'
+  230 |           ? await api.getAllWorkspaceDirectories()
+  231 |           : []
+  232 |       })
+  233 |       if (directories.length >= 1) break
+  234 |       await new Promise(r => setTimeout(r, 600))
+  235 |     }
+  236 | 
+  237 |     console.log(`[Step 03] 当前已挂载工作区数量: ${directories.length}`)
+  238 |     expect(directories.length).toBeGreaterThanOrEqual(1)
+  239 | 
+  240 |     const currentDir = directories.find(
+  241 |       (d: any) => d.path === workspaceDir || d.path.toLowerCase() === workspaceDir.toLowerCase()
+  242 |     )
+  243 |     expect(currentDir).toBeDefined()
+  244 | 
+  245 |     await page
+  246 |       .screenshot({ path: path.join(__dirname, '../reports/html/step-03-workspace-mounted.png') })
+  247 |       .catch(() => {})
+  248 |   })
+  249 | 
+  250 |   test('04. 文件探测与列表/详情展示 (File Explorer & Details Panel)', async () => {
+  251 |     console.log('--- [Step 04] 验证文件列表展示与详情面板交互 ---')
+  252 |     page = await app.getPage()
+  253 | 
+  254 |     // 主动触发目录读取并获取快照内的文件结构
+  255 |     const dirContent = await page.evaluate(async wsPath => {
+  256 |       const api = (window as any).electronAPI
+  257 |       if (api && typeof api.readDirectory === 'function') {
+  258 |         return await api.readDirectory(wsPath)
+  259 |       }
+  260 |       return { files: [], directories: [] }
+  261 |     }, workspaceDir)
+  262 | 
+  263 |     const scannedFiles = dirContent.files || []
+  264 |     const scannedDirs = dirContent.directories || []
+  265 |     console.log(
+  266 |       `[Step 04] 后端扫描到的文件数: ${scannedFiles.length}, 子目录数: ${scannedDirs.length}`
+  267 |     )
+  268 | 
+  269 |     // 验证扫描到的文件数不为 0
+> 270 |     expect(scannedFiles.length + scannedDirs.length).toBeGreaterThan(0)
+      |                                                      ^ Error: expect(received).toBeGreaterThan(expected)
+  271 |     console.log(`[Step 04] 文件名样本: ${scannedFiles.map((f: any) => f.name).join(', ')}`)
+  272 | 
+  273 |     // 等待 UI 渲染
+  274 |     await new Promise(r => setTimeout(r, 2000))
+  275 | 
+  276 |     // 检查页面渲染的文件元素或文件名文本
+  277 |     const fileElements = page.locator(
+  278 |       'div:has-text("成都市"), div:has-text("项目模块"), span:has-text("通知"), span:has-text("需求"), [class*="truncate"], tbody tr, [class*="card"]'
+  279 |     )
+  280 |     const domFileCount = await fileElements.count().catch(() => 0)
+  281 |     console.log(`[Step 04] 页面匹配到的文件相关 DOM 元素数量: ${domFileCount}`)
+  282 | 
+  283 |     // 验证页面至少能匹配到主工作区与文件相关元素
+  284 |     expect(domFileCount).toBeGreaterThan(0)
+  285 | 
+  286 |     // 尝试点击第一个文件项以唤起详情交互
+  287 |     await fileElements
+  288 |       .first()
+  289 |       .click()
+  290 |       .catch(() => {})
+  291 |     await new Promise(r => setTimeout(r, 1000))
+  292 | 
+  293 |     // 验证主视图区域可见
+  294 |     const mainView = page
+  295 |       .locator('main, [class*="fileExplorer"], [class*="layout"], [class*="content"]')
+  296 |       .first()
+  297 |     await expect(mainView).toBeVisible()
+  298 | 
+  299 |     await page
+  300 |       .screenshot({ path: path.join(__dirname, '../reports/html/step-04-file-explorer.png') })
+  301 |       .catch(() => {})
+  302 |   })
+  303 | 
+  304 |   test('05. 单个文件分析结果与属性面板值属性精确检测 (File Analysis & Attributes Inspection)', async () => {
+  305 |     console.log(
+  306 |       '--- [Step 05] 针对《项目模块_功能需求文档_日历调度AI集成需求_V1.docx》进行分析结果面板与AI深度推理全面校验 ---'
+  307 |     )
+  308 |     page = await app.getPage()
+  309 | 
+  310 |     // 1. 前置：检查并确保 AI 服务已就绪
+  311 |     console.log('[Step 05] 正在检查 AI 服务初始化与引擎就绪状态...')
+  312 |     const aiStatusBefore = await page.evaluate(async () => {
+  313 |       const api = (window as any).electronAPI
+  314 |       if (!api || !api.aiService) return { supported: false, status: 'unknown' }
+  315 |       try {
+  316 |         const status =
+  317 |           typeof api.aiService.getStatus === 'function'
+  318 |             ? await api.aiService.getStatus()
+  319 |             : 'unknown'
+  320 |         const isInit =
+  321 |           typeof api.aiService.isInitialized === 'function'
+  322 |             ? await api.aiService.isInitialized()
+  323 |             : false
+  324 |         const initInfo =
+  325 |           typeof api.aiService.getInitializationInfo === 'function'
+  326 |             ? await api.aiService.getInitializationInfo()
+  327 |             : null
+  328 |         const capabilities =
+  329 |           typeof api.aiService.getCapabilities === 'function'
+  330 |             ? await api.aiService.getCapabilities()
+  331 |             : null
+  332 | 
+  333 |         // 如果未就绪且未初始化，主动触发一次显式初始化
+  334 |         if (!isInit && typeof api.aiService.initialize === 'function') {
+  335 |           console.log('[E2E Page] 正在主动触发 api.aiService.initialize()...')
+  336 |           await api.aiService
+  337 |             .initialize()
+  338 |             .catch((err: any) => ({ success: false, error: err?.message }))
+  339 |         }
+  340 | 
+  341 |         return {
+  342 |           supported: true,
+  343 |           status,
+  344 |           isInit,
+  345 |           initInfo,
+  346 |           capabilities
+  347 |         }
+  348 |       } catch (err: any) {
+  349 |         return { supported: true, error: err?.message || String(err) }
+  350 |       }
+  351 |     })
+  352 |     console.log('[Step 05] AI 服务前置探测状态:', JSON.stringify(aiStatusBefore, null, 2))
+  353 | 
+  354 |     // 等待 AI 服务达到可用态 (idle 或 processing)，最长等待 45 秒 (应对低配 CI 冷启动)
+  355 |     const aiReadyStart = Date.now()
+  356 |     let currentAIStatus = 'unknown'
+  357 |     while (Date.now() - aiReadyStart < 45000) {
+  358 |       currentAIStatus = await page
+  359 |         .evaluate(async () => {
+  360 |           const api = (window as any).electronAPI
+  361 |           return api?.aiService?.getStatus ? await api.aiService.getStatus() : 'ready'
+  362 |         })
+  363 |         .catch(() => 'unknown')
+  364 | 
+  365 |       if (
+  366 |         currentAIStatus === 'idle' ||
+  367 |         currentAIStatus === 'processing' ||
+  368 |         currentAIStatus === 'ready'
+  369 |       ) {
+  370 |         console.log(
+```
