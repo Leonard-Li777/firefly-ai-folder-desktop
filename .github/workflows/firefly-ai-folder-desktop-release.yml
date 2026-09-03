@@ -763,16 +763,19 @@ jobs:
             libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 \
             libasound2 libxshmfence1 libx11-xcb1 p7zip-full curl tar
 
-          # 解决 GCC 8.3 不支持 -std=c++20 (仅支持 -std=c++2a) 的兼容性 wrapper
+          # 解决 GCC 8.3 不支持 -std=c++20 / -std=gnu++20 的兼容性 wrapper
+          # Node 22+ 的 node-gyp 默认下发 -std=gnu++20，而 buster 自带 GCC 8.3 仅识别 -std=gnu++2a，
+          # 且对 C++20 特性支持不完整，故统一降级为 C++17：与 Node 20 时代的编译标准完全一致，
+          # 既避免参数不被识别，也避免半吊子 C++20 特性引发的编译错误。
           printf '%s\n' \
             '#!/bin/bash' \
             'args=()' \
             'for arg in "$@"; do' \
-            '  if [ "$arg" = "-std=c++20" ]; then' \
-            '    args+=("-std=c++2a")' \
-            '  else' \
-            '    args+=("$arg")' \
-            '  fi' \
+            '  case "$arg" in' \
+            '    -std=c++2[0-9]) arg="-std=c++17" ;;' \
+            '    -std=gnu++2[0-9]) arg="-std=gnu++17" ;;' \
+            '  esac' \
+            '  args+=("$arg")' \
             'done' \
             'exec /usr/bin/g++ "${args[@]}"' \
             > /usr/local/bin/g++
