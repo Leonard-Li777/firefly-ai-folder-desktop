@@ -45,6 +45,10 @@ jobs:
       win_exe_name: ${{ steps.get_release.outputs.win_exe_name }}
       mac_dmg_url: ${{ steps.get_release.outputs.mac_dmg_url }}
       mac_dmg_name: ${{ steps.get_release.outputs.mac_dmg_name }}
+      mac_arm64_dmg_url: ${{ steps.get_release.outputs.mac_arm64_dmg_url }}
+      mac_arm64_dmg_name: ${{ steps.get_release.outputs.mac_arm64_dmg_name }}
+      mac_x64_dmg_url: ${{ steps.get_release.outputs.mac_x64_dmg_url }}
+      mac_x64_dmg_name: ${{ steps.get_release.outputs.mac_x64_dmg_name }}
       linux_deb_url: ${{ steps.get_release.outputs.linux_deb_url }}
       linux_deb_name: ${{ steps.get_release.outputs.linux_deb_name }}
       linux_rpm_url: ${{ steps.get_release.outputs.linux_rpm_url }}
@@ -113,15 +117,35 @@ jobs:
               core.setOutput('win_exe_name', winExe.name);
             }
 
-            // macOS .dmg / .pkg / .zip (ARM64)
-            const macDmg = assets.find(a => {
+            // macOS .dmg / .pkg / .zip (ARM64: Apple Silicon)
+            const macArm64Dmg = assets.find(a => {
               const n = a.name.toLowerCase();
-              return (n.endsWith('.dmg') || n.endsWith('.pkg') || (n.endsWith('.zip') && (n.includes('mac') || n.includes('darwin')))) && !n.includes('blockmap') && (n.includes(region) || !n.includes('intl'));
+              return (n.endsWith('.dmg') || n.endsWith('.pkg') || (n.endsWith('.zip') && (n.includes('mac') || n.includes('darwin')))) &&
+                !n.includes('blockmap') &&
+                (n.includes('arm64') || n.includes('aarch64')) &&
+                (n.includes(region) || !n.includes('intl'));
             });
-            if (macDmg) {
-              core.info(`Selected macOS Package: ${macDmg.name}`);
-              core.setOutput('mac_dmg_url', macDmg.browser_download_url);
-              core.setOutput('mac_dmg_name', macDmg.name);
+            if (macArm64Dmg) {
+              core.info(`Selected macOS ARM64 Package: ${macArm64Dmg.name}`);
+              core.setOutput('mac_arm64_dmg_url', macArm64Dmg.browser_download_url);
+              core.setOutput('mac_arm64_dmg_name', macArm64Dmg.name);
+              // 兼容旧字段
+              core.setOutput('mac_dmg_url', macArm64Dmg.browser_download_url);
+              core.setOutput('mac_dmg_name', macArm64Dmg.name);
+            }
+
+            // macOS .dmg / .pkg / .zip (x64: Intel)
+            const macX64Dmg = assets.find(a => {
+              const n = a.name.toLowerCase();
+              return (n.endsWith('.dmg') || n.endsWith('.pkg') || (n.endsWith('.zip') && (n.includes('mac') || n.includes('darwin')))) &&
+                !n.includes('blockmap') &&
+                (n.includes('x64') || n.includes('x86_64') || n.includes('intel')) &&
+                (n.includes(region) || !n.includes('intl'));
+            });
+            if (macX64Dmg) {
+              core.info(`Selected macOS Intel (x64) Package: ${macX64Dmg.name}`);
+              core.setOutput('mac_x64_dmg_url', macX64Dmg.browser_download_url);
+              core.setOutput('mac_x64_dmg_name', macX64Dmg.name);
             }
 
             // Linux .deb
@@ -517,13 +541,14 @@ jobs:
           retention-days: 14
 
   # ==============================================================================
-  # 4. macOS E2E Release Test (Apple Silicon ARM64)
   # ==============================================================================
-  e2e-macos:
+  # 4. macOS E2E Release Tests (Apple Silicon ARM64 & Intel x64)
+  # ==============================================================================
+  e2e-macos-arm64:
     name: E2E Test macOS (ARM64)
     needs: resolve-release
     if: |
-      needs.resolve-release.outputs.mac_dmg_url != '' &&
+      needs.resolve-release.outputs.mac_arm64_dmg_url != '' &&
       (github.event_name == 'release' || github.event.inputs.platform_scope == 'macos-only' || github.event.inputs.platform_scope == 'all-platforms')
     # 固定 macOS 15：macOS 26 镜像下 hdiutil 挂载/卸载行为变化，会导致 DMG 校验不稳定
     runs-on: macos-15
@@ -549,9 +574,9 @@ jobs:
       - name: Install E2E Test Dependencies
         run: npm --prefix pro/tests/e2e/release-pkg install
 
-      - name: Download & Mount macOS DMG
+      - name: Download & Mount macOS DMG (ARM64)
         run: |
-          curl -L -s -S -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_dmg_url }}"
+          curl -L -s -S -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_arm64_dmg_url }}"
           hdiutil attach /tmp/app.dmg -mountpoint /tmp/firefly-mount -nobrowse -quiet
           
           APP_PATH=$(find /tmp/firefly-mount -maxdepth 2 -name "*.app" | head -n 1)
@@ -591,11 +616,91 @@ jobs:
           fi
           ls -la pro/tests/e2e/release-pkg/reports/html/
 
-      - name: Upload macOS Test Report Artifact
+      - name: Upload macOS ARM64 Test Report Artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-macos
+          name: playwright-report-macos-arm64
+          path: pro/tests/e2e/release-pkg/reports/html
+          retention-days: 14
+
+  e2e-macos-x64:
+    name: E2E Test macOS (Intel x64)
+    needs: resolve-release
+    if: |
+      needs.resolve-release.outputs.mac_x64_dmg_url != '' &&
+      (github.event_name == 'release' || github.event.inputs.platform_scope == 'macos-only' || github.event.inputs.platform_scope == 'all-platforms')
+    # 使用与构建发布完全对齐的 macOS 15 Intel 镜像环境
+    runs-on: macos-15-intel
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # E2E 测试套件（pro/tests/e2e/release-pkg）位于私有仓库，必须显式检出，
+      # 否则后续 npm --prefix pro/tests/e2e/release-pkg install 会因缺少 package.json 报 ENOENT
+      - name: Checkout Private Pro Module (E2E Test Suites)
+        uses: actions/checkout@v4
+        with:
+          repository: Leonard-Li777/firefly-ai-folder-desktop-pro
+          token: ${{ secrets.PRO_SUBMODULE_TOKEN || secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.SUBMODULE_ACCESS_TOKEN || secrets.PAT || secrets.GH_PAT || secrets.RELEASE_TOKEN }}
+          path: pro
+          ref: master
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.15.0
+
+      - name: Install E2E Test Dependencies
+        run: npm --prefix pro/tests/e2e/release-pkg install
+
+      - name: Download & Mount macOS DMG (x64)
+        run: |
+          curl -L -s -S -o /tmp/app.dmg "${{ needs.resolve-release.outputs.mac_x64_dmg_url }}"
+          hdiutil attach /tmp/app.dmg -mountpoint /tmp/firefly-mount -nobrowse -quiet
+          
+          APP_PATH=$(find /tmp/firefly-mount -maxdepth 2 -name "*.app" | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "Failed to locate .app bundle inside mounted macOS DMG!"
+            exit 1
+          fi
+          
+          echo "Copying $APP_PATH to /Applications..."
+          cp -R "$APP_PATH" /Applications/
+          hdiutil detach /tmp/firefly-mount -quiet || true
+          
+          INSTALLED_APP=$(find /Applications -maxdepth 1 -name "firefly*.app" | head -n 1)
+          EXECUTABLE="$INSTALLED_APP/Contents/MacOS/$(defaults read "$INSTALLED_APP/Contents/Info.plist" CFBundleExecutable 2>/dev/null || echo "firefly-ai-folder")"
+          
+          if [ ! -f "$EXECUTABLE" ]; then
+            EXECUTABLE=$(find "$INSTALLED_APP/Contents/MacOS" -type f -perm +111 | head -n 1)
+          fi
+          
+          echo "Located macOS Executable: $EXECUTABLE"
+          echo "TEST_APP_EXECUTABLE=$EXECUTABLE" >> $GITHUB_ENV
+
+      - name: Run Playwright Golden Path E2E Test
+        env:
+          IS_E2E_TEST: 'true'
+          PLAYWRIGHT_TEST_TYPE: 'e2e'
+          IS_INTEGRATION_TEST: 'false'
+        run: |
+          npx --prefix pro/tests/e2e/release-pkg playwright test --config=pro/tests/e2e/release-pkg/config/playwright.release.config.ts
+
+      - name: Bundle Logs into Report Artifact
+        if: always()
+        run: |
+          mkdir -p pro/tests/e2e/release-pkg/reports/html
+          if [ -f "pro/tests/e2e/release-pkg/reports/logs/app.log" ]; then
+            cp "pro/tests/e2e/release-pkg/reports/logs/app.log" "pro/tests/e2e/release-pkg/reports/html/app.log"
+          fi
+          ls -la pro/tests/e2e/release-pkg/reports/html/
+
+      - name: Upload macOS Intel Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-macos-x64
           path: pro/tests/e2e/release-pkg/reports/html
           retention-days: 14
 
@@ -604,43 +709,347 @@ jobs:
   # ==============================================================================
   publish-report:
     name: Publish Test Report & Summary
-    needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos]
+    needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos-arm64, e2e-macos-x64]
     if: always()
     runs-on: ubuntu-latest
     steps:
+      - name: Download Windows Report Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: playwright-report-windows
+          path: ./tmp-reports/windows
+
+      - name: Download Linux DEB Report Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: playwright-report-linux-deb
+          path: ./tmp-reports/linux-deb
+
+      - name: Download Linux RPM Report Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: playwright-report-linux-rpm
+          path: ./tmp-reports/linux-rpm
+
+      - name: Download macOS ARM64 Report Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: playwright-report-macos-arm64
+          path: ./tmp-reports/macos-arm64
+
+      - name: Download macOS Intel Report Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: playwright-report-macos-x64
+          path: ./tmp-reports/macos-x64
+
+      - name: Build GitHub Pages Dashboard & Reports Structure
+        shell: bash
+        run: |
+          RUN_ID="${{ github.run_id }}"
+          PAGES_DIR="./gh-pages-deploy"
+          TARGET_RUN_DIR="$PAGES_DIR/reports/$RUN_ID"
+          
+          mkdir -p "$TARGET_RUN_DIR"
+          touch "$PAGES_DIR/.nojekyll"
+
+          # 依次复制各平台报告
+          PLATFORMS=("windows" "linux-deb" "linux-rpm" "macos-arm64" "macos-x64")
+          for p in "${PLATFORMS[@]}"; do
+            if [ -d "./tmp-reports/$p" ]; then
+              echo "📦 整理并归档 $p 平台报告..."
+              mkdir -p "$TARGET_RUN_DIR/$p"
+              cp -R ./tmp-reports/$p/* "$TARGET_RUN_DIR/$p/" 2>/dev/null || true
+            fi
+          done
+
+          # 生成针对当前 Run ID 的聚合导航页
+          cat << 'EOF' > "$TARGET_RUN_DIR/index.html"
+          <!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Firefly Desktop Release E2E Functional Test Reports</title>
+            <style>
+              :root {
+                --bg: #0f172a;
+                --card-bg: #1e293b;
+                --card-border: #334155;
+                --text-main: #f8fafc;
+                --text-muted: #94a3b8;
+                --primary: #38bdf8;
+                --success: #22c55e;
+                --danger: #ef4444;
+                --skipped: #64748b;
+              }
+              body {
+                margin: 0;
+                padding: 40px 20px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+                background-color: var(--bg);
+                color: var(--text-main);
+                min-height: 100vh;
+                box-sizing: border-box;
+              }
+              .container {
+                max-width: 960px;
+                margin: 0 auto;
+              }
+              header {
+                text-align: center;
+                margin-bottom: 40px;
+              }
+              h1 {
+                font-size: 28px;
+                font-weight: 700;
+                margin-bottom: 12px;
+                background: linear-gradient(to right, #38bdf8, #818cf8);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+              }
+              .meta {
+                color: var(--text-muted);
+                font-size: 14px;
+                line-height: 1.6;
+              }
+              .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 20px;
+                margin-bottom: 40px;
+              }
+              .card {
+                background: var(--card-bg);
+                border: 1px solid var(--card-border);
+                border-radius: 12px;
+                padding: 24px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+                transition: transform 0.2s, border-color 0.2s;
+              }
+              .card:hover {
+                transform: translateY(-2px);
+                border-color: var(--primary);
+              }
+              .card-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 16px;
+              }
+              .platform-name {
+                font-size: 18px;
+                font-weight: 600;
+              }
+              .badge {
+                font-size: 12px;
+                font-weight: 600;
+                padding: 4px 10px;
+                border-radius: 9999px;
+                text-transform: uppercase;
+              }
+              .badge-success { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+              .badge-failure { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+              .badge-skipped { background: rgba(100, 116, 139, 0.2); color: var(--skipped); }
+              .desc {
+                color: var(--text-muted);
+                font-size: 14px;
+                margin-bottom: 24px;
+              }
+              .btn {
+                display: block;
+                text-align: center;
+                text-decoration: none;
+                padding: 10px 16px;
+                border-radius: 8px;
+                font-weight: 500;
+                font-size: 14px;
+                background: #0284c7;
+                color: #fff;
+                transition: background 0.2s;
+              }
+              .btn:hover { background: #0369a1; }
+              .btn-disabled {
+                background: #334155;
+                color: #64748b;
+                pointer-events: none;
+              }
+              footer {
+                text-align: center;
+                color: var(--text-muted);
+                font-size: 13px;
+                border-top: 1px solid var(--card-border);
+                padding-top: 24px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <header>
+                <h1>Firefly Desktop Release E2E Functional Test Reports</h1>
+                <div class="meta">
+                  <span>运行 ID: <strong>RUN_ID_PLACEHOLDER</strong></span> |
+                  <span>目标版本: <strong>TARGET_TAG_PLACEHOLDER</strong></span> |
+                  <span>测试时间: <strong>TIMESTAMP_PLACEHOLDER</strong></span>
+                </div>
+              </header>
+              <div class="grid">
+                <!-- Windows -->
+                <div class="card">
+                  <div class="card-header">
+                    <span class="platform-name">🪟 Windows (x64)</span>
+                    <span class="badge badge-WIN_STATUS_LOWER">WIN_STATUS</span>
+                  </div>
+                  <div class="desc">NSIS 真实安装、主界面渲染、工作区挂载与黄金主链路用例。</div>
+                  WIN_BUTTON
+                </div>
+                <!-- Linux DEB -->
+                <div class="card">
+                  <div class="card-header">
+                    <span class="platform-name">🐧 Linux (Ubuntu / DEB)</span>
+                    <span class="badge badge-DEB_STATUS_LOWER">DEB_STATUS</span>
+                  </div>
+                  <div class="desc">Ubuntu 多架构容器、dpkg 安装与 xvfb 驱动真实桌面环境运行。</div>
+                  DEB_BUTTON
+                </div>
+                <!-- Linux RPM -->
+                <div class="card">
+                  <div class="card-header">
+                    <span class="platform-name">🐧 Linux (Fedora / RPM)</span>
+                    <span class="badge badge-RPM_STATUS_LOWER">RPM_STATUS</span>
+                  </div>
+                  <div class="desc">Fedora 多架构容器、rpm 安装与图形化会话全链路验证。</div>
+                  RPM_BUTTON
+                </div>
+                <!-- macOS Apple Silicon -->
+                <div class="card">
+                  <div class="card-header">
+                    <span class="platform-name">🍎 macOS (Apple Silicon)</span>
+                    <span class="badge badge-MAC_ARM64_STATUS_LOWER">MAC_ARM64_STATUS</span>
+                  </div>
+                  <div class="desc">macOS 15 ARM64 宿主机、DMG 挂载与原生硬件加速功能验证。</div>
+                  MAC_ARM64_BUTTON
+                </div>
+                <!-- macOS Intel -->
+                <div class="card">
+                  <div class="card-header">
+                    <span class="platform-name">🍎 macOS (Intel x64)</span>
+                    <span class="badge badge-MAC_X64_STATUS_LOWER">MAC_X64_STATUS</span>
+                  </div>
+                  <div class="desc">macOS 15 Intel 镜像环境、DMG 挂载与 x64 原生架构启动验证。</div>
+                  MAC_X64_BUTTON
+                </div>
+              </div>
+              <footer>
+                <p>Firefly AI Folder CI/CD Automation Pipeline • 智能文件管理与本地 AI 整理</p>
+              </footer>
+            </div>
+          </body>
+          </html>
+          EOF
+
+          # 替换动态变量
+          TIME_STR="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          TAG_STR="${{ needs.resolve-release.outputs.tag_name || 'Latest' }}"
+          
+          sed -i "s|RUN_ID_PLACEHOLDER|$RUN_ID|g" "$TARGET_RUN_DIR/index.html"
+          sed -i "s|TARGET_TAG_PLACEHOLDER|$TAG_STR|g" "$TARGET_RUN_DIR/index.html"
+          sed -i "s|TIMESTAMP_PLACEHOLDER|$TIME_STR|g" "$TARGET_RUN_DIR/index.html"
+
+          # 辅助宏替换函数
+          render_card() {
+            local key="$1"
+            local status="$2"
+            local dir_name="$3"
+
+            local lower_status=$(echo "$status" | tr '[:upper:]' '[:lower:]')
+            sed -i "s|${key}_STATUS_LOWER|${lower_status}|g" "$TARGET_RUN_DIR/index.html"
+            sed -i "s|${key}_STATUS|${status}|g" "$TARGET_RUN_DIR/index.html"
+
+            if [ -f "$TARGET_RUN_DIR/$dir_name/index.html" ]; then
+              sed -i "s|${key}_BUTTON|<a class=\"btn\" href=\"./${dir_name}/index.html\">查看 Playwright 报告 &rarr;</a>|g" "$TARGET_RUN_DIR/index.html"
+            else
+              sed -i "s|${key}_BUTTON|<span class=\"btn btn-disabled\">无报告产物 (${status})</span>|g" "$TARGET_RUN_DIR/index.html"
+            fi
+          }
+
+          render_card "WIN" "${{ needs.e2e-windows.result }}" "windows"
+          render_card "DEB" "${{ needs.e2e-linux-deb.result }}" "linux-deb"
+          render_card "RPM" "${{ needs.e2e-linux-rpm.result }}" "linux-rpm"
+          render_card "MAC_ARM64" "${{ needs.e2e-macos-arm64.result }}" "macos-arm64"
+          render_card "MAC_X64" "${{ needs.e2e-macos-x64.result }}" "macos-x64"
+
+          # 根目录 index.html 自动跳转到最新报告
+          cat << EOF > "$PAGES_DIR/index.html"
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="refresh" content="0; url=./reports/$RUN_ID/index.html">
+            <title>Redirecting to Latest Report...</title>
+          </head>
+          <body>
+            <p>正在跳转至最新测试报告: <a href="./reports/$RUN_ID/index.html">点击进入</a></p>
+          </body>
+          </html>
+          EOF
+
+          echo "✅ 聚合仪表盘与目录结构生成完成: $TARGET_RUN_DIR"
+          ls -la "$TARGET_RUN_DIR"
+
+      - name: Deploy Reports to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./gh-pages-deploy
+          keep_files: true
+
       - name: Render Job Summary
         shell: bash
         run: |
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          PAGES_BASE="https://leonard-li777.github.io/firefly-ai-folder-desktop"
+          RUN_PAGES_URL="$PAGES_BASE/reports/${{ github.run_id }}/index.html"
           
           echo "## 📊 Release 安装包 E2E 全流程功能测试结果汇总" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "本次运行 ID: \`${{ github.run_id }}\` | 流水线页面: [查看 GitHub Actions 运行记录]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **在线测试报告总览 (GitHub Pages)**: [点击直接在线查看本次测试仪表盘]($RUN_PAGES_URL)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| 平台 / 环境 | 目标测试架构 | 执行状态 | 测试报告下载工件 (Artifacts) |" >> $GITHUB_STEP_SUMMARY
-          echo "| :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Windows** | x64 (NSIS 安装) | ${{ needs.e2e-windows.result }} | \`playwright-report-windows\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Linux (DEB)** | x64/arm64 (DEB / Ubuntu) | ${{ needs.e2e-linux-deb.result }} | \`playwright-report-linux-deb\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Linux (RPM)** | x64/arm64 (RPM / Fedora) | ${{ needs.e2e-linux-rpm.result }} | \`playwright-report-linux-rpm\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| **macOS** | ARM64 (DMG 挂载) | ${{ needs.e2e-macos.result }} | \`playwright-report-macos\` |" >> $GITHUB_STEP_SUMMARY
+          echo "本次运行 ID: \`${{ github.run_id }}\` | 流水线运行详情: [查看 GitHub Actions 运行记录]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📦 如何查看各平台 HTML 测试报告与步骤追踪" >> $GITHUB_STEP_SUMMARY
-          echo "1. 访问当前运行页面：[GitHub Actions Run #${{ github.run_id }}]($RUN_URL)" >> $GITHUB_STEP_SUMMARY
-          echo "2. 滑动到页面底部的 **Artifacts (工件列表)** 区域；" >> $GITHUB_STEP_SUMMARY
-          echo "3. 点击下载对应平台的报告包（如 \`playwright-report-windows.zip\` 或 \`playwright-report-macos.zip\`）；" >> $GITHUB_STEP_SUMMARY
-          echo "4. 解压并在本地浏览器中打开 \`index.html\`，即可交互式查看全部用例、控制台日志、DOM 状态与执行截图。" >> $GITHUB_STEP_SUMMARY
+          echo "| 平台 / 环境 | 目标测试架构 | 执行状态 | 在线查看报告 (无需下载解压) | 本地工件下载 |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- | :--- | :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Windows** | x64 (NSIS 安装) | ${{ needs.e2e-windows.result }} | [在线查看报告]($PAGES_BASE/reports/${{ github.run_id }}/windows/index.html) | \`playwright-report-windows\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (DEB)** | x64/arm64 (DEB / Ubuntu) | ${{ needs.e2e-linux-deb.result }} | [在线查看报告]($PAGES_BASE/reports/${{ github.run_id }}/linux-deb/index.html) | \`playwright-report-linux-deb\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Linux (RPM)** | x64/arm64 (RPM / Fedora) | ${{ needs.e2e-linux-rpm.result }} | [在线查看报告]($PAGES_BASE/reports/${{ github.run_id }}/linux-rpm/index.html) | \`playwright-report-linux-rpm\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **macOS (Apple Silicon)** | ARM64 (DMG 挂载) | ${{ needs.e2e-macos-arm64.result }} | [在线查看报告]($PAGES_BASE/reports/${{ github.run_id }}/macos-arm64/index.html) | \`playwright-report-macos-arm64\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **macOS (Intel)** | x64 (DMG 挂载) | ${{ needs.e2e-macos-x64.result }} | [在线查看报告]($PAGES_BASE/reports/${{ github.run_id }}/macos-x64/index.html) | \`playwright-report-macos-x64\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 💡 查看说明" >> $GITHUB_STEP_SUMMARY
+          echo "- **推荐方式**：直接点击上方表格中的 **[在线查看报告]** 链接，即可在浏览器中交互式查看用例、失败原因、截图及执行链路。" >> $GITHUB_STEP_SUMMARY
+          echo "- **备用方式**：亦可在页面底部的 **Artifacts (工件列表)** 区域下载 ZIP 压缩包在本地离线查看。" >> $GITHUB_STEP_SUMMARY
 
   # ==============================================================================
   # 6. Trigger Marketing Website Deployment (EdgeOne CN + Cloudflare INTL)
   # ==============================================================================
   trigger-marketing-deploy:
     name: 触发官网全渠道发版
-    needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos]
+    needs: [resolve-release, e2e-windows, e2e-linux-deb, e2e-linux-rpm, e2e-macos-arm64, e2e-macos-x64]
     if: |
       needs.e2e-windows.result == 'success' &&
       needs.e2e-linux-deb.result == 'success' &&
       needs.e2e-linux-rpm.result == 'success' &&
-      needs.e2e-macos.result == 'success'
+      needs.e2e-macos-arm64.result == 'success' &&
+      needs.e2e-macos-x64.result == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: 触发根仓库官网发版工作流 (deploy-marketing.yml)
