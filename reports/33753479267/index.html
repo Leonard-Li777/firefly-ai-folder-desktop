@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firefly Desktop Release E2E Functional Test Reports</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --skipped: #64748b;
+    }
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(to right, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .meta {
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .platform-name {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+    }
+    .badge-success { background: rgba(34, 197, 94, 0.15); color: var(--success); }
+    .badge-failure { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+    .badge-skipped { background: rgba(100, 116, 139, 0.2); color: var(--skipped); }
+    .desc {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      flex: 1;
+      text-align: center;
+      text-decoration: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 13px;
+      background: #0284c7;
+      color: #fff;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: #0369a1; }
+    .btn-secondary {
+      background: #334155;
+      color: #e2e8f0;
+    }
+    .btn-secondary:hover { background: #475569; }
+    .btn-disabled {
+      background: #1e293b;
+      color: #475569;
+      border: 1px solid #334155;
+      pointer-events: none;
+    }
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      border-top: 1px solid var(--card-border);
+      padding-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Firefly Desktop Release E2E Functional Test Reports</h1>
+      <div class="meta">
+        <span>运行 ID: <strong>33753479267</strong></span> |
+        <span>目标版本: <strong>v3.5.2</strong></span> |
+        <span>测试时间: <strong>2026-09-03 12:15:28 UTC</strong></span>
+      </div>
+    </header>
+    <div class="grid">
+      <!-- Windows -->
+      <div class="card">
+        <div class="card-header">
+          <span class="platform-name">🪟 Windows (x64)</span>
+          <span class="badge badge-success">success</span>
+        </div>
+        <div class="desc">NSIS 真实安装、主界面渲染、工作区挂载与黄金主链路用例。</div>
+        <div class="btn-group">
+          <a class="btn" href="./windows/index.html">查看用例报告</a>
+          <a class="btn btn-secondary" href="./windows/app.log" target="_blank">📄 应用日志</a>
+        </div>
+      </div>
+      <!-- Linux DEB -->
+      <div class="card">
+        <div class="card-header">
+          <span class="platform-name">🐧 Linux (Ubuntu / DEB)</span>
+          <span class="badge badge-success">success</span>
+        </div>
+        <div class="desc">Ubuntu 多架构容器、dpkg 安装与 xvfb 驱动真实桌面环境运行。</div>
+        <div class="btn-group">
+          <a class="btn" href="./linux-deb/index.html">查看用例报告</a>
+          <a class="btn btn-secondary" href="./linux-deb/app.log" target="_blank">📄 应用日志</a>
+        </div>
+      </div>
+      <!-- Linux RPM -->
+      <div class="card">
+        <div class="card-header">
+          <span class="platform-name">🐧 Linux (Fedora / RPM)</span>
+          <span class="badge badge-success">success</span>
+        </div>
+        <div class="desc">Fedora 多架构容器、rpm 安装与图形化会话全链路验证。</div>
+        <div class="btn-group">
+          <a class="btn" href="./linux-rpm/index.html">查看用例报告</a>
+          <a class="btn btn-secondary" href="./linux-rpm/app.log" target="_blank">📄 应用日志</a>
+        </div>
+      </div>
+      <!-- macOS Apple Silicon -->
+      <div class="card">
+        <div class="card-header">
+          <span class="platform-name">🍎 macOS (Apple Silicon)</span>
+          <span class="badge badge-success">success</span>
+        </div>
+        <div class="desc">macOS 15 ARM64 宿主机、DMG 挂载与原生硬件加速功能验证。</div>
+        <div class="btn-group">
+          <a class="btn" href="./macos-arm64/index.html">查看用例报告</a>
+          <a class="btn btn-secondary" href="./macos-arm64/app.log" target="_blank">📄 应用日志</a>
+        </div>
+      </div>
+      <!-- macOS Intel -->
+      <div class="card">
+        <div class="card-header">
+          <span class="platform-name">🍎 macOS (Intel x64)</span>
+          <span class="badge badge-success">success</span>
+        </div>
+        <div class="desc">macOS 15 Intel 镜像环境、DMG 挂载与 x64 原生架构启动验证。</div>
+        <div class="btn-group">
+          <a class="btn" href="./macos-x64/index.html">查看用例报告</a>
+          <a class="btn btn-secondary" href="./macos-x64/app.log" target="_blank">📄 应用日志</a>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <p>Firefly AI Folder CI/CD Automation Pipeline • 智能文件管理与本地 AI 整理</p>
+    </footer>
+  </div>
+</body>
+</html>
