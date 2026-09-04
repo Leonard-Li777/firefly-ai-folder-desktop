@@ -15,6 +15,7 @@ export interface AnydocResult {
   metadata?: any
   phash?: string
   benchmark?: import('./omni-service').OmniBenchmarkResponse
+  perception?: import('./omni-service').OmniPerceptionResponse
 }
 
 export class AnydocService {
@@ -55,6 +56,44 @@ export class AnydocService {
         assets: []
       }
     }
+  }
+
+  /**
+   * 原生多模态感知 (聚合元数据 + 物理事实 + 视觉标签 + 语音转录 + 逆地理)
+   * 若 Omni 原生感知失败，平滑降级执行标准 extract
+   */
+  public async perceive(
+    filePath: string,
+    options?: import('./omni-service').OmniPerceptionOptions
+  ): Promise<AnydocResult> {
+    try {
+      const perception = await omniService.perceive(filePath, options)
+      if (perception) {
+        const rawContent = perception.markdown_content || ''
+        const isBinaryNulSkip = rawContent.includes('[Binary File] NUL byte detected')
+        return {
+          content: isBinaryNulSkip ? '' : rawContent,
+          assets: [],
+          metadata: perception.metadata,
+          phash: perception.phash,
+          benchmark: perception.benchmark
+            ? {
+                total_ms: perception.benchmark.total_ms,
+                text_ms: perception.benchmark.extract_ms
+              }
+            : undefined,
+          perception
+        }
+      }
+    } catch (error: any) {
+      logger.warn(
+        LogCategory.ANALYSIS_QUEUE,
+        `[AnydocService] 原生多模态感知异常 (${filePath})，回退至基础提取:`,
+        error?.message || error
+      )
+    }
+
+    return this.extract(filePath, options?.timeoutMs)
   }
 }
 

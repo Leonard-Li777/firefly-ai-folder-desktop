@@ -13,8 +13,62 @@ import {
 import { LogCategory, logger, APP_PORTS } from '@firefly/shared'
 import { databaseService } from '../database'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
+import { t } from '@app/languages'
 
 export class DuplicateDetectionService {
+  /**
+   * 动态多语言格式化查重组描述文本
+   */
+  private formatStrategyDescription(strategy: string, count: number): string {
+    switch (strategy) {
+      case 'exact_hash':
+      case 'exact':
+      case 'duplicates':
+        return `${t('100% 完全精确一致文件')} (${count})`
+      case 'image_phash':
+      case 'image':
+      case 'similar_images':
+        return `${t('视觉感知相似图像')} (${count})`
+      case 'audio_hash':
+      case 'audio':
+      case 'same_music':
+        return `${t('同源/声学相似音频文件')} (${count})`
+      case 'video_phash':
+      case 'video':
+      case 'similar_videos':
+        return `${t('同源/画面相似视频文件')} (${count})`
+      case 'bad_extensions':
+        return `${t('扩展名不匹配文件')} (${count})`
+      case 'empty_folders':
+      case 'empty_folder':
+        return `${t('空文件夹')} (${count})`
+      case 'big_files':
+      case 'big_file':
+        return `${t('占用空间超大文件')} (${count})`
+      case 'empty_files':
+      case 'empty_file':
+        return `${t('0 字节空文件')} (${count})`
+      case 'temporary_files':
+      case 'temporary':
+        return `${t('临时与残留缓存文件')} (${count})`
+      case 'invalid_symlinks':
+      case 'invalid_symlink':
+        return `${t('无效或断裂的软链接')} (${count})`
+      case 'broken_files':
+      case 'broken_file':
+        return `${t('损坏或无法解码的文件')} (${count})`
+      case 'bad_names':
+      case 'bad_name':
+        return `${t('包含异常/不合规字符的文件名')} (${count})`
+      case 'exif_remover':
+        return `${t('可清除 Exif 隐私信息的文件')} (${count})`
+      case 'video_optimizer':
+        return `${t('可转码/优化的高效能视频')} (${count})`
+      default:
+        return `${t('多模态特征识别组')} (${count})`
+    }
+  }
+
   /**
    * Omni API 基础 URL：优先读取 omni-service 实际绑定端口（由 OMNI_ACTUAL_PORT 环境变量写入），
    * 兜底使用统一冷门端口段基准 APP_PORTS.OMNI_SERVER (38200)。
@@ -247,7 +301,7 @@ export class DuplicateDetectionService {
                   onProgress?.({
                     scanned: maxScanned,
                     totalScanned: maxTotalScanned,
-                    stage: '扫描完成'
+                    stage: t('扫描完成')
                   })
                 }
               } catch {}
@@ -259,7 +313,7 @@ export class DuplicateDetectionService {
                   strategy: (g.strategy || 'exact_hash') as DuplicateDetectionStrategy,
                   similarityPercentage: g.similarity_percentage || 100,
                   groupThreshold: g.group_threshold,
-                  description: g.description || '多模态特征识别组',
+                  description: this.formatStrategyDescription(g.strategy, (g.files || []).length),
                   files: (g.files || []).map((f: any) => ({
                     fileId: 0,
                     fingerprint: f.fingerprint || '',
@@ -274,7 +328,7 @@ export class DuplicateDetectionService {
                 onProgress?.({
                   scanned: maxScanned,
                   totalScanned: maxTotalScanned,
-                  stage: '发现重复组',
+                  stage: t('发现重复组'),
                   group: mappedGroup
                 })
               } catch {}
@@ -310,7 +364,7 @@ export class DuplicateDetectionService {
         strategy: (g.strategy || 'exact_hash') as DuplicateDetectionStrategy,
         similarityPercentage: g.similarity_percentage || 100,
         groupThreshold: g.group_threshold,
-        description: g.description || '多模态特征识别组',
+        description: this.formatStrategyDescription(g.strategy, (g.files || []).length),
         files: (g.files || []).map((f: any) => ({
           fileId: 0,
           fingerprint: f.fingerprint || '',

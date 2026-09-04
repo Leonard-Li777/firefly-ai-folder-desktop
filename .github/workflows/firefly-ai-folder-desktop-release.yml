@@ -247,6 +247,12 @@ jobs:
           echo "🔍 [CI 诊断 - macOS] build/extraResources/configs/preset-resources.lock.json:"
           cat build/extraResources/configs/preset-resources.lock.json || true
 
+      - name: Prepare Multimodal Resources (Fallback if not cached)
+        shell: bash
+        run: |
+          echo "📦 检查并准备多模态预置资源..."
+          node scripts/download-multimodal-resources.js --resource chinese-clip,mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp || true
+
       - name: Setup Resources (Basic)
         shell: bash
         run: |
@@ -560,6 +566,12 @@ jobs:
           ls -la build/presetResources/llama.cpp || true
           echo "🔍 [CI 诊断 - Windows] build/extraResources/configs/preset-resources.lock.json:"
           cat build/extraResources/configs/preset-resources.lock.json || true
+
+      - name: Prepare Multimodal Resources (Fallback if not cached)
+        shell: bash
+        run: |
+          echo "📦 检查并准备多模态预置资源..."
+          node scripts/download-multimodal-resources.js --resource chinese-clip,mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp || true
 
       - name: Setup Resources (Basic)
         shell: bash
@@ -944,6 +956,12 @@ jobs:
           ls -la build/presetResources/llama.cpp || true
           echo "🔍 [CI 诊断 - Linux] build/extraResources/configs/preset-resources.lock.json:"
           cat build/extraResources/configs/preset-resources.lock.json || true
+
+      - name: Prepare Multimodal Resources (Fallback if not cached)
+        shell: bash
+        run: |
+          echo "📦 检查并准备多模态预置资源..."
+          node scripts/download-multimodal-resources.js --resource chinese-clip,mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp || true
 
       - name: Setup Resources (Basic)
         shell: bash

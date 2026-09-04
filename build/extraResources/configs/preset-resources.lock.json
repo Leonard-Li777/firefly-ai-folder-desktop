@@ -45,6 +45,9 @@
     },
     "mobile-clip": {
       "version": "INT8"
+    },
+    "nsfw-tiny": {
+      "version": "1.0.0"
     }
   },
   "engines": {

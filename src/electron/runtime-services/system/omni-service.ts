@@ -59,6 +59,91 @@ export interface OmniGeoReverseResponse {
   results?: OmniGeoReverseItem[]
 }
 
+export interface OmniPerceptionOptions {
+  language?: string
+  enableVisualTags?: boolean
+  enableAudioTranscript?: boolean
+  enableGeoReverse?: boolean
+  maxContentSizeKb?: number
+  timeoutMs?: number
+}
+
+export interface OmniPerceptionBenchmarkResponse {
+  total_ms: number
+  extract_ms?: number
+  ads_ms?: number
+  vision_ms?: number
+  audio_ms?: number
+  geo_ms?: number
+}
+
+export interface OmniPerceptionResponse {
+  file_path: string
+  mime_type: string
+  file_size: number
+  category?: string
+  markdown_content: string
+  metadata: Record<string, any>
+
+  // 物理事实特征
+  file_source?: string
+  file_source_code?: string
+  source_url?: string
+  workflow_state?: string
+  workflow_state_code?: string
+  security_level?: string
+  security_level_code?: string
+  has_watermark?: boolean
+  watermark_level?: number
+  watermark_status?: string
+  has_mosaic?: boolean
+  mosaic_level?: number
+  mosaic_status?: string
+
+  // 多模态直出字段
+  visual_tags: string[]
+  audio_transcript?: string
+  audio_events: string[]
+  geo_address?: string
+
+  phash?: string
+  is_corrupted: boolean
+  benchmark?: OmniPerceptionBenchmarkResponse
+}
+
+export interface OmniAudioTranscribeResponse {
+  file_path: string
+  transcript?: string
+  events: string[]
+  language?: string
+  duration_ms: number
+}
+
+export interface OmniVisionTagsResponse {
+  file_path: string
+  tags: string[]
+  duration_ms: number
+}
+
+export interface OmniVisionInspectResponse {
+  file_path: string
+  has_watermark: boolean
+  watermark_level?: number
+  watermark_status: string
+  has_mosaic: boolean
+  mosaic_level?: number
+  mosaic_status: string
+  duration_ms: number
+}
+
+export interface OmniFsAdsResponse {
+  file_path: string
+  file_source?: string
+  file_source_code?: string
+  source_url?: string
+  duration_ms: number
+}
+
 export class OmniService {
   private static instance: OmniService
   private process: ChildProcess | null = null
@@ -743,7 +828,246 @@ export class OmniService {
   public async getPdfCover(filePath: string): Promise<Buffer | null> {
     return this.getFileCover(filePath)
   }
+
+  /**
+   * 原生多模态感知 (单点聚合: 元数据 + NTFS ADS + 频域水印/打码 + CLIP + SenseVoice ASR + 逆地理)
+   * POST /api/perceive
+   */
+  public async perceive(
+    filePath: string,
+    options?: OmniPerceptionOptions
+  ): Promise<OmniPerceptionResponse | null> {
+    await this.ensureRunning()
+    const tStart = Date.now()
+    const reqBody = {
+      file_path: filePath,
+      language: options?.language,
+      enable_visual_tags: options?.enableVisualTags,
+      enable_audio_transcript: options?.enableAudioTranscript,
+      enable_geo_reverse: options?.enableGeoReverse ?? true,
+      max_content_size_kb: options?.maxContentSizeKb
+    }
+    logger.debug(
+      LogCategory.SYSTEM,
+      `[OmniService] >>> POST /api/perceive 请求发起:`,
+      JSON.stringify(reqBody)
+    )
+
+    const timeoutMs = options?.timeoutMs || 120000
+
+    const doFetch = async () => {
+      const res = await fetch(`${this.baseUrl}/api/perceive`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+
+      if (!res.ok) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          `[OmniService] <<< POST /api/perceive 响应异常: status=${res.status}, 耗时: ${Date.now() - tStart}ms`
+        )
+        return null
+      }
+
+      const json = (await res.json()) as OmniPerceptionResponse
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] <<< POST /api/perceive 响应成功 (${filePath}, 耗时: ${Date.now() - tStart}ms):`,
+        JSON.stringify({
+          file_path: json.file_path,
+          file_source: json.file_source,
+          workflow_state: json.workflow_state,
+          security_level: json.security_level,
+          has_watermark: json.has_watermark,
+          has_mosaic: json.has_mosaic,
+          visual_tags_count: json.visual_tags?.length || 0,
+          has_audio_transcript: !!json.audio_transcript,
+          geo_address: json.geo_address
+        })
+      )
+      return json
+    }
+
+    try {
+      return await doFetch()
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.SYSTEM,
+        `[OmniService] <<< POST /api/perceive 首次调用异常 (${filePath}): 耗时: ${Date.now() - tStart}ms, 错误: ${err.message}，尝试自愈拉起并重试...`
+      )
+      const restarted = await this.start()
+      if (restarted) {
+        try {
+          return await doFetch()
+        } catch (retryErr: any) {
+          logger.error(
+            LogCategory.SYSTEM,
+            `[OmniService] <<< POST /api/perceive 自愈重试仍失败 (${filePath}): ${retryErr.message}`
+          )
+        }
+      }
+      return null
+    }
+  }
+
+  /**
+   * 单指标：音频转文本 (SenseVoice ASR)
+   * POST /api/audio/transcribe
+   */
+  public async transcribeAudio(
+    filePath: string,
+    options?: { language?: string; timeoutMs?: number }
+  ): Promise<OmniAudioTranscribeResponse | null> {
+    await this.ensureRunning()
+    const tStart = Date.now()
+    const reqBody = {
+      file_path: filePath,
+      language: options?.language
+    }
+    const timeoutMs = options?.timeoutMs || 60000
+
+    const doFetch = async () => {
+      const res = await fetch(`${this.baseUrl}/api/audio/transcribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      return (await res.json()) as OmniAudioTranscribeResponse
+    }
+
+    try {
+      return await doFetch()
+    } catch (err: any) {
+      logger.debug(LogCategory.SYSTEM, `[OmniService] transcribeAudio 异常 (${filePath}):`, err.message)
+      const restarted = await this.start()
+      if (restarted) {
+        try {
+          return await doFetch()
+        } catch {}
+      }
+      return null
+    }
+  }
+
+  /**
+   * 单指标：提取视觉标签 (CLIP 图像特征向量)
+   * POST /api/vision/tags
+   */
+  public async extractVisualTags(
+    filePath: string,
+    options?: { language?: string; topK?: number; timeoutMs?: number }
+  ): Promise<string[] | null> {
+    await this.ensureRunning()
+    const reqBody = {
+      file_path: filePath,
+      language: options?.language,
+      top_k: options?.topK
+    }
+    const timeoutMs = options?.timeoutMs || 30000
+
+    const doFetch = async () => {
+      const res = await fetch(`${this.baseUrl}/api/vision/tags`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      const json = (await res.json()) as OmniVisionTagsResponse
+      return json.tags || []
+    }
+
+    try {
+      return await doFetch()
+    } catch (err: any) {
+      logger.debug(LogCategory.SYSTEM, `[OmniService] extractVisualTags 异常 (${filePath}):`, err.message)
+      const restarted = await this.start()
+      if (restarted) {
+        try {
+          return await doFetch()
+        } catch {}
+      }
+      return null
+    }
+  }
+
+  /**
+   * 单指标：图像水印与打码频域检测
+   * POST /api/vision/inspect
+   */
+  public async inspectVision(
+    filePath: string,
+    timeoutMs: number = 10000
+  ): Promise<OmniVisionInspectResponse | null> {
+    await this.ensureRunning()
+    const reqBody = { file_path: filePath }
+
+    const doFetch = async () => {
+      const res = await fetch(`${this.baseUrl}/api/vision/inspect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      return (await res.json()) as OmniVisionInspectResponse
+    }
+
+    try {
+      return await doFetch()
+    } catch (err: any) {
+      logger.debug(LogCategory.SYSTEM, `[OmniService] inspectVision 异常 (${filePath}):`, err.message)
+      const restarted = await this.start()
+      if (restarted) {
+        try {
+          return await doFetch()
+        } catch {}
+      }
+      return null
+    }
+  }
+
+  /**
+   * 单指标：文件系统 NTFS ADS 来源追踪 (Zone.Identifier)
+   * POST /api/fs/ads
+   */
+  public async inspectAds(
+    filePath: string,
+    timeoutMs: number = 5000
+  ): Promise<OmniFsAdsResponse | null> {
+    await this.ensureRunning()
+    const reqBody = { file_path: filePath }
+
+    const doFetch = async () => {
+      const res = await fetch(`${this.baseUrl}/api/fs/ads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      return (await res.json()) as OmniFsAdsResponse
+    }
+
+    try {
+      return await doFetch()
+    } catch (err: any) {
+      logger.debug(LogCategory.SYSTEM, `[OmniService] inspectAds 异常 (${filePath}):`, err.message)
+      const restarted = await this.start()
+      if (restarted) {
+        try {
+          return await doFetch()
+        } catch {}
+      }
+      return null
+    }
+  }
 }
 
 export const omniService = OmniService.getInstance()
+
 

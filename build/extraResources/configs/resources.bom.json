@@ -1,113 +1,53 @@
 {
   "schema": 1,
-  "generatedAt": "2026-09-02T09:54:41.415Z",
+  "generatedAt": "2026-09-04T20:34:01.994Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
   },
   "resources": {
-    "fastfetch": {
-      "version": "2.62.0",
+    "chinese-clip": {
+      "version": "INT8",
       "source": "shared",
       "asset": {
-        "name": "fastfetch-2.62.0-win32-x64.zip",
-        "sha256": "3381c3b208f9495e7c2954784e4340833e48bfbc1e448618c87d779cc7457378",
-        "size": 2908282,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/fastfetch-2.62.0-win32-x64.zip"
+        "name": "chinese-clip-int8.zip",
+        "sha256": "1c53fa47168d9794e175d7672ba1bf03d67ae1aad141943594e972842980ae36",
+        "size": 13414817,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/chinese-clip-int8.zip"
       }
     },
-    "llama-model-download": {
+    "mobile-clip": {
+      "version": "INT8",
+      "source": "shared",
+      "asset": {
+        "name": "mobile-clip-int8.zip",
+        "sha256": "415e84d2f86a78ea34aedd971eb1baa5e44c1f530f442a77fd823e31eec707ad",
+        "size": 10556419,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/mobile-clip-int8.zip"
+      }
+    },
+    "nsfw-tiny": {
       "version": "1.0.0",
       "source": "shared",
       "asset": {
-        "name": "llama-model-download-1.0.0-win32-x64.zip",
-        "sha256": "50966cc8f346240d20897cee219ec51bdafb6bcf2c2f11ce50b3f7e8dfed9ec0",
-        "size": 782485,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/llama-model-download-1.0.0-win32-x64.zip"
-      }
-    },
-    "ffmpeg": {
-      "version": "master-20260827",
-      "source": "shared",
-      "asset": {
-        "name": "ffmpeg-master-20260827-win32-x64.zip",
-        "sha256": "e39f97014143737827de6f9f91c3cfc283cea620f75c3fdef5d1f505c79171ff",
-        "size": 56096345,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ffmpeg-master-20260827-win32-x64.zip"
-      }
-    },
-    "ffprobe": {
-      "version": "master-20260827",
-      "source": "shared",
-      "asset": {
-        "name": "ffprobe-master-20260827-win32-x64.zip",
-        "sha256": "04940a8c3162f5783a29cd9940e3a1296e4f148fdaef2be45eac20e8077b4ac8",
-        "size": 55987464,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ffprobe-master-20260827-win32-x64.zip"
-      }
-    },
-    "geo": {
-      "version": "20260825",
-      "source": "shared",
-      "asset": {
-        "name": "geo-20260825.tar.gz",
-        "sha256": "7c71064e7942a0391addd61ca3a313ac033a589fdfb6cf001a1e7c5e9abb5fb1",
-        "size": 8702416,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/geo-20260825.tar.gz"
-      }
-    },
-    "exiftool": {
-      "version": "13.59",
-      "source": "shared",
-      "asset": {
-        "name": "exiftool-13.59-win32-x64.zip",
-        "sha256": "40eef5c309e16b6638ad7fbeb11b980bb882f98e39759407d15ae17d4882bd48",
-        "size": 10931900,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/exiftool-13.59-win32-x64.zip"
-      }
-    },
-    "magika": {
-      "version": "1.0",
-      "source": "shared",
-      "asset": {
-        "name": "magika-resources.zip",
-        "sha256": "15c794093504618097b63a3fc837fdd141401b2a4e928e2bf0d82923b82f3ee3",
-        "size": 3211197,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/magika-resources.zip"
-      }
-    },
-    "PP-OCRv6": {
-      "version": "v6",
-      "source": "shared",
-      "asset": {
-        "name": "ppocrv6-resources.zip",
-        "sha256": "1acc7cab32448ce4e2e8dd294951442cc80e3b61bb1e0b4a68579df6d119c55f",
-        "size": 37586355,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ppocrv6-resources.zip"
-      }
-    },
-    "LFM2.5-1.2B-Instruct-GGUF": {
-      "version": "Q4_K_M",
-      "source": "shared",
-      "asset": {
-        "name": "LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip",
-        "sha256": "2902a813b175c48b9d77259c4ebb16e21f7567fc74316d2f27641c8c7ead3d1e",
-        "size": 730895438,
-        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/LFM2.5-1.2B-Instruct-GGUF--Q4_K_M.zip"
+        "name": "nsfw-tiny-1.0.0.zip",
+        "sha256": "ad6542687e942650a2b51e2e16c28983b54128ac68343574ccbb98ce07c4c002",
+        "size": 2145177,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-tiny-1.0.0.zip"
       }
     }
   },
   "engines": {
     "firefly-omni": {
-      "version": "v0.1.1",
+      "version": "v0.1.2",
       "source": "upstream",
       "files": [
         {
-          "name": "firefly-omni-v0.1.1-win32-x64.zip",
-          "size": 50924985,
+          "name": "firefly-omni-v0.1.2-win32-x64.zip",
+          "size": 31804070,
           "platform": "win32",
           "arch": "x64",
-          "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.1-win32-x64.zip"
+          "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.2-win32-x64.zip"
         }
       ]
     },

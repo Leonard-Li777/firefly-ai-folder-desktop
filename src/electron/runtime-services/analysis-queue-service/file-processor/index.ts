@@ -1247,10 +1247,12 @@ export class FileProcessor {
 
       // 0. 统一调用 Omni 原生引擎进行端到端内容与元数据提取（覆盖文档、图片、纯文本、代码、音视频、字体等所有格式并输出真实 Benchmark）
       const anydocStartTime = Date.now()
-      const anydocResult: AnydocResult = await anydocService.extract(filePath).catch(err => {
-        logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 提取失败: ${err.message}`)
-        return { content: '', assets: [], metadata: undefined, benchmark: undefined }
-      })
+      const anydocResult: AnydocResult = await anydocService
+        .perceive(filePath, { language })
+        .catch(err => {
+          logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 提取失败: ${err.message}`)
+          return { content: '', assets: [], metadata: undefined, benchmark: undefined }
+        })
       const anydocDurationMs = Date.now() - anydocStartTime
 
       const anydocTextBytes = Buffer.byteLength(
@@ -1508,7 +1510,8 @@ export class FileProcessor {
         mimeType: magikaCategory?.mime_type || getMimeType(enhancedFileType),
         contentPreview: contentResult.content ? contentResult.content.slice(0, 1000) : undefined,
         metadata: contentResult.metadata,
-        stats
+        stats,
+        omniPerception: anydocResult?.perception
       })
 
       // 平铺注入 metadata（更新 contentResult.metadata 与 fileInfo.metadata，供后续所有模式使用）
