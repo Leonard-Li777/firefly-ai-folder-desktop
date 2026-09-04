@@ -35,6 +35,7 @@
     "start:config": "cross-env FORCE_CONFIG_STAGE=1 BUILD_REGION=CN electron-vite dev",
     "start:quiet": "cross-env LOG_LEVEL=error BUILD_REGION=CN electron-vite dev -- --log-categories=ERROR,WARNING",
     "start:debug": "cross-env AI_ENGINE=llama.cpp pnpm setup-resources && cross-env DEVTOOLS=true LOG_LEVEL=debug,info,warn,error BUILD_REGION=CN electron-vite dev -- --log-categories=ALL,-LLAMA_SERVER",
+    "start:debug:intl": "cross-env AI_ENGINE=llama.cpp pnpm setup-resources && cross-env DEVTOOLS=true LOG_LEVEL=debug,info,warn,error BUILD_REGION=INTL electron-vite dev -- --log-categories=ALL,-LLAMA_SERVER",
     "start:canary": "cross-env AI_ENGINE=llama.cpp pnpm setup-resources && cross-env NODE_ENV=production LOG_LEVEL=debug,info,warn,error BUILD_REGION=CN electron-vite dev --mode canary -- --log-categories=ALL",
     "start:prod": "cross-env AI_ENGINE=llama.cpp pnpm setup-resources && cross-env NODE_ENV=production LOG_LEVEL=debug,info,warn,error BUILD_REGION=CN electron-vite dev --mode production -- --log-categories=ALL",
     "start:record": "cross-env AI_ENGINE=llama.cpp pnpm setup-resources && cross-env WINDOW_WIDTH=1920 WINDOW_HEIGHT=1080 LOG_LEVEL=debug,info,warn,error BUILD_REGION=CN electron-vite dev --mode development -- --log-categories=ALL",
