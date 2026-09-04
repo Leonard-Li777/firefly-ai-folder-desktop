@@ -1,25 +1,25 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
 import { t } from '@app/languages'
-import { Check, Rocket, Crown, Building2, Sparkles } from 'lucide-react'
+import { Check, Crown, Building2, Sparkles, ExternalLink, Rocket } from 'lucide-react'
 import { useTierStore } from '../../stores/tier-store'
 import { UserTier } from '@firefly/types'
 import type { TierConstants, SubscriptionPlan } from '@firefly/types'
 import { useConfigStore } from '../../stores/config-store'
 import { getLocalPrice, formatPrice, formatMonthlyPrice } from '../../lib/utils'
+import { openMarketingPricingUrl } from '../../lib/marketing-link'
+
 interface UpgradeAccountDialogProps {
   open: boolean
-  onOpenChange: (open: boolean, isNavigatingToPro?: boolean) => void
+  onOpenChange: (open: boolean) => void
 }
 
 export const UpgradeAccountDialog: React.FC<UpgradeAccountDialogProps> = ({
   open,
   onOpenChange
 }) => {
-  const navigate = useNavigate()
   const { tier } = useTierStore()
   const config = useConfigStore(state => state.config)
   const tierConstants = (config as any)?.TIER_CONSTANTS as TierConstants | undefined
@@ -30,13 +30,6 @@ export const UpgradeAccountDialog: React.FC<UpgradeAccountDialogProps> = ({
   }
 
   const freeLimits = tierConstants.tierLimits[UserTier.FREE]
-
-  const getProPrice = () => {
-    const proYearly: SubscriptionPlan | undefined = operationPrices?.upgrade_pro?.yearly
-    if (!proYearly) return null
-    const price = getLocalPrice(proYearly.prices)
-    return formatPrice(price)
-  }
 
   const getProMonthlyPrice = () => {
     const proYearly: SubscriptionPlan | undefined = operationPrices?.upgrade_pro?.yearly
@@ -192,16 +185,17 @@ export const UpgradeAccountDialog: React.FC<UpgradeAccountDialogProps> = ({
                     disabled={tInfo.disabled}
                     onClick={() => {
                       if (tInfo.id === UserTier.PRO) {
-                        onOpenChange(false, true)
-                        navigate('/pro-activation')
+                        onOpenChange(false)
+                        openMarketingPricingUrl('upgrade_pro')
                       }
                       if (tInfo.id === UserTier.ENTERPRISE) {
-                        onOpenChange(false, true)
-                        navigate('/enterprise-activation')
+                        onOpenChange(false)
+                        openMarketingPricingUrl('enterprise')
                       }
                     }}
                   >
-                    {tInfo.buttonText}
+                    <span>{tInfo.buttonText}</span>
+                    {tInfo.id !== UserTier.FREE && <ExternalLink className="w-3.5 h-3.5 ml-1 opacity-70" />}
                   </Button>
                 </CardFooter>
               </Card>

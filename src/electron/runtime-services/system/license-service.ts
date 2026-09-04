@@ -180,11 +180,18 @@ export class LicenseService {
   }
 
   /**
-   * 获取本机 Base64 识别码（可逆，管理员可解码还原完整 machine_id）
+   * 获取本机标识码（44位 Base64 编码，无损可逆，供离线管理员签发授权）
    */
-  async getBase64Code(): Promise<string> {
+  async getIdentCode(): Promise<string> {
     const machineId = SystemIdentityService.getInstance().getMachineId()
     return encodeMachineIdToBase64(machineId)
+  }
+
+  /**
+   * @deprecated 请使用 getIdentCode
+   */
+  async getBase64Code(): Promise<string> {
+    return this.getIdentCode()
   }
 
   /**
@@ -398,7 +405,7 @@ export class LicenseService {
 
     const machineId = SystemIdentityService.getInstance().getMachineId()
     const invitationCode = encodeMachineIdToRef(machineId)
-    const base64Code = encodeMachineIdToBase64(machineId)
+    const identCode = encodeMachineIdToBase64(machineId)
 
     try {
       const result = await verifyLicense(licenseStr, this.publicKey)
@@ -408,8 +415,8 @@ export class LicenseService {
 
       const { ids } = result.data
 
-      // 校验机器码（支持原始 hex、Base62 邀请码、Base64 三种格式）
-      if (!ids.includes(machineId) && !ids.includes(invitationCode) && !ids.includes(base64Code)) {
+      // 校验设备码（支持原始 hex 设备码、Base62 邀请码、Base64 标识码三种格式）
+      if (!ids.includes(machineId) && !ids.includes(invitationCode) && !ids.includes(identCode)) {
         return { status: LicenseStatus.UNAUTHORIZED, error: '授权码与当前机器不匹配' }
       }
 
@@ -499,7 +506,7 @@ export class LicenseService {
     const config = ConfigOrchestrator.getInstance()
     const machineId = SystemIdentityService.getInstance().getMachineId()
     const invitationCode = encodeMachineIdToRef(machineId)
-    const base64Code = encodeMachineIdToBase64(machineId)
+    const identCode = encodeMachineIdToBase64(machineId)
 
     if (!this.publicKey) {
       return { success: false, error: t('系统未配置公钥') }
@@ -513,7 +520,7 @@ export class LicenseService {
     if (
       !result.data.ids.includes(machineId) &&
       !result.data.ids.includes(invitationCode) &&
-      !result.data.ids.includes(base64Code)
+      !result.data.ids.includes(identCode)
     ) {
       return { success: false, error: t('该授权码不适用于当前机器') }
     }

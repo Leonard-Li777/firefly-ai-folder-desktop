@@ -434,8 +434,11 @@ export function registerMiscIPCHandlers() {
   ipcMain.handle('license/get-invitation-code', async () =>
     LicenseService.getInstance().getInvitationCode()
   )
+  ipcMain.handle('license/get-ident-code', async () =>
+    LicenseService.getInstance().getIdentCode()
+  )
   ipcMain.handle('license/get-base64-code', async () =>
-    LicenseService.getInstance().getBase64Code()
+    LicenseService.getInstance().getIdentCode()
   )
   ipcMain.handle('license/activate', async (_event, licenseCode: string) =>
     LicenseService.getInstance().activate(licenseCode)

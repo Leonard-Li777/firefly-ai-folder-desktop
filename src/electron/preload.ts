@@ -376,7 +376,8 @@ const electronAPI = {
     checkOnline: (): Promise<{ status: string; expiry?: string; error?: string; type?: string }> =>
       ipcRenderer.invoke('license/check-online'),
     getInvitationCode: (): Promise<string> => ipcRenderer.invoke('license/get-invitation-code'),
-    getBase64Code: (): Promise<string> => ipcRenderer.invoke('license/get-base64-code'),
+    getIdentCode: (): Promise<string> => ipcRenderer.invoke('license/get-ident-code'),
+    getBase64Code: (): Promise<string> => ipcRenderer.invoke('license/get-ident-code'),
     activate: (licenseCode: string): Promise<{ success: boolean; error?: string }> =>
       ipcRenderer.invoke('license/activate', licenseCode),
     onUnauthorized: (callback: (result: any) => void) => {

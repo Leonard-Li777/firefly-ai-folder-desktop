@@ -27,8 +27,6 @@ import { Organize } from './components/file-explorer/Organize/index'
 import { WelcomeWizard } from './components/welcome/WelcomeWizard'
 import { InitialSetupOverlay } from './components/welcome/InitialSetupOverlay'
 import { LicenseGateway } from './components/license/LicenseGateway'
-import { ProActivationPage } from './components/tier/ProActivationPage'
-import { EnterpriseActivationPage } from './components/tier/EnterpriseActivationPage'
 import { Loader2 } from 'lucide-react'
 import { Card } from './components/ui/card'
 import { t, i18nScope } from '@app/languages'
@@ -70,8 +68,6 @@ const App: React.FC = () => {
   const [hasMountedAnalyzed, setHasMountedAnalyzed] = useState(false)
   const [hasMountedOrganize, setHasMountedOrganize] = useState(false)
   const [hasMountedVirtual, setHasMountedVirtual] = useState(false)
-  const [hasMountedProActivation, setHasMountedProActivation] = useState(false)
-  const [hasMountedEnterpriseActivation, setHasMountedEnterpriseActivation] = useState(false)
 
   useEffect(() => {
     if (currentPath === '/' || currentPath === '/real-directory') {
@@ -82,10 +78,6 @@ const App: React.FC = () => {
       setHasMountedOrganize(true)
     } else if (currentPath.startsWith('/virtual-directory')) {
       setHasMountedVirtual(true)
-    } else if (currentPath === '/pro-activation') {
-      setHasMountedProActivation(true)
-    } else if (currentPath === '/enterprise-activation') {
-      setHasMountedEnterpriseActivation(true)
     }
   }, [currentPath])
 
@@ -1054,34 +1046,6 @@ const App: React.FC = () => {
 
 
 
-          {/* Pro 开通页面 - KeepAlive */}
-          {hasMountedProActivation && (
-            <div
-              className={cn(
-                'absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-200',
-                currentPath === '/pro-activation'
-                  ? 'opacity-100 z-[60]'
-                  : 'opacity-0 pointer-events-none z-0'
-              )}
-            >
-              <ProActivationPage />
-            </div>
-          )}
-
-          {/* 企业版开通页面 - KeepAlive */}
-          {hasMountedEnterpriseActivation && (
-            <div
-              className={cn(
-                'absolute inset-0 flex flex-col overflow-hidden transition-opacity duration-200',
-                currentPath === '/enterprise-activation'
-                  ? 'opacity-100 z-[60]'
-                  : 'opacity-0 pointer-events-none z-0'
-              )}
-            >
-              <EnterpriseActivationPage />
-            </div>
-          )}
-
           {/* 基础路由占位，确保路由系统正常工作 */}
           <Routes>
             <Route path="/" element={null} />
@@ -1091,8 +1055,6 @@ const App: React.FC = () => {
             <Route path="/virtual-directory" element={null} />
             <Route path="/virtual-directory/export" element={null} />
             <Route path="/preview-window" element={null} />
-            <Route path="/pro-activation" element={null} />
-            <Route path="/enterprise-activation" element={null} />
             <Route path="/queue-window" element={<QueueWindowPage />} />
           </Routes>
         </div>

@@ -10,7 +10,9 @@ import {
   RotateCcw,
   Settings,
   User,
-  Bot
+  Bot,
+  Crown,
+  KeyRound
 } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
@@ -18,11 +20,13 @@ import { AboutDialog } from '../settings/about-dialog'
 import { FirecoresRulesDialog } from './FirecoresRulesDialog'
 import { UpgradeAccountDialog } from './UpgradeAccountDialog'
 import { AccountManagementDialog } from './AccountManagementDialog'
+import { ActivationCodeDialog } from './ActivationCodeDialog'
 import { UserTier, formatDateOnly } from '@firefly/shared'
 import { WechatQRDialog } from './WechatQRDialog'
 import { cn } from '../../lib/utils'
 import { createPortal } from 'react-dom'
 import { openExternalLink } from '../../lib/external-link'
+import { openMarketingPricingUrl } from '../../lib/marketing-link'
 import { t } from '@app/languages'
 import { useLocation } from 'react-router-dom'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -42,6 +46,7 @@ export const UserAvatarMenu: React.FC = () => {
   const [rulesDefaultTab, setRulesDefaultTab] = useState<string | undefined>(undefined)
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
   const [isAccountManagementOpen, setIsAccountManagementOpen] = useState(false)
+  const [isActivationCodeOpen, setIsActivationCodeOpen] = useState(false)
   const [isAboutOpen, setIsAboutOpen] = useState(false)
   const [isWechatQROpen, setIsWechatQROpen] = useState(false)
 
@@ -56,35 +61,45 @@ export const UserAvatarMenu: React.FC = () => {
     switch (tier) {
       case UserTier.ENTERPRISE:
         return {
-          label: t('企业版'),
-          ringClass: 'border-purple-600',
-          bgClass: 'bg-purple-100 dark:bg-purple-900/30',
+          name: t('企业版'),
+          bgClass: 'bg-purple-500/15 text-purple-600 dark:text-purple-400',
           textClass: 'text-purple-600 dark:text-purple-400',
-          arrowClass: 'text-purple-600'
+          borderClass: 'border-purple-500/30',
+          badgeClass:
+            'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-purple-500/20',
+          ringClass: 'ring-1 ring-purple-500/30 hover:ring-purple-500/50',
+          arrowClass: 'text-purple-500/70'
         }
       case UserTier.AGENT:
         return {
-          label: t('代理版'),
-          ringClass: 'border-emerald-500',
-          bgClass: 'bg-emerald-100 dark:bg-emerald-900/30',
+          name: t('代理版'),
+          bgClass: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
           textClass: 'text-emerald-600 dark:text-emerald-400',
-          arrowClass: 'text-emerald-600'
+          borderClass: 'border-emerald-500/30',
+          badgeClass:
+            'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-emerald-500/20',
+          ringClass: 'ring-1 ring-emerald-500/30 hover:ring-emerald-500/50',
+          arrowClass: 'text-emerald-500/70'
         }
       case UserTier.PRO:
         return {
-          label: t('专业版'),
-          ringClass: 'border-amber-500',
-          bgClass: 'bg-amber-100 dark:bg-amber-900/30',
+          name: t('Pro 专业版'),
+          bgClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
           textClass: 'text-amber-600 dark:text-amber-400',
-          arrowClass: 'text-amber-600'
+          borderClass: 'border-amber-500/30',
+          badgeClass: 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/20',
+          ringClass: 'ring-1 ring-amber-500/30 hover:ring-amber-500/50',
+          arrowClass: 'text-amber-500/70'
         }
       default:
         return {
-          label: t('免费版'),
-          ringClass: 'border-primary',
-          bgClass: 'bg-primary dark:bg-primary',
-          textClass: 'text-primary-foreground dark:text-primary-foreground',
-          arrowClass: 'text-primary'
+          name: t('免费版'),
+          bgClass: 'bg-muted text-muted-foreground',
+          textClass: 'text-muted-foreground',
+          borderClass: 'border-border/50',
+          badgeClass: 'bg-secondary text-secondary-foreground',
+          ringClass: 'ring-1 ring-border/50 hover:ring-border',
+          arrowClass: 'text-muted-foreground/70'
         }
     }
   }, [])
@@ -128,6 +143,8 @@ export const UserAvatarMenu: React.FC = () => {
     action()
     setIsOpen(false)
   }
+
+  const paymentInfo = (config as any)?.PAYMENT_INFO
 
   return (
     <div className="relative">
@@ -178,37 +195,41 @@ export const UserAvatarMenu: React.FC = () => {
                   tier === UserTier.ENTERPRISE
                     ? 'bg-gradient-to-br from-purple-500/[0.09] via-indigo-500/[0.03] to-transparent border-purple-500/15'
                     : tier === UserTier.PRO
-                      ? 'bg-gradient-to-br from-amber-500/[0.08] via-yellow-500/[0.03] to-transparent border-amber-500/15'
+                      ? 'bg-gradient-to-br from-amber-500/[0.09] via-yellow-500/[0.03] to-transparent border-amber-500/15'
                       : tier === UserTier.AGENT
-                        ? 'bg-gradient-to-br from-emerald-500/[0.08] via-green-500/[0.03] to-transparent border-emerald-500/15'
-                        : 'bg-gradient-to-br from-slate-400/[0.07] via-slate-500/[0.02] to-transparent border-slate-500/10'
+                        ? 'bg-gradient-to-br from-emerald-500/[0.09] via-teal-500/[0.03] to-transparent border-emerald-500/15'
+                        : 'bg-muted/40 border-border/60'
                 )}
               >
-                {/* Rotated Triangle Corner Badge in Top Right */}
+                {/* 装饰性光晕背景 */}
                 <div
                   className={cn(
-                    'absolute -top-12 -right-12 w-24 h-24 rotate-45 pointer-events-none z-20 flex items-end justify-center pb-1.5 font-black text-white shadow-sm',
+                    'absolute -right-8 -top-8 w-24 h-24 rounded-full blur-2xl pointer-events-none opacity-60',
                     tier === UserTier.ENTERPRISE
-                      ? 'bg-purple-600'
+                      ? 'bg-purple-500/20'
                       : tier === UserTier.PRO
-                        ? 'bg-amber-500'
+                        ? 'bg-amber-500/20'
                         : tier === UserTier.AGENT
-                          ? 'bg-emerald-500'
-                          : 'bg-slate-500'
+                          ? 'bg-emerald-500/20'
+                          : 'bg-muted'
                   )}
-                >
-                  <span
-                    style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
-                    className="w-full text-center text-[10px] sm:text-[11px] font-black tracking-normal leading-tight select-none !whitespace-normal !break-words px-2"
-                  >
-                    {tierConfig.label}
-                  </span>
+                />
+
+                {/* 会员等级徽章 */}
+                <div className="flex items-center justify-between relative z-10 pt-2 pb-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className={cn(
+                        'text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm truncate',
+                        tierConfig.badgeClass
+                      )}
+                    >
+                      {tierConfig.name}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Background decorative glow */}
-                <div className="absolute -top-12 -right-12 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
-
-                {/* Middle Row: Firecores Display (Left Aligned for visual balance) */}
+                {/* 萤火余额卡片 */}
                 <div
                   onClick={() =>
                     handleMenuClick(() => {
@@ -232,15 +253,17 @@ export const UserAvatarMenu: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Action Row: Upgrade Account & Firecore Rules (Visually aligned heights & borders) */}
+                {/* Action Row: Upgrade Account & Firecore Rules */}
                 <div className="grid grid-cols-2 gap-2.5 relative z-10 pt-3 border-t border-border/40">
                   <Button
                     onClick={() =>
                       handleMenuClick(() => {
                         if (tier !== UserTier.FREE) {
-                          setIsAccountManagementOpen(true)
+                          openExternalLink(
+                            paymentInfo?.cancellation_portal?.url || 'https://www.creem.io/portal'
+                          )
                         } else {
-                          setIsUpgradeOpen(true)
+                          openMarketingPricingUrl('upgrade_pro')
                         }
                       })
                     }
@@ -250,9 +273,9 @@ export const UserAvatarMenu: React.FC = () => {
                     <CreditCard className="w-3.5 h-3.5 shrink-0" />
                     <span
                       style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}
-                      className="min-w-0 !whitespace-normal !break-words text-center leading-tight"
+                      className="min-w-0 !whitespace-normal !break-words text-center leading-tight flex items-center gap-0.5"
                     >
-                      {tier !== UserTier.FREE ? t('管理帐户') : t('升级帐户')}
+                      {tier !== UserTier.FREE ? t('管理订阅') : t('升级帐户')}
                     </span>
                   </Button>
                   <Button
@@ -312,8 +335,25 @@ export const UserAvatarMenu: React.FC = () => {
 
             {/* Menu Items */}
             <div className="p-2 space-y-0.5">
+              {/* 离线企业激活码兑换入口 */}
               <button
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                onClick={() =>
+                  handleMenuClick(() => {
+                    setIsActivationCodeOpen(true)
+                  })
+                }
+              >
+                <KeyRound className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all text-sky-500" />
+                <span className="font-medium whitespace-normal break-words min-w-0 text-left leading-tight">
+                  {t('兑换授权激活码')}
+                </span>
+              </button>
+
+              <div className="my-1 border-t border-border/30 mx-2" />
+
+              <button
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
                 onClick={() => handleMenuClick(() => openSettings())}
               >
                 <Settings className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all" />
@@ -322,7 +362,7 @@ export const UserAvatarMenu: React.FC = () => {
                 </span>
               </button>
               <button
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
                 onClick={() =>
                   handleMenuClick(() => useAnalysisQueueStore.getState().toggleQueue())
                 }
@@ -333,7 +373,7 @@ export const UserAvatarMenu: React.FC = () => {
                 </span>
               </button>
               <button
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
                 onClick={() =>
                   handleMenuClick(async () => {
                     const runningPort = await window.electronAPI?.getLlamaServerPort?.()
@@ -350,7 +390,7 @@ export const UserAvatarMenu: React.FC = () => {
                 </span>
               </button>
               <button
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
                 onClick={() =>
                   handleMenuClick(() => {
                     // 根据当前页面路径确定 storageKey
@@ -378,7 +418,7 @@ export const UserAvatarMenu: React.FC = () => {
               <div className="my-1 border-t border-border/30 mx-2" />
               {(config as any)?.PAYMENT_INFO?.method === 'creem' ? (
                 <button
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
                   onClick={() =>
                     handleMenuClick(() => {
                       openExternalLink('https://t.me/firefly_ai_folder')
@@ -393,7 +433,7 @@ export const UserAvatarMenu: React.FC = () => {
               ) : (
                 <>
                   <button
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
                     onClick={() =>
                       handleMenuClick(() => {
                         openExternalLink('https://www.zhihu.com/ring/2019089912897478826')
@@ -406,7 +446,7 @@ export const UserAvatarMenu: React.FC = () => {
                     </span>
                   </button>
                   <button
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
                     onClick={() =>
                       handleMenuClick(() => {
                         setIsWechatQROpen(true)
@@ -420,18 +460,13 @@ export const UserAvatarMenu: React.FC = () => {
                   </button>
                 </>
               )}
-              <div className="my-1 border-t border-border/30 mx-2" />
               <button
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
-                onClick={() =>
-                  handleMenuClick(() => {
-                    setIsAboutOpen(true)
-                  })
-                }
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-all duration-200 group active:scale-[0.98]"
+                onClick={() => handleMenuClick(() => setIsAboutOpen(true))}
               >
-                <Info className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all" />
+                <Info className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all text-blue-500" />
                 <span className="font-medium whitespace-normal break-words min-w-0 text-left leading-tight">
-                  {t('关于')}
+                  {t('关于萤核')}
                 </span>
               </button>
             </div>
@@ -439,6 +474,7 @@ export const UserAvatarMenu: React.FC = () => {
           document.body
         )}
 
+      {/* Dialogs */}
       <FirecoresRulesDialog
         open={isRulesOpen}
         onOpenChange={setIsRulesOpen}
@@ -448,6 +484,10 @@ export const UserAvatarMenu: React.FC = () => {
       <AccountManagementDialog
         open={isAccountManagementOpen}
         onOpenChange={setIsAccountManagementOpen}
+      />
+      <ActivationCodeDialog
+        open={isActivationCodeOpen}
+        onOpenChange={setIsActivationCodeOpen}
       />
       <AboutDialog open={isAboutOpen} onOpenChange={setIsAboutOpen} />
       <WechatQRDialog open={isWechatQROpen} onOpenChange={setIsWechatQROpen} />

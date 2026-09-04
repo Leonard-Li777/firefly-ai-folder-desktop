@@ -10,6 +10,7 @@ import { toast } from '../common/Toast'
 import { t } from '@app/languages'
 import confetti from 'canvas-confetti'
 import { openExternalLink } from '../../lib/external-link'
+import { openMarketingPricingUrl } from '../../lib/marketing-link'
 
 interface ActivationCodeSectionProps {
   tier: 'pro' | 'enterprise'
@@ -27,21 +28,21 @@ export const ActivationCodeSection: React.FC<ActivationCodeSectionProps> = ({
 }
 
 const ProActivationCode: React.FC<{ onActivated?: () => void }> = ({ onActivated }) => {
-  const [invitationCode, setInvitationCode] = useState<string>('')
+  const [identCode, setIdentCode] = useState<string>('')
 
   useEffect(() => {
     if (window.electronAPI?.license) {
-      window.electronAPI.license.getBase64Code().then(setInvitationCode)
+      window.electronAPI.license.getIdentCode().then(setIdentCode)
     }
   }, [])
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(invitationCode)
+    navigator.clipboard.writeText(identCode)
     toast.success(t('标识码已复制到剪贴板'))
   }
 
   return (
-    <div className="space-y-8 max-w-xl mx-auto py-6">
+    <div className="space-y-8 mx-auto py-6">
       <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 text-primary">
@@ -54,7 +55,7 @@ const ProActivationCode: React.FC<{ onActivated?: () => void }> = ({ onActivated
             variant="link"
             size="sm"
             className="text-[11px] font-bold h-auto p-0 flex items-center gap-1 opacity-70 hover:opacity-100"
-            onClick={() => openExternalLink('https://aifolder.iocn.cn/pricing')}
+            onClick={() => openMarketingPricingUrl('upgrade_pro')}
           >
             {t('了解 Pro 版专属功能')}
             <ExternalLink className="w-3 h-3" />
@@ -63,7 +64,7 @@ const ProActivationCode: React.FC<{ onActivated?: () => void }> = ({ onActivated
         <div className="relative group">
           <Input
             readOnly
-            value={invitationCode}
+            value={identCode}
             className="font-mono text-lg bg-muted/40 border-2 border-border/60 h-16 pr-28 focus-visible:ring-primary/30 transition-all rounded-2xl shadow-sm"
           />
           <Button
@@ -89,7 +90,7 @@ const ProActivationCode: React.FC<{ onActivated?: () => void }> = ({ onActivated
 }
 
 const EnterpriseActivationFlow: React.FC<{ onActivated?: () => void }> = ({ onActivated }) => {
-  const [invitationCode, setInvitationCode] = useState<string>('')
+  const [identCode, setIdentCode] = useState<string>('')
   const [licenseCode, setLicenseCode] = useState<string>('')
   const [isActivating, setIsActivating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -138,8 +139,8 @@ const EnterpriseActivationFlow: React.FC<{ onActivated?: () => void }> = ({ onAc
   useEffect(() => {
     const init = async () => {
       if (window.electronAPI?.license) {
-        const code = await window.electronAPI.license.getBase64Code()
-        setInvitationCode(code)
+        const code = await window.electronAPI.license.getIdentCode()
+        setIdentCode(code)
 
         try {
           const statusResult = await window.electronAPI.license.getStatus()
@@ -207,7 +208,7 @@ const EnterpriseActivationFlow: React.FC<{ onActivated?: () => void }> = ({ onAc
   }
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(invitationCode)
+    navigator.clipboard.writeText(identCode)
     toast.success(t('标识码已复制到剪贴板'))
   }
 
@@ -294,7 +295,7 @@ const EnterpriseActivationFlow: React.FC<{ onActivated?: () => void }> = ({ onAc
   }
 
   return (
-    <div className="space-y-8 max-w-xl mx-auto py-6">
+    <div className="space-y-8 mx-auto py-6">
       <div className="space-y-5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5 text-primary">
@@ -307,7 +308,7 @@ const EnterpriseActivationFlow: React.FC<{ onActivated?: () => void }> = ({ onAc
             variant="link"
             size="sm"
             className="text-[11px] font-bold h-auto p-0 flex items-center gap-1 opacity-70 hover:opacity-100"
-            onClick={() => openExternalLink('https://aifolder.iocn.cn/pricing')}
+            onClick={() => openMarketingPricingUrl('enterprise')}
           >
             {t('了解企业版专属功能')}
             <ExternalLink className="w-3 h-3" />
@@ -316,7 +317,7 @@ const EnterpriseActivationFlow: React.FC<{ onActivated?: () => void }> = ({ onAc
         <div className="relative group">
           <Input
             readOnly
-            value={invitationCode}
+            value={identCode}
             className="font-mono text-lg bg-muted/40 border-2 border-border/60 h-16 pr-28 focus-visible:ring-primary/30 transition-all rounded-2xl shadow-sm"
           />
           <Button

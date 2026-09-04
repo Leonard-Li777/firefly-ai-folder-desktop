@@ -66,7 +66,8 @@ export const PaymentFlowDialog: React.FC<PaymentFlowDialogProps> = ({
       if (result.success) {
         onSuccess()
         onOpenChange(false)
-        toast.success(successTitle ?? t('兑换成功'))
+        const msg = successDescription ? `${successTitle ?? t('兑换成功')}: ${successDescription}` : (successTitle ?? t('兑换成功'))
+        toast.success(msg)
       } else {
         toast.error(result.message || t('操作无法完成，请稍后再试'))
       }
@@ -229,16 +230,12 @@ export const PaymentFlowDialog: React.FC<PaymentFlowDialogProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Upgrade Account Dialog (占位) */}
+      {/* Upgrade Account Dialog */}
       <UpgradeAccountDialog
         open={open && step === 'upgrade'}
-        onOpenChange={(o, isNavigatingToPro) => {
+        onOpenChange={o => {
           if (!o) {
-            if (isNavigatingToPro) {
-              handleClose()
-            } else {
-              handleBack()
-            }
+            handleBack()
           }
         }}
       />
