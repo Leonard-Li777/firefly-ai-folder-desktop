@@ -271,7 +271,6 @@ export default defineConfig(({ command, mode }) => {
     // 'exifr',
     'libreoffice-convert',
     'node-machine-id',
-    '@toon-format/toon',
     'llamaindex',
     'setimmediate',
     'jschardet'

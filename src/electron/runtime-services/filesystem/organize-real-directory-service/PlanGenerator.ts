@@ -6,7 +6,6 @@ import { FileInfoForAI } from '@firefly/types'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { t } from '@app/languages'
 import Database from 'better-sqlite3'
-import { encode } from '@toon-format/toon'
 import { buildOrganizeSystemPrompt, buildOrganizeUserPrompt } from '@firefly/core-engine'
 import { databaseService } from '../../database/database-service'
 import { createCoreEngineAdapters } from '../../../adapters'
@@ -256,7 +255,15 @@ export class PlanGenerator {
       }
 
       for (const dim of baseDimensions) collectDirectories(dim, '')
-      const treeDesc = encode({ directories: allDirectoryGroups })
+      let treeDesc = ''
+      if (allDirectoryGroups.length > 0) {
+        const rows: string[] = []
+        for (const group of allDirectoryGroups) {
+          const namesStr = group.name.join(', ')
+          rows.push(`| ${namesStr} | ${group.parent || '根目录'} |`)
+        }
+        treeDesc = '| 目录候选名称 | 父级目录 |\n| --- | --- |\n' + rows.join('\n')
+      }
 
       if (options) {
         options.dimensionMap = dimensionMap

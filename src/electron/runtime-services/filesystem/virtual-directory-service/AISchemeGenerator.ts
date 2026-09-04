@@ -282,24 +282,12 @@ export class AISchemeGenerator {
       logger.error(LogCategory.FILE_ORGANIZATION, '获取维度标签异常:', e)
     }
 
-    // 使用 Toon 编码节省 Token
-    let toon: any = null
-    try {
-      toon = require('@toon-format/toon')
-    } catch {}
-
-    // 构建 fileTypeDistribution 字符串，使用 Toon 编码
-    const fileTypeArray = Object.entries(fileTypeDistribution).map(([ext, count]) => ({
-      e: ext,
-      c: count
-    }))
+    // 构建 fileTypeDistribution 字符串，使用 Markdown 表格
     let fileTypeStr = ''
-    if (fileTypeArray.length > 0) {
-      if (toon) {
-        fileTypeStr = toon.encode(fileTypeArray) + '\n\n字段说明：e=文件扩展名, c=文件数量'
-      } else {
-        fileTypeStr = JSON.stringify(fileTypeDistribution)
-      }
+    const fileTypeEntries = Object.entries(fileTypeDistribution)
+    if (fileTypeEntries.length > 0) {
+      const rows = fileTypeEntries.map(([ext, count]) => `| ${ext} | ${count} |`)
+      fileTypeStr = '| 文件扩展名 | 文件数量 |\n| --- | --- |\n' + rows.join('\n')
     }
 
     // 构建维度标签树字符串，使用 Markdown 表格

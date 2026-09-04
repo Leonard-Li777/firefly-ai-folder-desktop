@@ -212,7 +212,6 @@ const FRONTEND_IGNORE_MODULES = [
   'react-window',
   // 国际化和分析（由 Vite 打包）
   '@voerkai18n',
-  '@toon-format',
   '@posthog',
   'posthog-js',
   'posthog-node',
