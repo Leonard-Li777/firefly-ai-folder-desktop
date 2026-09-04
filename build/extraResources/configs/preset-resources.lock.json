@@ -33,6 +33,18 @@
     },
     "LFM2.5-1.2B-Instruct-GGUF": {
       "version": "Q4_K_M"
+    },
+    "audio-cpp": {
+      "version": "1.0.0"
+    },
+    "sensevoice-small": {
+      "version": "Q4_K"
+    },
+    "chinese-clip": {
+      "version": "INT8"
+    },
+    "mobile-clip": {
+      "version": "INT8"
     }
   },
   "engines": {

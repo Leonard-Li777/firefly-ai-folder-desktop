@@ -41,7 +41,9 @@ import {
   FileDimensionService,
   TextFileProcessor,
   extractPureLyrics,
-  type FileInfoInput
+  type FileInfoInput,
+  PreflightFeaturePipeline,
+  TagReconciliationArbiter
 } from '@firefly/core-engine'
 import { omniService } from '../../system/omni-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
@@ -683,6 +685,18 @@ export class FileProcessor {
           }
         }
 
+        const preflightContext = PreflightFeaturePipeline.run({
+          filePath,
+          fileName: item.name,
+          fileSize: currentStats.size,
+          fileCategory: enhancedInfo.fileType,
+          mimeType: existingBasicData.category?.mime_type || getMimeType(enhancedInfo.fileType),
+          contentPreview: existingBasicData.content ? existingBasicData.content.slice(0, 1000) : undefined,
+          metadata: baseMetadata,
+          stats: currentStats
+        })
+        baseMetadata = preflightContext.flattenedMetadata
+
         const fileInfo: FileInfoInput = {
           path: filePath,
           name: enhancedInfo.smartName,
@@ -868,6 +882,10 @@ export class FileProcessor {
         )
 
         this.saveBasicMagikaTags(fileFingerprint, existingBasicData.category || null, filePath, db)
+
+        // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
+        this.reconcileAndSaveTags(db, fileFingerprint, preflightContext, dimResult)
+
         databaseService.syncFTSTags(fileFingerprint)
 
         // 从数据库捞取合并后的全量 analysisStats（包含 CPU 阶段 1/2 + GPU 阶段 3/4）推送给前端 UI
@@ -1479,6 +1497,23 @@ export class FileProcessor {
       // 记录标准 contentExtraction 阶段耗时 (取 Omni 并行最大耗时或实际耗时)
       timer.record('contentExtraction', markitdownBenchmark.totalMs || anydocDurationMs)
 
+      const stats = currentStats || fs.statSync(filePath)
+
+      // 运行 CPU 阶段预计算特征流水线 (PreflightFeaturePipeline, ADR 0030)
+      const preflightContext = PreflightFeaturePipeline.run({
+        filePath,
+        fileName: item.name,
+        fileSize: stats.size,
+        fileCategory: enhancedFileType,
+        mimeType: magikaCategory?.mime_type || getMimeType(enhancedFileType),
+        contentPreview: contentResult.content ? contentResult.content.slice(0, 1000) : undefined,
+        metadata: contentResult.metadata,
+        stats
+      })
+
+      // 平铺注入 metadata（更新 contentResult.metadata 与 fileInfo.metadata，供后续所有模式使用）
+      contentResult.metadata = preflightContext.flattenedMetadata
+
       const fileInfo: FileInfoInput = {
         path: filePath,
         name: enhancedSmartName,
@@ -1509,7 +1544,6 @@ export class FileProcessor {
       // - document/full 模式下 magikaCategory 来自 MarkitdownServer 的 serverResult.magika（或本地兜底）
       // 否则并行 CPU 阶段提前返回时，从 Server 获取的 magika 数据将无法落库，
       // 导致文件属性面板元数据 Tab 的 Magika 字段缺失
-      const stats = currentStats || fs.statSync(filePath)
       db.prepare(
         `
         INSERT INTO files (file_fingerprint, smart_name, size, type, category, created_at, modified_at, accessed_at)
@@ -1694,6 +1728,9 @@ export class FileProcessor {
         // 保存 Magika 标签（文件类型 + 扩展名）
         this.saveBasicMagikaTags(fileFingerprint, magikaCategory, filePath, db)
 
+        // 运行找补裁决器：全量无损写入 CPU 既定事实标签（文件来源、处理状态、安全等级、水印、打码等），打破 8 个上限限制
+        this.reconcileAndSaveTags(db, fileFingerprint, preflightContext, null)
+
         // 从元数据直接提取作者/语言标签并保存（标签 + 专用字段）
         if (processResult.metadata) {
           await this.saveBasicAuthorTags(fileFingerprint, processResult.metadata, db)
@@ -1796,6 +1833,9 @@ export class FileProcessor {
 
       // ========== 补充写入基础 of Magika 类型与扩展名标签 ==========
       this.saveBasicMagikaTags(fileFingerprint, magikaCategory, filePath, db)
+
+      // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
+      this.reconcileAndSaveTags(db, fileFingerprint, preflightContext, dimResult)
 
       databaseService.syncFTSTags(fileFingerprint)
 
@@ -1965,6 +2005,57 @@ export class FileProcessor {
       }
     } catch (error) {
       logger.warn(LogCategory.ANALYSIS_QUEUE, `[基础分析] 保存 Magika 标签失败: ${error}`)
+    }
+  }
+
+  /**
+   * 将 CPU 既定事实标签与 AI 推理标签进行仲裁并全量无损持久化
+   * 遵循 ADR 0030 物理事实绝对覆盖律与无损入库规范
+   */
+  private reconcileAndSaveTags(
+    db: any,
+    fileFingerprint: string,
+    preflightContext: any,
+    dimResult?: any
+  ): void {
+    if (!preflightContext?.groundTruthTags || !db) return
+
+    try {
+      const aiInferenceTags: Array<{ dimensionName: string; tagName: string }> = []
+      if (dimResult?.dimensionTags && typeof dimResult.dimensionTags === 'object') {
+        for (const [dimName, tags] of Object.entries(dimResult.dimensionTags)) {
+          if (Array.isArray(tags)) {
+            for (const tag of tags) {
+              if (typeof tag === 'string' && tag.trim()) {
+                aiInferenceTags.push({ dimensionName: dimName, tagName: tag.trim() })
+              }
+            }
+          } else if (typeof tags === 'string' && (tags as string).trim()) {
+            aiInferenceTags.push({ dimensionName: dimName, tagName: (tags as string).trim() })
+          }
+        }
+      }
+      if (Array.isArray(dimResult?.tags)) {
+        for (const t of dimResult.tags) {
+          if (typeof t === 'string' && t.trim()) {
+            aiInferenceTags.push({ dimensionName: '内容标签', tagName: t.trim() })
+          }
+        }
+      }
+
+      TagReconciliationArbiter.reconcileAndSave({
+        db,
+        fileFingerprint,
+        groundTruthTags: preflightContext.groundTruthTags,
+        aiInferenceTags,
+        syncStatus: 0
+      })
+    } catch (error) {
+      logger.error(
+        LogCategory.ANALYSIS_QUEUE,
+        `[找补裁决器] 标签裁决入库失败: ${fileFingerprint}`,
+        error
+      )
     }
   }
 
