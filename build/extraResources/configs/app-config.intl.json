@@ -101,24 +101,42 @@
         "period_unit": "month",
         "period_count": 1,
         "prices": [
-          { "currency": "CNY", "amount": 2000 },
-          { "currency": "USD", "amount": 590 }
+          {
+            "currency": "CNY",
+            "amount": 2000
+          },
+          {
+            "currency": "USD",
+            "amount": 590
+          }
         ]
       },
       "quarterly": {
         "period_unit": "month",
         "period_count": 3,
         "prices": [
-          { "currency": "CNY", "amount": 4500 },
-          { "currency": "USD", "amount": 1290 }
+          {
+            "currency": "CNY",
+            "amount": 4500
+          },
+          {
+            "currency": "USD",
+            "amount": 1290
+          }
         ]
       },
       "yearly": {
         "period_unit": "month",
         "period_count": 12,
         "prices": [
-          { "currency": "CNY", "amount": 15000 },
-          { "currency": "USD", "amount": 4200 }
+          {
+            "currency": "CNY",
+            "amount": 15000
+          },
+          {
+            "currency": "USD",
+            "amount": 4200
+          }
         ]
       }
     },
@@ -127,16 +145,28 @@
         "period_unit": "month",
         "period_count": 6,
         "prices": [
-          { "currency": "CNY", "amount": 27000 },
-          { "currency": "USD", "amount": 7500 }
+          {
+            "currency": "CNY",
+            "amount": 27000
+          },
+          {
+            "currency": "USD",
+            "amount": 7500
+          }
         ]
       },
       "yearly": {
         "period_unit": "month",
         "period_count": 12,
         "prices": [
-          { "currency": "CNY", "amount": 48000 },
-          { "currency": "USD", "amount": 13200 }
+          {
+            "currency": "CNY",
+            "amount": 48000
+          },
+          {
+            "currency": "USD",
+            "amount": 13200
+          }
         ]
       }
     },
@@ -144,29 +174,53 @@
       {
         "firecores": 20,
         "prices": [
-          { "currency": "CNY", "amount": 500 },
-          { "currency": "USD", "amount": 150 }
+          {
+            "currency": "CNY",
+            "amount": 500
+          },
+          {
+            "currency": "USD",
+            "amount": 150
+          }
         ]
       },
       {
         "firecores": 45,
         "prices": [
-          { "currency": "CNY", "amount": 1000 },
-          { "currency": "USD", "amount": 290 }
+          {
+            "currency": "CNY",
+            "amount": 1000
+          },
+          {
+            "currency": "USD",
+            "amount": 290
+          }
         ]
       },
       {
         "firecores": 150,
         "prices": [
-          { "currency": "CNY", "amount": 3000 },
-          { "currency": "USD", "amount": 850 }
+          {
+            "currency": "CNY",
+            "amount": 3000
+          },
+          {
+            "currency": "USD",
+            "amount": 850
+          }
         ]
       },
       {
         "firecores": 280,
         "prices": [
-          { "currency": "CNY", "amount": 5000 },
-          { "currency": "USD", "amount": 1390 }
+          {
+            "currency": "CNY",
+            "amount": 5000
+          },
+          {
+            "currency": "USD",
+            "amount": 1390
+          }
         ]
       }
     ]
@@ -180,6 +234,20 @@
     "support_email": "support@aifolder.net",
     "telegram": "@firefly_ai_folder",
     "telegram_url": "https://t.me/firefly_ai_folder",
+    "creem": {
+      "checkout_base_url": "https://creem.io/payment",
+      "products": {
+        "pro_monthly": "prod_73m2zOpUrfVszCP7lFz2kw",
+        "pro_quarterly": "prod_5D8ml4kJs6rMnFZjomveXN",
+        "pro_yearly": "prod_5GyErAlyc1LSDGBEtBnYQR",
+        "enterprise_half_year": "prod_1TKu6Mmo6Adv7rAp4rh6QM",
+        "enterprise_yearly": "prod_4NzT1SQ5rR3G3rc6URHfK4",
+        "firecores_20": "prod_2YJ1HimU4bAQ4cpRqxEwNH",
+        "firecores_45": "prod_5JyfPIGwgIrkL4SkfIHKej",
+        "firecores_150": "prod_5owCT9VLONbTJX5M7lTbpK",
+        "firecores_280": "prod_5dvbtcmf0r8MYbL5X6GiFB"
+      }
+    },
     "contact_info": {
       "email": "support@aifolder.net",
       "telegram": "@firefly_ai_folder",

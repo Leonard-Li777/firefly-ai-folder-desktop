@@ -26,7 +26,7 @@ import { WechatQRDialog } from './WechatQRDialog'
 import { cn } from '../../lib/utils'
 import { createPortal } from 'react-dom'
 import { openExternalLink } from '../../lib/external-link'
-import { openMarketingPricingUrl } from '../../lib/marketing-link'
+import { openMarketingPricingUrl, resolveDevCreemUrl } from '../../lib/marketing-link'
 import { t } from '@app/languages'
 import { useLocation } from 'react-router-dom'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -259,9 +259,9 @@ export const UserAvatarMenu: React.FC = () => {
                     onClick={() =>
                       handleMenuClick(() => {
                         if (tier !== UserTier.FREE) {
-                          openExternalLink(
+                          const targetPortalUrl =
                             paymentInfo?.cancellation_portal?.url || 'https://www.creem.io/portal'
-                          )
+                          openExternalLink(resolveDevCreemUrl(targetPortalUrl))
                         } else {
                           openMarketingPricingUrl('upgrade_pro')
                         }

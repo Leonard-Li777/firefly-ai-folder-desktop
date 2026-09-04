@@ -133,9 +133,6 @@ importers:
       '@supabase/supabase-js':
         specifier: 2.90.1
         version: 2.90.1
-      '@toon-format/toon':
-        specifier: 1.4.0
-        version: 1.4.0
       '@types/react':
         specifier: 19.2.14
         version: 19.2.14
@@ -1570,7 +1567,7 @@ packages:
     hasBin: true
 
   '@file-viewer/assets-cad@3.0.0':
-    resolution: {integrity: sha512-+SWJRzC96wb3IFBBZNVVgMANUXNyeUHPyahvRlBT6H0YynrQpvPSYRT9e1vQud+hX8+ZwtuGOgEyNOzk1BvQKQ==, tarball: https://registry.npmjs.org/@file-viewer/assets-cad/-/assets-cad-3.0.0.tgz}
+    resolution: {integrity: sha512-+SWJRzC96wb3IFBBZNVVgMANUXNyeUHPyahvRlBT6H0YynrQpvPSYRT9e1vQud+hX8+ZwtuGOgEyNOzk1BvQKQ==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -1580,7 +1577,7 @@ packages:
     hasBin: true
 
   '@file-viewer/assets-model@3.0.0':
-    resolution: {integrity: sha512-WGb4V7i3j0axP23fNpj54YTaMcC8GLkawelm6KpwkvSfBUy12yrn8gpRR6PoaYHm1H5Kj72ejAWoZEcD24EfBg==, tarball: https://registry.npmjs.org/@file-viewer/assets-model/-/assets-model-3.0.0.tgz}
+    resolution: {integrity: sha512-WGb4V7i3j0axP23fNpj54YTaMcC8GLkawelm6KpwkvSfBUy12yrn8gpRR6PoaYHm1H5Kj72ejAWoZEcD24EfBg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -1590,7 +1587,7 @@ packages:
     hasBin: true
 
   '@file-viewer/assets-typst@3.0.0':
-    resolution: {integrity: sha512-0qyskCl0sS8S+8rAB6YskA5fpfsTFwCqpedVzjMN7xISyN4dm7dTi6+RHP8cr6k2NWOE+y6qbIRYUTqlpR40FQ==, tarball: https://registry.npmjs.org/@file-viewer/assets-typst/-/assets-typst-3.0.0.tgz}
+    resolution: {integrity: sha512-0qyskCl0sS8S+8rAB6YskA5fpfsTFwCqpedVzjMN7xISyN4dm7dTi6+RHP8cr6k2NWOE+y6qbIRYUTqlpR40FQ==}
     engines: {node: '>=20'}
     hasBin: true
 

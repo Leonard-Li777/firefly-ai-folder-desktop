@@ -1,4 +1,4 @@
-import { encodeMachineIdToRef } from '@firefly/shared'
+import { encodeMachineIdToRef, encodeMachineIdToBase64 } from '@firefly/shared'
 import { openExternalLink } from './external-link'
 import i18nScope from '@src/languages'
 
@@ -48,7 +48,36 @@ function resolveDevMarketingUrl(targetUrl: URL): URL {
   )
   return devUrl
 }
- 
+
+/**
+ * 将 Creem 生产/结算链接在开发模式下自动拦截切换为测试环境链接
+ * 例如: https://creem.io/payment/... -> https://test-api.creem.io/payment/...
+ * 或 https://www.creem.io/portal -> https://test.creem.io/portal
+ */
+export function resolveDevCreemUrl(urlStr: string): string {
+  const metaEnv = (import.meta as any)?.env
+  const isDev = metaEnv?.DEV ?? (window.electronAPI?.isPackaged === false)
+  if (!isDev || !urlStr) {
+    return urlStr
+  }
+
+  try {
+    const parsed = new URL(urlStr)
+    // 拦截 creem.io 结账与 portal
+    if (parsed.hostname === 'creem.io' || parsed.hostname === 'www.creem.io') {
+      const devBase = metaEnv?.VITE_CREEM_CHECKOUT_BASE_URL || 'https://creem.io/payment'
+      const devBaseUrl = new URL(devBase)
+      parsed.protocol = devBaseUrl.protocol
+      parsed.host = devBaseUrl.host
+      return parsed.toString()
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  return urlStr
+}
+
 /**
  * 获取当前环境/区域的官方网站基础域名
  * 国内版 (CN): https://aifolder.iocn.cn
@@ -80,7 +109,7 @@ export function getInviteLink(machineId: string): string {
 
 /**
  * 构造并打开官网营销站定价/购买页面
- * 自动在 URL query 中携带 44 位 Base64 标识码 (ident_code) 与短码兼容 (device_code)，实现免密绑定设备
+ * 自动在 URL query 中携带 44 位 Base64 标识码 (ident_code)，实现免密绑定设备
  * 在开发环境（import.meta.env.DEV）下自动拦截重定向至本地开发服务器（默认端口 38800）
  * 
  * @param action 可选的行为参数 (upgrade_pro | buy_firecores | enterprise)
@@ -88,23 +117,16 @@ export function getInviteLink(machineId: string): string {
 export async function openMarketingPricingUrl(action?: MarketingAction) {
   try {
     let identCode = ''
-    let deviceCode = ''
 
-    // 1. 优先获取 44 位 Base64 标识码 ident_code
-    try {
-      if (window.electronAPI?.license?.getIdentCode) {
-        identCode = await window.electronAPI.license.getIdentCode()
-      }
-    } catch (e) {
-      console.warn('[MarketingLink] Failed to get ident code:', e)
+    // 1. 获取机器码并生成统一的 44 位 Base64 标识码 ident_code
+    if (window.electronAPI?.license?.getIdentCode) {
+      identCode = await window.electronAPI.license.getIdentCode()
     }
-
-    // 2. 同时获取 16 位机器短码，保证新老端双向兼容
-    try {
+    if (!identCode) {
       const machineId = await window.electronAPI.getMachineId()
-      deviceCode = encodeMachineIdToRef(machineId)
-    } catch (e) {
-      console.warn('[MarketingLink] Failed to get machine id:', e)
+      if (machineId) {
+        identCode = encodeMachineIdToBase64(machineId)
+      }
     }
 
     const config = (window as any).__APP_CONFIG__ || {}
@@ -115,12 +137,9 @@ export async function openMarketingPricingUrl(action?: MarketingAction) {
 
     let url = new URL(baseUrl)
 
-    // 3. 注入标识码参数（ident_code 优先，device_code 兼容）
+    // 2. URL 严格仅携带 44 位 Base64 标识码 ident_code
     if (identCode) {
       url.searchParams.set('ident_code', identCode)
-    }
-    if (deviceCode) {
-      url.searchParams.set('device_code', deviceCode)
     }
     if (action) {
       url.searchParams.set('action', action)
