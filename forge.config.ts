@@ -142,6 +142,17 @@ const EXTERNAL_DEPENDENCIES = [
   'portkey-ai',
   'process',
   '@supabase/supabase-js',
+  // @supabase/supabase-js 的运行时子包：supabase-js 在运行时 require 它们，
+  // 显式列入 KEEP 集合确保永不被 ASAR 忽略逻辑排除（v3.5.2 后 protected.jsc 打包链新增此依赖路径）
+  '@supabase/auth-js',
+  '@supabase/functions-js',
+  '@supabase/postgrest-js',
+  '@supabase/realtime-js',
+  '@supabase/storage-js',
+  // React 运行时依赖：@voerkai18n/react 被 Vite 打包进主进程 chunk，
+  // 其内部保留了 require('react')，运行时必须在 ASAR 中能找到 react 模块
+  'react',
+  'react-dom',
   // 以下是主进程真正需要在 Node.js 运行时 require() 的包
   'chokidar',
   'fix-path',
@@ -198,8 +209,9 @@ const FRONTEND_IGNORE_MODULES = [
   'tailwindcss',
   '@felixrieseberg',
   // 纯前端 React 生态（由 Vite 打包进 renderer chunk）
-  'react',
-  'react-dom',
+  // 注意：react 和 react-dom 不能在此排除，因为 @voerkai18n/react 被打包进主进程
+  // 且其内部保留了 require('react')，运行时需要在 ASAR 中能找到 react 模块
+  // 已移至 EXTERNAL_DEPENDENCIES 以确保保留在 ASAR 中
   'react-router-dom',
   'lucide-react',
   '@radix-ui',
