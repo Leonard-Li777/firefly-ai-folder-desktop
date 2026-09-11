@@ -115,3 +115,29 @@ export async function executeProTextTagging(
   return []
 }
 
+export interface ProHowNetSlot {
+  slotName: string
+  zh: string
+  targetValue: string
+}
+
+export interface ProHowNetDescribeResult {
+  word: string
+  found: boolean
+  isAligned: boolean
+  alignmentLevel?: number
+  topConcept?: string
+  slots: ProHowNetSlot[]
+  synonyms: string[]
+  antonyms: string[]
+  description: string
+}
+
+export async function fetchProHowNetDescribe(
+  _word: string,
+  _port = 38200
+): Promise<ProHowNetDescribeResult | null> {
+  return null
+}
+
+
