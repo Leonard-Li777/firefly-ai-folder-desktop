@@ -14,8 +14,7 @@ import Database from 'better-sqlite3'
 import { databaseService } from '../../database/database-service'
 import fs from 'fs-extra'
 import path from 'node:path'
-import { DimensionManager } from '../analyzed-directory-service/DimensionManager'
-import { FileFilter } from '../analyzed-directory-service/FileFilter'
+import { TagTreeQuery } from './TagTreeQuery'
 import { LinkManager } from './LinkManager'
 import { PersistenceManager } from './PersistenceManager'
 import { VIRTUAL_DIRECTORY_ROOT, copyReadmeFile } from './utils'
@@ -29,8 +28,7 @@ import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 export class VirtualDirectoryService {
   private _db: Database.Database | null = null
   private _initialized = false
-  private _dimensionManager: DimensionManager | null = null
-  private _fileFilter: FileFilter | null = null
+  private _tagTreeQuery: TagTreeQuery | null = null
   private _linkManager: LinkManager | null = null
   private _persistenceManager: PersistenceManager | null = null
 
@@ -62,11 +60,10 @@ export class VirtualDirectoryService {
 
   private initDelegates() {
     const db = this._db!
-    this._dimensionManager = new DimensionManager(db)
-    this._fileFilter = new FileFilter(db, tag => this._dimensionManager!.getExtensionsForTag(tag))
+    this._tagTreeQuery = new TagTreeQuery(db)
     this._linkManager = new LinkManager(
       db,
-      params => this._fileFilter!.getFilteredFiles(params),
+      params => this._tagTreeQuery!.getFilteredFiles(params),
       virtualDirPath => copyReadmeFile(virtualDirPath)
     )
     this._persistenceManager = new PersistenceManager(db)
@@ -83,13 +80,27 @@ export class VirtualDirectoryService {
     return this._db!
   }
 
+  public get tagTreeQuery(): TagTreeQuery {
+    this.ensureInitialized()
+    return this._tagTreeQuery!
+  }
+
+  public get linkManager(): LinkManager {
+    this.ensureInitialized()
+    return this._linkManager!
+  }
+
+  public get persistenceManager(): PersistenceManager {
+    this.ensureInitialized()
+    return this._persistenceManager!
+  }
+
   /**
    * 重置服务状态，在数据库重新初始化后调用（如语言切换）
    */
   reset(): void {
     this._db = null
-    this._dimensionManager = null
-    this._fileFilter = null
+    this._tagTreeQuery = null
     this._linkManager = null
     this._persistenceManager = null
     this._iconManager = null
@@ -832,36 +843,6 @@ export class VirtualDirectoryService {
     return { skipped: false, syncedCount }
   }
 
-  async getAnalyzedFilesCount(workspaceDirectoryPath?: string): Promise<number> {
-    try {
-      let query = ''
-      const params: any[] = []
-
-      if (workspaceDirectoryPath) {
-        query = 'SELECT COUNT(DISTINCT id) as count FROM workspace_files WHERE is_analyzed = 1'
-        const sep = path.sep
-        const prefix = workspaceDirectoryPath.endsWith(sep)
-          ? workspaceDirectoryPath
-          : workspaceDirectoryPath + sep
-        query += ` AND (path LIKE ? OR path = ?)`
-        params.push(`${prefix}%`, workspaceDirectoryPath)
-      } else {
-        query = `
-          SELECT COUNT(DISTINCT id) as count
-          FROM workspace_files
-          WHERE is_analyzed = 1
-            AND workspace_id IN (SELECT workspace_id FROM workspaces WHERE type = 'PRIVATE')
-        `
-      }
-
-      const result = this.db.prepare(query).get(...params) as { count: number }
-      return result?.count || 0
-    } catch (error) {
-      logger.error(LogCategory.VIRTUAL_DIRECTORY, 'Failed to get analyzed files count:', error)
-      return 0
-    }
-  }
-
   async updateAllVirtualDirectories(workspacePath: string): Promise<void> {
     logger.info(
       LogCategory.VIRTUAL_DIRECTORY,
@@ -972,6 +953,94 @@ export class VirtualDirectoryService {
   public async copyReadmeFile(virtualDirPath: string): Promise<void> {
     return copyReadmeFile(virtualDirPath)
   }
+
+  // ─── 统一标签树与过滤查询接口 (TagTreeQuery) ──────────────────────────
+
+  async getDimensionGroups(
+    options?: import('@firefly/types').GetDimensionGroupsOptions | string,
+    language?: string
+  ): Promise<import('@firefly/types').DimensionGroupsResponse> {
+    this.ensureInitialized()
+    return this._tagTreeQuery!.getDimensionGroups(options, language)
+  }
+
+  async getFilteredFiles(params: any): Promise<import('@firefly/types').FileItem[]> {
+    this.ensureInitialized()
+    return this._tagTreeQuery!.getFilteredFiles(params)
+  }
+
+  async getFilteredFilesPaged(params: any): Promise<import('@firefly/types').FilteredFilesResponse> {
+    this.ensureInitialized()
+    return this._tagTreeQuery!.getFilteredFilesPaged(params)
+  }
+
+  async getAnalyzedFilesCount(workspaceDirectoryPath?: string): Promise<number> {
+    this.ensureInitialized()
+    return this._tagTreeQuery!.getAnalyzedFilesCount(workspaceDirectoryPath)
+  }
+
+  // ─── 统一保存目录管理接口 (PersistenceManager) ──────────────────
+
+  async getSavedDirectories(workspaceDirectoryPath?: string) {
+    this.ensureInitialized()
+    return this._persistenceManager!.getSavedDirectories(workspaceDirectoryPath)
+  }
+
+  async saveDirectory(directory: any, workspaceDirectoryPath?: string) {
+    this.ensureInitialized()
+    return this._persistenceManager!.saveDirectory(directory, workspaceDirectoryPath || '')
+  }
+
+  async batchSaveDirectories(directories: any[], workspaceDirectoryPath: string) {
+    this.ensureInitialized()
+    return this._persistenceManager!.batchSaveDirectories(
+      directories,
+      workspaceDirectoryPath,
+      d => this._persistenceManager!.saveDirectory(d, workspaceDirectoryPath)
+    )
+  }
+
+  async deleteDirectory(id: string) {
+    this.ensureInitialized()
+    return this._persistenceManager!.deleteDirectory(id)
+  }
+
+  async renameDirectory(id: string, newName: string) {
+    this.ensureInitialized()
+    return this._persistenceManager!.renameDirectory(id, newName)
+  }
+
+  async isFirstVirtualDirectory(workspaceDirectoryPath?: string): Promise<boolean> {
+    this.ensureInitialized()
+    return this._persistenceManager!.isFirstVirtualDirectory(workspaceDirectoryPath)
+  }
+
+  async isFirst(workspaceDirectoryPath?: string): Promise<boolean> {
+    return this.isFirstVirtualDirectory(workspaceDirectoryPath)
+  }
+
+  // ─── 统一硬链接与清理接口 (LinkManager) ──────────────────────────
+
+  async cleanupVirtualDirectory(workspaceDirectoryPath: string): Promise<void> {
+    this.ensureInitialized()
+    return this._linkManager!.cleanupVirtualDirectory(workspaceDirectoryPath)
+  }
+
+  async cleanup(workspaceDirectoryPath: string): Promise<void> {
+    return this.cleanupVirtualDirectory(workspaceDirectoryPath)
+  }
+
+  async getPrivateAnalyzedFilesCount(workspaceDirectoryPath?: string): Promise<number> {
+    return this.getAnalyzedFilesCount(workspaceDirectoryPath)
+  }
+
+  async findFirstHardlink(filePath: string, workspacePath: string): Promise<string | null> {
+    this.ensureInitialized()
+    return this._linkManager!.findFirstHardlink(filePath, workspacePath)
+  }
 }
 
 export const virtualDirectoryService = new VirtualDirectoryService()
+export const analyzedDirectoryService = virtualDirectoryService
+export const AnalyzedDirectoryService = VirtualDirectoryService
+export type AnalyzedDirectoryService = VirtualDirectoryService

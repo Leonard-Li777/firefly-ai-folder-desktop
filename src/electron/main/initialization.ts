@@ -62,7 +62,6 @@ import {
   setFileCleanupService,
   initializationPhaseStarted,
   setInitializationPhaseStarted,
-  analyzedDirectoryService,
   virtualDirectoryService
 } from './state'
 import { enrichAIStatus, clearEnrichCache } from './utils'
@@ -230,7 +229,6 @@ export async function initDatabaseAndDependentServices(
     if (force && databaseService.db) {
       logger.info(LogCategory.MAIN, '强制重新初始化：关闭旧数据库连接...')
       databaseService.close()
-      analyzedDirectoryService.reset()
       virtualDirectoryService.reset()
       // 清理旧的回调，避免重复注册
       databaseService.clearPostMigrationCallbacks()

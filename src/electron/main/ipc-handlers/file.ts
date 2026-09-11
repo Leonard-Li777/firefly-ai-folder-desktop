@@ -10,7 +10,7 @@ import {
 import { logger, LogCategory, getMimeTypeByExtension, normalizeForCache } from '@firefly/shared'
 import { t } from '@app/languages'
 import type { FileInfo, FileItem, DirectoryItem, WorkspaceDirectory } from '@firefly/types'
-import { analyzedDirectoryService, syncedDirectories } from '../state'
+import { virtualDirectoryService, syncedDirectories } from '../state'
 import { trayService } from '../../runtime-services/system/tray-service'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 
@@ -50,7 +50,7 @@ export function registerFileIPCHandlers() {
       // FTS 全字段（文件名/智能名/描述/内容/标签等）+ path/type/author/language/category LIKE，
       // 并包含未分析文件（通过基础字段兼容命中）
       try {
-        const result = await analyzedDirectoryService.getFilteredFilesPaged({
+        const result = await virtualDirectoryService.getFilteredFilesPaged({
           selectedTags: [],
           sortBy: 'name',
           sortOrder: 'asc',
@@ -152,8 +152,8 @@ export function registerFileIPCHandlers() {
       const [entries, workspace] = await Promise.all([
         fs.promises.readdir(dirPath, { withFileTypes: true }),
         databaseService.findRootWorkspaceDirectory(dirPath),
-        analyzedDirectoryService
-          ? analyzedDirectoryService.cleanupVirtualDirectory(dirPath).catch(e => {
+        virtualDirectoryService
+          ? virtualDirectoryService.cleanupVirtualDirectory(dirPath).catch(e => {
               logger.warn(LogCategory.MAIN, '[IPC] 清理虚拟目录失败:', dirPath, e)
             })
           : Promise.resolve()

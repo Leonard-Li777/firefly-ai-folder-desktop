@@ -1,4 +1,3 @@
-export * from './analyzed-directory-service'
 export * from './virtual-directory-service'
 export * from './directory-context-service'
 export * from './file-cleanup-service'

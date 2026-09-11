@@ -6,7 +6,6 @@ import { databaseService } from '../../runtime-services/database/database-servic
 import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
 import { t } from '@app/languages'
 import {
-  analyzedDirectoryService,
   virtualDirectoryService,
   organizeRealDirectoryService,
   reorganizePauseFlags,
@@ -192,14 +191,14 @@ export function registerVirtualDirectoryIPCHandlers() {
           }
         | string
     ) => {
-      if (!analyzedDirectoryService) throw new Error(t('已分析目录服务未初始化'))
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
       // 兼容旧的 string 参数
       const opts = typeof options === 'string' ? { workspaceDirectoryPath: options } : options || {}
       const currentLanguage =
         opts.language ||
         ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') ||
         'zh-CN'
-      return await analyzedDirectoryService.getDimensionGroups({
+      return await virtualDirectoryService.getDimensionGroups({
         workspaceDirectoryPath: opts.workspaceDirectoryPath,
         language: currentLanguage,
         excludeExtensionDimension: opts.excludeExtensionDimension,
@@ -542,7 +541,7 @@ export function registerVirtualDirectoryIPCHandlers() {
       }
 
       // 获取当前工作区的全量已分析文件
-      const files = await analyzedDirectoryService.getFilteredFiles({
+      const files = await virtualDirectoryService.getFilteredFiles({
         selectedTags: [],
         sortBy: 'name',
         sortOrder: 'asc',
@@ -575,26 +574,26 @@ export function registerVirtualDirectoryIPCHandlers() {
     }
   )
   ipcMain.handle('analyzed-directory/get-filtered-files', async (event, params: any) => {
-    if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-    return await analyzedDirectoryService.getFilteredFiles(params)
+    if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+    return await virtualDirectoryService.getFilteredFiles(params)
   })
 
   ipcMain.handle('analyzed-directory/get-filtered-files-paged', async (event, params: any) => {
-    if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-    return await analyzedDirectoryService.getFilteredFilesPaged(params)
+    if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+    return await virtualDirectoryService.getFilteredFilesPaged(params)
   })
   ipcMain.handle(
     'analyzed-directory/save-directory',
     async (event, directory: any, workspaceDirectoryPath?: string) => {
-      if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-      return await analyzedDirectoryService.saveDirectory(directory, workspaceDirectoryPath)
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+      return await virtualDirectoryService.saveDirectory(directory, workspaceDirectoryPath)
     }
   )
   ipcMain.handle(
     'analyzed-directory/batch-save-directories',
     async (event, directories: any[], workspaceDirectoryPath: string) => {
-      if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-      return await analyzedDirectoryService.batchSaveDirectories(
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+      return await virtualDirectoryService.batchSaveDirectories(
         directories,
         workspaceDirectoryPath
       )
@@ -603,51 +602,50 @@ export function registerVirtualDirectoryIPCHandlers() {
   ipcMain.handle(
     'analyzed-directory/get-saved-directories',
     async (event, workspaceDirectoryPath?: string) => {
-      // 使用 analyzedDirectoryService 查询 analyzed_directories 表（generateFromPreviewTree 写入该表）
-      if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-      return await analyzedDirectoryService.getSavedDirectories(workspaceDirectoryPath || '')
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+      return await virtualDirectoryService.getSavedDirectories(workspaceDirectoryPath || '')
     }
   )
 
   ipcMain.handle(
     'analyzed-directory/delete-directory',
     async (event, id: string, workspaceDirectoryPath?: string) => {
-      if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-      return await analyzedDirectoryService.deleteDirectory(id)
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+      return await virtualDirectoryService.deleteDirectory(id)
     }
   )
   ipcMain.handle(
     'analyzed-directory/rename-directory',
     async (event, id: string, newName: string) => {
-      if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-      return await analyzedDirectoryService.renameDirectory(id, newName)
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+      return await virtualDirectoryService.renameDirectory(id, newName)
     }
   )
   ipcMain.handle('analyzed-directory/is-first', async (event, workspaceDirectoryPath?: string) => {
-    if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-    return await analyzedDirectoryService.isFirstVirtualDirectory(workspaceDirectoryPath || '')
+    if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+    return await virtualDirectoryService.isFirstVirtualDirectory(workspaceDirectoryPath || '')
   })
   ipcMain.handle('analyzed-directory/cleanup', async (event, workspaceDirectoryPath: string) => {
-    if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-    return await analyzedDirectoryService.cleanupVirtualDirectory(workspaceDirectoryPath)
+    if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+    return await virtualDirectoryService.cleanupVirtualDirectory(workspaceDirectoryPath)
   })
   ipcMain.handle(
     'analyzed-directory/get-analyzed-files-count',
     async (event, workspaceDirectoryPath?: string) => {
-      if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-      return await analyzedDirectoryService.getAnalyzedFilesCount(workspaceDirectoryPath)
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+      return await virtualDirectoryService.getAnalyzedFilesCount(workspaceDirectoryPath)
     }
   )
   ipcMain.handle('analyzed-directory/get-private-analyzed-files-count', async () => {
-    if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
-    return await analyzedDirectoryService.getAnalyzedFilesCount()
+    if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+    return await virtualDirectoryService.getAnalyzedFilesCount()
   })
   ipcMain.handle('analyzed-directory/find-first-hardlink', async (event, filePath: string) => {
-    if (!analyzedDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+    if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
     const workspaceDir = await databaseService.getCurrentWorkspaceDirectory()
     const workspacePath = workspaceDir?.path
     if (!workspacePath) throw new Error(t('未设置工作目录'))
-    return await analyzedDirectoryService.findFirstHardlink(filePath, workspacePath)
+    return await virtualDirectoryService.findFirstHardlink(filePath, workspacePath)
   })
   ipcMain.handle('analyzed-directory/generate-from-preview-tree', async (event, params: any) => {
     const license = await checkLicenseAndNotify(true)

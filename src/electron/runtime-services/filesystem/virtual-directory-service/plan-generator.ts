@@ -1,7 +1,7 @@
 import { LogCategory, logger } from '@firefly/shared'
 import path from 'node:path'
 import { databaseService } from '../../database/database-service'
-import { analyzedDirectoryService } from '../analyzed-directory-service'
+import { virtualDirectoryService } from './VirtualDirectoryService'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
 import { DirectoryContextService } from '../directory-context-service'
@@ -81,10 +81,10 @@ export async function generateNameAndStrategyCandidates(
     logger.info(LogCategory.FILE_ORGANIZATION, '获取维度标签:', {
       workspaceId,
       workspaceDirPath: workspaceDir?.path,
-      hasAnalyzedDirectoryService: !!analyzedDirectoryService
+      hasVirtualDirectoryService: !!virtualDirectoryService
     })
-    if (workspaceDir && workspaceDir.path && analyzedDirectoryService) {
-      const response = await analyzedDirectoryService.getDimensionGroups(workspaceDir.path)
+    if (workspaceDir && workspaceDir.path && virtualDirectoryService) {
+      const response = await virtualDirectoryService.getDimensionGroups(workspaceDir.path)
       const groups = response?.groups || []
 
       // 如果限制了文件选择，查询这些文件实际拥有的标签，用于过滤维度标签树
@@ -170,7 +170,7 @@ export async function generateNameAndStrategyCandidates(
       logger.warn(LogCategory.FILE_ORGANIZATION, '获取维度标签失败:', {
         workspaceDir: !!workspaceDir,
         workspaceDirPath: workspaceDir?.path,
-        analyzedDirectoryService: !!analyzedDirectoryService,
+        virtualDirectoryService: !!virtualDirectoryService,
         workspaceId
       })
     }

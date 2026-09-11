@@ -1,7 +1,6 @@
 import { BrowserWindow } from 'electron'
 import type { ILlamaIndexAIService } from '@firefly/types'
 import type { ICoreEngine } from '@firefly/core-engine'
-import { AnalyzedDirectoryService } from '../runtime-services/filesystem/analyzed-directory-service/index'
 import { VirtualDirectoryService } from '../runtime-services/filesystem/virtual-directory-service/index'
 import { DirectoryContextService } from '../runtime-services/filesystem/directory-context-service'
 import { OrganizeRealDirectoryService } from '../runtime-services/filesystem/organize-real-directory-service/index'
@@ -18,8 +17,8 @@ export function setCoreEngine(engine: ICoreEngine | null) {
   coreEngine = engine
 }
 
-export const analyzedDirectoryService = new AnalyzedDirectoryService()
 export const virtualDirectoryService = new VirtualDirectoryService()
+export const analyzedDirectoryService = virtualDirectoryService
 
 export let directoryContextService: DirectoryContextService | null = null
 export function setDirectoryContextService(service: DirectoryContextService | null) {

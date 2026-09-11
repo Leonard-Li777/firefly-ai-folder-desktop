@@ -10,7 +10,6 @@ import Database from 'better-sqlite3'
 import path from 'node:path'
 import { t } from '@app/languages'
 import { databaseService } from '../../database/database-service'
-import { analyzedDirectoryService } from '../analyzed-directory-service'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { DirectoryContextService } from '../directory-context-service'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
@@ -27,6 +26,7 @@ export interface AISchemeProvider {
   ): Promise<VirtualDirectory>
   replaceFiles(virtualDirectoryId: number, files: VirtualDirectoryFileInput[]): Promise<void>
   get(id: number): Promise<VirtualDirectory | null>
+  getDimensionGroups(options?: any, language?: string): Promise<any>
 }
 
 export class AISchemeGenerator {
@@ -185,10 +185,10 @@ export class AISchemeGenerator {
       logger.info(LogCategory.FILE_ORGANIZATION, '获取维度标签:', {
         workspaceId,
         workspaceDirPath: workspaceDir?.path,
-        hasAnalyzedDirectoryService: !!analyzedDirectoryService
+        hasProviderDimensionGroups: typeof this.provider.getDimensionGroups === 'function'
       })
-      if (workspaceDir && workspaceDir.path && analyzedDirectoryService) {
-        const response = await analyzedDirectoryService.getDimensionGroups(workspaceDir.path)
+      if (workspaceDir && workspaceDir.path && typeof this.provider.getDimensionGroups === 'function') {
+        const response = await this.provider.getDimensionGroups(workspaceDir.path)
         const groups = response?.groups || []
 
         // 如果限制了文件选择，查询这些文件实际拥有的标签，用于过滤维度标签树
@@ -274,7 +274,7 @@ export class AISchemeGenerator {
         logger.warn(LogCategory.FILE_ORGANIZATION, '获取维度标签失败:', {
           workspaceDir: !!workspaceDir,
           workspaceDirPath: workspaceDir?.path,
-          analyzedDirectoryService: !!analyzedDirectoryService,
+          hasProviderDimensionGroups: typeof this.provider.getDimensionGroups === 'function',
           workspaceId
         })
       }
