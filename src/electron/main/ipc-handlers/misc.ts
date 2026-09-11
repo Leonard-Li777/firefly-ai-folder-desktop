@@ -139,9 +139,13 @@ export function registerMiscIPCHandlers() {
         .prepare('SELECT file_fingerprint FROM workspace_files WHERE path = ?')
         .get(filePath) as { file_fingerprint: string } | undefined
       if (!fileRow) return { success: false, error: '文件不存在' }
-      db.prepare('DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND tag_id = ?').run(
+      const tagRow = db
+        .prepare('SELECT code FROM file_tags WHERE id = ? OR code = ? OR name = ?')
+        .get(tagId, tagId, tagId) as { code: string } | undefined
+      const targetCode = tagRow?.code || String(tagId)
+      db.prepare('DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND tag_code = ?').run(
         fileRow.file_fingerprint,
-        tagId
+        targetCode
       )
       databaseService.syncFTSTags(fileRow.file_fingerprint)
       return { success: true }

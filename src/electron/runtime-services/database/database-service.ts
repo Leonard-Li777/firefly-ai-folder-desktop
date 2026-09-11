@@ -1175,11 +1175,11 @@ export class DatabaseService {
     try {
       this._db.transaction(() => {
         const tagRows = this._db!.prepare(
-          'SELECT id FROM file_tags WHERE dimension_id = ? AND LOWER(TRIM(name)) = LOWER(TRIM(?))'
-        ).all(dimensionId, tagName) as Array<{ id: number }>
+          'SELECT id, code FROM file_tags WHERE (dimension_id = ? OR code LIKE ? || ".%") AND LOWER(TRIM(name)) = LOWER(TRIM(?))'
+        ).all(dimensionId, String(dimensionId), tagName) as Array<{ id: number; code: string }>
 
         for (const tag of tagRows) {
-          this._db!.prepare('DELETE FROM file_tag_relations WHERE tag_id = ?').run(tag.id)
+          this._db!.prepare('DELETE FROM file_tag_relations WHERE tag_code = ?').run(tag.code)
           this._db!.prepare('DELETE FROM file_tags WHERE id = ?').run(tag.id)
         }
 
@@ -1239,7 +1239,7 @@ export class DatabaseService {
     try {
       this._db.transaction(() => {
         // 1. 处理结构化 addTags 与 newTags
-        const createdTagMap = new Map<string, number>()
+        const createdTagMap = new Map<string, string>()
         const combinedAddTags = [...(operation.addTags || []), ...(operation.newTags || [])]
 
         if (combinedAddTags.length > 0) {
@@ -1257,22 +1257,29 @@ export class DatabaseService {
             }
 
             const existingTag = this._db!.prepare(
-              'SELECT id FROM file_tags WHERE dimension_id = ? AND name = ?'
-            ).get(dimId, item.tagName) as { id: number } | undefined
+              'SELECT code FROM file_tags WHERE (dimension_id = ? OR code LIKE ? || ".%") AND name = ?'
+            ).get(dimId, String(dimId), item.tagName) as { code: string } | undefined
 
             if (existingTag) {
-              createdTagMap.set(`${dimId}:${item.tagName}`, existingTag.id)
+              createdTagMap.set(`${dimId}:${item.tagName}`, existingTag.code)
             } else {
-              const res = this._db!.prepare(
-                'INSERT INTO file_tags (name, dimension_id, sync_status, created_at) VALUES (?, ?, 0, CURRENT_TIMESTAMP)'
-              ).run(item.tagName, dimId)
-              createdTagMap.set(`${dimId}:${item.tagName}`, Number(res.lastInsertRowid))
+              const sanitized = item.tagName.toLowerCase().replace(/[\s\/:*?"<>|]+/g, '_').replace(/^_+|_+$/g, '')
+              const code = `custom:${sanitized || 'tag'}`
+              this._db!.prepare(
+                'INSERT OR IGNORE INTO file_tags (code, name, parent_codes, depth, file_groups, is_multi_select, is_leaf, is_system, sync_status, created_at) VALUES (?, ?, \'["content"]\', 2, \'[]\', 1, 1, 0, 0, CURRENT_TIMESTAMP)'
+              ).run(code, item.tagName)
+              createdTagMap.set(`${dimId}:${item.tagName}`, code)
             }
           }
         }
 
         // 2. 处理待移除标签 removeTags
-        const resolvedRemoveTagIds = [...(operation.removeTagIds || [])]
+        const resolvedRemoveTagCodes: string[] = []
+        for (const rawId of operation.removeTagIds || []) {
+          const found = this._db!.prepare('SELECT code FROM file_tags WHERE id = ? OR code = ?').get(rawId, String(rawId)) as { code: string } | undefined
+          resolvedRemoveTagCodes.push(found?.code || String(rawId))
+        }
+
         if (operation.removeTags && operation.removeTags.length > 0) {
           for (const item of operation.removeTags) {
             let dimId = item.dimensionId || 28
@@ -1288,17 +1295,23 @@ export class DatabaseService {
             }
 
             const existingTag = this._db!.prepare(
-              'SELECT id FROM file_tags WHERE dimension_id = ? AND name = ?'
-            ).get(dimId, item.tagName) as { id: number } | undefined
+              'SELECT code FROM file_tags WHERE (dimension_id = ? OR code LIKE ? || ".%") AND name = ?'
+            ).get(dimId, String(dimId), item.tagName) as { code: string } | undefined
 
             if (existingTag) {
-              resolvedRemoveTagIds.push(existingTag.id)
+              resolvedRemoveTagCodes.push(existingTag.code)
+            } else {
+              resolvedRemoveTagCodes.push(item.tagName)
             }
           }
         }
 
         // 3. 遍历文件应用或解绑
-        const allAddTagIds = [...(operation.addTagIds || []), ...Array.from(createdTagMap.values())]
+        const allAddTagCodes: string[] = [...Array.from(createdTagMap.values())]
+        for (const rawId of operation.addTagIds || []) {
+          const found = this._db!.prepare('SELECT code FROM file_tags WHERE id = ? OR code = ?').get(rawId, String(rawId)) as { code: string } | undefined
+          allAddTagCodes.push(found?.code || String(rawId))
+        }
 
         for (const fileId of operation.fileIds) {
           try {
@@ -1343,21 +1356,21 @@ export class DatabaseService {
             }
 
             // 添加标签关联
-            if (allAddTagIds.length > 0) {
+            if (allAddTagCodes.length > 0) {
               const insertStmt = this._db!.prepare(
-                'INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_id, sync_status) VALUES (?, ?, 0)'
+                'INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, confidence, sync_status, created_at) VALUES (?, ?, 1.0, 0, CURRENT_TIMESTAMP)'
               )
-              for (const tagId of allAddTagIds) {
-                insertStmt.run(fp, tagId)
+              for (const tagCode of allAddTagCodes) {
+                insertStmt.run(fp, tagCode)
               }
             }
 
             // 移除标签关联
-            if (resolvedRemoveTagIds.length > 0) {
-              const placeholders = resolvedRemoveTagIds.map(() => '?').join(',')
+            if (resolvedRemoveTagCodes.length > 0) {
+              const placeholders = resolvedRemoveTagCodes.map(() => '?').join(',')
               this._db!.prepare(
-                `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND tag_id IN (${placeholders})`
-              ).run(fp, ...resolvedRemoveTagIds)
+                `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND tag_code IN (${placeholders})`
+              ).run(fp, ...resolvedRemoveTagCodes)
             }
 
             successCount++

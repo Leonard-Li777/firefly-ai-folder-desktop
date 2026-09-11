@@ -548,7 +548,7 @@ export class CloudSyncWorker {
         .prepare(
           `
         SELECT DISTINCT ft.* FROM file_tag_relations ftr
-        JOIN file_tags ft ON ftr.tag_id = ft.id
+        JOIN file_tags ft ON ftr.tag_code = ft.code
         WHERE ftr.file_fingerprint IN (${fileIds.map(() => '?').join(',')})
       `
         )
@@ -619,10 +619,10 @@ export class CloudSyncWorker {
       const fileTagLinks = db
         .prepare(
           `
-        SELECT f.file_fingerprint, ft.name as tag_name, ft.dimension_id
+        SELECT f.file_fingerprint, ft.code as tag_code, ft.name as tag_name, ft.dimension_id
         FROM file_tag_relations ftr
         JOIN files f ON ftr.file_fingerprint = f.file_fingerprint
-        JOIN file_tags ft ON ftr.tag_id = ft.id
+        JOIN file_tags ft ON ftr.tag_code = ft.code
         WHERE ftr.file_fingerprint IN (${fileIds.map(() => '?').join(',')})
       `
         )
