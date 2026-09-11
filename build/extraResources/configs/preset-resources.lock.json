@@ -37,60 +37,60 @@
   },
   "engines": {
     "firefly-omni": {
-      "version": "v0.1.6",
+      "version": "v0.1.8",
       "platforms": {
         "win32-x64": {
           "files": [
             {
-              "name": "firefly-omni-v0.1.6-win32-x64.zip",
-              "size": 31807654,
+              "name": "firefly-omni-v0.1.8-win32-x64.zip",
+              "size": 31807142,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.6-win32-x64.zip"
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.8-win32-x64.zip"
             }
           ]
         },
         "linux-arm64": {
           "files": [
             {
-              "name": "firefly-omni-v0.1.6-linux-arm64.tar.gz",
-              "size": 30938300,
+              "name": "firefly-omni-v0.1.8-linux-arm64.tar.gz",
+              "size": 30933533,
               "platform": "linux",
               "arch": "arm64",
-              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.6-linux-arm64.tar.gz"
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.8-linux-arm64.tar.gz"
             }
           ]
         },
         "linux-x64": {
           "files": [
             {
-              "name": "firefly-omni-v0.1.6-linux-x64.tar.gz",
-              "size": 33530636,
+              "name": "firefly-omni-v0.1.8-linux-x64.tar.gz",
+              "size": 33536108,
               "platform": "linux",
               "arch": "x64",
-              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.6-linux-x64.tar.gz"
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.8-linux-x64.tar.gz"
             }
           ]
         },
         "darwin-arm64": {
           "files": [
             {
-              "name": "firefly-omni-v0.1.6-darwin-arm64.tar.gz",
-              "size": 41605862,
+              "name": "firefly-omni-v0.1.8-darwin-arm64.tar.gz",
+              "size": 41605972,
               "platform": "darwin",
               "arch": "arm64",
-              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.6-darwin-arm64.tar.gz"
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.8-darwin-arm64.tar.gz"
             }
           ]
         },
         "darwin-x64": {
           "files": [
             {
-              "name": "firefly-omni-v0.1.6-darwin-x64.tar.gz",
-              "size": 43332845,
+              "name": "firefly-omni-v0.1.8-darwin-x64.tar.gz",
+              "size": 43332438,
               "platform": "darwin",
               "arch": "x64",
-              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.6-darwin-x64.tar.gz"
+              "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/firefly-omni-v0.1.8-darwin-x64.tar.gz"
             }
           ]
         }
