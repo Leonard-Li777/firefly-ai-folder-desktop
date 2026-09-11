@@ -626,6 +626,7 @@ export class OmniService {
             enable_visual_tags: options?.enableVisualTags ?? true,
             enable_audio_transcript: options?.enableAudioTranscript,
             enable_geo_reverse: options?.enableGeoReverse ?? true,
+            enable_text_analysis: options?.enableTextAnalysis,
             max_content_size_kb: options?.maxContentSizeKb
         };
         logger.debug(LogCategory.SYSTEM, `[OmniService] >>> POST /api/perceive 请求发起:`, JSON.stringify(reqBody));

@@ -65,6 +65,7 @@ export interface OmniPerceptionOptions {
   enableVisualTags?: boolean
   enableAudioTranscript?: boolean
   enableGeoReverse?: boolean
+  enableTextAnalysis?: boolean
   maxContentSizeKb?: number
   audioAnalysisDuration?: number
   timeoutMs?: number
@@ -1024,6 +1025,7 @@ export class OmniService {
       enable_visual_tags: options?.enableVisualTags ?? true,
       enable_audio_transcript: options?.enableAudioTranscript,
       enable_geo_reverse: options?.enableGeoReverse ?? true,
+      enable_text_analysis: options?.enableTextAnalysis,
       max_content_size_kb: options?.maxContentSizeKb,
       audio_analysis_duration: options?.audioAnalysisDuration
     }
@@ -1338,7 +1340,7 @@ export class OmniService {
     timeoutMs: number = 30000
   ): Promise<OmniIndexResponse | null> {
     await this.ensureRunning()
-    try {
+    const doFetch = async () => {
       const res = await fetch(`${this.baseUrl}/api/search/index`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1347,8 +1349,15 @@ export class OmniService {
       })
       if (!res.ok) return null
       return (await res.json()) as OmniIndexResponse
+    }
+    try {
+      return await doFetch()
     } catch (err: any) {
-      logger.error(LogCategory.SYSTEM, `[OmniService] indexDocuments 异常:`, err.message)
+      logger.debug(LogCategory.SYSTEM, `[OmniService] indexDocuments 异常:`, err.message)
+      const restarted = await this.start()
+      if (restarted) {
+        try { return await doFetch() } catch {}
+      }
       return null
     }
   }
@@ -1366,7 +1375,7 @@ export class OmniService {
     timeoutMs: number = 10000
   ): Promise<OmniHybridSearchResponse | null> {
     await this.ensureRunning()
-    try {
+    const doFetch = async () => {
       const res = await fetch(`${this.baseUrl}/api/search/hybrid`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1375,8 +1384,15 @@ export class OmniService {
       })
       if (!res.ok) return null
       return (await res.json()) as OmniHybridSearchResponse
+    }
+    try {
+      return await doFetch()
     } catch (err: any) {
-      logger.error(LogCategory.SYSTEM, `[OmniService] searchHybrid 异常:`, err.message)
+      logger.debug(LogCategory.SYSTEM, `[OmniService] searchHybrid 异常:`, err.message)
+      const restarted = await this.start()
+      if (restarted) {
+        try { return await doFetch() } catch {}
+      }
       return null
     }
   }
@@ -1396,7 +1412,7 @@ export class OmniService {
     timeoutMs: number = 30000
   ): Promise<OmniClusterResponse | null> {
     await this.ensureRunning()
-    try {
+    const doFetch = async () => {
       const res = await fetch(`${this.baseUrl}/api/search/cluster`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1405,8 +1421,15 @@ export class OmniService {
       })
       if (!res.ok) return null
       return (await res.json()) as OmniClusterResponse
+    }
+    try {
+      return await doFetch()
     } catch (err: any) {
-      logger.error(LogCategory.SYSTEM, `[OmniService] clusterDocuments 异常:`, err.message)
+      logger.debug(LogCategory.SYSTEM, `[OmniService] clusterDocuments 异常:`, err.message)
+      const restarted = await this.start()
+      if (restarted) {
+        try { return await doFetch() } catch {}
+      }
       return null
     }
   }

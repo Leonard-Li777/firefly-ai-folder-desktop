@@ -57,6 +57,7 @@ export interface OmniPerceptionOptions {
     enableVisualTags?: boolean;
     enableAudioTranscript?: boolean;
     enableGeoReverse?: boolean;
+    enableTextAnalysis?: boolean;
     maxContentSizeKb?: number;
     audioAnalysisDuration?: number;
     timeoutMs?: number;
