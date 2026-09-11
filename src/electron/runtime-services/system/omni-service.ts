@@ -211,6 +211,56 @@ export interface OmniFsAdsResponse {
   duration_ms: number
 }
 
+export interface OmniIndexedDocument {
+  fingerprint: string
+  embedding: number[]
+  searchableText: string
+}
+
+export interface OmniIndexResponse {
+  success: boolean
+  totalIndexed: number
+  error?: string
+}
+
+export interface OmniFusedResult {
+  fingerprint: string
+  rrfScore: number
+  finalScore: number
+  denseRank?: number
+  bm25Rank?: number
+}
+
+export interface OmniHybridSearchResponse {
+  success: boolean
+  results: OmniFusedResult[]
+  error?: string
+}
+
+export interface OmniClusterDocument {
+  fingerprint: string
+  embedding: number[]
+  keywords: string[]
+}
+
+export interface OmniClusterGroup {
+  fingerprints: string[]
+  folderName: string
+  path: string[]
+}
+
+export interface OmniClusterTreeResult {
+  clusters: OmniClusterGroup[]
+  otherFiles: string[]
+  durationMs: number
+}
+
+export interface OmniClusterResponse {
+  success: boolean
+  result?: OmniClusterTreeResult
+  error?: string
+}
+
 export class OmniService {
   private static instance: OmniService
   private process: ChildProcess | null = null
@@ -1220,6 +1270,87 @@ export class OmniService {
           return await doFetch()
         } catch {}
       }
+      return null
+    }
+  }
+
+  /**
+   * 工业级混合检索：批量写入双轨索引 (USearch 密集向量 + Tantivy BM25)
+   * POST /api/search/index
+   */
+  public async indexDocuments(
+    documents: OmniIndexedDocument[],
+    timeoutMs: number = 30000
+  ): Promise<OmniIndexResponse | null> {
+    await this.ensureRunning()
+    try {
+      const res = await fetch(`${this.baseUrl}/api/search/index`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ documents }),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      return (await res.json()) as OmniIndexResponse
+    } catch (err: any) {
+      logger.error(LogCategory.SYSTEM, `[OmniService] indexDocuments 异常:`, err.message)
+      return null
+    }
+  }
+
+  /**
+   * 工业级混合检索：双轨混合检索与加权 RRF 融合打分 + 规则重排
+   * POST /api/search/hybrid
+   */
+  public async searchHybrid(
+    options: {
+      queryText?: string
+      queryEmbedding?: number[]
+      topK?: number
+    },
+    timeoutMs: number = 10000
+  ): Promise<OmniHybridSearchResponse | null> {
+    await this.ensureRunning()
+    try {
+      const res = await fetch(`${this.baseUrl}/api/search/hybrid`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(options),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      return (await res.json()) as OmniHybridSearchResponse
+    } catch (err: any) {
+      logger.error(LogCategory.SYSTEM, `[OmniService] searchHybrid 异常:`, err.message)
+      return null
+    }
+  }
+
+  /**
+   * 约束层次凝聚聚类 (HAC) 与提示词向量引导多级目录自动归档
+   * POST /api/search/cluster
+   */
+  public async clusterDocuments(
+    options: {
+      documents: OmniClusterDocument[]
+      promptEmbedding?: number[]
+      distanceThreshold?: number
+      maxLeafSize?: number
+    },
+    timeoutMs: number = 30000
+  ): Promise<OmniClusterResponse | null> {
+    await this.ensureRunning()
+    try {
+      const res = await fetch(`${this.baseUrl}/api/search/cluster`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(options),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      return (await res.json()) as OmniClusterResponse
+    } catch (err: any) {
+      logger.error(LogCategory.SYSTEM, `[OmniService] clusterDocuments 异常:`, err.message)
       return null
     }
   }

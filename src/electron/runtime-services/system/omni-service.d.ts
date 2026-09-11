@@ -184,6 +184,48 @@ export interface OmniFsAdsResponse {
     source_url?: string;
     duration_ms: number;
 }
+export interface OmniIndexedDocument {
+    fingerprint: string;
+    embedding: number[];
+    searchableText: string;
+}
+export interface OmniIndexResponse {
+    success: boolean;
+    totalIndexed: number;
+    error?: string;
+}
+export interface OmniFusedResult {
+    fingerprint: string;
+    rrfScore: number;
+    finalScore: number;
+    denseRank?: number;
+    bm25Rank?: number;
+}
+export interface OmniHybridSearchResponse {
+    success: boolean;
+    results: OmniFusedResult[];
+    error?: string;
+}
+export interface OmniClusterDocument {
+    fingerprint: string;
+    embedding: number[];
+    keywords: string[];
+}
+export interface OmniClusterGroup {
+    fingerprints: string[];
+    folderName: string;
+    path: string[];
+}
+export interface OmniClusterTreeResult {
+    clusters: OmniClusterGroup[];
+    otherFiles: string[];
+    durationMs: number;
+}
+export interface OmniClusterResponse {
+    success: boolean;
+    result?: OmniClusterTreeResult;
+    error?: string;
+}
 export declare class OmniService {
     private static instance;
     private process;
@@ -296,6 +338,30 @@ export declare class OmniService {
      * POST /api/fs/ads
      */
     inspectAds(filePath: string, timeoutMs?: number): Promise<OmniFsAdsResponse | null>;
+    /**
+     * 工业级混合检索：批量写入双轨索引 (USearch 密集向量 + Tantivy BM25)
+     * POST /api/search/index
+     */
+    indexDocuments(documents: OmniIndexedDocument[], timeoutMs?: number): Promise<OmniIndexResponse | null>;
+    /**
+     * 工业级混合检索：双轨混合检索与加权 RRF 融合打分 + 规则重排
+     * POST /api/search/hybrid
+     */
+    searchHybrid(options: {
+        queryText?: string;
+        queryEmbedding?: number[];
+        topK?: number;
+    }, timeoutMs?: number): Promise<OmniHybridSearchResponse | null>;
+    /**
+     * 约束层次凝聚聚类 (HAC) 与提示词向量引导多级目录自动归档
+     * POST /api/search/cluster
+     */
+    clusterDocuments(options: {
+        documents: OmniClusterDocument[];
+        promptEmbedding?: number[];
+        distanceThreshold?: number;
+        maxLeafSize?: number;
+    }, timeoutMs?: number): Promise<OmniClusterResponse | null>;
 }
 export declare const omniService: OmniService;
 //# sourceMappingURL=omni-service.d.ts.map
