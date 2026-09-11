@@ -140,4 +140,29 @@ export async function fetchProHowNetDescribe(
   return null
 }
 
+export interface SemanticAlignment {
+  tagCode: string
+  tagName: string
+  omwSynsets: any[]
+  hownetSlots?: ProHowNetSlot[]
+  hownetDescription?: string
+  antonyms?: string[]
+}
+
+export async function alignTagSemantics(
+  tagCode: string,
+  tagName: string,
+  dbService: any,
+  _omniPort = 38200
+): Promise<SemanticAlignment> {
+  const omwSynsets = dbService?.tagToOmw ? dbService.tagToOmw(tagCode) : []
+  const antonyms = dbService?.omwAntonyms ? dbService.omwAntonyms(tagName).map((a: any) => a.antonym) : []
+  return {
+    tagCode,
+    tagName,
+    omwSynsets,
+    antonyms
+  }
+}
+
 

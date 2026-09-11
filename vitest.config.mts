@@ -56,6 +56,7 @@ export default defineConfig({
     }
   },
   resolve: {
+    extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
     alias: {
       '@': resolve(__dirname, 'src'),
       '@src': resolve(__dirname, 'src'),
@@ -70,6 +71,7 @@ export default defineConfig({
       '@stores': resolve(__dirname, 'src/renderer/stores'),
       '@hooks': resolve(__dirname, 'src/renderer/hooks'),
       '@runtime': resolve(__dirname, 'src/electron/runtime-services'),
+      '@pro/scripts': resolve(__dirname, 'pro/scripts'),
       '@pro': proAliasDir,
       '@pro/*': resolve(proAliasDir, '*'),
       '../src': resolve(__dirname, 'src'),

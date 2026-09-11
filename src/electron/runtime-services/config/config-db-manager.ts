@@ -88,7 +88,10 @@ export class ConfigDbManager {
       // 4. 清空并导入 file_tags 统一标签树
       this.loadInitialFileTagsToDb(db, resolvedLanguage)
 
-      // 5. 将所有配置加载到内存中
+      // 5. 导入 OMW 多语言词网预置数据 (支柱 2)
+      this.loadInitialOmwToDb(db, resolvedLanguage)
+
+      // 6. 将所有配置加载到内存中
       this.loadAllConfigsFromDb(db)
 
       logger.info(
@@ -420,6 +423,205 @@ export class ConfigDbManager {
    */
   private loadInitialFileDimensionsToDb(db: Database.Database, language: string): void {
     this.loadInitialFileTagsToDb(db, language)
+  }
+
+  /**
+   * 从 preset CSV 解析并导入 OMW 多语言词网预置数据到 SQLite (支柱 2)
+   */
+  private loadInitialOmwToDb(db: Database.Database, _language: string): void {
+    try {
+      // 1. 检查 omw_languages 表是否已存在且已有数据
+      try {
+        const check = db.prepare('SELECT count(*) as cnt FROM omw_languages').get() as
+          | { cnt: number }
+          | undefined
+        if (check && check.cnt > 0) {
+          logger.info(
+            LogCategory.CONFIG,
+            `ConfigDbManager: omw_languages 已存在 ${check.cnt} 条数据，跳过重复导入`
+          )
+          return
+        }
+      } catch {
+        // 表若尚未创建则安全返回
+        return
+      }
+
+      const taxonomyDir = this.findTaxonomyDir()
+      if (!taxonomyDir) {
+        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 未找到 preset taxonomy 资源目录，跳过 OMW 导入')
+        return
+      }
+
+      const isTest = isTestEnvironment()
+      const rowLimit = isTest ? 200 : 0 // 测试环境仅取前 200 条以加速
+
+      // 1) 导入 omw_languages.csv
+      const langPath = path.join(taxonomyDir, 'omw_languages.csv')
+      if (fs.existsSync(langPath)) {
+        const lines = fs.readFileSync(langPath, 'utf-8').split(/\r?\n/).filter(Boolean)
+        const insertLang = db.prepare(`
+          INSERT OR REPLACE INTO omw_languages (code, label, has_hierarchy, has_definitions, has_examples, meta)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `)
+        db.transaction(() => {
+          for (let i = 1; i < lines.length; i++) {
+            const cols = this.parseCsvLine(lines[i])
+            if (cols.length >= 6) {
+              insertLang.run(
+                cols[0],
+                cols[1],
+                parseInt(cols[2]) || 0,
+                parseInt(cols[3]) || 0,
+                parseInt(cols[4]) || 0,
+                cols[5] || '{}'
+              )
+            }
+          }
+        })()
+      }
+
+      // 2) 导入 omw_synsets.csv
+      const synsetPath = path.join(taxonomyDir, 'omw_synsets.csv')
+      if (fs.existsSync(synsetPath)) {
+        this.streamImportCsv(
+          db,
+          synsetPath,
+          `INSERT OR REPLACE INTO omw_synsets (id, ili, pos, lexfile, definition, dc_identifier, meta) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          rowLimit,
+          7
+        )
+      }
+
+      // 3) 导入 omw_lexical_entries.csv
+      const entryPath = path.join(taxonomyDir, 'omw_lexical_entries.csv')
+      if (fs.existsSync(entryPath)) {
+        this.streamImportCsv(
+          db,
+          entryPath,
+          `INSERT OR REPLACE INTO omw_lexical_entries (id, synset_id, language, lemma, pos, meta) VALUES (?, ?, ?, ?, ?, ?)`,
+          rowLimit,
+          6
+        )
+      }
+
+      // 4) 导入 omw_relations.csv
+      const relPath = path.join(taxonomyDir, 'omw_relations.csv')
+      if (fs.existsSync(relPath)) {
+        this.streamImportCsv(
+          db,
+          relPath,
+          `INSERT OR REPLACE INTO omw_relations (source_id, target_id, rel_type, meta) VALUES (?, ?, ?, ?)`,
+          rowLimit,
+          3,
+          (cols) => [cols[0], cols[1], cols[2], '{}']
+        )
+      }
+
+      // 5) 导入 omw_sense_relations.csv
+      const senseRelPath = path.join(taxonomyDir, 'omw_sense_relations.csv')
+      if (fs.existsSync(senseRelPath)) {
+        this.streamImportCsv(
+          db,
+          senseRelPath,
+          `INSERT OR REPLACE INTO omw_sense_relations (source_entry_id, target_entry_id, rel_type, meta) VALUES (?, ?, ?, ?)`,
+          rowLimit,
+          3,
+          (cols) => [cols[0], cols[1], cols[2], '{}']
+        )
+      }
+
+      // 6) 导入 omw_examples.csv
+      const examplePath = path.join(taxonomyDir, 'omw_examples.csv')
+      if (fs.existsSync(examplePath)) {
+        this.streamImportCsv(
+          db,
+          examplePath,
+          `INSERT OR REPLACE INTO omw_examples (synset_id, text, language, meta) VALUES (?, ?, ?, ?)`,
+          rowLimit,
+          3,
+          (cols) => [cols[0], cols[1], cols[2], '{}']
+        )
+      }
+
+      logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功导入 OMW 词网数据`)
+    } catch (error) {
+      logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入 OMW 词网数据失败:', error)
+    }
+  }
+
+  private findTaxonomyDir(): string | null {
+    const candidates = [
+      ResourceLocator.resolveResourcePath('taxonomy'),
+      path.resolve(process.cwd(), 'apps/desktop/build/presetResources/taxonomy'),
+      path.resolve(process.cwd(), 'build/presetResources/taxonomy')
+    ]
+    for (const c of candidates) {
+      if (fs.existsSync(c) && fs.existsSync(path.join(c, 'omw_languages.csv'))) {
+        return c
+      }
+    }
+    let cur = process.cwd()
+    for (let i = 0; i < 4; i++) {
+      const probe = path.join(cur, 'apps', 'desktop', 'build', 'presetResources', 'taxonomy')
+      if (fs.existsSync(probe) && fs.existsSync(path.join(probe, 'omw_languages.csv'))) {
+        return probe
+      }
+      const parent = path.dirname(cur)
+      if (parent === cur) break
+      cur = parent
+    }
+    return null
+  }
+
+  private parseCsvLine(line: string): string[] {
+    const result: string[] = []
+    let current = ''
+    let inQuotes = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (ch === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"'
+          i++
+        } else {
+          inQuotes = !inQuotes
+        }
+      } else if (ch === ',' && !inQuotes) {
+        result.push(current)
+        current = ''
+      } else {
+        current += ch
+      }
+    }
+    result.push(current)
+    return result
+  }
+
+  private streamImportCsv(
+    db: Database.Database,
+    filePath: string,
+    insertSql: string,
+    rowLimit: number,
+    expectedMinCols: number,
+    transformRow?: (cols: string[]) => any[]
+  ): void {
+    const insertStmt = db.prepare(insertSql)
+    const content = fs.readFileSync(filePath, 'utf-8')
+    const lines = content.split(/\r?\n/)
+    const max = rowLimit > 0 ? Math.min(rowLimit + 1, lines.length) : lines.length
+
+    db.transaction(() => {
+      for (let i = 1; i < max; i++) {
+        const line = lines[i]
+        if (!line || !line.trim()) continue
+        const cols = this.parseCsvLine(line)
+        if (cols.length >= expectedMinCols) {
+          const params = transformRow ? transformRow(cols) : cols
+          insertStmt.run(...params)
+        }
+      }
+    })()
   }
 
   /**

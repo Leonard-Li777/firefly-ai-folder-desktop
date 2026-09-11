@@ -261,6 +261,61 @@ export interface OmniClusterResponse {
   error?: string
 }
 
+export interface OmniHowNetSlot {
+  role: string
+  target: string
+  confidence: number
+}
+
+export interface OmniHowNetDescribeResult {
+  word: string
+  found: boolean
+  is_aligned: boolean
+  alignment_level?: string
+  top_concept?: string
+  slots: OmniHowNetSlot[]
+  synonyms: string[]
+  antonyms: string[]
+  description: string
+}
+
+export interface OmniExtractedEntity {
+  entity_type: string
+  value: string
+  confidence: number
+  source: string
+  hownet_role?: string
+}
+
+export interface OmniStructuredSummary {
+  who?: string
+  when?: string
+  where?: string
+  what?: string
+  why?: string
+  how?: string
+}
+
+export interface OmniDocumentChunk {
+  chunk_index: number
+  text: string
+  char_count: number
+}
+
+export interface OmniTextAnalysisResult {
+  title: string | null
+  language: string
+  keywords: string[]
+  entities: OmniExtractedEntity[]
+  structured_summary: OmniStructuredSummary
+  one_sentence_desc: string | null
+  smart_name: string | null
+  name_slots: Record<string, any>
+  embedding_dense: number[]
+  chunks: OmniDocumentChunk[]
+  duration_ms: number
+}
+
 export class OmniService {
   private static instance: OmniService
   private process: ChildProcess | null = null
@@ -1333,6 +1388,7 @@ export class OmniService {
   public async clusterDocuments(
     options: {
       documents: OmniClusterDocument[]
+      prompt?: string
       promptEmbedding?: number[]
       distanceThreshold?: number
       maxLeafSize?: number
@@ -1351,6 +1407,83 @@ export class OmniService {
       return (await res.json()) as OmniClusterResponse
     } catch (err: any) {
       logger.error(LogCategory.SYSTEM, `[OmniService] clusterDocuments 异常:`, err.message)
+      return null
+    }
+  }
+
+  /**
+   * OpenHowNet 语义描述查询与自然语言描述句合成 (支柱 3)
+   * POST /api/hownet/describe
+   */
+  public async describeHowNet(
+    word: string,
+    timeoutMs: number = 5000
+  ): Promise<OmniHowNetDescribeResult | null> {
+    await this.ensureRunning()
+    const reqBody = { word }
+
+    const doFetch = async () => {
+      const res = await fetch(`${this.baseUrl}/api/hownet/describe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      return (await res.json()) as OmniHowNetDescribeResult
+    }
+
+    try {
+      return await doFetch()
+    } catch (err: any) {
+      logger.debug(LogCategory.SYSTEM, `[OmniService] describeHowNet 异常 (${word}):`, err.message)
+      const restarted = await this.start()
+      if (restarted) {
+        try {
+          return await doFetch()
+        } catch {}
+      }
+      return null
+    }
+  }
+
+  /**
+   * Tier 1 端侧纯 CPU 文本特征与 384 维向量提取 (支柱 4)
+   * POST /api/text/analyze
+   */
+  public async analyzeText(
+    text: string,
+    options?: { fileName?: string; mtime?: string },
+    timeoutMs: number = 10000
+  ): Promise<OmniTextAnalysisResult | null> {
+    await this.ensureRunning()
+    const reqBody = {
+      text,
+      fileName: options?.fileName,
+      mtime: options?.mtime
+    }
+
+    const doFetch = async () => {
+      const res = await fetch(`${this.baseUrl}/api/text/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      return (await res.json()) as OmniTextAnalysisResult
+    }
+
+    try {
+      return await doFetch()
+    } catch (err: any) {
+      logger.debug(LogCategory.SYSTEM, `[OmniService] analyzeText 异常:`, err.message)
+      const restarted = await this.start()
+      if (restarted) {
+        try {
+          return await doFetch()
+        } catch {}
+      }
       return null
     }
   }

@@ -325,6 +325,118 @@ const GENESIS_V1_SCHEMA = `
   CREATE TRIGGER trg_file_contents_update_modified_at AFTER UPDATE ON file_contents BEGIN
     UPDATE files SET modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = new.file_fingerprint;
   END;
+
+  -- 19. OMW 多语言词网与语义增强表 (支柱 2)
+  CREATE TABLE IF NOT EXISTS omw_languages (
+    code TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    has_hierarchy INTEGER NOT NULL DEFAULT 0,
+    has_definitions INTEGER NOT NULL DEFAULT 0,
+    has_examples INTEGER NOT NULL DEFAULT 0,
+    meta TEXT NOT NULL DEFAULT '{}'
+  );
+
+  CREATE TABLE IF NOT EXISTS omw_synsets (
+    id TEXT PRIMARY KEY,
+    ili TEXT,
+    pos TEXT NOT NULL,
+    lexfile TEXT,
+    definition TEXT,
+    dc_identifier TEXT,
+    meta TEXT NOT NULL DEFAULT '{}'
+  );
+
+  CREATE TABLE IF NOT EXISTS omw_lexical_entries (
+    id TEXT PRIMARY KEY,
+    synset_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
+    language TEXT NOT NULL REFERENCES omw_languages(code),
+    lemma TEXT NOT NULL,
+    pos TEXT NOT NULL,
+    meta TEXT NOT NULL DEFAULT '{}'
+  );
+
+  CREATE TABLE IF NOT EXISTS omw_relations (
+    source_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
+    target_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
+    rel_type TEXT NOT NULL,
+    meta TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (source_id, target_id, rel_type)
+  );
+
+  CREATE TABLE IF NOT EXISTS omw_sense_relations (
+    source_entry_id TEXT NOT NULL REFERENCES omw_lexical_entries(id) ON DELETE CASCADE,
+    target_entry_id TEXT NOT NULL REFERENCES omw_lexical_entries(id) ON DELETE CASCADE,
+    rel_type TEXT NOT NULL,
+    meta TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (source_entry_id, target_entry_id, rel_type)
+  );
+
+  CREATE TABLE IF NOT EXISTS omw_examples (
+    synset_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
+    text TEXT NOT NULL,
+    language TEXT NOT NULL REFERENCES omw_languages(code),
+    meta TEXT NOT NULL DEFAULT '{}'
+  );
+
+  CREATE TABLE IF NOT EXISTS tag_omw_mapping (
+    tag_code TEXT NOT NULL REFERENCES file_tags(code) ON DELETE CASCADE,
+    synset_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
+    match_level INTEGER NOT NULL,   -- 1=精确, 2=向量
+    confidence REAL,
+    meta TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (tag_code, synset_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS antonym_pairs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    word_a TEXT NOT NULL,
+    word_b TEXT NOT NULL,
+    source TEXT NOT NULL,
+    language TEXT NOT NULL DEFAULT 'cmn',
+    status TEXT NOT NULL DEFAULT 'auto',
+    meta TEXT NOT NULL DEFAULT '{}',
+    UNIQUE (word_a, word_b, language)
+  );
+
+  CREATE TABLE IF NOT EXISTS hownet_words (
+    id INTEGER PRIMARY KEY,
+    wc TEXT NOT NULL,
+    we TEXT,
+    gc TEXT,
+    rmk TEXT,
+    is_common INTEGER NOT NULL DEFAULT 1,
+    omw_synset_id TEXT REFERENCES omw_synsets(id),
+    meta TEXT NOT NULL DEFAULT '{}'
+  );
+
+  CREATE TABLE IF NOT EXISTS hownet_concepts (
+    id INTEGER PRIMARY KEY,
+    en TEXT NOT NULL UNIQUE,
+    zh TEXT NOT NULL,
+    child_of INTEGER REFERENCES hownet_concepts(id),
+    meta TEXT NOT NULL DEFAULT '{}'
+  );
+
+  CREATE TABLE IF NOT EXISTS hownet_word_concepts (
+    word_id INTEGER NOT NULL REFERENCES hownet_words(id) ON DELETE CASCADE,
+    concept_id INTEGER NOT NULL REFERENCES hownet_concepts(id) ON DELETE CASCADE,
+    depth INTEGER NOT NULL,
+    path TEXT NOT NULL,
+    meta TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (word_id, concept_id)
+  );
+
+  -- 20. OMW 与语义索引
+  CREATE INDEX IF NOT EXISTS idx_omw_lexical_entries_lemma_lang ON omw_lexical_entries(lemma, language);
+  CREATE INDEX IF NOT EXISTS idx_omw_lexical_entries_synset ON omw_lexical_entries(synset_id);
+  CREATE INDEX IF NOT EXISTS idx_omw_relations_source ON omw_relations(source_id, rel_type);
+  CREATE INDEX IF NOT EXISTS idx_omw_relations_target ON omw_relations(target_id, rel_type);
+  CREATE INDEX IF NOT EXISTS idx_tag_omw_mapping_tag ON tag_omw_mapping(tag_code);
+  CREATE INDEX IF NOT EXISTS idx_tag_omw_mapping_synset ON tag_omw_mapping(synset_id);
+  CREATE INDEX IF NOT EXISTS idx_antonym_word_a ON antonym_pairs(word_a);
+  CREATE INDEX IF NOT EXISTS idx_antonym_word_b ON antonym_pairs(word_b);
+  CREATE INDEX IF NOT EXISTS idx_hownet_words_we ON hownet_words(we);
+  CREATE INDEX IF NOT EXISTS idx_hownet_words_wc ON hownet_words(wc);
 `
 
 /**
@@ -338,6 +450,17 @@ export const migrations: IMigrationConfig[] = [
     description: '一步到位初始化 Genesis V1 创世基线架构',
     up: GENESIS_V1_SCHEMA,
     down: `
+      DROP TABLE IF EXISTS tag_omw_mapping;
+      DROP TABLE IF EXISTS antonym_pairs;
+      DROP TABLE IF EXISTS hownet_word_concepts;
+      DROP TABLE IF EXISTS hownet_concepts;
+      DROP TABLE IF EXISTS hownet_words;
+      DROP TABLE IF EXISTS omw_examples;
+      DROP TABLE IF EXISTS omw_sense_relations;
+      DROP TABLE IF EXISTS omw_relations;
+      DROP TABLE IF EXISTS omw_lexical_entries;
+      DROP TABLE IF EXISTS omw_synsets;
+      DROP TABLE IF EXISTS omw_languages;
       DROP TABLE IF EXISTS files_fts;
       DROP TABLE IF EXISTS virtual_directory_files;
       DROP TABLE IF EXISTS virtual_directories;
