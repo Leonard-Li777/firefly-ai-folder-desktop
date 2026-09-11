@@ -5,7 +5,7 @@
 
 import * as path from 'path'
 import { LogCategory, logger } from '@firefly/shared'
-import { FileCategory } from '@firefly/types'
+import { MagikaFileCategory } from '@firefly/types'
 import { omniService } from './omni-service'
 
 export class MagikaService {
@@ -23,7 +23,7 @@ export class MagikaService {
   /**
    * 检测文件类型 (优先通过 Omni 原生服务识别)
    */
-  public async identifyFile(filePath: string): Promise<FileCategory> {
+  public async identifyFile(filePath: string): Promise<MagikaFileCategory> {
     try {
       const result = await omniService.identifyMagika(filePath)
       if (result && result.label) {
@@ -40,8 +40,8 @@ export class MagikaService {
   /**
    * 批量检测文件类型
    */
-  public async identifyFiles(filePaths: string[]): Promise<Map<string, FileCategory>> {
-    const results = new Map<string, FileCategory>()
+  public async identifyFiles(filePaths: string[]): Promise<Map<string, MagikaFileCategory>> {
+    const results = new Map<string, MagikaFileCategory>()
     for (const p of filePaths) {
       const category = await this.identifyFile(p)
       results.set(p, category)
@@ -52,7 +52,7 @@ export class MagikaService {
   /**
    * 根据扩展名构造 Mock 返回 (兜底方案)
    */
-  public getMockCategory(filePath: string): FileCategory {
+  public getMockCategory(filePath: string): MagikaFileCategory {
     const ext = path.extname(filePath).toLowerCase().replace('.', '')
     logger.debug(
       LogCategory.SYSTEM,

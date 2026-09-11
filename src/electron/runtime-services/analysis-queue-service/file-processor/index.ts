@@ -2,7 +2,7 @@ import {
   AnalysisQueueItem,
   DimensionExpansion,
   LanguageCode,
-  FileCategory as MagikaCategory,
+  MagikaFileCategory as MagikaCategory,
   MarkitdownBenchmark,
   Stage1Benchmark
 } from '@firefly/types'
@@ -13,12 +13,6 @@ import {
   FileCategory,
   getFileCategory,
   isCategory,
-  saveAuthorTagsFromMetadata,
-  saveLanguageTagsFromMetadata,
-  saveMagikaGroupTag,
-  saveExtensionTags,
-  saveMagikaIsTextTag,
-  getMagikaGroupFromExtension,
   BROWSER_NATIVE_IMAGE_EXTS,
   isTestEnvironment,
   shouldSkipAIServiceInTest,
@@ -903,14 +897,16 @@ export class FileProcessor {
           cpuSkipped
         )
 
-        this.saveBasicMagikaTags(fileFingerprint, existingBasicData.category || null, filePath, db)
-
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
         executeProTagReconciliation({
           db,
           fileFingerprint,
           preflightContext,
-          dimResult
+          dimResult,
+          authors: baseMetadata?.authors || baseMetadata?.document?.authors,
+          language: baseMetadata?.language,
+          fileGroup: existingBasicData.category || null,
+          extension: path.extname(filePath).replace(/^\./, '').toLowerCase()
         })
 
         databaseService.syncFTSTags(fileFingerprint)
@@ -1808,22 +1804,17 @@ export class FileProcessor {
           `[基础分析] 保存 category: ${JSON.stringify(magikaCategory).slice(0, 200)}`
         )
 
-        // 保存 Magika 标签（文件类型 + 扩展名）
-        this.saveBasicMagikaTags(fileFingerprint, magikaCategory, filePath, db)
-
-        // 运行找补裁决器：全量无损写入 CPU 既定事实标签（文件来源、处理状态、安全等级、水印、打码等），打破 8 个上限限制
+        // 运行找补裁决器单点持久化：全量注入物理事实（来源、状态、安全、水印、作者、分类、扩展名等）
         executeProTagReconciliation({
           db,
           fileFingerprint,
           preflightContext,
-          dimResult: null
+          dimResult: null,
+          authors: anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
+          language,
+          fileGroup: magikaGroup,
+          extension: effectiveExt
         })
-
-        // 从元数据直接提取作者/语言标签并保存（标签 + 专用字段）
-        if (processResult.metadata) {
-          await this.saveBasicAuthorTags(fileFingerprint, processResult.metadata, db)
-          await this.saveBasicLanguageTags(fileFingerprint, processResult.metadata, db)
-        }
 
         databaseService.syncFTSTags(fileFingerprint)
 
@@ -1926,15 +1917,16 @@ export class FileProcessor {
         stage1Benchmark
       )
 
-      // ========== 补充写入基础 of Magika 类型与扩展名标签 ==========
-      this.saveBasicMagikaTags(fileFingerprint, magikaCategory, filePath, db)
-
-      // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
+      // 运行找补裁决器单点持久化：将 CPU 既定事实标签（含清洗后的作者、分类、扩展名）与 AI 推理标签合并，物理事实绝对覆盖，全量无损原子入库
       executeProTagReconciliation({
         db,
         fileFingerprint,
         preflightContext,
-        dimResult
+        dimResult,
+        authors: anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
+        language,
+        fileGroup: magikaGroup,
+        extension: effectiveExt
       })
 
       databaseService.syncFTSTags(fileFingerprint)
@@ -1996,55 +1988,7 @@ export class FileProcessor {
     }
   }
 
-  /**
-   * 基础分析模式下从元数据提取作者标签（使用共享工具）
-   */
-  private async saveBasicAuthorTags(
-    fileFingerprint: string,
-    metadata: any,
-    db: any
-  ): Promise<void> {
-    try {
-      const result = saveAuthorTagsFromMetadata(db, fileFingerprint, metadata, 4)
-      if (result.authorNames.length > 0) {
-        db.prepare('UPDATE files SET author = ? WHERE file_fingerprint = ?').run(
-          result.authorValue,
-          fileFingerprint
-        )
-        logger.info(
-          LogCategory.ANALYSIS_QUEUE,
-          `[基础分析] 已从元数据提取作者标签: ${result.authorNames.join(', ')}`
-        )
-      }
-    } catch (error) {
-      logger.warn(LogCategory.ANALYSIS_QUEUE, `[基础分析] 提取作者标签失败: ${error}`)
-    }
-  }
 
-  /**
-   * 基础分析模式下从元数据提取语言标签（使用共享工具）
-   */
-  private async saveBasicLanguageTags(
-    fileFingerprint: string,
-    metadata: any,
-    db: any
-  ): Promise<void> {
-    try {
-      const result = saveLanguageTagsFromMetadata(db, fileFingerprint, metadata, 4)
-      if (result.languageValue) {
-        db.prepare('UPDATE files SET language = ? WHERE file_fingerprint = ?').run(
-          result.languageValue,
-          fileFingerprint
-        )
-        logger.info(
-          LogCategory.ANALYSIS_QUEUE,
-          `[基础分析] 已从元数据提取语言标签: ${result.languageValue}`
-        )
-      }
-    } catch (error) {
-      logger.warn(LogCategory.ANALYSIS_QUEUE, `[基础分析] 提取语言标签失败: ${error}`)
-    }
-  }
 
   /**
    * 低置信度 Magika 结果净化
@@ -2069,44 +2013,7 @@ export class FileProcessor {
     return { ...magikaCategory, extensions: [diskExt] }
   }
 
-  /**
-   * 基础分析模式下保存 Magika 标签（使用共享工具）
-   */
-  private saveBasicMagikaTags(
-    fileFingerprint: string,
-    magikaCategory: MagikaCategory | null,
-    filePath: string,
-    db: any
-  ): void {
-    try {
-      const isMagikaReliable =
-        magikaCategory &&
-        typeof magikaCategory !== 'string' &&
-        magikaCategory.group &&
-        magikaCategory.group !== 'unknown' &&
-        (magikaCategory.score ?? 1) >= 0.6
 
-      if (isMagikaReliable) {
-        saveMagikaGroupTag(db, fileFingerprint, magikaCategory, 4)
-        saveExtensionTags(db, fileFingerprint, magikaCategory, 4)
-        saveMagikaIsTextTag(db, fileFingerprint, magikaCategory, 4)
-      } else if (filePath) {
-        // Magika 不可靠时，使用原始文件扩展名兜底
-        const originalExt = path.extname(filePath).toLowerCase().replace(/^\./, '')
-        if (originalExt) {
-          // 保存扩展名标签
-          saveExtensionTags(db, fileFingerprint, { extensions: [originalExt] } as any, 4)
-          // 从扩展名反推 group 并保存类型标签
-          const group = getMagikaGroupFromExtension(originalExt)
-          if (group) {
-            saveMagikaGroupTag(db, fileFingerprint, { group } as any, 4)
-          }
-        }
-      }
-    } catch (error) {
-      logger.warn(LogCategory.ANALYSIS_QUEUE, `[基础分析] 保存 Magika 标签失败: ${error}`)
-    }
-  }
 
 
 

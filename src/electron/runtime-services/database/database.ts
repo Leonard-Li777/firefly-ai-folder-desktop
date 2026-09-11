@@ -37,10 +37,11 @@ export interface IMigrationConfig {
 }
 
 /**
- * 2.2 版本初始架构
- * 包含所有表、索引和触发器
+ * Genesis V1 创世基线架构
+ * 包含统一标签树表 (file_tags)、复合主键关联表 (file_tag_relations)、文件常量表 (file_constants)、
+ * 统一多虚拟目录表 (virtual_directories)、FTS5 检索表与触发器
  */
-const V2_2_SCHEMA = `
+const GENESIS_V1_SCHEMA = `
   -- 1. 用户根工作区配置表
   CREATE TABLE IF NOT EXISTS workspaces (
     workspace_id INTEGER PRIMARY KEY AUTOINCREMENT, -- 工作区唯一标识
@@ -67,15 +68,15 @@ const V2_2_SCHEMA = `
     FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE
   );
 
-  -- 3. 文件基础信息表（内容中心化，基于指纹去重）
+  -- 3. 文件基础信息表（内容中心化，基于指纹去重，以 FileGroup category 分类）
   CREATE TABLE IF NOT EXISTS files (
     file_fingerprint TEXT PRIMARY KEY,           -- 文件内容指纹 (Base62/32位)，作为全局唯一标识
     smart_name TEXT,                             -- AI 生成或用户定义的智能名称
     description TEXT,                            -- AI 生成的文件描述
     size INTEGER NOT NULL DEFAULT 0,             -- 文件大小（字节）
-    type TEXT NOT NULL,                          -- 文件后缀名
-    mime_type TEXT NOT NULL,                     -- MIME 类型
-    author TEXT,                                 -- AI 提取的作者信息
+    type TEXT NOT NULL,                          -- 文件后缀名 (如 .png, .pdf)
+    category TEXT,                               -- 文件分组 (对应 FileGroup 枚举，如 image, video, document)
+    author TEXT,                                 -- AI 提取或元数据清洗的作者信息
     language TEXT,                               -- 文件自身的语言（如：zh-CN, en-US）
     is_hit BOOLEAN DEFAULT 0,                    -- 是否命中云端/本地缓存
     last_hit_at DATETIME,                        -- 最后一次缓存命中时间
@@ -111,10 +112,11 @@ const V2_2_SCHEMA = `
     path TEXT NOT NULL,                          -- 文件完整物理路径
     name TEXT NOT NULL,                          -- 文件名
     is_analyzed BOOLEAN NOT NULL DEFAULT 0,      -- 该路径下的文件是否已完成分析
+    status INTEGER NOT NULL DEFAULT 1,           -- 状态标识
     analysis_error TEXT,                         -- 分析失败时的错误信息
     last_analyzed_at DATETIME,                   -- 最后分析时间
     parent_archive TEXT,                         -- 如果是压缩包内文件，记录父包路径
-    unit_id INTEGER,                             -- 所属逻辑单元ID（如：相册、章节）
+    unit_id INTEGER,                             -- 所属逻辑单元ID
     thumbnail_path TEXT,                         -- 缩略图相对路径
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录修改时间
@@ -143,121 +145,113 @@ const V2_2_SCHEMA = `
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP  -- 任务状态更新时间
   );
 
-  -- 7. 文件维度表（如：风格、情绪、用途等）
-  CREATE TABLE IF NOT EXISTS file_dimensions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 维度 ID
-    name TEXT NOT NULL UNIQUE,                    -- 维度名称
-    level INTEGER NOT NULL,                       -- 维度层级 (1: 核心, 2: 扩展, 3: 自定义)
-    tags TEXT NOT NULL,                          -- 该维度下的静态标签定义 (JSON)
-    trigger_conditions TEXT,                     -- 该维度的 AI 触发条件 (JSON)
-    is_ai_generated BOOLEAN DEFAULT 0,           -- 是否为 AI 自动发现的维度
-    description TEXT,                            -- 维度功能描述
-    applicable_file_types TEXT,                  -- 适用的文件扩展名列表 (JSON)
-    context_hints TEXT,                          -- AI 分析时的提示参考
-    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 创建时间
-  );
-
-  -- 8. 维度扩展提案表（存储 AI 建议新增的维度）
-  CREATE TABLE IF NOT EXISTS dimension_expansions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 提案 ID
-    name TEXT NOT NULL UNIQUE,                    -- 建议维度名称
-    level INTEGER NOT NULL,                       -- 建议层级
-    tags TEXT NOT NULL,                          -- 建议的标签定义 (JSON)
-    trigger_conditions TEXT,                     -- 建议的触发条件 (JSON)
-    description TEXT,                            -- 维度描述说明
-    applicable_file_types TEXT,                  -- 适用文件类型
-    context_hints TEXT,                          -- AI 提示参考
-    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 提案时间
-  );
-
-  -- 9. 文件标签实例表（实际生成的标签库）
+  -- 7. 统一标签维度体系表 (涵盖维度根节点、受控标签与动态扩展标签，以 code 为唯一主键)
   CREATE TABLE IF NOT EXISTS file_tags (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 标签 ID
-    name TEXT NOT NULL,                          -- 标签名称
-    dimension_id INTEGER NOT NULL,               -- 所属维度 ID
-    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    UNIQUE(dimension_id, name)                   -- 同一维度下名称唯一
+    code               TEXT PRIMARY KEY,              -- 语言无关稳定标识 (如 dim.file_type, image.screenshot)
+    name               TEXT NOT NULL,                 -- 当前语言本地化显示名 (如 "文件类型", "截图")
+    parent_codes       TEXT NOT NULL DEFAULT '[]',    -- JSON 数组，记录所有直接父节点的 code (支持多父 DAG)
+    materialized_paths TEXT NOT NULL DEFAULT '[]',    -- JSON 对象数组: [ { "code_path": "...", "name_path": "..." }, ... ]
+    depth              INTEGER NOT NULL DEFAULT 0,    -- 节点深度 (维度根=0, 直属子标签=1, ...)
+    source             TEXT NOT NULL DEFAULT 'builtin'
+                           CHECK (source IN ('builtin', 'expanded', 'user')),
+    file_groups        TEXT,                          -- JSON 数组：格式分组约束 (全集为 FileGroup 完整枚举，优先级：优先按扩展名匹配字典，未命中由 Magika 补齐)
+    context_hints      TEXT,                          -- JSON 数组 (上下文提取线索)
+    description        TEXT,                          -- 业务功能或语义描述
+    meta               TEXT NOT NULL DEFAULT '{}'     -- JSON 元数据: isDimension, isRuleSubdivision, isPanDimension, isMultiSelect, color, icon 等
   );
 
-  -- 10. 标签扩展提案表（存储 AI 建议在现有维度下新增的标签）
-  CREATE TABLE IF NOT EXISTS tag_expansions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 提案 ID
-    name TEXT NOT NULL,                          -- 建议标签名称
-    dimension_id INTEGER NOT NULL,               -- 所属维度 ID
-    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 提案时间
-    UNIQUE(dimension_id, name)
-  );
-
-  -- 11. 系统配置表（存储与云端同步的全局参数）
-  CREATE TABLE IF NOT EXISTS system_config (
-    key TEXT PRIMARY KEY,                        -- 配置键名
-    value TEXT,                                  -- 配置值 (JSON)
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 修改时间
-  );
-
-  -- 12. 文件标签关联表（基于内容指纹建立多对多关系）
+  -- 8. 文件指纹与标签多对多关联表 (基于复合主键 file_fingerprint + tag_code)
   CREATE TABLE IF NOT EXISTS file_tag_relations (
-    file_fingerprint TEXT NOT NULL,              -- 文件内容指纹
-    tag_id INTEGER NOT NULL,                     -- 标签 ID
-    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
-    PRIMARY KEY (file_fingerprint, tag_id),
-    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE,
-    FOREIGN KEY (tag_id) REFERENCES file_tags(id) ON DELETE CASCADE
+    file_fingerprint   TEXT NOT NULL,                 -- 核心引擎 32 位 Base62 文件内容指纹
+    tag_code           TEXT NOT NULL REFERENCES file_tags(code) ON DELETE CASCADE,
+    confidence         REAL NOT NULL DEFAULT 1.0,     -- 分析置信度或物理事实权重 (0.0 ~ 1.0)
+    source             TEXT DEFAULT 'ai'
+                           CHECK (source IN ('ai', 'user', 'rule')),
+    created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    meta               TEXT NOT NULL DEFAULT '{}',    -- JSON 元数据
+    PRIMARY KEY (file_fingerprint, tag_code),
+    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
   );
 
-  -- 13. 最小单元表（文件逻辑分组，如：一套漫画、一个项目的代码）
-  CREATE TABLE IF NOT EXISTS file_units (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 单元 ID
-    name TEXT NOT NULL,                          -- 单元名称
-    description TEXT,                            -- 单元逻辑描述
-    type TEXT NOT NULL,                          -- 单元类型：'album', 'series', 'collection' 等
-    path TEXT,                                   -- 单元对应的主要物理路径
-    grouping_reason TEXT DEFAULT 'collection',   -- 分组依据理由
-    grouping_confidence REAL DEFAULT 0.5,        -- 分组置信度
-    author TEXT,                                 -- 单元整体作者
-    title TEXT,                                  -- 单元标题
-    tags TEXT,                                   -- 单元级别标签 (JSON)
-    quality_score REAL,                          -- 单元整体质量分
-    parent_unit_id TEXT,                         -- 父单元 ID（支持嵌套）
-    is_analyzed BOOLEAN DEFAULT 0,               -- 是否已完成单元分析
-    analyzed_at DATETIME,                        -- 最后分析时间
-    analysis_error TEXT,                         -- 分析错误
-    workspace_id INTEGER NOT NULL,               -- 所属工作区
-    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 创建时间
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+  -- 9. 独立文件常量配置表 (file_constants)
+  CREATE TABLE IF NOT EXISTS file_constants (
+    key        TEXT PRIMARY KEY,                      -- 常量键名 (如 'category_ext_map', 'decodable_image_exts')
+    value      TEXT NOT NULL,                         -- JSON 字符串
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 10. 本地应用配置表
+  CREATE TABLE IF NOT EXISTS app_config (
+    key TEXT PRIMARY KEY,
+    value TEXT,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 11. 系统全局参数配置表
+  CREATE TABLE IF NOT EXISTS system_config (
+    key TEXT PRIMARY KEY,
+    value TEXT,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 12. 多虚拟目录元数据表
+  CREATE TABLE IF NOT EXISTS virtual_directories (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    workspace_id    INTEGER NOT NULL,
+    name            TEXT    NOT NULL,
+    icon            TEXT,
+    perspective     TEXT,
+    strategy        TEXT,
+    source          TEXT    NOT NULL DEFAULT 'manual',
+    ai_prompt       TEXT,
+    source_analyzed_directory_id INTEGER,
+    sort_order      INTEGER DEFAULT 0,
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(workspace_id, name),
     FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE
   );
 
-  -- 14. 文件与最小单元关联表（物理文件到逻辑单元的多对多关联）
-  CREATE TABLE IF NOT EXISTS file_unit_relations (
-    file_id INTEGER NOT NULL,                    -- workspace_files 记录 ID
-    unit_id INTEGER NOT NULL,                    -- 逻辑单元 ID
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 关联时间
-    PRIMARY KEY (file_id, unit_id),
-    FOREIGN KEY (file_id) REFERENCES workspace_files(id) ON DELETE CASCADE,
-    FOREIGN KEY (unit_id) REFERENCES file_units(id) ON DELETE CASCADE
+  -- 13. 虚拟目录文件映射表
+  CREATE TABLE IF NOT EXISTS virtual_directory_files (
+    virtual_directory_id INTEGER NOT NULL,
+    file_id              INTEGER NOT NULL,
+    file_fingerprint     TEXT    NOT NULL,
+    relative_path        TEXT    NOT NULL,
+    created_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (virtual_directory_id, file_id, relative_path),
+    FOREIGN KEY (virtual_directory_id) REFERENCES virtual_directories(id) ON DELETE CASCADE,
+    FOREIGN KEY (file_id) REFERENCES workspace_files(id) ON DELETE CASCADE
   );
 
-  -- 15. 虚拟目录视角表（V2.2 原始名称）
-  CREATE TABLE IF NOT EXISTS virtual_directories (
+  -- 14. 待同步操作表
+  CREATE TABLE IF NOT EXISTS pending_firecore_operations (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    description TEXT,
-    filters TEXT NOT NULL,
-    parent_id TEXT,
-    workspace_id INTEGER NOT NULL,
+    operation_type TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    local_state_before TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    retry_count INTEGER DEFAULT 0,
+    error_message TEXT,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (workspace_id) REFERENCES workspace_directories(id) ON DELETE CASCADE,
-    FOREIGN KEY (parent_id) REFERENCES virtual_directories(id) ON DELETE CASCADE
+    synced_at DATETIME
   );
 
-  -- 19. FTS5 全文搜索虚拟表（高性能索引）
+  -- 15. 内存响应缓存表
+  CREATE TABLE IF NOT EXISTS memory_cache (
+    id TEXT PRIMARY KEY,
+    request_data TEXT,
+    response_data TEXT,
+    model TEXT,
+    provider TEXT,
+    latency_ms INTEGER,
+    file_fingerprint TEXT,
+    sync_status INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 16. FTS5 全文搜索虚拟表
   CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
     file_fingerprint UNINDEXED,                  -- 指纹（不建立全文索引，仅作为关联键）
     name,                                        -- 物理文件名
@@ -267,23 +261,30 @@ const V2_2_SCHEMA = `
     multimodal_content,                          -- 多模态描述
     lrc,                                         -- 歌词/字幕
     tags,                                        -- 聚合后的标签文本
-    tokenize='trigram'                           -- 使用 trigram 分词以支持多语言模糊搜索
+    tokenize='trigram'                           -- 使用 trigram 分词支持多语言模糊搜索
   );
 
-  -- 20. 常用索引（提升高频查询效率）
+  -- 17. 高频索引
   CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace_id ON workspace_files(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_dir_id ON workspace_files(directory_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint ON workspace_files(file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint_analyzed ON workspace_files(file_fingerprint, is_analyzed);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_path ON workspace_files(path);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_path_nocase ON workspace_files(path COLLATE NOCASE);
+  CREATE INDEX IF NOT EXISTS idx_workspace_files_status ON workspace_files(status);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_workspace_id ON workspace_directories(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_path ON workspace_directories(path COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_workspace_files_path_nocase ON workspace_files(path COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_file_tags_dimension_id ON file_tags(dimension_id);
   CREATE INDEX IF NOT EXISTS idx_file_tags_name ON file_tags(name);
-  CREATE INDEX IF NOT EXISTS idx_file_dimensions_level ON file_dimensions(level);
+  CREATE INDEX IF NOT EXISTS idx_file_tags_source ON file_tags(source);
+  CREATE INDEX IF NOT EXISTS idx_file_tags_depth ON file_tags(depth);
+  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_tag ON file_tag_relations(tag_code, file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_vd_workspace ON virtual_directories(workspace_id);
+  CREATE INDEX IF NOT EXISTS idx_vd_updated ON virtual_directories(updated_at DESC);
+  CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
+  CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
 
-  -- 21. FTS 同步触发器（确保文件信息变更时实时更新搜索索引）
+  -- 18. FTS 同步触发器（确保文件信息变更时实时更新搜索索引）
   DROP TRIGGER IF EXISTS trg_files_fts_update;
   CREATE TRIGGER trg_files_fts_update AFTER UPDATE ON files BEGIN
     UPDATE files_fts SET smart_name = new.smart_name, description = new.description WHERE file_fingerprint = new.file_fingerprint;
@@ -317,7 +318,6 @@ const V2_2_SCHEMA = `
     UPDATE files_fts SET name = new.name WHERE file_fingerprint = new.file_fingerprint;
   END;
 
-  -- 文件修改时间同步触发器
   DROP TRIGGER IF EXISTS trg_file_contents_update_modified_at;
   CREATE TRIGGER trg_file_contents_update_modified_at AFTER UPDATE ON file_contents BEGIN
     UPDATE files SET modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = new.file_fingerprint;
@@ -326,263 +326,32 @@ const V2_2_SCHEMA = `
 
 /**
  * 数据库迁移列表
+ * 创世基线架构：版本 1
  */
 export const migrations: IMigrationConfig[] = [
   {
-    version: 2,
-    name: 'direct_v2_2_initialization',
-    description: '一步到位初始化 V2.2 架构',
-    up: V2_2_SCHEMA,
+    version: 1,
+    name: 'genesis_v1_baseline',
+    description: '一步到位初始化 Genesis V1 创世基线架构',
+    up: GENESIS_V1_SCHEMA,
     down: `
-      DROP TABLE IF EXISTS workspaces;
-      DROP TABLE IF EXISTS workspace_directories;
-      DROP TABLE IF EXISTS files;
-      DROP TABLE IF EXISTS file_contents;
-      DROP TABLE IF EXISTS workspace_files;
-      DROP TABLE IF EXISTS analysis_queue;
-      DROP TABLE IF EXISTS file_dimensions;
-      DROP TABLE IF EXISTS dimension_expansions;
-      DROP TABLE IF EXISTS file_tags;
-      DROP TABLE IF EXISTS tag_expansions;
-      DROP TABLE IF EXISTS system_config;
-      DROP TABLE IF EXISTS file_tag_relations;
-      DROP TABLE IF EXISTS file_units;
-      DROP TABLE IF EXISTS file_unit_relations;
-      DROP TABLE IF EXISTS analyzed_directories;
-      DROP TABLE IF EXISTS virtual_directories;
-      DROP TABLE IF EXISTS virtual_directory_files;
-      DROP TABLE IF EXISTS memory_cache;
       DROP TABLE IF EXISTS files_fts;
-    `
-  },
-  {
-    version: 3,
-    name: 'add_memory_cache_table',
-    description: '添加 memory_cache 表',
-    up: `
-      CREATE TABLE IF NOT EXISTS memory_cache (
-        id TEXT PRIMARY KEY,
-        request_data TEXT,
-        response_data TEXT,
-        model TEXT,
-        provider TEXT,
-        latency_ms INTEGER,
-        file_fingerprint TEXT,
-        sync_status INTEGER NOT NULL DEFAULT 0,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-      );
-    `,
-    down: `DROP TABLE IF EXISTS memory_cache;`
-  },
-  {
-    version: 4,
-    name: 'add_analyzed_and_multi_virtual_directories',
-    description:
-      '合并 ：分析目录、多虚拟目录、标签扩展字段、pending_firecore_operations、app_config、日期字段类型修正',
-    up: `
-      -- 1. files 表新增 category 字段，并删除 mime_type 字段
-      ALTER TABLE files ADD COLUMN category TEXT;
-      ALTER TABLE files DROP COLUMN mime_type;
-
-      -- 2. 重命名旧表 virtual_directories
-      ALTER TABLE virtual_directories RENAME TO analyzed_directories;
-      
-      -- 3. 添加 sort_order 字段
-      ALTER TABLE analyzed_directories ADD COLUMN sort_order INTEGER DEFAULT 0;
-
-      -- 4. 新建多虚拟目录元数据表
-      CREATE TABLE IF NOT EXISTS virtual_directories (
-        id              INTEGER PRIMARY KEY AUTOINCREMENT,
-        workspace_id    INTEGER NOT NULL,
-        name            TEXT    NOT NULL,
-        icon            TEXT,
-        perspective     TEXT,
-        strategy        TEXT,
-        source          TEXT    NOT NULL DEFAULT 'manual',
-        ai_prompt       TEXT,
-        source_analyzed_directory_id INTEGER,
-        created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(workspace_id, name),
-        FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE
-      );
-      CREATE INDEX IF NOT EXISTS idx_vd_workspace ON virtual_directories(workspace_id);
-      CREATE INDEX IF NOT EXISTS idx_vd_updated   ON virtual_directories(updated_at DESC);
-
-      -- 5. 新建虚拟目录文件映射表
-      CREATE TABLE IF NOT EXISTS virtual_directory_files (
-        virtual_directory_id INTEGER NOT NULL,
-        file_id    INTEGER NOT NULL,
-        file_fingerprint     TEXT    NOT NULL,
-        relative_path        TEXT    NOT NULL,
-        created_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (virtual_directory_id, file_id, relative_path),
-        FOREIGN KEY (virtual_directory_id) REFERENCES virtual_directories(id) ON DELETE CASCADE,
-        FOREIGN KEY (file_id) REFERENCES workspace_files(id) ON DELETE CASCADE
-      );
-      CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
-      CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
-
-      -- 6. tag_expansions 新增原始 AI 维度字段
-      ALTER TABLE tag_expansions ADD COLUMN file_dimensions_id INTEGER;
-      ALTER TABLE tag_expansions ADD COLUMN dimension_expansions_id INTEGER;
-      CREATE INDEX IF NOT EXISTS idx_tag_expansions_file_dim ON tag_expansions(file_dimensions_id);
-      CREATE INDEX IF NOT EXISTS idx_tag_expansions_expansion_dim ON tag_expansions(dimension_expansions_id);
-
-      -- 7. 创建 pending_firecore_operations 表
-      CREATE TABLE IF NOT EXISTS pending_firecore_operations (
-        id TEXT PRIMARY KEY,
-        operation_type TEXT NOT NULL,
-        payload TEXT NOT NULL,
-        local_state_before TEXT NOT NULL,
-        status TEXT DEFAULT 'pending',
-        retry_count INTEGER DEFAULT 0,
-        error_message TEXT,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        synced_at DATETIME
-      );
-      CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
-
-      -- 8. 创建本地 app_config 表
-      CREATE TABLE IF NOT EXISTS app_config (
-        key TEXT PRIMARY KEY,
-        value TEXT,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-      );
-    `,
-    down: `
-      DROP TABLE IF EXISTS pending_firecore_operations;
-      DROP INDEX IF EXISTS idx_tag_expansions_file_dim;
-      DROP INDEX IF EXISTS idx_tag_expansions_expansion_dim;
-      ALTER TABLE files ADD COLUMN mime_type TEXT NOT NULL DEFAULT 'application/octet-stream';
-      ALTER TABLE files DROP COLUMN category;
       DROP TABLE IF EXISTS virtual_directory_files;
       DROP TABLE IF EXISTS virtual_directories;
+      DROP TABLE IF EXISTS pending_firecore_operations;
+      DROP TABLE IF EXISTS memory_cache;
+      DROP TABLE IF EXISTS file_tag_relations;
+      DROP TABLE IF EXISTS file_tags;
+      DROP TABLE IF EXISTS file_constants;
       DROP TABLE IF EXISTS app_config;
+      DROP TABLE IF EXISTS system_config;
+      DROP TABLE IF EXISTS analysis_queue;
+      DROP TABLE IF EXISTS workspace_files;
+      DROP TABLE IF EXISTS file_contents;
+      DROP TABLE IF EXISTS files;
+      DROP TABLE IF EXISTS workspace_directories;
+      DROP TABLE IF EXISTS workspaces;
     `
-  },
-  {
-    version: 5,
-    name: 'add_workspace_files_status_column',
-    description: '在 workspace_files 表中增加 status 状态字段',
-    up: `
-      ALTER TABLE workspace_files ADD COLUMN status INTEGER NOT NULL DEFAULT 1;
-      CREATE INDEX IF NOT EXISTS idx_workspace_files_status ON workspace_files(status);
-    `,
-    down: `
-      DROP INDEX IF EXISTS idx_workspace_files_status;
-      ALTER TABLE workspace_files DROP COLUMN status;
-    `
-  },
-  {
-    version: 6,
-    name: 'decouple_fts_tag_triggers',
-    description: '移除 file_tag_relations 上的行级 FTS 同步触发器以避免写放大',
-    up: `
-      DROP TRIGGER IF EXISTS trg_file_tags_fts_sync;
-      DROP TRIGGER IF EXISTS trg_file_tags_fts_delete;
-    `,
-    down: `
-      CREATE TRIGGER IF NOT EXISTS trg_file_tags_fts_sync AFTER INSERT ON file_tag_relations BEGIN
-        UPDATE files_fts SET tags = (SELECT GROUP_CONCAT(ft.name, ' ') FROM file_tag_relations ftr JOIN file_tags ft ON ftr.tag_id = ft.id WHERE ftr.file_fingerprint = new.file_fingerprint) WHERE file_fingerprint = new.file_fingerprint;
-      END;
-
-      CREATE TRIGGER IF NOT EXISTS trg_file_tags_fts_delete AFTER DELETE ON file_tag_relations BEGIN
-        UPDATE files_fts SET tags = (SELECT GROUP_CONCAT(ft.name, ' ') FROM file_tag_relations ftr JOIN file_tags ft ON ftr.tag_id = ft.id WHERE ftr.file_fingerprint = old.file_fingerprint) WHERE file_fingerprint = old.file_fingerprint;
-      END;
-    `
-  },
-  {
-    version: 7,
-    name: 'add_workspace_files_fingerprint_analyzed_covering_index',
-    description:
-      '在 workspace_files 表上建立 (file_fingerprint, is_analyzed) 复合覆盖索引提升高频联查效率',
-    up: `
-      CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint_analyzed ON workspace_files(file_fingerprint, is_analyzed);
-    `,
-    down: `
-      DROP INDEX IF EXISTS idx_workspace_files_fingerprint_analyzed;
-    `
-  },
-  {
-    version: 8,
-    name: 'fix_misrouted_file_tags_to_content_dimension',
-    description: '修正不在所属维度预设列表中的非泛维度标签，统一重定向至内容标签维度（ID 28）',
-    up: `
-      -- 1. 确保所有需要重定向的非预设标签都在 28 维度（内容标签）存在对应记录
-      INSERT OR IGNORE INTO file_tags (name, dimension_id, sync_status, created_at)
-      SELECT DISTINCT ft.name, 28, 0, CURRENT_TIMESTAMP
-      FROM file_tags ft
-      WHERE ft.dimension_id NOT IN (4, 28)
-        AND ft.dimension_id IN (SELECT id FROM file_dimensions)
-        AND NOT EXISTS (
-          SELECT 1 FROM file_dimensions fd, json_each(fd.tags)
-          WHERE fd.id = ft.dimension_id AND json_each.value = ft.name
-        );
-
-      -- 2. 将关联关系重新映射到 28 维度的同名标签 ID
-      INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_id, sync_status)
-      SELECT ftr.file_fingerprint, target_ft.id, ftr.sync_status
-      FROM file_tag_relations ftr
-      JOIN file_tags old_ft ON ftr.tag_id = old_ft.id
-      JOIN file_tags target_ft ON target_ft.name = old_ft.name AND target_ft.dimension_id = 28
-      WHERE old_ft.dimension_id NOT IN (4, 28)
-        AND old_ft.dimension_id IN (SELECT id FROM file_dimensions)
-        AND NOT EXISTS (
-          SELECT 1 FROM file_dimensions fd, json_each(fd.tags)
-          WHERE fd.id = old_ft.dimension_id AND json_each.value = old_ft.name
-        );
-
-      -- 3. 删除非泛维度误插入标签的旧关系记录
-      DELETE FROM file_tag_relations
-      WHERE tag_id IN (
-        SELECT old_ft.id
-        FROM file_tags old_ft
-        WHERE old_ft.dimension_id NOT IN (4, 28)
-          AND old_ft.dimension_id IN (SELECT id FROM file_dimensions)
-          AND NOT EXISTS (
-            SELECT 1 FROM file_dimensions fd, json_each(fd.tags)
-            WHERE fd.id = old_ft.dimension_id AND json_each.value = old_ft.name
-          )
-      );
-
-      -- 4. 删除非泛维度误插入标签的旧 file_tags 记录
-      DELETE FROM file_tags
-      WHERE dimension_id NOT IN (4, 28)
-        AND dimension_id IN (SELECT id FROM file_dimensions)
-        AND NOT EXISTS (
-          SELECT 1 FROM file_dimensions fd, json_each(fd.tags)
-          WHERE fd.id = file_tags.dimension_id AND json_each.value = file_tags.name
-        );
-
-      -- 5. 将 tag_expansions 中非泛维度的记录迁移至 28 维度，并保留原维度至 file_dimensions_id
-      INSERT OR IGNORE INTO tag_expansions (name, dimension_id, file_dimensions_id, dimension_expansions_id, created_at)
-      SELECT te.name, 28, te.dimension_id, te.dimension_expansions_id, CURRENT_TIMESTAMP
-      FROM tag_expansions te
-      WHERE te.dimension_id NOT IN (4, 28)
-        AND te.dimension_id IN (SELECT id FROM file_dimensions)
-        AND NOT EXISTS (
-          SELECT 1 FROM file_dimensions fd, json_each(fd.tags)
-          WHERE fd.id = te.dimension_id AND json_each.value = te.name
-        );
-
-      -- 6. 删除 tag_expansions 中旧的非泛维度记录
-      DELETE FROM tag_expansions
-      WHERE dimension_id NOT IN (4, 28)
-        AND dimension_id IN (SELECT id FROM file_dimensions)
-        AND NOT EXISTS (
-          SELECT 1 FROM file_dimensions fd, json_each(fd.tags)
-          WHERE fd.id = tag_expansions.dimension_id AND json_each.value = tag_expansions.name
-        );
-    `,
-    down: `-- 无需反向回退`
-  },
-  {
-    version: 9,
-    name: 'add_file_dimensions_metadata',
-    description: 'file_dimensions 新增 metadata 列（存储维度功能标识 flag：isPanDimension/singleSelect/isMicroService/isRuleSubdivision 等）',
-    up: `ALTER TABLE file_dimensions ADD COLUMN metadata TEXT;`,
-    down: `ALTER TABLE file_dimensions DROP COLUMN metadata;`
   }
 ]
 /**

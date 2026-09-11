@@ -1,4 +1,4 @@
-import { AnalysisQueueItem, LanguageCode, FileCategory as MagikaCategory } from '@firefly/types'
+import { AnalysisQueueItem, LanguageCode, MagikaFileCategory as MagikaCategory } from '@firefly/types'
 import { LogCategory, logger, PerformanceTimer, FileCategory, isCategory } from '@firefly/shared'
 import { t } from '@app/languages'
 import {

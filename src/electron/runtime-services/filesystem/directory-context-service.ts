@@ -292,8 +292,7 @@ export class DirectoryContextService {
    */
   private getFileTypeCategory(ext: string): string {
     const category = getFileCategory(ext)
-    if (category === 'unknown') return 'other'
-    return category
+    if (category === FileCategory.UNKNOWN || (category as string) === 'unknown') return 'other'
     return category
   }
 

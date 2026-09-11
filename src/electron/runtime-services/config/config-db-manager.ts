@@ -7,7 +7,8 @@ import {
   getSharedSchemaName,
   getLanguageSchemaName,
   isTestEnvironment,
-  ResourceLocator
+  ResourceLocator,
+  updateRuntimeFileConstants
 } from '@firefly/shared'
 import { createSupabaseClient } from '../system/supabase-client-factory'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
@@ -22,6 +23,7 @@ export class ConfigDbManager {
 
   private appConfigMap = new Map<string, any>()
   private systemConfigMap = new Map<string, any>()
+  private fileConstantsMap = new Map<string, any>()
   private fileDimensionsCache: Array<any> = []
   private initialized = false
   private currentLanguage = 'zh-CN'
@@ -77,13 +79,16 @@ export class ConfigDbManager {
       // 1. 清空并导入 app_config
       this.loadInitialAppConfigToDb(db)
 
-      // 2. 清空并导入 system_config（含模型配置）
+      // 2. 清空并导入 file_constants
+      this.loadInitialFileConstantsToDb(db)
+
+      // 3. 清空并导入 system_config（含模型配置）
       this.loadInitialSystemConfigToDb(db, resolvedLanguage)
 
-      // 3. 清空并导入 file_dimensions
-      this.loadInitialFileDimensionsToDb(db, resolvedLanguage)
+      // 4. 清空并导入 file_tags 统一标签树
+      this.loadInitialFileTagsToDb(db, resolvedLanguage)
 
-      // 4. 将所有配置加载到内存中
+      // 5. 将所有配置加载到内存中
       this.loadAllConfigsFromDb(db)
 
       logger.info(
@@ -268,9 +273,47 @@ export class ConfigDbManager {
   }
 
   /**
-   * 从 fileDimension_[lang].json 加载文件维度到 file_dimensions 表（先清空再导入）
+   * 从 file-constants.json 读取全局文件常量配置写入 file_constants 表（先清空再导入）
    */
-  private loadInitialFileDimensionsToDb(db: Database.Database, language: string): void {
+  private loadInitialFileConstantsToDb(db: Database.Database): void {
+    try {
+      const configPath = this.getConfigFilePath('file-constants.json')
+
+      if (!fs.existsSync(configPath)) {
+        logger.warn(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 初始 file-constants 配置文件不存在: ${configPath}`
+        )
+        return
+      }
+
+      const raw = fs.readFileSync(configPath, 'utf-8')
+      const parsed = JSON.parse(raw)
+
+      const insertStmt = db.prepare(
+        `INSERT OR REPLACE INTO file_constants (key, value, updated_at) VALUES (?, ?, ?)`
+      )
+
+      db.transaction(() => {
+        db.prepare('DELETE FROM file_constants').run()
+        Object.entries(parsed).forEach(([key, value]) => {
+          insertStmt.run(key, JSON.stringify(value), new Date().toISOString())
+        })
+      })()
+
+      // 同步更新 @firefly/shared 运行时常量缓存
+      updateRuntimeFileConstants(parsed)
+
+      logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 file_constants 数据`)
+    } catch (error) {
+      logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 file_constants 失败:', error)
+    }
+  }
+
+  /**
+   * 从 fileDimension_[lang].json 加载初始标签维度树到 file_tags 表（先清空再导入）
+   */
+  private loadInitialFileTagsToDb(db: Database.Database, language: string): void {
     try {
       const filePath = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
       if (!fs.existsSync(filePath)) {
@@ -294,75 +337,89 @@ export class ConfigDbManager {
         return
       }
 
-      // 先清空表
-      db.prepare('DELETE FROM file_dimensions').run()
+      // 先清空 file_tags 中 builtin 标签
+      db.prepare(`DELETE FROM file_tags WHERE source = 'builtin'`).run()
 
       const insertStmt = db.prepare(`
-        INSERT INTO file_dimensions (
-          id, name, level, tags, trigger_conditions, is_ai_generated, description,
-          applicable_file_types, context_hints, sync_status, metadata, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 2, ?, ?)
+        INSERT OR REPLACE INTO file_tags (
+          code, name, parent_codes, materialized_paths, depth, source,
+          file_groups, context_hints, description, meta
+        ) VALUES (?, ?, ?, ?, ?, 'builtin', ?, ?, ?, ?)
       `)
 
       db.transaction(() => {
         for (const dim of dimensions) {
-          const tags = typeof dim.tags === 'string' ? dim.tags : JSON.stringify(dim.tags || [])
-          // JSON 源文件用驼峰键名，数据库用下划线，需兼容
-          const rawTC = dim.triggerConditions ?? dim.trigger_conditions
-          const triggerConditions = rawTC
-            ? typeof rawTC === 'string'
-              ? rawTC
-              : JSON.stringify(rawTC)
-            : null
-          const rawAFT = dim.applicableFileTypes ?? dim.applicable_file_types
-          const applicableFileTypes = rawAFT
-            ? typeof rawAFT === 'string'
-              ? rawAFT
-              : JSON.stringify(rawAFT)
-            : null
+          const dimSlug = `dim.${dim.id}`
+          const dimName = dim.name
+          const dimDepth = 0
+          const dimPaths = [{ code_path: `/${dimSlug}`, name_path: `/${dimName}` }]
+          const rawAFT = dim.applicableFileTypes ?? dim.applicable_file_types ?? dim.file_groups ?? ['*']
+          const fileGroupsStr = typeof rawAFT === 'string' ? rawAFT : JSON.stringify(rawAFT)
           const rawCH = dim.contextHints ?? dim.context_hints
-          const contextHints = rawCH
-            ? typeof rawCH === 'string'
-              ? rawCH
-              : JSON.stringify(rawCH)
-            : null
-          const rawMetadata = dim.metadata
-          const metadata = rawMetadata ? JSON.stringify(rawMetadata) : null
+          const contextHintsStr = rawCH ? (typeof rawCH === 'string' ? rawCH : JSON.stringify(rawCH)) : null
+          
+          const isMultiSelect = dim.name === '文件用途' || !!dim.metadata?.flag?.isPanDimension
+          const metaObj = {
+            isDimension: true,
+            isMultiSelect,
+            ...(dim.metadata || {})
+          }
 
+          // 插入维度根节点
           insertStmt.run(
-            dim.id,
-            dim.name,
-            dim.level,
-            tags,
-            triggerConditions,
-            dim.is_ai_generated ? 1 : 0,
+            dimSlug,
+            dimName,
+            '[]',
+            JSON.stringify(dimPaths),
+            dimDepth,
+            fileGroupsStr,
+            contextHintsStr,
             dim.description || null,
-            applicableFileTypes,
-            contextHints,
-            metadata,
-            dim.created_at || new Date().toISOString()
+            JSON.stringify(metaObj)
           )
+
+          // 插入维度下的子标签
+          const tags = Array.isArray(dim.tags) ? dim.tags : (typeof dim.tags === 'string' ? JSON.parse(dim.tags || '[]') : [])
+          tags.forEach((tag: string, tagIdx: number) => {
+            const tagCode = `${dimSlug}.${tag}`
+            const tagPaths = [{ code_path: `/${dimSlug}/${tag}`, name_path: `/${dimName}/${tag}` }]
+            const tagMeta = {
+              isDimension: false,
+              sortOrder: tagIdx,
+              isMultiSelect: false
+            }
+
+            insertStmt.run(
+              tagCode,
+              tag,
+              JSON.stringify([dimSlug]),
+              JSON.stringify(tagPaths),
+              1,
+              fileGroupsStr,
+              contextHintsStr,
+              null,
+              JSON.stringify(tagMeta)
+            )
+          })
         }
       })()
 
       databaseService.clearDimensionsCache()
 
-      // 重新读取存入 fileDimensionsCache，确保内存缓存同步最新物理预设数据
-      try {
-        this.fileDimensionsCache = db
-          .prepare('SELECT * FROM file_dimensions ORDER BY level ASC')
-          .all() as Array<any>
-      } catch {
-        this.fileDimensionsCache = []
-      }
-
       logger.info(
         LogCategory.CONFIG,
-        `ConfigDbManager: 成功导入 ${dimensions.length} 个 file_dimensions 数据`
+        `ConfigDbManager: 成功导入 ${dimensions.length} 个初始 file_tags 体系`
       )
     } catch (error) {
-      logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入 fileDimension 失败:', error)
+      logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入 file_tags 失败:', error)
     }
+  }
+
+  /**
+   * 兼容性保留
+   */
+  private loadInitialFileDimensionsToDb(db: Database.Database, language: string): void {
+    this.loadInitialFileTagsToDb(db, language)
   }
 
   /**
@@ -371,6 +428,7 @@ export class ConfigDbManager {
   private loadAllConfigsFromDb(db: any): void {
     this.appConfigMap.clear()
     this.systemConfigMap.clear()
+    this.fileConstantsMap.clear()
 
     const appConfigs = db.prepare('SELECT key, value FROM app_config').all() as Array<{
       key: string
@@ -397,17 +455,31 @@ export class ConfigDbManager {
     })
 
     try {
-      const dimensions = db
-        .prepare('SELECT * FROM file_dimensions ORDER BY level ASC')
-        .all() as Array<any>
-      this.fileDimensionsCache = dimensions || []
-    } catch {
-      this.fileDimensionsCache = []
+      const constantRows = db.prepare('SELECT key, value FROM file_constants').all() as Array<{
+        key: string
+        value: string
+      }>
+      const constantsObj: Record<string, any> = {}
+      constantRows.forEach(row => {
+        try {
+          const val = JSON.parse(row.value)
+          this.fileConstantsMap.set(row.key, val)
+          constantsObj[row.key] = val
+        } catch (err) {
+          this.fileConstantsMap.set(row.key, row.value)
+          constantsObj[row.key] = row.value
+        }
+      })
+      updateRuntimeFileConstants(constantsObj)
+    } catch (err) {
+      logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 读取 file_constants 失败:', err)
     }
+
+    this.fileDimensionsCache = []
   }
 
   /**
-   * 获取缓存的 file_dimensions 数据（内存缓存加速，未命中则查 SQLite）
+   * 获取缓存的 file_dimensions 数据（优先从 file_tags 树形表动态映射）
    */
   getFileDimensions(): Array<any> {
     if (this.fileDimensionsCache.length > 0) {
@@ -417,14 +489,71 @@ export class ConfigDbManager {
     if (!db) return []
     try {
       const rows = db
-        .prepare('SELECT * FROM file_dimensions ORDER BY level ASC')
+        .prepare(`
+          SELECT code, name, depth, description, file_groups, context_hints, meta
+          FROM file_tags
+          WHERE depth = 0
+          ORDER BY code ASC
+        `)
         .all() as Array<any>
-      this.fileDimensionsCache = rows || []
-      return this.fileDimensionsCache
+
+      if (rows && rows.length > 0) {
+        const getChildStmt = db.prepare(
+          `SELECT name FROM file_tags WHERE depth = 1 AND json_extract(parent_codes, '$[0]') = ?`
+        )
+        this.fileDimensionsCache = rows.map((r, idx) => {
+          let metaObj: any = {}
+          try {
+            metaObj = JSON.parse(r.meta)
+          } catch {}
+          let childTags: string[] = []
+          try {
+            childTags = (getChildStmt.all(r.code) as any[]).map(c => c.name)
+          } catch {}
+          let aft: string[] = []
+          try {
+            aft = JSON.parse(r.file_groups || '[]')
+          } catch {}
+          let ch: string[] = []
+          try {
+            ch = JSON.parse(r.context_hints || '[]')
+          } catch {}
+          return {
+            id: idx + 1,
+            code: r.code,
+            name: r.name,
+            level: 1,
+            tags: childTags,
+            description: r.description,
+            applicable_file_types: aft,
+            context_hints: ch,
+            metadata: metaObj
+          }
+        })
+        return this.fileDimensionsCache
+      }
+
+      // 降级：检查旧表是否存在
+      const hasOldTable = db.prepare(`SELECT 1 FROM sqlite_master WHERE type='table' AND name='file_dimensions'`).get()
+      if (hasOldTable) {
+        const oldRows = db.prepare('SELECT * FROM file_dimensions ORDER BY level ASC').all() as Array<any>
+        this.fileDimensionsCache = oldRows || []
+        return this.fileDimensionsCache
+      }
+
+      return []
     } catch (err) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 获取 file_dimensions 失败:', err)
       return []
     }
+  }
+
+  getFileConstant<T = any>(key: string): T | undefined {
+    return this.fileConstantsMap.get(key) as T
+  }
+
+  getAllFileConstants(): Record<string, any> {
+    return Object.fromEntries(this.fileConstantsMap)
   }
 
   private getExtraResourcesDir(subdir: string): string {

@@ -13,7 +13,7 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { app } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS, findAvailablePort } from '@firefly/shared'
-import { FileCategory } from '@firefly/types'
+import { MagikaFileCategory } from '@firefly/types'
 
 export interface OmniBenchmarkResponse {
   total_ms: number
@@ -823,7 +823,7 @@ export class OmniService {
   /**
    * 获取 Magika 分类信息 (与历史 Node.js Magika 返回格式 100% 对齐)
    */
-  public async identifyMagika(filePath: string): Promise<FileCategory | null> {
+  public async identifyMagika(filePath: string): Promise<MagikaFileCategory | null> {
     const ext = path.extname(filePath).toLowerCase().replace('.', '')
     const extList = ext ? [ext] : []
 

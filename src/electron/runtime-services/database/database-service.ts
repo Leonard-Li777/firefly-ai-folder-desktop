@@ -508,24 +508,7 @@ export class DatabaseService {
       const userVersion = this._db.pragma('user_version', { simple: true }) as number
 
       if (userVersion === 0) {
-        const v1TablesExist = this._db
-          .prepare(
-            `
-          SELECT count(*) as count FROM sqlite_master 
-          WHERE type='table' AND name IN ('files', 'workspace_directories', 'file_tags')
-        `
-          )
-          .get() as any
-
-        if (v1TablesExist.count >= 3) {
-          logger.warn(LogCategory.DATABASE_SERVICE, t('检测到 1.x 版本数据库，拒绝启动'))
-          await this.showLegacyVersionError()
-          return
-        }
-        logger.info(LogCategory.DATABASE_SERVICE, t('全新安装，准备执行架构初始化...'))
-      } else if (userVersion === 1) {
-        logger.warn(LogCategory.DATABASE_SERVICE, t('检测到版本 1 数据库，拒绝启动'))
-        await this.showLegacyVersionError()
+        logger.info(LogCategory.DATABASE_SERVICE, t('全新安装，准备执行架构初始化 (Genesis Baseline V1)...'))
       }
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, t('创建数据表失败'), { error })

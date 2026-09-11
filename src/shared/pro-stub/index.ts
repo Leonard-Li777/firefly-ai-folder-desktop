@@ -58,6 +58,10 @@ export interface ProTagReconciliationParams {
   } | null
   dimResult?: any
   syncStatus?: number
+  authors?: string[]
+  language?: string
+  fileGroup?: string
+  extension?: string
 }
 
 export interface ProTagReconciliationResult {

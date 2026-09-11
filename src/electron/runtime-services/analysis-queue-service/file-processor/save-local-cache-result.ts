@@ -1,6 +1,6 @@
 import {
   AnalysisQueueItem,
-  FileCategory as MagikaCategory,
+  MagikaFileCategory as MagikaCategory,
   MarkitdownBenchmark,
   Stage1Benchmark
 } from '@firefly/types'
