@@ -13,6 +13,7 @@ import {
 import { LogCategory, logger } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
+import { DAGMaterializer } from './DAGMaterializer'
 
 export interface FilterFilesParams {
   selectedTags?: SelectedTag[]
@@ -38,8 +39,11 @@ export interface FilterFilesParams {
  * 3. 彻底消除魔法数字区间（102..117），全量依托 file_tags 树与 file_tag_relations 自然主键关联。
  */
 export class TagTreeQuery {
+  private dagMaterializer: DAGMaterializer
+
   constructor(private db: Database.Database) {
     this.ensureSqlFunctions()
+    this.dagMaterializer = new DAGMaterializer(db)
   }
 
   private ensureSqlFunctions(): void {
@@ -80,32 +84,85 @@ export class TagTreeQuery {
   }
 
   /**
-   * 递归查找指定标签值（或代码）自身及其所有后代标签的 code 集合
+   * 查找指定标签值（或代码）自身及其所有后代标签的 code 集合
+   *
+   * 两步查询范式（#622）：
+   * Step 1: 在 file_tags 小表用 materialized_paths 前缀过滤得到 codes（json_each 仅扫几千行）
+   * Step 2: 调用方用 codes 走 idx_file_tag_relations_tag 索引查大表
+   *
+   * 彻底根除对百万级 file_tag_relations 执行 json_each / 递归 CTE LIKE 全扫的性能灾难。
    */
   public getDescendantTagCodes(tagValueOrCode: string): string[] {
     try {
-      const query = `
-        WITH RECURSIVE descendants(code) AS (
-          SELECT code FROM file_tags 
-          WHERE name = ? OR code = ?
-          UNION ALL
-          SELECT ft.code FROM file_tags ft
-          JOIN descendants d ON (
-            ft.parent_codes LIKE '%"' || d.code || '"%'
-            OR ft.code LIKE d.code || '.%'
-          )
+      // 优先：直接命中 code 或 name，取其物化路径前缀做子树召回
+      const anchor = this.db
+        .prepare(
+          `SELECT code, name, materialized_paths FROM file_tags
+           WHERE code = ? OR name = ?
+           LIMIT 1`
         )
-        SELECT DISTINCT code FROM descendants
-      `
-      const rows = this.db.prepare(query).all(tagValueOrCode, tagValueOrCode) as Array<{ code: string }>
-      if (rows.length > 0) {
-        return rows.map(r => r.code)
+        .get(tagValueOrCode, tagValueOrCode) as
+        | { code: string; name: string; materialized_paths: string }
+        | undefined
+
+      if (!anchor) {
+        // 未命中标签树节点：原样返回，交由调用方当字面量 code 使用
+        return [tagValueOrCode]
       }
-      return [tagValueOrCode]
+
+      const paths = DAGMaterializer.parsePaths(anchor.materialized_paths)
+
+      // 物化路径缺失时，尝试现场修复一次再查
+      if (paths.length === 0) {
+        this.dagMaterializer.materializeTag(anchor.code)
+        const repaired = this.db
+          .prepare('SELECT materialized_paths FROM file_tags WHERE code = ?')
+          .pluck()
+          .get(anchor.code) as string | undefined
+        const repairedPaths = DAGMaterializer.parsePaths(repaired)
+        if (repairedPaths.length > 0) {
+          return this.collectSubtreeCodes(repairedPaths)
+        }
+      } else {
+        return this.collectSubtreeCodes(paths)
+      }
+
+      // 兜底：无物化路径时返回节点自身
+      return [anchor.code]
     } catch (err) {
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 递归查询子标签失败: ${tagValueOrCode}`, err)
+      logger.warn(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 子树召回失败: ${tagValueOrCode}`, err)
       return [tagValueOrCode]
     }
+  }
+
+  /**
+   * 对给定物化路径集合执行前缀扫描，收集子树全部 codes
+   */
+  private collectSubtreeCodes(
+    paths: Array<{ code_path: string; name_path: string }>
+  ): string[] {
+    const codeSet = new Set<string>()
+
+    for (const p of paths) {
+      // Step 1：file_tags 小表 json_each 前缀过滤（< 1ms）
+      const rows = this.db
+        .prepare(
+          `SELECT code FROM file_tags
+           WHERE EXISTS (
+             SELECT 1 FROM json_each(materialized_paths)
+             WHERE json_extract(value, '$.code_path') = ?
+                OR json_extract(value, '$.code_path') LIKE ?
+           )`
+        )
+        .pluck()
+        .all(p.code_path, `${p.code_path}/%`) as string[]
+
+      for (const c of rows) {
+        codeSet.add(c)
+      }
+    }
+
+    return Array.from(codeSet)
   }
 
   /**
@@ -162,7 +219,7 @@ export class TagTreeQuery {
         })
       }
 
-      // 2. 获取所有非根标签节点
+      // 2. 获取所有非根标签节点（#625：透出 code/parent_codes/meta 供前端纯树形状态机消费）
       const tagRows = this.db
         .prepare(`
           SELECT code, name, parent_codes, depth, file_groups, meta
@@ -299,12 +356,25 @@ export class TagTreeQuery {
             continue
           }
 
+          // #625：解析子标签的 meta 与 parent_codes，透出给前端纯树形状态机
+          let childMeta: any = {}
+          try {
+            childMeta = JSON.parse(child.meta || '{}')
+          } catch {}
+          let childParentCodes: string[] = []
+          try {
+            childParentCodes = JSON.parse(child.parent_codes || '[]')
+          } catch {}
+
           dimensionTags.push({
             dimensionId: dimCode as any,
             dimensionName: root.name,
             tagValue: child.name,
             fileCount: aggregatedCount,
-            level: child.depth || 1
+            level: child.depth || 1,
+            code: child.code,
+            parentCode: childParentCodes[0] || dimCode,
+            isMultiSelect: childMeta?.isMultiSelect === true
           })
         }
 
@@ -317,6 +387,8 @@ export class TagTreeQuery {
           name: root.name,
           level: root.depth,
           tags: dimensionTags,
+          code: dimCode,
+          isMultiSelect: dimMeta?.isMultiSelect === true,
           metadata: dimMeta
         })
       }

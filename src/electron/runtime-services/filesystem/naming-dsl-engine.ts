@@ -1,31 +1,12 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { BatchRenamePreviewItem, BatchRenameResult } from '@firefly/types'
-import { LogCategory, logger, isExtensionTriggerTagName, isDimensionApplicableToFile } from '@firefly/shared'
+import { LogCategory, logger, isExtensionTriggerTagName } from '@firefly/shared'
 import { t } from '@app/languages'
 
-/**
- * 细分维度与适用文件类型的基础类型限制表（兜底防脏数据与跨类型误匹配）
- * 函数形式，key 通过 [t('中文')] 动态国际化，保证语言切换后仍能匹配当前语言的维度名
- */
-export function DEFAULT_DIMENSION_TYPE_RESTRICTIONS(): Record<string, string[]> {
-  return {
-    [t('视频细分')]: ['video'],
-    [t('图片细分')]: ['image'],
-    [t('音频细分')]: ['audio'],
-    [t('文档细分')]: ['document', 'text'],
-    [t('文本细分')]: ['text', 'document'],
-    [t('电子书细分')]: ['ebook', 'document'],
-    [t('源代码细分')]: ['code'],
-    [t('程序细分')]: ['executable'],
-    [t('应用数据细分')]: ['application'],
-    [t('数据库细分')]: ['database'],
-    [t('磁盘映像细分')]: ['diskimage', 'archive'],
-    [t('系统文件细分')]: ['filesystem'],
-    [t('压缩包细分')]: ['archive'],
-    [t('字体细分')]: ['font']
-  }
-}
+// #624：彻底删除 DEFAULT_DIMENSION_TYPE_RESTRICTIONS 本地化限制字典
+// 标签有效性完全信任前置已入库的 file_tag_relations（仲裁阶段已保证符合 file_groups）
+// 模板占位符 {TAG:xxx} 直接与标准化 tag_code 或维度名绑定，跨语言无缝移植
 
 export interface FileRenameContext {
   id: number
@@ -224,22 +205,11 @@ export class NamingDSLEngine {
     let rendered = template
 
     const rawDimTagsMap: Record<string, string[]> = {}
+    // #624：直接信任前置已入库的 file_tag_relations，不再做文件类型二次校验
     const addTagToDimension = (dim: string, val: any) => {
       if (!dim || val === undefined || val === null) return
       const cleanDim = String(dim).trim()
       if (!cleanDim) return
-
-      // 验证维度是否适用于当前文件类型（防止从脏数据读取到不匹配的细分标签）
-      const filePathOrName = context.path || context.name || ''
-      if (filePathOrName) {
-        const restrictionMap = DEFAULT_DIMENSION_TYPE_RESTRICTIONS()
-        const types =
-          restrictionMap[cleanDim] ||
-          restrictionMap[cleanDim.toLowerCase()]
-        if (types && !isDimensionApplicableToFile(types, filePathOrName)) {
-          return
-        }
-      }
 
       let candidateTags: string[] = []
       if (Array.isArray(val)) {
@@ -365,20 +335,13 @@ export class NamingDSLEngine {
       NamingDSLEngine.formatDate(creDate, pattern)
     )
 
-    // 6. {TAG:维度名}
+    // 6. {TAG:维度名或tag_code}
+    // #624：直接信任前置已入库的 file_tag_relations，不再做文件类型二次校验
+    // 支持标准化 tag_code（如 dim.6、image.screenshot）与本地化维度名双通道绑定
     rendered = rendered.replace(/\{TAG:([^}]+)\}/g, (_, dimName) => {
       const dimKey = String(dimName).trim()
-      const filePathOrName = context.path || context.name || ''
-      if (filePathOrName) {
-        const restrictionMap = DEFAULT_DIMENSION_TYPE_RESTRICTIONS()
-        const types =
-          restrictionMap[dimKey] ||
-          restrictionMap[dimKey.toLowerCase()]
-        if (types && !isDimensionApplicableToFile(types, filePathOrName)) {
-          return '' // 目标维度不适用于当前文件类型（如在图片/文档上请求视频细分）
-        }
-      }
 
+      // 优先：精确匹配 tag_code 或维度名
       if (dimTagsMap[dimKey]) {
         return dimTagsMap[dimKey]
       }
@@ -387,7 +350,7 @@ export class NamingDSLEngine {
         return dimTagsMap[lowerKey]
       }
 
-      // 遍历维度映射表进行不区分大小写匹配
+      // 次优：遍历维度映射表进行不区分大小写匹配
       for (const [k, v] of Object.entries(dimTagsMap)) {
         if (k.toLowerCase() === lowerKey) {
           return v
