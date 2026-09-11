@@ -1011,7 +1011,10 @@ jobs:
             echo "⚠️ 未在 out/make 找到对应的 ${{ matrix.maker }} 安装包，尝试直接校验解包二进制..."
           fi
 
-          APP_EXEC=$(which firefly-ai-folder 2>/dev/null || which firefly-ai-folder-cn 2>/dev/null || find /opt out /usr/bin -name 'firefly*' -type f -perm /111 2>/dev/null | grep -v "chrome-sandbox" | head -n 1)
+          # 定位 Electron 主程序：which 命中安装的启动器（CN/INTL 两种命名都要覆盖，
+          # INTL 未命中正是导致 find 兜底误选 omni 的根因）；find 兜底时必须排除
+          # firefly-omni 引擎二进制（它是 spawn 的子进程，崩溃会自动降级不阻断应用）
+          APP_EXEC=$(which firefly-ai-folder 2>/dev/null || which firefly-ai-folder-cn 2>/dev/null || which firefly-ai-folder-intl 2>/dev/null || find /opt out /usr/bin -name 'firefly*' -type f -perm /111 2>/dev/null | grep -v "chrome-sandbox" | grep -v "bin/omni/" | head -n 1)
           if [ -z "$APP_EXEC" ] || [ ! -x "$APP_EXEC" ]; then
             echo "❌ 未能定位到已安装或生成的 Linux 二进制程序！"
             exit 1
