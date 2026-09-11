@@ -730,7 +730,9 @@ jobs:
       matrix:
         maker: [deb, rpm]
     container:
-      image: node:20-buster
+      # Debian 12 (bookworm, glibc 2.36)：满足 firefly-omni 引擎的 glibc 2.34+ 要求，
+      # omni 引擎在打包产物中完整可用（老系统 Debian 10/11 已不再支持）
+      image: node:20-bookworm
     env:
       NPM_CONFIG_UNSAFE_PERM: 'true'
       PYTHON: python3
@@ -747,45 +749,12 @@ jobs:
           path: pro
           ref: master
 
-      - name: Fix buster apt sources (EOL)
-        shell: bash
-        run: |
-          rm -f /etc/apt/sources.list /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources
-          printf '%s\n' \
-            'deb http://archive.debian.org/debian buster main contrib non-free' \
-            'deb http://archive.debian.org/debian buster-updates main contrib non-free' \
-            'deb http://archive.debian.org/debian-security buster/updates main contrib non-free' \
-            > /etc/apt/sources.list
-          echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
-          cat /etc/apt/sources.list
-
       - name: Install System Build Dependencies (Linux)
         run: |
           apt-get update && apt-get install -y \
             build-essential make g++ python3 fakeroot dpkg rpm libnss3 libnspr4 \
             libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libgtk-3-0 libgbm1 \
             libasound2 libxshmfence1 libx11-xcb1 p7zip-full curl tar
-
-          # 备用兼容 wrapper：buster 自带 GCC 8.3 不识别 Node 22+ 下发的 -std=c++20 / -std=gnu++20，
-          # 统一映射为 GCC 8 支持的 -std=c++2a / -std=gnu++2a。
-          # 宿主 Node 已固定为 20.18.0（下发 -std=gnu++17），正常情况下本 wrapper 不会被触发；
-          # 若将来升级宿主 Node 到 22+，必须同时换成自带 GCC 12+ 的镜像（bullseye/bookworm），
-          # 否则即便参数被识别，V8 13 头文件在 GCC 8 下依然无法编译。
-          printf '%s\n' \
-            '#!/bin/bash' \
-            'args=()' \
-            'for arg in "$@"; do' \
-            '  case "$arg" in' \
-            '    -std=c++2[0-9]) arg="-std=c++2a" ;;' \
-            '    -std=gnu++2[0-9]) arg="-std=gnu++2a" ;;' \
-            '  esac' \
-            '  args+=("$arg")' \
-            'done' \
-            'exec /usr/bin/g++ "${args[@]}"' \
-            > /usr/local/bin/g++
-          chmod +x /usr/local/bin/g++
-          ln -sf /usr/local/bin/g++ /usr/local/bin/c++
-          ln -sf /usr/local/bin/g++ /usr/local/bin/x86_64-linux-gnu-g++
 
       - name: Install gh CLI
         shell: bash
@@ -822,11 +791,10 @@ jobs:
           fi
           echo "gh version: $(gh --version 2>/dev/null || echo '未检测到版本')"
 
-      # 宿主 Node 固定为 20.18.0，不可升级到 Node 22/24：
-      # 1) 本 job 容器为 node:20-buster（Debian 10 / GCC 8.3，glibc 2.28），better-sqlite3 的
-      #    预编译二进制要求 GLIBC_2.29，只能回退源码编译；
-      # 2) Node 24 的 V8 13 头文件要求 C++20，GCC 8.3 无法编译 better-sqlite3 等原生模块；
-      # 3) 打包目标为 Electron 32（Node 20 ABI），宿主 Node 20.18.0 与之一致，编译标准同为 C++17。
+      # 宿主 Node 固定为 20.18.0：
+      # 1) 打包目标为 Electron 32（Node 20 ABI），宿主 Node 20.18.0 与之 ABI 一致；
+      # 2) bookworm 自带 GCC 12，better-sqlite3/sharp 等原生模块可直接编译，
+      #    预编译二进制（GLIBC_2.29 要求）也可直接命中，无需源码编译回退。
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -848,39 +816,13 @@ jobs:
           version: 9.15.4
           run_install: false
 
-      - name: Setup Python (python-build-standalone for buster glibc)
+      # bookworm 自带 python3 (3.11)，原生模块构建直接使用系统 Python，
+      # 无需 buster 时代的 python-build-standalone 手动安装
+      - name: Verify Python
         shell: bash
         run: |
-          set -euo pipefail
-          echo "🔧 下载 python-build-standalone (manylinux, 最低 glibc 2.17)..."
-          TRIPLE="$(uname -m)-unknown-linux-gnu"
-          URL="$(
-            curl -fsSL -H "Authorization: token ${{ secrets.GITHUB_TOKEN || github.token }}" "https://api.github.com/repos/astral-sh/python-build-standalone/releases/latest" \
-            | TRIPLE="${TRIPLE}" node -e '
-                let d = "";
-                process.stdin.on("data", (c) => (d += c));
-                process.stdin.on("end", () => {
-                  const j = JSON.parse(d);
-                  const triple = process.env.TRIPLE;
-                  const asset = j.assets.find(
-                    (a) =>
-                      /cpython-3\.11\.[0-9]+/.test(a.name) &&
-                      a.name.includes(triple) &&
-                      a.name.includes("install_only") &&
-                      !a.name.includes("stripped")
-                  );
-                  if (!asset) {
-                    console.error(`未找到 ${triple} 的 Python 3.11 install_only asset`);
-                    process.exit(1);
-                  }
-                  console.log(asset.browser_download_url);
-                });
-              '
-          )"
-          mkdir -p /opt/pybs
-          curl -fsSL -H "Authorization: token ${{ secrets.GITHUB_TOKEN || github.token }}" "${URL}" | tar -xz -C /opt/pybs
-          echo "/opt/pybs/python/bin" >> "${GITHUB_PATH}"
-          /opt/pybs/python/bin/python3 --version
+          python3 --version
+          which python3
 
       - name: Override Electron version for Linux compatibility
         shell: bash
@@ -1039,6 +981,23 @@ jobs:
           echo "✅ Linux 应用程序通过 15s 烟雾启动稳定性测试！"
           kill -15 $APP_PID 2>/dev/null || kill -9 $APP_PID 2>/dev/null || true
           echo "🎉 Linux 构建产物校验成功，准备执行后续发布！"
+
+          # omni 引擎可用性验证：容器基线为 bookworm (glibc 2.36)，omni (要求 glibc 2.34+)
+          # 必须完整可运行，直接执行二进制探活（--help 即可验证动态链接与启动）
+          OMNI_BIN=$(find out -path "*resources/bin/omni/firefly-omni" -type f 2>/dev/null | head -n 1)
+          if [ -n "$OMNI_BIN" ] && [ -f "$OMNI_BIN" ]; then
+            chmod +x "$OMNI_BIN"
+            echo "🧪 验证 omni 引擎可运行性: $OMNI_BIN"
+            if "$OMNI_BIN" --help > /tmp/omni-check.log 2>&1; then
+              echo "✅ firefly-omni 引擎运行正常（glibc/原生依赖满足）"
+            else
+              echo "❌ firefly-omni 引擎无法运行（动态链接失败或启动异常）:"
+              cat /tmp/omni-check.log || true
+              exit 1
+            fi
+          else
+            echo "⚠️ 未找到 omni 引擎二进制，跳过 omni 可用性验证"
+          fi
 
 
       - name: Publish to Cloudflare R2
