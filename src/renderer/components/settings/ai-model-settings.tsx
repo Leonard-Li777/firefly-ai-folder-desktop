@@ -225,7 +225,7 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
                 {dsparkModelId && isDsparkDownloaded && (
                   <Badge className="text-[9px] font-black h-4 px-1.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-tighter flex items-center gap-1">
                     <Zap className="h-2.5 w-2.5 fill-current" />
-                    {t('已就绪 (CPU加速已启用)')}
+                    {t('已就绪 (加速已启用)')}
                   </Badge>
                 )}
                 {(model.tags || []).map((tag: string) => (

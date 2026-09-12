@@ -105,6 +105,54 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
+      id: 'OpenBMB/MiniCPM5-2B-gguf:Q4_K_M',
+      dspark: 'OpenBMB/MiniCPM5-2B-DSpark-GGUF',
+      name: `MiniCPM5 2B（${t('中文更佳')}•${t('投机加速')}）`,
+      company: 'OpenBMB',
+      parameterSize: '2B',
+      totalSize: '1.45GB',
+      recommended: true,
+      description: t('面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。'),
+      source: 'modelscope',
+      quantization: 'Q4_K_M',
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'very_fast',
+        quality: 'high'
+      },
+      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('中文更佳'), 'DSpark'],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
+      id: 'openbmb/MiniCPM5-2B-GGUF:Q4_K_M',
+      dspark: 'openbmb/MiniCPM5-2B-DSpark-GGUF',
+      name: `MiniCPM5 2B（${t('中文更佳')}•${t('投机加速')}）`,
+      company: 'OpenBMB',
+      parameterSize: '2B',
+      totalSize: '1.45GB',
+      recommended: true,
+      description: t('面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。'),
+      source: 'huggingface',
+      quantization: 'Q4_K_M',
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'very_fast',
+        quality: 'high'
+      },
+      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('中文更佳'), 'DSpark'],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
       id: 'LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M',
       name: `LFM2.5 2.6B（${t('快速')}）`,
       company: 'LiquidAI',
