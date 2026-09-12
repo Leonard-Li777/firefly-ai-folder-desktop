@@ -276,14 +276,14 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
           </div>
 
           <div className="flex flex-col items-end gap-2 shrink-0 ml-4">
-            {/* 当为 CPU 模式、配置了 DSpark、主模型已就绪但 DSpark 未下载时，在激活按钮上方展示下载加速模型按钮 */}
-            {isCpuTier && dsparkModelId && isDownloaded && !isDsparkDownloaded && (
+            {/* 配置了 DSpark、主模型已就绪但 DSpark 未下载时，在激活按钮上方展示下载加速模型按钮 */}
+            {dsparkModelId && isDownloaded && !isDsparkDownloaded && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownloadDspark}
                 disabled={isDsparkDownloading}
-                title={t('CPU模式可加速30%')}
+                title={t('启用投机采样，大幅加速生成')}
                 className="h-7 text-xs px-2.5 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex items-center gap-1"
               >
                 {isDsparkDownloading ? (

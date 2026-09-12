@@ -111,7 +111,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       parameterSize: '2.6B',
       totalSize: '1.63GB',
       recommended: true,
-      description: t('最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 CPU 专属 DSpark 加速。'),
+      description: t('最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 DSpark 投机采样加速。'),
       source: 'modelscope',
       quantization: 'Q4_K_M',
       isMultiModal: false,
