@@ -89,6 +89,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       totalSize: '873MB',
       description: t('最新 LFM2.5 指令模型，文本分析高效，CPU 推理快速。'),
       source: 'modelscope',
+      recommended: true,
       isBuiltin: true,
       quantization: 'Q4_K_M',
       isMultiModal: false,
@@ -106,13 +107,13 @@ export const MODEL_CONFIG_SOURCE = () => ({
     },
     {
       id: 'OpenBMB/MiniCPM5-2B-gguf:Q4_K_M',
-      dspark: 'OpenBMB/MiniCPM5-2B-DSpark-GGUF',
-      name: `MiniCPM5 2B（${t('中文更佳')}•${t('投机加速')}）`,
+      // dspark: 'OpenBMB/MiniCPM5-2B-DSpark-GGUF',
+      name: `MiniCPM5 2B（${t('高质量')}•${t('高速')}）`,
       company: 'OpenBMB',
       parameterSize: '2B',
       totalSize: '1.45GB',
       recommended: true,
-      description: t('面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。'),
+      description: t('显存不足，又想正确分类文件，必须选我，唯一缺点仅支持文本。'),
       source: 'modelscope',
       quantization: 'Q4_K_M',
       isMultiModal: false,
@@ -130,13 +131,13 @@ export const MODEL_CONFIG_SOURCE = () => ({
     },
     {
       id: 'openbmb/MiniCPM5-2B-GGUF:Q4_K_M',
-      dspark: 'openbmb/MiniCPM5-2B-DSpark-GGUF',
-      name: `MiniCPM5 2B（${t('中文更佳')}•${t('投机加速')}）`,
+      // dspark: 'openbmb/MiniCPM5-2B-DSpark-GGUF',
+      name: `MiniCPM5 2B（${t('高质量')}•${t('高速')}）`,
       company: 'OpenBMB',
       parameterSize: '2B',
       totalSize: '1.45GB',
       recommended: true,
-      description: t('面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。'),
+      description: t('显存不足，又想正确分类文件，必须选我，唯一缺点仅支持文本。'),
       source: 'huggingface',
       quantization: 'Q4_K_M',
       isMultiModal: false,
@@ -520,57 +521,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
         numPredict: 3072
       }
     },
-    {
-      id: 'openbmb/MiniCPM5-2B-GGUF:Q4_K_M',
-      name: `MiniCPM5 2B（${t('高质量')}-${t('快速')}-${t('小体积')}）`,
-      company: 'OpenBMB',
-      parameterSize: '2B',
-      totalSize: '1.45GB',
-      recommended: true,
-      description: t(
-        '如果显存不足，又想正确分类文件，必须选我，唯一缺点仅支持文本。'
-      ),
-      source: 'huggingface',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'very_fast',
-        quality: 'very_high'
-      },
-      tags: [t('仅文本'), t('高质量'), t('速度快'), t('中文更佳')],
-      recommendedConfig: {
-        numCtx: 16384,
-        numPredict: 4096
-      }
-    },
-    {
-      id: 'OpenBMB/MiniCPM5-2B-gguf:Q4_K_M',
-      name: `MiniCPM5 2B（${t('高质量')}-${t('快速')}-${t('小体积')}）`,
-      company: 'OpenBMB',
-      parameterSize: '2B',
-      totalSize: '1.45GB',
-      recommended: true,
-      description: t(
-        '如果显存不足，又想正确分类文件，必须选我，唯一缺点仅支持文本。'
-      ),
-      source: 'modelscope',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'very_fast',
-        quality: 'very_high'
-      },
-      tags: [t('仅文本'), t('高质量'), t('速度快'), t('中文更佳')],
-      recommendedConfig: {
-        numCtx: 16384,
-        numPredict: 4096
-      }
-    },
-    {
+       {
       id: 'Abiray/Nanbeige4.2-3B-GGUF:Q4_K_S',
       name: t('Nanbeige 4.2 3B（较好）'),
       company: 'Abiray',

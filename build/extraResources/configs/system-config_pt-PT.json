@@ -8,7 +8,7 @@
       "[Herança de regras de análise] Estratégias de análise de perfil de diretório, regras inteligentes de nome de arquivo e atributos adicionais suportam herança",
       "[Novos modelos] Qwen3.8, Ornith-1.5 e outros modelos mais recentes de alta pontuação da comunidade, e alguns modelos desatualizados foram removidos",
       "[Modelo integrado] Mude para o modelo de alta velocidade LFM2.5-1.2B, conclua uma análise em 2 segundos",
-      "[Aceleração DSpark] O modelo integrado oferece suporte à aceleração do modelo DSpark em computadores que suportam apenas inferência de CPU.",
+      "Princípiodspark acceleration_dspark acceleration_dspark acceleration_dspark acceleration_dspark",
       "[Geração de estrutura de diretório] Suporta cópia de palavras de prompt com um clique para IA externa, como Doubao, para obter estrutura de diretório de arquivo de alta qualidade",
       "[Local de suporte] Verifique as informações do nome do local com base nas coordenadas dos metadados do arquivo e adicione tags",
       "[Configuração simplificada] A extração de informações do arquivo simplifica o arquivo de configuração e obtém informações do arquivo de forma mais inteligente e eficiente.",

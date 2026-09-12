@@ -102,6 +102,7 @@
       "totalSize": "873MB",
       "description": "最新の LFM2.5 インストラクションモデル。テキスト分析が効率的で、CPU 推論も高速。",
       "source": "modelscope",
+      "recommended": true,
       "isBuiltin": true,
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -126,13 +127,12 @@
     },
     {
       "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
-      "dspark": "OpenBMB/MiniCPM5-2B-DSpark-GGUF",
-      "name": "MiniCPM5 2B（中国語のほうが上手い•投机加速）",
+      "name": "MiniCPM5 2B（高品質•高スピード）",
       "company": "OpenBMB",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。",
+      "description": "ビデオメモリが不足しているため、ファイルを正しく分類したい場合は、私を選択する必要があります。 唯一の欠点は、テキストのみをサポートすることです。",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -158,13 +158,12 @@
     },
     {
       "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "dspark": "openbmb/MiniCPM5-2B-DSpark-GGUF",
-      "name": "MiniCPM5 2B（中国語のほうが上手い•投机加速）",
+      "name": "MiniCPM5 2B（高品質•高スピード）",
       "company": "OpenBMB",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。",
+      "description": "ビデオメモリが不足しているため、ファイルを正しく分類したい場合は、私を選択する必要があります。 唯一の欠点は、テキストのみをサポートすることです。",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -195,7 +194,7 @@
       "parameterSize": "2.6B",
       "totalSize": "1.63GB",
       "recommended": true,
-      "description": "最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 DSpark 投机采样加速。",
+      "description": "最新のLFM2.5 2.6b公式モデルは、効率的な推論と高品質の分析のバランスをとり、DSpark投機的サンプリング加速をサポートしています。",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -688,66 +687,6 @@
       "recommendedConfig": {
         "numCtx": 16384,
         "numPredict": 3072
-      }
-    },
-    {
-      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（高品質-スピード-小型）",
-      "company": "OpenBMB",
-      "parameterSize": "2B",
-      "totalSize": "1.45GB",
-      "recommended": true,
-      "description": "ビデオメモリが不足していて、ファイルを正しく分類したい場合は、[私]を選択する必要があります。 唯一の欠点は、テキストのみをサポートすることです。",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "very_high"
-      },
-      "tags": [
-        "テキストのみ",
-        "高品質",
-        "速い",
-        "中国語のほうが上手い"
-      ],
-      "recommendedConfig": {
-        "numCtx": 16384,
-        "numPredict": 4096
-      }
-    },
-    {
-      "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
-      "name": "MiniCPM5 2B（高品質-スピード-小型）",
-      "company": "OpenBMB",
-      "parameterSize": "2B",
-      "totalSize": "1.45GB",
-      "recommended": true,
-      "description": "ビデオメモリが不足していて、ファイルを正しく分類したい場合は、[私]を選択する必要があります。 唯一の欠点は、テキストのみをサポートすることです。",
-      "source": "modelscope",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "very_high"
-      },
-      "tags": [
-        "テキストのみ",
-        "高品質",
-        "速い",
-        "中国語のほうが上手い"
-      ],
-      "recommendedConfig": {
-        "numCtx": 16384,
-        "numPredict": 4096
       }
     },
     {

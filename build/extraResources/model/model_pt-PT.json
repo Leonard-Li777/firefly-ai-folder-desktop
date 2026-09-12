@@ -102,6 +102,7 @@
       "totalSize": "873MB",
       "description": "Mais recente modelo de instrução LFM2.5, análise de texto eficiente, inferência rápida em CPU.",
       "source": "modelscope",
+      "recommended": true,
       "isBuiltin": true,
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -126,13 +127,12 @@
     },
     {
       "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
-      "dspark": "OpenBMB/MiniCPM5-2B-DSpark-GGUF",
-      "name": "MiniCPM5 2B（Chinês é melhor•投机加速）",
+      "name": "MiniCPM5 2B（Alta qualidade•Alta velocidade）",
       "company": "OpenBMB",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。",
+      "description": "Não há memória de vídeo suficiente e, se quiser classificar os ficheiros correctamente, deve escolher-me. A única desvantagem é que só suporta texto.",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -158,13 +158,12 @@
     },
     {
       "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "dspark": "openbmb/MiniCPM5-2B-DSpark-GGUF",
-      "name": "MiniCPM5 2B（Chinês é melhor•投机加速）",
+      "name": "MiniCPM5 2B（Alta qualidade•Alta velocidade）",
       "company": "OpenBMB",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。",
+      "description": "Não há memória de vídeo suficiente e, se quiser classificar os ficheiros correctamente, deve escolher-me. A única desvantagem é que só suporta texto.",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -195,7 +194,7 @@
       "parameterSize": "2.6B",
       "totalSize": "1.63GB",
       "recommended": true,
-      "description": "最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 DSpark 投机采样加速。",
+      "description": "O último modelo Oficial LFM2.5 2.6 b equilibra o raciocínio eficiente com uma análise de alta qualidade e apoia a aceleração da amostragem especulativa dspark.",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -688,66 +687,6 @@
       "recommendedConfig": {
         "numCtx": 16384,
         "numPredict": 3072
-      }
-    },
-    {
-      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（Alta qualidade-Velocidade-Tamanho pequeno）",
-      "company": "OpenBMB",
-      "parameterSize": "2B",
-      "totalSize": "1.45GB",
-      "recommended": true,
-      "description": "Se a memória de vídeo for insuficiente e pretender classificar os ficheiros correctamente, deve escolher-me. A única desvantagem é que só suporta texto.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "very_high"
-      },
-      "tags": [
-        "Somente texto",
-        "Alta qualidade",
-        "Rápido",
-        "Chinês é melhor"
-      ],
-      "recommendedConfig": {
-        "numCtx": 16384,
-        "numPredict": 4096
-      }
-    },
-    {
-      "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
-      "name": "MiniCPM5 2B（Alta qualidade-Velocidade-Tamanho pequeno）",
-      "company": "OpenBMB",
-      "parameterSize": "2B",
-      "totalSize": "1.45GB",
-      "recommended": true,
-      "description": "Se a memória de vídeo for insuficiente e pretender classificar os ficheiros correctamente, deve escolher-me. A única desvantagem é que só suporta texto.",
-      "source": "modelscope",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "very_high"
-      },
-      "tags": [
-        "Somente texto",
-        "Alta qualidade",
-        "Rápido",
-        "Chinês é melhor"
-      ],
-      "recommendedConfig": {
-        "numCtx": 16384,
-        "numPredict": 4096
       }
     },
     {

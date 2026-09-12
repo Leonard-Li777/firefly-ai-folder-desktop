@@ -8,7 +8,7 @@
       "[Herencia de reglas de análisis] Las estrategias de análisis de perfiles de directorio, las reglas inteligentes de nombres de archivos y atributos adicionales admiten la herencia",
       "[Nuevos modelos] Qwen3.8, Ornith-1.5 y otros modelos más recientes de alta puntuación de la comunidad, y se han eliminado algunos modelos obsoletos",
       "[Modelo incorporado] Cambie al modelo de alta velocidad LFM2.5-1.2B, complete un análisis en 2 segundos",
-      "[Aceleración DSpark] El modelo integrado admite la aceleración del modelo DSpark en computadoras que solo admiten inferencia de CPU.",
+      "【Aceleración DSpark】 El modelo incorporado admite la aceleración del modelo de muestreo especulativo DSpark",
       "[Generación de estructura de directorios] Admite la copia con un solo clic de palabras solicitadas a una IA externa como Doubao para obtener una estructura de directorio de archivos de alta calidad",
       "[Ubicación de soporte] Verifique la información del nombre del lugar según las coordenadas de los metadatos del archivo y agregue etiquetas",
       "[Configuración simplificada] La extracción de información del archivo simplifica el archivo de configuración y obtiene información del archivo de manera más inteligente y eficiente.",

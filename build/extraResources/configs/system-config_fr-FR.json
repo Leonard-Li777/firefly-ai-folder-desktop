@@ -8,7 +8,7 @@
       "[Héritage des règles d'analyse] Les stratégies d'analyse de profilage d'annuaire, les règles de nom de fichier intelligentes et les attributs supplémentaires prennent en charge l'héritage",
       "[Nouveaux modèles] Qwen3.8, Ornith-1.5 et d'autres derniers modèles communautaires à haut score, ainsi que certains modèles obsolètes ont été supprimés.",
       "[Modèle intégré] Passez au modèle haute vitesse LFM2.5-1.2B, effectuez une analyse en 2 secondes",
-      "[Accélération DSpark] Le modèle intégré prend en charge l'accélération du modèle DSpark sur les ordinateurs qui prennent uniquement en charge l'inférence CPU.",
+      "【Accélération DSpark】 Le modèle intégré prend en charge l'accélération du modèle d'échantillonnage spéculatif DSpark",
       "[Génération de structure de répertoire] Prend en charge la copie en un clic des mots d'invite vers une IA externe telle que Doubao pour obtenir une structure de répertoire de fichiers de haute qualité",
       "[Emplacement du support] Vérifiez les informations sur le nom du lieu en fonction des coordonnées des métadonnées du fichier et ajoutez des balises",
       "[Configuration simplifiée] L'extraction des informations sur les fichiers simplifie le fichier de configuration et obtient les informations sur les fichiers de manière plus intelligente et efficace.",

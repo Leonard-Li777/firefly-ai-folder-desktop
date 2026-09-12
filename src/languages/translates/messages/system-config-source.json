@@ -77,18 +77,18 @@
     "$files": ["src/electron/config/system-config-source.ts(613-650)"],
     "$id": 11168
   },
-  "【DSpark加速】内置模型在仅支持CPU推理的电脑上支持DSpark模型加速": {
-    "en-US": "[DSpark Acceleration] The built-in model supports DSpark model acceleration on computers that only support CPU inference.",
-    "es-ES": "[Aceleración DSpark] El modelo integrado admite la aceleración del modelo DSpark en computadoras que solo admiten inferencia de CPU.",
-    "ar-EG": "[تسريع DSpark] يدعم النموذج المدمج تسريع نموذج DSpark على أجهزة الكمبيوتر التي تدعم استنتاج وحدة المعالجة المركزية فقط.",
-    "pt-PT": "[Aceleração DSpark] O modelo integrado oferece suporte à aceleração do modelo DSpark em computadores que suportam apenas inferência de CPU.",
-    "ru-RU": "[Ускорение DSpark] Встроенная модель поддерживает ускорение модели DSpark на компьютерах, которые поддерживают только вывод ЦП.",
-    "ja-JP": "[DSpark アクセラレーション] 組み込みモデルは、CPU 推論のみをサポートするコンピューター上の DSpark モデル アクセラレーションをサポートします。",
-    "de-DE": "[DSpark-Beschleunigung] Das integrierte Modell unterstützt die DSpark-Modellbeschleunigung auf Computern, die nur CPU-Inferenz unterstützen.",
-    "fr-FR": "[Accélération DSpark] Le modèle intégré prend en charge l'accélération du modèle DSpark sur les ordinateurs qui prennent uniquement en charge l'inférence CPU.",
-    "ko-KR": "[DSpark 가속] 내장 모델은 CPU 추론만 지원하는 컴퓨터에서 DSpark 모델 가속을 지원합니다.",
-    "$files": ["src/electron/config/system-config-source.ts(659-702)"],
-    "$id": 11170
+  "【DSpark加速】内置模型支持DSpark投机采样模型加速": {
+    "en-US": "【DSpark acceleration】 The built-in model supports DSpark speculative sampling model acceleration",
+    "es-ES": "【Aceleración DSpark】 El modelo incorporado admite la aceleración del modelo de muestreo especulativo DSpark",
+    "ar-EG": "- تسريع دسبارك - يدعم النموذج المدمج تسريع نموذج أخذ العينات المضاربة دسبارك",
+    "pt-PT": "Princípiodspark acceleration_dspark acceleration_dspark acceleration_dspark acceleration_dspark",
+    "ru-RU": "【Ускорение DSpark】 Встроенная модель поддерживает ускорение модели спекулятивной выборки DSpark",
+    "ja-JP": "【DSpark acceleration】内蔵モデルはDSpark投機的サンプリングモデルのアクセラレーションに対応しています",
+    "de-DE": "【DSpark-Beschleunigung】 Das integrierte Modell unterstützt die Beschleunigung des spekulativen dspark-Sampling-Modells",
+    "fr-FR": "【Accélération DSpark】 Le modèle intégré prend en charge l'accélération du modèle d'échantillonnage spéculatif DSpark",
+    "ko-KR": "기본 제공 모델은 디스파크 투기 샘플링 모델 가속을 지원합니다.",
+    "$files": ["src/electron/config/system-config-source.ts(659-693)"],
+    "$id": 11438
   },
   "【目录结构生成】支持一键复制提示词到豆包等外部AI获取高质量文件目录结构": {
     "en-US": "[Directory structure generation] Supports one-click copying of prompt words to external AI such as Doubao to obtain high-quality file directory structure",
@@ -100,7 +100,7 @@
     "de-DE": "[Verzeichnisstrukturgenerierung] Unterstützt das Kopieren von Eingabeaufforderungswörtern mit einem Klick an eine externe KI wie Doubao, um eine hochwertige Dateiverzeichnisstruktur zu erhalten",
     "fr-FR": "[Génération de structure de répertoire] Prend en charge la copie en un clic des mots d'invite vers une IA externe telle que Doubao pour obtenir une structure de répertoire de fichiers de haute qualité",
     "ko-KR": "[디렉터리 구조 생성] 고품질 파일 디렉토리 구조를 얻기 위해 Doubao와 같은 외부 AI에 프롬프트 단어를 원클릭 복사 지원",
-    "$files": ["src/electron/config/system-config-source.ts(711-751)"],
+    "$files": ["src/electron/config/system-config-source.ts(702-742)"],
     "$id": 11171
   },
   "【支持位置】根据文件元数据坐标反查地名信息，并添加标签": {
@@ -113,7 +113,7 @@
     "de-DE": "[Unterstützter Standort] Überprüfen Sie Ortsnameninformationen basierend auf Dateimetadatenkoordinaten und fügen Sie Tags hinzu",
     "fr-FR": "[Emplacement du support] Vérifiez les informations sur le nom du lieu en fonction des coordonnées des métadonnées du fichier et ajoutez des balises",
     "ko-KR": "[지원 위치] 파일 메타데이터 좌표를 기반으로 지명 정보 확인 및 태그 추가",
-    "$files": ["src/electron/config/system-config-source.ts(760-791)"],
+    "$files": ["src/electron/config/system-config-source.ts(751-782)"],
     "$id": 11172
   },
   "【简化配置】文件信息提取简化配置文件，更智能高效的获取文件信息": {
@@ -126,7 +126,7 @@
     "de-DE": "[Vereinfachte Konfiguration] Durch die Extraktion von Dateiinformationen wird die Konfigurationsdatei vereinfacht und Dateiinformationen werden intelligenter und effizienter abgerufen.",
     "fr-FR": "[Configuration simplifiée] L'extraction des informations sur les fichiers simplifie le fichier de configuration et obtient les informations sur les fichiers de manière plus intelligente et efficace.",
     "ko-KR": "[간소화된 구성] 파일 정보 추출은 구성 파일을 단순화하고 보다 지능적이고 효율적으로 파일 정보를 얻습니다.",
-    "$files": ["src/electron/config/system-config-source.ts(800-835)"],
+    "$files": ["src/electron/config/system-config-source.ts(791-826)"],
     "$id": 11173
   },
   "【UI性能】移除所有占用GPU的UI动效": {
@@ -139,7 +139,7 @@
     "de-DE": "[UI-Leistung] Entfernen Sie alle UI-Animationen, die die GPU belegen",
     "fr-FR": "[Performances de l'interface utilisateur] Supprimez toutes les animations de l'interface utilisateur qui occupent le GPU",
     "ko-KR": "[UI 성능] GPU를 차지하는 모든 UI 애니메이션 제거",
-    "$files": ["src/electron/config/system-config-source.ts(844-868)"],
+    "$files": ["src/electron/config/system-config-source.ts(835-859)"],
     "$id": 11154
   },
   "【架构稳定】移除V3.4中引入的各硬件环境可能存在的不兼容优化": {
@@ -152,7 +152,7 @@
     "de-DE": "[Stabile Architektur] Entfernen Sie mögliche inkompatible Optimierungen, die in V3.4 für verschiedene Hardwareumgebungen eingeführt wurden",
     "fr-FR": "[Architecture stable] Supprimez les éventuelles optimisations incompatibles introduites dans la V3.4 pour divers environnements matériels",
     "ko-KR": "[안정적인 아키텍처] 다양한 하드웨어 환경에 대해 V3.4에 도입된 호환되지 않는 최적화를 제거합니다.",
-    "$files": ["src/electron/config/system-config-source.ts(877-912)"],
+    "$files": ["src/electron/config/system-config-source.ts(868-903)"],
     "$id": 11155
   },
   "新增批量更名、批量标签、批量清理": {
@@ -165,7 +165,7 @@
     "de-DE": "Chargenumbenennung, Chargenkennzeichnung und Chargenreinigung hinzugefügt",
     "fr-FR": "Ajout du renommage des lots, de l'étiquetage des lots et du nettoyage des lots",
     "ko-KR": "배치 이름 바꾸기, 배치 라벨링 및 배치 청소가 추가되었습니다.",
-    "$files": ["src/electron/config/system-config-source.ts(1067-1087)"],
+    "$files": ["src/electron/config/system-config-source.ts(1058-1078)"],
     "$id": 11156
   },
   "MiniCPM5-2B 性价比王，2G显存跑出超强智能": {
@@ -178,7 +178,7 @@
     "de-DE": "MiniCPM5-2B kostengünstiger König, 2G Videospeicher, super smart",
     "fr-FR": "MiniCPM5-2B roi rentable, mémoire vidéo 2G, super intelligent",
     "ko-KR": "비용 효율적인 킹,2 그램 비디오 메모리,슈퍼 스마트",
-    "$files": ["src/electron/config/system-config-source.ts(1116-1147)"],
+    "$files": ["src/electron/config/system-config-source.ts(1107-1138)"],
     "$id": 11394
   },
   "新增云端服务商 Agnes AI，永久免费API，国内网络可正常访问": {
@@ -191,7 +191,7 @@
     "de-DE": "Neuer Cloud-Dienst Agnes AI hinzugefügt, dauerhaft kostenlose API, aus dem Landesinneren erreichbar",
     "fr-FR": "Nouveau fournisseur cloud ajouté  Agnes AI, API gratuite à vie, accessible normalement sur les réseaux chinois",
     "ko-KR": "Agnes AI 신규 클라우드 서비스 제공, 영구 무료 API, 중국 내 네트워크에서 정상적으로 접속 가능",
-    "$files": ["src/electron/config/system-config-source.ts(1242-1280)"],
+    "$files": ["src/electron/config/system-config-source.ts(1233-1271)"],
     "$id": 9895
   },
   "功能答疑、产品交流，欢迎前往萤核知乎官方圈子参与讨论": {
@@ -204,7 +204,7 @@
     "de-DE": "Fragen zu Funktionen, Produktaustausch – willkommen im offiziellen Firefly AI Folder Zhihu Community-Forum zur Teilnahme an Diskussionen",
     "fr-FR": "Pour des questions fonctionnelles et des échanges produits, rejoignez notre communauté officielle Firefly AI Folder sur Zhihu pour participer aux discussions",
     "ko-KR": "기능 문의 및 제품 교류는 Firefly AI Folder Zhihu 공식 커뮤니티에서 참여해 주세요",
-    "$files": ["src/electron/config/system-config-source.ts(1346-1376)"],
+    "$files": ["src/electron/config/system-config-source.ts(1337-1367)"],
     "$id": 9898
   }
 }

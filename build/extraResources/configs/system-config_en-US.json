@@ -8,7 +8,7 @@
       "[Analysis Rule Inheritance] Directory profiling analysis strategies, intelligent file name rules, and additional attributes support inheritance",
       "[New models] Qwen3.8, Ornith-1.5 and other latest community high-scoring models, and some outdated models have been removed",
       "[Built-in model] Switch to high-speed model LFM2.5-1.2B, complete an analysis in 2 seconds",
-      "[DSpark Acceleration] The built-in model supports DSpark model acceleration on computers that only support CPU inference.",
+      "【DSpark acceleration】 The built-in model supports DSpark speculative sampling model acceleration",
       "[Directory structure generation] Supports one-click copying of prompt words to external AI such as Doubao to obtain high-quality file directory structure",
       "[Support location] Check place name information based on file metadata coordinates and add tags",
       "[Simplified configuration] File information extraction simplifies the configuration file and obtains file information more intelligently and efficiently.",

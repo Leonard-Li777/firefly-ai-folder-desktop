@@ -102,6 +102,7 @@
       "totalSize": "873MB",
       "description": "최신 LFM2.5 지시 모델, 텍스트 분석 효율적, CPU 추론 빠름.",
       "source": "modelscope",
+      "recommended": true,
       "isBuiltin": true,
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -126,13 +127,12 @@
     },
     {
       "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
-      "dspark": "OpenBMB/MiniCPM5-2B-DSpark-GGUF",
-      "name": "MiniCPM5 2B（중국어가 더 낫다•投机加速）",
+      "name": "MiniCPM5 2B（고품질•고속）",
       "company": "OpenBMB",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。",
+      "description": "비디오 메모리가 부족하고 파일을 올바르게 분류하려면 나를 선택해야합니다. 유일한 단점은 텍스트 만 지원한다는 것입니다.",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -158,13 +158,12 @@
     },
     {
       "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "dspark": "openbmb/MiniCPM5-2B-DSpark-GGUF",
-      "name": "MiniCPM5 2B（중국어가 더 낫다•投机加速）",
+      "name": "MiniCPM5 2B（고품질•고속）",
       "company": "OpenBMB",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "面壁智能开源的端侧小钢炮，支持 DSpark 投机采样双倍加速，中文与轻量推理表现优秀。",
+      "description": "비디오 메모리가 부족하고 파일을 올바르게 분류하려면 나를 선택해야합니다. 유일한 단점은 텍스트 만 지원한다는 것입니다.",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -195,7 +194,7 @@
       "parameterSize": "2.6B",
       "totalSize": "1.63GB",
       "recommended": true,
-      "description": "最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 DSpark 投机采样加速。",
+      "description": "최신 공식 모델은 효율적인 추론과 고품질 분석의 균형을 맞추고 투기 샘플링 가속화를 지원합니다.",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -688,66 +687,6 @@
       "recommendedConfig": {
         "numCtx": 16384,
         "numPredict": 3072
-      }
-    },
-    {
-      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（고품질-속도-작은 사이즈）",
-      "company": "OpenBMB",
-      "parameterSize": "2B",
-      "totalSize": "1.45GB",
-      "recommended": true,
-      "description": "비디오 메모리가 부족하고 올바르게 파일을 분류 할 경우,당신은 저를 선택해야합니다. 유일한 단점은 텍스트 만 지원한다는 것입니다.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "very_high"
-      },
-      "tags": [
-        "텍스트만",
-        "고품질",
-        "빠른",
-        "중국어가 더 낫다"
-      ],
-      "recommendedConfig": {
-        "numCtx": 16384,
-        "numPredict": 4096
-      }
-    },
-    {
-      "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
-      "name": "MiniCPM5 2B（고품질-속도-작은 사이즈）",
-      "company": "OpenBMB",
-      "parameterSize": "2B",
-      "totalSize": "1.45GB",
-      "recommended": true,
-      "description": "비디오 메모리가 부족하고 올바르게 파일을 분류 할 경우,당신은 저를 선택해야합니다. 유일한 단점은 텍스트 만 지원한다는 것입니다.",
-      "source": "modelscope",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "very_high"
-      },
-      "tags": [
-        "텍스트만",
-        "고품질",
-        "빠른",
-        "중국어가 더 낫다"
-      ],
-      "recommendedConfig": {
-        "numCtx": 16384,
-        "numPredict": 4096
       }
     },
     {

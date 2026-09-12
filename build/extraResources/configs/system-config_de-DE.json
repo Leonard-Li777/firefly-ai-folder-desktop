@@ -8,7 +8,7 @@
       "[Vererbung von Analyseregeln] Analysestrategien für die Verzeichnisprofilierung, intelligente Dateinamenregeln und zusätzliche Attribute unterstützen die Vererbung",
       "[Neue Modelle] Qwen3.8, Ornith-1.5 und andere aktuelle Community-Highscore-Modelle sowie einige veraltete Modelle wurden entfernt",
       "[Eingebautes Modell] Wechseln Sie zum Hochgeschwindigkeitsmodell LFM2.5-1.2B und führen Sie eine Analyse in 2 Sekunden durch",
-      "[DSpark-Beschleunigung] Das integrierte Modell unterstützt die DSpark-Modellbeschleunigung auf Computern, die nur CPU-Inferenz unterstützen.",
+      "【DSpark-Beschleunigung】 Das integrierte Modell unterstützt die Beschleunigung des spekulativen dspark-Sampling-Modells",
       "[Verzeichnisstrukturgenerierung] Unterstützt das Kopieren von Eingabeaufforderungswörtern mit einem Klick an eine externe KI wie Doubao, um eine hochwertige Dateiverzeichnisstruktur zu erhalten",
       "[Unterstützter Standort] Überprüfen Sie Ortsnameninformationen basierend auf Dateimetadatenkoordinaten und fügen Sie Tags hinzu",
       "[Vereinfachte Konfiguration] Durch die Extraktion von Dateiinformationen wird die Konfigurationsdatei vereinfacht und Dateiinformationen werden intelligenter und effizienter abgerufen.",
