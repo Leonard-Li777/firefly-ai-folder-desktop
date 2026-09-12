@@ -236,7 +236,19 @@
     "telegram_url": "https://t.me/firefly_ai_folder",
     "creem": {
       "checkout_base_url": "https://creem.io/payment",
+      "test_checkout_base_url": "https://www.creem.io/test/product",
       "products": {
+        "pro_monthly": "prod_7IQefdg2y8zpKIKF3QA7PE",
+        "pro_quarterly": "prod_252yfPiPCEGKH8cTEBR5OS",
+        "pro_yearly": "prod_351VO3a7dfpxYT4h6gQFuB",
+        "enterprise_half_year": "prod_5IWEU8nh0kI2Ci2p2rnX1X",
+        "enterprise_yearly": "prod_vFfw2iaqvuZzbzCeuZkZR",
+        "firecores_20": "prod_2y4KfNT1wYbyzQlr1r7lSy",
+        "firecores_45": "prod_3oJG3eiYrpC2oQGQ37Vzie",
+        "firecores_150": "prod_3F9DT00VqsySoASAQYTia",
+        "firecores_280": "prod_7VsVyffjHFHR6DnKR4gUVK"
+      },
+      "test_products": {
         "pro_monthly": "prod_73m2zOpUrfVszCP7lFz2kw",
         "pro_quarterly": "prod_5D8ml4kJs6rMnFZjomveXN",
         "pro_yearly": "prod_5GyErAlyc1LSDGBEtBnYQR",
