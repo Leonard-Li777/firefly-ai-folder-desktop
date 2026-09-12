@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { MaterialIcon, cn } from '../../../../lib/utils'
-import { t } from '@app/languages'
+import i18nScope, { t, getLanguage } from '@app/languages'
+import { useVoerkaI18n } from '@voerkai18n/react'
 import { ProgressBar } from '../../../ui/ProgressBar'
 import { toast } from '../../../common/Toast'
 import { Button } from '../../../ui/button'
@@ -75,6 +76,7 @@ const DirectoryProfileSectionComponent: React.FC<{
   isUnit,
   workspaceDirectoryPath
 }) => {
+    const { activeLanguage } = useVoerkaI18n(i18nScope)
     if (!analysisResult || !isDirAnalysis(analysisResult)) return null
 
     const ctx = analysisResult.contextAnalysis
@@ -274,30 +276,21 @@ const DirectoryProfileSectionComponent: React.FC<{
     // 复制智能文件名格式要求给外部 AI（如豆包、ChatGPT）
     const handleCopyNamingFormatPrompt = async () => {
       try {
-        const activeLanguage =
-          (window as any).electronAPI?.config?.getSync?.('DEFAULT_LANGUAGE') || 'zh-CN'
+        const currentLang =
+          activeLanguage ||
+          getLanguage?.() ||
+          (i18nScope as any)?.activeLanguage ||
+          'zh-CN'
         let content: string | null = null
         try {
           const { loadPromptParagraph } = await import('@firefly/shared')
-          content = await loadPromptParagraph('smart-naming-format-prompt', activeLanguage)
-        } catch {
-          // 回退
+          content = await loadPromptParagraph('smart-naming-format-prompt', currentLang)
+        } catch (loadErr) {
+          logger.warn(LogCategory.FILE_ANALYSIS, '加载多语言提示词段落失败，使用内置兜底模版:', loadErr)
         }
-        if (!content || !content.trim()) {
-          content = [
-            `【${t('萤核智能文件夹-智能文件名格式要求')}】`,
-            t('软件支持以下智能文件名规则，你可以根据实际文件分类需求自行定义关键词，由AI自动识别提取并生成：'),
-            `\n一、合规格式规范（核心规则：规则中必须包含“内容描述”或“描述”，可置于开头、中间或末尾）：`,
-            `1. 在内容描述后添加属性：xxx_xxx，例如：${t('内容描述')}_${t('角色名')}、${t('内容描述')}_${t('作者')}_${t('年份')}`,
-            `2. 仅使用中括号分类：[xxx]xxx，例如：[${t('领域')}]${t('内容描述')}、[${t('系列名')}]${t('内容描述')}、[${t('作者')}]${t('内容描述')}`,
-            `3. 使用下划线分隔属性：xxx_xxx，例如：${t('领域')}_${t('内容描述')}、${t('版本')}_${t('内容描述')}`,
-            `4. 多层级属性组合：xxx_xxx_xxx，例如：[${t('领域')}]${t('内容描述')}_${t('角色名')}、${t('作者')}_${t('年份')}_${t('内容描述')}、${t('分类')}_${t('地名')}_${t('年份')}_${t('内容描述')}`,
-            `5. 中括号与下划线结合：[xxx]xxx_xxx，例如：[${t('原文件名编号')}]${t('状态')}_${t('内容描述')}、[${t('领域')}]${t('内容描述')}_${t('角色名')}`,
-            `6. 极简模式：${t('内容描述')}`,
-            `\n二、AI助手工作指引：`,
-            `请以温馨、专业的语气回复用户，先用一两句简短亲切的话（例如：“你好！我已经收到你的智能命名需求，请告诉我你希望文件如何命名…”）引导用户用自然语言描述他们期望的文件名样式或包含的信息。`,
-            `当用户提供描述后，请严格遵循上述格式规范，将其提炼转换为符合规范的智能文件名格式（规则中必须包含“内容描述”或“描述”，可置于开头、中间或末尾），并给出2~3个推荐的格式选项供用户直接复制使用。`
-          ].join('\n')
+        if (!content?.trim()) {
+          toast.error(t('无法复制：未找到智能文件名格式要求内容'))
+          return
         }
         await navigator.clipboard.writeText(content.trim())
         toast.success(t('格式要求已复制到剪贴板，已为您开启编辑模式'))
