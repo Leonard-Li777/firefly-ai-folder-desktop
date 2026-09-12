@@ -21,7 +21,7 @@ interface AnalysisQueueState {
   toggleQueue: () => void
   refresh: () => Promise<void>
   addItems: (
-    items: { path: string; name: string; size: number; type: string }[],
+    items: { path: string; name: string; size: number; type: string; expand?: boolean }[],
     forceReanalyze?: boolean
   ) => Promise<void>
   retryFailed: () => Promise<void>

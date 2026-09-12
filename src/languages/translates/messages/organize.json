@@ -9,7 +9,7 @@
     "de-DE": "KI analysiert und organisiert den Plan...\r",
     "fr-FR": "L'IA analyse et organise le plan...\r",
     "ko-KR": "AI가 정리 방안을 분석 중입니다...",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(1674-1691)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(1632-1649)"],
     "$id": 4132
   },
   "恢复": {
@@ -22,7 +22,7 @@
     "de-DE": "Genesen",
     "fr-FR": "Récupérer",
     "ko-KR": "다시 덮다",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2168-2174)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2115-2121)"],
     "$id": 10536
   },
   "暂停": {
@@ -35,7 +35,7 @@
     "de-DE": "Pause",
     "fr-FR": "Pause",
     "ko-KR": "정지시키다",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2178-2184)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2125-2131)"],
     "$id": 10537
   },
   "结束": {
@@ -48,7 +48,7 @@
     "de-DE": "Beenden",
     "fr-FR": "Finition",
     "ko-KR": "마치다",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2570-2576)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2506-2512)"],
     "$id": 10538
   },
   "取消": {
@@ -62,10 +62,10 @@
     "fr-FR": "Annuler\r",
     "ko-KR": "취소\r",
     "$files": [
-      "src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2764-2770)",
-      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6011-6017)",
-      "src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28411-28417)",
-      "src/renderer/components/organize/UndoHistoryDialog.tsx(2438-2444)"
+      "src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2695-2701)",
+      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5849-5855)",
+      "src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(27680-27686)",
+      "src/renderer/components/organize/UndoHistoryDialog.tsx(2356-2362)"
     ],
     "$id": 4150
   },
@@ -79,7 +79,7 @@
     "de-DE": "Stapel-Fortschritt:\r",
     "fr-FR": "Progression du lot :\r",
     "ko-KR": "배치 진행 상황：",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3666-3675)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3578-3587)"],
     "$id": 4133
   },
   "第 {currentBatch} / {totalBatches} 批": {
@@ -92,7 +92,7 @@
     "de-DE": "Stapel {currentBatch} / {totalBatches}\r",
     "fr-FR": "Lot {currentBatch} / {totalBatches}\r",
     "ko-KR": "{currentBatch} / {totalBatches} 배치",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3721-3760)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3631-3670)"],
     "$id": 4134
   },
   "文件进度：": {
@@ -105,7 +105,7 @@
     "de-DE": "Datei-Fortschritt:\r",
     "fr-FR": "Progression du fichier :\r",
     "ko-KR": "파일 진행 상황：",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(4038-4047)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3943-3952)"],
     "$id": 4135
   },
   "{processedFiles}/{totalFiles} 个文件": {
@@ -118,7 +118,7 @@
     "de-DE": "{processedFiles}/{totalFiles} Dateien\r",
     "fr-FR": "{processedFiles}/{totalFiles} fichiers\r",
     "ko-KR": "{processedFiles}/{totalFiles} 개 파일",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(4077-4114)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(3981-4018)"],
     "$id": 4136
   },
   "已创建 {count} 个目录分类": {
@@ -131,7 +131,7 @@
     "de-DE": "{count} Verzeichniskategorien wurden erstellt\r",
     "fr-FR": "{count} répertoires classés ont été créés\r",
     "ko-KR": "{count} 개 디렉터리 분류 생성됨",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(4784-4805)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(4675-4696)"],
     "$id": 4137
   },
   "隐藏预览": {
@@ -144,7 +144,7 @@
     "de-DE": "Vorschau ausblenden\r",
     "fr-FR": "Masquer l'aperçu\r",
     "ko-KR": "미리보기 숨기기",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5285-5293)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5166-5174)"],
     "$id": 4138
   },
   "显示预览": {
@@ -157,7 +157,7 @@
     "de-DE": "Vorschau anzeigen\r",
     "fr-FR": "Afficher l'aperçu\r",
     "ko-KR": "미리보기 표시",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5297-5305)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5178-5186)"],
     "$id": 4139
   },
   "当前目录结构预览": {
@@ -170,7 +170,7 @@
     "de-DE": "Aktuelle Verzeichnisstruktur-Vorschau\r",
     "fr-FR": "Aperçu de la structure du répertoire actuel\r",
     "ko-KR": "현재 디렉터리 구조 미리보기",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5859-5871)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5724-5736)"],
     "$id": 4140
   },
   "(持续更新中...)": {
@@ -183,7 +183,7 @@
     "de-DE": "(läuft aktuell weiter...)\r",
     "fr-FR": "(Mise à jour en cours...)\r",
     "ko-KR": "(지속적으로 업데이트 중...)",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(6011-6025)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(5873-5887)"],
     "$id": 4141
   },
   "AI正在处理更多文件，请稍候...": {
@@ -196,7 +196,7 @@
     "de-DE": "KI verarbeitet weitere Dateien, bitte warten...",
     "fr-FR": "L'IA traite davantage de fichiers, veuillez patienter...",
     "ko-KR": "AI가 추가 파일을 처리 중입니다. 잠시만 기다려 주십시오...",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(6746-6767)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(6589-6610)"],
     "$id": 4142
   },
   "正在生成目录结构...": {
@@ -209,7 +209,7 @@
     "de-DE": "Verzeichnisstruktur wird generiert...\r",
     "fr-FR": "Génération de la structure du répertoire en cours...",
     "ko-KR": "디렉토리 구조를 생성하는 중입니다...",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(7010-7025)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(6846-6861)"],
     "$id": 3269
   },
   "取消分析": {
@@ -222,7 +222,7 @@
     "de-DE": "Analyse abbrechen\r",
     "fr-FR": "Annuler l'analyse\r",
     "ko-KR": "분석 취소\r",
-    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(7234-7242)"],
+    "$files": ["src/renderer/components/organize/AIOrganizeProgressDialog.tsx(7063-7071)"],
     "$id": 4144
   },
   "整理真实目录": {
@@ -236,8 +236,8 @@
     "fr-FR": "Organiser le répertoire réel\r",
     "ko-KR": "실제 디렉터리 정리\r",
     "$files": [
-      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(2669-2679)",
-      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7281-7291)"
+      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(2588-2598)",
+      "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7080-7090)"
     ],
     "$id": 4145
   },
@@ -251,7 +251,7 @@
     "de-DE": "Falls Sie mit dem Ergebnis nicht zufrieden sind? Bitte versuchen Sie:\r",
     "fr-FR": "Si vous n'êtes pas satisfait du résultat ? Veuillez essayer :",
     "ko-KR": "결과에 만족하지 않으시나요? 다음 방법을 시도해보세요:",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3144-3161)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3055-3072)"],
     "$id": 3270
   },
   "导出虚拟目录功能": {
@@ -264,7 +264,7 @@
     "de-DE": "Virtuelle Verzeichnisfunktion generieren\r",
     "fr-FR": "Fonction de génération de répertoire virtuel",
     "ko-KR": "가상 디렉토리 생성 기능",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3608-3620)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3509-3521)"],
     "$id": 3271
   },
   "在虚拟目录页面左侧标签目录树中切换整理模式，勾选标签，点击导出虚拟目录按钮，定制化的生成你需要的目录结构，且不影响真实目录的文件结构": {
@@ -277,7 +277,7 @@
     "de-DE": "Wechseln Sie den Organisationsmodus in der Registerkarte „Verzeichnisbaum“ auf der linken Seite der virtuellen Verzeichnisseite, überprüfen Sie die Registerkarte und klicken Sie auf die Schaltfläche „Virtuelles Verzeichnis exportieren“, um die gewünschte Verzeichnisstruktur anzupassen, ohne die Dateistruktur des realen Verzeichnisses zu beeinträchtigen.",
     "fr-FR": "Changez le mode d'organisation dans l'arborescence des onglets sur le côté gauche de la page du répertoire virtuel, vérifiez l'onglet et cliquez sur le bouton Exporter le répertoire virtuel pour personnaliser la structure de répertoires dont vous avez besoin sans affecter la structure de fichiers du répertoire réel.",
     "ko-KR": "가상 디렉터리 페이지 왼쪽의 탭 디렉터리 트리에서 구성 모드를 전환하고 탭을 확인한 후 가상 디렉터리 내보내기 버튼을 클릭하면 실제 디렉터리의 파일 구조에 영향을 주지 않고 필요한 디렉터리 구조를 사용자 지정할 수 있습니다.",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3881-3977)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(3778-3873)"],
     "$id": 4616
   },
   "或者": {
@@ -290,7 +290,7 @@
     "de-DE": "Oder\r",
     "fr-FR": "Ou",
     "ko-KR": "또는",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4119-4125)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4010-4016)"],
     "$id": 3273
   },
   "提示词引导AI整理": {
@@ -303,7 +303,7 @@
     "de-DE": "KI-Organisation durch Eingabeaufforderungen\r",
     "fr-FR": "Conseils pour guider l'IA à organiser",
     "ko-KR": "프롬프트로 AI 정리 유도",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4505-4518)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4387-4400)"],
     "$id": 3274
   },
   "例如：目录名最多4个字": {
@@ -316,7 +316,7 @@
     "de-DE": "Beispiel: Verzeichnisnamen maximal 4 Zeichen\r",
     "fr-FR": "Par exemple : nom du répertoire maximum 4 caractères",
     "ko-KR": "예: 디렉토리명은 최대 4자",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4729-4744)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(4603-4618)"],
     "$id": 3275
   },
   "重新整理": {
@@ -329,7 +329,7 @@
     "de-DE": "Neu organisieren\r",
     "fr-FR": "Réorganiser",
     "ko-KR": "다시 정리",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5149-5157)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5015-5023)"],
     "$id": 3276
   },
   "整理预览：": {
@@ -342,7 +342,7 @@
     "de-DE": "Organisierungs-Vorschau:\r",
     "fr-FR": "Aperçu de l'organisation :",
     "ko-KR": "정리 미리보기:\r",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5338-5347)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5196-5205)"],
     "$id": 4147
   },
   "{fileCount} 个文件将被移动到新位置": {
@@ -355,7 +355,7 @@
     "de-DE": "{fileCount} Dateien werden an neue Positionen verschoben\r",
     "fr-FR": "{fileCount} fichiers seront déplacés vers de nouveaux emplacements\r",
     "ko-KR": "{fileCount}개의 파일이 새 위치로 이동됩니다\r",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5409-5436)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(5265-5292)"],
     "$id": 4149
   },
   "导出虚拟目录": {
@@ -368,7 +368,7 @@
     "de-DE": "Virtuelles Verzeichnis erstellen",
     "fr-FR": "Créer un répertoire virtuel",
     "ko-KR": "가상 디렉터리 생성",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6877-6887)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6689-6699)"],
     "$id": 4146
   },
   "存为已分析视角": {
@@ -381,7 +381,7 @@
     "de-DE": "Als analysierte Perspektive speichern",
     "fr-FR": "Enregistrer comme perspective analysée",
     "ko-KR": "분석된 관점으로 저장",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7066-7077)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6872-6883)"],
     "$id": 10539
   },
   "此操作将改变真实目录的文件结构，操作不可撤销！": {
@@ -394,7 +394,7 @@
     "de-DE": "Dieser Vorgang wird die Dateistruktur der echten Verzeichnisse verändern, der Vorgang ist unumkehrbar!",
     "fr-FR": "Cette opération modifiera la structure des fichiers du répertoire réel, l'opération est irréversible !",
     "ko-KR": "이 작업은 실제 디렉토리의 파일 구조를 변경하며, 작업 취소가 불가능합니다!",
-    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7876-7903)"],
+    "$files": ["src/renderer/components/organize/ConfirmOrganizeDialog.tsx(7668-7695)"],
     "$id": 3277
   },
   "文件冲突": {
@@ -407,7 +407,7 @@
     "de-DE": "Dateikonflikt\r",
     "fr-FR": "Conflit de fichiers\r",
     "ko-KR": "파일 충돌\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(1684-1692)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(1640-1648)"],
     "$id": 4152
   },
   "检测到 {count} 个文件冲突。请选择如何处理这些冲突。": {
@@ -420,7 +420,7 @@
     "de-DE": "{count} Dateikonflikte gefunden. Bitte wählen Sie, wie mit diesen Konflikten umgegangen werden soll.\r",
     "fr-FR": "{count} conflits de fichiers détectés. Veuillez choisir comment gérer ces conflits.\r",
     "ko-KR": "{count}개의 파일 충돌이 감지되었습니다. 충돌 처리 방법을 선택해주세요.\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(1938-1972)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(1889-1923)"],
     "$id": 4153
   },
   "冲突文件列表：": {
@@ -433,7 +433,7 @@
     "de-DE": "Liste der Konfliktdateien:\r",
     "fr-FR": "Liste des fichiers en conflit :\r",
     "ko-KR": "충돌 파일 목록:\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(2156-2167)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(2102-2113)"],
     "$id": 4154
   },
   "现有文件：": {
@@ -446,7 +446,7 @@
     "de-DE": "Vorhandene Dateien:\r",
     "fr-FR": "Fichier existant :\r",
     "ko-KR": "기존 파일:\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(3293-3302)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(3217-3226)"],
     "$id": 4155
   },
   "新文件：": {
@@ -459,7 +459,7 @@
     "de-DE": "Neue Dateien:\r",
     "fr-FR": "Nouveau fichier :\r",
     "ko-KR": "새 파일:\r",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(3809-3817)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(3726-3734)"],
     "$id": 4156
   },
   "还有 {count} 个冲突文件未显示...": {
@@ -472,7 +472,7 @@
     "de-DE": "Weitere {count} Konfliktdateien werden nicht angezeigt...",
     "fr-FR": "{count} autres fichiers en conflit ne sont pas affichés...",
     "ko-KR": "표시되지 않은 충돌 파일이 {count}개 더 있습니다...",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(4372-4398)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(4276-4302)"],
     "$id": 4157
   },
   "选择处理方式：": {
@@ -485,7 +485,7 @@
     "de-DE": "Auswahl der Bearbeitungsweise:",
     "fr-FR": "Sélectionner le mode de traitement :",
     "ko-KR": "처리 방식 선택:",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(4658-4669)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(4554-4565)"],
     "$id": 4158
   },
   "重命名": {
@@ -498,7 +498,7 @@
     "de-DE": "Umbenennen",
     "fr-FR": "Renommer",
     "ko-KR": "이름 변경",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5279-5286)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5163-5170)"],
     "$id": 4159
   },
   "自动为新文件重命名，保留现有文件": {
@@ -511,7 +511,7 @@
     "de-DE": "Neue Datei automatisch umbenennen und bestehende Datei beibehalten",
     "fr-FR": "Renommer automatiquement le nouveau fichier, conserver le fichier existant",
     "ko-KR": "새 파일 자동 이름 변경, 기존 파일 보존",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5384-5404)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5266-5286)"],
     "$id": 4160
   },
   "添加序号 (file (1).txt)": {
@@ -524,7 +524,7 @@
     "de-DE": "Nummerierung hinzufügen (file (1).txt)",
     "fr-FR": "Ajouter un numéro (file (1).txt)",
     "ko-KR": "순차 번호 추가 (file (1).txt)",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(6083-6106)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(5951-5974)"],
     "$id": 4161
   },
   "添加时间戳 (file_20250120.txt)": {
@@ -537,7 +537,7 @@
     "de-DE": "Zeitstempel hinzufügen (file_20250120.txt)",
     "fr-FR": "Ajouter un horodatage (file_20250120.txt)",
     "ko-KR": "타임스탬프 추가 (file_20250120.txt)",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(6718-6747)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(6573-6602)"],
     "$id": 4162
   },
   "添加来源目录名 (file_OldFolder.txt)": {
@@ -550,7 +550,7 @@
     "de-DE": "Quellordnername hinzufügen (file_OldFolder.txt)",
     "fr-FR": "Ajouter le nom du répertoire source (file_OldFolder.txt)",
     "ko-KR": "소스 디렉토리 이름 추가 (file_OldFolder.txt)",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(7353-7385)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(7195-7227)"],
     "$id": 4163
   },
   "跳过": {
@@ -563,7 +563,7 @@
     "de-DE": "Überspringen",
     "fr-FR": "Ignorer",
     "ko-KR": "건너뛰기",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8110-8116)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(7934-7940)"],
     "$id": 4164
   },
   "保留现有文件，不移动新文件": {
@@ -576,7 +576,7 @@
     "de-DE": "Bestehende Datei beibehalten, neue Datei nicht verschieben",
     "fr-FR": "Conserver le fichier existant, ne pas déplacer le nouveau fichier",
     "ko-KR": "기존 파일 보존, 새 파일 이동 안 함",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8214-8231)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8036-8053)"],
     "$id": 4165
   },
   "覆盖": {
@@ -589,7 +589,7 @@
     "de-DE": "Überschreiben",
     "fr-FR": "Remplacer",
     "ko-KR": "덮어쓰기",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8935-8941)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8742-8748)"],
     "$id": 4166
   },
   "删除现有文件，使用新文件替换（危险操作）": {
@@ -602,7 +602,7 @@
     "de-DE": "Bestehende Datei löschen und durch neue Datei ersetzen (gefährliche Aktion)",
     "fr-FR": "Supprimer le fichier existant et le remplacer par le nouveau fichier (opération dangereuse)",
     "ko-KR": "기존 파일 삭제, 새 파일로 대체 (위험 작업)",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(9048-9072)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(8853-8877)"],
     "$id": 4167
   },
   "应用于所有 {count} 个冲突文件": {
@@ -615,7 +615,7 @@
     "de-DE": "An alle {count} Konfliktdateien anwenden",
     "fr-FR": "S'appliquer à tous les {count} fichiers en conflit",
     "ko-KR": "모든 {count}개의 충돌 파일에 적용",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(9595-9618)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(9385-9408)"],
     "$id": 4168
   },
   "取消整理": {
@@ -629,8 +629,8 @@
     "fr-FR": "Annuler l'organisation",
     "ko-KR": "정리 취소",
     "$files": [
-      "src/renderer/components/organize/ConflictResolutionDialog.tsx(9983-9991)",
-      "src/renderer/components/organize/OrganizeProgressDialog.tsx(2812-2820)"
+      "src/renderer/components/organize/ConflictResolutionDialog.tsx(9763-9771)",
+      "src/renderer/components/organize/OrganizeProgressDialog.tsx(2742-2750)"
     ],
     "$id": 4169
   },
@@ -644,7 +644,7 @@
     "de-DE": "Bestätigen und fortfahren",
     "fr-FR": "Confirmer et continuer",
     "ko-KR": "확인 및 계속",
-    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(10200-10209)"],
+    "$files": ["src/renderer/components/organize/ConflictResolutionDialog.tsx(9974-9983)"],
     "$id": 4170
   },
   "暂无目录结构预览": {
@@ -657,7 +657,7 @@
     "de-DE": "Keine Verzeichnisstruktur-Vorschau vorhanden",
     "fr-FR": "Aperçu de la structure du répertoire indisponible",
     "ko-KR": "아직 디렉토리 구조 미리보기 없음",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(940-952)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(910-922)"],
     "$id": 4171
   },
   "目录结构为空": {
@@ -670,7 +670,7 @@
     "de-DE": "Verzeichnisstruktur ist leer",
     "fr-FR": "La structure du répertoire est vide",
     "ko-KR": "디렉토리 구조가 비어 있음",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(1117-1127)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(1079-1089)"],
     "$id": 4172
   },
   "快速整理只读预览，不支持微调交互": {
@@ -683,7 +683,7 @@
     "de-DE": "Organisieren Sie schnell schreibgeschützte Vorschauen und unterstützen Sie keine Feinabstimmungsinteraktionen",
     "fr-FR": "Organisez rapidement des aperçus en lecture seule et ne prenez pas en charge les interactions de réglage fin",
     "ko-KR": "읽기 전용 미리보기를 빠르게 구성하고 미세 조정 상호 작용을 지원하지 않습니다.",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(2290-2310)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(2219-2239)"],
     "$id": 10540
   },
   "只读": {
@@ -697,8 +697,8 @@
     "fr-FR": "Lecture seule",
     "ko-KR": "읽기 전용",
     "$files": [
-      "src/renderer/components/organize/DirectoryTreePreview.tsx(4655-4661)",
-      "src/renderer/components/organize/DirectoryTreePreview.tsx(6927-6933)"
+      "src/renderer/components/organize/DirectoryTreePreview.tsx(4516-4522)",
+      "src/renderer/components/organize/DirectoryTreePreview.tsx(6735-6741)"
     ],
     "$id": 10541
   },
@@ -712,7 +712,7 @@
     "de-DE": "({count}) Dateien",
     "fr-FR": "{count} fichiers",
     "ko-KR": "({count})개 파일",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(4765-4782)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(4622-4639)"],
     "$id": 4173
   },
   "删除目录": {
@@ -725,7 +725,7 @@
     "de-DE": "Verzeichnis löschen",
     "fr-FR": "Supprimer le répertoire",
     "ko-KR": "디렉토리 삭제",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(5387-5395)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(5232-5240)"],
     "$id": 7725
   },
   "扫描失败: {message}": {
@@ -937,8 +937,8 @@
       "src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(12168-12174)",
       "src/renderer/components/organize/EmptyFolderCleanupDialog.tsx(13379-13385)",
       "src/renderer/components/organize/OrganizeErrorDialog.tsx(3065-3071)",
-      "src/renderer/components/organize/OrganizeResultDialog.tsx(8835-8841)",
-      "src/renderer/components/organize/UndoHistoryDialog.tsx(9619-9625)"
+      "src/renderer/components/organize/OrganizeResultDialog.tsx(8625-8631)",
+      "src/renderer/components/organize/UndoHistoryDialog.tsx(9389-9395)"
     ],
     "$id": 4189
   },
@@ -978,7 +978,7 @@
     "de-DE": "Virtuelles Verzeichnis Stamm",
     "fr-FR": "Racine du répertoire virtuel",
     "ko-KR": "가상 디렉토리 루트",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6231-6240)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6045-6054)"],
     "$id": 4192
   },
   "扁平化文件列表": {
@@ -991,7 +991,7 @@
     "de-DE": "Gekachelte Dateiliste",
     "fr-FR": "Aplatir la liste des fichiers",
     "ko-KR": "파일 목록 평탄화",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6290-6301)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6102-6113)"],
     "$id": 4193
   },
   "{tag}标签目录": {
@@ -1004,7 +1004,7 @@
     "de-DE": "{tag} Tag-Verzeichnis",
     "fr-FR": "Dossier de tags {tag}",
     "ko-KR": "{tag} 태그 디렉토리",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6909-6922)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6699-6712)"],
     "$id": 4194
   },
   "题材": {
@@ -1017,7 +1017,7 @@
     "de-DE": "Thema",
     "fr-FR": "Thème",
     "ko-KR": "주제",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(9086-9092)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(8809-8815)"],
     "$id": 4569
   },
   "游戏类型": {
@@ -1030,7 +1030,7 @@
     "de-DE": "Spieltyp",
     "fr-FR": "Type de jeu",
     "ko-KR": "게임 유형",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(9387-9395)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(9104-9112)"],
     "$id": 4570
   },
   "视频": {
@@ -1043,7 +1043,7 @@
     "de-DE": "Video",
     "fr-FR": "Vidéo",
     "ko-KR": "동영상",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10049-10055)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(9749-9755)"],
     "$id": 4571
   },
   "影视": {
@@ -1056,7 +1056,7 @@
     "de-DE": "Film und Fernsehen",
     "fr-FR": "Cinéma et télévision",
     "ko-KR": "영화와 텔레비전",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10092-10098)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(9791-9797)"],
     "$id": 4572
   },
   "电子书": {
@@ -1069,7 +1069,7 @@
     "de-DE": "E-Book",
     "fr-FR": "Livre électronique",
     "ko-KR": "전자책",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10368-10375)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10061-10068)"],
     "$id": 4573
   },
   "小说": {
@@ -1082,7 +1082,7 @@
     "de-DE": "Roman",
     "fr-FR": "Roman",
     "ko-KR": "소설",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10412-10418)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10104-10110)"],
     "$id": 4574
   },
   "游戏娱乐": {
@@ -1095,7 +1095,7 @@
     "de-DE": "Spiele und Unterhaltung",
     "fr-FR": "Jeux et divertissements",
     "ko-KR": "게임 및 엔터테인먼트",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10688-10696)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10374-10382)"],
     "$id": 4576
   },
   "{fileCount} 个文件": {
@@ -1108,7 +1108,7 @@
     "de-DE": "{fileCount} Dateien",
     "fr-FR": "{fileCount} fichiers",
     "ko-KR": "{fileCount}개 파일",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(16699-16718)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(16206-16225)"],
     "$id": 4195
   },
   "导出虚拟目录预览": {
@@ -1121,7 +1121,7 @@
     "de-DE": "Virtuelle Verzeichnisvorschau generieren",
     "fr-FR": "Générer l'aperçu du répertoire virtuel",
     "ko-KR": "가상 디렉토리 미리보기 생성",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(18573-18585)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(18033-18045)"],
     "$id": 4196
   },
   "将创建 {count} 个虚拟目录": {
@@ -1134,7 +1134,7 @@
     "de-DE": "Es werden {count} virtuelle Verzeichnisse erstellt\r",
     "fr-FR": "{count} répertoires virtuels seront créés",
     "ko-KR": "{count}개의 가상 디렉토리가 생성됩니다",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19302-19323)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(18743-18764)"],
     "$id": 4197
   },
   "共 {count} 个文件": {
@@ -1147,7 +1147,7 @@
     "de-DE": "Insgesamt {count} Dateien\r",
     "fr-FR": "{count} fichiers au total",
     "ko-KR": "총 {count}개의 파일",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19483-19500)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(18921-18938)"],
     "$id": 4198
   },
   "文件列表预览（扁平化）：": {
@@ -1160,7 +1160,7 @@
     "de-DE": "Vorschau der Dateiliste (geglättet):\r",
     "fr-FR": "Aperçu de la liste des fichiers (aplati) :",
     "ko-KR": "파일 목록 미리보기(플랫 형식)：",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19783-19799)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19213-19229)"],
     "$id": 4199
   },
   "目录结构预览：": {
@@ -1173,7 +1173,7 @@
     "de-DE": "Vorschau der Verzeichnisstruktur:\r",
     "fr-FR": "Aperçu de la structure des répertoires :",
     "ko-KR": "디렉토리 구조 미리보기：",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19803-19814)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19233-19244)"],
     "$id": 4200
   },
   "加载文件列表中...": {
@@ -1186,7 +1186,7 @@
     "de-DE": "Lade Dateiliste...\r",
     "fr-FR": "Chargement de la liste des fichiers...",
     "ko-KR": "파일 목록 로드 중...",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(20333-20347)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19756-19770)"],
     "$id": 4201
   },
   "平铺到虚拟目录": {
@@ -1199,7 +1199,7 @@
     "de-DE": "In virtuelles Verzeichnis kacheln\r",
     "fr-FR": "Répartir dans les répertoires virtuels",
     "ko-KR": "가상 디렉토리로 평면화",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(22409-22420)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(21786-21797)"],
     "$id": 4202
   },
   "勾选后，隐藏所有目录层级，将所有文件展示为单一层级的纯文件列表（自动去重）": {
@@ -1212,7 +1212,7 @@
     "de-DE": "Wenn aktiviert, werden alle Verzeichnisebenen ausgeblendet und alle Dateien als einfache Einzel-Ebene-Liste angezeigt (automatische Duplikatentfernung)\r",
     "fr-FR": "Lorsque cette case est cochée, tous les niveaux de répertoires sont masqués, et tous les fichiers sont affichés comme une liste simple sans duplication automatique",
     "ko-KR": "선택하면 모든 디렉토리 계층을 숨기고 모든 파일을 단일 계층의 순수 파일 목록으로 표시합니다(자동 중복 제거)",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(22994-23035)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(22363-22404)"],
     "$id": 4203
   },
   "目录按勾选顺序嵌套": {
@@ -1225,7 +1225,7 @@
     "de-DE": "Verzeichnisse sind in der Kontrollreihenfolge verschachtelt",
     "fr-FR": "Les répertoires sont imbriqués dans l'ordre des chèques",
     "ko-KR": "디렉토리는 검사 순서대로 중첩됩니다.",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(23773-23786)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(23127-23140)"],
     "$id": 4686
   },
   "勾选后，点选的多个不同维度（分类）的标签将按点击顺序变成父子文件夹（如：{文件类型} > {文件用途}）。不选中时，它们将分别作为独立的一级文件夹并列显示{文件类型} {文件用途}。": {
@@ -1238,7 +1238,7 @@
     "de-DE": "Wenn diese Option aktiviert ist, werden die ausgewählten Tags aus verschiedenen Dimensionen (Kategorien) in der Reihenfolge des Anklickens zu übergeordneten und untergeordneten Ordnern (z. B.: {Dateityp} > {Verwendungszweck der Datei}). Wenn die Option nicht aktiviert ist, werden sie jeweils als eigenständige Ordner der ersten Ebene nebeneinander angezeigt {Dateityp} {Verwendungszweck der Datei}.",
     "fr-FR": "Une fois cochée, les étiquettes de différentes dimensions (catégories) sélectionnées deviendront des dossiers parent-enfant selon l'ordre de clic (par exemple : {Type de fichier} > {Usage du fichier}). Si non cochée, elles seront affichées séparément comme des dossiers de premier niveau {Type de fichier} {Usage du fichier}.",
     "ko-KR": "체크 시, 선택한 여러 개의 서로 다른 차원(분류) 태그는 클릭 순서에 따라 부모-자식 폴더로 변환됩니다 (예: {파일 유형} > {파일 용도}). 체크하지 않을 경우, 각각 독립된 1차 폴더로 나란히 표시됩니다 {파일 유형} {파일 용도}.",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(24376-24495)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(23722-23840)"],
     "$id": 2742
   },
   "文件去重": {
@@ -1251,7 +1251,7 @@
     "de-DE": "Datei-Duplikatentfernung\r",
     "fr-FR": "Suppression des doublons de fichiers",
     "ko-KR": "파일 중복 제거",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(25253-25261)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(24581-24589)"],
     "$id": 4204
   },
   "勾选后，同一文件在整个虚拟目录树中仅出现一次。采用\"后选优先\"原则：文件归属到最后勾选的标签目录（例如：先选A后选B，文件归入B目录）。未勾选时，文件可在多个标签目录下重复显示。": {
@@ -1264,7 +1264,7 @@
     "de-DE": "Wenn aktiviert, erscheint dieselbe Datei innerhalb des gesamten virtuellen Verzeichnisbaums nur einmal. Es gilt das Prinzip \"Später Auswahl hat Vorrang\": Die Datei gehört zu dem zuletzt ausgewählten Label-Verzeichnis (z. B. wenn zuerst A und dann B ausgewählt wird, wird die Datei dem Verzeichnis B zugeordnet). Wenn deaktiviert, können Dateien in mehreren Label-Verzeichnissen mehrfach angezeigt werden.",
     "fr-FR": "Lorsque cette case est cochée, chaque fichier n'apparaît qu'une seule fois dans l'arborescence virtuelle. Principe appliqué : « dernier choix prioritaire » : le fichier est affecté au dernier répertoire de tags coché (par exemple, si A est coché avant B, le fichier est affecté au répertoire B). Lorsque cette case n'est pas cochée, les fichiers peuvent apparaître plusieurs fois dans différents répertoires de tags.",
     "ko-KR": "선택하면 동일한 파일이 전체 가상 디렉토리 트리에서 한 번만 나타납니다. \"후선 투표 우선\" 원칙을 따릅니다: 파일은 마지막으로 선택한 태그 디렉토리에 속합니다(예: 먼저 A를 선택하고 B를 선택하면 파일은 B 디렉토리에 포함됨). 선택하지 않은 경우 하나의 파일이 여러 태그 디렉토리에 중복 표시될 수 있습니다.",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(25851-25968)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(25171-25287)"],
     "$id": 4205
   },
   "不生成空目录": {
@@ -1277,7 +1277,7 @@
     "de-DE": "Keine leeren Verzeichnisse erstellen",
     "fr-FR": "Ne pas générer les répertoires vides",
     "ko-KR": "빈 디렉토리 생성 안 함",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(26674-26684)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(25977-25987)"],
     "$id": 4206
   },
   "勾选后，预览和最终生成的虚拟目录都不会包含没有文件的空目录": {
@@ -1290,7 +1290,7 @@
     "de-DE": "Wenn aktiviert, werden weder in der Vorschau noch im endgültigen virtuellen Verzeichnis leere Verzeichnisse ohne Dateien enthalten sein",
     "fr-FR": "Lorsque cette case est cochée, les répertoires virtuels de prévisualisation et de génération finale n'incluront pas les répertoires vides sans fichiers",
     "ko-KR": "체크하면 미리보기 및 최종 생성된 가상 디렉토리에 파일이 없는 빈 디렉토리가 포함되지 않습니다",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(27258-27291)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(26553-26586)"],
     "$id": 4207
   },
   "生成后打开虚拟目录": {
@@ -1303,7 +1303,7 @@
     "de-DE": "Virtuelles Verzeichnis nach Erstellung öffnen",
     "fr-FR": "Ouvrir le répertoire virtuel après la génération",
     "ko-KR": "생성 후 가상 디렉토리 열기",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(27949-27962)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(27230-27243)"],
     "$id": 4208
   },
   "确认生成": {
@@ -1316,7 +1316,7 @@
     "de-DE": "Erstellung bestätigen",
     "fr-FR": "Confirmer la génération",
     "ko-KR": "생성 확인",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28691-28699)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(27954-27962)"],
     "$id": 4209
   },
   "整理过程中遇到错误": {
@@ -1420,7 +1420,7 @@
     "de-DE": "Ungefähr {seconds} Sekunden",
     "fr-FR": "Environ {seconds} secondes",
     "ko-KR": "약 {seconds} 초",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(647-664)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(621-638)"],
     "$id": 4217
   },
   "约 {minutes} 分钟": {
@@ -1433,7 +1433,7 @@
     "de-DE": "Ungefähr {minutes} Minuten",
     "fr-FR": "Environ {minutes} minutes",
     "ko-KR": "약 {minutes} 분",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(756-774)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(728-746)"],
     "$id": 4218
   },
   "整理进度": {
@@ -1446,7 +1446,7 @@
     "de-DE": "Fortschritt der Organisation",
     "fr-FR": "Progression du tri",
     "ko-KR": "정리 진행 상황",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1076-1084)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1042-1050)"],
     "$id": 4219
   },
   "正在处理：": {
@@ -1459,7 +1459,7 @@
     "de-DE": "Wird verarbeitet:",
     "fr-FR": "En cours de traitement :",
     "ko-KR": "처리 중:",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1832-1841)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1784-1793)"],
     "$id": 4220
   },
   "准备中...": {
@@ -1472,7 +1472,7 @@
     "de-DE": "Vorbereitung läuft...",
     "fr-FR": "En préparation...",
     "ko-KR": "준비 중...",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1950-1960)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(1900-1910)"],
     "$id": 4221
   },
   "已完成：": {
@@ -1485,7 +1485,7 @@
     "de-DE": "Abgeschlossen:",
     "fr-FR": "Terminé :",
     "ko-KR": "완료됨:",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2124-2132)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2070-2078)"],
     "$id": 4222
   },
   "{processedCount} / {totalCount} 文件": {
@@ -1498,7 +1498,7 @@
     "de-DE": "{processedCount} / {totalCount} Dateien",
     "fr-FR": "{processedCount} / {totalCount} fichiers",
     "ko-KR": "{processedCount} / {totalCount} 파일",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2162-2200)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2107-2145)"],
     "$id": 4223
   },
   "预计剩余：": {
@@ -1511,7 +1511,7 @@
     "de-DE": "Voraussichtliche Restzeit:",
     "fr-FR": "Temps restant estimé :",
     "ko-KR": "예상 잔여:",
-    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2430-2439)"],
+    "$files": ["src/renderer/components/organize/OrganizeProgressDialog.tsx(2371-2380)"],
     "$id": 4224
   },
   "{ms} 毫秒": {
@@ -1524,7 +1524,7 @@
     "de-DE": "{ms} Millisekunden",
     "fr-FR": "{ms} millisecondes",
     "ko-KR": "{ms} 밀리초",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(786-797)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(757-768)"],
     "$id": 4225
   },
   "{seconds} 秒": {
@@ -1537,7 +1537,7 @@
     "de-DE": "{seconds} Sekunden",
     "fr-FR": "{seconds} secondes",
     "ko-KR": "{seconds} 초",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(835-850)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(805-820)"],
     "$id": 4226
   },
   "{minutes} 分钟": {
@@ -1550,7 +1550,7 @@
     "de-DE": "{minutes} Minuten",
     "fr-FR": "{minutes} minutes",
     "ko-KR": "{minutes} 분",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(901-917)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(870-886)"],
     "$id": 4227
   },
   "整理完成": {
@@ -1563,7 +1563,7 @@
     "de-DE": "Organisation abgeschlossen",
     "fr-FR": "Tri terminé",
     "ko-KR": "정리 완료",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1577-1585)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1533-1541)"],
     "$id": 4228
   },
   "所有文件已成功整理": {
@@ -1576,7 +1576,7 @@
     "de-DE": "Alle Dateien wurden erfolgreich organisiert",
     "fr-FR": "Tous les fichiers ont été triés avec succès",
     "ko-KR": "모든 파일이 성공적으로 정리됨",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1699-1712)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1653-1666)"],
     "$id": 4229
   },
   "整理完成，部分文件失败": {
@@ -1589,7 +1589,7 @@
     "de-DE": "Organisation abgeschlossen, einige Dateien fehlgeschlagen",
     "fr-FR": "Tri terminé, certains fichiers ont échoué",
     "ko-KR": "정리 완료, 일부 파일 실패",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1716-1731)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1670-1685)"],
     "$id": 4230
   },
   "成功率": {
@@ -1602,7 +1602,7 @@
     "de-DE": "Erfolgsrate",
     "fr-FR": "Taux de réussite",
     "ko-KR": "성공률",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1961-1968)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(1907-1914)"],
     "$id": 4231
   },
   "总文件数": {
@@ -1615,7 +1615,7 @@
     "de-DE": "Gesamtzahl der Dateien",
     "fr-FR": "Nombre total de fichiers",
     "ko-KR": "총 파일 수",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(2808-2816)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(2736-2744)"],
     "$id": 4232
   },
   "成功移动": {
@@ -1628,7 +1628,7 @@
     "de-DE": "Erfolgreich verschoben",
     "fr-FR": "Déplacés avec succès",
     "ko-KR": "성공적으로 이동됨",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(3414-3422)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(3330-3338)"],
     "$id": 4233
   },
   "创建目录": {
@@ -1641,7 +1641,7 @@
     "de-DE": "Verzeichnis erstellen",
     "fr-FR": "Créer un répertoire",
     "ko-KR": "디렉토리 생성",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(4030-4038)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(3934-3942)"],
     "$id": 4234
   },
   "失败文件": {
@@ -1654,7 +1654,7 @@
     "de-DE": "Fehlerhafte Dateien",
     "fr-FR": "Fichiers échoués",
     "ko-KR": "실패한 파일",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(4995-5003)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(4874-4882)"],
     "$id": 4235
   },
   "耗时：": {
@@ -1667,7 +1667,7 @@
     "de-DE": "Verstrichene Zeit:",
     "fr-FR": "Temps écoulé :",
     "ko-KR": "소요 시간:",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6048-6055)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(5900-5907)"],
     "$id": 4236
   },
   "平均速度：": {
@@ -1680,7 +1680,7 @@
     "de-DE": "Durchschnittsgeschwindigkeit:",
     "fr-FR": "Vitesse moyenne :",
     "ko-KR": "평균 속도:",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6433-6442)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6278-6287)"],
     "$id": 4237
   },
   "{speed} 文件/秒": {
@@ -1693,7 +1693,7 @@
     "de-DE": "{speed} Dateien/Sekunde",
     "fr-FR": "{speed} fichiers/seconde",
     "ko-KR": "{speed} 파일/초",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6590-6606)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6432-6448)"],
     "$id": 4238
   },
   "失败文件列表": {
@@ -1706,7 +1706,7 @@
     "de-DE": "Liste der fehlerhaften Dateien",
     "fr-FR": "Liste des fichiers échoués",
     "ko-KR": "실패한 파일 목록",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(7133-7143)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(6961-6971)"],
     "$id": 4239
   },
   "还有 {count} 个错误...": {
@@ -1719,7 +1719,7 @@
     "de-DE": "Noch {count} Fehler...",
     "fr-FR": "Encore {count} erreurs...",
     "ko-KR": "{count}개의 오류 더 있음...",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8000-8021)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(7812-7833)"],
     "$id": 4240
   },
   "导出日志": {
@@ -1732,7 +1732,7 @@
     "de-DE": "Protokolle exportieren",
     "fr-FR": "Exporter les journaux",
     "ko-KR": "로그 내보내기",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8447-8455)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8247-8255)"],
     "$id": 4241
   },
   "打开目录": {
@@ -1745,7 +1745,7 @@
     "de-DE": "Verzeichnis öffnen",
     "fr-FR": "Ouvrir le répertoire",
     "ko-KR": "디렉토리 열기",
-    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8717-8725)"],
+    "$files": ["src/renderer/components/organize/OrganizeResultDialog.tsx(8511-8519)"],
     "$id": 4242
   },
   "加载历史记录失败: {error_message}": {
@@ -1758,7 +1758,7 @@
     "de-DE": "Laden des Verlaufs fehlgeschlagen: {error_message}",
     "fr-FR": "Échec du chargement de l'historique : {error_message}",
     "ko-KR": "이력 로드 실패: {error_message}",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1505-1534)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1452-1481)"],
     "$id": 4243
   },
   "撤销成功！文件已恢复到整理前的状态": {
@@ -1771,7 +1771,7 @@
     "de-DE": "Rückgängig erfolgreich! Datei wurde auf den Zustand vor der Organisation zurückgesetzt",
     "fr-FR": "Annulation réussie ! Le fichier a été restauré à son état précédent",
     "ko-KR": "되돌리기 성공! 파일이 정리 전 상태로 복원되었습니다",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1813-1834)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1748-1769)"],
     "$id": 4244
   },
   "撤销失败: {error_message}": {
@@ -1784,7 +1784,7 @@
     "de-DE": "Rückgängig fehlgeschlagen: {error_message}",
     "fr-FR": "Échec de l'annulation : {error_message}",
     "ko-KR": "되돌리기 실패: {error_message}",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2053-2078)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(1983-2008)"],
     "$id": 4245
   },
   "删除会话": {
@@ -1797,7 +1797,7 @@
     "de-DE": "Sitzung löschen",
     "fr-FR": "Supprimer la session",
     "ko-KR": "세션 삭제",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2346-2354)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2266-2274)"],
     "$id": 4246
   },
   "确定要删除这个会话记录吗？删除后将无法撤销此次整理操作。": {
@@ -1810,7 +1810,7 @@
     "de-DE": "Sind Sie sicher, dass Sie diesen Sitzungseintrag löschen möchten? Nach dem Löschen kann dieser Organisationsvorgang nicht rückgängig gemacht werden.",
     "fr-FR": "Voulez-vous vraiment supprimer cet enregistrement de session ? Après la suppression, vous ne pourrez pas annuler cette opération de tri.",
     "ko-KR": "이 세션 기록을 삭제하시겠습니까? 삭제 후에는 이 정리 작업을 되돌릴 수 없습니다.",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2375-2407)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2294-2326)"],
     "$id": 4247
   },
   "删除": {
@@ -1823,7 +1823,7 @@
     "de-DE": "Löschen",
     "fr-FR": "Supprimer",
     "ko-KR": "삭제",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2429-2435)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2347-2353)"],
     "$id": 4248
   },
   "会话记录已删除": {
@@ -1836,7 +1836,7 @@
     "de-DE": "Sitzungseintrag wurde gelöscht",
     "fr-FR": "L'enregistrement de session a été supprimé",
     "ko-KR": "세션 기록이 삭제되었습니다",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2715-2726)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2623-2634)"],
     "$id": 4249
   },
   "删除失败: {error_message}": {
@@ -1849,7 +1849,7 @@
     "de-DE": "Löschen fehlgeschlagen: {error_message}",
     "fr-FR": "Échec de la suppression : {error_message}",
     "ko-KR": "삭제 실패: {error_message}",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2964-2989)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(2866-2891)"],
     "$id": 4250
   },
   "无文件": {
@@ -1862,7 +1862,7 @@
     "de-DE": "Keine Dateien",
     "fr-FR": "Aucun fichier",
     "ko-KR": "파일 없음",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3219-3226)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3112-3119)"],
     "$id": 4251
   },
   "{count} 个文件": {
@@ -1875,7 +1875,7 @@
     "de-DE": "{count} Dateien",
     "fr-FR": "{count} fichiers",
     "ko-KR": "{count}개 파일",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3240-3255)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3132-3147)"],
     "$id": 4252
   },
   "撤销历史": {
@@ -1888,7 +1888,7 @@
     "de-DE": "Verlauf rückgängig machen",
     "fr-FR": "Historique d'annulation",
     "ko-KR": "되돌리기 이력",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3797-3805)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(3680-3688)"],
     "$id": 4253
   },
   "加载历史记录...": {
@@ -1901,7 +1901,7 @@
     "de-DE": "Verlaufsdaten werden geladen...\r",
     "fr-FR": "Chargement de l'historique...",
     "ko-KR": "이력 로드 중...",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4366-4379)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4238-4251)"],
     "$id": 4254
   },
   "暂无历史记录": {
@@ -1914,7 +1914,7 @@
     "de-DE": "Kein Verlauf vorhanden\r",
     "fr-FR": "Aucun historique pour le moment",
     "ko-KR": "이력 없음",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4754-4764)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4619-4629)"],
     "$id": 4255
   },
   "还没有执行过整理操作，或者历史记录已被清理。": {
@@ -1927,7 +1927,7 @@
     "de-DE": "Es wurden noch keine Organisationsvorgänge durchgeführt oder der Verlauf wurde bereinigt.\r",
     "fr-FR": "Aucune opération d'organisation n'a encore été effectuée ou l'historique a été nettoyé.",
     "ko-KR": "정리 작업을 아직 수행하지 않았거나 이력이 삭제되었습니다.",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4843-4869)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(4706-4732)"],
     "$id": 4256
   },
   "已备份": {
@@ -1940,7 +1940,7 @@
     "de-DE": "Gesichert\r",
     "fr-FR": "Sauvegardé",
     "ko-KR": "백업 완료",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(5941-5948)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(5783-5790)"],
     "$id": 4257
   },
   "移动了 {count}": {
@@ -1953,7 +1953,7 @@
     "de-DE": "{count} verschoben\r",
     "fr-FR": "{count} éléments déplacés",
     "ko-KR": "{count}개 이동됨",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6345-6360)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6179-6194)"],
     "$id": 4258
   },
   "备份位置: {backup_name}": {
@@ -1966,7 +1966,7 @@
     "de-DE": "Sicherungsort: {backup_name}\r",
     "fr-FR": "Emplacement de sauvegarde : {backup_name}",
     "ko-KR": "백업 위치: {backup_name}",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6858-6881)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(6683-6706)"],
     "$id": 4259
   },
   "撤销中...": {
@@ -1979,7 +1979,7 @@
     "de-DE": "Wird rückgängig gemacht...\r",
     "fr-FR": "Annulation en cours...",
     "ko-KR": "복원 중...",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8152-8162)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(7956-7966)"],
     "$id": 4260
   },
   "撤销": {
@@ -1992,7 +1992,7 @@
     "de-DE": "Rückgängig machen\r",
     "fr-FR": "Annuler",
     "ko-KR": "복원",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8370-8376)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8169-8175)"],
     "$id": 4261
   },
   "删除记录": {
@@ -2005,7 +2005,7 @@
     "de-DE": "Datensatz löschen\r",
     "fr-FR": "Supprimer l'enregistrement",
     "ko-KR": "기록 삭제",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8866-8874)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(8657-8665)"],
     "$id": 4262
   },
   "撤销操作将恢复文件到整理前的位置": {
@@ -2018,7 +2018,7 @@
     "de-DE": "Der Rückgängig-Vorgang stellt die Dateien an die ursprünglichen Positionen vor der Organisation wieder her",
     "fr-FR": "L'opération d'annulation restaurera les fichiers à leur emplacement d'origine avant l'organisation",
     "ko-KR": "복원 작업을 통해 파일이 정리 전 위치로 복구됩니다.",
-    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(9401-9421)"],
+    "$files": ["src/renderer/components/organize/UndoHistoryDialog.tsx(9177-9197)"],
     "$id": 4263
   }
 }

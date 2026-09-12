@@ -420,17 +420,32 @@ export function registerVirtualDirectoryIPCHandlers() {
         fileTypeDistribution: string
         tagsSection?: string
         fileStructurePreview: string
+        organizeMode?: string
       }
     ) => {
       const currentLanguage =
         ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
-      const prompt = await loadPromptParagraph('external-directory-plan-prompt', currentLanguage, {
+      const paragraphId =
+        params.organizeMode === 'fast-organize'
+          ? 'external-directory-plan-fast-prompt'
+          : 'external-directory-plan-prompt'
+      let prompt = await loadPromptParagraph(paragraphId, currentLanguage, {
         fileCount: String(params.fileCount || 0),
         totalDirCount: String(params.totalDirCount || 6),
         fileTypeDistribution: params.fileTypeDistribution || '',
         tagsSection: params.tagsSection || '',
         fileStructurePreview: params.fileStructurePreview || ''
       })
+      // 兜底降级：若特定模式段落未能加载，回退到通用外部规划提示词
+      if (!prompt && paragraphId !== 'external-directory-plan-prompt') {
+        prompt = await loadPromptParagraph('external-directory-plan-prompt', currentLanguage, {
+          fileCount: String(params.fileCount || 0),
+          totalDirCount: String(params.totalDirCount || 6),
+          fileTypeDistribution: params.fileTypeDistribution || '',
+          tagsSection: params.tagsSection || '',
+          fileStructurePreview: params.fileStructurePreview || ''
+        })
+      }
       return prompt
     }
   )

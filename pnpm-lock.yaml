@@ -13,9 +13,9 @@ pnpmfileChecksum: sha256-+ZPiee0DFXaxEY9BucvqO3eWbKpoX39nAtbf1C5eiAw=
 patchedDependencies:
   '@electron/universal@2.0.1': 0e09f8daf2c380c8bbb8cbc5d1cdcfa085c54d151bdcf8862981505e9ed6fa80
   '@voerkai18n/cli@3.0.22': 4f6df667e15e492f1f74084f35462712bb2cc6b58c441ed2087a0b7b89126b9b
-  '@voerkai18n/utils@3.0.22': 2bfc5faf35cc9e1f702030aea100bb702ee08e0b11171c83b3569bfc1142e35d
+  '@voerkai18n/utils@3.0.22': e46b98f7fae2155e016af534f9996d05129d1769acbb09797e740256b54885a3
   better-sqlite3@12.10.0: 1bca5bfc04428970d654aa59bfb847262a359485eaec000e898b304418a766db
-  extract-file-icon@0.3.2: 5b9984077e6e9f3200e04a48098fc9a18d46b3ff633a04d22e2d3a186333b4e7
+  extract-file-icon@0.3.2: 720aca3656b3a631482abc3e1978d81f139a34f5879759a384281472c0eb006b
   macos-alias@0.2.12: c848f86571c442a652a4f986b927c1f16daaeee0b6366cb8fdb8c88d9ec4d459
 
 importers:
@@ -213,7 +213,7 @@ importers:
         version: 0.3.5
       extract-file-icon:
         specifier: 0.3.2
-        version: 0.3.2(patch_hash=5b9984077e6e9f3200e04a48098fc9a18d46b3ff633a04d22e2d3a186333b4e7)
+        version: 0.3.2(patch_hash=720aca3656b3a631482abc3e1978d81f139a34f5879759a384281472c0eb006b)
       fix-path:
         specifier: 4.0.0
         version: 4.0.0
@@ -634,6 +634,9 @@ importers:
 
   pro/packages/shared:
     dependencies:
+      '@firefly/i18n-content':
+        specifier: workspace:*
+        version: link:../i18n-content
       '@firefly/types':
         specifier: workspace:*
         version: link:../types
@@ -11537,7 +11540,7 @@ snapshots:
     dependencies:
       '@voerkai18n/formatters': 3.0.22(@voerkai18n/runtime@3.0.22)
       '@voerkai18n/runtime': 3.0.22
-      '@voerkai18n/utils': 3.0.22(patch_hash=2bfc5faf35cc9e1f702030aea100bb702ee08e0b11171c83b3569bfc1142e35d)(@voerkai18n/runtime@3.0.22)
+      '@voerkai18n/utils': 3.0.22(patch_hash=e46b98f7fae2155e016af534f9996d05129d1769acbb09797e740256b54885a3)(@voerkai18n/runtime@3.0.22)
       axios: 1.20.0
       bcp47-language-tags: 1.2.0
       deepmerge: 4.3.1
@@ -11564,7 +11567,7 @@ snapshots:
 
   '@voerkai18n/plugins@3.0.22(@voerkai18n/runtime@3.0.22)(esbuild@0.28.2)(vite@7.3.6(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.110.1(esbuild@0.28.2)(lightningcss@1.30.2)(postcss@8.5.26))':
     dependencies:
-      '@voerkai18n/utils': 3.0.22(patch_hash=2bfc5faf35cc9e1f702030aea100bb702ee08e0b11171c83b3569bfc1142e35d)(@voerkai18n/runtime@3.0.22)
+      '@voerkai18n/utils': 3.0.22(patch_hash=e46b98f7fae2155e016af534f9996d05129d1769acbb09797e740256b54885a3)(@voerkai18n/runtime@3.0.22)
       unplugin: 2.1.2
     optionalDependencies:
       esbuild: 0.28.2
@@ -11577,7 +11580,7 @@ snapshots:
 
   '@voerkai18n/plugins@3.0.22(@voerkai18n/runtime@3.0.22)(esbuild@0.28.2)(vite@7.3.6(@types/node@24.12.4)(jiti@2.7.0)(lightningcss@1.30.2)(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.110.1(esbuild@0.28.2)(lightningcss@1.30.2)(postcss@8.5.26))':
     dependencies:
-      '@voerkai18n/utils': 3.0.22(patch_hash=2bfc5faf35cc9e1f702030aea100bb702ee08e0b11171c83b3569bfc1142e35d)(@voerkai18n/runtime@3.0.22)
+      '@voerkai18n/utils': 3.0.22(patch_hash=e46b98f7fae2155e016af534f9996d05129d1769acbb09797e740256b54885a3)(@voerkai18n/runtime@3.0.22)
       unplugin: 2.1.2
     optionalDependencies:
       esbuild: 0.28.2
@@ -11605,7 +11608,7 @@ snapshots:
       flexvars: 1.0.9
       ts-mixer: 6.0.4
 
-  '@voerkai18n/utils@3.0.22(patch_hash=2bfc5faf35cc9e1f702030aea100bb702ee08e0b11171c83b3569bfc1142e35d)(@voerkai18n/runtime@3.0.22)':
+  '@voerkai18n/utils@3.0.22(patch_hash=e46b98f7fae2155e016af534f9996d05129d1769acbb09797e740256b54885a3)(@voerkai18n/runtime@3.0.22)':
     dependencies:
       '@voerkai18n/runtime': 3.0.22
       axios: 1.20.0
@@ -13483,7 +13486,7 @@ snapshots:
       iconv-lite: 0.4.24
       tmp: 0.0.33
 
-  extract-file-icon@0.3.2(patch_hash=5b9984077e6e9f3200e04a48098fc9a18d46b3ff633a04d22e2d3a186333b4e7):
+  extract-file-icon@0.3.2(patch_hash=720aca3656b3a631482abc3e1978d81f139a34f5879759a384281472c0eb006b):
     dependencies:
       node-addon-api: 1.7.1
 

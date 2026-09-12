@@ -14,7 +14,7 @@
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(30813-30820)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(3314-3321)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(2701-2708)",
-      "src/renderer/components/tier/UserTierBadge.tsx(943-950)"
+      "src/renderer/components/tier/UserTierBadge.tsx(920-927)"
     ],
     "$id": 10959
   },
@@ -300,7 +300,7 @@
       "src/renderer/components/tier/AccountManagementDialog.tsx(5841-5848)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(30648-30655)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(4203-4210)",
-      "src/renderer/components/tier/UserTierBadge.tsx(1286-1293)"
+      "src/renderer/components/tier/UserTierBadge.tsx(1253-1260)"
     ],
     "$id": 10957
   },
@@ -557,7 +557,7 @@
     "ar-EG": "في وضع السبات",
     "pt-PT": "Em modo de suspensão",
     "ru-RU": "В режиме сна",
-    "ja-JP": "休眠中",
+    "ja-JP": "スリープ中",
     "de-DE": "Im Ruhezustand",
     "fr-FR": "En veille",
     "ko-KR": "휴면 중",
@@ -938,7 +938,7 @@
     "de-DE": "Identifikationscode in die Zwischenablage kopiert",
     "fr-FR": "Code d'identification copié dans le presse-papiers",
     "ko-KR": "식별 코드가 클립보드에 복사되었습니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(1596-1610)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(1654-1668)"],
     "$id": 10873
   },
   "我的设备标识码": {
@@ -951,7 +951,7 @@
     "de-DE": "Meine Gerätekennung",
     "fr-FR": "Identifiant de mon appareil",
     "ko-KR": "내 기기 식별 번호",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(2283-2294)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(2354-2365)"],
     "$id": 11534
   },
   "前往官网升级 Pro 版": {
@@ -964,7 +964,7 @@
     "de-DE": "Zur offiziellen Website, um auf die Pro-Version zu aktualisieren",
     "fr-FR": "Rendez-vous sur le site officiel pour passer à la version Pro",
     "ko-KR": "공식 웹사이트에서 Pro 버전으로 업그레이드하기",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(2755-2771)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(2836-2852)"],
     "$id": 11535
   },
   "已复制": {
@@ -977,7 +977,7 @@
     "de-DE": "Kopiert",
     "fr-FR": "Copié",
     "ko-KR": "복사됨",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(3612-3619)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(3712-3719)"],
     "$id": 10942
   },
   "复制": {
@@ -990,7 +990,7 @@
     "de-DE": "Kopieren",
     "fr-FR": "Copier",
     "ko-KR": "복사",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(3750-3756)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(3855-3861)"],
     "$id": 10876
   },
   "您可在官网定价中心选购 Pro 专业版，系统将根据此标识码自动绑定当前设备即刻生效开通。": {
@@ -1003,7 +1003,7 @@
     "de-DE": "Sie können die Pro-Version im Preiscenter auf der offiziellen Website erwerben. Das System wird das aktuelle Gerät anhand dieser Kennung automatisch zuweisen, sodass die Aktivierung sofort in Kraft tritt.",
     "fr-FR": "Vous pouvez acheter la version Pro sur la page « Tarifs » du site officiel ; le système associera automatiquement cet identifiant à votre appareil actuel et l'activation prendra effet immédiatement.",
     "ko-KR": "공식 웹사이트의 가격 정책 센터에서 Pro 버전을 구매하시면, 시스템이 해당 식별 코드를 기반으로 현재 기기에 자동으로 연동하여 즉시 활성화됩니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(4087-4150)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(4201-4265)"],
     "$id": 11536
   },
   "已过期": {
@@ -1017,7 +1017,7 @@
     "fr-FR": "Expiré",
     "ko-KR": "만료됨",
     "$files": [
-      "src/renderer/components/tier/ActivationCodeSection.tsx(6667-6674)",
+      "src/renderer/components/tier/ActivationCodeSection.tsx(6868-6875)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(14453-14460)"
     ],
     "$id": 10878
@@ -1032,7 +1032,7 @@
     "de-DE": "{years}Jahr-{months}Monat-{days}Tag {hours}:{minutes}:{seconds}",
     "fr-FR": "{years}année-{months}mois-{days}jour {hours} :{minutes} :{seconds}",
     "ko-KR": "{years}년-{months}월-{days}일 {hours}:{minutes}:{seconds}",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(7120-7178)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(7334-7392)"],
     "$id": 8205
   },
   "设备标识码已复制到剪贴板": {
@@ -1045,7 +1045,7 @@
     "de-DE": "Die Gerätekennung wurde in die Zwischenablage kopiert.",
     "fr-FR": "Le code d'identification de l'appareil a été copié dans le presse-papiers",
     "ko-KR": "기기 식별 코드가 클립보드에 복사되었습니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(10061-10077)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(10385-10401)"],
     "$id": 11537
   },
   "离线购买链接已复制到剪贴板": {
@@ -1058,7 +1058,7 @@
     "de-DE": "Der Link zum Offline-Kauf wurde in die Zwischenablage kopiert",
     "fr-FR": "Le lien d'achat hors ligne a été copié dans le presse-papiers",
     "ko-KR": "오프라인 구매 링크가 클립보드에 복사되었습니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(10508-10525)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(10845-10862)"],
     "$id": 11538
   },
   "企业版授权激活成功！": {
@@ -1071,7 +1071,7 @@
     "de-DE": "Aktivierung der Enterprise-Versionslizenz erfolgreich!",
     "fr-FR": "Activation de la licence de la version Entreprise réussie !",
     "ko-KR": "Enterprise 버전 라이선스 활성화에 성공했습니다!",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11102-11116)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11461-11475)"],
     "$id": 10879
   },
   "激活失败，请检查授权码与当前设备是否匹配": {
@@ -1084,7 +1084,7 @@
     "de-DE": "Die Aktivierung ist fehlgeschlagen. Bitte überprüfen Sie, ob der Autorisierungscode mit dem aktuellen Gerät übereinstimmt.",
     "fr-FR": "Échec de l'activation. Veuillez vérifier que le code d'autorisation correspond bien à l'appareil actuel.",
     "ko-KR": "활성화에 실패했습니다. 인증 코드와 현재 기기가 일치하는지 확인해 주세요.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11253-11277)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11618-11642)"],
     "$id": 11539
   },
   "激活过程中发生错误，请稍后重试": {
@@ -1097,7 +1097,7 @@
     "de-DE": "Bei der Aktivierung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
     "fr-FR": "Une erreur s'est produite lors de l'activation. Veuillez réessayer plus tard.",
     "ko-KR": "활성화 과정에서 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11321-11340)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11689-11708)"],
     "$id": 11540
   },
   "正在同步本地离线授权状态...": {
@@ -1110,7 +1110,7 @@
     "de-DE": "Der lokale Offline-Autorisierungsstatus wird gerade synchronisiert...",
     "fr-FR": "Synchronisation en cours de l'état de l'autorisation hors ligne locale...",
     "ko-KR": "로컬 오프라인 인증 상태를 동기화 중입니다...",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(11698-11717)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(12077-12096)"],
     "$id": 11541
   },
   "欢迎使用企业版": {
@@ -1123,7 +1123,7 @@
     "de-DE": "Willkommen bei der Enterprise Edition",
     "fr-FR": "Bienvenue dans l'édition Entreprise",
     "ko-KR": "엔터프라이즈 에디션에 오신 것을 환영합니다",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(12936-12947)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(13337-13348)"],
     "$id": 10883
   },
   "授权验证成功，所有离线企业级高级功能已全面解锁": {
@@ -1136,7 +1136,7 @@
     "de-DE": "Die Autorisierung wurde erfolgreich überprüft. Alle erweiterten Offline-Funktionen für Unternehmen sind nun vollständig freigeschaltet.",
     "fr-FR": "La vérification de l'autorisation a réussi. Toutes les fonctionnalités avancées hors ligne destinées aux entreprises sont désormais entièrement débloquées.",
     "ko-KR": "인증에 성공했습니다. 모든 오프라인 엔터프라이즈급 고급 기능이 완전히 해제되었습니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(13047-13074)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(13451-13478)"],
     "$id": 11542
   },
   "授权有效期至：{date}": {
@@ -1149,7 +1149,7 @@
     "de-DE": "Die Autorisierung ist gültig bis: {date}",
     "fr-FR": "L'autorisation est valable jusqu'au : {date}",
     "ko-KR": "승인은 다음 날짜까지 유효합니다: {date}",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(13407-13424)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(13818-13835)"],
     "$id": 10885
   },
   "剩余时间：{time}": {
@@ -1162,7 +1162,7 @@
     "de-DE": "Übrige Zeit:{time}",
     "fr-FR": "Temps restant:{time}",
     "ko-KR": "남은 시간:{time}",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(13862-13877)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(14280-14295)"],
     "$id": 10886
   },
   "窗口将在数秒后自动完成激活闭环": {
@@ -1175,7 +1175,7 @@
     "de-DE": "Das Fenster wird in wenigen Sekunden automatisch den Aktivierungszyklus abschließen.",
     "fr-FR": "La fenêtre achèvera automatiquement la boucle fermée d'activation dans quelques secondes.",
     "ko-KR": "창은 몇 초 후에 자동으로 활성화 루프를 완료할 것입니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(14161-14180)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(14587-14606)"],
     "$id": 11543
   },
   "第一步：在官网购买离线企业授权，获取授权码": {
@@ -1188,7 +1188,7 @@
     "de-DE": "Schritt 1: Kaufen Sie auf der offiziellen Website eine Offline-Unternehmenslizenz und erhalten Sie den Lizenzschlüssel.",
     "fr-FR": "Première étape : acheter une licence d'entreprise hors ligne sur le site officiel et obtenir le code d'activation",
     "ko-KR": "1단계: 공식 웹사이트에서 오프라인 기업용 라이선스를 구매하고 라이선스 코드를 받기",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(15259-15284)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(15713-15738)"],
     "$id": 11544
   },
   "前往官网购买离线企业授权": {
@@ -1201,7 +1201,7 @@
     "de-DE": "Besuchen Sie die offizielle Website, um eine Offline-Unternehmenslizenz zu erwerben",
     "fr-FR": "Rendez-vous sur le site officiel pour acheter une licence d'entreprise hors ligne",
     "ko-KR": "공식 웹사이트에서 오프라인 기업용 라이선스를 구매하세요",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(15894-15910)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(16361-16377)"],
     "$id": 11545
   },
   "已复制链接": {
@@ -1214,7 +1214,7 @@
     "de-DE": "Link wurde kopiert",
     "fr-FR": "Le lien a été copié",
     "ko-KR": "링크를 복사했습니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(17308-17317)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(17801-17810)"],
     "$id": 11546
   },
   "一键复制链接": {
@@ -1227,7 +1227,7 @@
     "de-DE": "Link mit einem Klick kopieren",
     "fr-FR": "Copier le lien en un clic",
     "ko-KR": "한 번의 클릭으로 링크 복사하기",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(17472-17482)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(17970-17980)"],
     "$id": 11547
   },
   "当前设备处于离线状态": {
@@ -1240,7 +1240,7 @@
     "de-DE": "Das Gerät ist derzeit offline.",
     "fr-FR": "L'appareil est actuellement hors ligne.",
     "ko-KR": "현재 장치가 오프라인 상태입니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(18018-18032)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(18526-18540)"],
     "$id": 11548
   },
   "无法直接打开网页": {
@@ -1253,7 +1253,7 @@
     "de-DE": "Die Webseite lässt sich nicht direkt öffnen.",
     "fr-FR": "Impossible d'ouvrir directement la page Web",
     "ko-KR": "웹페이지를 직접 열 수 없습니다",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(18166-18178)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(18676-18688)"],
     "$id": 11549
   },
   "请点击上方按钮一键复制购买链接，发送到能上网的电脑或手机浏览器打开购买。该链接已内嵌本机设备标识，支付后即可生成对应专属授权码。": {
@@ -1266,7 +1266,7 @@
     "de-DE": "Bitte klicken Sie auf die Schaltfläche oben, um den Kauf-Link mit einem Klick zu kopieren, und senden Sie ihn an einen Computer oder einen mobilen Browser mit Internetverbindung, um den Kauf abzuschließen. Der Link enthält bereits die Geräte-ID Ihres Geräts; nach der Zahlung wird der entsprechende individuelle Autorisierungscode generiert.",
     "fr-FR": "Cliquez sur le bouton ci-dessus pour copier le lien d'achat en un seul clic, puis envoyez-le vers un ordinateur ou un navigateur mobile connecté à Internet pour l'ouvrir et effectuer l'achat. Ce lien contient l'identifiant de votre appareil ; une fois le paiement effectué, un code d'autorisation unique sera généré.",
     "ko-KR": "상단의 버튼을 클릭하여 구매 링크를 한 번에 복사한 후, 인터넷에 연결된 컴퓨터나 휴대폰 브라우저로 전송하여 열어 구매해 주세요. 이 링크에는 기기 식별 정보가 내장되어 있어, 결제 후 해당 기기에 대한 전용 인증 코드가 생성됩니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(18268-18357)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(18782-18872)"],
     "$id": 11550
   },
   "第二步：输入离线授权码": {
@@ -1279,7 +1279,7 @@
     "de-DE": "Schritt 2: Offline-Autorisierungscode eingeben",
     "fr-FR": "Deuxième étape : saisir le code d'autorisation hors ligne",
     "ko-KR": "2단계: 오프라인 인증 코드 입력",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(19146-19161)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(19680-19695)"],
     "$id": 11551
   },
   "清空输入": {
@@ -1292,7 +1292,7 @@
     "de-DE": "Eingabe löschen",
     "fr-FR": "Effacer le contenu du champ de saisie",
     "ko-KR": "입력 내용 지우기",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(19536-19544)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(20082-20090)"],
     "$id": 11552
   },
   "在此粘贴离线授权码...": {
@@ -1305,7 +1305,7 @@
     "de-DE": "Fügen Sie hier den Offline-Autorisierungscode ein...",
     "fr-FR": "Collez le code d'autorisation hors ligne ici...",
     "ko-KR": "여기에 오프라인 인증 코드를 붙여넣으세요...",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(19749-19765)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(20304-20320)"],
     "$id": 11553
   },
   "已输入 {count} 个字符": {
@@ -1318,7 +1318,7 @@
     "de-DE": "Es wurden {count} Zeichen eingegeben",
     "fr-FR": "{count} caractères ont été saisis",
     "ko-KR": "{count} 자를 입력했습니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(20832-20851)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(21408-21427)"],
     "$id": 11554
   },
   "离线授权码为长格式安全密文": {
@@ -1331,7 +1331,7 @@
     "de-DE": "Der Offline-Autorisierungscode ist ein sicherer, verschlüsselter Text im Langformat.",
     "fr-FR": "Le code d'autorisation hors ligne est un texte chiffré sécurisé au format long",
     "ko-KR": "오프라인 인증 코드는 긴 형식의 보안 암호문입니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(20996-21013)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(21575-21592)"],
     "$id": 11555
   },
   "验证中...": {
@@ -1344,7 +1344,7 @@
     "de-DE": "Wird überprüft...",
     "fr-FR": "Vérification en cours...",
     "ko-KR": "확인 중...",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(21345-21355)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(21932-21942)"],
     "$id": 11556
   },
   "立即激活": {
@@ -1357,7 +1357,7 @@
     "de-DE": "Jetzt aktivieren",
     "fr-FR": "Activer maintenant",
     "ko-KR": "지금 활성화",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(21782-21790)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(22378-22386)"],
     "$id": 11557
   },
   "授权验证未通过": {
@@ -1370,7 +1370,7 @@
     "de-DE": "Die Autorisierungsprüfung ist fehlgeschlagen",
     "fr-FR": "La vérification de l'autorisation a échoué",
     "ko-KR": "인증에 실패했습니다.",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(22435-22446)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(23048-23059)"],
     "$id": 11558
   },
   "纯本地离线验签": {
@@ -1383,7 +1383,7 @@
     "de-DE": "Rein lokale Offline-Signaturprüfung",
     "fr-FR": "Vérification des signatures hors ligne, entièrement locale",
     "ko-KR": "완전한 로컬 오프라인 서명 검증",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(23069-23080)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(23697-23708)"],
     "$id": 11559
   },
   "硬件设备指纹绑定": {
@@ -1396,7 +1396,7 @@
     "de-DE": "Hardware-Geräte-Fingerabdruck-Zuordnung",
     "fr-FR": "Liaison d'empreintes digitales aux périphériques matériels",
     "ko-KR": "하드웨어 기기 지문 등록",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(23294-23306)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(23926-23938)"],
     "$id": 11560
   },
   "永久或周期灵活授权": {
@@ -1409,7 +1409,7 @@
     "de-DE": "Dauerhafte oder zeitlich flexible Lizenzierung",
     "fr-FR": "Licence permanente ou à durée flexible",
     "ko-KR": "영구 또는 주기별 유연한 라이선스",
-    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(23518-23531)"],
+    "$files": ["src/renderer/components/tier/ActivationCodeSection.tsx(24154-24167)"],
     "$id": 11561
   },
   "我发现一个超好用的开源免费AI工具\"萤核智能文件夹\"，一键整理乱七八糟的桌面、下载目录等，AI自动分类/重命名/标签/描述/缩略图/归档/清理！利用本地AI能力保障隐私，创新虚拟目录整理技术保障文件安全!": {
@@ -1544,7 +1544,7 @@
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(6329-6337)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(6524-6532)",
       "src/renderer/components/tier/PaymentFlowDialog.tsx(8245-8253)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(19878-19886)"
+      "src/renderer/components/tier/UserAvatarMenu.tsx(19775-19783)"
     ],
     "$id": 10928
   },
@@ -1561,7 +1561,7 @@
     "$files": [
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(6484-6492)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(6808-6816)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(17857-17865)"
+      "src/renderer/components/tier/UserAvatarMenu.tsx(17687-17695)"
     ],
     "$id": 10930
   },
@@ -2100,7 +2100,7 @@
     "ko-KR": "프로페셔널 버전",
     "$files": [
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(30730-30737)",
-      "src/renderer/components/tier/UserTierBadge.tsx(1120-1127)"
+      "src/renderer/components/tier/UserTierBadge.tsx(1092-1099)"
     ],
     "$id": 10958
   },
@@ -2731,7 +2731,7 @@
     "ko-KR": "잉도우 균형",
     "$files": [
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(51200-51208)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(16669-16677)"
+      "src/renderer/components/tier/UserAvatarMenu.tsx(16728-16736)"
     ],
     "$id": 11042
   },
@@ -3324,10 +3324,7 @@
     "de-DE": "Klicken Sie hier, um die Einnahmen- und Ausgabenrechnung anzuzeigen",
     "fr-FR": "Cliquez pour consulter l'état des revenus et dépenses",
     "ko-KR": "클릭하시면 수입지출내역서를 보실 수 있습니다",
-    "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(16117-16129)",
-      "src/renderer/components/tier/UserAvatarMenu.tsx(17639-17651)"
-    ],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(16086-16098)"],
     "$id": 11041
   },
   "兑换激活码": {
@@ -3340,7 +3337,7 @@
     "de-DE": "Aktivierungscode einlösen",
     "fr-FR": "Échanger un code d'activation",
     "ko-KR": "활성화 코드 교환",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(20597-20606)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(20494-20503)"],
     "$id": 11618
   },
   "设置": {
@@ -3353,7 +3350,7 @@
     "de-DE": "Aufstellen",
     "fr-FR": "Installation",
     "ko-KR": "설정",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(21657-21663)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(21554-21560)"],
     "$id": 11044
   },
   "分析队列": {
@@ -3366,7 +3363,7 @@
     "de-DE": "Analysewarteschlange",
     "fr-FR": "File d'attente d'analyse",
     "ko-KR": "분석 대기열",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(22575-22583)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(22472-22480)"],
     "$id": 7874
   },
   "与本地AI私密聊天": {
@@ -3379,7 +3376,7 @@
     "de-DE": "Chatten Sie privat mit lokaler KI",
     "fr-FR": "Discutez en privé avec l'IA locale",
     "ko-KR": "로컬 AI와 비공개 채팅",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(23841-23854)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(23738-23751)"],
     "$id": 7987
   },
   "重置布局": {
@@ -3392,7 +3389,7 @@
     "de-DE": "Layout zurücksetzen",
     "fr-FR": "Réinitialiser la mise en page",
     "ko-KR": "레이아웃 재설정",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(25604-25612)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(25501-25509)"],
     "$id": 11045
   },
   "Telegram 官方频道": {
@@ -3405,7 +3402,7 @@
     "de-DE": "Offizieller Telegram-Kanal",
     "fr-FR": "Chaîne officielle de Telegram",
     "ko-KR": "텔레그램 공식 채널",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(26751-26768)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(26648-26665)"],
     "$id": 9544
   },
   "知乎萤核圈子": {
@@ -3418,7 +3415,7 @@
     "de-DE": "Zhihu Feuerkernkreis",
     "fr-FR": "Cercle de noyau de feu de Zhihu",
     "ko-KR": "Zhihu 파이어 코어 서클",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(27954-27964)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(27851-27861)"],
     "$id": 11046
   },
   "扫码加微信群": {
@@ -3432,8 +3429,8 @@
     "fr-FR": "Scannez le code QR pour rejoindre le groupe WeChat",
     "ko-KR": "WeChat 그룹에 가입하려면 QR 코드를 스캔하세요.",
     "$files": [
-      "src/renderer/components/tier/UserAvatarMenu.tsx(29067-29077)",
-      "src/renderer/components/tier/WechatQRDialog.tsx(1106-1116)"
+      "src/renderer/components/tier/UserAvatarMenu.tsx(28964-28974)",
+      "src/renderer/components/tier/WechatQRDialog.tsx(1074-1084)"
     ],
     "$id": 11047
   },
@@ -3447,7 +3444,7 @@
     "de-DE": "Über Firefly",
     "fr-FR": "À propos de Firefly",
     "ko-KR": "‘잉허’에 대하여",
-    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(29968-29976)"],
+    "$files": ["src/renderer/components/tier/UserAvatarMenu.tsx(29865-29873)"],
     "$id": 11619
   },
   "微信二维码": {
@@ -3460,7 +3457,7 @@
     "de-DE": "WeChat QR-Code",
     "fr-FR": "Code QR WeChat",
     "ko-KR": "위챗 QR 코드",
-    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1318-1327)"],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1280-1289)"],
     "$id": 7732
   },
   "加微信并留言：萤核，拉你进微信群交流": {
@@ -3473,7 +3470,7 @@
     "de-DE": "Fügen Sie WeChat hinzu und hinterlassen Sie eine Nachricht: Firefly lädt Sie zur Kommunikation in die WeChat-Gruppe ein",
     "fr-FR": "Ajoutez WeChat et laissez un message : Firefly vous invitera au groupe WeChat pour communiquer",
     "ko-KR": "WeChat을 추가하고 메시지를 남겨주세요: Firefly가 귀하를 WeChat 그룹에 초대하여 소통할 것입니다.",
-    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1629-1651)"],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1585-1607)"],
     "$id": 11049
   },
   "严禁广告或发邀请码": {
@@ -3486,7 +3483,7 @@
     "de-DE": "Werbung oder das Versenden von Einladungscodes ist strengstens untersagt",
     "fr-FR": "La publicité ou l'envoi de codes d'invitation sont strictement interdits",
     "ko-KR": "광고 또는 초대 코드 전송은 엄격히 금지됩니다.",
-    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1718-1731)"],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1672-1685)"],
     "$id": 11050
   }
 }

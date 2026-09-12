@@ -158,21 +158,32 @@ const FileDetailsPanelComponent: React.FC<any> = ({
 
   const isFileAnalysis = React.useCallback(
     (res: any) =>
+      !isDirectory &&
+      !showDirectory &&
       res &&
+      !('contextAnalysis' in res) &&
+      !('fileCount' in res) &&
       ('smartName' in res ||
-        'isAnalyzed' in res ||
         'dimensionTags' in res ||
         'qualityScore' in res ||
         'qualityReasoning' in res ||
         'multimodalContent' in res ||
         'analysisStats' in res ||
         'content' in res ||
-        'metadata' in res),
-    []
+        'metadata' in res ||
+        res.itemType === 'file'),
+    [isDirectory, showDirectory]
   )
   const isDirAnalysis = React.useCallback(
-    (res: any) => res && ('fileCount' in res || 'subdirectoriesCount' in res || 'contextAnalysis' in res),
-    []
+    (res: any) =>
+      res &&
+      (isDirectory ||
+        showDirectory ||
+        'contextAnalysis' in res ||
+        'fileCount' in res ||
+        'subdirectoriesCount' in res ||
+        res.itemType === 'directory'),
+    [isDirectory, showDirectory]
   )
 
   const getTagColor = React.useCallback((index: number) => {
@@ -522,7 +533,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
           )}
         </div>
 
-        {analysisResult && isFileAnalysis(analysisResult) && analysisResult.isAnalyzed && (
+        {!isDirectory && !showDirectory && analysisResult && isFileAnalysis(analysisResult) && analysisResult.isAnalyzed && (
           <TagList
             analysisResult={analysisResult}
             getTagColor={getTagColor}

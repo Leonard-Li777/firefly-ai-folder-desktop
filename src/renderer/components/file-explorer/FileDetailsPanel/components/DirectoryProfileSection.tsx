@@ -4,7 +4,7 @@ import { t } from '@app/languages'
 import { ProgressBar } from '../../../ui/ProgressBar'
 import { toast } from '../../../common/Toast'
 import { Button } from '../../../ui/button'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, isValidNamingPattern } from '@firefly/shared'
 import { PersistentTooltip } from '../../../common/PersistentTooltip'
 
 /**
@@ -106,6 +106,7 @@ const DirectoryProfileSectionComponent: React.FC<{
     const [editingNamingPattern, setEditingNamingPattern] = useState(false)
     const [namingPatternValue, setNamingPatternValue] = useState('')
     const [savingNamingPattern, setSavingNamingPattern] = useState(false)
+    const namingPatternInputRef = useRef<HTMLInputElement>(null)
 
     // AI分析策略编辑状态
     const [editingAnalysisStrategy, setEditingAnalysisStrategy] = useState(false)
@@ -117,6 +118,7 @@ const DirectoryProfileSectionComponent: React.FC<{
     const [namingTemplateValue, setNamingTemplateValue] = useState('')
     const [savingNamingTemplate, setSavingNamingTemplate] = useState(false)
     const [applyingTemplate, setApplyingTemplate] = useState(false)
+    const [showAdvancedConfig, setShowAdvancedConfig] = useState(false)
     const templateInputRef = useRef<HTMLInputElement>(null)
 
     // 快捷插入 DSL 标签至模板输入框光标处
@@ -185,10 +187,17 @@ const DirectoryProfileSectionComponent: React.FC<{
     // 保存智能文件名格式
     const handleSaveNamingPattern = async () => {
       if (!dirPath || !namingPatternValue.trim()) return
+      const trimmedVal = namingPatternValue.trim()
+      if (!isValidNamingPattern(trimmedVal)) {
+        toast.error(
+          t('格式不符合要求：规则中必须包含“内容描述”或“描述”（例如：[领域]内容描述、内容描述_角色名）')
+        )
+        return
+      }
       setSavingNamingPattern(true)
       try {
         await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
-          namingPattern: namingPatternValue.trim()
+          namingPattern: trimmedVal
         })
         toast.success(t('智能文件名格式已更新'))
         setEditingNamingPattern(false)
@@ -259,6 +268,47 @@ const DirectoryProfileSectionComponent: React.FC<{
         toast.error(t('采纳失败，请重试'))
       } finally {
         setSavingNamingPattern(false)
+      }
+    }
+
+    // 复制智能文件名格式要求给外部 AI（如豆包、ChatGPT）
+    const handleCopyNamingFormatPrompt = async () => {
+      try {
+        const activeLanguage =
+          (window as any).electronAPI?.config?.getSync?.('DEFAULT_LANGUAGE') || 'zh-CN'
+        let content: string | null = null
+        try {
+          const { loadPromptParagraph } = await import('@firefly/shared')
+          content = await loadPromptParagraph('smart-naming-format-prompt', activeLanguage)
+        } catch {
+          // 回退
+        }
+        if (!content || !content.trim()) {
+          content = [
+            `【${t('萤核智能文件夹-智能文件名格式要求')}】`,
+            t('软件支持以下智能文件名规则，你可以根据实际文件分类需求自行定义关键词，由AI自动识别提取并生成：'),
+            `\n一、合规格式规范（核心规则：规则中必须包含“内容描述”或“描述”，可置于开头、中间或末尾）：`,
+            `1. 在内容描述后添加属性：xxx_xxx，例如：${t('内容描述')}_${t('角色名')}、${t('内容描述')}_${t('作者')}_${t('年份')}`,
+            `2. 仅使用中括号分类：[xxx]xxx，例如：[${t('领域')}]${t('内容描述')}、[${t('系列名')}]${t('内容描述')}、[${t('作者')}]${t('内容描述')}`,
+            `3. 使用下划线分隔属性：xxx_xxx，例如：${t('领域')}_${t('内容描述')}、${t('版本')}_${t('内容描述')}`,
+            `4. 多层级属性组合：xxx_xxx_xxx，例如：[${t('领域')}]${t('内容描述')}_${t('角色名')}、${t('作者')}_${t('年份')}_${t('内容描述')}、${t('分类')}_${t('地名')}_${t('年份')}_${t('内容描述')}`,
+            `5. 中括号与下划线结合：[xxx]xxx_xxx，例如：[${t('原文件名编号')}]${t('状态')}_${t('内容描述')}、[${t('领域')}]${t('内容描述')}_${t('角色名')}`,
+            `6. 极简模式：${t('内容描述')}`,
+            `\n二、AI助手工作指引：`,
+            `请以温馨、专业的语气回复用户，先用一两句简短亲切的话（例如：“你好！我已经收到你的智能命名需求，请告诉我你希望文件如何命名…”）引导用户用自然语言描述他们期望的文件名样式或包含的信息。`,
+            `当用户提供描述后，请严格遵循上述格式规范，将其提炼转换为符合规范的智能文件名格式（规则中必须包含“内容描述”或“描述”，可置于开头、中间或末尾），并给出2~3个推荐的格式选项供用户直接复制使用。`
+          ].join('\n')
+        }
+        await navigator.clipboard.writeText(content.trim())
+        toast.success(t('格式要求已复制到剪贴板，已为您开启编辑模式'))
+        // 自动进入智能文件名编辑态，并让输入框聚焦
+        setEditingNamingPattern(true)
+        setTimeout(() => {
+          namingPatternInputRef.current?.focus()
+        }, 50)
+      } catch (error) {
+        logger.error(LogCategory.FILE_ANALYSIS, '复制智能文件名格式要求失败:', error)
+        toast.error(t('复制失败，请重试'))
       }
     }
 
@@ -345,173 +395,14 @@ const DirectoryProfileSectionComponent: React.FC<{
           </div>
         </div>
 
-        {/* AI 分析策略 + 智能文件名格式 + 智能文件名附加属性 — 组合可编辑区块 */}
+        {/* 智能文件名格式 + 高级配置（附加属性与AI分析策略） — 组合可编辑区块 */}
         {(ctx?.analysisStrategy || ctx?.namingPattern || ctx?.namingTemplate !== undefined || ctx) && !isUnit && (
           <div className="border-t border-border pt-4 mb-6 group/tooltip">
             <div className="">
               <div className="bg-primary/10 rounded-lg px-4 py-3 -mx-4 space-y-5">
-                {(ctx?.analysisStrategy !== undefined || ctx?.analysisStrategy_suggestion !== undefined) && (
-                  <>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-sm font-semibold text-foreground">
-                        {t('AI分析策略')}{' '}
-                        {ctx.confidence !== undefined && ctx.confidence !== null && (
-                          <span className="text-xs font-light text-muted-foreground ml-2">
-                            {t('置信度: ')}
-                            {(ctx.confidence * 100).toFixed(0)}%
-                          </span>
-                        )}
-                      </h3>
-                      <button
-                        onClick={() => {
-                          setAnalysisStrategyValue(ctx?.analysisStrategy || '')
-                          setEditingAnalysisStrategy(!editingAnalysisStrategy)
-                        }}
-                        className={editButtonClass}
-                        title={t('编辑AI分析策略')}
-                      >
-                        <MaterialIcon
-                          icon={editingAnalysisStrategy ? 'close' : 'edit'}
-                          className="text-sm"
-                        />
-                        <span>{editingAnalysisStrategy ? t('取消') : t('编辑')}</span>
-                      </button>
-                    </div>
-
-                    {/* 继承模式控制 */}
-                    <div className="flex items-center gap-3 text-xs mb-2">
-                      {inheritOptions.map(item => (
-                        <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
-                          <input
-                            type="radio"
-                            name="inherit_analysis_strategy"
-                            checked={getEffectiveInheritMode('analysisStrategy') === item.key}
-                            onChange={() => handleUpdateInheritMode('analysisStrategy', item.key)}
-                            className="accent-primary w-3 h-3"
-                          />
-                          <span
-                            className={cn(
-                              getEffectiveInheritMode('analysisStrategy') === item.key
-                                ? 'text-primary font-medium'
-                                : 'text-muted-foreground'
-                            )}
-                          >
-                            {item.label}
-                          </span>
-                        </label>
-                      ))}
-                      {!isWorkspaceRoot &&
-                        getEffectiveInheritMode('analysisStrategy') === 'inherit' &&
-                        inheritedFrom?.analysisStrategy && (
-                          <span
-                            className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
-                            title={inheritedFrom.analysisStrategy}
-                          >
-                            ({t('源:')} {inheritedFrom.analysisStrategy.split(/[\\/]/).pop()})
-                          </span>
-                        )}
-                    </div>
-
-                    {editingAnalysisStrategy ? (
-                      <div className="space-y-2">
-                        <textarea
-                          value={analysisStrategyValue}
-                          onChange={e => setAnalysisStrategyValue(e.target.value)}
-                          placeholder={t('请输入AI分析策略，例如关注文件标签、元数据、内容大纲等要求...')}
-                          className="w-full text-sm text-foreground bg-background p-3 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 whitespace-pre-wrap leading-relaxed resize-y min-h-[80px] outline-none transition-all duration-200"
-                          rows={4}
-                          autoFocus
-                        />
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground/70">
-                            <MaterialIcon
-                              icon="info"
-                              className="text-xs inline mr-1 align-text-top text-amber-500"
-                            />
-                            {t('影响AI文件分析结果如：标签、描述等')}
-                          </span>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => setEditingAnalysisStrategy(false)}
-                              disabled={savingAnalysisStrategy}
-                            >
-                              {t('取消')}
-                            </Button>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={handleSaveAnalysisStrategy}
-                              disabled={savingAnalysisStrategy || !analysisStrategyValue.trim()}
-                            >
-                              {savingAnalysisStrategy ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-current mr-1.5" />
-                                  {t('保存中')}
-                                </>
-                              ) : (
-                                <>{t('保存')}</>
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="group">
-                        {ctx?.analysisStrategy ? (
-                          <p className="text-sm text-foreground bg-background dark:bg-background/50 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed">
-                            {ctx.analysisStrategy}
-                          </p>
-                        ) : (
-                          <p className="text-xs text-muted-foreground/60 italic bg-background/50 dark:bg-background/30 p-3 rounded-md border border-dashed border-border/60 leading-relaxed">
-                            {t('未配置正式分析策略（可点击右上角编辑手动输入，或采纳下方 AI 建议）')}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* AI 分析策略建议展示与一键采纳（如果输入框/当前值与AI建议值相同，则不显示AI建议） */}
-                    {Boolean(
-                      ctx?.analysisStrategy_suggestion &&
-                      ctx.analysisStrategy_suggestion.trim() &&
-                      (editingAnalysisStrategy
-                        ? analysisStrategyValue.trim()
-                        : (ctx?.analysisStrategy || '').trim()) !== ctx.analysisStrategy_suggestion.trim()
-                    ) && (
-                      <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
-                        <div className="flex items-center justify-between relative">
-                          {/* 悬浮提示 */}
-                          <div className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full mb-2 px-3 py-1.5 bg-popover text-popover-foreground text-xs leading-relaxed rounded-md shadow-lg border border-border hidden group-hover/tooltip:block z-50 pointer-events-none whitespace-nowrap">
-                            {t('可通过目录画像再次自动生成')}
-                          </div>
-                          <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                            <MaterialIcon icon="auto_awesome" className="text-sm text-primary" />
-                            <span>{t('AI建议')}</span>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:hover:text-secondary-foreground gap-1"
-                            onClick={() =>
-                              handleAdoptAnalysisStrategySuggestion(ctx.analysisStrategy_suggestion!)
-                            }
-                            disabled={savingAnalysisStrategy}
-                            title={t('采纳此AI建议并正式启用')}
-                          >
-                            <MaterialIcon icon="check" className="text-xs" />
-                            <span>{t('采纳建议')}</span>
-                          </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground/90 leading-relaxed whitespace-pre-wrap">
-                          {ctx.analysisStrategy_suggestion}
-                        </p>
-                      </div>
-                    )}
-                  </>
-                )}
+                {/* 1. 智能文件名格式（常显在最上方） */}
                 {(ctx?.namingPattern !== undefined || ctx?.namingPattern_suggestion !== undefined) && (
-                  <>
+                  <div>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1">
                         <h3 className="text-sm font-semibold text-foreground">
@@ -581,6 +472,7 @@ const DirectoryProfileSectionComponent: React.FC<{
                     {editingNamingPattern ? (
                       <div className="space-y-2">
                         <input
+                          ref={namingPatternInputRef}
                           type="text"
                           value={namingPatternValue}
                           onChange={e => setNamingPatternValue(e.target.value)}
@@ -605,6 +497,9 @@ const DirectoryProfileSectionComponent: React.FC<{
                               </div>
                               <ul className="list-disc list-inside text-[11px] text-muted-foreground/90 space-y-0.5 font-mono">
                                 <li>
+                                  {t('内容描述')}_{t('角色名')} / [{t('领域')}]{t('内容描述')}_{t('角色名')}
+                                </li>
+                                <li>
                                   [{t('系列名')}]{t('内容描述')} / [{t('领域')}]{t('内容描述')}
                                 </li>
                                 <li>
@@ -623,7 +518,7 @@ const DirectoryProfileSectionComponent: React.FC<{
                               </ul>
 
                               <div className="text-[10px] text-amber-500/90 pt-1 border-t border-border/40">
-                                * {t('不符合格式要求的规则将自动还原为默认值')}[{t('领域')}]
+                                * {t('规则中必须包含“内容描述”或“描述”，不符合格式要求的规则将自动还原为默认值')}[{t('领域')}]
                                 {t('内容描述')}
                               </div>
                             </div>
@@ -677,6 +572,37 @@ const DirectoryProfileSectionComponent: React.FC<{
                       </div>
                     )}
 
+                    {/* 外部 AI 帮生成格式引导卡片（非编辑态和编辑态均常显，支持一键复制格式提示词并进入编辑态） */}
+                    <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                          <MaterialIcon icon="psychology" className="text-sm text-primary" />
+                          <span>{t('让外部 AI 帮生成格式')}</span>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:text-secondary-foreground gap-1"
+                          onClick={handleCopyNamingFormatPrompt}
+                          title={t('复制格式提示词发给豆包或 ChatGPT，并自动进入编辑模式')}
+                        >
+                          <MaterialIcon icon="content_copy" className="text-xs" />
+                          <span>{t('复制格式提示词')}</span>
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground/90 leading-relaxed">
+                        {t('可复制格式提示词发给豆包或 ChatGPT，由它按规范定制理想的规则模板，生成后直接贴入上方保存生效。')}
+                      </p>
+                      <div className="pt-1 text-[11px] font-mono text-muted-foreground/80 border-t border-primary/10 flex flex-wrap items-center gap-1">
+                        <span>{t('格式示例：')}</span>
+                        <span className="font-semibold text-foreground/90">[xxx]xxx</span>
+                        <span className="text-muted-foreground/70">([{t('领域')}]{t('内容描述')})</span>
+                        <span className="text-muted-foreground/40">|</span>
+                        <span className="font-semibold text-foreground/90">xxx_xxx</span>
+                        <span className="text-muted-foreground/70">({t('内容描述')}_{t('角色名')}、{t('领域')}_{t('内容描述')})</span>
+                      </div>
+                    </div>
+
                     {/* 智能文件名格式建议展示与一键采纳（如果输入框/当前值与AI建议值相同，则不显示AI建议） */}
                     {Boolean(
                       ctx?.namingPattern_suggestion &&
@@ -714,266 +640,457 @@ const DirectoryProfileSectionComponent: React.FC<{
                         </p>
                       </div>
                     )}
-                  </>
+                  </div>
                 )}
 
-                {/* 智能文件名附加属性 (namingTemplate) */}
-                <div className="border-t border-border/40 pt-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1">
-                      <h3 className="text-sm font-semibold text-foreground">
-                        {t('智能文件名附加属性')}
-                      </h3>
-                      <div className="relative group/help">
-                        <MaterialIcon
-                          icon="help_outline"
-                          className="text-xs text-muted-foreground cursor-help"
-                        />
-                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover/help:block z-50 w-64 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg border border-border leading-relaxed whitespace-normal pointer-events-none">
-                          {t('在文件分析完毕后自动按该模板生成最终智能文件名，是AI生成的智能文件名的有力补充更快更可控。更多信息，请参考整理页面的批量更名功能')}
-                        </div>
-                      </div>
+                {/* 2. 高级配置折叠切换栏（包含：智能文件名附加属性、AI分析策略） */}
+                <div className="border-t border-border/40 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAdvancedConfig(!showAdvancedConfig)}
+                    className="w-full flex items-center justify-between py-1 px-1 rounded hover:bg-primary/5 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer select-none"
+                  >
+                    <div className="flex items-center gap-1.5 font-medium">
+                      <MaterialIcon icon="tune" className="text-sm text-primary" />
+                      <span>{t('高级配置')}</span>
+                      <span className="text-[11px] text-muted-foreground/60 font-normal">
+                        ({t('附加属性、AI分析策略')})
+                      </span>
                     </div>
-
-                    <div className="flex items-center gap-1.5">
-                      {/* 手动编辑/取消切换按钮 */}
-                      <button
-                        onClick={() => {
-                          setNamingTemplateValue(ctx?.namingTemplate || '')
-                          setEditingNamingTemplate(!editingNamingTemplate)
-                        }}
-                        className={editButtonClass}
-                        title={t('编辑智能文件名附加属性')}
-                      >
-                        <MaterialIcon
-                          icon={editingNamingTemplate ? 'close' : 'edit'}
-                          className="text-sm"
-                        />
-                        <span>{editingNamingTemplate ? t('取消') : t('编辑')}</span>
-                      </button>
+                    <div className="flex items-center gap-1 text-[11px]">
+                      <span>{showAdvancedConfig ? t('收起') : t('展开')}</span>
+                      <MaterialIcon
+                        icon={showAdvancedConfig ? 'expand_less' : 'expand_more'}
+                        className="text-base transition-transform duration-200"
+                      />
                     </div>
-                  </div>
+                  </button>
 
-                  {/* 继承模式控制 */}
-                  <div className="flex items-center gap-3 text-xs mb-2">
-                    {inheritOptions.map(item => (
-                      <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
-                        <input
-                          type="radio"
-                          name="inherit_naming_template"
-                          checked={getEffectiveInheritMode('namingTemplate') === item.key}
-                          onChange={() => handleUpdateInheritMode('namingTemplate', item.key)}
-                          className="accent-primary w-3 h-3"
-                        />
-                        <span
-                          className={cn(
-                            getEffectiveInheritMode('namingTemplate') === item.key
-                              ? 'text-primary font-medium'
-                              : 'text-muted-foreground'
-                          )}
-                        >
-                          {item.label}
-                        </span>
-                      </label>
-                    ))}
-                    {!isWorkspaceRoot &&
-                      getEffectiveInheritMode('namingTemplate') === 'inherit' &&
-                      inheritedFrom?.namingTemplate && (
-                        <span
-                          className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
-                          title={inheritedFrom.namingTemplate}
-                        >
-                          ({t('源:')} {inheritedFrom.namingTemplate.split(/[\\/]/).pop()})
-                        </span>
-                      )}
-                  </div>
+                  {/* 高级配置展开内容 */}
+                  {showAdvancedConfig && (
+                    <div className="pt-4 space-y-6">
+                      {/* 2.1 智能文件名附加属性 (namingTemplate) */}
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-1">
+                            <h3 className="text-sm font-semibold text-foreground">
+                              {t('智能文件名附加属性')}
+                            </h3>
+                            <div className="relative group/help">
+                              <MaterialIcon
+                                icon="help_outline"
+                                className="text-xs text-muted-foreground cursor-help"
+                              />
+                              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover/help:block z-50 w-64 p-2 bg-popover text-popover-foreground text-xs rounded-md shadow-lg border border-border leading-relaxed whitespace-normal pointer-events-none">
+                                {t('在文件分析完毕后自动按该模板生成最终智能文件名，是AI生成的智能文件名的有力补充更快更可控。更多信息，请参考整理页面的批量更名功能')}
+                              </div>
+                            </div>
+                          </div>
 
-                  {editingNamingTemplate ? (
-                    /* 手动编辑 DSL 模板面板 */
-                    <div className="space-y-3 p-3 bg-background/60 dark:bg-background/40 rounded-lg border border-primary/30">
-                      {/* 快速载入预设 */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">{t('载入预设:')}</span>
-                        <select
-                          onChange={e => {
-                            const val = e.target.value
-                            if (val === '__CLEAR__') {
-                              setNamingTemplateValue('')
-                            } else if (val) {
-                              setNamingTemplateValue(val)
-                            }
-                            setTimeout(() => templateInputRef.current?.focus(), 0)
-                          }}
-                          defaultValue=""
-                          className="w-full h-7 text-xs text-foreground bg-background px-2 py-0.5 rounded border border-border/60 hover:border-primary/50 focus:border-primary outline-none transition-all duration-150 cursor-pointer truncate"
-                        >
-                          <option value="" disabled>{t('选择预设模板快速填入...')}</option>
-                          <option value="__CLEAR__">{t('清空模板 (不使用附加属性)')}</option>
-                          {presetTemplates.map((preset, pIdx) => (
-                            <option key={pIdx} value={preset.template}>
-                              {preset.name} - {preset.template}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* 手动编辑输入框 */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-medium text-foreground">{t('模板表达式 (支持自由手动编辑)')}:</span>
-                          {namingTemplateValue && (
+                          <div className="flex items-center gap-1.5">
+                            {/* 手动编辑/取消切换按钮 */}
                             <button
-                              type="button"
                               onClick={() => {
-                                setNamingTemplateValue('')
-                                templateInputRef.current?.focus()
+                                setNamingTemplateValue(ctx?.namingTemplate || '')
+                                setEditingNamingTemplate(!editingNamingTemplate)
                               }}
-                              className="text-[11px] text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                              className={editButtonClass}
+                              title={t('编辑智能文件名附加属性')}
                             >
-                              {t('清空内容')}
+                              <MaterialIcon
+                                icon={editingNamingTemplate ? 'close' : 'edit'}
+                                className="text-sm"
+                              />
+                              <span>{editingNamingTemplate ? t('取消') : t('编辑')}</span>
                             </button>
+                          </div>
+                        </div>
+
+                        {/* 继承模式控制 */}
+                        <div className="flex items-center gap-3 text-xs mb-2">
+                          {inheritOptions.map(item => (
+                            <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
+                              <input
+                                type="radio"
+                                name="inherit_naming_template"
+                                checked={getEffectiveInheritMode('namingTemplate') === item.key}
+                                onChange={() => handleUpdateInheritMode('namingTemplate', item.key)}
+                                className="accent-primary w-3 h-3"
+                              />
+                              <span
+                                className={cn(
+                                  getEffectiveInheritMode('namingTemplate') === item.key
+                                    ? 'text-primary font-medium'
+                                    : 'text-muted-foreground'
+                                )}
+                              >
+                                {item.label}
+                              </span>
+                            </label>
+                          ))}
+                          {!isWorkspaceRoot &&
+                            getEffectiveInheritMode('namingTemplate') === 'inherit' &&
+                            inheritedFrom?.namingTemplate && (
+                              <span
+                                className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
+                                title={inheritedFrom.namingTemplate}
+                              >
+                                ({t('源:')} {inheritedFrom.namingTemplate.split(/[\\/]/).pop()})
+                              </span>
+                            )}
+                        </div>
+
+                        {editingNamingTemplate ? (
+                          /* 手动编辑 DSL 模板面板 */
+                          <div className="space-y-3 p-3 bg-background/60 dark:bg-background/40 rounded-lg border border-primary/30">
+                            {/* 快速载入预设 */}
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">{t('载入预设:')}</span>
+                              <select
+                                onChange={e => {
+                                  const val = e.target.value
+                                  if (val === '__CLEAR__') {
+                                    setNamingTemplateValue('')
+                                  } else if (val) {
+                                    setNamingTemplateValue(val)
+                                  }
+                                  setTimeout(() => templateInputRef.current?.focus(), 0)
+                                }}
+                                defaultValue=""
+                                className="w-full h-7 text-xs text-foreground bg-background px-2 py-0.5 rounded border border-border/60 hover:border-primary/50 focus:border-primary outline-none transition-all duration-150 cursor-pointer truncate"
+                              >
+                                <option value="" disabled>{t('选择预设模板快速填入...')}</option>
+                                <option value="__CLEAR__">{t('清空模板 (不使用附加属性)')}</option>
+                                {presetTemplates.map((preset, pIdx) => (
+                                  <option key={pIdx} value={preset.template}>
+                                    {preset.name} - {preset.template}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {/* 手动编辑输入框 */}
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-medium text-foreground">{t('模板表达式 (支持自由手动编辑)')}:</span>
+                                {namingTemplateValue && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setNamingTemplateValue('')
+                                      templateInputRef.current?.focus()
+                                    }}
+                                    className="text-[11px] text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+                                  >
+                                    {t('清空内容')}
+                                  </button>
+                                )}
+                              </div>
+                              <input
+                                ref={templateInputRef}
+                                type="text"
+                                value={namingTemplateValue}
+                                onChange={e => setNamingTemplateValue(e.target.value)}
+                                placeholder={t('例如: [{TAG:文件类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}')}
+                                className="w-full font-mono text-xs text-foreground bg-background px-3 py-2 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-200"
+                                autoFocus
+                              />
+                            </div>
+
+                            {/* 快捷插入常用 DSL 标签 */}
+                            <div className="space-y-1.5">
+                              <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                                <MaterialIcon icon="touch_app" className="text-xs text-primary" />
+                                <span>{t('点击快捷插入标签至光标处')}:</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  { label: '{SMART_NAME}', desc: t('原始智能名') },
+                                  { label: '{MOD:YYYY-MM-DD}', desc: t('修改日期') },
+                                  { label: '{CRE:YYYY-MM-DD}', desc: t('创建日期') },
+                                  { label: '({SEQ:01})', desc: t('双位序号') },
+                                  { label: `[{TAG:${t('文件类型')}}]`, desc: t('文件类型标签') },
+                                  { label: `[{TAG:${t('题材')}}]`, desc: t('题材标签') },
+                                  { label: '[{AUTHOR}]', desc: t('作者') },
+                                  { label: '{ORIG_NAME}', desc: t('原文件名') }
+                                ].map((chip, cIdx) => (
+                                  <button
+                                    key={cIdx}
+                                    type="button"
+                                    onClick={() => handleInsertTagToTemplate(chip.label)}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-muted/60 hover:bg-primary/10 hover:text-primary hover:border-primary/40 border border-border/50 text-foreground transition-all cursor-pointer select-none"
+                                    title={chip.desc}
+                                  >
+                                    <span className="text-primary font-bold">+</span>
+                                    <span>{chip.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* 操作按钮 */}
+                            <div className="flex items-center justify-between pt-1 border-t border-border/40">
+                              <span className="text-xs text-muted-foreground/70">
+                                <MaterialIcon icon="info" className="text-xs inline mr-1 align-text-top text-amber-500" />
+                                {t('支持任意自定义前后缀、文字与 DSL 标签组合')}
+                              </span>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => setEditingNamingTemplate(false)}
+                                  disabled={savingNamingTemplate}
+                                >
+                                  {t('取消')}
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  onClick={() => handleSaveNamingTemplate()}
+                                  disabled={savingNamingTemplate}
+                                >
+                                  {savingNamingTemplate ? (
+                                    <>
+                                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-current mr-1.5" />
+                                      {t('保存中')}
+                                    </>
+                                  ) : (
+                                    <>{t('保存')}</>
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          /* 下拉选择菜单与当前模板展示 */
+                          <div className="space-y-2">
+                            <div className="relative">
+                              <select
+                                value={
+                                  !namingTemplateValue
+                                    ? '__NONE__'
+                                    : presetTemplates.some(p => p.template === namingTemplateValue)
+                                      ? namingTemplateValue
+                                      : '__CUSTOM__'
+                                }
+                                onChange={e => {
+                                  const sel = e.target.value
+                                  if (sel === '__NONE__') {
+                                    handleSaveNamingTemplate('')
+                                  } else if (sel === '__CUSTOM__') {
+                                    setEditingNamingTemplate(true)
+                                  } else {
+                                    handleSaveNamingTemplate(sel)
+                                  }
+                                }}
+                                className="w-full h-9 text-xs text-foreground bg-background px-3 py-1.5 rounded-md border border-border/60 hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-150 cursor-pointer truncate"
+                              >
+                                <option value="__NONE__">{t('不使用附加模板 (仅保留原始智能名)')}</option>
+                                {presetTemplates.map((preset, pIdx) => (
+                                  <option key={pIdx} value={preset.template}>
+                                    {preset.name} - {preset.template}
+                                  </option>
+                                ))}
+                                {namingTemplateValue &&
+                                  !presetTemplates.some(p => p.template === namingTemplateValue) && (
+                                    <option value="__CUSTOM__">
+                                      {t('自定义')}: {namingTemplateValue}
+                                    </option>
+                                  )}
+                              </select>
+                            </div>
+
+                            {namingTemplateValue ? (
+                              <div className="flex items-center justify-between text-[11px] font-mono px-3 py-1.5 rounded bg-muted/40 text-muted-foreground border border-border/40">
+                                <span className="truncate" title={namingTemplateValue}>
+                                  {t('当前模板:')} <span className="text-foreground font-medium">{namingTemplateValue}</span>
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="text-[11px] text-muted-foreground/60 italic px-1">
+                                {t('未启用附加模板，将直接采用 AI 输出的智能文件名')}
+                              </div>
+                            )}
+
+                            {/* 一键应用至已分析文件按钮 */}
+                            <button
+                              type="button"
+                              onClick={handleApplyTemplateToFiles}
+                              disabled={applyingTemplate}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                              title={t('为当前目录下已分析文件重新应用该命名模板')}
+                            >
+                              <MaterialIcon
+                                icon={applyingTemplate ? 'sync' : 'auto_fix_high'}
+                                className={cn('text-sm', applyingTemplate && 'animate-spin')}
+                              />
+                              <span>{applyingTemplate ? t('应用中...') : t('将附加属性应用至当前目录已分析文件')}</span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 2.2 AI分析策略（放在高级配置最末尾） */}
+                      {(ctx?.analysisStrategy !== undefined || ctx?.analysisStrategy_suggestion !== undefined) && (
+                        <div className="border-t border-border/30 pt-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-sm font-semibold text-foreground">
+                              {t('AI分析策略')}{' '}
+                              {ctx.confidence !== undefined && ctx.confidence !== null && (
+                                <span className="text-xs font-light text-muted-foreground ml-2">
+                                  {t('置信度: ')}
+                                  {(ctx.confidence * 100).toFixed(0)}%
+                                </span>
+                              )}
+                            </h3>
+                            <button
+                              onClick={() => {
+                                setAnalysisStrategyValue(ctx?.analysisStrategy || '')
+                                setEditingAnalysisStrategy(!editingAnalysisStrategy)
+                              }}
+                              className={editButtonClass}
+                              title={t('编辑AI分析策略')}
+                            >
+                              <MaterialIcon
+                                icon={editingAnalysisStrategy ? 'close' : 'edit'}
+                                className="text-sm"
+                              />
+                              <span>{editingAnalysisStrategy ? t('取消') : t('编辑')}</span>
+                            </button>
+                          </div>
+
+                          {/* 继承模式控制 */}
+                          <div className="flex items-center gap-3 text-xs mb-2">
+                            {inheritOptions.map(item => (
+                              <label key={item.key} className="flex items-center gap-1 cursor-pointer select-none">
+                                <input
+                                  type="radio"
+                                  name="inherit_analysis_strategy"
+                                  checked={getEffectiveInheritMode('analysisStrategy') === item.key}
+                                  onChange={() => handleUpdateInheritMode('analysisStrategy', item.key)}
+                                  className="accent-primary w-3 h-3"
+                                />
+                                <span
+                                  className={cn(
+                                    getEffectiveInheritMode('analysisStrategy') === item.key
+                                      ? 'text-primary font-medium'
+                                      : 'text-muted-foreground'
+                                  )}
+                                >
+                                  {item.label}
+                                </span>
+                              </label>
+                            ))}
+                            {!isWorkspaceRoot &&
+                              getEffectiveInheritMode('analysisStrategy') === 'inherit' &&
+                              inheritedFrom?.analysisStrategy && (
+                                <span
+                                  className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]"
+                                  title={inheritedFrom.analysisStrategy}
+                                >
+                                  ({t('源:')} {inheritedFrom.analysisStrategy.split(/[\\/]/).pop()})
+                                </span>
+                              )}
+                          </div>
+
+                          {editingAnalysisStrategy ? (
+                            <div className="space-y-2">
+                              <textarea
+                                value={analysisStrategyValue}
+                                onChange={e => setAnalysisStrategyValue(e.target.value)}
+                                placeholder={t('请输入AI分析策略，例如关注文件标签、元数据、内容大纲等要求...')}
+                                className="w-full text-sm text-foreground bg-background p-3 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 whitespace-pre-wrap leading-relaxed resize-y min-h-[80px] outline-none transition-all duration-200"
+                                rows={4}
+                                autoFocus
+                              />
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-muted-foreground/70">
+                                  <MaterialIcon
+                                    icon="info"
+                                    className="text-xs inline mr-1 align-text-top text-amber-500"
+                                  />
+                                  {t('影响AI文件分析结果如：标签、描述等')}
+                                </span>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    onClick={() => setEditingAnalysisStrategy(false)}
+                                    disabled={savingAnalysisStrategy}
+                                  >
+                                    {t('取消')}
+                                  </Button>
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={handleSaveAnalysisStrategy}
+                                    disabled={savingAnalysisStrategy || !analysisStrategyValue.trim()}
+                                  >
+                                    {savingAnalysisStrategy ? (
+                                      <>
+                                        <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-current mr-1.5" />
+                                        {t('保存中')}
+                                      </>
+                                    ) : (
+                                      <>{t('保存')}</>
+                                    )}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="group">
+                              {ctx?.analysisStrategy ? (
+                                <p className="text-sm text-foreground bg-background dark:bg-background/50 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed">
+                                  {ctx.analysisStrategy}
+                                </p>
+                              ) : (
+                                <p className="text-xs text-muted-foreground/60 italic bg-background/50 dark:bg-background/30 p-3 rounded-md border border-dashed border-border/60 leading-relaxed">
+                                  {t('未配置正式分析策略（可点击右上角编辑手动输入，或采纳下方 AI 建议）')}
+                                </p>
+                              )}
+                            </div>
+                          )}
+
+                          {/* AI 分析策略建议展示与一键采纳（如果输入框/当前值与AI建议值相同，则不显示AI建议） */}
+                          {Boolean(
+                            ctx?.analysisStrategy_suggestion &&
+                            ctx.analysisStrategy_suggestion.trim() &&
+                            (editingAnalysisStrategy
+                              ? analysisStrategyValue.trim()
+                              : (ctx?.analysisStrategy || '').trim()) !== ctx.analysisStrategy_suggestion.trim()
+                          ) && (
+                            <div className="mt-2.5 p-2.5 rounded-md border border-primary/25 bg-primary/[0.04] dark:bg-primary/[0.08] flex flex-col gap-1.5 transition-all">
+                              <div className="flex items-center justify-between relative">
+                                {/* 悬浮提示 */}
+                                <div className="absolute -top-1 left-1/2 -translate-x-1/2 -translate-y-full mb-2 px-3 py-1.5 bg-popover text-popover-foreground text-xs leading-relaxed rounded-md shadow-lg border border-border hidden group-hover/tooltip:block z-50 pointer-events-none whitespace-nowrap">
+                                  {t('可通过目录画像再次自动生成')}
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
+                                  <MaterialIcon icon="auto_awesome" className="text-sm text-primary" />
+                                  <span>{t('AI建议')}</span>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-6 px-2 text-xs border-primary/30 text-primary hover:bg-primary hover:hover:text-secondary-foreground gap-1"
+                                  onClick={() =>
+                                    handleAdoptAnalysisStrategySuggestion(ctx.analysisStrategy_suggestion!)
+                                  }
+                                  disabled={savingAnalysisStrategy}
+                                  title={t('采纳此AI建议并正式启用')}
+                                >
+                                  <MaterialIcon icon="check" className="text-xs" />
+                                  <span>{t('采纳建议')}</span>
+                                </Button>
+                              </div>
+                              <p className="text-xs text-muted-foreground/90 leading-relaxed whitespace-pre-wrap">
+                                {ctx.analysisStrategy_suggestion}
+                              </p>
+                            </div>
                           )}
                         </div>
-                        <input
-                          ref={templateInputRef}
-                          type="text"
-                          value={namingTemplateValue}
-                          onChange={e => setNamingTemplateValue(e.target.value)}
-                          placeholder={t('例如: [{TAG:文件类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}')}
-                          className="w-full font-mono text-xs text-foreground bg-background px-3 py-2 rounded-md border border-primary/40 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-200"
-                          autoFocus
-                        />
-                      </div>
-
-                      {/* 快捷插入常用 DSL 标签 */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                          <MaterialIcon icon="touch_app" className="text-xs text-primary" />
-                          <span>{t('点击快捷插入标签至光标处')}:</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[
-                            { label: '{SMART_NAME}', desc: t('原始智能名') },
-                            { label: '{MOD:YYYY-MM-DD}', desc: t('修改日期') },
-                            { label: '{CRE:YYYY-MM-DD}', desc: t('创建日期') },
-                            { label: '({SEQ:01})', desc: t('双位序号') },
-                            { label: `[{TAG:${t('文件类型')}}]`, desc: t('文件类型标签') },
-                            { label: `[{TAG:${t('题材')}}]`, desc: t('题材标签') },
-                            { label: '[{AUTHOR}]', desc: t('作者') },
-                            { label: '{ORIG_NAME}', desc: t('原文件名') }
-                          ].map((chip, cIdx) => (
-                            <button
-                              key={cIdx}
-                              type="button"
-                              onClick={() => handleInsertTagToTemplate(chip.label)}
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono bg-muted/60 hover:bg-primary/10 hover:text-primary hover:border-primary/40 border border-border/50 text-foreground transition-all cursor-pointer select-none"
-                              title={chip.desc}
-                            >
-                              <span className="text-primary font-bold">+</span>
-                              <span>{chip.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* 操作按钮 */}
-                      <div className="flex items-center justify-between pt-1 border-t border-border/40">
-                        <span className="text-xs text-muted-foreground/70">
-                          <MaterialIcon icon="info" className="text-xs inline mr-1 align-text-top text-amber-500" />
-                          {t('支持任意自定义前后缀、文字与 DSL 标签组合')}
-                        </span>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => setEditingNamingTemplate(false)}
-                            disabled={savingNamingTemplate}
-                          >
-                            {t('取消')}
-                          </Button>
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => handleSaveNamingTemplate()}
-                            disabled={savingNamingTemplate}
-                          >
-                            {savingNamingTemplate ? (
-                              <>
-                                <div className="animate-spin rounded-full h-3.5 w-3.5 border-t-2 border-b-2 border-current mr-1.5" />
-                                {t('保存中')}
-                              </>
-                            ) : (
-                              <>{t('保存')}</>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    /* 下拉选择菜单与当前模板展示 */
-                    <div className="space-y-2">
-                      <div className="relative">
-                        <select
-                          value={
-                            !namingTemplateValue
-                              ? '__NONE__'
-                              : presetTemplates.some(p => p.template === namingTemplateValue)
-                                ? namingTemplateValue
-                                : '__CUSTOM__'
-                          }
-                          onChange={e => {
-                            const sel = e.target.value
-                            if (sel === '__NONE__') {
-                              handleSaveNamingTemplate('')
-                            } else if (sel === '__CUSTOM__') {
-                              setEditingNamingTemplate(true)
-                            } else {
-                              handleSaveNamingTemplate(sel)
-                            }
-                          }}
-                          className="w-full h-9 text-xs text-foreground bg-background px-3 py-1.5 rounded-md border border-border/60 hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary/30 outline-none transition-all duration-150 cursor-pointer truncate"
-                        >
-                          <option value="__NONE__">{t('不使用附加模板 (仅保留原始智能名)')}</option>
-                          {presetTemplates.map((preset, pIdx) => (
-                            <option key={pIdx} value={preset.template}>
-                              {preset.name} - {preset.template}
-                            </option>
-                          ))}
-                          {namingTemplateValue &&
-                            !presetTemplates.some(p => p.template === namingTemplateValue) && (
-                              <option value="__CUSTOM__">
-                                {t('自定义')}: {namingTemplateValue}
-                              </option>
-                            )}
-                        </select>
-                      </div>
-
-                      {namingTemplateValue ? (
-                        <div className="flex items-center justify-between text-[11px] font-mono px-3 py-1.5 rounded bg-muted/40 text-muted-foreground border border-border/40">
-                          <span className="truncate" title={namingTemplateValue}>
-                            {t('当前模板:')} <span className="text-foreground font-medium">{namingTemplateValue}</span>
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="text-[11px] text-muted-foreground/60 italic px-1">
-                          {t('未启用附加模板，将直接采用 AI 输出的智能文件名')}
-                        </div>
                       )}
-
-                      {/* 一键应用至已分析文件按钮 */}
-                      <button
-                        type="button"
-                        onClick={handleApplyTemplateToFiles}
-                        disabled={applyingTemplate}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md border border-primary/40 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-medium transition-all duration-200 disabled:opacity-50 cursor-pointer"
-                        title={t('为当前目录下已分析文件重新应用该命名模板')}
-                      >
-                        <MaterialIcon
-                          icon={applyingTemplate ? 'sync' : 'auto_fix_high'}
-                          className={cn('text-sm', applyingTemplate && 'animate-spin')}
-                        />
-                        <span>{applyingTemplate ? t('应用中...') : t('将附加属性应用至当前目录已分析文件')}</span>
-                      </button>
                     </div>
                   )}
                 </div>

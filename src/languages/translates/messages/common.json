@@ -9,7 +9,7 @@
     "de-DE": "Kartenabmessungen skalieren",
     "fr-FR": "Ajuster la taille des cartes",
     "ko-KR": "카드 크기 조정",
-    "$files": ["src/renderer/components/common/CardSizePopover.tsx(2681-2691)"],
+    "$files": ["src/renderer/components/common/CardSizePopover.tsx(2589-2599)"],
     "$id": 7972
   },
   "卡片大小": {
@@ -22,7 +22,7 @@
     "de-DE": "Kartengröße",
     "fr-FR": "Taille des cartes",
     "ko-KR": "카드 크기",
-    "$files": ["src/renderer/components/common/CardSizePopover.tsx(3578-3586)"],
+    "$files": ["src/renderer/components/common/CardSizePopover.tsx(3464-3472)"],
     "$id": 7973
   },
   "重置": {
@@ -36,8 +36,8 @@
     "fr-FR": "Réinitialiser",
     "ko-KR": "재설정",
     "$files": [
-      "src/renderer/components/common/CardSizePopover.tsx(3913-3919)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(12980-12986)"
+      "src/renderer/components/common/CardSizePopover.tsx(3791-3797)",
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(12663-12669)"
     ],
     "$id": 7974
   },
@@ -52,8 +52,8 @@
     "fr-FR": "Réduire",
     "ko-KR": "축소",
     "$files": [
-      "src/renderer/components/common/CardSizePopover.tsx(4355-4361)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13698-13704)"
+      "src/renderer/components/common/CardSizePopover.tsx(4222-4228)",
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13367-13373)"
     ],
     "$id": 7975
   },
@@ -68,8 +68,8 @@
     "fr-FR": "Agrandir",
     "ko-KR": "확대",
     "$files": [
-      "src/renderer/components/common/CardSizePopover.tsx(5266-5272)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15242-15248)"
+      "src/renderer/components/common/CardSizePopover.tsx(5111-5117)",
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(14884-14890)"
     ],
     "$id": 7976
   },
@@ -83,7 +83,7 @@
     "de-DE": "Anwendung ist auf einen Fehler gestoßen",
     "fr-FR": "L'application a rencontré une erreur",
     "ko-KR": "앱에서 오류가 발생했습니다",
-    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(1161-1171)"],
+    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(1117-1127)"],
     "$id": 3888
   },
   "很抱歉，应用遇到了一个错误。请尝试刷新页面或重启应用。": {
@@ -96,7 +96,7 @@
     "de-DE": "Es tut uns leid, die Anwendung ist auf einen Fehler gestoßen. Bitte versuchen Sie, die Seite zu aktualisieren oder die Anwendung neu zu starten.",
     "fr-FR": "Désolé, l'application a rencontré une erreur. Veuillez essayer d'actualiser la page ou redémarrer l'application.",
     "ko-KR": "죄송합니다. 앱에 오류가 발생했습니다. 페이지를 새로고침하거나 앱을 재시작해 보세요.",
-    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(1243-1274)"],
+    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(1197-1228)"],
     "$id": 3889
   },
   "错误详情": {
@@ -109,7 +109,7 @@
     "de-DE": "Fehlerdetails",
     "fr-FR": "Détails de l'erreur",
     "ko-KR": "오류 세부 정보",
-    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(1471-1479)"],
+    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(1421-1429)"],
     "$id": 3890
   },
   "刷新页面": {
@@ -122,7 +122,7 @@
     "de-DE": "Seite aktualisieren",
     "fr-FR": "Actualiser la page",
     "ko-KR": "페이지 새로고침",
-    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(1943-1951)"],
+    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(1882-1890)"],
     "$id": 3891
   },
   "重试": {
@@ -135,7 +135,7 @@
     "de-DE": "Erneut versuchen",
     "fr-FR": "Réessayer",
     "ko-KR": "재시도",
-    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(2264-2270)"],
+    "$files": ["src/renderer/components/common/ErrorBoundary.tsx(2195-2201)"],
     "$id": 3892
   },
   "AI服务异常": {
@@ -208,7 +208,7 @@
     "ko-KR": "그림",
     "$files": [
       "src/renderer/components/common/Footer.tsx(13239-13245)",
-      "src/renderer/components/common/SupportedFormats.tsx(733-739)"
+      "src/renderer/components/common/SupportedFormats.tsx(707-713)"
     ],
     "$id": 4290
   },
@@ -224,7 +224,7 @@
     "ko-KR": "오디오",
     "$files": [
       "src/renderer/components/common/Footer.tsx(13307-13313)",
-      "src/renderer/components/common/SupportedFormats.tsx(869-875)"
+      "src/renderer/components/common/SupportedFormats.tsx(839-845)"
     ],
     "$id": 4291
   },
@@ -240,7 +240,7 @@
     "ko-KR": "동영상",
     "$files": [
       "src/renderer/components/common/Footer.tsx(13375-13381)",
-      "src/renderer/components/common/SupportedFormats.tsx(1013-1019)"
+      "src/renderer/components/common/SupportedFormats.tsx(979-985)"
     ],
     "$id": 4292
   },
@@ -811,7 +811,7 @@
     "ko-KR": "Firefly AI Folder",
     "$files": [
       "src/renderer/components/common/Logo.tsx(397-408)",
-      "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4673-4684)"
+      "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4573-4584)"
     ],
     "$id": 3918
   },
@@ -825,7 +825,7 @@
     "de-DE": "Listenansicht",
     "fr-FR": "Vue en liste",
     "ko-KR": "목록 보기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3257-3265)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3155-3163)"],
     "$id": 11405
   },
   "网格视图": {
@@ -838,7 +838,7 @@
     "de-DE": "Rasteransicht",
     "fr-FR": "Vue en grille",
     "ko-KR": "그리드 보기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(5545-5553)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(5390-5398)"],
     "$id": 11406
   },
   "瀑布流视图": {
@@ -851,7 +851,7 @@
     "de-DE": "Blick auf den Wasserfall",
     "fr-FR": "Vue sur la cascade",
     "ko-KR": "폭포 전망",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(6847-6856)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(6660-6669)"],
     "$id": 11407
   },
   "列表行高大小": {
@@ -864,7 +864,7 @@
     "de-DE": "Listenzeilenhöhe und -größe",
     "fr-FR": "Hauteur et taille des lignes de liste",
     "ko-KR": "행 높이 및 크기 나열",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8874-8884)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8640-8650)"],
     "$id": 11408
   },
   "卡片缩放大小": {
@@ -877,7 +877,7 @@
     "de-DE": "Karten-Zoom-Größe",
     "fr-FR": "Taille du zoom de la carte",
     "ko-KR": "카드 줌 크기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8888-8898)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8654-8664)"],
     "$id": 11409
   },
   "视图与显示设置": {
@@ -890,7 +890,7 @@
     "de-DE": "Ansichts- und Anzeigeeinstellungen",
     "fr-FR": "Paramètres d'affichage et de vue",
     "ko-KR": "뷰 및 표시 설정",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9346-9357)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9100-9111)"],
     "$id": 7999
   },
   "视图模式": {
@@ -903,7 +903,7 @@
     "de-DE": "Ansichtsmodus",
     "fr-FR": "Mode d'affichage",
     "ko-KR": "뷰 모드",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(10465-10473)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(10193-10201)"],
     "$id": 8000
   },
   "更小": {
@@ -916,7 +916,7 @@
     "de-DE": "Smaller",
     "fr-FR": "Plus petit",
     "ko-KR": "더 작은",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15618-15624)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15252-15258)"],
     "$id": 11410
   },
   "默认": {
@@ -929,7 +929,7 @@
     "de-DE": "Standard",
     "fr-FR": "Défaut",
     "ko-KR": "기본",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16044-16050)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15670-15676)"],
     "$id": 11411
   },
   "更大": {
@@ -942,7 +942,7 @@
     "de-DE": "Zweitgrößte",
     "fr-FR": "Plus grand",
     "ko-KR": "더 큰",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16114-16120)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15738-15744)"],
     "$id": 11412
   },
   "主副文件名显示": {
@@ -955,7 +955,7 @@
     "de-DE": "Anzeige des primären und sekundären Dateinamens",
     "fr-FR": "Affichage du nom de fichier principal et secondaire",
     "ko-KR": "기본 및 보조 파일 이름 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16561-16572)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16176-16187)"],
     "$id": 11413
   },
   "互换主次位置": {
@@ -968,7 +968,7 @@
     "de-DE": "Tauschen Sie primäre und sekundäre Positionen",
     "fr-FR": "Permuter les positions primaires et secondaires",
     "ko-KR": "기본 및 보조 위치 교환",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16705-16715)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16317-16327)"],
     "$id": 11414
   },
   "智能名为主": {
@@ -981,7 +981,7 @@
     "de-DE": "Intelligenter Name Meister",
     "fr-FR": "Maître de nom intelligent",
     "ko-KR": "스마트 이름 마스터",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16955-16964)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16560-16569)"],
     "$id": 11415
   },
   "真实名为辅": {
@@ -994,7 +994,7 @@
     "de-DE": "Echter Name: Hilfskraft",
     "fr-FR": "Vrai nom: auxiliaire",
     "ko-KR": "실제 이름:보조",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17039-17048)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16642-16651)"],
     "$id": 11416
   },
   "真实名为主": {
@@ -1007,7 +1007,7 @@
     "de-DE": "Der wahre Name ist der Herr",
     "fr-FR": "Le vrai nom est le seigneur",
     "ko-KR": "진짜 이름은 주님",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17171-17180)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16770-16779)"],
     "$id": 11417
   },
   "智能名为辅": {
@@ -1020,7 +1020,7 @@
     "de-DE": "Intelligenter Name Hilfs",
     "fr-FR": "Auxiliaire de nom intelligent",
     "ko-KR": "스마트 이름 보조",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17255-17264)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16852-16861)"],
     "$id": 11418
   },
   "显示完整文件名": {
@@ -1033,7 +1033,7 @@
     "de-DE": "Vollen Dateinamen anzeigen",
     "fr-FR": "Afficher le nom de fichier complet",
     "ko-KR": "전체 파일명 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(19688-19699)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(19239-19250)"],
     "$id": 8005
   },
   "显示丢失文件": {
@@ -1046,7 +1046,7 @@
     "de-DE": "Fehlende Dateien anzeigen",
     "fr-FR": "Afficher les fichiers manquants",
     "ko-KR": "누락된 파일 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(20210-20220)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(19749-19759)"],
     "$id": 8006
   },
   "请选择您要整理的文件夹（工作目录）": {
@@ -1059,7 +1059,7 @@
     "de-DE": "Bitte wählen Sie den Ordner aus, den Sie organisieren möchten (Arbeitsverzeichnis).",
     "fr-FR": "Veuillez sélectionner le dossier que vous souhaitez organiser (répertoire de travail)",
     "ko-KR": "정리하고 싶은 폴더(작업 디렉토리)를 선택해주세요",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1079-1100)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1050-1071)"],
     "$id": 4457
   },
   "文件需经过AI分析才能分类，过多会比较耗时，工作模式决定了分析结果是否缓存到服务器": {
@@ -1072,7 +1072,7 @@
     "de-DE": "Die Dateien müssen durch KI analysiert werden, um klassifiziert zu werden. Zu viele Dateien können zeitaufwendig sein. Der Arbeitsmodus bestimmt, ob die Analyseergebnisse auf dem Server zwischengespeichert werden.",
     "fr-FR": "Les fichiers doivent être analysés par l'IA pour être classifiés, trop nombreux peuvent prendre du temps, le mode de fonctionnement détermine si les résultats d'analyse sont mis en cache sur le serveur",
     "ko-KR": "파일은 AI 분석을 거쳐야만 분류할 수 있으며, 너무 많으면 시간이 오래 걸릴 수 있습니다. 작업 모드에 따라 분석 결과를 서버에 캐시할지 여부가 결정됩니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1180-1225)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1148-1193)"],
     "$id": 6227
   },
   "企业版暂不支持极速目录": {
@@ -1085,7 +1085,7 @@
     "de-DE": "Die Enterprise-Version unterstützt derzeit keine Speed-Verzeichnisse.",
     "fr-FR": "La version entreprise ne prend actuellement pas en charge les répertoires rapides.",
     "ko-KR": "엔터프라이즈 버전은 현재 속도 디렉터리를 지원하지 않습니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1717-1732)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(1673-1688)"],
     "$id": 4380
   },
   "极速目录": {
@@ -1098,7 +1098,7 @@
     "de-DE": "Geschwindigkeitsverzeichnis",
     "fr-FR": "Annuaire de vitesse",
     "ko-KR": "속도 디렉토리",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2144-2152)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2093-2101)"],
     "$id": 2900
   },
   "互助共享，秒级完成": {
@@ -1111,7 +1111,7 @@
     "de-DE": "Gegenseitige Hilfe und Austausch, in Sekundenschnelle erledigt",
     "fr-FR": "Assistance mutuelle et partage, réalisés en quelques secondes",
     "ko-KR": "몇 초 만에 완료되는 상호 지원 및 공유",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2287-2300)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2233-2246)"],
     "$id": 2901
   },
   "如果你待分析的文件是他人分析过的，可使用服务器脱敏缓存，": {
@@ -1124,7 +1124,7 @@
     "de-DE": "Wenn die von Ihnen zu analysierende Datei bereits von anderen analysiert wurde, können Sie den serverseitigen Desensibilisierungs-Cache nutzen,  ",
     "fr-FR": "Si le fichier que vous souhaitez analyser a déjà été traité par quelqu’un d’autre, vous pouvez utiliser le cache de désensibilisation du serveur  ",
     "ko-KR": "분석 대상 파일이 이미 다른 사람이 분석한 적 있다면 서버의 민감 정보 제거 캐시를 사용하여  ",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2467-2499)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2408-2440)"],
     "$id": 3380
   },
   "大幅提升处理速度": {
@@ -1137,7 +1137,7 @@
     "de-DE": "Um die Verarbeitungsgeschwindigkeit erheblich zu steigern.",
     "fr-FR": "Afin d’accélérer considérablement le traitement.",
     "ko-KR": "처리 속도를 크게 향상시킬 수 있습니다",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2654-2666)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(2593-2605)"],
     "$id": 3381
   },
   "云端共享原理说明": {
@@ -1150,7 +1150,7 @@
     "de-DE": "Erklärung des Cloud-Sharing-Prinzips",
     "fr-FR": "Explication du principe de partage dans le cloud",
     "ko-KR": "클라우드 공유 원리 설명",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4517-4529)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4420-4432)"],
     "$id": 7684
   },
   "始终将隐私保护作为核心设计原则，坚持": {
@@ -1163,7 +1163,7 @@
     "de-DE": "Betrachten Sie den Schutz der Privatsphäre stets als zentralen Gestaltungsgrundsatz und halten Sie ihn ein",
     "fr-FR": "Considérez toujours la protection de la vie privée comme un principe de conception fondamental et respectez",
     "ko-KR": "항상 개인정보 보호를 핵심 설계 원칙으로 간주하고 이를 준수합니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4720-4742)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4619-4641)"],
     "$id": 7685
   },
   "数据本地优先": {
@@ -1176,7 +1176,7 @@
     "de-DE": "Lokale Datenpriorität",
     "fr-FR": "Priorité locale des données",
     "ko-KR": "데이터 로컬 우선순위",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4805-4815)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4703-4713)"],
     "$id": 7686
   },
   "，切实保障用户隐私安全，其核心技术原理与行业常见的哈希（Hash）机制逻辑一致。": {
@@ -1189,7 +1189,7 @@
     "de-DE": ", um die Privatsphäre und Sicherheit der Benutzer wirksam zu schützen, und seine technischen Kernprinzipien stimmen logisch mit dem in der Branche üblichen Hash-Mechanismus (Hash) überein.",
     "fr-FR": ", pour protéger efficacement la confidentialité et la sécurité des utilisateurs, et ses principes techniques de base sont logiquement cohérents avec le mécanisme de hachage (Hash) commun dans l'industrie.",
     "ko-KR": ", 사용자 개인 정보 보호 및 보안을 효과적으로 보호하기 위해 핵심 기술 원칙은 업계 공통 해시(Hash) 메커니즘과 논리적으로 일치합니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4851-4921)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(4748-4817)"],
     "$id": 7687
   },
   "简单来说": {
@@ -1202,7 +1202,7 @@
     "de-DE": "In einfachen Worten",
     "fr-FR": "En termes simples",
     "ko-KR": "간단히 말해서",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5140-5148)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5031-5039)"],
     "$id": 7688
   },
   "，系统会通过加密算法为每个文件生成唯一的特征标识（长度 16-128 字符），相当于文件的专属 ID。": {
@@ -1215,7 +1215,7 @@
     "de-DE": ", generiert das System über einen Verschlüsselungsalgorithmus für jede Datei eine eindeutige charakteristische Kennung (Länge 16–128 Zeichen), die der eindeutigen ID der Datei entspricht.",
     "fr-FR": ", le système générera un identifiant caractéristique unique (longueur de 16 à 128 caractères) pour chaque fichier via un algorithme de cryptage, qui est équivalent à l'identifiant unique du fichier.",
     "ko-KR": ", 시스템은 암호화 알고리즘을 통해 각 파일에 대해 파일의 고유 ID와 동일한 고유 특성 식별자(길이 16-128자)를 생성합니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5186-5269)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5076-5158)"],
     "$id": 7689
   },
   "生成这一 ID 的": {
@@ -1228,7 +1228,7 @@
     "de-DE": "Generieren Sie diese ID",
     "fr-FR": "Générer cet identifiant",
     "ko-KR": "이 ID를 생성하세요",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5463-5476)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5347-5360)"],
     "$id": 7690
   },
   "唯一前提": {
@@ -1241,7 +1241,7 @@
     "de-DE": "Die einzige Voraussetzung",
     "fr-FR": "La seule prémisse",
     "ko-KR": "유일한 전제",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5543-5551)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5426-5434)"],
     "$id": 7691
   },
   "，是用户本地持有该文件并完成算法计算，应用不会向任何第三方泄露该文件 ID。仅凭借此 ID，才可向服务器请求对应 ID 的分析数据，无其他获取途径。": {
@@ -1254,7 +1254,7 @@
     "de-DE": ", speichert der Benutzer die Datei lokal und schließt die Algorithmusberechnung ab. Die Anwendung gibt die Datei-ID nicht an Dritte weiter. Nur mit dieser ID können die Analysedaten der entsprechenden ID vom Server angefordert werden und es gibt keine andere Möglichkeit, diese zu erhalten.",
     "fr-FR": ", l'utilisateur conserve le fichier localement et termine le calcul de l'algorithme. L'application ne divulguera l'ID du fichier à aucun tiers. Ce n'est qu'avec cet identifiant que les données d'analyse de l'identifiant correspondant peuvent être demandées au serveur, et il n'y a aucun autre moyen de les obtenir.",
     "ko-KR": ", 사용자는 파일을 로컬로 보유하고 알고리즘 계산을 완료합니다. 애플리케이션은 파일 ID를 제3자에게 공개하지 않습니다. 이 ID만이 해당 ID의 분석 데이터를 서버에 요청할 수 있으며, 이를 얻을 수 있는 다른 방법은 없습니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5591-5699)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5473-5580)"],
     "$id": 7692
   },
   "即便在": {
@@ -1267,7 +1267,7 @@
     "de-DE": "Sogar drin",
     "fr-FR": "Même dans",
     "ko-KR": "심지어",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5819-5826)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5696-5703)"],
     "$id": 7693
   },
   "极端假设下": {
@@ -1280,7 +1280,7 @@
     "de-DE": "Unter extremen Annahmen",
     "fr-FR": "Sous des hypothèses extrêmes",
     "ko-KR": "극단적인 가정하에",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5893-5902)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5769-5778)"],
     "$id": 7694
   },
   "（服务器被突破），第三方仅能获取文件分析数据与对应 ID，且不同平台的 ID 算法完全独立，与百度网盘等平台的文件 ID 无任何关联，无法跨平台匹配原文件。": {
@@ -1293,7 +1293,7 @@
     "de-DE": "(Der Server wurde angegriffen), Dritte können nur Dateianalysedaten und entsprechende IDs erhalten, und die ID-Algorithmen verschiedener Plattformen sind völlig unabhängig und haben keine Verbindung zu den Datei-IDs von Plattformen wie Baidu Netdisk und können Originaldateien nicht plattformübergreifend abgleichen.",
     "fr-FR": "(Le serveur a été piraté), les tiers ne peuvent obtenir que les données d'analyse de fichiers et les identifiants correspondants, et les algorithmes d'identification des différentes plates-formes sont complètement indépendants et n'ont aucun lien avec les identifiants de fichiers de plates-formes telles que Baidu Netdisk, et ne peuvent pas correspondre aux fichiers originaux sur toutes les plates-formes.",
     "ko-KR": "(서버가 침해됨) 제3자는 파일 분석 데이터와 해당 ID만 얻을 수 있으며, 서로 다른 플랫폼의 ID 알고리즘은 완전히 독립적이며 Baidu Netdisk와 같은 플랫폼의 파일 ID와 연결되지 않으며 플랫폼 간에 원본 파일을 일치시킬 수 없습니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5942-6054)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(5817-5928)"],
     "$id": 7695
   },
   "同时，": {
@@ -1306,7 +1306,7 @@
     "de-DE": "Gleichzeitig,",
     "fr-FR": "En même temps,",
     "ko-KR": "동시에,",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6174-6181)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6044-6051)"],
     "$id": 7696
   },
   "服务器仅存储分析类数据": {
@@ -1319,7 +1319,7 @@
     "de-DE": "Der Server speichert nur analytische Daten",
     "fr-FR": "Le serveur stocke uniquement les données analytiques",
     "ko-KR": "서버는 분석 데이터만 저장합니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6248-6263)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6117-6132)"],
     "$id": 7697
   },
   "：包括智能文件名、标签、内容摘要、评分及理由、元数据等，也就是大家在右侧属性面板可见的内容，绝不会上传、存储文件本体。": {
@@ -1332,7 +1332,7 @@
     "de-DE": ": Einschließlich intelligenter Dateinamen, Tags, Inhaltszusammenfassungen, Bewertungen und Gründe, Metadaten usw., die Sie im Eigenschaftenfenster rechts sehen können. Die Datei selbst wird niemals hochgeladen oder gespeichert.",
     "fr-FR": ": Y compris les noms de fichiers intelligents, les balises, les résumés de contenu, les évaluations et les raisons, les métadonnées, etc., comme vous pouvez le voir dans le panneau des propriétés sur la droite. Le fichier lui-même ne sera jamais téléchargé ou stocké.",
     "ko-KR": ": 스마트 파일 이름, 태그, 콘텐츠 요약, 평가 및 이유, 메타데이터 등을 포함하며, 이는 오른쪽 속성 패널에서 볼 수 있습니다. 파일 자체는 업로드되거나 저장되지 않습니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6303-6396)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6171-6263)"],
     "$id": 7698
   },
   "适用场景：": {
@@ -1346,8 +1346,8 @@
     "fr-FR": "Scénarios applicables :",
     "ko-KR": "적용 가능한 시나리오:",
     "$files": [
-      "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6747-6756)",
-      "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7985-7994)"
+      "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6603-6612)",
+      "src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7812-7821)"
     ],
     "$id": 2903
   },
@@ -1361,7 +1361,7 @@
     "de-DE": "Download-Verzeichnis, Netzwerkressourcen, E-Books, Comics, Musik und andere öffentliche Dateien.",
     "fr-FR": "Téléchargement de répertoires, ressources réseau, livres électroniques, bandes dessinées, musique et autres fichiers publics.",
     "ko-KR": "다운로드 디렉토리, 네트워크 리소스, 전자책, 만화, 음악 등 공개 파일입니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6782-6811)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(6637-6666)"],
     "$id": 6229
   },
   "私有目录": {
@@ -1374,7 +1374,7 @@
     "de-DE": "Privates Verzeichnis",
     "fr-FR": "Répertoire privé",
     "ko-KR": "개인 디렉토리",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7445-7453)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7285-7293)"],
     "$id": 2905
   },
   "本地分析，数据不出端": {
@@ -1387,7 +1387,7 @@
     "de-DE": "Lokale Analyse, Daten stammen nicht aus der Quelle",
     "fr-FR": "Analyse locale, les données ne sortent pas de la source",
     "ko-KR": "로컬 분석, 데이터가 소스에서 나오지 않음",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7588-7602)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7425-7439)"],
     "$id": 2906
   },
   "你的分析结果仅保存在本地，不缓存服务器，守护数据主权。但无法享受服务器缓存带来的提速效果。": {
@@ -1400,7 +1400,7 @@
     "de-DE": "Ihre Analyseergebnisse werden nur lokal gespeichert und nicht auf dem Server zwischengespeichert, um die Datenhoheit zu schützen. Allerdings können Sie nicht von der Geschwindigkeitssteigerung durch den Server-Cache profitieren.",
     "fr-FR": "Vos résultats d'analyse ne sont sauvegardés que localement, non mis en cache sur le serveur, protégeant la souveraineté des données. Mais vous ne pouvez pas bénéficier de l'effet d'accélération apporté par le cache serveur.",
     "ko-KR": "분석 결과는 로컬에만 저장되며 서버에는 캐시되지 않아 데이터 주권을 보호합니다. 하지만 서버 캐시가 제공하는 속도 향상 효과는 누릴 수 없습니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7759-7826)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7591-7657)"],
     "$id": 6230
   },
   "个人原创作品、照片、财务报表、隐私文档。": {
@@ -1413,7 +1413,7 @@
     "de-DE": "Persönliche Originalwerke, Fotos, Finanzberichte, vertrauliche Dokumente.",
     "fr-FR": "Œuvres originales personnelles, photos, états financiers, documents confidentiels.",
     "ko-KR": "개인 창작 작품, 사진, 재무제표, 개인정보 문서 등입니다.",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(8020-8044)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(7846-7870)"],
     "$id": 6231
   },
   "注：所有数据都是脱敏的，无IP，全匿名": {
@@ -1426,7 +1426,7 @@
     "de-DE": "Hinweis: Alle Daten sind anonymisiert, ohne IP, vollständig anonym",
     "fr-FR": "Remarque : Toutes les données sont anonymisées, sans IP, entièrement anonymes",
     "ko-KR": "주석: 모든 데이터는 탈민감화되어 있으며, IP가 없고 전부 익명 처리됨",
-    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(8205-8228)"],
+    "$files": ["src/renderer/components/common/NoWorkspaceDirectoryMessage.tsx(8025-8048)"],
     "$id": 2746
   },
   "知道了": {
@@ -1728,8 +1728,8 @@
     "fr-FR": "Rechercher...",
     "ko-KR": "찾다...",
     "$files": [
-      "src/renderer/components/common/SearchBar.tsx(722-731)",
-      "src/renderer/components/common/SearchBar.tsx(7180-7189)"
+      "src/renderer/components/common/SearchBar.tsx(700-709)",
+      "src/renderer/components/common/SearchBar.tsx(6928-6937)"
     ],
     "$id": 3922
   },
@@ -1743,7 +1743,7 @@
     "de-DE": "Suchen Sie nach Dateinamen, Beschreibung, Tag oder Erweiterung ...",
     "fr-FR": "Recherchez le nom du fichier, la description, la balise ou l'extension...",
     "ko-KR": "파일 이름, 설명, 태그 또는 확장명 검색...",
-    "$files": ["src/renderer/components/common/SearchBar.tsx(7262-7286)"],
+    "$files": ["src/renderer/components/common/SearchBar.tsx(7007-7031)"],
     "$id": 4684
   },
   "搜索已分析的文件名、特征、标签...": {
@@ -1756,7 +1756,7 @@
     "de-DE": "Durchsuchen Sie analysierte Dateinamen, Funktionen, Tags ...",
     "fr-FR": "Rechercher des noms de fichiers analysés, des fonctionnalités, des balises...",
     "ko-KR": "분석된 파일 이름, 기능, 태그 검색...",
-    "$files": ["src/renderer/components/common/SearchBar.tsx(7297-7319)"],
+    "$files": ["src/renderer/components/common/SearchBar.tsx(7041-7063)"],
     "$id": 4685
   },
   "搜索": {
@@ -1769,7 +1769,7 @@
     "de-DE": "Suchen",
     "fr-FR": "Recherche",
     "ko-KR": "찾다",
-    "$files": ["src/renderer/components/common/SearchBar.tsx(7826-7832)"],
+    "$files": ["src/renderer/components/common/SearchBar.tsx(7555-7561)"],
     "$id": 4617
   },
   "输入关键词进行搜索": {
@@ -1782,7 +1782,7 @@
     "de-DE": "Stichwort eingeben, um zu suchen",
     "fr-FR": "Saisissez des mots-clés pour effectuer une recherche",
     "ko-KR": "검색할 키워드를 입력하세요",
-    "$files": ["src/renderer/components/common/SearchBar.tsx(9514-9527)"],
+    "$files": ["src/renderer/components/common/SearchBar.tsx(9204-9217)"],
     "$id": 3923
   },
   "清除搜索内容": {
@@ -1795,7 +1795,7 @@
     "de-DE": "Suchinhalt löschen",
     "fr-FR": "Effacer la recherche",
     "ko-KR": "검색 지우기",
-    "$files": ["src/renderer/components/common/SearchBar.tsx(10081-10091)"],
+    "$files": ["src/renderer/components/common/SearchBar.tsx(9757-9767)"],
     "$id": 3924
   },
   "原生预览": {
@@ -1808,7 +1808,7 @@
     "de-DE": "Native Vorschau",
     "fr-FR": "Aperçu natif",
     "ko-KR": "네이티브 미리보기",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(572-580)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(552-560)"],
     "$id": 8937
   },
   "即时渲染": {
@@ -1821,7 +1821,7 @@
     "de-DE": "Sofortiges Rendern",
     "fr-FR": "Rendu instantané",
     "ko-KR": "인스턴트 렌더링",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(598-606)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(577-585)"],
     "$id": 8938
   },
   "纯文本": {
@@ -1834,7 +1834,7 @@
     "de-DE": "Klartext",
     "fr-FR": "Texte brut",
     "ko-KR": "일반 텍스트",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1106-1113)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1068-1075)"],
     "$id": 8939
   },
   "高级预览": {
@@ -1847,7 +1847,7 @@
     "de-DE": "Erweiterte Vorschau",
     "fr-FR": "Aperçu avancé",
     "ko-KR": "고급 미리보기",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1263-1271)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1219-1227)"],
     "$id": 8940
   },
   "复杂渲染": {
@@ -1860,7 +1860,7 @@
     "de-DE": "Komplexes Rendering",
     "fr-FR": "Rendu complexe",
     "ko-KR": "복잡한 렌더링",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1289-1297)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1244-1252)"],
     "$id": 8941
   },
   "文档": {
@@ -1873,7 +1873,7 @@
     "de-DE": "Dokument  ",
     "fr-FR": "Document  ",
     "ko-KR": "문서",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1423-1429)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(1373-1379)"],
     "$id": 8942
   },
   "压缩包": {
@@ -1886,7 +1886,7 @@
     "de-DE": "Komprimiertes Archiv  ",
     "fr-FR": "Archive compressée  ",
     "ko-KR": "압축 파일",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(2198-2205)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(2113-2120)"],
     "$id": 8943
   },
   "邮件": {
@@ -1899,7 +1899,7 @@
     "de-DE": "Post",
     "fr-FR": "Mail",
     "ko-KR": "우편",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(2956-2962)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(2836-2842)"],
     "$id": 8944
   },
   "3D 模型": {
@@ -1912,7 +1912,7 @@
     "de-DE": "3D-Modell",
     "fr-FR": "Modèle 3D",
     "ko-KR": "3D 모델",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3209-3218)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3081-3090)"],
     "$id": 8946
   },
   "地理数据": {
@@ -1925,7 +1925,7 @@
     "de-DE": "Geografische Daten",
     "fr-FR": "Données géographiques",
     "ko-KR": "지리적 데이터",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3906-3914)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3746-3754)"],
     "$id": 8947
   },
   "脑图/绘图": {
@@ -1938,7 +1938,7 @@
     "de-DE": "Mind Mapping/Zeichnung",
     "fr-FR": "Cartographie mentale/dessin",
     "ko-KR": "마인드맵/드로잉",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4018-4027)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(3854-3863)"],
     "$id": 8948
   },
   "电子书": {
@@ -1951,7 +1951,7 @@
     "de-DE": "E-Book  ",
     "fr-FR": "Livre électronique  ",
     "ko-KR": "전자책",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4177-4184)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4009-4016)"],
     "$id": 8949
   },
   "标记语言": {
@@ -1964,7 +1964,7 @@
     "de-DE": "Auszeichnungssprache",
     "fr-FR": "Langage de balisage",
     "ko-KR": "마크업 언어",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4271-4279)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4099-4107)"],
     "$id": 8950
   },
   "代码": {
@@ -1977,7 +1977,7 @@
     "de-DE": "Code",
     "fr-FR": "Code",
     "ko-KR": "암호",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4643-4649)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(4454-4460)"],
     "$id": 8951
   },
   "设计/字体/数据": {
@@ -1990,7 +1990,7 @@
     "de-DE": "Design/Schriftart/Daten",
     "fr-FR": "Conception/Police/Données",
     "ko-KR": "디자인/글꼴/데이터",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(5527-5539)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(5297-5309)"],
     "$id": 8952
   },
   "图片/音视频扩展": {
@@ -2003,7 +2003,7 @@
     "de-DE": "Bild-/Audio-Video-Erweiterung",
     "fr-FR": "Extension image/audio vidéo",
     "ko-KR": "사진/오디오 비디오 확장",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(5908-5920)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(5661-5673)"],
     "$id": 8953
   },
   "支持的格式": {
@@ -2016,7 +2016,7 @@
     "de-DE": "Unterstützte Formate",
     "fr-FR": "Formats pris en charge",
     "ko-KR": "지원되는 형식",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(6391-6400)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(6127-6136)"],
     "$id": 10221
   },
   "支持 240+ 种预览格式": {
@@ -2029,7 +2029,7 @@
     "de-DE": "Unterstützt mehr als 240 Vorschauformate",
     "fr-FR": "Prise en charge de plus de 240 formats de prévisualisation",
     "ko-KR": "지원 240+미리보기 형식",
-    "$files": ["src/renderer/components/common/SupportedFormats.tsx(6856-6873)"],
+    "$files": ["src/renderer/components/common/SupportedFormats.tsx(6577-6594)"],
     "$id": 11419
   },
   "无法加载文件预览，请检查文件权限或格式。": {
@@ -2042,7 +2042,7 @@
     "de-DE": "Die Dateivorschau kann nicht geladen werden. Bitte überprüfen Sie die Dateiberechtigungen oder das Format.",
     "fr-FR": "Impossible de charger l'aperçu du fichier, veuillez vérifier les autorisations ou le format du fichier.",
     "ko-KR": "파일 미리보기를 로드할 수 없습니다. 파일 권한이나 형식을 확인하세요.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(11370-11394)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(11120-11144)"],
     "$id": 10223
   },
   "无法加载预览，请检查文件格式或重试。": {
@@ -2055,7 +2055,7 @@
     "de-DE": "Die Vorschau konnte nicht geladen werden. Bitte überprüfen Sie das Dateiformat oder versuchen Sie es erneut.",
     "fr-FR": "Impossible de charger l'aperçu, veuillez vérifier le format du fichier ou réessayer.",
     "ko-KR": "미리보기를 로드할 수 없습니다. 파일 형식을 확인하거나 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(12194-12216)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(11920-11942)"],
     "$id": 10225
   },
   "预览加载失败": {
@@ -2068,7 +2068,7 @@
     "de-DE": "Die Vorschau konnte nicht geladen werden",
     "fr-FR": "L'aperçu n'a pas pu être chargé",
     "ko-KR": "미리보기를 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(14981-14991)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(14640-14650)"],
     "$id": 10226
   },
   "加载预览中...": {
@@ -2081,7 +2081,7 @@
     "de-DE": "Vorschau wird geladen...",
     "fr-FR": "Chargement de l'aperçu...",
     "ko-KR": "미리보기 로드 중...",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(15762-15774)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(15403-15415)"],
     "$id": 10227
   }
 }

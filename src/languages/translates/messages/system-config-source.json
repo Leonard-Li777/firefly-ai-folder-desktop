@@ -9,7 +9,7 @@
     "de-DE": "[Batch-Umbenennung] Unterstützt die Batch-Umbenennung intelligenter Dateinamen nach Abschluss der Analyse",
     "fr-FR": "[Renommer par lots] Prend en charge le renommage par lots des noms de fichiers intelligents une fois l'analyse terminée",
     "ko-KR": "[일괄 이름 변경] 분석 완료 후 스마트 파일 이름 일괄 변경 지원",
-    "$files": ["src/electron/config/system-config-source.ts(408-436)"],
+    "$files": ["src/electron/config/system-config-source.ts(395-423)"],
     "$id": 11161
   },
   "【批量标签】支持分析完成后，对文件批量增删标签": {
@@ -22,7 +22,7 @@
     "de-DE": "[Batch-Tags] Unterstützt das stapelweise Hinzufügen und Löschen von Tags zu Dateien nach Abschluss der Analyse",
     "fr-FR": "[Batch Tags] Prend en charge l'ajout et la suppression de balises dans les fichiers par lots une fois l'analyse terminée",
     "ko-KR": "[Batch Tags] 분석 완료 후 일괄적으로 파일에 태그 추가 및 삭제 지원",
-    "$files": ["src/electron/config/system-config-source.ts(446-473)"],
+    "$files": ["src/electron/config/system-config-source.ts(432-459)"],
     "$id": 11162
   },
   "【批量清理】进行扫描去重、识别命名错误、扩展名错误、优化修正": {
@@ -35,7 +35,7 @@
     "de-DE": "[Stapelbereinigung] Scannen, um Duplikate zu entfernen, Namens- und Erweiterungsfehler zu identifizieren sowie zu optimieren und zu korrigieren",
     "fr-FR": "[Nettoyage par lots] Analysez pour supprimer les doublons, identifier les erreurs de dénomination, les erreurs d'extension, puis optimiser et corriger",
     "ko-KR": "[일괄 정리] 스캔하여 중복 제거, 명명 오류, 확장자 오류 식별, 최적화 및 수정",
-    "$files": ["src/electron/config/system-config-source.ts(483-517)"],
+    "$files": ["src/electron/config/system-config-source.ts(468-502)"],
     "$id": 11163
   },
   "【分析规则继承】目录画像分析策略、智能文件名规则、附加属性支持继承": {
@@ -48,7 +48,7 @@
     "de-DE": "[Vererbung von Analyseregeln] Analysestrategien für die Verzeichnisprofilierung, intelligente Dateinamenregeln und zusätzliche Attribute unterstützen die Vererbung",
     "fr-FR": "[Héritage des règles d'analyse] Les stratégies d'analyse de profilage d'annuaire, les règles de nom de fichier intelligentes et les attributs supplémentaires prennent en charge l'héritage",
     "ko-KR": "[분석 규칙 상속] 디렉터리 프로파일링 분석 전략, 지능형 파일 이름 규칙 및 추가 속성이 상속을 지원합니다.",
-    "$files": ["src/electron/config/system-config-source.ts(527-564)"],
+    "$files": ["src/electron/config/system-config-source.ts(511-548)"],
     "$id": 11167
   },
   "【新增模型】Qwen3.8、Ornith-1.5等最新社区高分模型，并移除部份过时模型": {
@@ -61,7 +61,7 @@
     "de-DE": "[Neue Modelle] Qwen3.8, Ornith-1.5 und andere aktuelle Community-Highscore-Modelle sowie einige veraltete Modelle wurden entfernt",
     "fr-FR": "[Nouveaux modèles] Qwen3.8, Ornith-1.5 et d'autres derniers modèles communautaires à haut score, ainsi que certains modèles obsolètes ont été supprimés.",
     "ko-KR": "[신규 모델] Qwen3.8, Ornith-1.5 등 최신 커뮤니티 고득점 모델 및 일부 구모델 삭제",
-    "$files": ["src/electron/config/system-config-source.ts(574-621)"],
+    "$files": ["src/electron/config/system-config-source.ts(557-604)"],
     "$id": 11153
   },
   "【内置模型】切换为高速模型LFM2.5-1.2B，2秒完成一次分析": {
@@ -74,7 +74,7 @@
     "de-DE": "[Eingebautes Modell] Wechseln Sie zum Hochgeschwindigkeitsmodell LFM2.5-1.2B und führen Sie eine Analyse in 2 Sekunden durch",
     "fr-FR": "[Modèle intégré] Passez au modèle haute vitesse LFM2.5-1.2B, effectuez une analyse en 2 secondes",
     "ko-KR": "[내장 모델] 고속 모델 LFM2.5-1.2B로 전환, 2초 안에 분석 완료",
-    "$files": ["src/electron/config/system-config-source.ts(631-668)"],
+    "$files": ["src/electron/config/system-config-source.ts(613-650)"],
     "$id": 11168
   },
   "【DSpark加速】内置模型在仅支持CPU推理的电脑上支持DSpark模型加速": {
@@ -87,7 +87,7 @@
     "de-DE": "[DSpark-Beschleunigung] Das integrierte Modell unterstützt die DSpark-Modellbeschleunigung auf Computern, die nur CPU-Inferenz unterstützen.",
     "fr-FR": "[Accélération DSpark] Le modèle intégré prend en charge l'accélération du modèle DSpark sur les ordinateurs qui prennent uniquement en charge l'inférence CPU.",
     "ko-KR": "[DSpark 가속] 내장 모델은 CPU 추론만 지원하는 컴퓨터에서 DSpark 모델 가속을 지원합니다.",
-    "$files": ["src/electron/config/system-config-source.ts(678-721)"],
+    "$files": ["src/electron/config/system-config-source.ts(659-702)"],
     "$id": 11170
   },
   "【目录结构生成】支持一键复制提示词到豆包等外部AI获取高质量文件目录结构": {
@@ -100,7 +100,7 @@
     "de-DE": "[Verzeichnisstrukturgenerierung] Unterstützt das Kopieren von Eingabeaufforderungswörtern mit einem Klick an eine externe KI wie Doubao, um eine hochwertige Dateiverzeichnisstruktur zu erhalten",
     "fr-FR": "[Génération de structure de répertoire] Prend en charge la copie en un clic des mots d'invite vers une IA externe telle que Doubao pour obtenir une structure de répertoire de fichiers de haute qualité",
     "ko-KR": "[디렉터리 구조 생성] 고품질 파일 디렉토리 구조를 얻기 위해 Doubao와 같은 외부 AI에 프롬프트 단어를 원클릭 복사 지원",
-    "$files": ["src/electron/config/system-config-source.ts(731-771)"],
+    "$files": ["src/electron/config/system-config-source.ts(711-751)"],
     "$id": 11171
   },
   "【支持位置】根据文件元数据坐标反查地名信息，并添加标签": {
@@ -113,7 +113,7 @@
     "de-DE": "[Unterstützter Standort] Überprüfen Sie Ortsnameninformationen basierend auf Dateimetadatenkoordinaten und fügen Sie Tags hinzu",
     "fr-FR": "[Emplacement du support] Vérifiez les informations sur le nom du lieu en fonction des coordonnées des métadonnées du fichier et ajoutez des balises",
     "ko-KR": "[지원 위치] 파일 메타데이터 좌표를 기반으로 지명 정보 확인 및 태그 추가",
-    "$files": ["src/electron/config/system-config-source.ts(781-812)"],
+    "$files": ["src/electron/config/system-config-source.ts(760-791)"],
     "$id": 11172
   },
   "【简化配置】文件信息提取简化配置文件，更智能高效的获取文件信息": {
@@ -126,7 +126,7 @@
     "de-DE": "[Vereinfachte Konfiguration] Durch die Extraktion von Dateiinformationen wird die Konfigurationsdatei vereinfacht und Dateiinformationen werden intelligenter und effizienter abgerufen.",
     "fr-FR": "[Configuration simplifiée] L'extraction des informations sur les fichiers simplifie le fichier de configuration et obtient les informations sur les fichiers de manière plus intelligente et efficace.",
     "ko-KR": "[간소화된 구성] 파일 정보 추출은 구성 파일을 단순화하고 보다 지능적이고 효율적으로 파일 정보를 얻습니다.",
-    "$files": ["src/electron/config/system-config-source.ts(822-857)"],
+    "$files": ["src/electron/config/system-config-source.ts(800-835)"],
     "$id": 11173
   },
   "【UI性能】移除所有占用GPU的UI动效": {
@@ -139,7 +139,7 @@
     "de-DE": "[UI-Leistung] Entfernen Sie alle UI-Animationen, die die GPU belegen",
     "fr-FR": "[Performances de l'interface utilisateur] Supprimez toutes les animations de l'interface utilisateur qui occupent le GPU",
     "ko-KR": "[UI 성능] GPU를 차지하는 모든 UI 애니메이션 제거",
-    "$files": ["src/electron/config/system-config-source.ts(867-891)"],
+    "$files": ["src/electron/config/system-config-source.ts(844-868)"],
     "$id": 11154
   },
   "【架构稳定】移除V3.4中引入的各硬件环境可能存在的不兼容优化": {
@@ -152,7 +152,7 @@
     "de-DE": "[Stabile Architektur] Entfernen Sie mögliche inkompatible Optimierungen, die in V3.4 für verschiedene Hardwareumgebungen eingeführt wurden",
     "fr-FR": "[Architecture stable] Supprimez les éventuelles optimisations incompatibles introduites dans la V3.4 pour divers environnements matériels",
     "ko-KR": "[안정적인 아키텍처] 다양한 하드웨어 환경에 대해 V3.4에 도입된 호환되지 않는 최적화를 제거합니다.",
-    "$files": ["src/electron/config/system-config-source.ts(901-936)"],
+    "$files": ["src/electron/config/system-config-source.ts(877-912)"],
     "$id": 11155
   },
   "新增批量更名、批量标签、批量清理": {
@@ -165,21 +165,21 @@
     "de-DE": "Chargenumbenennung, Chargenkennzeichnung und Chargenreinigung hinzugefügt",
     "fr-FR": "Ajout du renommage des lots, de l'étiquetage des lots et du nettoyage des lots",
     "ko-KR": "배치 이름 바꾸기, 배치 라벨링 및 배치 청소가 추가되었습니다.",
-    "$files": ["src/electron/config/system-config-source.ts(1099-1119)"],
+    "$files": ["src/electron/config/system-config-source.ts(1067-1087)"],
     "$id": 11156
   },
-  "Nanbeige4.2 性价比王，3G显存跑出超强智能，请升级至 V3.2+": {
-    "en-US": "Nanbeige 4.2 — The Ultimate Value Choice: Super intelligence with just 3GB VRAM, please upgrade to V3.2+",
-    "es-ES": "Nanbeige4.2 El rey de la relación calidad-precio, inteligencia potente con 3GB de VRAM, por favor actualiza a V3.2+",
-    "ar-EG": "Nanbeige4.2 الأفضل من حيث السعر والأداء، يستغل ذاكرة 3G لإظهار ذكاء فائق، يرجى الترقية إلى V3.2+",
-    "pt-PT": "Nanbeige 4.2 - O rei da relação qualidade/preço, com apenas 3GB de VRAM oferece inteligência suprema, por favor atualize para V3.2+",
-    "ru-RU": "Nanbeige4.2 — лидер по соотношению цена/качество: мощное интеллектуальное управление даже с 3 ГБ видеопамяти, обновитесь до V3.2+",
-    "ja-JP": "Nanbeige4.2 最高のコストパフォーマンス、3GB VRAMで超強力なAI処理を実現、V3.2+へのアップグレードをお願いします",
-    "de-DE": "Nanbeige 4.2 Preis-Leistungs-Sieger, 3 GB VRAM für leistungsstarke KI, bitte auf V3.2+ aktualisieren",
-    "fr-FR": "Nanbeige4.2  Le roi du rapport qualité-prix, une puissance IA ultra-performante avec 3G de VRAM, veuillez passer à la version V3.2+",
-    "ko-KR": "Nanbeige4.2 가성비 왕, 3G VRAM으로 초강력 AI 동작, V3.2+ 이상으로 업그레이드",
-    "$files": ["src/electron/config/system-config-source.ts(1151-1193)"],
-    "$id": 9894
+  "MiniCPM5-2B 性价比王，2G显存跑出超强智能": {
+    "en-US": "MiniCPM5-2B cost-effective king, 2G video memory, super smart",
+    "es-ES": "MiniCPM5-2B rey rentable, memoria de video 2G, súper inteligente",
+    "ar-EG": "ميني بي إم 5-2 بي كينج فعال من حيث التكلفة ، ذاكرة فيديو 2 جي ، ذكي للغاية",
+    "pt-PT": "Rei eficaz na redução de custos de MiniCPM5-2B, memória 2G video, esperta super",
+    "ru-RU": "MiniCPM5-2B - экономичный процессор king, 2 ГБ видеопамяти, очень умный",
+    "ja-JP": "Minicpm5-2Bの費用効果が大きい王、2Gビデオ-メモリ、極度のスマート",
+    "de-DE": "MiniCPM5-2B kostengünstiger König, 2G Videospeicher, super smart",
+    "fr-FR": "MiniCPM5-2B roi rentable, mémoire vidéo 2G, super intelligent",
+    "ko-KR": "비용 효율적인 킹,2 그램 비디오 메모리,슈퍼 스마트",
+    "$files": ["src/electron/config/system-config-source.ts(1116-1147)"],
+    "$id": 11394
   },
   "新增云端服务商 Agnes AI，永久免费API，国内网络可正常访问": {
     "en-US": "New cloud service provider Agnes AI added, with a permanently free API that is accessible from mainland China networks",
@@ -191,7 +191,7 @@
     "de-DE": "Neuer Cloud-Dienst Agnes AI hinzugefügt, dauerhaft kostenlose API, aus dem Landesinneren erreichbar",
     "fr-FR": "Nouveau fournisseur cloud ajouté  Agnes AI, API gratuite à vie, accessible normalement sur les réseaux chinois",
     "ko-KR": "Agnes AI 신규 클라우드 서비스 제공, 영구 무료 API, 중국 내 네트워크에서 정상적으로 접속 가능",
-    "$files": ["src/electron/config/system-config-source.ts(1292-1330)"],
+    "$files": ["src/electron/config/system-config-source.ts(1242-1280)"],
     "$id": 9895
   },
   "功能答疑、产品交流，欢迎前往萤核知乎官方圈子参与讨论": {
@@ -204,7 +204,7 @@
     "de-DE": "Fragen zu Funktionen, Produktaustausch – willkommen im offiziellen Firefly AI Folder Zhihu Community-Forum zur Teilnahme an Diskussionen",
     "fr-FR": "Pour des questions fonctionnelles et des échanges produits, rejoignez notre communauté officielle Firefly AI Folder sur Zhihu pour participer aux discussions",
     "ko-KR": "기능 문의 및 제품 교류는 Firefly AI Folder Zhihu 공식 커뮤니티에서 참여해 주세요",
-    "$files": ["src/electron/config/system-config-source.ts(1400-1430)"],
+    "$files": ["src/electron/config/system-config-source.ts(1346-1376)"],
     "$id": 9898
   }
 }

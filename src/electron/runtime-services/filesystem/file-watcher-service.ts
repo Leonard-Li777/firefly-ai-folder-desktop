@@ -1,12 +1,11 @@
 import chokidar from 'chokidar'
 import path from 'node:path'
 import fs from 'node:fs'
-import { logger, LogCategory, isSubPath } from '@firefly/shared'
+import { logger, LogCategory, isSubPath, calculateFileFingerprint } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
 import { analysisQueueService } from '../analysis-queue-service'
 import { loadIgnoreRules, shouldIgnoreFile } from '../analysis/analysis-ignore-service'
 import type { IIgnoreRule } from '@firefly/types'
-import { calculateFileFingerprint } from '@firefly/core-engine'
 
 /**
  * 文件监听服务类

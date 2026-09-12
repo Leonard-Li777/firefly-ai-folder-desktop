@@ -14,6 +14,7 @@ import { UnlockPrivateQuotaModal } from '../invitation/UnlockPrivateQuotaModal'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { NoWorkspaceDirectoryMessage } from '../common/NoWorkspaceDirectoryMessage'
 import { QuotaWarningBar } from './QuotaWarningBar'
+import { CleanRecommendationBanner } from './CleanRecommendationBanner'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../common/Toast'
@@ -899,7 +900,13 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
         }
       })
 
-      const filesToAdd = Array.from(uniqueFiles.values())
+      const filesToAdd: Array<{
+        path: string
+        name: string
+        size: number
+        type: string
+        expand?: boolean
+      }> = Array.from(uniqueFiles.values())
         .map((f: any) => ({
           path: f?.path,
           name: f?.name,
@@ -907,6 +914,35 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
           type: f?.isDirectory ? 'folder' : f?.extension || 'file'
         }))
         .filter(i => !!i.path)
+
+      // 检查当前所在目录是否已分析；若尚未分析，自动将当前目录作为首项前置加入队列，优先完成目录画像分析
+      const targetDir = currentPath || currentWorkspaceDirectory?.path
+      if (targetDir && typeof window.electronAPI?.getDirectoryAnalysisResult === 'function') {
+        try {
+          const dirRes = await window.electronAPI.getDirectoryAnalysisResult(targetDir)
+          const isDirAnalyzed =
+            dirRes?.isAnalyzed ||
+            (dirRes?.contextAnalysis && Object.keys(dirRes.contextAnalysis).length > 0)
+          if (!isDirAnalyzed) {
+            const dirName = targetDir.split(/[/\\]/).filter(Boolean).pop() || ''
+            const { isPathEqual } = window.electronAPI!.utils || {
+              isPathEqual: (a: string, b: string) => a.toLowerCase() === b.toLowerCase()
+            }
+            const hasDirAlready = filesToAdd.some(f => isPathEqual(f.path, targetDir))
+            if (!hasDirAlready) {
+              filesToAdd.unshift({
+                path: targetDir,
+                name: dirName,
+                size: 0,
+                type: 'folder',
+                expand: false // 仅分析目录画像，不重复展开未选中的文件
+              })
+            }
+          }
+        } catch (e) {
+          logger.warn(LogCategory.RENDERER, '检查当前目录分析状态失败:', e)
+        }
+      }
 
       if (filesToAdd.length > 0) {
         await addItems(filesToAdd)
@@ -1197,10 +1233,10 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
               store.setStage('batch-duplicate')
               navigate('/organize')
             }}
-            title={t('扫描并清理重复、临时与大文件')}
+            title={t('扫描并清理重复、临时与大文件，为 AI 分析瘦身提速')}
           >
             <MaterialIcon icon="cleaning_services" className="text-sm text-primary" />
-            <span>{t('文件清理')}</span>
+            <span>{t('目录瘦身')}</span>
           </Button>
         </div>
       </div>
@@ -1257,6 +1293,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
             setMachineId={setMachineId}
             setShowInvitationModal={setShowInvitationModal}
           />
+          <CleanRecommendationBanner />
           <div className="flex-1 flex overflow-hidden relative">
             <main className="flex-1 min-w-0 bg-card overflow-hidden flex flex-col">
               <FileExplorerLayout

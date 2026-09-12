@@ -39,7 +39,7 @@
       "company": "unsloth",
       "parameterSize": "0.8B",
       "totalSize": "579MB",
-      "recommended": false,
+      "recommended": true,
       "description": "Modelo de texto extremamente rápido e leve, adequado para ambientes low-end e de CPU, com desempenho de análise chinês balanceado.",
       "source": "huggingface",
       "quantization": "UD-Q5_K_XL",
@@ -71,6 +71,7 @@
       "totalSize": "976MB",
       "description": "Velocidade de execução extrema, adequada para ambientes de configuração extremamente baixa e suporta análise de imagens, que é menos precisa.",
       "source": "huggingface",
+      "recommended": true,
       "isMultiModal": true,
       "contextLength": 131072,
       "performance": {
@@ -125,7 +126,7 @@
     },
     {
       "id": "LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M",
-      "name": "LFM2.5 2.6B（Eficiente）",
+      "name": "LFM2.5 2.6B（Velocidade）",
       "company": "LiquidAI",
       "parameterSize": "2.6B",
       "totalSize": "1.63GB",
@@ -206,7 +207,7 @@
       },
       "tags": [
         "Multimodal",
-        "Rápido",
+        "Velocidade",
         "Áudio",
         "Inglês é melhor"
       ],
@@ -423,39 +424,9 @@
       },
       "tags": [
         "Multimodal",
-        "Rápido",
+        "Velocidade",
         "Áudio",
         "Inglês é melhor"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 3072
-      }
-    },
-    {
-      "id": "unsloth/Qwen3.5-4B-MTP-GGUF:UD-Q4_K_XL",
-      "name": "Qwen 3.5 4B MTP(Mais recente)",
-      "company": "Unsloth",
-      "parameterSize": "4B",
-      "totalSize": "3.41GB",
-      "description": "Uma versão quantificada da arquitetura MTP, combinando velocidade e qualidade.",
-      "source": "modelscope",
-      "quantization": "UD-Q4_K_XL",
-      "isMultiModal": true,
-      "contextLength": 262144,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "MTP",
-        "Multimodal",
-        "Rápido",
-        "Chinês é melhor"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -591,7 +562,7 @@
       "company": "unsloth",
       "parameterSize": "2B",
       "totalSize": "3.61GB",
-      "recommended": true,
+      "recommended": false,
       "description": "Versão quantificada QAT multimodal unificada, a arquitetura MoE economiza extremamente memória de vídeo, suporta análise de texto, imagem e áudio.",
       "source": "modelscope",
       "quantization": "UD-Q4_K_XL",
@@ -627,7 +598,7 @@
       "company": "unsloth",
       "parameterSize": "2B",
       "totalSize": "3.71GB",
-      "recommended": true,
+      "recommended": false,
       "description": "Com recursos completos, além da tecnologia MTP para velocidade, é de longe o melhor modelo para escolher.",
       "source": "huggingface",
       "quantization": "UD-Q4_K_XL",
@@ -656,12 +627,13 @@
       }
     },
     {
-      "id": "GnLOLot/MiniCPM5-1B-Claude-Opus-Fable5-Thinking-GGUF:Q4_K_M",
-      "name": "MiniCPM5 1B Claude微调（Cadeia de pensamento）",
-      "company": "GnLOLot",
-      "parameterSize": "1B",
-      "totalSize": "688MB",
-      "description": "MiniCPM5-1B, que é ajustado com base no conjunto de dados Claude Opus Fable5, suporta raciocínio em cadeia de pensamento e é bom em programação e seguimento de instruções.",
+      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
+      "name": "MiniCPM5 2B（Alta qualidade-Velocidade-Tamanho pequeno）",
+      "company": "OpenBMB",
+      "parameterSize": "2B",
+      "totalSize": "1.45GB",
+      "recommended": true,
+      "description": "Se a memória de vídeo for insuficiente e pretender classificar os ficheiros correctamente, deve escolher-me. A única desvantagem é que só suporta texto.",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -670,30 +642,57 @@
         "TEXT"
       ],
       "performance": {
-        "speed": "extreme",
+        "speed": "very_fast",
         "quality": "very_high"
       },
       "tags": [
-        "Otimização de ajuste fino",
-        "Conjunto de dados Claude",
-        "Cadeia de pensamento",
-        "Otimização de programação",
-        "Leve",
-        "Suporte à operação da CPU",
-        "Somente texto"
+        "Somente texto",
+        "Alta qualidade",
+        "Rápido",
+        "Chinês é melhor"
       ],
       "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
+        "numCtx": 16384,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
+      "name": "MiniCPM5 2B（Alta qualidade-Velocidade-Tamanho pequeno）",
+      "company": "OpenBMB",
+      "parameterSize": "2B",
+      "totalSize": "1.45GB",
+      "recommended": true,
+      "description": "Se a memória de vídeo for insuficiente e pretender classificar os ficheiros correctamente, deve escolher-me. A única desvantagem é que só suporta texto.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "very_high"
+      },
+      "tags": [
+        "Somente texto",
+        "Alta qualidade",
+        "Rápido",
+        "Chinês é melhor"
+      ],
+      "recommendedConfig": {
+        "numCtx": 16384,
+        "numPredict": 4096
       }
     },
     {
       "id": "Abiray/Nanbeige4.2-3B-GGUF:Q4_K_S",
-      "name": "Nanbeige 4.2 3B (além de 9B)",
+      "name": "Nanbeige 4.2 3B (melhor)",
       "company": "Abiray",
       "parameterSize": "3B",
       "totalSize": "2.33GB",
-      "recommended": true,
+      "recommended": false,
       "description": "Corpo 3B em aço duro 9B, altamente recomendado, mas suporta apenas texto.",
       "source": "modelscope",
       "quantization": "Q4_K_S",
@@ -717,42 +716,12 @@
       }
     },
     {
-      "id": "owao/Nanbeige4.2-3B-GGUF:Q4_K_M",
-      "name": "Nanbeige 4.2 3B (além de 9B)",
-      "company": "owao",
-      "parameterSize": "3B",
-      "totalSize": "2.40GB",
-      "recommended": false,
-      "description": "Corpo 3B em aço duro 9B, altamente recomendado, mas suporta apenas texto.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "Fuga da prisão",
-        "Sem censura",
-        "NSFW",
-        "Somente texto"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
       "id": "mradermacher/Nanbeige4.2-3B-heretic-i1-GGUF:i1-Q5_K_M",
       "name": "Nanbeige 4.2 3B（Otimização de jailbreak）",
       "company": "mradermacher",
       "parameterSize": "3B",
       "totalSize": "2.78GB",
-      "recommended": true,
+      "recommended": false,
       "description": "Corpo 3B em aço duro 9B, a versão jailbroken do i1 tem maior precisão de quantização, mas suporta apenas texto.",
       "source": "huggingface",
       "quantization": "i1-Q5_K_M",
@@ -871,14 +840,15 @@
       }
     },
     {
-      "id": "JonathanColetti/Qwen3.8-27B-Uncensored-GGUF:Q4_K_M",
-      "name": "Qwen 3.8 27B（O Jailbreak mais forte）",
-      "company": "JonathanColetti",
+      "id": "unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_M",
+      "name": "Qwen 3.8 27B（Mais forte）",
+      "company": "unsloth",
       "parameterSize": "27B",
-      "totalSize": "16.52GB",
-      "description": "Qwen3.8-27B é uma versão quantitativa sem censura que retém longas previsões do MTP e oferece suporte à análise de texto e imagem.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
+      "totalSize": "16.2GB",
+      "recommended": true,
+      "description": "A versão oficial de quantização dinâmica UD do unsloth, com perda de qualidade extremamente baixa, suporta análise de texto e imagem e requer maior memória de vídeo.",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_M",
       "isMultiModal": true,
       "contextLength": 131072,
       "capabilities": [
@@ -887,15 +857,13 @@
       ],
       "performance": {
         "speed": "slow",
-        "quality": "high"
+        "quality": "very_high"
       },
       "tags": [
-        "Sem censura",
-        "Fuga da prisão",
-        "NSFW",
         "Multimodal",
         "Parâmetros grandes",
-        "MTP"
+        "Alta precisão",
+        "Mais forte"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -903,59 +871,32 @@
       }
     },
     {
-      "id": "empero-ai/Qwen3.8-2B-Distill-GGUF:Q4_K_M",
-      "name": "Qwen 3.8 2B（Destilação）",
-      "company": "empero-ai",
-      "parameterSize": "2B",
-      "totalSize": "1.22GB",
+      "id": "HauhauCS/Qwen3.8-27B-Uncensored-HauhauCS-Aggressive-MTP-GGUF:Q4_K_P",
+      "name": "Qwen 3.8 27B（Fuga da prisão）",
+      "company": "HauhauCS",
+      "parameterSize": "27B",
+      "totalSize": "17.56GB",
       "recommended": true,
-      "description": "Qwen3.8 Versão destilada, velocidade máxima de execução, suporta apenas análise de texto.",
+      "description": "Qwen3.8-27B é uma versão radical de descensura. A quantização da série P mantém maior precisão nos tensores principais, sem censura e oferece suporte à análise de imagens.",
       "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
+      "quantization": "Q4_K_P",
+      "isMultiModal": true,
       "contextLength": 131072,
       "capabilities": [
-        "TEXT"
+        "TEXT",
+        "IMAGE"
       ],
       "performance": {
-        "speed": "extreme",
-        "quality": "high"
-      },
-      "tags": [
-        "Destilação",
-        "Leve",
-        "Suporte à operação da CPU",
-        "Somente texto"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "empero-ai/Qwen3.8-9B-Distill-GGUF:Q4_K_M",
-      "name": "Qwen 3.8 9B（Destilação）",
-      "company": "empero-ai",
-      "parameterSize": "9B",
-      "totalSize": "5.38GB",
-      "recommended": true,
-      "description": "Qwen3.8 Versão destilada, herda a capacidade de raciocínio profundo do modelo grande, suporta apenas análise de texto.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
+        "speed": "slow",
         "quality": "very_high"
       },
       "tags": [
-        "Destilação",
-        "Raciocínio",
-        "Somente texto",
-        "Otimização de ajuste fino"
+        "Fuga da prisão",
+        "Sem censura",
+        "NSFW",
+        "Multimodal",
+        "Parâmetros grandes",
+        "MTP"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -1020,35 +961,6 @@
       "recommendedConfig": {
         "numCtx": 8192,
         "numPredict": 4096
-      }
-    },
-    {
-      "id": "XHToken/Spark-X2.5-1.7B-GGUF",
-      "name": "Spark X2.5 1.7B（Leve）",
-      "company": "XHToken",
-      "parameterSize": "1.7B",
-      "totalSize": "3.19GB",
-      "description": "O modelo de texto Spark X2.5 1.7 b, leve e eficiente, suporta apenas a análise de texto.",
-      "source": "huggingface",
-      "quantization": "",
-      "disabled": true,
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "Leve",
-        "Suporte à operação da CPU",
-        "Somente texto"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
       }
     }
   ]

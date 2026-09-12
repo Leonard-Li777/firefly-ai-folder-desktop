@@ -200,10 +200,10 @@ export class QueueManager {
       return
     }
 
-    // 优先处理文件，其次才是目录，使文件先被分析
+    // 优先处理目录画像，使其先被分析，为后续子文件的分析提供上下文指导与规则约束
     inputs.sort((a, b) => {
-      if (a.type === 'folder' && b.type !== 'folder') return 1
-      if (a.type !== 'folder' && b.type === 'folder') return -1
+      if (a.type === 'folder' && b.type !== 'folder') return -1
+      if (a.type !== 'folder' && b.type === 'folder') return 1
       return 0
     })
 
@@ -380,7 +380,8 @@ export class QueueManager {
           updatedAt: now,
           progress: 0,
           forceReanalyze: shouldForceReanalyze,
-          isAnalyzed: isAlreadyAnalyzed
+          isAnalyzed: isAlreadyAnalyzed,
+          expand: file.expand
         }
 
         const dbId = databaseService.enqueueAnalysisSync({

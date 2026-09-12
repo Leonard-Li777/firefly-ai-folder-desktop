@@ -37,6 +37,7 @@ import { StructureView } from './components/StructureView'
 import { OrganizingView } from './components/OrganizingView'
 import { DoneView } from './components/DoneView'
 import { SplitPane } from '../../common/SplitPane'
+import { OrganizeMode } from './types'
 
 export const Organize: React.FC = () => {
   useVoerkaI18n(i18nScope)
@@ -188,6 +189,13 @@ export const Organize: React.FC = () => {
       organizeMode !== 'fast-organize' &&
       organizeMode !== 'fine-organize')
 
+  const [customFormMode, setCustomFormMode] = useState<OrganizeMode>('fast-organize')
+
+  const openCustomForm = useCallback((mode: OrganizeMode) => {
+    setCustomFormMode(mode)
+    setShowCustomForm(true)
+  }, [setShowCustomForm])
+
   const hasClassifiedInTree = useMemo(() => {
     const tree = finalTree?.length ? finalTree : draftTree
     if (!Array.isArray(tree) || tree.length === 0) return false
@@ -246,9 +254,10 @@ export const Organize: React.FC = () => {
         (await window.electronAPI?.virtualDirectory.generateExternalDirectoryPlanPrompt({
           fileCount: totalFiles,
           totalDirCount,
-          fileTypeDistribution: extSummary || '通用文件',
-          tagsSection: tagsList ? `- 核心特征与高频标签：${tagsList}` : '',
-          fileStructurePreview: sampleNames.map(name => `* ${name}`).join('\n')
+          fileTypeDistribution: extSummary || t('通用文件'),
+          tagsSection: tagsList ? `- ${t('核心特征与高频标签')}：${tagsList}` : '',
+          fileStructurePreview: sampleNames.map(name => `* ${name}`).join('\n'),
+          organizeMode
         })) || ''
 
       if (promptText) {
@@ -261,12 +270,10 @@ export const Organize: React.FC = () => {
       console.error('复制提示词失败:', err)
       toast.error(t('复制失败，请重试'))
     }
-  }, [toOrganizeFiles, highFrequencyTags])
+  }, [toOrganizeFiles, highFrequencyTags, organizeMode])
 
   const isShowLocalAiBanner =
-    isLocalMode &&
-    organizeMode !== 'fast-organize' &&
-    (stage === 'candidates' || stage === 'structure')
+    isLocalMode && (stage === 'candidates' || stage === 'structure')
 
   return (
     <>
@@ -398,10 +405,11 @@ export const Organize: React.FC = () => {
             {stage === 'batch-duplicate' && (
               <>
                 <span
-                  className="text-xs text-muted-foreground font-medium px-2.5 py-1 bg-muted/30 rounded-md select-none shrink-0 truncate"
-                  title={t('本页是对真实目录物理文件处理')}
+                  className="text-xs text-emerald-600 dark:text-emerald-400 font-medium px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-md select-none shrink-0 truncate flex items-center gap-1"
+                  title={t('删除文件将安全移入系统回收站，随时可还原')}
                 >
-                  {t('本页是对真实目录物理文件处理')}
+                  <MaterialIcon icon="verified_user" className="text-sm" />
+                  {t('回收站安全保护，支持随时还原')}
                 </span>
                 <Button
                   variant="destructive"
@@ -467,13 +475,30 @@ export const Organize: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowCustomForm(true)}
+                  onClick={() => openCustomForm('fast-organize')}
                   disabled={isGeneratingCandidates}
-                  className="text-xs gap-1 h-8 shrink-0"
-                  title={t('自定义目录树（推荐）')}
+                  className={cn(
+                    'text-xs gap-1 h-8 shrink-0 font-medium',
+                    organizeMode === 'fast-organize' && 'border-emerald-500/50 text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10'
+                  )}
+                  title={t('快速整理自定义目录树')}
                 >
-                  <MaterialIcon icon="edit_note" className="text-sm shrink-0" />
-                  <span className="truncate">{t('自定义目录树（推荐）')}</span>
+                  <MaterialIcon icon="bolt" className="text-sm shrink-0 text-emerald-500" />
+                  <span className="truncate">{t('快速整理自定义目录树')}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openCustomForm('fine-organize')}
+                  disabled={isGeneratingCandidates}
+                  className={cn(
+                    'text-xs gap-1 h-8 shrink-0 font-medium',
+                    organizeMode === 'fine-organize' && 'border-purple-500/50 text-purple-600 dark:text-purple-400 bg-purple-500/5 hover:bg-purple-500/10'
+                  )}
+                  title={t('精细整理自定义目录树')}
+                >
+                  <MaterialIcon icon="psychology" className="text-sm shrink-0 text-purple-500" />
+                  <span className="truncate">{t('精细整理自定义目录树')}</span>
                 </Button>
               </>
             )}
@@ -751,7 +776,11 @@ export const Organize: React.FC = () => {
                             <Button
                               size="sm"
                               variant="default"
-                              onClick={() => setShowCustomForm(true)}
+                              onClick={() =>
+                                openCustomForm(
+                                  organizeMode === 'fine-organize' ? 'fine-organize' : 'fast-organize'
+                                )
+                              }
                               className="h-6 text-xs gap-1 border-amber-500/40 text-amber-900 dark:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 hover:text-amber-950 dark:hover:text-amber-100 rounded-md px-2 font-bold shrink-0 shadow-xs cursor-pointer"
                             >
                               <MaterialIcon icon="edit_note" className="text-xs" />
@@ -912,6 +941,7 @@ export const Organize: React.FC = () => {
           initialName={initialVDirInfo?.name}
           initialStrategy={initialVDirInfo?.strategy}
           workspacePath={currentWorkspaceDirectory?.path}
+          targetMode={customFormMode}
         />
 
         {showEditStrategy && (

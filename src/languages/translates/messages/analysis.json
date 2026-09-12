@@ -9,7 +9,7 @@
     "de-DE": "Analysieren Sie erneut und bestätigen Sie",
     "fr-FR": "Réanalyser et confirmer",
     "ko-KR": "재분석 및 확인",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(1673-1683)"],
+    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(1621-1631)"],
     "$id": 7947
   },
   "检测到所选的文件中包含在当前模式下已完成分析的文件，您可以选择跳过这些文件或重新进行分析。": {
@@ -22,7 +22,7 @@
     "de-DE": "Es wurde festgestellt, dass die ausgewählten Dateien Dateien enthalten, die bereits im aktuellen Modus analysiert wurden. Sie können diese Dateien überspringen oder erneut analysieren.",
     "fr-FR": "Il a été détecté que les fichiers sélectionnés contiennent des fichiers qui ont déjà été analysés dans le mode actuel. Vous pouvez choisir d'ignorer ces fichiers ou de les réanalyser.",
     "ko-KR": "선택한 파일에는 현재 모드에서 이미 분석된 파일이 포함되어 있는 것으로 감지되었습니다. 이러한 파일을 건너뛰거나 다시 분석하도록 선택할 수 있습니다.",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(1804-1869)"],
+    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(1749-1813)"],
     "$id": 7950
   },
   "取消": {
@@ -36,8 +36,8 @@
     "fr-FR": "Annuler",
     "ko-KR": "취소",
     "$files": [
-      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(2876-2882)",
-      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7243-7249)"
+      "src/renderer/components/analysis/AnalysisConfirmModal.tsx(2791-2797)",
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7062-7068)"
     ],
     "$id": 10239
   },
@@ -51,7 +51,7 @@
     "de-DE": "Analysieren Sie erneut",
     "fr-FR": "Réanalyser",
     "ko-KR": "재분석",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(3155-3163)"],
+    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(3063-3071)"],
     "$id": 7951
   },
   "跳过已分析文件": {
@@ -64,7 +64,7 @@
     "de-DE": "Analysierte Dateien überspringen",
     "fr-FR": "Ignorer les fichiers analysés",
     "ko-KR": "분석된 파일 건너뛰기",
-    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(3402-3413)"],
+    "$files": ["src/renderer/components/analysis/AnalysisConfirmModal.tsx(3303-3314)"],
     "$id": 7956
   },
   "分析失败": {
@@ -707,7 +707,7 @@
     "de-DE": "Intelligente Dateinamenerweiterungsbestätigung",
     "fr-FR": "Confirmation intelligente de l'extension du nom de fichier",
     "ko-KR": "스마트 파일명 확장자 확인",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2143-2157)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2077-2091)"],
     "$id": 10231
   },
   "此操作仅会更新智能文件名，不会影响磁盘中的原始文件。": {
@@ -720,7 +720,7 @@
     "de-DE": "Dieser Vorgang aktualisiert nur den intelligenten Dateinamen und hat keinen Einfluss auf die ursprüngliche Datei auf der Festplatte.",
     "fr-FR": "Cette opération ne mettra à jour que le nom de fichier intelligent, sans affecter le fichier original sur le disque.",
     "ko-KR": "이 작업은 스마트 파일명만 업데이트하며, 디스크의 원본 파일에는 영향을 주지 않습니다.",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2219-2249)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2151-2181)"],
     "$id": 10232
   },
   "智能文件名": {
@@ -733,7 +733,7 @@
     "de-DE": "Intelligente Dateinamen",
     "fr-FR": "Noms de fichiers intelligents",
     "ko-KR": "스마트 파일 이름",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2550-2559)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2476-2485)"],
     "$id": 7682
   },
   "定位": {
@@ -746,7 +746,7 @@
     "de-DE": "Standort",
     "fr-FR": "Positionner",
     "ko-KR": "위치",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2611-2617)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2536-2542)"],
     "$id": 10235
   },
   "扩展名确认": {
@@ -759,7 +759,7 @@
     "de-DE": "Erweiterungsbestätigung",
     "fr-FR": "Confirmation de l'extension",
     "ko-KR": "확장자 확인",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2645-2654)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(2569-2578)"],
     "$id": 10236
   },
   "在文件夹中打开": {
@@ -772,7 +772,7 @@
     "de-DE": "Im Ordner öffnen",
     "fr-FR": "Ouvrir dans le dossier",
     "ko-KR": "폴더에서 열기",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(4682-4693)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(4558-4569)"],
     "$id": 10237
   },
   "不更名": {
@@ -785,7 +785,7 @@
     "de-DE": "Umbenennen unterlassen",
     "fr-FR": "Ne pas renommer",
     "ko-KR": "이름 변경 안 함",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(5597-5604)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(5454-5461)"],
     "$id": 10238
   },
   "确认": {
@@ -798,7 +798,7 @@
     "de-DE": "Bestätigen",
     "fr-FR": "Confirmer",
     "ko-KR": "확인하다",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7317-7323)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7134-7140)"],
     "$id": 10240
   },
   "拖拽改变分栏高度": {
@@ -811,7 +811,7 @@
     "de-DE": "Spaltenhöhe durch Ziehen ändern",
     "fr-FR": "Glisser pour modifier la hauteur des panneaux",
     "ko-KR": "컬럼 높이 드래그로 조정",
-    "$files": ["src/renderer/components/analysis/QueueSplitPanel.tsx(2038-2050)"],
+    "$files": ["src/renderer/components/analysis/QueueSplitPanel.tsx(1986-1998)"],
     "$id": 8148
   }
 }

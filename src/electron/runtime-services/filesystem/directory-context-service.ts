@@ -640,6 +640,20 @@ export class DirectoryContextService {
           LogCategory.DIRECTORY_CONTEXT,
           `成功保存目录上下文分析: ${directoryPath}, changes: ${result.changes}`
         )
+        // 广播目录画像更新事件给所有前端窗口
+        try {
+          const { BrowserWindow } = require('electron')
+          BrowserWindow.getAllWindows().forEach((win: any) => {
+            if (!win.isDestroyed()) {
+              win.webContents.send('directory-context-updated', {
+                directoryPath,
+                contextAnalysis: mergedAnalysis
+              })
+            }
+          })
+        } catch (e) {
+          logger.warn(LogCategory.DIRECTORY_CONTEXT, '广播目录上下文更新事件失败:', e)
+        }
       }
     } catch (error) {
       logger.error(LogCategory.DIRECTORY_CONTEXT, '保存上下文分析失败:', error)
@@ -959,6 +973,20 @@ export class DirectoryContextService {
       })()
 
       logger.info(LogCategory.DIRECTORY_CONTEXT, `已清除目录上下文分析: ${directoryPath}`)
+      // 广播目录画像清空事件给所有前端窗口
+      try {
+        const { BrowserWindow } = require('electron')
+        BrowserWindow.getAllWindows().forEach((win: any) => {
+          if (!win.isDestroyed()) {
+            win.webContents.send('directory-context-updated', {
+              directoryPath,
+              contextAnalysis: null
+            })
+          }
+        })
+      } catch (e) {
+        logger.warn(LogCategory.DIRECTORY_CONTEXT, '广播目录上下文清空事件失败:', e)
+      }
     } catch (error) {
       logger.error(LogCategory.DIRECTORY_CONTEXT, '清除目录上下文分析失败:', error)
     }

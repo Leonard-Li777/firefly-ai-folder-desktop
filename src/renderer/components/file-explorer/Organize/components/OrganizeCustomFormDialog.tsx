@@ -3,16 +3,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '../../../ui/button'
 import { Input } from '../../../ui/input'
 import { Textarea } from '../../../ui/textarea'
-import { MaterialIcon } from '../../../../lib/utils'
+import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
+
+import { OrganizeMode } from '../types'
 
 interface OrganizeCustomFormDialogProps {
   open: boolean
   onClose: () => void
-  onSubmit: (name: string, strategy: string) => void
+  onSubmit: (name: string, strategy: string, mode?: OrganizeMode) => void
   initialName?: string
   initialStrategy?: string
   workspacePath?: string
+  targetMode?: OrganizeMode
 }
 
 const DEFAULT_STRATEGY = `以办公文员视角，按以下目录结构整理文档：
@@ -41,11 +44,14 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
   onSubmit,
   initialName = '',
   initialStrategy = '',
-  workspacePath
+  workspacePath,
+  targetMode = 'fast-organize'
 }) => {
   const [name, setName] = useState(initialName)
   const [strategy, setStrategy] = useState(initialStrategy)
   const [isDirty, setIsDirty] = useState(false)
+
+  const isFastMode = targetMode === 'fast-organize'
 
   useEffect(() => {
     if (open) {
@@ -78,7 +84,7 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
     e.preventDefault()
     if (!name.trim()) return
     const finalStrategy = isDirty ? strategy.trim() : DEFAULT_STRATEGY.trim()
-    onSubmit(name.trim(), finalStrategy)
+    onSubmit(name.trim(), finalStrategy, targetMode)
     // 保存到 localStorage
     if (workspacePath) {
       localStorage.setItem(`organize_custom_name_${workspacePath}`, name.trim())
@@ -114,11 +120,25 @@ export const OrganizeCustomFormDialog: React.FC<OrganizeCustomFormDialogProps> =
                 <MaterialIcon icon="settings_suggest" className="text-xl" />
               </div>
               <div>
-                <DialogTitle className="text-lg font-bold tracking-tight">
-                  {t('自定义目录树')}
+                <DialogTitle className="text-lg font-bold tracking-tight flex items-center gap-2">
+                  <span>
+                    {isFastMode ? t('快速整理自定义目录树') : t('精细整理自定义目录树')}
+                  </span>
+                  <span
+                    className={cn(
+                      'text-xs font-semibold px-2 py-0.5 rounded-full border',
+                      isFastMode
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                        : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20'
+                    )}
+                  >
+                    {isFastMode ? t('快速整理模式') : t('精细整理模式')}
+                  </span>
                 </DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {t('手动创建专属的整理视角与最终的目录树')}
+                  {isFastMode
+                    ? t('贴入外部AI生成的目录树，通过高频特征直接完成极速归类')
+                    : t('贴入外部AI生成的目录树，后续将结合模型进行深度语义推理归类')}
                 </p>
               </div>
             </div>

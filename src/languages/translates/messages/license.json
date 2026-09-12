@@ -297,7 +297,7 @@
     "ko-KR": "승인 확인 실패",
     "$files": [
       "src/renderer/components/license/EnterpriseLicenseForm.tsx(12809-12819)",
-      "src/renderer/components/license/LicenseGateway.tsx(2591-2601)"
+      "src/renderer/components/license/LicenseGateway.tsx(2523-2533)"
     ],
     "$id": 10518
   },
@@ -311,7 +311,7 @@
     "de-DE": "Online-Verifizierung erfolgreich!",
     "fr-FR": "Vérification en ligne réussie !",
     "ko-KR": "온라인 인증에 성공했습니다!",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(1334-1345)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(1299-1310)"],
     "$id": 10519
   },
   "网络连接失败，请检查设置": {
@@ -324,7 +324,7 @@
     "de-DE": "Netzwerkverbindung fehlgeschlagen, bitte überprüfen Sie die Einstellungen",
     "fr-FR": "La connexion réseau a échoué, veuillez vérifier les paramètres",
     "ko-KR": "네트워크 연결에 실패했습니다. 설정을 확인하세요.",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(1421-1437)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(1383-1399)"],
     "$id": 10520
   },
   "在线验证过程中发生错误": {
@@ -337,7 +337,7 @@
     "de-DE": "Bei der Online-Verifizierung ist ein Fehler aufgetreten",
     "fr-FR": "Une erreur s'est produite lors de la vérification en ligne",
     "ko-KR": "온라인 인증 중 오류가 발생했습니다.",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(1484-1499)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(1443-1458)"],
     "$id": 10521
   },
   "软件授权验证": {
@@ -350,7 +350,7 @@
     "de-DE": "Überprüfung der Softwareautorisierung",
     "fr-FR": "Vérification de l'autorisation du logiciel",
     "ko-KR": "소프트웨어 인증 확인",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(2098-2108)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(2043-2053)"],
     "$id": 10522
   },
   "检测到系统时间异常，请校准时间后再运行。": {
@@ -363,7 +363,7 @@
     "de-DE": "Es wurde eine Systemzeitanomalie festgestellt. Bitte kalibrieren Sie die Zeit vor dem Ausführen.",
     "fr-FR": "Anomalie de l'heure du système détectée, veuillez calibrer l'heure avant de l'exécuter.",
     "ko-KR": "시스템 시간 이상이 감지되었습니다. 실행하기 전에 시간을 보정하십시오.",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(2241-2265)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(2183-2207)"],
     "$id": 10523
   },
   "当前处于离线环境，个人需要联网，企业需要获取离线授权才能继续使用。": {
@@ -376,7 +376,7 @@
     "de-DE": "Es befindet sich derzeit in einer Offline-Umgebung, Einzelpersonen müssen mit dem Internet verbunden sein und Unternehmen müssen eine Offline-Autorisierung erhalten, um es weiterhin verwenden zu können.",
     "fr-FR": "Il se trouve actuellement dans un environnement hors ligne, les individus doivent être connectés à Internet et les entreprises doivent obtenir une autorisation hors ligne pour continuer à l'utiliser.",
     "ko-KR": "현재는 오프라인 환경이므로 개인은 인터넷에 연결되어 있어야 하며, 기업은 이를 계속 사용하려면 오프라인 승인을 받아야 합니다.",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(2286-2323)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(2227-2264)"],
     "$id": 10524
   },
   "个人，我已打开网络": {
@@ -389,7 +389,7 @@
     "de-DE": "Persönlich habe ich das Internet eingeschaltet",
     "fr-FR": "Personnellement, j'ai activé Internet",
     "ko-KR": "개인적으로 인터넷을 켰는데",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(3207-3220)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(3122-3135)"],
     "$id": 10525
   },
   "企业，离线授权使用": {
@@ -402,7 +402,7 @@
     "de-DE": "Enterprise, autorisierte Offline-Nutzung",
     "fr-FR": "Entreprise, utilisation autorisée hors ligne",
     "ko-KR": "기업, 오프라인 승인 사용",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(3640-3653)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(3542-3555)"],
     "$id": 10526
   },
   "返回": {
@@ -415,7 +415,7 @@
     "de-DE": "Zurückkehren",
     "fr-FR": "Retour",
     "ko-KR": "반품",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(4232-4238)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(4115-4121)"],
     "$id": 10527
   },
   "本软件受版权保护，合法授权后方可解锁。": {
@@ -428,7 +428,7 @@
     "de-DE": "Diese Software ist urheberrechtlich geschützt und kann nur nach Erhalt einer gültigen Lizenz freigeschaltet werden.",
     "fr-FR": "Ce logiciel est protégé par le droit d'auteur et doit être débloqué après obtention d'une autorisation légale.",
     "ko-KR": "이 소프트웨어는 저작권의 보호를 받으며, 합법적인 권한 부여 후에만 잠금이 해제됩니다.",
-    "$files": ["src/renderer/components/license/LicenseGateway.tsx(4395-4418)"],
+    "$files": ["src/renderer/components/license/LicenseGateway.tsx(4273-4296)"],
     "$id": 10528
   }
 }

@@ -9,7 +9,7 @@
     "de-DE": "Unbegrenztes Kontingent an privaten Verzeichnissen freigeschaltet",
     "fr-FR": "Quota illimité débloqué de répertoires privés",
     "ko-KR": "개인 디렉토리의 무제한 할당량 잠금 해제",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(1822-1837)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(1765-1780)"],
     "$id": 10477
   },
   "解锁失败": {
@@ -22,7 +22,7 @@
     "de-DE": "Entsperren fehlgeschlagen",
     "fr-FR": "Échec du déverrouillage",
     "ko-KR": "잠금해제 실패",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(1914-1922)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(1854-1862)"],
     "$id": 10478
   },
   "解锁请求失败": {
@@ -35,7 +35,7 @@
     "de-DE": "Die Entsperranforderung ist fehlgeschlagen",
     "fr-FR": "La demande de déverrouillage a échoué",
     "ko-KR": "잠금해제 요청 실패",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(1968-1978)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(1905-1915)"],
     "$id": 10479
   },
   "解锁私有目录无限额度": {
@@ -48,7 +48,7 @@
     "de-DE": "Schalten Sie unbegrenzt private Verzeichnisse frei",
     "fr-FR": "Débloquez des répertoires privés illimités",
     "ko-KR": "무제한 개인 디렉토리 잠금 해제",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(2545-2559)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(2464-2478)"],
     "$id": 10480
   },
   "私有目录有一定的分析额度限制，消耗萤火即可解锁无限额度，不再受限。": {
@@ -61,7 +61,7 @@
     "de-DE": "Für das private Verzeichnis gilt ein bestimmtes Analysekontingent. Sie können das unbegrenzte Kontingent freischalten, indem Sie Firecores konsumieren, das nicht mehr begrenzt ist.",
     "fr-FR": "Le répertoire privé a une certaine limite de quota d'analyse. Vous pouvez débloquer le quota illimité en consommant du Firecores, qui n'est plus limité.",
     "ko-KR": "개인 디렉터리에는 특정 분석 할당량 제한이 있습니다. 더 이상 제한이 없는 Firecores를 소비하여 무제한 할당량을 잠금 해제할 수 있습니다.",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(2686-2723)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(2602-2639)"],
     "$id": 10481
   },
   "当前萤火": {
@@ -74,7 +74,7 @@
     "de-DE": "Aktuelle Firecores",
     "fr-FR": "Firecores actuel",
     "ko-KR": "현재 Firecores",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3069-3077)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(2977-2985)"],
     "$id": 10482
   },
   "萤火": {
@@ -87,7 +87,7 @@
     "de-DE": "Firecores",
     "fr-FR": "Firecores",
     "ko-KR": "Firecores",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3207-3213)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3113-3119)"],
     "$id": 10483
   },
   "当前分析额度": {
@@ -100,7 +100,7 @@
     "de-DE": "Aktueller Analysebetrag",
     "fr-FR": "Montant de l'analyse actuelle",
     "ko-KR": "현재 분석금액",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3427-3437)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3329-3339)"],
     "$id": 10484
   },
   "不限数量": {
@@ -113,7 +113,7 @@
     "de-DE": "Unbegrenzte Anzahl",
     "fr-FR": "Nombre illimité",
     "ko-KR": "개수 제한 없음",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3553-3561)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3453-3461)"],
     "$id": 10485
   },
   "个文件": {
@@ -126,7 +126,7 @@
     "de-DE": "Dateien",
     "fr-FR": "Fichiers",
     "ko-KR": "파일",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3623-3630)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3522-3529)"],
     "$id": 10487
   },
   "解锁后您将获得": {
@@ -139,7 +139,7 @@
     "de-DE": "Nach dem Entsperren erhalten Sie",
     "fr-FR": "Après le déverrouillage, vous obtiendrez",
     "ko-KR": "잠금을 해제하면 얻을 수 있습니다",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3978-3989)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(3868-3879)"],
     "$id": 10488
   },
   "私有目录分析文件数量无上限": {
@@ -152,7 +152,7 @@
     "de-DE": "Es gibt keine Obergrenze für die Anzahl der Analysedateien in einem privaten Verzeichnis",
     "fr-FR": "Il n'y a pas de limite supérieure au nombre de fichiers d'analyse dans un répertoire privé",
     "ko-KR": "개인 디렉터리의 분석 파일 수에는 상한이 없습니다.",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(4248-4265)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(4133-4150)"],
     "$id": 10489
   },
   "永久有效，一次解锁长期使用": {
@@ -165,7 +165,7 @@
     "de-DE": "Dauerhaft gültig, sobald es für eine langfristige Nutzung freigeschaltet wird",
     "fr-FR": "Valable en permanence, une fois débloqué pour une utilisation à long terme",
     "ko-KR": "영구적으로 유효하며 장기간 사용을 위해 잠금 해제되면",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(4453-4470)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(4334-4351)"],
     "$id": 10490
   },
   "消耗 {cost} 萤火": {
@@ -178,7 +178,7 @@
     "de-DE": "Verbrauchen Sie {cost} Firecores",
     "fr-FR": "Consommez {cost} Firecores",
     "ko-KR": "{cost}개의 Firecores을 섭취하세요",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(4782-4798)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(4657-4673)"],
     "$id": 10491
   },
   "刷新状态": {
@@ -191,7 +191,7 @@
     "de-DE": "Status aktualisieren",
     "fr-FR": "Actualiser l'état",
     "ko-KR": "상태 새로고침",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(5400-5408)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(5256-5264)"],
     "$id": 10492
   },
   "处理中...": {
@@ -204,7 +204,7 @@
     "de-DE": "Verarbeitung...",
     "fr-FR": "Traitement...",
     "ko-KR": "처리 중...",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(5892-5902)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(5734-5744)"],
     "$id": 10493
   },
   "兑换无限额度 ({cost} 萤火)": {
@@ -217,7 +217,7 @@
     "de-DE": "Unbegrenztes Einlösungslimit ({cost} Firecores)",
     "fr-FR": "Limite d'échange illimitée ({cost} Firecores)",
     "ko-KR": "무제한 상환 한도({cost} Firecores)",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(5923-5945)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(5764-5786)"],
     "$id": 10494
   },
   "收集萤火": {
@@ -230,7 +230,7 @@
     "de-DE": "Holen Sie sich Firecores",
     "fr-FR": "Obtenez des Firecores",
     "ko-KR": "Firecores을 얻으세요",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(6270-6278)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(6105-6113)"],
     "$id": 10495
   },
   "稍后再说": {
@@ -243,7 +243,7 @@
     "de-DE": "Später",
     "fr-FR": "Plus tard",
     "ko-KR": "나중에 하기",
-    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(6413-6421)"],
+    "$files": ["src/renderer/components/invitation/UnlockPrivateQuotaModal.tsx(6245-6253)"],
     "$id": 10496
   }
 }

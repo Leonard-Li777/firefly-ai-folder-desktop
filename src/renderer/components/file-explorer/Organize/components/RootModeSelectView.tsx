@@ -37,12 +37,13 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
     {
       stage: 'batch-duplicate' as Stage,
       title: t('批量清理'),
-      tag: t('警告：真实文件操作'),
+      tag: t('回收站安全保护'),
       icon: 'cleaning_services',
-      description: t('基于FireFly Omni智能分析并安全清理冗余文件以及执行文件修复。'),
+      description: t('基于FireFly Omni智能分析并安全清理冗余文件，所有删除均移入系统回收站，支持随时还原。'),
       accentColor: 'from-amber-500/10 via-orange-500/5 to-transparent',
       iconColor: 'text-amber-500 bg-amber-500/10',
-      badgeVariant: 'destructive' as const
+      badgeVariant: 'secondary' as const,
+      badgeClassName: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
     },
     {
       stage: 'mode-select' as Stage,
@@ -101,7 +102,7 @@ export const RootModeSelectView: React.FC<RootModeSelectViewProps> = ({
                   >
                     <MaterialIcon icon={mode.icon} className="text-2xl" />
                   </div>
-                  <Badge variant={mode.badgeVariant} className="font-medium text-xs">
+                  <Badge variant={mode.badgeVariant} className={cn('font-medium text-xs', mode.badgeClassName)}>
                     {mode.tag}
                   </Badge>
                 </div>

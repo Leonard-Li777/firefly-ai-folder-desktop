@@ -62,6 +62,7 @@ export interface EnqueueInput {
   size: number
   type: string
   forceReanalyze?: boolean
+  expand?: boolean // 目录项是否在分析完画像后递归展开子项（默认为 true，若为 false 则仅分析目录画像）
 }
 
 /**

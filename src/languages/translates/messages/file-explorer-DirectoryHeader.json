@@ -9,7 +9,7 @@
     "de-DE": "Echtes Verzeichnis",
     "fr-FR": "Vrai répertoire",
     "ko-KR": "실제 디렉토리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3158-3166)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3275-3283)"],
     "$id": 8277
   },
   "已分析": {
@@ -22,7 +22,7 @@
     "de-DE": "Analysiert\r",
     "fr-FR": "Analysé",
     "ko-KR": "분석 완료",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3263-3270)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3380-3387)"],
     "$id": 8278
   },
   "有新分析完成的文件，点击「已分析」查看": {
@@ -35,7 +35,7 @@
     "de-DE": "Wenn neu analysierte Dateien vorhanden sind, klicken Sie auf „Analysiert“, um sie anzuzeigen.",
     "fr-FR": "S'il y a des fichiers nouvellement analysés, cliquez sur \"Analysé\" pour les afficher.",
     "ko-KR": "새로 분석된 파일이 있으면 \"분석됨\"을 클릭하여 확인하세요.",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3471-3494)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3588-3611)"],
     "$id": 8281
   },
   "整理": {
@@ -48,7 +48,7 @@
     "de-DE": "Ordentlich",
     "fr-FR": "Rangé",
     "ko-KR": "정돈하다",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3539-3545)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3656-3662)"],
     "$id": 8284
   },
   "虚拟目录": {
@@ -61,7 +61,7 @@
     "de-DE": "Virtuelles Verzeichnis",
     "fr-FR": "Répertoire virtuel",
     "ko-KR": "가상 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3642-3650)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3759-3767)"],
     "$id": 8289
   },
   "导出": {
@@ -74,7 +74,7 @@
     "de-DE": "Export",
     "fr-FR": "Exporter",
     "ko-KR": "내보내다",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3781-3787)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(3898-3904)"],
     "$id": 8290
   },
   "对虚拟目录满意，可以选择导出": {
@@ -87,7 +87,7 @@
     "de-DE": "Wenn Sie mit dem virtuellen Verzeichnis zufrieden sind, können Sie es exportieren",
     "fr-FR": "Lorsque vous êtes satisfait du répertoire virtuel, vous pouvez choisir de l'exporter",
     "ko-KR": "가상 디렉터리에 만족하면 내보내도록 선택할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(4000-4018)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(4117-4135)"],
     "$id": 8292
   },
   "无法打开链接": {
@@ -100,7 +100,7 @@
     "de-DE": "Link kann nicht geöffnet werden",
     "fr-FR": "Impossible d'ouvrir le lien",
     "ko-KR": "링크를 열 수 없습니다",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(6471-6481)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(7363-7373)"],
     "$id": 8293
   },
   "萤核智能文件夹": {
@@ -113,7 +113,7 @@
     "de-DE": "Firefly Intelligenter Ordner",
     "fr-FR": "Firefly AI Folder",
     "ko-KR": "형광핵 AI 파일 폴더",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(9728-9739)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(10614-10625)"],
     "$id": 8294
   },
   "当前工作目录: {name}，点击切换": {
@@ -126,7 +126,7 @@
     "de-DE": "Aktuelles Arbeitsverzeichnis: {name}, klicken Sie zum Wechseln",
     "fr-FR": "Répertoire de travail actuel : {name}, cliquez pour basculer",
     "ko-KR": "현재 작업 디렉터리: {name}, 클릭하여 전환",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(11962-11985)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(12916-12939)"],
     "$id": 8295
   },
   "未选择": {
@@ -140,8 +140,8 @@
     "fr-FR": "Non sélectionné",
     "ko-KR": "선택되지 않음",
     "$files": [
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(12049-12056)",
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(12896-12903)"
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(13003-13010)",
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(13850-13857)"
     ],
     "$id": 8296
   },
@@ -155,7 +155,7 @@
     "de-DE": "Kein Arbeitsverzeichnis vorhanden",
     "fr-FR": "Aucun répertoire de travail pour le moment",
     "ko-KR": "작업 디렉터리 없음",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(13992-14002)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(14946-14956)"],
     "$id": 8297
   },
   "已超出目录插槽限制，点击可激活": {
@@ -168,7 +168,7 @@
     "de-DE": "Das Verzeichnis-Slot-Limit wurde überschritten. Zum Aktivieren klicken",
     "fr-FR": "Limite d'emplacement de répertoire dépassée, cliquez pour activer",
     "ko-KR": "디렉터리 슬롯 한도를 초과했습니다. 활성화하려면 클릭하세요.",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(16573-16592)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(17527-17546)"],
     "$id": 8298
   },
   "切换到工作目录: {path}": {
@@ -181,7 +181,7 @@
     "de-DE": "Zu Arbeitsverzeichnis wechseln: {path}",
     "fr-FR": "Basculer vers le répertoire de travail : {path}",
     "ko-KR": "작업 디렉터리로 전환: {path}",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(16629-16648)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(17583-17602)"],
     "$id": 8299
   },
   "（极速）": {
@@ -194,7 +194,7 @@
     "de-DE": "（Extrem schnell）",
     "fr-FR": "(ultra-rapide)",
     "ko-KR": "(초고속)",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(17947-17955)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(18901-18909)"],
     "$id": 8300
   },
   "（私有）": {
@@ -207,7 +207,7 @@
     "de-DE": "（Privat）",
     "fr-FR": "(privé)",
     "ko-KR": "(비공개)",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(18232-18240)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(19186-19194)"],
     "$id": 8301
   },
   "添加新工作目录": {
@@ -220,7 +220,7 @@
     "de-DE": "Neues Arbeitsverzeichnis hinzufügen",
     "fr-FR": "Ajouter un nouveau répertoire de travail",
     "ko-KR": "새 작업 디렉터리 추가",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(19791-19802)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(20745-20756)"],
     "$id": 8302
   },
   "企业版暂不支持极速目录": {
@@ -233,7 +233,7 @@
     "de-DE": "Die Enterprise-Version unterstützt derzeit keine Speed-Verzeichnisse.",
     "fr-FR": "La version entreprise ne prend actuellement pas en charge les répertoires rapides.",
     "ko-KR": "엔터프라이즈 버전은 현재 속도 디렉터리를 지원하지 않습니다.",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(21027-21042)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(21981-21996)"],
     "$id": 8303
   },
   "创建极速目录（推荐）": {
@@ -246,7 +246,7 @@
     "de-DE": "Erstellen Sie ein Schnellverzeichnis (empfohlen)",
     "fr-FR": "Créez un répertoire rapide (recommandé)",
     "ko-KR": "빠른 디렉터리 생성(권장)",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(21046-21060)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(22000-22014)"],
     "$id": 8304
   },
   "极速目录": {
@@ -259,7 +259,7 @@
     "de-DE": "Geschwindigkeitsverzeichnis",
     "fr-FR": "Annuaire de vitesse",
     "ko-KR": "속도 디렉토리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(22550-22558)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(23504-23512)"],
     "$id": 8305
   },
   "共享分析数据，极速分析": {
@@ -273,8 +273,8 @@
     "fr-FR": "Partagez des données d’analyse pour une analyse extrêmement rapide",
     "ko-KR": "매우 빠른 분석을 위해 분석 데이터 공유",
     "$files": [
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(22823-22838)",
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(22892-22907)"
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(23777-23792)",
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(23846-23861)"
     ],
     "$id": 8306
   },
@@ -288,7 +288,7 @@
     "de-DE": "Privates Verzeichnis erstellen",
     "fr-FR": "Créer un répertoire privé",
     "ko-KR": "개인 디렉토리 생성",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(23763-23773)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(24717-24727)"],
     "$id": 8307
   },
   "私有目录": {
@@ -301,7 +301,7 @@
     "de-DE": "Privates Verzeichnis",
     "fr-FR": "Répertoire privé",
     "ko-KR": "개인 디렉토리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(24821-24829)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(25775-25783)"],
     "$id": 8308
   },
   "分析数据不上云，数据私密": {
@@ -315,8 +315,8 @@
     "fr-FR": "Les données d'analyse ne vont pas vers le cloud et les données sont privées",
     "ko-KR": "분석 데이터는 클라우드로 이동하지 않으며 데이터는 비공개입니다.",
     "$files": [
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(25118-25134)",
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(25188-25204)"
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(26072-26088)",
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(26142-26158)"
     ],
     "$id": 8309
   },
@@ -330,7 +330,7 @@
     "de-DE": "Arbeitsverzeichnisverwaltung",
     "fr-FR": "Gestion du répertoire de travail",
     "ko-KR": "작업 디렉토리 관리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(25969-25979)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(26923-26933)"],
     "$id": 8310
   },
   "最新动态": {
@@ -343,7 +343,7 @@
     "de-DE": "Neueste Nachrichten",
     "fr-FR": "Dernières nouvelles",
     "ko-KR": "최신 뉴스",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(29178-29186)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(30664-30672)"],
     "$id": 8311
   },
   "AI 摘要功能已上线!": {
@@ -356,7 +356,7 @@
     "de-DE": "KI-Zusammenfassungsfunktion ist jetzt verfügbar!",
     "fr-FR": "La fonction de résumé IA est maintenant disponible !",
     "ko-KR": "AI 요약 기능 출시!",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(31820-31835)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(33408-33423)"],
     "$id": 8312
   },
   "最小化": {
@@ -369,7 +369,7 @@
     "de-DE": "Minimieren",
     "fr-FR": "Réduire",
     "ko-KR": "최소화",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(33007-33014)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(34370-34377)"],
     "$id": 8313
   },
   "恢复": {
@@ -382,7 +382,7 @@
     "de-DE": "Wiederherstellen",
     "fr-FR": "Restaurer",
     "ko-KR": "복원",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(33463-33469)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(34846-34852)"],
     "$id": 8314
   },
   "最大化": {
@@ -395,7 +395,7 @@
     "de-DE": "Maximieren",
     "fr-FR": "Agrandir",
     "ko-KR": "최대화",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(33473-33480)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(34856-34863)"],
     "$id": 8315
   },
   "关闭": {
@@ -408,7 +408,7 @@
     "de-DE": "Schließen",
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(33960-33966)"],
+    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(35363-35369)"],
     "$id": 8316
   }
 }

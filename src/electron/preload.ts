@@ -255,6 +255,13 @@ const electronAPI = {
     ipcRenderer.on('analysis-queue-updated', handler)
     return () => ipcRenderer.removeListener('analysis-queue-updated', handler)
   },
+  onDirectoryContextUpdated: (
+    callback: (payload: { directoryPath: string; contextAnalysis: any }) => void
+  ) => {
+    const handler = (_event: any, payload: any) => callback(payload)
+    ipcRenderer.on('directory-context-updated', handler)
+    return () => ipcRenderer.removeListener('directory-context-updated', handler)
+  },
   onModelStatusChanged: (
     callback: (payload: {
       modelName: string | null
@@ -764,6 +771,7 @@ const electronAPI = {
       fileTypeDistribution: string
       tagsSection?: string
       fileStructurePreview: string
+      organizeMode?: string
     }): Promise<string | null> =>
       ipcRenderer.invoke('virtual-directory/generate-external-directory-plan-prompt', params),
     estimateReorganizeBatches: (virtualDirectoryId: number, options: any) =>

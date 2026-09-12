@@ -33,7 +33,7 @@ export const SYSTEM_CONFIG_SOURCE = () => ({
       text: `V3.5 ${t('新增批量更名、批量标签、批量清理')}`
     },
     {
-      text: t('Nanbeige4.2 性价比王，3G显存跑出超强智能，请升级至 V3.2+'),
+      text: t('MiniCPM5-2B 性价比王，2G显存跑出超强智能'),
       url: 'https://page.om.qq.com/page/Oq2nbyVJUAaavsyDZtcbedCw0'
     },
     {
