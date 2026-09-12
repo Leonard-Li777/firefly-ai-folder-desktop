@@ -801,12 +801,12 @@
   },
   "萤核智能文件夹": {
     "en-US": "Firefly AI Folder",
-    "es-ES": "Carpeta AI Firefly",
+    "es-ES": "Firefly AI Folder",
     "ar-EG": "Firefly AI Folder",
-    "pt-PT": "Pasta AI Firefly",
-    "ru-RU": "Умная папка Firefly",
-    "ja-JP": "Firefly 智能フォルダ",
-    "de-DE": "Firefly Intelligenter Ordner",
+    "pt-PT": "Firefly AI Folder",
+    "ru-RU": "Firefly AI Folder",
+    "ja-JP": "Firefly AI Folder",
+    "de-DE": "Firefly AI Folder",
     "fr-FR": "Firefly AI Folder",
     "ko-KR": "Firefly AI Folder",
     "$files": [
