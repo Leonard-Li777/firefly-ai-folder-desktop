@@ -129,6 +129,40 @@ export function touchActiveWorktree(worktreeName: string): void {
 }
 
 /**
+ * 解析并获取主版本号标识（如 'v4'）
+ */
+function getAppMajorVersion(): string {
+  try {
+    // 优先尝试从 apps/desktop/package.json 中直接解析
+    const candidatePaths = [
+      path.resolve(__dirname, '../../package.json'),
+      path.resolve(__dirname, '../../../package.json'),
+      path.resolve(process.cwd(), 'package.json')
+    ]
+    for (const p of candidatePaths) {
+      if (fs.existsSync(p)) {
+        const raw = fs.readFileSync(p, 'utf-8')
+        const pkg = JSON.parse(raw)
+        if (pkg.version) {
+          const match = String(pkg.version).match(/\d+/)
+          if (match) return `v${match[0]}`
+        }
+      }
+    }
+  } catch {}
+
+  try {
+    const v = app.getVersion()
+    if (v) {
+      const match = v.match(/\d+/)
+      if (match) return `v${match[0]}`
+    }
+  } catch {}
+
+  return 'v4'
+}
+
+/**
  * 初始化并隔离当前 Worktree 实例的 app.name 与 userData 路径
  * 必须在 main/index.ts 顶部尽早调用！
  */
@@ -136,7 +170,8 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
   if (cachedInfo) return cachedInfo
 
   let isProd = app.isPackaged || process.env.NODE_ENV === 'production'
-  const region = (process.env.BUILD_REGION || 'CN').toLowerCase()
+  const rawRegion = (process.env.BUILD_REGION || 'CN').trim().toLowerCase()
+  const region = rawRegion === 'cn' ? 'cn' : 'intl'
 
   // 检查深链接中是否指明了环境
   try {
@@ -152,11 +187,20 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
     }
   } catch {}
 
-  const worktreeName = detectWorktreeName()
+  const rawEnv = (process.env.APP_ENV || (isProd ? 'production' : 'development')).trim().toLowerCase()
+  let appEnv = 'development'
+  if (rawEnv.includes('prod')) appEnv = 'production'
+  else if (rawEnv.includes('can') || rawEnv.includes('gray')) appEnv = 'canary'
+  else appEnv = 'development'
 
+  const worktreeName = detectWorktreeName()
+  const majorVersion = getAppMajorVersion()
+
+  // 生产打包时: firefly-ai-folder-v4-[cn|intl]
+  // 开发运行时: firefly-ai-folder-v4-[cn|intl]-[development|canary|production]-[worktree]
   const appName = isProd
-    ? `firefly-ai-folder-${region}`
-    : `firefly-ai-folder-${region}-${worktreeName}`
+    ? `firefly-ai-folder-${majorVersion}-${region}`
+    : `firefly-ai-folder-${majorVersion}-${region}-${appEnv}-${worktreeName}`
 
   app.setName(appName)
 

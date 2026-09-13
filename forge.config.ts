@@ -32,10 +32,12 @@ if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath, override: true })
 }
 
-const BUILD_REGION = process.env.BUILD_REGION || 'CN'
-const APP_NAME = `firefly-ai-folder-${BUILD_REGION.toLowerCase()}`
+const rawRegion = (process.env.BUILD_REGION || 'CN').trim().toLowerCase()
+const BUILD_REGION = rawRegion === 'cn' ? 'cn' : 'intl'
+const MAJOR_VERSION = 'v' + (String(packageJson.version || '4.0.0').match(/\d+/) ? String(packageJson.version).match(/\d+/)![0] : '4')
+const APP_NAME = `firefly-ai-folder-${MAJOR_VERSION}-${BUILD_REGION}`
 const EXECUTABLE_NAME = APP_NAME
-const SHORTCUT_NAME = BUILD_REGION === 'CN' ? '萤核智能文件夹' : 'Firefly AI folder'
+const SHORTCUT_NAME = BUILD_REGION === 'cn' ? '萤核智能文件夹' : 'Firefly AI folder'
 // 存储需要打包的原生模块依赖
 let nativeModuleDependenciesToPackage: string[] = []
 
