@@ -47,35 +47,45 @@ export const CleanRecommendationBanner: React.FC = () => {
         'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/20 text-foreground'
       )}
     >
-      <div className="flex items-center gap-2 min-w-0 pr-2">
+      <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
         <span className="text-sm select-none shrink-0" role="img" aria-label="lightbulb">
           💡
         </span>
         <span className="font-medium truncate text-amber-950 dark:text-amber-200">
           {t('建议在 AI 深度分析前先执行【目录瘦身】，临时文件与重复项清理，可节省分析时间与算力。')}
         </span>
+
+        <div className="flex items-center gap-1.5 shrink-0 ml-1">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleGoToCleanup}
+            className="h-6 px-2.5 text-xs font-medium rounded-md gap-1 bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/30 text-amber-900 dark:text-amber-100 cursor-pointer shadow-2xs transition-all"
+          >
+            <MaterialIcon icon="cleaning_services" className="text-xs text-amber-600 dark:text-amber-400" />
+            <span>{t('立即查看冗余文件')}</span>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleDismiss}
+            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer rounded-md hover:bg-amber-500/15"
+          >
+            {t('知道了')}
+          </Button>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleGoToCleanup}
-          className="h-6 px-2.5 text-xs font-medium rounded-md gap-1 bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/30 text-amber-900 dark:text-amber-100 cursor-pointer shadow-2xs transition-all"
-        >
-          <MaterialIcon icon="cleaning_services" className="text-xs text-amber-600 dark:text-amber-400" />
-          <span>{t('目录瘦身')}</span>
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleDismiss}
-          className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer rounded-md"
-        >
-          {t('知道了')}
-        </Button>
-      </div>
+      <button
+        type="button"
+        onClick={handleDismiss}
+        className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-amber-500/20 transition-colors cursor-pointer shrink-0 flex items-center justify-center"
+        title={t('关闭提示')}
+        aria-label={t('关闭提示')}
+      >
+        <MaterialIcon icon="close" className="text-sm" />
+      </button>
     </div>
   )
 }
