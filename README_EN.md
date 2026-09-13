@@ -3,7 +3,7 @@
 ### <p align="center"><a href="README.md">中文</a> | <b>English</b></p>
 
 <p align="center">
-  <img src="./assets/icon.png" width="128" alt="Firefly Logo">
+  <img src="./assets/icon.webp" width="128" alt="Firefly Logo">
 </p>
 
 <p align="center">
@@ -49,7 +49,7 @@ Click the preview image below to watch our demo on Bilibili and see how AI can t
 
 <p align="center">
   <a href="https://www.bilibili.com/video/BV1gZAUzUEXe" target="_blank">
-    <img src="./assets/onekeyOrganize.png" width="100%" alt="Firefly AI Folder Demo Video">
+    <img src="./assets/onekeyOrganize.webp" width="100%" alt="Firefly AI Folder Demo Video">
   </a>
 </p>
 
@@ -66,7 +66,7 @@ AI intelligently understands documents/pictures/code/audio and video, automatica
 - Automatic semantic tagging: automatically assign multi-dimensional tags based on 54+ classification dimensions
 
 <p align="center">
-  <img src="./assets/feature-tagging.png" width="90%" alt="Automatic Tagging and Deep Summarization">
+  <img src="./assets/feature-tagging.webp" width="90%" alt="Automatic Tagging and Deep Summarization">
 </p>
 
 ### ✏️ Semantics-Based Intelligent Renaming
@@ -78,7 +78,7 @@ Say goodbye to "New Text Document (1).txt" or "DSC_0042.jpg" and rename files in
 - Flexible template customization: build your own automated batch rename naming rules
 
 <p align="center">
-  <img src="./assets/feature-rename.png" width="90%" alt="Semantics-Based Intelligent Renaming">
+  <img src="./assets/feature-rename.webp" width="90%" alt="Semantics-Based Intelligent Renaming">
 </p>
 
 ### 📂 Original "Multi-Dimensional Virtual Directory"
@@ -90,7 +90,7 @@ No moving of original files, no additional hard drive space required — one-cli
 - Safe & lossless: original file directories stay untouched, eliminating the risk of file loss
 
 <p align="center">
-  <img src="./assets/feature-virtual-dir.png" width="90%" alt="Multi-Dimensional Virtual Directory">
+  <img src="./assets/feature-virtual-dir.webp" width="90%" alt="Multi-Dimensional Virtual Directory">
 </p>
 
 ### 🔍 Intelligent Semantic & Full-Text Search
@@ -102,7 +102,7 @@ Not just file names — deep search over file content, AI tags, and semantic sum
 - Fuzzy intent matching: find files by impression even without remembering the exact file name
 
 <p align="center">
-  <img src="./assets/feature-search.png" width="90%" alt="Intelligent Semantic Search and File Deduplication">
+  <img src="./assets/feature-search.webp" width="90%" alt="Intelligent Semantic Search and File Deduplication">
 </p>
 
 ### 👁️ 200+ Format Native Preview & OCR
@@ -114,7 +114,7 @@ A powerful built-in preview engine supporting Office/PDF/e-books/code/3D models 
 - Second-level response: ultra-fast preview thumbnails to greatly boost file viewing efficiency
 
 <p align="center">
-  <img src="./assets/feature-preview.png" width="90%" alt="200+ Format Native Preview and OCR">
+  <img src="./assets/feature-preview.webp" width="90%" alt="200+ Format Native Preview and OCR">
 </p>
 
 ### ⭐ File Quality Assessment & Extension Correction
@@ -126,7 +126,7 @@ Automatically assess file value and relevance ranking, identify real file format
 - One-click extension correction: automatically fix .tmp, .dat and other wrong suffixes
 
 <p align="center">
-  <img src="./assets/feature-quality.png" width="90%" alt="File Quality Assessment and Extension Correction">
+  <img src="./assets/feature-quality.webp" width="90%" alt="File Quality Assessment and Extension Correction">
 </p>
 
 ### 🛡️ 100% Privacy Security & Data Freedom
@@ -138,7 +138,7 @@ A local high-performance AI engine (GPU/CPU), with data stored locally — zero 
 - Hardware intelligent acceleration: perfectly adapted to NVIDIA GPU, Apple Silicon, and CPU
 
 <p align="center">
-  <img src="./assets/feature-privacy.png" width="90%" alt="100% Privacy Security and Data Freedom">
+  <img src="./assets/feature-privacy.webp" width="90%" alt="100% Privacy Security and Data Freedom">
 </p>
 
 ### 🌍 Cross-Platform & Multi-Language Experience
@@ -150,7 +150,7 @@ Built on Electron, fully supporting Windows / macOS / Linux with built-in interf
 - Multi-language native integration: built-in 10+ mainstream languages for global use
 
 <p align="center">
-  <img src="./assets/feature-platform.png" width="90%" alt="Cross-Platform Support and Multi-Language Experience">
+  <img src="./assets/feature-platform.webp" width="90%" alt="Cross-Platform Support and Multi-Language Experience">
 </p>
 
 ---
@@ -162,7 +162,7 @@ Built on Electron, fully supporting Windows / macOS / Linux with built-in interf
 Supports arbitrary selection of existing disk directories, automatically monitoring file changes and performing real-time incremental analysis.
 
 <p align="center">
-  <img src="./assets/realDirectory.jpg" width="90%" alt="Real-Time Sniffing of Real Directories">
+  <img src="./assets/realDirectory.webp" width="90%" alt="Real-Time Sniffing of Real Directories">
 </p>
 
 ### 🗂️ Flexible Workspace Modes
@@ -170,7 +170,7 @@ Supports arbitrary selection of existing disk directories, automatically monitor
 Supports extreme speed mode and private mode to meet different preferences for performance and privacy.
 
 <p align="center">
-  <img src="./assets/workspace.png" width="90%" alt="Flexible Workspace Modes">
+  <img src="./assets/workspace.webp" width="90%" alt="Flexible Workspace Modes">
 </p>
 
 ### 📂 Multi-Dimensional Virtual Directory Tree
@@ -178,7 +178,7 @@ Supports extreme speed mode and private mode to meet different preferences for p
 Automatically assembles multi-level directory trees based on AI dimensions, occupying zero disk space.
 
 <p align="center">
-  <img src="./assets/virtualDirectory.png" width="90%" alt="Multi-Dimensional Virtual Directory Tree">
+  <img src="./assets/virtualDirectory.webp" width="90%" alt="Multi-Dimensional Virtual Directory Tree">
 </p>
 
 ### 🤖 AI Dual-Engine Architecture
@@ -186,7 +186,7 @@ Automatically assembles multi-level directory trees based on AI dimensions, occu
 The dual mode of local large model and online API achieves both efficiency and privacy.
 
 <p align="center">
-  <img src="./assets/modelsMode.png" width="90%" alt="AI Dual-Engine Architecture">
+  <img src="./assets/modelsMode.webp" width="90%" alt="AI Dual-Engine Architecture">
 </p>
 
 ### 🚀 Batch Organization of Massive Files
@@ -194,7 +194,7 @@ The dual mode of local large model and online API achieves both efficiency and p
 Supports parallel extraction of metadata from tens of thousands of file queues — efficient and stable.
 
 <p align="center">
-  <img src="./assets/bulkOrganize.png" width="90%" alt="Batch Organization of Massive Files">
+  <img src="./assets/bulkOrganize.webp" width="90%" alt="Batch Organization of Massive Files">
 </p>
 
 ### 💡 Hardware Perception & Model Recommendation
@@ -202,7 +202,7 @@ Supports parallel extraction of metadata from tens of thousands of file queues �
 Automatically detects VRAM and CPU performance, and accurately recommends local models with the best specifications.
 
 <p align="center">
-  <img src="./assets/aiEngine.png" width="90%" alt="Hardware Perception and Model Recommendation">
+  <img src="./assets/aiEngine.webp" width="90%" alt="Hardware Perception and Model Recommendation">
 </p>
 
 ### 📝 Auto-Generated Organization Plans
@@ -210,7 +210,7 @@ Automatically detects VRAM and CPU performance, and accurately recommends local 
 Three organization plans, multi-perspective archiving — efficient and stable.
 
 <p align="center">
-  <img src="./assets/strategy.png" width="90%" alt="Auto-Generated Organization Plans">
+  <img src="./assets/strategy.webp" width="90%" alt="Auto-Generated Organization Plans">
 </p>
 
 ### 📤 Powerful Export Support
@@ -218,7 +218,7 @@ Three organization plans, multi-perspective archiving — efficient and stable.
 Supports virtual directory tree export and real directory export to meet the needs of different scenarios.
 
 <p align="center">
-  <img src="./assets/export.png" width="90%" alt="Powerful Export Support">
+  <img src="./assets/export.webp" width="90%" alt="Powerful Export Support">
 </p>
 
 ---
@@ -323,5 +323,5 @@ pnpm package
 <p>
   <img src="./assets/wechat-qr.jpg" width="200" alt="WeChat">
 
-  <img src="./assets/feedback.jpg" width="200" alt="Feedback">
+  <img src="./assets/feedback.webp" width="200" alt="Feedback">
 </p>

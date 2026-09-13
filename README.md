@@ -3,7 +3,7 @@
 ### <p align="center"><b>中文</b> | <a href="README_EN.md">English</a></p>
 
 <p align="center">
-  <img src="./assets/icon.png" width="128" alt="Firefly Logo">
+  <img src="./assets/icon.webp" width="128" alt="Firefly Logo">
 </p>
 
 <p align="center">
@@ -49,7 +49,7 @@
 
 <p align="center">
   <a href="https://www.bilibili.com/video/BV1gZAUzUEXe" target="_blank">
-    <img src="./assets/onekeyOrganize.png" width="100%" alt="萤核智能文件夹演示视频">
+    <img src="./assets/onekeyOrganize.webp" width="100%" alt="萤核智能文件夹演示视频">
   </a>
 </p>
 
@@ -66,7 +66,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 - 自动语义标签：基于 54+ 分类维度自动赋予多维标记
 
 <p align="center">
-  <img src="./assets/feature-tagging.png" width="90%" alt="自动打标与深度摘要">
+  <img src="./assets/feature-tagging.webp" width="90%" alt="自动打标与深度摘要">
 </p>
 
 ### ✏️ 基于语义的智能重命名
@@ -78,7 +78,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 - 灵活模板自定义：支持构建专属的自动化批量改名命名法则
 
 <p align="center">
-  <img src="./assets/feature-rename.png" width="90%" alt="基于语义的智能重命名">
+  <img src="./assets/feature-rename.webp" width="90%" alt="基于语义的智能重命名">
 </p>
 
 ### 📂 独创 "多维虚拟目录"
@@ -90,7 +90,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 - 安全无损：原始文件目录保持不动，彻底免除文件丢失风险
 
 <p align="center">
-  <img src="./assets/feature-virtual-dir.png" width="90%" alt="多维虚拟目录">
+  <img src="./assets/feature-virtual-dir.webp" width="90%" alt="多维虚拟目录">
 </p>
 
 ### 🔍 智能语义与全文检索
@@ -102,7 +102,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 - 模糊意图匹配：即使记不清精确文件名，也能凭借印象瞬间找到
 
 <p align="center">
-  <img src="./assets/feature-search.png" width="90%" alt="智能语义与全文检索">
+  <img src="./assets/feature-search.webp" width="90%" alt="智能语义与全文检索">
 </p>
 
 ### 👁️ 200+ 格式原生预览与 OCR
@@ -114,7 +114,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 - 秒级响应：极速渲染预览图与缩略图，大幅提升文件查看效率
 
 <p align="center">
-  <img src="./assets/feature-preview.png" width="90%" alt="200+ 格式原生预览与 OCR">
+  <img src="./assets/feature-preview.webp" width="90%" alt="200+ 格式原生预览与 OCR">
 </p>
 
 ### ⭐ 文件质量评估与扩展名纠偏
@@ -126,7 +126,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 - 扩展名一键纠偏：自动将 .tmp、.dat 等纠正为正确的后缀格式
 
 <p align="center">
-  <img src="./assets/feature-quality.png" width="90%" alt="文件质量评估与扩展名纠偏">
+  <img src="./assets/feature-quality.webp" width="90%" alt="文件质量评估与扩展名纠偏">
 </p>
 
 ### 🛡️ 100% 隐私安全与数据自由
@@ -138,7 +138,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 - 硬件智能加速：完美适配 NVIDIA GPU、Apple Silicon 与 CPU 算力
 
 <p align="center">
-  <img src="./assets/feature-privacy.png" width="90%" alt="100% 隐私安全与数据自由">
+  <img src="./assets/feature-privacy.webp" width="90%" alt="100% 隐私安全与数据自由">
 </p>
 
 ### 🌍 跨平台支持与多语言体验
@@ -150,7 +150,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 - 多语言原生集成：内置 10+ 种主流语言，支持全球化使用
 
 <p align="center">
-  <img src="./assets/feature-platform.png" width="90%" alt="跨平台支持与多语言体验">
+  <img src="./assets/feature-platform.webp" width="90%" alt="跨平台支持与多语言体验">
 </p>
 
 ---
@@ -162,7 +162,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 支持任意选择已有磁盘目录，自动监控文件变动并实时增量分析。
 
 <p align="center">
-  <img src="./assets/realDirectory.jpg" width="90%" alt="真实目录实时嗅探">
+  <img src="./assets/realDirectory.webp" width="90%" alt="真实目录实时嗅探">
 </p>
 
 ### 🗂️ 灵活工作区模式
@@ -170,7 +170,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 支持极速模式与私有模式，满足性能与隐私的不同偏好。
 
 <p align="center">
-  <img src="./assets/workspace.png" width="90%" alt="灵活工作区模式">
+  <img src="./assets/workspace.webp" width="90%" alt="灵活工作区模式">
 </p>
 
 ### 📂 多维虚拟目录树
@@ -178,7 +178,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 根据 AI 维度自动组装多级目录树，零占用磁盘空间。
 
 <p align="center">
-  <img src="./assets/virtualDirectory.png" width="90%" alt="多维虚拟目录树">
+  <img src="./assets/virtualDirectory.webp" width="90%" alt="多维虚拟目录树">
 </p>
 
 ### 🤖 AI 双引擎架构
@@ -186,7 +186,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 本地大模型与在线 API 双重模式，效率与隐私兼得。
 
 <p align="center">
-  <img src="./assets/modelsMode.png" width="90%" alt="AI 双引擎架构">
+  <img src="./assets/modelsMode.webp" width="90%" alt="AI 双引擎架构">
 </p>
 
 ### 🚀 海量文件批量整理
@@ -194,7 +194,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 支持数万级文件队列并行提取元数据，高效稳定。
 
 <p align="center">
-  <img src="./assets/bulkOrganize.png" width="90%" alt="海量文件批量整理">
+  <img src="./assets/bulkOrganize.webp" width="90%" alt="海量文件批量整理">
 </p>
 
 ### 💡 硬件感知与模型推荐
@@ -202,7 +202,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 自动侦测显存与 CPU 性能，精准推荐最佳规格的本地模型。
 
 <p align="center">
-  <img src="./assets/aiEngine.png" width="90%" alt="硬件感知与模型推荐">
+  <img src="./assets/aiEngine.webp" width="90%" alt="硬件感知与模型推荐">
 </p>
 
 ### 📝 整理方案自动生成
@@ -210,7 +210,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 三份整理方案，多视角归档文件，高效稳定。
 
 <p align="center">
-  <img src="./assets/strategy.png" width="90%" alt="整理方案自动生成">
+  <img src="./assets/strategy.webp" width="90%" alt="整理方案自动生成">
 </p>
 
 ### 📤 强大的导出支持
@@ -218,7 +218,7 @@ AI 智能理解文档/图片/代码/音视频，自动提取语义并生成多�
 支持虚拟目录树导出和真实目录导出，满足不同场景需求。
 
 <p align="center">
-  <img src="./assets/export.png" width="90%" alt="强大的导出支持">
+  <img src="./assets/export.webp" width="90%" alt="强大的导出支持">
 </p>
 
 ---
@@ -323,5 +323,5 @@ pnpm package
 <p>
   <img src="./assets/wechat-qr.jpg" width="200" alt="WeChat">
 
-  <img src="./assets/feedback.jpg" width="200" alt="Feedback">
+  <img src="./assets/feedback.webp" width="200" alt="Feedback">
 </p>
