@@ -44,6 +44,7 @@ interface AnalysisQueueItem {
   maxRetries: number
   createdAt: string
   updatedAt: string
+  expand?: boolean
 }
 
 // 分析队列状态接口
@@ -485,11 +486,11 @@ declare global {
       // 分析队列
       getAnalysisQueue: () => Promise<AnalysisQueue>
       addToAnalysisQueue: (
-        items: { path: string; name: string; size: number; type: string }[],
+        items: { path: string; name: string; size: number; type: string; expand?: boolean }[],
         forceReanalyze?: boolean
       ) => Promise<void>
       addToAnalysisQueueResolved: (
-        items: { path: string; name: string; size: number; type: string }[],
+        items: { path: string; name: string; size: number; type: string; expand?: boolean }[],
         forceReanalyze?: boolean
       ) => Promise<void>
       retryFailedAnalysis: () => Promise<void>
@@ -508,6 +509,7 @@ declare global {
       >
       batchFixExtensions: (fixes: Array<{ fileFingerprint: string; chosenExtension: string | null }>) => Promise<{ success: boolean; count: number }>
       onAnalysisQueueUpdated: (callback: (payload: AnalysisQueue) => void) => () => void
+      onDirectoryContextUpdated: (callback: (payload: { directoryPath: string; contextAnalysis: any }) => void) => () => void
       onModelStatusChanged: (callback: (payload: ModelStatusChange) => void) => () => void
       onModelNotDownloaded: (callback: (payload: { modelId?: string }) => void) => () => void
 

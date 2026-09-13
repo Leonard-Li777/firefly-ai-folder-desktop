@@ -66,6 +66,8 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     const [isNewsDropdownOpen, setIsNewsDropdownOpen] = useState(false)
     const newsDropdownRef = useRef<HTMLDivElement | null>(null)
     const newsTimerRef = useRef<NodeJS.Timeout | null>(null)
+    const headerRef = useRef<HTMLElement | null>(null)
+    const [isHubWrapped, setIsHubWrapped] = useState(false)
 
     const STEPS: Step[] = [
       { key: 'real', label: t('真实目录'), path: '/real-directory', icon: 'folder' },
@@ -121,6 +123,31 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
       }
       checkMaximized()
       fetchLicenseStatus()
+    }, [])
+
+    // 动态监听 Header 宽度，判断空间是否不足以容纳 Hub + 最小 100px 的最新消息
+    useEffect(() => {
+      const headerEl = headerRef.current
+      if (!headerEl) return
+
+      const updateWrapState = () => {
+        const width = headerEl.offsetWidth
+        // Logo(~190) + Hub(~720) + Controls(~170) + Padding/Gap(~60) + MinNews(100) = ~1240px
+        const threshold = 1240
+        setIsHubWrapped(prev => {
+          if (!prev && width < threshold) return true
+          if (prev && width >= threshold + 20) return false
+          return prev
+        })
+      }
+
+      updateWrapState()
+      const resizeObserver = new ResizeObserver(updateWrapState)
+      resizeObserver.observe(headerEl)
+
+      return () => {
+        resizeObserver.disconnect()
+      }
     }, [])
 
     // 全局点击外部关闭逻辑（第二层保险：处理点击页面主体、侧边栏等非 Header 区域）
@@ -232,7 +259,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
     return (
       <header
-        className="relative z-50 flex-shrink-0 bg-background/98 dark:bg-background/98 backdrop-blur-md border-b border-border/60 dark:border-border/40 grid grid-cols-[auto_1fr_auto] grid-rows-[auto_auto] items-center px-4 py-3 shadow-sm gap-y-2 gap-x-4 xl:flex xl:flex-wrap xl:grid-cols-none xl:grid-rows-none xl:items-center xl:justify-between xl:py-2.5 xl:gap-4"
+        ref={headerRef}
+        className={cn(
+          'relative z-50 flex-shrink-0 bg-background/98 dark:bg-background/98 backdrop-blur-md border-b border-border/60 dark:border-border/40 px-4 py-2.5 shadow-sm w-full',
+          isHubWrapped
+            ? 'grid grid-cols-[auto_1fr_auto] items-center gap-y-2 gap-x-3'
+            : 'flex flex-row items-center justify-between gap-4 flex-nowrap'
+        )}
         style={{ WebkitAppRegion: isAnyDropdownOpen ? 'no-drag' : 'drag' } as React.CSSProperties}
       >
         {/* Dropdown Overlays */}
@@ -250,7 +283,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
         {/* Left Side: Logo and Title */}
         <div
-          className="flex items-center space-x-2 flex-shrink-0 order-1 xl:order-1 xl:col-span-none xl:row-span-none"
+          className="flex items-center space-x-2 flex-shrink-0 order-1"
           style={{ gridColumn: '1', gridRow: '1' }}
         >
           <img
@@ -260,15 +293,20 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
             className="object-contain flex-shrink-0"
             alt="logo"
           />
-          <span className="text-base font-semibold text-foreground dark:text-foreground block xl:hidden 2xl:inline-block whitespace-nowrap">
+          <span className="text-base font-semibold text-foreground dark:text-foreground hidden sm:inline-block whitespace-nowrap">
             {t('萤核智能文件夹')}
           </span>
         </div>
 
         {/* Unified View Control Hub Container */}
         <div
-          className="w-full xl:w-auto flex justify-start min-w-[700px] order-2 xl:order-2 xl:flex-1 xl:mx-4 mt-1 xl:mt-0 xl:min-w-[700px]"
-          style={{ gridColumn: '1 / -1', gridRow: '2' }}
+          className={cn(
+            'min-w-0 flex-shrink-0 flex justify-start',
+            isHubWrapped
+              ? 'w-full order-3 col-span-full'
+              : 'mx-2 order-2'
+          )}
+          style={isHubWrapped ? { gridRow: '2' } : undefined}
         >
           <div
             className="flex items-center rounded-full min-w-[700px] transition-all duration-300 relative z-[95]
@@ -560,155 +598,162 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           </div>
         </div>
 
-        {/* News Carousel */}
-        {!isEnterprise && (
-          <div
-            className="relative flex items-center text-xs text-primary transition-all duration-500 min-w-0 flex-shrink-0 max-w-[600px] xl:max-w-[200px] 2xl:max-w-[600px] order-3 xl:order-3 w-fit"
-            style={{ gridColumn: '2', gridRow: '1', justifySelf: 'start' }}
-            ref={newsDropdownRef}
-            onPointerDown={e => e.stopPropagation()}
-          >
-            {latestNews.length > 0 ? (
-              <>
-                <div
-                  className={cn(
-                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full animate-in fade-in duration-500 cursor-pointer shadow-sm w-full min-w-0 overflow-hidden',
-                    getLevelStyles(latestNews[currentNewsIndex]?.level).bg,
-                    getLevelStyles(latestNews[currentNewsIndex]?.level).text,
-                    isNewsDropdownOpen
-                      ? cn('ring-1', getLevelStyles(latestNews[currentNewsIndex]?.level).ring)
-                      : ''
-                  )}
-                  style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-                  onClick={() => setIsNewsDropdownOpen(!isNewsDropdownOpen)}
-                >
-                  <span
-                    className={cn(
-                      'flex h-1.5 w-1.5 rounded-full animate-pulse flex-shrink-0',
-                      getLevelStyles(latestNews[currentNewsIndex]?.level).dot
-                    )}
-                  />
-                  <span
-                    className="flex-1 truncate 2xl:truncate-none font-medium min-w-0"
-                    title={latestNews[currentNewsIndex]?.text}
-                  >
-                    {latestNews[currentNewsIndex]?.text}
-                  </span>
-                  <MaterialIcon
-                    icon={isNewsDropdownOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
-                    className="text-base opacity-70 flex-shrink-0"
-                  />
-                </div>
-
-                {isNewsDropdownOpen && (
+        {/* Right Side: News & Controls */}
+        <div
+          className={cn(
+            'flex items-center relative z-[95]',
+            isHubWrapped
+              ? 'col-span-2 order-2 justify-between flex-1 min-w-0 pl-2'
+              : 'order-3 flex-1 min-w-0 justify-end space-x-3'
+          )}
+          style={isHubWrapped ? { gridColumn: '2 / -1', gridRow: '1' } : undefined}
+        >
+          {/* News Carousel */}
+          {!isEnterprise && (
+            <div
+              className={cn(
+                'relative flex items-center text-xs text-primary transition-all duration-500 min-w-0',
+                isHubWrapped
+                  ? 'flex-1 max-w-[600px] justify-start mr-4'
+                  : 'flex-initial min-w-[50px] max-w-[280px] 2xl:max-w-[420px]'
+              )}
+              ref={newsDropdownRef}
+              onPointerDown={e => e.stopPropagation()}
+            >
+              {latestNews.length > 0 ? (
+                <>
                   <div
-                    className="absolute top-full left-0 mt-2 bg-popover border border-border rounded-md shadow-lg z-[100] py-1 min-w-[280px]"
+                    className={cn(
+                      'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full animate-in fade-in duration-500 cursor-pointer shadow-sm w-full min-w-0 overflow-hidden',
+                      getLevelStyles(latestNews[currentNewsIndex]?.level).bg,
+                      getLevelStyles(latestNews[currentNewsIndex]?.level).text,
+                      isNewsDropdownOpen
+                        ? cn('ring-1', getLevelStyles(latestNews[currentNewsIndex]?.level).ring)
+                        : ''
+                    )}
                     style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+                    onClick={() => setIsNewsDropdownOpen(!isNewsDropdownOpen)}
                   >
-                    <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground border-b border-border mb-1 uppercase tracking-wider">
-                      {t('最新动态')}
-                    </div>
-                    <div className="max-h-60 overflow-y-auto">
-                      {latestNews.map((news, index) => {
-                        const styles = getLevelStyles(news.level)
-                        return (
-                          <button
-                            key={index}
-                            className={cn(
-                              'w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors group whitespace-nowrap',
-                              news.url
-                                ? 'cursor-pointer hover:bg-accent hover:text-accent-foreground'
-                                : 'cursor-default',
-                              'border-b border-border/50 last:border-none'
-                            )}
-                            onClick={() => handleNewsClick(news.url)}
-                          >
-                            <span
+                    <span
+                      className={cn(
+                        'flex h-1.5 w-1.5 rounded-full animate-pulse flex-shrink-0',
+                        getLevelStyles(latestNews[currentNewsIndex]?.level).dot
+                      )}
+                    />
+                    <span
+                      className="flex-1 truncate font-medium min-w-0"
+                      title={latestNews[currentNewsIndex]?.text}
+                    >
+                      {latestNews[currentNewsIndex]?.text}
+                    </span>
+                    <MaterialIcon
+                      icon={isNewsDropdownOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
+                      className="text-base opacity-70 flex-shrink-0"
+                    />
+                  </div>
+
+                  {isNewsDropdownOpen && (
+                    <div
+                      className="absolute top-full right-0 mt-2 bg-popover border border-border rounded-md shadow-lg z-[100] py-1 min-w-[280px]"
+                      style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+                    >
+                      <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground border-b border-border mb-1 uppercase tracking-wider">
+                        {t('最新动态')}
+                      </div>
+                      <div className="max-h-60 overflow-y-auto">
+                        {latestNews.map((news, index) => {
+                          const styles = getLevelStyles(news.level)
+                          return (
+                            <button
+                              key={index}
                               className={cn(
-                                'flex h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0',
-                                news.level
-                                  ? styles.dot
-                                  : index === currentNewsIndex
-                                    ? 'bg-primary animate-pulse'
-                                    : 'bg-muted-foreground/40'
+                                'w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors group whitespace-nowrap',
+                                news.url
+                                  ? 'cursor-pointer hover:bg-accent hover:text-accent-foreground'
+                                  : 'cursor-default',
+                                'border-b border-border/50 last:border-none'
                               )}
-                            />
-                            <div className="min-w-0">
-                              <div className={cn('text-xs font-medium', news.level && styles.text)}>
-                                {news.text}
+                              onClick={() => handleNewsClick(news.url)}
+                            >
+                              <span
+                                className={cn(
+                                  'flex h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0',
+                                  news.level
+                                    ? styles.dot
+                                    : index === currentNewsIndex
+                                      ? 'bg-primary animate-pulse'
+                                      : 'bg-muted-foreground/40'
+                                )}
+                              />
+                              <div className="min-w-0">
+                                <div className={cn('text-xs font-medium', news.level && styles.text)}>
+                                  {news.text}
+                                </div>
+                                {news.url && (
+                                  <div className="text-[10px] text-muted-foreground truncate opacity-60 transition-colors duration-200 group-hover:text-accent-foreground/70">
+                                    {news.url}
+                                  </div>
+                                )}
                               </div>
                               {news.url && (
-                                <div className="text-[10px] text-muted-foreground truncate opacity-60 transition-colors duration-200 group-hover:text-accent-foreground/70">
-                                  {news.url}
-                                </div>
+                                <MaterialIcon
+                                  icon="open_in_new"
+                                  className="text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity self-center"
+                                />
                               )}
-                            </div>
-                            {news.url && (
-                              <MaterialIcon
-                                icon="open_in_new"
-                                className="text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity self-center"
-                              />
-                            )}
-                          </button>
-                        )
-                      })}
+                            </button>
+                          )
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <span className="truncate px-2">{t('AI 摘要功能已上线!')}</span>
-            )}
-          </div>
-        )}
+                  )}
+                </>
+              ) : (
+                <span className="truncate px-2">{t('AI 摘要功能已上线!')}</span>
+              )}
+            </div>
+          )}
 
-        {/* Right Side: Controls */}
-        <div
-          className="flex items-center space-x-3 flex-shrink-0 order-3 xl:order-4 relative z-[95]"
-          style={{ gridColumn: '3', gridRow: '1' }}
-        >
-          <div
-            className="flex-grow xl:flex-grow-0 xl:w-0 self-stretch"
-            style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
-          />
+          {/* Controls Group */}
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            {/* User Avatar Menu */}
+            <div data-no-drag className="no-drag flex-shrink-0" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+              <UserAvatarMenu onOpenChange={setIsUserMenuOpen} />
+            </div>
 
-          {/* User Avatar Menu */}
-          <div data-no-drag className="no-drag" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
-            <UserAvatarMenu onOpenChange={setIsUserMenuOpen} />
-          </div>
-
-          {/* Window Controls */}
-          <div
-            className="flex items-center space-x-1 pl-2 border-l border-border/40 dark:border-white/10 ml-1"
-            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-          >
-            <button
-              onClick={handleMinimize}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
-              title={t('最小化')}
+            {/* Window Controls */}
+            <div
+              className="flex items-center space-x-1 pl-2 border-l border-border/40 dark:border-white/10 ml-1 flex-shrink-0"
+              style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
             >
-              <MaterialIcon
-                icon="minimize"
-                className="text-muted-foreground text-lg leading-none"
-              />
-            </button>
-            <button
-              onClick={handleMaximize}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
-              title={isMaximized ? t('恢复') : t('最大化')}
-            >
-              <MaterialIcon
-                icon={isMaximized ? 'fullscreen_exit' : 'fullscreen'}
-                className="text-muted-foreground text-lg leading-none"
-              />
-            </button>
-            <button
-              onClick={handleClose}
-              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer"
-              title={t('关闭')}
-            >
-              <MaterialIcon icon="close" className="text-muted-foreground text-lg leading-none" />
-            </button>
+              <button
+                onClick={handleMinimize}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                title={t('最小化')}
+              >
+                <MaterialIcon
+                  icon="minimize"
+                  className="text-muted-foreground text-lg leading-none"
+                />
+              </button>
+              <button
+                onClick={handleMaximize}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                title={isMaximized ? t('恢复') : t('最大化')}
+              >
+                <MaterialIcon
+                  icon={isMaximized ? 'fullscreen_exit' : 'fullscreen'}
+                  className="text-muted-foreground text-lg leading-none"
+                />
+              </button>
+              <button
+                onClick={handleClose}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer"
+                title={t('关闭')}
+              >
+                <MaterialIcon icon="close" className="text-muted-foreground text-lg leading-none" />
+              </button>
+            </div>
           </div>
         </div>
       </header>

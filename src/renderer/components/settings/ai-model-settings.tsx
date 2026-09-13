@@ -44,6 +44,7 @@ import { CloudModelConfigSettings } from './cloud-model-config-settings'
 import { InitialSetupOverlay } from '../welcome/InitialSetupOverlay'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
+import { Switch } from '../ui/switch'
 import { ModelDownloadProgress } from '../download/ModelDownloadProgress'
 import { cn } from '../../lib/utils'
 import { openExternalLink } from '../../lib/external-link'
@@ -224,7 +225,7 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
                 {dsparkModelId && isDsparkDownloaded && (
                   <Badge className="text-[9px] font-black h-4 px-1.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 uppercase tracking-tighter flex items-center gap-1">
                     <Zap className="h-2.5 w-2.5 fill-current" />
-                    {t('已就绪 (CPU加速已启用)')}
+                    {t('已就绪 (加速已启用)')}
                   </Badge>
                 )}
                 {(model.tags || []).map((tag: string) => (
@@ -275,14 +276,14 @@ const ModelCardItem: React.FC<ModelCardItemProps> = React.memo(
           </div>
 
           <div className="flex flex-col items-end gap-2 shrink-0 ml-4">
-            {/* 当为 CPU 模式、配置了 DSpark、主模型已就绪但 DSpark 未下载时，在激活按钮上方展示下载加速模型按钮 */}
-            {isCpuTier && dsparkModelId && isDownloaded && !isDsparkDownloaded && (
+            {/* 配置了 DSpark、主模型已就绪但 DSpark 未下载时，在激活按钮上方展示下载加速模型按钮 */}
+            {dsparkModelId && isDownloaded && !isDsparkDownloaded && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownloadDspark}
                 disabled={isDsparkDownloading}
-                title={t('CPU模式可加速30%')}
+                title={t('启用投机采样，大幅加速生成')}
                 className="h-7 text-xs px-2.5 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors flex items-center gap-1"
               >
                 {isDsparkDownloading ? (
@@ -413,6 +414,7 @@ export const AIModelSettings: React.FC = () => {
   const isGpuSwitching = useAIServiceStore(state => state.isGpuSwitching)
   const setIsGpuSwitching = useAIServiceStore(state => state.setIsGpuSwitching)
   const [activeTab, setActiveTab] = useState<string>('')
+  const [showRecommendedOnly, setShowRecommendedOnly] = useState<boolean>(true)
   const [deleteConfirm, setDeleteConfirm] = useState<{
     modelId: string
     displayName: string
@@ -767,6 +769,17 @@ export const AIModelSettings: React.FC = () => {
     return groupAndSortModels(models, hardwareInfo, recommendedModelIds)
   }, [models, hardwareInfo, recommendedModelIds])
 
+  const filteredGroupedModels = useMemo(() => {
+    if (!showRecommendedOnly) return groupedModels
+    const filtered: Record<string, any[]> = {}
+    Object.keys(groupedModels).forEach(source => {
+      filtered[source] = (groupedModels[source] || []).filter(
+        (m: any) => m.recommended === true
+      )
+    })
+    return filtered
+  }, [groupedModels, showRecommendedOnly])
+
   /**
    * 计算当前"激活的模型"的 (id, source) 组合 key
    * 用 (id, source) 组合 key 精确比对，避免多个同 id 模型都显示激活态。
@@ -930,21 +943,37 @@ export const AIModelSettings: React.FC = () => {
           </div> */}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="flex w-full justify-start h-14 bg-muted/40 p-0 border-b border-border rounded-none overflow-x-auto no-scrollbar">
-              {sourceList.map(s => (
-                <TabsTrigger
-                  key={s}
-                  value={s}
-                  className="flex-shrink-0 px-4 h-full rounded-none font-black text-xs data-[state=active]:border-primary data-[state=active]:bg-background data-[state=active]:text-primary transition-all border-b-2 border-transparent relative"
+            <div className="flex items-center justify-between border-b border-border bg-muted/40 pr-4">
+              <TabsList className="flex justify-start h-14 bg-transparent p-0 border-b-0 rounded-none overflow-x-auto no-scrollbar">
+                {sourceList.map(s => (
+                  <TabsTrigger
+                    key={s}
+                    value={s}
+                    className="flex-shrink-0 px-4 h-full rounded-none font-black text-xs data-[state=active]:border-primary data-[state=active]:bg-background data-[state=active]:text-primary transition-all border-b-2 border-transparent relative"
+                  >
+                    <Globe className="w-4 h-4 mr-2" />
+                    {MODEL_SOURCES[s].name}
+                    <span className="ml-2 text-[10px] bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
+                      {(filteredGroupedModels[s] || []).length}
+                    </span>
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+
+              <div className="flex items-center gap-2 shrink-0 py-2">
+                <Switch
+                  id="filter-recommended-only"
+                  checked={showRecommendedOnly}
+                  onCheckedChange={setShowRecommendedOnly}
+                />
+                <Label
+                  htmlFor="filter-recommended-only"
+                  className="text-xs font-bold text-muted-foreground cursor-pointer select-none"
                 >
-                  <Globe className="w-4 h-4 mr-2" />
-                  {MODEL_SOURCES[s].name}
-                  <span className="ml-2 text-[10px] bg-muted px-2 py-0.5 rounded-full text-muted-foreground">
-                    {(groupedModels[s] || []).length}
-                  </span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+                  {t('仅显示推荐')}
+                </Label>
+              </div>
+            </div>
 
             {sourceList.map(s => (
               <TabsContent key={s} value={s} className="p-6 focus-visible:ring-0 m-0">
@@ -954,12 +983,12 @@ export const AIModelSettings: React.FC = () => {
                 </div>
 
                 <div className="space-y-3">
-                  {!groupedModels[s] || groupedModels[s].length === 0 ? (
+                  {!filteredGroupedModels[s] || filteredGroupedModels[s].length === 0 ? (
                     <div className="text-center py-16 text-muted-foreground/30 font-black text-xs uppercase tracking-widest">
-                      {t('该来源暂无可用模型')}
+                      {showRecommendedOnly ? t('暂无推荐模型') : t('该来源暂无可用模型')}
                     </div>
                   ) : (
-                    groupedModels[s].map(model => {
+                    filteredGroupedModels[s].map(model => {
                       const downloadKey = `${model.id}@${model.source}`
                       const isActive = activeModelKey === `${model.id}@${model.source || 'default'}`
                       const configBestAcc = String(
@@ -977,7 +1006,7 @@ export const AIModelSettings: React.FC = () => {
                       const isCpuTier = Boolean(
                         effectiveBestAcc === 'cpu' ||
                         (!effectiveBestAcc && currentAcc === 'cpu') ||
-                        (!effectiveBestAcc && !currentAcc && hardwareInfo && !hardwareInfo.hasGPU)
+                        (!effectiveBestAcc && !currentAcc && hardwareInfo?.hasGPU)
                       )
                       const dsparkKey = model.dspark ? `${model.dspark}@${model.source}` : ''
                       const isDsparkDownloaded = !!(

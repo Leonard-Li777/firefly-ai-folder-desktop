@@ -41,7 +41,8 @@ import { getUniqueVirtualDirectoryName } from '../../VirtualDirectory/utils/vdir
 import { sanitizeDirectoryName } from '../utils/helpers'
 import { calculateDirectoryLimits as calcDirectoryLimits } from '../utils/directory-limits'
 
-const DEFAULT_GUIDANCE_PROMPT = `以设计师视角，按以下目录结构整理素材文件：
+const getDefaultGuidancePrompt = () =>
+  t(`以设计师视角，按以下目录结构整理素材文件：
 
 - 设计素材库
   - UI设计
@@ -63,7 +64,7 @@ const DEFAULT_GUIDANCE_PROMPT = `以设计师视角，按以下目录结构整�
   - 动效资源
     - Lottie动画
     - GIF动图
-    - 视频素材`
+    - 视频素材`)
 
 export function useOrganizeState() {
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)
@@ -754,7 +755,7 @@ export function useOrganizeState() {
 
   // 重置指导提示词为默认值
   const resetGuidancePrompt = useCallback(() => {
-    saveGuidancePrompt(DEFAULT_GUIDANCE_PROMPT)
+    saveGuidancePrompt(getDefaultGuidancePrompt())
   }, [saveGuidancePrompt])
 
   // ─── 策略编辑 ─────────────────────────────────────────────────────────────
@@ -1070,7 +1071,7 @@ export function useOrganizeState() {
 
   // ─── 指导方案生成 ───────────────────────────────────────────────────────
   const handleGuideGeneration = useCallback(async () => {
-    const prompt = guidancePrompt.trim() || DEFAULT_GUIDANCE_PROMPT
+    const prompt = guidancePrompt.trim() || getDefaultGuidancePrompt()
     if (!currentWorkspaceDirectory?.id) return
     setShowGuidanceDialog(false)
     setIsGeneratingCandidates(true)
@@ -1239,7 +1240,11 @@ export function useOrganizeState() {
 
   // ─── 自定义方案提交 → 直接解析目录树 → 进入 State 2 ──────────────────────
   const handleCustomSubmit = useCallback(
-    async (name: string, strategy: string) => {
+    async (name: string, strategy: string, targetMode?: OrganizeMode) => {
+      const activeMode = targetMode || organizeMode
+      if (targetMode) {
+        setOrganizeMode(targetMode)
+      }
       const candidate = { name, strategy }
       setSelectedCandidate(candidate)
       setCurrentVDir(null)
@@ -1255,12 +1260,12 @@ export function useOrganizeState() {
         const finalCustomTree =
           parsedTree && parsedTree.length > 0
             ? parsedTree
-            : buildSkeletonTree(dimensionGroups, organizeMode)
+            : buildSkeletonTree(dimensionGroups, activeMode)
 
         setDraftTree(finalCustomTree)
       } catch (e) {
         logger.error(LogCategory.FILE_ORGANIZATION, '解析目录树失败:', e)
-        const fallbackTree = buildSkeletonTree(dimensionGroups, organizeMode)
+        const fallbackTree = buildSkeletonTree(dimensionGroups, activeMode)
         setDraftTree(fallbackTree)
         toast.error(t('目录树解析出错，已使用默认骨架树'))
       } finally {

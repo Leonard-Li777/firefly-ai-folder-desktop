@@ -166,6 +166,16 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
     }
   }
 
+  // 目录画像或非文件分析结果不渲染文件标签列表，避免错误提示“暂无标签”
+  if (
+    !analysisResult ||
+    (analysisResult as any).contextAnalysis !== undefined ||
+    (analysisResult as any).fileCount !== undefined ||
+    !('dimensionTags' in analysisResult)
+  ) {
+    return null
+  }
+
   if (totalTagsCount === 0) {
     return (
       <div className="border-t border-border pt-4 mb-6">

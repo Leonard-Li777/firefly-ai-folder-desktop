@@ -23,6 +23,7 @@ import path from 'node:path'
  */
 export class DirectoryProcessor {
   private directoryContextCache: Map<string, DirectoryContextAnalysis> = new Map()
+  private inflightContextPromises: Map<string, Promise<DirectoryContextAnalysis | null>> = new Map()
 
   constructor(
     private getDependencies: () => {
@@ -59,10 +60,14 @@ export class DirectoryProcessor {
           keysToRemove.push(cachedPath)
         }
       }
-      keysToRemove.forEach(key => this.directoryContextCache.delete(key))
+      keysToRemove.forEach(key => {
+        this.directoryContextCache.delete(key)
+        this.inflightContextPromises.delete(key)
+      })
       logger.info(LogCategory.ANALYSIS_QUEUE, `[分析队列] 已清除目录缓存: ${resolvedPath}`)
     } else {
       this.directoryContextCache.clear()
+      this.inflightContextPromises.clear()
       logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 已清除所有目录上下文缓存')
     }
   }
@@ -267,9 +272,11 @@ export class DirectoryProcessor {
           )
         }
 
-        // 展开当前目录的直接子内容（一层）加入队列
-        this.updateItemStatus(item.id, 'analyzing', 50)
-        await this.expandDirectoryToQueue(item.path, !!item.forceReanalyze)
+        // 展开当前目录的直接子内容（一层）加入队列（当 expand 不为 false 时才展开）
+        if (item.expand !== false) {
+          this.updateItemStatus(item.id, 'analyzing', 50)
+          await this.expandDirectoryToQueue(item.path, !!item.forceReanalyze)
+        }
         this.updateItemStatus(item.id, 'completed', 100)
       }
     } catch (error: any) {
@@ -297,18 +304,33 @@ export class DirectoryProcessor {
     // cacheOnly 模式：仅读内存缓存，不触发 directoryContextService 分析
     if (cacheOnly) return null
     if (!deps.directoryContextService) return null
-    const userLanguage =
-      ConfigOrchestrator.getInstance().getValue<LanguageCode>('DEFAULT_LANGUAGE') || 'zh-CN'
-    const contextAnalysis = await deps.directoryContextService.analyzeDirectoryContext(
-      directoryPath,
-      userLanguage as LanguageCode,
-      force
-    )
-    this.directoryContextCache.set(directoryPath, contextAnalysis)
-    if (contextAnalysis && this.onDirectoryCompleted) {
-      this.onDirectoryCompleted(directoryPath)
+
+    // 防并发：若该目录已有正在执行的分析任务，复用该 Promise，避免并发重复调用
+    if (!force && this.inflightContextPromises.has(directoryPath)) {
+      return this.inflightContextPromises.get(directoryPath)!
     }
-    return contextAnalysis
+
+    const task = (async () => {
+      try {
+        const userLanguage =
+          ConfigOrchestrator.getInstance().getValue<LanguageCode>('DEFAULT_LANGUAGE') || 'zh-CN'
+        const contextAnalysis = await deps.directoryContextService!.analyzeDirectoryContext(
+          directoryPath,
+          userLanguage as LanguageCode,
+          force
+        )
+        this.directoryContextCache.set(directoryPath, contextAnalysis)
+        if (contextAnalysis && this.onDirectoryCompleted) {
+          this.onDirectoryCompleted(directoryPath)
+        }
+        return contextAnalysis
+      } finally {
+        this.inflightContextPromises.delete(directoryPath)
+      }
+    })()
+
+    this.inflightContextPromises.set(directoryPath, task)
+    return await task
   }
 
   /**

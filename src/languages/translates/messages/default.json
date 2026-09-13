@@ -373,7 +373,7 @@
     "de-DE": "Schnittstelle existiert nicht",
     "fr-FR": "L'interface n'existe pas",
     "ko-KR": "인터페이스가 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(1826-1835)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(1775-1784)"],
     "$id": 9521
   },
   "文件未找到": {
@@ -386,7 +386,7 @@
     "de-DE": "Datei nicht gefunden",
     "fr-FR": "Fichier introuvable",
     "ko-KR": "파일을 찾을 수 없습니다",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11442-11451)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11088-11097)"],
     "$id": 7629
   },
   "缺少 filePath 参数": {
@@ -399,7 +399,7 @@
     "de-DE": "FilePath-Parameter fehlt",
     "fr-FR": "Paramètre filePath manquant",
     "ko-KR": "filePath 매개변수가 누락되었습니다.",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(12110-12128)"],
+    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11736-11754)"],
     "$id": 9446
   },
   "响应序列化失败": {
@@ -413,8 +413,8 @@
     "fr-FR": "La sérialisation de la réponse a échoué",
     "ko-KR": "응답 직렬화 실패",
     "$files": [
-      "src/electron/runtime-services/ai-skill-api-service.ts(16981-16992)",
-      "src/electron/runtime-services/ai-skill-api-service.ts(17698-17709)"
+      "src/electron/runtime-services/ai-skill-api-service.ts(16482-16493)",
+      "src/electron/runtime-services/ai-skill-api-service.ts(17178-17189)"
     ],
     "$id": 7631
   },
@@ -824,7 +824,7 @@
     "de-DE": "GetDatabaseConfig muss explizit einen Sprachcode (language) angeben",
     "fr-FR": "GetDatabaseConfig doit explicitement spécifier le code de langue (language)",
     "ko-KR": "getDatabaseConfig는 언어 코드(language)를 명시적으로 지정해야 합니다",
-    "$files": ["src/electron/runtime-services/database/database.ts(26658-26701)"],
+    "$files": ["src/electron/runtime-services/database/database.ts(26072-26115)"],
     "$id": 8122
   },
   "正在处理中，请等待当前任务完成": {
@@ -837,7 +837,7 @@
     "de-DE": "Wird verarbeitet. Bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist",
     "fr-FR": "Traitement en cours, veuillez attendre que la tâche en cours soit terminée",
     "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
-    "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3383-3402)"],
+    "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3263-3282)"],
     "$id": 7661
   },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
@@ -850,7 +850,7 @@
     "de-DE": "Kontingent erschöpft: {count} private Verzeichnisdateien analysiert, aktuelles Kontingent beträgt {quota} Dateien. Sie können weitere Credits freischalten, indem Sie Freunde einladen.",
     "fr-FR": "Quota épuisé : {count} fichiers du répertoire privé analysés, le quota actuel est de {quota} fichiers. Vous pouvez débloquer plus de crédits en invitant des amis.",
     "ko-KR": "할당량 소진: {count}개의 개인 디렉터리 파일이 분석되었으며, 현재 할당량은 {quota}개 파일입니다. 친구를 초대하면 더 많은 크레딧을 잠금 해제할 수 있습니다.",
-    "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(6038-6113)"],
+    "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(5865-5939)"],
     "$id": 7662
   },
   "云端执行失败": {
@@ -864,8 +864,8 @@
     "fr-FR": "L'exécution du cloud a échoué",
     "ko-KR": "클라우드 실행 실패",
     "$files": [
-      "src/electron/runtime-services/user-tier/user-tier-service.ts(8589-8599)",
-      "src/electron/runtime-services/user-tier/user-tier-service.ts(10782-10792)"
+      "src/electron/runtime-services/user-tier/user-tier-service.ts(8343-8353)",
+      "src/electron/runtime-services/user-tier/user-tier-service.ts(10472-10482)"
     ],
     "$id": 7663
   },
@@ -879,7 +879,7 @@
     "de-DE": "Der Dateipfad-Eintrag existiert nicht",
     "fr-FR": "L'enregistrement du chemin de fichier n'existe pas",
     "ko-KR": "파일 경로 기록이 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/database/dao/file-dao.ts(17115-17128)"],
+    "$files": ["src/electron/runtime-services/database/dao/file-dao.ts(16667-16680)"],
     "$id": 8123
   },
   "该目录已创建为{typeName}": {
@@ -892,7 +892,7 @@
     "de-DE": "Dieses Verzeichnis wurde als {typeName} erstellt",
     "fr-FR": "Ce répertoire a été créé en tant que {typeName}",
     "ko-KR": "해당 디렉토리가 {typeName}(으)로 생성되었습니다",
-    "$files": ["src/electron/runtime-services/database/dao/workspace-dao.ts(4666-4687)"],
+    "$files": ["src/electron/runtime-services/database/dao/workspace-dao.ts(4528-4549)"],
     "$id": 8124
   }
 }

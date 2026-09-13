@@ -5,6 +5,7 @@ import { t } from '@app/languages'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '../../../ui/dialog'
 import { getPerspectiveIcon } from '../utils/helpers'
 import { Button } from '../../../ui/button'
+import { toast } from '../../../common/Toast'
 
 export function CandidatesView({
   candidates,
@@ -129,13 +130,29 @@ export function CandidatesView({
                     )}
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-muted/60 dark:from-zinc-900/60 to-transparent pointer-events-none" />
-                  <button
-                    onClick={() => setSelectedDetail(c)}
-                    className="absolute bottom-2 right-2 text-[10px] font-bold text-primary/95 bg-background dark:bg-zinc-900 px-2 py-0.5 rounded border border-border/30 shadow-xs hover:border-primary/40 transition-all cursor-pointer flex items-center gap-0.5"
-                  >
-                    <MaterialIcon icon="open_in_new" className="text-[9px]" />
-                    {t('展开策略')}
-                  </button>
+                  <div className="absolute bottom-2 right-2 flex items-center gap-1.5">
+                    {c.strategy && c.strategy.trim() && (
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation()
+                          await navigator.clipboard.writeText(c.strategy.trim())
+                          toast.success(t('整理策略已复制到剪贴板'))
+                        }}
+                        className="text-[10px] font-bold text-muted-foreground hover:text-foreground bg-background dark:bg-zinc-900 px-2 py-0.5 rounded border border-border/30 shadow-xs hover:border-primary/40 transition-all cursor-pointer flex items-center gap-0.5"
+                        title={t('复制此方案目录树策略')}
+                      >
+                        <MaterialIcon icon="content_copy" className="text-[9px]" />
+                        {t('复制策略')}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setSelectedDetail(c)}
+                      className="text-[10px] font-bold text-primary/95 bg-background dark:bg-zinc-900 px-2 py-0.5 rounded border border-border/30 shadow-xs hover:border-primary/40 transition-all cursor-pointer flex items-center gap-0.5"
+                    >
+                      <MaterialIcon icon="open_in_new" className="text-[9px]" />
+                      {t('展开策略')}
+                    </button>
+                  </div>
                 </div>
 
                 {c.rationale && (
@@ -217,10 +234,24 @@ export function CandidatesView({
 
               <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
                 <div className="space-y-2.5">
-                  <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                    <MaterialIcon icon="menu_book" className="text-sm" />
-                    <span>{t('整理策略')}</span>
-                  </h4>
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                      <MaterialIcon icon="menu_book" className="text-sm" />
+                      <span>{t('整理策略')}</span>
+                    </h4>
+                    {selectedDetail.strategy && (
+                      <button
+                        onClick={async () => {
+                          await navigator.clipboard.writeText(selectedDetail.strategy.trim())
+                          toast.success(t('整理策略已复制到剪贴板'))
+                        }}
+                        className="text-xs text-primary hover:text-primary/80 font-medium flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        <MaterialIcon icon="content_copy" className="text-xs" />
+                        <span>{t('复制策略')}</span>
+                      </button>
+                    )}
+                  </div>
                   <div className="bg-muted/30 rounded-xl p-4 border border-border/30 overflow-y-auto max-h-[300px]">
                     <div className="text-sm leading-relaxed text-foreground whitespace-pre-wrap break-words">
                       {selectedDetail.strategy}

@@ -9,7 +9,7 @@
     "de-DE": "FFmpeg ist nicht bereit (System FFmpeg nicht erkannt), Audio kann nicht konvertiert werden",
     "fr-FR": "FFmpeg n'est pas prêt (système FFmpeg non détecté), impossible de convertir l'audio",
     "ko-KR": "FFmpeg가 준비되지 않았으며(시스템 FFmpeg가 감지되지 않음) 오디오를 변환할 수 없습니다.",
-    "$files": ["src/electron/runtime-services/filesystem/audio-converter.ts(1624-1660)"],
+    "$files": ["src/electron/runtime-services/filesystem/audio-converter.ts(1570-1606)"],
     "$id": 9445
   },
   "数据库连接未初始化": {
@@ -36,8 +36,8 @@
     "fr-FR": "L'entrée de fichier { fileId } n'existe pas",
     "ko-KR": "파일 기록 { fileId }이(가) 존재하지 않습니다",
     "$files": [
-      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(905-928)",
-      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(7139-7162)"
+      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(872-895)",
+      "src/electron/runtime-services/filesystem/file-cleanup-service.ts(6905-6928)"
     ],
     "$id": 3305
   },
@@ -734,7 +734,7 @@
     "de-DE": "Abgeschlossen",
     "fr-FR": "Terminé\r",
     "ko-KR": "완료",
-    "$files": ["src/electron/runtime-services/filesystem/organize-progress-tracker.ts(2554-2560)"],
+    "$files": ["src/electron/runtime-services/filesystem/organize-progress-tracker.ts(2452-2458)"],
     "$id": 5895
   },
   "Simple 模式下跳过 PDF/Office 缩略图生成": {
@@ -747,7 +747,7 @@
     "de-DE": "Überspringen Sie die Erstellung von PDF-/Office-Miniaturansichten im einfachen Modus",
     "fr-FR": "Ignorer la génération de vignettes PDF/Office en mode simple",
     "ko-KR": "단순 모드에서 PDF/Office 축소판 생성 건너뛰기",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(8838-8871)"],
+    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(8523-8556)"],
     "$id": 11055
   },
   "文件不存在: {filePath}": {
@@ -760,7 +760,7 @@
     "de-DE": "Datei existiert nicht: {filePath}",
     "fr-FR": "Le fichier n'existe pas : {filePath}\r",
     "ko-KR": "파일이 존재하지 않음: {filePath}",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(9174-9195)"],
+    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(8846-8867)"],
     "$id": 5897
   },
   "所有缩略图生成方法都失败（缓存）": {
@@ -773,7 +773,7 @@
     "de-DE": "Alle Methoden zur Thumbnail-Generierung sind fehlgeschlagen (Cache)",
     "fr-FR": "Toutes les méthodes de génération de vignettes ont échoué (cache)",
     "ko-KR": "모든 썸네일 생성 방법이 실패했습니다 (캐시)",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(9488-9508)"],
+    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(9148-9168)"],
     "$id": 8032
   },
   "所有缩略图生成方法都失败": {
@@ -786,7 +786,7 @@
     "de-DE": "Alle Methoden zur Generierung von Miniaturbildern sind fehlgeschlagen",
     "fr-FR": "Toutes les méthodes de génération des miniatures ont échoué",
     "ko-KR": "모든 썸네일 생성 방법이 실패함",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(11414-11430)"],
+    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(11002-11018)"],
     "$id": 5898
   },
   "原文件不存在: {filePath}": {
@@ -799,7 +799,7 @@
     "de-DE": "Die Originaldatei existiert nicht: {filePath}",
     "fr-FR": "Le fichier d'origine n'existe pas : {filePath}",
     "ko-KR": "원본 파일이 존재하지 않습니다: {filePath}",
-    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(14013-14035)"],
+    "$files": ["src/electron/runtime-services/filesystem/thumbnail-service.ts(13514-13536)"],
     "$id": 11056
   },
   "工作目录不存在: {workspaceDirectoryPath}": {
@@ -813,8 +813,8 @@
     "fr-FR": "Le répertoire de travail n'existe pas : {workspaceDirectoryPath}",
     "ko-KR": "작업 디렉터리가 존재하지 않습니다: {workspaceDirectoryPath}",
     "$files": [
-      "src/electron/runtime-services/filesystem/analyzed-directory-service/PersistenceManager.ts(594-631)",
-      "src/electron/runtime-services/filesystem/virtual-directory-service/PersistenceManager.ts(594-631)"
+      "src/electron/runtime-services/filesystem/analyzed-directory-service/PersistenceManager.ts(578-615)",
+      "src/electron/runtime-services/filesystem/virtual-directory-service/PersistenceManager.ts(578-615)"
     ],
     "$id": 8136
   },
@@ -828,7 +828,7 @@
     "de-DE": "Der entsprechende Arbeitsbereich kann nicht gefunden werden: {path}",
     "fr-FR": "L'espace de travail correspondant est introuvable : {path}",
     "ko-KR": "해당 작업공간을 찾을 수 없습니다: {path}",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/index.ts(12702-12724)"],
+    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/index.ts(12341-12363)"],
     "$id": 4382
   },
   "选中的文件中没有AI分析过的文件，请先进行AI分析": {
@@ -841,7 +841,7 @@
     "de-DE": "In den ausgewählten Dateien befinden sich keine von KI analysierten Dateien. Bitte führen Sie zunächst eine KI-Analyse durch.",
     "fr-FR": "Aucun fichier sélectionné n'a été analysé par l'IA, veuillez d'abord effectuer une analyse IA",
     "ko-KR": "선택한 파일 중 AI 분석이 완료된 파일이 없습니다. 먼저 AI 분석을 진행해 주세요.",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3043-3072)"],
+    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(2959-2988)"],
     "$id": 3421
   },
   "当前没有AI分析过的文件，请先在真实目录中勾选文件进行AI分析": {
@@ -854,7 +854,7 @@
     "de-DE": "Derzeit liegen keine von KI analysierten Dateien vor. Bitte wählen Sie zunächst Dateien im echten Verzeichnis aus, um eine KI-Analyse durchzuführen.",
     "fr-FR": "Aucun fichier analysé par l'IA n'est disponible pour le moment, veuillez d'abord sélectionner des fichiers dans le répertoire réel pour une analyse IA",
     "ko-KR": "현재 AI 분석이 완료된 파일이 없습니다. 실제 디렉터리에서 파일을 선택하여 AI 분석을 먼저 진행해 주세요.",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3089-3124)"],
+    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/PlanGenerator.ts(3004-3039)"],
     "$id": 3422
   },
   "核心引擎未初始化，请等待初始化完成后再试": {
@@ -868,8 +868,8 @@
     "fr-FR": "Le moteur principal n'a pas été initialisé, veuillez attendre la fin de l'initialisation et réessayer.",
     "ko-KR": "핵심 엔진이 초기화되지 않았습니다. 초기화가 완료된 후 다시 시도해 주세요.",
     "$files": [
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(12688-12712)",
-      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(13554-13578)"
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(12343-12367)",
+      "src/electron/runtime-services/filesystem/virtual-directory-service/AISchemeGenerator.ts(13182-13206)"
     ],
     "$id": 8077
   },
@@ -883,7 +883,7 @@
     "de-DE": "Virtuelles Verzeichnis kann nicht erstellt werden: Der Name \"{name}\" und alle abgeleiteten Namen sind bereits vergeben",
     "fr-FR": "Impossible de créer un répertoire virtuel: le nom \"{name}\" et tous ses noms dérivés sont déjà utilisés",
     "ko-KR": "가상 디렉터리를 생성할 수 없습니다: 이름 \"{name}\" 및 모든 파생 이름이 이미 사용 중입니다",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(10970-11006)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(10663-10699)"],
     "$id": 8137
   },
   "虚拟目录不存在": {
@@ -896,7 +896,7 @@
     "de-DE": "Virtuelles Verzeichnis nicht vorhanden",
     "fr-FR": "Le répertoire virtuel n'existe pas",
     "ko-KR": "가상 디렉터리가 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11173-11184)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(10861-10872)"],
     "$id": 8138
   },
   "无法更新名称：名称\"{name}\"已被占用": {
@@ -909,7 +909,7 @@
     "de-DE": "Name kann nicht aktualisiert werden: Der Name \"{name}\" ist bereits vergeben",
     "fr-FR": "Impossible de mettre à jour le nom : le nom \"{name}\" est déjà utilisé",
     "ko-KR": "이름을 업데이트할 수 없습니다: 이름 \"{name}\"이(가) 이미 사용 중입니다",
-    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(12024-12049)"],
+    "$files": ["src/electron/runtime-services/filesystem/virtual-directory-service/VirtualDirectoryService.ts(11685-11710)"],
     "$id": 8139
   }
 }

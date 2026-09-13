@@ -108,6 +108,10 @@ function sanitizeName(name: string): string {
  * 注册当前 Worktree 实例为活跃状态（记录 PID 与时间戳）
  */
 export function touchActiveWorktree(worktreeName: string): void {
+  // 该文件仅被开发模式的 detectWorktreeName 回退逻辑读取（该处已有 !app.isPackaged 保护）。
+  // 打包模式下写入只会在 appData 下创建裸 firefly-ai-folder 目录，污染用户数据目录，
+  // 因此打包模式直接跳过，确保 prod 运行仅使用 firefly-ai-folder-[region]
+  if (app.isPackaged || process.env.NODE_ENV === 'production') return
   try {
     const commonDir = path.join(app.getPath('appData'), 'firefly-ai-folder')
     if (!fs.existsSync(commonDir)) {
@@ -170,7 +174,13 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
   if (cachedInfo) return cachedInfo
 
   let isProd = app.isPackaged || process.env.NODE_ENV === 'production'
-  const rawRegion = (process.env.BUILD_REGION || 'CN').trim().toLowerCase()
+  // region 优先取构建期注入的 __BUILD_REGION__（打包 exe 运行时没有 BUILD_REGION 环境变量，
+  // 若只读 process.env 会错误回退到 'CN'，导致 intl 包把 userData 写进 firefly-ai-folder-cn）
+  const rawRegion = (
+    typeof __BUILD_REGION__ !== 'undefined' && __BUILD_REGION__
+      ? __BUILD_REGION__
+      : process.env.BUILD_REGION || 'CN'
+  ).trim().toLowerCase()
   const region = rawRegion === 'cn' ? 'cn' : 'intl'
 
   // 检查深链接中是否指明了环境
@@ -196,11 +206,19 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
   const worktreeName = detectWorktreeName()
   const majorVersion = getAppMajorVersion()
 
-  // 生产打包时: firefly-ai-folder-v4-[cn|intl]
+  // 打包模式默认使用正式目录名（不带分支后缀），保证已发布用户的数据目录不受影响；
+  // 但若显式设置了 WORKTREE_NAME 环境变量（多 Worktree 并发测试打包产物时由启动脚本注入），
+  // 则打包模式也追加分支后缀，隔离 userData，避免污染正式环境数据
+  const explicitWorktree = process.env.WORKTREE_NAME && process.env.WORKTREE_NAME.trim()
+
+  // 生产打包时: firefly-ai-folder-v4-[cn|intl]（若显式指定 WORKTREE_NAME 则追加分支后缀隔离测试数据）
   // 开发运行时: firefly-ai-folder-v4-[cn|intl]-[development|canary|production]-[worktree]
-  const appName = isProd
-    ? `firefly-ai-folder-${majorVersion}-${region}`
-    : `firefly-ai-folder-${majorVersion}-${region}-${appEnv}-${worktreeName}`
+  const appName =
+    isProd && !explicitWorktree
+      ? `firefly-ai-folder-${majorVersion}-${region}`
+      : isProd
+        ? `firefly-ai-folder-${majorVersion}-${region}-${worktreeName}`
+        : `firefly-ai-folder-${majorVersion}-${region}-${appEnv}-${worktreeName}`
 
   app.setName(appName)
 

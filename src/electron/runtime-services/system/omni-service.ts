@@ -686,6 +686,8 @@ export class OmniService {
       const analysisMode = (orchestrator.getValue<string>('ANALYSIS_MODE') || 'full').toLowerCase()
       const reuseBasic = orchestrator.getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true
       const audioAnalysisDuration = orchestrator.getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30
+      // 当前用户界面语言，同步给 Omni 引擎（供 OCR/元数据提取等按语言处理）
+      const currentLanguage = orchestrator.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
 
       // 提取最新的受保护排除项清单 (来自 IGNORE_RULES 中 isCzkawka 标记)
       const { duplicateDetectionService } = await import('../filesystem')
@@ -701,7 +703,8 @@ export class OmniService {
         analysis_mode: analysisMode,
         reuse_basic_analysis_data: reuseBasic,
         audio_analysis_duration: audioAnalysisDuration,
-        excluded_items: excludedItems
+        excluded_items: excludedItems,
+        language: currentLanguage
       })
 
       const res = await fetch(`${this.baseUrl}/api/config`, {
@@ -714,7 +717,7 @@ export class OmniService {
       if (res.ok) {
         logger.info(
           LogCategory.SYSTEM,
-          `[OmniService] 已向 Omni 引擎同步配置: enable_office_cover=${enableOfficeCover}, max_document_ocr_items=${maxDocOcrItems}, enable_image_ocr=${enableImageOcr}, ocr_model_size=${ocrModelSize}, audio_analysis_duration=${audioAnalysisDuration}s, excluded_items_count=${excludedItems.length}`
+          `[OmniService] 已向 Omni 引擎同步配置: enable_office_cover=${enableOfficeCover}, max_document_ocr_items=${maxDocOcrItems}, enable_image_ocr=${enableImageOcr}, ocr_model_size=${ocrModelSize}, audio_analysis_duration=${audioAnalysisDuration}s, excluded_items_count=${excludedItems.length}, language=${currentLanguage}`
         )
         return true
       }

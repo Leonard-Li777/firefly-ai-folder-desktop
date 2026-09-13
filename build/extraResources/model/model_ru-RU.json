@@ -39,7 +39,7 @@
       "company": "unsloth",
       "parameterSize": "0.8B",
       "totalSize": "579MB",
-      "recommended": false,
+      "recommended": true,
       "description": "Чрезвычайно быстрая и легкая текстовая модель, подходящая для сред низкого уровня и ЦП, со сбалансированной производительностью анализа на китайском языке.",
       "source": "huggingface",
       "quantization": "UD-Q5_K_XL",
@@ -71,6 +71,7 @@
       "totalSize": "976MB",
       "description": "Экстремальная скорость работы, подходит для сред с чрезвычайно низкой конфигурацией и поддерживает менее точный анализ изображений.",
       "source": "huggingface",
+      "recommended": true,
       "isMultiModal": true,
       "contextLength": 131072,
       "performance": {
@@ -101,6 +102,7 @@
       "totalSize": "873MB",
       "description": "Новейшая инструктивная модель LFM2.5, эффективный анализ текста, быстрая работа на CPU.",
       "source": "modelscope",
+      "recommended": true,
       "isBuiltin": true,
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -124,13 +126,75 @@
       }
     },
     {
+      "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
+      "name": "MiniCPM5 2B（высокое качество•высокоскоростной）",
+      "company": "OpenBMB",
+      "parameterSize": "2B",
+      "totalSize": "1.45GB",
+      "recommended": true,
+      "description": "Недостаточно видеопамяти, и если вы хотите правильно классифицировать файлы, вы должны выбрать me. Единственным недостатком является то, что он поддерживает только текст.",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "легкий",
+        "Поддержка работы процессора",
+        "только текст",
+        "Китайский лучше",
+        "DSpark"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
+      "name": "MiniCPM5 2B（высокое качество•высокоскоростной）",
+      "company": "OpenBMB",
+      "parameterSize": "2B",
+      "totalSize": "1.45GB",
+      "recommended": true,
+      "description": "Недостаточно видеопамяти, и если вы хотите правильно классифицировать файлы, вы должны выбрать me. Единственным недостатком является то, что он поддерживает только текст.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "very_fast",
+        "quality": "high"
+      },
+      "tags": [
+        "легкий",
+        "Поддержка работы процессора",
+        "только текст",
+        "Китайский лучше",
+        "DSpark"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
       "id": "LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M",
-      "name": "LFM2.5 2.6B（Высокая эффективность）",
+      "name": "LFM2.5 2.6B（скорость）",
       "company": "LiquidAI",
       "parameterSize": "2.6B",
       "totalSize": "1.63GB",
       "recommended": true,
-      "description": "Последняя официальная модель LFM2.5 2.6B, сочетающая эффективное выводение и высококачественный анализ, с эксклюзивным ускорением DSpark для CPU.",
+      "description": "Новейшая официальная модель LFM2.5 2.6B сочетает в себе эффективные рассуждения с высококачественным анализом и поддерживает ускорение спекулятивной выборки DSpark.",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -206,7 +270,7 @@
       },
       "tags": [
         "мультимодальный",
-        "быстрый",
+        "скорость",
         "Аудио",
         "английский лучше"
       ],
@@ -423,39 +487,9 @@
       },
       "tags": [
         "мультимодальный",
-        "быстрый",
+        "скорость",
         "Аудио",
         "английский лучше"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 3072
-      }
-    },
-    {
-      "id": "unsloth/Qwen3.5-4B-MTP-GGUF:UD-Q4_K_XL",
-      "name": "Qwen 3.5 4B MTP(Новее)",
-      "company": "Unsloth",
-      "parameterSize": "4B",
-      "totalSize": "3.41GB",
-      "description": "Количественная версия архитектуры MTP, сочетающая скорость и качество.",
-      "source": "modelscope",
-      "quantization": "UD-Q4_K_XL",
-      "isMultiModal": true,
-      "contextLength": 262144,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "MTP",
-        "мультимодальный",
-        "быстрый",
-        "Китайский лучше"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -591,7 +625,7 @@
       "company": "unsloth",
       "parameterSize": "2B",
       "totalSize": "3.61GB",
-      "recommended": true,
+      "recommended": false,
       "description": "Унифицированная мультимодальная количественная версия QAT, архитектура MoE чрезвычайно экономит видеопамять, поддерживает анализ текста, изображений и звука.",
       "source": "modelscope",
       "quantization": "UD-Q4_K_XL",
@@ -627,7 +661,7 @@
       "company": "unsloth",
       "parameterSize": "2B",
       "totalSize": "3.71GB",
-      "recommended": true,
+      "recommended": false,
       "description": "Обладая всеми возможностями, а также технологией MTP для обеспечения скорости, это, безусловно, лучшая модель для выбора.",
       "source": "huggingface",
       "quantization": "UD-Q4_K_XL",
@@ -656,74 +690,12 @@
       }
     },
     {
-      "id": "GnLOLot/MiniCPM5-1B-Claude-Opus-Fable5-Thinking-GGUF:Q4_K_M",
-      "name": "MiniCPM5 1B Claude微调（Цепочка мыслей）",
-      "company": "GnLOLot",
-      "parameterSize": "1B",
-      "totalSize": "688MB",
-      "description": "MiniCPM5-1B, настроенный на основе набора данных Claude Opus Fable5, поддерживает цепочку мышления и хорош в программировании и выполнении инструкций.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "extreme",
-        "quality": "very_high"
-      },
-      "tags": [
-        "Точная оптимизация",
-        "Набор данных Клода",
-        "Цепочка мыслей",
-        "Оптимизация программирования",
-        "легкий",
-        "Поддержка работы процессора",
-        "только текст"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（высший）",
-      "company": "OpenBMB",
-      "parameterSize": "2B",
-      "totalSize": "1.45GB",
-      "recommended": true,
-      "description": "2B 级开源 SOTA 文本模型，代码推理、数学与长上下文能力突出，支持思维链推理，仅支持文本分析。",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "very_high"
-      },
-      "tags": [
-        "только текст",
-        "Оптимизация программирования",
-        "Цепочка мыслей",
-        "Китайский лучше"
-      ],
-      "recommendedConfig": {
-        "numCtx": 16384,
-        "numPredict": 4096
-      }
-    },
-    {
       "id": "Abiray/Nanbeige4.2-3B-GGUF:Q4_K_S",
-      "name": "Наньбежевый 4,2 3B (за пределами 9B)",
+      "name": "Наньбежевый 4.2 3B (лучше)",
       "company": "Abiray",
       "parameterSize": "3B",
       "totalSize": "2.33GB",
-      "recommended": true,
+      "recommended": false,
       "description": "Корпус 3B из твердой стали 9B, настоятельно рекомендуется, но поддерживает только текст.",
       "source": "modelscope",
       "quantization": "Q4_K_S",
@@ -747,42 +719,12 @@
       }
     },
     {
-      "id": "owao/Nanbeige4.2-3B-GGUF:Q4_K_M",
-      "name": "Наньбежевый 4,2 3B (за пределами 9B)",
-      "company": "owao",
-      "parameterSize": "3B",
-      "totalSize": "2.40GB",
-      "recommended": false,
-      "description": "Корпус 3B из твердой стали 9B, настоятельно рекомендуется, но поддерживает только текст.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "побег из тюрьмы",
-        "Нет цензуры",
-        "NSFW",
-        "только текст"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
       "id": "mradermacher/Nanbeige4.2-3B-heretic-i1-GGUF:i1-Q5_K_M",
       "name": "Nanbeige 4.2 3B（Джейлбрейк-Оптимизация）",
       "company": "mradermacher",
       "parameterSize": "3B",
       "totalSize": "2.78GB",
-      "recommended": true,
+      "recommended": false,
       "description": "3B корпус из твердой стали 9B, версия i1 с джейлбрейком имеет более высокую точность квантования, но поддерживает только текст.",
       "source": "huggingface",
       "quantization": "i1-Q5_K_M",
@@ -901,14 +843,15 @@
       }
     },
     {
-      "id": "JonathanColetti/Qwen3.8-27B-Uncensored-GGUF:Q4_K_M",
-      "name": "Qwen 3.8 27B（Самый сильный побег из тюрьмы）",
-      "company": "JonathanColetti",
+      "id": "unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_M",
+      "name": "Qwen 3.8 27B（сильнейший）",
+      "company": "unsloth",
       "parameterSize": "27B",
-      "totalSize": "16.52GB",
-      "description": "Qwen3.8-27B — это количественная версия без цензуры, которая сохраняет длинные прогнозы MTP и поддерживает анализ текста и изображений.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
+      "totalSize": "16.2GB",
+      "recommended": true,
+      "description": "Официальная версия динамического квантования UD от unsloth с чрезвычайно низкой потерей качества, поддерживает анализ текста и изображений и требует большего объема видеопамяти.",
+      "source": "modelscope",
+      "quantization": "UD-Q4_K_M",
       "isMultiModal": true,
       "contextLength": 131072,
       "capabilities": [
@@ -917,15 +860,13 @@
       ],
       "performance": {
         "speed": "slow",
-        "quality": "high"
+        "quality": "very_high"
       },
       "tags": [
-        "Нет цензуры",
-        "побег из тюрьмы",
-        "NSFW",
         "мультимодальный",
         "Большие параметры",
-        "MTP"
+        "Высокая точность",
+        "сильнейший"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -933,59 +874,32 @@
       }
     },
     {
-      "id": "empero-ai/Qwen3.8-2B-Distill-GGUF:Q4_K_M",
-      "name": "Qwen 3.8 2B（дистилляция）",
-      "company": "empero-ai",
-      "parameterSize": "2B",
-      "totalSize": "1.22GB",
+      "id": "HauhauCS/Qwen3.8-27B-Uncensored-HauhauCS-Aggressive-MTP-GGUF:Q4_K_P",
+      "name": "Qwen 3.8 27B（побег из тюрьмы）",
+      "company": "HauhauCS",
+      "parameterSize": "27B",
+      "totalSize": "17.56GB",
       "recommended": true,
-      "description": "Qwen3.8 Дистилляционная версия, экстремальная скорость работы, поддерживает только текстовый анализ.",
+      "description": "Qwen3.8-27B — версия с радикальной децензурой. Квантование серии P сохраняет более высокую точность ключевых тензоров без цензуры и поддерживает анализ изображений.",
       "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
+      "quantization": "Q4_K_P",
+      "isMultiModal": true,
       "contextLength": 131072,
       "capabilities": [
-        "TEXT"
+        "TEXT",
+        "IMAGE"
       ],
       "performance": {
-        "speed": "extreme",
-        "quality": "high"
-      },
-      "tags": [
-        "дистилляция",
-        "легкий",
-        "Поддержка работы процессора",
-        "только текст"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "empero-ai/Qwen3.8-9B-Distill-GGUF:Q4_K_M",
-      "name": "Qwen 3.8 9B（дистилляция）",
-      "company": "empero-ai",
-      "parameterSize": "9B",
-      "totalSize": "5.38GB",
-      "recommended": true,
-      "description": "Дистилляционная версия Qwen3.8, унаследовавшая способность глубокого рассуждения больших моделей, поддерживает только текстовый анализ.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
+        "speed": "slow",
         "quality": "very_high"
       },
       "tags": [
-        "дистилляция",
-        "рассуждение",
-        "только текст",
-        "Точная оптимизация"
+        "побег из тюрьмы",
+        "Нет цензуры",
+        "NSFW",
+        "мультимодальный",
+        "Большие параметры",
+        "MTP"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -1050,35 +964,6 @@
       "recommendedConfig": {
         "numCtx": 8192,
         "numPredict": 4096
-      }
-    },
-    {
-      "id": "XHToken/Spark-X2.5-1.7B-GGUF",
-      "name": "Spark X2.5 1.7B（легкий）",
-      "company": "XHToken",
-      "parameterSize": "1.7B",
-      "totalSize": "3.19GB",
-      "description": "Текстовая модель Spark X2.5 1.7B, легкая и эффективная, поддерживает только анализ текста.",
-      "source": "huggingface",
-      "quantization": "",
-      "disabled": true,
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "легкий",
-        "Поддержка работы процессора",
-        "только текст"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
       }
     }
   ]

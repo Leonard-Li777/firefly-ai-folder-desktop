@@ -1,3 +1,19 @@
+diff --git a/binding.gyp b/binding.gyp
+index 28bdfbc5e6d8b57253542d2fcad287b3ecb9d5ce..0ed6a8b63f73c058b9f9463c9a0b29e2bd0cee2d 100644
+--- a/binding.gyp
++++ b/binding.gyp
+@@ -30,6 +30,11 @@
+         "<!@(node -p \"require('node-addon-api').include\")"
+       ],
+       'defines': [ 'NAPI_DISABLE_CPP_EXCEPTIONS' ],
++      'configurations': {
++        'Release': {
++          'msbuild_toolset': 'v143',
++        },
++      },
+     }
+   ]
+ }
 diff --git a/lib/addon.cc b/lib/addon.cc
 index 80f73c0aad6923e633abc8c9fc0cba78ce412360..593b88be1346ea61dac7a5fb59c9649873011116 100644
 --- a/lib/addon.cc

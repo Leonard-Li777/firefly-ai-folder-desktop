@@ -10,6 +10,16 @@ index a962e3f89acde436f4915eeeb11a28b49ad7b364..90ad9ed05987577d95047cd9b293ded4
  
  function _interopDefault (e) { return e && e.__esModule ? e : { default: e }; }
  
+@@ -70,3 +71,3 @@ function getSettingsFromPackageJson(entry) {
+ function getDefaultLanguageDir() {
+-  const cwd = process.env.INIT_CWD || process.cwd();
++  const cwd = process.cwd();
+   const srcPath = path8__default.default.join(cwd, "src");
+@@ -86,3 +87,3 @@ function getLanguageDir(options) {
+   }, options);
+-  const cwd = process.env.INIT_CWD || process.cwd();
++  const cwd = process.cwd();
+   try {
 @@ -256,7 +257,8 @@ async function aiQuestion(prompt, options) {
          "Content-Type": "application/json",
          "Authorization": `Bearer ${apiKey}`,
@@ -20,3 +30,27 @@ index a962e3f89acde436f4915eeeb11a28b49ad7b364..90ad9ed05987577d95047cd9b293ded4
      });
      if (res.status !== 200) {
        throw new Error(`API request failed with status ${res.status}: ${res.statusText}`);
+@@ -440,3 +442,3 @@ async function getProjectContext(options) {
+   const ctx = await getVoerkaI18nSettings();
+-  ctx.rootDir = process.env.INIT_CWD || process.cwd();
++  ctx.rootDir = process.cwd();
+   ctx.langDir = getLanguageDir();
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 72ef9f8e4e9f73f08efcf9c63b49911e3b6d2146..d01dbfc9ce9d7249339e1f57999824637a2e0a29 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -61,3 +61,3 @@ function getSettingsFromPackageJson(entry) {
+ function getDefaultLanguageDir() {
+-  const cwd = process.env.INIT_CWD || process.cwd();
++  const cwd = process.cwd();
+   const srcPath = path8.join(cwd, "src");
+@@ -77,3 +77,3 @@ function getLanguageDir(options) {
+   }, options);
+-  const cwd = process.env.INIT_CWD || process.cwd();
++  const cwd = process.cwd();
+   try {
+@@ -430,3 +430,3 @@ async function getProjectContext(options) {
+   const ctx = await getVoerkaI18nSettings();
+-  ctx.rootDir = process.env.INIT_CWD || process.cwd();
++  ctx.rootDir = process.cwd();
+   ctx.langDir = getLanguageDir();
