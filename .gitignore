@@ -117,3 +117,14 @@ trusted-signing-metadata.json
 build/extraResources/configs/binaries.json
 build/extraResources/configs/models.json
 build/extraResources/geo/.ready-geo-20260825
+
+# Compiled TypeScript artifacts inside src (NEVER COMMIT)
+# 背景：`tsc` 曾将编译产物直出到 src/ 并误入版本库，导致 stale .js 与 .ts 源码并存，
+# 构建期出现 "Could not resolve" 类错误。此规则确保将来重新生成的产物始终被忽略。
+src/**/*.js
+src/**/*.js.map
+src/**/*.d.ts
+src/**/*.d.ts.map
+# 例外：手写类型声明是真实源码，必须参与版本控制，不可被上面的规则吞掉
+!src/global.d.ts
+!src/shared/types/*.d.ts
