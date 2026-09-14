@@ -61,8 +61,8 @@ function HistoryBadge({
   status?: string
   analysisMode: string
 }) {
-  // 分析模式决定文件完成所需的 stage：Sample->1, Document->2, Full->4
-  const completionStage = analysisMode === 'simple' ? 1 : analysisMode === 'document' ? 2 : 4
+  // 分析模式决定文件完成所需的 stage：simple->2（CPU 内容提取完成）、quick_name->3、full->4
+  const completionStage = analysisMode === 'quick_name' ? 3 : analysisMode === 'full' ? 4 : 2
   const s = stage ?? 0
 
   // 失败：在状态列展示分析失败

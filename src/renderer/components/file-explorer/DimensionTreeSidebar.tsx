@@ -459,22 +459,58 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
 )
 DimensionTreeRow.displayName = 'DimensionTreeRow'
 
-// Recursive helper to find all keys in tree
+/**
+ * 解析节点在给定父标签上下文下实际要展示的标签集合。
+ * 这是「渲染」与「全选」必须共用的唯一口径：
+ * 当节点存在 contextualTags 且当前非扩展名维度时，实际展示的是上下文标签而非 node.tags。
+ * 若两处口径不一致，会导致「点全选后标签样式变了，但每行 checkbox 未勾选」。
+ */
+const resolveTagsToUse = (node: DimensionTreeNode, parentTagValue?: string) => {
+  let tagsToUse = node.tags
+  if (parentTagValue && node.contextualTags && node.contextualTags[parentTagValue]) {
+    const isL3Ext = /扩展名|Extension/i.test(node.name)
+    if (!isL3Ext) {
+      tagsToUse = node.contextualTags[parentTagValue]
+    }
+  }
+  return tagsToUse
+}
+
+/**
+ * 递归收集树中所有「可被勾选」的标签 key。
+ * 约束（必须与渲染层一致）：
+ * 1. 标签集合取自 resolveTagsToUse（含 contextualTags 场景）；
+ * 2. 跳过 fileCount === 0 的禁用标签（渲染层 checkbox 处于 disabled，无法勾选）；
+ * 3. 跳过折叠维度组内的标签（渲染层未渲染，勾选后用户看不到任何反馈）。
+ * 否则「全选」会写入一堆不会渲染出勾选态的 key，表现为「标签变全选样式但 checkbox 未勾选」。
+ */
 const getAllKeys = (
   nodes: DimensionTreeNode[],
   parentTag?: string,
-  chain: string[] = []
+  chain: string[] = [],
+  collapsedDimensionGroups?: Set<number>
 ): { key: string; ancestorChain: string[] }[] => {
   const keys: { key: string; ancestorChain: string[] }[] = []
   nodes.forEach(node => {
-    node.tags.forEach(tag => {
-      const key = makeTagKey(node.id, tag.tagValue, parentTag)
+    // 折叠的维度组不渲染其标签，不应计入全选范围
+    if (node.level === 0 && collapsedDimensionGroups?.has(node.id)) return
+
+    const tagsToUse = resolveTagsToUse(node, parentTag)
+    tagsToUse.forEach(tag => {
+      // 与渲染层复选框 disabled 条件保持一致
+      if (tag.fileCount === 0) return
+      // 必须使用 tag.dimensionId 生成 key：渲染层 isTagSelected 的判断依据即为 tag.dimensionId，
+      // contextualTags 场景下 tag.dimensionId 可能与 node.id 不同，用 node.id 会导致选中态匹配错位
+      const key = makeTagKey(tag.dimensionId, tag.tagValue, parentTag)
       const currentChain = [...chain, tag.tagValue]
       keys.push({ key, ancestorChain: currentChain })
     })
+    // 与渲染层一致：childTags 以当前节点实际展示的标签值作为父标签键递归
     if (node.childTags) {
       for (const [childParentTag, childNodes] of node.childTags) {
-        keys.push(...getAllKeys(childNodes, childParentTag, [...chain, childParentTag]))
+        keys.push(
+          ...getAllKeys(childNodes, childParentTag, [...chain, childParentTag], collapsedDimensionGroups)
+        )
       }
     }
   })
@@ -790,6 +826,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   }, [dimensionGroups])
 
   // 4. 自动清理不在当前维度树中的无效/陈旧幽灵标签键
+  // 注意：此处不排除折叠的维度组（折叠只是临时 UI 状态，不代表标签失效），
+  // 因此不传 collapsedDimensionGroups，仅按「标签是否存在且可勾选」判定有效性。
   useEffect(() => {
     if (selectedTags.size === 0) return
 
@@ -840,7 +878,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   }, [visibleGroups, isExportMode, storageKey])
 
   const handleSelectAll = useCallback(() => {
-    const allItems = getAllKeys(visibleGroups)
+    const allItems = getAllKeys(visibleGroups, undefined, [], collapsedDimensionGroups)
     const newSelected = new Set<string>()
     const newStack: string[] = []
     const newParentTagMap = new Map<string, string[]>()
@@ -876,10 +914,10 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     if (onSelectionChangeRef.current) {
       onSelectionChangeRef.current(newSelected, 'selectAll', newParentTagMap)
     }
-  }, [visibleGroups, storageKey])
+  }, [visibleGroups, storageKey, collapsedDimensionGroups])
 
   const handleInvertSelection = useCallback(() => {
-    const allItems = getAllKeys(visibleGroups)
+    const allItems = getAllKeys(visibleGroups, undefined, [], collapsedDimensionGroups)
     const newSelected = new Set<string>()
     const newStack: string[] = []
     const newParentTagMap = new Map<string, string[]>()
@@ -917,7 +955,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     if (onSelectionChangeRef.current) {
       onSelectionChangeRef.current(newSelected, 'invert', newParentTagMap)
     }
-  }, [visibleGroups, selectedTags, storageKey])
+  }, [visibleGroups, selectedTags, storageKey, collapsedDimensionGroups])
 
   const handleVisibleAndHiddenTags = useCallback(
     (group: DimensionGroup, childTags?: Map<string, DimensionTreeNode[]>) => {
@@ -989,13 +1027,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         if (isCollapsed) return
       }
 
-      let tagsToUse = node.tags
-      if (parentTagValue && node.contextualTags && node.contextualTags[parentTagValue]) {
-        const isL3Ext = /扩展名|Extension/i.test(node.name)
-        if (!isL3Ext) {
-          tagsToUse = node.contextualTags[parentTagValue]
-        }
-      }
+      // 与 getAllKeys（全选）共用同一份标签解析口径，确保选中态 key 集合完全一致
+      const tagsToUse = resolveTagsToUse(node, parentTagValue)
 
       const { tagsToShow } = handleVisibleAndHiddenTags(
         { ...node, tags: tagsToUse },

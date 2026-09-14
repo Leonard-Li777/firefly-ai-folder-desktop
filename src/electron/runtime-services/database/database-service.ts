@@ -756,6 +756,13 @@ export class DatabaseService {
   async updateAnalysisStage(fileFingerprint: string, stage: number): Promise<void> {
     return this.fileDao.updateAnalysisStage(fileFingerprint, stage)
   }
+  /**
+   * 补齐单个文件的「已分析完成」标记（幂等）。
+   * 供分析管道在提前结束的路径上回写状态，避免队列已完成但 is_analyzed 仍为 0。
+   */
+  async markFileAnalyzed(workspaceId: number, filePath: string): Promise<number> {
+    return this.fileDao.markFileAnalyzed(workspaceId, filePath)
+  }
   async updateAnalysisStageAndQuality(
     fileFingerprint: string,
     stage: number,

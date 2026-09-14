@@ -154,16 +154,6 @@ export class DeploymentManager {
     {
       platform: 'win32',
       architecture: 'x64',
-      acceleration: 'openvino',
-      packageName: 'llama-bin-win-openvino-x64',
-      relativePath: 'llama/llama-bin-win-openvino-x64',
-      required: false,
-      priority: 85,
-      dependencies: ['Intel oneAPI Runtime', 'Visual C++ Redistributable']
-    },
-    {
-      platform: 'win32',
-      architecture: 'x64',
       acceleration: 'cpu',
       packageName: 'llama-bin-win-cpu-x64',
       relativePath: 'llama/llama-bin-win-cpu-x64',
@@ -224,16 +214,6 @@ export class DeploymentManager {
       required: false,
       priority: 100,
       dependencies: ['CUDA Runtime', 'NVIDIA Driver']
-    },
-    {
-      platform: 'linux',
-      architecture: 'x64',
-      acceleration: 'openvino',
-      packageName: 'llama-bin-ubuntu-openvino-x64',
-      relativePath: 'llama/llama-bin-ubuntu-openvino-x64',
-      required: false,
-      priority: 85,
-      dependencies: ['Intel oneAPI Runtime']
     },
     {
       platform: 'linux',

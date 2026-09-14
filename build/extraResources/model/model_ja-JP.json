@@ -157,13 +157,13 @@
       }
     },
     {
-      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（高品質•高スピード）",
-      "company": "OpenBMB",
+      "id": "Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M",
+      "name": "MiniCPM5 2B（高品質•高スピード•脱獄）",
+      "company": "Abiray",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "ビデオメモリが不足しているため、ファイルを正しく分類したい場合は、私を選択する必要があります。 唯一の欠点は、テキストのみをサポートすることです。",
+      "description": "ビデオメモリが不足しているため、ファイルを正しく分類する場合は、バージョンを制限するために私を選択する必要があります（Abliterated）。",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -176,11 +176,11 @@
         "quality": "high"
       },
       "tags": [
-        "軽量",
-        "CPU動作をサポート",
+        "制限する",
+        "検閲なし",
+        "NSFW",
         "テキストのみ",
-        "中国語のほうが上手い",
-        "DSpark"
+        "中国語のほうが上手い"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

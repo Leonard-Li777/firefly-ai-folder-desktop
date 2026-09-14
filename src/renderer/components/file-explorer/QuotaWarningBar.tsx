@@ -6,6 +6,7 @@ import { useTierStore } from '../../stores/tier-store'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { useShallow } from 'zustand/react/shallow'
 import { INFINITY } from '@firefly/shared'
+import { FirecoresRulesDialog } from '../tier/FirecoresRulesDialog'
 
 interface QuotaWarningBarProps {
   currentWorkspaceDirectory?: {
@@ -13,17 +14,17 @@ interface QuotaWarningBarProps {
   }
   machineId: string | null
   setMachineId: (id: string) => void
-  setShowInvitationModal: (show: boolean) => void
 }
 
 export const QuotaWarningBar: React.FC<QuotaWarningBarProps> = ({
   currentWorkspaceDirectory,
   machineId,
-  setMachineId,
-  setShowInvitationModal
+  setMachineId
 }) => {
   const { t } = useVoerkaI18n()
   const [analyzedCount, setAnalyzedCount] = useState(0)
+  // 萤火规则弹层：点击提示条直接展示「收集萤火」Tab，不再跳转解锁弹窗
+  const [showFirecoreRules, setShowFirecoreRules] = useState(false)
   const completedItemIds = useAnalysisQueueStore(
     useShallow(
       s => s.snapshot?.items?.filter(item => item.status === 'completed').map(item => item.id) || []
@@ -104,72 +105,82 @@ export const QuotaWarningBar: React.FC<QuotaWarningBarProps> = ({
   if (!isQuotaLow && !isOverQuota) return null
 
   return (
-    <div
-      className={cn(
-        'px-3 py-2 flex items-center justify-between cursor-pointer transition-colors border-b text-xs',
-        // 超额状态 - 红色警告
-        isOverQuota &&
-          'bg-red-50/90 dark:bg-red-950/90 border-red-100 dark:border-red-900/90 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/90',
-        // 配额紧张 - 橙色提醒
-        isQuotaLow &&
-          'bg-orange-50/90 dark:bg-orange-950/90 border-orange-100 dark:border-orange-900/90 text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/90'
-      )}
-      onClick={async e => {
-        e.stopPropagation()
-        if (!machineId) {
-          const mId = await window.electronAPI!.getMachineId()
-          setMachineId(mId)
-        }
-        setShowInvitationModal(true)
-      }}
-    >
-      <div className="flex items-center gap-2">
-        <MaterialIcon
-          icon={isOverQuota ? 'report_problem' : 'warning'}
-          className={cn(
-            'text-sm flex-shrink-0',
-            // 超额状态
-            isOverQuota && 'text-red-500 dark:text-red-400',
-            // 配额紧张
-            isQuotaLow && 'text-orange-500 dark:text-orange-400'
-          )}
-        />
-        <span className="font-medium">
-          {isOverQuota
-            ? t('您私有目录合计已分析 {count} 个文件，已超出额度，可使用极速目录不限额。', {
-                count: analyzedCount
-              })
-            : t(
-                '您私有目录合计已分析 {count} 个文件，仅剩 {remaining} 个额度，可使用极速目录不限额。',
-                {
-                  count: analyzedCount,
-                  remaining
-                }
-              )}
-        </span>
-        <span
-          className={cn(
-            'underline decoration-dotted underline-offset-2',
-            isOverQuota
-              ? 'text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300'
-              : 'text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300'
-          )}
-        >
-          {t('如何取消私有目录限制？')}
-        </span>
+    <>
+      <div
+        className={cn(
+          'px-3 py-2 flex items-center justify-between cursor-pointer transition-colors border-b text-xs',
+          // 超额状态 - 红色警告
+          isOverQuota &&
+            'bg-red-50/90 dark:bg-red-950/90 border-red-100 dark:border-red-900/90 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/90',
+          // 配额紧张 - 橙色提醒
+          isQuotaLow &&
+            'bg-orange-50/90 dark:bg-orange-950/90 border-orange-100 dark:border-orange-900/90 text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/90'
+        )}
+        onClick={async e => {
+          e.stopPropagation()
+          if (!machineId) {
+            const mId = await window.electronAPI!.getMachineId()
+            setMachineId(mId)
+          }
+          // 直接弹出萤火规则的「收集萤火」Tab，引导用户收集萤火解锁额度
+          setShowFirecoreRules(true)
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <MaterialIcon
+            icon={isOverQuota ? 'report_problem' : 'warning'}
+            className={cn(
+              'text-sm flex-shrink-0',
+              // 超额状态
+              isOverQuota && 'text-red-500 dark:text-red-400',
+              // 配额紧张
+              isQuotaLow && 'text-orange-500 dark:text-orange-400'
+            )}
+          />
+          <span className="font-medium">
+            {isOverQuota
+              ? t('您私有目录合计已分析 {count} 个文件，已超出额度，可使用极速目录不限额。', {
+                  count: analyzedCount
+                })
+              : t(
+                  '您私有目录合计已分析 {count} 个文件，仅剩 {remaining} 个额度，可使用极速目录不限额。',
+                  {
+                    count: analyzedCount,
+                    remaining
+                  }
+                )}
+          </span>
+          <span
+            className={cn(
+              'underline decoration-dotted underline-offset-2',
+              isOverQuota
+                ? 'text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300'
+                : 'text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300'
+            )}
+          >
+            {t('如何取消私有目录限制？')}
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-muted-foreground opacity-70 hidden sm:inline">
+            {t('小技巧：双击文件启用预览，方向键切换文件，ESC关闭预览')}
+          </span>
+          <MaterialIcon
+            icon="chevron_right"
+            className={cn(
+              'text-sm flex-shrink-0 opacity-60',
+              isOverQuota ? 'text-red-500 dark:text-red-400' : 'text-orange-500 dark:text-orange-400'
+            )}
+          />
+        </div>
       </div>
-      <div className="flex items-center gap-3">
-        <span className="text-muted-foreground opacity-70 hidden sm:inline">
-          {t('小技巧：双击文件启用预览，方向键切换文件，ESC关闭预览')}
-        </span>
-        <MaterialIcon
-          icon="chevron_right"
-          className={cn(
-            'text-sm flex-shrink-0 opacity-60',
-            isOverQuota ? 'text-red-500 dark:text-red-400' : 'text-orange-500 dark:text-orange-400'
-          )}
-        />
-      </div>
-    </div>
+
+      {/* 萤火规则弹层：默认定位到「收集萤火」Tab */}
+      <FirecoresRulesDialog
+        open={showFirecoreRules}
+        onOpenChange={setShowFirecoreRules}
+        defaultTab="earn"
+      />
+    </>
   )
 }

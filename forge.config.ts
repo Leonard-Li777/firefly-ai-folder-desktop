@@ -56,6 +56,29 @@ function logToFile(msg: string) {
   }
 }
 
+// 获取架构类型
+export function getArch(): string {
+  // 优先读取环境变量 BUILD_ARCH (CI 和打包脚本显式指定)
+  if (process.env.BUILD_ARCH) {
+    return process.env.BUILD_ARCH
+  }
+  // 兼容 npm 传入架构
+  if (process.env.npm_config_arch) {
+    return process.env.npm_config_arch
+  }
+  // 检查命令行参数 --arch=
+  const archArg = process.argv.find(s => s.startsWith('--arch='))
+  if (archArg) {
+    return archArg.split('=')[1]
+  }
+  // 如果在 CI 环境中运行，兜底检查 process.argv 中的标志
+  if (process.env.CI || process.argv.some(s => s.includes('arch'))) {
+    return process.argv.some(s => s.includes('--arch=arm64')) ? 'arm64' : 'x64'
+  }
+
+  return process.arch
+}
+
 // 定义各种构建标志和环境变量
 const FLAGS = {
   // 是否启用代码签名
@@ -105,11 +128,6 @@ const EXTERNAL_DEPENDENCIES = [
   '@img/sharp-linux-arm',
   '@img/sharp-libvips-linuxmusl-arm64',
   '@img/sharp-libvips-linuxmusl-x64',
-  '@firecrawl/anydoc',
-  '@firecrawl/anydoc-win32-x64-msvc',
-  '@firecrawl/anydoc-darwin-x64',
-  '@firecrawl/anydoc-darwin-arm64',
-  '@firecrawl/anydoc-linux-x64-gnu',
   '@img/sharp-linuxmusl-arm64',
   '@img/sharp-libvips-linuxmusl-arm64',
   // sharp 的嵌套依赖
@@ -731,9 +749,24 @@ const config: ForgeConfig = {
               : process.platform === 'win32'
                 ? 'win32'
                 : 'linux'
-          const key = `${osKey}-${process.arch === 'arm64' ? 'arm64' : 'x64'}`
+          const targetArch = getArch()
+          const archKey =
+            targetArch === 'arm64'
+              ? 'arm64'
+              : targetArch === 'x64'
+                ? 'x64'
+                : process.arch === 'arm64'
+                  ? 'arm64'
+                  : 'x64'
+          const key = `${osKey}-${archKey}`
           const platformEntry = engine.platforms[key]
-          const files = platformEntry?.files
+          let files = platformEntry?.files
+          if (targetArch === 'universal' && osKey === 'darwin') {
+            files = [
+              ...(engine.platforms['darwin-arm64']?.files || []),
+              ...(engine.platforms['darwin-x64']?.files || [])
+            ]
+          }
           const presetBundlesDir = resolveResourcePath(`build/presetResources/${aiEngine}`)
           const errors: string[] = []
 
@@ -1039,6 +1072,11 @@ const config: ForgeConfig = {
           }
         }
 
+        // macOS 构建时清理预解压模板中的旧 _CodeSignature 目录
+        if (_platform === 'darwin') {
+          removeCodeSignatures(buildPath)
+        }
+
         // 使用官方 llama.cpp 发布包，无需强制安装 node-llama-cpp 二进制文件
         logToFile(
           '[packageAfterPrune] Using official llama.cpp release packages, skipping node-llama-cpp binary installation'
@@ -1108,11 +1146,6 @@ const config: ForgeConfig = {
     packageAfterExtract: async (_config, extractPath, _electronVersion, platform) => {
       if (platform === 'darwin') {
         removeCodeSignatures(extractPath)
-      }
-    },
-    packageAfterPrune: async (_config, buildPath, _electronVersion, platform) => {
-      if (platform === 'darwin') {
-        removeCodeSignatures(buildPath)
       }
     }
   },
@@ -1293,9 +1326,10 @@ const config: ForgeConfig = {
         // 剔除不匹配当前平台架构的 sharp 二进制包
         if (relativePath.includes('node_modules/@img/sharp')) {
           const currentPlatform = process.platform
+          const targetArch = getArch()
           const isDarwinUniversal =
             currentPlatform === 'darwin' &&
-            (process.env.BUILD_ARCH === 'universal' || process.env.npm_config_arch === 'universal')
+            (targetArch === 'universal' || process.env.npm_config_arch === 'universal')
           const isVips = relativePath.includes('sharp-libvips')
           const platformPrefix = isVips ? 'sharp-libvips-' : 'sharp-'
 
@@ -1309,7 +1343,7 @@ const config: ForgeConfig = {
               return true
             }
           } else {
-            const currentArch = process.arch
+            const currentArch = targetArch === 'arm64' ? 'arm64' : 'x64'
             const targetSuffix = `${currentPlatform}-${currentArch}`
 
             if (
@@ -1319,6 +1353,11 @@ const config: ForgeConfig = {
               return true
             }
           }
+        }
+
+        // 剔除 @firecrawl/anydoc 二进制包（已由 Omni Rust 原生引擎接管，不再打入 ASAR）
+        if (relativePath.includes('node_modules/@firecrawl/anydoc')) {
+          return true
         }
 
         // 剔除 macOS / Linux 的 pdf-poppler 库文件 (Windows下不需要)
@@ -1386,12 +1425,15 @@ const config: ForgeConfig = {
     junk: true,
     // 是否修剪不需要的文件
     prune: false,
-    // macOS 通用应用配置
-    osxUniversal: {
-      mergeASARs: true,
-      singleArchFiles: '**/*',
-      x64ArchFiles: '**/*'
-    }
+    // macOS 通用应用配置：仅在 Universal 构建模式下启用，单架构打包时设为 undefined 防止体积膨胀与重复打包
+    osxUniversal:
+      getArch() === 'universal'
+        ? {
+            mergeASARs: true,
+            singleArchFiles: '**/*',
+            x64ArchFiles: '**/*'
+          }
+        : undefined
   },
   // 我们已经在 fix-pnpm-modules.js 中手动运行了 pnpm run rebuild:all
   // 根据环境决定是否让 Forge 自动重建原生模块
@@ -1758,16 +1800,6 @@ function setup() {
   }
 }
 
-// 获取架构类型
-function getArch() {
-  // 如果在 CI 环境中运行，使用传入的架构
-  // 如果有人传递了标志，我们也使用该标志
-  if (process.env.CI || process.argv.some(s => s.includes('arch'))) {
-    return process.argv.some(s => s.includes('--arch=arm64')) ? 'arm64' : 'x64'
-  }
-
-  return process.arch
-}
 
 /*
  * node-llama-cpp 二进制文件在其 package.json 中有一个 cpu 标志，这意味着

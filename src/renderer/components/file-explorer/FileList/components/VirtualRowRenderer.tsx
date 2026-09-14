@@ -548,10 +548,16 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
     if (prevIsActive !== nextIsActive) return false
   }
 
-  // selectedPathsSet 比对：只在当前 itemPath 的选中状态发生改变时才失效
+  // selectedPathsSet 比对：只在当前 itemPath 的选中状态发生改变时才失效（键为归一化路径）
   if (prevData.selectedPathsSet !== nextData.selectedPathsSet) {
-    const prevIsSelected = prevData.selectedPathsSet?.has(prevItem.path) ?? false
-    const nextIsSelected = nextData.selectedPathsSet?.has(nextItem.path) ?? false
+    const prevKey = prevItem.path
+      ? (prevData.normalizeForCache?.(prevItem.path) ?? prevItem.path)
+      : ''
+    const nextKey = nextItem.path
+      ? (nextData.normalizeForCache?.(nextItem.path) ?? nextItem.path)
+      : ''
+    const prevIsSelected = prevData.selectedPathsSet?.has(prevKey) ?? false
+    const nextIsSelected = nextData.selectedPathsSet?.has(nextKey) ?? false
     if (prevIsSelected !== nextIsSelected) return false
   }
 
@@ -608,7 +614,11 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
 
   const { isPathEqual } = window.electronAPI!.utils
 
-  const isSelected = (data.selectedPathsSet?.has(itemPath) ?? false) || isDragSelected
+  // selectedPathsSet 使用归一化路径作为键，查找前需对 itemPath 做同样归一化
+  const normalizedItemPath = itemPath ? (data.normalizeForCache?.(itemPath) ?? itemPath) : ''
+  const isSelected =
+    (normalizedItemPath ? (data.selectedPathsSet?.has(normalizedItemPath) ?? false) : false) ||
+    isDragSelected
 
   const isActive = activeItem?.path && isPathEqual(itemPath, activeItem.path)
   const isDirectory = item && 'isDirectory' in item && item.isDirectory

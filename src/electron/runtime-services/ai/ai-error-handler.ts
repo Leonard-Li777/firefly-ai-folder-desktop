@@ -144,11 +144,9 @@ export class AIErrorHandler extends EventEmitter {
           const currentAcc = config.getValue<string>('SELECTED_ACCELERATION') || 'auto'
           const isDarwin = process.platform === 'darwin'
 
-          // 定义各加速层的下一步降级方向
+          // 定义各加速层的下一步降级方向（OpenVINO 引擎已移除，Intel 统一走 SYCL）
           let nextAcc = 'cpu'
-          if (currentAcc === 'openvino') {
-            nextAcc = 'sycl'
-          } else if (
+          if (
             currentAcc === 'sycl' ||
             currentAcc === 'cuda' ||
             currentAcc === 'hip' ||

@@ -10,7 +10,6 @@ import { FileDetailsPanel } from './FileDetailsPanel/index'
 import { FileList } from './FileList'
 import { FileExplorerLayout } from './FileExplorerLayout'
 import { Breadcrumbs } from './Breadcrumbs'
-import { UnlockPrivateQuotaModal } from '../invitation/UnlockPrivateQuotaModal'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { NoWorkspaceDirectoryMessage } from '../common/NoWorkspaceDirectoryMessage'
 import { QuotaWarningBar } from './QuotaWarningBar'
@@ -20,7 +19,6 @@ import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../common/Toast'
 import { useAnalysisQueueStore } from '../../stores/analysis-queue-store'
 import { useFileExplorerStore } from '../../stores/app-store'
-import { useInvitation } from '../../hooks/useInvitation'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useSearchStore } from '../../stores/search-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -228,14 +226,6 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   const [showDirectoryDropdown, setShowDirectoryDropdown] = useState(false)
 
   const isSplitView = (pageStates[PAGE_IDS.REAL_DIRECTORY]?.mode ?? 'split') === 'split'
-
-  // 邀请相关状态
-  const [showInvitationModal, setShowInvitationModal] = useState(false)
-  const {
-    quota,
-    refreshCount: refreshInvitationCount,
-    isLoading: isInvitationLoading
-  } = useInvitation(true)
 
   const [machineId, setMachineId] = useState('')
   const [navigationHistory, setNavigationHistory] = useState<string[]>([])
@@ -1291,7 +1281,6 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
             currentWorkspaceDirectory={currentWorkspaceDirectory}
             machineId={machineId}
             setMachineId={setMachineId}
-            setShowInvitationModal={setShowInvitationModal}
           />
           <CleanRecommendationBanner />
           <div className="flex-1 flex overflow-hidden relative">
@@ -1321,6 +1310,49 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
                 onFileDeleted={refreshDirectoryContents}
                 onFileUpdated={refreshDirectoryContents}
                 renderToolbar={renderToolbar}
+                renderFooter={layoutContext => (
+                  <div className="px-4 py-1.5 flex items-center text-xs text-muted-foreground shrink-0 border-t border-border/40 min-h-[32px]">
+                    {/* 文件夹数量 */}
+                    <MaterialIcon icon="folder" className="mr-1.5 text-sm" />
+                    <span>
+                      {t('{count} 个文件夹', {
+                        count: layoutContext.directories.length
+                      })}
+                    </span>
+
+                    <span className="mx-2 text-border">|</span>
+
+                    {/* 文件数量 */}
+                    <MaterialIcon icon="insert_drive_file" className="mr-1.5 text-sm" />
+                    <span>
+                      {t('{count} 个文件', {
+                        count: layoutContext.files.length
+                      })}
+                    </span>
+
+                    {/* 跨目录搜索结果时给出提示，避免用户误解为当前目录统计 */}
+                    {realDirectoryKeyword.trim() && (
+                      <>
+                        <span className="mx-2 text-border">|</span>
+                        <span className="text-primary/80">
+                          {isSearchingAllDirs
+                            ? t('搜索中...')
+                            : t('已按关键词跨目录搜索')}
+                        </span>
+                      </>
+                    )}
+
+                    {/* 选中数量（有选中项时才展示） */}
+                    {selectedFiles.length > 0 && (
+                      <>
+                        <span className="mx-2 text-border">|</span>
+                        <span className="text-primary font-medium">
+                          {t('已选 {count} 项', { count: selectedFiles.length })}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )}
               />
             </main>
             {!isWorkspaceActive && currentWorkspaceDirectory && (
@@ -1339,18 +1371,6 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
       ) : (
         <NoWorkspaceDirectoryMessage onAddWorkspaceDirectory={handleAddWorkspaceDirectory} />
       )}
-
-      {/* 解锁私有目录无限额度弹窗 */}
-      <UnlockPrivateQuotaModal
-        isOpen={showInvitationModal}
-        onClose={() => setShowInvitationModal(false)}
-        quota={quota}
-        onRefresh={async () => {
-          await refreshInvitationCount()
-        }}
-        isLoading={isInvitationLoading}
-        workspaceId={currentWorkspaceDirectory?.id}
-      />
     </div>
   )
 }

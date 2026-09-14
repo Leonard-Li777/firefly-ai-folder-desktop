@@ -12,6 +12,10 @@ export interface FileExplorerLayoutContext {
   selectedFiles: FileItem[]
   activeItem: FileItem | DirectoryItem | null
   totalCount: number
+  /** 当前展示的文件列表（已按搜索/忽略规则过滤），供底部状态栏统计使用 */
+  files: FileItem[]
+  /** 当前展示的目录列表，供底部状态栏统计使用 */
+  directories: DirectoryItem[]
 }
 
 export interface FileExplorerLayoutProps {

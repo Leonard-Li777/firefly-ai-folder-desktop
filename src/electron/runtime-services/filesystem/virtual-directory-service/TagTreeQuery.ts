@@ -725,6 +725,10 @@ export class TagTreeQuery {
 
   /**
    * 获取已分析文件总数
+   *
+   * 注意：本方法统计的是「已 AI 分析」的文件总数（is_analyzed = 1）。
+   * 真实目录页面显示的文件数还包含磁盘上尚未被分析的文件（isAnalyzed = false），
+   * 两者口径不同属于预期行为，不应强行对齐。
    */
   async getAnalyzedFilesCount(workspaceDirectoryPath?: string): Promise<number> {
     try {

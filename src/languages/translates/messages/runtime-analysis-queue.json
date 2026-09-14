@@ -132,7 +132,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(30741-30770)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(31397-31426)"],
     "$id": 11304
   },
   "分析超时": {
@@ -145,7 +145,7 @@
     "de-DE": "Analyse-Timeout",
     "fr-FR": "Délai d'analyse",
     "ko-KR": "분석 시간 초과",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(32356-32364)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(33012-33020)"],
     "$id": 2976
   },
   "建议切换低显存需求的AI模型": {
@@ -159,9 +159,9 @@
     "fr-FR": "Il est recommandé de passer à un modèle d'IA avec de faibles besoins en mémoire",
     "ko-KR": "메모리 요구 사항이 낮은 AI 모델로 전환하는 것이 좋습니다.",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(32383-32401)",
+      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(33039-33057)",
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10321-10339)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(65538-65556)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(68911-68929)"
     ],
     "$id": 2977
   },
@@ -175,7 +175,7 @@
     "de-DE": "Gehen Sie zu den Einstellungen",
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(32489-32497)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(33145-33153)"],
     "$id": 4521
   },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
@@ -190,7 +190,7 @@
     "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3352-3432)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(16732-16812)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(17294-17374)"
     ],
     "$id": 11053
   },
@@ -662,7 +662,7 @@
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(437-448)",
       "src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(887-898)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(1220-1231)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(1307-1318)"
     ],
     "$id": 8130
   },
@@ -719,7 +719,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(65460-65487)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(68833-68860)"],
     "$id": 11054
   },
   "AI 服务未就绪": {
@@ -748,7 +748,7 @@
     "de-DE": "Dateipfadeintrag konnte nicht abgerufen werden",
     "fr-FR": "Impossible d'obtenir l'enregistrement du chemin du fichier",
     "ko-KR": "파일 경로 레코드를 조회할 수 없습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(4557-4571)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(5022-5036)"],
     "$id": 8132
   }
 }

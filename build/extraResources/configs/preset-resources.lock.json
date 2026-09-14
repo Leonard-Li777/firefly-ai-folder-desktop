@@ -112,10 +112,10 @@
       }
     },
     "llama.cpp": {
-      "version": "b10917",
-      "updatedAt": "2026-09-12",
+      "version": "b10955",
+      "updatedAt": "2026-09-14",
       "mode": "all-platforms-bundle",
-      "status": "completed",
+      "status": "downloading",
       "platforms": {
         "win32-x64": {
           "files": [
@@ -124,49 +124,42 @@
               "size": 391443627,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10917/cudart-llama-bin-win-cuda-12.4-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10955/cudart-llama-bin-win-cuda-12.4-x64.zip"
             },
             {
-              "name": "llama-b10917-bin-win-cuda-12.4-x64.zip",
-              "size": 254079872,
+              "name": "llama-b10955-bin-win-cuda-12.4-x64.zip",
+              "size": 254078862,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10917/llama-b10917-bin-win-cuda-12.4-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10955/llama-b10955-bin-win-cuda-12.4-x64.zip"
             },
             {
-              "name": "llama-b10917-bin-win-vulkan-x64.zip",
-              "size": 31669204,
+              "name": "llama-b10955-bin-win-vulkan-x64.zip",
+              "size": 31673577,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10917/llama-b10917-bin-win-vulkan-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10955/llama-b10955-bin-win-vulkan-x64.zip"
             },
             {
-              "name": "llama-b10917-bin-win-rocm-10.0-x64.zip",
-              "size": 255987381,
+              "name": "llama-b10955-bin-win-rocm-10.0-x64.zip",
+              "size": 255996535,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10917/llama-b10917-bin-win-rocm-10.0-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10955/llama-b10955-bin-win-rocm-10.0-x64.zip"
             },
             {
-              "name": "llama-b10917-bin-win-sycl-x64.zip",
-              "size": 119783845,
+              "name": "llama-b10955-bin-win-sycl-x64.zip",
+              "size": 119785886,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10917/llama-b10917-bin-win-sycl-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10955/llama-b10955-bin-win-sycl-x64.zip"
             },
             {
-              "name": "llama-b10917-bin-win-openvino-2026.3.1-x64.zip",
-              "size": 80273423,
+              "name": "llama-b10955-bin-win-cpu-x64.zip",
+              "size": 18426429,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10917/llama-b10917-bin-win-openvino-2026.3.1-x64.zip"
-            },
-            {
-              "name": "llama-b10917-bin-win-cpu-x64.zip",
-              "size": 18424755,
-              "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10917/llama-b10917-bin-win-cpu-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b10955/llama-b10955-bin-win-cpu-x64.zip"
             }
           ]
         },

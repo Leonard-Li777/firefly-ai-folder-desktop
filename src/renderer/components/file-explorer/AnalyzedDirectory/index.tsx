@@ -29,7 +29,6 @@ import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { EmptyState } from '../../common/EmptyState'
 import { toast } from '../../common/Toast'
-import { useInvitation } from '../../../hooks/useInvitation'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useSearchStore } from '../../../stores/search-store'
 import { usePreviewOverlayStore } from '../../../stores/preview-overlay-store'
@@ -74,7 +73,7 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
   const setShowDetailsPanel = useAnalyzedDirectoryStore(s => s.setShowDetailsPanel)
 
   const { setAnalyzedDirectoryKeyword } = useSearchStore()
-  const { quota, refreshCount, isLoading: isInvitationLoading } = useInvitation(true)
+
 
   // Manage local states - isOrganizeMode: true = 整理模式, false = 浏览模式(默认)
   const [isOrganizeMode, setIsOrganizeMode] = useState(() => {
@@ -95,7 +94,6 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
   const [showManageModal, setShowManageModal] = useState(false)
   const [editingAnalyzedDirectoryId, setEditingAnalyzedDirectoryId] = useState<string | null>(null)
   const [editingDirectoryName, setEditingDirectoryName] = useState('')
-  const [showInvitationModal, setShowInvitationModal] = useState(false)
   const [showThresholdDialog, setShowThresholdDialog] = useState(false)
   const [showGenerateAnalyzedDirDialog, setShowGenerateAnalyzedDirDialog] = useState(false)
   const [showBatchDeleteDialog, setShowBatchDeleteDialog] = useState(false)
@@ -133,7 +131,10 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     showDirectoryDropdown,
     setShowDirectoryDropdown,
     isDimensionLoading,
-    lastSingleTag
+    lastSingleTag,
+    analyzedDirectoryKeyword,
+    sortBy,
+    sortOrder
   } = state
 
   const pageStates = usePreviewOverlayStore(s => s.pageStates)
@@ -261,20 +262,38 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     isPaused
   } = organize
 
+  /**
+   * 只清除 react-router 写入的用户态路由载荷（usr），保留 history.state 的其它字段。
+   * 直接 history.replaceState({}, '') 会抹掉整个 state 对象，
+   * 导致后续跳转（如 /organize）读取 location.state 时拿不到 selectedFileIds。
+   */
+  const clearRouteUserState = useCallback(() => {
+    try {
+      const currentState = window.history.state
+      if (currentState && typeof currentState === 'object') {
+        window.history.replaceState({ ...currentState, usr: null }, '')
+      } else {
+        window.history.replaceState({ usr: null }, '')
+      }
+    } catch {
+      // history 不可用时静默失败
+    }
+  }, [])
+
   // 清除路由状态，避免刷新页面时仍然保持整理模式
   useEffect(() => {
     if (location.state?.startInOrganizeMode) {
-      window.history.replaceState({}, '')
+      clearRouteUserState()
     }
-  }, [])
+  }, [clearRouteUserState, location.state])
 
   // 监听路由状态变化，当从虚拟目录传入 startInOrganizeMode 时进入整理模式
   useEffect(() => {
     if (location.state?.startInOrganizeMode) {
       setIsOrganizeMode(true)
-      window.history.replaceState({}, '')
+      clearRouteUserState()
     }
-  }, [location.state])
+  }, [clearRouteUserState, location.state])
 
   // 整理模式与多选模式联动：进入整理模式自动开启多选，退出时自动关闭
   useEffect(() => {
@@ -285,22 +304,63 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
     }
   }, [isOrganizeMode])
 
-  // 当搜索结果变化时，清理不在结果中的已选中项 (O(N + M) 线性算法，彻底消除六百万次二次循环死锁)
+  // 当搜索关键字变化时，清理不在结果中的已选中项。
+  // 注意：filteredFiles 是「分页加载」的子集（每页 100 条），不能作为全量基准去裁剪选中项，
+  // 否则跨页勾选会被误清空。仅在搜索关键字真正变化时，用全量查询结果做一次裁剪。
+  const prevSearchKeywordRef = useRef(analyzedDirectoryKeyword)
   useEffect(() => {
-    if (selectedFiles.length > 0) {
-      if (filteredFiles.length === 0) {
-        setSelectedFiles([])
-        return
+    const keywordChanged = prevSearchKeywordRef.current !== analyzedDirectoryKeyword
+    prevSearchKeywordRef.current = analyzedDirectoryKeyword
+
+    if (!keywordChanged) return
+    if (selectedFilesRef.current.length === 0) return
+
+    // 搜索关键字清空时，视为回到全量视图，保留已有选择，不做任何裁剪
+    if (!analyzedDirectoryKeyword || !analyzedDirectoryKeyword.trim()) return
+
+    let cancelled = false
+    const pruneByKeyword = async () => {
+      try {
+        const { getPlatform } = window.electronAPI!.utils
+        const isWin = getPlatform() === 'win32'
+        const normalize = (p?: string) => (p ? (isWin ? p.toLowerCase() : p) : '')
+
+        const result = await window.electronAPI!.analyzedDirectory.getFilteredFilesPaged({
+          selectedTags,
+          sortBy,
+          sortOrder,
+          workspaceDirectoryPath: currentWorkspaceDirectory?.path,
+          searchKeyword: analyzedDirectoryKeyword,
+          limit: 10000,
+          offset: 0,
+          unionMode
+        })
+        if (cancelled) return
+
+        const pathSet = new Set(
+          (result.items || []).map((item: { path?: string }) => normalize(item.path))
+        )
+        const current = selectedFilesRef.current
+        const newSelected = current.filter(sf => pathSet.has(normalize(sf.path)))
+        if (newSelected.length !== current.length) setSelectedFiles(newSelected)
+      } catch (e) {
+        // 裁剪失败时保持现状，避免误清空用户已选文件
       }
-      const { getPlatform } = window.electronAPI!.utils
-      const isWin = getPlatform() === 'win32'
-      const pathSet = new Set(filteredFiles.map(ff => (isWin ? ff.path.toLowerCase() : ff.path)))
-      const newSelected = selectedFiles.filter(sf =>
-        pathSet.has(isWin ? sf.path.toLowerCase() : sf.path)
-      )
-      if (newSelected.length !== selectedFiles.length) setSelectedFiles(newSelected)
     }
-  }, [filteredFiles])
+    pruneByKeyword()
+
+    return () => {
+      cancelled = true
+    }
+  }, [
+    analyzedDirectoryKeyword,
+    selectedTags,
+    sortBy,
+    sortOrder,
+    unionMode,
+    currentWorkspaceDirectory?.path,
+    setSelectedFiles
+  ])
 
   // Handlers
   const handleTagClick = useCallback(
@@ -456,7 +516,6 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
             currentWorkspaceDirectory={currentWorkspaceDirectory}
             machineId={machineId}
             setMachineId={setMachineId}
-            setShowInvitationModal={setShowInvitationModal}
           />
           {/* 整理模式提示条 */}
           {isOrganizeMode && (
@@ -627,16 +686,19 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
                         setActiveItem={setSelectedItem}
                         selectedFiles={selectedFiles}
                         setSelectedFiles={setSelectedFiles}
-                        showOrganizeButton={!isOrganizeMode}
+                        showOrganizeButton={!isOrganizeMode && !isMultiSelectMode}
                         onStartOrganize={() => setIsOrganizeMode(true)}
-                        isOrganizeMode={isOrganizeMode}
+                        // 多选模式与整理模式均需开启复选框列，保证标签多选与文件勾选能力一致
+                        isOrganizeMode={isOrganizeMode || isMultiSelectMode}
                         onOrganizeSelected={() => {
                           if (selectedFiles.length === 0) {
                             toast.warning(t('至少勾选一个文件'))
                             return
                           }
+                          // 同时携带 id 与 path：整理页优先按 id 匹配，缺失时回退 path 匹配
                           const stateParams = {
                             selectedFileIds: selectedFiles.map(f => f.id),
+                            selectedFilePaths: selectedFiles.map(f => f.path),
                             initialStage: 'root-mode-select'
                           }
                           navigate('/organize', { state: stateParams })
@@ -792,11 +854,6 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
         setShowEmptyFolderCleanupDialog={setShowEmptyFolderCleanupDialog}
         emptyFolderScanPath={emptyFolderScanPath}
         setEmptyFolderScanPath={setEmptyFolderScanPath}
-        showInvitationModal={showInvitationModal}
-        setShowInvitationModal={setShowInvitationModal}
-        quota={quota}
-        refreshCount={refreshCount}
-        isInvitationLoading={isInvitationLoading}
         showGenerateAnalyzedDirDialog={showGenerateAnalyzedDirDialog}
         setShowGenerateAnalyzedDirDialog={setShowGenerateAnalyzedDirDialog}
         handleConfirmGenerateAnalyzedDirectories={handleConfirmGenerateAnalyzedDirectories}

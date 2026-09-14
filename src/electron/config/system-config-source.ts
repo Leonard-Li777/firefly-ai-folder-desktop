@@ -33,7 +33,7 @@ export const SYSTEM_CONFIG_SOURCE = () => ({
     },
     {
       text: t('MiniCPM5-2B 性价比王，2G显存跑出超强智能'),
-      url: 'https://page.om.qq.com/page/Oq2nbyVJUAaavsyDZtcbedCw0'
+      url: 'https://github.com/openbmb/minicpm'
     },
     {
       text: t('新增云端服务商 Agnes AI，永久免费API，国内网络可正常访问'),

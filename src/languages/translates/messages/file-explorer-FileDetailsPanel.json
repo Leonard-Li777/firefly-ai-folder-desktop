@@ -149,7 +149,7 @@
     "ko-KR": "신뢰",
     "$files": [
       "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(15715-15722)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(7463-7470)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(7477-7484)",
       "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14019-14026)"
     ],
     "$id": 8381
@@ -2160,18 +2160,18 @@
     ],
     "$id": 8440
   },
-  "暂无标签，请重新分析": {
-    "en-US": "No tags yet, please reanalyze",
-    "es-ES": "Aún no hay etiquetas, vuelva a analizar",
-    "ar-EG": "لا توجد علامات حتى الآن، يرجى إعادة التحليل",
-    "pt-PT": "Ainda não há tags. Reanalisar",
-    "ru-RU": "Тегов пока нет, пожалуйста, повторите анализ",
-    "ja-JP": "まだタグがありません。再分析してください",
-    "de-DE": "Noch keine Tags, bitte noch einmal analysieren",
-    "fr-FR": "Aucun tag pour l'instant, veuillez réanalyser",
-    "ko-KR": "아직 태그가 없습니다. 다시 분석해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(5102-5116)"],
-    "$id": 8441
+  "简单分类模式无标签，请选其它分析模式，并重新分析": {
+    "en-US": "The simple classification mode has no label, please select another analysis mode and re-analyze",
+    "es-ES": "El modo de clasificación simple no tiene etiqueta, seleccione otro modo de análisis y vuelva a analizar",
+    "ar-EG": "لا يحتوي وضع التصنيف البسيط على تسمية ، يرجى تحديد وضع تحليل آخر وإعادة التحليل",
+    "pt-PT": "O modo simples da classificação não tem nenhuma etiqueta, seleciona por favor um outro modo da análise e reanalisa-o",
+    "ru-RU": "В режиме простой классификации нет маркировки, пожалуйста, выберите другой режим анализа и повторите анализ",
+    "ja-JP": "単純分類モードにはラベルがありませんので、別の分析モードを選択して再分析してください",
+    "de-DE": "Der einfache Klassifizierungsmodus hat keine Beschriftung, bitte wählen Sie einen anderen Analysemodus und analysieren Sie ihn erneut",
+    "fr-FR": "Le mode de classification simple n'a pas d'étiquette, veuillez sélectionner un autre mode d'analyse et réanalyser",
+    "ko-KR": "간단한 분류 모드에는 레이블이 없으므로 다른 분석 모드를 선택하고 다시 분석하십시오",
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(5102-5130)"],
+    "$id": 11643
   },
   "目录画像分析完成": {
     "en-US": "Catalog portrait analysis completed",

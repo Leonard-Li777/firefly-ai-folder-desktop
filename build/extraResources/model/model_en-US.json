@@ -157,13 +157,13 @@
       }
     },
     {
-      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（High quality•High-speed）",
-      "company": "OpenBMB",
+      "id": "Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M",
+      "name": "MiniCPM5 2B（High quality•High-speed•Prison Break）",
+      "company": "Abiray",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "There is insufficient video memory, and if you want to classify files correctly, you must choose me. The only drawback is that it only supports text.",
+      "description": "There is insufficient video memory, and if you want to classify files correctly, you must choose me to restrict the version (Abliterated).",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -176,11 +176,11 @@
         "quality": "high"
       },
       "tags": [
-        "Lightweight",
-        "Support CPU operation",
+        "To limit",
+        "No censorship",
+        "NSFW",
         "Text only",
-        "Chinese is better",
-        "DSpark"
+        "Chinese is better"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

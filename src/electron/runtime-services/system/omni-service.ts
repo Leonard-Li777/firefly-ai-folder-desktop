@@ -683,7 +683,9 @@ export class OmniService {
       const ocrModelSize = (orchestrator.getValue<string>('OCR_MODEL_SIZE') || 'tiny').toLowerCase()
       const maxContentSizeKb = orchestrator.getValue<number>('MAX_CONTENT_SIZE_KB') ?? 30
       const maxFileSizeMb = orchestrator.getValue<number>('MAX_FILE_SIZE') ?? 100
-      const analysisMode = (orchestrator.getValue<string>('ANALYSIS_MODE') || 'full').toLowerCase()
+      // 统一走 analysis-mode 模块解析，避免此处 `|| 'full'` 与其它模块 `?? 'quick_name'` 的兜底不一致
+      const { resolveAnalysisMode } = await import('../../config/analysis-mode')
+      const analysisMode = resolveAnalysisMode()
       const reuseBasic = orchestrator.getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true
       const audioAnalysisDuration = orchestrator.getValue<number>('AUDIO_ANALYSIS_DURATION') ?? 30
       // 当前用户界面语言，同步给 Omni 引擎（供 OCR/元数据提取等按语言处理）

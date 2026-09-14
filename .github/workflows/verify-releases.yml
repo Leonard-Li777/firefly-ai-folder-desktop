@@ -300,11 +300,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # 支持基线已上移 Debian 12 / glibc 2.36（omni 引擎要求 2.34+），
+        # Ubuntu 20.04 / Debian 10 / Debian 11 容器条目已移除（2026-09-11）
         include:
-          - id: "ubuntu-20-04-x64"
-            name: "Ubuntu 20.04 (glibc 2.31, x64)"
-            image: "ubuntu:20.04"
-            arch: "amd64"
           - id: "ubuntu-22-04-x64"
             name: "Ubuntu 22.04 (glibc 2.35, x64)"
             image: "ubuntu:22.04"
@@ -312,14 +310,6 @@ jobs:
           - id: "ubuntu-24-04-x64"
             name: "Ubuntu 24.04 (glibc 2.39, x64)"
             image: "ubuntu:24.04"
-            arch: "amd64"
-          - id: "debian-10-x64"
-            name: "Debian 10 Buster (glibc 2.28 / Deepin 20.x, x64)"
-            image: "debian:10-slim"
-            arch: "amd64"
-          - id: "debian-11-x64"
-            name: "Debian 11 Bullseye (glibc 2.31, x64)"
-            image: "debian:11-slim"
             arch: "amd64"
           - id: "debian-12-x64"
             name: "Debian 12 Bookworm (glibc 2.36 / Deepin 23, x64)"
@@ -379,7 +369,7 @@ jobs:
               set -e
               export DEBIAN_FRONTEND=noninteractive
 
-              # Fix Debian 10 archive repositories if needed
+              # Fix legacy Debian archive repositories if needed
               if grep -q '10' /etc/debian_version 2>/dev/null; then
                 sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list || true
                 sed -i 's|security.debian.org/debian-security|archive.debian.org/debian-security|g' /etc/apt/sources.list || true

@@ -130,14 +130,14 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
-      id: 'openbmb/MiniCPM5-2B-GGUF:Q4_K_M',
+      id: 'Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M',
       // dspark: 'openbmb/MiniCPM5-2B-DSpark-GGUF',
-      name: `MiniCPM5 2B（${t('高质量')}•${t('高速')}）`,
-      company: 'OpenBMB',
+      name: `MiniCPM5 2B（${t('高质量')}•${t('高速')}•${t('越狱')}）`,
+      company: 'Abiray',
       parameterSize: '2B',
       totalSize: '1.45GB',
       recommended: true,
-      description: t('显存不足，又想正确分类文件，必须选我，唯一缺点仅支持文本。'),
+      description: t('显存不足，又想正确分类文件，必须选我，去限制版本（Abliterated）。'),
       source: 'huggingface',
       quantization: 'Q4_K_M',
       isMultiModal: false,
@@ -147,7 +147,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
         speed: 'very_fast',
         quality: 'high'
       },
-      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('中文更佳'), 'DSpark'],
+      tags: [t('去限制'), t('无审查'), 'NSFW', t('仅文本'), t('中文更佳')],
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 2048

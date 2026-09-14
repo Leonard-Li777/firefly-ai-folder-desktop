@@ -73,7 +73,6 @@ export const AIEngineConfigSettings: React.FC = () => {
           gpuType: activeGpu ? (gpuVendor === 'unknown' ? 'none' : 'dedicated') : 'none',
           storageFreeGB: 50,
           supportsSycl: gpus?.some((g: any) => g.supportsSycl),
-          supportsOpenVINO: gpus?.some((g: any) => g.supportsOpenVINO),
           gpu: { type: gpuVendor, memory: activeGpu?.memory || 0 },
           cpu: {
             model: cpu?.model || '',
@@ -174,7 +173,8 @@ export const AIEngineConfigSettings: React.FC = () => {
     const vendor = getGpuVendor().toUpperCase()
     if (vendor.includes('NVIDIA')) return 'cuda'
     if (vendor.includes('AMD')) return 'hip'
-    if (vendor.includes('INTEL')) return 'openvino'
+    // Intel Arc / Core Ultra 新显卡统一使用 SYCL；不支持 SYCL 时由表格展示降级到 Vulkan / CPU
+    if (vendor.includes('INTEL')) return (hardwareInfo as any)?.supportsSycl ? 'sycl' : 'vulkan'
     if (vendor.includes('APPLE')) return 'metal'
     return 'cpu'
   }
@@ -293,19 +293,11 @@ export const AIEngineConfigSettings: React.FC = () => {
         })
       } else if (vendor.includes('INTEL')) {
         rows.push({
-          name: 'Intel OpenVINO',
-          backend: 'openvino',
+          name: 'Intel SYCL',
+          backend: 'sycl',
           matchType: 'best',
           matchText: t('最佳匹配'),
           performance: t('100% 性能利用'),
-          isCurrent: runningEngine === 'openvino'
-        })
-        rows.push({
-          name: 'Intel SYCL',
-          backend: 'sycl',
-          matchType: 'compatible',
-          matchText: t('兼容模式'),
-          performance: t('80% 性能利用'),
           isCurrent: runningEngine === 'sycl'
         })
         rows.push({
@@ -390,41 +382,6 @@ export const AIEngineConfigSettings: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* OpenVINO 适配与驱动/环境变量特别提示卡片 */}
-      {!isCloudMode &&
-        (hardwareInfo as any)?.supportsOpenVINO &&
-        getRunningEngine() !== 'openvino' && (
-          <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl flex flex-col gap-2">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="text-blue-500 h-5 w-5 shrink-0 mt-0.5" />
-              <div className="flex flex-col gap-1">
-                <span className="text-sm font-bold text-blue-900 dark:text-blue-400">
-                  {t('检测到 Intel GPU 支持 OpenVINO 加速')}
-                </span>
-                <p className="text-xs text-blue-800/80 dark:text-blue-400/80 leading-relaxed">
-                  {t(
-                    '若切换至 OpenVINO 启动失败，请确保 Intel 显卡驱动已升级至最新版本（建议 31.0.101.5186 或更高），并正确配置 OpenVINO 运行环境变量（如 OPENVINO_LOG_LEVEL 或 OpenVINO 运行时 DLL 路径环境）。'
-                  )}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-2 pl-8 mt-1">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs h-7 border-blue-400/30 hover:bg-blue-500/20 text-blue-700 dark:text-blue-300"
-                onClick={() =>
-                  openExternalLink(
-                    'https://www.intel.com/content/www/us/en/download-center/home.html'
-                  )
-                }
-              >
-                {t('升级 Intel 显卡驱动')}
-              </Button>
-            </div>
-          </div>
-        )}
 
       {/* 显卡和显存信息行 */}
       {!isCloudMode && hardwareInfo && (

@@ -25,6 +25,15 @@ import {
   isGibberishOcrText
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import {
+  resolveAnalysisMode,
+  isAiStageEnabled,
+  isAnalysisComplete,
+  isStageSufficientForMode,
+  resolveAchievedStage,
+  getCpuTargetStage,
+  getAiTargetStage
+} from '../../../config/analysis-mode'
 import { databaseService } from '../../database/database-service'
 import { quotaChecker } from '../../user-tier/quota-checker-proxy'
 import { magikaService } from '../../system/magika-service'
@@ -372,6 +381,11 @@ export class FileProcessor {
   ): Promise<void> {
     const deps = this.getDependencies()
     try {
+      // 入口中止检查：用户点击暂停时，队列服务的 pause() 会 abort 当前 signal。
+      // 必须在真正开始分析前检查一次，否则已排队的下一个文件仍会照常执行，
+      // 导致「点了暂停但文件还在一个接一个地分析」。
+      this.throwIfAborted(signal)
+
       // V2.2 架构：优先从 item.path 获取，如果存在则通过 item_id 查询数据库
       let filePath = (item as any).file_path || item.path
       const itemId = (item as any).item_id
@@ -457,14 +471,8 @@ export class FileProcessor {
         ConfigOrchestrator.getInstance().getValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true
       const initialStage = db ? getFileStageFromDB(db, currentWorkspaceId, filePath) : 0
 
-      // 提前读取分析模式配置（带保护，后续 CPU/GPU/AI 分支均需使用）
-      let analysisMode = 'quick_name'
-      try {
-        analysisMode =
-          ConfigOrchestrator.getInstance().getValue<string>('ANALYSIS_MODE') ?? 'quick_name'
-      } catch {
-        logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] 读取分析模式配置失败')
-      }
+      // 提前读取分析模式配置（统一走 analysis-mode 模块，避免各处口径漂移与静默兜底）
+      const analysisMode = resolveAnalysisMode()
 
       if (phase === 'all') {
         // 串行分支与并行分支保持一致：只要文件已处于 Stage >= 2（CPU 提取已完成）即跳过 CPU 阶段，
@@ -481,20 +489,28 @@ export class FileProcessor {
         const forcedReextract =
           item.forceReanalyze === true && !reuseBasicAnalysisData && alreadyAnalyzed
         if (initialStage >= 2 && !forcedReextract) {
-          if (analysisMode === 'full' || analysisMode === 'quick_name') {
-            // full / quick_name 模式：跳过 CPU 提取，直接进入 GPU AI 阶段（stage3/4）
+          if (isAiStageEnabled(analysisMode)) {
+            // quick_name / full 模式：跳过 CPU 提取，直接进入 GPU AI 阶段（stage3/4）。
+            // 注意：AI 阶段入口会自行校验并撤销「以当前模式衡量尚未达标」的残留 is_analyzed 标记。
             logger.info(
               LogCategory.ANALYSIS_QUEUE,
               `[串行队列] 文件已处于 Stage ${initialStage} >= 2，跳过 CPU 提取，直接进入 GPU AI 阶段: ${item.name}`
             )
             return this.processFile(item, signal, 'gpu', true)
           }
-          // 非 AI 模式（simple/document）不执行 AI 阶段（stage3/4），
-          // 继续走 CPU 提取流程，复用已有数据后在基础分析分支完成
+          // 简单模式（simple）不执行 AI 阶段，其完成标志即 stage 2（CPU 内容提取完成）。
+          // 此时 stage 已 >= 2 必然满足完成条件，因此可直接补写完成标记并结束，
+          // 无需再重复跑一遍 CPU 提取。此前的实现在 alreadyAnalyzed 为 true 时会继续重跑 CPU，
+          // 既浪费算力，也无法修正「stage 达标但 is_analyzed 错误为 0」的状态。
           logger.info(
             LogCategory.ANALYSIS_QUEUE,
-            `[串行队列] 文件已处于 Stage ${initialStage} >= 2，非 AI 模式（${analysisMode}）跳过 AI 阶段: ${item.name}`
+            `[串行队列] 文件已处于 Stage ${initialStage}，简单模式（${analysisMode}）下已满足完成条件，确保完成标记后就绪: ${item.name}`
           )
+          if (!alreadyAnalyzed) {
+            await databaseService.markFileAnalyzed(currentWorkspaceId, filePath)
+          }
+          this.updateItemStatus(item.id, 'completed', 100)
+          return
         }
       }
 
@@ -555,15 +571,65 @@ export class FileProcessor {
         ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
 
       if (phase === 'gpu') {
-        // simple/document 模式不执行 AI 阶段（stage3/4），
-        // 该防御覆盖并行流水线运行中切换分析模式后 GPU 消费者继续处理文件的情况
-        if (analysisMode !== 'full' && analysisMode !== 'quick_name') {
+        // 进入 AI 阶段前检查中止：AI 推理耗时较长，若用户已点击暂停则不应再启动
+        this.throwIfAborted(signal)
+
+        // simple 模式不执行 AI 阶段（stage3/4），
+        // 该防御覆盖并行流水线运行中切换分析模式后 GPU 消费者继续处理文件的情况。
+        //
+        // 重要：仅跳过 AI 阶段是不够的。若文件在切换前（如 quick_name）已完成 CPU 内容提取
+        // （analysis_stage >= 2，即 simple 模式的完成标志），则在新模式（simple）下已满足完成条件，
+        // 必须在此处补写 workspace_files.is_analyzed = 1 并刷新 last_analyzed_at。
+        // 否则会出现「分析队列显示 completed，但 is_analyzed 仍为 0」的状态错位，
+        // 导致已分析页面统计与真实目录不一致，且该文件永远不会被再次标记。
+        if (!isAiStageEnabled(analysisMode)) {
+          const currentStage = getFileStageFromDB(db, currentWorkspaceId, filePath)
+          // 简单分类模式的完成标志是 stage 2（CPU 内容提取完成）
+          const canMark = isAnalysisComplete(currentStage, analysisMode)
           logger.info(
             LogCategory.ANALYSIS_QUEUE,
-            `[分析队列] 非 AI 模式（${analysisMode}）跳过 GPU AI 阶段: ${item.name}`
+            `[分析队列] 非 AI 模式（${analysisMode}）跳过 GPU AI 阶段: ${item.name}`,
+            { currentStage, willMarkAnalyzed: canMark }
           )
+          if (canMark) {
+            await databaseService.markFileAnalyzed(currentWorkspaceId, filePath)
+          }
           this.updateItemStatus(item.id, 'completed', 100)
           return
+        }
+
+        // 即将执行 AI 阶段，先保证 is_analyzed 与「当前模式 + 实际 stage」自洽。
+        //
+        // 背景：is_analyzed 是单向标记（只在达标时置 1，从不回退），但其判定标准取决于
+        // 当时的 ANALYSIS_MODE。当分析过程中把模式切换到要求更高的模式时
+        // （例如 simple -> quick_name，或 full -> ...），低模式阶段写入的 is_analyzed=1
+        // 会残留下来：若后续 AI 阶段失败/中断，该文件会被长期误判为「已完成」，
+        // 表现为已分析页面统计到它、但它既无智能命名也无标签。
+        //
+        // 因此进入 AI 阶段前必须撤销「以当前模式衡量尚未达标」的旧标记，
+        // 让本次 AI 阶段在真正达成后重新落库 is_analyzed=1。
+        try {
+          const stageBeforeGpu = getFileStageFromDB(db, currentWorkspaceId, filePath)
+          if (!isStageSufficientForMode(stageBeforeGpu, analysisMode)) {
+            const reverted = db
+              .prepare(
+                `UPDATE workspace_files SET is_analyzed = 0
+                 WHERE workspace_id = ? AND path = ? AND is_analyzed = 1`
+              )
+              .run(currentWorkspaceId, filePath)
+            if (reverted.changes > 0) {
+              logger.info(
+                LogCategory.ANALYSIS_QUEUE,
+                `[分析队列] 模式（${analysisMode}）下 stage=${stageBeforeGpu} 未达标，撤销残留的已分析标记，交由 AI 阶段重新判定: ${item.name}`
+              )
+            }
+          }
+        } catch (revertError) {
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            `[分析队列] 校验并撤销残留的已分析标记失败: ${item.name}`,
+            revertError
+          )
         }
 
         const existingWorkspaceFile = this.selectWorkspaceFileStmt.get(
@@ -877,6 +943,10 @@ export class FileProcessor {
           finalSmartName = `${finalSmartName}${dotExt}`
         }
 
+        // 本次 AI 阶段实际达成的阶段：quick_name 完成维度与智能命名（stage 3），full 额外完成质量评分（stage 4）。
+        // 取与已有阶段（initialStage）的较大值，避免「曾以更高模式分析过、之后切到较低模式重跑」时把阶段回退。
+        const gpuCompletionStage = resolveAchievedStage(getAiTargetStage(analysisMode), initialStage)
+
         // 保存本地分析结果
         const { workspaceFile } = await saveLocalAnalysisResult(
           item,
@@ -893,7 +963,7 @@ export class FileProcessor {
           dimResult?.groupingReason,
           dimResult?.groupingConfidence,
           undefined, // markitdownBenchmark
-          analysisMode === 'quick_name' ? 3 : 4,
+          gpuCompletionStage,
           cpuSkipped
         )
 
@@ -1273,6 +1343,11 @@ export class FileProcessor {
         : undefined
 
       // 0. 统一调用 Omni 原生引擎进行端到端内容与元数据提取（覆盖文档、图片、纯文本、代码、音视频、字体等所有格式并输出真实 Benchmark）
+      //
+      // 这是 simple 模式下最耗时的环节，且 Omni 为原生调用、无法被 AbortSignal 打断。
+      // 因此在启动提取前必须检查中止信号，确保用户点击暂停后不再开始新的提取任务。
+      this.throwIfAborted(signal)
+
       const anydocStartTime = Date.now()
       const anydocResult: AnydocResult = await anydocService
         .perceive(filePath, {
@@ -1640,9 +1715,10 @@ export class FileProcessor {
         new Date(stats.atime).toISOString()
       )
 
-      // 实时保存 CPU 提取完成阶段状态：写入内容、元数据、歌词及阶段状态
-      // 分析模式决定 CPU 完成 stage：Sample 在 1 结束，Document/Full 在 2 结束
-      const cpuCompletionStage = analysisMode === 'simple' ? 1 : 2
+      // 实时保存 CPU 提取完成阶段状态：写入内容、元数据、歌词及阶段状态。
+      // 取「当前模式目标阶段」与「已有阶段」的较大值，避免模式切换导致阶段回退
+      // （例如 quick_name -> simple 时实际 CPU 提取已完成，不能把阶段回写成 1）。
+      const cpuCompletionStage = resolveAchievedStage(getCpuTargetStage(analysisMode), initialStage)
       const detectedOcrText =
         anydocResult?.ocrText ||
         (isImage && contentResult.content ? contentResult.content : undefined)
@@ -1735,7 +1811,9 @@ export class FileProcessor {
             saveCpuError
           )
         }
-        this.updateItemStatus(item.id, 'pending', 50, undefined, { analysisStage: 2 })
+        this.updateItemStatus(item.id, 'pending', 50, undefined, {
+          analysisStage: cpuCompletionStage
+        })
         return
       }
 
@@ -1775,8 +1853,12 @@ export class FileProcessor {
           qualityCriteria: undefined
         }
 
+        // 简单分类模式的完成阶段是 stage 2（CPU 内容提取完成），
+        // 而非 stage 1（stage 1 只是基础身份/元数据提取，正文尚未提取完）。
+        const simpleFinalStage = resolveAchievedStage(getCpuTargetStage(analysisMode), initialStage)
+
         this.updateItemStatus(item.id, 'analyzing', 80, undefined, {
-          analysisStage: 1
+          analysisStage: simpleFinalStage
         })
 
         const { workspaceFile } = await saveLocalAnalysisResult(
@@ -1794,7 +1876,7 @@ export class FileProcessor {
           undefined,
           undefined,
           markitdownBenchmark,
-          1,
+          simpleFinalStage,
           undefined,
           stage1Benchmark
         )
@@ -1988,6 +2070,24 @@ export class FileProcessor {
     }
   }
 
+  /**
+   * 中止哨兵：若 signal 已被 abort，抛出标准 AbortError。
+   *
+   * 为什么需要显式检查：CPU 内容提取依赖 markitdown / Omni 等原生调用，
+   * 这些调用无法被 AbortSignal 打断，也不会抛出 AbortError。
+   * 若不在阶段边界主动检查，pause() 触发的 abort() 将成为一个空动作 ——
+   * 信号被置为 aborted 却无人读取，导致用户点击暂停后文件继续被逐个分析。
+   *
+   * 抛出的错误会被 processFile 的 catch 识别（name === 'AbortError'），
+   * 将队列项恢复为 pending 而非标记失败。
+   */
+  private throwIfAborted(signal?: AbortSignal): void {
+    if (signal?.aborted) {
+      const error = new Error('Aborted')
+      error.name = 'AbortError'
+      throw error
+    }
+  }
 
 
   /**

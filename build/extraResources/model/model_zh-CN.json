@@ -157,13 +157,13 @@
       }
     },
     {
-      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（高质量•高速）",
-      "company": "OpenBMB",
+      "id": "Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M",
+      "name": "MiniCPM5 2B（高质量•高速•越狱）",
+      "company": "Abiray",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "显存不足，又想正确分类文件，必须选我，唯一缺点仅支持文本。",
+      "description": "显存不足，又想正确分类文件，必须选我，去限制版本（Abliterated）。",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -176,11 +176,11 @@
         "quality": "high"
       },
       "tags": [
-        "轻量",
-        "支持CPU运行",
+        "去限制",
+        "无审查",
+        "NSFW",
         "仅文本",
-        "中文更佳",
-        "DSpark"
+        "中文更佳"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

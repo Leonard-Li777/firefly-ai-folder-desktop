@@ -157,13 +157,13 @@
       }
     },
     {
-      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（Alta calidad•Alta velocidad）",
-      "company": "OpenBMB",
+      "id": "Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M",
+      "name": "MiniCPM5 2B（Alta calidad•Alta velocidad•Fuga de la prisión）",
+      "company": "Abiray",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "No hay suficiente memoria de video,y si desea clasificar los archivos correctamente, debe elegirme. El único inconveniente es que solo admite texto.",
+      "description": "No hay suficiente memoria de video, y si desea clasificar los archivos correctamente, debe elegirme para restringir la versión (Abliterada).",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -176,11 +176,11 @@
         "quality": "high"
       },
       "tags": [
-        "Ligero",
-        "Soporta operación de CPU",
+        "Limitar",
+        "Sin censura",
+        "NSFW",
         "Solo texto",
-        "El chino es mejor",
-        "DSpark"
+        "El chino es mejor"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

@@ -45,7 +45,12 @@ interface AnalysisQueueState {
 
   // 批量已分析文件入队二次确认弹窗状态
   showConfirmModal: boolean
+  /** 已按当前模式完整分析、可安全跳过的文件 */
   confirmModalFiles: any[]
+  /** 已产生分析痕迹但未达当前模式要求、需要补全分析的文件（无论选哪个操作都会入队） */
+  confirmModalInsufficientFiles: any[]
+  /** 完全未分析的文件（不展示在弹窗列表中，但计入总数） */
+  confirmModalUntouchedCount: number
   pendingAddItems: any[]
   pendingForceReanalyze: boolean
   setShowConfirmModal: (v: boolean) => void
@@ -98,6 +103,8 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
     // 批量已分析文件入队二次确认弹窗状态
     showConfirmModal: false,
     confirmModalFiles: [],
+    confirmModalInsufficientFiles: [],
+    confirmModalUntouchedCount: 0,
     pendingAddItems: [],
     pendingForceReanalyze: false,
     setShowConfirmModal: v => {
@@ -105,6 +112,8 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
         set({
           showConfirmModal: false,
           confirmModalFiles: [],
+          confirmModalInsufficientFiles: [],
+          confirmModalUntouchedCount: 0,
           pendingAddItems: [],
           pendingForceReanalyze: false
         })
@@ -112,21 +121,30 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
         set({ showConfirmModal: true })
       }
     },
+    /**
+     * 跳过已完成的文件：仅剔除「已按当前模式完整分析」的那部分。
+     * 「分析不完整」与「完全未分析」的文件一律照常入队，确保结果最终完整。
+     *
+     * 注意：当 confirmModalFiles 为空时（所选文件全部属于「需要补全」），
+     * 本方法等价于「全部入队」，前端会将其表述为「继续分析」而非「跳过已完成」。
+     */
     handleConfirmSkip: async () => {
       const { pendingAddItems, confirmModalFiles } = get()
-      const stage4Paths = new Set(confirmModalFiles.map(f => f.path))
-      const filteredItems = pendingAddItems.filter(i => !stage4Paths.has(i.path))
+      const analyzedPaths = new Set(confirmModalFiles.map(f => f.path))
+      const itemsToAdd = pendingAddItems.filter(i => !analyzedPaths.has(i.path))
 
       // 重置状态并隐藏弹窗
       set({
         showConfirmModal: false,
         confirmModalFiles: [],
+        confirmModalInsufficientFiles: [],
+        confirmModalUntouchedCount: 0,
         pendingAddItems: [],
         pendingForceReanalyze: false
       })
 
-      if (filteredItems.length > 0) {
-        await window.electronAPI!.addToAnalysisQueue(filteredItems, false)
+      if (itemsToAdd.length > 0) {
+        await window.electronAPI!.addToAnalysisQueue(itemsToAdd, false)
         await get().refresh()
         await get().start()
         // 强制以 split 面板形式打开队列，确保用户可见进度
@@ -141,6 +159,9 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
         await get().refresh()
       }
     },
+    /**
+     * 全部重新分析：所选文件整体强制重跑（典型场景：更换模型后希望用新模型重新分析）。
+     */
     handleConfirmReanalyze: async () => {
       const { pendingAddItems } = get()
 
@@ -148,6 +169,8 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
       set({
         showConfirmModal: false,
         confirmModalFiles: [],
+        confirmModalInsufficientFiles: [],
+        confirmModalUntouchedCount: 0,
         pendingAddItems: [],
         pendingForceReanalyze: false
       })
@@ -235,24 +258,43 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
           if (analyzedRes && analyzedRes.length > 0) {
             const isPathEqual =
               window.electronAPI?.utils?.isPathEqual || ((a: string, b: string) => a === b)
+
+            // 按后端返回的 status 分为两组：
+            // - analyzed     : 已按当前模式完整分析，可安全跳过
+            // - insufficient : 已分析过但未达当前模式要求，必须入队补全
             const analyzedFiles: any[] = []
+            const insufficientFiles: any[] = []
             items.forEach(item => {
               const hit = analyzedRes.find((res: any) => {
                 const resPath = typeof res === 'string' ? res : res?.path
                 return resPath && isPathEqual(resPath, item.path)
               })
-              if (hit) {
-                if (typeof hit === 'object') {
-                  analyzedFiles.push({ ...item, ...hit })
-                } else {
-                  analyzedFiles.push(item)
-                }
+              if (!hit) return
+              const merged = typeof hit === 'object' ? { ...item, ...hit } : item
+              if (typeof hit === 'object' && hit.status === 'insufficient') {
+                insufficientFiles.push(merged)
+              } else {
+                analyzedFiles.push(merged)
               }
             })
 
-            if (analyzedFiles.length > 0) {
+            // 完全未分析的文件数量（既不完整也算不上已达标的那些）
+            const reportedCount = analyzedFiles.length + insufficientFiles.length
+            const untouchedCount = Math.max(0, items.length - reportedCount)
+
+            // 触发条件：只要存在「已有分析痕迹」的文件就弹窗，而不是仅限于
+            // 「可跳过」的那部分。
+            //
+            // 原因：insufficient（已分析但未达当前模式要求）同样需要用户知情 ——
+            // 典型场景是已完成【简单分类】的文件在【全面分析】模式下会被重新分析。
+            // 若只以 analyzedFiles 为条件，当所选文件全部是 insufficient 时
+            // （例如 68 个已完成简单分类 + 77 个中间态，没有一个是"可跳过"的），
+            // 弹窗会被整体跳过并静默入队，用户将完全不知道已完成的部分被重跑。
+            if (analyzedFiles.length + insufficientFiles.length > 0) {
               set({
                 confirmModalFiles: analyzedFiles,
+                confirmModalInsufficientFiles: insufficientFiles,
+                confirmModalUntouchedCount: untouchedCount,
                 pendingAddItems: items,
                 pendingForceReanalyze: !!forceReanalyze,
                 showConfirmModal: true

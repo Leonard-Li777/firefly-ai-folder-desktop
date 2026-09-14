@@ -426,12 +426,15 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     if (Array.isArray(selectedFiles)) {
       for (let i = 0; i < selectedFiles.length; i++) {
         const f = selectedFiles[i]
-        const p = typeof f === 'string' ? f : f?.path || f?.id
-        if (p) set.add(p)
+        // 仅以 path 作为归一化键：与列表 item.path 的渲染判定口径保持一致，
+        // 避免 id / path 混用导致匹配不到而出现「已全选但复选框未勾选」的假阴性
+        const p = typeof f === 'string' ? f : f?.path
+        const normalized = p ? normalizeForCache(p) : ''
+        if (normalized) set.add(normalized)
       }
     }
     return set
-  }, [selectedFiles])
+  }, [selectedFiles, normalizeForCache])
 
   const activeColumns = useMemo(() => {
     const cols = []
@@ -635,9 +638,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
 
   const isAllSelected = useMemo(() => {
     if (items.length === 0) return false
-    if (selectedFiles.length < items.length) return false
-    return items.every(item => item.path && selectedPathsSet.has(item.path))
-  }, [items, selectedFiles.length, selectedPathsSet])
+    return items.every(item => item.path && selectedPathsSet.has(normalizeForCache(item.path)))
+  }, [items, selectedPathsSet, normalizeForCache])
 
   if (viewMode === 'list') {
     const listHeight = containerSize.height > 40 ? containerSize.height - 40 : 0
@@ -688,10 +690,18 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 <Checkbox
                   checked={isAllSelected}
                   onCheckedChange={checked => {
-                    if (isAllSelected) {
-                      const visiblePaths = new Set(items.map(it => it.path))
+                    // 以事件回调的 checked 参数为准，避免使用渲染期闭包中的 isAllSelected 造成状态滞后
+                    if (!checked) {
+                      // 取消全选：仅剔除当前 items 中的文件，保留其它页已选中项
+                      const visibleKeys = new Set(
+                        items
+                          .filter(it => !!it.path)
+                          .map(it => normalizeForCache(it.path!))
+                      )
                       onFileSelect(
-                        selectedFiles.filter(f => f && !visiblePaths.has(f.path)),
+                        selectedFiles.filter(
+                          f => f && f.path && !visibleKeys.has(normalizeForCache(f.path))
+                        ),
                         true
                       )
                     } else {
@@ -951,8 +961,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                   >
                     {columnItems.map(({ item, index }) => {
                       const itemPath = item.path || ''
-                      // 静态选中由 selectedPathsSet 判断；拖拽框选高亮由 GridCellInner 内部订阅 store 实现
-                      const isSelected = selectedPathsSet.has(itemPath)
+                      // 静态选中由 selectedPathsSet 判断（键为归一化路径）；拖拽框选高亮由 GridCellInner 内部订阅 store 实现
+                      const isSelected = selectedPathsSet.has(normalizeForCache(itemPath))
                       const isActive = !!(
                         activeItem?.path && isPathEqual(itemPath, activeItem.path)
                       )
@@ -1145,7 +1155,18 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                         true
                       )
                     } else {
-                      onFileSelect([], true)
+                      // 取消全选：仅剔除当前 items 中的文件，保留其它页已选中项
+                      const visibleKeys = new Set(
+                        items
+                          .filter(it => !!it.path)
+                          .map(it => normalizeForCache(it.path!))
+                      )
+                      onFileSelect(
+                        selectedFiles.filter(
+                          f => f && f.path && !visibleKeys.has(normalizeForCache(f.path))
+                        ),
+                        true
+                      )
                     }
                   }}
                 />

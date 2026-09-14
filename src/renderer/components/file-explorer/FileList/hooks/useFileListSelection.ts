@@ -473,10 +473,24 @@ export const useFileListSelection = ({
 
       if (e.key === 'a' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault()
-        currentOnFileSelect(
-          currentItems.map(item => item.path!),
-          true
+        // Ctrl+A 仅作用于当前已加载项，并与既有多页选中项合并，避免覆盖其它页选择
+        const normalize =
+          window.electronAPI?.utils?.normalizeForCache ||
+          ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
+        const currentSelected = getLatestSelectedFiles()
+        const selectedKeys = new Set(
+          currentSelected.map(f => (f?.path ? normalize(f.path) : ''))
         )
+        const merged = [...currentSelected]
+        for (const item of currentItems) {
+          if (!item.path) continue
+          const key = normalize(item.path)
+          if (!selectedKeys.has(key)) {
+            merged.push(item as FileType)
+            selectedKeys.add(key)
+          }
+        }
+        currentOnFileSelect(merged, true)
       } else if (e.key === 'Escape') {
         currentOnFileSelect([], true)
       } else if (e.key === 'Backspace') {

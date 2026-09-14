@@ -5,6 +5,11 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { AccessTimeBatchUpdater } from '../access-time-batch-updater'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import {
+  isAnalyzedForMode,
+  normalizeAnalysisMode,
+  type AnalysisMode
+} from '../../../config/analysis-mode'
 
 export class FileDao {
   private dimensionsCache: any[] | null = null
@@ -581,6 +586,17 @@ export class FileDao {
           existingStats.hardware || { platform: process.platform }
         const analysisStage = incomingStats.analysis_stage ?? existingStats.analysis_stage ?? 0
 
+        // 「本次分析实际采用的模式」必须与 analysis_stage 一同落库。
+        //
+        // 存在的必要性：quick_name 与 full 的终态 stage 都是 4，仅凭 stage 无法区分。
+        // 若此前用 quick_name 分析过（跳过质量评分），切到 full 后必须重跑以补上质量评分；
+        // 反之 full 的产物对 quick_name / simple 向下兼容，无需重跑。
+        //
+        // 注意：下方 finalStatsObj 是白名单重建，未列入此处的字段会被静默丢弃。
+        const completedMode = normalizeAnalysisMode(
+          incomingStats.completed_mode ?? existingStats.completed_mode
+        )
+
         const existingPerf = existingStats.performance || {}
         const incomingPerf = incomingStats.performance || {}
         const incomingFresh =
@@ -777,14 +793,21 @@ export class FileDao {
         if (finalFresh) delete finalFresh.cpuSkipped
 
         // 历史遗留根级字段（durationMs/phases/contentExtractionBreakdown/model）只读不写，
-        // 新数据仅写入 analysis_stage、hardware、performance，根级读取由各消费方 fallback 兼容旧数据
-        const finalStatsObj = {
+        // 新数据仅写入 analysis_stage、completed_mode、hardware、performance，
+        // 根级读取由各消费方 fallback 兼容旧数据。
+        //
+        // ⚠️ 这是白名单重建：任何未在此列出的字段都不会落库。
+        // 新增分析状态字段时必须同步补充，否则会像 completed_mode 一样被静默丢弃。
+        const finalStatsObj: Record<string, any> = {
           hardware,
           analysis_stage: analysisStage,
           performance: {
             fresh: finalFresh,
             archive: finalArchive
           }
+        }
+        if (completedMode) {
+          finalStatsObj.completed_mode = completedMode
         }
 
         newStatsJson = JSON.stringify(finalStatsObj)
@@ -838,8 +861,9 @@ export class FileDao {
           newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null)
         )
 
-      // 获取当前最新的 analysis_stage 判断是否达到目标阶段
+      // 获取当前最新的 analysis_stage 与 completed_mode，判断是否达到目标阶段
       let currentStage = 0
+      let currentCompletedMode: AnalysisMode | undefined
       try {
         const row = this.db
           .prepare('SELECT analysis_stats FROM file_contents WHERE file_fingerprint = ?')
@@ -847,17 +871,21 @@ export class FileDao {
         if (row?.analysis_stats) {
           const stats = JSON.parse(row.analysis_stats)
           currentStage = Number(stats?.analysis_stage ?? 0)
+          currentCompletedMode = normalizeAnalysisMode(stats?.completed_mode)
         }
       } catch {
         currentStage = 0
+        currentCompletedMode = undefined
       }
 
-      const analysisMode =
-        ConfigOrchestrator.getInstance().getValue<string>('ANALYSIS_MODE') ?? 'quick_name'
-      const isTargetStageReached =
-        (analysisMode === 'simple' && currentStage >= 1) ||
-        (analysisMode === 'quick_name' && currentStage >= 3) ||
-        (analysisMode === 'full' && currentStage >= 4)
+      // 统一通过「分析模式单一事实来源」判定，避免与 save-local-cache-result 口径漂移。
+      // 必须同时校验 completed_mode：quick_name 与 full 的终态 stage 都是 4，
+      // 但 quick_name 跳过质量评分，仅凭 stage 无法区分。
+      // 采用等级覆盖口径：高级模式的产物对低级模式依然有效（无需重跑）。
+      const isTargetStageReached = isAnalyzedForMode({
+        stage: currentStage,
+        completedMode: currentCompletedMode
+      })
 
       this.db
         .prepare(
@@ -1435,6 +1463,46 @@ export class FileDao {
         lastHitAt: row.last_hit_at ? new Date(row.last_hit_at) : undefined
       }
     })
+  }
+
+  /**
+   * 将指定文件标记为「已分析完成」。
+   *
+   * 使用场景：分析管道在某个阶段提前结束（例如并行流水线运行中把分析模式切换为
+   * simple，GPU 消费者不再执行 AI 阶段），但文件其实已满足当前模式的完成条件。
+   * 此前这类路径只更新了分析队列状态，未落库 is_analyzed，
+   * 导致「队列显示已完成、已分析页面却不统计该文件」的状态错位。
+   *
+   * 幂等：重复调用不会产生副作用。
+   *
+   * @param workspaceId 工作区 ID
+   * @param filePath    文件的绝对路径
+   * @returns 实际被更新的记录数（0 表示文件不存在或本就已标记）
+   */
+  async markFileAnalyzed(workspaceId: number, filePath: string): Promise<number> {
+    try {
+      const result = this.db
+        .prepare(
+          `
+          UPDATE workspace_files
+          SET is_analyzed = 1,
+              last_analyzed_at = COALESCE(last_analyzed_at, ?)
+          WHERE workspace_id = ? AND path = ? AND (is_analyzed IS NULL OR is_analyzed = 0)
+        `
+        )
+        .run(new Date().toISOString(), workspaceId, filePath)
+
+      if (result.changes > 0) {
+        logger.info(
+          LogCategory.ANALYSIS_QUEUE,
+          `[FileDao] 补齐已分析标记: ${filePath}（受影响 ${result.changes} 行）`
+        )
+      }
+      return result.changes
+    } catch (error) {
+      logger.error(LogCategory.ANALYSIS_QUEUE, `[FileDao] 补齐已分析标记失败: ${filePath}`, error)
+      return 0
+    }
   }
 
   async updateAnalysisStage(fileFingerprint: string, stage: number): Promise<void> {
