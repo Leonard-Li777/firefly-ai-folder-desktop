@@ -59,8 +59,16 @@ const areRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRendererPro
   )
   if (prevIsActive !== nextIsActive) return false
 
-  const prevIsSelected = prevProps.data?.selectedPathsSet?.has(prevItem.path) ?? false
-  const nextIsSelected = nextProps.data?.selectedPathsSet?.has(nextItem.path) ?? false
+  const prevIsSelected = prevProps.data?.selectedPathsSet?.has(
+    prevItem.path ? (prevProps.data?.normalizeForCache?.(prevItem.path) ?? prevItem.path) : ''
+  )
+    ? true
+    : false
+  const nextIsSelected = nextProps.data?.selectedPathsSet?.has(
+    nextItem.path ? (nextProps.data?.normalizeForCache?.(nextItem.path) ?? nextItem.path) : ''
+  )
+    ? true
+    : false
   if (prevIsSelected !== nextIsSelected) return false
 
   if (prevProps.data?.refreshKey !== nextProps.data?.refreshKey) return false
@@ -139,8 +147,11 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
   // 拖拽框选高亮：通过 selector 订阅 store，仅当本行进入/退出框选时才重渲染
   const isDragSelected = useDragSelectStore(s => s.dragSelectionPaths.has(item.path))
 
-  // 这里的计算极其轻量：O(1) 查找
-  const isSelected = (data.selectedPathsSet?.has(item.path) ?? false) || isDragSelected
+  // 这里的计算极其轻量：O(1) 查找（selectedPathsSet 使用归一化路径作为键）
+  const normalizedItemPath = item.path ? (data.normalizeForCache?.(item.path) ?? item.path) : ''
+  const isSelected =
+    (normalizedItemPath ? (data.selectedPathsSet?.has(normalizedItemPath) ?? false) : false) ||
+    isDragSelected
 
   // 活动状态（属性面板选中）
   const isActive = data.activeItem && isPathEqual(item.path, data.activeItem.path)

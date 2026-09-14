@@ -23,6 +23,15 @@ import { LlamaIndexAIService } from '@firefly/electron-llamaIndex-service'
 import { AIServiceStatus, ILlamaIndexAIService } from '@firefly/types'
 import { BrowserWindow } from 'electron'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
+import {
+  resolveAnalysisMode,
+  isAiStageEnabled,
+  isAnalysisComplete,
+  isAnalyzedForMode,
+  getRequiredStage,
+  normalizeAnalysisMode,
+  type AnalysisMode
+} from '@app/electron/config/analysis-mode'
 import { DirectoryContextService } from '../filesystem/directory-context-service'
 import { ErrorHandler } from './error-handler'
 import { QueueManager } from './queue-manager'
@@ -383,15 +392,10 @@ export class AnalysisQueueService {
         // 仅在明确处于 CPU 引擎模式时串行；非 CPU 引擎（GPU/云端/Ollama/vulkan/cuda等）均启用并行
         const isCpuEngine = aiServiceMode === 'local' && (isForceCpu || selectedAcc === 'cpu')
 
-        let analysisMode = 'quick_name'
-        try {
-          analysisMode = config.getValue<string>('ANALYSIS_MODE') ?? 'quick_name'
-        } catch {
-          // fallback
-        }
+        // 统一走 analysis-mode 模块解析，避免与 file-processor / DAO 的口径漂移
+        const analysisMode = resolveAnalysisMode()
 
-        const useParallel =
-          !isCpuEngine && (analysisMode === 'full' || analysisMode === 'quick_name')
+        const useParallel = !isCpuEngine && isAiStageEnabled(analysisMode)
 
         if (useParallel) {
           const snapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
@@ -667,15 +671,19 @@ export class AnalysisQueueService {
             }
           }
 
+          // 必须先创建 AbortController 再设置 this.current：
+          // pause() 通过 `this.current && this.currentAbortController` 定位要中止的任务，
+          // 若先设 current，存在「current 已指向新任务但 controller 仍是上一轮实例」的窗口，
+          // 此刻暂停会 abort 到过期对象，导致新任务无法被中止。
+          this.currentAbortController = new AbortController()
+          const currentSignal = this.currentAbortController.signal
           this.current = next
           this.updateItemStatus(next.id, 'analyzing', 0)
-
-          this.currentAbortController = new AbortController()
 
           if (next.itemType === 'directory') {
             await this.directoryProcessor.processDirectory(next)
           } else {
-            await this.fileProcessor.processFile(next, this.currentAbortController.signal)
+            await this.fileProcessor.processFile(next, currentSignal)
             cloudSyncWorker.triggerSync(2000)
           }
 
@@ -711,7 +719,14 @@ export class AnalysisQueueService {
       this.runningWorkspaceStack = []
     }
 
-    if (this.current && (!targetWsId || this.current.workspaceId === targetWsId)) {
+    // 中止当前正在执行的任务。
+    //
+    // 注意：这里只按「是否指定了 workspaceId」判断，而不再要求
+    // `this.current.workspaceId === targetWsId`。原因：targetWsId 取自
+    // 「当前打开的工作目录」，而 this.current 可能是运行栈中另一个工作空间的
+    // 任务。若二者不一致，旧逻辑会跳过 abort，但下方仍把 running 置为 false，
+    // 导致「界面显示已暂停，任务却在后台继续跑」。
+    if (this.current && (!workspaceId || this.current.workspaceId === workspaceId)) {
       if (this.currentAbortController) {
         this.currentAbortController.abort()
         this.currentAbortController = null
@@ -1238,32 +1253,32 @@ export class AnalysisQueueService {
   }
 
   /**
-   * 检查指定的文件路径中，在当前分析模式下哪些已经算作已分析完成：
-   * - full 模式：stage === 4
-   * - sample 模式：stage === 1
-   * - document 模式：stage === 2
+   * 检查指定文件的分析状态，供前端弹窗提示用户。
+   *
+   * 按「相对当前模式的完成程度」分为两类，二者判定互斥：
+   *
+   * 1. `analyzed`（已完成）：`analysis_stage >= 当前模式所需阶段` AND `is_analyzed = 1`
+   *    —— 已按当前模式完整分析过，提示用户「可跳过」，默认不重复消耗算力。
+   * 2. `insufficient`（分析不完整）：已产生过分析痕迹，但未达到当前模式要求。
+   *    涵盖两种子情况：
+   *    - `is_analyzed = 1` 但 stage 不达标：此前用较低模式分析过
+   *      （例如已完成【简单分析】，而当前是【全面分析】）；
+   *    - stage 有值但 `is_analyzed = 0`：CPU 提取完成却未走完 AI 阶段的中间态。
+   *    这类文件应当参与分析以补全结果。
+   *
+   * 两者都不属于的文件（完全没有分析记录）不会被返回，由调用方直接入队。
+   *
    * @param filePaths 待检查的文件路径列表
+   * @returns 含 `status: 'analyzed' | 'insufficient'` 标记的文件数组
    */
   async checkAlreadyAnalyzedFiles(filePaths: string[]): Promise<any[]> {
     const db = databaseService.db
     if (!db || !filePaths || filePaths.length === 0) return []
 
-    let analysisMode = 'quick_name'
-    try {
-      analysisMode =
-        ConfigOrchestrator.getInstance().getValue<string>('ANALYSIS_MODE') ?? 'quick_name'
-    } catch {
-      // fallback
-    }
+    // 统一走 analysis-mode 模块解析
+    const analysisMode = resolveAnalysisMode()
 
-    const targetStage =
-      analysisMode === 'simple' || analysisMode === 'sample'
-        ? 1
-        : analysisMode === 'quick_name'
-          ? 3
-          : 4
-
-    const analyzedItems: any[] = []
+    const result: any[] = []
     const chunkSize = 500
 
     try {
@@ -1299,34 +1314,52 @@ export class AnalysisQueueService {
           tags_str: string | null
         }>
         for (const row of rows) {
-          let stageCompleted = false
-          if (row.analysis_stats) {
-            try {
-              const stats = JSON.parse(row.analysis_stats)
-              if (
-                stats &&
-                typeof stats.analysis_stage === 'number' &&
-                stats.analysis_stage >= targetStage
-              ) {
-                stageCompleted = true
-              }
-            } catch (e) {
-              // 忽略解析错误
-            }
+          let stageValue = 0
+          let completedMode: AnalysisMode | undefined
+          try {
+            const stats = row.analysis_stats ? JSON.parse(row.analysis_stats) : null
+            stageValue = Number(stats?.analysis_stage ?? 0) || 0
+            completedMode = normalizeAnalysisMode(stats?.completed_mode)
+          } catch (e) {
+            // 解析失败视为未达标
+            stageValue = 0
+            completedMode = undefined
           }
-          if (stageCompleted || row.is_analyzed === 1) {
-            analyzedItems.push({
-              path: row.path,
-              name: row.name,
-              smartName: row.smart_name || undefined,
-              qualityScore: row.quality_score ?? undefined,
-              description: row.description || undefined,
-              author: row.author || undefined,
-              language: row.language || undefined,
-              tags: row.tags_str ? row.tags_str.split(',') : undefined,
-              isAnalyzed: true
-            })
-          }
+
+          // 口径：stage 达标 **且** completed_mode 的等级不低于当前模式（向下兼容）。
+          //
+          // 必须校验 completed_mode 的原因：quick_name 与 full 的终态 stage 都是 4，
+          // 但 quick_name 跳过了质量评分。若只看 stage，会把「用快速命名分析过」的文件
+          // 误判为「已完成全面分析」，导致切到全面分析后不补跑质量评分。
+          // 反之，高级模式（如 full）的产物对低级模式（quick_name / simple）天然有效，
+          // 切回低级模式时无需重跑。
+          const analyzed =
+            row.is_analyzed === 1 &&
+            isAnalyzedForMode({ stage: stageValue, completedMode, mode: analysisMode })
+
+          // 已产生过分析痕迹但未达到当前模式要求
+          const insufficient = !analyzed && (row.is_analyzed === 1 || stageValue > 0)
+
+          // 完全无分析记录的文件不返回，由调用方直接入队
+          if (!analyzed && !insufficient) continue
+
+          result.push({
+            path: row.path,
+            name: row.name,
+            smartName: row.smart_name || undefined,
+            qualityScore: row.quality_score ?? undefined,
+            description: row.description || undefined,
+            author: row.author || undefined,
+            language: row.language || undefined,
+            tags: row.tags_str ? row.tags_str.split(',') : undefined,
+            isAnalyzed: analyzed,
+            /** 相对当前模式的完成程度：analyzed=可跳过；insufficient=需要补全 */
+            status: analyzed ? 'analyzed' : 'insufficient',
+            /** 该文件已完成的阶段，便于前端展示「已完成阶段 X/Y」 */
+            analysisStage: stageValue,
+            /** 该文件实际完成分析所用的模式（缺失表示旧数据或未记录） */
+            completedMode
+          })
         }
       }
     } catch (error) {
@@ -1335,10 +1368,10 @@ export class AnalysisQueueService {
 
     logger.info(
       LogCategory.ANALYSIS_QUEUE,
-      `[分析队列] 检查已分析文件 (模式: ${analysisMode}, 目标Stage: ${targetStage}): 传入 ${filePaths.length} 个, 命中已分析 ${analyzedItems.length} 个`
+      `[分析队列] 检查已分析文件 (模式: ${analysisMode}, 目标Stage: ${getRequiredStage(analysisMode)}): 传入 ${filePaths.length} 个, 已完成 ${result.filter(r => r.status === 'analyzed').length} 个, 分析不完整 ${result.filter(r => r.status === 'insufficient').length} 个`
     )
 
-    return analyzedItems
+    return result
   }
 
   // 兼容原有方法名

@@ -377,6 +377,23 @@ export const VirtualDirectory: React.FC = () => {
                                 setActiveItem={setActiveItem}
                                 selectedFiles={selectedFileListFiles}
                                 setSelectedFiles={setSelectedFileListFiles}
+                                // 多选模式下开启复选框列，使标签多选与文件勾选能力保持一致
+                                isOrganizeMode={vdirMultiSelectMode}
+                                onOrganizeSelected={() => {
+                                  if (selectedFileListFiles.length === 0) {
+                                    toast.warning(t('至少勾选一个文件'))
+                                    return
+                                  }
+                                  // 同时携带 id 与 path：整理页优先按 id 匹配，缺失时回退 path 匹配
+                                  navigate('/organize', {
+                                    state: {
+                                      selectedFileIds: selectedFileListFiles.map(f => f.id),
+                                      selectedFilePaths: selectedFileListFiles.map(f => f.path),
+                                      initialStage: 'root-mode-select'
+                                    }
+                                  })
+                                }}
+                                showOrganizeButton={false}
                                 unionMode={unionMode}
                                 showDetailsPanel={!!currentWorkspaceDirectory}
                                 showPreviewPanel={isSplitView}

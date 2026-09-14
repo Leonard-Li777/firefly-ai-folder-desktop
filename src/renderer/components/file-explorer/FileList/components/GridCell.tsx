@@ -609,10 +609,18 @@ const gridCellAreEqual = (prevProps: GridCellProps, nextProps: GridCellProps): b
     if (prevIsActive !== nextIsActive) return false
   }
 
-  // selectedPathsSet 比对：只在当前 itemPath 的选中状态发生改变时才失效
+  // selectedPathsSet 比对：只在当前 itemPath 的选中状态发生改变时才失效。
+  // 注意：selectedPathsSet 的键为「归一化路径」，必须先用 normalizeForCache 归一化后再查找，
+  // 否则在 Windows 上（键被转成小写）永远查不到，导致网格卡片选中态不刷新。
   if (prevData.selectedPathsSet !== nextData.selectedPathsSet) {
-    const prevIsSelected = prevData.selectedPathsSet?.has(prevItem.path) ?? false
-    const nextIsSelected = nextData.selectedPathsSet?.has(nextItem.path) ?? false
+    const prevKey = prevItem.path
+      ? (prevData.normalizeForCache?.(prevItem.path) ?? prevItem.path)
+      : ''
+    const nextKey = nextItem.path
+      ? (nextData.normalizeForCache?.(nextItem.path) ?? nextItem.path)
+      : ''
+    const prevIsSelected = prevData.selectedPathsSet?.has(prevKey) ?? false
+    const nextIsSelected = nextData.selectedPathsSet?.has(nextKey) ?? false
     if (prevIsSelected !== nextIsSelected) return false
   }
 
@@ -668,9 +676,13 @@ export const GridCell = React.memo((props: GridCellProps) => {
   const { isPathEqual } = window.electronAPI!.utils
   const itemPath = item.path ? item.path : ''
 
-  // 静态选中状态由 selectedPathsSet 判断；拖拽框选高亮由 GridCellInner 内部订阅 store 实现，
-  // 避免框选时每帧生成新 Set 导致全部可见卡片重渲染
-  const isSelected = data.selectedPathsSet?.has(itemPath) ?? false
+  // 静态选中状态由 selectedPathsSet 判断（键为归一化路径，需先归一化再查找）；
+  // 拖拽框选高亮由 GridCellInner 内部订阅 store 实现，避免框选时每帧生成新 Set 导致全部可见卡片重渲染
+  const normalizedItemPath = itemPath
+    ? (data.normalizeForCache?.(itemPath) ?? itemPath)
+    : ''
+  const isSelected =
+    (normalizedItemPath ? (data.selectedPathsSet?.has(normalizedItemPath) ?? false) : false)
 
   const isActive = activeItem?.path && isPathEqual(itemPath, activeItem.path)
   const isDirectory = 'isDirectory' in item && item.isDirectory

@@ -53,21 +53,26 @@ export class FileFilter {
         // default true
       }
 
+      // 注意：本方法统计的是「已 AI 分析」的文件总数（is_analyzed = 1）。
+      // 真实目录页面显示的文件数还包含磁盘上尚未被分析的文件（isAnalyzed = false），
+      // 两者口径不同属于预期行为，不应强行对齐。
       if (workspaceDirectoryPath) {
-        query = `SELECT COUNT(DISTINCT id) as count FROM workspace_files WHERE is_analyzed = 1 ${!showMissing ? 'AND status = 1' : ''}`
+        query = `SELECT COUNT(DISTINCT wf.id) as count FROM workspace_files wf
+          WHERE wf.is_analyzed = 1
+          ${!showMissing ? 'AND wf.status = 1' : ''}`
         const sep = path.sep
         const prefix = workspaceDirectoryPath.endsWith(sep)
           ? workspaceDirectoryPath
           : workspaceDirectoryPath + sep
-        query += ` AND (path LIKE ? OR path = ?)`
+        query += ` AND (wf.path LIKE ? OR wf.path = ?)`
         params.push(`${prefix}%`, workspaceDirectoryPath)
       } else {
         query = `
-          SELECT COUNT(DISTINCT id) as count
-          FROM workspace_files
-          WHERE is_analyzed = 1
-          ${!showMissing ? 'AND status = 1' : ''}
-          AND workspace_id IN (SELECT workspace_id FROM workspaces WHERE type = 'PRIVATE')
+          SELECT COUNT(DISTINCT wf.id) as count
+          FROM workspace_files wf
+          WHERE wf.is_analyzed = 1
+          ${!showMissing ? 'AND wf.status = 1' : ''}
+          AND wf.workspace_id IN (SELECT workspace_id FROM workspaces WHERE type = 'PRIVATE')
         `
       }
 

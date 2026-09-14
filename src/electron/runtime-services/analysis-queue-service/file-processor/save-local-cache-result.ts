@@ -13,6 +13,7 @@ import {
 } from '@firefly/shared'
 import { t } from '@app/languages'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import { isAnalyzedForMode, resolveAnalysisMode } from '../../../config/analysis-mode'
 import { databaseService } from '../../database/database-service'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -81,16 +82,30 @@ export async function saveLocalAnalysisResult(
     initialStatsWithBenchmark.performance.fresh.cpuSkipped = true
   }
 
-  const finalStage = analysisStage !== undefined ? analysisStage : isBasic ? 1 : 4
+  // 基础分析（简单分类）的完成阶段是 2（CPU 内容提取完成），非 1；
+  // 非基础分析（AI 阶段落库）的默认完成阶段是 4。
+  const finalStage = analysisStage !== undefined ? analysisStage : isBasic ? 2 : 4
   initialStatsWithBenchmark.analysis_stage = finalStage
 
-  const analysisMode =
-    ConfigOrchestrator.getInstance().getValue<string>('ANALYSIS_MODE') ?? 'quick_name'
+  // 记录「本次分析实际采用的模式」。
+  //
+  // 存在的必要性：quick_name 与 full 的终态 stage 都是 4，
+  // 但 quick_name 跳过了质量评分（stage 3），二者能力不同。
+  // 仅凭 stage 无法区分，故额外落库 completed_mode，
+  // 使后续判定能识别「用 quick_name 分析过的文件在 full 模式下尚未完成」。
+  //
+  // 注意：isBasic 表示走的是简单分类分支，此时模式可能是 simple。
+  const effectiveMode = resolveAnalysisMode()
+  initialStatsWithBenchmark.completed_mode = effectiveMode
 
-  const isAnalyzed =
-    (analysisMode === 'simple' && finalStage >= 1) ||
-    (analysisMode === 'quick_name' && finalStage >= 3) ||
-    (analysisMode === 'full' && finalStage >= 4)
+  // 统一通过「分析模式单一事实来源」判定是否完成。
+  // 此处 completedMode 即本次刚写入的模式，等级覆盖判定天然成立：
+  // 本次分析已达成当前模式要求，故只需校验 stage 是否达标。
+  const isAnalyzed = isAnalyzedForMode({
+    stage: finalStage,
+    completedMode: effectiveMode,
+    mode: effectiveMode
+  })
 
   // 获取或创建 workspace_files 记录
   const dirPath = path.dirname(filePath)

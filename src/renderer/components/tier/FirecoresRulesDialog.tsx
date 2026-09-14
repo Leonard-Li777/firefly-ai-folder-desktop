@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs'
 import { t } from '@app/languages'
@@ -40,11 +40,6 @@ import { EmptyState } from '../common/EmptyState'
 import { UpgradeAccountDialog } from './UpgradeAccountDialog'
 import { openMarketingPricingUrl, getInviteLink } from '../../lib/marketing-link'
 
-// 懒加载解锁弹层：避免与 UnlockPrivateQuotaModal 形成反向循环依赖（其内部会打开本弹层）
-const UnlockPrivateQuotaModal = lazy(() =>
-  import('../invitation/UnlockPrivateQuotaModal').then(m => ({ default: m.UnlockPrivateQuotaModal }))
-)
-
 interface FirecoresRulesDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -61,8 +56,9 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   const [isRedeeming, setIsRedeeming] = useState(false)
   const [hasCopied, setHasCopied] = useState(false)
   const [isUpgradeOpen, setIsUpgradeOpen] = useState(false)
-  const [showUnlockModal, setShowUnlockModal] = useState(false)
-  const { counters, firecores = 0, computed_limits, tier, subscription } = useTierStore()
+  // 兑换无限额度：处理中状态
+  const [isUnlocking, setIsUnlocking] = useState(false)
+  const { counters, firecores = 0, tier, subscription, spendFirecores } = useTierStore()
   const wasInvited = counters?.is_invited === 1
 
   const config = useConfigStore(state => state.config)
@@ -72,9 +68,6 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
   const inviteFirecoreReward = tierConstants?.inviteFirecoreReward || 100
   const inviteFirecoreRewardInvitee = tierConstants?.inviteFirecoreRewardInvitee || 45
   const unlockThreshold = tierConstants?.prices?.spend_unlock_analysis || 300
-
-  // 当前私有目录分析额度（供解锁弹层统计展示）
-  const unlockQuota = computed_limits?.analysis_quota_total ?? 0
 
   // 邀请人数统计（若后端无邀请人数，可由已获邀请奖励或萤火刻度推算展示）
   const invitedCount = Number(counters?.invite_count ?? counters?.invited_count ?? 0)
@@ -89,8 +82,12 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
     subscription?.status === 'active' &&
     (!subscription?.expires_at || new Date(subscription.expires_at).getTime() >= Date.now())
 
+  // 是否已真正解锁无限额度：仅依据已发放的权益或有效的 Pro/企业版会员，而非「萤火是否够兑换」
   const isUnlockedUnlimited =
-    firecores >= unlockThreshold || Boolean(counters?.unlimited_analysis_unlocked) || isActiveProOrEnterprise
+    Boolean(counters?.unlimited_analysis_unlocked) || isActiveProOrEnterprise
+
+  // 萤火是否足以兑换无限额度（只决定兑换按钮是否可点击，不代表已解锁）
+  const canAffordUnlock = firecores >= unlockThreshold
 
   // getFirecoreRules 的返回类型（earn/spend 规则对象）
   type FirecoreRules = ReturnType<typeof getFirecoreRules>
@@ -107,7 +104,7 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
 
   if (!open) return null
   const inviteLink = getInviteLink(machineId)
-  const text = `${t('我发现一个超好用的开源免费AI工具"萤核智能文件夹"，一键整理乱七八糟的桌面、下载目录等，AI自动分类/重命名/标签/描述/缩略图/归档/清理！利用本地AI能力保障隐私，创新虚拟目录整理技术保障文件安全!')}\n${inviteLink}`
+  const text = `${t('我发现一个超好用的开源免费AI工具"萤核智能文件夹"，一键整理乱七八糟的桌面、下载目录等，AI自动分类/重命名/标签/描述/缩略图/归档/清理！利用本地AI能力保障隐私，创新虚拟目录整理技术保障文件安全！ 使用邀请码解锁更多高级权益')}\n${inviteLink}`
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(text)
@@ -145,10 +142,36 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
     }
   }
 
+  /**
+   * 消耗萤火兑换私有目录无限分析额度
+   * 原 UnlockPrivateQuotaModal 的内联实现：解锁后私有目录分析文件数量不再受限
+   */
+  const handleUnlockUnlimited = async () => {
+    if (isUnlocking) return
+    setIsUnlocking(true)
+    try {
+      const result = await spendFirecores(unlockThreshold, 'spend_unlock_analysis', {
+        reference_type: 'analysis',
+        reference_id: 'unlimited'
+      })
+      if (result.success) {
+        // spendFirecores 内部已刷新额度与萤火余额
+        toast.success(t('已解锁私有目录无限额度'))
+      } else {
+        toast.error(result.message || t('解锁失败'))
+      }
+    } catch {
+      toast.error(t('解锁请求失败'))
+    } finally {
+      setIsUnlocking(false)
+    }
+  }
+
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl sm:max-w-4xl max-h-[82vh] overflow-hidden flex flex-col mt-10">
+        <DialogContent className="max-w-5xl max-h-[82vh] overflow-hidden flex flex-col mt-10">
           <DialogHeader>
             <DialogTitle>{t('萤火规则')}</DialogTitle>
           </DialogHeader>
@@ -406,8 +429,8 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                           )}
                         </div>
 
-                        {/* 立即兑换 CTA：点击打开消费萤火兑换无限额度弹层 */}
-                        {firecores >= 300 || isUnlockedUnlimited ? (
+                        {/* 立即兑换 CTA：直接消耗萤火兑换私有目录无限额度 */}
+                        {isUnlockedUnlimited ? (
                           <div className="mt-2.5 w-full flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-xl py-2">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {t('已解锁无限额度')}
@@ -415,11 +438,30 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
                         ) : (
                           <Button
                             size="sm"
-                            onClick={() => setShowUnlockModal(true)}
-                            className="mt-5 w-full font-bold shadow-sm bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white flex items-center justify-center gap-1.5 transition-all hover:scale-[1.02] active:scale-95"
+                            onClick={handleUnlockUnlimited}
+                            disabled={!canAffordUnlock || isUnlocking}
+                            title={
+                              canAffordUnlock
+                                ? t('消耗 {cost} 萤火，永久解锁私有目录无限分析额度', {
+                                    cost: unlockThreshold
+                                  })
+                                : t('萤火不足，还需 {needed} 萤火', { needed: neededFirecores })
+                            }
+                            className={cn(
+                              'mt-5 w-full font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all',
+                              canAffordUnlock
+                                ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white hover:scale-[1.02] active:scale-95'
+                                : 'opacity-50 cursor-not-allowed text-white bg-gradient-to-r from-amber-500 to-amber-600'
+                            )}
                           >
                             <Unlock className="w-3.5 h-3.5" />
-                            <span>{t('兑换无限额度')}</span>
+                            <span>
+                              {isUnlocking
+                                ? t('处理中...')
+                                : canAffordUnlock
+                                  ? t('兑换无限额度（{cost} 萤火）', { cost: unlockThreshold })
+                                  : t('还需 {needed} 萤火可兑换', { needed: neededFirecores })}
+                            </span>
                           </Button>
                         )}
                       </div>
@@ -657,17 +699,6 @@ export const FirecoresRulesDialog: React.FC<FirecoresRulesDialogProps> = ({
           setIsUpgradeOpen(open)
         }}
       />
-      <Suspense fallback={null}>
-        <UnlockPrivateQuotaModal
-          isOpen={showUnlockModal}
-          onClose={() => setShowUnlockModal(false)}
-          quota={unlockQuota}
-          onRefresh={() => {
-            // 刷新额度解锁状态与萤火余额
-            useTierStore.getState().fetchProfile()
-          }}
-        />
-      </Suspense>
     </>
   )
 }

@@ -237,19 +237,47 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
       })
 
       if (isFromCheckbox) {
-        const resolvedSelection = newSelection
-          .map(item => {
-            if (item && typeof item === 'object' && 'path' in item) return item as FileType
-            const pathStr = typeof item === 'string' ? item : item?.path
-            return pathStr ? fileMap.get(normalize(pathStr)) : undefined
-          })
-          .filter(Boolean) as FileType[]
-        setSelectedFiles(resolvedSelection)
+        // 当前页数据查找表（用于把路径/字符串还原为完整文件对象）
+        const pageMap = new Map<string, FileType>()
+        filteredFiles.forEach(f => {
+          if (f?.path) pageMap.set(normalize(f.path), f)
+        })
+        // 全量选中项查找表：勾选事件只携带当前页受影响项，需与既有多页选中项合并而非整体覆盖
+        const selectedMap = new Map<string, FileType>()
+        selectedFiles.forEach(f => {
+          const p = typeof f === 'string' ? f : f?.path
+          if (p) selectedMap.set(normalize(p), f as FileType)
+        })
+
+        const resolvedSelection: FileType[] = []
+        for (const item of newSelection) {
+          if (item && typeof item === 'object' && 'path' in item) {
+            resolvedSelection.push(item as FileType)
+            continue
+          }
+          const pathStr = typeof item === 'string' ? item : item?.path
+          if (!pathStr) continue
+          const found = fileMap.get(normalize(pathStr)) || pageMap.get(normalize(pathStr))
+          if (found) resolvedSelection.push(found)
+        }
+
+        // 以「当前页最新勾选结果」为基准，合并保留其它页已选中的文件
+        const resolvedPaths = new Set(resolvedSelection.map(f => normalize(f?.path)))
+        const pagePaths = new Set(filteredFiles.map(f => normalize(f?.path)))
+        const mergedSelection = [...resolvedSelection]
+        selectedMap.forEach((file, key) => {
+          if (!pagePaths.has(key) && !resolvedPaths.has(key)) {
+            mergedSelection.push(file)
+          }
+        })
+
+        setSelectedFiles(mergedSelection)
         // 多选/全选时不强行修改 activeItem 触发单文件深度预览
-        if (resolvedSelection.length === 1) {
-          lastSelectedItemRef.current = resolvedSelection[0]
-          setActiveItem(resolvedSelection[0])
-        } else if (resolvedSelection.length === 0) {
+        if (newSelection.length === 1) {
+          const single = mergedSelection.find(f => resolvedPaths.has(normalize(f?.path)))
+          lastSelectedItemRef.current = single || mergedSelection[0]
+          setActiveItem(single || mergedSelection[0])
+        } else if (newSelection.length === 0) {
           lastSelectedItemRef.current = null
           setActiveItem(null)
         }
@@ -288,26 +316,86 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
 
   const getSelectedFiles = useCallback(() => selectedFiles, [selectedFiles])
 
-  // 全选状态判断：加入 O(1) 长度短路，并使用 Set 实现 O(N) 比较，彻底消除 O(N^2)
-  const isAllVisibleItemsSelected = useMemo(() => {
-    if (filteredFiles.length === 0) return false
-    if (selectedFiles.length < filteredFiles.length) return false
+  /** 统一路径归一化：Windows 大小写不敏感 + 去除尾部斜杠，保证选中态匹配口径一致 */
+  const normalizePathForCompare = useCallback((p?: string | null) => {
+    if (!p) return ''
     const normalize =
       window.electronAPI?.utils?.normalizeForCache ||
-      ((p: string) => p.toLowerCase().replace(/[\\/]+$/, ''))
-    const selectedPathsSet = new Set(
-      selectedFiles.map(f => normalize(typeof f === 'string' ? f : f?.path || ''))
-    )
-    return filteredFiles.every(f => f?.path && selectedPathsSet.has(normalize(f.path)))
-  }, [filteredFiles, selectedFiles])
+      ((v: string) => v.toLowerCase().replace(/[\\/]+$/, ''))
+    return normalize(p)
+  }, [])
 
+  /** 已选中文件的路径集合（用于列表渲染层判断勾选态，避免与分页子集口径不一致） */
+  const selectedPathsSet = useMemo(() => {
+    const set = new Set<string>()
+    for (const f of selectedFiles) {
+      const p = typeof f === 'string' ? f : f?.path
+      const normalized = normalizePathForCompare(p)
+      if (normalized) set.add(normalized)
+    }
+    return set
+  }, [selectedFiles, normalizePathForCompare])
+
+  // 全选状态判断：仅以「当前已加载页」为基准判定，与复选框实际可见范围保持一致
+  const isAllVisibleItemsSelected = useMemo(() => {
+    if (filteredFiles.length === 0) return false
+    return filteredFiles.every(f => f?.path && selectedPathsSet.has(normalizePathForCompare(f.path)))
+  }, [filteredFiles, selectedPathsSet, normalizePathForCompare])
+
+  /**
+   * 分页状态：供底部状态栏展示「第几页 / 共几页」。
+   *
+   * 背景：列表采用虚拟滚动 + 分页加载，全文「全选」只作用于已加载的页，
+   * 而 footer 原先只显示文件总数，导致用户误以为已全选全部文件。
+   * 同时展示总页数与当前页，让「全选的实际覆盖范围」一目了然。
+   */
+  const paginationInfo = useMemo(() => {
+    const totalPages = Math.max(1, Math.ceil(totalFilesCount / PAGE_SIZE))
+    const loadedPages = Math.max(0, Math.ceil(filteredFiles.length / PAGE_SIZE))
+    // 已加载页数不应超过总页数（加载过程中的瞬时状态可能略大）
+    const currentPage = Math.min(Math.max(1, loadedPages), totalPages)
+    return {
+      totalPages,
+      currentPage,
+      /** 是否仍有未加载的数据（决定是否提示「已加载 x / 共 y」） */
+      hasUnloaded: filteredFiles.length < totalFilesCount
+    }
+  }, [totalFilesCount, filteredFiles.length])
+
+  /**
+   * 全选/取消全选（作用于当前已加载页）
+   * - 取消：从全量选中项中剔除当前页文件，保留其它页已选中的文件
+   * - 全选：将当前页文件并入全量选中项，避免覆盖掉其它页已选中的文件
+   */
   const handleToggleSelectAll = useCallback(() => {
     if (isAllVisibleItemsSelected) {
-      setSelectedFiles([])
+      const pagePaths = new Set(filteredFiles.map(f => normalizePathForCompare(f?.path)))
+      setSelectedFiles(
+        selectedFiles.filter(
+          f => !pagePaths.has(normalizePathForCompare(typeof f === 'string' ? f : f?.path))
+        )
+      )
     } else {
-      setSelectedFiles([...filteredFiles])
+      const merged = [...selectedFiles]
+      const existing = new Set(
+        selectedFiles.map(f => normalizePathForCompare(typeof f === 'string' ? f : f?.path))
+      )
+      for (const f of filteredFiles) {
+        const normalized = normalizePathForCompare(f?.path)
+        if (normalized && !existing.has(normalized)) {
+          merged.push(f)
+          existing.add(normalized)
+        }
+      }
+      setSelectedFiles(merged)
     }
-  }, [isAllVisibleItemsSelected, filteredFiles, setSelectedFiles])
+  }, [
+    isAllVisibleItemsSelected,
+    filteredFiles,
+    selectedFiles,
+    setSelectedFiles,
+    normalizePathForCompare
+  ])
 
   return (
     <div className="flex-1 h-full relative overflow-hidden flex flex-col bg-background">
@@ -321,7 +409,7 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
           setViewMode(newMode as any)
           await updateConfigValue('DEFAULT_VIEW', newMode)
         }}
-        selectedFileIds={selectedFiles.map(f => f.path || f.id)}
+        selectedFiles={selectedFiles}
         activeItem={activeItem}
         onFileSelect={(filesOrItem, isFromCheckbox) =>
           handleFileSelect(Array.isArray(filesOrItem) ? filesOrItem : [filesOrItem], isFromCheckbox)
@@ -468,15 +556,44 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
           </div>
         )}
         renderFooter={() => (
-          <div className="px-4 py-1.5 flex items-center text-xs text-muted-foreground shrink-0 border-t border-border/40 min-h-[32px]">
-            <MaterialIcon icon="insert_drive_file" className="mr-1.5 text-sm" />
-            <span>
-              {t('{count} 个文件', {
-                count: totalFilesCount
-              })}
+          <div className="px-4 py-1.5 flex items-center text-xs text-muted-foreground shrink-0 border-t border-border/40 min-h-[32px] gap-x-3">
+            <span className="flex items-center">
+              <MaterialIcon icon="insert_drive_file" className="mr-1.5 text-sm" />
+              {/* 已加载数 / 总数：虚拟滚动下「全选」只作用于已加载页，
+                  必须让总数与已加载数同时可见，否则用户会误以为全选了全部文件 */}
+              {paginationInfo.hasUnloaded
+                ? t('已加载 {loaded} / 共 {total} 个文件', {
+                    loaded: filteredFiles.length,
+                    total: totalFilesCount
+                  })
+                : t('{count} 个文件', { count: totalFilesCount })}
             </span>
+
+            {/* 当前页数：明确「全选」实际覆盖的范围 */}
+            {totalFilesCount > PAGE_SIZE && (
+              <span className="flex items-center">
+                <MaterialIcon icon="description" className="mr-1.5 text-sm" />
+                <span className="font-mono">
+                  {t('第 {current} / {total} 页', {
+                    current: paginationInfo.currentPage,
+                    total: paginationInfo.totalPages
+                  })}
+                </span>
+              </span>
+            )}
+
+            {/* 已选中数量：仅在勾选能力开启且确有选中项时展示，避免长期占用底部空间。
+                勾选能力与 FileExplorerLayout 的 selectionEnabled 保持一致
+                （多选模式与整理模式均需开启复选框列） */}
+            {(isOrganizeMode || isMultiSelectMode) && selectedFiles.length > 0 && (
+              <span className="flex items-center text-primary font-medium">
+                <MaterialIcon icon="check_circle" className="mr-1.5 text-sm" />
+                {t('已选中 {count} 个文件', { count: selectedFiles.length })}
+              </span>
+            )}
+
             {isLoadingMore && (
-              <span className="ml-2 inline-block animate-spin rounded-full h-3 w-3 border-t-2 border-primary"></span>
+              <span className="inline-block animate-spin rounded-full h-3 w-3 border-t-2 border-primary"></span>
             )}
           </div>
         )}

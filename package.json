@@ -14,10 +14,10 @@
     "download:llama": "node pro/scripts/run.js download-llama-cpp-releases.js",
     "download:llama:update": "cross-env FORCE_UPDATE=true pnpm download:llama",
     "install-sharp-cross-platform": "node pro/scripts/run.js install-sharp-cross-platform.js",
-    "rebuild": "electron-rebuild -f -w better-sqlite3,sharp",
-    "rebuild:better-sqlite3": "electron-rebuild -f -v 42.2.0 -w better-sqlite3",
-    "rebuild:sharp": "electron-rebuild -f -v 42.2.0 -w sharp",
-    "rebuild:macos-alias": "node -e \"if (process.platform === 'darwin') require('child_process').execSync('electron-rebuild -f -v 42.2.0 -w macos-alias', {stdio: 'inherit'})\"",
+    "rebuild": "node -e \"const a = process.env.BUILD_ARCH && process.env.BUILD_ARCH !== 'universal' ? ' -a ' + process.env.BUILD_ARCH : ''; require('child_process').execSync('electron-rebuild -f' + a + ' -w better-sqlite3,sharp', {stdio: 'inherit'})\"",
+    "rebuild:better-sqlite3": "node -e \"const a = process.env.BUILD_ARCH && process.env.BUILD_ARCH !== 'universal' ? ' -a ' + process.env.BUILD_ARCH : ''; require('child_process').execSync('electron-rebuild -f -v 42.2.0' + a + ' -w better-sqlite3', {stdio: 'inherit'})\"",
+    "rebuild:sharp": "node -e \"const a = process.env.BUILD_ARCH && process.env.BUILD_ARCH !== 'universal' ? ' -a ' + process.env.BUILD_ARCH : ''; require('child_process').execSync('electron-rebuild -f -v 42.2.0' + a + ' -w sharp', {stdio: 'inherit'})\"",
+    "rebuild:macos-alias": "node -e \"if (process.platform === 'darwin') { const a = process.env.BUILD_ARCH && process.env.BUILD_ARCH !== 'universal' ? ' -a ' + process.env.BUILD_ARCH : ''; require('child_process').execSync('electron-rebuild -f -v 42.2.0' + a + ' -w macos-alias', {stdio: 'inherit'}); }\"",
     "rebuild:macos-universal": "node pro/scripts/run.js rebuild-macos-universal.js",
     "rebuild:electron-binary": "node -e \"require('child_process').execSync('node \\\"' + require.resolve('electron/install.js') + '\\\"', { cwd: process.cwd(), stdio: 'inherit' })\"",
     "rebuild:extract-file-icon": "node pro/scripts/run.js rebuild-extract-icon.js",
@@ -235,7 +235,6 @@
     "vitest": "3.2.4"
   },
   "optionalDependencies": {
-    "@firecrawl/anydoc-win32-x64-msvc": "0.1.7",
     "@img/sharp-darwin-arm64": "0.35.4",
     "@img/sharp-darwin-x64": "0.35.4",
     "@img/sharp-libvips-darwin-arm64": "1.3.3",

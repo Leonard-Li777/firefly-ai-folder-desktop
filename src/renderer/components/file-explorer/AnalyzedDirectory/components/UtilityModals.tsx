@@ -2,7 +2,6 @@ import React from 'react'
 import { WorkspaceDirectory, DimensionGroup, SelectedTag } from '@firefly/types'
 import { GenerateVirtualDirectoriesDialog } from '../../../organize/GenerateVirtualDirectoriesDialog'
 import { EmptyFolderCleanupDialog } from '../../../organize/EmptyFolderCleanupDialog'
-import { UnlockPrivateQuotaModal } from '../../../invitation/UnlockPrivateQuotaModal'
 
 interface UtilityModalsProps {
   currentWorkspaceDirectory: WorkspaceDirectory | null
@@ -16,16 +15,11 @@ interface UtilityModalsProps {
   setShowEmptyFolderCleanupDialog: (show: boolean) => void
   emptyFolderScanPath: string | null
   setEmptyFolderScanPath: (path: string | null) => void
-  showInvitationModal: boolean
-  setShowInvitationModal: (show: boolean) => void
-  quota: any
-  refreshCount: () => void
-  isInvitationLoading: boolean
 }
 
 /**
  * 工具类弹窗组件
- * 包含虚拟目录生成、空文件夹清理和邀请系统
+ * 包含虚拟目录生成、空文件夹清理等工具弹窗
  */
 export const UtilityModals: React.FC<UtilityModalsProps> = ({
   currentWorkspaceDirectory,
@@ -38,12 +32,7 @@ export const UtilityModals: React.FC<UtilityModalsProps> = ({
   showEmptyFolderCleanupDialog,
   setShowEmptyFolderCleanupDialog,
   emptyFolderScanPath,
-  setEmptyFolderScanPath,
-  showInvitationModal,
-  setShowInvitationModal,
-  quota,
-  refreshCount,
-  isInvitationLoading
+  setEmptyFolderScanPath
 }) => {
   return (
     <>
@@ -79,15 +68,6 @@ export const UtilityModals: React.FC<UtilityModalsProps> = ({
           scanPath={emptyFolderScanPath || undefined}
         />
       )}
-
-      <UnlockPrivateQuotaModal
-        isOpen={showInvitationModal}
-        onClose={() => setShowInvitationModal(false)}
-        quota={quota}
-        onRefresh={refreshCount}
-        isLoading={isInvitationLoading}
-        workspaceId={currentWorkspaceDirectory?.id}
-      />
     </>
   )
 }

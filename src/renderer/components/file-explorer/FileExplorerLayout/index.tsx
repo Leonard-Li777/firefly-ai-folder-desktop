@@ -299,7 +299,9 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
       setGridCardWidth: handleGridCardWidthChange,
       selectedFiles,
       activeItem,
-      totalCount: files.length + directories.length
+      totalCount: displayFiles.length + directories.length,
+      files: displayFiles,
+      directories
     }),
     [
       currentViewMode,
@@ -308,8 +310,8 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
       handleGridCardWidthChange,
       selectedFiles,
       activeItem,
-      files.length,
-      directories.length
+      displayFiles,
+      directories
     ]
   )
 

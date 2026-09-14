@@ -129,8 +129,6 @@ export async function getActiveHardwareBackend(): Promise<string> {
           return g.supportsHip
         case 'vulkan':
           return g.supportsVulkan
-        case 'openvino':
-          return false // CPU 优化，无对应 GPU
         default:
           return false
       }

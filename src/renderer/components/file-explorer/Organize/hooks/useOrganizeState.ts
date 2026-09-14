@@ -193,6 +193,11 @@ export function useOrganizeState() {
     return (location.state as any)?.selectedFileIds as number[] | undefined
   }, [location.state])
 
+  // 解析从已分析页面传过来的勾选文件路径列表（id 缺失/不匹配时的兜底匹配依据）
+  const selectedFilePathsFromState = useMemo(() => {
+    return (location.state as any)?.selectedFilePaths as string[] | undefined
+  }, [location.state])
+
   // 当前工作区所有的已分析文件列表
   const [allWorkspaceFiles, setAllWorkspaceFiles] = useState<any[]>([])
   const [isLoadingFiles, setIsLoadingFiles] = useState(false)
@@ -245,19 +250,23 @@ export function useOrganizeState() {
   }, [currentWorkspaceDirectory])
 
   // 挂载时自动恢复工作目录并拉取已分析文件；工作区变化时重新拉取
+  const hasResetFromStateRef = useRef(false)
   useEffect(() => {
     loadFilesToOrganize()
 
     // 如果有勾选状态带入（从已分析页面跳转过来），彻底清除 Keep-Alive 旧状态并复位到选择整理模式
     const selectedFileIdsFromState = location.state?.selectedFileIds
-    if (
-      selectedFileIdsFromState &&
-      Array.isArray(selectedFileIdsFromState) &&
-      selectedFileIdsFromState.length > 0
-    ) {
+    const hasSelectionState =
+      (selectedFileIdsFromState &&
+        Array.isArray(selectedFileIdsFromState) &&
+        selectedFileIdsFromState.length > 0) ||
+      ((location.state as any)?.selectedFilePaths?.length ?? 0) > 0
+
+    if (hasSelectionState && !hasResetFromStateRef.current) {
+      hasResetFromStateRef.current = true
       console.log(
-        '[Organize State] 从已分析页面带入 selectedFileIds，重置 Keep-Alive 状态，文件数:',
-        selectedFileIdsFromState.length
+        '[Organize State] 从已分析页面带入勾选文件，重置 Keep-Alive 状态，文件数:',
+        selectedFileIdsFromState?.length
       )
       setStage(location.state?.initialStage || 'root-mode-select')
       setIncrementalVdId(null)
@@ -266,7 +275,9 @@ export function useOrganizeState() {
       setFinalTree([])
       setDraftTree([])
       isSavedRef.current = false
-      window.history.replaceState({}, '')
+      // 注意：不在此处调用 window.history.replaceState({}, '')，
+      // 否则会抹掉 react-router 写入的 location.state，导致 selectedFileIdsFromState 丢失
+      // （表现为进入整理页后待整理文件列表为空）
     }
   }, [
     currentWorkspaceDirectory?.id,
@@ -290,10 +301,25 @@ export function useOrganizeState() {
       f => (f as any).is_analyzed !== 0 && f.isAnalyzed !== false
     )
 
-    // 1. 如果是从已分析页面勾选带入的
-    if (selectedFileIdsFromState && selectedFileIdsFromState.length > 0) {
-      const selectIds = new Set(selectedFileIdsFromState.map(id => String(id)))
-      baseFiles = baseFiles.filter(f => selectIds.has(String(f.id)))
+    // 1. 如果是从已分析页面勾选带入的（按 id 匹配，缺失时回退 path 匹配，兼容两种数据源）
+    if (
+      (selectedFileIdsFromState && selectedFileIdsFromState.length > 0) ||
+      (selectedFilePathsFromState && selectedFilePathsFromState.length > 0)
+    ) {
+      const selectIds = new Set((selectedFileIdsFromState || []).map(id => String(id)))
+      const normalizePath = (p?: string) =>
+        p ? p.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase() : ''
+      const selectPaths = new Set(
+        (selectedFilePathsFromState || []).map(p => normalizePath(p)).filter(Boolean)
+      )
+
+      baseFiles = baseFiles.filter(f => {
+        const rawId = f.id ?? (f as any).fileId ?? (f as any).file_id
+        if (rawId != null && selectIds.has(String(rawId))) return true
+        // id 匹配失败时使用路径兜底，避免因主键字段差异导致待整理列表全空
+        const filePath = normalizePath(f.path ?? (f as any).originalPath)
+        return !!filePath && selectPaths.has(filePath)
+      })
     } else if (vdIdParam && action === 'regenerate' && regenerateFiles) {
       // 2. 如果是重新生成虚拟目录
       const regenIds = new Set(regenerateFiles.map(rf => String(rf.id)))
@@ -326,9 +352,29 @@ export function useOrganizeState() {
       collectClassified(initialDraftTree)
 
       if (classifiedKeys.size > 0) {
+        // 预先按 Key 前缀建立索引集合，使每个文件只需 O(1) 次 Set 查询，
+        // 替代原有的 keys.some() 嵌套遍历（O(N×M)，大文件量下会造成进入整理页卡顿）
+        const classifiedIdSet = new Set<string>()
+        const classifiedFpSet = new Set<string>()
+        const classifiedPathSet = new Set<string>()
+        const classifiedNameSet = new Set<string>()
+        for (const key of classifiedKeys) {
+          if (key.startsWith('id:')) classifiedIdSet.add(key.slice(3))
+          else if (key.startsWith('fp:')) classifiedFpSet.add(key.slice(3))
+          else if (key.startsWith('path:')) classifiedPathSet.add(key.slice(3))
+          else if (key.startsWith('name:')) classifiedNameSet.add(key.slice(4))
+        }
+
         return baseFiles.filter(f => {
-          const keys = getAllFileKeys(f)
-          return !keys.some(k => classifiedKeys.has(k))
+          const rawId = f.id ?? (f as any).fileId ?? (f as any).file_id
+          if (rawId != null && classifiedIdSet.has(String(rawId))) return false
+          const fp = f.fileFingerprint ?? (f as any).file_fingerprint
+          if (fp && classifiedFpSet.has(String(fp))) return false
+          const p = f.path ?? (f as any).originalPath
+          if (p && classifiedPathSet.has(String(p))) return false
+          const name = f.name || f.smartName
+          if (name && classifiedNameSet.has(String(name))) return false
+          return true
         })
       }
     }
@@ -337,6 +383,7 @@ export function useOrganizeState() {
   }, [
     allWorkspaceFiles,
     selectedFileIdsFromState,
+    selectedFilePathsFromState,
     regenerateFiles,
     searchParams,
     vdIdParam,

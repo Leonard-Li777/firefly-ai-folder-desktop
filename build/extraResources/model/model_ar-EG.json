@@ -157,13 +157,13 @@
       }
     },
     {
-      "id": "openbmb/MiniCPM5-2B-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（جودة عالية•سرعة عالية）",
-      "company": "OpenBMB",
+      "id": "Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M",
+      "name": "MiniCPM5 2B（جودة عالية•سرعة عالية•كسر السجن）",
+      "company": "Abiray",
       "parameterSize": "2B",
       "totalSize": "1.45GB",
       "recommended": true,
-      "description": "لا توجد ذاكرة فيديو كافية ، وإذا كنت تريد تصنيف الملفات بشكل صحيح ، فيجب عليك اختياريي. العيب الوحيد هو أنه يدعم النص فقط.",
+      "description": "لا توجد ذاكرة فيديو كافية ، وإذا كنت تريد تصنيف الملفات بشكل صحيح ، فيجب عليك اختيار لي لتقييد الإصدار (تم اقتناؤه).",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": false,
@@ -176,11 +176,11 @@
         "quality": "high"
       },
       "tags": [
-        "خفيفة الوزن",
-        "دعم تشغيل وحدة المعالجة المركزية",
+        "للحد",
+        "لا الرقابة",
+        "NSFW",
         "النص فقط",
-        "الصينية أفضل",
-        "DSpark"
+        "الصينية أفضل"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
