@@ -460,6 +460,21 @@ export function registerVirtualDirectoryIPCHandlers() {
     }
   )
   ipcMain.handle(
+    'virtual-directory/save-from-plan',
+    async (
+      _event,
+      workspaceId: number,
+      name: string,
+      structure: { summary: string; directories: any[] }
+    ) => {
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+      return await virtualDirectoryService.saveFromPlan(workspaceId, name, {
+        summary: structure.summary || '',
+        directories: structure.directories || []
+      })
+    }
+  )
+  ipcMain.handle(
     'virtual-directory/estimate-reorganize-batches',
     async (_event, virtualDirectoryId: number, options: any) => {
       if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))

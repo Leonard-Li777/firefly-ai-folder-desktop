@@ -775,6 +775,12 @@ const electronAPI = {
         selectedFileIds,
         userPrompt
       ),
+    saveFromPlan: (
+      workspaceId: number,
+      name: string,
+      structure: { summary: string; directories: any[] }
+    ) =>
+      ipcRenderer.invoke('virtual-directory/save-from-plan', workspaceId, name, structure),
     checkIsLimitPredict: () => ipcRenderer.invoke('virtual-directory/check-is-limit-predict'),
     generateExternalDirectoryPlanPrompt: (params: {
       fileCount: number | string
