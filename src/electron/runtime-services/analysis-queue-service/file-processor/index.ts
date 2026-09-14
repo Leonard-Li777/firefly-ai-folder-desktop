@@ -778,6 +778,9 @@ export class FileProcessor {
         })
 
         baseMetadata = preflightContext.flattenedMetadata
+        if (preflightContext.flattenedMetadata?.smart_name) {
+          enhancedInfo.smartName = preflightContext.flattenedMetadata.smart_name
+        }
 
         const fileInfo: FileInfoInput = {
           path: filePath,
@@ -1354,7 +1357,9 @@ export class FileProcessor {
           language,
           // 音视频文件启用 SenseVoice 语音转录，并传递配置的截取时长
           enableAudioTranscript: isAudioOrVideo ? true : undefined,
-          audioAnalysisDuration: audioAnalysisDuration
+          audioAnalysisDuration: audioAnalysisDuration,
+          // 显式激活 Tier 1 端侧纯 CPU 文本特征与 384d 向量提取 (Issue #631)
+          enableTextAnalysis: true
         })
         .catch(err => {
           logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 提取失败: ${err.message}`)
@@ -1654,9 +1659,9 @@ export class FileProcessor {
       })
 
 
-      // 优先采用 Omni 原生多模态感知 / 级联仲裁给出的建议智能命名与内容描述
-      const omniSmartName = anydocResult?.perception?.smart_name
-      const omniDescription = anydocResult?.perception?.content_description
+      // 优先采用 Omni 原生多模态感知 / 级联仲裁给出的建议智能命名与内容描述 (Issue #631)
+      const omniSmartName = anydocResult?.perception?.smart_name || preflightContext.flattenedMetadata?.smart_name
+      const omniDescription = anydocResult?.perception?.content_description || preflightContext.flattenedMetadata?.one_sentence_desc || preflightContext.flattenedMetadata?.description
       if (omniSmartName && omniSmartName.trim().length > 0) {
         enhancedSmartName = omniSmartName.trim()
       }

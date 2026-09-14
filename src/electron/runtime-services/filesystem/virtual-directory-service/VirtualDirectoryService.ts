@@ -914,6 +914,22 @@ export class VirtualDirectoryService {
     return this._aiSchemeGenerator!.checkIsLimitPredict()
   }
 
+  /**
+   * 基于端侧 384d 密集向量与 Omni 约束层次聚类 (HAC) 生成目录整理方案 (Issue #633)
+   */
+  async generateHACClusterScheme(
+    workspaceId: number,
+    selectedFileIds?: number[],
+    userPrompt?: string
+  ): Promise<AIDirectoryStructure | null> {
+    this.ensureInitialized()
+    return this._aiSchemeGenerator!.generateHACClusterScheme(
+      workspaceId,
+      selectedFileIds,
+      userPrompt
+    )
+  }
+
   async reorganize(
     virtualDirectoryId: number,
     options: DirectoryReorganizeOptions

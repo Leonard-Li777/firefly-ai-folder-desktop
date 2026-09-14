@@ -25,12 +25,15 @@ import { ConfigOrchestrator } from '../../config/config-orchestrator'
  * 音频转换工具
  * 负责将各种格式的音频转换为 AI 专用的标准格式
  */
+import os from 'node:os'
+
 export class AudioConverter {
   private static instance: AudioConverter | null = null
   private tempDir: string
 
   private constructor() {
-    this.tempDir = path.join(app.getPath('temp'), 'firefly-ai-audio-cache')
+    const tempBase = app?.getPath ? app.getPath('temp') : os.tmpdir()
+    this.tempDir = path.join(tempBase, 'firefly-ai-audio-cache')
     if (!fs.existsSync(this.tempDir)) {
       fs.mkdirSync(this.tempDir, { recursive: true })
     }

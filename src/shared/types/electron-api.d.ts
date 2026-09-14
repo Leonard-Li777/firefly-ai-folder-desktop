@@ -656,6 +656,11 @@ declare global {
         isFirst: (workspaceDirectoryPath?: string) => Promise<boolean>
         cleanup: (workspaceDirectoryPath: string) => Promise<void>
         getAnalyzedFilesCount: (workspaceDirectoryPath?: string) => Promise<number>
+        generateHACClusterScheme: (
+          workspaceId: number,
+          selectedFileIds?: number[],
+          userPrompt?: string
+        ) => Promise<any>
       }
 
       // 文件清理相关

@@ -764,6 +764,17 @@ const electronAPI = {
         organizeMode,
         selectedFileIds
       ),
+    generateHACClusterScheme: (
+      workspaceId: number,
+      selectedFileIds?: number[],
+      userPrompt?: string
+    ) =>
+      ipcRenderer.invoke(
+        'virtual-directory/generate-hac-cluster-scheme',
+        workspaceId,
+        selectedFileIds,
+        userPrompt
+      ),
     checkIsLimitPredict: () => ipcRenderer.invoke('virtual-directory/check-is-limit-predict'),
     generateExternalDirectoryPlanPrompt: (params: {
       fileCount: number | string

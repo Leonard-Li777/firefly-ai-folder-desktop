@@ -36,6 +36,7 @@ export interface FileAnalysisResponse {
     smartName?: string
     description?: string
     category?: string
+    metadata?: Record<string, any>
     qualityScore?: number
     multimodalContent?: string
     lastAnalyzedAt?: string
@@ -189,12 +190,19 @@ export async function getFileAnalysisData(
     const fileContent = db
       .prepare(
         `SELECT f.smart_name, f.description, f.category,
-              fc.quality_score, fc.multimodal_content
+              fc.quality_score, fc.multimodal_content, fc.metadata
        FROM files f
        LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
        WHERE f.file_fingerprint = ?`
       )
       .get(workspaceFile.file_fingerprint) as any
+
+    let parsedMetadata: any = undefined
+    if (fileContent?.metadata) {
+      try {
+        parsedMetadata = typeof fileContent.metadata === 'string' ? JSON.parse(fileContent.metadata) : fileContent.metadata
+      } catch {}
+    }
 
     return {
       belongsToWorkspace: true,
@@ -213,6 +221,7 @@ export async function getFileAnalysisData(
         smartName: fileContent?.smart_name,
         description: fileContent?.description,
         category: fileContent?.category,
+        metadata: parsedMetadata,
         qualityScore: fileContent?.quality_score,
         multimodalContent: fileContent?.multimodal_content,
         lastAnalyzedAt: workspaceFile.last_analyzed_at,

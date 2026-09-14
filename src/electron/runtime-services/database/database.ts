@@ -254,6 +254,51 @@ const GENESIS_V1_SCHEMA = `
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
+  -- 15.1 过渡期兼容表: 文件维度表 (file_dimensions)
+  -- 兼容过渡期 core-engine FileDimensionService 与下游服务的依赖
+  CREATE TABLE IF NOT EXISTS file_dimensions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 维度 ID
+    name TEXT NOT NULL UNIQUE,                    -- 维度名称
+    level INTEGER NOT NULL,                       -- 维度层级 (1: 核心, 2: 扩展, 3: 自定义)
+    tags TEXT NOT NULL,                          -- 该维度下的静态标签定义 (JSON)
+    trigger_conditions TEXT,                     -- 该维度的 AI 触发条件 (JSON)
+    is_ai_generated BOOLEAN DEFAULT 0,           -- 是否为 AI 自动发现的维度
+    description TEXT,                            -- 维度功能描述
+    applicable_file_types TEXT,                  -- 适用的文件扩展名列表 (JSON)
+    context_hints TEXT,                          -- AI 分析时的提示参考
+    metadata TEXT,                               -- 扩展元数据 (JSON)
+    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 创建时间
+  );
+
+  -- 15.2 过渡期兼容表: 维度扩展提案表 (dimension_expansions)
+  CREATE TABLE IF NOT EXISTS dimension_expansions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 提案 ID
+    name TEXT NOT NULL UNIQUE,                    -- 建议维度名称
+    level INTEGER NOT NULL,                       -- 建议层级
+    tags TEXT NOT NULL,                          -- 建议的标签定义 (JSON)
+    trigger_conditions TEXT,                     -- 建议的触发条件 (JSON)
+    is_ai_generated BOOLEAN DEFAULT 0,           -- 是否 AI 自动生成
+    description TEXT,                            -- 维度描述说明
+    applicable_file_types TEXT,                  -- 适用文件类型
+    context_hints TEXT,                          -- AI 提示参考
+    status TEXT DEFAULT 'pending',               -- 审批状态: 'pending' | 'approved' | 'rejected'
+    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 提案时间
+  );
+
+  -- 15.3 过渡期兼容表: 标签扩展提案表 (tag_expansions)
+  CREATE TABLE IF NOT EXISTS tag_expansions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 提案 ID
+    name TEXT NOT NULL,                          -- 建议标签名称
+    dimension_id INTEGER NOT NULL,               -- 所属维度 ID
+    file_dimensions_id INTEGER,                  -- 兼容老字段
+    dimension_expansions_id INTEGER,             -- 兼容老字段
+    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 提案时间
+    UNIQUE(dimension_id, name)
+  );
+
   -- 16. FTS5 全文搜索虚拟表
   CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
     file_fingerprint UNINDEXED,                  -- 指纹（不建立全文索引，仅作为关联键）
@@ -286,6 +331,9 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
   CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
+  CREATE INDEX IF NOT EXISTS idx_file_dimensions_name ON file_dimensions(name);
+  CREATE INDEX IF NOT EXISTS idx_dimension_expansions_name ON dimension_expansions(name);
+  CREATE INDEX IF NOT EXISTS idx_tag_expansions_dim ON tag_expansions(dimension_id);
 
   -- 18. FTS 同步触发器（确保文件信息变更时实时更新搜索索引）
   DROP TRIGGER IF EXISTS trg_files_fts_update;
@@ -466,6 +514,9 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS virtual_directories;
       DROP TABLE IF EXISTS pending_firecore_operations;
       DROP TABLE IF EXISTS memory_cache;
+      DROP TABLE IF EXISTS tag_expansions;
+      DROP TABLE IF EXISTS dimension_expansions;
+      DROP TABLE IF EXISTS file_dimensions;
       DROP TABLE IF EXISTS file_tag_relations;
       DROP TABLE IF EXISTS file_tags;
       DROP TABLE IF EXISTS file_constants;

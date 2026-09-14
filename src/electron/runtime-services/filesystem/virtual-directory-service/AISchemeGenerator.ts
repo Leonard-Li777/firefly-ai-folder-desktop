@@ -1,5 +1,7 @@
 import {
   AIDirectoryStructure,
+  DirectoryNode,
+  FileInfoBase,
   VirtualDirectory,
   VirtualDirectoryFileInput,
   DirectoryReorganizeOptions,
@@ -13,6 +15,7 @@ import { databaseService } from '../../database/database-service'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { DirectoryContextService } from '../directory-context-service'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
+import { omniService, OmniClusterDocument } from '../../system/omni-service'
 
 export interface AISchemeProvider {
   db: Database.Database
@@ -31,6 +34,200 @@ export interface AISchemeProvider {
 
 export class AISchemeGenerator {
   constructor(private provider: AISchemeProvider) {}
+
+  /**
+   * 基于端侧 384d 密集向量与 Omni 约束层次聚类 (HAC) 生成目录整理方案 (Issue #633)
+   * 纯 CPU 毫秒级运算，零显卡依赖、零 Token 消耗
+   */
+  async generateHACClusterScheme(
+    workspaceId: number,
+    selectedFileIds?: number[],
+    userPrompt?: string
+  ): Promise<AIDirectoryStructure | null> {
+    try {
+      // 1. 获取工作区文件
+      const selectIdSet =
+        selectedFileIds && selectedFileIds.length > 0
+          ? new Set(selectedFileIds.map(id => String(id)))
+          : null
+
+      const rows = this.provider.db
+        .prepare(`
+          SELECT 
+            wf.id, wf.path, wf.name, wf.file_fingerprint,
+            f.smart_name, fc.content, fc.metadata
+          FROM workspace_files wf
+          JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+          LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
+          WHERE wf.workspace_id = ?
+        `)
+        .all(workspaceId) as Array<{
+          id: number
+          path: string
+          name: string
+          file_fingerprint: string
+          smart_name?: string
+          content?: string
+          metadata?: string
+        }>
+
+      const targetRows = selectIdSet
+        ? rows.filter(r => selectIdSet.has(String(r.id)))
+        : rows
+
+      if (targetRows.length === 0) {
+        return null
+      }
+
+      // 2. 收集 384d 密集向量与元数据
+      const docs: OmniClusterDocument[] = []
+      const fileMap = new Map<string, { id: number; name: string; path: string }>()
+
+      for (const row of targetRows) {
+        fileMap.set(row.file_fingerprint, {
+          id: row.id,
+          name: row.smart_name || row.name,
+          path: row.path
+        })
+
+        let embedding: number[] | null = null
+        let keywords: string[] = []
+
+        if (row.metadata) {
+          try {
+            const meta = JSON.parse(row.metadata)
+            if (Array.isArray(meta.embedding_dense) && meta.embedding_dense.length === 384) {
+              embedding = meta.embedding_dense
+            } else if (Array.isArray(meta.embeddingDense) && meta.embeddingDense.length === 384) {
+              embedding = meta.embeddingDense
+            }
+            if (Array.isArray(meta.keywords)) {
+              keywords = meta.keywords
+            }
+          } catch {}
+        }
+
+        if (embedding) {
+          docs.push({
+            fingerprint: row.file_fingerprint,
+            embedding,
+            keywords
+          })
+        }
+      }
+
+      // 如果有 384d 向量的文档不足 2 份，无法形成有效聚类，返回 null 降级
+      if (docs.length < 2) {
+        logger.info(
+          LogCategory.FILE_ORGANIZATION,
+          `[HAC智能聚类] 具备密集向量的文档数(${docs.length})不足，平滑回退传统方案`
+        )
+        return null
+      }
+
+      // 3. 调用 Omni 原生端侧 HAC 聚类
+      logger.info(
+        LogCategory.FILE_ORGANIZATION,
+        `[HAC智能聚类] 正在调用 Omni 端侧 HAC 聚类引擎: 文档数=${docs.length}, prompt=${userPrompt || 'none'}`
+      )
+      const clusterRes = await omniService.clusterDocuments({
+        documents: docs,
+        prompt: userPrompt
+      })
+
+      if (!clusterRes || !clusterRes.success || !clusterRes.result) {
+        logger.warn(
+          LogCategory.FILE_ORGANIZATION,
+          `[HAC智能聚类] Omni 聚类接口调用未成功:`,
+          clusterRes?.error
+        )
+        return null
+      }
+
+      const { clusters, otherFiles, durationMs } = clusterRes.result
+      logger.info(
+        LogCategory.FILE_ORGANIZATION,
+        `[HAC智能聚类] 聚类计算成功: 生成簇数=${clusters.length}, 未归类=${otherFiles.length}, 耗时=${durationMs}ms`
+      )
+
+      // 4. 将 OmniClusterTreeResult 转换为系统统一的 AIDirectoryStructure
+      const dirMap = new Map<string, DirectoryNode>()
+
+      for (const cluster of clusters) {
+        const clusterPath =
+          cluster.path && cluster.path.length > 0 ? cluster.path : [cluster.folderName]
+
+        let currentParent = ''
+        for (let i = 0; i < clusterPath.length; i++) {
+          const dirName = clusterPath[i]
+          const dirKey = clusterPath.slice(0, i + 1).join('/')
+          if (!dirMap.has(dirKey)) {
+            dirMap.set(dirKey, {
+              id: dirKey,
+              name: dirName,
+              parent: currentParent,
+              files: [],
+              fileCount: 0
+            })
+          }
+          currentParent = dirKey
+        }
+
+        const leafKey = clusterPath.join('/')
+        const leafNode = dirMap.get(leafKey)!
+        const filesInCluster: FileInfoBase[] = []
+
+        for (const fp of cluster.fingerprints) {
+          const fInfo = fileMap.get(fp)
+          if (fInfo) {
+            filesInCluster.push({
+              id: fInfo.id,
+              name: fInfo.name,
+              path: fInfo.path
+            })
+          }
+        }
+        leafNode.files = filesInCluster
+        leafNode.fileCount = filesInCluster.length
+      }
+
+      // 未归入主要聚类簇的文件，集中归入「其他文件」
+      if (otherFiles && otherFiles.length > 0) {
+        const otherFilesList: FileInfoBase[] = []
+        for (const fp of otherFiles) {
+          const fInfo = fileMap.get(fp)
+          if (fInfo) {
+            otherFilesList.push({
+              id: fInfo.id,
+              name: fInfo.name,
+              path: fInfo.path
+            })
+          }
+        }
+        if (otherFilesList.length > 0) {
+          dirMap.set('__other__', {
+            id: '__other__',
+            name: t('其他文件'),
+            parent: '',
+            files: otherFilesList,
+            fileCount: otherFilesList.length
+          })
+        }
+      }
+
+      return {
+        summary: t('端侧 HAC 智能聚类完成，共识别出 {count} 个主题目录 (耗时 {ms}ms)', {
+          count: clusters.length,
+          ms: durationMs || 0
+        }),
+        directories: Array.from(dirMap.values()),
+        isReadOnly: false
+      }
+    } catch (error) {
+      logger.error(LogCategory.FILE_ORGANIZATION, '[HAC智能聚类] 执行异常:', error)
+      return null
+    }
+  }
 
   /**
    * 获取当前选中模型的 numPredict 值
@@ -92,18 +289,34 @@ export class AISchemeGenerator {
 
     for (const dir of structure.directories) {
       const relativeDirPath = buildPath(dir.id || dir.name)
-      if (dir.files) {
+      if (dir.files && Array.isArray(dir.files)) {
         for (const file of dir.files) {
-          if (typeof file === 'object' && file.id) {
+          let fileId: number | undefined
+          let fileName: string | undefined
+
+          if (typeof file === 'object' && file && file.id) {
+            fileId = file.id
+            fileName = file.name || file.smartName || `file_${file.id}`
+          } else if (typeof file === 'string') {
+            const foundRow = this.provider.db
+              .prepare('SELECT id, file_fingerprint FROM workspace_files WHERE workspace_id = ? AND (name = ? OR path LIKE ?) LIMIT 1')
+              .get(workspaceId, file, `%/${file}`) as { id: number; file_fingerprint: string } | undefined
+            if (foundRow) {
+              fileId = foundRow.id
+              fileName = file
+            }
+          }
+
+          if (fileId) {
             const dbFile = this.provider.db
               .prepare('SELECT file_fingerprint FROM workspace_files WHERE id = ?')
-              .get(file.id) as { file_fingerprint: string } | undefined
+              .get(fileId) as { file_fingerprint: string } | undefined
             if (dbFile) {
-              const fileName = file.name || file.smartName || `file_${file.id}`
+              const safeName = fileName || `file_${fileId}`
               files.push({
-                fileId: file.id,
+                fileId,
                 fileFingerprint: dbFile.file_fingerprint,
-                relativePath: relativeDirPath ? `${relativeDirPath}/${fileName}` : fileName
+                relativePath: relativeDirPath ? `${relativeDirPath}/${safeName}` : safeName
               })
             }
           }

@@ -167,6 +167,15 @@ export interface OmniPerceptionResponse {
   content_description?: string
   pruned_ambiguous_words?: string[]
 
+  // Tier 1 端侧纯 CPU 确定性文本特征与 384 维向量 (支柱 4, Issue #631)
+  title?: string | null
+  keywords?: string[]
+  entities?: Array<Record<string, any>>
+  structured_summary?: OmniStructuredSummary
+  one_sentence_desc?: string | null
+  name_slots?: Record<string, any>
+  embedding_dense?: number[]
+
   phash?: string
   is_corrupted: boolean
   benchmark?: OmniPerceptionBenchmarkResponse
@@ -692,8 +701,13 @@ export class OmniService {
       const currentLanguage = orchestrator.getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
 
       // 提取最新的受保护排除项清单 (来自 IGNORE_RULES 中 isCzkawka 标记)
-      const { duplicateDetectionService } = await import('../filesystem')
-      const excludedItems = duplicateDetectionService ? duplicateDetectionService.getProtectedExcludedItems() : []
+      let excludedItems: any[] = []
+      try {
+        const { duplicateDetectionService } = await import('../filesystem/duplicate-detection-service')
+        excludedItems = duplicateDetectionService ? duplicateDetectionService.getProtectedExcludedItems() : []
+      } catch {
+        excludedItems = []
+      }
 
       const payload = JSON.stringify({
         enable_office_cover: enableOfficeCover,
@@ -725,7 +739,7 @@ export class OmniService {
       }
       return false
     } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, '[OmniService] 同步配置到 Omni 引擎失败:', err.message)
+      logger.debug(LogCategory.SYSTEM, '[OmniService] 同步配置到 Omni 引擎失败 (无头环境已容错):', err.message)
       return false
     }
   }
@@ -1424,7 +1438,11 @@ export class OmniService {
         body: JSON.stringify(options),
         signal: AbortSignal.timeout(timeoutMs)
       })
-      if (!res.ok) return null
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => '')
+        logger.warn(LogCategory.SYSTEM, `[OmniService] clusterDocuments 响应错误 HTTP ${res.status}: ${errorText}`)
+        return { success: false, error: `HTTP ${res.status}: ${errorText}` }
+      }
       return (await res.json()) as OmniClusterResponse
     }
     try {

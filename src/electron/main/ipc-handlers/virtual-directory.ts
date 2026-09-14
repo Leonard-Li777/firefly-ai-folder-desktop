@@ -449,6 +449,17 @@ export function registerVirtualDirectoryIPCHandlers() {
     }
   )
   ipcMain.handle(
+    'virtual-directory/generate-hac-cluster-scheme',
+    async (_event, workspaceId: number, selectedFileIds?: number[], userPrompt?: string) => {
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+      return await virtualDirectoryService.generateHACClusterScheme(
+        workspaceId,
+        selectedFileIds,
+        userPrompt
+      )
+    }
+  )
+  ipcMain.handle(
     'virtual-directory/estimate-reorganize-batches',
     async (_event, virtualDirectoryId: number, options: any) => {
       if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))

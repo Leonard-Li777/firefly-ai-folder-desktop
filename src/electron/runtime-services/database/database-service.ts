@@ -141,6 +141,9 @@ export class DatabaseService {
           await this.runMigrationsWithBackup(language)
         }
 
+        // 确保过渡期兼容表存在 (兼容已有老库不用强制删库自愈)
+        this.ensureCompatibilityTables()
+
         this.cleanupOrphanQueueItems()
 
         // 执行迁移后回调（如：从本地 JSON 加载初始配置）
@@ -513,6 +516,64 @@ export class DatabaseService {
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, t('创建数据表失败'), { error })
       throw error
+    }
+  }
+
+  /**
+   * 补齐过渡期兼容表 (file_dimensions, dimension_expansions, tag_expansions)
+   * 确保未删库的已有本地数据库也能平滑自愈
+   */
+  private ensureCompatibilityTables(): void {
+    if (!this._db) return
+    try {
+      this._db.exec(`
+        CREATE TABLE IF NOT EXISTS file_dimensions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE,
+          level INTEGER NOT NULL,
+          tags TEXT NOT NULL,
+          trigger_conditions TEXT,
+          is_ai_generated BOOLEAN DEFAULT 0,
+          description TEXT,
+          applicable_file_types TEXT,
+          context_hints TEXT,
+          metadata TEXT,
+          sync_status INTEGER NOT NULL DEFAULT 0,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS dimension_expansions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL UNIQUE,
+          level INTEGER NOT NULL,
+          tags TEXT NOT NULL,
+          trigger_conditions TEXT,
+          is_ai_generated BOOLEAN DEFAULT 0,
+          description TEXT,
+          applicable_file_types TEXT,
+          context_hints TEXT,
+          status TEXT DEFAULT 'pending',
+          sync_status INTEGER NOT NULL DEFAULT 0,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS tag_expansions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          dimension_id INTEGER NOT NULL,
+          file_dimensions_id INTEGER,
+          dimension_expansions_id INTEGER,
+          sync_status INTEGER NOT NULL DEFAULT 0,
+          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(dimension_id, name)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_file_dimensions_name ON file_dimensions(name);
+        CREATE INDEX IF NOT EXISTS idx_dimension_expansions_name ON dimension_expansions(name);
+        CREATE INDEX IF NOT EXISTS idx_tag_expansions_dim ON tag_expansions(dimension_id);
+      `)
+    } catch (error) {
+      logger.warn(LogCategory.DATABASE_SERVICE, '确保兼容表结构自愈失败:', error)
     }
   }
 

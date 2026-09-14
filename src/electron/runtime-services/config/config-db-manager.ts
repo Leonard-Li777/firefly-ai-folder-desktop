@@ -457,64 +457,68 @@ export class ConfigDbManager {
       const isTest = isTestEnvironment()
       const rowLimit = isTest ? 200 : 0 // 测试环境仅取前 200 条以加速
 
-      // 3) 导入 omw_lexical_entries (按语言独立文件, 语言码对齐系统 locale 规范)
-      // 入库语言集合: 当前语言 + 英文兜底 (英文是层级骨架, 必须保留)
-      const importLocales = [language === 'en-US' ? 'en-US' : 'en-US', language]
-        .filter((v, i, a) => a.indexOf(v) === i) // 去重
-      logger.info(
-        LogCategory.CONFIG,
-        `ConfigDbManager: OMW 导入语言: ${importLocales.join(', ')} (系统语言: ${language})`
-      )
+      // 关键：大批量流式导入期间临时关闭外键约束检查，并在 finally 中严格恢复，防止由于跨表依赖时序或未就绪的种子数据触发外键约束报错
+      db.pragma('foreign_keys = OFF')
 
-      for (const loc of importLocales) {
-        const entryPath = path.join(taxonomyDir, `omw_lexical_entries_${loc}.csv`)
-        if (fs.existsSync(entryPath)) {
+      try {
+        // 1) 导入 omw_languages.csv (顶层基础表，无外键依赖)
+        const langPath = path.join(taxonomyDir, 'omw_languages.csv')
+        if (fs.existsSync(langPath)) {
+          const lines = fs.readFileSync(langPath, 'utf-8').split(/\r?\n/).filter(Boolean)
+          const insertLang = db.prepare(`
+            INSERT OR REPLACE INTO omw_languages (code, label, has_hierarchy, has_definitions, has_examples, meta)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `)
+          db.transaction(() => {
+            for (let i = 1; i < lines.length; i++) {
+              const cols = this.parseCsvLine(lines[i])
+              if (cols.length >= 6) {
+                insertLang.run(
+                  cols[0],
+                  cols[1],
+                  parseInt(cols[2]) || 0,
+                  parseInt(cols[3]) || 0,
+                  parseInt(cols[4]) || 0,
+                  cols[5] || '{}'
+                )
+              }
+            }
+          })()
+        }
+
+        // 2) 导入 omw_synsets.csv (概念表，被 entries 与 relations 依赖)
+        const synsetPath = path.join(taxonomyDir, 'omw_synsets.csv')
+        if (fs.existsSync(synsetPath)) {
           this.streamImportCsv(
             db,
-            entryPath,
-            `INSERT OR REPLACE INTO omw_lexical_entries (id, synset_id, language, lemma, pos, meta) VALUES (?, ?, ?, ?, ?, ?)`,
+            synsetPath,
+            `INSERT OR REPLACE INTO omw_synsets (id, ili, pos, lexfile, definition, dc_identifier, meta) VALUES (?, ?, ?, ?, ?, ?, ?)`,
             rowLimit,
-            6
+            7
           )
         }
-      }
 
-      // 1) 导入 omw_languages.csv
-      const langPath = path.join(taxonomyDir, 'omw_languages.csv')
-      if (fs.existsSync(langPath)) {
-        const lines = fs.readFileSync(langPath, 'utf-8').split(/\r?\n/).filter(Boolean)
-        const insertLang = db.prepare(`
-          INSERT OR REPLACE INTO omw_languages (code, label, has_hierarchy, has_definitions, has_examples, meta)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `)
-        db.transaction(() => {
-          for (let i = 1; i < lines.length; i++) {
-            const cols = this.parseCsvLine(lines[i])
-            if (cols.length >= 6) {
-              insertLang.run(
-                cols[0],
-                cols[1],
-                parseInt(cols[2]) || 0,
-                parseInt(cols[3]) || 0,
-                parseInt(cols[4]) || 0,
-                cols[5] || '{}'
-              )
-            }
-          }
-        })()
-      }
-
-      // 2) 导入 omw_synsets.csv
-      const synsetPath = path.join(taxonomyDir, 'omw_synsets.csv')
-      if (fs.existsSync(synsetPath)) {
-        this.streamImportCsv(
-          db,
-          synsetPath,
-          `INSERT OR REPLACE INTO omw_synsets (id, ili, pos, lexfile, definition, dc_identifier, meta) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          rowLimit,
-          7
+        // 3) 导入 omw_lexical_entries (按语言独立文件, 依赖 omw_synsets 与 omw_languages)
+        // 入库语言集合: 当前语言 + 英文兜底 (英文是层级骨架, 必须保留)
+        const importLocales = [language === 'en-US' ? 'en-US' : 'en-US', language]
+          .filter((v, i, a) => a.indexOf(v) === i) // 去重
+        logger.info(
+          LogCategory.CONFIG,
+          `ConfigDbManager: OMW 导入语言: ${importLocales.join(', ')} (系统语言: ${language})`
         )
-      }
+
+        for (const loc of importLocales) {
+          const entryPath = path.join(taxonomyDir, `omw_lexical_entries_${loc}.csv`)
+          if (fs.existsSync(entryPath)) {
+            this.streamImportCsv(
+              db,
+              entryPath,
+              `INSERT OR REPLACE INTO omw_lexical_entries (id, synset_id, language, lemma, pos, meta) VALUES (?, ?, ?, ?, ?, ?)`,
+              rowLimit,
+              6
+            )
+          }
+        }
 
       // 4) 导入 omw_relations.csv (语言无关骨架)
       const relPath = path.join(taxonomyDir, 'omw_relations.csv')
@@ -623,6 +627,12 @@ export class ConfigDbManager {
       logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功导入 OMW 词网数据`)
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入 OMW 词网数据失败:', error)
+    } finally {
+      try {
+        db.pragma('foreign_keys = ON')
+      } catch (e) {
+        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 恢复 foreign_keys 失败:', e)
+      }
     }
   }
 
