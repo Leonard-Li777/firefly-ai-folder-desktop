@@ -661,6 +661,11 @@ declare global {
           selectedFileIds?: number[],
           userPrompt?: string
         ) => Promise<any>
+        saveFromPlan: (
+          workspaceId: number,
+          name: string,
+          structure: { summary: string; directories: any[] }
+        ) => Promise<any>
       }
 
       // 文件清理相关
