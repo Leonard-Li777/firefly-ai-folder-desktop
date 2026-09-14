@@ -427,8 +427,9 @@ export class ConfigDbManager {
 
   /**
    * 从 preset CSV 解析并导入 OMW 多语言词网预置数据到 SQLite (支柱 2)
+   * 按语言分库: 仅导入当前语言 + 英文兜底的词条, 其余语言不入库
    */
-  private loadInitialOmwToDb(db: Database.Database, _language: string): void {
+  private loadInitialOmwToDb(db: Database.Database, language: string): void {
     try {
       // 1. 检查 omw_languages 表是否已存在且已有数据
       try {
@@ -455,6 +456,28 @@ export class ConfigDbManager {
 
       const isTest = isTestEnvironment()
       const rowLimit = isTest ? 200 : 0 // 测试环境仅取前 200 条以加速
+
+      // 3) 导入 omw_lexical_entries (按语言独立文件, 语言码对齐系统 locale 规范)
+      // 入库语言集合: 当前语言 + 英文兜底 (英文是层级骨架, 必须保留)
+      const importLocales = [language === 'en-US' ? 'en-US' : 'en-US', language]
+        .filter((v, i, a) => a.indexOf(v) === i) // 去重
+      logger.info(
+        LogCategory.CONFIG,
+        `ConfigDbManager: OMW 导入语言: ${importLocales.join(', ')} (系统语言: ${language})`
+      )
+
+      for (const loc of importLocales) {
+        const entryPath = path.join(taxonomyDir, `omw_lexical_entries_${loc}.csv`)
+        if (fs.existsSync(entryPath)) {
+          this.streamImportCsv(
+            db,
+            entryPath,
+            `INSERT OR REPLACE INTO omw_lexical_entries (id, synset_id, language, lemma, pos, meta) VALUES (?, ?, ?, ?, ?, ?)`,
+            rowLimit,
+            6
+          )
+        }
+      }
 
       // 1) 导入 omw_languages.csv
       const langPath = path.join(taxonomyDir, 'omw_languages.csv')
@@ -493,19 +516,7 @@ export class ConfigDbManager {
         )
       }
 
-      // 3) 导入 omw_lexical_entries.csv
-      const entryPath = path.join(taxonomyDir, 'omw_lexical_entries.csv')
-      if (fs.existsSync(entryPath)) {
-        this.streamImportCsv(
-          db,
-          entryPath,
-          `INSERT OR REPLACE INTO omw_lexical_entries (id, synset_id, language, lemma, pos, meta) VALUES (?, ?, ?, ?, ?, ?)`,
-          rowLimit,
-          6
-        )
-      }
-
-      // 4) 导入 omw_relations.csv
+      // 4) 导入 omw_relations.csv (语言无关骨架)
       const relPath = path.join(taxonomyDir, 'omw_relations.csv')
       if (fs.existsSync(relPath)) {
         this.streamImportCsv(
@@ -531,16 +542,81 @@ export class ConfigDbManager {
         )
       }
 
-      // 6) 导入 omw_examples.csv
-      const examplePath = path.join(taxonomyDir, 'omw_examples.csv')
-      if (fs.existsSync(examplePath)) {
+      // 6) 导入 omw_examples (按语言独立文件, 语言码对齐系统 locale 规范)
+      for (const loc of importLocales) {
+        const examplePath = path.join(taxonomyDir, `omw_examples_${loc}.csv`)
+        if (fs.existsSync(examplePath)) {
+          this.streamImportCsv(
+            db,
+            examplePath,
+            `INSERT OR REPLACE INTO omw_examples (synset_id, text, language, meta) VALUES (?, ?, ?, ?)`,
+            rowLimit,
+            3,
+            (cols) => [cols[0], cols[1], cols[2], '{}']
+          )
+        }
+      }
+
+      // 7-9) 导入 HowNet 中文增强数据 (仅 zh-CN 语言库)
+      if (language === 'zh-CN') {
+        // 7) 导入 hownet_words.csv
+        const hownetWordsPath = path.join(taxonomyDir, 'hownet_words.csv')
+        if (fs.existsSync(hownetWordsPath)) {
+          this.streamImportCsv(
+            db,
+            hownetWordsPath,
+            `INSERT OR REPLACE INTO hownet_words (word, pos, language, definition) VALUES (?, ?, ?, ?)`,
+            rowLimit,
+            4
+          )
+        }
+
+        // 8) 导入 hownet_concepts.csv
+        const hownetConceptsPath = path.join(taxonomyDir, 'hownet_concepts.csv')
+        if (fs.existsSync(hownetConceptsPath)) {
+          this.streamImportCsv(
+            db,
+            hownetConceptsPath,
+            `INSERT OR REPLACE INTO hownet_concepts (id, name, parent_id) VALUES (?, ?, ?)`,
+            rowLimit,
+            3
+          )
+        }
+
+        // 9) 导入 hownet_word_concepts.csv
+        const hownetWordConceptsPath = path.join(taxonomyDir, 'hownet_word_concepts.csv')
+        if (fs.existsSync(hownetWordConceptsPath)) {
+          this.streamImportCsv(
+            db,
+            hownetWordConceptsPath,
+            `INSERT OR REPLACE INTO hownet_word_concepts (word, concept_id) VALUES (?, ?)`,
+            rowLimit,
+            2
+          )
+        }
+      }
+
+      // 10) 导入 antonym_pairs.csv (反义词多来源合并)
+      const antonymPath = path.join(taxonomyDir, 'antonym_pairs.csv')
+      if (fs.existsSync(antonymPath)) {
         this.streamImportCsv(
           db,
-          examplePath,
-          `INSERT OR REPLACE INTO omw_examples (synset_id, text, language, meta) VALUES (?, ?, ?, ?)`,
+          antonymPath,
+          `INSERT OR REPLACE INTO antonym_pairs (word_a, word_b, source) VALUES (?, ?, ?)`,
           rowLimit,
-          3,
-          (cols) => [cols[0], cols[1], cols[2], '{}']
+          3
+        )
+      }
+
+      // 11) 导入 tag_omw_mapping.csv (标签-OMW 映射, Step 5 产出)
+      const mappingPath = path.join(taxonomyDir, 'tag_omw_mapping.csv')
+      if (fs.existsSync(mappingPath)) {
+        this.streamImportCsv(
+          db,
+          mappingPath,
+          `INSERT OR REPLACE INTO tag_omw_mapping (tag_code, synset_id, match_level, confidence, meta) VALUES (?, ?, ?, ?, ?)`,
+          rowLimit,
+          5
         )
       }
 
@@ -604,7 +680,7 @@ export class ConfigDbManager {
     insertSql: string,
     rowLimit: number,
     expectedMinCols: number,
-    transformRow?: (cols: string[]) => any[]
+    transformRow?: (cols: string[]) => any[] | null
   ): void {
     const insertStmt = db.prepare(insertSql)
     const content = fs.readFileSync(filePath, 'utf-8')
@@ -618,6 +694,8 @@ export class ConfigDbManager {
         const cols = this.parseCsvLine(line)
         if (cols.length >= expectedMinCols) {
           const params = transformRow ? transformRow(cols) : cols
+          // transformRow 返回 null 表示跳过该行 (如语言过滤)
+          if (params === null) continue
           insertStmt.run(...params)
         }
       }
