@@ -430,95 +430,94 @@ export class ConfigDbManager {
    * 按语言分库: 仅导入当前语言 + 英文兜底的词条, 其余语言不入库
    */
   private loadInitialOmwToDb(db: Database.Database, language: string): void {
+    // 1. 检查 omw_languages 表是否已存在且已有数据
     try {
-      // 1. 检查 omw_languages 表是否已存在且已有数据
-      try {
-        const check = db.prepare('SELECT count(*) as cnt FROM omw_languages').get() as
-          | { cnt: number }
-          | undefined
-        if (check && check.cnt > 0) {
-          logger.info(
-            LogCategory.CONFIG,
-            `ConfigDbManager: omw_languages 已存在 ${check.cnt} 条数据，跳过重复导入`
-          )
-          return
-        }
-      } catch {
-        // 表若尚未创建则安全返回
-        return
-      }
-
-      const taxonomyDir = this.findTaxonomyDir()
-      if (!taxonomyDir) {
-        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 未找到 preset taxonomy 资源目录，跳过 OMW 导入')
-        return
-      }
-
-      const isTest = isTestEnvironment()
-      const rowLimit = isTest ? 200 : 0 // 测试环境仅取前 200 条以加速
-
-      // 关键：大批量流式导入期间临时关闭外键约束检查，并在 finally 中严格恢复，防止由于跨表依赖时序或未就绪的种子数据触发外键约束报错
-      db.pragma('foreign_keys = OFF')
-
-      try {
-        // 1) 导入 omw_languages.csv (顶层基础表，无外键依赖)
-        const langPath = path.join(taxonomyDir, 'omw_languages.csv')
-        if (fs.existsSync(langPath)) {
-          const lines = fs.readFileSync(langPath, 'utf-8').split(/\r?\n/).filter(Boolean)
-          const insertLang = db.prepare(`
-            INSERT OR REPLACE INTO omw_languages (code, label, has_hierarchy, has_definitions, has_examples, meta)
-            VALUES (?, ?, ?, ?, ?, ?)
-          `)
-          db.transaction(() => {
-            for (let i = 1; i < lines.length; i++) {
-              const cols = this.parseCsvLine(lines[i])
-              if (cols.length >= 6) {
-                insertLang.run(
-                  cols[0],
-                  cols[1],
-                  parseInt(cols[2]) || 0,
-                  parseInt(cols[3]) || 0,
-                  parseInt(cols[4]) || 0,
-                  cols[5] || '{}'
-                )
-              }
-            }
-          })()
-        }
-
-        // 2) 导入 omw_synsets.csv (概念表，被 entries 与 relations 依赖)
-        const synsetPath = path.join(taxonomyDir, 'omw_synsets.csv')
-        if (fs.existsSync(synsetPath)) {
-          this.streamImportCsv(
-            db,
-            synsetPath,
-            `INSERT OR REPLACE INTO omw_synsets (id, ili, pos, lexfile, definition, dc_identifier, meta) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            rowLimit,
-            7
-          )
-        }
-
-        // 3) 导入 omw_lexical_entries (按语言独立文件, 依赖 omw_synsets 与 omw_languages)
-        // 入库语言集合: 当前语言 + 英文兜底 (英文是层级骨架, 必须保留)
-        const importLocales = [language === 'en-US' ? 'en-US' : 'en-US', language]
-          .filter((v, i, a) => a.indexOf(v) === i) // 去重
+      const check = db.prepare('SELECT count(*) as cnt FROM omw_languages').get() as
+        | { cnt: number }
+        | undefined
+      if (check && check.cnt > 0) {
         logger.info(
           LogCategory.CONFIG,
-          `ConfigDbManager: OMW 导入语言: ${importLocales.join(', ')} (系统语言: ${language})`
+          `ConfigDbManager: omw_languages 已存在 ${check.cnt} 条数据，跳过重复导入`
         )
+        return
+      }
+    } catch {
+      // 表若尚未创建则安全返回
+      return
+    }
 
-        for (const loc of importLocales) {
-          const entryPath = path.join(taxonomyDir, `omw_lexical_entries_${loc}.csv`)
-          if (fs.existsSync(entryPath)) {
-            this.streamImportCsv(
-              db,
-              entryPath,
-              `INSERT OR REPLACE INTO omw_lexical_entries (id, synset_id, language, lemma, pos, meta) VALUES (?, ?, ?, ?, ?, ?)`,
-              rowLimit,
-              6
-            )
+    const taxonomyDir = this.findTaxonomyDir()
+    if (!taxonomyDir) {
+      logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 未找到 preset taxonomy 资源目录，跳过 OMW 导入')
+      return
+    }
+
+    const isTest = isTestEnvironment()
+    const rowLimit = isTest ? 200 : 0 // 测试环境仅取前 200 条以加速
+
+    // 关键：大批量流式导入期间临时关闭外键约束检查，并在 finally 中严格恢复，防止由于跨表依赖时序或未就绪的种子数据触发外键约束报错
+    db.pragma('foreign_keys = OFF')
+
+    try {
+        // 1) 导入 omw_languages.csv (顶层基础表，无外键依赖)
+      const langPath = path.join(taxonomyDir, 'omw_languages.csv')
+      if (fs.existsSync(langPath)) {
+        const lines = fs.readFileSync(langPath, 'utf-8').split(/\r?\n/).filter(Boolean)
+        const insertLang = db.prepare(`
+          INSERT OR REPLACE INTO omw_languages (code, label, has_hierarchy, has_definitions, has_examples, meta)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `)
+        db.transaction(() => {
+          for (let i = 1; i < lines.length; i++) {
+            const cols = this.parseCsvLine(lines[i])
+            if (cols.length >= 6) {
+              insertLang.run(
+                cols[0],
+                cols[1],
+                parseInt(cols[2]) || 0,
+                parseInt(cols[3]) || 0,
+                parseInt(cols[4]) || 0,
+                cols[5] || '{}'
+              )
+            }
           }
+        })()
+      }
+
+      // 2) 导入 omw_synsets.csv (概念表，被 entries 与 relations 依赖)
+      const synsetPath = path.join(taxonomyDir, 'omw_synsets.csv')
+      if (fs.existsSync(synsetPath)) {
+        this.streamImportCsv(
+          db,
+          synsetPath,
+          `INSERT OR REPLACE INTO omw_synsets (id, ili, pos, lexfile, definition, dc_identifier, meta) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          rowLimit,
+          7
+        )
+      }
+
+      // 3) 导入 omw_lexical_entries (按语言独立文件, 依赖 omw_synsets 与 omw_languages)
+      // 入库语言集合: 当前语言 + 英文兜底 (英文是层级骨架, 必须保留)
+      const importLocales = [language === 'en-US' ? 'en-US' : 'en-US', language]
+        .filter((v, i, a) => a.indexOf(v) === i) // 去重
+      logger.info(
+        LogCategory.CONFIG,
+        `ConfigDbManager: OMW 导入语言: ${importLocales.join(', ')} (系统语言: ${language})`
+      )
+
+      for (const loc of importLocales) {
+        const entryPath = path.join(taxonomyDir, `omw_lexical_entries_${loc}.csv`)
+        if (fs.existsSync(entryPath)) {
+          this.streamImportCsv(
+            db,
+            entryPath,
+            `INSERT OR REPLACE INTO omw_lexical_entries (id, synset_id, language, lemma, pos, meta) VALUES (?, ?, ?, ?, ?, ?)`,
+            rowLimit,
+            6
+          )
         }
+      }
 
       // 4) 导入 omw_relations.csv (语言无关骨架)
       const relPath = path.join(taxonomyDir, 'omw_relations.csv')
@@ -769,7 +768,10 @@ export class ConfigDbManager {
   }
 
   /**
-   * 获取缓存的 file_dimensions 数据（优先从 file_tags 树形表动态映射）
+   * 获取维度数据（由 file_tags 标签树的维度根节点动态映射）
+   *
+   * 创世 Baseline V1：维度不再存储于 file_dimensions 表，而是以 file_tags 中
+   * parent_codes 为空（depth = 0）的根节点表达，其直属子节点即该维度的标签集。
    */
   getFileDimensions(): Array<any> {
     if (this.fileDimensionsCache.length > 0) {
@@ -823,17 +825,9 @@ export class ConfigDbManager {
         return this.fileDimensionsCache
       }
 
-      // 降级：检查旧表是否存在
-      const hasOldTable = db.prepare(`SELECT 1 FROM sqlite_master WHERE type='table' AND name='file_dimensions'`).get()
-      if (hasOldTable) {
-        const oldRows = db.prepare('SELECT * FROM file_dimensions ORDER BY level ASC').all() as Array<any>
-        this.fileDimensionsCache = oldRows || []
-        return this.fileDimensionsCache
-      }
-
       return []
     } catch (err) {
-      logger.error(LogCategory.CONFIG, 'ConfigDbManager: 获取 file_dimensions 失败:', err)
+      logger.error(LogCategory.CONFIG, 'ConfigDbManager: 获取维度数据失败:', err)
       return []
     }
   }
@@ -939,26 +933,7 @@ export class ConfigDbManager {
           )
         }
 
-        // 3. 从云端拉取 file_dimensions
-        let dimensionData: Array<any> = []
-        try {
-          const { data: freshDimData, error: fetchError } = await supabase
-            .schema(systemSchema)
-            .from('file_dimensions')
-            .select('*')
-            .order('level', { ascending: true })
-
-          if (!fetchError && freshDimData) {
-            dimensionData = freshDimData
-          }
-        } catch (err: any) {
-          logger.warn(
-            LogCategory.CONFIG,
-            `ConfigDbManager: 拉取 file_dimensions 失败: ${err.message}`
-          )
-        }
-
-        // 4. 在事务中一次性写入（失败则回滚）
+        // 3. 在事务中一次性写入（失败则回滚）
         db.transaction(() => {
           // 合并导入 app_config（云端数据覆盖本地，保留本地独有 key）
           if (appData.length > 0) {
@@ -983,67 +958,6 @@ export class ConfigDbManager {
                 finalValue = { ...finalValue, language: this.currentLanguage }
               }
               systemInsert.run(row.key.toUpperCase(), JSON.stringify(finalValue), now)
-            })
-          }
-
-          // 合并导入 file_dimensions（如果非中文且包含中文文本，增加保护逻辑防止脏数据覆盖）
-          if (dimensionData.length > 0) {
-            if (this.currentLanguage !== 'zh-CN') {
-              const hasChinese = dimensionData.some(
-                d => typeof d.name === 'string' && /[\u4e00-\u9fa5]/.test(d.name)
-              )
-              if (hasChinese) {
-                logger.warn(
-                  LogCategory.CONFIG,
-                  `ConfigDbManager: 云端拉取的维度包含中文，与当前语言 (${this.currentLanguage}) 不符，跳过覆盖`
-                )
-                return
-              }
-            }
-
-            db.prepare('DELETE FROM file_dimensions').run()
-            const dimInsert = db.prepare(`
-              INSERT INTO file_dimensions (
-                id, name, level, tags, trigger_conditions, is_ai_generated, description,
-                applicable_file_types, context_hints, sync_status, metadata, created_at
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 2, ?, ?)
-            `)
-            const now = new Date().toISOString()
-            dimensionData.forEach(dim => {
-              const tags = typeof dim.tags === 'string' ? dim.tags : JSON.stringify(dim.tags || [])
-              const trigger_conditions =
-                typeof dim.trigger_conditions === 'string'
-                  ? dim.trigger_conditions
-                  : dim.trigger_conditions
-                    ? JSON.stringify(dim.trigger_conditions)
-                    : null
-              const applicable_file_types =
-                typeof dim.applicable_file_types === 'string'
-                  ? dim.applicable_file_types
-                  : dim.applicable_file_types
-                    ? JSON.stringify(dim.applicable_file_types)
-                    : null
-              const context_hints =
-                typeof dim.context_hints === 'string'
-                  ? dim.context_hints
-                  : dim.context_hints
-                    ? JSON.stringify(dim.context_hints)
-                    : null
-              const metadata = dim.metadata ? JSON.stringify(dim.metadata) : null
-
-              dimInsert.run(
-                dim.id,
-                dim.name,
-                dim.level,
-                tags,
-                trigger_conditions,
-                dim.is_ai_generated ? 1 : 0,
-                dim.description || null,
-                applicable_file_types,
-                context_hints,
-                metadata,
-                dim.created_at || now
-              )
             })
           }
         })()

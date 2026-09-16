@@ -1,13 +1,13 @@
-import { AnalysisQueueItem, LanguageCode, MagikaFileCategory as MagikaCategory } from '@firefly/types'
+import { AnalysisQueueItem, MagikaFileCategory as MagikaCategory } from '@firefly/types'
 import { LogCategory, logger, PerformanceTimer, FileCategory, isCategory } from '@firefly/shared'
 import { t } from '@app/languages'
 import {
   FileProcessorService,
   DimensionAnalyzer,
-  FileDimensionService,
   type FileInfoInput,
   extractPureLyrics
 } from '@firefly/core-engine'
+import { ConfigDbManager } from '../../config/config-db-manager'
 import { IErrorRecoveryConfig } from '../types'
 import { databaseService } from '../../database/database-service'
 import path from 'node:path'
@@ -25,7 +25,6 @@ export async function processLocalAnalysis(
   deps: {
     fileProcessor: FileProcessorService | undefined
     dimensionAnalyzer: DimensionAnalyzer | undefined
-    fileDimensionService: FileDimensionService | undefined
     errorRecoveryConfig: IErrorRecoveryConfig
   },
   options: {
@@ -43,8 +42,7 @@ export async function processLocalAnalysis(
     progress: number,
     error?: string,
     extra?: any
-  ) => void,
-  processNewDimensionSuggestions: (suggestions: any[], fileFingerprint: string) => Promise<void>
+  ) => void
 ): Promise<any> {
   const { language, directoryContext, magikaCategory, isSpeedy } = options
 
@@ -160,15 +158,13 @@ export async function processLocalAnalysis(
 
   updateItemStatus(item.id, 'analyzing', 15, undefined, { analysisStage: 3 })
 
-  if (!deps.dimensionAnalyzer || !deps.fileDimensionService) throw new Error(t('AI 服务未就绪'))
+  if (!deps.dimensionAnalyzer) throw new Error(t('AI 服务未就绪'))
 
   // ========== 第四阶段：AI 目录分析 ==========
   // 目录上下文已提前获取，此处直接复用
   updateItemStatus(item.id, 'analyzing', 55, undefined, { analysisStage: 4 })
 
-  const existingDimensions = await deps.fileDimensionService.getDimensionsByLanguage(
-    language as LanguageCode
-  )
+  const existingDimensions = ConfigDbManager.getInstance().getFileDimensions()
 
   // ========== 第五阶段：AI 标签维度分析 ==========
   timer.start('dimensionAnalysis')
@@ -230,8 +226,6 @@ export async function processLocalAnalysis(
       processResult.metadata,
       magikaCategory
     )
-    if (dimResult.newDimensions)
-      await processNewDimensionSuggestions(dimResult.newDimensions, fileFingerprint)
   }
   timer.end('dimensionAnalysis')
 

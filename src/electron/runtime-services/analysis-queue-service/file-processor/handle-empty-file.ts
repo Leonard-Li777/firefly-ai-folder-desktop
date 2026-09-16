@@ -1,7 +1,8 @@
 import { AnalysisQueueItem } from '@firefly/types'
 import { databaseService } from '../../database/database-service'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, insertTagToDb } from '@firefly/shared'
 import { t } from '@app/languages'
+import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -101,22 +102,36 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
   const emptyTagLabel = t('空文件')
   try {
     db.transaction(() => {
-      let localDimId = 0
-      const dimRow = db
-        .prepare("SELECT id FROM file_dimensions WHERE name = '基础属性' OR id = 1")
-        .get() as any
-      if (dimRow) localDimId = dimRow.id
-      if (localDimId) {
-        db.prepare(
-          `INSERT OR IGNORE INTO file_tags (name, dimension_id, sync_status, created_at) VALUES (?, ?, 2, ?)`
-        ).run(emptyTagLabel, localDimId, new Date().toISOString())
-        const tagRow = db
-          .prepare('SELECT id FROM file_tags WHERE name = ? AND dimension_id = ?')
-          .get(emptyTagLabel, localDimId) as any
-        if (tagRow) {
+      // 创世 Baseline V1：「基础属性」维度根节点以 code 自然主键表达，不再查询 file_dimensions。
+      const BASIC_ATTR_DIM_CODE = 'dim.basic_attr'
+
+      try {
+        insertTagToDb(db, emptyHash, emptyTagLabel, BASIC_ATTR_DIM_CODE, 2)
+      } catch {
+        try {
+          // 兜底：以离线确定性编码派生合法 code，并与文件建立自然主键关联
+          const tagCode = DeterministicCodeGenerator.generateUnique(emptyTagLabel, 'zh-CN', {
+            lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
+          })
           db.prepare(
-            `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_id, sync_status) VALUES (?, ?, 2)`
-          ).run(emptyHash, tagRow.id)
+            `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, materialized_paths, depth, file_groups, source, meta)
+             VALUES (?, ?, ?, '[]', 2, '[]', 'expanded', ?)`
+          ).run(
+            tagCode,
+            emptyTagLabel,
+            JSON.stringify([BASIC_ATTR_DIM_CODE]),
+            JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 2 })
+          )
+          db.prepare(
+            `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, confidence, source, meta)
+             VALUES (?, ?, 1.0, 'rule', ?)`
+          ).run(emptyHash, tagCode, JSON.stringify({ syncStatus: 2 }))
+        } catch (fallbackError) {
+          logger.warn(
+            LogCategory.FILE_ANALYSIS,
+            '[空文件处理] 兜底写入默认标签失败:',
+            fallbackError
+          )
         }
       }
     })()

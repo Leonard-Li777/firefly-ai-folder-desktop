@@ -96,11 +96,29 @@ export interface OmniPerceptionBenchmarkResponse {
 }
 
 export interface OmniTagChainItem {
-  tag: string
+  code: string
+  name: string
   confidence: number
-  dimension_id: number
-  dimension_name: string
-  logic_pan_dimension: string
+  tag?: string
+  dimension_id?: number
+  dimension_name?: string
+  logic_pan_dimension?: string
+  parent_code?: string
+}
+
+export interface OmniResolveParentRequest {
+  tag_name: string
+  language?: string
+  context_hint?: string
+}
+
+export interface OmniResolveParentResponse {
+  success: boolean
+  parent_code: string
+  parent_name: string
+  confidence: number
+  suggested_depth: number
+  materialized_paths: Array<{ code_path: string; name_path: string }>
 }
 
 export type OmniRamTagItem = OmniTagChainItem
@@ -136,6 +154,7 @@ export interface OmniPerceptionResponse {
 
   // 多模态直出字段与各大引擎标签 (统一走标签链输出)
   visual_tags: OmniTagChainItem[]
+  fused_tags?: OmniTagChainItem[]
   mobilenet_tags?: string[]
   clip_tags?: string[]
   nsfw_tags?: string[]
@@ -1110,6 +1129,8 @@ export class OmniService {
           candidate_hypotheses_count: json.candidate_hypotheses?.length || 0,
           visual_tags: json.visual_tags || [],
           visual_tags_count: json.visual_tags?.length || 0,
+          fused_tags: json.fused_tags || [],
+          fused_tags_count: json.fused_tags?.length || 0,
           ram_tags: json.ram_tags || [],
           mobilenet_tags: json.mobilenet_tags || [],
           clip_tags: json.clip_tags || [],
@@ -1119,6 +1140,7 @@ export class OmniService {
           has_audio_transcript: !!json.audio_transcript,
           audio_transcript_length: json.audio_transcript?.length || 0,
           ocr_text_length: json.ocr_text?.length || 0,
+          markdown_content: json.markdown_content,
           markdown_content_length: json.markdown_content?.length || 0,
           has_metadata: !!json.metadata && Object.keys(json.metadata).length > 0,
           benchmark: json.benchmark,
@@ -1530,6 +1552,43 @@ export class OmniService {
           return await doFetch()
         } catch {}
       }
+      return null
+    }
+  }
+
+  /**
+   * 语义标签父级推荐与物化路径推导 (POST /api/taxonomy/resolve-parent)
+   */
+  public async resolveTaxonomyParent(
+    params: {
+      tagName: string
+      language?: string
+      contextHint?: string
+    },
+    timeoutMs: number = 300
+  ): Promise<OmniResolveParentResponse | null> {
+    await this.ensureRunning()
+    const reqBody: OmniResolveParentRequest = {
+      tag_name: params.tagName,
+      language: params.language,
+      context_hint: params.contextHint
+    }
+
+    try {
+      const res = await fetch(`${this.baseUrl}/api/taxonomy/resolve-parent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(reqBody),
+        signal: AbortSignal.timeout(timeoutMs)
+      })
+      if (!res.ok) return null
+      return (await res.json()) as OmniResolveParentResponse
+    } catch (err: any) {
+      logger.debug(
+        LogCategory.SYSTEM,
+        `[OmniService] resolveTaxonomyParent 超时或异常降级:`,
+        err.message
+      )
       return null
     }
   }

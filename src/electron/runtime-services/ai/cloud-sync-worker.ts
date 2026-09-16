@@ -1,12 +1,10 @@
-import { LogCategory, logger, getIsDebugMode, sanitizeObject, toUTCString, isPanDimension } from '@firefly/shared'
-import type { DimensionMetadata } from '@firefly/types'
+import { LogCategory, logger, sanitizeObject, toUTCString } from '@firefly/shared'
 import { net, powerMonitor } from 'electron'
 
 import { cloudAnalysisService } from '@firefly/server'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../database/database-service'
 import { userTierService } from '../user-tier/user-tier-service'
-import { ConfigDbManager } from '../config/config-db-manager'
 
 /**
  * 云端同步 Worker
@@ -15,16 +13,18 @@ import { ConfigDbManager } from '../config/config-db-manager'
 export class CloudSyncWorker {
   private static instance: CloudSyncWorker
   private isSyncing = false
-  private isRefreshingMaps = false
   private checkInterval: NodeJS.Timeout | null = null
   /** 标记当前 runCycle 循环是否仍有效，防止 stop() 后旧循环继续调度新定时器 */
   private cycleValid = false
   private readonly BATCH_SIZE = 50
 
+  /**
+   * 【V4 自然主键直通架构】
+   * 端云已完全以 `code` / `tag_code` 自然主键 1:1 对齐，
+   * 因此彻底移除了 cloudDimMap / cloudTagMap / cloudTagNameMap 等自增 ID 映射字典。
+   * 同步器不再需要任何 ID 反查与映射刷新流程。
+   */
   private initialized = false
-  private cloudDimMap = new Map<string, number>() // 维度名 -> 云端维度ID
-  private cloudTagMap = new Map<string, number>() // 维度ID:标签名 -> 云端标签ID
-  private cloudTagNameMap = new Map<string, number>() // 标签名 -> 云端标签ID (用于回退匹配)
   private nextSyncAllowedAt: number | null = null
 
   private constructor() {
@@ -59,90 +59,27 @@ export class CloudSyncWorker {
   }
 
   /**
-   * 刷新云端 ID 映射缓存
-   * 💡 应用启动时调用一次或在必要时手动触发
+   * 初始化同步器
+   *
+   * 【V4 自然主键直通架构】无需再拉取并缓存云端自增 ID 映射字典，
+   * 本方法仅做一次幂等的就绪标记，保持对外契约兼容。
    */
   public async refreshCloudMaps(): Promise<void> {
-    if (this.isRefreshingMaps) return
-
     if (!this.shouldSyncToCloud()) {
       logger.debug(
         LogCategory.SUPABASE,
-        'CloudSyncWorker: sync_analysis_to_cloud is disabled, skipping cloud maps refresh'
+        'CloudSyncWorker: sync_analysis_to_cloud is disabled, skipping initialization'
       )
       return
     }
 
-    this.isRefreshingMaps = true
-
-    const language =
-      ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+    this.initialized = true
     logger.info(
       LogCategory.SUPABASE,
-      `CloudSyncWorker: Refreshing cloud ID maps for [${language}]...`
-    )
-
-    try {
-      // 1. 获取维度映射 (Name -> CloudID，统一优先从 ConfigDbManager 缓存获取)
-      const cloudDimensions = ConfigDbManager.getInstance().getFileDimensions()
-      this.cloudDimMap = new Map<string, number>(cloudDimensions.map(d => [d.name, Number(d.id)]))
-
-      // 2. 获取标签映射 (DimID + Name -> CloudID)
-      const cloudTags = await cloudAnalysisService.fetchTags(language)
-      this.cloudTagMap = new Map<string, number>(
-        cloudTags.map(t => [`${t.dimension_id}:${t.name}`, Number(t.id)])
-      )
-
-      // 3. 构建标签名到云端标签ID的映射 (用于处理本地维度ID回退情况)
-      // 当本地维度ID被回退到28时，可以通过标签名直接匹配云端标签
-      this.cloudTagNameMap = new Map<string, number>(cloudTags.map(t => [t.name, Number(t.id)]))
-
-      this.initialized = true
-      logger.info(
-        LogCategory.SUPABASE,
-        `CloudSyncWorker: Cloud ID maps refreshed. (Dims: ${this.cloudDimMap.size}, Tags: ${this.cloudTagMap.size}, TagsByName: ${this.cloudTagNameMap.size})`
-      )
-    } catch (error) {
-      logger.warn(
-        LogCategory.SUPABASE,
-        'CloudSyncWorker: Failed to refresh cloud ID maps (will retry later)',
-        error
-      )
-    } finally {
-      this.isRefreshingMaps = false
-    }
-  }
-  /**
-   * 仅刷新标签映射（不重取维度）
-   * 在同步标签到云端后调用，获取云端生成的 tag_id
-   */
-  private async refreshTagMaps(): Promise<void> {
-    const language =
-      ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
-    // 注意：此处失败必须向上抛出，不可静默吞掉。
-    // 若吞掉错误，cloudTagMap/cloudTagNameMap 将保持陈旧快照，
-    // 后续关系匹配会误判"标签未找到云端对应ID"并丢弃 tag_relations，
-    // 而文件仍会被标记为已同步 (sync_status=2)，导致这些关联永久丢失、再无重试机会。
-    // 抛出后由 performSync 的 catch 统一回退文件状态为 3，等待下轮重试。
-    const cloudTags = await cloudAnalysisService.fetchTags(language)
-    this.cloudTagMap = new Map<string, number>(
-      cloudTags.map(t => [`${t.dimension_id}:${t.name}`, Number(t.id)])
-    )
-    this.cloudTagNameMap = new Map<string, number>(cloudTags.map(t => [t.name, Number(t.id)]))
-    this.initialized = true
-    logger.debug(
-      LogCategory.SUPABASE,
-      `CloudSyncWorker: Tag maps refreshed. (Tags: ${this.cloudTagMap.size}, TagsByName: ${this.cloudTagNameMap.size})`
+      'CloudSyncWorker: 已就绪（V4 自然主键直通模式，无需云端 ID 映射字典）'
     )
   }
 
-  /**
-   * 同步标签到云端后，需要刷新映射以获取云端生成的 tag_id
-   * 使用 refreshTagMaps 轻量刷新，避免每次都重新拉取维度定义
-   */
-  private async afterSyncTags(): Promise<void> {
-    await this.refreshTagMaps()
-  }
   private debounceTimer: NodeJS.Timeout | null = null
 
   /**
@@ -242,7 +179,7 @@ export class CloudSyncWorker {
    * @returns 是否有数据被同步或处理
    */
   public async trySync(): Promise<boolean> {
-    if (this.isSyncing || this.isRefreshingMaps) return false
+    if (this.isSyncing) return false
 
     if (!this.shouldSyncToCloud()) {
       logger.debug(
@@ -303,159 +240,13 @@ export class CloudSyncWorker {
 
       const language =
         ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
-      // 泛维度判定：以 file_dimensions.metadata 为唯一事实源（已退役 PAN_DIMENSION_IDS 配置）
-      const panDimRows = db
-        .prepare('SELECT id, metadata FROM file_dimensions')
-        .all() as Array<{ id: number; metadata?: DimensionMetadata | string | null }>
-      const panSet = new Set(
-        panDimRows
-          .filter(d => isPanDimension({ id: d.id, metadata: d.metadata }))
-          .map(d => Number(d.id))
-      )
 
       // ==================================================================================
-      // Phase 0: 同步提案数据 (Expansions) - 本地单向推送至云端，ID 不同步
+      // 【V4 自然主键直通架构】
+      // Phase 0（维度/标签扩展提案同步）已彻底删除：
+      // 本地已无 dimension_expansions / tag_expansions 表，且不再依赖云端自增 ID 回传覆盖。
+      // 扩展标签定义统一通过 Phase 2 的 file_tags (code 自然主键) 直接推送。
       // ==================================================================================
-
-      // 0.1 维度扩展提案 (维度提案不涉及泛维度过滤，因为它们尚未成为正式维度)
-      const pendingDimExp = db
-        .prepare(`SELECT * FROM dimension_expansions WHERE sync_status = 0 LIMIT ?`)
-        .all(this.BATCH_SIZE) as any[]
-      if (pendingDimExp.length > 0) {
-        hasActualWork = true
-
-        // 同步前查询云端已存在的同名维度，更新 tag_expansions 中的引用
-        const cloudDimMapBefore = await cloudAnalysisService.getExistingExpansionNames(language)
-        for (const localExp of pendingDimExp) {
-          if (cloudDimMapBefore.has(localExp.name)) {
-            const cloudId = cloudDimMapBefore.get(localExp.name)
-            db.prepare(
-              `
-              UPDATE tag_expansions SET dimension_expansions_id = ?
-              WHERE dimension_expansions_id = ?
-            `
-            ).run(cloudId, localExp.id)
-          }
-        }
-
-        const payload = pendingDimExp.map(d => ({
-          name: d.name,
-          level: d.level,
-          tags: this.safeJsonParse(d.tags, []),
-          trigger_conditions: this.safeJsonParse(d.trigger_conditions, []),
-          description: d.description,
-          applicable_file_types: this.safeJsonParse(d.applicable_file_types, []),
-          context_hints: this.safeJsonParse(d.context_hints, []),
-          created_at: toUTCString(d.created_at)
-        }))
-        await cloudAnalysisService.batchSync(
-          { dimension_expansions: sanitizeObject(payload) },
-          language
-        )
-
-        // 同步后查询云端所有维度ID，将云端ID覆盖本地ID，并更新tag_expansions外键
-        const cloudDimMapAfter = await cloudAnalysisService.getExistingExpansionNames(language)
-        for (const localExp of pendingDimExp) {
-          if (cloudDimMapAfter.has(localExp.name)) {
-            const cloudId = cloudDimMapAfter.get(localExp.name)
-            if (cloudId !== localExp.id) {
-              // 用云端ID覆盖本地ID（INSERT OR REPLACE + DELETE旧记录）
-              db.prepare(`DELETE FROM dimension_expansions WHERE id = ?`).run(localExp.id)
-              db.prepare(
-                `
-                INSERT OR REPLACE INTO dimension_expansions (id, name, level, tags, trigger_conditions, description, applicable_file_types, context_hints, sync_status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 2, ?)
-              `
-              ).run(
-                cloudId,
-                localExp.name,
-                localExp.level,
-                localExp.tags,
-                localExp.trigger_conditions,
-                localExp.description,
-                localExp.applicable_file_types,
-                localExp.context_hints,
-                localExp.created_at
-              )
-              // 更新tag_expansions中引用旧ID的记录
-              db.prepare(
-                `
-                UPDATE tag_expansions SET dimension_expansions_id = ?
-                WHERE dimension_expansions_id = ?
-              `
-              ).run(cloudId, localExp.id)
-            } else {
-              // 如果 ID 已经一致，仅更新同步状态为 2
-              db.prepare(`UPDATE dimension_expansions SET sync_status = 2 WHERE id = ?`).run(
-                localExp.id
-              )
-            }
-          }
-        }
-      }
-
-      // 0.2 标签扩展提案 - 处理泛维度过滤
-      const pendingTagExp = db
-        .prepare(`SELECT * FROM tag_expansions WHERE sync_status = 0 LIMIT ?`)
-        .all(this.BATCH_SIZE) as any[]
-      if (pendingTagExp.length > 0) {
-        // 过滤掉泛维度的标签提案
-        const toSync = pendingTagExp.filter(t => !panSet.has(Number(t.dimension_id)))
-        const toSkip = pendingTagExp.filter(t => panSet.has(Number(t.dimension_id)))
-
-        if (toSync.length > 0) {
-          hasActualWork = true
-          const payload = toSync.map(t => ({
-            name: t.name,
-            dimension_id: t.dimension_id,
-            file_dimensions_id: t.file_dimensions_id,
-            dimension_expansions_id: t.dimension_expansions_id,
-            created_at: toUTCString(t.created_at)
-          }))
-          await cloudAnalysisService.batchSync(
-            { tag_expansions: sanitizeObject(payload) },
-            language
-          )
-
-          // 同步后查询云端标签ID，回传到本地
-          const cloudTagMap = await cloudAnalysisService.getExistingTagExpansionIds(language)
-          for (const localTag of toSync) {
-            const cloudTagId = cloudTagMap.get(localTag.name)
-            if (cloudTagId && cloudTagId !== localTag.id) {
-              // 用云端ID覆盖本地ID
-              db.prepare(`DELETE FROM tag_expansions WHERE id = ?`).run(localTag.id)
-              db.prepare(
-                `
-                INSERT OR REPLACE INTO tag_expansions (id, name, dimension_id, file_dimensions_id, dimension_expansions_id, sync_status, created_at)
-                VALUES (?, ?, ?, ?, ?, 2, ?)
-              `
-              ).run(
-                cloudTagId,
-                localTag.name,
-                localTag.dimension_id,
-                localTag.file_dimensions_id,
-                localTag.dimension_expansions_id,
-                localTag.created_at
-              )
-            }
-          }
-        }
-
-        // 统一更新状态：同步成功的设为 2，被过滤的也设为 2 (防止下次重复扫描)
-        const allProcessedIds = pendingTagExp.map(t => t.id)
-        if (allProcessedIds.length > 0) {
-          db.prepare(
-            `UPDATE tag_expansions SET sync_status = 2 WHERE id IN (${allProcessedIds.map(() => '?').join(',')})`
-          ).run(...allProcessedIds)
-        }
-
-        if (toSkip.length > 0) {
-          logger.info(
-            LogCategory.SUPABASE,
-            `CloudSyncWorker: 已忽略 ${toSkip.length} 个属于泛维度的标签提案`
-          )
-        }
-      }
 
       // ==================================================================================
       // Phase 1: 同步微调数据集 (memory_cache) - 独立于文件同步，即使无文件也要处理
@@ -531,7 +322,6 @@ export class CloudSyncWorker {
         .all(oneDayAgo, this.BATCH_SIZE) as any[]
 
       if (pendingFiles.length === 0) {
-        this.cleanupProcessedExpansions(db)
         return hasActualWork
       }
 
@@ -543,7 +333,7 @@ export class CloudSyncWorker {
         `UPDATE files SET sync_status = 1 WHERE file_fingerprint IN (${fileIds.map(() => '?').join(',')})`
       ).run(...fileIds)
 
-      // 2.2 准备同步标签定义 - 遵循泛维度过滤规则
+      // 2.2 准备同步标签定义（V4 自然主键直通：以完整对象推送 code/name/parent_codes/depth 等）
       const relatedTags = db
         .prepare(
           `
@@ -555,27 +345,24 @@ export class CloudSyncWorker {
         .all(...fileIds) as any[]
 
       if (relatedTags.length > 0) {
-        // 推送包含泛维度的所有标签定义
-        const tagsToPush = relatedTags
+        // 直接以完整标签树节点对象推送，云端按 code UPSERT，无需任何 ID 映射
+        const tagsPayload = relatedTags.map(t => ({
+          code: t.code,
+          name: t.name,
+          parent_codes: this.safeJsonParse(t.parent_codes, []),
+          materialized_paths: this.safeJsonParse(t.materialized_paths, []),
+          depth: typeof t.depth === 'number' ? t.depth : 1,
+          file_groups: this.safeJsonParse(t.file_groups, []),
+          source: t.source || 'expanded',
+          meta: this.safeJsonParse(t.meta, {})
+        }))
+        await cloudAnalysisService.batchSync({ tags: sanitizeObject(tagsPayload) }, language)
 
-        if (tagsToPush.length > 0) {
-          const tagsPayload = tagsToPush.map(t => ({
-            name: t.name,
-            dimension_id: t.dimension_id,
-            created_at: toUTCString(t.created_at)
-          }))
-          await cloudAnalysisService.batchSync({ tags: sanitizeObject(tagsPayload) }, language)
-
-          // 关键：必须刷新标签映射，以获取云端生成的 tag_id 用于 Phase 2 的关系建立
-          // 注意：维度定义不会在会话期间变化，因此只刷新标签，不重新拉取维度定义
-          await this.afterSyncTags()
-        }
-
-        // 更新所有相关标签的本地同步状态 (包含被过滤的，确保流程推进)
-        const allTagIds = relatedTags.map(t => t.id)
+        // 按 code 原子更新本地标签定义同步状态
+        const allTagCodes = relatedTags.map(t => t.code)
         db.prepare(
-          `UPDATE file_tags SET sync_status = 2 WHERE id IN (${allTagIds.map(() => '?').join(',')})`
-        ).run(...allTagIds)
+          `UPDATE file_tags SET sync_status = 2 WHERE code IN (${allTagCodes.map(() => '?').join(',')})`
+        ).run(...allTagCodes)
       }
 
       // 2.3 构建文件 Payload - 云端 ID 使用本地 file_fingerprint
@@ -615,73 +402,24 @@ export class CloudSyncWorker {
         }
       })
 
-      // 2.4 建立关系 Payload - 遵循泛维度过滤规则且执行 ID 转换
-      const fileTagLinks = db
+      // 2.4 建立关系 Payload（V4 自然主键直通：直接推送 file_fingerprint + tag_code）
+      //     彻底废除 cloudTagMap / cloudTagNameMap 自增 ID 反查与映射字典
+      const relationsPayload = db
         .prepare(
           `
-        SELECT f.file_fingerprint, ft.code as tag_code, ft.name as tag_name, ft.dimension_id
+        SELECT ftr.file_fingerprint, ftr.tag_code, ftr.confidence, ftr.source, ftr.meta
         FROM file_tag_relations ftr
-        JOIN files f ON ftr.file_fingerprint = f.file_fingerprint
-        JOIN file_tags ft ON ftr.tag_code = ft.code
         WHERE ftr.file_fingerprint IN (${fileIds.map(() => '?').join(',')})
       `
         )
-        .all(...fileIds) as any[]
-
-      // 辅助函数：执行一轮 ID 匹配（维度ID+标签名精确匹配 → 标签名回退匹配）
-      const matchLinks = () => {
-        const payload: any[] = []
-        const failed: any[] = []
-        for (const link of fileTagLinks) {
-          // 优先使用维度ID+标签名精确匹配
-          let cloudTagId = this.cloudTagMap.get(`${link.dimension_id}:${link.tag_name}`)
-
-          // 如果精确匹配失败，尝试使用标签名回退匹配（处理本地维度ID回退到28的情况）
-          if (!cloudTagId) {
-            cloudTagId = this.cloudTagNameMap.get(link.tag_name)
-            if (cloudTagId) {
-              logger.debug(
-                LogCategory.SUPABASE,
-                `CloudSyncWorker: 标签 "${link.tag_name}" 使用标签名回退匹配 (本地维度ID: ${link.dimension_id})`
-              )
-            }
-          }
-
-          if (!cloudTagId) {
-            failed.push(link)
-            continue
-          }
-
-          payload.push({
-            file_fingerprint: link.file_fingerprint, // V2 架构：对齐云端 RPC 字段名
-            tag_id: cloudTagId
-          })
-        }
-        return { payload, failed }
-      }
-
-      let matchResult = matchLinks()
-
-      // 兜底：若存在未命中映射的标签，先强制刷新一次映射再重试匹配。
-      // 场景：Phase 2.2 刚推送的标签定义已写入云端，但内存映射可能因网络抖动而陈旧，
-      // 若直接丢弃会导致有效关系永久丢失（文件随后被标记为已同步，不再重试）。
-      if (matchResult.failed.length > 0) {
-        logger.warn(
-          LogCategory.SUPABASE,
-          `CloudSyncWorker: ${matchResult.failed.length} 个标签未命中云端ID映射，强制刷新映射后重试`
-        )
-        await this.refreshTagMaps() // 刷新失败会抛出，由外层 catch 回退文件状态等待下轮重试
-        matchResult = matchLinks()
-        // 重试后仍失败的标签记录警告并放弃（避免脏数据卡死同步队列）
-        for (const link of matchResult.failed) {
-          logger.warn(
-            LogCategory.SUPABASE,
-            `CloudSyncWorker: 标签 "${link.tag_name}" 未找到云端对应ID，跳过同步`
-          )
-        }
-      }
-
-      const relationsPayload = matchResult.payload
+        .all(...fileIds)
+        .map((link: any) => ({
+          file_fingerprint: link.file_fingerprint,
+          tag_code: link.tag_code,
+          confidence: this.ensureReal(link.confidence, 1.0),
+          source: link.source || 'rule',
+          meta: this.safeJsonParse(link.meta, {})
+        }))
 
       // 2.5 执行同步提交
       await cloudAnalysisService.batchSync(
@@ -692,7 +430,7 @@ export class CloudSyncWorker {
         language
       )
 
-      // 2.6 更新本地同步状态
+      // 2.6 更新本地同步状态（按 file_fingerprint 原子更新关系同步状态）
       db.prepare(
         `UPDATE files SET sync_status = 2 WHERE file_fingerprint IN (${fileIds.map(() => '?').join(',')})`
       ).run(...fileIds)
@@ -702,10 +440,9 @@ export class CloudSyncWorker {
 
       logger.info(
         LogCategory.SUPABASE,
-        `CloudSyncWorker: 已同步 ${pendingFiles.length} 个文件及 ${relationsPayload.length} 个有效关联 (包含泛维度)`
+        `CloudSyncWorker: 已同步 ${pendingFiles.length} 个文件及 ${relationsPayload.length} 个标签关联（自然主键直通）`
       )
 
-      this.cleanupProcessedExpansions(db)
       this.nextSyncAllowedAt = null
       return true
     } catch (error) {
@@ -742,63 +479,9 @@ export class CloudSyncWorker {
     }
   }
 
-  /**
-   * 清理本地已审核通过（或已存在于标准库中）的扩展记录
-   * 逻辑：如果 dimension_expansions/tag_expansions 中的内容在 file_dimensions/file_tags 中已存在且 sync_status=2，
-   * 说明云端已接纳（审核通过）并同步回了本地，此时应删除本地的 expansion 记录以防冗余。
-   */
-  private cleanupProcessedExpansions(db: any): void {
-    try {
-      // 1. 清理维度提案
-      // 只要 file_dimensions 里有同名且已同步的维度，就删除对应的提案
-      const deletedDims = db
-        .prepare(
-          `
-        DELETE FROM dimension_expansions 
-        WHERE name IN (
-          SELECT name FROM file_dimensions WHERE sync_status = 2
-        )
-      `
-        )
-        .run()
-
-      if (deletedDims.changes > 0) {
-        logger.info(
-          LogCategory.SUPABASE,
-          `CloudSyncWorker: Cleaned up ${deletedDims.changes} approved dimension expansions`
-        )
-      }
-
-      // 2. 清理标签提案
-      // 只要 file_tags 里有同名、同维度（通过维度名匹配）且已同步的标签，就删除对应的提案
-      // 注意：这里通过维度名关联，因为 ID 可能会变（本地临时 ID vs 云端正式 ID）
-      const deletedTags = db
-        .prepare(
-          `
-        DELETE FROM tag_expansions 
-        WHERE EXISTS (
-          SELECT 1 
-          FROM file_tags ft 
-          JOIN file_dimensions fd_real ON ft.dimension_id = fd_real.id
-          JOIN file_dimensions fd_exp ON tag_expansions.dimension_id = fd_exp.id
-          WHERE ft.name = tag_expansions.name 
-          AND fd_real.name = fd_exp.name 
-          AND ft.sync_status = 2
-        )
-      `
-        )
-        .run()
-
-      if (deletedTags.changes > 0) {
-        logger.info(
-          LogCategory.SUPABASE,
-          `CloudSyncWorker: Cleaned up ${deletedTags.changes} approved tag expansions`
-        )
-      }
-    } catch (e) {
-      logger.error(LogCategory.SUPABASE, 'Failed to cleanup processed expansions', e)
-    }
-  }
+  // 【V4 自然主键直通架构】cleanupProcessedExpansions 已彻底删除。
+  // 本地已不存在 dimension_expansions / tag_expansions 提案表，
+  // 扩展标签定义通过 file_tags(code 自然主键) 与云端 1:1 直通，无需任何提案清理流程。
 }
 
 export const cloudSyncWorker = CloudSyncWorker.getInstance()

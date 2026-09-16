@@ -60,7 +60,7 @@ export interface ProTagReconciliationParams {
   syncStatus?: number
   authors?: string[]
   language?: string
-  fileGroup?: string
+  fileGroup?: string | { group?: string; label?: string } | any
   extension?: string
 }
 

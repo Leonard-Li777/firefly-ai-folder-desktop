@@ -45,50 +45,66 @@ export class AISchemeGenerator {
     userPrompt?: string
   ): Promise<AIDirectoryStructure | null> {
     try {
-      // 1. 获取工作区文件
-      const selectIdSet =
-        selectedFileIds && selectedFileIds.length > 0
-          ? new Set(selectedFileIds.map(id => String(id)))
-          : null
+      // 1. 获取工作区文件 (支持精确定位所选文件，避免大型工作区全表扫描)
+      let targetRows: Array<{
+        id: number
+        path: string
+        name: string
+        file_fingerprint: string
+        smart_name?: string
+        content?: string
+        metadata?: string
+      }>
 
-      const rows = this.provider.db
-        .prepare(`
-          SELECT 
-            wf.id, wf.path, wf.name, wf.file_fingerprint,
-            f.smart_name, fc.content, fc.metadata
-          FROM workspace_files wf
-          JOIN files f ON wf.file_fingerprint = f.file_fingerprint
-          LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-          WHERE wf.workspace_id = ?
-        `)
-        .all(workspaceId) as Array<{
-          id: number
-          path: string
-          name: string
-          file_fingerprint: string
-          smart_name?: string
-          content?: string
-          metadata?: string
-        }>
-
-      const targetRows = selectIdSet
-        ? rows.filter(r => selectIdSet.has(String(r.id)))
-        : rows
+      if (selectedFileIds && selectedFileIds.length > 0 && selectedFileIds.length <= 1000) {
+        const placeholders = selectedFileIds.map(() => '?').join(',')
+        targetRows = this.provider.db
+          .prepare(`
+            SELECT 
+              wf.id, wf.path, wf.name, wf.file_fingerprint,
+              f.smart_name, fc.content, fc.metadata
+            FROM workspace_files wf
+            JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+            LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
+            WHERE wf.workspace_id = ? AND wf.id IN (${placeholders})
+          `)
+          .all(workspaceId, ...selectedFileIds) as any[]
+      } else {
+        const rows = this.provider.db
+          .prepare(`
+            SELECT 
+              wf.id, wf.path, wf.name, wf.file_fingerprint,
+              f.smart_name, fc.content, fc.metadata
+            FROM workspace_files wf
+            JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+            LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
+            WHERE wf.workspace_id = ?
+          `)
+          .all(workspaceId) as any[]
+        const selectIdSet =
+          selectedFileIds && selectedFileIds.length > 0
+            ? new Set(selectedFileIds.map(id => String(id)))
+            : null
+        targetRows = selectIdSet ? rows.filter(r => selectIdSet.has(String(r.id))) : rows
+      }
 
       if (targetRows.length === 0) {
         return null
       }
 
-      // 2. 收集 384d 密集向量与元数据
+      // 2. 收集 384d 密集向量与元数据 (按指纹建立一对多映射，支持同指纹副本文件完整归档)
       const docs: OmniClusterDocument[] = []
-      const fileMap = new Map<string, { id: number; name: string; path: string }>()
+      const fileMap = new Map<string, Array<{ id: number; name: string; path: string }>>()
+      const seenFp = new Set<string>()
 
       for (const row of targetRows) {
-        fileMap.set(row.file_fingerprint, {
+        const existing = fileMap.get(row.file_fingerprint) || []
+        existing.push({
           id: row.id,
           name: row.smart_name || row.name,
           path: row.path
         })
+        fileMap.set(row.file_fingerprint, existing)
 
         let embedding: number[] | null = null
         let keywords: string[] = []
@@ -107,7 +123,8 @@ export class AISchemeGenerator {
           } catch {}
         }
 
-        if (embedding) {
+        if (embedding && !seenFp.has(row.file_fingerprint)) {
+          seenFp.add(row.file_fingerprint)
           docs.push({
             fingerprint: row.file_fingerprint,
             embedding,
@@ -178,30 +195,34 @@ export class AISchemeGenerator {
         const filesInCluster: FileInfoBase[] = []
 
         for (const fp of cluster.fingerprints) {
-          const fInfo = fileMap.get(fp)
-          if (fInfo) {
-            filesInCluster.push({
-              id: fInfo.id,
-              name: fInfo.name,
-              path: fInfo.path
-            })
+          const fInfos = fileMap.get(fp)
+          if (fInfos && fInfos.length > 0) {
+            for (const fInfo of fInfos) {
+              filesInCluster.push({
+                id: fInfo.id,
+                name: fInfo.name,
+                path: fInfo.path
+              })
+            }
           }
         }
-        leafNode.files = filesInCluster
-        leafNode.fileCount = filesInCluster.length
+        leafNode.files = [...(leafNode.files || []), ...filesInCluster]
+        leafNode.fileCount = leafNode.files.length
       }
 
       // 未归入主要聚类簇的文件，集中归入「其他文件」
       if (otherFiles && otherFiles.length > 0) {
         const otherFilesList: FileInfoBase[] = []
         for (const fp of otherFiles) {
-          const fInfo = fileMap.get(fp)
-          if (fInfo) {
-            otherFilesList.push({
-              id: fInfo.id,
-              name: fInfo.name,
-              path: fInfo.path
-            })
+          const fInfos = fileMap.get(fp)
+          if (fInfos && fInfos.length > 0) {
+            for (const fInfo of fInfos) {
+              otherFilesList.push({
+                id: fInfo.id,
+                name: fInfo.name,
+                path: fInfo.path
+              })
+            }
           }
         }
         if (otherFilesList.length > 0) {
@@ -276,13 +297,16 @@ export class AISchemeGenerator {
     const files: VirtualDirectoryFileInput[] = []
     const directoryPaths = new Map<string, string>()
 
-    // 构建目录路径映射 (与 OrganizeRealDirectoryService 逻辑对齐)
-    const buildPath = (dirId: string): string => {
+    // 构建目录路径映射 (与 OrganizeRealDirectoryService 逻辑对齐，防环并统一正斜杠)
+    const buildPath = (dirId: string, visited = new Set<string>()): string => {
       if (directoryPaths.has(dirId)) return directoryPaths.get(dirId)!
+      if (visited.has(dirId)) return ''
+      visited.add(dirId)
       const dir = structure.directories.find(d => (d.id || d.name) === dirId)
       if (!dir) return ''
-      const parentPath = dir.parent ? buildPath(dir.parent) : ''
-      const fullPath = path.join(parentPath, dir.name)
+      const parentPath = dir.parent ? buildPath(dir.parent, visited) : ''
+      const joined = parentPath ? `${parentPath}/${dir.name}` : dir.name
+      const fullPath = joined.replace(/\\/g, '/').replace(/\/+/g, '/')
       directoryPaths.set(dirId, fullPath)
       return fullPath
     }
@@ -313,10 +337,11 @@ export class AISchemeGenerator {
               .get(fileId) as { file_fingerprint: string } | undefined
             if (dbFile) {
               const safeName = fileName || `file_${fileId}`
+              const rawRel = relativeDirPath ? `${relativeDirPath}/${safeName}` : safeName
               files.push({
                 fileId,
                 fileFingerprint: dbFile.file_fingerprint,
-                relativePath: relativeDirPath ? `${relativeDirPath}/${safeName}` : safeName
+                relativePath: rawRel.replace(/\\/g, '/').replace(/\/+/g, '/')
               })
             }
           }
@@ -418,7 +443,7 @@ export class AISchemeGenerator {
             const fps = fpRows.map(r => r.file_fingerprint)
             const tagRows = this.provider.db
               .prepare(
-                'SELECT DISTINCT ft.name FROM file_tags ft JOIN file_tag_relations ftr ON ftr.tag_id = ft.id WHERE ftr.file_fingerprint IN (' +
+                'SELECT DISTINCT ft.name FROM file_tags ft JOIN file_tag_relations ftr ON ft.code = ftr.tag_code WHERE ftr.file_fingerprint IN (' +
                   fps.map(() => '?').join(',') +
                   ')'
               )
@@ -676,7 +701,7 @@ export class AISchemeGenerator {
               `
               SELECT wf.id as file_id, ft.name as tag_name
               FROM file_tag_relations ftr
-                     JOIN file_tags ft ON ftr.tag_id = ft.id
+                     JOIN file_tags ft ON ft.code = ftr.tag_code
                      JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
               WHERE wf.id IN (${placeholders})
             `

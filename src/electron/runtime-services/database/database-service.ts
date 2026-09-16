@@ -15,6 +15,7 @@ import * as path from 'path'
 import { t } from '@app/languages'
 
 import { WorkspaceDao, FileDao, TagUnitDao, QueueDao } from './dao'
+import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { AccessTimeBatchUpdater } from './access-time-batch-updater'
 import { loadIgnoreRules, shouldIgnoreFile } from '../analysis/analysis-ignore-service'
@@ -33,6 +34,44 @@ export class DatabaseService {
   private queueDao!: QueueDao
 
   private initPromise: Promise<void> | null = null
+
+  /** 当前应用语言，用于扩展标签的离线确定性编码（默认 zh-CN） */
+  private currentLanguage = 'zh-CN'
+
+  /**
+   * 解析维度的自然主键 code
+   *
+   * 优先使用调用方显式传入的维度 code；若传入的是纯数字 ID，映射为 `dim.{id}` 前缀；
+   * 仅在显式 code 缺失时才按维度显示名反查标签树根节点，避免额外查询开销。
+   */
+  private resolveDimensionCode(
+    dimensionId?: number | string,
+    dimensionName?: string
+  ): string | null {
+    if (dimensionId !== undefined && dimensionId !== null && dimensionId !== '') {
+      const raw = String(dimensionId)
+      // 已是完整 code（如 dim.28 / content）则直接采用
+      if (/^[a-z]/.test(raw) && !/^\d+$/.test(raw)) return raw
+      // 纯数字 ID 映射为 dim.{n} 前缀
+      if (/^\d+$/.test(raw)) return `dim.${raw}`
+      return raw
+    }
+    if (dimensionName && this._db) {
+      try {
+        const row = this._db
+          .prepare(
+            `SELECT code FROM file_tags
+             WHERE name = ? AND (parent_codes IS NULL OR parent_codes = '[]')
+             LIMIT 1`
+          )
+          .get(dimensionName) as { code: string } | undefined
+        if (row?.code) return row.code
+      } catch {
+        // 查询容错：标签树不可用时返回 null，由调用方兜底
+      }
+    }
+    return null
+  }
 
   /** 迁移完成后执行的回调列表 */
   private postMigrationCallbacks: Array<(db: Database.Database, language: LanguageCode) => void> =
@@ -520,58 +559,28 @@ export class DatabaseService {
   }
 
   /**
-   * 补齐过渡期兼容表 (file_dimensions, dimension_expansions, tag_expansions)
-   * 确保未删库的已有本地数据库也能平滑自愈
+   * 确保表结构自愈（如对齐 hownet 等扩展结构）
    */
   private ensureCompatibilityTables(): void {
     if (!this._db) return
     try {
-      this._db.exec(`
-        CREATE TABLE IF NOT EXISTS file_dimensions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL UNIQUE,
-          level INTEGER NOT NULL,
-          tags TEXT NOT NULL,
-          trigger_conditions TEXT,
-          is_ai_generated BOOLEAN DEFAULT 0,
-          description TEXT,
-          applicable_file_types TEXT,
-          context_hints TEXT,
-          metadata TEXT,
-          sync_status INTEGER NOT NULL DEFAULT 0,
-          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE TABLE IF NOT EXISTS dimension_expansions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL UNIQUE,
-          level INTEGER NOT NULL,
-          tags TEXT NOT NULL,
-          trigger_conditions TEXT,
-          is_ai_generated BOOLEAN DEFAULT 0,
-          description TEXT,
-          applicable_file_types TEXT,
-          context_hints TEXT,
-          status TEXT DEFAULT 'pending',
-          sync_status INTEGER NOT NULL DEFAULT 0,
-          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-
-        CREATE TABLE IF NOT EXISTS tag_expansions (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          dimension_id INTEGER NOT NULL,
-          file_dimensions_id INTEGER,
-          dimension_expansions_id INTEGER,
-          sync_status INTEGER NOT NULL DEFAULT 0,
-          created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE(dimension_id, name)
-        );
-
-        CREATE INDEX IF NOT EXISTS idx_file_dimensions_name ON file_dimensions(name);
-        CREATE INDEX IF NOT EXISTS idx_dimension_expansions_name ON dimension_expansions(name);
-        CREATE INDEX IF NOT EXISTS idx_tag_expansions_dim ON tag_expansions(dimension_id);
-      `)
+      // 自愈检测：检查现有数据库中 hownet_words 表结构是否具有 word 列
+      try {
+        const tableInfo = this._db.pragma('table_info(hownet_words)') as { name: string }[]
+        if (tableInfo && tableInfo.length > 0) {
+          const hasWordCol = tableInfo.some(col => col.name === 'word')
+          if (!hasWordCol) {
+            logger.info(LogCategory.DATABASE_SERVICE, '检测到旧版 hownet_words 表结构，正在自愈对齐最新结构...')
+            this._db.exec(`
+              DROP TABLE IF EXISTS hownet_word_concepts;
+              DROP TABLE IF EXISTS hownet_concepts;
+              DROP TABLE IF EXISTS hownet_words;
+            `)
+          }
+        }
+      } catch (hownetCheckErr) {
+        logger.warn(LogCategory.DATABASE_SERVICE, '自愈检测 hownet_words 失败:', hownetCheckErr)
+      }
     } catch (error) {
       logger.warn(LogCategory.DATABASE_SERVICE, '确保兼容表结构自愈失败:', error)
     }
@@ -1192,8 +1201,6 @@ export class DatabaseService {
         this._db!.prepare('DELETE FROM file_contents').run()
         this._db!.prepare('DELETE FROM file_tag_relations').run()
         this._db!.prepare('DELETE FROM file_tags').run()
-        this._db!.prepare('DELETE FROM tag_expansions').run()
-        this._db!.prepare('DELETE FROM dimension_expansions').run()
         this._db!.prepare('DELETE FROM analysis_queue').run()
       })()
       logger.info(LogCategory.DATABASE_SERVICE, t('所有AI分析数据已重置'))
@@ -1238,43 +1245,28 @@ export class DatabaseService {
   /**
    * 全局直接删除指定维度标签（清理关联关系与标签记录）
    */
-  async deleteTagGlobally(dimensionId: number, tagName: string): Promise<boolean> {
+  async deleteTagGlobally(dimensionId: number | string, tagName: string): Promise<boolean> {
     if (!this._db) return false
     try {
+      // 创世 Baseline V1：标签以 code 自然主键存储，维度由其父级 code 表达。
+      // 传入的 dimensionId 既可能是维度 code（推荐），也可能回退为数字 ID（映射为 dim.{n} 前缀）。
+      const dimCode = String(dimensionId)
+      const dimNumericPrefix = `dim.${dimCode}`
+
       this._db.transaction(() => {
         const tagRows = this._db!.prepare(
-          'SELECT id, code FROM file_tags WHERE (dimension_id = ? OR code LIKE ? || ".%") AND LOWER(TRIM(name)) = LOWER(TRIM(?))'
-        ).all(dimensionId, String(dimensionId), tagName) as Array<{ id: number; code: string }>
+          `
+          SELECT code FROM file_tags
+          WHERE (code LIKE ? || '.%' OR code LIKE ? || '.%' OR json_extract(parent_codes, '$[0]') IN (?, ?))
+            AND LOWER(TRIM(name)) = LOWER(TRIM(?))
+        `
+        ).all(dimCode, dimNumericPrefix, dimCode, dimNumericPrefix, tagName) as Array<{
+          code: string
+        }>
 
         for (const tag of tagRows) {
           this._db!.prepare('DELETE FROM file_tag_relations WHERE tag_code = ?').run(tag.code)
-          this._db!.prepare('DELETE FROM file_tags WHERE id = ?').run(tag.id)
-        }
-
-        this._db!.prepare(
-          'DELETE FROM tag_expansions WHERE dimension_id = ? AND LOWER(TRIM(name)) = LOWER(TRIM(?))'
-        ).run(dimensionId, tagName)
-
-        // 同时从 file_dimensions 表 tags JSON 列表中剔除该标签（若为预设标签），支持删除任意维度标签
-        const dimRow = this._db!.prepare(
-          'SELECT tags FROM file_dimensions WHERE id = ?'
-        ).get(dimensionId) as { tags?: string } | undefined
-
-        if (dimRow?.tags) {
-          try {
-            const list = JSON.parse(dimRow.tags)
-            if (Array.isArray(list)) {
-              const filtered = list.filter(
-                t => typeof t === 'string' && t.trim().toLowerCase() !== tagName.trim().toLowerCase()
-              )
-              if (filtered.length !== list.length) {
-                this._db!.prepare('UPDATE file_dimensions SET tags = ? WHERE id = ?').run(
-                  JSON.stringify(filtered),
-                  dimensionId
-                )
-              }
-            }
-          } catch {}
+          this._db!.prepare('DELETE FROM file_tags WHERE code = ?').run(tag.code)
         }
       })()
 
@@ -1312,31 +1304,32 @@ export class DatabaseService {
 
         if (combinedAddTags.length > 0) {
           for (const item of combinedAddTags) {
-            let dimId = item.dimensionId || 28
-            if (!item.dimensionId && item.dimensionName) {
-              if (item.dimensionName === '作者' || item.dimensionName === 'Author') {
-                dimId = 4
-              } else {
-                const dimRow = this._db!.prepare(
-                  'SELECT id FROM file_dimensions WHERE name = ?'
-                ).get(item.dimensionName) as { id: number } | undefined
-                if (dimRow) dimId = dimRow.id
-              }
-            }
+            // 解析目标维度：优先使用传入的 code/ID，其次按维度名反查标签树根节点
+            let dimCode = this.resolveDimensionCode(item.dimensionId, item.dimensionName)
+            if (!dimCode) dimCode = 'content'
 
+            // 以 code 自然主键精确查找已有标签（同名视为同一标签，直接复用）
             const existingTag = this._db!.prepare(
-              'SELECT code FROM file_tags WHERE (dimension_id = ? OR code LIKE ? || ".%") AND name = ?'
-            ).get(dimId, String(dimId), item.tagName) as { code: string } | undefined
+              'SELECT code FROM file_tags WHERE name = ? LIMIT 1'
+            ).get(item.tagName) as { code: string } | undefined
 
             if (existingTag) {
-              createdTagMap.set(`${dimId}:${item.tagName}`, existingTag.code)
+              createdTagMap.set(`${dimCode}:${item.tagName}`, existingTag.code)
             } else {
-              const sanitized = item.tagName.toLowerCase().replace(/[\s\/:*?"<>|]+/g, '_').replace(/^_+|_+$/g, '')
-              const code = `custom:${sanitized || 'tag'}`
+              // 按 PRD §4.2 离线确定性编码规范派生合法 code，严禁 `custom:` 冒号前缀
+              const code = DeterministicCodeGenerator.generateUnique(item.tagName, this.currentLanguage, {
+                lookupExistingName: DeterministicCodeGenerator.createDbLookup(this._db!)
+              })
               this._db!.prepare(
-                'INSERT OR IGNORE INTO file_tags (code, name, parent_codes, depth, file_groups, is_multi_select, is_leaf, is_system, sync_status, created_at) VALUES (?, ?, \'["content"]\', 2, \'[]\', 1, 1, 0, 0, CURRENT_TIMESTAMP)'
-              ).run(code, item.tagName)
-              createdTagMap.set(`${dimId}:${item.tagName}`, code)
+                `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, materialized_paths, depth, file_groups, source, meta)
+                 VALUES (?, ?, ?, '[]', 2, '[]', 'expanded', ?)`
+              ).run(
+                code,
+                item.tagName,
+                JSON.stringify([dimCode]),
+                JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 })
+              )
+              createdTagMap.set(`${dimCode}:${item.tagName}`, code)
             }
           }
         }
@@ -1350,21 +1343,10 @@ export class DatabaseService {
 
         if (operation.removeTags && operation.removeTags.length > 0) {
           for (const item of operation.removeTags) {
-            let dimId = item.dimensionId || 28
-            if (!item.dimensionId && item.dimensionName) {
-              if (item.dimensionName === '作者' || item.dimensionName === 'Author') {
-                dimId = 4
-              } else {
-                const dimRow = this._db!.prepare(
-                  'SELECT id FROM file_dimensions WHERE name = ?'
-                ).get(item.dimensionName) as { id: number } | undefined
-                if (dimRow) dimId = dimRow.id
-              }
-            }
-
+            // 以 code 自然主键或标签名精确解析待移除标签
             const existingTag = this._db!.prepare(
-              'SELECT code FROM file_tags WHERE (dimension_id = ? OR code LIKE ? || ".%") AND name = ?'
-            ).get(dimId, String(dimId), item.tagName) as { code: string } | undefined
+              'SELECT code FROM file_tags WHERE name = ? LIMIT 1'
+            ).get(item.tagName) as { code: string } | undefined
 
             if (existingTag) {
               resolvedRemoveTagCodes.push(existingTag.code)

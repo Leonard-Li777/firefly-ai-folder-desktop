@@ -158,9 +158,26 @@ export class PlanGenerator {
 
   private prepareDimensionInfo(options?: any, relevantTags?: Set<string>): string {
     try {
+      // 创世 Baseline V1：维度定义改由 file_tags 标签树推导。
+      // 维度根节点 = parent_codes 为空的节点；其直属子节点集合即该维度的可选标签集。
       const dimensions = this.db
         .prepare(
-          'SELECT id, name, level, tags, trigger_conditions, metadata FROM file_dimensions ORDER BY level ASC'
+          `
+          SELECT
+            root.code AS id,
+            root.name AS name,
+            root.depth + 1 AS level,
+            (
+              SELECT json_group_array(child.name)
+              FROM file_tags child
+              WHERE json_extract(child.parent_codes, '$[0]') = root.code
+            ) AS tags,
+            NULL AS trigger_conditions,
+            root.meta AS metadata
+          FROM file_tags root
+          WHERE root.parent_codes IS NULL OR root.parent_codes = '[]'
+          ORDER BY root.depth ASC, root.code ASC
+        `
         )
         .all() as any[]
 

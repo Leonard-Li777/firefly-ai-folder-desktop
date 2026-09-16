@@ -101,7 +101,7 @@ export async function generateNameAndStrategyCandidates(
           const fps = fpRows.map(r => r.file_fingerprint)
           const tagRows = db
             .prepare(
-              'SELECT DISTINCT ft.name FROM file_tags ft JOIN file_tag_relations ftr ON ftr.tag_id = ft.id WHERE ftr.file_fingerprint IN (' +
+              'SELECT DISTINCT ft.name FROM file_tags ft JOIN file_tag_relations ftr ON ft.code = ftr.tag_code WHERE ftr.file_fingerprint IN (' +
                 fps.map(() => '?').join(',') +
                 ')'
             )

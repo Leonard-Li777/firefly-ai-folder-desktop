@@ -42,7 +42,6 @@ import {
   getMimeType,
   FileProcessorService,
   DimensionAnalyzer,
-  FileDimensionService,
   TextFileProcessor,
   extractPureLyrics,
   type FileInfoInput
@@ -226,7 +225,6 @@ export class FileProcessor {
     private getDependencies: () => {
       fileProcessor: FileProcessorService | undefined
       dimensionAnalyzer: DimensionAnalyzer | undefined
-      fileDimensionService: FileDimensionService | undefined
       errorRecoveryConfig: IErrorRecoveryConfig
     },
     private updateItemStatus: (
@@ -243,11 +241,7 @@ export class FileProcessor {
       directoryPath: string,
       force?: boolean,
       cacheOnly?: boolean
-    ) => Promise<any>,
-    private processNewDimensionSuggestions: (
-      suggestions: DimensionExpansion[],
-      fileFingerprint: string
-    ) => Promise<void>
+    ) => Promise<any>
   ) {}
 
   /**
@@ -825,7 +819,7 @@ export class FileProcessor {
           )
         }
 
-        if (!deps.dimensionAnalyzer || !deps.fileDimensionService) throw new Error('AI 服务未就绪')
+        if (!deps.dimensionAnalyzer) throw new Error('AI 服务未就绪')
 
         let processResult: any
         let dimResult: any
@@ -847,8 +841,7 @@ export class FileProcessor {
               initialStage,
               forceReanalyze: item.forceReanalyze === true
             },
-            this.updateItemStatus.bind(this),
-            this.processNewDimensionSuggestions.bind(this)
+            this.updateItemStatus.bind(this)
           )
           processResult = quickRes.processResult
           dimResult = quickRes.dimResult
@@ -869,8 +862,7 @@ export class FileProcessor {
               initialStage,
               forceReanalyze: item.forceReanalyze === true
             },
-            this.updateItemStatus.bind(this),
-            this.processNewDimensionSuggestions.bind(this)
+            this.updateItemStatus.bind(this)
           )
           processResult = fullRes.processResult
           dimResult = fullRes.dimResult
@@ -970,6 +962,11 @@ export class FileProcessor {
           cpuSkipped
         )
 
+        const existingMagikaGroup =
+          typeof existingBasicData.category === 'string'
+            ? existingBasicData.category
+            : existingBasicData.category?.group || null
+
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
         executeProTagReconciliation({
           db,
@@ -978,7 +975,7 @@ export class FileProcessor {
           dimResult,
           authors: baseMetadata?.authors || baseMetadata?.document?.authors,
           language: baseMetadata?.language,
-          fileGroup: existingBasicData.category || null,
+          fileGroup: existingMagikaGroup,
           extension: path.extname(filePath).replace(/^\./, '').toLowerCase()
         })
 
@@ -1946,8 +1943,7 @@ export class FileProcessor {
             forceReanalyze: item.forceReanalyze === true,
             lrc: activeLrc
           },
-          this.updateItemStatus.bind(this),
-          this.processNewDimensionSuggestions.bind(this)
+          this.updateItemStatus.bind(this)
         )
         processResult = quickRes.processResult
         dimResult = quickRes.dimResult
@@ -1969,8 +1965,7 @@ export class FileProcessor {
             forceReanalyze: item.forceReanalyze === true,
             lrc: activeLrc
           },
-          this.updateItemStatus.bind(this),
-          this.processNewDimensionSuggestions.bind(this)
+          this.updateItemStatus.bind(this)
         )
         processResult = fullRes.processResult
         dimResult = fullRes.dimResult

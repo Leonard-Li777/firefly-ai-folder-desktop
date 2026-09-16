@@ -506,7 +506,7 @@ export class VirtualDirectoryService {
           (
             SELECT json_group_array(ft.name)
             FROM file_tag_relations ftr
-            JOIN file_tags ft ON ft.id = ftr.tag_id
+            JOIN file_tags ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = f.file_fingerprint
           ) as tags
         FROM virtual_directory_files vdf

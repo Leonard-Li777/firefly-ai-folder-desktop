@@ -180,12 +180,20 @@ export class TagUnitDao {
 
   async getFileTagsByFileId(fileFingerprint: string): Promise<any[]> {
     try {
+      // 创世 Baseline V1：以 code 自然主键直连 file_tags，
+      // dimension_id 取首个父级 code（维度根节点），便于调用方按维度归拢。
       return this.db
         .prepare(
           `
-        SELECT ft.id, ft.name, ft.dimension_id
+        SELECT
+          ft.code as id,
+          ft.name,
+          CASE
+            WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
+            ELSE json_extract(ft.parent_codes, '$[0]')
+          END as dimension_id
         FROM file_tag_relations ftr
-        JOIN file_tags ft ON ftr.tag_id = ft.id
+        JOIN file_tags ft ON ft.code = ftr.tag_code
         WHERE ftr.file_fingerprint = ?
       `
         )

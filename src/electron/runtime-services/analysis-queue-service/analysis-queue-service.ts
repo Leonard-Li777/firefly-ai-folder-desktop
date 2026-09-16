@@ -2,18 +2,14 @@ import type {
   AnalysisQueueItem,
   AnalysisQueueSnapshot,
   AnalysisStats,
-  DimensionExpansion,
-  LanguageCode,
   IIgnoreRule
 } from '@firefly/types'
 import { t } from '@app/languages'
 import {
   DimensionAnalyzer,
-  FileDimensionService,
   QualityScoringService,
   UnitRecognitionService,
-  FileProcessorService,
-  LanguageConfigService
+  FileProcessorService
 } from '@firefly/core-engine'
 import type { EnqueueInput, IErrorRecoveryConfig } from './types'
 import { LogCategory, logger, PerformanceTimer } from '@firefly/shared'
@@ -93,7 +89,6 @@ export class AnalysisQueueService {
   private dimensionAnalyzer!: DimensionAnalyzer
   private qualityScoringService!: QualityScoringService
   private unitRecognitionService!: UnitRecognitionService
-  private fileDimensionService?: FileDimensionService
   private directoryContextService?: DirectoryContextService
   private aiService?: ILlamaIndexAIService
 
@@ -154,7 +149,6 @@ export class AnalysisQueueService {
       () => ({
         fileProcessor: this.fileProcessorService,
         dimensionAnalyzer: this.dimensionAnalyzer,
-        fileDimensionService: this.fileDimensionService,
         errorRecoveryConfig: this.errorRecoveryConfig
       }),
       (itemId, status, progress, error, extra) =>
@@ -163,9 +157,7 @@ export class AnalysisQueueService {
       timer => this.statsCollector.collectAnalysisStats(timer),
       (modelId, mode) => this.statsCollector.getModelName(modelId, mode),
       (directoryPath, force?, cacheOnly?) =>
-        this.directoryProcessor.analyzeDirectoryContext(directoryPath, force, cacheOnly),
-      (suggestions, fileFingerprint) =>
-        this.processNewDimensionSuggestions(suggestions, fileFingerprint)
+        this.directoryProcessor.analyzeDirectoryContext(directoryPath, force, cacheOnly)
     )
 
     loggingService.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 服务实例已创建')
@@ -209,30 +201,9 @@ export class AnalysisQueueService {
       if (db && adapters) {
         try {
           this.aiService = LlamaIndexAIService.getInstance()!
-          const languageConfigService = new LanguageConfigService(
-            adapters.logger,
-            adapters.fileSystem,
-            adapters.llamaRuntime,
-            adapters.config
-          )
-
-          this.fileDimensionService = new FileDimensionService(
-            db,
-            this.aiService,
-            languageConfigService,
-            adapters.modelCapability,
-            adapters.aiHelper
-          )
           this.directoryContextService = new DirectoryContextService(this.aiService)
-
-          const userLanguage = (ConfigOrchestrator.getInstance().getValue<LanguageCode>(
-            'DEFAULT_LANGUAGE'
-          ) || 'zh-CN') as LanguageCode
-          this.fileDimensionService.setCurrentLanguage(userLanguage)
-
-          await this.fileDimensionService.initializeDimensionsForLanguage(userLanguage)
         } catch (error) {
-          logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 维度系统初始化失败:', error)
+          logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 上下文服务初始化失败:', error)
         }
       }
 
@@ -322,28 +293,9 @@ export class AnalysisQueueService {
     }
 
     try {
-      const adapters = await createCoreEngineAdapters()
-      const languageConfigService = new LanguageConfigService(
-        adapters.logger,
-        adapters.fileSystem,
-        adapters.llamaRuntime,
-        adapters.config
-      )
-
-      this.fileDimensionService = new FileDimensionService(
-        db,
-        this.aiService,
-        languageConfigService,
-        adapters.modelCapability,
-        adapters.aiHelper
-      )
+      // 创世 Baseline V1 起，维度/标签体系已统一由 file_tags 树承载，
+      // 不再存在 FileDimensionService 与 file_dimensions 表的运行时初始化流程。
       this.directoryContextService = new DirectoryContextService(this.aiService)
-
-      const userLanguage = (ConfigOrchestrator.getInstance().getValue<LanguageCode>(
-        'DEFAULT_LANGUAGE'
-      ) || 'zh-CN') as LanguageCode
-      this.fileDimensionService.setCurrentLanguage(userLanguage)
-      await this.fileDimensionService.initializeDimensionsForLanguage(userLanguage)
     } catch (error) {
       logger.error(LogCategory.MAIN, '[AnalysisQueue] 重新加载数据库相关的维度服务失败:', error)
     }
@@ -1009,24 +961,6 @@ export class AnalysisQueueService {
     }
   }
 
-  private async processNewDimensionSuggestions(
-    suggestions: DimensionExpansion[],
-    fileFingerprint: string
-  ): Promise<void> {
-    if (!this.fileDimensionService) return
-    for (const suggestion of suggestions) {
-      try {
-        // 仅保存到扩展表，不自动审批，等待云端同步审核
-        await this.fileDimensionService.saveDimensionExpansion({
-          ...suggestion,
-          triggerFileId: fileFingerprint as any
-        })
-      } catch (error) {
-        logger.warn(LogCategory.MAIN, '[AnalysisQueue] 处理新维度建议失败:', error)
-      }
-    }
-  }
-
   private async updateVirtualDirectoriesAfterQueueCompletion(): Promise<void> {
     try {
       const db = databaseService.db
@@ -1294,7 +1228,7 @@ export class AnalysisQueueService {
             (
               SELECT GROUP_CONCAT(ft.name, ',')
               FROM file_tag_relations ftr
-              JOIN file_tags ft ON ftr.tag_id = ft.id
+              JOIN file_tags ft ON ft.code = ftr.tag_code
               WHERE ftr.file_fingerprint = wf.file_fingerprint
             ) as tags_str
           FROM workspace_files wf

@@ -475,13 +475,21 @@ export default defineConfig(({ command, mode }) => {
           }
         },
         lib: {
-          entry: 'src/electron/main/index.ts',
-          formats: ['cjs'],
-          fileName: 'main'
+          // 多入口：主进程入口 + 图标提取子进程入口
+          // icon-extractor-worker 作为独立入口编译为 out_build/main/icon-extractor-worker.js，
+          // 供主进程通过 child_process.fork() 拉起，将 Windows Shell COM 调用隔离出主进程
+          entry: {
+            main: 'src/electron/main/index.ts',
+            'icon-extractor-worker': 'src/electron/main/icon-extractor-worker.ts'
+          },
+          formats: ['cjs']
         },
         rollupOptions: {
           output: {
-            entryFileNames: 'main.js',
+            // main 入口固定输出 main.js（package.json 的 main 字段依赖此文件名），
+            // 其余入口按入口名输出，保证 worker 产物文件名与 fork() 路径可预测
+            entryFileNames: (chunkInfo) =>
+              chunkInfo.name === 'main' ? 'main.js' : '[name].js',
             manualChunks(id): string | void {
               if (!isProd) return
               if (

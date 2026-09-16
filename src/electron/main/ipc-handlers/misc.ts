@@ -1,8 +1,8 @@
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
-import { createRequire } from 'node:module'
 import { ipcMain, app, shell, BrowserWindow, clipboard } from 'electron'
+import { iconExtractorClient } from '../icon-extractor-client'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { logger, LogCategory, ResourceLocator, getMimeTypeByExtension } from '@firefly/shared'
@@ -258,40 +258,6 @@ export function registerMiscIPCHandlers() {
   const fileIconCache = new Map<string, string>()
   const FILE_ICON_CACHE_MAX = 500
 
-  // 延迟加载原生模块的 require（与当前模块同目录解析），
-  // 不使用动态 import()：Electron 主进程在并发场景下首次动态 import() 原生模块
-  // 可能触发 Chromium "Must be called on Chrome_UIThread" 崩溃，require 无此问题
-  const iconModuleRequire = createRequire(import.meta.url)
-
-  // extract-file-icon 原生模块（Windows 专属，N-API），延迟加载避免主进程启动时加载
-  // undefined 表示尚未加载，null 表示不可用（非 Windows / 加载失败）
-  let extractFileIconModule: IconExtractor | null | undefined
-
-  type IconExtractor = (filePath: string, size?: 16 | 32 | 64 | 256) => Buffer
-
-  /**
-   * 延迟加载 extract-file-icon 原生模块，用于提取 256x256 高清文件关联图标。
-   * 模块由 electron-vite 标记为 external，运行时从 node_modules 加载。
-   * 返回 null 表示模块不可用（非 Windows / 未安装 / 加载失败）。
-   */
-  const getFileIconExtractor = (): IconExtractor | null => {
-    if (extractFileIconModule !== undefined) return extractFileIconModule
-    if (process.platform !== 'win32') {
-      extractFileIconModule = null
-      return null
-    }
-    try {
-      // 兼容 CJS interop 的两种形态（直接函数 / { default: fn }）
-      const mod = iconModuleRequire('extract-file-icon') as unknown
-      const fn = (mod as { default?: unknown })?.default ?? mod
-      extractFileIconModule = (typeof fn === 'function' ? fn : null) as IconExtractor | null
-    } catch (error) {
-      logger.warn(LogCategory.MAIN, '[IPC] extract-file-icon 加载失败，回退系统原生图标', error)
-      extractFileIconModule = null
-    }
-    return extractFileIconModule
-  }
-
   /**
    * 解析 Windows 快捷方式（.lnk）指向的实际目标路径。
    * 若解析失败或目标不存在，回退到原始 .lnk 路径。
@@ -334,30 +300,22 @@ export function registerMiscIPCHandlers() {
       const cacheKey = `${targetPath}:${iconSize}`
       if (fileIconCache.has(cacheKey)) return fileIconCache.get(cacheKey)
 
-      // Windows 下优先使用 extract-file-icon 提取 256x256 高清 PNG 图标，
-      // 若模块不可用或提取失败则降级为 Electron 原生 app.getFileIcon
+      // Windows 下优先使用 extract-file-icon 提取 256x256 高清 PNG 图标。
+      // 该调用涉及 Windows Shell COM API 且为同步阻塞操作，已下沉到独立子进程执行
+      // （见 icon-extractor-client.ts），避免主进程事件循环被阻塞，并规避
+      // "Must be called on Chrome_UIThread" 线程校验崩溃。
+      // 子进程不可用或提取失败时返回 null，降级为 Electron 原生 app.getFileIcon。
       let dataUrl: string | null = null
-      if (process.platform === 'win32') {
-        const extractor = getFileIconExtractor()
-        if (extractor) {
-          try {
-            const startedAt = Date.now()
-            const pngBuffer = extractor(targetPath, 256)
-            // 临时调试日志：记录高清提取耗时与结果
-            logger.debug(
-              LogCategory.MAIN,
-              `[IPC] extract-file-icon 提取: ${targetPath} bytes=${pngBuffer?.length ?? 0} 耗时=${Date.now() - startedAt}ms`
-            )
-            if (pngBuffer && pngBuffer.length > 0) {
-              dataUrl = `data:image/png;base64,${pngBuffer.toString('base64')}`
-            }
-          } catch (error) {
-            logger.warn(
-              LogCategory.MAIN,
-              `[IPC] extract-file-icon 提取图标失败，降级原生 API: ${targetPath}`,
-              error
-            )
-          }
+      if (iconExtractorClient.isSupported()) {
+        const startedAt = Date.now()
+        const pngBuffer = await iconExtractorClient.extractIcon(targetPath)
+        // 调试日志：记录高清提取耗时与结果
+        logger.debug(
+          LogCategory.MAIN,
+          `[IPC] extract-file-icon 提取: ${targetPath} bytes=${pngBuffer?.length ?? 0} 耗时=${Date.now() - startedAt}ms`
+        )
+        if (pngBuffer && pngBuffer.length > 0) {
+          dataUrl = `data:image/png;base64,${pngBuffer.toString('base64')}`
         }
       }
 

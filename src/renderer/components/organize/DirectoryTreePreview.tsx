@@ -49,10 +49,12 @@ export const DirectoryTreePreview: React.FC<DirectoryTreePreviewProps> = ({
     // 为每个目录添加subdirectories属性（临时用于渲染）
     const enrichedDirs = dirs.map(dir => ({ ...dir, subdirectories: [] as DirectoryNode[] }))
 
-    // 构建父子关系
+    // 构建父子关系 (支持 parent 字段匹配父节点的 id 或 name)
     enrichedDirs.forEach(dir => {
       if (dir.parent && dir.parent !== '') {
-        const parentDir = enrichedDirs.find(d => d.name === dir.parent)
+        const parentDir = enrichedDirs.find(
+          d => (d.id ? d.id === dir.parent : false) || d.name === dir.parent
+        )
         if (parentDir) {
           parentDir.subdirectories.push(dir)
         }
@@ -167,7 +169,7 @@ const DirectoryNodeItem: React.FC<DirectoryNodeItemProps> = ({
               {node.files?.map((fileName, index) => {
                 return (
                   <div
-                    key={`file-${fileName}-${index}`}
+                    key={`file-${typeof fileName === 'string' ? fileName : fileName.id || fileName.path || fileName.name || index}`}
                     className="flex items-center py-1 px-2 text-sm text-muted-foreground"
                     style={{ paddingLeft: `${level * 20 + 8}px` }}
                   >

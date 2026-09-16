@@ -190,16 +190,30 @@ export class FileDao {
       }
     }
 
+    // 创世 Baseline V1：以 code 自然主键直连 file_tags，彻底移除自增 id / dimension_id / tag_id 兼容分支。
+    // dimension_id 取首个父级 code（parent_codes 首元素），维度根节点自身则退化为自身 code。
     let tags: any[] = []
     if (fingerprint) {
-      const tagsStmt = this.db.prepare(`
-        SELECT 
-          ft.id, ft.name, ft.dimension_id
-        FROM file_tag_relations ftr
-        JOIN file_tags ft ON ft.id = ftr.tag_id
-        WHERE ftr.file_fingerprint = ? 
-      `)
-      tags = tagsStmt.all(fingerprint) as any[]
+      try {
+        tags = this.db
+          .prepare(
+            `
+          SELECT
+            ft.code as id,
+            ft.name,
+            CASE
+              WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
+              ELSE json_extract(ft.parent_codes, '$[0]')
+            END as dimension_id
+          FROM file_tag_relations ftr
+          JOIN file_tags ft ON ft.code = ftr.tag_code
+          WHERE ftr.file_fingerprint = ?
+        `
+          )
+          .all(fingerprint) as any[]
+      } catch {
+        tags = []
+      }
     }
 
     const dimensionTags: { [dimensionId: string]: any[] } = {}
@@ -209,14 +223,27 @@ export class FileDao {
       dimensionTags[dimId].push({ id: tag.id, name: tag.name })
     })
 
+    // 创世 Baseline V1 起，维度层级不再来自 file_dimensions 表（已废弃），
+    // 而是由 file_tags 标签树自身的 depth 字段表达：depth=0 为维度根节点，depth 越大层级越深。
+    // 此处读取全部标签树节点的层级关系，用于对命中维度进行稳定排序。
     if (!this.dimensionsCache) {
-      this.dimensionsCache = this.db
-        .prepare('SELECT id, level, description FROM file_dimensions ORDER BY level ASC')
-        .all() as any[]
+      try {
+        this.dimensionsCache = this.db
+          .prepare(
+            `SELECT code AS id, depth AS level, description
+             FROM file_tags
+             ORDER BY depth ASC, code ASC`
+          )
+          .all() as any[]
+      } catch {
+        // 标签树表缺失时安全降级为空集合，仅影响排序，不影响标签返回
+        this.dimensionsCache = []
+      }
     }
     const dimensions = this.dimensionsCache
     const sortedDimensionTags: Array<{ dimension: string; level: number; tags: any[] }> = []
 
+    // 维度根节点按 depth 升序优先输出
     dimensions.forEach(dim => {
       if (dimensionTags[dim.id]) {
         sortedDimensionTags.push({
@@ -228,6 +255,7 @@ export class FileDao {
       }
     })
 
+    // 未在标签树中登记归拢的剩余标签（如动态扩展标签）统一以 level=3 兜底输出
     Object.entries(dimensionTags).forEach(([dimId, remainingTags]) => {
       sortedDimensionTags.push({ dimension: dimId, level: 3, tags: remainingTags as any[] })
     })
@@ -1358,15 +1386,28 @@ export class FileDao {
       .all(workspaceId, limit) as any[]
 
     return rows.map(row => {
-      // Fetch dimension tags separately for each file to match FileInfoForAI structure
-      const tagsStmt = this.db.prepare(`
-        SELECT
-          ft.id, ft.name, ft.dimension_id
-        FROM file_tag_relations ftr
-        JOIN file_tags ft ON ft.id = ftr.tag_id
-        WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
-      `)
-      const tags = tagsStmt.all(row.id) as any[]
+      // 以 code 自然主键直连 file_tags 获取维度标签（创世 Baseline V1）
+      let tags: any[] = []
+      try {
+        tags = this.db
+          .prepare(
+            `
+          SELECT
+            ft.code as id,
+            ft.name,
+            CASE
+              WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
+              ELSE json_extract(ft.parent_codes, '$[0]')
+            END as dimension_id
+          FROM file_tag_relations ftr
+          JOIN file_tags ft ON ft.code = ftr.tag_code
+          WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
+        `
+          )
+          .all(row.id) as any[]
+      } catch {
+        tags = []
+      }
       const dimensionTags = tags.map(t => ({ tag: t.name, dimension: t.dimension_id }))
 
       return {
@@ -1640,6 +1681,7 @@ export class FileDao {
   syncFTSTags(fingerprint: string): void {
     if (!fingerprint) return
     try {
+      // 以 code 自然主键直连（创世 Baseline V1）
       this.db
         .prepare(
           `
@@ -1647,7 +1689,7 @@ export class FileDao {
           SET tags = (
             SELECT GROUP_CONCAT(ft.name, ' ')
             FROM file_tag_relations ftr
-            JOIN file_tags ft ON ftr.tag_id = ft.id
+            JOIN file_tags ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = ?
           )
           WHERE file_fingerprint = ?
@@ -1666,13 +1708,14 @@ export class FileDao {
 
     try {
       this.db.transaction(() => {
+        // 以 code 自然主键直连（创世 Baseline V1）
         const stmt = this.db.prepare(
           `
           UPDATE files_fts
           SET tags = (
             SELECT GROUP_CONCAT(ft.name, ' ')
             FROM file_tag_relations ftr
-            JOIN file_tags ft ON ftr.tag_id = ft.id
+            JOIN file_tags ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = ?
           )
           WHERE file_fingerprint = ?

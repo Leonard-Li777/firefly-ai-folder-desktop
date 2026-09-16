@@ -1099,12 +1099,17 @@ export class DirectoryContextService {
             rawSmartName = pathModule.basename(row.name || row.path || '', pathModule.extname(row.name || row.path || ''))
           }
 
-          // 查询该文件的标签维度
+          // 查询该文件的标签维度（创世 Baseline V1：维度取首个父级 code）
           const tagsRows = this.db
             .prepare(`
-              SELECT ft.name, ft.dimension_id
+              SELECT
+                ft.name,
+                CASE
+                  WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
+                  ELSE json_extract(ft.parent_codes, '$[0]')
+                END as dimension_id
               FROM file_tag_relations ftr
-              JOIN file_tags ft ON ft.id = ftr.tag_id
+              JOIN file_tags ft ON ft.code = ftr.tag_code
               WHERE ftr.file_fingerprint = ?
             `)
             .all(row.file_fingerprint) as Array<{ name: string; dimension_id: string }>

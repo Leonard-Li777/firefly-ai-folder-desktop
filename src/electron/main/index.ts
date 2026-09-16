@@ -28,6 +28,7 @@ import { logger, LogCategory, ErrorNormalizer, APP_PORTS, getWorktreeDebugPortBa
 import { loggingService } from '../runtime-services/system/logging-service'
 import { initWorktreeEnvironment, touchActiveWorktree } from './worktree-env'
 import { processReaper } from './process-reaper'
+import { iconExtractorClient } from './icon-extractor-client'
 import { createWindow, getMainWindow } from './window'
 import { deepLinkManager } from './deep-link'
 
@@ -910,6 +911,8 @@ app.on('before-quit', async () => {
 
   try {
     omniService.stop()
+    // 关闭图标提取子进程，避免遗留孤儿子进程
+    iconExtractorClient.dispose()
     await fileWatcherService.cleanup()
     await systemHealthService.stop()
     databaseService.close()

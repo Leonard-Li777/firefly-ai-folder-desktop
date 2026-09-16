@@ -41,12 +41,15 @@ export class DatabaseHelper {
         wf.path,
         wf.name,
         f.smart_name as smartName,
-        ft.dimension_id,
+        CASE
+          WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
+          ELSE json_extract(ft.parent_codes, '$[0]')
+        END as dimension_id,
         ft.name as tagName
       FROM workspace_files wf
       INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
       INNER JOIN file_tag_relations ftr ON ftr.file_fingerprint = f.file_fingerprint
-      INNER JOIN file_tags ft ON ft.id = ftr.tag_id
+      INNER JOIN file_tags ft ON ft.code = ftr.tag_code
       WHERE wf.is_analyzed = 1
         AND wf.workspace_id = ?
     `
@@ -117,7 +120,7 @@ export class DatabaseHelper {
       FROM workspace_files wf
       INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
       INNER JOIN file_tag_relations ftr ON ftr.file_fingerprint = f.file_fingerprint
-      INNER JOIN file_tags ft ON ft.id = ftr.tag_id
+      INNER JOIN file_tags ft ON ft.code = ftr.tag_code
       WHERE wf.is_analyzed = 1
         AND wf.workspace_id = (
           SELECT workspace_id FROM workspaces WHERE path = ?
@@ -128,12 +131,13 @@ export class DatabaseHelper {
 
     for (let i = 0; i < selectedTags.length; i++) {
       const tag = selectedTags[i]
+      // 维度归属通过父级 code 判定（创世 Baseline V1）
       query += `
         AND EXISTS (
           SELECT 1 FROM file_tag_relations ftr${i}
-          INNER JOIN file_tags ft${i} ON ft${i}.id = ftr${i}.tag_id
+          INNER JOIN file_tags ft${i} ON ft${i}.code = ftr${i}.tag_code
           WHERE ftr${i}.file_fingerprint = f.file_fingerprint
-            AND ft${i}.dimension_id = ?
+            AND json_extract(ft${i}.parent_codes, '$[0]') = ?
             AND (
               LOWER(TRIM(ft${i}.name)) = LOWER(TRIM(?))
               OR LOWER(TRIM(REPLACE(ft${i}.name, '.', ''))) = LOWER(TRIM(REPLACE(?, '.', '')))
@@ -194,19 +198,22 @@ export class DatabaseHelper {
       const filesWithTags: FileInfoForAI[] = []
 
       for (const file of files) {
+        // 创世 Baseline V1：维度信息由 file_tags 标签树的父节点表达，
+        // 不再存在 file_dimensions 表与 dimension_id 列。
+        // 维度根节点（parent_codes 为空）视为维度容器；其余节点归属其首个父级所在维度。
         const dimensionTagsArray = this.db
           .prepare(
             `
           SELECT
-            fd.name as dimensionName,
-            ft.dimension_id as dimension,
+            parent.name as dimensionName,
+            COALESCE(parent.code, ft.code) as dimension,
             ft.name as tag,
-            fd.applicable_file_types as applicableFileTypes
+            parent.file_groups as applicableFileTypes
           FROM file_tag_relations ftr
-          INNER JOIN file_tags ft ON ft.id = ftr.tag_id
-          LEFT JOIN file_dimensions fd ON fd.id = ft.dimension_id
+          INNER JOIN file_tags ft ON ft.code = ftr.tag_code
+          LEFT JOIN file_tags parent ON parent.code = json_extract(ft.parent_codes, '$[0]')
           WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
-            AND ft.dimension_id IS NOT NULL
+            AND ft.parent_codes IS NOT NULL AND ft.parent_codes != '[]'
         `
           )
           .all(file.id) as any[]
@@ -216,9 +223,9 @@ export class DatabaseHelper {
             `
           SELECT ft.name
           FROM file_tag_relations ftr
-          INNER JOIN file_tags ft ON ft.id = ftr.tag_id
+          INNER JOIN file_tags ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
-            AND ft.dimension_id IS NULL
+            AND (ft.parent_codes IS NULL OR ft.parent_codes = '[]')
         `
           )
           .all(file.id) as any[]

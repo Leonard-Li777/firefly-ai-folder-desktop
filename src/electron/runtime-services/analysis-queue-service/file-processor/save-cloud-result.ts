@@ -9,9 +9,11 @@ import {
   cleanSmartName,
   sanitizeAITagValue,
   isValidAITag,
-  isPanDimension
+  isPanDimension,
+  insertTagToDb
 } from '@firefly/shared'
 import { t } from '@app/languages'
+import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { databaseService } from '../../database/database-service'
 import { magikaService } from '../../system/magika-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
@@ -268,18 +270,33 @@ export async function saveCloudResult(
       )
 
       if (data.tags && Array.isArray(data.tags)) {
-        // 预取所有正式维度名及预设标签，用于过滤和路由校验
+        // 创世 Baseline V1：维度与预设标签统一由 file_tags 标签树推导，不再查询 file_dimensions。
+        // 维度根节点（parent_codes 为空）为维度容器，其直属子节点即该维度的预设标签集。
         const allDimRows = db
-          .prepare('SELECT id, name, tags, metadata FROM file_dimensions')
+          .prepare(
+            `
+            SELECT
+              root.code AS id,
+              root.name AS name,
+              (
+                SELECT json_group_array(child.name)
+                FROM file_tags child
+                WHERE json_extract(child.parent_codes, '$[0]') = root.code
+              ) AS tags,
+              root.meta AS metadata
+            FROM file_tags root
+            WHERE root.parent_codes IS NULL OR root.parent_codes = '[]'
+          `
+          )
           .all() as Array<{
-          id: number
+          id: string
           name: string
           tags: string
           metadata?: DimensionMetadata | string | null
         }>
         const officialDimNames = new Set(allDimRows.map(d => d.name))
         const dimMap = new Map<
-          number,
+          string,
           { name: string; tags: Set<string>; metadata?: DimensionMetadata | string | null }
         >()
         for (const row of allDimRows) {
@@ -289,12 +306,14 @@ export async function saveCloudResult(
           } catch {
             tagList = []
           }
-          dimMap.set(row.id, {
+          dimMap.set(String(row.id), {
             name: row.name,
             tags: new Set(tagList.map(t => (typeof t === 'string' ? t.toLowerCase().trim() : ''))),
             metadata: row.metadata ?? undefined
           })
         }
+        // 内容标签维度作为兜底路由目标
+        const CONTENT_DIM_CODE = 'dim.28'
 
         for (const tag of data.tags) {
           if (typeof tag?.name !== 'string') continue
@@ -303,58 +322,65 @@ export async function saveCloudResult(
           const cleanName = sanitizeAITagValue(tag.name).trim()
           if (!cleanName || !isValidAITag(cleanName, officialDimNames)) continue
           try {
-            const cloudDimId = Number(tag.dimension_id)
-            let localDimId = 28
-            const dimInfo = dimMap.get(cloudDimId)
+            // 云端回传的 dimension_id 既可能是自然主键 code，也可能为数字 ID
+            const rawDim = tag.dimension_id
+            const cloudDimCode =
+              rawDim === undefined || rawDim === null || rawDim === ''
+                ? CONTENT_DIM_CODE
+                : /^\d+$/.test(String(rawDim))
+                  ? `dim.${rawDim}`
+                  : String(rawDim)
+
+            let localDimCode = CONTENT_DIM_CODE
+            const dimInfo = dimMap.get(cloudDimCode)
             const lowerCleanName = cleanName.toLowerCase()
-            const isDimPan = (id: number, info?: { name: string; metadata?: DimensionMetadata | string | null }) =>
+            const isDimPan = (info?: { name: string; metadata?: DimensionMetadata | string | null }) =>
               info
-                ? isPanDimension({ id, metadata: info.metadata }) ||
+                ? isPanDimension({ id: 0, metadata: info.metadata }) ||
                   info.name === t('作者') ||
                   info.name === t('内容标签')
                 : false
 
             if (dimInfo) {
-              if (isDimPan(cloudDimId, dimInfo)) {
-                localDimId = cloudDimId
+              if (isDimPan(dimInfo)) {
+                localDimCode = cloudDimCode
               } else if (dimInfo.tags.has(lowerCleanName)) {
-                localDimId = cloudDimId
+                localDimCode = cloudDimCode
               } else {
                 // 检查是否命中其他非泛维度的预设标签
-                let foundOtherDimId: number | null = null
-                for (const [otherId, otherInfo] of dimMap) {
-                  if (isDimPan(otherId, otherInfo)) continue
+                let foundOtherDimCode: string | null = null
+                for (const [otherCode, otherInfo] of dimMap) {
+                  if (isDimPan(otherInfo)) continue
                   if (otherInfo.tags.has(lowerCleanName)) {
-                    foundOtherDimId = otherId
+                    foundOtherDimCode = otherCode
                     break
                   }
                 }
-                if (foundOtherDimId) {
-                  localDimId = foundOtherDimId
-                } else {
-                  // 未命中任何非泛维度预设标签，一律路由至 28（内容标签）
-                  localDimId = 28
-                }
+                // 未命中任何非泛维度预设标签，一律路由至内容标签维度
+                localDimCode = foundOtherDimCode ?? CONTENT_DIM_CODE
               }
-            } else {
-              localDimId = 28
             }
 
-            let tagRow = db
-              .prepare('SELECT id FROM file_tags WHERE name = ? AND dimension_id = ?')
-              .get(cleanName, localDimId) as { id: number } | undefined
-            if (!tagRow) {
+            try {
+              insertTagToDb(db, fileFingerprint, cleanName, localDimCode)
+            } catch {
+              // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
+              const tagCode = DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
+                lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
+              })
               db.prepare(
-                `INSERT INTO file_tags (name, dimension_id, sync_status, created_at) VALUES (?, ?, 0, ?)`
-              ).run(cleanName, localDimId, new Date().toISOString())
-              tagRow = db
-                .prepare('SELECT id FROM file_tags WHERE name = ? AND dimension_id = ?')
-                .get(cleanName, localDimId) as { id: number } | undefined
-            }
-            if (tagRow) {
+                `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, materialized_paths, depth, file_groups, source, meta)
+                 VALUES (?, ?, ?, '[]', 2, '[]', 'expanded', ?)`
+              ).run(
+                tagCode,
+                cleanName,
+                JSON.stringify([localDimCode]),
+                JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 })
+              )
               db.prepare(
-                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_id, sync_status) VALUES (?, ?, 0)`
-              ).run(fileFingerprint, tagRow.id)
+                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, confidence, source, meta)
+                 VALUES (?, ?, 1.0, 'rule', ?)`
+              ).run(fileFingerprint, tagCode, JSON.stringify({ syncStatus: 0 }))
             }
           } catch (tagError) {
             logger.warn(LogCategory.FILE_ANALYSIS, '[云端结果] 写入文件标签关系失败:', tagError)

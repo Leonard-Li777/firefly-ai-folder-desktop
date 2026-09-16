@@ -1,7 +1,8 @@
-import { AnalysisQueueItem, LanguageCode, MagikaFileCategory as MagikaCategory } from '@firefly/types'
+import { AnalysisQueueItem, MagikaFileCategory as MagikaCategory } from '@firefly/types'
 import { LogCategory, logger, PerformanceTimer } from '@firefly/shared'
 import { t } from '@app/languages'
-import { DimensionAnalyzer, FileDimensionService, type FileInfoInput } from '@firefly/core-engine'
+import { DimensionAnalyzer, type FileInfoInput } from '@firefly/core-engine'
+import { ConfigDbManager } from '../../config/config-db-manager'
 import { IErrorRecoveryConfig } from '../types'
 
 /**
@@ -17,7 +18,6 @@ export async function processQuickNameAnalysis(
   timer: PerformanceTimer,
   deps: {
     dimensionAnalyzer: DimensionAnalyzer | undefined
-    fileDimensionService: FileDimensionService | undefined
     errorRecoveryConfig: IErrorRecoveryConfig
   },
   options: {
@@ -35,21 +35,18 @@ export async function processQuickNameAnalysis(
     progress: number,
     error?: string,
     extra?: any
-  ) => void,
-  processNewDimensionSuggestions: (suggestions: any[], fileFingerprint: string) => Promise<void>
+  ) => void
 ): Promise<any> {
-  const { language, directoryContext, magikaCategory, isSpeedy } = options
+  const { directoryContext, magikaCategory, isSpeedy } = options
 
   // ========== 快速命名阶段：跳过 Stage 3 质量评分，直接执行 Stage 4 智能命名与维度分析 ==========
   updateItemStatus(item.id, 'analyzing', 25, undefined, { analysisStage: 4 })
 
-  if (!deps.dimensionAnalyzer || !deps.fileDimensionService) {
+  if (!deps.dimensionAnalyzer) {
     throw new Error(t('AI 服务未就绪'))
   }
 
-  const existingDimensions = await deps.fileDimensionService.getDimensionsByLanguage(
-    language as LanguageCode
-  )
+  const existingDimensions = ConfigDbManager.getInstance().getFileDimensions()
 
   const filePath = fileInfo.path
   const fileType = fileInfo.type
@@ -89,9 +86,6 @@ export async function processQuickNameAnalysis(
       processResult.metadata,
       magikaCategory
     )
-    if (dimResult.newDimensions) {
-      await processNewDimensionSuggestions(dimResult.newDimensions, fileFingerprint)
-    }
   }
   timer.end('dimensionAnalysis')
 

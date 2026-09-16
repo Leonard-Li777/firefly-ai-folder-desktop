@@ -9,6 +9,7 @@ interface ExportSelectorProps {
   computed_limits: any
   handleExportVdir: () => void
   handleExportReal: () => void
+  handleOpenHac: () => void
 }
 
 export const ExportSelector: React.FC<ExportSelectorProps> = React.memo(
@@ -17,7 +18,8 @@ export const ExportSelector: React.FC<ExportSelectorProps> = React.memo(
     isVdirActive,
     computed_limits,
     handleExportVdir,
-    handleExportReal
+    handleExportReal,
+    handleOpenHac
   }) => {
     return (
       <div className="flex-1 h-full w-full flex flex-col overflow-auto">
@@ -121,6 +123,46 @@ export const ExportSelector: React.FC<ExportSelectorProps> = React.memo(
                 <MaterialIcon
                   icon="arrow_forward"
                   className="ml-auto text-xl text-muted-foreground group-hover:text-orange-500 group-hover:translate-x-1.5 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* HAC 智能聚类整理卡片 (跨两列全宽) */}
+            <div
+              onClick={handleOpenHac}
+              className="group relative flex flex-row items-center p-6 rounded-3xl border-2 border-border/50 bg-background hover:border-violet-500/50 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300 cursor-pointer overflow-hidden md:col-span-2"
+            >
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl group-hover:bg-violet-500/10 transition-colors" />
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold mb-5 flex items-center gap-2">
+                  <MaterialIcon icon="auto_awesome" className="text-violet-500 text-2xl" />
+                  {t('智能聚类整理')}
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-4 text-left">
+                  {t('基于端侧 384d 密集向量自动聚类文件主题，生成目录整理方案')}
+                </p>
+                <ul className="text-muted-foreground text-sm leading-relaxed flex-1 space-y-1.5 text-left">
+                  <li className="flex items-start gap-2">
+                    <MaterialIcon icon="bolt" className="text-violet-500 text-base mt-0.5 shrink-0" />
+                    <span>{t('端侧毫秒级聚类，零 Token 消耗')}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <MaterialIcon
+                      icon="check_circle"
+                      className="text-violet-500 text-base mt-0.5 shrink-0"
+                    />
+                    <span>{t('预览确认后一键保存为虚拟目录')}</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <MaterialIcon icon="shield" className="text-violet-500 text-base mt-0.5 shrink-0" />
+                    <span>{t('不改变真实目录文件结构')}</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex items-center pt-6 border-t border-border/50 ml-8 shrink-0">
+                <MaterialIcon
+                  icon="arrow_forward"
+                  className="text-2xl text-muted-foreground group-hover:text-violet-500 group-hover:translate-x-1.5 transition-all"
                 />
               </div>
             </div>

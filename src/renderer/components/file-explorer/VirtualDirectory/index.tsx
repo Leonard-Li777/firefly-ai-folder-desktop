@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import { getFileNameFromPath } from '@firefly/shared'
 import { useVirtualDirectory } from './hooks/useVirtualDirectory'
 import { DimensionTreeSidebar } from './components/DimensionTreeSidebar'
@@ -14,6 +14,7 @@ import {
   DirectoryManagementModalsRef
 } from './components/DirectoryManagementModals'
 import { OrganizeModals, OrganizeModalsRef } from './components/OrganizeModals'
+import { HacOrganizeDialog } from '../../organize/HacOrganizeDialog'
 import { ExportSelector } from './components/ExportSelector'
 import { VirtualDirectoryFileList } from './components/VirtualDirectoryFileList'
 import { DimensionFileListPanel } from '../DimensionFileListPanel'
@@ -109,6 +110,7 @@ export const VirtualDirectory: React.FC = () => {
 
   const dirModalsRef = useRef<DirectoryManagementModalsRef>(null)
   const organizeModalsRef = useRef<OrganizeModalsRef>(null)
+  const [showHacDialog, setShowHacDialog] = useState(false)
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-background">
@@ -300,6 +302,7 @@ export const VirtualDirectory: React.FC = () => {
                       computed_limits={computed_limits}
                       handleExportVdir={() => organizeModalsRef.current?.triggerExportVdir()}
                       handleExportReal={() => organizeModalsRef.current?.triggerExportReal()}
+                      handleOpenHac={() => setShowHacDialog(true)}
                     />
                   ) : (
                     <SplitPane
@@ -467,6 +470,16 @@ export const VirtualDirectory: React.FC = () => {
         selectedTags={selectedTags}
         previewTree={previewTree}
         exportPreviewOptions={exportPreviewOptions}
+      />
+
+      <HacOrganizeDialog
+        open={showHacDialog}
+        onOpenChange={setShowHacDialog}
+        workspaceId={currentWorkspaceDirectory?.id}
+        onSaved={async () => {
+          await loadVDirs()
+          await loadTree()
+        }}
       />
     </div>
   )

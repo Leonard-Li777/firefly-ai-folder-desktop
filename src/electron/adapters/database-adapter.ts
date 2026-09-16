@@ -3,7 +3,7 @@
  * 将数据库服务 API 适配到核心引擎
  */
 
-import { IDatabaseAdapter } from '@firefly/core-engine'
+import { IDatabaseAdapter, DeterministicCodeGenerator } from '@firefly/core-engine'
 import { databaseService } from '../runtime-services/database'
 import type { LanguageCode } from '@firefly/types'
 import type Database from 'better-sqlite3'
@@ -145,117 +145,174 @@ export class DatabaseAdapter implements IDatabaseAdapter {
 
     /**
      * 维度操作
+     *
+     * 创世 Baseline V1：维度由 file_tags 标签树的根节点（parent_codes 为空）表达，
+     * 其直属子节点即该维度的标签集。此处对外保持「维度」语义的读写接口。
      */
     this.dimensions = {
       getAll: async (): Promise<any[]> => {
         const db = this.getDatabase()
-        const stmt = db.prepare('SELECT * FROM file_dimensions ORDER BY level ASC')
-        return stmt.all()
+        return db
+          .prepare(
+            `
+            SELECT
+              root.code AS id,
+              root.name AS name,
+              root.depth AS level,
+              (
+                SELECT COALESCE(json_group_array(child.name), '[]')
+                FROM file_tags child
+                WHERE json_extract(child.parent_codes, '$[0]') = root.code
+              ) AS tags,
+              root.description AS description,
+              root.meta AS metadata
+            FROM file_tags root
+            WHERE root.parent_codes IS NULL OR root.parent_codes = '[]'
+            ORDER BY root.depth ASC, root.code ASC
+          `
+          )
+          .all()
       },
 
       create: async (dimension: any): Promise<void> => {
         const db = this.getDatabase()
-        const stmt = db.prepare(`
-          INSERT INTO file_dimensions (
-            id, level, tags, trigger_conditions,
-            is_ai_generated, description, applicable_file_types, context_hints, metadata
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `)
-        stmt.run(
-          dimension.id,
-          dimension.level,
-          JSON.stringify(dimension.tags || []),
-          JSON.stringify(dimension.triggerConditions || []),
-          dimension.isAIGenerated ? 1 : 0,
-          dimension.description || null,
+        const code = dimension.id || dimension.code
+        if (!code) return
+        db.prepare(
+          `
+          INSERT OR IGNORE INTO file_tags (
+            code, name, parent_codes, materialized_paths, depth, file_groups, source, meta, description
+          ) VALUES (?, ?, '[]', ?, ?, ?, ?, ?, ?)
+        `
+        ).run(
+          code,
+          dimension.name || code,
+          JSON.stringify([{ code_path: `/${code}`, name_path: `/${dimension.name || code}` }]),
+          dimension.level ?? 0,
           JSON.stringify(dimension.applicableFileTypes || []),
-          JSON.stringify(dimension.contextHints || []),
-          dimension.metadata ? JSON.stringify(dimension.metadata) : null
+          dimension.isAIGenerated ? 'expanded' : 'builtin',
+          JSON.stringify({
+            isDimension: true,
+            isLeaf: false,
+            isSystem: !dimension.isAIGenerated,
+            isMultiSelect: true,
+            ...(dimension.metadata || {})
+          }),
+          dimension.description || null
         )
       },
 
       update: async (dimensionId: string, data: Partial<any>): Promise<void> => {
         const db = this.getDatabase()
-        const fields = Object.keys(data)
-        const values = Object.values(data).map(v =>
-          typeof v === 'object' && v !== null ? JSON.stringify(v) : v
+        // 仅允许更新标签树真实存在的列，避免动态 SQL 注入不存在的列名
+        const setClauses: string[] = []
+        const values: any[] = []
+        if (data.name !== undefined) {
+          setClauses.push('name = ?')
+          values.push(data.name)
+        }
+        if (data.description !== undefined) {
+          setClauses.push('description = ?')
+          values.push(data.description)
+        }
+        if (data.level !== undefined) {
+          setClauses.push('depth = ?')
+          values.push(data.level)
+        }
+        if (data.metadata !== undefined) {
+          setClauses.push('meta = ?')
+          values.push(typeof data.metadata === 'object' ? JSON.stringify(data.metadata) : data.metadata)
+        }
+        if (data.applicableFileTypes !== undefined) {
+          setClauses.push('file_groups = ?')
+          values.push(JSON.stringify(data.applicableFileTypes))
+        }
+        if (setClauses.length === 0) return
+        db.prepare(`UPDATE file_tags SET ${setClauses.join(', ')} WHERE code = ?`).run(
+          ...values,
+          dimensionId
         )
-        if (fields.length === 0) return
-        const setClause = fields.map(field => `${field} = ?`).join(', ')
-        const stmt = db.prepare(
-          `UPDATE file_dimensions SET ${setClause}, sync_status = 0 WHERE id = ?`
-        )
-        stmt.run(...values, dimensionId)
       },
 
       getById: async (dimensionId: string): Promise<any | null> => {
         const db = this.getDatabase()
-        const stmt = db.prepare('SELECT * FROM file_dimensions WHERE id = ?')
-        return stmt.get(dimensionId) || null
+        const row = db
+          .prepare('SELECT * FROM file_tags WHERE code = ?')
+          .get(dimensionId) as any
+        return row || null
       }
     }
 
     /**
      * 维度扩展操作
+     *
+     * 创世 Baseline V1：扩展标签直接以 `_ext.*` 自然主键写入 file_tags 标签树，
+     * 不再存在 dimension_expansions 提案表与审批流转。
      */
     this.dimensionExpansions = {
       create: async (expansion: any): Promise<void> => {
         const db = this.getDatabase()
-        const stmt = db.prepare(`
-          INSERT INTO dimension_expansions (
-            id, name, level, tags, trigger_conditions, description
-          ) VALUES (?, ?, ?, ?, ?, ?)
-        `)
-        stmt.run(
-          expansion.id,
-          expansion.name,
-          expansion.level || 2,
-          JSON.stringify(expansion.tags || []),
-          JSON.stringify(expansion.triggerConditions || []),
+        const name = expansion.name
+        if (!name) return
+        const code = DeterministicCodeGenerator.generateUnique(name, 'zh-CN', {
+          lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
+        })
+        const parentCode = expansion.parentCode || expansion.parent_codes?.[0] || 'dim.content'
+        db.prepare(
+          `
+          INSERT OR IGNORE INTO file_tags (
+            code, name, parent_codes, materialized_paths, depth, file_groups, source, meta, description
+          ) VALUES (?, ?, ?, '[]', 2, '[]', 'expanded', ?, ?)
+        `
+        ).run(
+          code,
+          name,
+          JSON.stringify([parentCode]),
+          JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 }),
           expansion.description || null
         )
       },
 
       getById: async (expansionId: string): Promise<any | null> => {
         const db = this.getDatabase()
-        const stmt = db.prepare('SELECT * FROM dimension_expansions WHERE id = ?')
-        return stmt.get(expansionId) || null
+        const row = db.prepare('SELECT * FROM file_tags WHERE code = ?').get(expansionId) as any
+        return row || null
       },
 
       approve: async (expansionId: string): Promise<void> => {
+        // 扩展标签创建即生效，审批流转已随 dimension_expansions 表一并下线。
+        // 此处仅将同步状态标记为待推送，保持调用方契约兼容。
         const db = this.getDatabase()
-        const expansion = db
-          .prepare('SELECT * FROM dimension_expansions WHERE id = ?')
-          .get(expansionId) as any
-        if (expansion) {
-          db.transaction(() => {
-            db.prepare(
-              `
-              INSERT OR REPLACE INTO file_dimensions (
-                id, level, tags, trigger_conditions, is_ai_generated, description, sync_status
-              ) VALUES (?, ?, ?, ?, 1, ?, 0)
-            `
-            ).run(
-              expansion.id,
-              expansion.level,
-              expansion.tags,
-              expansion.trigger_conditions,
-              expansion.description
-            )
-            db.prepare('DELETE FROM dimension_expansions WHERE id = ?').run(expansionId)
-          })()
-        }
+        db.prepare(
+          `UPDATE file_tags
+           SET meta = json_set(COALESCE(NULLIF(meta, ''), '{}'), '$.syncStatus', 0)
+           WHERE code = ?`
+        ).run(expansionId)
       },
 
       reject: async (expansionId: string): Promise<void> => {
+        // 创世 Baseline V1：扩展标签直接写入标签树，拒绝即物理删除该节点及其关联。
         const db = this.getDatabase()
-        db.prepare('DELETE FROM dimension_expansions WHERE id = ?').run(expansionId)
+        db.transaction(() => {
+          db.prepare('DELETE FROM file_tag_relations WHERE tag_code = ?').run(expansionId)
+          db.prepare(`DELETE FROM file_tags WHERE code = ? AND source = 'expanded'`).run(expansionId)
+        })()
       },
 
       getPending: async (): Promise<any[]> => {
+        // 待同步的扩展标签（meta.syncStatus = 0）
         const db = this.getDatabase()
-        const stmt = db.prepare(`SELECT * FROM dimension_expansions`)
-        return stmt.all()
+        return db
+          .prepare(
+            `
+            SELECT code AS id, name, parent_codes, depth, description, meta
+            FROM file_tags
+            WHERE source = 'expanded'
+              AND COALESCE(json_extract(NULLIF(meta, ''), '$.syncStatus'), 0) = 0
+            ORDER BY depth ASC, code ASC
+          `
+          )
+          .all()
       }
     }
   }
