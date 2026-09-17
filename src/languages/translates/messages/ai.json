@@ -9,7 +9,7 @@
     "de-DE": "AI-Modell-Dienst nicht verfügbar",
     "fr-FR": "Le service de modèle IA est indisponible",
     "ko-KR": "AI 모델 서비스를 사용할 수 없음",
-    "$files": ["src/renderer/components/ai/AIClassificationHandler.tsx(1526-1539)"],
+    "$files": ["src/renderer/components/ai/AIClassificationHandler.tsx(1583-1596)"],
     "$id": 3826
   },
   "AI服务初始化失败: {message}": {
@@ -22,7 +22,7 @@
     "de-DE": "AI-Dienst-Initialisierung fehlgeschlagen: {message}",
     "fr-FR": "Échec de l'initialisation du service IA : {message}",
     "ko-KR": "AI 서비스 초기화 실패: {message}",
-    "$files": ["src/renderer/components/ai/AIClassificationHandler.tsx(2057-2081)"],
+    "$files": ["src/renderer/components/ai/AIClassificationHandler.tsx(2129-2153)"],
     "$id": 3827
   },
   "未知错误": {
@@ -36,8 +36,8 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/renderer/components/ai/AIClassificationHandler.tsx(2902-2910)",
-      "src/renderer/components/ai/AIClassificationHandler.tsx(5799-5807)"
+      "src/renderer/components/ai/AIClassificationHandler.tsx(3004-3012)",
+      "src/renderer/components/ai/AIClassificationHandler.tsx(5991-5999)"
     ],
     "$id": 3828
   },
@@ -51,7 +51,7 @@
     "de-DE": "AI-Klassifizierung fehlgeschlagen: {error}",
     "fr-FR": "Échec de la classification IA : {error}",
     "ko-KR": "AI 분류 실패: {error}",
-    "$files": ["src/renderer/components/ai/AIClassificationHandler.tsx(5716-5735)"],
+    "$files": ["src/renderer/components/ai/AIClassificationHandler.tsx(5907-5926)"],
     "$id": 3829
   },
   "未知": {
@@ -65,10 +65,10 @@
     "fr-FR": "Inconnu",
     "ko-KR": "알 수 없음",
     "$files": [
-      "src/renderer/components/ai/AIClassificationHandler.tsx(6019-6025)",
-      "src/renderer/components/ai/AIClassificationHandler.tsx(7116-7122)",
-      "src/renderer/components/ai/AIClassificationHandler.tsx(7516-7522)",
-      "src/renderer/components/ai/AIClassificationHandler.tsx(7946-7952)"
+      "src/renderer/components/ai/AIClassificationHandler.tsx(6220-6226)",
+      "src/renderer/components/ai/AIClassificationHandler.tsx(7347-7353)",
+      "src/renderer/components/ai/AIClassificationHandler.tsx(7759-7765)",
+      "src/renderer/components/ai/AIClassificationHandler.tsx(8204-8210)"
     ],
     "$id": 3830
   },
@@ -83,9 +83,9 @@
     "fr-FR": "Non classifié",
     "ko-KR": "분류되지 않음",
     "$files": [
-      "src/renderer/components/ai/AIClassificationHandler.tsx(7185-7192)",
-      "src/renderer/components/ai/AIClassificationHandler.tsx(7565-7572)",
-      "src/renderer/components/ai/AIClassificationHandler.tsx(8375-8382)"
+      "src/renderer/components/ai/AIClassificationHandler.tsx(7418-7425)",
+      "src/renderer/components/ai/AIClassificationHandler.tsx(7810-7817)",
+      "src/renderer/components/ai/AIClassificationHandler.tsx(8643-8650)"
     ],
     "$id": 3831
   },
@@ -100,8 +100,8 @@
     "fr-FR": "Fichier : {filename}",
     "ko-KR": "파일: {filename}",
     "$files": [
-      "src/renderer/components/ai/AIClassificationHandler.tsx(7224-7242)",
-      "src/renderer/components/ai/AIClassificationHandler.tsx(8516-8534)"
+      "src/renderer/components/ai/AIClassificationHandler.tsx(7458-7476)",
+      "src/renderer/components/ai/AIClassificationHandler.tsx(8788-8806)"
     ],
     "$id": 3832
   },
@@ -115,7 +115,7 @@
     "de-DE": "Diese Datei kann nicht automatisch klassifiziert werden",
     "fr-FR": "Impossible de classer automatiquement ce fichier",
     "ko-KR": "이 파일을 자동으로 분류할 수 없음",
-    "$files": ["src/renderer/components/ai/AIClassificationHandler.tsx(7593-7606)"],
+    "$files": ["src/renderer/components/ai/AIClassificationHandler.tsx(7839-7852)"],
     "$id": 3833
   },
   "切换引擎": {

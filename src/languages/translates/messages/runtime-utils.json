@@ -9,7 +9,7 @@
     "de-DE": "Normale Datei  ",
     "fr-FR": "Fichier ordinaire",
     "ko-KR": "일반 파일",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(942-950)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(969-977)"],
     "$id": 5533
   },
   "最小单元识别已关闭": {
@@ -22,7 +22,7 @@
     "de-DE": "Die Erkennung der Mindesteinheit ist deaktiviert",
     "fr-FR": "La reconnaissance de l'unité minimale est désactivée",
     "ko-KR": "최소 단위 인식이 꺼졌습니다",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(1264-1277)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(1302-1315)"],
     "$id": 4740
   },
   "存在标记文件": {
@@ -35,7 +35,7 @@
     "de-DE": "Markierungsdatei vorhanden  ",
     "fr-FR": "Fichier de marqueur présent",
     "ko-KR": "마킹 파일 존재",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(1590-1600)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(1639-1649)"],
     "$id": 5534
   },
   "空目录": {
@@ -48,7 +48,7 @@
     "de-DE": "Leeres Verzeichnis  ",
     "fr-FR": "Répertoire vide",
     "ko-KR": "빈 디렉터리",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(1870-1877)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(1925-1932)"],
     "$id": 5535
   },
   "小文件集(<=3)且无子目录": {
@@ -61,7 +61,7 @@
     "de-DE": "Kleine Dateisammlung (<=3) ohne Unterverzeichnisse  ",
     "fr-FR": "Petit ensemble de fichiers (≤3) sans sous-répertoires",
     "ko-KR": "소규모 파일 집합(<=3)이며 하위 디렉터리 없음",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(2067-2085)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(2129-2147)"],
     "$id": 5536
   },
   "纯图片相册(<=50)": {
@@ -74,7 +74,7 @@
     "de-DE": "Reines Bilderalbum (<=50)  ",
     "fr-FR": "Album photo uniquement composé d'images (≤50)",
     "ko-KR": "순수 이미지 앨범(<=50)",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(2665-2680)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(2749-2764)"],
     "$id": 5537
   },
   "纯视频集合(<=50)": {
@@ -87,7 +87,7 @@
     "de-DE": "Reine Videosammlung (<=50)  ",
     "fr-FR": "Collection vidéo uniquement composée de vidéos (≤50)",
     "ko-KR": "순수 동영상 컬렉션(<=50)",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(2854-2869)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(2945-2960)"],
     "$id": 5538
   },
   "纯文档集合(<=20)": {
@@ -100,7 +100,7 @@
     "de-DE": "Reine Dokumentensammlung (<=20)  ",
     "fr-FR": "Collection documentaire uniquement composée de documents (≤20)",
     "ko-KR": "순수 문서 컬렉션(<=20)",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(3058-3073)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(3156-3171)"],
     "$id": 5539
   },
   "包含子目录或类型混合": {
@@ -113,7 +113,7 @@
     "de-DE": "Enthält Unterverzeichnisse oder gemischte Dateitypen",
     "fr-FR": "Contient des sous-répertoires ou des types mixtes",
     "ko-KR": "하위 디렉터리 포함 또는 유형 혼합",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(3235-3249)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(3341-3355)"],
     "$id": 5540
   },
   "检查失败，按文件处理": {
@@ -126,7 +126,7 @@
     "de-DE": "Prüfung fehlgeschlagen, dateibasiert verarbeiten",
     "fr-FR": "Échec de la vérification, traiter par fichier",
     "ko-KR": "검사 실패, 파일별로 처리",
-    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(3391-3405)"],
+    "$files": ["src/electron/runtime-services/utils/minimum-unit-service.ts(3504-3518)"],
     "$id": 5541
   }
 }

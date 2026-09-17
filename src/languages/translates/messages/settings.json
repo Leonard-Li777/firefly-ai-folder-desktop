@@ -9,7 +9,7 @@
     "de-DE": "Über Firefly AI Folder",
     "fr-FR": "À propos du Firefly AI Folder",
     "ko-KR": "Firefly AI Folder 정보",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(968-981)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(999-1012)"],
     "$id": 10542
   },
   "萤核智能文件夹": {
@@ -22,7 +22,7 @@
     "de-DE": "Firefly AI Folder",
     "fr-FR": "Firefly AI Folder",
     "ko-KR": "Firefly AI Folder",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(1175-1186)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(1212-1223)"],
     "$id": 10543
   },
   "版本 {version}": {
@@ -35,7 +35,7 @@
     "de-DE": "Version {version}",
     "fr-FR": "Version {version}",
     "ko-KR": "버전 {version}",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(1264-1280)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(1303-1319)"],
     "$id": 10544
   },
   "引擎": {
@@ -48,7 +48,7 @@
     "de-DE": "Motor",
     "fr-FR": "Moteur",
     "ko-KR": "엔진",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(1435-1441)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(1477-1483)"],
     "$id": 11240
   },
   "本地 AI 优先的智能虚拟文件管理系统": {
@@ -61,7 +61,7 @@
     "de-DE": "Lokales AI-first intelligentes virtuelles Dateiverwaltungssystem",
     "fr-FR": "Premier système de gestion de fichiers virtuels intelligent local basé sur l'IA",
     "ko-KR": "로컬 AI 우선 지능형 가상 파일 관리 시스템",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(1554-1577)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(1599-1622)"],
     "$id": 10545
   },
   "GitHub": {
@@ -74,7 +74,7 @@
     "de-DE": "GitHub",
     "fr-FR": "GitHub",
     "ko-KR": "깃허브",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2005-2015)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2064-2074)"],
     "$id": 10546
   },
   "官网": {
@@ -87,7 +87,7 @@
     "de-DE": "Offizielle Website",
     "fr-FR": "Site officiel",
     "ko-KR": "공식 홈페이지",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2284-2290)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2351-2357)"],
     "$id": 10547
   },
   "萤核智能文件夹由 萤核科技 开发并保留所有权利。": {
@@ -100,7 +100,7 @@
     "de-DE": "Firefly AI Folder wurde von Firefly Technology entwickelt und alle Rechte vorbehalten.",
     "fr-FR": "Firefly AI Folder est développé par Firefly Technology et tous droits réservés.",
     "ko-KR": "Firefly AI Folder는 Firefly Technology에서 개발했으며 모든 권리는 보유됩니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2467-2495)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2540-2568)"],
     "$id": 10548
   },
   "Copyright © 2026 萤核科技. All rights reserved.": {
@@ -113,7 +113,7 @@
     "de-DE": "Copyright © 2026 Firefly Technology. Alle Rechte vorbehalten.",
     "fr-FR": "Copyright © 2026 Technologie Firefly. Tous droits réservés.",
     "ko-KR": "저작권 © 2026 잉허 기술. 모든 권리 보유.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2518-2565)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2592-2639)"],
     "$id": 10549
   },
   "本软件桌面端核心业务逻辑基于 CC BY-NC-SA 4.0 许可证开源发布。": {
@@ -126,7 +126,7 @@
     "de-DE": "Die Kerngeschäftslogik der Desktop-Version dieser Software wird als Open Source auf Basis der CC BY-NC-SA 4.0-Lizenz veröffentlicht.",
     "fr-FR": "La logique métier de base de la version de bureau de ce logiciel est publiée en open source basée sur la licence CC BY-NC-SA 4.0.",
     "ko-KR": "이 소프트웨어 데스크톱 버전의 핵심 비즈니스 로직은 CC BY-NC-SA 4.0 라이선스를 기반으로 하는 오픈 소스로 출시됩니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2588-2631)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2663-2706)"],
     "$id": 10550
   },
   "用户隐私保护": {
@@ -139,7 +139,7 @@
     "de-DE": "Schutz der Privatsphäre der Benutzer",
     "fr-FR": "Protection de la vie privée des utilisateurs",
     "ko-KR": "사용자 개인정보 보호",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2792-2802)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2872-2882)"],
     "$id": 10551
   },
   "所有 AI 分析在本地执行，私有目录不上传任何分析信息": {
@@ -152,7 +152,7 @@
     "de-DE": "Die gesamte KI-Analyse wird lokal durchgeführt und es werden keine Analyseinformationen in das private Verzeichnis hochgeladen.",
     "fr-FR": "Toutes les analyses d'IA sont effectuées localement et aucune information d'analyse n'est téléchargée dans le répertoire privé.",
     "ko-KR": "모든 AI 분석은 로컬에서 수행되며 분석 정보는 개인 디렉터리에 업로드되지 않습니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2920-2951)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3002-3033)"],
     "$id": 10552
   },
   "应用仅收集必要的脱敏错误日志，以修复bug改进用户体验": {
@@ -165,7 +165,7 @@
     "de-DE": "Die Anwendung sammelt nur die notwendigen desensibilisierten Fehlerprotokolle, um Fehler zu beheben und die Benutzererfahrung zu verbessern.",
     "fr-FR": "L'application collecte uniquement les journaux d'erreurs désensibilisés nécessaires pour corriger les bugs et améliorer l'expérience utilisateur.",
     "ko-KR": "애플리케이션은 버그를 수정하고 사용자 경험을 개선하기 위해 필요한 민감도 감소 오류 로그만 수집합니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2978-3009)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3061-3092)"],
     "$id": 7810
   },
   "企业版支持完全离线运行，保证最高级别的隐私保护": {
@@ -178,7 +178,7 @@
     "de-DE": "Die Enterprise-Version unterstützt den vollständigen Offline-Betrieb und gewährleistet ein Höchstmaß an Datenschutz.",
     "fr-FR": "La version entreprise prend en charge un fonctionnement hors ligne complet et garantit le plus haut niveau de protection de la vie privée.",
     "ko-KR": "엔터프라이즈 버전은 완전한 오프라인 작업을 지원하고 최고 수준의 개인 정보 보호를 보장합니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3036-3063)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3120-3147)"],
     "$id": 10554
   },
   "不会将任何数据共享给第三方": {
@@ -191,7 +191,7 @@
     "de-DE": "Es werden keine Daten an Dritte weitergegeben",
     "fr-FR": "Aucune donnée ne sera partagée avec des tiers",
     "ko-KR": "어떠한 데이터도 제3자와 공유되지 않습니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3090-3107)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3175-3192)"],
     "$id": 10555
   },
   "核心业务逻辑开源可审查": {
@@ -204,7 +204,7 @@
     "de-DE": "Die Kerngeschäftslogik ist Open Source und überprüfbar",
     "fr-FR": "La logique métier de base est open source et peut être révisée",
     "ko-KR": "핵심 비즈니스 로직은 오픈 소스이며 검토 가능",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3134-3149)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3220-3235)"],
     "$id": 10556
   },
   "开源第三方致谢 (Open Source Notices)": {
@@ -217,7 +217,7 @@
     "de-DE": "Hinweise zu Open Source",
     "fr-FR": "Avis sur les sources ouvertes",
     "ko-KR": "오픈 소스 공지",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3345-3378)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3438-3471)"],
     "$id": 10557
   },
   "本软件在开发过程中使用并集成了以下第三方开源组件。对这些项目的开发者和社区表示由衷的感谢：": {
@@ -230,7 +230,7 @@
     "de-DE": "Diese Software verwendet und integriert während des Entwicklungsprozesses die folgenden Open-Source-Komponenten von Drittanbietern. Mein aufrichtiger Dank geht an die Entwickler und Communities dieser Projekte:",
     "fr-FR": "Ce logiciel utilise et intègre les composants open source tiers suivants pendant le processus de développement. Mes sincères remerciements aux développeurs et communautés de ces projets :",
     "ko-KR": "이 소프트웨어는 개발 프로세스 중에 다음과 같은 타사 오픈 소스 구성 요소를 사용하고 통합합니다. 이 프로젝트의 개발자와 커뮤니티에 진심으로 감사드립니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3477-3543)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3573-3640)"],
     "$id": 10558
   },
   "Flyfish Viewer": {
@@ -243,7 +243,7 @@
     "de-DE": "Flyfish-Betrachter",
     "fr-FR": "Vueur Flyfish",
     "ko-KR": "플라이피시 뷰어",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3736-3754)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3838-3856)"],
     "$id": 10559
   },
   "项目地址": {
@@ -257,9 +257,9 @@
     "fr-FR": "Adresse du projet",
     "ko-KR": "프로젝트 주소",
     "$files": [
-      "src/renderer/components/settings/about-dialog.tsx(3862-3870)",
-      "src/renderer/components/settings/about-dialog.tsx(4819-4827)",
-      "src/renderer/components/settings/about-dialog.tsx(5766-5774)"
+      "src/renderer/components/settings/about-dialog.tsx(3967-3975)",
+      "src/renderer/components/settings/about-dialog.tsx(4947-4955)",
+      "src/renderer/components/settings/about-dialog.tsx(5917-5925)"
     ],
     "$id": 10560
   },
@@ -274,9 +274,9 @@
     "fr-FR": "Illustrer",
     "ko-KR": "설명하다",
     "$files": [
-      "src/renderer/components/settings/about-dialog.tsx(4494-4500)",
-      "src/renderer/components/settings/about-dialog.tsx(5436-5442)",
-      "src/renderer/components/settings/about-dialog.tsx(6398-6404)"
+      "src/renderer/components/settings/about-dialog.tsx(4614-4620)",
+      "src/renderer/components/settings/about-dialog.tsx(5579-5585)",
+      "src/renderer/components/settings/about-dialog.tsx(6564-6570)"
     ],
     "$id": 10561
   },
@@ -290,7 +290,7 @@
     "de-DE": "Erweitertes Rendern der Dateivorschau",
     "fr-FR": "Rendu avancé d’aperçu de fichier",
     "ko-KR": "고급 파일 미리보기 렌더링",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(4505-4517)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4625-4637)"],
     "$id": 10562
   },
   "高性能本地 AI 推理引擎": {
@@ -303,7 +303,7 @@
     "de-DE": "Leistungsstarke lokale KI-Inferenz-Engine",
     "fr-FR": "Moteur d'inférence d'IA locale hautes performances",
     "ko-KR": "고성능 로컬 AI 추론 엔진",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(5447-5464)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(5590-5607)"],
     "$id": 10563
   },
   "轻量级系统硬件信息采集工具": {
@@ -316,7 +316,7 @@
     "de-DE": "Leichtes Tool zur Erfassung von Systemhardwareinformationen",
     "fr-FR": "Outil léger de collecte d'informations sur le matériel du système",
     "ko-KR": "경량 시스템 하드웨어 정보 수집 도구",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(6409-6426)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(6575-6592)"],
     "$id": 7735
   },
   "关闭": {
@@ -329,7 +329,7 @@
     "de-DE": "Schließung",
     "fr-FR": "Fermeture",
     "ko-KR": "폐쇄",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(6657-6663)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(6833-6839)"],
     "$id": 10566
   },
   "已从云端切换回本地模式": {
@@ -342,7 +342,7 @@
     "de-DE": "Von der Cloud zurück in den lokalen Modus gewechselt",
     "fr-FR": "Revenu en mode local depuis le cloud",
     "ko-KR": "클라우드에서 로컬 모드로 다시 전환됨",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(7019-7034)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(7209-7224)"],
     "$id": 7811
   },
   "已切换至选定引擎包": {
@@ -355,7 +355,7 @@
     "de-DE": "Wechseln zum ausgewählten Engine-Paket",
     "fr-FR": "Commuté vers le pack d'engine sélectionné",
     "ko-KR": "선택한 엔진 패키지로 전환되었습니다",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(7142-7155)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(7336-7349)"],
     "$id": 8027
   },
   "切换 AI 引擎失败": {
@@ -368,7 +368,7 @@
     "de-DE": "Der Wechsel der KI-Engine ist fehlgeschlagen",
     "fr-FR": "Échec du changement de moteur IA",
     "ko-KR": "AI 엔진 전환 실패",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(7448-7462)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(7652-7666)"],
     "$id": 7835
   },
   "最佳匹配": {
@@ -382,12 +382,12 @@
     "fr-FR": "Meilleur match",
     "ko-KR": "가장 잘 어울리는",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8115-8123)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8405-8413)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8702-8710)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9440-9448)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(10208-10216)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(10934-10942)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(8343-8351)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(8642-8650)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(8950-8958)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(9713-9721)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10506-10514)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11258-11266)"
     ],
     "$id": 7836
   },
@@ -402,10 +402,10 @@
     "fr-FR": "Utilisation des performances à 100 %",
     "ko-KR": "100% 성능 활용도",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8149-8162)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8736-8749)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9474-9487)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(10242-10255)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(8378-8391)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(8985-8998)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(9748-9761)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10541-10554)"
     ],
     "$id": 7837
   },
@@ -420,10 +420,10 @@
     "fr-FR": "Garanti",
     "ko-KR": "보장",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8395-8401)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9171-9177)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9936-9942)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(10677-10683)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(8632-8638)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(9435-9441)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10225-10231)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10991-10997)"
     ],
     "$id": 7838
   },
@@ -438,11 +438,11 @@
     "fr-FR": "Pas d'accélération de la carte graphique",
     "ko-KR": "그래픽 카드 가속 없음",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8437-8446)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9203-9212)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9968-9977)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(10709-10718)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(10968-10977)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(8675-8684)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(9468-9477)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10258-10267)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11024-11033)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(11293-11302)"
     ],
     "$id": 7839
   },
@@ -457,9 +457,9 @@
     "fr-FR": "Mode de compatibilité",
     "ko-KR": "호환성 모드",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8940-8948)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9705-9713)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(10446-10454)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(9196-9204)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(9986-9994)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10752-10760)"
     ],
     "$id": 7840
   },
@@ -474,9 +474,9 @@
     "fr-FR": "70 % d'utilisation des performances",
     "ko-KR": "70% 성능 활용도",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8974-8986)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9739-9751)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(10480-10492)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(9231-9243)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10021-10033)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10787-10799)"
     ],
     "$id": 7841
   },
@@ -490,7 +490,7 @@
     "de-DE": "Konfiguration der KI-Engine",
     "fr-FR": "Configuration du moteur IA",
     "ko-KR": "AI 엔진 구성",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(11376-11386)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(11718-11728)"],
     "$id": 7736
   },
   "配置AI引擎的运行模式": {
@@ -503,7 +503,7 @@
     "de-DE": "Konfigurieren Sie den Laufmodus der KI-Engine",
     "fr-FR": "Configurer le mode de fonctionnement du moteur AI",
     "ko-KR": "AI 엔진의 실행 모드 구성",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(11476-11491)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(11820-11835)"],
     "$id": 7737
   },
   "目前使用兼容模式，能发挥您显卡70% AI算力，显卡驱动需要升级，才能发挥满血性能": {
@@ -516,7 +516,7 @@
     "de-DE": "Im Kompatibilitätsmodus können derzeit 70 % der KI-Rechenleistung Ihrer Grafikkarte genutzt werden. Um die volle Leistung zu erreichen, muss der Grafikkartentreiber aktualisiert werden.",
     "fr-FR": "En utilisant actuellement le mode de compatibilité, 70 % de la puissance de calcul IA de votre carte graphique peut être utilisée. Le pilote de la carte graphique doit être mis à niveau pour obtenir toutes les performances.",
     "ko-KR": "현재 호환 모드를 사용하면 그래픽 카드의 AI 컴퓨팅 성능의 70%를 사용할 수 있습니다. 완전한 성능을 얻으려면 그래픽 카드 드라이버를 업그레이드해야 합니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(11943-11988)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(12297-12342)"],
     "$id": 10589
   },
   "升级显卡驱动": {
@@ -529,7 +529,7 @@
     "de-DE": "Aktualisieren Sie den Grafikkartentreiber",
     "fr-FR": "Mettre à niveau le pilote de la carte graphique",
     "ko-KR": "그래픽 카드 드라이버 업그레이드",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(12252-12262)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(12615-12625)"],
     "$id": 10590
   },
   "我已升级驱动，立即重启": {
@@ -542,7 +542,7 @@
     "de-DE": "Ich habe den Treiber aktualisiert und werde jetzt neu starten",
     "fr-FR": "J'ai mis à jour le pilote et je vais redémarrer maintenant",
     "ko-KR": "드라이버를 업그레이드했으며 지금 다시 시작하겠습니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(12800-12815)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13179-13194)"],
     "$id": 10591
   },
   "显卡 / 独立显存": {
@@ -555,7 +555,7 @@
     "de-DE": "Grafikkarte/diskreter Videospeicher",
     "fr-FR": "Carte graphique/mémoire vidéo discrète",
     "ko-KR": "그래픽 카드/개별 비디오 메모리",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13366-13379)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13758-13771)"],
     "$id": 10594
   },
   "核显": {
@@ -568,7 +568,7 @@
     "de-DE": "Nukleare Darstellung",
     "fr-FR": "Affichage nucléaire",
     "ko-KR": "핵 디스플레이",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13531-13537)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13926-13932)"],
     "$id": 10595
   },
   "硬盘可用空间": {
@@ -581,7 +581,7 @@
     "de-DE": "Verfügbarer Festplattenspeicher",
     "fr-FR": "Espace disponible sur le disque dur",
     "ko-KR": "하드 드라이브 사용 가능 공간",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(14668-14678)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(15086-15096)"],
     "$id": 10596
   },
   "未知": {
@@ -594,7 +594,7 @@
     "de-DE": "Unbekannt",
     "fr-FR": "Inconnu",
     "ko-KR": "알려지지 않은",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(14861-14867)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(15282-15288)"],
     "$id": 10571
   },
   "参考": {
@@ -607,7 +607,7 @@
     "de-DE": "Beziehen sich auf",
     "fr-FR": "Se référer à",
     "ko-KR": "참조하다",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(14921-14927)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(15343-15349)"],
     "$id": 10597
   },
   "切换AI引擎可以修复引擎失败": {
@@ -620,7 +620,7 @@
     "de-DE": "Das Umschalten der KI-Engine kann den Motorausfall beheben",
     "fr-FR": "La commutation du moteur AI peut réparer la panne du moteur",
     "ko-KR": "인공 지능 엔진을 전환하면 엔진 고장을 해결할 수 있습니다",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(15391-15409)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(15827-15845)"],
     "$id": 11421
   },
   "切换本地AI引擎": {
@@ -633,7 +633,7 @@
     "de-DE": "Lokale KI-Engine wechseln",
     "fr-FR": "Changer de moteur d'IA local",
     "ko-KR": "로컬 AI 엔진 전환",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(15427-15439)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(15864-15876)"],
     "$id": 7842
   },
   "当前使用云端模型，切换以下引擎将自动切换回本地模式": {
@@ -646,7 +646,7 @@
     "de-DE": "Wenn Sie derzeit das Cloud-Modell verwenden, wird beim Wechsel der folgenden Engines automatisch wieder in den lokalen Modus gewechselt",
     "fr-FR": "Vous utilisez actuellement le modèle cloud, le changement des moteurs suivants reviendra automatiquement en mode local",
     "ko-KR": "현재 클라우드 모델을 사용하고 있으며, 다음 엔진을 전환하면 자동으로 로컬 모드로 다시 전환됩니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(15590-15619)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16031-16060)"],
     "$id": 7812
   },
   "您的 {vendor} 显卡可切换以下引擎": {
@@ -659,7 +659,7 @@
     "de-DE": "Ihre {vendor}-Grafikkarte kann die folgenden Engines umschalten",
     "fr-FR": "Votre carte graphique {vendor} peut changer les moteurs suivants",
     "ko-KR": "{vendor} 그래픽 카드는 다음 엔진을 전환할 수 있습니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(15637-15662)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16079-16104)"],
     "$id": 7843
   },
   "AI 引擎": {
@@ -672,7 +672,7 @@
     "de-DE": "KI-Engine",
     "fr-FR": "Moteur d'IA",
     "ko-KR": "AI 엔진",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16087-16096)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16538-16547)"],
     "$id": 7844
   },
   "适配类型": {
@@ -685,7 +685,7 @@
     "de-DE": "Anpassungstyp",
     "fr-FR": "Type d'adaptation",
     "ko-KR": "적응 유형",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16240-16248)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16694-16702)"],
     "$id": 7845
   },
   "性能说明": {
@@ -698,7 +698,7 @@
     "de-DE": "Leistungshinweise",
     "fr-FR": "Notes de performances",
     "ko-KR": "성능 노트",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16392-16400)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16849-16857)"],
     "$id": 7846
   },
   "当前引擎": {
@@ -712,8 +712,8 @@
     "fr-FR": "Moteur actuel",
     "ko-KR": "현재 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(16544-16552)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(20276-20284)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(17004-17012)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(20814-20822)"
     ],
     "$id": 7847
   },
@@ -727,7 +727,7 @@
     "de-DE": "Motor Ausnahme",
     "fr-FR": "Exception de moteur",
     "ko-KR": "엔진 예외",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20042-20050)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20576-20584)"],
     "$id": 11422
   },
   "切换中...": {
@@ -740,7 +740,7 @@
     "de-DE": "Wechsel...",
     "fr-FR": "Commutation...",
     "ko-KR": "전환 중...",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20978-20988)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(21531-21541)"],
     "$id": 7848
   },
   "切换": {
@@ -753,7 +753,7 @@
     "de-DE": "Schalten",
     "fr-FR": "Changer",
     "ko-KR": "스위치",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20992-20998)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(21545-21551)"],
     "$id": 7849
   },
   "模型思考模式": {
@@ -766,7 +766,7 @@
     "de-DE": "Modelldenkenmodus",
     "fr-FR": "Mode de pensée modèle",
     "ko-KR": "모델 사고 모드",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(21888-21898)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22463-22473)"],
     "$id": 7738
   },
   "会增加耗时": {
@@ -779,7 +779,7 @@
     "de-DE": "Wird den Zeitverbrauch erhöhen",
     "fr-FR": "Augmentera la consommation de temps",
     "ko-KR": "시간 소모가 늘어나게 됩니다",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22096-22105)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22673-22682)"],
     "$id": 8286
   },
   "开启后允许本地和云端模型开启思考模式，可能提升AI分析质量，但会大大增加响应时间。": {
@@ -792,7 +792,7 @@
     "de-DE": "Nach dem Einschalten können lokale und Cloud-Modelle in den Denkmodus wechseln, was möglicherweise die Qualität der KI-Analyse verbessert, aber auch die Reaktionszeit erheblich verlängert.",
     "fr-FR": "Après l'avoir activé, les modèles locaux et cloud sont autorisés à passer en mode réflexion, ce qui peut améliorer la qualité de l'analyse de l'IA, mais augmentera considérablement le temps de réponse.",
     "ko-KR": "이 기능을 켜면 로컬 및 클라우드 모델이 사고 모드를 시작할 수 있어 AI 분석 품질이 향상될 수 있지만 응답 시간이 크게 늘어납니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22306-22374)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22888-22957)"],
     "$id": 7850
   },
   "不支持标记 Instruct 的模型。": {
@@ -805,7 +805,7 @@
     "de-DE": "Modelle mit dem Tag „Instruct“ werden nicht unterstützt.",
     "fr-FR": "Les modèles étiquetés Instruct ne sont pas pris en charge.",
     "ko-KR": "Instruct 태그가 지정된 모델은 지원되지 않습니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22532-22555)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(23120-23143)"],
     "$id": 7741
   }
 }

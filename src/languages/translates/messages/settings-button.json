@@ -10,8 +10,8 @@
     "fr-FR": "Ouvrir les paramètres de l'application",
     "ko-KR": "앱 설정 열기",
     "$files": [
-      "src/renderer/components/settings/settings-button.tsx(926-936)",
-      "src/renderer/components/settings/settings-button.tsx(1533-1543)"
+      "src/renderer/components/settings/settings-button.tsx(967-977)",
+      "src/renderer/components/settings/settings-button.tsx(1608-1618)"
     ],
     "$id": 3154
   },
@@ -25,7 +25,7 @@
     "de-DE": "Einstellungen",
     "fr-FR": "Paramètres",
     "ko-KR": "설정",
-    "$files": ["src/renderer/components/settings/settings-button.tsx(1036-1042)"],
+    "$files": ["src/renderer/components/settings/settings-button.tsx(1082-1088)"],
     "$id": 3155
   }
 }

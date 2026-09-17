@@ -22,7 +22,7 @@
     "de-DE": "{count} überprüfte Tags erfolgreich gelöscht",
     "fr-FR": "{count} balises cochées supprimées avec succès",
     "ko-KR": "{count} 확인된 태그가 성공적으로 삭제되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(15976-16000)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(15867-15891)"],
     "$id": 10707
   },
   "批量删除标签失败": {
@@ -35,7 +35,7 @@
     "de-DE": "Tags konnten nicht stapelweise gelöscht werden",
     "fr-FR": "Échec de la suppression des balises par lots",
     "ko-KR": "태그를 일괄 삭제하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(16465-16477)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(16356-16368)"],
     "$id": 10708
   },
   "添加工作目录失败": {
@@ -49,8 +49,8 @@
     "fr-FR": "Échec de l'ajout du répertoire de travail",
     "ko-KR": "작업 디렉터리 추가에 실패했습니다.",
     "$files": [
-      "src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(18779-18791)",
-      "src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(32086-32098)"
+      "src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(18670-18682)",
+      "src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(31916-31928)"
     ],
     "$id": 8318
   },
@@ -64,7 +64,7 @@
     "de-DE": "Bitte aktivieren Sie im Organisationsmodus die Dateien, die Sie zur Liste der zu organisierenden Dateien hinzufügen möchten, oder markieren Sie diese mit einem Kästchen (das Klicken auf Dateien unterstützt Strg und Umschalt).",
     "fr-FR": "Actuellement en mode organisation, veuillez cocher ou sélectionner les fichiers à ajouter à la liste des fichiers à organiser (cliquer sur les fichiers prend en charge Ctrl et Shift)",
     "ko-KR": "현재 정리 모드에서 정리할 파일 목록에 추가할 파일을 선택하거나 체크하세요. (파일 클릭은 Ctrl 및 Shift 지원)",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(19595-19666)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(19486-19557)"],
     "$id": 8319
   },
   "退出整理模式": {
@@ -77,7 +77,7 @@
     "de-DE": "Sortiermodus verlassen",
     "fr-FR": "Quitter le mode tri",
     "ko-KR": "정렬 모드 종료",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(19920-19930)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(19811-19821)"],
     "$id": 8320
   },
   "分类维度": {
@@ -90,7 +90,7 @@
     "de-DE": "Klassifizierungsdimension",
     "fr-FR": "Dimension de classement",
     "ko-KR": "분류 차원",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(20995-21003)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(20886-20894)"],
     "$id": 8321
   },
   "批量删除标签": {
@@ -103,7 +103,7 @@
     "de-DE": "Tags stapelweise löschen",
     "fr-FR": "Supprimer les balises par lots",
     "ko-KR": "태그를 일괄 삭제",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(21631-21641)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(21522-21532)"],
     "$id": 10709
   },
   "多选": {
@@ -116,7 +116,7 @@
     "de-DE": "Multiple Choice",
     "fr-FR": "Choix multiple",
     "ko-KR": "객관식",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(22245-22251)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(22136-22142)"],
     "$id": 8322
   },
   "加载中...": {
@@ -129,7 +129,7 @@
     "de-DE": "Wird geladen...\r",
     "fr-FR": "Chargement en cours...",
     "ko-KR": "불러오는 중...",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(24018-24028)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(23909-23919)"],
     "$id": 8323
   },
   "暂无数据": {
@@ -142,7 +142,7 @@
     "de-DE": "Noch keine Daten",
     "fr-FR": "Aucune donnée pour l'instant",
     "ko-KR": "아직 데이터가 없습니다",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(24187-24195)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(24078-24086)"],
     "$id": 8324
   },
   "暂无已分析文件": {
@@ -155,7 +155,7 @@
     "de-DE": "Keine analysierten Dateien vorhanden",
     "fr-FR": "Aucun fichier analysé",
     "ko-KR": "분석된 파일이 없습니다.\r",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(25588-25599)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(25418-25429)"],
     "$id": 8325
   },
   "当前工作目录还没有AI分析过的文件。": {
@@ -168,7 +168,7 @@
     "de-DE": "Im aktuellen Arbeitsverzeichnis befinden sich keine von AI analysierten Dateien.",
     "fr-FR": "Il n'y a aucun fichier analysé par AI dans le répertoire de travail actuel.",
     "ko-KR": "현재 작업 디렉터리에는 AI가 분석한 파일이 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(25642-25664)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(25472-25494)"],
     "$id": 8326
   },
   "切换到真实目录，找到要分析的文件": {
@@ -181,7 +181,7 @@
     "de-DE": "Wechseln Sie in das echte Verzeichnis und suchen Sie die Datei, die Sie analysieren möchten",
     "fr-FR": "Basculez vers le répertoire réel et recherchez le fichier que vous souhaitez analyser",
     "ko-KR": "실제 디렉터리로 전환하고 분석하려는 파일을 찾으세요.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(26404-26424)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(26234-26254)"],
     "$id": 8327
   },
   "选择文件或目录并点击\"立即分析\"，将文件加入AI analysis队列": {
@@ -194,7 +194,7 @@
     "de-DE": "Wählen Sie eine Datei oder ein Verzeichnis aus und klicken Sie auf „Jetzt analysieren“, um die Datei zur KI-Analysewarteschlange hinzuzufügen",
     "fr-FR": "Sélectionnez un fichier ou un répertoire et cliquez sur \"Analyser maintenant\" pour ajouter le fichier à la file d'attente d'analyse AI",
     "ko-KR": "파일이나 디렉터리를 선택하고 \"지금 분석\"을 클릭하면 해당 파일이 AI 분석 대기열에 추가됩니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(27076-27115)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(26906-26945)"],
     "$id": 8328
   },
   "前往真实目录": {
@@ -207,7 +207,7 @@
     "de-DE": "Zum aktuellen Verzeichnis wechseln",
     "fr-FR": "Aller au répertoire actuel",
     "ko-KR": "실제 디렉토리로 이동",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(27742-27752)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(27572-27582)"],
     "$id": 8329
   },
   "至少勾选一个文件": {
@@ -220,7 +220,7 @@
     "de-DE": "Überprüfen Sie mindestens eine Datei",
     "fr-FR": "Vérifiez au moins un fichier",
     "ko-KR": "하나 이상의 파일을 확인하십시오.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(29260-29272)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(29090-29102)"],
     "$id": 8330
   },
   "导出错误日志": {
@@ -233,7 +233,7 @@
     "de-DE": "Fehlerprotokoll exportieren",
     "fr-FR": "Exporter le journal des erreurs",
     "ko-KR": "오류 로그 내보내기",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(35314-35324)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(35144-35154)"],
     "$id": 8331
   },
   "文件数量较多": {
@@ -246,7 +246,7 @@
     "de-DE": "Große Anzahl an Dateien",
     "fr-FR": "Grand nombre de fichiers",
     "ko-KR": "많은 수의 파일",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(36495-36505)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(36325-36335)"],
     "$id": 8332
   },
   "当前已分析文件较多（共 {count} 个），整理耗时可能较长，是否开启选择模式手动挑选文件进行整理？": {
@@ -259,7 +259,7 @@
     "de-DE": "Derzeit gibt es viele analysierte Dateien (insgesamt {count}) und die Sortierung kann lange dauern. Möchten Sie den Auswahlmodus aktivieren, um Dateien manuell zum Sortieren auszuwählen?",
     "fr-FR": "Il y a actuellement beaucoup de fichiers analysés ({count} au total), et le tri peut prendre beaucoup de temps. Souhaitez-vous activer le mode de sélection pour sélectionner manuellement les fichiers à trier ?",
     "ko-KR": "현재 분석된 파일이 많아(총 {count}개) 정렬하는 데 시간이 오래 걸릴 수 있습니다. 정렬할 파일을 수동으로 선택하기 위해 선택 모드를 켜시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(36636-36707)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(36466-36537)"],
     "$id": 8333
   },
   "否，直接整理全部": {
@@ -272,7 +272,7 @@
     "de-DE": "Nein, sortieren Sie sie alle direkt",
     "fr-FR": "Non, triez-les tous directement",
     "ko-KR": "아니요, 모두 직접 정렬합니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(37035-37047)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(36865-36877)"],
     "$id": 8334
   },
   "是，开启选择模式": {
@@ -285,7 +285,7 @@
     "de-DE": "Ja, Auswahlmodus aktivieren",
     "fr-FR": "Oui, activer le mode de sélection",
     "ko-KR": "예, 선택 모드를 활성화합니다",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(37263-37275)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(37093-37105)"],
     "$id": 8335
   },
   "批量删除标签确认": {
@@ -298,7 +298,7 @@
     "de-DE": "Bestätigung des Stapellöschens von Tags",
     "fr-FR": "Confirmation de la balise de suppression par lots",
     "ko-KR": "일괄 삭제 태그 확인",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(37739-37751)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(37569-37581)"],
     "$id": 10710
   },
   "确定要删除选中的 {count} 个标签吗？": {
@@ -311,7 +311,7 @@
     "de-DE": "Sind Sie sicher, dass Sie die {count} ausgewählten Tags löschen möchten?",
     "fr-FR": "Êtes-vous sûr de vouloir supprimer les {count} balises sélectionnées ?",
     "ko-KR": "선택한 {count}개의 태그를 삭제하시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(37992-38018)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(37822-37848)"],
     "$id": 10711
   },
   "此操作将永久删除所选标签并清理所有文件的关联关系，不可撤销。": {
@@ -324,7 +324,7 @@
     "de-DE": "Dieser Vorgang löscht die ausgewählten Tags dauerhaft und bereinigt alle Dateizuordnungen und ist irreversibel.",
     "fr-FR": "Cette opération supprimera définitivement les balises sélectionnées et nettoiera toutes les associations de fichiers, et est irréversible.",
     "ko-KR": "이 작업은 선택한 태그를 영구적으로 삭제하고 모든 파일 연결을 정리하며 되돌릴 수 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(38161-38195)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(37991-38025)"],
     "$id": 10712
   },
   "取消": {
@@ -338,8 +338,8 @@
     "fr-FR": "Annuler",
     "ko-KR": "취소",
     "$files": [
-      "src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(39072-39078)",
-      "src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(3593-3599)"
+      "src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(38902-38908)",
+      "src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(3680-3686)"
     ],
     "$id": 8339
   },
@@ -353,7 +353,7 @@
     "de-DE": "Löschen...",
     "fr-FR": "Suppression...",
     "ko-KR": "삭제 중...",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(39680-39690)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(39510-39520)"],
     "$id": 10713
   },
   "确认删除": {
@@ -366,7 +366,7 @@
     "de-DE": "Löschen bestätigen",
     "fr-FR": "Confirmer la suppression  ",
     "ko-KR": "삭제 확인",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(39762-39770)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/index.tsx(39592-39600)"],
     "$id": 10714
   },
   "管理保存的虚拟目录": {
@@ -379,7 +379,7 @@
     "de-DE": "Gespeicherte virtuelle Verzeichnisse verwalten",
     "fr-FR": "Gérer les répertoires virtuels sauvegardés",
     "ko-KR": "저장된 가상 디렉토리 관리",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(1437-1450)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(1478-1491)"],
     "$id": 8336
   },
   "暂无已保存的虚拟目录": {
@@ -392,7 +392,7 @@
     "de-DE": "Keine gespeicherten virtuellen Verzeichnisse vorhanden",
     "fr-FR": "Aucun répertoire virtuel sauvegardé pour le moment",
     "ko-KR": "저장된 가상 디렉토리가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(2035-2049)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(2090-2104)"],
     "$id": 8337
   },
   "保存": {
@@ -405,7 +405,7 @@
     "de-DE": "Speichern",
     "fr-FR": "Sauvegarder",
     "ko-KR": "저장",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(3298-3304)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(3379-3385)"],
     "$id": 8338
   },
   "创建时间: {time}": {
@@ -418,7 +418,7 @@
     "de-DE": "Erstellungszeit: {time}",
     "fr-FR": "Date de création : {time}",
     "ko-KR": "작성 시간: {time}",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(3972-3988)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(4067-4083)"],
     "$id": 8340
   },
   "重命名": {
@@ -431,7 +431,7 @@
     "de-DE": "Umbenennen",
     "fr-FR": "Renommer",
     "ko-KR": "이름 변경",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(4443-4450)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(4545-4552)"],
     "$id": 8341
   },
   "删除": {
@@ -444,7 +444,7 @@
     "de-DE": "Löschen",
     "fr-FR": "Supprimer",
     "ko-KR": "삭제",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(4841-4847)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(4950-4956)"],
     "$id": 8342
   },
   "关闭": {
@@ -457,7 +457,7 @@
     "de-DE": "Schließen",
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(5473-5479)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/components/DirectoryManagementModals.tsx(5602-5608)"],
     "$id": 8343
   },
   "目录已删除，文件已移至\"未分类文件\"": {
@@ -470,7 +470,7 @@
     "de-DE": "Verzeichnis gelöscht und Dateien nach „Nicht kategorisierte Dateien“ verschoben",
     "fr-FR": "Répertoire supprimé et fichiers déplacés vers \"Fichiers non classés\"",
     "ko-KR": "디렉토리가 삭제되고 파일이 \"분류되지 않은 파일\"로 이동되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(5117-5139)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(5284-5306)"],
     "$id": 8344
   },
   "请先选择工作目录": {
@@ -483,7 +483,7 @@
     "de-DE": "Bitte wählen Sie zuerst das Arbeitsverzeichnis aus",
     "fr-FR": "Veuillez d'abord sélectionner le répertoire de travail\r",
     "ko-KR": "작업 디렉터리를 먼저 선택하십시오",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(5997-6009)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(6193-6205)"],
     "$id": 8345
   },
   "请先勾选要整理的文件。": {
@@ -496,7 +496,7 @@
     "de-DE": "Bitte überprüfen Sie zunächst die Dateien, die Sie organisieren möchten.",
     "fr-FR": "Veuillez d'abord vérifier les fichiers que vous souhaitez organiser.",
     "ko-KR": "먼저 정리하고 싶은 파일을 확인해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(6090-6105)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(6291-6306)"],
     "$id": 8346
   },
   "本地 AI 服务异常，请在设置中检查模型运行状态或切换模型": {
@@ -509,7 +509,7 @@
     "de-DE": "Der lokale KI-Dienst ist abnormal. Bitte überprüfen Sie den Betriebsstatus des Modells in den Einstellungen oder wechseln Sie das Modell.",
     "fr-FR": "Le service IA local est anormal. Veuillez vérifier l'état de fonctionnement du modèle dans les paramètres ou changer de modèle.",
     "ko-KR": "로컬 AI 서비스가 비정상입니다. 설정에서 모델 실행 상태를 확인하거나 모델을 전환하세요.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(6267-6300)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(6474-6507)"],
     "$id": 8347
   },
   "模型正在切换中，请等待": {
@@ -523,8 +523,8 @@
     "fr-FR": "Le modèle est en cours de basculement, veuillez patienter",
     "ko-KR": "모델 전환 중입니다. 기다려 주세요",
     "$files": [
-      "src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(8558-8573)",
-      "src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(11772-11787)"
+      "src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(8840-8855)",
+      "src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(12142-12157)"
     ],
     "$id": 8348
   },
@@ -538,7 +538,7 @@
     "de-DE": "Es konnte kein One-Click-Finishing-Plan erstellt werden",
     "fr-FR": "Échec de la génération du plan de finition en un clic",
     "ko-KR": "원클릭 마무리 계획 생성 실패",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(8645-8659)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(8929-8943)"],
     "$id": 8349
   },
   "确认": {
@@ -551,7 +551,7 @@
     "de-DE": "Bestätigen",
     "fr-FR": "Confirmer",
     "ko-KR": "확인하다",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(9077-9083)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(9374-9380)"],
     "$id": 8350
   },
   "取消/跳过": {
@@ -564,7 +564,7 @@
     "de-DE": "Abbrechen/Überspringen",
     "fr-FR": "Annuler/Sauter",
     "ko-KR": "취소/건너뛰기",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(9086-9095)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(9383-9392)"],
     "$id": 8351
   },
   "AI 补救归类": {
@@ -577,7 +577,7 @@
     "de-DE": "Klassifizierung der KI-Sanierung",
     "fr-FR": "Classification de la remédiation IA",
     "ko-KR": "AI 교정 분류",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(9163-9174)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(9463-9474)"],
     "$id": 8352
   },
   "当前仍有 {count} 个文件未成功归类，是否再次进行 AI 补救归类？": {
@@ -590,7 +590,7 @@
     "de-DE": "Es gibt immer noch {count} Dateien, die nicht erfolgreich klassifiziert wurden. Möchten Sie die KI-Klassifizierung erneut durchführen?",
     "fr-FR": "Il reste encore {count} fichiers qui n'ont pas été classés avec succès. Souhaitez-vous effectuer à nouveau une classification corrective IA ?",
     "ko-KR": "성공적으로 분류되지 않은 {count} 파일이 아직 있습니다. AI 교정 분류를 다시 수행하시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(9196-9237)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(9497-9538)"],
     "$id": 8353
   },
   "正在自动补救未分类文件...": {
@@ -604,8 +604,8 @@
     "fr-FR": "Correction automatique des fichiers non classés...",
     "ko-KR": "분류되지 않은 파일을 자동으로 교정하는 중...",
     "$files": [
-      "src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(10468-10486)",
-      "src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(10945-10963)"
+      "src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(10806-10824)",
+      "src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(11294-11312)"
     ],
     "$id": 8354
   },
@@ -619,7 +619,7 @@
     "de-DE": "Fehler bei der Behebungsklassifizierung",
     "fr-FR": "Échec de la classification de la correction",
     "ko-KR": "교정 분류 실패",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(11870-11880)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(12242-12252)"],
     "$id": 8355
   },
   "一键整理失败: {message}": {
@@ -632,7 +632,7 @@
     "de-DE": "Ein-Klick-Organisation fehlgeschlagen: {message}",
     "fr-FR": "Échec de l'organisation en un clic : {message}",
     "ko-KR": "원클릭 정리 실패: {message}\r",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(13185-13206)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(13596-13617)"],
     "$id": 8356
   },
   "成功移动 {count} 个文件": {
@@ -645,7 +645,7 @@
     "de-DE": "{count} Dateien erfolgreich verschoben",
     "fr-FR": "{count} fichiers déplacés avec succès",
     "ko-KR": "{count}개 파일 이동 성공",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(14528-14548)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(14984-15004)"],
     "$id": 8357
   },
   "整理完成": {
@@ -658,7 +658,7 @@
     "de-DE": "Organisation abgeschlossen",
     "fr-FR": "Organisation terminée",
     "ko-KR": "정리 완료",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(14901-14909)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(15365-15373)"],
     "$id": 8358
   },
   "整理完成！是否删除所有虚拟目录？": {
@@ -671,7 +671,7 @@
     "de-DE": "Organisation abgeschlossen! Alle virtuellen Verzeichnisse löschen?",
     "fr-FR": "Organisation terminée ! Voulez-vous supprimer tous les répertoires virtuels ?",
     "ko-KR": "정리 완료! 모든 가상 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(14933-14953)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(15398-15418)"],
     "$id": 8359
   },
   "是": {
@@ -684,7 +684,7 @@
     "de-DE": "Ja",
     "fr-FR": "Oui",
     "ko-KR": "예",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(14978-14983)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(15444-15449)"],
     "$id": 8360
   },
   "否": {
@@ -697,7 +697,7 @@
     "de-DE": "Nein",
     "fr-FR": "Non",
     "ko-KR": "아니오",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(14986-14991)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(15452-15457)"],
     "$id": 8361
   },
   "虚拟目录已删除": {
@@ -710,7 +710,7 @@
     "de-DE": "Virtuelles Verzeichnis wurde gelöscht",
     "fr-FR": "Répertoire virtuel supprimé",
     "ko-KR": "가상 디렉터리가 삭제되었습니다",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(15298-15309)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(15773-15784)"],
     "$id": 8362
   },
   "整理失败: {message}": {
@@ -723,7 +723,7 @@
     "de-DE": "Organisation fehlgeschlagen: {message}",
     "fr-FR": "Échec de l'organisation : {message}",
     "ko-KR": "정리 실패: {message}",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(16154-16173)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(16653-16672)"],
     "$id": 8363
   },
   "已取消 AI 整理方案生成": {
@@ -736,7 +736,7 @@
     "de-DE": "KI-gestützte Zusammenfassungslösung wurde abgebrochen",
     "fr-FR": "Génération de solution de tri par IA annulée",
     "ko-KR": "AI 정리 안 생성이 취소되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(16593-16610)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(17107-17124)"],
     "$id": 8364
   },
   "冲突解决功能开发中，将在后续版本支持": {
@@ -749,7 +749,7 @@
     "de-DE": "Die Konfliktlösungsfunktion ist in Entwicklung und wird in zukünftigen Versionen unterstützt",
     "fr-FR": "La fonction de résolution des conflits est en cours de développement et sera prise en charge dans les versions ultérieures",
     "ko-KR": "충돌 해결 기능은 개발 중이며 향후 버전에서 지원 예정",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(16896-16918)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(17422-17444)"],
     "$id": 8365
   },
   "已取消整理": {
@@ -762,7 +762,7 @@
     "de-DE": "Organisation abgebrochen",
     "fr-FR": "Organisation annulée",
     "ko-KR": "정리 취소됨",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(17058-17067)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryFilter.ts(17593-17602)"],
     "$id": 8366
   },
   "加载工作目录失败": {
@@ -775,7 +775,7 @@
     "de-DE": "Das Arbeitsverzeichnis konnte nicht geladen werden",
     "fr-FR": "Échec du chargement du répertoire de travail",
     "ko-KR": "작업 디렉터리를 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(9000-9012)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(9270-9282)"],
     "$id": 8367
   },
   "加载维度分组失败": {
@@ -788,7 +788,7 @@
     "de-DE": "Die Dimensionsgruppierung konnte nicht geladen werden",
     "fr-FR": "Échec du chargement du regroupement de dimensions",
     "ko-KR": "측정기준 그룹을 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(10734-10746)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(11055-11067)"],
     "$id": 8368
   },
   "加载文件列表失败": {
@@ -801,7 +801,7 @@
     "de-DE": "Dateiliste konnte nicht geladen werden",
     "fr-FR": "Échec du chargement de la liste des fichiers",
     "ko-KR": "파일 목록을 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(12054-12066)"],
+    "$files": ["src/renderer/components/file-explorer/AnalyzedDirectory/hooks/useAnalyzedDirectoryState.ts(12417-12429)"],
     "$id": 8369
   }
 }

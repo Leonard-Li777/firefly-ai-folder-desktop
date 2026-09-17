@@ -9,7 +9,7 @@
     "de-DE": "Freunde einladen",
     "fr-FR": "Inviter des amis",
     "ko-KR": "친구 초대",
-    "$files": ["src/renderer/constants/tier-rules.ts(499-507)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(523-531)"],
     "$id": 8812
   },
   "每成功邀请一位好友": {
@@ -22,7 +22,7 @@
     "de-DE": "Jedes Mal, wenn Sie erfolgreich einen Freund einladen",
     "fr-FR": "Chaque fois que vous invitez avec succès un ami",
     "ko-KR": "친구 초대에 성공할 때마다",
-    "$files": ["src/renderer/constants/tier-rules.ts(625-638)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(652-665)"],
     "$id": 8815
   },
   "解锁私有目录无限额度（邀请3人即可解锁）": {
@@ -35,7 +35,7 @@
     "de-DE": "Unbegrenzte private Verzeichnisse freischalten (kann durch Einladen von 3 Personen freigeschaltet werden)",
     "fr-FR": "Débloquez des répertoires privés illimités (peut être débloqué en invitant 3 personnes)",
     "ko-KR": "무제한 개인 디렉터리 잠금 해제(3명을 초대하면 잠금 해제 가능)",
-    "$files": ["src/renderer/constants/tier-rules.ts(732-756)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(765-789)"],
     "$id": 8840
   },
   "+1 私有目录槽位": {
@@ -48,7 +48,7 @@
     "de-DE": "+1 privater Verzeichnisplatz",
     "fr-FR": "+1 emplacement de répertoire privé",
     "ko-KR": "+1 개인 디렉토리 슬롯",
-    "$files": ["src/renderer/constants/tier-rules.ts(951-964)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(992-1005)"],
     "$id": 8842
   },
   "+1 极速目录槽位": {
@@ -61,7 +61,7 @@
     "de-DE": "+1 Schnellkatalog-Slot",
     "fr-FR": "+1 emplacement de catalogue rapide",
     "ko-KR": "+1 빠른 카탈로그 슬롯",
-    "$files": ["src/renderer/constants/tier-rules.ts(1165-1178)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(1214-1227)"],
     "$id": 8843
   },
   "+1 虚拟目录槽位（指定工作目录）": {
@@ -74,7 +74,7 @@
     "de-DE": "+1 virtueller Verzeichnisslot (Arbeitsverzeichnis angeben)",
     "fr-FR": "+1 emplacement de répertoire virtuel (préciser le répertoire de travail)",
     "ko-KR": "+1 가상 디렉터리 슬롯(작업 디렉터리 지정)",
-    "$files": ["src/renderer/constants/tier-rules.ts(1377-1398)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(1434-1455)"],
     "$id": 8864
   },
   "+1 虚拟目录（单次）": {
@@ -87,7 +87,7 @@
     "de-DE": "+1 virtuelles Verzeichnis (einzeln)",
     "fr-FR": "+1 répertoire virtuel (unique)",
     "ko-KR": "+1 가상 디렉터리(단일)",
-    "$files": ["src/renderer/constants/tier-rules.ts(1589-1604)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(1654-1669)"],
     "$id": 8865
   },
   "重新生成虚拟目录（单次）": {
@@ -100,7 +100,7 @@
     "de-DE": "Virtuelles Verzeichnis neu generieren (einzeln)",
     "fr-FR": "Régénérer le répertoire virtuel (une seule fois)",
     "ko-KR": "가상 디렉터리 재생성(단일)",
-    "$files": ["src/renderer/constants/tier-rules.ts(1796-1812)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(1869-1885)"],
     "$id": 8866
   },
   "导出虚拟目录（单次）": {
@@ -113,7 +113,7 @@
     "de-DE": "Virtuelles Verzeichnis exportieren (einzeln)",
     "fr-FR": "Exporter le répertoire virtuel (unique)",
     "ko-KR": "가상 디렉터리 내보내기(단일)",
-    "$files": ["src/renderer/constants/tier-rules.ts(1978-1992)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(2058-2072)"],
     "$id": 8867
   },
   "导出真实目录（单次）": {
@@ -126,7 +126,7 @@
     "de-DE": "Echtes Verzeichnis exportieren (einzeln)",
     "fr-FR": "Exporter le répertoire réel (unique)",
     "ko-KR": "실제 디렉터리 내보내기(단일)",
-    "$files": ["src/renderer/constants/tier-rules.ts(2158-2172)"],
+    "$files": ["src/renderer/constants/tier-rules.ts(2245-2259)"],
     "$id": 8868
   }
 }

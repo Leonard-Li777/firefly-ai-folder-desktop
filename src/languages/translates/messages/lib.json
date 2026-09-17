@@ -9,7 +9,7 @@
     "de-DE": "Dienstleister",
     "fr-FR": "Fournisseur de services",
     "ko-KR": "서비스 제공자",
-    "$files": ["src/renderer/lib/cloud-config-validator.ts(535-542)"],
+    "$files": ["src/renderer/lib/cloud-config-validator.ts(561-568)"],
     "$id": 7773
   },
   "API Key": {
@@ -22,7 +22,7 @@
     "de-DE": "API-Schlüssel",
     "fr-FR": "Clé API",
     "ko-KR": "API 키",
-    "$files": ["src/renderer/lib/cloud-config-validator.ts(664-675)"],
+    "$files": ["src/renderer/lib/cloud-config-validator.ts(695-706)"],
     "$id": 7774
   },
   "Base URL": {
@@ -35,7 +35,7 @@
     "de-DE": "Basis-URL",
     "fr-FR": "URL de base",
     "ko-KR": "기본 URL",
-    "$files": ["src/renderer/lib/cloud-config-validator.ts(806-818)"],
+    "$files": ["src/renderer/lib/cloud-config-validator.ts(842-854)"],
     "$id": 7775
   },
   "模型 ID": {
@@ -48,7 +48,7 @@
     "de-DE": "Modell-ID",
     "fr-FR": "ID du modèle",
     "ko-KR": "모델 ID",
-    "$files": ["src/renderer/lib/cloud-config-validator.ts(899-908)"],
+    "$files": ["src/renderer/lib/cloud-config-validator.ts(939-948)"],
     "$id": 7776
   },
   "出于安全考虑，仅支持打开 http/https 链接": {

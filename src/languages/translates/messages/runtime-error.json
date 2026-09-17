@@ -9,7 +9,7 @@
     "de-DE": "Neustart kritischer Dienste  ",
     "fr-FR": "Redémarrage des services critiques  ",
     "ko-KR": "핵심 서비스 재시작",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2027-2037)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2103-2113)"],
     "$id": 5506
   },
   "重启失败的关键服务": {
@@ -22,7 +22,7 @@
     "de-DE": "Neustart fehlgeschlagener kritischer Dienste  ",
     "fr-FR": "Redémarrage des services critiques ayant échoué  ",
     "ko-KR": "실패한 핵심 서비스 재시작",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2059-2072)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2136-2149)"],
     "$id": 5507
   },
   "内存清理": {
@@ -35,7 +35,7 @@
     "de-DE": "Speicherbereinigung  ",
     "fr-FR": "Nettoyage de la mémoire  ",
     "ko-KR": "메모리 정리",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2462-2470)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2555-2563)"],
     "$id": 5508
   },
   "清理系统内存": {
@@ -48,7 +48,7 @@
     "de-DE": "Systemspeicher bereinigen  ",
     "fr-FR": "Libération de la mémoire système  ",
     "ko-KR": "시스템 메모리 정리",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2492-2502)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2586-2596)"],
     "$id": 5509
   },
   "数据库重连": {
@@ -61,7 +61,7 @@
     "de-DE": "Datenbankneuverbindung  ",
     "fr-FR": "Reconnexion à la base de données  ",
     "ko-KR": "데이터베이스 재연결",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2864-2873)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2973-2982)"],
     "$id": 5510
   },
   "重新连接数据库": {
@@ -74,7 +74,7 @@
     "de-DE": "Datenbankverbindung erneut herstellen  ",
     "fr-FR": "Reconnexion à la base de données  ",
     "ko-KR": "데이터베이스 다시 연결",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(2895-2906)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(3005-3016)"],
     "$id": 5511
   },
   "网络重连": {
@@ -87,7 +87,7 @@
     "de-DE": "Netzwerkneuverbindung  ",
     "fr-FR": "Reconnexion réseau  ",
     "ko-KR": "네트워크 재연결",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(3275-3283)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(3400-3408)"],
     "$id": 5512
   },
   "重新建立网络连接": {
@@ -100,7 +100,7 @@
     "de-DE": "Netzwerkverbindung erneut herstellen  ",
     "fr-FR": "Rétablissement de la connexion réseau  ",
     "ko-KR": "네트워크 연결 다시 설정",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(3305-3317)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(3431-3443)"],
     "$id": 5513
   },
   "状态恢复": {
@@ -113,7 +113,7 @@
     "de-DE": "Statuswiederherstellung  ",
     "fr-FR": "Restauration de l'état  ",
     "ko-KR": "상태 복구",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(3681-3689)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(3822-3830)"],
     "$id": 5514
   },
   "恢复应用状态": {
@@ -126,7 +126,7 @@
     "de-DE": "Anwendungsstatus wiederherstellen  ",
     "fr-FR": "Restauration de l'état de l'application  ",
     "ko-KR": "애플리케이션 상태 복구",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(3711-3721)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(3853-3863)"],
     "$id": 5515
   },
   "优雅关闭": {
@@ -140,8 +140,8 @@
     "fr-FR": "Arrêt élégant  ",
     "ko-KR": "그레이스풀 종료",
     "$files": [
-      "src/electron/runtime-services/error/auto-recovery-service.ts(4112-4120)",
-      "src/electron/runtime-services/error/error-handling-service.ts(2465-2473)"
+      "src/electron/runtime-services/error/auto-recovery-service.ts(4269-4277)",
+      "src/electron/runtime-services/error/error-handling-service.ts(2553-2561)"
     ],
     "$id": 5516
   },
@@ -156,8 +156,8 @@
     "fr-FR": "Arrêt élégant de l'application  ",
     "ko-KR": "애플리케이션 그레이스풀 종료",
     "$files": [
-      "src/electron/runtime-services/error/auto-recovery-service.ts(4142-4152)",
-      "src/electron/runtime-services/error/error-handling-service.ts(2497-2507)"
+      "src/electron/runtime-services/error/auto-recovery-service.ts(4300-4310)",
+      "src/electron/runtime-services/error/error-handling-service.ts(2586-2596)"
     ],
     "$id": 5517
   },
@@ -171,7 +171,7 @@
     "de-DE": "System befindet sich in kritischem Gesundheitszustand  ",
     "fr-FR": "Le système est dans un état critique de santé  ",
     "ko-KR": "시스템이 중요한 건강 상태에 있음",
-    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(6110-6124)"],
+    "$files": ["src/electron/runtime-services/error/auto-recovery-service.ts(6331-6345)"],
     "$id": 5518
   },
   "重试操作": {
@@ -184,7 +184,7 @@
     "de-DE": "Wiederholungsversuch  ",
     "fr-FR": "Nouvelle tentative d'opération  ",
     "ko-KR": "재시도 작업",
-    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(1171-1179)"],
+    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(1211-1219)"],
     "$id": 5519
   },
   "重试失败的操作": {
@@ -197,7 +197,7 @@
     "de-DE": "Fehlgeschlagene Operation erneut versuchen  ",
     "fr-FR": "Nouvelle tentative des opérations ayant échoué  ",
     "ko-KR": "실패한 작업 재시도",
-    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(1203-1214)"],
+    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(1244-1255)"],
     "$id": 5520
   },
   "清理缓存": {
@@ -210,7 +210,7 @@
     "de-DE": "Cache bereinigen  ",
     "fr-FR": "Vidage du cache  ",
     "ko-KR": "캐시 정리",
-    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(1581-1589)"],
+    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(1636-1644)"],
     "$id": 5521
   },
   "清理应用缓存": {
@@ -223,7 +223,7 @@
     "de-DE": "Anwendungscache bereinigen  ",
     "fr-FR": "Vidage du cache de l'application  ",
     "ko-KR": "애플리케이션 캐시 정리",
-    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(1613-1623)"],
+    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(1669-1679)"],
     "$id": 5522
   },
   "重启服务": {
@@ -236,7 +236,7 @@
     "de-DE": "Dienst neustarten  ",
     "fr-FR": "Redémarrage du service  ",
     "ko-KR": "서비스 재시작",
-    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(1990-1998)"],
+    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(2060-2068)"],
     "$id": 5523
   },
   "服务启动失败，等待用户手动重试": {
@@ -249,7 +249,7 @@
     "de-DE": "Der Start des Dienstes ist fehlgeschlagen. Es wird darauf gewartet, dass der Benutzer es manuell erneut versucht",
     "fr-FR": "Le service n'a pas pu démarrer, attendant que l'utilisateur réessaye manuellement.",
     "ko-KR": "서비스 시작에 실패했습니다. 사용자가 수동으로 다시 시도하기를 기다리는 중입니다.",
-    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(2022-2041)"],
+    "$files": ["src/electron/runtime-services/error/error-handling-service.ts(2093-2112)"],
     "$id": 11057
   }
 }

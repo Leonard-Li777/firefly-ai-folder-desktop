@@ -9,7 +9,7 @@
     "de-DE": "Bitte wählen Sie mindestens eine Datei aus.",
     "fr-FR": "Veuillez sélectionner au moins un fichier",
     "ko-KR": "파일을 하나 이상 선택해 주세요.",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(12401-12414)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(12784-12797)"],
     "$id": 3236
   },
   "{count} 个文件已加入AI分析队列": {
@@ -22,7 +22,7 @@
     "de-DE": "{count} Dateien wurden der KI-Analyse-Warteschlange hinzugefügt.",
     "fr-FR": "{count} fichiers ont été ajoutés à la file d'analyse IA",
     "ko-KR": "{count}개의 파일이 AI 분석 대기열에 추가되었습니다.",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(12787-12811)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(13183-13207)"],
     "$id": 3237
   },
   "所有变更文件已处理完成": {
@@ -35,7 +35,7 @@
     "de-DE": "Alle geänderten Dateien wurden verarbeitet.",
     "fr-FR": "Tous les fichiers modifiés ont été traités",
     "ko-KR": "모든 변경된 파일 처리가 완료되었습니다.",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(13069-13084)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(13470-13485)"],
     "$id": 3238
   },
   "加入分析队列失败: {error}": {
@@ -48,7 +48,7 @@
     "de-DE": "Fehler beim Hinzufügen zur Analyse-Warteschlange: {error}",
     "fr-FR": "Échec de l'ajout à la file d'analyse : {error}",
     "ko-KR": "분석 대기열 추가 실패: {error}",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(13207-13228)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(13614-13635)"],
     "$id": 3239
   },
   "发现文件变更": {
@@ -61,7 +61,7 @@
     "de-DE": "Dateiänderungen erkannt",
     "fr-FR": "Des modifications de fichiers ont été détectées",
     "ko-KR": "파일 변경 사항 감지됨",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(14111-14121)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(14538-14548)"],
     "$id": 3240
   },
   "工作目录: ": {
@@ -74,7 +74,7 @@
     "de-DE": "Arbeitsverzeichnis: ",
     "fr-FR": "Répertoire de travail : ",
     "ko-KR": "작업 디렉터리: ",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(14247-14257)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(14677-14687)"],
     "$id": 3241
   },
   "所有变更已处理完成": {
@@ -87,7 +87,7 @@
     "de-DE": "Alle Änderungen wurden verarbeitet.",
     "fr-FR": "Toutes les modifications ont été traitées",
     "ko-KR": "모든 변경 사항 처리 완료",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(15045-15058)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(15496-15509)"],
     "$id": 3242
   },
   "可以关闭此对话框": {
@@ -100,7 +100,7 @@
     "de-DE": "Sie können diesen Dialog schließen.",
     "fr-FR": "Vous pouvez fermer cette boîte de dialogue",
     "ko-KR": "이 대화상자를 닫으셔도 됩니다.",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(15169-15181)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(15622-15634)"],
     "$id": 3243
   },
   "新增文件:": {
@@ -113,7 +113,7 @@
     "de-DE": "Neue Dateien:",
     "fr-FR": "Fichiers ajoutés :",
     "ko-KR": "새로 추가된 파일:",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(15569-15578)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(16031-16040)"],
     "$id": 3244
   },
   "修改文件:": {
@@ -126,7 +126,7 @@
     "de-DE": "Geänderte Dateien:",
     "fr-FR": "Fichiers modifiés :",
     "ko-KR": "수정된 파일:",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(15873-15882)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(16341-16350)"],
     "$id": 3245
   },
   "已选中": {
@@ -139,7 +139,7 @@
     "de-DE": "Ausgewählt",
     "fr-FR": "Sélectionné",
     "ko-KR": "선택됨",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(16217-16224)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(16692-16699)"],
     "$id": 3246
   },
   "新增文件": {
@@ -152,7 +152,7 @@
     "de-DE": "Neue Datei",
     "fr-FR": "Fichiers ajoutés",
     "ko-KR": "새로 추가된 파일",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(16772-16780)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(17256-17264)"],
     "$id": 3247
   },
   "修改文件": {
@@ -165,7 +165,7 @@
     "de-DE": "Geänderte Datei",
     "fr-FR": "Fichiers modifiés",
     "ko-KR": "파일 수정",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(17092-17100)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(17582-17590)"],
     "$id": 3248
   },
   "勾选目录可级联选择所有子文件": {
@@ -178,7 +178,7 @@
     "de-DE": "Durch Markieren eines Verzeichnisses werden rekursiv alle darin enthaltenen Dateien ausgewählt.",
     "fr-FR": "Cochez un répertoire pour sélectionner récursivement tous ses sous-fichiers",
     "ko-KR": "디렉터리를 선택하면 하위 모든 파일이 계층적으로 선택됩니다.",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(17479-17497)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(17978-17996)"],
     "$id": 3249
   },
   "反选": {
@@ -191,7 +191,7 @@
     "de-DE": "Auswahl umkehren",
     "fr-FR": "Inverser la sélection",
     "ko-KR": "선택 반전",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(18915-18921)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(19445-19451)"],
     "$id": 3250
   },
   "关闭": {
@@ -205,8 +205,8 @@
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
     "$files": [
-      "src/renderer/components/settings/RescanPreviewDialog.tsx(19218-19224)",
-      "src/renderer/components/settings/RescanPreviewDialog.tsx(20355-20361)"
+      "src/renderer/components/settings/RescanPreviewDialog.tsx(19755-19761)",
+      "src/renderer/components/settings/RescanPreviewDialog.tsx(20918-20924)"
     ],
     "$id": 3251
   },
@@ -220,7 +220,7 @@
     "de-DE": "Wird zur Warteschlange hinzugefügt ...",
     "fr-FR": "Ajout en cours à la file...",
     "ko-KR": "대기열에 추가 중...",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(19784-19797)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(20331-20344)"],
     "$id": 3252
   },
   "加入队列 ({count})": {
@@ -233,7 +233,7 @@
     "de-DE": "Zur Warteschlange hinzufügen ({count})",
     "fr-FR": "Ajouter à la file ({count})",
     "ko-KR": "대기열에 추가 ({count})",
-    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(19970-19988)"],
+    "$files": ["src/renderer/components/settings/RescanPreviewDialog.tsx(20522-20540)"],
     "$id": 3253
   }
 }

@@ -9,7 +9,7 @@
     "de-DE": "Schließen",
     "fr-FR": "Fermer",
     "ko-KR": "닫기",
-    "$files": ["src/renderer/components/ui/dialog.tsx(2344-2350)"],
+    "$files": ["src/renderer/components/ui/dialog.tsx(2393-2399)"],
     "$id": 5981
   },
   "useTheme must be used within a ThemeProvider": {
@@ -22,7 +22,7 @@
     "de-DE": "UseTheme muss innerhalb eines ThemeProvider verwendet werden",
     "fr-FR": "UseTheme doit être utilisé à l'intérieur d'un ThemeProvider",
     "ko-KR": "useTheme는 ThemeProvider 내부에서 사용되어야 합니다",
-    "$files": ["src/renderer/components/ui/theme-provider.tsx(3633-3681)"],
+    "$files": ["src/renderer/components/ui/theme-provider.tsx(3767-3815)"],
     "$id": 3415
   }
 }

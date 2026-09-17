@@ -9,7 +9,7 @@
     "de-DE": "IPC-Schnittstelle nicht verfügbar: modelDownload.checkDownloadStatus",
     "fr-FR": "Interface IPC indisponible : modelDownload.checkDownloadStatus",
     "ko-KR": "IPC 인터페이스를 사용할 수 없습니다: modelDownload.checkDownloadStatus",
-    "$files": ["src/renderer/hooks/use-model-download.ts(4175-4223)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(4325-4373)"],
     "$id": 5435
   },
   "IPC 接口不可用: ollama.pullModel": {
@@ -22,7 +22,7 @@
     "de-DE": "IPC-Schnittstelle nicht verfügbar: ollama.pullModel",
     "fr-FR": "L'interface IPC n'est pas disponible : ollama.pullModel",
     "ko-KR": "IPC 인터페이스를 사용할 수 없음: ollama.pullModel",
-    "$files": ["src/renderer/hooks/use-model-download.ts(6201-6232)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(6419-6450)"],
     "$id": 2813
   },
   "拉取 Ollama 模型失败": {
@@ -35,7 +35,7 @@
     "de-DE": "Fehler beim Herunterladen des Ollama-Modells",
     "fr-FR": "Échec du téléchargement du modèle Ollama",
     "ko-KR": "Ollama 모델을 가져오지 못했습니다",
-    "$files": ["src/renderer/hooks/use-model-download.ts(6488-6506)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(6715-6733)"],
     "$id": 2814
   },
   "IPC 接口不可用: modelDownload.startDownload": {
@@ -48,7 +48,7 @@
     "de-DE": "IPC-Schnittstelle nicht verfügbar: modelDownload.startDownload",
     "fr-FR": "Interface IPC indisponible : modelDownload.startDownload",
     "ko-KR": "IPC 인터페이스를 사용할 수 없습니다: modelDownload.startDownload",
-    "$files": ["src/renderer/hooks/use-model-download.ts(7149-7191)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(7398-7440)"],
     "$id": 5436
   },
   "未知错误": {
@@ -61,7 +61,7 @@
     "de-DE": "Unbekannter Fehler",
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
-    "$files": ["src/renderer/hooks/use-model-download.ts(7741-7749)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(8007-8015)"],
     "$id": 8869
   },
   "Ollama 未安装": {
@@ -74,7 +74,7 @@
     "de-DE": "Ollama nicht installiert",
     "fr-FR": "Ollama n'est pas installé",
     "ko-KR": "Ollama 설치되지 않음",
-    "$files": ["src/renderer/hooks/use-model-download.ts(7954-7968)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(8226-8240)"],
     "$id": 8965
   },
   "Ollama 未安装。如果已安装，请试着重启萤核智能文件夹，以再次检测": {
@@ -87,7 +87,7 @@
     "de-DE": "Ollama ist nicht installiert. Wenn es bereits installiert ist, versuchen Sie bitte, den Firefly AI Folder neu zu starten, um es erneut zu erkennen.",
     "fr-FR": "Ollama n'est pas installé. S'il est déjà installé, essayez de redémarrer Firefly AI Folder pour le détecter à nouveau.",
     "ko-KR": "올라마가 설치되지 않았습니다. 이미 설치되어 있는 경우 Firefly AI Folder를 다시 시작하여 다시 검색해 보세요.",
-    "$files": ["src/renderer/hooks/use-model-download.ts(8067-8106)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(8342-8381)"],
     "$id": 3294
   },
   "开始下载失败: {message}": {
@@ -100,7 +100,7 @@
     "de-DE": "Download konnte nicht gestartet werden: {message}",
     "fr-FR": "Échec du démarrage du téléchargement : {message}",
     "ko-KR": "다운로드 시작 실패: {message}",
-    "$files": ["src/renderer/hooks/use-model-download.ts(8138-8159)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(8415-8436)"],
     "$id": 3309
   },
   "下载失败": {
@@ -114,10 +114,10 @@
     "fr-FR": "Échec du téléchargement",
     "ko-KR": "다운로드 실패",
     "$files": [
-      "src/renderer/hooks/use-model-download.ts(12580-12588)",
-      "src/renderer/hooks/use-model-download.ts(12724-12732)",
-      "src/renderer/hooks/use-model-download.ts(12950-12958)",
-      "src/renderer/hooks/use-model-download.ts(15498-15506)"
+      "src/renderer/hooks/use-model-download.ts(13010-13018)",
+      "src/renderer/hooks/use-model-download.ts(13159-13167)",
+      "src/renderer/hooks/use-model-download.ts(13392-13400)",
+      "src/renderer/hooks/use-model-download.ts(16008-16016)"
     ],
     "$id": 5437
   },
@@ -131,7 +131,7 @@
     "de-DE": "Download-Fehler: {message}",
     "fr-FR": "Erreur de téléchargement : {message}",
     "ko-KR": "다운로드 오류: {message}",
-    "$files": ["src/renderer/hooks/use-model-download.ts(15774-15793)"],
+    "$files": ["src/renderer/hooks/use-model-download.ts(16292-16311)"],
     "$id": 3315
   },
   "质量评分": {
@@ -144,7 +144,7 @@
     "de-DE": "Qualitätsbewertung",
     "fr-FR": "Score de qualité",
     "ko-KR": "품질 평가 점수",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(753-761)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(783-791)"],
     "$id": 5438
   },
   "描述": {
@@ -157,7 +157,7 @@
     "de-DE": "Beschreibung",
     "fr-FR": "Description",
     "ko-KR": "설명",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(783-789)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(814-820)"],
     "$id": 5439
   },
   "标签": {
@@ -170,7 +170,7 @@
     "de-DE": "Label",
     "fr-FR": "Étiquette",
     "ko-KR": "라벨",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(804-810)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(836-842)"],
     "$id": 8966
   },
   "作者": {
@@ -183,7 +183,7 @@
     "de-DE": "Autor",
     "fr-FR": "Auteur",
     "ko-KR": "작성자",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(827-833)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(860-866)"],
     "$id": 5441
   },
   "语言": {
@@ -196,7 +196,7 @@
     "de-DE": "Sprache",
     "fr-FR": "Langue",
     "ko-KR": "언어",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(852-858)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(886-892)"],
     "$id": 5442
   },
   "分析日期": {
@@ -209,7 +209,7 @@
     "de-DE": "Analysedatum",
     "fr-FR": "Date d'analyse",
     "ko-KR": "분석일자",
-    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(879-887)"],
+    "$files": ["src/renderer/hooks/useFileDisplaySettings.ts(914-922)"],
     "$id": 8870
   },
   "API 不可用": {
@@ -222,7 +222,7 @@
     "de-DE": "API ist nicht verfügbar",
     "fr-FR": "L'API n'est pas disponible",
     "ko-KR": "API를 사용할 수 없습니다.",
-    "$files": ["src/renderer/hooks/useInvitation.ts(3615-3626)"],
+    "$files": ["src/renderer/hooks/useInvitation.ts(3721-3732)"],
     "$id": 8871
   }
 }

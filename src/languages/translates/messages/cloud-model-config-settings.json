@@ -9,7 +9,7 @@
     "de-DE": "Hersteller",
     "fr-FR": "Fabricant",
     "ko-KR": "제조업체",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3476-3482)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3587-3593)"],
     "$id": 4489
   },
   "参数规模": {
@@ -22,7 +22,7 @@
     "de-DE": "Parameterskala",
     "fr-FR": "Échelle des paramètres",
     "ko-KR": "매개변수 규모",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3566-3574)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3680-3688)"],
     "$id": 4490
   },
   "上下文长度": {
@@ -35,7 +35,7 @@
     "de-DE": "Kontextlänge",
     "fr-FR": "Longueur du contexte",
     "ko-KR": "컨텍스트 길이",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3664-3673)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3781-3790)"],
     "$id": 4491
   },
   "最大输出": {
@@ -48,7 +48,7 @@
     "de-DE": "Maximale Leistung",
     "fr-FR": "Puissance maximale",
     "ko-KR": "최대 출력",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3759-3767)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3879-3887)"],
     "$id": 4492
   },
   "每分钟请求数": {
@@ -61,7 +61,7 @@
     "de-DE": "Anfragen pro Minute",
     "fr-FR": "Requêtes par minute",
     "ko-KR": "분당 요청",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3921-3931)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(4046-4056)"],
     "$id": 4493
   },
   "每天请求限制": {
@@ -74,7 +74,7 @@
     "de-DE": "Tägliches Anforderungslimit",
     "fr-FR": "Limite de requêtes quotidienne",
     "ko-KR": "일일 요청 한도",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3958-3968)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(4084-4094)"],
     "$id": 4494
   },
   "每分钟 Token 限制": {
@@ -87,7 +87,7 @@
     "de-DE": "Token-Limit pro Minute",
     "fr-FR": "Limite de jetons par minute",
     "ko-KR": "분당 토큰 한도",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(3995-4011)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(4122-4138)"],
     "$id": 4495
   },
   "每秒请求数": {
@@ -100,7 +100,7 @@
     "de-DE": "Anfragen pro Sekunde",
     "fr-FR": "Requêtes par seconde",
     "ko-KR": "초당 요청",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(4038-4047)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(4166-4175)"],
     "$id": 4496
   },
   "速率限制": {
@@ -113,7 +113,7 @@
     "de-DE": "Tarifbegrenzung",
     "fr-FR": "Limite de taux",
     "ko-KR": "비율 제한",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(4075-4083)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(4205-4213)"],
     "$id": 4497
   },
   "未知错误": {
@@ -127,9 +127,9 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/renderer/components/settings/cloud-model-config-settings.tsx(8669-8677)",
-      "src/renderer/components/settings/cloud-model-config-settings.tsx(13806-13814)",
-      "src/renderer/components/settings/cloud-model-config-settings.tsx(15184-15192)"
+      "src/renderer/components/settings/cloud-model-config-settings.tsx(8908-8916)",
+      "src/renderer/components/settings/cloud-model-config-settings.tsx(14225-14233)",
+      "src/renderer/components/settings/cloud-model-config-settings.tsx(15653-15661)"
     ],
     "$id": 7912
   },
@@ -143,7 +143,7 @@
     "de-DE": "Bitte geben Sie zunächst den Anbieter und den API-Schlüssel ein.  ",
     "fr-FR": "Veuillez d'abord renseigner le fournisseur de services et la clé API.  ",
     "ko-KR": "먼저 서비스 제공업체와 API 키를 입력해 주세요.",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(12496-12516)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(12864-12884)"],
     "$id": 3043
   },
   "请先填写Base URL或选择有默认URL的服务商": {
@@ -157,8 +157,8 @@
     "fr-FR": "Veuillez d'abord renseigner l'URL de base ou sélectionner un fournisseur disposant d'une URL par défaut.  ",
     "ko-KR": "먼저 Base URL을 입력하거나 기본 URL이 있는 서비스 제공업체를 선택해 주세요.",
     "$files": [
-      "src/renderer/components/settings/cloud-model-config-settings.tsx(12716-12745)",
-      "src/renderer/components/settings/cloud-model-config-settings.tsx(14392-14421)"
+      "src/renderer/components/settings/cloud-model-config-settings.tsx(13092-13121)",
+      "src/renderer/components/settings/cloud-model-config-settings.tsx(14836-14865)"
     ],
     "$id": 3044
   },
@@ -172,7 +172,7 @@
     "de-DE": "Verbindungstest erfolgreich, Modelle werden abgerufen …  ",
     "fr-FR": "Test de connexion réussi, récupération de la liste des modèles en cours...  ",
     "ko-KR": "연결 테스트 성공, 모델 목록을 가져오는 중...",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(13004-13026)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(13394-13416)"],
     "$id": 3045
   },
   "未获取到在线模型列表，将继续使用内置模型列表": {
@@ -185,7 +185,7 @@
     "de-DE": "Online-Modellliste konnte nicht abgerufen werden; stattdessen wird die integrierte Modellliste verwendet.  ",
     "fr-FR": "Impossible d'obtenir la liste des modèles en ligne, la liste intégrée sera utilisée à la place.  ",
     "ko-KR": "온라인 모델 목록을 가져오지 못했습니다. 내장된 모델 목록을 계속 사용합니다.",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(13258-13284)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(13658-13684)"],
     "$id": 3046
   },
   "已加载并保存在线模型列表（{count}个）": {
@@ -198,7 +198,7 @@
     "de-DE": "Online-Modellliste wurde geladen und gespeichert ({count} Modelle).  ",
     "fr-FR": "Liste des modèles en ligne chargée et sauvegardée ({count} éléments).  ",
     "ko-KR": "온라인 모델 목록({count}개)을 로드하여 저장했습니다.",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(13666-13692)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(14083-14109)"],
     "$id": 3047
   },
   "请填写完整的配置信息": {
@@ -211,7 +211,7 @@
     "de-DE": "Bitte füllen Sie alle Konfigurationsfelder vollständig aus.  ",
     "fr-FR": "Veuillez renseigner toutes les informations de configuration.  ",
     "ko-KR": "구성 정보를 모두 입력해 주세요.",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(14145-14159)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(14579-14593)"],
     "$id": 3048
   },
   "已设为当前云端配置": {
@@ -224,7 +224,7 @@
     "de-DE": "Wurde als aktuelle Cloud-Konfiguration festgelegt.  ",
     "fr-FR": "Défini comme configuration cloud actuelle.  ",
     "ko-KR": "현재 클라우드 구성으로 설정되었습니다.",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(15083-15096)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(15550-15563)"],
     "$id": 3050
   },
   "无法激活为云端配置，错误信息：{message}": {
@@ -237,7 +237,7 @@
     "de-DE": "Kann nicht als Cloud-Konfiguration aktiviert werden. Fehlermeldung: {message}",
     "fr-FR": "Impossible d'activer la configuration cloud. Message d'erreur : {message}",
     "ko-KR": "클라우드 구성으로 활성화할 수 없습니다. 오류 메시지: {message}",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(15212-15240)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(15682-15710)"],
     "$id": 3051
   },
   "Custom（OpenAI Compatible）": {
@@ -250,7 +250,7 @@
     "de-DE": "Benutzerdefiniert (OpenAI-kompatibel)",
     "fr-FR": "Personnalisé (compatible OpenAI)  ",
     "ko-KR": "사용자 정의（OpenAI Compatible）",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(16156-16185)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(16657-16686)"],
     "$id": 3052
   },
   "正在加载...": {
@@ -263,7 +263,7 @@
     "de-DE": "Wird geladen...",
     "fr-FR": "Chargement en cours...  ",
     "ko-KR": "로딩 중...",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(18062-18073)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(18624-18635)"],
     "$id": 3055
   },
   "云服务商": {
@@ -276,7 +276,7 @@
     "de-DE": "Cloud-Anbieter",
     "fr-FR": "Fournisseur cloud  ",
     "ko-KR": "클라우드 서비스 제공업체",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(18296-18304)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(18864-18872)"],
     "$id": 3056
   },
   "选择服务商": {
@@ -289,7 +289,7 @@
     "de-DE": "Anbieter auswählen",
     "fr-FR": "Sélectionner un fournisseur  ",
     "ko-KR": "서비스 제공업체 선택",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(18583-18592)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(19158-19167)"],
     "$id": 3057
   },
   "推荐": {
@@ -302,7 +302,7 @@
     "de-DE": "Empfehlen",
     "fr-FR": "Recommander",
     "ko-KR": "추천하다",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(20106-20112)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(20705-20711)"],
     "$id": 11274
   },
   "本地": {
@@ -315,7 +315,7 @@
     "de-DE": "Lokal",
     "fr-FR": "Locale",
     "ko-KR": "현지의",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(20461-20467)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(21065-21071)"],
     "$id": 4391
   },
   "免费": {
@@ -329,8 +329,8 @@
     "fr-FR": "Gratuit",
     "ko-KR": "무료",
     "$files": [
-      "src/renderer/components/settings/cloud-model-config-settings.tsx(20809-20815)",
-      "src/renderer/components/settings/cloud-model-config-settings.tsx(30577-30583)"
+      "src/renderer/components/settings/cloud-model-config-settings.tsx(21418-21424)",
+      "src/renderer/components/settings/cloud-model-config-settings.tsx(31387-31393)"
     ],
     "$id": 4374
   },
@@ -344,7 +344,7 @@
     "de-DE": "Optional",
     "fr-FR": "Facultatif",
     "ko-KR": "선택 과목",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(21167-21173)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(21787-21793)"],
     "$id": 9508
   },
   "去注册/获取密钥": {
@@ -357,7 +357,7 @@
     "de-DE": "Registrieren/Schlüssel holen",
     "fr-FR": "Aller s'inscrire / obtenir une clé",
     "ko-KR": "등록/키 받기",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(22904-22916)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(23561-23573)"],
     "$id": 4375
   },
   "获取模型列表": {
@@ -371,8 +371,8 @@
     "fr-FR": "Obtenir la liste des modèles",
     "ko-KR": "모델 목록 가져오기",
     "$files": [
-      "src/renderer/components/settings/cloud-model-config-settings.tsx(24173-24183)",
-      "src/renderer/components/settings/cloud-model-config-settings.tsx(25920-25930)"
+      "src/renderer/components/settings/cloud-model-config-settings.tsx(24858-24868)",
+      "src/renderer/components/settings/cloud-model-config-settings.tsx(26643-26653)"
     ],
     "$id": 4392
   },
@@ -386,7 +386,7 @@
     "de-DE": "Bitte laden Sie Ollama herunter",
     "fr-FR": "Veuillez télécharger Ollama",
     "ko-KR": "올라마를 다운로드해주세요",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(24449-24463)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(25142-25156)"],
     "$id": 4393
   },
   "并在Ollama中安装Qwen3.5系列模型后，点击\"获取模型列表\"": {
@@ -399,7 +399,7 @@
     "de-DE": "Klicken Sie nach der Installation des Modells der Qwen3.5-Serie in Ollama auf „Modellliste abrufen“.",
     "fr-FR": "Après avoir installé le modèle de la série Qwen3.5 dans Ollama, cliquez sur « Obtenir la liste des modèles »",
     "ko-KR": "Ollama에 Qwen3.5 시리즈 모델을 설치한 후 \"모델 목록 가져오기\"를 클릭하세요.",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(25269-25307)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(25979-26017)"],
     "$id": 4394
   },
   "请输入或选择模型ID": {
@@ -412,7 +412,7 @@
     "de-DE": "Bitte geben Sie eine Modell-ID ein oder wählen Sie eine aus",
     "fr-FR": "Veuillez saisir ou sélectionner un identifiant de modèle  ",
     "ko-KR": "모델 ID를 입력하거나 선택하세요",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(27058-27072)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(27807-27821)"],
     "$id": 3064
   },
   "没有找到匹配的模型": {
@@ -425,7 +425,7 @@
     "de-DE": "Kein passendes Modell gefunden",
     "fr-FR": "Aucun modèle correspondant trouvé  ",
     "ko-KR": "일치하는 모델을 찾을 수 없습니다",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(31632-31645)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(32462-32475)"],
     "$id": 3065
   },
   "多模态能力": {
@@ -438,7 +438,7 @@
     "de-DE": "Multimodale Fähigkeiten",
     "fr-FR": "Capacité multimodale  ",
     "ko-KR": "멀티모달 기능",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(32936-32945)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(33794-33803)"],
     "$id": 3066
   },
   "当前使用的配置（已激活）": {
@@ -451,7 +451,7 @@
     "de-DE": "Die aktuell verwendete Konfiguration (aktiviert)",
     "fr-FR": "Configuration actuellement utilisée (activée)",
     "ko-KR": "현재 사용 중인 구성(활성화됨)",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(33929-33945)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(34809-34825)"],
     "$id": 2638
   },
   "设为当前配置(激活)": {
@@ -464,7 +464,7 @@
     "de-DE": "Als aktuelle Konfiguration festlegen (aktivieren)",
     "fr-FR": "Définir comme configuration actuelle (activer)",
     "ko-KR": "현재 구성으로 설정(활성화)",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(33949-33963)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(34829-34843)"],
     "$id": 2639
   },
   "当前激活的云端配置": {
@@ -477,7 +477,7 @@
     "de-DE": "Derzeit aktivierte Cloud-Konfiguration",
     "fr-FR": "Configuration cloud actuellement activée",
     "ko-KR": "현재 활성화된 클라우드 구성",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(35255-35268)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(36161-36174)"],
     "$id": 4670
   },
   "缺少": {
@@ -490,7 +490,7 @@
     "de-DE": "Fehlend",
     "fr-FR": "Manquant",
     "ko-KR": "누락",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(35578-35584)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(36491-36497)"],
     "$id": 7915
   },
   "服务商": {
@@ -503,7 +503,7 @@
     "de-DE": "Dienstleister",
     "fr-FR": "Fournisseur de services",
     "ko-KR": "서비스 제공자",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(35971-35978)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(36892-36899)"],
     "$id": 4671
   },
   "当前编辑": {
@@ -516,7 +516,7 @@
     "de-DE": "Aktueller Herausgeber",
     "fr-FR": "Éditeur actuel",
     "ko-KR": "현재 편집자",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(36433-36441)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(37360-37368)"],
     "$id": 4672
   },
   "模型": {
@@ -529,7 +529,7 @@
     "de-DE": "Modell",
     "fr-FR": "Modèle",
     "ko-KR": "모델",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(36661-36667)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(37593-37599)"],
     "$id": 4673
   },
   "未选择": {
@@ -542,7 +542,7 @@
     "de-DE": "Nicht ausgewählt",
     "fr-FR": "Non sélectionné",
     "ko-KR": "선택되지 않음",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(37093-37100)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(38033-38040)"],
     "$id": 7916
   },
   "Base URL": {
@@ -555,7 +555,7 @@
     "de-DE": "Basis-URL",
     "fr-FR": "URL de base",
     "ko-KR": "기본 URL",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(37338-37350)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(38283-38295)"],
     "$id": 4674
   },
   "未配置": {
@@ -568,7 +568,7 @@
     "de-DE": "Nicht konfiguriert",
     "fr-FR": "Non configuré",
     "ko-KR": "구성되지 않음",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(37836-37843)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(38790-38797)"],
     "$id": 7917
   },
   "正在加载配置...": {
@@ -581,7 +581,7 @@
     "de-DE": "Konfiguration wird geladen...",
     "fr-FR": "Chargement de la configuration…",
     "ko-KR": "설정을 불러오는 중...",
-    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(38064-38077)"],
+    "$files": ["src/renderer/components/settings/cloud-model-config-settings.tsx(39026-39039)"],
     "$id": 3069
   }
 }

@@ -9,7 +9,9 @@
     "de-DE": "Der Start der Anwendung wird vorbereitet...",
     "fr-FR": "Préparation du lancement de l'application...",
     "ko-KR": "애플리케이션 실행 준비 중...",
-    "$files": ["src/renderer/App.tsx(9199-9214)"],
+    "$files": [
+      "src/renderer/App.tsx(9199-9214)"
+    ],
     "$id": 7602
   },
   "已成功激活 {model}": {
@@ -22,7 +24,9 @@
     "de-DE": "Erfolgreich aktiviert {model}",
     "fr-FR": "Activation réussie {model}",
     "ko-KR": "{model}을(를) 성공적으로 활성화했습니다.",
-    "$files": ["src/renderer/App.tsx(10777-10794)"],
+    "$files": [
+      "src/renderer/App.tsx(10777-10794)"
+    ],
     "$id": 7603
   },
   "激活模型失败": {
@@ -35,7 +39,9 @@
     "de-DE": "Modell konnte nicht aktiviert werden",
     "fr-FR": "Échec de l'activation du modèle",
     "ko-KR": "모델을 활성화하지 못했습니다.",
-    "$files": ["src/renderer/App.tsx(11056-11066)"],
+    "$files": [
+      "src/renderer/App.tsx(11056-11066)"
+    ],
     "$id": 7604
   },
   "加速模型已就绪，将在 CPU 模式下自动启用加速": {
@@ -48,7 +54,9 @@
     "de-DE": "Das Beschleunigungsmodell ist bereit und die Beschleunigung wird im CPU-Modus automatisch aktiviert",
     "fr-FR": "Le modèle d'accélération est prêt et l'accélération sera automatiquement activée en mode CPU",
     "ko-KR": "가속 모델이 준비되었으며 CPU 모드에서 가속이 자동으로 활성화됩니다.",
-    "$files": ["src/renderer/App.tsx(11980-12008)"],
+    "$files": [
+      "src/renderer/App.tsx(11980-12008)"
+    ],
     "$id": 11219
   },
   "正在准备迁移模型...": {
@@ -61,7 +69,9 @@
     "de-DE": "Modellmigration wird vorbereitet...",
     "fr-FR": "Préparation de la migration du modèle...",
     "ko-KR": "모델 마이그레이션 준비 중...",
-    "$files": ["src/renderer/App.tsx(12849-12864)"],
+    "$files": [
+      "src/renderer/App.tsx(12849-12864)"
+    ],
     "$id": 7605
   },
   "正在迁移系统内置模型...": {
@@ -74,7 +84,9 @@
     "de-DE": "Im System integrierte Modelle werden migriert...",
     "fr-FR": "Migration des modèles intégrés au système...",
     "ko-KR": "시스템 내장 모델 마이그레이션 중...",
-    "$files": ["src/renderer/App.tsx(13028-13045)"],
+    "$files": [
+      "src/renderer/App.tsx(13028-13045)"
+    ],
     "$id": 7606
   },
   "正在优先迁移当前选中的模型...": {
@@ -87,7 +99,9 @@
     "de-DE": "Zuerst wird das aktuell ausgewählte Modell migriert...",
     "fr-FR": "Migration d'abord du modèle actuellement sélectionné...",
     "ko-KR": "현재 선택한 모델을 먼저 마이그레이션하는 중...",
-    "$files": ["src/renderer/App.tsx(13145-13165)"],
+    "$files": [
+      "src/renderer/App.tsx(13145-13165)"
+    ],
     "$id": 7607
   },
   "核心模型迁移成功！还有 {count} 个模型将在后台继续迁移，你可以随时点击“刷新模型列表”查看状态。": {
@@ -100,7 +114,9 @@
     "de-DE": "Die Migration des Kernmodells war erfolgreich! Es gibt {count} Modelle, die weiterhin im Hintergrund migriert werden. Sie können jederzeit auf „Modellliste aktualisieren“ klicken, um den Status zu überprüfen.",
     "fr-FR": "La migration du modèle de base a été réussie ! Il existe {count} modèles qui continueront à être migrés en arrière-plan. Vous pouvez cliquer sur « Actualiser la liste des modèles » pour vérifier l'état à tout moment.",
     "ko-KR": "핵심 모델 마이그레이션이 성공했습니다! 백그라운드에서 계속 마이그레이션되는 {count} 모델이 있습니다. 언제든지 \"모델 목록 새로 고침\"을 클릭하여 상태를 확인할 수 있습니다.",
-    "$files": ["src/renderer/App.tsx(13449-13521)"],
+    "$files": [
+      "src/renderer/App.tsx(13449-13521)"
+    ],
     "$id": 7608
   },
   "核心模型迁移成功！": {
@@ -113,7 +129,9 @@
     "de-DE": "Die Migration des Kernmodells war erfolgreich!",
     "fr-FR": "La migration du modèle de base a été réussie !",
     "ko-KR": "핵심 모델 마이그레이션이 성공했습니다!",
-    "$files": ["src/renderer/App.tsx(13639-13652)"],
+    "$files": [
+      "src/renderer/App.tsx(13639-13652)"
+    ],
     "$id": 7609
   },
   "所有模型迁移任务已完成": {
@@ -126,7 +144,9 @@
     "de-DE": "Alle Modellmigrationsaufgaben wurden abgeschlossen",
     "fr-FR": "Toutes les tâches de migration du modèle ont été terminées",
     "ko-KR": "모든 모델 마이그레이션 작업이 완료되었습니다.",
-    "$files": ["src/renderer/App.tsx(13778-13793)"],
+    "$files": [
+      "src/renderer/App.tsx(13778-13793)"
+    ],
     "$id": 7610
   },
   "模型迁移过程中发生错误，请检查磁盘空间或权限": {
@@ -139,7 +159,9 @@
     "de-DE": "Bei der Modellmigration ist ein Fehler aufgetreten. Bitte überprüfen Sie den Speicherplatz oder die Berechtigungen",
     "fr-FR": "Une erreur s'est produite lors de la migration du modèle, veuillez vérifier l'espace disque ou les autorisations",
     "ko-KR": "모델 마이그레이션 중 오류가 발생했습니다. 디스크 공간이나 권한을 확인하세요.",
-    "$files": ["src/renderer/App.tsx(13976-14002)"],
+    "$files": [
+      "src/renderer/App.tsx(13976-14002)"
+    ],
     "$id": 7611
   },
   "模型迁移进度：已完成 {count} 个，剩余 {remaining} 个": {
@@ -152,7 +174,9 @@
     "de-DE": "Modellmigrationsfortschritt: {count} abgeschlossen, {remaining} übrig",
     "fr-FR": "Progression de la migration du modèle : {count} terminé, {remaining} restant",
     "ko-KR": "모델 마이그레이션 진행률: {count} 완료, {remaining} 남음",
-    "$files": ["src/renderer/App.tsx(14409-14450)"],
+    "$files": [
+      "src/renderer/App.tsx(14409-14450)"
+    ],
     "$id": 7612
   },
   "模型迁移耗时过长（已等待 {seconds} 秒），已自动关闭蒙版。请前往日志查看详情，或检查目标目录文件是否完整。": {
@@ -165,7 +189,9 @@
     "de-DE": "Die Modellmigration hat zu lange gedauert ({seconds} Sekunden gewartet) und die Maske wurde automatisch deaktiviert. Bitte gehen Sie zum Protokoll, um Details anzuzeigen, oder überprüfen Sie, ob die Zielverzeichnisdatei vollständig ist.",
     "fr-FR": "La migration du modèle a pris trop de temps (attendu {seconds} secondes) et le masque a été automatiquement désactivé. Veuillez accéder au journal pour afficher les détails ou vérifier si le fichier du répertoire cible est complet.",
     "ko-KR": "모델 마이그레이션이 너무 오래 걸려서({seconds}초 동안 대기) 마스크가 자동으로 꺼졌습니다. 로그로 이동하여 세부정보를 보거나 대상 디렉터리 파일이 완전한지 확인하세요.",
-    "$files": ["src/renderer/App.tsx(15586-15660)"],
+    "$files": [
+      "src/renderer/App.tsx(15586-15660)"
+    ],
     "$id": 7613
   },
   "正在检测应用配置...": {
@@ -178,7 +204,9 @@
     "de-DE": "Anwendungskonfiguration wird erkannt...",
     "fr-FR": "Détection de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성을 감지하는 중...",
-    "$files": ["src/renderer/App.tsx(17240-17255)"],
+    "$files": [
+      "src/renderer/App.tsx(17240-17255)"
+    ],
     "$id": 7614
   },
   "正在验证授权状态...": {
@@ -191,7 +219,9 @@
     "de-DE": "Autorisierungsstatus wird überprüft...",
     "fr-FR": "Vérification de l'état d'autorisation...",
     "ko-KR": "승인 상태 확인 중...",
-    "$files": ["src/renderer/App.tsx(20288-20303)"],
+    "$files": [
+      "src/renderer/App.tsx(20288-20303)"
+    ],
     "$id": 7615
   },
   "选中的模型文件不存在或加载失败，请在设置中重新配置。": {
@@ -204,7 +234,9 @@
     "de-DE": "Die ausgewählte Modelldatei ist nicht vorhanden oder kann nicht geladen werden. Bitte konfigurieren Sie es in den Einstellungen neu.",
     "fr-FR": "Le fichier de modèle sélectionné n'existe pas ou ne parvient pas à se charger. Veuillez le reconfigurer dans les paramètres.",
     "ko-KR": "선택한 모델 파일이 존재하지 않거나 로드에 실패했습니다. 설정에서 다시 구성해 보세요.",
-    "$files": ["src/renderer/App.tsx(25899-25929)"],
+    "$files": [
+      "src/renderer/App.tsx(25899-25929)"
+    ],
     "$id": 7616
   },
   "去设置": {
@@ -217,7 +249,9 @@
     "de-DE": "Gehen Sie zu den Einstellungen",
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
-    "$files": ["src/renderer/App.tsx(26014-26021)"],
+    "$files": [
+      "src/renderer/App.tsx(26014-26021)"
+    ],
     "$id": 7617
   },
   "正在初始化应用环境...": {
@@ -230,7 +264,9 @@
     "de-DE": "Anwendungsumgebung wird initialisiert...",
     "fr-FR": "Initialisation de l'environnement d'application...",
     "ko-KR": "애플리케이션 환경 초기화 중...",
-    "$files": ["src/renderer/App.tsx(32067-32083)"],
+    "$files": [
+      "src/renderer/App.tsx(32067-32083)"
+    ],
     "$id": 7618
   },
   "正在初始化AI服务...": {
@@ -243,7 +279,9 @@
     "de-DE": "KI-Dienst wird initialisiert...",
     "fr-FR": "Initialisation du service IA...",
     "ko-KR": "AI 서비스 초기화 중...",
-    "$files": ["src/renderer/App.tsx(32230-32246)"],
+    "$files": [
+      "src/renderer/App.tsx(32230-32246)"
+    ],
     "$id": 7619
   },
   "正在加载应用配置...": {
@@ -256,7 +294,9 @@
     "de-DE": "Anwendungskonfiguration wird geladen...",
     "fr-FR": "Chargement de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성 로드 중...",
-    "$files": ["src/renderer/App.tsx(32517-32532)"],
+    "$files": [
+      "src/renderer/App.tsx(32517-32532)"
+    ],
     "$id": 7620
   },
   "正在检查 AI 状态...": {
@@ -269,7 +309,9 @@
     "de-DE": "AI-Status wird überprüft...",
     "fr-FR": "Vérification de l'état de l'IA...",
     "ko-KR": "AI 상태를 확인하는 중...",
-    "$files": ["src/renderer/App.tsx(32585-32602)"],
+    "$files": [
+      "src/renderer/App.tsx(32585-32602)"
+    ],
     "$id": 7621
   },
   "下载完成": {
@@ -282,7 +324,9 @@
     "de-DE": "Download abgeschlossen",
     "fr-FR": "Téléchargement terminé",
     "ko-KR": "다운로드 완료",
-    "$files": ["src/renderer/App.tsx(41319-41327)"],
+    "$files": [
+      "src/renderer/App.tsx(41319-41327)"
+    ],
     "$id": 7622
   },
   "{model} 模型已下载完成，是否立即激活？": {
@@ -295,7 +339,9 @@
     "de-DE": "{model} Das Modell wurde heruntergeladen. Möchten Sie es jetzt aktivieren?",
     "fr-FR": "{model} Le modèle a été téléchargé. Voulez-vous l'activer maintenant ?",
     "ko-KR": "{model} 모델이 다운로드되었습니다. 지금 활성화하시겠습니까?",
-    "$files": ["src/renderer/App.tsx(41529-41556)"],
+    "$files": [
+      "src/renderer/App.tsx(41529-41556)"
+    ],
     "$id": 7623
   },
   "稍后再说": {
@@ -308,7 +354,9 @@
     "de-DE": "Wir sprechen später",
     "fr-FR": "On se parle plus tard",
     "ko-KR": "나중에 얘기하자",
-    "$files": ["src/renderer/App.tsx(42051-42059)"],
+    "$files": [
+      "src/renderer/App.tsx(42051-42059)"
+    ],
     "$id": 7624
   },
   "立即激活": {
@@ -321,7 +369,9 @@
     "de-DE": "Jetzt aktivieren",
     "fr-FR": "Activer maintenant",
     "ko-KR": "지금 활성화",
-    "$files": ["src/renderer/App.tsx(42306-42314)"],
+    "$files": [
+      "src/renderer/App.tsx(42306-42314)"
+    ],
     "$id": 7625
   },
   "正在迁移模型": {
@@ -334,7 +384,9 @@
     "de-DE": "Migrationsmodell",
     "fr-FR": "Migration du modèle",
     "ko-KR": "모델 마이그레이션",
-    "$files": ["src/renderer/App.tsx(43429-43439)"],
+    "$files": [
+      "src/renderer/App.tsx(43429-43439)"
+    ],
     "$id": 7626
   },
   "正在准备迁移，请稍候...": {
@@ -347,7 +399,9 @@
     "de-DE": "Die Migration wird vorbereitet, bitte warten...",
     "fr-FR": "Préparation de la migration, veuillez patienter...",
     "ko-KR": "마이그레이션을 준비 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/App.tsx(43592-43609)"],
+    "$files": [
+      "src/renderer/App.tsx(43592-43609)"
+    ],
     "$id": 7627
   },
   "请勿关闭应用": {
@@ -360,7 +414,9 @@
     "de-DE": "Schließen Sie die App nicht",
     "fr-FR": "Ne fermez pas l'application",
     "ko-KR": "앱을 닫지 마세요",
-    "$files": ["src/renderer/App.tsx(44021-44031)"],
+    "$files": [
+      "src/renderer/App.tsx(44021-44031)"
+    ],
     "$id": 7628
   },
   "接口不存在": {
@@ -373,7 +429,9 @@
     "de-DE": "Schnittstelle existiert nicht",
     "fr-FR": "L'interface n'existe pas",
     "ko-KR": "인터페이스가 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(1775-1784)"],
+    "$files": [
+      "src/electron/runtime-services/ai-skill-api-service.ts(1826-1835)"
+    ],
     "$id": 9521
   },
   "文件未找到": {
@@ -386,7 +444,9 @@
     "de-DE": "Datei nicht gefunden",
     "fr-FR": "Fichier introuvable",
     "ko-KR": "파일을 찾을 수 없습니다",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11088-11097)"],
+    "$files": [
+      "src/electron/runtime-services/ai-skill-api-service.ts(11442-11451)"
+    ],
     "$id": 7629
   },
   "缺少 filePath 参数": {
@@ -399,7 +459,9 @@
     "de-DE": "FilePath-Parameter fehlt",
     "fr-FR": "Paramètre filePath manquant",
     "ko-KR": "filePath 매개변수가 누락되었습니다.",
-    "$files": ["src/electron/runtime-services/ai-skill-api-service.ts(11736-11754)"],
+    "$files": [
+      "src/electron/runtime-services/ai-skill-api-service.ts(12110-12128)"
+    ],
     "$id": 9446
   },
   "响应序列化失败": {
@@ -413,8 +475,8 @@
     "fr-FR": "La sérialisation de la réponse a échoué",
     "ko-KR": "응답 직렬화 실패",
     "$files": [
-      "src/electron/runtime-services/ai-skill-api-service.ts(16482-16493)",
-      "src/electron/runtime-services/ai-skill-api-service.ts(17178-17189)"
+      "src/electron/runtime-services/ai-skill-api-service.ts(16981-16992)",
+      "src/electron/runtime-services/ai-skill-api-service.ts(17698-17709)"
     ],
     "$id": 7631
   },
@@ -428,7 +490,9 @@
     "de-DE": "Datenbank kann nicht automatisch initialisiert werden: Es wurde keine Sprache angegeben",
     "fr-FR": "Impossible d'initialiser automatiquement la base de données : aucune langue n'a été spécifiée",
     "ko-KR": "데이터베이스를 자동 초기화할 수 없습니다. 언어가 지정되지 않았습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(2006-2027)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(3268-3289)"
+    ],
     "$id": 7771
   },
   "数据库初始化必须指定语言代码": {
@@ -441,7 +505,9 @@
     "de-DE": "Bei der Datenbankinitialisierung muss der Sprachcode angegeben werden",
     "fr-FR": "L'initialisation de la base de données doit spécifier le code de langue",
     "ko-KR": "데이터베이스 초기화에서는 언어 코드를 지정해야 합니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(2536-2554)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(3798-3816)"
+    ],
     "$id": 7772
   },
   "检测到迁移备份文件，正在恢复...": {
@@ -454,7 +520,9 @@
     "de-DE": "Migrationssicherungsdatei erkannt, wird wiederhergestellt...",
     "fr-FR": "Fichier de sauvegarde de migration détecté, restauration...",
     "ko-KR": "마이그레이션 백업 파일이 감지되었습니다. 복원 중...",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(3094-3115)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(4356-4377)"
+    ],
     "$id": 7633
   },
   "数据库已从备份恢复": {
@@ -467,7 +535,9 @@
     "de-DE": "Datenbank aus Sicherung wiederhergestellt",
     "fr-FR": "Base de données restaurée à partir d'une sauvegarde",
     "ko-KR": "백업에서 복원된 데이터베이스",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(3653-3666)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(4915-4928)"
+    ],
     "$id": 7634
   },
   "恢复备份失败": {
@@ -480,7 +550,9 @@
     "de-DE": "Das Wiederherstellen des Backups ist fehlgeschlagen",
     "fr-FR": "La restauration de la sauvegarde a échoué",
     "ko-KR": "백업 복원 실패",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(3761-3771)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(5023-5033)"
+    ],
     "$id": 7635
   },
   "数据库初始化失败": {
@@ -493,7 +565,9 @@
     "de-DE": "Die Datenbankinitialisierung ist fehlgeschlagen",
     "fr-FR": "L'initialisation de la base de données a échoué",
     "ko-KR": "데이터베이스 초기화 실패",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(5174-5186)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(6520-6532)"
+    ],
     "$id": 7636
   },
   "删除备份文件失败": {
@@ -506,7 +580,9 @@
     "de-DE": "Die Sicherungsdatei konnte nicht gelöscht werden",
     "fr-FR": "Échec de la suppression du fichier de sauvegarde",
     "ko-KR": "백업 파일을 삭제하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(6093-6105)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(7439-7451)"
+    ],
     "$id": 7637
   },
   "数据库备份已创建: {path}": {
@@ -519,7 +595,9 @@
     "de-DE": "Datenbanksicherung erstellt: {path}",
     "fr-FR": "Sauvegarde de base de données créée : {path}",
     "ko-KR": "생성된 데이터베이스 백업: {path}",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(6634-6654)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(7980-8000)"
+    ],
     "$id": 7638
   },
   "创建数据库备份失败": {
@@ -532,7 +610,9 @@
     "de-DE": "Datenbanksicherung konnte nicht erstellt werden",
     "fr-FR": "Échec de la création d'une sauvegarde de la base de données",
     "ko-KR": "데이터베이스 백업을 생성하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(6777-6790)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(8123-8136)"
+    ],
     "$id": 7639
   },
   "需要数据库迁移，正在创建备份...": {
@@ -545,7 +625,9 @@
     "de-DE": "Datenbankmigration erforderlich, Backup erstellen...",
     "fr-FR": "Migration de base de données requise, création de sauvegarde...",
     "ko-KR": "데이터베이스 마이그레이션이 필요합니다. 백업을 만드는 중...",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(7243-7264)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(8589-8610)"
+    ],
     "$id": 7640
   },
   "迁移成功，已删除备份": {
@@ -558,7 +640,9 @@
     "de-DE": "Migration erfolgreich, Backup gelöscht",
     "fr-FR": "Migration réussie, sauvegarde supprimée",
     "ko-KR": "마이그레이션이 완료되었습니다. 백업이 삭제되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(7420-7434)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(8766-8780)"
+    ],
     "$id": 7641
   },
   "数据库迁移失败": {
@@ -571,7 +655,9 @@
     "de-DE": "Die Datenbankmigration ist fehlgeschlagen",
     "fr-FR": "La migration de la base de données a échoué",
     "ko-KR": "데이터베이스 마이그레이션 실패",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(7519-7530)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(8865-8876)"
+    ],
     "$id": 7642
   },
   "正在执行迁移版本 {version}: {name}": {
@@ -584,7 +670,9 @@
     "de-DE": "Migrationsversion {version} wird ausgeführt: {name}",
     "fr-FR": "Exécution de la version de migration {version} : {name}",
     "ko-KR": "마이그레이션 버전 {version} 실행 중: {name}",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(8126-8156)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(9472-9502)"
+    ],
     "$id": 7643
   },
   "迁移版本 {version} 完成": {
@@ -597,7 +685,9 @@
     "de-DE": "Migrationsversion {version} abgeschlossen",
     "fr-FR": "Version de migration {version} terminée",
     "ko-KR": "마이그레이션 버전 {version}이(가) 완료되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(8792-8813)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(10138-10159)"
+    ],
     "$id": 7644
   },
   "执行数据库迁移失败": {
@@ -610,7 +700,9 @@
     "de-DE": "Die Datenbankmigration konnte nicht durchgeführt werden",
     "fr-FR": "Échec de la migration de la base de données",
     "ko-KR": "데이터베이스 마이그레이션을 수행하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(8953-8966)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(10299-10312)"
+    ],
     "$id": 7645
   },
   "数据库升级失败\\n\\n错误原因: {error}\\n\\n您的原始数据已安全备份到:\\n{path}\\n\\n请尝试重新启动，系统将自动从备份恢复并重新升级。": {
@@ -623,7 +715,9 @@
     "de-DE": "Datenbank-Upgrade fehlgeschlagen\\n\\nFehlergrund: {error}\\n\\nIhre ursprünglichen Daten wurden sicher gesichert unter:\\n{path}\\n\\nBitte versuchen Sie einen Neustart. Das System wird automatisch aus der Sicherung wiederhergestellt und erneut aktualisiert.",
     "fr-FR": "Échec de la mise à niveau de la base de données\\n\\nRaison de l'erreur : {error}\\n\\nVos données d'origine ont été sauvegardées en toute sécurité vers :\\n{path}\\n\\nVeuillez essayer de redémarrer, le système restaurera automatiquement à partir de la sauvegarde et effectuera une nouvelle mise à niveau.",
     "ko-KR": "데이터베이스 업그레이드 실패\\n\\n오류 이유: {error}\\n\\n원래 데이터가 다음 위치에 안전하게 백업되었습니다.\\n{path}\\n\\n다시 시작해 보십시오. 시스템이 자동으로 백업에서 복원되고 다시 업그레이드됩니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(12687-12778)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(14033-14124)"
+    ],
     "$id": 7646
   },
   "数据库升级失败": {
@@ -637,8 +731,8 @@
     "fr-FR": "La mise à niveau de la base de données a échoué",
     "ko-KR": "데이터베이스 업그레이드 실패",
     "$files": [
-      "src/electron/runtime-services/database/database-service.ts(13193-13204)",
-      "src/electron/runtime-services/database/database-service.ts(13225-13236)"
+      "src/electron/runtime-services/database/database-service.ts(14539-14550)",
+      "src/electron/runtime-services/database/database-service.ts(14571-14582)"
     ],
     "$id": 7647
   },
@@ -652,7 +746,9 @@
     "de-DE": "Neustart",
     "fr-FR": "Redémarrage",
     "ko-KR": "다시 시작",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(13283-13291)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(14629-14637)"
+    ],
     "$id": 7648
   },
   "退出应用": {
@@ -666,8 +762,8 @@
     "fr-FR": "Quitter l'application",
     "ko-KR": "애플리케이션 종료",
     "$files": [
-      "src/electron/runtime-services/database/database-service.ts(13294-13302)",
-      "src/electron/runtime-services/database/database-service.ts(14754-14762)"
+      "src/electron/runtime-services/database/database-service.ts(14640-14648)",
+      "src/electron/runtime-services/database/database-service.ts(16100-16108)"
     ],
     "$id": 7649
   },
@@ -681,7 +777,9 @@
     "de-DE": "Alte Version der Datenbank (1.x.x) erkannt\\n\\nDiese Anwendungsversion 2.0 unterstützt kein direktes Upgrade der Datenbank von der alten Version mehr. \\n\\nBitte führen Sie einen der folgenden Vorgänge aus:\\n1. Installieren und führen Sie zuerst Version 1.3.2 aus, um das Übergangs-Upgrade abzuschließen, und installieren Sie dann Version 2.0. \\n2. Löschen Sie die alte Datenbankdatei (firefly-ai-folder.db) manuell und starten Sie die Anwendung neu, um eine neue 2.2-Architektur zu erstellen. \\n\\nDie Anwendung wird jetzt geschlossen.",
     "fr-FR": "Ancienne version de la base de données (1.x.x) détectée\\n\\nCette application version 2.0 ne prend plus en charge la mise à niveau de la base de données directement à partir de l'ancienne version. \\n\\nVeuillez effectuer l'une des opérations suivantes :\\n1. Installez et exécutez d'abord la version 1.3.2 pour terminer la mise à niveau de transition, puis installez la version 2.0. \\n2. Supprimez manuellement l'ancien fichier de base de données (firefly-ai-folder.db) et redémarrez l'application pour créer une nouvelle architecture 2.2. \\n\\nL'application va maintenant se fermer.",
     "ko-KR": "이전 버전의 데이터베이스(1.x.x)가 감지되었습니다.\\n\\n이 애플리케이션 버전 2.0은 더 이상 이전 버전에서 직접 데이터베이스를 업그레이드하는 것을 지원하지 않습니다. \\n\\n다음 작업 중 하나를 수행하십시오.\\n1. 먼저 버전 1.3.2를 설치하고 실행하여 전환 업그레이드를 완료한 다음 버전 2.0을 설치하세요. \\n2. 기존 데이터베이스 파일(firefly-ai-folder.db)을 수동으로 삭제하고 애플리케이션을 다시 시작하여 새로운 2.2 아키텍처를 생성합니다. \\n\\n이제 애플리케이션이 닫힙니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(14129-14314)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(15475-15660)"
+    ],
     "$id": 7650
   },
   "数据库版本不兼容": {
@@ -694,7 +792,9 @@
     "de-DE": "Die Datenbankversion ist nicht kompatibel",
     "fr-FR": "La version de la base de données est incompatible",
     "ko-KR": "데이터베이스 버전이 호환되지 않습니다",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(14662-14674)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(16008-16020)"
+    ],
     "$id": 7651
   },
   "数据库版本过旧": {
@@ -707,7 +807,9 @@
     "de-DE": "Die Datenbankversion ist zu alt",
     "fr-FR": "La version de la base de données est trop ancienne",
     "ko-KR": "데이터베이스 버전이 너무 오래되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(14695-14706)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(16041-16052)"
+    ],
     "$id": 7652
   },
   "清理分析队列孤儿项失败": {
@@ -720,47 +822,25 @@
     "de-DE": "Das Bereinigen verwaister Elemente in der Analysewarteschlange ist fehlgeschlagen",
     "fr-FR": "Échec du nettoyage des éléments orphelins de la file d'attente d'analyse",
     "ko-KR": "분석 대기열 고아 항목을 정리하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(15593-15608)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(16939-16954)"
+    ],
     "$id": 7653
   },
-  "检测到 1.x 版本数据库，拒绝启动": {
-    "en-US": "Version 1.x database detected, refused to start",
-    "es-ES": "Se detectó la versión 1.x de la base de datos, se negó a iniciarse",
-    "ar-EG": "تم اكتشاف قاعدة بيانات الإصدار 1.x، وتم رفض البدء",
-    "pt-PT": "Banco de dados da versão 1.x detectado, recusou-se a iniciar",
-    "ru-RU": "Обнаружена база данных версии 1.x, запуск запрещен.",
-    "ja-JP": "バージョン 1.x データベースが検出されましたが、起動が拒否されました",
-    "de-DE": "Datenbank der Version 1.x erkannt, Start verweigert",
-    "fr-FR": "Base de données version 1.x détectée, refus de démarrer",
-    "ko-KR": "버전 1.x 데이터베이스가 감지되어 시작이 거부되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(16275-16297)"],
-    "$id": 7654
-  },
-  "全新安装，准备执行架构初始化...": {
-    "en-US": "Fresh installation, ready to perform architecture initialization...",
-    "es-ES": "Instalación nueva, lista para realizar la inicialización de la arquitectura...",
-    "ar-EG": "تثبيت جديد، جاهز لإجراء تهيئة البنية...",
-    "pt-PT": "Nova instalação, pronta para realizar a inicialização da arquitetura...",
-    "ru-RU": "Свежая установка, готовая к инициализации архитектуры...",
-    "ja-JP": "新規インストール。アーキテクチャの初期化を実行する準備ができています...",
-    "de-DE": "Neuinstallation, bereit für die Architekturinitialisierung ...",
-    "fr-FR": "Nouvelle installation, prête à effectuer l'initialisation de l'architecture...",
-    "ko-KR": "새로 설치하고 아키텍처 초기화를 수행할 준비가 되었습니다...",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(16427-16448)"],
-    "$id": 7655
-  },
-  "检测到版本 1 数据库，拒绝启动": {
-    "en-US": "Version 1 database detected, startup refused",
-    "es-ES": "Base de datos versión 1 detectada, inicio rechazado",
-    "ar-EG": "تم اكتشاف قاعدة بيانات الإصدار 1، وتم رفض بدء التشغيل",
-    "pt-PT": "Banco de dados da versão 1 detectado, inicialização recusada",
-    "ru-RU": "Обнаружена база данных версии 1, в запуске отказано",
-    "ja-JP": "バージョン 1 データベースが検出されましたが、起動は拒否されました",
-    "de-DE": "Datenbank der Version 1 erkannt, Start verweigert",
-    "fr-FR": "Base de données version 1 détectée, démarrage refusé",
-    "ko-KR": "버전 1 데이터베이스가 감지되어 시작이 거부되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(16541-16561)"],
-    "$id": 7656
+  "全新安装，准备执行架构初始化 (Genesis Baseline V1)...": {
+    "en-US": "Brand new installation, ready to perform architecture initialization (Genesis Baseline V1)...",
+    "es-ES": "Instalación completamente nueva, lista para realizar la inicialización de la arquitectura (Genesis Baseline V1)...",
+    "ar-EG": "تركيب جديد تماما ، جاهز لأداء تهيئة البنية (التكوين الأساسي الإصدار 1)...",
+    "pt-PT": "Instalação totalmente nova, pronta para executar a inicialização da arquitetura (Genesis Baseline V1)...",
+    "ru-RU": "Совершенно новая установка, готовая к выполнению инициализации архитектуры (Genesis Baseline V1)...",
+    "ja-JP": "新しいインストール、アーキテクチャの初期化を実行する準備ができています（Genesis Baseline V1）。..",
+    "de-DE": "Brandneue Installation, bereit für die Architekturinitialisierung (Genesis Baseline V1)...",
+    "fr-FR": "Nouvelle installation, prête à effectuer l'initialisation de l'architecture (Genesis Baseline V1)...",
+    "ko-KR": "새로운 설치,아키텍처 초기화를 수행 할 준비가되었습니다...",
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(17305-17348)"
+    ],
+    "$id": 19637
   },
   "创建数据表失败": {
     "en-US": "Failed to create data table",
@@ -772,7 +852,9 @@
     "de-DE": "Datentabelle konnte nicht erstellt werden",
     "fr-FR": "Échec de la création de la table de données",
     "ko-KR": "데이터 테이블을 생성하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(16691-16702)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(17433-17444)"
+    ],
     "$id": 7657
   },
   "发送前端通知失败": {
@@ -785,7 +867,9 @@
     "de-DE": "Das Senden der Frontend-Benachrichtigung ist fehlgeschlagen",
     "fr-FR": "Échec de l'envoi de la notification frontale",
     "ko-KR": "프런트엔드 알림을 보내지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(17395-17407)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(19148-19160)"
+    ],
     "$id": 7658
   },
   "所有AI分析数据已重置": {
@@ -798,7 +882,9 @@
     "de-DE": "Alle KI-Analysedaten wurden zurückgesetzt",
     "fr-FR": "Toutes les données d'analyse de l'IA ont été réinitialisées",
     "ko-KR": "모든 AI 분석 데이터가 재설정되었습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(37605-37620)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(39226-39241)"
+    ],
     "$id": 7659
   },
   "重置所有AI分析数据失败": {
@@ -811,7 +897,9 @@
     "de-DE": "Alle KI-Analysedaten konnten nicht zurückgesetzt werden",
     "fr-FR": "Échec de la réinitialisation de toutes les données d'analyse IA",
     "ko-KR": "모든 AI 분석 데이터를 재설정하지 못했습니다.",
-    "$files": ["src/electron/runtime-services/database/database-service.ts(37696-37712)"],
+    "$files": [
+      "src/electron/runtime-services/database/database-service.ts(39317-39333)"
+    ],
     "$id": 7660
   },
   "getDatabaseConfig 必须显式指定语言代码 (language)": {
@@ -824,7 +912,9 @@
     "de-DE": "GetDatabaseConfig muss explizit einen Sprachcode (language) angeben",
     "fr-FR": "GetDatabaseConfig doit explicitement spécifier le code de langue (language)",
     "ko-KR": "getDatabaseConfig는 언어 코드(language)를 명시적으로 지정해야 합니다",
-    "$files": ["src/electron/runtime-services/database/database.ts(26072-26115)"],
+    "$files": [
+      "src/electron/runtime-services/database/database.ts(22716-22759)"
+    ],
     "$id": 8122
   },
   "正在处理中，请等待当前任务完成": {
@@ -837,7 +927,9 @@
     "de-DE": "Wird verarbeitet. Bitte warten Sie, bis die aktuelle Aufgabe abgeschlossen ist",
     "fr-FR": "Traitement en cours, veuillez attendre que la tâche en cours soit terminée",
     "ko-KR": "처리 중입니다. 현재 작업이 완료될 때까지 기다려 주세요.",
-    "$files": ["src/electron/runtime-services/integration/file-scanner-integration.ts(3263-3282)"],
+    "$files": [
+      "src/electron/runtime-services/integration/file-scanner-integration.ts(3383-3402)"
+    ],
     "$id": 7661
   },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
@@ -850,7 +942,9 @@
     "de-DE": "Kontingent erschöpft: {count} private Verzeichnisdateien analysiert, aktuelles Kontingent beträgt {quota} Dateien. Sie können weitere Credits freischalten, indem Sie Freunde einladen.",
     "fr-FR": "Quota épuisé : {count} fichiers du répertoire privé analysés, le quota actuel est de {quota} fichiers. Vous pouvez débloquer plus de crédits en invitant des amis.",
     "ko-KR": "할당량 소진: {count}개의 개인 디렉터리 파일이 분석되었으며, 현재 할당량은 {quota}개 파일입니다. 친구를 초대하면 더 많은 크레딧을 잠금 해제할 수 있습니다.",
-    "$files": ["src/electron/runtime-services/invitation/invitation-service.ts(5865-5939)"],
+    "$files": [
+      "src/electron/runtime-services/invitation/invitation-service.ts(6038-6113)"
+    ],
     "$id": 7662
   },
   "云端执行失败": {
@@ -864,8 +958,8 @@
     "fr-FR": "L'exécution du cloud a échoué",
     "ko-KR": "클라우드 실행 실패",
     "$files": [
-      "src/electron/runtime-services/user-tier/user-tier-service.ts(8343-8353)",
-      "src/electron/runtime-services/user-tier/user-tier-service.ts(10472-10482)"
+      "src/electron/runtime-services/user-tier/user-tier-service.ts(8589-8599)",
+      "src/electron/runtime-services/user-tier/user-tier-service.ts(10782-10792)"
     ],
     "$id": 7663
   },
@@ -879,7 +973,9 @@
     "de-DE": "Der Dateipfad-Eintrag existiert nicht",
     "fr-FR": "L'enregistrement du chemin de fichier n'existe pas",
     "ko-KR": "파일 경로 기록이 존재하지 않습니다",
-    "$files": ["src/electron/runtime-services/database/dao/file-dao.ts(16781-16794)"],
+    "$files": [
+      "src/electron/runtime-services/database/dao/file-dao.ts(18120-18133)"
+    ],
     "$id": 8123
   },
   "该目录已创建为{typeName}": {
@@ -892,7 +988,9 @@
     "de-DE": "Dieses Verzeichnis wurde als {typeName} erstellt",
     "fr-FR": "Ce répertoire a été créé en tant que {typeName}",
     "ko-KR": "해당 디렉토리가 {typeName}(으)로 생성되었습니다",
-    "$files": ["src/electron/runtime-services/database/dao/workspace-dao.ts(4528-4549)"],
+    "$files": [
+      "src/electron/runtime-services/database/dao/workspace-dao.ts(4666-4687)"
+    ],
     "$id": 8124
   }
 }

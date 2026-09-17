@@ -156,9 +156,9 @@
     "fr-FR": "BaseUrl ne peut pas être vide",
     "ko-KR": "baseUrl은 공백일 수 없습니다.",
     "$files": [
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(3828-3843)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(6365-6380)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11833-11848)"
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(3982-3997)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(6606-6621)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(12249-12264)"
     ],
     "$id": 5746
   },
@@ -172,7 +172,7 @@
     "de-DE": "API-Antwortfehler: {status} - {errorText}",
     "fr-FR": "Erreur de réponse API : {status} - {errorText}",
     "ko-KR": "API 응답 오류: {status} - {errorText}",
-    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(5634-5669)"],
+    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(5849-5884)"],
     "$id": 5740
   },
   "provider 是必填项": {
@@ -186,9 +186,9 @@
     "fr-FR": "Le fournisseur est obligatoire",
     "ko-KR": "provider는 필수 입력 항목입니다.",
     "$files": [
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10325-10342)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10688-10705)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11300-11317)"
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10677-10694)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11057-11074)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11694-11711)"
     ],
     "$id": 5742
   },
@@ -203,9 +203,9 @@
     "fr-FR": "Le format de baseUrl est incorrect : {baseUrl}",
     "ko-KR": "baseUrl 형식이 올바르지 않습니다: {baseUrl}",
     "$files": [
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10462-10490)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11040-11068)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11607-11635)"
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10821-10849)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11423-11451)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(12013-12041)"
     ],
     "$id": 5743
   },
@@ -220,8 +220,8 @@
     "fr-FR": "La clé API est obligatoire",
     "ko-KR": "apiKey는 필수 입력 항목입니다.",
     "$files": [
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(10835-10850)",
-      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11447-11462)"
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11208-11223)",
+      "src/electron/runtime-services/ai/cloud-model-config-service.ts(11845-11860)"
     ],
     "$id": 5744
   },
@@ -235,7 +235,7 @@
     "de-DE": "Model ist ein Pflichtfeld",
     "fr-FR": "Le modèle est obligatoire",
     "ko-KR": "model은 필수 입력 항목입니다.",
-    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(10906-10920)"],
+    "$files": ["src/electron/runtime-services/ai/cloud-model-config-service.ts(11282-11296)"],
     "$id": 5745
   }
 }

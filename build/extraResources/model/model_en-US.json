@@ -189,7 +189,7 @@
     },
     {
       "id": "LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M",
-      "name": "LFM2.5 2.6B（Speed）",
+      "name": "LFM2.5 2.6B（Fast）",
       "company": "LiquidAI",
       "parameterSize": "2.6B",
       "totalSize": "1.63GB",
@@ -270,7 +270,7 @@
       },
       "tags": [
         "Multimodal",
-        "Speed",
+        "Fast",
         "Audio\r",
         "English is better"
       ],
@@ -487,7 +487,7 @@
       },
       "tags": [
         "Multimodal",
-        "Speed",
+        "Fast",
         "Audio\r",
         "English is better"
       ],

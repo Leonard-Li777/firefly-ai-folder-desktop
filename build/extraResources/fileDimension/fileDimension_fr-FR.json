@@ -52,7 +52,7 @@
         "Maintenance système",
         "Recherche académique",
         "Notes personnelles",
-        "家庭生活"
+        "La vie de famille"
       ],
       "description": "Principaux scénarios d'utilisation des fichiers",
       "applicableFileTypes": [
@@ -234,19 +234,19 @@
       "tags": [
         "Extension d'image",
         "Photographie",
-        "合同票据",
-        "证照",
+        "Titres contractuels",
+        "Licences et autorisations",
         "Capture d'écran",
         "Ébauche de conception",
-        "海报宣发",
+        "Promotion par affiches",
         "Icône d'application",
         "Émoticônes",
         "Imagerie médicale",
         "Dessin",
         "Bandes dessinées",
         "Peinture",
-        "有字图",
-        "无字图"
+        "Image avec texte",
+        "Image sans texte"
       ],
       "description": "Classification professionnelle du contenu des images",
       "applicableFileTypes": [
@@ -905,18 +905,18 @@
     },
     {
       "id": 29,
-      "name": "家庭生活细分",
+      "name": "Segmentation de la vie familiale",
       "level": 2,
       "tags": [
-        "房屋居住",
-        "家居购物",
-        "家庭医疗",
-        "家庭证件",
-        "子女教育",
-        "家政日常",
-        "家常饮食"
+        "Maison pour vivre",
+        "Achats à domicile",
+        "Médecine familiale",
+        "Documents de famille",
+        "L'éducation des enfants",
+        "Ménage quotidien",
+        "Repas faits maison"
       ],
-      "description": "家庭场景下的具体生活事项",
+      "description": "Questions de vie spécifiques dans les situations familiales",
       "applicableFileTypes": [
         "text",
         "document",
@@ -935,7 +935,7 @@
         {
           "parentDimension": "Utilisation du fichier",
           "triggerTags": [
-            "家庭生活"
+            "La vie de famille"
           ]
         }
       ],
@@ -2276,7 +2276,7 @@
       ],
       "triggerConditions": [
         {
-          "parentDimension": "敏感内容",
+          "parentDimension": "Contenu sensible",
           "triggerTags": [
             "Pornographie"
           ]
@@ -2382,30 +2382,30 @@
     },
     {
       "id": 126,
-      "name": "摄影照片细分",
+      "name": "Catégories de photos",
       "level": 3,
       "tags": [
-        "风景照",
-        "人物照",
-        "婚纱照",
-        "静物照",
-        "宠物照",
-        "微距摄影",
-        "夜景照",
-        "建筑摄影",
-        "旅行照",
-        "街拍抓拍",
-        "人像写真",
-        "航空航拍"
+        "Photos de paysages",
+        "Photos de personnes",
+        "Photos de mariage",
+        "Photographie de nature morte",
+        "Photos d'animaux de compagnie",
+        "Photographie macro",
+        "Photos de nuit",
+        "Photographie d'architecture",
+        "Photos de voyage",
+        "Photos de rue prises sur le vif",
+        "Portraits",
+        "Prise de vue aérienne"
       ],
-      "description": "摄影照片的内容与题材专业细分",
+      "description": "Classification professionnelle du contenu et des thèmes des photographies",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
         "Données EXIF",
-        "题材识别",
-        "场景感知"
+        "Identification du thème",
+        "Reconnaissance de scène"
       ],
       "triggerConditions": [
         {
@@ -2421,32 +2421,32 @@
     },
     {
       "id": 127,
-      "name": "照片质量",
+      "name": "Qualité des photos",
       "level": 3,
       "tags": [
-        "优质精选",
-        "曝光正常",
-        "暗光欠曝",
-        "逆光死白",
-        "高ISO噪点",
-        "模糊废片",
-        "虚焦",
-        "抖动",
-        "脱焦",
-        "运动抖动",
-        "构图不良",
-        "色偏严重",
-        "方向错误",
-        "画面倾斜"
+        "Une sélection de qualité",
+        "Exposition normale",
+        "Sous-exposition en basse lumière",
+        "Blanc aveuglant à contre-jour",
+        "Bruit à haute sensibilité ISO",
+        "Photos floues et ratées",
+        "Fausse mise au point",
+        "Tremblement",
+        "Dégraissage",
+        "Vibrations dues au mouvement",
+        "Mauvaise composition",
+        "Une forte dérive chromatique",
+        "Mauvaise direction",
+        "L'image est inclinée"
       ],
-      "description": "摄影照片的技术与画质状态评估",
+      "description": "Évaluation des techniques photographiques et de la qualité d'image",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "画质检测",
-        "曝光分析",
-        "清晰度评估"
+        "Contrôle de la qualité d'image",
+        "Analyse de l'exposition",
+        "Évaluation de la netteté"
       ],
       "triggerConditions": [
         {
@@ -2462,36 +2462,36 @@
     },
     {
       "id": 128,
-      "name": "合同票据细分",
+      "name": "Ventilation des titres contractuels",
       "level": 3,
       "tags": [
         "Contracter",
         "Facture",
-        "红头文件",
-        "论文",
-        "收据",
-        "对账单",
-        "银行回单",
-        "采购订单",
-        "报销凭证",
-        "保函协议",
-        "投标文件"
+        "Document officiel",
+        "Mémoire",
+        "Reçu",
+        "Relevé de compte",
+        "Reçu bancaire",
+        "Bon de commande",
+        "Justificatifs de remboursement",
+        "Contrat de garantie",
+        "Dossier d'appel d'offres"
       ],
-      "description": "商务票据与法律文书的版式专业分类",
+      "description": "Classification professionnelle des formats des effets de commerce et des actes juridiques",
       "applicableFileTypes": [
         "image",
         "document"
       ],
       "contextHints": [
-        "版式识别",
-        "公章印鉴",
-        "财务表格"
+        "Reconnaissance de la mise en page",
+        "Sceau officiel",
+        "Tableaux financiers"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Segmentation d'images",
           "triggerTags": [
-            "合同票据"
+            "Titres contractuels"
           ]
         }
       ],
@@ -2501,39 +2501,39 @@
     },
     {
       "id": 129,
-      "name": "证照细分",
+      "name": "Classification des licences et certificats",
       "level": 3,
       "tags": [
-        "身份证",
-        "房产证",
-        "护照",
-        "驾驶证",
-        "行驶证",
-        "车牌",
-        "银行卡",
-        "营业执照",
-        "户口本",
-        "毕业证",
-        "学位证",
-        "工作证",
-        "结婚证",
-        "社保卡"
+        "Carte d'identité",
+        "Certificat de propriété",
+        "Passeport",
+        "Permis de conduire",
+        "Carte grise",
+        "Plaque d'immatriculation",
+        "Carte bancaire",
+        "Licence commerciale",
+        "Carnet de famille",
+        "Diplôme de fin d'études",
+        "Diplôme universitaire",
+        "Carte d'identité professionnelle",
+        "Certificat de mariage",
+        "Carte de sécurité sociale"
       ],
-      "description": "公民身份与官方凭证资质卡证分类",
+      "description": "Citoyenneté et classification des documents d'identité officiels et des cartes d'accréditation",
       "applicableFileTypes": [
         "image",
         "document"
       ],
       "contextHints": [
-        "卡证边框",
-        "防伪底纹",
-        "官方证件"
+        "Cadre de carte d'identité",
+        "Motif de fond anti-contrefaçon",
+        "Documents officiels"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Segmentation d'images",
           "triggerTags": [
-            "证照"
+            "Licences et autorisations"
           ]
         }
       ],
@@ -2543,15 +2543,15 @@
     },
     {
       "id": 130,
-      "name": "敏感内容",
+      "name": "Contenu sensible",
       "level": 2,
       "tags": [
-        "血腥",
-        "涉政",
-        "违规",
+        "Sanglant",
+        "Liées à la politique",
+        "Infraction",
         "Pornographie"
       ],
-      "description": "文件内容的敏感与合规安全审查分类",
+      "description": "Classification des documents en fonction du caractère sensible de leur contenu et des exigences de conformité et de sécurité",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2559,9 +2559,9 @@
         "archive"
       ],
       "contextHints": [
-        "敏感内容审查",
-        "合规安全检测",
-        "违规过滤"
+        "Contrôle des contenus sensibles",
+        "Contrôle de conformité et de sécurité",
+        "Filtrage non conforme"
       ],
       "triggerConditions": [
         {
@@ -2603,20 +2603,20 @@
     },
     {
       "id": 131,
-      "name": "血腥细分",
+      "name": "Segmentation sanglante",
       "level": 3,
       "tags": [
-        "断头斩首",
-        "肢解碎尸",
-        "血腥虐杀",
-        "尸体残骸",
-        "酷刑折磨",
-        "血肉模糊",
-        "重口猎奇",
-        "暴恐惨案",
-        "自残放血"
+        "Décapitation",
+        "Démembrement et découpage des restes",
+        "Massacre sanglant",
+        "Restes de cadavres",
+        "Torture et mauvais traitements",
+        "En miettes",
+        "Extravagant et insolite",
+        "Attentats terroristes sanglants",
+        "Automutilation par saignée"
       ],
-      "description": "血腥、暴力与重口猎奇题材细分",
+      "description": "Sous-genres liés au sang, à la violence et aux thèmes macabres et extrêmes",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2624,15 +2624,15 @@
         "archive"
       ],
       "contextHints": [
-        "暴力审查",
-        "血腥评级",
-        "猎奇检测"
+        "Censure violente",
+        "Classification « sanglant »",
+        "Détection des phénomènes insolites"
       ],
       "triggerConditions": [
         {
-          "parentDimension": "敏感内容",
+          "parentDimension": "Contenu sensible",
           "triggerTags": [
-            "血腥"
+            "Sanglant"
           ]
         }
       ],
@@ -2642,19 +2642,19 @@
     },
     {
       "id": 132,
-      "name": "涉政细分",
+      "name": "Sous-secteur lié à la politique",
       "level": 3,
       "tags": [
-        "反党反政",
-        "颠覆政权",
-        "分裂国家",
-        "恐怖主义",
-        "邪教组织",
-        "暴乱动乱",
-        "宗教极端",
-        "极端思潮"
+        "Anti-parti et anti-gouvernement",
+        "Renverser le régime",
+        "Séparation du pays",
+        "Le terrorisme",
+        "Sectes",
+        "Émeutes et troubles",
+        "Extrémisme religieux",
+        "Courants d'extrême droite"
       ],
-      "description": "政治敏感、国家安全与意识形态违规分类",
+      "description": "Classification des infractions liées à la sensibilité politique, à la sécurité nationale et à l'idéologie",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2662,15 +2662,15 @@
         "archive"
       ],
       "contextHints": [
-        "政治合规",
-        "敏感人物",
-        "意识形态审查"
+        "Conformité politique",
+        "Personnes sensibles",
+        "Censure idéologique"
       ],
       "triggerConditions": [
         {
-          "parentDimension": "敏感内容",
+          "parentDimension": "Contenu sensible",
           "triggerTags": [
-            "涉政"
+            "Liées à la politique"
           ]
         }
       ],
@@ -2680,21 +2680,21 @@
     },
     {
       "id": 133,
-      "name": "违规细分",
+      "name": "Répartition par infraction",
       "level": 3,
       "tags": [
-        "毒品交易",
-        "走私贩私",
-        "枪支弹药",
-        "洗钱黑产",
-        "电信诈骗",
-        "暗网交易",
-        "网络赌博",
-        "假冒伪劣",
-        "侵害未成年",
-        "违禁物品"
+        "Trafic de drogue",
+        "Contrebande",
+        "Armes à feu et munitions",
+        "Réseaux criminels de blanchiment d'argent",
+        "Escroqueries par téléphone",
+        "Transactions sur le Dark Web",
+        "Jeux d'argent en ligne",
+        "Contrefaçons et produits de mauvaise qualité",
+        "Abus sur mineurs",
+        "Objets interdits"
       ],
-      "description": "法律法规禁止流通的违法违规物品与行为分类",
+      "description": "Classification des biens et des comportements illicites dont la circulation est interdite par la législation et la réglementation",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2702,15 +2702,15 @@
         "archive"
       ],
       "contextHints": [
-        "违法检测",
-        "违禁品识别",
-        "黑产过滤"
+        "Contrôles illégaux",
+        "Identification des articles interdits",
+        "Filtrage des activités illicites"
       ],
       "triggerConditions": [
         {
-          "parentDimension": "敏感内容",
+          "parentDimension": "Contenu sensible",
           "triggerTags": [
-            "违规"
+            "Infraction"
           ]
         }
       ],
@@ -2720,20 +2720,20 @@
     },
     {
       "id": 134,
-      "name": "色情细分",
+      "name": "Segments du marché de la pornographie",
       "level": 3,
       "tags": [
-        "露骨性行为",
-        "自慰高潮",
-        "情色文娱",
-        "擦边诱惑",
-        "暴露走光",
-        "调教拘束",
-        "私房写真",
-        "偷拍窥视",
-        "违背意愿"
+        "Scènes de sexe explicites",
+        "Orgasme par masturbation",
+        "Divertissement érotique",
+        "Une séduction à la limite",
+        "Dénudation accidentelle",
+        "Domination et bondage",
+        "Photos privées",
+        "Filmer en cachette, espionner",
+        "Contre son gré"
       ],
-      "description": "成人色情、情色文娱与擦边暴露题材细分",
+      "description": "Segments de marché : pornographie pour adultes, divertissement érotique et thèmes à la limite de la nudité",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2741,13 +2741,13 @@
         "archive"
       ],
       "contextHints": [
-        "成人审查",
-        "性行为检测",
-        "色情分类"
+        "Contrôle de l'âge",
+        "Dépistage des maladies sexuellement transmissibles",
+        "Catégories pornographiques"
       ],
       "triggerConditions": [
         {
-          "parentDimension": "敏感内容",
+          "parentDimension": "Contenu sensible",
           "triggerTags": [
             "Pornographie"
           ]
@@ -2759,32 +2759,32 @@
     },
     {
       "id": 135,
-      "name": "截图细分",
+      "name": "Ventilation des captures d'écran",
       "level": 3,
       "tags": [
-        "网页长截图",
-        "UI界面截图",
-        "聊天截图",
-        "代码截图",
-        "游戏截图",
-        "支付凭证截图",
-        "系统报错截图",
-        "社交动态截图",
-        "影视视频截图",
-        "文档截图",
-        "地图导航截图",
-        "终端控制台截图",
-        "订单物流截图",
-        "桌面全屏截图"
+        "Capture d'écran longue d'une page Web",
+        "Captures d'écran de l'interface utilisateur",
+        "Captures d'écran de conversation",
+        "Capture d'écran du code",
+        "Captures d'écran du jeu",
+        "Capture d'écran du justificatif de paiement",
+        "Capture d'écran de l'erreur système",
+        "Capture d'écran d'une publication sur les réseaux sociaux",
+        "Captures d'écran de films et de séries",
+        "Capture d'écran du document",
+        "Capture d'écran de la navigation sur la carte",
+        "Capture d'écran de la console de commande",
+        "Capture d'écran de la logistique des commandes",
+        "Capture d'écran en plein écran du bureau"
       ],
-      "description": "各类屏幕捕获与截图内容的专业细分",
+      "description": "Classification professionnelle des différents types de captures d'écran et de contenus",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "屏幕捕获",
-        "界面分析",
-        "截图识别"
+        "Capture d'écran",
+        "Analyse de l'interface",
+        "Reconnaissance d'images capturées"
       ],
       "triggerConditions": [
         {
@@ -2800,23 +2800,23 @@
     },
     {
       "id": 136,
-      "name": "生成载体",
+      "name": "Générer un vecteur",
       "level": 2,
       "tags": [
-        "实拍",
-        "手绘",
-        "CG渲染",
+        "Tir réel",
+        "Dessiné à la main",
+        "Rendu CG",
         "IA générée"
       ],
-      "description": "图像与视觉内容的物理生成方式与载体",
+      "description": "Méthodes de génération physique et supports d'images et de contenus visuels",
       "applicableFileTypes": [
         "image",
         "video"
       ],
       "contextHints": [
-        "生成方式",
-        "渲染类型",
-        "载体识别"
+        "Méthode de génération",
+        "Type de rendu",
+        "Identification du transporteur"
       ],
       "triggerConditions": [
         {
@@ -2837,23 +2837,23 @@
     },
     {
       "id": 137,
-      "name": "景别",
+      "name": "Adieu paysage",
       "level": 3,
       "tags": [
-        "特写",
-        "半身",
-        "全身",
-        "全景",
-        "微距"
+        "Gros plan",
+        "Demi-corps",
+        "Tout le corps",
+        "Vue panoramique",
+        "Macro"
       ],
-      "description": "摄影与美术作品的画幅取景范围与景别",
+      "description": "Gamme d'encadrement et de décors de photographies et d'œuvres d'art",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "取景范围",
-        "画幅构图",
-        "人物景别"
+        "Portée de visualisation",
+        "Composition du cadre",
+        "Scène de personnage"
       ],
       "triggerConditions": [
         {
@@ -2875,23 +2875,23 @@
     },
     {
       "id": 138,
-      "name": "光照",
+      "name": "éclairage",
       "level": 3,
       "tags": [
-        "日光",
-        "日落",
-        "夜景",
-        "暗光",
-        "室内光"
+        "Lumière du soleil",
+        "Coucher de soleil",
+        "Vue de nuit",
+        "Pénombre",
+        "Lumière intérieure"
       ],
-      "description": "摄影照片的环境光线与拍摄时间氛围",
+      "description": "Lumière ambiante et atmosphère du temps de prise de vue des photos photographiques",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "光线分析",
-        "拍摄时间",
-        "氛围识别"
+        "Analyse de la lumière",
+        "Temps de tournage",
+        "Reconnaissance de l'atmosphère"
       ],
       "triggerConditions": [
         {
@@ -2911,20 +2911,20 @@
     },
     {
       "id": 139,
-      "name": "背景",
+      "name": "Contexte",
       "level": 2,
       "tags": [
-        "透明背景",
-        "纯色背景",
-        "实景背景"
+        "Fond transparent",
+        "Fond de couleur unie",
+        "Fond en direct"
       ],
-      "description": "图像设计资产与素材的背景通道与环境类型",
+      "description": "Canaux d'arrière-plan et types d'environnement pour les ressources et les matériaux de conception d'image",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "Alpha通道",
-        "背景抠图",
+        "Canal alpha",
+        "Découpe d'arrière-plan",
         "Ressources de conception"
       ],
       "triggerConditions": [
@@ -2945,23 +2945,23 @@
     },
     {
       "id": 140,
-      "name": "视角",
+      "name": "Perspective",
       "level": 3,
       "tags": [
-        "平视",
-        "俯视",
-        "仰视",
-        "第一人称"
+        "Niveau des yeux",
+        "Regardant vers le bas",
+        "Chercher",
+        "Première personne"
       ],
-      "description": "拍摄与绘制镜头的透视角度与观察视角",
+      "description": "Angles de perspective et angles de vision pour la prise de vue et le dessin",
       "applicableFileTypes": [
         "image",
         "video"
       ],
       "contextHints": [
-        "拍摄视角",
-        "镜头透视",
-        "观察角度"
+        "Angle de prise de vue",
+        "Point de vue de l'objectif",
+        "Angle de vision"
       ],
       "triggerConditions": [
         {
@@ -2982,23 +2982,23 @@
     },
     {
       "id": 141,
-      "name": "版面",
+      "name": "Mise en page",
       "level": 2,
       "tags": [
-        "纯文字",
-        "图表为主",
-        "图文混合",
-        "手写笔记"
+        "Texte brut",
+        "Basé sur un graphique",
+        "Graphiques et textes mixtes",
+        "Notes manuscrites"
       ],
-      "description": "文档与页面视觉版式排版构成",
+      "description": "Composition de la mise en page visuelle des documents et des pages",
       "applicableFileTypes": [
         "document",
         "image"
       ],
       "contextHints": [
-        "排版结构",
-        "版面分析",
-        "图文比例"
+        "Structure de composition",
+        "Analyse de la mise en page",
+        "Rapport image et texte"
       ],
       "triggerConditions": [
         {
@@ -3019,23 +3019,23 @@
     },
     {
       "id": 142,
-      "name": "系统生态",
+      "name": "écologie du système",
       "level": 3,
       "tags": [
-        "Windows截图",
-        "macOS截图",
-        "iOS截图",
-        "Android截图",
-        "Linux截图"
+        "Capture d'écran de Windows",
+        "Captures d'écran macOS",
+        "Captures d'écran iOS",
+        "Capture d'écran Android",
+        "Capture d'écran Linux"
       ],
-      "description": "操作系统界面与终端设备生态来源细分",
+      "description": "Interface du système d'exploitation et segmentation des sources écologiques des terminaux",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "操作系统",
-        "界面风格",
-        "设备来源"
+        "Système opérateur",
+        "Style d'interface",
+        "Origine de l'équipement"
       ],
       "triggerConditions": [
         {
@@ -3055,23 +3055,23 @@
     },
     {
       "id": 143,
-      "name": "画幅",
+      "name": "Cadre",
       "level": 2,
       "tags": [
-        "横屏",
-        "竖屏",
-        "正方形",
-        "超宽长条"
+        "Écran horizontal",
+        "Écran vertical",
+        "Carré",
+        "Bande extra large"
       ],
-      "description": "画面的长宽比例与构图画幅走向",
+      "description": "Le rapport hauteur/largeur de l'image et la direction de la composition",
       "applicableFileTypes": [
         "image",
         "video"
       ],
       "contextHints": [
-        "宽高比",
-        "分辨率分析",
-        "画幅走向"
+        "Rapport hauteur/largeur",
+        "Analyse de résolution",
+        "Direction du cadre"
       ],
       "triggerConditions": [
         {
@@ -3092,22 +3092,22 @@
     },
     {
       "id": 144,
-      "name": "主体数量",
+      "name": "Nombre de sujets",
       "level": 3,
       "tags": [
-        "单人",
-        "双人",
-        "多人合影",
-        "无人空镜"
+        "Célibataire",
+        "Double",
+        "Photo de groupe",
+        "Miroir aérien sans pilote"
       ],
-      "description": "画面中人物或核心主体的数量构成",
+      "description": "Le nombre et la composition des personnages ou des sujets principaux de l'image",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "主体计数",
-        "人像检测",
-        "场景构成"
+        "Nombre de sujets",
+        "Détection de portraits",
+        "Composition de scène"
       ],
       "triggerConditions": [
         {
@@ -3129,23 +3129,23 @@
     },
     {
       "id": 145,
-      "name": "主体类型",
+      "name": "Type de sujet",
       "level": 2,
       "tags": [
-        "人物主体",
-        "动物宠物",
-        "植物花草",
-        "静物商品",
-        "环境建筑"
+        "Sujet du personnage",
+        "Animaux de compagnie",
+        "Plantes et fleurs",
+        "Marchandise de natures mortes",
+        "Architecture environnementale"
       ],
-      "description": "画面中最核心的前景视觉焦点类型",
+      "description": "Le type principal de mise au point visuelle au premier plan dans l'image",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "目标检测",
-        "主体识别",
-        "视觉焦点"
+        "Détection de cible",
+        "Identification du sujet",
+        "Mise au point visuelle"
       ],
       "triggerConditions": [
         {
@@ -3165,27 +3165,27 @@
     },
     {
       "id": 146,
-      "name": "文字密度",
+      "name": "Densité du texte",
       "level": 2,
       "tags": [
-        "微量文本",
-        "图文标题",
-        "密集排版"
+        "Microtexte",
+        "Titre de l'image et du texte",
+        "Typographie dense"
       ],
-      "description": "图像或页面中包含的文字量与版面密集度",
+      "description": "La quantité de texte et la densité de la mise en page contenue dans une image ou une page",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "OCR识别",
-        "文本覆盖率",
-        "文字排版"
+        "Reconnaissance OCR",
+        "Couverture du texte",
+        "Disposition du texte"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Segmentation d'images",
           "triggerTags": [
-            "有字图"
+            "Image avec texte"
           ]
         }
       ],
@@ -3199,23 +3199,23 @@
     },
     {
       "id": 147,
-      "name": "质感风格",
+      "name": "Style de texture",
       "level": 3,
       "tags": [
-        "扁平极简",
-        "写实拟真",
-        "复古胶片",
-        "赛博朋克",
-        "水彩水墨"
+        "Plat et minimaliste",
+        "Réaliste",
+        "Film vintage",
+        "Cyberpunk",
+        "Encre aquarelle"
       ],
-      "description": "视觉作品的美术基调与画面质感风格",
+      "description": "Le ton artistique et le style de texture d’image des œuvres visuelles",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "色彩风格",
-        "质感渲染",
-        "艺术格调"
+        "Style de couleur",
+        "Rendu des textures",
+        "Style artistique"
       ],
       "triggerConditions": [
         {
@@ -3236,22 +3236,22 @@
     },
     {
       "id": 148,
-      "name": "时间季节",
+      "name": "Temps saison",
       "level": 3,
       "tags": [
-        "春季花景",
-        "夏季绿荫",
-        "秋季金黄",
-        "冬季雪景"
+        "Scène de fleurs de printemps",
+        "Ombre d'été",
+        "Automne doré",
+        "Scène de neige en hiver"
       ],
-      "description": "自然风光与户外旅行照片的季节时序特征",
+      "description": "Caractéristiques saisonnières des paysages naturels et des photos de voyages en plein air",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "时序色彩",
-        "季节植物",
-        "气候特征"
+        "Couleur de la série chronologique",
+        "Plantes de saison",
+        "Caractéristiques climatiques"
       ],
       "triggerConditions": [
         {
@@ -3271,35 +3271,35 @@
     },
     {
       "id": 149,
-      "name": "主色调",
+      "name": "Couleur principale",
       "level": 2,
       "tags": [
-        "暖色调",
-        "冷色调",
-        "中性黑白灰",
-        "高饱和鲜艳",
-        "红色",
-        "橙色",
-        "黄色",
-        "绿色",
-        "青色",
-        "蓝色",
-        "紫色",
-        "粉色",
-        "棕色",
-        "白色",
-        "黑色",
-        "灰色"
+        "Couleurs chaudes",
+        "Couleurs fraîches",
+        "Noir neutre, blanc et gris",
+        "Très saturé et vif",
+        "Rouge",
+        "Couleur orange",
+        "Jaune",
+        "Vert",
+        "Bleu",
+        "Bleu",
+        "Violet",
+        "Rose",
+        "Marron",
+        "Blanc",
+        "Noir",
+        "Gris"
       ],
-      "description": "画面的整体主导色温与色彩基调倾向",
+      "description": "La température de couleur dominante globale et la tendance des tons de couleur de l'image",
       "applicableFileTypes": [
         "image",
         "video"
       ],
       "contextHints": [
-        "色温分析",
-        "色彩直方图",
-        "色调倾向"
+        "Analyse de la température de couleur",
+        "Histogramme de couleur",
+        "Tendance de teinte"
       ],
       "triggerConditions": [
         {

@@ -14,7 +14,7 @@
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(32315-32322)",
       "src/renderer/components/tier/UpgradeAccountDialog.tsx(3314-3321)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(2701-2708)",
-      "src/renderer/components/tier/UserTierBadge.tsx(920-927)"
+      "src/renderer/components/tier/UserTierBadge.tsx(943-950)"
     ],
     "$id": 10959
   },
@@ -300,7 +300,7 @@
       "src/renderer/components/tier/AccountManagementDialog.tsx(5841-5848)",
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(32150-32157)",
       "src/renderer/components/tier/UserAvatarMenu.tsx(4203-4210)",
-      "src/renderer/components/tier/UserTierBadge.tsx(1253-1260)"
+      "src/renderer/components/tier/UserTierBadge.tsx(1286-1293)"
     ],
     "$id": 10957
   },
@@ -2194,7 +2194,7 @@
     "ko-KR": "프로페셔널 버전",
     "$files": [
       "src/renderer/components/tier/FirecoresRulesDialog.tsx(32232-32239)",
-      "src/renderer/components/tier/UserTierBadge.tsx(1092-1099)"
+      "src/renderer/components/tier/UserTierBadge.tsx(1120-1127)"
     ],
     "$id": 10958
   },
@@ -3511,7 +3511,7 @@
     "ko-KR": "WeChat 그룹에 가입하려면 QR 코드를 스캔하세요.",
     "$files": [
       "src/renderer/components/tier/UserAvatarMenu.tsx(28964-28974)",
-      "src/renderer/components/tier/WechatQRDialog.tsx(1074-1084)"
+      "src/renderer/components/tier/WechatQRDialog.tsx(1106-1116)"
     ],
     "$id": 11047
   },
@@ -3538,7 +3538,7 @@
     "de-DE": "WeChat QR-Code",
     "fr-FR": "Code QR WeChat",
     "ko-KR": "위챗 QR 코드",
-    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1280-1289)"],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1318-1327)"],
     "$id": 7732
   },
   "加微信并留言：萤核，拉你进微信群交流": {
@@ -3551,7 +3551,7 @@
     "de-DE": "Fügen Sie WeChat hinzu und hinterlassen Sie eine Nachricht: Firefly lädt Sie zur Kommunikation in die WeChat-Gruppe ein",
     "fr-FR": "Ajoutez WeChat et laissez un message : Firefly vous invitera au groupe WeChat pour communiquer",
     "ko-KR": "WeChat을 추가하고 메시지를 남겨주세요: Firefly가 귀하를 WeChat 그룹에 초대하여 소통할 것입니다.",
-    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1585-1607)"],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1629-1651)"],
     "$id": 11049
   },
   "严禁广告或发邀请码": {
@@ -3564,7 +3564,7 @@
     "de-DE": "Werbung oder das Versenden von Einladungscodes ist strengstens untersagt",
     "fr-FR": "La publicité ou l'envoi de codes d'invitation sont strictement interdits",
     "ko-KR": "광고 또는 초대 코드 전송은 엄격히 금지됩니다.",
-    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1672-1685)"],
+    "$files": ["src/renderer/components/tier/WechatQRDialog.tsx(1718-1731)"],
     "$id": 11050
   }
 }
