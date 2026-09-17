@@ -81,6 +81,10 @@ export class DatabaseService {
     return this._db
   }
 
+  getDbPath(): string {
+    return this.dbPath
+  }
+
   constructor(dbPath: string = '') {
     this.dbPath = dbPath
   }

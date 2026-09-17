@@ -545,6 +545,10 @@ ConfigOrchestrator.getInstance().onValueChange<boolean>('LANGUAGE_CONFIRMED', as
     try {
       await initDatabaseAndDependentServices(language, true)
       await analysisQueueService.reloadDatabase()
+      // 通知 Omni 热重连新语言的只读 SQLite (ADR-0035 §8.4 双消费者架构)
+      omniService.reconnect(databaseService.getDbPath()).catch(err => {
+        logger.warn(LogCategory.MAIN, 'Omni 欢迎向导热重连失败:', err)
+      })
       BrowserWindow.getAllWindows().forEach(win => {
         win.webContents.send('database-switched', { language })
       })
@@ -589,6 +593,11 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
           .catch(err => {
             logger.error(LogCategory.MAIN, '语言切换后同步云端配置失败:', err)
           })
+
+        // 通知 Omni 热重连新语言的只读 SQLite (ADR-0035 §8.4 双消费者架构)
+        omniService.reconnect(databaseService.getDbPath()).catch(err => {
+          logger.warn(LogCategory.MAIN, 'Omni 语言切换热重连失败:', err)
+        })
 
         BrowserWindow.getAllWindows().forEach(win => {
           win.webContents.send('database-switched', { language: newLanguage })

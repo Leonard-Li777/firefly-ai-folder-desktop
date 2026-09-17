@@ -100,8 +100,6 @@ export interface OmniTagChainItem {
   name: string
   confidence: number
   tag?: string
-  dimension_id?: number
-  dimension_name?: string
   logic_pan_dimension?: string
   parent_code?: string
 }
@@ -539,7 +537,12 @@ export class OmniService {
         OMNI_PORT: String(port),
         RUST_LOG: process.env.RUST_LOG || 'info,omni_vision=info,omni_server=info'
       }
-      const child = spawn(exePath, ['serve', '-a', `127.0.0.1:${port}`], {
+
+      // 获取当前语言的 SQLite 绝对路径，透传给 Omni 以建立只读直连 (ADR-0035 双消费者架构)
+      const { databaseService } = await import('../database/database-service')
+      const dbPath = databaseService.getDbPath()
+
+      const child = spawn(exePath, ['serve', '-a', `127.0.0.1:${port}`, '--db-path', dbPath], {
         env,
         stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true
@@ -759,6 +762,32 @@ export class OmniService {
       return false
     } catch (err: any) {
       logger.debug(LogCategory.SYSTEM, '[OmniService] 同步配置到 Omni 引擎失败 (无头环境已容错):', err.message)
+      return false
+    }
+  }
+
+  /**
+   * 语言切换后通知 Omni 重载只读 SQLite 连接
+   * POST /api/reconnect { dbPath } (ADR-0035 §8.4 双消费者热重连契约)
+   */
+  public async reconnect(dbPath: string): Promise<boolean> {
+    await this.ensureRunning()
+    try {
+      const res = await fetch(`${this.baseUrl}/api/reconnect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dbPath }),
+        signal: AbortSignal.timeout(5000)
+      })
+      if (!res.ok) {
+        logger.warn(LogCategory.SYSTEM, `[OmniService] POST /api/reconnect 失败: status=${res.status}`)
+        return false
+      }
+      const json = await res.json()
+      logger.info(LogCategory.SYSTEM, `[OmniService] Omni 热重连结果:`, JSON.stringify(json))
+      return json.omwAvailable === true
+    } catch (err: any) {
+      logger.warn(LogCategory.SYSTEM, `[OmniService] POST /api/reconnect 异常:`, err.message)
       return false
     }
   }
