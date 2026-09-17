@@ -580,6 +580,9 @@ export class ConfigDbManager {
         }
       })()
 
+      // Spec 验收 10：历史 code（dim.*/拼音 builtin.*）→ en 源 code 迁移
+      this.applyHistoricalTagCodeMap(db, path.join(path.dirname(identityArtifact), 'historical-tag-code-map.json'))
+
       return true
     } catch (err: any) {
       logger.warn(
@@ -587,6 +590,44 @@ export class ConfigDbManager {
         `ConfigDbManager: builtin identity 导入不可用，降级历史路径: ${err?.message || err}`
       )
       return false
+    }
+  }
+
+  /**
+   * 读取 step0 历史映射产物，将 file_tag_relations 中的旧 tag_code 迁移到 en 源 identity code
+   * 并把映射表写入 file_constants，供查询侧解析旧 code。
+   */
+  private applyHistoricalTagCodeMap(db: Database.Database, mapPath: string): void {
+    if (!fs.existsSync(mapPath)) {
+      logger.warn(LogCategory.CONFIG, `ConfigDbManager: 历史 code 映射不存在: ${mapPath}`)
+      return
+    }
+    try {
+      const map = JSON.parse(fs.readFileSync(mapPath, 'utf-8')) as Record<string, string>
+      const entries = Object.entries(map)
+      if (entries.length === 0) return
+
+      const updateRel = db.prepare(`UPDATE file_tag_relations SET tag_code = ? WHERE tag_code = ?`)
+      let relUpdated = 0
+      db.transaction(() => {
+        for (const [legacy, modern] of entries) {
+          if (!legacy || !modern || legacy === modern) continue
+          const info = updateRel.run(modern, legacy)
+          relUpdated += info.changes || 0
+        }
+        // 查询侧缓存：file_constants 存完整历史映射
+        db.prepare(
+          `INSERT OR REPLACE INTO file_constants (key, value, updated_at)
+           VALUES ('historical_tag_code_map', ?, CURRENT_TIMESTAMP)`
+        ).run(JSON.stringify(map))
+      })()
+
+      logger.info(
+        LogCategory.CONFIG,
+        `ConfigDbManager: 历史 tag_code 映射完成 entries=${entries.length}, relations_updated=${relUpdated}`
+      )
+    } catch (err: any) {
+      logger.warn(LogCategory.CONFIG, `ConfigDbManager: 历史 code 映射失败: ${err?.message || err}`)
     }
   }
 
