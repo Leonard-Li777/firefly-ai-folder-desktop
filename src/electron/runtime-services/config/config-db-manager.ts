@@ -21,7 +21,8 @@ import {
   buildBuiltinTagIdentity,
   buildBuiltinImportPlan,
   BuiltinIdentityError,
-  type FileDimensionDocument
+  type FileDimensionDocument,
+  type BuiltinTagIdentity
 } from '@firefly/core-engine'
 
 export class ConfigDbManager {
@@ -456,6 +457,8 @@ export class ConfigDbManager {
 
   /**
    * 尝试以 en 源 Identity 导入 file_tags + tag_aliases
+   * 优先读取 taxonomy:build step11 产物 builtin-tag-identity.json；
+   * 产物不存在时再从 fileDimension 运行时构建（开发兜底）。
    * @returns 是否成功走 identity 路径
    */
   private tryLoadBuiltinIdentityToDb(db: Database.Database, language: string): boolean {
@@ -476,7 +479,42 @@ export class ConfigDbManager {
       const localeDocs: Record<string, FileDimensionDocument> = {}
       if (localeDoc) localeDocs[language] = localeDoc
 
-      const items = buildBuiltinTagIdentity({ enDoc, localeDocs })
+      // 1) 构建期产物（taxonomy:build --only step11）
+      let items: BuiltinTagIdentity[] | null = null
+      const dimDir = path.dirname(enPath)
+      const identityArtifact = path.join(
+        dimDir,
+        '..',
+        '..',
+        'presetResources',
+        'taxonomy',
+        'builtin-tag-identity.json'
+      )
+      if (fs.existsSync(identityArtifact)) {
+        try {
+          const artifact = JSON.parse(fs.readFileSync(identityArtifact, 'utf-8')) as {
+            tags?: BuiltinTagIdentity[]
+          }
+          if (Array.isArray(artifact.tags) && artifact.tags.length > 0) {
+            items = artifact.tags
+            logger.info(
+              LogCategory.CONFIG,
+              `ConfigDbManager: 使用 taxonomy step11 产物 identity (${items.length} tags)`
+            )
+          }
+        } catch (e: any) {
+          logger.warn(
+            LogCategory.CONFIG,
+            `ConfigDbManager: 解析 builtin-tag-identity.json 失败，回退运行时构建: ${e?.message}`
+          )
+        }
+      }
+
+      // 2) 运行时构建兜底（en 文件仍可能含 CJK，构建门禁失败则整体降级）
+      if (!items) {
+        items = buildBuiltinTagIdentity({ enDoc, localeDocs })
+      }
+
       const dimensionNames: Record<number, string> = {}
       const nameSource = localeDoc?.file_dimensions || enDoc.file_dimensions || []
       for (const d of nameSource) dimensionNames[d.id] = d.name
