@@ -17,13 +17,21 @@ import { databaseService } from '../database/database-service'
 import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
-import {
-  buildBuiltinTagIdentity,
-  buildBuiltinImportPlan,
-  BuiltinIdentityError,
-  type FileDimensionDocument,
-  type BuiltinTagIdentity
-} from '@firefly/core-engine'
+/**
+ * 身份构建 API：优先 Pro @firefly/core-engine；开源/无 pro 时降级 shared stub
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let identityApi: any
+try {
+  identityApi = require('@firefly/core-engine')
+} catch {
+  identityApi = require('../../../shared/builtin-tag-identity-stub')
+}
+
+const { buildBuiltinTagIdentity, buildBuiltinImportPlan } = identityApi
+
+type FileDimensionDocument = import('../../../shared/builtin-tag-identity-stub').FileDimensionDocument
+type BuiltinTagIdentity = import('../../../shared/builtin-tag-identity-stub').BuiltinTagIdentity
 
 export class ConfigDbManager {
   private static instance: ConfigDbManager | null = null
