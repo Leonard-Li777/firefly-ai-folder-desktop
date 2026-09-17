@@ -160,6 +160,18 @@ const GENESIS_V1_SCHEMA = `
     meta               TEXT NOT NULL DEFAULT '{}'     -- JSON 元数据: isDimension, isRuleSubdivision, isPanDimension, isMultiSelect, color, icon 等
   );
 
+  -- 8. builtin 等受控标签的多语言别名（词形/译名，不进 omw_lexical_entries）
+  -- Spec: issue-omni-i18n-tag-identity-spec D4
+  CREATE TABLE IF NOT EXISTS tag_aliases (
+    tag_code      TEXT NOT NULL REFERENCES file_tags(code) ON DELETE CASCADE,
+    locale        TEXT NOT NULL,
+    lemma         TEXT NOT NULL,
+    is_canonical  INTEGER NOT NULL DEFAULT 0,
+    meta          TEXT NOT NULL DEFAULT '{}',
+    PRIMARY KEY (tag_code, locale)
+  );
+  CREATE INDEX IF NOT EXISTS idx_tag_aliases_lemma ON tag_aliases(lemma, locale);
+
   -- 8. 文件指纹与标签多对多关联表 (基于复合主键 file_fingerprint + tag_code)
   CREATE TABLE IF NOT EXISTS file_tag_relations (
     file_fingerprint   TEXT NOT NULL,                 -- 核心引擎 32 位 Base62 文件内容指纹
@@ -463,6 +475,7 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS dimension_expansions;
       DROP TABLE IF EXISTS file_dimensions;
       DROP TABLE IF EXISTS file_tag_relations;
+      DROP TABLE IF EXISTS tag_aliases;
       DROP TABLE IF EXISTS file_tags;
       DROP TABLE IF EXISTS file_constants;
       DROP TABLE IF EXISTS app_config;
@@ -473,6 +486,25 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS files;
       DROP TABLE IF EXISTS workspace_directories;
       DROP TABLE IF EXISTS workspaces;
+    `
+  },
+  {
+    version: 2,
+    name: 'builtin_tag_aliases',
+    description: '受控标签多语言别名表 tag_aliases（issue-omni-i18n-tag-identity-spec D4）',
+    up: `
+      CREATE TABLE IF NOT EXISTS tag_aliases (
+        tag_code      TEXT NOT NULL REFERENCES file_tags(code) ON DELETE CASCADE,
+        locale        TEXT NOT NULL,
+        lemma         TEXT NOT NULL,
+        is_canonical  INTEGER NOT NULL DEFAULT 0,
+        meta          TEXT NOT NULL DEFAULT '{}',
+        PRIMARY KEY (tag_code, locale)
+      );
+      CREATE INDEX IF NOT EXISTS idx_tag_aliases_lemma ON tag_aliases(lemma, locale);
+    `,
+    down: `
+      DROP TABLE IF EXISTS tag_aliases;
     `
   }
 ]

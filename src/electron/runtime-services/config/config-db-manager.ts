@@ -17,6 +17,12 @@ import { databaseService } from '../database/database-service'
 import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
+import {
+  buildBuiltinTagIdentity,
+  buildBuiltinImportPlan,
+  BuiltinIdentityError,
+  type FileDimensionDocument
+} from '@firefly/core-engine'
 
 export class ConfigDbManager {
   private static instance: ConfigDbManager | null = null
@@ -314,7 +320,11 @@ export class ConfigDbManager {
   }
 
   /**
-   * 从 fileDimension_[lang].json 加载初始标签维度树到 file_tags 表（先清空再导入）
+   * 从 fileDimension_[lang].json 加载初始标签维度树到 file_tags 表
+   * Spec issue-omni-i18n-tag-identity-spec：
+   * - 优先 en 源 identity code（builtin.{en_slug}.{hash}）+ tag_aliases
+   * - identity 构建失败时降级为历史本地化 code 路径（生产 en 文件待清洗）
+   * - 语言切换场景：已有 code 时仅 UPDATE name，不 DELETE+INSERT 换 code
    */
   private loadInitialFileTagsToDb(db: Database.Database, language: string): void {
     try {
@@ -340,7 +350,33 @@ export class ConfigDbManager {
         return
       }
 
-      // 先清空 file_tags 中 builtin 标签
+      // 切换语言：若 builtin 概念 code 已存在，只刷新 name（D10）
+      const existingBuiltin = db
+        .prepare(
+          `SELECT COUNT(*) as cnt FROM file_tags WHERE source = 'builtin' AND code LIKE 'builtin.%'`
+        )
+        .get() as { cnt: number } | undefined
+      if ((existingBuiltin?.cnt ?? 0) > 0) {
+        this.refreshBuiltinDisplayNames(db, language, dimensions)
+        databaseService.clearDimensionsCache()
+        logger.info(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 检测到既有 builtin code，仅刷新 ${language} 显示名`
+        )
+        return
+      }
+
+      const identityLoaded = this.tryLoadBuiltinIdentityToDb(db, language)
+      if (identityLoaded) {
+        databaseService.clearDimensionsCache()
+        logger.info(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 已按 en 源 identity 导入 file_tags + tag_aliases (${language})`
+        )
+        return
+      }
+
+      // 降级：历史路径（本地化 code）—— 待 en 源清洗后由 identity 路径取代
       db.prepare(`DELETE FROM file_tags WHERE source = 'builtin'`).run()
 
       const insertStmt = db.prepare(`
@@ -360,7 +396,7 @@ export class ConfigDbManager {
           const fileGroupsStr = typeof rawAFT === 'string' ? rawAFT : JSON.stringify(rawAFT)
           const rawCH = dim.contextHints ?? dim.context_hints
           const contextHintsStr = rawCH ? (typeof rawCH === 'string' ? rawCH : JSON.stringify(rawCH)) : null
-          
+
           const isMultiSelect = dim.name === '文件用途' || !!dim.metadata?.flag?.isPanDimension
           const metaObj = {
             isDimension: true,
@@ -415,6 +451,138 @@ export class ConfigDbManager {
       )
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入 file_tags 失败:', error)
+    }
+  }
+
+  /**
+   * 尝试以 en 源 Identity 导入 file_tags + tag_aliases
+   * @returns 是否成功走 identity 路径
+   */
+  private tryLoadBuiltinIdentityToDb(db: Database.Database, language: string): boolean {
+    try {
+      const enPath = ResourceLocator.resolveDimension('fileDimension_en-US.json')
+      if (!fs.existsSync(enPath)) return false
+      const enDoc = JSON.parse(fs.readFileSync(enPath, 'utf-8')) as FileDimensionDocument
+      const localeDoc =
+        language === 'en-US'
+          ? null
+          : (() => {
+              const p = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
+              return fs.existsSync(p)
+                ? (JSON.parse(fs.readFileSync(p, 'utf-8')) as FileDimensionDocument)
+                : null
+            })()
+
+      const localeDocs: Record<string, FileDimensionDocument> = {}
+      if (localeDoc) localeDocs[language] = localeDoc
+
+      const items = buildBuiltinTagIdentity({ enDoc, localeDocs })
+      const dimensionNames: Record<number, string> = {}
+      const nameSource = localeDoc?.file_dimensions || enDoc.file_dimensions || []
+      for (const d of nameSource) dimensionNames[d.id] = d.name
+
+      const plan = buildBuiltinImportPlan({
+        items,
+        displayLocale: language,
+        dimensionNames
+      })
+
+      const insertStmt = db.prepare(`
+        INSERT OR REPLACE INTO file_tags (
+          code, name, parent_codes, materialized_paths, depth, source,
+          file_groups, context_hints, description, meta
+        ) VALUES (?, ?, ?, ?, ?, 'builtin', ?, ?, ?, ?)
+      `)
+      const aliasStmt = db.prepare(`
+        INSERT OR REPLACE INTO tag_aliases (tag_code, locale, lemma, is_canonical, meta)
+        VALUES (?, ?, ?, ?, '{}')
+      `)
+
+      db.transaction(() => {
+        db.prepare(`DELETE FROM file_tags WHERE source = 'builtin'`).run()
+        db.prepare(`DELETE FROM tag_aliases`).run()
+
+        for (const root of plan.dimensionRoots) {
+          const paths = [{ code_path: `/${root.code}`, name_path: `/${root.name}` }]
+          insertStmt.run(
+            root.code,
+            root.name,
+            '[]',
+            JSON.stringify(paths),
+            0,
+            JSON.stringify(['*']),
+            null,
+            null,
+            JSON.stringify({ isDimension: true, isMultiSelect: false })
+          )
+        }
+
+        for (const tag of plan.tags) {
+          const paths = [
+            {
+              code_path: `/dim.${tag.dimId}/${tag.code}`,
+              name_path: `/dim.${tag.dimId}/${tag.name}`
+            }
+          ]
+          insertStmt.run(
+            tag.code,
+            tag.name,
+            JSON.stringify(tag.parent_codes),
+            JSON.stringify(paths),
+            tag.depth,
+            JSON.stringify(['*']),
+            null,
+            null,
+            JSON.stringify(tag.meta)
+          )
+        }
+
+        for (const alias of plan.aliases) {
+          aliasStmt.run(alias.tag_code, alias.locale, alias.lemma, alias.is_canonical)
+        }
+      })()
+
+      return true
+    } catch (err: any) {
+      logger.warn(
+        LogCategory.CONFIG,
+        `ConfigDbManager: builtin identity 导入不可用，降级历史路径: ${err?.message || err}`
+      )
+      return false
+    }
+  }
+
+  /**
+   * 语言切换：按 displayLocale 仅更新 name（D10 不改 code）
+   */
+  private refreshBuiltinDisplayNames(
+    db: Database.Database,
+    language: string,
+    dimensions: any[]
+  ): void {
+    try {
+      const update = db.prepare(`UPDATE file_tags SET name = ? WHERE code = ?`)
+      // 优先用 tag_aliases 精确刷新
+      const aliasRows = db
+        .prepare(`SELECT tag_code, lemma FROM tag_aliases WHERE locale = ?`)
+        .all(language) as Array<{ tag_code: string; lemma: string }>
+      if (aliasRows.length > 0) {
+        db.transaction(() => {
+          for (const row of aliasRows) update.run(row.lemma, row.tag_code)
+          for (const dim of dimensions) {
+            update.run(dim.name, `dim.${dim.id}`)
+          }
+        })()
+        return
+      }
+      // 无别名表时：按 dim 结构名刷新根节点
+      db.transaction(() => {
+        for (const dim of dimensions) {
+          update.run(dim.name, `dim.${dim.id}`)
+        }
+      })()
+    } catch (err: any) {
+      logger.warn(LogCategory.CONFIG, `ConfigDbManager: 刷新显示名失败: ${err?.message || err}`)
     }
   }
 
