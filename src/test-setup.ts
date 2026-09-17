@@ -33,6 +33,31 @@ import { vi } from 'vitest'
 
 // 捕获 EPIPE (broken pipe) 错误，防止测试中断或终端关闭时触发 Electron 弹窗崩溃
 if (typeof process !== 'undefined') {
+  try {
+    const net = require('net')
+    if (net?.Socket?.prototype?.write) {
+      const origWrite = net.Socket.prototype.write
+      net.Socket.prototype.write = function (this: any, ...args: any[]) {
+        try {
+          return origWrite.apply(this, args)
+        } catch (err: any) {
+          if (
+            err &&
+            (err.code === 'EPIPE' ||
+              err.code === 'ERR_STREAM_DESTROYED' ||
+              String(err.message || '').includes('EPIPE') ||
+              String(err.message || '').includes('broken pipe'))
+          ) {
+            const cb = args.find((a: any) => typeof a === 'function')
+            if (cb) cb()
+            return true
+          }
+          throw err
+        }
+      }
+    }
+  } catch {}
+
   process.stdout?.on?.('error', (err: any) => {
     if (err?.code === 'EPIPE' || err?.code === 'ERR_STREAM_DESTROYED') {
       process.exit(0)
@@ -44,9 +69,15 @@ if (typeof process !== 'undefined') {
     }
   })
   process.on?.('uncaughtException', (err: any) => {
-    if (err?.code === 'EPIPE' || err?.code === 'ERR_STREAM_DESTROYED' || String(err?.message || '').includes('EPIPE')) {
+    if (
+      err?.code === 'EPIPE' ||
+      err?.code === 'ERR_STREAM_DESTROYED' ||
+      String(err?.message || '').includes('EPIPE') ||
+      String(err?.message || '').includes('broken pipe')
+    ) {
       process.exit(0)
     }
   })
 }
+
 
