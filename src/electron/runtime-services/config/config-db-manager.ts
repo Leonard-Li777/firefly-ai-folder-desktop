@@ -457,7 +457,7 @@ export class ConfigDbManager {
 
   /**
    * 尝试以 en 源 Identity 导入 file_tags + tag_aliases
-   * 优先读取 taxonomy:build step11 产物 builtin-tag-identity.json；
+   * 优先读取 taxonomy:build step0 产物 builtin-tag-identity.json；
    * 产物不存在时再从 fileDimension 运行时构建（开发兜底）。
    * @returns 是否成功走 identity 路径
    */
@@ -479,7 +479,7 @@ export class ConfigDbManager {
       const localeDocs: Record<string, FileDimensionDocument> = {}
       if (localeDoc) localeDocs[language] = localeDoc
 
-      // 1) 构建期产物（taxonomy:build --only step11）
+      // 1) 构建期产物（taxonomy:build --only step0）
       let items: BuiltinTagIdentity[] | null = null
       const dimDir = path.dirname(enPath)
       const identityArtifact = path.join(
@@ -499,7 +499,7 @@ export class ConfigDbManager {
             items = artifact.tags
             logger.info(
               LogCategory.CONFIG,
-              `ConfigDbManager: 使用 taxonomy step11 产物 identity (${items.length} tags)`
+              `ConfigDbManager: 使用 taxonomy step0 产物 identity (${items.length} tags)`
             )
           }
         } catch (e: any) {
