@@ -34,6 +34,7 @@
     "build:intl": "cross-env BUILD_REGION=INTL electron-vite build",
     "taxonomy": "node pro/scripts/run.js taxonomy/menu.js",
     "taxonomy:build": "node pro/scripts/run.js taxonomy/build-taxonomy.js",
+    "taxonomy:translate": "node pro/scripts/run.js taxonomy/build-taxonomy.js --only step2",
     "start:config": "cross-env FORCE_CONFIG_STAGE=1 BUILD_REGION=CN electron-vite dev",
     "start:quiet": "cross-env LOG_LEVEL=error BUILD_REGION=CN electron-vite dev -- --log-categories=ERROR,WARNING",
     "start:debug": "cross-env AI_ENGINE=llama.cpp SKIP_RESOURCE_CONSUME=1 pnpm setup-resources && cross-env DEVTOOLS=true LOG_LEVEL=debug,info,warn,error BUILD_REGION=CN electron-vite dev -- --log-categories=ALL,-LLAMA_SERVER",

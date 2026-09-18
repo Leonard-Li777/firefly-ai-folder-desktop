@@ -254,7 +254,8 @@ export class AISkillApiService {
         pathname.startsWith('/api/analysis/') ||
         pathname.startsWith('/api/files/') ||
         pathname.startsWith('/api/organize/') ||
-        pathname.startsWith('/api/virtual-directories')
+        pathname.startsWith('/api/virtual-directories') ||
+        pathname.startsWith('/api/ai/')
 
       if (!isSkillRoute) {
         return false
@@ -475,6 +476,59 @@ export class AISkillApiService {
         this.sendSuccess(res, {
           message: '整理方案已发送到整理页面'
         })
+        return true
+      }
+
+      // 8) 描述句/造句端点 (消费解耦后的 hownet_sentence_templates.json)
+      if (method === 'POST' && pathname === '/api/ai/sentences') {
+        const body = await this.readBody(req)
+        const words: string[] = Array.isArray(body.words) ? body.words : []
+        const maxResults = Number(body.maxResults) || 5
+
+        if (words.length === 0) {
+          this.sendError(res, 400, t('缺少 words 词汇列表'))
+          return true
+        }
+
+        // 尝试从 presetResources/taxonomy 或 extraResources 加载静态模板
+        let templates: Array<{ id: string; template: string; category?: string }> = []
+        try {
+          const candidates = [
+            path.resolve(process.cwd(), 'apps/desktop/build/presetResources/taxonomy/hownet_sentence_templates.json'),
+            path.resolve(process.cwd(), 'build/presetResources/taxonomy/hownet_sentence_templates.json')
+          ]
+          for (const c of candidates) {
+            const raw = await fs.readFile(c, 'utf-8').catch(() => null)
+            if (raw) {
+              templates = JSON.parse(raw)
+              break
+            }
+          }
+        } catch (e) {
+          logger.warn(LogCategory.SYSTEM, '[AI Skill API] 读取造句模板文件失败:', e)
+        }
+
+        const candidatesList: Array<{ sentence: string; templateId?: string; score: number }> = []
+        if (templates.length > 0) {
+          // 挑选前 N 个模板，将首个或多个词填入模板中的省略号
+          const selectedTpls = templates.slice(0, maxResults)
+          selectedTpls.forEach(tpl => {
+            const filled = tpl.template.replace(/\.\.\./g, words.join(' ')).replace(/…/g, words.join(' '))
+            candidatesList.push({
+              sentence: filled,
+              templateId: tpl.id,
+              score: 0.85
+            })
+          })
+        } else {
+          // 回退默认简单模板
+          candidatesList.push({
+            sentence: words.join(' '),
+            score: 0.5
+          })
+        }
+
+        this.sendSuccess(res, { candidates: candidatesList })
         return true
       }
 
