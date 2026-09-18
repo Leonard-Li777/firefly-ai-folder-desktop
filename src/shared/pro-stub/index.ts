@@ -146,6 +146,7 @@ export interface SemanticAlignment {
   omwSynsets: any[]
   hownetSlots?: ProHowNetSlot[]
   hownetDescription?: string
+  /** 反义仅 Omni（#669）；stub 不查询主进程 antonym */
   antonyms?: string[]
 }
 
@@ -156,12 +157,10 @@ export async function alignTagSemantics(
   _omniPort = 38200
 ): Promise<SemanticAlignment> {
   const omwSynsets = dbService?.tagToOmw ? dbService.tagToOmw(tagCode) : []
-  const antonyms = dbService?.omwAntonyms ? dbService.omwAntonyms(tagName).map((a: any) => a.antonym) : []
   return {
     tagCode,
     tagName,
-    omwSynsets,
-    antonyms
+    omwSynsets
   }
 }
 
