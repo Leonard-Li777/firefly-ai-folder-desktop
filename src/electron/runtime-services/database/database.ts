@@ -483,12 +483,9 @@ const GENESIS_V1_SCHEMA = `
     meta TEXT NOT NULL DEFAULT '{}'
   );
 
+  -- 词形表去冗余：仅 id + meta；synset/language/lemma/pos 由 id 切割（omw.{offset}.{pos}.{locale}.{lemma}）
   CREATE TABLE IF NOT EXISTS omw_lexical_entries (
     id TEXT PRIMARY KEY,
-    synset_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
-    language TEXT NOT NULL REFERENCES omw_languages(code),
-    lemma TEXT NOT NULL,
-    pos TEXT NOT NULL,
     meta TEXT NOT NULL DEFAULT '{}'
   );
 
@@ -540,9 +537,6 @@ const GENESIS_V1_SCHEMA = `
   );
 
   -- 20. OMW 与语义索引
-  CREATE INDEX IF NOT EXISTS idx_omw_lexical_entries_lemma_lang ON omw_lexical_entries(lemma, language);
-  CREATE INDEX IF NOT EXISTS idx_omw_lexical_entries_synset ON omw_lexical_entries(synset_id);
-  CREATE INDEX IF NOT EXISTS idx_omw_synset_lang_covering ON omw_lexical_entries(synset_id, language, lemma);
   CREATE INDEX IF NOT EXISTS idx_omw_relations_source ON omw_relations(source_id, rel_type);
   CREATE INDEX IF NOT EXISTS idx_omw_relations_target ON omw_relations(target_id, rel_type);
   CREATE INDEX IF NOT EXISTS idx_omw_synsets_lexfile ON omw_synsets(lexfile);
@@ -869,6 +863,25 @@ export const migrations: IMigrationConfig[] = [
     `,
     down: `
       -- 不恢复已废除桥表/例句表；仅提示不可逆字段裁剪
+      SELECT 1;
+    `
+  },
+  {
+    version: 6,
+    name: 'omw_lexical_entries_slim_id_meta',
+    description: '词形表去冗余：仅保留 id + meta，字段由 omw.{offset}.{pos}.{locale}.{lemma} 解析',
+    up: `
+      CREATE TABLE IF NOT EXISTS omw_lexical_entries_id_meta (
+        id TEXT PRIMARY KEY,
+        meta TEXT NOT NULL DEFAULT '{}'
+      );
+      INSERT OR IGNORE INTO omw_lexical_entries_id_meta (id, meta)
+      SELECT id, COALESCE(meta, '{}') FROM omw_lexical_entries;
+      DROP TABLE IF EXISTS omw_lexical_entries;
+      ALTER TABLE omw_lexical_entries_id_meta RENAME TO omw_lexical_entries;
+    `,
+    down: `
+      -- 迁移 v6 不可逆（不再物化 synset_id/language/lemma/pos）
       SELECT 1;
     `
   }

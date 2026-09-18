@@ -7,6 +7,11 @@ import type {
 } from '@firefly/types'
 import { LogCategory, logger, isTestEnvironment } from '@firefly/shared'
 import { getDatabaseConfig, migrations } from './database'
+import {
+  parseOmwLexicalEntryId,
+  lemmaEquals,
+  languageMatches
+} from '../../../shared/omw-entry-id'
 
 import Database from 'better-sqlite3'
 import { calculateFileFingerprint } from '@firefly/shared'
@@ -1463,34 +1468,22 @@ export class DatabaseService {
 
   /**
    * OMW 概念查询 (支柱 2)
-   * 已裁 ili/definition/dc_identifier（字段治理）；保留 lexfile/meta
+   * 词形表仅 id+meta：synset/lemma/language 由 id 切割
    */
   public omwLookup(word: string, language: string = 'en'): OmwSynsetResult[] {
     if (!this._db) return []
     try {
-      // 分步查询（兼容测试 mock；避免复杂 JOIN）
-      // 英文 lemma 需 NOCASE；测试 mock 可能不支持 COLLATE，失败时回退精确匹配
-      let entryRows: any[] = []
-      try {
-        entryRows = this._db
-          .prepare(
-            `SELECT synset_id, language, lemma FROM omw_lexical_entries WHERE lemma = ? COLLATE NOCASE`
-          )
-          .all(word) as any[]
-      } catch {
-        entryRows = []
-      }
-      if (entryRows.length === 0) {
-        entryRows = this._db
-          .prepare(`SELECT synset_id, language, lemma FROM omw_lexical_entries WHERE lemma = ?`)
-          .all(word) as any[]
-      }
+      const allEntries = this._db
+        .prepare(`SELECT id FROM omw_lexical_entries`)
+        .all() as any[]
 
       const synsetIds: string[] = []
-      for (const e of entryRows) {
-        if (e.language === language || e.language === 'en') {
-          if (!synsetIds.includes(e.synset_id)) synsetIds.push(e.synset_id)
-        }
+      for (const row of allEntries) {
+        const p = parseOmwLexicalEntryId(row.id)
+        if (!p) continue
+        if (!lemmaEquals(p.lemma, word)) continue
+        if (!languageMatches(p.language, language) && !languageMatches(p.language, 'en')) continue
+        if (!synsetIds.includes(p.synsetId)) synsetIds.push(p.synsetId)
         if (synsetIds.length >= 50) break
       }
 
@@ -1503,21 +1496,30 @@ export class DatabaseService {
         try {
           meta = JSON.parse(r.meta || '{}')
         } catch {}
-        const lemmaRows = this._db!
-          .prepare('SELECT lemma FROM omw_lexical_entries WHERE synset_id = ?')
-          .all(r.id) as any[]
         return {
           id: r.id,
           pos: r.pos,
           lexfile: r.lexfile,
           meta,
-          lemmas: Array.from(new Set(lemmaRows.map((l) => l.lemma)))
+          lemmas: this.lemmasOfSynset(r.id)
         }
       }).filter(Boolean) as OmwSynsetResult[]
     } catch (err: any) {
       logger.debug(LogCategory.DATABASE_SERVICE, `omwLookup 查询失败: ${word}`, err?.message)
       return []
     }
+  }
+
+  /** 按 synset id 从词形 id 切割收集 lemma */
+  private lemmasOfSynset(synsetId: string): string[] {
+    if (!this._db) return []
+    const lemmas = new Set<string>()
+    const rows = this._db.prepare(`SELECT id FROM omw_lexical_entries`).all() as any[]
+    for (const row of rows) {
+      const p = parseOmwLexicalEntryId(row.id)
+      if (p && p.synsetId === synsetId) lemmas.add(p.lemma)
+    }
+    return Array.from(lemmas)
   }
 
   /**
@@ -1569,14 +1571,11 @@ export class DatabaseService {
           .prepare(`SELECT id, pos FROM omw_synsets WHERE id = ?`)
           .get(rel.target_id) as any
         if (!r) return null
-        const lemmaRows = this._db!
-          .prepare('SELECT lemma FROM omw_lexical_entries WHERE synset_id = ?')
-          .all(r.id) as any[]
         return {
           synsetId: r.id,
           relType,
           pos: r.pos,
-          lemmas: Array.from(new Set(lemmaRows.map((l) => l.lemma)))
+          lemmas: this.lemmasOfSynset(r.id)
         }
       }).filter(Boolean) as OmwSynsetNode[]
     } catch {
@@ -1587,48 +1586,42 @@ export class DatabaseService {
   /**
    * OMW 反义词查询
    * 契约（wayfinder #672）：词义层图谱优先，词面 antonym_pairs 兜底；无 language 维度
+   * 词形表仅 id+meta：lemma 由 id 切割
    */
   public omwAntonyms(word: string, _language?: string): OmwAntonymResult[] {
     if (!this._db) return []
     const results: OmwAntonymResult[] = []
     try {
-      // 图谱优先：分步查询，避免复杂 JOIN（兼容测试 mock 与旧库）
-      // 英文 lemma 需 NOCASE；测试 mock 可能不支持 COLLATE，失败时回退精确匹配
-      let sourceEntries: any[] = []
-      try {
-        sourceEntries = this._db
-          .prepare(
-            `SELECT id FROM omw_lexical_entries WHERE lemma = ? COLLATE NOCASE LIMIT 20`
-          )
-          .all(word) as any[]
-      } catch {
-        sourceEntries = []
-      }
-      if (sourceEntries.length === 0) {
-        sourceEntries = this._db
-          .prepare(`SELECT id FROM omw_lexical_entries WHERE lemma = ? LIMIT 20`)
-          .all(word) as any[]
+      const allEntries = this._db
+        .prepare(`SELECT id FROM omw_lexical_entries`)
+        .all() as any[]
+
+      const sourceEntryIds: string[] = []
+      for (const row of allEntries) {
+        const p = parseOmwLexicalEntryId(row.id)
+        if (p && lemmaEquals(p.lemma, word)) {
+          sourceEntryIds.push(row.id)
+          if (sourceEntryIds.length >= 20) break
+        }
       }
 
       const targetIds = new Set<string>()
-      for (const se of sourceEntries) {
+      for (const se of sourceEntryIds) {
         const targets = this._db
           .prepare(
             `SELECT target_entry_id FROM omw_sense_relations
              WHERE source_entry_id = ? AND rel_type = 'antonym' LIMIT 20`
           )
-          .all(se.id) as any[]
+          .all(se) as any[]
         for (const t of targets) targetIds.add(t.target_entry_id)
       }
 
       for (const tid of targetIds) {
-        const lemmaRow = this._db
-          .prepare(`SELECT lemma FROM omw_lexical_entries WHERE id = ?`)
-          .get(tid) as { lemma: string } | undefined
-        if (lemmaRow?.lemma && lemmaRow.lemma !== word) {
+        const p = parseOmwLexicalEntryId(tid)
+        if (p?.lemma && !lemmaEquals(p.lemma, word)) {
           results.push({
             word,
-            antonym: lemmaRow.lemma,
+            antonym: p.lemma,
             source: 'omw_sense_relations'
           })
         }
@@ -1713,15 +1706,12 @@ export class DatabaseService {
         try {
           meta = JSON.parse(r.meta || '{}')
         } catch {}
-        const lemmaRows = this._db!
-          .prepare('SELECT lemma FROM omw_lexical_entries WHERE synset_id = ?')
-          .all(r.id) as any[]
         return {
           id: r.id,
           pos: r.pos,
           lexfile: r.lexfile,
           meta,
-          lemmas: Array.from(new Set(lemmaRows.map((l) => l.lemma)))
+          lemmas: this.lemmasOfSynset(r.id)
         }
       })
     } catch {
@@ -1782,58 +1772,55 @@ export class DatabaseService {
       const distinctCodes = Array.from(new Set(tagCodes.filter(Boolean)))
       if (distinctCodes.length === 0) return result
 
-      // 语言映射归一化支持 (如 zh-CN 映射 cmn/zh-CN，en-US 映射 en/eng/en-US)
       const targetLocale = locale || 'en-US'
       const baseLang = targetLocale.split('-')[0].toLowerCase()
-
-      const query = `
-        WITH requested(code) AS (
-          SELECT value FROM json_each(?)
-        )
-        SELECT 
-          r.code,
-          COALESCE(
-            ta.lemma,
-            (
-              SELECT ole.lemma 
-              FROM omw_lexical_entries ole 
-              WHERE ole.synset_id = r.code 
-                AND (ole.language = ? OR ole.language = ? OR ole.language = ?)
-              ORDER BY 
-                CASE 
-                  WHEN ole.language = ? THEN 1 
-                  WHEN ole.language = ? THEN 2 
-                  ELSE 3 
-                END ASC
-              LIMIT 1
-            ),
-            ft.name,
-            r.code
-          ) AS display_name
-        FROM requested r
-        LEFT JOIN file_tags ft ON ft.code = r.code
-        LEFT JOIN tag_aliases ta ON ta.tag_code = r.code AND ta.locale = ?
-      `
-
-      // 针对中文可兼顾 cmn/zh-CN/zh，英文兼顾 en/eng/en-US
-      const langVariant1 = baseLang === 'zh' ? 'cmn' : (baseLang === 'en' ? 'eng' : targetLocale)
+      const langVariant1 = baseLang === 'zh' ? 'cmn' : baseLang === 'en' ? 'eng' : targetLocale
       const langVariant2 = baseLang
+      const langPriority = [targetLocale, langVariant1, langVariant2]
 
-      const rows = this._db
-        .prepare(query)
-        .all(
-          JSON.stringify(distinctCodes),
-          targetLocale,
-          langVariant1,
-          langVariant2,
-          targetLocale,
-          langVariant1,
-          targetLocale
-        ) as Array<{ code: string; display_name: string }>
+      // 1) 别名
+      const aliasRows = this._db
+        .prepare(`SELECT tag_code, lemma FROM tag_aliases WHERE locale = ?`)
+        .all(targetLocale) as { tag_code: string; lemma: string }[]
+      const aliasMap = new Map(aliasRows.map(r => [r.tag_code, r.lemma]))
 
-      for (const row of rows) {
-        if (row && row.code) {
-          result[row.code] = row.display_name || row.code
+      // 2) file_tags.name
+      const tagRows = this._db.prepare(`SELECT code, name FROM file_tags`).all() as {
+        code: string
+        name: string
+      }[]
+      const nameMap = new Map(tagRows.map(r => [r.code, r.name]))
+
+      // 3) OMW 词形：id 切割，按 synset + 语言优先级
+      const entryRows = this._db.prepare(`SELECT id FROM omw_lexical_entries`).all() as any[]
+      const omwLemmaBySynset = new Map<string, string>()
+      for (const row of entryRows) {
+        const p = parseOmwLexicalEntryId(row.id)
+        if (!p) continue
+        const pref = langPriority.findIndex(lp => languageMatches(p.language, lp))
+        if (pref < 0) continue
+        const prev = omwLemmaBySynset.get(p.synsetId)
+        if (!prev) {
+          omwLemmaBySynset.set(p.synsetId, `${pref}|${p.lemma}`)
+        } else {
+          const prevPref = parseInt(prev.split('|')[0], 10)
+          if (pref < prevPref) omwLemmaBySynset.set(p.synsetId, `${pref}|${p.lemma}`)
+        }
+      }
+
+      for (const code of distinctCodes) {
+        // COALESCE(tag_aliases.lemma, omw lemma, file_tags.name, code)
+        if (aliasMap.has(code)) {
+          result[code] = aliasMap.get(code)!
+          continue
+        }
+        const omwHit = omwLemmaBySynset.get(code)
+        if (omwHit) {
+          result[code] = omwHit.slice(omwHit.indexOf('|') + 1)
+          continue
+        }
+        if (nameMap.has(code)) {
+          result[code] = nameMap.get(code)!
         }
       }
     } catch (error) {

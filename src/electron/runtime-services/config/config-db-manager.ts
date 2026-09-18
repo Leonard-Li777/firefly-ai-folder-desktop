@@ -775,16 +775,11 @@ export class ConfigDbManager {
           this.streamImportCsv(
             db,
             entryPath,
-            `INSERT OR REPLACE INTO omw_lexical_entries (id, synset_id, language, lemma, pos, meta) VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT OR REPLACE INTO omw_lexical_entries (id, meta) VALUES (?, ?)`,
             rowLimit,
-            5,
+            1,
             (cols) => [
               cols[0],
-              cols[1],
-              cols[2],
-              cols[3],
-              cols[4],
-              // 契约：不把 source_sense_id 塞进 meta；仅接受 JSON meta
               cols.length >= 7 && cols[6] && cols[6].startsWith('{')
                 ? cols[6]
                 : cols.length === 6 && cols[5] && cols[5].startsWith('{')
