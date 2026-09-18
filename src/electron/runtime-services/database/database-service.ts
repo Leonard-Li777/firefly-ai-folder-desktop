@@ -1722,6 +1722,95 @@ export class DatabaseService {
     return null
   }
 
+  /**
+   * 多语言展示层标签名级联解析器 (Tag Display Resolver)
+   * 遵循规范: docs/specs/multi-language-display-and-zero-redundancy-taxonomy-spec.md
+   * 
+   * 级联优先级:
+   * COALESCE(tag_aliases.lemma, omw_lexical_entries.lemma, file_tags.name, code)
+   * 
+   * 性能与契约:
+   * 1. 一次性批量解析传入的所有 tagCodes，消除前端 N+1 查询；
+   * 2. 利用 idx_tag_aliases_lookup 与 idx_omw_synset_lang_covering 覆盖索引，亚毫秒级返回；
+   * 3. 保持数据零冗余，不把 OMW 词形拷入 tag_aliases，保持领域模型职责纯粹。
+   * 
+   * @param tagCodes 需要解析显示名称的标签 code 数组
+   * @param locale 当前目标语言代码 (如 'zh-CN', 'en-US')
+   */
+  public resolveTagDisplayNames(tagCodes: string[], locale: string): Record<string, string> {
+    const result: Record<string, string> = {}
+    if (!tagCodes || tagCodes.length === 0) return result
+    for (const code of tagCodes) {
+      result[code] = code // 默认兜底为 code 本身
+    }
+
+    if (!this._db) return result
+
+    try {
+      const distinctCodes = Array.from(new Set(tagCodes.filter(Boolean)))
+      if (distinctCodes.length === 0) return result
+
+      // 语言映射归一化支持 (如 zh-CN 映射 cmn/zh-CN，en-US 映射 en/eng/en-US)
+      const targetLocale = locale || 'en-US'
+      const baseLang = targetLocale.split('-')[0].toLowerCase()
+
+      const query = `
+        WITH requested(code) AS (
+          SELECT value FROM json_each(?)
+        )
+        SELECT 
+          r.code,
+          COALESCE(
+            ta.lemma,
+            (
+              SELECT ole.lemma 
+              FROM omw_lexical_entries ole 
+              WHERE ole.synset_id = r.code 
+                AND (ole.language = ? OR ole.language = ? OR ole.language = ?)
+              ORDER BY 
+                CASE 
+                  WHEN ole.language = ? THEN 1 
+                  WHEN ole.language = ? THEN 2 
+                  ELSE 3 
+                END ASC
+              LIMIT 1
+            ),
+            ft.name,
+            r.code
+          ) AS display_name
+        FROM requested r
+        LEFT JOIN file_tags ft ON ft.code = r.code
+        LEFT JOIN tag_aliases ta ON ta.tag_code = r.code AND ta.locale = ?
+      `
+
+      // 针对中文可兼顾 cmn/zh-CN/zh，英文兼顾 en/eng/en-US
+      const langVariant1 = baseLang === 'zh' ? 'cmn' : (baseLang === 'en' ? 'eng' : targetLocale)
+      const langVariant2 = baseLang
+
+      const rows = this._db
+        .prepare(query)
+        .all(
+          JSON.stringify(distinctCodes),
+          targetLocale,
+          langVariant1,
+          langVariant2,
+          targetLocale,
+          langVariant1,
+          targetLocale
+        ) as Array<{ code: string; display_name: string }>
+
+      for (const row of rows) {
+        if (row && row.code) {
+          result[row.code] = row.display_name || row.code
+        }
+      }
+    } catch (error) {
+      logger.error(LogCategory.DATABASE_SERVICE, 'resolveTagDisplayNames 解析失败:', error)
+    }
+
+    return result
+  }
+
   // =========================================================================
   // 多模态向量存储与检索 API (file_vectors)
   // =========================================================================

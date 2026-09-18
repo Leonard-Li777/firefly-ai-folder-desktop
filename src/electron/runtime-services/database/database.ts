@@ -179,6 +179,7 @@ const GENESIS_V1_SCHEMA = `
     meta          TEXT NOT NULL DEFAULT '{}',
     PRIMARY KEY (tag_code, locale)
   );
+  CREATE INDEX IF NOT EXISTS idx_tag_aliases_lookup ON tag_aliases(locale, tag_code);
   CREATE INDEX IF NOT EXISTS idx_tag_aliases_lemma ON tag_aliases(lemma, locale);
 
   -- 8. 文件指纹与标签多对多关联表 (基于复合主键 file_fingerprint + tag_code + parent_tag_code)
@@ -562,6 +563,7 @@ const GENESIS_V1_SCHEMA = `
   -- 20. OMW 与语义索引
   CREATE INDEX IF NOT EXISTS idx_omw_lexical_entries_lemma_lang ON omw_lexical_entries(lemma, language);
   CREATE INDEX IF NOT EXISTS idx_omw_lexical_entries_synset ON omw_lexical_entries(synset_id);
+  CREATE INDEX IF NOT EXISTS idx_omw_synset_lang_covering ON omw_lexical_entries(synset_id, language, lemma);
   CREATE INDEX IF NOT EXISTS idx_omw_relations_source ON omw_relations(source_id, rel_type);
   CREATE INDEX IF NOT EXISTS idx_omw_relations_target ON omw_relations(target_id, rel_type);
   CREATE INDEX IF NOT EXISTS idx_tag_omw_mapping_tag ON tag_omw_mapping(tag_code);
@@ -648,6 +650,7 @@ export const migrations: IMigrationConfig[] = [
         meta          TEXT NOT NULL DEFAULT '{}',
         PRIMARY KEY (tag_code, locale)
       );
+      CREATE INDEX IF NOT EXISTS idx_tag_aliases_lookup ON tag_aliases(locale, tag_code);
       CREATE INDEX IF NOT EXISTS idx_tag_aliases_lemma ON tag_aliases(lemma, locale);
     `,
     down: `
@@ -676,8 +679,10 @@ export const migrations: IMigrationConfig[] = [
       CREATE INDEX IF NOT EXISTS idx_file_vectors_status ON file_vectors(status);
       CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
       CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
+      CREATE INDEX IF NOT EXISTS idx_omw_synset_lang_covering ON omw_lexical_entries(synset_id, language, lemma);
     `,
     down: `
+      DROP INDEX IF EXISTS idx_omw_synset_lang_covering;
       DROP INDEX IF EXISTS idx_file_tag_relations_covering;
       DROP INDEX IF EXISTS idx_analysis_queue_pending;
       DROP INDEX IF EXISTS idx_file_vectors_status;
