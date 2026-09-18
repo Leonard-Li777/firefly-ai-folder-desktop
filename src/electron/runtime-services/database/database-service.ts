@@ -661,7 +661,7 @@ export class DatabaseService {
     if (fileFingerprint) {
       const stats = fs.statSync(filePath)
       this._db!.prepare(
-        `INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, type, category, created_at, modified_at, accessed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        `INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, extension, file_group, created_at, modified_at, accessed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
       ).run(
         fileFingerprint,
         path.basename(filePath),
@@ -1071,7 +1071,7 @@ export class DatabaseService {
     `)
 
     const insertFileStmt = this._db.prepare(`
-      INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, type, category, created_at, modified_at, accessed_at)
+      INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, extension, file_group, created_at, modified_at, accessed_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `)
 

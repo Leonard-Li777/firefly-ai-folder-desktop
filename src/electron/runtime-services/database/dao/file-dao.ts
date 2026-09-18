@@ -148,7 +148,7 @@ export class FileDao {
           // 先确保父表 files 与 file_contents 记录存在，防止触发 SQLite 外键约束异常
           this.db
             .prepare(
-              `INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, type, created_at, modified_at, accessed_at)
+              `INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, extension, created_at, modified_at, accessed_at)
                VALUES (?, ?, ?, ?, ?, ?, ?)`
             )
             .run(

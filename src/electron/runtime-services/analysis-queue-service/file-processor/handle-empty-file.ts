@@ -27,7 +27,7 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
   const directoryId = await databaseService.addDirectory(dirPath, workspaceId)
 
   db.prepare(
-    `INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, type, category, created_at, modified_at, accessed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    `INSERT OR IGNORE INTO files (file_fingerprint, smart_name, size, extension, file_group, created_at, modified_at, accessed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
     emptyHash,
     emptySmartName,

@@ -193,14 +193,14 @@ export class FileProcessor {
     `)
     this.insertFileStmt = db.prepare(`
       INSERT INTO files (
-        file_fingerprint, smart_name, size, type, category,
+        file_fingerprint, smart_name, size, extension, file_group,
         created_at, modified_at, accessed_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(file_fingerprint) DO UPDATE SET
         size = excluded.size,
-        type = excluded.type,
+        extension = excluded.extension,
         smart_name = excluded.smart_name,
-        category = excluded.category,
+        file_group = excluded.file_group,
         modified_at = excluded.modified_at,
         accessed_at = ?
     `)
@@ -647,7 +647,7 @@ export class FileProcessor {
             )
             // 确保 files 与 workspace_files 正确关联
             db.prepare(
-              `INSERT INTO files (file_fingerprint, smart_name, size, type, created_at, modified_at, accessed_at)
+              `INSERT INTO files (file_fingerprint, smart_name, size, extension, created_at, modified_at, accessed_at)
                VALUES (?, ?, ?, ?, ?, ?, ?)
                ON CONFLICT(file_fingerprint) DO UPDATE SET
                  smart_name = COALESCE(files.smart_name, excluded.smart_name)`
@@ -1077,7 +1077,7 @@ export class FileProcessor {
         try {
           // 1. 确保 files 表中有对应基础记录 (必须先插入父表，满足外键约束)
           db.prepare(
-            `INSERT INTO files (file_fingerprint, smart_name, size, type, created_at, modified_at, accessed_at)
+            `INSERT INTO files (file_fingerprint, smart_name, size, extension, created_at, modified_at, accessed_at)
              VALUES (?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT(file_fingerprint) DO UPDATE SET
                smart_name = COALESCE(files.smart_name, excluded.smart_name)`
@@ -1698,10 +1698,10 @@ export class FileProcessor {
       // 导致文件属性面板元数据 Tab 的 Magika 字段缺失
       db.prepare(
         `
-        INSERT INTO files (file_fingerprint, smart_name, size, type, category, description, created_at, modified_at, accessed_at)
+        INSERT INTO files (file_fingerprint, smart_name, size, extension, file_group, description, created_at, modified_at, accessed_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
-          category = excluded.category,
+          file_group = excluded.file_group,
           smart_name = COALESCE(excluded.smart_name, files.smart_name),
           description = COALESCE(excluded.description, files.description)
         `
@@ -2236,7 +2236,7 @@ export class FileProcessor {
 
       db.prepare(
         `
-        INSERT INTO files (file_fingerprint, smart_name, description, size, type, category, author, language, created_at, modified_at, accessed_at)
+        INSERT INTO files (file_fingerprint, smart_name, description, size, extension, file_group, author, language, created_at, modified_at, accessed_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           smart_name = COALESCE(excluded.smart_name, smart_name),

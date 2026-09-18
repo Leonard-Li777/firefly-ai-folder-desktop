@@ -1173,7 +1173,7 @@ export class AnalysisQueueService {
               }
 
               db.prepare(
-                'UPDATE files SET type = ?, smart_name = ? WHERE file_fingerprint = ?'
+                'UPDATE files SET extension = ?, smart_name = ? WHERE file_fingerprint = ?'
               ).run(newExt, newSmartName, fileFingerprint)
               count++
             }

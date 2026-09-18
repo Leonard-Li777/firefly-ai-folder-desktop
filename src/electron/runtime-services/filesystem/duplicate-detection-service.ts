@@ -964,7 +964,7 @@ export class DuplicateDetectionService {
               )
               // 2. 如果存在关联的文件指纹，同步更新 files 表的基础元数据
               if (wfRow?.file_fingerprint) {
-                db.prepare('UPDATE files SET type = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
+                db.prepare('UPDATE files SET extension = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
                   newExt,
                   wfRow.file_fingerprint
                 )
@@ -1028,7 +1028,7 @@ export class DuplicateDetectionService {
                       updatedSmartName = `${updatedSmartName}${properExt}`
                     }
                   }
-                  db.prepare('UPDATE files SET type = ?, smart_name = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
+                  db.prepare('UPDATE files SET extension = ?, smart_name = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?').run(
                     cleanExt,
                     updatedSmartName || null,
                     wfRow.file_fingerprint
