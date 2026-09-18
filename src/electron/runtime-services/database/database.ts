@@ -475,13 +475,11 @@ const GENESIS_V1_SCHEMA = `
     meta TEXT NOT NULL DEFAULT '{}'
   );
 
+  -- 概念表：已裁 ili/definition/dc_identifier（wayfinder disposition）；保留 lexfile 供语义域利用
   CREATE TABLE IF NOT EXISTS omw_synsets (
     id TEXT PRIMARY KEY,
-    ili TEXT,
     pos TEXT NOT NULL,
     lexfile TEXT,
-    definition TEXT,
-    dc_identifier TEXT,
     meta TEXT NOT NULL DEFAULT '{}'
   );
 
@@ -510,31 +508,12 @@ const GENESIS_V1_SCHEMA = `
     PRIMARY KEY (source_entry_id, target_entry_id, rel_type)
   );
 
-  CREATE TABLE IF NOT EXISTS omw_examples (
-    synset_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
-    text TEXT NOT NULL,
-    language TEXT NOT NULL REFERENCES omw_languages(code),
-    meta TEXT NOT NULL DEFAULT '{}'
-  );
-
-  CREATE TABLE IF NOT EXISTS tag_omw_mapping (
-    tag_code TEXT NOT NULL REFERENCES file_tags(code) ON DELETE CASCADE,
-    synset_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
-    match_level INTEGER NOT NULL,   -- 1=精确, 2=向量
-    confidence REAL,
-    meta TEXT NOT NULL DEFAULT '{}',
-    PRIMARY KEY (tag_code, synset_id)
-  );
-
+  -- 词面反义兜底表：中文向；无 language 维度；写入前 word_a < word_b
   CREATE TABLE IF NOT EXISTS antonym_pairs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
     word_a TEXT NOT NULL,
     word_b TEXT NOT NULL,
-    source TEXT NOT NULL,
-    language TEXT NOT NULL DEFAULT 'cmn',
-    status TEXT NOT NULL DEFAULT 'auto',
     meta TEXT NOT NULL DEFAULT '{}',
-    UNIQUE (word_a, word_b, language)
+    UNIQUE (word_a, word_b)
   );
 
   CREATE TABLE IF NOT EXISTS hownet_words (
@@ -566,8 +545,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_omw_synset_lang_covering ON omw_lexical_entries(synset_id, language, lemma);
   CREATE INDEX IF NOT EXISTS idx_omw_relations_source ON omw_relations(source_id, rel_type);
   CREATE INDEX IF NOT EXISTS idx_omw_relations_target ON omw_relations(target_id, rel_type);
-  CREATE INDEX IF NOT EXISTS idx_tag_omw_mapping_tag ON tag_omw_mapping(tag_code);
-  CREATE INDEX IF NOT EXISTS idx_tag_omw_mapping_synset ON tag_omw_mapping(synset_id);
+  CREATE INDEX IF NOT EXISTS idx_omw_synsets_lexfile ON omw_synsets(lexfile);
   CREATE INDEX IF NOT EXISTS idx_antonym_word_a ON antonym_pairs(word_a);
   CREATE INDEX IF NOT EXISTS idx_antonym_word_b ON antonym_pairs(word_b);
   CREATE INDEX IF NOT EXISTS idx_hownet_words_word ON hownet_words(word);
@@ -604,12 +582,10 @@ export const migrations: IMigrationConfig[] = [
     up: GENESIS_V1_SCHEMA,
     down: `
       DROP TABLE IF EXISTS file_vectors;
-      DROP TABLE IF EXISTS tag_omw_mapping;
       DROP TABLE IF EXISTS antonym_pairs;
       DROP TABLE IF EXISTS hownet_word_concepts;
       DROP TABLE IF EXISTS hownet_concepts;
       DROP TABLE IF EXISTS hownet_words;
-      DROP TABLE IF EXISTS omw_examples;
       DROP TABLE IF EXISTS omw_sense_relations;
       DROP TABLE IF EXISTS omw_relations;
       DROP TABLE IF EXISTS omw_lexical_entries;
@@ -847,6 +823,53 @@ export const migrations: IMigrationConfig[] = [
       DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
       DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
       DROP TABLE IF EXISTS files_fts;
+    `
+  },
+  {
+    version: 5,
+    name: 'omw_field_governance_slim',
+    description:
+      'Wayfinder 字段治理：废除 omw_examples/tag_omw_mapping；omw_synsets 裁 ili/definition/dc_identifier；antonym_pairs 去 language/source/status/id',
+    up: `
+      DROP TABLE IF EXISTS omw_examples;
+      DROP TABLE IF EXISTS tag_omw_mapping;
+      DROP INDEX IF EXISTS idx_tag_omw_mapping_tag;
+      DROP INDEX IF EXISTS idx_tag_omw_mapping_synset;
+
+      -- 重建 omw_synsets（保留 lexfile/meta）
+      CREATE TABLE IF NOT EXISTS omw_synsets_slim (
+        id TEXT PRIMARY KEY,
+        pos TEXT NOT NULL,
+        lexfile TEXT,
+        meta TEXT NOT NULL DEFAULT '{}'
+      );
+      INSERT OR IGNORE INTO omw_synsets_slim (id, pos, lexfile, meta)
+      SELECT id, pos, lexfile, COALESCE(meta, '{}') FROM omw_synsets;
+      DROP TABLE IF EXISTS omw_synsets;
+      ALTER TABLE omw_synsets_slim RENAME TO omw_synsets;
+      CREATE INDEX IF NOT EXISTS idx_omw_synsets_lexfile ON omw_synsets(lexfile);
+
+      -- 重建 antonym_pairs：词面中文兜底，无 language
+      CREATE TABLE IF NOT EXISTS antonym_pairs_slim (
+        word_a TEXT NOT NULL,
+        word_b TEXT NOT NULL,
+        meta TEXT NOT NULL DEFAULT '{}',
+        UNIQUE (word_a, word_b)
+      );
+      INSERT OR IGNORE INTO antonym_pairs_slim (word_a, word_b, meta)
+      SELECT
+        CASE WHEN word_a < word_b THEN word_a ELSE word_b END AS wa,
+        CASE WHEN word_a < word_b THEN word_b ELSE word_a END AS wb,
+        COALESCE(meta, '{}')
+      FROM antonym_pairs;
+      DROP TABLE IF EXISTS antonym_pairs;
+      ALTER TABLE antonym_pairs_slim RENAME TO antonym_pairs;
+      CREATE INDEX IF NOT EXISTS idx_antonym_word_a ON antonym_pairs(word_a);
+      CREATE INDEX IF NOT EXISTS idx_antonym_word_b ON antonym_pairs(word_b);
+    `,
+    down: `
+      -- 不恢复已废除桥表/例句表；仅提示不可逆字段裁剪
+      SELECT 1;
     `
   }
 ]

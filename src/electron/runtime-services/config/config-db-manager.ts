@@ -811,20 +811,7 @@ export class ConfigDbManager {
         )
       }
 
-      // 6) 导入 omw_examples (按语言独立文件, 语言码对齐系统 locale 规范)
-      for (const loc of importLocales) {
-        const examplePath = path.join(taxonomyDir, `omw_examples_${loc}.csv`)
-        if (fs.existsSync(examplePath)) {
-          this.streamImportCsv(
-            db,
-            examplePath,
-            `INSERT OR REPLACE INTO omw_examples (synset_id, text, language, meta) VALUES (?, ?, ?, ?)`,
-            rowLimit,
-            3,
-            (cols) => [cols[0], cols[1], cols[2], '{}']
-          )
-        }
-      }
+      // 6) omw_examples 已依据规范彻底移除（0 占用，无需导入）
 
       // 7-9) 导入 HowNet 中文增强数据 (仅 zh-CN 语言库)
       if (language === 'zh-CN') {
