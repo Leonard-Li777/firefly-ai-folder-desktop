@@ -3,10 +3,11 @@ import { isPanDimension } from '@firefly/shared'
 import { DimensionTreeNode } from './AnalyzedDirectory/types'
 
 /**
- * 生成标签唯一 key（包含父标签路径以区分同名标签）
+ * 生成标签唯一 key（包含父标签标识以区分同名标签，V4 优先由 parentCode 驱动）
  */
-export function makeTagKey(dimensionId: number, tagValue: string, parentTagValue?: string): string {
-  return `${dimensionId}::${parentTagValue || ''}::${tagValue}`
+export function makeTagKey(dimensionId: number, tagValue: string, parentTagValue?: string, parentTagCode?: string): string {
+  const parentIdStr = parentTagCode ? `parentCode:${parentTagCode}` : (parentTagValue || '')
+  return `${dimensionId}::${parentIdStr}::${tagValue}`
 }
 
 /**
@@ -14,9 +15,12 @@ export function makeTagKey(dimensionId: number, tagValue: string, parentTagValue
  */
 export function parseTagKey(key: string) {
   const parts = key.split('::')
+  const parentPart = parts[1] || ''
+  const isParentCode = parentPart.startsWith('parentCode:')
   return {
     dimensionId: parseInt(parts[0], 10),
-    parentTagValue: parts[1] || undefined,
+    parentTagValue: isParentCode ? undefined : (parentPart || undefined),
+    parentTagCode: isParentCode ? parentPart.replace('parentCode:', '') : undefined,
     tagValue: parts.slice(2).join('::')
   }
 }
@@ -186,10 +190,14 @@ export function getSelectedTagsFromSet(
         ? ancestorChain[ancestorChain.length - 2]
         : undefined)
 
+    const tagItem = group.tags.find(t => t.tagValue === tagValue)
+
     results.push({
       dimensionId,
       dimensionName: group.name,
       tagValue,
+      code: tagItem?.code,
+      parentTagCode: parsed.parentTagCode || tagItem?.parentCode || undefined,
       level: tagObj?.level || 0,
       ...(parentTagValue ? { parentTagValue } : {}),
       ...(ancestorChain && ancestorChain.length > 0 ? { ancestorChain } : {})

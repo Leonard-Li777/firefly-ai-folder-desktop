@@ -2280,20 +2280,18 @@ export class FileProcessor {
           (r: any) => r.file_fingerprint === fingerprint
         )
         for (const rel of relations) {
-          const tag = this.mockData.file_tags.find((t: any) => t.id === rel.tag_id)
+          const tag = this.mockData.file_tags.find((t: any) => (t.code && t.code === rel.tag_code) || t.id === rel.tag_id)
           if (tag) {
-            db.prepare('INSERT OR IGNORE INTO file_tags (name, dimension_id) VALUES (?, ?)').run(
+            const tagCode = tag.code || `custom:${tag.name}`
+            const parentTagCode = rel.parent_tag_code || (tag.parent_codes ? JSON.parse(tag.parent_codes)[0] : '') || ''
+            db.prepare('INSERT OR IGNORE INTO file_tags (code, name, parent_codes) VALUES (?, ?, ?)').run(
+              tagCode,
               tag.name,
-              tag.dimension_id
+              JSON.stringify(parentTagCode ? [parentTagCode] : [])
             )
-            const localTagRow = db
-              .prepare('SELECT id FROM file_tags WHERE name = ? AND dimension_id = ?')
-              .get(tag.name, tag.dimension_id) as any
-            if (localTagRow) {
-              db.prepare(
-                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_id, sync_status) VALUES (?, ?, 0)`
-              ).run(fingerprint, localTagRow.id)
-            }
+            db.prepare(
+              `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, confidence, sync_status) VALUES (?, ?, ?, 1.0, 0)`
+            ).run(fingerprint, tagCode, parentTagCode)
           }
         }
       }

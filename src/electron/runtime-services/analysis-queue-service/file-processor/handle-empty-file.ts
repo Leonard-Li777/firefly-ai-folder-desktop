@@ -123,9 +123,9 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
             JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 2 })
           )
           db.prepare(
-            `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, confidence, source, meta)
-             VALUES (?, ?, 1.0, 'rule', ?)`
-          ).run(emptyHash, tagCode, JSON.stringify({ syncStatus: 2 }))
+            `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, confidence, source, meta)
+             VALUES (?, ?, ?, 1.0, 'rule', ?)`
+          ).run(emptyHash, tagCode, BASIC_ATTR_DIM_CODE, JSON.stringify({ syncStatus: 2 }))
         } catch (fallbackError) {
           logger.warn(
             LogCategory.FILE_ANALYSIS,

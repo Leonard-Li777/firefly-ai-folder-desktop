@@ -304,23 +304,26 @@ export class TagTreeQuery {
         }
       }
 
-      // 4. 统计在有效文件集合下，每个 tag_code 的文件命中数
+      // 4. 统计在有效文件集合下，每个 (tag_code, parent_tag_code) 的文件命中数（V4 联合统计）
       const countQuery = `
-        SELECT ftr.tag_code, COUNT(DISTINCT ftr.file_fingerprint) as count
+        SELECT ftr.tag_code, ftr.parent_tag_code, COUNT(DISTINCT ftr.file_fingerprint) as count
         FROM file_tag_relations ftr
         WHERE ftr.file_fingerprint IN (${filteredFingerprintsSql})
-        GROUP BY ftr.tag_code
+        GROUP BY ftr.tag_code, ftr.parent_tag_code
       `
       const countStartTime = performance.now()
       const countRows = this.db.prepare(countQuery).all(...filteredFingerprintsParams) as Array<{
         tag_code: string
+        parent_tag_code: string
         count: number
       }>
       dbQueryTime += performance.now() - countStartTime
 
       const tagCountMap = new Map<string, number>()
+      const tagParentCountMap = new Map<string, number>()
       for (const row of countRows) {
-        tagCountMap.set(row.tag_code, row.count)
+        tagCountMap.set(row.tag_code, (tagCountMap.get(row.tag_code) || 0) + row.count)
+        tagParentCountMap.set(`${row.tag_code}::${row.parent_tag_code}`, row.count)
       }
 
       // 5. 按照维度归类标签并组织树形结构
@@ -345,17 +348,6 @@ export class TagTreeQuery {
         const dimensionTags: DimensionTag[] = []
 
         for (const child of directChildren) {
-          // 汇总该标签自身及后代标签的代码
-          const familyCodes = this.getDescendantTagCodes(child.code)
-          let aggregatedCount = 0
-          for (const fc of familyCodes) {
-            aggregatedCount += tagCountMap.get(fc) || 0
-          }
-
-          if (removeEmptyTags && !includeAllPresetTags && aggregatedCount === 0) {
-            continue
-          }
-
           // #625：解析子标签的 meta 与 parent_codes，透出给前端纯树形状态机
           let childMeta: any = {}
           try {
@@ -365,6 +357,24 @@ export class TagTreeQuery {
           try {
             childParentCodes = JSON.parse(child.parent_codes || '[]')
           } catch {}
+          const immediateParentCode = childParentCodes[0] || dimCode
+
+          // 汇总该标签自身及后代标签的代码（优先匹配当前父级上下文）
+          const familyCodes = this.getDescendantTagCodes(child.code)
+          let aggregatedCount = 0
+          for (const fc of familyCodes) {
+            // 优先检查精确父级绑定的计数
+            const parentSpecific = tagParentCountMap.get(`${fc}::${immediateParentCode}`)
+            if (parentSpecific !== undefined) {
+              aggregatedCount += parentSpecific
+            } else {
+              aggregatedCount += tagCountMap.get(fc) || 0
+            }
+          }
+
+          if (removeEmptyTags && !includeAllPresetTags && aggregatedCount === 0) {
+            continue
+          }
 
           dimensionTags.push({
             dimensionId: dimCode as any,
@@ -509,33 +519,48 @@ export class TagTreeQuery {
 
     if (selectedTags.length > 0) {
       if (unionMode === 'union') {
-        const allCodes = new Set<string>()
+        const clauses: string[] = []
         for (const tag of selectedTags) {
-          const codes = this.getDescendantTagCodes(tag.tagValue)
-          codes.forEach(c => allCodes.add(c))
+          const codes = this.getDescendantTagCodes(tag.code || tag.tagValue)
+          if (codes.length > 0) {
+            const placeholders = codes.map(() => '?').join(',')
+            if (tag.parentTagCode) {
+              clauses.push(`(ftr.tag_code IN (${placeholders}) AND ftr.parent_tag_code = ?)`)
+              queryParams.push(...codes, tag.parentTagCode)
+            } else {
+              clauses.push(`ftr.tag_code IN (${placeholders})`)
+              queryParams.push(...codes)
+            }
+          }
         }
-        const codeArray = Array.from(allCodes)
-        if (codeArray.length > 0) {
-          const placeholders = codeArray.map(() => '?').join(',')
+        if (clauses.length > 0) {
           whereClauses.push(`wf.file_fingerprint IN (
             SELECT ftr.file_fingerprint
             FROM file_tag_relations ftr
-            WHERE ftr.tag_code IN (${placeholders})
+            WHERE ${clauses.join(' OR ')}
           )`)
-          queryParams.push(...codeArray)
         }
       } else {
         // intersection
         for (const tag of selectedTags) {
-          const codes = this.getDescendantTagCodes(tag.tagValue)
+          const codes = this.getDescendantTagCodes(tag.code || tag.tagValue)
           if (codes.length > 0) {
             const placeholders = codes.map(() => '?').join(',')
-            whereClauses.push(`wf.file_fingerprint IN (
-              SELECT ftr.file_fingerprint
-              FROM file_tag_relations ftr
-              WHERE ftr.tag_code IN (${placeholders})
-            )`)
-            queryParams.push(...codes)
+            if (tag.parentTagCode) {
+              whereClauses.push(`wf.file_fingerprint IN (
+                SELECT ftr.file_fingerprint
+                FROM file_tag_relations ftr
+                WHERE ftr.tag_code IN (${placeholders}) AND ftr.parent_tag_code = ?
+              )`)
+              queryParams.push(...codes, tag.parentTagCode)
+            } else {
+              whereClauses.push(`wf.file_fingerprint IN (
+                SELECT ftr.file_fingerprint
+                FROM file_tag_relations ftr
+                WHERE ftr.tag_code IN (${placeholders})
+              )`)
+              queryParams.push(...codes)
+            }
           }
         }
       }

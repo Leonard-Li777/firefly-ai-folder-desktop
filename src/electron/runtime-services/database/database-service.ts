@@ -1362,10 +1362,23 @@ export class DatabaseService {
         }
 
         // 3. 遍历文件应用或解绑
-        const allAddTagCodes: string[] = [...Array.from(createdTagMap.values())]
+        const allAddTagItems: Array<{ tagCode: string; parentTagCode: string }> = []
+        for (const [key, code] of createdTagMap.entries()) {
+          const dimCode = key.split(':')[0] || ''
+          allAddTagItems.push({ tagCode: code, parentTagCode: dimCode })
+        }
         for (const rawId of operation.addTagIds || []) {
-          const found = this._db!.prepare('SELECT code FROM file_tags WHERE id = ? OR code = ?').get(rawId, String(rawId)) as { code: string } | undefined
-          allAddTagCodes.push(found?.code || String(rawId))
+          const found = this._db!.prepare('SELECT code, parent_codes FROM file_tags WHERE id = ? OR code = ?').get(rawId, String(rawId)) as { code: string; parent_codes?: string } | undefined
+          let parentTagCode = ''
+          if (found?.parent_codes) {
+            try {
+              const parents = JSON.parse(found.parent_codes)
+              if (Array.isArray(parents) && parents.length > 0) {
+                parentTagCode = parents[0]
+              }
+            } catch {}
+          }
+          allAddTagItems.push({ tagCode: found?.code || String(rawId), parentTagCode })
         }
 
         for (const fileId of operation.fileIds) {
@@ -1410,13 +1423,13 @@ export class DatabaseService {
               continue
             }
 
-            // 添加标签关联
-            if (allAddTagCodes.length > 0) {
+            // 添加标签关联（写入 parent_tag_code）
+            if (allAddTagItems.length > 0) {
               const insertStmt = this._db!.prepare(
-                'INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, confidence, sync_status, created_at) VALUES (?, ?, 1.0, 0, CURRENT_TIMESTAMP)'
+                'INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, confidence, sync_status, created_at) VALUES (?, ?, ?, 1.0, 0, CURRENT_TIMESTAMP)'
               )
-              for (const tagCode of allAddTagCodes) {
-                insertStmt.run(fp, tagCode)
+              for (const item of allAddTagItems) {
+                insertStmt.run(fp, item.tagCode, item.parentTagCode)
               }
             }
 
