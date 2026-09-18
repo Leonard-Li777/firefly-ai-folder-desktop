@@ -266,9 +266,9 @@ export class FileProcessor {
     } = {}
 
     try {
-      // 1. 获取 category (files 表)
+      // 1. 获取 file_group (files 表，V4 由 category 改名)
       const fileRow = db
-        .prepare('SELECT category FROM files WHERE file_fingerprint = ?')
+        .prepare('SELECT file_group as category FROM files WHERE file_fingerprint = ?')
         .get(fingerprint) as { category?: string } | undefined
 
       if (fileRow?.category) {
@@ -1231,7 +1231,7 @@ export class FileProcessor {
           )
         } else if (existingWorkspaceFile) {
           const row = db
-            .prepare('SELECT category FROM files WHERE file_fingerprint = ?')
+            .prepare('SELECT file_group as category FROM files WHERE file_fingerprint = ?')
             .get(fileFingerprint) as { category?: string }
           if (row?.category) {
             try {
