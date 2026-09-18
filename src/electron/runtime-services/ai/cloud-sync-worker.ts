@@ -383,11 +383,15 @@ export class CloudSyncWorker {
           file_fingerprint: f.file_fingerprint, // V2 架构：对齐云端 RPC 字段名
           smart_name: f.smart_name,
           size: f.size,
-          type: f.type,
-          mime_type: f.category,
+          extension: f.extension || f.type,
+          type: f.extension || f.type,
+          file_group: f.file_group || f.category,
+          mime_type: f.file_group || f.category,
           author: f.author,
           description: f.description,
           content: cloudContent,
+          ocr: f.ocr,
+          lrc: f.lrc,
           language: f.language,
           quality_score: this.ensureReal(f.quality_score, 0),
           quality_confidence: this.ensureReal(f.quality_confidence, 0.5),
@@ -402,12 +406,12 @@ export class CloudSyncWorker {
         }
       })
 
-      // 2.4 建立关系 Payload（V4 自然主键直通：直接推送 file_fingerprint + tag_code）
+      // 2.4 建立关系 Payload（V4 自然主键直通：直接推送 file_fingerprint + tag_code + parent_tag_code）
       //     彻底废除 cloudTagMap / cloudTagNameMap 自增 ID 反查与映射字典
       const relationsPayload = db
         .prepare(
           `
-        SELECT ftr.file_fingerprint, ftr.tag_code, ftr.confidence, ftr.source, ftr.meta
+        SELECT ftr.file_fingerprint, ftr.tag_code, ftr.parent_tag_code, ftr.confidence, ftr.source, ftr.meta
         FROM file_tag_relations ftr
         WHERE ftr.file_fingerprint IN (${fileIds.map(() => '?').join(',')})
       `
@@ -416,6 +420,7 @@ export class CloudSyncWorker {
         .map((link: any) => ({
           file_fingerprint: link.file_fingerprint,
           tag_code: link.tag_code,
+          parent_tag_code: link.parent_tag_code || '',
           confidence: this.ensureReal(link.confidence, 1.0),
           source: link.source || 'rule',
           meta: this.safeJsonParse(link.meta, {})

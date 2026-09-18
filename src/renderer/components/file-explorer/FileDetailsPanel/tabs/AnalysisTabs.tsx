@@ -335,7 +335,7 @@ const AnalysisTabsComponent: React.FC<any> = ({
                 meta.exts ||
                 meta.FileTypeExtension
               const groupVal =
-                catObj.group ||
+                catObj.fileGroup ||
                 meta.group ||
                 meta.magikaGroup ||
                 (meta.MIMEType?.startsWith('image/') ? 'image' : undefined)
@@ -352,7 +352,7 @@ const AnalysisTabsComponent: React.FC<any> = ({
                 { key: 'description', label: t('描述'), val: descriptionVal },
                 { key: 'mime_type', label: t('MIME类型'), val: mimeVal },
                 { key: 'extensions', label: t('扩展名'), val: extensionsVal },
-                { key: 'group', label: t('文件分组'), val: groupVal },
+                { key: 'file_group', label: t('文件分组'), val: groupVal },
                 { key: 'is_text', label: t('是否文本'), val: isTextVal },
                 { key: 'score', label: t('置信度'), val: scoreVal }
               ]

@@ -773,7 +773,15 @@ export class ConfigDbManager {
             entryPath,
             `INSERT OR REPLACE INTO omw_lexical_entries (id, synset_id, language, lemma, pos, meta) VALUES (?, ?, ?, ?, ?, ?)`,
             rowLimit,
-            6
+            5,
+            (cols) => [
+              cols[0],
+              cols[1],
+              cols[2],
+              cols[3],
+              cols[4],
+              cols.length >= 7 ? cols[6] : (cols[5] || '{}')
+            ]
           )
         }
       }
@@ -951,6 +959,8 @@ export class ConfigDbManager {
     transformRow?: (cols: string[]) => any[] | null
   ): void {
     const insertStmt = db.prepare(insertSql)
+    // 计算 SQL 中的占位符数量，作为防御性上限
+    const placeholderCount = (insertSql.match(/\?/g) || []).length
     const content = fs.readFileSync(filePath, 'utf-8')
     const lines = content.split(/\r?\n/)
     const max = rowLimit > 0 ? Math.min(rowLimit + 1, lines.length) : lines.length
@@ -964,7 +974,12 @@ export class ConfigDbManager {
           const params = transformRow ? transformRow(cols) : cols
           // transformRow 返回 null 表示跳过该行 (如语言过滤)
           if (params === null) continue
-          insertStmt.run(...params)
+          // 防御性处理：若参数数量多于占位符数量，截断至占位符数量避免 better-sqlite3 抛出 RangeError
+          const finalParams =
+            placeholderCount > 0 && params.length > placeholderCount
+              ? params.slice(0, placeholderCount)
+              : params
+          insertStmt.run(...finalParams)
         }
       }
     })()

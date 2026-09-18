@@ -178,14 +178,15 @@ export async function saveCloudResult(
       db.prepare(
         `
         INSERT INTO files (
-          file_fingerprint, smart_name, description, size, type, category,
+          file_fingerprint, smart_name, description, size, extension, "group",
           author, language, is_hit, last_hit_at, sync_status,
           created_at, modified_at, accessed_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           smart_name = excluded.smart_name,
           description = excluded.description,
-          category = excluded.category,
+          extension = excluded.extension,
+          "group" = excluded."group",
           author = excluded.author,
           language = excluded.language,
           is_hit = excluded.is_hit,
@@ -199,7 +200,7 @@ export async function saveCloudResult(
         description,
         stats.size,
         fileType,
-        data.category ? JSON.stringify(data.category) : null,
+        data.category ? (typeof data.category === 'string' ? data.category : JSON.stringify(data.category)) : null,
         data.author || null,
         data.language || null,
         isHit,
@@ -213,13 +214,15 @@ export async function saveCloudResult(
       db.prepare(
         `
         INSERT INTO file_contents (
-          file_fingerprint, content, multimodal_content, lrc, metadata, analysis_stats,
+          file_fingerprint, content, multimodal_content, ocr, lrc, metadata, analysis_stats,
           quality_score, quality_confidence, quality_reasoning, quality_criteria,
           grouping_reason, grouping_confidence
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           content = excluded.content,
           multimodal_content = excluded.multimodal_content,
+          ocr = excluded.ocr,
+          lrc = excluded.lrc,
           metadata = excluded.metadata,
           quality_score = excluded.quality_score,
           quality_confidence = excluded.quality_confidence,
@@ -232,6 +235,7 @@ export async function saveCloudResult(
         fileFingerprint,
         content,
         multimodalContent,
+        data.ocr || null,
         data.lrc || null,
         fileData.metadata,
         fileData.analysisStats,
@@ -378,9 +382,9 @@ export async function saveCloudResult(
                 JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 })
               )
               db.prepare(
-                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, confidence, source, meta)
-                 VALUES (?, ?, 1.0, 'rule', ?)`
-              ).run(fileFingerprint, tagCode, JSON.stringify({ syncStatus: 0 }))
+                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, confidence, source, meta)
+                 VALUES (?, ?, ?, 1.0, 'rule', ?)`
+              ).run(fileFingerprint, tagCode, localDimCode, JSON.stringify({ syncStatus: 0 }))
             }
           } catch (tagError) {
             logger.warn(LogCategory.FILE_ANALYSIS, '[云端结果] 写入文件标签关系失败:', tagError)

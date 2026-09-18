@@ -72,14 +72,14 @@ const GENESIS_V1_SCHEMA = `
     FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE
   );
 
-  -- 3. 文件基础信息表（内容中心化，基于指纹去重，以 FileGroup category 分类）
+  -- 3. 文件基础信息表（内容中心化，基于指纹去重，以 FileGroup file_group 分类）
   CREATE TABLE IF NOT EXISTS files (
     file_fingerprint TEXT PRIMARY KEY,           -- 文件内容指纹 (Base62/32位)，作为全局唯一标识
     smart_name TEXT,                             -- AI 生成或用户定义的智能名称
     description TEXT,                            -- AI 生成的文件描述
     size INTEGER NOT NULL DEFAULT 0,             -- 文件大小（字节）
-    type TEXT NOT NULL,                          -- 文件后缀名 (如 .png, .pdf)
-    category TEXT,                               -- 文件分组 (对应 FileGroup 枚举，如 image, video, document)
+    extension TEXT NOT NULL,                     -- 文件后缀名 (如 .png, .pdf)
+    file_group TEXT,                             -- 文件分组 (对应 FileGroup 枚举，如 image, video, document)
     author TEXT,                                 -- AI 提取或元数据清洗的作者信息
     language TEXT,                               -- 文件自身的语言（如：zh-CN, en-US）
     is_hit BOOLEAN DEFAULT 0,                    -- 是否命中云端/本地缓存
@@ -96,6 +96,7 @@ const GENESIS_V1_SCHEMA = `
     file_fingerprint TEXT PRIMARY KEY,           -- 文件内容指纹
     content TEXT,                                -- AI 提取/总结的文件文本内容
     multimodal_content TEXT,                     -- AI 生成的多模态描述（如图片描述）
+    ocr TEXT,                                    -- 图片/文档的 OCR 识别文本
     lrc TEXT,                                    -- 音频/视频的歌词或字幕
     metadata TEXT,                               -- 扩展元数据 (JSON)
     analysis_stats TEXT,                         -- 分析统计信息 (JSON, 如耗时、Token数)
@@ -105,6 +106,7 @@ const GENESIS_V1_SCHEMA = `
     quality_reasoning TEXT,                      -- 评分理由说明
     grouping_reason TEXT,                        -- 自动分组建议理由
     grouping_confidence REAL,                    -- 分组建议置信度
+    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
   );
 
@@ -179,17 +181,19 @@ const GENESIS_V1_SCHEMA = `
   );
   CREATE INDEX IF NOT EXISTS idx_tag_aliases_lemma ON tag_aliases(lemma, locale);
 
-  -- 8. 文件指纹与标签多对多关联表 (基于复合主键 file_fingerprint + tag_code)
+  -- 8. 文件指纹与标签多对多关联表 (基于复合主键 file_fingerprint + tag_code + parent_tag_code)
   CREATE TABLE IF NOT EXISTS file_tag_relations (
     file_fingerprint   TEXT NOT NULL,                 -- 核心引擎 32 位 Base62 文件内容指纹
     tag_code           TEXT NOT NULL REFERENCES file_tags(code) ON DELETE CASCADE,
+    parent_tag_code    TEXT NOT NULL DEFAULT '',      -- 父级标签 code (指向 file_tags.code，用于一词多义消歧与限定类型上下文；无父级/根级填 '')
     confidence         REAL NOT NULL DEFAULT 1.0,     -- 分析置信度或物理事实权重 (0.0 ~ 1.0)
     source             TEXT DEFAULT 'ai'
                            CHECK (source IN ('ai', 'user', 'rule')),
+    sync_status        INTEGER NOT NULL DEFAULT 0,    -- 同步状态: 0-待同步, 1-同步中, 2-已同步
     created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     meta               TEXT NOT NULL DEFAULT '{}',    -- JSON 元数据
-    PRIMARY KEY (file_fingerprint, tag_code),
+    PRIMARY KEY (file_fingerprint, tag_code, parent_tag_code),
     FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
   );
 
@@ -197,6 +201,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE TABLE IF NOT EXISTS file_constants (
     key        TEXT PRIMARY KEY,                      -- 常量键名 (如 'category_ext_map', 'decodable_image_exts')
     value      TEXT NOT NULL,                         -- JSON 字符串
+    meta       TEXT NOT NULL DEFAULT '{}',            -- 弹性元数据 (JSON)
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -204,6 +209,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE TABLE IF NOT EXISTS app_config (
     key TEXT PRIMARY KEY,
     value TEXT,
+    meta TEXT NOT NULL DEFAULT '{}',                  -- 弹性元数据 (JSON)
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -211,6 +217,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE TABLE IF NOT EXISTS system_config (
     key TEXT PRIMARY KEY,
     value TEXT,
+    meta TEXT NOT NULL DEFAULT '{}',                  -- 弹性元数据 (JSON)
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -286,12 +293,15 @@ const GENESIS_V1_SCHEMA = `
     description,                                 -- 描述信息
     content,                                     -- 文本内容
     multimodal_content,                          -- 多模态描述
+    ocr,                                         -- OCR 文字识别内容
     lrc,                                         -- 歌词/字幕
     tags,                                        -- 聚合后的标签文本
     tokenize='trigram'                           -- 使用 trigram 分词支持多语言模糊搜索
   );
 
   -- 17. 高频索引
+  CREATE INDEX IF NOT EXISTS idx_files_group ON files(file_group);
+  CREATE INDEX IF NOT EXISTS idx_files_extension ON files(extension);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace_id ON workspace_files(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_dir_id ON workspace_files(directory_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_fingerprint ON workspace_files(file_fingerprint);
@@ -305,6 +315,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_file_tags_source ON file_tags(source);
   CREATE INDEX IF NOT EXISTS idx_file_tags_depth ON file_tags(depth);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_tag ON file_tag_relations(tag_code, file_fingerprint);
+  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_parent ON file_tag_relations(parent_tag_code, tag_code);
   CREATE INDEX IF NOT EXISTS idx_vd_workspace ON virtual_directories(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_vd_updated ON virtual_directories(updated_at DESC);
   CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
@@ -319,7 +330,7 @@ const GENESIS_V1_SCHEMA = `
 
   DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
   CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE ON file_contents BEGIN
-    UPDATE files_fts SET content = new.content, multimodal_content = new.multimodal_content, lrc = new.lrc WHERE file_fingerprint = new.file_fingerprint;
+    UPDATE files_fts SET content = new.content, multimodal_content = new.multimodal_content, ocr = new.ocr, lrc = new.lrc WHERE file_fingerprint = new.file_fingerprint;
   END;
 
   DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
@@ -427,18 +438,21 @@ const GENESIS_V1_SCHEMA = `
     word TEXT NOT NULL,
     pos TEXT,
     language TEXT,
-    definition TEXT
+    definition TEXT,
+    meta TEXT NOT NULL DEFAULT '{}'
   );
 
   CREATE TABLE IF NOT EXISTS hownet_concepts (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    parent_id TEXT
+    parent_id TEXT,
+    meta TEXT NOT NULL DEFAULT '{}'
   );
 
   CREATE TABLE IF NOT EXISTS hownet_word_concepts (
     word TEXT NOT NULL,
     concept_id TEXT NOT NULL,
+    meta TEXT NOT NULL DEFAULT '{}',
     PRIMARY KEY (word, concept_id)
   );
 
@@ -470,7 +484,7 @@ const GENESIS_V1_SCHEMA = `
   -- 22. 向量与队列高频覆盖索引
   CREATE INDEX IF NOT EXISTS idx_file_vectors_status ON file_vectors(status);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, confidence);
+  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
 `
 
 /**
@@ -558,7 +572,7 @@ export const migrations: IMigrationConfig[] = [
       -- 2. 高频索引
       CREATE INDEX IF NOT EXISTS idx_file_vectors_status ON file_vectors(status);
       CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-      CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, confidence);
+      CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
     `,
     down: `
       DROP INDEX IF EXISTS idx_file_tag_relations_covering;

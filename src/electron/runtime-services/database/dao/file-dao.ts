@@ -30,7 +30,7 @@ export class FileDao {
           SELECT
             COALESCE(f.file_fingerprint, wf.file_fingerprint) as file_fingerprint,
             COALESCE(f.smart_name, wf.name) as smart_name,
-            f.size, f.type, f.category, f.author, f.language, f.is_hit, f.last_hit_at, f.description,
+            f.size, f.extension, f.file_group, f.author, f.language, f.is_hit, f.last_hit_at, f.description,
             wf.id, wf.path, wf.name, wf.is_analyzed, wf.modified_at as wf_mod,
             fc.quality_score,
             bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
@@ -49,7 +49,7 @@ export class FileDao {
           SELECT
             COALESCE(f.file_fingerprint, wf.file_fingerprint) as file_fingerprint,
             COALESCE(f.smart_name, wf.name) as smart_name,
-            f.size, f.type, f.category, f.author, f.language, f.is_hit, f.last_hit_at, f.description,
+            f.size, f.extension, f.file_group, f.author, f.language, f.is_hit, f.last_hit_at, f.description,
             wf.id, wf.path, wf.name, wf.is_analyzed, wf.modified_at as wf_mod,
             fc.quality_score,
             bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
@@ -71,7 +71,7 @@ export class FileDao {
         SELECT
           COALESCE(f.file_fingerprint, wf.file_fingerprint) as file_fingerprint,
           COALESCE(f.smart_name, wf.name) as smart_name,
-          f.size, f.type, f.category, f.author, f.language, f.is_hit, f.last_hit_at, f.description,
+          f.size, f.extension, f.file_group, f.author, f.language, f.is_hit, f.last_hit_at, f.description,
           wf.id, wf.path, wf.name, wf.is_analyzed, wf.modified_at as wf_mod,
           fc.quality_score, vdf.relative_path, vdf.virtual_directory_id,
           bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
@@ -176,9 +176,9 @@ export class FileDao {
     if (fingerprint && !fingerprint.startsWith('temp_')) {
       const fileStmt = this.db.prepare(`
         SELECT
-          f.smart_name, f.size, f.type, f.category, f.author, f.language,
+          f.smart_name, f.size, f.extension, f.file_group, f.author, f.language,
           f.is_hit, f.last_hit_at, f.description,
-          fc.content, fc.multimodal_content, fc.lrc, fc.quality_score, fc.quality_confidence, 
+          fc.content, fc.multimodal_content, fc.ocr, fc.lrc, fc.quality_score, fc.quality_confidence, 
           fc.quality_reasoning, fc.quality_criteria, fc.grouping_reason, fc.grouping_confidence,
           fc.metadata, fc.analysis_stats
         FROM files f
@@ -201,6 +201,7 @@ export class FileDao {
           SELECT
             ft.code as id,
             ft.name,
+            ftr.parent_tag_code,
             CASE
               WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
               ELSE json_extract(ft.parent_codes, '$[0]')
@@ -260,7 +261,17 @@ export class FileDao {
       sortedDimensionTags.push({ dimension: dimId, level: 3, tags: remainingTags as any[] })
     })
 
-    const parsedCategory = fileData.category ? JSON.parse(fileData.category) : null
+    const parsedFileGroup = fileData.file_group ? (
+      (() => {
+        try {
+          return typeof fileData.file_group === 'string' && (fileData.file_group.startsWith('{') || fileData.file_group.startsWith('['))
+            ? JSON.parse(fileData.file_group)
+            : fileData.file_group
+        } catch {
+          return fileData.file_group
+        }
+      })()
+    ) : null
     const parsedStats = (() => {
       if (!fileData.analysis_stats) return undefined
       try {
@@ -284,9 +295,9 @@ export class FileDao {
       fileFingerprint: fingerprint,
       smartName: fileData.smart_name,
       size: fileData.size,
-      type: fileData.type,
-      category: parsedCategory ?? undefined,
-      mimeType: parsedCategory?.mime_type ?? 'application/octet-stream',
+      extension: fileData.extension,
+      fileGroup: typeof parsedFileGroup === 'object' && parsedFileGroup ? parsedFileGroup.group : parsedFileGroup,
+      mimeType: parsedFileGroup?.mime_type ?? 'application/octet-stream',
       createdAt: workspaceFile.created_at,
       modifiedAt: workspaceFile.modified_at,
       accessedAt: workspaceFile.accessed_at,
@@ -495,14 +506,14 @@ export class FileDao {
         .prepare(
           `
         INSERT INTO files (
-          file_fingerprint, smart_name, size, type, category,
+          file_fingerprint, smart_name, size, extension, file_group,
           author, language, is_hit, last_hit_at, description, sync_status, created_at, modified_at, accessed_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET 
           smart_name = COALESCE(?, smart_name),
           size = COALESCE(?, size),
-          type = COALESCE(?, type),
-          category = COALESCE(?, category),
+          extension = COALESCE(?, extension),
+          file_group = COALESCE(?, file_group),
           author = COALESCE(?, author),
           language = COALESCE(?, language),
           sync_status = COALESCE(?, sync_status),
@@ -517,8 +528,8 @@ export class FileDao {
           fileFingerprint,
           finalSmartName || null,
           result.size || 0,
-          result.type || 'file',
-          result.category ? JSON.stringify(result.category) : null,
+          result.extension || 'file',
+          result.fileGroup || null,
           result.author || null,
           result.language || null,
           result.isHit ? 1 : 0,
@@ -530,8 +541,8 @@ export class FileDao {
           now,
           finalSmartName || null,
           result.size || null,
-          result.type || null,
-          result.category ? JSON.stringify(result.category) : null,
+          result.extension || null,
+          result.fileGroup || null,
           result.author || null,
           result.language || null,
           result.syncStatus ?? 0,
@@ -845,13 +856,14 @@ export class FileDao {
         .prepare(
           `
         INSERT INTO file_contents (
-          file_fingerprint, content, multimodal_content, lrc, metadata, analysis_stats, 
+          file_fingerprint, content, multimodal_content, ocr, lrc, metadata, analysis_stats, 
           quality_score, quality_confidence, quality_criteria, quality_reasoning,
-          grouping_reason, grouping_confidence
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          grouping_reason, grouping_confidence, meta
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           content = COALESCE(?, content),
           multimodal_content = COALESCE(?, multimodal_content),
+          ocr = COALESCE(?, ocr),
           lrc = COALESCE(?, lrc),
           quality_score = COALESCE(?, quality_score),
           quality_confidence = COALESCE(?, quality_confidence),
@@ -860,13 +872,15 @@ export class FileDao {
           grouping_reason = COALESCE(?, grouping_reason),
           grouping_confidence = COALESCE(?, grouping_confidence),
           metadata = COALESCE(?, metadata),
-          analysis_stats = COALESCE(?, analysis_stats)
+          analysis_stats = COALESCE(?, analysis_stats),
+          meta = COALESCE(?, meta)
       `
         )
         .run(
           fileFingerprint,
           result.content ?? null,
           result.multimodalContent ?? null,
+          (result as any).ocr ?? null,
           result.lrc ?? null,
           finalMetadata ? JSON.stringify(finalMetadata) : null,
           newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null),
@@ -876,8 +890,10 @@ export class FileDao {
           result.qualityReasoning ?? null,
           result.groupingReason ?? null,
           result.groupingConfidence ?? null,
+          (result as any).meta ? JSON.stringify((result as any).meta) : '{}',
           result.content ?? null,
           result.multimodalContent ?? null,
+          (result as any).ocr ?? null,
           result.lrc ?? null,
           result.qualityScore ?? null,
           result.qualityConfidence ?? null,
@@ -886,7 +902,8 @@ export class FileDao {
           result.groupingReason ?? null,
           result.groupingConfidence ?? null,
           finalMetadata ? JSON.stringify(finalMetadata) : null,
-          newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null)
+          newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null),
+          (result as any).meta ? JSON.stringify((result as any).meta) : null
         )
 
       // 获取当前最新的 analysis_stage 与 completed_mode，判断是否达到目标阶段
@@ -960,11 +977,10 @@ export class FileDao {
     const rows = this.db.prepare(sql).all(...params) as any[]
 
     return rows.map(row => {
-      const parsedCategory = row.category ? JSON.parse(row.category) : null
-      const normalizedExt = row.type
-        ? row.type.startsWith('.')
-          ? row.type
-          : `.${row.type}`
+      const normalizedExt = row.extension
+        ? row.extension.startsWith('.')
+          ? row.extension
+          : `.${row.extension}`
         : row.path
           ? path.extname(row.path).toLowerCase()
           : ''
@@ -974,10 +990,8 @@ export class FileDao {
         path: row.path,
         smartName: row.smart_name,
         size: row.size || 0,
-        type: normalizedExt,
         extension: normalizedExt,
-        category: parsedCategory ?? undefined,
-        mimeType: parsedCategory?.mime_type ?? 'application/octet-stream',
+        fileGroup: row.file_group ?? undefined,
         createdAt: new Date(row.created_at || Date.now()),
         modifiedAt: new Date(row.wf_mod),
         description: row.description,
@@ -1104,11 +1118,10 @@ export class FileDao {
 
       if (!row || !row.is_analyzed) return null
 
-      const parsedCategory = row.category ? JSON.parse(row.category) : null
-      const normalizedExt = row.type
-        ? row.type.startsWith('.')
-          ? row.type
-          : `.${row.type}`
+      const normalizedExt = row.extension
+        ? row.extension.startsWith('.')
+          ? row.extension
+          : `.${row.extension}`
         : ''
       return {
         id: row.file_fingerprint,
@@ -1117,8 +1130,7 @@ export class FileDao {
         contentHash: row.file_fingerprint,
         size: row.size,
         extension: normalizedExt,
-        category: parsedCategory ?? undefined,
-        mimeType: parsedCategory?.mime_type ?? 'application/octet-stream',
+        fileGroup: row.file_group ?? undefined,
         isAnalyzed: true,
         qualityScore: row.quality_score,
         qualityConfidence: row.quality_confidence,
@@ -1127,6 +1139,7 @@ export class FileDao {
         description: row.description,
         content: row.content,
         multimodalContent: row.multimodal_content,
+        ocr: row.ocr,
         lrc: row.lrc,
         groupingReason: row.grouping_reason,
         groupingConfidence: row.grouping_confidence,
@@ -1164,12 +1177,10 @@ export class FileDao {
         if (f) fileData = f
       }
 
-      const parsedCategory = fileData.category ? JSON.parse(fileData.category) : null
-
-      const normalizedExt = fileData.type
-        ? fileData.type.startsWith('.')
-          ? fileData.type
-          : `.${fileData.type}`
+      const normalizedExt = fileData.extension
+        ? fileData.extension.startsWith('.')
+          ? fileData.extension
+          : `.${fileData.extension}`
         : wf.path
           ? path.extname(wf.path).toLowerCase()
           : ''
@@ -1182,8 +1193,7 @@ export class FileDao {
         parentPath: path.dirname(wf.path),
         size: fileData.size || 0,
         extension: normalizedExt,
-        category: parsedCategory ?? undefined,
-        mimeType: parsedCategory?.mime_type ?? 'application/octet-stream',
+        fileGroup: fileData.file_group ?? undefined,
         createdAt: new Date(wf.created_at),
         modifiedAt: new Date(wf.modified_at),
         isSelected: false,
@@ -1193,6 +1203,7 @@ export class FileDao {
         description: fileData.description,
         content: fileData.content,
         multimodalContent: fileData.multimodal_content,
+        ocr: fileData.ocr,
         lrc: fileData.lrc
       }
     } catch (error) {
@@ -1456,8 +1467,8 @@ export class FileDao {
         wf.accessed_at,
         f.smart_name,
         f.size,
-        f.type,
-        f.category,
+        f.extension,
+        f.file_group,
         f.description,
         f.is_hit,
         f.last_hit_at,
@@ -1473,11 +1484,10 @@ export class FileDao {
       .all(dirRecord.id, workspaceId) as any[]
 
     return rows.map(row => {
-      const parsedCategory = row.category ? JSON.parse(row.category) : null
-      const normalizedExt = row.type
-        ? row.type.startsWith('.')
-          ? row.type
-          : `.${row.type}`
+      const normalizedExt = row.extension
+        ? row.extension.startsWith('.')
+          ? row.extension
+          : `.${row.extension}`
         : row.path
           ? path.extname(row.path).toLowerCase()
           : ''
@@ -1488,10 +1498,8 @@ export class FileDao {
         name: row.name,
         smartName: row.smart_name,
         size: row.size,
-        type: normalizedExt,
         extension: normalizedExt,
-        category: parsedCategory ?? undefined,
-        mimeType: parsedCategory?.mime_type ?? 'application/octet-stream',
+        fileGroup: row.file_group ?? undefined,
         isAnalyzed: row.is_analyzed === 1,
         lastAnalyzedAt: row.last_analyzed_at ? new Date(row.last_analyzed_at) : undefined,
         thumbnailPath: row.thumbnail_path,
