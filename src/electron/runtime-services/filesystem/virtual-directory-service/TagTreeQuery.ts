@@ -467,10 +467,10 @@ export class TagTreeQuery {
         OR f.smart_name LIKE ?
         OR f.description LIKE ?
         OR wf.path LIKE ?
-        OR f.type LIKE ?
+        OR f.extension LIKE ?
         OR f.author LIKE ?
         OR f.language LIKE ?
-        OR f.category LIKE ?
+        OR f.file_group LIKE ?
         OR wf.file_fingerprint IN (
           SELECT ftr.file_fingerprint
           FROM file_tag_relations ftr
@@ -566,7 +566,7 @@ export class TagTreeQuery {
         name: 'wf.name',
         date: 'COALESCE(f.modified_at, wf.modified_at)',
         size: 'COALESCE(f.size, 0)',
-        type: 'COALESCE(f.type, "")',
+        type: 'COALESCE(f.extension, "")',
         smartName: 'COALESCE(f.smart_name, wf.name)',
         analysisStatus: 'wf.is_analyzed',
         qualityScore: 'COALESCE(fc.quality_score, 0)',
@@ -616,8 +616,8 @@ export class TagTreeQuery {
           wf.thumbnail_path,
           f.smart_name,
           f.size,
-          f.type,
-          f.category,
+          f.extension as type,
+          f.file_group as category,
           f.author,
           f.language,
           f.created_at,
@@ -670,7 +670,7 @@ export class TagTreeQuery {
         name: 'wf.name',
         date: 'COALESCE(f.modified_at, wf.modified_at)',
         size: 'COALESCE(f.size, 0)',
-        type: 'COALESCE(f.type, "")',
+        type: 'COALESCE(f.extension, "")',
         smartName: 'COALESCE(f.smart_name, wf.name)',
         analysisStatus: 'wf.is_analyzed',
         qualityScore: 'COALESCE(fc.quality_score, 0)',
@@ -693,8 +693,8 @@ export class TagTreeQuery {
           wf.thumbnail_path,
           f.smart_name,
           f.size,
-          f.type,
-          f.category,
+          f.extension as type,
+          f.file_group as category,
           f.author,
           f.language,
           f.created_at,

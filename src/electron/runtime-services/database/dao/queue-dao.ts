@@ -8,7 +8,7 @@ export class QueueDao {
       // V2.2: 根据 item_type 关联不同的表
       // is_hit 和 last_hit_at 在 files 表中（内容级），不在 workspace_files 表中（路径级）
       // analysis_stats 在 file_contents 表中
-      // 【修复】添加 f.type as file_type，确保获取正确的文件扩展名（如 '.jpg'）
+      // 【修复】V4 已将 files.type 改名 extension，此处取 f.extension as file_type，确保获取正确的文件扩展名（如 '.jpg'）
       return this.db
         .prepare(
           `
@@ -16,7 +16,7 @@ export class QueueDao {
                wf.name as file_name, wf.path as file_path,
                COALESCE(wf.workspace_id, wd.workspace_id, wd.id) as workspace_id,
                wd.name as dir_name, wd.path as dir_path,
-               f.type as file_type,
+               f.extension as file_type,
                f.is_hit, f.last_hit_at,
                fc.analysis_stats
         FROM analysis_queue q

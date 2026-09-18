@@ -1015,14 +1015,14 @@ export class AnalysisQueueService {
         .get(workspaceId) as { path: string } | undefined
       const workspaceRootPath = workspaceDir?.path || ''
 
-      // 查询有 category 的文件及其物理路径信息
+      // 查询有分组 (file_group) 的文件及其物理路径信息（V4: category→file_group, type→extension）
       const rows = db
         .prepare(
           `
-        SELECT f.file_fingerprint, wf.path, wf.name, f.type, f.category, f.smart_name
+        SELECT f.file_fingerprint, wf.path, wf.name, f.extension as type, f.file_group as category, f.smart_name
         FROM files f
         JOIN workspace_files wf ON f.file_fingerprint = wf.file_fingerprint
-        WHERE f.category IS NOT NULL AND wf.workspace_id = ?
+        WHERE f.file_group IS NOT NULL AND wf.workspace_id = ?
         ORDER BY wf.path ASC
       `
         )

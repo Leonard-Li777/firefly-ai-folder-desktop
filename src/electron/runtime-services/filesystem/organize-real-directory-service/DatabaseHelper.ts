@@ -166,7 +166,7 @@ export class DatabaseHelper {
           wf.name,
           f.smart_name as smartName,
           wf.path,
-          f.type,
+          f.extension as type,
           f.size,
           f.author,
           f.language,

@@ -1386,7 +1386,7 @@ export class FileDao {
       .prepare(
         `
       SELECT
-        wf.id, wf.path, wf.name, f.smart_name, f.type, f.description, fc.quality_score
+        wf.id, wf.path, wf.name, f.smart_name, f.extension as type, f.description, fc.quality_score
       FROM workspace_files wf
       JOIN files f ON wf.file_fingerprint = f.file_fingerprint
       LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
