@@ -1463,13 +1463,14 @@ export class DatabaseService {
 
   /**
    * OMW 概念查询 (支柱 2)
+   * 已裁 ili/definition/dc_identifier（字段治理）；保留 lexfile/meta
    */
   public omwLookup(word: string, language: string = 'en'): OmwSynsetResult[] {
     if (!this._db) return []
     try {
       const rows = this._db
         .prepare(
-          `SELECT DISTINCT s.id, s.ili, s.pos, s.lexfile, s.definition, s.dc_identifier, s.meta
+          `SELECT DISTINCT s.id, s.pos, s.lexfile, s.meta
            FROM omw_lexical_entries e
            JOIN omw_synsets s ON e.synset_id = s.id
            WHERE e.lemma = ? COLLATE NOCASE
@@ -1488,11 +1489,8 @@ export class DatabaseService {
           .all(r.id) as any[]
         return {
           id: r.id,
-          ili: r.ili,
           pos: r.pos,
           lexfile: r.lexfile,
-          definition: r.definition,
-          dc_identifier: r.dc_identifier,
           meta,
           lemmas: Array.from(new Set(lemmaRows.map((l) => l.lemma)))
         }
@@ -1504,53 +1502,55 @@ export class DatabaseService {
   }
 
   /**
-   * OMW 上位词 (hypernyms) 查询
+   * 按 OMW 词典语义域 (lexfile) 列举概念 — lexfile miss 最小接线面
    */
-  public omwHypernyms(synsetId: string): OmwSynsetNode[] {
+  public listOmwSynsetsByLexfile(lexfile: string, limit = 100): OmwSynsetResult[] {
     if (!this._db) return []
     try {
       const rows = this._db
         .prepare(
-          `SELECT r.rel_type, s.id, s.pos, s.definition
-           FROM omw_relations r
-           JOIN omw_synsets s ON r.target_id = s.id
-           WHERE r.source_id = ? AND r.rel_type = 'hypernym'
-           LIMIT 50`
+          `SELECT id, pos, lexfile, meta FROM omw_synsets WHERE lexfile = ? LIMIT ?`
         )
-        .all(synsetId) as any[]
-
+        .all(lexfile, limit) as any[]
       return rows.map((r) => {
-        const lemmaRows = this._db!
-          .prepare('SELECT lemma FROM omw_lexical_entries WHERE synset_id = ?')
-          .all(r.id) as any[]
-        return {
-          synsetId: r.id,
-          relType: r.rel_type,
-          pos: r.pos,
-          definition: r.definition,
-          lemmas: Array.from(new Set(lemmaRows.map((l) => l.lemma)))
-        }
+        let meta = {}
+        try {
+          meta = JSON.parse(r.meta || '{}')
+        } catch {}
+        return { id: r.id, pos: r.pos, lexfile: r.lexfile, meta, lemmas: [] }
       })
-    } catch {
+    } catch (err: any) {
+      logger.debug(LogCategory.DATABASE_SERVICE, `listOmwSynsetsByLexfile 失败: ${lexfile}`, err?.message)
       return []
     }
+  }
+
+  /**
+   * OMW 上位词 (hypernyms) 查询
+   */
+  public omwHypernyms(synsetId: string): OmwSynsetNode[] {
+    return this.omwRelationsByType(synsetId, 'hypernym')
   }
 
   /**
    * OMW 下位词 (hyponyms) 查询
    */
   public omwHyponyms(synsetId: string): OmwSynsetNode[] {
+    return this.omwRelationsByType(synsetId, 'hyponym')
+  }
+
+  private omwRelationsByType(synsetId: string, relType: string): OmwSynsetNode[] {
     if (!this._db) return []
     try {
       const rows = this._db
         .prepare(
-          `SELECT r.rel_type, s.id, s.pos, s.definition
+          `SELECT r.rel_type, s.id, s.pos
            FROM omw_relations r
            JOIN omw_synsets s ON r.target_id = s.id
-           WHERE r.source_id = ? AND r.rel_type = 'hyponym'
+           WHERE r.source_id = ? AND r.rel_type = ?
            LIMIT 50`
         )
-        .all(synsetId) as any[]
+        .all(synsetId, relType) as any[]
 
       return rows.map((r) => {
         const lemmaRows = this._db!
@@ -1560,7 +1560,6 @@ export class DatabaseService {
           synsetId: r.id,
           relType: r.rel_type,
           pos: r.pos,
-          definition: r.definition,
           lemmas: Array.from(new Set(lemmaRows.map((l) => l.lemma)))
         }
       })
@@ -1570,47 +1569,44 @@ export class DatabaseService {
   }
 
   /**
-   * OMW 反义词查询 (结合 antonym_pairs 与 omw_sense_relations)
+   * OMW 反义词查询
+   * 契约（wayfinder #672）：词义层图谱优先，词面 antonym_pairs 兜底；无 language 维度
    */
-  public omwAntonyms(word: string, language: string = 'cmn'): OmwAntonymResult[] {
+  public omwAntonyms(word: string, _language?: string): OmwAntonymResult[] {
     if (!this._db) return []
     const results: OmwAntonymResult[] = []
     try {
-      const pairs = this._db
+      const senseRows = this._db
         .prepare(
-          `SELECT word_a, word_b, source, language
-           FROM antonym_pairs
-           WHERE (word_a = ? OR word_b = ?) AND language = ?`
+          `SELECT e2.lemma
+           FROM omw_lexical_entries e1
+           JOIN omw_sense_relations sr ON e1.id = sr.source_entry_id
+           JOIN omw_lexical_entries e2 ON sr.target_entry_id = e2.id
+           WHERE e1.lemma = ? COLLATE NOCASE AND sr.rel_type = 'antonym'
+           LIMIT 20`
         )
-        .all(word, word, language) as any[]
+        .all(word) as any[]
 
-      for (const p of pairs) {
+      for (const sr of senseRows) {
         results.push({
           word,
-          antonym: p.word_a === word ? p.word_b : p.word_a,
-          source: p.source,
-          language: p.language
+          antonym: sr.lemma,
+          source: 'omw_sense_relations'
         })
       }
 
       if (results.length === 0) {
-        const senseRows = this._db
+        const pairs = this._db
           .prepare(
-            `SELECT e2.lemma, sr.rel_type
-             FROM omw_lexical_entries e1
-             JOIN omw_sense_relations sr ON e1.id = sr.source_entry_id
-             JOIN omw_lexical_entries e2 ON sr.target_entry_id = e2.id
-             WHERE e1.lemma = ? COLLATE NOCASE AND sr.rel_type = 'antonym'
-             LIMIT 20`
+            `SELECT word_a, word_b FROM antonym_pairs WHERE word_a = ? OR word_b = ?`
           )
-          .all(word) as any[]
+          .all(word, word) as any[]
 
-        for (const sr of senseRows) {
+        for (const p of pairs) {
           results.push({
             word,
-            antonym: sr.lemma,
-            source: 'omw_sense_relations',
-            language
+            antonym: p.word_a === word ? p.word_b : p.word_a,
+            source: 'antonym_pairs'
           })
         }
       }
@@ -1620,20 +1616,42 @@ export class DatabaseService {
     return results
   }
 
+  /** 从 tag 的 parent_codes / 自身 code 收集 omw.* 概念 id */
+  private collectOmwConceptIds(tagCode: string): string[] {
+    if (!this._db) return []
+    const ids = new Set<string>()
+    if (/^omw\./.test(tagCode)) ids.add(tagCode)
+    const row = this._db
+      .prepare('SELECT code, parent_codes FROM file_tags WHERE code = ?')
+      .get(tagCode) as { code: string; parent_codes?: string } | undefined
+    if (row) {
+      if (/^omw\./.test(row.code)) ids.add(row.code)
+      try {
+        const parents = JSON.parse(row.parent_codes || '[]')
+        if (Array.isArray(parents)) {
+          for (const p of parents) {
+            if (typeof p === 'string' && p.startsWith('omw.')) ids.add(p)
+          }
+        }
+      } catch {}
+    }
+    return Array.from(ids)
+  }
+
   /**
-   * 根据标签 Code 查询挂载的 OMW 概念节点
+   * 根据标签查询挂载的 OMW 概念（parent_codes / omw.* 身份，零桥表）
    */
   public tagToOmw(tagCode: string): OmwSynsetResult[] {
     if (!this._db) return []
     try {
+      const conceptIds = this.collectOmwConceptIds(tagCode)
+      if (conceptIds.length === 0) return []
+      const placeholders = conceptIds.map(() => '?').join(',')
       const rows = this._db
         .prepare(
-          `SELECT s.id, s.ili, s.pos, s.lexfile, s.definition, s.dc_identifier, s.meta, m.confidence, m.match_level
-           FROM tag_omw_mapping m
-           JOIN omw_synsets s ON m.synset_id = s.id
-           WHERE m.tag_code = ?`
+          `SELECT id, pos, lexfile, meta FROM omw_synsets WHERE id IN (${placeholders})`
         )
-        .all(tagCode) as any[]
+        .all(...conceptIds) as any[]
 
       return rows.map((r) => {
         let meta = {}
@@ -1645,11 +1663,8 @@ export class DatabaseService {
           .all(r.id) as any[]
         return {
           id: r.id,
-          ili: r.ili,
           pos: r.pos,
           lexfile: r.lexfile,
-          definition: r.definition,
-          dc_identifier: r.dc_identifier,
           meta,
           lemmas: Array.from(new Set(lemmaRows.map((l) => l.lemma)))
         }
@@ -1660,25 +1675,25 @@ export class DatabaseService {
   }
 
   /**
-   * 根据 OMW Synset ID 反查映射的标签
+   * 根据 OMW Synset 反查标签（自身 code 或 parent_codes 挂载该概念的标签）
    */
   public omwToTag(synsetId: string): OmwTagResult[] {
     if (!this._db) return []
     try {
       const rows = this._db
         .prepare(
-          `SELECT m.tag_code, t.name, m.match_level, m.confidence
-           FROM tag_omw_mapping m
-           JOIN file_tags t ON m.tag_code = t.code
-           WHERE m.synset_id = ?`
+          `SELECT code, name FROM file_tags
+           WHERE code = ?
+              OR parent_codes LIKE ?
+           LIMIT 100`
         )
-        .all(synsetId) as any[]
+        .all(synsetId, `%${synsetId}%`) as any[]
 
       return rows.map((r) => ({
-        tagCode: r.tag_code,
+        tagCode: r.code,
         tagName: r.name,
-        matchLevel: r.match_level,
-        confidence: r.confidence ?? 1.0
+        matchLevel: 1,
+        confidence: 1.0
       }))
     } catch {
       return []
@@ -1686,54 +1701,17 @@ export class DatabaseService {
   }
 
   /**
-   * 关联标签与 OMW 概念节点
-   */
-  public linkTagToOmw(
-    tagCode: string,
-    synsetId: string,
-    matchLevel: number = 1,
-    confidence: number = 1.0,
-    meta: Record<string, any> = {}
-  ): void {
-    if (!this._db) return
-    try {
-      this._db
-        .prepare(
-          `INSERT OR REPLACE INTO tag_omw_mapping (tag_code, synset_id, match_level, confidence, meta)
-           VALUES (?, ?, ?, ?, ?)`
-        )
-        .run(tagCode, synsetId, matchLevel, confidence, JSON.stringify(meta))
-    } catch (err: any) {
-      logger.error(LogCategory.DATABASE_SERVICE, 'linkTagToOmw 写入失败:', err?.message)
-    }
-  }
-
-  /**
-   * 生成概念自然语言描述句
-   */
-  public omwGenerateDescription(word: string, language?: string): string | null {
-    const synsets = this.omwLookup(word, language)
-    if (synsets.length === 0) return null
-    for (const s of synsets) {
-      if (s.definition && s.definition.trim()) {
-        return s.definition
-      }
-    }
-    return null
-  }
-
-  /**
    * 多语言展示层标签名级联解析器 (Tag Display Resolver)
    * 遵循规范: docs/specs/multi-language-display-and-zero-redundancy-taxonomy-spec.md
-   * 
+   *
    * 级联优先级:
    * COALESCE(tag_aliases.lemma, omw_lexical_entries.lemma, file_tags.name, code)
-   * 
+   *
    * 性能与契约:
    * 1. 一次性批量解析传入的所有 tagCodes，消除前端 N+1 查询；
    * 2. 利用 idx_tag_aliases_lookup 与 idx_omw_synset_lang_covering 覆盖索引，亚毫秒级返回；
    * 3. 保持数据零冗余，不把 OMW 词形拷入 tag_aliases，保持领域模型职责纯粹。
-   * 
+   *
    * @param tagCodes 需要解析显示名称的标签 code 数组
    * @param locale 当前目标语言代码 (如 'zh-CN', 'en-US')
    */
@@ -1976,11 +1954,8 @@ export interface SaveFileVectorInput {
 
 export interface OmwSynsetResult {
   id: string
-  ili?: string
   pos: string
   lexfile?: string
-  definition?: string
-  dc_identifier?: string
   meta?: Record<string, any>
   lemmas?: string[]
 }
@@ -1989,7 +1964,6 @@ export interface OmwSynsetNode {
   synsetId: string
   relType: string
   pos: string
-  definition?: string
   lemmas: string[]
 }
 
@@ -1997,7 +1971,6 @@ export interface OmwAntonymResult {
   word: string
   antonym: string
   source: string
-  language: string
 }
 
 export interface OmwTagResult {

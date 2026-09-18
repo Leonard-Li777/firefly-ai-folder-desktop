@@ -744,14 +744,19 @@ export class ConfigDbManager {
       }
 
       // 2) 导入 omw_synsets.csv (概念表，被 entries 与 relations 依赖)
+      // 目标列仅 id/pos/lexfile/meta；CSV 兼容旧 7 列表头，丢弃 ili/definition/dc_identifier
       const synsetPath = path.join(taxonomyDir, 'omw_synsets.csv')
       if (fs.existsSync(synsetPath)) {
         this.streamImportCsv(
           db,
           synsetPath,
-          `INSERT OR REPLACE INTO omw_synsets (id, ili, pos, lexfile, definition, dc_identifier, meta) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          `INSERT OR REPLACE INTO omw_synsets (id, pos, lexfile, meta) VALUES (?, ?, ?, ?)`,
           rowLimit,
-          7
+          3,
+          (cols) => {
+            const meta = cols.length >= 7 && cols[6] && cols[6].startsWith('{') ? cols[6] : '{}'
+            return [cols[0], cols[2], cols[3], meta]
+          }
         )
       }
 
@@ -779,7 +784,12 @@ export class ConfigDbManager {
               cols[2],
               cols[3],
               cols[4],
-              cols.length >= 7 ? cols[6] : (cols[5] || '{}')
+              // 契约：不把 source_sense_id 塞进 meta；仅接受 JSON meta
+              cols.length >= 7 && cols[6] && cols[6].startsWith('{')
+                ? cols[6]
+                : cols.length === 6 && cols[5] && cols[5].startsWith('{')
+                  ? cols[5]
+                  : '{}'
             ]
           )
         }
@@ -811,9 +821,10 @@ export class ConfigDbManager {
         )
       }
 
-      // 6) omw_examples 已依据规范彻底移除（0 占用，无需导入）
+      // 6) omw_examples 已依据规范彻底移除（schema 亦不再建表）
 
       // 7-9) 导入 HowNet 中文增强数据 (仅 zh-CN 语言库)
+      // 注：主库 hownet_* 非运行时权威（wayfinder #667）；保留导入作过渡预置
       if (language === 'zh-CN') {
         // 7) 导入 hownet_words.csv
         const hownetWordsPath = path.join(taxonomyDir, 'hownet_words.csv')
@@ -852,29 +863,24 @@ export class ConfigDbManager {
         }
       }
 
-      // 10) 导入 antonym_pairs.csv (反义词多来源合并)
+      // 10) 导入 antonym_pairs.csv — 仅 word_a/word_b，写入前无序归一 (a<b)
       const antonymPath = path.join(taxonomyDir, 'antonym_pairs.csv')
       if (fs.existsSync(antonymPath)) {
         this.streamImportCsv(
           db,
           antonymPath,
-          `INSERT OR REPLACE INTO antonym_pairs (word_a, word_b, source) VALUES (?, ?, ?)`,
+          `INSERT OR IGNORE INTO antonym_pairs (word_a, word_b, meta) VALUES (?, ?, '{}')`,
           rowLimit,
-          3
+          2,
+          (cols) => {
+            const a = cols[0]
+            const b = cols[1]
+            return a < b ? [a, b] : [b, a]
+          }
         )
       }
 
-      // 11) 导入 tag_omw_mapping.csv (标签-OMW 映射, Step 5 产出)
-      const mappingPath = path.join(taxonomyDir, 'tag_omw_mapping.csv')
-      if (fs.existsSync(mappingPath)) {
-        this.streamImportCsv(
-          db,
-          mappingPath,
-          `INSERT OR REPLACE INTO tag_omw_mapping (tag_code, synset_id, match_level, confidence, meta) VALUES (?, ?, ?, ?, ?)`,
-          rowLimit,
-          5
-        )
-      }
+      // 11) tag_omw_mapping 已废除（wayfinder #668）：不再导入
 
       logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功导入 OMW 词网数据`)
     } catch (error) {
