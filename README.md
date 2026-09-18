@@ -11,9 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="../../LICENSE">
-    <img src="https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-blue.svg" alt="License">
-  </a>
+  <img src="https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-blue.svg" alt="License">
   <img src="https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-green.svg" alt="Platform">
   <img src="https://img.shields.io/badge/Status-Free-orange.svg" alt="Free">
   <img src="https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen.svg" alt="Privacy">
