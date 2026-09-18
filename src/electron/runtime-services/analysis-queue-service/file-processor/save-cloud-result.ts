@@ -178,7 +178,7 @@ export async function saveCloudResult(
       db.prepare(
         `
         INSERT INTO files (
-          file_fingerprint, smart_name, description, size, extension, "group",
+          file_fingerprint, smart_name, description, size, extension, file_group,
           author, language, is_hit, last_hit_at, sync_status,
           created_at, modified_at, accessed_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -186,7 +186,7 @@ export async function saveCloudResult(
           smart_name = excluded.smart_name,
           description = excluded.description,
           extension = excluded.extension,
-          "group" = excluded."group",
+          file_group = excluded.file_group,
           author = excluded.author,
           language = excluded.language,
           is_hit = excluded.is_hit,
@@ -200,7 +200,7 @@ export async function saveCloudResult(
         description,
         stats.size,
         fileType,
-        data.category ? (typeof data.category === 'string' ? data.category : JSON.stringify(data.category)) : null,
+        data.file_group || null,
         data.author || null,
         data.language || null,
         isHit,
