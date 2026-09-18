@@ -5,7 +5,6 @@ import {
   LogCategory,
   logger,
   getSharedSchemaName,
-  getLanguageSchemaName,
   isTestEnvironment,
   ResourceLocator,
   updateRuntimeFileConstants
@@ -1162,8 +1161,9 @@ export class ConfigDbManager {
     const db = databaseService.db
     if (!db) return
 
+    // ADR-0037 / #659：app_config 与 system_config 均落全局 Schema，不得按语言选 Schema
     const appSchema = getSharedSchemaName()
-    const systemSchema = getLanguageSchemaName(this.currentLanguage)
+    const systemSchema = getSharedSchemaName()
 
     logger.info(LogCategory.CONFIG, 'ConfigDbManager: 开始从云端拉取配置...')
 
