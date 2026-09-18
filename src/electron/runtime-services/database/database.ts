@@ -354,7 +354,8 @@ const GENESIS_V1_SCHEMA = `
       COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
       COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
       COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      '';
+      ''
+    WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT new.rowid, new.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
@@ -368,14 +369,15 @@ const GENESIS_V1_SCHEMA = `
 
   CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
     INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-    VALUES('delete', old.rowid, old.file_fingerprint,
+    SELECT 'delete', old.rowid, old.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
       COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
       COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
       COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
       COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
       COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      '');
+      ''
+    WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
   END;
 
   CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
@@ -384,7 +386,8 @@ const GENESIS_V1_SCHEMA = `
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       '', '', '', '', ''
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
+    FROM files f WHERE f.file_fingerprint = new.file_fingerprint
+      AND EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
@@ -401,7 +404,8 @@ const GENESIS_V1_SCHEMA = `
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       COALESCE(old.content, ''), COALESCE(old.multimodal_content, ''),
       COALESCE(old.ocr, ''), COALESCE(old.lrc, ''), ''
-    FROM files f WHERE f.file_fingerprint = old.file_fingerprint;
+    FROM files f WHERE f.file_fingerprint = old.file_fingerprint
+      AND EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
@@ -421,7 +425,7 @@ const GENESIS_V1_SCHEMA = `
       COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint
-      AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = new.file_fingerprint);
+      AND EXISTS (SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
