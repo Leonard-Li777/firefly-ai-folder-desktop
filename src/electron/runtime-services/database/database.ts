@@ -285,7 +285,8 @@ const GENESIS_V1_SCHEMA = `
   );
 
 
-  -- 16. FTS5 全文搜索虚拟表
+  -- 16. FTS5 全文搜索虚拟表（Issue #661：contentless External Content 模式）
+  -- 不在 FTS 影子表内复制业务正文；索引文本在写入时由触发器提供，展示与业务字段回表 JOIN files/file_contents/workspace_files
   CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
     file_fingerprint UNINDEXED,                  -- 指纹（不建立全文索引，仅作为关联键）
     name,                                        -- 物理文件名
@@ -296,7 +297,8 @@ const GENESIS_V1_SCHEMA = `
     ocr,                                         -- OCR 文字识别内容
     lrc,                                         -- 歌词/字幕
     tags,                                        -- 聚合后的标签文本
-    tokenize='trigram'                           -- 使用 trigram 分词支持多语言模糊搜索
+    tokenize='trigram',                          -- 使用 trigram 分词支持多语言模糊搜索
+    content=''                                   -- contentless：仅倒排索引，消除正文双写
   );
 
   -- 17. 高频索引
@@ -322,38 +324,135 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
   CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
 
-  -- 18. FTS 同步触发器（确保文件信息变更时实时更新搜索索引）
+  -- 18. FTS 同步触发器（Issue #661：contentless 需用 delete+insert 提供原文 token）
   DROP TRIGGER IF EXISTS trg_files_fts_update;
-  CREATE TRIGGER trg_files_fts_update AFTER UPDATE ON files BEGIN
-    UPDATE files_fts SET smart_name = new.smart_name, description = new.description WHERE file_fingerprint = new.file_fingerprint;
-  END;
-
   DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
-  CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE ON file_contents BEGIN
-    UPDATE files_fts SET content = new.content, multimodal_content = new.multimodal_content, ocr = new.ocr, lrc = new.lrc WHERE file_fingerprint = new.file_fingerprint;
-  END;
-
   DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
-  CREATE TRIGGER trg_workspace_files_fts_update AFTER UPDATE OF name ON workspace_files BEGIN
-    UPDATE files_fts SET name = new.name WHERE file_fingerprint = new.file_fingerprint;
-  END;
-
   DROP TRIGGER IF EXISTS trg_files_fts_insert;
-  CREATE TRIGGER trg_files_fts_insert AFTER INSERT ON files BEGIN
-    INSERT OR IGNORE INTO files_fts(file_fingerprint, smart_name, description)
-    VALUES (new.file_fingerprint, new.smart_name, new.description);
-  END;
-
   DROP TRIGGER IF EXISTS trg_files_fts_delete;
-  CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
-    DELETE FROM files_fts WHERE file_fingerprint = old.file_fingerprint;
+  DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
+  DROP TRIGGER IF EXISTS trg_file_contents_fts_upsert;
+
+  CREATE TRIGGER trg_files_fts_insert AFTER INSERT ON files BEGIN
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT new.rowid, new.file_fingerprint,
+      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
+      COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
+      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      '';
   END;
 
-  DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
+  CREATE TRIGGER trg_files_fts_update AFTER UPDATE OF smart_name, description ON files BEGIN
+    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT 'delete', old.rowid, old.file_fingerprint,
+      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
+      COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
+      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      '';
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT new.rowid, new.file_fingerprint,
+      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
+      COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
+      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      '';
+  END;
+
+  CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
+    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    VALUES('delete', old.rowid, old.file_fingerprint,
+      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
+      COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
+      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      '');
+  END;
+
+  CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
+    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT 'delete', f.rowid, f.file_fingerprint,
+      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
+      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+      '', '', '', '', ''
+    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT f.rowid, f.file_fingerprint,
+      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
+      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+      COALESCE(new.content, ''), COALESCE(new.multimodal_content, ''),
+      COALESCE(new.ocr, ''), COALESCE(new.lrc, ''), ''
+    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
+  END;
+
+  CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE OF content, multimodal_content, ocr, lrc ON file_contents BEGIN
+    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT 'delete', f.rowid, f.file_fingerprint,
+      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
+      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+      COALESCE(old.content, ''), COALESCE(old.multimodal_content, ''),
+      COALESCE(old.ocr, ''), COALESCE(old.lrc, ''), ''
+    FROM files f WHERE f.file_fingerprint = old.file_fingerprint;
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT f.rowid, f.file_fingerprint,
+      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
+      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+      COALESCE(new.content, ''), COALESCE(new.multimodal_content, ''),
+      COALESCE(new.ocr, ''), COALESCE(new.lrc, ''), ''
+    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
+  END;
+
   CREATE TRIGGER trg_workspace_files_fts_insert AFTER INSERT ON workspace_files BEGIN
-    INSERT OR IGNORE INTO files_fts(file_fingerprint, name)
-    VALUES (new.file_fingerprint, new.name);
-    UPDATE files_fts SET name = new.name WHERE file_fingerprint = new.file_fingerprint;
+    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT 'delete', f.rowid, f.file_fingerprint, '',
+      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      ''
+    FROM files f WHERE f.file_fingerprint = new.file_fingerprint
+      AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = new.file_fingerprint);
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
+      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      ''
+    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
+  END;
+
+  CREATE TRIGGER trg_workspace_files_fts_update AFTER UPDATE OF name ON workspace_files BEGIN
+    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT 'delete', f.rowid, f.file_fingerprint, COALESCE(old.name, ''),
+      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      ''
+    FROM files f WHERE f.file_fingerprint = old.file_fingerprint
+      AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = old.file_fingerprint);
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
+      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      ''
+    FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
 
   DROP TRIGGER IF EXISTS trg_file_contents_update_modified_at;
@@ -579,6 +678,164 @@ export const migrations: IMigrationConfig[] = [
       DROP INDEX IF EXISTS idx_analysis_queue_pending;
       DROP INDEX IF EXISTS idx_file_vectors_status;
       DROP TABLE IF EXISTS file_vectors;
+    `
+  },
+  {
+    version: 4,
+    name: 'fts5_contentless_external_content',
+    description:
+      'Issue #661：files_fts 迁移为 FTS5 contentless 模式，消除影子表正文副本；老库重建索引',
+    up: `
+      DROP TRIGGER IF EXISTS trg_files_fts_update;
+      DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
+      DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
+      DROP TRIGGER IF EXISTS trg_files_fts_insert;
+      DROP TRIGGER IF EXISTS trg_files_fts_delete;
+      DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
+      DROP TRIGGER IF EXISTS trg_file_contents_fts_upsert;
+      DROP TABLE IF EXISTS files_fts;
+
+      CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
+        file_fingerprint UNINDEXED,
+        name, smart_name, description,
+        content, multimodal_content, ocr, lrc, tags,
+        tokenize='trigram',
+        content=''
+      );
+
+      INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+      SELECT f.rowid, f.file_fingerprint,
+        COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
+        COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+        COALESCE(fc.content, ''), COALESCE(fc.multimodal_content, ''),
+        COALESCE(fc.ocr, ''), COALESCE(fc.lrc, ''), ''
+      FROM files f
+      LEFT JOIN file_contents fc ON fc.file_fingerprint = f.file_fingerprint;
+
+      CREATE TRIGGER trg_files_fts_insert AFTER INSERT ON files BEGIN
+        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT new.rowid, new.file_fingerprint,
+          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
+          COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
+          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
+          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
+          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
+          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
+          '';
+      END;
+
+      CREATE TRIGGER trg_files_fts_update AFTER UPDATE OF smart_name, description ON files BEGIN
+        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT 'delete', old.rowid, old.file_fingerprint,
+          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
+          COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
+          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
+          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
+          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
+          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
+          '';
+        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT new.rowid, new.file_fingerprint,
+          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
+          COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
+          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
+          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
+          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
+          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
+          '';
+      END;
+
+      CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
+        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        VALUES('delete', old.rowid, old.file_fingerprint,
+          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
+          COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
+          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
+          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
+          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
+          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
+          '');
+      END;
+
+      CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
+        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT 'delete', f.rowid, f.file_fingerprint,
+          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
+          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+          '', '', '', '', ''
+        FROM files f WHERE f.file_fingerprint = new.file_fingerprint
+          AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = new.file_fingerprint);
+        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT f.rowid, f.file_fingerprint,
+          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
+          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+          COALESCE(new.content, ''), COALESCE(new.multimodal_content, ''),
+          COALESCE(new.ocr, ''), COALESCE(new.lrc, ''), ''
+        FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
+      END;
+
+      CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE OF content, multimodal_content, ocr, lrc ON file_contents BEGIN
+        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT 'delete', f.rowid, f.file_fingerprint,
+          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
+          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+          COALESCE(old.content, ''), COALESCE(old.multimodal_content, ''),
+          COALESCE(old.ocr, ''), COALESCE(old.lrc, ''), ''
+        FROM files f WHERE f.file_fingerprint = old.file_fingerprint
+          AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = old.file_fingerprint);
+        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT f.rowid, f.file_fingerprint,
+          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
+          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+          COALESCE(new.content, ''), COALESCE(new.multimodal_content, ''),
+          COALESCE(new.ocr, ''), COALESCE(new.lrc, ''), ''
+        FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
+      END;
+
+      CREATE TRIGGER trg_workspace_files_fts_insert AFTER INSERT ON workspace_files BEGIN
+        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
+          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          ''
+        FROM files f WHERE f.file_fingerprint = new.file_fingerprint
+          AND NOT EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = new.file_fingerprint);
+      END;
+
+      CREATE TRIGGER trg_workspace_files_fts_update AFTER UPDATE OF name ON workspace_files BEGIN
+        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT 'delete', f.rowid, f.file_fingerprint, COALESCE(old.name, ''),
+          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          ''
+        FROM files f WHERE f.file_fingerprint = old.file_fingerprint
+          AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = old.file_fingerprint);
+        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+        SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
+          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
+          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
+          ''
+        FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
+      END;
+    `,
+    down: `
+      DROP TRIGGER IF EXISTS trg_files_fts_insert;
+      DROP TRIGGER IF EXISTS trg_files_fts_update;
+      DROP TRIGGER IF EXISTS trg_files_fts_delete;
+      DROP TRIGGER IF EXISTS trg_file_contents_fts_upsert;
+      DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
+      DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
+      DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
+      DROP TABLE IF EXISTS files_fts;
     `
   }
 ]

@@ -468,7 +468,12 @@ export class TagTreeQuery {
       const likePattern = `%${trimmed}%`
       const ftsAvailable = this.isFtsAvailable()
       const ftsClause = ftsAvailable
-        ? `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (SELECT file_fingerprint FROM files_fts WHERE files_fts MATCH ?)) OR `
+        ? `(wf.file_fingerprint IS NOT NULL AND wf.file_fingerprint IN (
+             SELECT f.file_fingerprint
+             FROM files_fts
+             JOIN files f ON f.rowid = files_fts.rowid
+             WHERE files_fts MATCH ?
+           )) OR `
         : ''
       const sanitizedQuery = trimmed.replace(/["*^()]/g, ' ').trim() || trimmed
 
@@ -641,8 +646,8 @@ export class TagTreeQuery {
           wf.thumbnail_path,
           f.smart_name,
           f.size,
-          f.extension as type,
-          f.file_group as category,
+          f.extension,
+          f.file_group,
           f.author,
           f.language,
           f.created_at,
@@ -718,8 +723,8 @@ export class TagTreeQuery {
           wf.thumbnail_path,
           f.smart_name,
           f.size,
-          f.extension as type,
-          f.file_group as category,
+          f.extension,
+          f.file_group,
           f.author,
           f.language,
           f.created_at,

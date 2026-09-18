@@ -35,8 +35,8 @@ export class FileDao {
             fc.quality_score,
             bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
           FROM files_fts
-          JOIN workspace_files wf ON files_fts.file_fingerprint = wf.file_fingerprint
-          LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+          JOIN files f ON f.rowid = files_fts.rowid
+          JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
           WHERE files_fts MATCH ? AND wf.workspace_id = ?
           ORDER BY rank ASC LIMIT 100
@@ -54,8 +54,8 @@ export class FileDao {
             fc.quality_score,
             bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
           FROM files_fts
-          JOIN workspace_files wf ON files_fts.file_fingerprint = wf.file_fingerprint
-          LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+          JOIN files f ON f.rowid = files_fts.rowid
+          JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
           WHERE files_fts MATCH ?
           ORDER BY rank ASC LIMIT 100
@@ -76,9 +76,9 @@ export class FileDao {
           fc.quality_score, vdf.relative_path, vdf.virtual_directory_id,
           bm25(files_fts, 10.0, 5.0, 1.0, 2.0) as rank
         FROM files_fts
-        JOIN workspace_files wf ON files_fts.file_fingerprint = wf.file_fingerprint
+        JOIN files f ON f.rowid = files_fts.rowid
+        JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
         JOIN virtual_directory_files vdf ON vdf.file_id = wf.id
-        LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
         WHERE files_fts MATCH ?
           AND (? IS NULL OR vdf.virtual_directory_id = ?)
@@ -1386,7 +1386,7 @@ export class FileDao {
       .prepare(
         `
       SELECT
-        wf.id, wf.path, wf.name, f.smart_name, f.extension as type, f.description, fc.quality_score
+        wf.id, wf.path, wf.name, f.smart_name, f.extension, f.description, fc.quality_score
       FROM workspace_files wf
       JOIN files f ON wf.file_fingerprint = f.file_fingerprint
       LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -1426,7 +1426,7 @@ export class FileDao {
         path: row.path,
         name: row.name,
         smartName: row.smart_name,
-        type: row.type,
+        extension: row.extension,
         tags: dimensionTags.map(t => t.tag),
         description: row.description,
         qualityScore: row.quality_score,
@@ -1689,21 +1689,71 @@ export class FileDao {
   syncFTSTags(fingerprint: string): void {
     if (!fingerprint) return
     try {
-      // 以 code 自然主键直连（创世 Baseline V1）
-      this.db
+      // Issue #661 contentless：不能 UPDATE FTS 列，需按业务表重建倒排（含 tags）
+      const row = this.db
         .prepare(
           `
-          UPDATE files_fts
-          SET tags = (
-            SELECT GROUP_CONCAT(ft.name, ' ')
-            FROM file_tag_relations ftr
-            JOIN file_tags ft ON ft.code = ftr.tag_code
-            WHERE ftr.file_fingerprint = ?
-          )
-          WHERE file_fingerprint = ?
+          SELECT f.rowid AS rid, f.file_fingerprint,
+            COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), '') AS name,
+            COALESCE(f.smart_name, '') AS smart_name,
+            COALESCE(f.description, '') AS description,
+            COALESCE(fc.content, '') AS content,
+            COALESCE(fc.multimodal_content, '') AS multimodal_content,
+            COALESCE(fc.ocr, '') AS ocr,
+            COALESCE(fc.lrc, '') AS lrc,
+            COALESCE((
+              SELECT GROUP_CONCAT(ft.name, ' ')
+              FROM file_tag_relations ftr
+              JOIN file_tags ft ON ft.code = ftr.tag_code
+              WHERE ftr.file_fingerprint = f.file_fingerprint
+            ), '') AS tags
+          FROM files f
+          LEFT JOIN file_contents fc ON fc.file_fingerprint = f.file_fingerprint
+          WHERE f.file_fingerprint = ?
         `
         )
-        .run(fingerprint, fingerprint)
+        .get(fingerprint) as any
+      if (!row) return
+
+      const exists = this.db
+        .prepare(`SELECT 1 AS x FROM files_fts WHERE rowid = ?`)
+        .get(row.rid)
+      if (exists) {
+        this.db
+          .prepare(
+            `INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+             VALUES ('delete', ?,?,?,?,?,?,?,?,?,?)`
+          )
+          .run(
+            row.rid,
+            row.file_fingerprint,
+            row.name,
+            row.smart_name,
+            row.description,
+            row.content,
+            row.multimodal_content,
+            row.ocr,
+            row.lrc,
+            row.tags
+          )
+      }
+      this.db
+        .prepare(
+          `INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+           VALUES (?,?,?,?,?,?,?,?,?,?)`
+        )
+        .run(
+          row.rid,
+          row.file_fingerprint,
+          row.name,
+          row.smart_name,
+          row.description,
+          row.content,
+          row.multimodal_content,
+          row.ocr,
+          row.lrc,
+          row.tags
+        )
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '同步FTS标签失败', { error, fingerprint })
     }
@@ -1716,21 +1766,8 @@ export class FileDao {
 
     try {
       this.db.transaction(() => {
-        // 以 code 自然主键直连（创世 Baseline V1）
-        const stmt = this.db.prepare(
-          `
-          UPDATE files_fts
-          SET tags = (
-            SELECT GROUP_CONCAT(ft.name, ' ')
-            FROM file_tag_relations ftr
-            JOIN file_tags ft ON ft.code = ftr.tag_code
-            WHERE ftr.file_fingerprint = ?
-          )
-          WHERE file_fingerprint = ?
-          `
-        )
         for (const fp of uniqueFingerprints) {
-          stmt.run(fp, fp)
+          this.syncFTSTags(fp)
         }
       })()
       logger.info(
