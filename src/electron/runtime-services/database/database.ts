@@ -737,7 +737,8 @@ export const migrations: IMigrationConfig[] = [
           COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
           COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
           COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          '';
+          ''
+        WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
         INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
         SELECT new.rowid, new.file_fingerprint,
           COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
@@ -751,14 +752,15 @@ export const migrations: IMigrationConfig[] = [
 
       CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
         INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        VALUES('delete', old.rowid, old.file_fingerprint,
+        SELECT 'delete', old.rowid, old.file_fingerprint,
           COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
           COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
           COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
           COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
           COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
           COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          '');
+          ''
+        WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
       END;
 
       CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
@@ -768,7 +770,7 @@ export const migrations: IMigrationConfig[] = [
           COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
           '', '', '', '', ''
         FROM files f WHERE f.file_fingerprint = new.file_fingerprint
-          AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = new.file_fingerprint);
+          AND EXISTS (SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
         INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
         SELECT f.rowid, f.file_fingerprint,
           COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
@@ -786,7 +788,7 @@ export const migrations: IMigrationConfig[] = [
           COALESCE(old.content, ''), COALESCE(old.multimodal_content, ''),
           COALESCE(old.ocr, ''), COALESCE(old.lrc, ''), ''
         FROM files f WHERE f.file_fingerprint = old.file_fingerprint
-          AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = old.file_fingerprint);
+          AND EXISTS (SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
         INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
         SELECT f.rowid, f.file_fingerprint,
           COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
@@ -819,7 +821,7 @@ export const migrations: IMigrationConfig[] = [
           COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
           ''
         FROM files f WHERE f.file_fingerprint = old.file_fingerprint
-          AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = old.file_fingerprint);
+          AND EXISTS (SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
         INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
         SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
           COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
