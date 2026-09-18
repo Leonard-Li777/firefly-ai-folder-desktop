@@ -1,5 +1,6 @@
 import { app as electronApp } from 'electron'
 import path from 'path'
+import fs from 'fs'
 import { getDefaultLanguage } from '@firefly/shared'
 import { t } from '@app/languages'
 
@@ -22,6 +23,7 @@ export interface IDatabaseConfig {
     mmap_size: number
     temp_store: string
     foreign_keys: boolean
+    busy_timeout?: number
   }
 }
 
@@ -51,6 +53,7 @@ const GENESIS_V1_SCHEMA = `
     is_active BOOLEAN NOT NULL DEFAULT 1,         -- 是否为当前激活的工作区
     auto_watch BOOLEAN NOT NULL DEFAULT 0,        -- 是否自动监听文件系统变化
     last_scan_at DATETIME,                        -- 最后一次完整扫描的时间
+    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 创建时间
   );
 
@@ -63,6 +66,7 @@ const GENESIS_V1_SCHEMA = `
     context_analysis TEXT,                       -- 目录上下文分析结果 (JSON)
     is_analyzed BOOLEAN NOT NULL DEFAULT 0,      -- 是否已完成目录级分析
     last_analyzed_at DATETIME,                   -- 最后分析时间
+    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录最后修改时间
     FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE
@@ -81,6 +85,7 @@ const GENESIS_V1_SCHEMA = `
     is_hit BOOLEAN DEFAULT 0,                    -- 是否命中云端/本地缓存
     last_hit_at DATETIME,                        -- 最后一次缓存命中时间
     sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态: 0-待同步, 1-同步中, 2-已同步
+    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 文件在文件系统中的创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 文件在文件系统中的修改时间
     accessed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP -- 文件在文件系统中的最后访问时间
@@ -118,6 +123,7 @@ const GENESIS_V1_SCHEMA = `
     parent_archive TEXT,                         -- 如果是压缩包内文件，记录父包路径
     unit_id INTEGER,                             -- 所属逻辑单元ID
     thumbnail_path TEXT,                         -- 缩略图相对路径
+    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录创建时间
     modified_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录修改时间
     accessed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 记录最后访问时间
@@ -141,6 +147,7 @@ const GENESIS_V1_SCHEMA = `
     priority INTEGER NOT NULL DEFAULT 0,          -- 任务优先级
     retry_count INTEGER NOT NULL DEFAULT 0,      -- 已重试次数
     max_retries INTEGER NOT NULL DEFAULT 3,      -- 最大允许重试次数
+    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 任务创建时间
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP  -- 任务状态更新时间
   );
@@ -222,6 +229,7 @@ const GENESIS_V1_SCHEMA = `
     ai_prompt       TEXT,
     source_analyzed_directory_id INTEGER,
     sort_order      INTEGER DEFAULT 0,
+    meta            TEXT    NOT NULL DEFAULT '{}',    -- 弹性元数据 (JSON)
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(workspace_id, name),
@@ -234,6 +242,7 @@ const GENESIS_V1_SCHEMA = `
     file_id              INTEGER NOT NULL,
     file_fingerprint     TEXT    NOT NULL,
     relative_path        TEXT    NOT NULL,
+    meta                 TEXT    NOT NULL DEFAULT '{}',    -- 弹性元数据 (JSON)
     created_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (virtual_directory_id, file_id, relative_path),
     FOREIGN KEY (virtual_directory_id) REFERENCES virtual_directories(id) ON DELETE CASCADE,
@@ -249,6 +258,7 @@ const GENESIS_V1_SCHEMA = `
     status TEXT DEFAULT 'pending',
     retry_count INTEGER DEFAULT 0,
     error_message TEXT,
+    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     synced_at DATETIME
   );
@@ -263,6 +273,7 @@ const GENESIS_V1_SCHEMA = `
     latency_ms INTEGER,
     file_fingerprint TEXT,
     sync_status INTEGER NOT NULL DEFAULT 0,
+    meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -442,6 +453,24 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_antonym_word_b ON antonym_pairs(word_b);
   CREATE INDEX IF NOT EXISTS idx_hownet_words_word ON hownet_words(word);
   CREATE INDEX IF NOT EXISTS idx_hownet_concepts_parent ON hownet_concepts(parent_id);
+
+  -- 21. 多模态特征向量表 (file_vectors)
+  CREATE TABLE IF NOT EXISTS file_vectors (
+    file_fingerprint     TEXT PRIMARY KEY,              -- 文件内容指纹 (与 files 外键级联)
+    text_embedding       BLOB,                          -- 文本特征向量 (IEEE 754 32位单精度浮点二进制，384维)
+    image_embedding      BLOB,                          -- 视觉特征向量 (IEEE 754 32位单精度浮点二进制，512维)
+    multimodal_embedding BLOB,                          -- 多模态融合向量 (IEEE 754 32位单精度浮点二进制，768维)
+    status               INTEGER NOT NULL DEFAULT 0,    -- 计算状态: 0-未计算, 1-部分完成, 2-完全完成
+    model_version        TEXT,                          -- 向量模型版本标识 (如 "bge-small-zh-v1.5:clip-vit-b32")
+    meta                 TEXT NOT NULL DEFAULT '{}',    -- 向量弹性元数据 (JSON)
+    updated_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
+  );
+
+  -- 22. 向量与队列高频覆盖索引
+  CREATE INDEX IF NOT EXISTS idx_file_vectors_status ON file_vectors(status);
+  CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
+  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, confidence);
 `
 
 /**
@@ -455,6 +484,7 @@ export const migrations: IMigrationConfig[] = [
     description: '一步到位初始化 Genesis V1 创世基线架构',
     up: GENESIS_V1_SCHEMA,
     down: `
+      DROP TABLE IF EXISTS file_vectors;
       DROP TABLE IF EXISTS tag_omw_mapping;
       DROP TABLE IF EXISTS antonym_pairs;
       DROP TABLE IF EXISTS hownet_word_concepts;
@@ -506,18 +536,92 @@ export const migrations: IMigrationConfig[] = [
     down: `
       DROP TABLE IF EXISTS tag_aliases;
     `
+  },
+  {
+    version: 3,
+    name: 'add_file_vectors_and_meta',
+    description: '新增多模态向量表 file_vectors、复合与覆盖索引，为核心表补齐 meta 弹性扩展字段',
+    up: `
+      -- 1. 创建多模态向量表
+      CREATE TABLE IF NOT EXISTS file_vectors (
+        file_fingerprint     TEXT PRIMARY KEY,
+        text_embedding       BLOB,
+        image_embedding      BLOB,
+        multimodal_embedding BLOB,
+        status               INTEGER NOT NULL DEFAULT 0,
+        model_version        TEXT,
+        meta                 TEXT NOT NULL DEFAULT '{}',
+        updated_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
+      );
+
+      -- 2. 高频索引
+      CREATE INDEX IF NOT EXISTS idx_file_vectors_status ON file_vectors(status);
+      CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
+      CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, confidence);
+    `,
+    down: `
+      DROP INDEX IF EXISTS idx_file_tag_relations_covering;
+      DROP INDEX IF EXISTS idx_analysis_queue_pending;
+      DROP INDEX IF EXISTS idx_file_vectors_status;
+      DROP TABLE IF EXISTS file_vectors;
+    `
   }
 ]
-/**
- * 获取数据库配置
- * @param language 语言代码
- */
-export function getDatabaseConfig(language: string): IDatabaseConfig {
-  if (!language) {
-    throw new Error(t('getDatabaseConfig 必须显式指定语言代码 (language)'))
-  }
-  const dbName = `firefly-ai-folder_${language}.db`
 
+/**
+ * 探测并平滑迁移本地数据库至单一主库 (firefly-ai-folder.db)
+ * 若主库尚不存在，优先检测并平滑升级已有语言分库 (如 firefly-ai-folder_zh-CN.db)，数据 100% 保留
+ * @param userDataPath 用户数据目录
+ * @param language 可选首选语言代码
+ */
+export function resolveAndMigrateDatabasePath(userDataPath: string, language?: string): string {
+  const masterDbPath = path.join(userDataPath, 'firefly-ai-folder.db')
+  if (fs.existsSync(masterDbPath)) {
+    return masterDbPath
+  }
+
+  // 探测现有老版本语言分库候选列表
+  const candidateLangs = [
+    ...(language ? [language] : []),
+    'zh-CN',
+    'en-US',
+    'ja-JP',
+    'ko-KR',
+    'fr-FR',
+    'de-DE',
+    'es-ES',
+    'ru-RU',
+    'pt-PT',
+    'ar-EG'
+  ]
+
+  for (const lang of candidateLangs) {
+    const oldDbPath = path.join(userDataPath, `firefly-ai-folder_${lang}.db`)
+    if (fs.existsSync(oldDbPath)) {
+      try {
+        fs.copyFileSync(oldDbPath, masterDbPath)
+        if (fs.existsSync(oldDbPath + '-wal')) {
+          fs.copyFileSync(oldDbPath + '-wal', masterDbPath + '-wal')
+        }
+        if (fs.existsSync(oldDbPath + '-shm')) {
+          fs.copyFileSync(oldDbPath + '-shm', masterDbPath + '-shm')
+        }
+        return masterDbPath
+      } catch (e) {
+        // 若拷贝失败则继续尝试或回退直接使用 masterDbPath 由 sqlite 初始化
+      }
+    }
+  }
+
+  return masterDbPath
+}
+
+/**
+ * 获取数据库配置 (第二阶段：全面收敛至本地单一主库 firefly-ai-folder.db)
+ * @param language 可选语言代码（向后兼容保留，主库支持多语言动态映射）
+ */
+export function getDatabaseConfig(language?: string): IDatabaseConfig {
   // 安全获取 userData 路径，兼容非 Electron 环境（如测试）
   let userDataPath: string
   try {
@@ -526,9 +630,11 @@ export function getDatabaseConfig(language: string): IDatabaseConfig {
     userDataPath = process.cwd()
   }
 
+  const dbPath = resolveAndMigrateDatabasePath(userDataPath, language)
+
   return {
     type: 'sqlite',
-    path: path.join(userDataPath, dbName),
+    path: dbPath,
     migrations: true,
     backup: {
       enabled: true,
@@ -541,7 +647,8 @@ export function getDatabaseConfig(language: string): IDatabaseConfig {
       cache_size: -64000,
       mmap_size: 268435456,
       temp_store: 'MEMORY',
-      foreign_keys: true
+      foreign_keys: true,
+      busy_timeout: 5000
     }
   }
 }

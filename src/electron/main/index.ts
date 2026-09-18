@@ -574,7 +574,7 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
     if (newLanguage !== oldLanguage) {
       logger.info(
         LogCategory.MAIN,
-        `语言由 ${oldLanguage} 切换为 ${newLanguage}，正在切换数据库...`
+        `语言由 ${oldLanguage} 切换为 ${newLanguage}，基于统一单主库动态刷新多语言展示与服务...`
       )
       try {
         await initDatabaseAndDependentServices(newLanguage as any, true)

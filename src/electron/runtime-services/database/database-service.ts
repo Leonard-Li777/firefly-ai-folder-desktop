@@ -178,6 +178,7 @@ export class DatabaseService {
         this._db.pragma(`mmap_size = ${config.pragma.mmap_size}`)
         this._db.pragma(`temp_store = ${config.pragma.temp_store}`)
         this._db.pragma(`foreign_keys = ${config.pragma.foreign_keys ? 'ON' : 'OFF'}`)
+        this._db.pragma(`busy_timeout = ${config.pragma.busy_timeout ?? 5000}`)
 
         if (config.migrations) {
           await this.createTables()
@@ -1707,6 +1708,168 @@ export class DatabaseService {
     }
     return null
   }
+
+  // =========================================================================
+  // 多模态向量存储与检索 API (file_vectors)
+  // =========================================================================
+
+  /**
+   * 保存或增量更新文件的特征向量（支持文本/图像/多模态向量增量写入）
+   */
+  public saveFileVectors(input: SaveFileVectorInput): void {
+    if (!this._db || !input.fileFingerprint) return
+
+    const float32ToBuffer = (arr?: Float32Array | null): Buffer | null => {
+      if (!arr) return null
+      return Buffer.from(arr.buffer, arr.byteOffset, arr.byteLength)
+    }
+
+    const textBuf = float32ToBuffer(input.textEmbedding)
+    const imgBuf = float32ToBuffer(input.imageEmbedding)
+    const multiBuf = float32ToBuffer(input.multimodalEmbedding)
+    const metaJson = input.meta ? JSON.stringify(input.meta) : '{}'
+
+    const stmt = this._db.prepare(`
+      INSERT INTO file_vectors (
+        file_fingerprint,
+        text_embedding,
+        image_embedding,
+        multimodal_embedding,
+        status,
+        model_version,
+        meta,
+        updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(file_fingerprint) DO UPDATE SET
+        text_embedding = COALESCE(excluded.text_embedding, file_vectors.text_embedding),
+        image_embedding = COALESCE(excluded.image_embedding, file_vectors.image_embedding),
+        multimodal_embedding = COALESCE(excluded.multimodal_embedding, file_vectors.multimodal_embedding),
+        status = CASE 
+          WHEN excluded.status IS NOT NULL AND excluded.status != 0 THEN excluded.status 
+          ELSE file_vectors.status 
+        END,
+        model_version = COALESCE(excluded.model_version, file_vectors.model_version),
+        meta = CASE 
+          WHEN excluded.meta != '{}' THEN json_patch(file_vectors.meta, excluded.meta) 
+          ELSE file_vectors.meta 
+        END,
+        updated_at = CURRENT_TIMESTAMP
+    `)
+
+    stmt.run(
+      input.fileFingerprint,
+      textBuf,
+      imgBuf,
+      multiBuf,
+      input.status ?? 0,
+      input.modelVersion ?? null,
+      metaJson
+    )
+  }
+
+  /**
+   * 获取指定文件的多模态向量记录
+   */
+  public getFileVectors(fileFingerprint: string): FileVectorRecord | null {
+    if (!this._db || !fileFingerprint) return null
+    const row = this._db
+      .prepare('SELECT * FROM file_vectors WHERE file_fingerprint = ?')
+      .get(fileFingerprint) as any
+    if (!row) return null
+    return this.mapRowToFileVectorRecord(row)
+  }
+
+  /**
+   * 批量获取多个文件的向量记录
+   */
+  public batchGetFileVectors(fileFingerprints: string[]): Map<string, FileVectorRecord> {
+    const result = new Map<string, FileVectorRecord>()
+    if (!this._db || fileFingerprints.length === 0) return result
+
+    const chunkSize = 500
+    for (let i = 0; i < fileFingerprints.length; i += chunkSize) {
+      const chunk = fileFingerprints.slice(i, i + chunkSize)
+      const placeholders = chunk.map(() => '?').join(',')
+      const rows = this._db
+        .prepare(`SELECT * FROM file_vectors WHERE file_fingerprint IN (${placeholders})`)
+        .all(...chunk) as any[]
+
+      for (const row of rows) {
+        result.set(row.file_fingerprint, this.mapRowToFileVectorRecord(row))
+      }
+    }
+    return result
+  }
+
+  /**
+   * 删除指定文件的向量记录
+   */
+  public deleteFileVectors(fileFingerprint: string): void {
+    if (!this._db || !fileFingerprint) return
+    this._db.prepare('DELETE FROM file_vectors WHERE file_fingerprint = ?').run(fileFingerprint)
+  }
+
+  /**
+   * 将数据库行映射为强类型向量记录
+   */
+  private mapRowToFileVectorRecord(row: any): FileVectorRecord {
+    let parsedMeta = {}
+    try {
+      if (row.meta) {
+        parsedMeta = typeof row.meta === 'string' ? JSON.parse(row.meta) : row.meta
+      }
+    } catch {
+      parsedMeta = {}
+    }
+
+    const bufferToFloat32Array = (buf: any): Float32Array | null => {
+      if (!buf) return null
+      if (Buffer.isBuffer(buf)) {
+        // 创建独立的 4 字节对齐内存副本，避免 Node.js Buffer pool 偏移不对齐引发异常
+        const ab = new ArrayBuffer(buf.byteLength)
+        new Uint8Array(ab).set(buf)
+        return new Float32Array(ab)
+      }
+      if (buf instanceof Uint8Array || buf.buffer) {
+        const ab = new ArrayBuffer(buf.byteLength)
+        new Uint8Array(ab).set(new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength))
+        return new Float32Array(ab)
+      }
+      return null
+    }
+
+    return {
+      fileFingerprint: row.file_fingerprint,
+      textEmbedding: bufferToFloat32Array(row.text_embedding),
+      imageEmbedding: bufferToFloat32Array(row.image_embedding),
+      multimodalEmbedding: bufferToFloat32Array(row.multimodal_embedding),
+      status: row.status ?? 0,
+      modelVersion: row.model_version ?? null,
+      meta: parsedMeta,
+      updatedAt: row.updated_at
+    }
+  }
+}
+
+export interface FileVectorRecord {
+  fileFingerprint: string
+  textEmbedding: Float32Array | null
+  imageEmbedding: Float32Array | null
+  multimodalEmbedding: Float32Array | null
+  status: number
+  modelVersion: string | null
+  meta: Record<string, any>
+  updatedAt?: string
+}
+
+export interface SaveFileVectorInput {
+  fileFingerprint: string
+  textEmbedding?: Float32Array | null
+  imageEmbedding?: Float32Array | null
+  multimodalEmbedding?: Float32Array | null
+  status?: number
+  modelVersion?: string | null
+  meta?: Record<string, any>
 }
 
 export interface OmwSynsetResult {

@@ -17,21 +17,25 @@ import { databaseService } from '../database/database-service'
 import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
+import * as coreEngineIdentityApi from '@firefly/core-engine'
+import * as sharedIdentityStub from '@app/shared/builtin-tag-identity-stub'
+import type {
+  FileDimensionDocument,
+  BuiltinTagIdentity
+} from '@app/shared/builtin-tag-identity-stub'
 /**
  * 身份构建 API：优先 Pro @firefly/core-engine；开源/无 pro 时降级 shared stub
+ * 使用静态 ESM 导入，确保 electron-vite 打包时能重写别名并内联模块
+ * （运行时 require 相对路径在 out_build/main 下无法解析）
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let identityApi: any
-try {
-  identityApi = require('@firefly/core-engine')
-} catch {
-  identityApi = require('../../../shared/builtin-tag-identity-stub')
-}
+const identityApi: any =
+  typeof (coreEngineIdentityApi as { buildBuiltinTagIdentity?: unknown })
+    .buildBuiltinTagIdentity === 'function'
+    ? coreEngineIdentityApi
+    : sharedIdentityStub
 
 const { buildBuiltinTagIdentity, buildBuiltinImportPlan } = identityApi
-
-type FileDimensionDocument = import('../../../shared/builtin-tag-identity-stub').FileDimensionDocument
-type BuiltinTagIdentity = import('../../../shared/builtin-tag-identity-stub').BuiltinTagIdentity
 
 export class ConfigDbManager {
   private static instance: ConfigDbManager | null = null
