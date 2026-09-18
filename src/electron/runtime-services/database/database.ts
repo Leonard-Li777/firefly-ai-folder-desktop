@@ -841,51 +841,13 @@ export const migrations: IMigrationConfig[] = [
 ]
 
 /**
- * 探测并平滑迁移本地数据库至单一主库 (firefly-ai-folder.db)
- * 若主库尚不存在，优先检测并平滑升级已有语言分库 (如 firefly-ai-folder_zh-CN.db)，数据 100% 保留
+ * 获取本地单一主库路径 (firefly-ai-folder.db)
+ * V4 创世架构：单一主库，不作任何历史分库迁移
  * @param userDataPath 用户数据目录
- * @param language 可选首选语言代码
+ * @param _language 可选语言代码（保留入参签名兼容，主库不依赖语言后缀）
  */
-export function resolveAndMigrateDatabasePath(userDataPath: string, language?: string): string {
-  const masterDbPath = path.join(userDataPath, 'firefly-ai-folder.db')
-  if (fs.existsSync(masterDbPath)) {
-    return masterDbPath
-  }
-
-  // 探测现有老版本语言分库候选列表
-  const candidateLangs = [
-    ...(language ? [language] : []),
-    'zh-CN',
-    'en-US',
-    'ja-JP',
-    'ko-KR',
-    'fr-FR',
-    'de-DE',
-    'es-ES',
-    'ru-RU',
-    'pt-PT',
-    'ar-EG'
-  ]
-
-  for (const lang of candidateLangs) {
-    const oldDbPath = path.join(userDataPath, `firefly-ai-folder_${lang}.db`)
-    if (fs.existsSync(oldDbPath)) {
-      try {
-        fs.copyFileSync(oldDbPath, masterDbPath)
-        if (fs.existsSync(oldDbPath + '-wal')) {
-          fs.copyFileSync(oldDbPath + '-wal', masterDbPath + '-wal')
-        }
-        if (fs.existsSync(oldDbPath + '-shm')) {
-          fs.copyFileSync(oldDbPath + '-shm', masterDbPath + '-shm')
-        }
-        return masterDbPath
-      } catch (e) {
-        // 若拷贝失败则继续尝试或回退直接使用 masterDbPath 由 sqlite 初始化
-      }
-    }
-  }
-
-  return masterDbPath
+export function resolveAndMigrateDatabasePath(userDataPath: string, _language?: string): string {
+  return path.join(userDataPath, 'firefly-ai-folder.db')
 }
 
 /**
