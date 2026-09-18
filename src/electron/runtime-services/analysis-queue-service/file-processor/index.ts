@@ -266,18 +266,18 @@ export class FileProcessor {
     } = {}
 
     try {
-      // 1. 获取 file_group (files 表，V4 由 category 改名)
+      // 1. 获取 file_group (files 表)
       const fileRow = db
-        .prepare('SELECT file_group as category FROM files WHERE file_fingerprint = ?')
-        .get(fingerprint) as { category?: string } | undefined
+        .prepare('SELECT file_group FROM files WHERE file_fingerprint = ?')
+        .get(fingerprint) as { file_group?: string } | undefined
 
-      if (fileRow?.category) {
+      if (fileRow?.file_group) {
         try {
-          result.category = JSON.parse(fileRow.category)
+          result.category = JSON.parse(fileRow.file_group)
         } catch (e) {
           logger.warn(
             LogCategory.ANALYSIS_QUEUE,
-            `[复用数据] 解析 category JSON 失败: ${fingerprint}`
+            `[复用数据] 解析 file_group JSON 失败: ${fingerprint}`
           )
         }
       }
@@ -1231,11 +1231,11 @@ export class FileProcessor {
           )
         } else if (existingWorkspaceFile) {
           const row = db
-            .prepare('SELECT file_group as category FROM files WHERE file_fingerprint = ?')
-            .get(fileFingerprint) as { category?: string }
-          if (row?.category) {
+            .prepare('SELECT file_group FROM files WHERE file_fingerprint = ?')
+            .get(fileFingerprint) as { file_group?: string }
+          if (row?.file_group) {
             try {
-              magikaCategory = JSON.parse(row.category)
+              magikaCategory = JSON.parse(row.file_group)
             } catch (e) {
               logger.warn(LogCategory.FILE_ANALYSIS, '[文件处理器] 解析 Magika 分类 JSON 失败:', e)
             }

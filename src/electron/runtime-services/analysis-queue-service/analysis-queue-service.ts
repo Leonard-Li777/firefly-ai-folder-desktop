@@ -1115,29 +1115,29 @@ export class AnalysisQueueService {
           if (chosenExtension === null) {
             // "不更名"逻辑：将当前 files.extension 追加到 file_group.extensions
             const row = db
-              .prepare('SELECT extension as type, file_group as category FROM files WHERE file_fingerprint = ?')
-              .get(fileFingerprint) as { type: string; category: string } | undefined
+              .prepare('SELECT extension, file_group FROM files WHERE file_fingerprint = ?')
+              .get(fileFingerprint) as { extension: string; file_group: string } | undefined
 
-            if (row?.category) {
+            if (row?.file_group) {
               try {
-                const category = JSON.parse(row.category)
-                const extensions = category.extensions || []
-                const currentType = row.type.toLowerCase().replace(/^\./, '')
+                const groupObj = JSON.parse(row.file_group)
+                const extensions = groupObj.extensions || []
+                const currentExt = (row.extension || '').toLowerCase().replace(/^\./, '')
 
-                // 只有当 extensions 中不包含当前 type 时才追加
+                // 只有当 extensions 中不包含当前 extension 时才追加
                 if (
                   !extensions.some(
-                    (e: string) => e.toLowerCase().replace(/^\./, '') === currentType
+                    (e: string) => e.toLowerCase().replace(/^\./, '') === currentExt
                   )
                 ) {
                   // 保持格式一致：检查原 extensions 第一个元素的格式
                   const hasDot = extensions.length > 0 && extensions[0].startsWith('.')
-                  const valueToAdd = hasDot ? `.${currentType}` : currentType
+                  const valueToAdd = hasDot ? `.${currentExt}` : currentExt
                   extensions.push(valueToAdd)
-                  category.extensions = extensions
+                  groupObj.extensions = extensions
 
                   db.prepare('UPDATE files SET file_group = ? WHERE file_fingerprint = ?').run(
-                    JSON.stringify(category),
+                    JSON.stringify(groupObj),
                     fileFingerprint
                   )
                   count++
@@ -1145,15 +1145,15 @@ export class AnalysisQueueService {
               } catch (e) {
                 logger.warn(
                   LogCategory.ANALYSIS_QUEUE,
-                  `[扩展名校准] 解析 category 失败: ${fix.fileFingerprint}`
+                  `[扩展名校准] 解析 file_group 失败: ${fix.fileFingerprint}`
                 )
               }
             }
           } else {
-            // "选扩展名"逻辑：更新 files.type 和 files.smart_name
+            // "选扩展名"逻辑：更新 files.extension 和 files.smart_name
             const row = db
-              .prepare('SELECT smart_name, type FROM files WHERE file_fingerprint = ?')
-              .get(fileFingerprint) as { smart_name: string; type: string } | undefined
+              .prepare('SELECT smart_name, extension FROM files WHERE file_fingerprint = ?')
+              .get(fileFingerprint) as { smart_name: string; extension: string } | undefined
 
             if (row) {
               const oldSmartName = row.smart_name || ''
