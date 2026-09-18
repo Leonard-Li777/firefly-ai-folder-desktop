@@ -503,7 +503,7 @@ declare global {
           fileFingerprint: string
           path: string
           name: string
-          type: string
+          extension: string
           extensions: string[]
         }>
       >

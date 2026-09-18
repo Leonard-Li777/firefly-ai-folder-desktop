@@ -992,7 +992,7 @@ export class AnalysisQueueService {
 
   /**
    * 检查扩展名不匹配的文件
-   * 查询工作区中 category.extensions 不包含 files.type 的文件列表
+   * 查询工作区中 file_group.extensions 不包含 files.extension 的文件列表
    */
   async checkExtensionMismatch(workspaceId: number): Promise<
     Array<{
@@ -1000,7 +1000,7 @@ export class AnalysisQueueService {
       path: string
       name: string
       smartName: string
-      type: string
+      extension: string
       extensions: string[]
       workspaceRootPath: string
     }>
@@ -1019,7 +1019,7 @@ export class AnalysisQueueService {
       const rows = db
         .prepare(
           `
-        SELECT f.file_fingerprint, wf.path, wf.name, f.extension as type, f.file_group as category, f.smart_name
+        SELECT f.file_fingerprint, wf.path, wf.name, f.extension, f.file_group, f.smart_name
         FROM files f
         JOIN workspace_files wf ON f.file_fingerprint = wf.file_fingerprint
         WHERE f.file_group IS NOT NULL AND wf.workspace_id = ?
@@ -1030,8 +1030,8 @@ export class AnalysisQueueService {
         file_fingerprint: string
         path: string
         name: string
-        type: string
-        category: string
+        extension: string
+        file_group: string
         smart_name: string | null
       }>
 
@@ -1040,41 +1040,41 @@ export class AnalysisQueueService {
         path: string
         name: string
         smartName: string
-        type: string
+        extension: string
         extensions: string[]
         workspaceRootPath: string
       }> = []
 
       for (const row of rows) {
         try {
-          const category = JSON.parse(row.category)
+          const fileGroup = JSON.parse(row.file_group)
 
           // 低置信度 Magika 结果（score < 0.8）不进入扩展名校准弹窗，
           // 避免 magika 误判（如带 BOM 的中文 txt 被识别为 powershell，score≈0.58）
-          // 字符串类型的 category（旧兜底数据）无 score，视为可信，保持原有行为
-          const score = category && typeof category === 'object' ? (category.score ?? 1) : 1
+          // 字符串类型的 file_group（旧兜底数据）无 score，视为可信，保持原有行为
+          const score = fileGroup && typeof fileGroup === 'object' ? (fileGroup.score ?? 1) : 1
           if (score < 0.8) continue
 
-          // 跳过 category 解析为 null 的情况（空对象或无效数据）
-          const extensions = category?.extensions || []
+          // 跳过 file_group 解析为 null 的情况（空对象或无效数据）
+          const extensions = fileGroup?.extensions || []
 
           // 跳过 extensions 为空数组的情况
           if (extensions.length === 0) continue
 
           // 归一化比较：去除开头的点并转小写
-          const currentType = row.type.toLowerCase().replace(/^\./, '')
+          const currentType = row.extension.toLowerCase().replace(/^\./, '')
           const normalizedExtensions = extensions.map((e: string) =>
             e.toLowerCase().replace(/^\./, '')
           )
 
-          // 如果当前 type 不在 extensions 中，则属于不匹配
+          // 如果当前 extension 不在 extensions 中，则属于不匹配
           if (!normalizedExtensions.includes(currentType)) {
             results.push({
               fileFingerprint: row.file_fingerprint,
               path: row.path,
               name: row.name,
               smartName: row.smart_name || row.name,
-              type: row.type,
+              extension: row.extension,
               extensions: extensions,
               workspaceRootPath
             })
@@ -1082,7 +1082,7 @@ export class AnalysisQueueService {
         } catch (parseError) {
           logger.warn(
             LogCategory.ANALYSIS_QUEUE,
-            `[扩展名校准] 解析 category JSON 失败: ${row.file_fingerprint}`,
+            `[扩展名校准] 解析 file_group JSON 失败: ${row.file_fingerprint}`,
             parseError
           )
         }
@@ -1113,9 +1113,9 @@ export class AnalysisQueueService {
           const { fileFingerprint, chosenExtension } = fix
 
           if (chosenExtension === null) {
-            // "不更名"逻辑：将当前 files.type 追加到 category.extensions
+            // "不更名"逻辑：将当前 files.extension 追加到 file_group.extensions
             const row = db
-              .prepare('SELECT type, category FROM files WHERE file_fingerprint = ?')
+              .prepare('SELECT extension as type, file_group as category FROM files WHERE file_fingerprint = ?')
               .get(fileFingerprint) as { type: string; category: string } | undefined
 
             if (row?.category) {
@@ -1136,7 +1136,7 @@ export class AnalysisQueueService {
                   extensions.push(valueToAdd)
                   category.extensions = extensions
 
-                  db.prepare('UPDATE files SET category = ? WHERE file_fingerprint = ?').run(
+                  db.prepare('UPDATE files SET file_group = ? WHERE file_fingerprint = ?').run(
                     JSON.stringify(category),
                     fileFingerprint
                   )

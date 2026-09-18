@@ -147,9 +147,9 @@ export function ExtensionReconciliationDialog() {
                       {Array.from(new Set(file.extensions))
                         .filter(ext => {
                           const displayExt = ext.startsWith('.') ? ext : `.${ext}`
-                          const originalExt = file.type.startsWith('.')
-                            ? file.type
-                            : `.${file.type}`
+                          const originalExt = file.extension.startsWith('.')
+                            ? file.extension
+                            : `.${file.extension}`
                           return displayExt !== originalExt
                         })
                         .map(ext => {

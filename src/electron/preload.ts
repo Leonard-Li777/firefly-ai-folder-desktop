@@ -237,7 +237,7 @@ const electronAPI = {
       path: string
       name: string
       smartName: string
-      type: string
+      extension: string
       extensions: string[]
       workspaceRootPath: string
     }>

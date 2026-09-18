@@ -1014,7 +1014,7 @@ export class DirectoryContextService {
       const rows = this.db
         .prepare(`
           SELECT 
-            wf.id, wf.file_fingerprint, wf.path, wf.name, f.smart_name, f.extension as type, f.author, f.language, f.size,
+            wf.id, wf.file_fingerprint, wf.path, wf.name, f.smart_name, f.extension, f.author, f.language, f.size,
             wf.created_at, wf.modified_at,
             fc.quality_score, fc.metadata
           FROM workspace_files wf

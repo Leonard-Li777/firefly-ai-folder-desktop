@@ -224,7 +224,7 @@ export const useAnalyzedDirectoryFilter = (
         name: f.name,
         smartName: f.smartName,
         path: f.path,
-        type: (f as any).type || f.category || '',
+        extension: (f as any).extension || '',
         tags: [],
         dimensionTags: []
       })
@@ -318,7 +318,7 @@ export const useAnalyzedDirectoryFilter = (
                   name: f.name,
                   smartName: f.smartName,
                   path: f.path,
-                  type: (f as any).type || f.category || '',
+                  extension: (f as any).extension || '',
                   tags: [],
                   dimensionTags: []
                 }

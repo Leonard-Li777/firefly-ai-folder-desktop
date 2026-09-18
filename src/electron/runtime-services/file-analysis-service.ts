@@ -189,7 +189,7 @@ export async function getFileAnalysisData(
     // 获取 files 表中的内容数据
     const fileContent = db
       .prepare(
-        `SELECT f.smart_name, f.description, f.file_group as category,
+        `SELECT f.smart_name, f.description, f.file_group,
               fc.quality_score, fc.multimodal_content, fc.metadata
        FROM files f
        LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -220,7 +220,7 @@ export async function getFileAnalysisData(
         name: workspaceFile.name,
         smartName: fileContent?.smart_name,
         description: fileContent?.description,
-        category: fileContent?.category,
+        category: fileContent?.file_group,
         metadata: parsedMetadata,
         qualityScore: fileContent?.quality_score,
         multimodalContent: fileContent?.multimodal_content,
