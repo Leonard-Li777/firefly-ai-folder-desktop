@@ -386,6 +386,7 @@ export class CloudSyncWorker {
           extension: f.extension,
           type: f.extension,
           file_group: f.file_group,
+          // 云端 RPC 历史字段名 mime_type 与本地 file_group 对齐（ADR-0037 / #658 V4 契约）
           mime_type: f.file_group,
           author: f.author,
           description: f.description,
