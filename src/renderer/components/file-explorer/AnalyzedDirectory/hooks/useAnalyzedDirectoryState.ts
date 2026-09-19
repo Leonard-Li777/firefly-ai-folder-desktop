@@ -16,6 +16,7 @@ import { useSettingsStore } from '../../../../stores/settings-store'
 import { useModelStore } from '../../../../stores/model-store'
 import { useSearchStore } from '../../../../stores/search-store'
 import { useAnalysisQueueStore } from '../../../../stores/analysis-queue-store'
+import { useSearchViewAutoSwitch } from '../../FileList/hooks/useSearchViewAutoSwitch'
 
 /**
  * 虚拟目录状态管理 Hook
@@ -61,6 +62,13 @@ export const useAnalyzedDirectoryState = (
   const { config, getConfigValue, updateConfigValue } = useSettingsStore()
   const { serviceStatus, modelMode } = useModelStore()
   const { analyzedDirectoryKeyword, setAnalyzedDirectoryKeyword } = useSearchStore()
+
+  // 搜索关键词非空时自动切换至 search-list 视图，清空后恢复原模式
+  useSearchViewAutoSwitch({
+    keyword: analyzedDirectoryKeyword,
+    viewMode: viewMode as string,
+    setViewMode: setViewMode as (mode: any) => void
+  })
   const { snapshot } = useAnalysisQueueStore()
 
   const [isDimensionLoading, setIsDimensionLoading] = useState(false)

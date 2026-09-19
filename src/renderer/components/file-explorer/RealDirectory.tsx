@@ -8,6 +8,7 @@ import { SearchBar } from '../common/SearchBar'
 import { DirectoryHeader } from './DirectoryHeader'
 import { FileDetailsPanel } from './FileDetailsPanel/index'
 import { FileList } from './FileList'
+import { useSearchViewAutoSwitch } from './FileList/hooks/useSearchViewAutoSwitch'
 import { FileExplorerLayout } from './FileExplorerLayout'
 import { Breadcrumbs } from './Breadcrumbs'
 import { MaterialIcon, cn } from '../../lib/utils'
@@ -223,6 +224,14 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'waterfall'>(
     configDefaultView || 'list'
   )
+
+  // 搜索关键词非空时自动切换至 search-list 视图，清空后恢复原模式
+  useSearchViewAutoSwitch({
+    keyword: realDirectoryKeyword,
+    viewMode: viewMode as string,
+    setViewMode: setViewMode as (mode: any) => void
+  })
+
   const [showDirectoryDropdown, setShowDirectoryDropdown] = useState(false)
 
   const isSplitView = (pageStates[PAGE_IDS.REAL_DIRECTORY]?.mode ?? 'split') === 'split'

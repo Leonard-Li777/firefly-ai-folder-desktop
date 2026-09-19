@@ -6,6 +6,14 @@ export interface FileType extends BaseFileType {
   thumbnailPath?: string
   /** 分析完成时间（与 FILE_LIST_EXTRA_FIELDS 中 analyzedAt 字段对应） */
   analyzedAt?: string
+  /** 搜索结果富正文摘要：带 <mark> 高亮的 HTML 片段或纯语义最契合段落文本 */
+  snippet?: string
+  /** 匹配类型：exact=字面匹配 / fuzzy=模糊匹配 / semantic=语义召回 / unanalyzed=未分析文件名命中 */
+  matchType?: 'exact' | 'fuzzy' | 'semantic' | 'unanalyzed'
+  /** 语义召回相似度（0~1），matchType 为 semantic 时展示百分比 */
+  similarity?: number
+  /** 是否为尚未 AI 分析的文件（命中文件名） */
+  isUnanalyzed?: boolean
 }
 
 export interface FileListProps {
@@ -20,7 +28,7 @@ export interface FileListProps {
   onFileDoubleClick?: (file: FileType) => void
   loading?: boolean
   selectionEnabled?: boolean
-  viewMode?: 'list' | 'grid' | 'table' | 'waterfall'
+  viewMode?: 'list' | 'grid' | 'table' | 'waterfall' | 'search-list'
   currentPath: string
   showAnalysisStatus?: boolean
   showsmartName?: boolean

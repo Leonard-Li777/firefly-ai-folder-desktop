@@ -7,6 +7,7 @@ import {
 } from './constants'
 import { FileListProps, FileType, ListItemData } from './types'
 import { GridCell, GridCellInner } from './components/GridCell'
+import { SEARCH_LIST_ROW_HEIGHT } from './components/SearchListCard'
 import { LogCategory, logger } from '@firefly/shared'
 import { MaterialIcon, cn } from '../../../lib/utils'
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
@@ -640,6 +641,79 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     if (items.length === 0) return false
     return items.every(item => item.path && selectedPathsSet.has(normalizeForCache(item.path)))
   }, [items, selectedPathsSet, normalizeForCache])
+
+  // 搜索列表模式：专属搜索卡片视图，挂载于 VirtualRowRenderer 之下，支持万级结果虚拟滚动与触底翻页
+  if (viewMode === 'search-list') {
+    const listHeight = containerSize.height > 0 ? containerSize.height : 0
+
+    return (
+      <div
+        className={cn(
+          'w-full h-full flex flex-col overflow-hidden focus:outline-none relative animate-fade-in dark:bg-muted/70'
+        )}
+        key="search-list-view"
+        ref={containerRef}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        onMouseDown={handleMouseDown}
+        onDragStart={e => e.preventDefault()}
+        onClick={e => {
+          const target = e.target as HTMLElement
+          if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+            containerRef.current?.focus()
+          }
+        }}
+      >
+        <SelectionBox viewMode={viewMode} scrollOffset={scrollOffset} containerRef={containerRef} />
+        {contextMenu && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            items={contextMenuItems}
+            onClose={() => setContextMenu(null)}
+          />
+        )}
+
+        <div className="flex-1 overflow-hidden" ref={listWrapperRef}>
+          {reactWindowAvailable && ListComponent && listHeight > 0 && items.length > 0 ? (
+            isReactWindowV2 ? (
+              <ListComponent
+                height={listHeight}
+                rowCount={items.length}
+                rowHeight={SEARCH_LIST_ROW_HEIGHT}
+                width={containerSize.width || '100%'}
+                className="scrollbar-thin"
+                listRef={listRef}
+                rowProps={{ data: { ...itemData, viewMode: 'search-list' } }}
+                rowComponent={VirtualRowRenderer}
+                onScroll={onListScroll}
+              />
+            ) : (
+              <ListComponent
+                height={listHeight}
+                itemCount={items.length}
+                itemSize={SEARCH_LIST_ROW_HEIGHT}
+                width={containerSize.width || '100%'}
+                className="scrollbar-thin"
+                ref={listRef}
+                outerRef={activeOuterRef}
+                itemData={{ ...itemData, viewMode: 'search-list' }}
+                onScroll={onListScroll}
+              >
+                {VirtualRowRenderer}
+              </ListComponent>
+            )
+          ) : (
+            <EmptyState
+              icon={loading ? 'search' : 'search_off'}
+              title={loading ? t('正在搜索...') : t('没有找到匹配的文件')}
+              isLoading={loading}
+            />
+          )}
+        </div>
+      </div>
+    )
+  }
 
   if (viewMode === 'list') {
     const listHeight = containerSize.height > 40 ? containerSize.height - 40 : 0

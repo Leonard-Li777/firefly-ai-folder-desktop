@@ -24,6 +24,7 @@ import { t } from '@app/languages'
 import { getUniqueVirtualDirectoryName } from '../utils/vdir-naming-utils'
 import { useVirtualNavigation } from './useVirtualNavigation'
 import { useSettingsStore } from '../../../../stores/settings-store'
+import { useSearchViewAutoSwitch } from '../../FileList/hooks/useSearchViewAutoSwitch'
 
 export const useVirtualDirectory = () => {
   const [virtualDirectories, setVirtualDirectories] = useState<VirtualDirectoryType[]>([])
@@ -91,6 +92,13 @@ export const useVirtualDirectory = () => {
   )
   const { virtualDirectoryKeyword, setVirtualDirectoryKeyword, setAnalyzedDirectoryKeyword } =
     useSearchStore()
+
+  // 搜索关键词非空时自动切换至 search-list 视图，清空后恢复原模式
+  useSearchViewAutoSwitch({
+    keyword: virtualDirectoryKeyword,
+    viewMode: viewMode as string,
+    setViewMode: setViewMode as (mode: any) => void
+  })
   const { computed_limits, entitlements } = useTierStore()
 
   const vdirSlotLimit = useMemo(() => {

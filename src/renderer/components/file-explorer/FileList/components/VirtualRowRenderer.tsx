@@ -15,6 +15,7 @@ import { PageId } from '../../../../constants/page-ids'
 import { checkIsUnit, getUnitTypeLabel, getUnitTheme, getUnitTooltip } from '../utils'
 import { useFileQueueState } from '../../../../stores/analysis-queue-store'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
+import { SearchListCard } from './SearchListCard'
 
 interface VirtualRowRendererInnerProps {
   item: any
@@ -45,6 +46,7 @@ interface VirtualRowRendererInnerProps {
   pageId?: PageId
   gridCardWidth?: number
   listFontSize?: number
+  viewMode?: string
 }
 
 const areEqual = (
@@ -69,7 +71,8 @@ const areEqual = (
     prevProps.onFileSelect !== nextProps.onFileSelect ||
     prevProps.getSelectedFiles !== nextProps.getSelectedFiles ||
     prevProps.selectionEnabled !== nextProps.selectionEnabled ||
-    prevProps.listFontSize !== nextProps.listFontSize
+    prevProps.listFontSize !== nextProps.listFontSize ||
+    prevProps.viewMode !== nextProps.viewMode
   ) {
     return false
   }
@@ -178,6 +181,24 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
   const unitTooltip = isUnit ? getUnitTooltip(unitLabel, unitReason, unitConfidence) : ''
 
   const isRowEffectiveSelected = Boolean(isSelected || isActive)
+
+  // 搜索列表模式：以专属搜索卡片渲染（含匹配徽章、路径、富正文摘要与“立即分析”插队）
+  if (props.viewMode === 'search-list' && !isDirectory && fileItem) {
+    return (
+      <div style={{ width: totalWidth, height: '100%' }}>
+        <SearchListCard
+          item={fileItem}
+          safeItemName={safeItemName}
+          formatFileSize={formatFileSize}
+          onItemClick={onItemClick}
+          onContextMenu={onContextMenu}
+          isSelected={isSelected}
+          isActive={Boolean(isActive)}
+          index={index}
+        />
+      </div>
+    )
+  }
 
   const rowClass = cn(
     'flex items-center border-b border-border/30 file-row h-full select-none',
