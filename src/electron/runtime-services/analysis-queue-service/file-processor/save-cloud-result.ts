@@ -214,7 +214,7 @@ export async function saveCloudResult(
       db.prepare(
         `
         INSERT INTO file_contents (
-          file_fingerprint, content, multimodal_content, ocr, lrc, metadata, analysis_stats,
+          file_fingerprint, content, multimodal_content, ocr, lrc, meta, analysis_stats,
           quality_score, quality_confidence, quality_reasoning, quality_criteria,
           grouping_reason, grouping_confidence
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -223,7 +223,7 @@ export async function saveCloudResult(
           multimodal_content = excluded.multimodal_content,
           ocr = excluded.ocr,
           lrc = excluded.lrc,
-          metadata = excluded.metadata,
+          meta = excluded.meta,
           quality_score = excluded.quality_score,
           quality_confidence = excluded.quality_confidence,
           quality_reasoning = excluded.quality_reasoning,

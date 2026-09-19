@@ -109,7 +109,6 @@ const GENESIS_V1_SCHEMA = `
     multimodal_content TEXT,                     -- AI 生成的多模态描述（如图片描述）
     ocr TEXT,                                    -- 图片/文档的 OCR 识别文本
     lrc TEXT,                                    -- 音频/视频的歌词或字幕
-    metadata TEXT,                               -- 扩展元数据 (JSON)
     analysis_stats TEXT,                         -- 分析统计信息 (JSON, 如耗时、Token数)
     quality_score REAL,                          -- 质量评分 (1-10)
     quality_confidence REAL,                     -- 评分置信度 (0-1)
@@ -490,6 +489,7 @@ export const migrations: IMigrationConfig[] = [
     description:
       '一步到位初始化 Genesis V1 创世基线架构（ADR-0038：剔除 OMW/HowNet/file_vectors，标签软外键解耦）',
     up: GENESIS_V1_SCHEMA,
+    // down 仅供开发期手动回滚参考；创世建库期（ADR-0038）直接删除数据库文件重建，不执行此脚本
     down: `
       DROP TABLE IF EXISTS memory_cache;
       DROP TABLE IF EXISTS pending_firecore_operations;
@@ -508,7 +508,6 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS workspace_directories;
       DROP TABLE IF EXISTS workspaces;
       DROP TABLE IF EXISTS files_fts;
-      DROP TABLE IF EXISTS memory_cache;
     `
   }
 ]

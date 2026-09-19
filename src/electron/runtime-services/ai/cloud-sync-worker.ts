@@ -400,7 +400,7 @@ export class CloudSyncWorker {
           quality_reasoning: f.quality_reasoning,
           grouping_reason: f.grouping_reason,
           grouping_confidence: this.ensureReal(f.grouping_confidence, 0.5),
-          metadata: this.safeJsonParse(f.metadata, {}),
+          metadata: this.safeJsonParse(f.meta, {}),
           analysis_stats: this.safeJsonParse(f.analysis_stats, null),
           multimodal_content: f.multimodal_content,
           last_analyzed_at: toUTCString(f.last_analyzed_at)

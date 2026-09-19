@@ -1016,7 +1016,7 @@ export class DirectoryContextService {
           SELECT 
             wf.id, wf.file_fingerprint, wf.path, wf.name, f.smart_name, f.extension, f.author, f.language, f.size,
             wf.created_at, wf.modified_at,
-            fc.quality_score, fc.metadata
+            fc.quality_score, fc.meta
           FROM workspace_files wf
           JOIN files f ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
@@ -1072,7 +1072,7 @@ export class DirectoryContextService {
         'UPDATE files SET smart_name = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?'
       )
       const updateContentStmt = this.db.prepare(
-        'UPDATE file_contents SET metadata = ? WHERE file_fingerprint = ?'
+        'UPDATE file_contents SET meta = ? WHERE file_fingerprint = ?'
       )
 
       this.db.transaction(() => {
@@ -1080,9 +1080,9 @@ export class DirectoryContextService {
           const row = targetRows[i]
           let metadataObj: Record<string, any> = {}
           try {
-            if (row.metadata) {
+            if (row.meta) {
               metadataObj =
-                typeof row.metadata === 'string' ? JSON.parse(row.metadata) : row.metadata
+                typeof row.meta === 'string' ? JSON.parse(row.meta) : row.meta
             }
           } catch {
             metadataObj = {}

@@ -190,7 +190,7 @@ export async function getFileAnalysisData(
     const fileContent = db
       .prepare(
         `SELECT f.smart_name, f.description, f.file_group,
-              fc.quality_score, fc.multimodal_content, fc.metadata
+              fc.quality_score, fc.multimodal_content, fc.meta
        FROM files f
        LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
        WHERE f.file_fingerprint = ?`
@@ -198,9 +198,9 @@ export async function getFileAnalysisData(
       .get(workspaceFile.file_fingerprint) as any
 
     let parsedMetadata: any = undefined
-    if (fileContent?.metadata) {
+    if (fileContent?.meta) {
       try {
-        parsedMetadata = typeof fileContent.metadata === 'string' ? JSON.parse(fileContent.metadata) : fileContent.metadata
+        parsedMetadata = typeof fileContent.meta === 'string' ? JSON.parse(fileContent.meta) : fileContent.meta
       } catch {}
     }
 

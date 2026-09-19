@@ -10,6 +10,7 @@
 
 import { LogCategory, logger } from '@firefly/shared'
 import type { DimensionGroup, DimensionTag } from '@firefly/types'
+import type { DimensionMetadata } from '@firefly/types'
 import {
   omniClient,
   type OmniTaxonomyNode,
@@ -89,11 +90,12 @@ export class TaxonomyAliasCache {
       this.locale = target
       this.loaded = next.size > 0 || !!treeRes
       logger.info(
-        LogCategory.SYSTEM,
+        LogCategory.AI,
         `[TaxonomyAliasCache] 已装载 locale=${target} aliases=${next.size} treeNodes=${treeRes?.totalNodes ?? 0}`
       )
-    } catch (err: any) {
-      logger.warn(LogCategory.SYSTEM, '[TaxonomyAliasCache] 装载失败:', err?.message)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.AI, '[TaxonomyAliasCache] 装载失败:', msg)
       // 保留旧映射，避免语言切换过程中展示名闪空
       this.locale = target
     }
@@ -140,13 +142,18 @@ export class TaxonomyAliasCache {
     const groups: DimensionGroup[] = []
     let legacyId = 1
     for (const root of this.tree.rootNodes) {
+      const numMatch = root.code.match(/^dim\.(\d+)$/)
+      const id = numMatch ? parseInt(numMatch[1], 10) : legacyId
+      legacyId = Math.max(legacyId, id + 1)
+
       const tags: DimensionTag[] = []
       const collect = (node: OmniTaxonomyNode, parentCode: string, level: number) => {
         for (const child of node.children || []) {
           const code = child.code
           const count = countByCode?.get(code) ?? 0
           tags.push({
-            dimensionId: root.code as any,
+            // DimensionTag.dimensionId 为 number；使用当前维度组的数字 id 兜底
+            dimensionId: id,
             dimensionName: this.aliasMap.get(root.code) || root.name,
             tagValue: this.aliasMap.get(code) || child.name,
             fileCount: count,
@@ -160,18 +167,17 @@ export class TaxonomyAliasCache {
       }
       collect(root, root.code, 1)
 
-      const numMatch = root.code.match(/^dim\.(\d+)$/)
-      const id = numMatch ? parseInt(numMatch[1], 10) : legacyId
-      legacyId = Math.max(legacyId, id + 1)
+      // DimensionMetadata 的 flag 字段包含 source 等扩展标记
+      const dimensionMeta: DimensionMetadata = { source: root.source || 'builtin' }
 
       groups.push({
-        id: id as any,
+        id,
         name: this.aliasMap.get(root.code) || root.name,
         level: 0,
         tags,
         code: root.code,
         isMultiSelect: false,
-        metadata: { source: root.source || 'builtin' } as any
+        metadata: dimensionMeta
       })
     }
     return groups
@@ -189,7 +195,7 @@ export class TaxonomyAliasCache {
     description?: string
     applicable_file_types: string[]
     context_hints: string[]
-    metadata: Record<string, any>
+    meta: DimensionMetadata
   }> {
     if (!this.tree?.rootNodes?.length) return []
     return this.tree.rootNodes.map((root, idx) => {
@@ -209,7 +215,7 @@ export class TaxonomyAliasCache {
         description: undefined,
         applicable_file_types: [],
         context_hints: [],
-        metadata: { source: root.source || 'builtin' }
+        meta: { source: root.source || 'builtin' } satisfies DimensionMetadata
       }
     })
   }

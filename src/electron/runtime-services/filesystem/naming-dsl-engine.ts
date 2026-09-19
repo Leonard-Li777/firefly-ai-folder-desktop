@@ -1091,7 +1091,7 @@ export class NamingDSLEngine {
             ? `${preview.rawSmartName}${path.extname(file.path || file.name || '')}`
             : file.name)
 
-        // 同步更新 SQLite 中的 files.smart_name 及 file_contents.metadata
+        // 同步更新 SQLite 中的 files.smart_name 及 file_contents.meta
         await NamingDSLEngine.updateFileSmartNameInDb(file.id, newSmartName, template)
 
         successCount++
@@ -1176,13 +1176,13 @@ export class NamingDSLEngine {
       `).run(newSmartName, wfRow.file_fingerprint)
 
       const contentRow = db.prepare(`
-        SELECT metadata FROM file_contents WHERE file_fingerprint = ?
-      `).get(wfRow.file_fingerprint) as { metadata: string } | undefined
+        SELECT meta FROM file_contents WHERE file_fingerprint = ?
+      `).get(wfRow.file_fingerprint) as { meta: string } | undefined
 
       let metaObj: Record<string, any> = {}
       try {
-        if (contentRow?.metadata) {
-          metaObj = JSON.parse(contentRow.metadata)
+        if (contentRow?.meta) {
+          metaObj = JSON.parse(contentRow.meta)
         }
       } catch {
         metaObj = {}
@@ -1204,9 +1204,9 @@ export class NamingDSLEngine {
       metaObj.naming_template = namingTemplate
 
       db.prepare(`
-        INSERT INTO file_contents (file_fingerprint, metadata)
+        INSERT INTO file_contents (file_fingerprint, meta)
         VALUES (?, ?)
-        ON CONFLICT(file_fingerprint) DO UPDATE SET metadata = excluded.metadata
+        ON CONFLICT(file_fingerprint) DO UPDATE SET meta = excluded.meta
       `).run(JSON.stringify(metaObj), wfRow.file_fingerprint)
     } catch (err) {
       logger.warn(

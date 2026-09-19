@@ -772,7 +772,7 @@ export class DatabaseService {
         SET content = NULL,
             multimodal_content = NULL,
             lrc = NULL,
-            metadata = NULL,
+            meta = NULL,
             analysis_stats = NULL,
             quality_score = NULL,
             quality_confidence = NULL,

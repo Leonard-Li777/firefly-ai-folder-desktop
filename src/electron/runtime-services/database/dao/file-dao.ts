@@ -180,7 +180,7 @@ export class FileDao {
           f.is_hit, f.last_hit_at, f.description,
           fc.content, fc.multimodal_content, fc.ocr, fc.lrc, fc.quality_score, fc.quality_confidence, 
           fc.quality_reasoning, fc.quality_criteria, fc.grouping_reason, fc.grouping_confidence,
-          fc.metadata, fc.analysis_stats
+          fc.meta, fc.analysis_stats
         FROM files f
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
         WHERE f.file_fingerprint = ?`)
@@ -321,7 +321,7 @@ export class FileDao {
       groupingReason: fileData.grouping_reason,
       groupingConfidence: fileData.grouping_confidence,
       thumbnailPath: workspaceFile.thumbnail_path,
-      metadata: fileData.metadata ? JSON.parse(fileData.metadata) : undefined
+      metadata: fileData.meta ? JSON.parse(fileData.meta) : undefined
     }
   }
 
@@ -558,11 +558,11 @@ export class FileDao {
       let finalMetadata = result.metadata
       if (finalMetadata !== undefined) {
         const oldContentRow = this.db
-          .prepare('SELECT metadata FROM file_contents WHERE file_fingerprint = ?')
-          .get(fileFingerprint) as { metadata?: string } | undefined
-        if (oldContentRow?.metadata) {
+          .prepare('SELECT meta FROM file_contents WHERE file_fingerprint = ?')
+          .get(fileFingerprint) as { meta?: string } | undefined
+        if (oldContentRow?.meta) {
           try {
-            const oldMeta = JSON.parse(oldContentRow.metadata)
+            const oldMeta = JSON.parse(oldContentRow.meta)
             if (oldMeta && typeof oldMeta === 'object' && Object.keys(oldMeta).length > 0) {
               finalMetadata = {
                 ...oldMeta,
@@ -856,10 +856,10 @@ export class FileDao {
         .prepare(
           `
         INSERT INTO file_contents (
-          file_fingerprint, content, multimodal_content, ocr, lrc, metadata, analysis_stats, 
+          file_fingerprint, content, multimodal_content, ocr, lrc, meta, analysis_stats,
           quality_score, quality_confidence, quality_criteria, quality_reasoning,
-          grouping_reason, grouping_confidence, meta
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          grouping_reason, grouping_confidence
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           content = COALESCE(?, content),
           multimodal_content = COALESCE(?, multimodal_content),
@@ -871,9 +871,8 @@ export class FileDao {
           quality_criteria = COALESCE(?, quality_criteria),
           grouping_reason = COALESCE(?, grouping_reason),
           grouping_confidence = COALESCE(?, grouping_confidence),
-          metadata = COALESCE(?, metadata),
-          analysis_stats = COALESCE(?, analysis_stats),
-          meta = COALESCE(?, meta)
+          meta = COALESCE(?, meta),
+          analysis_stats = COALESCE(?, analysis_stats)
       `
         )
         .run(
@@ -882,7 +881,8 @@ export class FileDao {
           result.multimodalContent ?? null,
           (result as any).ocr ?? null,
           result.lrc ?? null,
-          finalMetadata ? JSON.stringify(finalMetadata) : null,
+          // 统一 meta 列：优先写入扩展元数据（Exif/媒体等），否则写入弹性 meta
+          finalMetadata ? JSON.stringify(finalMetadata) : (result as any).meta ? JSON.stringify((result as any).meta) : '{}',
           newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null),
           result.qualityScore ?? null,
           result.qualityConfidence ?? null,
@@ -890,7 +890,6 @@ export class FileDao {
           result.qualityReasoning ?? null,
           result.groupingReason ?? null,
           result.groupingConfidence ?? null,
-          (result as any).meta ? JSON.stringify((result as any).meta) : '{}',
           result.content ?? null,
           result.multimodalContent ?? null,
           (result as any).ocr ?? null,
@@ -901,9 +900,8 @@ export class FileDao {
           result.qualityCriteria ? JSON.stringify(result.qualityCriteria) : null,
           result.groupingReason ?? null,
           result.groupingConfidence ?? null,
-          finalMetadata ? JSON.stringify(finalMetadata) : null,
-          newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null),
-          (result as any).meta ? JSON.stringify((result as any).meta) : null
+          finalMetadata ? JSON.stringify(finalMetadata) : (result as any).meta ? JSON.stringify((result as any).meta) : null,
+          newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null)
         )
 
       // 获取当前最新的 analysis_stage 与 completed_mode，判断是否达到目标阶段
@@ -1326,7 +1324,7 @@ export class FileDao {
           SET content = NULL,
               multimodal_content = NULL,
               lrc = NULL,
-              metadata = NULL,
+              meta = NULL,
               analysis_stats = NULL,
               quality_score = NULL,
               quality_confidence = NULL,

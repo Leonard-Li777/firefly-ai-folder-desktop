@@ -90,6 +90,8 @@ export class DatabaseAdapter implements IDatabaseAdapter {
 
         // 更新 file_contents 表（如果包含相关字段）
         if (Object.keys(fileContentsData).length > 0) {
+          // 应用层字段 metadata 统一映射到 file_contents.meta 列
+          const columnOf = (field: string) => (field === 'metadata' ? 'meta' : field)
           const fields = Object.keys(fileContentsData)
           const values = Object.values(fileContentsData).map(v => {
             if (typeof v === 'object' && v !== null) {
@@ -97,7 +99,7 @@ export class DatabaseAdapter implements IDatabaseAdapter {
             }
             return v
           })
-          const setClause = fields.map(field => `${field} = ?`).join(', ')
+          const setClause = fields.map(field => `${columnOf(field)} = ?`).join(', ')
           const stmt = db.prepare(
             `UPDATE file_contents SET ${setClause} WHERE file_fingerprint = ?`
           )

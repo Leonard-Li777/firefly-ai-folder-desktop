@@ -1322,7 +1322,7 @@ export class DuplicateDetectionService {
     try {
       let query = `
         SELECT wf.id, wf.path, wf.name, f.size as size, wf.file_fingerprint as fingerprint,
-               wf.modified_at as modifiedAt, fc.content as contentText, fc.metadata,
+               wf.modified_at as modifiedAt, fc.content as contentText, fc.meta,
                fc.quality_score as qualityScore, wf.thumbnail_path as thumbnailPath
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
@@ -1344,7 +1344,7 @@ export class DuplicateDetectionService {
       return rows.map(r => {
         let meta: any = {}
         try {
-          if (r.metadata) meta = JSON.parse(r.metadata)
+          if (r.meta) meta = JSON.parse(r.meta)
         } catch {
           meta = {}
         }

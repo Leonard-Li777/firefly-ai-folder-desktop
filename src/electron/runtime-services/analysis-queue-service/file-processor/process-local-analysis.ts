@@ -64,7 +64,7 @@ export async function processLocalAnalysis(
         db
           .prepare(
             `
-        SELECT quality_score, quality_confidence, quality_reasoning, quality_criteria, content, metadata, multimodal_content, lrc
+        SELECT quality_score, quality_confidence, quality_reasoning, quality_criteria, content, meta, multimodal_content, lrc
         FROM file_contents
         WHERE file_fingerprint = ?
       `
@@ -75,15 +75,15 @@ export async function processLocalAnalysis(
       content: fileInfo.content || existingQuality.content || '',
       metadata: (() => {
         if (fileInfo.metadata && Object.keys(fileInfo.metadata).length > 0) return fileInfo.metadata
-        if (!existingQuality.metadata) return {}
-        if (typeof existingQuality.metadata === 'string') {
+        if (!existingQuality.meta) return {}
+        if (typeof existingQuality.meta === 'string') {
           try {
-            return JSON.parse(existingQuality.metadata)
+            return JSON.parse(existingQuality.meta)
           } catch {
             return {}
           }
         }
-        return existingQuality.metadata
+        return existingQuality.meta
       })(),
       qualityScore: existingQuality.quality_score ?? 3,
       qualityConfidence: existingQuality.quality_confidence ?? 0.5,

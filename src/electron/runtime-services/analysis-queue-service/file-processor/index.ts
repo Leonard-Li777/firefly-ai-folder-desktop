@@ -295,13 +295,13 @@ export class FileProcessor {
 
       // 3. 获取 metadata 和 content (file_contents 表)
       const contentRow = db
-        .prepare('SELECT metadata, content FROM file_contents WHERE file_fingerprint = ?')
-        .get(fingerprint) as { metadata?: string; content?: string } | undefined
+        .prepare('SELECT meta, content FROM file_contents WHERE file_fingerprint = ?')
+        .get(fingerprint) as { meta?: string; content?: string } | undefined
 
       if (contentRow) {
-        if (contentRow.metadata) {
+        if (contentRow.meta) {
           try {
-            result.metadata = JSON.parse(contentRow.metadata)
+            result.metadata = JSON.parse(contentRow.meta)
           } catch (e) {
             logger.warn(
               LogCategory.ANALYSIS_QUEUE,
@@ -326,7 +326,7 @@ export class FileProcessor {
    *
    * 指标与基础数据的对应关系：
    * - document / text / ocr：内容（OCR 结果落库时已合并进 content 保存）
-   * - metadata：元数据（file_contents.metadata）
+   * - metadata：元数据（file_contents.meta）
    * - magika：Magika 分类（files.category 或已恢复的 magikaCategory）
    * - thumbnail：缩略图（workspace_files.thumbnail_path）
    *
@@ -1748,13 +1748,13 @@ export class FileProcessor {
 
         db.prepare(
           `
-          INSERT INTO file_contents (file_fingerprint, content, metadata, lrc)
+          INSERT INTO file_contents (file_fingerprint, content, meta, lrc)
           VALUES (?, ?, ?, ?)
           ON CONFLICT(file_fingerprint) DO UPDATE SET
             content = COALESCE(excluded.content, content),
-            metadata = CASE
-              WHEN metadata IS NULL OR metadata = '{}' OR metadata = '' THEN excluded.metadata
-              ELSE COALESCE(excluded.metadata, metadata)
+            meta = CASE
+              WHEN meta IS NULL OR meta = '{}' OR meta = '' THEN excluded.meta
+              ELSE COALESCE(excluded.meta, meta)
             END,
             lrc = COALESCE(excluded.lrc, lrc)
           `

@@ -173,7 +173,7 @@ export class DatabaseHelper {
           wf.is_analyzed as isAnalyzed,
           COALESCE(f.modified_at, wf.modified_at) as modifiedAt,
           COALESCE(f.created_at, wf.created_at) as createdAt,
-          fc.metadata,
+          fc.meta,
           fc.quality_score as qualityScore,
           f.description
         FROM workspace_files wf
@@ -231,9 +231,9 @@ export class DatabaseHelper {
           .all(file.id) as any[]
 
         let parsedMeta: Record<string, any> = {}
-        if (file.metadata) {
+        if (file.meta) {
           try {
-            parsedMeta = typeof file.metadata === 'string' ? JSON.parse(file.metadata) : file.metadata
+            parsedMeta = typeof file.meta === 'string' ? JSON.parse(file.meta) : file.meta
           } catch {
             parsedMeta = {}
           }

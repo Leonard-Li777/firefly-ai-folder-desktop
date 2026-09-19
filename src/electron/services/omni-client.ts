@@ -99,17 +99,18 @@ export class OmniClient {
         ...init,
         headers: {
           'Content-Type': 'application/json',
-          ...(init?.headers || {})
+          ...(init?.headers ?? {})
         },
         signal: AbortSignal.timeout(timeoutMs)
       })
       if (!res.ok) {
-        logger.warn(LogCategory.SYSTEM, `[OmniClient] HTTP ${res.status} ${path}`)
+        logger.warn(LogCategory.AI, `[OmniClient] HTTP ${res.status} ${path}`)
         return null
       }
       return (await res.json()) as T
-    } catch (err: any) {
-      logger.debug(LogCategory.SYSTEM, `[OmniClient] 请求失败 ${path}:`, err?.message)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.debug(LogCategory.AI, `[OmniClient] 请求失败 ${path}:`, msg)
       return null
     }
   }
