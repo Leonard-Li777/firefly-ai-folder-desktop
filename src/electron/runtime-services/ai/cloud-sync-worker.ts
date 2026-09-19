@@ -3,6 +3,7 @@ import { net, powerMonitor } from 'electron'
 
 import { cloudAnalysisService } from '@firefly/server'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
+import { decompressJson, decompressText } from '../../utils/text-compressor'
 import { databaseService } from '../database/database-service'
 import { userTierService } from '../user-tier/user-tier-service'
 
@@ -374,14 +375,15 @@ export class CloudSyncWorker {
         ConfigOrchestrator.getInstance().getValue<number>('MAX_TEXT_LENGTH') ?? 30000
 
       const cloudFiles = pendingFiles.map(f => {
+        // 本地大文本字段为压缩 BLOB，上行同步前需透明解压还原为明文
+        const plainContent = decompressText(f.content)
         const cloudContent =
-          typeof f.content === 'string' && f.content.length > maxTextLength
-            ? f.content.substring(0, maxTextLength)
-            : f.content
+          plainContent.length > maxTextLength ? plainContent.substring(0, maxTextLength) : plainContent
 
         return {
           file_fingerprint: f.file_fingerprint, // V2 架构：对齐云端 RPC 字段名
           smart_name: f.smart_name,
+          raw_smart_name: f.raw_smart_name || null,
           size: f.size,
           extension: f.extension,
           type: f.extension,
@@ -391,8 +393,8 @@ export class CloudSyncWorker {
           author: f.author,
           description: f.description,
           content: cloudContent,
-          ocr: f.ocr,
-          lrc: f.lrc,
+          ocr: decompressText(f.ocr) || null,
+          lrc: decompressText(f.lrc) || null,
           language: f.language,
           quality_score: this.ensureReal(f.quality_score, 0),
           quality_confidence: this.ensureReal(f.quality_confidence, 0.5),
@@ -400,9 +402,9 @@ export class CloudSyncWorker {
           quality_reasoning: f.quality_reasoning,
           grouping_reason: f.grouping_reason,
           grouping_confidence: this.ensureReal(f.grouping_confidence, 0.5),
-          metadata: this.safeJsonParse(f.meta, {}),
+          metadata: decompressJson(f.exif) ?? {},
           analysis_stats: this.safeJsonParse(f.analysis_stats, null),
-          multimodal_content: f.multimodal_content,
+          multimodal_content: decompressText(f.multimodal_content) || null,
           last_analyzed_at: toUTCString(f.last_analyzed_at)
         }
       })

@@ -189,7 +189,6 @@ export class NamingDSLEngine {
 
     let rawSmartName =
       context.rawSmartName ||
-      metaObj.raw_smart_name ||
       (context as any).raw_smart_name ||
       context.smartName ||
       (context as any).smart_name ||
@@ -916,7 +915,6 @@ export class NamingDSLEngine {
 
         let smartNameValue =
           file.rawSmartName ||
-          metaObj.raw_smart_name ||
           (file as any).raw_smart_name ||
           file.smartName ||
           (file as any).smart_name ||
@@ -1170,11 +1168,32 @@ export class NamingDSLEngine {
 
       // 仅更新 files 表中的 smart_name，严禁修改 path 和 name
       db.prepare(`
-        UPDATE files 
+        UPDATE files
         SET smart_name = ?, modified_at = CURRENT_TIMESTAMP
         WHERE file_fingerprint = ?
       `).run(newSmartName, wfRow.file_fingerprint)
 
+      // 确保 raw_smart_name 存在且不带扩展名，落 files.raw_smart_name 列
+      const existingRow = db.prepare(`
+        SELECT raw_smart_name FROM files WHERE file_fingerprint = ?
+      `).get(wfRow.file_fingerprint) as { raw_smart_name?: string } | undefined
+
+      if (!existingRow?.raw_smart_name) {
+        const fileExt = path.extname(wfRow.path || wfRow.name || '').replace(/^\./, '')
+        let raw = wfRow.name || ''
+        if (fileExt) {
+          raw = raw.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
+        }
+        raw = raw.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
+        const rawSmartName =
+          raw ||
+          path.basename(wfRow.name || wfRow.path || '', path.extname(wfRow.name || wfRow.path || ''))
+        db.prepare(`
+          UPDATE files SET raw_smart_name = ? WHERE file_fingerprint = ?
+        `).run(rawSmartName, wfRow.file_fingerprint)
+      }
+
+      // 记录本次生效的命名模板到 file_contents.meta
       const contentRow = db.prepare(`
         SELECT meta FROM file_contents WHERE file_fingerprint = ?
       `).get(wfRow.file_fingerprint) as { meta: string } | undefined
@@ -1186,19 +1205,6 @@ export class NamingDSLEngine {
         }
       } catch {
         metaObj = {}
-      }
-
-      // 确保 raw_smart_name 存在且不带扩展名
-      if (!metaObj.raw_smart_name) {
-        const fileExt = path.extname(wfRow.path || wfRow.name || '').replace(/^\./, '')
-        let raw = wfRow.name || ''
-        if (fileExt) {
-          raw = raw.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
-        }
-        raw = raw.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
-        metaObj.raw_smart_name =
-          raw ||
-          path.basename(wfRow.name || wfRow.path || '', path.extname(wfRow.name || wfRow.path || ''))
       }
 
       metaObj.naming_template = namingTemplate

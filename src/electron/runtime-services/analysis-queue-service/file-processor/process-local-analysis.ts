@@ -11,6 +11,7 @@ import { ConfigDbManager } from '../../config/config-db-manager'
 import { IErrorRecoveryConfig } from '../types'
 import { databaseService } from '../../database/database-service'
 import path from 'node:path'
+import { compressText } from '../../../utils/text-compressor'
 
 /**
  * 处理本地 AI 分析任务（质量评分 + 维度标签）
@@ -64,7 +65,7 @@ export async function processLocalAnalysis(
         db
           .prepare(
             `
-        SELECT quality_score, quality_confidence, quality_reasoning, quality_criteria, content, meta, multimodal_content, lrc
+        SELECT quality_score, quality_confidence, quality_reasoning, quality_criteria, content, exif, multimodal_content, lrc
         FROM file_contents
         WHERE file_fingerprint = ?
       `
@@ -75,15 +76,15 @@ export async function processLocalAnalysis(
       content: fileInfo.content || existingQuality.content || '',
       metadata: (() => {
         if (fileInfo.metadata && Object.keys(fileInfo.metadata).length > 0) return fileInfo.metadata
-        if (!existingQuality.meta) return {}
-        if (typeof existingQuality.meta === 'string') {
+        if (!existingQuality.exif) return {}
+        if (typeof existingQuality.exif === 'string') {
           try {
-            return JSON.parse(existingQuality.meta)
+            return JSON.parse(existingQuality.exif)
           } catch {
             return {}
           }
         }
-        return existingQuality.meta
+        return existingQuality.exif
       })(),
       qualityScore: existingQuality.quality_score ?? 3,
       qualityConfidence: existingQuality.quality_confidence ?? 0.5,
@@ -208,7 +209,7 @@ export async function processLocalAnalysis(
               lrc = excluded.lrc
             `
             )
-            .run(fileFingerprint, processResult.lrc)
+            .run(fileFingerprint, compressText(processResult.lrc))
         } catch (lrcDbErr) {
           logger.error(
             LogCategory.ANALYSIS_QUEUE,

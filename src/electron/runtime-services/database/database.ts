@@ -1,5 +1,6 @@
 import { app as electronApp } from 'electron'
 import path from 'path'
+import { decompressText } from '../../utils/text-compressor'
 
 /**
  * 数据库配置接口定义
@@ -87,6 +88,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE TABLE IF NOT EXISTS files (
     file_fingerprint TEXT PRIMARY KEY,           -- 文件内容指纹 (Base62/32位)，作为全局唯一标识
     smart_name TEXT,                             -- AI 生成或用户定义的智能名称
+    raw_smart_name TEXT,                         -- 原始智能文件名（不带扩展名，未经模板包裹的 AI 核心名称）
     description TEXT,                            -- AI 生成的文件描述
     size INTEGER NOT NULL DEFAULT 0,             -- 文件大小（字节）
     extension TEXT NOT NULL,                     -- 文件后缀名 (如 .png, .pdf)
@@ -103,12 +105,14 @@ const GENESIS_V1_SCHEMA = `
   );
 
   -- 4. 核心大字段实体表（存储耗时的 AI 分析结果，与 files 一对一）
+  -- 5 大文本字段采用单行 Zlib/Deflate 无损压缩存储为 BLOB（ADR-0038 / Task #683）
   CREATE TABLE IF NOT EXISTS file_contents (
     file_fingerprint TEXT PRIMARY KEY,           -- 文件内容指纹
-    content TEXT,                                -- AI 提取/总结的文件文本内容
-    multimodal_content TEXT,                     -- AI 生成的多模态描述（如图片描述）
-    ocr TEXT,                                    -- 图片/文档的 OCR 识别文本
-    lrc TEXT,                                    -- 音频/视频的歌词或字幕
+    content BLOB,                                -- AI 提取/总结的文件文本内容 (压缩 BLOB)
+    multimodal_content BLOB,                     -- AI 生成的多模态描述 (压缩 BLOB)
+    ocr BLOB,                                    -- 图片/文档的 OCR 识别文本 (压缩 BLOB)
+    lrc BLOB,                                    -- 音频/视频的歌词或字幕 (压缩 BLOB)
+    exif BLOB,                                   -- 文件元数据 (JSON, 压缩 BLOB)
     analysis_stats TEXT,                         -- 分析统计信息 (JSON, 如耗时、Token数)
     quality_score REAL,                          -- 质量评分 (1-10)
     quality_confidence REAL,                     -- 评分置信度 (0-1)
@@ -351,10 +355,10 @@ const GENESIS_V1_SCHEMA = `
     SELECT new.rowid, new.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
       COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
-      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
       '';
   END;
 
@@ -363,20 +367,20 @@ const GENESIS_V1_SCHEMA = `
     SELECT 'delete', old.rowid, old.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
       COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
-      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
       ''
     WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT new.rowid, new.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
       COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
-      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
-      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
       '';
   END;
 
@@ -385,10 +389,10 @@ const GENESIS_V1_SCHEMA = `
     SELECT 'delete', old.rowid, old.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
       COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
-      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
       ''
     WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
   END;
@@ -405,8 +409,8 @@ const GENESIS_V1_SCHEMA = `
     SELECT f.rowid, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE(new.content, ''), COALESCE(new.multimodal_content, ''),
-      COALESCE(new.ocr, ''), COALESCE(new.lrc, ''), ''
+      COALESCE(decompress_text(new.content), ''), COALESCE(decompress_text(new.multimodal_content), ''),
+      COALESCE(decompress_text(new.ocr), ''), COALESCE(decompress_text(new.lrc), ''), ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
 
@@ -415,16 +419,16 @@ const GENESIS_V1_SCHEMA = `
     SELECT 'delete', f.rowid, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE(old.content, ''), COALESCE(old.multimodal_content, ''),
-      COALESCE(old.ocr, ''), COALESCE(old.lrc, ''), ''
+      COALESCE(decompress_text(old.content), ''), COALESCE(decompress_text(old.multimodal_content), ''),
+      COALESCE(decompress_text(old.ocr), ''), COALESCE(decompress_text(old.lrc), ''), ''
     FROM files f WHERE f.file_fingerprint = old.file_fingerprint
       AND EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE(new.content, ''), COALESCE(new.multimodal_content, ''),
-      COALESCE(new.ocr, ''), COALESCE(new.lrc, ''), ''
+      COALESCE(decompress_text(new.content), ''), COALESCE(decompress_text(new.multimodal_content), ''),
+      COALESCE(decompress_text(new.ocr), ''), COALESCE(decompress_text(new.lrc), ''), ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
 
@@ -432,20 +436,20 @@ const GENESIS_V1_SCHEMA = `
     INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT 'delete', f.rowid, f.file_fingerprint, '',
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint
       AND EXISTS (SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
@@ -454,20 +458,20 @@ const GENESIS_V1_SCHEMA = `
     INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT 'delete', f.rowid, f.file_fingerprint, COALESCE(old.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       ''
     FROM files f WHERE f.file_fingerprint = old.file_fingerprint
       AND EXISTS(SELECT 1 FROM files_fts WHERE file_fingerprint = old.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE((SELECT fc.content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.multimodal_content FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.ocr FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
@@ -566,3 +570,21 @@ export function getBackupPath(timestamp?: string, language?: string): string {
   const backupTimestamp = timestamp || new Date().toISOString().replace(/[:.]/g, '-')
   return path.join(config.backup.backupPath, `backup-${backupTimestamp}.db`)
 }
+
+/**
+ * 注册 SQLite 自定义函数（支持在触发器和 SQL 表达式中执行）
+ * @param db better-sqlite3 数据库实例
+ */
+export function registerDatabaseFunctions(db: any): void {
+  if (!db || typeof db.function !== 'function') return
+
+  // 注册解压缩函数，使 FTS 触发器在处理 content/multimodal_content/ocr/lrc 等 BLOB 时能透明解压为明文做 trigram 分词
+  try {
+    db.function('decompress_text', { deterministic: true }, (val: unknown) => {
+      return decompressText(val as any)
+    })
+  } catch {
+    // 忽略重复注册异常
+  }
+}
+

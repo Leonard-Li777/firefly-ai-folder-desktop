@@ -58,6 +58,7 @@ import { anydocService, AnydocAsset, AnydocResult } from '../../system/anydoc-se
 import { cloudAnalysisService } from '@firefly/server'
 import { IErrorRecoveryConfig } from '../types'
 import { t } from '@app/languages'
+import { compressText, compressJson } from '../../../utils/text-compressor'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -295,13 +296,13 @@ export class FileProcessor {
 
       // 3. 获取 metadata 和 content (file_contents 表)
       const contentRow = db
-        .prepare('SELECT meta, content FROM file_contents WHERE file_fingerprint = ?')
-        .get(fingerprint) as { meta?: string; content?: string } | undefined
+        .prepare('SELECT exif, content FROM file_contents WHERE file_fingerprint = ?')
+        .get(fingerprint) as { exif?: string; content?: string } | undefined
 
       if (contentRow) {
-        if (contentRow.meta) {
+        if (contentRow.exif) {
           try {
-            result.metadata = JSON.parse(contentRow.meta)
+            result.metadata = JSON.parse(contentRow.exif)
           } catch (e) {
             logger.warn(
               LogCategory.ANALYSIS_QUEUE,
@@ -885,12 +886,8 @@ export class FileProcessor {
         }
         let finalSmartName = coreSmartName
 
-        // 确保 processResult.metadata 存在并持久化 raw_smart_name（保留原始未经模板包裹、无扩展名的 AI 核心名称）
-        processResult.metadata = {
-          ...(fileInfo.metadata || {}),
-          ...(processResult.metadata || {}),
-          raw_smart_name: coreSmartName
-        }
+        // 持久化 raw_smart_name（保留原始未经模板包裹、无扩展名的 AI 核心名称）——落 files.raw_smart_name 列
+        ;(processResult as any).rawSmartName = coreSmartName
 
         // 检查当前目录或上级继承的生效命名模板
         try {
@@ -1748,21 +1745,21 @@ export class FileProcessor {
 
         db.prepare(
           `
-          INSERT INTO file_contents (file_fingerprint, content, meta, lrc)
+          INSERT INTO file_contents (file_fingerprint, content, exif, lrc)
           VALUES (?, ?, ?, ?)
           ON CONFLICT(file_fingerprint) DO UPDATE SET
             content = COALESCE(excluded.content, content),
-            meta = CASE
-              WHEN meta IS NULL OR meta = '{}' OR meta = '' THEN excluded.meta
-              ELSE COALESCE(excluded.meta, meta)
+            exif = CASE
+              WHEN exif IS NULL OR exif = '{}' OR exif = '' THEN excluded.exif
+              ELSE COALESCE(excluded.exif, exif)
             END,
             lrc = COALESCE(excluded.lrc, lrc)
           `
         ).run(
           fileFingerprint,
-          contentResult.content ?? null,
-          JSON.stringify(contentResult.metadata || {}),
-          finalLrc
+          compressText(contentResult.content ?? null),
+          compressJson(contentResult.metadata || {}),
+          compressText(finalLrc)
         )
 
         await databaseService.updateAnalysisStage(fileFingerprint, cpuCompletionStage)

@@ -19,6 +19,7 @@ import { magikaService } from '../../system/magika-service'
 import { thumbnailService } from '../../filesystem/thumbnail-service'
 import fs from 'node:fs'
 import path from 'node:path'
+import { compressText, compressJson } from '../../../utils/text-compressor'
 
 /**
  * 保存云端分析结果到数据库
@@ -146,6 +147,8 @@ export async function saveCloudResult(
     const fileData = {
       contentHash: fileFingerprint,
       smartName: smartName,
+      // 原始智能文件名（无扩展名）落 files.raw_smart_name 列
+      rawSmartName: rawSmartName,
       size: stats.size,
       description: description,
       content: content,
@@ -214,7 +217,7 @@ export async function saveCloudResult(
       db.prepare(
         `
         INSERT INTO file_contents (
-          file_fingerprint, content, multimodal_content, ocr, lrc, meta, analysis_stats,
+          file_fingerprint, content, multimodal_content, ocr, lrc, exif, analysis_stats,
           quality_score, quality_confidence, quality_reasoning, quality_criteria,
           grouping_reason, grouping_confidence
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -223,7 +226,7 @@ export async function saveCloudResult(
           multimodal_content = excluded.multimodal_content,
           ocr = excluded.ocr,
           lrc = excluded.lrc,
-          meta = excluded.meta,
+          exif = excluded.exif,
           quality_score = excluded.quality_score,
           quality_confidence = excluded.quality_confidence,
           quality_reasoning = excluded.quality_reasoning,
@@ -233,11 +236,11 @@ export async function saveCloudResult(
       `
       ).run(
         fileFingerprint,
-        content,
-        multimodalContent,
-        data.ocr || null,
-        data.lrc || null,
-        fileData.metadata,
+        compressText(content),
+        compressText(multimodalContent),
+        compressText(data.ocr || null),
+        compressText(data.lrc || null),
+        compressJson(fileData.metadata || null),
         fileData.analysisStats,
         qualityScore,
         fileData.qualityConfidence,

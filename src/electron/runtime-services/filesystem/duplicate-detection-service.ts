@@ -14,6 +14,7 @@ import { LogCategory, logger, APP_PORTS } from '@firefly/shared'
 import { databaseService } from '../database'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { t } from '@app/languages'
+import { decompressJson, decompressText } from '../../utils/text-compressor'
 
 export class DuplicateDetectionService {
   /**
@@ -1322,7 +1323,7 @@ export class DuplicateDetectionService {
     try {
       let query = `
         SELECT wf.id, wf.path, wf.name, f.size as size, wf.file_fingerprint as fingerprint,
-               wf.modified_at as modifiedAt, fc.content as contentText, fc.meta,
+               wf.modified_at as modifiedAt, fc.content as contentText, fc.exif,
                fc.quality_score as qualityScore, wf.thumbnail_path as thumbnailPath
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
@@ -1342,14 +1343,10 @@ export class DuplicateDetectionService {
       }
 
       return rows.map(r => {
-        let meta: any = {}
-        try {
-          if (r.meta) meta = JSON.parse(r.meta)
-        } catch {
-          meta = {}
-        }
+        const meta = decompressJson<any>(r.exif) || {}
         return {
           ...r,
+          contentText: decompressText(r.contentText),
           resolution: meta.resolution || meta.dimensions,
           duration: meta.duration
         }

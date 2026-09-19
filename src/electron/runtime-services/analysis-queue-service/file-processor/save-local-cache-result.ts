@@ -164,6 +164,7 @@ export async function saveLocalAnalysisResult(
     groupingConfidence: groupingConfidence ?? null,
     thumbnailPath: thumbnailRelativePath || null,
     metadata: processResult.metadata,
+    rawSmartName: (processResult as any).rawSmartName || null,
     analysisStats: initialStatsWithBenchmark,
     isHit: false,
     syncStatus: isBasic ? 4 : 0

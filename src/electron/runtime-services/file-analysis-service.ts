@@ -190,19 +190,15 @@ export async function getFileAnalysisData(
     const fileContent = db
       .prepare(
         `SELECT f.smart_name, f.description, f.file_group,
-              fc.quality_score, fc.multimodal_content, fc.meta
+              fc.quality_score, fc.multimodal_content, fc.exif
        FROM files f
        LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
        WHERE f.file_fingerprint = ?`
       )
       .get(workspaceFile.file_fingerprint) as any
 
-    let parsedMetadata: any = undefined
-    if (fileContent?.meta) {
-      try {
-        parsedMetadata = typeof fileContent.meta === 'string' ? JSON.parse(fileContent.meta) : fileContent.meta
-      } catch {}
-    }
+    const { decompressText, decompressJson } = await import('../utils/text-compressor')
+    const parsedMetadata: Record<string, any> | undefined = decompressJson(fileContent?.exif)
 
     return {
       belongsToWorkspace: true,
@@ -223,7 +219,7 @@ export async function getFileAnalysisData(
         category: fileContent?.file_group,
         metadata: parsedMetadata,
         qualityScore: fileContent?.quality_score,
-        multimodalContent: fileContent?.multimodal_content,
+        multimodalContent: decompressText(fileContent?.multimodal_content) || undefined,
         lastAnalyzedAt: workspaceFile.last_analyzed_at,
         thumbnailPath: workspaceFile.thumbnail_path
       }

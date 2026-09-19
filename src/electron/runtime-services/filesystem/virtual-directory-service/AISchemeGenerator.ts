@@ -53,7 +53,7 @@ export class AISchemeGenerator {
         file_fingerprint: string
         smart_name?: string
         content?: string
-        meta?: string
+        exif?: string
       }>
 
       if (selectedFileIds && selectedFileIds.length > 0 && selectedFileIds.length <= 1000) {
@@ -62,7 +62,7 @@ export class AISchemeGenerator {
           .prepare(`
             SELECT 
               wf.id, wf.path, wf.name, wf.file_fingerprint,
-              f.smart_name, fc.content, fc.meta
+              f.smart_name, fc.content, fc.exif
             FROM workspace_files wf
             JOIN files f ON wf.file_fingerprint = f.file_fingerprint
             LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -74,7 +74,7 @@ export class AISchemeGenerator {
           .prepare(`
             SELECT 
               wf.id, wf.path, wf.name, wf.file_fingerprint,
-              f.smart_name, fc.content, fc.meta
+              f.smart_name, fc.content, fc.exif
             FROM workspace_files wf
             JOIN files f ON wf.file_fingerprint = f.file_fingerprint
             LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
@@ -109,9 +109,9 @@ export class AISchemeGenerator {
         let embedding: number[] | null = null
         let keywords: string[] = []
 
-        if (row.meta) {
+        if (row.exif) {
           try {
-            const meta = JSON.parse(row.meta)
+            const meta = JSON.parse(row.exif)
             if (Array.isArray(meta.embedding_dense) && meta.embedding_dense.length === 384) {
               embedding = meta.embedding_dense
             } else if (Array.isArray(meta.embeddingDense) && meta.embeddingDense.length === 384) {

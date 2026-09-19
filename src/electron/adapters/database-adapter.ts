@@ -90,8 +90,8 @@ export class DatabaseAdapter implements IDatabaseAdapter {
 
         // 更新 file_contents 表（如果包含相关字段）
         if (Object.keys(fileContentsData).length > 0) {
-          // 应用层字段 metadata 统一映射到 file_contents.meta 列
-          const columnOf = (field: string) => (field === 'metadata' ? 'meta' : field)
+          // 应用层字段 metadata 统一映射到 file_contents.exif 列
+          const columnOf = (field: string) => (field === 'metadata' ? 'exif' : field)
           const fields = Object.keys(fileContentsData)
           const values = Object.values(fileContentsData).map(v => {
             if (typeof v === 'object' && v !== null) {

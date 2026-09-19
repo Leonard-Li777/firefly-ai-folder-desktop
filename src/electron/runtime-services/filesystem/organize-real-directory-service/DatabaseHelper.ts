@@ -3,6 +3,7 @@ import { SavedVirtualDirectory, FileInfoForAI } from '@firefly/types'
 import { LogCategory, logger, isDimensionApplicableToFile } from '@firefly/shared'
 import { t } from '@app/languages'
 import path from 'node:path'
+import { decompressJson } from '../../../utils/text-compressor'
 
 export class DatabaseHelper {
   constructor(private db: Database.Database) {}
@@ -165,6 +166,7 @@ export class DatabaseHelper {
           wf.id,
           wf.name,
           f.smart_name as smartName,
+          f.raw_smart_name as rawSmartName,
           wf.path,
           f.extension,
           f.size,
@@ -173,7 +175,7 @@ export class DatabaseHelper {
           wf.is_analyzed as isAnalyzed,
           COALESCE(f.modified_at, wf.modified_at) as modifiedAt,
           COALESCE(f.created_at, wf.created_at) as createdAt,
-          fc.meta,
+          fc.exif,
           fc.quality_score as qualityScore,
           f.description
         FROM workspace_files wf
@@ -231,16 +233,16 @@ export class DatabaseHelper {
           .all(file.id) as any[]
 
         let parsedMeta: Record<string, any> = {}
-        if (file.meta) {
+        if (file.exif) {
           try {
-            parsedMeta = typeof file.meta === 'string' ? JSON.parse(file.meta) : file.meta
+            parsedMeta = typeof file.exif === 'string' ? JSON.parse(file.exif) : file.exif
           } catch {
             parsedMeta = {}
           }
         }
 
         const fileExt = path.extname(file.path || file.name || '').replace(/^\./, '')
-        let rawSmartName = parsedMeta.raw_smart_name || file.smartName || file.name || ''
+        let rawSmartName = (file as any).raw_smart_name || file.smartName || file.name || ''
         if (fileExt) {
           rawSmartName = rawSmartName.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
         }

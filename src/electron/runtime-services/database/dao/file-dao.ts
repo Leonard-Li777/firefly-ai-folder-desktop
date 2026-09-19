@@ -10,6 +10,12 @@ import {
   normalizeAnalysisMode,
   type AnalysisMode
 } from '../../../config/analysis-mode'
+import {
+  compressText,
+  decompressText,
+  compressJson,
+  decompressJson
+} from '../../../utils/text-compressor'
 
 export class FileDao {
   private dimensionsCache: any[] | null = null
@@ -176,11 +182,11 @@ export class FileDao {
     if (fingerprint && !fingerprint.startsWith('temp_')) {
       const fileStmt = this.db.prepare(`
         SELECT
-          f.smart_name, f.size, f.extension, f.file_group, f.author, f.language,
+          f.smart_name, f.raw_smart_name, f.size, f.extension, f.file_group, f.author, f.language,
           f.is_hit, f.last_hit_at, f.description,
           fc.content, fc.multimodal_content, fc.ocr, fc.lrc, fc.quality_score, fc.quality_confidence, 
           fc.quality_reasoning, fc.quality_criteria, fc.grouping_reason, fc.grouping_confidence,
-          fc.meta, fc.analysis_stats
+          fc.exif, fc.analysis_stats
         FROM files f
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
         WHERE f.file_fingerprint = ?`)
@@ -294,6 +300,7 @@ export class FileDao {
       name: workspaceFile.name,
       fileFingerprint: fingerprint,
       smartName: fileData.smart_name,
+      rawSmartName: fileData.raw_smart_name ?? undefined,
       size: fileData.size,
       extension: fileData.extension,
       fileGroup: typeof parsedFileGroup === 'object' && parsedFileGroup ? parsedFileGroup.group : parsedFileGroup,
@@ -302,9 +309,10 @@ export class FileDao {
       modifiedAt: workspaceFile.modified_at,
       accessedAt: workspaceFile.accessed_at,
       description: fileData.description,
-      content: fileData.content,
-      multimodalContent: fileData.multimodal_content,
-      lrc: fileData.lrc,
+      content: decompressText(fileData.content),
+      multimodalContent: decompressText(fileData.multimodal_content),
+      ocr: decompressText(fileData.ocr),
+      lrc: decompressText(fileData.lrc),
       qualityScore: fileData.quality_score,
       qualityConfidence: fileData.quality_confidence,
       qualityReasoning: fileData.quality_reasoning,
@@ -321,7 +329,7 @@ export class FileDao {
       groupingReason: fileData.grouping_reason,
       groupingConfidence: fileData.grouping_confidence,
       thumbnailPath: workspaceFile.thumbnail_path,
-      metadata: fileData.meta ? JSON.parse(fileData.meta) : undefined
+      metadata: decompressJson(fileData.exif)
     }
   }
 
@@ -506,11 +514,12 @@ export class FileDao {
         .prepare(
           `
         INSERT INTO files (
-          file_fingerprint, smart_name, size, extension, file_group,
+          file_fingerprint, smart_name, raw_smart_name, size, extension, file_group,
           author, language, is_hit, last_hit_at, description, sync_status, created_at, modified_at, accessed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ON CONFLICT(file_fingerprint) DO UPDATE SET 
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(file_fingerprint) DO UPDATE SET
           smart_name = COALESCE(?, smart_name),
+          raw_smart_name = COALESCE(?, raw_smart_name),
           size = COALESCE(?, size),
           extension = COALESCE(?, extension),
           file_group = COALESCE(?, file_group),
@@ -527,6 +536,7 @@ export class FileDao {
         .run(
           fileFingerprint,
           finalSmartName || null,
+          result.rawSmartName || null,
           result.size || 0,
           result.extension || 'file',
           result.fileGroup || null,
@@ -540,6 +550,7 @@ export class FileDao {
           now,
           now,
           finalSmartName || null,
+          result.rawSmartName || null,
           result.size || null,
           result.extension || null,
           result.fileGroup || null,
@@ -558,11 +569,11 @@ export class FileDao {
       let finalMetadata = result.metadata
       if (finalMetadata !== undefined) {
         const oldContentRow = this.db
-          .prepare('SELECT meta FROM file_contents WHERE file_fingerprint = ?')
-          .get(fileFingerprint) as { meta?: string } | undefined
-        if (oldContentRow?.meta) {
+          .prepare('SELECT exif FROM file_contents WHERE file_fingerprint = ?')
+          .get(fileFingerprint) as { exif?: string } | undefined
+        if (oldContentRow?.exif) {
           try {
-            const oldMeta = JSON.parse(oldContentRow.meta)
+            const oldMeta = JSON.parse(oldContentRow.exif)
             if (oldMeta && typeof oldMeta === 'object' && Object.keys(oldMeta).length > 0) {
               finalMetadata = {
                 ...oldMeta,
@@ -852,19 +863,27 @@ export class FileDao {
         newStatsJson = JSON.stringify(finalStatsObj)
       }
 
+      // 5 大文本字段透明单行无损压缩存为 BLOB（Task #683）
+      const compressedContent = compressText(result.content ?? null)
+      const compressedMultimodal = compressText(result.multimodalContent ?? null)
+      const compressedOcr = compressText((result as any).ocr ?? null)
+      const compressedLrc = compressText(result.lrc ?? null)
+      const compressedExif = compressJson(finalMetadata ?? null)
+
       this.db
         .prepare(
           `
         INSERT INTO file_contents (
-          file_fingerprint, content, multimodal_content, ocr, lrc, meta, analysis_stats,
+          file_fingerprint, content, multimodal_content, ocr, lrc, exif, analysis_stats,
           quality_score, quality_confidence, quality_criteria, quality_reasoning,
-          grouping_reason, grouping_confidence
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          grouping_reason, grouping_confidence, meta
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           content = COALESCE(?, content),
           multimodal_content = COALESCE(?, multimodal_content),
           ocr = COALESCE(?, ocr),
           lrc = COALESCE(?, lrc),
+          exif = COALESCE(?, exif),
           quality_score = COALESCE(?, quality_score),
           quality_confidence = COALESCE(?, quality_confidence),
           quality_reasoning = COALESCE(?, quality_reasoning),
@@ -877,12 +896,11 @@ export class FileDao {
         )
         .run(
           fileFingerprint,
-          result.content ?? null,
-          result.multimodalContent ?? null,
-          (result as any).ocr ?? null,
-          result.lrc ?? null,
-          // 统一 meta 列：优先写入扩展元数据（Exif/媒体等），否则写入弹性 meta
-          finalMetadata ? JSON.stringify(finalMetadata) : (result as any).meta ? JSON.stringify((result as any).meta) : '{}',
+          compressedContent,
+          compressedMultimodal,
+          compressedOcr,
+          compressedLrc,
+          compressedExif,
           newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null),
           result.qualityScore ?? null,
           result.qualityConfidence ?? null,
@@ -890,17 +908,20 @@ export class FileDao {
           result.qualityReasoning ?? null,
           result.groupingReason ?? null,
           result.groupingConfidence ?? null,
-          result.content ?? null,
-          result.multimodalContent ?? null,
-          (result as any).ocr ?? null,
-          result.lrc ?? null,
+          // meta 列恢复纯弹性数据，不再混入扩展元数据
+          (result as any).meta ? JSON.stringify((result as any).meta) : '{}',
+          compressedContent,
+          compressedMultimodal,
+          compressedOcr,
+          compressedLrc,
+          compressedExif,
           result.qualityScore ?? null,
           result.qualityConfidence ?? null,
           result.qualityReasoning ?? null,
           result.qualityCriteria ? JSON.stringify(result.qualityCriteria) : null,
           result.groupingReason ?? null,
           result.groupingConfidence ?? null,
-          finalMetadata ? JSON.stringify(finalMetadata) : (result as any).meta ? JSON.stringify((result as any).meta) : null,
+          (result as any).meta ? JSON.stringify((result as any).meta) : null,
           newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null)
         )
 
@@ -1011,7 +1032,7 @@ export class FileDao {
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR fc.content LIKE ? OR fc.multimodal_content LIKE ? OR fc.lrc LIKE ?)
+        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ?)
       `
       const likeQuery = `%${trimmedQuery}%`
       const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
@@ -1061,7 +1082,7 @@ export class FileDao {
         JOIN workspace_files wf ON vdf.file_id = wf.id
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR fc.content LIKE ? OR fc.multimodal_content LIKE ? OR fc.lrc LIKE ?)
+        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ?)
       `
       const likeQuery = `%${trimmedQuery}%`
       const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
@@ -1135,15 +1156,15 @@ export class FileDao {
         qualityReasoning: row.quality_reasoning,
         qualityCriteria: row.quality_criteria ? JSON.parse(row.quality_criteria) : undefined,
         description: row.description,
-        content: row.content,
-        multimodalContent: row.multimodal_content,
-        ocr: row.ocr,
-        lrc: row.lrc,
+        content: decompressText(row.content),
+        multimodalContent: decompressText(row.multimodal_content),
+        ocr: decompressText(row.ocr),
+        lrc: decompressText(row.lrc),
         groupingReason: row.grouping_reason,
         groupingConfidence: row.grouping_confidence,
         author: row.author,
         language: row.language,
-        metadata: row.metadata
+        metadata: decompressJson(row.exif) ?? row.metadata
       }
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '根据内容哈希获取分析文件失败', {
@@ -1199,10 +1220,10 @@ export class FileDao {
         lastAnalyzedAt: wf.last_analyzed_at ? new Date(wf.last_analyzed_at) : undefined,
         qualityScore: fileData.quality_score,
         description: fileData.description,
-        content: fileData.content,
-        multimodalContent: fileData.multimodal_content,
-        ocr: fileData.ocr,
-        lrc: fileData.lrc
+        content: decompressText(fileData.content),
+        multimodalContent: decompressText(fileData.multimodal_content),
+        ocr: decompressText(fileData.ocr),
+        lrc: decompressText(fileData.lrc)
       }
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '根据路径获取文件失败', { error, filePath })
@@ -1324,7 +1345,7 @@ export class FileDao {
           SET content = NULL,
               multimodal_content = NULL,
               lrc = NULL,
-              meta = NULL,
+              exif = NULL,
               analysis_stats = NULL,
               quality_score = NULL,
               quality_confidence = NULL,
@@ -1695,10 +1716,10 @@ export class FileDao {
             COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), '') AS name,
             COALESCE(f.smart_name, '') AS smart_name,
             COALESCE(f.description, '') AS description,
-            COALESCE(fc.content, '') AS content,
-            COALESCE(fc.multimodal_content, '') AS multimodal_content,
-            COALESCE(fc.ocr, '') AS ocr,
-            COALESCE(fc.lrc, '') AS lrc,
+            COALESCE(decompress_text(fc.content), '') AS content,
+            COALESCE(decompress_text(fc.multimodal_content), '') AS multimodal_content,
+            COALESCE(decompress_text(fc.ocr), '') AS ocr,
+            COALESCE(decompress_text(fc.lrc), '') AS lrc,
             COALESCE((
               SELECT GROUP_CONCAT(ft.name, ' ')
               FROM file_tag_relations ftr

@@ -6,7 +6,7 @@ import type {
   UnitCreationData
 } from '@firefly/types'
 import { LogCategory, logger, isTestEnvironment } from '@firefly/shared'
-import { getDatabaseConfig, migrations } from './database'
+import { getDatabaseConfig, migrations, registerDatabaseFunctions } from './database'
 import { taxonomyAliasCache } from '../../services/taxonomy-alias-cache'
 import { omniClient } from '../../services/omni-client'
 
@@ -166,6 +166,7 @@ export class DatabaseService {
         }
 
         this._db = new Database(this.dbPath)
+        registerDatabaseFunctions(this._db)
         AccessTimeBatchUpdater.getInstance().setDbProvider(() => this._db)
         this.registerIgnoreFunction()
 

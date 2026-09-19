@@ -1016,7 +1016,7 @@ export class DirectoryContextService {
           SELECT 
             wf.id, wf.file_fingerprint, wf.path, wf.name, f.smart_name, f.extension, f.author, f.language, f.size,
             wf.created_at, wf.modified_at,
-            fc.quality_score, fc.meta
+            fc.quality_score, fc.meta, f.raw_smart_name
           FROM workspace_files wf
           JOIN files f ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
@@ -1088,9 +1088,9 @@ export class DirectoryContextService {
             metadataObj = {}
           }
 
-          // 获取原始核心智能名（rawSmartName 不需要带扩展名）
+          // 获取原始核心智能名（rawSmartName 不需要带扩展名），优先读 files.raw_smart_name 列
           const fileExt = pathModule.extname(row.path || row.name || '').replace(/^\./, '')
-          let rawSmartName = metadataObj.raw_smart_name || row.smart_name || row.name || ''
+          let rawSmartName = row.raw_smart_name || row.smart_name || row.name || ''
           if (fileExt) {
             rawSmartName = rawSmartName.replace(new RegExp(`\\.${fileExt}$`, 'i'), '')
           }
@@ -1152,12 +1152,7 @@ export class DirectoryContextService {
               ? `${newSmartName}${dotExt}`
               : newSmartName
 
-          // 确保 metadata 中留存无扩展名的 raw_smart_name
-          if (metadataObj.raw_smart_name !== rawSmartName) {
-            metadataObj.raw_smart_name = rawSmartName
-            updateContentStmt.run(JSON.stringify(metadataObj), row.file_fingerprint)
-          }
-
+          // 原始智能文件名已统一落 files.raw_smart_name 列，meta 中不再留存副本
           if (finalSmartNameWithExt && finalSmartNameWithExt !== row.smart_name) {
             updateStmt.run(finalSmartNameWithExt, row.file_fingerprint)
             updatedCount++
