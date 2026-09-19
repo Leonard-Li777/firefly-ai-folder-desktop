@@ -90,12 +90,12 @@ export class TaxonomyAliasCache {
       this.locale = target
       this.loaded = next.size > 0 || !!treeRes
       logger.info(
-        LogCategory.AI,
+        LogCategory.DIMENSION_SERVICE,
         `[TaxonomyAliasCache] 已装载 locale=${target} aliases=${next.size} treeNodes=${treeRes?.totalNodes ?? 0}`
       )
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(LogCategory.AI, '[TaxonomyAliasCache] 装载失败:', msg)
+      logger.warn(LogCategory.DIMENSION_SERVICE, '[TaxonomyAliasCache] 装载失败:', msg)
       // 保留旧映射，避免语言切换过程中展示名闪空
       this.locale = target
     }
@@ -152,8 +152,9 @@ export class TaxonomyAliasCache {
           const code = child.code
           const count = countByCode?.get(code) ?? 0
           tags.push({
-            // DimensionTag.dimensionId 为 number；使用当前维度组的数字 id 兜底
+            // 兼容前端数字 ID 索引，并挂载自然主键 dimensionCode
             dimensionId: id,
+            dimensionCode: root.code,
             dimensionName: this.aliasMap.get(root.code) || root.name,
             tagValue: this.aliasMap.get(code) || child.name,
             fileCount: count,
@@ -177,6 +178,7 @@ export class TaxonomyAliasCache {
         tags,
         code: root.code,
         isMultiSelect: false,
+        meta: dimensionMeta,
         metadata: dimensionMeta
       })
     }

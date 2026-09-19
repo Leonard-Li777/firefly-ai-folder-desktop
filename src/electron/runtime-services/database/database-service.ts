@@ -772,7 +772,7 @@ export class DatabaseService {
         SET content = NULL,
             multimodal_content = NULL,
             lrc = NULL,
-            meta = NULL,
+            exif = NULL,
             analysis_stats = NULL,
             quality_score = NULL,
             quality_confidence = NULL,
@@ -1480,36 +1480,56 @@ export class DatabaseService {
     if (distinctCodes.length === 0) return result
 
     try {
-      // 1) 内存别名总线优先（Omni taxonomy/aliases）
+      // 1) 内存别名总线优先（Omni taxonomy/aliases 独占托管所有受控 builtin.* / omw.* 别名）
       const resolved = taxonomyAliasCache.resolveMany(distinctCodes)
       for (const [code, name] of Object.entries(resolved)) {
-        result[code] = name
+        if (name && name !== code) {
+          result[code] = name
+        }
       }
 
-      // 2) 本地动态标签（expanded/user）兜底 file_tags.name
-      if (this._db) {
-        const placeholders = distinctCodes.map(() => '?').join(',')
-        const tagRows = this._db
-          .prepare(`SELECT code, name FROM file_tags WHERE code IN (${placeholders})`)
-          .all(...distinctCodes) as { code: string; name: string }[]
-        for (const row of tagRows) {
-          // 仅当内存未命中或命中值仍等于 code 时，才用本地 name
-          if (!taxonomyAliasCache.resolve(row.code) || result[row.code] === row.code) {
+      // 2) 区分受控标签与本地动态标签：
+      // file_tags.source CHECK 已收紧为 ('expanded', 'user')，受控标签绝不落用户主库 file_tags；
+      // 对未命中的受控标签，不执行无谓的本地 SQL 探测，直接走友好展示名兜底。
+      const dynamicCodes = distinctCodes.filter(
+        c => (!taxonomyAliasCache.resolve(c) || result[c] === c) &&
+             !c.startsWith('builtin.') &&
+             !c.startsWith('omw.')
+      )
+
+      if (this._db && dynamicCodes.length > 0) {
+        // 2.1) 本地动态标签优先查询当前 locale 的本地 tag_aliases
+        const targetLocale = locale || 'zh-CN'
+        const aliasPlaceholders = dynamicCodes.map(() => '?').join(',')
+        const aliasRows = this._db
+          .prepare(
+            `SELECT tag_code, lemma FROM tag_aliases WHERE locale = ? AND tag_code IN (${aliasPlaceholders})`
+          )
+          .all(targetLocale, ...dynamicCodes) as { tag_code: string; lemma: string }[]
+        for (const r of aliasRows) {
+          if (r.lemma) result[r.tag_code] = r.lemma
+        }
+
+        // 2.2) 本地 tag_aliases 未命中时，以本地 file_tags.name（默认名）兜底
+        const stillMissing = dynamicCodes.filter(c => result[c] === c)
+        if (stillMissing.length > 0) {
+          const tagPlaceholders = stillMissing.map(() => '?').join(',')
+          const tagRows = this._db
+            .prepare(`SELECT code, name FROM file_tags WHERE code IN (${tagPlaceholders})`)
+            .all(...stillMissing) as { code: string; name: string }[]
+          for (const row of tagRows) {
             if (row.name) result[row.code] = row.name
           }
         }
       }
 
-      // 3) 本地 tag_aliases 仅服务 user/扩展标签
-      if (this._db) {
-        const targetLocale = locale || 'en-US'
-        const aliasRows = this._db
-          .prepare(`SELECT tag_code, lemma FROM tag_aliases WHERE locale = ?`)
-          .all(targetLocale) as { tag_code: string; lemma: string }[]
-        const aliasMap = new Map(aliasRows.map(r => [r.tag_code, r.lemma]))
-        for (const code of distinctCodes) {
-          if (aliasMap.has(code) && !taxonomyAliasCache.resolve(code)) {
-            result[code] = aliasMap.get(code)!
+      // 3) 针对未命中的受控标签（如缓存未就绪或未收录），提取可读 slug，避免在界面暴露技术代码
+      for (const code of distinctCodes) {
+        if (result[code] === code && (code.startsWith('builtin.') || code.startsWith('omw.'))) {
+          const parts = code.split('.')
+          const readable = parts[parts.length - 1]
+          if (readable) {
+            result[code] = readable
           }
         }
       }

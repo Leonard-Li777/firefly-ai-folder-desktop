@@ -104,13 +104,13 @@ export class OmniClient {
         signal: AbortSignal.timeout(timeoutMs)
       })
       if (!res.ok) {
-        logger.warn(LogCategory.AI, `[OmniClient] HTTP ${res.status} ${path}`)
+        logger.warn(LogCategory.DIMENSION_SERVICE, `[OmniClient] HTTP ${res.status} ${path}`)
         return null
       }
       return (await res.json()) as T
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.debug(LogCategory.AI, `[OmniClient] 请求失败 ${path}:`, msg)
+      logger.debug(LogCategory.DIMENSION_SERVICE, `[OmniClient] 请求失败 ${path}:`, msg)
       return null
     }
   }
