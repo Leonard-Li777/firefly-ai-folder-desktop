@@ -1,5 +1,5 @@
 import React from 'react'
-import { formatDateTimeShort } from '@firefly/shared'
+import { formatDateTimeShort, logger, LogCategory } from '@firefly/shared'
 import { cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
 import { toast } from '../../../common/Toast'
@@ -59,7 +59,7 @@ interface SearchListCardProps {
   safeItemName: string
   formatFileSize: (size?: number) => string
   onItemClick: (index: number, e: React.MouseEvent) => void
-  onContextMenu: (e: React.MouseEvent, item: any) => void
+  onContextMenu: (e: React.MouseEvent, item: FileType) => void
   /** 双击打开：预览或系统默认程序打开（PRD：未分析文件也支持直接打开） */
   onDoubleClick?: () => void
   isSelected?: boolean
@@ -123,10 +123,12 @@ export const SearchListCard = React.memo(
         .then(() => {
           toast.success(t('已加入分析队列'))
         })
-        .catch((error: Error) => {
+        .catch((err: unknown) => {
+          logger.error(LogCategory.RENDERER, '加入分析队列失败:', err)
           const message =
-            error?.message?.replace(/^Error invoking remote method.*?: Error: /, '') ||
-            String(error)
+            err instanceof Error
+              ? err.message.replace(/^Error invoking remote method.*?: Error: /, '')
+              : String(err)
           toast.error(t('加入分析队列失败: {message}', { message }))
         })
     }

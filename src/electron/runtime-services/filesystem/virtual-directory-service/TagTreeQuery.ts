@@ -732,8 +732,8 @@ export class TagTreeQuery {
           totalTime: Math.round((performance.now() - startTime) * 100) / 100
         }
       }
-    } catch (error) {
-      logger.error(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 分页过滤文件失败:', error)
+    } catch (err: unknown) {
+      logger.error(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 分页过滤文件失败:', err)
       return { items: [], total: 0 }
     }
   }
@@ -891,8 +891,8 @@ export class TagTreeQuery {
           totalTime: Math.round((performance.now() - startTime) * 100) / 100
         }
       }
-    } catch (error) {
-      logger.error(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 混合检索分页失败，回退常规检索:', error)
+    } catch (err: unknown) {
+      logger.error(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 混合检索分页失败，回退常规检索:', err)
       // 回退：去除搜索词走常规分页，保证搜索异常时功能可用
       return this.getFilteredFilesPaged({ ...params, searchKeyword: undefined })
     }

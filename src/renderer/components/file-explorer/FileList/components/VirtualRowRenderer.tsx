@@ -587,16 +587,20 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
   if (!prevItem || !nextItem) return prevItem === nextItem
 
   if (prevItem.name !== nextItem.name) return false
-  if ((prevItem as any).smartName !== (nextItem as any).smartName) return false
-  if ((prevItem as any).description !== (nextItem as any).description) return false
   if (prevItem.modifiedAt !== nextItem.modifiedAt) return false
   if (prevItem.size !== nextItem.size) return false
   if (prevItem.path !== nextItem.path) return false
+
+  const prevFile = 'extension' in prevItem ? prevItem : undefined
+  const nextFile = 'extension' in nextItem ? nextItem : undefined
+
+  if (prevFile?.smartName !== nextFile?.smartName) return false
+  if (prevFile?.description !== nextFile?.description) return false
   // 搜索结果字段：snippet/matchType/similarity/isUnanalyzed 变化时必须重渲染搜索卡片
-  if ((prevItem as any).snippet !== (nextItem as any).snippet) return false
-  if ((prevItem as any).matchType !== (nextItem as any).matchType) return false
-  if ((prevItem as any).similarity !== (nextItem as any).similarity) return false
-  if ((prevItem as any).isUnanalyzed !== (nextItem as any).isUnanalyzed) return false
+  if (prevFile?.snippet !== nextFile?.snippet) return false
+  if (prevFile?.matchType !== nextFile?.matchType) return false
+  if (prevFile?.similarity !== nextFile?.similarity) return false
+  if (prevFile?.isUnanalyzed !== nextFile?.isUnanalyzed) return false
 
   // activeItem 比对：若引用一致则直接跳过路径比对
   if (prevData.activeItem !== nextData.activeItem) {
