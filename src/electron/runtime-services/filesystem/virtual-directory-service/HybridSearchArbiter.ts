@@ -327,8 +327,13 @@ export class HybridSearchArbiter {
 
     const failures: HybridSearchFailures = { fts: false, vector: false, fs: false }
 
-    // 1. FTS5 BM25 与 Omni 向量两路候选（可并行）
-    const [ftsResult, vectorResult] = await Promise.all([
+    // 1. FTS5 BM25 / Omni 向量 / 真实目录 FS 未分析三路信号并发拉取
+    // 注：未提供 workspaceDirectoryPath 时不发起 FS 检索，且不视为 FS 故障
+    const attemptedFs = !!workspaceDirectoryPath
+    const fsPromise = attemptedFs
+      ? this.queryFastFs(workspaceDirectoryPath!, keyword, poolSize)
+      : Promise.resolve(null)
+    const [ftsResult, vectorResult, fsResult] = await Promise.all([
       this.queryFtsCandidates(keyword, whereClauses, queryParams, poolSize),
       this.queryVectorCandidates(
         keyword,
@@ -336,7 +341,8 @@ export class HybridSearchArbiter {
         whereClauses,
         queryParams,
         poolSize
-      )
+      ),
+      fsPromise
     ])
 
     if (ftsResult === null) failures.fts = true
@@ -383,18 +389,17 @@ export class HybridSearchArbiter {
 
     // 4. 真实目录 FS 未分析命中（去重后追加尾部）
     let unanalyzedHits: HybridUnanalyzedHit[] = []
-    if (workspaceDirectoryPath) {
-      const fsHits = await this.queryFastFs(workspaceDirectoryPath, keyword, poolSize)
-      if (fsHits === null) {
+    if (attemptedFs) {
+      if (fsResult === null) {
         failures.fs = true
-      } else if (fsHits.length) {
+      } else if (fsResult.length) {
         const seenFp = new Set(candidates.map(c => c.fileFingerprint))
         const seenPath = new Set<string>()
         for (const c of candidates) {
           const p = nameMap.get(c.fileFingerprint)?.path
           if (p) seenPath.add(normalizeForCache(p))
         }
-        for (const hit of fsHits) {
+        for (const hit of fsResult) {
           if (!hit || !hit.path || !hit.name) continue
           if (hit.fileFingerprint && seenFp.has(hit.fileFingerprint)) continue
           const key = normalizeForCache(hit.path)

@@ -798,21 +798,14 @@ export class TagTreeQuery {
           hasLiteral: c.hasLiteral
         })
       }
-      // 2.2 旧 LIKE 全字段语义补充候选（已分析 + includeUnanalyzed 未分析行）
+      // 2.2 旧 LIKE 全字段语义补充候选（已分析）
       const legacyRefs = this.fetchLegacySearchRefs(params)
       for (const ref of legacyRefs.analyzed) {
         if (!ref.fileFingerprint || seenFp.has(ref.fileFingerprint)) continue
         seenFp.add(ref.fileFingerprint)
         fullPool.push(ref)
       }
-      for (const ref of legacyRefs.unanalyzed) {
-        if (ref.fileFingerprint && seenFp.has(ref.fileFingerprint)) continue
-        const key = normalizeForCache(ref.path)
-        if (seenUnanalyzedPath.has(key)) continue
-        seenUnanalyzedPath.add(key)
-        fullPool.push(ref)
-      }
-      // 2.3 FS 实时未分析命中（真实目录模式）
+      // 2.3 FS 实时未分析命中（真实目录模式，最新磁盘状态优先）
       for (const h of pool.unanalyzedHits) {
         if (h.fileFingerprint && seenFp.has(h.fileFingerprint)) continue
         const key = normalizeForCache(h.path)
@@ -824,6 +817,14 @@ export class TagTreeQuery {
           name: h.name,
           fileFingerprint: h.fileFingerprint
         })
+      }
+      // 2.4 旧 LIKE 未分析行（includeUnanalyzed 语义兜底，路径去重避免与 FS 命中重复）
+      for (const ref of legacyRefs.unanalyzed) {
+        if (ref.fileFingerprint && seenFp.has(ref.fileFingerprint)) continue
+        const key = normalizeForCache(ref.path)
+        if (seenUnanalyzedPath.has(key)) continue
+        seenUnanalyzedPath.add(key)
+        fullPool.push(ref)
       }
       const { items: pageRefs, total } = slicePage(fullPool, limit, offset)
 
@@ -1064,7 +1065,8 @@ export class TagTreeQuery {
         ? workspaceDirectoryPath
         : workspaceDirectoryPath + sep
       const fileDir = path.dirname(ref.path)
-      if (fileDir.startsWith(prefix)) {
+      // 比较层纪律：仅忽略大小写与末尾斜杠，不做分隔符转换（win32 下路径大小写不敏感）
+      if (fileDir.toLowerCase().startsWith(prefix.toLowerCase())) {
         const rel = path.relative(workspaceDirectoryPath, fileDir)
         if (rel && rel !== '.') relativePathPrefix = rel
       }
