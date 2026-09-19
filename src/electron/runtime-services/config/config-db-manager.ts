@@ -13,6 +13,7 @@ import { createSupabaseClient } from '../system/supabase-client-factory'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
 import { SystemIdentityService } from '../system/system-identity-service'
 import { databaseService } from '../database/database-service'
+import { taxonomyAliasCache } from '../../services/taxonomy-alias-cache'
 import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
@@ -103,11 +104,9 @@ export class ConfigDbManager {
       // 3. 清空并导入 system_config（含模型配置）
       this.loadInitialSystemConfigToDb(db, resolvedLanguage)
 
-      // 4. 清空并导入 file_tags 统一标签树
-      this.loadInitialFileTagsToDb(db, resolvedLanguage)
-
-      // 5. 导入 OMW 多语言词网预置数据 (支柱 2)
-      this.loadInitialOmwToDb(db, resolvedLanguage)
+      // 4. ADR-0038 / Issue #682：创世主库不再灌入 builtin 与 omw 受控标签
+      //    受控分类树与多语言别名改由 Omni semantic.pack + taxonomy HTTP API 托管
+      // 5. 不再向主库导入 OMW 词网预置数据
 
       // 6. 将所有配置加载到内存中
       this.loadAllConfigsFromDb(db)
@@ -1029,17 +1028,24 @@ export class ConfigDbManager {
   }
 
   /**
-   * 获取维度数据（由 file_tags 标签树的维度根节点动态映射）
+   * 获取维度数据
    *
-   * 创世 Baseline V1：维度不再存储于 file_dimensions 表，而是以 file_tags 中
-   * parent_codes 为空（depth = 0）的根节点表达，其直属子节点即该维度的标签集。
+   * ADR-0038 / Issue #682：
+   * 1. 优先从 Omni TaxonomyAliasCache 分类树获取受控维度（builtin / omw）；
+   * 2. 兜底合并本地 file_tags 中 depth=0 的动态维度（expanded / user）。
    */
   getFileDimensions(): Array<any> {
     if (this.fileDimensionsCache.length > 0) {
       return this.fileDimensionsCache
     }
+
+    const fromCache = taxonomyAliasCache.toFileDimensions()
     const db = databaseService.db
-    if (!db) return []
+    if (!db) {
+      this.fileDimensionsCache = fromCache
+      return this.fileDimensionsCache
+    }
+
     try {
       const rows = db
         .prepare(`
@@ -1050,46 +1056,55 @@ export class ConfigDbManager {
         `)
         .all() as Array<any>
 
-      if (rows && rows.length > 0) {
+      const localDims = (rows || []).map((r, idx) => {
+        let metaObj: any = {}
+        try {
+          metaObj = JSON.parse(r.meta)
+        } catch {}
+        let aft: string[] = []
+        try {
+          aft = JSON.parse(r.file_groups || '[]')
+        } catch {}
+        let ch: string[] = []
+        try {
+          ch = JSON.parse(r.context_hints || '[]')
+        } catch {}
+        return {
+          id: fromCache.length + idx + 1,
+          code: r.code,
+          name: r.name,
+          level: 1,
+          tags: [] as string[],
+          description: r.description,
+          applicable_file_types: aft,
+          context_hints: ch,
+          metadata: metaObj
+        }
+      })
+
+      // 本地动态维度补充子标签名
+      if (localDims.length > 0) {
         const getChildStmt = db.prepare(
           `SELECT name FROM file_tags WHERE depth = 1 AND json_extract(parent_codes, '$[0]') = ?`
         )
-        this.fileDimensionsCache = rows.map((r, idx) => {
-          let metaObj: any = {}
+        for (const dim of localDims) {
           try {
-            metaObj = JSON.parse(r.meta)
+            dim.tags = (getChildStmt.all(dim.code) as any[]).map(c => c.name)
           } catch {}
-          let childTags: string[] = []
-          try {
-            childTags = (getChildStmt.all(r.code) as any[]).map(c => c.name)
-          } catch {}
-          let aft: string[] = []
-          try {
-            aft = JSON.parse(r.file_groups || '[]')
-          } catch {}
-          let ch: string[] = []
-          try {
-            ch = JSON.parse(r.context_hints || '[]')
-          } catch {}
-          return {
-            id: idx + 1,
-            code: r.code,
-            name: r.name,
-            level: 1,
-            tags: childTags,
-            description: r.description,
-            applicable_file_types: aft,
-            context_hints: ch,
-            metadata: metaObj
-          }
-        })
-        return this.fileDimensionsCache
+        }
       }
 
-      return []
+      const seen = new Set(fromCache.map(d => d.code))
+      const merged = [
+        ...fromCache,
+        ...localDims.filter(d => !seen.has(d.code))
+      ]
+      this.fileDimensionsCache = merged
+      return this.fileDimensionsCache
     } catch (err) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 获取维度数据失败:', err)
-      return []
+      this.fileDimensionsCache = fromCache
+      return this.fileDimensionsCache
     }
   }
 

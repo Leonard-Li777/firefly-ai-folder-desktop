@@ -492,6 +492,17 @@ export async function initializeMinimalServices(options?: {
       // 执行数据迁移
       await dataMigrationService.migrate()
       logger.info(LogCategory.MAIN, '数据库服务初始化成功')
+
+      // ADR-0038 / Issue #682：启动装载 Omni 多语言别名与分类树内存总线
+      try {
+        const { taxonomyAliasCache } = await import('../services/taxonomy-alias-cache')
+        void taxonomyAliasCache.load(String(language || 'zh-CN'))
+        ConfigOrchestrator.getInstance().onValueChange('DEFAULT_LANGUAGE', (lang: any) => {
+          void taxonomyAliasCache.load(String(lang || 'zh-CN'))
+        })
+      } catch (err) {
+        logger.warn(LogCategory.MAIN, '[Initialization] TaxonomyAliasCache 启动装载失败:', err)
+      }
     } else {
       logger.info(
         LogCategory.MAIN,

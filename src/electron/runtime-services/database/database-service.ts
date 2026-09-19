@@ -7,11 +7,8 @@ import type {
 } from '@firefly/types'
 import { LogCategory, logger, isTestEnvironment } from '@firefly/shared'
 import { getDatabaseConfig, migrations } from './database'
-import {
-  parseOmwLexicalEntryId,
-  lemmaEquals,
-  languageMatches
-} from '../../../shared/omw-entry-id'
+import { taxonomyAliasCache } from '../../services/taxonomy-alias-cache'
+import { omniClient } from '../../services/omni-client'
 
 import Database from 'better-sqlite3'
 import { calculateFileFingerprint } from '@firefly/shared'
@@ -569,28 +566,24 @@ export class DatabaseService {
   }
 
   /**
-   * 确保表结构自愈（如对齐 hownet 等扩展结构）
+   * 确保表结构自愈（ADR-0038 创世卫生：剔除只读语义表与向量堆表）
    */
   private ensureCompatibilityTables(): void {
     if (!this._db) return
     try {
-      // 自愈检测：检查现有数据库中 hownet_words 表结构是否具有 word 列
-      try {
-        const tableInfo = this._db.pragma('table_info(hownet_words)') as { name: string }[]
-        if (tableInfo && tableInfo.length > 0) {
-          const hasWordCol = tableInfo.some(col => col.name === 'word')
-          if (!hasWordCol) {
-            logger.info(LogCategory.DATABASE_SERVICE, '检测到旧版 hownet_words 表结构，正在自愈对齐最新结构...')
-            this._db.exec(`
-              DROP TABLE IF EXISTS hownet_word_concepts;
-              DROP TABLE IF EXISTS hownet_concepts;
-              DROP TABLE IF EXISTS hownet_words;
-            `)
-          }
-        }
-      } catch (hownetCheckErr) {
-        logger.warn(LogCategory.DATABASE_SERVICE, '自愈检测 hownet_words 失败:', hownetCheckErr)
-      }
+      // 创世期卫生：即便历史库残留只读/堆表，也在此彻底剔除（语义与向量改由 Omni 托管）
+      this._db.exec(`
+        DROP TABLE IF EXISTS file_vectors;
+        DROP TABLE IF EXISTS antonym_pairs;
+        DROP TABLE IF EXISTS hownet_word_concepts;
+        DROP TABLE IF EXISTS hownet_concepts;
+        DROP TABLE IF EXISTS hownet_words;
+        DROP TABLE IF EXISTS omw_sense_relations;
+        DROP TABLE IF EXISTS omw_relations;
+        DROP TABLE IF EXISTS omw_lexical_entries;
+        DROP TABLE IF EXISTS omw_synsets;
+        DROP TABLE IF EXISTS omw_languages;
+      `)
     } catch (error) {
       logger.warn(LogCategory.DATABASE_SERVICE, '确保兼容表结构自愈失败:', error)
     }
@@ -1467,294 +1460,11 @@ export class DatabaseService {
   }
 
   /**
-   * OMW 概念查询 (支柱 2)
-   * 词形表仅 id+meta：synset/lemma/language 由 id 切割
-   */
-  public omwLookup(word: string, language: string = 'en'): OmwSynsetResult[] {
-    if (!this._db) return []
-    try {
-      const allEntries = this._db
-        .prepare(`SELECT id FROM omw_lexical_entries`)
-        .all() as any[]
-
-      const synsetIds: string[] = []
-      for (const row of allEntries) {
-        const p = parseOmwLexicalEntryId(row.id)
-        if (!p) continue
-        if (!lemmaEquals(p.lemma, word)) continue
-        if (!languageMatches(p.language, language) && !languageMatches(p.language, 'en')) continue
-        if (!synsetIds.includes(p.synsetId)) synsetIds.push(p.synsetId)
-        if (synsetIds.length >= 50) break
-      }
-
-      return synsetIds.map((sid) => {
-        const r = this._db!
-          .prepare(`SELECT id, pos, lexfile, meta FROM omw_synsets WHERE id = ?`)
-          .get(sid) as any
-        if (!r) return null
-        let meta = {}
-        try {
-          meta = JSON.parse(r.meta || '{}')
-        } catch {}
-        return {
-          id: r.id,
-          pos: r.pos,
-          lexfile: r.lexfile,
-          meta,
-          lemmas: this.lemmasOfSynset(r.id)
-        }
-      }).filter(Boolean) as OmwSynsetResult[]
-    } catch (err: any) {
-      logger.debug(LogCategory.DATABASE_SERVICE, `omwLookup 查询失败: ${word}`, err?.message)
-      return []
-    }
-  }
-
-  /** 按 synset id 从词形 id 切割收集 lemma */
-  private lemmasOfSynset(synsetId: string): string[] {
-    if (!this._db) return []
-    const lemmas = new Set<string>()
-    const rows = this._db.prepare(`SELECT id FROM omw_lexical_entries`).all() as any[]
-    for (const row of rows) {
-      const p = parseOmwLexicalEntryId(row.id)
-      if (p && p.synsetId === synsetId) lemmas.add(p.lemma)
-    }
-    return Array.from(lemmas)
-  }
-
-  /**
-   * 按 OMW 词典语义域 (lexfile) 列举概念 — lexfile miss 最小接线面
-   */
-  public listOmwSynsetsByLexfile(lexfile: string, limit = 100): OmwSynsetResult[] {
-    if (!this._db) return []
-    try {
-      const rows = this._db
-        .prepare(`SELECT id, pos, lexfile, meta FROM omw_synsets WHERE lexfile = ?`)
-        .all(lexfile) as any[]
-      return rows.slice(0, limit).map((r) => {
-        let meta = {}
-        try {
-          meta = JSON.parse(r.meta || '{}')
-        } catch {}
-        return { id: r.id, pos: r.pos, lexfile: r.lexfile, meta, lemmas: [] }
-      })
-    } catch (err: any) {
-      logger.debug(LogCategory.DATABASE_SERVICE, `listOmwSynsetsByLexfile 失败: ${lexfile}`, err?.message)
-      return []
-    }
-  }
-
-  /**
-   * OMW 上位词 (hypernyms) 查询
-   */
-  public omwHypernyms(synsetId: string): OmwSynsetNode[] {
-    return this.omwRelationsByType(synsetId, 'hypernym')
-  }
-
-  /**
-   * OMW 下位词 (hyponyms) 查询
-   */
-  public omwHyponyms(synsetId: string): OmwSynsetNode[] {
-    return this.omwRelationsByType(synsetId, 'hyponym')
-  }
-
-  private omwRelationsByType(synsetId: string, relType: string): OmwSynsetNode[] {
-    if (!this._db) return []
-    try {
-      const allRels = this._db
-        .prepare(`SELECT source_id, target_id, rel_type FROM omw_relations`)
-        .all() as any[]
-      const relRows = allRels.filter(r => r.source_id === synsetId && r.rel_type === relType)
-
-      return relRows.slice(0, 50).map((rel) => {
-        const r = this._db!
-          .prepare(`SELECT id, pos FROM omw_synsets WHERE id = ?`)
-          .get(rel.target_id) as any
-        if (!r) return null
-        return {
-          synsetId: r.id,
-          relType,
-          pos: r.pos,
-          lemmas: this.lemmasOfSynset(r.id)
-        }
-      }).filter(Boolean) as OmwSynsetNode[]
-    } catch {
-      return []
-    }
-  }
-
-  /**
-   * OMW 反义词查询
-   * 契约（wayfinder #672）：词义层图谱优先，词面 antonym_pairs 兜底；无 language 维度
-   * 词形表仅 id+meta：lemma 由 id 切割
-   */
-  public omwAntonyms(word: string, _language?: string): OmwAntonymResult[] {
-    if (!this._db) return []
-    const results: OmwAntonymResult[] = []
-    try {
-      const allEntries = this._db
-        .prepare(`SELECT id FROM omw_lexical_entries`)
-        .all() as any[]
-
-      const sourceEntryIds: string[] = []
-      for (const row of allEntries) {
-        const p = parseOmwLexicalEntryId(row.id)
-        if (p && lemmaEquals(p.lemma, word)) {
-          sourceEntryIds.push(row.id)
-          if (sourceEntryIds.length >= 20) break
-        }
-      }
-
-      const targetIds = new Set<string>()
-      for (const se of sourceEntryIds) {
-        const targets = this._db
-          .prepare(
-            `SELECT target_entry_id FROM omw_sense_relations
-             WHERE source_entry_id = ? AND rel_type = 'antonym' LIMIT 20`
-          )
-          .all(se) as any[]
-        for (const t of targets) targetIds.add(t.target_entry_id)
-      }
-
-      for (const tid of targetIds) {
-        const p = parseOmwLexicalEntryId(tid)
-        if (p?.lemma && !lemmaEquals(p.lemma, word)) {
-          results.push({
-            word,
-            antonym: p.lemma,
-            source: 'omw_sense_relations'
-          })
-        }
-      }
-
-      if (results.length === 0) {
-        const pairs = this._db
-          .prepare(
-            `SELECT word_a, word_b FROM antonym_pairs WHERE word_a = ? OR word_b = ?`
-          )
-          .all(word, word) as any[]
-
-        for (const p of pairs) {
-          results.push({
-            word,
-            antonym: p.word_a === word ? p.word_b : p.word_a,
-            source: 'antonym_pairs'
-          })
-        }
-      }
-    } catch (err: any) {
-      logger.debug(LogCategory.DATABASE_SERVICE, `omwAntonyms 失败: ${word}`, err?.message)
-    }
-    return results
-  }
-
-  /** 从 tag 的 parent_codes / 自身 code 收集 omw.* 概念 id */
-  private collectOmwConceptIds(tagCode: string): string[] {
-    if (!this._db) return []
-    const ids = new Set<string>()
-    if (/^omw\./.test(tagCode)) ids.add(tagCode)
-
-    const addFromParents = (parentsJson: string | undefined | null) => {
-      if (!parentsJson) return
-      try {
-        const parents = JSON.parse(parentsJson)
-        if (Array.isArray(parents)) {
-          for (const p of parents) {
-            if (typeof p === 'string' && p.startsWith('omw.')) ids.add(p)
-          }
-        }
-      } catch {}
-      // 兜底：从原始字符串提取 omw 概念 id（兼容 omw.* 与 omw-* 两种历史形态 / 非严格 JSON）
-      const matches = String(parentsJson).match(/omw[-.][0-9A-Za-z._-]+/g)
-      if (matches) {
-        for (const m of matches) ids.add(m)
-      }
-    }
-
-    try {
-      const all = this._db
-        .prepare('SELECT code, parent_codes FROM file_tags')
-        .all() as { code: string; parent_codes?: string }[]
-      for (const row of all) {
-        if (row.code === tagCode) {
-          if (/^omw\./.test(row.code)) ids.add(row.code)
-          addFromParents(row.parent_codes)
-        }
-      }
-    } catch {}
-    return Array.from(ids)
-  }
-
-  /**
-   * 根据标签查询挂载的 OMW 概念（parent_codes / omw.* 身份，零桥表）
-   */
-  public tagToOmw(tagCode: string): OmwSynsetResult[] {
-    if (!this._db) return []
-    try {
-      const conceptIds = this.collectOmwConceptIds(tagCode)
-      if (conceptIds.length === 0) return []
-      const rows: any[] = []
-      for (const cid of conceptIds) {
-        const r = this._db
-          .prepare(`SELECT id, pos, lexfile, meta FROM omw_synsets WHERE id = ?`)
-          .get(cid) as any
-        if (r) rows.push(r)
-      }
-
-      return rows.map((r) => {
-        let meta = {}
-        try {
-          meta = JSON.parse(r.meta || '{}')
-        } catch {}
-        return {
-          id: r.id,
-          pos: r.pos,
-          lexfile: r.lexfile,
-          meta,
-          lemmas: this.lemmasOfSynset(r.id)
-        }
-      })
-    } catch {
-      return []
-    }
-  }
-
-  /**
-   * 根据 OMW Synset 反查标签（自身 code 或 parent_codes 挂载该概念的标签）
-   */
-  public omwToTag(synsetId: string): OmwTagResult[] {
-    if (!this._db) return []
-    try {
-      const all = this._db
-        .prepare(`SELECT code, name, parent_codes FROM file_tags`)
-        .all() as { code: string; name: string; parent_codes?: string }[]
-      const hits = all.filter(r => {
-        if (r.code === synsetId) return true
-        const pc = r.parent_codes || ''
-        return pc.includes(synsetId)
-      })
-      return hits.slice(0, 100).map(r => ({
-        tagCode: r.code,
-        tagName: r.name,
-        matchLevel: 1,
-        confidence: 1.0
-      }))
-    } catch {
-      return []
-    }
-  }
-
-  /**
-   * 多语言展示层标签名级联解析器 (Tag Display Resolver)
-   * 遵循规范: docs/specs/multi-language-display-and-zero-redundancy-taxonomy-spec.md
-   *
-   * 级联优先级:
-   * COALESCE(tag_aliases.lemma, omw_lexical_entries.lemma, file_tags.name, code)
-   *
-   * 性能与契约:
-   * 1. 一次性批量解析传入的所有 tagCodes，消除前端 N+1 查询；
-   * 2. 利用 idx_tag_aliases_lookup 与 idx_omw_synset_lang_covering 覆盖索引，亚毫秒级返回；
-   * 3. 保持数据零冗余，不把 OMW 词形拷入 tag_aliases，保持领域模型职责纯粹。
+   * 多语言展示层标签名解析器 (Tag Display Resolver)
+   * ADR-0038 / Issue #682：
+   * 1. 受控 builtin / omw 展示名走 TaxonomyAliasCache 内存总线（零 SQL、微秒级）；
+   * 2. 用户/扩展标签兜底读取本地 file_tags.name；
+   * 3. 彻底废除对 omw_lexical_entries 等只读语义表的裸 SQL 查询。
    *
    * @param tagCodes 需要解析显示名称的标签 code 数组
    * @param locale 当前目标语言代码 (如 'zh-CN', 'en-US')
@@ -1766,61 +1476,41 @@ export class DatabaseService {
       result[code] = code // 默认兜底为 code 本身
     }
 
-    if (!this._db) return result
+    const distinctCodes = Array.from(new Set(tagCodes.filter(Boolean)))
+    if (distinctCodes.length === 0) return result
 
     try {
-      const distinctCodes = Array.from(new Set(tagCodes.filter(Boolean)))
-      if (distinctCodes.length === 0) return result
+      // 1) 内存别名总线优先（Omni taxonomy/aliases）
+      const resolved = taxonomyAliasCache.resolveMany(distinctCodes)
+      for (const [code, name] of Object.entries(resolved)) {
+        result[code] = name
+      }
 
-      const targetLocale = locale || 'en-US'
-      const baseLang = targetLocale.split('-')[0].toLowerCase()
-      const langVariant1 = baseLang === 'zh' ? 'cmn' : baseLang === 'en' ? 'eng' : targetLocale
-      const langVariant2 = baseLang
-      const langPriority = [targetLocale, langVariant1, langVariant2]
-
-      // 1) 别名
-      const aliasRows = this._db
-        .prepare(`SELECT tag_code, lemma FROM tag_aliases WHERE locale = ?`)
-        .all(targetLocale) as { tag_code: string; lemma: string }[]
-      const aliasMap = new Map(aliasRows.map(r => [r.tag_code, r.lemma]))
-
-      // 2) file_tags.name
-      const tagRows = this._db.prepare(`SELECT code, name FROM file_tags`).all() as {
-        code: string
-        name: string
-      }[]
-      const nameMap = new Map(tagRows.map(r => [r.code, r.name]))
-
-      // 3) OMW 词形：id 切割，按 synset + 语言优先级
-      const entryRows = this._db.prepare(`SELECT id FROM omw_lexical_entries`).all() as any[]
-      const omwLemmaBySynset = new Map<string, string>()
-      for (const row of entryRows) {
-        const p = parseOmwLexicalEntryId(row.id)
-        if (!p) continue
-        const pref = langPriority.findIndex(lp => languageMatches(p.language, lp))
-        if (pref < 0) continue
-        const prev = omwLemmaBySynset.get(p.synsetId)
-        if (!prev) {
-          omwLemmaBySynset.set(p.synsetId, `${pref}|${p.lemma}`)
-        } else {
-          const prevPref = parseInt(prev.split('|')[0], 10)
-          if (pref < prevPref) omwLemmaBySynset.set(p.synsetId, `${pref}|${p.lemma}`)
+      // 2) 本地动态标签（expanded/user）兜底 file_tags.name
+      if (this._db) {
+        const placeholders = distinctCodes.map(() => '?').join(',')
+        const tagRows = this._db
+          .prepare(`SELECT code, name FROM file_tags WHERE code IN (${placeholders})`)
+          .all(...distinctCodes) as { code: string; name: string }[]
+        for (const row of tagRows) {
+          // 仅当内存未命中或命中值仍等于 code 时，才用本地 name
+          if (!taxonomyAliasCache.resolve(row.code) || result[row.code] === row.code) {
+            if (row.name) result[row.code] = row.name
+          }
         }
       }
 
-      for (const code of distinctCodes) {
-        // COALESCE(tag_aliases.lemma, omw lemma, file_tags.name, code)
-        if (aliasMap.has(code)) {
-          result[code] = aliasMap.get(code)!
-          continue
-        }
-        const omwHit = omwLemmaBySynset.get(code)
-        if (omwHit) {
-          result[code] = omwHit.slice(omwHit.indexOf('|') + 1)
-          continue
-        }
-        if (nameMap.has(code)) {
-          result[code] = nameMap.get(code)!
+      // 3) 本地 tag_aliases 仅服务 user/扩展标签
+      if (this._db) {
+        const targetLocale = locale || 'en-US'
+        const aliasRows = this._db
+          .prepare(`SELECT tag_code, lemma FROM tag_aliases WHERE locale = ?`)
+          .all(targetLocale) as { tag_code: string; lemma: string }[]
+        const aliasMap = new Map(aliasRows.map(r => [r.tag_code, r.lemma]))
+        for (const code of distinctCodes) {
+          if (aliasMap.has(code) && !taxonomyAliasCache.resolve(code)) {
+            result[code] = aliasMap.get(code)!
+          }
         }
       }
     } catch (error) {
@@ -1830,148 +1520,22 @@ export class DatabaseService {
     return result
   }
 
-  // =========================================================================
-  // 多模态向量存储与检索 API (file_vectors)
-  // =========================================================================
-
   /**
-   * 保存或增量更新文件的特征向量（支持文本/图像/多模态向量增量写入）
+   * AI 分析完成后将 dense 向量写入 Omni zvec（替代旧 file_vectors BLOB 堆表）
    */
-  public saveFileVectors(input: SaveFileVectorInput): void {
-    if (!this._db || !input.fileFingerprint) return
-
-    const float32ToBuffer = (arr?: Float32Array | null): Buffer | null => {
-      if (!arr) return null
-      return Buffer.from(arr.buffer, arr.byteOffset, arr.byteLength)
-    }
-
-    const textBuf = float32ToBuffer(input.textEmbedding)
-    const imgBuf = float32ToBuffer(input.imageEmbedding)
-    const multiBuf = float32ToBuffer(input.multimodalEmbedding)
-    const metaJson = input.meta ? JSON.stringify(input.meta) : '{}'
-
-    const stmt = this._db.prepare(`
-      INSERT INTO file_vectors (
-        file_fingerprint,
-        text_embedding,
-        image_embedding,
-        multimodal_embedding,
-        status,
-        model_version,
-        meta,
-        updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(file_fingerprint) DO UPDATE SET
-        text_embedding = COALESCE(excluded.text_embedding, file_vectors.text_embedding),
-        image_embedding = COALESCE(excluded.image_embedding, file_vectors.image_embedding),
-        multimodal_embedding = COALESCE(excluded.multimodal_embedding, file_vectors.multimodal_embedding),
-        status = CASE 
-          WHEN excluded.status IS NOT NULL AND excluded.status != 0 THEN excluded.status 
-          ELSE file_vectors.status 
-        END,
-        model_version = COALESCE(excluded.model_version, file_vectors.model_version),
-        meta = CASE 
-          WHEN excluded.meta != '{}' THEN json_patch(file_vectors.meta, excluded.meta) 
-          ELSE file_vectors.meta 
-        END,
-        updated_at = CURRENT_TIMESTAMP
-    `)
-
-    stmt.run(
-      input.fileFingerprint,
-      textBuf,
-      imgBuf,
-      multiBuf,
-      input.status ?? 0,
-      input.modelVersion ?? null,
-      metaJson
-    )
-  }
-
-  /**
-   * 获取指定文件的多模态向量记录
-   */
-  public getFileVectors(fileFingerprint: string): FileVectorRecord | null {
-    if (!this._db || !fileFingerprint) return null
-    const row = this._db
-      .prepare('SELECT * FROM file_vectors WHERE file_fingerprint = ?')
-      .get(fileFingerprint) as any
-    if (!row) return null
-    return this.mapRowToFileVectorRecord(row)
-  }
-
-  /**
-   * 批量获取多个文件的向量记录
-   */
-  public batchGetFileVectors(fileFingerprints: string[]): Map<string, FileVectorRecord> {
-    const result = new Map<string, FileVectorRecord>()
-    if (!this._db || fileFingerprints.length === 0) return result
-
-    const chunkSize = 500
-    for (let i = 0; i < fileFingerprints.length; i += chunkSize) {
-      const chunk = fileFingerprints.slice(i, i + chunkSize)
-      const placeholders = chunk.map(() => '?').join(',')
-      const rows = this._db
-        .prepare(`SELECT * FROM file_vectors WHERE file_fingerprint IN (${placeholders})`)
-        .all(...chunk) as any[]
-
-      for (const row of rows) {
-        result.set(row.file_fingerprint, this.mapRowToFileVectorRecord(row))
-      }
-    }
-    return result
-  }
-
-  /**
-   * 删除指定文件的向量记录
-   */
-  public deleteFileVectors(fileFingerprint: string): void {
-    if (!this._db || !fileFingerprint) return
-    this._db.prepare('DELETE FROM file_vectors WHERE file_fingerprint = ?').run(fileFingerprint)
-  }
-
-  /**
-   * 将数据库行映射为强类型向量记录
-   */
-  private mapRowToFileVectorRecord(row: any): FileVectorRecord {
-    let parsedMeta = {}
-    try {
-      if (row.meta) {
-        parsedMeta = typeof row.meta === 'string' ? JSON.parse(row.meta) : row.meta
-      }
-    } catch {
-      parsedMeta = {}
-    }
-
-    const bufferToFloat32Array = (buf: any): Float32Array | null => {
-      if (!buf) return null
-      if (Buffer.isBuffer(buf)) {
-        // 创建独立的 4 字节对齐内存副本，避免 Node.js Buffer pool 偏移不对齐引发异常
-        const ab = new ArrayBuffer(buf.byteLength)
-        new Uint8Array(ab).set(buf)
-        return new Float32Array(ab)
-      }
-      if (buf instanceof Uint8Array || buf.buffer) {
-        const ab = new ArrayBuffer(buf.byteLength)
-        new Uint8Array(ab).set(new Uint8Array(buf.buffer, buf.byteOffset, buf.byteLength))
-        return new Float32Array(ab)
-      }
-      return null
-    }
-
-    return {
-      fileFingerprint: row.file_fingerprint,
-      textEmbedding: bufferToFloat32Array(row.text_embedding),
-      imageEmbedding: bufferToFloat32Array(row.image_embedding),
-      multimodalEmbedding: bufferToFloat32Array(row.multimodal_embedding),
-      status: row.status ?? 0,
-      modelVersion: row.model_version ?? null,
-      meta: parsedMeta,
-      updatedAt: row.updated_at
-    }
+  public async upsertFileVectorToOmni(
+    fileFingerprint: string,
+    embedding: number[] | Float32Array | null | undefined
+  ): Promise<boolean> {
+    if (!fileFingerprint || !embedding) return false
+    const vector = embedding instanceof Float32Array ? Array.from(embedding) : embedding
+    if (!Array.isArray(vector) || vector.length === 0) return false
+    const res = await omniClient.upsertVector(fileFingerprint, vector)
+    return !!res?.success
   }
 }
 
+/** @deprecated 向量已由 Omni zvec 托管，类型保留仅为兼容外部引用 */
 export interface FileVectorRecord {
   fileFingerprint: string
   textEmbedding: Float32Array | null
@@ -1983,6 +1547,7 @@ export interface FileVectorRecord {
   updatedAt?: string
 }
 
+/** @deprecated 向量写入请调用 Omni /api/v1/vector/upsert */
 export interface SaveFileVectorInput {
   fileFingerprint: string
   textEmbedding?: Float32Array | null
@@ -1991,34 +1556,6 @@ export interface SaveFileVectorInput {
   status?: number
   modelVersion?: string | null
   meta?: Record<string, any>
-}
-
-export interface OmwSynsetResult {
-  id: string
-  pos: string
-  lexfile?: string
-  meta?: Record<string, any>
-  lemmas?: string[]
-}
-
-export interface OmwSynsetNode {
-  synsetId: string
-  relType: string
-  pos: string
-  lemmas: string[]
-}
-
-export interface OmwAntonymResult {
-  word: string
-  antonym: string
-  source: string
-}
-
-export interface OmwTagResult {
-  tagCode: string
-  tagName: string
-  matchLevel: number
-  confidence: number
 }
 
 export const databaseService = new DatabaseService()

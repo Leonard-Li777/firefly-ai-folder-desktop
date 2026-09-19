@@ -55,6 +55,7 @@ build/extraResources/llama/
 build/extraResources/bundles/
 build/extraResources/bundles-static/
 build/extraResources/stubs/
+build/extraResources/semantic/
 build/extraResources/temp/
 build/extraResources/logs/
 build/extraResources/configs/binaries.json

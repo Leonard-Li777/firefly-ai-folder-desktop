@@ -1666,6 +1666,19 @@ export class FileProcessor {
       // 平铺注入 metadata（更新 contentResult.metadata 与 fileInfo.metadata，供后续所有模式使用）
       contentResult.metadata = preflightContext.flattenedMetadata
 
+      // ADR-0038 / Issue #682：分析产出 dense 向量后写入 Omni zvec（废除 SQLite file_vectors）
+      const denseEmbedding =
+        (contentResult.metadata?.embedding_dense as number[] | undefined) ||
+        ((anydocResult?.perception as any)?.embedding_dense as number[] | undefined)
+      if (fileFingerprint && !fileFingerprint.startsWith('temp_') && Array.isArray(denseEmbedding) && denseEmbedding.length > 0) {
+        try {
+          const { databaseService } = await import('../../database/database-service')
+          void databaseService.upsertFileVectorToOmni(fileFingerprint, denseEmbedding)
+        } catch (vecErr) {
+          logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] Omni 向量 upsert 失败(非致命):', vecErr)
+        }
+      }
+
       const fileInfo: FileInfoInput = {
         path: filePath,
         name: enhancedSmartName,

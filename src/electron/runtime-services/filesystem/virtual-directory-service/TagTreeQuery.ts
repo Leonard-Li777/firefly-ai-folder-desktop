@@ -14,6 +14,7 @@ import { LogCategory, logger } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { DAGMaterializer } from './DAGMaterializer'
+import { taxonomyAliasCache } from '../../../services/taxonomy-alias-cache'
 
 export interface FilterFilesParams {
   selectedTags?: SelectedTag[]
@@ -167,17 +168,18 @@ export class TagTreeQuery {
 
   /**
    * 获取维度组导航树（含命中文件计数）
+   * ADR-0038 / Issue #682：受控分类树由 Omni taxonomy/tree 提供，本地仅保留 expanded/user 动态标签
    */
   async getDimensionGroups(
     options?: GetDimensionGroupsOptions | string,
-    _language?: string
+    language?: string
   ): Promise<DimensionGroupsResponse> {
     const startTime = performance.now()
     let dbQueryTime = 0
 
     const opts: GetDimensionGroupsOptions =
       typeof options === 'string'
-        ? { workspaceDirectoryPath: options, language: _language }
+        ? { workspaceDirectoryPath: options, language }
         : options || {}
 
     const {
@@ -190,17 +192,23 @@ export class TagTreeQuery {
     } = opts
 
     try {
+      const locale = opts.language || language || 'zh-CN'
+      // 启动/切换语言时装载 Omni 别名与分类树内存总线
+      if (!taxonomyAliasCache.isLoaded() || taxonomyAliasCache.getLocale() !== locale) {
+        await taxonomyAliasCache.load(locale)
+      }
+
       let showMissing = true
       try {
         showMissing = ConfigOrchestrator.getInstance().getValue<boolean>('SHOW_MISSING_FILES') ?? true
       } catch {}
 
-      // 1. 获取所有维度根节点 (depth = 0 或 meta.isDimension = 1)
+      // 1. 获取所有维度根节点（本地动态标签：expanded/user；受控根节点来自 Omni 树）
       const dbStart = performance.now()
       let dimensionRoots = this.db
         .prepare(`
-          SELECT code, name, depth, file_groups, meta 
-          FROM file_tags 
+          SELECT code, name, depth, file_groups, meta
+          FROM file_tags
           WHERE depth = 0 OR json_extract(meta, '$.isDimension') = 1
           ORDER BY code ASC
         `)
@@ -326,11 +334,15 @@ export class TagTreeQuery {
         tagParentCountMap.set(`${row.tag_code}::${row.parent_tag_code}`, row.count)
       }
 
-      // 5. 按照维度归类标签并组织树形结构
+      // 5. 按照维度归类本地动态标签并组织树形结构
       const groups: DimensionGroup[] = []
+      const seenDimCodes = new Set<string>()
+      const aliasResolver = (code: string, fallbackName?: string) =>
+        taxonomyAliasCache.resolve(code) || fallbackName || code
 
       for (const root of dimensionRoots) {
         const dimCode = root.code
+        seenDimCodes.add(dimCode)
         let dimMeta: any = {}
         try {
           dimMeta = JSON.parse(root.meta || '{}')
@@ -378,8 +390,8 @@ export class TagTreeQuery {
 
           dimensionTags.push({
             dimensionId: dimCode as any,
-            dimensionName: root.name,
-            tagValue: child.name,
+            dimensionName: aliasResolver(root.code, root.name),
+            tagValue: aliasResolver(child.code, child.name),
             fileCount: aggregatedCount,
             level: child.depth || 1,
             code: child.code,
@@ -394,13 +406,29 @@ export class TagTreeQuery {
 
         groups.push({
           id: legacyNumericId as any,
-          name: root.name,
+          name: aliasResolver(root.code, root.name),
           level: root.depth,
           tags: dimensionTags,
           code: dimCode,
           isMultiSelect: dimMeta?.isMultiSelect === true,
           metadata: dimMeta
         })
+      }
+
+      // 6. 合并 Omni 受控分类树（builtin / omw 不再入库主库）
+      const omniGroups = taxonomyAliasCache.toDimensionGroups(tagCountMap)
+      for (const og of omniGroups) {
+        const code = og.code
+        if (!code || seenDimCodes.has(code)) continue
+        seenDimCodes.add(code)
+        let tags = og.tags || []
+        if (excludeExtensionDimension) {
+          tags = tags.filter(t => !/扩展名|Extension/i.test(t.tagValue) && t.code !== 'dim.17')
+        }
+        if (removeEmptyTags && !includeAllPresetTags) {
+          tags = tags.filter(t => t.fileCount > 0)
+        }
+        groups.push({ ...og, tags })
       }
 
       return {

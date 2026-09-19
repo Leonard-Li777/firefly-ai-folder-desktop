@@ -1,8 +1,5 @@
 import { app as electronApp } from 'electron'
 import path from 'path'
-import fs from 'fs'
-import { getDefaultLanguage } from '@firefly/shared'
-import { t } from '@app/languages'
 
 /**
  * 数据库配置接口定义
@@ -39,11 +36,25 @@ export interface IMigrationConfig {
 }
 
 /**
- * Genesis V1 创世基线架构
- * 包含统一标签树表 (file_tags)、复合主键关联表 (file_tag_relations)、文件常量表 (file_constants)、
- * 统一多虚拟目录表 (virtual_directories)、FTS5 检索表与触发器
+ * Genesis V1 创世基线架构（ADR-0038 瘦身版）
+ * - 用户主库只保留动态业务数据与 expanded/user 标签
+ * - 只读语义包（OMW/受控标签/别名）由 Omni 专职托管，不在主库建表
+ * - 多模态向量由 Omni zvec 托管，彻底废除 SQLite file_vectors BLOB 堆表
+ * - file_tag_relations.tag_code 为业务软外键，允许写入 builtin / omw 受控标签 code
  */
 const GENESIS_V1_SCHEMA = `
+  -- 0. 创世卫生：剔除只读语义表 / 遗留 HowNet / 向量堆表（ADR-0038）
+  DROP TABLE IF EXISTS file_vectors;
+  DROP TABLE IF EXISTS antonym_pairs;
+  DROP TABLE IF EXISTS hownet_word_concepts;
+  DROP TABLE IF EXISTS hownet_concepts;
+  DROP TABLE IF EXISTS hownet_words;
+  DROP TABLE IF EXISTS omw_sense_relations;
+  DROP TABLE IF EXISTS omw_relations;
+  DROP TABLE IF EXISTS omw_lexical_entries;
+  DROP TABLE IF EXISTS omw_synsets;
+  DROP TABLE IF EXISTS omw_languages;
+
   -- 1. 用户根工作区配置表
   CREATE TABLE IF NOT EXISTS workspaces (
     workspace_id INTEGER PRIMARY KEY AUTOINCREMENT, -- 工作区唯一标识
@@ -154,25 +165,25 @@ const GENESIS_V1_SCHEMA = `
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP  -- 任务状态更新时间
   );
 
-  -- 7. 统一标签维度体系表 (涵盖维度根节点、受控标签与动态扩展标签，以 code 为唯一主键)
+  -- 7. 用户动态标签维度体系表（仅 expanded/_ext.* 与 user 手建标签；builtin.*/omw.* 由 Omni 语义包托管）
   CREATE TABLE IF NOT EXISTS file_tags (
-    code               TEXT PRIMARY KEY,              -- 语言无关稳定标识 (如 dim.file_type, image.screenshot)
-    name               TEXT NOT NULL,                 -- 当前语言本地化显示名 (如 "文件类型", "截图")
+    code               TEXT PRIMARY KEY,              -- 语言无关稳定标识 (如 _ext.topic.xxx, user.custom)
+    name               TEXT NOT NULL,                 -- 当前语言本地化显示名
     parent_codes       TEXT NOT NULL DEFAULT '[]',    -- JSON 数组，记录所有直接父节点的 code (支持多父 DAG)
-    materialized_paths TEXT NOT NULL DEFAULT '[]',    -- JSON 对象数组: [ { "code_path": "...", "name_path": "..." }, ... ]
+    materialized_paths TEXT NOT NULL DEFAULT '[]',    -- JSON 对象数组: [ { "code_path": "...", "name_path": "...", } ... ]
     depth              INTEGER NOT NULL DEFAULT 0,    -- 节点深度 (维度根=0, 直属子标签=1, ...)
-    source             TEXT NOT NULL DEFAULT 'builtin'
-                           CHECK (source IN ('builtin', 'expanded', 'user')),
+    source             TEXT NOT NULL DEFAULT 'user'
+                           CHECK (source IN ('expanded', 'user')),
     file_groups        TEXT,                          -- JSON 数组：格式分组约束 (全集为 FileGroup 完整枚举，优先级：优先按扩展名匹配字典，未命中由 Magika 补齐)
     context_hints      TEXT,                          -- JSON 数组 (上下文提取线索)
     description        TEXT,                          -- 业务功能或语义描述
     meta               TEXT NOT NULL DEFAULT '{}'     -- JSON 元数据: isDimension, isRuleSubdivision, isPanDimension, isMultiSelect, color, icon 等
   );
 
-  -- 8. builtin 等受控标签的多语言别名（词形/译名，不进 omw_lexical_entries）
-  -- Spec: issue-omni-i18n-tag-identity-spec D4
+  -- 8. 用户/扩展标签多语言别名（受控 builtin.* 别名由 Omni taxonomy/aliases 内存总线提供）
+  -- Spec: issue-omni-i18n-tag-identity-spec D4；软外键，不物理 REFERENCES file_tags
   CREATE TABLE IF NOT EXISTS tag_aliases (
-    tag_code      TEXT NOT NULL REFERENCES file_tags(code) ON DELETE CASCADE,
+    tag_code      TEXT NOT NULL,                 -- 业务软外键：允许指向 Omni 受控 code
     locale        TEXT NOT NULL,
     lemma         TEXT NOT NULL,
     is_canonical  INTEGER NOT NULL DEFAULT 0,
@@ -182,10 +193,10 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_tag_aliases_lookup ON tag_aliases(locale, tag_code);
   CREATE INDEX IF NOT EXISTS idx_tag_aliases_lemma ON tag_aliases(lemma, locale);
 
-  -- 8. 文件指纹与标签多对多关联表 (基于复合主键 file_fingerprint + tag_code + parent_tag_code)
+  -- 9. 文件指纹与标签多对多关联表（tag_code 为业务软外键，兼容受控标签 code）
   CREATE TABLE IF NOT EXISTS file_tag_relations (
     file_fingerprint   TEXT NOT NULL,                 -- 核心引擎 32 位 Base62 文件内容指纹
-    tag_code           TEXT NOT NULL REFERENCES file_tags(code) ON DELETE CASCADE,
+    tag_code           TEXT NOT NULL,                 -- 业务软外键：允许 builtin.*/omw.*/_ext.*/user.*，由应用层校验
     parent_tag_code    TEXT NOT NULL DEFAULT '',      -- 父级标签 code (指向 file_tags.code，用于一词多义消歧与限定类型上下文；无父级/根级填 '')
     confidence         REAL NOT NULL DEFAULT 1.0,     -- 分析置信度或物理事实权重 (0.0 ~ 1.0)
     source             TEXT DEFAULT 'ai'
@@ -198,7 +209,7 @@ const GENESIS_V1_SCHEMA = `
     FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
   );
 
-  -- 9. 独立文件常量配置表 (file_constants)
+  -- 10. 独立文件常量配置表 (file_constants)
   CREATE TABLE IF NOT EXISTS file_constants (
     key        TEXT PRIMARY KEY,                      -- 常量键名 (如 'category_ext_map', 'decodable_image_exts')
     value      TEXT NOT NULL,                         -- JSON 字符串
@@ -206,7 +217,7 @@ const GENESIS_V1_SCHEMA = `
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
-  -- 10. 本地应用配置表
+  -- 11. 本地应用配置表
   CREATE TABLE IF NOT EXISTS app_config (
     key TEXT PRIMARY KEY,
     value TEXT,
@@ -214,7 +225,7 @@ const GENESIS_V1_SCHEMA = `
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
-  -- 11. 系统全局参数配置表
+  -- 12. 系统全局参数配置表
   CREATE TABLE IF NOT EXISTS system_config (
     key TEXT PRIMARY KEY,
     value TEXT,
@@ -222,7 +233,7 @@ const GENESIS_V1_SCHEMA = `
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
 
-  -- 12. 多虚拟目录元数据表
+  -- 13. 多虚拟目录元数据表
   CREATE TABLE IF NOT EXISTS virtual_directories (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     workspace_id    INTEGER NOT NULL,
@@ -244,7 +255,7 @@ const GENESIS_V1_SCHEMA = `
     FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE
   );
 
-  -- 13. 虚拟目录文件映射表
+  -- 14. 虚拟目录文件映射表
   CREATE TABLE IF NOT EXISTS virtual_directory_files (
     virtual_directory_id INTEGER NOT NULL,
     file_id              INTEGER NOT NULL,
@@ -257,7 +268,7 @@ const GENESIS_V1_SCHEMA = `
     FOREIGN KEY (file_id) REFERENCES workspace_files(id) ON DELETE CASCADE
   );
 
-  -- 14. 待同步操作表
+  -- 15. 待同步操作表
   CREATE TABLE IF NOT EXISTS pending_firecore_operations (
     id TEXT PRIMARY KEY,
     operation_type TEXT NOT NULL,
@@ -271,7 +282,7 @@ const GENESIS_V1_SCHEMA = `
     synced_at DATETIME
   );
 
-  -- 15. 内存响应缓存表
+  -- 16. 内存响应缓存表
   CREATE TABLE IF NOT EXISTS memory_cache (
     id TEXT PRIMARY KEY,
     request_data TEXT,
@@ -286,7 +297,7 @@ const GENESIS_V1_SCHEMA = `
   );
 
 
-  -- 16. FTS5 全文搜索虚拟表（Issue #661：contentless External Content 模式）
+  -- 17. FTS5 全文搜索虚拟表（Issue #661：contentless External Content 模式）
   -- 不在 FTS 影子表内复制业务正文；索引文本在写入时由触发器提供，展示与业务字段回表 JOIN files/file_contents/workspace_files
   CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
     file_fingerprint UNINDEXED,                  -- 指纹（不建立全文索引，仅作为关联键）
@@ -302,7 +313,7 @@ const GENESIS_V1_SCHEMA = `
     content=''                                   -- contentless：仅倒排索引，消除正文双写
   );
 
-  -- 17. 高频索引
+  -- 18. 高频索引
   CREATE INDEX IF NOT EXISTS idx_files_group ON files(file_group);
   CREATE INDEX IF NOT EXISTS idx_files_extension ON files(extension);
   CREATE INDEX IF NOT EXISTS idx_workspace_files_workspace_id ON workspace_files(workspace_id);
@@ -324,8 +335,10 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
   CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
+  CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
+  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
 
-  -- 18. FTS 同步触发器（Issue #661：contentless 需用 delete+insert 提供原文 token）
+  -- 19. FTS 同步触发器（Issue #661：contentless 需用 delete+insert 提供原文 token）
   DROP TRIGGER IF EXISTS trg_files_fts_update;
   DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
   DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
@@ -448,7 +461,7 @@ const GENESIS_V1_SCHEMA = `
       COALESCE((SELECT fc.lrc FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       ''
     FROM files f WHERE f.file_fingerprint = old.file_fingerprint
-      AND EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = old.file_fingerprint);
+      AND EXISTS(SELECT 1 FROM files_fts WHERE file_fingerprint = old.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
@@ -464,425 +477,38 @@ const GENESIS_V1_SCHEMA = `
   CREATE TRIGGER trg_file_contents_update_modified_at AFTER UPDATE ON file_contents BEGIN
     UPDATE files SET modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = new.file_fingerprint;
   END;
-
-  -- 19. OMW 多语言词网与语义增强表 (支柱 2)
-  CREATE TABLE IF NOT EXISTS omw_languages (
-    code TEXT PRIMARY KEY,
-    label TEXT NOT NULL,
-    has_hierarchy INTEGER NOT NULL DEFAULT 0,
-    has_definitions INTEGER NOT NULL DEFAULT 0,
-    has_examples INTEGER NOT NULL DEFAULT 0,
-    meta TEXT NOT NULL DEFAULT '{}'
-  );
-
-  -- 概念表：已裁 ili/definition/dc_identifier（wayfinder disposition）；保留 lexfile 供语义域利用
-  CREATE TABLE IF NOT EXISTS omw_synsets (
-    id TEXT PRIMARY KEY,
-    pos TEXT NOT NULL,
-    lexfile TEXT,
-    meta TEXT NOT NULL DEFAULT '{}'
-  );
-
-  -- 词形表去冗余：仅 id + meta；synset/language/lemma/pos 由 id 切割（omw.{offset}.{pos}.{locale}.{lemma}）
-  CREATE TABLE IF NOT EXISTS omw_lexical_entries (
-    id TEXT PRIMARY KEY,
-    meta TEXT NOT NULL DEFAULT '{}'
-  );
-
-  CREATE TABLE IF NOT EXISTS omw_relations (
-    source_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
-    target_id TEXT NOT NULL REFERENCES omw_synsets(id) ON DELETE CASCADE,
-    rel_type TEXT NOT NULL,
-    meta TEXT NOT NULL DEFAULT '{}',
-    PRIMARY KEY (source_id, target_id, rel_type)
-  );
-
-  CREATE TABLE IF NOT EXISTS omw_sense_relations (
-    source_entry_id TEXT NOT NULL REFERENCES omw_lexical_entries(id) ON DELETE CASCADE,
-    target_entry_id TEXT NOT NULL REFERENCES omw_lexical_entries(id) ON DELETE CASCADE,
-    rel_type TEXT NOT NULL,
-    meta TEXT NOT NULL DEFAULT '{}',
-    PRIMARY KEY (source_entry_id, target_entry_id, rel_type)
-  );
-
-  -- 词面反义兜底表：中文向；无 language 维度；写入前 word_a < word_b
-  CREATE TABLE IF NOT EXISTS antonym_pairs (
-    word_a TEXT NOT NULL,
-    word_b TEXT NOT NULL,
-    meta TEXT NOT NULL DEFAULT '{}',
-    UNIQUE (word_a, word_b)
-  );
-
-  CREATE TABLE IF NOT EXISTS hownet_words (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    word TEXT NOT NULL,
-    pos TEXT,
-    language TEXT,
-    definition TEXT,
-    meta TEXT NOT NULL DEFAULT '{}'
-  );
-
-  CREATE TABLE IF NOT EXISTS hownet_concepts (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    parent_id TEXT,
-    meta TEXT NOT NULL DEFAULT '{}'
-  );
-
-  CREATE TABLE IF NOT EXISTS hownet_word_concepts (
-    word TEXT NOT NULL,
-    concept_id TEXT NOT NULL,
-    meta TEXT NOT NULL DEFAULT '{}',
-    PRIMARY KEY (word, concept_id)
-  );
-
-  -- 20. OMW 与语义索引
-  CREATE INDEX IF NOT EXISTS idx_omw_relations_source ON omw_relations(source_id, rel_type);
-  CREATE INDEX IF NOT EXISTS idx_omw_relations_target ON omw_relations(target_id, rel_type);
-  CREATE INDEX IF NOT EXISTS idx_omw_synsets_lexfile ON omw_synsets(lexfile);
-  CREATE INDEX IF NOT EXISTS idx_antonym_word_a ON antonym_pairs(word_a);
-  CREATE INDEX IF NOT EXISTS idx_antonym_word_b ON antonym_pairs(word_b);
-  CREATE INDEX IF NOT EXISTS idx_hownet_words_word ON hownet_words(word);
-  CREATE INDEX IF NOT EXISTS idx_hownet_concepts_parent ON hownet_concepts(parent_id);
-
-  -- 21. 多模态特征向量表 (file_vectors)
-  CREATE TABLE IF NOT EXISTS file_vectors (
-    file_fingerprint     TEXT PRIMARY KEY,              -- 文件内容指纹 (与 files 外键级联)
-    text_embedding       BLOB,                          -- 文本特征向量 (IEEE 754 32位单精度浮点二进制，384维)
-    image_embedding      BLOB,                          -- 视觉特征向量 (IEEE 754 32位单精度浮点二进制，512维)
-    multimodal_embedding BLOB,                          -- 多模态融合向量 (IEEE 754 32位单精度浮点二进制，768维)
-    status               INTEGER NOT NULL DEFAULT 0,    -- 计算状态: 0-未计算, 1-部分完成, 2-完全完成
-    model_version        TEXT,                          -- 向量模型版本标识 (如 "bge-small-zh-v1.5:clip-vit-b32")
-    meta                 TEXT NOT NULL DEFAULT '{}',    -- 向量弹性元数据 (JSON)
-    updated_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
-  );
-
-  -- 22. 向量与队列高频覆盖索引
-  CREATE INDEX IF NOT EXISTS idx_file_vectors_status ON file_vectors(status);
-  CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
 `
 
 /**
  * 数据库迁移列表
- * 创世基线架构：版本 1
+ * 创世建库期（ADR-0038）：直接采用精简基线，不做历史热迁移
  */
 export const migrations: IMigrationConfig[] = [
   {
     version: 1,
     name: 'genesis_v1_baseline',
-    description: '一步到位初始化 Genesis V1 创世基线架构',
+    description:
+      '一步到位初始化 Genesis V1 创世基线架构（ADR-0038：剔除 OMW/HowNet/file_vectors，标签软外键解耦）',
     up: GENESIS_V1_SCHEMA,
     down: `
-      DROP TABLE IF EXISTS file_vectors;
-      DROP TABLE IF EXISTS antonym_pairs;
-      DROP TABLE IF EXISTS hownet_word_concepts;
-      DROP TABLE IF EXISTS hownet_concepts;
-      DROP TABLE IF EXISTS hownet_words;
-      DROP TABLE IF EXISTS omw_sense_relations;
-      DROP TABLE IF EXISTS omw_relations;
-      DROP TABLE IF EXISTS omw_lexical_entries;
-      DROP TABLE IF EXISTS omw_synsets;
-      DROP TABLE IF EXISTS omw_languages;
-      DROP TABLE IF EXISTS files_fts;
+      DROP TABLE IF EXISTS memory_cache;
+      DROP TABLE IF EXISTS pending_firecore_operations;
       DROP TABLE IF EXISTS virtual_directory_files;
       DROP TABLE IF EXISTS virtual_directories;
-      DROP TABLE IF EXISTS pending_firecore_operations;
-      DROP TABLE IF EXISTS memory_cache;
-      DROP TABLE IF EXISTS tag_expansions;
-      DROP TABLE IF EXISTS dimension_expansions;
-      DROP TABLE IF EXISTS file_dimensions;
+      DROP TABLE IF EXISTS system_config;
+      DROP TABLE IF EXISTS app_config;
+      DROP TABLE IF EXISTS file_constants;
       DROP TABLE IF EXISTS file_tag_relations;
       DROP TABLE IF EXISTS tag_aliases;
       DROP TABLE IF EXISTS file_tags;
-      DROP TABLE IF EXISTS file_constants;
-      DROP TABLE IF EXISTS app_config;
-      DROP TABLE IF EXISTS system_config;
       DROP TABLE IF EXISTS analysis_queue;
       DROP TABLE IF EXISTS workspace_files;
       DROP TABLE IF EXISTS file_contents;
       DROP TABLE IF EXISTS files;
       DROP TABLE IF EXISTS workspace_directories;
       DROP TABLE IF EXISTS workspaces;
-    `
-  },
-  {
-    version: 2,
-    name: 'builtin_tag_aliases',
-    description: '受控标签多语言别名表 tag_aliases（issue-omni-i18n-tag-identity-spec D4）',
-    up: `
-      CREATE TABLE IF NOT EXISTS tag_aliases (
-        tag_code      TEXT NOT NULL REFERENCES file_tags(code) ON DELETE CASCADE,
-        locale        TEXT NOT NULL,
-        lemma         TEXT NOT NULL,
-        is_canonical  INTEGER NOT NULL DEFAULT 0,
-        meta          TEXT NOT NULL DEFAULT '{}',
-        PRIMARY KEY (tag_code, locale)
-      );
-      CREATE INDEX IF NOT EXISTS idx_tag_aliases_lookup ON tag_aliases(locale, tag_code);
-      CREATE INDEX IF NOT EXISTS idx_tag_aliases_lemma ON tag_aliases(lemma, locale);
-    `,
-    down: `
-      DROP TABLE IF EXISTS tag_aliases;
-    `
-  },
-  {
-    version: 3,
-    name: 'add_file_vectors_and_meta',
-    description: '新增多模态向量表 file_vectors、复合与覆盖索引，为核心表补齐 meta 弹性扩展字段',
-    up: `
-      -- 1. 创建多模态向量表
-      CREATE TABLE IF NOT EXISTS file_vectors (
-        file_fingerprint     TEXT PRIMARY KEY,
-        text_embedding       BLOB,
-        image_embedding      BLOB,
-        multimodal_embedding BLOB,
-        status               INTEGER NOT NULL DEFAULT 0,
-        model_version        TEXT,
-        meta                 TEXT NOT NULL DEFAULT '{}',
-        updated_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
-      );
-
-      -- 2. 高频索引
-      CREATE INDEX IF NOT EXISTS idx_file_vectors_status ON file_vectors(status);
-      CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-      CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
-      CREATE INDEX IF NOT EXISTS idx_omw_synset_lang_covering ON omw_lexical_entries(synset_id, language, lemma);
-    `,
-    down: `
-      DROP INDEX IF EXISTS idx_omw_synset_lang_covering;
-      DROP INDEX IF EXISTS idx_file_tag_relations_covering;
-      DROP INDEX IF EXISTS idx_analysis_queue_pending;
-      DROP INDEX IF EXISTS idx_file_vectors_status;
-      DROP TABLE IF EXISTS file_vectors;
-    `
-  },
-  {
-    version: 4,
-    name: 'fts5_contentless_external_content',
-    description:
-      'Issue #661：files_fts 迁移为 FTS5 contentless 模式，消除影子表正文副本；老库重建索引',
-    up: `
-      DROP TRIGGER IF EXISTS trg_files_fts_update;
-      DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
-      DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
-      DROP TRIGGER IF EXISTS trg_files_fts_insert;
-      DROP TRIGGER IF EXISTS trg_files_fts_delete;
-      DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
-      DROP TRIGGER IF EXISTS trg_file_contents_fts_upsert;
       DROP TABLE IF EXISTS files_fts;
-
-      CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
-        file_fingerprint UNINDEXED,
-        name, smart_name, description,
-        content, multimodal_content, ocr, lrc, tags,
-        tokenize='trigram',
-        content=''
-      );
-
-      INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-      SELECT f.rowid, f.file_fingerprint,
-        COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
-        COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-        COALESCE(fc.content, ''), COALESCE(fc.multimodal_content, ''),
-        COALESCE(fc.ocr, ''), COALESCE(fc.lrc, ''), ''
-      FROM files f
-      LEFT JOIN file_contents fc ON fc.file_fingerprint = f.file_fingerprint;
-
-      CREATE TRIGGER trg_files_fts_insert AFTER INSERT ON files BEGIN
-        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT new.rowid, new.file_fingerprint,
-          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
-          COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
-          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
-          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
-          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
-          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
-          '';
-      END;
-
-      CREATE TRIGGER trg_files_fts_update AFTER UPDATE OF smart_name, description ON files BEGIN
-        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT 'delete', old.rowid, old.file_fingerprint,
-          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
-          COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
-          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          ''
-        WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
-        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT new.rowid, new.file_fingerprint,
-          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
-          COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
-          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
-          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
-          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
-          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = new.file_fingerprint), ''),
-          '';
-      END;
-
-      CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
-        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT 'delete', old.rowid, old.file_fingerprint,
-          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
-          COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
-          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = old.file_fingerprint), ''),
-          ''
-        WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
-      END;
-
-      CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
-        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT 'delete', f.rowid, f.file_fingerprint,
-          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
-          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-          '', '', '', '', ''
-        FROM files f WHERE f.file_fingerprint = new.file_fingerprint
-          AND EXISTS (SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
-        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT f.rowid, f.file_fingerprint,
-          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
-          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-          COALESCE(new.content, ''), COALESCE(new.multimodal_content, ''),
-          COALESCE(new.ocr, ''), COALESCE(new.lrc, ''), ''
-        FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-      END;
-
-      CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE OF content, multimodal_content, ocr, lrc ON file_contents BEGIN
-        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT 'delete', f.rowid, f.file_fingerprint,
-          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
-          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-          COALESCE(old.content, ''), COALESCE(old.multimodal_content, ''),
-          COALESCE(old.ocr, ''), COALESCE(old.lrc, ''), ''
-        FROM files f WHERE f.file_fingerprint = old.file_fingerprint
-          AND EXISTS (SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
-        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT f.rowid, f.file_fingerprint,
-          COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
-          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-          COALESCE(new.content, ''), COALESCE(new.multimodal_content, ''),
-          COALESCE(new.ocr, ''), COALESCE(new.lrc, ''), ''
-        FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-      END;
-
-      CREATE TRIGGER trg_workspace_files_fts_insert AFTER INSERT ON workspace_files BEGIN
-        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
-          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          ''
-        FROM files f WHERE f.file_fingerprint = new.file_fingerprint
-          AND NOT EXISTS (SELECT 1 FROM files_fts WHERE file_fingerprint = new.file_fingerprint);
-      END;
-
-      CREATE TRIGGER trg_workspace_files_fts_update AFTER UPDATE OF name ON workspace_files BEGIN
-        INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT 'delete', f.rowid, f.file_fingerprint, COALESCE(old.name, ''),
-          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          ''
-        FROM files f WHERE f.file_fingerprint = old.file_fingerprint
-          AND EXISTS (SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
-        INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-        SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
-          COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-          COALESCE((SELECT c.content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          COALESCE((SELECT c.multimodal_content FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          COALESCE((SELECT c.ocr FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          COALESCE((SELECT c.lrc FROM file_contents c WHERE c.file_fingerprint = f.file_fingerprint), ''),
-          ''
-        FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
-      END;
-    `,
-    down: `
-      DROP TRIGGER IF EXISTS trg_files_fts_insert;
-      DROP TRIGGER IF EXISTS trg_files_fts_update;
-      DROP TRIGGER IF EXISTS trg_files_fts_delete;
-      DROP TRIGGER IF EXISTS trg_file_contents_fts_upsert;
-      DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
-      DROP TRIGGER IF EXISTS trg_workspace_files_fts_insert;
-      DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
-      DROP TABLE IF EXISTS files_fts;
-    `
-  },
-  {
-    version: 5,
-    name: 'omw_field_governance_slim',
-    description:
-      'Wayfinder 字段治理：废除 omw_examples/tag_omw_mapping；omw_synsets 裁 ili/definition/dc_identifier；antonym_pairs 去 language/source/status/id',
-    up: `
-      DROP TABLE IF EXISTS omw_examples;
-      DROP TABLE IF EXISTS tag_omw_mapping;
-      DROP INDEX IF EXISTS idx_tag_omw_mapping_tag;
-      DROP INDEX IF EXISTS idx_tag_omw_mapping_synset;
-
-      -- 重建 omw_synsets（保留 lexfile/meta）
-      CREATE TABLE IF NOT EXISTS omw_synsets_slim (
-        id TEXT PRIMARY KEY,
-        pos TEXT NOT NULL,
-        lexfile TEXT,
-        meta TEXT NOT NULL DEFAULT '{}'
-      );
-      INSERT OR IGNORE INTO omw_synsets_slim (id, pos, lexfile, meta)
-      SELECT id, pos, lexfile, COALESCE(meta, '{}') FROM omw_synsets;
-      DROP TABLE IF EXISTS omw_synsets;
-      ALTER TABLE omw_synsets_slim RENAME TO omw_synsets;
-      CREATE INDEX IF NOT EXISTS idx_omw_synsets_lexfile ON omw_synsets(lexfile);
-
-      -- 重建 antonym_pairs：词面中文兜底，无 language
-      CREATE TABLE IF NOT EXISTS antonym_pairs_slim (
-        word_a TEXT NOT NULL,
-        word_b TEXT NOT NULL,
-        meta TEXT NOT NULL DEFAULT '{}',
-        UNIQUE (word_a, word_b)
-      );
-      INSERT OR IGNORE INTO antonym_pairs_slim (word_a, word_b, meta)
-      SELECT
-        CASE WHEN word_a < word_b THEN word_a ELSE word_b END AS wa,
-        CASE WHEN word_a < word_b THEN word_b ELSE word_a END AS wb,
-        COALESCE(meta, '{}')
-      FROM antonym_pairs;
-      DROP TABLE IF EXISTS antonym_pairs;
-      ALTER TABLE antonym_pairs_slim RENAME TO antonym_pairs;
-      CREATE INDEX IF NOT EXISTS idx_antonym_word_a ON antonym_pairs(word_a);
-      CREATE INDEX IF NOT EXISTS idx_antonym_word_b ON antonym_pairs(word_b);
-    `,
-    down: `
-      -- 不恢复已废除桥表/例句表；仅提示不可逆字段裁剪
-      SELECT 1;
-    `
-  },
-  {
-    version: 6,
-    name: 'omw_lexical_entries_slim_id_meta',
-    description: '词形表去冗余：仅保留 id + meta，字段由 omw.{offset}.{pos}.{locale}.{lemma} 解析',
-    up: `
-      CREATE TABLE IF NOT EXISTS omw_lexical_entries_id_meta (
-        id TEXT PRIMARY KEY,
-        meta TEXT NOT NULL DEFAULT '{}'
-      );
-      INSERT OR IGNORE INTO omw_lexical_entries_id_meta (id, meta)
-      SELECT id, COALESCE(meta, '{}') FROM omw_lexical_entries;
-      DROP TABLE IF EXISTS omw_lexical_entries;
-      ALTER TABLE omw_lexical_entries_id_meta RENAME TO omw_lexical_entries;
-    `,
-    down: `
-      -- 迁移 v6 不可逆（不再物化 synset_id/language/lemma/pos）
-      SELECT 1;
+      DROP TABLE IF EXISTS memory_cache;
     `
   }
 ]

@@ -153,14 +153,14 @@ export interface SemanticAlignment {
 export async function alignTagSemantics(
   tagCode: string,
   tagName: string,
-  dbService: any,
+  _dbService: any,
   _omniPort = 38200
 ): Promise<SemanticAlignment> {
-  const omwSynsets = dbService?.tagToOmw ? dbService.tagToOmw(tagCode) : []
+  // ADR-0038 / Issue #682：Desktop 不再查询 OMW 裸 SQL；概念对齐由 Omni 语义包托管
   return {
     tagCode,
     tagName,
-    omwSynsets
+    omwSynsets: []
   }
 }
 
