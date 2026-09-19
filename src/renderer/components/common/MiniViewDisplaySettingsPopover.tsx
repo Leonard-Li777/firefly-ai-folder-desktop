@@ -7,8 +7,10 @@ import { createPortal } from 'react-dom'
 import { useSettingsStore } from '../../stores/settings-store'
 import { Check, Sparkles, FileText } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import type { FileListViewMode } from '../file-explorer/FileList/types'
 
-type ViewMode = 'grid' | 'list' | 'waterfall' | 'table'
+/** 可展示的视图模式：含搜索临时态 search-list（弹窗内仍只提供 4 种常驻模式） */
+type ViewMode = FileListViewMode
 
 interface MiniViewDisplaySettingsPopoverProps {
   viewMode: ViewMode

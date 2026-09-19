@@ -32,7 +32,9 @@ export const useVirtualDirectory = () => {
   const [activeItem, setActiveItem] = useState<any | null>(null)
   const [selectedFileListFiles, setSelectedFileListFiles] = useState<any[]>([])
   const lastSelectedFileRef = useRef<any>(null)
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'waterfall'>('grid')
+  const [viewMode, setViewMode] = useState<
+    'list' | 'grid' | 'waterfall' | 'table' | 'search-list'
+  >('grid')
   const [vdirSidebarTab, setVdirSidebarTab] = useState<'directory' | 'dimensions'>('directory')
   const [dimensionGroups, setDimensionGroups] = useState<DimensionGroup[]>([])
   const [selectedTags, setSelectedTags] = useState<SelectedTag[]>([])
@@ -96,8 +98,8 @@ export const useVirtualDirectory = () => {
   // 搜索关键词非空时自动切换至 search-list 视图，清空后恢复原模式
   useSearchViewAutoSwitch({
     keyword: virtualDirectoryKeyword,
-    viewMode: viewMode as string,
-    setViewMode: setViewMode as (mode: any) => void
+    viewMode,
+    setViewMode
   })
   const { computed_limits, entitlements } = useTierStore()
 

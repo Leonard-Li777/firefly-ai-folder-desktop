@@ -10,11 +10,19 @@ import {
   SelectedTag,
   VirtualDirectoryFilter
 } from '@firefly/types'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, extractSnippet, normalizeForCache } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { DAGMaterializer } from './DAGMaterializer'
 import { taxonomyAliasCache } from '../../../services/taxonomy-alias-cache'
+import { decompressText } from '../../../utils/text-compressor'
+import {
+  HybridRankedCandidate,
+  HybridSearchArbiter,
+  HYBRID_SEARCH_POOL_SIZE,
+  slicePage,
+  splitPassages
+} from './HybridSearchArbiter'
 
 export interface FilterFilesParams {
   selectedTags?: SelectedTag[]
@@ -31,6 +39,11 @@ export interface FilterFilesParams {
   includeUnanalyzed?: boolean
 }
 
+/** 混合检索分页引用：已分析候选 / 未分析 FS 命中 */
+type HybridPageRef =
+  | { kind: 'analyzed'; fileFingerprint: string; hasLiteral: boolean }
+  | { kind: 'unanalyzed'; path: string; name: string; fileFingerprint?: string }
+
 /**
  * TagTreeQuery 深模块
  * 
@@ -41,10 +54,12 @@ export interface FilterFilesParams {
  */
 export class TagTreeQuery {
   private dagMaterializer: DAGMaterializer
+  private hybridArbiter: HybridSearchArbiter
 
-  constructor(private db: Database.Database) {
+  constructor(private db: Database.Database, hybridArbiter?: HybridSearchArbiter) {
     this.ensureSqlFunctions()
     this.dagMaterializer = new DAGMaterializer(db)
+    this.hybridArbiter = hybridArbiter ?? new HybridSearchArbiter(db)
   }
 
   private ensureSqlFunctions(): void {
@@ -637,6 +652,13 @@ export class TagTreeQuery {
       const limit = params.limit !== undefined ? Math.max(0, params.limit) : Math.max(1, pageSize)
       const offset = params.offset !== undefined ? Math.max(0, params.offset) : Math.max(0, (page - 1) * limit)
 
+      // 混合检索分支：存在非空搜索词时启用（ADR-0039 Hybrid Search Everything）
+      // 本地 FTS5 BM25 + Omni 向量语义 + 文件名提升加权 RRF 融合，真实目录模式追加 FS 未分析命中
+      const searchKeyword = (params.searchKeyword || '').trim()
+      if (searchKeyword) {
+        return this.getFilteredFilesPagedHybrid({ ...params, limit, offset }, searchKeyword)
+      }
+
       // 1. 查询符合条件的总数
       const countQuery = `
         SELECT COUNT(DISTINCT wf.id) as total
@@ -714,6 +736,436 @@ export class TagTreeQuery {
       logger.error(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 分页过滤文件失败:', error)
       return { items: [], total: 0 }
     }
+  }
+
+  /**
+   * 混合检索分页（ADR-0039 / Ticket-2）：
+   * 1. 委托 HybridSearchArbiter 融合 FTS5 BM25 + Omni 向量 + 文件名提升，
+   *    真实目录模式下追加 FS 实时未分析命中；
+   * 2. 按融合候选的统一顺序分页；当前页已分析候选补充富正文摘要（字面高亮 / 段落级语义对齐）；
+   * 3. 未分析命中由 FS 返回属性直接合成 FileItem（matchType = 'unanalyzed'）。
+   * 任一步骤异常均回退为去除搜索词的常规分页，避免搜索功能受损。
+   */
+  private async getFilteredFilesPagedHybrid(
+    params: FilterFilesParams,
+    keyword: string
+  ): Promise<FilteredFilesResponse> {
+    const startTime = performance.now()
+    let dbQueryTime = 0
+    try {
+      const workspaceDirectoryPath = params.workspaceDirectoryPath
+      // 基础过滤条件（不含 searchKeyword 自身的 LIKE 条件，交由仲裁器在各检索模型上叠加）
+      const { whereClauses, queryParams, showMissing } = this.buildFilterQuery({
+        ...params,
+        searchKeyword: undefined
+      })
+
+      const limit = params.limit !== undefined ? Math.max(0, params.limit) : Math.max(1, params.pageSize ?? 100)
+      const offset = params.offset !== undefined ? Math.max(0, params.offset) : Math.max(0, ((params.page ?? 1) - 1) * limit)
+
+      // 1. 仲裁融合（FTS + 向量 + 文件名）
+      const pool = await this.hybridArbiter.searchHybrid({
+        keyword,
+        whereClauses,
+        queryParams,
+        workspaceDirectoryPath,
+        poolSize: HYBRID_SEARCH_POOL_SIZE
+      })
+
+      if (pool.failures.fts || pool.failures.vector || pool.failures.fs) {
+        logger.debug(
+          LogCategory.VIRTUAL_DIRECTORY,
+          `[TagTreeQuery] 混合检索部分降级: fts=${pool.failures.fts}, vector=${pool.failures.vector}, fs=${pool.failures.fs}`
+        )
+      }
+
+      // 2. 统一有序引用（已分析候选在前，未分析命中追加尾部）：
+      //    - 先取仲裁融合的高精度候选；
+      //    - 再用旧版 LIKE 全字段查询（buildFilterQuery 含 searchKeyword）作为补充候选源，
+      //      保留路径/作者/语言/描述/标签等基础字段命中与 includeUnanalyzed 未分析行（Hybrid Search Everything 兼容层）；
+      //    - FS 实时未分析命中追加最后。
+      const seenFp = new Set<string>()
+      const seenUnanalyzedPath = new Set<string>()
+      const fullPool: HybridPageRef[] = []
+      // 2.1 仲裁候选（已分析）
+      for (const c of pool.candidates) {
+        if (!c.fileFingerprint) continue
+        if (seenFp.has(c.fileFingerprint)) continue
+        seenFp.add(c.fileFingerprint)
+        fullPool.push({
+          kind: 'analyzed',
+          fileFingerprint: c.fileFingerprint,
+          hasLiteral: c.hasLiteral
+        })
+      }
+      // 2.2 旧 LIKE 全字段语义补充候选（已分析 + includeUnanalyzed 未分析行）
+      const legacyRefs = this.fetchLegacySearchRefs(params)
+      for (const ref of legacyRefs.analyzed) {
+        if (!ref.fileFingerprint || seenFp.has(ref.fileFingerprint)) continue
+        seenFp.add(ref.fileFingerprint)
+        fullPool.push(ref)
+      }
+      for (const ref of legacyRefs.unanalyzed) {
+        if (ref.fileFingerprint && seenFp.has(ref.fileFingerprint)) continue
+        const key = normalizeForCache(ref.path)
+        if (seenUnanalyzedPath.has(key)) continue
+        seenUnanalyzedPath.add(key)
+        fullPool.push(ref)
+      }
+      // 2.3 FS 实时未分析命中（真实目录模式）
+      for (const h of pool.unanalyzedHits) {
+        if (h.fileFingerprint && seenFp.has(h.fileFingerprint)) continue
+        const key = normalizeForCache(h.path)
+        if (seenUnanalyzedPath.has(key)) continue
+        seenUnanalyzedPath.add(key)
+        fullPool.push({
+          kind: 'unanalyzed',
+          path: h.path,
+          name: h.name,
+          fileFingerprint: h.fileFingerprint
+        })
+      }
+      const { items: pageRefs, total } = slicePage(fullPool, limit, offset)
+
+      if (pageRefs.length === 0) {
+        return {
+          items: [],
+          total,
+          performance: {
+            dbQueryTime: Math.round(dbQueryTime * 100) / 100,
+            totalTime: Math.round((performance.now() - startTime) * 100) / 100
+          }
+        }
+      }
+
+      // 3. 已分析候选：加载数据库行与正文，供摘要丰富
+      const candidateByFp = new Map<string, HybridRankedCandidate>(
+        pool.candidates.map(c => [c.fileFingerprint, c])
+      )
+      const analyzedRefs = pageRefs.filter(
+        (r): r is Extract<HybridPageRef, { kind: 'analyzed' }> => r.kind === 'analyzed'
+      )
+      const analyzedFps = analyzedRefs.map(r => r.fileFingerprint)
+
+      const rowStart = performance.now()
+      const rows = analyzedFps.length ? this.fetchRowsByFingerprints(analyzedFps) : []
+      dbQueryTime += performance.now() - rowStart
+
+      const baseItems = new Map<string, FileItem>()
+      for (const item of this.mapFilesToItems(rows, workspaceDirectoryPath, showMissing)) {
+        if (item.fileFingerprint) baseItems.set(item.fileFingerprint, item)
+      }
+
+      const contentStart = performance.now()
+      const contentsByFp = analyzedFps.length
+        ? this.fetchContentsForSearch(analyzedFps)
+        : new Map<string, string>()
+      dbQueryTime += performance.now() - contentStart
+
+      const enrichment = await this.enrichSearchPage(keyword, analyzedRefs, candidateByFp, contentsByFp)
+
+      // 4. 保持融合顺序组装最终条目
+      const items: FileItem[] = []
+      for (const ref of pageRefs) {
+        if (ref.kind === 'analyzed') {
+          const base = baseItems.get(ref.fileFingerprint)
+          if (!base) continue
+          const e = enrichment.get(ref.fileFingerprint)
+          items.push({
+            ...base,
+            snippet: e?.snippet,
+            matchType: e?.matchType ?? (ref.hasLiteral ? 'fuzzy' : 'semantic'),
+            similarity: e?.similarity
+          })
+        } else {
+          items.push(this.synthesizeUnanalyzedItem(ref, workspaceDirectoryPath))
+        }
+      }
+
+      return {
+        items,
+        total,
+        performance: {
+          dbQueryTime: Math.round(dbQueryTime * 100) / 100,
+          totalTime: Math.round((performance.now() - startTime) * 100) / 100
+        }
+      }
+    } catch (error) {
+      logger.error(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 混合检索分页失败，回退常规检索:', error)
+      // 回退：去除搜索词走常规分页，保证搜索异常时功能可用
+      return this.getFilteredFilesPaged({ ...params, searchKeyword: undefined })
+    }
+  }
+
+  /**
+   * 为当前页已分析候选批量生成富正文摘要：
+   * - 字面候选（FTS 命中或文件名全子串）优先走 extractSnippet 高亮；
+   * - 无字面命中的候选走段落级语义对齐（matchPassages）；
+   * - 语义对齐缺失/失败时降级为语义首段摘要。
+   */
+  private async enrichSearchPage(
+    keyword: string,
+    analyzedRefs: Array<Extract<HybridPageRef, { kind: 'analyzed' }>>,
+    candidateByFp: Map<string, HybridRankedCandidate>,
+    contentsByFp: Map<string, string>
+  ): Promise<
+    Map<string, { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }>
+  > {
+    const result = new Map<
+      string,
+      { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }
+    >()
+
+    // 字面候选直接高亮
+    const semanticBatch: Array<{ fileFingerprint: string; text: string }> = []
+    for (const ref of analyzedRefs) {
+      const cand = candidateByFp.get(ref.fileFingerprint)
+      const text = contentsByFp.get(ref.fileFingerprint) ?? ''
+      if (cand?.hasLiteral) {
+        const highlight = extractSnippet(text, keyword, { escapeHtml: false })
+        if (highlight.hitCount > 0) {
+          result.set(ref.fileFingerprint, {
+            snippet: highlight.snippet,
+            matchType: highlight.matchType
+          })
+          continue
+        }
+      }
+      semanticBatch.push({ fileFingerprint: ref.fileFingerprint, text })
+    }
+
+    // 无字面命中 → 段落级语义对齐
+    if (semanticBatch.length > 0) {
+      const alignItems: Array<{ fileFingerprint: string; passages: string[] }> = []
+      for (const b of semanticBatch) {
+        alignItems.push({ fileFingerprint: b.fileFingerprint, passages: splitPassages(b.text) })
+      }
+      const alignMap = await this.hybridArbiter.alignPassages(
+        keyword,
+        alignItems.map(a => ({ fileFingerprint: a.fileFingerprint, passages: a.passages }))
+      )
+      for (const b of semanticBatch) {
+        const cand = candidateByFp.get(b.fileFingerprint)
+        const match = alignMap[b.fileFingerprint]
+        if (match && match.bestPassage) {
+          result.set(b.fileFingerprint, {
+            snippet: match.bestPassage,
+            matchType: 'semantic',
+            similarity: Math.round(match.similarity * 100) / 100
+          })
+        } else {
+          // 语义对齐缺失/失败 → 语义首段摘要 + 向量相似度
+          const highlight = extractSnippet(b.text, keyword, { escapeHtml: false })
+          result.set(b.fileFingerprint, {
+            snippet: highlight.snippet || undefined,
+            matchType: 'semantic',
+            similarity: cand?.vecScore
+          })
+        }
+      }
+    }
+
+    return result
+  }
+
+  /**
+   * 按指纹批量加载文件明细行（用于混合检索当前页已分析候选）
+   */
+  private fetchRowsByFingerprints(fileFingerprints: string[]): any[] {
+    if (fileFingerprints.length === 0) return []
+    const placeholders = fileFingerprints.map(() => '?').join(',')
+    const sql = `
+      SELECT
+        wf.id,
+        wf.status,
+        wf.file_fingerprint,
+        wf.path,
+        wf.name,
+        wf.is_analyzed,
+        wf.last_analyzed_at,
+        wf.thumbnail_path,
+        f.smart_name,
+        f.size,
+        f.extension,
+        f.file_group,
+        f.author,
+        f.language,
+        f.created_at,
+        f.modified_at,
+        fc.quality_score,
+        COALESCE(f.description, fc.description) as description,
+        fc.multimodal_content,
+        (
+          SELECT json_group_array(ft.name)
+          FROM file_tag_relations ftr
+          JOIN file_tags ft ON ft.code = ftr.tag_code
+          WHERE ftr.file_fingerprint = wf.file_fingerprint
+        ) as dimension_tags
+      FROM workspace_files wf
+      LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+      LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
+      WHERE wf.file_fingerprint IN (${placeholders})
+    `
+    return this.db.prepare(sql).all(...fileFingerprints) as any[]
+  }
+
+  /**
+   * 批量加载 file_contents 四类正文列并解压拼接，供摘要提取使用
+   */
+  private fetchContentsForSearch(fileFingerprints: string[]): Map<string, string> {
+    const map = new Map<string, string>()
+    if (fileFingerprints.length === 0) return map
+    const placeholders = fileFingerprints.map(() => '?').join(',')
+    try {
+      const rows = this.db
+        .prepare(`
+          SELECT file_fingerprint, content, multimodal_content, ocr, lrc
+          FROM file_contents
+          WHERE file_fingerprint IN (${placeholders})
+        `)
+        .all(...fileFingerprints) as Array<{
+        file_fingerprint: string
+        content: string | Buffer | null
+        multimodal_content: string | Buffer | null
+        ocr: string | Buffer | null
+        lrc: string | Buffer | null
+      }>
+      for (const r of rows) {
+        const parts: string[] = []
+        for (const col of [r.content, r.multimodal_content, r.ocr, r.lrc]) {
+          if (col === null || col === undefined) continue
+          try {
+            const text = decompressText(col)
+            if (text && text.trim().length > 0) parts.push(text)
+          } catch {
+            // 单列解压失败不影响其它列
+          }
+        }
+        if (parts.length > 0) map.set(r.file_fingerprint, parts.join('\n'))
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 加载检索正文失败: ', msg)
+    }
+    return map
+  }
+
+  /**
+   * 由 FS 未分析命中合成 FileItem（仅含目录名、路径等基础属性）
+   */
+  private synthesizeUnanalyzedItem(
+    ref: Extract<HybridPageRef, { kind: 'unanalyzed' }>,
+    workspaceDirectoryPath?: string
+  ): FileItem {
+    let relativePathPrefix = ''
+    if (workspaceDirectoryPath) {
+      const sep = path.sep
+      const prefix = workspaceDirectoryPath.endsWith(sep)
+        ? workspaceDirectoryPath
+        : workspaceDirectoryPath + sep
+      const fileDir = path.dirname(ref.path)
+      if (fileDir.startsWith(prefix)) {
+        const rel = path.relative(workspaceDirectoryPath, fileDir)
+        if (rel && rel !== '.') relativePathPrefix = rel
+      }
+    }
+    return {
+      id: `unanalyzed:${ref.path}`,
+      status: 1,
+      fileFingerprint: ref.fileFingerprint,
+      path: ref.path,
+      parentPath: path.dirname(ref.path),
+      name: ref.name,
+      size: 0,
+      extension: path.extname(ref.name).replace(/^\./, '').toLowerCase(),
+      modifiedAt: new Date(),
+      isDirectory: false,
+      isAnalyzed: false,
+      matchType: 'unanalyzed',
+      isUnanalyzed: true,
+      relativePathPrefix: relativePathPrefix || undefined
+    }
+  }
+
+  /**
+   * 旧版 LIKE 全字段语义补充候选源（Hybrid Search Everything 兼容层）：
+   * 仲裁融合只覆盖 FTS5 BM25 / 向量 / 文件名提升，为保留路径、作者、语言、
+   * 描述、扩展名（f.extension）、分类（f.file_group）等基础字段以及标签名的
+   * LIKE 命中（含 includeUnanalyzed 未分析行），此处复用 buildFilterQuery
+   * （保留 searchKeyword 自身的 LIKE 条件）作为补充候选源，
+   * 按 sortBy 排序、单源容量封顶 HYBRID_SEARCH_POOL_SIZE。
+   * 任一步骤异常（如短关键词触发了 trigram FTS 语法错误）仅降级为空补充集，
+   * 融合池仍保留仲裁结果，不影响搜索可用性。
+   */
+  private fetchLegacySearchRefs(
+    params: FilterFilesParams
+  ): {
+    analyzed: Array<Extract<HybridPageRef, { kind: 'analyzed' }>>
+    unanalyzed: Array<Extract<HybridPageRef, { kind: 'unanalyzed' }>>
+  } {
+    const analyzed: Array<Extract<HybridPageRef, { kind: 'analyzed' }>> = []
+    const unanalyzed: Array<Extract<HybridPageRef, { kind: 'unanalyzed' }>> = []
+    try {
+      const { sortBy = 'name', sortOrder = 'asc' } = params
+      const { whereClauses, queryParams } = this.buildFilterQuery(params)
+      // 与常规分页一致的排序规则
+      const sortMap: Record<string, string> = {
+        name: 'wf.name',
+        date: 'COALESCE(f.modified_at, wf.modified_at)',
+        size: 'COALESCE(f.size, 0)',
+        type: 'COALESCE(f.extension, "")',
+        smartName: 'COALESCE(f.smart_name, wf.name)',
+        analysisStatus: 'wf.is_analyzed',
+        qualityScore: 'COALESCE(fc.quality_score, 0)',
+        author: 'COALESCE(f.author, "")',
+        language: 'COALESCE(f.language, "")'
+      }
+      const sortColumn = sortMap[sortBy] || 'wf.name'
+      const safeSortOrder = sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC'
+
+      const sql = `
+        SELECT
+          wf.file_fingerprint AS file_fingerprint,
+          wf.name AS name,
+          wf.path AS path,
+          wf.is_analyzed AS is_analyzed
+        FROM workspace_files wf
+        LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
+        LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
+        WHERE ${whereClauses.join(' AND ')}
+        ORDER BY ${sortColumn} ${safeSortOrder}
+        LIMIT ?
+      `
+      const rows = this.db.prepare(sql).all(...queryParams, HYBRID_SEARCH_POOL_SIZE) as Array<{
+        file_fingerprint: string | null
+        name: string
+        path: string
+        is_analyzed: number
+      }>
+      for (const r of rows) {
+        if (!r.path) continue
+        if (r.is_analyzed) {
+          if (r.file_fingerprint) {
+            analyzed.push({ kind: 'analyzed', fileFingerprint: r.file_fingerprint, hasLiteral: true })
+          }
+        } else {
+          unanalyzed.push({
+            kind: 'unanalyzed',
+            path: r.path,
+            name: r.name,
+            fileFingerprint: r.file_fingerprint ?? undefined
+          })
+        }
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] 旧 LIKE 全字段补充候选查询失败，仅保留仲裁融合结果:',
+        msg
+      )
+    }
+    return { analyzed, unanalyzed }
   }
 
   /**

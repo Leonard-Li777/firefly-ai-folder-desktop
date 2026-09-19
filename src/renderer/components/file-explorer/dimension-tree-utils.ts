@@ -26,7 +26,168 @@ export function parseTagKey(key: string) {
 }
 
 /**
- * 递归构建维度树（支持基于 triggerTags 的细粒度层级）
+ * 顶层主干排序权重接口
+ */
+export interface SortWeightNode {
+  id?: number | string
+  code?: string
+  name?: string
+  tagValue?: string
+  level?: number
+  order?: number
+  sort_order?: number
+  fileCount?: number
+  omwCount?: number
+  tags?: Array<{ fileCount?: number; omwCount?: number; [key: string]: any }>
+  meta?: any
+  metadata?: any
+  [key: string]: any
+}
+
+/**
+ * 提取主干节点的三级权重元组：
+ * 1. order: 内置顺序（升序优先，如 1 < 2 < 3）
+ * 2. fileCount: 关联文件数（降序优先）
+ * 3. omwCount: 语言学词频（降序优先）
+ */
+export function getTopLevelSortWeight(node: SortWeightNode): {
+  hasOrder: boolean
+  order: number
+  fileCount: number
+  omwCount: number
+} {
+  // 1. 内置 order 提取
+  let orderVal: number | undefined = undefined
+
+  // 1.1 直接属性
+  if (typeof node.order === 'number' && Number.isFinite(node.order)) {
+    orderVal = node.order
+  } else if (typeof node.sort_order === 'number' && Number.isFinite(node.sort_order)) {
+    orderVal = node.sort_order
+  }
+
+  // 1.2 meta 或 metadata 属性
+  const metaObj =
+    typeof node.meta === 'object' && node.meta !== null
+      ? node.meta
+      : typeof node.metadata === 'object' && node.metadata !== null
+        ? node.metadata
+        : typeof node.meta === 'string'
+          ? (() => {
+              try {
+                return JSON.parse(node.meta)
+              } catch {
+                return null
+              }
+            })()
+          : null
+
+  if (orderVal === undefined && metaObj) {
+    if (typeof metaObj.order === 'number' && Number.isFinite(metaObj.order)) {
+      orderVal = metaObj.order
+    } else if (typeof metaObj.sort_order === 'number' && Number.isFinite(metaObj.sort_order)) {
+      orderVal = metaObj.sort_order
+    }
+  }
+
+  // 1.3 针对老版本内置维度 ID (例如 id: 1 为文件类型) 且为 builtin 维度的回退支持
+  if (
+    orderVal === undefined &&
+    typeof node.id === 'number' &&
+    Number.isFinite(node.id) &&
+    node.id > 0 &&
+    (node.code?.startsWith('builtin.') ||
+      metaObj?.source === 'builtin' ||
+      node.code?.startsWith('dim.'))
+  ) {
+    orderVal = node.id
+  }
+
+  const hasOrder = orderVal !== undefined && Number.isFinite(orderVal)
+  const order = hasOrder ? (orderVal as number) : Infinity
+
+  // 2. fileCount 文件关联数提取（降序）
+  let fileCount = 0
+  if (typeof node.fileCount === 'number' && Number.isFinite(node.fileCount)) {
+    fileCount = node.fileCount
+  } else if (Array.isArray(node.tags) && node.tags.length > 0) {
+    fileCount = node.tags.reduce((acc, t) => {
+      const c = typeof t.fileCount === 'number' && Number.isFinite(t.fileCount) ? t.fileCount : 0
+      return acc + c
+    }, 0)
+  }
+
+  // 3. omwCount 词频提取（降序）
+  let omwCount = 0
+  if (typeof node.omwCount === 'number' && Number.isFinite(node.omwCount)) {
+    omwCount = node.omwCount
+  } else if (metaObj && typeof metaObj.count === 'number' && Number.isFinite(metaObj.count)) {
+    omwCount = metaObj.count
+  } else if (Array.isArray(node.tags) && node.tags.length > 0) {
+    // 若组未直接标注词频，取其 tags 中的最高词频
+    omwCount = node.tags.reduce((max, t) => {
+      const tc =
+        typeof t.omwCount === 'number' && Number.isFinite(t.omwCount)
+          ? t.omwCount
+          : t.meta && typeof t.meta.count === 'number' && Number.isFinite(t.meta.count)
+            ? t.meta.count
+            : 0
+      return tc > max ? tc : max
+    }, 0)
+  }
+
+  return {
+    hasOrder,
+    order,
+    fileCount,
+    omwCount
+  }
+}
+
+/**
+ * 顶层主干比较函数（严格执行三级动态权重排序）：
+ * SortWeight = <builtin.meta.order (升序), file_count (降序), omw.meta.count (降序)>
+ */
+export function compareTopLevelNodes(a: SortWeightNode, b: SortWeightNode): number {
+  const wA = getTopLevelSortWeight(a)
+  const wB = getTopLevelSortWeight(b)
+
+  // 优先级 1（最高）：builtin.meta.order 升序优先（如 1 < 2 < 3）
+  if (wA.hasOrder && wB.hasOrder) {
+    if (wA.order !== wB.order) {
+      return wA.order - wB.order
+    }
+  } else if (wA.hasOrder) {
+    return -1
+  } else if (wB.hasOrder) {
+    return 1
+  }
+
+  // 优先级 2：关联文件数 file_count 降序（越高越靠前）
+  if (wB.fileCount !== wA.fileCount) {
+    return wB.fileCount - wA.fileCount
+  }
+
+  // 优先级 3：语言学词频 omw.meta.count 降序（越大越靠前）
+  if (wB.omwCount !== wA.omwCount) {
+    return wB.omwCount - wA.omwCount
+  }
+
+  // 优先级 4（兜底）：按名称/代码稳定字母序升序排列
+  const labelA = a.name || a.tagValue || a.code || String(a.id ?? '')
+  const labelB = b.name || b.tagValue || b.code || String(b.id ?? '')
+  return labelA.localeCompare(labelB)
+}
+
+/**
+ * 顶层主干数组动态排序
+ */
+export function sortTopLevelDimensionNodes<T extends SortWeightNode>(nodes: T[]): T[] {
+  return [...nodes].sort(compareTopLevelNodes)
+}
+
+/**
+ * 递归构建维度树（支持基于 triggerTags 的细粒度层级与顶层主干开放准入）
  */
 export function buildDimensionTree(
   dimensionGroups: DimensionGroup[],
@@ -38,12 +199,17 @@ export function buildDimensionTree(
   const map = new Map<number | null, DimensionGroup[]>()
   const childrenSet = new Set<number>()
   dimensionGroups.forEach(g => {
-    if (!g.triggerConditions || g.triggerConditions.length === 0) {
+    // 开放准入：凡无父级依赖、无触发条件，或声明为根层级的组均进入顶层候选池
+    const isTopLevel =
+      (!g.triggerConditions || g.triggerConditions.length === 0) &&
+      (!g.parentDimensionIds || g.parentDimensionIds.length === 0)
+
+    if (isTopLevel || g.level === 0) {
       const list = map.get(null) || []
       list.push(g)
       map.set(null, list)
     }
-    if (g.parentDimensionIds) {
+    if (g.parentDimensionIds && g.parentDimensionIds.length > 0) {
       g.parentDimensionIds.forEach(pid => {
         const list = map.get(pid) || []
         list.push(g)
@@ -95,12 +261,10 @@ export function buildDimensionTree(
         } as DimensionTreeNode
       })
       .sort((a, b) => {
-        // 文件类型 (ID 1) 永远排在最首位
-        if (a.id === 1) return -1
-        if (b.id === 1) return 1
-        // 内容标签 (ID 28) 永远排在最后位
-        if (a.id === 28) return 1
-        if (b.id === 28) return -1
+        if (lvl === 0) {
+          // 第一层主干节点：严格执行三级动态权重排序
+          return compareTopLevelNodes(a, b)
+        }
         if (a.level !== b.level) return a.level - b.level
         return a.id - b.id
       })

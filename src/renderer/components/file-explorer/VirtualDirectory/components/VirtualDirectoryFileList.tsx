@@ -18,8 +18,8 @@ interface VirtualDirectoryFileListProps {
   activeItem: any | null
   handleFileListFileSelect: (newSelection: any[], isFromCheckbox?: boolean) => void
   handleFileListDirectoryChange: (path: string) => void
-  viewMode: 'list' | 'grid' | 'waterfall'
-  setViewMode: (mode: 'list' | 'grid' | 'waterfall') => void
+  viewMode: 'list' | 'grid' | 'waterfall' | 'table' | 'search-list'
+  setViewMode: (mode: 'list' | 'grid' | 'waterfall' | 'table' | 'search-list') => void
   currentWorkspaceDirectory: any
   isSplitView: boolean
   loadTree: () => void
@@ -86,7 +86,7 @@ export const VirtualDirectoryFileList: React.FC<VirtualDirectoryFileListProps> =
         onFileSelect={handleFileListFileSelect}
         onDirectoryChange={handleFileListDirectoryChange}
         viewMode={viewMode}
-        onViewModeChange={mode => setViewMode(mode as any)}
+        onViewModeChange={mode => setViewMode(mode)}
         currentPath={selectedNode ? selectedNode.name : currentVD?.name || ''}
         isRealDirectory={false}
         selectionEnabled={false}

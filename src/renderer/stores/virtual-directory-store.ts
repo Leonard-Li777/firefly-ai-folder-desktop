@@ -9,6 +9,10 @@ import {
   SavedVirtualDirectory,
   AnalysisQueueItem
 } from '@firefly/types'
+import {
+  sortTopLevelDimensionNodes,
+  SortWeightNode
+} from '../components/file-explorer/dimension-tree-utils'
 
 /**
  * #625 前端纯树形选择状态机
@@ -40,6 +44,10 @@ interface VirtualDirectoryStore {
   // Dimension groups and tags
   dimensionGroups: DimensionGroup[]
   setDimensionGroups: (groups: DimensionGroup[]) => void
+  /** 获取经三级动态权重排序后的顶层主干维度组 */
+  getSortedTopLevelGroups: () => DimensionGroup[]
+  /** 动态更新文件计数并触发响应式重新排序 */
+  updateTagCounts: (countMap: Record<string, number> | Map<string, number>) => void
 
   // #625: 标签拓扑（code → 节点信息），由 setDimensionGroups 自动构建
   tagTopology: Map<string, TagTopologyNode>
@@ -85,7 +93,7 @@ interface VirtualDirectoryStore {
     | 'author'
     | 'language'
   sortOrder: 'asc' | 'desc'
-  viewMode: 'list' | 'grid' | 'waterfall'
+  viewMode: 'list' | 'grid' | 'waterfall' | 'table' | 'search-list'
   setSortBy: (
     sortBy:
       | 'name'
@@ -99,7 +107,7 @@ interface VirtualDirectoryStore {
       | 'language'
   ) => void
   setSortOrder: (order: 'asc' | 'desc') => void
-  setViewMode: (mode: 'list' | 'grid' | 'waterfall') => void
+  setViewMode: (mode: 'list' | 'grid' | 'waterfall' | 'table' | 'search-list') => void
 
   // Saved virtual directories
   savedDirectories: SavedVirtualDirectory[]
@@ -244,10 +252,65 @@ export const useVirtualDirectoryStore = create<VirtualDirectoryStore>((set, get)
 
   setWorkspaceDirectories: directories => set({ workspaceDirectories: directories }),
 
-  // Dimension groups（自动构建拓扑）
+  // Dimension groups（自动构建拓扑并计算聚合计数）
   setDimensionGroups: groups => {
-    const topology = buildTagTopology(groups)
-    set({ dimensionGroups: groups, tagTopology: topology })
+    const groupsWithCounts = groups.map(g => {
+      const computedFileCount =
+        typeof g.fileCount === 'number'
+          ? g.fileCount
+          : (g.tags || []).reduce((acc, t) => acc + (t.fileCount || 0), 0)
+      return {
+        ...g,
+        fileCount: computedFileCount
+      }
+    })
+    const topology = buildTagTopology(groupsWithCounts)
+    set({ dimensionGroups: groupsWithCounts, tagTopology: topology })
+  },
+
+  /**
+   * 获取经三级动态权重排序后的顶层主干维度组：
+   * SortWeight = <builtin.meta.order (升序), file_count (降序), omw.meta.count (降序)>
+   */
+  getSortedTopLevelGroups: () => {
+    const { dimensionGroups } = get()
+    const topLevelGroups = dimensionGroups.filter(
+      g =>
+        g.level === 0 ||
+        ((!g.triggerConditions || g.triggerConditions.length === 0) &&
+          (!g.parentDimensionIds || g.parentDimensionIds.length === 0))
+    )
+    return sortTopLevelDimensionNodes(topLevelGroups)
+  },
+
+  /**
+   * 响应式更新标签文件计数，并触发排序重新计算
+   */
+  updateTagCounts: countMap => {
+    const { dimensionGroups } = get()
+    const getCount = (code: string, fallback?: number) => {
+      if (countMap instanceof Map) {
+        return countMap.get(code) ?? fallback ?? 0
+      }
+      return countMap[code] ?? fallback ?? 0
+    }
+
+    const updatedGroups = dimensionGroups.map(group => {
+      let groupTotal = 0
+      const updatedTags = group.tags.map(tag => {
+        const key = tag.code || tag.tagValue
+        const newCount = getCount(key, tag.fileCount)
+        groupTotal += newCount
+        return { ...tag, fileCount: newCount }
+      })
+      return {
+        ...group,
+        tags: updatedTags,
+        fileCount: groupTotal
+      }
+    })
+
+    set({ dimensionGroups: updatedGroups })
   },
 
   // ========== #625 纯树形状态机核心 ==========
@@ -535,3 +598,20 @@ export const useVirtualDirectoryStore = create<VirtualDirectoryStore>((set, get)
     }
   }
 }))
+
+/**
+ * Selector: 获取按三级动态权重排序后的顶层主干维度组
+ * SortWeight = <builtin.meta.order (升序), file_count (降序), omw.meta.count (降序)>
+ */
+export const selectSortedTopLevelGroups = (
+  state: Pick<VirtualDirectoryStore, 'dimensionGroups'>
+): DimensionGroup[] => {
+  const topLevel = (state.dimensionGroups || []).filter(
+    g =>
+      g.level === 0 ||
+      ((!g.triggerConditions || g.triggerConditions.length === 0) &&
+        (!g.parentDimensionIds || g.parentDimensionIds.length === 0))
+  )
+  return sortTopLevelDimensionNodes(topLevel)
+}
+

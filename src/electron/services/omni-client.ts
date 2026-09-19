@@ -68,6 +68,41 @@ export interface OmniVectorDeleteResponse {
   error?: string
 }
 
+/** 真实目录快速文件名检索命中项 */
+export interface OmniSearchFsItem {
+  path: string
+  name: string
+  fileFingerprint?: string | null
+  isAnalyzed?: boolean
+}
+
+/** 真实目录快速文件名检索响应 */
+export interface OmniSearchFsResponse {
+  items: OmniSearchFsItem[]
+  count: number
+  durationMs: number
+}
+
+/** 段落级语义对齐请求项 */
+export interface OmniMatchPassagesItem {
+  fileFingerprint: string
+  passages: string[]
+}
+
+/** 段落级语义对齐匹配结果 */
+export interface OmniPassageMatch {
+  fileFingerprint: string
+  bestPassageIndex: number
+  bestPassage: string
+  similarity: number
+}
+
+/** 段落级语义对齐响应 */
+export interface OmniMatchPassagesResponse {
+  matches: OmniPassageMatch[]
+  durationMs: number
+}
+
 const DEFAULT_TIMEOUT_MS = 8000
 
 /**
@@ -186,6 +221,36 @@ export class OmniClient {
     return this.request<OmniVectorDeleteResponse>('/api/v1/vector/delete', {
       method: 'DELETE',
       body: JSON.stringify({ fileFingerprints })
+    })
+  }
+
+  /**
+   * 真实目录快速文件名检索：GET /api/v1/search/fs?dir={dir}&q={q}&limit={limit}
+   * 由 Omni 内在 walker 直接扫描磁盘目录返回实时命中（含未 AI 分析文件），
+   * 结果中带 fileFingerprint 的项即为已分析文件，可与向量/FTS 候选去重
+   */
+  async searchFastFs(
+    dir: string,
+    query: string,
+    limit = 100
+  ): Promise<OmniSearchFsResponse | null> {
+    const params = new URLSearchParams({ dir: dir, q: query, limit: String(limit) })
+    return this.request<OmniSearchFsResponse>(`/api/v1/search/fs?${params.toString()}`)
+  }
+
+  /**
+   * 段落级语义对齐：POST /api/v1/vector/match-passages
+   * 将查询向量与候选文件的前置分段列表对齐，返回每文件最契合段落与相似度，
+   * 用于对无字面命中候选生成语义召回摘要
+   */
+  async matchPassages(
+    query: string,
+    items: OmniMatchPassagesItem[]
+  ): Promise<OmniMatchPassagesResponse | null> {
+    if (!items.length) return { matches: [], durationMs: 0 }
+    return this.request<OmniMatchPassagesResponse>('/api/v1/vector/match-passages', {
+      method: 'POST',
+      body: JSON.stringify({ query, items })
     })
   }
 }

@@ -66,8 +66,8 @@ export const useAnalyzedDirectoryState = (
   // 搜索关键词非空时自动切换至 search-list 视图，清空后恢复原模式
   useSearchViewAutoSwitch({
     keyword: analyzedDirectoryKeyword,
-    viewMode: viewMode as string,
-    setViewMode: setViewMode as (mode: any) => void
+    viewMode,
+    setViewMode
   })
   const { snapshot } = useAnalysisQueueStore()
 

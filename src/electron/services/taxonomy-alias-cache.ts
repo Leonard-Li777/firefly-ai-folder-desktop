@@ -168,8 +168,13 @@ export class TaxonomyAliasCache {
       }
       collect(root, root.code, 1)
 
-      // DimensionMetadata 的 flag 字段包含 source 等扩展标记
-      const dimensionMeta: DimensionMetadata = { source: root.source || 'builtin' }
+      // DimensionMetadata 的 flag 字段包含 source 等扩展标记与 order
+      const orderVal =
+        typeof root.sortOrder === 'number' && root.sortOrder > 0 ? root.sortOrder : undefined
+      const dimensionMeta: DimensionMetadata = {
+        source: root.source || 'builtin',
+        ...(orderVal !== undefined ? { order: orderVal } : {})
+      }
 
       groups.push({
         id,
@@ -177,6 +182,7 @@ export class TaxonomyAliasCache {
         level: 0,
         tags,
         code: root.code,
+        order: orderVal,
         isMultiSelect: false,
         meta: dimensionMeta,
         metadata: dimensionMeta

@@ -60,6 +60,8 @@ interface SearchListCardProps {
   formatFileSize: (size?: number) => string
   onItemClick: (index: number, e: React.MouseEvent) => void
   onContextMenu: (e: React.MouseEvent, item: any) => void
+  /** 双击打开：预览或系统默认程序打开（PRD：未分析文件也支持直接打开） */
+  onDoubleClick?: () => void
   isSelected?: boolean
   isActive?: boolean
   index: number
@@ -78,6 +80,7 @@ export const SearchListCard = React.memo(
     formatFileSize,
     onItemClick,
     onContextMenu,
+    onDoubleClick,
     isSelected,
     isActive,
     index
@@ -99,8 +102,13 @@ export const SearchListCard = React.memo(
     const handleAnalyzeNow = (e: React.MouseEvent) => {
       e.stopPropagation()
       if (!item.path) return
-      window.electronAPI
-        ?.addToAnalysisQueue?.(
+      const addFn = window.electronAPI?.addToAnalysisQueue
+      if (typeof addFn !== 'function') {
+        toast.error(t('加入分析队列失败: {message}', { message: 'IPC unavailable' }))
+        return
+      }
+      Promise.resolve(
+        addFn(
           [
             {
               path: item.path,
@@ -111,6 +119,7 @@ export const SearchListCard = React.memo(
           ],
           false
         )
+      )
         .then(() => {
           toast.success(t('已加入分析队列'))
         })
@@ -133,6 +142,7 @@ export const SearchListCard = React.memo(
         )}
         data-index={index}
         onClick={e => onItemClick(index, e)}
+        onDoubleClick={() => onDoubleClick?.()}
         onContextMenu={e => onContextMenu(e, item)}
       >
         {/* 元数据行：图标 + 名称 + 匹配徽章 + 时间/大小 */}

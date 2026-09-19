@@ -1,8 +1,9 @@
 import React from 'react'
 import { FileItem, DirectoryItem } from '@firefly/types'
 import { PageId } from '../../../constants/page-ids'
+import type { FileListViewMode } from '../FileList/types'
 
-export type ViewMode = 'grid' | 'list' | 'waterfall' | 'table'
+export type ViewMode = FileListViewMode
 
 export interface FileExplorerLayoutContext {
   viewMode: ViewMode

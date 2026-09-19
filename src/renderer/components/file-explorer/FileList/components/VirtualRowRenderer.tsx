@@ -47,6 +47,8 @@ interface VirtualRowRendererInnerProps {
   gridCardWidth?: number
   listFontSize?: number
   viewMode?: string
+  /** 搜索卡片双击打开回调（可选；缺省时由 Inner 回退预览/系统打开） */
+  onFileDoubleClick?: (file: FileType) => void
 }
 
 const areEqual = (
@@ -68,6 +70,11 @@ const areEqual = (
     prevProps.item?.modifiedAt !== nextProps.item?.modifiedAt ||
     prevProps.item?.size !== nextProps.item?.size ||
     prevProps.fileItem?.qualityScore !== nextProps.fileItem?.qualityScore ||
+    // 搜索列表卡片依赖的字段，变化时需失效 memo
+    prevProps.fileItem?.snippet !== nextProps.fileItem?.snippet ||
+    prevProps.fileItem?.matchType !== nextProps.fileItem?.matchType ||
+    prevProps.fileItem?.similarity !== nextProps.fileItem?.similarity ||
+    prevProps.fileItem?.isUnanalyzed !== nextProps.fileItem?.isUnanalyzed ||
     prevProps.onFileSelect !== nextProps.onFileSelect ||
     prevProps.getSelectedFiles !== nextProps.getSelectedFiles ||
     prevProps.selectionEnabled !== nextProps.selectionEnabled ||
@@ -119,7 +126,9 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
     columnWidths,
     totalWidth,
     selectionEnabled,
-    pageId
+    pageId,
+    viewMode,
+    onFileDoubleClick
   } = props
 
   const selectedFilesRef = useRef(selectedFiles)
@@ -183,7 +192,35 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
   const isRowEffectiveSelected = Boolean(isSelected || isActive)
 
   // 搜索列表模式：以专属搜索卡片渲染（含匹配徽章、路径、富正文摘要与“立即分析”插队）
-  if (props.viewMode === 'search-list' && !isDirectory && fileItem) {
+  if (viewMode === 'search-list' && !isDirectory && fileItem) {
+    /** 搜索卡片双击：优先外部 onFileDoubleClick，否则复用预览/系统打开逻辑 */
+    const handleSearchCardDoubleClick = () => {
+      if (onFileDoubleClick) {
+        onFileDoubleClick(fileItem)
+        return
+      }
+      if (!fileItem.path) return
+      const ext =
+        fileItem.extension ||
+        getExtFromSmartName(fileItem.smartName || fileItem.name || '') ||
+        fileItem.path.split('.').pop() ||
+        ''
+      const routeType = getPreviewRouteType(ext)
+      if (routeType !== 'unsupported') {
+        usePreviewOverlayStore
+          .getState()
+          .openPreview(fileItem.path, fileItem.smartName || fileItem.name || '', ext, pageId)
+      } else {
+        window.electronAPI!.utils.openFileWithDefaultApp(fileItem.path).catch((error: Error) => {
+          logger.error(LogCategory.RENDERER, '打开文件失败:', error)
+          const message =
+            error?.message?.replace(/^Error invoking remote method.*?: Error: /, '') ||
+            String(error)
+          toast.error(t('打开文件失败: {message}', { message }))
+        })
+      }
+    }
+
     return (
       <div style={{ width: totalWidth, height: '100%' }}>
         <SearchListCard
@@ -192,6 +229,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
           formatFileSize={formatFileSize}
           onItemClick={onItemClick}
           onContextMenu={onContextMenu}
+          onDoubleClick={handleSearchCardDoubleClick}
           isSelected={isSelected}
           isActive={Boolean(isActive)}
           index={index}
@@ -554,6 +592,11 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
   if (prevItem.modifiedAt !== nextItem.modifiedAt) return false
   if (prevItem.size !== nextItem.size) return false
   if (prevItem.path !== nextItem.path) return false
+  // 搜索结果字段：snippet/matchType/similarity/isUnanalyzed 变化时必须重渲染搜索卡片
+  if ((prevItem as any).snippet !== (nextItem as any).snippet) return false
+  if ((prevItem as any).matchType !== (nextItem as any).matchType) return false
+  if ((prevItem as any).similarity !== (nextItem as any).similarity) return false
+  if ((prevItem as any).isUnanalyzed !== (nextItem as any).isUnanalyzed) return false
 
   // activeItem 比对：若引用一致则直接跳过路径比对
   if (prevData.activeItem !== nextData.activeItem) {
@@ -623,7 +666,9 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
     columnWidths,
     totalWidth,
     selectionEnabled,
-    pageId
+    pageId,
+    viewMode,
+    onFileDoubleClick
   } = data
   const swapFileNameDisplay = swapFileNameDisplayRaw ?? false
 
@@ -678,6 +723,9 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
         pageId={pageId}
         gridCardWidth={data.gridCardWidth}
         listFontSize={data.listFontSize}
+        // search-list 模式必须透传给 Inner，否则 SearchListCard 分支永不触发
+        viewMode={data.viewMode}
+        onFileDoubleClick={onFileDoubleClick}
       />
     </div>
   )

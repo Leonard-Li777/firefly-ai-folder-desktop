@@ -82,6 +82,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
     if (externalViewMode !== undefined) return externalViewMode
     try {
       const saved = localStorage.getItem(pageViewModeKey) as ViewMode
+      // search-list 为搜索临时态，不从持久化恢复
       if (saved && ['grid', 'list', 'waterfall', 'table'].includes(saved)) {
         return saved
       }

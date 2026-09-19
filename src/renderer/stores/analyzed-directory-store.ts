@@ -50,7 +50,7 @@ interface AnalyzedDirectoryStore {
     | 'author'
     | 'language'
   sortOrder: 'asc' | 'desc'
-  viewMode: 'list' | 'grid' | 'waterfall'
+  viewMode: 'list' | 'grid' | 'waterfall' | 'table' | 'search-list'
   setSortBy: (
     sortBy:
       | 'name'
@@ -64,7 +64,7 @@ interface AnalyzedDirectoryStore {
       | 'language'
   ) => void
   setSortOrder: (order: 'asc' | 'desc') => void
-  setViewMode: (mode: 'list' | 'grid' | 'waterfall') => void
+  setViewMode: (mode: 'list' | 'grid' | 'waterfall' | 'table' | 'search-list') => void
 
   // Saved virtual directories
   savedDirectories: SavedAnalyzedDirectory[]

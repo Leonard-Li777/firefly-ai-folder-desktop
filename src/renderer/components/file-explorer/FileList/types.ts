@@ -1,6 +1,9 @@
 import { FileItem as BaseFileType, DirectoryItem, AnalysisStatus } from '@firefly/types'
 import { PageId } from '../../../constants/page-ids'
 
+/** FileList 支持的视图模式；search-list 为搜索临时态，清空关键词后恢复原模式 */
+export type FileListViewMode = 'list' | 'grid' | 'table' | 'waterfall' | 'search-list'
+
 export interface FileType extends BaseFileType {
   relativePathPrefix?: string
   thumbnailPath?: string
@@ -28,7 +31,7 @@ export interface FileListProps {
   onFileDoubleClick?: (file: FileType) => void
   loading?: boolean
   selectionEnabled?: boolean
-  viewMode?: 'list' | 'grid' | 'table' | 'waterfall' | 'search-list'
+  viewMode?: FileListViewMode
   currentPath: string
   showAnalysisStatus?: boolean
   showsmartName?: boolean

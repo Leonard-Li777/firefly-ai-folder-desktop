@@ -221,15 +221,15 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
   const realDirectoryKeyword = useSearchStore(s => s.realDirectoryKeyword)
   const clearRealDirectorySearch = useSearchStore(s => s.clearRealDirectorySearch)
 
-  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'waterfall'>(
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'waterfall' | 'table' | 'search-list'>(
     configDefaultView || 'list'
   )
 
   // 搜索关键词非空时自动切换至 search-list 视图，清空后恢复原模式
   useSearchViewAutoSwitch({
     keyword: realDirectoryKeyword,
-    viewMode: viewMode as string,
-    setViewMode: setViewMode as (mode: any) => void
+    viewMode,
+    setViewMode
   })
 
   const [showDirectoryDropdown, setShowDirectoryDropdown] = useState(false)
@@ -1302,7 +1302,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
                 onFileSelect={handleFileSelect}
                 onDirectoryChange={handleDirectoryChange}
                 viewMode={viewMode}
-                onViewModeChange={mode => setViewMode(mode as any)}
+                onViewModeChange={mode => setViewMode(mode)}
                 currentPath={currentPath}
                 isRealDirectory={true}
                 showsmartName={true}
