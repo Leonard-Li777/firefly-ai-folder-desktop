@@ -1321,14 +1321,13 @@ export class FileDao {
           )
           .run(actualId)
 
-        // 2. 清空 files 表中的分析数据（含 category 字段的 magika 类型识别信息）
+        // 2. 清空 files 表中的分析数据 (创世 Baseline V1：files 表无 category 列，magika 类型识别由标签树承载)
         this.db
           .prepare(
             `
           UPDATE files
           SET smart_name = (SELECT name FROM workspace_files WHERE id = ?),
               description = NULL,
-              category = NULL,
               author = NULL,
               language = NULL,
               is_hit = 0,

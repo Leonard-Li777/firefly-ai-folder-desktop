@@ -202,6 +202,22 @@ const electronAPI = {
       ipcRenderer.invoke('ai-service/switch-acceleration-backend', backend)
   },
 
+  // 引擎桥接 (Tier 2 上层 AI 引擎监控与指令)
+  engineBridge: {
+    getStatus: (): Promise<any> => ipcRenderer.invoke('engine-bridge/get-status'),
+    getExeInfo: (): Promise<{ available: boolean; path: string | null; devMode: boolean }> =>
+      ipcRenderer.invoke('engine-bridge/get-exe-info'),
+    start: (): Promise<boolean> => ipcRenderer.invoke('engine-bridge/start'),
+    openUI: (): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke('engine-bridge/open-ui'),
+    shutdown: (): Promise<{ ok: boolean }> => ipcRenderer.invoke('engine-bridge/shutdown'),
+    onStatusChanged: (callback: (payload: any) => void) => {
+      const handler = (_event: any, payload: any) => callback(payload)
+      ipcRenderer.on('tier2:status-changed', handler)
+      return () => ipcRenderer.removeListener('tier2:status-changed', handler)
+    }
+  },
+
   // 邀请服务
   invitation: {
     match: (features: any) => ipcRenderer.invoke('invitation/match', features),

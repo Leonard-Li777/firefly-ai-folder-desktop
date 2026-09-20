@@ -456,15 +456,29 @@ export class OmniService {
   public resolveOmniExecutable(): string | null {
     const isWin = process.platform === 'win32'
     const exeName = isWin ? 'firefly-omni.exe' : 'firefly-omni'
+    const isDev = !app.isPackaged || process.env.NODE_ENV !== 'production'
+    const root = process.cwd()
 
-    // 1. 优先通过 ResourceLocator 检索
+    // 1. 生产或已部署环境：通过 ResourceLocator 检索
     const bin = ResourceLocator.resolveBin('omni/firefly-omni') || ResourceLocator.resolveBin('firefly-omni')
     if (bin && fs.existsSync(bin)) {
       return bin
     }
 
-    // 2. 多候选路径兜底检索
-    const root = process.cwd()
+    // 2. 本地开发环境下，优先检索最新由 cargo 编译的 target/debug 或 target/release 原生二进制
+    if (isDev) {
+      const devCandidates = [
+        path.join(root, 'apps', 'omni', 'target', 'debug', exeName),
+        path.join(root, 'apps', 'omni', 'target', 'release', exeName),
+      ]
+      for (const cand of devCandidates) {
+        if (fs.existsSync(cand)) {
+          return cand
+        }
+      }
+    }
+
+    // 3. 多候选路径兜底检索
     const candidates = [
       path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'omni', exeName),
       path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', exeName),
@@ -532,10 +546,12 @@ export class OmniService {
       }
 
       logger.info(LogCategory.SYSTEM, `[OmniService] 正在拉起 firefly-omni 守护进程 (Port: ${port}): ${exePath}`)
+      const isDevMode = !app.isPackaged || process.env.NODE_ENV !== 'production'
       const env = {
         ...process.env,
         OMNI_PORT: String(port),
-        RUST_LOG: process.env.RUST_LOG || 'info,omni_vision=info,omni_server=info'
+        OMNI_DEV_MODE: isDevMode ? '1' : '0',
+        RUST_LOG: process.env.RUST_LOG || (isDevMode ? 'info,omni_vision=info,omni_server=info,omni_text=info' : 'warn')
       }
 
       // 获取当前语言的 SQLite 绝对路径，透传给 Omni 以建立只读直连 (ADR-0035 双消费者架构)
@@ -567,15 +583,20 @@ export class OmniService {
       child.stdout?.on('data', data => {
         const str = data.toString().trim()
         if (str && !isCzkawkaDump(str)) {
-          // 级联仲裁日志以 debug 级别输出到 Desktop 控制台 (pnpm start:debug 可见)
-          logger.debug(LogCategory.SYSTEM, `[Omni] ${str}`)
+          // 若子进程输出为 INFO 级别或包含多模态关键业务日志，以 info 输出至控制台；其余以 debug 输出
+          const isInfoMsg = str.includes('INFO') || str.includes('[普遍语法造句') || str.includes('[双锚点融合') || str.includes('[OmniServer]') || str.includes('[prune_and_rank_tags]') || str.includes('[落选') || str.includes('[胜出')
+          if (isInfoMsg) {
+            logger.info(LogCategory.SYSTEM, `[Omni] ${str}`)
+          } else {
+            logger.debug(LogCategory.SYSTEM, `[Omni] ${str}`)
+          }
         }
       })
 
       child.stderr?.on('data', data => {
         const str = data.toString().trim()
         if (str && !isCzkawkaDump(str)) {
-          logger.debug(LogCategory.SYSTEM, `[Omni:err] ${str}`)
+          logger.warn(LogCategory.SYSTEM, `[Omni:err] ${str}`)
         }
       })
 
@@ -1122,19 +1143,40 @@ export class OmniService {
 
       const json = (await res.json()) as OmniPerceptionResponse
 
-      // 级联仲裁终局结果显式输出至 Desktop 控制台 (debug 级别，使用 pnpm start:debug 可查验)
+      // 级联仲裁终局结果显式输出至 Desktop 控制台 (debug/开发模式可见)
       if (json.winning_hypothesis || (json.candidate_hypotheses && json.candidate_hypotheses.length > 0)) {
-        logger.debug(
+        logger.info(
           LogCategory.SYSTEM,
           `[级联仲裁:Desktop] 终局胜出: "${json.winning_hypothesis?.prompt_text || '无'}" (置信度: ${json.winning_hypothesis?.confidence ?? 'N/A'}) | 建议命名: ${json.smart_name || '无'}`
         )
         if (json.candidate_hypotheses && json.candidate_hypotheses.length > 0) {
-          for (const cand of json.candidate_hypotheses) {
-            logger.debug(
+          const top100 = json.candidate_hypotheses.slice(0, 100)
+          logger.info(
+            LogCategory.SYSTEM,
+            `[普遍语法造句:Desktop] Top ${top100.length} 候选造句排列表 (总数: ${json.candidate_hypotheses.length}):`
+          )
+          for (let i = 0; i < top100.length; i++) {
+            const cand = top100[i]
+            logger.info(
               LogCategory.SYSTEM,
-              `[级联仲裁:Desktop] 候选假设 id=${cand.id} winner=${cand.is_winner ? '★YES' : ' NO '} conf=${cand.confidence} prompt="${cand.prompt_text}"`
+              `  [${String(i + 1).padStart(3, ' ')}] conf=${cand.confidence.toFixed(3)} winner=${cand.is_winner ? '★YES' : ' NO '} prompt="${cand.prompt_text}"`
             )
           }
+        }
+      }
+
+      // 输出所有融合标签 (fused_tags)
+      if (json.fused_tags && json.fused_tags.length > 0) {
+        logger.info(
+          LogCategory.SYSTEM,
+          `[双锚点融合:Desktop] 最终胜出融合标签 (count=${json.fused_tags.length}):`
+        )
+        for (let i = 0; i < json.fused_tags.length; i++) {
+          const t = json.fused_tags[i]
+          logger.info(
+            LogCategory.SYSTEM,
+            `  [${String(i + 1).padStart(2, ' ')}] conf=${t.confidence.toFixed(3)} code=${t.code.padEnd(30, ' ')} name=${t.name.padEnd(10, ' ')} parent=${t.parent_code ?? 'None'}`
+          )
         }
       }
 

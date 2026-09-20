@@ -378,6 +378,8 @@ export class FileProcessor {
     cpuSkipped = false
   ): Promise<void> {
     const deps = this.getDependencies()
+    // slice-3 双层仲裁：Tier 1（Omni/预置数据）产出的可读命名，作为 Tier 2 AI 推理失败的静默保底
+    let tier1FallbackName: string | null = null
     try {
       // 入口中止检查：用户点击暂停时，队列服务的 pause() 会 abort 当前 signal。
       // 必须在真正开始分析前检查一次，否则已排队的下一个文件仍会照常执行，
@@ -779,6 +781,9 @@ export class FileProcessor {
         if (preflightContext.flattenedMetadata?.smart_name) {
           enhancedInfo.smartName = preflightContext.flattenedMetadata.smart_name
         }
+
+        // slice-3 双层仲裁：GPU 阶段正式开始 AI 推理前，记录 Tier 1 已确认的命名作为保底
+        tier1FallbackName = enhancedInfo.smartName || item.name || null
 
         const fileInfo: FileInfoInput = {
           path: filePath,
@@ -2078,6 +2083,31 @@ export class FileProcessor {
           }
         }
         logger.error(LogCategory.ANALYSIS_QUEUE, `[分析队列] 文件分析失败: ${item.name}`, error)
+
+        // slice-3 双层仲裁：非元数据/抽取类的 AI 推理失败（含免保底关键词之外的超时、服务未就绪、
+        // 显存不足等），若 Tier 1 已产出可读命名，则静默降级为 completed (analysisStage 2)。
+        // Tier 2 故障不再演化为用户可见的失败项，全部由 Tier 1（Omni）兜底。
+        const isExtractionError =
+          errorMsg.includes('元数据') ||
+          errorMsg.includes('Markitdown') ||
+          errorMsg.includes('提取') ||
+          errorMsg.includes('extract') ||
+          errorMsg.includes('fileAnalysisService') ||
+          errorMsg.includes('缩略图') ||
+          errorMsg.includes('thumbnail') ||
+          errorMsg.includes('thumbnailService') ||
+          errorMsg.includes('exif')
+        if (!isExtractionError && tier1FallbackName) {
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[分析队列] Tier 2 AI 推理失败，自动降级 Tier 1 命名兜底: ${item.name} -> ${tier1FallbackName}`
+          )
+          this.updateItemStatus(item.id, 'completed', 100, undefined, {
+            analysisStage: 2
+          })
+          return
+        }
+
         this.updateItemStatus(item.id, 'failed', 100, errorMsg)
       }
     }

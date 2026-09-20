@@ -831,6 +831,45 @@ const config: ForgeConfig = {
             )
           } else {
             console.log(`[prePackage] ✅ 发现 bin 目录，将直接打包二进制工具。`)
+
+            // slice-3 极致瘦身：剔除 llama.cpp 重型加速引擎包（CUDA/ROCm/SYCL/HIP），
+            // 可缩减数百 MB 安装体积而不影响 Tier 1（Omni）保底能力。
+            const engineSlim = process.env.ENGINE_SLIM !== 'false'
+            if (engineSlim && process.platform === 'win32') {
+              const removed: string[] = []
+              for (const dirent of fs.readdirSync(binDir, { withFileTypes: true })) {
+                const dirName = dirent.name
+                if (!dirent.isDirectory()) continue
+                if (
+                  /llama-.*-win-(cuda|rocm|sycl|hip)-/i.test(dirName) ||
+                  /(^|-)(cuda|rocm|sycl|hip)(-|$)/i.test(dirName)
+                ) {
+                  removed.push(dirName)
+                  fs.rmSync(path.join(binDir, dirName), { recursive: true, force: true })
+                }
+              }
+              if (removed.length > 0) {
+                console.log(
+                  `[prePackage] 🔪 已剔除 ${removed.length} 个重型加速引擎目录 (ENGINE_SLIM): ${removed.join(', ')}`
+                )
+              }
+            }
+
+            // slice-3 解耦：同步 Tier 2 引擎二进制（缺失时不阻断打包，仅告警）
+            const engineSrcDir = resolveResourcePath('build/presetResources/firefly-ai-engine')
+            const engineBinDir = path.join(binDir, 'firefly-ai-engine')
+            if (fs.existsSync(engineSrcDir)) {
+              if (fs.existsSync(engineBinDir)) {
+                fs.rmSync(engineBinDir, { recursive: true, force: true })
+              }
+              fs.cpSync(engineSrcDir, engineBinDir, { recursive: true })
+              console.log(`[prePackage] ✅ 已同步 Tier 2 引擎二进制: ${engineBinDir}`)
+            } else {
+              console.warn(
+                `[prePackage] ⚠️ 未找到 Tier 2 引擎资源 ${engineSrcDir}，跳过引擎同步（运行由 Tier 1 兜底）`
+              )
+            }
+          }
           }
         } catch (e: any) {
           if (e.message && e.message.includes('AI 引擎二进制包验证失败')) {

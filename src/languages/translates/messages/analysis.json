@@ -193,7 +193,7 @@
     "ko-KR": "취소",
     "$files": [
       "src/renderer/components/analysis/AnalysisConfirmModal.tsx(11338-11344)",
-      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7243-7249)"
+      "src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7258-7264)"
     ],
     "$id": 10239
   },
@@ -993,7 +993,7 @@
     "de-DE": "Bestätigen",
     "fr-FR": "Confirmer",
     "ko-KR": "확인하다",
-    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7317-7323)"],
+    "$files": ["src/renderer/components/analysis/ExtensionReconciliationDialog.tsx(7332-7338)"],
     "$id": 10240
   },
   "拖拽改变分栏高度": {

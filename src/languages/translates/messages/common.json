@@ -37,7 +37,7 @@
     "ko-KR": "재설정",
     "$files": [
       "src/renderer/components/common/CardSizePopover.tsx(3913-3919)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(12980-12986)"
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13083-13089)"
     ],
     "$id": 7974
   },
@@ -53,7 +53,7 @@
     "ko-KR": "축소",
     "$files": [
       "src/renderer/components/common/CardSizePopover.tsx(4355-4361)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13698-13704)"
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(13801-13807)"
     ],
     "$id": 7975
   },
@@ -69,7 +69,7 @@
     "ko-KR": "확대",
     "$files": [
       "src/renderer/components/common/CardSizePopover.tsx(5266-5272)",
-      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15242-15248)"
+      "src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15345-15351)"
     ],
     "$id": 7976
   },
@@ -825,7 +825,7 @@
     "de-DE": "Listenansicht",
     "fr-FR": "Vue en liste",
     "ko-KR": "목록 보기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3257-3265)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(3360-3368)"],
     "$id": 11405
   },
   "网格视图": {
@@ -838,7 +838,7 @@
     "de-DE": "Rasteransicht",
     "fr-FR": "Vue en grille",
     "ko-KR": "그리드 보기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(5545-5553)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(5648-5656)"],
     "$id": 11406
   },
   "瀑布流视图": {
@@ -851,7 +851,7 @@
     "de-DE": "Blick auf den Wasserfall",
     "fr-FR": "Vue sur la cascade",
     "ko-KR": "폭포 전망",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(6847-6856)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(6950-6959)"],
     "$id": 11407
   },
   "列表行高大小": {
@@ -864,7 +864,7 @@
     "de-DE": "Listenzeilenhöhe und -größe",
     "fr-FR": "Hauteur et taille des lignes de liste",
     "ko-KR": "행 높이 및 크기 나열",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8874-8884)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8977-8987)"],
     "$id": 11408
   },
   "卡片缩放大小": {
@@ -877,7 +877,7 @@
     "de-DE": "Karten-Zoom-Größe",
     "fr-FR": "Taille du zoom de la carte",
     "ko-KR": "카드 줌 크기",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8888-8898)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(8991-9001)"],
     "$id": 11409
   },
   "视图与显示设置": {
@@ -890,7 +890,7 @@
     "de-DE": "Ansichts- und Anzeigeeinstellungen",
     "fr-FR": "Paramètres d'affichage et de vue",
     "ko-KR": "뷰 및 표시 설정",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9346-9357)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(9449-9460)"],
     "$id": 7999
   },
   "视图模式": {
@@ -903,7 +903,7 @@
     "de-DE": "Ansichtsmodus",
     "fr-FR": "Mode d'affichage",
     "ko-KR": "뷰 모드",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(10465-10473)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(10568-10576)"],
     "$id": 8000
   },
   "更小": {
@@ -916,7 +916,7 @@
     "de-DE": "Smaller",
     "fr-FR": "Plus petit",
     "ko-KR": "더 작은",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15618-15624)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(15721-15727)"],
     "$id": 11410
   },
   "默认": {
@@ -929,7 +929,7 @@
     "de-DE": "Standard",
     "fr-FR": "Défaut",
     "ko-KR": "기본",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16044-16050)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16147-16153)"],
     "$id": 11411
   },
   "更大": {
@@ -942,7 +942,7 @@
     "de-DE": "Zweitgrößte",
     "fr-FR": "Plus grand",
     "ko-KR": "더 큰",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16114-16120)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16217-16223)"],
     "$id": 11412
   },
   "主副文件名显示": {
@@ -955,7 +955,7 @@
     "de-DE": "Anzeige des primären und sekundären Dateinamens",
     "fr-FR": "Affichage du nom de fichier principal et secondaire",
     "ko-KR": "기본 및 보조 파일 이름 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16561-16572)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16664-16675)"],
     "$id": 11413
   },
   "互换主次位置": {
@@ -968,7 +968,7 @@
     "de-DE": "Tauschen Sie primäre und sekundäre Positionen",
     "fr-FR": "Permuter les positions primaires et secondaires",
     "ko-KR": "기본 및 보조 위치 교환",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16705-16715)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16808-16818)"],
     "$id": 11414
   },
   "智能名为主": {
@@ -981,7 +981,7 @@
     "de-DE": "Intelligenter Name Meister",
     "fr-FR": "Maître de nom intelligent",
     "ko-KR": "스마트 이름 마스터",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(16955-16964)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17058-17067)"],
     "$id": 11415
   },
   "真实名为辅": {
@@ -994,7 +994,7 @@
     "de-DE": "Echter Name: Hilfskraft",
     "fr-FR": "Vrai nom: auxiliaire",
     "ko-KR": "실제 이름:보조",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17039-17048)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17142-17151)"],
     "$id": 11416
   },
   "真实名为主": {
@@ -1007,7 +1007,7 @@
     "de-DE": "Der wahre Name ist der Herr",
     "fr-FR": "Le vrai nom est le seigneur",
     "ko-KR": "진짜 이름은 주님",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17171-17180)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17274-17283)"],
     "$id": 11417
   },
   "智能名为辅": {
@@ -1020,7 +1020,7 @@
     "de-DE": "Intelligenter Name Hilfs",
     "fr-FR": "Auxiliaire de nom intelligent",
     "ko-KR": "스마트 이름 보조",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17255-17264)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(17358-17367)"],
     "$id": 11418
   },
   "显示完整文件名": {
@@ -1033,7 +1033,7 @@
     "de-DE": "Vollen Dateinamen anzeigen",
     "fr-FR": "Afficher le nom de fichier complet",
     "ko-KR": "전체 파일명 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(19688-19699)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(19791-19802)"],
     "$id": 8005
   },
   "显示丢失文件": {
@@ -1046,7 +1046,7 @@
     "de-DE": "Fehlende Dateien anzeigen",
     "fr-FR": "Afficher les fichiers manquants",
     "ko-KR": "누락된 파일 표시",
-    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(20210-20220)"],
+    "$files": ["src/renderer/components/common/MiniViewDisplaySettingsPopover.tsx(20313-20323)"],
     "$id": 8006
   },
   "请选择您要整理的文件夹（工作目录）": {

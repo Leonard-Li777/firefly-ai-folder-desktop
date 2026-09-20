@@ -9,7 +9,7 @@
     "de-DE": "Vorbereitungen für den ersten Installationsstart...",
     "fr-FR": "Préparation du démarrage de l'installation pour la première fois...",
     "ko-KR": "처음으로 설치 시작을 준비 중입니다...",
-    "$files": ["src/electron/main/index.ts(27410-27427)"],
+    "$files": ["src/electron/main/index.ts(27323-27340)"],
     "$id": 10169
   },
   "正在从版本 {oldVersion} 升级到 {newVersion}...": {
@@ -22,7 +22,7 @@
     "de-DE": "Upgrade von Version {oldVersion} auf {newVersion}...",
     "fr-FR": "Mise à niveau de la version {oldVersion} vers {newVersion}...",
     "ko-KR": "버전 {oldVersion}에서 {newVersion}로 업그레이드 중...",
-    "$files": ["src/electron/main/index.ts(27440-27482)"],
+    "$files": ["src/electron/main/index.ts(27353-27395)"],
     "$id": 10170
   },
   "检测到您的 {gpuName} 显卡驱动版本过低或不兼容，已为你降级AI引擎速度，建立升级驱动体验满血AI性能。": {

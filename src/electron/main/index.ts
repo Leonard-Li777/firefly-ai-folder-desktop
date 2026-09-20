@@ -920,6 +920,8 @@ app.on('before-quit', async () => {
 
   try {
     omniService.stop()
+    const { engineBridgeService } = await import('../runtime-services/engine-bridge')
+    engineBridgeService.stop()
     // 关闭图标提取子进程，避免遗留孤儿子进程
     iconExtractorClient.dispose()
     await fileWatcherService.cleanup()
@@ -970,6 +972,8 @@ process.on('unhandledRejection', reason => {
 const handleProcessTermination = () => {
   try {
     omniService.stop()
+    const { engineBridgeService } = require('../runtime-services/engine-bridge')
+    engineBridgeService.stop()
   } catch {}
   process.exit(0)
 }

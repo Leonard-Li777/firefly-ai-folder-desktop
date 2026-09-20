@@ -703,7 +703,7 @@ export class TagTreeQuery {
           f.created_at,
           f.modified_at,
           fc.quality_score,
-          COALESCE(f.description, fc.description) as description,
+          f.description as description,
           fc.multimodal_content,
           (
             SELECT json_group_array(ft.name)
@@ -994,7 +994,7 @@ export class TagTreeQuery {
         f.created_at,
         f.modified_at,
         fc.quality_score,
-        COALESCE(f.description, fc.description) as description,
+        f.description as description,
         fc.multimodal_content,
         (
           SELECT json_group_array(ft.name)
@@ -1212,7 +1212,7 @@ export class TagTreeQuery {
           f.created_at,
           f.modified_at,
           fc.quality_score,
-          COALESCE(f.description, fc.description) as description,
+          f.description as description,
           fc.multimodal_content,
           (
             SELECT json_group_array(ft.name)

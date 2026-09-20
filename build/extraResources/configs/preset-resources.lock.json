@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-09-17",
+  "updatedAt": "2026-09-20",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources",
@@ -113,7 +113,7 @@
     },
     "llama.cpp": {
       "version": "b11011",
-      "updatedAt": "2026-09-17",
+      "updatedAt": "2026-09-20",
       "mode": "all-platforms-bundle",
       "status": "completed",
       "platforms": {
@@ -124,42 +124,65 @@
               "size": 391443627,
               "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11011/cudart-llama-bin-win-cuda-12.4-x64.zip"
-            },
-            {
-              "name": "llama-b11011-bin-win-cuda-12.4-x64.zip",
-              "size": 254190475,
-              "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11011/llama-b11011-bin-win-cuda-12.4-x64.zip"
-            },
-            {
-              "name": "llama-b11011-bin-win-vulkan-x64.zip",
-              "size": 31710621,
-              "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11011/llama-b11011-bin-win-vulkan-x64.zip"
-            },
-            {
-              "name": "llama-b11011-bin-win-rocm-10.0-x64.zip",
-              "size": 256090617,
-              "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11011/llama-b11011-bin-win-rocm-10.0-x64.zip"
-            },
-            {
-              "name": "llama-b11011-bin-win-sycl-x64.zip",
-              "size": 119790761,
-              "platform": "win32",
-              "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11011/llama-b11011-bin-win-sycl-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/cudart-llama-bin-win-cuda-12.4-x64.zip"
             },
             {
               "name": "llama-b11011-bin-win-cpu-x64.zip",
               "size": 18438128,
               "platform": "win32",
+              "arch": "x64"
+            },
+            {
+              "name": "llama-b11011-bin-win-cuda-12.4-x64.zip",
+              "size": 254190475,
+              "platform": "win32",
+              "arch": "x64"
+            },
+            {
+              "name": "llama-b11011-bin-win-rocm-10.0-x64.zip",
+              "size": 256090617,
+              "platform": "win32",
+              "arch": "x64"
+            },
+            {
+              "name": "llama-b11011-bin-win-sycl-x64.zip",
+              "size": 119790761,
+              "platform": "win32",
+              "arch": "x64"
+            },
+            {
+              "name": "llama-b11011-bin-win-vulkan-x64.zip",
+              "size": 31710621,
+              "platform": "win32",
+              "arch": "x64"
+            },
+            {
+              "name": "llama-b11063-bin-win-cuda-12.4-x64.zip",
+              "size": 254735279,
+              "platform": "win32",
               "arch": "x64",
-              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11011/llama-b11011-bin-win-cpu-x64.zip"
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/llama-b11063-bin-win-cuda-12.4-x64.zip"
+            },
+            {
+              "name": "llama-b11063-bin-win-rocm-10.0-x64.zip",
+              "size": 256160942,
+              "platform": "win32",
+              "arch": "x64",
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/llama-b11063-bin-win-rocm-10.0-x64.zip"
+            },
+            {
+              "name": "llama-b11063-bin-win-sycl-x64.zip",
+              "size": 119830086,
+              "platform": "win32",
+              "arch": "x64",
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/llama-b11063-bin-win-sycl-x64.zip"
+            },
+            {
+              "name": "llama-b11063-bin-win-vulkan-x64.zip",
+              "size": 31851331,
+              "platform": "win32",
+              "arch": "x64",
+              "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11063/llama-b11063-bin-win-vulkan-x64.zip"
             }
           ]
         },

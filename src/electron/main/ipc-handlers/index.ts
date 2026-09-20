@@ -7,6 +7,7 @@ import { registerHardwareIPCHandlers } from './hardware'
 import { registerWindowIPCHandlers } from './window'
 import { registerQueueWindowIPCHandlers } from './queue-window-ipc'
 import { registerMiscIPCHandlers } from './misc'
+import { registerEngineBridgeIPCHandlers } from './engine-bridge'
 import { syncedDirectories } from '../state'
 import { logger, LogCategory } from '@firefly/shared'
 
@@ -22,6 +23,7 @@ export async function setupIPCHandlers(): Promise<void> {
   registerWindowIPCHandlers()
   registerQueueWindowIPCHandlers()
   registerMiscIPCHandlers()
+  registerEngineBridgeIPCHandlers()
 
   if (syncedDirectoriesCleanupInterval) {
     clearInterval(syncedDirectoriesCleanupInterval)

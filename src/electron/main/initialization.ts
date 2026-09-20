@@ -469,6 +469,30 @@ export async function initializeMinimalServices(options?: {
       logger.warn(LogCategory.MAIN, '系统身份 Supabase 注册未完成 (可能离线):', err)
     }
 
+    // 2.5 桥接 Tier 2 上层 AI 引擎（slice-3 桌面解耦）：本地模式优先复用 38400 上的引擎服务。
+    //     引擎在线则将 AIService 本地调用重定向至外部引擎；离线时静默降级，由 Tier 1（Omni）全程保底。
+    try {
+      const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+      if (initMode !== 'cloud') {
+        const { engineBridgeService } = await import('../runtime-services/engine-bridge')
+        const tier2Online = await engineBridgeService.ensureRunning().catch(() => false)
+        if (tier2Online) {
+          process.env.FA_TIER2_EXTERNAL = '1'
+          logger.info(
+            LogCategory.MAIN,
+            '[EngineBridge] Tier 2 引擎在线，AIService 本地调用将重定向至端口 38400'
+          )
+        } else {
+          logger.warn(
+            LogCategory.MAIN,
+            '[EngineBridge] Tier 2 引擎不可用（熔断或未部署），分析将由 Tier 1（Omni）兜底'
+          )
+        }
+      }
+    } catch (bridgeError) {
+      logger.warn(LogCategory.MAIN, '[EngineBridge] Tier 2 引擎桥接初始化异常（不阻断启动）:', bridgeError)
+    }
+
     // 3. 仅在非云端模式下执行本地 AI 引擎部署（不依赖云端/数据库）
     const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
     if (initMode !== 'cloud') {
