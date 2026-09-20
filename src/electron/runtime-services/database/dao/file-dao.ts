@@ -1734,28 +1734,7 @@ export class FileDao {
         .get(fingerprint) as any
       if (!row) return
 
-      const exists = this.db
-        .prepare(`SELECT 1 AS x FROM files_fts WHERE rowid = ?`)
-        .get(row.rid)
-      if (exists) {
-        this.db
-          .prepare(
-            `INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-             VALUES ('delete', ?,?,?,?,?,?,?,?,?,?)`
-          )
-          .run(
-            row.rid,
-            row.file_fingerprint,
-            row.name,
-            row.smart_name,
-            row.description,
-            row.content,
-            row.multimodal_content,
-            row.ocr,
-            row.lrc,
-            row.tags
-          )
-      }
+      this.db.prepare(`DELETE FROM files_fts WHERE rowid = ?`).run(row.rid)
       this.db
         .prepare(
           `INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)

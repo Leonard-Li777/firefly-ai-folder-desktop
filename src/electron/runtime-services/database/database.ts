@@ -300,8 +300,8 @@ const GENESIS_V1_SCHEMA = `
   );
 
 
-  -- 17. FTS5 全文搜索虚拟表（Issue #661：contentless External Content 模式）
-  -- 不在 FTS 影子表内复制业务正文；索引文本在写入时由触发器提供，展示与业务字段回表 JOIN files/file_contents/workspace_files
+  -- 17. FTS5 全文搜索虚拟表（标准独立存储表）
+  -- 避免 contentless 模式在多表异步写入/更新时发生 token 不匹配导致 SQLITE_CORRUPT_VTAB (database disk image is malformed)
   CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
     file_fingerprint UNINDEXED,                  -- 指纹（不建立全文索引，仅作为关联键）
     name,                                        -- 物理文件名
@@ -312,8 +312,7 @@ const GENESIS_V1_SCHEMA = `
     ocr,                                         -- OCR 文字识别内容
     lrc,                                         -- 歌词/字幕
     tags,                                        -- 聚合后的标签文本
-    tokenize='trigram',                          -- 使用 trigram 分词支持多语言模糊搜索
-    content=''                                   -- contentless：仅倒排索引，消除正文双写
+    tokenize='trigram'                           -- 使用 trigram 分词支持多语言模糊搜索
   );
 
   -- 18. 高频索引
@@ -341,7 +340,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
 
-  -- 19. FTS 同步触发器（Issue #661：contentless 需用 delete+insert 提供原文 token）
+  -- 19. FTS 同步触发器（标准 FTS5：使用 DELETE WHERE rowid 进行原子安全同步）
   DROP TRIGGER IF EXISTS trg_files_fts_update;
   DROP TRIGGER IF EXISTS trg_file_contents_fts_update;
   DROP TRIGGER IF EXISTS trg_workspace_files_fts_update;
@@ -363,16 +362,7 @@ const GENESIS_V1_SCHEMA = `
   END;
 
   CREATE TRIGGER trg_files_fts_update AFTER UPDATE OF smart_name, description ON files BEGIN
-    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-    SELECT 'delete', old.rowid, old.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
-      COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      ''
-    WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
+    DELETE FROM files_fts WHERE rowid = old.rowid;
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT new.rowid, new.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
@@ -385,26 +375,11 @@ const GENESIS_V1_SCHEMA = `
   END;
 
   CREATE TRIGGER trg_files_fts_delete AFTER DELETE ON files BEGIN
-    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-    SELECT 'delete', old.rowid, old.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = old.file_fingerprint LIMIT 1), ''),
-      COALESCE(old.smart_name, ''), COALESCE(old.description, ''),
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = old.file_fingerprint), ''),
-      ''
-    WHERE EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = old.rowid);
+    DELETE FROM files_fts WHERE rowid = old.rowid;
   END;
 
   CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
-    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-    SELECT 'delete', f.rowid, f.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      '', '', '', '', ''
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint
-      AND EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
+    DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
@@ -415,14 +390,7 @@ const GENESIS_V1_SCHEMA = `
   END;
 
   CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE OF content, multimodal_content, ocr, lrc ON file_contents BEGIN
-    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-    SELECT 'delete', f.rowid, f.file_fingerprint,
-      COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE(decompress_text(old.content), ''), COALESCE(decompress_text(old.multimodal_content), ''),
-      COALESCE(decompress_text(old.ocr), ''), COALESCE(decompress_text(old.lrc), ''), ''
-    FROM files f WHERE f.file_fingerprint = old.file_fingerprint
-      AND EXISTS(SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
+    DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
@@ -433,16 +401,7 @@ const GENESIS_V1_SCHEMA = `
   END;
 
   CREATE TRIGGER trg_workspace_files_fts_insert AFTER INSERT ON workspace_files BEGIN
-    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-    SELECT 'delete', f.rowid, f.file_fingerprint, '',
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      ''
-    FROM files f WHERE f.file_fingerprint = new.file_fingerprint
-      AND EXISTS (SELECT 1 FROM files_fts WHERE files_fts.rowid = f.rowid);
+    DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
@@ -454,17 +413,8 @@ const GENESIS_V1_SCHEMA = `
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
 
-  CREATE TRIGGER trg_workspace_files_fts_update AFTER UPDATE OF name ON workspace_files BEGIN
-    INSERT INTO files_fts(files_fts, rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-    SELECT 'delete', f.rowid, f.file_fingerprint, COALESCE(old.name, ''),
-      COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
-      COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
-      ''
-    FROM files f WHERE f.file_fingerprint = old.file_fingerprint
-      AND EXISTS(SELECT 1 FROM files_fts WHERE file_fingerprint = old.file_fingerprint);
+  CREATE TRIGGER trg_workspace_files_fts_update AFTER UPDATE OF name, file_fingerprint ON workspace_files BEGIN
+    DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
     INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
     SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
