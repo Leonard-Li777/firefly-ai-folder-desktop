@@ -234,11 +234,8 @@ export class DatabaseHelper {
 
         let parsedMeta: Record<string, any> = {}
         if (file.exif) {
-          try {
-            parsedMeta = typeof file.exif === 'string' ? JSON.parse(file.exif) : file.exif
-          } catch {
-            parsedMeta = {}
-          }
+          // exif 列是 BLOB（compressText 压缩），需用 decompressJson 解压
+          parsedMeta = decompressJson<Record<string, any>>(file.exif) ?? {}
         }
 
         const fileExt = path.extname(file.path || file.name || '').replace(/^\./, '')

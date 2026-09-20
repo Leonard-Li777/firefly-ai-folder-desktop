@@ -11,7 +11,7 @@ import { ConfigDbManager } from '../../config/config-db-manager'
 import { IErrorRecoveryConfig } from '../types'
 import { databaseService } from '../../database/database-service'
 import path from 'node:path'
-import { compressText } from '../../../utils/text-compressor'
+import { compressText, decompressText, decompressJson } from '../../../utils/text-compressor'
 
 /**
  * 处理本地 AI 分析任务（质量评分 + 维度标签）
@@ -73,18 +73,13 @@ export async function processLocalAnalysis(
           .get(fileFingerprint) || {}
     }
     processResult = {
-      content: fileInfo.content || existingQuality.content || '',
+      content: fileInfo.content || decompressText(existingQuality.content) || '',
       metadata: (() => {
         if (fileInfo.metadata && Object.keys(fileInfo.metadata).length > 0) return fileInfo.metadata
         if (!existingQuality.exif) return {}
-        if (typeof existingQuality.exif === 'string') {
-          try {
-            return JSON.parse(existingQuality.exif)
-          } catch {
-            return {}
-          }
-        }
-        return existingQuality.exif
+        // exif 列是 BLOB（compressText 压缩），需用 decompressJson 解压
+        const parsedExif = decompressJson<Record<string, any>>(existingQuality.exif)
+        return parsedExif ?? {}
       })(),
       qualityScore: existingQuality.quality_score ?? 3,
       qualityConfidence: existingQuality.quality_confidence ?? 0.5,
@@ -100,8 +95,12 @@ export async function processLocalAnalysis(
         }
         return existingQuality.quality_criteria
       })(),
-      multimodalContent: existingQuality.multimodal_content ?? undefined,
-      lrc: existingQuality.lrc ?? undefined
+      multimodalContent: existingQuality.multimodal_content
+        ? decompressText(existingQuality.multimodal_content) || undefined
+        : undefined,
+      lrc: existingQuality.lrc
+        ? decompressText(existingQuality.lrc) || undefined
+        : undefined
     }
   } else {
     processResult = deps.fileProcessor

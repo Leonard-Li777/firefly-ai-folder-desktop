@@ -16,6 +16,7 @@ import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { DirectoryContextService } from '../directory-context-service'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
 import { omniService, OmniClusterDocument } from '../../system/omni-service'
+import { decompressJson } from '../../../utils/text-compressor'
 
 export interface AISchemeProvider {
   db: Database.Database
@@ -111,13 +112,14 @@ export class AISchemeGenerator {
 
         if (row.exif) {
           try {
-            const meta = JSON.parse(row.exif)
-            if (Array.isArray(meta.embedding_dense) && meta.embedding_dense.length === 384) {
+            // exif 列是 BLOB（compressText 压缩），需用 decompressJson 解压
+            const meta = decompressJson<Record<string, any>>(row.exif)
+            if (meta && Array.isArray(meta.embedding_dense) && meta.embedding_dense.length === 384) {
               embedding = meta.embedding_dense
-            } else if (Array.isArray(meta.embeddingDense) && meta.embeddingDense.length === 384) {
+            } else if (meta && Array.isArray(meta.embeddingDense) && meta.embeddingDense.length === 384) {
               embedding = meta.embeddingDense
             }
-            if (Array.isArray(meta.keywords)) {
+            if (meta && Array.isArray(meta.keywords)) {
               keywords = meta.keywords
             }
           } catch {}

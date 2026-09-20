@@ -1345,7 +1345,7 @@ export class TagTreeQuery {
           qualityScore: file.quality_score || undefined,
           description: file.description || undefined,
           thumbnailPath: file.thumbnail_path || undefined,
-          multimodalContent: file.multimodal_content || undefined,
+          multimodalContent: file.multimodal_content ? decompressText(file.multimodal_content) || undefined : undefined,
           relativePathPrefix: relativePathPrefix || undefined,
           author: file.author || undefined,
           language: file.language || undefined,

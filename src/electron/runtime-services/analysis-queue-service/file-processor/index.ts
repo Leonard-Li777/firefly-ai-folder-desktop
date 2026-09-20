@@ -58,7 +58,7 @@ import { anydocService, AnydocAsset, AnydocResult } from '../../system/anydoc-se
 import { cloudAnalysisService } from '@firefly/server'
 import { IErrorRecoveryConfig } from '../types'
 import { t } from '@app/languages'
-import { compressText, compressJson } from '../../../utils/text-compressor'
+import { compressText, compressJson, decompressText } from '../../../utils/text-compressor'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -302,7 +302,9 @@ export class FileProcessor {
       if (contentRow) {
         if (contentRow.exif) {
           try {
-            result.metadata = JSON.parse(contentRow.exif)
+            // exif 列是 BLOB（compressText 压缩），需先解压再 JSON.parse
+            const exifText = decompressText(contentRow.exif as unknown as Buffer | string)
+            result.metadata = JSON.parse(exifText)
           } catch (e) {
             logger.warn(
               LogCategory.ANALYSIS_QUEUE,
@@ -311,7 +313,8 @@ export class FileProcessor {
           }
         }
         if (contentRow.content) {
-          result.content = contentRow.content
+          // content 列是 BLOB（compressText 压缩），需解压还原为字符串
+          result.content = decompressText(contentRow.content as unknown as Buffer | string)
         }
       }
     } catch (error) {

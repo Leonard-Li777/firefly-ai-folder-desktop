@@ -573,7 +573,8 @@ export class FileDao {
           .get(fileFingerprint) as { exif?: string } | undefined
         if (oldContentRow?.exif) {
           try {
-            const oldMeta = JSON.parse(oldContentRow.exif)
+            // exif 列是 BLOB（compressText 压缩），需先解压再 JSON.parse
+            const oldMeta = JSON.parse(decompressText(oldContentRow.exif as unknown as Buffer | string))
             if (oldMeta && typeof oldMeta === 'object' && Object.keys(oldMeta).length > 0) {
               finalMetadata = {
                 ...oldMeta,
