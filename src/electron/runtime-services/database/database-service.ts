@@ -1524,7 +1524,7 @@ export class DatabaseService {
         }
       }
 
-      // 3) 针对未命中的受控标签（如缓存未就绪或未收录），提取可读 slug，避免在界面暴露技术代码
+      // 3) 仍未命中的受控标签，提取可读 slug，避免在界面暴露技术代码；待 Omni 就绪后由缓存刷新覆盖
       for (const code of distinctCodes) {
         if (result[code] === code && (code.startsWith('builtin.') || code.startsWith('omw.'))) {
           const parts = code.split('.')
@@ -1540,6 +1540,21 @@ export class DatabaseService {
 
     return result
   }
+
+  /**
+   * 按 lemma 快速查询受控标签 tag_code (走内存快速索引)
+   */
+  public findTagCodeByLemma(lemma: string): string | undefined {
+    return taxonomyAliasCache.resolveTagCode(lemma)
+  }
+
+  /**
+   * 按 tag_code 快速查询当前语言规范展示名 (走内存快速索引)
+   */
+  public findLemmaByTagCode(tagCode: string): string | undefined {
+    return taxonomyAliasCache.resolve(tagCode)
+  }
+
 
   /**
    * AI 分析完成后将 dense 向量写入 Omni zvec（替代旧 file_vectors BLOB 堆表）

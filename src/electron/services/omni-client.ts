@@ -161,12 +161,14 @@ export class OmniClient {
   }
 
   /**
-   * 拉取多语言别名字典：GET /api/v1/taxonomy/aliases?locale={lang}
+   * 拉取多语言别名字典：GET /api/v1/taxonomy/aliases?locale={lang}&prefix={prefix}
    * 供 TaxonomyAliasCache 进程内存总线装载
    */
-  async getTaxonomyAliases(locale = 'zh-CN'): Promise<OmniTaxonomyAliasesResponse | null> {
+  async getTaxonomyAliases(locale = 'zh-CN', prefix?: string): Promise<OmniTaxonomyAliasesResponse | null> {
+    const params = new URLSearchParams({ locale })
+    if (prefix) params.set('prefix', prefix)
     return this.request<OmniTaxonomyAliasesResponse>(
-      `/api/v1/taxonomy/aliases?locale=${encodeURIComponent(locale)}`
+      `/api/v1/taxonomy/aliases?${params.toString()}`
     )
   }
 

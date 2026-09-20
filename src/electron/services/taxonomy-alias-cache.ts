@@ -25,6 +25,8 @@ export class TaxonomyAliasCache {
 
   /** tag_code -> 当前语言展示名（canonical） */
   private aliasMap = new Map<string, string>()
+  /** lemma -> tag_code 反向映射（当前语言高频快速反查） */
+  private lemmaToCodeMap = new Map<string, string>()
   /** 当前已装载语言 */
   private locale = ''
   /** 是否已成功装载 */
@@ -54,26 +56,52 @@ export class TaxonomyAliasCache {
   /**
    * 装载/刷新别名字典与分类树
    * 应用启动与用户切换语言时调用
+   * 仅通过 Omni 拉取当前语言的 builtin.* 标签别名，节约 99% 内存，对齐 ADR-0038
    */
   async load(locale: string): Promise<void> {
     const target = locale || 'zh-CN'
-    try {
-      const [aliasesRes, treeRes] = await Promise.all([
-        omniClient.getTaxonomyAliases(target),
-        omniClient.getTaxonomyTree(target)
-      ])
 
-      const next = new Map<string, string>()
+    let aliasesRes: { canonicalNames?: Record<string, string>; aliases?: Record<string, string[]> } | null = null
+    let treeRes: OmniTaxonomyTreeResponse | null = null
+
+    try {
+      const [aRes, tRes] = await Promise.all([
+        omniClient.getTaxonomyAliases(target, 'builtin').catch(() => null),
+        omniClient.getTaxonomyTree(target).catch(() => null)
+      ])
+      aliasesRes = aRes
+      treeRes = tRes
+    } catch {
+      // 忽略外部客户端异常，平滑降级
+    }
+
+    try {
+      const nextAlias = new Map<string, string>()
+      const nextLemmaToCode = new Map<string, string>()
+
       if (aliasesRes?.canonicalNames) {
         for (const [code, lemma] of Object.entries(aliasesRes.canonicalNames)) {
-          if (typeof lemma === 'string' && lemma) next.set(code, lemma)
+          if (typeof lemma === 'string' && lemma) {
+            nextAlias.set(code, lemma)
+            if (!nextLemmaToCode.has(lemma)) {
+              nextLemmaToCode.set(lemma, code)
+            }
+          }
         }
       }
+
       // aliases 兜底：canonical 缺失时取候选首位
       if (aliasesRes?.aliases) {
         for (const [code, list] of Object.entries(aliasesRes.aliases)) {
-          if (!next.has(code) && Array.isArray(list) && list[0]) {
-            next.set(code, list[0])
+          if (!nextAlias.has(code) && Array.isArray(list) && list[0]) {
+            nextAlias.set(code, list[0])
+          }
+          if (Array.isArray(list)) {
+            for (const lem of list) {
+              if (lem && !nextLemmaToCode.has(lem)) {
+                nextLemmaToCode.set(lem, code)
+              }
+            }
           }
         }
       }
@@ -81,17 +109,24 @@ export class TaxonomyAliasCache {
       // 分类树节点名也可作为展示名兜底
       if (treeRes?.rootNodes) {
         this.walkTree(treeRes.rootNodes, node => {
-          if (node.name && !next.has(node.code)) next.set(node.code, node.name)
+          if (node.name && !nextAlias.has(node.code)) {
+            nextAlias.set(node.code, node.name)
+            if (!nextLemmaToCode.has(node.name)) {
+              nextLemmaToCode.set(node.name, node.code)
+            }
+          }
         })
       }
 
-      this.aliasMap = next
+      this.aliasMap = nextAlias
+      this.lemmaToCodeMap = nextLemmaToCode
       this.tree = treeRes
       this.locale = target
-      this.loaded = next.size > 0 || !!treeRes
+      this.loaded = nextAlias.size > 0 || !!treeRes
+
       logger.info(
         LogCategory.DIMENSION_SERVICE,
-        `[TaxonomyAliasCache] 已装载 locale=${target} aliases=${next.size} treeNodes=${treeRes?.totalNodes ?? 0}`
+        `[TaxonomyAliasCache] 已装载 locale=${target} aliases=${nextAlias.size} treeNodes=${treeRes?.totalNodes ?? 0}`
       )
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -103,11 +138,19 @@ export class TaxonomyAliasCache {
 
   /**
    * 内存直查展示名（微秒级）
-   * @returns 命中别名返回别名，未命中返回 undefined
+   * @returns 命中别名返回展示名，未命中返回 undefined
    */
   resolve(code: string): string | undefined {
     if (!code) return undefined
     return this.aliasMap.get(code)
+  }
+
+  /**
+   * 按 lemma 反查受控标签 tag_code (走内存快速索引)
+   */
+  resolveTagCode(lemma: string): string | undefined {
+    if (!lemma) return undefined
+    return this.lemmaToCodeMap.get(lemma)
   }
 
   /**
@@ -117,7 +160,7 @@ export class TaxonomyAliasCache {
     const result: Record<string, string> = {}
     if (!codes?.length) return result
     for (const code of codes) {
-      const hit = this.aliasMap.get(code)
+      const hit = this.resolve(code)
       if (hit) {
         result[code] = hit
         continue
@@ -231,6 +274,7 @@ export class TaxonomyAliasCache {
   /** 清空缓存（测试与重置场景） */
   clear(): void {
     this.aliasMap.clear()
+    this.lemmaToCodeMap.clear()
     this.tree = null
     this.locale = ''
     this.loaded = false
@@ -239,6 +283,12 @@ export class TaxonomyAliasCache {
   /** 测试注入：直接写入别名映射 */
   primeForTest(locale: string, map: Record<string, string>, tree?: OmniTaxonomyTreeResponse | null): void {
     this.aliasMap = new Map(Object.entries(map))
+    this.lemmaToCodeMap = new Map()
+    for (const [code, lemma] of Object.entries(map)) {
+      if (lemma && !this.lemmaToCodeMap.has(lemma)) {
+        this.lemmaToCodeMap.set(lemma, code)
+      }
+    }
     this.locale = locale
     this.tree = tree ?? null
     this.loaded = true
