@@ -73,6 +73,8 @@
     "format:check": "prettier --check .",
     "test": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit",
     "test:unit": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit",
+    "test:unit:node-service": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit --exclude \"**/renderer/**\" --exclude \"**/*.test.tsx\"",
+    "test:unit:renderer": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit/renderer",
     "test:integration": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp pnpm build && cross-env NODE_ENV=test playwright test --config=pro/tests/integration/config/playwright.config.ts",
     "test:e2e": "node ../../scripts/run-local-release-test.mjs",
     "test:coverage": "cross-env AI_ENGINE=llama.cpp pnpm build:prebuild && cross-env AI_ENGINE=llama.cpp node ../../scripts/test-electron.js run pro/tests/unit --coverage",
