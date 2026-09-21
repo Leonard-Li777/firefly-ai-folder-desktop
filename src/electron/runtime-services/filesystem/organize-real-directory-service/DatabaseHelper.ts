@@ -210,7 +210,7 @@ export class DatabaseHelper {
             parent.name as dimensionName,
             COALESCE(parent.code, ft.code) as dimension,
             ft.name as tag,
-            parent.file_groups as applicableFileTypes
+            json_extract(parent.meta, '$.applicableFileTypes') as applicableFileTypes
           FROM file_tag_relations ftr
           INNER JOIN file_tags ft ON ft.code = ftr.tag_code
           LEFT JOIN file_tags parent ON parent.code = json_extract(ft.parent_codes, '$[0]')
