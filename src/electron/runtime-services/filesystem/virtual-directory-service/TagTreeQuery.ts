@@ -1328,13 +1328,13 @@ export class TagTreeQuery {
           name: file.name,
           smartName: file.smart_name || undefined,
           size: file.size ?? 0,
-          extension: file.type
-            ? file.type.replace(/^\./, '')
+          extension: file.extension
+            ? file.extension.replace(/^\./, '')
             : file.name
               ? path.extname(file.name).replace(/^\./, '').toLowerCase()
               : '',
-          mimeType: file.category,
-          category: file.category,
+          mimeType: file.file_group,
+          category: file.file_group,
           createdAt: file.created_at ? new Date(file.created_at) : new Date(),
           modifiedAt: file.modified_at ? new Date(file.modified_at) : new Date(),
           isDirectory: false,

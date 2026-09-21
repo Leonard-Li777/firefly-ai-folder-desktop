@@ -753,7 +753,6 @@ export class DatabaseService {
         `
         UPDATE files
         SET description = NULL,
-            category = NULL,
             author = NULL,
             language = NULL,
             is_hit = 0,

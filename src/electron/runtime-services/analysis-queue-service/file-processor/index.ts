@@ -1466,6 +1466,28 @@ export class FileProcessor {
         }
       }
 
+      // 感知内容兜底：Rust 端未融合到 markdown_content 时，
+      // 将 perceive 返回的 OCR（图片）或音频转录（音视频）文本合并进 content，
+      // 确保详情面板 OCR / 音频文本 Tab 有可展示的数据
+      const isAudioVideoContent =
+        isCategory(enhancedFileType, FileCategory.AUDIO) ||
+        isCategory(enhancedFileType, FileCategory.VIDEO)
+      if (!combinedContent.trim()) {
+        if (isImage && anydocResult?.ocrText?.trim()) {
+          combinedContent = anydocResult.ocrText.trim()
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[FileProcessor] 感知 OCR 兜底合并进 content: ${item.name}, 长度: ${combinedContent.length}`
+          )
+        } else if (isAudioVideoContent && anydocResult?.audioTranscript?.trim()) {
+          combinedContent = anydocResult.audioTranscript.trim()
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[FileProcessor] 感知音频转录兜底合并进 content: ${item.name}, 长度: ${combinedContent.length}`
+          )
+        }
+      }
+
       // 复用数据：Omni 未返回内容时（完全跳过或仅按需请求了缺失指标），回退到已有内容
       if (!combinedContent.trim() && existingBasicData.content && !isImage) {
         combinedContent = existingBasicData.content
@@ -1745,7 +1767,12 @@ export class FileProcessor {
       const detectedAudioTranscript = anydocResult?.audioTranscript
       let activeLrc: string | null = null
       try {
-        const metadataLyrics = getFallbackLyrics(fileInfo.metadata)
+        const metadataLyrics =
+          anydocResult?.lrc ||
+          anydocResult?.perception?.lrc ||
+          anydocResult?.metadata?.lrc ||
+          anydocResult?.metadata?.audio?.lrc ||
+          getFallbackLyrics(fileInfo.metadata)
         // 遵循设计规范：file_contents.lrc 字段仅保存从音频元数据（ID3/FLAC）提取的真实歌词/字幕，
         // 严禁再混入 OCR 文本或音频转录文本（它们已作为一级公民存入 content 字段）
         const finalLrc = metadataLyrics ?? null
@@ -1753,21 +1780,23 @@ export class FileProcessor {
 
         db.prepare(
           `
-          INSERT INTO file_contents (file_fingerprint, content, exif, lrc)
-          VALUES (?, ?, ?, ?)
+          INSERT INTO file_contents (file_fingerprint, content, exif, lrc, ocr)
+          VALUES (?, ?, ?, ?, ?)
           ON CONFLICT(file_fingerprint) DO UPDATE SET
             content = COALESCE(excluded.content, content),
             exif = CASE
               WHEN exif IS NULL OR exif = '{}' OR exif = '' THEN excluded.exif
               ELSE COALESCE(excluded.exif, exif)
             END,
-            lrc = COALESCE(excluded.lrc, lrc)
+            lrc = COALESCE(excluded.lrc, lrc),
+            ocr = COALESCE(excluded.ocr, ocr)
           `
         ).run(
           fileFingerprint,
           compressText(contentResult.content ?? null),
           compressJson(contentResult.metadata || {}),
-          compressText(finalLrc)
+          compressText(finalLrc),
+          compressText(detectedOcrText ?? null)
         )
 
         await databaseService.updateAnalysisStage(fileFingerprint, cpuCompletionStage)

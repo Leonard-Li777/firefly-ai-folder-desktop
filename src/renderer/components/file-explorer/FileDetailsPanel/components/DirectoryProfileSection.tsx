@@ -510,6 +510,13 @@ const DirectoryProfileSectionComponent: React.FC<{
                                 <li>{t('内容描述')}</li>
                               </ul>
 
+                              <div className="text-[10px] text-muted-foreground/80">
+                                {t('分隔符提示：属性之间可以用下划线“_”或中划线“-”连接（例如：')}[
+                                  {t('领域')}
+                                ]{t('内容描述')}-{t('角色名')}
+                                {t('）')}
+                              </div>
+
                               <div className="text-[10px] text-amber-500/90 pt-1 border-t border-border/40">
                                 * {t('规则中必须包含“内容描述”或“描述”，不符合格式要求的规则将自动还原为默认值')}[{t('领域')}]
                                 {t('内容描述')}

@@ -256,7 +256,7 @@ const AnalysisTabsComponent: React.FC<any> = ({
         {activeTab === 'ocr' && (
           <SummaryMarkdown
             content={(() => {
-              if (analysisResult.ocrContent?.trim()) return analysisResult.ocrContent
+              if (analysisResult.ocr?.trim()) return analysisResult.ocr
               if (analysisResult.content?.trim()) return analysisResult.content
               return `> ${t('暂无 OCR 识别结果')}`
             })()}

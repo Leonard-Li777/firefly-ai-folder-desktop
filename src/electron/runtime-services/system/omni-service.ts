@@ -101,7 +101,7 @@ export interface OmniTagChainItem {
   confidence: number
   tag?: string
   logic_pan_dimension?: string
-  parent_code?: string
+  parent_codes?: string[]
 }
 
 export interface OmniResolveParentRequest {
@@ -163,6 +163,7 @@ export interface OmniPerceptionResponse {
   sensitive_types?: string[]
   content_rating?: string
   audio_transcript?: string
+  lrc?: string
   audio_events: string[]
   geo_address?: string
 
@@ -1175,7 +1176,7 @@ export class OmniService {
           const t = json.fused_tags[i]
           logger.info(
             LogCategory.SYSTEM,
-            `  [${String(i + 1).padStart(2, ' ')}] conf=${t.confidence.toFixed(3)} code=${t.code.padEnd(30, ' ')} name=${t.name.padEnd(10, ' ')} parent=${t.parent_code ?? 'None'}`
+            `  [${String(i + 1).padStart(2, ' ')}] conf=${t.confidence.toFixed(3)} code=${t.code.padEnd(30, ' ')} name=${t.name.padEnd(10, ' ')} parent=${t.parent_codes?.join(',') ?? 'None'}`
           )
         }
       }

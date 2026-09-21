@@ -322,11 +322,11 @@ const FileDetailsPanelComponent: React.FC<any> = ({
     const isImageFile = fileCategory === FileCategory.IMAGE
     const isAudioVideo = fileCategory === FileCategory.AUDIO || fileCategory === FileCategory.VIDEO
 
-    // 1. 图片类：若有提取文字（ocrContent 或 content），展示【OCR】Tab
+    // 1. 图片类：若有提取文字（ocr 或 content），展示【OCR】Tab
     const hasImageOcr =
       isImageFile &&
       Boolean(
-        analysisResult.ocrContent?.trim() ||
+        analysisResult.ocr?.trim() ||
           analysisResult.content?.trim()
       )
     if (hasImageOcr) {
