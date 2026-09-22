@@ -4,6 +4,7 @@ import { t } from '@app/languages'
 import * as path from 'path'
 import * as fs from 'fs'
 import { AccessTimeBatchUpdater } from '../access-time-batch-updater'
+import { resolveTagAliasesLangTable } from '../database'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
   isAnalyzedForMode,
@@ -17,6 +18,31 @@ import {
   decompressJson
 } from '../../../utils/text-compressor'
 
+/**
+ * 从受控标签 code 提取可读 slug 作为展示名兜底（builtin.* / omw.* / dim.xxx）
+ * 对齐 databaseService.resolveTagDisplayNames 的 slug 兜底策略，避免在界面暴露技术代码
+ */
+function readableCode(code: string): string {
+  if (!code) return code
+  const parts = code.split('.')
+  const slug = parts[parts.length - 1] || code
+  return slug.replace(/_/g, ' ')
+}
+
+/**
+ * 受控标签展示名解析：本地 file_tags.name 优先，
+ * 其次主库当前语言分表 tag_aliases_{lang}（DAO 层直查 SQL，替换 TaxonomyAliasCache 内存总线），最后 code 可读 slug 兜底。
+ * 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags 表（file_tags.source CHECK 仅 expanded/user），
+ * 其展示名须经语言分表 / Omni 语义包 tag_aliases 镜像解析。
+ */
+function dimensionForCode(code: string, sqlDimId: string | null, parentTagCode: string): string {
+  if (sqlDimId) return sqlDimId
+  if (parentTagCode) return parentTagCode
+  const dimPrefix = code.match(/^dim\.(\d+)(?:\.|$)/)
+  if (dimPrefix) return `dim.${dimPrefix[1]}`
+  return code
+}
+
 export class FileDao {
   private dimensionsCache: any[] | null = null
   private ftsSearchStmtWithWorkspace: Statement | null = null
@@ -24,6 +50,32 @@ export class FileDao {
   private ftsVirtualSearchStmt: Statement | null = null
 
   constructor(private db: Database) {}
+
+  /**
+   * 受控标签展示名解析（DAO 层直查主库当前语言分表 tag_aliases_{lang}）
+   * 本地 file_tags.name 优先 → 语言分表 lemma → code 可读 slug 兜底。
+   * @param code 标签 code（受控 builtin.*/omw.*/dim.xxx 或本地动态标签）
+   * @param ftName 已从 file_tags 取到的本地展示名（无则传 null）
+   */
+  private resolveDisplayName(code: string, ftName: string | null): string {
+    if (ftName) return ftName
+    if (!code) return code
+    try {
+      const locale =
+        ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+      const langTable = resolveTagAliasesLangTable(locale)
+      const row = this.db
+        .prepare(
+          `SELECT lemma FROM ${langTable}
+           WHERE tag_code = ? ORDER BY is_canonical DESC LIMIT 1`
+        )
+        .get(code) as { lemma?: string } | undefined
+      if (row?.lemma) return row.lemma
+    } catch {
+      // 分表不可用时降级，不影响主查询
+    }
+    return readableCode(code)
+  }
 
   clearDimensionsCache(): void {
     this.dimensionsCache = null
@@ -196,8 +248,10 @@ export class FileDao {
       }
     }
 
-    // 创世 Baseline V1：以 code 自然主键直连 file_tags，彻底移除自增 id / dimension_id / tag_id 兼容分支。
+    // 创世 Baseline V1：以 code 自然主键 LEFT JOIN file_tags，彻底移除自增 id / dimension_id / tag_id 兼容分支。
     // dimension_id 取首个父级 code（parent_codes 首元素），维度根节点自身则退化为自身 code。
+    // 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags 表（file_tags.source CHECK 仅 expanded/user），
+    // 其展示名与维度归属需经 TaxonomyAliasCache（Omni 语义包 tag_aliases 内存总线）解析，故不可使用内连接过滤。
     let tags: any[] = []
     if (fingerprint) {
       try {
@@ -205,15 +259,15 @@ export class FileDao {
           .prepare(
             `
           SELECT
-            ft.code as id,
-            ft.name,
+            ftr.tag_code as id,
+            ft.name as ft_name,
             ftr.parent_tag_code,
             CASE
               WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
               ELSE json_extract(ft.parent_codes, '$[0]')
             END as dimension_id
           FROM file_tag_relations ftr
-          JOIN file_tags ft ON ft.code = ftr.tag_code
+          LEFT JOIN file_tags ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = ?
         `
           )
@@ -223,11 +277,16 @@ export class FileDao {
       }
     }
 
+    // 受控标签展示名解析与维度归属统一走工具函数（resolveDisplayName / dimensionForCode），
+    // 与 getAnalyzedFilesByWorkspace、syncFTSTags 保持同一套解析语义
     const dimensionTags: { [dimensionId: string]: any[] } = {}
     tags.forEach(tag => {
-      const dimId = tag.dimension_id
+      const dimId = dimensionForCode(tag.id, tag.dimension_id, tag.parent_tag_code || '')
       if (!dimensionTags[dimId]) dimensionTags[dimId] = []
-      dimensionTags[dimId].push({ id: tag.id, name: tag.name })
+      dimensionTags[dimId].push({
+        id: tag.id,
+        name: this.resolveDisplayName(tag.id, tag.ft_name)
+      })
     })
 
     // 创世 Baseline V1 起，维度层级不再来自 file_dimensions 表（已废弃），
@@ -1416,21 +1475,24 @@ export class FileDao {
       .all(workspaceId, limit) as any[]
 
     return rows.map(row => {
-      // 以 code 自然主键直连 file_tags 获取维度标签（创世 Baseline V1）
+      // 以 tag_code 自然主键 LEFT JOIN file_tags 获取维度标签（创世 Baseline V1）。
+      // 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags 表，其展示名与维度归属
+      // 与属性面板同源：统一走 resolveDisplayName / dimensionForCode（主库语言分表直查）。
       let tags: any[] = []
       try {
         tags = this.db
           .prepare(
             `
           SELECT
-            ft.code as id,
-            ft.name,
+            ftr.tag_code as id,
+            ft.name as ft_name,
+            ftr.parent_tag_code,
             CASE
               WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
               ELSE json_extract(ft.parent_codes, '$[0]')
             END as dimension_id
           FROM file_tag_relations ftr
-          JOIN file_tags ft ON ft.code = ftr.tag_code
+          LEFT JOIN file_tags ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
         `
           )
@@ -1438,7 +1500,10 @@ export class FileDao {
       } catch {
         tags = []
       }
-      const dimensionTags = tags.map(t => ({ tag: t.name, dimension: t.dimension_id }))
+      const dimensionTags = tags.map(t => ({
+        tag: this.resolveDisplayName(t.id, t.ft_name),
+        dimension: dimensionForCode(t.id, t.dimension_id, t.parent_tag_code || '')
+      }))
 
       return {
         id: String(row.id),
@@ -1719,13 +1784,7 @@ export class FileDao {
             COALESCE(decompress_text(fc.content), '') AS content,
             COALESCE(decompress_text(fc.multimodal_content), '') AS multimodal_content,
             COALESCE(decompress_text(fc.ocr), '') AS ocr,
-            COALESCE(decompress_text(fc.lrc), '') AS lrc,
-            COALESCE((
-              SELECT GROUP_CONCAT(ft.name, ' ')
-              FROM file_tag_relations ftr
-              JOIN file_tags ft ON ft.code = ftr.tag_code
-              WHERE ftr.file_fingerprint = f.file_fingerprint
-            ), '') AS tags
+            COALESCE(decompress_text(fc.lrc), '') AS lrc
           FROM files f
           LEFT JOIN file_contents fc ON fc.file_fingerprint = f.file_fingerprint
           WHERE f.file_fingerprint = ?
@@ -1733,6 +1792,26 @@ export class FileDao {
         )
         .get(fingerprint) as any
       if (!row) return
+
+      // FTS 倒排的 tags 列：受控标签展示名经主库语言分表 resolveDisplayName 解析（SQL 层无法访问该动态分表），
+      // 故在 JS 侧聚合：LEFT JOIN file_tags 取本地名，缺失时走 resolveDisplayName（语言分表 lemma → 可读 slug），
+      // 保证"设计稿/如云西点"等感知标签展示名可被全文搜索命中。
+      let tagsText = ''
+      try {
+        const relationRows = this.db
+          .prepare(
+            `
+            SELECT ftr.tag_code as id, ft.name as ft_name
+            FROM file_tag_relations ftr
+            LEFT JOIN file_tags ft ON ft.code = ftr.tag_code
+            WHERE ftr.file_fingerprint = ?
+          `
+          )
+          .all(fingerprint) as Array<{ id: string; ft_name: string | null }>
+        tagsText = relationRows.map(r => this.resolveDisplayName(r.id, r.ft_name)).join(' ')
+      } catch {
+        tagsText = ''
+      }
 
       this.db.prepare(`DELETE FROM files_fts WHERE rowid = ?`).run(row.rid)
       this.db
@@ -1750,7 +1829,7 @@ export class FileDao {
           row.multimodal_content,
           row.ocr,
           row.lrc,
-          row.tags
+          tagsText
         )
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '同步FTS标签失败', { error, fingerprint })

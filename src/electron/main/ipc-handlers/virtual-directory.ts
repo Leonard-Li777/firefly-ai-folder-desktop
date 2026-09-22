@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
-import { logger, LogCategory, sanitizeDirectoryName, isTestEnvironment } from '@firefly/shared'
+import { logger, LogCategory, sanitizeDirectoryName, isTestEnvironment, HAC_FEATURE_FLAGS } from '@firefly/shared'
 import { userTierService } from '../../runtime-services/user-tier/user-tier-service'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
@@ -452,6 +452,8 @@ export function registerVirtualDirectoryIPCHandlers() {
     'virtual-directory/generate-hac-cluster-scheme',
     async (_event, workspaceId: number, selectedFileIds?: number[], userPrompt?: string) => {
       if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+      // 功能开关降级：向量数据源迁移期间禁用
+      if (!HAC_FEATURE_FLAGS.ENABLE_HAC_CLUSTERING) return null
       return await virtualDirectoryService.generateHACClusterScheme(
         workspaceId,
         selectedFileIds,

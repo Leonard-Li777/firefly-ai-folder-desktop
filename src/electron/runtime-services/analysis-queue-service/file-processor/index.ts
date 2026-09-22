@@ -973,6 +973,7 @@ export class FileProcessor {
             : existingBasicData.category?.group || null
 
         // 运行找补裁决器：将 CPU 既定事实标签与 AI 推理标签合并，物理事实绝对覆盖，全量无损入库（打破 8 个上限限制）
+        // resolveControlledCode：中文词形优先反查 Omni 语义包（omw.* > builtin.*），禁止无脑 _ext / 冒号 code
         executeProTagReconciliation({
           db,
           fileFingerprint,
@@ -981,7 +982,8 @@ export class FileProcessor {
           authors: baseMetadata?.authors || baseMetadata?.document?.authors,
           language: baseMetadata?.language,
           fileGroup: existingMagikaGroup,
-          extension: path.extname(filePath).replace(/^\./, '').toLowerCase()
+          extension: path.extname(filePath).replace(/^\./, '').toLowerCase(),
+          resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)
         })
 
         databaseService.syncFTSTags(fileFingerprint)
@@ -1944,7 +1946,8 @@ export class FileProcessor {
           authors: anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
           language,
           fileGroup: magikaGroup,
-          extension: effectiveExt
+          extension: effectiveExt,
+          resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)
         })
 
         databaseService.syncFTSTags(fileFingerprint)
@@ -2055,7 +2058,8 @@ export class FileProcessor {
         authors: anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
         language,
         fileGroup: magikaGroup,
-        extension: effectiveExt
+        extension: effectiveExt,
+        resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)
       })
 
       databaseService.syncFTSTags(fileFingerprint)

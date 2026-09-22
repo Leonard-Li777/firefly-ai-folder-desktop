@@ -14,7 +14,7 @@ import { DirectoryTreePreview } from './DirectoryTreePreview'
 import { DirectoryNode } from '@firefly/types/organize-types'
 import { t } from '@app/languages'
 import { toast } from '../common/Toast'
-import { logger } from '@firefly/shared'
+import { logger, HAC_FEATURE_FLAGS } from '@firefly/shared'
 import { LogCategory } from '@firefly/shared'
 
 interface HacOrganizeDialogProps {
@@ -46,6 +46,11 @@ export const HacOrganizeDialog: React.FC<HacOrganizeDialogProps> = ({
 
   const loadScheme = useCallback(async (promptOverride?: string) => {
     if (!open || !workspaceId) return
+    // 功能开关降级：向量数据源迁移期间禁用，避免无向量时恒降级返回 null
+    if (!HAC_FEATURE_FLAGS.ENABLE_HAC_CLUSTERING) {
+      toast.info(t('该功能正在数据源迁移中，暂不可用'))
+      return
+    }
     setIsGenerating(true)
     setSummary('')
     setDirectories([])

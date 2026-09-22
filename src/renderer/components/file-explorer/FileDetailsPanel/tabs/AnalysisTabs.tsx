@@ -463,7 +463,10 @@ const AnalysisTabsComponent: React.FC<any> = ({
                       'naming_template',
                       'text', // 已由 text_stats 专有卡片呈现
                       'text_stats', // 已由上方专有卡片呈现
-                      'textStats'
+                      'textStats',
+                      'embedding_dense', // 384d 向量由 Omni zvec 独占托管（ADR-0038），严禁在 UI 平铺巨型数组
+                      'embeddingDense',
+                      'embedding'
                     ])
                     // ExifDateTime 日期对象特征：含 _ctor 或同时有 year/month/day 子字段
                     const isExifDateTimeObj = (v: any): boolean =>

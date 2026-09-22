@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { getFileNameFromPath } from '@firefly/shared'
+import { getFileNameFromPath, HAC_FEATURE_FLAGS } from '@firefly/shared'
 import { useVirtualDirectory } from './hooks/useVirtualDirectory'
 import { DimensionTreeSidebar } from './components/DimensionTreeSidebar'
 import { DirectoryHeader } from '../DirectoryHeader'
@@ -302,7 +302,13 @@ export const VirtualDirectory: React.FC = () => {
                       computed_limits={computed_limits}
                       handleExportVdir={() => organizeModalsRef.current?.triggerExportVdir()}
                       handleExportReal={() => organizeModalsRef.current?.triggerExportReal()}
-                      handleOpenHac={() => setShowHacDialog(true)}
+                      handleOpenHac={() => {
+                        if (!HAC_FEATURE_FLAGS.ENABLE_HAC_CLUSTERING) {
+                          toast.info(t('该功能正在数据源迁移中，暂不可用'))
+                          return
+                        }
+                        setShowHacDialog(true)
+                      }}
                     />
                   ) : (
                     <SplitPane

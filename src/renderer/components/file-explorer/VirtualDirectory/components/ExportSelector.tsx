@@ -1,5 +1,6 @@
 import React from 'react'
 import { t } from '@app/languages'
+import { HAC_FEATURE_FLAGS } from '@firefly/shared'
 import { MaterialIcon } from '../../../../lib/utils'
 import { EmptyState } from '../../../common/EmptyState'
 
@@ -129,8 +130,13 @@ export const ExportSelector: React.FC<ExportSelectorProps> = React.memo(
 
             {/* HAC 智能聚类整理卡片 (跨两列全宽) */}
             <div
-              onClick={handleOpenHac}
-              className="group relative flex flex-row items-center p-6 rounded-3xl border-2 border-border/50 bg-background hover:border-violet-500/50 hover:shadow-2xl hover:shadow-violet-500/10 transition-all duration-300 cursor-pointer overflow-hidden md:col-span-2"
+              onClick={HAC_FEATURE_FLAGS.ENABLE_HAC_CLUSTERING ? handleOpenHac : undefined}
+              aria-disabled={!HAC_FEATURE_FLAGS.ENABLE_HAC_CLUSTERING}
+              className={`group relative flex flex-row items-center p-6 rounded-3xl border-2 overflow-hidden md:col-span-2 transition-all duration-300 ${
+                HAC_FEATURE_FLAGS.ENABLE_HAC_CLUSTERING
+                  ? 'border-border/50 bg-background hover:border-violet-500/50 hover:shadow-2xl hover:shadow-violet-500/10 cursor-pointer'
+                  : 'border-border/40 bg-muted/30 cursor-not-allowed opacity-70'
+              }`}
             >
               <div className="absolute -top-12 -right-12 w-32 h-32 bg-violet-500/5 rounded-full blur-3xl group-hover:bg-violet-500/10 transition-colors" />
               <div className="flex-1">
@@ -158,6 +164,11 @@ export const ExportSelector: React.FC<ExportSelectorProps> = React.memo(
                     <span>{t('不改变真实目录文件结构')}</span>
                   </li>
                 </ul>
+                {!HAC_FEATURE_FLAGS.ENABLE_HAC_CLUSTERING && (
+                  <p className="text-xs text-muted-foreground mt-4 text-left">
+                    {t('该功能正在数据源迁移中，暂不可用')}
+                  </p>
+                )}
               </div>
               <div className="flex items-center pt-6 border-t border-border/50 ml-8 shrink-0">
                 <MaterialIcon

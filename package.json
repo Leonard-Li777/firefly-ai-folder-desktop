@@ -13,6 +13,7 @@
     "postinstall": "node pro/scripts/run.js copy-viewer-resources.js && node pro/scripts/run.js rebuild-extract-icon.js",
     "download:llama": "node pro/scripts/run.js download-llama-cpp-releases.js",
     "download:llama:update": "cross-env FORCE_UPDATE=true pnpm download:llama",
+    "sync:llama:r2": "node pro/scripts/run.js sync-llama-to-r2.js",
     "install-sharp-cross-platform": "node pro/scripts/run.js install-sharp-cross-platform.js",
     "rebuild": "node -e \"const a = process.env.BUILD_ARCH && process.env.BUILD_ARCH !== 'universal' ? ' -a ' + process.env.BUILD_ARCH : ''; require('child_process').execSync('electron-rebuild -f' + a + ' -w better-sqlite3,sharp', {stdio: 'inherit'})\"",
     "rebuild:better-sqlite3": "node -e \"const a = process.env.BUILD_ARCH && process.env.BUILD_ARCH !== 'universal' ? ' -a ' + process.env.BUILD_ARCH : ''; require('child_process').execSync('electron-rebuild -f -v 42.2.0' + a + ' -w better-sqlite3', {stdio: 'inherit'})\"",

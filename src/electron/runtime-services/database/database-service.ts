@@ -6,8 +6,12 @@ import type {
   UnitCreationData
 } from '@firefly/types'
 import { LogCategory, logger, isTestEnvironment } from '@firefly/shared'
-import { getDatabaseConfig, migrations, registerDatabaseFunctions } from './database'
-import { taxonomyAliasCache } from '../../services/taxonomy-alias-cache'
+import {
+  getDatabaseConfig,
+  migrations,
+  registerDatabaseFunctions,
+  resolveTagAliasesLangTable
+} from './database'
 import { omniClient } from '../../services/omni-client'
 
 import Database from 'better-sqlite3'
@@ -133,6 +137,8 @@ export class DatabaseService {
     }
 
     if (this.initPromise) return this.initPromise
+
+    this.currentLanguage = language
 
     this.initPromise = (async () => {
       try {
@@ -1461,10 +1467,10 @@ export class DatabaseService {
 
   /**
    * 多语言展示层标签名解析器 (Tag Display Resolver)
-   * ADR-0038 / Issue #682：
-   * 1. 受控 builtin / omw 展示名走 TaxonomyAliasCache 内存总线（零 SQL、微秒级）；
+   * ADR-0038 / Issue #682 / tag-aliases-lang-tables：
+   * 1. 受控 + 动态标签展示名统一查主库当前语言分表 tag_aliases_{lang}（本地持久化镜像，零网络）；
    * 2. 用户/扩展标签兜底读取本地 file_tags.name；
-   * 3. 彻底废除对 omw_lexical_entries 等只读语义表的裸 SQL 查询。
+   * 3. 彻底废除对 omw_lexical_entries 等只读语义表的裸 SQL 查询与 TaxonomyAliasCache 内存总线。
    *
    * @param tagCodes 需要解析显示名称的标签 code 数组
    * @param locale 当前目标语言代码 (如 'zh-CN', 'en-US')
@@ -1480,46 +1486,36 @@ export class DatabaseService {
     if (distinctCodes.length === 0) return result
 
     try {
-      // 1) 内存别名总线优先（Omni taxonomy/aliases 独占托管所有受控 builtin.* / omw.* 别名）
-      const resolved = taxonomyAliasCache.resolveMany(distinctCodes)
-      for (const [code, name] of Object.entries(resolved)) {
-        if (name && name !== code) {
-          result[code] = name
+      const targetLocale = locale || 'zh-CN'
+      const langTable = resolveTagAliasesLangTable(targetLocale)
+
+      // 1) 受控 + 动态标签统一查当前语言分表（替换内存总线优先）
+      if (this._db && distinctCodes.length > 0) {
+        const aliasPlaceholders = distinctCodes.map(() => '?').join(',')
+        // 优先规范名（is_canonical=1），其次首个词形
+        const aliasRows = this._db
+          .prepare(
+            `SELECT tag_code, lemma FROM ${langTable}
+             WHERE tag_code IN (${aliasPlaceholders})
+             ORDER BY is_canonical DESC`
+          )
+          .all(...distinctCodes) as { tag_code: string; lemma: string }[]
+        for (const r of aliasRows) {
+          if (r.lemma && result[r.tag_code] === r.tag_code) {
+            result[r.tag_code] = r.lemma
+          }
         }
       }
 
-      // 2) 区分受控标签与本地动态标签：
-      // file_tags.source CHECK 已收紧为 ('expanded', 'user')，受控标签绝不落用户主库 file_tags；
-      // 对未命中的受控标签，不执行无谓的本地 SQL 探测，直接走友好展示名兜底。
-      const dynamicCodes = distinctCodes.filter(
-        c => (!taxonomyAliasCache.resolve(c) || result[c] === c) &&
-             !c.startsWith('builtin.') &&
-             !c.startsWith('omw.')
-      )
-
-      if (this._db && dynamicCodes.length > 0) {
-        // 2.1) 本地动态标签优先查询当前 locale 的本地 tag_aliases
-        const targetLocale = locale || 'zh-CN'
-        const aliasPlaceholders = dynamicCodes.map(() => '?').join(',')
-        const aliasRows = this._db
-          .prepare(
-            `SELECT tag_code, lemma FROM tag_aliases WHERE locale = ? AND tag_code IN (${aliasPlaceholders})`
-          )
-          .all(targetLocale, ...dynamicCodes) as { tag_code: string; lemma: string }[]
-        for (const r of aliasRows) {
-          if (r.lemma) result[r.tag_code] = r.lemma
-        }
-
-        // 2.2) 本地 tag_aliases 未命中时，以本地 file_tags.name（默认名）兜底
-        const stillMissing = dynamicCodes.filter(c => result[c] === c)
-        if (stillMissing.length > 0) {
-          const tagPlaceholders = stillMissing.map(() => '?').join(',')
-          const tagRows = this._db
-            .prepare(`SELECT code, name FROM file_tags WHERE code IN (${tagPlaceholders})`)
-            .all(...stillMissing) as { code: string; name: string }[]
-          for (const row of tagRows) {
-            if (row.name) result[row.code] = row.name
-          }
+      // 2) 未命中分表时，以本地 file_tags.name（默认名）兜底
+      const stillMissing = distinctCodes.filter(c => result[c] === c)
+      if (this._db && stillMissing.length > 0) {
+        const tagPlaceholders = stillMissing.map(() => '?').join(',')
+        const tagRows = this._db
+          .prepare(`SELECT code, name FROM file_tags WHERE code IN (${tagPlaceholders})`)
+          .all(...stillMissing) as { code: string; name: string }[]
+        for (const row of tagRows) {
+          if (row.name) result[row.code] = row.name
         }
       }
 
@@ -1541,17 +1537,53 @@ export class DatabaseService {
   }
 
   /**
-   * 按 lemma 快速查询受控标签 tag_code (走内存快速索引)
+   * 按 lemma 快速查询受控标签 tag_code (反查，走当前语言分表 lemma 索引)
+   * 优先级：omw.* > builtin.*（与旧 TaxonomyAliasCache 反查映射规则一致）
    */
-  public findTagCodeByLemma(lemma: string): string | undefined {
-    return taxonomyAliasCache.resolveTagCode(lemma)
+  public findTagCodeByLemma(lemma: string, locale?: string): string | undefined {
+    if (!lemma || !this._db) return undefined
+    const targetLocale = locale || this.currentLanguage || 'zh-CN'
+    const langTable = resolveTagAliasesLangTable(targetLocale)
+    try {
+      const rows = this._db
+        .prepare(
+          `SELECT tag_code FROM ${langTable}
+           WHERE lemma = ?
+           ORDER BY CASE
+             WHEN tag_code LIKE 'omw.%' THEN 0
+             WHEN tag_code LIKE 'builtin.%' THEN 1
+             ELSE 2 END
+           LIMIT 1`
+        )
+        .all(lemma) as { tag_code: string }[]
+      return rows[0]?.tag_code
+    } catch (error) {
+      logger.error(LogCategory.DATABASE_SERVICE, 'findTagCodeByLemma 反查失败:', error)
+      return undefined
+    }
   }
 
   /**
-   * 按 tag_code 快速查询当前语言规范展示名 (走内存快速索引)
+   * 按 tag_code 快速查询当前语言规范展示名 (读当前语言分表，优先规范名)
    */
-  public findLemmaByTagCode(tagCode: string): string | undefined {
-    return taxonomyAliasCache.resolve(tagCode)
+  public findLemmaByTagCode(tagCode: string, locale?: string): string | undefined {
+    if (!tagCode || !this._db) return undefined
+    const targetLocale = locale || this.currentLanguage || 'zh-CN'
+    const langTable = resolveTagAliasesLangTable(targetLocale)
+    try {
+      const rows = this._db
+        .prepare(
+          `SELECT lemma FROM ${langTable}
+           WHERE tag_code = ?
+           ORDER BY is_canonical DESC
+           LIMIT 1`
+        )
+        .all(tagCode) as { lemma: string }[]
+      return rows[0]?.lemma
+    } catch (error) {
+      logger.error(LogCategory.DATABASE_SERVICE, 'findLemmaByTagCode 查询失败:', error)
+      return undefined
+    }
   }
 
 

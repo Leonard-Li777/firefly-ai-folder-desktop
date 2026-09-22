@@ -8,7 +8,7 @@ import {
   DirectoryReorganizeResult,
   AIDirectoryStructure
 } from '@firefly/types'
-import { LogCategory, logger, sanitizeDirectoryName } from '@firefly/shared'
+import { LogCategory, logger, sanitizeDirectoryName, HAC_FEATURE_FLAGS } from '@firefly/shared'
 import { t } from '@app/languages'
 import Database from 'better-sqlite3'
 import { databaseService } from '../../database/database-service'
@@ -914,7 +914,7 @@ export class VirtualDirectoryService {
     return this._aiSchemeGenerator!.checkIsLimitPredict()
   }
 
-  /**
+  /** 
    * 基于端侧 384d 密集向量与 Omni 约束层次聚类 (HAC) 生成目录整理方案 (Issue #633)
    */
   async generateHACClusterScheme(
@@ -923,6 +923,8 @@ export class VirtualDirectoryService {
     userPrompt?: string
   ): Promise<AIDirectoryStructure | null> {
     this.ensureInitialized()
+    // 功能开关降级：向量数据源迁移期间禁用，避免无向量时恒降级返回 null
+    if (!HAC_FEATURE_FLAGS.ENABLE_HAC_CLUSTERING) return null
     return this._aiSchemeGenerator!.generateHACClusterScheme(
       workspaceId,
       selectedFileIds,

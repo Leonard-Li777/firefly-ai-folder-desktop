@@ -11,10 +11,11 @@
  */
 
 import { deflateSync, inflateSync } from 'node:zlib'
+import { app } from 'electron'
 
 /** 编码格式标识 */
-const enum CompressionFormat {
-  /** 原始明文 UTF-8（短文本或不可压缩文本） */
+export const enum CompressionFormat {
+  /** 原始明文 UTF-8（短文本、不可压缩文本或开发模式） */
   RAW_UTF8 = 0x00,
   /** Zlib Deflate 压缩 */
   ZLIB_DEFLATE = 0x01
@@ -22,6 +23,35 @@ const enum CompressionFormat {
 
 /** 触发压缩的最小字节长度阈值（低于此长度压缩后通常体积更大） */
 const COMPRESSION_THRESHOLD_BYTES = 64
+
+/**
+ * 判断当前是否处于开发环境（未打包或非 production，支持测试显式覆盖）
+ */
+let devCompressionOverride: boolean | null = null
+
+export function isCompressionDisabled(): boolean {
+  if (devCompressionOverride !== null) {
+    return devCompressionOverride
+  }
+  if (process.env.DISABLE_TEXT_COMPRESSION === 'true') {
+    return true
+  }
+  // 测试环境默认不禁用压缩（以便单元测试能正常覆盖真实压缩率与解压算法）
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST === 'true') {
+    return false
+  }
+  // 开发模式：未打包或 NODE_ENV !== 'production'
+  const isPackaged = typeof app !== 'undefined' && app ? app.isPackaged : false
+  const isDev = !isPackaged || process.env.NODE_ENV !== 'production'
+  return isDev
+}
+
+/**
+ * 供测试或特定场景手动切换是否禁用压缩
+ */
+export function setCompressionDisabled(disabled: boolean | null): void {
+  devCompressionOverride = disabled
+}
 
 /**
  * 将文本字符串压缩为带格式头的 Buffer (BLOB)
@@ -42,8 +72,8 @@ export function compressText(text: string | null | undefined): Buffer | null {
 
   const rawBuffer = Buffer.from(text, 'utf-8')
 
-  // 1) 短文本旁路：小于阈值直接前置 0x00
-  if (rawBuffer.length < COMPRESSION_THRESHOLD_BYTES) {
+  // 1) 开发模式或短文本旁路：小于阈值或开发模式直接前置 0x00 保留明文，便于数据库直读调试
+  if (isCompressionDisabled() || rawBuffer.length < COMPRESSION_THRESHOLD_BYTES) {
     const out = Buffer.allocUnsafe(1 + rawBuffer.length)
     out[0] = CompressionFormat.RAW_UTF8
     rawBuffer.copy(out, 1)

@@ -1,6 +1,7 @@
 import { app as electronApp } from 'electron'
 import path from 'path'
 import { decompressText } from '../../utils/text-compressor'
+import type { Database } from 'better-sqlite3'
 
 /**
  * 数据库配置接口定义
@@ -183,18 +184,8 @@ const GENESIS_V1_SCHEMA = `
     meta               TEXT NOT NULL DEFAULT '{}'     -- JSON 元数据: isDimension, isRuleSubdivision, isPanDimension, isMultiSelect, color, icon 等
   );
 
-  -- 8. 用户/扩展标签多语言别名（受控 builtin.* 别名由 Omni taxonomy/aliases 内存总线提供）
-  -- Spec: issue-omni-i18n-tag-identity-spec D4；软外键，不物理 REFERENCES file_tags
-  CREATE TABLE IF NOT EXISTS tag_aliases (
-    tag_code      TEXT NOT NULL,                 -- 业务软外键：允许指向 Omni 受控 code
-    locale        TEXT NOT NULL,
-    lemma         TEXT NOT NULL,
-    is_canonical  INTEGER NOT NULL DEFAULT 0,
-    meta          TEXT NOT NULL DEFAULT '{}',
-    PRIMARY KEY (tag_code, locale)
-  );
-  CREATE INDEX IF NOT EXISTS idx_tag_aliases_lookup ON tag_aliases(locale, tag_code);
-  CREATE INDEX IF NOT EXISTS idx_tag_aliases_lemma ON tag_aliases(lemma, locale);
+  -- 8. 用户/扩展标签多语言别名（受控 builtin.*/omw.* 别名由语言分表 tag_aliases_{lang} 镜像）
+  -- 语言分表 DDL 见 createTagAliasesLangTable（表名含语言后缀，需按语言动态创建）；单表 tag_aliases 已废止。
 
   -- 9. 文件指纹与标签多对多关联表（tag_code 为业务软外键，兼容受控标签 code）
   CREATE TABLE IF NOT EXISTS file_tag_relations (
@@ -453,7 +444,6 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS app_config;
       DROP TABLE IF EXISTS file_constants;
       DROP TABLE IF EXISTS file_tag_relations;
-      DROP TABLE IF EXISTS tag_aliases;
       DROP TABLE IF EXISTS file_tags;
       DROP TABLE IF EXISTS analysis_queue;
       DROP TABLE IF EXISTS workspace_files;
@@ -474,6 +464,43 @@ export const migrations: IMigrationConfig[] = [
  */
 export function resolveAndMigrateDatabasePath(userDataPath: string, _language?: string): string {
   return path.join(userDataPath, 'firefly-ai-folder.db')
+}
+
+/**
+ * 将语言区域代码转换为分表后缀（与 Omni 语义包 / build-semantic-pack 的 localeToTableSuffix 一致）
+ * 如 zh-CN → zh_CN；en-US → en_US
+ */
+export function localeToTableSuffix(locale: string): string {
+  return locale.replace(/-/g, '_')
+}
+
+/**
+ * 生成某个语言的分表名（与 Omni 语义包 tag_aliases_{lang} 一一对应）
+ * @param locale 如 zh-CN
+ */
+export function resolveTagAliasesLangTable(locale: string): string {
+  return `tag_aliases_${localeToTableSuffix(locale)}`
+}
+
+/**
+ * 创建主库语言分表 tag_aliases_{lang}（受控别名的本地持久化镜像）
+ * - 字段与 Omni 语义包 tag_aliases_{lang} 完全一致：无 locale / meta 列，语言体现在表名；
+ * - 附加 lemma 索引支撑反查（对应语义包 _lemma_index）；
+ * - 幂等：已存在则跳过。
+ */
+export function createTagAliasesLangTable(db: Database, locale: string): void {
+  const table = resolveTagAliasesLangTable(locale)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS ${table} (
+      tag_code    TEXT NOT NULL,          -- 受控 code（builtin.* / omw.*）
+      lemma       TEXT NOT NULL,          -- 该语言词形
+      is_canonical INTEGER NOT NULL DEFAULT 0,   -- 是否规范名
+      n           INTEGER NOT NULL DEFAULT 1,    -- 语义包词频（镜像字段）
+      count       INTEGER NOT NULL DEFAULT 0,    -- 语义包文档数（镜像字段）
+      PRIMARY KEY (tag_code, lemma)
+    ) WITHOUT ROWID;
+    CREATE INDEX IF NOT EXISTS idx_${table}_lemma ON ${table}(lemma);
+  `)
 }
 
 /**
