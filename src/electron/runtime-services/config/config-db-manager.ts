@@ -13,6 +13,7 @@ import { createSupabaseClient } from '../system/supabase-client-factory'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
 import { SystemIdentityService } from '../system/system-identity-service'
 import { databaseService } from '../database/database-service'
+import { createTagAliasesLangTable } from '../database/database'
 import { taxonomyAliasCache } from '../../services/taxonomy-alias-cache'
 import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
@@ -71,6 +72,9 @@ export class ConfigDbManager {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 数据库未就绪，无法初始化配置')
       return
     }
+
+    // Slice 6 / R3.2：语言初始化/切换时创建 tag_aliases_{lang} 分表
+    createTagAliasesLangTable(db, language)
 
     try {
       this.loadFromJson(db, language)
