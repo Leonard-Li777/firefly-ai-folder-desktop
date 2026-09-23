@@ -65,6 +65,7 @@ import path from 'node:path'
 import { saveCloudResult } from './save-cloud-result'
 import { handleEmptyFile } from './handle-empty-file'
 import { processLocalAnalysis } from './process-local-analysis'
+import { classifyAnalysisError, tagErrorPhase, createTimeoutError } from './analysis-error-classifier'
 import { processQuickNameAnalysis } from './process-quick-name-analysis'
 import { saveLocalAnalysisResult } from './save-local-cache-result'
 import { NamingDSLEngine } from '../../filesystem/naming-dsl-engine'
@@ -851,7 +852,10 @@ export class FileProcessor {
               forceReanalyze: item.forceReanalyze === true
             },
             this.updateItemStatus.bind(this)
-          )
+          ).catch(err => {
+            // Fix-07：推理阶段边界打 errorPhase 标记，外层 catch 依结构化分类判定降级
+            throw tagErrorPhase(err, 'inference')
+          })
           processResult = quickRes.processResult
           dimResult = quickRes.dimResult
         } else {
@@ -872,7 +876,10 @@ export class FileProcessor {
               forceReanalyze: item.forceReanalyze === true
             },
             this.updateItemStatus.bind(this)
-          )
+          ).catch(err => {
+            // Fix-07：推理阶段边界打 errorPhase 标记，外层 catch 依结构化分类判定降级
+            throw tagErrorPhase(err, 'inference')
+          })
           processResult = fullRes.processResult
           dimResult = fullRes.dimResult
         }
@@ -1062,7 +1069,7 @@ export class FileProcessor {
             calculateFileFingerprint(filePath),
             new Promise<string>((_, reject) =>
               setTimeout(
-                () => reject(new Error('文件哈希计算超时(3s)，文件可能损坏或被占用')),
+                () => reject(createTimeoutError('文件哈希计算超时(3s)，文件可能损坏或被占用')),
                 3000
               )
             )
@@ -1994,7 +2001,10 @@ export class FileProcessor {
             lrc: activeLrc
           },
           this.updateItemStatus.bind(this)
-        )
+        ).catch(err => {
+          // Fix-07：推理阶段边界打 errorPhase 标记，外层 catch 依结构化分类判定降级
+          throw tagErrorPhase(err, 'inference')
+        })
         processResult = quickRes.processResult
         dimResult = quickRes.dimResult
       } else {
@@ -2016,7 +2026,10 @@ export class FileProcessor {
             lrc: activeLrc
           },
           this.updateItemStatus.bind(this)
-        )
+        ).catch(err => {
+          // Fix-07：推理阶段边界打 errorPhase 标记，外层 catch 依结构化分类判定降级
+          throw tagErrorPhase(err, 'inference')
+        })
         processResult = fullRes.processResult
         dimResult = fullRes.dimResult
       }
@@ -2102,35 +2115,21 @@ export class FileProcessor {
         this.updateItemStatus(item.id, 'pending', 0)
       } else {
         let errorMsg = error instanceof Error ? error.message : String(error)
-        if (errorMsg.includes('timeout') || errorMsg.includes('超时')) {
-          if (
-            errorMsg.includes('元数据') ||
-            errorMsg.includes('Markitdown') ||
-            errorMsg.includes('提取') ||
-            errorMsg.includes('extract') ||
-            errorMsg.includes('fileAnalysisService')
-          ) {
-            errorMsg += ` ${t('建议减少 PDF 分析页数或关闭 OCR 功能')}`
-          } else {
-            errorMsg += ` ${t('建议切换低显存需求的AI模型')}`
-          }
+        // Fix-07：结构化错误分类 —— 阶段标记由推理调用点边界（tagErrorPhase）打上，
+        // 超时依据 TimeoutError/ETIMEDOUT 标记，不再匹配「元数据/提取/超时」等自然语言文案。
+        // 未打标错误保守视为「非推理失败」：不给 Tier 1 静默降级，避免落库/未知异常被吞。
+        const { isTimeout, allowTier1Fallback } = classifyAnalysisError(error)
+        if (isTimeout) {
+          errorMsg += allowTier1Fallback
+            ? ` ${t('建议切换低显存需求的AI模型')}`
+            : ` ${t('建议减少 PDF 分析页数或关闭 OCR 功能')}`
         }
         logger.error(LogCategory.ANALYSIS_QUEUE, `[分析队列] 文件分析失败: ${item.name}`, error)
 
-        // slice-3 双层仲裁：非元数据/抽取类的 AI 推理失败（含免保底关键词之外的超时、服务未就绪、
-        // 显存不足等），若 Tier 1 已产出可读命名，则静默降级为 completed (analysisStage 2)。
+        // slice-3 双层仲裁：仅推理阶段（inference）的失败（超时、服务未就绪、显存不足等），
+        // 若 Tier 1 已产出可读命名，则静默降级为 completed (analysisStage 2)。
         // Tier 2 故障不再演化为用户可见的失败项，全部由 Tier 1（Omni）兜底。
-        const isExtractionError =
-          errorMsg.includes('元数据') ||
-          errorMsg.includes('Markitdown') ||
-          errorMsg.includes('提取') ||
-          errorMsg.includes('extract') ||
-          errorMsg.includes('fileAnalysisService') ||
-          errorMsg.includes('缩略图') ||
-          errorMsg.includes('thumbnail') ||
-          errorMsg.includes('thumbnailService') ||
-          errorMsg.includes('exif')
-        if (!isExtractionError && tier1FallbackName) {
+        if (allowTier1Fallback && tier1FallbackName) {
           logger.info(
             LogCategory.ANALYSIS_QUEUE,
             `[分析队列] Tier 2 AI 推理失败，自动降级 Tier 1 命名兜底: ${item.name} -> ${tier1FallbackName}`

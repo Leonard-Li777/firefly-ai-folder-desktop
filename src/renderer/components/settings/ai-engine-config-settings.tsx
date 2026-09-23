@@ -29,10 +29,16 @@ export interface EngineBridgeSnapshotUI {
   updatedAt?: number | null
 }
 
-const CIRCUIT_LABELS: Record<string, { text: string; tone: 'green' | 'yellow' | 'red' | 'gray' }> = {
-  closed: { text: '熔断关闭', tone: 'green' },
-  half_open: { text: '半开试探', tone: 'yellow' },
-  open: { text: '熔断敞开', tone: 'red' }
+/**
+ * 熔断状态文案表（Fix-05：不得以模块级静态对象持有裸文案，
+ * 改为函数返回对象以保证切换语言时翻译即时刷新、t() 只收静态字符串）
+ */
+function getCircuitLabels(t: (key: string) => string): Record<string, { text: string; tone: 'green' | 'yellow' | 'red' | 'gray' }> {
+  return {
+    closed: { text: t('熔断关闭'), tone: 'green' },
+    half_open: { text: t('半开试探'), tone: 'yellow' },
+    open: { text: t('熔断敞开'), tone: 'red' }
+  }
 }
 
 const STATUS_ICON_MAP = {
@@ -123,7 +129,9 @@ export const AIEngineConfigSettings: React.FC = () => {
   }
 
   const statusBadge = getStatusBadge()
-  const circuit = snapshot ? (CIRCUIT_LABELS[snapshot.circuitState || 'closed'] || CIRCUIT_LABELS.closed) : null
+  // 在渲染期内构造文案表，语言切换时随 t 自动刷新；text 已完成翻译，直接渲染
+  const circuitLabels = getCircuitLabels(t)
+  const circuit = snapshot ? (circuitLabels[snapshot.circuitState || 'closed'] ?? circuitLabels.closed) : null
 
   return (
     <div className="p-6 space-y-6 text-foreground">
@@ -248,7 +256,7 @@ export const AIEngineConfigSettings: React.FC = () => {
                             : 'bg-green-500/10 text-green-700 dark:text-green-500 border-green-500/20'
                       }`}
                     >
-                      {t(circuit.text)}
+                      {circuit.text}
                     </Badge>
                   ) : (
                     '—'

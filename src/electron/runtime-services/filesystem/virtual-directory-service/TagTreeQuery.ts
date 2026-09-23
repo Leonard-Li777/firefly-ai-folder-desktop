@@ -3,6 +3,7 @@ import path from 'node:path'
 import {
   DimensionGroup,
   DimensionGroupsResponse,
+  DimensionMetadata,
   DimensionTag,
   FileItem,
   FilteredFilesResponse,
@@ -16,13 +17,14 @@ import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignor
 import { DAGMaterializer } from './DAGMaterializer'
 import { decompressText } from '../../../utils/text-compressor'
 import { omniClient } from '../../../services/omni-client'
+import type { OmniTaxonomyNode } from '../../../services/omni-client'
 import {
   HybridRankedCandidate,
   HybridSearchArbiter,
   HYBRID_SEARCH_POOL_SIZE,
   splitPassages
 } from './HybridSearchArbiter'
-import { HybridSearchSession } from './HybridSearchSession'
+import { HybridSearchSession } from './hybrid-search-session'
 
 export interface FilterFilesParams {
   selectedTags?: SelectedTag[]
@@ -88,12 +90,15 @@ export class TagTreeQuery {
             lastFetched = now
           }
           return shouldIgnoreFile(filePath, fileName, ignoreRulesCache) ? 1 : 0
-        } catch {
+        } catch (err) {
+          // 忽略规则加载失败属可容忍降级：该文件按「不忽略」处理
+          logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] should_ignore_file 判定失败（${fileName}），按不忽略处理:`, err)
           return 0
         }
       })
-    } catch {
-      // 忽略已注册或 Mock 数据库环境中的错误
+    } catch (err) {
+      // 忽略已注册或 Mock 数据库环境中的错误（注册冲突属可容忍降级：SQL 函数缺省，查询回退不过滤）
+      logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 注册 should_ignore_file SQL 函数失败，忽略:', err)
     }
   }
 
@@ -105,7 +110,9 @@ export class TagTreeQuery {
         .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='files_fts'")
         .get()
       this._ftsAvailable = !!row
-    } catch {
+    } catch (err) {
+      // FTS 探针失败属可容忍降级：回退 LIKE 检索路径
+      logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] files_fts 探针失败，按 FTS 不可用处理:', err)
       this._ftsAvailable = false
     }
     return this._ftsAvailable
@@ -226,7 +233,10 @@ export class TagTreeQuery {
       let showMissing = true
       try {
         showMissing = ConfigOrchestrator.getInstance().getValue<boolean>('SHOW_MISSING_FILES') ?? true
-      } catch {}
+      } catch (err) {
+        // 配置中心未就绪属可容忍降级：按默认值显示缺失文件
+        logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 读取 SHOW_MISSING_FILES 失败，按默认 true 处理:', err)
+      }
 
       // 1. 获取所有维度根节点（本地动态标签：expanded/user；受控根节点来自 Omni 树）
       const dbStart = performance.now()
@@ -362,48 +372,70 @@ export class TagTreeQuery {
       // 5. 按照维度归类本地动态标签并组织树形结构
       const groups: DimensionGroup[] = []
       const seenDimCodes = new Set<string>()
-      // 别名解析：直接查当前语言分表 + file_tags.name 兜底（替代 TaxonomyAliasCache）
-      const aliasResolver = async (code: string, fallbackName?: string) => {
+      // 别名解析（Fix-06）：收集本次请求全部标签 code 后一次性批量解析展示名，
+      // 消除逐节点 await 的 N+1；locale 在本请求作用域只读一次（与本方法开头的 locale 同源）。
+      // 解析失败属可容忍降级（回退 file_tags.name / code），记 warn 暴露缺陷。
+      const aliasMap: Record<string, string> = {}
+      const aliasCodes = new Set<string>()
+      for (const root of dimensionRoots) aliasCodes.add(root.code)
+      for (const t of tagRows) aliasCodes.add(t.code)
+      if (aliasCodes.size > 0) {
         try {
-          const db = this.db
-          // 先查当前语言分表（需先获取当前语言）
-          const locale = ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
-          const dbService = (await import('../../../runtime-services/database/database-service')).databaseService
-          const displayName = await dbService.resolveTagDisplayNames([code], locale)
-          if (displayName[code]) return displayName[code]
-        } catch {}
-        return fallbackName || code
+          const { databaseService } = await import('@runtime/database/database-service')
+          Object.assign(aliasMap, databaseService.resolveTagDisplayNames(Array.from(aliasCodes), locale))
+        } catch (err) {
+          logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 批量标签展示名解析失败，回退 file_tags.name:', err)
+        }
       }
+      const aliasResolver = (code: string, fallbackName?: string): string =>
+        aliasMap[code] || fallbackName || code
 
       for (const root of dimensionRoots) {
         const dimCode = root.code
         seenDimCodes.add(dimCode)
-        let dimMeta: any = {}
+        let dimMeta: DimensionMetadata = {}
         try {
           dimMeta = JSON.parse(root.meta || '{}')
-        } catch {}
+        } catch (err) {
+          // meta 脏数据属可容忍降级：按空元数据处理
+          logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析维度根节点 meta 失败（${root.code}），按空对象处理:`, err)
+        }
 
         // 匹配该维度下的直属子标签
         const directChildren = tagRows.filter(t => {
           let parentCodes: string[] = []
           try {
             parentCodes = JSON.parse(t.parent_codes || '[]')
-          } catch {}
+          } catch (err) {
+            // parent_codes 脏数据属可容忍降级：视为无父，仅按 code 前缀匹配归属
+            logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析 parent_codes 失败（${t.code}），按空数组处理:`, err)
+          }
           return parentCodes.includes(dimCode) || t.code.startsWith(`${dimCode}.`)
         })
 
         const dimensionTags: DimensionTag[] = []
 
+        // 提取数值型 ID 用于向前兼容（Fix-06：dimensionId 恢复为声明的 number 类型，
+        // 标签归属改用 dimensionCode/code 承载，不再把字符串 code 强塞进数字字段）
+        const numIdMatch = dimCode.match(/^dim\.(\d+)$/)
+        const legacyNumericId = numIdMatch ? parseInt(numIdMatch[1], 10) : groups.length + 1
+
         for (const child of directChildren) {
           // #625：解析子标签的 meta 与 parent_codes，透出给前端纯树形状态机
-          let childMeta: any = {}
+          let childMeta: DimensionMetadata = {}
           try {
             childMeta = JSON.parse(child.meta || '{}')
-          } catch {}
+          } catch (err) {
+            // meta 脏数据属可容忍降级：按空元数据处理
+            logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析子标签 meta 失败（${child.code}），按空对象处理:`, err)
+          }
           let childParentCodes: string[] = []
           try {
             childParentCodes = JSON.parse(child.parent_codes || '[]')
-          } catch {}
+          } catch (err) {
+            // parent_codes 脏数据属可容忍降级：回退当前维度根作为父级
+            logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析子标签 parent_codes 失败（${child.code}），回退当前维度根:`, err)
+          }
           const immediateParentCode = childParentCodes[0] || dimCode
 
           // 汇总该标签自身及后代标签的代码（优先匹配当前父级上下文）
@@ -424,9 +456,10 @@ export class TagTreeQuery {
           }
 
           dimensionTags.push({
-            dimensionId: dimCode as any,
-            dimensionName: await aliasResolver(root.code, root.name),
-            tagValue: await aliasResolver(child.code, child.name),
+            dimensionId: legacyNumericId,
+            dimensionCode: dimCode,
+            dimensionName: aliasResolver(root.code, root.name),
+            tagValue: aliasResolver(child.code, child.name),
             fileCount: aggregatedCount,
             level: child.depth || 1,
             code: child.code,
@@ -435,13 +468,9 @@ export class TagTreeQuery {
           })
         }
 
-        // 提取数值型 ID 用于向前兼容
-        const numIdMatch = dimCode.match(/^dim\.(\d+)$/)
-        const legacyNumericId = numIdMatch ? parseInt(numIdMatch[1], 10) : groups.length + 1
-
         groups.push({
-          id: legacyNumericId as any,
-          name: await aliasResolver(root.code, root.name),
+          id: legacyNumericId,
+          name: aliasResolver(root.code, root.name),
           level: root.depth,
           tags: dimensionTags,
           code: dimCode,
@@ -452,12 +481,12 @@ export class TagTreeQuery {
 
       // 6. 合并 Omni 受控分类树（builtin / omw 不再入库主库，走 HTTP API 拉取树结构）
       const treeRes = await omniClient.getTaxonomyTree(locale)
-      const omniGroups = treeRes?.rootNodes
+      const omniGroups: Array<Omit<DimensionGroup, 'tags'> & { tags: DimensionTag[] }> = treeRes?.rootNodes
         ? treeRes.rootNodes.map(root => {
             const numMatch = root.code.match(/^dim\.(\d+)$/)
             const id = numMatch ? parseInt(numMatch[1], 10) : 0
-            const tags: any[] = []
-            const collect = (node: any, parentCode: string, level: number) => {
+            const tags: DimensionTag[] = []
+            const collect = (node: OmniTaxonomyNode, parentCode: string, level: number) => {
               for (const child of node.children || []) {
                 const code = child.code
                 const count = tagCountMap?.get(code) ?? 0
@@ -536,7 +565,10 @@ export class TagTreeQuery {
     let showMissing = true
     try {
       showMissing = ConfigOrchestrator.getInstance().getValue<boolean>('SHOW_MISSING_FILES') ?? true
-    } catch {}
+    } catch (err) {
+      // 配置中心未就绪属可容忍降级：按默认值显示缺失文件
+      logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 读取 SHOW_MISSING_FILES 失败，按默认 true 处理:', err)
+    }
 
     const whereClauses: string[] = ['should_ignore_file(wf.path, wf.name) = 0']
     const queryParams: any[] = []
@@ -1148,7 +1180,10 @@ export class TagTreeQuery {
       let showMissing = true
       try {
         showMissing = ConfigOrchestrator.getInstance().getValue<boolean>('SHOW_MISSING_FILES') ?? true
-      } catch {}
+      } catch (err) {
+        // 配置中心未就绪属可容忍降级：按默认值显示缺失文件
+        logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 读取 SHOW_MISSING_FILES 失败，按默认 true 处理:', err)
+      }
 
       let query = 'SELECT COUNT(DISTINCT wf.id) as count FROM workspace_files wf WHERE wf.is_analyzed = 1'
       const params: any[] = []
@@ -1217,7 +1252,10 @@ export class TagTreeQuery {
         if (file.dimension_tags) {
           try {
             tags = typeof file.dimension_tags === 'string' ? JSON.parse(file.dimension_tags) : file.dimension_tags
-          } catch {}
+          } catch (err) {
+            // 标签 JSON 脏数据属可容忍降级：该文件按无标签展示
+            logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析 dimension_tags 失败（${file.name}），按空标签处理:`, err)
+          }
         }
 
         return {

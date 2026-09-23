@@ -1,4 +1,5 @@
 import { LogCategory, logger } from '@firefly/shared'
+import type Database from 'better-sqlite3'
 
 /**
  * 标签树 → 浏览视图（原维度视图）唯一 adapter（ADR-0035 落地修订）：
@@ -12,8 +13,11 @@ import { LogCategory, logger } from '@firefly/shared'
  */
 
 /**
- * 系统级兜底标签父码常量表（集中管理，替代散落的 dim.* 硬编码）。
- * 值为 file_tags 中的标签**名称**（按名查 code，dim.* 编码已废除，见 getTagCodeByName）。
+ * 系统级兜底标签的语义包规范词形常量表（集中管理，替代散落的 dim.* 硬编码）。
+ * Fix-08 修订：值为 Omni 语义包的**中文规范词形（lemma）**，经
+ * databaseService.findTagCodeByLemma 走语言分表 lemma→code 动态轨反查稳定 code
+ * （omw > builtin，用户裁决③），不再对本地 file_tags 做名称反查；
+ * 常量本身是身份查询输入，与界面语言无关，展示名一律经分表级联解析。
  */
 export const SYSTEM_TAG_NAMES = {
   /** 空文件兜底标签（handle-empty-file 使用） */
@@ -54,7 +58,7 @@ export const CHILD_OF_ROOT_CLAUSE = `
  * 查询标签树根分组及其全部直属子节点（视图分组的唯一收口）。
  * 替代各业务处复制的「根节点 + parent_codes[0] 子节点」伪维度推导 SQL。
  */
-export function getRootGroupsWithChildren(db: any): TagRootGroup[] {
+export function getRootGroupsWithChildren(db: Database.Database): TagRootGroup[] {
   try {
     const roots = db
       .prepare(
@@ -105,21 +109,5 @@ export function getRootGroupsWithChildren(db: any): TagRootGroup[] {
   } catch (err: unknown) {
     logger.error(LogCategory.DATABASE, '[TagTreeViewAdapter] 根分组查询失败:', err)
     return []
-  }
-}
-
-/**
- * 按标签名查 code（系统兜底标签以名称锚定，dim.* 编码已废除）。
- * 命中多个同名标签时按 depth 升序取最浅者（最接近根的系统标签）。
- */
-export function getTagCodeByName(db: any, name: string): string | null {
-  try {
-    const row = db
-      .prepare('SELECT code FROM file_tags WHERE name = ? ORDER BY depth ASC LIMIT 1')
-      .get(name) as { code: string } | undefined
-    return row?.code ?? null
-  } catch (err: unknown) {
-    logger.warn(LogCategory.DATABASE, `[TagTreeViewAdapter] 按名查标签失败: ${name}`, err)
-    return null
   }
 }

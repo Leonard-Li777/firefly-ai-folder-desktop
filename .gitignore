@@ -129,3 +129,6 @@ src/**/*.d.ts.map
 # 例外：手写类型声明是真实源码，必须参与版本控制，不可被上面的规则吞掉
 !src/global.d.ts
 !src/shared/types/*.d.ts
+
+# Fix-11: monorepo 单锁约定，锁文件由主仓根目录统一管理，子模块内禁止再提交
+/pnpm-lock.yaml

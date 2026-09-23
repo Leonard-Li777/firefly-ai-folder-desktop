@@ -251,7 +251,7 @@ export class FileDao {
     // 创世 Baseline V1：以 code 自然主键 LEFT JOIN file_tags，彻底移除自增 id / dimension_id / tag_id 兼容分支。
     // dimension_id 取首个父级 code（parent_codes 首元素），维度根节点自身则退化为自身 code。
     // 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags 表（file_tags.source CHECK 仅 expanded/user），
-    // 其展示名与维度归属需经 TaxonomyAliasCache（Omni 语义包 tag_aliases 内存总线）解析，故不可使用内连接过滤。
+    // 其展示名与维度归属经主库语言分表 tag_aliases_{lang} 直查解析（原 TaxonomyAliasCache 内存总线已按主设计废除），故不可使用内连接过滤。
     let tags: any[] = []
     if (fingerprint) {
       try {

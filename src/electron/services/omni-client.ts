@@ -5,7 +5,8 @@
  * 职责：
  * 1. 消费 Omni 暴露的高阶业务 HTTP API（taxonomy / vector）
  * 2. 屏蔽 Desktop 对 OMW 底层 SQLite 与 file_vectors 堆表的直接依赖
- * 3. 供 TaxonomyAliasCache、虚拟目录渲染与分析向量链路统一调用
+ * 3. 供主库语言分表 tag_aliases_{lang} 初值补录、虚拟目录渲染与分析向量链路统一调用
+ *    （TaxonomyAliasCache 内存总线已按主设计废除，展示别名一律分表直查）
  */
 
 import { LogCategory, logger } from '@firefly/shared'
@@ -29,11 +30,11 @@ export interface OmniTaxonomyTreeResponse {
   totalNodes: number
 }
 
-/** 多语言别名单行（对齐 Rust TagAliasRow：snake_case） */
+/** 多语言别名单行（对齐 Rust TagAliasRow：snake_case；is_canonical 为 INTEGER 0/1） */
 export interface OmniTagAliasRow {
   tag_code: string
   lemma: string
-  is_canonical: boolean
+  is_canonical: number
   n: number
   count: number
 }
@@ -165,15 +166,22 @@ export class OmniClient {
   }
 
   /**
-   * 拉取多语言别名字典：GET /api/v1/taxonomy/aliases?locale={lang}&prefix={prefix}
-   * 供 TaxonomyAliasCache 进程内存总线装载
+   * 拉取多语言别名行：GET /api/v1/taxonomy/aliases?locale={lang}&source={source}&codes={codes}
+   * 供主库语言分表初值写入（Fix-01 首建拉全集 / Fix-02 切语言 codes= 补漏）。
+   * @param locale 语言区域代码，如 zh-CN
+   * @param options.source 受控 source 列表（逗号分隔，如 'tag,dimension'），仅返回 file_tags.source 命中的行
+   * @param options.codes 精确 tag_code 列表（内部自动逗号拼接），未命中 code 不出行
+   * @param options.prefix 兼容保留的旧前缀过滤（builtin / omw）
    */
-  async getTaxonomyAliases(locale = 'zh-CN', prefix?: string): Promise<OmniTaxonomyAliasesResponse | null> {
+  async getTaxonomyAliases(
+    locale = 'zh-CN',
+    options?: { source?: string; codes?: string[]; prefix?: string }
+  ): Promise<OmniTagAliasRow[] | null> {
     const params = new URLSearchParams({ locale })
-    if (prefix) params.set('prefix', prefix)
-    return this.request<OmniTaxonomyAliasesResponse>(
-      `/api/v1/taxonomy/aliases?${params.toString()}`
-    )
+    if (options?.source) params.set('source', options.source)
+    if (options?.codes?.length) params.set('codes', options.codes.join(','))
+    if (options?.prefix) params.set('prefix', options.prefix)
+    return this.request<OmniTagAliasRow[]>(`/api/v1/taxonomy/aliases?${params.toString()}`)
   }
 
   /**

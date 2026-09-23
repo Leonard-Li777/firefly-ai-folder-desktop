@@ -1,6 +1,7 @@
 import { app as electronApp } from 'electron'
 import path from 'path'
 import { decompressText } from '../../utils/text-compressor'
+import { LogCategory, logger, SUPPORTED_LANGUAGES_KEY } from '@firefly/shared'
 import type { Database } from 'better-sqlite3'
 
 /**
@@ -475,10 +476,24 @@ export function localeToTableSuffix(locale: string): string {
 }
 
 /**
+ * 分表兜底语言：白名单外 locale 一律回退，防止非法值拼入表名（Fix-09）
+ */
+const TAG_ALIASES_FALLBACK_LOCALE = 'zh-CN'
+
+/**
  * 生成某个语言的分表名（与 Omni 语义包 tag_aliases_{lang} 一一对应）
+ * 安全入口：locale 必须命中 SUPPORTED_LANGUAGES_KEY 白名单（与构建期语言清单同源），
+ * 非白名单值回退 zh-CN 并记 warn，杜绝任意字符串拼入表名。
  * @param locale 如 zh-CN
  */
 export function resolveTagAliasesLangTable(locale: string): string {
+  if (!(SUPPORTED_LANGUAGES_KEY as readonly string[]).includes(locale)) {
+    logger.warn(
+      LogCategory.DATABASE,
+      `非法语言 locale "${locale}"，分表名解析回退 ${TAG_ALIASES_FALLBACK_LOCALE}`
+    )
+    locale = TAG_ALIASES_FALLBACK_LOCALE
+  }
   return `tag_aliases_${localeToTableSuffix(locale)}`
 }
 

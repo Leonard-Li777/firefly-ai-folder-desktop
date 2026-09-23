@@ -1,6 +1,5 @@
 import { app } from 'electron'
 import * as fs from 'fs'
-import * as path from 'path'
 import {
   LogCategory,
   logger,
@@ -13,30 +12,16 @@ import { createSupabaseClient } from '../system/supabase-client-factory'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
 import { SystemIdentityService } from '../system/system-identity-service'
 import { databaseService } from '../database/database-service'
-import { createTagAliasesLangTable } from '../database/database'
+import { createTagAliasesLangTable, resolveTagAliasesLangTable } from '../database/database'
+import { omniClient, OmniTagAliasRow } from '../../services/omni-client'
 
 import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
-import * as coreEngineIdentityApi from '@firefly/core-engine'
-import * as sharedIdentityStub from '@app/shared/builtin-tag-identity-stub'
-import type {
-  FileDimensionDocument,
-  BuiltinTagIdentity
-} from '@app/shared/builtin-tag-identity-stub'
-/**
- * 身份构建 API：优先 Pro @firefly/core-engine；开源/无 pro 时降级 shared stub
- * 使用静态 ESM 导入，确保 electron-vite 打包时能重写别名并内联模块
- * （运行时 require 相对路径在 out_build/main 下无法解析）
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const identityApi: any =
-  typeof (coreEngineIdentityApi as { buildBuiltinTagIdentity?: unknown })
-    .buildBuiltinTagIdentity === 'function'
-    ? coreEngineIdentityApi
-    : sharedIdentityStub
-
-const { buildBuiltinTagIdentity, buildBuiltinImportPlan } = identityApi
+// ADR-0038 / Issue #682 与主设计 §7/§8（Fix-03）：
+// 原 builtin identity / fileDimension 灌库链路（buildBuiltinTagIdentity / buildBuiltinImportPlan
+// / tag_aliases 单表 / file_tags source='builtin' 行）已随单体 tag_aliases 表一并废弃删除，
+// 受控别名初值统一走下方 seedTagAliasesLangTable 的分表补录。
 
 export class ConfigDbManager {
   private static instance: ConfigDbManager | null = null
@@ -75,6 +60,11 @@ export class ConfigDbManager {
 
     // Slice 6 / R3.2：语言初始化/切换时创建 tag_aliases_{lang} 分表
     createTagAliasesLangTable(db, language)
+    // 主设计 §2/§7（Fix-01/02）：初始化期异步补录分表初值（首建拉全集 / 切语言 codes= 补漏）。
+    // 不阻塞启动；失败仅告警——R3.3 分析同事务「首见补录」仍是兜底写路径。
+    void this.seedTagAliasesLangTable(db, language).catch(err => {
+      logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 分表初值补录异常:', err)
+    })
 
     try {
       this.loadFromJson(db, language)
@@ -87,6 +77,106 @@ export class ConfigDbManager {
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 初始化失败:', error)
     }
+  }
+
+  /**
+   * 分表初值补录（主设计 §2，C1=(b) 定稿，Fix-01/Fix-02）
+   * - 目标语言分表已有行 → 计算差集（其它分表有、目标表缺的 code）：差集为空则幂等跳过
+   *   （避免每次启动都请求 Omni）；差集非空仅为缺失 code 走 `codes=` 补录（只补缺、不触碰已有行）；
+   * - 若库内其它语言分表已有行（目标表为空）→ 取其全部 tag_code 经 Omni `codes=` 批量补录目标语言（切语言场景）；
+   * - 否则（首次初始化该语言，无旧语言表）→ 以 `source=dimension,tag` 拉受控全集建表（首建场景）。
+   * 动态/自定义标签不在分表建语言行（走 file_tags expanded/user）。补录行经 INSERT OR REPLACE
+   * 写入，保持镜像与语义包一致。
+   * @param db 主库连接
+   * @param language 目标 locale，如 zh-CN
+   */
+  async seedTagAliasesLangTable(db: Database.Database, language: string): Promise<void> {
+    const table = resolveTagAliasesLangTable(language)
+    const existingCnt =
+      (
+        db.prepare(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as
+          | { cnt: number }
+          | undefined
+      )?.cnt ?? 0
+
+    // 收集其它语言分表的 code 集（SQLite GLOB；不用 LIKE——其 '_' 是单字符通配会误匹配）
+    const otherTables = (
+      db
+        .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name GLOB 'tag_aliases_*'`)
+        .all() as Array<{ name: string }>
+    )
+      .map(r => r.name)
+      .filter(n => n !== table)
+
+    const sourceCodes = new Set<string>()
+    for (const t of otherTables) {
+      try {
+        const rows = db
+          .prepare(`SELECT DISTINCT tag_code FROM ${t}`)
+          .all() as Array<{ tag_code: string }>
+        rows.forEach(r => sourceCodes.add(r.tag_code))
+      } catch (err) {
+        logger.warn(LogCategory.CONFIG, `ConfigDbManager: 读取历史分表 ${t} code 集失败:`, err)
+      }
+    }
+
+    // Fix-02 差集补录：目标表非空时仅补「其它分表已有、目标表缺失」的 code；
+    // 差集为空即维持原幂等跳过语义，不请求 Omni
+    let codes: string[] = []
+    if (existingCnt > 0) {
+      const targetCodes = new Set(
+        (
+          db.prepare(`SELECT DISTINCT tag_code FROM ${table}`).all() as Array<{ tag_code: string }>
+        ).map(r => r.tag_code)
+      )
+      codes = [...sourceCodes].filter(c => !targetCodes.has(c))
+      if (codes.length === 0) {
+        logger.debug(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 分表 ${table} 已有 ${existingCnt} 行且无差集，跳过初值补录`
+        )
+        return
+      }
+    } else {
+      codes = [...sourceCodes]
+    }
+
+    let rows: OmniTagAliasRow[] = []
+    if (codes.length > 0) {
+      // 切语言补漏：codes= 精确批量点查，未命中 code 不出行；分批防 URL 超长
+      const CODE_BATCH = 400
+      for (let i = 0; i < codes.length; i += CODE_BATCH) {
+        const batch = await omniClient.getTaxonomyAliases(language, {
+          codes: codes.slice(i, i + CODE_BATCH)
+        })
+        if (batch) rows.push(...batch)
+      }
+    } else {
+      // 首建全集：source=dimension,tag 受控全集（与语义包 file_tags.source 治理一致）
+      rows = (await omniClient.getTaxonomyAliases(language, { source: 'dimension,tag' })) ?? []
+    }
+
+    if (rows.length === 0) {
+      logger.warn(
+        LogCategory.CONFIG,
+        `ConfigDbManager: Omni 未返回 ${language} 别名（服务未就绪或语义包缺失），分表暂空，展示走 code slug 兜底、后续分析首见补录`
+      )
+      return
+    }
+
+    const t0 = Date.now()
+    const insert = db.prepare(
+      `INSERT OR REPLACE INTO ${table} (tag_code, lemma, is_canonical, n, count) VALUES (?, ?, ?, ?, ?)`
+    )
+    db.transaction(() => {
+      for (const r of rows) {
+        insert.run(r.tag_code, r.lemma, r.is_canonical ? 1 : 0, r.n ?? 1, r.count ?? 0)
+      }
+    })()
+    logger.info(
+      LogCategory.CONFIG,
+      `ConfigDbManager: 分表 ${table} 初值补录完成 rows=${rows.length}, 来源=${codes.length > 0 ? 'codes补漏' : '受控全集'}, 耗时=${Date.now() - t0}ms`
+    )
   }
 
   /**
@@ -334,357 +424,6 @@ export class ConfigDbManager {
     }
   }
 
-  /**
-   * 从 fileDimension_[lang].json 加载初始标签维度树到 file_tags 表
-   * Spec issue-omni-i18n-tag-identity-spec：
-   * - 优先 en 源 identity code（builtin.{en_slug}.{hash}）+ tag_aliases
-   * - identity 构建失败时降级为历史本地化 code 路径（生产 en 文件待清洗）
-   * - 语言切换场景：已有 code 时仅 UPDATE name，不 DELETE+INSERT 换 code
-   */
-  private loadInitialFileTagsToDb(db: Database.Database, language: string): void {
-    try {
-      const filePath = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
-      if (!fs.existsSync(filePath)) {
-        logger.warn(
-          LogCategory.CONFIG,
-          `ConfigDbManager: fileDimension 配置文件不存在: ${filePath}`
-        )
-        return
-      }
-
-      const content = fs.readFileSync(filePath, 'utf-8')
-      if (!content || content.trim() === '') {
-        return
-      }
-
-      const parsed = JSON.parse(content)
-      const dimensions = parsed.file_dimensions || []
-
-      if (!Array.isArray(dimensions) || dimensions.length === 0) {
-        logger.warn(LogCategory.CONFIG, `ConfigDbManager: fileDimension 配置文件为空或格式错误`)
-        return
-      }
-
-      // 切换语言：若 builtin 概念 code 已存在，只刷新 name（D10）
-      const existingBuiltin = db
-        .prepare(
-          `SELECT COUNT(*) as cnt FROM file_tags WHERE source = 'builtin' AND code LIKE 'builtin.%'`
-        )
-        .get() as { cnt: number } | undefined
-      if ((existingBuiltin?.cnt ?? 0) > 0) {
-        this.refreshBuiltinDisplayNames(db, language, dimensions)
-        databaseService.clearDimensionsCache()
-        logger.info(
-          LogCategory.CONFIG,
-          `ConfigDbManager: 检测到既有 builtin code，仅刷新 ${language} 显示名`
-        )
-        return
-      }
-
-      const identityLoaded = this.tryLoadBuiltinIdentityToDb(db, language)
-      if (identityLoaded) {
-        databaseService.clearDimensionsCache()
-        logger.info(
-          LogCategory.CONFIG,
-          `ConfigDbManager: 已按 en 源 identity 导入 file_tags + tag_aliases (${language})`
-        )
-        return
-      }
-
-      // 降级：历史路径（本地化 code）—— 待 en 源清洗后由 identity 路径取代
-      db.prepare(`DELETE FROM file_tags WHERE source = 'builtin'`).run()
-
-      const insertStmt = db.prepare(`
-        INSERT OR REPLACE INTO file_tags (
-          code, name, parent_codes, materialized_paths, depth, source,
-          file_groups, context_hints, description, meta
-        ) VALUES (?, ?, ?, ?, ?, 'builtin', ?, ?, ?, ?)
-      `)
-
-      db.transaction(() => {
-        for (const dim of dimensions) {
-          const dimSlug = `dim.${dim.id}`
-          const dimName = dim.name
-          const dimDepth = 0
-          const dimPaths = [{ code_path: `/${dimSlug}`, name_path: `/${dimName}` }]
-          const rawAFT = dim.applicableFileTypes ?? dim.applicable_file_types ?? dim.file_groups ?? ['*']
-          const fileGroupsStr = typeof rawAFT === 'string' ? rawAFT : JSON.stringify(rawAFT)
-          const rawCH = dim.contextHints ?? dim.context_hints
-          const contextHintsStr = rawCH ? (typeof rawCH === 'string' ? rawCH : JSON.stringify(rawCH)) : null
-
-          const isMultiSelect = dim.name === '文件用途' || !!dim.metadata?.flag?.isPanDimension
-          const metaObj = {
-            isDimension: true,
-            isMultiSelect,
-            ...(dim.metadata || {})
-          }
-
-          // 插入维度根节点
-          insertStmt.run(
-            dimSlug,
-            dimName,
-            '[]',
-            JSON.stringify(dimPaths),
-            dimDepth,
-            fileGroupsStr,
-            contextHintsStr,
-            dim.description || null,
-            JSON.stringify(metaObj)
-          )
-
-          // 插入维度下的子标签
-          const tags = Array.isArray(dim.tags) ? dim.tags : (typeof dim.tags === 'string' ? JSON.parse(dim.tags || '[]') : [])
-          tags.forEach((tag: string, tagIdx: number) => {
-            const tagCode = `${dimSlug}.${tag}`
-            const tagPaths = [{ code_path: `/${dimSlug}/${tag}`, name_path: `/${dimName}/${tag}` }]
-            const tagMeta = {
-              isDimension: false,
-              sortOrder: tagIdx,
-              isMultiSelect: false
-            }
-
-            insertStmt.run(
-              tagCode,
-              tag,
-              JSON.stringify([dimSlug]),
-              JSON.stringify(tagPaths),
-              1,
-              fileGroupsStr,
-              contextHintsStr,
-              null,
-              JSON.stringify(tagMeta)
-            )
-          })
-        }
-      })()
-
-      databaseService.clearDimensionsCache()
-
-      logger.info(
-        LogCategory.CONFIG,
-        `ConfigDbManager: 成功导入 ${dimensions.length} 个初始 file_tags 体系`
-      )
-    } catch (error) {
-      logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入 file_tags 失败:', error)
-    }
-  }
-
-  /**
-   * 尝试以 en 源 Identity 导入 file_tags + tag_aliases
-   * 优先读取 taxonomy:build step0 产物 builtin-tag-identity.json；
-   * 产物不存在时再从 fileDimension 运行时构建（开发兜底）。
-   * @returns 是否成功走 identity 路径
-   */
-  private tryLoadBuiltinIdentityToDb(db: Database.Database, language: string): boolean {
-    try {
-      const enPath = ResourceLocator.resolveDimension('fileDimension_en-US.json')
-      if (!fs.existsSync(enPath)) return false
-      const enDoc = JSON.parse(fs.readFileSync(enPath, 'utf-8')) as FileDimensionDocument
-      const localeDoc =
-        language === 'en-US'
-          ? null
-          : (() => {
-              const p = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
-              return fs.existsSync(p)
-                ? (JSON.parse(fs.readFileSync(p, 'utf-8')) as FileDimensionDocument)
-                : null
-            })()
-
-      const localeDocs: Record<string, FileDimensionDocument> = {}
-      if (localeDoc) localeDocs[language] = localeDoc
-
-      // 1) 构建期产物（taxonomy:build --only step0）
-      let items: BuiltinTagIdentity[] | null = null
-      const dimDir = path.dirname(enPath)
-      const identityArtifact = path.join(
-        dimDir,
-        '..',
-        '..',
-        'presetResources',
-        'taxonomy',
-        'builtin-tag-identity.json'
-      )
-      if (fs.existsSync(identityArtifact)) {
-        try {
-          const artifact = JSON.parse(fs.readFileSync(identityArtifact, 'utf-8')) as {
-            tags?: BuiltinTagIdentity[]
-          }
-          if (Array.isArray(artifact.tags) && artifact.tags.length > 0) {
-            items = artifact.tags
-            logger.info(
-              LogCategory.CONFIG,
-              `ConfigDbManager: 使用 taxonomy step0 产物 identity (${items.length} tags)`
-            )
-          }
-        } catch (e: any) {
-          logger.warn(
-            LogCategory.CONFIG,
-            `ConfigDbManager: 解析 builtin-tag-identity.json 失败，回退运行时构建: ${e?.message}`
-          )
-        }
-      }
-
-      // 2) 运行时构建兜底（en 文件仍可能含 CJK，构建门禁失败则整体降级）
-      if (!items) {
-        items = buildBuiltinTagIdentity({ enDoc, localeDocs })
-      }
-
-      const dimensionNames: Record<number, string> = {}
-      const nameSource = localeDoc?.file_dimensions || enDoc.file_dimensions || []
-      for (const d of nameSource) dimensionNames[d.id] = d.name
-
-      const plan = buildBuiltinImportPlan({
-        items,
-        displayLocale: language,
-        dimensionNames
-      })
-
-      const insertStmt = db.prepare(`
-        INSERT OR REPLACE INTO file_tags (
-          code, name, parent_codes, materialized_paths, depth, source,
-          file_groups, context_hints, description, meta
-        ) VALUES (?, ?, ?, ?, ?, 'builtin', ?, ?, ?, ?)
-      `)
-      const aliasStmt = db.prepare(`
-        INSERT OR REPLACE INTO tag_aliases (tag_code, locale, lemma, is_canonical, meta)
-        VALUES (?, ?, ?, ?, '{}')
-      `)
-
-      db.transaction(() => {
-        db.prepare(`DELETE FROM file_tags WHERE source = 'builtin'`).run()
-        db.prepare(`DELETE FROM tag_aliases`).run()
-
-        for (const root of plan.dimensionRoots) {
-          const paths = [{ code_path: `/${root.code}`, name_path: `/${root.name}` }]
-          insertStmt.run(
-            root.code,
-            root.name,
-            '[]',
-            JSON.stringify(paths),
-            0,
-            JSON.stringify(['*']),
-            null,
-            null,
-            JSON.stringify({ isDimension: true, isMultiSelect: false })
-          )
-        }
-
-        for (const tag of plan.tags) {
-          const paths = [
-            {
-              code_path: `/dim.${tag.dimId}/${tag.code}`,
-              name_path: `/dim.${tag.dimId}/${tag.name}`
-            }
-          ]
-          insertStmt.run(
-            tag.code,
-            tag.name,
-            JSON.stringify(tag.parent_codes),
-            JSON.stringify(paths),
-            tag.depth,
-            JSON.stringify(['*']),
-            null,
-            null,
-            JSON.stringify(tag.meta)
-          )
-        }
-
-        for (const alias of plan.aliases) {
-          aliasStmt.run(alias.tag_code, alias.locale, alias.lemma, alias.is_canonical)
-        }
-      })()
-
-      // Spec 验收 10：历史 code（dim.*/拼音 builtin.*）→ en 源 code 迁移
-      this.applyHistoricalTagCodeMap(db, path.join(path.dirname(identityArtifact), 'historical-tag-code-map.json'))
-
-      return true
-    } catch (err: any) {
-      logger.warn(
-        LogCategory.CONFIG,
-        `ConfigDbManager: builtin identity 导入不可用，降级历史路径: ${err?.message || err}`
-      )
-      return false
-    }
-  }
-
-  /**
-   * 读取 step0 历史映射产物，将 file_tag_relations 中的旧 tag_code 迁移到 en 源 identity code
-   * 并把映射表写入 file_constants，供查询侧解析旧 code。
-   */
-  private applyHistoricalTagCodeMap(db: Database.Database, mapPath: string): void {
-    if (!fs.existsSync(mapPath)) {
-      logger.warn(LogCategory.CONFIG, `ConfigDbManager: 历史 code 映射不存在: ${mapPath}`)
-      return
-    }
-    try {
-      const map = JSON.parse(fs.readFileSync(mapPath, 'utf-8')) as Record<string, string>
-      const entries = Object.entries(map)
-      if (entries.length === 0) return
-
-      const updateRel = db.prepare(`UPDATE file_tag_relations SET tag_code = ? WHERE tag_code = ?`)
-      let relUpdated = 0
-      db.transaction(() => {
-        for (const [legacy, modern] of entries) {
-          if (!legacy || !modern || legacy === modern) continue
-          const info = updateRel.run(modern, legacy)
-          relUpdated += info.changes || 0
-        }
-        // 查询侧缓存：file_constants 存完整历史映射
-        db.prepare(
-          `INSERT OR REPLACE INTO file_constants (key, value, updated_at)
-           VALUES ('historical_tag_code_map', ?, CURRENT_TIMESTAMP)`
-        ).run(JSON.stringify(map))
-      })()
-
-      logger.info(
-        LogCategory.CONFIG,
-        `ConfigDbManager: 历史 tag_code 映射完成 entries=${entries.length}, relations_updated=${relUpdated}`
-      )
-    } catch (err: any) {
-      logger.warn(LogCategory.CONFIG, `ConfigDbManager: 历史 code 映射失败: ${err?.message || err}`)
-    }
-  }
-
-  /**
-   * 语言切换：按 displayLocale 仅更新 name（D10 不改 code）
-   */
-  private refreshBuiltinDisplayNames(
-    db: Database.Database,
-    language: string,
-    dimensions: any[]
-  ): void {
-    try {
-      const update = db.prepare(`UPDATE file_tags SET name = ? WHERE code = ?`)
-      // 优先用 tag_aliases 精确刷新
-      const aliasRows = db
-        .prepare(`SELECT tag_code, lemma FROM tag_aliases WHERE locale = ?`)
-        .all(language) as Array<{ tag_code: string; lemma: string }>
-      if (aliasRows.length > 0) {
-        db.transaction(() => {
-          for (const row of aliasRows) update.run(row.lemma, row.tag_code)
-          for (const dim of dimensions) {
-            update.run(dim.name, `dim.${dim.id}`)
-          }
-        })()
-        return
-      }
-      // 无别名表时：按 dim 结构名刷新根节点
-      db.transaction(() => {
-        for (const dim of dimensions) {
-          update.run(dim.name, `dim.${dim.id}`)
-        }
-      })()
-    } catch (err: any) {
-      logger.warn(LogCategory.CONFIG, `ConfigDbManager: 刷新显示名失败: ${err?.message || err}`)
-    }
-  }
-
-  /**
-   * 兼容性保留
-   */
-  private loadInitialFileDimensionsToDb(db: Database.Database, language: string): void {
-    this.loadInitialFileTagsToDb(db, language)
-  }
 
   // 依据 ADR-0038 / PRD Issue #686：创世主库彻底废除 omw_* 与 hownet_* 导入，静态语义数据全量由只读语义包 semantic.pack 托管
 

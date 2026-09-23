@@ -14,6 +14,8 @@ import { contextBridge, ipcRenderer } from 'electron'
 
 import type { ConfigKey } from '@firefly/types/config-types'
 import { IModelRecommendation } from '@firefly/types/model-manager'
+// 仅类型导入（编译期擦除，不引入主进程运行时依赖），用于引擎桥 IPC 类型化（Fix-05）
+import type { EngineBridgeSnapshot } from './runtime-services/engine-bridge'
 
 /**
  * 暴露给渲染进程的安全API
@@ -204,15 +206,15 @@ const electronAPI = {
 
   // 引擎桥接 (Tier 2 上层 AI 引擎监控与指令)
   engineBridge: {
-    getStatus: (): Promise<any> => ipcRenderer.invoke('engine-bridge/get-status'),
+    getStatus: (): Promise<EngineBridgeSnapshot> => ipcRenderer.invoke('engine-bridge/get-status'),
     getExeInfo: (): Promise<{ available: boolean; path: string | null; devMode: boolean }> =>
       ipcRenderer.invoke('engine-bridge/get-exe-info'),
     start: (): Promise<boolean> => ipcRenderer.invoke('engine-bridge/start'),
     openUI: (): Promise<{ ok: boolean; error?: string }> =>
       ipcRenderer.invoke('engine-bridge/open-ui'),
     shutdown: (): Promise<{ ok: boolean }> => ipcRenderer.invoke('engine-bridge/shutdown'),
-    onStatusChanged: (callback: (payload: any) => void) => {
-      const handler = (_event: any, payload: any) => callback(payload)
+    onStatusChanged: (callback: (payload: EngineBridgeSnapshot) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, payload: EngineBridgeSnapshot) => callback(payload)
       ipcRenderer.on('tier2:status-changed', handler)
       return () => ipcRenderer.removeListener('tier2:status-changed', handler)
     }

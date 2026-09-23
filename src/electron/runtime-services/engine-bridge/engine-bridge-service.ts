@@ -121,7 +121,10 @@ export class EngineBridgeService {
       process.once('exit', cleanExit)
       process.once('SIGINT', cleanExit)
       process.once('SIGTERM', cleanExit)
-    } catch {}
+    } catch (err) {
+      // 生命周期钩子注册失败仅意味着退出回收依赖 Electron 默认行为，记日志便于排查残留进程
+      logger.warn(LogCategory.SYSTEM, '[EngineBridge] 注册退出清理钩子失败:', err)
+    }
   }
 
   /**
@@ -370,8 +373,9 @@ export class EngineBridgeService {
         method: 'POST',
         signal: AbortSignal.timeout(SHUTDOWN_TIMEOUT_MS)
       })
-    } catch {
-      // 引擎可能已下线或未运行，忽略
+    } catch (err) {
+      // 引擎可能已下线或未运行，属可容忍降级；仍记 debug 便于排查优雅退出是否真正送达
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] shutdown 请求未送达（引擎可能未运行）:', err)
     }
     this.killOwnProcess()
     return { ok: true }
@@ -392,7 +396,10 @@ export class EngineBridgeService {
       } else {
         proc.kill('SIGKILL')
       }
-    } catch {}
+    } catch (err) {
+      // kill 失败常见于进程已自行退出；仍记日志以便发现残留进程
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 回收自拉起引擎进程失败（可能已退出）:', err)
+    }
   }
 
   /**
@@ -460,7 +467,10 @@ export class EngineBridgeService {
     this.listeners.forEach(fn => {
       try {
         fn(snapshot)
-      } catch {}
+      } catch (err) {
+        // 单个订阅者抛错不得中断其余广播；记日志暴露订阅方缺陷
+        logger.warn(LogCategory.SYSTEM, '[EngineBridge] 状态订阅者回调异常:', err)
+      }
     })
     if (typeof BrowserWindow !== 'undefined') {
       try {
@@ -469,7 +479,9 @@ export class EngineBridgeService {
             win.webContents.send('tier2:status-changed', snapshot)
           }
         }
-      } catch {}
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[EngineBridge] 向渲染窗口广播状态失败:', err)
+      }
     }
   }
 
