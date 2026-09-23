@@ -3,6 +3,7 @@ import { databaseService } from '../../database/database-service'
 import { LogCategory, logger, insertTagToDb } from '@firefly/shared'
 import { t } from '@app/languages'
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
+import { getTagCodeByName, SYSTEM_TAG_NAMES } from '../../../adapters/tag-tree-view-adapter'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -102,11 +103,21 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
   const emptyTagLabel = t('空文件')
   try {
     db.transaction(() => {
-      // 创世 Baseline V1：「基础属性」维度根节点以 code 自然主键表达，不再查询 file_dimensions。
-      const BASIC_ATTR_DIM_CODE = 'dim.basic_attr'
+      // ADR-0035 修订：dim.* 编码已废除，系统兜底父码经 TagTreeViewAdapter 常量表
+      // 以「标签名」锚定（按名查 code，最浅者优先生效）。
+      const basicAttrCode =
+        getTagCodeByName(db, SYSTEM_TAG_NAMES.basicAttr) ??
+        getTagCodeByName(db, SYSTEM_TAG_NAMES.emptyFile) ??
+        // 双查皆未命中时的最终兜底：不再使用已废除的 dim.basic_attr 字面量
+        null
 
       try {
-        insertTagToDb(db, emptyHash, emptyTagLabel, BASIC_ATTR_DIM_CODE, 2)
+        // 父码查无可循时不打系统父码（跳过主路径），走下方确定性编码兜底
+        if (basicAttrCode !== null) {
+          insertTagToDb(db, emptyHash, emptyTagLabel, basicAttrCode, 2)
+        } else {
+          throw new Error('系统兜底父码未命中（基础属性/空文件标签缺失）')
+        }
       } catch {
         try {
           // 兜底：以离线确定性编码派生合法 code，并与文件建立自然主键关联
@@ -119,13 +130,13 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
           ).run(
             tagCode,
             emptyTagLabel,
-            JSON.stringify([BASIC_ATTR_DIM_CODE]),
+            JSON.stringify([basicAttrCode]),
             JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 2 })
           )
           db.prepare(
             `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, confidence, source, meta)
              VALUES (?, ?, ?, 1.0, 'rule', ?)`
-          ).run(emptyHash, tagCode, BASIC_ATTR_DIM_CODE, JSON.stringify({ syncStatus: 2 }))
+          ).run(emptyHash, tagCode, basicAttrCode, JSON.stringify({ syncStatus: 2 }))
         } catch (fallbackError) {
           logger.warn(
             LogCategory.FILE_ANALYSIS,

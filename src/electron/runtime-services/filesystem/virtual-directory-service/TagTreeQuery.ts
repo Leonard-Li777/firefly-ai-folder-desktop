@@ -14,15 +14,15 @@ import { LogCategory, logger, extractSnippet, normalizeForCache } from '@firefly
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { DAGMaterializer } from './DAGMaterializer'
-import { taxonomyAliasCache } from '../../../services/taxonomy-alias-cache'
 import { decompressText } from '../../../utils/text-compressor'
+import { omniClient } from '../../../services/omni-client'
 import {
   HybridRankedCandidate,
   HybridSearchArbiter,
   HYBRID_SEARCH_POOL_SIZE,
-  slicePage,
   splitPassages
 } from './HybridSearchArbiter'
+import { HybridSearchSession } from './HybridSearchSession'
 
 export interface FilterFilesParams {
   selectedTags?: SelectedTag[]
@@ -55,11 +55,23 @@ type HybridPageRef =
 export class TagTreeQuery {
   private dagMaterializer: DAGMaterializer
   private hybridArbiter: HybridSearchArbiter
+  private hybridSession: HybridSearchSession
 
   constructor(private db: Database.Database, hybridArbiter?: HybridSearchArbiter) {
     this.ensureSqlFunctions()
     this.dagMaterializer = new DAGMaterializer(db)
     this.hybridArbiter = hybridArbiter ?? new HybridSearchArbiter(db)
+    // 混合检索编排（ADR-0039）公开收口：Session 负责编排与回退策略，本类作为数据访问协作者注入
+    this.hybridSession = new HybridSearchSession({
+      searchHybrid: this.hybridArbiter.searchHybrid.bind(this.hybridArbiter),
+      fetchLegacySearchRefs: params => this.fetchLegacySearchRefs(params),
+      fetchRowsByFingerprints: fps => this.fetchRowsByFingerprints(fps),
+      mapFilesToItems: (rows, ws, showMissing) => this.mapFilesToItems(rows, ws, showMissing ?? true),
+      fetchContentsForSearch: fps => this.fetchContentsForSearch(fps),
+      enrichSearchPage: (kw, refs, cand, contents) => this.enrichSearchPage(kw, refs, cand, contents),
+      synthesizeUnanalyzedItem: (ref, ws) => this.synthesizeUnanalyzedItem(ref, ws),
+      fallbackPaged: params => this.getFilteredFilesPaged(params)
+    })
   }
 
   private ensureSqlFunctions(): void {
@@ -208,10 +220,8 @@ export class TagTreeQuery {
 
     try {
       const locale = opts.language || language || 'zh-CN'
-      // 启动/切换语言时装载 Omni 别名与分类树内存总线
-      if (!taxonomyAliasCache.isLoaded() || taxonomyAliasCache.getLocale() !== locale) {
-        await taxonomyAliasCache.load(locale)
-      }
+      // 多语言别名已落库分表，展示名直接查 DB，无需内存总线 TaxonomyAliasCache
+      // 如需确保当前语言分表存在，可在此调用 createTagAliasesLangTable(db, locale)
 
       let showMissing = true
       try {
@@ -352,8 +362,18 @@ export class TagTreeQuery {
       // 5. 按照维度归类本地动态标签并组织树形结构
       const groups: DimensionGroup[] = []
       const seenDimCodes = new Set<string>()
-      const aliasResolver = (code: string, fallbackName?: string) =>
-        taxonomyAliasCache.resolve(code) || fallbackName || code
+      // 别名解析：直接查当前语言分表 + file_tags.name 兜底（替代 TaxonomyAliasCache）
+      const aliasResolver = async (code: string, fallbackName?: string) => {
+        try {
+          const db = this.db
+          // 先查当前语言分表（需先获取当前语言）
+          const locale = ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+          const dbService = (await import('../../../runtime-services/database/database-service')).databaseService
+          const displayName = await dbService.resolveTagDisplayNames([code], locale)
+          if (displayName[code]) return displayName[code]
+        } catch {}
+        return fallbackName || code
+      }
 
       for (const root of dimensionRoots) {
         const dimCode = root.code
@@ -405,8 +425,8 @@ export class TagTreeQuery {
 
           dimensionTags.push({
             dimensionId: dimCode as any,
-            dimensionName: aliasResolver(root.code, root.name),
-            tagValue: aliasResolver(child.code, child.name),
+            dimensionName: await aliasResolver(root.code, root.name),
+            tagValue: await aliasResolver(child.code, child.name),
             fileCount: aggregatedCount,
             level: child.depth || 1,
             code: child.code,
@@ -421,7 +441,7 @@ export class TagTreeQuery {
 
         groups.push({
           id: legacyNumericId as any,
-          name: aliasResolver(root.code, root.name),
+          name: await aliasResolver(root.code, root.name),
           level: root.depth,
           tags: dimensionTags,
           code: dimCode,
@@ -430,8 +450,45 @@ export class TagTreeQuery {
         })
       }
 
-      // 6. 合并 Omni 受控分类树（builtin / omw 不再入库主库）
-      const omniGroups = taxonomyAliasCache.toDimensionGroups(tagCountMap)
+      // 6. 合并 Omni 受控分类树（builtin / omw 不再入库主库，走 HTTP API 拉取树结构）
+      const treeRes = await omniClient.getTaxonomyTree(locale)
+      const omniGroups = treeRes?.rootNodes
+        ? treeRes.rootNodes.map(root => {
+            const numMatch = root.code.match(/^dim\.(\d+)$/)
+            const id = numMatch ? parseInt(numMatch[1], 10) : 0
+            const tags: any[] = []
+            const collect = (node: any, parentCode: string, level: number) => {
+              for (const child of node.children || []) {
+                const code = child.code
+                const count = tagCountMap?.get(code) ?? 0
+                tags.push({
+                  dimensionId: id,
+                  dimensionCode: root.code,
+                  dimensionName: root.name,
+                  tagValue: child.name,
+                  fileCount: count,
+                  level,
+                  code,
+                  parentCode: parentCode || root.code,
+                  isMultiSelect: false
+                })
+                collect(child, code, level + 1)
+              }
+            }
+            collect(root, root.code, 1)
+            return {
+              id,
+              name: root.name,
+              level: 0,
+              tags,
+              code: root.code,
+              order: root.sortOrder,
+              isMultiSelect: false,
+              meta: { source: root.source || 'builtin' },
+              metadata: { source: root.source || 'builtin' }
+            }
+          })
+        : []
       for (const og of omniGroups) {
         const code = og.code
         if (!code || seenDimCodes.has(code)) continue
@@ -653,10 +710,14 @@ export class TagTreeQuery {
       const offset = params.offset !== undefined ? Math.max(0, params.offset) : Math.max(0, (page - 1) * limit)
 
       // 混合检索分支：存在非空搜索词时启用（ADR-0039 Hybrid Search Everything）
-      // 本地 FTS5 BM25 + Omni 向量语义 + 文件名提升加权 RRF 融合，真实目录模式追加 FS 未分析命中
+      // 编排委托 HybridSearchSession 公开收口：融合排序/去重/分页/回退策略在 Session 单点定义
       const searchKeyword = (params.searchKeyword || '').trim()
       if (searchKeyword) {
-        return this.getFilteredFilesPagedHybrid({ ...params, limit, offset }, searchKeyword)
+        return this.hybridSession.runPaged(
+          { ...params, limit, offset },
+          searchKeyword,
+          this.buildFilterQuery({ ...params, searchKeyword: undefined })
+        )
       }
 
       // 1. 查询符合条件的总数
@@ -735,166 +796,6 @@ export class TagTreeQuery {
     } catch (err: unknown) {
       logger.error(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 分页过滤文件失败:', err)
       return { items: [], total: 0 }
-    }
-  }
-
-  /**
-   * 混合检索分页（ADR-0039 / Ticket-2）：
-   * 1. 委托 HybridSearchArbiter 融合 FTS5 BM25 + Omni 向量 + 文件名提升，
-   *    真实目录模式下追加 FS 实时未分析命中；
-   * 2. 按融合候选的统一顺序分页；当前页已分析候选补充富正文摘要（字面高亮 / 段落级语义对齐）；
-   * 3. 未分析命中由 FS 返回属性直接合成 FileItem（matchType = 'unanalyzed'）。
-   * 任一步骤异常均回退为去除搜索词的常规分页，避免搜索功能受损。
-   */
-  private async getFilteredFilesPagedHybrid(
-    params: FilterFilesParams,
-    keyword: string
-  ): Promise<FilteredFilesResponse> {
-    const startTime = performance.now()
-    let dbQueryTime = 0
-    try {
-      const workspaceDirectoryPath = params.workspaceDirectoryPath
-      // 基础过滤条件（不含 searchKeyword 自身的 LIKE 条件，交由仲裁器在各检索模型上叠加）
-      const { whereClauses, queryParams, showMissing } = this.buildFilterQuery({
-        ...params,
-        searchKeyword: undefined
-      })
-
-      const limit = params.limit !== undefined ? Math.max(0, params.limit) : Math.max(1, params.pageSize ?? 100)
-      const offset = params.offset !== undefined ? Math.max(0, params.offset) : Math.max(0, ((params.page ?? 1) - 1) * limit)
-
-      // 1. 仲裁融合（FTS + 向量 + 文件名）
-      const pool = await this.hybridArbiter.searchHybrid({
-        keyword,
-        whereClauses,
-        queryParams,
-        workspaceDirectoryPath,
-        poolSize: HYBRID_SEARCH_POOL_SIZE
-      })
-
-      if (pool.failures.fts || pool.failures.vector || pool.failures.fs) {
-        logger.debug(
-          LogCategory.VIRTUAL_DIRECTORY,
-          `[TagTreeQuery] 混合检索部分降级: fts=${pool.failures.fts}, vector=${pool.failures.vector}, fs=${pool.failures.fs}`
-        )
-      }
-
-      // 2. 统一有序引用（已分析候选在前，未分析命中追加尾部）：
-      //    - 先取仲裁融合的高精度候选；
-      //    - 再用旧版 LIKE 全字段查询（buildFilterQuery 含 searchKeyword）作为补充候选源，
-      //      保留路径/作者/语言/描述/标签等基础字段命中与 includeUnanalyzed 未分析行（Hybrid Search Everything 兼容层）；
-      //    - FS 实时未分析命中追加最后。
-      const seenFp = new Set<string>()
-      const seenUnanalyzedPath = new Set<string>()
-      const fullPool: HybridPageRef[] = []
-      // 2.1 仲裁候选（已分析）
-      for (const c of pool.candidates) {
-        if (!c.fileFingerprint) continue
-        if (seenFp.has(c.fileFingerprint)) continue
-        seenFp.add(c.fileFingerprint)
-        fullPool.push({
-          kind: 'analyzed',
-          fileFingerprint: c.fileFingerprint,
-          hasLiteral: c.hasLiteral
-        })
-      }
-      // 2.2 旧 LIKE 全字段语义补充候选（已分析）
-      const legacyRefs = this.fetchLegacySearchRefs(params)
-      for (const ref of legacyRefs.analyzed) {
-        if (!ref.fileFingerprint || seenFp.has(ref.fileFingerprint)) continue
-        seenFp.add(ref.fileFingerprint)
-        fullPool.push(ref)
-      }
-      // 2.3 FS 实时未分析命中（真实目录模式，最新磁盘状态优先）
-      for (const h of pool.unanalyzedHits) {
-        if (h.fileFingerprint && seenFp.has(h.fileFingerprint)) continue
-        const key = normalizeForCache(h.path)
-        if (seenUnanalyzedPath.has(key)) continue
-        seenUnanalyzedPath.add(key)
-        fullPool.push({
-          kind: 'unanalyzed',
-          path: h.path,
-          name: h.name,
-          fileFingerprint: h.fileFingerprint
-        })
-      }
-      // 2.4 旧 LIKE 未分析行（includeUnanalyzed 语义兜底，路径去重避免与 FS 命中重复）
-      for (const ref of legacyRefs.unanalyzed) {
-        if (ref.fileFingerprint && seenFp.has(ref.fileFingerprint)) continue
-        const key = normalizeForCache(ref.path)
-        if (seenUnanalyzedPath.has(key)) continue
-        seenUnanalyzedPath.add(key)
-        fullPool.push(ref)
-      }
-      const { items: pageRefs, total } = slicePage(fullPool, limit, offset)
-
-      if (pageRefs.length === 0) {
-        return {
-          items: [],
-          total,
-          performance: {
-            dbQueryTime: Math.round(dbQueryTime * 100) / 100,
-            totalTime: Math.round((performance.now() - startTime) * 100) / 100
-          }
-        }
-      }
-
-      // 3. 已分析候选：加载数据库行与正文，供摘要丰富
-      const candidateByFp = new Map<string, HybridRankedCandidate>(
-        pool.candidates.map(c => [c.fileFingerprint, c])
-      )
-      const analyzedRefs = pageRefs.filter(
-        (r): r is Extract<HybridPageRef, { kind: 'analyzed' }> => r.kind === 'analyzed'
-      )
-      const analyzedFps = analyzedRefs.map(r => r.fileFingerprint)
-
-      const rowStart = performance.now()
-      const rows = analyzedFps.length ? this.fetchRowsByFingerprints(analyzedFps) : []
-      dbQueryTime += performance.now() - rowStart
-
-      const baseItems = new Map<string, FileItem>()
-      for (const item of this.mapFilesToItems(rows, workspaceDirectoryPath, showMissing)) {
-        if (item.fileFingerprint) baseItems.set(item.fileFingerprint, item)
-      }
-
-      const contentStart = performance.now()
-      const contentsByFp = analyzedFps.length
-        ? this.fetchContentsForSearch(analyzedFps)
-        : new Map<string, string>()
-      dbQueryTime += performance.now() - contentStart
-
-      const enrichment = await this.enrichSearchPage(keyword, analyzedRefs, candidateByFp, contentsByFp)
-
-      // 4. 保持融合顺序组装最终条目
-      const items: FileItem[] = []
-      for (const ref of pageRefs) {
-        if (ref.kind === 'analyzed') {
-          const base = baseItems.get(ref.fileFingerprint)
-          if (!base) continue
-          const e = enrichment.get(ref.fileFingerprint)
-          items.push({
-            ...base,
-            snippet: e?.snippet,
-            matchType: e?.matchType ?? (ref.hasLiteral ? 'fuzzy' : 'semantic'),
-            similarity: e?.similarity
-          })
-        } else {
-          items.push(this.synthesizeUnanalyzedItem(ref, workspaceDirectoryPath))
-        }
-      }
-
-      return {
-        items,
-        total,
-        performance: {
-          dbQueryTime: Math.round(dbQueryTime * 100) / 100,
-          totalTime: Math.round((performance.now() - startTime) * 100) / 100
-        }
-      }
-    } catch (err: unknown) {
-      logger.error(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 混合检索分页失败，回退常规检索:', err)
-      // 回退：去除搜索词走常规分页，保证搜索异常时功能可用
-      return this.getFilteredFilesPaged({ ...params, searchKeyword: undefined })
     }
   }
 

@@ -54,7 +54,7 @@ export class FileDao {
   /**
    * 受控标签展示名解析（DAO 层直查主库当前语言分表 tag_aliases_{lang}）
    * 本地 file_tags.name 优先 → 语言分表 lemma → code 可读 slug 兜底。
-   * @param code 标签 code（受控 builtin.*/omw.*/dim.xxx 或本地动态标签）
+   * @param code 标签 code（受控 builtin.* / omw.* / dim.xxx 或本地动态标签）
    * @param ftName 已从 file_tags 取到的本地展示名（无则传 null）
    */
   private resolveDisplayName(code: string, ftName: string | null): string {

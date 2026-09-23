@@ -9,6 +9,7 @@ import type { LanguageCode } from '@firefly/types'
 import type Database from 'better-sqlite3'
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { t } from '@app/languages'
+import { getRootGroupsWithChildren } from './tag-tree-view-adapter'
 
 /**
  * 数据库适配器
@@ -154,26 +155,15 @@ export class DatabaseAdapter implements IDatabaseAdapter {
     this.dimensions = {
       getAll: async (): Promise<any[]> => {
         const db = this.getDatabase()
-        return db
-          .prepare(
-            `
-            SELECT
-              root.code AS id,
-              root.name AS name,
-              root.depth AS level,
-              (
-                SELECT COALESCE(json_group_array(child.name), '[]')
-                FROM file_tags child
-                WHERE json_extract(child.parent_codes, '$[0]') = root.code
-              ) AS tags,
-              root.description AS description,
-              root.meta AS metadata
-            FROM file_tags root
-            WHERE root.parent_codes IS NULL OR root.parent_codes = '[]'
-            ORDER BY root.depth ASC, root.code ASC
-          `
-          )
-          .all()
+        // 视图分组统一收口 TagTreeViewAdapter：根=parent_codes 为空，子节点多父全挂（禁 parent_codes[0] 首父推导）
+        return getRootGroupsWithChildren(db).map(r => ({
+          id: r.code,
+          name: r.name,
+          level: r.depth,
+          tags: JSON.stringify(r.children.map(c => c.name)),
+          description: r.description,
+          metadata: r.meta
+        }))
       },
 
       create: async (dimension: any): Promise<void> => {

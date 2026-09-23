@@ -29,13 +29,17 @@ export interface OmniTaxonomyTreeResponse {
   totalNodes: number
 }
 
-/** 多语言别名响应 */
-export interface OmniTaxonomyAliasesResponse {
-  locale: string
-  aliases: Record<string, string[]>
-  canonicalNames: Record<string, string>
-  totalTags: number
+/** 多语言别名单行（对齐 Rust TagAliasRow：snake_case） */
+export interface OmniTagAliasRow {
+  tag_code: string
+  lemma: string
+  is_canonical: boolean
+  n: number
+  count: number
 }
+
+/** 多语言别名响应：Vec<TagAliasRow>（对齐 Rust Vec<TagAliasRow>，Slice 7） */
+export type OmniTaxonomyAliasesResponse = OmniTagAliasRow[]
 
 /** 向量写入条目 */
 export interface OmniVectorUpsertItem {

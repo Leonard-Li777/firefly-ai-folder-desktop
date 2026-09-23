@@ -1,5 +1,6 @@
 import { AnalysisQueueItem } from '@firefly/types'
 import type { DimensionMetadata } from '@firefly/types'
+import { getRootGroupsWithChildren } from '../../../adapters/tag-tree-view-adapter'
 import {
   LogCategory,
   logger,
@@ -278,29 +279,13 @@ export async function saveCloudResult(
 
       if (data.tags && Array.isArray(data.tags)) {
         // 创世 Baseline V1：维度与预设标签统一由 file_tags 标签树推导，不再查询 file_dimensions。
-        // 维度根节点（parent_codes 为空）为维度容器，其直属子节点即该维度的预设标签集。
-        const allDimRows = db
-          .prepare(
-            `
-            SELECT
-              root.code AS id,
-              root.name AS name,
-              (
-                SELECT json_group_array(child.name)
-                FROM file_tags child
-                WHERE json_extract(child.parent_codes, '$[0]') = root.code
-              ) AS tags,
-              root.meta AS metadata
-            FROM file_tags root
-            WHERE root.parent_codes IS NULL OR root.parent_codes = '[]'
-          `
-          )
-          .all() as Array<{
-          id: string
-          name: string
-          tags: string
-          metadata?: DimensionMetadata | string | null
-        }>
+        // 视图分组统一收口 TagTreeViewAdapter：根=parent_codes 为空，子节点多父全挂（禁首父推导）。
+        const allDimRows = getRootGroupsWithChildren(db).map(r => ({
+          id: r.code,
+          name: r.name,
+          tags: JSON.stringify(r.children.map(c => c.name)),
+          metadata: r.meta
+        }))
         const officialDimNames = new Set(allDimRows.map(d => d.name))
         const dimMap = new Map<
           string,

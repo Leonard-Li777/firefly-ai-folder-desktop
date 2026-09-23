@@ -14,7 +14,7 @@ import { WORKSPACE_CONSTANTS } from '@firefly/server'
 import { SystemIdentityService } from '../system/system-identity-service'
 import { databaseService } from '../database/database-service'
 import { createTagAliasesLangTable } from '../database/database'
-import { taxonomyAliasCache } from '../../services/taxonomy-alias-cache'
+
 import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
@@ -749,19 +749,17 @@ export class ConfigDbManager {
    * 获取维度数据
    *
    * ADR-0038 / Issue #682：
-   * 1. 优先从 Omni TaxonomyAliasCache 分类树获取受控维度（builtin / omw）；
-   * 2. 兜底合并本地 file_tags 中 depth=0 的动态维度（expanded / user）。
+   * 从 file_tags 表直接查询维度（depth=0），不再依赖 TaxonomyAliasCache 内存总线。
+   * 受控/感知标签的展示名由数据库分表查询；动态维度直接读 file_tags。
    */
   getFileDimensions(): Array<any> {
     if (this.fileDimensionsCache.length > 0) {
       return this.fileDimensionsCache
     }
 
-    const fromCache = taxonomyAliasCache.toFileDimensions()
     const db = databaseService.db
     if (!db) {
-      this.fileDimensionsCache = fromCache
-      return this.fileDimensionsCache
+      return []
     }
 
     try {
@@ -788,7 +786,7 @@ export class ConfigDbManager {
           ch = JSON.parse(r.context_hints || '[]')
         } catch {}
         return {
-          id: fromCache.length + idx + 1,
+          id: idx + 1,
           code: r.code,
           name: r.name,
           level: 1,
@@ -798,7 +796,7 @@ export class ConfigDbManager {
           context_hints: ch,
           metadata: metaObj
         }
-      })
+      });
 
       // 本地动态维度补充子标签名
       if (localDims.length > 0) {
@@ -812,17 +810,11 @@ export class ConfigDbManager {
         }
       }
 
-      const seen = new Set(fromCache.map(d => d.code))
-      const merged = [
-        ...fromCache,
-        ...localDims.filter(d => !seen.has(d.code))
-      ]
-      this.fileDimensionsCache = merged
+      this.fileDimensionsCache = localDims
       return this.fileDimensionsCache
     } catch (err) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 获取维度数据失败:', err)
-      this.fileDimensionsCache = fromCache
-      return this.fileDimensionsCache
+      return []
     }
   }
 
