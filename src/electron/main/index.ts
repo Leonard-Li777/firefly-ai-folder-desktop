@@ -341,7 +341,7 @@ import { SystemIdentityService } from '../runtime-services/system/system-identit
 import { LicenseService, LicenseStatus } from '../runtime-services/system/license-service'
 import { regionDetectionService } from '../runtime-services/system/region-detection-service'
 import { postHogMain } from '../services/posthog-service'
-import { AIEngineFactory } from '../runtime-services/ai/adapters/ai-engine-factory'
+
 import { llamaModelManager } from '../runtime-services/llama/llama-model-manager'
 import { omniService } from '../runtime-services/system/omni-service'
 import { hardwareDetectionService } from '../runtime-services/system/hardware-detection-service'
@@ -684,7 +684,7 @@ ConfigOrchestrator.getInstance().onValueChange<boolean>(
 
 app.on('ready', async () => {
   // 关键：在注册 IPC 处理器之前注入包内 ConfigOrchestrator，
-  // 避免 setupIPCHandlers 中 AIEngineFactory.getAdapter() 等早期调用触发
+  // 避免 setupIPCHandlers 中包内服务早期读取配置触发
   // "ConfigOrchestrator has not been injected in AI package" 错误（日志已确认）
   AIPackageConfigOrchestrator.setInstance(ConfigOrchestrator.getInstance())
 
@@ -701,9 +701,6 @@ app.on('ready', async () => {
   deepLinkManager.init()
 
   const orchestrator = ConfigOrchestrator.getInstance()
-
-  AIEngineFactory.setBuildTimeEngine(__AI_ENGINE__)
-  const engineType = AIEngineFactory.getBuildTimeEngineType()
 
   // 1. 探测启动状态（首次运行或版本升级）
   const isFirstRun = orchestrator.getValue<boolean>('IS_FIRST_RUN')
@@ -777,9 +774,8 @@ app.on('ready', async () => {
     logger.error(LogCategory.SYSTEM, '地域探测失败:', err)
   })
 
-  orchestrator.updateValues({ AI_ENGINE: engineType }, { source: 'runtime' })
-  orchestrator.updateRendererConfig({ aiEngine: engineType } as any)
-  logger.info(LogCategory.MAIN, `[App] 已将 AI 引擎配置注入 ConfigOrchestrator: ${engineType}`)
+  // 本地推理引擎已外置为 Tier 2 独立应用（firefly-ai-engine），
+  // desktop 不再按构建期常量注入 AI_ENGINE，引擎状态由 engine-bridge 探活驱动。
 
   try {
     await baseInitPromise

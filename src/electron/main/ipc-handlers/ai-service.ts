@@ -16,7 +16,6 @@ import {
   setGlobalLlamaIndexService,
   setDirectoryContextService
 } from '../state'
-import { ensureLlamaEngineDeployed } from '../initialization'
 import { enrichAIStatus, getActiveHardwareBackend, clearEnrichCache } from '../utils'
 
 export function registerAIServiceIPCHandlers() {
@@ -41,21 +40,22 @@ export function registerAIServiceIPCHandlers() {
         }
 
         if (initMode === 'cloud') {
-          logger.info(LogCategory.MAIN, '[IPC] 云端模式：跳过本地 AI 引擎部署')
+          logger.info(LogCategory.MAIN, '[IPC] 云端模式：跳过本地 AI 引擎连接')
         } else {
-          await ensureLlamaEngineDeployed({ forceDeploy: options?.forceDeploy })
-          if (options?.forceDeploy) {
-            logger.info(LogCategory.MAIN, '[IPC] forceDeploy 模式：强制杀掉旧引擎进程')
-            try {
-              await llamaServerService.forceKillProcess()
-            } catch (e) {
-              logger.warn(LogCategory.MAIN, '[IPC] 强制杀掉旧进程失败（可能已退出）:', e)
-            }
-          }
+          // Tier 2 桥接零过渡：桌面端不再部署/拉起 llama-server 本地引擎，
+          // 统一通过 engineBridge 探活并静默唤起外部 firefly-ai-engine
+          const { engineBridgeService } = await import('../../runtime-services/engine-bridge')
+          const tier2Online = options?.onlyDeploy
+            ? await engineBridgeService.healthCheck().then(s => s !== null)
+            : await engineBridgeService.ensureRunning().catch(() => false)
+          logger.info(
+            LogCategory.MAIN,
+            `[IPC] Tier 2 引擎探活结果: ${tier2Online ? '在线' : '不可用（将由 Tier 1 保底）'}`
+          )
         }
 
         if (options?.onlyDeploy) {
-          logger.info(LogCategory.MAIN, '[IPC] 检测到 onlyDeploy 标志，仅部署引擎，不启动服务')
+          logger.info(LogCategory.MAIN, '[IPC] 检测到 onlyDeploy 标志，仅确认引擎可用性，不启动服务')
           if (!globalLlamaIndexService) {
             const service = LlamaIndexAIService.getInstance(
               ConfigOrchestrator.getInstance(),
@@ -70,7 +70,7 @@ export function registerAIServiceIPCHandlers() {
           const { llamaModelManager } =
             await import('../../runtime-services/llama/llama-model-manager')
           llamaModelManager.clearCache()
-          return { success: true, message: t('Llama 引擎部署完成') }
+          return { success: true, message: t('AI 引擎检查完成') }
         }
 
         if (!globalLlamaIndexService) {
@@ -96,7 +96,7 @@ export function registerAIServiceIPCHandlers() {
             if (options?.forceDeploy) {
               logger.info(
                 LogCategory.MAIN,
-                '[IPC] 检测到 forceDeploy，触发 AI 服务配置重载以重启引擎进程'
+                '[IPC] 检测到 forceDeploy，触发 AI 服务配置重载以重连外部引擎'
               )
               await globalLlamaIndexService.reloadConfig()
             } else {
@@ -494,17 +494,14 @@ export function registerAIServiceIPCHandlers() {
 
   ipcMain.handle('llama-server-port', async () => {
     try {
-      const processInfo = llamaServerService.getProcessInfo()
-      if (processInfo && processInfo.config?.port) {
-        return processInfo.config.port
-      }
+      // Tier 2 桥接语义：无本地进程，返回外部引擎连接端口
       const currentConfig = llamaServerService.getCurrentConfig()
       if (currentConfig && currentConfig.port) {
         return currentConfig.port
       }
       return null
     } catch (error) {
-      logger.error(LogCategory.MAIN, '[Main] 获取 llama-server 运行端口失败:', error)
+      logger.error(LogCategory.MAIN, '[Main] 获取本地 AI 引擎运行端口失败:', error)
       return null
     }
   })

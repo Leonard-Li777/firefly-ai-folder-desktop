@@ -349,11 +349,16 @@ export class EngineBridgeService {
 
   /**
    * 打开引擎管理面板
+   * @param options.panel 目标面板：error=错误分析侧边栏，logs=运行日志，default=仅显示主窗口
    */
-  public async openUI(): Promise<{ ok: boolean; error?: string }> {
+  public async openUI(options?: {
+    panel?: 'error' | 'logs' | 'default'
+  }): Promise<{ ok: boolean; error?: string }> {
     try {
       const res = await fetch(`${this.baseUrl}${ENGINE_OPEN_UI_PATH}`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ panel: options?.panel || 'default' }),
         signal: AbortSignal.timeout(OPEN_UI_TIMEOUT_MS)
       })
       return { ok: res.ok, error: res.ok ? undefined : `引擎返回 ${res.status}` }

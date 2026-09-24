@@ -16,8 +16,6 @@ import {
   ModelDownloadManagerIPCHandler,
   registerFfmpegIpcHandlers
 } from '../../runtime-services/ipc'
-import { registerOllamaIPCHandlers } from '../../runtime-services/ipc/ollama-ipc-handler'
-import { AIEngineFactory } from '../../runtime-services/ai/adapters/ai-engine-factory'
 import { t } from '@app/languages'
 import { coreEngine, fileCleanupService } from '../state'
 import { initializeHardwareDetection as initializeHardwareDetectionFn } from '../initialization'
@@ -630,23 +628,14 @@ export function registerMiscIPCHandlers() {
     })
   })
 
-  const currentEngine = AIEngineFactory.getAdapter().engineName
-  logger.info(LogCategory.MAIN, `[IPC] 当前 AI 引擎: ${currentEngine}`)
+  // 本地推理引擎已外置为 Tier 2 独立应用（firefly-ai-engine），
+  // 引擎状态由 engine-bridge IPC（engine-bridge/*）暴露给渲染层。
 
   try {
     ModelDownloadManagerIPCHandler.getInstance()
     logger.info(LogCategory.MAIN, '[IPC] 模型下载管理 IPC 处理程序注册完成')
   } catch (error: any) {
     logger.error(LogCategory.MAIN, '[IPC] 模型下载管理 IPC 处理程序注册失败:', error)
-  }
-
-  if (currentEngine === 'ollama') {
-    try {
-      registerOllamaIPCHandlers()
-      logger.info(LogCategory.MAIN, '[IPC] Ollama IPC 处理程序注册完成')
-    } catch (error: any) {
-      logger.error(LogCategory.MAIN, '[IPC] Ollama IPC 处理程序注册失败:', error)
-    }
   }
 
   if (!app.isPackaged || process.env.IS_INTEGRATION_TEST === 'true' || process.env.IS_E2E_TEST === 'true') {

@@ -18,8 +18,6 @@ import { systemHealthService } from '../runtime-services/system/system-health-se
 import {
   llamaServerService,
   LlamaIndexAIService,
-  binaryManager,
-  ollamaService,
   multiModalModelService,
   ConfigOrchestrator as AIPackageConfigOrchestrator
 } from '@firefly/electron-llamaIndex-service'
@@ -40,11 +38,8 @@ import { checkLicenseAndNotify } from './utils'
 import { userTierService } from '../runtime-services/user-tier/user-tier-service'
 import { networkInterceptorService } from '../services/network-interceptor-service'
 import { invitationService } from '../runtime-services/invitation/invitation-service'
-import { llamaEngineService } from '../runtime-services/llama/llama-engine-service'
-import { gpuDriverComplianceService } from '../runtime-services/llama/gpu-driver-compliance-service'
 import { modelMigrationService } from '../runtime-services/llama/model-migration-service'
 import { deploymentIntegrityVerifier } from '../runtime-services/llama/deployment-integrity-verifier'
-import { AIEngineFactory } from '../runtime-services/ai/adapters/ai-engine-factory'
 import { aiErrorHandler } from '../runtime-services/ai/ai-error-handler'
 import { cloudSyncWorker } from '../runtime-services/ai/cloud-sync-worker'
 import { AISkillApiService } from '../runtime-services/ai-skill-api-service'
@@ -154,62 +149,6 @@ export async function initializeLlamaServer(): Promise<void> {
     }
   } catch (error) {
     logger.error(LogCategory.STARTUP, 'llama-server 初始化失败:', error)
-  }
-}
-
-/**
- * 确保 llama.cpp 引擎已部署
- */
-export async function ensureLlamaEngineDeployed(options?: {
-  forceDeploy?: boolean
-  onProgress?: (msg: string) => void
-}): Promise<void> {
-  try {
-    logger.info(LogCategory.MAIN, '正在确保 Llama 引擎已就绪 (含 llama.cpp 和 llamafile)...')
-    const binaryPath = await llamaEngineService.ensureEngineDeployed(!!options?.forceDeploy)
-
-    // 执行显卡驱动合规性检测 (仅针对 llama.cpp 引擎)
-    // try {
-    //   const config = ConfigOrchestrator.getInstance();
-    //   const aiEngine = config.getValue<string>('AI_ENGINE');
-
-    //   if (aiEngine === 'llama.cpp') {
-    //     const compliance = await gpuDriverComplianceService.checkCompliance();
-
-    //     if (!compliance.compliant) {
-    //       logger.warn(LogCategory.AI_SERVICE, `显卡驱动合规性检测未通过: ${compliance.gpuName || 'NVIDIA|AMD GPU'}`);
-
-    //       const aiError = aiErrorHandler.createAIError(
-    //         AIErrorType.GPU_DRIVER_OUTDATED,
-    //         t('检测到您的 {gpuName} 显卡驱动版本过低或不兼容，已为你降级AI引擎速度，建立升级驱动体验满血AI性能。', { gpuName: compliance.gpuName || 'NVIDIA|AMD' }),
-    //         'GpuDriverComplianceService',
-    //         { gpuName: compliance.gpuName }
-    //       );
-    //       aiErrorHandler.handleError(aiError).catch(err => {
-    //         logger.error(LogCategory.AI_SERVICE, '处理驱动合规性错误失败:', err);
-    //       });
-    //     }
-    //   }
-    // } catch (complianceError) {
-    //   logger.error(LogCategory.AI_SERVICE, '显卡驱动合规性检测过程异常:', complianceError);
-    // }
-
-    if (binaryManager) {
-      binaryManager.setCustomBinaryPath(binaryPath)
-      logger.info(LogCategory.MAIN, `Llama 引擎路径已成功注入: ${binaryPath}`)
-
-      if (globalLlamaIndexService) {
-        logger.info(LogCategory.MAIN, 'Llama 引擎部署完成，自动初始化拉起 AI 服务...')
-        globalLlamaIndexService.initialize().catch(err => {
-          logger.warn(LogCategory.MAIN, '自动拉起 AI 服务失败:', err.message)
-        })
-      }
-    } else {
-      logger.error(LogCategory.MAIN, '无法获取 binaryManager 实例')
-      throw new Error('无法获取 binaryManager 实例')
-    }
-  } catch (error) {
-    logger.error(LogCategory.MAIN, '确保 Llama 引擎部署失败:', error)
   }
 }
 
@@ -433,7 +372,6 @@ export async function initializeMinimalServices(options?: {
   try {
     // 关键：将桌面侧 ConfigOrchestrator 注入 AI 包（包内服务如 unifiedModelManager 通过该静态入口读取配置）
     AIPackageConfigOrchestrator.setInstance(ConfigOrchestrator.getInstance())
-    AIEngineFactory.setBuildTimeEngine(__AI_ENGINE__)
     logger.info(LogCategory.MAIN, '正在初始化配置阶段所需的最小服务...')
     logger.info(LogCategory.MAIN, '日志服务初始化成功')
     logger.info(LogCategory.MAIN, '错误处理服务初始化成功')
@@ -469,15 +407,15 @@ export async function initializeMinimalServices(options?: {
       logger.warn(LogCategory.MAIN, '系统身份 Supabase 注册未完成 (可能离线):', err)
     }
 
-    // 2.5 桥接 Tier 2 上层 AI 引擎（slice-3 桌面解耦）：本地模式优先复用 38400 上的引擎服务。
-    //     引擎在线则将 AIService 本地调用重定向至外部引擎；离线时静默降级，由 Tier 1（Omni）全程保底。
+    // 2.5 桥接 Tier 2 上层 AI 引擎（slice-3 桌面解耦）：本地模式仅连接 38400 上的外部引擎，
+    //     desktop 不再自带任何推理进程。探活失败则静默拉起引擎应用；
+    //     仍不可用时由 Tier 1（Omni）全程保底，绝不回退到本地自拉起。
     try {
       const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
       if (initMode !== 'cloud') {
         const { engineBridgeService } = await import('../runtime-services/engine-bridge')
         const tier2Online = await engineBridgeService.ensureRunning().catch(() => false)
         if (tier2Online) {
-          process.env.FA_TIER2_EXTERNAL = '1'
           logger.info(
             LogCategory.MAIN,
             '[EngineBridge] Tier 2 引擎在线，AIService 本地调用将重定向至端口 38400'
@@ -491,15 +429,6 @@ export async function initializeMinimalServices(options?: {
       }
     } catch (bridgeError) {
       logger.warn(LogCategory.MAIN, '[EngineBridge] Tier 2 引擎桥接初始化异常（不阻断启动）:', bridgeError)
-    }
-
-    // 3. 仅在非云端模式下执行本地 AI 引擎部署（不依赖云端/数据库）
-    const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
-    if (initMode !== 'cloud') {
-      logger.info(LogCategory.MAIN, '正在执行本地 Llama 引擎部署...')
-      await ensureLlamaEngineDeployed(options)
-    } else {
-      logger.info(LogCategory.MAIN, '当前为云端模式，跳过本地 AI 引擎部署')
     }
 
     await ffmpegService.initialize()
@@ -591,11 +520,12 @@ export async function initializeFullServices(): Promise<void> {
     const fullInitMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
 
     if (fullInitMode === 'cloud') {
-      logger.info(LogCategory.MAIN, '当前为云端模式，跳过本地 AI 引擎部署和初始化')
+      logger.info(LogCategory.MAIN, '当前为云端模式，跳过本地 AI 引擎初始化')
     } else {
-      ensureLlamaEngineDeployed().catch(err => {
-        logger.error(LogCategory.MAIN, 'Llama 引擎后台初始化启动失败:', err)
-      })
+      logger.info(
+        LogCategory.MAIN,
+        '本地模式：Tier 2 引擎桥接已在配置阶段完成，desktop 不再自带推理进程'
+      )
     }
 
     const modelStoragePath = ConfigOrchestrator.getInstance().getValue<string>('MODEL_STORAGE_PATH')
@@ -605,22 +535,10 @@ export async function initializeFullServices(): Promise<void> {
       logger.error(LogCategory.MAIN, '内置模型后台静默迁移失败:', err)
     }
 
-    // 确保适配器在每次 Phase2 执行时都被设置到 llamaServerService。
-    // 必须在 if (!globalLlamaIndexService) 之外，否则当 gpu-driver-compliance-service
-    // 在 Phase2 完成前触发 reloadConfig() 时，llamaServerService.adapter 仍为 null，
-    // 导致"服务切换失败: 未设置 AI 引擎适配器"错误。setAdapter 是幂等操作，重复调用安全。
-    const engineAdapter = AIEngineFactory.getAdapter()
-    llamaServerService.setAdapter(engineAdapter)
-
     // Inject ModelManager into multiModalModelService
     multiModalModelService.setModelManager(unifiedModelManager)
 
     if (!globalLlamaIndexService) {
-      // 注入依赖到 ollamaService
-      ollamaService.setConfigOrchestrator(ConfigOrchestrator.getInstance())
-      ollamaService.setModelManager(unifiedModelManager as any)
-      ollamaService.setFileDownloadService(fileDownloadService)
-
       const service = LlamaIndexAIService.getInstance(
         ConfigOrchestrator.getInstance(),
         llamaServerService,

@@ -53,6 +53,36 @@ interface IAIServiceErrorDialogProps {
 }
 
 /**
+ * 判断错误是否来自外部引擎（firefly-ai-engine / llama.cpp 运行时）
+ * 职责分离：engine 错误详情与专业分析在 engine 应用侧边栏展示
+ */
+function isEngineSourcedError(error: any): boolean {
+  if (!error) return false
+  if (error.context?.source === 'engine') return true
+  const code = String(error.code || error.type || '')
+  const engineCodes = new Set([
+    'ENGINE_NOT_FOUND',
+    'SERVER_START_FAILED',
+    'SERVER_CRASHED',
+    'FREQUENT_CRASH',
+    'MODEL_LOAD_FAILED',
+    'GPU_DRIVER_OUTDATED',
+    'INSUFFICIENT_VRAM',
+    'LOCAL_AI_UNSUPPORTED'
+  ])
+  if (engineCodes.has(code)) return true
+  const text = `${error.message || ''} ${error.details || ''}`.toLowerCase()
+  return (
+    text.includes('llama') ||
+    text.includes('ggml') ||
+    text.includes('cuda') ||
+    text.includes('vulkan') ||
+    text.includes('out of memory') ||
+    text.includes('model loading error')
+  )
+}
+
+/**
  * 错误信息接口
  */
 interface IErrorInfo {
@@ -283,6 +313,22 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         })
       }
 
+      // engine 错误：跳转到引擎应用查看专业分析与建议（职责分离）
+      if (isEngineSourcedError(aiError)) {
+        actions.unshift({
+          label: t('在引擎中查看'),
+          action: async () => {
+            try {
+              await window.electronAPI?.engineBridge?.openUI?.({ panel: 'error' })
+            } catch (e) {
+              logger.error(LogCategory.AI_SERVICE, '打开引擎错误面板失败:', e)
+            }
+            onClose()
+          },
+          variant: 'default'
+        })
+      }
+
       // 始终提供切换到简单分类模式的选项
       actions.push({
         label: t('切换简单分类'),
@@ -475,6 +521,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
                   <Settings className="h-4 w-4 mr-1.5" />
                 )}
                 {action.label.includes('下载') && <ExternalLink className="h-4 w-4 mr-1.5" />}
+                {action.label.includes('引擎') && <Zap className="h-4 w-4 mr-1.5" />}
                 {action.label}
                 {action.variant === 'default' && (
                   <ChevronRight className="h-4 w-4 ml-1 opacity-50" />
