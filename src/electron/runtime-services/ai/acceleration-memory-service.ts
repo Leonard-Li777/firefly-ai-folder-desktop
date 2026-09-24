@@ -4,7 +4,7 @@ import {
   LogCategory,
   logger,
   shouldUpgradeBestAcceleration,
-  extractAccelerationFromBinaryPath
+  extractAccelerationFromBackendDisplay
 } from '@firefly/shared'
 
 /**
@@ -14,63 +14,17 @@ import {
  * - 记忆标准：成功发送 hello 校验并收到回应（模型真正可用）时，记录**实际运行**的加速引擎
  * - 等级规则：只能升不能降（假设之前记忆的是 cuda，则不能降级为 vulkan 或 cpu）
  *
- * 说明：当前用户选择的加速引擎（SELECTED_ACCELERATION）是部署期静态选定的值，可能因引擎
- * 失败主动降级或用户手动切换而变更，与真正回应 hello 校验的运行引擎不一致。因此本服务
- * 从实际运行的二进制路径（binaryPath）中提取真实加速类型进行记忆，供 UI（如 Footer）
- * 检测并提示用户切换。
+ * 说明：本地推理已外置为 Tier 2 独立引擎（firefly-ai-engine），desktop 不再持有推理进程，
+ * 实际运行的加速后端由引擎状态端点（/api/engine/status 的 backend 字段）上报。
+ * 因此本服务在成功推理时从引擎上报的后端描述中提取真实加速类型进行记忆，
+ * 供 UI（如 Footer）检测并提示用户切换。
  */
 export class AccelerationMemoryService {
-  private isListenerSetup = false
-
-  constructor() {
-    this.setupServiceStartedListener()
-  }
-
-  /**
-   * 监听服务启动事件（service-started 在 hello 校验成功、模型真正可用后触发），
-   * 从实际运行的二进制路径提取加速引擎并记忆最佳可用引擎。
-   */
-  private setupServiceStartedListener(): void {
-    if (this.isListenerSetup) return
-
-    const attach = () => {
-      if (this.isListenerSetup) return
-      try {
-        const serverService = LlamaServerService.getInstance()
-        if (serverService && typeof (serverService as any).on === 'function') {
-          this.isListenerSetup = true
-          ;(serverService as any).on('service-started', (startedProcess: any) => {
-            try {
-              const binaryPath = startedProcess?.config?.binaryPath
-              if (!binaryPath || binaryPath === 'external') return
-              this.recordVerifiedAccelerationFromBinaryPath(binaryPath)
-            } catch (err) {
-              logger.warn(
-                LogCategory.AI_SERVICE,
-                '服务启动时记录最佳可用引擎发生异常（不影响主流程）:',
-                err
-              )
-            }
-          })
-        }
-      } catch (err) {
-        logger.warn(LogCategory.AI_SERVICE, '注册服务启动事件监听失败:', err)
-      }
-    }
-
-    // 延迟到事件循环下一刻度执行，避免模块加载时的 TDZ 问题
-    if (typeof setImmediate === 'function') {
-      setImmediate(attach)
-    } else {
-      setTimeout(attach, 0)
-    }
-  }
-
   /**
    * 记录一次成功的 AI 推理所用的加速引擎
    *
-   * 推理成功意味着服务处于运行状态（hello 校验必然已经通过），因此从当前运行进程的
-   * 二进制路径提取实际加速引擎进行记忆，而非读取部署期静态选定的引擎。
+   * 推理成功意味着服务处于运行状态（hello 校验必然已经通过），因此从外部 Tier 2 引擎
+   * 上报的运行状态中提取实际加速引擎进行记忆，而非读取部署期静态选定的引擎。
    * 仅本地 llama.cpp 引擎参与记忆（云端模式 / ollama / llamafile 无硬件加速引擎概念）。
    * 只有当当前引擎等级严格高于已记忆的最佳引擎等级时才升级记忆。
    * 写入失败不影响主流程（AI 推理结果不受影响）。
@@ -80,9 +34,10 @@ export class AccelerationMemoryService {
   recordSuccessfulInferenceAcceleration(): string | null {
     try {
       const serverService = LlamaServerService.getInstance()
-      const binaryPath = serverService.getProcessInfo()?.config?.binaryPath
-      if (!binaryPath || binaryPath === 'external') return null
-      return this.recordVerifiedAccelerationFromBinaryPath(binaryPath)
+      const engineStatus = serverService.getExternalEngineStatus?.()
+      const backend = engineStatus?.backend || engineStatus?.active_backend
+      if (!backend) return null
+      return this.recordVerifiedAccelerationFromBackend(backend)
     } catch (err) {
       logger.warn(LogCategory.AI_SERVICE, '记录最佳可用引擎时发生异常（不影响主流程）:', err)
       return null
@@ -90,12 +45,12 @@ export class AccelerationMemoryService {
   }
 
   /**
-   * 从实际运行的二进制路径中提取加速引擎并记忆最佳可用引擎
+   * 从实际运行的加速后端描述中提取加速引擎并记忆最佳可用引擎
    *
-   * @param binaryPath 实际运行的二进制文件路径（来自进程信息或服务启动事件）
+   * @param backend 引擎状态上报的运行后端（如 "cuda"、"Vulkan"、"NVIDIA(cpu)"）
    * @returns 若成功升级记忆则返回新记忆的引擎名，否则返回 null
    */
-  private recordVerifiedAccelerationFromBinaryPath(binaryPath: string): string | null {
+  private recordVerifiedAccelerationFromBackend(backend: string): string | null {
     try {
       const config = ConfigOrchestrator.getInstance()
       const aiServiceMode = config.getValue<string>('AI_SERVICE_MODE')
@@ -104,7 +59,7 @@ export class AccelerationMemoryService {
       // 仅本地 llama.cpp 引擎存在硬件加速引擎概念
       if (aiServiceMode !== 'local' || aiEngine !== 'llama.cpp') return null
 
-      const currentAcc = extractAccelerationFromBinaryPath(binaryPath)
+      const currentAcc = extractAccelerationFromBackendDisplay(backend)
       if (!currentAcc) return null
 
       const bestAcc = config.getValue<string>('BEST_ACCELERATION') || 'auto'
@@ -124,7 +79,7 @@ export class AccelerationMemoryService {
 
       logger.info(
         LogCategory.AI_SERVICE,
-        `成功记录最佳可用硬件加速引擎: ${bestAcc} -> ${currentAcc}（实际运行二进制: ${binaryPath}）`
+        `成功记录最佳可用硬件加速引擎: ${bestAcc} -> ${currentAcc}（引擎上报后端: ${backend}）`
       )
       return currentAcc
     } catch (err) {
