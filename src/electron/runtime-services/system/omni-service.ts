@@ -102,6 +102,8 @@ export interface OmniTagChainItem {
   tag?: string
   logic_pan_dimension?: string
   parent_codes?: string[]
+  /** 打标引擎来源 (WP2a): clip | ram | physical | mutual_group | ocr | nsfw | quality | rule */
+  engine?: string
 }
 
 export interface OmniResolveParentRequest {

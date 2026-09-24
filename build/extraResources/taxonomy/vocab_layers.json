@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "comment": "CLIP 视觉词表分层黑名单 sidecar (WP4, image-tag-quality-governance-spec §3 WP4)。运行时 Omni 引擎优先加载本文件，缺失时回退内置同源默认。layers.non_visual: 非视觉属性词（文本/文件/分辨率/版本语义），严禁 CLIP 视觉检索输出。layers.level3_conditional_or_physical: 三级条件细分与物理确定性标签（依赖门禁/专职模型裁决，严禁 CLIP 语义点积越权泛化）。zh/en 双语同等保护，摆脱运行时 is_zh 分支限制。",
+  "layers": {
+    "non_visual": {
+      "zh": [
+        "文本", "文档", "电子书", "压缩包", "加密压缩包", "源代码", "程序", "字体", "系统文件",
+        "数据库", "磁盘映像", "应用数据", "表格", "纯文本", "标记文档", "日志文件",
+        "配置文件", "差异文件", "字幕", "快捷方式", "播放列表", "注册表", "帮助文档",
+        "Office", "Word文档", "演示文稿", "WPS文档",
+        "流畅360P", "标清480P", "高清720P", "超清1080P", "4K超高清", "8K超高清", "2K",
+        "绿色版", "破解版", "安装包", "镜像", "免安装版", "原画", "修改版", "汉化版", "已归档",
+        "txt", "gif", "flv", "f95"
+      ],
+      "en": [
+        "text", "document", "ebook", "archive", "encrypted archive", "source code", "program",
+        "font", "system file", "database", "disk image", "application data", "spreadsheet",
+        "plain text", "markdown document", "log file", "config file", "diff file", "subtitle",
+        "shortcut", "playlist", "registry", "help document",
+        "Office", "Word document", "presentation", "WPS document",
+        "360p", "480p", "720p", "1080p", "4K", "8K", "2K",
+        "full version", "cracked", "installer", "image file", "portable", "original", "modified",
+        "translated", "archived",
+        "txt", "gif", "flv", "f95"
+      ]
+    },
+    "level3_conditional_or_physical": {
+      "zh": [
+        "断头斩首", "肢解碎尸", "血腥虐杀", "尸体残骸", "酷刑折磨", "血肉模糊", "重口猎奇", "暴恐惨案", "自残放血",
+        "露骨性行为", "自慰高潮", "调教拘束", "偷拍窥视", "违背意愿", "擦边诱惑", "暴露走光", "情色文娱",
+        "黑白", "全彩", "有字图", "无字图",
+        "证照", "身份证", "房产证", "护照", "驾驶证", "行驶证", "车牌", "银行卡", "营业执照", "户口本", "毕业证", "学位证", "工作证", "结婚证", "社保卡",
+        "合同票据", "合同", "发票", "红头文件", "论文", "收据", "对账单", "银行回单", "采购订单", "报销凭证", "保函协议", "投标文件",
+        "医学影像",
+        "表情包",
+        "网页长截图", "UI界面截图", "代码截图", "游戏截图", "支付凭证截图", "系统报错截图", "社交动态截图",
+        "影视视频截图", "文档截图", "地图导航截图", "终端控制台截图", "订单物流截图", "桌面全屏截图",
+        "条漫", "页漫", "四格漫"
+      ],
+      "en": [
+        "beheading", "dismemberment", "gruesome killing", "corpse remains", "torture",
+        "bloodied body", "extreme gore", "terror attack", "self-harm bleeding",
+        "explicit sexual act", "masturbation", "bondage", "voyeurism", "non-consensual",
+        "suggestive", "wardrobe malfunction", "erotic entertainment",
+        "black and white", "full color", "text image", "no text image",
+        "certificate", "ID card", "property deed", "passport", "driver license",
+        "vehicle plate", "bank card", "business license", "household book",
+        "diploma", "degree certificate", "work ID", "marriage certificate", "social security card",
+        "bill receipt", "contract", "invoice", "official document", "paper", "receipt",
+        "statement", "bank slip", "purchase order", "expense voucher", "guarantee agreement",
+        "bid document",
+        "medical image",
+        "sticker",
+        "long screenshot", "UI screenshot", "code screenshot", "game screenshot",
+        "payment screenshot", "error screenshot", "social post screenshot",
+        "video screenshot", "document screenshot", "map screenshot",
+        "terminal screenshot", "order tracking screenshot", "fullscreen screenshot",
+        "4-panel comic", "page manga", "webtoon"
+      ]
+    }
+  }
+}
