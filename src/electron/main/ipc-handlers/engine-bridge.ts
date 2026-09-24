@@ -21,10 +21,13 @@ export function registerEngineBridgeIPCHandlers() {
     return ok
   })
 
-  ipcMain.handle('engine-bridge/open-ui', async () => {
-    logger.info(LogCategory.IPC, '[IPC] 收到打开引擎管理面板请求')
-    return engineBridgeService.openUI()
-  })
+  ipcMain.handle(
+    'engine-bridge/open-ui',
+    async (_event, options?: { panel?: 'error' | 'logs' | 'default' }) => {
+      logger.info(LogCategory.IPC, '[IPC] 收到打开引擎管理面板请求', options)
+      return engineBridgeService.openUI(options)
+    }
+  )
 
   ipcMain.handle('engine-bridge/shutdown', async () => {
     logger.info(LogCategory.IPC, '[IPC] 收到关闭 Tier 2 引擎请求')

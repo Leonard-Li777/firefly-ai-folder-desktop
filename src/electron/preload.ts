@@ -210,8 +210,10 @@ const electronAPI = {
     getExeInfo: (): Promise<{ available: boolean; path: string | null; devMode: boolean }> =>
       ipcRenderer.invoke('engine-bridge/get-exe-info'),
     start: (): Promise<boolean> => ipcRenderer.invoke('engine-bridge/start'),
-    openUI: (): Promise<{ ok: boolean; error?: string }> =>
-      ipcRenderer.invoke('engine-bridge/open-ui'),
+    openUI: (options?: {
+      panel?: 'error' | 'logs' | 'default'
+    }): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke('engine-bridge/open-ui', options),
     shutdown: (): Promise<{ ok: boolean }> => ipcRenderer.invoke('engine-bridge/shutdown'),
     onStatusChanged: (callback: (payload: EngineBridgeSnapshot) => void) => {
       const handler = (_event: Electron.IpcRendererEvent, payload: EngineBridgeSnapshot) => callback(payload)
