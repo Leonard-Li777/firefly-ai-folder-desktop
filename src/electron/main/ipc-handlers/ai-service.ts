@@ -3,8 +3,8 @@ import { LlamaIndexAIService, llamaServerService } from '@firefly/electron-llama
 import { AIServiceStatus, StartupPhase } from '@firefly/types'
 import { logger, LogCategory, isTestEnvironment, shouldSkipAIServiceInTest } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
-import { llamaEngineService } from '../../runtime-services/llama/llama-engine-service'
-import { gpuDriverComplianceService } from '../../runtime-services/llama/gpu-driver-compliance-service'
+// 注：llamaEngineService / gpuDriverComplianceService 已随本地引擎部署链清退移除；
+// 加速后端选择与驱动合规检查改由 Tier 2 引擎（firefly-ai-engine）端负责。
 import { deploymentIntegrityVerifier } from '../../runtime-services/llama/deployment-integrity-verifier'
 import { databaseService } from '../../runtime-services/database/database-service'
 import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
@@ -238,28 +238,15 @@ export function registerAIServiceIPCHandlers() {
     }
   })
 
-  ipcMain.handle('ai-service/check-driver-compliance', async () => {
-    return await gpuDriverComplianceService.checkCompliance()
-  })
+  // 旧驱动合规检查 IPC（check-driver-compliance / get-driver-update-url /
+  // switch-to-compatible-mode / switch-to-high-performance-mode）已随本地引擎部署链
+  // 清退移除：GPU 驱动合规与后端选择由 Tier 2 引擎端管理。
 
   ipcMain.handle('ai-service/check-package-integrity', async () => {
     return deploymentIntegrityVerifier.getFailedPackageNames()
   })
 
-  ipcMain.handle('ai-service/get-driver-update-url', async () => {
-    return await gpuDriverComplianceService.getDriverUpdateUrl()
-  })
-
-  ipcMain.handle('ai-service/switch-to-compatible-mode', async () => {
-    return await gpuDriverComplianceService.switchToCompatibleMode()
-  })
-
-  ipcMain.handle('ai-service/switch-to-high-performance-mode', async () => {
-    return await gpuDriverComplianceService.switchToHighPerformanceMode()
-  })
-
   // 缓存上次的 get-ai-status 结果，避免前端轮询时重复检测
-  // 提升到 switch-acceleration-backend 之前，使切换后能清除此缓存
   let lastGetAIStatusCache: {
     result: any
     timestamp: number
@@ -282,33 +269,8 @@ export function registerAIServiceIPCHandlers() {
     }
   })
 
-  ipcMain.handle('ai-service/switch-acceleration-backend', async (_event, backend: string) => {
-    const result = await gpuDriverComplianceService.switchAccelerationBackend(backend)
-    // 切换加速后端后清除 get-ai-status 缓存，确保前端下次获取能拿到新 backend 值
-    lastGetAIStatusCache = null
-    clearEnrichCache()
-    // 主动广播最新状态给所有窗口，确保 Footer（useModelStore）能立即更新，
-    // 不依赖引擎重启后才触发的 onStatusChanged 事件
-    try {
-      if (globalLlamaIndexService) {
-        const info = await globalLlamaIndexService.getCurrentModelInfo()
-        const adapter = createModelCapabilityAdapter()
-        const caps = await adapter.getCapabilities()
-        info.capabilities = caps
-        if (caps.modelName) info.modelName = caps.modelName
-        if (caps.provider) info.provider = caps.provider
-        const enrichedInfo = await enrichAIStatus(info)
-        BrowserWindow.getAllWindows().forEach(win => {
-          if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
-            win.webContents.send('ai-model-status-changed', enrichedInfo)
-          }
-        })
-      }
-    } catch (e) {
-      logger.warn(LogCategory.MAIN, '[switch-acceleration-backend] 广播状态更新失败:', e)
-    }
-    return result
-  })
+  // 旧 'ai-service/switch-acceleration-backend' IPC 已移除：
+  // 加速后端切换归 Tier 2 引擎所有（经引擎自身界面 /api/engine/open-ui 完成）。
 
   ipcMain.handle('get-ai-status', async () => {
     try {

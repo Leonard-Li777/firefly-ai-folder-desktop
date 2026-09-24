@@ -12,10 +12,7 @@ import { cloudAnalysisService } from '@firefly/server'
 import { userTierService } from '../../runtime-services/user-tier/user-tier-service'
 import { invitationService } from '../../runtime-services/invitation/invitation-service'
 import { libreOfficeDetector } from '../../runtime-services/system/libreoffice-detector'
-import {
-  ModelDownloadManagerIPCHandler,
-  registerFfmpegIpcHandlers
-} from '../../runtime-services/ipc'
+import { registerFfmpegIpcHandlers } from '../../runtime-services/ipc'
 import { t } from '@app/languages'
 import { coreEngine, fileCleanupService } from '../state'
 import { initializeHardwareDetection as initializeHardwareDetectionFn } from '../initialization'
@@ -630,13 +627,6 @@ export function registerMiscIPCHandlers() {
 
   // 本地推理引擎已外置为 Tier 2 独立应用（firefly-ai-engine），
   // 引擎状态由 engine-bridge IPC（engine-bridge/*）暴露给渲染层。
-
-  try {
-    ModelDownloadManagerIPCHandler.getInstance()
-    logger.info(LogCategory.MAIN, '[IPC] 模型下载管理 IPC 处理程序注册完成')
-  } catch (error: any) {
-    logger.error(LogCategory.MAIN, '[IPC] 模型下载管理 IPC 处理程序注册失败:', error)
-  }
 
   if (!app.isPackaged || process.env.IS_INTEGRATION_TEST === 'true' || process.env.IS_E2E_TEST === 'true') {
     logger.info(LogCategory.MAIN, '[IPC] 注册数据库直连 IPC 处理程序 (开发/测试模式)')

@@ -527,17 +527,8 @@ export const AIModelSettings: React.FC = () => {
     }
   }
 
-  const handleHighPerformanceMode = async () => {
-    setIsGpuSwitching(true)
-    try {
-      await window.electronAPI.aiService.switchToHighPerformanceMode()
-      await loadModelsAndHardware(true)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setIsGpuSwitching(false)
-    }
-  }
+  // 旧 handleHighPerformanceMode（ai-service/switch-to-high-performance-mode）已随
+  // 本地引擎部署链清退：高性能/兼容切换归 Tier 2 引擎端管理。
 
   const isCloudMode = aiServiceMode === 'cloud'
   const isOllama = aiEngine === 'ollama'
@@ -547,24 +538,8 @@ export const AIModelSettings: React.FC = () => {
       try {
         setLoading(true)
 
-        // 如果当前没有活跃下载 ID，尝试从后台获取正在运行的任务
-        if (!activeDownloadId) {
-          try {
-            const tasks = await window.electronAPI!.modelDownload.getAllTasks()
-            if (tasks && tasks.length > 0) {
-              // 找到第一个正在下载或等待的任务
-              const activeTask = tasks.find((task: any) =>
-                ['downloading', 'pending', 'retrying'].includes(task.status)
-              )
-              if (activeTask) {
-                console.log('[AIModelSettings] 自动检测到活跃任务:', activeTask.modelId)
-                setActiveDownloadId(activeTask.modelId)
-              }
-            }
-          } catch (e) {
-            console.error('[AIModelSettings] 获取后台任务失败:', e)
-          }
-        }
+        // 本地模型下载任务（model-download-manager）已外置到 Tier 2 引擎，
+        // 桌面端不再轮询后台下载任务恢复 activeDownloadId。
 
         // 如果需要强制重新检测硬件（针对 llama.cpp 引擎热替换）
         if (forceRedetect && !isOllama && !isCloudMode) {
@@ -576,14 +551,15 @@ export const AIModelSettings: React.FC = () => {
         setHardwareInfo(hw)
 
         // 根据平台条件性获取模型列表
-        // 恢复引擎过滤逻辑：llama.cpp/llamafile 模式显示本地模型，Ollama 模式显示 Ollama 模型
+        // Ollama 内置推理已清退（PRD-0042）：残留 AI_ENGINE=ollama 时不再调用
+        // 已删除的 ollama:get-recommended-models，直接按本地 Tier 2 路径取列表。
         let llamaModels: any[] = []
         let ollamaModels: any[] = []
 
         if (isOllama) {
-          // Ollama 模式：获取 Ollama 推荐模型列表
-          const ollamaResult = await window.electronAPI!.ollama.getRecommendedModels()
-          ollamaModels = ollamaResult?.models || []
+          // 残留 ollama 分支：推荐模型列表已随 ollama-ipc-handler 清退，置空避免 IPC 炸弹
+          ollamaModels = []
+          logger.warn(LogCategory.RENDERER, '[AIModelSettings] 残留 AI_ENGINE=ollama，跳过 ollama 推荐模型列表（IPC 已清退）')
         } else {
           // llama.cpp / llamafile 模式：快速获取本地模型列表（跳过存在性检测）
           llamaModels = await window.electronAPI!.listModelsFast()

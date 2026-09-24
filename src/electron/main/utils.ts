@@ -6,7 +6,7 @@ import { ConfigOrchestrator } from '../config/config-orchestrator'
 import { LlamaModelManager } from '../runtime-services'
 import { LicenseService, LicenseStatus } from '../runtime-services/system/license-service'
 import { unifiedModelManager } from '../runtime-services/llama/unified-model-manager'
-import { llamaEngineService } from '../runtime-services/llama/llama-engine-service'
+import { engineBridgeService } from '../runtime-services/engine-bridge'
 import * as path from 'path'
 import { activeHardwareBackendCache, setActiveHardwareBackendCache } from './state'
 
@@ -44,6 +44,24 @@ try {
   })
 } catch (e) {
   logger.warn(LogCategory.MAIN, '[enrichAIStatus] 绑定配置变更监听失败:', e)
+}
+
+// Tier 2 引擎上报 backend 变化（上线/切换 vulkan/cpu 等）时失效硬件后端缓存，
+// 避免 Footer/`getActiveHardwareBackend` 在下次配置变更前一直显示离线时的旧值。
+try {
+  let lastTier2Backend: string | null = null
+  engineBridgeService.subscribe(snapshot => {
+    if (snapshot.backend !== lastTier2Backend) {
+      lastTier2Backend = snapshot.backend
+      setActiveHardwareBackendCache(null)
+      logger.debug(
+        LogCategory.MAIN,
+        `[enrichAIStatus] Tier2 backend 变化为 ${snapshot.backend ?? 'null'}，清除硬件后端缓存`
+      )
+    }
+  })
+} catch (e) {
+  logger.warn(LogCategory.MAIN, '[enrichAIStatus] 订阅 Tier2 状态失败:', e)
 }
 
 /**
@@ -103,7 +121,8 @@ export async function getActiveHardwareBackend(): Promise<string> {
     if (isCompatibleMode) {
       tier = 'vulkan'
     } else {
-      const selectedAcc = llamaEngineService.getSelectedAcceleration()
+      // 读取 Tier 2 引擎上报的实际运行后端（引擎离线时为 null，回退硬件最佳层级）
+      const selectedAcc = engineBridgeService.getSnapshot().backend
       tier = selectedAcc || (await hardwareDetectionService.getBestAccelerationTier())
     }
 
@@ -215,7 +234,7 @@ export const enrichAIStatus = async (info: any) => {
       ...info,
       ...cached.data
     }
-    if (!result.backend && result.modelMode === 'local' && result.provider !== 'Ollama') {
+    if (!result.backend && result.modelMode === 'local') {
       try {
         result.backend = await getActiveHardwareBackend()
         cached.data.backend = result.backend
@@ -310,7 +329,7 @@ export const enrichAIStatus = async (info: any) => {
 
   try {
     if (enriched.modelMode === 'local') {
-      // 优化：使用 in-memory config 查找，避免执行 listAllModels 触发的磁盘 I/O 和 Ollama 网络 API
+      // 优化：使用 in-memory config 查找，避免执行 listAllModels 触发的磁盘 I/O
       unifiedModelManager.ensureLoaded()
       const rawModels = unifiedModelManager.getAllModels()
 
@@ -361,10 +380,6 @@ export const enrichAIStatus = async (info: any) => {
         enriched.modelName = model.name
         enriched.vramRequiredGB = vramRequiredGB
         enriched.totalSizeBytes = totalSizeBytes
-
-        if (model.source === 'ollama' || (model as any).ollama) {
-          enriched.provider = 'Ollama'
-        }
       } else {
         logger.warn(
           LogCategory.MAIN,
@@ -377,10 +392,6 @@ export const enrichAIStatus = async (info: any) => {
         .toLowerCase()
         .trim()
       if (providerId) {
-        if (providerId === 'ollama') {
-          enriched.provider = 'Ollama'
-        }
-
         const providers =
           ConfigOrchestrator.getInstance().getValue<any[]>('CLOUD_MODEL_CONFIGS') || []
         const providerPreset = providers.find(
@@ -402,7 +413,7 @@ export const enrichAIStatus = async (info: any) => {
     logger.error(LogCategory.MAIN, '增强 AI 状态失败:', err)
   }
 
-  if (enriched.modelMode === 'local' && enriched.provider !== 'Ollama') {
+  if (enriched.modelMode === 'local') {
     try {
       enriched.backend = await getActiveHardwareBackend()
     } catch (e) {

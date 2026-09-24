@@ -424,21 +424,15 @@ const App: React.FC = () => {
     if (!window.electronAPI) return
     if (startupPhase !== 'ready') return
 
+    // Ollama 状态监听已随 ollama-ipc-handler 清退（PRD-0042）；
+    // model-download-* 事件发送方已删，监听器仅保留无害占位（永远不会触发）。
     const unsubscribeComplete = window.electronAPI.onModelDownloadComplete((payload: any) => {
       logger.info(LogCategory.RENDERER, '收到模型下载完成事件(llama.cpp):', payload)
       handleDownloadComplete({ modelId: payload.modelId, source: payload.source })
     })
 
-    const unsubscribeOllamaStatus = window.electronAPI.onOllamaModelStatusChanged((data: any) => {
-      if (data.status === 'downloaded') {
-        logger.info(LogCategory.RENDERER, '收到模型下载完成事件(Ollama):', data)
-        handleDownloadComplete({ modelId: data.modelId, source: 'ollama' })
-      }
-    })
-
     return () => {
       unsubscribeComplete()
-      unsubscribeOllamaStatus()
     }
   }, [startupPhase, handleDownloadComplete])
 
@@ -495,24 +489,15 @@ const App: React.FC = () => {
           languageConfirmed
         )
 
-        // 只有在本地模式下才检查模型下载状态
+        // 本地模型下载/存在性由 Tier 2 引擎端负责（PRD-0042 零过渡）：
+        // 桌面端不再调用已删除的 modelDownload / ollama IPC，避免无 handler 时
+        // catch 强制 setStartupPhase('config') 造成每次启动误入配置阶段。
+        // 引擎是否就绪已在 startup/get-flags 探活把关；此处仅需有已选模型即可继续。
         if (aiServiceMode === 'local' && selectedModelId) {
-          const aiEngine = config.aiEngine || 'llama.cpp'
-
-          if (aiEngine === 'ollama') {
-            // Ollama 平台检查
-            const result = await window.electronAPI!.ollama.checkModel(selectedModelId)
-            hasDownloadedModel = result.installed
-          } else {
-            // llama.cpp 平台检查
-            const status =
-              await window.electronAPI!.modelDownload.checkDownloadStatus(selectedModelId)
-            hasDownloadedModel = status.isDownloaded
-          }
-
-          logger.info(LogCategory.RENDERER, `检查本地模型下载状态 (${aiEngine}):`, {
+          hasDownloadedModel = true
+          logger.info(LogCategory.RENDERER, '本地模式已选模型，跳过桌面端下载态 IPC 检查:', {
             modelId: selectedModelId,
-            isDownloaded: hasDownloadedModel
+            aiEngine: config.aiEngine || 'llama.cpp'
           })
         } else if (aiServiceMode === 'cloud') {
           // 云端模式下，只要有选中的模型ID，就认为“已就绪”

@@ -32,11 +32,7 @@ import type {
 } from '@firefly/types/config-types'
 import type { ConfigDbManager } from '../runtime-services/config/config-db-manager'
 import { defaultUnifiedConfig } from './config.default'
-import {
-  AIServiceConfigManager,
-  llamaModelManager,
-  modelDownloadManager
-} from '@firefly/electron-llamaIndex-service'
+import { AIServiceConfigManager, llamaModelManager } from '@firefly/electron-llamaIndex-service'
 import type { AIServiceConfig } from '@firefly/types/ai-config-types'
 
 interface UpdateOptions {
@@ -222,10 +218,6 @@ export class ConfigOrchestrator extends EventEmitter {
       const selectedModelId = aiConfig.local.modelId
 
       try {
-        // 增强下载状态
-        const status = await modelDownloadManager.checkModelDownloadStatus(selectedModelId)
-        ;(aiConfig.local as any).isModelDownloaded = status.isDownloaded
-
         // 增强多模态路径
         if (!aiConfig.local.mmprojPath) {
           const multiModalConfig = await llamaModelManager.getMultiModalModelConfig(selectedModelId)

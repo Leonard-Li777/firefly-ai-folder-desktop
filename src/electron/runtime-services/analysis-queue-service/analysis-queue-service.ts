@@ -40,7 +40,7 @@ import { AnalysisStatsCollector } from './analysis-stats-collector'
 import { DirectoryProcessor } from './directory-processor'
 import { FileProcessor, getFileStageFromDB, getFileAnalysisStateFromDB } from './file-processor'
 import path from 'node:path'
-import { llamaEngineService } from '../llama/llama-engine-service'
+import { engineBridgeService } from '../engine-bridge'
 
 class StageNotifier {
   private resolvers = new Map<number, () => void>()
@@ -339,11 +339,14 @@ export class AnalysisQueueService {
         const isForceCpu = config.getValue<boolean>('AI_ENGINE_FORCE_CPU_MODE') ?? false
         const aiServiceMode = config.getValue<string>('AI_SERVICE_MODE') ?? 'local'
         const savedAcc = config.getValue<string>('SELECTED_ACCELERATION')
-        const currentEngineAcc = llamaEngineService.getSelectedAcceleration()
+        // Tier 2 引擎在线时读取其上报的实际运行后端，离线时回退配置值
+        const currentEngineAcc = engineBridgeService.getSnapshot().backend
         const selectedAcc = (currentEngineAcc || (savedAcc && savedAcc !== 'auto' ? savedAcc : '') || 'vulkan').toLowerCase()
 
-        // 仅在明确处于 CPU 引擎模式时串行；非 CPU 引擎（GPU/云端/Ollama/vulkan/cuda等）均启用并行
-        const isCpuEngine = aiServiceMode === 'local' && (isForceCpu || selectedAcc === 'cpu')
+        // 仅在明确处于 CPU 引擎模式时串行；非 CPU 引擎（GPU/云端/vulkan/cuda 等）均启用并行
+        // 引擎可能上报 "CPU (AVX2)" / "cpu-avx2" 等变体，用前缀匹配避免全等漏判
+        const isCpuEngine =
+          aiServiceMode === 'local' && (isForceCpu || selectedAcc === 'cpu' || selectedAcc.startsWith('cpu'))
 
         // 统一走 analysis-mode 模块解析，避免与 file-processor / DAO 的口径漂移
         const analysisMode = resolveAnalysisMode()

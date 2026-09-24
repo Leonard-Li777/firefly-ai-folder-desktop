@@ -190,18 +190,11 @@ const electronAPI = {
       ipcRenderer.invoke('ai-service/on-model-changed', modelId),
     setConfigReloadSuspended: (suspended: boolean): Promise<void> =>
       ipcRenderer.invoke('ai-service/set-config-reload-suspended', suspended),
-    checkDriverCompliance: (): Promise<any> =>
-      ipcRenderer.invoke('ai-service/check-driver-compliance'),
     checkPackageIntegrity: (): Promise<string[]> =>
-      ipcRenderer.invoke('ai-service/check-package-integrity'),
-    getDriverUpdateUrl: (): Promise<string | null> =>
-      ipcRenderer.invoke('ai-service/get-driver-update-url'),
-    switchToCompatibleMode: (): Promise<void> =>
-      ipcRenderer.invoke('ai-service/switch-to-compatible-mode'),
-    switchToHighPerformanceMode: (): Promise<void> =>
-      ipcRenderer.invoke('ai-service/switch-to-high-performance-mode'),
-    switchAccelerationBackend: (backend: string): Promise<void> =>
-      ipcRenderer.invoke('ai-service/switch-acceleration-backend', backend)
+      ipcRenderer.invoke('ai-service/check-package-integrity')
+    // 驱动合规/高性能切换/加速后端 IPC 已随本地引擎部署链清退（主进程 handler 已删）：
+    // checkDriverCompliance / getDriverUpdateUrl / switchToCompatibleMode /
+    // switchToHighPerformanceMode / switchAccelerationBackend — 归 Tier 2 引擎端管理。
   },
 
   // 引擎桥接 (Tier 2 上层 AI 引擎监控与指令)
@@ -211,7 +204,7 @@ const electronAPI = {
       ipcRenderer.invoke('engine-bridge/get-exe-info'),
     start: (): Promise<boolean> => ipcRenderer.invoke('engine-bridge/start'),
     openUI: (options?: {
-      panel?: 'error' | 'logs' | 'default'
+      panel?: 'error' | 'logs' | 'models' | 'default'
     }): Promise<{ ok: boolean; error?: string }> =>
       ipcRenderer.invoke('engine-bridge/open-ui', options),
     shutdown: (): Promise<{ ok: boolean }> => ipcRenderer.invoke('engine-bridge/shutdown'),
@@ -1157,250 +1150,11 @@ const electronAPI = {
     }
   },
 
-  // 本地模型下载管理相关
-  modelDownload: {
-    // 检查模型下载状态
-    checkDownloadStatus: async (
-      modelId: string,
-      source?: string
-    ): Promise<{
-      isDownloaded: boolean
-      hasPartialFiles: boolean
-      downloadProgress: number
-      missingFiles: string[]
-      existingFiles: Array<{ name: string; size: number; expectedSize: number }>
-    }> => {
-      const result = await ipcRenderer.invoke(
-        'model-download-manager:check-status',
-        modelId,
-        source
-      )
-      if (result.success) return result.data
-      throw new Error(result.error || 'Unknown error')
-    },
+  // 本地模型下载 IPC（model-download-manager:*）已随内置推理链清退：
+  // 模型下载/部署归 Tier 2 firefly-ai-engine，桌面端仅经 engineBridge 探活与引导配置。
 
-    // 开始下载模型
-    startDownload: async (
-      modelId: string,
-      options?: {
-        autoRetry?: boolean
-        retryAttempts?: number
-        source?: string
-      }
-    ) => {
-      const result = await ipcRenderer.invoke(
-        'model-download-manager:start-download',
-        modelId,
-        options
-      )
-      if (result.success) return result.data
-      throw new Error(result.error || 'Unknown error')
-    },
-
-    // 取消下载
-    cancelDownload: async (taskId: string): Promise<void> => {
-      const result = await ipcRenderer.invoke('model-download-manager:cancel-download', taskId)
-      if (!result.success) throw new Error(result.error || 'Unknown error')
-    },
-
-    // 暂停下载
-    pauseDownload: async (taskId: string): Promise<void> => {
-      const result = await ipcRenderer.invoke('model-download-manager:pause-download', taskId)
-      if (!result.success) throw new Error(result.error || 'Unknown error')
-    },
-
-    // 恢复下载
-    resumeDownload: async (taskId: string): Promise<void> => {
-      const result = await ipcRenderer.invoke('model-download-manager:resume-download', taskId)
-      if (!result.success) throw new Error(result.error || 'Unknown error')
-    },
-
-    // 获取任务状态
-    getTaskStatus: async (taskId: string) => {
-      const result = await ipcRenderer.invoke('model-download-manager:get-task-status', taskId)
-      if (result.success) return result.data
-      throw new Error(result.error || 'Unknown error')
-    },
-
-    // 获取模型的任务状态
-    getModelTask: async (modelId: string, source?: string) => {
-      const result = await ipcRenderer.invoke(
-        'model-download-manager:get-model-task',
-        modelId,
-        source
-      )
-      if (result.success) return result.data
-      throw new Error(result.error || 'Unknown error')
-    },
-
-    // 检查模型是否正在下载
-    isDownloading: async (modelId: string, source?: string): Promise<boolean> => {
-      const result = await ipcRenderer.invoke(
-        'model-download-manager:is-downloading',
-        modelId,
-        source
-      )
-      if (result.success) return result.data
-      throw new Error(result.error || 'Unknown error')
-    },
-
-    // 获取所有活跃任务
-    getAllTasks: async () => {
-      const result = await ipcRenderer.invoke('model-download-manager:get-all-tasks')
-      if (result.success) return result.data
-      throw new Error(result.error || 'Unknown error')
-    }
-  },
-
-  // Ollama 相关 API
-  ollama: {
-    // 检查 Ollama 安装状态
-    checkInstallation: async (): Promise<{
-      installed: boolean
-      version?: string
-      error?: string
-    }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:check-installation')
-        return result
-      } catch (error) {
-        return {
-          installed: false,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      }
-    },
-
-    // 安装 Ollama
-    install: async (): Promise<{ success: boolean; error?: string }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:install')
-        return result
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      }
-    },
-
-    // 取消安装 Ollama
-    cancelInstall: async (): Promise<{ success: boolean; error?: string }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:cancel-install')
-        return result
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      }
-    },
-
-    // 获取 Ollama 状态
-    getStatus: async (): Promise<{ status: string; version?: string }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:get-status')
-        return result
-      } catch (error) {
-        return { status: 'error' }
-      }
-    },
-
-    // 检查是否需要 Ollama 设置
-    needsSetup: async (): Promise<{ needsSetup: boolean; error?: string }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:needs-setup')
-        return result
-      } catch (error) {
-        return {
-          needsSetup: false,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      }
-    },
-
-    // 拉取模型
-    pullModel: async (modelId: string): Promise<{ success: boolean; error?: string }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:pull-model', modelId)
-        return result
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      }
-    },
-
-    // 检查模型是否已安装
-    checkModel: async (modelId: string): Promise<{ installed: boolean; error?: string }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:check-model', modelId)
-        return result
-      } catch (error) {
-        return {
-          installed: false,
-          error: error instanceof Error ? error.message : String(error)
-        }
-      }
-    },
-
-    // 获取已安装的模型列表
-    listModels: async (): Promise<{ models: string[]; error?: string }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:list-models')
-        return result
-      } catch (error) {
-        return {
-          models: [],
-          error: error instanceof Error ? error.message : String(error)
-        }
-      }
-    },
-
-    // 获取推荐的模型列表
-    getRecommendedModels: async (): Promise<{ models: any[] }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:get-recommended-models')
-        return result
-      } catch (error) {
-        return { models: [] }
-      }
-    },
-
-    // 打开 Ollama 官网
-    openWebsite: async (): Promise<{ success: boolean }> => {
-      try {
-        const result = await ipcRenderer.invoke('ollama:open-website')
-        return result
-      } catch (error) {
-        return { success: false }
-      }
-    },
-
-    // 重启应用以使安装生效
-    relaunch: async (): Promise<void> => {
-      await ipcRenderer.invoke('ollama:relaunch')
-    },
-
-    // 退出应用
-    exit: async (): Promise<void> => {
-      await ipcRenderer.invoke('ollama:exit')
-    },
-
-    // 获取当前下载镜像
-    getDownloadMirror: async (): Promise<'cn' | 'global'> => {
-      return await ipcRenderer.invoke('ollama:get-download-mirror')
-    },
-
-    // 监听镜像同步事件
-    onMirrorSync: (callback: (mirror: 'cn' | 'global') => void) => {
-      const handler = (_event: any, mirror: 'cn' | 'global') => callback(mirror)
-      ipcRenderer.on('ollama:mirror-sync', handler)
-      return () => ipcRenderer.removeListener('ollama:mirror-sync', handler)
-    }
-  },
+  // Ollama 内置推理 IPC（ollama:*）已随 PRD-0042 清退（主进程 ollama-ipc-handler 已删）：
+  // 残留 AI_ENGINE=ollama 配置由 startup/get-flags 强制回落为 llama.cpp（Tier 2 桥接）。
 
   // FFmpeg 相关 API
   /*
@@ -1424,43 +1178,9 @@ const electronAPI = {
   },
   */
 
-  // Ollama 事件监听器
-  onOllamaInstallProgress: (callback: (data: { message: string }) => void) => {
-    const handler = (_event: any, payload: { message: string }) => callback(payload)
-    ipcRenderer.on('ollama:install-progress', handler)
-    return () => ipcRenderer.removeListener('ollama:install-progress', handler)
-  },
-
-  onOllamaInstallComplete: (callback: () => void) => {
-    const handler = () => callback()
-    ipcRenderer.on('ollama:install-complete', handler)
-    return () => ipcRenderer.removeListener('ollama:install-complete', handler)
-  },
-
-  onOllamaInstallError: (callback: (data: { error: string }) => void) => {
-    const handler = (_event: any, payload: { error: string }) => callback(payload)
-    ipcRenderer.on('ollama:install-error', handler)
-    return () => ipcRenderer.removeListener('ollama:install-error', handler)
-  },
-
-  onOllamaStatusChanged: (callback: (data: { status: string }) => void) => {
-    const handler = (_event: any, payload: { status: string }) => callback(payload)
-    ipcRenderer.on('ollama:status-changed', handler)
-    return () => ipcRenderer.removeListener('ollama:status-changed', handler)
-  },
-
-  onOllamaModelStatusChanged: (callback: (data: { modelId: string; status: string }) => void) => {
-    const handler = (_event: any, payload: { modelId: string; status: string }) => callback(payload)
-    ipcRenderer.on('ollama:model-status-changed', handler)
-    return () => ipcRenderer.removeListener('ollama:model-status-changed', handler)
-  },
-
-  onOllamaModelProgress: (callback: (data: { modelId: string; message: string }) => void) => {
-    const handler = (_event: any, payload: { modelId: string; message: string }) =>
-      callback(payload)
-    ipcRenderer.on('model-progress', handler)
-    return () => ipcRenderer.removeListener('model-progress', handler)
-  },
+  // Ollama 事件监听器已随 ollama-ipc-handler 清退（PRD-0042）：
+  // onOllamaInstallProgress / onOllamaInstallComplete / onOllamaInstallError /
+  // onOllamaStatusChanged / onOllamaModelStatusChanged / onOllamaModelProgress。
 
   onApplyOrganizePlan: (
     callback: (payload: { name: string; strategy: string; perspective?: string }) => void

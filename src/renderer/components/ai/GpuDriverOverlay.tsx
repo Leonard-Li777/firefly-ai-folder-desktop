@@ -28,8 +28,13 @@ export const GpuDriverOverlay: React.FC = () => {
           console.error(e);
         }
       }
-      const url = await window.electronAPI.aiService.getDriverUpdateUrl();
-      setDriverUrl(url);
+      // 驱动下载链接已随本地部署链清退：跳转引擎错误分析面板获取驱动建议
+      try {
+        await window.electronAPI.engineBridge?.openUI?.({ panel: 'error' })
+      } catch (e) {
+        console.error(e);
+      }
+      setDriverUrl(null);
       setIsVisible(true);
     };
 
@@ -48,7 +53,8 @@ export const GpuDriverOverlay: React.FC = () => {
   const handleCompatibleMode = async () => {
     setIsGpuSwitching(true);
     try {
-      await window.electronAPI.aiService.switchToCompatibleMode();
+      // 兼容模式切换已归 Tier 2 引擎端：打开引擎面板由用户在引擎内完成降级
+      await window.electronAPI.engineBridge?.openUI?.({ panel: 'default' });
     } catch (e) {
       console.error(e);
     } finally {

@@ -6,6 +6,59 @@ import { toast } from '../components/common/Toast'
 import { useSettingsStore } from '../stores/settings-store'
 import { captureEvent } from '../lib/posthog'
 
+// PRD-0042：本地模型下载已外置到 Tier 2 引擎，preload 已删除 modelDownload 块。
+// 用本地可选类型访问，保留旧调用点的“接口不可用”降级语义，避免 ElectronAPI 类型断裂。
+type ModelDownloadBridge = {
+  checkDownloadStatus?: (
+    modelId: string,
+    source?: string
+  ) => Promise<{
+    isDownloaded: boolean
+    hasPartialFiles: boolean
+    downloadProgress: number
+    missingFiles: string[]
+    existingFiles: Array<{ name: string; size: number; expectedSize: number }>
+  }>
+  startDownload?: (
+    modelId: string,
+    options?: { autoRetry?: boolean; source?: string }
+  ) => Promise<{ taskId: string; totalBytes: number }>
+  pauseDownload?: (taskId: string) => Promise<void>
+  resumeDownload?: (taskId: string) => Promise<void>
+  cancelDownload?: (taskId: string) => Promise<void>
+  getTaskStatus?: (taskId: string) => Promise<{
+    status: ModelDownloadState['status'] | 'paused'
+    progress?: number
+    receivedBytes?: number
+    totalBytes?: number
+    speedBps?: number
+    currentFileName?: string
+    fileName?: string
+    fileIndex?: number
+    totalFiles?: number
+    error?: string
+  } | null>
+  getModelTask?: (
+    modelId: string,
+    source?: string
+  ) => Promise<{
+    taskId: string
+    status: ModelDownloadState['status'] | 'paused'
+    progress?: number
+    receivedBytes?: number
+    totalBytes?: number
+    speedBps?: number
+    currentFileName?: string
+    fileName?: string
+    fileIndex?: number
+    totalFiles?: number
+  } | null>
+}
+
+const getModelDownloadBridge = (): ModelDownloadBridge | undefined =>
+  (window.electronAPI as typeof window.electronAPI & { modelDownload?: ModelDownloadBridge })
+    ?.modelDownload
+
 export interface ModelDownloadState {
   isDownloading: boolean
   isPaused: boolean
@@ -147,10 +200,11 @@ export function useModelDownload(
     }
 
     try {
-      if (!window.electronAPI?.modelDownload?.checkDownloadStatus) {
+      const modelDownload = getModelDownloadBridge()
+      if (!modelDownload?.checkDownloadStatus) {
         throw new Error(t('IPC 接口不可用: modelDownload.checkDownloadStatus'))
       }
-      const status = await window.electronAPI.modelDownload.checkDownloadStatus(
+      const status = await modelDownload.checkDownloadStatus(
         modelId,
         sourceRef.current
       )
@@ -213,29 +267,19 @@ export function useModelDownload(
           modelId: finalModelId // 确保状态中的 modelId 同步
         }))
 
-        // Ollama 模式逻辑
+        // Ollama 内置推理已清退（PRD-0042）：残留 AI_ENGINE=ollama 时直接抛错，
+  // 不再调用已删除的 ollama:* IPC（主进程 ollama-ipc-handler 已删）。
         if (isOllama) {
-          if (!window.electronAPI?.ollama?.pullModel) {
-            throw new Error(t('IPC 接口不可用: ollama.pullModel'))
-          }
-
-          // 发送启动通知
-          options.onDownloadStart?.()
-
-          // 开始拉取 (异步)
-          const result = await window.electronAPI.ollama.pullModel(finalModelId)
-          if (!result.success) {
-            throw new Error(result.error || t('拉取 Ollama 模型失败'))
-          }
-          return
+          throw new Error(t('IPC 接口不可用: ollama.pullModel（已清退，AI_ENGINE=ollama 请改用本地 Tier 2 引擎）'))
         }
 
         // llama.cpp 模式逻辑
         // 如果是强制重新下载，先取消现有任务
         if (finalOptions?.forceRestart && taskIdRef.current) {
           try {
-            if (window.electronAPI?.modelDownload?.cancelDownload) {
-              await window.electronAPI.modelDownload.cancelDownload(taskIdRef.current)
+            const cancelApi = getModelDownloadBridge()?.cancelDownload
+            if (cancelApi) {
+              await cancelApi(taskIdRef.current)
             }
           } catch (err) {
             logger.warn(
@@ -246,11 +290,12 @@ export function useModelDownload(
           }
         }
 
-        if (!window.electronAPI?.modelDownload?.startDownload) {
+        const startApi = getModelDownloadBridge()?.startDownload
+        if (!startApi) {
           throw new Error(t('IPC 接口不可用: modelDownload.startDownload'))
         }
 
-        const task = await window.electronAPI.modelDownload.startDownload(finalModelId, {
+        const task = await startApi(finalModelId, {
           autoRetry: finalOptions?.autoRetry !== false,
           source: finalOptions?.source || sourceRef.current
         })
@@ -295,8 +340,9 @@ export function useModelDownload(
     if (isOllama || !taskIdRef.current) return
 
     try {
-      if (window.electronAPI?.modelDownload?.pauseDownload) {
-        await window.electronAPI.modelDownload.pauseDownload(taskIdRef.current)
+      const pauseApi = getModelDownloadBridge()?.pauseDownload
+      if (pauseApi) {
+        await pauseApi(taskIdRef.current)
       }
       setState(prev => ({
         ...prev,
@@ -314,8 +360,9 @@ export function useModelDownload(
     if (isOllama || !taskIdRef.current) return
 
     try {
-      if (window.electronAPI?.modelDownload?.resumeDownload) {
-        await window.electronAPI.modelDownload.resumeDownload(taskIdRef.current)
+      const resumeApi = getModelDownloadBridge()?.resumeDownload
+      if (resumeApi) {
+        await resumeApi(taskIdRef.current)
       }
       setState(prev => ({
         ...prev,
@@ -334,8 +381,9 @@ export function useModelDownload(
 
     const currentTaskId = taskIdRef.current
     try {
-      if (window.electronAPI?.modelDownload?.cancelDownload) {
-        await window.electronAPI.modelDownload.cancelDownload(currentTaskId)
+      const cancelApi = getModelDownloadBridge()?.cancelDownload
+      if (cancelApi) {
+        await cancelApi(currentTaskId)
       }
 
       // 立即更新本地状态，不再等待事件，防止 UI 延迟
@@ -377,76 +425,8 @@ export function useModelDownload(
       return
     }
 
-    // Ollama 模式监听
-    if (isOllama) {
-      const unsubscribeOllamaProgress = window.electronAPI.onOllamaModelProgress((data: any) => {
-        if (data.modelId !== modelIdRef.current) return
-
-        setState(prev => {
-          // 如果已经完成或报错，不再接收后续进度干扰（防止 race condition）
-          if (prev.status === 'completed' || prev.status === 'error') {
-            return prev
-          }
-
-          const percent = data.percent ?? prev.progress
-          return {
-            ...prev,
-            progress: percent,
-            currentFileName: data.message,
-            isDownloading: true,
-            status: 'downloading',
-            downloadProgress: {
-              taskId: `ollama-${data.modelId}`,
-              modelId: data.modelId,
-              percent: percent,
-              receivedBytes: 0,
-              totalBytes: 0,
-              status: 'downloading',
-              fileName: data.message
-            }
-          }
-        })
-      })
-
-      const unsubscribeOllamaStatus = window.electronAPI.onOllamaModelStatusChanged((data: any) => {
-        if (data.modelId !== modelIdRef.current) return
-
-        if (data.status === 'downloaded') {
-          setState(prev => ({
-            ...prev,
-            isDownloading: false,
-            status: 'completed',
-            progress: 100,
-            downloadProgress: {
-              ...(prev.downloadProgress || {}),
-              taskId: `ollama-${data.modelId}`,
-              modelId: data.modelId,
-              percent: 100,
-              status: 'completed'
-            } as any
-          }))
-          captureEvent('模型下载完成', { modelId: modelIdRef.current, platform: 'ollama' })
-          optionsRef.current.onDownloadComplete?.()
-        } else if (data.status === 'error') {
-          toast.error(t('下载失败'))
-          setState(prev => ({
-            ...prev,
-            isDownloading: false,
-            status: 'error',
-            error: t('下载失败')
-          }))
-          captureEvent('模型下载失败', {
-            modelId: modelIdRef.current,
-            platform: 'ollama',
-            error: 'Ollama error'
-          })
-          optionsRef.current.onDownloadError?.(t('下载失败'))
-        }
-      })
-
-      cleanupRef.current = [unsubscribeOllamaProgress, unsubscribeOllamaStatus]
-      return cleanup
-    }
+    // Ollama 进度/状态监听已随 ollama-ipc-handler 清退（PRD-0042）：
+    // 残留 isOllama 分支不再注册任何监听，直接走 llama.cpp 模式监听路径。
 
     // llama.cpp 模式监听
     // 下载进度监听
@@ -580,18 +560,20 @@ export function useModelDownload(
 
       try {
         if (taskIdRef.current) {
-          if (window.electronAPI.modelDownload?.getTaskStatus) {
-            const task = await window.electronAPI.modelDownload.getTaskStatus(taskIdRef.current)
+          const getTaskStatus = getModelDownloadBridge()?.getTaskStatus
+          if (getTaskStatus) {
+            const task = await getTaskStatus(taskIdRef.current)
             if (task) {
               setState(prev => {
                 // 如果状态已经是完成或错误，且后端也一致，则跳过
                 if (prev.status === task.status && prev.progress === task.progress) return prev
 
-                return {
+return {
                   ...prev,
                   isDownloading: ['downloading', 'retrying', 'pending'].includes(task.status),
                   isPaused: task.status === 'paused', // 修正暂停状态判定
-                  status: task.status,
+                  // ModelDownloadState['status'] 不含 'paused'，暂停以 isPaused 表达，status 回落 pending
+                  status: task.status === 'paused' ? 'pending' : task.status,
                   progress: task.progress !== undefined ? task.progress : prev.progress,
                   receivedBytes: task.receivedBytes || 0,
                   totalBytes: task.totalBytes || prev.totalBytes,
@@ -613,8 +595,9 @@ export function useModelDownload(
           }
         } else {
           // 没有任务ID时，检查该模型是否正在下载
-          if (window.electronAPI.modelDownload?.getModelTask) {
-            const modelTask = await window.electronAPI.modelDownload.getModelTask(
+          const getModelTask = getModelDownloadBridge()?.getModelTask
+          if (getModelTask) {
+            const modelTask = await getModelTask(
               modelId,
               sourceRef.current
             )
@@ -624,7 +607,8 @@ export function useModelDownload(
                 ...prev,
                 taskId: modelTask.taskId,
                 isDownloading: ['downloading', 'retrying', 'pending'].includes(modelTask.status),
-                status: modelTask.status,
+                isPaused: modelTask.status === 'paused',
+                status: modelTask.status === 'paused' ? 'pending' : modelTask.status,
                 progress: modelTask.progress !== undefined ? modelTask.progress : prev.progress,
                 receivedBytes: modelTask.receivedBytes || 0,
                 totalBytes: modelTask.totalBytes || prev.totalBytes,

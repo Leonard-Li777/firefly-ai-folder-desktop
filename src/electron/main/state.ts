@@ -40,7 +40,7 @@ export const organizePlanAbortControllers = new Map<string, AbortController>()
 // Reorganize 暂停/结束控制标志（key: virtualDirectoryId）
 export const reorganizePauseFlags = new Map<number, boolean>()
 export const reorganizeEndFlags = new Map<number, boolean>()
-// 硬件加速后端描述缓存统一由 AI 包维护（llama-engine-service 等包内代码写入），
+// 硬件加速后端描述缓存统一由 AI 包维护（引擎侧运行状态写入），
 // 此处 re-export 包内绑定，避免迁移后出现两份独立状态导致 Footer 无法感知 CUDA 等后端
 export {
   activeHardwareBackendCache,

@@ -349,10 +349,10 @@ export class EngineBridgeService {
 
   /**
    * 打开引擎管理面板
-   * @param options.panel 目标面板：error=错误分析侧边栏，logs=运行日志，default=仅显示主窗口
+   * @param options.panel 目标面板：error=错误分析侧边栏，logs=运行日志，models=模型列表页（下载引导流深链，见 PRD-0043），default=仅显示主窗口
    */
   public async openUI(options?: {
-    panel?: 'error' | 'logs' | 'default'
+    panel?: 'error' | 'logs' | 'models' | 'default'
   }): Promise<{ ok: boolean; error?: string }> {
     try {
       const res = await fetch(`${this.baseUrl}${ENGINE_OPEN_UI_PATH}`, {

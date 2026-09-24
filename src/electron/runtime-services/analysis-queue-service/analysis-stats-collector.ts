@@ -3,7 +3,7 @@ import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { LogCategory, logger, PerformanceTimer } from '@firefly/shared'
 import { hardwareDetectionService } from '../system'
 import { unifiedModelManager } from '../llama/unified-model-manager'
-import { llamaEngineService } from '../llama/llama-engine-service'
+import { engineBridgeService } from '../engine-bridge'
 
 /**
  * 分析统计收集器
@@ -35,8 +35,8 @@ export class AnalysisStatsCollector {
       } else if (isCompatible) {
         accelerator = 'vulkan'
       } else {
-        // 优先取引擎运行时实际值，其次取配置，最后由硬件能力检测决定
-        const runtimeAcc = llamaEngineService.getSelectedAcceleration()
+        // 优先取 Tier 2 引擎上报的实际运行后端，其次取配置，最后由硬件能力检测决定
+        const runtimeAcc = engineBridgeService.getSnapshot().backend
         const configAcc = config.getValue<string>('SELECTED_ACCELERATION')
         if (runtimeAcc) {
           accelerator = runtimeAcc
