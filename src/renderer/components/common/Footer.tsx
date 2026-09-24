@@ -22,7 +22,6 @@ import { useSettingsStore } from '@/renderer/stores/settings-store'
 import { useVirtualDirectoryStore } from '@/renderer/stores/virtual-directory-store'
 import { useAnalyzedDirectoryStore } from '@/renderer/stores/analyzed-directory-store'
 import { compareVersions, LogCategory, logger, ErrorNormalizer } from '@firefly/shared'
-import { getAccelerationTier, extractAccelerationFromBackendDisplay } from '@firefly/shared'
 import { PersistentTooltip } from '@/renderer/components/common/PersistentTooltip'
 
 import { getStageLabel } from '@/renderer/components/analysis/AnalysisQueueContent'
@@ -517,22 +516,20 @@ export function Footer() {
 
   const aiServiceInfo = getFooterDisplay(serviceStatus)
 
-  // 最佳可用引擎警告：仅根据记忆的最佳引擎（BEST_ACCELERATION，成功验证过）判断
-  // 未记忆（auto 或空）时不显示警告；当当前引擎低于记忆的最佳引擎时提示切换
-  const bestAcceleration =
-    (config as any)?.bestAcceleration ?? (config as any)?.BEST_ACCELERATION ?? ''
-  const currentAcceleration = extractAccelerationFromBackendDisplay(backend)
-  const accelerationBelowBest = useMemo(() => {
-    if (
-      modelMode !== 'local' ||
-      !currentAcceleration ||
-      !bestAcceleration ||
-      bestAcceleration === 'auto'
-    ) {
-      return false
-    }
-    return getAccelerationTier(currentAcceleration) < getAccelerationTier(bestAcceleration)
-  }, [modelMode, currentAcceleration, bestAcceleration])
+  // PRD-0043：本地模式下，Tier 2 引擎真实未在线时不得展示任何"模型就绪"类状态行
+  // （状态数据来自 model-store，可能与引擎真实运行态脱钩，此处以 engineBridge 探活结果为准）。
+  // 探活完成（engineOnline !== null）且离线时：云端模式不受影响，本地模式降级为未就绪提示。
+  const effectiveAiServiceInfo =
+    engineOnline === false && modelMode === 'local'
+      ? {
+          text: t('AI 服务未就绪（本地 AI 引擎未运行）'),
+          icon: 'radio_button_unchecked',
+          color: 'text-gray-400'
+        }
+      : aiServiceInfo
+
+  // 注：PRD-0043 后"非最佳可用引擎"警告归属引擎应用（firefly-ai-engine）Footer 展示，
+  // desktop 不再显示该警告（BEST_ACCELERATION 记忆服务仍保留，供引擎侧消费）。
 
   const handleQueueButtonClick = async () => {
     try {
@@ -561,20 +558,20 @@ export function Footer() {
         <div className="flex items-center space-x-6 min-w-0">
           <div className="flex items-center space-x-2 group min-w-0">
             <MaterialIcon
-              icon={aiServiceInfo.icon}
-              className={`${aiServiceInfo.color} ${aiServiceInfo.animate || ''} text-sm`}
+              icon={effectiveAiServiceInfo.icon}
+              className={`${effectiveAiServiceInfo.color} ${effectiveAiServiceInfo.animate || ''} text-sm`}
             />
             {/* min-w-0 允许内部文字截断 */}
             <div className="min-w-0">
               <button
                 className={`${
-                  aiServiceInfo.color
+                  effectiveAiServiceInfo.color
                 } transition-all duration-200 hover:underline cursor-pointer truncate max-w-[480px] block`}
                 onClick={() => openSettings(SettingsCategory.AI_MODEL)}
-                title={aiServiceInfo.text}
+                title={effectiveAiServiceInfo.text}
               >
                 {' '}
-                {aiServiceInfo.text}
+                {effectiveAiServiceInfo.text}
               </button>
               {/* min-w-0 保护：次级提示行在西文语种下可能很长，需允许截断而非撑破footer */}
               <div className="min-w-0">
@@ -619,21 +616,6 @@ export function Footer() {
                     <span>
                       {t('当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果')}
                     </span>
-                  </button>
-                )}
-                {accelerationBelowBest && (
-                  <button
-                    onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
-                    className="text-yellow-500 text-xs hover:underline cursor-pointer block truncate max-w-[480px]"
-                    title={t('警告：{current}非最佳可用引擎，请点击切换{best}！', {
-                      current: currentAcceleration,
-                      best: bestAcceleration
-                    })}
-                  >
-                    {t('警告：{current}非最佳可用引擎，请点击切换{best}！', {
-                      current: currentAcceleration,
-                      best: bestAcceleration
-                    })}
                   </button>
                 )}
               </div>
