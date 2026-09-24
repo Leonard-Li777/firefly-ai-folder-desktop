@@ -98,6 +98,50 @@ export function Footer() {
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
   const [licenseType, setLicenseType] = useState<string | null>(null)
 
+  // Tier 2 引擎在线状态（PRD-0043 下载引导流）：经 engineBridge 探活并订阅状态广播
+  const [engineOnline, setEngineOnline] = useState<boolean | null>(null)
+  useEffect(() => {
+    let disposed = false
+    const bridge = (window as any).electronAPI?.engineBridge
+    if (!bridge?.getStatus) return
+    bridge
+      .getStatus()
+      .then((snap: { connected?: boolean } | null) => {
+        if (!disposed) setEngineOnline(!!snap?.connected)
+      })
+      .catch(() => {
+        if (!disposed) setEngineOnline(false)
+      })
+    if (bridge.onStatusChanged) {
+      const unsub = bridge.onStatusChanged((snap: { connected?: boolean } | null) => {
+        setEngineOnline(!!snap?.connected)
+      })
+      return () => {
+        disposed = true
+        if (typeof unsub === 'function') unsub()
+      }
+    }
+    return () => {
+      disposed = true
+    }
+  }, [])
+
+  // 引导条触发判据（PRD-0042 Task 6 / PRD-0043）：未连接 Tier 2 引擎 且 未配置云端 AI
+  const showEngineGuide = modelMode !== 'cloud' && engineOnline === false
+
+  /**
+   * 引导条点击链路（PRD-0043）：三路并行，互不阻塞
+   * 1. ensureRunning：引擎未运行则静默拉起（托盘模式）
+   * 2. openUI({panel:'models'})：深链直达引擎模型列表页（气泡引导由引擎侧激活）
+   * 3. openSettings：同时打开 desktop 的 AI 引擎配置设置页
+   */
+  const handleEngineGuideClick = () => {
+    const bridge = (window as any).electronAPI?.engineBridge
+    if (bridge?.start) bridge.start().catch(() => {})
+    if (bridge?.openUI) bridge.openUI({ panel: 'models' }).catch(() => {})
+    openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+  }
+
   const showAiError = serviceStatus === AIServiceStatus.ERROR || !!error
   const errorMessageDisplay = useMemo(() => {
     if (!showAiError) return ''
@@ -562,6 +606,19 @@ export function Footer() {
                     title={t('检测到您有高性能显卡，请切换更聪明的AI模型，立即设置')}
                   >
                     {t('检测到您有高性能显卡，请切换更聪明的AI模型，立即设置')}
+                  </button>
+                )}
+                {showEngineGuide && (
+                  <button
+                    data-testid="engine-guide-bar"
+                    className="text-xs leading-tight text-primary font-medium transition-all duration-200 hover:underline cursor-pointer flex items-center gap-1 text-left block truncate max-w-[480px]"
+                    onClick={handleEngineGuideClick}
+                    title={t('当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果。点击进入配置。')}
+                  >
+                    <MaterialIcon icon="rocket_launch" className="text-xs shrink-0" />
+                    <span>
+                      {t('当前为内置基础AI引擎，建议配置高级AI引擎，配置后可以增强分析结果')}
+                    </span>
                   </button>
                 )}
                 {accelerationBelowBest && (
