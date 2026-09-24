@@ -7,6 +7,18 @@ import { logger, LogCategory } from '@firefly/shared'
  */
 export function registerEngineBridgeIPCHandlers() {
   ipcMain.handle('engine-bridge/get-status', async () => {
+    // PRD-0043：Footer 等渲染层需实时探活结果，而非缓存快照
+    // 直接调用 healthCheck() 向外部引擎发起实时状态查询
+    const status = await engineBridgeService.healthCheck()
+    if (status) {
+      // 更新缓存并广播，保持后续 getSnapshot() 一致
+      engineBridgeService['lastRawStatus'] = status
+      engineBridgeService.broadcastStatus()
+      return engineBridgeService.getSnapshot()
+    }
+    // 探活失败：清空缓存并广播离线
+    engineBridgeService['lastRawStatus'] = null
+    engineBridgeService.broadcastStatus()
     return engineBridgeService.getSnapshot()
   })
 
