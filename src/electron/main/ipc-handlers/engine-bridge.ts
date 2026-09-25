@@ -47,4 +47,19 @@ export function registerEngineBridgeIPCHandlers() {
     engineBridgeService.broadcastStatus()
     return result
   })
+
+  // PRD-0044：启动/停止引擎侧 AI 推理服务（不退出引擎应用）
+  ipcMain.handle('engine-bridge/start-service', async () => {
+    logger.info(LogCategory.IPC, '[IPC] 收到启动 AI 服务请求')
+    const result = await engineBridgeService.startService()
+    engineBridgeService.broadcastStatus()
+    return result
+  })
+
+  ipcMain.handle('engine-bridge/stop-service', async () => {
+    logger.info(LogCategory.IPC, '[IPC] 收到停止 AI 服务请求')
+    const result = await engineBridgeService.stopService()
+    engineBridgeService.broadcastStatus()
+    return result
+  })
 }

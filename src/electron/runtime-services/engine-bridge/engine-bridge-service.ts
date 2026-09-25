@@ -30,11 +30,16 @@ const ENGINE_OPEN_UI_PATH = '/api/engine/open-ui'
 const ENGINE_SHUTDOWN_PATH = '/api/engine/shutdown'
 /** 引擎模型列表端点（PRD-0044：状态卡「已安装模型计数」数据源） */
 const ENGINE_MODELS_PATH = '/api/models'
+/** 引擎 AI 服务启停端点（启停 llama.cpp 推理子进程，非退出引擎应用） */
+const ENGINE_SERVICE_START_PATH = '/api/engine/start'
+const ENGINE_SERVICE_STOP_PATH = '/api/engine/stop'
 
 /** 桥接请求超时（毫秒） */
 const STATUS_TIMEOUT_MS = 1500
 const OPEN_UI_TIMEOUT_MS = 3000
 const SHUTDOWN_TIMEOUT_MS = 3000
+/** AI 服务启停动作超时（服务启动可能耗时较长） */
+const SERVICE_ACTION_TIMEOUT_MS = 15_000
 
 /** 引擎拉起后的就绪等待上限（毫秒） */
 const READY_WAIT_LIMIT_MS = 25_000
@@ -50,6 +55,8 @@ export interface Tier2EngineStatus {
   backend?: string
   active_backend?: string
   model?: string
+  /** 引擎契约字段名（EngineStatus.current_model，见 firefly-ai-engine engine/mod.rs） */
+  current_model?: string
   loaded_models?: string[]
   vram_mb?: number
   gpu_mem_mb?: number
@@ -143,16 +150,19 @@ export class EngineBridgeService {
     const isWin = process.platform === 'win32'
     const exeName = isWin ? 'firefly-ai-engine.exe' : 'firefly-ai-engine'
     const isDev = !app?.isPackaged || process.env.NODE_ENV !== 'production'
-    const root = process.cwd()
 
     if (isDev) {
-      const devCandidates = [
-        path.join(root, 'apps', 'firefly-ai-engine', 'src-tauri', 'target', 'release', exeName),
-        path.join(root, 'apps', 'firefly-ai-engine', 'src-tauri', 'target', 'debug', exeName)
-      ]
-      for (const cand of devCandidates) {
-        if (fs.existsSync(cand)) {
-          return cand
+      // cwd 可能是 monorepo 根，也可能是 apps/desktop（pnpm --filter desktop 启动时），
+      // 向上探测包含 apps/firefly-ai-engine 的 monorepo 根，再拼 target 产物路径。
+      for (const root of this.collectMonorepoRoots()) {
+        const devCandidates = [
+          path.join(root, 'apps', 'firefly-ai-engine', 'src-tauri', 'target', 'release', exeName),
+          path.join(root, 'apps', 'firefly-ai-engine', 'src-tauri', 'target', 'debug', exeName)
+        ]
+        for (const cand of devCandidates) {
+          if (fs.existsSync(cand)) {
+            return cand
+          }
         }
       }
     }
@@ -165,18 +175,41 @@ export class EngineBridgeService {
       return bin
     }
 
-    // 多候选路径兜底检索
-    const candidates = [
-      path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'firefly-ai-engine', exeName),
-      path.join(root, 'build', 'extraResources', 'bin', 'firefly-ai-engine', exeName)
-    ]
-    for (const cand of candidates) {
-      if (fs.existsSync(cand)) {
-        return cand
+    // 多候选路径兜底检索（兼容 cwd = monorepo 根 / apps/desktop）
+    for (const root of this.collectMonorepoRoots()) {
+      const candidates = [
+        path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'firefly-ai-engine', exeName),
+        path.join(root, 'build', 'extraResources', 'bin', 'firefly-ai-engine', exeName),
+        path.join(root, 'apps', 'desktop', 'pro', 'build', 'extraResources', 'bin', 'firefly-ai-engine', exeName)
+      ]
+      for (const cand of candidates) {
+        if (fs.existsSync(cand)) {
+          return cand
+        }
       }
     }
 
     return null
+  }
+
+  /**
+   * 收集候选 monorepo 根：process.cwd() 及其祖先目录中包含 apps/firefly-ai-engine 的路径。
+   * 保证从 monorepo 根或 apps/desktop 启动时均能定位引擎工程。
+   */
+  private collectMonorepoRoots(): string[] {
+    const roots: string[] = []
+    const push = (p: string) => {
+      if (p && !roots.includes(p)) roots.push(p)
+    }
+    push(process.cwd())
+    let probe = process.cwd()
+    for (let i = 0; i < 6; i++) {
+      const parent = path.dirname(probe)
+      if (parent === probe) break
+      probe = parent
+      push(probe)
+    }
+    return roots
   }
 
   /**
@@ -428,6 +461,52 @@ export class EngineBridgeService {
   }
 
   /**
+   * 启动引擎侧 AI 推理服务（llama.cpp 子进程），不退出引擎应用本身
+   * 对应引擎端 POST /api/engine/start
+   */
+  public async startService(): Promise<{ ok: boolean; error?: string }> {
+    try {
+      const res = await fetch(`${this.baseUrl}${ENGINE_SERVICE_START_PATH}`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(SERVICE_ACTION_TIMEOUT_MS)
+      })
+      const body = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
+      const ok = res.ok && body.success !== false
+      if (!ok) {
+        logger.warn(LogCategory.SYSTEM, `[EngineBridge] 启动 AI 服务失败: ${body.error || res.status}`)
+      }
+      return { ok, error: ok ? undefined : body.error || `引擎返回 ${res.status}` }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.SYSTEM, `[EngineBridge] 启动 AI 服务请求失败: ${error}`)
+      return { ok: false, error }
+    }
+  }
+
+  /**
+   * 停止引擎侧 AI 推理服务（llama.cpp 子进程），不退出引擎应用本身
+   * 对应引擎端 POST /api/engine/stop
+   */
+  public async stopService(): Promise<{ ok: boolean; error?: string }> {
+    try {
+      const res = await fetch(`${this.baseUrl}${ENGINE_SERVICE_STOP_PATH}`, {
+        method: 'POST',
+        signal: AbortSignal.timeout(SERVICE_ACTION_TIMEOUT_MS)
+      })
+      const body = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
+      const ok = res.ok && body.success !== false
+      if (!ok) {
+        logger.warn(LogCategory.SYSTEM, `[EngineBridge] 停止 AI 服务失败: ${body.error || res.status}`)
+      }
+      return { ok, error: ok ? undefined : body.error || `引擎返回 ${res.status}` }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.SYSTEM, `[EngineBridge] 停止 AI 服务请求失败: ${error}`)
+      return { ok: false, error }
+    }
+  }
+
+  /**
    * 强制清理由本服务拉起的子进程（taskkill 兜底，Unix 走 SIGKILL）
    */
   private killOwnProcess(): void {
@@ -497,8 +576,10 @@ export class EngineBridgeService {
       port: TIER2_ENGINE_PORT,
       version: raw?.version || this.versionCache || null,
       backend: raw?.active_backend || raw?.backend || null,
-      model: raw?.model || (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) || null,
-      vramMb: typeof raw?.vram_mb === 'number' ? raw.vram_mb : typeof raw?.gpu_mem_mb === 'number' ? raw.gpu_mem_mb : null,
+      // 引擎契约字段为 current_model（兼容旧 model 字段与 loaded_models 列表）
+      model: raw?.current_model || raw?.model || (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) || null,
+      // 引擎契约字段为 vram_usage_mb（兼容旧 vram_mb / gpu_mem_mb）
+      vramMb: typeof raw?.vram_usage_mb === 'number' ? raw.vram_usage_mb : typeof raw?.vram_mb === 'number' ? raw.vram_mb : typeof raw?.gpu_mem_mb === 'number' ? raw.gpu_mem_mb : null,
       modelCount: raw ? this.lastModelCount : null,
       lastError: this.lastError,
       updatedAt: raw ? Date.now() : null,

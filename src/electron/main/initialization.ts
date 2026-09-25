@@ -651,6 +651,23 @@ export async function initializeFullServices(): Promise<void> {
           clearEnrichCache()
           createModelCapabilityAdapter().clearCache()
         }
+
+        // PRD-0044：生效引擎切换为「禁用/云端」时，完全退出萤核AI引擎应用（不再需要本地推理）
+        // onConfigChange 回调的 changes 值即为该 key 的新值
+        if ('AI_SERVICE_MODE' in changes) {
+          const newMode = changes['AI_SERVICE_MODE']
+          if (newMode === 'disabled' || newMode === 'cloud') {
+            logger.info(LogCategory.MAIN, `[initialization] 生效引擎切换为 ${newMode}，请求萤核AI引擎完全退出`)
+            void (async () => {
+              try {
+                const { engineBridgeService } = await import('../runtime-services/engine-bridge')
+                await engineBridgeService.shutdown()
+              } catch (err) {
+                logger.warn(LogCategory.MAIN, '[initialization] 请求引擎退出失败（引擎可能未运行）:', err)
+              }
+            })()
+          }
+        }
       })
 
       service.onStatusChange(async info => {

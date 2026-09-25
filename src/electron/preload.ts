@@ -208,6 +208,10 @@ const electronAPI = {
     }): Promise<{ ok: boolean; error?: string }> =>
       ipcRenderer.invoke('engine-bridge/open-ui', options),
     shutdown: (): Promise<{ ok: boolean }> => ipcRenderer.invoke('engine-bridge/shutdown'),
+    startService: (): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke('engine-bridge/start-service'),
+    stopService: (): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke('engine-bridge/stop-service'),
     onStatusChanged: (callback: (payload: EngineBridgeSnapshot) => void) => {
       const handler = (_event: Electron.IpcRendererEvent, payload: EngineBridgeSnapshot) => callback(payload)
       ipcRenderer.on('tier2:status-changed', handler)
