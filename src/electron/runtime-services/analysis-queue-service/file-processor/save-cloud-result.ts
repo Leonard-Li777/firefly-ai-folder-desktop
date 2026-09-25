@@ -354,7 +354,10 @@ export async function saveCloudResult(
             }
 
             try {
-              insertTagToDb(db, fileFingerprint, cleanName, localDimCode)
+              // ADR-0045：云端缓存回灌须保留标签**原始**来源分组，而 insertTagToDb 的缺省值（fact）
+              // 会把回灌标签错标为物理事实。此处显式落 ''（暂不分组，面板不展示该行），
+              // 待云端 tag_group 双向同步（含读 RPC rpc_get_file_by_id）落地后回填真实分组。
+              insertTagToDb(db, fileFingerprint, cleanName, localDimCode, 0, undefined, '')
             } catch {
               // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
               const tagCode = DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {

@@ -362,7 +362,8 @@ export class FileDao {
       group => (groupTagMap.get(group)?.length ?? 0) > 0
     ).map(group => ({
       group,
-      tags: (groupTagMap.get(group) || []).sort((a, b) => b.confidence - a.confidence)
+      // 只聚合不排序：组顺序（按组平均置信度降序）与组内顺序均属展示规则，由属性面板决定
+      tags: groupTagMap.get(group) || []
     }))
 
     const parsedFileGroup = fileData.file_group ? (

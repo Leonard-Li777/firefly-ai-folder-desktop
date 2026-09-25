@@ -155,8 +155,11 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
     <div className="border-t border-border pt-3 mb-4 space-y-2.5">
       {tagGroups.map(group => (
         <div key={group.id} className="flex items-center justify-between gap-2">
-          {/* 左侧标签列表 */}
+          {/* 左侧标签列表（组标题 + 组内标签） */}
           <div className="flex-1 flex flex-wrap gap-1.5 items-center min-w-0">
+            <span className="text-[10px] font-semibold text-muted-foreground/70 shrink-0 mr-0.5">
+              {group.title}
+            </span>
             {group.tags.map(tag => (
               <span
                 key={tag.id}
