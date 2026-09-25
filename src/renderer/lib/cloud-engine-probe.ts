@@ -31,8 +31,21 @@ export async function runCloudProbe(
   store.beginProbe()
   try {
     await CloudModelConfigAPI.testConfig(config)
-    // 探针成功：点亮已启动，并计入已连接所需「已拉取模型列表」（CONTEXT：云端连通性探针）
-    useCloudEngineStatusStore.getState().markStarted({ modelsFetched: true })
+    // 探针成功仅点亮已启动；「已拉取模型列表」只在真正拿到在线列表时计入（slice-2 严格条件）
+    useCloudEngineStatusStore.getState().markStarted()
+    try {
+      const models = await CloudModelConfigAPI.getProviderModels(
+        config.provider,
+        config.apiKey,
+        config.baseUrl,
+        false
+      )
+      if (models.length > 0) {
+        useCloudEngineStatusStore.getState().markModelsFetched()
+      }
+    } catch {
+      // 列表拉取失败不影响已启动；已连接保持严格条件
+    }
     return true
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
