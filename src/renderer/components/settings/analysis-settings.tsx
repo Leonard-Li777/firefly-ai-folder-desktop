@@ -407,7 +407,7 @@ export const AnalysisSettings: React.FC = () => {
     <div className="p-6 space-y-6">
       <div>
         <h3 className="text-lg font-semibold mb-2">{t('分析设置')}</h3>
-        <p className="text-sm text-muted-foreground">{t('配置AI分析行为、提示词和忽略规则')}</p>
+        <p className="text-sm text-muted-foreground">{t('配置分析模式、文件内容提取、提示词和忽略规则')}</p>
       </div>
 
       {/* 选择分析模式 */}
