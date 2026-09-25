@@ -141,7 +141,6 @@ export const AnalysisSettings: React.FC = () => {
   const [showLibreOfficeHelp, setShowLibreOfficeHelp] = useState(false)
   // 忽略规则列表折叠与筛选（渐进披露，避免长列表淹没设置页）
   const [showIgnoreRuleList, setShowIgnoreRuleList] = useState(false)
-  const [showSystemRules, setShowSystemRules] = useState(false)
   const [ruleFilter, setRuleFilter] = useState<'all' | 'custom' | 'system'>('all')
 
   // 高级AI引擎（萤核/云端）是否已开启；disabled = 仅基础AI引擎
@@ -411,12 +410,13 @@ export const AnalysisSettings: React.FC = () => {
         <p className="text-sm text-muted-foreground">{t('配置AI分析行为、提示词和忽略规则')}</p>
       </div>
 
-      {/* 分析模式与提取配置（影响分析数据速度和内容提取） */}
+      {/* 选择分析模式 */}
       <Card className="p-4">
         <div className="space-y-5">
           {/* 切换文件分析模式 */}
           <div className="space-y-3">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
+              <MaterialIcon icon="speed" className="text-primary h-4 w-4" />
               <Label className="text-base font-medium">{t('选择分析模式')}</Label>
               <HelpTooltip
                 content={t(
@@ -1065,7 +1065,8 @@ export const AnalysisSettings: React.FC = () => {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
+                <MaterialIcon icon="account_tree" className="text-primary h-4 w-4" />
                 <Label htmlFor="unit-recognition-switch" className="text-base font-medium">
                   {t('启用最小单元识别')}
                 </Label>
@@ -1380,105 +1381,154 @@ export const AnalysisSettings: React.FC = () => {
             </div>
           )}
 
-          {/* 规则列表 */}
-          <div className="space-y-2">
-            {[...ignoreRules]
-              .sort((a, b) => {
-                // 系统规则排在最后 (isSystem 为 true 的排在后面)
-                if (a.isSystem && !b.isSystem) return 1
-                if (!a.isSystem && b.isSystem) return -1
-                return 0
-              })
-              .map(rule => (
-                <div
-                  key={rule.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
-                >
-                  {editingRule === rule.id ? (
-                    <EditRuleForm
-                      rule={rule}
-                      onSave={updates => handleSaveRule(rule.id, updates)}
-                      onCancel={handleCancelEdit}
-                    />
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="flex items-center gap-2">
-                          {getRuleTypeIcon(rule.type)}
-                          <span className="text-xs bg-muted px-2 py-1 rounded">
-                            {getRuleTypeLabel(rule.type)}
-                          </span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium flex items-center gap-2">
-                            <span>{rule.value}</span>
-                            {rule.isCzkawka && (
-                              <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-normal">
-                                {t('排除清理')}
+          {/* 规则列表：默认收起，筛选 + 滚动，避免长列表淹没设置页 */}
+          {showIgnoreRuleList && (
+            <div>
+              {/* 筛选：全部 / 自定义 / 内置 */}
+              <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border/40 bg-muted/10">
+                {(
+                  [
+                    { key: 'all', label: t('全部') },
+                    { key: 'custom', label: t('自定义') },
+                    { key: 'system', label: t('内置') }
+                  ] as const
+                ).map(item => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setRuleFilter(item.key)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                      ruleFilter === item.key
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                    }`}
+                  >
+                    {item.label}
+                    <span className="ml-1 opacity-70">
+                      {item.key === 'all'
+                        ? ignoreRules.length
+                        : item.key === 'custom'
+                          ? ignoreRules.filter(r => !r.isSystem).length
+                          : ignoreRules.filter(r => r.isSystem).length}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="max-h-[360px] overflow-y-auto p-3 space-y-1.5">
+                {(() => {
+                  const filtered = [...ignoreRules]
+                    .filter(rule => {
+                      if (ruleFilter === 'custom') return !rule.isSystem
+                      if (ruleFilter === 'system') return !!rule.isSystem
+                      return true
+                    })
+                    .sort((a, b) => {
+                      // 系统规则排在最后 (isSystem 为 true 的排在后面)
+                      if (a.isSystem && !b.isSystem) return 1
+                      if (!a.isSystem && b.isSystem) return -1
+                      return 0
+                    })
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="py-8 text-center text-sm text-muted-foreground">
+                        {ruleFilter === 'custom'
+                          ? t('暂无自定义规则，点击「添加规则」创建')
+                          : t('暂无匹配规则')}
+                      </div>
+                    )
+                  }
+
+                  return filtered.map(rule => (
+                    <div
+                      key={rule.id}
+                      className={`flex items-center gap-2 px-2.5 py-2 border rounded-lg bg-card transition-colors hover:bg-muted/20 ${
+                        editingRule === rule.id ? 'border-primary/40 bg-primary/5' : ''
+                      }`}
+                    >
+                      {editingRule === rule.id ? (
+                        <EditRuleForm
+                          rule={rule}
+                          onSave={updates => handleSaveRule(rule.id, updates)}
+                          onCancel={handleCancelEdit}
+                        />
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {getRuleTypeIcon(rule.type)}
+                            <span className="text-[11px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">
+                              {getRuleTypeLabel(rule.type)}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm flex items-center gap-1.5">
+                              <span className="truncate" title={rule.value}>
+                                {rule.value}
                               </span>
+                              {rule.isCzkawka && (
+                                <span className="text-[10px] shrink-0 bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded font-normal">
+                                  {t('排除清理')}
+                                </span>
+                              )}
+                              {rule.isSystem && (
+                                <span className="text-[10px] shrink-0 text-muted-foreground px-1.5 py-0.5 rounded border border-border">
+                                  {t('内置')}
+                                </span>
+                              )}
+                            </div>
+                            {rule.description && (
+                              <div className="text-xs text-muted-foreground truncate" title={rule.description}>
+                                {rule.description}
+                              </div>
                             )}
                           </div>
-                          {rule.description && (
-                            <div className="text-sm text-muted-foreground">{rule.description}</div>
-                          )}
-                        </div>
-                        {rule.isSystem && (
-                          <span className="text-xs text-muted-foreground px-2 py-1 rounded">
-                            {t('内置')}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Switch
-                          checked={rule.isActive}
-                          onCheckedChange={checked =>
-                            updateIgnoreRule(rule.id, { isActive: checked })
-                          }
-                          disabled={rule.isSystem}
-                        />
-                        {!rule.isSystem && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEditRule(rule.id)}
-                            >
-                              <Edit3 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => removeIgnoreRule(rule.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
-          </div>
-        </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <Switch
+                              checked={rule.isActive}
+                              onCheckedChange={checked =>
+                                updateIgnoreRule(rule.id, { isActive: checked })
+                              }
+                              disabled={rule.isSystem}
+                            />
+                            {!rule.isSystem && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => handleEditRule(rule.id)}
+                                >
+                                  <Edit3 className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                  onClick={() => removeIgnoreRule(rule.id)}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))
+                })()}
+              </div>
+            </div>
+          )}
       </Card>
 
-      {/* 提示信息 */}
-      <Card className="p-4 bg-muted border-foreground">
-        <div className="flex items-start gap-2">
-          <div className="text-blue-600 mt-0.5">💡</div>
-          <div className="text-sm text-foreground/50">
-            <p className="font-medium mb-1">{t('提示')}</p>
-            <ul className="space-y-1">
-              <li>{t('• 提示词修改后将应用到新的分析任务')}</li>
-              <li>{t('• 忽略规则可以提高分析效率，避免处理不必要的文件')}</li>
-              <li>{t('• 系统预设的忽略规则不能删除')}</li>
-              <li>{t('• 标记【排除清理】的规则会在清理查重时自动跳过，确保核心数据与工作区安全')}</li>
-              <li>{t('• 通配符支持 * 和 ? 匹配，正则表达式支持更复杂的模式')}</li>
-            </ul>
-          </div>
-        </div>
-      </Card>
+      {/* 提示信息（精简，细节提示已内联到各模块） */}
+      <div className="flex items-start gap-2 px-1 text-xs text-muted-foreground">
+        <MaterialIcon icon="info" className="h-3.5 w-3.5 mt-0.5 shrink-0 text-blue-500" />
+        <p>
+          {t('提示词修改后将应用到新的分析任务；忽略规则可提高分析效率，内置规则不可删除；通配符支持 * 和 ?，正则支持更复杂模式。')}
+        </p>
+      </div>
     </div>
   )
 }
