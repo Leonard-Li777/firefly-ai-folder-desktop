@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { Activity, Brain, CircleCheck, CircleX, CircleAlert, Clock, Plus, Power, Radio, Box } from 'lucide-react'
+import { Ban, Brain, CircleCheck, CircleX, CircleAlert, Clock, Cloud, Plus, Power, Radio, Box, Zap } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
@@ -12,6 +12,10 @@ import { useSettingsStore } from '../../stores/settings-store'
 import { AIServiceStatus } from '@firefly/types'
 import { useAIServiceStore } from '../../stores/ai-service-store'
 import { toast } from '../common/Toast'
+import { CloudModelConfigSettings } from './cloud-model-config-settings'
+
+/** 生效引擎模式（PRD-0044）：禁用 | 萤核AI引擎（本地） | 云端AI引擎 */
+type EffectiveEngineMode = 'disabled' | 'local' | 'cloud'
 
 /** 引擎桥接状态快照（与主进程 EngineBridgeSnapshot 对齐，宽容解析） */
 export interface EngineBridgeSnapshotUI {
@@ -49,15 +53,18 @@ const STATUS_ICON_MAP = {
 }
 
 /**
- * AI引擎配置组件 - 桥接监控面板（slice-3 桌面解耦）
+ * 高级AI引擎配置组件（PRD-0044 合并页）
  *
- * Tier 2 上层 AI 引擎（firefly-ai-engine）以服务形态常驻于端口 38400，
- * 面板仅负责状态监控与开机控制，不再管理驱动检测与本地引擎包切换。
+ * 顶部以「生效引擎」三选一卡片（radiogroup 语义）决定分析走哪条通道：
+ * - 禁用：只使用基础AI引擎（纯 CPU 通道），不拉起任何高级引擎；
+ * - 萤核AI引擎：桥接监控面板（本地推理由 Tier 2 独立引擎应用提供，端口 38400）；
+ * - 云端AI引擎：内嵌云端模型配置区 + 思考模式开关。
+ * 选中卡片下方才渲染对应引擎的配置区，模型列表管理已收敛至萤核AI引擎应用内。
  */
 export const AIEngineConfigSettings: React.FC = () => {
   const { t } = useVoerkaI18n(i18nScope)
-  const aiEngine = useSettingsStore(s => s.config?.aiEngine)
   const aiServiceMode = useSettingsStore(s => s.config?.aiServiceMode)
+  const isDisabledMode = aiServiceMode === 'disabled'
   const isCloudMode = aiServiceMode === 'cloud'
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
@@ -66,6 +73,15 @@ export const AIEngineConfigSettings: React.FC = () => {
   const [actionPending, setActionPending] = useState<string | null>(null)
   const aiServiceStatus = useAIServiceStore(s => s.status)
   const isEngineFailed = !isCloudMode && aiServiceStatus === AIServiceStatus.ERROR
+
+  /** 当前生效引擎（未识别的历史取值按 local 处理，与主进程回落口径一致） */
+  const currentMode: EffectiveEngineMode = isDisabledMode ? 'disabled' : isCloudMode ? 'cloud' : 'local'
+
+  const selectMode = (mode: EffectiveEngineMode) => {
+    if (mode === currentMode) return
+    updateConfigValue('AI_SERVICE_MODE', mode)
+    captureEvent('切换生效引擎', { mode })
+  }
 
   const loadSnapshot = useCallback(async () => {
     try {
@@ -133,40 +149,162 @@ export const AIEngineConfigSettings: React.FC = () => {
   const circuitLabels = getCircuitLabels(t)
   const circuit = snapshot ? (circuitLabels[snapshot.circuitState || 'closed'] ?? circuitLabels.closed) : null
 
+  /** 生效引擎选择卡（radiogroup 语义），点击即写入 AI_SERVICE_MODE */
+  const renderModeCard = (
+    mode: EffectiveEngineMode,
+    name: string,
+    desc: string,
+    icon: React.ReactNode,
+    extra?: React.ReactNode
+  ) => {
+    const checked = currentMode === mode
+    return (
+      <button
+        key={mode}
+        type="button"
+        role="radio"
+        aria-checked={checked}
+        aria-label={name}
+        onClick={() => selectMode(mode)}
+        className={`flex items-start gap-3 p-4 rounded-2xl border text-left transition-colors ${
+          checked
+            ? 'border-primary bg-primary/5 shadow-sm'
+            : 'border-border bg-card hover:border-primary/40'
+        }`}
+      >
+        <div
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
+            checked
+              ? 'bg-primary/10 text-primary border-primary/20'
+              : 'bg-muted/30 text-muted-foreground border-border/40'
+          }`}
+        >
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <span className="text-sm font-black flex items-center gap-2 flex-wrap">{name}</span>
+          {extra}
+          <p className="text-[11px] text-muted-foreground font-medium mt-1 leading-relaxed">{desc}</p>
+        </div>
+        <div
+          className={`mt-1 h-4 w-4 shrink-0 rounded-full border-2 ${
+            checked ? 'border-primary bg-primary' : 'border-muted-foreground/40'
+          }`}
+        />
+      </button>
+    )
+  }
+
   return (
     <div className="p-6 space-y-6 text-foreground">
       <div className="flex-1 min-w-0">
-        <h3 className="text-xl font-black tracking-tight">{t('AI引擎配置')}</h3>
+        <h3 className="text-xl font-black tracking-tight">{t('高级AI引擎配置')}</h3>
         <p className="text-xs text-muted-foreground font-medium mt-1">
-          {t('监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态')}
+          {t('选择生效引擎：萤核AI引擎负责本地推理，云端AI引擎支持 OpenAI 兼容服务，禁用后仅使用基础AI引擎')}
         </p>
       </div>
 
-      {/* 云端模式提示 */}
-      {isCloudMode ? (
+      {/* 生效引擎三选一（radiogroup 语义） */}
+      <div role="radiogroup" aria-label={t('生效引擎')} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {renderModeCard(
+          'disabled',
+          t('禁用'),
+          t('关闭高级AI引擎，文件分析仅由基础AI引擎自动处理'),
+          <Ban className="h-5 w-5" />
+        )}
+        {renderModeCard(
+          'local',
+          t('萤核AI引擎'),
+          t('由萤核AI引擎应用在本地提供大模型推理'),
+          <Radio className="h-5 w-5" />,
+          <Badge className={`font-black px-2 py-0.5 rounded-full border ${statusBadge.cls}`}>
+            {statusBadge.icon}
+            <span className="ml-1">{statusBadge.text}</span>
+          </Badge>
+        )}
+        {renderModeCard(
+          'cloud',
+          t('云端AI引擎'),
+          t('连接 OpenAI 兼容云端模型服务进行分析'),
+          <Cloud className="h-5 w-5" />
+        )}
+      </div>
+
+      {/* 禁用分支：仅说明卡 */}
+      {isDisabledMode && (
         <Card className="p-6 border-border shadow-sm rounded-3xl bg-card">
-          <div className="flex items-center gap-3">
-            <Activity className="h-5 w-5 text-primary/70" />
-            <div>
-              <Label className="text-sm font-black">{t('当前使用云端模型')}</Label>
-              <p className="text-[11px] text-muted-foreground font-medium mt-1">
-                {t('云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。')}
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/40 text-muted-foreground border border-border/40">
+              <Ban className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <Label className="text-sm font-black">{t('已禁用高级AI引擎')}</Label>
+              <p className="text-[11px] text-muted-foreground font-medium mt-1.5 leading-relaxed">
+                {t(
+                  'AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用，不会出现报错。'
+                )}
               </p>
             </div>
           </div>
         </Card>
-      ) : (
+      )}
+
+      {/* 云端分支：云端模型配置区 + 思考模式 */}
+      {isCloudMode && (
+        <>
+          <CloudModelConfigSettings />
+          <Card className="p-6 border-border shadow-sm rounded-3xl bg-card">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-500 border border-purple-500/20">
+                  <Brain className="h-5 w-5" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Label className="text-sm font-black flex items-center gap-2 flex-wrap">
+                    <span>{t('模型思考模式')}</span>
+                    <span className="text-[11px] font-light text-purple-600 dark:text-purple-500 bg-purple-500/10 px-1.5 py-0.5 rounded-md border border-purple-500/20">
+                      {t('会增加耗时')}
+                    </span>
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground font-medium mt-1.5 leading-relaxed">
+                    <span>
+                      {t(
+                        '开启后允许本地和云端模型开启思考模式，可能提升AI分析质量，但会大大增加响应时间。'
+                      )}
+                    </span>
+                    <br />
+                    <span className="text-muted-foreground/70">
+                      {t('不支持标记 Instruct 的模型。')}
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="thinking-mode-switch"
+                checked={getConfigValue<boolean>('ENABLE_THINKING_MODE') ?? false}
+                onCheckedChange={async checked => {
+                  await updateConfigValue('ENABLE_THINKING_MODE', checked)
+                  captureEvent('切换思考模式', { enabled: checked })
+                }}
+              />
+            </div>
+          </Card>
+        </>
+      )}
+
+      {/* 萤核分支：桥接状态总览 + 基础AI引擎兜底提示 */}
+      {!isDisabledMode && !isCloudMode && (
         <>
           {/* 桥接状态总览 */}
           <Card className="p-6 border-border shadow-sm rounded-3xl bg-card space-y-4 overflow-hidden">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
-                  <Radio className="h-5 w-5" />
+                  <Zap className="h-5 w-5" />
                 </div>
                 <div>
                   <Label className="text-sm font-black flex items-center gap-2">
-                    {snapshot?.version ? `Tier 2 ${snapshot.version}` : 'Tier 2'}
+                    {snapshot?.version ? `${t('萤核AI引擎')} v${snapshot.version}` : t('萤核AI引擎')}
                     <Badge className={`font-black px-2.5 py-0.5 rounded-full border ${statusBadge.cls}`}>
                       {statusBadge.icon}
                       <span className="ml-1">{statusBadge.text}</span>
@@ -271,22 +409,22 @@ export const AIEngineConfigSettings: React.FC = () => {
               <span className="text-[11px] text-muted-foreground font-medium truncate">
                 {snapshot?.available
                   ? snapshot?.exePath || t('引擎二进制已部署')
-                  : t('未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。')}
+                  : t('未检测到引擎二进制，在线分析由基础AI引擎自动兜底。')}
               </span>
             </div>
           </Card>
 
-          {/* 降级与降级提示（Tier 1 保底） */}
+          {/* 降级与降级提示（基础AI引擎保底） */}
           <Card className="p-6 border-border shadow-sm rounded-3xl bg-card">
             <div className="flex items-start gap-3 flex-1 min-w-0">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-500 border border-amber-500/20">
                 <CircleAlert className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
-                <Label className="text-sm font-black">{t('Tier 1 自动兜底')}</Label>
+                <Label className="text-sm font-black">{t('基础AI引擎自动兜底')}</Label>
                 <p className="text-[11px] text-muted-foreground font-medium mt-1.5 leading-relaxed">
                   {t(
-                    '当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。'
+                    '当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。'
                   )}
                   {snapshot?.lastError && (
                     <span className="block mt-2 text-red-600/80 dark:text-red-400/80">
@@ -297,52 +435,6 @@ export const AIEngineConfigSettings: React.FC = () => {
               </div>
             </div>
           </Card>
-
-          {/* 思考模式 */}
-          {aiEngine === 'llama.cpp' && (
-            <Card className="p-6 border-border shadow-sm rounded-3xl bg-card">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-500 border border-purple-500/20">
-                    <Brain className="h-5 w-5" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <Label className="text-sm font-black flex items-center gap-2 flex-wrap">
-                      <span>{t('模型思考模式')}</span>
-                      <span className="text-[11px] font-light text-purple-600 dark:text-purple-500 bg-purple-500/10 px-1.5 py-0.5 rounded-md border border-purple-500/20">
-                        {t('会增加耗时')}
-                      </span>
-                    </Label>
-                    <p className="text-[11px] text-muted-foreground font-medium mt-1.5 leading-relaxed">
-                      <span>
-                        {t(
-                          '开启后允许本地和云端模型开启思考模式，可能提升AI分析质量，但会大大增加响应时间。'
-                        )}
-                      </span>
-                      <br />
-                      <span className="text-muted-foreground/70">
-                        {t('不支持标记 Instruct 的模型。')}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  id="thinking-mode-switch"
-                  checked={getConfigValue<boolean>('ENABLE_THINKING_MODE') ?? false}
-                  onCheckedChange={async checked => {
-                    await updateConfigValue('ENABLE_THINKING_MODE', checked)
-                    captureEvent('切换思考模式', { enabled: checked })
-                    try {
-                      await window.electronAPI?.aiService.initialize({ forceDeploy: true })
-                      loadSnapshot()
-                    } catch (e) {
-                      console.error('重新部署引擎失败:', e)
-                    }
-                  }}
-                />
-              </div>
-            </Card>
-          )}
         </>
       )}
     </div>

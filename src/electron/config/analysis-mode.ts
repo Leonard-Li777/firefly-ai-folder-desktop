@@ -88,6 +88,20 @@ export function describeStage(stage: number | null | undefined): string {
  * @returns 归一化后的分析模式
  */
 export function resolveAnalysisMode(): AnalysisMode {
+  // PRD-0044 生效引擎 = 禁用（AI_SERVICE_MODE='disabled'）：
+  // 语义为「只关闭高级AI引擎（萤核/云端）增强，分析回落到基础AI引擎（纯 CPU 通道）」，
+  // 而非暂停全部分析。simple 模式（stage 2 完成）正是基础AI引擎通道的既有语义，
+  // 因此在此单点强制归一为 simple，下游全部消费方（队列、file-processor、
+  // save-local-cache-result、is_analyzed 判定）自动获得一致行为，无需各自感知 disabled。
+  try {
+    const serviceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+    if (serviceMode === 'disabled') {
+      return 'simple'
+    }
+  } catch {
+    // 配置尚未初始化时按未禁用处理，走正常 ANALYSIS_MODE 解析
+  }
+
   let raw: unknown
   try {
     raw = ConfigOrchestrator.getInstance().getValue<string>('ANALYSIS_MODE')

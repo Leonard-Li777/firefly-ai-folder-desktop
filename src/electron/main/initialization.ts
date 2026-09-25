@@ -409,10 +409,11 @@ export async function initializeMinimalServices(options?: {
 
     // 2.5 桥接 Tier 2 上层 AI 引擎（slice-3 桌面解耦）：本地模式仅连接 38400 上的外部引擎，
     //     desktop 不再自带任何推理进程。探活失败则静默拉起引擎应用；
-    //     仍不可用时由 Tier 1（Omni）全程保底，绝不回退到本地自拉起。
+    //     仍不可用时由基础AI引擎（Tier 1 / Omni）全程保底，绝不回退到本地自拉起。
+    //     PRD-0044：生效引擎为「云端」或「禁用」时不拉起引擎（禁用 = 只跑基础AI引擎通道）。
     try {
       const initMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
-      if (initMode !== 'cloud') {
+      if (initMode !== 'cloud' && initMode !== 'disabled') {
         const { engineBridgeService } = await import('../runtime-services/engine-bridge')
         const tier2Online = await engineBridgeService.ensureRunning().catch(() => false)
         if (tier2Online) {
