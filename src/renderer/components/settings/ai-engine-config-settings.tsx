@@ -149,6 +149,28 @@ export const AIEngineConfigSettings: React.FC = () => {
   const circuitLabels = getCircuitLabels(t)
   const circuit = snapshot ? (circuitLabels[snapshot.circuitState || 'closed'] ?? circuitLabels.closed) : null
 
+  /** 萤核分支两态（PRD-0044）：已连接 = 引擎状态卡；未连接 = 提示卡 + 聚焦主按钮 */
+  const isLocalBranch = !isDisabledMode && !isCloudMode
+  const engineConnected = !!snapshot?.connected
+  const openEngineBtnRef = React.useRef<HTMLButtonElement>(null)
+
+  // 「打开萤核AI引擎」为未连接态唯一行动点，渲染后自动置于焦点（user story 5）
+  useEffect(() => {
+    if (isLocalBranch && !engineConnected) {
+      openEngineBtnRef.current?.focus()
+    }
+  }, [isLocalBranch, engineConnected])
+
+  /** 单入口：ensureRunning（经 start IPC）成功后直达引擎界面 */
+  const openEngineFlow = async () => {
+    const ok = await window.electronAPI.engineBridge.start()
+    if (ok) {
+      await window.electronAPI.engineBridge.openUI()
+    } else {
+      toast.error(t('萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试'))
+    }
+  }
+
   /** 生效引擎选择卡（radiogroup 语义），点击即写入 AI_SERVICE_MODE */
   const renderModeCard = (
     mode: EffectiveEngineMode,
@@ -292,9 +314,11 @@ export const AIEngineConfigSettings: React.FC = () => {
         </>
       )}
 
-      {/* 萤核分支：桥接状态总览 + 基础AI引擎兜底提示 */}
-      {!isDisabledMode && !isCloudMode && (
+      {/* 萤核分支：两态渲染（未连接提示卡 / 引擎状态卡） + 基础AI引擎兜底提示 */}
+      {isLocalBranch && (
         <>
+          {engineConnected ? (
+          <>
           {/* 桥接状态总览 */}
           <Card className="p-6 border-border shadow-sm rounded-3xl bg-card space-y-4 overflow-hidden">
             <div className="flex items-center justify-between flex-wrap gap-3">
@@ -330,15 +354,6 @@ export const AIEngineConfigSettings: React.FC = () => {
                 >
                   <Plus className="h-4 w-4 mr-1" />
                   {t('打开引擎管理面板')}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={actionPending !== null || snapshot?.connected || !snapshot?.available}
-                  onClick={() => runAction('start', () => window.electronAPI.engineBridge.start())}
-                >
-                  <Power className="h-4 w-4 mr-1" />
-                  {actionPending === 'start' ? t('启动中...') : t('静默拉起')}
                 </Button>
                 <Button
                   size="sm"
@@ -413,6 +428,35 @@ export const AIEngineConfigSettings: React.FC = () => {
               </span>
             </div>
           </Card>
+          </>
+        ) : (
+          /* 未连接提示卡：唯一行动点为聚焦主按钮「打开萤核AI引擎」（ensureRunning → openUI 单入口） */
+          <Card className="p-6 border-border shadow-sm rounded-3xl bg-card">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                <Radio className="h-5 w-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <Label className="text-sm font-black">{t('萤核AI引擎未连接')}</Label>
+                <p className="text-[11px] text-muted-foreground font-medium mt-1.5 leading-relaxed">
+                  {snapshot?.available
+                    ? t('萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。')
+                    : t('未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。')}
+                </p>
+                <Button
+                  ref={openEngineBtnRef}
+                  size="sm"
+                  className="mt-3"
+                  disabled={actionPending !== null}
+                  onClick={() => runAction('open-engine', openEngineFlow)}
+                >
+                  <Power className="h-4 w-4 mr-1" />
+                  {actionPending === 'open-engine' ? t('启动中...') : t('打开萤核AI引擎')}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
           {/* 降级与降级提示（基础AI引擎保底） */}
           <Card className="p-6 border-border shadow-sm rounded-3xl bg-card">
