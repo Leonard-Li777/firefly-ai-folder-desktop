@@ -731,7 +731,8 @@ export class AIErrorHandler extends EventEmitter {
       if (error.aiErrorType === AIErrorType.REQUEST_TIMEOUT) {
         action = {
           label: t('前往设置'),
-          category: 'AI_MODEL'
+          // PRD-0044：模型管理 tab 已合并，通知跳链改指「高级AI引擎配置」
+          category: 'AI_ENGINE_CONFIG'
         }
       }
 

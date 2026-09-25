@@ -17,9 +17,11 @@ export class AnalysisStatsCollector {
     try {
       const hardware = await hardwareDetectionService.detectSystemResources()
       const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
-      const modelId = ConfigOrchestrator.getInstance().getValue<string>(
-        mode === 'cloud' ? 'AI_CLOUD_SELECTED_MODEL_ID' : 'SELECTED_MODEL_ID'
-      )
+      // PRD-0044：本地分支模型身份真相 = 萤核AI引擎桥接快照（SELECTED_MODEL_ID 已删除）
+      const modelId =
+        mode === 'cloud'
+          ? ConfigOrchestrator.getInstance().getValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
+          : engineBridgeService.getSnapshot().model
       // 读取当前引擎实际运行的加速层，优先级：
       // 1. 强制 CPU 模式 → 'cpu'
       // 2. 驱动兼容（Vulkan）模式 → 'vulkan'

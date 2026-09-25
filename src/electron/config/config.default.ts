@@ -28,7 +28,6 @@ function safeGetPath(name: Parameters<typeof app.getPath>[0], fallbackFolder: st
 
 const userDataPath = safeGetPath('userData', '.firefly-user-data')
 const tempPath = safeGetPath('temp', '.firefly-temp')
-const defaultModelDirectory = path.join(userDataPath, 'models')
 const defaultLogDirectory = path.join(userDataPath, 'logs')
 const defaultTempDirectory = path.join(tempPath, 'firefly-temp')
 
@@ -38,13 +37,13 @@ export const defaultUnifiedConfig: UnifiedAppConfig = deepMerge(DEFAULT_UNIFIED_
     DOWNLOAD_MIRROR: 'cn' // 默认为官方原版，后面会动态探测
   },
   ui: {
-    // MODEL_STORAGE_PATH removed from here, using paths.MODEL_STORAGE_PATH instead
+    // PRD-0044：SELECTED_MODEL_ID / SELECTED_MODEL_SOURCE 默认值随配置键删除（模型身份真相 = 萤核AI引擎桥接快照）
   },
   ai: {
     AI_ENGINE: typeof __AI_ENGINE__ !== 'undefined' ? __AI_ENGINE__ : 'llama.cpp'
   },
   paths: {
-    MODEL_STORAGE_PATH: defaultModelDirectory, // 模型存储路径
+    // PRD-0044：MODEL_STORAGE_PATH 默认值随配置键删除，模型目录由萤核AI引擎独占管理
     LOG_PATH: defaultLogDirectory, // 日志路径
     TEMP_PATH: defaultTempDirectory // 临时文件路径
   }

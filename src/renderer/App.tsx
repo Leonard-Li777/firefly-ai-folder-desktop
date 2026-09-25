@@ -25,14 +25,15 @@ import { PreviewOverlay } from './components/file-explorer/PreviewOverlay'
 import { SplitPreviewPanel } from './components/file-explorer/SplitPreviewPanel'
 import { Organize } from './components/file-explorer/Organize/index'
 import { WelcomeWizard } from './components/welcome/WelcomeWizard'
-import { InitialSetupOverlay } from './components/welcome/InitialSetupOverlay'
+// PRD-0044（S5）：InitialSetupOverlay / GpuDriverOverlay / ModelDownloadProgress / use-model-download
+// 等模型下载与本地切换残留 UI 已随「模型激活归萤核AI引擎独占」整体清退
 import { LicenseGateway } from './components/license/LicenseGateway'
 import { Loader2 } from 'lucide-react'
 import { Card } from './components/ui/card'
 import { t, i18nScope } from '@app/languages'
 import { useAIModelStore } from './stores/app-store'
 import { useModelStore } from './stores/model-store'
-import { useAIServiceInitialization, useAIServiceStore } from './stores/ai-service-store'
+import { useAIServiceInitialization } from './stores/ai-service-store'
 import { useSettingsStore } from './stores/settings-store'
 import { useTheme } from './components/ui/theme-provider'
 import { useConfigStore, useWelcomeStore } from './stores/config-store'
@@ -42,17 +43,7 @@ import { useAnalyzedDirectoryStore } from './stores/analyzed-directory-store'
 import { useVirtualDirectoryStore } from './stores/virtual-directory-store'
 import { useTierStore } from './stores/tier-store'
 import { FirecoresRulesDialog } from './components/tier/FirecoresRulesDialog'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from './components/ui/alert-dialog'
-import { buttonVariants } from './components/ui/button'
+// PRD-0044（S5 提前摘除）：模型激活确认对话框删除，AlertDialog/buttonVariants 导入随之下线
 
 type StartupPhase = 'determining' | 'setup' | 'config' | 'licensing' | 'initializing' | 'ready'
 
@@ -235,87 +226,13 @@ const App: React.FC = () => {
   } | null>(null)
   const forceConfigFlagConsumedRef = useRef(false)
   const isWelcomeCompletedRef = useRef(false)
-  const [activationConfirm, setActivationConfirm] = useState<{
-    modelId: string
-    displayName: string
-    source?: string
-  } | null>(null)
+  // PRD-0044（S5 提前摘除）：模型下载完成"立即激活"确认弹窗链删除，模型激活归萤核AI引擎独占
 
   // AI服务状态管理
   const { initializeAIService } = useAIServiceInitialization()
   const { isOpen: isErrorDialogOpen, closeDialog: closeErrorDialog } = useAIServiceErrorDialog()
   const { isMigrating, setMigrating, migrationProgress, updateConfigValue } = useSettingsStore()
-  const { setModelName } = useModelStore()
   const { filePath: previewFilePath } = usePreviewOverlayStore()
-
-  const handleActivateModel = useCallback(async () => {
-    if (!activationConfirm) return
-    const { modelId, displayName, source } = activationConfirm
-    try {
-      // 激活模型
-      await updateConfigValue('SELECTED_MODEL_ID', modelId, { preventAutoReload: true })
-      // 同时保存模型来源（huggingface / modelscope / ollama），以便后端精确查询模型配置
-      await updateConfigValue('SELECTED_MODEL_SOURCE', source, { preventAutoReload: true })
-      // 获取新激活模型的信息（以便设置正确名字）
-      const models = await window.electronAPI.listModels()
-      const model = models.find((m: any) => m.id === modelId)
-      if (model?.name) {
-        setModelName(model.name)
-      }
-      const { notifyModelChanged } = useAIServiceStore.getState()
-      await notifyModelChanged(modelId)
-      toast.success(t('已成功激活 {model}', { model: displayName }))
-      // 广播激活完成事件，让模型设置页面刷新列表并同步最新下载状态
-      window.dispatchEvent(new CustomEvent('app:model-activated', { detail: { modelId } }))
-    } catch (error) {
-      logger.error(LogCategory.RENDERER, '激活模型失败:', error)
-      toast.error(t('激活模型失败'))
-    } finally {
-      setActivationConfirm(null)
-    }
-  }, [activationConfirm, updateConfigValue, setModelName])
-
-  // 处理模型下载完成后的激活提示
-  const handleDownloadComplete = useCallback(
-    async (payload: { modelId: string; source?: string }) => {
-      // 仅在就绪阶段才弹出提示，避免干扰欢迎向导
-      if (startupPhase !== 'ready') return
-
-      try {
-        // 获取模型列表以获取模型名称
-        const models = await window.electronAPI.listModels()
-
-        // 检查该下载项是否属于某个主模型的草稿/加速模型（如 DSpark / MTP），若是则不弹出激活主模型弹窗
-        const isDraftOrDspark = models.some(
-          (m: any) =>
-            (m.dspark === payload.modelId || m.draftId === payload.modelId) &&
-            (!payload.source || m.source === payload.source)
-        )
-        if (isDraftOrDspark) {
-          logger.info(
-            LogCategory.RENDERER,
-            `检测到加速/草稿模型 (${payload.modelId}) 下载完成，跳过主模型激活弹窗`
-          )
-          toast.success(t('加速模型已就绪，将在 CPU 模式下自动启用加速'))
-          return
-        }
-
-        const model = models.find(
-          (m: any) => m.id === payload.modelId && (!payload.source || m.source === payload.source)
-        )
-        const displayName = model?.name || payload.modelId
-
-        setActivationConfirm({
-          modelId: payload.modelId,
-          displayName,
-          source: payload.source
-        })
-      } catch (error) {
-        logger.error(LogCategory.RENDERER, '处理下载完成激活提示失败:', error)
-      }
-    },
-    [startupPhase]
-  )
 
   // 监听模型迁移进度
   useEffect(() => {
@@ -419,22 +336,8 @@ const App: React.FC = () => {
     }
   }, [isMigrating, setMigrating])
 
-  // 监听模型下载完成事件
-  useEffect(() => {
-    if (!window.electronAPI) return
-    if (startupPhase !== 'ready') return
-
-    // Ollama 状态监听已随 ollama-ipc-handler 清退（PRD-0042）；
-    // model-download-* 事件发送方已删，监听器仅保留无害占位（永远不会触发）。
-    const unsubscribeComplete = window.electronAPI.onModelDownloadComplete((payload: any) => {
-      logger.info(LogCategory.RENDERER, '收到模型下载完成事件(llama.cpp):', payload)
-      handleDownloadComplete({ modelId: payload.modelId, source: payload.source })
-    })
-
-    return () => {
-      unsubscribeComplete()
-    }
-  }, [startupPhase, handleDownloadComplete])
+  // PRD-0044（S5 提前摘除）：model-download-complete → 激活确认弹窗监听随激活链删除
+  // （事件发送方已随 PRD-0042 llama 清退移除，监听器一并下线）
 
   const determineStartupPhase = useCallback(
     async (options?: { ignoreForceFlag?: boolean }) => {
@@ -478,7 +381,6 @@ const App: React.FC = () => {
 
         const languageConfirmed = config.languageConfirmed ?? false
         let hasDownloadedModel = false
-        const selectedModelId = config.selectedModelId
         const aiServiceMode = config.aiServiceMode || 'local'
 
         logger.info(LogCategory.RENDERER, '=== 启动阶段判断开始 ===')
@@ -489,14 +391,12 @@ const App: React.FC = () => {
           languageConfirmed
         )
 
-        // 本地模型下载/存在性由 Tier 2 引擎端负责（PRD-0042 零过渡）：
-        // 桌面端不再调用已删除的 modelDownload / ollama IPC，避免无 handler 时
-        // catch 强制 setStartupPhase('config') 造成每次启动误入配置阶段。
-        // 引擎是否就绪已在 startup/get-flags 探活把关；此处仅需有已选模型即可继续。
-        if (aiServiceMode === 'local' && selectedModelId) {
+        // 本地模型下载/存在性由 Tier 2 引擎端负责（PRD-0042 零过渡 + PRD-0044 引擎单一真相）：
+        // SELECTED_MODEL_ID 配置键已删除，桌面端启动判定不再做本地模型存在性检查，
+        // 引擎是否就绪由 startup 探活与桥接熔断把关；此处本地模式视为可继续。
+        if (aiServiceMode === 'local') {
           hasDownloadedModel = true
-          logger.info(LogCategory.RENDERER, '本地模式已选模型，跳过桌面端下载态 IPC 检查:', {
-            modelId: selectedModelId,
+          logger.info(LogCategory.RENDERER, '本地模式：模型就绪态由萤核AI引擎独占，跳过桌面端模型检查:', {
             aiEngine: config.aiEngine || 'llama.cpp'
           })
         } else if (aiServiceMode === 'cloud') {
@@ -696,7 +596,8 @@ const App: React.FC = () => {
           'model-load-error',
           {
             label: t('去设置'),
-            onClick: () => useSettingsStore.getState().openSettings(SettingsCategory.AI_MODEL)
+            // PRD-0044：模型管理 tab 已合并，跳链统一指向「高级AI引擎配置」
+            onClick: () => useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
           }
         )
         return
@@ -747,8 +648,9 @@ const App: React.FC = () => {
           toastAction = {
             label: action.label,
             onClick: () => {
-              if (action.category === 'AI_MODEL') {
-                useSettingsStore.getState().openSettings(SettingsCategory.AI_MODEL)
+              // PRD-0044：'AI_MODEL' 分类已合并为 'AI_ENGINE_CONFIG'（与主进程通知 action 同步改名）
+              if (action.category === 'AI_ENGINE_CONFIG') {
+                useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
               } else if (action.category === 'GENERAL') {
                 useSettingsStore.getState().openSettings((SettingsCategory as any).GENERAL)
               } else {
@@ -1106,11 +1008,13 @@ const App: React.FC = () => {
           open={isErrorDialogOpen}
           onClose={closeErrorDialog}
           onOpenSettings={() => {
-            useSettingsStore.getState().openSettings(SettingsCategory.AI_MODEL)
+            // PRD-0044：错误弹窗跳链改指「高级AI引擎配置」
+            useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
             closeErrorDialog()
           }}
           onSwitchToCloud={() => {
-            useSettingsStore.getState().openSettings(SettingsCategory.AI_MODEL)
+            // PRD-0044：错误弹窗跳链改指「高级AI引擎配置」
+            useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
             useSettingsStore
               .getState()
               .updateConfigValue('AI_SERVICE_MODE', 'cloud', { preventAutoReload: true })
@@ -1118,42 +1022,7 @@ const App: React.FC = () => {
           }}
         />
 
-        {/* 模型激活确认对话框 */}
-        <AlertDialog
-          open={!!activationConfirm}
-          onOpenChange={open => !open && setActivationConfirm(null)}
-        >
-          <AlertDialogContent className="max-w-md rounded-2xl p-6 border bg-background/95 backdrop-blur-xl shadow-2xl">
-            <AlertDialogHeader className="space-y-3">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-                <span className="material-icons text-2xl">download_done</span>
-              </div>
-              <AlertDialogTitle className="text-xl font-bold text-center text-foreground">
-                {t('下载完成')}
-              </AlertDialogTitle>
-              <AlertDialogDescription className="text-sm text-muted-foreground text-center font-medium">
-                {activationConfirm &&
-                  t('{model} 模型已下载完成，是否立即激活？', {
-                    model: activationConfirm.displayName
-                  })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-              <AlertDialogCancel
-                onClick={() => setActivationConfirm(null)}
-                className={cn(buttonVariants({ variant: 'secondary' }), 'w-full sm:w-auto')}
-              >
-                {t('稍后再说')}
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleActivateModel}
-                className={cn(buttonVariants({ variant: 'default' }), 'w-full sm:w-auto')}
-              >
-                {t('立即激活')}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        {/* PRD-0044（S5 提前摘除）：模型激活确认对话框随激活链删除 */}
 
         {/* 模型迁移蒙版 -仅在非配置阶段显示，欢迎向导有自己的内部蒙版处理 */}
         {isMigrating && (startupPhase as string) !== 'config' && (

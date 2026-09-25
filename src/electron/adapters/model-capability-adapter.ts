@@ -27,6 +27,8 @@ import type {
 import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { modelCapabilityDetector } from '../runtime-services/llama/model-capability-detector'
 import { unifiedModelManager } from '../runtime-services/llama/unified-model-manager'
+// PRD-0044：本地模型身份唯一真相 = 萤核AI引擎桥接快照（SELECTED_MODEL_ID 配置键已删除）
+import { engineBridgeService } from '../runtime-services/engine-bridge'
 /**
  * 分析类型枚举
  */
@@ -219,12 +221,11 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
       } as any
       return modelCapabilityDetector.detectCapabilities(serviceConfig)
     } else {
-      const modelId = ConfigOrchestrator.getInstance().getValue<string>(
-        'SELECTED_MODEL_ID'
-      ) as string
+      // PRD-0044：本地分支模型身份改读引擎桥接快照的当前加载模型（原 SELECTED_MODEL_ID 已删除）
+      const modelId = engineBridgeService.getSnapshot().model || ''
 
       // 构建假的 serviceConfig 来适配 detector
-      const modelConfig = unifiedModelManager.getModelById(modelId) as any
+      const modelConfig = this.findLocalModelConfig(modelId)
       const mmprojFile = modelConfig?.files?.find((f: any) => f.type === 'mmproj')
       const serviceConfig = {
         mode: 'local' as const,
@@ -272,6 +273,17 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
     }
   }
 
+  /**
+   * PRD-0044：按模型标识（id 或展示名）反查包内模型元数据；
+   * 本地模型身份唯一真相为萤核AI引擎桥接快照，desktop 不再持久化 SELECTED_MODEL_ID
+   */
+  private findLocalModelConfig(modelId: string): any | undefined {
+    if (!modelId) return undefined
+    unifiedModelManager.ensureLoaded()
+    return (unifiedModelManager.getModelById(modelId) ||
+      unifiedModelManager.getAllModels().find(m => m.name === modelId)) as any
+  }
+
   isMultiModalModel(modelId?: string): boolean {
     const aiServiceMode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
     if (aiServiceMode === 'cloud') {
@@ -283,11 +295,10 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
         (ConfigOrchestrator.getInstance().getValue<string>('AI_CLOUD_SELECTED_MODEL_ID') as string)
       return modelCapabilityDetector.isMultiModalCloudModel(provider, model || 'unknown')
     } else {
-      const currentModelId =
-        modelId ||
-        (ConfigOrchestrator.getInstance().getValue<string>('SELECTED_MODEL_ID') as string)
+      // PRD-0044：本地模型身份真相 = 引擎桥接快照
+      const currentModelId = modelId || engineBridgeService.getSnapshot().model || ''
       if (!currentModelId) return false
-      const modelConfig = unifiedModelManager.getModelById(currentModelId)
+      const modelConfig = this.findLocalModelConfig(currentModelId)
       if (!modelConfig) return false
 
       // Wait, detectLocalCapabilities is async, but isMultiModalModel is sync!
@@ -351,11 +362,11 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
         return Math.min(officialContext, 32768) // 云端限制为 32K
       }
 
-      // 本地模式：需要更保守的限制
-      const modelId = ConfigOrchestrator.getInstance().getValue<string>('SELECTED_MODEL_ID')
+      // 本地模式：需要更保守的限制（PRD-0044：模型身份读引擎桥接快照）
+      const modelId = engineBridgeService.getSnapshot().model || ''
       if (!modelId) return 4096
 
-      const modelConfig = unifiedModelManager.getModelById(modelId)
+      const modelConfig = this.findLocalModelConfig(modelId)
       if (!modelConfig) return 4096
 
       // 解析模型参数大小
@@ -402,11 +413,11 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
         return 4096
       }
 
-      // 本地模式
-      const modelId = ConfigOrchestrator.getInstance().getValue<string>('SELECTED_MODEL_ID')
+      // 本地模式（PRD-0044：模型身份读引擎桥接快照）
+      const modelId = engineBridgeService.getSnapshot().model || ''
       if (!modelId) return 2048
 
-      const modelConfig = unifiedModelManager.getModelById(modelId)
+      const modelConfig = this.findLocalModelConfig(modelId)
       if (!modelConfig) return 2048
 
       // 解析模型参数大小
@@ -447,10 +458,11 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
         return 0
       }
 
-      const modelId = ConfigOrchestrator.getInstance().getValue<string>('SELECTED_MODEL_ID')
+      // PRD-0044：模型身份读引擎桥接快照
+      const modelId = engineBridgeService.getSnapshot().model || ''
       if (!modelId) return 0
 
-      const modelConfig = unifiedModelManager.getModelById(modelId)
+      const modelConfig = this.findLocalModelConfig(modelId)
       if (!modelConfig || !modelConfig.parameterSize) return 0
 
       return parseParameterSize(modelConfig.parameterSize)
@@ -558,7 +570,8 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
         ? (ConfigOrchestrator.getInstance().getValue<string>(
             'AI_CLOUD_SELECTED_MODEL_ID'
           ) as string)
-        : (ConfigOrchestrator.getInstance().getValue<string>('SELECTED_MODEL_ID') as string)
+        : // PRD-0044：本地模型身份真相 = 萤核AI引擎桥接快照
+          engineBridgeService.getSnapshot().model || ''
 
     if (!modelId) {
       return {
@@ -906,7 +919,8 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
         ? (ConfigOrchestrator.getInstance().getValue<string>(
             'AI_CLOUD_SELECTED_MODEL_ID'
           ) as string)
-        : (ConfigOrchestrator.getInstance().getValue<string>('SELECTED_MODEL_ID') as string)
+        : // PRD-0044：本地模型身份真相 = 萤核AI引擎桥接快照
+          engineBridgeService.getSnapshot().model || ''
 
     return `${modelId}_${context.filePath}_${context.fileSize}_${context.modifiedAt?.getTime() || 0}`
   }

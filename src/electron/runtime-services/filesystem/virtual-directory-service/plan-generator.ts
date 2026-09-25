@@ -3,6 +3,8 @@ import path from 'node:path'
 import { databaseService } from '../../database/database-service'
 import { virtualDirectoryService } from './VirtualDirectoryService'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+// PRD-0044：本地模型身份真相 = 萤核AI引擎桥接快照
+import { engineBridgeService } from '../../engine-bridge'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
 import { DirectoryContextService } from '../directory-context-service'
 import Database from 'better-sqlite3'
@@ -203,18 +205,15 @@ export async function generateNameAndStrategyCandidates(
 
   const config = ConfigOrchestrator.getInstance()
   const aiServiceMode = config.getValue<string>('AI_SERVICE_MODE')
-  const activeSource = config.getValue<string>('SELECTED_MODEL_SOURCE')
+  // PRD-0044：SELECTED_MODEL_ID/SOURCE 配置键删除，本地模型身份真相 = 萤核AI引擎桥接快照
   const selectedModelId =
     aiServiceMode === 'cloud'
       ? (config.getValue<string>('AI_CLOUD_SELECTED_MODEL_ID') as string)
-      : (config.getValue<string>('SELECTED_MODEL_ID') as string)
+      : (engineBridgeService.getSnapshot().model || '')
 
   let numPredict = 8192
   if (selectedModelId) {
-    let modelConfig = unifiedModelManager.getModelById(selectedModelId, activeSource)
-    if (!modelConfig) {
-      modelConfig = unifiedModelManager.getModelById(selectedModelId)
-    }
+    let modelConfig = unifiedModelManager.getModelById(selectedModelId)
     if (!modelConfig) {
       const allModels = unifiedModelManager.getAllModels()
       modelConfig = allModels.find(m => m.id === selectedModelId || m.name === selectedModelId)
@@ -253,9 +252,12 @@ export async function checkIsLimitPredict(): Promise<boolean> {
   const aiServiceMode = config.getValue<string>('AI_SERVICE_MODE')
   let numPredict = 2048
   if (aiServiceMode !== 'cloud') {
-    const selectedModelId = config.getValue<string>('SELECTED_MODEL_ID')
+    // PRD-0044：本地模型身份真相 = 萤核AI引擎桥接快照
+    const selectedModelId = engineBridgeService.getSnapshot().model || ''
     if (selectedModelId) {
-      const modelConfig = unifiedModelManager.getModelById(selectedModelId)
+      const modelConfig =
+        unifiedModelManager.getModelById(selectedModelId) ||
+        unifiedModelManager.getAllModels().find(m => m.id === selectedModelId || m.name === selectedModelId)
       if (modelConfig?.recommendedConfig?.numPredict !== undefined) {
         numPredict = modelConfig.recommendedConfig.numPredict
       }

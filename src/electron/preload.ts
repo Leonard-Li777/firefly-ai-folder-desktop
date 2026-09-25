@@ -8,12 +8,12 @@ import type {
   DirectoryItem,
   FileItem
 } from '@firefly/types'
-import { AppConfig, DownloadProgressEvent, FileInfo, WorkspaceDirectory } from '@firefly/types'
+import { AppConfig, FileInfo, WorkspaceDirectory } from '@firefly/types'
 import { LogCategory, logger } from '@firefly/shared'
 import { contextBridge, ipcRenderer } from 'electron'
 
 import type { ConfigKey } from '@firefly/types/config-types'
-import { IModelRecommendation } from '@firefly/types/model-manager'
+// PRD-0044（S5）：IModelRecommendation 类型导入随 recommendModelsByHardware IPC 清退删除
 // 仅类型导入（编译期擦除，不引入主进程运行时依赖），用于引擎桥 IPC 类型化（Fix-05）
 import type { EngineBridgeSnapshot } from './runtime-services/engine-bridge'
 
@@ -314,35 +314,13 @@ const electronAPI = {
     return () => ipcRenderer.removeListener(channel, handler)
   },
 
-  // 模型管理
-  listModels: (): Promise<any[]> => ipcRenderer.invoke('list-models'),
-  listModelsFast: (): Promise<any[]> => ipcRenderer.invoke('list-models-fast'),
-  getAllModels: (): Promise<any[]> => ipcRenderer.invoke('get-all-models'),
-  getBuiltinModelId: (): Promise<string> => ipcRenderer.invoke('get-builtin-model-id'),
-  checkModelsStatus: (): Promise<
-    Record<string, { isDownloaded: boolean; downloadProgress?: number }>
-  > => ipcRenderer.invoke('check-models-status'),
+  // PRD-0044（S5）：模型管理 IPC（listModels / listModelsFast / getAllModels /
+  // getBuiltinModelId / checkModelsStatus）随模型列表清退删除，模型身份归萤核AI引擎独占
   getHardwareInfo: (): Promise<any> => ipcRenderer.invoke('get-hardware-info'),
   getMachineId: (): Promise<string> => ipcRenderer.invoke('get-machine-id'),
-  recommendModelsByHardware: (
-    memoryGB: number,
-    hasGPU: boolean,
-    vramGB?: number
-  ): Promise<IModelRecommendation> =>
-    ipcRenderer.invoke('recommend-models-by-hardware', memoryGB, hasGPU, vramGB),
-  getModelPath: (modelId: string): Promise<string | null> =>
-    ipcRenderer.invoke('get-model-path', modelId),
+  // PRD-0044（S5）：recommendModelsByHardware / getModelPath / deleteModel /
+  // migrateBuiltinModels / migrateFromOldPath 随模型管理与本地下载链清退删除
   getLlamaServerPort: (): Promise<number | null> => ipcRenderer.invoke('llama-server-port'),
-  deleteModel: (modelId: string): Promise<void> => ipcRenderer.invoke('delete-model', modelId),
-
-  migrateBuiltinModels: (targetDir: string): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('llama/migrate-builtin-models', targetDir),
-
-  migrateFromOldPath: (
-    oldPath: string,
-    newPath: string
-  ): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke('llama/migrate-from-old-path', oldPath, newPath),
 
   onModelMigrationProgress: (callback: (message: string) => void) => {
     const handler = (_event: any, message: string) => callback(message)
@@ -350,22 +328,8 @@ const electronAPI = {
     return () => ipcRenderer.removeListener('llama/model-migration-progress', handler)
   },
 
-  // 模型下载事件
-  onModelDownloadProgress: (callback: (payload: DownloadProgressEvent) => void) => {
-    const handler = (_event: any, payload: any) => callback(payload)
-    ipcRenderer.on('model-download-progress', handler)
-    return () => ipcRenderer.removeListener('model-download-progress', handler)
-  },
-  onModelDownloadComplete: (callback: (payload: DownloadProgressEvent) => void) => {
-    const handler = (_event: any, payload: any) => callback(payload)
-    ipcRenderer.on('model-download-complete', handler)
-    return () => ipcRenderer.removeListener('model-download-complete', handler)
-  },
-  onModelDownloadError: (callback: (payload: DownloadProgressEvent) => void) => {
-    const handler = (_event: any, payload: any) => callback(payload)
-    ipcRenderer.on('model-download-error', handler)
-    return () => ipcRenderer.removeListener('model-download-error', handler)
-  },
+  // PRD-0044（S5）：模型下载事件（onModelDownloadProgress / Complete / Error）
+  // 随桌面端下载链清退删除，下载进度由萤核AI引擎自管
 
   onSSLCertificateError: (callback: (event: any) => void) => {
     const handler = (_event: any, payload: any) => callback(payload)
@@ -1243,15 +1207,7 @@ contextBridge.exposeInMainWorld('electronLLM', {
     }
   },
 
-  // 获取模型路径
-  getModelPath: async (modelAlias: string) => {
-    try {
-      const modelPath = await ipcRenderer.invoke('get-model-path', modelAlias)
-      return modelPath
-    } catch (error) {
-      throw error
-    }
-  },
+  // PRD-0044（S5）：electronLLM.getModelPath 随 'get-model-path' IPC 清退删除
 
   // 检查 AI 服务状态
   checkStatus: async () => {

@@ -8,7 +8,7 @@ import { globalLlamaIndexService } from '../state'
 import type { AppConfig, ConfigKey } from '@firefly/types'
 import {
   registerCloudModelConfigIPCHandlers,
-  registerLocalModelConfigIPCHandlers,
+  // PRD-0044（S5）：registerLocalModelConfigIPCHandlers 随模型迁移 IPC 清退删除
   registerSettingsIPCHandlers
 } from '../../runtime-services/ipc'
 
@@ -83,6 +83,5 @@ export function registerConfigIPCHandlers() {
 
   registerSettingsIPCHandlers()
   registerCloudModelConfigIPCHandlers()
-  registerLocalModelConfigIPCHandlers()
 }
 

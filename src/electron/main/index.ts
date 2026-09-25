@@ -342,7 +342,7 @@ import { LicenseService, LicenseStatus } from '../runtime-services/system/licens
 import { regionDetectionService } from '../runtime-services/system/region-detection-service'
 import { postHogMain } from '../services/posthog-service'
 
-import { llamaModelManager } from '../runtime-services/llama/llama-model-manager'
+// PRD-0044（S4）：llamaModelManager 导入随 MODEL_STORAGE_PATH 订阅点删除后已无使用，清退
 import { omniService } from '../runtime-services/system/omni-service'
 import { hardwareDetectionService } from '../runtime-services/system/hardware-detection-service'
 import { deploymentIntegrityVerifier } from '../runtime-services/llama/deployment-integrity-verifier'
@@ -609,29 +609,8 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
   }
 )
 
-ConfigOrchestrator.getInstance().onValueChange<string>(
-  'MODEL_STORAGE_PATH',
-  async (newPath, oldPath) => {
-    if (newPath !== oldPath) {
-      logger.info(
-        LogCategory.MAIN,
-        `模型存储路径由 ${oldPath} 切换为 ${newPath}，正在刷新模型管理器...`
-      )
-      try {
-        llamaModelManager.refreshBaseDirectory()
-        const resources = await hardwareDetectionService.detectSystemResources(true)
-        ConfigOrchestrator.getInstance().updateValues({ HARDWARE_STORAGE_INFO: resources.storage })
-        if (globalLlamaIndexService) {
-          await globalLlamaIndexService.reloadConfig().catch(err => {
-            logger.warn(LogCategory.MAIN, 'AI 服务重新加载配置失败:', err.message)
-          })
-        }
-      } catch (error) {
-        logger.error(LogCategory.MAIN, '刷新模型路径相关服务失败:', error)
-      }
-    }
-  }
-)
+// PRD-0044：MODEL_STORAGE_PATH 配置键删除，模型目录由萤核AI引擎独占管理，
+// 原"模型存储路径变更 → 刷新模型管理器/硬件/AI服务"订阅点一并移除
 
 ConfigOrchestrator.getInstance().onValueChange<string>(
   'AI_ENGINE',

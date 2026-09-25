@@ -7,7 +7,7 @@
  */
 
 import { AppConfig, WorkspaceDirectory } from '@yonuc/types'
-import { IModelRecommendation, IModelSummary } from '@yonuc/types/model-manager'
+// PRD-0044（S5）：IModelRecommendation / IModelSummary 导入随模型管理与推荐 IPC 清退删除
 import type { ConfigKey } from '@yonuc/types/config-types'
 import { FileInfo } from '@yonuc/core-engine'
 import {
@@ -285,23 +285,8 @@ interface AIClassificationRequest {
   metadata?: Record<string, unknown>
 }
 
-// 模型下载进度接口
-interface ModelDownloadProgress {
-  modelId: string
-  progress: number
-  speed: string
-}
-
-// 模型下载完成接口
-interface ModelDownloadComplete {
-  modelId: string
-}
-
-// 模型下载错误接口
-interface ModelDownloadError {
-  modelId: string
-  error: string
-}
+// PRD-0044（S5）：ModelDownloadProgress / Complete / Error 接口随模型下载 IPC 清退删除
+// （桌面端下载链归萤核AI引擎独占）
 
 // 模型状态变化接口
 interface ModelStatusChange {
@@ -513,29 +498,14 @@ declare global {
       onModelStatusChanged: (callback: (payload: ModelStatusChange) => void) => () => void
       onModelNotDownloaded: (callback: (payload: { modelId?: string }) => void) => () => void
 
-      // 模型管理
-      listModels: () => Promise<IModelSummary[]>
-      listModelsFast: () => Promise<IModelSummary[]>
+      // PRD-0044（S5）：模型管理 IPC 声明（listModels / listModelsFast /
+      // recommendModelsByHardware / isModelDownloaded / getModelPath / startModelDownload /
+      // cancelModelDownload / deleteModel / migrateBuiltinModels / migrateFromOldPath）
+      // 与模型下载事件声明随模型管理与本地下载链清退删除，模型身份归萤核AI引擎独占
       getHardwareInfo: () => Promise<HardwareInfo>
-      recommendModelsByHardware: (
-        memoryGB: number,
-        hasGPU: boolean,
-        vramGB?: number
-      ) => Promise<IModelRecommendation>
-      isModelDownloaded: (modelId: string) => Promise<boolean>
-      getModelPath: (modelId: string) => Promise<string | null>
-      startModelDownload: (modelId: string) => Promise<void>
-      cancelModelDownload: (taskId: string) => Promise<void>
-      deleteModel: (modelId: string) => Promise<void>
-
-      migrateBuiltinModels: (targetDir: string) => Promise<{ success: boolean; error?: string }>
-      migrateFromOldPath: (oldPath: string, newPath: string) => Promise<{ success: boolean; error?: string }>
       onModelMigrationProgress: (callback: (message: string) => void) => () => void
 
-      // 模型下载事件
-      onModelDownloadProgress: (callback: (payload: ModelDownloadProgress) => void) => () => void
-      onModelDownloadComplete: (callback: (payload: ModelDownloadComplete) => void) => () => void
-      onModelDownloadError: (callback: (payload: ModelDownloadError) => void) => () => void
+      // 模型下载事件（PRD-0044 S5：onModelDownloadProgress/Complete/Error 已清退）
       onSSLCertificateError: (callback: (event: Event) => void) => () => void
 
       // 工作目录更新事件
@@ -752,7 +722,7 @@ declare global {
       initialized: boolean
       initialize: () => Promise<AIServiceInitResult>
       chat: (options: ElectronLLMChatOptions) => Promise<ElectronLLMChatResult>
-      getModelPath: (modelAlias: string) => Promise<string>
+      // PRD-0044（S5）：getModelPath 随 'get-model-path' IPC 清退删除
       checkStatus: () => Promise<ElectronLLMStatus>
     }
 

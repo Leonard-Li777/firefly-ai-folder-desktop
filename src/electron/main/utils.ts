@@ -195,11 +195,11 @@ export const enrichAIStatus = async (info: any) => {
 
   const orchestrator = ConfigOrchestrator.getInstance()
   const currentMode = info.modelMode || orchestrator.getValue<string>('AI_SERVICE_MODE') || 'local'
+  // PRD-0044：本地分支模型身份唯一真相 = 萤核AI引擎侧当前加载模型（桥接快照），SELECTED_MODEL_ID/SOURCE 已删除
   const currentSelectedModelId =
     currentMode === 'cloud'
       ? orchestrator.getValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
-      : orchestrator.getValue<string>('SELECTED_MODEL_ID')
-  const currentSelectedSource = orchestrator.getValue<string>('SELECTED_MODEL_SOURCE')
+      : (await import('../runtime-services/engine-bridge')).engineBridgeService.getSnapshot().model
   const currentCloudProvider = orchestrator.getValue<string>('AI_CLOUD_PROVIDER')
 
   // Create a stable cache key based on model identity AND engine config AND selected model in orchestrator
@@ -208,7 +208,6 @@ export const enrichAIStatus = async (info: any) => {
     modelMode: currentMode,
     provider: info.provider,
     selectedModelId: currentSelectedModelId,
-    selectedSource: currentSelectedSource,
     cloudProvider: currentCloudProvider,
     error: info.error
       ? typeof info.error === 'string'
@@ -297,14 +296,14 @@ export const enrichAIStatus = async (info: any) => {
     if (!enriched.provider) enriched.provider = null
   }
 
-  // 兜底补全：如果 modelName 为空或为 generic 标识，从配置中心提取真实的 SELECTED_MODEL_ID
+  // 兜底补全：如果 modelName 为空或为 generic 标识，取引擎桥接快照中当前加载的模型名
   if (enriched.modelMode === 'local') {
     if (
       !enriched.modelName ||
       enriched.modelName === 'unknown' ||
       enriched.modelName === 'llama.cpp'
     ) {
-      const fallbackModelId = ConfigOrchestrator.getInstance().getValue<string>('SELECTED_MODEL_ID')
+      const fallbackModelId = currentSelectedModelId
       if (fallbackModelId) {
         enriched.modelName = fallbackModelId
       }
@@ -333,15 +332,12 @@ export const enrichAIStatus = async (info: any) => {
       unifiedModelManager.ensureLoaded()
       const rawModels = unifiedModelManager.getAllModels()
 
-      // 1. 优先使用配置中心精准指定的 SELECTED_MODEL_ID 和 SELECTED_MODEL_SOURCE 匹配
-      let model = rawModels.find(
-        m =>
-          m.id === currentSelectedModelId &&
-          (!currentSelectedSource || m.source === currentSelectedSource)
-      )
-      if (!model && currentSelectedModelId) {
-        model = rawModels.find(m => m.id === currentSelectedModelId)
-      }
+      // 1. 优先用引擎桥接快照的当前模型名反查元数据（PRD-0044：id 或 name 匹配任一即可）
+      let model = currentSelectedModelId
+        ? rawModels.find(
+            m => m.id === currentSelectedModelId || m.name === currentSelectedModelId
+          )
+        : undefined
 
       // 2. 回退：如果根据配置没查到，再根据传入的 enriched.modelName 精确匹配
       if (!model && enriched.modelName) {
@@ -437,7 +433,7 @@ export const enrichAIStatus = async (info: any) => {
 
   // Cache the enriched properties
   const enrichData = {
-    targetModelId: currentSelectedModelId,
+    targetModelId: currentSelectedModelId ?? undefined,
     error: enriched.error,
     modelMode: enriched.modelMode,
     modelName: enriched.modelName,

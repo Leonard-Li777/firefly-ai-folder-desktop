@@ -12,6 +12,8 @@ import Database from 'better-sqlite3'
 import path from 'node:path'
 import { t } from '@app/languages'
 import { databaseService } from '../../database/database-service'
+// PRD-0044：本地模型身份真相 = 萤核AI引擎桥接快照
+import { engineBridgeService } from '../../engine-bridge'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { DirectoryContextService } from '../directory-context-service'
 import { unifiedModelManager } from '../../llama/unified-model-manager'
@@ -259,17 +261,14 @@ export class AISchemeGenerator {
   private getNumPredict(): number {
     const config = ConfigOrchestrator.getInstance()
     const aiServiceMode = config.getValue<string>('AI_SERVICE_MODE')
-    const activeSource = config.getValue<string>('SELECTED_MODEL_SOURCE')
+    // PRD-0044：SELECTED_MODEL_ID/SOURCE 配置键删除，本地模型身份真相 = 萤核AI引擎桥接快照
     const selectedModelId =
       aiServiceMode === 'cloud'
         ? (config.getValue<string>('AI_CLOUD_SELECTED_MODEL_ID') as string)
-        : (config.getValue<string>('SELECTED_MODEL_ID') as string)
+        : (engineBridgeService.getSnapshot().model || '')
 
     if (selectedModelId) {
-      let modelConfig = unifiedModelManager.getModelById(selectedModelId, activeSource)
-      if (!modelConfig) {
-        modelConfig = unifiedModelManager.getModelById(selectedModelId)
-      }
+      let modelConfig = unifiedModelManager.getModelById(selectedModelId)
       if (!modelConfig) {
         const allModels = unifiedModelManager.getAllModels()
         modelConfig = allModels.find(m => m.id === selectedModelId || m.name === selectedModelId)

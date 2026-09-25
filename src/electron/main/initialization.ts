@@ -529,7 +529,8 @@ export async function initializeFullServices(): Promise<void> {
       )
     }
 
-    const modelStoragePath = ConfigOrchestrator.getInstance().getValue<string>('MODEL_STORAGE_PATH')
+    // PRD-0044：MODEL_STORAGE_PATH 配置键删除；内置元数据底座迁移按默认底座目录（userData/models）静默执行
+    const modelStoragePath = unifiedModelManager.getModelBaseDir()
     try {
       await modelMigrationService.migrateModels(modelStoragePath, true)
     } catch (err) {
@@ -639,8 +640,7 @@ export async function initializeFullServices(): Promise<void> {
       // 监听模型配置更新，发生变更时强行使状态缓存与能力缓存失效
       ConfigOrchestrator.getInstance().onConfigChange(changes => {
         if (
-          'SELECTED_MODEL_ID' in changes ||
-          'SELECTED_MODEL_SOURCE' in changes ||
+          // PRD-0044：SELECTED_MODEL_ID / SELECTED_MODEL_SOURCE 订阅点随配置键删除（本地模型身份以引擎桥接快照为准）
           'AI_CLOUD_SELECTED_MODEL_ID' in changes ||
           'AI_SERVICE_MODE' in changes ||
           'AI_CLOUD_PROVIDER' in changes
@@ -656,10 +656,12 @@ export async function initializeFullServices(): Promise<void> {
       service.onStatusChange(async info => {
         const orchestrator = ConfigOrchestrator.getInstance()
         const mode = orchestrator.getValue<string>('AI_SERVICE_MODE') || 'local'
+        // PRD-0044：本地分支模型身份唯一真相 = 萤核AI引擎侧当前加载模型（桥接快照），desktop 不再读 SELECTED_MODEL_ID
         const activeModelId =
           mode === 'cloud'
             ? orchestrator.getValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
-            : orchestrator.getValue<string>('SELECTED_MODEL_ID')
+            : (await import('../runtime-services/engine-bridge')).engineBridgeService.getSnapshot()
+                .model
         const cloudProvider =
           mode === 'cloud' ? orchestrator.getValue<string>('AI_CLOUD_PROVIDER') : null
 

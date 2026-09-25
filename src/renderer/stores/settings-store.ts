@@ -99,17 +99,12 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
     icon: 'folder_open',
     description: t('目录管理和自动监听')
   },
-  {
-    id: SettingsCategory.AI_MODEL,
-    name: t('模型管理'),
-    icon: 'psychology',
-    description: t('本地/云端模型配置')
-  },
+  // PRD-0044：模型管理（AI_MODEL）分类清退，与 AI引擎配置 合并为唯一「高级AI引擎配置」tab
   {
     id: SettingsCategory.AI_ENGINE_CONFIG,
-    name: t('AI引擎配置'),
+    name: t('高级AI引擎配置'),
     icon: 'settings_suggest',
-    description: t('引擎切换、思考模式')
+    description: t('生效引擎选择、云端配置与思考模式')
   },
   {
     id: SettingsCategory.ANALYSIS,

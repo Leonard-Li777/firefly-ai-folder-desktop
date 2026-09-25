@@ -7,7 +7,8 @@ import { t } from '@app/languages'
 import { ILlamaRuntimeAdapter } from '@firefly/core-engine'
 import { llamaServerService } from '@firefly/electron-llamaIndex-service'
 import { modelCapabilityDetector } from '../runtime-services/llama'
-import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
+// PRD-0044：SELECTED_MODEL_ID 配置键删除，当前模型身份改读萤核AI引擎桥接快照
+import { engineBridgeService } from '../runtime-services/engine-bridge'
 import { logger, LogCategory, FileCategory, isCategory } from '@firefly/shared'
 import sharp from 'sharp'
 import fs from 'node:fs'
@@ -307,13 +308,9 @@ export class LlamaRuntimeAdapter implements ILlamaRuntimeAdapter {
   }
 
   getCurrentModelId(): string | null {
-    // 从modelService获取当前加载的模型ID
+    // PRD-0044：本地模型身份唯一真相 = 萤核AI引擎桥接快照的当前加载模型（SELECTED_MODEL_ID 配置键已删除）
     try {
-      // 使用async/await异步方法获取
-      const currentModelId = ConfigOrchestrator.getInstance().getValue<string>(
-        'SELECTED_MODEL_ID'
-      ) as string
-      return currentModelId ?? null
+      return engineBridgeService.getSnapshot().model || null
     } catch (error) {
       logger.error(LogCategory.MODEL_SERVICE, '获取当前模型ID失败:', error)
       return null

@@ -257,8 +257,8 @@ export function registerAIServiceIPCHandlers() {
   // 监听模型配置更新，配置变动时强行失效 lastGetAIStatusCache
   ConfigOrchestrator.getInstance().onConfigChange(changes => {
     if (
-      'SELECTED_MODEL_ID' in changes ||
-      'SELECTED_MODEL_SOURCE' in changes ||
+      // PRD-0044：SELECTED_MODEL_ID / SELECTED_MODEL_SOURCE 订阅点随配置键删除；
+      // 本地模型身份来自引擎桥接快照，已并入下方 modelKey 计算，引擎侧切换模型会自然使缓存失效
       'AI_CLOUD_SELECTED_MODEL_ID' in changes ||
       'AI_SERVICE_MODE' in changes ||
       'AI_CLOUD_PROVIDER' in changes
@@ -300,14 +300,15 @@ export function registerAIServiceIPCHandlers() {
         logger.error(LogCategory.MAIN, '[IPC] Failed to fetch capabilities for model info:', err)
       }
 
-      // 修正：构建模型身份键 + 选中的模型ID + 引擎配置键，确保切换模型后立即使 get-ai-status 缓存失效
+      // 修正：构建模型身份键 + 当前生效模型 + 引擎配置键，确保切换模型后立即使 get-ai-status 缓存失效
       const config = ConfigOrchestrator.getInstance()
       const mode = info.modelMode || config.getValue<string>('AI_SERVICE_MODE') || 'local'
+      // PRD-0044：本地分支模型身份唯一真相 = 萤核AI引擎侧当前加载模型（桥接快照），SELECTED_MODEL_ID/SOURCE 已删除
       const activeModelId =
         mode === 'cloud'
           ? config.getValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
-          : config.getValue<string>('SELECTED_MODEL_ID')
-      const activeSource = config.getValue<string>('SELECTED_MODEL_SOURCE')
+          : (await import('../../runtime-services/engine-bridge')).engineBridgeService.getSnapshot()
+              .model
       const activeCloudProvider = config.getValue<string>('AI_CLOUD_PROVIDER')
 
       const modelKey = JSON.stringify({
@@ -315,7 +316,6 @@ export function registerAIServiceIPCHandlers() {
         modelMode: mode,
         provider: info.provider,
         selectedModelId: activeModelId,
-        selectedSource: activeSource,
         cloudProvider: activeCloudProvider,
         // 引擎配置影响 backend 值，切换引擎时需使缓存失效
         aiEngine: config.getValue<string>('AI_ENGINE'),

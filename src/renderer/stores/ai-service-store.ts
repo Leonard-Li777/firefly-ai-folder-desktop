@@ -47,8 +47,7 @@ export interface IAIServiceState {
   selectedModelId?: string
   /** 模型切换状态 */
   isModelSwitching: boolean
-  /** 是否正在切换 GPU 驱动模式（兼容模式/高性能模式） */
-  isGpuSwitching: boolean
+  // PRD-0044（S5）：isGpuSwitching 链随 GpuDriverOverlay 与本地引擎切换清退一并删除
   /** 错误详情对话框是否显示（由用户手动点击错误提示打开） */
   isErrorDialogOpen: boolean
   /** 最后的模型切换错误 */
@@ -97,8 +96,7 @@ export interface IAIServiceActions {
   resetState: () => void
   /** 更新最后活动时间 */
   updateLastActivity: () => void
-  /** 设置 GPU 驱动切换状态 */
-  setIsGpuSwitching: (switching: boolean) => void
+  // PRD-0044（S5）：setIsGpuSwitching 声明随 isGpuSwitching 状态一并删除
 }
 
 /**
@@ -141,7 +139,6 @@ export const useAIServiceStore = create<TAIServiceStore>()(
     currentPhase: StartupPhase.CONFIGURATION,
     selectedModelId: undefined,
     isModelSwitching: false,
-    isGpuSwitching: false,
     isErrorDialogOpen: false,
     lastModelSwitchError: undefined,
     initializationAttempts: 0,
@@ -420,11 +417,7 @@ export const useAIServiceStore = create<TAIServiceStore>()(
         // 保存强制CPU模式到配置（后端适配器会直接从 ConfigOrchestrator 读取）
         try {
           await window.electronAPI?.updateConfigValue('AI_ENGINE_FORCE_CPU_MODE', true)
-          // 自动切换到内置模型（CPU 模式较慢，需要小模型）
-          const builtinId = await window.electronAPI?.getBuiltinModelId?.()
-          if (builtinId) {
-            await window.electronAPI?.updateConfigValue('SELECTED_MODEL_ID', builtinId)
-          }
+          // PRD-0044：SELECTED_MODEL_ID 配置键删除，模型切换归萤核AI引擎独占，渲染层不再自动回切内置模型
         } catch (e) {
           logger.warn(LogCategory.AI_SERVICE, '[AIServiceStore] 保存 CPU 模式配置失败:', e)
         }
@@ -712,14 +705,9 @@ export const useAIServiceStore = create<TAIServiceStore>()(
       set({
         lastActivity: new Date()
       })
-    },
-
-    setIsGpuSwitching: (switching: boolean) => {
-      set({ isGpuSwitching: switching })
-      if (switching) {
-        set({ error: null })
-      }
     }
+
+    // PRD-0044（S5）：setIsGpuSwitching 实现随 isGpuSwitching 状态一并删除
   }))
 )
 
@@ -1016,15 +1004,7 @@ if (typeof window !== 'undefined' && window.electronAPI) {
     }
 
     useAIServiceStore.setState(state => {
-      // 正在切换 GPU 驱动模式（兼容模式/高性能模式）时，静默并不记录任何致命错误
-      if (state.isGpuSwitching) {
-        return {
-          status: toAIServiceStatus(payload.status),
-          capabilities: finalCapabilities,
-          error: null,
-          lastActivity: new Date()
-        }
-      }
+      // PRD-0044（S5）：原 isGpuSwitching 静默分支随 GPU 驱动切换 overlay 清退删除
 
       // 正在切换模型时，忽略 STOPPED 等过渡状态，避免覆盖 RESTARTING 状态
       // 使用模块级 __isModelSwitching 而非 state.isModelSwitching，

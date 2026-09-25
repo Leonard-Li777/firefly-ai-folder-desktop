@@ -15,7 +15,7 @@ import React, { useState, useCallback, memo } from 'react'
 import { settingsCategories, useSettingsStore } from '../../stores/settings-store'
 
 import { AIEngineConfigSettings } from './ai-engine-config-settings'
-import { AIModelSettings } from './ai-model-settings'
+// PRD-0044：模型管理 tab（ai-model-settings）整体清退，与 AI引擎配置 合并为「高级AI引擎配置」
 import { AnalysisSettings } from './analysis-settings'
 import { Button } from '../ui/button'
 import { FileDisplaySettings } from './file-display-settings'
@@ -27,7 +27,6 @@ import { t } from '@app/languages'
 
 const MemoizedInterfaceSettings = memo(InterfaceSettings)
 const MemoizedFileDisplaySettings = memo(FileDisplaySettings)
-const MemoizedAIModelSettings = memo(AIModelSettings)
 const MemoizedAIEngineConfigSettings = memo(AIEngineConfigSettings)
 const MemoizedAnalysisSettings = memo(AnalysisSettings)
 const MemoizedMonitoringSettings = memo(MonitoringSettings)
@@ -38,7 +37,6 @@ const CATEGORY_COMPONENTS: Array<{
 }> = [
   { category: SettingsCategory.INTERFACE, Component: MemoizedInterfaceSettings },
   { category: SettingsCategory.FILE_DISPLAY, Component: MemoizedFileDisplaySettings },
-  { category: SettingsCategory.AI_MODEL, Component: MemoizedAIModelSettings },
   { category: SettingsCategory.AI_ENGINE_CONFIG, Component: MemoizedAIEngineConfigSettings },
   { category: SettingsCategory.ANALYSIS, Component: MemoizedAnalysisSettings },
   { category: SettingsCategory.MONITORING, Component: MemoizedMonitoringSettings }

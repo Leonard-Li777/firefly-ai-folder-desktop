@@ -48,7 +48,7 @@ const DEFAULT_CONFIG: AppConfig = {
   language: 'zh-CN',
   defaultView: 'grid',
   fileListExtraFields: [],
-  modelPath: undefined,
+  // PRD-0044：modelPath 桥接字段随 MODEL_STORAGE_PATH 配置键删除
   isFirstRun: false,
   isPrivateDirectoryUnlocked: false
 }

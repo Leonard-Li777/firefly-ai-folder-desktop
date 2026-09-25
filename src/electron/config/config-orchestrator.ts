@@ -179,8 +179,6 @@ export class ConfigOrchestrator extends EventEmitter {
     const config = this.getRendererConfig()
 
     // 注入 unified-config 中的关键配置项到 AppConfig 顶层（用于兼容）
-    const selectedModelId = this.getValue('SELECTED_MODEL_ID') as string | undefined
-    const modelPath = this.getValue('MODEL_STORAGE_PATH') as string
     const language = this.getValue('DEFAULT_LANGUAGE') as any
     const theme = this.getValue('THEME_MODE') as any
     const showEmptyTags = this.getValue('SHOW_EMPTY_TAGS') as boolean
@@ -192,8 +190,6 @@ export class ConfigOrchestrator extends EventEmitter {
       language,
       theme,
       showEmptyTags,
-      selectedModelId,
-      modelPath,
       nextVersion,
       LATEST_NEWS: latestNews,
       ui: {
@@ -269,11 +265,8 @@ export class ConfigOrchestrator extends EventEmitter {
       }
 
       // 2. 特殊处理未映射的顶层字段
-      if (field === 'selectedModelId') {
-        await this.updateValue('SELECTED_MODEL_ID', value)
-      } else if (field === 'modelPath') {
-        await this.updateValue('MODEL_STORAGE_PATH', value)
-      } else if (field === 'language') {
+      // PRD-0044：selectedModelId/modelPath 旧字段名兼容注入随三配置键一并删除
+      if (field === 'language') {
         await this.updateValue('DEFAULT_LANGUAGE', value)
       } else if (field === 'theme') {
         await this.updateValue('THEME_MODE', value)

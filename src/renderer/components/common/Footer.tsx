@@ -567,7 +567,7 @@ export function Footer() {
                 className={`${
                   effectiveAiServiceInfo.color
                 } transition-all duration-200 hover:underline cursor-pointer truncate max-w-[480px] block`}
-                onClick={() => openSettings(SettingsCategory.AI_MODEL)}
+                onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
                 title={effectiveAiServiceInfo.text}
               >
                 {' '}
@@ -599,7 +599,7 @@ export function Footer() {
                 {showRecommendation && (
                   <button
                     className="text-xs leading-tight text-red-500/90 font-medium transition-all duration-200 hover:underline cursor-pointer block truncate max-w-[480px]"
-                    onClick={() => openSettings(SettingsCategory.AI_MODEL)}
+                    onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
                     title={t('检测到您有高性能显卡，请切换更聪明的AI模型，立即设置')}
                   >
                     {t('检测到您有高性能显卡，请切换更聪明的AI模型，立即设置')}
