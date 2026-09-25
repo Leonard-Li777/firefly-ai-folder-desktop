@@ -4,6 +4,8 @@ import { useShallow } from 'zustand/react/shallow'
 import { AnalysisQueueSnapshot, AnalysisQueueItem, AnalysisStatus } from '@firefly/types/types'
 import { captureEvent } from '../lib/posthog'
 import { useVirtualDirectoryStore } from './virtual-directory-store'
+import { useSettingsStore } from './settings-store'
+import { notifyCloudAnalyzeSuccess, notifyCloudAnalyzeFailure } from '../lib/cloud-engine-probe'
 
 interface AnalysisQueueState {
   snapshot: AnalysisQueueSnapshot
@@ -401,6 +403,33 @@ if (!(typeof window !== 'undefined' && (window as any)[GLOBAL_INIT_KEY])) {
 
       const items = snap.items || []
       const completedItems = items.filter((i: any) => i.status === 'completed')
+
+      // PRD-0045：分析管线云端成功点亮「已启动」/失败写入引擎异常（仅生效引擎=cloud 时）
+      try {
+        const mode = useSettingsStore.getState()?.config?.aiServiceMode
+        if (mode === 'cloud') {
+          const prevCompleted = (prevSnapshot?.items || []).filter(
+            (i: any) => i.status === 'completed'
+          ).length
+          if (completedItems.length > prevCompleted) {
+            notifyCloudAnalyzeSuccess()
+          }
+          const prevFailed = (prevSnapshot?.items || []).filter(
+            (i: any) => i.status === 'failed'
+          ).length
+          const failedItems = items.filter((i: any) => i.status === 'failed')
+          if (failedItems.length > prevFailed) {
+            const last = failedItems[failedItems.length - 1]
+            notifyCloudAnalyzeFailure(last?.error || last?.message || String(last?.status || 'failed'), {
+              provider: '',
+              model: '',
+              asActiveEngine: true
+            })
+          }
+        }
+      } catch {
+        // 状态通知失败不影响分析队列本身
+      }
 
       if (lastRunningState && !snap.running) {
         const failedCount = items.filter((i: any) => i.status === 'failed').length

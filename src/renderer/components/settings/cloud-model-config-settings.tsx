@@ -9,6 +9,7 @@ import { logger, LogCategory } from '@firefly/shared'
 import type { CloudModelConfig, ProviderModel } from '@firefly/types'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useCloudModelConfigStore } from '../../stores/cloud-model-config-store'
+import { useCloudEngineStatusStore } from '../../stores/cloud-engine-status-store'
 import CloudModelConfigAPI from '../../api/cloud-model-config-api'
 import { Loader2, ChevronDown, Check, AlertTriangle, Star } from 'lucide-react'
 import i18nScope, { t } from '@app/languages'
@@ -403,6 +404,8 @@ export const CloudModelConfigSettings: React.FC = () => {
       }
 
       setCachedModels(draft.provider, models)
+      // 已连接严格条件之一：成功拉取模型列表（PRD-0045）
+      useCloudEngineStatusStore.getState().markModelsFetched()
 
       const hasModel = models.some(m => m.id === draft.model)
       const selectedModel = hasModel ? draft.model : models[0].id
@@ -420,6 +423,17 @@ export const CloudModelConfigSettings: React.FC = () => {
       const message = error instanceof Error ? error.message : t('未知错误')
       toast.error(message)
       logger.error(LogCategory.RENDERER, '测试连接或获取模型列表失败:', error)
+      // 手动点测失败写入错误卡；仅生效引擎=云端 时才置引擎异常（PRD-0045 Q12 A）
+      // 手动点测失败只写错误卡，不改徽章（PRD-0045 Q12 A / US#20）
+      useCloudEngineStatusStore.getState().markFailed(
+        {
+          provider: draft.provider || '',
+          model: draft.model || '',
+          stage: 'fetch-models',
+          message
+        },
+        { asActiveEngine: false }
+      )
     } finally {
       setTestingIndex(null)
       setFetchingModelsProvider(null)
@@ -455,6 +469,8 @@ export const CloudModelConfigSettings: React.FC = () => {
 
     try {
       await CloudModelConfigAPI.testConfig(testConfig)
+      // 探针成功点亮已启动（复用 testConfig，PRD-0045）
+      useCloudEngineStatusStore.getState().markStarted()
 
       // 顺序写入所有云端配置，确保数据到位再触发服务切换，
       // 避免 AI_SERVICE_MODE 先于 AI_CLOUD_BASE_URL 写入导致的竞态
@@ -470,6 +486,16 @@ export const CloudModelConfigSettings: React.FC = () => {
       const message = error instanceof Error ? error.message : t('未知错误')
       toast.error(t('无法激活为云端配置，错误信息：{message}', { message }))
       logger.error(LogCategory.RENDERER, '设置选中云端配置失败:', error)
+      // 手动激活失败只写错误卡，不改徽章（PRD-0045 Q12 A）
+      useCloudEngineStatusStore.getState().markFailed(
+        {
+          provider: draft.provider || '',
+          model: draft.model || '',
+          stage: 'chat-probe',
+          message
+        },
+        { asActiveEngine: false }
+      )
     } finally {
       setTestingIndex(null)
     }

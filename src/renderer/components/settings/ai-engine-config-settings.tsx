@@ -15,6 +15,11 @@ import { useAIServiceStore } from '../../stores/ai-service-store'
 import { useEngineStore } from '../../stores/engine-store'
 import { toast } from '../common/Toast'
 import { CloudModelConfigSettings } from './cloud-model-config-settings'
+import { CloudErrorCard } from './cloud-error-card'
+import { deriveEngineBadge, type EngineBadgeResult, type EngineBadgeStatus } from '../../lib/engine-status-badge'
+import { useCloudEngineStatusStore, isCloudStrictConnected } from '../../stores/cloud-engine-status-store'
+import { runCloudProbe } from '../../lib/cloud-engine-probe'
+import type { CloudModelConfig } from '@firefly/types'
 
 /** 高级引擎类型（开启状态下二选一）：萤核AI引擎（本地） | 云端AI引擎 */
 type ActiveEngineMode = 'local' | 'cloud'
@@ -55,6 +60,13 @@ export const AIEngineConfigSettings: React.FC = () => {
   const isCloudMode = aiServiceMode === 'cloud'
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
+  // 订阅云端配置字段：配置改坏时徽章需立即重算（AI_CLOUD_* 变更必须触发重渲染）
+  const cloudProviderCfg = useSettingsStore(s => (s.config as any)?.aiCloudProvider as string | undefined)
+  const cloudApiKeyCfg = useSettingsStore(s => (s.config as any)?.aiCloudApiKey as string | undefined)
+  const cloudBaseUrlCfg = useSettingsStore(s => (s.config as any)?.aiCloudBaseUrl as string | undefined)
+  const cloudSelectedModelCfg = useSettingsStore(
+    s => (s.config as any)?.aiCloudSelectedModelId as string | undefined
+  )
 
   // 记录上一次激活的模式（用于关闭后再次打开时还原），若无则默认为 local
   const [lastActiveMode, setLastActiveMode] = useState<ActiveEngineMode>(
@@ -74,6 +86,20 @@ export const AIEngineConfigSettings: React.FC = () => {
   const [actionPending, setActionPending] = useState<string | null>(null)
   const aiServiceStatus = useAIServiceStore(s => s.status)
   const isEngineFailed = !isCloudMode && aiServiceStatus === AIServiceStatus.ERROR
+
+  // 云端引擎状态面（PRD-0045）
+  const cloudStarted = useCloudEngineStatusStore(s => s.cloudStarted)
+  const cloudProbeState = useCloudEngineStatusStore(s => s.cloudProbeState)
+  const cloudEngineFailed = useCloudEngineStatusStore(s => s.cloudEngineFailed)
+  const cloudModelsFetched = useCloudEngineStatusStore(s => s.cloudModelsFetched)
+  const cloudLastError = useCloudEngineStatusStore(s => s.cloudLastError)
+  const [cloudRetesting, setCloudRetesting] = useState(false)
+
+  /** 云端「已连接」严格条件：已拉取模型列表 且 当前激活配置已选模型 */
+  const cloudStrictConnected = isCloudStrictConnected(
+    cloudModelsFetched,
+    !!(cloudSelectedModelCfg ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID'))?.trim()
+  )
 
   /** 当前激活的高级引擎（在开启态下） */
   const activeMode: ActiveEngineMode = isCloudMode ? 'cloud' : 'local'
@@ -102,6 +128,65 @@ export const AIEngineConfigSettings: React.FC = () => {
   useEffect(() => {
     return useEngineStore.getState().subscribe()
   }, [])
+
+  /**
+   * 切到云端时自动连通性探针（复用 testConfig，PRD-0045 user story #9）。
+   * 配置基本可用才探测；成功点亮已启动，失败写入错误卡/引擎异常。
+   */
+  const runCloudAutoProbe = React.useCallback(async () => {
+    const provider = (cloudProviderCfg ?? getConfigValue<string>('AI_CLOUD_PROVIDER'))?.trim()
+    const apiKey = (cloudApiKeyCfg ?? getConfigValue<string>('AI_CLOUD_API_KEY'))?.trim()
+    const model = (cloudSelectedModelCfg ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID'))?.trim()
+    const baseUrl = (cloudBaseUrlCfg ?? getConfigValue<string>('AI_CLOUD_BASE_URL'))?.trim()
+    // ollama 免 Key；模型列表路径不强制已选模型
+    const basicallyValid = !!provider && (provider === 'ollama' || !!apiKey)
+    if (!basicallyValid) return
+
+    const probeConfig: CloudModelConfig = {
+      provider: provider as string,
+      apiKey: apiKey || '',
+      baseUrl: baseUrl || undefined,
+      model: model || ''
+    }
+    await runCloudProbe(probeConfig, { asActiveEngine: true, stage: 'chat-probe' })
+  }, [getConfigValue, cloudProviderCfg, cloudApiKeyCfg, cloudSelectedModelCfg, cloudBaseUrlCfg])
+
+  useEffect(() => {
+    if (!isCloudMode) return
+    void runCloudAutoProbe()
+  }, [isCloudMode, runCloudAutoProbe])
+
+  /**
+   * 配置改坏（激活配置不再完整）时熄灭已启动（PRD-0045 Q10 B）。
+   * 依赖显式订阅的云端配置字段，保证变更即重算。
+   */
+  const cloudConfigKey = [
+    cloudProviderCfg || '',
+    cloudApiKeyCfg || '',
+    cloudBaseUrlCfg || '',
+    cloudSelectedModelCfg || ''
+  ].join('|')
+
+  useEffect(() => {
+    if (!isCloudMode) return
+    const model = (cloudSelectedModelCfg ?? getConfigValue<string>('AI_CLOUD_SELECTED_MODEL_ID'))?.trim()
+    const provider = (cloudProviderCfg ?? getConfigValue<string>('AI_CLOUD_PROVIDER'))?.trim()
+    const apiKey = (cloudApiKeyCfg ?? getConfigValue<string>('AI_CLOUD_API_KEY'))?.trim()
+    const valid = !!provider && !!model && (provider === 'ollama' || !!apiKey)
+    if (!valid && (cloudStarted || cloudModelsFetched || cloudEngineFailed)) {
+      useCloudEngineStatusStore.getState().extinguishForInvalidConfig()
+    }
+  }, [
+    cloudConfigKey,
+    isCloudMode,
+    cloudStarted,
+    cloudModelsFetched,
+    cloudEngineFailed,
+    cloudProviderCfg,
+    cloudApiKeyCfg,
+    cloudSelectedModelCfg,
+    getConfigValue
+  ])
 
   /**
    * 上报引擎桥接操作失败到全局 AI 服务错误 store。
@@ -147,24 +232,73 @@ export const AIEngineConfigSettings: React.FC = () => {
     }
   }
 
-  const getStatusBadge = () => {
-    const connected = snapshot?.connected
-    if (loading && !snapshot) {
-      return { icon: STATUS_ICON_MAP.starting, text: t('检测中...'), cls: 'bg-muted text-muted-foreground' }
+  /**
+   * 引擎状态徽章（PRD-0045）：单枚互斥文案 + 仅选中着色。
+   * 萤核已启动 = 推理服务就绪（raw.status === 'ready'）。
+   * 云端已连接 = 已拉取模型列表且已选模型（严格条件）。
+   * 文案按 status 用 t(静态字面量) 包裹（t 只收静态字符串）。
+   */
+  const badgeText = (status: EngineBadgeStatus): string => {
+    switch (status) {
+      case 'error':
+        return t('引擎异常')
+      case 'started':
+        return t('已启动')
+      case 'connected':
+        return t('已连接')
+      case 'detecting':
+        return t('检测中...')
+      case 'not-deployed':
+        return t('引擎未部署')
+      default:
+        return t('未连接')
     }
-    if (isEngineFailed) {
-      return { icon: STATUS_ICON_MAP.error, text: t('引擎异常'), cls: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' }
-    }
-    if (connected) {
-      return { icon: STATUS_ICON_MAP.connected, text: t('已连接'), cls: 'bg-green-500/10 text-green-700 dark:text-green-500 border-green-500/20' }
-    }
-    if (!snapshot?.available) {
-      return { icon: STATUS_ICON_MAP.error, text: t('引擎未部署'), cls: 'bg-muted text-muted-foreground' }
-    }
-    return { icon: STATUS_ICON_MAP.disconnected, text: t('未连接'), cls: 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-500 border-yellow-500/20' }
   }
 
-  const statusBadge = getStatusBadge()
+  const badgeIcon = (icon: EngineBadgeResult['icon']): React.ReactNode => {
+    if (icon === 'connected' || icon === 'started') return STATUS_ICON_MAP.connected
+    if (icon === 'starting') return STATUS_ICON_MAP.starting
+    if (icon === 'disconnected') return STATUS_ICON_MAP.disconnected
+    return STATUS_ICON_MAP.error
+  }
+
+  const buildBadge = (mode: ActiveEngineMode): { icon: React.ReactNode; text: string; cls: string } => {
+    const selected = activeMode === mode
+    const raw: EngineBadgeResult =
+      mode === 'local'
+        ? deriveEngineBadge({
+            selected,
+            local: {
+              detecting: loading && !snapshot,
+              failed: isEngineFailed,
+              connected: !!snapshot?.connected,
+              started: snapshot?.raw?.status === 'ready',
+              available: snapshot?.available !== false
+            }
+          })
+        : deriveEngineBadge({
+            selected,
+            cloud: {
+              failed: cloudEngineFailed,
+              started: cloudStarted,
+              connected: cloudStrictConnected,
+              probing: cloudProbeState === 'probing'
+            }
+          })
+    return { icon: badgeIcon(raw.icon), text: badgeText(raw.status), cls: raw.cls }
+  }
+
+  const renderStatusBadge = (mode: ActiveEngineMode) => {
+    const b = buildBadge(mode)
+    return (
+      <Badge className={`font-semibold px-2 py-0.5 text-[11px] rounded-full border ${b.cls}`}>
+        {b.icon}
+        <span className="ml-1">{b.text}</span>
+      </Badge>
+    )
+  }
+
+  const statusBadge = buildBadge('local')
   // 在渲染期内构造文案表，语言切换时随 t 自动刷新；text 已完成翻译，直接渲染
   const circuitLabels = getCircuitLabels(t)
   const circuit = snapshot ? (circuitLabels[snapshot.circuitState || 'closed'] ?? circuitLabels.closed) : null
@@ -315,22 +449,31 @@ export const AIEngineConfigSettings: React.FC = () => {
               t('萤核AI引擎'),
               modeDescriptions.local,
               <Radio className="h-4.5 w-4.5" />,
-              <Badge className={`font-semibold px-2 py-0.5 text-[11px] rounded-full border ${statusBadge.cls}`}>
-                {statusBadge.icon}
-                <span className="ml-1">{statusBadge.text}</span>
-              </Badge>
+              renderStatusBadge('local')
             )}
             {renderModeOption(
               'cloud',
               t('云端AI引擎'),
               modeDescriptions.cloud,
-              <Cloud className="h-4.5 w-4.5" />
+              <Cloud className="h-4.5 w-4.5" />,
+              renderStatusBadge('cloud')
             )}
           </div>
 
-          {/* 云端分支：云端模型配置区 + 思考模式 */}
+          {/* 云端分支：错误卡片 + 云端模型配置区 + 思考模式 */}
           {isCloudMode && (
             <div className="space-y-4">
+              <CloudErrorCard
+                retesting={cloudRetesting}
+                onRetest={async () => {
+                  setCloudRetesting(true)
+                  try {
+                    await runCloudAutoProbe()
+                  } finally {
+                    setCloudRetesting(false)
+                  }
+                }}
+              />
               <CloudModelConfigSettings />
               <Card className="p-5 border-border/80 shadow-xs rounded-2xl bg-card">
                 <div className="flex items-center justify-between gap-4">
