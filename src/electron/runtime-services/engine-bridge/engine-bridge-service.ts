@@ -28,6 +28,8 @@ export const TIER2_ENGINE_PORT = APP_PORTS.LLAMA_LOCAL_SERVER
 const ENGINE_STATUS_PATH = '/api/engine/status'
 const ENGINE_OPEN_UI_PATH = '/api/engine/open-ui'
 const ENGINE_SHUTDOWN_PATH = '/api/engine/shutdown'
+/** 引擎模型列表端点（PRD-0044：状态卡「已安装模型计数」数据源） */
+const ENGINE_MODELS_PATH = '/api/models'
 
 /** 桥接请求超时（毫秒） */
 const STATUS_TIMEOUT_MS = 1500
@@ -79,6 +81,8 @@ export interface EngineBridgeSnapshot {
   model: string | null
   /** 显存占用（MB） */
   vramMb: number | null
+  /** 引擎已安装模型数量（PRD-0044 状态卡增项；未连接或引擎未返回时为 null） */
+  modelCount: number | null
   /** 最近一次异常信息（静默记录） */
   lastError: string | null
   /** 最近一次状态快照时间戳 */
@@ -97,6 +101,9 @@ export class EngineBridgeService {
   private lastRawStatus: Tier2EngineStatus | null = null
   private versionCache: string | null = null
   private lastError: string | null = null
+  /** 引擎已安装模型计数缓存（经 /api/models 异步汇总，见 refreshModelCount） */
+  private lastModelCount: number | null = null
+  private modelCountFetching = false
   private listeners = new Set<(snapshot: EngineBridgeSnapshot) => void>()
   readonly circuitBreaker = new Tier2CircuitBreaker()
 
@@ -201,10 +208,44 @@ export class EngineBridgeService {
         this.versionCache = data.version
       }
       this.lastRawStatus = data
+      // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径
+      void this.refreshModelCount()
       return data
     } catch (err) {
       this.circuitBreaker.recordFailure()
       return null
+    }
+  }
+
+  /**
+   * 从引擎 /api/models 汇总已安装模型数量并更新缓存（PRD-0044 状态卡增项）。
+   * 并发去重；数量变化时补播一次状态，让渲染层无需等下个轮询周期。
+   */
+  private async refreshModelCount(): Promise<void> {
+    if (this.modelCountFetching) {
+      return
+    }
+    this.modelCountFetching = true
+    try {
+      const res = await fetch(`${this.baseUrl}${ENGINE_MODELS_PATH}`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+      })
+      if (res.ok) {
+        const list = (await res.json()) as Array<{ isDownloaded?: boolean }>
+        const prev = this.lastModelCount
+        this.lastModelCount = Array.isArray(list)
+          ? list.filter(m => m?.isDownloaded === true).length
+          : null
+        if (prev !== this.lastModelCount) {
+          this.broadcastStatus()
+        }
+      }
+    } catch (err) {
+      // 计数为展示增项，失败不影响桥接主链路；记 debug 便于排查
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 拉取引擎模型列表失败（模型计数缺省）:', err)
+    } finally {
+      this.modelCountFetching = false
     }
   }
 
@@ -458,6 +499,7 @@ export class EngineBridgeService {
       backend: raw?.active_backend || raw?.backend || null,
       model: raw?.model || (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) || null,
       vramMb: typeof raw?.vram_mb === 'number' ? raw.vram_mb : typeof raw?.gpu_mem_mb === 'number' ? raw.gpu_mem_mb : null,
+      modelCount: raw ? this.lastModelCount : null,
       lastError: this.lastError,
       updatedAt: raw ? Date.now() : null,
       raw
@@ -497,6 +539,7 @@ export class EngineBridgeService {
     this.stopPolling()
     this.killOwnProcess()
     this.lastRawStatus = null
+    this.lastModelCount = null
     this.circuitBreaker.reset()
   }
 }
