@@ -780,9 +780,9 @@ export function Footer() {
             }`}
           >
             {config?.analysisMode === 'simple'
-              ? t('简单分类')
+              ? t('标准分析')
               : config?.analysisMode === 'quick_name'
-                ? t('快速命名')
+                ? t('增强分析')
                 : t('全面分析')}
           </span>
         </button>

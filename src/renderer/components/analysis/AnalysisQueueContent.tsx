@@ -735,10 +735,10 @@ export function AnalysisQueueContent({
                 onClick={() => useSettingsStore.getState().openSettings(SettingsCategory.ANALYSIS)}
               >
                 {currentMode === 'simple' || currentMode === 'document'
-                  ? t('结果简陋？切为【快速命名】或【全面分析】')
+                  ? t('结果简陋？切为【增强分析】或【全面分析】')
                   : currentMode === 'quick_name'
                     ? t('需要评分描述？切为【全面分析】')
-                    : t('分析太慢？切为【快速命名】或【简单分类】')}
+                    : t('分析太慢？切为【增强分析】或【标准分析】')}
               </span>
             )
           })()}

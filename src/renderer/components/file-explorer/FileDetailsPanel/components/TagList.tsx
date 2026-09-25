@@ -179,7 +179,7 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
   if (totalTagsCount === 0) {
     return (
       <div className="border-t border-border pt-4 mb-6">
-        <span className="text-xs text-muted-foreground italic">{t('简单分类模式无标签，请选其它分析模式，并重新分析')}</span>
+        <span className="text-xs text-muted-foreground italic">{t('标准分析模式无标签，请选其它分析模式，并重新分析')}</span>
       </div>
     )
   }

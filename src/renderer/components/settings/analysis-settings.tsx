@@ -7,6 +7,7 @@ import {
   FileX,
   Filter,
   FolderX,
+  Lock,
   Plus,
   Save,
   Trash2,
@@ -20,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
-import { IIgnoreRule } from '@firefly/types/settings-types'
+import { IIgnoreRule, SettingsCategory } from '@firefly/types/settings-types'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { SUPPORTED_LANGUAGES } from '@firefly/shared'
@@ -89,6 +90,7 @@ export const AnalysisSettings: React.FC = () => {
   const config = useSettingsStore(s => s.config)
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
+  const openSettings = useSettingsStore(s => s.openSettings)
   const audioAnalysisDuration = useSettingsStore(s => s.config?.audioAnalysisDuration)
   const ignoreRules = useSettingsStore(s => s.ignoreRules)
   const addIgnoreRule = useSettingsStore(s => s.addIgnoreRule)
@@ -137,6 +139,17 @@ export const AnalysisSettings: React.FC = () => {
   )
   const [showAdvancedPrompts, setShowAdvancedPrompts] = useState(false)
   const [showLibreOfficeHelp, setShowLibreOfficeHelp] = useState(false)
+  // 忽略规则列表折叠与筛选（渐进披露，避免长列表淹没设置页）
+  const [showIgnoreRuleList, setShowIgnoreRuleList] = useState(false)
+  const [showSystemRules, setShowSystemRules] = useState(false)
+  const [ruleFilter, setRuleFilter] = useState<'all' | 'custom' | 'system'>('all')
+
+  // 高级AI引擎（萤核/云端）是否已开启；disabled = 仅基础AI引擎
+  const isAdvancedAiEnabled = (config?.aiServiceMode ?? 'local') !== 'disabled'
+  // 高级AI引擎关闭时，增强/全面不可选，展示与生效模式统一回落为标准分析
+  const analysisMode = isAdvancedAiEnabled
+    ? (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name')
+    : 'simple'
 
   // 为每个提示词设置独立的防抖更新
   useDebouncedPromptUpdater(unitPrompt, 'UNIT_RECOGNITION_PROMPT', getConfigValue, updateConfigValue)
@@ -407,20 +420,20 @@ export const AnalysisSettings: React.FC = () => {
               <Label className="text-base font-medium">{t('选择分析模式')}</Label>
               <HelpTooltip
                 content={t(
-                  '根据需求选择不同模式，全面分析耗时最长但精度最高；简单分类最快但不支持AI生成描述。'
+                  '根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。'
                 )}
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {/* 简单分类 */}
+              {/* 标准分析（原简单分类） */}
               <div
                 onClick={() => {
                   updateConfigValue('ANALYSIS_MODE', 'simple')
                   captureEvent('切换分析模式', { mode: 'simple' })
                 }}
                 className={`relative overflow-hidden flex flex-col p-3.5 rounded-lg border-2 cursor-pointer transition-all ${
-                  (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name') === 'simple'
+                  analysisMode === 'simple'
                     ? 'border-primary bg-primary/15 shadow-md ring-1 ring-primary/30'
                     : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
                 }`}
@@ -429,44 +442,43 @@ export const AnalysisSettings: React.FC = () => {
                   {t('极速')}
                 </div>
                 {/* 选中勾选标记 */}
-                {(getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name') === 'simple' && (
+                {analysisMode === 'simple' && (
                   <div className="absolute bottom-2 right-2 w-4.5 h-4.5 rounded-full bg-primary flex items-center justify-center">
                     <MaterialIcon icon="check" className="text-[11px] text-primary-foreground" />
                   </div>
                 )}
                 <div className="flex items-center justify-between pr-8">
                   <span
-                    className={`font-semibold text-sm ${
-                      (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name') === 'simple'
-                        ? 'text-primary'
-                        : ''
-                    }`}
+                    className={`font-semibold text-sm ${analysisMode === 'simple' ? 'text-primary' : ''}`}
                   >
-                    {t('简单分类')}
+                    {t('标准分析')}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  {t('按文件类型分类，并行抽取缩略图、元数据及全量文档文本与 OCR(如开启)。')}
+                  {t('基于基础AI引擎高速获取文件标签、智能文件名和摘要')}
                 </p>
               </div>
 
-              {/* 快速命名 */}
+              {/* 增强分析（原快速命名）—— 需开启高级AI引擎 */}
               <div
                 onClick={() => {
+                  if (!isAdvancedAiEnabled) return
                   updateConfigValue('ANALYSIS_MODE', 'quick_name')
                   captureEvent('切换分析模式', { mode: 'quick_name' })
                 }}
-                className={`relative overflow-hidden flex flex-col p-3.5 rounded-lg border-2 cursor-pointer transition-all ${
-                  (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name') === 'quick_name'
-                    ? 'border-primary bg-primary/15 shadow-md ring-1 ring-primary/30'
-                    : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                className={`relative overflow-hidden flex flex-col p-3.5 rounded-lg border-2 transition-all ${
+                  !isAdvancedAiEnabled
+                    ? 'border-border bg-muted/20 opacity-60 cursor-not-allowed'
+                    : analysisMode === 'quick_name'
+                      ? 'border-primary bg-primary/15 shadow-md ring-1 ring-primary/30 cursor-pointer'
+                      : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer'
                 }`}
               >
                 <div className="absolute top-0 right-0 text-[11px] font-bold bg-muted text-muted-foreground px-3 py-1 rounded-bl-md">
                   {t('默认')}
                 </div>
                 {/* 选中勾选标记 */}
-                {(getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name') === 'quick_name' && (
+                {isAdvancedAiEnabled && analysisMode === 'quick_name' && (
                   <div className="absolute bottom-2 right-2 w-4.5 h-4.5 rounded-full bg-primary flex items-center justify-center">
                     <MaterialIcon icon="check" className="text-[11px] text-primary-foreground" />
                   </div>
@@ -474,38 +486,53 @@ export const AnalysisSettings: React.FC = () => {
                 <div className="flex items-center justify-between pr-8">
                   <span
                     className={`font-semibold text-sm ${
-                      (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name') === 'quick_name'
-                        ? 'text-primary'
-                        : ''
+                      isAdvancedAiEnabled && analysisMode === 'quick_name' ? 'text-primary' : ''
                     }`}
                   >
-                    {t('快速命名')}
+                    {t('增强分析')}
                   </span>
+                  {!isAdvancedAiEnabled && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  {t(
-                    '【简单分类】 + 快速AI分析，直接生成智能文件名、维度标签和简短描述，速度更快。'
-                  )}
+                  {t('【标准分析】+ 高级AI引擎修正和补充基础AI引擎分析结果')}
                 </p>
+                {!isAdvancedAiEnabled && (
+                  <div className="flex items-center gap-1 mt-2 text-xs text-amber-600 dark:text-amber-400">
+                    <Lock className="h-3 w-3" />
+                    <button
+                      type="button"
+                      className="underline font-medium"
+                      onClick={e => {
+                        e.stopPropagation()
+                        openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+                      }}
+                    >
+                      {t('需开启高级AI引擎')}
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* 全面分析 */}
+              {/* 全面分析 —— 需开启高级AI引擎 */}
               <div
                 onClick={() => {
+                  if (!isAdvancedAiEnabled) return
                   updateConfigValue('ANALYSIS_MODE', 'full')
                   captureEvent('切换分析模式', { mode: 'full' })
                 }}
-                className={`relative overflow-hidden flex flex-col p-3.5 rounded-lg border-2 cursor-pointer transition-all ${
-                  (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name') === 'full'
-                    ? 'border-primary bg-primary/15 shadow-md ring-1 ring-primary/30'
-                    : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                className={`relative overflow-hidden flex flex-col p-3.5 rounded-lg border-2 transition-all ${
+                  !isAdvancedAiEnabled
+                    ? 'border-border bg-muted/20 opacity-60 cursor-not-allowed'
+                    : analysisMode === 'full'
+                      ? 'border-primary bg-primary/15 shadow-md ring-1 ring-primary/30 cursor-pointer'
+                      : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer'
                 }`}
               >
                 <div className="absolute top-0 right-0 text-[11px] font-bold bg-green-500 text-white px-3 py-1 rounded-bl-md shadow-sm dark:bg-green-600">
                   {t('推荐')}
                 </div>
                 {/* 选中勾选标记 */}
-                {(getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name') === 'full' && (
+                {isAdvancedAiEnabled && analysisMode === 'full' && (
                   <div className="absolute bottom-2 right-2 w-4.5 h-4.5 rounded-full bg-primary flex items-center justify-center">
                     <MaterialIcon icon="check" className="text-[11px] text-primary-foreground" />
                   </div>
@@ -513,29 +540,56 @@ export const AnalysisSettings: React.FC = () => {
                 <div className="flex items-center justify-between pr-8">
                   <span
                     className={`font-semibold text-sm ${
-                      (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name') === 'full'
-                        ? 'text-primary'
-                        : ''
+                      isAdvancedAiEnabled && analysisMode === 'full' ? 'text-primary' : ''
                     }`}
                   >
                     {t('全面分析')}
                   </span>
+                  {!isAdvancedAiEnabled && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
                 </div>
                 <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  {t('【快速命名】 + 全面AI分析，包含质量评分与详细图片内容描述、lrc（歌词）等。')}
+                  {t(
+                    '【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等'
+                  )}
                 </p>
+                {!isAdvancedAiEnabled && (
+                  <div className="flex items-center gap-1 mt-2 text-xs text-amber-600 dark:text-amber-400">
+                    <Lock className="h-3 w-3" />
+                    <button
+                      type="button"
+                      className="underline font-medium"
+                      onClick={e => {
+                        e.stopPropagation()
+                        openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+                      }}
+                    >
+                      {t('需开启高级AI引擎')}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
+        </div>
+      </Card>
 
-          {/* 性能与提取设置网格 */}
-          <div className="border-t pt-4 space-y-4">
-            {/* 分组1：文档与内容提取 */}
-            <div className="p-4 rounded-lg border bg-muted/10 space-y-4">
-              <div className="flex items-center gap-2 border-b border-border/50 pb-2.5">
-                <MaterialIcon icon="article" className="text-lg text-primary h-4 w-4" />
-                <Label className="text-sm font-semibold">{t('文档与内容提取')}</Label>
-              </div>
+      {/* 文件内容提取：文档/OCR/音频等提取参数，与「选择分析模式」同级 */}
+      <Card className="p-4">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <MaterialIcon icon="inventory_2" className="text-primary h-4 w-4" />
+            <Label className="text-base font-medium">{t('文件内容提取')}</Label>
+            <HelpTooltip
+              content={t('控制文本、文档、OCR 与音视频内容的提取范围和精度，影响分析耗时与结果丰富度')}
+            />
+          </div>
+
+          {/* 子分区：文档与内容提取 */}
+          <div className="p-4 rounded-lg border bg-muted/10 space-y-4">
+            <div className="flex items-center gap-2 border-b border-border/50 pb-2.5">
+              <MaterialIcon icon="article" className="text-lg text-primary h-4 w-4" />
+              <Label className="text-sm font-semibold">{t('文档与内容提取')}</Label>
+            </div>
 
               {/* 内容提取大小上限（刻度条带刻度线与每个刻度的数值标注，终点为特殊值 -1 "不限"） */}
               <div className="p-3.5 rounded-lg border bg-card space-y-3">
@@ -793,12 +847,11 @@ export const AnalysisSettings: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* 分组2：OCR 识别与处理 */}
+          {/* 子分区：OCR 识别与处理 */}
           <div className="p-4 rounded-lg border bg-muted/10 space-y-4">
             <div className="flex items-center gap-2 border-b border-border/50 pb-2.5">
-              <MaterialIcon icon="article" className="text-lg text-primary h-4 w-4" />
+              <MaterialIcon icon="document_scanner" className="text-lg text-primary h-4 w-4" />
               <Label className="text-sm font-semibold">{t('OCR 识别与处理')}</Label>
             </div>
 
@@ -886,19 +939,20 @@ export const AnalysisSettings: React.FC = () => {
                   )
                 })()}
               </div>
-
             </div>
+          </div>
 
-            {/* OCR 识别精度选择（支持图片与文档 OCR） */}
-            <div className="pt-2">
-                <div className="flex items-center gap-1.5 mb-2.5">
-                  <Label className="text-sm font-medium">{t('OCR识别精度')}</Label>
-                  <HelpTooltip
-                    content={t(
-                      '选择OCR文字识别的精度等级。极速OCR适合大部分场景；高精度OCR识别更准确但耗时稍长。'
-                    )}
-                  />
-                </div>
+          {/* 子分区：OCR 识别精度（支持图片与文档 OCR） */}
+          <div className="p-4 rounded-lg border bg-muted/10 space-y-4">
+            <div className="flex items-center gap-2 border-b border-border/50 pb-2.5">
+              <MaterialIcon icon="high_quality" className="text-lg text-primary h-4 w-4" />
+              <Label className="text-sm font-semibold">{t('OCR识别精度')}</Label>
+              <HelpTooltip
+                content={t(
+                  '选择OCR文字识别的精度等级。极速OCR适合大部分场景；高精度OCR识别更准确但耗时稍长。'
+                )}
+              />
+            </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* 极速OCR */}
                   <div
@@ -975,36 +1029,33 @@ export const AnalysisSettings: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </div>
           </div>
 
-          {/* 复用数据开关（始终显示，占满整行，位于其它项之后、插件安装之前） */}
-          <div className="border-t pt-4">
-            <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/10">
-              <div className="space-y-1">
-                <div className="flex items-center gap-1">
-                  <Label htmlFor="reuse-basic-data-switch" className="text-sm font-medium">
-                    {t('重新分析时复用数据')}
-                  </Label>
-                  <HelpTooltip
-                    content={t(
-                      '如果文件有更新，请关闭此项，否则任意文件基础信息已存在则跳过该项信息获取，基础信息包括：文件类型、缩略图、元数据、文件内容'
-                    )}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {t('分析提速，不会重新获取简单分类阶段的信息')}
-                </p>
+          {/* 复用数据开关 */}
+          <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/10">
+            <div className="space-y-1">
+              <div className="flex items-center gap-1">
+                <Label htmlFor="reuse-basic-data-switch" className="text-sm font-medium">
+                  {t('重新分析时复用数据')}
+                </Label>
+                <HelpTooltip
+                  content={t(
+                    '如果文件有更新，请关闭此项，否则任意文件基础信息已存在则跳过该项信息获取，基础信息包括：文件类型、缩略图、元数据、文件内容'
+                  )}
+                />
               </div>
-              <Switch
-                id="reuse-basic-data-switch"
-                checked={getConfigValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true}
-                onCheckedChange={checked => {
-                  updateConfigValue('REUSE_BASIC_ANALYSIS_DATA', checked)
-                  captureEvent('切换复用基础分析数据', { enabled: checked })
-                }}
-              />
+              <p className="text-xs text-muted-foreground">
+                {t('分析提速，不会重新获取标准分析阶段的信息')}
+              </p>
             </div>
+            <Switch
+              id="reuse-basic-data-switch"
+              checked={getConfigValue<boolean>('REUSE_BASIC_ANALYSIS_DATA') ?? true}
+              onCheckedChange={checked => {
+                updateConfigValue('REUSE_BASIC_ANALYSIS_DATA', checked)
+                captureEvent('切换复用基础分析数据', { enabled: checked })
+              }}
+            />
           </div>
         </div>
       </Card>
@@ -1051,39 +1102,78 @@ export const AnalysisSettings: React.FC = () => {
         </div>
       </Card>
 
-      {/* 提示词设置 */}
-      <Card className="p-4">
-        <div className="space-y-4">
-          <div
-            onClick={() => setShowAdvancedPrompts(!showAdvancedPrompts)}
-            className="flex items-center justify-between cursor-pointer select-none"
-          >
-            <div>
-              <Label className="text-base font-medium flex items-center gap-1 cursor-pointer">
-                {t('高级 AI 提示词自定义')}
-              </Label>
+      {/* 提示词设置（可折叠，整行可点） */}
+      <Card
+        className={`p-0 overflow-hidden transition-colors ${
+          showAdvancedPrompts ? 'border-primary/30' : ''
+        }`}
+      >
+        <div
+          role="button"
+          tabIndex={0}
+          aria-expanded={showAdvancedPrompts}
+          onClick={() => setShowAdvancedPrompts(!showAdvancedPrompts)}
+          onKeyDown={e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              setShowAdvancedPrompts(!showAdvancedPrompts)
+            }
+          }}
+          className={`flex items-center justify-between gap-3 p-4 cursor-pointer select-none transition-colors ${
+            showAdvancedPrompts
+              ? 'bg-primary/5 border-b border-border'
+              : 'hover:bg-muted/40'
+          }`}
+        >
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div
+              className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+                showAdvancedPrompts ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'
+              }`}
+            >
+              <MaterialIcon icon="edit_note" className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Label className="text-base font-medium cursor-pointer">
+                  {t('高级 AI 提示词自定义')}
+                </Label>
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                  {t('3 项')}
+                </span>
+              </div>
               <p className="text-sm text-muted-foreground mt-0.5">
                 {t('自定义提示词以微调模型对分类命名和质量评分，推荐云端模型遵循较好')}
               </p>
-              <p className="text-xs text-orange-600 font-medium mt-1">
-                {t('若因字数过多导致AI分析失败，请自行减少字数。对于本地小模型，建议100字以内。')}
-              </p>
-            </div>
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              {showAdvancedPrompts ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
+              {!showAdvancedPrompts && (
+                <p className="text-xs text-orange-600 font-medium mt-1">
+                  {t('若因字数过多导致AI分析失败，请自行减少字数。对于本地小模型，建议100字以内。')}
+                </p>
               )}
-            </Button>
+            </div>
           </div>
-
           <div
-            className={`transition-all duration-300 overflow-hidden px-1 ${
+            className={`flex items-center gap-1.5 shrink-0 rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
               showAdvancedPrompts
-                ? 'max-h-[1200px] opacity-100 border-t pt-4 space-y-4'
-                : 'max-h-0 opacity-0 pointer-events-none'
+                ? 'border-primary/40 bg-primary/10 text-primary'
+                : 'border-border bg-muted/50 text-muted-foreground hover:text-foreground hover:border-foreground/30'
             }`}
+          >
+            {showAdvancedPrompts ? t('收起') : t('展开编辑')}
+            {showAdvancedPrompts ? (
+              <ChevronUp className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" />
+            )}
+          </div>
+        </div>
+
+        <div
+          className={`transition-all duration-300 overflow-hidden px-4 ${
+            showAdvancedPrompts
+              ? 'max-h-[1200px] opacity-100 py-4 space-y-4'
+              : 'max-h-0 opacity-0 pointer-events-none'
+          }`}
           >
             {/* 最小单元识别提示词 */}
             <div className="space-y-2">
@@ -1172,28 +1262,57 @@ export const AnalysisSettings: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
       </Card>
 
-      {/* AI分析忽略规则 */}
-      <Card className="p-4">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-base font-medium">{t('AI分析忽略规则')}</Label>
-              <p className="text-sm text-muted-foreground mt-1">
+      {/* AI分析忽略规则（渐进披露：摘要 + 筛选 + 折叠长列表） */}
+      <Card className="p-0 overflow-hidden">
+        <div className="flex items-center justify-between gap-3 p-4 border-b border-border/60">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <MaterialIcon icon="filter_alt" className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Label className="text-base font-medium">{t('AI分析忽略规则')}</Label>
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                  {t('{total} 条 · {active} 启用', {
+                    total: ignoreRules.length,
+                    active: ignoreRules.filter(r => r.isActive).length
+                  })}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {t('设置不需要进行AI分析的文件和目录')}
               </p>
             </div>
-            <Button size="sm" onClick={() => setShowAddRule(true)}>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button size="sm" variant="outline" onClick={() => setShowAddRule(true)}>
               <Plus className="h-4 w-4 mr-1" />
               {t('添加规则')}
             </Button>
+            <button
+              type="button"
+              onClick={() => setShowIgnoreRuleList(!showIgnoreRuleList)}
+              className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                showIgnoreRuleList
+                  ? 'border-primary/40 bg-primary/10 text-primary'
+                  : 'border-border bg-muted/50 text-muted-foreground hover:text-foreground hover:border-foreground/30'
+              }`}
+            >
+              {showIgnoreRuleList ? t('收起列表') : t('展开列表')}
+              {showIgnoreRuleList ? (
+                <ChevronUp className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5" />
+              )}
+            </button>
           </div>
+        </div>
 
-          {/* 添加新规则 */}
-          {showAddRule && (
-            <div className="p-3 border rounded-lg bg-muted/30">
+        {/* 添加新规则 */}
+        {showAddRule && (
+          <div className="p-4 border-b border-border/60 bg-muted/20">
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>

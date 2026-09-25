@@ -9,7 +9,7 @@
  *   1. 口径漂移：同一文件在不同环节可能读到不同的配置值（例如分析中途切换模式），
  *      造成「队列已完成但 workspace_files.is_analyzed 仍为 0」。
  *   2. 静默兜底：各处均使用 `?? 'quick_name'` 兜底，一旦配置尚未初始化，
- *      真实的 simple（简单分类）模式会被误判为 quick_name，从而要求 stage >= 3，
+ *      真实的 simple（标准分析）模式会被误判为 quick_name，从而要求 stage >= 3，
  *      使仅跑完 CPU 提取（stage 2）的文件永远无法标记为已分析。
  *
  * 本模块集中定义：
@@ -36,11 +36,11 @@ const FALLBACK_MODE: AnalysisMode = 'quick_name'
  *
  * - 0: unanalyzed   未分析
  * - 1: 基础身份与元数据提取完成（指纹 / Exif / Magika）
- * - 2: CPU 内容提取完成 —— **这是「简单分类」分析模式的完成标志**
- * - 3: AI 质量评分完成（快速命名的中间阶段）
- * - 4: 维度标签与智能命名完成（快速命名 / 全面分析的终点）
+ * - 2: CPU 内容提取完成 —— **这是「标准分析」分析模式的完成标志**
+ * - 3: AI 质量评分完成（增强分析的中间阶段）
+ * - 4: 维度标签与智能命名完成（增强分析 / 全面分析的终点）
  *
- * 重要：简单分类（simple）模式的完成标志是 stage = 2，而不是 stage = 1。
+ * 重要：标准分析（simple）模式的完成标志是 stage = 2，而不是 stage = 1。
  * simple 模式同样需要跑完 CPU 内容提取（正文、元数据、缩略图），
  * 只是不进入 AI 阶段（stage 3/4）。若以 stage = 1 作为完成标志，
  * 会导致「正文尚未提取完」的文件被错误标记为已分析。
@@ -60,8 +60,8 @@ const REQUIRED_STAGE: Record<AnalysisMode, number> = {
 export const STAGE_DESCRIPTIONS: Record<number, string> = {
   0: '未分析',
   1: '基础身份提取',
-  2: '简单分类',
-  3: '快速命名',
+  2: '标准分析',
+  3: '增强分析',
   4: '全面分析'
 }
 

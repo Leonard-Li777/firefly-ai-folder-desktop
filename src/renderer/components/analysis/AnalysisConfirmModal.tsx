@@ -16,23 +16,23 @@ import FileList from '../file-explorer/FileList'
 
 /** 分析模式的展示名称，与设置页 analysis-settings 保持一致 */
 const ANALYSIS_MODE_LABEL: Record<string, string> = {
-  simple: '简单分类',
-  quick_name: '快速命名',
+  simple: '标准分析',
+  quick_name: '增强分析',
   full: '全面分析'
 }
 
 /**
  * analysis_stage 的权威语义：
- * 0=未分析、1=基础身份/元数据提取完成、2=CPU 内容提取完成（即简单分类完成）、
- * 3=AI 质量评分完成（快速命名）、4=维度标签与智能命名完成（全面分析）。
+ * 0=未分析、1=基础身份/元数据提取完成、2=CPU 内容提取完成（即标准分析完成）、
+ * 3=AI 质量评分完成（增强分析）、4=维度标签与智能命名完成（全面分析）。
  *
- * 注意：简单分类模式的完成标志是 stage=2，不是 stage=1。
+ * 注意：标准分析模式的完成标志是 stage=2，不是 stage=1。
  */
 const STAGE_LABEL: Record<number, string> = {
   0: '未分析',
   1: '基础身份提取',
-  2: '简单分类',
-  3: '快速命名',
+  2: '标准分析',
+  3: '增强分析',
   4: '全面分析'
 }
 
@@ -54,8 +54,8 @@ const describeStage = (stage: number): string => STAGE_LABEL[stage] ?? '未分�
  * —— 两者后果一致（都入队），但表述需与实际情况相符。
  *
  * ⚠️ 文案必须基于「文件实际完成模式」（completed_mode），而非当前选择的模式。
- * 因为判定采用等级覆盖口径：在【快速命名】模式下，实际完成【全面分析】的文件
- * 同样可跳过，但不能声称它们「已完成【快速命名】分析」。
+ * 因为判定采用等级覆盖口径：在【增强分析】模式下，实际完成【全面分析】的文件
+ * 同样可跳过，但不能声称它们「已完成【增强分析】分析」。
  */
 export function AnalysisConfirmModal() {
   const {
@@ -73,7 +73,7 @@ export function AnalysisConfirmModal() {
   const currentMode = useSettingsStore(
     s => (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'quick_name'
   )
-  const currentModeLabel = t(ANALYSIS_MODE_LABEL[currentMode] || '快速命名')
+  const currentModeLabel = t(ANALYSIS_MODE_LABEL[currentMode] || '增强分析')
 
   const totalCount = pendingAddItems.length
   const analyzedCount = confirmModalFiles.length
@@ -85,9 +85,9 @@ export function AnalysisConfirmModal() {
    * 按「文件实际完成分析所用模式」对可跳过文件分组。
    *
    * 为什么不能直接用当前模式：判定采用「等级覆盖」口径 —— 高级模式的产物
-   * 对低级模式同样有效。因此在【快速命名】模式下，那批实际完成【全面分析】
+   * 对低级模式同样有效。因此在【增强分析】模式下，那批实际完成【全面分析】
    * 的文件也会被列为可跳过。若统一套用当前模式文案，就会显示成
-   * 「已完成【快速命名】分析」，与文件的真实状态不符，用户会以为结果被降级。
+   * 「已完成【增强分析】分析」，与文件的真实状态不符，用户会以为结果被降级。
    */
   const analyzedModeGroups = React.useMemo(() => {
     const counts = new Map<string, number>()
@@ -141,7 +141,7 @@ export function AnalysisConfirmModal() {
    * （历史数据 / 中间态）才退回按 analysis_stage 推断阶段描述。
    *
    * 为什么必须优先用 completed_mode：stage 无法区分 quick_name 与 full
-   * ——两者终态都是 4。若只用 stage，那批以【快速命名】完成、在【全面分析】
+   * ——两者终态都是 4。若只用 stage，那批以【增强分析】完成、在【全面分析】
    * 模式下待补全的文件会被描述成「仅完成【全面分析】」，
    * 紧接着又说「尚未达到【全面分析】模式的要求」，自相矛盾。
    */
@@ -196,7 +196,7 @@ export function AnalysisConfirmModal() {
                     })}
               </p>
               {/* 按文件「实际使用的模式」逐条列出，而非统一套用当前模式。
-                  例如当前是【快速命名】，其中一批文件实际完成的是【全面分析】，
+                  例如当前是【增强分析】，其中一批文件实际完成的是【全面分析】，
                   它们因等级覆盖而同样可跳过，但必须如实说明其真实完成模式。 */}
               {analyzedModeGroups.map(group => (
                 <p key={group.mode} className="flex items-start gap-1.5">

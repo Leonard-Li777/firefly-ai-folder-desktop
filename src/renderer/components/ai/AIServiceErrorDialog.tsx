@@ -203,7 +203,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
   }, [onSwitchToCloud, onClose])
 
   /**
-   * 处理切换到简单分类模式
+   * 处理切换到标准分析模式
    */
   const handleSwitchToSimple = useCallback(() => {
     useSettingsStore.getState().updateConfigValue('ANALYSIS_MODE', 'simple')
@@ -329,9 +329,9 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         })
       }
 
-      // 始终提供切换到简单分类模式的选项
+      // 始终提供切换到标准分析模式的选项
       actions.push({
-        label: t('切换简单分类'),
+        label: t('切换标准分析'),
         action: handleSwitchToSimple,
         variant: 'secondary'
       })
@@ -343,7 +343,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         suggestions: (aiError.suggestions && aiError.suggestions.length > 0
           ? aiError.suggestions
           : completeInfo.solutions
-        ).concat(t('简单分类模式不依赖AI且高效，可快速完成文件分类和元数据提取')),
+        ).concat(t('标准分析模式由基础AI引擎处理，高效完成文件标签、智能文件名和摘要')),
         actions
       }
     },

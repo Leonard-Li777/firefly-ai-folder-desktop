@@ -417,7 +417,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
 
         tracksList.push({
           key: `${labelPrefix}_gpu_t1`,
-          label: isSimpleLonger ? t('简单分析 (阶段1+2)') : t('AI分析 (阶段3+4)'),
+          label: isSimpleLonger ? t('标准分析 (阶段1+2)') : t('AI分析 (阶段3+4)'),
           duration: track1GroupTotal,
           pct: totalMs > 0 ? (track1GroupTotal / totalMs) * 100 : 100,
           radius: 18,
@@ -458,7 +458,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
 
         tracksList.push({
           key: `${labelPrefix}_gpu_t2`,
-          label: isSimpleLonger ? t('AI分析 (阶段3+4)') : t('简单分析 (阶段1+2)'),
+          label: isSimpleLonger ? t('AI分析 (阶段3+4)') : t('标准分析 (阶段1+2)'),
           duration: track2GroupTotal,
           pct:
             totalMs > 0

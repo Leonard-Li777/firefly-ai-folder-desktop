@@ -286,9 +286,9 @@ export const useAnalysisQueueStore: AnalysisQueueStoreInstance =
             // 「可跳过」的那部分。
             //
             // 原因：insufficient（已分析但未达当前模式要求）同样需要用户知情 ——
-            // 典型场景是已完成【简单分类】的文件在【全面分析】模式下会被重新分析。
+            // 典型场景是已完成【标准分析】的文件在【全面分析】模式下会被重新分析。
             // 若只以 analyzedFiles 为条件，当所选文件全部是 insufficient 时
-            // （例如 68 个已完成简单分类 + 77 个中间态，没有一个是"可跳过"的），
+            // （例如 68 个已完成标准分析 + 77 个中间态，没有一个是"可跳过"的），
             // 弹窗会被整体跳过并静默入队，用户将完全不知道已完成的部分被重跑。
             if (analyzedFiles.length + insufficientFiles.length > 0) {
               set({
