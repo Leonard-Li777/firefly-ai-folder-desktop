@@ -1427,10 +1427,11 @@ export class DatabaseService {
               continue
             }
 
-            // 添加标签关联（写入 parent_tag_code）
+            // 添加标签关联（写入 parent_tag_code 与 tag_group）
+            // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'
             if (allAddTagItems.length > 0) {
               const insertStmt = this._db!.prepare(
-                'INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, confidence, sync_status, created_at) VALUES (?, ?, ?, 1.0, 0, CURRENT_TIMESTAMP)'
+                "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, tag_group, confidence, sync_status, created_at) VALUES (?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
               )
               for (const item of allAddTagItems) {
                 insertStmt.run(fp, item.tagCode, item.parentTagCode)

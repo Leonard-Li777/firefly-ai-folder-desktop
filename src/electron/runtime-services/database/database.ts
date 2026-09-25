@@ -193,6 +193,7 @@ const GENESIS_V1_SCHEMA = `
     file_fingerprint   TEXT NOT NULL,                 -- 核心引擎 32 位 Base62 文件内容指纹
     tag_code           TEXT NOT NULL,                 -- 业务软外键：允许 builtin.*/omw.*/_ext.*/user.*，由应用层校验
     parent_tag_code    TEXT NOT NULL DEFAULT '',      -- 父级标签 code (指向 file_tags.code，用于一词多义消歧与限定类型上下文；无父级/根级填 '')
+    tag_group          TEXT NOT NULL DEFAULT '',      -- 标签来源分组 (ADR-0045)：fact/fused/visual/ai/user；列名不用 group，因其为 SQL 关键字
     confidence         REAL NOT NULL DEFAULT 1.0,     -- 分析置信度或物理事实权重 (0.0 ~ 1.0)
     source             TEXT DEFAULT 'ai'
                            CHECK (source IN ('ai', 'user', 'rule')),

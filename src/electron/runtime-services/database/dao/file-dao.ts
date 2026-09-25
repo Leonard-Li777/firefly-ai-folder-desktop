@@ -1,5 +1,11 @@
 import type { Database, Statement } from 'better-sqlite3'
-import { LogCategory, logger, cleanSmartName } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  cleanSmartName,
+  isTagProvenanceGroup,
+  TAG_PROVENANCE_GROUPS
+} from '@firefly/shared'
 import { t } from '@app/languages'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -262,6 +268,8 @@ export class FileDao {
             ftr.tag_code as id,
             ft.name as ft_name,
             ftr.parent_tag_code,
+            ftr.tag_group,
+            ftr.confidence,
             CASE
               WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
               ELSE json_extract(ft.parent_codes, '$[0]')
@@ -326,6 +334,37 @@ export class FileDao {
       sortedDimensionTags.push({ dimension: dimId, level: 3, tags: remainingTags as any[] })
     })
 
+    // ADR-0045：平行新增「标签来源分组」视图，**不改动** dimensionTags 的既有维度语义
+    // （FileDetailsPanel 依赖 dimension === 1/2 生成虚拟路径，ai-skill-api-service 将其作为对外契约透传）。
+    // 分组归属在写入侧（预检注入层 / 用户打标 / 云端回灌）已零推断赋值，此处仅按列聚合，不做任何推断。
+    // 组内按各自置信度降序；组顺序由展示层按各组平均置信度降序决定，此处保持稳定枚举顺序。
+    const groupTagMap = new Map<string, Array<{ id: string; name: string; confidence: number }>>()
+    for (const tag of tags) {
+      const group = typeof tag.tag_group === 'string' ? tag.tag_group : ''
+      if (!isTagProvenanceGroup(group)) {
+        // 未分组/非法分组（如待补齐的历史云端回灌行）不进入分组视图，避免臆测归属
+        if (group) {
+          logger.debug(
+            LogCategory.DATABASE_SERVICE,
+            `标签来源分组非法，已跳过分组视图: ${group}`
+          )
+        }
+        continue
+      }
+      if (!groupTagMap.has(group)) groupTagMap.set(group, [])
+      groupTagMap.get(group)!.push({
+        id: tag.id,
+        name: this.resolveDisplayName(tag.id, tag.ft_name),
+        confidence: typeof tag.confidence === 'number' ? tag.confidence : 1.0
+      })
+    }
+    const tagGroups = TAG_PROVENANCE_GROUPS.filter(
+      group => (groupTagMap.get(group)?.length ?? 0) > 0
+    ).map(group => ({
+      group,
+      tags: (groupTagMap.get(group) || []).sort((a, b) => b.confidence - a.confidence)
+    }))
+
     const parsedFileGroup = fileData.file_group ? (
       (() => {
         try {
@@ -385,6 +424,7 @@ export class FileDao {
       lastHitAt: fileData.last_hit_at ? new Date(fileData.last_hit_at) : undefined,
       analysisStats: parsedStats,
       dimensionTags: sortedDimensionTags,
+      tagGroups,
       groupingReason: fileData.grouping_reason,
       groupingConfidence: fileData.grouping_confidence,
       thumbnailPath: workspaceFile.thumbnail_path,
