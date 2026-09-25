@@ -652,7 +652,9 @@ export async function initializeFullServices(): Promise<void> {
           createModelCapabilityAdapter().clearCache()
         }
 
-        // PRD-0044：生效引擎切换为「禁用/云端」时，完全退出萤核AI引擎应用（不再需要本地推理）
+        // PRD-0044：生效引擎切换为「禁用/云端」时，完全退出萤核AI引擎应用（不再需要本地推理）；
+        // 反向对称：用户显式选择「萤核AI引擎」（local）时，desktop 主动拉起引擎应用，
+        // 避免用户还要额外点一次设置页按钮。
         // onConfigChange 回调的 changes 值即为该 key 的新值
         if ('AI_SERVICE_MODE' in changes) {
           const newMode = changes['AI_SERVICE_MODE']
@@ -664,6 +666,20 @@ export async function initializeFullServices(): Promise<void> {
                 await engineBridgeService.shutdown()
               } catch (err) {
                 logger.warn(LogCategory.MAIN, '[initialization] 请求引擎退出失败（引擎可能未运行）:', err)
+              }
+            })()
+          } else if (newMode === 'local') {
+            logger.info(LogCategory.MAIN, '[initialization] 生效引擎切换为 local，主动拉起萤核AI引擎')
+            void (async () => {
+              try {
+                const { engineBridgeService } = await import('../runtime-services/engine-bridge')
+                const online = await engineBridgeService.ensureRunning().catch(() => false)
+                logger.info(
+                  LogCategory.MAIN,
+                  `[initialization] 萤核AI引擎${online ? '已在线' : '未能拉起（将由 Tier 1 兜底）'}`
+                )
+              } catch (err) {
+                logger.warn(LogCategory.MAIN, '[initialization] 主动拉起萤核AI引擎失败:', err)
               }
             })()
           }

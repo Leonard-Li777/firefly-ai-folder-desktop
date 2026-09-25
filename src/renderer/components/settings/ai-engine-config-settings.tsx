@@ -9,7 +9,8 @@ import { captureEvent } from '../../lib/posthog'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { useSettingsStore } from '../../stores/settings-store'
-import { AIServiceStatus } from '@firefly/types'
+import { AIErrorType, AIServiceStatus } from '@firefly/types'
+import { ErrorNormalizer } from '@firefly/shared'
 import { useAIServiceStore } from '../../stores/ai-service-store'
 import { useEngineStore } from '../../stores/engine-store'
 import { toast } from '../common/Toast'
@@ -102,14 +103,45 @@ export const AIEngineConfigSettings: React.FC = () => {
     return useEngineStore.getState().subscribe()
   }, [])
 
+  /**
+   * 上报引擎桥接操作失败到全局 AI 服务错误 store。
+   *
+   * 背景：`engineBridge.startService/stopService/openUI` 以 `{ ok:false, error }` 表达失败而**不抛错**，
+   * 旧实现只在主进程记 warn，用户侧完全看不到（引擎面板无内容、Footer 无提示）。
+   * 这里统一转成标准 AIServiceError 并写入 store —— setError 会同时把 status 置为 ERROR，
+   * 于是 Footer 错误信息区（`showAiError` 依赖 `status===ERROR || !!error`）会立即展示该错误；
+   * 采用引擎类错误码（SERVER_START_FAILED / SERVER_STOP_FAILED）可命中 `isEngineSourcedError`，
+   * 使错误对话框给出「在引擎中查看」深链，与「引擎面板优先、Footer 其次」的展示约定一致。
+   */
+  const reportBridgeError = (key: string, message: string) => {
+    const detail = message?.trim() || t('操作失败，请查看日志')
+    const aiErrorType =
+      key === 'stop-service' ? AIErrorType.SERVER_STOP_FAILED : AIErrorType.SERVER_START_FAILED
+    useAIServiceStore.getState().setError(
+      ErrorNormalizer.normalize(detail, aiErrorType, 'EngineBridge')
+    )
+    toast.error(detail)
+  }
+
   const runAction = async (key: string, fn: () => Promise<unknown>) => {
     setActionPending(key)
     try {
-      await fn()
+      const result = await fn()
+      // 桥接方法不抛错，改用 { ok:false, error } 表达失败，必须显式识别否则会被静默吞掉
+      if (result && typeof result === 'object' && (result as { ok?: boolean }).ok === false) {
+        reportBridgeError(key, (result as { error?: string }).error || '')
+      } else if (key === 'start-service') {
+        // 启动成功：清掉上一次失败残留的错误，否则 Footer 会一直挂着过期错误行
+        const store = useAIServiceStore.getState()
+        if (store.status === AIServiceStatus.ERROR) {
+          store.clearError()
+          store.updateStatus(AIServiceStatus.IDLE)
+        }
+      }
       await loadSnapshot()
     } catch (e) {
       console.error(`引擎桥接操作 [${key}] 失败:`, e)
-      toast.error(t('操作失败，请查看日志'))
+      reportBridgeError(key, e instanceof Error ? e.message : String(e))
     } finally {
       setActionPending(null)
     }
@@ -163,8 +195,8 @@ export const AIEngineConfigSettings: React.FC = () => {
 
   /** 各高级模式在 Radio 卡片内部展示的描述文案 */
   const modeDescriptions: Record<ActiveEngineMode, string> = {
-    local: t('由萤核AI引擎应用在本地提供大模型推理，支持硬件加速与隐私安全离线分析。'),
-    cloud: t('连接 OpenAI 兼容云端模型服务进行分析，提供更强语言认知能力，需保持网络连接。')
+    local: t('由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。'),
+    cloud: t('连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。')
   }
 
   /** 精致紧凑单选按钮（描述文案置于卡片内部） */
@@ -239,7 +271,7 @@ export const AIEngineConfigSettings: React.FC = () => {
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {t('选择生效引擎：萤核AI引擎负责本地推理，云端AI引擎支持 OpenAI 兼容服务，禁用后仅使用基础AI引擎')}
+            {t('选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源')}
           </p>
         </div>
         <Switch

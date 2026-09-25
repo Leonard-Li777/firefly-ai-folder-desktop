@@ -40,11 +40,33 @@ const OPEN_UI_TIMEOUT_MS = 3000
 const SHUTDOWN_TIMEOUT_MS = 3000
 /** AI 服务启停动作超时（服务启动可能耗时较长） */
 const SERVICE_ACTION_TIMEOUT_MS = 15_000
+/**
+ * 引擎端口滑动探测区间长度。
+ * 引擎侧在 38400 被占用时会顺延绑定（38400~38419 首个可用端口，见 firefly-ai-engine `config/store.rs`），
+ * desktop 协议端点固定在基准端口，故必须在基准端口不可达时扫描该区间并采纳实际端口。
+ */
+const PORT_SCAN_RANGE = 20
+/** 滑动区间内的单端口探测超时（回环地址被拒绝是即时的，无需长超时） */
+const PORT_PROBE_TIMEOUT_MS = 400
+/** 重启前等待旧实例释放端口的时长上限（毫秒） */
+const PORT_RELEASE_WAIT_MS = 8_000
 
 /** 引擎拉起后的就绪等待上限（毫秒） */
 const READY_WAIT_LIMIT_MS = 25_000
 /** 状态轮询间隔（毫秒） */
 const POLL_INTERVAL_MS = 5_000
+
+/**
+ * 引擎在 desktop 集成目录中的相对目录名（ADR-0033 1:1 镜像）
+ * 集成目录 = `<extraResources>/bin/firefly-ai-engine/`，由 `pnpm engine:deploy:watch` 部署
+ */
+const ENGINE_BIN_DIR_NAME = 'firefly-ai-engine'
+
+/**
+ * 开发态二进制热更新轮询间隔（毫秒）
+ * 用于感知 `engine:deploy:watch` 重编译后覆盖集成目录中的 exe
+ */
+const DEV_BINARY_WATCH_INTERVAL_MS = 3_000
 
 /**
  * 引擎状态快照（来自 /api/engine/status，字段以引擎契约为准，宽容解析）
@@ -76,7 +98,7 @@ export interface EngineBridgeSnapshot {
   available: boolean
   /** 引擎可执行文件绝对路径（未部署时为 null） */
   exePath: string | null
-  /** 是否为开发模式（优先 dev 构建产物） */
+  /** 是否为开发模式（集成目录热更新监听在该模式下生效） */
   devMode: boolean
   /** 通信端口 */
   port: number
@@ -101,7 +123,8 @@ export interface EngineBridgeSnapshot {
 export class EngineBridgeService {
   private static instance: EngineBridgeService
   private process: ChildProcess | null = null
-  private readonly baseUrl = `http://127.0.0.1:${TIER2_ENGINE_PORT}`
+  /** 当前实际通信端口（初始为基准端口；引擎滑动时经探测采纳实际端口） */
+  private activePort: number = TIER2_ENGINE_PORT
   private isStarting = false
   private startPromise: Promise<boolean> | null = null
   private pollTimer: NodeJS.Timeout | null = null
@@ -111,6 +134,13 @@ export class EngineBridgeService {
   /** 引擎已安装模型计数缓存（经 /api/models 异步汇总，见 refreshModelCount） */
   private lastModelCount: number | null = null
   private modelCountFetching = false
+  /**
+   * 本服务已拉起二进制的签名（mtimeMs:size）。
+   * 非 null 表示「本服务托管过引擎」，用于开发态感知 `engine:deploy:watch` 的重编译覆盖。
+   */
+  private spawnedBinarySignature: string | null = null
+  /** 开发态二进制热更新轮询定时器 */
+  private devBinaryWatchTimer: NodeJS.Timeout | null = null
   private listeners = new Set<(snapshot: EngineBridgeSnapshot) => void>()
   readonly circuitBreaker = new Tier2CircuitBreaker()
 
@@ -143,44 +173,35 @@ export class EngineBridgeService {
 
   /**
    * 定位 firefly-ai-engine 可执行文件
-   * - 开发模式：优先 dev 构建产物（apps/firefly-ai-engine/src-tauri/target）
-   * - 生产模式：extraResources/bin/firefly-ai-engine/firefly-ai-engine
+   *
+   * **唯一来源 = desktop 集成目录** `<extraResources>/bin/firefly-ai-engine/`（ADR-0033 1:1 镜像）：
+   * - 开发态：`apps/desktop/build/extraResources/bin/firefly-ai-engine/`（由 `pnpm engine:deploy:watch` 部署）
+   * - 生产态：`process.resourcesPath/extraResources/bin/firefly-ai-engine/`
+   *
+   * 引擎工程自身的 `src-tauri/target/{release,debug}` 产物**不再作为加载来源**：
+   * 它既不是最终发布形态，也会让引擎的资源锚点落在引擎工程目录内，
+   * 从而无法验证「只读自身安装目录 + 自身用户数据目录」这一发布约束。
    */
   public resolveEngineExecutable(): string | null {
-    const isWin = process.platform === 'win32'
-    const exeName = isWin ? 'firefly-ai-engine.exe' : 'firefly-ai-engine'
-    const isDev = !app?.isPackaged || process.env.NODE_ENV !== 'production'
+    const exeName = process.platform === 'win32' ? 'firefly-ai-engine.exe' : 'firefly-ai-engine'
 
-    if (isDev) {
-      // cwd 可能是 monorepo 根，也可能是 apps/desktop（pnpm --filter desktop 启动时），
-      // 向上探测包含 apps/firefly-ai-engine 的 monorepo 根，再拼 target 产物路径。
-      for (const root of this.collectMonorepoRoots()) {
-        const devCandidates = [
-          path.join(root, 'apps', 'firefly-ai-engine', 'src-tauri', 'target', 'release', exeName),
-          path.join(root, 'apps', 'firefly-ai-engine', 'src-tauri', 'target', 'debug', exeName)
-        ]
-        for (const cand of devCandidates) {
-          if (fs.existsSync(cand)) {
-            return cand
-          }
-        }
-      }
-    }
-
-    // 生产 / 已部署环境：优先通过 ResourceLocator 检索
-    const bin = ResourceLocator.resolveBin(
-      isWin ? 'firefly-ai-engine/firefly-ai-engine.exe' : 'firefly-ai-engine/firefly-ai-engine'
-    )
+    // 1. 首选 ResourceLocator：开发态解析到 apps/desktop/build/extraResources，
+    //    生产态解析到 process.resourcesPath/extraResources。
+    //    关闭 8.3 短路径转换与递归检索，保证路径可读且唯一确定。
+    const bin = ResourceLocator.resolveBin(`${ENGINE_BIN_DIR_NAME}/${exeName}`, {
+      useShortPath: false,
+      recursive: false
+    })
     if (bin && fs.existsSync(bin)) {
       return bin
     }
 
-    // 多候选路径兜底检索（兼容 cwd = monorepo 根 / apps/desktop）
+    // 2. monorepo 相对路径兜底（cwd 可能是仓库根，也可能是 apps/desktop）
     for (const root of this.collectMonorepoRoots()) {
       const candidates = [
-        path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'firefly-ai-engine', exeName),
-        path.join(root, 'build', 'extraResources', 'bin', 'firefly-ai-engine', exeName),
-        path.join(root, 'apps', 'desktop', 'pro', 'build', 'extraResources', 'bin', 'firefly-ai-engine', exeName)
+        path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', ENGINE_BIN_DIR_NAME, exeName),
+        path.join(root, 'apps', 'desktop', 'pro', 'build', 'extraResources', 'bin', ENGINE_BIN_DIR_NAME, exeName),
+        path.join(root, 'build', 'extraResources', 'bin', ENGINE_BIN_DIR_NAME, exeName)
       ]
       for (const cand of candidates) {
         if (fs.existsSync(cand)) {
@@ -193,8 +214,9 @@ export class EngineBridgeService {
   }
 
   /**
-   * 收集候选 monorepo 根：process.cwd() 及其祖先目录中包含 apps/firefly-ai-engine 的路径。
-   * 保证从 monorepo 根或 apps/desktop 启动时均能定位引擎工程。
+   * 收集候选 monorepo 根：process.cwd() 及其祖先目录。
+   * 用于在 ResourceLocator 未命中时，以「仓库根 / apps/desktop」两种 cwd 起点
+   * 拼出 desktop 集成目录的候选路径。
    */
   private collectMonorepoRoots(): string[] {
     const roots: string[] = []
@@ -217,37 +239,226 @@ export class EngineBridgeService {
    */
   public getExeInfo(): { available: boolean; path: string | null; devMode: boolean } {
     const exePath = this.resolveEngineExecutable()
-    const devMode = !app?.isPackaged || process.env.NODE_ENV !== 'production'
-    return { available: exePath !== null, path: exePath, devMode }
+    return { available: exePath !== null, path: exePath, devMode: this.isDevMode() }
+  }
+
+  /** 是否开发态（未打包或非 production） */
+  private isDevMode(): boolean {
+    return !app?.isPackaged || process.env.NODE_ENV !== 'production'
+  }
+
+  /**
+   * 计算二进制签名（mtimeMs + size）。
+   * 集成目录被 `engine:deploy:watch` 覆盖后签名必然变化，用于判断是否需要重启引擎。
+   */
+  private binarySignature(exePath: string): string | null {
+    try {
+      const st = fs.statSync(exePath)
+      return `${st.mtimeMs}:${st.size}`
+    } catch (err) {
+      logger.debug(LogCategory.SYSTEM, `[EngineBridge] 读取引擎二进制签名失败: ${exePath}`, err)
+      return null
+    }
+  }
+
+  /**
+   * 当前配置是否要求引擎常驻运行（高级AI引擎 = 萤核AI引擎，即 local）
+   * 读取失败时保守返回 false，避免误拉起。
+   */
+  private async shouldEngineRun(): Promise<boolean> {
+    try {
+      const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+      const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') || 'local'
+      return mode !== 'cloud' && mode !== 'disabled'
+    } catch (err) {
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 读取 AI_SERVICE_MODE 失败，跳过自动拉起:', err)
+      return false
+    }
+  }
+
+  /**
+   * 启动开发态二进制热更新监听。
+   *
+   * `pnpm engine:deploy:watch` 会在重编译后覆盖集成目录中的 exe（覆盖前先 taskkill 占锁进程），
+   * 若 desktop 不做任何处理，用户会一直跑在旧二进制上。这里周期比对签名，
+   * 发现变化即回收本服务拉起的旧进程，并在「高级AI引擎 = 萤核AI引擎」时重新拉起新二进制。
+   *
+   * 生产环境不启动该监听（打包产物不会被就地覆盖）。
+   */
+  public startDevBinaryWatch(intervalMs: number = DEV_BINARY_WATCH_INTERVAL_MS): void {
+    if (this.devBinaryWatchTimer || !this.isDevMode()) {
+      return
+    }
+    this.devBinaryWatchTimer = setInterval(() => {
+      void this.checkBinaryUpdated()
+    }, intervalMs)
+    this.devBinaryWatchTimer.unref?.()
+    logger.info(
+      LogCategory.SYSTEM,
+      `[EngineBridge] 已开启引擎二进制热更新监听（每 ${intervalMs}ms 比对集成目录产物）`
+    )
+  }
+
+  /** 停止开发态二进制热更新监听 */
+  public stopDevBinaryWatch(): void {
+    if (this.devBinaryWatchTimer) {
+      clearInterval(this.devBinaryWatchTimer)
+      this.devBinaryWatchTimer = null
+    }
+  }
+
+  /**
+   * 比对当前二进制签名与本服务拉起时的签名；变化则重启引擎。
+   * - 本服务托管过引擎：回收旧进程 → 按当前模式决定是否重新拉起
+   * - 从未托管（引擎由外部启动）：不越权结束进程，仅提示需重启后生效
+   */
+  private async checkBinaryUpdated(): Promise<void> {
+    if (this.isStarting) {
+      return
+    }
+    const exePath = this.resolveEngineExecutable()
+    if (!exePath) {
+      return
+    }
+    const signature = this.binarySignature(exePath)
+    if (!signature || signature === this.spawnedBinarySignature) {
+      return
+    }
+
+    const previous = this.spawnedBinarySignature
+    this.spawnedBinarySignature = signature
+
+    if (previous === null) {
+      // 本服务未托管过引擎：可能是外部实例，不越权处理
+      if (this.lastRawStatus) {
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[EngineBridge] 检测到引擎二进制已更新，但当前实例非本服务拉起，需重启该实例后新版本才会生效'
+        )
+      }
+      return
+    }
+
+    logger.info(
+      LogCategory.SYSTEM,
+      `[EngineBridge] 检测到引擎二进制更新（${previous} → ${signature}），回收旧进程并重新拉起`
+    )
+    this.killOwnProcess()
+    // 先等旧实例（可能绑定在滑动端口上）真正释放端口，再复位到基准端口，
+    // 否则新实例会顺延绑定，desktop 将连不上刚拉起的引擎
+    await this.waitForPortReleased()
+    this.activePort = TIER2_ENGINE_PORT
+    this.lastRawStatus = null
+    this.lastModelCount = null
+    this.circuitBreaker.reset()
+
+    if (await this.shouldEngineRun()) {
+      const ok = await this.ensureRunning().catch(() => false)
+      logger.info(
+        LogCategory.SYSTEM,
+        `[EngineBridge] 引擎二进制更新后重启${ok ? '成功' : '未就绪（将由 Tier 1 兜底）'}`
+      )
+    }
+    this.broadcastStatus()
+  }
+
+  /** 当前生效的引擎端点基址 */
+  private get baseUrl(): string {
+    return `http://127.0.0.1:${this.activePort}`
   }
 
   /**
    * 探活：向 /api/engine/status 发起一次状态查询
    * 每次失败都将计入熔断器（Tier 2 静默熔断）
+   *
+   * 基准端口不可达时会扫描 38400~38419，采纳引擎实际绑定的滑动端口，
+   * 避免引擎顺延后 desktop 永久显示「未连接」。
    */
   public async healthCheck(): Promise<Tier2EngineStatus | null> {
+    const data = await this.probeStatus(this.activePort, STATUS_TIMEOUT_MS)
+    if (data) {
+      this.circuitBreaker.recordSuccess()
+      this.applyStatus(data)
+      return data
+    }
+
+    // 基准端口不可达：引擎可能因端口占用顺延绑定，扫描区间并采纳实际端口
+    if (await this.adoptRunningEnginePort()) {
+      this.circuitBreaker.recordSuccess()
+      return this.lastRawStatus
+    }
+
+    this.circuitBreaker.recordFailure()
+    return null
+  }
+
+  /** 单端口探活（不触碰熔断器与状态缓存，供探活主路径与滑动探测复用） */
+  private async probeStatus(port: number, timeoutMs: number): Promise<Tier2EngineStatus | null> {
     try {
-      const res = await fetch(`${this.baseUrl}${ENGINE_STATUS_PATH}`, {
+      const res = await fetch(`http://127.0.0.1:${port}${ENGINE_STATUS_PATH}`, {
         method: 'GET',
-        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+        signal: AbortSignal.timeout(timeoutMs)
       })
       if (!res.ok) {
-        this.circuitBreaker.recordFailure()
         return null
       }
-      const data = (await res.json()) as Tier2EngineStatus
-      this.circuitBreaker.recordSuccess()
-      if (typeof data.version === 'string' && data.version) {
-        this.versionCache = data.version
-      }
-      this.lastRawStatus = data
-      // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径
-      void this.refreshModelCount()
-      return data
+      return (await res.json()) as Tier2EngineStatus
     } catch (err) {
-      this.circuitBreaker.recordFailure()
       return null
     }
+  }
+
+  /** 采纳探活结果：刷新版本缓存与原始状态，并异步刷新模型计数 */
+  private applyStatus(data: Tier2EngineStatus): void {
+    if (typeof data.version === 'string' && data.version) {
+      this.versionCache = data.version
+    }
+    this.lastRawStatus = data
+    // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径
+    void this.refreshModelCount()
+  }
+
+  /**
+   * 在 38400~38419 区间扫描已运行的引擎并采纳其端口。
+   * 引擎侧端口滑动（`config/store.rs`）对 desktop 不可见，不采纳就会一直「未连接」。
+   * @returns 是否发现并采纳了可用端口
+   */
+  private async adoptRunningEnginePort(): Promise<boolean> {
+    for (let port = TIER2_ENGINE_PORT; port < TIER2_ENGINE_PORT + PORT_SCAN_RANGE; port++) {
+      if (port === this.activePort) {
+        continue
+      }
+      const status = await this.probeStatus(port, PORT_PROBE_TIMEOUT_MS)
+      if (status) {
+        logger.info(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 基准端口不可达，已在 ${port} 发现运行中的 Tier 2 引擎，采纳该端口`
+        )
+        this.activePort = port
+        this.applyStatus(status)
+        return true
+      }
+    }
+    return false
+  }
+
+  /**
+   * 等待当前端口上的引擎完全退出（最多 limitMs）。
+   * 重启前必须确认旧实例已释放端口，否则新实例会顺延绑定到 38401，
+   * 表现为 desktop 连不上刚拉起的引擎。
+   */
+  private async waitForPortReleased(limitMs: number = PORT_RELEASE_WAIT_MS): Promise<void> {
+    const start = Date.now()
+    while (Date.now() - start < limitMs) {
+      if (!(await this.probeStatus(this.activePort, STATUS_TIMEOUT_MS))) {
+        return
+      }
+      await new Promise(resolve => setTimeout(resolve, 300))
+    }
+    logger.warn(
+      LogCategory.SYSTEM,
+      `[EngineBridge] 等待端口 ${this.activePort} 释放超时（${limitMs}ms），继续尝试拉起引擎`
+    )
   }
 
   /**
@@ -340,7 +551,7 @@ export class EngineBridgeService {
     this.isStarting = true
     const exePath = this.resolveEngineExecutable()
     if (!exePath) {
-      const msg = '未找到 firefly-ai-engine 可执行二进制，跳过子进程托管（Tier 1 全程保底）'
+      const msg = '未找到萤核AI引擎可执行文件，跳过自动拉起（由基础AI引擎全程保底）'
       logger.warn(LogCategory.SYSTEM, `[EngineBridge] ${msg}`)
       this.lastError = msg
       this.broadcastStatus()
@@ -358,6 +569,9 @@ export class EngineBridgeService {
       }
 
       logger.info(LogCategory.SYSTEM, `[EngineBridge] 静默拉起 Tier 2 引擎: ${exePath}`)
+      // ENGINE_PORT 仅作前向兼容提示：引擎当前从自身 %APPDATA%/com.firefly.ai-engine/config.json
+      // 的 base_port 取基准端口，并在被占用时于 38400~38419 内顺延；
+      // desktop 侧由 healthCheck 的滑动区间探测兜底，不依赖该环境变量。
       const env = {
         ...process.env,
         ENGINE_PORT: String(TIER2_ENGINE_PORT)
@@ -369,6 +583,11 @@ export class EngineBridgeService {
       })
       this.process = child
       child.unref()
+
+      // 记录本次拉起的二进制签名，并开启热更新监听：
+      // engine:deploy:watch 覆盖集成目录产物后据此自动重启引擎
+      this.spawnedBinarySignature = this.binarySignature(exePath)
+      this.startDevBinaryWatch()
 
       child.once('error', err => {
         this.lastError = `引擎子进程异常: ${err.message}`
@@ -389,7 +608,7 @@ export class EngineBridgeService {
       const ready = await this.waitForReady(READY_WAIT_LIMIT_MS)
       this.isStarting = false
       if (!ready) {
-        const msg = 'Tier 2 引擎启动超时，未能在规定时间内完成就绪'
+        const msg = '萤核AI引擎启动超时，未能在规定时间内完成就绪'
         this.lastError = msg
         logger.warn(LogCategory.SYSTEM, `[EngineBridge] ${msg}`)
       } else {
@@ -457,6 +676,9 @@ export class EngineBridgeService {
       logger.debug(LogCategory.SYSTEM, '[EngineBridge] shutdown 请求未送达（引擎可能未运行）:', err)
     }
     this.killOwnProcess()
+    // 引擎已请求退出，端口复位到基准值，下次拉起按默认端口协商
+    this.activePort = TIER2_ENGINE_PORT
+    this.lastRawStatus = null
     return { ok: true }
   }
 
@@ -572,8 +794,8 @@ export class EngineBridgeService {
       circuitState: this.circuitBreaker.getState(),
       available: this.resolveEngineExecutable() !== null,
       exePath: this.resolveEngineExecutable(),
-      devMode: !app?.isPackaged || process.env.NODE_ENV !== 'production',
-      port: TIER2_ENGINE_PORT,
+      devMode: this.isDevMode(),
+      port: this.activePort,
       version: raw?.version || this.versionCache || null,
       backend: raw?.active_backend || raw?.backend || null,
       // 引擎契约字段为 current_model（兼容旧 model 字段与 loaded_models 列表）
@@ -618,7 +840,10 @@ export class EngineBridgeService {
    */
   public stop(): void {
     this.stopPolling()
+    this.stopDevBinaryWatch()
     this.killOwnProcess()
+    this.activePort = TIER2_ENGINE_PORT
+    this.spawnedBinarySignature = null
     this.lastRawStatus = null
     this.lastModelCount = null
     this.circuitBreaker.reset()
