@@ -35,7 +35,7 @@ export function registerEngineBridgeIPCHandlers() {
 
   ipcMain.handle(
     'engine-bridge/open-ui',
-    async (_event, options?: { panel?: 'error' | 'logs' | 'default' }) => {
+    async (_event, options?: { panel?: 'error' | 'logs' | 'models' | 'default' }) => {
       logger.info(LogCategory.IPC, '[IPC] 收到打开引擎管理面板请求', options)
       return engineBridgeService.openUI(options)
     }

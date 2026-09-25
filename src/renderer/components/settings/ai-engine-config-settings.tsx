@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Ban, Brain, CircleCheck, CircleX, CircleAlert, Clock, Cloud, Plus, Power, Radio, Box, Zap } from 'lucide-react'
 import { Badge } from '../ui/badge'
 import { Button } from '../ui/button'
@@ -11,37 +11,23 @@ import { useVoerkaI18n } from '@voerkai18n/react'
 import { useSettingsStore } from '../../stores/settings-store'
 import { AIServiceStatus } from '@firefly/types'
 import { useAIServiceStore } from '../../stores/ai-service-store'
+import { useEngineStore } from '../../stores/engine-store'
 import { toast } from '../common/Toast'
 import { CloudModelConfigSettings } from './cloud-model-config-settings'
 
 /** 生效引擎模式（PRD-0044）：禁用 | 萤核AI引擎（本地） | 云端AI引擎 */
 type EffectiveEngineMode = 'disabled' | 'local' | 'cloud'
 
-/** 引擎桥接状态快照（与主进程 EngineBridgeSnapshot 对齐，宽容解析） */
-export interface EngineBridgeSnapshotUI {
-  connected?: boolean
-  circuitState?: string
-  available?: boolean
-  exePath?: string | null
-  devMode?: boolean
-  port?: number
-  version?: string | null
-  backend?: string | null
-  model?: string | null
-  vramMb?: number | null
-  lastError?: string | null
-  updatedAt?: number | null
-}
-
 /**
- * 熔断状态文案表（Fix-05：不得以模块级静态对象持有裸文案，
- * 改为函数返回对象以保证切换语言时翻译即时刷新、t() 只收静态字符串）
+ * 引擎健康状态文案表（PRD-0044：熔断行话改通俗文案；
+ * Fix-05：不得以模块级静态对象持有裸文案，改为函数返回对象
+ * 以保证切换语言时翻译即时刷新、t() 只收静态字符串）
  */
 function getCircuitLabels(t: (key: string) => string): Record<string, { text: string; tone: 'green' | 'yellow' | 'red' | 'gray' }> {
   return {
-    closed: { text: t('熔断关闭'), tone: 'green' },
-    half_open: { text: t('半开试探'), tone: 'yellow' },
-    open: { text: t('熔断敞开'), tone: 'red' }
+    closed: { text: t('引擎状态良好'), tone: 'green' },
+    half_open: { text: t('引擎偶发异常，正在自动尝试'), tone: 'yellow' },
+    open: { text: t('引擎连续失败，已临时停用并由基础AI引擎兜底'), tone: 'red' }
   }
 }
 
@@ -68,8 +54,10 @@ export const AIEngineConfigSettings: React.FC = () => {
   const isCloudMode = aiServiceMode === 'cloud'
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
-  const [snapshot, setSnapshot] = useState<EngineBridgeSnapshotUI | null>(null)
-  const [loading, setLoading] = useState<boolean>(false)
+  // 引擎快照统一走全局引擎状态 store（PRD-0044 任务 #5），与 Footer 等消费方共享同一份订阅
+  const snapshot = useEngineStore(s => s.snapshot)
+  const loading = useEngineStore(s => s.loading)
+  const loadSnapshot = useEngineStore(s => s.load)
   const [actionPending, setActionPending] = useState<string | null>(null)
   const aiServiceStatus = useAIServiceStore(s => s.status)
   const isEngineFailed = !isCloudMode && aiServiceStatus === AIServiceStatus.ERROR
@@ -83,36 +71,10 @@ export const AIEngineConfigSettings: React.FC = () => {
     captureEvent('切换生效引擎', { mode })
   }
 
-  const loadSnapshot = useCallback(async () => {
-    try {
-      const snap = await window.electronAPI.engineBridge.getStatus()
-      setSnapshot(snap)
-    } catch (e) {
-      console.error('加载引擎桥接状态失败:', e)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
+  // 挂载即拉取初始快照并订阅主进程广播，卸载时取消订阅（store 内部完成首次 load）
   useEffect(() => {
-    let unsub: (() => void) | undefined
-    const subscribe = async () => {
-      setLoading(true)
-      await loadSnapshot()
-      try {
-        unsub = window.electronAPI.engineBridge?.onStatusChanged(payload => {
-          setSnapshot(payload)
-          setLoading(false)
-        })
-      } catch (e) {
-        console.error('订阅引擎桥接状态失败:', e)
-      }
-    }
-    subscribe()
-    return () => {
-      unsub?.()
-    }
-  }, [loadSnapshot])
+    return useEngineStore.getState().subscribe()
+  }, [])
 
   const runAction = async (key: string, fn: () => Promise<unknown>) => {
     setActionPending(key)
@@ -357,6 +319,15 @@ export const AIEngineConfigSettings: React.FC = () => {
                 </Button>
                 <Button
                   size="sm"
+                  variant="ghost"
+                  disabled={actionPending !== null || !snapshot?.connected}
+                  onClick={() => runAction('open-models', () => window.electronAPI.engineBridge.openUI({ panel: 'models' }))}
+                >
+                  <Box className="h-4 w-4 mr-1" />
+                  {t('在萤核AI引擎中管理模型')}
+                </Button>
+                <Button
+                  size="sm"
                   variant="outline"
                   disabled={actionPending !== null || !snapshot?.connected}
                   className="text-red-600 dark:text-red-400"
@@ -368,19 +339,23 @@ export const AIEngineConfigSettings: React.FC = () => {
               </div>
             </div>
 
-            {/* 运行指标网格 */}
+            {/* 运行指标网格（PRD-0044 dashboard 等效：不复制显存/内存等引擎侧专属卡） */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="flex flex-col gap-1 px-3 py-2.5 bg-muted/20 border border-border/40 rounded-xl">
                 <span className="text-[10px] font-black text-muted-foreground/50 uppercase leading-none">
-                  {t('活跃后端')}
+                  {t('计算引擎')}
                 </span>
                 <span className="text-sm font-bold truncate">
-                  {snapshot?.backend || (snapshot?.connected ? t('未知') : t('离线'))}
+                  {snapshot?.backend
+                    ? `${snapshot.backend}${snapshot?.raw?.hardware?.gpu_name ? ` · ${snapshot.raw.hardware.gpu_name}` : ''}`
+                    : snapshot?.connected
+                      ? t('未知')
+                      : t('离线')}
                 </span>
               </div>
               <div className="flex flex-col gap-1 px-3 py-2.5 bg-muted/20 border border-border/40 rounded-xl">
                 <span className="text-[10px] font-black text-muted-foreground/50 uppercase leading-none">
-                  {t('已加载模型')}
+                  {t('当前模型（引擎侧只读）')}
                 </span>
                 <span className="text-sm font-bold truncate">
                   {snapshot?.model || (snapshot?.connected ? t('加载中...') : '—')}
@@ -388,15 +363,15 @@ export const AIEngineConfigSettings: React.FC = () => {
               </div>
               <div className="flex flex-col gap-1 px-3 py-2.5 bg-muted/20 border border-border/40 rounded-xl">
                 <span className="text-[10px] font-black text-muted-foreground/50 uppercase leading-none">
-                  {t('显存占用')}
+                  {t('已安装模型')}
                 </span>
                 <span className="text-sm font-bold">
-                  {snapshot?.vramMb != null ? `${(snapshot.vramMb / 1024).toFixed(1)} GB` : '—'}
+                  {snapshot?.modelCount != null ? `${snapshot.modelCount} 个` : '—'}
                 </span>
               </div>
               <div className="flex flex-col gap-1 px-3 py-2.5 bg-muted/20 border border-border/40 rounded-xl">
                 <span className="text-[10px] font-black text-muted-foreground/50 uppercase leading-none">
-                  {t('熔断状态')}
+                  {t('引擎健康状况')}
                 </span>
                 <span className="text-sm font-bold">
                   {circuit ? (
