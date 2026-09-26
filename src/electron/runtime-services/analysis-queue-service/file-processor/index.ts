@@ -22,7 +22,8 @@ import {
   cleanSmartName,
   createSecretHmac,
   toBase62,
-  isGibberishOcrText
+  isGibberishOcrText,
+  isTagProvenanceGroup
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
@@ -1789,8 +1790,8 @@ export class FileProcessor {
 
         db.prepare(
           `
-          INSERT INTO file_contents (file_fingerprint, content, exif, lrc, ocr)
-          VALUES (?, ?, ?, ?, ?)
+          INSERT INTO file_contents (file_fingerprint, content, exif, lrc, ocr, asr)
+          VALUES (?, ?, ?, ?, ?, ?)
           ON CONFLICT(file_fingerprint) DO UPDATE SET
             content = COALESCE(excluded.content, content),
             exif = CASE
@@ -1798,14 +1799,16 @@ export class FileProcessor {
               ELSE COALESCE(excluded.exif, exif)
             END,
             lrc = COALESCE(excluded.lrc, lrc),
-            ocr = COALESCE(excluded.ocr, ocr)
+            ocr = COALESCE(excluded.ocr, ocr),
+            asr = COALESCE(excluded.asr, asr)
           `
         ).run(
           fileFingerprint,
           compressText(contentResult.content ?? null),
           compressJson(contentResult.metadata || {}),
           compressText(finalLrc),
-          compressText(detectedOcrText ?? null)
+          compressText(detectedOcrText ?? null),
+          compressText(detectedAudioTranscript ?? null)
         )
 
         await databaseService.updateAnalysisStage(fileFingerprint, cpuCompletionStage)
@@ -2359,14 +2362,17 @@ export class FileProcessor {
           if (tag) {
             const tagCode = tag.code || `custom:${tag.name}`
             const parentTagCode = rel.parent_tag_code || (tag.parent_codes ? JSON.parse(tag.parent_codes)[0] : '') || ''
+            // mock 回灌须显式携带 tag_group，否则落 DEFAULT '' 不进属性面板分组视图；
+            // 夹具未声明分组时按分析引擎产出归 'ai'（勿依赖 insertTagToDb 的 'fact' 缺省）
+            const mockGroup = isTagProvenanceGroup(rel.tag_group) ? rel.tag_group : 'ai'
             db.prepare('INSERT OR IGNORE INTO file_tags (code, name, parent_codes) VALUES (?, ?, ?)').run(
               tagCode,
               tag.name,
               JSON.stringify(parentTagCode ? [parentTagCode] : [])
             )
             db.prepare(
-              `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, confidence, sync_status) VALUES (?, ?, ?, 1.0, 0)`
-            ).run(fingerprint, tagCode, parentTagCode)
+              `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, tag_group, confidence, sync_status) VALUES (?, ?, ?, ?, 1.0, 0)`
+            ).run(fingerprint, tagCode, parentTagCode, mockGroup)
           }
         }
       }
