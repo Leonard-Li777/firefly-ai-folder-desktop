@@ -264,9 +264,13 @@ const AnalysisTabsComponent: React.FC<any> = ({
           />
         )}
 
-        {activeTab === 'audio_transcript' && (
+        {activeTab === 'asr' && (
           <SummaryMarkdown
-            content={analysisResult.content?.trim() || `> ${t('暂无语音转录文本')}`}
+            content={
+              analysisResult.asr?.trim() ||
+              analysisResult.content?.trim() ||
+              `> ${t('暂无语音转录文本')}`
+            }
             maskClass={maskClass}
           />
         )}

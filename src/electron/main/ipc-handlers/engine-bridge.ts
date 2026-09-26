@@ -35,11 +35,23 @@ export function registerEngineBridgeIPCHandlers() {
 
   ipcMain.handle(
     'engine-bridge/open-ui',
-    async (_event, options?: { panel?: 'error' | 'logs' | 'models' | 'default' }) => {
+    async (
+      _event,
+      options?: {
+        panel?: 'error' | 'logs' | 'models' | 'default'
+        focusModel?: string
+        source?: string
+      }
+    ) => {
       logger.info(LogCategory.IPC, '[IPC] 收到打开引擎管理面板请求', options)
       return engineBridgeService.openUI(options)
     }
   )
+
+  // Issue 0046 §3：探测引擎侧模型安装状态（高维修正开关未安装预警）
+  ipcMain.handle('engine-bridge/check-models', async (_event, keywords?: string[]) => {
+    return engineBridgeService.checkModelsInstalled(Array.isArray(keywords) ? keywords : [])
+  })
 
   ipcMain.handle('engine-bridge/shutdown', async () => {
     logger.info(LogCategory.IPC, '[IPC] 收到关闭 Tier 2 引擎请求')

@@ -171,7 +171,12 @@ export interface OmniPerceptionResponse {
   nsfw_high_confidence_tags?: string[]
   sensitive_types?: string[]
   content_rating?: string
-  audio_transcript?: string
+  /** ASR 语音转录文本（Issue 0046 §1：替代旧 `audio_transcript` 命名） */
+  asr?: string
+  /** 是否存在有效 ASR 转录文本 */
+  has_asr?: boolean
+  /** ASR 转录文本字符长度 */
+  asr_length?: number
   lrc?: string
   audio_events: string[]
   geo_address?: string
@@ -1121,7 +1126,7 @@ export class OmniService {
       file_path: filePath,
       language: options?.language,
       enable_visual_tags: options?.enableVisualTags ?? true,
-      enable_audio_transcript: options?.enableAudioTranscript,
+      enable_asr: options?.enableAudioTranscript,
       enable_geo_reverse: options?.enableGeoReverse ?? true,
       enable_text_analysis: options?.enableTextAnalysis,
       max_content_size_kb: options?.maxContentSizeKb,
@@ -1235,8 +1240,8 @@ export class OmniService {
           nsfw_tags: json.nsfw_tags || [],
           sensitive_types: json.sensitive_types || [],
           content_rating: json.content_rating,
-          has_audio_transcript: !!json.audio_transcript,
-          audio_transcript_length: json.audio_transcript?.length || 0,
+          has_asr: json.has_asr ?? !!json.asr,
+          asr_length: json.asr_length ?? json.asr?.length ?? 0,
           ocr_text_length: json.ocr_text?.length || 0,
           markdown_content: json.markdown_content,
           markdown_content_length: json.markdown_content?.length || 0,

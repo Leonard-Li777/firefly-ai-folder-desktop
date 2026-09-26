@@ -91,6 +91,8 @@ const GENESIS_V1_SCHEMA = `
     file_fingerprint TEXT PRIMARY KEY,           -- 文件内容指纹 (Base62/32位)，作为全局唯一标识
     smart_name TEXT,                             -- AI 生成或用户定义的智能名称
     raw_smart_name TEXT,                         -- 原始智能文件名（不带扩展名，未经模板包裹的 AI 核心名称）
+    smart_name_source TEXT,                      -- 智能名称来源 (Issue 0046)：'machine'=机器 5W 生成 | 'user'=人工命名
+    high_dim_corrected BOOLEAN NOT NULL DEFAULT 0, -- 是否已完成 Stage 5 高维修正并落库 zvec 向量 (Issue 0046)
     description TEXT,                            -- AI 生成的文件描述
     size INTEGER NOT NULL DEFAULT 0,             -- 文件大小（字节）
     extension TEXT NOT NULL,                     -- 文件后缀名 (如 .png, .pdf)
@@ -114,6 +116,7 @@ const GENESIS_V1_SCHEMA = `
     multimodal_content BLOB,                     -- AI 生成的多模态描述 (压缩 BLOB)
     ocr BLOB,                                    -- 图片/文档的 OCR 识别文本 (压缩 BLOB)
     lrc BLOB,                                    -- 音频/视频的歌词或字幕 (压缩 BLOB)
+    asr BLOB,                                    -- 音频/视频的 ASR 语音转录文本 (压缩 BLOB, Issue 0046)
     exif BLOB,                                   -- 文件元数据 (JSON, 压缩 BLOB)
     analysis_stats TEXT,                         -- 分析统计信息 (JSON, 如耗时、Token数)
     quality_score REAL,                          -- 质量评分 (1-10)
@@ -156,6 +159,8 @@ const GENESIS_V1_SCHEMA = `
     id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 队列项唯一标识
     item_id INTEGER,                             -- 关联 ID（根据 item_type 决定是文件ID还是目录ID）
     item_type TEXT NOT NULL DEFAULT 'file',      -- 待分析项类型: 'file' | 'directory'
+    task_type TEXT NOT NULL DEFAULT 'analysis'   -- 任务类型: 'analysis'(Stage 1~4 普通文件分析) | 'high_dim_correction'(Stage 5 高维修正)
+                 CHECK (task_type IN ('analysis', 'high_dim_correction')),
     status TEXT NOT NULL DEFAULT 'pending',      -- 任务状态: 'pending', 'analyzing', 'completed', 'failed'
     progress INTEGER NOT NULL DEFAULT 0,          -- 分析进度 (0-100)
     error TEXT,                                  -- 最近一次运行的错误信息
@@ -304,6 +309,7 @@ const GENESIS_V1_SCHEMA = `
     multimodal_content,                          -- 多模态描述
     ocr,                                         -- OCR 文字识别内容
     lrc,                                         -- 歌词/字幕
+    asr,                                         -- ASR 语音转录内容 (Issue 0046)
     tags,                                        -- 聚合后的标签文本
     tokenize='trigram'                           -- 使用 trigram 分词支持多语言模糊搜索
   );
@@ -331,6 +337,8 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
   CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
+  -- 抢占式单队列调度覆盖索引 (Issue 0046 / CONTEXT.md 抢占式单队列调度)：按任务类型 + 状态检索，支撑 Stage 5 高维修正独立高速取件
+  CREATE INDEX IF NOT EXISTS idx_analysis_queue_task_status ON analysis_queue(task_type, status, priority DESC, created_at ASC);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
 
   -- 19. FTS 同步触发器（标准 FTS5：使用 DELETE WHERE rowid 进行原子安全同步）
@@ -343,7 +351,7 @@ const GENESIS_V1_SCHEMA = `
   DROP TRIGGER IF EXISTS trg_file_contents_fts_upsert;
 
   CREATE TRIGGER trg_files_fts_insert AFTER INSERT ON files BEGIN
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
     SELECT new.rowid, new.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
       COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
@@ -351,12 +359,13 @@ const GENESIS_V1_SCHEMA = `
       COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.asr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
       '';
   END;
 
   CREATE TRIGGER trg_files_fts_update AFTER UPDATE OF smart_name, description ON files BEGIN
     DELETE FROM files_fts WHERE rowid = old.rowid;
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
     SELECT new.rowid, new.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = new.file_fingerprint LIMIT 1), ''),
       COALESCE(new.smart_name, ''), COALESCE(new.description, ''),
@@ -364,6 +373,7 @@ const GENESIS_V1_SCHEMA = `
       COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.asr) FROM file_contents fc WHERE fc.file_fingerprint = new.file_fingerprint), ''),
       '';
   END;
 
@@ -373,48 +383,50 @@ const GENESIS_V1_SCHEMA = `
 
   CREATE TRIGGER trg_file_contents_fts_upsert AFTER INSERT ON file_contents BEGIN
     DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
     SELECT f.rowid, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       COALESCE(decompress_text(new.content), ''), COALESCE(decompress_text(new.multimodal_content), ''),
-      COALESCE(decompress_text(new.ocr), ''), COALESCE(decompress_text(new.lrc), ''), ''
+      COALESCE(decompress_text(new.ocr), ''), COALESCE(decompress_text(new.lrc), ''), COALESCE(decompress_text(new.asr), ''), ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
 
-  CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE OF content, multimodal_content, ocr, lrc ON file_contents BEGIN
+  CREATE TRIGGER trg_file_contents_fts_update AFTER UPDATE OF content, multimodal_content, ocr, lrc, asr ON file_contents BEGIN
     DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
     SELECT f.rowid, f.file_fingerprint,
       COALESCE((SELECT wf.name FROM workspace_files wf WHERE wf.file_fingerprint = f.file_fingerprint LIMIT 1), ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       COALESCE(decompress_text(new.content), ''), COALESCE(decompress_text(new.multimodal_content), ''),
-      COALESCE(decompress_text(new.ocr), ''), COALESCE(decompress_text(new.lrc), ''), ''
+      COALESCE(decompress_text(new.ocr), ''), COALESCE(decompress_text(new.lrc), ''), COALESCE(decompress_text(new.asr), ''), ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
 
   CREATE TRIGGER trg_workspace_files_fts_insert AFTER INSERT ON workspace_files BEGIN
     DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
     SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.asr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;
 
   CREATE TRIGGER trg_workspace_files_fts_update AFTER UPDATE OF name, file_fingerprint ON workspace_files BEGIN
     DELETE FROM files_fts WHERE rowid = (SELECT rowid FROM files WHERE file_fingerprint = new.file_fingerprint);
-    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
+    INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
     SELECT f.rowid, f.file_fingerprint, COALESCE(new.name, ''),
       COALESCE(f.smart_name, ''), COALESCE(f.description, ''),
       COALESCE((SELECT decompress_text(fc.content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.multimodal_content) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.ocr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       COALESCE((SELECT decompress_text(fc.lrc) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
+      COALESCE((SELECT decompress_text(fc.asr) FROM file_contents fc WHERE fc.file_fingerprint = f.file_fingerprint), ''),
       ''
     FROM files f WHERE f.file_fingerprint = new.file_fingerprint;
   END;

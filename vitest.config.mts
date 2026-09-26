@@ -35,6 +35,10 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}', 'tests/**/*.test.{ts,tsx}', 'pro/tests/**/*.test.{ts,tsx}'],
     setupFiles: ['src/test-setup.ts'],
     testTimeout: 60000,
+    // 数据库类用例的 beforeEach 会建库并执行创世基线 DDL（GENESIS_V1_SCHEMA），
+    // 全量并发跑时该 hook 可能从 < 1s 涨到 > 10s（默认 hookTimeout）而误报失败。
+    // 与 testTimeout 对齐，避免把「机器忙」判成「代码错」。
+    hookTimeout: 60000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -62,6 +66,8 @@ export default defineConfig({
       '@src': resolve(__dirname, 'src'),
       '@app': resolve(__dirname, 'src'),
       '@/shared': resolve(__dirname, 'src/shared'),
+      '@shared': resolve(__dirname, 'src/shared'),
+      '@shared/*': resolve(__dirname, 'src/shared/*'),
       '@/electron': resolve(__dirname, 'src/electron'),
       '@/renderer': resolve(__dirname, 'src/renderer'),
       '@components': resolve(__dirname, 'src/renderer/components'),

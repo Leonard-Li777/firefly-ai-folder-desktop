@@ -31,7 +31,14 @@ import {
 } from '@app/electron/config/analysis-mode'
 import { DirectoryContextService } from '../filesystem/directory-context-service'
 import { ErrorHandler } from './error-handler'
-import { QueueManager } from './queue-manager'
+import { QueueManager, pickNextPending } from './queue-manager'
+import { HighDimCorrectionService } from './high-dim-correction-service'
+import {
+  createWemmEmbedder,
+  createWemmTagScorer,
+  createOmniFiveWRefiner,
+  createZvecVectorSink
+} from './high-dim-adapters'
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
 import { createCoreEngineAdapters } from '../../adapters'
 import { databaseService } from '../database/database-service'
@@ -83,6 +90,7 @@ class StageNotifier {
  */
 export class AnalysisQueueService {
   private queueManager!: QueueManager
+  private highDimCorrectionService!: HighDimCorrectionService
   private errorHandler!: ErrorHandler
   private fileProcessorService!: FileProcessorService
 
@@ -219,6 +227,28 @@ export class AnalysisQueueService {
         onWakeUp: () => this.wakeUp()
       })
 
+      // Stage 5 高维修正编排器（Issue 0046）：默认注入引擎嵌入器、高维标签打分器、
+      // 5W 名称提纯器与 zvec 入库器。
+      // 让权钩子：真正起作用的是**调度让权**（单文件落库后回到 pickNextPending，
+      // 必然优先选中新插入的 analysis 任务）；嵌入由 Tier 2 引擎托管，
+      // 引擎侧目前**没有**「卸载嵌入上下文」接口，故此钩子只记录让权事实、不整体停服
+      // （停服会连带中断用户正在进行的前台对话）。将来引擎提供换载接口时在此接入。
+      const wemmEmbedder = createWemmEmbedder()
+      this.highDimCorrectionService = new HighDimCorrectionService({
+        embedder: wemmEmbedder,
+        tagScorer: createWemmTagScorer(wemmEmbedder),
+        nameRefiner: createOmniFiveWRefiner(),
+        vectorSink: createZvecVectorSink(),
+        enqueueHighDim: (candidates, workspaceId) =>
+          this.queueManager.enqueueHighDimBatch(candidates, workspaceId),
+        releaseEngine: async () => {
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            '[高维修正] 让权：单文件已原子落库，交还调度权给新插入的普通分析任务'
+          )
+        }
+      })
+
       await this.queueManager.loadFromDB()
       await this.queueManager.validateQueueConsistency()
 
@@ -351,11 +381,20 @@ export class AnalysisQueueService {
         // 统一走 analysis-mode 模块解析，避免与 file-processor / DAO 的口径漂移
         const analysisMode = resolveAnalysisMode()
 
-        const useParallel = !isCpuEngine && isAiStageEnabled(analysisMode)
+        // 抢占式硬优先级（Issue 0046 §4）：只要存在普通分析待办就走并行通道；
+        // 仅剩高维修正待办时退回串行单文件通道（Stage 5 恒为单文件事务，保证可让权）。
+        const decisionSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
+        const hasAnalysisPending = decisionSnapshot.items.some(
+          i => i.status === 'pending' && i.taskType !== 'high_dim_correction'
+        )
+        const useParallel = !isCpuEngine && isAiStageEnabled(analysisMode) && hasAnalysisPending
 
         if (useParallel) {
-          const snapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
-          const pendingItems = snapshot.items.filter(i => i.status === 'pending')
+          const snapshot = decisionSnapshot
+          // 并行通道仅消费普通分析任务；高维修正任务留给串行通道
+          const pendingItems = snapshot.items.filter(
+            i => i.status === 'pending' && i.taskType !== 'high_dim_correction'
+          )
 
           if (pendingItems.length === 0) {
             logger.info(
@@ -587,9 +626,10 @@ export class AnalysisQueueService {
             await this.updateVirtualDirectoriesAfterQueueCompletion()
           }
         } else {
-          // ORIGINAL SERIAL LOOP
+          // ORIGINAL SERIAL LOOP（含 Stage 5 高维修正单文件通道）
           const snapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
-          const next = snapshot.items.find(i => i.status === 'pending')
+          // 抢占式硬优先级：只要有 analysis 待办就绝不消费 high_dim_correction
+          const next = pickNextPending(snapshot.items)
 
           if (next) {
             const isReady = await this.aiServiceManager.waitForAIServiceReady()
@@ -601,6 +641,14 @@ export class AnalysisQueueService {
           }
 
           if (!next) {
+            // Stage 5 触发（Issue 0046 §4）：普通分析待办清零后，扫描工作区
+            // 「已分析但尚未高维修正」的文件并分批灌库；有新任务则立即回到循环消费。
+            const refilled = await this.highDimCorrectionService.refill(activeWorkspaceId)
+            if (refilled > 0) {
+              this.emitUpdate()
+              continue
+            }
+
             logger.info(
               LogCategory.ANALYSIS_QUEUE,
               `[分析队列] 工作空间 ${activeWorkspaceId} 的队列已分析完毕，从运行栈中弹出`
@@ -636,7 +684,30 @@ export class AnalysisQueueService {
           this.current = next
           this.updateItemStatus(next.id, 'analyzing', 0)
 
-          if (next.itemType === 'directory') {
+          if (next.taskType === 'high_dim_correction') {
+            // Stage 5：单文件为最小事务单元，落库完成即可安全让权（Issue 0046 §4）
+            try {
+              const outcome = await this.highDimCorrectionService.correctOne(next, currentSignal)
+              logger.info(
+                LogCategory.ANALYSIS_QUEUE,
+                `[高维修正] 完成: ${next.name}（维度 ${outcome.vectorDimension}，标签 ${outcome.tagsWritten}）`,
+                { skippedForUserNaming: outcome.skippedForUserNaming }
+              )
+              this.updateItemStatus(next.id, 'completed', 100)
+            } catch (err) {
+              this.updateItemStatus(
+                next.id,
+                'failed',
+                100,
+                err instanceof Error ? err.message : String(err)
+              )
+            }
+            // 让权仲裁：高维修正执行期间若有普通分析任务插入，单文件落库后立即释放引擎换载；
+            // 回到循环后 pickNextPending 必然优先选中新插入的 analysis 任务（抢占）。
+            if (this.highDimCorrectionService.consumeYield()) {
+              await this.highDimCorrectionService.releaseEngine()
+            }
+          } else if (next.itemType === 'directory') {
             await this.directoryProcessor.processDirectory(next)
           } else {
             await this.fileProcessor.processFile(next, currentSignal)
@@ -700,6 +771,9 @@ export class AnalysisQueueService {
   async addItems(inputs: EnqueueInput[], forceReanalyze = false): Promise<void> {
     await this.ensureInitialized()
     await this.queueManager.addItems(inputs, forceReanalyze)
+    // Stage 5 让权（Issue 0046 §4）：高维修正执行期间插入新文件 → 置让权信号，
+    // 待当前单文件原子落库后立即释放 WeMM 引擎，新普通分析任务随即抢占执行。
+    this.requestHighDimYieldIfRunning()
     // 修复：即使 running 为 true，只要处理循环已退出(isProcessingLoopActive=false)，
     // 也必须重新启动循环，否则新加入的目录项/文件项将永远停留在 pending 不被处理
     if (!this.isProcessingLoopActive && this.isInitialized) {
@@ -710,9 +784,17 @@ export class AnalysisQueueService {
   async addItemsResolved(inputs: EnqueueInput[], forceReanalyze = false): Promise<void> {
     await this.ensureInitialized()
     await this.queueManager.addItemsResolved(inputs, forceReanalyze)
+    this.requestHighDimYieldIfRunning()
     // 修复：同上，处理循环未激活时必须重新启动
     if (!this.isProcessingLoopActive && this.isInitialized) {
       void this.start()
+    }
+  }
+
+  /** 若当前正在消费高维修正任务，则置让权信号（无副作用，幂等） */
+  private requestHighDimYieldIfRunning(): void {
+    if (this.current?.taskType === 'high_dim_correction') {
+      this.highDimCorrectionService?.requestYield()
     }
   }
 

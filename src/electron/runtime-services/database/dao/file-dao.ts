@@ -49,6 +49,18 @@ function dimensionForCode(code: string, sqlDimId: string | null, parentTagCode: 
   return code
 }
 
+/**
+ * Stage 5 高维修正**不得**改写的标签来源分组（ADR-0045 §3 组优先序 `fact > fused > visual > ai`）。
+ *
+ * 高维修正产出归 `ai` 组（见 `applyHighDimCorrectionResult`），只能写自己所属的分组。
+ * 若某个 `(tag_code, parent_tag_code)` 关系已以**更高优先级**的分组存在，一律原样保留其
+ * `tag_group` / `source` / `confidence`，绝不改写成 `ai`：
+ * - `fact` 是确定性物理事实，改写会破坏「事实组平均 0.90」的可观测结论；
+ * - `fused` / `visual` 承载 Omni 原始输出，改写会丢失与上游的可对账性；
+ * - `user` 是用户手动标注（恒 1.00），改写等于把人工劳动成果降级为机器标注。
+ */
+const HIGH_DIM_PROTECTED_TAG_GROUPS = ['fact', 'fused', 'visual', 'user'] as const
+
 export class FileDao {
   private dimensionsCache: any[] | null = null
   private ftsSearchStmtWithWorkspace: Statement | null = null
@@ -242,7 +254,7 @@ export class FileDao {
         SELECT
           f.smart_name, f.raw_smart_name, f.size, f.extension, f.file_group, f.author, f.language,
           f.is_hit, f.last_hit_at, f.description,
-          fc.content, fc.multimodal_content, fc.ocr, fc.lrc, fc.quality_score, fc.quality_confidence, 
+          fc.content, fc.multimodal_content, fc.ocr, fc.lrc, fc.asr, fc.quality_score, fc.quality_confidence, 
           fc.quality_reasoning, fc.quality_criteria, fc.grouping_reason, fc.grouping_confidence,
           fc.exif, fc.analysis_stats
         FROM files f
@@ -412,6 +424,7 @@ export class FileDao {
       multimodalContent: decompressText(fileData.multimodal_content),
       ocr: decompressText(fileData.ocr),
       lrc: decompressText(fileData.lrc),
+      asr: decompressText(fileData.asr),
       qualityScore: fileData.quality_score,
       qualityConfidence: fileData.quality_confidence,
       qualityReasoning: fileData.quality_reasoning,
@@ -969,21 +982,23 @@ export class FileDao {
       const compressedMultimodal = compressText(result.multimodalContent ?? null)
       const compressedOcr = compressText((result as any).ocr ?? null)
       const compressedLrc = compressText(result.lrc ?? null)
+      const compressedAsr = compressText((result as any).asr ?? null)
       const compressedExif = compressJson(finalMetadata ?? null)
 
       this.db
         .prepare(
           `
         INSERT INTO file_contents (
-          file_fingerprint, content, multimodal_content, ocr, lrc, exif, analysis_stats,
+          file_fingerprint, content, multimodal_content, ocr, lrc, asr, exif, analysis_stats,
           quality_score, quality_confidence, quality_criteria, quality_reasoning,
           grouping_reason, grouping_confidence, meta
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           content = COALESCE(?, content),
           multimodal_content = COALESCE(?, multimodal_content),
           ocr = COALESCE(?, ocr),
           lrc = COALESCE(?, lrc),
+          asr = COALESCE(?, asr),
           exif = COALESCE(?, exif),
           quality_score = COALESCE(?, quality_score),
           quality_confidence = COALESCE(?, quality_confidence),
@@ -1001,6 +1016,7 @@ export class FileDao {
           compressedMultimodal,
           compressedOcr,
           compressedLrc,
+          compressedAsr,
           compressedExif,
           newStatsJson || (result.analysisStats ? JSON.stringify(result.analysisStats) : null),
           result.qualityScore ?? null,
@@ -1015,6 +1031,7 @@ export class FileDao {
           compressedMultimodal,
           compressedOcr,
           compressedLrc,
+          compressedAsr,
           compressedExif,
           result.qualityScore ?? null,
           result.qualityConfidence ?? null,
@@ -1133,10 +1150,10 @@ export class FileDao {
         FROM workspace_files wf
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ?)
+        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ? OR decompress_text(fc.asr) LIKE ?)
       `
       const likeQuery = `%${trimmedQuery}%`
-      const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
+      const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
 
       if (workspaceId) {
         sql += ` AND wf.workspace_id = ?`
@@ -1183,10 +1200,10 @@ export class FileDao {
         JOIN workspace_files wf ON vdf.file_id = wf.id
         LEFT JOIN files f ON wf.file_fingerprint = f.file_fingerprint
         LEFT JOIN file_contents fc ON f.file_fingerprint = fc.file_fingerprint
-        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ?)
+        WHERE (wf.name LIKE ? OR f.smart_name LIKE ? OR f.description LIKE ? OR decompress_text(fc.content) LIKE ? OR decompress_text(fc.multimodal_content) LIKE ? OR decompress_text(fc.lrc) LIKE ? OR decompress_text(fc.asr) LIKE ?)
       `
       const likeQuery = `%${trimmedQuery}%`
-      const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
+      const params: any[] = [likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery]
 
       if (virtualDirectoryId) {
         sql += ` AND vdf.virtual_directory_id = ?`
@@ -1261,6 +1278,7 @@ export class FileDao {
         multimodalContent: decompressText(row.multimodal_content),
         ocr: decompressText(row.ocr),
         lrc: decompressText(row.lrc),
+        asr: decompressText(row.asr),
         groupingReason: row.grouping_reason,
         groupingConfidence: row.grouping_confidence,
         author: row.author,
@@ -1272,6 +1290,24 @@ export class FileDao {
         error,
         contentHash
       })
+      return null
+    }
+  }
+
+  /**
+   * 按工作区路径取文件指纹（轻量查询，不联表加载 contents）。
+   *
+   * 队列项只带 `path` 时需要指纹来寻址 `files` / `file_contents`，此方法提供该跳转。
+   */
+  getFileFingerprintByPath(filePath: string): string | null {
+    if (!filePath) return null
+    try {
+      const row = this.db
+        .prepare(`SELECT file_fingerprint FROM workspace_files WHERE path = ?`)
+        .get(filePath) as { file_fingerprint?: string | null } | undefined
+      return row?.file_fingerprint ?? null
+    } catch (error) {
+      logger.error(LogCategory.DATABASE_SERVICE, '按路径查询文件指纹失败', { error, filePath })
       return null
     }
   }
@@ -1324,7 +1360,8 @@ export class FileDao {
         content: decompressText(fileData.content),
         multimodalContent: decompressText(fileData.multimodal_content),
         ocr: decompressText(fileData.ocr),
-        lrc: decompressText(fileData.lrc)
+        lrc: decompressText(fileData.lrc),
+        asr: decompressText(fileData.asr)
       }
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '根据路径获取文件失败', { error, filePath })
@@ -1445,6 +1482,7 @@ export class FileDao {
           SET content = NULL,
               multimodal_content = NULL,
               lrc = NULL,
+              asr = NULL,
               exif = NULL,
               analysis_stats = NULL,
               quality_score = NULL,
@@ -1825,7 +1863,8 @@ export class FileDao {
             COALESCE(decompress_text(fc.content), '') AS content,
             COALESCE(decompress_text(fc.multimodal_content), '') AS multimodal_content,
             COALESCE(decompress_text(fc.ocr), '') AS ocr,
-            COALESCE(decompress_text(fc.lrc), '') AS lrc
+            COALESCE(decompress_text(fc.lrc), '') AS lrc,
+            COALESCE(decompress_text(fc.asr), '') AS asr
           FROM files f
           LEFT JOIN file_contents fc ON fc.file_fingerprint = f.file_fingerprint
           WHERE f.file_fingerprint = ?
@@ -1857,8 +1896,8 @@ export class FileDao {
       this.db.prepare(`DELETE FROM files_fts WHERE rowid = ?`).run(row.rid)
       this.db
         .prepare(
-          `INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, tags)
-           VALUES (?,?,?,?,?,?,?,?,?,?)`
+          `INSERT INTO files_fts(rowid, file_fingerprint, name, smart_name, description, content, multimodal_content, ocr, lrc, asr, tags)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?)`
         )
         .run(
           row.rid,
@@ -1870,6 +1909,7 @@ export class FileDao {
           row.multimodal_content,
           row.ocr,
           row.lrc,
+          row.asr,
           tagsText
         )
     } catch (error) {
@@ -1894,6 +1934,206 @@ export class FileDao {
       )
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '批量同步FTS标签失败', error)
+    }
+  }
+
+  /**
+   * 读取 Stage 5 高维修正所需的文件事实（Issue 0046 §5）。
+   *
+   * 返回：
+   * - 当前智能名称 / 描述及其来源（machine | user | null）；
+   * - 现有受控标签（`file_tag_relations`，供高维二次打分做「补齐/校准」的基线）；
+   * - 用于生成 2048d 向量的文本事实（smart_name + description + 已解压的 content/ocr/asr 拼接）。
+   */
+  getHighDimCorrectionFacts(fileFingerprint: string): {
+    smartName: string | null
+    description: string | null
+    namingSource: 'machine' | 'user' | null
+    existingTags: Array<{ code: string; parentCode: string; confidence: number }>
+    textFacts: string
+  } | null {
+    if (!fileFingerprint) return null
+    try {
+      const row = this.db
+        .prepare(
+          `
+          SELECT f.smart_name, f.description, f.smart_name_source,
+                 COALESCE(decompress_text(fc.content), '') AS content,
+                 COALESCE(decompress_text(fc.multimodal_content), '') AS multimodal_content,
+                 COALESCE(decompress_text(fc.ocr), '') AS ocr,
+                 COALESCE(decompress_text(fc.asr), '') AS asr
+          FROM files f
+          LEFT JOIN file_contents fc ON fc.file_fingerprint = f.file_fingerprint
+          WHERE f.file_fingerprint = ?
+        `
+        )
+        .get(fileFingerprint) as any
+      if (!row) return null
+
+      const tags = this.db
+        .prepare(
+          `SELECT tag_code AS code, parent_tag_code AS parentCode, confidence
+           FROM file_tag_relations WHERE file_fingerprint = ?`
+        )
+        .all(fileFingerprint) as Array<{ code: string; parentCode: string; confidence: number }>
+
+      const namingSource: 'machine' | 'user' | null =
+        row.smart_name_source === 'user'
+          ? 'user'
+          : row.smart_name_source === 'machine'
+            ? 'machine'
+            : null
+
+      const textFacts = [row.smart_name, row.description, row.content, row.multimodal_content, row.ocr, row.asr]
+        .filter((v: unknown): v is string => typeof v === 'string' && v.trim().length > 0)
+        .join('\n')
+
+      return {
+        smartName: row.smart_name ?? null,
+        description: row.description ?? null,
+        namingSource,
+        existingTags: (tags || []).map(t => ({
+          code: t.code,
+          parentCode: t.parentCode ?? '',
+          confidence: Number(t.confidence ?? 1)
+        })),
+        textFacts
+      }
+    } catch (error) {
+      logger.error(LogCategory.DATABASE_SERVICE, '读取高维修正事实失败', {
+        error,
+        fileFingerprint
+      })
+      return null
+    }
+  }
+
+  /**
+   * 原子落库高维修正结果（Issue 0046 §5）。
+   *
+   * 单一事务内完成：
+   * 1. 受控标签的二次校准写入 `file_tag_relations`（tag_group='ai'，source='ai'，带高维置信度）；
+   *    **已以高优先级分组存在的同键关系（fact / fused / visual / user）原样保留**，
+   *    见 `HIGH_DIM_PROTECTED_TAG_GROUPS`——高维修正不得改写他人出处；
+   * 2. 更新 `files.smart_name` / `description`（仅当传入非空）；写 `smart_name` 时一并置
+   *    `smart_name_source = 'machine'`，保证「人工命名保护」判据在后续轮次仍然成立；
+   * 3. 置 `files.high_dim_corrected = 1`，标记该内容已完成 Stage 5（避免重复灌库）。
+   *
+   * 可选 `pruneTagGroups`：在同一事务内剔除这些来源分组中**未被本次精修保留**的标签
+   * （Issue 0046 §5「低置信度噪点标签被剔除」）。调用方必须只在**高维打分确实产出候选**时传入，
+   * 否则打分失败会被误判成「标签是噪点」而误删。
+   *
+   * 事务提交后重建 FTS 倒排（含标签展示名），保证高维校准后的标签可被全文检索命中。
+   */
+  applyHighDimCorrectionResult(
+    fileFingerprint: string,
+    result: {
+      tags: Array<{ code: string; parentCode?: string; confidence: number }>
+      smartName?: string | null
+      description?: string | null
+      smartNameUpdated?: boolean
+      descriptionUpdated?: boolean
+      /** 允许剔除的标签来源分组（仅 AI 派生分组，严禁传入 fact / user） */
+      pruneTagGroups?: string[]
+    }
+  ): void {
+    if (!fileFingerprint) return
+    try {
+      this.db.transaction(() => {
+        // 先读该文件既有关系的分组，用于保护高优先级来源（ADR-0045 §3）：
+        // 传入的 result.tags 是「既有标签 ∪ 高维候选」的融合结果，其中既有标签可能来自
+        // fact / fused / visual / user 组，这些关系**只能被保留**，不得被本方法改写为 ai。
+        const protectedKeys = new Set<string>()
+        const protectedGroups = new Set<string>(HIGH_DIM_PROTECTED_TAG_GROUPS)
+        const existingRows = this.db
+          .prepare(
+            `SELECT tag_code, parent_tag_code, tag_group FROM file_tag_relations WHERE file_fingerprint = ?`
+          )
+          .all(fileFingerprint) as Array<{
+          tag_code: string
+          parent_tag_code: string | null
+          tag_group: string | null
+        }>
+        for (const row of existingRows) {
+          if (!protectedGroups.has(row.tag_group ?? '')) continue
+          protectedKeys.add(`${row.tag_code}\u0000${row.parent_tag_code ?? ''}`)
+        }
+
+        for (const tag of result.tags || []) {
+          if (!tag?.code) continue
+          const key = `${tag.code}\u0000${tag.parentCode ?? ''}`
+          // 高优先级来源关系原样保留（含 confidence），高维修正不越权改写其出处。
+          if (protectedKeys.has(key)) continue
+          // tag_group='ai'：Stage 5 高维精修属 AI 派生标签（ADR-0045 词表中 fact/fused/visual 分别对应
+          // 物理事实 / Omni 多模态融合 / 视觉引擎；高维修正不属其一，归入 ai）。
+          // confidence 采用高维二次打分的真实值，不用 ADR-0045 的 ai 基准 0.60——
+          // 该值来自 2048d 余弦相似度，是可解释的独立度量。
+          this.db
+            .prepare(
+              `INSERT OR REPLACE INTO file_tag_relations
+                 (file_fingerprint, tag_code, parent_tag_code, tag_group, confidence, source, sync_status, created_at)
+               VALUES (?, ?, ?, 'ai', ?, 'ai', 0, CURRENT_TIMESTAMP)`
+            )
+            .run(fileFingerprint, tag.code, tag.parentCode ?? '', Number(tag.confidence ?? 1))
+        }
+
+        if (result.smartNameUpdated && typeof result.smartName === 'string') {
+          this.db
+            .prepare(
+              `UPDATE files SET smart_name = ?, smart_name_source = 'machine', modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?`
+            )
+            .run(result.smartName, fileFingerprint)
+        }
+        if (result.descriptionUpdated && typeof result.description === 'string') {
+          this.db
+            .prepare(
+              `UPDATE files SET description = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?`
+            )
+            .run(result.description, fileFingerprint)
+        }
+
+        // 噪点标签剔除（仅限调用方显式指定的 AI 派生分组）
+        if (result.pruneTagGroups && result.pruneTagGroups.length > 0) {
+          const kept = new Set(
+            (result.tags || [])
+              .filter(t => t?.code)
+              .map(t => `${t.code}\u0000${t.parentCode ?? ''}`)
+          )
+          const placeholders = result.pruneTagGroups.map(() => '?').join(', ')
+          const existing = this.db
+            .prepare(
+              `SELECT tag_code, parent_tag_code FROM file_tag_relations
+               WHERE file_fingerprint = ? AND tag_group IN (${placeholders})`
+            )
+            .all(fileFingerprint, ...result.pruneTagGroups) as Array<{
+            tag_code: string
+            parent_tag_code: string | null
+          }>
+          const deleteStmt = this.db.prepare(
+            `DELETE FROM file_tag_relations
+             WHERE file_fingerprint = ? AND tag_code = ? AND parent_tag_code = ?`
+          )
+          for (const row of existing) {
+            const parent = row.parent_tag_code ?? ''
+            if (kept.has(`${row.tag_code}\u0000${parent}`)) continue
+            deleteStmt.run(fileFingerprint, row.tag_code, parent)
+          }
+        }
+
+        this.db
+          .prepare(
+            `UPDATE files SET high_dim_corrected = 1, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?`
+          )
+          .run(fileFingerprint)
+      })()
+
+      this.syncFTSTags(fileFingerprint)
+    } catch (error) {
+      logger.error(LogCategory.DATABASE_SERVICE, '落库高维修正结果失败', {
+        error,
+        fileFingerprint
+      })
+      throw error
     }
   }
 }

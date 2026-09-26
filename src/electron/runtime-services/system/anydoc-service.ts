@@ -78,7 +78,7 @@ export class AnydocService {
           content: isBinaryNulSkip ? '' : rawContent,
           assets: [],
           ocrText: perception.ocr_text || undefined,
-          audioTranscript: perception.audio_transcript || undefined,
+          audioTranscript: perception.asr || undefined,
           lrc: perception.lrc || perception.metadata?.lrc || perception.metadata?.audio?.lrc || undefined,
           metadata: perception.metadata,
           phash: perception.phash,

@@ -337,8 +337,8 @@ const FileDetailsPanelComponent: React.FC<any> = ({
     // - 若有转录文本（content），展示【音频文本】Tab
     // - 若有纯正元数据歌词（lrc），展示【歌词】Tab
     if (isAudioVideo) {
-      if (analysisResult.content?.trim()) {
-        tabs.push({ id: 'audio_transcript', label: t('音频文本'), icon: 'record_voice_over' })
+      if (analysisResult.asr?.trim() || analysisResult.content?.trim()) {
+        tabs.push({ id: 'asr', label: t('音频文本'), icon: 'record_voice_over' })
       }
       if (analysisResult.lrc?.trim()) {
         tabs.push({ id: 'lrc', label: t('歌词'), icon: 'music_note' })

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { AnalysisQueueItem } from '@firefly/types/types'
 import { Button } from '../ui/button'
-import { SettingsCategory } from '@firefly/types'
+import { SettingsCategory, HIGH_DIM_CORRECTION_STAGE } from '@firefly/types'
 import { cn } from '../../lib/utils'
 import { formatDuration } from '@firefly/shared'
 import { t } from '@app/languages'
@@ -55,12 +55,44 @@ const DEFAULT_COL_WIDTHS: ColumnWidths = {
 function HistoryBadge({
   stage,
   status,
-  analysisMode
+  analysisMode,
+  taskType
 }: {
   stage?: number
   status?: string
   analysisMode: string
+  taskType?: AnalysisQueueItem['taskType']
 }) {
+  // Stage 5 高维修正任务拥有独立的完成语义，不参与普通分析的 stage 终态判定
+  if (isHighDimCorrectionTask(taskType, stage)) {
+    if (status === 'failed') {
+      return (
+        <span className="text-xs px-2 py-0.5 rounded bg-destructive/10 text-destructive font-medium">
+          {t('修正失败')}
+        </span>
+      )
+    }
+    if (status === 'analyzing') {
+      return (
+        <span className="text-xs px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 font-medium">
+          {t('修正中')}
+        </span>
+      )
+    }
+    if (status === 'completed') {
+      return (
+        <span className="text-xs px-2 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 font-medium">
+          {t('已完成')}
+        </span>
+      )
+    }
+    return (
+      <span className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground">
+        {t('等待中')}
+      </span>
+    )
+  }
+
   // 分析模式决定文件完成所需的 stage：simple->2（CPU 内容提取完成）、quick_name->3、full->4
   const completionStage = analysisMode === 'quick_name' ? 3 : analysisMode === 'full' ? 4 : 2
   const s = stage ?? 0
@@ -137,7 +169,49 @@ function ColumnResizeHandle({
   )
 }
 
-export function getStageLabel(status: AnalysisQueueItem['status'], stage?: number): string {
+/**
+ * 判定 (taskType, stage) 是否属于 Stage 5 高维修正任务（CONTEXT.md 抢占式单队列调度）。
+ *
+ * `stage === HIGH_DIM_CORRECTION_STAGE` 作为兜底：兼容尚未携带 `taskType` 的历史快照，
+ * 以及只传 stage 的调用方（如 `Footer` 的进度文案）。
+ */
+export function isHighDimCorrectionTask(
+  taskType: AnalysisQueueItem['taskType'] | undefined,
+  stage?: number
+): boolean {
+  return taskType === 'high_dim_correction' || stage === HIGH_DIM_CORRECTION_STAGE
+}
+
+/**
+ * 判定队列项是否属于 Stage 5 高维修正任务。
+ */
+export function isHighDimCorrectionItem(item: AnalysisQueueItem): boolean {
+  return isHighDimCorrectionTask(item.taskType, item.stage)
+}
+
+/** Stage 5 高维修正专属徽标文案（紫色系） */
+export function getHighDimCorrectionLabel(status: AnalysisQueueItem['status']): string {
+  switch (status) {
+    case 'analyzing':
+      return t('修正中')
+    case 'pending':
+      return t('等待中')
+    case 'failed':
+      return t('修正失败')
+    default:
+      return `${t('阶段 5')}: ${t('高维修正')}`
+  }
+}
+
+export function getStageLabel(
+  status: AnalysisQueueItem['status'],
+  stage?: number,
+  taskType?: AnalysisQueueItem['taskType']
+): string {
+  if (isHighDimCorrectionTask(taskType, stage)) {
+    return getHighDimCorrectionLabel(status)
+  }
+
   if (status === 'analyzing') {
     const s = stage ?? 0
     switch (s) {
@@ -173,14 +247,20 @@ export function getStageLabel(status: AnalysisQueueItem['status'], stage?: numbe
 
 function StatusBadge({ item }: { item: AnalysisQueueItem }) {
   const status = item.status
-  const stage = item.analysisStage ?? (item.analysisStats as any)?.analysis_stage
+  const stage = item.stage ?? item.analysisStage ?? (item.analysisStats as any)?.analysis_stage
   const isAnalyzing = status === 'analyzing'
+  const isHighDim = isHighDimCorrectionItem(item)
 
-  const label = getStageLabel(status, stage)
+  const label = getStageLabel(status, stage, item.taskType)
 
   let colorStyle = 'bg-muted text-muted-foreground'
   if (status === 'failed') {
     colorStyle = 'bg-destructive/10 text-destructive font-medium'
+  } else if (isHighDim) {
+    // Stage 5 高维修正：紫色系专属视觉
+    colorStyle = isAnalyzing
+      ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 animate-pulse font-semibold'
+      : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 font-medium'
   } else if (isAnalyzing) {
     switch (stage) {
       case 2:
@@ -257,9 +337,10 @@ const QueueRowRenderer = React.memo(
         </div>
         <div className="px-1 truncate text-center">
           <HistoryBadge
-            stage={item.analysisStage ?? (item.analysisStats as any)?.analysis_stage}
+            stage={item.stage ?? item.analysisStage ?? (item.analysisStats as any)?.analysis_stage}
             status={item.status}
             analysisMode={data.analysisMode}
+            taskType={item.taskType}
           />
         </div>
         <div
@@ -531,6 +612,16 @@ export function AnalysisQueueContent({
 
   const unitCount = React.useMemo(() => items.filter(i => i.isUnit).length, [items])
 
+  // 统一 UI 进度上下文（Issue 0046 §4）：根据当前正在消费的任务类型切换文案与配色。
+  // 高维修正（Stage 5）→ 紫色；普通文件分析 → 蓝色。抢占发生时 currentAnalyzingItem
+  // 会毫秒级切回普通分析任务，颜色随之自动切回蓝色。
+  const currentTaskType = snapshot.currentAnalyzingItem?.taskType
+  const isHighDimActive = isCurrentWsRunning && currentTaskType === 'high_dim_correction'
+  const processedCount = React.useMemo(
+    () => items.filter(i => i.status === 'completed').length,
+    [items]
+  )
+
   // 响应式读取分析模式：用于按分析模式判断文件完成 stage
   const analysisMode = useSettingsStore(
     s => (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'quick_name'
@@ -677,6 +768,19 @@ export function AnalysisQueueContent({
                 {snapshot.activeRunningWorkspaceId ? t('【排队中】') : t('【已暂停】')}
               </span>
             )}
+            {/* 统一进度上下文：蓝色=普通文件分析，紫色=高维修正（Issue 0046 §4） */}
+            {isCurrentWsRunning && (
+              <span
+                className={
+                  isHighDimActive
+                    ? 'text-xs font-normal px-2 py-0.5 rounded-full whitespace-nowrap bg-purple-500/10 text-purple-600 dark:text-purple-400'
+                    : 'text-xs font-normal px-2 py-0.5 rounded-full whitespace-nowrap bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                }
+              >
+                {isHighDimActive ? t('【正在高维修正】') : t('【正在文件分析】')}{' '}
+                {processedCount} / {items.length}
+              </span>
+            )}
           </h2>
           <span className="text-xs text-muted-foreground ml-2 whitespace-nowrap hidden sm:inline">
             {t('{count1} 项 · {count2} 单元', {
@@ -700,7 +804,7 @@ export function AnalysisQueueContent({
               onClick={() => pause()}
             >
               <Pause className="w-3.5 h-3.5 mr-1" />
-              {t('暂停')}
+              {isHighDimActive ? t('暂停高维修正') : t('暂停文件分析')}
             </Button>
           ) : (
             <Button

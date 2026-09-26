@@ -21,6 +21,7 @@ import * as path from 'path'
 import { t } from '@app/languages'
 
 import { WorkspaceDao, FileDao, TagUnitDao, QueueDao } from './dao'
+import type { AnalysisTaskType } from './dao'
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { AccessTimeBatchUpdater } from './access-time-batch-updater'
@@ -865,6 +866,26 @@ export class DatabaseService {
       this.fileDao.syncFTSTagsBatch(fingerprints)
     }
   }
+
+  /** 读取 Stage 5 高维修正所需的文件事实（Issue 0046 §5） */
+  getHighDimCorrectionFacts(fileFingerprint: string) {
+    return this.fileDao.getHighDimCorrectionFacts(fileFingerprint)
+  }
+
+  /** 原子落库高维修正结果（标签校准 + 名称/描述提纯 + 噪点标签剔除 + 标记已修正） */
+  applyHighDimCorrectionResult(
+    fileFingerprint: string,
+    result: {
+      tags: Array<{ code: string; parentCode?: string; confidence: number }>
+      smartName?: string | null
+      description?: string | null
+      smartNameUpdated?: boolean
+      descriptionUpdated?: boolean
+      pruneTagGroups?: string[]
+    }
+  ): void {
+    return this.fileDao.applyHighDimCorrectionResult(fileFingerprint, result)
+  }
   clearDimensionsCache(): void {
     if (this.fileDao) {
       this.fileDao.clearDimensionsCache()
@@ -890,6 +911,15 @@ export class DatabaseService {
   }
   async getFileByPath(p: string) {
     return this.fileDao.getFileByPath(p)
+  }
+  /**
+   * 按工作区路径取文件指纹（轻量查询，不加载 contents）。
+   *
+   * 供只有路径、需要指纹的场景使用（如 Stage 5 高维修正解析队列项指纹）。
+   * 服务层不应自行拼 SQL——指纹所在表与列名属 DAO 的领域知识。
+   */
+  getFileFingerprintByPath(filePath: string): string | null {
+    return this.fileDao.getFileFingerprintByPath(filePath)
   }
   async getFilesByParentPath(p: string, wsId: number) {
     return this.fileDao.getFilesByParentPath(p, wsId)
@@ -1014,9 +1044,18 @@ export class DatabaseService {
   getAnalysisQueue() {
     return this.queueDao.getAnalysisQueue()
   }
+  /** 抢占式提取队头待办任务（普通分析恒优先于高维修正，ADR-0046 / CONTEXT.md 抢占式单队列调度） */
+  fetchNextQueueItem(taskType?: AnalysisTaskType) {
+    return this.queueDao.fetchNextQueueItem(taskType)
+  }
+  /** 扫描工作区中「已分析但尚未高维修正」的文件（Stage 5 分批灌库） */
+  listHighDimCandidates(workspaceId: number, limit: number) {
+    return this.queueDao.listHighDimCandidates(workspaceId, limit)
+  }
   async enqueueAnalysis(item: {
     item_id: number | null
     item_type?: 'file' | 'directory'
+    task_type?: AnalysisTaskType
     status: string
     progress?: number
   }): Promise<number> {
@@ -1025,6 +1064,7 @@ export class DatabaseService {
   enqueueAnalysisSync(item: {
     item_id: number | null
     item_type?: 'file' | 'directory'
+    task_type?: AnalysisTaskType
     status: string
     progress?: number
   }): number {
@@ -1036,17 +1076,18 @@ export class DatabaseService {
     progress?: number
     error?: string | null
     result?: string | null
+    taskType?: AnalysisTaskType
   }) {
     return this.queueDao.updateAnalysisQueue(item)
   }
   clearNonCompletedAnalysis() {
     return this.queueDao.clearNonCompletedAnalysis()
   }
-  clearPendingAnalysis() {
-    return this.queueDao.clearPendingAnalysis()
+  clearPendingAnalysis(taskType?: AnalysisTaskType) {
+    return this.queueDao.clearPendingAnalysis(taskType)
   }
-  retryFailedAnalysis() {
-    return this.queueDao.retryFailedAnalysis()
+  retryFailedAnalysis(taskType?: AnalysisTaskType) {
+    return this.queueDao.retryFailedAnalysis(taskType)
   }
   deleteAnalysis(id: number) {
     return this.queueDao.deleteAnalysis(id)

@@ -205,8 +205,17 @@ const electronAPI = {
     start: (): Promise<boolean> => ipcRenderer.invoke('engine-bridge/start'),
     openUI: (options?: {
       panel?: 'error' | 'logs' | 'models' | 'default'
+      /** 目标模型关键词：引擎前端据此滚动聚焦并呼吸高亮（Issue 0046 §3） */
+      focusModel?: string
+      /** 推荐模型源（modelscope / huggingface）：引擎前端据此预选可顺畅下载的源 */
+      source?: string
     }): Promise<{ ok: boolean; error?: string }> =>
       ipcRenderer.invoke('engine-bridge/open-ui', options),
+    /** 探测引擎侧是否已安装指定模型（关键词宽松匹配，Issue 0046 §3） */
+    checkModelsInstalled: (
+      keywords: string[]
+    ): Promise<{ reachable: boolean; installed: boolean; matched: string[] }> =>
+      ipcRenderer.invoke('engine-bridge/check-models', keywords),
     shutdown: (): Promise<{ ok: boolean }> => ipcRenderer.invoke('engine-bridge/shutdown'),
     startService: (): Promise<{ ok: boolean; error?: string }> =>
       ipcRenderer.invoke('engine-bridge/start-service'),

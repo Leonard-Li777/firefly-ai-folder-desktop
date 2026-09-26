@@ -42,6 +42,11 @@ import i18nScope from '@app/languages'
 import { openExternalLink } from '../../lib/external-link'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useVoerkaI18n } from '@voerkai18n/react'
+import { modelSourceToDownloadMirror, probeModelSource, type ModelSourceId } from '../../lib/model-source-probe'
+import {
+  HIGH_DIM_MODEL_FOCUS_KEYWORD,
+  HIGH_DIM_MODEL_KEYWORDS
+} from '@shared/constants/high-dim-correction'
 
 /**
  * 辅助悬浮气泡组件
@@ -158,6 +163,81 @@ export const AnalysisSettings: React.FC = () => {
   const analysisMode = isAdvancedAiEnabled
     ? (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name')
     : 'simple'
+
+  // ── 高维修正（Stage 5，Issue 0046 §3）────────────────────────────────────
+  // 开关值来自统一配置中心；打开时探测引擎侧是否已安装 WeMM 模型，未就绪则展开引导警示条
+  const highDimCorrection = getConfigValue<boolean>('HIGH_DIMENSION_CORRECTION') ?? false
+  const [highDimModelMissing, setHighDimModelMissing] = useState(false)
+  // 引擎未运行 ≠ 模型未安装：两者都触发引导，但文案必须区分，
+  // 否则会把「引擎没开」误报成「模型没装」（用户会白跑一趟下载页）。
+  const [highDimEngineOffline, setHighDimEngineOffline] = useState(false)
+  const [checkingHighDimModel, setCheckingHighDimModel] = useState(false)
+  const [redirectingToEngine, setRedirectingToEngine] = useState(false)
+
+  // 模型安装探针：仅当开关处于打开状态时才探测，避免无谓的网络请求
+  useEffect(() => {
+    let cancelled = false
+    if (!highDimCorrection) {
+      setHighDimModelMissing(false)
+      setHighDimEngineOffline(false)
+      return
+    }
+    setCheckingHighDimModel(true)
+    void (async () => {
+      try {
+        const res = await window.electronAPI.engineBridge.checkModelsInstalled(
+          HIGH_DIM_MODEL_KEYWORDS
+        )
+        if (!cancelled) {
+          setHighDimModelMissing(!res.installed)
+          setHighDimEngineOffline(!res.reachable)
+        }
+      } catch {
+        if (!cancelled) {
+          setHighDimModelMissing(true)
+          setHighDimEngineOffline(true)
+        }
+      } finally {
+        if (!cancelled) {
+          setCheckingHighDimModel(false)
+        }
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [highDimCorrection])
+
+  /**
+   * 【打开萤核AI引擎】引导动作（Issue 0046 §3）：
+   * 1. 切换路由到「高级AI引擎配置」设置分类；
+   * 2. 网络探测（ModelScope / HuggingFace）并自动切换到可达源（落库 DOWNLOAD_MIRROR）；
+   * 3. 深链打开引擎模型面板，并携带目标模型与推荐源，由引擎前端滚动聚焦 + 呼吸高亮。
+   */
+  const handleOpenEngineForHighDim = async () => {
+    if (redirectingToEngine) return
+    setRedirectingToEngine(true)
+    try {
+      openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+
+      let recommendedSource: ModelSourceId = 'modelscope'
+      try {
+        const probe = await probeModelSource()
+        recommendedSource = probe.source
+      } catch {
+        // 探测失败不阻塞引导：沿用当前下载镜像
+      }
+      updateConfigValue('DOWNLOAD_MIRROR', modelSourceToDownloadMirror(recommendedSource))
+
+      await window.electronAPI.engineBridge.openUI({
+        panel: 'models',
+        focusModel: HIGH_DIM_MODEL_FOCUS_KEYWORD,
+        source: recommendedSource
+      })
+    } finally {
+      setRedirectingToEngine(false)
+    }
+  }
 
   // 为每个提示词设置独立的防抖更新
   useDebouncedPromptUpdater(unitPrompt, 'UNIT_RECOGNITION_PROMPT', getConfigValue, updateConfigValue)
@@ -581,6 +661,76 @@ export const AnalysisSettings: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
+      </Card>
+
+      {/* 高维修正（Stage 5）：分析队列清空后由 WeMM-Embedding 2B 做 2048d 向量精修 */}
+      <Card className="p-5">
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start gap-2.5 min-w-0">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="high-dimension-correction" className="text-base font-semibold leading-none">
+                    {t('开启视频搜索与标签修正（高维修正）')}
+                  </Label>
+                  <HelpTooltip
+                    content={t(
+                      '开启后，文件队列分析完成会自动进行高维修正：用 2048 维多模态向量二次校准标签与智能命名，并解锁以图搜图与视频自然语言搜索。'
+                    )}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                  {t(
+                    '对标签智能文件名描述等进行高维度向量修正，可以获得更准确的结果，此外还支持更精准的文件搜索，甚至支持视频内容用自然语言搜索。在文件队列分析完成后，自动进行高维修正，每个文件耗时约1秒；'
+                  )}
+                </p>
+              </div>
+            </div>
+            <Switch
+              id="high-dimension-correction"
+              checked={highDimCorrection}
+              onCheckedChange={checked => {
+                updateConfigValue('HIGH_DIMENSION_CORRECTION', checked)
+                captureEvent('切换高维修正', { enabled: checked })
+              }}
+            />
+          </div>
+
+          {/* 未安装 WeMM 模型预警（Issue 0046 §3） */}
+          {highDimCorrection && highDimModelMissing && (
+            <div className="flex flex-col gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5">
+              <div className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                <span className="leading-relaxed">
+                  {checkingHighDimModel
+                    ? t('正在检测 WeMM-Embedding 2B 多模态嵌入模型...')
+                    : highDimEngineOffline
+                      ? t(
+                          '未检测到萤核AI引擎正在运行，无法确认 WeMM-Embedding 2B 多模态嵌入模型是否已安装。高维修正依赖该模型，请先启动或安装萤核AI引擎。'
+                        )
+                      : t(
+                          '尚未安装 WeMM-Embedding 2B 多模态嵌入模型，高维修正无法执行。请前往萤核AI引擎安装后再开启。'
+                        )}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
+                  disabled={redirectingToEngine}
+                  onClick={() => void handleOpenEngineForHighDim()}
+                >
+                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                  {t('打开萤核AI引擎')}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 

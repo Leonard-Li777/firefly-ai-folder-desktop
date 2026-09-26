@@ -643,15 +643,23 @@ export class EngineBridgeService {
   /**
    * 打开引擎管理面板
    * @param options.panel 目标面板：error=错误分析侧边栏，logs=运行日志，models=模型列表页（下载引导流深链，见 PRD-0043），default=仅显示主窗口
+   * @param options.focusModel 目标模型关键词（Issue 0046 §3）：引擎前端据此滚动聚焦并呼吸高亮对应模型行
+   * @param options.source 推荐模型源（modelscope / huggingface）：引擎前端据此预选可顺畅下载的源
    */
   public async openUI(options?: {
     panel?: 'error' | 'logs' | 'models' | 'default'
+    focusModel?: string
+    source?: string
   }): Promise<{ ok: boolean; error?: string }> {
     try {
       const res = await fetch(`${this.baseUrl}${ENGINE_OPEN_UI_PATH}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ panel: options?.panel || 'default' }),
+        body: JSON.stringify({
+          panel: options?.panel || 'default',
+          ...(options?.focusModel ? { focus_model: options.focusModel } : {}),
+          ...(options?.source ? { source: options.source } : {})
+        }),
         signal: AbortSignal.timeout(OPEN_UI_TIMEOUT_MS)
       })
       return { ok: res.ok, error: res.ok ? undefined : `引擎返回 ${res.status}` }
@@ -659,6 +667,57 @@ export class EngineBridgeService {
       const error = err instanceof Error ? err.message : String(err)
       logger.warn(LogCategory.SYSTEM, `[EngineBridge] 打开引擎管理面板失败: ${error}`)
       return { ok: false, error }
+    }
+  }
+
+  /**
+   * 探测引擎侧是否已安装指定模型（Issue 0046 §3：高维修正开关的未安装预警）。
+   *
+   * 引擎 `/api/models` 只返回磁盘实际扫描到的模型（`isDownloaded: true`），
+   * 其 `id` 为 GGUF 文件名主干或自定义模型 id。因此以「关键词包含」做宽松匹配：
+   * 任一已下载条目的 id / name / localPath / fileName 命中任一关键词即视为已安装。
+   *
+   * @returns reachable 表示是否成功拿到模型列表；未连接或请求失败时 installed 恒为 false
+   */
+  public async checkModelsInstalled(keywords: string[]): Promise<{
+    reachable: boolean
+    installed: boolean
+    matched: string[]
+  }> {
+    const normalized = keywords.map(k => k.trim().toLowerCase()).filter(Boolean)
+    if (normalized.length === 0) {
+      return { reachable: false, installed: false, matched: [] }
+    }
+    try {
+      const res = await fetch(`${this.baseUrl}${ENGINE_MODELS_PATH}`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+      })
+      if (!res.ok) {
+        return { reachable: false, installed: false, matched: [] }
+      }
+      const list = (await res.json()) as Array<Record<string, unknown>>
+      if (!Array.isArray(list)) {
+        return { reachable: true, installed: false, matched: [] }
+      }
+      const matched: string[] = []
+      for (const item of list) {
+        if (item?.isDownloaded !== true) continue
+        const haystack = [item.id, item.name, item.localPath, item.fileName, item.author]
+          .filter(v => typeof v === 'string')
+          .join(' ')
+          .toLowerCase()
+        if (!haystack) continue
+        const hit = normalized.find(k => haystack.includes(k))
+        if (hit && !matched.includes(hit)) {
+          matched.push(hit)
+        }
+      }
+      return { reachable: true, installed: matched.length > 0, matched }
+    } catch (err) {
+      // 引擎未运行/端口未就绪属可容忍降级，交由上层展示「未安装」引导
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 探测模型安装状态失败（引擎可能未运行）:', err)
+      return { reachable: false, installed: false, matched: [] }
     }
   }
 
