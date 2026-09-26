@@ -47,6 +47,7 @@ import {
   HIGH_DIM_MODEL_FOCUS_KEYWORD,
   HIGH_DIM_MODEL_KEYWORDS
 } from '@shared/constants/high-dim-correction'
+import { toast } from '../common/Toast'
 
 /**
  * 辅助悬浮气泡组件
@@ -229,11 +230,14 @@ export const AnalysisSettings: React.FC = () => {
       }
       updateConfigValue('DOWNLOAD_MIRROR', modelSourceToDownloadMirror(recommendedSource))
 
-      await window.electronAPI.engineBridge.openUI({
+      const res = await window.electronAPI.engineBridge.openUI({
         panel: 'models',
         focusModel: HIGH_DIM_MODEL_FOCUS_KEYWORD,
         source: recommendedSource
       })
+      if (res && res.ok === false) {
+        toast.error(t('打开萤核AI引擎失败，请确认AI引擎已正常启动'))
+      }
     } finally {
       setRedirectingToEngine(false)
     }

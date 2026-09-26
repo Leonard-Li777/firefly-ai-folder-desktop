@@ -7,8 +7,10 @@ export type AnalysisTaskType = 'analysis' | 'high_dim_correction'
  * 抢占式硬优先级排序片段（Issue 0046；依据 ADR-0046 与 CONTEXT.md「抢占式单队列调度」）：
  * 普通文件分析（`analysis`）恒排在高维修正（`high_dim_correction`）之前，
  * 保证「只要存在任何普通分析待办，高维修正任务自然挂起不执行」。
+ * 在 ASCII 字典序下 'analysis' < 'high_dim_correction' 严格等价于 CASE 表达式，
+ * 且可直接利用覆盖索引 (status, task_type, priority DESC, id ASC) 实现 0 排序扫描。
  */
-const PREEMPTIVE_ORDER_BY = `(CASE WHEN q.task_type = 'analysis' THEN 0 ELSE 1 END), q.priority DESC, q.id ASC`
+const PREEMPTIVE_ORDER_BY = `q.task_type ASC, q.priority DESC, q.id ASC`
 
 export class QueueDao {
   constructor(private db: Database) {}

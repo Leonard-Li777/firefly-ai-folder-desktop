@@ -40,3 +40,23 @@ export const HIGH_DIM_REFILL_BATCH_SIZE = 150
 
 /** Stage 5 高维修正阶段编号（单一真相源在 `@firefly/types`，此处仅重导出） */
 export { HIGH_DIM_CORRECTION_STAGE } from '@firefly/types'
+
+/**
+ * 高维修正受保护的标签来源分组（ADR-0045 §3 / ADR-0046 Consequences 出处保护）。
+ *
+ * 这些分组的标签关系由客观物理事实（fact）、多模态模型融合（fused）、
+ * 纯视觉引擎（visual）或用户人工打标（user）产出，高维修正不得改写他人出处，
+ * 写入时同键关系原样保留。
+ */
+export const HIGH_DIM_PROTECTED_TAG_GROUPS: string[] = ['fact', 'fused', 'visual', 'user']
+
+/**
+ * 高维修正允许剪枝剔除的标签来源分组（仅限 AI 派生分组，严禁包含 fact / user）。
+ */
+export const HIGH_DIM_PRUNABLE_TAG_GROUPS: string[] = ['fused', 'visual', 'ai']
+
+/**
+ * 高维修正受控标签入库的最低置信度阈值。
+ * 低于该阈值的弱相关候选被判定为噪点并丢弃（Issue 0046 §5）。
+ */
+export const HIGH_DIM_MIN_TAG_CONFIDENCE = 0.55

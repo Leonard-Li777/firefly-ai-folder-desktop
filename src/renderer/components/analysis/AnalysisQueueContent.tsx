@@ -172,14 +172,17 @@ function ColumnResizeHandle({
 /**
  * 判定 (taskType, stage) 是否属于 Stage 5 高维修正任务（CONTEXT.md 抢占式单队列调度）。
  *
- * `stage === HIGH_DIM_CORRECTION_STAGE` 作为兜底：兼容尚未携带 `taskType` 的历史快照，
- * 以及只传 stage 的调用方（如 `Footer` 的进度文案）。
+ * 优先依据显式 `taskType` 判定；若未提供 `taskType`（如未携带 taskType 的历史快照或仅传 stage 的调用方），
+ * 则以 `stage === HIGH_DIM_CORRECTION_STAGE` 作为向后兼容兜底。
  */
 export function isHighDimCorrectionTask(
   taskType: AnalysisQueueItem['taskType'] | undefined,
   stage?: number
 ): boolean {
-  return taskType === 'high_dim_correction' || stage === HIGH_DIM_CORRECTION_STAGE
+  if (taskType) {
+    return taskType === 'high_dim_correction'
+  }
+  return stage === HIGH_DIM_CORRECTION_STAGE
 }
 
 /**

@@ -337,8 +337,8 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
   CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-  -- 抢占式单队列调度覆盖索引 (Issue 0046 / CONTEXT.md 抢占式单队列调度)：按任务类型 + 状态检索，支撑 Stage 5 高维修正独立高速取件
-  CREATE INDEX IF NOT EXISTS idx_analysis_queue_task_status ON analysis_queue(task_type, status, priority DESC, created_at ASC);
+  -- 抢占式单队列调度覆盖索引 (Issue 0046 / CONTEXT.md 抢占式单队列调度)：按任务类型 + 状态检索，支撑 Stage 5 高维修正独立高速取件与硬优先序 0 排序扫描
+  CREATE INDEX IF NOT EXISTS idx_analysis_queue_task_status ON analysis_queue(status, task_type, priority DESC, id ASC);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
 
   -- 19. FTS 同步触发器（标准 FTS5：使用 DELETE WHERE rowid 进行原子安全同步）

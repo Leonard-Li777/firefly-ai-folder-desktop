@@ -39,6 +39,9 @@ export const defaultUnifiedConfig: UnifiedAppConfig = deepMerge(DEFAULT_UNIFIED_
   ui: {
     // PRD-0044：SELECTED_MODEL_ID / SELECTED_MODEL_SOURCE 默认值随配置键删除（模型身份真相 = 萤核AI引擎桥接快照）
   },
+  analysis: {
+    HIGH_DIMENSION_CORRECTION: false // 高维修正（Stage 5）：默认关闭（需 WeMM 模型支持）
+  },
   ai: {
     AI_ENGINE: typeof __AI_ENGINE__ !== 'undefined' ? __AI_ENGINE__ : 'llama.cpp'
   },

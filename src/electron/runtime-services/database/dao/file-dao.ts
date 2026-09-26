@@ -49,17 +49,8 @@ function dimensionForCode(code: string, sqlDimId: string | null, parentTagCode: 
   return code
 }
 
-/**
- * Stage 5 高维修正**不得**改写的标签来源分组（ADR-0045 §3 组优先序 `fact > fused > visual > ai`）。
- *
- * 高维修正产出归 `ai` 组（见 `applyHighDimCorrectionResult`），只能写自己所属的分组。
- * 若某个 `(tag_code, parent_tag_code)` 关系已以**更高优先级**的分组存在，一律原样保留其
- * `tag_group` / `source` / `confidence`，绝不改写成 `ai`：
- * - `fact` 是确定性物理事实，改写会破坏「事实组平均 0.90」的可观测结论；
- * - `fused` / `visual` 承载 Omni 原始输出，改写会丢失与上游的可对账性；
- * - `user` 是用户手动标注（恒 1.00），改写等于把人工劳动成果降级为机器标注。
- */
-const HIGH_DIM_PROTECTED_TAG_GROUPS = ['fact', 'fused', 'visual', 'user'] as const
+import { HIGH_DIM_PROTECTED_TAG_GROUPS } from '@/shared/constants/high-dim-correction'
+export { HIGH_DIM_PROTECTED_TAG_GROUPS }
 
 export class FileDao {
   private dimensionsCache: any[] | null = null

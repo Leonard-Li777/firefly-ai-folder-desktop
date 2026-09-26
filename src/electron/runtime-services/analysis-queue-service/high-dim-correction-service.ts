@@ -103,17 +103,11 @@ export interface HighDimCorrectionOutcome {
   skippedForUserNaming: boolean
 }
 
-/** 标签噪声剔除阈值：低于该置信度的高维候选标签一律丢弃 */
-const HIGH_DIM_MIN_TAG_CONFIDENCE = 0.55
-
-/**
- * 允许被高维修正剔除的标签来源分组（ADR-0045 词表的子集）。
- *
- * 只剔除 AI 派生标签（`fused` 多模态融合 / `visual` 视觉 / `ai` 第三阶段推理）：
- * - `fact` 是确定性物理事实，不因语义相似度低而消失；
- * - `user` 是用户手动标注，属人工劳动成果，绝不被机器删除。
- */
-const HIGH_DIM_PRUNABLE_TAG_GROUPS: Array<'fused' | 'visual' | 'ai'> = ['fused', 'visual', 'ai']
+import {
+  HIGH_DIM_PRUNABLE_TAG_GROUPS,
+  HIGH_DIM_MIN_TAG_CONFIDENCE
+} from '@/shared/constants/high-dim-correction'
+export { HIGH_DIM_PRUNABLE_TAG_GROUPS, HIGH_DIM_MIN_TAG_CONFIDENCE }
 
 export class HighDimCorrectionService {
   private readonly embedder?: WemmEmbedder
