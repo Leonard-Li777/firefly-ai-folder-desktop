@@ -411,10 +411,11 @@ export class CloudSyncWorker {
 
       // 2.4 建立关系 Payload（V4 自然主键直通：直接推送 file_fingerprint + tag_code + parent_tag_code）
       //     彻底废除 cloudTagMap / cloudTagNameMap 自增 ID 反查与映射字典
+      //     tag_group 必须随行上行：否则云端无分组，缓存命中回灌时面板退回未分组状态（票据 04）
       const relationsPayload = db
         .prepare(
           `
-        SELECT ftr.file_fingerprint, ftr.tag_code, ftr.parent_tag_code, ftr.confidence, ftr.source, ftr.meta
+        SELECT ftr.file_fingerprint, ftr.tag_code, ftr.parent_tag_code, ftr.tag_group, ftr.confidence, ftr.source, ftr.meta
         FROM file_tag_relations ftr
         WHERE ftr.file_fingerprint IN (${fileIds.map(() => '?').join(',')})
       `
@@ -424,6 +425,7 @@ export class CloudSyncWorker {
           file_fingerprint: link.file_fingerprint,
           tag_code: link.tag_code,
           parent_tag_code: link.parent_tag_code || '',
+          tag_group: link.tag_group || '',
           confidence: this.ensureReal(link.confidence, 1.0),
           source: link.source || 'rule',
           meta: this.safeJsonParse(link.meta, {})

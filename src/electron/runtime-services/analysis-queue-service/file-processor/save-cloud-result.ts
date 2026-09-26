@@ -11,7 +11,9 @@ import {
   sanitizeAITagValue,
   isValidAITag,
   isPanDimension,
-  insertTagToDb
+  insertTagToDb,
+  isTagProvenanceGroup,
+  type TagProvenanceGroup
 } from '@firefly/shared'
 import { t } from '@app/languages'
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
@@ -313,6 +315,13 @@ export async function saveCloudResult(
           // "“应用数据细分”" 清洗后为 "应用数据细分"，实为已有维度名，应被过滤而非入库
           const cleanName = sanitizeAITagValue(tag.name).trim()
           if (!cleanName || !isValidAITag(cleanName, officialDimNames)) continue
+          // ADR-0045 票据 04：回灌须保留标签**原始**来源分组。读 RPC rpc_get_file_by_id 已返回
+          // tag_group（与上行 payload、云端列、写入 RPC 同批落地）。
+          // 缺失或非法一律落 ''（暂不分组，面板不展示该行），**绝不兜底为 'fact'**——
+          // 兜底会把 AI / 融合标签错标成物理事实。
+          const cloudGroup: TagProvenanceGroup | '' = isTagProvenanceGroup(tag.tag_group)
+            ? tag.tag_group
+            : ''
           try {
             // 云端回传的 dimension_id 既可能是自然主键 code，也可能为数字 ID
             const rawDim = tag.dimension_id
@@ -354,10 +363,9 @@ export async function saveCloudResult(
             }
 
             try {
-              // ADR-0045：云端缓存回灌须保留标签**原始**来源分组，而 insertTagToDb 的缺省值（fact）
-              // 会把回灌标签错标为物理事实。此处显式落 ''（暂不分组，面板不展示该行），
-              // 待云端 tag_group 双向同步（含读 RPC rpc_get_file_by_id）落地后回填真实分组。
-              insertTagToDb(db, fileFingerprint, cleanName, localDimCode, 0, undefined, '')
+              // ADR-0045 票据 04：显式传入云端返回的原始分组（缺失/非法为 ''），
+              // 不再依赖 insertTagToDb 的 'fact' 缺省——那会把 AI / 融合标签错标成物理事实。
+              insertTagToDb(db, fileFingerprint, cleanName, localDimCode, 0, undefined, cloudGroup)
             } catch {
               // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
               const tagCode = DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
@@ -373,9 +381,15 @@ export async function saveCloudResult(
                 JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 })
               )
               db.prepare(
-                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, confidence, source, meta)
-                 VALUES (?, ?, ?, 1.0, 'rule', ?)`
-              ).run(fileFingerprint, tagCode, localDimCode, JSON.stringify({ syncStatus: 0 }))
+                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, tag_group, confidence, source, meta)
+                 VALUES (?, ?, ?, ?, 1.0, 'rule', ?)`
+              ).run(
+                fileFingerprint,
+                tagCode,
+                localDimCode,
+                cloudGroup,
+                JSON.stringify({ syncStatus: 0 })
+              )
             }
           } catch (tagError) {
             logger.warn(LogCategory.FILE_ANALYSIS, '[云端结果] 写入文件标签关系失败:', tagError)
