@@ -156,12 +156,12 @@ export interface OmniPerceptionResponse {
   visual_tags: OmniTagChainItem[]
   fused_tags?: OmniTagChainItem[]
   /**
-   * 原生元数据标签直出 (Task 2)：
+   * 原生事实标签直出 (Task 2)：
    * 由 Omni 原生层从 ExifTool/音频/文档/图像元数据 + 下沉物理事实抽取的确定性标签链，
-   * 置信度 1.0 (物理事实) / 0.95 (规则推导)，engine 统一为 "metadata"。
+   * 置信度扁平统一 0.90（物理直读与规则推导同级），engine 统一为 "metadata"。
    * Desktop 端作为第一权威物理事实无损落库至 file_tags。
    */
-  meta_tags?: OmniTagChainItem[]
+  fact_tags?: OmniTagChainItem[]
   mobilenet_tags?: string[]
   clip_tags?: string[]
   nsfw_tags?: string[]
@@ -1190,14 +1190,14 @@ export class OmniService {
         }
       }
 
-      // 输出原生元数据标签 (meta_tags, Task 2)
-      if (json.meta_tags && json.meta_tags.length > 0) {
+      // 输出原生事实标签 (fact_tags, Task 2)
+      if (json.fact_tags && json.fact_tags.length > 0) {
         logger.info(
           LogCategory.SYSTEM,
-          `[元数据标签:Desktop] 接收 Omni meta_tags (count=${json.meta_tags.length}): [${json.meta_tags.map(t => t.name).join(', ')}]`
+          `[事实标签:Desktop] 接收 Omni fact_tags (count=${json.fact_tags.length}): [${json.fact_tags.map(t => t.name).join(', ')}]`
         )
-        for (let i = 0; i < json.meta_tags.length; i++) {
-          const t = json.meta_tags[i]
+        for (let i = 0; i < json.fact_tags.length; i++) {
+          const t = json.fact_tags[i]
           logger.info(
             LogCategory.SYSTEM,
             `  [${String(i + 1).padStart(2, ' ')}] conf=${t.confidence.toFixed(3)} code=${t.code.padEnd(30, ' ')} name=${t.name.padEnd(12, ' ')} engine=${t.engine ?? 'metadata'}`
@@ -1227,8 +1227,8 @@ export class OmniService {
           visual_tags_count: json.visual_tags?.length || 0,
           fused_tags: json.fused_tags || [],
           fused_tags_count: json.fused_tags?.length || 0,
-          meta_tags: json.meta_tags || [],
-          meta_tags_count: json.meta_tags?.length || 0,
+          fact_tags: json.fact_tags || [],
+          fact_tags_count: json.fact_tags?.length || 0,
           ram_tags: json.ram_tags || [],
           mobilenet_tags: json.mobilenet_tags || [],
           clip_tags: json.clip_tags || [],
