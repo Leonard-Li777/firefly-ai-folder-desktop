@@ -655,18 +655,18 @@
     "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(23423-23432)"],
     "$id": 3884
   },
-  "结果简陋？切为【快速命名】或【全面分析】": {
-    "en-US": "The result is crude? Switch to [Quick Naming] or [Comprehensive Analysis]",
-    "es-ES": "¿El resultado es crudo? Cambie a [Nombre rápido] o [Análisis completo]",
-    "ar-EG": "والنتيجة خام؟ قم بالتبديل إلى [التسمية السريعة] أو [التحليل الشامل]",
-    "pt-PT": "O resultado é bruto? Mude para [Nomeação Rápida] ou [Análise Abrangente]",
-    "ru-RU": "Результат сырой? Переключитесь на [Быстрое именование] или [Комплексный анализ]",
-    "ja-JP": "結果は粗雑ですか？ [クイックネーミング]または[総合分析]に切り替えます",
-    "de-DE": "Das Ergebnis ist grob? Wechseln Sie zu [Schnelle Benennung] oder [Umfassende Analyse]",
-    "fr-FR": "Le résultat est brut ? Basculez vers [Quick Naming] ou [Comprehensive Analysis]",
-    "ko-KR": "결과는 조악하다? [빠른 이름 지정] 또는 [종합 분석]으로 전환",
+  "结果简陋？切为【增强分析】或【全面分析】": {
+    "en-US": "结果简陋？切为【增强分析】或【全面分析】",
+    "es-ES": "结果简陋？切为【增强分析】或【全面分析】",
+    "ar-EG": "结果简陋？切为【增强分析】或【全面分析】",
+    "pt-PT": "结果简陋？切为【增强分析】或【全面分析】",
+    "ru-RU": "结果简陋？切为【增强分析】或【全面分析】",
+    "ja-JP": "结果简陋？切为【增强分析】或【全面分析】",
+    "de-DE": "结果简陋？切为【增强分析】或【全面分析】",
+    "fr-FR": "结果简陋？切为【增强分析】或【全面分析】",
+    "ko-KR": "结果简陋？切为【增强分析】或【全面分析】",
     "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(24027-24051)"],
-    "$id": 9418
+    "$id": 19422
   },
   "需要评分描述？切为【全面分析】": {
     "en-US": "Need a rating description? Cut to【Comprehensive Analysis】",
@@ -681,18 +681,18 @@
     "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(24126-24145)"],
     "$id": 9419
   },
-  "分析太慢？切为【快速命名】或【简单分类】": {
-    "en-US": "Analysis too slow? Switch to [Quick Name] or [Simple Classification]",
-    "es-ES": "¿El análisis es demasiado lento? Cambie a [Nombre rápido] o [Clasificación simple]",
-    "ar-EG": "التحليل بطيء جدا؟ قم بالتبديل إلى [الاسم السريع] أو [التصنيف البسيط]",
-    "pt-PT": "Análise muito lenta? Mude para [Nome rápido] ou [Classificação simples]",
-    "ru-RU": "Анализ слишком медленный? Переключитесь на [Быстрое имя] или [Простая классификация]",
-    "ja-JP": "分析が遅すぎますか？ [クイックネーム]または[簡易分類]に切り替えます",
-    "de-DE": "Analyse zu langsam? Wechseln Sie zu [Schnellname] oder [Einfache Klassifizierung]",
-    "fr-FR": "Analyse trop lente ? Basculez vers [Nom rapide] ou [Classification simple]",
-    "ko-KR": "분석이 너무 느리나요? [빠른 이름] 또는 [간단 분류]로 전환",
+  "分析太慢？切为【增强分析】或【标准分析】": {
+    "en-US": "分析太慢？切为【增强分析】或【标准分析】",
+    "es-ES": "分析太慢？切为【增强分析】或【标准分析】",
+    "ar-EG": "分析太慢？切为【增强分析】或【标准分析】",
+    "pt-PT": "分析太慢？切为【增强分析】或【标准分析】",
+    "ru-RU": "分析太慢？切为【增强分析】或【标准分析】",
+    "ja-JP": "分析太慢？切为【增强分析】或【标准分析】",
+    "de-DE": "分析太慢？切为【增强分析】或【标准分析】",
+    "fr-FR": "分析太慢？切为【增强分析】或【标准分析】",
+    "ko-KR": "分析太慢？切为【增强分析】或【标准分析】",
     "$files": ["src/renderer/components/analysis/AnalysisQueueContent.tsx(24170-24194)"],
-    "$id": 9420
+    "$id": 19423
   },
   "切为独立窗口": {
     "en-US": "Make it a separate window",

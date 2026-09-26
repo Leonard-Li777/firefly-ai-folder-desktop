@@ -378,6 +378,51 @@
     ],
     "$id": 10566
   },
+  "引擎状态良好": {
+    "en-US": "引擎状态良好",
+    "es-ES": "引擎状态良好",
+    "ar-EG": "引擎状态良好",
+    "pt-PT": "引擎状态良好",
+    "ru-RU": "引擎状态良好",
+    "ja-JP": "引擎状态良好",
+    "de-DE": "引擎状态良好",
+    "fr-FR": "引擎状态良好",
+    "ko-KR": "引擎状态良好",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(1695-1705)"
+    ],
+    "$id": 19430
+  },
+  "引擎偶发异常，正在自动尝试": {
+    "en-US": "引擎偶发异常，正在自动尝试",
+    "es-ES": "引擎偶发异常，正在自动尝试",
+    "ar-EG": "引擎偶发异常，正在自动尝试",
+    "pt-PT": "引擎偶发异常，正在自动尝试",
+    "ru-RU": "引擎偶发异常，正在自动尝试",
+    "ja-JP": "引擎偶发异常，正在自动尝试",
+    "de-DE": "引擎偶发异常，正在自动尝试",
+    "fr-FR": "引擎偶发异常，正在自动尝试",
+    "ko-KR": "引擎偶发异常，正在自动尝试",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(1749-1766)"
+    ],
+    "$id": 19431
+  },
+  "引擎连续失败，已临时停用并由基础AI引擎兜底": {
+    "en-US": "引擎连续失败，已临时停用并由基础AI引擎兜底",
+    "es-ES": "引擎连续失败，已临时停用并由基础AI引擎兜底",
+    "ar-EG": "引擎连续失败，已临时停用并由基础AI引擎兜底",
+    "pt-PT": "引擎连续失败，已临时停用并由基础AI引擎兜底",
+    "ru-RU": "引擎连续失败，已临时停用并由基础AI引擎兜底",
+    "ja-JP": "引擎连续失败，已临时停用并由基础AI引擎兜底",
+    "de-DE": "引擎连续失败，已临时停用并由基础AI引擎兜底",
+    "fr-FR": "引擎连续失败，已临时停用并由基础AI引擎兜底",
+    "ko-KR": "引擎连续失败，已临时停用并由基础AI引擎兜底",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(1806-1832)"
+    ],
+    "$id": 19432
+  },
   "操作失败，请查看日志": {
     "en-US": "The operation failed, please check the log",
     "es-ES": "La operación falló, verifique el registro",
@@ -389,24 +434,9 @@
     "fr-FR": "L'opération a échoué, veuillez vérifier le journal",
     "ko-KR": "작업이 실패,로그를 확인하시기 바랍니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(3410-3424)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(8453-8467)"
     ],
     "$id": 20099
-  },
-  "检测中...": {
-    "en-US": "Detecting...  ",
-    "es-ES": "Detectando...",
-    "ar-EG": "قيد الكشف...  ",
-    "pt-PT": "A detetar...",
-    "ru-RU": "Идет проверка...  ",
-    "ja-JP": "テスト。..",
-    "de-DE": "Wird erkannt …  ",
-    "fr-FR": "Détection en cours...",
-    "ko-KR": "감지 중...  ",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(3643-3653)"
-    ],
-    "$id": 20100
   },
   "引擎异常": {
     "en-US": "Engine exception",
@@ -419,24 +449,54 @@
     "fr-FR": "Exception de moteur",
     "ko-KR": "엔진 예외",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(3778-3786)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(9954-9962)"
     ],
     "$id": 11422
   },
+  "已启动": {
+    "en-US": "已启动",
+    "es-ES": "已启动",
+    "ar-EG": "已启动",
+    "pt-PT": "已启动",
+    "ru-RU": "已启动",
+    "ja-JP": "已启动",
+    "de-DE": "已启动",
+    "fr-FR": "已启动",
+    "ko-KR": "已启动",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10003-10010)"
+    ],
+    "$id": 19433
+  },
   "已连接": {
-    "en-US": "connected",
-    "es-ES": "conectado",
+    "en-US": "Connected",
+    "es-ES": "Conectado",
     "ar-EG": "متصل",
-    "pt-PT": "ligado",
+    "pt-PT": "Ligado",
     "ru-RU": "связанный",
     "ja-JP": "接続されている",
-    "de-DE": "verbunden",
-    "fr-FR": "connecté",
+    "de-DE": "Verbunden",
+    "fr-FR": "Connecté",
     "ko-KR": "연결됨",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(3942-3949)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10053-10060)"
     ],
     "$id": 20101
+  },
+  "检测中...": {
+    "en-US": "Detecting...  ",
+    "es-ES": "Detectando...",
+    "ar-EG": "قيد الكشف...  ",
+    "pt-PT": "A detetar...",
+    "ru-RU": "Идет проверка...  ",
+    "ja-JP": "テスト。..",
+    "de-DE": "Wird erkannt …  ",
+    "fr-FR": "Détection en cours...",
+    "ko-KR": "감지 중...  ",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10103-10113)"
+    ],
+    "$id": 20100
   },
   "引擎未部署": {
     "en-US": "引擎未部署",
@@ -449,7 +509,7 @@
     "fr-FR": "引擎未部署",
     "ko-KR": "引擎未部署",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(4120-4129)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10159-10168)"
     ],
     "$id": 20102
   },
@@ -464,324 +524,192 @@
     "fr-FR": "未连接",
     "ko-KR": "未连接",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(4233-4240)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(10202-10209)"
     ],
     "$id": 20103
   },
-  "AI引擎配置": {
-    "en-US": "AI engine configuration",
-    "es-ES": "Configuración del motor de IA",
-    "ar-EG": "تكوين محرك الذكاء الاصطناعي",
-    "pt-PT": "Configuração do mecanismo de IA",
-    "ru-RU": "Конфигурация ИИ-движка",
-    "ja-JP": "AIエンジン構成",
-    "de-DE": "Konfiguration der KI-Engine",
-    "fr-FR": "Configuration du moteur IA",
-    "ko-KR": "AI 엔진 구성",
+  "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试": {
+    "en-US": "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试",
+    "es-ES": "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试",
+    "ar-EG": "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试",
+    "pt-PT": "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试",
+    "ru-RU": "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试",
+    "ja-JP": "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试",
+    "de-DE": "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试",
+    "fr-FR": "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试",
+    "ko-KR": "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(4646-4656)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(12862-12896)"
     ],
-    "$id": 7736
+    "$id": 19434
   },
-  "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态": {
-    "en-US": "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态",
-    "es-ES": "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态",
-    "ar-EG": "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态",
-    "pt-PT": "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态",
-    "ru-RU": "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态",
-    "ja-JP": "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态",
-    "de-DE": "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态",
-    "fr-FR": "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态",
-    "ko-KR": "监控并管理 Tier 2 上层 AI 引擎（端口 38400）的运行状态",
+  "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。": {
+    "en-US": "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。",
+    "es-ES": "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。",
+    "ar-EG": "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。",
+    "pt-PT": "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。",
+    "ru-RU": "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。",
+    "ja-JP": "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。",
+    "de-DE": "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。",
+    "fr-FR": "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。",
+    "ko-KR": "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(4746-4786)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(13024-13066)"
     ],
-    "$id": 20104
+    "$id": 19435
   },
-  "当前使用云端模型": {
-    "en-US": "当前使用云端模型",
-    "es-ES": "当前使用云端模型",
-    "ar-EG": "当前使用云端模型",
-    "pt-PT": "当前使用云端模型",
-    "ru-RU": "当前使用云端模型",
-    "ja-JP": "当前使用云端模型",
-    "de-DE": "当前使用云端模型",
-    "fr-FR": "当前使用云端模型",
-    "ko-KR": "当前使用云端模型",
+  "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。": {
+    "en-US": "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。",
+    "es-ES": "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。",
+    "ar-EG": "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。",
+    "pt-PT": "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。",
+    "ru-RU": "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。",
+    "ja-JP": "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。",
+    "de-DE": "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。",
+    "fr-FR": "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。",
+    "ko-KR": "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(5119-5131)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(13081-13120)"
     ],
-    "$id": 20105
+    "$id": 19436
   },
-  "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。": {
-    "en-US": "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。",
-    "es-ES": "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。",
-    "ar-EG": "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。",
-    "pt-PT": "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。",
-    "ru-RU": "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。",
-    "ja-JP": "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。",
-    "de-DE": "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。",
-    "fr-FR": "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。",
-    "ko-KR": "云端模式下本地 Tier 2 引擎不参与分析，桥接面板仅展示部署状态。",
+  "开启高级AI引擎": {
+    "en-US": "开启高级AI引擎",
+    "es-ES": "开启高级AI引擎",
+    "ar-EG": "开启高级AI引擎",
+    "pt-PT": "开启高级AI引擎",
+    "ru-RU": "开启高级AI引擎",
+    "ja-JP": "开启高级AI引擎",
+    "de-DE": "开启高级AI引擎",
+    "fr-FR": "开启高级AI引擎",
+    "ko-KR": "开启高级AI引擎",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(5240-5279)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15554-15566)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16209-16221)"
     ],
-    "$id": 20106
+    "$id": 19437
   },
-  "本地通信端口": {
-    "en-US": "本地通信端口",
-    "es-ES": "本地通信端口",
-    "ar-EG": "本地通信端口",
-    "pt-PT": "本地通信端口",
-    "ru-RU": "本地通信端口",
-    "ja-JP": "本地通信端口",
-    "de-DE": "本地通信端口",
-    "fr-FR": "本地通信端口",
-    "ko-KR": "本地通信端口",
+  "已启用": {
+    "en-US": "已启用",
+    "es-ES": "已启用",
+    "ar-EG": "已启用",
+    "pt-PT": "已启用",
+    "ru-RU": "已启用",
+    "ja-JP": "已启用",
+    "de-DE": "已启用",
+    "fr-FR": "已启用",
+    "ko-KR": "已启用",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(6425-6435)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15910-15917)"
     ],
-    "$id": 20107
+    "$id": 19438
   },
-  "打开引擎管理面板": {
-    "en-US": "打开引擎管理面板",
-    "es-ES": "打开引擎管理面板",
-    "ar-EG": "打开引擎管理面板",
-    "pt-PT": "打开引擎管理面板",
-    "ru-RU": "打开引擎管理面板",
-    "ja-JP": "打开引擎管理面板",
-    "de-DE": "打开引擎管理面板",
-    "fr-FR": "打开引擎管理面板",
-    "ko-KR": "打开引擎管理面板",
+  "已停用": {
+    "en-US": "已停用",
+    "es-ES": "已停用",
+    "ar-EG": "已停用",
+    "pt-PT": "已停用",
+    "ru-RU": "已停用",
+    "ja-JP": "已停用",
+    "de-DE": "已停用",
+    "fr-FR": "已停用",
+    "ko-KR": "已停用",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(7250-7262)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(15921-15928)"
     ],
-    "$id": 20108
+    "$id": 19439
   },
-  "启动中...": {
-    "en-US": "启动中...",
-    "es-ES": "启动中...",
-    "ar-EG": "启动中...",
-    "pt-PT": "启动中...",
-    "ru-RU": "启动中...",
-    "ja-JP": "启动中...",
-    "de-DE": "启动中...",
-    "fr-FR": "启动中...",
-    "ko-KR": "启动中...",
+  "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源": {
+    "en-US": "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源",
+    "es-ES": "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源",
+    "ar-EG": "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源",
+    "pt-PT": "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源",
+    "ru-RU": "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源",
+    "ja-JP": "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源",
+    "de-DE": "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源",
+    "fr-FR": "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源",
+    "ko-KR": "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(7696-7706)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16047-16099)"
     ],
-    "$id": 20109
+    "$id": 19440
   },
-  "静默拉起": {
-    "en-US": "静默拉起",
-    "es-ES": "静默拉起",
-    "ar-EG": "静默拉起",
-    "pt-PT": "静默拉起",
-    "ru-RU": "静默拉起",
-    "ja-JP": "静默拉起",
-    "de-DE": "静默拉起",
-    "fr-FR": "静默拉起",
-    "ko-KR": "静默拉起",
+  "已禁用高级AI引擎": {
+    "en-US": "已禁用高级AI引擎",
+    "es-ES": "已禁用高级AI引擎",
+    "ar-EG": "已禁用高级AI引擎",
+    "pt-PT": "已禁用高级AI引擎",
+    "ru-RU": "已禁用高级AI引擎",
+    "ja-JP": "已禁用高级AI引擎",
+    "de-DE": "已禁用高级AI引擎",
+    "fr-FR": "已禁用高级AI引擎",
+    "ko-KR": "已禁用高级AI引擎",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(7710-7718)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16838-16851)"
     ],
-    "$id": 20110
+    "$id": 19441
   },
-  "关闭引擎": {
-    "en-US": "关闭引擎",
-    "es-ES": "关闭引擎",
-    "ar-EG": "关闭引擎",
-    "pt-PT": "关闭引擎",
-    "ru-RU": "关闭引擎",
-    "ja-JP": "关闭引擎",
-    "de-DE": "关闭引擎",
-    "fr-FR": "关闭引擎",
-    "ko-KR": "关闭引擎",
+  "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。": {
+    "en-US": "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。",
+    "es-ES": "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。",
+    "ar-EG": "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。",
+    "pt-PT": "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。",
+    "ru-RU": "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。",
+    "ja-JP": "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。",
+    "de-DE": "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。",
+    "fr-FR": "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。",
+    "ko-KR": "AI增强分析已关闭，文件将由基础AI引擎自动处理，智能命名与标签依然可用。",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8170-8178)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(16974-17035)"
     ],
-    "$id": 20111
+    "$id": 19442
   },
-  "活跃后端": {
-    "en-US": "活跃后端",
-    "es-ES": "活跃后端",
-    "ar-EG": "活跃后端",
-    "pt-PT": "活跃后端",
-    "ru-RU": "活跃后端",
-    "ja-JP": "活跃后端",
-    "de-DE": "活跃后端",
-    "fr-FR": "活跃后端",
-    "ko-KR": "活跃后端",
+  "生效引擎": {
+    "en-US": "生效引擎",
+    "es-ES": "生效引擎",
+    "ar-EG": "生效引擎",
+    "pt-PT": "生效引擎",
+    "ru-RU": "生效引擎",
+    "ja-JP": "生效引擎",
+    "de-DE": "生效引擎",
+    "fr-FR": "生效引擎",
+    "ko-KR": "生效引擎",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8579-8587)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(17380-17388)"
     ],
-    "$id": 20112
+    "$id": 19443
   },
-  "未知": {
-    "en-US": "Unknown",
-    "es-ES": "Desconocido",
-    "ar-EG": "مجهول",
-    "pt-PT": "Desconhecido",
-    "ru-RU": "неизвестный",
-    "ja-JP": "不明",
-    "de-DE": "Unbekannt",
-    "fr-FR": "Inconnu",
-    "ko-KR": "알려지지 않은",
+  "萤核AI引擎": {
+    "en-US": "萤核AI引擎",
+    "es-ES": "萤核AI引擎",
+    "ar-EG": "萤核AI引擎",
+    "pt-PT": "萤核AI引擎",
+    "ru-RU": "萤核AI引擎",
+    "ja-JP": "萤核AI引擎",
+    "de-DE": "萤核AI引擎",
+    "fr-FR": "萤核AI引擎",
+    "ko-KR": "萤核AI引擎",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8739-8745)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(17538-17548)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21432-21442)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21469-21479)"
     ],
-    "$id": 10571
+    "$id": 19444
   },
-  "离线": {
-    "en-US": "离线",
-    "es-ES": "离线",
-    "ar-EG": "离线",
-    "pt-PT": "离线",
-    "ru-RU": "离线",
-    "ja-JP": "离线",
-    "de-DE": "离线",
-    "fr-FR": "离线",
-    "ko-KR": "离线",
+  "云端AI引擎": {
+    "en-US": "云端AI引擎",
+    "es-ES": "云端AI引擎",
+    "ar-EG": "云端AI引擎",
+    "pt-PT": "云端AI引擎",
+    "ru-RU": "云端AI引擎",
+    "ja-JP": "云端AI引擎",
+    "de-DE": "云端AI引擎",
+    "fr-FR": "云端AI引擎",
+    "ko-KR": "云端AI引擎",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(8749-8755)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(17769-17779)"
     ],
-    "$id": 20113
-  },
-  "已加载模型": {
-    "en-US": "已加载模型",
-    "es-ES": "已加载模型",
-    "ar-EG": "已加载模型",
-    "pt-PT": "已加载模型",
-    "ru-RU": "已加载模型",
-    "ja-JP": "已加载模型",
-    "de-DE": "已加载模型",
-    "fr-FR": "已加载模型",
-    "ko-KR": "已加载模型",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9040-9049)"
-    ],
-    "$id": 20114
-  },
-  "加载中...": {
-    "en-US": "加载中...",
-    "es-ES": "加载中...",
-    "ar-EG": "加载中...",
-    "pt-PT": "加载中...",
-    "ru-RU": "加载中...",
-    "ja-JP": "加载中...",
-    "de-DE": "加载中...",
-    "fr-FR": "加载中...",
-    "ko-KR": "加载中...",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9199-9209)"
-    ],
-    "$id": 20115
-  },
-  "显存占用": {
-    "en-US": "显存占用",
-    "es-ES": "显存占用",
-    "ar-EG": "显存占用",
-    "pt-PT": "显存占用",
-    "ru-RU": "显存占用",
-    "ja-JP": "显存占用",
-    "de-DE": "显存占用",
-    "fr-FR": "显存占用",
-    "ko-KR": "显存占用",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9500-9508)"
-    ],
-    "$id": 20116
-  },
-  "熔断状态": {
-    "en-US": "熔断状态",
-    "es-ES": "熔断状态",
-    "ar-EG": "熔断状态",
-    "pt-PT": "熔断状态",
-    "ru-RU": "熔断状态",
-    "ja-JP": "熔断状态",
-    "de-DE": "熔断状态",
-    "fr-FR": "熔断状态",
-    "ko-KR": "熔断状态",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(9966-9974)"
-    ],
-    "$id": 20117
-  },
-  "引擎二进制已部署": {
-    "en-US": "引擎二进制已部署",
-    "es-ES": "引擎二进制已部署",
-    "ar-EG": "引擎二进制已部署",
-    "pt-PT": "引擎二进制已部署",
-    "ru-RU": "引擎二进制已部署",
-    "ja-JP": "引擎二进制已部署",
-    "de-DE": "引擎二进制已部署",
-    "fr-FR": "引擎二进制已部署",
-    "ko-KR": "引擎二进制已部署",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11216-11228)"
-    ],
-    "$id": 20118
-  },
-  "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。": {
-    "en-US": "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。",
-    "es-ES": "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。",
-    "ar-EG": "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。",
-    "pt-PT": "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。",
-    "ru-RU": "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。",
-    "ja-JP": "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。",
-    "de-DE": "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。",
-    "fr-FR": "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。",
-    "ko-KR": "未检测到引擎二进制，在线分析由 Tier 1（Omni）兜底。",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11250-11285)"
-    ],
-    "$id": 20119
-  },
-  "Tier 1 自动兜底": {
-    "en-US": "Tier 1 自动兜底",
-    "es-ES": "Tier 1 自动兜底",
-    "ar-EG": "Tier 1 自动兜底",
-    "pt-PT": "Tier 1 自动兜底",
-    "ru-RU": "Tier 1 自动兜底",
-    "ja-JP": "Tier 1 自动兜底",
-    "de-DE": "Tier 1 自动兜底",
-    "fr-FR": "Tier 1 自动兜底",
-    "ko-KR": "Tier 1 自动兜底",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(11878-11893)"
-    ],
-    "$id": 20120
-  },
-  "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。": {
-    "en-US": "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
-    "es-ES": "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
-    "ar-EG": "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
-    "pt-PT": "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
-    "ru-RU": "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
-    "ja-JP": "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
-    "de-DE": "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
-    "fr-FR": "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
-    "ko-KR": "当 Tier 2 引擎推理连续失败或未部署时，分析流水线将静默降级到 Tier 1（Omni）纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(12024-12129)"
-    ],
-    "$id": 20121
-  },
-  "最近异常": {
-    "en-US": "最近异常",
-    "es-ES": "最近异常",
-    "ar-EG": "最近异常",
-    "pt-PT": "最近异常",
-    "ru-RU": "最近异常",
-    "ja-JP": "最近异常",
-    "de-DE": "最近异常",
-    "fr-FR": "最近异常",
-    "ko-KR": "最近异常",
-    "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(12305-12313)"
-    ],
-    "$id": 20122
+    "$id": 19445
   },
   "模型思考模式": {
     "en-US": "Model thinking mode",
@@ -794,7 +722,7 @@
     "fr-FR": "Mode de pensée modèle",
     "ko-KR": "모델 사고 모드",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(13183-13193)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(19165-19175)"
     ],
     "$id": 7738
   },
@@ -809,7 +737,7 @@
     "fr-FR": "Augmentera la consommation de temps",
     "ko-KR": "시간 소모가 늘어나게 됩니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(13399-13408)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(19388-19397)"
     ],
     "$id": 8286
   },
@@ -824,7 +752,7 @@
     "fr-FR": "Après l'avoir activé, les modèles locaux et cloud sont autorisés à passer en mode réflexion, ce qui peut améliorer la qualité de l'analyse de l'IA, mais augmentera considérablement le temps de réponse.",
     "ko-KR": "이 기능을 켜면 로컬 및 클라우드 모델이 사고 모드를 시작할 수 있어 AI 분석 품질이 향상될 수 있지만 응답 시간이 크게 늘어납니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(13629-13701)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(19627-19702)"
     ],
     "$id": 7850
   },
@@ -839,8 +767,520 @@
     "fr-FR": "Les modèles étiquetés Instruct ne sont pas pris en charge.",
     "ko-KR": "Instruct 태그가 지정된 모델은 지원되지 않습니다.",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(13879-13902)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(19868-19891)"
     ],
     "$id": 7741
+  },
+  "本地通信端口": {
+    "en-US": "本地通信端口",
+    "es-ES": "本地通信端口",
+    "ar-EG": "本地通信端口",
+    "pt-PT": "本地通信端口",
+    "ru-RU": "本地通信端口",
+    "ja-JP": "本地通信端口",
+    "de-DE": "本地通信端口",
+    "fr-FR": "本地通信端口",
+    "ko-KR": "本地通信端口",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21942-21952)"
+    ],
+    "$id": 20107
+  },
+  "停止中...": {
+    "en-US": "停止中...",
+    "es-ES": "停止中...",
+    "ar-EG": "停止中...",
+    "pt-PT": "停止中...",
+    "ru-RU": "停止中...",
+    "ja-JP": "停止中...",
+    "de-DE": "停止中...",
+    "fr-FR": "停止中...",
+    "ko-KR": "停止中...",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(23183-23193)"
+    ],
+    "$id": 19446
+  },
+  "停止服务": {
+    "en-US": "停止服务",
+    "es-ES": "停止服务",
+    "ar-EG": "停止服务",
+    "pt-PT": "停止服务",
+    "ru-RU": "停止服务",
+    "ja-JP": "停止服务",
+    "de-DE": "停止服务",
+    "fr-FR": "停止服务",
+    "ko-KR": "停止服务",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(23197-23205)"
+    ],
+    "$id": 19447
+  },
+  "启动中...": {
+    "en-US": "启动中...",
+    "es-ES": "启动中...",
+    "ar-EG": "启动中...",
+    "pt-PT": "启动中...",
+    "ru-RU": "启动中...",
+    "ja-JP": "启动中...",
+    "de-DE": "启动中...",
+    "fr-FR": "启动中...",
+    "ko-KR": "启动中...",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(23792-23802)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30740-30750)"
+    ],
+    "$id": 20109
+  },
+  "启动服务": {
+    "en-US": "启动服务",
+    "es-ES": "启动服务",
+    "ar-EG": "启动服务",
+    "pt-PT": "启动服务",
+    "ru-RU": "启动服务",
+    "ja-JP": "启动服务",
+    "de-DE": "启动服务",
+    "fr-FR": "启动服务",
+    "ko-KR": "启动服务",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(23806-23814)"
+    ],
+    "$id": 19448
+  },
+  "打开引擎管理面板": {
+    "en-US": "打开引擎管理面板",
+    "es-ES": "打开引擎管理面板",
+    "ar-EG": "打开引擎管理面板",
+    "pt-PT": "打开引擎管理面板",
+    "ru-RU": "打开引擎管理面板",
+    "ja-JP": "打开引擎管理面板",
+    "de-DE": "打开引擎管理面板",
+    "fr-FR": "打开引擎管理面板",
+    "ko-KR": "打开引擎管理面板",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(24357-24369)"
+    ],
+    "$id": 20108
+  },
+  "在萤核AI引擎中管理模型": {
+    "en-US": "在萤核AI引擎中管理模型",
+    "es-ES": "在萤核AI引擎中管理模型",
+    "ar-EG": "在萤核AI引擎中管理模型",
+    "pt-PT": "在萤核AI引擎中管理模型",
+    "ru-RU": "在萤核AI引擎中管理模型",
+    "ja-JP": "在萤核AI引擎中管理模型",
+    "de-DE": "在萤核AI引擎中管理模型",
+    "fr-FR": "在萤核AI引擎中管理模型",
+    "ko-KR": "在萤核AI引擎中管理模型",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(24946-24962)"
+    ],
+    "$id": 19449
+  },
+  "计算引擎": {
+    "en-US": "计算引擎",
+    "es-ES": "计算引擎",
+    "ar-EG": "计算引擎",
+    "pt-PT": "计算引擎",
+    "ru-RU": "计算引擎",
+    "ja-JP": "计算引擎",
+    "de-DE": "计算引擎",
+    "fr-FR": "计算引擎",
+    "ko-KR": "计算引擎",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(25513-25521)"
+    ],
+    "$id": 19450
+  },
+  "未知": {
+    "en-US": "Unknown",
+    "es-ES": "Desconocido",
+    "ar-EG": "مجهول",
+    "pt-PT": "Desconhecido",
+    "ru-RU": "неизвестный",
+    "ja-JP": "不明",
+    "de-DE": "Unbekannt",
+    "fr-FR": "Inconnu",
+    "ko-KR": "알려지지 않은",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(25936-25942)"
+    ],
+    "$id": 10571
+  },
+  "离线": {
+    "en-US": "离线",
+    "es-ES": "离线",
+    "ar-EG": "离线",
+    "pt-PT": "离线",
+    "ru-RU": "离线",
+    "ja-JP": "离线",
+    "de-DE": "离线",
+    "fr-FR": "离线",
+    "ko-KR": "离线",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(25977-25983)"
+    ],
+    "$id": 20113
+  },
+  "当前模型（引擎侧只读）": {
+    "en-US": "当前模型（引擎侧只读）",
+    "es-ES": "当前模型（引擎侧只读）",
+    "ar-EG": "当前模型（引擎侧只读）",
+    "pt-PT": "当前模型（引擎侧只读）",
+    "ru-RU": "当前模型（引擎侧只读）",
+    "ja-JP": "当前模型（引擎侧只读）",
+    "de-DE": "当前模型（引擎侧只读）",
+    "fr-FR": "当前模型（引擎侧只读）",
+    "ko-KR": "当前模型（引擎侧只读）",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(26315-26330)"
+    ],
+    "$id": 19451
+  },
+  "未加载模型": {
+    "en-US": "未加载模型",
+    "es-ES": "未加载模型",
+    "ar-EG": "未加载模型",
+    "pt-PT": "未加载模型",
+    "ru-RU": "未加载模型",
+    "ja-JP": "未加载模型",
+    "de-DE": "未加载模型",
+    "fr-FR": "未加载模型",
+    "ko-KR": "未加载模型",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(26719-26728)"
+    ],
+    "$id": 19452
+  },
+  "已安装模型": {
+    "en-US": "已安装模型",
+    "es-ES": "已安装模型",
+    "ar-EG": "已安装模型",
+    "pt-PT": "已安装模型",
+    "ru-RU": "已安装模型",
+    "ja-JP": "已安装模型",
+    "de-DE": "已安装模型",
+    "fr-FR": "已安装模型",
+    "ko-KR": "已安装模型",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(27097-27106)"
+    ],
+    "$id": 19453
+  },
+  "引擎健康状况": {
+    "en-US": "引擎健康状况",
+    "es-ES": "引擎健康状况",
+    "ar-EG": "引擎健康状况",
+    "pt-PT": "引擎健康状况",
+    "ru-RU": "引擎健康状况",
+    "ja-JP": "引擎健康状况",
+    "de-DE": "引擎健康状况",
+    "fr-FR": "引擎健康状况",
+    "ko-KR": "引擎健康状况",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(27630-27640)"
+    ],
+    "$id": 19454
+  },
+  "引擎二进制已部署": {
+    "en-US": "引擎二进制已部署",
+    "es-ES": "引擎二进制已部署",
+    "ar-EG": "引擎二进制已部署",
+    "pt-PT": "引擎二进制已部署",
+    "ru-RU": "引擎二进制已部署",
+    "ja-JP": "引擎二进制已部署",
+    "de-DE": "引擎二进制已部署",
+    "fr-FR": "引擎二进制已部署",
+    "ko-KR": "引擎二进制已部署",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(29163-29175)"
+    ],
+    "$id": 20118
+  },
+  "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。": {
+    "en-US": "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。",
+    "es-ES": "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。",
+    "ar-EG": "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。",
+    "pt-PT": "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。",
+    "ru-RU": "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。",
+    "ja-JP": "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。",
+    "de-DE": "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。",
+    "fr-FR": "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。",
+    "ko-KR": "未检测到引擎二进制，在线分析由基础AI引擎自动兜底。",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(29204-29234)"
+    ],
+    "$id": 19455
+  },
+  "萤核AI引擎未连接": {
+    "en-US": "萤核AI引擎未连接",
+    "es-ES": "萤核AI引擎未连接",
+    "ar-EG": "萤核AI引擎未连接",
+    "pt-PT": "萤核AI引擎未连接",
+    "ru-RU": "萤核AI引擎未连接",
+    "ja-JP": "萤核AI引擎未连接",
+    "de-DE": "萤核AI引擎未连接",
+    "fr-FR": "萤核AI引擎未连接",
+    "ko-KR": "萤核AI引擎未连接",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(29923-29936)"
+    ],
+    "$id": 19456
+  },
+  "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。": {
+    "en-US": "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。",
+    "es-ES": "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。",
+    "ar-EG": "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。",
+    "pt-PT": "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。",
+    "ru-RU": "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。",
+    "ja-JP": "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。",
+    "de-DE": "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。",
+    "fr-FR": "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。",
+    "ko-KR": "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30124-30162)"
+    ],
+    "$id": 19457
+  },
+  "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。": {
+    "en-US": "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。",
+    "es-ES": "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。",
+    "ar-EG": "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。",
+    "pt-PT": "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。",
+    "ru-RU": "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。",
+    "ja-JP": "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。",
+    "de-DE": "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。",
+    "fr-FR": "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。",
+    "ko-KR": "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30193-30237)"
+    ],
+    "$id": 19458
+  },
+  "打开萤核AI引擎": {
+    "en-US": "打开萤核AI引擎",
+    "es-ES": "打开萤核AI引擎",
+    "ar-EG": "打开萤核AI引擎",
+    "pt-PT": "打开萤核AI引擎",
+    "ru-RU": "打开萤核AI引擎",
+    "ja-JP": "打开萤核AI引擎",
+    "de-DE": "打开萤核AI引擎",
+    "fr-FR": "打开萤核AI引擎",
+    "ko-KR": "打开萤核AI引擎",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(30754-30766)"
+    ],
+    "$id": 19459
+  },
+  "基础AI引擎自动兜底": {
+    "en-US": "基础AI引擎自动兜底",
+    "es-ES": "基础AI引擎自动兜底",
+    "ar-EG": "基础AI引擎自动兜底",
+    "pt-PT": "基础AI引擎自动兜底",
+    "ru-RU": "基础AI引擎自动兜底",
+    "ja-JP": "基础AI引擎自动兜底",
+    "de-DE": "基础AI引擎自动兜底",
+    "fr-FR": "基础AI引擎自动兜底",
+    "ko-KR": "基础AI引擎自动兜底",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31482-31496)"
+    ],
+    "$id": 19460
+  },
+  "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。": {
+    "en-US": "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
+    "es-ES": "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
+    "ar-EG": "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
+    "pt-PT": "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
+    "ru-RU": "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
+    "ja-JP": "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
+    "de-DE": "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
+    "fr-FR": "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
+    "ko-KR": "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31631-31741)"
+    ],
+    "$id": 19461
+  },
+  "最近异常": {
+    "en-US": "最近异常",
+    "es-ES": "最近异常",
+    "ar-EG": "最近异常",
+    "pt-PT": "最近异常",
+    "ru-RU": "最近异常",
+    "ja-JP": "最近异常",
+    "de-DE": "最近异常",
+    "fr-FR": "最近异常",
+    "ko-KR": "最近异常",
+    "$files": [
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(31957-31965)"
+    ],
+    "$id": 20122
+  },
+  "获取模型列表": {
+    "en-US": "获取模型列表",
+    "es-ES": "获取模型列表",
+    "ar-EG": "获取模型列表",
+    "pt-PT": "获取模型列表",
+    "ru-RU": "获取模型列表",
+    "ja-JP": "获取模型列表",
+    "de-DE": "获取模型列表",
+    "fr-FR": "获取模型列表",
+    "ko-KR": "获取模型列表",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(777-787)"
+    ],
+    "$id": 19462
+  },
+  "分析请求": {
+    "en-US": "分析请求",
+    "es-ES": "分析请求",
+    "ar-EG": "分析请求",
+    "pt-PT": "分析请求",
+    "ru-RU": "分析请求",
+    "ja-JP": "分析请求",
+    "de-DE": "分析请求",
+    "fr-FR": "分析请求",
+    "ko-KR": "分析请求",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(822-830)"
+    ],
+    "$id": 19463
+  },
+  "对话探针": {
+    "en-US": "对话探针",
+    "es-ES": "对话探针",
+    "ar-EG": "对话探针",
+    "pt-PT": "对话探针",
+    "ru-RU": "对话探针",
+    "ja-JP": "对话探针",
+    "de-DE": "对话探针",
+    "fr-FR": "对话探针",
+    "ko-KR": "对话探针",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(858-866)"
+    ],
+    "$id": 19464
+  },
+  "云端引擎错误详情": {
+    "en-US": "云端引擎错误详情",
+    "es-ES": "云端引擎错误详情",
+    "ar-EG": "云端引擎错误详情",
+    "pt-PT": "云端引擎错误详情",
+    "ru-RU": "云端引擎错误详情",
+    "ja-JP": "云端引擎错误详情",
+    "de-DE": "云端引擎错误详情",
+    "fr-FR": "云端引擎错误详情",
+    "ko-KR": "云端引擎错误详情",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(1770-1782)"
+    ],
+    "$id": 19465
+  },
+  "清除": {
+    "en-US": "清除",
+    "es-ES": "清除",
+    "ar-EG": "清除",
+    "pt-PT": "清除",
+    "ru-RU": "清除",
+    "ja-JP": "清除",
+    "de-DE": "清除",
+    "fr-FR": "清除",
+    "ko-KR": "清除",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(1966-1972)",
+      "src/renderer/components/settings/cloud-error-card.tsx(3949-3955)"
+    ],
+    "$id": 19466
+  },
+  "时间": {
+    "en-US": "时间",
+    "es-ES": "时间",
+    "ar-EG": "时间",
+    "pt-PT": "时间",
+    "ru-RU": "时间",
+    "ja-JP": "时间",
+    "de-DE": "时间",
+    "fr-FR": "时间",
+    "ko-KR": "时间",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(2289-2295)"
+    ],
+    "$id": 19467
+  },
+  "服务商": {
+    "en-US": "服务商",
+    "es-ES": "服务商",
+    "ar-EG": "服务商",
+    "pt-PT": "服务商",
+    "ru-RU": "服务商",
+    "ja-JP": "服务商",
+    "de-DE": "服务商",
+    "fr-FR": "服务商",
+    "ko-KR": "服务商",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(2512-2519)"
+    ],
+    "$id": 19468
+  },
+  "模型": {
+    "en-US": "模型",
+    "es-ES": "模型",
+    "ar-EG": "模型",
+    "pt-PT": "模型",
+    "ru-RU": "模型",
+    "ja-JP": "模型",
+    "de-DE": "模型",
+    "fr-FR": "模型",
+    "ko-KR": "模型",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(2686-2692)"
+    ],
+    "$id": 19469
+  },
+  "失败阶段": {
+    "en-US": "失败阶段",
+    "es-ES": "失败阶段",
+    "ar-EG": "失败阶段",
+    "pt-PT": "失败阶段",
+    "ru-RU": "失败阶段",
+    "ja-JP": "失败阶段",
+    "de-DE": "失败阶段",
+    "fr-FR": "失败阶段",
+    "ko-KR": "失败阶段",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(2856-2864)"
+    ],
+    "$id": 19470
+  },
+  "测试中...": {
+    "en-US": "测试中...",
+    "es-ES": "测试中...",
+    "ar-EG": "测试中...",
+    "pt-PT": "测试中...",
+    "ru-RU": "测试中...",
+    "ja-JP": "测试中...",
+    "de-DE": "测试中...",
+    "fr-FR": "测试中...",
+    "ko-KR": "测试中...",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(3679-3689)"
+    ],
+    "$id": 19471
+  },
+  "重新测试": {
+    "en-US": "重新测试",
+    "es-ES": "重新测试",
+    "ar-EG": "重新测试",
+    "pt-PT": "重新测试",
+    "ru-RU": "重新测试",
+    "ja-JP": "重新测试",
+    "de-DE": "重新测试",
+    "fr-FR": "重新测试",
+    "ko-KR": "重新测试",
+    "$files": [
+      "src/renderer/components/settings/cloud-error-card.tsx(3693-3701)"
+    ],
+    "$id": 19472
   }
 }

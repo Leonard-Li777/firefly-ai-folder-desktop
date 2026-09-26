@@ -142,7 +142,7 @@
     "de-DE": "Fehler an Frontend übertragen: {type}",
     "fr-FR": "Erreur transmise au frontend : {type}",
     "ko-KR": "프런트엔드로 푸시된 오류: {type}",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(23211-23231)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(23272-23292)"],
     "$id": 4467
   },
   "baseUrl不能为空": {

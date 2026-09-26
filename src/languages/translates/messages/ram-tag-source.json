@@ -4016,14 +4016,14 @@
     "$id": 24072
   },
   "横幅": {
-    "en-US": "banner",
-    "es-ES": "bandera",
+    "en-US": "Banner",
+    "es-ES": "Bandera",
     "ar-EG": "بانر",
-    "pt-PT": "banner",
+    "pt-PT": "Banner",
     "ru-RU": "плакат",
     "ja-JP": "バナー",
     "de-DE": "Banner",
-    "fr-FR": "bannière",
+    "fr-FR": "Bannière",
     "ko-KR": "배너",
     "$files": [
       "src/electron/config/ram-tag-source.ts(3732-3738)"
@@ -4830,14 +4830,14 @@
     "$id": 24126
   },
   "球棒": {
-    "en-US": "bat",
-    "es-ES": "murciélago",
+    "en-US": "Bat",
+    "es-ES": "Murciélago",
     "ar-EG": "بات",
     "pt-PT": "MTD",
     "ru-RU": "бита",
     "ja-JP": "バット",
     "de-DE": "Fledermaus",
-    "fr-FR": "chauve-souris",
+    "fr-FR": "Chauve-souris",
     "ko-KR": "박쥐",
     "$files": [
       "src/electron/config/ram-tag-source.ts(4435-4441)"
@@ -5071,14 +5071,14 @@
     "$id": 24142
   },
   "击球员": {
-    "en-US": "batsmen",
-    "es-ES": "bateadores",
+    "en-US": "Batsmen",
+    "es-ES": "Bateadores",
     "ar-EG": "المضرب",
-    "pt-PT": "batedores",
+    "pt-PT": "Batedores",
     "ru-RU": "игроки с битой",
     "ja-JP": "バッツマン",
     "de-DE": "Schlagmann",
-    "fr-FR": "batteurs",
+    "fr-FR": "Batteurs",
     "ko-KR": "타자",
     "$files": [
       "src/electron/config/ram-tag-source.ts(4654-4661)"
@@ -6883,14 +6883,14 @@
     "$id": 28047
   },
   "毯子": {
-    "en-US": "blanket",
-    "es-ES": "manta",
+    "en-US": "Blanket",
+    "es-ES": "Manta",
     "ar-EG": "بطانية",
-    "pt-PT": "cobertor",
+    "pt-PT": "Cobertor",
     "ru-RU": "одеяло",
     "ja-JP": "毛布",
     "de-DE": "Decke",
-    "fr-FR": "couverture",
+    "fr-FR": "Couverture",
     "ko-KR": "담요",
     "$files": [
       "src/electron/config/ram-tag-source.ts(6195-6201)"
@@ -9363,14 +9363,14 @@
     "$id": 24426
   },
   "卷": {
-    "en-US": "volume",
-    "es-ES": "volumen",
+    "en-US": "Volume",
+    "es-ES": "Volumen",
     "ar-EG": "الحجم",
-    "pt-PT": "volume",
+    "pt-PT": "Volume",
     "ru-RU": "рулет",
     "ja-JP": "ボリューム",
     "de-DE": "Volumen",
-    "fr-FR": "le volume",
+    "fr-FR": "Le volume",
     "ko-KR": "볼륨",
     "$files": [
       "src/electron/config/ram-tag-source.ts(8291-8296)"
@@ -9423,14 +9423,14 @@
     "$id": 24430
   },
   "地堡": {
-    "en-US": "bunker",
-    "es-ES": "búnker",
+    "en-US": "Bunker",
+    "es-ES": "Búnker",
     "ar-EG": "بنكر",
-    "pt-PT": "bunker",
+    "pt-PT": "Bunker",
     "ru-RU": "бункер",
     "ja-JP": "バンカー",
     "de-DE": "Bunker",
-    "fr-FR": "soute",
+    "fr-FR": "Soute",
     "ko-KR": "벙커",
     "$files": [
       "src/electron/config/ram-tag-source.ts(8338-8344)"
@@ -10558,14 +10558,14 @@
     "$id": 24506
   },
   "树冠": {
-    "en-US": "canopy",
-    "es-ES": "toldo",
+    "en-US": "Canopy",
+    "es-ES": "Toldo",
     "ar-EG": "الستارة",
-    "pt-PT": "canopy",
+    "pt-PT": "Canopy",
     "ru-RU": "крона",
     "ja-JP": "キャノピー",
     "de-DE": "Baldachin",
-    "fr-FR": "auvent",
+    "fr-FR": "Auvent",
     "ko-KR": "캐노피",
     "$files": [
       "src/electron/config/ram-tag-source.ts(9341-9347)"
@@ -12552,14 +12552,14 @@
     "$id": 24638
   },
   "检查": {
-    "en-US": "check",
-    "es-ES": "comprobar",
+    "en-US": "Check",
+    "es-ES": "Comprobar",
     "ar-EG": "تحقق",
-    "pt-PT": "verificar",
+    "pt-PT": "Verificar",
     "ru-RU": "проверять",
     "ja-JP": "チェック",
     "de-DE": "Check",
-    "fr-FR": "vérifier",
+    "fr-FR": "Vérifier",
     "ko-KR": "확인",
     "$files": [
       "src/electron/config/ram-tag-source.ts(11054-11060)"
@@ -12627,14 +12627,14 @@
     "$id": 24643
   },
   "鼓励": {
-    "en-US": "encourage",
-    "es-ES": "fomentar",
+    "en-US": "Encourage",
+    "es-ES": "Fomentar",
     "ar-EG": "تشجيع",
-    "pt-PT": "incentivar",
+    "pt-PT": "Incentivar",
     "ru-RU": "поощрять",
     "ja-JP": "励ます",
-    "de-DE": "ermutigen",
-    "fr-FR": "encourager",
+    "de-DE": "Ermutigen",
+    "fr-FR": "Encourager",
     "ko-KR": "격려",
     "$files": [
       "src/electron/config/ram-tag-source.ts(11117-11123)"
@@ -16934,14 +16934,14 @@
     "$id": 24930
   },
   "夫妇": {
-    "en-US": "couple",
-    "es-ES": "pareja",
+    "en-US": "Couple",
+    "es-ES": "Pareja",
     "ar-EG": "زوجان",
-    "pt-PT": "casal",
+    "pt-PT": "Casal",
     "ru-RU": "супружеская пара",
     "ja-JP": "カップル",
-    "de-DE": "paar",
-    "fr-FR": "en couple",
+    "de-DE": "Paar",
+    "fr-FR": "En couple",
     "ko-KR": "커플",
     "$files": [
       "src/electron/config/ram-tag-source.ts(14935-14941)"
@@ -18776,14 +18776,14 @@
     "$id": 25052
   },
   "装修": {
-    "en-US": "decoration",
-    "es-ES": "decoración",
+    "en-US": "Decoration",
+    "es-ES": "Decoración",
     "ar-EG": "الديكور",
-    "pt-PT": "decoração",
+    "pt-PT": "Decoração",
     "ru-RU": "ремонт",
     "ja-JP": "装飾",
     "de-DE": "Dekoration",
-    "fr-FR": "décoration",
+    "fr-FR": "Décoration",
     "ko-KR": "장식",
     "$files": [
       "src/electron/config/ram-tag-source.ts(16564-16570)"
@@ -19092,14 +19092,14 @@
     "$id": 25073
   },
   "桌子": {
-    "en-US": "table",
-    "es-ES": "cuadro",
+    "en-US": "Table",
+    "es-ES": "Cuadro",
     "ar-EG": "الجدول",
-    "pt-PT": "quadro",
+    "pt-PT": "Quadro",
     "ru-RU": "стол",
     "ja-JP": "テーブル",
     "de-DE": "Tabelle",
-    "fr-FR": "tableau",
+    "fr-FR": "Tableau",
     "ko-KR": "표",
     "$files": [
       "src/electron/config/ram-tag-source.ts(16824-16830)"
@@ -20496,14 +20496,14 @@
     "$id": 25166
   },
   "图画": {
-    "en-US": "picture",
-    "es-ES": "imagen",
+    "en-US": "Picture",
+    "es-ES": "Imagen",
     "ar-EG": "الصورة",
-    "pt-PT": "imagem",
+    "pt-PT": "Imagem",
     "ru-RU": "картинка",
     "ja-JP": "絵",
     "de-DE": "Bild",
-    "fr-FR": "image",
+    "fr-FR": "Image",
     "ko-KR": "그림",
     "$files": [
       "src/electron/config/ram-tag-source.ts(18027-18033)"
@@ -20526,14 +20526,14 @@
     "$id": 25168
   },
   "连衣裙": {
-    "en-US": "dress",
-    "es-ES": "vestido",
+    "en-US": "Dress",
+    "es-ES": "Vestido",
     "ar-EG": "اللباس",
-    "pt-PT": "vestido",
+    "pt-PT": "Vestido",
     "ru-RU": "платье",
     "ja-JP": "ドレス",
     "de-DE": "Kleid",
-    "fr-FR": "robe",
+    "fr-FR": "Robe",
     "ko-KR": "드레스",
     "$files": [
       "src/electron/config/ram-tag-source.ts(18063-18070)"
@@ -20692,14 +20692,14 @@
     "$id": 25179
   },
   "饮品": {
-    "en-US": "drink",
-    "es-ES": "bebida",
+    "en-US": "Drink",
+    "es-ES": "Bebida",
     "ar-EG": "شرب",
-    "pt-PT": "bebida",
+    "pt-PT": "Bebida",
     "ru-RU": "напитки",
     "ja-JP": "飲む",
     "de-DE": "Getränk",
-    "fr-FR": "boire",
+    "fr-FR": "Boire",
     "ko-KR": "음료",
     "$files": [
       "src/electron/config/ram-tag-source.ts(18200-18206)"
@@ -22015,14 +22015,14 @@
     "$id": 25267
   },
   "外壳": {
-    "en-US": "shell",
-    "es-ES": "cáscara",
+    "en-US": "Shell",
+    "es-ES": "Cáscara",
     "ar-EG": "شل",
-    "pt-PT": "shell",
+    "pt-PT": "Shell",
     "ru-RU": "оболочка",
     "ja-JP": "シェル",
     "de-DE": "Shell",
-    "fr-FR": "coquille",
+    "fr-FR": "Coquille",
     "ko-KR": "쉘",
     "$files": [
       "src/electron/config/ram-tag-source.ts(19333-19339)"
@@ -23022,10 +23022,10 @@
     "$id": 25334
   },
   "风扇": {
-    "en-US": "fan",
-    "es-ES": "ventilador",
+    "en-US": "Fan",
+    "es-ES": "Ventilador",
     "ar-EG": "مروحة",
-    "pt-PT": "ventilador",
+    "pt-PT": "Ventilador",
     "ru-RU": "вентилятор",
     "ja-JP": "扇",
     "de-DE": "Fan",
@@ -23610,14 +23610,14 @@
     "$id": 25373
   },
   "田野": {
-    "en-US": "field",
-    "es-ES": "campo",
+    "en-US": "Field",
+    "es-ES": "Campo",
     "ar-EG": "الميدان",
-    "pt-PT": "campo",
+    "pt-PT": "Campo",
     "ru-RU": "поля",
     "ja-JP": "フィールド",
     "de-DE": "Feld",
-    "fr-FR": "champ",
+    "fr-FR": "Champ",
     "ko-KR": "필드",
     "$files": [
       "src/electron/config/ram-tag-source.ts(20778-20784)"
@@ -24708,10 +24708,10 @@
     "$id": 25446
   },
   "地板": {
-    "en-US": "floor",
-    "es-ES": "suelo",
+    "en-US": "Floor",
+    "es-ES": "Suelo",
     "ar-EG": "الطابق",
-    "pt-PT": "chão",
+    "pt-PT": "Chão",
     "ru-RU": "пол",
     "ja-JP": "床",
     "de-DE": "Etage",
@@ -30285,14 +30285,14 @@
     "$id": 25817
   },
   "隐藏": {
-    "en-US": "hide",
-    "es-ES": "ocultar",
+    "en-US": "Hide",
+    "es-ES": "Ocultar",
     "ar-EG": "إخفاء",
-    "pt-PT": "esconder",
+    "pt-PT": "Esconder",
     "ru-RU": "прятаться",
     "ja-JP": "隠す",
-    "de-DE": "verstecken",
-    "fr-FR": "cacher",
+    "de-DE": "Verstecken",
+    "fr-FR": "Cacher",
     "ko-KR": "숨기기",
     "$files": [
       "src/electron/config/ram-tag-source.ts(26656-26662)"
@@ -30751,14 +30751,14 @@
     "$id": 25848
   },
   "家": {
-    "en-US": "home",
-    "es-ES": "inicio",
+    "en-US": "Home",
+    "es-ES": "Inicio",
     "ar-EG": "الرئيسية",
-    "pt-PT": "casa",
+    "pt-PT": "Casa",
     "ru-RU": "домой",
     "ja-JP": "ホーム",
     "de-DE": "Startseite",
-    "fr-FR": "accueil",
+    "fr-FR": "Accueil",
     "ko-KR": "홈",
     "$files": [
       "src/electron/config/ram-tag-source.ts(27058-27063)"
@@ -32106,14 +32106,14 @@
     "$id": 25938
   },
   "光": {
-    "en-US": "light",
-    "es-ES": "luz",
+    "en-US": "Light",
+    "es-ES": "Luz",
     "ar-EG": "ضوء",
-    "pt-PT": "luz",
+    "pt-PT": "Luz",
     "ru-RU": "лучи",
     "ja-JP": "ライト",
     "de-DE": "Licht",
-    "fr-FR": "lumière",
+    "fr-FR": "Lumière",
     "ko-KR": "빛",
     "$files": [
       "src/electron/config/ram-tag-source.ts(28223-28228)"
@@ -33579,14 +33579,14 @@
     "$id": 26036
   },
   "按键": {
-    "en-US": "button",
-    "es-ES": "botón",
+    "en-US": "Button",
+    "es-ES": "Botón",
     "ar-EG": "زر",
-    "pt-PT": "botão",
+    "pt-PT": "Botão",
     "ru-RU": "кнопка",
     "ja-JP": "ボタン",
     "de-DE": "Schaltfläche",
-    "fr-FR": "bouton",
+    "fr-FR": "Bouton",
     "ko-KR": "버튼",
     "$files": [
       "src/electron/config/ram-tag-source.ts(29534-29540)"
@@ -34978,14 +34978,14 @@
     "$id": 26130
   },
   "倾斜": {
-    "en-US": "tilt",
-    "es-ES": "inclinación",
+    "en-US": "Tilt",
+    "es-ES": "Inclinación",
     "ar-EG": "الميل",
-    "pt-PT": "tilt",
+    "pt-PT": "Tilt",
     "ru-RU": "крен",
     "ja-JP": "チルト",
     "de-DE": "Tilt",
-    "fr-FR": "inclinaison",
+    "fr-FR": "Inclinaison",
     "ko-KR": "틸트",
     "$files": [
       "src/electron/config/ram-tag-source.ts(30770-30776)"
@@ -35671,10 +35671,10 @@
     "$id": 26177
   },
   "照明": {
-    "en-US": "lighting",
-    "es-ES": "iluminación",
+    "en-US": "Lighting",
+    "es-ES": "Iluminación",
     "ar-EG": "الإضاءة",
-    "pt-PT": "iluminação",
+    "pt-PT": "Iluminação",
     "ru-RU": "свет",
     "ja-JP": "照明",
     "de-DE": "Beleuchtung",
@@ -37674,14 +37674,14 @@
     "$id": 26310
   },
   "面具": {
-    "en-US": "mask",
-    "es-ES": "máscara",
+    "en-US": "Mask",
+    "es-ES": "Máscara",
     "ar-EG": "قناع",
-    "pt-PT": "máscara",
+    "pt-PT": "Máscara",
     "ru-RU": "маска",
     "ja-JP": "マスク",
     "de-DE": "Maske",
-    "fr-FR": "masque",
+    "fr-FR": "Masque",
     "ko-KR": "마스크",
     "$files": [
       "src/electron/config/ram-tag-source.ts(33151-33157)"
@@ -39613,14 +39613,14 @@
     "$id": 26439
   },
   "鼠标": {
-    "en-US": "mouse",
-    "es-ES": "ratón",
+    "en-US": "Mouse",
+    "es-ES": "Ratón",
     "ar-EG": "الماوس",
-    "pt-PT": "rato",
+    "pt-PT": "Rato",
     "ru-RU": "мышь",
     "ja-JP": "マウス",
     "de-DE": "Maus",
-    "fr-FR": "souris",
+    "fr-FR": "Souris",
     "ko-KR": "마우스",
     "$files": [
       "src/electron/config/ram-tag-source.ts(34912-34918)"
@@ -41536,14 +41536,14 @@
     "$id": 26568
   },
   "橙子": {
-    "en-US": "orange",
-    "es-ES": "naranja",
+    "en-US": "Orange",
+    "es-ES": "Naranja",
     "ar-EG": "أورانج",
-    "pt-PT": "laranja",
+    "pt-PT": "Laranja",
     "ru-RU": "апельсин",
     "ja-JP": "オレンジ",
     "de-DE": "Orange",
-    "fr-FR": "orange",
+    "fr-FR": "Orange",
     "ko-KR": "오렌지",
     "$files": [
       "src/electron/config/ram-tag-source.ts(36646-36652)"
@@ -42996,14 +42996,14 @@
     "$id": 26665
   },
   "图案": {
-    "en-US": "pattern",
-    "es-ES": "patrón",
+    "en-US": "Pattern",
+    "es-ES": "Patrón",
     "ar-EG": "نمط",
-    "pt-PT": "padrão",
+    "pt-PT": "Padrão",
     "ru-RU": "рисунок",
     "ja-JP": "パターン",
     "de-DE": "Muster",
-    "fr-FR": "motif",
+    "fr-FR": "Motif",
     "ko-KR": "패턴",
     "$files": [
       "src/electron/config/ram-tag-source.ts(37904-37910)"
@@ -43011,14 +43011,14 @@
     "$id": 20062
   },
   "人行道": {
-    "en-US": "sidewalk",
-    "es-ES": "acera",
+    "en-US": "Sidewalk",
+    "es-ES": "Acera",
     "ar-EG": "الرصيف",
-    "pt-PT": "calçada",
+    "pt-PT": "Calçada",
     "ru-RU": "тротуар",
     "ja-JP": "歩道",
     "de-DE": "Bürgersteig",
-    "fr-FR": "trottoir",
+    "fr-FR": "Trottoir",
     "ko-KR": "보도",
     "$files": [
       "src/electron/config/ram-tag-source.ts(37916-37923)"
@@ -43356,14 +43356,14 @@
     "$id": 26689
   },
   "笔": {
-    "en-US": "pen",
-    "es-ES": "bolígrafo",
+    "en-US": "Pen",
+    "es-ES": "Bolígrafo",
     "ar-EG": "القلم",
-    "pt-PT": "caneta",
+    "pt-PT": "Caneta",
     "ru-RU": "ручка",
     "ja-JP": "ペン",
     "de-DE": "Stift",
-    "fr-FR": "stylo",
+    "fr-FR": "Stylo",
     "ko-KR": "펜",
     "$files": [
       "src/electron/config/ram-tag-source.ts(38215-38220)"
@@ -43567,14 +43567,14 @@
     "$id": 26703
   },
   "胡椒": {
-    "en-US": "pepper",
-    "es-ES": "pimienta",
+    "en-US": "Pepper",
+    "es-ES": "Pimienta",
     "ar-EG": "الفلفل",
-    "pt-PT": "pimenta",
+    "pt-PT": "Pimenta",
     "ru-RU": "перец",
     "ja-JP": "ペッパー",
     "de-DE": "Pfeffer",
-    "fr-FR": "poivre",
+    "fr-FR": "Poivre",
     "ko-KR": "고추",
     "$files": [
       "src/electron/config/ram-tag-source.ts(38387-38393)"
@@ -44965,14 +44965,14 @@
     "$id": 26796
   },
   "玩": {
-    "en-US": "play",
-    "es-ES": "jugar",
+    "en-US": "Play",
+    "es-ES": "Jugar",
     "ar-EG": "لعب",
-    "pt-PT": "jogar",
+    "pt-PT": "Jogar",
     "ru-RU": "играть",
     "ja-JP": "プレイ",
-    "de-DE": "spielen",
-    "fr-FR": "jouer",
+    "de-DE": "Spielen",
+    "fr-FR": "Jouer",
     "ko-KR": "재생",
     "$files": [
       "src/electron/config/ram-tag-source.ts(39656-39661)"
@@ -45100,14 +45100,14 @@
     "$id": 26805
   },
   "选手": {
-    "en-US": "player",
-    "es-ES": "jugador",
+    "en-US": "Player",
+    "es-ES": "Jugador",
     "ar-EG": "لاعب",
-    "pt-PT": "jogador",
+    "pt-PT": "Jogador",
     "ru-RU": "игрок",
     "ja-JP": "プレーヤー",
     "de-DE": "Spieler",
-    "fr-FR": "joueur",
+    "fr-FR": "Joueur",
     "ko-KR": "플레이어",
     "$files": [
       "src/electron/config/ram-tag-source.ts(39773-39779)"
@@ -45508,14 +45508,14 @@
     "$id": 26832
   },
   "指": {
-    "en-US": "refers to",
-    "es-ES": "se refiere a",
+    "en-US": "Refers to",
+    "es-ES": "Se refiere a",
     "ar-EG": "يشير إلى",
-    "pt-PT": "refere-se a",
+    "pt-PT": "Refere-se a",
     "ru-RU": "палец",
     "ja-JP": "を参照してください",
-    "de-DE": "bezieht sich auf",
-    "fr-FR": "fait référence à",
+    "de-DE": "Bezieht sich auf",
+    "fr-FR": "Fait référence à",
     "ko-KR": "참조",
     "$files": [
       "src/electron/config/ram-tag-source.ts(40129-40134)"
@@ -45583,14 +45583,14 @@
     "$id": 26837
   },
   "杆": {
-    "en-US": "rod",
-    "es-ES": "vara",
+    "en-US": "Rod",
+    "es-ES": "Vara",
     "ar-EG": "رود",
-    "pt-PT": "rod",
+    "pt-PT": "Rod",
     "ru-RU": "шест",
     "ja-JP": "ロッド",
     "de-DE": "Stab",
-    "fr-FR": "tige",
+    "fr-FR": "Tige",
     "ko-KR": "로드",
     "$files": [
       "src/electron/config/ram-tag-source.ts(40190-40195)"
@@ -46213,14 +46213,14 @@
     "$id": 26879
   },
   "锅": {
-    "en-US": "pot",
-    "es-ES": "bote",
+    "en-US": "Pot",
+    "es-ES": "Bote",
     "ar-EG": "وعاء",
-    "pt-PT": "pot",
+    "pt-PT": "Pot",
     "ru-RU": "кастрюля",
     "ja-JP": "鍋",
     "de-DE": "Topf",
-    "fr-FR": "pot",
+    "fr-FR": "Pot",
     "ko-KR": "냄비",
     "$files": [
       "src/electron/config/ram-tag-source.ts(40731-40736)"
@@ -47505,14 +47505,14 @@
     "$id": 26966
   },
   "水沟": {
-    "en-US": "ditch",
-    "es-ES": "zanja",
+    "en-US": "Ditch",
+    "es-ES": "Zanja",
     "ar-EG": "الخندق",
-    "pt-PT": "vala",
+    "pt-PT": "Vala",
     "ru-RU": "канализационная труба",
     "ja-JP": "溝",
-    "de-DE": "graben",
-    "fr-FR": "fossé",
+    "de-DE": "Graben",
+    "fr-FR": "Fossé",
     "ko-KR": "수로",
     "$files": [
       "src/electron/config/ram-tag-source.ts(41877-41883)"
@@ -47580,14 +47580,14 @@
     "$id": 26971
   },
   "木筏": {
-    "en-US": "raft",
-    "es-ES": "balsa",
+    "en-US": "Raft",
+    "es-ES": "Balsa",
     "ar-EG": "طوف",
-    "pt-PT": "jangada",
+    "pt-PT": "Jangada",
     "ru-RU": "плот",
     "ja-JP": "いかだ",
     "de-DE": "Floß",
-    "fr-FR": "radeau",
+    "fr-FR": "Radeau",
     "ko-KR": "뗏목",
     "$files": [
       "src/electron/config/ram-tag-source.ts(41950-41956)"
@@ -48152,14 +48152,14 @@
     "$id": 27010
   },
   "记录器": {
-    "en-US": "recorder",
-    "es-ES": "grabadora",
+    "en-US": "Recorder",
+    "es-ES": "Grabadora",
     "ar-EG": "مسجل",
-    "pt-PT": "gravador",
+    "pt-PT": "Gravador",
     "ru-RU": "самописец",
     "ja-JP": "レコーダー",
     "de-DE": "Brenner",
-    "fr-FR": "enregistreur",
+    "fr-FR": "Enregistreur",
     "ko-KR": "기록기",
     "$files": [
       "src/electron/config/ram-tag-source.ts(42488-42495)"
@@ -48964,14 +48964,14 @@
     "$id": 27064
   },
   "骑": {
-    "en-US": "ride",
-    "es-ES": "paseo",
+    "en-US": "Ride",
+    "es-ES": "Paseo",
     "ar-EG": "ركوب",
-    "pt-PT": "passeio",
+    "pt-PT": "Passeio",
     "ru-RU": "всадник",
     "ja-JP": "ライド",
     "de-DE": "Reiten",
-    "fr-FR": "balade",
+    "fr-FR": "Balade",
     "ko-KR": "타고",
     "$files": [
       "src/electron/config/ram-tag-source.ts(43238-43243)"
@@ -49024,14 +49024,14 @@
     "$id": 27068
   },
   "环": {
-    "en-US": "ring",
-    "es-ES": "anillo",
+    "en-US": "Ring",
+    "es-ES": "Anillo",
     "ar-EG": "حلقة",
-    "pt-PT": "anel",
+    "pt-PT": "Anel",
     "ru-RU": "окружать",
     "ja-JP": "リング",
     "de-DE": "Ring",
-    "fr-FR": "bague",
+    "fr-FR": "Bague",
     "ko-KR": "반지",
     "$files": [
       "src/electron/config/ram-tag-source.ts(43296-43301)"
@@ -50981,10 +50981,10 @@
     "$id": 27198
   },
   "秤": {
-    "en-US": "scale",
-    "es-ES": "escala",
+    "en-US": "Scale",
+    "es-ES": "Escala",
     "ar-EG": "مقياس",
-    "pt-PT": "escala",
+    "pt-PT": "Escala",
     "ru-RU": "весы",
     "ja-JP": "スケール",
     "de-DE": "Skala",
@@ -53308,14 +53308,14 @@
     "$id": 27353
   },
   "坐": {
-    "en-US": "sit",
-    "es-ES": "siéntate",
+    "en-US": "Sit",
+    "es-ES": "Siéntate",
     "ar-EG": "اجلس",
-    "pt-PT": "sit",
+    "pt-PT": "Sit",
     "ru-RU": "сидеть",
     "ja-JP": "座る",
-    "de-DE": "sitzen",
-    "fr-FR": "assis",
+    "de-DE": "Sitzen",
+    "fr-FR": "Assis",
     "ko-KR": "앉아",
     "$files": [
       "src/electron/config/ram-tag-source.ts(47091-47096)"
@@ -53999,14 +53999,14 @@
     "$id": 27399
   },
   "烟雾": {
-    "en-US": "smoke",
-    "es-ES": "humo",
+    "en-US": "Smoke",
+    "es-ES": "Humo",
     "ar-EG": "دخان",
-    "pt-PT": "fumo",
+    "pt-PT": "Fumo",
     "ru-RU": "дым",
     "ja-JP": "煙",
     "de-DE": "Rauchen",
-    "fr-FR": "fumée",
+    "fr-FR": "Fumée",
     "ko-KR": "연기",
     "$files": [
       "src/electron/config/ram-tag-source.ts(47693-47699)"
@@ -55591,14 +55591,14 @@
     "$id": 27505
   },
   "摊位": {
-    "en-US": "booth",
-    "es-ES": "cabina",
+    "en-US": "Booth",
+    "es-ES": "Cabina",
     "ar-EG": "بوث",
-    "pt-PT": "cabine",
+    "pt-PT": "Cabine",
     "ru-RU": "будка",
     "ja-JP": "ブース",
     "de-DE": "Stand",
-    "fr-FR": "cabine",
+    "fr-FR": "Cabine",
     "ko-KR": "부스",
     "$files": [
       "src/electron/config/ram-tag-source.ts(49125-49131)"
@@ -56057,14 +56057,14 @@
     "$id": 27537
   },
   "戳": {
-    "en-US": "poke",
-    "es-ES": "empuje",
+    "en-US": "Poke",
+    "es-ES": "Empuje",
     "ar-EG": "كزة",
-    "pt-PT": "poke",
+    "pt-PT": "Poke",
     "ru-RU": "тыкать",
     "ja-JP": "ポケ",
-    "de-DE": "stoßen",
-    "fr-FR": "piquer",
+    "de-DE": "Stoßen",
+    "fr-FR": "Piquer",
     "ko-KR": "찌르",
     "$files": [
       "src/electron/config/ram-tag-source.ts(49527-49532)"
@@ -56583,14 +56583,14 @@
     "$id": 27573
   },
   "稻草": {
-    "en-US": "straw",
-    "es-ES": "paja",
+    "en-US": "Straw",
+    "es-ES": "Paja",
     "ar-EG": "سترو",
-    "pt-PT": "palha",
+    "pt-PT": "Palha",
     "ru-RU": "солома",
     "ja-JP": "わら",
     "de-DE": "Stroh",
-    "fr-FR": "paille",
+    "fr-FR": "Paille",
     "ko-KR": "짚",
     "$files": [
       "src/electron/config/ram-tag-source.ts(50006-50012)"
@@ -58504,14 +58504,14 @@
     "$id": 27701
   },
   "拍": {
-    "en-US": "shoot",
-    "es-ES": "disparar",
+    "en-US": "Shoot",
+    "es-ES": "Disparar",
     "ar-EG": "تبادل لاطلاق النار",
-    "pt-PT": "tiro",
+    "pt-PT": "Tiro",
     "ru-RU": "снимать",
     "ja-JP": "シュート",
-    "de-DE": "schießen",
-    "fr-FR": "tirer",
+    "de-DE": "Schießen",
+    "fr-FR": "Tirer",
     "ko-KR": "촬영",
     "$files": [
       "src/electron/config/ram-tag-source.ts(51711-51716)"
@@ -58534,14 +58534,14 @@
     "$id": 27703
   },
   "说话": {
-    "en-US": "speak",
-    "es-ES": "habla",
+    "en-US": "Speak",
+    "es-ES": "Habla",
     "ar-EG": "تحدث",
-    "pt-PT": "falar",
+    "pt-PT": "Falar",
     "ru-RU": "говорить",
     "ja-JP": "話す",
-    "de-DE": "sprechen",
-    "fr-FR": "parler",
+    "de-DE": "Sprechen",
+    "fr-FR": "Parler",
     "ko-KR": "말하기",
     "$files": [
       "src/electron/config/ram-tag-source.ts(51734-51740)"
@@ -58924,14 +58924,14 @@
     "$id": 27730
   },
   "眼泪": {
-    "en-US": "tears",
-    "es-ES": "lágrimas",
+    "en-US": "Tears",
+    "es-ES": "Lágrimas",
     "ar-EG": "دموع",
-    "pt-PT": "lágrimas",
+    "pt-PT": "Lágrimas",
     "ru-RU": "слезы",
     "ja-JP": "涙",
-    "de-DE": "reißen",
-    "fr-FR": "larmes",
+    "de-DE": "Reißen",
+    "fr-FR": "Larmes",
     "ko-KR": "눈물",
     "$files": [
       "src/electron/config/ram-tag-source.ts(52083-52089)"
@@ -59284,14 +59284,14 @@
     "$id": 27754
   },
   "终端": {
-    "en-US": "terminal",
-    "es-ES": "terminal",
+    "en-US": "Terminal",
+    "es-ES": "Terminal",
     "ar-EG": "محطة",
-    "pt-PT": "terminal",
+    "pt-PT": "Terminal",
     "ru-RU": "терминал",
     "ja-JP": "ターミナル",
     "de-DE": "Terminal",
-    "fr-FR": "borne",
+    "fr-FR": "Borne",
     "ko-KR": "터미널",
     "$files": [
       "src/electron/config/ram-tag-source.ts(52398-52404)"
@@ -60319,14 +60319,14 @@
     "$id": 27823
   },
   "火炬": {
-    "en-US": "torch",
-    "es-ES": "antorcha",
+    "en-US": "Torch",
+    "es-ES": "Antorcha",
     "ar-EG": "الشعلة",
-    "pt-PT": "tocha",
+    "pt-PT": "Tocha",
     "ru-RU": "факел",
     "ja-JP": "トーチ",
     "de-DE": "Fackel",
-    "fr-FR": "torche",
+    "fr-FR": "Torche",
     "ko-KR": "불꽃",
     "$files": [
       "src/electron/config/ram-tag-source.ts(53330-53336)"
@@ -60981,14 +60981,14 @@
     "$id": 27867
   },
   "电车": {
-    "en-US": "tram",
-    "es-ES": "tranvía",
+    "en-US": "Tram",
+    "es-ES": "Tranvía",
     "ar-EG": "ترام",
-    "pt-PT": "eléctrico",
+    "pt-PT": "Eléctrico",
     "ru-RU": "трамвай",
     "ja-JP": "路面電車",
     "de-DE": "Straßenbahn",
-    "fr-FR": "tramway",
+    "fr-FR": "Tramway",
     "ko-KR": "트램",
     "$files": [
       "src/electron/config/ram-tag-source.ts(53974-53980)"
@@ -61041,14 +61041,14 @@
     "$id": 27871
   },
   "托盘": {
-    "en-US": "tray",
-    "es-ES": "bandeja",
+    "en-US": "Tray",
+    "es-ES": "Bandeja",
     "ar-EG": "صينية",
-    "pt-PT": "bandeja",
+    "pt-PT": "Bandeja",
     "ru-RU": "поднос",
     "ja-JP": "トレイ",
     "de-DE": "Tablett",
-    "fr-FR": "plateau",
+    "fr-FR": "Plateau",
     "ko-KR": "트레이",
     "$files": [
       "src/electron/config/ram-tag-source.ts(54037-54043)"
@@ -62183,14 +62183,14 @@
     "$id": 27947
   },
   "花瓶": {
-    "en-US": "vase",
-    "es-ES": "florero",
+    "en-US": "Vase",
+    "es-ES": "Florero",
     "ar-EG": "مزهرية",
-    "pt-PT": "vaso",
+    "pt-PT": "Vaso",
     "ru-RU": "ваза",
     "ja-JP": "花瓶",
     "de-DE": "Vase",
-    "fr-FR": "vase à fleurs",
+    "fr-FR": "Vase à fleurs",
     "ko-KR": "꽃병",
     "$files": [
       "src/electron/config/ram-tag-source.ts(55064-55070)"

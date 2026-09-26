@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "language": "zh",
-  "lastUpdated": "2026-05-23",
+  "lastUpdated": "2026-09-26",
   "models": [
     {
       "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL",
@@ -995,6 +995,68 @@
       "recommendedConfig": {
         "numCtx": 8192,
         "numPredict": 4096
+      }
+    },
+    {
+      "id": "huangyusi/WeMM-Embedding-2B-GGUF:Q4_K_M",
+      "name": "WeMM-Embedding 2B (多模态嵌入)",
+      "company": "huangyusi",
+      "parameterSize": "2B",
+      "intelligenceLevel": 2,
+      "totalSize": "2.08GB",
+      "recommended": false,
+      "description": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
+      "source": "modelscope",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "嵌入",
+        "多模态",
+        "低显存"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 512
+      }
+    },
+    {
+      "id": "Weidows/WeMM-Embedding-2B-GGUF:Q4_K_M",
+      "name": "WeMM-Embedding 2B (多模态嵌入)",
+      "company": "Weidows",
+      "parameterSize": "2B",
+      "intelligenceLevel": 2,
+      "totalSize": "2.08GB",
+      "recommended": false,
+      "description": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": true,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "嵌入",
+        "多模态",
+        "低显存"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 512
       }
     }
   ]

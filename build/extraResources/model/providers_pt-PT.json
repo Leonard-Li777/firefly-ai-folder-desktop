@@ -1073,7 +1073,7 @@
         "description": "O modelo de raciocínio extremamente rápido do SenseTime",
         "free": false,
         "company": "SenseTime",
-        "parameterSize": "Desconhecido\r",
+        "parameterSize": "Desconhecido",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [
@@ -1086,7 +1086,7 @@
         "description": "Modelo de inferência rápida DeepSeek hospedado por SenseTime",
         "free": false,
         "company": "SenseTime",
-        "parameterSize": "Desconhecido\r",
+        "parameterSize": "Desconhecido",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [

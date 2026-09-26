@@ -1073,7 +1073,7 @@
         "description": "El modelo de razonamiento extremadamente rápido de SenseTime",
         "free": false,
         "company": "SentirTiempo",
-        "parameterSize": "Desconocido\r",
+        "parameterSize": "Desconocido",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [
@@ -1086,7 +1086,7 @@
         "description": "Modelo de inferencia rápida de DeepSeek alojado en SenseTime",
         "free": false,
         "company": "SentirTiempo",
-        "parameterSize": "Desconocido\r",
+        "parameterSize": "Desconocido",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [

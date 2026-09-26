@@ -19,43 +19,9 @@
       "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(4099-4107)",
       "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(4637-4645)",
       "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(5336-5344)",
-      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(5979-5987)",
-      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(1647-1655)",
-      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(4016-4024)",
-      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(4410-4418)",
-      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(4877-4885)",
-      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(5288-5296)",
-      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(5587-5595)",
-      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(5843-5851)",
-      "src/electron/runtime-services/ipc/ollama-ipc-handler.ts(6336-6344)"
+      "src/electron/runtime-services/ipc/cloud-model-config-ipc-handler.ts(5979-5987)"
     ],
     "$id": 11058
-  },
-  "未提供目标目录": {
-    "en-US": "No target directory provided",
-    "es-ES": "No se proporciona ningún directorio de destino",
-    "ar-EG": "لم يتم توفير الدليل الهدف",
-    "pt-PT": "Nenhum diretório de destino fornecido",
-    "ru-RU": "Целевой каталог не указан",
-    "ja-JP": "ターゲット ディレクトリが指定されていません",
-    "de-DE": "Kein Zielverzeichnis angegeben",
-    "fr-FR": "Aucun répertoire cible fourni",
-    "ko-KR": "제공된 대상 디렉터리가 없습니다.",
-    "$files": ["src/electron/runtime-services/ipc/local-model-config-ipc-handler.ts(960-971)"],
-    "$id": 11060
-  },
-  "任务不存在": {
-    "en-US": "Task does not exist",
-    "es-ES": "La tarea no existe",
-    "ar-EG": "المهمة غير موجودة",
-    "pt-PT": "A tarefa não existe",
-    "ru-RU": "Задача не существует",
-    "ja-JP": "タスクが存在しません",
-    "de-DE": "Aufgabe existiert nicht",
-    "fr-FR": "La tâche n'existe pas",
-    "ko-KR": "작업이 존재하지 않습니다.",
-    "$files": ["src/electron/runtime-services/ipc/model-download-manager-ipc-handler.ts(4622-4631)"],
-    "$id": 11061
   },
   "未找到工作区": {
     "en-US": "Workspace not found",

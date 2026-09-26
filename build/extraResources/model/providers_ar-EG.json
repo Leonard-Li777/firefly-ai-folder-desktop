@@ -1073,7 +1073,7 @@
         "description": "نموذج الاستدلال السريع للغاية الخاص بـ SenseTime",
         "free": false,
         "company": "سينس تايم",
-        "parameterSize": "غير معروف",
+        "parameterSize": "مجهول",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [
@@ -1086,7 +1086,7 @@
         "description": "نموذج الاستدلال السريع DeepSeek الذي يستضيفه SenseTime",
         "free": false,
         "company": "سينس تايم",
-        "parameterSize": "غير معروف",
+        "parameterSize": "مجهول",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [

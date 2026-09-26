@@ -65,7 +65,7 @@
       "src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2764-2770)",
       "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6011-6017)",
       "src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28411-28417)",
-      "src/renderer/components/organize/HacOrganizeDialog.tsx(6385-6391)",
+      "src/renderer/components/organize/HacOrganizeDialog.tsx(6563-6569)",
       "src/renderer/components/organize/UndoHistoryDialog.tsx(2438-2444)"
     ],
     "$id": 4150
@@ -1320,6 +1320,19 @@
     "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28691-28699)"],
     "$id": 4209
   },
+  "该功能正在数据源迁移中，暂不可用": {
+    "en-US": "该功能正在数据源迁移中，暂不可用",
+    "es-ES": "该功能正在数据源迁移中，暂不可用",
+    "ar-EG": "该功能正在数据源迁移中，暂不可用",
+    "pt-PT": "该功能正在数据源迁移中，暂不可用",
+    "ru-RU": "该功能正在数据源迁移中，暂不可用",
+    "ja-JP": "该功能正在数据源迁移中，暂不可用",
+    "de-DE": "该功能正在数据源迁移中，暂不可用",
+    "fr-FR": "该功能正在数据源迁移中，暂不可用",
+    "ko-KR": "该功能正在数据源迁移中，暂不可用",
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(1629-1649)"],
+    "$id": 19429
+  },
   "当前文件暂无法进行智能聚类整理，请确认文件已完成 AI 分析": {
     "en-US": "The current file cannot be intelligent clustered for the time being, please confirm that the file has completed the AI analysis",
     "es-ES": "El archivo actual no puede agruparse de forma inteligente por el momento, confirme que el archivo haya completado el análisis de IA",
@@ -1330,7 +1343,7 @@
     "de-DE": "Die aktuelle Datei kann vorerst nicht intelligent geclustert werden. Bitte bestätigen Sie, dass die Datei die KI-Analyse abgeschlossen hat",
     "fr-FR": "Le fichier actuel ne peut pas être mis en cluster intelligent pour le moment, veuillez confirmer que le fichier a terminé l'analyse de l'IA",
     "ko-KR": "현재 파일은 당분간 지능형 클러스터링 할 수 없으므로 파일이 인공 지능 분석을 완료했는지 확인하십시오",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(2122-2156)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(2300-2334)"],
     "$id": 19965
   },
   "生成智能聚类方案失败，请重试": {
@@ -1343,7 +1356,7 @@
     "de-DE": "Fehler beim Generieren eines intelligenten Clusterschemas. Bitte versuchen Sie es erneut",
     "fr-FR": "Impossible de générer un schéma de clustering intelligent, veuillez réessayer",
     "ko-KR": "지능형 클러스터링 구성표를 생성하지 못했습니다.",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(2278-2296)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(2456-2474)"],
     "$id": 19966
   },
   "智能聚类整理": {
@@ -1357,8 +1370,8 @@
     "fr-FR": "Clustering intelligent",
     "ko-KR": "지능형 클러스터링",
     "$files": [
-      "src/renderer/components/organize/HacOrganizeDialog.tsx(2644-2654)",
-      "src/renderer/components/organize/HacOrganizeDialog.tsx(3460-3470)"
+      "src/renderer/components/organize/HacOrganizeDialog.tsx(2822-2832)",
+      "src/renderer/components/organize/HacOrganizeDialog.tsx(3638-3648)"
     ],
     "$id": 19967
   },
@@ -1372,7 +1385,7 @@
     "de-DE": "Gespeichertes virtuelles Verzeichnis: {name}",
     "fr-FR": "Répertoire virtuel enregistré: {name}",
     "ko-KR": "저장된 가상 디렉터리:{name}",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(2855-2873)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(3033-3051)"],
     "$id": 19968
   },
   "保存虚拟目录失败，请重试": {
@@ -1385,7 +1398,7 @@
     "de-DE": "Speichern des virtuellen Verzeichnisses fehlgeschlagen, bitte versuchen Sie es erneut",
     "fr-FR": "L'enregistrement du répertoire virtuel a échoué, veuillez réessayer",
     "ko-KR": "가상 디렉터리를 저장하지 못했습니다.",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(3064-3080)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(3242-3258)"],
     "$id": 19969
   },
   "基于端侧 384d 密集向量自动聚类文件主题，零 Token 消耗，可预览后保存为虚拟目录": {
@@ -1398,7 +1411,7 @@
     "de-DE": "Automatisches Clustern von Dateithemen basierend auf endseitigen 384d-dichten Vektoren, Null-Token-Verbrauch, kann in der Vorschau angezeigt und als virtuelles Verzeichnis gespeichert werden",
     "fr-FR": "Regroupez automatiquement les sujets de fichiers en fonction de vecteurs denses 384d côté terminal, consommation de jetons nulle, peuvent être prévisualisés et enregistrés en tant que répertoire virtuel",
     "ko-KR": "자동 클러스터 파일 항목을 기반으로 엔드 사이드 384 차원 밀도 벡터,제로 토큰 소비,미리보기 및 가상 디렉터리로 저장할 수 있습니다",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(3544-3593)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(3722-3771)"],
     "$id": 19970
   },
   "输入整理引导 Prompt（可选，例如：按年份与财务归类）": {
@@ -1411,7 +1424,7 @@
     "de-DE": "Geben Sie die Aufforderung zur Sortierungshilfe ein (optional, z. B. Klassifizierung nach Jahr und Finanzen)",
     "fr-FR": "Entrez l'invite du guide de classement (facultatif, par exemple: classement par année et finances)",
     "ko-KR": "데이터 정렬 가이드 프롬프트를 입력합니다(선택 사항(예:연도 및 재무 별 분류)",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(3875-3908)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(4053-4086)"],
     "$id": 19971
   },
   "重新聚类": {
@@ -1424,7 +1437,7 @@
     "de-DE": "Formieren",
     "fr-FR": "Regrouper",
     "ko-KR": "재조직",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(4516-4524)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(4694-4702)"],
     "$id": 19972
   },
   "正在分析文件语义并聚类主题...": {
@@ -1437,7 +1450,7 @@
     "de-DE": "Analysieren von Dateisemantik und Clustering-Themen...",
     "fr-FR": "Analyse de la sémantique des fichiers et des sujets de clustering...",
     "ko-KR": "파일 의미 분석 및 클러스터링 주제...",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(4911-4931)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(5089-5109)"],
     "$id": 19973
   },
   "暂无聚类方案，请重试或更换引导词": {
@@ -1450,7 +1463,7 @@
     "de-DE": "Es gibt kein Clusterschema, bitte versuchen Sie es erneut oder ändern Sie das Leitwort",
     "fr-FR": "Il n'y a pas de schéma de clustering, veuillez réessayer ou changer le mot guide",
     "ko-KR": "더 클러스터링 방식은 없다,다시 시도하거나 가이드 단어를 변경하시기 바랍니다",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(5244-5264)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(5422-5442)"],
     "$id": 19974
   },
   "虚拟目录名称": {
@@ -1463,7 +1476,7 @@
     "de-DE": "Name des virtuellen Verzeichnisses",
     "fr-FR": "Nom du répertoire virtuel",
     "ko-KR": "가상 디렉터리 이름",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(5927-5937)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(6105-6115)"],
     "$id": 19975
   },
   "例如：我的智能聚类目录": {
@@ -1476,7 +1489,7 @@
     "de-DE": "Zum Beispiel: Mein Smart Cluster-Verzeichnis",
     "fr-FR": "Par exemple: Mon répertoire de cluster intelligent",
     "ko-KR": "예:내 스마트 클러스터 디렉토리",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(6090-6105)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(6268-6283)"],
     "$id": 19976
   },
   "保存中...": {
@@ -1489,7 +1502,7 @@
     "de-DE": "Einsparung...",
     "fr-FR": "Économiser...",
     "ko-KR": "저장...",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(6630-6640)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(6808-6818)"],
     "$id": 19977
   },
   "保存为虚拟目录": {
@@ -1502,7 +1515,7 @@
     "de-DE": "Als virtuelles Verzeichnis speichern",
     "fr-FR": "Enregistrer en tant que répertoire virtuel",
     "ko-KR": "가상 디렉터리로 저장",
-    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(6644-6655)"],
+    "$files": ["src/renderer/components/organize/HacOrganizeDialog.tsx(6822-6833)"],
     "$id": 19978
   },
   "整理过程中遇到错误": {

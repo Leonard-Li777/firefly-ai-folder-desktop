@@ -10,9 +10,9 @@
     "fr-FR": "ElectronAPI.aiService.initialize n'est pas disponible",
     "ko-KR": "electronAPI.aiService.initialize를 사용할 수 없습니다",
     "$files": [
-      "src/renderer/stores/ai-service-store.ts(4339-4379)",
-      "src/renderer/stores/ai-service-store.ts(7410-7450)",
-      "src/renderer/stores/ai-service-store.ts(10913-10953)"
+      "src/renderer/stores/ai-service-store.ts(4302-4342)",
+      "src/renderer/stores/ai-service-store.ts(7373-7413)",
+      "src/renderer/stores/ai-service-store.ts(10876-10916)"
     ],
     "$id": 5455
   },
@@ -27,9 +27,9 @@
     "fr-FR": "Échec de l'initialisation du service IA",
     "ko-KR": "AI 서비스 초기화 실패",
     "$files": [
-      "src/renderer/stores/ai-service-store.ts(5794-5807)",
-      "src/renderer/stores/ai-service-store.ts(9241-9254)",
-      "src/renderer/stores/ai-service-store.ts(12894-12907)"
+      "src/renderer/stores/ai-service-store.ts(5757-5770)",
+      "src/renderer/stores/ai-service-store.ts(9204-9217)",
+      "src/renderer/stores/ai-service-store.ts(12685-12698)"
     ],
     "$id": 5458
   },
@@ -44,10 +44,10 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/renderer/stores/ai-service-store.ts(6600-6608)",
-      "src/renderer/stores/ai-service-store.ts(10053-10061)",
-      "src/renderer/stores/ai-service-store.ts(13708-13716)",
-      "src/renderer/stores/ai-service-store.ts(17239-17247)",
+      "src/renderer/stores/ai-service-store.ts(6563-6571)",
+      "src/renderer/stores/ai-service-store.ts(10016-10024)",
+      "src/renderer/stores/ai-service-store.ts(13499-13507)",
+      "src/renderer/stores/ai-service-store.ts(17030-17038)",
       "src/renderer/stores/tier-store.ts(4953-4961)"
     ],
     "$id": 8872
@@ -62,7 +62,7 @@
     "de-DE": "ElectronAPI.aiService.onModelChanged nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.onModelChanged n'est pas disponible",
     "ko-KR": "electronAPI.aiService.onModelChanged 사용 불가",
-    "$files": ["src/renderer/stores/ai-service-store.ts(14488-14532)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(14279-14323)"],
     "$id": 8128
   },
   "模型切换失败": {
@@ -75,7 +75,7 @@
     "de-DE": "Modellwechsel fehlgeschlagen",
     "fr-FR": "Échec du changement de modèle",
     "ko-KR": "모델 전환 실패",
-    "$files": ["src/renderer/stores/ai-service-store.ts(16390-16400)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(16181-16191)"],
     "$id": 5462
   },
   "更新配置失败": {
@@ -88,7 +88,7 @@
     "de-DE": "Aktualisierung der Konfiguration fehlgeschlagen",
     "fr-FR": "Échec de la mise à jour de la configuration",
     "ko-KR": "구성 업데이트 실패",
-    "$files": ["src/renderer/stores/config-store.ts(1987-1997)"],
+    "$files": ["src/renderer/stores/config-store.ts(2018-2028)"],
     "$id": 5465
   },
   "更新配置项失败": {
@@ -101,7 +101,7 @@
     "de-DE": "Aktualisierung der Konfigurationseinstellungen fehlgeschlagen",
     "fr-FR": "Échec de la mise à jour des paramètres de configuration",
     "ko-KR": "구성 항목 업데이트 실패",
-    "$files": ["src/renderer/stores/config-store.ts(2717-2728)"],
+    "$files": ["src/renderer/stores/config-store.ts(2748-2759)"],
     "$id": 5466
   },
   "获取配置失败": {
@@ -114,7 +114,7 @@
     "de-DE": "Abrufen der Konfiguration fehlgeschlagen",
     "fr-FR": "Échec de la récupération de la configuration",
     "ko-KR": "구성 가져오기 실패",
-    "$files": ["src/renderer/stores/config-store.ts(3232-3242)"],
+    "$files": ["src/renderer/stores/config-store.ts(3263-3273)"],
     "$id": 5467
   },
   "工作区": {
@@ -143,57 +143,31 @@
     "$files": ["src/renderer/stores/settings-store.ts(3151-3164)"],
     "$id": 3302
   },
-  "模型管理": {
-    "en-US": "Model management",
-    "es-ES": "Gestión de modelos",
-    "ar-EG": "إدارة النموذج",
-    "pt-PT": "Gerenciamento de modelo",
-    "ru-RU": "Управление моделями",
-    "ja-JP": "モデル管理",
-    "de-DE": "Modellmanagement",
-    "fr-FR": "Gestion des modèles",
-    "ko-KR": "모델 관리",
-    "$files": ["src/renderer/stores/settings-store.ts(3224-3232)"],
-    "$id": 7666
+  "高级AI引擎配置": {
+    "en-US": "高级AI引擎配置",
+    "es-ES": "高级AI引擎配置",
+    "ar-EG": "高级AI引擎配置",
+    "pt-PT": "高级AI引擎配置",
+    "ru-RU": "高级AI引擎配置",
+    "ja-JP": "高级AI引擎配置",
+    "de-DE": "高级AI引擎配置",
+    "fr-FR": "Configuration du moteur IA avancé",
+    "ko-KR": "高级AI引擎配置",
+    "$files": ["src/renderer/stores/settings-store.ts(3294-3306)"],
+    "$id": 19417
   },
-  "本地/云端模型配置": {
-    "en-US": "Local/Cloud Model Configuration",
-    "es-ES": "Configuración de modelos locales/en la nube",
-    "ar-EG": "إعدادات النماذج المحلية/السحابية",
-    "pt-PT": "Configuração de modelos locais/na nuvem",
-    "ru-RU": "Конфигурация локальных и облачных моделей",
-    "ja-JP": "ローカル/クラウドモデル設定",
-    "de-DE": "Lokale/Cloud-Modellkonfiguration",
-    "fr-FR": "Configuration des modèles locaux/cloud",
-    "ko-KR": "로컬/클라우드 모델 구성",
-    "$files": ["src/renderer/stores/settings-store.ts(3278-3291)"],
-    "$id": 3299
-  },
-  "AI引擎配置": {
-    "en-US": "AI engine configuration",
-    "es-ES": "Configuración del motor de IA",
-    "ar-EG": "تكوين محرك الذكاء الاصطناعي",
-    "pt-PT": "Configuração do mecanismo de IA",
-    "ru-RU": "Конфигурация ИИ-движка",
-    "ja-JP": "AIエンジン構成",
-    "de-DE": "Konfiguration der KI-Engine",
-    "fr-FR": "Configuration du moteur IA",
-    "ko-KR": "AI 엔진 구성",
-    "$files": ["src/renderer/stores/settings-store.ts(3359-3369)"],
-    "$id": 7667
-  },
-  "引擎切换、思考模式": {
-    "en-US": "Engine switching, thinking mode",
-    "es-ES": "Cambio de motor, modo de pensamiento.",
-    "ar-EG": "تبديل المحرك، وضع التفكير",
-    "pt-PT": "Troca de motor, modo de pensamento",
-    "ru-RU": "Переключение двигателя, режим мышления",
-    "ja-JP": "エンジン切り替え、思考モード",
-    "de-DE": "Motorschaltung, Denkmodus",
-    "fr-FR": "Changement de moteur, mode réflexion",
-    "ko-KR": "엔진 전환, 사고 모드",
-    "$files": ["src/renderer/stores/settings-store.ts(3421-3434)"],
-    "$id": 7816
+  "生效引擎选择、云端配置与思考模式": {
+    "en-US": "生效引擎选择、云端配置与思考模式",
+    "es-ES": "生效引擎选择、云端配置与思考模式",
+    "ar-EG": "生效引擎选择、云端配置与思考模式",
+    "pt-PT": "生效引擎选择、云端配置与思考模式",
+    "ru-RU": "生效引擎选择、云端配置与思考模式",
+    "ja-JP": "生效引擎选择、云端配置与思考模式",
+    "de-DE": "生效引擎选择、云端配置与思考模式",
+    "fr-FR": "Sélection du moteur actif, configuration du cloud et mode de raisonnement",
+    "ko-KR": "生效引擎选择、云端配置与思考模式",
+    "$files": ["src/renderer/stores/settings-store.ts(3358-3378)"],
+    "$id": 19418
   },
   "分析设置": {
     "en-US": "Analysis settings",
@@ -205,7 +179,7 @@
     "de-DE": "Analyseeinstellungen  ",
     "fr-FR": "Paramètres d'analyse",
     "ko-KR": "분석 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(3494-3502)"],
+    "$files": ["src/renderer/stores/settings-store.ts(3438-3446)"],
     "$id": 5487
   },
   "忽略规则和分析参数": {
@@ -218,7 +192,7 @@
     "de-DE": "Ignorierregeln und Analyseparameter",
     "fr-FR": "Règles d'ignorance et paramètres d'analyse",
     "ko-KR": "무시 규칙 및 분석 매개변수",
-    "$files": ["src/renderer/stores/settings-store.ts(3547-3560)"],
+    "$files": ["src/renderer/stores/settings-store.ts(3491-3504)"],
     "$id": 3300
   },
   "风格和语言": {
@@ -231,7 +205,7 @@
     "de-DE": "Stil und Sprache",
     "fr-FR": "Style et langage",
     "ko-KR": "스타일과 언어",
-    "$files": ["src/renderer/stores/settings-store.ts(3621-3630)"],
+    "$files": ["src/renderer/stores/settings-store.ts(3565-3574)"],
     "$id": 4272
   },
   "外观、语言和主题": {
@@ -244,7 +218,7 @@
     "de-DE": "Aussehen, Sprache und Design",
     "fr-FR": "Apparence, langue et thèmes",
     "ko-KR": "모습, 언어 및 테마",
-    "$files": ["src/renderer/stores/settings-store.ts(3673-3685)"],
+    "$files": ["src/renderer/stores/settings-store.ts(3617-3629)"],
     "$id": 3295
   },
   "列表设置": {
@@ -257,7 +231,7 @@
     "de-DE": "Listeneinstellungen",
     "fr-FR": "Paramètres de la liste",
     "ko-KR": "목록 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(3749-3757)"],
+    "$files": ["src/renderer/stores/settings-store.ts(3693-3701)"],
     "$id": 4273
   },
   "文件列表显示项": {
@@ -270,7 +244,7 @@
     "de-DE": "Anzeigeoptionen für Dateilisten",
     "fr-FR": "Éléments affichés dans la liste des fichiers",
     "ko-KR": "파일 목록 표시 항목",
-    "$files": ["src/renderer/stores/settings-store.ts(3802-3813)"],
+    "$files": ["src/renderer/stores/settings-store.ts(3746-3757)"],
     "$id": 3297
   },
   "保存设置失败": {
@@ -283,7 +257,7 @@
     "de-DE": "Speichern der Einstellungen fehlgeschlagen",
     "fr-FR": "Échec de la sauvegarde des paramètres",
     "ko-KR": "설정 저장 실패",
-    "$files": ["src/renderer/stores/settings-store.ts(6934-6944)"],
+    "$files": ["src/renderer/stores/settings-store.ts(6878-6888)"],
     "$id": 5491
   },
   "确认删除此工作目录？": {
@@ -296,7 +270,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich löschen?",
     "fr-FR": "Confirmer la suppression de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(9719-9733)"],
+    "$files": ["src/renderer/stores/settings-store.ts(9663-9677)"],
     "$id": 3303
   },
   "确认重置此工作目录？": {
@@ -309,7 +283,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich zurücksetzen?",
     "fr-FR": "Confirmer la réinitialisation de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(10041-10055)"],
+    "$files": ["src/renderer/stores/settings-store.ts(9985-9999)"],
     "$id": 3304
   },
   "不支持的语言设置": {
@@ -322,7 +296,7 @@
     "de-DE": "Nicht unterstützte Spracheinstellung",
     "fr-FR": "Paramètre de langue non pris en charge",
     "ko-KR": "지원되지 않는 언어 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(10510-10522)"],
+    "$files": ["src/renderer/stores/settings-store.ts(10454-10466)"],
     "$id": 5501
   },
   "交易失败，已归还扣币，原因：{reason}": {

@@ -1073,7 +1073,7 @@
         "description": "Чрезвычайно быстрая модель рассуждения SenseTime",
         "free": false,
         "company": "SenseTime",
-        "parameterSize": "Неизвестно\r",
+        "parameterSize": "неизвестный",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [
@@ -1086,7 +1086,7 @@
         "description": "Модель быстрого вывода DeepSeek, размещенная на SenseTime",
         "free": false,
         "company": "SenseTime",
-        "parameterSize": "Неизвестно\r",
+        "parameterSize": "неизвестный",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [

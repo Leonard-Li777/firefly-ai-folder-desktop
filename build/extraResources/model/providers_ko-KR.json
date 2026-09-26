@@ -1073,7 +1073,7 @@
         "description": "SenseTime의 매우 빠른 추론 모델",
         "free": false,
         "company": "센스타임",
-        "parameterSize": "알 수 없음",
+        "parameterSize": "알려지지 않은",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [
@@ -1086,7 +1086,7 @@
         "description": "SenseTime에서 호스팅하는 DeepSeek 빠른 추론 모델",
         "free": false,
         "company": "센스타임",
-        "parameterSize": "알 수 없음",
+        "parameterSize": "알려지지 않은",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [

@@ -132,7 +132,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(30647-30676)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(30777-30806)"],
     "$id": 11304
   },
   "分析超时": {
@@ -145,7 +145,7 @@
     "de-DE": "Analyse-Timeout",
     "fr-FR": "Délai d'analyse",
     "ko-KR": "분석 시간 초과",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(32317-32325)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(32447-32455)"],
     "$id": 2976
   },
   "建议切换低显存需求的AI模型": {
@@ -159,9 +159,9 @@
     "fr-FR": "Il est recommandé de passer à un modèle d'IA avec de faibles besoins en mémoire",
     "ko-KR": "메모리 요구 사항이 낮은 AI 모델로 전환하는 것이 좋습니다.",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(32344-32362)",
+      "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(32474-32492)",
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10606-10624)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(76844-76862)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(79069-79087)"
     ],
     "$id": 2977
   },
@@ -175,7 +175,7 @@
     "de-DE": "Gehen Sie zu den Einstellungen",
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(32454-32462)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(32637-32645)"],
     "$id": 4521
   },
   "配额已用尽：已分析 {count} 个私有目录文件，当前配额为 {quota} 个文件。可以通过邀请好友解锁更多额度。": {
@@ -190,7 +190,7 @@
     "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3448-3529)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(18076-18157)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(18180-18261)"
     ],
     "$id": 11053
   },
@@ -660,8 +660,8 @@
     "fr-FR": "Base de données non initialisée",
     "ko-KR": "데이터베이스가 초기화되지 않았습니다",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(531-542)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(1082-1093)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(540-551)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(1220-1231)",
       "src/electron/runtime-services/analysis-queue-service/file-processor/save-local-cache-result.ts(1356-1367)"
     ],
     "$id": 8130
@@ -676,7 +676,7 @@
     "de-DE": "Unbekannte Datei",
     "fr-FR": "Fichier inconnu",
     "ko-KR": "알 수 없는 파일",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(740-748)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(749-757)"],
     "$id": 8969
   },
   "空文件": {
@@ -690,9 +690,9 @@
     "fr-FR": "Fichier vide",
     "ko-KR": "빈 파일",
     "$files": [
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(968-975)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2690-2697)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(3328-3335)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(977-984)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2699-2706)",
+      "src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(3337-3344)"
     ],
     "$id": 8970
   },
@@ -706,7 +706,7 @@
     "de-DE": "Dateigröße beträgt 0",
     "fr-FR": "Taille du fichier égale à zéro",
     "ko-KR": "파일 크기가 0임",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2836-2846)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/handle-empty-file.ts(2845-2855)"],
     "$id": 8971
   },
   "建议减少 PDF 分析页数或关闭 OCR 功能": {
@@ -719,7 +719,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(76764-76791)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(79110-79137)"],
     "$id": 11054
   },
   "AI 服务未就绪": {
@@ -748,7 +748,7 @@
     "de-DE": "Autor",
     "fr-FR": "Auteur",
     "ko-KR": "작가",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(13020-13026)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(13060-13066)"],
     "$id": 19944
   },
   "内容标签": {
@@ -761,7 +761,7 @@
     "de-DE": "Inhalts-Tags",
     "fr-FR": "Balises de contenu",
     "ko-KR": "콘텐츠 태그",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(13064-13072)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(13104-13112)"],
     "$id": 19945
   },
   "无法获取文件路径记录": {

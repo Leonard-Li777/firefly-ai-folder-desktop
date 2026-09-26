@@ -1073,7 +1073,7 @@
         "description": "Das extrem schnelle Argumentationsmodell von SenseTime",
         "free": false,
         "company": "SenseTime",
-        "parameterSize": "Unbekannt\r",
+        "parameterSize": "Unbekannt",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [
@@ -1086,7 +1086,7 @@
         "description": "DeepSeek-Schnellinferenzmodell, gehostet von SenseTime",
         "free": false,
         "company": "SenseTime",
-        "parameterSize": "Unbekannt\r",
+        "parameterSize": "Unbekannt",
         "isMultiModal": false,
         "contextLength": "32k",
         "capabilities": [

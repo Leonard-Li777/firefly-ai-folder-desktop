@@ -10,7 +10,7 @@ import { t } from '@app/languages'
 export const MODEL_CONFIG_SOURCE = () => ({
   version: '2.0.0',
   language: 'zh',
-  lastUpdated: '2026-05-23',
+  lastUpdated: '2026-09-26',
   models: [
     {
       id: 'unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL',
@@ -755,6 +755,58 @@ export const MODEL_CONFIG_SOURCE = () => ({
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 4096
+      }
+    },
+    {
+      // 模型文件位于仓库根目录，同目录含唯一投影文件 mmproj-WeMM-Embedding-2B-BF16.gguf
+      // totalSize = 主模型 (1,559,772,320 B) + 最小投影文件 (671,373,120 B) = 2.08GB
+      id: 'huangyusi/WeMM-Embedding-2B-GGUF:Q4_K_M',
+      name: `WeMM-Embedding 2B (${t('多模态嵌入')})`,
+      company: 'huangyusi',
+      parameterSize: '2B',
+      intelligenceLevel: 2,
+      totalSize: '2.08GB',
+      recommended: false,
+      description: t('WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。'),
+      source: 'modelscope',
+      quantization: 'Q4_K_M',
+      isMultiModal: true,
+      contextLength: 32768,
+      capabilities: ['TEXT', 'IMAGE'],
+      performance: {
+        speed: 'fast',
+        quality: 'medium'
+      },
+      tags: [t('嵌入'), t('多模态'), t('低显存')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 512
+      }
+    },
+    {
+      // 同目录含唯一投影文件 mmproj-WeMM-Embedding-2B-BF16.gguf
+      // totalSize = 主模型 (1,559,772,320 B) + 最小投影文件 (671,373,120 B) = 2.08GB
+      id: 'Weidows/WeMM-Embedding-2B-GGUF:Q4_K_M',
+      name: `WeMM-Embedding 2B (${t('多模态嵌入')})`,
+      company: 'Weidows',
+      parameterSize: '2B',
+      intelligenceLevel: 2,
+      totalSize: '2.08GB',
+      recommended: false,
+      description: t('WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。'),
+      source: 'huggingface',
+      quantization: 'Q4_K_M',
+      isMultiModal: true,
+      contextLength: 32768,
+      capabilities: ['TEXT', 'IMAGE'],
+      performance: {
+        speed: 'fast',
+        quality: 'medium'
+      },
+      tags: [t('嵌入'), t('多模态'), t('低显存')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 512
       }
     }
   ]

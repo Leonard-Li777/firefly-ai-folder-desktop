@@ -128,7 +128,7 @@
     "de-DE": "Motor wechseln",
     "fr-FR": "Changer de moteur",
     "ko-KR": "스위치 엔진",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(5601-5609)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6489-6497)"],
     "$id": 7979
   },
   "配置云端模型": {
@@ -141,7 +141,7 @@
     "de-DE": "Cloud-Modell konfigurieren",
     "fr-FR": "Configurer le modèle cloud",
     "ko-KR": "클라우드 모델 구성",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(5886-5896)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6774-6784)"],
     "$id": 10189
   },
   "升级显卡驱动": {
@@ -154,10 +154,7 @@
     "de-DE": "Aktualisieren Sie den Grafikkartentreiber",
     "fr-FR": "Mettre à niveau le pilote de la carte graphique",
     "ko-KR": "그래픽 카드 드라이버 업그레이드",
-    "$files": [
-      "src/renderer/components/ai/AIServiceErrorDialog.tsx(6318-6328)",
-      "src/renderer/components/ai/GpuDriverOverlay.tsx(4053-4063)"
-    ],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7206-7216)"],
     "$id": 4652
   },
   "重新部署 AI 引擎": {
@@ -170,7 +167,7 @@
     "de-DE": "Stellen Sie die KI-Engine erneut bereit",
     "fr-FR": "Redéployer le moteur IA",
     "ko-KR": "AI 엔진 재배치",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6621-6635)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7509-7523)"],
     "$id": 4629
   },
   "管理设置": {
@@ -183,7 +180,7 @@
     "de-DE": "Einstellungen verwalten",
     "fr-FR": "Paramètres de gestion",
     "ko-KR": "관리 설정",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7127-7135)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8015-8023)"],
     "$id": 3837
   },
   "去配置 API 密钥": {
@@ -196,7 +193,7 @@
     "de-DE": "API-Schlüssel konfigurieren",
     "fr-FR": "Aller configurer la clé API",
     "ko-KR": "API 키를 구성하러 가기",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7217-7231)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8105-8119)"],
     "$id": 4357
   },
   "管理模型": {
@@ -209,7 +206,7 @@
     "de-DE": "Verwaltungsmodell",
     "fr-FR": "Modèle de gestion\r",
     "ko-KR": "관리 모델",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7301-7309)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8189-8197)"],
     "$id": 3841
   },
   "重试启动": {
@@ -222,7 +219,7 @@
     "de-DE": "Versuchen Sie den Start erneut",
     "fr-FR": "Réessayez le démarrage",
     "ko-KR": "시동 재시도",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7670-7678)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8558-8566)"],
     "$id": 4470
   },
   "查看设置": {
@@ -235,34 +232,47 @@
     "de-DE": "Einstellungen anzeigen",
     "fr-FR": "Afficher les paramètres",
     "ko-KR": "설정 보기",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7851-7859)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8739-8747)"],
     "$id": 4471
   },
-  "切换简单分类": {
-    "en-US": "Switch simple categories",
-    "es-ES": "Cambiar categorías simples",
-    "ar-EG": "تبديل الفئات البسيطة",
-    "pt-PT": "Alternar categorias simples",
-    "ru-RU": "Переключение простых категорий",
-    "ja-JP": "シンプルカテゴリーの切り替え",
-    "de-DE": "Einfache Kategorien wechseln",
-    "fr-FR": "Changer de catégorie simple",
-    "ko-KR": "단순 카테고리 전환",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8027-8037)"],
-    "$id": 9892
+  "在引擎中查看": {
+    "en-US": "View in engine",
+    "es-ES": "Ver en el motor",
+    "ar-EG": "عرض في المحرك",
+    "pt-PT": "Verificar no motor",
+    "ru-RU": "Просмотр в движке",
+    "ja-JP": "エンジン内で表示",
+    "de-DE": "In the engine view",
+    "fr-FR": "View in the engine",
+    "ko-KR": "엔진에서 보기",
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8982-8992)"],
+    "$id": 19419
   },
-  "简单分类模式不依赖AI且高效，可快速完成文件分类和元数据提取": {
-    "en-US": "The simple classification mode does not rely on AI and is efficient, and can quickly complete file classification and metadata extraction.",
-    "es-ES": "El modo de clasificación simple no depende de la IA y es eficiente, y puede completar rápidamente la clasificación de archivos y la extracción de metadatos.",
-    "ar-EG": "لا يعتمد وضع التصنيف البسيط على الذكاء الاصطناعي وهو فعال ويمكنه إكمال تصنيف الملفات واستخراج البيانات الوصفية بسرعة.",
-    "pt-PT": "O modo de classificação simples não depende de IA e é eficiente, podendo concluir rapidamente a classificação de arquivos e a extração de metadados.",
-    "ru-RU": "Простой режим классификации не зависит от искусственного интеллекта, эффективен и позволяет быстро выполнить классификацию файлов и извлечение метаданных.",
-    "ja-JP": "AIに依存しない簡易分類モードは効率的で、ファイルの分類とメタデータの抽出を迅速に完了できます。",
-    "de-DE": "Der einfache Klassifizierungsmodus basiert nicht auf KI, ist effizient und kann die Dateiklassifizierung und Metadatenextraktion schnell abschließen.",
-    "fr-FR": "Le mode de classification simple ne repose pas sur l'IA et est efficace, et peut terminer rapidement la classification des fichiers et l'extraction des métadonnées.",
-    "ko-KR": "단순 분류 모드는 AI에 의존하지 않고 효율적이며 파일 분류 및 메타데이터 추출을 빠르게 완료할 수 있습니다.",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8467-8501)"],
-    "$id": 10191
+  "切换标准分析": {
+    "en-US": "Toggle Standard Analysis",
+    "es-ES": "Alternar análisis estándar",
+    "ar-EG": "التبديل إلى التحليل القياسي",
+    "pt-PT": "Alternar para a análise padrão",
+    "ru-RU": "Переключение на стандартный анализ",
+    "ja-JP": "標準分析に切り替え",
+    "de-DE": "Switch to Standard Analysis",
+    "fr-FR": "Toggle Standard Analysis",
+    "ko-KR": "표준 분석으로 전환",
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9398-9408)"],
+    "$id": 19420
+  },
+  "标准分析模式由基础AI引擎处理，高效完成文件标签、智能文件名和摘要": {
+    "en-US": "Standard Analysis mode is processed by the Base AI engine, efficiently completing file tagging, smart file naming, and summarization",
+    "es-ES": "El modo de análisis estándar lo procesa el motor de IA base, completando de forma eficiente la etiquetación de archivos, el nombre de archivo inteligente y el resumen",
+    "ar-EG": "يتم تشغيل وضع التحليل القياسي من قبل محرك الذكاء الاصطناعي الأساسي، مما يحقق إنجازاً فعّالاً لوسم الملفات وتوليد أسماء ملفات ذكية وملخصات",
+    "pt-PT": "O modo de análise padrão é tratado pelo motor de IA básico, concluído de forma eficiente com etiquetas de ficheiros, nomes de ficheiros inteligentes e resumos",
+    "ru-RU": "Режим стандартного анализа обрабатывается базовым ИИ-движком, эффективно выполняя маркировк�� файлов, интеллигентные имена файлов и резюме",
+    "ja-JP": "標準分析モードは基盤AIエンジンで処理され、ファイルタグ付け、スマートなファイル名と要約を効率的に完了します。",
+    "de-DE": "Standard Analysis mode is processed by the base AI engine, efficiently completing file tagging, smart filename generation, and summarization",
+    "fr-FR": "The standard analysis mode is handled by the basic AI engine, efficiently completing file tagging, smart filenames, and summarization",
+    "ko-KR": "표준 분석 모드는 기본 AI 엔진으로 처리되며, 파일 태그, 지능형 파일 이름 및 요약을 효율적으로 완성합니다",
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9838-9875)"],
+    "$id": 19421
   },
   "错误详情": {
     "en-US": "Error details",
@@ -274,7 +284,7 @@
     "de-DE": "Fehlerdetails",
     "fr-FR": "Détails de l'erreur",
     "ko-KR": "오류 세부정보",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(10030-10038)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(11404-11412)"],
     "$id": 4472
   },
   "详细信息: ": {
@@ -287,7 +297,7 @@
     "de-DE": "Details:",
     "fr-FR": "Détails :\r",
     "ko-KR": "자세한 정보:",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(11022-11032)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(12396-12406)"],
     "$id": 3851
   },
   "系统诊断信息": {
@@ -300,7 +310,7 @@
     "de-DE": "Informationen zur Systemdiagnose",
     "fr-FR": "Informations de diagnostic du système",
     "ko-KR": "시스템 진단 정보",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(11579-11589)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(12953-12963)"],
     "$id": 4473
   },
   "系统内存": {
@@ -313,7 +323,7 @@
     "de-DE": "Systemspeicher",
     "fr-FR": "Mémoire système",
     "ko-KR": "시스템 메모리",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(11890-11898)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13264-13272)"],
     "$id": 4474
   },
   "可用显存": {
@@ -326,7 +336,7 @@
     "de-DE": "Verfügbarer Videospeicher",
     "fr-FR": "Mémoire vidéo disponible",
     "ko-KR": "사용 가능한 비디오 메모리",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(12291-12299)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13665-13673)"],
     "$id": 4475
   },
   "模型文件": {
@@ -339,7 +349,7 @@
     "de-DE": "Modelldatei",
     "fr-FR": "Fichier modèle",
     "ko-KR": "모델 파일",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(12695-12703)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14069-14077)"],
     "$id": 4476
   },
   "存在": {
@@ -352,7 +362,7 @@
     "de-DE": "Vorhanden",
     "fr-FR": "Existant",
     "ko-KR": "존재함",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13080-13086)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14454-14460)"],
     "$id": 3856
   },
   "缺失": {
@@ -365,7 +375,7 @@
     "de-DE": "Fehlt",
     "fr-FR": "Manquant",
     "ko-KR": "누락됨",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13090-13096)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14464-14470)"],
     "$id": 3857
   },
   "端口状态": {
@@ -378,7 +388,7 @@
     "de-DE": "Portstatus",
     "fr-FR": "Statut du port",
     "ko-KR": "포트 상태",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13358-13366)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14732-14740)"],
     "$id": 4477
   },
   "可用": {
@@ -391,7 +401,7 @@
     "de-DE": "Verfügbar",
     "fr-FR": "Disponible",
     "ko-KR": "사용 가능",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13739-13745)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15113-15119)"],
     "$id": 3859
   },
   "被占用": {
@@ -404,7 +414,7 @@
     "de-DE": "Belegt",
     "fr-FR": "Occupé",
     "ko-KR": "사용 중",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13749-13756)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15123-15130)"],
     "$id": 3860
   },
   "网络连接": {
@@ -417,7 +427,7 @@
     "de-DE": "Netzwerkverbindung",
     "fr-FR": "Connexion réseau",
     "ko-KR": "네트워크 연결",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14024-14032)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15398-15406)"],
     "$id": 4478
   },
   "正常": {
@@ -430,7 +440,7 @@
     "de-DE": "Normal",
     "fr-FR": "Normale",
     "ko-KR": "정상",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14417-14423)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15791-15797)"],
     "$id": 3862
   },
   "异常": {
@@ -443,7 +453,7 @@
     "de-DE": "Fehlerhaft",
     "fr-FR": "Anormale",
     "ko-KR": "비정상",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14427-14433)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15801-15807)"],
     "$id": 3863
   },
   "建议解决方案": {
@@ -456,98 +466,7 @@
     "de-DE": "Empfohlene Lösung",
     "fr-FR": "Solution recommandée",
     "ko-KR": "권장 해결 방안",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14846-14856)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(16220-16230)"],
     "$id": 3864
-  },
-  "正在配置兼容模式运行环境，请稍候...": {
-    "en-US": "Configuring compatibility mode running environment, please wait...",
-    "es-ES": "Configurando el modo de compatibilidad del entorno de ejecución, espere...",
-    "ar-EG": "جارٍ تكوين بيئة تشغيل وضع التوافق، يرجى الانتظار...",
-    "pt-PT": "Configurando o ambiente de execução do modo de compatibilidade, aguarde...",
-    "ru-RU": "Настройка рабочей среды в режиме совместимости, подождите...",
-    "ja-JP": "互換モード実行環境を構成しています。お待ちください...",
-    "de-DE": "Die Ausführungsumgebung für den Kompatibilitätsmodus wird konfiguriert. Bitte warten ...",
-    "fr-FR": "Configuration de l'environnement d'exécution du mode de compatibilité, veuillez patienter...",
-    "ko-KR": "호환 모드 실행 환경을 구성 중입니다. 잠시 기다려 주십시오...",
-    "$files": ["src/renderer/components/ai/GpuDriverOverlay.tsx(2399-2422)"],
-    "$id": 4647
-  },
-  "显卡驱动需要升级": {
-    "en-US": "Graphics card driver needs to be upgraded",
-    "es-ES": "Es necesario actualizar el controlador de la tarjeta gráfica",
-    "ar-EG": "يحتاج برنامج تشغيل بطاقة الرسومات إلى الترقية",
-    "pt-PT": "O driver da placa gráfica precisa ser atualizado",
-    "ru-RU": "Необходимо обновить драйвер видеокарты",
-    "ja-JP": "グラフィックカードドライバーをアップグレードする必要がある",
-    "de-DE": "Der Grafikkartentreiber muss aktualisiert werden",
-    "fr-FR": "Le pilote de la carte graphique doit être mis à niveau",
-    "ko-KR": "그래픽 카드 드라이버를 업그레이드해야 합니다",
-    "$files": ["src/renderer/components/ai/GpuDriverOverlay.tsx(3101-3113)"],
-    "$id": 4648
-  },
-  "检测到显卡：": {
-    "en-US": "Graphics card detected:",
-    "es-ES": "Tarjeta gráfica detectada:",
-    "ar-EG": "تم اكتشاف بطاقة الرسومات:",
-    "pt-PT": "Placa gráfica detectada:",
-    "ru-RU": "Обнаружена видеокарта:",
-    "ja-JP": "グラフィックス カードが検出されました:",
-    "de-DE": "Grafikkarte erkannt:",
-    "fr-FR": "Carte graphique détectée :",
-    "ko-KR": "감지된 그래픽 카드:",
-    "$files": ["src/renderer/components/ai/GpuDriverOverlay.tsx(3337-3347)"],
-    "$id": 4649
-  },
-  "目前使用兼容模式，能发挥您显卡70% AI算力，显卡驱动需要升级，才能发挥满血性能": {
-    "en-US": "Currently using compatibility mode, 70% of the AI ​​computing power of your graphics card can be used. The graphics card driver needs to be upgraded to achieve full performance.",
-    "es-ES": "Actualmente, al utilizar el modo de compatibilidad, se puede utilizar el 70% de la potencia informática de IA de su tarjeta gráfica. Es necesario actualizar el controlador de la tarjeta gráfica para lograr el máximo rendimiento.",
-    "ar-EG": "باستخدام وضع التوافق حاليًا، يمكن استخدام 70% من قوة حوسبة الذكاء الاصطناعي لبطاقة الرسومات الخاصة بك. يحتاج برنامج تشغيل بطاقة الرسومات إلى الترقية لتحقيق الأداء الكامل.",
-    "pt-PT": "Atualmente usando o modo de compatibilidade, 70% do poder de computação AI da sua placa gráfica pode ser usado. O driver da placa gráfica precisa ser atualizado para atingir desempenho total.",
-    "ru-RU": "В настоящее время в режиме совместимости можно использовать 70% вычислительной мощности AI вашей видеокарты. Для достижения полной производительности необходимо обновить драйвер видеокарты.",
-    "ja-JP": "現在互換モードを使用すると、グラフィックス カードの AI 計算能力の 70% を使用できます。最大限のパフォーマンスを実現するには、グラフィック カード ドライバーをアップグレードする必要があります。",
-    "de-DE": "Im Kompatibilitätsmodus können derzeit 70 % der KI-Rechenleistung Ihrer Grafikkarte genutzt werden. Um die volle Leistung zu erreichen, muss der Grafikkartentreiber aktualisiert werden.",
-    "fr-FR": "En utilisant actuellement le mode de compatibilité, 70 % de la puissance de calcul IA de votre carte graphique peut être utilisée. Le pilote de la carte graphique doit être mis à niveau pour obtenir toutes les performances.",
-    "ko-KR": "현재 호환 모드를 사용하면 그래픽 카드의 AI 컴퓨팅 성능의 70%를 사용할 수 있습니다. 완전한 성능을 얻으려면 그래픽 카드 드라이버를 업그레이드해야 합니다.",
-    "$files": ["src/renderer/components/ai/GpuDriverOverlay.tsx(3412-3457)"],
-    "$id": 4630
-  },
-  "强烈建议你升级显卡驱动后重启电脑和应用": {
-    "en-US": "It is strongly recommended that you upgrade your graphics card driver and restart your computer and applications.",
-    "es-ES": "Se recomienda encarecidamente que actualice el controlador de su tarjeta gráfica y reinicie su computadora y sus aplicaciones.",
-    "ar-EG": "يوصى بشدة بترقية برنامج تشغيل بطاقة الرسومات الخاصة بك وإعادة تشغيل الكمبيوتر والتطبيقات.",
-    "pt-PT": "É altamente recomendável que você atualize o driver da placa gráfica e reinicie o computador e os aplicativos.",
-    "ru-RU": "Настоятельно рекомендуется обновить драйвер видеокарты и перезагрузить компьютер и приложения.",
-    "ja-JP": "グラフィックス カード ドライバーをアップグレードし、コンピューターとアプリケーションを再起動することを強くお勧めします。",
-    "de-DE": "Es wird dringend empfohlen, Ihren Grafikkartentreiber zu aktualisieren und Ihren Computer und Ihre Anwendungen neu zu starten.",
-    "fr-FR": "Il est fortement recommandé de mettre à niveau le pilote de votre carte graphique et de redémarrer votre ordinateur et vos applications.",
-    "ko-KR": "그래픽 카드 드라이버를 업그레이드하고 컴퓨터와 응용 프로그램을 다시 시작하는 것이 좋습니다.",
-    "$files": ["src/renderer/components/ai/GpuDriverOverlay.tsx(3745-3768)"],
-    "$id": 4651
-  },
-  "我已升级，切换高性能模式": {
-    "en-US": "I have upgraded and switched to high performance mode",
-    "es-ES": "He actualizado y cambiado al modo de alto rendimiento.",
-    "ar-EG": "لقد قمت بالترقية والتحول إلى وضع الأداء العالي",
-    "pt-PT": "Eu atualizei e mudei para o modo de alto desempenho",
-    "ru-RU": "Я обновил и переключился в режим высокой производительности",
-    "ja-JP": "アップグレードして高パフォーマンス モードに切り替えました",
-    "de-DE": "Ich habe ein Upgrade durchgeführt und in den Hochleistungsmodus gewechselt",
-    "fr-FR": "J'ai mis à niveau et suis passé en mode hautes performances",
-    "ko-KR": "업그레이드하고 고성능 모드로 전환했습니다",
-    "$files": ["src/renderer/components/ai/GpuDriverOverlay.tsx(4280-4296)"],
-    "$id": 4653
-  },
-  "临时降级为兼容模式": {
-    "en-US": "Temporarily downgrade to compatibility mode",
-    "es-ES": "Bajar temporalmente al modo de compatibilidad",
-    "ar-EG": "الرجوع مؤقتًا إلى وضع التوافق",
-    "pt-PT": "Downgrade temporário para modo de compatibilidade",
-    "ru-RU": "Временно перейти в режим совместимости",
-    "ja-JP": "一時的に互換モードにダウングレードする",
-    "de-DE": "Vorübergehend auf den Kompatibilitätsmodus herunterstufen",
-    "fr-FR": "Passer temporairement en mode de compatibilité",
-    "ko-KR": "일시적으로 호환 모드로 다운그레이드",
-    "$files": ["src/renderer/components/ai/GpuDriverOverlay.tsx(4486-4499)"],
-    "$id": 4654
   }
 }
