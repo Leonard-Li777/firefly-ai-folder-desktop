@@ -258,7 +258,7 @@ export class TagTreeQuery {
 
       if (excludeExtensionDimension) {
         dimensionRoots = dimensionRoots.filter(d => {
-          return d.code !== 'dim.17' && !/扩展名|Extension/i.test(d.name)
+          return !/扩展名|Extension/i.test(d.name) && !/扩展名|Extension/i.test(d.code)
         })
       }
 
@@ -347,17 +347,17 @@ export class TagTreeQuery {
         }
       }
 
-      // 4. 统计在有效文件集合下，每个 (tag_code, parent_tag_code) 的文件命中数（V4 联合统计）
+      // 4. 统计在有效文件集合下，每个 (tag_code, via_parent_code) 的文件命中数（V4 联合统计）
       const countQuery = `
-        SELECT ftr.tag_code, ftr.parent_tag_code, COUNT(DISTINCT ftr.file_fingerprint) as count
+        SELECT ftr.tag_code, ftr.via_parent_code, COUNT(DISTINCT ftr.file_fingerprint) as count
         FROM file_tag_relations ftr
         WHERE ftr.file_fingerprint IN (${filteredFingerprintsSql})
-        GROUP BY ftr.tag_code, ftr.parent_tag_code
+        GROUP BY ftr.tag_code, ftr.via_parent_code
       `
       const countStartTime = performance.now()
       const countRows = this.db.prepare(countQuery).all(...filteredFingerprintsParams) as Array<{
         tag_code: string
-        parent_tag_code: string
+        via_parent_code: string
         count: number
       }>
       dbQueryTime += performance.now() - countStartTime
@@ -366,7 +366,7 @@ export class TagTreeQuery {
       const tagParentCountMap = new Map<string, number>()
       for (const row of countRows) {
         tagCountMap.set(row.tag_code, (tagCountMap.get(row.tag_code) || 0) + row.count)
-        tagParentCountMap.set(`${row.tag_code}::${row.parent_tag_code}`, row.count)
+        tagParentCountMap.set(`${row.tag_code}::${row.via_parent_code}`, row.count)
       }
 
       // 5. 按照维度归类本地动态标签并组织树形结构
@@ -463,7 +463,7 @@ export class TagTreeQuery {
             fileCount: aggregatedCount,
             level: child.depth || 1,
             code: child.code,
-            parentCode: childParentCodes[0] || dimCode,
+            viaParentCode: childParentCodes[0] || dimCode,
             isMultiSelect: childMeta?.isMultiSelect === true
           })
         }
@@ -483,8 +483,7 @@ export class TagTreeQuery {
       const treeRes = await omniClient.getTaxonomyTree(locale)
       const omniGroups: Array<Omit<DimensionGroup, 'tags'> & { tags: DimensionTag[] }> = treeRes?.rootNodes
         ? treeRes.rootNodes.map(root => {
-            const numMatch = root.code.match(/^dim\.(\d+)$/)
-            const id = numMatch ? parseInt(numMatch[1], 10) : 0
+            const id = 0
             const tags: DimensionTag[] = []
             const collect = (node: OmniTaxonomyNode, parentCode: string, level: number) => {
               for (const child of node.children || []) {
@@ -498,7 +497,7 @@ export class TagTreeQuery {
                   fileCount: count,
                   level,
                   code,
-                  parentCode: parentCode || root.code,
+                  viaParentCode: parentCode || root.code,
                   isMultiSelect: false
                 })
                 collect(child, code, level + 1)
@@ -524,7 +523,7 @@ export class TagTreeQuery {
         seenDimCodes.add(code)
         let tags = og.tags || []
         if (excludeExtensionDimension) {
-          tags = tags.filter(t => !/扩展名|Extension/i.test(t.tagValue) && t.code !== 'dim.17')
+          tags = tags.filter(t => !/扩展名|Extension/i.test(t.tagValue) && !/扩展名|Extension/i.test(t.code || ''))
         }
         if (removeEmptyTags && !includeAllPresetTags) {
           tags = tags.filter(t => t.fileCount > 0)
@@ -661,9 +660,10 @@ export class TagTreeQuery {
           const codes = this.getDescendantTagCodes(tag.code || tag.tagValue)
           if (codes.length > 0) {
             const placeholders = codes.map(() => '?').join(',')
-            if (tag.parentTagCode) {
-              clauses.push(`(ftr.tag_code IN (${placeholders}) AND ftr.parent_tag_code = ?)`)
-              queryParams.push(...codes, tag.parentTagCode)
+            const targetViaParent = tag.viaParentCode
+            if (targetViaParent) {
+              clauses.push(`(ftr.tag_code IN (${placeholders}) AND ftr.via_parent_code = ?)`)
+              queryParams.push(...codes, targetViaParent)
             } else {
               clauses.push(`ftr.tag_code IN (${placeholders})`)
               queryParams.push(...codes)
@@ -683,13 +683,14 @@ export class TagTreeQuery {
           const codes = this.getDescendantTagCodes(tag.code || tag.tagValue)
           if (codes.length > 0) {
             const placeholders = codes.map(() => '?').join(',')
-            if (tag.parentTagCode) {
+            const targetViaParent = tag.viaParentCode
+            if (targetViaParent) {
               whereClauses.push(`wf.file_fingerprint IN (
                 SELECT ftr.file_fingerprint
                 FROM file_tag_relations ftr
-                WHERE ftr.tag_code IN (${placeholders}) AND ftr.parent_tag_code = ?
+                WHERE ftr.tag_code IN (${placeholders}) AND ftr.via_parent_code = ?
               )`)
-              queryParams.push(...codes, tag.parentTagCode)
+              queryParams.push(...codes, targetViaParent)
             } else {
               whereClauses.push(`wf.file_fingerprint IN (
                 SELECT ftr.file_fingerprint

@@ -39,13 +39,13 @@ interface DimensionTreeNodeProps {
   isExportMode: boolean
   collapsedDimensionGroups: Set<number>
   toggleDimensionGroupCollapsed: (groupId: number) => void
-  isTagSelected: (dimensionId: number, tagValue: string, parentTagValue?: string, parentTagCode?: string) => boolean
+  isTagSelected: (dimensionId: number, tagValue: string, parentTagValue?: string, viaParentCode?: string) => boolean
   toggleTagSelection: (
     dimensionId: number,
     tagValue: string,
     parentTagValue?: string,
     ancestorChain?: string[],
-    parentTagCode?: string
+    viaParentCode?: string
   ) => void
   getVisibleAndHiddenTags: (
     group: any,
@@ -121,7 +121,7 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
         {!isCollapsed && (
           <div className={cn('relative', isTopLevel ? 'ml-5 mt-1' : 'ml-3')}>
             {tagsToShow.map((tag: DimensionTag, index: number) => {
-              const isSelected = isTagSelected(tag.dimensionId, tag.tagValue, parentTagValue, tag.parentCode || undefined)
+              const isSelected = isTagSelected(tag.dimensionId, tag.tagValue, parentTagValue, tag.viaParentCode || undefined)
               const isDisabled = tag.fileCount === 0
               const childDimensions = node.childTags?.get(tag.tagValue)
               const hasChildDimensions = childDimensions && childDimensions.length > 0
@@ -179,7 +179,7 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                               tag.tagValue,
                               parentTagValue,
                               currentChain,
-                              tag.parentCode || undefined
+                              tag.viaParentCode || undefined
                             )
                           }
                         }}
@@ -194,7 +194,7 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                               tag.tagValue,
                               parentTagValue,
                               currentChain,
-                              tag.parentCode || undefined
+                              tag.viaParentCode || undefined
                             )
                           }
                           className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
@@ -222,7 +222,7 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                             tag.tagValue,
                             parentTagValue,
                             currentChain,
-                            tag.parentCode || undefined
+                            tag.viaParentCode || undefined
                           )
                         } else {
                           handleTagClick({
@@ -230,7 +230,7 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                             dimensionName: tag.dimensionName,
                             tagValue: tag.tagValue,
                             code: tag.code,
-                            parentTagCode: tag.parentCode || undefined,
+                            viaParentCode: tag.viaParentCode || undefined,
                             level: tag.level,
                             parentTagValue,
                             ancestorChain: currentChain
@@ -721,17 +721,18 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   }, [])
 
   const isTagSelected = useCallback(
-    (dimensionId: number, tagValue: string, parentTagValue?: string, parentTagCode?: string): boolean => {
+    (dimensionId: number, tagValue: string, parentTagValue?: string, viaParentCode?: string): boolean => {
       if (isExportMode) {
-        const key = makeTagKey(dimensionId, tagValue, parentTagValue, parentTagCode)
+        const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode)
         return selectedTags.has(key)
       } else {
+        const curParent = currentTag ? currentTag.viaParentCode : undefined
         return (
           currentTag !== null &&
           currentTag.dimensionId === dimensionId &&
           currentTag.tagValue === tagValue &&
           currentTag.parentTagValue === parentTagValue &&
-          (!parentTagCode || !currentTag.parentTagCode || currentTag.parentTagCode === parentTagCode)
+          (!viaParentCode || !curParent || curParent === viaParentCode)
         )
       }
     },
@@ -739,8 +740,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   )
 
   const toggleTagSelection = useCallback(
-    (dimensionId: number, tagValue: string, parentTagValue?: string, ancestorChain?: string[], parentTagCode?: string) => {
-      const key = makeTagKey(dimensionId, tagValue, parentTagValue, parentTagCode)
+    (dimensionId: number, tagValue: string, parentTagValue?: string, ancestorChain?: string[], viaParentCode?: string) => {
+      const key = makeTagKey(dimensionId, tagValue, parentTagValue, viaParentCode)
 
       const isRemoving = selectedTags.has(key)
       const nextSelected = new Set(selectedTags)
@@ -794,32 +795,35 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       dimensionName: string
       tagValue: string
       code?: string
+      viaParentCode?: string
       parentTagCode?: string
       level: number
       parentTagValue?: string
       ancestorChain?: string[]
     }) => {
+      const effectiveViaParent = tag.viaParentCode ?? tag.parentTagCode
       if (isExportMode) {
-        toggleTagSelection(tag.dimensionId, tag.tagValue, tag.parentTagValue, tag.ancestorChain, tag.parentTagCode)
+        toggleTagSelection(tag.dimensionId, tag.tagValue, tag.parentTagValue, tag.ancestorChain, effectiveViaParent)
       } else {
         const newTag: SelectedTag = {
           dimensionId: tag.dimensionId,
           dimensionName: tag.dimensionName,
           tagValue: tag.tagValue,
           code: tag.code,
-          parentTagCode: tag.parentTagCode,
+          viaParentCode: effectiveViaParent,
           level: tag.level,
           parentTagValue: tag.parentTagValue,
           ancestorChain: tag.ancestorChain
         }
 
         setCurrentTag(prev => {
+          const prevViaParent = prev ? prev.viaParentCode : undefined
           const isSame =
             prev !== null &&
             prev.dimensionId === tag.dimensionId &&
             prev.tagValue === tag.tagValue &&
             prev.parentTagValue === tag.parentTagValue &&
-            prev.parentTagCode === tag.parentTagCode
+            prevViaParent === effectiveViaParent
 
           return isSame ? null : newTag
         })

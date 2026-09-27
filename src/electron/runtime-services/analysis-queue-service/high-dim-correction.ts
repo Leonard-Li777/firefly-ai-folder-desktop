@@ -15,7 +15,9 @@
 export interface HighDimTagCandidate {
   /** 受控标签 code（builtin.* / omw.* 等） */
   code: string
-  /** 父级标签 code（一词多义消歧用），根级填 '' */
+  /** 经由父级标签 code（一词多义消歧用），根级填 '' */
+  viaParentCode?: string
+  /** @deprecated 兼容过渡别名，推荐使用 viaParentCode */
   parentCode?: string
   /** 置信度 0~1 */
   confidence: number
@@ -58,9 +60,10 @@ export interface HighDimCorrectionResult {
   skippedForUserNaming: boolean
 }
 
-/** 标签去重键：同 code 不同 parentCode 视为两个独立标签 */
+/** 标签去重键：同 code 不同 viaParentCode 视为两个独立标签 */
 function tagKey(tag: HighDimTagCandidate): string {
-  return `${tag.code}|${tag.parentCode ?? ''}`
+  const parent = tag.viaParentCode ?? tag.parentCode ?? ''
+  return `${tag.code}|${parent}`
 }
 
 /** 归一化置信度：非法值（NaN/undefined/负数）回退为 0，并夹紧到 [0,1] */
@@ -90,8 +93,14 @@ export function fuseHighDimTags(
     const confidence = normalizeConfidence(tag.confidence)
     const key = tagKey(tag)
     const prev = merged.get(key)
+    const parent = tag.viaParentCode ?? tag.parentCode ?? ''
     if (!prev || confidence > prev.confidence) {
-      merged.set(key, { code: tag.code, parentCode: tag.parentCode ?? '', confidence })
+      merged.set(key, {
+        code: tag.code,
+        viaParentCode: parent,
+        parentCode: parent,
+        confidence
+      })
     }
   }
 

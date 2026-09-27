@@ -163,7 +163,7 @@ function buildTagTopology(groups: DimensionGroup[]): Map<string, TagTopologyNode
       topology.set(tagCode, {
         code: tagCode,
         name: tag.tagValue,
-        parentCode: tag.parentCode || dimCode,
+        parentCode: tag.viaParentCode || dimCode,
         // 子标签自身的 isMultiSelect 控制其子节点；同父互斥由父节点的 isMultiSelect 决定
         isMultiSelect: tag.isMultiSelect === true,
         dimensionCode: dimCode,

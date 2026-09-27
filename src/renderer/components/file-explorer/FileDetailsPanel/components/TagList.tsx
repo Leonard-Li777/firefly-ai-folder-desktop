@@ -9,7 +9,7 @@ import {
 } from '@firefly/shared'
 
 interface TagItem {
-  /** 标签业务软主键 code（如 builtin.jpg / dim.6.design / omw.*），删除时透传给主进程解析 */
+  /** 标签业务软主键 code（如 builtin.jpg / builtin.image.design / omw.*），删除时透传给主进程解析 */
   id: number | string
   name: string
   /** 该标签自身的置信度 (0.0 ~ 1.0)，用于组内排序与 hover 提示 */

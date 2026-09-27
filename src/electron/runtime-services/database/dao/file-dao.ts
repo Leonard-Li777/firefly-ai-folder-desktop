@@ -41,9 +41,8 @@ function readableCode(code: string): string {
  * 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags 表（file_tags.source CHECK 仅 expanded/user），
  * 其展示名须经语言分表 / Omni 语义包 tag_aliases 镜像解析。
  */
-function dimensionForCode(code: string, sqlDimId: string | null, parentTagCode: string): string {
-  if (sqlDimId) return sqlDimId
-  if (parentTagCode) return parentTagCode
+function dimensionForCode(code: string, viaParentCode?: string | null): string {
+  if (viaParentCode) return viaParentCode
   const dimPrefix = code.match(/^dim\.(\d+)(?:\.|$)/)
   if (dimPrefix) return `dim.${dimPrefix[1]}`
   return code
@@ -258,7 +257,7 @@ export class FileDao {
     }
 
     // 创世 Baseline V1：以 code 自然主键 LEFT JOIN file_tags，彻底移除自增 id / dimension_id / tag_id 兼容分支。
-    // dimension_id 取首个父级 code（parent_codes 首元素），维度根节点自身则退化为自身 code。
+    // 维度归属由单次标注关系经由的 via_parent_code 决定，无维度则为空（真根），严禁回退 parent_codes 首父。
     // 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags 表（file_tags.source CHECK 仅 expanded/user），
     // 其展示名与维度归属经主库语言分表 tag_aliases_{lang} 直查解析（原 TaxonomyAliasCache 内存总线已按主设计废除），故不可使用内连接过滤。
     let tags: any[] = []
@@ -270,13 +269,9 @@ export class FileDao {
           SELECT
             ftr.tag_code as id,
             ft.name as ft_name,
-            ftr.parent_tag_code,
+            ftr.via_parent_code,
             ftr.tag_group,
-            ftr.confidence,
-            CASE
-              WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
-              ELSE json_extract(ft.parent_codes, '$[0]')
-            END as dimension_id
+            ftr.confidence
           FROM file_tag_relations ftr
           LEFT JOIN file_tags ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = ?
@@ -292,7 +287,7 @@ export class FileDao {
     // 与 getAnalyzedFilesByWorkspace、syncFTSTags 保持同一套解析语义
     const dimensionTags: { [dimensionId: string]: any[] } = {}
     tags.forEach(tag => {
-      const dimId = dimensionForCode(tag.id, tag.dimension_id, tag.parent_tag_code || '')
+      const dimId = dimensionForCode(tag.id, tag.via_parent_code || '')
       if (!dimensionTags[dimId]) dimensionTags[dimId] = []
       dimensionTags[dimId].push({
         id: tag.id,
@@ -1556,11 +1551,7 @@ export class FileDao {
           SELECT
             ftr.tag_code as id,
             ft.name as ft_name,
-            ftr.parent_tag_code,
-            CASE
-              WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
-              ELSE json_extract(ft.parent_codes, '$[0]')
-            END as dimension_id
+            ftr.via_parent_code
           FROM file_tag_relations ftr
           LEFT JOIN file_tags ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
@@ -1572,7 +1563,7 @@ export class FileDao {
       }
       const dimensionTags = tags.map(t => ({
         tag: this.resolveDisplayName(t.id, t.ft_name),
-        dimension: dimensionForCode(t.id, t.dimension_id, t.parent_tag_code || '')
+        dimension: dimensionForCode(t.id, t.via_parent_code || '')
       }))
 
       return {
@@ -1963,10 +1954,10 @@ export class FileDao {
 
       const tags = this.db
         .prepare(
-          `SELECT tag_code AS code, parent_tag_code AS parentCode, confidence
+          `SELECT tag_code AS code, via_parent_code AS viaParentCode, confidence
            FROM file_tag_relations WHERE file_fingerprint = ?`
         )
-        .all(fileFingerprint) as Array<{ code: string; parentCode: string; confidence: number }>
+        .all(fileFingerprint) as Array<{ code: string; viaParentCode: string; confidence: number }>
 
       const namingSource: 'machine' | 'user' | null =
         row.smart_name_source === 'user'
@@ -1985,7 +1976,8 @@ export class FileDao {
         namingSource,
         existingTags: (tags || []).map(t => ({
           code: t.code,
-          parentCode: t.parentCode ?? '',
+          viaParentCode: t.viaParentCode ?? '',
+          parentCode: t.viaParentCode ?? '',
           confidence: Number(t.confidence ?? 1)
         })),
         textFacts
@@ -2019,7 +2011,7 @@ export class FileDao {
   applyHighDimCorrectionResult(
     fileFingerprint: string,
     result: {
-      tags: Array<{ code: string; parentCode?: string; confidence: number }>
+      tags: Array<{ code: string; viaParentCode?: string; parentCode?: string; confidence: number }>
       smartName?: string | null
       description?: string | null
       smartNameUpdated?: boolean
@@ -2038,21 +2030,22 @@ export class FileDao {
         const protectedGroups = new Set<string>(HIGH_DIM_PROTECTED_TAG_GROUPS)
         const existingRows = this.db
           .prepare(
-            `SELECT tag_code, parent_tag_code, tag_group FROM file_tag_relations WHERE file_fingerprint = ?`
+            `SELECT tag_code, via_parent_code, tag_group FROM file_tag_relations WHERE file_fingerprint = ?`
           )
           .all(fileFingerprint) as Array<{
           tag_code: string
-          parent_tag_code: string | null
+          via_parent_code: string | null
           tag_group: string | null
         }>
         for (const row of existingRows) {
           if (!protectedGroups.has(row.tag_group ?? '')) continue
-          protectedKeys.add(`${row.tag_code}\u0000${row.parent_tag_code ?? ''}`)
+          protectedKeys.add(`${row.tag_code}\u0000${row.via_parent_code ?? ''}`)
         }
 
         for (const tag of result.tags || []) {
           if (!tag?.code) continue
-          const key = `${tag.code}\u0000${tag.parentCode ?? ''}`
+          const viaParent = tag.viaParentCode ?? tag.parentCode ?? ''
+          const key = `${tag.code}\u0000${viaParent}`
           // 高优先级来源关系原样保留（含 confidence），高维修正不越权改写其出处。
           if (protectedKeys.has(key)) continue
           // tag_group='ai'：Stage 5 高维精修属 AI 派生标签（ADR-0045 词表中 fact/fused/visual 分别对应
@@ -2062,10 +2055,10 @@ export class FileDao {
           this.db
             .prepare(
               `INSERT OR REPLACE INTO file_tag_relations
-                 (file_fingerprint, tag_code, parent_tag_code, tag_group, confidence, source, sync_status, created_at)
+                 (file_fingerprint, tag_code, via_parent_code, tag_group, confidence, source, sync_status, created_at)
                VALUES (?, ?, ?, 'ai', ?, 'ai', 0, CURRENT_TIMESTAMP)`
             )
-            .run(fileFingerprint, tag.code, tag.parentCode ?? '', Number(tag.confidence ?? 1))
+            .run(fileFingerprint, tag.code, viaParent, Number(tag.confidence ?? 1))
         }
 
         if (result.smartNameUpdated && typeof result.smartName === 'string') {
@@ -2088,26 +2081,26 @@ export class FileDao {
           const kept = new Set(
             (result.tags || [])
               .filter(t => t?.code)
-              .map(t => `${t.code}\u0000${t.parentCode ?? ''}`)
+              .map(t => `${t.code}\u0000${t.viaParentCode ?? t.parentCode ?? ''}`)
           )
           const placeholders = result.pruneTagGroups.map(() => '?').join(', ')
           const existing = this.db
             .prepare(
-              `SELECT tag_code, parent_tag_code FROM file_tag_relations
+              `SELECT tag_code, via_parent_code FROM file_tag_relations
                WHERE file_fingerprint = ? AND tag_group IN (${placeholders})`
             )
             .all(fileFingerprint, ...result.pruneTagGroups) as Array<{
             tag_code: string
-            parent_tag_code: string | null
+            via_parent_code: string | null
           }>
           const deleteStmt = this.db.prepare(
             `DELETE FROM file_tag_relations
-             WHERE file_fingerprint = ? AND tag_code = ? AND parent_tag_code = ?`
+             WHERE file_fingerprint = ? AND tag_code = ? AND via_parent_code = ?`
           )
           for (const row of existing) {
-            const parent = row.parent_tag_code ?? ''
-            if (kept.has(`${row.tag_code}\u0000${parent}`)) continue
-            deleteStmt.run(fileFingerprint, row.tag_code, parent)
+            const viaParent = row.via_parent_code ?? ''
+            if (kept.has(`${row.tag_code}\u0000${viaParent}`)) continue
+            deleteStmt.run(fileFingerprint, row.tag_code, viaParent)
           }
         }
 

@@ -45,7 +45,7 @@ export interface IMigrationConfig {
  * - 多模态向量由 Omni zvec 托管，彻底废除 SQLite file_vectors BLOB 堆表
  * - file_tag_relations.tag_code 为业务软外键，允许写入 builtin / omw 受控标签 code
  */
-const GENESIS_V1_SCHEMA = `
+export const GENESIS_V1_SCHEMA = `
   -- 0. 创世卫生：剔除只读语义表 / 遗留 HowNet / 向量堆表（ADR-0038）
   DROP TABLE IF EXISTS file_vectors;
   DROP TABLE IF EXISTS antonym_pairs;
@@ -187,7 +187,7 @@ const GENESIS_V1_SCHEMA = `
     file_groups        TEXT,                          -- JSON 数组：格式分组约束 (全集为 FileGroup 完整枚举，优先级：优先按扩展名匹配字典，未命中由 Magika 补齐)
     context_hints      TEXT,                          -- JSON 数组 (上下文提取线索)
     description        TEXT,                          -- 业务功能或语义描述
-    meta               TEXT NOT NULL DEFAULT '{}'     -- JSON 元数据: isDimension, isRuleSubdivision, isPanDimension, isMultiSelect, color, icon 等
+    meta               TEXT NOT NULL DEFAULT '{}'     -- JSON 元数据: isDimension, isRuleSubdivision, isMultiSelect, color, icon 等（注：isPanDimension 真实存活在 fileDimension 配置 metadata.flag 域，非 file_tags.meta）
   );
 
   -- 8. 用户/扩展标签多语言别名（受控 builtin.*/omw.* 别名由语言分表 tag_aliases_{lang} 镜像）
@@ -197,7 +197,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE TABLE IF NOT EXISTS file_tag_relations (
     file_fingerprint   TEXT NOT NULL,                 -- 核心引擎 32 位 Base62 文件内容指纹
     tag_code           TEXT NOT NULL,                 -- 业务软外键：允许 builtin.*/omw.*/_ext.*/user.*，由应用层校验
-    parent_tag_code    TEXT NOT NULL DEFAULT '',      -- 父级标签 code (指向 file_tags.code，用于一词多义消歧与限定类型上下文；无父级/根级填 '')
+    via_parent_code    TEXT NOT NULL DEFAULT '',      -- 经由父级标签 code (ADR-0047：用于一词多义消歧与限定类型上下文；真根填 '')
     tag_group          TEXT NOT NULL DEFAULT '',      -- 标签来源分组 (ADR-0045)：fact/fused/visual/ai/user；列名不用 group，因其为 SQL 关键字
     confidence         REAL NOT NULL DEFAULT 1.0,     -- 分析置信度或物理事实权重 (0.0 ~ 1.0)
     source             TEXT DEFAULT 'ai'
@@ -206,7 +206,7 @@ const GENESIS_V1_SCHEMA = `
     created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     meta               TEXT NOT NULL DEFAULT '{}',    -- JSON 元数据
-    PRIMARY KEY (file_fingerprint, tag_code, parent_tag_code),
+    PRIMARY KEY (file_fingerprint, tag_code, via_parent_code),
     FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE
   );
 
@@ -330,7 +330,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_file_tags_source ON file_tags(source);
   CREATE INDEX IF NOT EXISTS idx_file_tags_depth ON file_tags(depth);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_tag ON file_tag_relations(tag_code, file_fingerprint);
-  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_parent ON file_tag_relations(parent_tag_code, tag_code);
+  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_parent ON file_tag_relations(via_parent_code, tag_code);
   CREATE INDEX IF NOT EXISTS idx_vd_workspace ON virtual_directories(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_vd_updated ON virtual_directories(updated_at DESC);
   CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);
@@ -339,7 +339,7 @@ const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
   -- 抢占式单队列调度覆盖索引 (Issue 0046 / CONTEXT.md 抢占式单队列调度)：按任务类型 + 状态检索，支撑 Stage 5 高维修正独立高速取件与硬优先序 0 排序扫描
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_task_status ON analysis_queue(status, task_type, priority DESC, id ASC);
-  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, parent_tag_code, confidence);
+  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, via_parent_code, confidence);
 
   -- 19. FTS 同步触发器（标准 FTS5：使用 DELETE WHERE rowid 进行原子安全同步）
   DROP TRIGGER IF EXISTS trg_files_fts_update;

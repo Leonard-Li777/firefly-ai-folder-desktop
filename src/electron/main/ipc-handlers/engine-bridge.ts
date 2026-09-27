@@ -28,7 +28,8 @@ export function registerEngineBridgeIPCHandlers() {
 
   ipcMain.handle('engine-bridge/start', async () => {
     logger.info(LogCategory.IPC, '[IPC] 收到启动 Tier 2 引擎请求')
-    const ok = await engineBridgeService.ensureRunning()
+    // force：用户显式点击启动，复位熔断器后放行拉起
+    const ok = await engineBridgeService.ensureRunning({ force: true })
     engineBridgeService.broadcastStatus()
     return ok
   })

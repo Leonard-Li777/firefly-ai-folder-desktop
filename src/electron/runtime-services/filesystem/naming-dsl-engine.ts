@@ -336,7 +336,7 @@ export class NamingDSLEngine {
 
     // 6. {TAG:维度名或tag_code}
     // #624：直接信任前置已入库的 file_tag_relations，不再做文件类型二次校验
-    // 支持标准化 tag_code（如 dim.6、image.screenshot）与本地化维度名双通道绑定
+    // 支持标准化 tag_code（如 dimension.media_type.image、image.screenshot）与本地化维度名双通道绑定
     rendered = rendered.replace(/\{TAG:([^}]+)\}/g, (_, dimName) => {
       const dimKey = String(dimName).trim()
 

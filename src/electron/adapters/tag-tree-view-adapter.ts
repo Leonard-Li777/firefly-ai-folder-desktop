@@ -6,7 +6,7 @@ import type Database from 'better-sqlite3'
  *
  * 领域语义（经产品澄清确认）：
  * 1. 「维度」已废除为独立实体，降级为标签树的一层节点 —— 视图根节点 = parent_codes 为空的节点；
- *    logicPanDimension 不再是独立键，仅对应 file_tags.source = 'dimension' 的锚点标签，收敛于 parent_codes 链；
+ *    逻辑泛维度概念已彻底废弃，锚点标签收敛于 parent_codes 链与 via_parent_code（ADR-0047）；
  * 2. 标签的每个父级完全平等，不存在「首父」概念 —— 子节点归属视图分组时必须挂载到其
  *    parent_codes 中的**每一个**父级之下（多父全挂），禁止使用 parent_codes[0] 取首父的伪维度推导；
  * 3. 系统兜底标签的父码集中在本常量表管理，禁止在业务代码中散落硬编码。

@@ -46,11 +46,19 @@ export class Tier2CircuitBreaker {
    * 记录一次失败调用。
    * 使用滑动窗口统计：仅在 openTimeoutMs 窗口内的失败才计入阈值，
    * 避免历史失败长期占用熔断位。
+   *
+   * 冷却期（open）内的后续失败**不**刷新 openedAt：否则持续探活会无限续期，
+   * 熔断永不解开，ensureRunning 将一直拒绝拉起。
    */
   public recordFailure(now: number = Date.now()): void {
     this.pruneOutdated(now)
     this.probing = false
     this.failures.push(now)
+
+    // 已处于熔断开放状态：只记账，不延长冷却起点
+    if (this.openedAt !== null && now - this.openedAt < this.openTimeoutMs) {
+      return
+    }
 
     for (const failureTime of this.failures) {
       if (now - failureTime <= this.openTimeoutMs) {
@@ -60,11 +68,6 @@ export class Tier2CircuitBreaker {
           return
         }
       }
-    }
-
-    // 若此前已处于熔断开放状态且冷却尚未结束，刷新冷却起点
-    if (this.openedAt !== null && now - this.openedAt < this.openTimeoutMs) {
-      this.openedAt = now
     }
   }
 

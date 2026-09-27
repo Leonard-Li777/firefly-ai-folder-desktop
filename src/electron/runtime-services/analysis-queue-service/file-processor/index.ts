@@ -2361,18 +2361,21 @@ export class FileProcessor {
           const tag = this.mockData.file_tags.find((t: any) => (t.code && t.code === rel.tag_code) || t.id === rel.tag_id)
           if (tag) {
             const tagCode = tag.code || `custom:${tag.name}`
-            const parentTagCode = rel.parent_tag_code || (tag.parent_codes ? JSON.parse(tag.parent_codes)[0] : '') || ''
+            const viaParentCode = rel.via_parent_code || rel.parent_tag_code || ''
             // mock 回灌须显式携带 tag_group，否则落 DEFAULT '' 不进属性面板分组视图；
             // 夹具未声明分组时按分析引擎产出归 'ai'（勿依赖 insertTagToDb 的 'fact' 缺省）
             const mockGroup = isTagProvenanceGroup(rel.tag_group) ? rel.tag_group : 'ai'
+            // 漂移③修复：严格遵守 A/B 分离，file_tags.parent_codes 保留标签自身的稳定拓扑声明（若夹具已声明），
+            // 严禁将单次标注关系的 viaParentCode 反向灌入 file_tags.parent_codes
+            const tagParentCodes = tag.parent_codes || '[]'
             db.prepare('INSERT OR IGNORE INTO file_tags (code, name, parent_codes) VALUES (?, ?, ?)').run(
               tagCode,
               tag.name,
-              JSON.stringify(parentTagCode ? [parentTagCode] : [])
+              tagParentCodes
             )
             db.prepare(
-              `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, tag_group, confidence, sync_status) VALUES (?, ?, ?, ?, 1.0, 0)`
-            ).run(fingerprint, tagCode, parentTagCode, mockGroup)
+              `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, tag_group, confidence, sync_status) VALUES (?, ?, ?, ?, 1.0, 0)`
+            ).run(fingerprint, tagCode, viaParentCode, mockGroup)
           }
         }
       }

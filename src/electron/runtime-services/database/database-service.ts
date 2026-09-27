@@ -48,8 +48,8 @@ export class DatabaseService {
   /**
    * 解析维度的自然主键 code
    *
-   * 优先使用调用方显式传入的维度 code；若传入的是纯数字 ID，映射为 `dim.{id}` 前缀；
-   * 仅在显式 code 缺失时才按维度显示名反查标签树根节点，避免额外查询开销。
+   * 优先使用调用方显式传入的维度 code（非纯数字）；
+   * 仅在显式 code 缺失或为纯数字 ID 时才按维度显示名反查标签树根节点，避免额外查询开销。
    */
   private resolveDimensionCode(
     dimensionId?: number | string,
@@ -57,11 +57,8 @@ export class DatabaseService {
   ): string | null {
     if (dimensionId !== undefined && dimensionId !== null && dimensionId !== '') {
       const raw = String(dimensionId)
-      // 已是完整 code（如 dim.28 / content）则直接采用
+      // 若已是自然主键 code 则直接采用
       if (/^[a-z]/.test(raw) && !/^\d+$/.test(raw)) return raw
-      // 纯数字 ID 映射为 dim.{n} 前缀
-      if (/^\d+$/.test(raw)) return `dim.${raw}`
-      return raw
     }
     if (dimensionName && this._db) {
       try {
@@ -1299,18 +1296,16 @@ export class DatabaseService {
     if (!this._db) return false
     try {
       // 创世 Baseline V1：标签以 code 自然主键存储，维度由其父级 code 表达。
-      // 传入的 dimensionId 既可能是维度 code（推荐），也可能回退为数字 ID（映射为 dim.{n} 前缀）。
-      const dimCode = String(dimensionId)
-      const dimNumericPrefix = `dim.${dimCode}`
+      const dimCode = this.resolveDimensionCode(dimensionId) || String(dimensionId)
 
       this._db.transaction(() => {
         const tagRows = this._db!.prepare(
           `
           SELECT code FROM file_tags
-          WHERE (code LIKE ? || '.%' OR code LIKE ? || '.%' OR json_extract(parent_codes, '$[0]') IN (?, ?))
+          WHERE (code LIKE ? || '.%' OR json_extract(parent_codes, '$[0]') = ?)
             AND LOWER(TRIM(name)) = LOWER(TRIM(?))
         `
-        ).all(dimCode, dimNumericPrefix, dimCode, dimNumericPrefix, tagName) as Array<{
+        ).all(dimCode, dimCode, tagName) as Array<{
           code: string
         }>
 
@@ -1407,23 +1402,23 @@ export class DatabaseService {
         }
 
         // 3. 遍历文件应用或解绑
-        const allAddTagItems: Array<{ tagCode: string; parentTagCode: string }> = []
+        const allAddTagItems: Array<{ tagCode: string; viaParentCode: string }> = []
         for (const [key, code] of createdTagMap.entries()) {
           const dimCode = key.split(':')[0] || ''
-          allAddTagItems.push({ tagCode: code, parentTagCode: dimCode })
+          allAddTagItems.push({ tagCode: code, viaParentCode: dimCode })
         }
         for (const rawId of operation.addTagIds || []) {
           const found = this._db!.prepare('SELECT code, parent_codes FROM file_tags WHERE id = ? OR code = ?').get(rawId, String(rawId)) as { code: string; parent_codes?: string } | undefined
-          let parentTagCode = ''
+          let viaParentCode = ''
           if (found?.parent_codes) {
             try {
               const parents = JSON.parse(found.parent_codes)
               if (Array.isArray(parents) && parents.length > 0) {
-                parentTagCode = parents[0]
+                viaParentCode = parents[0]
               }
             } catch {}
           }
-          allAddTagItems.push({ tagCode: found?.code || String(rawId), parentTagCode })
+          allAddTagItems.push({ tagCode: found?.code || String(rawId), viaParentCode })
         }
 
         for (const fileId of operation.fileIds) {
@@ -1468,14 +1463,14 @@ export class DatabaseService {
               continue
             }
 
-            // 添加标签关联（写入 parent_tag_code 与 tag_group）
+            // 添加标签关联（写入 via_parent_code 与 tag_group）
             // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'
             if (allAddTagItems.length > 0) {
               const insertStmt = this._db!.prepare(
-                "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, tag_group, confidence, sync_status, created_at) VALUES (?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
+                "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, tag_group, confidence, sync_status, created_at) VALUES (?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
               )
               for (const item of allAddTagItems) {
-                insertStmt.run(fp, item.tagCode, item.parentTagCode)
+                insertStmt.run(fp, item.tagCode, item.viaParentCode)
               }
             }
 

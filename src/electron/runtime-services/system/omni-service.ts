@@ -100,7 +100,9 @@ export interface OmniTagChainItem {
   name: string
   confidence: number
   tag?: string
-  logic_pan_dimension?: string
+  /** 本次标注实际经由的消歧父级 code（概念 B，ADR-0047） */
+  via_parent_code?: string
+  viaParentCode?: string
   parent_codes?: string[]
   /** 打标引擎来源 (WP2a): clip | ram | physical | mutual_group | ocr | nsfw | quality | rule | metadata */
   engine?: string
@@ -115,6 +117,9 @@ export interface OmniResolveParentRequest {
 export interface OmniResolveParentResponse {
   success: boolean
   parent_code: string
+  /** 经由父级 code 兼容别名 (ADR-0047) */
+  via_parent_code?: string
+  viaParentCode?: string
   parent_name: string
   confidence: number
   suggested_depth: number

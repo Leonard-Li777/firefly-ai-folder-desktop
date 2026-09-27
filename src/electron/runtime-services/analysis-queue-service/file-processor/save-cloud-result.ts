@@ -306,8 +306,15 @@ export async function saveCloudResult(
             metadata: row.metadata ?? undefined
           })
         }
-        // 内容标签维度作为兜底路由目标
-        const CONTENT_DIM_CODE = 'dim.28'
+        // 内容标签维度作为兜底路由目标（受控域契约，优先动态命中，兜底 dim.content）
+        let contentDimCode = 'dim.content'
+        for (const row of allDimRows) {
+          if (row.name === '内容标签' || row.name === t('内容标签')) {
+            contentDimCode = String(row.id)
+            break
+          }
+        }
+        const CONTENT_DIM_CODE = contentDimCode
 
         for (const tag of data.tags) {
           if (typeof tag?.name !== 'string') continue
@@ -323,14 +330,12 @@ export async function saveCloudResult(
             ? tag.tag_group
             : ''
           try {
-            // 云端回传的 dimension_id 既可能是自然主键 code，也可能为数字 ID
+            // 云端回传的 dimension_id 为自然主键 code
             const rawDim = tag.dimension_id
             const cloudDimCode =
               rawDim === undefined || rawDim === null || rawDim === ''
                 ? CONTENT_DIM_CODE
-                : /^\d+$/.test(String(rawDim))
-                  ? `dim.${rawDim}`
-                  : String(rawDim)
+                : String(rawDim)
 
             let localDimCode = CONTENT_DIM_CODE
             const dimInfo = dimMap.get(cloudDimCode)
@@ -381,7 +386,7 @@ export async function saveCloudResult(
                 JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 })
               )
               db.prepare(
-                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, parent_tag_code, tag_group, confidence, source, meta)
+                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, tag_group, confidence, source, meta)
                  VALUES (?, ?, ?, ?, 1.0, 'rule', ?)`
               ).run(
                 fileFingerprint,

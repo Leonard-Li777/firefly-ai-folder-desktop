@@ -502,9 +502,13 @@ export class EngineBridgeService {
 
   /**
    * 确保引擎在线：在线则直接复用；离线则尝试静默拉起（受熔断器保护）
+   * @param options.force 显式启动（用户点击）时跳过熔断冷却，避免「点了没反应」
    */
-  public async ensureRunning(): Promise<boolean> {
-    if (this.circuitBreaker.getState() === 'open') {
+  public async ensureRunning(options?: { force?: boolean }): Promise<boolean> {
+    if (options?.force) {
+      // 显式启动视为用户意图，复位熔断器重新放行
+      this.circuitBreaker.reset()
+    } else if (this.circuitBreaker.getState() === 'open') {
       logger.warn(
         LogCategory.SYSTEM,
         '[EngineBridge] Tier 2 引擎处于熔断冷却期，跳过静默拉起（分析将降级到 Tier 1）'
@@ -576,9 +580,11 @@ export class EngineBridgeService {
         ...process.env,
         ENGINE_PORT: String(TIER2_ENGINE_PORT)
       }
+      // windowsHide: 抑制 Windows 控制台窗口闪烁（debug 构建的引擎为控制台子系统）
       const child = spawn(exePath, ['--silent', '--tray'], {
         detached: true,
         stdio: 'ignore',
+        windowsHide: true,
         env
       })
       this.process = child
@@ -626,18 +632,44 @@ export class EngineBridgeService {
     }
   }
 
+  /**
+   * 等待引擎 HTTP 就绪。
+   *
+   * **不得走熔断器**：拉起后的启动窗口内探活失败是预期现象（引擎仍在初始化），
+   * 若记入熔断器，3 次失败即 open，后续 canExecute()=false 会直接跳过探测，
+   * 表现为「引擎明明已就绪，desktop 仍报启动超时」。这里只做裸探活。
+   */
   private async waitForReady(limitMs: number): Promise<boolean> {
     const start = Date.now()
     while (Date.now() - start < limitMs) {
-      if (this.circuitBreaker.canExecute()) {
-        const status = await this.healthCheck()
-        if (status) {
-          return true
-        }
+      // 裸探活：不触碰熔断器，兼容基准端口与 38400~38419 滑动端口
+      let status = await this.probeStatus(this.activePort, STATUS_TIMEOUT_MS)
+      if (!status) {
+        status = await this.probeStatusForReady()
+      }
+      if (status) {
+        this.circuitBreaker.recordSuccess()
+        this.applyStatus(status)
+        return true
       }
       await new Promise(resolve => setTimeout(resolve, 1200))
     }
     return false
+  }
+
+  /** 就绪等待专用滑动端口扫描（不触碰熔断器） */
+  private async probeStatusForReady(): Promise<Tier2EngineStatus | null> {
+    for (let port = TIER2_ENGINE_PORT; port < TIER2_ENGINE_PORT + PORT_SCAN_RANGE; port++) {
+      if (port === this.activePort) {
+        continue
+      }
+      const status = await this.probeStatus(port, PORT_PROBE_TIMEOUT_MS)
+      if (status) {
+        this.activePort = port
+        return status
+      }
+    }
+    return null
   }
 
   /**
@@ -798,7 +830,8 @@ export class EngineBridgeService {
     }
     try {
       if (process.platform === 'win32' && proc.pid) {
-        execSync(`taskkill /pid ${proc.pid} /T /F`, { stdio: 'ignore' })
+        // windowsHide: 抑制 taskkill 控制台窗口闪烁
+        execSync(`taskkill /pid ${proc.pid} /T /F`, { stdio: 'ignore', windowsHide: true })
       } else {
         proc.kill('SIGKILL')
       }

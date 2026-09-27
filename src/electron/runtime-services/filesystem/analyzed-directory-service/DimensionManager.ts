@@ -6,14 +6,6 @@ import {
 } from '@firefly/types'
 import { TagTreeQuery } from '../virtual-directory-service/TagTreeQuery'
 
-export interface LogicPanItem {
-  zh: string
-  en: string
-  dimensionId: number
-  dimensionName: string
-  logicPanDimension: string
-}
-
 /**
  * DimensionManager 薄封装服务
  * 

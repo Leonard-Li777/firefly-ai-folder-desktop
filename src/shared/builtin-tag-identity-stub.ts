@@ -134,7 +134,7 @@ export function buildBuiltinImportPlan(input: {
   aliases: TagAliasImportRow[]
   dimensionRoots: Array<{ code: string; name: string; dimId: number }>
 } {
-  const dimCode = input.dimensionRootCode ?? ((id: number) => `dim.${id}`)
+  const dimCode = input.dimensionRootCode ?? ((id: number) => `builtin.dim_${id}`)
   const tags: FileTagImportRow[] = []
   const aliases: TagAliasImportRow[] = []
   for (const item of input.items) {
