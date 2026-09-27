@@ -108,8 +108,8 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
       // 收尾评审修正：SYSTEM_TAG_NAMES 恒为中文规范词形，必须显式锚定 'zh-CN' 分表检索，
       // 否则非中文界面语言下 findTagCodeByLemma 默认查当前语言分表（英文 lemma）必然落空。
       const basicAttrCode =
-        databaseService.findTagCodeByLemma(SYSTEM_TAG_NAMES.basicAttr, 'zh-CN') ??
-        databaseService.findTagCodeByLemma(SYSTEM_TAG_NAMES.emptyFile, 'zh-CN') ??
+        databaseService.findTagCodeByLemma(SYSTEM_TAG_NAMES.basicAttr, 'zh-CN')?.tagCode ??
+        databaseService.findTagCodeByLemma(SYSTEM_TAG_NAMES.emptyFile, 'zh-CN')?.tagCode ??
         null
 
       if (basicAttrCode === null) {

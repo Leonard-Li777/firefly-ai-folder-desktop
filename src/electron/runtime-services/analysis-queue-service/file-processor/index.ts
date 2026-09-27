@@ -991,7 +991,7 @@ export class FileProcessor {
           language: baseMetadata?.language,
           fileGroup: existingMagikaGroup,
           extension: path.extname(filePath).replace(/^\./, '').toLowerCase(),
-          resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)
+          resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)?.tagCode
         })
 
         databaseService.syncFTSTags(fileFingerprint)
@@ -1957,7 +1957,7 @@ export class FileProcessor {
           language,
           fileGroup: magikaGroup,
           extension: effectiveExt,
-          resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)
+          resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)?.tagCode
         })
 
         databaseService.syncFTSTags(fileFingerprint)
@@ -2075,7 +2075,7 @@ export class FileProcessor {
         language,
         fileGroup: magikaGroup,
         extension: effectiveExt,
-        resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)
+        resolveControlledCode: (lemma: string) => databaseService.findTagCodeByLemma(lemma)?.tagCode
       })
 
       databaseService.syncFTSTags(fileFingerprint)

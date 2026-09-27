@@ -1,7 +1,12 @@
 import { app as electronApp } from 'electron'
 import path from 'path'
 import { decompressText } from '../../utils/text-compressor'
-import { LogCategory, logger, SUPPORTED_LANGUAGES_KEY } from '@firefly/shared'
+import {
+  detectTagLanguage,
+  LogCategory,
+  logger,
+  SUPPORTED_LANGUAGES_KEY
+} from '@firefly/shared'
 import type { Database } from 'better-sqlite3'
 
 /**
@@ -529,6 +534,101 @@ export function createTagAliasesLangTable(db: Database, locale: string): void {
     ) WITHOUT ROWID;
     CREATE INDEX IF NOT EXISTS idx_${table}_lemma ON ${table}(lemma);
   `)
+}
+
+/**
+ * 两阶段反查结果 (ADR-0048)
+ */
+export interface TwoStageTagLookup {
+  /** 受控标签 code（builtin.* / omw.* 等） */
+  tagCode: string
+  /**
+   * 命中 code 在当前语言下的规范展示名（is_canonical = 1 的 lemma）。
+   * 仅第二阶段（异语命中）时才有值；第一阶段（当前语言直查）命中时为 undefined，
+   * 此时调用方沿用原 lemma 即为当前语言词形，无需替换。
+   */
+  canonicalName?: string
+}
+
+/** 单分表反查：按 lemma 查 tag_code，omw.* > builtin.* > 其它 */
+function queryTagCodeInTable(
+  db: Database,
+  table: string,
+  lemma: string
+): { tagCode?: string } {
+  const rows = db
+    .prepare(
+      `SELECT tag_code FROM ${table}
+       WHERE lemma = ?
+       ORDER BY CASE
+         WHEN tag_code LIKE 'omw.%' THEN 0
+         WHEN tag_code LIKE 'builtin.%' THEN 1
+         ELSE 2 END
+       LIMIT 1`
+    )
+    .all(lemma) as { tag_code: string }[]
+  const tagCode = rows[0]?.tag_code
+  if (!tagCode) return {}
+  return { tagCode }
+}
+
+/**
+ * 受控标签两阶段跨语言反查 (ADR-0048，与 Omni Rust 侧 resolve_controlled_tag_two_stage 对齐)：
+ * 1. 当前语言分表直查；
+ * 2. 未命中时执行 Unicode LID 语言识别，识别语种与当前语言相同则短路返回 undefined；
+ * 3. 异语分表反查，命中后反查当前语言 is_canonical = 1 规范名就地本地化 (Q2 选项 A)。
+ *
+ * 供 DatabaseService.findTagCodeByLemma 与单测直接复用（生产链路，不经过任何 mock 包装）。
+ * 抛出的 SQLite 异常由调用方捕获处理。
+ */
+export function findTagCodeTwoStage(
+  db: Database,
+  lemma: string,
+  locale?: string,
+  currentLanguage?: string
+): TwoStageTagLookup | undefined {
+  if (!lemma) return undefined
+  const cleanLemma = lemma.trim()
+  if (!cleanLemma) return undefined
+  const targetLocale = locale || currentLanguage || 'zh-CN'
+
+  // ─── 第一阶段：当前语言分表直查 ───
+  const langTable = resolveTagAliasesLangTable(targetLocale)
+  const first = queryTagCodeInTable(db, langTable, cleanLemma)
+  if (first.tagCode) {
+    // 当前语言命中：lemma 本身即为当前语言词形，无需就地本地化
+    return { tagCode: first.tagCode }
+  }
+
+  // ─── 第二阶段：Unicode LID 语言识别与异语分表反查 (ADR-0048) ───
+  const detectedLocale = detectTagLanguage(cleanLemma)
+  // 同语种短路：识别语种与当前语言相同，不再重复查询
+  if (detectedLocale === targetLocale) {
+    return undefined
+  }
+
+  const detectedTable = resolveTagAliasesLangTable(detectedLocale)
+  // 检查本地库是否存在该异语分表
+  const tableExists = db
+    .prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?`)
+    .get(detectedTable)
+  if (!tableExists) {
+    return undefined
+  }
+  const second = queryTagCodeInTable(db, detectedTable, cleanLemma)
+  if (second.tagCode) {
+    // canonicalName 在异语表上无意义，需回当前语言分表反查规范名
+    const canonRows = db
+      .prepare(
+        `SELECT lemma FROM ${langTable}
+         WHERE tag_code = ? AND is_canonical = 1
+         LIMIT 1`
+      )
+      .all(second.tagCode) as { lemma: string }[]
+    return { tagCode: second.tagCode, canonicalName: canonRows[0]?.lemma }
+  }
+
+  return undefined
 }
 
 /**

@@ -153,55 +153,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
         speed: 'very_fast',
         quality: 'high'
       },
-      tags: [t('去限制'), t('无审查'), 'NSFW', t('仅文本'), t('中文更佳')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M',
-      name: `LFM2.5 2.6B（${t('快速')}）`,
-      company: 'LiquidAI',
-      parameterSize: '2.6B',
-      intelligenceLevel: 2,
-      totalSize: '1.63GB',
-      recommended: true,
-      description: t('最新 LFM2.5 2.6B 官方模型，平衡高效推理与高质量分析，支持 DSpark 投机采样加速。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 32768,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'very_fast',
-        quality: 'high'
-      },
-      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('英文更佳')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'Abiray/LFM2.5-2.6B-Heretic-Abliterated-GGUF:Q4_K_M',
-      name: `LFM2.5 2.6B（${t('越狱')}）`,
-      company: 'Abiray',
-      parameterSize: '2.6B',
-      intelligenceLevel: 2,
-      totalSize: '1.56GB',
-      recommended: true,
-      description: t('LFM2.5 2.6B 去限制无审查版本，平衡速度与质量。'),
-      source: 'huggingface',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 32768,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'very_fast',
-        quality: 'high'
-      },
-      tags: [t('去限制'), t('无审查'), 'NSFW', t('仅文本')],
+      tags: [t('去限制'), t('越狱'), 'NSFW', t('仅文本'), t('中文更佳')],
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 2048
@@ -230,102 +182,6 @@ export const MODEL_CONFIG_SOURCE = () => ({
         numCtx: 8192,
         numPredict: 3072
       }
-    },
-    {
-      id: 'mradermacher/Qwen3.5-4B_Abliterated-GGUF:Q4_K_M',
-      name: `Qwen 3.5 4B（${t('平衡')}）`,
-      company: 'mradermacher',
-      parameterSize: '4B',
-      intelligenceLevel: 3,
-      totalSize: '3.08GB',
-      recommended: false,
-      description: t('去限制版本（Abliterated）平衡速度与质量。'),
-      source: 'huggingface',
-      quantization: 'Q4_K_M',
-      isMultiModal: true,
-      contextLength: 262144,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'fast',
-        quality: 'high'
-      },
-      tags: [t('去限制'), t('无审查'), 'NSFW', t('越狱'), t('多模态')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 3072
-      }
-    },
-    {
-      id: 'mradermacher/Huihui-Qwen3.5-2B-abliterated-GGUF:Q8_0',
-      name: `Qwen 3.5 2B（${t('较好')}）`,
-      company: 'mradermacher',
-      parameterSize: '2B',
-      intelligenceLevel: 2,
-      totalSize: '2.68GB',
-      recommended: false,
-      description: t('4G显存首选。'),
-      source: 'huggingface',
-      quantization: 'Q8_0',
-      isMultiModal: true,
-      contextLength: 262144,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'very_fast',
-        quality: 'very_high'
-      },
-      tags: [t('去限制'), t('无审查'), 'NSFW', t('越狱'), t('多模态')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 3072
-      }
-    },
-    {
-      id: 'tatsuyaaaaaaa/Qwen3.5-2B-gguf:Q4_0',
-      name: `Qwen 3.5 2B（${t('日语优化')}）`,
-      company: 'tatsuyaaaaaaa',
-      parameterSize: '2B',
-      intelligenceLevel: 2,
-      totalSize: '1.2GB',
-      recommended: false,
-      description: t('日语数据集优化的文本分析模型，仅支持文本分析。'),
-      source: 'huggingface',
-      quantization: 'Q4_0',
-      isMultiModal: false,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'fast',
-        quality: 'medium'
-      },
-      tags: [t('日语优化'), t('仅文本'), t('低显存')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'jordanwoodson/Qwen3.5-2B-heretic-GGUF:Q4_K_M',
-      name: `Qwen 3.5 2B（${t('越狱文本')}）`,
-      company: 'jordanwoodson',
-      parameterSize: '2B',
-      intelligenceLevel: 2,
-      totalSize: '1.27GB',
-      recommended: false,
-      description: t('对内容有一定理解能力的越狱模型。'),
-      source: 'huggingface',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 131072,
-      performance: {
-        speed: 'fast',
-        quality: 'high'
-      },
-      tags: [t('越狱'), t('无审查'), 'NSFW', t('仅文本')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      },
-      capabilities: ['TEXT']
     },
     {
       id: 'ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M',
@@ -400,52 +256,6 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
-      id: 'MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K',
-      name: `Qwen 3.5 9B v2（${t('越狱')}）`,
-      company: 'MaimaiSuirai',
-      parameterSize: '9B',
-      intelligenceLevel: 3,
-      totalSize: '8.27GB',
-      description: t('第二代去审查版，能力出众。'),
-      source: 'modelscope',
-      quantization: 'Q6_K',
-      isMultiModal: true,
-      contextLength: 131072,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'medium',
-        quality: 'high'
-      },
-      tags: [t('越狱'), 'NSFW', t('无审查'), t('多模态')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 3072
-      }
-    },
-    {
-      id: 'MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S',
-      name: `Qwen 3.5 27B v2（${t('无审查')}）`,
-      company: 'MaimaiSuirai',
-      parameterSize: '27B',
-      intelligenceLevel: 4,
-      totalSize: '15.57GB',
-      description: t('顶级的 Qwen 3.5 27B 去审查版，极强的推理与视觉综合能力。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_S',
-      isMultiModal: true,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'medium',
-        quality: 'very_high'
-      },
-      tags: [t('越狱'), 'NSFW', t('无审查'), t('多模态'), t('大参数')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 4096
-      }
-    },
-    {
       id: 'mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF',
       name: `Gemma 4 26B-it（${t('全能')}）`,
       company: 'Mudler',
@@ -463,34 +273,10 @@ export const MODEL_CONFIG_SOURCE = () => ({
         speed: 'medium',
         quality: 'very_high'
       },
-      tags: [t('越狱'), 'NSFW', t('无审查'), t('英文更佳')],
+      tags: [t('越狱'), 'NSFW', t('越狱'), t('英文更佳')],
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 3072
-      }
-    },
-    {
-      id: 'Abiray/Qwen3.5-2B-heretic-GGUF:Q4_K_M',
-      name: `Qwen 3.5 2B (${t('越狱识图')})`,
-      company: 'Abiray',
-      parameterSize: '2B',
-      intelligenceLevel: 2,
-      totalSize: '1.81GB',
-      recommended: false,
-      description: t('越狱版，支持图像分析。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_M',
-      isMultiModal: true,
-      contextLength: 131072,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'fast',
-        quality: 'high'
-      },
-      tags: [t('越狱'), t('无审查'), 'NSFW', t('多模态')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
       }
     },
     {
@@ -543,111 +329,19 @@ export const MODEL_CONFIG_SOURCE = () => ({
         numPredict: 3072
       }
     },
-       {
-      id: 'Abiray/Nanbeige4.2-3B-GGUF:Q4_K_S',
-      name: t('Nanbeige 4.2 3B（较好）'),
-      company: 'Abiray',
-      parameterSize: '3B',
-      intelligenceLevel: 2,
-      totalSize: '2.33GB',
-      recommended: false,
-      description: t('3B身材硬钢9B，强列推荐，但仅支持文本。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_S',
-      isMultiModal: false,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'fast',
-        quality: 'medium'
-      },
-      tags: [t('仅文本'), t('编程优化'), t('中文更佳')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
     {
-      id: 'mradermacher/Nanbeige4.2-3B-heretic-i1-GGUF:i1-Q5_K_M',
-      name: `Nanbeige 4.2 3B（${t('越狱-优化')}）`,
-      company: 'mradermacher',
-      parameterSize: '3B',
-      intelligenceLevel: 2,
-      totalSize: '2.78GB',
-      recommended: false,
-      description: t('3B身材硬钢9B，越狱版i1量化精度更高，但仅支持文本。'),
-      source: 'huggingface',
-      quantization: 'i1-Q5_K_M',
-      isMultiModal: false,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'fast',
-        quality: 'high'
-      },
-      tags: [t('越狱'), t('无审查'), 'NSFW', t('仅文本'), t('高精度')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'unsloth/gemma-3-1b-it-GGUF:UD-Q4_K_XL',
-      name: 'Gemma 3 1B Instruct（基础）',
-      company: 'Google',
-      parameterSize: '1B',
-      intelligenceLevel: 1,
-      totalSize: '770MB',
-      description: t('英文小模型翘楚'),
-      source: 'huggingface',
-      quantization: 'UD-Q4_K_XL',
-      isMultiModal: false,
-      contextLength: 32768,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'extreme',
-        quality: 'medium'
-      },
-      tags: [t('轻量'), t('支持CPU运行'), t('仅文本'), t('英文更佳')],
-      recommendedConfig: {
-        numCtx: 4096,
-        numPredict: 1024
-      }
-    },
-    {
-      id: 'gaston-parravicini/LFM2.5-8B-A1B-Uncensored-Gaston-GGUF:Q4_K_M',
-      name: `LFM2.5 8B A1B（${t('越狱')}）`,
-      company: 'gaston-parravicini',
-      parameterSize: '8B-A1B',
-      intelligenceLevel: 3,
-      totalSize: '4.80GB',
-      recommended: true,
-      description: t('LFM2.5 8B A1B MoE 无审查版本，仅 1B 激活参数，速度与质量均衡。'),
-      source: 'huggingface',
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 32768,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'very_fast',
-        quality: 'high'
-      },
-      tags: ['MoE', t('无审查'), 'NSFW', t('越狱'), t('仅文本'), t('英文更佳')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'dealignai/Bonsai-27b-1bit-CRACK-GGUF:Q1_0',
-      name: `Bonsai 27B 1-bit（${t('超级压缩')}）`,
-      company: 'dealignai',
+      // 同目录最小投影文件 mmproj-Q8_0.gguf (629,246,976 B)
+      // totalSize = 主模型 PQ2_0 (7,206,168,928 B) + 投影 (629,246,976 B) = 7,835,415,904 B ≈ 7.30GiB
+      id: 'OS-Software/Ternary-Bonsai-2-27B-Uncensored-Heretic-GGUF:PQ2_0',
+      name: `Bonsai 2 ternary 27B（${t('2比特')}•${t('越狱')}）`,
+      company: 'OS-Software',
       parameterSize: '27B',
-      intelligenceLevel: 2,
-      totalSize: '5.21GB',
-      description: t('Bonsai 27B 一比特量化越狱版本，去对齐无审查，支持文本与图像分析。'),
+      intelligenceLevel: 3,
+      totalSize: '7.30GB',
+      recommended: true,
+      description: t('Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐越狱，支持文本与图像分析。'),
       source: 'huggingface',
-      quantization: 'Q1_0',
+      quantization: 'PQ2_0',
       isMultiModal: true,
       contextLength: 131072,
       capabilities: ['TEXT', 'IMAGE'],
@@ -655,7 +349,111 @@ export const MODEL_CONFIG_SOURCE = () => ({
         speed: 'fast',
         quality: 'medium'
       },
-      tags: [t('1比特'), t('越狱'), t('无审查'), 'NSFW', t('多模态'), t('低显存')],
+      tags: [t('2比特'), t('越狱'), t('越狱'), 'NSFW', t('多模态'), t('低显存')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 4096
+      }
+    },
+    {
+      // 同目录最小投影文件 mmproj-Q8_0.gguf (629,246,976 B)
+      // totalSize = 主模型 PTQ1_0 (5,946,648,928 B) + 投影 (629,246,976 B) = 6,575,895,904 B ≈ 6.12GiB
+      id: 'OS-Software/Ternary-Bonsai-2-27B-Uncensored-Heretic-GGUF:PTQ1_0',
+      name: `Bonsai 2 ternary 27B（${t('超级压缩')}•${t('越狱')}）`,
+      company: 'OS-Software',
+      parameterSize: '27B',
+      intelligenceLevel: 3,
+      totalSize: '6.12GB',
+      recommended: true,
+      description: t('Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐越狱，体积最小，支持文本与图像分析。'),
+      source: 'huggingface',
+      quantization: 'PTQ1_0',
+      isMultiModal: true,
+      contextLength: 131072,
+      capabilities: ['TEXT', 'IMAGE'],
+      performance: {
+        speed: 'fast',
+        quality: 'medium'
+      },
+      tags: [t('1比特'), t('越狱'), t('越狱'), 'NSFW', t('多模态'), t('低显存')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 4096
+      }
+    },
+    {
+      // ModelScope 仓库仅含单文件，无投影文件
+      // totalSize = 主模型 PTQ1_0-CRACK (5,946,648,928 B) ≈ 5.54GiB
+      id: 'dealignai/Bonsai-2-27B-1bit-CRACK-GGUF:Bonsai-2-27B-PTQ1_0-CRACK.gguf',
+      name: `Bonsai 27B 1-bit（${t('超级压缩')}•${t('国内加速')}）`,
+      company: 'dealignai',
+      parameterSize: '27B',
+      intelligenceLevel: 3,
+      totalSize: '5.54GB',
+      recommended: true,
+      description: t('Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。'),
+      source: 'modelscope',
+      quantization: 'PTQ1_0',
+      isMultiModal: false,
+      contextLength: 131072,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'fast',
+        quality: 'medium'
+      },
+      tags: [t('1比特'), t('越狱'), t('越狱'), 'NSFW', t('仅文本'), t('低显存')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 4096
+      }
+    },
+    {
+      // 同目录最小投影文件 Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf (629,246,976 B)
+      // totalSize = 主模型 PQ2_0 (7,206,168,928 B) + 投影 (629,246,976 B) = 7,835,415,904 B ≈ 7.30GiB
+      id: 'prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf',
+      name: `Bonsai 2 ternary 27B（${t('2比特')}•${t('官方')}•${t('国内加速')}）`,
+      company: 'prism-ml',
+      parameterSize: '27B',
+      intelligenceLevel: 3,
+      totalSize: '7.30GB',
+      recommended: true,
+      description: t('Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。'),
+      source: 'modelscope',
+      quantization: 'PQ2_0',
+      isMultiModal: true,
+      contextLength: 131072,
+      capabilities: ['TEXT', 'IMAGE'],
+      performance: {
+        speed: 'fast',
+        quality: 'medium'
+      },
+      tags: [t('2比特'), t('多模态'), t('低显存')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 4096
+      }
+    },
+    {
+      // 同目录最小投影文件 Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf (629,246,976 B)
+      // totalSize = 主模型 PTQ1_0 (5,946,648,928 B) + 投影 (629,246,976 B) = 6,575,895,904 B ≈ 6.12GiB
+      id: 'prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf',
+      name: `Bonsai 2 ternary 27B（${t('超级压缩')}）`,
+      company: 'prism-ml',
+      parameterSize: '27B',
+      intelligenceLevel: 3,
+      totalSize: '6.12GB',
+      recommended: true,
+      description: t('Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。'),
+      source: 'modelscope',
+      quantization: 'PTQ1_0',
+      isMultiModal: true,
+      contextLength: 131072,
+      capabilities: ['TEXT', 'IMAGE'],
+      performance: {
+        speed: 'fast',
+        quality: 'medium'
+      },
+      tags: [t('1比特'), t('多模态'), t('低显存')],
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 4096
@@ -693,7 +491,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       intelligenceLevel: 4,
       totalSize: '17.56GB',
       recommended: true,
-      description: t('Qwen3.8-27B 激进去审查版本，P 系重量化在关键张量保留更高精度，无审查且支持图像分析。'),
+      description: t('Qwen3.8-27B 激进去审查版本，P 系重量化在关键张量保留更高精度，越狱且支持图像分析。'),
       source: 'huggingface',
       quantization: 'Q4_K_P',
       isMultiModal: true,
@@ -703,7 +501,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
         speed: 'slow',
         quality: 'very_high'
       },
-      tags: [t('越狱'), t('无审查'), 'NSFW', t('多模态'), t('大参数'), 'MTP'],
+      tags: [t('越狱'), t('越狱'), 'NSFW', t('多模态'), t('大参数'), 'MTP'],
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 4096

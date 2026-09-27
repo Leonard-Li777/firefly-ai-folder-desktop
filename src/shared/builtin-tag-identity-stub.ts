@@ -8,6 +8,8 @@
 
 import { createHash } from 'node:crypto'
 
+import { getControlledDimensionRootCode } from '@firefly/shared'
+
 export interface FileDimensionDocument {
   file_dimensions: Array<{
     id: number
@@ -134,7 +136,8 @@ export function buildBuiltinImportPlan(input: {
   aliases: TagAliasImportRow[]
   dimensionRoots: Array<{ code: string; name: string; dimId: number }>
 } {
-  const dimCode = input.dimensionRootCode ?? ((id: number) => `builtin.dim_${id}`)
+  // 维度根 code 策略与 pro 侧 import-plan.ts 契约同源：统一反查受控维度根，严禁 builtin.dim_{id} 悬空
+  const dimCode = input.dimensionRootCode ?? ((id: number) => getControlledDimensionRootCode(id))
   const tags: FileTagImportRow[] = []
   const aliases: TagAliasImportRow[] = []
   for (const item of input.items) {

@@ -14,11 +14,15 @@ export function getProConfig(): Record<string, unknown> | null {
 }
 
 export interface ProGroundTruthTag {
-  dimensionName: string
   tagName: string
   confidence: number
-  dimensionId?: number | string
-  tagId?: number
+  tagCode?: string
+  code?: string
+  parentName?: string
+  viaParentName?: string
+  viaParentCode?: string
+  parentCodes?: string[]
+  group?: string
 }
 
 export interface ProPreflightParams {
