@@ -663,7 +663,7 @@ export class EngineBridgeService {
    * 确保引擎在线：在线则直接复用；离线则尝试静默拉起（受熔断器保护）
    * @param options.force 显式启动（用户点击）时跳过熔断冷却，避免「点了没反应」
    */
-  public async ensureRunning(options?: { force?: boolean }): Promise<boolean> {
+  public async ensureRunning(options?: { force?: boolean; mode?: 'language' | 'embedding' }): Promise<boolean> {
     if (options?.force) {
       // 显式启动视为用户意图，复位熔断器重新放行
       this.circuitBreaker.reset()
@@ -999,10 +999,12 @@ export class EngineBridgeService {
    * 启动引擎侧 AI 推理服务（llama.cpp 子进程），不退出引擎应用本身
    * 对应引擎端 POST /api/engine/start
    */
-  public async startService(): Promise<{ ok: boolean; error?: string }> {
+  public async startService(options?: { mode?: 'language' | 'embedding'; modelId?: string }): Promise<{ ok: boolean; error?: string }> {
     try {
       const res = await fetch(`${this.baseUrl}${ENGINE_SERVICE_START_PATH}`, {
         method: 'POST',
+        headers: options ? { 'Content-Type': 'application/json' } : undefined,
+        body: options ? JSON.stringify(options) : undefined,
         signal: AbortSignal.timeout(SERVICE_ACTION_TIMEOUT_MS)
       })
       const body = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string }
@@ -1016,6 +1018,29 @@ export class EngineBridgeService {
       logger.warn(LogCategory.SYSTEM, `[EngineBridge] 启动 AI 服务请求失败: ${error}`)
       return { ok: false, error }
     }
+  }
+
+  /**
+   * 确保引擎以指定的意图模式运行（'language' | 'embedding'）
+   * - 'language'：主语言模型模式（用于文件分析、文本分类）
+   * - 'embedding'：多模态嵌入模式（用于 Stage 5 高维修正 WeMM 向量嵌入）
+   * 若当前未运行或运行的模型与目标意图不符，则按意图重新激活并启动
+   */
+  public async ensureMode(mode: 'language' | 'embedding'): Promise<{ ok: boolean; error?: string }> {
+    const running = await this.ensureRunning({ mode })
+    if (!running) {
+      return { ok: false, error: 'AI引擎未运行且拉起失败' }
+    }
+    const status = await this.healthCheck()
+    const currentModel = (status?.current_model || status?.model || '').toLowerCase()
+    const isCurrentlyEmbedding = currentModel.includes('wemm') || currentModel.includes('embedding')
+    const matchesTarget = mode === 'embedding' ? isCurrentlyEmbedding : !isCurrentlyEmbedding
+
+    if (status?.status === 'ready' && matchesTarget) {
+      return { ok: true }
+    }
+
+    return this.startService({ mode })
   }
 
   /**
@@ -1155,16 +1180,16 @@ export class EngineBridgeService {
         logger.warn(LogCategory.SYSTEM, '[EngineBridge] 状态订阅者回调异常:', err)
       }
     })
-    if (typeof BrowserWindow !== 'undefined') {
-      try {
+    try {
+      if (typeof BrowserWindow !== 'undefined' && typeof BrowserWindow?.getAllWindows === 'function') {
         for (const win of BrowserWindow.getAllWindows()) {
           if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
             win.webContents.send('tier2:status-changed', snapshot)
           }
         }
-      } catch (err) {
-        logger.warn(LogCategory.SYSTEM, '[EngineBridge] 向渲染窗口广播状态失败:', err)
       }
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[EngineBridge] 向渲染窗口广播状态失败:', err)
     }
   }
 

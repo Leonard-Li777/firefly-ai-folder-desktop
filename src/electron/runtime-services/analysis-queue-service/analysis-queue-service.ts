@@ -244,8 +244,11 @@ export class AnalysisQueueService {
         releaseEngine: async () => {
           logger.info(
             LogCategory.ANALYSIS_QUEUE,
-            '[高维修正] 让权：单文件已原子落库，交还调度权给新插入的普通分析任务'
+            '[高维修正] 让权：单文件已原子落库，交还调度权给新插入的普通分析任务并切回主语言模型'
           )
+          await engineBridgeService?.ensureMode?.('language')?.catch?.(err => {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, '[高维修正] 让权切回主语言模型告警:', err)
+          })
         }
       })
 
@@ -685,8 +688,11 @@ export class AnalysisQueueService {
           this.updateItemStatus(next.id, 'analyzing', 0)
 
           if (next.taskType === 'high_dim_correction') {
-            // Stage 5：单文件为最小事务单元，落库完成即可安全让权（Issue 0046 §4）
+            // Stage 5：确保以 WeMM embedding 模式运行，单文件为最小事务单元，落库完成即可安全让权（Issue 0046 §4）
             try {
+              await engineBridgeService?.ensureMode?.('embedding')?.catch?.(err => {
+                logger.warn(LogCategory.ANALYSIS_QUEUE, '[高维修正] 调度 WeMM 嵌入模式告警:', err)
+              })
               const outcome = await this.highDimCorrectionService.correctOne(next, currentSignal)
               logger.info(
                 LogCategory.ANALYSIS_QUEUE,
@@ -707,11 +713,15 @@ export class AnalysisQueueService {
             if (this.highDimCorrectionService.consumeYield()) {
               await this.highDimCorrectionService.releaseEngine()
             }
-          } else if (next.itemType === 'directory') {
-            await this.directoryProcessor.processDirectory(next)
           } else {
-            await this.fileProcessor.processFile(next, currentSignal)
-            cloudSyncWorker.triggerSync(2000)
+            // 普通分析任务：确保引擎处于主语言模型模式
+            await engineBridgeService?.ensureMode?.('language')?.catch?.(() => {})
+            if (next.itemType === 'directory') {
+              await this.directoryProcessor.processDirectory(next)
+            } else {
+              await this.fileProcessor.processFile(next, currentSignal)
+              cloudSyncWorker.triggerSync(2000)
+            }
           }
 
           const updatedSnapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
