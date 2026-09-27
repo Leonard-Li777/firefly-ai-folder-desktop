@@ -545,7 +545,7 @@
             "空调"
           ]
         ],
-        "syntacticRole": "scene"
+        "syntacticRole": "form"
       }
     ]
   },
@@ -19608,7 +19608,7 @@
             "冷却器"
           ]
         ],
-        "syntacticRole": "scene"
+        "syntacticRole": "subject"
       }
     ]
   },
@@ -19628,7 +19628,7 @@
             "铜"
           ]
         ],
-        "syntacticRole": "scene"
+        "syntacticRole": "form"
       }
     ]
   },
@@ -31210,7 +31210,7 @@
             "冰箱"
           ]
         ],
-        "syntacticRole": "scene"
+        "syntacticRole": "subject"
       }
     ]
   },
@@ -39134,7 +39134,7 @@
             "铁"
           ]
         ],
-        "syntacticRole": "scene"
+        "syntacticRole": "form"
       }
     ]
   },
@@ -45789,7 +45789,7 @@
             "金属"
           ]
         ],
-        "syntacticRole": "scene"
+        "syntacticRole": "form"
       }
     ]
   },
@@ -53839,7 +53839,7 @@
             "塑料"
           ]
         ],
-        "syntacticRole": "scene"
+        "syntacticRole": "form"
       }
     ]
   },
@@ -63799,7 +63799,7 @@
             "银"
           ]
         ],
-        "syntacticRole": "scene"
+        "syntacticRole": "form"
       }
     ]
   },
@@ -77954,7 +77954,7 @@
             "木头"
           ]
         ],
-        "syntacticRole": "scene"
+        "syntacticRole": "form"
       }
     ]
   },
