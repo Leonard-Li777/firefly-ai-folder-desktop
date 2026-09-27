@@ -5,7 +5,7 @@ import type {
   Unit,
   UnitCreationData
 } from '@firefly/types'
-import { LogCategory, logger, isTestEnvironment } from '@firefly/shared'
+import { LogCategory, logger, isTestEnvironment, detectTagLanguage } from '@firefly/shared'
 import {
   getDatabaseConfig,
   migrations,
@@ -1579,9 +1579,12 @@ export class DatabaseService {
    */
   public findTagCodeByLemma(lemma: string, locale?: string): string | undefined {
     if (!lemma || !this._db) return undefined
+    const cleanLemma = lemma.trim()
+    if (!cleanLemma) return undefined
     const targetLocale = locale || this.currentLanguage || 'zh-CN'
     const langTable = resolveTagAliasesLangTable(targetLocale)
     try {
+      // 1. 第一阶段：查当前目标语言分表
       const rows = this._db
         .prepare(
           `SELECT tag_code FROM ${langTable}
@@ -1592,8 +1595,38 @@ export class DatabaseService {
              ELSE 2 END
            LIMIT 1`
         )
-        .all(lemma) as { tag_code: string }[]
-      return rows[0]?.tag_code
+        .all(cleanLemma) as { tag_code: string }[]
+      if (rows[0]?.tag_code) {
+        return rows[0].tag_code
+      }
+
+      // 2. 第二阶段：Unicode LID 语言识别与异语分表反查 (ADR-0048)
+      const detectedLocale = detectTagLanguage(cleanLemma)
+      if (detectedLocale !== targetLocale) {
+        const detectedTable = resolveTagAliasesLangTable(detectedLocale)
+        // 检查本地库是否存在该异语分表
+        const tableExists = this._db
+          .prepare(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?`)
+          .get(detectedTable)
+        if (tableExists) {
+          const detectedRows = this._db
+            .prepare(
+              `SELECT tag_code FROM ${detectedTable}
+               WHERE lemma = ?
+               ORDER BY CASE
+                 WHEN tag_code LIKE 'omw.%' THEN 0
+                 WHEN tag_code LIKE 'builtin.%' THEN 1
+                 ELSE 2 END
+               LIMIT 1`
+            )
+            .all(cleanLemma) as { tag_code: string }[]
+          if (detectedRows[0]?.tag_code) {
+            return detectedRows[0].tag_code
+          }
+        }
+      }
+
+      return undefined
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, 'findTagCodeByLemma 反查失败:', error)
       return undefined
