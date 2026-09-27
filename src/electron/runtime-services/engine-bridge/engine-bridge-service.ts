@@ -20,6 +20,7 @@ import * as fs from 'node:fs'
 import { app, BrowserWindow } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS } from '@firefly/shared'
 import { Tier2CircuitBreaker, Tier2CircuitState } from './tier2-circuit-breaker'
+import { MODEL_CONFIG_SOURCE } from '../../config/model-source'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
 export const TIER2_ENGINE_PORT = APP_PORTS.LLAMA_LOCAL_SERVER
@@ -124,7 +125,7 @@ export interface EngineBridgeSnapshot {
   vramMb: number | null
   /** 引擎已安装模型数量（PRD-0044 状态卡增项；未连接或引擎未返回时为 null） */
   modelCount: number | null
-  /** 支持的可用模型总数（默认 32，来自内置可用模型库） */
+  /** 支持的可用模型总数（默认 33，合计语言模型与 embedding 模型，来自内置可用模型库） */
   totalModelCount: number | null
   /** 最近一次异常信息（静默记录） */
   lastError: string | null
@@ -145,10 +146,10 @@ export class EngineBridgeService {
   private lastRawStatus: Tier2EngineStatus | null = null
   private versionCache: string | null = null
   private lastError: string | null = null
-  /** 引擎已安装模型计数缓存（经 /api/models 异步汇总，见 refreshModelCount） */
+  /** 引擎已安装模型计数缓存（经 /api/models 异步汇总，包含语言模型与 embedding 模型，见 refreshModelCount） */
   private lastModelCount: number | null = null
-  /** 支持的可用模型总数缓存（默认 32） */
-  private lastTotalModelCount: number = 32
+  /** 支持的可用模型总数缓存（默认 33，合计语言模型与 embedding 模型） */
+  private lastTotalModelCount: number = 33
   /** model id / fileName → 展示名称映射（随 refreshModelCount 一并更新） */
   private lastModelNameMap: Map<string, string> = new Map()
   /** 最近一次有效的 current_model（服务停止后保留，用于 UI 持续展示上次激活模型） */
@@ -159,8 +160,8 @@ export class EngineBridgeService {
   private lastBackendMatchType: 'best' | 'compatible' | 'fallback' | null = null
   /** 引擎列表拉取防抖标志（与模型计数同策略，避免并发重复拉取） */
   private engineListFetching = false
-  /** 内置模型元数据缓存（id / name 映射列表） */
-  private builtinModelCatalog: Array<{ id: string; name: string }> | null = null
+  /** 内置模型元数据缓存（包含所有语言模型与 embedding 模型） */
+  private builtinModelCatalog: Array<{ id: string; name: string; isEmbedding?: boolean }> | null = null
   private modelCountFetching = false
   /**
    * 本服务已拉起二进制的签名（mtimeMs:size）。
@@ -289,14 +290,16 @@ export class EngineBridgeService {
   }
 
   /**
-   * 加载内置模型目录（带内存缓存），用于将引擎文件/ID映射为友好名称
+   * 加载内置推荐模型目录（带内存缓存），用于将引擎文件/ID映射为友好名称以及计算总可用模型数。
+   * 包含全部官方语言模型（31 个）与 Embedding 向量模型（2 个），共 33 个。
    */
-  private loadBuiltinModelCatalog(): Array<{ id: string; name: string }> {
+  private loadBuiltinModelCatalog(): Array<{ id: string; name: string; isEmbedding?: boolean }> {
     if (this.builtinModelCatalog && this.builtinModelCatalog.length > 0) {
       return this.builtinModelCatalog
     }
     try {
       const candidates = [
+        ResourceLocator.resolveModelConfig('model_zh-CN.json'),
         ResourceLocator.resolveResourcePath('model/model_zh-CN.json'),
         path.join(process.cwd(), 'apps', 'desktop', 'build', 'extraResources', 'model', 'model_zh-CN.json'),
         path.join(process.cwd(), 'build', 'extraResources', 'model', 'model_zh-CN.json')
@@ -308,15 +311,32 @@ export class EngineBridgeService {
           if (Array.isArray(parsed?.models)) {
             this.builtinModelCatalog = parsed.models.map((m: any) => ({
               id: String(m.id || ''),
-              name: String(m.name || '')
+              name: String(m.name || ''),
+              isEmbedding: Boolean(m.isEmbedding)
             }))
             return this.builtinModelCatalog || []
           }
         }
       }
     } catch (err) {
-      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 加载内置模型清单失败:', err)
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 从磁盘加载内置模型清单失败，使用编译期预设兜底:', err)
     }
+
+    // 兜底：使用编译期内置模型源配置（合计 31 语言模型 + 2 Embedding 模型 = 33 个）
+    try {
+      const fallback = MODEL_CONFIG_SOURCE()
+      if (Array.isArray(fallback?.models)) {
+        this.builtinModelCatalog = fallback.models.map((m: any) => ({
+          id: String(m.id || ''),
+          name: String(m.name || ''),
+          isEmbedding: Boolean(m.isEmbedding)
+        }))
+        return this.builtinModelCatalog || []
+      }
+    } catch (err) {
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 加载编译期模型源失败:', err)
+    }
+
     return []
   }
 
@@ -607,7 +627,9 @@ export class EngineBridgeService {
   }
 
   /**
-   * 从引擎 /api/models 汇总已安装模型数量并更新缓存（PRD-0044 状态卡增项）。
+   * 从引擎 /api/models 汇总已安装模型数量与可用模型总数并更新缓存（PRD-0044 状态卡增项）。
+   * 分子：已安装模型数（合计所有已下载就绪的语言模型、Embedding 向量模型及本地自定义模型）
+   * 分母：总可用模型数（合计所有官方推荐语言模型 31 个 + Embedding 向量模型 2 个 = 33 个，加上本地未在推荐库中的自定义模型）
    * 并发去重；数量变化时补播一次状态，让渲染层无需等下个轮询周期。
    */
   private async refreshModelCount(): Promise<void> {
@@ -627,15 +649,39 @@ export class EngineBridgeService {
           id?: string
           localPath?: string
           fileName?: string
+          isEmbedding?: boolean
         }>
         const prev = this.lastModelCount
         const prevTotal = this.lastTotalModelCount
         const prevFirst = this.firstDownloadedModel
+
+        // 1. 已安装模型数量：合计所有已下载的模型（包含语言模型、embedding 模型和自定义模型）
         this.lastModelCount = Array.isArray(list)
           ? list.filter(m => m?.isDownloaded === true).length
           : null
-        this.lastTotalModelCount = Array.isArray(list) && list.length > 1 ? list.length : 32
-        // 构建 id / localPath / fileName → name 映射，供快照查找当前模型展示名
+
+        // 2. 总可用模型数量：合计所有语言模型（31 个）与 embedding 模型（2 个）= 33 个推荐模型，
+        //    并加上扫描到的未在内置推荐列表中的外部自定义模型
+        const catalog = this.loadBuiltinModelCatalog()
+        const builtinCount = catalog.length > 0 ? catalog.length : 33
+        let customCount = 0
+        if (Array.isArray(list)) {
+          for (const m of list) {
+            if (!m) continue
+            // 判断是否已被内置推荐目录包含（按 id、name 或文件名模糊匹配）
+            const isBuiltin = catalog.some(b => {
+              if (b.id && (b.id === m.id || b.name === m.name)) return true
+              if (m.localPath && b.id && m.localPath.toLowerCase().includes(b.id.split(':')[0].toLowerCase())) return true
+              return false
+            })
+            if (!isBuiltin) {
+              customCount++
+            }
+          }
+        }
+        this.lastTotalModelCount = builtinCount + customCount
+
+        // 3. 构建 id / localPath / fileName → name 映射，供快照查找当前模型展示名
         if (Array.isArray(list)) {
           const map = new Map<string, string>()
           let firstDl: string | null = null

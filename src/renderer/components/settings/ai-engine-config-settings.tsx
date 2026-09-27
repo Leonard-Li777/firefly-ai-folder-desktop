@@ -672,7 +672,7 @@ export const AIEngineConfigSettings: React.FC = () => {
                         </span>
                         <span className="text-xs font-semibold">
                           {snapshot?.modelCount != null
-                            ? `${snapshot.modelCount} / ${snapshot.totalModelCount ?? 32} ${t('个可用')}`
+                            ? `${snapshot.modelCount} / ${snapshot.totalModelCount ?? 33} ${t('个可用')}`
                             : '—'}
                         </span>
                       </div>
