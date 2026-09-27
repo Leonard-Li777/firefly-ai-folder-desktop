@@ -20,7 +20,6 @@ import * as fs from 'node:fs'
 import { app, BrowserWindow } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS } from '@firefly/shared'
 import { Tier2CircuitBreaker, Tier2CircuitState } from './tier2-circuit-breaker'
-import { MODEL_CONFIG_SOURCE } from '../../config/model-source'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
 export const TIER2_ENGINE_PORT = APP_PORTS.LLAMA_LOCAL_SERVER
@@ -38,6 +37,8 @@ const ENGINE_LIST_PATH = '/api/engine/list'
 /** 引擎 AI 服务启停端点（启停 llama.cpp 推理子进程，非退出引擎应用） */
 const ENGINE_SERVICE_START_PATH = '/api/engine/start'
 const ENGINE_SERVICE_STOP_PATH = '/api/engine/stop'
+/** 引擎计算后端切换端点（写入 preferred_backend，重启服务后生效） */
+const ENGINE_SWITCH_PATH = '/api/engine/switch'
 
 /** 桥接请求超时（毫秒） */
 const STATUS_TIMEOUT_MS = 1500
@@ -166,7 +167,8 @@ export class EngineBridgeService {
   private builtinModelCatalog: Array<{ id: string; name: string; isEmbedding?: boolean }> | null = null
   /** 引擎模型元数据全量缓存（含 totalSize / vramRequiredGB / recommendedConfig 等，供 enrichAIStatus 匹配） */
   private modelMetaCache: { lang: string; models: any[]; fetchedAt: number } | null = null
-  private modelCountFetching = false
+  /** 模型计数刷新进行中的 Promise（并发调用共享同一刷新，await 可等待真正完成） */
+  private modelCountPromise: Promise<void> | null = null
   /**
    * 本服务已拉起二进制的签名（mtimeMs:size）。
    * 非 null 表示「本服务托管过引擎」，用于开发态感知 `engine:deploy:watch` 的重编译覆盖。
@@ -301,7 +303,14 @@ export class EngineBridgeService {
    */
   public async fetchModelMeta(lang = 'zh-CN', force = false): Promise<any[]> {
     const now = Date.now()
-    if (!force && this.modelMetaCache && this.modelMetaCache.lang === lang && now - this.modelMetaCache.fetchedAt < 60_000) {
+    // 仅命中非空缓存：空结果视为未命中，允许下次重试（探活早期误匹配或引擎未就绪时会写入空值）
+    if (
+      !force &&
+      this.modelMetaCache &&
+      this.modelMetaCache.lang === lang &&
+      this.modelMetaCache.models.length > 0 &&
+      now - this.modelMetaCache.fetchedAt < 60_000
+    ) {
       return this.modelMetaCache.models
     }
 
@@ -313,13 +322,15 @@ export class EngineBridgeService {
       if (res.ok) {
         const payload = (await res.json()) as { models?: any[] }
         const models = Array.isArray(payload?.models) ? payload.models : []
-        this.modelMetaCache = { lang, models, fetchedAt: now }
-        // 同步刷新目录缓存（id/name/isEmbedding）
-        this.builtinModelCatalog = models.map((m: any) => ({
-          id: String(m.id || ''),
-          name: String(m.name || ''),
-          isEmbedding: Boolean(m.isEmbedding)
-        }))
+        if (models.length > 0) {
+          this.modelMetaCache = { lang, models, fetchedAt: now }
+          // 同步刷新目录缓存（id/name/isEmbedding）
+          this.builtinModelCatalog = models.map((m: any) => ({
+            id: String(m.id || ''),
+            name: String(m.name || ''),
+            isEmbedding: Boolean(m.isEmbedding)
+          }))
+        }
         return models
       }
       logger.debug(LogCategory.SYSTEM, `[EngineBridge] /api/models/meta 响应非 OK: ${res.status}`)
@@ -648,10 +659,17 @@ export class EngineBridgeService {
    * 并发去重；数量变化时补播一次状态，让渲染层无需等下个轮询周期。
    */
   private async refreshModelCount(): Promise<void> {
-    if (this.modelCountFetching) {
-      return
+    // 并发去重：进行中的刷新被共享，await 可等待真正完成（避免 applyStatus 触发的刷新与显式 await 竞态）
+    if (this.modelCountPromise) {
+      return this.modelCountPromise
     }
-    this.modelCountFetching = true
+    this.modelCountPromise = this.doRefreshModelCount().finally(() => {
+      this.modelCountPromise = null
+    })
+    return this.modelCountPromise
+  }
+
+  private async doRefreshModelCount(): Promise<void> {
     try {
       // 预热引擎模型元数据目录（model_*.json 权威落点在 engine，desktop 一律经引擎查询）
       await this.fetchModelMeta()
@@ -678,7 +696,7 @@ export class EngineBridgeService {
           ? list.filter(m => m?.isDownloaded === true).length
           : null
 
-        // 2. 总可用模型数量：合计所有语言模型（31 个）与 embedding 模型（2 个）= 33 个推荐模型，
+        // 2. 总可用模型数量：合计所有官方推荐模型（经 /api/models/meta 引擎元数据目录），
         //    并加上扫描到的未在内置推荐列表中的外部自定义模型
         const catalog = this.loadBuiltinModelCatalog()
         const builtinCount = catalog.length > 0 ? catalog.length : 33
@@ -727,8 +745,6 @@ export class EngineBridgeService {
     } catch (err) {
       // 计数为展示增项，失败不影响桥接主链路；记 debug 便于排查
       logger.debug(LogCategory.SYSTEM, '[EngineBridge] 拉取引擎模型列表失败（模型计数缺省）:', err)
-    } finally {
-      this.modelCountFetching = false
     }
   }
 
@@ -1184,6 +1200,35 @@ export class EngineBridgeService {
   }
 
   /**
+   * 切换引擎计算后端（PRD-0049：引擎激活单一化）。
+   * 对应引擎端 POST /api/engine/switch：写入 preferred_backend 并清除 active_engine，
+   * 需随后调用 startService/stopService 重启推理服务后生效。
+   * @param backend 目标后端（cuda / cuda134 / vulkan / cpu 等，与引擎列表 id/backend 一致）
+   */
+  public async switchBackend(backend: string): Promise<{ ok: boolean; error?: string }> {
+    try {
+      const res = await fetch(`${this.baseUrl}${ENGINE_SWITCH_PATH}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ backend }),
+        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+      })
+      const body = (await res.json().catch(() => ({}))) as { success?: boolean; error?: string; message?: string }
+      const ok = res.ok && body.success !== false
+      if (!ok) {
+        logger.warn(LogCategory.SYSTEM, `[EngineBridge] 切换后端 ${backend} 失败: ${body.error || res.status}`)
+      } else {
+        logger.info(LogCategory.SYSTEM, `[EngineBridge] 已请求切换后端至 ${backend}（重启服务后生效）`)
+      }
+      return { ok, error: ok ? undefined : body.error || `引擎返回 ${res.status}` }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.SYSTEM, `[EngineBridge] 切换后端请求失败: ${error}`)
+      return { ok: false, error }
+    }
+  }
+
+  /**
    * 强制清理由本服务拉起的子进程（taskkill 兜底，Unix 走 SIGKILL）
    */
   private killOwnProcess(): void {
@@ -1323,6 +1368,10 @@ export class EngineBridgeService {
     this.lastRawStatus = null
     this.lastModelCount = null
     this.lastBackendMatchType = null
+    // 清空模型元数据缓存，避免跨会话/测试复用陈旧目录
+    this.modelMetaCache = null
+    this.builtinModelCatalog = null
+    this.modelCountPromise = null
     this.circuitBreaker.reset()
   }
 }

@@ -300,7 +300,7 @@ export class ConfigDbManager {
       // 2. 加载 model_[lang].json、ollama_[lang].json、providers_[lang].json
       const now = new Date().toISOString()
 
-      // 加载 model_[lang].json
+      // 加载 model_[lang].json（desktop 本地 extraResources，由 generate:dims 双写至 engine）
       const localPresetPath = ResourceLocator.resolveModelConfig(`model_${language}.json`)
       if (fs.existsSync(localPresetPath)) {
         try {

@@ -5,7 +5,6 @@ import { hardwareDetectionService } from '../runtime-services/system/hardware-de
 import { ConfigOrchestrator } from '../config/config-orchestrator'
 import { LlamaModelManager } from '../runtime-services'
 import { LicenseService, LicenseStatus } from '../runtime-services/system/license-service'
-import { unifiedModelManager } from '../runtime-services/llama/unified-model-manager'
 import { engineBridgeService } from '../runtime-services/engine-bridge'
 import * as path from 'path'
 import { activeHardwareBackendCache, setActiveHardwareBackendCache } from './state'
@@ -22,7 +21,6 @@ interface EnrichCacheEntry {
     totalSizeBytes?: number
     provider: string | null
     backend?: string
-    bestAcceleration?: string
   }
 }
 
@@ -80,51 +78,25 @@ export async function checkLicenseAndNotify(force = false) {
 }
 
 /**
- * 获取当前推荐的"最佳可用加速引擎"参考值
- * 直接取记忆的最佳引擎（BEST_ACCELERATION，成功验证过），未记忆（auto）时返回 auto，
- * 仅依据记忆值显示，硬件检测不参与，避免 CUDA 引擎实际不可用时仍提示切换。
+ * PRD-0049：getBestAvailableAcceleration 已清退（BEST_ACCELERATION 配置键删除）
+ * 引擎激活/加速后端唯一真相 = 萤核AI引擎桥接快照
  */
-export async function getBestAvailableAcceleration(): Promise<string> {
-  try {
-    return ConfigOrchestrator.getInstance().getValue<string>('BEST_ACCELERATION') || 'auto'
-  } catch (e) {
-    logger.warn(LogCategory.MAIN, '获取最佳可用引擎失败，回退为 auto:', e)
-    return 'auto'
-  }
-}
 
 /**
  * 获取当前活跃的硬件加速后端描述字符串
+ * PRD-0049：tier 一律取萤核AI引擎桥接快照 backend（引擎激活单一真相源）
  */
 export async function getActiveHardwareBackend(): Promise<string> {
-  // 强制 CPU 模式下直接返回 CPU 描述，不写入缓存（保证下次切换模式能重新计算）
-  const isForceCpuMode = ConfigOrchestrator.getInstance().getValue<boolean>(
-    'AI_ENGINE_FORCE_CPU_MODE'
-  )
-  if (isForceCpuMode) {
-    const resources = await hardwareDetectionService.detectSystemResources()
-    const primaryGPU = resources.gpus[0]
-    const vendor = primaryGPU ? primaryGPU.vendor.toUpperCase() : 'CPU'
-    return `${vendor}(cpu)`
-  }
-
   if (activeHardwareBackendCache) return activeHardwareBackendCache
 
   try {
-    const orchestrator = ConfigOrchestrator.getInstance()
-    const isCompatibleMode = orchestrator.getValue<boolean>('AI_ENGINE_DRIVER_COMPATIBLE_MODE')
     const resources = await hardwareDetectionService.detectSystemResources()
 
-    // 优先从配置决定 tier：引擎未重启时 selectedAcceleration 还是旧值，不可靠
-    // 兼容模式 → vulkan；否则从引擎运行时或硬件最佳值取
-    let tier: string
-    if (isCompatibleMode) {
-      tier = 'vulkan'
-    } else {
-      // 读取 Tier 2 引擎上报的实际运行后端（引擎离线时为 null，回退硬件最佳层级）
-      const selectedAcc = engineBridgeService.getSnapshot().backend
-      tier = selectedAcc || (await hardwareDetectionService.getBestAccelerationTier())
-    }
+    // PRD-0049：当前引擎唯一真相 = 桥接快照 backend
+    // 不再读取 AI_ENGINE_FORCE_CPU_MODE / AI_ENGINE_DRIVER_COMPATIBLE_MODE / SELECTED_ACCELERATION
+    // 引擎离线（backend 为 null）时回落硬件最佳层级：仅作描述性展示，不构成"当前引擎"真相
+    const selectedAcc = engineBridgeService.getSnapshot().backend
+    const tier: string = selectedAcc || (await hardwareDetectionService.getBestAccelerationTier())
 
     if (tier === 'cpu') {
       const primaryGPU = resources.gpus[0]
@@ -216,9 +188,8 @@ export const enrichAIStatus = async (info: any) => {
       : null,
     language,
     // 引擎配置影响 backend 值，切换引擎时需使缓存失效
-    aiEngine: orchestrator.getValue<string>('AI_ENGINE'),
-    aiEngineForceCpuMode: orchestrator.getValue<boolean>('AI_ENGINE_FORCE_CPU_MODE'),
-    aiEngineDriverCompatibleMode: orchestrator.getValue<boolean>('AI_ENGINE_DRIVER_COMPATIBLE_MODE')
+    // PRD-0049：不再以 AI_ENGINE_FORCE_CPU_MODE / AI_ENGINE_DRIVER_COMPATIBLE_MODE 参与缓存键
+    aiEngine: orchestrator.getValue<string>('AI_ENGINE')
   })
 
   const now = Date.now()
@@ -239,14 +210,6 @@ export const enrichAIStatus = async (info: any) => {
         cached.data.backend = result.backend
       } catch (e) {
         logger.warn(LogCategory.MAIN, '获取硬件后端失败:', e)
-      }
-    }
-    if (!result.bestAcceleration && result.modelMode === 'local') {
-      try {
-        result.bestAcceleration = await getBestAvailableAcceleration()
-        cached.data.bestAcceleration = result.bestAcceleration
-      } catch (e) {
-        logger.warn(LogCategory.MAIN, '获取最佳可用引擎失败:', e)
       }
     }
     return result
@@ -328,9 +291,8 @@ export const enrichAIStatus = async (info: any) => {
 
   try {
     if (enriched.modelMode === 'local') {
-      // 优化：使用 in-memory config 查找，避免执行 listAllModels 触发的磁盘 I/O
-      unifiedModelManager.ensureLoaded()
-      const rawModels = unifiedModelManager.getAllModels()
+      // 模型元数据唯一权威来源 = 萤核AI引擎（/api/models/meta），desktop 不再读取本地 model_*.json
+      const rawModels = await engineBridgeService.fetchModelMeta()
 
       // 1. 优先用引擎桥接快照的当前模型名反查元数据（PRD-0044：id 或 name 匹配任一即可）
       let model = currentSelectedModelId
@@ -363,10 +325,11 @@ export const enrichAIStatus = async (info: any) => {
       if (model) {
         const vramRequiredGB = Math.ceil(
           (model as any).vramRequiredGB ||
-            unifiedModelManager.calculateRequiredVRAM(model.totalSize || '0B')
+            (model as any).vramNeededGB ||
+            parseSizeToGB(model.totalSize || model.size || '0B') * 1.15 + 0.5
         )
-        const totalSizeBytes = model.totalSize
-          ? Math.round(parseSizeToGB(model.totalSize) * 1024 ** 3)
+        const totalSizeBytes = model.totalSize || model.size
+          ? Math.round(parseSizeToGB(model.totalSize || model.size) * 1024 ** 3)
           : 0
 
         logger.debug(
@@ -377,6 +340,11 @@ export const enrichAIStatus = async (info: any) => {
         enriched.vramRequiredGB = vramRequiredGB
         enriched.totalSizeBytes = totalSizeBytes
       } else {
+        // 引擎 /api/models 的 name 映射兜底（扫描到的物理模型可能不在推荐目录中）
+        const friendly = engineBridgeService.resolveFriendlyModelName(enriched.modelName)
+        if (friendly && friendly !== enriched.modelName) {
+          enriched.modelName = friendly
+        }
         logger.warn(
           LogCategory.MAIN,
           `[enrichAIStatus] 未找到匹配的模型元数据: ${enriched.modelName}`
@@ -417,18 +385,11 @@ export const enrichAIStatus = async (info: any) => {
     }
   }
 
-  // 本地模式下附带"最佳可用引擎"参考值（融合记忆与硬件检测），供前端警告使用
-  if (enriched.modelMode === 'local') {
-    try {
-      enriched.bestAcceleration = await getBestAvailableAcceleration()
-    } catch (e) {
-      logger.warn(LogCategory.MAIN, '获取最佳可用引擎失败:', e)
-    }
-  }
+  // PRD-0049：bestAcceleration 输出链已清退
 
   logger.debug(
     LogCategory.MAIN,
-    `[enrichAIStatus] 增强后: mode=${enriched.modelMode}, name=${enriched.modelName}, provider=${enriched.provider}, backend=${enriched.backend}, bestAcceleration=${enriched.bestAcceleration}`
+    `[enrichAIStatus] 增强后: mode=${enriched.modelMode}, name=${enriched.modelName}, provider=${enriched.provider}, backend=${enriched.backend}`
   )
 
   // Cache the enriched properties
@@ -440,8 +401,7 @@ export const enrichAIStatus = async (info: any) => {
     vramRequiredGB: enriched.vramRequiredGB,
     totalSizeBytes: enriched.totalSizeBytes,
     provider: enriched.provider,
-    backend: enriched.backend,
-    bestAcceleration: enriched.bestAcceleration
+    backend: enriched.backend
   }
   enrichCache.set(infoKey, {
     timestamp: now,
