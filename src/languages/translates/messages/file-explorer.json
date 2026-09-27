@@ -108,7 +108,7 @@
     "ko-KR": "전체 선택",
     "$files": [
       "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(19787-19793)",
-      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(42863-42869)",
+      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(43046-43052)",
       "src/renderer/components/file-explorer/RealDirectory.tsx(41364-41370)"
     ],
     "$id": 3290
@@ -207,7 +207,7 @@
     "de-DE": "Gegenwahl",
     "fr-FR": "Contre-élection",
     "ko-KR": "역선거",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(43406-43412)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(43589-43595)"],
     "$id": 7517
   },
   "并集": {
@@ -220,7 +220,7 @@
     "de-DE": "Union",
     "fr-FR": "Union",
     "ko-KR": "노동 조합",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(44077-44083)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(44260-44266)"],
     "$id": 7808
   },
   "交集": {
@@ -233,7 +233,7 @@
     "de-DE": "Überschneidung",
     "fr-FR": "Intersection",
     "ko-KR": "교차로",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(44653-44659)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(44836-44842)"],
     "$id": 7809
   },
   "目录树": {

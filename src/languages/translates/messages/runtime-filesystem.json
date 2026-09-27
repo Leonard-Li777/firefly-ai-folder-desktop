@@ -404,8 +404,8 @@
     "ko-KR": "작가",
     "$files": [
       "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1441-1447)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24209-24215)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24263-24269)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24230-24236)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24284-24290)"
     ],
     "$id": 10682
   },
@@ -435,8 +435,8 @@
     "$files": [
       "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1583-1590)",
       "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(1646-1653)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11708-11715)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(13926-13933)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11729-11736)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(13947-13954)"
     ],
     "$id": 10684
   },
@@ -587,8 +587,8 @@
     "fr-FR": "Durée",
     "ko-KR": "지속",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11759-11765)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(15112-15118)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11780-11786)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(15133-15139)"
     ],
     "$id": 10695
   },
@@ -603,8 +603,8 @@
     "fr-FR": "Nombre de pages",
     "ko-KR": "페이지 수",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11811-11817)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18332-18338)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11832-11838)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(18353-18359)"
     ],
     "$id": 10696
   },
@@ -619,8 +619,8 @@
     "fr-FR": "Codage",
     "ko-KR": "코딩",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11863-11869)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(20579-20585)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11884-11890)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(20600-20606)"
     ],
     "$id": 10697
   },
@@ -635,8 +635,8 @@
     "fr-FR": "Format d'encodage",
     "ko-KR": "인코딩 형식",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11921-11929)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(20638-20646)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(11942-11950)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(20659-20667)"
     ],
     "$id": 10698
   },
@@ -650,7 +650,7 @@
     "de-DE": "Breite",
     "fr-FR": "Largeur",
     "ko-KR": "너비",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(12548-12554)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(12569-12575)"],
     "$id": 10699
   },
   "高度": {
@@ -663,7 +663,7 @@
     "de-DE": "Hoch",
     "fr-FR": "Haut",
     "ko-KR": "높은",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(12965-12971)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(12986-12992)"],
     "$id": 10700
   },
   "{hh}时{mm}分{ss}秒": {
@@ -676,7 +676,7 @@
     "de-DE": "{hh}Stunden{mm}Minuten{ss}Sekunden",
     "fr-FR": "{hh}heures{mm}minutes{ss}secondes",
     "ko-KR": "{hh}시간{mm}분{ss}초",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(17390-17409)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(17411-17430)"],
     "$id": 10701
   },
   "{mm}分{ss}秒": {
@@ -689,7 +689,7 @@
     "de-DE": "{mm}Minuten{ss}Sekunden",
     "fr-FR": "{mm}minutes{ss}secondes",
     "ko-KR": "{mm}분{ss}초",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(17462-17476)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(17483-17497)"],
     "$id": 10702
   },
   "创作者": {
@@ -702,7 +702,7 @@
     "de-DE": "Schöpfer",
     "fr-FR": "Créateur",
     "ko-KR": "창조자",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24351-24358)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24372-24379)"],
     "$id": 10703
   },
   "语言": {
@@ -716,8 +716,8 @@
     "fr-FR": "Langue",
     "ko-KR": "언어",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24603-24609)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24657-24663)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24624-24630)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(24678-24684)"
     ],
     "$id": 10704
   },
@@ -732,8 +732,8 @@
     "fr-FR": "Générer une nouvelle exception de nom de fichier",
     "ko-KR": "새 파일 이름 예외 생성",
     "$files": [
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(34663-34675)",
-      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(35717-35729)"
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(34684-34696)",
+      "src/electron/runtime-services/filesystem/naming-dsl-engine.ts(35738-35750)"
     ],
     "$id": 10705
   },
@@ -747,7 +747,7 @@
     "de-DE": "Ausnahme für intelligente Dateinamen aktualisieren",
     "fr-FR": "Mettre à jour l'exception de nom de fichier intelligent",
     "ko-KR": "스마트 파일 이름 예외 업데이트",
-    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(36825-36838)"],
+    "$files": ["src/electron/runtime-services/filesystem/naming-dsl-engine.ts(36846-36859)"],
     "$id": 10706
   },
   "完成": {

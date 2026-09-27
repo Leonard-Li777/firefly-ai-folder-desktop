@@ -183,72 +183,10 @@
       },
       "tags": [
         "制限する",
-        "検閲なし",
+        "脱獄",
         "NSFW",
         "テキストのみ",
         "中国語のほうが上手い"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M",
-      "name": "LFM2.5 2.6B（速い）",
-      "company": "LiquidAI",
-      "parameterSize": "2.6B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.63GB",
-      "recommended": true,
-      "description": "最新のLFM2.5 2.6b公式モデルは、効率的な推論と高品質の分析のバランスをとり、DSpark投機的サンプリング加速をサポートしています。",
-      "source": "modelscope",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "high"
-      },
-      "tags": [
-        "軽量",
-        "CPU動作をサポート",
-        "テキストのみ",
-        "英語の方が良い"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "Abiray/LFM2.5-2.6B-Heretic-Abliterated-GGUF:Q4_K_M",
-      "name": "LFM2.5 2.6B（脱獄）",
-      "company": "Abiray",
-      "parameterSize": "2.6B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.56GB",
-      "recommended": true,
-      "description": "LFM2.5 2.6B の制限なし・検閲なしバージョン。速度と品質のバランスに優れる。",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "high"
-      },
-      "tags": [
-        "制限する",
-        "検閲なし",
-        "NSFW",
-        "テキストのみ"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -287,133 +225,6 @@
         "numCtx": 8192,
         "numPredict": 3072
       }
-    },
-    {
-      "id": "mradermacher/Qwen3.5-4B_Abliterated-GGUF:Q4_K_M",
-      "name": "Qwen 3.5 4B（バランス）",
-      "company": "mradermacher",
-      "parameterSize": "4B",
-      "intelligenceLevel": 3,
-      "totalSize": "3.08GB",
-      "recommended": false,
-      "description": "削除されたバージョンでは、速度と品質のバランスが取れています。",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": true,
-      "contextLength": 262144,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "制限する",
-        "検閲なし",
-        "NSFW",
-        "脱獄",
-        "マルチモーダル"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 3072
-      }
-    },
-    {
-      "id": "mradermacher/Huihui-Qwen3.5-2B-abliterated-GGUF:Q8_0",
-      "name": "Qwen 3.5 2B（より良い）",
-      "company": "mradermacher",
-      "parameterSize": "2B",
-      "intelligenceLevel": 2,
-      "totalSize": "2.68GB",
-      "recommended": false,
-      "description": "4G ビデオ メモリが第一の選択肢です。",
-      "source": "huggingface",
-      "quantization": "Q8_0",
-      "isMultiModal": true,
-      "contextLength": 262144,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "very_high"
-      },
-      "tags": [
-        "制限する",
-        "検閲なし",
-        "NSFW",
-        "脱獄",
-        "マルチモーダル"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 3072
-      }
-    },
-    {
-      "id": "tatsuyaaaaaaa/Qwen3.5-2B-gguf:Q4_0",
-      "name": "Qwen 3.5 2B（日本語の最適化）",
-      "company": "tatsuyaaaaaaa",
-      "parameterSize": "2B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.2GB",
-      "recommended": false,
-      "description": "日本語データセット用に最適化されたテキスト分析モデルは、テキスト分析のみをサポートします。",
-      "source": "huggingface",
-      "quantization": "Q4_0",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "日本語の最適化",
-        "テキストのみ",
-        "ビデオメモリが少ない"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "jordanwoodson/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
-      "name": "Qwen 3.5 2B（脱獄テキスト）",
-      "company": "jordanwoodson",
-      "parameterSize": "2B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.27GB",
-      "recommended": false,
-      "description": "内容をある程度理解した脱獄モデル。",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "脱獄",
-        "検閲なし",
-        "NSFW",
-        "テキストのみ"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      },
-      "capabilities": [
-        "TEXT"
-      ]
     },
     {
       "id": "ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M",
@@ -513,68 +324,6 @@
       }
     },
     {
-      "id": "MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K",
-      "name": "Qwen 3.5 9B v2（脱獄）",
-      "company": "MaimaiSuirai",
-      "parameterSize": "9B",
-      "intelligenceLevel": 3,
-      "totalSize": "8.27GB",
-      "description": "第 2 世代は検閲版に移行し、優れた機能を備えています。",
-      "source": "modelscope",
-      "quantization": "Q6_K",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "medium",
-        "quality": "high"
-      },
-      "tags": [
-        "脱獄",
-        "NSFW",
-        "検閲なし",
-        "マルチモーダル"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 3072
-      }
-    },
-    {
-      "id": "MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S",
-      "name": "Qwen 3.5 27B v2（検閲なし）",
-      "company": "MaimaiSuirai",
-      "parameterSize": "27B",
-      "intelligenceLevel": 4,
-      "totalSize": "15.57GB",
-      "description": "Qwen 3.5 27B のトップ レビュー バージョンで、強力な推論機能と視覚的合成機能を備えています。",
-      "source": "modelscope",
-      "quantization": "Q4_K_S",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "medium",
-        "quality": "very_high"
-      },
-      "tags": [
-        "脱獄",
-        "NSFW",
-        "検閲なし",
-        "マルチモーダル",
-        "大きなパラメータ"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
       "id": "mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF",
       "name": "Gemma 4 26B-it（万能）",
       "company": "Mudler",
@@ -599,44 +348,12 @@
       "tags": [
         "脱獄",
         "NSFW",
-        "検閲なし",
+        "脱獄",
         "英語の方が良い"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
         "numPredict": 3072
-      }
-    },
-    {
-      "id": "Abiray/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
-      "name": "Qwen 3.5 2B (脱獄画像認識)",
-      "company": "Abiray",
-      "parameterSize": "2B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.81GB",
-      "recommended": false,
-      "description": "ジェイルブレイク版、画像解析をサポート。",
-      "source": "modelscope",
-      "quantization": "Q4_K_M",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "脱獄",
-        "検閲なし",
-        "NSFW",
-        "マルチモーダル"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
       }
     },
     {
@@ -712,140 +429,50 @@
       }
     },
     {
-      "id": "Abiray/Nanbeige4.2-3B-GGUF:Q4_K_S",
-      "name": "ナンベージュ 4.2 3B (良好)",
-      "company": "Abiray",
-      "parameterSize": "3B",
-      "intelligenceLevel": 2,
-      "totalSize": "2.33GB",
-      "recommended": false,
-      "description": "3B ボディ硬鋼 9B、強く推奨しますが、テキストのみをサポートします。",
-      "source": "modelscope",
-      "quantization": "Q4_K_S",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "テキストのみ",
-        "プログラミングの最適化",
-        "中国語のほうが上手い"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "mradermacher/Nanbeige4.2-3B-heretic-i1-GGUF:i1-Q5_K_M",
-      "name": "Nanbeige 4.2 3B（脱獄の最適化）",
-      "company": "mradermacher",
-      "parameterSize": "3B",
-      "intelligenceLevel": 2,
-      "totalSize": "2.78GB",
-      "recommended": false,
-      "description": "3B ボディの硬質鋼 9B、i1 の脱獄バージョンは量子化精度が高くなりますが、テキストのみをサポートします。",
-      "source": "huggingface",
-      "quantization": "i1-Q5_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "脱獄",
-        "検閲なし",
-        "NSFW",
-        "テキストのみ",
-        "高精度"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "unsloth/gemma-3-1b-it-GGUF:UD-Q4_K_XL",
-      "name": "Gemma 3 1B Instruct（基础）",
-      "company": "Google",
-      "parameterSize": "1B",
-      "intelligenceLevel": 1,
-      "totalSize": "770MB",
-      "description": "イギリス人のモデルリーダー",
-      "source": "huggingface",
-      "quantization": "UD-Q4_K_XL",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "軽量",
-        "CPU動作をサポート",
-        "テキストのみ",
-        "英語の方が良い"
-      ],
-      "recommendedConfig": {
-        "numCtx": 4096,
-        "numPredict": 1024
-      }
-    },
-    {
-      "id": "gaston-parravicini/LFM2.5-8B-A1B-Uncensored-Gaston-GGUF:Q4_K_M",
-      "name": "LFM2.5 8B A1B（脱獄）",
-      "company": "gaston-parravicini",
-      "parameterSize": "8B-A1B",
-      "intelligenceLevel": 3,
-      "totalSize": "4.80GB",
-      "recommended": true,
-      "description": "LFM2.5 8B A1B MoE 無審査版、アクティブパラメータは1Bのみ、速度と品質のバランス。",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "high"
-      },
-      "tags": [
-        "MoE",
-        "検閲なし",
-        "NSFW",
-        "脱獄",
-        "テキストのみ",
-        "英語の方が良い"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "dealignai/Bonsai-27b-1bit-CRACK-GGUF:Q1_0",
-      "name": "Bonsai 27B 1-bit（超圧縮）",
-      "company": "dealignai",
+      "id": "OS-Software/Ternary-Bonsai-2-27B-Uncensored-Heretic-GGUF:PQ2_0",
+      "name": "Bonsai 2 ternary 27B（2比特•脱獄）",
+      "company": "OS-Software",
       "parameterSize": "27B",
-      "intelligenceLevel": 2,
-      "totalSize": "5.21GB",
-      "description": "Bonsai 27B 1ビット量子化 Jailbreak 版、アライメント解除・検閲なし、テキストおよび画像分析に対応。",
+      "intelligenceLevel": 3,
+      "totalSize": "7.30GB",
+      "recommended": true,
+      "description": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐越狱，支持文本与图像分析。",
       "source": "huggingface",
-      "quantization": "Q1_0",
+      "quantization": "PQ2_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "2比特",
+        "脱獄",
+        "脱獄",
+        "NSFW",
+        "マルチモーダル",
+        "ビデオメモリが少ない"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "OS-Software/Ternary-Bonsai-2-27B-Uncensored-Heretic-GGUF:PTQ1_0",
+      "name": "Bonsai 2 ternary 27B（超圧縮•脱獄）",
+      "company": "OS-Software",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "6.12GB",
+      "recommended": true,
+      "description": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐越狱，体积最小，支持文本与图像分析。",
+      "source": "huggingface",
+      "quantization": "PTQ1_0",
       "isMultiModal": true,
       "contextLength": 131072,
       "capabilities": [
@@ -859,8 +486,103 @@
       "tags": [
         "1ビット",
         "脱獄",
-        "検閲なし",
+        "脱獄",
         "NSFW",
+        "マルチモーダル",
+        "ビデオメモリが少ない"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "dealignai/Bonsai-2-27B-1bit-CRACK-GGUF:Bonsai-2-27B-PTQ1_0-CRACK.gguf",
+      "name": "Bonsai 27B 1-bit（超圧縮•国内加速）",
+      "company": "dealignai",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "5.54GB",
+      "recommended": true,
+      "description": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+      "source": "modelscope",
+      "quantization": "PTQ1_0",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "1ビット",
+        "脱獄",
+        "脱獄",
+        "NSFW",
+        "テキストのみ",
+        "ビデオメモリが少ない"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
+      "name": "Bonsai 2 ternary 27B（2比特•官方•国内加速）",
+      "company": "prism-ml",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "7.30GB",
+      "recommended": true,
+      "description": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "source": "modelscope",
+      "quantization": "PQ2_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "2比特",
+        "マルチモーダル",
+        "ビデオメモリが少ない"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
+      "name": "Bonsai 2 ternary 27B（超圧縮）",
+      "company": "prism-ml",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "6.12GB",
+      "recommended": true,
+      "description": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "source": "modelscope",
+      "quantization": "PTQ1_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "1ビット",
         "マルチモーダル",
         "ビデオメモリが少ない"
       ],
@@ -909,7 +631,7 @@
       "intelligenceLevel": 4,
       "totalSize": "17.56GB",
       "recommended": true,
-      "description": "Qwen3.8-27B は、徹底的な検閲解除バージョンです。 P シリーズ量子化は、検閲なしでキー テンソルの高い精度を維持し、画像分析をサポートします。",
+      "description": "Qwen3.8-27B 激进去审查版本，P 系重量化在关键张量保留更高精度，越狱且支持图像分析。",
       "source": "huggingface",
       "quantization": "Q4_K_P",
       "isMultiModal": true,
@@ -924,7 +646,7 @@
       },
       "tags": [
         "脱獄",
-        "検閲なし",
+        "脱獄",
         "NSFW",
         "マルチモーダル",
         "大きなパラメータ",

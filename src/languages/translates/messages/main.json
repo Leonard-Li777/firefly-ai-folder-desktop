@@ -32,7 +32,7 @@
     "pt-PT": "AI 引擎检查完成",
     "ru-RU": "AI 引擎检查完成",
     "ja-JP": "AI 引擎检查完成",
-    "de-DE": "AI 引擎检查完成",
+    "de-DE": "AI-Engine-Prüfung abgeschlossen",
     "fr-FR": "AI 引擎检查完成",
     "ko-KR": "AI 引擎检查完成",
     "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3490-3503)"],

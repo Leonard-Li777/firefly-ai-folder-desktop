@@ -183,72 +183,10 @@
       },
       "tags": [
         "Limitar",
-        "Sem censura",
+        "Fuga da prisão",
         "NSFW",
         "Somente texto",
         "Chinês é melhor"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "LiquidAI/LFM2.5-2.6B-GGUF:Q4_K_M",
-      "name": "LFM2.5 2.6B（Rápido）",
-      "company": "LiquidAI",
-      "parameterSize": "2.6B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.63GB",
-      "recommended": true,
-      "description": "O último modelo Oficial LFM2.5 2.6 b equilibra o raciocínio eficiente com uma análise de alta qualidade e apoia a aceleração da amostragem especulativa dspark.",
-      "source": "modelscope",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "high"
-      },
-      "tags": [
-        "Leve",
-        "Suporte à operação da CPU",
-        "Somente texto",
-        "Inglês é melhor"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "Abiray/LFM2.5-2.6B-Heretic-Abliterated-GGUF:Q4_K_M",
-      "name": "LFM2.5 2.6B（Fuga da prisão）",
-      "company": "Abiray",
-      "parameterSize": "2.6B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.56GB",
-      "recommended": true,
-      "description": "Versão sem restrições e sem censura do LFM2.5 2.6B, equilibrando velocidade e qualidade.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "high"
-      },
-      "tags": [
-        "Limitar",
-        "Sem censura",
-        "NSFW",
-        "Somente texto"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -287,133 +225,6 @@
         "numCtx": 8192,
         "numPredict": 3072
       }
-    },
-    {
-      "id": "mradermacher/Qwen3.5-4B_Abliterated-GGUF:Q4_K_M",
-      "name": "Qwen 3.5 4B（Equilíbrio）",
-      "company": "mradermacher",
-      "parameterSize": "4B",
-      "intelligenceLevel": 3,
-      "totalSize": "3.08GB",
-      "recommended": false,
-      "description": "A versão Abliterada equilibra velocidade e qualidade.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": true,
-      "contextLength": 262144,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "Limitar",
-        "Sem censura",
-        "NSFW",
-        "Fuga da prisão",
-        "Multimodal"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 3072
-      }
-    },
-    {
-      "id": "mradermacher/Huihui-Qwen3.5-2B-abliterated-GGUF:Q8_0",
-      "name": "Qwen 3.5 2B（Melhorar）",
-      "company": "mradermacher",
-      "parameterSize": "2B",
-      "intelligenceLevel": 2,
-      "totalSize": "2.68GB",
-      "recommended": false,
-      "description": "A memória de vídeo 4G é a primeira escolha.",
-      "source": "huggingface",
-      "quantization": "Q8_0",
-      "isMultiModal": true,
-      "contextLength": 262144,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "very_high"
-      },
-      "tags": [
-        "Limitar",
-        "Sem censura",
-        "NSFW",
-        "Fuga da prisão",
-        "Multimodal"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 3072
-      }
-    },
-    {
-      "id": "tatsuyaaaaaaa/Qwen3.5-2B-gguf:Q4_0",
-      "name": "Qwen 3.5 2B（Otimização japonesa）",
-      "company": "tatsuyaaaaaaa",
-      "parameterSize": "2B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.2GB",
-      "recommended": false,
-      "description": "Modelo de análise de texto otimizado para conjuntos de dados japoneses, suporta apenas análise de texto.",
-      "source": "huggingface",
-      "quantization": "Q4_0",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "Otimização japonesa",
-        "Somente texto",
-        "Memória de vídeo baixa"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "jordanwoodson/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
-      "name": "Qwen 3.5 2B（Texto de jailbreak）",
-      "company": "jordanwoodson",
-      "parameterSize": "2B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.27GB",
-      "recommended": false,
-      "description": "Um modelo de jailbreak que possui uma certa compreensão do conteúdo.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "Fuga da prisão",
-        "Sem censura",
-        "NSFW",
-        "Somente texto"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      },
-      "capabilities": [
-        "TEXT"
-      ]
     },
     {
       "id": "ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M",
@@ -513,68 +324,6 @@
       }
     },
     {
-      "id": "MaimaiSuirai/Qwen3.5-9b-heretic-v2-GGUF:Q6_K",
-      "name": "Qwen 3.5 9B v2（Fuga da prisão）",
-      "company": "MaimaiSuirai",
-      "parameterSize": "9B",
-      "intelligenceLevel": 3,
-      "totalSize": "8.27GB",
-      "description": "A segunda geração foi para a versão censurada e possui capacidades excepcionais.",
-      "source": "modelscope",
-      "quantization": "Q6_K",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "medium",
-        "quality": "high"
-      },
-      "tags": [
-        "Fuga da prisão",
-        "NSFW",
-        "Sem censura",
-        "Multimodal"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 3072
-      }
-    },
-    {
-      "id": "MaimaiSuirai/Qwen3.5-27B-heretic-v2-GGUF:Q4_K_S",
-      "name": "Qwen 3.5 27B v2（Sem censura）",
-      "company": "MaimaiSuirai",
-      "parameterSize": "27B",
-      "intelligenceLevel": 4,
-      "totalSize": "15.57GB",
-      "description": "A versão de análise superior do Qwen 3.5 27B, com forte raciocínio e recursos de síntese visual.",
-      "source": "modelscope",
-      "quantization": "Q4_K_S",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "medium",
-        "quality": "very_high"
-      },
-      "tags": [
-        "Fuga da prisão",
-        "NSFW",
-        "Sem censura",
-        "Multimodal",
-        "Parâmetros grandes"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
       "id": "mudler/gemma-4-26B-A4B-it-heretic-APEX-GGUF",
       "name": "Gemma 4 26B-it（Todo Poderoso）",
       "company": "Mudler",
@@ -599,44 +348,12 @@
       "tags": [
         "Fuga da prisão",
         "NSFW",
-        "Sem censura",
+        "Fuga da prisão",
         "Inglês é melhor"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
         "numPredict": 3072
-      }
-    },
-    {
-      "id": "Abiray/Qwen3.5-2B-heretic-GGUF:Q4_K_M",
-      "name": "Qwen 3.5 2B (Reconhecimento de imagem de jailbreak)",
-      "company": "Abiray",
-      "parameterSize": "2B",
-      "intelligenceLevel": 2,
-      "totalSize": "1.81GB",
-      "recommended": false,
-      "description": "Versão jailbroken, suporta análise de imagens.",
-      "source": "modelscope",
-      "quantization": "Q4_K_M",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "Fuga da prisão",
-        "Sem censura",
-        "NSFW",
-        "Multimodal"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
       }
     },
     {
@@ -712,140 +429,50 @@
       }
     },
     {
-      "id": "Abiray/Nanbeige4.2-3B-GGUF:Q4_K_S",
-      "name": "Nanbeige 4.2 3B (melhor)",
-      "company": "Abiray",
-      "parameterSize": "3B",
-      "intelligenceLevel": 2,
-      "totalSize": "2.33GB",
-      "recommended": false,
-      "description": "Corpo 3B em aço duro 9B, altamente recomendado, mas suporta apenas texto.",
-      "source": "modelscope",
-      "quantization": "Q4_K_S",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "Somente texto",
-        "Otimização de programação",
-        "Chinês é melhor"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "mradermacher/Nanbeige4.2-3B-heretic-i1-GGUF:i1-Q5_K_M",
-      "name": "Nanbeige 4.2 3B（Otimização de jailbreak）",
-      "company": "mradermacher",
-      "parameterSize": "3B",
-      "intelligenceLevel": 2,
-      "totalSize": "2.78GB",
-      "recommended": false,
-      "description": "Corpo 3B em aço duro 9B, a versão jailbroken do i1 tem maior precisão de quantização, mas suporta apenas texto.",
-      "source": "huggingface",
-      "quantization": "i1-Q5_K_M",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "high"
-      },
-      "tags": [
-        "Fuga da prisão",
-        "Sem censura",
-        "NSFW",
-        "Somente texto",
-        "Alta precisão"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "unsloth/gemma-3-1b-it-GGUF:UD-Q4_K_XL",
-      "name": "Gemma 3 1B Instruct（基础）",
-      "company": "Google",
-      "parameterSize": "1B",
-      "intelligenceLevel": 1,
-      "totalSize": "770MB",
-      "description": "Líder modelo inglês",
-      "source": "huggingface",
-      "quantization": "UD-Q4_K_XL",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "Leve",
-        "Suporte à operação da CPU",
-        "Somente texto",
-        "Inglês é melhor"
-      ],
-      "recommendedConfig": {
-        "numCtx": 4096,
-        "numPredict": 1024
-      }
-    },
-    {
-      "id": "gaston-parravicini/LFM2.5-8B-A1B-Uncensored-Gaston-GGUF:Q4_K_M",
-      "name": "LFM2.5 8B A1B（Fuga da prisão）",
-      "company": "gaston-parravicini",
-      "parameterSize": "8B-A1B",
-      "intelligenceLevel": 3,
-      "totalSize": "4.80GB",
-      "recommended": true,
-      "description": "Versão sem revisão do LFM2.5 8B A1B MoE, apenas 1B de parâmetros ativados, equilíbrio entre velocidade e qualidade.",
-      "source": "huggingface",
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "very_fast",
-        "quality": "high"
-      },
-      "tags": [
-        "MoE",
-        "Sem censura",
-        "NSFW",
-        "Fuga da prisão",
-        "Somente texto",
-        "Inglês é melhor"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "dealignai/Bonsai-27b-1bit-CRACK-GGUF:Q1_0",
-      "name": "Bonsai 27B 1-bit（Supercompressão）",
-      "company": "dealignai",
+      "id": "OS-Software/Ternary-Bonsai-2-27B-Uncensored-Heretic-GGUF:PQ2_0",
+      "name": "Bonsai 2 ternary 27B（2比特•Fuga da prisão）",
+      "company": "OS-Software",
       "parameterSize": "27B",
-      "intelligenceLevel": 2,
-      "totalSize": "5.21GB",
-      "description": "Versão Jailbreak do Bonsai 27B com quantização de 1-bit, sem moderação e sem revisão, suporte para análise de texto e imagem.",
+      "intelligenceLevel": 3,
+      "totalSize": "7.30GB",
+      "recommended": true,
+      "description": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐越狱，支持文本与图像分析。",
       "source": "huggingface",
-      "quantization": "Q1_0",
+      "quantization": "PQ2_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "2比特",
+        "Fuga da prisão",
+        "Fuga da prisão",
+        "NSFW",
+        "Multimodal",
+        "Memória de vídeo baixa"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "OS-Software/Ternary-Bonsai-2-27B-Uncensored-Heretic-GGUF:PTQ1_0",
+      "name": "Bonsai 2 ternary 27B（Supercompressão•Fuga da prisão）",
+      "company": "OS-Software",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "6.12GB",
+      "recommended": true,
+      "description": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐越狱，体积最小，支持文本与图像分析。",
+      "source": "huggingface",
+      "quantization": "PTQ1_0",
       "isMultiModal": true,
       "contextLength": 131072,
       "capabilities": [
@@ -859,8 +486,103 @@
       "tags": [
         "1-bit",
         "Fuga da prisão",
-        "Sem censura",
+        "Fuga da prisão",
         "NSFW",
+        "Multimodal",
+        "Memória de vídeo baixa"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "dealignai/Bonsai-2-27B-1bit-CRACK-GGUF:Bonsai-2-27B-PTQ1_0-CRACK.gguf",
+      "name": "Bonsai 27B 1-bit（Supercompressão•国内加速）",
+      "company": "dealignai",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "5.54GB",
+      "recommended": true,
+      "description": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+      "source": "modelscope",
+      "quantization": "PTQ1_0",
+      "isMultiModal": false,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "1-bit",
+        "Fuga da prisão",
+        "Fuga da prisão",
+        "NSFW",
+        "Somente texto",
+        "Memória de vídeo baixa"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
+      "name": "Bonsai 2 ternary 27B（2比特•官方•国内加速）",
+      "company": "prism-ml",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "7.30GB",
+      "recommended": true,
+      "description": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "source": "modelscope",
+      "quantization": "PQ2_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "2比特",
+        "Multimodal",
+        "Memória de vídeo baixa"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
+      "name": "Bonsai 2 ternary 27B（Supercompressão）",
+      "company": "prism-ml",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "6.12GB",
+      "recommended": true,
+      "description": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "source": "modelscope",
+      "quantization": "PTQ1_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "1-bit",
         "Multimodal",
         "Memória de vídeo baixa"
       ],
@@ -909,7 +631,7 @@
       "intelligenceLevel": 4,
       "totalSize": "17.56GB",
       "recommended": true,
-      "description": "Qwen3.8-27B é uma versão radical de descensura. A quantização da série P mantém maior precisão nos tensores principais, sem censura e oferece suporte à análise de imagens.",
+      "description": "Qwen3.8-27B 激进去审查版本，P 系重量化在关键张量保留更高精度，越狱且支持图像分析。",
       "source": "huggingface",
       "quantization": "Q4_K_P",
       "isMultiModal": true,
@@ -924,7 +646,7 @@
       },
       "tags": [
         "Fuga da prisão",
-        "Sem censura",
+        "Fuga da prisão",
         "NSFW",
         "Multimodal",
         "Parâmetros grandes",

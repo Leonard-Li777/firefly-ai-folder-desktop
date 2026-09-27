@@ -113,7 +113,8 @@
       "src/electron/config/model-source.ts(16520-16527)",
       "src/electron/config/model-source.ts(17243-17250)",
       "src/electron/config/model-source.ts(17877-17884)",
-      "src/electron/config/model-source.ts(18624-18631)"
+      "src/electron/config/model-source.ts(18624-18631)",
+      "src/electron/config/model-source.ts(21953-21960)"
     ],
     "$id": 9609
   },
@@ -180,12 +181,16 @@
       "src/electron/config/model-source.ts(14957-14964)",
       "src/electron/config/model-source.ts(15835-15842)",
       "src/electron/config/model-source.ts(19320-19327)",
-      "src/electron/config/model-source.ts(20003-20010)",
-      "src/electron/config/model-source.ts(20769-20776)",
-      "src/electron/config/model-source.ts(21444-21451)",
-      "src/electron/config/model-source.ts(22121-22128)",
-      "src/electron/config/model-source.ts(22977-22984)",
-      "src/electron/config/model-source.ts(23807-23814)"
+      "src/electron/config/model-source.ts(20212-20219)",
+      "src/electron/config/model-source.ts(21113-21120)",
+      "src/electron/config/model-source.ts(22862-22869)",
+      "src/electron/config/model-source.ts(23780-23787)",
+      "src/electron/config/model-source.ts(24463-24470)",
+      "src/electron/config/model-source.ts(25229-25236)",
+      "src/electron/config/model-source.ts(25904-25911)",
+      "src/electron/config/model-source.ts(26581-26588)",
+      "src/electron/config/model-source.ts(27439-27446)",
+      "src/electron/config/model-source.ts(28271-28278)"
     ],
     "$id": 9613
   },
@@ -223,8 +228,8 @@
       "src/electron/config/model-source.ts(15884-15892)",
       "src/electron/config/model-source.ts(17887-17895)",
       "src/electron/config/model-source.ts(18634-18642)",
-      "src/electron/config/model-source.ts(21463-21471)",
-      "src/electron/config/model-source.ts(22140-22148)"
+      "src/electron/config/model-source.ts(25923-25931)",
+      "src/electron/config/model-source.ts(26600-26608)"
     ],
     "$id": 9625
   },
@@ -325,8 +330,11 @@
       "src/electron/config/model-source.ts(18107-18113)",
       "src/electron/config/model-source.ts(18615-18621)",
       "src/electron/config/model-source.ts(19293-19299)",
-      "src/electron/config/model-source.ts(20255-20261)",
-      "src/electron/config/model-source.ts(20742-20748)"
+      "src/electron/config/model-source.ts(20185-20191)",
+      "src/electron/config/model-source.ts(21086-21092)",
+      "src/electron/config/model-source.ts(21926-21932)",
+      "src/electron/config/model-source.ts(24715-24721)",
+      "src/electron/config/model-source.ts(25202-25208)"
     ],
     "$id": 9620
   },
@@ -385,7 +393,12 @@
       "src/electron/config/model-source.ts(17225-17232)",
       "src/electron/config/model-source.ts(18597-18604)",
       "src/electron/config/model-source.ts(19302-19309)",
-      "src/electron/config/model-source.ts(20751-20758)"
+      "src/electron/config/model-source.ts(19720-19727)",
+      "src/electron/config/model-source.ts(20194-20201)",
+      "src/electron/config/model-source.ts(20615-20622)",
+      "src/electron/config/model-source.ts(21095-21102)",
+      "src/electron/config/model-source.ts(21935-21942)",
+      "src/electron/config/model-source.ts(25211-25218)"
     ],
     "$id": 9619
   },
@@ -576,8 +589,13 @@
     "$files": [
       "src/electron/config/model-source.ts(8810-8817)",
       "src/electron/config/model-source.ts(19330-19337)",
-      "src/electron/config/model-source.ts(22987-22994)",
-      "src/electron/config/model-source.ts(23817-23824)"
+      "src/electron/config/model-source.ts(20222-20229)",
+      "src/electron/config/model-source.ts(21123-21130)",
+      "src/electron/config/model-source.ts(21963-21970)",
+      "src/electron/config/model-source.ts(22872-22879)",
+      "src/electron/config/model-source.ts(23790-23797)",
+      "src/electron/config/model-source.ts(27449-27456)",
+      "src/electron/config/model-source.ts(28281-28288)"
     ],
     "$id": 9638
   },
@@ -709,8 +727,8 @@
     "ko-KR": "큰 매개변수",
     "$files": [
       "src/electron/config/model-source.ts(12903-12910)",
-      "src/electron/config/model-source.ts(20013-20020)",
-      "src/electron/config/model-source.ts(20779-20786)"
+      "src/electron/config/model-source.ts(24473-24480)",
+      "src/electron/config/model-source.ts(25239-25246)"
     ],
     "$id": 9662
   },
@@ -927,7 +945,7 @@
     "ko-KR": "높은 정밀도",
     "$files": [
       "src/electron/config/model-source.ts(17253-17260)",
-      "src/electron/config/model-source.ts(20023-20030)"
+      "src/electron/config/model-source.ts(24483-24490)"
     ],
     "$id": 9681
   },
@@ -967,7 +985,12 @@
     "de-DE": "Super Kompression",
     "fr-FR": "Super-compression",
     "ko-KR": "슈퍼 압축",
-    "$files": ["src/electron/config/model-source.ts(18836-18844)"],
+    "$files": [
+      "src/electron/config/model-source.ts(18836-18844)",
+      "src/electron/config/model-source.ts(20602-20610)",
+      "src/electron/config/model-source.ts(21454-21462)",
+      "src/electron/config/model-source.ts(23277-23285)"
+    ],
     "$id": 9489
   },
   "Bonsai 27B 一比特量化越狱版本，去对齐无审查，支持文本与图像分析。": {
@@ -993,8 +1016,129 @@
     "de-DE": "1 Bit",
     "fr-FR": "1-bit",
     "ko-KR": "1비트",
-    "$files": ["src/electron/config/model-source.ts(19283-19290)"],
+    "$files": [
+      "src/electron/config/model-source.ts(19283-19290)",
+      "src/electron/config/model-source.ts(21076-21083)",
+      "src/electron/config/model-source.ts(21916-21923)",
+      "src/electron/config/model-source.ts(23770-23777)"
+    ],
     "$id": 9430
+  },
+  "2比特": {
+    "en-US": "2比特",
+    "es-ES": "2比特",
+    "ar-EG": "2比特",
+    "pt-PT": "2比特",
+    "ru-RU": "2比特",
+    "ja-JP": "2比特",
+    "de-DE": "2比特",
+    "fr-FR": "2比特",
+    "ko-KR": "2比特",
+    "$files": [
+      "src/electron/config/model-source.ts(19708-19715)",
+      "src/electron/config/model-source.ts(20175-20182)",
+      "src/electron/config/model-source.ts(22366-22373)",
+      "src/electron/config/model-source.ts(22852-22859)"
+    ],
+    "$id": 19538
+  },
+  "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。": {
+    "en-US": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。",
+    "es-ES": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。",
+    "ar-EG": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。",
+    "pt-PT": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。",
+    "ru-RU": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。",
+    "ja-JP": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。",
+    "de-DE": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。",
+    "fr-FR": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。",
+    "ko-KR": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐无审查，支持文本与图像分析。",
+    "$files": ["src/electron/config/model-source.ts(19870-19918)"],
+    "$id": 19539
+  },
+  "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。": {
+    "en-US": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。",
+    "es-ES": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。",
+    "ar-EG": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。",
+    "pt-PT": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。",
+    "ru-RU": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。",
+    "ja-JP": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。",
+    "de-DE": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。",
+    "fr-FR": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。",
+    "ko-KR": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐无审查，体积最小，支持文本与图像分析。",
+    "$files": ["src/electron/config/model-source.ts(20765-20818)"],
+    "$id": 19540
+  },
+  "国内加速": {
+    "en-US": "国内加速",
+    "es-ES": "国内加速",
+    "ar-EG": "国内加速",
+    "pt-PT": "国内加速",
+    "ru-RU": "国内加速",
+    "ja-JP": "国内加速",
+    "de-DE": "国内加速",
+    "fr-FR": "国内加速",
+    "ko-KR": "国内加速",
+    "$files": [
+      "src/electron/config/model-source.ts(21467-21475)",
+      "src/electron/config/model-source.ts(22389-22397)",
+      "src/electron/config/model-source.ts(23301-23309)"
+    ],
+    "$id": 19541
+  },
+  "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。": {
+    "en-US": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+    "es-ES": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+    "ar-EG": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+    "pt-PT": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+    "ru-RU": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+    "ja-JP": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+    "de-DE": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+    "fr-FR": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+    "ko-KR": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
+    "$files": ["src/electron/config/model-source.ts(21616-21667)"],
+    "$id": 19542
+  },
+  "官方": {
+    "en-US": "官方",
+    "es-ES": "官方",
+    "ar-EG": "官方",
+    "pt-PT": "官方",
+    "ru-RU": "官方",
+    "ja-JP": "官方",
+    "de-DE": "官方",
+    "fr-FR": "官方",
+    "ko-KR": "官方",
+    "$files": [
+      "src/electron/config/model-source.ts(22378-22384)",
+      "src/electron/config/model-source.ts(23290-23296)"
+    ],
+    "$id": 19543
+  },
+  "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。": {
+    "en-US": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "es-ES": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "ar-EG": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "pt-PT": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "ru-RU": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "ja-JP": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "de-DE": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "fr-FR": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "ko-KR": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "$files": ["src/electron/config/model-source.ts(22537-22596)"],
+    "$id": 19544
+  },
+  "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。": {
+    "en-US": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "es-ES": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "ar-EG": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "pt-PT": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "ru-RU": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "ja-JP": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "de-DE": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "fr-FR": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "ko-KR": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+    "$files": ["src/electron/config/model-source.ts(23449-23513)"],
+    "$id": 19545
   },
   "最强": {
     "en-US": "Strongest",
@@ -1007,8 +1151,8 @@
     "fr-FR": "Le plus fort",
     "ko-KR": "가장 강한",
     "$files": [
-      "src/electron/config/model-source.ts(19520-19526)",
-      "src/electron/config/model-source.ts(20033-20039)"
+      "src/electron/config/model-source.ts(23980-23986)",
+      "src/electron/config/model-source.ts(24493-24499)"
     ],
     "$id": 11386
   },
@@ -1022,7 +1166,7 @@
     "de-DE": "Die offizielle Version der dynamischen UD-Quantisierung von unsloth mit extrem geringem Qualitätsverlust unterstützt Text- und Bildanalyse und erfordert einen größeren Videospeicher.",
     "fr-FR": "La version officielle de quantification dynamique UD d'unsloth, avec une perte de qualité extrêmement faible, prend en charge l'analyse de texte et d'image et nécessite une mémoire vidéo plus grande.",
     "ko-KR": "unsloth의 공식 UD 동적 양자화 버전은 품질 손실이 매우 낮고 텍스트 및 이미지 분석을 지원하며 더 큰 비디오 메모리가 필요합니다.",
-    "$files": ["src/electron/config/model-source.ts(19691-19740)"],
+    "$files": ["src/electron/config/model-source.ts(24151-24200)"],
     "$id": 11195
   },
   "Qwen3.8-27B 激进去审查版本，P 系重量化在关键张量保留更高精度，无审查且支持图像分析。": {
@@ -1035,7 +1179,7 @@
     "de-DE": "Qwen3.8-27B ist eine radikale De-Zensur-Version. Die P-Reihen-Quantisierung sorgt für eine höhere Genauigkeit in Schlüsseltensoren ohne Zensur und unterstützt die Bildanalyse.",
     "fr-FR": "Qwen3.8-27B est une version de décensure radicale. La quantification de la série P conserve une plus grande précision dans les tenseurs clés, sans censure et prend en charge l'analyse d'images.",
     "ko-KR": "Qwen3.8-27B는 철저한 검열 해제 버전입니다. P 시리즈 양자화는 검열 없이 주요 텐서에서 더 높은 정확도를 유지하고 이미지 분석을 지원합니다.",
-    "$files": ["src/electron/config/model-source.ts(20428-20481)"],
+    "$files": ["src/electron/config/model-source.ts(24888-24941)"],
     "$id": 11203
   },
   "顶级": {
@@ -1049,8 +1193,8 @@
     "fr-FR": "Haut de gamme",
     "ko-KR": "최고급",
     "$files": [
-      "src/electron/config/model-source.ts(20978-20984)",
-      "src/electron/config/model-source.ts(21656-21662)"
+      "src/electron/config/model-source.ts(25438-25444)",
+      "src/electron/config/model-source.ts(26116-26122)"
     ],
     "$id": 11242
   },
@@ -1065,8 +1209,8 @@
     "fr-FR": "Modèle multimodal Ornith 1.5, prend en charge l'analyse de texte et d'images.",
     "ko-KR": "Ornith 1.5 멀티모달 모델, 텍스트 및 이미지 분석 지원.",
     "$files": [
-      "src/electron/config/model-source.ts(21150-21181)",
-      "src/electron/config/model-source.ts(21828-21859)"
+      "src/electron/config/model-source.ts(25610-25641)",
+      "src/electron/config/model-source.ts(26288-26319)"
     ],
     "$id": 11297
   },
@@ -1081,8 +1225,8 @@
     "fr-FR": "Reconnaissance d'images",
     "ko-KR": "이미지 인식",
     "$files": [
-      "src/electron/config/model-source.ts(21454-21460)",
-      "src/electron/config/model-source.ts(22131-22137)"
+      "src/electron/config/model-source.ts(25914-25920)",
+      "src/electron/config/model-source.ts(26591-26597)"
     ],
     "$id": 11298
   },
@@ -1097,26 +1241,26 @@
     "fr-FR": "多模态嵌入",
     "ko-KR": "多模态嵌入",
     "$files": [
-      "src/electron/config/model-source.ts(22488-22497)",
-      "src/electron/config/model-source.ts(23319-23328)"
+      "src/electron/config/model-source.ts(26948-26957)",
+      "src/electron/config/model-source.ts(27781-27790)"
     ],
     "$id": 19413
   },
-  "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。": {
-    "en-US": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
-    "es-ES": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
-    "ar-EG": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
-    "pt-PT": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
-    "ru-RU": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
-    "ja-JP": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
-    "de-DE": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
-    "fr-FR": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
-    "ko-KR": "WeMM 2B 多模态嵌入模型，附视觉投影器 (mmproj)，支持文本与图像嵌入检索。",
+  "支持萤核智能文件夹，图文视频语义搜索增强。": {
+    "en-US": "支持萤核智能文件夹，图文视频语义搜索增强。",
+    "es-ES": "支持萤核智能文件夹，图文视频语义搜索增强。",
+    "ar-EG": "支持萤核智能文件夹，图文视频语义搜索增强。",
+    "pt-PT": "支持萤核智能文件夹，图文视频语义搜索增强。",
+    "ru-RU": "支持萤核智能文件夹，图文视频语义搜索增强。",
+    "ja-JP": "支持萤核智能文件夹，图文视频语义搜索增强。",
+    "de-DE": "支持萤核智能文件夹，图文视频语义搜索增强。",
+    "fr-FR": "支持萤核智能文件夹，图文视频语义搜索增强。",
+    "ko-KR": "支持萤核智能文件夹，图文视频语义搜索增强。",
     "$files": [
-      "src/electron/config/model-source.ts(22664-22712)",
-      "src/electron/config/model-source.ts(23493-23541)"
+      "src/electron/config/model-source.ts(27123-27148)",
+      "src/electron/config/model-source.ts(27954-27979)"
     ],
-    "$id": 19414
+    "$id": 19546
   },
   "嵌入": {
     "en-US": "嵌入",
@@ -1129,8 +1273,8 @@
     "fr-FR": "嵌入",
     "ko-KR": "嵌入",
     "$files": [
-      "src/electron/config/model-source.ts(22968-22974)",
-      "src/electron/config/model-source.ts(23798-23804)"
+      "src/electron/config/model-source.ts(27430-27436)",
+      "src/electron/config/model-source.ts(28262-28268)"
     ],
     "$id": 19415
   }

@@ -1,4 +1,17 @@
 {
+  "打开萤核AI引擎失败，请确认AI引擎已正常启动": {
+    "en-US": "Failed to open the Firefly AI Engine. Please ensure the AI Engine has started successfully.",
+    "es-ES": "Falló al iniciar el motor Firefly AI; asegúrese de que el motor AI esté iniciado correctamente",
+    "ar-EG": "فشل في فتح محرك Firefly AI، يرجى التأكد من أن محرك الذكاء الاصطناعي يعمل بشكل صحيح",
+    "pt-PT": "Falha ao iniciar o Motor AI Firefly. Confirme que o motor de IA foi iniciado corretamente.",
+    "ru-RU": "Не удалось открыть AI-двигатель Firefly. Убедитесь, что AI-двигатель запущен корректно",
+    "ja-JP": "Fluorine AI エンジンの起動に失敗しました。AI エンジンの正常な起動を確認してください。",
+    "de-DE": "Das Öffnen des Firefly-AI-Engine fehlgeschlagen. Bitte stellen Sie sicher, dass die AI-Engine ordnungsgemäß gestartet ist",
+    "fr-FR": "打开萤核AI引擎失败，请确认AI引擎已正常启动",
+    "ko-KR": "打开萤核AI引擎失败，请确认AI引擎已正常启动",
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(9076-9103)"],
+    "$id": 19578
+  },
   "示例：作为整体单元的文件集合特征为：文件命名带数字后缀的文件集合，例如：1.txt, 2.txt, 3.txt": {
     "en-US": "Example: The characteristic of a file collection as a whole unit is: a set of files named with numeric suffixes, for example: 1.txt, 2.txt, 3.txt",
     "es-ES": "Ejemplo: La característica de una colección de archivos como unidad global es: una colección de archivos con nombres que incluyen sufijos numéricos, por ejemplo: 1.txt, 2.txt, 3.txt  ",
@@ -9,7 +22,7 @@
     "de-DE": "Beispiel: Eine Dateisammlung als Ganzes ist durch Dateien mit numerischen Suffixen gekennzeichnet, zum Beispiel: 1.txt, 2.txt, 3.txt",
     "fr-FR": "Exemple : Caractéristique d'une collection de fichiers en tant qu'unité globale : ensemble de fichiers dont le nom est suffixé par un chiffre, par exemple : 1.txt, 2.txt, 3.txt",
     "ko-KR": "예시: 전체 단위로 된 파일 집합의 특징은 숫자 접미사를 포함한 파일명으로 구성된 파일 집합입니다. 예를 들어: 1.txt, 2.txt, 3.txt",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(10602-10671)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(13770-13839)"],
     "$id": 2681
   },
   "示例：为喜剧故事多加分；为技术指标降低权重; 多模态内容描述着重人物关系, lrc翻译为{activeLanguage}": {
@@ -22,7 +35,7 @@
     "de-DE": "Beispiel: Geben Sie Comedy-Geschichten mehr Gewicht; reduzieren Sie das Gewicht technischer Indikatoren; bei multimodalen Inhaltsbeschreibungen liegt der Fokus auf Personenbeziehungen, lrc-Übersetzung in {activeLanguage}",
     "fr-FR": "Exemple : attribuer plus de points aux histoires comiques ; réduire le poids des indicateurs techniques ; dans les descriptions multimodales, mettre l'accent sur les relations entre personnages ; traduire « lrc » en {activeLanguage}.  ",
     "ko-KR": "예시: 코미디 스토리에 가중치를 더 부여하고, 기술 지표의 가중치는 낮추기; 멀티모달 콘텐츠 설명은 인물 관계에 중점을 두고, lrc를 {activeLanguage}로 번역  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(10703-10777)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(13871-13945)"],
     "$id": 3067
   },
   "示例：智能文件名需要翻译成{activeLanguage}，格式：作者_内容描述。例如：乔治·马丁_冰与火之歌.pdf。标签最多生成20个，且每个不要超过2个字，至少从文件名提取一个标签，其它必须从此集合里提取：[开心,痛苦,愤恨,...]": {
@@ -35,7 +48,7 @@
     "de-DE": "Beispiel: Intelligente Dateinamen müssen in {activeLanguage} übersetzt werden, Format: Autor_Inhaltsbeschreibung. Beispiel: George_R._Martin_Eis_und_Feuer.pdf. Es werden maximal 20 Tags generiert, wobei jedes Tag nicht länger als 2 Zeichen sein darf. Mindestens ein Tag muss aus dem Dateinamen extrahiert werden, die restlichen müssen aus folgendem Set stammen: [Freude, Schmerz, Groll,...]",
     "fr-FR": "Exemple : les noms de fichiers intelligents doivent être traduits en {activeLanguage}, au format : auteur_description_du_contenu. Par exemple : George_Martin_Le_Trône_de_fer.pdf. Générer au maximum 20 étiquettes, chacune ne dépassant pas deux caractères. Extraire au moins une étiquette du nom de fichier, les autres doivent obligatoirement provenir de cet ensemble : [joie, douleur, colère, ...]",
     "ko-KR": "예시: 스마트 파일 이름은 {activeLanguage}로 번역되어야 하며, 형식: 작가_콘텐츠 설명. 예: 조지 R.R. 마틴_얼음과 불의 노래.pdf. 태그는 최대 20개까지 생성하며, 각 태그는 2자 이내로 제한되고, 반드시 파일 이름에서 하나 이상의 태그를 추출해야 하며, 나머지는 다음 집합에서만 추출해야 함: [기쁨, 고통, 분노,...]",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(10935-11069)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(14103-14237)"],
     "$id": 3083
   },
   "文件": {
@@ -49,9 +62,9 @@
     "fr-FR": "Fichier  ",
     "ko-KR": "파일  ",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(12682-12688)",
-      "src/renderer/components/settings/analysis-settings.tsx(56094-56100)",
-      "src/renderer/components/settings/analysis-settings.tsx(66572-66578)"
+      "src/renderer/components/settings/analysis-settings.tsx(15850-15856)",
+      "src/renderer/components/settings/analysis-settings.tsx(62474-62480)",
+      "src/renderer/components/settings/analysis-settings.tsx(72952-72958)"
     ],
     "$id": 3001
   },
@@ -66,9 +79,9 @@
     "fr-FR": "Répertoire  ",
     "ko-KR": "디렉터리  ",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(12709-12715)",
-      "src/renderer/components/settings/analysis-settings.tsx(56172-56178)",
-      "src/renderer/components/settings/analysis-settings.tsx(66640-66646)"
+      "src/renderer/components/settings/analysis-settings.tsx(15877-15883)",
+      "src/renderer/components/settings/analysis-settings.tsx(62552-62558)",
+      "src/renderer/components/settings/analysis-settings.tsx(73020-73026)"
     ],
     "$id": 3002
   },
@@ -83,9 +96,9 @@
     "fr-FR": "Extension  ",
     "ko-KR": "확장자  ",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(12736-12743)",
-      "src/renderer/components/settings/analysis-settings.tsx(56250-56257)",
-      "src/renderer/components/settings/analysis-settings.tsx(66708-66715)"
+      "src/renderer/components/settings/analysis-settings.tsx(15904-15911)",
+      "src/renderer/components/settings/analysis-settings.tsx(62630-62637)",
+      "src/renderer/components/settings/analysis-settings.tsx(73088-73095)"
     ],
     "$id": 3003
   },
@@ -100,9 +113,9 @@
     "fr-FR": "Expression régulière",
     "ko-KR": "정규식",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(12760-12769)",
-      "src/renderer/components/settings/analysis-settings.tsx(56403-56412)",
-      "src/renderer/components/settings/analysis-settings.tsx(66841-66850)"
+      "src/renderer/components/settings/analysis-settings.tsx(15928-15937)",
+      "src/renderer/components/settings/analysis-settings.tsx(62783-62792)",
+      "src/renderer/components/settings/analysis-settings.tsx(73221-73230)"
     ],
     "$id": 3310
   },
@@ -117,9 +130,9 @@
     "fr-FR": "Caractère générique",
     "ko-KR": "와일드카드",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(12789-12796)",
-      "src/renderer/components/settings/analysis-settings.tsx(56328-56335)",
-      "src/renderer/components/settings/analysis-settings.tsx(66776-66783)"
+      "src/renderer/components/settings/analysis-settings.tsx(15957-15964)",
+      "src/renderer/components/settings/analysis-settings.tsx(62708-62715)",
+      "src/renderer/components/settings/analysis-settings.tsx(73156-73163)"
     ],
     "$id": 3311
   },
@@ -133,7 +146,7 @@
     "de-DE": "Muster",
     "fr-FR": "Modèle  ",
     "ko-KR": "모드  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(12815-12821)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(15983-15989)"],
     "$id": 3004
   },
   "分析设置": {
@@ -146,7 +159,7 @@
     "de-DE": "Analyseeinstellungen",
     "fr-FR": "Paramètres d'analyse  ",
     "ko-KR": "분석 설정  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(12993-13001)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(16161-16169)"],
     "$id": 3005
   },
   "配置分析模式、文件内容提取、提示词和忽略规则": {
@@ -154,12 +167,12 @@
     "es-ES": "Configuración del modo de análisis, extracción del contenido del archivo, indicaciones y reglas de exclusión",
     "ar-EG": "إعداد وضع التحليل، واستخراج محتوى الملف، والعبارات التوضيحية، وقواعد التجاهل",
     "pt-PT": "Configurar o modo de análise, a extração de conteúdo de ficheiros, os prompts e as regras de exclusão",
-    "ru-RU": "配置分析模式、文件内容提取、提示词和忽略规则",
-    "ja-JP": "配置分析模式、文件内容提取、提示词和忽略规则",
-    "de-DE": "配置分析模式、文件内容提取、提示词和忽略规则",
+    "ru-RU": "Настройте режим анализа, извлечение содержимого файла, промпт и правила игнорирования",
+    "ja-JP": "分析モード、ファイル内容の抽出、プロンプト、および無視ルールの設定",
+    "de-DE": "Konfiguration des Analysemodus, Extraktion der Dateiinhalte, Prompts und Ignorierungsregeln",
     "fr-FR": "配置分析模式、文件内容提取、提示词和忽略规则",
     "ko-KR": "配置分析模式、文件内容提取、提示词和忽略规则",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(13064-13090)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(16232-16258)"],
     "$id": 19473
   },
   "选择分析模式": {
@@ -172,7 +185,7 @@
     "de-DE": "Analysemodus auswählen",
     "fr-FR": "Sélectionnez le mode d'analyse",
     "ko-KR": "분석 모드 선택",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(13613-13623)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(16781-16791)"],
     "$id": 7788
   },
   "根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。": {
@@ -180,12 +193,12 @@
     "es-ES": "Seleccione diferentes modos según las necesidades. El análisis exhaustivo es el más lento pero tiene la mayor precisión; el análisis estándar es el más rápido. El análisis mejorado y el análisis exhaustivo requieren activar el motor de IA avanzado.",
     "ar-EG": "اختر الوضع المناسب حسب المتطلبات؛ يتطلب التحليل الشامل أطول وقت لكنه يعطي أعلى دقة، بينما يكون التحليل القياسي هو الأسرع. يتطلّب التحليل المعزز والتحليل الشامل تفعيل محرك الذكاء الاصطناعي المتقدم.",
     "pt-PT": "Selecionar diferentes modos conforme as necessidades; a análise abrangente é a mais demorada, mas a de maior precisão; a análise padrão é a mais rápida. A análise melhorada e a análise abrangente exigem a ativação do motor de IA avançado.",
-    "ru-RU": "根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。",
-    "ja-JP": "根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。",
-    "de-DE": "根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。",
+    "ru-RU": "Выбирайте разные режимы в соответствии с потребностями: полный анализ занимает больше всего времени, но обеспечивает наибольшую точность; стандартный анализ самый быстрый. Для усиленного и полного анализа необходимо включить продвинутый AI-двигатель.",
+    "ja-JP": "ニーズに合わせて異なるモードを選択してください。完全分析は最も時間がかかりますが、精度は最も高いです。標準分析が最も速いです。拡張分析と完全分析には高度な AI エンジンを有効にする必要があります。",
+    "de-DE": "Wählen Sie je nach Anforderungen verschiedene Modi: Die umfassende Analyse ist die zeitintensivste, aber die genaueste; die Standardanalyse ist am schnellsten. Für die erweiterte und umfassende Analyse muss die erweiterte AI-Engine aktiviert sein.",
     "fr-FR": "根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。",
     "ko-KR": "根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(13688-13763)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(16856-16931)"],
     "$id": 19474
   },
   "极速": {
@@ -198,7 +211,7 @@
     "de-DE": "Extreme Geschwindigkeit",
     "fr-FR": "Vitesse extrême",
     "ko-KR": "극한의 속도",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(14663-14669)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(17831-17837)"],
     "$id": 7817
   },
   "标准分析": {
@@ -206,12 +219,12 @@
     "es-ES": "Análisis estándar",
     "ar-EG": "التحليل القياسي",
     "pt-PT": "Análise padrão",
-    "ru-RU": "标准分析",
-    "ja-JP": "标准分析",
-    "de-DE": "标准分析",
+    "ru-RU": "Стандартный анализ",
+    "ja-JP": "標準分析",
+    "de-DE": "Standardanalyse",
     "fr-FR": "标准分析",
     "ko-KR": "标准分析",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(15279-15287)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(18447-18455)"],
     "$id": 19475
   },
   "基于基础AI引擎高速获取文件标签、智能文件名和摘要": {
@@ -219,12 +232,12 @@
     "es-ES": "Obtención rápida de etiquetas del archivo, nombres de archivos inteligentes y resúmenes basados en el motor de IA básico",
     "ar-EG": "استعلام سريع عن وسوم الملف، وأسماء الملفات الذكية، والملخصات باستخدام محرك الذكاء الاصطناعي الأساسي",
     "pt-PT": "Obter em alta velocidade etiquetas de ficheiros, nomes de ficheiros inteligentes e resumos com base no motor de IA básico",
-    "ru-RU": "基于基础AI引擎高速获取文件标签、智能文件名和摘要",
-    "ja-JP": "基于基础AI引擎高速获取文件标签、智能文件名和摘要",
-    "de-DE": "基于基础AI引擎高速获取文件标签、智能文件名和摘要",
+    "ru-RU": "Быстрое получение меток файлов, интеллектуального имени файла и краткого описания на основе базового AI-движка",
+    "ja-JP": "基礎 AI エンジンにより高速にファイルタグ、インテリジェントなファイル名、および要約を取得します。",
+    "de-DE": "Schnelle Erfassung von Dateitags, intelligenten Dateinamen und Zusammenfassungen basierend auf der Basis-AI-Engine",
     "fr-FR": "基于基础AI引擎高速获取文件标签、智能文件名和摘要",
     "ko-KR": "基于基础AI引擎高速获取文件标签、智能文件名和摘要",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(15437-15466)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(18605-18634)"],
     "$id": 19476
   },
   "默认": {
@@ -237,7 +250,7 @@
     "de-DE": "Standard",
     "fr-FR": "Défaut",
     "ko-KR": "기본",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(16479-16485)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(19647-19653)"],
     "$id": 9410
   },
   "增强分析": {
@@ -245,12 +258,12 @@
     "es-ES": "Análisis mejorado",
     "ar-EG": "التحليل المعزز",
     "pt-PT": "Análise melhorada",
-    "ru-RU": "增强分析",
-    "ja-JP": "增强分析",
-    "de-DE": "增强分析",
+    "ru-RU": "Усиленный анализ",
+    "ja-JP": "拡張分析",
+    "de-DE": "Erweiterte Analyse",
     "fr-FR": "增强分析",
     "ko-KR": "增强分析",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(17191-17199)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(20359-20367)"],
     "$id": 19477
   },
   "【标准分析】+ 高级AI引擎修正和补充基础AI引擎分析结果": {
@@ -258,12 +271,12 @@
     "es-ES": "[Análisis estándar] + corrección y complemento de los resultados del motor de IA básico mediante el motor de IA avanzado",
     "ar-EG": "[التحليل القياسي] + تصحيح وتحسين نتائج تحليل محرك الذكاء الاصطناعي الأساسي بواسطة محرك الذكاء الاصطناعي المتقدم",
     "pt-PT": "【Análise padrão】 + Correções e complementos do motor de IA avançado aos resultados da análise do motor de IA básico",
-    "ru-RU": "【标准分析】+ 高级AI引擎修正和补充基础AI引擎分析结果",
-    "ja-JP": "【标准分析】+ 高级AI引擎修正和补充基础AI引擎分析结果",
-    "de-DE": "【标准分析】+ 高级AI引擎修正和补充基础AI引擎分析结果",
+    "ru-RU": "[Стандардный анализ] + исправление и дополнение результатов базового AI-движка с использованием продвинутого AI-движка",
+    "ja-JP": "【標準分析】+ 高度な AI エンジンによる基礎 AI エンジンの分析結果の修正と補足",
+    "de-DE": "【Standardanalyse】+ Korrigierung und Ergänzung der Analyseergebnisse der Basis-AI-Engine durch die erweiterte AI-Engine",
     "fr-FR": "【标准分析】+ 高级AI引擎修正和补充基础AI引擎分析结果",
     "ko-KR": "【标准分析】+ 高级AI引擎修正和补充基础AI引擎分析结果",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(17456-17489)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(20624-20657)"],
     "$id": 19478
   },
   "需开启高级AI引擎": {
@@ -271,14 +284,14 @@
     "es-ES": "Se debe activar el motor de IA avanzado",
     "ar-EG": "يتطلب تفعيل محرك الذكاء الاصطناعي المتقدم",
     "pt-PT": "Exige a ativação do motor de IA avançado",
-    "ru-RU": "需开启高级AI引擎",
-    "ja-JP": "需开启高级AI引擎",
-    "de-DE": "需开启高级AI引擎",
+    "ru-RU": "Необходимо включить расширенный ИИ-движок",
+    "ja-JP": "高度AIエンジンの有効化が必要です",
+    "de-DE": "Advanced AI engine required",
     "fr-FR": "需开启高级AI引擎",
     "ko-KR": "需开启高级AI引擎",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(18078-18091)",
-      "src/renderer/components/settings/analysis-settings.tsx(20785-20798)"
+      "src/renderer/components/settings/analysis-settings.tsx(21246-21259)",
+      "src/renderer/components/settings/analysis-settings.tsx(23953-23966)"
     ],
     "$id": 19479
   },
@@ -293,8 +306,8 @@
     "fr-FR": "Recommander",
     "ko-KR": "추천하다",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(19152-19158)",
-      "src/renderer/components/settings/analysis-settings.tsx(40573-40579)"
+      "src/renderer/components/settings/analysis-settings.tsx(22320-22326)",
+      "src/renderer/components/settings/analysis-settings.tsx(46953-46959)"
     ],
     "$id": 7821
   },
@@ -308,7 +321,7 @@
     "de-DE": "Umfassende Analyse",
     "fr-FR": "Analyse complète",
     "ko-KR": "종합적인 분석",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(19852-19860)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(23020-23028)"],
     "$id": 9433
   },
   "【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等": {
@@ -316,25 +329,116 @@
     "es-ES": "[Análisis mejorado] + análisis de IA exhaustivo, que incluye puntuación de calidad y descripciones detalladas del contenido de imágenes, audio y vídeo, etc.",
     "ar-EG": "[التحليل المعزز] + تحليل شامل بالذكاء الاصطناعي، يتضمن تقييم الجودة ووصف تفصيلي لمحتوى الصور والصوتيات والمقاطع المرئية",
     "pt-PT": "【Análise melhorada】 + Análise de IA abrangente, incluindo pontuação de qualidade e descrições detalhadas do conteúdo de imagens, áudio e vídeo",
-    "ru-RU": "【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等",
-    "ja-JP": "【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等",
-    "de-DE": "【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等",
+    "ru-RU": "【Улучшенный анализ】+ полный ИИ-анализ, включая оценку качества и подробное описание контента изображений, аудио и видео",
+    "ja-JP": "【強化解析】＋包括的なAI解析、品質スコアリングおよび詳細な画像、音声、ビ��オ内容の説明などを含む",
+    "de-DE": "[Enhanced Analysis] + Comprehensive AI analysis, including quality scores and detailed descriptions of image, audio, and video content",
     "fr-FR": "【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等",
     "ko-KR": "【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(20117-20178)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(23285-23346)"],
     "$id": 19480
+  },
+  "开启视频搜索与标签修正（高维修正）": {
+    "en-US": "Enable video search and high-precision label correction",
+    "es-ES": "Activar la búsqueda de vídeo y la corrección de etiquetas (corrección de alta precisión)",
+    "ar-EG": "تفعيل البحث في الفيديو وتصحيح الوسوم (تصحيح عالي الأبعاد)",
+    "pt-PT": "Ativar pesquisa de vídeo e correção de etiquetas (correção de alta dimensão)",
+    "ru-RU": "Включить поиск видео и коррекцию меток (коррекция высокой точности)",
+    "ja-JP": "ビデオ検索とタグの修正（高次元の修正）を有効化",
+    "de-DE": "Enable video search and tag correction (high-dimensional correction)",
+    "fr-FR": "开启视频搜索与标签修正（高维修正）",
+    "ko-KR": "开启视频搜索与标签修正（高维修正）",
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(24835-24856)"],
+    "$id": 19579
+  },
+  "开启后，文件队列分析完成会自动进行高维修正：用 2048 维多模态向量二次校准标签与智能命名，并解锁以图搜图与视频自然语言搜索。": {
+    "en-US": "Once enabled, high-precision correction will be automatically performed upon completion of the file queue analysis: labels and smart naming will be recalibrated using 2048-dimensional multimodal vectors, and image-to-image search and natural language video search will be unlocked.",
+    "es-ES": "Al activar, al completarse el análisis de la cola de archivos, se realizará automáticamente una corrección de alta precisión: recalibrar las etiquetas y el nombrado inteligente con vectores multimodales de 2048 dimensiones, y desbloquear la búsqueda de imágenes por imagen y la búsqueda de vídeo mediante lenguaje natural.",
+    "ar-EG": "بعد التفعيل، سيُجرى تصحيح عالي الأبعاد تلقائيًا بعد اكتمال تحليل قائمة الملفات: معايرة دقيقة للوسوم والتسمية الذكية باستخدام متجه متعدد الوسائط من 2048 بعدًا، وفتح إمكانية البحث عن الصور بناءً على الصور والبحث اللغوي الطبيعي في الفيديو.",
+    "pt-PT": "Ao ativar, a correção de alta dimensão é executada automaticamente após a análise da fila de ficheiros: as etiquetas e o nome inteligente são calibrados novamente com vetores multimodais de 2048 dimensões, e a pesquisa de imagem por imagem e a pesquisa de vídeo em linguagem natural são desbloqueadas.",
+    "ru-RU": "После включения при завершении анализа очереди файлов будет автоматически выполняться коррекция высокой точности: с использованием 2048-мерного мультимодального вектора производится вторичная калибровка меток и интеллектуальное именование, а также открываются возможности поиска изображений по изображению и семантического поиска видео.",
+    "ja-JP": "有効化後、ファイルキューの解析が完了すると自動的に高次元の修正が実行されます：2048次元マルチモーダルベクトルでタグとスマート命名を二次校正し、画像による画像検索とビデオの自然言語検索が解放されます。",
+    "de-DE": "Once enabled, high-dimensional correction is automatically performed after the file queue analysis is completed: tags and smart naming are re-calibrated using 2048-dimensional multimodal vectors, unlocking image-based search and natural language video search.",
+    "fr-FR": "开启后，文件队列分析完成会自动进行高维修正：用 2048 维多模态向量二次校准标签与智能命名，并解锁以图搜图与视频自然语言搜索。",
+    "ko-KR": "开启后，文件队列分析完成会自动进行高维修正：用 2048 维多模态向量二次校准标签与智能命名，并解锁以图搜图与视频自然语言搜索。",
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(24949-25041)"],
+    "$id": 19580
+  },
+  "对标签智能文件名描述等进行高维度向量修正，可以获得更准确的结果，此外还支持更精准的文件搜索，甚至支持视频内容用自然语言搜索。在文件队列分析完成后，自动进行高维修正，每个文件耗时约1秒；": {
+    "en-US": "High-dimensional vector correction for intelligent labels, file names, and descriptions can yield more accurate results. This also supports more precise file searches, even enabling natural language search for video content. After file queue analysis is complete, high-precision correction is automatically performed, taking approximately 1 second per file.",
+    "es-ES": "Aplicar la corrección vectorial de alta dimensión a las descripciones de nombres de archivo inteligentes y a las etiquetas puede obtener resultados más precisos; además, se soporta una búsqueda de archivos más precisa, e incluso se permite buscar contenido de vídeo mediante lenguaje natural. Al completarse el análisis de la cola de archivos, se realiza automáticamente la corrección de alta precisión; cada archivo tarda aproximadamente 1 segundo.",
+    "ar-EG": "إجراء تصحيح متجهي عالي الأبعاد لوصف أسماء الملفات الذكية والوسوم للحصول على نتائج أكثر دقة، بالإضافة إلى دعم البحث الأذكى عن الملفات، بل يشمل البحث اللغوي الطبيعي عن محتوى الفيديو. بعد اكتمال تحليل قائمة الملفات، يتم إجراء التصحيح عالي الأبعاد تلقائيًا؛ يستغرق كل ملف حوالي ثانية واحدة.",
+    "pt-PT": "A correção de vetores de alta dimensão de descrições de nomes de ficheiros inteligentes e etiquetas, entre outros, pode obter resultados mais precisos; além disso, suporta pesquisa de ficheiros mais precisa e até mesmo pesquisa de conteúdo de vídeo em linguagem natural. Após a conclusão da análise da fila de ficheiros, a correção de alta dimensão é executada automaticamente, com um custo de cerca de 1 segundo por ficheiro;",
+    "ru-RU": "Коррекция описаний меток и имен файлов с помощью векторов высокой размерности позволяет получать более точные результаты, кроме того, поддерживается более точный поиск файлов, вплоть до семантического поиска контента видео. После завершения анализа очереди файлов коррекция высокой точности выполняется автоматически, время обработки каждого файла составляет примерно 1 секунду.",
+    "ja-JP": "タグやスマートファイル名の説明などに高次元ベクトル修正を行うことで、より正確な結果を取得でき、さらに、より精密なファイル検索に対応し、ビデオ内容を自然言語で検索することも可能です。ファイルキューの解析が完了した後、自動的に高次元修正が行われ、各ファイルあたりの所要時間は約1秒です。",
+    "de-DE": "High-dimensional vector correction is applied to tags, smart file names, and descriptions for more accurate results. This also enables more precise file search, even supporting natural language search for video content. After the file queue analysis is complete, high-dimensional correction is automatically performed, taking approximately 1 second per file;",
+    "fr-FR": "对标签智能文件名描述等进行高维度向量修正，可以获得更准确的结果，此外还支持更精准的文件搜索，甚至支持视频内容用自然语言搜索。在文件队列分析完成后，自动进行高维修正，每个文件耗时约1秒；",
+    "ko-KR": "对标签智能文件名描述等进行高维度向量修正，可以获得更准确的结果，此外还支持更精准的文件搜索，甚至支持视频内容用自然语言搜索。在文件队列分析完成后，自动进行高维修正，每个文件耗时约1秒；",
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(25216-25334)"],
+    "$id": 19581
+  },
+  "正在检测 WeMM-Embedding 2B 多模态嵌入模型...": {
+    "en-US": "Detecting the WeMM-Embedding 2B multimodal embedding model...",
+    "es-ES": "Detecting the WeMM-Embedding 2B multimodal embedding model...",
+    "ar-EG": "جاري اكتشاف نموذج التضمين متعدد الوسائط WeMM-Embedding 2B...",
+    "pt-PT": "A detetar o modelo de embeddings multimodal WeMM-Embedding 2B...",
+    "ru-RU": "Выполняется обнаружение мультимодальной модели встраивания WeMM-Embedding 2B…",
+    "ja-JP": "WeMM-Embedding 2B マルチモーダル埋め込みモデルの検出中...",
+    "de-DE": "Mehdoddemodell WeMM-Embedding 2B für multimodale Embeddings wird geprüft...",
+    "fr-FR": "正在检测 WeMM-Embedding 2B 多模态嵌入模型...",
+    "ko-KR": "正在检测 WeMM-Embedding 2B 多模态嵌入模型...",
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(26274-26311)"],
+    "$id": 19582
+  },
+  "未检测到萤核AI引擎正在运行，无法确认 WeMM-Embedding 2B 多模态嵌入模型是否已安装。高维修正依赖该模型，请先启动或安装萤核AI引擎。": {
+    "en-US": "The Firefly AI engine is not detected as running, so it is impossible to confirm whether the WeMM-Embedding 2B multimodal embedding model has been installed. Advanced correction depends on this model; please start or install the Firefly AI engine first.",
+    "es-ES": "The Firefly AI Folder engine is not detected as running, so it cannot be confirmed whether the WeMM-Embedding 2B multimodal embedding model is installed. High-precision correction depends on this model. Please start or install the Firefly AI Folder engine first.",
+    "ar-EG": "لم يتم اكتشاف محرك Firefly AI يعمل، ولا يمكن تأكيد ما إذا كان نموذج التضمين متعدد الوسائط WeMM-Embedding 2B مثبتًا. تعتمد الإصلاحات المتقدمة على هذا النموذج، لذا يرجى بدء تشغيل محرك Firefly AI أو تثبيته أولًا.",
+    "pt-PT": "O motor AI Firefly não foi detetado a ser executado; não é possível confirmar se o modelo de embeddings multimodal WeMM-Embedding 2B está instalado. A correção de alta fiabilidade depende deste modelo; por favor, inicie ou instale primeiro o motor AI Firefly.",
+    "ru-RU": "Не обнаружено работающий AI-движок Firefly AI Folder, невозможно проверить, установлена ли модель мультимодального встраивания WeMM-Embedding 2B. Высокоточная коррекция зависит от этой модели, сначала запустите или установите AI-движок Firefly AI Folder.",
+    "ja-JP": "Firefly AI エンジンが実行されていないため、WeMM-Embedding 2B マ��チモーダル埋め込みモデルがインストールされているか確認できません。高精細補正はこのモデルに依存しているため、まず Firefly AI エンジンの起動またはインストールを行ってください。",
+    "de-DE": "Es wurde nicht erkannt, dass der Firefly AI-Engine läuft; es kann nicht bestätigt werden, ob das multimodale Embeddingsmodell WeMM-Embedding 2B installiert ist. Hochkorrekturen hängen von diesem Modell ab; bitte starten oder installieren Sie zuerst die Firefly AI-Engine.",
+    "fr-FR": "未检测到萤核AI引擎正在运行，无法确认 WeMM-Embedding 2B 多模态嵌入模型是否已安装。高维修正依赖该模型，请先启动或安装萤核AI引擎。",
+    "ko-KR": "未检测到萤核AI引擎正在运行，无法确认 WeMM-Embedding 2B 多模态嵌入模型是否已安装。高维修正依赖该模型，请先启动或安装萤核AI引擎。",
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(26382-26489)"],
+    "$id": 19583
+  },
+  "请前往萤核AI引擎安装 WeMM-Embedding 2B 多模态嵌入模型，否则高维修正无法生效。": {
+    "en-US": "Please go to the Firefly AI engine to install the WeMM-Embedding 2B multimodal embedding model; otherwise, advanced correction will not take effect.",
+    "es-ES": "Please install the WeMM-Embedding 2B multimodal embedding model in the Firefly AI Folder engine; otherwise, high-precision correction will not take effect.",
+    "ar-EG": "يرجى الانتقال إلى محرك Firefly AI لتثبيت نموذج التضمين متعدد الوسائط WeMM-Embedding 2B، وإلا فلن يعمل الإصلاح المتقدم.",
+    "pt-PT": "Por favor, instale o modelo de embeddings multimodal WeMM-Embedding 2B através do motor AI Firefly; de outra forma, a correção de alta fiabilidade não será aplicada.",
+    "ru-RU": "Пожалуйста, установите мультимодальную модель встраивания WeMM-Embedding 2B в Firefly AI Folder, иначе высокоточная коррекция не вступит в силу.",
+    "ja-JP": "Firefly AI エンジンで WeMM-Embedding 2B マルチモーダル埋め込みモデルをインストールしてください。それ否则、高精細補正は無効になります。",
+    "de-DE": "Bitte installieren Sie das multimodale Embeddingsmodell WeMM-Embedding 2B über die Firefly AI-Engine, andernfalls können Hochkorrekturen nicht wirksam werden.",
+    "fr-FR": "请前往萤核AI引擎安装 WeMM-Embedding 2B 多模态嵌入模型，否则高维修正无法生效。",
+    "ko-KR": "请前往萤核AI引擎安装 WeMM-Embedding 2B 多模态嵌入模型，否则高维修正无法生效。",
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(26542-26623)"],
+    "$id": 19584
+  },
+  "打开萤核AI引擎": {
+    "en-US": "Open Firefly AI Engine",
+    "es-ES": "Abrir el motor de IA Firefly",
+    "ar-EG": "افتح محرك Firefly AI",
+    "pt-PT": "Abrir motor de IA Firefly",
+    "ru-RU": "Откройте AI-движок Firefly",
+    "ja-JP": "Flame Core AIエンジンを起動",
+    "de-DE": "Firefly AI-Engine starten",
+    "fr-FR": "打开萤核AI引擎",
+    "ko-KR": "打开萤核AI引擎",
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(27192-27204)"],
+    "$id": 19585
   },
   "文件内容提取": {
     "en-US": "File Content Extraction",
     "es-ES": "Extracción del contenido del archivo",
     "ar-EG": "استخراج محتوى الملف",
     "pt-PT": "Extração de conteúdo de ficheiro",
-    "ru-RU": "文件内容提取",
-    "ja-JP": "文件内容提取",
-    "de-DE": "文件内容提取",
+    "ru-RU": "Извлечение содержимого файла",
+    "ja-JP": "ファイル内容の抽出",
+    "de-DE": "Inhaltsauswertung aus Dateien",
     "fr-FR": "文件内容提取",
     "ko-KR": "文件内容提取",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(21454-21464)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(27834-27844)"],
     "$id": 19481
   },
   "控制文本、文档、OCR 与音视频内容的提取范围和精度，影响分析耗时与结果丰富度": {
@@ -342,12 +446,12 @@
     "es-ES": "Controla el alcance y la precisión de la extracción de texto, documentos, OCR y contenido de audio y vídeo, lo cual afecta al tiempo de análisis y a la amplitud de los resultados",
     "ar-EG": "تحكّم في نطاق ودقة استخراج المحتوى من النصوص والمستندات ونتائج التقاط النصوص البصري (OCR) من الصوتيات والفيديوهات، مما يؤثر على و��ت المعالجة وغنى النتائج",
     "pt-PT": "Controla o âmbito e a precisão da extração de texto, documentos, OCR e conteúdo áudio e vídeo, afetando a duração da análise e a riqueza dos resultados",
-    "ru-RU": "控制文本、文档、OCR 与音视频内容的提取范围和精度，影响分析耗时与结果丰富度",
-    "ja-JP": "控制文本、文档、OCR 与音视频内容的提取范围和精度，影响分析耗时与结果丰富度",
-    "de-DE": "控制文本、文档、OCR 与音视频内容的提取范围和精度，影响分析耗时与结果丰富度",
+    "ru-RU": "Управление диапазоном и точностью извлечения текста, документов, OCR и аудио-видео-контента, что влияет на время анализа и полноту результатов",
+    "ja-JP": "テキスト、ドキュメント、OCRおよびオーディオビジュアル内容の抽出範囲と精度を制御し、解析時間と結果の豊富さに影響を与える",
+    "de-DE": "Steuert Umfang und Genauigkeit der Extraktion von Text-, Dokument-, OCR- sowie Audio- und Videoinhalten; beeinflusst Analysezeit und Ergebnisdichte",
     "fr-FR": "控制文本、文档、OCR 与音视频内容的提取范围和精度，影响分析耗时与结果丰富度",
     "ko-KR": "控制文本、文档、OCR 与音视频内容的提取范围和精度，影响分析耗时与结果丰富度",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(21529-21572)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(27909-27952)"],
     "$id": 19482
   },
   "文档与内容提取": {
@@ -360,7 +464,7 @@
     "de-DE": "Dokumenten- und Inhaltsextraktion",
     "fr-FR": "Extraction de documents et de contenus",
     "ko-KR": "문서 및 콘텐츠 추출",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(21894-21905)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(28274-28285)"],
     "$id": 7824
   },
   "内容(含OCR）提取大小上限": {
@@ -373,7 +477,7 @@
     "de-DE": "Größenbeschränkung für die Extraktion von Inhalten (einschließlich OCR).",
     "fr-FR": "Limite de taille d'extraction du contenu (y compris OCR)",
     "ko-KR": "콘텐츠(OCR 포함) 추출 크기 제한",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(22297-22315)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(28677-28695)"],
     "$id": 7825
   },
   "单个文本指标（文本/文档/OCR/HTML）的最大提取大小，超长内容会被自动截断。否则过多占用存储空间，影响性能。": {
@@ -386,7 +490,7 @@
     "de-DE": "Maximale Extraktionsgröße für einen einzelnen Textindikator (Text/Dokument/OCR/HTML). Überlange Inhalte werden automatisch abgeschnitten. Andernfalls wird zu viel Speicherplatz belegt und die Leistung beeinträchtigt.",
     "fr-FR": "Taille maximale d'extraction pour un seul indicateur de texte (texte/document/OCR/HTML), les contenus trop longs seront automatiquement tronqués. Sinon, cela occupera trop d’espace de stockage et affectera les performances.",
     "ko-KR": "단일 텍스트 표시기(텍스트/문서/OCR/HTML)에 대한 최대 추출 크기, 너무 긴 내용은 자동으로 잘립니다. 그렇지 않으면 너무 많은 저장 공간을 차지하고 성능에 영향을 미칩니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(22408-22493)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(28788-28873)"],
     "$id": 7826
   },
   "不限": {
@@ -400,10 +504,10 @@
     "fr-FR": "Aucune limite",
     "ko-KR": "제한 없음",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(22844-22850)",
-      "src/renderer/components/settings/analysis-settings.tsx(26448-26454)",
-      "src/renderer/components/settings/analysis-settings.tsx(36353-36359)",
-      "src/renderer/components/settings/analysis-settings.tsx(38955-38961)"
+      "src/renderer/components/settings/analysis-settings.tsx(29224-29230)",
+      "src/renderer/components/settings/analysis-settings.tsx(32828-32834)",
+      "src/renderer/components/settings/analysis-settings.tsx(42733-42739)",
+      "src/renderer/components/settings/analysis-settings.tsx(45335-45341)"
     ],
     "$id": 7827
   },
@@ -413,13 +517,13 @@
     "ar-EG": "عشرة آلاف",
     "pt-PT": "Dez mil",
     "ru-RU": "Десять тысяч",
-    "ja-JP": "万",
+    "ja-JP": "10,000",
     "de-DE": "Zehntausend",
     "fr-FR": "Dix mille",
     "ko-KR": "만",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(23545-23550)",
-      "src/renderer/components/settings/analysis-settings.tsx(23888-23893)"
+      "src/renderer/components/settings/analysis-settings.tsx(29925-29930)",
+      "src/renderer/components/settings/analysis-settings.tsx(30268-30273)"
     ],
     "$id": 7828
   },
@@ -433,7 +537,7 @@
     "de-DE": "Entspricht etwa {zh} Wörtern oder {en} Wörtern",
     "fr-FR": "Équivalent à environ {zh} mots ou {en} mots",
     "ko-KR": "약 {zh} 단어 또는 {en} 단어에 해당",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(23994-24018)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(30374-30398)"],
     "$id": 7829
   },
   "开启Office文档封面截图": {
@@ -446,7 +550,7 @@
     "de-DE": "Screenshot des Open Office-Dokumentcovers",
     "fr-FR": "Capture d'écran de la couverture du document Open Office",
     "ko-KR": "Office 문서 표지 열기 스크린샷",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(27114-27132)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(33494-33512)"],
     "$id": 11310
   },
   "支持Office文档首页导出为封面缩略图，但会大大增加Office内容提取耗时，PDF不受影响。需要安装LibreOffice。": {
@@ -459,7 +563,7 @@
     "de-DE": "Es unterstützt den Export der Homepage von Office-Dokumenten als Cover-Miniaturansichten, erhöht jedoch die zum Extrahieren von Office-Inhalten benötigte Zeit erheblich und die PDF-Datei wird nicht beeinträchtigt. LibreOffice muss installiert sein.",
     "fr-FR": "Il prend en charge l'exportation de la page d'accueil des documents Office sous forme de vignettes de couverture, mais cela augmentera considérablement le temps nécessaire à l'extraction du contenu Office et le PDF ne sera pas affecté. LibreOffice doit être installé.",
     "ko-KR": "Office 문서의 홈페이지를 표지 축소판으로 내보내는 것을 지원하지만 Office 콘텐츠를 추출하는 데 시간이 크게 늘어나고 PDF는 영향을 받지 않습니다. LibreOffice를 설치해야 합니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(27231-27325)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(33611-33705)"],
     "$id": 11311
   },
   "开启，调用LibreOffice转首页为缩略图封面（非常耗时）": {
@@ -472,7 +576,7 @@
     "de-DE": "Schalten Sie es ein und rufen Sie LibreOffice auf, um die Homepage in ein Miniaturbild-Cover umzuwandeln (sehr zeitaufwändig).",
     "fr-FR": "Allumez-le et appelez LibreOffice pour convertir la page d'accueil en couverture miniature (très long)",
     "ko-KR": "전원을 켜고 LibreOffice를 호출하여 홈페이지를 썸네일 커버로 변환합니다(시간이 많이 소요됨)",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(27537-27572)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(33917-33952)"],
     "$id": 11312
   },
   "关闭，跳过Office封面图提取": {
@@ -485,7 +589,7 @@
     "de-DE": "Schließen und überspringen Sie die Extraktion des Office-Titelbilds",
     "fr-FR": "Fermer et ignorer l’extraction de l’image de couverture Office",
     "ko-KR": "Office 표지 이미지 추출 닫기 및 건너뛰기",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(27599-27619)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(33979-33999)"],
     "$id": 11313
   },
   "插件安装：LibreOffice": {
@@ -498,7 +602,7 @@
     "de-DE": "Plug-in-Installation: LibreOffice",
     "fr-FR": "Installation du plug-in : LibreOffice",
     "ko-KR": "플러그인 설치: LibreOffice",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(28311-28331)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(34691-34711)"],
     "$id": 7892
   },
   "支持Office文件整页转换与封面图提取": {
@@ -511,7 +615,7 @@
     "de-DE": "Unterstützt die ganzseitige Konvertierung von Office-Dateien und die Extraktion von Titelbildern",
     "fr-FR": "Prend en charge la conversion pleine page des fichiers Office et l'extraction des images de couverture",
     "ko-KR": "Office 파일의 전체 페이지 변환 및 표지 이미지 추출 지원",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(28498-28522)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(34878-34902)"],
     "$id": 11347
   },
   "但会大大增加Office内容提取耗时，PDF不受影响": {
@@ -519,12 +623,12 @@
     "es-ES": "Aumentará significativamente el tiempo de extracción de contenido de Office, mientras que el PDF no se verá afectado",
     "ar-EG": "لكنّه سيُضيف زيادة كبيرة في زمن استخراج محتوى Office، بينما لا يتأثر PDF",
     "pt-PT": "Aumenta significativamente o tempo de extração de conteúdo do Office; o PDF não é afetado",
-    "ru-RU": "但会大大增加Office内容提取耗时，PDF不受影响",
-    "ja-JP": "但会大大增加Office内容提取耗时，PDF不受影响",
-    "de-DE": "但会大大增加Office内容提取耗时，PDF不受影响",
+    "ru-RU": "Однако это значительно увеличит время извлечения содержимого Office, на PDF это не повлияет",
+    "ja-JP": "ただし、Officeコンテンツの抽出にかかる時間を大幅に増加させ、PDFには影響しません",
+    "de-DE": "Deutliche Verlängerung der Extraktionszeit für Office-Dateien, PDFs bleiben davon unberührt",
     "fr-FR": "但会大大增加Office内容提取耗时，PDF不受影响",
     "ko-KR": "但会大大增加Office内容提取耗时，PDF不受影响",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(28633-28663)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(35013-35043)"],
     "$id": 19483
   },
   "收起 Windows 安装教程 💡": {
@@ -537,7 +641,7 @@
     "de-DE": "Windows-Installationsanleitung ausblenden 💡",
     "fr-FR": "Masquer le tutoriel d'installation de Windows 💡",
     "ko-KR": "Windows 설치 튜토리얼 숨기기 💡",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(29329-29351)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(35709-35731)"],
     "$id": 7895
   },
   "展开 Windows 安装与 PATH 配置教程 💡": {
@@ -550,7 +654,7 @@
     "de-DE": "Erweitern Sie das Windows-Installations- und PATH-Konfigurations-Tutorial 💡",
     "fr-FR": "Développez le didacticiel d'installation de Windows et de configuration de PATH 💡",
     "ko-KR": "Windows 설치 및 PATH 구성 튜토리얼 확장 💡",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(29388-29419)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(35768-35799)"],
     "$id": 7896
   },
   "如何配置：": {
@@ -563,7 +667,7 @@
     "de-DE": "So konfigurieren Sie:",
     "fr-FR": "Comment configurer :",
     "ko-KR": "구성 방법:",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(30104-30113)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(36484-36493)"],
     "$id": 7897
   },
   "请先将 LibreOffice 的安装路径添加进系统的 PATH 环境变量": {
@@ -576,7 +680,7 @@
     "de-DE": "Bitte fügen Sie zunächst den Installationspfad von LibreOffice zur Umgebungsvariablen PATH des Systems hinzu",
     "fr-FR": "Veuillez d'abord ajouter le chemin d'installation de LibreOffice à la variable d'environnement PATH du système.",
     "ko-KR": "먼저 LibreOffice의 설치 경로를 시스템의 PATH 환경 변수에 추가하십시오.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(30275-30316)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(36655-36696)"],
     "$id": 7898
   },
   "默认位置：": {
@@ -589,7 +693,7 @@
     "de-DE": "Standardspeicherort:",
     "fr-FR": "Emplacement par défaut :",
     "ko-KR": "기본 위치:",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(30400-30409)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(36780-36789)"],
     "$id": 7899
   },
   "配置后重启应用再次点击重新检测。": {
@@ -602,7 +706,7 @@
     "de-DE": "Starten Sie nach der Konfiguration die Anwendung neu und klicken Sie erneut auf „Erneut erkennen“.",
     "fr-FR": "Après la configuration, redémarrez l'application et cliquez à nouveau sur Re-détecter.",
     "ko-KR": "구성 후 애플리케이션을 다시 시작하고 다시 검색을 클릭하세요.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(30493-30513)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(36873-36893)"],
     "$id": 7903
   },
   "前往下载": {
@@ -615,7 +719,7 @@
     "de-DE": "Zum Download gehen  ",
     "fr-FR": "Accéder aux téléchargements",
     "ko-KR": "다운로드로 이동  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(31093-31101)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(37473-37481)"],
     "$id": 3014
   },
   "检测中...": {
@@ -629,8 +733,8 @@
     "fr-FR": "Détection en cours...",
     "ko-KR": "감지 중...  ",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(31427-31437)",
-      "src/renderer/components/settings/analysis-settings.tsx(32661-32671)"
+      "src/renderer/components/settings/analysis-settings.tsx(37807-37817)",
+      "src/renderer/components/settings/analysis-settings.tsx(39041-39051)"
     ],
     "$id": 3015
   },
@@ -644,7 +748,7 @@
     "de-DE": "Installiert  ",
     "fr-FR": "Installé",
     "ko-KR": "설치됨  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(31761-31768)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(38141-38148)"],
     "$id": 3016
   },
   "未检测到": {
@@ -657,7 +761,7 @@
     "de-DE": "Nicht erkannt",
     "fr-FR": "Non détecté",
     "ko-KR": "감지되지 않음",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(32210-32218)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(38590-38598)"],
     "$id": 7904
   },
   "重新检测": {
@@ -670,7 +774,7 @@
     "de-DE": "Erneut erkennen  ",
     "fr-FR": "Relancer la détection",
     "ko-KR": "다시 감지  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(32675-32683)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(39055-39063)"],
     "$id": 3020
   },
   "音频分析截取时长": {
@@ -683,7 +787,7 @@
     "de-DE": "Abfangdauer der Audioanalyse",
     "fr-FR": "Durée d'interception de l'analyse audio",
     "ko-KR": "오디오 분석 차단 기간",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(33198-33210)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(39578-39590)"],
     "$id": 7830
   },
   "截取音视频前N秒进行降噪与语音转录提取，最大值100秒，设置过大会增加耗时": {
@@ -696,7 +800,7 @@
     "de-DE": "Rauschunterdrückung und Sprachtranskriptionsextraktion werden N Sekunden vor dem Abfangen von Audio und Video durchgeführt, der Maximalwert beträgt 100 Sekunden und die Einstellung ist zu groß, um den Zeitaufwand zu erhöhen",
     "fr-FR": "La réduction du bruit et l'extraction de la transcription vocale sont effectuées N secondes avant l'interception de l'audio et de la vidéo, la valeur maximale est de 100 secondes et le paramètre est trop important pour augmenter le temps nécessaire",
     "ko-KR": "노이즈 감소 및 음성 전사 추출은 오디오 및 비디오가 가로 채기 몇 초 전에 수행되며 최대 값은 100 초이며 설정이 너무 커서 시간이 많이 걸립니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(33303-33344)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(39683-39724)"],
     "$id": 19979
   },
   "截取音视频前N秒进行语音转录，超大会增加分析耗时甚至超时失败": {
@@ -709,7 +813,7 @@
     "de-DE": "Die Sprachtranskription wird N Sekunden vor dem Abfangen von Audio und Video durchgeführt, was die zeitaufwändige Analyse erhöht und sogar fehlschlägt, wenn das Timeout überschritten wird.",
     "fr-FR": "La transcription vocale est effectuée N secondes avant l'interception de l'audio et de la vidéo, ce qui augmente le temps d'analyse et échoue même lorsque le délai d'attente est dépassé.",
     "ko-KR": "음성 전사는 오디오와 비디오가 가로채기 몇 초 전에 수행되며,이는 시간이 많이 걸리는 분석을 증가시키고 타임아웃이 초과되면 실패합니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(33476-33510)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(39856-39890)"],
     "$id": 19980
   },
   "OCR 识别与处理": {
@@ -722,7 +826,7 @@
     "de-DE": "OCR-Erkennung und -Verarbeitung",
     "fr-FR": "Reconnaissance et traitement OCR",
     "ko-KR": "OCR 인식 및 처리",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(34405-34418)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(40785-40798)"],
     "$id": 7833
   },
   "开启图片OCR智能识别": {
@@ -730,12 +834,12 @@
     "es-ES": "Activación del reconocimiento inteligente de OCR en imágenes",
     "ar-EG": "تفعيل التعرّف البصري للصور (OCR) الذكي",
     "pt-PT": "Ativar reconhecimento inteligente de OCR de imagens",
-    "ru-RU": "开启图片OCR智能识别",
-    "ja-JP": "开启图片OCR智能识别",
-    "de-DE": "开启图片OCR智能识别",
+    "ru-RU": "Включить интеллектуальное распознавание OCR изображений",
+    "ja-JP": "画像OCRスマート認識を有効化",
+    "de-DE": "Aktiviere intelligente Bild-OCR-Erkennung",
     "fr-FR": "开启图片OCR智能识别",
     "ko-KR": "开启图片OCR智能识别",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(34816-34831)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(41196-41211)"],
     "$id": 19484
   },
   "毫秒级智能感知图片中是否有文本，有则进行OCR识别": {
@@ -743,14 +847,14 @@
     "es-ES": "Percepción inteligente en milisegundos de si hay texto en las imágenes; en caso afirmativo, se realiza el reconocimiento OCR",
     "ar-EG": "استشعار ذكي بمilliseconds لوجود النص داخل الصورة، وإن وُجد يُنفَّذ OCR",
     "pt-PT": "Detecção inteligente em milissegundos de presença de texto em imagens; se existir, realiza OCR",
-    "ru-RU": "毫秒级智能感知图片中是否有文本，有则进行OCR识别",
-    "ja-JP": "毫秒级智能感知图片中是否有文本，有则进行OCR识别",
-    "de-DE": "毫秒级智能感知图片中是否有文本，有则进行OCR识别",
+    "ru-RU": "Интеллектуальное распознавание наличия текста на изображении за миллисекунды, при наличии текста выполняется OCR-распознавание",
+    "ja-JP": "ミリ秒単位で画像内にテキストがあるかどうかをスマートに検出し、ある場合はOCR認識を実行します",
+    "de-DE": "Ermittelt in Millisekunden intelligent, ob Text auf dem Bild vorhanden ist, und führt bei Vorliegen eine OCR-Erkennung durch",
     "fr-FR": "毫秒级智能感知图片中是否有文本，有则进行OCR识别",
     "ko-KR": "毫秒级智能感知图片中是否有文本，有则进行OCR识别",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(34924-34953)",
-      "src/renderer/components/settings/analysis-settings.tsx(35085-35114)"
+      "src/renderer/components/settings/analysis-settings.tsx(41304-41333)",
+      "src/renderer/components/settings/analysis-settings.tsx(41465-41494)"
     ],
     "$id": 19485
   },
@@ -764,7 +868,7 @@
     "de-DE": "Anzahl der OCR-Erkennungen von Dokumenten",
     "fr-FR": "Nombre de reconnaissances OCR de documents",
     "ko-KR": "문서 OCR 인식 횟수",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(35910-35923)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(42290-42303)"],
     "$id": 11306
   },
   "文档OCR识别数量上限（Office文档内嵌图片数量 / PDF文档页数）": {
@@ -777,7 +881,7 @@
     "de-DE": "Die Obergrenze der Anzahl der Dokument-OCR-Erkennungen (Anzahl der eingebetteten Bilder in Office-Dokumenten / Anzahl der Seiten des PDF-Dokuments)",
     "fr-FR": "La limite supérieure du nombre de reconnaissances OCR de documents (nombre d'images intégrées dans les documents Office / nombre de pages de documents PDF)",
     "ko-KR": "문서 OCR 인식 횟수 상한(Office 문서에 포함된 이미지 수/PDF 문서 페이지 수)",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(36016-36057)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(42396-42437)"],
     "$id": 11348
   },
   "关闭 (0)": {
@@ -790,7 +894,7 @@
     "de-DE": "Schließen (0)",
     "fr-FR": "Fermer (0)",
     "ko-KR": "닫기 (0)",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(36437-36447)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(42817-42827)"],
     "$id": 11308
   },
   "项/页": {
@@ -803,7 +907,7 @@
     "de-DE": "Artikel/Seite",
     "fr-FR": "Article/page",
     "ko-KR": "항목/페이지",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(36500-36507)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(42880-42887)"],
     "$id": 11309
   },
   "OCR识别精度": {
@@ -816,7 +920,7 @@
     "de-DE": "Genauigkeit der OCR-Erkennung",
     "fr-FR": "Précision de la reconnaissance OCR",
     "ko-KR": "OCR 인식 정확도",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(39425-39436)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(45805-45816)"],
     "$id": 7883
   },
   "选择OCR文字识别的精度等级。极速OCR适合大部分场景；高精度OCR识别更准确但耗时稍长。": {
@@ -829,7 +933,7 @@
     "de-DE": "Wählen Sie die Genauigkeitsstufe der OCR-Texterkennung aus. Extrem schnelle OCR ist für die meisten Szenarien geeignet; Die hochpräzise OCR-Erkennung ist genauer, dauert aber etwas länger.",
     "fr-FR": "Sélectionnez le niveau de précision de la reconnaissance de texte OCR. L'OCR extrêmement rapide convient à la plupart des scénarios ; La reconnaissance OCR de haute précision est plus précise mais prend un peu plus de temps.",
     "ko-KR": "OCR 텍스트 인식의 정확도 수준을 선택합니다. 매우 빠른 OCR은 대부분의 시나리오에 적합합니다. 고정밀 OCR 인식은 더 정확하지만 시간이 조금 더 걸립니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(39505-39576)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(45885-45956)"],
     "$id": 7884
   },
   "极速OCR": {
@@ -842,7 +946,7 @@
     "de-DE": "Extrem schnelle OCR",
     "fr-FR": "OCR extrêmement rapide",
     "ko-KR": "매우 빠른 OCR",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(41383-41392)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(47763-47772)"],
     "$id": 7885
   },
   "单图1~2秒内完成，适合大部分场景": {
@@ -855,7 +959,7 @@
     "de-DE": "Ein einzelnes Bild kann innerhalb von 1 bis 2 Sekunden fertiggestellt werden, was für die meisten Szenarien geeignet ist.",
     "fr-FR": "Une seule image peut être complétée en 1 à 2 secondes, ce qui convient à la plupart des scénarios.",
     "ko-KR": "단일 이미지는 대부분의 시나리오에 적합한 1~2초 내에 완료될 수 있습니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(41558-41579)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(47938-47959)"],
     "$id": 11351
   },
   "高精度OCR": {
@@ -868,7 +972,7 @@
     "de-DE": "Hochpräzise OCR",
     "fr-FR": "OCR de haute précision",
     "ko-KR": "고정밀 OCR",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(43086-43096)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(49466-49476)"],
     "$id": 7887
   },
   "单图2~4秒内完成，提高识别精度": {
@@ -881,7 +985,7 @@
     "de-DE": "Ein einzelnes Bild kann innerhalb von 2 bis 4 Sekunden fertiggestellt werden, wodurch die Erkennungsgenauigkeit verbessert wird.",
     "fr-FR": "Une seule image peut être complétée en 2 à 4 secondes, améliorant ainsi la précision de la reconnaissance.",
     "ko-KR": "단일 이미지를 2~4초 내에 완성할 수 있어 인식 정확도가 향상됩니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(43262-43282)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(49642-49662)"],
     "$id": 11352
   },
   "重新分析时复用数据": {
@@ -894,7 +998,7 @@
     "de-DE": "Daten bei erneuter Analyse wiederverwenden",
     "fr-FR": "Réutiliser les données lors de la réanalyse",
     "ko-KR": "재분석 시 데이터 재사용",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(43826-43839)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(50206-50219)"],
     "$id": 7889
   },
   "如果文件有更新，请关闭此项，否则任意文件基础信息已存在则跳过该项信息获取，基础信息包括：文件类型、缩略图、元数据、文件内容": {
@@ -907,7 +1011,7 @@
     "de-DE": "Wenn die Datei aktualisiert wurde, deaktivieren Sie dieses Element. Andernfalls überspringen Sie diese Informationserfassung, wenn die Grundinformationen einer Datei bereits vorhanden sind. Zu den grundlegenden Informationen gehören: Dateityp, Miniaturansicht, Metadaten und Dateiinhalt.",
     "fr-FR": "Si le fichier a été mis à jour, veuillez désactiver cet élément. Sinon, si les informations de base d'un fichier existent déjà, ignorez cette acquisition d'informations. Les informations de base comprennent : le type de fichier, la vignette, les métadonnées et le contenu du fichier.",
     "ko-KR": "파일이 업데이트된 경우 이 항목을 꺼주세요. 그렇지 않고, 어떤 파일의 기본 정보가 이미 존재하는 경우에는 이 정보 획득을 건너뜁니다. 기본 정보에는 파일 유형, 축소판, 메타데이터 및 파일 콘텐츠가 포함됩니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(43932-44021)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(50312-50401)"],
     "$id": 7890
   },
   "分析提速，不会重新获取标准分析阶段的信息": {
@@ -915,12 +1019,12 @@
     "es-ES": "Acelera el análisis, sin recuperar de nuevo la información de la fase de análisis estándar",
     "ar-EG": "تسريع المعالجة، دون إعادة جلب المعلومات من مرحلة التحليل القياسية",
     "pt-PT": "Aceleração da análise; não recuperará novamente a informação da fase de análise padrão",
-    "ru-RU": "分析提速，不会重新获取标准分析阶段的信息",
-    "ja-JP": "分析提速，不会重新获取标准分析阶段的信息",
-    "de-DE": "分析提速，不会重新获取标准分析阶段的信息",
+    "ru-RU": "Ускорение анализа, информация стандартной фазы анализа не будет повторно извлекаться",
+    "ja-JP": "解析時間を短縮し、標準解析段階の情報を再取得しません",
+    "de-DE": "Analyse wird beschleunigt, es werden keine zusätzlichen Daten aus dem Standardanalysestadium abgerufen",
     "fr-FR": "分析提速，不会重新获取标准分析阶段的信息",
     "ko-KR": "分析提速，不会重新获取标准分析阶段的信息",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(44175-44199)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(50555-50579)"],
     "$id": 19486
   },
   "启用最小单元识别": {
@@ -933,7 +1037,7 @@
     "de-DE": "Aktivieren Sie die Erkennung minimaler Einheiten",
     "fr-FR": "Activer la reconnaissance minimale des unités",
     "ko-KR": "최소 단위 인식 활성화",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(45381-45393)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(51761-51773)"],
     "$id": 4741
   },
   "以下类别强制识别，无需开启：系统目录、软件安装目录、工程项目、游戏包、AI数据集/模型、缓存与LFS、虚拟环境": {
@@ -946,7 +1050,7 @@
     "de-DE": "Die folgenden Kategorien müssen identifiziert werden und müssen nicht aktiviert werden: Systemverzeichnis, Softwareinstallationsverzeichnis, technische Projekte, Spielpakete, KI-Datensätze/-Modelle, Cache und LFS, virtuelle Umgebung",
     "fr-FR": "Les catégories suivantes doivent être identifiées de force et n'ont pas besoin d'être activées : répertoire système, répertoire d'installation de logiciels, projets d'ingénierie, packages de jeux, ensembles/modèles de données IA, cache et LFS, environnement virtuel.",
     "ko-KR": "시스템 디렉터리, 소프트웨어 설치 디렉터리, 엔지니어링 프로젝트, 게임 패키지, AI 데이터 세트/모델, 캐시 및 LFS, 가상 환경 등의 범주는 강제로 식별되므로 활성화할 필요가 없습니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(45486-45569)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(51866-51949)"],
     "$id": 7905
   },
   "启用后，识别为最小单元的目录，跳过文件逐一分析": {
@@ -959,7 +1063,7 @@
     "de-DE": "Wenn diese Option aktiviert ist, wird das Verzeichnis als kleinste Einheit identifiziert und die Dateien werden übersprungen und einzeln analysiert.",
     "fr-FR": "Lorsqu'il est activé, le répertoire est identifié comme la plus petite unité et les fichiers sont ignorés et analysés un par un.",
     "ko-KR": "활성화되면 디렉터리가 가장 작은 단위로 식별되어 파일을 하나씩 건너뛰고 분석합니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(45746-45773)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(52126-52153)"],
     "$id": 4742
   },
   "系列文件：连续编号的文档或图片（如 01.jpg, 02.jpg, 03.jpg）": {
@@ -972,7 +1076,7 @@
     "de-DE": "Seriendateien: fortlaufend nummerierte Dokumente oder Bilder (z. B. 01.jpg, 02.jpg, 03.jpg)",
     "fr-FR": "Fichiers de série : documents ou images numérotés consécutivement (tels que 01.jpg, 02.jpg, 03.jpg)",
     "ko-KR": "시리즈 파일: 연속 번호가 붙은 문서 또는 사진(예: 01.jpg, 02.jpg, 03.jpg)",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(46452-46497)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(52832-52877)"],
     "$id": 4745
   },
   "音频专辑：同一专辑的音轨文件集合（如 .flac, .mp3）": {
@@ -985,7 +1089,7 @@
     "de-DE": "Audioalbum: eine Sammlung von Audiotiteldateien desselben Albums (z. B. .flac, .mp3)",
     "fr-FR": "Album audio : une collection de fichiers de pistes audio du même album (tels que .flac, .mp3)",
     "ko-KR": "오디오 앨범: 동일한 앨범의 오디오 트랙 파일 모음(예: .flac, .mp3)",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(46525-46560)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(52905-52940)"],
     "$id": 4744
   },
   "设计工程：含工程文件及资源目录的设计项目（如 .prproj、.aep、.blend）": {
@@ -998,7 +1102,7 @@
     "de-DE": "Designprojekt: ein Designprojekt, das Projektdateien und Ressourcenverzeichnisse enthält (z. B. .prproj, .aep, .blend)",
     "fr-FR": "Projet de conception : un projet de conception contenant des fichiers de projet et des répertoires de ressources (tels que .prproj, .aep, .blend)",
     "ko-KR": "디자인 프로젝트: 프로젝트 파일과 리소스 디렉터리(예: .prproj, .aep, .blend)가 포함된 디자인 프로젝트",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(46588-46635)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(52968-53015)"],
     "$id": 7906
   },
   "提示：关闭后所有文件将独立分析，适用于需对每个文件单独生成描述和标签的场景": {
@@ -1011,7 +1115,7 @@
     "de-DE": "Tipp: Nach dem Schließen werden alle Dateien unabhängig analysiert, was für Szenarien geeignet ist, in denen Beschreibungen und Beschriftungen für jede Datei separat generiert werden müssen.",
     "fr-FR": "Astuce : Après la fermeture, tous les fichiers seront analysés indépendamment, ce qui convient aux scénarios dans lesquels les descriptions et les étiquettes doivent être générées séparément pour chaque fichier.",
     "ko-KR": "팁: 닫은 후에는 모든 파일이 독립적으로 분석됩니다. 이는 각 파일에 대해 별도로 설명과 레이블을 생성해야 하는 시나리오에 적합합니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(46762-46803)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(53142-53183)"],
     "$id": 4747
   },
   "高级 AI 提示词自定义": {
@@ -1024,7 +1128,7 @@
     "de-DE": "Erweiterte KI-Anpassung von Eingabeaufforderungswörtern",
     "fr-FR": "Personnalisation avancée des mots d'invite de l'IA",
     "ko-KR": "고급 AI 프롬프트 단어 사용자 정의",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(48358-48374)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(54738-54754)"],
     "$id": 7907
   },
   "3 项": {
@@ -1032,12 +1136,12 @@
     "es-ES": "3 elementos",
     "ar-EG": "3 عناصر",
     "pt-PT": "3 itens",
-    "ru-RU": "3 项",
-    "ja-JP": "3 项",
-    "de-DE": "3 项",
+    "ru-RU": "3 элемента",
+    "ja-JP": "3 項目",
+    "de-DE": "3 Elemente",
     "fr-FR": "3 项",
     "ko-KR": "3 项",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(48535-48542)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(54915-54922)"],
     "$id": 19487
   },
   "自定义提示词以微调模型对分类命名和质量评分，推荐云端模型遵循较好": {
@@ -1050,7 +1154,7 @@
     "de-DE": "Passen Sie Eingabeaufforderungswörter an, um das Modell zu verfeinern, um die Kategorie zu benennen und die Qualität zu bewerten, und um das Cloud-Modell besser zu empfehlen",
     "fr-FR": "Personnalisez les mots d'invite pour affiner le modèle afin de nommer la catégorie et d'évaluer la qualité, et recommandez au modèle cloud de mieux suivre",
     "ko-KR": "프롬프트 단어를 사용자 정의하여 모델을 미세 조정하여 카테고리 이름을 지정하고 품질 점수를 매기고 클라우드 모델이 더 잘 따르도록 권장합니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(48694-48730)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(55074-55110)"],
     "$id": 7908
   },
   "若因字数过多导致AI分析失败，请自行减少字数。对于本地小模型，建议100字以内。": {
@@ -1063,7 +1167,7 @@
     "de-DE": "Sollte die KI-Analyse aufgrund zu vieler Wörter fehlschlagen, reduzieren Sie bitte selbst die Wortanzahl. Für lokale kleine Modelle wird empfohlen, maximal 100 Wörter zu enthalten.",
     "fr-FR": "Si l'analyse de l'IA échoue en raison d'un trop grand nombre de mots, veuillez réduire vous-même le nombre de mots. Pour les petits modèles locaux, il est recommandé de se limiter à 100 mots.",
     "ko-KR": "단어가 너무 많아 AI 분석이 실패할 경우 직접 단어 수를 줄여주세요. 로컬 소규모 모델의 경우 100 단어 이내를 권장합니다.",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(48908-48952)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(55288-55332)"],
     "$id": 7909
   },
   "收起": {
@@ -1071,12 +1175,12 @@
     "es-ES": "Contraer",
     "ar-EG": "طيّ",
     "pt-PT": "Colapsar",
-    "ru-RU": "收起",
-    "ja-JP": "收起",
-    "de-DE": "收起",
+    "ru-RU": "Свернуть",
+    "ja-JP": "折りたたむ",
+    "de-DE": "Einziehen",
     "fr-FR": "收起",
     "ko-KR": "收起",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(49309-49315)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(55689-55695)"],
     "$id": 19488
   },
   "展开编辑": {
@@ -1084,12 +1188,12 @@
     "es-ES": "Expandir y editar",
     "ar-EG": "توسيع تحرير",
     "pt-PT": "Expandir/Editar",
-    "ru-RU": "展开编辑",
-    "ja-JP": "展开编辑",
-    "de-DE": "展开编辑",
+    "ru-RU": "Развернуть и редактировать",
+    "ja-JP": "展開して編集",
+    "de-DE": "Editieren aufklappen",
     "fr-FR": "展开编辑",
     "ko-KR": "展开编辑",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(49319-49327)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(55699-55707)"],
     "$id": 19489
   },
   "最小单元识别提示词（需启用最小单元识别）": {
@@ -1102,7 +1206,7 @@
     "de-DE": "Eingabeaufforderungswort zur Mindesteinheitsidentifizierung (Mindesteinheitsidentifizierung muss aktiviert sein)",
     "fr-FR": "Mot d’invite d’identification minimale de l’unité (l’identification minimale de l’unité doit être activée)",
     "ko-KR": "최소 단위 식별 프롬프트 단어(최소 단위 식별을 활성화해야 함)",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(50001-50025)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(56381-56405)"],
     "$id": 7910
   },
   "/1000 字符": {
@@ -1116,9 +1220,9 @@
     "fr-FR": "/1000 caractères",
     "ko-KR": "/1000자",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(50838-50850)",
-      "src/renderer/components/settings/analysis-settings.tsx(51912-51924)",
-      "src/renderer/components/settings/analysis-settings.tsx(52969-52981)"
+      "src/renderer/components/settings/analysis-settings.tsx(57218-57230)",
+      "src/renderer/components/settings/analysis-settings.tsx(58292-58304)",
+      "src/renderer/components/settings/analysis-settings.tsx(59349-59361)"
     ],
     "$id": 7911
   },
@@ -1132,7 +1236,7 @@
     "de-DE": "Prompt zur Qualitätsbewertung  ",
     "fr-FR": "Invite pour la notation de qualité",
     "ko-KR": "품질 평가 프롬프트  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(51076-51087)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(57456-57467)"],
     "$id": 3025
   },
   "标签、智能文件名生成提示词": {
@@ -1145,7 +1249,7 @@
     "de-DE": "Tags, intelligente Dateinamengenerierung Eingabeaufforderung",
     "fr-FR": "Étiquettes, invites de génération de noms de fichiers intelligents",
     "ko-KR": "라벨, 지능형 파일 이름 생성 프롬프트 단어",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(52146-52163)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(58526-58543)"],
     "$id": 2684
   },
   "AI分析忽略规则": {
@@ -1158,7 +1262,7 @@
     "de-DE": "KI-Analyse-Ausschlussregeln  ",
     "fr-FR": "Règles d'exclusion de l'analyse IA",
     "ko-KR": "AI 분석 무시 규칙  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(53836-53848)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(60216-60228)"],
     "$id": 3027
   },
   "{total} 条 · {active} 启用": {
@@ -1166,12 +1270,12 @@
     "es-ES": "{total} elementos · {active} activos",
     "ar-EG": "{total} عنصر · {active} مفعّل",
     "pt-PT": "{total} itens · {active} ativos",
-    "ru-RU": "{total} 条 · {active} 启用",
-    "ja-JP": "{total} 条 · {active} 启用",
-    "de-DE": "{total} 条 · {active} 启用",
+    "ru-RU": "{total} шт. · {active} активно",
+    "ja-JP": "{total} 件 · {active} 有効",
+    "de-DE": "{total} Einträge · {active} aktiviert",
     "fr-FR": "{total} 条 · {active} 启用",
     "ko-KR": "{total} 条 · {active} 启用",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(53991-54018)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(60371-60398)"],
     "$id": 19490
   },
   "设置不需要进行AI分析的文件和目录": {
@@ -1184,7 +1288,7 @@
     "de-DE": "Dateien und Verzeichnisse festlegen, die nicht per KI analysiert werden sollen  ",
     "fr-FR": "Définir les fichiers et répertoires à exclure de l'analyse IA",
     "ko-KR": "AI 분석을 수행하지 않을 파일 및 디렉터리 설정  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(54314-54335)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(60694-60715)"],
     "$id": 3028
   },
   "添加规则": {
@@ -1197,33 +1301,33 @@
     "de-DE": "Regel hinzufügen  ",
     "fr-FR": "Ajouter une règle",
     "ko-KR": "규칙 추가  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(54646-54654)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(61026-61034)"],
     "$id": 3029
   },
   "收起列表": {
     "en-US": "Collapse list",
     "es-ES": "Ocultar lista",
     "ar-EG": "تجميع القائمة",
-    "pt-PT": "收起列表",
-    "ru-RU": "收起列表",
-    "ja-JP": "收起列表",
+    "pt-PT": "Recolher lista",
+    "ru-RU": "Свернуть список",
+    "ja-JP": "リストを折りたたむ",
     "de-DE": "收起列表",
     "fr-FR": "收起列表",
     "ko-KR": "收起列表",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(55013-55021)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(61393-61401)"],
     "$id": 19491
   },
   "展开列表": {
     "en-US": "Expand list",
     "es-ES": "Mostrar lista",
     "ar-EG": "توسيع القائمة",
-    "pt-PT": "展开列表",
-    "ru-RU": "展开列表",
-    "ja-JP": "展开列表",
+    "pt-PT": "Expandir lista",
+    "ru-RU": "Развернуть список",
+    "ja-JP": "リストを展開する",
     "de-DE": "展开列表",
     "fr-FR": "展开列表",
     "ko-KR": "展开列表",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(55025-55033)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(61405-61413)"],
     "$id": 19492
   },
   "类型": {
@@ -1236,7 +1340,7 @@
     "de-DE": "Typ  ",
     "fr-FR": "Type",
     "ko-KR": "유형  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(55611-55617)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(61991-61997)"],
     "$id": 3030
   },
   "值": {
@@ -1249,7 +1353,7 @@
     "de-DE": "Wert  ",
     "fr-FR": "Valeur",
     "ko-KR": "값  ",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(56604-56609)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(62984-62989)"],
     "$id": 3031
   },
   "输入匹配值...": {
@@ -1262,7 +1366,7 @@
     "de-DE": "Geben Sie einen übereinstimmenden Wert ein...",
     "fr-FR": "Saisir une valeur correspondante...",
     "ko-KR": "일치 값 입력...",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(56727-56739)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(63107-63119)"],
     "$id": 3313
   },
   "描述（可选）": {
@@ -1276,8 +1380,8 @@
     "fr-FR": "Description (facultatif)",
     "ko-KR": "설명(선택 사항)",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(57024-57034)",
-      "src/renderer/components/settings/analysis-settings.tsx(67186-67196)"
+      "src/renderer/components/settings/analysis-settings.tsx(63404-63414)",
+      "src/renderer/components/settings/analysis-settings.tsx(73566-73576)"
     ],
     "$id": 3033
   },
@@ -1291,7 +1395,7 @@
     "de-DE": "Regelbeschreibung eingeben...",
     "fr-FR": "Saisissez la description des règles...",
     "ko-KR": "입력 규칙 설명...",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(57145-57158)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(63525-63538)"],
     "$id": 3034
   },
   "清理与查重时原生排除保护": {
@@ -1305,8 +1409,8 @@
     "fr-FR": "Protection d'exclusion native lors du nettoyage et de la vérification des duplications",
     "ko-KR": "정리 및 중복 검사 중 기본 제외 보호",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(57916-57932)",
-      "src/renderer/components/settings/analysis-settings.tsx(67846-67862)"
+      "src/renderer/components/settings/analysis-settings.tsx(64296-64312)",
+      "src/renderer/components/settings/analysis-settings.tsx(74226-74242)"
     ],
     "$id": 11353
   },
@@ -1321,8 +1425,8 @@
     "fr-FR": "Enregistrer",
     "ko-KR": "저장",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(58219-58225)",
-      "src/renderer/components/settings/analysis-settings.tsx(68089-68095)"
+      "src/renderer/components/settings/analysis-settings.tsx(64599-64605)",
+      "src/renderer/components/settings/analysis-settings.tsx(74469-74475)"
     ],
     "$id": 3035
   },
@@ -1337,8 +1441,8 @@
     "fr-FR": "Annuler",
     "ko-KR": "취소",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(58425-58431)",
-      "src/renderer/components/settings/analysis-settings.tsx(68236-68242)"
+      "src/renderer/components/settings/analysis-settings.tsx(64805-64811)",
+      "src/renderer/components/settings/analysis-settings.tsx(74616-74622)"
     ],
     "$id": 3036
   },
@@ -1346,26 +1450,26 @@
     "en-US": "All",
     "es-ES": "Todo",
     "ar-EG": "الكل",
-    "pt-PT": "全部",
-    "ru-RU": "全部",
-    "ja-JP": "全部",
+    "pt-PT": "Todos",
+    "ru-RU": "Все",
+    "ja-JP": "すべて",
     "de-DE": "全部",
     "fr-FR": "全部",
     "ko-KR": "全部",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(58880-58886)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(65260-65266)"],
     "$id": 19493
   },
   "自定义": {
     "en-US": "Custom",
     "es-ES": "Personalizado",
     "ar-EG": "مخصص",
-    "pt-PT": "自定义",
-    "ru-RU": "自定义",
-    "ja-JP": "自定义",
+    "pt-PT": "Personalizado",
+    "ru-RU": "Пользовательские",
+    "ja-JP": "カスタム",
     "de-DE": "自定义",
     "fr-FR": "自定义",
     "ko-KR": "自定义",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(58936-58943)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(65316-65323)"],
     "$id": 19494
   },
   "内置": {
@@ -1379,8 +1483,8 @@
     "fr-FR": "Intégré",
     "ko-KR": "내장",
     "$files": [
-      "src/renderer/components/settings/analysis-settings.tsx(58993-58999)",
-      "src/renderer/components/settings/analysis-settings.tsx(63096-63102)"
+      "src/renderer/components/settings/analysis-settings.tsx(65373-65379)",
+      "src/renderer/components/settings/analysis-settings.tsx(69476-69482)"
     ],
     "$id": 3037
   },
@@ -1388,26 +1492,26 @@
     "en-US": "No custom rules. Click \"Add Rule\" to create one",
     "es-ES": "No hay reglas personalizadas, haga clic en «Agregar regla» para crear una",
     "ar-EG": "لا توجد قواعد مخصصة حالياً، انقر على \"إضافة قاعدة\" لإنشاء واحدة",
-    "pt-PT": "暂无自定义规则，点击「添加规则」创建",
-    "ru-RU": "暂无自定义规则，点击「添加规则」创建",
-    "ja-JP": "暂无自定义规则，点击「添加规则」创建",
+    "pt-PT": "Nenhuma regra personalizada, clique em «Adicionar regra» para criar",
+    "ru-RU": "Пока нет пользовательских ��равил. Нажмите «Добавить правило», чтобы создать",
+    "ja-JP": "カスタムルールはまだありません。「ルールの追加」をクリックして作成してください。",
     "de-DE": "暂无自定义规则，点击「添加规则」创建",
     "fr-FR": "暂无自定义规则，点击「添加规则」创建",
     "ko-KR": "暂无自定义规则，点击「添加规则」创建",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(60962-60984)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(67342-67364)"],
     "$id": 19495
   },
   "暂无匹配规则": {
     "en-US": "No matching rules",
     "es-ES": "No hay reglas coincidentes",
     "ar-EG": "لا توجد قواعد مطابقة",
-    "pt-PT": "暂无匹配规则",
-    "ru-RU": "暂无匹配规则",
-    "ja-JP": "暂无匹配规则",
+    "pt-PT": "Nenhuma regra correspondente",
+    "ru-RU": "Нет соответствующих правил",
+    "ja-JP": "一致するルールはありません。",
     "de-DE": "暂无匹配规则",
     "fr-FR": "暂无匹配规则",
     "ko-KR": "暂无匹配规则",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(61015-61025)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(67395-67405)"],
     "$id": 19496
   },
   "排除清理": {
@@ -1420,20 +1524,20 @@
     "de-DE": "Bereinigung ausschließen",
     "fr-FR": "Exclure le nettoyage",
     "ko-KR": "정리 제외",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(62785-62793)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(69165-69173)"],
     "$id": 11354
   },
   "提示词修改后将应用到新的分析任务；忽略规则可提高分析效率，内置规则不可删除；通配符支持 * 和 ?，正则支持更复杂模式。": {
     "en-US": "Prompt changes will apply to new analysis tasks; ignoring rules can improve analysis efficiency; built-in rules cannot be deleted; wildcards support * and ?, regex supports more complex patterns.",
     "es-ES": "Las modificaciones del indicador se aplicarán a las nuevas tareas de análisis; omitir reglas puede mejorar la eficiencia del análisis; las reglas integradas no se pueden eliminar; los comodines admiten * y ?, y las expresiones regulares admiten patrones más complejos.",
     "ar-EG": "ستُطبَّق التعديلات عل�� المحفزات على مهام التحليل الجديدة؛ قد تحسّن قواعد التجاهل كفاءة التحليل، ولا يمكن حذف القواعد المدمجة؛ تدعم رموز النجمة * والسؤال ؟، بينما تدعم تعبيرات النمط正则 أنماطاً معقدة.",
-    "pt-PT": "提示词修改后将应用到新的分析任务；忽略规则可提高分析效率，内置规则不可删除；通配符支持 * 和 ?，正则支持更复杂模式。",
-    "ru-RU": "提示词修改后将应用到新的分析任务；忽略规则可提高分析效率，内置规则不可删除；通配符支持 * 和 ?，正则支持更复杂模式。",
-    "ja-JP": "提示词修改后将应用到新的分析任务；忽略规则可提高分析效率，内置规则不可删除；通配符支持 * 和 ?，正则支持更复杂模式。",
+    "pt-PT": "As alterações no prompt serão aplicadas a novas tarefas de análise; ignorar regras pode aumentar a eficiência da análise, as regras integradas não podem ser removidas; os curingas suportam * e ?, a expressão regular suporta padrões mais complexos.",
+    "ru-RU": "Изменённые промпты будут применяться к новым задачам анализа; игнорирование правил повышает эффективность анализа; встроенные правила нельзя удалить; в качестве wildcards поддерживаются * и ?, для более сложных поддерживаются regex-выражения.",
+    "ja-JP": "プロンプトを変更すると、新しい解析タスクに適用されます。無視ルールを設定すると解析効率を向上できます。組み込みルールは削除できません。ワイルドカードには * と ? が使用でき、正規表現によりより複雑なパターンをサポートします。",
     "de-DE": "提示词修改后将应用到新的分析任务；忽略规则可提高分析效率，内置规则不可删除；通配符支持 * 和 ?，正则支持更复杂模式。",
     "fr-FR": "提示词修改后将应用到新的分析任务；忽略规则可提高分析效率，内置规则不可删除；通配符支持 * 和 ?，正则支持更复杂模式。",
     "ko-KR": "提示词修改后将应用到新的分析任务；忽略规则可提高分析效率，内置规则不可删除；通配符支持 * 和 ?，正则支持更复杂模式。",
-    "$files": ["src/renderer/components/settings/analysis-settings.tsx(65446-65510)"],
+    "$files": ["src/renderer/components/settings/analysis-settings.tsx(71826-71890)"],
     "$id": 19497
   }
 }
