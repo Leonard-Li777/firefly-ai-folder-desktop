@@ -796,12 +796,11 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       tagValue: string
       code?: string
       viaParentCode?: string
-      parentTagCode?: string
       level: number
       parentTagValue?: string
       ancestorChain?: string[]
     }) => {
-      const effectiveViaParent = tag.viaParentCode ?? tag.parentTagCode
+      const effectiveViaParent = tag.viaParentCode
       if (isExportMode) {
         toggleTagSelection(tag.dimensionId, tag.tagValue, tag.parentTagValue, tag.ancestorChain, effectiveViaParent)
       } else {

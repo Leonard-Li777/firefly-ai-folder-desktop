@@ -2361,7 +2361,7 @@ export class FileProcessor {
           const tag = this.mockData.file_tags.find((t: any) => (t.code && t.code === rel.tag_code) || t.id === rel.tag_id)
           if (tag) {
             const tagCode = tag.code || `custom:${tag.name}`
-            const viaParentCode = rel.via_parent_code || rel.parent_tag_code || ''
+            const viaParentCode = rel.via_parent_code || ''
             // mock 回灌须显式携带 tag_group，否则落 DEFAULT '' 不进属性面板分组视图；
             // 夹具未声明分组时按分析引擎产出归 'ai'（勿依赖 insertTagToDb 的 'fact' 缺省）
             const mockGroup = isTagProvenanceGroup(rel.tag_group) ? rel.tag_group : 'ai'

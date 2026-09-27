@@ -42,13 +42,13 @@ function readableCode(code: string): string {
  * 其展示名须经语言分表 / Omni 语义包 tag_aliases 镜像解析。
  */
 function dimensionForCode(code: string, viaParentCode?: string | null): string {
+  // 票 02 终稿口径：维度归属槽只认经由父 B（via_parent_code）；
+  // 为空即真根/无父，退自身 code，严禁再构造 dim.{n} 或退读 parent_codes[0] 二次猜测。
   if (viaParentCode) return viaParentCode
-  const dimPrefix = code.match(/^dim\.(\d+)(?:\.|$)/)
-  if (dimPrefix) return `dim.${dimPrefix[1]}`
   return code
 }
 
-import { HIGH_DIM_PROTECTED_TAG_GROUPS } from '@/shared/constants/high-dim-correction'
+import { HIGH_DIM_PROTECTED_TAG_GROUPS } from '@shared/constants/high-dim-correction'
 export { HIGH_DIM_PROTECTED_TAG_GROUPS }
 
 export class FileDao {

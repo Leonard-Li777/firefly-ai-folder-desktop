@@ -22,7 +22,6 @@ export function parseTagKey(key: string) {
     dimensionId: parseInt(parts[0], 10),
     parentTagValue: isParentCode ? undefined : (parentPart || undefined),
     viaParentCode: viaParent,
-    parentTagCode: viaParent,
     tagValue: parts.slice(2).join('::')
   }
 }
