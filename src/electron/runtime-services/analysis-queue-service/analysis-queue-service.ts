@@ -916,6 +916,34 @@ export class AnalysisQueueService {
   }
 
   /**
+   * 推导当前队列意图模式：
+   * - 队列中有待办任务时，按 pickNextPending 判定首选任务模式（high_dim_correction -> 'embedding'，普通分析 -> 'language'）
+   * - 队列为空时，默认返回 'language'
+   */
+  public determineIntentMode(): 'language' | 'embedding' {
+    if (!this.queueManager) {
+      return 'language'
+    }
+    const snapshot = this.queueManager.getSnapshot()
+    const next = snapshot?.items ? pickNextPending(snapshot.items) : undefined
+    if (next?.taskType === 'high_dim_correction') {
+      return 'embedding'
+    }
+    return 'language'
+  }
+
+  /**
+   * 检测队列中是否存在待处理的任务（pending 状态）
+   */
+  public hasPendingItems(): boolean {
+    if (!this.queueManager) {
+      return false
+    }
+    const snapshot = this.queueManager.getSnapshot()
+    return Array.isArray(snapshot?.items) && snapshot.items.some(i => i.status === 'pending')
+  }
+
+  /**
    * 检测本地模型当前是否正忙（已有请求在进行中）
    * 云端模型不限制并发；本地模型无法同时负载多个请求，需拒绝新的 AI 请求
    * @returns true 表示本地模型正忙，应拒绝本次请求
