@@ -356,12 +356,11 @@ export function Footer() {
   )
 
   function getFooterDisplay(status: AIServiceStatus) {
-    const isCompatible =
-      modelMode === 'local' &&
-      (!!(
-        config?.aiEngineDriverCompatibleMode || (config as any)?.AI_ENGINE_DRIVER_COMPATIBLE_MODE
-      ) ||
-        (typeof backend === 'string' && backend.toLowerCase().includes('vulkan')))
+    // 「兼容模式」标记的权威来源是引擎列表（/api/engine/list）的 matchType：
+    // 仅当当前激活引擎被引擎端标记为 matchType === 'compatible' 时才展示，
+    // 不依赖可能过期的 AI_ENGINE_DRIVER_COMPATIBLE_MODE 配置项，
+    // 也不做 backend 含 'vulkan' 的粗粒度字符串判断（Vulkan 可能是「最佳匹配」而非兼容模式）。
+    const isCompatible = modelMode === 'local' && engineSnapshot?.backendMatchType === 'compatible'
     const isForceCpu =
       modelMode === 'local' &&
       !!(config?.aiEngineForceCpuMode || (config as any)?.AI_ENGINE_FORCE_CPU_MODE)

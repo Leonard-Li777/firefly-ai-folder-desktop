@@ -16,6 +16,12 @@ export interface EngineBridgeSnapshotUI {
   port?: number
   version?: string | null
   backend?: string | null
+  /**
+   * 当前激活引擎在引擎列表中的适配类型：
+   * 'best' | 'compatible' | 'fallback' | null
+   * Footer 仅在 'compatible' 时展示「兼容模式」
+   */
+  backendMatchType?: 'best' | 'compatible' | 'fallback' | null
   /** 当前加载模型（原始路径/id） */
   model?: string | null
   /** 当前加载模型的展示名称（来自 /api/models 的 name 字段；未匹配时为 null） */

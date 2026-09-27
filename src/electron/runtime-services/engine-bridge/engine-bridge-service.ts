@@ -30,6 +30,8 @@ const ENGINE_OPEN_UI_PATH = '/api/engine/open-ui'
 const ENGINE_SHUTDOWN_PATH = '/api/engine/shutdown'
 /** 引擎模型列表端点（PRD-0044：状态卡「已安装模型计数」数据源） */
 const ENGINE_MODELS_PATH = '/api/models'
+/** 引擎包列表端点（含 matchType/matchText，Footer「兼容模式」标记的权威来源） */
+const ENGINE_LIST_PATH = '/api/engine/list'
 /** 引擎 AI 服务启停端点（启停 llama.cpp 推理子进程，非退出引擎应用） */
 const ENGINE_SERVICE_START_PATH = '/api/engine/start'
 const ENGINE_SERVICE_STOP_PATH = '/api/engine/stop'
@@ -106,6 +108,14 @@ export interface EngineBridgeSnapshot {
   version: string | null
   /** 当前激活后端（cuda/vulkan/cpu/metal/...） */
   backend: string | null
+  /**
+   * 当前激活引擎在引擎列表（/api/engine/list）中的适配类型：
+   * - 'best'：最佳/正确/最新适配（不应显示「兼容模式」）
+   * - 'compatible'：兼容模式（Footer 应显示「兼容模式」）
+   * - 'fallback'：保底
+   * 未获取到引擎列表时为 null
+   */
+  backendMatchType: 'best' | 'compatible' | 'fallback' | null
   /** 当前加载模型（原始路径/id，来自引擎契约 current_model） */
   model: string | null
   /** 当前加载模型的展示名称（来自 /api/models 列表的 name 字段；未匹配时为 null） */
@@ -145,6 +155,10 @@ export class EngineBridgeService {
   private lastKnownModel: string | null = null
   /** 引擎本地已下载的默认激活模型（服务未启动时兜底展示激活模型） */
   private firstDownloadedModel: string | null = null
+  /** 当前激活引擎在引擎列表中的适配类型缓存（Footer「兼容模式」标记依据） */
+  private lastBackendMatchType: 'best' | 'compatible' | 'fallback' | null = null
+  /** 引擎列表拉取防抖标志（与模型计数同策略，避免并发重复拉取） */
+  private engineListFetching = false
   /** 内置模型元数据缓存（id / name 映射列表） */
   private builtinModelCatalog: Array<{ id: string; name: string }> | null = null
   private modelCountFetching = false
@@ -545,6 +559,8 @@ export class EngineBridgeService {
     }
     // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径
     void this.refreshModelCount()
+    // 异步刷新当前引擎适配类型（Footer「兼容模式」标记依据），不阻塞探活关键路径
+    void this.refreshBackendMatchType()
   }
 
   /**
@@ -649,6 +665,43 @@ export class EngineBridgeService {
       logger.debug(LogCategory.SYSTEM, '[EngineBridge] 拉取引擎模型列表失败（模型计数缺省）:', err)
     } finally {
       this.modelCountFetching = false
+    }
+  }
+
+  /**
+   * 异步刷新当前激活引擎的适配类型（/api/engine/list 的 matchType）。
+   * Footer 仅在 matchType === 'compatible' 时展示「兼容模式」，与引擎管理列表标记保持一致。
+   */
+  private async refreshBackendMatchType(): Promise<void> {
+    if (!this.lastRawStatus || this.engineListFetching) return
+    this.engineListFetching = true
+    try {
+      const res = await fetch(`${this.baseUrl}${ENGINE_LIST_PATH}`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+      })
+      if (res.ok) {
+        const list = (await res.json()) as Array<{
+          backend?: string
+          matchType?: 'best' | 'compatible' | 'fallback'
+        }>
+        const activeBackend = this.lastRawStatus.active_backend || this.lastRawStatus.backend
+        if (Array.isArray(list) && activeBackend) {
+          // 归一化比较：cuda134/cuda 等具体变体与列表 backend 字段对齐（忽略大小写）
+          const norm = (s: string) => s.toLowerCase()
+          const item = list.find(e => e?.backend && norm(e.backend) === norm(activeBackend))
+          const next = item?.matchType ?? null
+          if (next !== this.lastBackendMatchType) {
+            this.lastBackendMatchType = next
+            this.broadcastStatus()
+          }
+        }
+      }
+    } catch (err) {
+      // 适配类型为展示增项，失败不影响桥接主链路；记 debug 便于排查
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 拉取引擎列表失败（适配类型缺省）:', err)
+    } finally {
+      this.engineListFetching = false
     }
   }
 
@@ -1137,6 +1190,7 @@ export class EngineBridgeService {
       port: this.activePort,
       version: raw?.version || this.versionCache || null,
       backend: raw?.active_backend || raw?.backend || null,
+      backendMatchType: raw ? this.lastBackendMatchType : null,
       // 激活模型推导：引擎运行模型 -> 上次已知模型 -> 本地已下载首个就绪模型（引擎未启动服务时展示当前激活模型）
       model: (() => {
         return (
@@ -1204,6 +1258,7 @@ export class EngineBridgeService {
     this.spawnedBinarySignature = null
     this.lastRawStatus = null
     this.lastModelCount = null
+    this.lastBackendMatchType = null
     this.circuitBreaker.reset()
   }
 }
