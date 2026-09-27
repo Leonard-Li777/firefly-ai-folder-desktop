@@ -35,7 +35,7 @@ if (fs.existsSync(envPath)) {
 const rawRegion = (process.env.BUILD_REGION || 'CN').trim().toLowerCase()
 const BUILD_REGION = rawRegion === 'cn' ? 'cn' : 'intl'
 const MAJOR_VERSION = 'v' + (String(packageJson.version || '4.0.0').match(/\d+/) ? String(packageJson.version).match(/\d+/)![0] : '4')
-const APP_NAME = `firefly-ai-folder-${MAJOR_VERSION}-${BUILD_REGION}`
+const APP_NAME = `firefly-ai-folder_${MAJOR_VERSION}_${BUILD_REGION}`
 const EXECUTABLE_NAME = APP_NAME
 const SHORTCUT_NAME = BUILD_REGION === 'cn' ? '萤核智能文件夹' : 'Firefly AI folder'
 // 存储需要打包的原生模块依赖
@@ -1232,7 +1232,7 @@ const config: ForgeConfig = {
     // 显式指定应用名称，确保 macOS 下生成的 .app 名称正确
     name: APP_NAME,
     // 显式指定 productName，确保 Electron app.getName() 返回带区域后缀的名称，
-    // 从而决定正确的 userData 路径（如 firefly-ai-folder-cn）
+    // 从而决定正确的 userData 路径（如 firefly-ai-folder_v4_cn）
     productName: APP_NAME,
     // 显式指定可执行文件名，防止 Linux 打包时找不到二进制文件
     executableName: EXECUTABLE_NAME,

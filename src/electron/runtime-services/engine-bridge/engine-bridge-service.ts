@@ -51,8 +51,8 @@ const PORT_PROBE_TIMEOUT_MS = 400
 /** 重启前等待旧实例释放端口的时长上限（毫秒） */
 const PORT_RELEASE_WAIT_MS = 8_000
 
-/** 引擎拉起后的就绪等待上限（毫秒） */
-const READY_WAIT_LIMIT_MS = 25_000
+/** 引擎拉起后的就绪等待上限（毫秒）；冷启动含硬件探测，放宽到 40s 避免假超时 */
+const READY_WAIT_LIMIT_MS = 40_000
 /** 状态轮询间隔（毫秒） */
 const POLL_INTERVAL_MS = 5_000
 
@@ -106,12 +106,16 @@ export interface EngineBridgeSnapshot {
   version: string | null
   /** 当前激活后端（cuda/vulkan/cpu/metal/...） */
   backend: string | null
-  /** 当前加载模型 */
+  /** 当前加载模型（原始路径/id，来自引擎契约 current_model） */
   model: string | null
+  /** 当前加载模型的展示名称（来自 /api/models 列表的 name 字段；未匹配时为 null） */
+  modelName: string | null
   /** 显存占用（MB） */
   vramMb: number | null
   /** 引擎已安装模型数量（PRD-0044 状态卡增项；未连接或引擎未返回时为 null） */
   modelCount: number | null
+  /** 支持的可用模型总数（默认 32，来自内置可用模型库） */
+  totalModelCount: number | null
   /** 最近一次异常信息（静默记录） */
   lastError: string | null
   /** 最近一次状态快照时间戳 */
@@ -133,19 +137,42 @@ export class EngineBridgeService {
   private lastError: string | null = null
   /** 引擎已安装模型计数缓存（经 /api/models 异步汇总，见 refreshModelCount） */
   private lastModelCount: number | null = null
+  /** 支持的可用模型总数缓存（默认 32） */
+  private lastTotalModelCount: number = 32
+  /** model id / fileName → 展示名称映射（随 refreshModelCount 一并更新） */
+  private lastModelNameMap: Map<string, string> = new Map()
+  /** 最近一次有效的 current_model（服务停止后保留，用于 UI 持续展示上次激活模型） */
+  private lastKnownModel: string | null = null
+  /** 引擎本地已下载的默认激活模型（服务未启动时兜底展示激活模型） */
+  private firstDownloadedModel: string | null = null
+  /** 内置模型元数据缓存（id / name 映射列表） */
+  private builtinModelCatalog: Array<{ id: string; name: string }> | null = null
   private modelCountFetching = false
   /**
    * 本服务已拉起二进制的签名（mtimeMs:size）。
    * 非 null 表示「本服务托管过引擎」，用于开发态感知 `engine:deploy:watch` 的重编译覆盖。
    */
   private spawnedBinarySignature: string | null = null
+  /** 最近一次成功拉起子进程的时间戳，用于启动冷静期保护 */
+  private lastSpawnedAt = 0
+  /** 热更新待确认的候选签名 */
+  private pendingUpdateSignature: string | null = null
+  /** 候选签名首次被发现的时间戳（用于防抖稳定期判断） */
+  private pendingUpdateSince = 0
   /** 开发态二进制热更新轮询定时器 */
   private devBinaryWatchTimer: NodeJS.Timeout | null = null
   private listeners = new Set<(snapshot: EngineBridgeSnapshot) => void>()
   readonly circuitBreaker = new Tier2CircuitBreaker()
 
+  /** 当前是否正处于拉起启动流程中 */
+  public isStartingNow(): boolean {
+    return this.isStarting
+  }
+
   private constructor() {
     this.setupLifecycleHooks()
+    // 启动常驻状态轮询（3秒探活），自动同步外部引擎上线/下线及在引擎内切换模型
+    this.startPolling(3000)
   }
 
   public static getInstance(): EngineBridgeService {
@@ -248,6 +275,72 @@ export class EngineBridgeService {
   }
 
   /**
+   * 加载内置模型目录（带内存缓存），用于将引擎文件/ID映射为友好名称
+   */
+  private loadBuiltinModelCatalog(): Array<{ id: string; name: string }> {
+    if (this.builtinModelCatalog && this.builtinModelCatalog.length > 0) {
+      return this.builtinModelCatalog
+    }
+    try {
+      const candidates = [
+        ResourceLocator.resolveResourcePath('model/model_zh-CN.json'),
+        path.join(process.cwd(), 'apps', 'desktop', 'build', 'extraResources', 'model', 'model_zh-CN.json'),
+        path.join(process.cwd(), 'build', 'extraResources', 'model', 'model_zh-CN.json')
+      ]
+      for (const p of candidates) {
+        if (p && fs.existsSync(p)) {
+          const raw = fs.readFileSync(p, 'utf-8')
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed?.models)) {
+            this.builtinModelCatalog = parsed.models.map((m: any) => ({
+              id: String(m.id || ''),
+              name: String(m.name || '')
+            }))
+            return this.builtinModelCatalog || []
+          }
+        }
+      }
+    } catch (err) {
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 加载内置模型清单失败:', err)
+    }
+    return []
+  }
+
+  /**
+   * 将当前加载的原始模型标识（路径、文件名、简写 ID）解析为规范的模型展示名称
+   */
+  public resolveFriendlyModelName(identifier: string | null): string | null {
+    if (!identifier) return null
+
+    // 1. 优先从内置模型目录进行语义与归一化匹配（获取 Qwen 3.5 0.8B (中文更佳) 等中文规范名称）
+    const catalog = this.loadBuiltinModelCatalog()
+    if (catalog.length > 0) {
+      const clean = identifier.replace(/\.[^.]+$/, '').replace(/.*[\\/]/, '')
+      const cleanNorm = clean.toLowerCase().replace(/[-_:\/]|gguf/gi, '')
+      const hit = catalog.find(m => {
+        if (!m.id) return false
+        if (m.id === identifier || m.id === clean || m.name === identifier) return true
+        const idNorm = m.id.toLowerCase().replace(/[-_:\/]|gguf/gi, '')
+        return idNorm.includes(cleanNorm) || cleanNorm.includes(idNorm)
+      })
+      if (hit && hit.name) {
+        return hit.name
+      }
+    }
+
+    // 2. 次选从 /api/models 映射表中反查（若名称与原始 ID 不同则采用）
+    if (this.lastModelNameMap.size > 0) {
+      const mapped = this.lastModelNameMap.get(identifier)
+      if (mapped && mapped !== identifier) {
+        return mapped
+      }
+    }
+
+    // 3. 兜底剥离路径和扩展名
+    return identifier.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, '')
+  }
+
+  /**
    * 计算二进制签名（mtimeMs + size）。
    * 集成目录被 `engine:deploy:watch` 覆盖后签名必然变化，用于判断是否需要重启引擎。
    */
@@ -316,17 +409,37 @@ export class EngineBridgeService {
     if (this.isStarting) {
       return
     }
+    // 启动冷静期（15秒）：引擎刚启动不久，给其足够的稳定初始化时间，避免启动期抖动
+    if (this.lastSpawnedAt > 0 && Date.now() - this.lastSpawnedAt < 15_000) {
+      return
+    }
     const exePath = this.resolveEngineExecutable()
     if (!exePath) {
       return
     }
     const signature = this.binarySignature(exePath)
     if (!signature || signature === this.spawnedBinarySignature) {
+      this.pendingUpdateSignature = null
+      this.pendingUpdateSince = 0
+      return
+    }
+
+    // 首次检测到签名变更：进入待定状态，不立即杀死进程
+    if (this.pendingUpdateSignature !== signature) {
+      this.pendingUpdateSignature = signature
+      this.pendingUpdateSince = Date.now()
+      return
+    }
+
+    // 连续两次检测到相同新签名，且持续稳定至少 3 秒（确保外部文件复制落盘完全完毕）
+    if (Date.now() - this.pendingUpdateSince < 3_000) {
       return
     }
 
     const previous = this.spawnedBinarySignature
     this.spawnedBinarySignature = signature
+    this.pendingUpdateSignature = null
+    this.pendingUpdateSince = 0
 
     if (previous === null) {
       // 本服务未托管过引擎：可能是外部实例，不越权处理
@@ -413,7 +526,23 @@ export class EngineBridgeService {
     if (typeof data.version === 'string' && data.version) {
       this.versionCache = data.version
     }
+    const prevModel = this.lastRawStatus?.current_model || this.lastRawStatus?.model || this.lastKnownModel
+    const currentModel = data.current_model || data.model || (data.loaded_models?.[0]) || null
+    const modelChanged = currentModel !== null && currentModel !== prevModel
+    const wasOffline = this.lastRawStatus === null
+
     this.lastRawStatus = data
+    // current_model 有值时更新缓存，服务停止后保留上次值供 UI 展示
+    if (currentModel) {
+      this.lastKnownModel = currentModel
+    }
+    // 探活成功即代表引擎在线：清掉历史启动超时等陈旧错误，避免「已就绪却仍显示超时」
+    const hadError = this.lastError !== null
+    this.lastError = null
+    // 状态变化（错误清除、模型切换、从离线恢复）时立即广播，无需等待后续异步操作
+    if (hadError || modelChanged || wasOffline) {
+      this.broadcastStatus()
+    }
     // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径
     void this.refreshModelCount()
   }
@@ -476,12 +605,42 @@ export class EngineBridgeService {
         signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
       })
       if (res.ok) {
-        const list = (await res.json()) as Array<{ isDownloaded?: boolean }>
+        const list = (await res.json()) as Array<{
+          isDownloaded?: boolean
+          name?: string
+          id?: string
+          localPath?: string
+          fileName?: string
+        }>
         const prev = this.lastModelCount
+        const prevTotal = this.lastTotalModelCount
+        const prevFirst = this.firstDownloadedModel
         this.lastModelCount = Array.isArray(list)
           ? list.filter(m => m?.isDownloaded === true).length
           : null
-        if (prev !== this.lastModelCount) {
+        this.lastTotalModelCount = Array.isArray(list) && list.length > 1 ? list.length : 32
+        // 构建 id / localPath / fileName → name 映射，供快照查找当前模型展示名
+        if (Array.isArray(list)) {
+          const map = new Map<string, string>()
+          let firstDl: string | null = null
+          for (const m of list) {
+            if (!m) continue
+            if (m.isDownloaded === true && !firstDl) {
+              firstDl = m.localPath || m.id || m.fileName || m.name || null
+            }
+            if (!m.name) continue
+            if (m.id) map.set(m.id, m.name)
+            if (m.localPath) map.set(m.localPath, m.name)
+            if (m.fileName) map.set(m.fileName, m.name)
+          }
+          this.lastModelNameMap = map
+          this.firstDownloadedModel = firstDl
+        }
+        if (
+          prev !== this.lastModelCount ||
+          prevTotal !== this.lastTotalModelCount ||
+          prevFirst !== this.firstDownloadedModel
+        ) {
           this.broadcastStatus()
         }
       }
@@ -593,6 +752,9 @@ export class EngineBridgeService {
       // 记录本次拉起的二进制签名，并开启热更新监听：
       // engine:deploy:watch 覆盖集成目录产物后据此自动重启引擎
       this.spawnedBinarySignature = this.binarySignature(exePath)
+      this.lastSpawnedAt = Date.now()
+      this.pendingUpdateSignature = null
+      this.pendingUpdateSince = 0
       this.startDevBinaryWatch()
 
       child.once('error', err => {
@@ -613,7 +775,12 @@ export class EngineBridgeService {
       // 等待引擎就绪（轮询 /api/engine/status）
       const ready = await this.waitForReady(READY_WAIT_LIMIT_MS)
       this.isStarting = false
-      if (!ready) {
+      // 就绪窗口结束后再做一次终确认：引擎可能在临界点刚起来，
+      // 否则会出现「界面已显示状态良好 / 已连接，日志却打启动超时」
+      const finalAlive = ready ? true : !!(await this.healthCheck())
+      // 并发探活可能已把 lastRawStatus 置好：此时不得再回写「启动超时」污染状态
+      const alreadyUp = !!this.lastRawStatus
+      if (!finalAlive && !alreadyUp) {
         const msg = '萤核AI引擎启动超时，未能在规定时间内完成就绪'
         this.lastError = msg
         logger.warn(LogCategory.SYSTEM, `[EngineBridge] ${msg}`)
@@ -621,7 +788,7 @@ export class EngineBridgeService {
         this.lastError = null
       }
       this.broadcastStatus()
-      return ready
+      return finalAlive || alreadyUp
     } catch (err) {
       this.isStarting = false
       const msg = err instanceof Error ? err.message : String(err)
@@ -684,17 +851,41 @@ export class EngineBridgeService {
     source?: string
   }): Promise<{ ok: boolean; error?: string }> {
     try {
-      const res = await fetch(`${this.baseUrl}${ENGINE_OPEN_UI_PATH}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          panel: options?.panel || 'default',
-          ...(options?.focusModel ? { focus_model: options.focusModel } : {}),
-          ...(options?.source ? { source: options.source } : {})
-        }),
-        signal: AbortSignal.timeout(OPEN_UI_TIMEOUT_MS)
-      })
-      return { ok: res.ok, error: res.ok ? undefined : `引擎返回 ${res.status}` }
+      // 引擎未运行或正处于离线状态时，先平稳拉起并等待就绪，避免 fetch 直接抛错
+      if (!this.lastRawStatus) {
+        logger.info(LogCategory.SYSTEM, '[EngineBridge] 打开面板前检测到引擎未运行，主动平稳拉起')
+        const ok = await this.ensureRunning({ force: true })
+        if (!ok) {
+          return { ok: false, error: '未能成功拉起引擎服务' }
+        }
+      }
+
+      // 请求 /api/engine/open-ui，增加轻量重试（最多3次，每次间隔600ms），吸收刚启动时的瞬态连接拒绝
+      let lastErr: Error | null = null
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const res = await fetch(`${this.baseUrl}${ENGINE_OPEN_UI_PATH}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              panel: options?.panel || 'default',
+              ...(options?.focusModel ? { focus_model: options.focusModel } : {}),
+              ...(options?.source ? { source: options.source } : {})
+            }),
+            signal: AbortSignal.timeout(OPEN_UI_TIMEOUT_MS)
+          })
+          if (res.ok) {
+            return { ok: true }
+          }
+          lastErr = new Error(`引擎返回 ${res.status}`)
+        } catch (e) {
+          lastErr = e instanceof Error ? e : new Error(String(e))
+        }
+        await new Promise(r => setTimeout(r, 600))
+      }
+      const errorMsg = lastErr ? lastErr.message : '打开管理面板重试失败'
+      logger.warn(LogCategory.SYSTEM, `[EngineBridge] 打开引擎管理面板失败: ${errorMsg}`)
+      return { ok: false, error: errorMsg }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err)
       logger.warn(LogCategory.SYSTEM, `[EngineBridge] 打开引擎管理面板失败: ${error}`)
@@ -709,7 +900,7 @@ export class EngineBridgeService {
    * 其 `id` 为 GGUF 文件名主干或自定义模型 id。因此以「关键词包含」做宽松匹配：
    * 任一已下载条目的 id / name / localPath / fileName 命中任一关键词即视为已安装。
    *
-   * @returns reachable 表示是否成功拿到模型列表；未连接或请求失败时 installed 恒为 false
+   * @returns reachable 表示引擎是否在线可达；未连接或请求失败时 installed 恒为 false
    */
   public async checkModelsInstalled(keywords: string[]): Promise<{
     reachable: boolean
@@ -720,13 +911,37 @@ export class EngineBridgeService {
     if (normalized.length === 0) {
       return { reachable: false, installed: false, matched: [] }
     }
+
+    // 第一步：通过 healthCheck 探活（内置基准端口探活 + 38400~38419 滑动端口扫描与自动绑定）
+    // 确保引擎即便因端口冲突顺延绑定，也能被正确识别为在线并校准 this.activePort
+    let reachable = false
+    try {
+      const status = await this.healthCheck()
+      if (status !== null) {
+        reachable = true
+      } else if (this.getSnapshot().connected === true) {
+        reachable = true
+      } else {
+        // 兜底再次扫描滑动区间
+        reachable = await this.adoptRunningEnginePort()
+      }
+    } catch {
+      reachable = this.getSnapshot().connected === true
+    }
+
+    if (!reachable) {
+      return { reachable: false, installed: false, matched: [] }
+    }
+
+    // 第二步：引擎已确认在线，拉取模型列表并匹配关键词
     try {
       const res = await fetch(`${this.baseUrl}${ENGINE_MODELS_PATH}`, {
         method: 'GET',
-        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+        signal: AbortSignal.timeout(8000)
       })
       if (!res.ok) {
-        return { reachable: false, installed: false, matched: [] }
+        // 引擎可达但端点返回非 2xx（如 500/404），判定为「引擎已运行，但模型未安装/不可用」
+        return { reachable: true, installed: false, matched: [] }
       }
       const list = (await res.json()) as Array<Record<string, unknown>>
       if (!Array.isArray(list)) {
@@ -735,7 +950,14 @@ export class EngineBridgeService {
       const matched: string[] = []
       for (const item of list) {
         if (item?.isDownloaded !== true) continue
-        const haystack = [item.id, item.name, item.localPath, item.fileName, item.author]
+        const haystack = [
+          item.id,
+          item.name,
+          item.localPath,
+          item.fileName,
+          item.author,
+          item.downloadId
+        ]
           .filter(v => typeof v === 'string')
           .join(' ')
           .toLowerCase()
@@ -747,9 +969,9 @@ export class EngineBridgeService {
       }
       return { reachable: true, installed: matched.length > 0, matched }
     } catch (err) {
-      // 引擎未运行/端口未就绪属可容忍降级，交由上层展示「未安装」引导
-      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 探测模型安装状态失败（引擎可能未运行）:', err)
-      return { reachable: false, installed: false, matched: [] }
+      // /api/models 超时或失败，但引擎已确认在线，判定为「引擎已运行，但尚未安装该模型」
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 拉取 /api/models 失败（引擎已在线）:', err)
+      return { reachable: true, installed: false, matched: [] }
     }
   }
 
@@ -890,11 +1112,30 @@ export class EngineBridgeService {
       port: this.activePort,
       version: raw?.version || this.versionCache || null,
       backend: raw?.active_backend || raw?.backend || null,
-      // 引擎契约字段为 current_model（兼容旧 model 字段与 loaded_models 列表）
-      model: raw?.current_model || raw?.model || (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) || null,
+      // 激活模型推导：引擎运行模型 -> 上次已知模型 -> 本地已下载首个就绪模型（引擎未启动服务时展示当前激活模型）
+      model: (() => {
+        return (
+          raw?.current_model ||
+          raw?.model ||
+          (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) ||
+          this.lastKnownModel ||
+          this.firstDownloadedModel ||
+          null
+        )
+      })(),
+      // 解析规范友好的中文模型名称（优先从内置模型目录匹配，fallback 到映射表或纯文件名）
+      modelName: this.resolveFriendlyModelName(
+        raw?.current_model ||
+          raw?.model ||
+          (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) ||
+          this.lastKnownModel ||
+          this.firstDownloadedModel ||
+          null
+      ),
       // 引擎契约字段为 vram_usage_mb（兼容旧 vram_mb / gpu_mem_mb）
       vramMb: typeof raw?.vram_usage_mb === 'number' ? raw.vram_usage_mb : typeof raw?.vram_mb === 'number' ? raw.vram_mb : typeof raw?.gpu_mem_mb === 'number' ? raw.gpu_mem_mb : null,
       modelCount: raw ? this.lastModelCount : null,
+      totalModelCount: raw ? this.lastTotalModelCount : null,
       lastError: this.lastError,
       updatedAt: raw ? Date.now() : null,
       raw

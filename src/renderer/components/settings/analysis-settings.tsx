@@ -175,39 +175,50 @@ export const AnalysisSettings: React.FC = () => {
   const [checkingHighDimModel, setCheckingHighDimModel] = useState(false)
   const [redirectingToEngine, setRedirectingToEngine] = useState(false)
 
-  // 模型安装探针：仅当开关处于打开状态时才探测，避免无谓的网络请求
+  // 探测模型安装状态与引擎可达性
+  const probeHighDimModel = React.useCallback(async () => {
+    if (!window.electronAPI?.engineBridge) return
+    setCheckingHighDimModel(true)
+    try {
+      const res = await window.electronAPI.engineBridge.checkModelsInstalled(
+        HIGH_DIM_MODEL_KEYWORDS
+      )
+      setHighDimModelMissing(!res.installed)
+      setHighDimEngineOffline(!res.reachable)
+    } catch {
+      setHighDimModelMissing(true)
+      setHighDimEngineOffline(true)
+    } finally {
+      setCheckingHighDimModel(false)
+    }
+  }, [])
+
+  // 模型安装探针：开启时立即探测；支持窗口重获焦点时刷新；若处于未就绪状态则轻量定时探活
   useEffect(() => {
-    let cancelled = false
     if (!highDimCorrection) {
       setHighDimModelMissing(false)
       setHighDimEngineOffline(false)
       return
     }
-    setCheckingHighDimModel(true)
-    void (async () => {
-      try {
-        const res = await window.electronAPI.engineBridge.checkModelsInstalled(
-          HIGH_DIM_MODEL_KEYWORDS
-        )
-        if (!cancelled) {
-          setHighDimModelMissing(!res.installed)
-          setHighDimEngineOffline(!res.reachable)
-        }
-      } catch {
-        if (!cancelled) {
-          setHighDimModelMissing(true)
-          setHighDimEngineOffline(true)
-        }
-      } finally {
-        if (!cancelled) {
-          setCheckingHighDimModel(false)
-        }
-      }
-    })()
-    return () => {
-      cancelled = true
+
+    void probeHighDimModel()
+
+    // 用户在外部启动引擎或安装模型后切回桌面端，自动刷新探针状态
+    const handleFocus = () => {
+      void probeHighDimModel()
     }
-  }, [highDimCorrection])
+    window.addEventListener('focus', handleFocus)
+
+    // 若当前检测到引擎未运行或模型缺失，每 5 秒自动重试探活一次，引擎启动后自动切换文案
+    const timer = setInterval(() => {
+      void probeHighDimModel()
+    }, 5000)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      clearInterval(timer)
+    }
+  }, [highDimCorrection, probeHighDimModel])
 
   /**
    * 【打开萤核AI引擎】引导动作（Issue 0046 §3）：
@@ -717,7 +728,7 @@ export const AnalysisSettings: React.FC = () => {
                           '未检测到萤核AI引擎正在运行，无法确认 WeMM-Embedding 2B 多模态嵌入模型是否已安装。高维修正依赖该模型，请先启动或安装萤核AI引擎。'
                         )
                       : t(
-                          '尚未安装 WeMM-Embedding 2B 多模态嵌入模型，高维修正无法执行。请前往萤核AI引擎安装后再开启。'
+                          '请前往萤核AI引擎安装 WeMM-Embedding 2B 多模态嵌入模型，否则高维修正无法生效。'
                         )}
                 </span>
               </div>

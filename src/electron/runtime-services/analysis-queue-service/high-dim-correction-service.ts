@@ -21,8 +21,10 @@ import { databaseService } from '../database/database-service'
 import {
   HIGH_DIM_REFILL_BATCH_SIZE,
   HIGH_DIM_CORRECTION_STAGE,
-  WEMM_EMBEDDING_DIM
-} from '@app/shared/constants/high-dim-correction'
+  WEMM_EMBEDDING_DIM,
+  HIGH_DIM_PRUNABLE_TAG_GROUPS,
+  HIGH_DIM_MIN_TAG_CONFIDENCE
+} from '@shared/constants/high-dim-correction'
 import {
   applyHighDimCorrection,
   isMachineGeneratedName,
@@ -103,10 +105,6 @@ export interface HighDimCorrectionOutcome {
   skippedForUserNaming: boolean
 }
 
-import {
-  HIGH_DIM_PRUNABLE_TAG_GROUPS,
-  HIGH_DIM_MIN_TAG_CONFIDENCE
-} from '@/shared/constants/high-dim-correction'
 export { HIGH_DIM_PRUNABLE_TAG_GROUPS, HIGH_DIM_MIN_TAG_CONFIDENCE }
 
 export class HighDimCorrectionService {

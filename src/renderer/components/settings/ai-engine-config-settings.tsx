@@ -310,6 +310,26 @@ export const AIEngineConfigSettings: React.FC = () => {
   const serviceRunning = snapshot?.raw?.status === 'ready'
   const openEngineBtnRef = React.useRef<HTMLButtonElement>(null)
 
+  /** 将模型文件名或标识符美化为规范友好的模型展示名称 */
+  const formatFriendlyModelName = (name?: string | null, rawModel?: string | null): string => {
+    const candidate = name || rawModel
+    if (!candidate) return '—'
+    if (name && (name.includes(' ') || /[\u4e00-\u9fa5]/.test(name))) {
+      return name
+    }
+    const clean = candidate.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, '')
+    if (/qwen3\.?5[-_]0\.8b/i.test(clean)) {
+      return t('Qwen 3.5 0.8B (中文更佳)')
+    }
+    if (/lfm2\.?5[-_]1\.2b/i.test(clean)) {
+      return t('LFM2.5 1.2B Instruct（英文更佳•高速）')
+    }
+    if (/minicpm5[-_]2b/i.test(clean)) {
+      return t('MiniCPM5 2B（高质量•高速）')
+    }
+    return name || clean
+  }
+
   // 「打开萤核AI引擎」为未连接态唯一行动点，渲染后自动置于焦点（user story 5）
   useEffect(() => {
     if (isLocalBranch && !engineConnected) {
@@ -421,7 +441,7 @@ export const AIEngineConfigSettings: React.FC = () => {
         <Card className="p-5 border-border/80 shadow-xs rounded-2xl bg-card">
           <div className="flex items-start gap-3.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground border border-border/40">
-              <Ban className="h-4.5 w-4.5" />
+              <Ban className="h-[18px] w-[18px]" />
             </div>
             <div className="flex-1 min-w-0">
               <Label className="text-sm font-semibold">{t('已禁用高级AI引擎')}</Label>
@@ -491,14 +511,14 @@ export const AIEngineConfigSettings: React.FC = () => {
               'local',
               t('萤核AI引擎'),
               modeDescriptions.local,
-              <Radio className="h-4.5 w-4.5" />,
+              <Radio className="h-[18px] w-[18px]" />,
               renderStatusBadge('local')
             )}
             {renderModeOption(
               'cloud',
               t('云端AI引擎'),
               modeDescriptions.cloud,
-              <Cloud className="h-4.5 w-4.5" />,
+              <Cloud className="h-[18px] w-[18px]" />,
               renderStatusBadge('cloud')
             )}
           </div>
@@ -522,7 +542,7 @@ export const AIEngineConfigSettings: React.FC = () => {
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-start gap-3.5 flex-1 min-w-0">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-                      <Brain className="h-4.5 w-4.5" />
+                      <Brain className="h-[18px] w-[18px]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <Label className="text-sm font-semibold flex items-center gap-2 flex-wrap">
@@ -562,85 +582,79 @@ export const AIEngineConfigSettings: React.FC = () => {
               {engineConnected ? (
                 /* 已连接态：现代化控制台卡片 */
                 <Card className="border-border/80 shadow-xs rounded-2xl bg-card overflow-hidden">
-                  {/* 控制台头部 */}
-                  <div className="p-5 flex items-center justify-between flex-wrap gap-3 border-b border-border/40">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
-                        <Zap className="h-4.5 w-4.5" />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-semibold flex items-center gap-2">
-                          {snapshot?.version ? `${t('萤核AI引擎')} v${snapshot.version}` : t('萤核AI引擎')}
-                          <Badge className={`font-semibold px-2 py-0.5 text-[11px] rounded-full border ${statusBadge.cls}`}>
-                            {statusBadge.icon}
-                            <span className="ml-1">{statusBadge.text}</span>
-                          </Badge>
-                        </Label>
-                        <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                          <span>{t('本地通信端口')}:</span>
-                          <span className="font-mono font-semibold text-foreground/80">127.0.0.1:{snapshot?.port ?? 38400}</span>
-                          {snapshot?.devMode && (
-                            <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-medium">
-                              DEV
+                  {/* 控制台头部：引擎标识 + 主操作按钮 */}
+                  <div className="p-5 border-b border-border/40 space-y-3">
+                    {/* 顶行：引擎名称+状态 / 主操作 */}
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
+                          <Zap className="h-[18px] w-[18px]" />
+                        </div>
+                        <div className="min-w-0">
+                          <Label className="text-sm font-semibold flex items-center gap-2 flex-wrap">
+                            {snapshot?.version ? `${t('萤核AI引擎')} v${snapshot.version}` : t('萤核AI引擎')}
+                            <Badge className={`font-semibold px-2 py-0.5 text-[11px] rounded-full border ${statusBadge.cls}`}>
+                              {statusBadge.icon}
+                              <span className="ml-1">{statusBadge.text}</span>
                             </Badge>
-                          )}
-                        </p>
+                            {snapshot?.devMode && (
+                              <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-medium">
+                                DEV
+                              </Badge>
+                            )}
+                          </Label>
+                          <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                            <span>{t('本地通信端口')}:</span>
+                            <span className="font-mono font-semibold text-foreground/80">127.0.0.1:{snapshot?.port ?? 38400}</span>
+                          </p>
+                        </div>
+                      </div>
+                      {/* 主操作：启动/停止服务（互斥）+ 管理面板 */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {serviceRunning ? (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            disabled={actionPending !== null}
+                            onClick={() => runAction('stop-service', () => window.electronAPI.engineBridge.stopService())}
+                            className="h-8 text-xs font-medium"
+                          >
+                            <CircleX className="h-3.5 w-3.5 mr-1" />
+                            {actionPending === 'stop-service' ? t('停止中...') : t('停止服务')}
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="default"
+                            disabled={actionPending !== null}
+                            onClick={() => runAction('start-service', () => window.electronAPI.engineBridge.startService())}
+                            className="h-8 text-xs font-medium"
+                          >
+                            <Power className="h-3.5 w-3.5 mr-1" />
+                            {actionPending === 'start-service' ? t('启动中...') : t('启动服务')}
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          disabled={actionPending !== null || !snapshot?.connected}
+                          onClick={() => runAction('open-ui', () => window.electronAPI.engineBridge.openUI())}
+                          className="h-8 text-xs font-medium"
+                        >
+                          <Plus className="h-3.5 w-3.5 mr-1" />
+                          {t('打开引擎管理面板')}
+                        </Button>
                       </div>
                     </div>
 
-                    {/* 顶部操作按钮群 */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {/* 启动/停止服务互斥：按引擎侧 AI 推理服务运行态二选一渲染（不退出引擎应用） */}
-                      {serviceRunning ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={actionPending !== null}
-                          onClick={() => runAction('stop-service', () => window.electronAPI.engineBridge.stopService())}
-                          className="h-8 text-xs font-medium"
-                        >
-                          <CircleX className="h-3.5 w-3.5 mr-1" />
-                          {actionPending === 'stop-service' ? t('停止中...') : t('停止服务')}
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={actionPending !== null}
-                          onClick={() => runAction('start-service', () => window.electronAPI.engineBridge.startService())}
-                          className="h-8 text-xs font-medium"
-                        >
-                          <Power className="h-3.5 w-3.5 mr-1" />
-                          {actionPending === 'start-service' ? t('启动中...') : t('启动服务')}
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        disabled={actionPending !== null || !snapshot?.connected}
-                        onClick={() => runAction('open-ui', () => window.electronAPI.engineBridge.openUI())}
-                        className="h-8 text-xs font-medium"
-                      >
-                        <Plus className="h-3.5 w-3.5 mr-1" />
-                        {t('打开引擎管理面板')}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={actionPending !== null || !snapshot?.connected}
-                        onClick={() => runAction('open-models', () => window.electronAPI.engineBridge.openUI({ panel: 'models' }))}
-                        className="h-8 text-xs font-medium text-muted-foreground hover:text-foreground"
-                      >
-                        <Box className="h-3.5 w-3.5 mr-1" />
-                        {t('在萤核AI引擎中管理模型')}
-                      </Button>
-                    </div>
                   </div>
 
                   {/* 运行指标网格（PRD-0044 dashboard 等效：不复制显存/内存等引擎侧专属卡） */}
                   <div className="p-5">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-                      <div className="flex flex-col gap-1 p-3 bg-muted/20 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
+                    {/* 3列布局：左2列为宽字段（计算引擎/当前模型），右1列为窄字段（已安装模型/引擎健康状况） */}
+                    <div className="grid grid-cols-3 gap-2.5">
+                      {/* 第一行：计算引擎（宽）+ 已安装模型（窄） */}
+                      <div className="col-span-2 flex flex-col gap-1 p-3 bg-muted/20 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
                         <span className="text-[11px] font-medium text-muted-foreground">
                           {t('计算引擎')}
                         </span>
@@ -652,28 +666,28 @@ export const AIEngineConfigSettings: React.FC = () => {
                               : t('离线')}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-1 p-3 bg-muted/20 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
-                        <span className="text-[11px] font-medium text-muted-foreground">
-                          {t('当前模型（引擎侧只读）')}
-                        </span>
-                        <span className="text-xs font-semibold truncate" title={snapshot?.model || undefined}>
-                          {/* 已连接但引擎未激活模型时如实展示"未加载模型"，不伪装成加载中 */}
-                          {snapshot?.model
-                            ? snapshot.model
-                            : snapshot?.connected
-                              ? t('未加载模型')
-                              : '—'}
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-1 p-3 bg-muted/20 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
+                      <div className="col-span-1 flex flex-col gap-1 p-3 bg-muted/20 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
                         <span className="text-[11px] font-medium text-muted-foreground">
                           {t('已安装模型')}
                         </span>
                         <span className="text-xs font-semibold">
-                          {snapshot?.modelCount != null ? `${snapshot.modelCount} 个` : '—'}
+                          {snapshot?.modelCount != null
+                            ? `${snapshot.modelCount} / ${snapshot.totalModelCount ?? 32} ${t('个可用')}`
+                            : '—'}
                         </span>
                       </div>
-                      <div className="flex flex-col gap-1 p-3 bg-muted/20 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
+                      {/* 第二行：当前模型（宽）+ 引擎健康状况（窄） */}
+                      <div className="col-span-2 flex flex-col gap-1 p-3 bg-muted/20 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          {/* 精简标签，去掉"（引擎侧只读）"冗余说明 */}
+                          {t('当前模型')}
+                        </span>
+                        <span className="text-xs font-semibold truncate" title={snapshot?.model || undefined}>
+                          {/* 优先取规范模型友好名称（内置模型库/映射表/智能美化），无模型统一显示 — */}
+                          {formatFriendlyModelName(snapshot?.modelName, snapshot?.model)}
+                        </span>
+                      </div>
+                      <div className="col-span-1 flex flex-col gap-1 p-3 bg-muted/20 border border-border/50 rounded-xl hover:bg-muted/30 transition-colors">
                         <span className="text-[11px] font-medium text-muted-foreground">
                           {t('引擎健康状况')}
                         </span>
@@ -698,22 +712,24 @@ export const AIEngineConfigSettings: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* 部署信息底部微条 */}
-                  <div className="flex items-center gap-2 px-5 py-2.5 bg-muted/15 border-t border-border/40 text-xs text-muted-foreground">
-                    <Box className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
-                    <span className="font-mono text-[11px] truncate">
-                      {snapshot?.available
-                        ? snapshot?.exePath || t('引擎二进制已部署')
-                        : t('未检测到引擎二进制，在线分析由基础AI引擎自动兜底。')}
-                    </span>
-                  </div>
+                  {/* 部署信息底部微条：仅开发模式展示路径，生产模式隐藏 */}
+                  {snapshot?.devMode && (
+                    <div className="flex items-center gap-2 px-5 py-2.5 bg-muted/15 border-t border-border/40 text-xs text-muted-foreground">
+                      <Box className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+                      <span className="font-mono text-[11px] truncate">
+                        {snapshot?.available
+                          ? snapshot?.exePath || t('引擎二进制已部署')
+                          : t('未检测到引擎二进制，在线分析由基础AI引擎自动兜底。')}
+                      </span>
+                    </div>
+                  )}
                 </Card>
               ) : (
                 /* 未连接提示卡：唯一行动点为聚焦主按钮「打开萤核AI引擎」（ensureRunning → openUI 单入口） */
-                <Card className="p-5 border-border/80 shadow-xs rounded-2xl bg-card">
-                  <div className="flex items-start gap-3.5">
+                <Card className="border-border/80 shadow-xs rounded-2xl bg-card overflow-hidden">
+                  <div className="p-5 flex items-start gap-3.5">
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20">
-                      <Radio className="h-4.5 w-4.5" />
+                      <Radio className="h-[18px] w-[18px]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <Label className="text-sm font-semibold">{t('萤核AI引擎未连接')}</Label>
@@ -734,6 +750,17 @@ export const AIEngineConfigSettings: React.FC = () => {
                       </Button>
                     </div>
                   </div>
+                  {/* 未连接底部信息条：仅开发模式展示路径，生产模式隐藏 */}
+                  {snapshot?.devMode && (
+                    <div className="flex items-center gap-2 px-5 py-2.5 bg-muted/15 border-t border-border/40 text-xs text-muted-foreground">
+                      <Box className="h-3.5 w-3.5 text-muted-foreground/60 shrink-0" />
+                      <span className="font-mono text-[11px] truncate">
+                        {snapshot?.available
+                          ? snapshot?.exePath || t('引擎二进制已部署')
+                          : t('未检测到引擎二进制')}
+                      </span>
+                    </div>
+                  )}
                 </Card>
               )}
 
@@ -749,7 +776,8 @@ export const AIEngineConfigSettings: React.FC = () => {
                       {t(
                         '当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。'
                       )}
-                      {snapshot?.lastError && (
+                      {/* 最近异常仅在未连接时展示：已连接后历史启动超时等信息不再打扰用户 */}
+                      {!engineConnected && snapshot?.lastError && (
                         <span className="block mt-1.5 text-xs text-red-600/90 dark:text-red-400/90 font-mono">
                           {t('最近异常')}: {snapshot.lastError}
                         </span>

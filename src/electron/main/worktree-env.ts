@@ -175,7 +175,7 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
 
   let isProd = app.isPackaged || process.env.NODE_ENV === 'production'
   // region 优先取构建期注入的 __BUILD_REGION__（打包 exe 运行时没有 BUILD_REGION 环境变量，
-  // 若只读 process.env 会错误回退到 'CN'，导致 intl 包把 userData 写进 firefly-ai-folder-cn）
+  // 若只读 process.env 会错误回退到 'CN'，导致 intl 包把 userData 写进 firefly-ai-folder_v4_cn）
   const rawRegion = (
     typeof __BUILD_REGION__ !== 'undefined' && __BUILD_REGION__
       ? __BUILD_REGION__
@@ -211,14 +211,16 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
   // 则打包模式也追加分支后缀，隔离 userData，避免污染正式环境数据
   const explicitWorktree = process.env.WORKTREE_NAME && process.env.WORKTREE_NAME.trim()
 
-  // 生产打包时: firefly-ai-folder-v4-[cn|intl]（若显式指定 WORKTREE_NAME 则追加分支后缀隔离测试数据）
-  // 开发运行时: firefly-ai-folder-v4-[cn|intl]-[development|canary|production]-[worktree]
+  // 目录命名仅在「打包模式」下省略环境段；生产但非打包（NODE_ENV=production / 深链接 env=prod）
+  // 必须带 _production 环境段，与开发/灰度同构：firefly-ai-folder_v4_[cn|intl]_[env]_[worktree]
+  // 打包模式: firefly-ai-folder_v4_[cn|intl]（显式 WORKTREE_NAME 时仅追加分支后缀，不带环境段）
+  const useBareName = app.isPackaged
   const appName =
-    isProd && !explicitWorktree
-      ? `firefly-ai-folder-${majorVersion}-${region}`
-      : isProd
-        ? `firefly-ai-folder-${majorVersion}-${region}-${worktreeName}`
-        : `firefly-ai-folder-${majorVersion}-${region}-${appEnv}-${worktreeName}`
+    useBareName && !explicitWorktree
+      ? `firefly-ai-folder_${majorVersion}_${region}`
+      : useBareName
+        ? `firefly-ai-folder_${majorVersion}_${region}_${worktreeName}`
+        : `firefly-ai-folder_${majorVersion}_${region}_${appEnv}_${worktreeName}`
 
   app.setName(appName)
 

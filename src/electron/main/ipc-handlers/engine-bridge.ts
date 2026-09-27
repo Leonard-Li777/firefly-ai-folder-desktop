@@ -7,6 +7,10 @@ import { logger, LogCategory } from '@firefly/shared'
  */
 export function registerEngineBridgeIPCHandlers() {
   ipcMain.handle('engine-bridge/get-status', async () => {
+    // 若引擎正处于启动拉起流程中，避免瞬态探活失败清空状态并向前端广播离线，防止界面反复抖动
+    if (engineBridgeService.isStartingNow()) {
+      return engineBridgeService.getSnapshot()
+    }
     // PRD-0043：Footer 等渲染层需实时探活结果，而非缓存快照
     // 直接调用 healthCheck() 向外部引擎发起实时状态查询
     const status = await engineBridgeService.healthCheck()

@@ -16,12 +16,17 @@ export interface EngineBridgeSnapshotUI {
   port?: number
   version?: string | null
   backend?: string | null
+  /** 当前加载模型（原始路径/id） */
   model?: string | null
+  /** 当前加载模型的展示名称（来自 /api/models 的 name 字段；未匹配时为 null） */
+  modelName?: string | null
   vramMb?: number | null
   lastError?: string | null
   updatedAt?: number | null
   /** 引擎已安装模型数量（未连接或引擎未返回时为 null） */
   modelCount?: number | null
+  /** 支持的可用模型总数（默认 32） */
+  totalModelCount?: number | null
   /** 原始引擎状态（hardware 等 dashboard 增项经此透传） */
   raw?: {
     hardware?: { gpu_name?: string; is_integrated?: boolean; [key: string]: any } | null

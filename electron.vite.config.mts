@@ -403,6 +403,7 @@ export default defineConfig(({ command, mode }) => {
       },
       resolve: {
         alias: {
+          '@': path.resolve(__dirname, 'src'),
           '@app': path.resolve(__dirname, 'src'),
           '@lib': path.resolve(__dirname, 'src/renderer/lib'),
           '@renderer': path.resolve(__dirname, 'src/renderer'),
@@ -554,6 +555,7 @@ export default defineConfig(({ command, mode }) => {
       },
       resolve: {
         alias: {
+          '@': path.resolve(__dirname, 'src'),
           '@app': path.resolve(__dirname, 'src'),
           '@lib': path.resolve(__dirname, 'src/renderer/lib'),
           '@renderer': path.resolve(__dirname, 'src/renderer'),

@@ -321,17 +321,18 @@ const QueueRowRenderer = React.memo(
         : undefined
 
     return (
+      // 行容器不再叠加横向 padding / minWidth：列宽总和已按容器宽度分配，
+      // 额外 padding 会在 border-box 下挤占 grid 内容区，导致恒定横向溢出并出现滚动条
       <div
-        className="w-full items-center px-2 border-b border-border/40 hover:bg-accent/40 transition-colors text-xs select-none"
+        className="w-full items-center border-b border-border/40 hover:bg-accent/40 transition-colors text-xs select-none"
         style={{
           ...style,
           display: 'grid',
           gridTemplateColumns: data.colTemplate,
-          minWidth: data.totalWidth > 0 ? data.totalWidth : '100%',
           height: ROW_HEIGHT
         }}
       >
-        <div className="text-center font-mono text-muted-foreground/70 px-1 truncate">{index + 1}</div>
+        <div className="text-center font-mono text-muted-foreground/70 px-2 truncate">{index + 1}</div>
         <div className="truncate text-foreground font-medium pr-2" title={item.path}>
           {item.name}
         </div>
@@ -391,7 +392,7 @@ const QueueRowRenderer = React.memo(
             <span className="text-muted-foreground/50">—</span>
           )}
         </div>
-        <div className="flex gap-2 justify-end pr-2 shrink-0">
+        <div className="flex gap-2 justify-end px-2 shrink-0">
           {item.status === 'failed' && (
             <button
               className="text-xs text-primary hover:underline font-medium cursor-pointer"
@@ -536,6 +537,7 @@ function VirtualList({
             rowHeight={ROW_HEIGHT}
             width={width}
             className="scrollbar-thin"
+            style={{ overflowX: 'hidden', overflowY: 'auto' }}
             rowProps={{ data: rowData }}
             rowComponent={QueueRowRenderer}
             onScroll={({ scrollLeft }: { scrollLeft: number }) => onScrollX?.(scrollLeft)}
@@ -547,6 +549,7 @@ function VirtualList({
             itemSize={ROW_HEIGHT}
             width={width}
             className="scrollbar-thin"
+            style={{ overflowX: 'hidden', overflowY: 'auto' }}
             itemData={rowData}
             onScroll={({ scrollLeft }: { scrollLeft: number }) => onScrollX?.(scrollLeft)}
           >
@@ -690,6 +693,13 @@ export function AnalysisQueueContent({
           unit: Math.max(MIN_WIDTHS.unit, Math.round(prev.unit * ratio)),
           actions: Math.max(MIN_WIDTHS.actions, Math.round(prev.actions * ratio))
         }
+        // 取整残差并入较宽的一列，避免 1~2px 溢出触发横向滚动条
+        const residual =
+          containerWidth - Object.values(updated).reduce((a, b) => a + b, 0)
+        if (residual !== 0) {
+          const target = updated.name >= updated.reason ? 'name' : 'reason'
+          updated[target] = Math.max(MIN_WIDTHS[target], updated[target] + residual)
+        }
         return updated
       })
     })
@@ -733,7 +743,9 @@ export function AnalysisQueueContent({
     })
   }
 
-  const colTemplate = `${colWidths.index}px ${colWidths.name}px ${colWidths.status}px ${colWidths.history}px ${colWidths.reason}px ${colWidths.stats}px ${colWidths.unit}px 1fr`
+  // 末列使用 minmax(0, 1fr)：允许在垂直滚动条占宽或列宽取整残差时收缩，
+  // 避免 1fr 默认的 min-content 下限把行撑出容器，产生恒定横向滚动条
+  const colTemplate = `${colWidths.index}px ${colWidths.name}px ${colWidths.status}px ${colWidths.history}px ${colWidths.reason}px ${colWidths.stats}px ${colWidths.unit}px minmax(0, 1fr)`
 
   const handleModeSwitch = () => {
     const nextMode = viewMode === 'split' ? 'window' : 'split'

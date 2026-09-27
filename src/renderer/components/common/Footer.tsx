@@ -18,6 +18,7 @@ import { useAnalysisQueueStore } from '@/renderer/stores/analysis-queue-store'
 import { useConfigStore } from '@/renderer/stores/config-store'
 import { useShallow } from 'zustand/react/shallow'
 import { useModelStore } from '@/renderer/stores/model-store'
+import { useEngineStore } from '@/renderer/stores/engine-store'
 import { useSettingsStore } from '@/renderer/stores/settings-store'
 import { useVirtualDirectoryStore } from '@/renderer/stores/virtual-directory-store'
 import { useAnalyzedDirectoryStore } from '@/renderer/stores/analyzed-directory-store'
@@ -97,48 +98,30 @@ export function Footer() {
   const [hardwareInfo, setHardwareInfo] = useState<HardwareInfo | null>(null)
   const [licenseType, setLicenseType] = useState<string | null>(null)
 
-  // Tier 2 引擎在线状态（PRD-0043 下载引导流）：经 engineBridge 探活并订阅状态广播
-  const [engineOnline, setEngineOnline] = useState<boolean | null>(null)
+  // Tier 2 引擎在线状态（PRD-0043 下载引导流）：共用 useEngineStore 统一快照与广播订阅
+  const engineSnapshot = useEngineStore(s => s.snapshot)
   useEffect(() => {
-    let disposed = false
-    const bridge = (window as any).electronAPI?.engineBridge
-    if (!bridge?.getStatus) return
-    bridge
-      .getStatus()
-      .then((snap: { connected?: boolean } | null) => {
-        if (!disposed) setEngineOnline(!!snap?.connected)
-      })
-      .catch(() => {
-        if (!disposed) setEngineOnline(false)
-      })
-    if (bridge.onStatusChanged) {
-      const unsub = bridge.onStatusChanged((snap: { connected?: boolean } | null) => {
-        setEngineOnline(!!snap?.connected)
-      })
-      return () => {
-        disposed = true
-        if (typeof unsub === 'function') unsub()
-      }
-    }
-    return () => {
-      disposed = true
-    }
+    const unsub = useEngineStore.getState().subscribe()
+    return () => unsub?.()
   }, [])
+  const engineOnline = engineSnapshot ? !!engineSnapshot.connected : null
 
   // 引导条触发判据（PRD-0042 Task 6 / PRD-0043）：未连接 Tier 2 引擎 且 未配置云端 AI
   const showEngineGuide = modelMode !== 'cloud' && engineOnline === false
 
   /**
-   * 引导条点击链路（PRD-0043）：三路并行，互不阻塞
-   * 1. ensureRunning：引擎未运行则静默拉起（托盘模式）
-   * 2. openUI({panel:'models'})：深链直达引擎模型列表页（气泡引导由引擎侧激活）
-   * 3. openSettings：同时打开 desktop 的 AI 引擎配置设置页
+   * 引导条点击链路（PRD-0043）：
+   * 1. openSettings：即刻打开 desktop 的 AI 引擎配置设置页
+   * 2. openUI({panel:'models'})：深链直达引擎模型列表页（openUI 内部已包含平稳拉起与就绪等待）
    */
-  const handleEngineGuideClick = () => {
-    const bridge = (window as any).electronAPI?.engineBridge
-    if (bridge?.start) bridge.start().catch(() => {})
-    if (bridge?.openUI) bridge.openUI({ panel: 'models' }).catch(() => {})
+  const handleEngineGuideClick = async () => {
     openSettings(SettingsCategory.AI_ENGINE_CONFIG)
+    const bridge = (window as any).electronAPI?.engineBridge
+    if (bridge?.openUI) {
+      await bridge.openUI({ panel: 'models' }).catch(() => {})
+    } else if (bridge?.start) {
+      await bridge.start().catch(() => {})
+    }
   }
 
   const showAiError = serviceStatus === AIServiceStatus.ERROR || !!error
@@ -385,26 +368,29 @@ export function Footer() {
     const modeName = modelMode === 'local' ? t('本地') : t('云端')
     const compatibleLabel = isCompatible ? t('兼容模式') + '-' : ''
     const cpuLabel = isForceCpu ? t('兼容模式') + '-' : ''
-    const backendLabel = modelMode === 'local' && backend ? ` ${backend}` : ''
+    const activeBackend = modelMode === 'local' ? (engineSnapshot?.backend || backend) : backend
+    const rawActiveModelName = modelMode === 'local' ? (engineSnapshot?.modelName || modelName) : modelName
+    const validModelName = rawActiveModelName && rawActiveModelName !== 'unknown' ? rawActiveModelName : null
+    const backendLabel = modelMode === 'local' && activeBackend ? ` ${activeBackend}` : ''
     const header = `[${modeName}]${cpuLabel}${compatibleLabel && !isForceCpu ? compatibleLabel : ''}${backendLabel}`
     let modelInfo = header
 
     if (modelMode === 'cloud') {
       const displayProvider = provider || ''
 
-      if (displayProvider && modelName) {
-        modelInfo = `${header} ${displayProvider} - ${modelName}`
-      } else if (modelName) {
-        modelInfo = `${header} ${modelName}`
+      if (displayProvider && validModelName) {
+        modelInfo = `${header} ${displayProvider} - ${validModelName}`
+      } else if (validModelName) {
+        modelInfo = `${header} ${validModelName}`
       }
-    } else if (modelMode === 'local' && modelName) {
+    } else if (modelMode === 'local' && validModelName) {
       // 优化：在本地模式下，如果提供商不是 'local' 或 'unknown'，则也显示提供商名称（如 Ollama）
       const displayProvider =
         provider && provider !== 'local' && provider !== 'unknown' ? provider : ''
       if (displayProvider) {
-        modelInfo = `${header} ${displayProvider} - ${modelName}`
+        modelInfo = `${header} ${displayProvider} - ${validModelName}`
       } else {
-        modelInfo = `${header} ${modelName}`
+        modelInfo = `${header} ${validModelName}`
       }
     }
 
@@ -448,9 +434,11 @@ export function Footer() {
         }
       case AIServiceStatus.STOPPED:
         return {
-          text: t('AI 服务已停止'),
+          text: validModelName
+            ? t('{modelInfo} AI 服务未启动', { modelInfo })
+            : t('AI 服务未启动'),
           icon: 'stop_circle',
-          color: 'text-gray-500'
+          color: 'text-gray-400'
         }
       case AIServiceStatus.PENDING:
         return {
@@ -514,7 +502,30 @@ export function Footer() {
     }
   }
 
-  const aiServiceInfo = getFooterDisplay(serviceStatus)
+  // 本地模式下以 Tier 2 引擎真实运行态（engineSnapshot）为准驱动 Footer 状态
+  const effectiveStatus = useMemo(() => {
+    if (modelMode === 'local') {
+      if (engineOnline === false) {
+        return AIServiceStatus.STOPPED
+      }
+      if (engineSnapshot?.connected) {
+        if (serviceStatus === AIServiceStatus.PROCESSING) {
+          return AIServiceStatus.PROCESSING
+        }
+        if (engineSnapshot.raw?.status === 'ready') {
+          return AIServiceStatus.IDLE
+        }
+        if (engineSnapshot.raw?.status === 'starting') {
+          return AIServiceStatus.INITIALIZING
+        }
+        // 引擎已连接但 AI 推理服务未启动（status: "stopped"）
+        return AIServiceStatus.STOPPED
+      }
+    }
+    return serviceStatus
+  }, [modelMode, engineOnline, engineSnapshot, serviceStatus])
+
+  const aiServiceInfo = getFooterDisplay(effectiveStatus)
 
   // PRD-0043：本地模式下，Tier 2 引擎真实未在线时不得展示任何"模型就绪"类状态行
   // （状态数据来自 model-store，可能与引擎真实运行态脱钩，此处以 engineBridge 探活结果为准）。
