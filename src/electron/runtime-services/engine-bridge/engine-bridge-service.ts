@@ -31,6 +31,8 @@ const ENGINE_OPEN_UI_PATH = '/api/engine/open-ui'
 const ENGINE_SHUTDOWN_PATH = '/api/engine/shutdown'
 /** 引擎模型列表端点（PRD-0044：状态卡「已安装模型计数」数据源） */
 const ENGINE_MODELS_PATH = '/api/models'
+/** 引擎模型元数据目录端点（model_*.json 权威落点在 engine，desktop 一律经此查询） */
+const ENGINE_MODEL_META_PATH = '/api/models/meta'
 /** 引擎包列表端点（含 matchType/matchText，Footer「兼容模式」标记的权威来源） */
 const ENGINE_LIST_PATH = '/api/engine/list'
 /** 引擎 AI 服务启停端点（启停 llama.cpp 推理子进程，非退出引擎应用） */
@@ -160,8 +162,10 @@ export class EngineBridgeService {
   private lastBackendMatchType: 'best' | 'compatible' | 'fallback' | null = null
   /** 引擎列表拉取防抖标志（与模型计数同策略，避免并发重复拉取） */
   private engineListFetching = false
-  /** 内置模型元数据缓存（包含所有语言模型与 embedding 模型） */
+  /** 内置模型元数据缓存（包含所有语言模型与 embedding 模型；权威来源 = engine /api/models/meta） */
   private builtinModelCatalog: Array<{ id: string; name: string; isEmbedding?: boolean }> | null = null
+  /** 引擎模型元数据全量缓存（含 totalSize / vramRequiredGB / recommendedConfig 等，供 enrichAIStatus 匹配） */
+  private modelMetaCache: { lang: string; models: any[]; fetchedAt: number } | null = null
   private modelCountFetching = false
   /**
    * 本服务已拉起二进制的签名（mtimeMs:size）。
@@ -290,54 +294,58 @@ export class EngineBridgeService {
   }
 
   /**
-   * 加载内置推荐模型目录（带内存缓存），用于将引擎文件/ID映射为友好名称以及计算总可用模型数。
-   * 包含全部官方语言模型（31 个）与 Embedding 向量模型（2 个），共 33 个。
+   * 从引擎 /api/models/meta 拉取推荐模型元数据（model_*.json 权威落点在 engine build/extraResources/model）。
+   * desktop 一律经引擎查询模型信息，不再读取 desktop 侧 model_*.json。
+   * @param lang 语言代码（默认 zh-CN；引擎侧缺省会回退 zh-CN）
+   * @param force 强制刷新缓存
+   */
+  public async fetchModelMeta(lang = 'zh-CN', force = false): Promise<any[]> {
+    const now = Date.now()
+    if (!force && this.modelMetaCache && this.modelMetaCache.lang === lang && now - this.modelMetaCache.fetchedAt < 60_000) {
+      return this.modelMetaCache.models
+    }
+
+    try {
+      const res = await fetch(
+        `${this.baseUrl}${ENGINE_MODEL_META_PATH}?lang=${encodeURIComponent(lang)}`,
+        { method: 'GET', signal: AbortSignal.timeout(STATUS_TIMEOUT_MS) }
+      )
+      if (res.ok) {
+        const payload = (await res.json()) as { models?: any[] }
+        const models = Array.isArray(payload?.models) ? payload.models : []
+        this.modelMetaCache = { lang, models, fetchedAt: now }
+        // 同步刷新目录缓存（id/name/isEmbedding）
+        this.builtinModelCatalog = models.map((m: any) => ({
+          id: String(m.id || ''),
+          name: String(m.name || ''),
+          isEmbedding: Boolean(m.isEmbedding)
+        }))
+        return models
+      }
+      logger.debug(LogCategory.SYSTEM, `[EngineBridge] /api/models/meta 响应非 OK: ${res.status}`)
+    } catch (err) {
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 拉取引擎模型元数据失败:', err)
+    }
+    return this.modelMetaCache?.lang === lang ? this.modelMetaCache.models : []
+  }
+
+  /**
+   * 获取引擎模型元数据目录（id/name/isEmbedding），供友好名映射与总模型数计算。
+   * 优先使用内存缓存；未命中时返回空数组（由调用方决定是否触发 fetchModelMeta）。
    */
   private loadBuiltinModelCatalog(): Array<{ id: string; name: string; isEmbedding?: boolean }> {
     if (this.builtinModelCatalog && this.builtinModelCatalog.length > 0) {
       return this.builtinModelCatalog
     }
-    try {
-      const candidates = [
-        ResourceLocator.resolveModelConfig('model_zh-CN.json'),
-        ResourceLocator.resolveResourcePath('model/model_zh-CN.json'),
-        path.join(process.cwd(), 'apps', 'desktop', 'build', 'extraResources', 'model', 'model_zh-CN.json'),
-        path.join(process.cwd(), 'build', 'extraResources', 'model', 'model_zh-CN.json')
-      ]
-      for (const p of candidates) {
-        if (p && fs.existsSync(p)) {
-          const raw = fs.readFileSync(p, 'utf-8')
-          const parsed = JSON.parse(raw)
-          if (Array.isArray(parsed?.models)) {
-            this.builtinModelCatalog = parsed.models.map((m: any) => ({
-              id: String(m.id || ''),
-              name: String(m.name || ''),
-              isEmbedding: Boolean(m.isEmbedding)
-            }))
-            return this.builtinModelCatalog || []
-          }
-        }
-      }
-    } catch (err) {
-      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 从磁盘加载内置模型清单失败，使用编译期预设兜底:', err)
-    }
-
-    // 兜底：使用编译期内置模型源配置（合计 31 语言模型 + 2 Embedding 模型 = 33 个）
-    try {
-      const fallback = MODEL_CONFIG_SOURCE()
-      if (Array.isArray(fallback?.models)) {
-        this.builtinModelCatalog = fallback.models.map((m: any) => ({
-          id: String(m.id || ''),
-          name: String(m.name || ''),
-          isEmbedding: Boolean(m.isEmbedding)
-        }))
-        return this.builtinModelCatalog || []
-      }
-    } catch (err) {
-      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 加载编译期模型源失败:', err)
-    }
-
     return []
+  }
+
+  /**
+   * 同步获取已缓存的模型元数据全量条目（含 totalSize / vramRequiredGB 等）。
+   * 未缓存时返回空数组；调用方可用 fetchModelMeta 异步预热。
+   */
+  public getCachedModelMeta(): any[] {
+    return this.modelMetaCache?.models || []
   }
 
   /**
@@ -345,6 +353,13 @@ export class EngineBridgeService {
    */
   public resolveFriendlyModelName(identifier: string | null): string | null {
     if (!identifier) return null
+
+    // 防护：mmproj 是多模态投影器辅助文件，不是可直接启动的主模型，不应展示为当前模型名称
+    const fileBasename = identifier.replace(/.*[/\\]/, '').toLowerCase()
+    if (fileBasename.startsWith('mmproj')) {
+      logger.warn(LogCategory.SYSTEM, `[EngineBridge] current_model 指向投影器文件，忽略展示: ${identifier}`)
+      return null
+    }
 
     // 1. 优先从内置模型目录进行语义与归一化匹配（获取 Qwen 3.5 0.8B (中文更佳) 等中文规范名称）
     const catalog = this.loadBuiltinModelCatalog()
@@ -638,6 +653,9 @@ export class EngineBridgeService {
     }
     this.modelCountFetching = true
     try {
+      // 预热引擎模型元数据目录（model_*.json 权威落点在 engine，desktop 一律经引擎查询）
+      await this.fetchModelMeta()
+
       const res = await fetch(`${this.baseUrl}${ENGINE_MODELS_PATH}`, {
         method: 'GET',
         signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
