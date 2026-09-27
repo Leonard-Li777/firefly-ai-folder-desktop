@@ -31,8 +31,7 @@ interface ModelState {
   /** 硬件加速后端 */
   backend?: string
 
-  /** 最佳可用加速引擎参考值（融合记忆 BEST_ACCELERATION 与硬件检测） */
-  bestAcceleration?: string
+  // PRD-0049：bestAcceleration 字段已删除（BEST_ACCELERATION 配置键清退）
 
   /** 当前正在下载的模型 ID（用于 UI 状态保持） */
   activeDownloadId: string | null
@@ -97,7 +96,6 @@ export const useModelStore = create<ModelState>()(set => ({
       vramRequiredGB: undefined,
       totalSizeBytes: undefined,
       backend: undefined,
-      bestAcceleration: undefined,
       activeDownloadId: null
     })
 }))
@@ -130,8 +128,7 @@ if (typeof window !== 'undefined' && window.electronAPI) {
       lastError: payload.error || null,
       vramRequiredGB: payload.vramRequiredGB,
       totalSizeBytes: payload.totalSizeBytes,
-      backend: payload.backend,
-      bestAcceleration: payload.bestAcceleration
+      backend: payload.backend
     })
 
     // 如果主进程上报了 error，且 status 是 ERROR，同步更新到 useAIServiceStore
@@ -162,8 +159,7 @@ if (typeof window !== 'undefined' && window.electronAPI) {
       lastError: aiStatus?.error || null,
       vramRequiredGB: aiStatus?.vramRequiredGB,
       totalSizeBytes: aiStatus?.totalSizeBytes,
-      backend: aiStatus?.backend,
-      bestAcceleration: aiStatus?.bestAcceleration
+      backend: aiStatus?.backend
     })
 
     if (aiStatus?.status === AIServiceStatus.ERROR && aiStatus?.error) {

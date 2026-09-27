@@ -634,28 +634,8 @@ ConfigOrchestrator.getInstance().onValueChange('HARDWARE_GPU_INFO', () => {
   setActiveHardwareBackendCache(null)
 })
 
-ConfigOrchestrator.getInstance().onValueChange<boolean>(
-  'AI_ENGINE_FORCE_CPU_MODE',
-  async (newValue, oldValue) => {
-    if (newValue !== oldValue) {
-      // 清除硬件加速后端描述缓存，避免 Footer 引擎标识继续显示旧的 GPU 后端（如 cuda）
-      setActiveHardwareBackendCache(null)
-      logger.info(
-        LogCategory.MAIN,
-        `强制 CPU 模式由 ${oldValue} 切换为 ${newValue}，正在重启 AI 服务...`
-      )
-      try {
-        if (globalLlamaIndexService) {
-          await globalLlamaIndexService.reloadConfig().catch(err => {
-            logger.warn(LogCategory.MAIN, 'AI 服务重新加载配置失败:', err.message)
-          })
-        }
-      } catch (error) {
-        logger.error(LogCategory.MAIN, '重启 AI 服务失败:', error)
-      }
-    }
-  }
-)
+// PRD-0049：AI_ENGINE_FORCE_CPU_MODE 变更监听已清退
+// 引擎切换归萤核AI引擎（engineBridge.switchBackend），桌面不再以该配置驱动服务重启
 
 // =================================================================
 // 应用启动入口

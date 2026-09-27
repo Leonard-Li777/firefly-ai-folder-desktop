@@ -358,20 +358,16 @@ export function Footer() {
   function getFooterDisplay(status: AIServiceStatus) {
     // 「兼容模式」标记的权威来源是引擎列表（/api/engine/list）的 matchType：
     // 仅当当前激活引擎被引擎端标记为 matchType === 'compatible' 时才展示，
-    // 不依赖可能过期的 AI_ENGINE_DRIVER_COMPATIBLE_MODE 配置项，
+    // 不依赖可能过期的 AI_ENGINE_DRIVER_COMPATIBLE_MODE / AI_ENGINE_FORCE_CPU_MODE 配置项，
     // 也不做 backend 含 'vulkan' 的粗粒度字符串判断（Vulkan 可能是「最佳匹配」而非兼容模式）。
     const isCompatible = modelMode === 'local' && engineSnapshot?.backendMatchType === 'compatible'
-    const isForceCpu =
-      modelMode === 'local' &&
-      !!(config?.aiEngineForceCpuMode || (config as any)?.AI_ENGINE_FORCE_CPU_MODE)
     const modeName = modelMode === 'local' ? t('本地') : t('云端')
     const compatibleLabel = isCompatible ? t('兼容模式') + '-' : ''
-    const cpuLabel = isForceCpu ? t('兼容模式') + '-' : ''
     const activeBackend = modelMode === 'local' ? (engineSnapshot?.backend || backend) : backend
     const rawActiveModelName = modelMode === 'local' ? (engineSnapshot?.modelName || modelName) : modelName
     const validModelName = rawActiveModelName && rawActiveModelName !== 'unknown' ? rawActiveModelName : null
     const backendLabel = modelMode === 'local' && activeBackend ? ` ${activeBackend}` : ''
-    const header = `[${modeName}]${cpuLabel}${compatibleLabel && !isForceCpu ? compatibleLabel : ''}${backendLabel}`
+    const header = `[${modeName}]${compatibleLabel}${backendLabel}`
     let modelInfo = header
 
     if (modelMode === 'cloud') {
@@ -539,7 +535,7 @@ export function Footer() {
       : aiServiceInfo
 
   // 注：PRD-0043 后"非最佳可用引擎"警告归属引擎应用（firefly-ai-engine）Footer 展示，
-  // desktop 不再显示该警告（BEST_ACCELERATION 记忆服务仍保留，供引擎侧消费）。
+  // desktop 不再显示该警告（PRD-0049：BEST_ACCELERATION 记忆服务已清退）。
 
   const handleQueueButtonClick = async () => {
     try {

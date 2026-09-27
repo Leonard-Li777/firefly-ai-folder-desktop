@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import { engineBridgeService } from '../../runtime-services/engine-bridge'
 import { logger, LogCategory } from '@firefly/shared'
+import { t } from '@app/languages'
 
 /**
  * 引擎桥接 IPC 处理器（Tier 2 监控面板 / 控制指令）
@@ -76,6 +77,26 @@ export function registerEngineBridgeIPCHandlers() {
   ipcMain.handle('engine-bridge/stop-service', async () => {
     logger.info(LogCategory.IPC, '[IPC] 收到停止 AI 服务请求')
     const result = await engineBridgeService.stopService()
+    engineBridgeService.broadcastStatus()
+    return result
+  })
+
+  // PRD-0049：切换引擎计算后端（引擎激活单一化，错误降级/错误弹窗入口用）
+  ipcMain.handle('engine-bridge/switch-backend', async (_event, backend?: string) => {
+    if (!backend || typeof backend !== 'string') {
+      return { ok: false, error: t('缺少目标后端参数') }
+    }
+    logger.info(LogCategory.IPC, `[IPC] 收到切换引擎后端请求: ${backend}`)
+    const result = await engineBridgeService.switchBackend(backend)
+    // 切换后重启推理服务使新后端生效；失败不影响 switch 本身的成功语义（引擎侧偏好已写入）
+    if (result.ok) {
+      await engineBridgeService.stopService().catch((e: unknown) => {
+        logger.warn(LogCategory.IPC, '[IPC] 切换后端后停止旧服务失败（不影响切换结果）:', e)
+      })
+      await engineBridgeService.startService().catch((e: unknown) => {
+        logger.warn(LogCategory.IPC, '[IPC] 切换后端后启动新服务失败（引擎侧偏好已写入）:', e)
+      })
+    }
     engineBridgeService.broadcastStatus()
     return result
   })

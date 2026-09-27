@@ -118,8 +118,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
   onOpenSettings,
   onSwitchToCloud
 }) => {
-  const { initializeAIService, initializeAIServiceWithCpu, initializeAIServiceWithVulkan } =
-    useAIServiceStatus()
+  const { initializeAIService } = useAIServiceStatus()
   const { error: storeError } = useAIServiceError()
   const lastError = useModelStore(s => s.lastError)
 
@@ -157,17 +156,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
     return null
   }, [storeError, lastError])
 
-  /**
-   * 处理以 CPU 模式启动
-   */
-  const handleStartWithCpu = useCallback(async () => {
-    try {
-      await initializeAIServiceWithCpu()
-      onClose()
-    } catch (error) {
-      logger.error(LogCategory.AI_SERVICE, '以 CPU 模式初始化失败:', error)
-    }
-  }, [initializeAIServiceWithCpu, onClose])
+  // PRD-0049：原「以 CPU 模式启动」入口已清退（引擎切换归萤核AI引擎 engineBridge.switchBackend）
 
   /**
    * 处理重试
@@ -264,6 +253,27 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
           action: () => openExternalLink('https://www.nvidia.com/Download/index.aspx'),
           variant: 'secondary'
         })
+        // PRD-0049：引擎激活单一化——切换到 CPU 引擎入口（替代原「以 CPU 模式启动」）
+        actions.push({
+          label: t('切换到 CPU 引擎'),
+          action: async () => {
+            try {
+              const switchResult = await window.electronAPI?.engineBridge?.switchBackend?.('cpu')
+              if (switchResult?.ok) {
+                onClose()
+              } else {
+                // 切换失败时降级为「打开萤核AI引擎」深链
+                await window.electronAPI?.engineBridge?.openUI?.().catch(() => {})
+                onClose()
+              }
+            } catch (e) {
+              logger.error(LogCategory.AI_SERVICE, '切换到 CPU 引擎失败:', e)
+              await window.electronAPI?.engineBridge?.openUI?.().catch(() => {})
+              onClose()
+            }
+          },
+          variant: 'secondary'
+        })
       }
 
       // 如果是 Llama 引擎未找到/部署失败错误，提供重新部署引擎按钮
@@ -347,7 +357,7 @@ export const AIServiceErrorDialog: React.FC<IAIServiceErrorDialogProps> = ({
         actions
       }
     },
-    [handleRetry, onOpenSettings, handleStartWithCpu, handleSwitchToCloud]
+    [handleRetry, onOpenSettings, handleSwitchToCloud]
   )
 
   // 使用 useMemo 缓存错误信息

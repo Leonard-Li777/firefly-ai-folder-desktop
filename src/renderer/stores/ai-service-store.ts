@@ -64,10 +64,8 @@ export interface IAIServiceState {
 export interface IAIServiceActions {
   /** 初始化AI服务 */
   initializeAIService: (options?: { forceDeploy?: boolean; onlyDeploy?: boolean }) => Promise<void>
-  /** 以 CPU 模式初始化AI服务 */
-  initializeAIServiceWithCpu: () => Promise<void>
-  /** 以兼容模式（Vulkan）初始化AI服务 */
-  initializeAIServiceWithVulkan: () => Promise<void>
+  // PRD-0049：initializeAIServiceWithCpu / initializeAIServiceWithVulkan 已清退
+  // 引擎切换归萤核AI引擎（engineBridge.switchBackend），不再写桌面配置
   /** 通知模型切换 */
   notifyModelChanged: (modelId: string) => Promise<void>
   /** 更新状态 */
@@ -245,231 +243,9 @@ export const useAIServiceStore = create<TAIServiceStore>()(
         throw error
       }
     },
-    initializeAIServiceWithVulkan: async () => {
-      const state = get()
-
-      // 如果正在初始化，跳过（允许从错误状态重试）
-      if (state.status === AIServiceStatus.INITIALIZING) {
-        logger.debug(
-          LogCategory.AI_SERVICE,
-          '[AIServiceStore] AI服务正在初始化，跳过兼容模式初始化请求'
-        )
-        return
-      }
-
-      const api = window.electronAPI?.aiService
-      if (!api?.initialize) {
-        const errorMessage = t('electronAPI.aiService.initialize 不可用')
-        logger.error(LogCategory.AI_SERVICE, '[AIServiceStore] 兼容模式初始化失败:', errorMessage)
-        set({
-          status: AIServiceStatus.ERROR,
-          error: ErrorNormalizer.normalize(
-            errorMessage,
-            AIErrorType.SERVER_START_FAILED,
-            'AIServiceStore'
-          ),
-          lastActivity: new Date()
-        })
-        return
-      }
-
-      const toAIServiceStatus = (raw: unknown): AIServiceStatus => {
-        if (
-          typeof raw === 'string' &&
-          (Object.values(AIServiceStatus) as unknown[]).includes(raw)
-        ) {
-          return raw as AIServiceStatus
-        }
-        return AIServiceStatus.IDLE
-      }
-
-      const toStartupPhase = (raw: unknown): StartupPhase => {
-        if (typeof raw === 'string' && (Object.values(StartupPhase) as unknown[]).includes(raw)) {
-          return raw as StartupPhase
-        }
-        return StartupPhase.CONFIGURATION
-      }
-
-      try {
-        set(s => ({
-          status: AIServiceStatus.INITIALIZING,
-          initializationAttempts: s.initializationAttempts + 1,
-          error: null,
-          lastActivity: new Date()
-        }))
-
-        logger.info(
-          LogCategory.AI_SERVICE,
-          '[AIServiceStore] 开始以兼容模式（Vulkan）初始化AI服务...'
-        )
-
-        // 保存驱动兼容模式到配置
-        try {
-          await window.electronAPI?.updateConfigValue('AI_ENGINE_DRIVER_COMPATIBLE_MODE', true)
-          await window.electronAPI?.updateConfigValue('AI_ENGINE_FORCE_CPU_MODE', false)
-        } catch (e) {
-          logger.warn(LogCategory.AI_SERVICE, '[AIServiceStore] 保存兼容模式配置失败:', e)
-        }
-
-        const initResult = await api.initialize()
-        if (!initResult?.success) {
-          throw new Error(initResult?.message || t('AI服务初始化失败'))
-        }
-
-        const [statusRaw, phaseRaw, capabilitiesRaw] = await Promise.all([
-          (api as any).getStatus?.(),
-          (api as any).getCurrentPhase?.(),
-          (api as any).getCapabilities?.()
-        ])
-
-        const status = toAIServiceStatus(statusRaw)
-        const currentPhase = toStartupPhase(phaseRaw)
-        const capabilities = (capabilitiesRaw as AICapabilities | null) ?? null
-
-        set({
-          status,
-          currentPhase,
-          capabilities,
-          lastActivity: new Date()
-        })
-
-        logger.info(LogCategory.AI_SERVICE, '[AIServiceStore] 兼容模式 AI 服务初始化成功', {
-          status,
-          currentPhase,
-          modelName: capabilities?.modelName
-        })
-      } catch (error) {
-        const errorMessage = t('未知错误')
-        logger.error(
-          LogCategory.AI_SERVICE,
-          '[AIServiceStore] 兼容模式 AI 服务初始化失败:',
-          errorMessage
-        )
-
-        set({
-          status: AIServiceStatus.ERROR,
-          error: ErrorNormalizer.normalize(
-            error,
-            undefined,
-            'AIServiceStore'
-          ),
-          lastActivity: new Date()
-        })
-
-        throw error
-      }
-    },
-    initializeAIServiceWithCpu: async () => {
-      const state = get()
-
-      // 如果正在初始化，跳过（允许从错误状态重试）
-      if (state.status === AIServiceStatus.INITIALIZING) {
-        logger.debug(
-          LogCategory.AI_SERVICE,
-          '[AIServiceStore] AI服务正在初始化，跳过 CPU 模式初始化请求'
-        )
-        return
-      }
-
-      const api = window.electronAPI?.aiService
-      if (!api?.initialize) {
-        const errorMessage = t('electronAPI.aiService.initialize 不可用')
-        logger.error(LogCategory.AI_SERVICE, '[AIServiceStore] CPU 模式初始化失败:', errorMessage)
-        set({
-          status: AIServiceStatus.ERROR,
-          error: ErrorNormalizer.normalize(
-            errorMessage,
-            AIErrorType.SERVER_START_FAILED,
-            'AIServiceStore'
-          ),
-          lastActivity: new Date()
-        })
-        return
-      }
-
-      const toAIServiceStatus = (raw: unknown): AIServiceStatus => {
-        if (
-          typeof raw === 'string' &&
-          (Object.values(AIServiceStatus) as unknown[]).includes(raw)
-        ) {
-          return raw as AIServiceStatus
-        }
-        return AIServiceStatus.IDLE
-      }
-
-      const toStartupPhase = (raw: unknown): StartupPhase => {
-        if (typeof raw === 'string' && (Object.values(StartupPhase) as unknown[]).includes(raw)) {
-          return raw as StartupPhase
-        }
-        return StartupPhase.CONFIGURATION
-      }
-
-      try {
-        set(s => ({
-          status: AIServiceStatus.INITIALIZING,
-          initializationAttempts: s.initializationAttempts + 1,
-          error: null,
-          lastActivity: new Date()
-        }))
-
-        logger.info(LogCategory.AI_SERVICE, '[AIServiceStore] 开始以 CPU 模式初始化AI服务...')
-
-        // 保存强制CPU模式到配置（后端适配器会直接从 ConfigOrchestrator 读取）
-        try {
-          await window.electronAPI?.updateConfigValue('AI_ENGINE_FORCE_CPU_MODE', true)
-          // PRD-0044：SELECTED_MODEL_ID 配置键删除，模型切换归萤核AI引擎独占，渲染层不再自动回切内置模型
-        } catch (e) {
-          logger.warn(LogCategory.AI_SERVICE, '[AIServiceStore] 保存 CPU 模式配置失败:', e)
-        }
-
-        const initResult = await api.initialize()
-        if (!initResult?.success) {
-          throw new Error(initResult?.message || t('AI服务初始化失败'))
-        }
-
-        const [statusRaw, phaseRaw, capabilitiesRaw] = await Promise.all([
-          (api as any).getStatus?.(),
-          (api as any).getCurrentPhase?.(),
-          (api as any).getCapabilities?.()
-        ])
-
-        const status = toAIServiceStatus(statusRaw)
-        const currentPhase = toStartupPhase(phaseRaw)
-        const capabilities = (capabilitiesRaw as AICapabilities | null) ?? null
-
-        set({
-          status,
-          currentPhase,
-          capabilities,
-          lastActivity: new Date()
-        })
-
-        logger.info(LogCategory.AI_SERVICE, '[AIServiceStore] CPU 模式 AI 服务初始化成功', {
-          status,
-          currentPhase,
-          modelName: capabilities?.modelName
-        })
-      } catch (error) {
-        const errorMessage = t('未知错误')
-        logger.error(
-          LogCategory.AI_SERVICE,
-          '[AIServiceStore] CPU 模式 AI 服务初始化失败:',
-          errorMessage
-        )
-
-        set({
-          status: AIServiceStatus.ERROR,
-          error: ErrorNormalizer.normalize(
-            error,
-            undefined,
-            'AIServiceStore'
-          ),
-          lastActivity: new Date()
-        })
-
-        throw error
-      }
-    },
+    // PRD-0049：initializeAIServiceWithCpu / initializeAIServiceWithVulkan 已清退
+    // 引擎切换归萤核AI引擎（engineBridge.switchBackend），不再写 AI_ENGINE_FORCE_CPU_MODE /
+    // AI_ENGINE_DRIVER_COMPATIBLE_MODE 桌面配置
 
     notifyModelChanged: async (modelId: string) => {
       const state = get()
@@ -803,8 +579,6 @@ export const useAIServiceStatus = () => {
 
   const {
     initializeAIService,
-    initializeAIServiceWithCpu,
-    initializeAIServiceWithVulkan,
     updateStatus,
     setError,
     clearError,
@@ -820,8 +594,6 @@ export const useAIServiceStatus = () => {
     currentPhase,
     capabilities,
     initializeAIService,
-    initializeAIServiceWithCpu,
-    initializeAIServiceWithVulkan,
     updateStatus,
     setError,
     clearError,

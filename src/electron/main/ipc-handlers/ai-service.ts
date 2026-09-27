@@ -318,9 +318,8 @@ export function registerAIServiceIPCHandlers() {
         selectedModelId: activeModelId,
         cloudProvider: activeCloudProvider,
         // 引擎配置影响 backend 值，切换引擎时需使缓存失效
-        aiEngine: config.getValue<string>('AI_ENGINE'),
-        aiEngineForceCpuMode: config.getValue<boolean>('AI_ENGINE_FORCE_CPU_MODE'),
-        aiEngineDriverCompatibleMode: config.getValue<boolean>('AI_ENGINE_DRIVER_COMPATIBLE_MODE')
+        // PRD-0049：不再以 AI_ENGINE_FORCE_CPU_MODE / AI_ENGINE_DRIVER_COMPATIBLE_MODE 参与缓存键
+        aiEngine: config.getValue<string>('AI_ENGINE')
       })
 
       // 模型未切换且在缓存有效期内，直接返回缓存（仅更新状态字段）

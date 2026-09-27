@@ -35,7 +35,7 @@ import {
 import { ConfigOrchestrator } from '../config/config-orchestrator'
 import { databaseService } from '../runtime-services/database/database-service'
 import { audioConverter } from '../runtime-services/filesystem/audio-converter'
-import { accelerationMemoryService } from '../runtime-services/ai/acceleration-memory-service'
+// PRD-0049：accelerationMemoryService 已清退（BEST_ACCELERATION 配置键删除）
 import { JSONParser } from '@firefly/core-engine'
 import { t } from '@app/languages'
 /**
@@ -423,10 +423,7 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
       // 注意：这里我们只需要清理后的字符串
       const responseText = JSONParser.parse(rawResponseText) as Record<string, unknown> | undefined
 
-      // 成功以本地引擎调用 AI 并正确返回结果后，记忆最佳可用引擎（等级只能升不能降）
-      if (response.success && rawResponseText && rawResponseText.trim().length > 0) {
-        accelerationMemoryService.recordSuccessfulInferenceAcceleration()
-      }
+      // PRD-0049：accelerationMemoryService 已清退（BEST_ACCELERATION 配置键删除）
 
       logger.debug(LogCategory.AI_SERVICE, '[LlamaIndexAIAdapter] AI推理完成 (预览):', responseText)
       return {

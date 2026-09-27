@@ -221,6 +221,9 @@ const electronAPI = {
       ipcRenderer.invoke('engine-bridge/start-service'),
     stopService: (): Promise<{ ok: boolean; error?: string }> =>
       ipcRenderer.invoke('engine-bridge/stop-service'),
+    /** 切换引擎计算后端（PRD-0049：引擎激活单一化） */
+    switchBackend: (backend: string): Promise<{ ok: boolean; error?: string }> =>
+      ipcRenderer.invoke('engine-bridge/switch-backend', backend),
     onStatusChanged: (callback: (payload: EngineBridgeSnapshot) => void) => {
       const handler = (_event: Electron.IpcRendererEvent, payload: EngineBridgeSnapshot) => callback(payload)
       ipcRenderer.on('tier2:status-changed', handler)
@@ -296,7 +299,6 @@ const electronAPI = {
       modelMode?: 'local' | 'cloud' | null
       provider?: string | null
       backend?: string
-      bestAcceleration?: string
     }) => void
   ) => {
     const handler = (_event: any, payload: any) => callback(payload)

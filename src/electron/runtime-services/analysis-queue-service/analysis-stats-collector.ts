@@ -22,32 +22,10 @@ export class AnalysisStatsCollector {
         mode === 'cloud'
           ? ConfigOrchestrator.getInstance().getValue<string>('AI_CLOUD_SELECTED_MODEL_ID')
           : engineBridgeService.getSnapshot().model
-      // 读取当前引擎实际运行的加速层，优先级：
-      // 1. 强制 CPU 模式 → 'cpu'
-      // 2. 驱动兼容（Vulkan）模式 → 'vulkan'
-      // 3. llamaEngineService 运行时加速层（最准确的实际值）
-      // 4. 配置 SELECTED_ACCELERATION
-      // 5. 硬件最佳加速层（不硬编码厂商，由 hardwareDetectionService 判断）
-      const config = ConfigOrchestrator.getInstance()
-      const isForceCpu = config.getValue<boolean>('AI_ENGINE_FORCE_CPU_MODE')
-      const isCompatible = config.getValue<boolean>('AI_ENGINE_DRIVER_COMPATIBLE_MODE')
-      let accelerator: string
-      if (isForceCpu) {
-        accelerator = 'cpu'
-      } else if (isCompatible) {
-        accelerator = 'vulkan'
-      } else {
-        // 优先取 Tier 2 引擎上报的实际运行后端，其次取配置，最后由硬件能力检测决定
-        const runtimeAcc = engineBridgeService.getSnapshot().backend
-        const configAcc = config.getValue<string>('SELECTED_ACCELERATION')
-        if (runtimeAcc) {
-          accelerator = runtimeAcc
-        } else if (configAcc) {
-          accelerator = configAcc
-        } else {
-          accelerator = await hardwareDetectionService.getBestAccelerationTier()
-        }
-      }
+      // PRD-0049：当前加速层唯一真相 = 萤核AI引擎桥接快照 backend
+      // 不再读取 AI_ENGINE_FORCE_CPU_MODE / AI_ENGINE_DRIVER_COMPATIBLE_MODE / SELECTED_ACCELERATION（残留值会污染判定）
+      // 引擎离线（backend 为 null）时为 'unknown'，不回落硬件检测/配置猜路
+      const accelerator = engineBridgeService.getSnapshot().backend ?? 'unknown'
 
       // 获取模型名称
       const modelName = this.getModelName(modelId || '', mode || 'local')

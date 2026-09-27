@@ -137,49 +137,46 @@ export class AIErrorHandler extends EventEmitter {
           const aiService = LlamaIndexAIService.getInstance()
           if (!aiService) return false
 
-          const config = ConfigOrchestrator.getInstance()
-          const isForceCpu = config.getValue<boolean>('AI_ENGINE_FORCE_CPU_MODE')
-          const isCompatible = config.getValue<boolean>('AI_ENGINE_DRIVER_COMPATIBLE_MODE')
+          // PRD-0049：引擎激活单一化——降级归引擎侧，不再写 SELECTED_ACCELERATION /
+          // AI_ENGINE_DRIVER_COMPATIBLE_MODE / AI_ENGINE_FORCE_CPU_MODE 桌面配置
+          const { engineBridgeService } = await import('../engine-bridge')
+          const { normalizeAccelerationName } = await import('@firefly/shared')
+          // 归一化后再比较：引擎上报 backend 可能是 cuda-12.4 / hip-radeon / cuda134 等变体
+          const currentAcc = normalizeAccelerationName(
+            engineBridgeService.getSnapshot().backend
+          )
 
-          const currentAcc = config.getValue<string>('SELECTED_ACCELERATION') || 'auto'
-          const isDarwin = process.platform === 'darwin'
-
-          // 定义各加速层的下一步降级方向（OpenVINO 引擎已移除，Intel 统一走 SYCL）
+          // 按引擎侧降级链（get_fallback_tier 语义）推导下一级：cuda/hip/rocm/sycl → vulkan → cpu
           let nextAcc = 'cpu'
-          if (
-            currentAcc === 'sycl' ||
-            currentAcc === 'cuda' ||
-            currentAcc === 'hip' ||
-            currentAcc === 'rocm'
-          ) {
-            nextAcc = isDarwin ? 'cpu' : 'vulkan'
+          if (['sycl', 'cuda', 'hip', 'rocm'].includes(currentAcc)) {
+            nextAcc = 'vulkan'
           } else if (currentAcc === 'metal' || currentAcc === 'vulkan') {
             nextAcc = 'cpu'
           }
 
           loggingService.warn(
             LogCategory.AI_ERROR_HANDLER,
-            `模型/驱动崩溃或加载失败，正在自动降级加速模式: ${currentAcc} -> ${nextAcc}`
+            `模型/驱动崩溃或加载失败，正在切换引擎计算后端: ${currentAcc || 'unknown'} -> ${nextAcc}`
           )
 
-          const updatePayload: Record<string, any> = {
-            SELECTED_ACCELERATION: nextAcc
+          const switchResult = await engineBridgeService.switchBackend(nextAcc)
+          if (!switchResult.ok) {
+            loggingService.error(
+              LogCategory.AI_ERROR_HANDLER,
+              `切换引擎后端至 ${nextAcc} 失败: ${switchResult.error}`
+            )
+            return false
           }
 
-          if (nextAcc === 'vulkan' || nextAcc === 'sycl') {
-            updatePayload.AI_ENGINE_DRIVER_COMPATIBLE_MODE = true
-            updatePayload.AI_ENGINE_FORCE_CPU_MODE = false
-          } else if (nextAcc === 'cpu') {
-            updatePayload.AI_ENGINE_FORCE_CPU_MODE = true
-            updatePayload.AI_ENGINE_DRIVER_COMPATIBLE_MODE = false
-          } else {
-            updatePayload.AI_ENGINE_DRIVER_COMPATIBLE_MODE = false
-            updatePayload.AI_ENGINE_FORCE_CPU_MODE = false
-          }
+          // 重启推理服务使新后端生效（引擎端 switch 写入 preferred_backend，重启后重新选路）
+          await engineBridgeService.stopService().catch((e: unknown) => {
+            loggingService.warn(LogCategory.AI_ERROR_HANDLER, '降级后停止旧服务失败（不影响切换结果）:', e)
+          })
+          await engineBridgeService.startService().catch((e: unknown) => {
+            loggingService.warn(LogCategory.AI_ERROR_HANDLER, '降级后启动新服务失败:', e)
+          })
 
-          await config.updateValues(updatePayload, { source: 'runtime', preventAutoReload: true })
-
-          // 重启服务以应用新配置并重新加载模型
+          // 重启本地 AI 服务以应用新配置并重新加载模型
           await aiService.restart()
           return true
         } catch (error) {
