@@ -121,7 +121,9 @@ export async function handleEmptyFile(item: AnalysisQueueItem, workspaceId: numb
         )
         return
       }
-      insertTagToDb(db, emptyHash, emptyTagLabel, basicAttrCode, 2)
+      // 受控父码走显式 viaParentCode 参（第 6 参），不再借道遗留 _dimensionId 槽（第 4 参）；
+      // 语义更诚实：basicAttrCode 是稳定 code 而非数字维度 id。syncStatus=2 保留。
+      insertTagToDb(db, emptyHash, emptyTagLabel, undefined, 2, basicAttrCode)
     })()
     databaseService.syncFTSTags(emptyHash)
   } catch (e) {

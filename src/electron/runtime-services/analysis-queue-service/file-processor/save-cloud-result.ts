@@ -370,7 +370,8 @@ export async function saveCloudResult(
             try {
               // ADR-0045 票据 04：显式传入云端返回的原始分组（缺失/非法为 ''），
               // 不再依赖 insertTagToDb 的 'fact' 缺省——那会把 AI / 融合标签错标成物理事实。
-              insertTagToDb(db, fileFingerprint, cleanName, localDimCode, 0, undefined, cloudGroup)
+              // 父码走显式 viaParentCode 参（第 6 参），不借道遗留 _dimensionId 槽。
+              insertTagToDb(db, fileFingerprint, cleanName, undefined, 0, localDimCode, cloudGroup)
             } catch {
               // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
               const tagCode = DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
