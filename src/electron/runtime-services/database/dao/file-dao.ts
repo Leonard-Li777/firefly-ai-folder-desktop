@@ -1454,7 +1454,8 @@ export class FileDao {
               author = NULL,
               language = NULL,
               is_hit = 0,
-              last_hit_at = NULL
+              last_hit_at = NULL,
+              high_dim_corrected = 0
           WHERE file_fingerprint = ?
         `
           )
@@ -1943,14 +1944,18 @@ export class FileDao {
                  COALESCE(decompress_text(fc.content), '') AS content,
                  COALESCE(decompress_text(fc.multimodal_content), '') AS multimodal_content,
                  COALESCE(decompress_text(fc.ocr), '') AS ocr,
-                 COALESCE(decompress_text(fc.asr), '') AS asr
+                 COALESCE(decompress_text(fc.asr), '') AS asr,
+                 EXISTS (
+                   SELECT 1 FROM workspace_files wf
+                   WHERE wf.file_fingerprint = f.file_fingerprint AND wf.is_analyzed = 1
+                 ) AS has_analyzed_instance
           FROM files f
           LEFT JOIN file_contents fc ON fc.file_fingerprint = f.file_fingerprint
           WHERE f.file_fingerprint = ?
         `
         )
         .get(fileFingerprint) as any
-      if (!row) return null
+      if (!row || !row.has_analyzed_instance) return null
 
       const tags = this.db
         .prepare(

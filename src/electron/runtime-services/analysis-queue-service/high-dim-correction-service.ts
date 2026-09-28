@@ -301,7 +301,7 @@ export class HighDimCorrectionService {
   }
 
   /** 解析文件指纹：优先使用队列项上已解析的指纹，缺失时回退按路径查询（DAO 层） */
-  private resolveFingerprint(item: AnalysisQueueItem): string | null {
+  public resolveFingerprint(item: AnalysisQueueItem): string | null {
     const fromItem = (item as any).fileFingerprint || (item as any).file_fingerprint
     if (typeof fromItem === 'string' && fromItem.length > 0) return fromItem
     if (item.path) {

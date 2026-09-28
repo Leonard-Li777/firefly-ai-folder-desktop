@@ -341,30 +341,68 @@ export class QueueManager {
         const key = `${file.nativePath}|${file.workspaceId}`
         const exists = existingByPathAndWorkspace.get(key)
         if (exists) {
-          // 关键逻辑：如果文件已在队列中且分析成功，则强制重新分析
-          const shouldForceReanalyze = forceReanalyze || exists.status === 'completed'
+          // 关键逻辑：如果文件已在队列中且分析成功，则强制重新分析；若为失败或高维修正残留，也重置为待办的基础分析
+          const shouldForceReanalyze =
+            forceReanalyze ||
+            exists.status === 'completed' ||
+            exists.status === 'failed' ||
+            exists.taskType === 'high_dim_correction'
 
           if (shouldForceReanalyze) {
             const oldStatus = exists.status
+            const oldTaskType = exists.taskType
             exists.status = 'pending'
+            exists.taskType = 'analysis'
+            exists.stage = 1
             exists.error = undefined
             exists.updatedAt = now
             exists.progress = 0
             exists.forceReanalyze = true
             updatedCount++
 
-            const reason = forceReanalyze ? '用户强制重新分析' : '文件已分析成功'
+            const reason = forceReanalyze
+              ? '用户强制重新分析'
+              : oldTaskType === 'high_dim_correction'
+                ? '从高维修正重置为基础分析'
+                : exists.status === 'failed'
+                  ? '失败重试'
+                  : '文件已分析成功'
             logger.info(
               LogCategory.ANALYSIS_QUEUE,
-              `[分析队列] 文件已在队列中 (原状态: ${oldStatus})，${reason}，重置为 pending: ${file.nativePath}`
+              `[分析队列] 文件已在队列中 (原状态: ${oldStatus}, 任务类型: ${oldTaskType})，${reason}，重置为 pending: ${file.nativePath}`
             )
 
-            databaseService.updateAnalysisQueue({
-              id: exists.id,
-              status: 'pending',
-              progress: 0,
-              error: null
-            })
+            const existingDbRow = db?.prepare('SELECT id FROM analysis_queue WHERE id = ?').get(exists.id)
+            if (existingDbRow) {
+              databaseService.updateAnalysisQueue({
+                id: exists.id,
+                status: 'pending',
+                progress: 0,
+                error: null,
+                taskType: 'analysis'
+              })
+            } else {
+              const itemType = file.type === 'folder' ? 'directory' : 'file'
+              let itemId: number | null = null
+              if (itemType === 'directory') {
+                const dir = selectDirAnalyzedStmt?.get(file.nativePath, file.workspaceId) as any
+                itemId = dir?.id
+              } else {
+                const wf = selectFileAnalyzedStmt?.get(file.nativePath, file.workspaceId) as any
+                itemId = wf?.id
+              }
+              if (itemId) {
+                const dbId = databaseService.enqueueAnalysisSync({
+                  item_id: itemId,
+                  item_type: itemType,
+                  task_type: 'analysis',
+                  status: 'pending'
+                })
+                if (dbId) {
+                  exists.id = dbId
+                }
+              }
+            }
           }
           continue
         }
@@ -595,6 +633,27 @@ export class QueueManager {
       })
     } catch (e) {
       logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 删除失败:', e)
+    }
+    this.emitUpdate()
+  }
+
+  deleteItemByPath(filePath: string): void {
+    if (!this.isInitialized) return
+    const itemsToDelete = this.queue.filter(item => {
+      if (!item.path) return false
+      return isPathEqual(item.path, filePath)
+    })
+
+    if (itemsToDelete.length === 0) return
+    const ids = itemsToDelete.map(i => i.id)
+
+    try {
+      this.dbTransaction(() => {
+        for (const id of ids) databaseService.deleteAnalysis(id)
+      })
+      this.queue = this.queue.filter(item => !ids.includes(item.id))
+    } catch (e) {
+      logger.error(LogCategory.ANALYSIS_QUEUE, `[分析队列] 按路径删除失败 (${filePath}):`, e)
     }
     this.emitUpdate()
   }

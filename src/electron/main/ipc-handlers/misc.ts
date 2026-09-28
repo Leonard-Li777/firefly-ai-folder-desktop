@@ -5,6 +5,7 @@ import { ipcMain, app, shell, BrowserWindow, clipboard } from 'electron'
 import { iconExtractorClient } from '../icon-extractor-client'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { databaseService } from '../../runtime-services/database/database-service'
+import { analysisQueueService } from '../../runtime-services/analysis-queue-service'
 import { logger, LogCategory, ResourceLocator, getMimeTypeByExtension } from '@firefly/shared'
 import { SystemIdentityService } from '../../runtime-services/system/system-identity-service'
 import { LicenseService, LicenseStatus } from '../../runtime-services/system/license-service'
@@ -335,8 +336,13 @@ export function registerMiscIPCHandlers() {
 
   ipcMain.handle('reset-file-analysis', async (event, fileId: string) => {
     try {
-      const { fileAnalysisService } = await import('@firefly/core-engine')
-      fileAnalysisService.removeFromQueue(fileId)
+      await analysisQueueService.deleteItemByPath(fileId)
+      try {
+        const { fileAnalysisService } = await import('@firefly/core-engine')
+        fileAnalysisService.removeFromQueue(fileId)
+      } catch {
+        // 忽略旧引擎清理异常
+      }
       await databaseService.resetFileAnalysis(fileId)
       return { success: true }
     } catch (error) {

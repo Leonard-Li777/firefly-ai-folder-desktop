@@ -686,30 +686,54 @@ export class AnalysisQueueService {
           this.updateItemStatus(next.id, 'analyzing', 0)
 
           if (next.taskType === 'high_dim_correction') {
-            // Stage 5：确保以 WeMM embedding 模式运行，单文件为最小事务单元，落库完成即可安全让权（Issue 0046 §4）
-            try {
-              await engineBridgeService?.ensureMode?.('embedding')?.catch?.(err => {
-                logger.warn(LogCategory.ANALYSIS_QUEUE, '[高维修正] 调度 WeMM 嵌入模式告警:', err)
-              })
-              const outcome = await this.highDimCorrectionService.correctOne(next, currentSignal)
-              logger.info(
+            const fingerprint = this.highDimCorrectionService.resolveFingerprint(next)
+            const facts = fingerprint ? databaseService.getHighDimCorrectionFacts(fingerprint) : null
+            if (!facts) {
+              logger.warn(
                 LogCategory.ANALYSIS_QUEUE,
-                `[高维修正] 完成: ${next.name}（维度 ${outcome.vectorDimension}，标签 ${outcome.tagsWritten}）`,
-                { skippedForUserNaming: outcome.skippedForUserNaming }
+                `[高维修正] 文件未完成基础分析或分析数据已被清理，自愈转为普通基础分析: ${next.name} (${next.path})`
               )
-              this.updateItemStatus(next.id, 'completed', 100)
-            } catch (err) {
-              this.updateItemStatus(
-                next.id,
-                'failed',
-                100,
-                err instanceof Error ? err.message : String(err)
-              )
-            }
-            // 让权仲裁：高维修正执行期间若有普通分析任务插入，单文件落库后立即释放引擎换载；
-            // 回到循环后 pickNextPending 必然优先选中新插入的 analysis 任务（抢占）。
-            if (this.highDimCorrectionService.consumeYield()) {
-              await this.highDimCorrectionService.releaseEngine()
+              next.taskType = 'analysis'
+              next.stage = 1
+              next.forceReanalyze = true
+              databaseService.updateAnalysisQueue({
+                id: next.id,
+                taskType: 'analysis',
+                status: 'pending'
+              })
+              await engineBridgeService?.ensureMode?.('language')?.catch?.(() => {})
+              if (next.itemType === 'directory') {
+                await this.directoryProcessor.processDirectory(next)
+              } else {
+                await this.fileProcessor.processFile(next, currentSignal)
+                cloudSyncWorker.triggerSync(2000)
+              }
+            } else {
+              // Stage 5：确保以 WeMM embedding 模式运行，单文件为最小事务单元，落库完成即可安全让权（Issue 0046 §4）
+              try {
+                await engineBridgeService?.ensureMode?.('embedding')?.catch?.(err => {
+                  logger.warn(LogCategory.ANALYSIS_QUEUE, '[高维修正] 调度 WeMM 嵌入模式告警:', err)
+                })
+                const outcome = await this.highDimCorrectionService.correctOne(next, currentSignal)
+                logger.info(
+                  LogCategory.ANALYSIS_QUEUE,
+                  `[高维修正] 完成: ${next.name}（维度 ${outcome.vectorDimension}，标签 ${outcome.tagsWritten}）`,
+                  { skippedForUserNaming: outcome.skippedForUserNaming }
+                )
+                this.updateItemStatus(next.id, 'completed', 100)
+              } catch (err) {
+                this.updateItemStatus(
+                  next.id,
+                  'failed',
+                  100,
+                  err instanceof Error ? err.message : String(err)
+                )
+              }
+              // 让权仲裁：高维修正执行期间若有普通分析任务插入，单文件落库后立即释放引擎换载；
+              // 回到循环后 pickNextPending 必然优先选中新插入的 analysis 任务（抢占）。
+              if (this.highDimCorrectionService.consumeYield()) {
+                await this.highDimCorrectionService.releaseEngine()
+              }
             }
           } else {
             // 普通分析任务：确保引擎处于主语言模型模式
@@ -813,6 +837,15 @@ export class AnalysisQueueService {
       this.currentAbortController = null
     }
     this.queueManager.deleteItem(id)
+  }
+
+  async deleteItemByPath(filePath: string): Promise<void> {
+    await this.ensureInitialized()
+    if (this.current?.path === filePath && this.currentAbortController) {
+      this.currentAbortController.abort()
+      this.currentAbortController = null
+    }
+    this.queueManager.deleteItemByPath(filePath)
   }
 
   async deleteItemsByDirectory(directoryPath: string): Promise<void> {

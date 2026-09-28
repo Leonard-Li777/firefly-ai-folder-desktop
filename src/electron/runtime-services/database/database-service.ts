@@ -1075,6 +1075,8 @@ export class DatabaseService {
     error?: string | null
     result?: string | null
     taskType?: AnalysisTaskType
+    task_type?: AnalysisTaskType
+    filterTaskType?: AnalysisTaskType
   }) {
     return this.queueDao.updateAnalysisQueue(item)
   }

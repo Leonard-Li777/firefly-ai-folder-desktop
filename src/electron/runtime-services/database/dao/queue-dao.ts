@@ -119,7 +119,10 @@ export class QueueDao {
     progress?: number
     error?: string | null
     result?: string | null
+    task_type?: AnalysisTaskType
     /** 可选任务类型过滤：仅当记录属于该类型时才更新（防止跨类型误改） */
+    filterTaskType?: AnalysisTaskType
+    /** @deprecated 仅用于兼容过滤入参 */
     taskType?: AnalysisTaskType
   }): void {
     try {
@@ -138,8 +141,10 @@ export class QueueDao {
           return
         }
 
-        const typeFilter = item.taskType ? ` AND task_type = ?` : ''
-        const tailParams = item.taskType ? [item.taskType] : []
+        const filter = item.filterTaskType
+        const typeFilter = filter ? ` AND task_type = ?` : ''
+        const tailParams = filter ? [filter] : []
+        const nextTaskType = item.task_type ?? item.taskType
 
         this.db
           .prepare(
@@ -148,6 +153,7 @@ export class QueueDao {
           progress = COALESCE(?, progress),
           error = COALESCE(?, error),
           result = COALESCE(?, result),
+          task_type = COALESCE(?, task_type),
           updated_at = ?
           WHERE id = ?${typeFilter}`
           )
@@ -156,6 +162,7 @@ export class QueueDao {
             item.progress,
             item.error,
             item.result,
+            nextTaskType,
             new Date().toISOString(),
             item.id,
             ...tailParams
