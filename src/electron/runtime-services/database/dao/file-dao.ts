@@ -4,7 +4,8 @@ import {
   logger,
   cleanSmartName,
   isTagProvenanceGroup,
-  TAG_PROVENANCE_GROUPS
+  TAG_PROVENANCE_GROUPS,
+  getCanonicalConceptName
 } from '@firefly/shared'
 import { t } from '@app/languages'
 import * as path from 'path'
@@ -61,16 +62,34 @@ export class FileDao {
 
   /**
    * 受控标签展示名解析（DAO 层直查主库当前语言分表 tag_aliases_{lang}）
-   * 本地 file_tags.name 优先 → 语言分表 lemma → code 可读 slug 兜底。
+   * 受控标签展示名解析（AOT 概念字典与主库当前语言分表 tag_aliases_{lang} 联合解析）
+   * 1. 中文环境下，凡命中 AOT 受控权威词条（Canonical Concept）的受控代码，强制采用规范中文展示名；
+   * 2. 本地语言分表 tag_aliases_{lang} 规范名（is_canonical=1）其次；
+   * 3. 本地 file_tags.name 再次（动态标签/扩展标签，中文环境下拦截过滤常见英文机器码）；
+   * 4. 仍未命中时以受控词表或 code 的可读 slug 兜底，绝不暴露未处理的技术代码。
    * @param code 标签 code（受控 builtin.* / omw.* / dim.xxx 或本地动态标签）
    * @param ftName 已从 file_tags 取到的本地展示名（无则传 null）
    */
   private resolveDisplayName(code: string, ftName: string | null): string {
-    if (ftName) return ftName
-    if (!code) return code
+    if (!code) return ftName || ''
+    const locale =
+      ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+    const isZh = locale.toLowerCase().startsWith('zh')
+
+    // 1. 中文环境下，凡命中 AOT 受控权威概念字典 (Canonical Concept) 的受控代码，
+    // 强制采用规范中文展示名（由 concepts.generated 单一事实源统一解析，零硬编码）
+    if (isZh) {
+      const canonical = getCanonicalConceptName(code)
+      if (canonical) return canonical
+    }
+
+    // 2. 本地 file_tags.name（用于自定义标签、动态扩展标签）
+    if (ftName) {
+      return ftName
+    }
+
+    // 3. 本地主库语言分表 tag_aliases_{lang} 直查
     try {
-      const locale =
-        ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
       const langTable = resolveTagAliasesLangTable(locale)
       const row = this.db
         .prepare(
@@ -82,6 +101,11 @@ export class FileDao {
     } catch {
       // 分表不可用时降级，不影响主查询
     }
+
+    // 4. 非中文环境或分表未收录时的 AOT 规范名兜底
+    const canonicalFallback = getCanonicalConceptName(code)
+    if (canonicalFallback) return canonicalFallback
+
     return readableCode(code)
   }
 

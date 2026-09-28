@@ -5,7 +5,7 @@ import type {
   Unit,
   UnitCreationData
 } from '@firefly/types'
-import { LogCategory, logger, isTestEnvironment } from '@firefly/shared'
+import { LogCategory, logger, isTestEnvironment, getCanonicalConceptName } from '@firefly/shared'
 import {
   findTagCodeTwoStage,
   getDatabaseConfig,
@@ -1528,6 +1528,17 @@ export class DatabaseService {
     try {
       const targetLocale = locale || 'zh-CN'
       const langTable = resolveTagAliasesLangTable(targetLocale)
+      const isZh = targetLocale.toLowerCase().startsWith('zh')
+
+      // 0) 中文环境下优先 AOT 受控权威词条
+      if (isZh) {
+        for (const code of distinctCodes) {
+          const canonical = getCanonicalConceptName(code)
+          if (canonical) {
+            result[code] = canonical
+          }
+        }
+      }
 
       // 1) 受控 + 动态标签统一查当前语言分表（替换内存总线优先）
       if (this._db && distinctCodes.length > 0) {
@@ -1555,17 +1566,25 @@ export class DatabaseService {
           .prepare(`SELECT code, name FROM file_tags WHERE code IN (${tagPlaceholders})`)
           .all(...stillMissing) as { code: string; name: string }[]
         for (const row of tagRows) {
-          if (row.name) result[row.code] = row.name
+          if (row.name) {
+            const canonical = isZh ? getCanonicalConceptName(row.code) : undefined
+            result[row.code] = canonical || row.name
+          }
         }
       }
 
-      // 3) 仍未命中的受控标签，提取可读 slug，避免在界面暴露技术代码；待 Omni 就绪后由缓存刷新覆盖
+      // 3) 仍未命中的受控标签，优先 AOT 概念字典兜底，再提取可读 slug
       for (const code of distinctCodes) {
-        if (result[code] === code && (code.startsWith('builtin.') || code.startsWith('omw.'))) {
-          const parts = code.split('.')
-          const readable = parts[parts.length - 1]
-          if (readable) {
-            result[code] = readable
+        if (result[code] === code && (code.startsWith('builtin.') || code.startsWith('omw.') || code.startsWith('hownet.'))) {
+          const canonical = getCanonicalConceptName(code)
+          if (canonical) {
+            result[code] = canonical
+          } else {
+            const parts = code.split('.')
+            const readable = parts[parts.length - 1]
+            if (readable) {
+              result[code] = readable
+            }
           }
         }
       }
