@@ -5,7 +5,8 @@ import {
   cleanSmartName,
   isTagProvenanceGroup,
   TAG_PROVENANCE_GROUPS,
-  getCanonicalConceptName
+  getCanonicalConceptName,
+  type TagProvenanceGroup
 } from '@firefly/shared'
 import { t } from '@app/languages'
 import * as path from 'path'
@@ -358,13 +359,12 @@ export class FileDao {
 
     // ADR-0045：平行新增「标签来源分组」视图，**不改动** dimensionTags 的既有维度语义
     // （FileDetailsPanel 依赖 dimension === 1/2 生成虚拟路径，ai-skill-api-service 将其作为对外契约透传）。
-    // 分组归属在写入侧（预检注入层 / 用户打标 / 云端回灌）已零推断赋值，此处仅按列聚合，不做任何推断。
-    // 组内按各自置信度降序；组顺序由展示层按各组平均置信度降序决定，此处保持稳定枚举顺序。
-    const groupTagMap = new Map<string, Array<{ id: string; name: string; confidence: number }>>()
+    // 跨组与组内双重去重（以物理事实绝对覆盖律保证：user > fact > fused > visual > ai）
+    // 保证同一名称或同一 code 在全局视图中唯一呈现，且事实标签绝对优先于视觉/融合/AI标签
+    const groupTagRawMap = new Map<string, Array<{ id: string; name: string; confidence: number }>>()
     for (const tag of tags) {
       const group = typeof tag.tag_group === 'string' ? tag.tag_group : ''
       if (!isTagProvenanceGroup(group)) {
-        // 未分组/非法分组（如待补齐的历史云端回灌行）不进入分组视图，避免臆测归属
         if (group) {
           logger.debug(
             LogCategory.DATABASE_SERVICE,
@@ -373,19 +373,46 @@ export class FileDao {
         }
         continue
       }
-      if (!groupTagMap.has(group)) groupTagMap.set(group, [])
-      groupTagMap.get(group)!.push({
+      if (!groupTagRawMap.has(group)) groupTagRawMap.set(group, [])
+      groupTagRawMap.get(group)!.push({
         id: tag.id,
         name: this.resolveDisplayName(tag.id, tag.ft_name),
         confidence: typeof tag.confidence === 'number' ? tag.confidence : 1.0
       })
     }
+
+    const SEEN_PRIORITY_ORDER: TagProvenanceGroup[] = ['user', 'fact', 'fused', 'visual', 'ai']
+    const seenGlobalTagNames = new Set<string>()
+    const seenGlobalTagCodes = new Set<string>()
+    const deduplicatedGroupTagMap = new Map<string, Array<{ id: string; name: string; confidence: number }>>()
+
+    for (const group of SEEN_PRIORITY_ORDER) {
+      const rawTags = groupTagRawMap.get(group) || []
+      const sorted = [...rawTags].sort((a, b) => b.confidence - a.confidence)
+      const deduped: Array<{ id: string; name: string; confidence: number }> = []
+
+      for (const t of sorted) {
+        const normName = t.name.trim().toLowerCase()
+        if (!normName) continue
+        if (seenGlobalTagNames.has(normName) || seenGlobalTagCodes.has(String(t.id))) {
+          continue
+        }
+        seenGlobalTagNames.add(normName)
+        seenGlobalTagCodes.add(String(t.id))
+        deduped.push(t)
+      }
+
+      if (deduped.length > 0) {
+        deduplicatedGroupTagMap.set(group, deduped)
+      }
+    }
+
     const tagGroups = TAG_PROVENANCE_GROUPS.filter(
-      group => (groupTagMap.get(group)?.length ?? 0) > 0
+      group => (deduplicatedGroupTagMap.get(group)?.length ?? 0) > 0
     ).map(group => ({
       group,
       // 只聚合不排序：组顺序（按组平均置信度降序）与组内顺序均属展示规则，由属性面板决定
-      tags: groupTagMap.get(group) || []
+      tags: deduplicatedGroupTagMap.get(group) || []
     }))
 
     const parsedFileGroup = fileData.file_group ? (

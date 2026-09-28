@@ -75,12 +75,39 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
     const rawGroups = Array.isArray(analysisResult?.tagGroups) ? analysisResult.tagGroups : []
     let colorIndex = 0
 
-    const groups: RenderedTagGroup[] = []
-    for (const rawGroup of rawGroups) {
-      if (!rawGroup || !isTagProvenanceGroup(rawGroup.group)) continue
-      if (!Array.isArray(rawGroup.tags) || rawGroup.tags.length === 0) continue
+    // 跨组与组内双重去重（以来源优先序保证：user > fact > fused > visual > ai）
+    // 事实标签绝对优先于视觉/融合/AI标签，且全局仅展示一次
+    const SEEN_PRIORITY: TagProvenanceGroup[] = ['user', 'fact', 'fused', 'visual', 'ai']
+    const rawGroupMap = new Map<string, TagGroupView>()
+    for (const rg of rawGroups) {
+      if (rg && isTagProvenanceGroup(rg.group)) {
+        rawGroupMap.set(rg.group, rg)
+      }
+    }
 
-      const tags: CategorizedTag[] = [...rawGroup.tags]
+    const seenNames = new Set<string>()
+    const seenIds = new Set<string>()
+    const groups: RenderedTagGroup[] = []
+
+    for (const groupKey of SEEN_PRIORITY) {
+      const rawGroup = rawGroupMap.get(groupKey)
+      if (!rawGroup || !Array.isArray(rawGroup.tags) || rawGroup.tags.length === 0) continue
+
+      const filteredTags = rawGroup.tags.filter(tag => {
+        const normName = (tag?.name || '').trim().toLowerCase()
+        const idStr = String(tag?.id ?? '')
+        if (!normName) return false
+        if (seenNames.has(normName) || (idStr && seenIds.has(idStr))) {
+          return false
+        }
+        seenNames.add(normName)
+        if (idStr) seenIds.add(idStr)
+        return true
+      })
+
+      if (filteredTags.length === 0) continue
+
+      const tags: CategorizedTag[] = filteredTags
         .map(tag => ({
           ...tag,
           normalizedConfidence: typeof tag.confidence === 'number' ? tag.confidence : 1.0
@@ -92,8 +119,8 @@ export const TagList: React.FC<TagListProps> = ({ analysisResult, getTagColor, o
       const average = tags.reduce((acc, tag) => acc + tag.normalizedConfidence, 0) / tags.length
 
       groups.push({
-        id: rawGroup.group,
-        title: titles[rawGroup.group],
+        id: groupKey,
+        title: titles[groupKey],
         confidencePercent: Math.round(average * 100),
         tags
       })
