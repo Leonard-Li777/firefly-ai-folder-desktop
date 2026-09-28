@@ -1173,7 +1173,50 @@ export class EngineBridgeService {
       return { ok: true }
     }
 
-    return this.startService({ mode })
+    const startRes = await this.startService({ mode })
+    if (!startRes.ok) {
+      return startRes
+    }
+
+    return this.waitForServiceReady(mode, 45000)
+  }
+
+  /**
+   * 等待引擎推理子进程 (llama-server) 真正就绪且运行符合目标意图的模型
+   * 避免启动后反向代理处于 503 拒绝状态导致前台或高维修正报错
+   */
+  private async waitForServiceReady(
+    mode: 'language' | 'embedding',
+    limitMs: number = 45000
+  ): Promise<{ ok: boolean; error?: string }> {
+    const start = Date.now()
+    while (Date.now() - start < limitMs) {
+      const status = await this.healthCheck()
+      if (status) {
+        const currentModel = (status.current_model || status.model || '').toLowerCase()
+        const isCurrentlyEmbedding = currentModel.includes('wemm') || currentModel.includes('embedding')
+        const matchesTarget = mode === 'embedding' ? isCurrentlyEmbedding : !isCurrentlyEmbedding
+
+        if (status.status === 'ready' && matchesTarget) {
+          logger.info(
+            LogCategory.SYSTEM,
+            `[EngineBridge] 引擎推理服务已就绪（模式: ${mode}, 模型: ${status.current_model}）`
+          )
+          return { ok: true }
+        }
+
+        if (status.status === 'error' || status.status === 'failed') {
+          const errMsg = status.last_error || status.error || '引擎服务运行报错'
+          logger.warn(LogCategory.SYSTEM, `[EngineBridge] 引擎服务报告错误: ${errMsg}`)
+          return { ok: false, error: errMsg }
+        }
+      }
+      await new Promise(resolve => setTimeout(resolve, 800))
+    }
+
+    const timeoutMsg = `等待引擎切换至 ${mode === 'embedding' ? 'WeMM 嵌入' : '主语言'} 模型就绪超时（${Math.round(limitMs / 1000)}s）`
+    logger.warn(LogCategory.SYSTEM, `[EngineBridge] ${timeoutMsg}`)
+    return { ok: false, error: timeoutMsg }
   }
 
   /**

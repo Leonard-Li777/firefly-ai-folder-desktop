@@ -711,9 +711,10 @@ export class AnalysisQueueService {
             } else {
               // Stage 5：确保以 WeMM embedding 模式运行，单文件为最小事务单元，落库完成即可安全让权（Issue 0046 §4）
               try {
-                await engineBridgeService?.ensureMode?.('embedding')?.catch?.(err => {
-                  logger.warn(LogCategory.ANALYSIS_QUEUE, '[高维修正] 调度 WeMM 嵌入模式告警:', err)
-                })
+                const modeRes = await engineBridgeService?.ensureMode?.('embedding')
+                if (modeRes && !modeRes.ok) {
+                  throw new Error(`[高维修正] 启动 WeMM 嵌入模型失败: ${modeRes.error || '引擎未就绪'}`)
+                }
                 const outcome = await this.highDimCorrectionService.correctOne(next, currentSignal)
                 logger.info(
                   LogCategory.ANALYSIS_QUEUE,
@@ -737,7 +738,10 @@ export class AnalysisQueueService {
             }
           } else {
             // 普通分析任务：确保引擎处于主语言模型模式
-            await engineBridgeService?.ensureMode?.('language')?.catch?.(() => {})
+            const modeRes = await engineBridgeService?.ensureMode?.('language')
+            if (modeRes && !modeRes.ok) {
+              logger.warn(LogCategory.ANALYSIS_QUEUE, '[普通分析] 切换主语言模型告警:', modeRes.error)
+            }
             if (next.itemType === 'directory') {
               await this.directoryProcessor.processDirectory(next)
             } else {
