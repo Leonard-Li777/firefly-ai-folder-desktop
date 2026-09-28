@@ -382,32 +382,6 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
-      // ModelScope 仓库仅含单文件，无投影文件
-      // totalSize = 主模型 PTQ1_0-CRACK (5,946,648,928 B) ≈ 5.54GiB
-      id: 'dealignai/Bonsai-2-27B-1bit-CRACK-GGUF:Bonsai-2-27B-PTQ1_0-CRACK.gguf',
-      name: `Bonsai 27B 1-bit（${t('超级压缩')}•${t('国内加速')}）`,
-      company: 'dealignai',
-      parameterSize: '27B',
-      intelligenceLevel: 3,
-      totalSize: '5.54GB',
-      recommended: true,
-      description: t('Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。'),
-      source: 'modelscope',
-      quantization: 'PTQ1_0',
-      isMultiModal: false,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'fast',
-        quality: 'medium'
-      },
-      tags: [t('1比特'), t('越狱'), t('越狱'), 'NSFW', t('仅文本'), t('低显存')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 4096
-      }
-    },
-    {
       // 同目录最小投影文件 Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf (629,246,976 B)
       // totalSize = 主模型 PQ2_0 (7,206,168,928 B) + 投影 (629,246,976 B) = 7,835,415,904 B ≈ 7.30GiB
       id: 'prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf',
