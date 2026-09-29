@@ -126,75 +126,6 @@
       }
     },
     {
-      "id": 100,
-      "name": "文本细分",
-      "level": 2,
-      "tags": [
-        "文本扩展名",
-        "纯文本",
-        "标记文档",
-        "日志文件",
-        "配置文件",
-        "差异文件",
-        "字幕"
-      ],
-      "description": "文本文件的细分分类",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "格式特征"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "文件类型",
-          "triggerTags": [
-            "文本"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
-      "id": 101,
-      "name": "文档细分",
-      "level": 2,
-      "tags": [
-        "文档扩展名",
-        "Office",
-        "Word文档",
-        "表格",
-        "演示文稿",
-        "WPS文档"
-      ],
-      "description": "文档文件的细分分类",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "格式特征"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "文件类型",
-          "triggerTags": [
-            "文档"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 5,
       "name": "应用数据细分",
       "level": 2,
@@ -626,172 +557,6 @@
       }
     },
     {
-      "id": 102,
-      "name": "应用数据扩展名",
-      "level": 3,
-      "tags": [
-        "bplist",
-        "cat",
-        "chm",
-        "emf",
-        "gpg",
-        "hlp",
-        "ics",
-        "lnk",
-        "m3u",
-        "m3u8",
-        "mum",
-        "pcap",
-        "pcapng",
-        "pdb",
-        "pem",
-        "pickle",
-        "pkl",
-        "plist",
-        "po",
-        "pt",
-        "pth",
-        "pub",
-        "reg",
-        "sqlite",
-        "sqlite3",
-        "srt",
-        "sum",
-        "torrent",
-        "url"
-      ],
-      "description": "应用数据文件的扩展名",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "文件扩展名"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "应用数据细分",
-          "triggerTags": [
-            "应用数据扩展名"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 103,
-      "name": "数据库扩展名",
-      "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
-      "description": "数据库文件的扩展名",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "文件扩展名"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "数据库细分",
-          "triggerTags": [
-            "数据库扩展名"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 104,
-      "name": "磁盘映像扩展名",
-      "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
-      "description": "磁盘映像文件的扩展名",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "文件扩展名"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "磁盘映像细分",
-          "triggerTags": [
-            "磁盘映像扩展名"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 105,
-      "name": "源代码细分",
-      "level": 2,
-      "tags": [
-        "源代码扩展名",
-        "脚本",
-        "配置文件",
-        "编程语言",
-        "前端",
-        "后端"
-      ],
-      "description": "源代码文件的分类",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "语法特征",
-        "解释器路径"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "文件类型",
-          "triggerTags": [
-            "源代码"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 16,
       "name": "地理位置",
       "level": 2,
@@ -901,46 +666,6 @@
           "isRuleSubdivision": true,
           "singleSelect": true
         }
-      }
-    },
-    {
-      "id": 29,
-      "name": "家庭生活细分",
-      "level": 2,
-      "tags": [
-        "房屋居住",
-        "家居购物",
-        "家庭医疗",
-        "家庭证件",
-        "子女教育",
-        "家政日常",
-        "家常饮食"
-      ],
-      "description": "家庭场景下的具体生活事项",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "存储路径",
-        "命名模式",
-        "关联应用"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "文件用途",
-          "triggerTags": [
-            "家庭生活"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {}
       }
     },
     {
@@ -1340,6 +1065,281 @@
       "metadata": {
         "flag": {
           "isPanDimension": true
+        }
+      }
+    },
+    {
+      "id": 29,
+      "name": "家庭生活细分",
+      "level": 2,
+      "tags": [
+        "房屋居住",
+        "家居购物",
+        "家庭医疗",
+        "家庭证件",
+        "子女教育",
+        "家政日常",
+        "家常饮食"
+      ],
+      "description": "家庭场景下的具体生活事项",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "design"
+      ],
+      "contextHints": [
+        "存储路径",
+        "命名模式",
+        "关联应用"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件用途",
+          "triggerTags": [
+            "家庭生活"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 100,
+      "name": "文本细分",
+      "level": 2,
+      "tags": [
+        "文本扩展名",
+        "纯文本",
+        "标记文档",
+        "日志文件",
+        "配置文件",
+        "差异文件",
+        "字幕"
+      ],
+      "description": "文本文件的细分分类",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "格式特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "文本"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 101,
+      "name": "文档细分",
+      "level": 2,
+      "tags": [
+        "文档扩展名",
+        "Office",
+        "Word文档",
+        "表格",
+        "演示文稿",
+        "WPS文档"
+      ],
+      "description": "文档文件的细分分类",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "格式特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "文档"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 102,
+      "name": "应用数据扩展名",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "应用数据文件的扩展名",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "应用数据细分",
+          "triggerTags": [
+            "应用数据扩展名"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 103,
+      "name": "数据库扩展名",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "数据库文件的扩展名",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "数据库细分",
+          "triggerTags": [
+            "数据库扩展名"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 104,
+      "name": "磁盘映像扩展名",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "磁盘映像文件的扩展名",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "文件扩展名"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "磁盘映像细分",
+          "triggerTags": [
+            "磁盘映像扩展名"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 105,
+      "name": "源代码细分",
+      "level": 2,
+      "tags": [
+        "源代码扩展名",
+        "脚本",
+        "配置文件",
+        "编程语言",
+        "前端",
+        "后端"
+      ],
+      "description": "源代码文件的分类",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "语法特征",
+        "解释器路径"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "源代码"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
         }
       }
     },
@@ -2550,7 +2550,8 @@
         "涉政",
         "违规",
         "色情",
-        "辱骂"
+        "辱骂",
+        "血腥"
       ],
       "description": "文件内容的敏感与合规安全审查分类",
       "applicableFileTypes": [
@@ -2724,17 +2725,20 @@
       "name": "色情细分",
       "level": 3,
       "tags": [
-        "露骨性行为",
-        "自慰高潮",
-        "情色文娱",
-        "擦边诱惑",
-        "暴露走光",
-        "调教拘束",
-        "私房写真",
-        "偷拍窥视",
-        "违背意愿"
+        "家庭乱伦",
+        "婚外情欲",
+        "校园师生",
+        "职场社交",
+        "多人群交",
+        "性爱调教",
+        "窥视暴露",
+        "职业制服",
+        "文学题材",
+        "情欲生理",
+        "非自愿侵犯",
+        "多元取向"
       ],
-      "description": "成人色情、情色文娱与擦边暴露题材细分",
+      "description": "成人色情与垂直题材核心门类划分",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2743,8 +2747,8 @@
       ],
       "contextHints": [
         "成人审查",
-        "性行为检测",
-        "色情分类"
+        "题材分类",
+        "情色识别"
       ],
       "triggerConditions": [
         {
@@ -3317,6 +3321,470 @@
           "singleSelect": true,
           "isMicroService": true
         }
+      }
+    },
+    {
+      "id": 150,
+      "name": "家庭乱伦细分",
+      "level": 4,
+      "tags": [
+        "近亲乱伦",
+        "母子",
+        "父女",
+        "兄妹",
+        "姐弟",
+        "公公媳妇",
+        "婆媳",
+        "继父继母",
+        "岳父岳母",
+        "小姨子",
+        "姑侄",
+        "叔侄",
+        "舅甥",
+        "表亲姻亲",
+        "嫂嫂",
+        "爷孙隔代"
+      ],
+      "description": "近亲血缘、家庭辈分与禁忌伦理题材细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "近亲题材",
+        "伦理禁忌",
+        "血缘叙事"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "家庭乱伦"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 151,
+      "name": "婚外情欲细分",
+      "level": 4,
+      "tags": [
+        "伴侣交换",
+        "换妻",
+        "偷情出轨",
+        "人妻美妇",
+        "少妇熟女",
+        "情妇小三",
+        "主妇",
+        "忘年之乐",
+        "纯洁恋情"
+      ],
+      "description": "婚姻外情感契约、伴侣互换与人妻题材细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "伴侣互换",
+        "婚外隐秘",
+        "人妻题材"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "婚外情欲"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 152,
+      "name": "校园师生细分",
+      "level": 4,
+      "tags": [
+        "教师学生",
+        "女教师",
+        "男老师",
+        "女同学",
+        "学长学姐",
+        "学弟学妹",
+        "校花",
+        "大学生",
+        "高中生",
+        "家庭教师"
+      ],
+      "description": "师生互动、青春校园与同窗题材细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "师生叙事",
+        "校园青春",
+        "同窗题材"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "校园师生"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 153,
+      "name": "职场社交细分",
+      "level": 4,
+      "tags": [
+        "同事之间",
+        "女老板",
+        "男上司",
+        "女秘书",
+        "女邻居",
+        "左邻右舍",
+        "司机工友",
+        "女佣",
+        "都市生活",
+        "乡间记趣",
+        "网络交友"
+      ],
+      "description": "职场雇佣、社区邻里与生活社交圈层细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "职场叙事",
+        "邻里生活",
+        "社交关系"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "职场社交"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 154,
+      "name": "多人群体细分",
+      "level": 4,
+      "tags": [
+        "3P",
+        "群交",
+        "多伴侣聚会",
+        "群体互动",
+        "多人派对"
+      ],
+      "description": "多主体协同、群体交互与多人互动题材细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "多主体互动",
+        "群体互动",
+        "聚会场景"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "多人群交"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 155,
+      "name": "性爱调教细分",
+      "level": 4,
+      "tags": [
+        "性爱调教",
+        "SM",
+        "性奴隶",
+        "调教拘束",
+        "粗暴性爱",
+        "粗野性交",
+        "重口变态",
+        "滴蜡皮鞭",
+        "特定恋物"
+      ],
+      "description": "支配与顺从、亚文化癖好与重度对抗性爱细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "亚文化调教",
+        "支配顺从",
+        "重度对抗"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "性爱调教"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 156,
+      "name": "窥视暴露细分",
+      "level": 4,
+      "tags": [
+        "疯狂暴露",
+        "公共空间暴露",
+        "户外露出",
+        "车震",
+        "偷拍窥视",
+        "隐私盗摄",
+        "洗澡窥视",
+        "走光露底"
+      ],
+      "description": "公共空间暴露、户外展示与隐蔽窥视偷拍细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "空间暴露",
+        "偷拍盗摄",
+        "户外展示"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "窥视暴露"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 157,
+      "name": "职业制服细分",
+      "level": 4,
+      "tags": [
+        "医生护士",
+        "妇产科",
+        "空姐",
+        "女警",
+        "模特车模",
+        "舞女",
+        "商业涉黄",
+        "援交嫖妓"
+      ],
+      "description": "行业特定职业、特定制服角色与人设细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "制服人设",
+        "行业职业",
+        "角色扮演"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "职业制服"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 158,
+      "name": "文学题材细分",
+      "level": 4,
+      "tags": [
+        "情色武侠",
+        "古典情色",
+        "历史情色",
+        "奇幻科幻",
+        "午夜怪谈",
+        "当代都市",
+        "游戏同人",
+        "日本情色",
+        "西洋情色",
+        "奇遇物语"
+      ],
+      "description": "成人文学背景设定、时空背景与特定流派细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "文学题材",
+        "背景设定",
+        "文学流派"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "文学题材"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 159,
+      "name": "情欲生理细分",
+      "level": 4,
+      "tags": [
+        "露骨性行为",
+        "自慰高潮",
+        "口交",
+        "肛交",
+        "颜射吞精",
+        "私房写真",
+        "擦边诱惑",
+        "美乳美腿",
+        "处女情结"
+      ],
+      "description": "生理行为动作、器官特写、性感写真与感官特征细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "生理动作",
+        "器官特写",
+        "性感写真"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "情欲生理"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 160,
+      "name": "非自愿侵犯细分",
+      "level": 4,
+      "tags": [
+        "强暴强奸",
+        "迷奸下药",
+        "违背意愿",
+        "轮奸侵犯",
+        "暴力胁迫"
+      ],
+      "description": "非自愿强迫、侵害侵害与极端违规内容分类",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "违背意愿",
+        "侵害违规",
+        "强迫侵犯"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "非自愿侵犯"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 161,
+      "name": "多元取向细分",
+      "level": 4,
+      "tags": [
+        "同性情色",
+        "女同百合",
+        "男同耽美",
+        "跨性别"
+      ],
+      "description": "多元性别认知、多元取向与特定性向题材细分",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "多元取向",
+        "同性题材",
+        "性向分类"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "色情细分",
+          "triggerTags": [
+            "多元取向"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
       }
     }
   ]

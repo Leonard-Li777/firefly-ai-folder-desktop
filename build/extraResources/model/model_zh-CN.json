@@ -436,7 +436,7 @@
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐越狱，支持文本与图像分析。",
+      "description": "Qwen3.8底座高压缩，体积最小，支持文本与图像分析。",
       "source": "huggingface",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -470,7 +470,7 @@
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐越狱，体积最小，支持文本与图像分析。",
+      "description": "Qwen3.8底座高压缩，体积最小，支持文本与图像分析。",
       "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
@@ -497,14 +497,14 @@
       }
     },
     {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
-      "name": "Bonsai 2 ternary 27B（2比特•官方•国内加速）",
+      "id": "prism-ml/Ternary-Bonsai-2-27B-PQ2_0",
+      "name": "Bonsai 2 ternary 27B（2比特压缩•高智能）",
       "company": "prism-ml",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "description": "Qwen3.8底座高压缩，体积最小，支持文本与图像分析。",
       "source": "modelscope",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -528,77 +528,15 @@
       }
     },
     {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
-      "name": "Bonsai 2 ternary 27B（超级压缩）",
+      "id": "prism-ml/Ternary-Bonsai-2-27B-PTQ1_0",
+      "name": "Bonsai 2 ternary 27B（1比特压缩•高智能）",
       "company": "prism-ml",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "description": "Qwen3.8底座高压缩，体积最小，支持文本与图像分析。",
       "source": "modelscope",
-      "quantization": "PTQ1_0",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "1比特",
-        "多模态",
-        "低显存"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
-      "name": "Bonsai 2 ternary 27B（2比特•官方）",
-      "company": "prism-ml",
-      "parameterSize": "27B",
-      "intelligenceLevel": 3,
-      "totalSize": "7.30GB",
-      "recommended": false,
-      "description": "Bonsai 2 27B 三值 2 比特量化官方版本，支持文本与图像分析。",
-      "source": "huggingface",
-      "quantization": "PQ2_0",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "2比特",
-        "多模态",
-        "低显存"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
-      "name": "Bonsai 2 ternary 27B（超级压缩•官方）",
-      "company": "prism-ml",
-      "parameterSize": "27B",
-      "intelligenceLevel": 3,
-      "totalSize": "6.12GB",
-      "recommended": false,
-      "description": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，支持文本与图像分析。",
-      "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
       "contextLength": 131072,

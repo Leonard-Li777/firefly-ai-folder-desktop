@@ -126,75 +126,6 @@
       }
     },
     {
-      "id": 100,
-      "name": "Text subdivision",
-      "level": 2,
-      "tags": [
-        "Text Extensions",
-        "Plain text",
-        "Marked documents",
-        "Log files",
-        "Configuration file",
-        "Diff files",
-        "Subtitles"
-      ],
-      "description": "Subdivision of text files",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "Format characteristics"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "File Type",
-          "triggerTags": [
-            "Text"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
-      "id": 101,
-      "name": "Document subdivision",
-      "level": 2,
-      "tags": [
-        "Document Extensions",
-        "Office",
-        "Word document",
-        "Sheet",
-        "Presentation",
-        "WPS document"
-      ],
-      "description": "Subdivision of document files",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "Format characteristics"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "File Type",
-          "triggerTags": [
-            "Document"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 5,
       "name": "Application data segmentation",
       "level": 2,
@@ -626,172 +557,6 @@
       }
     },
     {
-      "id": 102,
-      "name": "Application Data Extensions",
-      "level": 3,
-      "tags": [
-        "bplist",
-        "cat",
-        "chm",
-        "emf",
-        "gpg",
-        "hlp",
-        "ics",
-        "lnk",
-        "m3u",
-        "m3u8",
-        "mum",
-        "pcap",
-        "pcapng",
-        "pdb",
-        "pem",
-        "pickle",
-        "pkl",
-        "plist",
-        "po",
-        "pt",
-        "pth",
-        "pub",
-        "reg",
-        "sqlite",
-        "sqlite3",
-        "srt",
-        "sum",
-        "torrent",
-        "url"
-      ],
-      "description": "Application Data File Extensions",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Application data segmentation",
-          "triggerTags": [
-            "Application Data Extensions"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 103,
-      "name": "Database Extensions",
-      "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
-      "description": "Database File Extensions",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Database segmentation",
-          "triggerTags": [
-            "Database Extensions"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 104,
-      "name": "Disk Image Extensions",
-      "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
-      "description": "Disk Image File Extensions",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "File Extensions"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Disk image segmentation",
-          "triggerTags": [
-            "Disk Image Extensions"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 105,
-      "name": "Source code segmentation",
-      "level": 2,
-      "tags": [
-        "Source Code Extensions",
-        "Script",
-        "Configuration file",
-        "Programming Language",
-        "Front End",
-        "Rear End"
-      ],
-      "description": "Classification of source code files",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "Grammatical Features",
-        "Interpreter Path"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "File Type",
-          "triggerTags": [
-            "Source Code"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 16,
       "name": "Geographical Location",
       "level": 2,
@@ -901,46 +666,6 @@
           "isRuleSubdivision": true,
           "singleSelect": true
         }
-      }
-    },
-    {
-      "id": 29,
-      "name": "Family life segmentation",
-      "level": 2,
-      "tags": [
-        "House to live in",
-        "Home shopping",
-        "Family medicine",
-        "Family documents",
-        "Children's education",
-        "Daily housekeeping",
-        "Home-cooked meals"
-      ],
-      "description": "Specific life matters in family situations",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "Storage Path",
-        "Naming Pattern",
-        "Associated Applications"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "File Purpose",
-          "triggerTags": [
-            "Family life"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {}
       }
     },
     {
@@ -1340,6 +1065,281 @@
       "metadata": {
         "flag": {
           "isPanDimension": true
+        }
+      }
+    },
+    {
+      "id": 29,
+      "name": "Family life segmentation",
+      "level": 2,
+      "tags": [
+        "House to live in",
+        "Home shopping",
+        "Family medicine",
+        "Family documents",
+        "Children's education",
+        "Daily housekeeping",
+        "Home-cooked meals"
+      ],
+      "description": "Specific life matters in family situations",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "design"
+      ],
+      "contextHints": [
+        "Storage Path",
+        "Naming Pattern",
+        "Associated Applications"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "File Purpose",
+          "triggerTags": [
+            "Family life"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 100,
+      "name": "Text subdivision",
+      "level": 2,
+      "tags": [
+        "Text Extensions",
+        "Plain text",
+        "Marked documents",
+        "Log files",
+        "Configuration file",
+        "Diff files",
+        "Subtitles"
+      ],
+      "description": "Subdivision of text files",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "Format characteristics"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "File Type",
+          "triggerTags": [
+            "Text"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 101,
+      "name": "Document subdivision",
+      "level": 2,
+      "tags": [
+        "Document Extensions",
+        "Office",
+        "Word document",
+        "Sheet",
+        "Presentation",
+        "WPS document"
+      ],
+      "description": "Subdivision of document files",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "Format characteristics"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "File Type",
+          "triggerTags": [
+            "Document"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 102,
+      "name": "Application Data Extensions",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "Application Data File Extensions",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "File Extensions"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Application data segmentation",
+          "triggerTags": [
+            "Application Data Extensions"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 103,
+      "name": "Database Extensions",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "Database File Extensions",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "File Extensions"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Database segmentation",
+          "triggerTags": [
+            "Database Extensions"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 104,
+      "name": "Disk Image Extensions",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "Disk Image File Extensions",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "File Extensions"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Disk image segmentation",
+          "triggerTags": [
+            "Disk Image Extensions"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 105,
+      "name": "Source code segmentation",
+      "level": 2,
+      "tags": [
+        "Source Code Extensions",
+        "Script",
+        "Configuration file",
+        "Programming Language",
+        "Front End",
+        "Rear End"
+      ],
+      "description": "Classification of source code files",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "Grammatical Features",
+        "Interpreter Path"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "File Type",
+          "triggerTags": [
+            "Source Code"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
         }
       }
     },
@@ -2550,7 +2550,8 @@
         "Political Issues",
         "Violation",
         "Pornography",
-        "Abuse"
+        "Abuse",
+        "Bloody"
       ],
       "description": "Classification of Document Content Based on Sensitivity and Compliance Security Reviews",
       "applicableFileTypes": [
@@ -2724,17 +2725,20 @@
       "name": "Pornography Subgenres",
       "level": 3,
       "tags": [
-        "Explicit Sexual Acts",
-        "Orgasm Through Masturbation",
-        "Adult Entertainment",
-        "Temptation on the Edge",
-        "Exposure and Indecent Exposure",
-        "Training and Restraint",
-        "Private Photo Shoot",
-        "Covert Photography and Peeping",
-        "Against one's will"
+        "Family incest",
+        "Extramarital lust",
+        "Campus teachers and students",
+        "Workplace social",
+        "Group sex",
+        "Sex training",
+        "Peeping exposed",
+        "Professional uniform",
+        "Literary themes",
+        "Erotic Physiology",
+        "Involuntary assault",
+        "Multiple orientations"
       ],
-      "description": "Adult Pornography, Erotic Entertainment, and Nude Content Subgenres",
+      "description": "Division of core categories of adult porn and vertical themes",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2743,8 +2747,8 @@
       ],
       "contextHints": [
         "Adult Content Review",
-        "Sexual Behavior Testing",
-        "Pornography Categories"
+        "Theme classification",
+        "Erotic recognition"
       ],
       "triggerConditions": [
         {
@@ -3317,6 +3321,470 @@
           "singleSelect": true,
           "isMicroService": true
         }
+      }
+    },
+    {
+      "id": 150,
+      "name": "Family Incest Breakdown",
+      "level": 4,
+      "tags": [
+        "Incest",
+        "Mother and son",
+        "Father and daughter",
+        "Brother and sister",
+        "Siblings",
+        "Father-in-law and daughter-in-law",
+        "Mother-in-law and daughter-in-law",
+        "Stepfather stepmother",
+        "Father-in-law and mother-in-law",
+        "Sister-in-law",
+        "Aunt and nephew",
+        "Uncle and nephew",
+        "Uncle and nephew",
+        "Cousins ​​in-laws",
+        "Sister-in-law",
+        "Grandfather and grandson separated generations"
+      ],
+      "description": "Subdivision of consanguinity, family seniority and taboo ethical themes",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Close relatives theme",
+        "Ethical taboos",
+        "Blood narrative"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Family incest"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 151,
+      "name": "Extramarital lust breakdown",
+      "level": 4,
+      "tags": [
+        "Partner swap",
+        "Wife swapping",
+        "Cheating",
+        "Beautiful married woman",
+        "Young mature woman",
+        "Mistress mistress",
+        "Housewife",
+        "The joy of forgetting the year",
+        "Pure love"
+      ],
+      "description": "Segmentation of extramarital emotional contracts, partner exchange and wife themes",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Partner swap",
+        "Extramarital secrets",
+        "Wife theme"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Extramarital lust"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 152,
+      "name": "Campus teachers and students breakdown",
+      "level": 4,
+      "tags": [
+        "Teacher student",
+        "Female teacher",
+        "Male teacher",
+        "Female classmate",
+        "Senior senior sister",
+        "Underclassmen",
+        "School beauty",
+        "College Student",
+        "High school student",
+        "Tutor"
+      ],
+      "description": "Theme breakdown of teacher-student interaction, youth campus and classmates",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Teacher and student narrative",
+        "Campus youth",
+        "Classmates theme"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Campus teachers and students"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 153,
+      "name": "Workplace social segmentation",
+      "level": 4,
+      "tags": [
+        "Between colleagues",
+        "Female boss",
+        "Male boss",
+        "Female secretary",
+        "Female neighbor",
+        "Neighbors",
+        "Driver coworker",
+        "Maid",
+        "Urban life",
+        "Countryside Notes",
+        "Internet dating"
+      ],
+      "description": "Segmentation of workplace employment, community neighborhoods and life social circles",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Workplace narrative",
+        "Neighborhood life",
+        "Social relations"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Workplace social"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 154,
+      "name": "Multi-person group segmentation",
+      "level": 4,
+      "tags": [
+        "3P",
+        "Group sex",
+        "Multi-partner gathering",
+        "Group interaction",
+        "Multi-person party"
+      ],
+      "description": "Multi-agent collaboration, group interaction and multi-person interaction theme segmentation",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Multi-agent interaction",
+        "Group interaction",
+        "Party scene"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Group sex"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 155,
+      "name": "Sex training breakdown",
+      "level": 4,
+      "tags": [
+        "Sex training",
+        "SM",
+        "Sex slave",
+        "Training and Restraint",
+        "Rough sex",
+        "Rough sex",
+        "Heavy-duty pervert",
+        "Dripping wax whip",
+        "Specific fetish"
+      ],
+      "description": "Dominance and submission, subcultural fetishes and serious confrontational sex breakdown",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Subculture training",
+        "Dominant submissive",
+        "Heavy confrontation"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Sex training"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 156,
+      "name": "Peep Exposed Segmentation",
+      "level": 4,
+      "tags": [
+        "Crazy exposure",
+        "Public space exposure",
+        "Exposed outdoors",
+        "Car shock",
+        "Covert Photography and Peeping",
+        "Privacy camera",
+        "Bath peeping",
+        "Exposed"
+      ],
+      "description": "Subdivision of public space exposure, outdoor display and covert peeping and candid photography",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Spatial exposure",
+        "Candid filming",
+        "Outdoor display"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Peeping exposed"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 157,
+      "name": "Professional uniform segmentation",
+      "level": 4,
+      "tags": [
+        "Doctor nurse",
+        "Obstetrics and Gynecology",
+        "Airline stewardess",
+        "Policewoman",
+        "Mannequin car model",
+        "Dancing girl",
+        "Commercial pornography",
+        "Paid Dating and Prostitution"
+      ],
+      "description": "Industry-specific occupations, specific uniform roles and personality segmentation",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Uniform character",
+        "Industry occupation",
+        "Role-Playing"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Professional uniform"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 158,
+      "name": "Literary subject breakdown",
+      "level": 4,
+      "tags": [
+        "Erotic martial arts",
+        "Classical Erotica",
+        "Historical erotica",
+        "Fantasy science fiction",
+        "Midnight stories",
+        "Contemporary city",
+        "Game fan",
+        "Japanese erotica",
+        "Western erotica",
+        "Adventure story"
+      ],
+      "description": "Adult literature background settings, time and space background and specific genre subdivisions",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Literary themes",
+        "Background settings",
+        "Literary genre"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Literary themes"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 159,
+      "name": "Physiological breakdown of desire",
+      "level": 4,
+      "tags": [
+        "Explicit Sexual Acts",
+        "Orgasm Through Masturbation",
+        "Oral sex",
+        "Anal sex",
+        "Facial cum swallowing",
+        "Private Photo Shoot",
+        "Temptation on the Edge",
+        "Beautiful breasts and legs",
+        "Virginity complex"
+      ],
+      "description": "Physiological and behavioral movements, close-ups of organs, sexy photos and breakdown of sensory characteristics",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Physiological actions",
+        "Organ close-up",
+        "Sexy photo"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Erotic Physiology"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 160,
+      "name": "Involuntary assault breakdown",
+      "level": 4,
+      "tags": [
+        "Rape rape",
+        "Raped and drugged",
+        "Against one's will",
+        "Gang rape assault",
+        "Violent coercion"
+      ],
+      "description": "Classification of involuntary coercion, infringement and extreme violations",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Against one's will",
+        "Infringement and violation",
+        "Forcible violation"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Involuntary assault"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 161,
+      "name": "Multiple orientation segmentation",
+      "level": 4,
+      "tags": [
+        "Homoerotic",
+        "Lesbian lily",
+        "Gay beauty",
+        "Transgender"
+      ],
+      "description": "Diverse gender cognition, diverse orientations and specific sexual orientation theme segmentation",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Multiple orientations",
+        "Homosexual themes",
+        "Sexual orientation classification"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Pornography Subgenres",
+          "triggerTags": [
+            "Multiple orientations"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
       }
     }
   ]

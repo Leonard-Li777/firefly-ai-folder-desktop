@@ -436,7 +436,7 @@
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "Versão de jailbreak de quantização trivalente de 2 bits Bonsai 2 27B, desalinhamento com jailbreak, suporta análise de texto e imagem.",
+      "description": "Qwen3.8 de base com alta compressão, tamanho mínimo, suporta análise de texto e imagem.",
       "source": "huggingface",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -470,7 +470,7 @@
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "Versão de jailbreak de quantização trivalente de 1 bit Bonsai 2 27B, desalinhamento com jailbreak, tamanho mínimo, suporta análise de texto e imagem.",
+      "description": "Qwen3.8 de base com alta compressão, tamanho mínimo, suporta análise de texto e imagem.",
       "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
@@ -497,14 +497,14 @@
       }
     },
     {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
-      "name": "Bonsai 2 ternary 27B（2 bits•Oficial•Aceleração na China）",
+      "id": "prism-ml/Ternary-Bonsai-2-27B-PQ2_0",
+      "name": "Bonsai 2 ternary 27B（Compressão de 2 bits•Alta inteligência）",
       "company": "prism-ml",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "Versão oficial de quantização trivalente de 2 bits Bonsai 2 27B, aceleração com espelho nacional do ModelScope, suporta análise de texto e imagem.",
+      "description": "Qwen3.8 de base com alta compressão, tamanho mínimo, suporta análise de texto e imagem.",
       "source": "modelscope",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -528,77 +528,15 @@
       }
     },
     {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
-      "name": "Bonsai 2 ternary 27B（Supercompressão）",
+      "id": "prism-ml/Ternary-Bonsai-2-27B-PTQ1_0",
+      "name": "Bonsai 2 ternary 27B（Compressão de 1 bit•Alta inteligência）",
       "company": "prism-ml",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "Versão oficial quantizada a 1 bit de três valores do Bonsai 2 27B, menor tamanho, espelho interno em acelerado no ModelScope, com suporte para análise de texto e imagem.",
+      "description": "Qwen3.8 de base com alta compressão, tamanho mínimo, suporta análise de texto e imagem.",
       "source": "modelscope",
-      "quantization": "PTQ1_0",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "1-bit",
-        "Multimodal",
-        "Memória de vídeo baixa"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
-      "name": "Bonsai 2 ternary 27B（2 bits•Oficial）",
-      "company": "prism-ml",
-      "parameterSize": "27B",
-      "intelligenceLevel": 3,
-      "totalSize": "7.30GB",
-      "recommended": false,
-      "description": "Versão oficial quantizada a 2 bits de três valores do Bonsai 2 27B, com suporte para análise de texto e imagem.",
-      "source": "huggingface",
-      "quantization": "PQ2_0",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "2 bits",
-        "Multimodal",
-        "Memória de vídeo baixa"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
-      "name": "Bonsai 2 ternary 27B（Supercompressão•Oficial）",
-      "company": "prism-ml",
-      "parameterSize": "27B",
-      "intelligenceLevel": 3,
-      "totalSize": "6.12GB",
-      "recommended": false,
-      "description": "Versão oficial quantizada a 1 bit de três valores do Bonsai 2 27B, menor tamanho, com suporte para análise de texto e imagem.",
-      "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
       "contextLength": 131072,

@@ -436,7 +436,7 @@
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "نسخة تجاوز قيود نموذج Bonsai 2 27B بثلاث قيم مُكمّس بدقة 2 بت، مع إلغاء المحاذاة لتجاوز القيود، ويدعم تحليل النصوص والصور.",
+      "description": "قاعدي Qwen3.8 المضغوط عاليًا، أصغر حجمًا، يدعم تحليل النصوص والصور.",
       "source": "huggingface",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -470,7 +470,7 @@
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "نسخة تجاوز قيود نموذج Bonsai 2 27B بثلاث قيم مُكمّس بدقة 1 بت، مع إلغاء المحاذاة لتجاوز القيود، أصغر حجمًا، ويدعم تحليل النصوص والصور.",
+      "description": "قاعدي Qwen3.8 المضغوط عاليًا، أصغر حجمًا، يدعم تحليل النصوص والصور.",
       "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
@@ -497,14 +497,14 @@
       }
     },
     {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
-      "name": "Bonsai 2 ternary 27B（2-bit•رسمي•تسريع داخل الصين）",
+      "id": "prism-ml/Ternary-Bonsai-2-27B-PQ2_0",
+      "name": "Bonsai 2 ternary 27B（ضغط 2 بايت•ذكاء عالٍ）",
       "company": "prism-ml",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "النسخة الرسمية من نموذج Bonsai 2 27B بثلاث قيم مُكمّس بدقة 2 بت، مع تسريع عبر مرآة ModelScope المحلية داخل الصين، ويدعم تحليل النصوص والصور.",
+      "description": "قاعدي Qwen3.8 المضغوط عاليًا، أصغر حجمًا، يدعم تحليل النصوص والصور.",
       "source": "modelscope",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -528,77 +528,15 @@
       }
     },
     {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
-      "name": "Bonsai 2 ternary 27B（ضغط فائق）",
+      "id": "prism-ml/Ternary-Bonsai-2-27B-PTQ1_0",
+      "name": "Bonsai 2 ternary 27B（ضغط 1 بايت•ذكاء عالٍ）",
       "company": "prism-ml",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "الإصدار الرسمي من Bonsai 2 27B بتكميم ثلاثي القيمة 1 بت، أصغر حجمًا، مع تسريع مرآة ModelScope داخل الصين، ويدعم تحليل النصوص والصور.",
+      "description": "قاعدي Qwen3.8 المضغوط عاليًا، أصغر حجمًا، يدعم تحليل النصوص والصور.",
       "source": "modelscope",
-      "quantization": "PTQ1_0",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "1 بت",
-        "الوسائط المتعددة",
-        "ذاكرة فيديو منخفضة"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
-      "name": "Bonsai 2 ternary 27B（2-bit•رسمي）",
-      "company": "prism-ml",
-      "parameterSize": "27B",
-      "intelligenceLevel": 3,
-      "totalSize": "7.30GB",
-      "recommended": false,
-      "description": "الإصدار الرسمي من Bonsai 2 27B بتكميم ثلاثي القيمة 2 بت، ويدعم تحليل النصوص والصور.",
-      "source": "huggingface",
-      "quantization": "PQ2_0",
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "2-bit",
-        "الوسائط المتعددة",
-        "ذاكرة فيديو منخفضة"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
-      "name": "Bonsai 2 ternary 27B（ضغط فائق•رسمي）",
-      "company": "prism-ml",
-      "parameterSize": "27B",
-      "intelligenceLevel": 3,
-      "totalSize": "6.12GB",
-      "recommended": false,
-      "description": "الإصدار الرسمي من Bonsai 2 27B بتكميم ثلاثي القيمة 1 بت، أصغر حجمًا، ويدعم تحليل النصوص والصور.",
-      "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
       "contextLength": 131072,

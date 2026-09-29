@@ -126,75 +126,6 @@
       }
     },
     {
-      "id": 100,
-      "name": "تقسيم النص",
-      "level": 2,
-      "tags": [
-        "امتداد النص",
-        "نص نقي",
-        "مستند مشطَّر",
-        "ملف سجل",
-        "ملف التكوين",
-        "ملف الاختلافات",
-        "التعليقات التوضيحية"
-      ],
-      "description": "تقسيم الملفات النصية",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "خصائص التنسيق"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "نص"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
-      "id": 101,
-      "name": "تجزئة المستند",
-      "level": 2,
-      "tags": [
-        "امتداد الوثيقة",
-        "Office",
-        "وثيقة كلمة",
-        "ملزمة",
-        "عرض تقديمي",
-        "وثيقة WPS"
-      ],
-      "description": "تقسيم ملفات المستندات",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "خصائص التنسيق"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "وثيقة"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 5,
       "name": "تجزئة بيانات التطبيق",
       "level": 2,
@@ -626,172 +557,6 @@
       }
     },
     {
-      "id": 102,
-      "name": "تمديد بيانات التطبيق",
-      "level": 3,
-      "tags": [
-        "bplist",
-        "cat",
-        "chm",
-        "emf",
-        "gpg",
-        "hlp",
-        "ics",
-        "lnk",
-        "m3u",
-        "m3u8",
-        "mum",
-        "pcap",
-        "pcapng",
-        "pdb",
-        "pem",
-        "pickle",
-        "pkl",
-        "plist",
-        "po",
-        "pt",
-        "pth",
-        "pub",
-        "reg",
-        "sqlite",
-        "sqlite3",
-        "srt",
-        "sum",
-        "torrent",
-        "url"
-      ],
-      "description": "امتداد ملف بيانات التطبيق",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "تجزئة بيانات التطبيق",
-          "triggerTags": [
-            "تمديد بيانات التطبيق"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 103,
-      "name": "امتداد قاعدة البيانات",
-      "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
-      "description": "امتداد ملف قاعدة البيانات",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "تجزئة قاعدة البيانات",
-          "triggerTags": [
-            "امتداد قاعدة البيانات"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 104,
-      "name": "امتداد صورة القرص",
-      "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
-      "description": "امتداد ملف صورة القرص",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "امتداد الملف"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "تجزئة صورة القرص",
-          "triggerTags": [
-            "امتداد صورة القرص"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 105,
-      "name": "تجزئة كود المصدر",
-      "level": 2,
-      "tags": [
-        "ملحق كود المصدر",
-        "البرنامج النصي",
-        "ملف التكوين",
-        "لغة البرمجة",
-        "الواجهة الأمامية",
-        "نهاية الطريق"
-      ],
-      "description": "تصنيف ملفات التعليمات البرمجية المصدر",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "الميزات النحوية",
-        "مسار المترجم"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "نوع الملف",
-          "triggerTags": [
-            "كود المصدر"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 16,
       "name": "الموقع الجغرافي",
       "level": 2,
@@ -901,46 +666,6 @@
           "isRuleSubdivision": true,
           "singleSelect": true
         }
-      }
-    },
-    {
-      "id": 29,
-      "name": "تجزئة الحياة الأسرية",
-      "level": 2,
-      "tags": [
-        "منزل للعيش فيه",
-        "التسوق المنزلي",
-        "طب الأسرة",
-        "وثائق عائلية",
-        "تعليم الاطفال",
-        "التدبير المنزلي اليومي",
-        "وجبات الطعام المطبوخة في المنزل"
-      ],
-      "description": "أمور حياتية محددة في المواقف العائلية",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "مسار التخزين",
-        "نمط التسمية",
-        "التطبيقات المرتبطة"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "الغرض من الملف",
-          "triggerTags": [
-            "الحياة العائلية"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {}
       }
     },
     {
@@ -1340,6 +1065,281 @@
       "metadata": {
         "flag": {
           "isPanDimension": true
+        }
+      }
+    },
+    {
+      "id": 29,
+      "name": "تجزئة الحياة الأسرية",
+      "level": 2,
+      "tags": [
+        "منزل للعيش فيه",
+        "التسوق المنزلي",
+        "طب الأسرة",
+        "وثائق عائلية",
+        "تعليم الاطفال",
+        "التدبير المنزلي اليومي",
+        "وجبات الطعام المطبوخة في المنزل"
+      ],
+      "description": "أمور حياتية محددة في المواقف العائلية",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "design"
+      ],
+      "contextHints": [
+        "مسار التخزين",
+        "نمط التسمية",
+        "التطبيقات المرتبطة"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "الغرض من الملف",
+          "triggerTags": [
+            "الحياة العائلية"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 100,
+      "name": "تقسيم النص",
+      "level": 2,
+      "tags": [
+        "امتداد النص",
+        "نص نقي",
+        "مستند مشطَّر",
+        "ملف سجل",
+        "ملف التكوين",
+        "ملف الاختلافات",
+        "التعليقات التوضيحية"
+      ],
+      "description": "تقسيم الملفات النصية",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "خصائص التنسيق"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "نص"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 101,
+      "name": "تجزئة المستند",
+      "level": 2,
+      "tags": [
+        "امتداد الوثيقة",
+        "Office",
+        "وثيقة كلمة",
+        "ملزمة",
+        "عرض تقديمي",
+        "وثيقة WPS"
+      ],
+      "description": "تقسيم ملفات المستندات",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "خصائص التنسيق"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "وثيقة"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 102,
+      "name": "تمديد بيانات التطبيق",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "امتداد ملف بيانات التطبيق",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة بيانات التطبيق",
+          "triggerTags": [
+            "تمديد بيانات التطبيق"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 103,
+      "name": "امتداد قاعدة البيانات",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "امتداد ملف قاعدة البيانات",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة قاعدة البيانات",
+          "triggerTags": [
+            "امتداد قاعدة البيانات"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 104,
+      "name": "امتداد صورة القرص",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "امتداد ملف صورة القرص",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "امتداد الملف"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "تجزئة صورة القرص",
+          "triggerTags": [
+            "امتداد صورة القرص"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 105,
+      "name": "تجزئة كود المصدر",
+      "level": 2,
+      "tags": [
+        "ملحق كود المصدر",
+        "البرنامج النصي",
+        "ملف التكوين",
+        "لغة البرمجة",
+        "الواجهة الأمامية",
+        "نهاية الطريق"
+      ],
+      "description": "تصنيف ملفات التعليمات البرمجية المصدر",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "الميزات النحوية",
+        "مسار المترجم"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "نوع الملف",
+          "triggerTags": [
+            "كود المصدر"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
         }
       }
     },
@@ -2550,7 +2550,8 @@
         "المسائل السياسية",
         "مخالفة",
         "المواد الإباحية",
-        "الشتائم"
+        "الشتائم",
+        "دموي"
       ],
       "description": "تصنيف محتويات الملفات حسب درجة حساسيتها ومراجعتها من حيث الامتثال والمعايير الأمنية",
       "applicableFileTypes": [
@@ -2724,17 +2725,20 @@
       "name": "التصنيفات الإباحية",
       "level": 3,
       "tags": [
-        "أفعال جنسية صريحة",
-        "النشوة الجنسية الذاتية",
-        "الترفيه الإباحي",
-        "الإغراء المراوغ",
-        "الكشف عن أجزاء من الجسم",
-        "التدريب والتقييد",
-        "صور خاصة",
-        "التصوير الخفي والتلصص",
-        "ضد الإرادة"
+        "سفاح القربى العائلي",
+        "شهوة خارج نطاق الزواج",
+        "معلمي وطلاب الحرم الجامعي",
+        "الاجتماعية في مكان العمل",
+        "الجنس الجماعي",
+        "التدريب على الجنس",
+        "مختلس النظر مكشوفة",
+        "الزي المهني",
+        "موضوعات أدبية",
+        "علم وظائف الأعضاء المثيرة",
+        "اعتداء لا إرادي",
+        "اتجاهات متعددة"
       ],
-      "description": "تصنيف المواد الإباحية للبالغين، والترفيه الإباحي، والموضوعات التي تتناول العري بشكل غير صريح",
+      "description": "تقسيم الفئات الأساسية للإباحية للبالغين والمواضيع الرأسية",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2743,8 +2747,8 @@
       ],
       "contextHints": [
         "التصنيف للبالغين",
-        "فحص النشاط الجنسي",
-        "تصنيفات المواد الإباحية"
+        "تصنيف الموضوع",
+        "الاعتراف المثيرة"
       ],
       "triggerConditions": [
         {
@@ -3317,6 +3321,470 @@
           "singleSelect": true,
           "isMicroService": true
         }
+      }
+    },
+    {
+      "id": 150,
+      "name": "انهيار سفاح القربى الأسرة",
+      "level": 4,
+      "tags": [
+        "سفاح القربى",
+        "الأم والابن",
+        "الأب وابنته",
+        "أخ وأخت",
+        "إخوة",
+        "والد الزوجة وزوجة الابن",
+        "حماة وزوجة الابن",
+        "زوجة الأب",
+        "والد الزوج وحماته",
+        "أخت الزوج أو اخت الزوجة",
+        "عمة وابن أخ",
+        "عمه وابن أخيه",
+        "عمه وابن أخيه",
+        "أبناء العمومة",
+        "أخت الزوج أو اخت الزوجة",
+        "الجد والحفيد فصلوا الأجيال"
+      ],
+      "description": "تقسيم قرابة الدم والأقدمية العائلية والمواضيع الأخلاقية المحرمة",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "موضوع الأقارب المقربين",
+        "المحرمات الأخلاقية",
+        "رواية الدم"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "سفاح القربى العائلي"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 151,
+      "name": "انهيار الشهوة خارج نطاق الزواج",
+      "level": 4,
+      "tags": [
+        "مبادلة الشريك",
+        "تبادل الزوجات",
+        "الغش",
+        "امرأة متزوجة جميلة",
+        "امرأة شابة ناضجة",
+        "عشيقة عشيقة",
+        "ربة منزل",
+        "فرحة نسيان السنة",
+        "الحب النقي"
+      ],
+      "description": "تجزئة العقود العاطفية خارج نطاق الزواج وتبادل الشركاء وموضوعات الزوجة",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "مبادلة الشريك",
+        "أسرار خارج نطاق الزواج",
+        "موضوع الزوجة"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "شهوة خارج نطاق الزواج"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 152,
+      "name": "انهيار المعلمين والطلاب في الحرم الجامعي",
+      "level": 4,
+      "tags": [
+        "طالب المعلم",
+        "معلمة",
+        "مدرس ذكر",
+        "زميلة أنثى",
+        "الأخت الكبرى",
+        "الطبقة الدنيا",
+        "جمال المدرسة",
+        "طلاب الجامعات",
+        "طالب في المدرسة الثانوية",
+        "مدرس خاص"
+      ],
+      "description": "تفصيل الموضوع للتفاعل بين المعلم والطالب، والحرم الجامعي للشباب وزملاء الدراسة",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "رواية المعلم والطالب",
+        "شباب الحرم الجامعي",
+        "موضوع زملاء الدراسة"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "معلمي وطلاب الحرم الجامعي"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 153,
+      "name": "التقسيم الاجتماعي في مكان العمل",
+      "level": 4,
+      "tags": [
+        "بين الزملاء",
+        "رئيسة أنثى",
+        "رئيس ذكر",
+        "سكرتيرة أنثى",
+        "جارة أنثى",
+        "الجيران",
+        "زميل سائق",
+        "خادمة",
+        "الحياة الحضرية",
+        "ملاحظات الريف",
+        "التعارف عن طريق الانترنت"
+      ],
+      "description": "تجزئة العمالة في مكان العمل والأحياء المجتمعية ودوائر الحياة الاجتماعية",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "رواية مكان العمل",
+        "حياة الحي",
+        "العلاقات الاجتماعية"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "الاجتماعية في مكان العمل"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 154,
+      "name": "تجزئة مجموعة متعددة الأشخاص",
+      "level": 4,
+      "tags": [
+        "3P",
+        "جماع جماعي",
+        "تجمع متعدد الشركاء",
+        "التفاعل الجماعي",
+        "حفلة متعددة الأشخاص"
+      ],
+      "description": "التعاون متعدد الوكلاء والتفاعل الجماعي وتجزئة موضوع التفاعل متعدد الأشخاص",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "تفاعل متعدد الوكلاء",
+        "التفاعل الجماعي",
+        "مشهد الحفلة"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "الجنس الجماعي"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 155,
+      "name": "انهيار التدريب الجنسي",
+      "level": 4,
+      "tags": [
+        "التدريب على الجنس",
+        "SM",
+        "الرقيق الجنس",
+        "التدريب والتقييد",
+        "الجنس الخشن",
+        "الجنس الخشن",
+        "المنحرف الثقيلة",
+        "يقطر سوط الشمع",
+        "صنم معين"
+      ],
+      "description": "الهيمنة والخضوع، والأوثان الثقافية الفرعية والانهيار الجنسي الخطير",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "التدريب على الثقافة الفرعية",
+        "الخاضعة المهيمنة",
+        "مواجهة ثقيلة"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "التدريب على الجنس"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 156,
+      "name": "زقزقة المكشوفة تجزئة",
+      "level": 4,
+      "tags": [
+        "التعرض مجنون",
+        "التعرض للفضاء العام",
+        "مكشوفة في الهواء الطلق",
+        "صدمة السيارة",
+        "التصوير الخفي والتلصص",
+        "كاميرا الخصوصية",
+        "حمام مختلس النظر",
+        "مُعرض ل"
+      ],
+      "description": "تقسيم التعرض للفضاء العام والعرض الخارجي والتصوير الخفي والصريح",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "التعرض المكاني",
+        "تصوير صريح",
+        "عرض خارجي"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "مختلس النظر مكشوفة"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 157,
+      "name": "تجزئة الزي المهني",
+      "level": 4,
+      "tags": [
+        "ممرضة طبيب",
+        "أمراض النساء والتوليد",
+        "مضيفة طيران",
+        "شرطية",
+        "نموذج سيارة عارضة أزياء",
+        "فتاة ترقص",
+        "المواد الإباحية التجارية",
+        "المواعدة المدفوعة والدعارة"
+      ],
+      "description": "المهن الخاصة بالصناعة، والأدوار الموحدة المحددة وتجزئة الشخصية",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "شخصية موحدة",
+        "مهنة الصناعة",
+        "لعب الأدوار"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "الزي المهني"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 158,
+      "name": "تقسيم الموضوع الأدبي",
+      "level": 4,
+      "tags": [
+        "فنون الدفاع عن النفس المثيرة",
+        "الشبقية الكلاسيكية",
+        "الشبقية التاريخية",
+        "الخيال العلمي الخيال",
+        "قصص منتصف الليل",
+        "المدينة المعاصرة",
+        "مروحة اللعبة",
+        "الشبقية اليابانية",
+        "الشبقية الغربية",
+        "قصة مغامرة"
+      ],
+      "description": "إعدادات خلفية أدب الكبار، وخلفية الزمان والمكان، وتقسيمات فرعية محددة للنوع",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "موضوعات أدبية",
+        "إعدادات الخلفية",
+        "النوع الأدبي"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "موضوعات أدبية"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 159,
+      "name": "الانهيار الفسيولوجي للرغبة",
+      "level": 4,
+      "tags": [
+        "أفعال جنسية صريحة",
+        "النشوة الجنسية الذاتية",
+        "الجنس عن طريق الفم",
+        "الجنس الشرجي",
+        "ابتلاع نائب الرئيس على الوجه",
+        "صور خاصة",
+        "الإغراء المراوغ",
+        "الصدور والساقين جميلة",
+        "مجمع العذرية"
+      ],
+      "description": "الحركات الفسيولوجية والسلوكية، لقطات مقربة للأعضاء، صور مثيرة وانهيار الخصائص الحسية",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "الإجراءات الفسيولوجية",
+        "لقطة مقربة للأعضاء",
+        "صورة مثيرة"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "علم وظائف الأعضاء المثيرة"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 160,
+      "name": "انهيار الاعتداء اللاإرادي",
+      "level": 4,
+      "tags": [
+        "اغتصاب اغتصاب",
+        "اغتصاب وتخدير",
+        "ضد الإرادة",
+        "اعتداء اغتصاب جماعي",
+        "الإكراه العنيف"
+      ],
+      "description": "تصنيف الإكراه غير الطوعي والتعدي والانتهاكات الجسيمة",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "ضد الإرادة",
+        "التعدي والانتهاك",
+        "انتهاك قسري"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "اعتداء لا إرادي"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 161,
+      "name": "تجزئة الاتجاه المتعددة",
+      "level": 4,
+      "tags": [
+        "المثلية",
+        "زنبق مثليه",
+        "جمال مثلي الجنس",
+        "المتحولين جنسيا"
+      ],
+      "description": "الإدراك المتنوع للجنس والتوجهات المتنوعة وتقسيم موضوع التوجه الجنسي المحدد",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "اتجاهات متعددة",
+        "مواضيع مثلية",
+        "تصنيف التوجه الجنسي"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "التصنيفات الإباحية",
+          "triggerTags": [
+            "اتجاهات متعددة"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
       }
     }
   ]

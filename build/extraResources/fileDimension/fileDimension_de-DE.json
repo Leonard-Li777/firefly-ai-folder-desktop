@@ -126,75 +126,6 @@
       }
     },
     {
-      "id": 100,
-      "name": "Textaufschlüsselung",
-      "level": 2,
-      "tags": [
-        "Texterweiterung",
-        "Reintext",
-        "Markup-Dokument",
-        "Logdatei",
-        "Konfigurationsdatei",
-        "Differenzdatei",
-        "Untertitel"
-      ],
-      "description": "Unterteilung von Textdateien",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "Formateigenschaften"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Dateityp",
-          "triggerTags": [
-            "Text"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
-      "id": 101,
-      "name": "Dokumentaufschlüsselung",
-      "level": 2,
-      "tags": [
-        "Dokumenterweiterung",
-        "Office",
-        "Word-Dokument",
-        "Blatt",
-        "Präsentation",
-        "WPS-Dokument"
-      ],
-      "description": "Unterteilung von Dokumentdateien",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "Formateigenschaften"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Dateityp",
-          "triggerTags": [
-            "Dokument"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 5,
       "name": "Segmentierung der Anwendungsdaten",
       "level": 2,
@@ -626,172 +557,6 @@
       }
     },
     {
-      "id": 102,
-      "name": "Anwendungsdatenerweiterung",
-      "level": 3,
-      "tags": [
-        "bplist",
-        "cat",
-        "chm",
-        "emf",
-        "gpg",
-        "hlp",
-        "ics",
-        "lnk",
-        "m3u",
-        "m3u8",
-        "mum",
-        "pcap",
-        "pcapng",
-        "pdb",
-        "pem",
-        "pickle",
-        "pkl",
-        "plist",
-        "po",
-        "pt",
-        "pth",
-        "pub",
-        "reg",
-        "sqlite",
-        "sqlite3",
-        "srt",
-        "sum",
-        "torrent",
-        "url"
-      ],
-      "description": "Dateierweiterung für Anwendungsdaten",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "Dateierweiterung"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Segmentierung der Anwendungsdaten",
-          "triggerTags": [
-            "Anwendungsdatenerweiterung"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 103,
-      "name": "Datenbankerweiterung",
-      "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
-      "description": "Datenbankdateierweiterung",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "Dateierweiterung"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Datenbanksegmentierung",
-          "triggerTags": [
-            "Datenbankerweiterung"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 104,
-      "name": "Disk-Image-Erweiterung",
-      "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
-      "description": "Erweiterung der Disk-Image-Datei",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "Dateierweiterung"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Disk-Image-Segmentierung",
-          "triggerTags": [
-            "Disk-Image-Erweiterung"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 105,
-      "name": "Segmentierung des Quellcodes",
-      "level": 2,
-      "tags": [
-        "Quellcode-Erweiterung",
-        "Skript",
-        "Konfigurationsdatei",
-        "Programmiersprache",
-        "Frontend",
-        "Hinteres Ende"
-      ],
-      "description": "Klassifizierung von Quellcodedateien",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "Grammatikalische Merkmale",
-        "Interpreter-Pfad"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Dateityp",
-          "triggerTags": [
-            "Quellcode"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 16,
       "name": "Geografische Lage",
       "level": 2,
@@ -901,46 +666,6 @@
           "isRuleSubdivision": true,
           "singleSelect": true
         }
-      }
-    },
-    {
-      "id": 29,
-      "name": "Segmentierung des Familienlebens",
-      "level": 2,
-      "tags": [
-        "Haus zum Leben",
-        "Homeshopping",
-        "Familienmedizin",
-        "Familiendokumente",
-        "Kindererziehung",
-        "Tägliche Zimmerreinigung",
-        "Hausgemachte Mahlzeiten"
-      ],
-      "description": "Spezifische Lebensthemen in Familiensituationen",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "Speicherpfad",
-        "Benennungsmuster",
-        "Zugehörige Anwendungen"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Verwendungszweck der Datei",
-          "triggerTags": [
-            "Familienleben"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {}
       }
     },
     {
@@ -1340,6 +1065,281 @@
       "metadata": {
         "flag": {
           "isPanDimension": true
+        }
+      }
+    },
+    {
+      "id": 29,
+      "name": "Segmentierung des Familienlebens",
+      "level": 2,
+      "tags": [
+        "Haus zum Leben",
+        "Homeshopping",
+        "Familienmedizin",
+        "Familiendokumente",
+        "Kindererziehung",
+        "Tägliche Zimmerreinigung",
+        "Hausgemachte Mahlzeiten"
+      ],
+      "description": "Spezifische Lebensthemen in Familiensituationen",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "design"
+      ],
+      "contextHints": [
+        "Speicherpfad",
+        "Benennungsmuster",
+        "Zugehörige Anwendungen"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Verwendungszweck der Datei",
+          "triggerTags": [
+            "Familienleben"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 100,
+      "name": "Textaufschlüsselung",
+      "level": 2,
+      "tags": [
+        "Texterweiterung",
+        "Reintext",
+        "Markup-Dokument",
+        "Logdatei",
+        "Konfigurationsdatei",
+        "Differenzdatei",
+        "Untertitel"
+      ],
+      "description": "Unterteilung von Textdateien",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "Formateigenschaften"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Dateityp",
+          "triggerTags": [
+            "Text"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 101,
+      "name": "Dokumentaufschlüsselung",
+      "level": 2,
+      "tags": [
+        "Dokumenterweiterung",
+        "Office",
+        "Word-Dokument",
+        "Blatt",
+        "Präsentation",
+        "WPS-Dokument"
+      ],
+      "description": "Unterteilung von Dokumentdateien",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "Formateigenschaften"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Dateityp",
+          "triggerTags": [
+            "Dokument"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 102,
+      "name": "Anwendungsdatenerweiterung",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "Dateierweiterung für Anwendungsdaten",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "Dateierweiterung"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentierung der Anwendungsdaten",
+          "triggerTags": [
+            "Anwendungsdatenerweiterung"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 103,
+      "name": "Datenbankerweiterung",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "Datenbankdateierweiterung",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "Dateierweiterung"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Datenbanksegmentierung",
+          "triggerTags": [
+            "Datenbankerweiterung"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 104,
+      "name": "Disk-Image-Erweiterung",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "Erweiterung der Disk-Image-Datei",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "Dateierweiterung"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Disk-Image-Segmentierung",
+          "triggerTags": [
+            "Disk-Image-Erweiterung"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 105,
+      "name": "Segmentierung des Quellcodes",
+      "level": 2,
+      "tags": [
+        "Quellcode-Erweiterung",
+        "Skript",
+        "Konfigurationsdatei",
+        "Programmiersprache",
+        "Frontend",
+        "Hinteres Ende"
+      ],
+      "description": "Klassifizierung von Quellcodedateien",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "Grammatikalische Merkmale",
+        "Interpreter-Pfad"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Dateityp",
+          "triggerTags": [
+            "Quellcode"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
         }
       }
     },
@@ -2550,7 +2550,8 @@
         "Politische Angelegenheiten",
         "Verstöße",
         "Pornographie",
-        "Beleidigungen"
+        "Beleidigungen",
+        "Blutig"
       ],
       "description": "Klassifizierung von Dokumenten nach Sensitivität und Compliance-Sicherheitsprüfung",
       "applicableFileTypes": [
@@ -2724,17 +2725,20 @@
       "name": "Erotik-Segmente",
       "level": 3,
       "tags": [
-        "Explizite sexuelle Handlungen",
-        "Orgasmus durch Selbstbefriedigung",
-        "Erotische Unterhaltung",
-        "Verlockung am Rande",
-        "Entblößung und versehentlicher Blick auf Intimbereiche",
-        "Fetisch und Fesselung",
-        "Private Fotos",
-        "Heimliche Aufnahmen und Spionage",
-        "Gegen den Willen"
+        "Familieninzest",
+        "Außereheliche Lust",
+        "Campus-Lehrer und -Studenten",
+        "Soziales am Arbeitsplatz",
+        "Gruppensex",
+        "Sexualtraining",
+        "Peeping ausgesetzt",
+        "Berufsuniform",
+        "Literarische Themen",
+        "Erotische Physiologie",
+        "Unfreiwilliger Angriff",
+        "Mehrere Ausrichtungen"
       ],
-      "description": "Segmente für Erwachsenenpornografie, erotische Unterhaltung und Themen am Rande der Anstößigkeit",
+      "description": "Aufteilung der Kernkategorien von Erwachsenenpornos und vertikalen Themen",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2743,8 +2747,8 @@
       ],
       "contextHints": [
         "Altersprüfung",
-        "Tests auf sexuelle Kontakte",
-        "Erotik-Kategorien"
+        "Themenklassifizierung",
+        "Erotische Anerkennung"
       ],
       "triggerConditions": [
         {
@@ -3317,6 +3321,470 @@
           "singleSelect": true,
           "isMicroService": true
         }
+      }
+    },
+    {
+      "id": 150,
+      "name": "Aufschlüsselung des Familieninzests",
+      "level": 4,
+      "tags": [
+        "Inzest",
+        "Mutter und Sohn",
+        "Vater und Tochter",
+        "Bruder und Schwester",
+        "Geschwister",
+        "Schwiegervater und Schwiegertochter",
+        "Schwiegermutter und Schwiegertochter",
+        "Stiefvater, Stiefmutter",
+        "Schwiegervater und Schwiegermutter",
+        "Schwägerin",
+        "Tante und Neffe",
+        "Onkel und Neffe",
+        "Onkel und Neffe",
+        "Cousins ​​und Schwiegereltern",
+        "Schwägerin",
+        "Großvater und Enkel trennten die Generationen"
+      ],
+      "description": "Unterteilung der Themen Blutsverwandtschaft, Familienalter und tabuisierte Ethik",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Thema nahe Verwandte",
+        "Ethische Tabus",
+        "Blut-Erzählung"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Familieninzest"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 151,
+      "name": "Außerehelicher Lustzusammenbruch",
+      "level": 4,
+      "tags": [
+        "Partnertausch",
+        "Frauentausch",
+        "Schummeln",
+        "Schöne verheiratete Frau",
+        "Junge reife Frau",
+        "Herrin Herrin",
+        "Hausfrau",
+        "Die Freude, das Jahr zu vergessen",
+        "Reine Liebe"
+      ],
+      "description": "Segmentierung außerehelicher emotionaler Verträge, Partneraustausch und Ehefrauenthemen",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Partnertausch",
+        "Außereheliche Geheimnisse",
+        "Thema Frau"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Außereheliche Lust"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 152,
+      "name": "Aufschlüsselung der Campus-Lehrer und -Studenten",
+      "level": 4,
+      "tags": [
+        "Lehrerschüler",
+        "Weibliche Lehrerin",
+        "Männlicher Lehrer",
+        "Weibliche Klassenkameradin",
+        "ältere ältere Schwester",
+        "Unterschüler",
+        "Schulschönheit",
+        "Studierende",
+        "Gymnasiast",
+        "Tutor"
+      ],
+      "description": "Themenaufschlüsselung: Lehrer-Schüler-Interaktion, Jugendcampus und Klassenkameraden",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Erzählung von Lehrern und Schülern",
+        "Campus-Jugend",
+        "Thema „Klassenkameraden“."
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Campus-Lehrer und -Studenten"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 153,
+      "name": "Soziale Segmentierung am Arbeitsplatz",
+      "level": 4,
+      "tags": [
+        "Zwischen Kollegen",
+        "Weibliche Chefin",
+        "Männlicher Chef",
+        "Weibliche Sekretärin",
+        "Weibliche Nachbarin",
+        "Nachbarn",
+        "Fahrerkollege",
+        "Dienstmädchen",
+        "Städtisches Leben",
+        "Landschaftsnotizen",
+        "Internet-Dating"
+      ],
+      "description": "Segmentierung der Beschäftigung am Arbeitsplatz, der Gemeindenachbarschaften und der sozialen Lebenskreise",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Erzählung am Arbeitsplatz",
+        "Nachbarschaftsleben",
+        "Soziale Beziehungen"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Soziales am Arbeitsplatz"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 154,
+      "name": "Segmentierung von Mehrpersonengruppen",
+      "level": 4,
+      "tags": [
+        "3P",
+        "Gruppensex",
+        "Treffen mit mehreren Partnern",
+        "Gruppeninteraktion",
+        "Mehrpersonenparty"
+      ],
+      "description": "Themensegmentierung für Zusammenarbeit mit mehreren Agenten, Gruppeninteraktion und Interaktion mit mehreren Personen",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Interaktion mit mehreren Agenten",
+        "Gruppeninteraktion",
+        "Partyszene"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Gruppensex"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 155,
+      "name": "Panne beim Sextraining",
+      "level": 4,
+      "tags": [
+        "Sexualtraining",
+        "SM",
+        "Sexsklavin",
+        "Fetisch und Fesselung",
+        "Harter Sex",
+        "Harter Sex",
+        "Schwerer Perverser",
+        "Tropfende Wachspeitsche",
+        "Spezifischer Fetisch"
+      ],
+      "description": "Dominanz und Unterwerfung, subkulturelle Fetische und ernsthafter konfrontativer Sex-Zusammenbruch",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Subkulturtraining",
+        "Dominant unterwürfig",
+        "Schwere Konfrontation"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Sexualtraining"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 156,
+      "name": "Peep Exponierte Segmentierung",
+      "level": 4,
+      "tags": [
+        "Verrückte Belichtung",
+        "Exposition im öffentlichen Raum",
+        "Im Freien ausgesetzt",
+        "Autoschock",
+        "Heimliche Aufnahmen und Spionage",
+        "Privatsphärenkamera",
+        "Badegucken",
+        "Ausgesetzt"
+      ],
+      "description": "Unterteilung in öffentliche Räume, Ausstellungen im Freien und verdecktes Spähen und ehrliche Fotografie",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Räumliche Belichtung",
+        "Ehrliches Filmen",
+        "Außendarstellung"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Peeping ausgesetzt"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 157,
+      "name": "Professionelle einheitliche Segmentierung",
+      "level": 4,
+      "tags": [
+        "Arzt, Krankenschwester",
+        "Geburtshilfe und Gynäkologie",
+        "Flugbegleiterin",
+        "Polizeiangestellte",
+        "Mannequin-Automodell",
+        "Tanzendes Mädchen",
+        "Kommerzielle Pornografie",
+        "Bezahltes Dating und Prostitution"
+      ],
+      "description": "Branchenspezifische Berufe, spezifische einheitliche Rollen und Persönlichkeitssegmentierung",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Einheitlicher Charakter",
+        "Branchenberuf",
+        "Rollenspiel"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Berufsuniform"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 158,
+      "name": "Aufschlüsselung der literarischen Themen",
+      "level": 4,
+      "tags": [
+        "Erotische Kampfkünste",
+        "Klassische Erotik",
+        "Historische Erotik",
+        "Fantasy-Science-Fiction",
+        "Mitternachtsgeschichten",
+        "Zeitgenössische Stadt",
+        "Spielefan",
+        "Japanische Erotik",
+        "Westliche Erotik",
+        "Abenteuergeschichte"
+      ],
+      "description": "Hintergrundeinstellungen der Erwachsenenliteratur, zeitlicher und räumlicher Hintergrund und spezifische Genreunterteilungen",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Literarische Themen",
+        "Hintergrundeinstellungen",
+        "Literarisches Genre"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Literarische Themen"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 159,
+      "name": "Physiologischer Zusammenbruch des Verlangens",
+      "level": 4,
+      "tags": [
+        "Explizite sexuelle Handlungen",
+        "Orgasmus durch Selbstbefriedigung",
+        "Oralsex",
+        "Analsex",
+        "Gesichtssperma schlucken",
+        "Private Fotos",
+        "Verlockung am Rande",
+        "Schöne Brüste und Beine",
+        "Jungfräulichkeitskomplex"
+      ],
+      "description": "Physiologische und Verhaltensbewegungen, Nahaufnahmen von Organen, sexy Fotos und Aufschlüsselung sensorischer Eigenschaften",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Physiologische Handlungen",
+        "Nahaufnahme der Orgel",
+        "Sexy Foto"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Erotische Physiologie"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 160,
+      "name": "Zusammenbruch durch unfreiwillige Körperverletzung",
+      "level": 4,
+      "tags": [
+        "Vergewaltigung Vergewaltigung",
+        "Vergewaltigt und unter Drogen gesetzt",
+        "Gegen den Willen",
+        "Gruppenvergewaltigung",
+        "Gewalttätiger Zwang"
+      ],
+      "description": "Klassifizierung von unfreiwilliger Nötigung, Übergriffen und extremen Verstößen",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Gegen den Willen",
+        "Verstoß und Verletzung",
+        "Gewaltsamer Verstoß"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Unfreiwilliger Angriff"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 161,
+      "name": "Segmentierung mit mehreren Orientierungen",
+      "level": 4,
+      "tags": [
+        "Homoerotisch",
+        "Lesbische Lilie",
+        "Schwule Schönheit",
+        "Transgender"
+      ],
+      "description": "Unterschiedliche Geschlechterwahrnehmung, unterschiedliche Orientierungen und spezifische Segmentierung der sexuellen Orientierungsthemen",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Mehrere Ausrichtungen",
+        "Homosexuelle Themen",
+        "Klassifizierung der sexuellen Orientierung"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Erotik-Segmente",
+          "triggerTags": [
+            "Mehrere Ausrichtungen"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
       }
     }
   ]

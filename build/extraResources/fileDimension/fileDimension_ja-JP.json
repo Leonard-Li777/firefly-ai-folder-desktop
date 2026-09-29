@@ -126,75 +126,6 @@
       }
     },
     {
-      "id": 100,
-      "name": "テキストの細分化",
-      "level": 2,
-      "tags": [
-        "テキスト拡張子",
-        "プレーンテキスト",
-        "マークアップドキュメント",
-        "ログファイル",
-        "設定ファイル",
-        "差分ファイル",
-        "サブタイトル"
-      ],
-      "description": "テキストファイルの小分け",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "フォーマットの特徴"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "ファイルの種類",
-          "triggerTags": [
-            "テキスト"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
-      "id": 101,
-      "name": "ドキュメントの細分化",
-      "level": 2,
-      "tags": [
-        "文書拡張子",
-        "Office",
-        "Word文書",
-        "シート",
-        "プレゼンテーション",
-        "WPSドキュメント"
-      ],
-      "description": "文書ファイルの小分け",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "フォーマットの特徴"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "ファイルの種類",
-          "triggerTags": [
-            "ドキュメント"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 5,
       "name": "アプリケーションデータのセグメント化",
       "level": 2,
@@ -626,172 +557,6 @@
       }
     },
     {
-      "id": 102,
-      "name": "アプリケーションデータ拡張子",
-      "level": 3,
-      "tags": [
-        "bplist",
-        "cat",
-        "chm",
-        "emf",
-        "gpg",
-        "hlp",
-        "ics",
-        "lnk",
-        "m3u",
-        "m3u8",
-        "mum",
-        "pcap",
-        "pcapng",
-        "pdb",
-        "pem",
-        "pickle",
-        "pkl",
-        "plist",
-        "po",
-        "pt",
-        "pth",
-        "pub",
-        "reg",
-        "sqlite",
-        "sqlite3",
-        "srt",
-        "sum",
-        "torrent",
-        "url"
-      ],
-      "description": "アプリケーションデータファイルの拡張子",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "ファイル拡張子"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "アプリケーションデータのセグメント化",
-          "triggerTags": [
-            "アプリケーションデータ拡張子"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 103,
-      "name": "データベース拡張機能",
-      "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
-      "description": "データベースファイル拡張子",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "ファイル拡張子"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "データベースのセグメント化",
-          "triggerTags": [
-            "データベース拡張機能"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 104,
-      "name": "ディスクイメージ拡張子",
-      "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
-      "description": "ディスクイメージファイルの拡張子",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "ファイル拡張子"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "ディスクイメージのセグメンテーション",
-          "triggerTags": [
-            "ディスクイメージ拡張子"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 105,
-      "name": "ソースコードのセグメンテーション",
-      "level": 2,
-      "tags": [
-        "ソースコードの拡張子",
-        "スクリプト",
-        "設定ファイル",
-        "プログラミング言語",
-        "フロントエンド",
-        "後部"
-      ],
-      "description": "ソースコードファイルの分類",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "文法的特徴",
-        "インタプリタのパス"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "ファイルの種類",
-          "triggerTags": [
-            "ソースコード"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 16,
       "name": "地理的位置",
       "level": 2,
@@ -901,46 +666,6 @@
           "isRuleSubdivision": true,
           "singleSelect": true
         }
-      }
-    },
-    {
-      "id": 29,
-      "name": "家族生活の内訳",
-      "level": 2,
-      "tags": [
-        "ハウスレジデンス",
-        "ホームショッピング",
-        "在宅医療",
-        "家族ID",
-        "子どもの教育",
-        "毎日のハウスキーピング",
-        "家庭料理"
-      ],
-      "description": "家族のシーンでの特定の生活の問題",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "保存パス",
-        "命名パターン",
-        "関連アプリケーション"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "ファイルの用途",
-          "triggerTags": [
-            "家族生活"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {}
       }
     },
     {
@@ -1340,6 +1065,281 @@
       "metadata": {
         "flag": {
           "isPanDimension": true
+        }
+      }
+    },
+    {
+      "id": 29,
+      "name": "家族生活の内訳",
+      "level": 2,
+      "tags": [
+        "ハウスレジデンス",
+        "ホームショッピング",
+        "在宅医療",
+        "家族ID",
+        "子どもの教育",
+        "毎日のハウスキーピング",
+        "家庭料理"
+      ],
+      "description": "家族のシーンでの特定の生活の問題",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "design"
+      ],
+      "contextHints": [
+        "保存パス",
+        "命名パターン",
+        "関連アプリケーション"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの用途",
+          "triggerTags": [
+            "家族生活"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 100,
+      "name": "テキストの細分化",
+      "level": 2,
+      "tags": [
+        "テキスト拡張子",
+        "プレーンテキスト",
+        "マークアップドキュメント",
+        "ログファイル",
+        "設定ファイル",
+        "差分ファイル",
+        "サブタイトル"
+      ],
+      "description": "テキストファイルの小分け",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "フォーマットの特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "テキスト"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 101,
+      "name": "ドキュメントの細分化",
+      "level": 2,
+      "tags": [
+        "文書拡張子",
+        "Office",
+        "Word文書",
+        "シート",
+        "プレゼンテーション",
+        "WPSドキュメント"
+      ],
+      "description": "文書ファイルの小分け",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "フォーマットの特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "ドキュメント"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 102,
+      "name": "アプリケーションデータ拡張子",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "アプリケーションデータファイルの拡張子",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アプリケーションデータのセグメント化",
+          "triggerTags": [
+            "アプリケーションデータ拡張子"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 103,
+      "name": "データベース拡張機能",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "データベースファイル拡張子",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "データベースのセグメント化",
+          "triggerTags": [
+            "データベース拡張機能"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 104,
+      "name": "ディスクイメージ拡張子",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "ディスクイメージファイルの拡張子",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "ファイル拡張子"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ディスクイメージのセグメンテーション",
+          "triggerTags": [
+            "ディスクイメージ拡張子"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 105,
+      "name": "ソースコードのセグメンテーション",
+      "level": 2,
+      "tags": [
+        "ソースコードの拡張子",
+        "スクリプト",
+        "設定ファイル",
+        "プログラミング言語",
+        "フロントエンド",
+        "後部"
+      ],
+      "description": "ソースコードファイルの分類",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "文法的特徴",
+        "インタプリタのパス"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "ソースコード"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
         }
       }
     },
@@ -2550,7 +2550,8 @@
         "政治的関与",
         "違反",
         "ポルノ",
-        "乱用"
+        "乱用",
+        "ブラッディ"
       ],
       "description": "機密性とコンプライアンスの分類文書コンテンツのセキュリティレビュー",
       "applicableFileTypes": [
@@ -2724,17 +2725,20 @@
       "name": "アダルトのジャンル",
       "level": 3,
       "tags": [
-        "露骨なセックス",
-        "オナニーによるオーガズム",
-        "アダルトエンターテインメント",
-        "エッジ誘惑",
-        "露出し、行って",
-        "規律拘束",
-        "プライベート写真",
-        "率直なのぞき見",
-        "意志に反して"
+        "家族の近親相姦",
+        "婚外の欲望",
+        "キャンパスの先生と学生",
+        "職場の社会",
+        "集団セックス",
+        "セックストレーニング",
+        "盗撮露出",
+        "プロのユニフォーム",
+        "文学的なテーマ",
+        "エロ生理学",
+        "不本意な暴行",
+        "複数の向き"
       ],
-      "description": "アダルトビデオ、エロ芸能、エッチラビング露出の話題の内訳",
+      "description": "アダルトポルノの中核カテゴリーと垂直テーマの分割",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2743,8 +2747,8 @@
       ],
       "contextHints": [
         "アダルトレビュー",
-        "性行動の検出",
-        "アダルトカテゴリ"
+        "テーマ分類",
+        "エロ認識"
       ],
       "triggerConditions": [
         {
@@ -3317,6 +3321,470 @@
           "singleSelect": true,
           "isMicroService": true
         }
+      }
+    },
+    {
+      "id": 150,
+      "name": "家族の近親相姦の内訳",
+      "level": 4,
+      "tags": [
+        "近親相姦",
+        "母と息子",
+        "父と娘",
+        "兄と妹",
+        "兄弟",
+        "義父と嫁",
+        "義母と嫁",
+        "継父継母",
+        "義父と義母",
+        "義理の姉妹",
+        "叔母と甥",
+        "叔父と甥",
+        "叔父と甥",
+        "義理のいとこ",
+        "義理の姉妹",
+        "祖父と孫が世代を隔てた"
+      ],
+      "description": "血族関係、家族の年功序列、タブーとされる倫理的テーマの細分化",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "近親者のテーマ",
+        "倫理的タブー",
+        "血の物語"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "家族の近親相姦"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 151,
+      "name": "婚外の欲望の内訳",
+      "level": 4,
+      "tags": [
+        "パートナー交換",
+        "妻のスワッピング",
+        "不正行為",
+        "美しい人妻",
+        "若い熟女",
+        "愛人 愛人",
+        "主婦",
+        "年を忘れる楽しさ",
+        "純愛"
+      ],
+      "description": "婚外の感情的契約、パートナー交換、妻のテーマの細分化",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "パートナー交換",
+        "婚外の秘密",
+        "妻のテーマ"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "婚外の欲望"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 152,
+      "name": "キャンパスの教師と学生の内訳",
+      "level": 4,
+      "tags": [
+        "先生生徒",
+        "女教師",
+        "男性教師",
+        "同級生の女子",
+        "先輩先輩お姉さん",
+        "下級生",
+        "学校の美しさ",
+        "大学生",
+        "高校生",
+        "家庭教師"
+      ],
+      "description": "教師と生徒の交流、青少年キャンパス、クラスメートのテーマの内訳",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "教師と生徒の物語",
+        "キャンパスユース",
+        "クラスメイトのテーマ"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "キャンパスの先生と学生"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 153,
+      "name": "職場の社会的セグメンテーション",
+      "level": 4,
+      "tags": [
+        "同僚の間で",
+        "女上司",
+        "男性上司",
+        "女性秘書",
+        "隣人の女性",
+        "隣人",
+        "ドライバーの同僚",
+        "メイド",
+        "都市生活",
+        "田舎のメモ",
+        "インターネットデート"
+      ],
+      "description": "職場の雇用、近隣地域、生活社会サークルの細分化",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "職場の物語",
+        "近所の生活",
+        "社会関係"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "職場の社会"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 154,
+      "name": "複数人のグループのセグメンテーション",
+      "level": 4,
+      "tags": [
+        "3P",
+        "クワイン",
+        "マルチパートナーの集まり",
+        "グループでの交流",
+        "複数人パーティー"
+      ],
+      "description": "マルチエージェントコラボレーション、グループインタラクション、および複数人インタラクションのテーマセグメント化",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "マルチエージェントインタラクション",
+        "グループでの交流",
+        "パーティーシーン"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "集団セックス"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 155,
+      "name": "セックストレーニングの内訳",
+      "level": 4,
+      "tags": [
+        "セックストレーニング",
+        "SM",
+        "性奴隷",
+        "規律拘束",
+        "激しいセックス",
+        "激しいセックス",
+        "ヘビーデューティーな変態",
+        "滴る蝋鞭",
+        "特定のフェチ"
+      ],
+      "description": "支配と服従、サブカルチャーのフェティッシュと深刻な対立的なセックスの崩壊",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "サブカルチャートレーニング",
+        "支配的な従順な",
+        "激しい対立"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "セックストレーニング"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 156,
+      "name": "のぞき見露出セグメンテーション",
+      "level": 4,
+      "tags": [
+        "クレイジー露出",
+        "公共空間での露出",
+        "屋外で露出",
+        "車の衝撃",
+        "率直なのぞき見",
+        "プライバシーカメラ",
+        "お風呂のぞき",
+        "露出"
+      ],
+      "description": "公共空間での露出、屋外展示、隠し撮りおよび率直な写真撮影の細分化",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "空間露出",
+        "率直な撮影",
+        "屋外ディスプレイ"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "盗撮露出"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 157,
+      "name": "プロフェッショナルな均一セグメンテーション",
+      "level": 4,
+      "tags": [
+        "医師看護師",
+        "産婦人科",
+        "航空会社のスチュワーデス",
+        "婦人警官",
+        "マネキンの車のモデル",
+        "踊る女の子",
+        "商業ポルノ",
+        "援助交際と売春"
+      ],
+      "description": "業界特有の職業、特定の統一的な役割、性格の細分化",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "均一なキャラクター",
+        "業界の職業",
+        "ロールプレイング"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "プロのユニフォーム"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 158,
+      "name": "文学科目の内訳",
+      "level": 4,
+      "tags": [
+        "エロ格闘技",
+        "クラシックエロティカ",
+        "歴史的エロチカ",
+        "ファンタジーサイエンスフィクション",
+        "真夜中の物語",
+        "現代都市",
+        "ゲームファン",
+        "日本のエロチカ",
+        "西洋エロチカ",
+        "冒険物語"
+      ],
+      "description": "成人向け文学の背景設定、時間と空間の背景、特定のジャンルの細分化",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "文学的なテーマ",
+        "背景設定",
+        "文学ジャンル"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "文学的なテーマ"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 159,
+      "name": "欲望の生理学的崩壊",
+      "level": 4,
+      "tags": [
+        "露骨なセックス",
+        "オナニーによるオーガズム",
+        "オーラルセックス",
+        "アナルセックス",
+        "顔射ごっくん",
+        "プライベート写真",
+        "エッジ誘惑",
+        "美しい胸と脚",
+        "処女コンプレックス"
+      ],
+      "description": "生理学的および行動的な動き、臓器のクローズアップ、セクシーな写真、感覚特性の内訳",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "生理作用",
+        "臓器のクローズアップ",
+        "セクシーな写真"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "エロ生理学"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 160,
+      "name": "非自発的暴行の内訳",
+      "level": 4,
+      "tags": [
+        "レイプ レイプ",
+        "レイプされて薬漬けにされた",
+        "意志に反して",
+        "集団強姦暴行",
+        "暴力的な強制"
+      ],
+      "description": "非自発的な強制、侵害、および極端な違反の分類",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "意志に反して",
+        "侵害と違反",
+        "強制違反"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "不本意な暴行"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 161,
+      "name": "複数の方向のセグメンテーション",
+      "level": 4,
+      "tags": [
+        "同性愛的",
+        "レズビアンのユリ",
+        "ゲイの美しさ",
+        "トランスジェンダー"
+      ],
+      "description": "多様な性別認知、多様な指向、特定の性的指向のテーマ分割",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "複数の向き",
+        "同性愛のテーマ",
+        "性的指向の分類"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "アダルトのジャンル",
+          "triggerTags": [
+            "複数の向き"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
       }
     }
   ]

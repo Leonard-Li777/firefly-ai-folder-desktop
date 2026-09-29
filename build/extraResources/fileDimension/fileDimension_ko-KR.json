@@ -126,75 +126,6 @@
       }
     },
     {
-      "id": 100,
-      "name": "텍스트 세분화",
-      "level": 2,
-      "tags": [
-        "텍스트 확장",
-        "순수 텍스트",
-        "마크다운 문서",
-        "로그 파일",
-        "구성 파일",
-        "차이 파일",
-        "자막"
-      ],
-      "description": "텍스트 파일의 세분화",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "형식 특성"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "파일 유형",
-          "triggerTags": [
-            "텍스트"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
-      "id": 101,
-      "name": "문서 세분화",
-      "level": 2,
-      "tags": [
-        "문서 확장자",
-        "Office",
-        "워드 문서",
-        "시트",
-        "프레젠테이션",
-        "WPS 문서"
-      ],
-      "description": "문서 파일의 세분화",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "형식 특성"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "파일 유형",
-          "triggerTags": [
-            "문서"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 5,
       "name": "애플리케이션 데이터 세분화",
       "level": 2,
@@ -626,172 +557,6 @@
       }
     },
     {
-      "id": 102,
-      "name": "애플리케이션 데이터 확장",
-      "level": 3,
-      "tags": [
-        "bplist",
-        "cat",
-        "chm",
-        "emf",
-        "gpg",
-        "hlp",
-        "ics",
-        "lnk",
-        "m3u",
-        "m3u8",
-        "mum",
-        "pcap",
-        "pcapng",
-        "pdb",
-        "pem",
-        "pickle",
-        "pkl",
-        "plist",
-        "po",
-        "pt",
-        "pth",
-        "pub",
-        "reg",
-        "sqlite",
-        "sqlite3",
-        "srt",
-        "sum",
-        "torrent",
-        "url"
-      ],
-      "description": "애플리케이션 데이터 파일 확장자",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "파일 확장자"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "애플리케이션 데이터 세분화",
-          "triggerTags": [
-            "애플리케이션 데이터 확장"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 103,
-      "name": "데이터베이스 확장",
-      "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
-      "description": "데이터베이스 파일 확장자",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "파일 확장자"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "데이터베이스 세분화",
-          "triggerTags": [
-            "데이터베이스 확장"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 104,
-      "name": "디스크 이미지 확장",
-      "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
-      "description": "디스크 이미지 파일 확장자",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "파일 확장자"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "디스크 이미지 분할",
-          "triggerTags": [
-            "디스크 이미지 확장"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 105,
-      "name": "소스 코드 분할",
-      "level": 2,
-      "tags": [
-        "소스 코드 확장",
-        "스크립트",
-        "구성 파일",
-        "프로그래밍 언어",
-        "프런트 엔드",
-        "후방"
-      ],
-      "description": "소스 코드 파일 분류",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "문법적 특징",
-        "인터프리터 경로"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "파일 유형",
-          "triggerTags": [
-            "소스 코드"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 16,
       "name": "지리적 위치",
       "level": 2,
@@ -901,46 +666,6 @@
           "isRuleSubdivision": true,
           "singleSelect": true
         }
-      }
-    },
-    {
-      "id": 29,
-      "name": "가족 생활 세분화",
-      "level": 2,
-      "tags": [
-        "살고 싶은 집",
-        "홈쇼핑",
-        "가정의학",
-        "가족 문서",
-        "어린이 교육",
-        "일일 하우스키핑",
-        "집에서 만든 식사"
-      ],
-      "description": "가족 상황에서 구체적인 삶의 문제",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "저장 경로",
-        "명명 패턴",
-        "연동 애플리케이션"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "파일 용도",
-          "triggerTags": [
-            "가족 생활"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {}
       }
     },
     {
@@ -1340,6 +1065,281 @@
       "metadata": {
         "flag": {
           "isPanDimension": true
+        }
+      }
+    },
+    {
+      "id": 29,
+      "name": "가족 생활 세분화",
+      "level": 2,
+      "tags": [
+        "살고 싶은 집",
+        "홈쇼핑",
+        "가정의학",
+        "가족 문서",
+        "어린이 교육",
+        "일일 하우스키핑",
+        "집에서 만든 식사"
+      ],
+      "description": "가족 상황에서 구체적인 삶의 문제",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "design"
+      ],
+      "contextHints": [
+        "저장 경로",
+        "명명 패턴",
+        "연동 애플리케이션"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 용도",
+          "triggerTags": [
+            "가족 생활"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 100,
+      "name": "텍스트 세분화",
+      "level": 2,
+      "tags": [
+        "텍스트 확장",
+        "순수 텍스트",
+        "마크다운 문서",
+        "로그 파일",
+        "구성 파일",
+        "차이 파일",
+        "자막"
+      ],
+      "description": "텍스트 파일의 세분화",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "형식 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "텍스트"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 101,
+      "name": "문서 세분화",
+      "level": 2,
+      "tags": [
+        "문서 확장자",
+        "Office",
+        "워드 문서",
+        "시트",
+        "프레젠테이션",
+        "WPS 문서"
+      ],
+      "description": "문서 파일의 세분화",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "형식 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "문서"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 102,
+      "name": "애플리케이션 데이터 확장",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "애플리케이션 데이터 파일 확장자",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "애플리케이션 데이터 세분화",
+          "triggerTags": [
+            "애플리케이션 데이터 확장"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 103,
+      "name": "데이터베이스 확장",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "데이터베이스 파일 확장자",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "데이터베이스 세분화",
+          "triggerTags": [
+            "데이터베이스 확장"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 104,
+      "name": "디스크 이미지 확장",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "디스크 이미지 파일 확장자",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "파일 확장자"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "디스크 이미지 분할",
+          "triggerTags": [
+            "디스크 이미지 확장"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 105,
+      "name": "소스 코드 분할",
+      "level": 2,
+      "tags": [
+        "소스 코드 확장",
+        "스크립트",
+        "구성 파일",
+        "프로그래밍 언어",
+        "프런트 엔드",
+        "후방"
+      ],
+      "description": "소스 코드 파일 분류",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "문법적 특징",
+        "인터프리터 경로"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "소스 코드"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
         }
       }
     },
@@ -2550,7 +2550,8 @@
         "정치 관련",
         "규정 위반",
         "춘화",
-        "모욕"
+        "모욕",
+        "피비린내"
       ],
       "description": "문서 내용의 민감도 및 규정 준수 보안 검토 분류",
       "applicableFileTypes": [
@@ -2724,17 +2725,20 @@
       "name": "포르노 장르 분류",
       "level": 3,
       "tags": [
-        "노골적인 성행위",
-        "자위 오르가슴",
-        "에로 엔터테인먼트",
-        "아슬아슬한 유혹",
-        "노출 사고",
-        "조교 및 구속",
-        "비공개 사진",
-        "몰래 촬영 및 엿보기",
-        "의사에 반하여"
+        "가족 근친상간",
+        "혼외정욕",
+        "캠퍼스 교사와 학생",
+        "직장 사회",
+        "그룹 섹스",
+        "성교육",
+        "엿보는 노출",
+        "전문 유니폼",
+        "문학적 주제",
+        "에로틱 생리학",
+        "비자발적인 폭행",
+        "다양한 방향"
       ],
-      "description": "성인 포르노, 에로틱 엔터테인먼트 및 선정적 노출 소재의 세분화",
+      "description": "성인 포르노 및 수직 테마의 핵심 카테고리 구분",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2743,8 +2747,8 @@
       ],
       "contextHints": [
         "성인 등급 심사",
-        "성행위 검사",
-        "성인 콘텐츠 카테고리"
+        "테마 분류",
+        "에로틱 인식"
       ],
       "triggerConditions": [
         {
@@ -3317,6 +3321,470 @@
           "singleSelect": true,
           "isMicroService": true
         }
+      }
+    },
+    {
+      "id": 150,
+      "name": "가족 근친상간 분석",
+      "level": 4,
+      "tags": [
+        "근친 상간",
+        "모자",
+        "아버지와 딸",
+        "형제와 자매",
+        "형제",
+        "시아버지와 며느리",
+        "시어머니와 며느리",
+        "계부 계모",
+        "시아버지와 시어머니",
+        "형수",
+        "이모와 조카",
+        "삼촌과 조카",
+        "삼촌과 조카",
+        "사촌들",
+        "형수",
+        "할아버지와 손자는 세대를 나누었습니다."
+      ],
+      "description": "혈족, 가족 서열 및 금기의 윤리적 주제 세분화",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "가까운 친척 테마",
+        "윤리적 금기",
+        "혈액 이야기"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "가족 근친상간"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 151,
+      "name": "혼외 정욕 붕괴",
+      "level": 4,
+      "tags": [
+        "파트너 교환",
+        "아내 교환",
+        "부정 행위",
+        "아름다운 결혼한 여자",
+        "젊은 성숙한 여자",
+        "여주인",
+        "주부",
+        "한해를 잊은 기쁨",
+        "순수한 사랑"
+      ],
+      "description": "혼외정서계약, 파트너교류, 아내테마의 세분화",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "파트너 교환",
+        "혼외 비밀",
+        "아내 테마"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "혼외정욕"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 152,
+      "name": "캠퍼스 교사와 학생 분석",
+      "level": 4,
+      "tags": [
+        "선생님 학생",
+        "여교사",
+        "남자 선생님",
+        "여자 동급생",
+        "선배 언니",
+        "저학년",
+        "학교 미용",
+        "대학생",
+        "고등학생",
+        "가정 교사"
+      ],
+      "description": "교사-학생 상호 작용, 청소년 캠퍼스 및 급우의 주제 분석",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "선생님과 학생의 이야기",
+        "캠퍼스 청소년",
+        "동급생 테마"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "캠퍼스 교사와 학생"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 153,
+      "name": "직장의 사회적 세분화",
+      "level": 4,
+      "tags": [
+        "동료들 사이에서",
+        "여자 상사",
+        "남자 상사",
+        "여성 비서",
+        "여자 이웃",
+        "이웃",
+        "운전사 동료",
+        "하녀",
+        "도시 생활",
+        "시골 노트",
+        "인터넷 데이트"
+      ],
+      "description": "직장 고용, 지역 사회, 생활 사회 집단의 세분화",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "직장 내러티브",
+        "동네 생활",
+        "사회적 관계"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "직장 사회"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 154,
+      "name": "다중 사용자 그룹 세분화",
+      "level": 4,
+      "tags": [
+        "3P",
+        "집합성교",
+        "다중 파트너 모임",
+        "그룹 상호 작용",
+        "다인 파티"
+      ],
+      "description": "다중 상담원 협업, 그룹 상호 작용 및 다자 상호 작용 주제 세분화",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "다중 에이전트 상호 작용",
+        "그룹 상호 작용",
+        "파티 장면"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "그룹 섹스"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 155,
+      "name": "성교육 분석",
+      "level": 4,
+      "tags": [
+        "성교육",
+        "SM",
+        "성노예",
+        "조교 및 구속",
+        "거친 섹스",
+        "거친 섹스",
+        "중장비 변태",
+        "떨어지는 왁스 채찍",
+        "특정 페티쉬"
+      ],
+      "description": "지배와 복종, 하위문화 페티시와 심각한 대립적 성 붕괴",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "서브컬쳐 트레이닝",
+        "지배적 복종",
+        "무거운 대결"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "성교육"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 156,
+      "name": "노출된 분할 살펴보기",
+      "level": 4,
+      "tags": [
+        "미친 노출",
+        "공공장소 노출",
+        "옥외에 노출된",
+        "자동차 충격",
+        "몰래 촬영 및 엿보기",
+        "프라이버시 카메라",
+        "목욕 엿보는",
+        "노출된"
+      ],
+      "description": "공공장소 노출, 옥외 전시, 은밀한 엿보기, 솔직한 사진 촬영 세분화",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "공간적 노출",
+        "솔직한 촬영",
+        "옥외 전시"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "엿보는 노출"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 157,
+      "name": "전문적인 유니폼 세분화",
+      "level": 4,
+      "tags": [
+        "의사 간호사",
+        "산부인과",
+        "항공사 스튜어디스",
+        "경찰",
+        "마네킹 자동차 모델",
+        "춤추는 소녀",
+        "상업 포르노",
+        "유료 데이트 및 매춘"
+      ],
+      "description": "산업별 직업, 특정 통일된 역할 및 성격 세분화",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "획일적인 성격",
+        "산업체 직업",
+        "역할극"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "전문 유니폼"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 158,
+      "name": "문학 주제 분석",
+      "level": 4,
+      "tags": [
+        "에로틱 무술",
+        "고전 에로티카",
+        "역사적인 에로티카",
+        "판타지 SF",
+        "자정 이야기",
+        "현대 도시",
+        "게임 팬",
+        "일본의 에로티카",
+        "서양 에로티카",
+        "모험 이야기"
+      ],
+      "description": "성인문학 배경 설정, 시공간 배경 및 특정 장르 세분화",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "문학적 주제",
+        "배경 설정",
+        "문학 장르"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "문학적 주제"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 159,
+      "name": "욕망의 생리적 붕괴",
+      "level": 4,
+      "tags": [
+        "노골적인 성행위",
+        "자위 오르가슴",
+        "오럴 섹스",
+        "애널 섹스",
+        "얼굴의 정액을 삼키는",
+        "비공개 사진",
+        "아슬아슬한 유혹",
+        "가슴이랑 다리가 예뻐요",
+        "처녀성 콤플렉스"
+      ],
+      "description": "생리적, 행동적 움직임, 장기 클로즈업, 섹시한 사진, 감각 특성의 붕괴",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "생리적 작용",
+        "장기 클로즈업",
+        "섹시한 사진"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "에로틱 생리학"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 160,
+      "name": "무의식적인 폭행 붕괴",
+      "level": 4,
+      "tags": [
+        "강간 강간",
+        "강간당하고 마약먹고",
+        "의사에 반하여",
+        "집단 성폭행",
+        "폭력적인 강압"
+      ],
+      "description": "비자발적 강요, 침해, 극단적 위반의 분류",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "의사에 반하여",
+        "침해 및 위반",
+        "강제 위반"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "비자발적인 폭행"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 161,
+      "name": "다중 방향 분할",
+      "level": 4,
+      "tags": [
+        "동성애",
+        "레즈비언 백합",
+        "게이 뷰티",
+        "트랜스젠더"
+      ],
+      "description": "다양한 성별 인식, 다양한 지향성, 구체적인 성적 지향성 테마 세분화",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "다양한 방향",
+        "동성애 주제",
+        "성적 취향 분류"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "포르노 장르 분류",
+          "triggerTags": [
+            "다양한 방향"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
       }
     }
   ]

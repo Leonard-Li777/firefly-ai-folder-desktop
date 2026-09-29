@@ -339,7 +339,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       intelligenceLevel: 3,
       totalSize: '7.30GB',
       recommended: true,
-      description: t('Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐越狱，支持文本与图像分析。'),
+      description: t('Qwen3.8底座高压缩，体积最小，支持文本与图像分析。'),
       source: 'huggingface',
       quantization: 'PQ2_0',
       isMultiModal: true,
@@ -365,7 +365,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       intelligenceLevel: 3,
       totalSize: '6.12GB',
       recommended: true,
-      description: t('Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐越狱，体积最小，支持文本与图像分析。'),
+      description: t('Qwen3.8底座高压缩，体积最小，支持文本与图像分析。'),
       source: 'huggingface',
       quantization: 'PTQ1_0',
       isMultiModal: true,
@@ -384,14 +384,14 @@ export const MODEL_CONFIG_SOURCE = () => ({
     {
       // 同目录最小投影文件 Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf (629,246,976 B)
       // totalSize = 主模型 PQ2_0 (7,206,168,928 B) + 投影 (629,246,976 B) = 7,835,415,904 B ≈ 7.30GiB
-      id: 'prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf',
-      name: `Bonsai 2 ternary 27B（${t('2比特')}•${t('官方')}•${t('国内加速')}）`,
+      id: 'prism-ml/Ternary-Bonsai-2-27B-PQ2_0',
+      name: `Bonsai 2 ternary 27B（${t('2比特压缩')}•${t('高智能')}）`,
       company: 'prism-ml',
       parameterSize: '27B',
       intelligenceLevel: 3,
       totalSize: '7.30GB',
       recommended: true,
-      description: t('Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。'),
+      description: t('Qwen3.8底座高压缩，体积最小，支持文本与图像分析。'),
       source: 'modelscope',
       quantization: 'PQ2_0',
       isMultiModal: true,
@@ -410,67 +410,15 @@ export const MODEL_CONFIG_SOURCE = () => ({
     {
       // 同目录最小投影文件 Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf (629,246,976 B)
       // totalSize = 主模型 PTQ1_0 (5,946,648,928 B) + 投影 (629,246,976 B) = 6,575,895,904 B ≈ 6.12GiB
-      id: 'prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf',
-      name: `Bonsai 2 ternary 27B（${t('超级压缩')}）`,
+      id: 'prism-ml/Ternary-Bonsai-2-27B-PTQ1_0',
+      name: `Bonsai 2 ternary 27B（${t('1比特压缩')}•${t('高智能')}）`,
       company: 'prism-ml',
       parameterSize: '27B',
       intelligenceLevel: 3,
       totalSize: '6.12GB',
       recommended: true,
-      description: t('Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。'),
+      description: t('Qwen3.8底座高压缩，体积最小，支持文本与图像分析。'),
       source: 'modelscope',
-      quantization: 'PTQ1_0',
-      isMultiModal: true,
-      contextLength: 131072,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'fast',
-        quality: 'medium'
-      },
-      tags: [t('1比特'), t('多模态'), t('低显存')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 4096
-      }
-    },
-    {
-      // 同目录最小投影文件 Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf (629,246,976 B)
-      // totalSize = 主模型 PQ2_0 (7,206,168,928 B) + 投影 (629,246,976 B) = 7,835,415,904 B ≈ 7.30GiB
-      id: 'prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf',
-      name: `Bonsai 2 ternary 27B（${t('2比特')}•${t('官方')}）`,
-      company: 'prism-ml',
-      parameterSize: '27B',
-      intelligenceLevel: 3,
-      totalSize: '7.30GB',
-      recommended: false,
-      description: t('Bonsai 2 27B 三值 2 比特量化官方版本，支持文本与图像分析。'),
-      source: 'huggingface',
-      quantization: 'PQ2_0',
-      isMultiModal: true,
-      contextLength: 131072,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'fast',
-        quality: 'medium'
-      },
-      tags: [t('2比特'), t('多模态'), t('低显存')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 4096
-      }
-    },
-    {
-      // 同目录最小投影文件 Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf (629,246,976 B)
-      // totalSize = 主模型 PTQ1_0 (5,946,648,928 B) + 投影 (629,246,976 B) = 6,575,895,904 B ≈ 6.12GiB
-      id: 'prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf',
-      name: `Bonsai 2 ternary 27B（${t('超级压缩')}•${t('官方')}）`,
-      company: 'prism-ml',
-      parameterSize: '27B',
-      intelligenceLevel: 3,
-      totalSize: '6.12GB',
-      recommended: false,
-      description: t('Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，支持文本与图像分析。'),
-      source: 'huggingface',
       quantization: 'PTQ1_0',
       isMultiModal: true,
       contextLength: 131072,

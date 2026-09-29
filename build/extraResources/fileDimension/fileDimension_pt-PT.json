@@ -126,75 +126,6 @@
       }
     },
     {
-      "id": 100,
-      "name": "Segmentação de texto",
-      "level": 2,
-      "tags": [
-        "Extensão de texto",
-        "Texto puro",
-        "Documento com marcação",
-        "Ficheiro de registo",
-        "Arquivo de configuração",
-        "Ficheiro de diferença",
-        "Legendas"
-      ],
-      "description": "Subdivisão de arquivos de texto",
-      "applicableFileTypes": [
-        "text"
-      ],
-      "contextHints": [
-        "Características de formato"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Tipo de ficheiro",
-          "triggerTags": [
-            "Texto"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
-      "id": 101,
-      "name": "Segmentação de documento",
-      "level": 2,
-      "tags": [
-        "Extensão do documento",
-        "Office",
-        "Documento do Word",
-        "Folha",
-        "Apresentação",
-        "Documento WPS"
-      ],
-      "description": "Subdivisão de arquivos de documentos",
-      "applicableFileTypes": [
-        "document"
-      ],
-      "contextHints": [
-        "Características de formato"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Tipo de ficheiro",
-          "triggerTags": [
-            "Documento"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 5,
       "name": "Segmentação de dados de aplicativos",
       "level": 2,
@@ -626,172 +557,6 @@
       }
     },
     {
-      "id": 102,
-      "name": "Extensão de dados do aplicativo",
-      "level": 3,
-      "tags": [
-        "bplist",
-        "cat",
-        "chm",
-        "emf",
-        "gpg",
-        "hlp",
-        "ics",
-        "lnk",
-        "m3u",
-        "m3u8",
-        "mum",
-        "pcap",
-        "pcapng",
-        "pdb",
-        "pem",
-        "pickle",
-        "pkl",
-        "plist",
-        "po",
-        "pt",
-        "pth",
-        "pub",
-        "reg",
-        "sqlite",
-        "sqlite3",
-        "srt",
-        "sum",
-        "torrent",
-        "url"
-      ],
-      "description": "Extensão do arquivo de dados do aplicativo",
-      "applicableFileTypes": [
-        "application"
-      ],
-      "contextHints": [
-        "Extensão de arquivo"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Segmentação de dados de aplicativos",
-          "triggerTags": [
-            "Extensão de dados do aplicativo"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 103,
-      "name": "Extensão de banco de dados",
-      "level": 3,
-      "tags": [
-        "db",
-        "db3",
-        "mdb",
-        "accdb",
-        "fdb",
-        "dbf",
-        "sqlitedb"
-      ],
-      "description": "Extensão do arquivo de banco de dados",
-      "applicableFileTypes": [
-        "database"
-      ],
-      "contextHints": [
-        "Extensão de arquivo"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Segmentação de banco de dados",
-          "triggerTags": [
-            "Extensão de banco de dados"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 104,
-      "name": "Extensão de imagem de disco",
-      "level": 3,
-      "tags": [
-        "vhd",
-        "vhdx",
-        "vmdk",
-        "img",
-        "nrg",
-        "mdf",
-        "mds",
-        "raw",
-        "qcow2",
-        "vdi",
-        "ova"
-      ],
-      "description": "Extensão de arquivo de imagem de disco",
-      "applicableFileTypes": [
-        "diskimage"
-      ],
-      "contextHints": [
-        "Extensão de arquivo"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Segmentação de imagem de disco",
-          "triggerTags": [
-            "Extensão de imagem de disco"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "isExtensionDimension": true
-        }
-      }
-    },
-    {
-      "id": 105,
-      "name": "Segmentação de código-fonte",
-      "level": 2,
-      "tags": [
-        "Extensão do código-fonte",
-        "Roteiro",
-        "Arquivo de configuração",
-        "Linguagem de programação",
-        "Front-end",
-        "Extremidade traseira"
-      ],
-      "description": "Classificação de arquivos de código-fonte",
-      "applicableFileTypes": [
-        "code"
-      ],
-      "contextHints": [
-        "Características gramaticais",
-        "Caminho do intérprete"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Tipo de ficheiro",
-          "triggerTags": [
-            "Código fonte"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {
-          "isRuleSubdivision": true,
-          "singleSelect": true
-        }
-      }
-    },
-    {
       "id": 16,
       "name": "Localização geográfica",
       "level": 2,
@@ -901,46 +666,6 @@
           "isRuleSubdivision": true,
           "singleSelect": true
         }
-      }
-    },
-    {
-      "id": 29,
-      "name": "Segmentação da vida familiar",
-      "level": 2,
-      "tags": [
-        "Casa para morar",
-        "Compras em casa",
-        "Medicina familiar",
-        "Documentos de família",
-        "Educação infantil",
-        "Limpeza diária",
-        "Refeições caseiras"
-      ],
-      "description": "Assuntos específicos da vida em situações familiares",
-      "applicableFileTypes": [
-        "text",
-        "document",
-        "ebook",
-        "image",
-        "video",
-        "audio",
-        "design"
-      ],
-      "contextHints": [
-        "Caminho de armazenamento",
-        "Padrão de nomenclatura",
-        "Aplicações associadas"
-      ],
-      "triggerConditions": [
-        {
-          "parentDimension": "Finalidade do ficheiro",
-          "triggerTags": [
-            "Vida familiar"
-          ]
-        }
-      ],
-      "metadata": {
-        "flag": {}
       }
     },
     {
@@ -1340,6 +1065,281 @@
       "metadata": {
         "flag": {
           "isPanDimension": true
+        }
+      }
+    },
+    {
+      "id": 29,
+      "name": "Segmentação da vida familiar",
+      "level": 2,
+      "tags": [
+        "Casa para morar",
+        "Compras em casa",
+        "Medicina familiar",
+        "Documentos de família",
+        "Educação infantil",
+        "Limpeza diária",
+        "Refeições caseiras"
+      ],
+      "description": "Assuntos específicos da vida em situações familiares",
+      "applicableFileTypes": [
+        "text",
+        "document",
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "design"
+      ],
+      "contextHints": [
+        "Caminho de armazenamento",
+        "Padrão de nomenclatura",
+        "Aplicações associadas"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Finalidade do ficheiro",
+          "triggerTags": [
+            "Vida familiar"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 100,
+      "name": "Segmentação de texto",
+      "level": 2,
+      "tags": [
+        "Extensão de texto",
+        "Texto puro",
+        "Documento com marcação",
+        "Ficheiro de registo",
+        "Arquivo de configuração",
+        "Ficheiro de diferença",
+        "Legendas"
+      ],
+      "description": "Subdivisão de arquivos de texto",
+      "applicableFileTypes": [
+        "text"
+      ],
+      "contextHints": [
+        "Características de formato"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Tipo de ficheiro",
+          "triggerTags": [
+            "Texto"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 101,
+      "name": "Segmentação de documento",
+      "level": 2,
+      "tags": [
+        "Extensão do documento",
+        "Office",
+        "Documento do Word",
+        "Folha",
+        "Apresentação",
+        "Documento WPS"
+      ],
+      "description": "Subdivisão de arquivos de documentos",
+      "applicableFileTypes": [
+        "document"
+      ],
+      "contextHints": [
+        "Características de formato"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Tipo de ficheiro",
+          "triggerTags": [
+            "Documento"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
+        }
+      }
+    },
+    {
+      "id": 102,
+      "name": "Extensão de dados do aplicativo",
+      "level": 3,
+      "tags": [
+        "bplist",
+        "cat",
+        "chm",
+        "emf",
+        "gpg",
+        "hlp",
+        "ics",
+        "lnk",
+        "m3u",
+        "m3u8",
+        "mum",
+        "pcap",
+        "pcapng",
+        "pdb",
+        "pem",
+        "pickle",
+        "pkl",
+        "plist",
+        "po",
+        "pt",
+        "pth",
+        "pub",
+        "reg",
+        "sqlite",
+        "sqlite3",
+        "srt",
+        "sum",
+        "torrent",
+        "url"
+      ],
+      "description": "Extensão do arquivo de dados do aplicativo",
+      "applicableFileTypes": [
+        "application"
+      ],
+      "contextHints": [
+        "Extensão de arquivo"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentação de dados de aplicativos",
+          "triggerTags": [
+            "Extensão de dados do aplicativo"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 103,
+      "name": "Extensão de banco de dados",
+      "level": 3,
+      "tags": [
+        "db",
+        "db3",
+        "mdb",
+        "accdb",
+        "fdb",
+        "dbf",
+        "sqlitedb"
+      ],
+      "description": "Extensão do arquivo de banco de dados",
+      "applicableFileTypes": [
+        "database"
+      ],
+      "contextHints": [
+        "Extensão de arquivo"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentação de banco de dados",
+          "triggerTags": [
+            "Extensão de banco de dados"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 104,
+      "name": "Extensão de imagem de disco",
+      "level": 3,
+      "tags": [
+        "vhd",
+        "vhdx",
+        "vmdk",
+        "img",
+        "nrg",
+        "mdf",
+        "mds",
+        "raw",
+        "qcow2",
+        "vdi",
+        "ova"
+      ],
+      "description": "Extensão de arquivo de imagem de disco",
+      "applicableFileTypes": [
+        "diskimage"
+      ],
+      "contextHints": [
+        "Extensão de arquivo"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentação de imagem de disco",
+          "triggerTags": [
+            "Extensão de imagem de disco"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "isExtensionDimension": true
+        }
+      }
+    },
+    {
+      "id": 105,
+      "name": "Segmentação de código-fonte",
+      "level": 2,
+      "tags": [
+        "Extensão do código-fonte",
+        "Roteiro",
+        "Arquivo de configuração",
+        "Linguagem de programação",
+        "Front-end",
+        "Extremidade traseira"
+      ],
+      "description": "Classificação de arquivos de código-fonte",
+      "applicableFileTypes": [
+        "code"
+      ],
+      "contextHints": [
+        "Características gramaticais",
+        "Caminho do intérprete"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Tipo de ficheiro",
+          "triggerTags": [
+            "Código fonte"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRuleSubdivision": true,
+          "singleSelect": true
         }
       }
     },
@@ -2550,7 +2550,8 @@
         "Assuntos políticos",
         "Infracção",
         "Pornografia",
-        "Injúria"
+        "Injúria",
+        "Sangrento"
       ],
       "description": "Classificação da análise de segurança em termos de confidencialidade e conformidade do conteúdo dos documentos",
       "applicableFileTypes": [
@@ -2724,17 +2725,20 @@
       "name": "Segmentos da indústria pornográfica",
       "level": 3,
       "tags": [
-        "Atos sexuais explícitos",
-        "Orgasmo através da masturbação",
-        "Entretenimento erótico",
-        "Sedução no limite",
-        "Exposição acidental",
-        "Dominação e Restrição",
-        "Fotografias particulares",
-        "Fotografar à socorta e espreitar",
-        "Contra a vontade"
+        "Incesto familiar",
+        "Luxúria extraconjugal",
+        "Professores e alunos do campus",
+        "Ambiente de trabalho social",
+        "Sexo em grupo",
+        "Treinamento sexual",
+        "Espiando exposto",
+        "Uniforme profissional",
+        "Temas literários",
+        "Fisiologia Erótica",
+        "Agressão involuntária",
+        "Orientações múltiplas"
       ],
-      "description": "Segmentos de pornografia para adultos, entretenimento erótico e temas de nudez limite",
+      "description": "Divisão das principais categorias de pornografia adulta e temas verticais",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2743,8 +2747,8 @@
       ],
       "contextHints": [
         "Controlo de idade",
-        "Detecção de atividade sexual",
-        "Categorias de conteúdo pornográfico"
+        "Classificação temática",
+        "Reconhecimento erótico"
       ],
       "triggerConditions": [
         {
@@ -3317,6 +3321,470 @@
           "singleSelect": true,
           "isMicroService": true
         }
+      }
+    },
+    {
+      "id": 150,
+      "name": "Análise do Incesto Familiar",
+      "level": 4,
+      "tags": [
+        "Incesto",
+        "Mãe e filho",
+        "Pai e filha",
+        "Irmão e irmã",
+        "Irmãos",
+        "Sogro e nora",
+        "Sogra e nora",
+        "Padrasto madrasta",
+        "Sogro e sogra",
+        "Cunhada",
+        "Tia e sobrinho",
+        "Tio e sobrinho",
+        "Tio e sobrinho",
+        "Primos por afinidade",
+        "Cunhada",
+        "Avô e neto separaram gerações"
+      ],
+      "description": "Subdivisão de consanguinidade, antiguidade familiar e temas éticos tabus",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Tema de parentes próximos",
+        "Tabus éticos",
+        "Narrativa de sangue"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Incesto familiar"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 151,
+      "name": "Colapso de luxúria extraconjugal",
+      "level": 4,
+      "tags": [
+        "Troca de parceiro",
+        "Troca de esposa",
+        "Trapaceando",
+        "Linda mulher casada",
+        "Jovem mulher madura",
+        "Amante amante",
+        "Dona de casa",
+        "A alegria de esquecer o ano",
+        "Amor puro"
+      ],
+      "description": "Segmentação de contratos afetivos extraconjugais, troca de parceiros e temas de esposas",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Troca de parceiro",
+        "Segredos extraconjugais",
+        "Tema esposa"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Luxúria extraconjugal"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 152,
+      "name": "Discriminação de professores e alunos do campus",
+      "level": 4,
+      "tags": [
+        "Professor estudante",
+        "Professora",
+        "Professor masculino",
+        "Colega de classe",
+        "Irmã mais velha",
+        "Alunos do último ano",
+        "Beleza da escola",
+        "Estudante universitário",
+        "Estudante do ensino médio",
+        "Tutor"
+      ],
+      "description": "Análise temática da interação professor-aluno, campus juvenil e colegas de classe",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Narrativa de professor e aluno",
+        "Juventude do campus",
+        "Tema de colegas de classe"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Professores e alunos do campus"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 153,
+      "name": "Segmentação social no local de trabalho",
+      "level": 4,
+      "tags": [
+        "Entre colegas",
+        "Chefe feminina",
+        "Chefe masculino",
+        "Secretária feminina",
+        "Vizinha",
+        "Vizinhos",
+        "Colega de trabalho motorista",
+        "Empregada doméstica",
+        "Vida urbana",
+        "Notas rurais",
+        "Namoro pela internet"
+      ],
+      "description": "Segmentação do emprego no local de trabalho, bairros comunitários e círculos sociais de vida",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Narrativa no local de trabalho",
+        "Vida no bairro",
+        "Relações sociais"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Ambiente de trabalho social"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 154,
+      "name": "Segmentação de grupos multipessoas",
+      "level": 4,
+      "tags": [
+        "3P",
+        "Sexo grupal",
+        "Reunião de vários parceiros",
+        "Interação em grupo",
+        "Festa multipessoas"
+      ],
+      "description": "Colaboração multiagente, interação em grupo e segmentação temática de interação multipessoa",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Interação multiagente",
+        "Interação em grupo",
+        "Cena de festa"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Sexo em grupo"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 155,
+      "name": "Análise do treinamento sexual",
+      "level": 4,
+      "tags": [
+        "Treinamento sexual",
+        "SM",
+        "Escrava sexual",
+        "Dominação e Restrição",
+        "Sexo violento",
+        "Sexo violento",
+        "Pervertido pesado",
+        "Chicote de cera pingando",
+        "Fetiche específico"
+      ],
+      "description": "Dominância e submissão, fetiches subculturais e graves conflitos sexuais",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Treinamento de subcultura",
+        "Dominante submisso",
+        "Confronto pesado"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Treinamento sexual"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 156,
+      "name": "Peep Segmentação Exposta",
+      "level": 4,
+      "tags": [
+        "Exposição louca",
+        "Exposição em espaço público",
+        "Exposto ao ar livre",
+        "Choque de carro",
+        "Fotografar à socorta e espreitar",
+        "Câmera de privacidade",
+        "Espiando no banho",
+        "Expor"
+      ],
+      "description": "Subdivisão de exposição em espaço público, exibição ao ar livre e espionagem secreta e fotografia espontânea",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Exposição espacial",
+        "Filmagem sincera",
+        "Exibição ao ar livre"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Espiando exposto"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 157,
+      "name": "Segmentação de uniformes profissionais",
+      "level": 4,
+      "tags": [
+        "Médico enfermeira",
+        "Obstetrícia e Ginecologia",
+        "Aeromoça",
+        "Policial",
+        "Modelo de carro manequim",
+        "Garota dançando",
+        "Pornografia comercial",
+        "Namoro Pago e Prostituição"
+      ],
+      "description": "Ocupações específicas do setor, funções uniformes específicas e segmentação de personalidade",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Caráter uniforme",
+        "Ocupação da indústria",
+        "Jogo de representação"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Uniforme profissional"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 158,
+      "name": "Análise do assunto literário",
+      "level": 4,
+      "tags": [
+        "Artes marciais eróticas",
+        "Erótica Clássica",
+        "Erotismo histórico",
+        "Ficção científica fantasia",
+        "Histórias da meia-noite",
+        "Cidade contemporânea",
+        "Fã de jogos",
+        "Erotismo japonês",
+        "Erótica ocidental",
+        "História de aventura"
+      ],
+      "description": "Configurações de antecedentes da literatura adulta, antecedentes de tempo e espaço e subdivisões específicas de gênero",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Temas literários",
+        "Configurações de fundo",
+        "Gênero literário"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Temas literários"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 159,
+      "name": "Colapso fisiológico do desejo",
+      "level": 4,
+      "tags": [
+        "Atos sexuais explícitos",
+        "Orgasmo através da masturbação",
+        "Sexo oral",
+        "Sexo anal",
+        "Facial cum engolir",
+        "Fotografias particulares",
+        "Sedução no limite",
+        "Lindos seios e pernas",
+        "Complexo de virgindade"
+      ],
+      "description": "Movimentos fisiológicos e comportamentais, close-ups de órgãos, fotos sensuais e análise de características sensoriais",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Ações fisiológicas",
+        "Close do órgão",
+        "Foto sexy"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Fisiologia Erótica"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 160,
+      "name": "Colapso de agressão involuntária",
+      "level": 4,
+      "tags": [
+        "Estupro estupro",
+        "Estuprada e drogada",
+        "Contra a vontade",
+        "Assalto de estupro coletivo",
+        "Coerção violenta"
+      ],
+      "description": "Classificação de coerção involuntária, infração e violações extremas",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Contra a vontade",
+        "Violação e violação",
+        "Violação forçada"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Agressão involuntária"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
+      }
+    },
+    {
+      "id": 161,
+      "name": "Segmentação de orientação múltipla",
+      "level": 4,
+      "tags": [
+        "Homoerótico",
+        "Lírio lésbica",
+        "Beleza alegre",
+        "Transgênero"
+      ],
+      "description": "Cognição de gênero diversa, orientações diversas e segmentação temática de orientação sexual específica",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "archive"
+      ],
+      "contextHints": [
+        "Orientações múltiplas",
+        "Temas homossexuais",
+        "Classificação de orientação sexual"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Segmentos da indústria pornográfica",
+          "triggerTags": [
+            "Orientações múltiplas"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {}
       }
     }
   ]
