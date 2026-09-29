@@ -7,7 +7,7 @@
  * 3. 极速自愈联动：整组隐藏、子项隐藏、单项过滤后，阶段耗时与饼图比例自动重新按物理模型求值。
  */
 
-import { MarkitdownBenchmark, Stage1Benchmark } from '@firefly/types'
+import { MarkitdownBenchmark, Stage1Benchmark, getSubtaskMs } from '@firefly/types'
 
 /** 子任务执行流拓扑类型 */
 export type SubtaskExecutionType = 'sync' | 'async'
@@ -97,6 +97,49 @@ function formatKeyToLabel(key: string): string {
   return clean.charAt(0).toUpperCase() + clean.slice(1)
 }
 
+/** 已在阶段 2 各分组中静态消费的保留键 (不再进入动态归组扫描) */
+const RESERVED_STAGE2_KEYS: ReadonlySet<string> = new Set([
+  'totalMs',
+  'officePrePdfMs',
+  'tagMs',
+  'magikaMs',
+  'textMs',
+  'ocrMs',
+  'metadataMs',
+  'thumbnailMs',
+  'clipMs',
+  'clipEmbedMs',
+  'clipMutualMs',
+  'ramMs',
+  'nsfwMs',
+  'aestheticMs',
+  'watermarkMs',
+  'mosaicMs',
+  'textDetectMs',
+  'bwMs',
+  // 兼容旧字段，避免落入扩展算子组以机器格式展示
+  'htmlMs',
+  'documentMs'
+])
+
+/** 标签生成组的动态归类关键词 (唯一事实源，tag/other 扫描共用) */
+const TAG_GROUP_KEYWORDS = ['clip', 'ram', 'nsfw', 'tag'] as const
+
+/** 画质与形态组的动态归类关键词 (唯一事实源，quality/other 扫描共用) */
+const QUALITY_GROUP_KEYWORDS = ['watermark', 'mosaic', 'aesthetic', 'quality', 'detect', 'blur', 'bw'] as const
+
+/**
+ * 动态子任务键路由 (开闭原则唯一归类入口):
+ * 按关键词将未知算子键路由到标签生成组 / 画质与形态组 / 扩展算子组。
+ * 新增分类关键词只需修改对应关键词表，无需改动任何扫描调用方。
+ */
+function classifySubtaskKey(rawKey: string): 'tag_group' | 'quality_group' | 'other' {
+  const lowerKey = rawKey.toLowerCase()
+  if (TAG_GROUP_KEYWORDS.some(kw => lowerKey.includes(kw))) return 'tag_group'
+  if (QUALITY_GROUP_KEYWORDS.some(kw => lowerKey.includes(kw))) return 'quality_group'
+  return 'other'
+}
+
 /**
  * 计算阶段 1、阶段 2 及各子组的分组过滤与耗时
  */
@@ -110,6 +153,8 @@ export function computeGroupedMetrics(
   groups: MetricGroup[]
   stage1TotalMs: number
   stage2TotalMs: number
+  stage3Ms: number
+  stage4Ms: number
   visibleTotalMs: number
   allVisibleItems: SubtaskItem[]
   phasesSum: number
@@ -182,20 +227,28 @@ export function computeGroupedMetrics(
   if (contentBreakdown) {
     // 2.1 基础内容组 (content)
     if (!filter.hiddenGroupIds.has('content')) {
-      const mergedThumbnailMs =
-        (Number(contentBreakdown.thumbnailMs) || 0) +
-        (Number(contentBreakdown.officePrePdfMs) || 0)
-
+      // Office 预转 PDF 作为串行前缀已独立成项，封面图渲染仅统计自身耗时
       const rawContentItems: SubtaskItem[] = [
         {
+          // Magika 类型识别在分支分发前串行执行，标注 sync
           key: 'magikaMs',
           label: t('类型识别'),
           duration: Number(contentBreakdown.magikaMs) || 0,
           color: '#10b981',
           groupId: 'content',
           isSubItem: false,
-          executionType: 'async',
+          executionType: 'sync',
           weight: 21
+        },
+        {
+          key: 'officePrePdfMs',
+          label: t('Office预转PDF'),
+          duration: Number(contentBreakdown.officePrePdfMs) || 0,
+          color: '#d97706',
+          groupId: 'content',
+          isSubItem: false,
+          executionType: 'sync',
+          weight: 24
         },
         {
           key: 'textMs',
@@ -230,7 +283,7 @@ export function computeGroupedMetrics(
         {
           key: 'thumbnailMs',
           label: t('封面图渲染'),
-          duration: mergedThumbnailMs,
+          duration: Number(contentBreakdown.thumbnailMs) || 0,
           color: '#f59e0b',
           groupId: 'content',
           isSubItem: false,
@@ -271,7 +324,7 @@ export function computeGroupedMetrics(
       ]
 
       for (const k of knownTagKeys) {
-        const dur = Number(contentBreakdown[k.key]) || 0
+        const dur = getSubtaskMs(contentBreakdown, k.key)
         if (dur > 0 && !filter.hiddenKeys.has(k.key)) {
           tagSubItems.push({
             key: k.key,
@@ -287,41 +340,29 @@ export function computeGroupedMetrics(
         }
       }
 
-      // 动态增项扫描 (包含 clip, ram, nsfw, tag 关键词)
+      // 动态增项扫描: 经 classifySubtaskKey 路由进标签生成组
       let dynPaletteIdx = 0
       for (const [rawKey, val] of Object.entries(contentBreakdown)) {
         if (!val || typeof val !== 'number' || val <= 0) continue
-        if (
-          ['totalMs', 'officePrePdfMs', 'tagMs', 'magikaMs', 'textMs', 'ocrMs', 'metadataMs', 'thumbnailMs'].includes(
-            rawKey
-          )
-        ) {
-          continue
-        }
+        if (RESERVED_STAGE2_KEYS.has(rawKey)) continue
         if (knownTagKeys.some(k => k.key === rawKey)) continue
+        if (classifySubtaskKey(rawKey) !== 'tag_group') continue
 
-        const lowerKey = rawKey.toLowerCase()
-        if (
-          lowerKey.includes('clip') ||
-          lowerKey.includes('ram') ||
-          lowerKey.includes('nsfw') ||
-          lowerKey.includes('tag')
-        ) {
-          if (!filter.hiddenKeys.has(rawKey)) {
-            const isSync =
-              lowerKey.includes('embed') || lowerKey.includes('mutual') || lowerKey.includes('sync')
-            tagSubItems.push({
-              key: rawKey,
-              label: formatKeyToLabel(rawKey),
-              duration: val,
-              color: DYNAMIC_PALETTE[dynPaletteIdx++ % DYNAMIC_PALETTE.length],
-              groupId: 'tag_group',
-              parentKey: 'tagMs',
-              isSubItem: true,
-              executionType: isSync ? 'sync' : 'async',
-              weight: 36 + dynPaletteIdx
-            })
-          }
+        if (!filter.hiddenKeys.has(rawKey)) {
+          const lowerKey = rawKey.toLowerCase()
+          const isSync =
+            lowerKey.includes('embed') || lowerKey.includes('mutual') || lowerKey.includes('sync')
+          tagSubItems.push({
+            key: rawKey,
+            label: formatKeyToLabel(rawKey),
+            duration: val,
+            color: DYNAMIC_PALETTE[dynPaletteIdx++ % DYNAMIC_PALETTE.length],
+            groupId: 'tag_group',
+            parentKey: 'tagMs',
+            isSubItem: true,
+            executionType: isSync ? 'sync' : 'async',
+            weight: 36 + dynPaletteIdx
+          })
         }
       }
 
@@ -385,7 +426,7 @@ export function computeGroupedMetrics(
       ]
 
       for (const k of knownQualityKeys) {
-        const dur = Number(contentBreakdown[k.key]) || 0
+        const dur = getSubtaskMs(contentBreakdown, k.key)
         if (dur > 0 && !filter.hiddenKeys.has(k.key)) {
           qualitySubItems.push({
             key: k.key,
@@ -401,42 +442,26 @@ export function computeGroupedMetrics(
         }
       }
 
-      // 动态增项扫描 (包含 watermark, mosaic, aesthetic, quality, bw, detect, blur)
+      // 动态增项扫描: 经 classifySubtaskKey 路由进画质与形态组
       let qPaletteIdx = 3
       for (const [rawKey, val] of Object.entries(contentBreakdown)) {
         if (!val || typeof val !== 'number' || val <= 0) continue
-        if (
-          ['totalMs', 'officePrePdfMs', 'tagMs', 'magikaMs', 'textMs', 'ocrMs', 'metadataMs', 'thumbnailMs'].includes(
-            rawKey
-          )
-        ) {
-          continue
-        }
+        if (RESERVED_STAGE2_KEYS.has(rawKey)) continue
         if (knownQualityKeys.some(k => k.key === rawKey)) continue
+        if (classifySubtaskKey(rawKey) !== 'quality_group') continue
 
-        const lowerKey = rawKey.toLowerCase()
-        if (
-          lowerKey.includes('watermark') ||
-          lowerKey.includes('mosaic') ||
-          lowerKey.includes('aesthetic') ||
-          lowerKey.includes('quality') ||
-          lowerKey.includes('detect') ||
-          lowerKey.includes('blur') ||
-          lowerKey.includes('bw')
-        ) {
-          if (!filter.hiddenKeys.has(rawKey)) {
-            qualitySubItems.push({
-              key: rawKey,
-              label: formatKeyToLabel(rawKey),
-              duration: val,
-              color: DYNAMIC_PALETTE[qPaletteIdx++ % DYNAMIC_PALETTE.length],
-              groupId: 'quality_group',
-              parentKey: 'quality_group',
-              isSubItem: true,
-              executionType: 'async',
-              weight: 46 + qPaletteIdx
-            })
-          }
+        if (!filter.hiddenKeys.has(rawKey)) {
+          qualitySubItems.push({
+            key: rawKey,
+            label: formatKeyToLabel(rawKey),
+            duration: val,
+            color: DYNAMIC_PALETTE[qPaletteIdx++ % DYNAMIC_PALETTE.length],
+            groupId: 'quality_group',
+            parentKey: 'quality_group',
+            isSubItem: true,
+            executionType: 'async',
+            weight: 46 + qPaletteIdx
+          })
         }
       }
 
@@ -475,48 +500,14 @@ export function computeGroupedMetrics(
     // 2.4 其他未匹配扩展项 (开闭原则 other 组)
     if (!filter.hiddenGroupIds.has('other')) {
       const otherSubItems: SubtaskItem[] = []
-      const handledKeys = new Set([
-        'totalMs',
-        'officePrePdfMs',
-        'tagMs',
-        'magikaMs',
-        'textMs',
-        'ocrMs',
-        'metadataMs',
-        'thumbnailMs',
-        'clipMs',
-        'clipEmbedMs',
-        'clipMutualMs',
-        'ramMs',
-        'nsfwMs',
-        'aestheticMs',
-        'watermarkMs',
-        'mosaicMs',
-        'textDetectMs',
-        'bwMs'
-      ])
 
       let oPaletteIdx = 5
       for (const [rawKey, val] of Object.entries(contentBreakdown)) {
         if (!val || typeof val !== 'number' || val <= 0) continue
-        if (handledKeys.has(rawKey)) continue
+        if (RESERVED_STAGE2_KEYS.has(rawKey)) continue
+        if (classifySubtaskKey(rawKey) !== 'other') continue
 
-        const lowerKey = rawKey.toLowerCase()
-        const isTagLike =
-          lowerKey.includes('clip') ||
-          lowerKey.includes('ram') ||
-          lowerKey.includes('nsfw') ||
-          lowerKey.includes('tag')
-        const isQualityLike =
-          lowerKey.includes('watermark') ||
-          lowerKey.includes('mosaic') ||
-          lowerKey.includes('aesthetic') ||
-          lowerKey.includes('quality') ||
-          lowerKey.includes('detect') ||
-          lowerKey.includes('blur') ||
-          lowerKey.includes('bw')
-
-        if (!isTagLike && !isQualityLike && !filter.hiddenKeys.has(rawKey)) {
+        if (!filter.hiddenKeys.has(rawKey)) {
           otherSubItems.push({
             key: rawKey,
             label: formatKeyToLabel(rawKey),
@@ -568,11 +559,11 @@ export function computeGroupedMetrics(
     })
   }
 
-  // 4. 阶段 3 与阶段 4 耗时
-  const p3 = Number(phases['qualityScoring'] || phases['质量分析'] || 0)
-  const p4 = Number(phases['dimensionAnalysis'] || phases['维度分析'] || 0)
+  // 4. 阶段 3 与阶段 4 耗时 (串行阶段，独立于饼图并发分组，但计入总挂钟)
+  const stage3Ms = Number(phases['qualityScoring'] || phases['质量分析'] || 0)
+  const stage4Ms = Number(phases['dimensionAnalysis'] || phases['维度分析'] || 0)
 
-  const phasesSum = stage1TotalMs + stage2TotalMs + p3 + p4
+  const phasesSum = stage1TotalMs + stage2TotalMs + stage3Ms + stage4Ms
   const visibleTotalMs = phasesSum
 
   // 汇聚所有扁平化可见条目
@@ -585,6 +576,8 @@ export function computeGroupedMetrics(
     groups,
     stage1TotalMs,
     stage2TotalMs,
+    stage3Ms,
+    stage4Ms,
     visibleTotalMs,
     allVisibleItems,
     phasesSum
@@ -600,7 +593,7 @@ export function buildCoaxialTracks(
   t: (k: string) => string
 ): CoaxialTrack[] {
   const tracksList: CoaxialTrack[] = []
-  const { groups, stage1TotalMs, stage2TotalMs, visibleTotalMs } = metricsResult
+  const { groups, stage1TotalMs, stage2TotalMs, stage3Ms, stage4Ms, visibleTotalMs } = metricsResult
   const totalMs = Math.max(visibleTotalMs, 1)
 
   // 主轨道切片
@@ -661,6 +654,26 @@ export function buildCoaxialTracks(
     })
   }
 
+  // 3. 阶段 3 / 阶段 4 串行切片 (主内环): 补齐后内环各切片占比相加精确等于 100%
+  const serialTailPhases: Array<{ key: string; label: string; duration: number; color: string }> = [
+    { key: 'stage3_main', label: t('阶段 3: 质量评分'), duration: stage3Ms, color: '#f97316' },
+    { key: 'stage4_main', label: t('阶段 4: 维度分析'), duration: stage4Ms, color: '#22c55e' }
+  ]
+  serialTailPhases.forEach(p => {
+    if (p.duration > 0) {
+      const span = (p.duration / totalMs) * 360
+      mainSlices.push({
+        key: p.key,
+        label: p.label,
+        duration: p.duration,
+        startAngle: accAngle,
+        endAngle: accAngle + span,
+        color: p.color
+      })
+      accAngle += span
+    }
+  })
+
   // 添加内环主轨道 (Radius 18, StrokeWidth 6)
   if (mainSlices.length > 0) {
     tracksList.push({
@@ -675,6 +688,9 @@ export function buildCoaxialTracks(
   }
 
   // 3. 构建外层同轴子轨道 (对齐父级起始角度，直观显示各子项耗时占比)
+  // 半径封顶保护: 极端多子任务时轨道可能突破 viewBox (50) 被裁切，
+  // 超出上限后不再绘制外环，降级为仅图例展示
+  const MAX_SUBTRACK_RADIUS = 44
   let currentRadius = 28
   stage2Groups.forEach(g => {
     const angleInfo = groupAngleMap.get(g.id)
@@ -687,10 +703,20 @@ export function buildCoaxialTracks(
     const { startAngle, spanAngle, groupDuration } = angleInfo
     const effectiveGroupDuration = groupDuration > 0 ? groupDuration : 1
 
-    g.items.forEach(subItem => {
-      if (subItem.duration <= 0) return
+    // 仅对有实际弧长的可见子项绘制外环
+    const visibleSubItems = g.items.filter(it => it.duration > 0)
+
+    // 最小可见弧长按父组剩余空间均摊钳制: 当父组扇区极窄时, 防止多个 2° 硬下限
+    // 累加溢出父组扇区边界, 与相邻组的外环弧发生视觉重叠
+    const minVisibleSpan = Math.min(2, spanAngle / Math.max(visibleSubItems.length, 1))
+
+    visibleSubItems.forEach(subItem => {
+      // 半径超出 viewBox 上限则停止绘制外环，防止轨道被裁切
+      if (currentRadius > MAX_SUBTRACK_RADIUS) return
+
       const subRatio = Math.min(Math.max(subItem.duration / effectiveGroupDuration, 0), 1)
-      const subSpan = Math.max(subRatio * spanAngle, 2)
+      // 跨度 = (子项耗时 / 父组耗时) * 父组弧长跨度, 并钳制在父组扇区内
+      const subSpan = Math.max(subRatio * spanAngle, minVisibleSpan)
 
       tracksList.push({
         key: `sub_${g.id}_${subItem.key}`,

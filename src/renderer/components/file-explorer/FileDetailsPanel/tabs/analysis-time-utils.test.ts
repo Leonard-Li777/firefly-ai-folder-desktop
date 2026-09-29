@@ -85,10 +85,17 @@ describe('analysis-time-utils: 耗时指标通用分组、过滤与物理拓扑�
     expect(otherGroup?.items.some(i => i.key === 'audio_mfcc_ms')).toBe(true)
     expect(otherGroup?.items.some(i => i.key === 'custom_subtask_ms')).toBe(true)
 
-    // 检查封面图是否合并了 officePrePdfMs (200 + 100 = 300)
+    // 检查封面图仅统计自身耗时 (Office 预转 PDF 已独立成项，不再合并)
     const contentGroup = result.groups.find(g => g.id === 'content')
     const thumbItem = contentGroup?.items.find(i => i.key === 'thumbnailMs')
-    expect(thumbItem?.duration).toBe(300)
+    expect(thumbItem?.duration).toBe(200)
+    // Office 预转 PDF 独立成项并标注 sync (串行前缀)
+    const prePdfItem = contentGroup?.items.find(i => i.key === 'officePrePdfMs')
+    expect(prePdfItem?.duration).toBe(100)
+    expect(prePdfItem?.executionType).toBe('sync')
+    // Magika 在分支分发前串行执行，标注 sync
+    const magikaItem = contentGroup?.items.find(i => i.key === 'magikaMs')
+    expect(magikaItem?.executionType).toBe('sync')
   })
 
   it('2. 正确区分同步(⚙️ 串行)与异步(⚡ 并发)，并精确标注长尾瓶颈', () => {
@@ -138,7 +145,7 @@ describe('analysis-time-utils: 耗时指标通用分组、过滤与物理拓扑�
     // 标签生成组不应在可见组中
     expect(result.groups.some(g => g.id === 'tag_group')).toBe(false)
 
-    // 剩余项中：OCR 为 800ms，封面图为 300ms，画质组美学为 500ms，other 为 250ms
+    // 剩余项中：OCR 为 800ms，封面图为 200ms，画质组美学为 500ms，other 为 250ms
     // 阶段 2 并发最大耗时应自动变为 800ms (OCR 成为新的瓶颈)
     expect(result.stage2TotalMs).toBe(800)
     const contentGroup = result.groups.find(g => g.id === 'content')
@@ -189,5 +196,65 @@ describe('analysis-time-utils: 耗时指标通用分组、过滤与物理拓扑�
 
     const contentGroup = result.groups.find(g => g.id === 'content')
     expect(contentGroup?.items.some(i => i.key === 'ocrMs')).toBe(false)
+  })
+
+  it('6. 内环主轨道切片角度相加精确覆盖 360° (含阶段3/4串行切片)', () => {
+    const result = computeGroupedMetrics(mockStage1, mockStage2, mockPhases, defaultFilter, t)
+    const tracks = buildCoaxialTracks(result, 'cpu', t)
+
+    const mainTrack = tracks.find(tr => tr.key === 'main_inner_track')
+    expect(mainTrack).toBeDefined()
+
+    // 所有切片角度之和必须归一到完整圆周 (允许浮点误差)
+    const totalSpan = mainTrack!.slices.reduce((acc, s) => acc + (s.endAngle - s.startAngle), 0)
+    expect(totalSpan).toBeCloseTo(360, 5)
+
+    // 阶段 3 / 阶段 4 串行切片必须存在
+    expect(mainTrack!.slices.some(s => s.key === 'stage3_main')).toBe(true)
+    expect(mainTrack!.slices.some(s => s.key === 'stage4_main')).toBe(true)
+  })
+
+  it('7. 外环同轴子弧不溢出父组扇区 (极窄父组下的最小跨度钳制)', () => {
+    // tag 组各子项数值导致父组扇区极窄的场景
+    const narrow: MarkitdownBenchmark = {
+      totalMs: 100,
+      tagMs: 10,
+      clipMs: 6,
+      clipEmbedMs: 3,
+      clipMutualMs: 2,
+      ramMs: 9,
+      nsfwMs: 4,
+      ocrMs: 5000 // content 组占据绝对主导，tag 组扇区被压得极窄
+    }
+    const result = computeGroupedMetrics(mockStage1, narrow, mockPhases, defaultFilter, t)
+    const tracks = buildCoaxialTracks(result, 'cpu', t)
+
+    // 收集 tag_group 父组在内环的扇区范围 (父组切片位于 main_inner_track 内)
+    const mainTrack = tracks.find(tr => tr.key === 'main_inner_track')
+    expect(mainTrack).toBeDefined()
+    const tagMainSlice = mainTrack!.slices.find(s => s.key === 'stage2_tag_group_main')
+    expect(tagMainSlice).toBeDefined()
+    const parentStart = tagMainSlice!.startAngle
+    const parentEnd = tagMainSlice!.endAngle
+
+    // 每条 tag 子轨道弧必须完整落在父组扇区之内
+    const subTracks = tracks.filter(tr => tr.key.startsWith('sub_tag_group_'))
+    expect(subTracks.length).toBeGreaterThan(0)
+    subTracks.forEach(tr => {
+      const slice = tr.slices[0]
+      expect(slice.startAngle).toBeGreaterThanOrEqual(parentStart)
+      expect(slice.endAngle).toBeLessThanOrEqual(parentEnd)
+    })
+  })
+
+  it('8. htmlMs/documentMs 等兼容旧字段不落入扩展算子组', () => {
+    const legacy: MarkitdownBenchmark = {
+      totalMs: 100,
+      htmlMs: 30,
+      documentMs: 20,
+      ocrMs: 50
+    }
+    const result = computeGroupedMetrics(mockStage1, legacy, mockPhases, defaultFilter, t)
+    expect(result.groups.some(g => g.id === 'other')).toBe(false)
   })
 })

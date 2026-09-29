@@ -35,7 +35,6 @@ export interface OmniBenchmarkResponse {
   mosaic_ms?: number
   aesthetic_ms?: number
   bw_ms?: number
-  [subtask_ms: string]: number | undefined
 }
 
 export interface OmniExtractionResponse {
@@ -106,7 +105,6 @@ export interface OmniPerceptionBenchmarkResponse {
   aesthetic_ms?: number
   bw_ms?: number
   ram_ms?: number
-  [subtask_ms: string]: number | undefined
 }
 
 export interface OmniTagChainItem {
