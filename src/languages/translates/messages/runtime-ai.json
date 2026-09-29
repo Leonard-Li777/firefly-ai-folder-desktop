@@ -9,7 +9,7 @@
     "de-DE": "Doppelter Fehler, ignoriert",
     "fr-FR": "Erreur en double, ignorée",
     "ko-KR": "중복 오류, 무시됨",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11410-11423)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11441-11454)"],
     "$id": 4436
   },
   "AI错误: {type} - {message}": {
@@ -22,7 +22,7 @@
     "de-DE": "KI-Fehler: {type} - {message}",
     "fr-FR": "Erreur IA : {type} - {message}",
     "ko-KR": "AI 오류: {type} - {message}",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11678-11706)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(11709-11737)"],
     "$id": 4512
   },
   "错误不可恢复或正在恢复中": {
@@ -35,7 +35,7 @@
     "de-DE": "Der Fehler ist nicht behebbar oder wird behoben",
     "fr-FR": "L'erreur est irrécupérable ou en cours de récupération",
     "ko-KR": "오류가 복구 불가능하거나 복구 중입니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(12329-12345)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(12360-12376)"],
     "$id": 4513
   },
   "没有找到适用于 {type} 的恢复策略": {
@@ -48,7 +48,7 @@
     "de-DE": "Keine Wiederherstellungsrichtlinie für {type} gefunden",
     "fr-FR": "Aucune politique de récupération trouvée pour {type}",
     "ko-KR": "{type}에 대한 복구 정책을 찾을 수 없습니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(13108-13132)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(13139-13163)"],
     "$id": 4514
   },
   "没有可用的恢复策略": {
@@ -61,7 +61,7 @@
     "de-DE": "Keine Wiederherstellungsstrategie verfügbar",
     "fr-FR": "Aucune stratégie de récupération disponible",
     "ko-KR": "사용 가능한 복구 전략이 없습니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(13239-13252)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(13270-13283)"],
     "$id": 4515
   },
   "使用策略 \"{name}\" 成功恢复": {
@@ -74,7 +74,7 @@
     "de-DE": "Mit Richtlinie „{name}“ erfolgreich wiederhergestellt",
     "fr-FR": "Restauré avec succès à l'aide de la stratégie \"{name}\"",
     "ko-KR": "\"{name}\" 정책을 사용하여 성공적으로 복원되었습니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(14089-14111)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(14120-14142)"],
     "$id": 4516
   },
   "所有恢复策略都失败": {
@@ -88,8 +88,8 @@
     "fr-FR": "Toutes les stratégies de récupération échouent",
     "ko-KR": "모든 복구 전략이 실패함",
     "$files": [
-      "src/electron/runtime-services/ai/ai-error-handler.ts(14601-14614)",
-      "src/electron/runtime-services/ai/ai-error-handler.ts(14735-14748)"
+      "src/electron/runtime-services/ai/ai-error-handler.ts(14632-14645)",
+      "src/electron/runtime-services/ai/ai-error-handler.ts(14766-14779)"
     ],
     "$id": 4517
   },
@@ -103,7 +103,7 @@
     "de-DE": "AI-Fehlerhistorie gelöscht",
     "fr-FR": "L'historique des erreurs de l'IA a été effacé",
     "ko-KR": "AI 오류 내역이 삭제되었습니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(18399-18412)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(18430-18443)"],
     "$id": 4518
   },
   "恢复已在进行中": {
@@ -116,7 +116,7 @@
     "de-DE": "Die Wiederherstellung ist bereits im Gange",
     "fr-FR": "La reprise est déjà en cours",
     "ko-KR": "복구가 이미 진행 중입니다.",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(18998-19009)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(19029-19040)"],
     "$id": 4519
   },
   "前往设置": {
@@ -129,7 +129,7 @@
     "de-DE": "Gehen Sie zu den Einstellungen",
     "fr-FR": "Allez dans les paramètres",
     "ko-KR": "설정으로 이동",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(20799-20807)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(20830-20838)"],
     "$id": 4520
   },
   "已推送错误到前端: {type}": {
@@ -142,7 +142,7 @@
     "de-DE": "Fehler an Frontend übertragen: {type}",
     "fr-FR": "Erreur transmise au frontend : {type}",
     "ko-KR": "프런트엔드로 푸시된 오류: {type}",
-    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(23272-23292)"],
+    "$files": ["src/electron/runtime-services/ai/ai-error-handler.ts(23303-23323)"],
     "$id": 4467
   },
   "baseUrl不能为空": {

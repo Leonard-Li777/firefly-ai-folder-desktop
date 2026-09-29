@@ -167,11 +167,11 @@ export interface OmniPerceptionResponse {
    * Desktop 端作为第一权威物理事实无损落库至 file_tags。
    */
   fact_tags?: OmniTagChainItem[]
-  mobilenet_tags?: string[]
+  morphology_tags?: string[]
   clip_tags?: string[]
   nsfw_tags?: string[]
   ram_tags?: string[]
-  mobilenet_high_confidence_tags?: string[]
+  morphology_high_confidence_tags?: string[]
   clip_high_confidence_tags?: string[]
   nsfw_high_confidence_tags?: string[]
   sensitive_types?: string[]
@@ -574,11 +574,35 @@ export class OmniService {
         RUST_LOG: process.env.RUST_LOG || (isDevMode ? 'info,omni_vision=info,omni_server=info,omni_text=info' : 'warn')
       }
 
-      // 获取当前语言的 SQLite 绝对路径，透传给 Omni 以建立只读直连 (ADR-0035 双消费者架构)
+      // 获取业务主库 SQLite 绝对路径与只读语义包路径，以两个独立参数透传给 Omni (ADR-0035 & ADR-0038)
       const { databaseService } = await import('../database/database-service')
       const dbPath = databaseService.getDbPath()
 
-      const child = spawn(exePath, ['serve', '-a', `127.0.0.1:${port}`, '--db-path', dbPath], {
+      const candidatePackPaths = [
+        ResourceLocator.resolveResourcePath('semantic/semantic.pack'),
+        ResourceLocator.resolveResourcePath('presetResources/semantic/semantic.pack'),
+        path.join(process.cwd(), 'apps/desktop/build/extraResources/semantic/semantic.pack'),
+        path.join(process.cwd(), 'apps/desktop/build/presetResources/semantic/semantic.pack')
+      ]
+      let packPath: string | null = null
+      for (const cand of candidatePackPaths) {
+        if (cand && fs.existsSync(cand)) {
+          packPath = cand
+          break
+        }
+      }
+
+      const spawnArgs = ['serve', '-a', `127.0.0.1:${port}`]
+      if (dbPath) {
+        spawnArgs.push('--db-path', dbPath)
+        logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 业务主库路径 (--db-path): ${dbPath}`)
+      }
+      if (packPath) {
+        spawnArgs.push('--pack-path', packPath)
+        logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 语义包路径 (--pack-path): ${packPath}`)
+      }
+
+      const child = spawn(exePath, spawnArgs, {
         env,
         stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true
@@ -1240,7 +1264,7 @@ export class OmniService {
           fact_tags: json.fact_tags || [],
           fact_tags_count: json.fact_tags?.length || 0,
           ram_tags: json.ram_tags || [],
-          mobilenet_tags: json.mobilenet_tags || [],
+          morphology_tags: json.morphology_tags || [],
           clip_tags: json.clip_tags || [],
           nsfw_tags: json.nsfw_tags || [],
           sensitive_types: json.sensitive_types || [],

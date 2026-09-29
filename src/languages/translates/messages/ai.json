@@ -128,7 +128,7 @@
     "de-DE": "Motor wechseln",
     "fr-FR": "Changer de moteur",
     "ko-KR": "스위치 엔진",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6489-6497)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6196-6204)"],
     "$id": 7979
   },
   "配置云端模型": {
@@ -141,7 +141,7 @@
     "de-DE": "Cloud-Modell konfigurieren",
     "fr-FR": "Configurer le modèle cloud",
     "ko-KR": "클라우드 모델 구성",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6774-6784)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6481-6491)"],
     "$id": 10189
   },
   "升级显卡驱动": {
@@ -154,8 +154,21 @@
     "de-DE": "Aktualisieren Sie den Grafikkartentreiber",
     "fr-FR": "Mettre à niveau le pilote de la carte graphique",
     "ko-KR": "그래픽 카드 드라이버 업그레이드",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7206-7216)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(6913-6923)"],
     "$id": 4652
+  },
+  "切换到 CPU 引擎": {
+    "en-US": "Switch to CPU engine",
+    "es-ES": "Cambiar al motor de CPU",
+    "ar-EG": "التبديل إلى محرك CPU",
+    "pt-PT": "Alternar para o motor de CPU",
+    "ru-RU": "Переключиться на ЦПУ",
+    "ja-JP": "CPU エンジンに切り替え",
+    "de-DE": "Zum CPU-Engine wechseln",
+    "fr-FR": "Passer au moteur CPU",
+    "ko-KR": "CPU 엔진으로 전환",
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7161-7175)"],
+    "$id": 19378
   },
   "重新部署 AI 引擎": {
     "en-US": "Redeploy the AI ​​engine",
@@ -167,7 +180,7 @@
     "de-DE": "Stellen Sie die KI-Engine erneut bereit",
     "fr-FR": "Redéployer le moteur IA",
     "ko-KR": "AI 엔진 재배치",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(7509-7523)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8024-8038)"],
     "$id": 4629
   },
   "管理设置": {
@@ -180,7 +193,7 @@
     "de-DE": "Einstellungen verwalten",
     "fr-FR": "Paramètres de gestion",
     "ko-KR": "관리 설정",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8015-8023)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8530-8538)"],
     "$id": 3837
   },
   "去配置 API 密钥": {
@@ -193,7 +206,7 @@
     "de-DE": "API-Schlüssel konfigurieren",
     "fr-FR": "Aller configurer la clé API",
     "ko-KR": "API 키를 구성하러 가기",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8105-8119)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8620-8634)"],
     "$id": 4357
   },
   "管理模型": {
@@ -206,7 +219,7 @@
     "de-DE": "Verwaltungsmodell",
     "fr-FR": "Modèle de gestion\r",
     "ko-KR": "관리 모델",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8189-8197)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8704-8712)"],
     "$id": 3841
   },
   "重试启动": {
@@ -219,7 +232,7 @@
     "de-DE": "Versuchen Sie den Start erneut",
     "fr-FR": "Réessayez le démarrage",
     "ko-KR": "시동 재시도",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8558-8566)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9073-9081)"],
     "$id": 4470
   },
   "查看设置": {
@@ -232,7 +245,7 @@
     "de-DE": "Einstellungen anzeigen",
     "fr-FR": "Afficher les paramètres",
     "ko-KR": "설정 보기",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8739-8747)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9254-9262)"],
     "$id": 4471
   },
   "在引擎中查看": {
@@ -245,7 +258,7 @@
     "de-DE": "In the engine view",
     "fr-FR": "View in the engine",
     "ko-KR": "엔진에서 보기",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(8982-8992)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9497-9507)"],
     "$id": 19419
   },
   "切换标准分析": {
@@ -258,7 +271,7 @@
     "de-DE": "Switch to Standard Analysis",
     "fr-FR": "Toggle Standard Analysis",
     "ko-KR": "표준 분석으로 전환",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9398-9408)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9913-9923)"],
     "$id": 19420
   },
   "标准分析模式由基础AI引擎处理，高效完成文件标签、智能文件名和摘要": {
@@ -271,7 +284,7 @@
     "de-DE": "Standard Analysis mode is processed by the base AI engine, efficiently completing file tagging, smart filename generation, and summarization",
     "fr-FR": "The standard analysis mode is handled by the basic AI engine, efficiently completing file tagging, smart filenames, and summarization",
     "ko-KR": "표준 분석 모드는 기본 AI 엔진으로 처리되며, 파일 태그, 지능형 파일 이름 및 요약을 효율적으로 완성합니다",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(9838-9875)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(10353-10390)"],
     "$id": 19421
   },
   "错误详情": {
@@ -284,7 +297,7 @@
     "de-DE": "Fehlerdetails",
     "fr-FR": "Détails de l'erreur",
     "ko-KR": "오류 세부정보",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(11404-11412)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(11899-11907)"],
     "$id": 4472
   },
   "详细信息: ": {
@@ -297,7 +310,7 @@
     "de-DE": "Details:",
     "fr-FR": "Détails :\r",
     "ko-KR": "자세한 정보:",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(12396-12406)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(12891-12901)"],
     "$id": 3851
   },
   "系统诊断信息": {
@@ -310,7 +323,7 @@
     "de-DE": "Informationen zur Systemdiagnose",
     "fr-FR": "Informations de diagnostic du système",
     "ko-KR": "시스템 진단 정보",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(12953-12963)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13448-13458)"],
     "$id": 4473
   },
   "系统内存": {
@@ -323,7 +336,7 @@
     "de-DE": "Systemspeicher",
     "fr-FR": "Mémoire système",
     "ko-KR": "시스템 메모리",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13264-13272)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13759-13767)"],
     "$id": 4474
   },
   "可用显存": {
@@ -336,7 +349,7 @@
     "de-DE": "Verfügbarer Videospeicher",
     "fr-FR": "Mémoire vidéo disponible",
     "ko-KR": "사용 가능한 비디오 메모리",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(13665-13673)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14160-14168)"],
     "$id": 4475
   },
   "模型文件": {
@@ -349,7 +362,7 @@
     "de-DE": "Modelldatei",
     "fr-FR": "Fichier modèle",
     "ko-KR": "모델 파일",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14069-14077)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14564-14572)"],
     "$id": 4476
   },
   "存在": {
@@ -362,7 +375,7 @@
     "de-DE": "Vorhanden",
     "fr-FR": "Existant",
     "ko-KR": "존재함",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14454-14460)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14949-14955)"],
     "$id": 3856
   },
   "缺失": {
@@ -375,7 +388,7 @@
     "de-DE": "Fehlt",
     "fr-FR": "Manquant",
     "ko-KR": "누락됨",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14464-14470)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14959-14965)"],
     "$id": 3857
   },
   "端口状态": {
@@ -388,7 +401,7 @@
     "de-DE": "Portstatus",
     "fr-FR": "Statut du port",
     "ko-KR": "포트 상태",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(14732-14740)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15227-15235)"],
     "$id": 4477
   },
   "可用": {
@@ -401,7 +414,7 @@
     "de-DE": "Verfügbar",
     "fr-FR": "Disponible",
     "ko-KR": "사용 가능",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15113-15119)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15608-15614)"],
     "$id": 3859
   },
   "被占用": {
@@ -414,7 +427,7 @@
     "de-DE": "Belegt",
     "fr-FR": "Occupé",
     "ko-KR": "사용 중",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15123-15130)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15618-15625)"],
     "$id": 3860
   },
   "网络连接": {
@@ -427,7 +440,7 @@
     "de-DE": "Netzwerkverbindung",
     "fr-FR": "Connexion réseau",
     "ko-KR": "네트워크 연결",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15398-15406)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15893-15901)"],
     "$id": 4478
   },
   "正常": {
@@ -440,7 +453,7 @@
     "de-DE": "Normal",
     "fr-FR": "Normale",
     "ko-KR": "정상",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15791-15797)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(16286-16292)"],
     "$id": 3862
   },
   "异常": {
@@ -453,7 +466,7 @@
     "de-DE": "Fehlerhaft",
     "fr-FR": "Anormale",
     "ko-KR": "비정상",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(15801-15807)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(16296-16302)"],
     "$id": 3863
   },
   "建议解决方案": {
@@ -466,7 +479,7 @@
     "de-DE": "Empfohlene Lösung",
     "fr-FR": "Solution recommandée",
     "ko-KR": "권장 해결 방안",
-    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(16220-16230)"],
+    "$files": ["src/renderer/components/ai/AIServiceErrorDialog.tsx(16715-16725)"],
     "$id": 3864
   }
 }

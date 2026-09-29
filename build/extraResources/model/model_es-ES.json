@@ -430,13 +430,13 @@
     },
     {
       "id": "OS-Software/Ternary-Bonsai-2-27B-Uncensored-Heretic-GGUF:PQ2_0",
-      "name": "Bonsai 2 ternary 27B（2比特•Fuga de la prisión）",
+      "name": "Bonsai 2 ternary 27B（2 bits•Fuga de la prisión）",
       "company": "OS-Software",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐越狱，支持文本与图像分析。",
+      "description": "Versión sin restricciones de Bonsai 2 27B, cuantización ternaria de 2 bits, alineación eliminada, admite análisis de texto e imágenes.",
       "source": "huggingface",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -450,7 +450,7 @@
         "quality": "medium"
       },
       "tags": [
-        "2比特",
+        "2 bits",
         "Fuga de la prisión",
         "Fuga de la prisión",
         "NSFW",
@@ -470,7 +470,7 @@
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐越狱，体积最小，支持文本与图像分析。",
+      "description": "Versión sin restricciones de Bonsai 2 27B, cuantización ternaria de 1 bit, alineación eliminada, tamaño más pequeño, admite análisis de texto e imágenes.",
       "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
@@ -497,47 +497,14 @@
       }
     },
     {
-      "id": "dealignai/Bonsai-2-27B-1bit-CRACK-GGUF:Bonsai-2-27B-PTQ1_0-CRACK.gguf",
-      "name": "Bonsai 27B 1-bit（Súper compresión•国内加速）",
-      "company": "dealignai",
-      "parameterSize": "27B",
-      "intelligenceLevel": 3,
-      "totalSize": "5.54GB",
-      "recommended": true,
-      "description": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
-      "source": "modelscope",
-      "quantization": "PTQ1_0",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "1 bit",
-        "Fuga de la prisión",
-        "Fuga de la prisión",
-        "NSFW",
-        "Solo texto",
-        "Memoria de vídeo baja"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
       "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
-      "name": "Bonsai 2 ternary 27B（2比特•官方•国内加速）",
+      "name": "Bonsai 2 ternary 27B（2 bits•Oficial•Aceleración en China continental）",
       "company": "prism-ml",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "description": "Versión oficial de Bonsai 2 27B, cuantización ternaria de 2 bits, espejo acelerado de ModelScope en China continental, admite análisis de texto e imágenes.",
       "source": "modelscope",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -551,7 +518,7 @@
         "quality": "medium"
       },
       "tags": [
-        "2比特",
+        "2 bits",
         "Multimodal",
         "Memoria de vídeo baja"
       ],
@@ -568,8 +535,70 @@
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "description": "Versión oficial de cuantización binaria trivalente de Bonsai 2 27B, de tamaño mínimo, con aceleración de mirror nacional de ModelScope, compatible con el análisis de texto e imagen.",
       "source": "modelscope",
+      "quantization": "PTQ1_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "1 bit",
+        "Multimodal",
+        "Memoria de vídeo baja"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
+      "name": "Bonsai 2 ternary 27B（2 bits•Oficial）",
+      "company": "prism-ml",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "7.30GB",
+      "recommended": false,
+      "description": "Versión oficial de cuantización de 2 bits trivalente de Bonsai 2 27B, compatible con el análisis de texto e imagen.",
+      "source": "huggingface",
+      "quantization": "PQ2_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "2 bits",
+        "Multimodal",
+        "Memoria de vídeo baja"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
+      "name": "Bonsai 2 ternary 27B（Súper compresión•Oficial）",
+      "company": "prism-ml",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "6.12GB",
+      "recommended": false,
+      "description": "Versión oficial de cuantización binaria trivalente de Bonsai 2 27B, de tamaño mínimo, compatible con el análisis de texto e imagen.",
+      "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
       "contextLength": 131072,
@@ -631,7 +660,7 @@
       "intelligenceLevel": 4,
       "totalSize": "17.56GB",
       "recommended": true,
-      "description": "Qwen3.8-27B 激进去审查版本，P 系重量化在关键张量保留更高精度，越狱且支持图像分析。",
+      "description": "Versión desbloqueada de Qwen3.8-27B; la cuantización de pesos P mantiene una mayor precisión en los tensores clave, permite el jailbreak y es compatible con el análisis de imagen.",
       "source": "huggingface",
       "quantization": "Q4_K_P",
       "isMultiModal": true,
@@ -721,13 +750,13 @@
     },
     {
       "id": "huangyusi/WeMM-Embedding-2B-GGUF:Q4_K_M",
-      "name": "WeMM-Embedding 2B (多模态嵌入)",
+      "name": "WeMM-Embedding 2B (Incrustaciones multimodales)",
       "company": "huangyusi",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
       "totalSize": "2.08GB",
       "recommended": true,
-      "description": "支持萤核智能文件夹，图文视频语义搜索增强。",
+      "description": "Compatible con Firefly AI Folder; mejora la búsqueda semántica de imágenes, texto y video.",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isEmbedding": true,
@@ -742,7 +771,7 @@
         "quality": "medium"
       },
       "tags": [
-        "嵌入",
+        "Incrustaciones",
         "Multimodal",
         "Memoria de vídeo baja"
       ],
@@ -753,13 +782,13 @@
     },
     {
       "id": "Weidows/WeMM-Embedding-2B-GGUF:Q4_K_M",
-      "name": "WeMM-Embedding 2B (多模态嵌入)",
+      "name": "WeMM-Embedding 2B (Incrustaciones multimodales)",
       "company": "Weidows",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
       "totalSize": "2.08GB",
       "recommended": true,
-      "description": "支持萤核智能文件夹，图文视频语义搜索增强。",
+      "description": "Compatible con Firefly AI Folder; mejora la búsqueda semántica de imágenes, texto y video.",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isEmbedding": true,
@@ -774,7 +803,7 @@
         "quality": "medium"
       },
       "tags": [
-        "嵌入",
+        "Incrustaciones",
         "Multimodal",
         "Memoria de vídeo baja"
       ],

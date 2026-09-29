@@ -430,13 +430,13 @@
     },
     {
       "id": "OS-Software/Ternary-Bonsai-2-27B-Uncensored-Heretic-GGUF:PQ2_0",
-      "name": "Bonsai 2 ternary 27B（2比特•побег из тюрьмы）",
+      "name": "Bonsai 2 ternary 27B（2 бита•побег из тюрьмы）",
       "company": "OS-Software",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 2 比特量化越狱版本，去对齐越狱，支持文本与图像分析。",
+      "description": "Bonsai 2 27B тризначный 2-битный квантованный джейлбрейк-вариант, снятие ограничений по джейлбрейку, поддерживает анализ текста и изображений.",
       "source": "huggingface",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -450,7 +450,7 @@
         "quality": "medium"
       },
       "tags": [
-        "2比特",
+        "2 бита",
         "побег из тюрьмы",
         "побег из тюрьмы",
         "NSFW",
@@ -470,7 +470,7 @@
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 1 比特量化越狱版本，去对齐越狱，体积最小，支持文本与图像分析。",
+      "description": "Bonsai 2 27B тризначный 1-битный квантованный джейлбрейк-вариант, снятие ограничений по джейлбрейку, минимальный размер, поддерживает анализ текста и изображений.",
       "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
@@ -497,47 +497,14 @@
       }
     },
     {
-      "id": "dealignai/Bonsai-2-27B-1bit-CRACK-GGUF:Bonsai-2-27B-PTQ1_0-CRACK.gguf",
-      "name": "Bonsai 27B 1-bit（супер сжатие•国内加速）",
-      "company": "dealignai",
-      "parameterSize": "27B",
-      "intelligenceLevel": 3,
-      "totalSize": "5.54GB",
-      "recommended": true,
-      "description": "Bonsai 27B 一比特量化越狱版本，ModelScope 国内镜像加速，仅支持文本分析。",
-      "source": "modelscope",
-      "quantization": "PTQ1_0",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "fast",
-        "quality": "medium"
-      },
-      "tags": [
-        "1 бит",
-        "побег из тюрьмы",
-        "побег из тюрьмы",
-        "NSFW",
-        "только текст",
-        "Мало видеопамяти"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 4096
-      }
-    },
-    {
       "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
-      "name": "Bonsai 2 ternary 27B（2比特•官方•国内加速）",
+      "name": "Bonsai 2 ternary 27B（2 бита•Официальный•Ускорение внутри Китая）",
       "company": "prism-ml",
       "parameterSize": "27B",
       "intelligenceLevel": 3,
       "totalSize": "7.30GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 2 比特量化官方版本，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "description": "Bonsai 2 27B тризначный 2-битный квантованный официальный вариант, ускорение через внутрикитайское зеркало ModelScope, поддерживает анализ текста и изображений.",
       "source": "modelscope",
       "quantization": "PQ2_0",
       "isMultiModal": true,
@@ -551,7 +518,7 @@
         "quality": "medium"
       },
       "tags": [
-        "2比特",
+        "2 бита",
         "мультимодальный",
         "Мало видеопамяти"
       ],
@@ -568,8 +535,70 @@
       "intelligenceLevel": 3,
       "totalSize": "6.12GB",
       "recommended": true,
-      "description": "Bonsai 2 27B 三值 1 比特量化官方版本，体积最小，ModelScope 国内镜像加速，支持文本与图像分析。",
+      "description": "Официальная версия квантования Bonsai 2 27B трёхзначного 1 бита, минимальный размер, ускорение от китайского зеркала ModelScope, поддержка анализа текста и изображений.",
       "source": "modelscope",
+      "quantization": "PTQ1_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "1 бит",
+        "мультимодальный",
+        "Мало видеопамяти"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PQ2_0.gguf",
+      "name": "Bonsai 2 ternary 27B（2 бита•Официальный）",
+      "company": "prism-ml",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "7.30GB",
+      "recommended": false,
+      "description": "Официальная версия квантования Bonsai 2 27B трёхзначного 2 бит, поддержка анализа текста и изображений.",
+      "source": "huggingface",
+      "quantization": "PQ2_0",
+      "isMultiModal": true,
+      "contextLength": 131072,
+      "capabilities": [
+        "TEXT",
+        "IMAGE"
+      ],
+      "performance": {
+        "speed": "fast",
+        "quality": "medium"
+      },
+      "tags": [
+        "2 бита",
+        "мультимодальный",
+        "Мало видеопамяти"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 4096
+      }
+    },
+    {
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:Ternary-Bonsai-2-27B-PTQ1_0.gguf",
+      "name": "Bonsai 2 ternary 27B（супер сжатие•Официальный）",
+      "company": "prism-ml",
+      "parameterSize": "27B",
+      "intelligenceLevel": 3,
+      "totalSize": "6.12GB",
+      "recommended": false,
+      "description": "Официальная версия квантования Bonsai 2 27B трёхзначного 1 бита, минимальный размер, поддержка анализа текста и изображений.",
+      "source": "huggingface",
       "quantization": "PTQ1_0",
       "isMultiModal": true,
       "contextLength": 131072,
@@ -631,7 +660,7 @@
       "intelligenceLevel": 4,
       "totalSize": "17.56GB",
       "recommended": true,
-      "description": "Qwen3.8-27B 激进去审查版本，P 系重量化在关键张量保留更高精度，越狱且支持图像分析。",
+      "description": "Qwen3.8-27B радикальная версия без цензуры, P-серия квантования сохраняет более высокую точность для ключевых тензоров, поддержка джейлбрейка и анализа изображений.",
       "source": "huggingface",
       "quantization": "Q4_K_P",
       "isMultiModal": true,
@@ -721,13 +750,13 @@
     },
     {
       "id": "huangyusi/WeMM-Embedding-2B-GGUF:Q4_K_M",
-      "name": "WeMM-Embedding 2B (多模态嵌入)",
+      "name": "WeMM-Embedding 2B (Мультимодальные встраивания)",
       "company": "huangyusi",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
       "totalSize": "2.08GB",
       "recommended": true,
-      "description": "支持萤核智能文件夹，图文视频语义搜索增强。",
+      "description": "Поддержка Firefly AI Folder, улучшенный семантический поиск по тексту, изображениям и видео.",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isEmbedding": true,
@@ -742,7 +771,7 @@
         "quality": "medium"
       },
       "tags": [
-        "嵌入",
+        "Встраивания",
         "мультимодальный",
         "Мало видеопамяти"
       ],
@@ -753,13 +782,13 @@
     },
     {
       "id": "Weidows/WeMM-Embedding-2B-GGUF:Q4_K_M",
-      "name": "WeMM-Embedding 2B (多模态嵌入)",
+      "name": "WeMM-Embedding 2B (Мультимодальные встраивания)",
       "company": "Weidows",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
       "totalSize": "2.08GB",
       "recommended": true,
-      "description": "支持萤核智能文件夹，图文视频语义搜索增强。",
+      "description": "Поддержка Firefly AI Folder, улучшенный семантический поиск по тексту, изображениям и видео.",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isEmbedding": true,
@@ -774,7 +803,7 @@
         "quality": "medium"
       },
       "tags": [
-        "嵌入",
+        "Встраивания",
         "мультимодальный",
         "Мало видеопамяти"
       ],

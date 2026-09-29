@@ -2278,7 +2278,6 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
       name: t('内容尺度'),
       level: 3,
       tags: [
-        t('全年龄'),
         t('软色情'),
         t('半肉'),
         t('纯肉'),
@@ -2572,10 +2571,12 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
       name: t('敏感内容'),
       level: 2,
       tags: [
-        t('血腥'),
+        t('全年龄'),
+        t('暴恐'),
         t('涉政'),
         t('违规'),
-        t('色情')
+        t('色情'),
+        t('辱骂')
       ],
       description: t('文件内容的敏感与合规安全审查分类'),
       applicableFileTypes: [

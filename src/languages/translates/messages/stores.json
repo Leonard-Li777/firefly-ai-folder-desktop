@@ -9,11 +9,7 @@
     "de-DE": "ElectronAPI.aiService.initialize nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.initialize n'est pas disponible",
     "ko-KR": "electronAPI.aiService.initialize를 사용할 수 없습니다",
-    "$files": [
-      "src/renderer/stores/ai-service-store.ts(4302-4342)",
-      "src/renderer/stores/ai-service-store.ts(7373-7413)",
-      "src/renderer/stores/ai-service-store.ts(10876-10916)"
-    ],
+    "$files": ["src/renderer/stores/ai-service-store.ts(4272-4312)"],
     "$id": 5455
   },
   "AI服务初始化失败": {
@@ -26,11 +22,7 @@
     "de-DE": "Initialisierung des KI-Dienstes fehlgeschlagen",
     "fr-FR": "Échec de l'initialisation du service IA",
     "ko-KR": "AI 서비스 초기화 실패",
-    "$files": [
-      "src/renderer/stores/ai-service-store.ts(5757-5770)",
-      "src/renderer/stores/ai-service-store.ts(9204-9217)",
-      "src/renderer/stores/ai-service-store.ts(12685-12698)"
-    ],
+    "$files": ["src/renderer/stores/ai-service-store.ts(5727-5740)"],
     "$id": 5458
   },
   "未知错误": {
@@ -44,10 +36,8 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/renderer/stores/ai-service-store.ts(6563-6571)",
-      "src/renderer/stores/ai-service-store.ts(10016-10024)",
-      "src/renderer/stores/ai-service-store.ts(13499-13507)",
-      "src/renderer/stores/ai-service-store.ts(17030-17038)",
+      "src/renderer/stores/ai-service-store.ts(6533-6541)",
+      "src/renderer/stores/ai-service-store.ts(10217-10225)",
       "src/renderer/stores/tier-store.ts(4953-4961)"
     ],
     "$id": 8872
@@ -62,7 +52,7 @@
     "de-DE": "ElectronAPI.aiService.onModelChanged nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.onModelChanged n'est pas disponible",
     "ko-KR": "electronAPI.aiService.onModelChanged 사용 불가",
-    "$files": ["src/renderer/stores/ai-service-store.ts(14279-14323)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(7466-7510)"],
     "$id": 8128
   },
   "模型切换失败": {
@@ -75,7 +65,7 @@
     "de-DE": "Modellwechsel fehlgeschlagen",
     "fr-FR": "Échec du changement de modèle",
     "ko-KR": "모델 전환 실패",
-    "$files": ["src/renderer/stores/ai-service-store.ts(16181-16191)"],
+    "$files": ["src/renderer/stores/ai-service-store.ts(9368-9378)"],
     "$id": 5462
   },
   "更新配置失败": {
@@ -144,8 +134,8 @@
     "$id": 3302
   },
   "高级AI引擎配置": {
-    "en-US": "高级AI引擎配置",
-    "es-ES": "高级AI引擎配置",
+    "en-US": "Advanced AI Engine Configuration",
+    "es-ES": "Configuración del motor de IA avanzado",
     "ar-EG": "高级AI引擎配置",
     "pt-PT": "高级AI引擎配置",
     "ru-RU": "高级AI引擎配置",
@@ -157,8 +147,8 @@
     "$id": 19417
   },
   "生效引擎选择、云端配置与思考模式": {
-    "en-US": "生效引擎选择、云端配置与思考模式",
-    "es-ES": "生效引擎选择、云端配置与思考模式",
+    "en-US": "Active Engine Selection, Cloud Configuration, and Thinking Mode",
+    "es-ES": "Selección del motor aplicable, configuración en la nube y modo de razonamiento",
     "ar-EG": "生效引擎选择、云端配置与思考模式",
     "pt-PT": "生效引擎选择、云端配置与思考模式",
     "ru-RU": "生效引擎选择、云端配置与思考模式",

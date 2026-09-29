@@ -9,7 +9,7 @@
     "de-DE": "Vorbereitungen für den ersten Installationsstart...",
     "fr-FR": "Préparation du démarrage de l'installation pour la première fois...",
     "ko-KR": "처음으로 설치 시작을 준비 중입니다...",
-    "$files": ["src/electron/main/index.ts(26220-26237)"],
+    "$files": ["src/electron/main/index.ts(25611-25628)"],
     "$id": 10169
   },
   "正在从版本 {oldVersion} 升级到 {newVersion}...": {
@@ -22,19 +22,19 @@
     "de-DE": "Upgrade von Version {oldVersion} auf {newVersion}...",
     "fr-FR": "Mise à niveau de la version {oldVersion} vers {newVersion}...",
     "ko-KR": "버전 {oldVersion}에서 {newVersion}로 업그레이드 중...",
-    "$files": ["src/electron/main/index.ts(26250-26292)"],
+    "$files": ["src/electron/main/index.ts(25641-25683)"],
     "$id": 10170
   },
   "AI 引擎检查完成": {
-    "en-US": "AI 引擎检查完成",
-    "es-ES": "AI 引擎检查完成",
-    "ar-EG": "AI 引擎检查完成",
-    "pt-PT": "AI 引擎检查完成",
-    "ru-RU": "AI 引擎检查完成",
-    "ja-JP": "AI 引擎检查完成",
+    "en-US": "AI engine check completed",
+    "es-ES": "Comprobación del motor de IA completada",
+    "ar-EG": "اكتمل فحص محرك الذكاء الاصطناعي",
+    "pt-PT": "Verificação do motor de IA concluída",
+    "ru-RU": "Проверка AI-движка завершена",
+    "ja-JP": "AI エンジンのチェック完了",
     "de-DE": "AI-Engine-Prüfung abgeschlossen",
-    "fr-FR": "AI 引擎检查完成",
-    "ko-KR": "AI 引擎检查完成",
+    "fr-FR": "Vérification du moteur IA terminée",
+    "ko-KR": "AI 엔진 검사 완료",
     "$files": ["src/electron/main/ipc-handlers/ai-service.ts(3490-3503)"],
     "$id": 19416
   },
@@ -113,7 +113,7 @@
     "de-DE": "Initialisierung des KI-Dienstes erfolgreich",
     "fr-FR": "Initialisation du service IA réussie",
     "ko-KR": "AI 서비스 초기화 성공",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(14939-14952)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(14844-14857)"],
     "$id": 10178
   },
   "模型正在切换中，请等待": {
@@ -127,8 +127,8 @@
     "fr-FR": "Le modèle est en cours de commutation, veuillez patienter",
     "ko-KR": "모델이 전환 중입니다. 기다려 주세요",
     "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(15745-15760)",
-      "src/electron/main/ipc-handlers/ai-service.ts(17644-17659)",
+      "src/electron/main/ipc-handlers/ai-service.ts(15650-15665)",
+      "src/electron/main/ipc-handlers/ai-service.ts(17549-17564)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(13830-13845)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(17951-17966)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(31254-31269)",
@@ -146,7 +146,7 @@
     "de-DE": "Die KI arbeitet derzeit, etwa an der Analyse der Warteschlange. Bitte stoppen Sie und fordern Sie dann erneut an.",
     "fr-FR": "L'IA travaille actuellement, comme l'analyse de la file d'attente. Veuillez arrêter, puis demander à nouveau.",
     "ko-KR": "현재 대기열 분석 등 AI가 작동하고 있다. 중지한 후 다시 요청하세요.",
-    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(18014-18043)"],
+    "$files": ["src/electron/main/ipc-handlers/ai-service.ts(17919-17948)"],
     "$id": 11303
   },
   "AI 服务正在初始化中，请稍候再试": {
@@ -160,13 +160,26 @@
     "fr-FR": "Le service AI est en cours d'initialisation, veuillez réessayer plus tard.",
     "ko-KR": "AI 서비스를 초기화 중입니다. 나중에 다시 시도해 주세요.",
     "$files": [
-      "src/electron/main/ipc-handlers/ai-service.ts(18390-18411)",
+      "src/electron/main/ipc-handlers/ai-service.ts(18295-18316)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(18380-18401)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(18735-18756)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(31943-31964)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(35537-35558)"
     ],
     "$id": 10179
+  },
+  "缺少目标后端参数": {
+    "en-US": "Missing target backend parameters",
+    "es-ES": "Faltan parámetros del backend objetivo",
+    "ar-EG": "معاملات الخادم الهدف مفقودة",
+    "pt-PT": "Parâmetros de backend de destino ausentes",
+    "ru-RU": "Отсутствуют параметры целевого бэкенда",
+    "ja-JP": "対象のバックエンドパラメータがありません",
+    "de-DE": "Ziel-Backend-Parameter fehlen",
+    "fr-FR": "Paramètres du backend cible manquants",
+    "ko-KR": "대상 백엔드 매개변수 누락",
+    "$files": ["src/electron/main/ipc-handlers/engine-bridge.ts(3045-3057)"],
+    "$id": 19377
   },
   "权限不足，无法访问目录: {dirPath}": {
     "en-US": "Insufficient permissions to access directory: {dirPath}",
@@ -217,7 +230,7 @@
     "de-DE": "Die Dateiinformationen wurden im Arbeitsbereich nicht gefunden",
     "fr-FR": "Les informations du fichier sont introuvables dans l'espace de travail",
     "ko-KR": "작업공간에서 파일정보를 찾을 수 없습니다",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(6819-6836)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(6905-6922)"],
     "$id": 7671
   },
   "未找到所属的工作区目录": {
@@ -230,7 +243,7 @@
     "de-DE": "Das entsprechende Arbeitsbereichsverzeichnis wurde nicht gefunden",
     "fr-FR": "Le répertoire de l'espace de travail correspondant est introuvable",
     "ko-KR": "해당 작업공간 디렉터리를 찾을 수 없습니다.",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(6997-7012)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(7083-7098)"],
     "$id": 7672
   },
   "未知错误": {
@@ -244,7 +257,7 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(13128-13136)",
+      "src/electron/main/ipc-handlers/misc.ts(13338-13346)",
       "src/electron/main/ipc-handlers/virtual-directory.ts(32910-32918)"
     ],
     "$id": 10180
@@ -260,8 +273,8 @@
     "fr-FR": "Service de nettoyage de fichiers non initialisé",
     "ko-KR": "파일 정리 서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(13295-13309)",
-      "src/electron/main/ipc-handlers/misc.ts(13529-13543)"
+      "src/electron/main/ipc-handlers/misc.ts(13505-13519)",
+      "src/electron/main/ipc-handlers/misc.ts(13739-13753)"
     ],
     "$id": 7673
   },
@@ -276,8 +289,8 @@
     "fr-FR": "Base de données non connectée",
     "ko-KR": "데이터베이스가 연결되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(13848-13858)",
-      "src/electron/main/ipc-handlers/misc.ts(14263-14273)"
+      "src/electron/main/ipc-handlers/misc.ts(14058-14068)",
+      "src/electron/main/ipc-handlers/misc.ts(14473-14483)"
     ],
     "$id": 7674
   },
@@ -291,7 +304,7 @@
     "de-DE": "Netzwerkverbindung fehlgeschlagen",
     "fr-FR": "La connexion réseau a échoué",
     "ko-KR": "네트워크 연결 실패",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(15223-15233)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(15433-15443)"],
     "$id": 10181
   },
   "仅允许 http: 和 https: 协议": {
@@ -304,7 +317,7 @@
     "de-DE": "Es sind nur die Protokolle http: und https: zulässig",
     "fr-FR": "Seuls les protocoles http: et https: sont autorisés",
     "ko-KR": "http: 및 https: 프로토콜만 허용됩니다.",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(20598-20623)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(20808-20833)"],
     "$id": 10182
   },
   "无效的 URL": {
@@ -317,7 +330,7 @@
     "de-DE": "Ungültige URL",
     "fr-FR": "URL invalide",
     "ko-KR": "잘못된 URL",
-    "$files": ["src/electron/main/ipc-handlers/misc.ts(20754-20765)"],
+    "$files": ["src/electron/main/ipc-handlers/misc.ts(20964-20975)"],
     "$id": 10183
   },
   "核心引擎未初始化": {
@@ -331,11 +344,11 @@
     "fr-FR": "Moteur principal non initialisé",
     "ko-KR": "코어 엔진이 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(21010-21022)",
-      "src/electron/main/ipc-handlers/misc.ts(21198-21210)",
-      "src/electron/main/ipc-handlers/misc.ts(21387-21399)",
-      "src/electron/main/ipc-handlers/misc.ts(21553-21565)",
-      "src/electron/main/ipc-handlers/misc.ts(21705-21717)"
+      "src/electron/main/ipc-handlers/misc.ts(21220-21232)",
+      "src/electron/main/ipc-handlers/misc.ts(21408-21420)",
+      "src/electron/main/ipc-handlers/misc.ts(21597-21609)",
+      "src/electron/main/ipc-handlers/misc.ts(21763-21775)",
+      "src/electron/main/ipc-handlers/misc.ts(21915-21927)"
     ],
     "$id": 7675
   },
@@ -350,9 +363,9 @@
     "fr-FR": "Base de données non initialisée",
     "ko-KR": "데이터베이스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/misc.ts(24248-24259)",
-      "src/electron/main/ipc-handlers/misc.ts(24500-24511)",
-      "src/electron/main/ipc-handlers/misc.ts(24752-24763)"
+      "src/electron/main/ipc-handlers/misc.ts(24458-24469)",
+      "src/electron/main/ipc-handlers/misc.ts(24710-24721)",
+      "src/electron/main/ipc-handlers/misc.ts(24962-24973)"
     ],
     "$id": 7676
   },

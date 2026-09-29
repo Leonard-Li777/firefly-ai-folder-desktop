@@ -11,7 +11,7 @@
     "ko-KR": "AI 서비스가 준비되지 않았습니다. 나중에 다시 시도해 주세요.",
     "$files": [
       "src/electron/adapters/ai-adapter-factory.ts(2096-2113)",
-      "src/electron/adapters/llama-index-ai-adapter.ts(2385-2402)"
+      "src/electron/adapters/llama-index-ai-adapter.ts(2357-2374)"
     ],
     "$id": 4270
   },
@@ -38,7 +38,7 @@
     "de-DE": "Verarbeitung der multimodalen Datei fehlgeschlagen [{filePath}]: {errorMsg}",
     "fr-FR": "Échec du traitement du fichier multimodal [{filePath}] : {errorMsg}",
     "ko-KR": "멀티모달 파일 [{filePath}] 처리 실패: {errorMsg}",
-    "$files": ["src/electron/adapters/llama-index-ai-adapter.ts(10390-10428)"],
+    "$files": ["src/electron/adapters/llama-index-ai-adapter.ts(10362-10400)"],
     "$id": 4271
   },
   "没有加载的模型": {
