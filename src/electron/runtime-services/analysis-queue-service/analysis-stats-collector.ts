@@ -4,6 +4,7 @@ import { LogCategory, logger, PerformanceTimer } from '@firefly/shared'
 import { hardwareDetectionService } from '../system'
 import { unifiedModelManager } from '../llama/unified-model-manager'
 import { engineBridgeService } from '../engine-bridge'
+import { isAiStageEnabled, resolveAnalysisMode } from '@app/electron/config/analysis-mode'
 
 /**
  * 分析统计收集器
@@ -14,6 +15,10 @@ export class AnalysisStatsCollector {
    * 收集分析统计信息
    */
   async collectAnalysisStats(timer: PerformanceTimer): Promise<AnalysisStats> {
+    // 标准分析（simple）模式在 CPU 内容提取完成后即结束，不进入 AI 阶段（stage 3/4），
+    // 全程未调用任何 AI 模型。此时不应记录模型信息，否则前端会在「分析耗时」旁
+    // 显示一个无意义（甚至错误）的模型标识。门控前置到 try 之外，确保异常兜底分支同样生效。
+    const aiStageEnabled = isAiStageEnabled(resolveAnalysisMode())
     try {
       const hardware = await hardwareDetectionService.detectSystemResources()
       const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
@@ -27,17 +32,17 @@ export class AnalysisStatsCollector {
       // 引擎离线（backend 为 null）时为 'unknown'，不回落硬件检测/配置猜路
       const accelerator = engineBridgeService.getSnapshot().backend ?? 'unknown'
 
-      // 获取模型名称
-      const modelName = this.getModelName(modelId || '', mode || 'local')
+      // 仅在启用 AI 阶段（增强/全面分析）时记录模型；标准分析无模型，置为 undefined
+      const modelObj = aiStageEnabled
+        ? {
+            id: modelId || 'unknown',
+            name: this.getModelName(modelId || '', mode || 'local'),
+            provider: mode || 'local'
+          }
+        : undefined
 
       // 获取 GPU 名称和显存
       const gpuInfo = hardware.gpus && hardware.gpus.length > 0 ? hardware.gpus[0] : null
-
-      const modelObj = {
-        id: modelId || 'unknown',
-        name: modelName,
-        provider: mode || 'local'
-      }
 
       const durationMs = timer.getTotalDuration()
       const phases = timer.getPhases()
@@ -61,7 +66,9 @@ export class AnalysisStatsCollector {
       logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析统计] 收集统计信息失败:', error)
       const durationMs = timer.getTotalDuration()
       const phases = timer.getPhases()
-      const modelObj = { id: 'unknown', name: 'unknown', provider: 'unknown' }
+      const modelObj = aiStageEnabled
+        ? { id: 'unknown', name: 'unknown', provider: 'unknown' }
+        : undefined
       return {
         hardware: { platform: process.platform },
         performance: {
