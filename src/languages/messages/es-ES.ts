@@ -2999,6 +2999,8 @@ export default  {
     "11642": "{count} Archivos seleccionados",
     "11647": "No hay suficiente memoria de video, y si desea clasificar los archivos correctamente, debe elegirme para restringir la versión (Abliterada).",
     "14746": "Mejor adaptación de memoria gráfica.",
+    "19344": "Terrorismo",
+    "19345": "Insultos",
     "19372": "Versión sin restricciones de Bonsai 2 27B, cuantización ternaria de 2 bits, alineación eliminada, admite análisis de texto e imágenes.",
     "19373": "Versión sin restricciones de Bonsai 2 27B, cuantización ternaria de 1 bit, alineación eliminada, tamaño más pequeño, admite análisis de texto e imágenes.",
     "19374": "Versión oficial de cuantización de 2 bits trivalente de Bonsai 2 27B, compatible con el análisis de texto e imagen.",

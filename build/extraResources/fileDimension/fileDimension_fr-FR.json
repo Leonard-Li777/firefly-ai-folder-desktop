@@ -2546,10 +2546,11 @@
       "level": 2,
       "tags": [
         "Tous les âges",
-        "Sanglant",
+        "Violence et terrorisme",
         "Liées à la politique",
         "Infraction",
-        "Pornographie"
+        "Pornographie",
+        "Injures"
       ],
       "description": "Classification des documents en fonction du caractère sensible de leur contenu et des exigences de conformité et de sécurité",
       "applicableFileTypes": [

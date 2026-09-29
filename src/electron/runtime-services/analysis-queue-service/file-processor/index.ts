@@ -1568,6 +1568,7 @@ export class FileProcessor {
       )
 
       markitdownBenchmark = {
+        ...(omniBm || {}),
         totalMs: omniBm?.total_ms ?? (calculatedMaxParallelTotalMs > 0 ? calculatedMaxParallelTotalMs : anydocDurationMs),
         officePrePdfMs: undefined,
         magikaMs: stage2MagikaMs,
@@ -1577,7 +1578,21 @@ export class FileProcessor {
         documentMs: undefined, // 彻底移除冗余正文
         ocrMs: stage2OcrMs,
         htmlMs: omniBm?.html_ms,
-        thumbnailMs: (stage2ThumbMs && stage2ThumbMs > 0) ? stage2ThumbMs : undefined
+        thumbnailMs: (stage2ThumbMs && stage2ThumbMs > 0) ? stage2ThumbMs : undefined,
+
+        // 细分算子耗时（标签生成组）
+        clipMs: omniBm?.clip_ms ?? (omniBm as any)?.clipMs,
+        clipEmbedMs: omniBm?.clip_embed_ms ?? (omniBm as any)?.clipEmbedMs,
+        clipMutualMs: omniBm?.clip_mutual_ms ?? (omniBm as any)?.clipMutualMs,
+        ramMs: omniBm?.ram_ms ?? (omniBm as any)?.ramMs,
+        nsfwMs: omniBm?.nsfw_ms ?? (omniBm as any)?.nsfwMs,
+
+        // 细分算子耗时（画质与物理形态组）
+        textDetectMs: omniBm?.text_detect_ms ?? (omniBm as any)?.textDetectMs,
+        watermarkMs: omniBm?.watermark_ms ?? (omniBm as any)?.watermarkMs,
+        mosaicMs: omniBm?.mosaic_ms ?? (omniBm as any)?.mosaicMs,
+        aestheticMs: omniBm?.aesthetic_ms ?? (omniBm as any)?.aestheticMs,
+        bwMs: omniBm?.bw_ms ?? (omniBm as any)?.bwMs
       }
 
       // 根据用户配置的 MAX_CONTENT_SIZE_KB 进行统一的 UTF-8 字符边界防乱码安全截断 (-1 表示不限制大小)

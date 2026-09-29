@@ -25,6 +25,17 @@ export interface OmniBenchmarkResponse {
   ocr_ms?: number
   html_ms?: number
   thumbnail_ms?: number
+  clip_ms?: number
+  clip_embed_ms?: number
+  clip_mutual_ms?: number
+  ram_ms?: number
+  nsfw_ms?: number
+  text_detect_ms?: number
+  watermark_ms?: number
+  mosaic_ms?: number
+  aesthetic_ms?: number
+  bw_ms?: number
+  [subtask_ms: string]: number | undefined
 }
 
 export interface OmniExtractionResponse {
@@ -87,12 +98,15 @@ export interface OmniPerceptionBenchmarkResponse {
   ocr_ms?: number
   text_detect_ms?: number
   clip_ms?: number
+  clip_embed_ms?: number
+  clip_mutual_ms?: number
   nsfw_ms?: number
   watermark_ms?: number
   mosaic_ms?: number
   aesthetic_ms?: number
   bw_ms?: number
   ram_ms?: number
+  [subtask_ms: string]: number | undefined
 }
 
 export interface OmniTagChainItem {

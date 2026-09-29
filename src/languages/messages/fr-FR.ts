@@ -2999,6 +2999,8 @@ export default  {
     "11642": "Fichiers {count} sélectionnés",
     "11647": "La mémoire vidéo est insuffisante, et si vous souhaitez classer correctement les fichiers, vous devez me choisir pour restreindre la version (Ablitérée).",
     "14746": "Meilleure adaptation de la mémoire graphique",
+    "19344": "Violence et terrorisme",
+    "19345": "Injures",
     "19372": "Bonsai 2 27B quantization ternaire 2 bits version jailbreak, désalignement jailbreak, prend en charge l'analyse de texte et d'image.",
     "19373": "Bonsai 2 27B quantization ternaire 1 bit version jailbreak, désalignement jailbreak, taille minimale, prend en charge l'analyse de texte et d'image.",
     "19374": "Bonsai 2 27B quantisation à trois valeurs 2 bits, version officielle, support de l'analyse du texte et de l'image.",

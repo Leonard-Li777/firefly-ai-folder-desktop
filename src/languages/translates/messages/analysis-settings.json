@@ -450,7 +450,7 @@
     "ja-JP": "テキスト、ドキュメント、OCRおよびオーディオビジュアル内容の抽出範囲と精度を制御し、解析時間と結果の豊富さに影響を与える",
     "de-DE": "Steuert Umfang und Genauigkeit der Extraktion von Text-, Dokument-, OCR- sowie Audio- und Videoinhalten; beeinflusst Analysezeit und Ergebnisdichte",
     "fr-FR": "Contrôler la portée et la précision de l'extraction de textes, documents, OCR et de contenu audio/vidéo, ce qui influence la durée d'analyse et la richesse des résultats",
-    "ko-KR": "텍스트, 문서, OCR 및音视频 콘텐츠의 추출 범위와 정밀도를 제어하며, 분석 소요 시간과 결과의 풍부도에 영향을 미침",
+    "ko-KR": "텍스트, 문서, OCR, 오디오 및 비디오 콘텐츠의 추출 범위와 정확도를 제어하여 분석 시간과 결과의 풍부함에 영향을 미칩니다.",
     "$files": ["src/renderer/components/settings/analysis-settings.tsx(27909-27952)"],
     "$id": 19482
   },
@@ -1530,7 +1530,7 @@
   "提示词修改后将应用到新的分析任务；忽略规则可提高分析效率，内置规则不可删除；通配符支持 * 和 ?，正则支持更复杂模式。": {
     "en-US": "Prompt changes will apply to new analysis tasks; ignoring rules can improve analysis efficiency; built-in rules cannot be deleted; wildcards support * and ?, regex supports more complex patterns.",
     "es-ES": "Las modificaciones del indicador se aplicarán a las nuevas tareas de análisis; omitir reglas puede mejorar la eficiencia del análisis; las reglas integradas no se pueden eliminar; los comodines admiten * y ?, y las expresiones regulares admiten patrones más complejos.",
-    "ar-EG": "ستُطبَّق التعديلات عل�� المحفزات على مهام التحليل الجديدة؛ قد تحسّن قواعد التجاهل كفاءة التحليل، ولا يمكن حذف القواعد المدمجة؛ تدعم رموز النجمة * والسؤال ؟، بينما تدعم تعبيرات النمط正则 أنماطاً معقدة.",
+    "ar-EG": "سيتم تطبيق الكلمات السريعة المعدلة على مهام التحليل الجديدة؛ يمكن أن يؤدي تجاهل القواعد إلى تحسين كفاءة التحليل، ولا يمكن حذف القواعد المضمنة؛ تدعم أحرف البدل * و؟، وتدعم التعبيرات العادية الأنماط الأكثر تعقيدًا.",
     "pt-PT": "As alterações no prompt serão aplicadas a novas tarefas de análise; ignorar regras pode aumentar a eficiência da análise, as regras integradas não podem ser removidas; os curingas suportam * e ?, a expressão regular suporta padrões mais complexos.",
     "ru-RU": "Изменённые промпты будут применяться к новым задачам анализа; игнорирование правил повышает эффективность анализа; встроенные правила нельзя удалить; в качестве wildcards поддерживаются * и ?, для более сложных поддерживаются regex-выражения.",
     "ja-JP": "プロンプトを変更すると、新しい解析タスクに適用されます。無視ルールを設定すると解析効率を向上できます。組み込みルールは削除できません。ワイルドカードには * と ? が使用でき、正規表現によりより複雑なパターンをサポートします。",
