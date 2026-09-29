@@ -257,4 +257,22 @@ describe('analysis-time-utils: 耗时指标通用分组、过滤与物理拓扑�
     const result = computeGroupedMetrics(mockStage1, legacy, mockPhases, defaultFilter, t)
     expect(result.groups.some(g => g.id === 'other')).toBe(false)
   })
+
+  it('9. 标签组在缺乏总tagMs时，正确将clipEmbedMs与clipMutualMs串行求和作为瓶颈', () => {
+    // clipEmbedMs = 40, clipMutualMs = 30 -> 串行链 70ms
+    // ramMs = 50ms (并发), nsfwMs = 20ms (并发)
+    // 标签组有效耗时必须为 70ms (40 + 30)，而非被误认为单纯取各子项最大值 50ms
+    const benchmark: MarkitdownBenchmark = {
+      totalMs: 150,
+      clipEmbedMs: 40,
+      clipMutualMs: 30,
+      ramMs: 50,
+      nsfwMs: 20
+    }
+    const result = computeGroupedMetrics(mockStage1, benchmark, mockPhases, defaultFilter, t)
+    const tagGroup = result.groups.find(g => g.id === 'tag_group')
+    expect(tagGroup).toBeDefined()
+    expect(tagGroup?.duration).toBe(70)
+  })
 })
+

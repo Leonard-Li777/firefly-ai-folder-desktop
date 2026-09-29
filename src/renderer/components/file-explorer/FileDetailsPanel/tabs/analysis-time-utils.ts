@@ -366,10 +366,16 @@ export function computeGroupedMetrics(
         }
       }
 
-      // 父级 tagMs 耗时：如果原数据有 tagMs 优先，且保证 >= 各子项最大值
+      // 父级 tagMs 耗时：如果原数据有 tagMs 优先，且保证 >= 关键串行路径及并发最大值
+      // 物理流水线特性: clipEmbedMs (串行) -> clipMutualMs (串行)，二者为局部串行链路，需累加
       const rawTagMs = Number(contentBreakdown.tagMs) || 0
-      const subItemsMax = tagSubItems.length > 0 ? Math.max(...tagSubItems.map(i => i.duration)) : 0
-      const effectiveTagDuration = Math.max(rawTagMs, subItemsMax)
+      const embedMs = getSubtaskMs(contentBreakdown, 'clipEmbedMs') || 0
+      const mutualMs = getSubtaskMs(contentBreakdown, 'clipMutualMs') || 0
+      const clipChainMs = embedMs + mutualMs
+      const otherSubItemsMax = tagSubItems
+        .filter(it => it.key !== 'clipEmbedMs' && it.key !== 'clipMutualMs')
+        .reduce((max, it) => Math.max(max, it.duration), 0)
+      const effectiveTagDuration = Math.max(rawTagMs, clipChainMs, otherSubItemsMax)
 
       if (effectiveTagDuration > 0 && !filter.hiddenKeys.has('tagMs')) {
         let finalTagItems: SubtaskItem[] = []

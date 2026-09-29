@@ -465,6 +465,91 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
             </div>
           )
         })}
+
+        {/* 串行后续阶段 (阶段 3: 质量评分 与 阶段 4: 维度分析) 图例卡片对齐 */}
+        {metrics.stage3Ms > 0 && (
+          <div
+            key={`stage3_${isArchive ? 'arc' : 'frs'}`}
+            className="rounded-lg border border-border/30 bg-muted/10 p-2 space-y-1.5 transition-all"
+          >
+            <div className="flex items-center justify-between gap-1 text-xs">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="w-3.5 h-3.5 inline-block" />
+                <span
+                  className="w-2.5 h-2.5 rounded-sm shrink-0"
+                  style={{ backgroundColor: '#f97316' }}
+                />
+                <span className="font-semibold text-foreground truncate flex items-center gap-1.5">
+                  {t('阶段 3: 质量评分')}
+                  <span
+                    className="text-[10px] text-blue-500 font-normal px-1 bg-blue-500/10 rounded border border-blue-500/20"
+                    title={t('串行执行 (按累加和计)')}
+                  >
+                    ⚙️ {t('串行')}
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="font-mono text-foreground font-semibold">
+                  {formatSeconds(metrics.stage3Ms)} (
+                  {metrics.phasesSum > 0
+                    ? ((metrics.stage3Ms / metrics.phasesSum) * 100).toFixed(1)
+                    : '0.0'}
+                  %)
+                </span>
+                {isArchive &&
+                  (fresh.phases as any)?.qualityScoring === undefined &&
+                  (fresh.phases as any)?.['质量分析'] === undefined && (
+                    <span className="text-[9px] px-1 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20">
+                      {t('复用')}
+                    </span>
+                  )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {metrics.stage4Ms > 0 && (
+          <div
+            key={`stage4_${isArchive ? 'arc' : 'frs'}`}
+            className="rounded-lg border border-border/30 bg-muted/10 p-2 space-y-1.5 transition-all"
+          >
+            <div className="flex items-center justify-between gap-1 text-xs">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="w-3.5 h-3.5 inline-block" />
+                <span
+                  className="w-2.5 h-2.5 rounded-sm shrink-0"
+                  style={{ backgroundColor: '#22c55e' }}
+                />
+                <span className="font-semibold text-foreground truncate flex items-center gap-1.5">
+                  {t('阶段 4: 维度分析')}
+                  <span
+                    className="text-[10px] text-blue-500 font-normal px-1 bg-blue-500/10 rounded border border-blue-500/20"
+                    title={t('串行执行 (按累加和计)')}
+                  >
+                    ⚙️ {t('串行')}
+                  </span>
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="font-mono text-foreground font-semibold">
+                  {formatSeconds(metrics.stage4Ms)} (
+                  {metrics.phasesSum > 0
+                    ? ((metrics.stage4Ms / metrics.phasesSum) * 100).toFixed(1)
+                    : '0.0'}
+                  %)
+                </span>
+                {isArchive &&
+                  (fresh.phases as any)?.dimensionAnalysis === undefined &&
+                  (fresh.phases as any)?.['维度分析'] === undefined && (
+                    <span className="text-[9px] px-1 bg-amber-500/10 text-amber-500 rounded border border-amber-500/20">
+                      {t('复用')}
+                    </span>
+                  )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
