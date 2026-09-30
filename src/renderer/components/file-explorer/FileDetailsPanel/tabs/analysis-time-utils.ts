@@ -12,23 +12,26 @@ import { MarkitdownBenchmark, Stage1Benchmark, getSubtaskMs } from '@firefly/typ
 /** 子任务执行流拓扑类型 */
 export type SubtaskExecutionType = 'sync' | 'async'
 
+export type MetricGroupId = 'stage1' | 'content' | 'tag_group' | 'semantic_fusion' | 'quality_group' | 'other'
+
 /** 子任务/指标条目 */
 export interface SubtaskItem {
   key: string
   label: string
   duration: number
   color: string
-  groupId: 'stage1' | 'content' | 'tag_group' | 'quality_group' | 'other'
+  groupId: MetricGroupId
   parentKey?: string
   isSubItem: boolean
   executionType: SubtaskExecutionType
   isBottleneck?: boolean
   weight: number
+  modelBadge?: string
 }
 
 /** 分组结构 */
 export interface MetricGroup {
-  id: 'stage1' | 'content' | 'tag_group' | 'quality_group' | 'other'
+  id: MetricGroupId
   label: string
   color: string
   executionType: SubtaskExecutionType
@@ -39,7 +42,7 @@ export interface MetricGroup {
 
 /** 显隐与过滤配置 */
 export interface FilterConfig {
-  /** 隐藏的整组 ID (例如 'tag_group' | 'quality_group' | 'content') */
+  /** 隐藏的整组 ID (例如 'tag_group' | 'semantic_fusion' | 'quality_group' | 'content') */
   hiddenGroupIds: Set<string>
   /** 隐藏组内子项的组 ID (仅保留父级汇总，隐藏细分条目与外环同轴弧) */
   hideSubItems: Set<string>
@@ -112,7 +115,9 @@ const RESERVED_STAGE2_KEYS: ReadonlySet<string> = new Set([
   'tagMs',
   'magikaMs',
   'textMs',
+  'docParseMs',
   'ocrMs',
+  'textDetectMs',
   'metadataMs',
   'thumbnailMs',
 
@@ -123,11 +128,16 @@ const RESERVED_STAGE2_KEYS: ReadonlySet<string> = new Set([
   'ramMs',
   'nsfwMs',
 
+  // 语义与多模态融合组静态保留项
+  'bekkoEmbedMs',
+  'keybertMs',
+  'slotSummaryMs',
+  'fusionMs',
+
   // 画质与形态组静态保留项
   'aestheticMs',
   'watermarkMs',
   'mosaicMs',
-  'textDetectMs',
   'bwMs',
 
   // 兼容旧字段，避免落入扩展算子组以机器格式展示
@@ -159,17 +169,21 @@ function getBenchmarkValue(bm: MarkitdownBenchmark | undefined, camelKey: string
 /** 标签生成组的动态归类关键词 (唯一事实源，tag/other 扫描共用) */
 const TAG_GROUP_KEYWORDS = ['clip', 'ram', 'nsfw', 'tag'] as const
 
+/** 语义与多模态融合组的动态归类关键词 */
+const SEMANTIC_FUSION_KEYWORDS = ['bekko', 'keybert', 'slot', 'fusion'] as const
+
 /** 画质与形态组的动态归类关键词 (唯一事实源，quality/other 扫描共用) */
-const QUALITY_GROUP_KEYWORDS = ['watermark', 'mosaic', 'aesthetic', 'quality', 'detect', 'blur', 'bw'] as const
+const QUALITY_GROUP_KEYWORDS = ['watermark', 'mosaic', 'aesthetic', 'quality', 'blur', 'bw'] as const
 
 /**
  * 动态子任务键路由 (开闭原则唯一归类入口):
- * 按关键词将未知算子键路由到标签生成组 / 画质与形态组 / 扩展算子组。
+ * 按关键词将未知算子键路由到标签生成组 / 语义融合组 / 画质与形态组 / 扩展算子组。
  * 新增分类关键词只需修改对应关键词表，无需改动任何扫描调用方。
  */
-function classifySubtaskKey(rawKey: string): 'tag_group' | 'quality_group' | 'other' {
+function classifySubtaskKey(rawKey: string): 'tag_group' | 'semantic_fusion' | 'quality_group' | 'other' {
   const lowerKey = rawKey.toLowerCase()
   if (TAG_GROUP_KEYWORDS.some(kw => lowerKey.includes(kw))) return 'tag_group'
+  if (SEMANTIC_FUSION_KEYWORDS.some(kw => lowerKey.includes(kw))) return 'semantic_fusion'
   if (QUALITY_GROUP_KEYWORDS.some(kw => lowerKey.includes(kw))) return 'quality_group'
   return 'other'
 }
@@ -265,9 +279,9 @@ export function computeGroupedMetrics(
       // Office 预转 PDF 作为串行前缀已独立成项，封面图渲染仅统计自身耗时
       const rawContentItems: SubtaskItem[] = [
         {
-          // Magika 类型识别在分支分发前串行执行，标注 sync
           key: 'magikaMs',
           label: t('类型识别'),
+          modelBadge: 'Magika',
           duration: getBenchmarkValue(contentBreakdown, 'magikaMs'),
           color: '#10b981',
           groupId: 'content',
@@ -285,24 +299,14 @@ export function computeGroupedMetrics(
           parentKey: 'content',
           isSubItem: true,
           executionType: 'sync',
-          weight: 24
-        },
-        {
-          key: 'textMs',
-          label: t('文本提取'),
-          duration: getBenchmarkValue(contentBreakdown, 'textMs'),
-          color: '#a855f7',
-          groupId: 'content',
-          parentKey: 'content',
-          isSubItem: true,
-          executionType: 'async',
           weight: 22
         },
         {
-          key: 'ocrMs',
-          label: t('OCR识别'),
-          duration: getBenchmarkValue(contentBreakdown, 'ocrMs'),
-          color: '#e11d48',
+          key: 'docParseMs',
+          label: t('AnyDoc排版解析'),
+          modelBadge: 'AnyDoc',
+          duration: getBenchmarkValue(contentBreakdown, 'docParseMs'),
+          color: '#8b5cf6',
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -310,10 +314,10 @@ export function computeGroupedMetrics(
           weight: 23
         },
         {
-          key: 'metadataMs',
-          label: t('元数据提取'),
-          duration: getBenchmarkValue(contentBreakdown, 'metadataMs'),
-          color: '#ec4899',
+          key: 'textMs',
+          label: t('文本内容提取'),
+          duration: getBenchmarkValue(contentBreakdown, 'textMs'),
+          color: '#a855f7',
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -321,15 +325,52 @@ export function computeGroupedMetrics(
           weight: 24
         },
         {
+          key: 'ocrMs',
+          label: t('OCR文字识别'),
+          modelBadge: 'PP-OCRv6',
+          duration: getBenchmarkValue(contentBreakdown, 'ocrMs'),
+          color: '#e11d48',
+          groupId: 'content',
+          parentKey: 'content',
+          isSubItem: true,
+          executionType: 'async',
+          weight: 25
+        },
+        {
+          key: 'textDetectMs',
+          label: t('前置文本探活'),
+          modelBadge: 'DBNet',
+          duration: getBenchmarkValue(contentBreakdown, 'textDetectMs'),
+          color: '#f43f5e',
+          groupId: 'content',
+          parentKey: 'content',
+          isSubItem: true,
+          executionType: 'async',
+          weight: 26
+        },
+        {
+          key: 'metadataMs',
+          label: t('元数据提取'),
+          modelBadge: 'ExifTool',
+          duration: getBenchmarkValue(contentBreakdown, 'metadataMs'),
+          color: '#ec4899',
+          groupId: 'content',
+          parentKey: 'content',
+          isSubItem: true,
+          executionType: 'async',
+          weight: 27
+        },
+        {
           key: 'thumbnailMs',
-          label: t('封面图渲染'),
+          label: t('文档封面提取'),
+          modelBadge: 'CoverRenderer',
           duration: getBenchmarkValue(contentBreakdown, 'thumbnailMs'),
           color: '#f59e0b',
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
           executionType: 'async',
-          weight: 25
+          weight: 28
         }
       ]
 
@@ -376,17 +417,17 @@ export function computeGroupedMetrics(
       }
     }
 
-    // 2.2 标签生成组 (tag_group)
+    // 2.2 视觉标签组 (tag_group)
     if (!filter.hiddenGroupIds.has('tag_group')) {
       const isSubItemsHidden = filter.hideSubItems.has('tag_group')
       const tagSubItems: SubtaskItem[] = []
 
       // 已知静态标签生成子项
       const knownTagKeys = [
-        { key: 'clipMs', label: t('CLIP视觉打标'), color: '#60a5fa', type: 'async' as const, weight: 31 },
-        { key: 'clipEmbedMs', label: t('CLIP图像嵌入'), color: '#818cf8', type: 'sync' as const, weight: 32 },
+        { key: 'clipMs', label: t('CLIP视觉打标'), badge: 'ViT-B/16', color: '#60a5fa', type: 'async' as const, weight: 31 },
+        { key: 'clipEmbedMs', label: t('CLIP图像嵌入'), badge: 'ViT-B/16', color: '#818cf8', type: 'sync' as const, weight: 32 },
         { key: 'clipMutualMs', label: t('CLIP互斥分类'), color: '#93c5fd', type: 'sync' as const, weight: 33 },
-        { key: 'ramMs', label: t('RAM++实体打标'), color: '#2dd4bf', type: 'async' as const, weight: 34 },
+        { key: 'ramMs', label: t('RAM++实体打标'), badge: 'Swin', color: '#2dd4bf', type: 'async' as const, weight: 34 },
         { key: 'nsfwMs', label: t('NSFW敏感鉴定'), color: '#f43f5e', type: 'async' as const, weight: 35 }
       ]
 
@@ -396,6 +437,7 @@ export function computeGroupedMetrics(
           tagSubItems.push({
             key: k.key,
             label: k.label,
+            modelBadge: k.badge,
             duration: dur,
             color: k.color,
             groupId: 'tag_group',
@@ -434,7 +476,6 @@ export function computeGroupedMetrics(
       }
 
       // 父级 tagMs 耗时：如果原数据有 tagMs 优先，且保证 >= 关键串行路径及并发最大值
-      // 物理流水线特性: clipEmbedMs (串行) -> clipMutualMs (串行)，二者为局部串行链路，需累加
       const rawTagMs = getBenchmarkValue(contentBreakdown, 'tagMs')
       const embedMs = getBenchmarkValue(contentBreakdown, 'clipEmbedMs')
       const mutualMs = getBenchmarkValue(contentBreakdown, 'clipMutualMs')
@@ -447,7 +488,6 @@ export function computeGroupedMetrics(
       if (effectiveTagDuration > 0 && !filter.hiddenKeys.has('tagMs')) {
         let finalTagItems: SubtaskItem[] = []
         if (isSubItemsHidden) {
-          // 仅保留父级汇总
           finalTagItems = [
             {
               key: 'tagMs',
@@ -461,7 +501,6 @@ export function computeGroupedMetrics(
             }
           ]
         } else {
-          // 若底层未产生更细粒度的CLIP等子项，但存在父级打标耗时，生成明确的打标子项
           if (tagSubItems.length === 0 && rawTagMs > 0) {
             tagSubItems.push({
               key: 'tagMs_inference',
@@ -476,7 +515,6 @@ export function computeGroupedMetrics(
             })
           }
 
-          // 展开子项并按耗时给最大子项标注瓶颈 (仅当子任务多于1个时才判定长尾瓶颈)
           tagSubItems.sort((a, b) => a.weight - b.weight)
           if (tagSubItems.length > 1) {
             const maxSubDur = Math.max(...tagSubItems.map(it => it.duration))
@@ -491,7 +529,7 @@ export function computeGroupedMetrics(
 
         groups.push({
           id: 'tag_group',
-          label: t('标签生成组'),
+          label: t('视觉标签组'),
           color: '#38bdf8',
           executionType: 'async',
           duration: effectiveTagDuration,
@@ -500,17 +538,109 @@ export function computeGroupedMetrics(
       }
     }
 
-    // 2.3 画质与形态组 (quality_group)
+    // 2.3 语义与多模态融合组 (semantic_fusion)
+    if (!filter.hiddenGroupIds.has('semantic_fusion')) {
+      const isSubItemsHidden = filter.hideSubItems.has('semantic_fusion')
+      const fusionSubItems: SubtaskItem[] = []
+
+      const knownFusionKeys = [
+        { key: 'bekkoEmbedMs', label: t('语义特征嵌入'), badge: 'bekko-a8m', color: '#8b5cf6', type: 'sync' as const, weight: 41 },
+        { key: 'keybertMs', label: t('主题词抽取'), badge: 'MMR', color: '#a855f7', type: 'async' as const, weight: 42 },
+        { key: 'slotSummaryMs', label: t('5W摘要重命名'), badge: 'SlotEngine', color: '#c084fc', type: 'async' as const, weight: 43 },
+        { key: 'fusionMs', label: t('多模态融合裁决'), badge: 'fused_tags', color: '#6366f1', type: 'sync' as const, weight: 44 }
+      ]
+
+      for (const k of knownFusionKeys) {
+        const dur = getBenchmarkValue(contentBreakdown, k.key)
+        if (dur > 0 && !filter.hiddenKeys.has(k.key)) {
+          fusionSubItems.push({
+            key: k.key,
+            label: k.label,
+            modelBadge: k.badge,
+            duration: dur,
+            color: k.color,
+            groupId: 'semantic_fusion',
+            parentKey: 'semantic_fusion',
+            isSubItem: true,
+            executionType: k.type,
+            weight: k.weight
+          })
+        }
+      }
+
+      // 动态增项扫描: 经 classifySubtaskKey 路由进语义融合组
+      let sfPaletteIdx = 1
+      for (const [rawKey, val] of Object.entries(contentBreakdown)) {
+        if (!val || typeof val !== 'number' || val <= 0) continue
+        if (isReservedStage2Key(rawKey)) continue
+        if (knownFusionKeys.some(k => k.key === rawKey)) continue
+        if (classifySubtaskKey(rawKey) !== 'semantic_fusion') continue
+
+        if (!filter.hiddenKeys.has(rawKey)) {
+          fusionSubItems.push({
+            key: rawKey,
+            label: formatKeyToLabel(rawKey),
+            duration: val,
+            color: DYNAMIC_PALETTE[sfPaletteIdx++ % DYNAMIC_PALETTE.length],
+            groupId: 'semantic_fusion',
+            parentKey: 'semantic_fusion',
+            isSubItem: true,
+            executionType: 'async',
+            weight: 45 + sfPaletteIdx
+          })
+        }
+      }
+
+      if (fusionSubItems.length > 0) {
+        const fusionMax = Math.max(...fusionSubItems.map(it => it.duration), 0)
+        let finalFusionItems: SubtaskItem[] = []
+        if (isSubItemsHidden) {
+          finalFusionItems = [
+            {
+              key: 'semantic_fusion_total',
+              label: t('语义与融合汇总'),
+              duration: fusionMax,
+              color: '#8b5cf6',
+              groupId: 'semantic_fusion',
+              isSubItem: false,
+              executionType: 'async',
+              weight: 40
+            }
+          ]
+        } else {
+          fusionSubItems.sort((a, b) => a.weight - b.weight)
+          if (fusionSubItems.length > 1) {
+            const maxFussionDur = Math.max(...fusionSubItems.map(it => it.duration))
+            fusionSubItems.forEach(it => {
+              if (it.duration === maxFussionDur && maxFussionDur > 0) {
+                it.isBottleneck = true
+              }
+            })
+          }
+          finalFusionItems = fusionSubItems
+        }
+
+        groups.push({
+          id: 'semantic_fusion',
+          label: t('语义与融合组'),
+          color: '#8b5cf6',
+          executionType: 'async',
+          duration: fusionMax,
+          items: finalFusionItems
+        })
+      }
+    }
+
+    // 2.4 画质与形态组 (quality_group)
     if (!filter.hiddenGroupIds.has('quality_group')) {
       const isSubItemsHidden = filter.hideSubItems.has('quality_group')
       const qualitySubItems: SubtaskItem[] = []
 
       const knownQualityKeys = [
-        { key: 'aestheticMs', label: t('美学画质评分'), color: '#06b6d4', weight: 41 },
-        { key: 'watermarkMs', label: t('频域水印检测'), color: '#0ea5e9', weight: 42 },
-        { key: 'mosaicMs', label: t('打码检测'), color: '#6366f1', weight: 43 },
-        { key: 'textDetectMs', label: t('文本探活'), color: '#8b5cf6', weight: 44 },
-        { key: 'bwMs', label: t('黑白全彩判定'), color: '#64748b', weight: 45 }
+        { key: 'aestheticMs', label: t('美学画质评分'), badge: 'Aesthetic Predictor', color: '#06b6d4', weight: 51 },
+        { key: 'watermarkMs', label: t('频域盲水印检测'), badge: '2D-FFT', color: '#0ea5e9', weight: 52 },
+        { key: 'mosaicMs', label: t('打码检测'), badge: '2D-DCT', color: '#6366f1', weight: 53 },
+        { key: 'bwMs', label: t('黑白全彩判定'), badge: 'Hist1ms', color: '#64748b', weight: 54 }
       ]
 
       for (const k of knownQualityKeys) {
@@ -519,6 +649,7 @@ export function computeGroupedMetrics(
           qualitySubItems.push({
             key: k.key,
             label: k.label,
+            modelBadge: k.badge,
             duration: dur,
             color: k.color,
             groupId: 'quality_group',
@@ -548,7 +679,7 @@ export function computeGroupedMetrics(
             parentKey: 'quality_group',
             isSubItem: true,
             executionType: 'async',
-            weight: 46 + qPaletteIdx
+            weight: 55 + qPaletteIdx
           })
         }
       }
@@ -566,7 +697,7 @@ export function computeGroupedMetrics(
               groupId: 'quality_group',
               isSubItem: false,
               executionType: 'async',
-              weight: 40
+              weight: 50
             }
           ]
         } else {
@@ -593,7 +724,7 @@ export function computeGroupedMetrics(
       }
     }
 
-    // 2.4 其他未匹配扩展项 (开闭原则 other 组)
+    // 2.5 其他未匹配扩展项 (开闭原则 other 组)
     if (!filter.hiddenGroupIds.has('other')) {
       const otherSubItems: SubtaskItem[] = []
 
@@ -629,13 +760,14 @@ export function computeGroupedMetrics(
         groups.push({
           id: 'other',
           label: t('扩展算子组'),
-          color: '#8b5cf6',
+          color: '#0ea5e9',
           executionType: 'async',
           duration: otherMax,
           items: otherSubItems
         })
       }
     }
+  }
   }
 
   // ----------------------------------------------------

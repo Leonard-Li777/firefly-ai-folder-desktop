@@ -35,6 +35,11 @@ export interface OmniBenchmarkResponse {
   mosaic_ms?: number
   aesthetic_ms?: number
   bw_ms?: number
+  doc_parse_ms?: number
+  bekko_embed_ms?: number
+  keybert_ms?: number
+  slot_summary_ms?: number
+  fusion_ms?: number
   [subtask_ms: `${string}_ms`]: number | undefined
 }
 
@@ -106,6 +111,11 @@ export interface OmniPerceptionBenchmarkResponse {
   aesthetic_ms?: number
   bw_ms?: number
   ram_ms?: number
+  doc_parse_ms?: number
+  bekko_embed_ms?: number
+  keybert_ms?: number
+  slot_summary_ms?: number
+  fusion_ms?: number
   [subtask_ms: `${string}_ms`]: number | undefined
 }
 
@@ -389,6 +399,7 @@ export class OmniService {
   private restartAttempts = 0
   private maxRestartAttempts = 10
   private restartTimeout: NodeJS.Timeout | null = null
+  private lastCoverDurationMs?: number
 
   private constructor() {
     try {
@@ -1125,9 +1136,12 @@ export class OmniService {
 
       const arrayBuffer = await res.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
+      const durationHeader = res.headers.get('x-cover-duration-ms')
+      const durationMs = durationHeader ? Number(durationHeader) : (Date.now() - tStart)
+      this.lastCoverDurationMs = durationMs
       logger.debug(
         LogCategory.SYSTEM,
-        `[OmniService] <<< GET /api/cover 响应成功 (${filePath}, 字节大小: ${buffer.length} B, 耗时: ${Date.now() - tStart}ms)`
+        `[OmniService] <<< GET /api/cover 响应成功 (${filePath}, 字节大小: ${buffer.length} B, 耗时: ${durationMs}ms)`
       )
       return buffer
     }
@@ -1146,6 +1160,13 @@ export class OmniService {
       }
       return null
     }
+  }
+
+  /**
+   * 获取最近一次由 Omni 引擎执行封面提取的物理耗时 (毫秒)
+   */
+  public getLastCoverDurationMs(): number | undefined {
+    return this.lastCoverDurationMs
   }
 
   /**

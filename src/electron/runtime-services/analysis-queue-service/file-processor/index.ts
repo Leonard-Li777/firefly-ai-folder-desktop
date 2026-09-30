@@ -1555,7 +1555,7 @@ export class FileProcessor {
         ? (omniBm?.text_ms ?? (localTextMs || undefined))
         : undefined
       const stage2OcrMs = omniBm?.ocr_ms
-      const stage2ThumbMs = omniBm?.thumbnail_ms
+      const stage2ThumbMs = omniBm?.thumbnail_ms ?? omniService.getLastCoverDurationMs()
 
       // 阶段 2 耗时为各项并行任务的最大耗时 (含标签多模态最大耗时)
       const calculatedMaxParallelTotalMs = Math.max(
@@ -1580,12 +1580,21 @@ export class FileProcessor {
         htmlMs: omniBm?.html_ms,
         thumbnailMs: (stage2ThumbMs && stage2ThumbMs > 0) ? stage2ThumbMs : undefined,
 
+        // 细分算子耗时（基础内容组）
+        docParseMs: omniBm?.doc_parse_ms ?? (omniBm as any)?.docParseMs,
+
         // 细分算子耗时（标签生成组）
         clipMs: omniBm?.clip_ms ?? (omniBm as any)?.clipMs,
         clipEmbedMs: omniBm?.clip_embed_ms ?? (omniBm as any)?.clipEmbedMs,
         clipMutualMs: omniBm?.clip_mutual_ms ?? (omniBm as any)?.clipMutualMs,
         ramMs: omniBm?.ram_ms ?? (omniBm as any)?.ramMs,
         nsfwMs: omniBm?.nsfw_ms ?? (omniBm as any)?.nsfwMs,
+
+        // 细分算子耗时（语义与多模态融合组）
+        bekkoEmbedMs: omniBm?.bekko_embed_ms ?? (omniBm as any)?.bekkoEmbedMs,
+        keybertMs: omniBm?.keybert_ms ?? (omniBm as any)?.keybertMs,
+        slotSummaryMs: omniBm?.slot_summary_ms ?? (omniBm as any)?.slotSummaryMs,
+        fusionMs: omniBm?.fusion_ms ?? (omniBm as any)?.fusionMs,
 
         // 细分算子耗时（画质与物理形态组）
         textDetectMs: omniBm?.text_detect_ms ?? (omniBm as any)?.textDetectMs,
