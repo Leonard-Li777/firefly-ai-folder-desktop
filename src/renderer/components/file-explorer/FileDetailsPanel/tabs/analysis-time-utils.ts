@@ -190,6 +190,9 @@ function classifySubtaskKey(rawKey: string): 'tag_group' | 'semantic_fusion' | '
 
 /**
  * 计算阶段 1、阶段 2 及各子组的分组过滤与耗时
+ *
+ * @param t - 动态传入的翻译函数，确保语言切换时所有标签即时响应多语言更新，
+ *            避免静态对象初始化时锁死当前语言（勿改为模块顶层常量）。
  */
 export function computeGroupedMetrics(
   stage1Breakdown: Stage1Benchmark | undefined,
@@ -219,7 +222,7 @@ export function computeGroupedMetrics(
         key: 'fingerprintMs',
         label: t('文件指纹'),
         duration: Number(stage1Breakdown?.fingerprintMs) || 0,
-        color: '#818cf8',
+        color: '#818cf8', // 靛蓝
         groupId: 'stage1',
         isSubItem: true,
         executionType: 'sync',
@@ -229,7 +232,7 @@ export function computeGroupedMetrics(
         key: 'localReuseMs',
         label: t('本地复用'),
         duration: Number(stage1Breakdown?.localReuseMs) || 0,
-        color: '#38bdf8',
+        color: '#38bdf8', // 天蓝
         groupId: 'stage1',
         isSubItem: true,
         executionType: 'sync',
@@ -239,7 +242,7 @@ export function computeGroupedMetrics(
         key: 'cloudReuseMs',
         label: t('云端复用'),
         duration: Number(stage1Breakdown?.cloudReuseMs) || 0,
-        color: '#06b6d4',
+        color: '#06b6d4', // 青蓝
         groupId: 'stage1',
         isSubItem: true,
         executionType: 'sync',
@@ -284,7 +287,7 @@ export function computeGroupedMetrics(
           label: t('类型识别'),
           modelBadge: 'Magika',
           duration: getBenchmarkValue(contentBreakdown, 'magikaMs'),
-          color: '#10b981',
+          color: '#10b981', // 翡翠绿 (Magika 模型)
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -296,7 +299,7 @@ export function computeGroupedMetrics(
           key: 'officePrePdfMs',
           label: t('Office预转PDF'),
           duration: getBenchmarkValue(contentBreakdown, 'officePrePdfMs'),
-          color: '#d97706',
+          color: '#d97706', // 浅石板绿
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -309,7 +312,7 @@ export function computeGroupedMetrics(
           label: t('AnyDoc排版解析'),
           modelBadge: 'AnyDoc',
           duration: getBenchmarkValue(contentBreakdown, 'docParseMs'),
-          color: '#8b5cf6',
+          color: '#8b5cf6', // 湖绿
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -320,7 +323,7 @@ export function computeGroupedMetrics(
           key: 'textMs',
           label: t('文本内容提取'),
           duration: getBenchmarkValue(contentBreakdown, 'textMs'),
-          color: '#a855f7',
+          color: '#a855f7', // 翠绿
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -332,7 +335,7 @@ export function computeGroupedMetrics(
           label: t('OCR文字识别'),
           modelBadge: 'PP-OCRv6',
           duration: getBenchmarkValue(contentBreakdown, 'ocrMs'),
-          color: '#e11d48',
+          color: '#e11d48', // 海绿
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -344,7 +347,7 @@ export function computeGroupedMetrics(
           label: t('前置文本探活'),
           modelBadge: 'DBNet',
           duration: getBenchmarkValue(contentBreakdown, 'textDetectMs'),
-          color: '#f43f5e',
+          color: '#f43f5e', // 玫红
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -356,7 +359,7 @@ export function computeGroupedMetrics(
           label: t('元数据提取'),
           modelBadge: 'ExifTool',
           duration: getBenchmarkValue(contentBreakdown, 'metadataMs'),
-          color: '#ec4899',
+          color: '#ec4899', // 青翠
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -368,7 +371,7 @@ export function computeGroupedMetrics(
           label: t('文档封面提取'),
           modelBadge: 'CoverRenderer',
           duration: getBenchmarkValue(contentBreakdown, 'thumbnailMs'),
-          color: '#f59e0b',
+          color: '#f59e0b', // 薄荷绿
           groupId: 'content',
           parentKey: 'content',
           isSubItem: true,
@@ -506,6 +509,7 @@ export function computeGroupedMetrics(
             }
           ]
         } else {
+          // 若底层未产生更细粒度的 CLIP 等子项，但存在父级打标耗时，生成明确的打标子项
           if (tagSubItems.length === 0 && rawTagMs > 0) {
             tagSubItems.push({
               key: 'tagMs_inference',
@@ -520,6 +524,7 @@ export function computeGroupedMetrics(
             })
           }
 
+          // 展开子项并按耗时给最大子项标注瓶颈 (仅当子任务多于1个时才判定长尾瓶颈)
           tagSubItems.sort((a, b) => a.weight - b.weight)
           if (tagSubItems.length > 1) {
             const maxSubDur = Math.max(...tagSubItems.map(it => it.duration))
