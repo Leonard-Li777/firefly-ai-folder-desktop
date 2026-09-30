@@ -2482,7 +2482,7 @@
     "de-DE": "Datei-Fingerabdruck",
     "fr-FR": "Empreinte de fichier",
     "ko-KR": "파일 지문",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(4134-4142)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5039-5047)"],
     "$id": 11356
   },
   "本地复用": {
@@ -2495,7 +2495,7 @@
     "de-DE": "Lokale Wiederverwendung",
     "fr-FR": "Réutilisation locale",
     "ko-KR": "지역 재사용",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(4397-4405)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5302-5310)"],
     "$id": 11357
   },
   "云端复用": {
@@ -2508,7 +2508,7 @@
     "de-DE": "Cloud-Wiederverwendung",
     "fr-FR": "Réutilisation du cloud",
     "ko-KR": "클라우드 재사용",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(4659-4667)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5564-5572)"],
     "$id": 11358
   },
   "阶段 1: 文件指纹与复用判定": {
@@ -2521,7 +2521,7 @@
     "de-DE": "Stufe 1: Datei-Fingerprinting und Wiederverwendungsbestimmung",
     "fr-FR": "Étape 1 : Prise d'empreintes digitales des fichiers et détermination de la réutilisation",
     "ko-KR": "1단계: 파일 핑거프린팅 및 재사용 결정",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5393-5412)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(6298-6317)"],
     "$id": 11360
   },
   "类型识别": {
@@ -2534,7 +2534,7 @@
     "de-DE": "Typerkennung",
     "fr-FR": "Identification du type",
     "ko-KR": "유형 식별",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5990-5998)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(6895-6903)"],
     "$id": 9407
   },
   "Office预转PDF": {
@@ -2547,7 +2547,7 @@
     "de-DE": "Office-PDF vorkonvertieren",
     "fr-FR": "Office pré-convertir le PDF",
     "ko-KR": "Office 사전 변환 PDF",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(6272-6287)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7186-7201)"],
     "$id": 20333
   },
   "文本提取": {
@@ -2560,7 +2560,7 @@
     "de-DE": "Textextraktion",
     "fr-FR": "Extraction de texte",
     "ko-KR": "텍스트 추출",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(6559-6567)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7482-7490)"],
     "$id": 20334
   },
   "OCR识别": {
@@ -2573,7 +2573,7 @@
     "de-DE": "OCR-Erkennung",
     "fr-FR": "Reconnaissance OCR",
     "ko-KR": "OCR 인식",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(6831-6840)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7763-7772)"],
     "$id": 20335
   },
   "元数据提取": {
@@ -2586,7 +2586,7 @@
     "de-DE": "Metadatenextraktion",
     "fr-FR": "Extraction de métadonnées",
     "ko-KR": "메타데이터 추출",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7108-7117)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8049-8058)"],
     "$id": 20336
   },
   "封面图渲染": {
@@ -2599,7 +2599,7 @@
     "de-DE": "Coverbild-Rendering",
     "fr-FR": "Rendu de l'image de couverture",
     "ko-KR": "표지 이미지 렌더링",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7391-7400)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8341-8350)"],
     "$id": 20337
   },
   "基础内容组": {
@@ -2612,7 +2612,7 @@
     "de-DE": "Grundlegende Inhaltsgruppe",
     "fr-FR": "Groupe de contenu de base",
     "ko-KR": "기본 콘텐츠 그룹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7951-7960)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8910-8919)"],
     "$id": 20338
   },
   "CLIP视觉打标": {
@@ -2625,7 +2625,7 @@
     "de-DE": "Visuelle Markierung mit CLIP",
     "fr-FR": "Marquage visuel CLIP",
     "ko-KR": "CLIP 시각적 마킹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8392-8404)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9351-9363)"],
     "$id": 20339
   },
   "CLIP图像嵌入": {
@@ -2638,7 +2638,7 @@
     "de-DE": "CLIP-Bildeinbettung",
     "fr-FR": "Intégration d'images CLIP",
     "ko-KR": "CLIP 이미지 삽입",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8500-8512)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9459-9471)"],
     "$id": 20340
   },
   "CLIP互斥分类": {
@@ -2651,7 +2651,7 @@
     "de-DE": "CLIP schließt sich gegenseitig aus",
     "fr-FR": "Classification CLIP mutuellement exclusive",
     "ko-KR": "CLIP 상호 배타적 분류",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8608-8620)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9567-9579)"],
     "$id": 20341
   },
   "RAM++实体打标": {
@@ -2664,7 +2664,7 @@
     "de-DE": "RAM++-Entitätsmarkierung",
     "fr-FR": "Marquage d'entité RAM++",
     "ko-KR": "RAM++ 엔터티 마킹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8709-8722)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9668-9681)"],
     "$id": 20342
   },
   "NSFW敏感鉴定": {
@@ -2677,7 +2677,7 @@
     "de-DE": "NSFW-sensible Identifizierung",
     "fr-FR": "Identification sensible NSFW",
     "ko-KR": "NSFW 민감한 식별",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8813-8825)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9772-9784)"],
     "$id": 20343
   },
   "标签生成总计": {
@@ -2690,7 +2690,7 @@
     "de-DE": "Gesamte Etikettengenerierung",
     "fr-FR": "Génération totale d'étiquettes",
     "ko-KR": "총 라벨 생성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(11316-11326)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12284-12294)"],
     "$id": 20344
   },
   "标签生成组": {
@@ -2703,7 +2703,7 @@
     "de-DE": "Tag-Generierungsgruppe",
     "fr-FR": "Groupe de génération de balises",
     "ko-KR": "태그 생성 그룹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12072-12081)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13040-13049)"],
     "$id": 20345
   },
   "美学画质评分": {
@@ -2716,7 +2716,7 @@
     "de-DE": "Ästhetische Qualitätsbewertung",
     "fr-FR": "Cote de qualité esthétique",
     "ko-KR": "미적 품질 평가",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12525-12535)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13493-13503)"],
     "$id": 20346
   },
   "频域水印检测": {
@@ -2729,7 +2729,7 @@
     "de-DE": "Erkennung von Wasserzeichen im Frequenzbereich",
     "fr-FR": "Détection de filigrane dans le domaine fréquentiel",
     "ko-KR": "주파수 영역 워터마크 감지",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12607-12617)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13575-13585)"],
     "$id": 20347
   },
   "打码检测": {
@@ -2742,7 +2742,7 @@
     "de-DE": "Codierungserkennung",
     "fr-FR": "Détection de codage",
     "ko-KR": "코딩 감지",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12686-12694)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13654-13662)"],
     "$id": 20348
   },
   "文本探活": {
@@ -2755,7 +2755,7 @@
     "de-DE": "Texterkundung",
     "fr-FR": "Exploration de texte",
     "ko-KR": "텍스트 탐색",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12767-12775)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13735-13743)"],
     "$id": 20349
   },
   "黑白全彩判定": {
@@ -2768,7 +2768,7 @@
     "de-DE": "Schwarzweiß-Vollfarbbeurteilung",
     "fr-FR": "Jugement en couleur noir et blanc",
     "ko-KR": "흑백 풀 컬러 판정",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12840-12850)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13808-13818)"],
     "$id": 20350
   },
   "画质与形态组": {
@@ -2782,8 +2782,8 @@
     "fr-FR": "Qualité d'image et groupe de forme",
     "ko-KR": "이미지 품질 및 양식 그룹",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(14572-14582)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(15020-15030)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(15540-15550)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(15988-15998)"
     ],
     "$id": 20351
   },
@@ -2797,7 +2797,7 @@
     "de-DE": "Erweiterte Betreibergruppe",
     "fr-FR": "Groupe d'opérateurs étendu",
     "ko-KR": "확장된 운영자 그룹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(16188-16197)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(17151-17160)"],
     "$id": 20352
   },
   "阶段 3: 质量评分": {
@@ -2811,7 +2811,7 @@
     "fr-FR": "Étape 3 : évaluation de la qualité",
     "ko-KR": "3단계: 품질 평가",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(20068-20082)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(21031-21045)",
       "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(16682-16696)"
     ],
     "$id": 20353
@@ -2827,7 +2827,7 @@
     "fr-FR": "Étape 4 : Analyse dimensionnelle",
     "ko-KR": "4단계: 차원 분석",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(20158-20172)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(21121-21135)",
       "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(18556-18570)"
     ],
     "$id": 20354
@@ -2842,7 +2842,7 @@
     "de-DE": "Hauptfach Bühnenphysik",
     "fr-FR": "Piste principale de physique de scène",
     "ko-KR": "무대 물리학 메인 트랙",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(20693-20704)"],
+    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(21656-21667)"],
     "$id": 20355
   },
   "技术指标": {
