@@ -242,13 +242,15 @@ export class AnalysisQueueService {
         enqueueHighDim: (candidates, workspaceId) =>
           this.queueManager.enqueueHighDimBatch(candidates, workspaceId),
         releaseEngine: async () => {
-          logger.info(
-            LogCategory.ANALYSIS_QUEUE,
-            '[高维修正] 让权：单文件已原子落库，交还调度权给新插入的普通分析任务并切回主语言模型'
-          )
-          await engineBridgeService?.ensureMode?.('language')?.catch?.(err => {
-            logger.warn(LogCategory.ANALYSIS_QUEUE, '[高维修正] 让权切回主语言模型告警:', err)
-          })
+          if (isAiStageEnabled()) {
+            logger.info(
+              LogCategory.ANALYSIS_QUEUE,
+              '[高维修正] 让权：单文件已原子落库，交还调度权给新插入的普通分析任务并切回主语言模型'
+            )
+            await engineBridgeService?.ensureMode?.('language')?.catch?.(err => {
+              logger.warn(LogCategory.ANALYSIS_QUEUE, '[高维修正] 让权切回主语言模型告警:', err)
+            })
+          }
         }
       })
 
@@ -629,15 +631,21 @@ export class AnalysisQueueService {
         } else {
           // ORIGINAL SERIAL LOOP（含 Stage 5 高维修正单文件通道）
           const snapshot = this.queueManager.getSnapshot(undefined, activeWorkspaceId)
-          // 抢占式硬优先级：只要有 analysis 待办就绝不消费 high_dim_correction
-          const next = pickNextPending(snapshot.items)
+          const isHighDimEnabled = this.highDimCorrectionService.isEnabled()
+          // 抢占式硬优先级：只要有 analysis 待办就绝不消费 high_dim_correction；高维修正未开启时跳过高维修正任务
+          const next = pickNextPending(snapshot.items, isHighDimEnabled)
 
           if (next) {
-            const isReady = await this.aiServiceManager.waitForAIServiceReady()
-            if (!isReady) {
-              this.running = false
-              this.isProcessingLoopActive = false
-              break
+            // 标准分析模式无需 AI 服务就绪检查
+            if (next.taskType === 'analysis' && !isAiStageEnabled()) {
+              // 跳过 AI 就绪检查
+            } else if (next.taskType === 'analysis') {
+              const isReady = await this.aiServiceManager.waitForAIServiceReady()
+              if (!isReady) {
+                this.running = false
+                this.isProcessingLoopActive = false
+                break
+              }
             }
           }
 
@@ -686,6 +694,15 @@ export class AnalysisQueueService {
           this.updateItemStatus(next.id, 'analyzing', 0)
 
           if (next.taskType === 'high_dim_correction') {
+            if (!this.highDimCorrectionService.isEnabled()) {
+              logger.info(
+                LogCategory.ANALYSIS_QUEUE,
+                `[高维修正] 高维修正未开启，跳过该任务: ${next.name} (${next.path})`
+              )
+              this.updateItemStatus(next.id, 'completed', 100)
+              continue
+            }
+
             const fingerprint = this.highDimCorrectionService.resolveFingerprint(next)
             const facts = fingerprint ? databaseService.getHighDimCorrectionFacts(fingerprint) : null
             if (!facts) {
@@ -701,7 +718,9 @@ export class AnalysisQueueService {
                 taskType: 'analysis',
                 status: 'pending'
               })
-              await engineBridgeService?.ensureMode?.('language')?.catch?.(() => {})
+              if (isAiStageEnabled()) {
+                await engineBridgeService?.ensureMode?.('language')?.catch?.(() => {})
+              }
               if (next.itemType === 'directory') {
                 await this.directoryProcessor.processDirectory(next)
               } else {
@@ -737,10 +756,12 @@ export class AnalysisQueueService {
               }
             }
           } else {
-            // 普通分析任务：确保引擎处于主语言模型模式
-            const modeRes = await engineBridgeService?.ensureMode?.('language')
-            if (modeRes && !modeRes.ok) {
-              logger.warn(LogCategory.ANALYSIS_QUEUE, '[普通分析] 切换主语言模型告警:', modeRes.error)
+            // 普通分析任务：仅在启用 AI 阶段（增强分析 / 全面分析）时确保引擎处于主语言模型模式；标准分析模式无需语言模型
+            if (isAiStageEnabled()) {
+              const modeRes = await engineBridgeService?.ensureMode?.('language')
+              if (modeRes && !modeRes.ok) {
+                logger.warn(LogCategory.ANALYSIS_QUEUE, '[普通分析] 切换主语言模型告警:', modeRes.error)
+              }
             }
             if (next.itemType === 'directory') {
               await this.directoryProcessor.processDirectory(next)
@@ -952,30 +973,44 @@ export class AnalysisQueueService {
 
   /**
    * 推导当前队列意图模式：
-   * - 队列中有待办任务时，按 pickNextPending 判定首选任务模式（high_dim_correction -> 'embedding'，普通分析 -> 'language'）
-   * - 队列为空时，默认返回 'language'
+   * - 队列中有待办任务时，按 pickNextPending 判定首选任务模式：
+   *   - 若首选为 high_dim_correction 且高维修正开启，返回 'embedding'
+   *   - 若首选为 普通分析，且启用 AI 阶段（quick_name/full），返回 'language'；标准分析模式无需语言模型，返回 null
+   * - 队列为空时：
+   *   - 仅在启用 AI 阶段时预置 'language'，标准分析模式返回 null
    */
-  public determineIntentMode(): 'language' | 'embedding' {
+  public determineIntentMode(): 'language' | 'embedding' | null {
+    const isHighDimEnabled = this.highDimCorrectionService?.isEnabled() ?? false
     if (!this.queueManager) {
-      return 'language'
+      return isAiStageEnabled() ? 'language' : null
     }
     const snapshot = this.queueManager.getSnapshot()
-    const next = snapshot?.items ? pickNextPending(snapshot.items) : undefined
-    if (next?.taskType === 'high_dim_correction') {
+    const next = snapshot?.items ? pickNextPending(snapshot.items, isHighDimEnabled) : undefined
+    if (next?.taskType === 'high_dim_correction' && isHighDimEnabled) {
       return 'embedding'
     }
-    return 'language'
+    if (next?.taskType === 'analysis') {
+      return isAiStageEnabled() ? 'language' : null
+    }
+    return isAiStageEnabled() ? 'language' : null
   }
 
   /**
    * 检测队列中是否存在待处理的任务（pending 状态）
+   * 会根据高维修正开关过滤：若未开启高维修正，忽略 high_dim_correction 类型的待办
    */
   public hasPendingItems(): boolean {
     if (!this.queueManager) {
       return false
     }
     const snapshot = this.queueManager.getSnapshot()
-    return Array.isArray(snapshot?.items) && snapshot.items.some(i => i.status === 'pending')
+    const isHighDimEnabled = this.highDimCorrectionService?.isEnabled() ?? false
+    return (
+      Array.isArray(snapshot?.items) &&
+      snapshot.items.some(
+        i => i.status === 'pending' && (isHighDimEnabled || i.taskType !== 'high_dim_correction')
+      )
+    )
   }
 
   /**

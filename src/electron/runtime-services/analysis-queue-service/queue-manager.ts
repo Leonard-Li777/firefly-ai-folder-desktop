@@ -29,10 +29,14 @@ import fs from 'node:fs'
  *
  * 抽成纯函数便于单测与在并行/串行两条消费路径间复用，避免口径漂移。
  */
-export function pickNextPending(items: AnalysisQueueItem[]): AnalysisQueueItem | undefined {
+export function pickNextPending(
+  items: AnalysisQueueItem[],
+  allowHighDim: boolean = true
+): AnalysisQueueItem | undefined {
   let best: AnalysisQueueItem | undefined
   for (const item of items) {
     if (item.status !== 'pending') continue
+    if (!allowHighDim && item.taskType === 'high_dim_correction') continue
     if (!best) {
       best = item
       continue

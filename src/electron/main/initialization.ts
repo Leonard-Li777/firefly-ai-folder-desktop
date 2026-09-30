@@ -522,11 +522,39 @@ export async function initializeFullServices(): Promise<void> {
 
     if (fullInitMode === 'cloud') {
       logger.info(LogCategory.MAIN, '当前为云端模式，跳过本地 AI 引擎初始化')
+    } else if (fullInitMode === 'disabled') {
+      logger.info(LogCategory.MAIN, '当前为禁用模式，跳过本地 AI 引擎初始化')
     } else {
       logger.info(
         LogCategory.MAIN,
-        '本地模式：Tier 2 引擎桥接已在配置阶段完成，desktop 不再自带推理进程'
+        '本地模式：启动阶段自适应拉起 Tier 2 引擎模型推理服务'
       )
+      // 启动阶段在初始化 AI 服务前，确保外部 Tier 2 引擎与模型推理服务就绪（避免 waitForModelReady 超时）
+      if (!shouldSkipAIServiceInTest()) {
+        try {
+          const { engineBridgeService } = await import('../runtime-services/engine-bridge')
+          const targetMode = analysisQueueService.determineIntentMode()
+          if (!targetMode) {
+            logger.info(
+              LogCategory.MAIN,
+              '[EngineBridge] 启动阶段判定当前无需拉起引擎模型（分析模式为标准分析且无高维修正需求）'
+            )
+          } else {
+            logger.info(
+              LogCategory.MAIN,
+              `[EngineBridge] 启动阶段自适应拉起 Tier 2 引擎模型，目标意图: ${targetMode}`
+            )
+            const res = await engineBridgeService.ensureMode(targetMode, { force: true })
+            if (res.ok) {
+              logger.info(LogCategory.MAIN, `[EngineBridge] Tier 2 引擎模型推理服务已就绪 (${targetMode})`)
+            } else {
+              logger.warn(LogCategory.MAIN, `[EngineBridge] 引擎模型服务拉起告警: ${res.error}`)
+            }
+          }
+        } catch (err) {
+          logger.warn(LogCategory.MAIN, '[EngineBridge] 启动阶段拉起引擎模型服务失败:', err)
+        }
+      }
     }
 
     // PRD-0044：MODEL_STORAGE_PATH 配置键删除；内置元数据底座迁移按默认底座目录（userData/models）静默执行
@@ -633,6 +661,15 @@ export async function initializeFullServices(): Promise<void> {
 
       setGlobalLlamaIndexService(service)
 
+      if (!shouldSkipAIServiceInTest() && typeof (service as any).setEnsureLocalServerHandler === 'function') {
+        ;(service as any).setEnsureLocalServerHandler(async () => {
+          const { engineBridgeService } = await import('../runtime-services/engine-bridge')
+          const targetMode = analysisQueueService.determineIntentMode() ?? 'language'
+          const res = await engineBridgeService.ensureMode(targetMode, { force: true })
+          return res.ok
+        })
+      }
+
       // 缓存上次的模型身份和能力信息，避免未切换模型时重复检测
       let lastModelIdentity: string | null = null
       let lastCapabilities: AICapabilities | null = null
@@ -674,12 +711,19 @@ export async function initializeFullServices(): Promise<void> {
               try {
                 const { engineBridgeService } = await import('../runtime-services/engine-bridge')
                 const targetMode = analysisQueueService.determineIntentMode()
-                const res = await engineBridgeService.ensureMode(targetMode)
-                logger.info(
-                  LogCategory.MAIN,
-                  `[initialization] 萤核AI引擎${res.ok ? `已就绪并启动 (${targetMode})` : '未能拉起（将由 Tier 1 兜底）'}`
-                )
-                if (res.ok && analysisQueueService.hasPendingItems()) {
+                if (targetMode) {
+                  const res = await engineBridgeService.ensureMode(targetMode)
+                  logger.info(
+                    LogCategory.MAIN,
+                    `[initialization] 萤核AI引擎${res.ok ? `已就绪并启动 (${targetMode})` : '未能拉起（将由 Tier 1 兜底）'}`
+                  )
+                } else {
+                  logger.info(
+                    LogCategory.MAIN,
+                    '[initialization] 生效引擎切换为 local，当前无需拉起模型（标准分析或无待办）'
+                  )
+                }
+                if (analysisQueueService.hasPendingItems()) {
                   logger.info(LogCategory.MAIN, '[initialization] 切换 local 模式后检测到待办任务，自动启动分析队列循环')
                   void analysisQueueService.start()
                 }
@@ -899,30 +943,15 @@ export async function initializeFullServices(): Promise<void> {
       logger.error(LogCategory.MAIN, '[analysis-queue] 分析队列服务初始化失败:', error)
     }
 
-    // 桌面启动后根据当前队列任务自适应启动 Tier 2 引擎模型推理服务
+    // 队列初始化完成后，若存在待办任务且处于可用模式，自动启动分析队列循环
     try {
       const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
-      if (mode !== 'cloud' && mode !== 'disabled') {
-        const { engineBridgeService } = await import('../runtime-services/engine-bridge')
-        const targetMode = analysisQueueService.determineIntentMode()
-        const hasPending = analysisQueueService.hasPendingItems()
-        logger.info(
-          LogCategory.MAIN,
-          `[EngineBridge] 启动阶段自适应拉起 Tier 2 引擎模型，目标意图: ${targetMode} (待办任务: ${hasPending ? '有' : '无'})`
-        )
-        const res = await engineBridgeService.ensureMode(targetMode)
-        if (res.ok) {
-          logger.info(LogCategory.MAIN, `[EngineBridge] Tier 2 引擎模型推理服务已就绪 (${targetMode})`)
-          if (hasPending) {
-            logger.info(LogCategory.MAIN, '[EngineBridge] 检测到待办任务，自动启动分析队列循环')
-            void analysisQueueService.start()
-          }
-        } else {
-          logger.warn(LogCategory.MAIN, `[EngineBridge] 引擎模型服务拉起告警: ${res.error}`)
-        }
+      if (mode !== 'disabled' && analysisQueueService.hasPendingItems()) {
+        logger.info(LogCategory.MAIN, '[analysis-queue] 检测到待办任务，自动启动分析队列循环')
+        void analysisQueueService.start()
       }
     } catch (err) {
-      logger.warn(LogCategory.MAIN, '[EngineBridge] 启动阶段拉起引擎模型服务失败:', err)
+      logger.warn(LogCategory.MAIN, '[analysis-queue] 自动启动分析队列失败:', err)
     }
 
     registerServiceHealthChecks()
