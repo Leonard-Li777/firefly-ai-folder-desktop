@@ -17,7 +17,7 @@ export interface AnydocResult {
   lrc?: string
   metadata?: any
   phash?: string
-  benchmark?: import('./omni-service').OmniBenchmarkResponse
+  benchmark?: import('./omni-service').OmniBenchmarkResponse | import('./omni-service').OmniPerceptionBenchmarkResponse
   perception?: import('./omni-service').OmniPerceptionResponse
 }
 
@@ -82,16 +82,7 @@ export class AnydocService {
           lrc: perception.lrc || perception.metadata?.lrc || perception.metadata?.audio?.lrc || undefined,
           metadata: perception.metadata,
           phash: perception.phash,
-          benchmark: perception.benchmark
-            ? {
-                total_ms: perception.benchmark.total_ms,
-                magika_ms: perception.benchmark.magika_ms,
-                metadata_ms: perception.benchmark.metadata_ms,
-                tag_ms: perception.benchmark.tag_ms,
-                text_ms: perception.benchmark.text_ms,
-                ocr_ms: perception.benchmark.ocr_ms
-              }
-            : undefined,
+          benchmark: perception.benchmark ? { ...perception.benchmark } : undefined,
           perception
         }
       }

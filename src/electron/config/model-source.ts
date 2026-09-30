@@ -384,7 +384,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
     {
       // 同目录最小投影文件 Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf (629,246,976 B)
       // totalSize = 主模型 PQ2_0 (7,206,168,928 B) + 投影 (629,246,976 B) = 7,835,415,904 B ≈ 7.30GiB
-      id: 'prism-ml/Ternary-Bonsai-2-27B-PQ2_0',
+      id: 'prism-ml/Ternary-Bonsai-2-27B-gguf:PQ2_0',
       name: `Bonsai 2 ternary 27B（${t('2比特压缩')}•${t('高智能')}）`,
       company: 'prism-ml',
       parameterSize: '27B',
@@ -410,7 +410,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
     {
       // 同目录最小投影文件 Ternary-Bonsai-2-27B-mmproj-Q8_0.gguf (629,246,976 B)
       // totalSize = 主模型 PTQ1_0 (5,946,648,928 B) + 投影 (629,246,976 B) = 6,575,895,904 B ≈ 6.12GiB
-      id: 'prism-ml/Ternary-Bonsai-2-27B-PTQ1_0',
+      id: 'prism-ml/Ternary-Bonsai-2-27B-gguf:PTQ1_0',
       name: `Bonsai 2 ternary 27B（${t('1比特压缩')}•${t('高智能')}）`,
       company: 'prism-ml',
       parameterSize: '27B',

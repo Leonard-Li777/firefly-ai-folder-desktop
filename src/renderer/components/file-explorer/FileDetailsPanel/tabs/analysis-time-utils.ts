@@ -97,9 +97,17 @@ function formatKeyToLabel(key: string): string {
   return clean.charAt(0).toUpperCase() + clean.slice(1)
 }
 
-/** 已在阶段 2 各分组中静态消费的保留键 (不再进入动态归组扫描) */
+/** 已在阶段 2 各分组中静态消费或属于顶层宏观阶段的保留键 (不再进入动态归组扫描) */
 const RESERVED_STAGE2_KEYS: ReadonlySet<string> = new Set([
+  // 顶层宏观阶段耗时 (Wall-clock time)
   'totalMs',
+  'extractMs',
+  'visionMs',
+  'audioMs',
+  'geoMs',
+  'adsMs',
+
+  // 基础内容组静态保留项
   'officePrePdfMs',
   'tagMs',
   'magikaMs',
@@ -107,20 +115,46 @@ const RESERVED_STAGE2_KEYS: ReadonlySet<string> = new Set([
   'ocrMs',
   'metadataMs',
   'thumbnailMs',
+
+  // 标签生成组静态保留项
   'clipMs',
   'clipEmbedMs',
   'clipMutualMs',
   'ramMs',
   'nsfwMs',
+
+  // 画质与形态组静态保留项
   'aestheticMs',
   'watermarkMs',
   'mosaicMs',
   'textDetectMs',
   'bwMs',
+
   // 兼容旧字段，避免落入扩展算子组以机器格式展示
   'htmlMs',
   'documentMs'
 ])
+
+/**
+ * 判断键是否为已静态处理或宏观阶段的保留键（支持 camelCase 与 snake_case 自动统一）
+ */
+function isReservedStage2Key(rawKey: string): boolean {
+  if (RESERVED_STAGE2_KEYS.has(rawKey)) return true
+  // 将 snake_case 转换为 camelCase (例如 total_ms -> totalMs, clip_embed_ms -> clipEmbedMs)
+  const camelKey = rawKey.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase())
+  return RESERVED_STAGE2_KEYS.has(camelKey)
+}
+
+/**
+ * 从 Benchmark 中安全读取指定指标耗时（容错支持 camelCase 与 snake_case 双格式）
+ */
+function getBenchmarkValue(bm: MarkitdownBenchmark | undefined, camelKey: string): number {
+  if (!bm) return 0
+  const direct = getSubtaskMs(bm, camelKey)
+  if (direct > 0) return direct
+  const snakeKey = camelKey.replace(/([A-Z])/g, '_$1').toLowerCase()
+  return getSubtaskMs(bm, snakeKey)
+}
 
 /** 标签生成组的动态归类关键词 (唯一事实源，tag/other 扫描共用) */
 const TAG_GROUP_KEYWORDS = ['clip', 'ram', 'nsfw', 'tag'] as const
@@ -227,66 +261,73 @@ export function computeGroupedMetrics(
   if (contentBreakdown) {
     // 2.1 基础内容组 (content)
     if (!filter.hiddenGroupIds.has('content')) {
+      const isSubItemsHidden = filter.hideSubItems.has('content')
       // Office 预转 PDF 作为串行前缀已独立成项，封面图渲染仅统计自身耗时
       const rawContentItems: SubtaskItem[] = [
         {
           // Magika 类型识别在分支分发前串行执行，标注 sync
           key: 'magikaMs',
           label: t('类型识别'),
-          duration: Number(contentBreakdown.magikaMs) || 0,
+          duration: getBenchmarkValue(contentBreakdown, 'magikaMs'),
           color: '#10b981',
           groupId: 'content',
-          isSubItem: false,
+          parentKey: 'content',
+          isSubItem: true,
           executionType: 'sync',
           weight: 21
         },
         {
           key: 'officePrePdfMs',
           label: t('Office预转PDF'),
-          duration: Number(contentBreakdown.officePrePdfMs) || 0,
+          duration: getBenchmarkValue(contentBreakdown, 'officePrePdfMs'),
           color: '#d97706',
           groupId: 'content',
-          isSubItem: false,
+          parentKey: 'content',
+          isSubItem: true,
           executionType: 'sync',
           weight: 24
         },
         {
           key: 'textMs',
           label: t('文本提取'),
-          duration: Number(contentBreakdown.textMs) || 0,
+          duration: getBenchmarkValue(contentBreakdown, 'textMs'),
           color: '#a855f7',
           groupId: 'content',
-          isSubItem: false,
+          parentKey: 'content',
+          isSubItem: true,
           executionType: 'async',
           weight: 22
         },
         {
           key: 'ocrMs',
           label: t('OCR识别'),
-          duration: Number(contentBreakdown.ocrMs) || 0,
+          duration: getBenchmarkValue(contentBreakdown, 'ocrMs'),
           color: '#e11d48',
           groupId: 'content',
-          isSubItem: false,
+          parentKey: 'content',
+          isSubItem: true,
           executionType: 'async',
           weight: 23
         },
         {
           key: 'metadataMs',
           label: t('元数据提取'),
-          duration: Number(contentBreakdown.metadataMs) || 0,
+          duration: getBenchmarkValue(contentBreakdown, 'metadataMs'),
           color: '#ec4899',
           groupId: 'content',
-          isSubItem: false,
+          parentKey: 'content',
+          isSubItem: true,
           executionType: 'async',
           weight: 24
         },
         {
           key: 'thumbnailMs',
           label: t('封面图渲染'),
-          duration: Number(contentBreakdown.thumbnailMs) || 0,
+          duration: getBenchmarkValue(contentBreakdown, 'thumbnailMs'),
           color: '#f59e0b',
           groupId: 'content',
-          isSubItem: false,
+          parentKey: 'content',
+          isSubItem: true,
           executionType: 'async',
           weight: 25
         }
@@ -298,13 +339,39 @@ export function computeGroupedMetrics(
 
       if (validContentItems.length > 0) {
         const contentMax = Math.max(...validContentItems.map(it => it.duration), 0)
+        let finalContentItems: SubtaskItem[] = []
+        if (isSubItemsHidden) {
+          finalContentItems = [
+            {
+              key: 'content_total',
+              label: t('基础内容汇总'),
+              duration: contentMax,
+              color: '#f59e0b',
+              groupId: 'content',
+              isSubItem: false,
+              executionType: 'async',
+              weight: 20
+            }
+          ]
+        } else {
+          validContentItems.sort((a, b) => a.weight - b.weight)
+          if (validContentItems.length > 1) {
+            validContentItems.forEach(it => {
+              if (it.duration === contentMax && contentMax > 0) {
+                it.isBottleneck = true
+              }
+            })
+          }
+          finalContentItems = validContentItems
+        }
+
         groups.push({
           id: 'content',
           label: t('基础内容组'),
           color: '#f59e0b',
           executionType: 'async',
           duration: contentMax,
-          items: validContentItems
+          items: finalContentItems
         })
       }
     }
@@ -324,7 +391,7 @@ export function computeGroupedMetrics(
       ]
 
       for (const k of knownTagKeys) {
-        const dur = getSubtaskMs(contentBreakdown, k.key)
+        const dur = getBenchmarkValue(contentBreakdown, k.key)
         if (dur > 0 && !filter.hiddenKeys.has(k.key)) {
           tagSubItems.push({
             key: k.key,
@@ -344,7 +411,7 @@ export function computeGroupedMetrics(
       let dynPaletteIdx = 0
       for (const [rawKey, val] of Object.entries(contentBreakdown)) {
         if (!val || typeof val !== 'number' || val <= 0) continue
-        if (RESERVED_STAGE2_KEYS.has(rawKey)) continue
+        if (isReservedStage2Key(rawKey)) continue
         if (knownTagKeys.some(k => k.key === rawKey)) continue
         if (classifySubtaskKey(rawKey) !== 'tag_group') continue
 
@@ -368,9 +435,9 @@ export function computeGroupedMetrics(
 
       // 父级 tagMs 耗时：如果原数据有 tagMs 优先，且保证 >= 关键串行路径及并发最大值
       // 物理流水线特性: clipEmbedMs (串行) -> clipMutualMs (串行)，二者为局部串行链路，需累加
-      const rawTagMs = Number(contentBreakdown.tagMs) || 0
-      const embedMs = getSubtaskMs(contentBreakdown, 'clipEmbedMs') || 0
-      const mutualMs = getSubtaskMs(contentBreakdown, 'clipMutualMs') || 0
+      const rawTagMs = getBenchmarkValue(contentBreakdown, 'tagMs')
+      const embedMs = getBenchmarkValue(contentBreakdown, 'clipEmbedMs')
+      const mutualMs = getBenchmarkValue(contentBreakdown, 'clipMutualMs')
       const clipChainMs = embedMs + mutualMs
       const otherSubItemsMax = tagSubItems
         .filter(it => it.key !== 'clipEmbedMs' && it.key !== 'clipMutualMs')
@@ -394,12 +461,27 @@ export function computeGroupedMetrics(
             }
           ]
         } else {
-          // 展开子项并按耗时给最大子项标注瓶颈
+          // 若底层未产生更细粒度的CLIP等子项，但存在父级打标耗时，生成明确的打标子项
+          if (tagSubItems.length === 0 && rawTagMs > 0) {
+            tagSubItems.push({
+              key: 'tagMs_inference',
+              label: t('标签推理打标'),
+              duration: rawTagMs,
+              color: '#38bdf8',
+              groupId: 'tag_group',
+              parentKey: 'tagMs',
+              isSubItem: true,
+              executionType: 'async',
+              weight: 31
+            })
+          }
+
+          // 展开子项并按耗时给最大子项标注瓶颈 (仅当子任务多于1个时才判定长尾瓶颈)
           tagSubItems.sort((a, b) => a.weight - b.weight)
-          if (tagSubItems.length > 0) {
+          if (tagSubItems.length > 1) {
             const maxSubDur = Math.max(...tagSubItems.map(it => it.duration))
             tagSubItems.forEach(it => {
-              if (it.duration === maxSubDur) {
+              if (it.duration === maxSubDur && maxSubDur > 0) {
                 it.isBottleneck = true
               }
             })
@@ -432,7 +514,7 @@ export function computeGroupedMetrics(
       ]
 
       for (const k of knownQualityKeys) {
-        const dur = getSubtaskMs(contentBreakdown, k.key)
+        const dur = getBenchmarkValue(contentBreakdown, k.key)
         if (dur > 0 && !filter.hiddenKeys.has(k.key)) {
           qualitySubItems.push({
             key: k.key,
@@ -452,7 +534,7 @@ export function computeGroupedMetrics(
       let qPaletteIdx = 3
       for (const [rawKey, val] of Object.entries(contentBreakdown)) {
         if (!val || typeof val !== 'number' || val <= 0) continue
-        if (RESERVED_STAGE2_KEYS.has(rawKey)) continue
+        if (isReservedStage2Key(rawKey)) continue
         if (knownQualityKeys.some(k => k.key === rawKey)) continue
         if (classifySubtaskKey(rawKey) !== 'quality_group') continue
 
@@ -489,6 +571,14 @@ export function computeGroupedMetrics(
           ]
         } else {
           qualitySubItems.sort((a, b) => a.weight - b.weight)
+          if (qualitySubItems.length > 1) {
+            const maxQDur = Math.max(...qualitySubItems.map(it => it.duration))
+            qualitySubItems.forEach(it => {
+              if (it.duration === maxQDur && maxQDur > 0) {
+                it.isBottleneck = true
+              }
+            })
+          }
           finalQualityItems = qualitySubItems
         }
 
@@ -510,7 +600,7 @@ export function computeGroupedMetrics(
       let oPaletteIdx = 5
       for (const [rawKey, val] of Object.entries(contentBreakdown)) {
         if (!val || typeof val !== 'number' || val <= 0) continue
-        if (RESERVED_STAGE2_KEYS.has(rawKey)) continue
+        if (isReservedStage2Key(rawKey)) continue
         if (classifySubtaskKey(rawKey) !== 'other') continue
 
         if (!filter.hiddenKeys.has(rawKey)) {
@@ -529,6 +619,13 @@ export function computeGroupedMetrics(
 
       if (otherSubItems.length > 0) {
         const otherMax = Math.max(...otherSubItems.map(it => it.duration), 0)
+        if (otherSubItems.length > 1) {
+          otherSubItems.forEach(it => {
+            if (it.duration === otherMax && otherMax > 0) {
+              it.isBottleneck = true
+            }
+          })
+        }
         groups.push({
           id: 'other',
           label: t('扩展算子组'),

@@ -497,7 +497,7 @@
       }
     },
     {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-PQ2_0",
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:PQ2_0",
       "name": "Bonsai 2 ternary 27B（ضغط 2 بايت•ذكاء عالٍ）",
       "company": "prism-ml",
       "parameterSize": "27B",
@@ -528,7 +528,7 @@
       }
     },
     {
-      "id": "prism-ml/Ternary-Bonsai-2-27B-PTQ1_0",
+      "id": "prism-ml/Ternary-Bonsai-2-27B-gguf:PTQ1_0",
       "name": "Bonsai 2 ternary 27B（ضغط 1 بايت•ذكاء عالٍ）",
       "company": "prism-ml",
       "parameterSize": "27B",

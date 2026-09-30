@@ -274,5 +274,105 @@ describe('analysis-time-utils: 耗时指标通用分组、过滤与物理拓扑�
     expect(tagGroup).toBeDefined()
     expect(tagGroup?.duration).toBe(70)
   })
+
+  it('10. 排除 snake_case 原生宏观阶段与标准字段，防止被误判为扩展算子（如 total_ms 变成 Total）', () => {
+    const benchmarkWithSnakeCase: MarkitdownBenchmark = {
+      totalMs: 8630,
+      metadataMs: 1050,
+      textMs: 3480,
+      ocrMs: 1720,
+      tagMs: 1680,
+      // 模拟底层透传的下划线原生键
+      total_ms: 8630,
+      metadata_ms: 1050,
+      text_ms: 3480,
+      ocr_ms: 1720,
+      tag_ms: 1680,
+      extract_ms: 500,
+      vision_ms: 2000,
+      // 真正的动态新增扩展算子
+      custom_extension_ms: 300
+    } as any
+
+    const result = computeGroupedMetrics(mockStage1, benchmarkWithSnakeCase, mockPhases, defaultFilter, t)
+
+    // 1. 检查扩展算子组 (other)
+    const otherGroup = result.groups.find(g => g.id === 'other')
+    expect(otherGroup).toBeDefined()
+    // 应该只包含真正的动态扩展项 custom_extension_ms，耗时为 300
+    expect(otherGroup?.duration).toBe(300)
+    expect(otherGroup?.items.length).toBe(1)
+    expect(otherGroup?.items[0].key).toBe('custom_extension_ms')
+
+    // 严禁包含 total_ms (即伪项 Total 8.63s)、metadata_ms、text_ms、ocr_ms、extract_ms、vision_ms
+    expect(otherGroup?.items.some(i => i.key === 'total_ms' || i.label === 'Total')).toBe(false)
+    expect(otherGroup?.items.some(i => i.key === 'metadata_ms' || i.label === 'Metadata')).toBe(false)
+    expect(otherGroup?.items.some(i => i.key === 'text_ms' || i.label === 'Text')).toBe(false)
+    expect(otherGroup?.items.some(i => i.key === 'ocr_ms' || i.label === 'Ocr')).toBe(false)
+    expect(otherGroup?.items.some(i => i.key === 'extract_ms')).toBe(false)
+    expect(otherGroup?.items.some(i => i.key === 'vision_ms')).toBe(false)
+
+    // 2. 检查标签生成组 (tag_group)
+    const tagGroup = result.groups.find(g => g.id === 'tag_group')
+    expect(tagGroup).toBeDefined()
+    // 严禁包含英文伪子项 Tag (key: tag_ms)
+    expect(tagGroup?.items.some(i => i.key === 'tag_ms' || i.label === 'Tag')).toBe(false)
+    // 此时应该包含规范的标签推理打标子项 tagMs_inference
+    const inferenceItem = tagGroup?.items.find(i => i.key === 'tagMs_inference')
+    expect(inferenceItem).toBeDefined()
+    expect(inferenceItem?.duration).toBe(1680)
+    // 单一子项严禁被打上长尾标记
+    expect(inferenceItem?.isBottleneck).toBeFalsy()
+  })
+
+  it('11. 基础内容组默认包含细分子项(isSubItem: true)，在hideSubItems生效时正确收起为汇总项', () => {
+    // 默认未隐藏细项
+    const unhidden = computeGroupedMetrics(mockStage1, mockStage2, mockPhases, defaultFilter, t)
+    const contentGroup = unhidden.groups.find(g => g.id === 'content')
+    expect(contentGroup).toBeDefined()
+    // 应该包含 ocrMs, metadataMs 等子项，且 isSubItem 均为 true
+    expect(contentGroup?.items.length).toBeGreaterThan(1)
+    expect(contentGroup?.items.every(i => i.isSubItem)).toBe(true)
+
+    // 当设置了 hideSubItems 包含 content
+    const filterHideContent: FilterConfig = {
+      ...defaultFilter,
+      hideSubItems: new Set(['content'])
+    }
+    const hidden = computeGroupedMetrics(mockStage1, mockStage2, mockPhases, filterHideContent, t)
+    const hiddenContentGroup = hidden.groups.find(g => g.id === 'content')
+    expect(hiddenContentGroup).toBeDefined()
+    // 应该折叠为单项汇总
+    expect(hiddenContentGroup?.items.length).toBe(1)
+    expect(hiddenContentGroup?.items[0].key).toBe('content_total')
+    expect(hiddenContentGroup?.items[0].isSubItem).toBe(false)
+  })
+
+  it('12. 标签生成组在多并发子项时正确标注长尾，单子项时不打长尾标记', () => {
+    // 场景 A: 多子项 (clipMs: 1200, ramMs: 500) -> clipMs 为长尾
+    const multiTag: MarkitdownBenchmark = {
+      totalMs: 2000,
+      clipMs: 1200,
+      ramMs: 500
+    }
+    const resMulti = computeGroupedMetrics(mockStage1, multiTag, mockPhases, defaultFilter, t)
+    const groupMulti = resMulti.groups.find(g => g.id === 'tag_group')
+    expect(groupMulti?.items.length).toBe(2)
+    const clipItem = groupMulti?.items.find(i => i.key === 'clipMs')
+    const ramItem = groupMulti?.items.find(i => i.key === 'ramMs')
+    expect(clipItem?.isBottleneck).toBe(true)
+    expect(ramItem?.isBottleneck).toBeFalsy()
+
+    // 场景 B: 单子项 (仅有 tagMs: 1680) -> 生成标签推理打标且无长尾标记
+    const singleTag: MarkitdownBenchmark = {
+      totalMs: 2000,
+      tagMs: 1680
+    }
+    const resSingle = computeGroupedMetrics(mockStage1, singleTag, mockPhases, defaultFilter, t)
+    const groupSingle = resSingle.groups.find(g => g.id === 'tag_group')
+    expect(groupSingle?.items.length).toBe(1)
+    expect(groupSingle?.items[0].key).toBe('tagMs_inference')
+    expect(groupSingle?.items[0].isBottleneck).toBeFalsy()
+  })
 })
 

@@ -255,12 +255,58 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
     [archiveStage1Breakdown, archiveBreakdown, archive.phases, filter, activeLanguage]
   )
 
-  // 挂钟物理耗时
-  const freshTotalMs = fresh.durationMs || stats.durationMs || freshMetrics.visibleTotalMs
-  const archiveTotalMs =
-    archive.durationMs && archive.durationMs >= archiveMetrics.visibleTotalMs
-      ? archive.durationMs
-      : archiveMetrics.visibleTotalMs
+  // 挂钟物理耗时：发生过滤时实时联动为当前可见项的物理耗时，未过滤时展示完整挂钟耗时
+  const freshTotalMs = isFiltered
+    ? freshMetrics.visibleTotalMs
+    : (fresh.durationMs || stats.durationMs || freshMetrics.visibleTotalMs)
+  const archiveTotalMs = isFiltered
+    ? archiveMetrics.visibleTotalMs
+    : ((archive.durationMs && archive.durationMs >= archiveMetrics.visibleTotalMs)
+        ? archive.durationMs
+        : archiveMetrics.visibleTotalMs)
+
+  // 计算无过滤状态下的原始可用分组与包含子项的分组列表
+  const { availableGroupIds, groupsWithSubItems } = useMemo(() => {
+    const emptyFilter: FilterConfig = {
+      hiddenGroupIds: new Set(),
+      hideSubItems: new Set(),
+      hiddenKeys: new Set(),
+      collapsedGroupIds: new Set()
+    }
+    const base = computeGroupedMetrics(
+      freshStage1Breakdown || archiveStage1Breakdown,
+      freshBreakdown || archiveBreakdown,
+      fresh.phases || archive.phases || {},
+      emptyFilter,
+      t
+    )
+    return {
+      availableGroupIds: new Set(base.groups.map(g => g.id)),
+      groupsWithSubItems: base.groups.filter(g => g.items.some(i => i.isSubItem)).map(g => g.id)
+    }
+  }, [freshStage1Breakdown, archiveStage1Breakdown, freshBreakdown, archiveBreakdown, fresh.phases, archive.phases, activeLanguage])
+
+  const hasTagGroup = availableGroupIds.has('tag_group')
+  const hasQualityGroup = availableGroupIds.has('quality_group')
+  const hasContentGroup = availableGroupIds.has('content')
+
+  // 检查当前是否所有可用且包含子项的分组均已隐藏细项
+  const areAllSubItemsHidden =
+    groupsWithSubItems.length > 0 && groupsWithSubItems.every(id => filter.hideSubItems.has(id))
+
+  const toggleAllSubItems = () => {
+    setFilter(prev => {
+      const nextHideSub = new Set(prev.hideSubItems)
+      if (areAllSubItemsHidden) {
+        // 全部展开各组细项
+        groupsWithSubItems.forEach(id => nextHideSub.delete(id))
+      } else {
+        // 全部隐藏各组细项
+        groupsWithSubItems.forEach(id => nextHideSub.add(id))
+      }
+      return { ...prev, hideSubItems: nextHideSub }
+    })
+  }
 
   // 4. 构建 SVG 同轴多轨道 (主轨道 + 子项外环)
   const freshTracks = useMemo(
@@ -279,7 +325,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
     isArchive: boolean
   ) => {
     return (
-      <div className="w-full flex-1 space-y-2">
+      <div className="w-full flex-1 space-y-2 text-left">
         {metrics.groups.map(group => {
           const isCollapsed = filter.collapsedGroupIds.has(group.id)
           const isSubHidden = filter.hideSubItems.has(group.id)
@@ -288,16 +334,16 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           return (
             <div
               key={`grp_${isArchive ? 'arc' : 'frs'}_${group.id}`}
-              className="rounded-lg border border-border/30 bg-muted/10 p-2 space-y-1.5 transition-all"
+              className="rounded-lg border border-border/30 bg-muted/10 p-2 space-y-1.5 transition-all text-left"
             >
               {/* 分组标题行 */}
               <div className="flex items-center justify-between gap-1 text-xs">
-                <div className="flex items-center gap-1.5 min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0 text-left">
                   {hasSubItems ? (
                     <button
                       type="button"
                       onClick={() => toggleGroupCollapse(group.id)}
-                      className="p-0.5 text-muted-foreground hover:text-foreground rounded transition-colors"
+                      className="p-0.5 text-muted-foreground hover:text-foreground rounded transition-colors shrink-0"
                       title={isCollapsed ? t('展开子项') : t('折叠子项')}
                     >
                       {isCollapsed ? (
@@ -307,7 +353,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                       )}
                     </button>
                   ) : (
-                    <span className="w-3.5 h-3.5 inline-block" />
+                    <span className="w-3.5 h-3.5 inline-block shrink-0" />
                   )}
 
                   <span
@@ -388,9 +434,12 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                     // 判断是否复用
                     let isReused = false
                     if (isArchive) {
+                      const checkParent = subItem.parentKey
                       const hasFreshVal =
                         (freshStage1Breakdown as any)?.[subItem.key] !== undefined ||
                         (freshBreakdown as any)?.[subItem.key] !== undefined ||
+                        (checkParent && (freshBreakdown as any)?.[checkParent] !== undefined) ||
+                        (checkParent && (freshBreakdown as any)?.[checkParent.toLowerCase()] !== undefined) ||
                         (fresh.phases as any)?.[subItem.key] !== undefined
                       isReused = !hasFreshVal
                     }
@@ -470,11 +519,11 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         {metrics.stage3Ms > 0 && (
           <div
             key={`stage3_${isArchive ? 'arc' : 'frs'}`}
-            className="rounded-lg border border-border/30 bg-muted/10 p-2 space-y-1.5 transition-all"
+            className="rounded-lg border border-border/30 bg-muted/10 p-2 space-y-1.5 transition-all text-left"
           >
             <div className="flex items-center justify-between gap-1 text-xs">
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="w-3.5 h-3.5 inline-block" />
+                <span className="w-3.5 h-3.5 inline-block shrink-0" />
                 <span
                   className="w-2.5 h-2.5 rounded-sm shrink-0"
                   style={{ backgroundColor: '#f97316' }}
@@ -512,11 +561,11 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         {metrics.stage4Ms > 0 && (
           <div
             key={`stage4_${isArchive ? 'arc' : 'frs'}`}
-            className="rounded-lg border border-border/30 bg-muted/10 p-2 space-y-1.5 transition-all"
+            className="rounded-lg border border-border/30 bg-muted/10 p-2 space-y-1.5 transition-all text-left"
           >
             <div className="flex items-center justify-between gap-1 text-xs">
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="w-3.5 h-3.5 inline-block" />
+                <span className="w-3.5 h-3.5 inline-block shrink-0" />
                 <span
                   className="w-2.5 h-2.5 rounded-sm shrink-0"
                   style={{ backgroundColor: '#22c55e' }}
@@ -601,43 +650,55 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           {/* 标签生成组开关 */}
           <button
             type="button"
-            onClick={() => toggleGroupVisibility('tag_group')}
+            disabled={!hasTagGroup}
+            onClick={() => hasTagGroup && toggleGroupVisibility('tag_group')}
             className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] transition-all',
-              filter.hiddenGroupIds.has('tag_group')
-                ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
-                : 'bg-sky-500/10 border-sky-500/30 text-sky-600 dark:text-sky-400 font-medium'
+              !hasTagGroup
+                ? 'opacity-40 cursor-not-allowed border-border/40 text-muted-foreground'
+                : filter.hiddenGroupIds.has('tag_group')
+                  ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
+                  : 'bg-sky-500/10 border-sky-500/30 text-sky-600 dark:text-sky-400 font-medium hover:bg-sky-500/20'
             )}
+            title={!hasTagGroup ? t('当前文件未生成标签组数据') : t('切换标签组显隐')}
           >
             <Tag className="w-3 h-3" />
             <span>{t('标签组')}</span>
           </button>
 
-          {/* CLIP 等细项显示/隐藏开关 */}
+          {/* 细项显示/隐藏开关 */}
           <button
             type="button"
-            onClick={() => toggleSubItemsVisibility('tag_group')}
+            disabled={groupsWithSubItems.length === 0}
+            onClick={toggleAllSubItems}
             className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] transition-all',
-              filter.hideSubItems.has('tag_group')
-                ? 'bg-muted/40 border-border/40 text-muted-foreground opacity-70'
-                : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 font-medium'
+              groupsWithSubItems.length === 0
+                ? 'opacity-40 cursor-not-allowed border-border/40 text-muted-foreground'
+                : areAllSubItemsHidden
+                  ? 'bg-muted/40 border-border/40 text-muted-foreground opacity-70'
+                  : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-600 dark:text-indigo-400 font-medium hover:bg-indigo-500/20'
             )}
+            title={groupsWithSubItems.length === 0 ? t('当前各分组暂无细分子项') : (areAllSubItemsHidden ? t('展开显示各分组细分子项') : t('收起隐藏各分组细分子项'))}
           >
             <Layers className="w-3 h-3" />
-            <span>{filter.hideSubItems.has('tag_group') ? t('看CLIP细项') : t('隐藏CLIP细项')}</span>
+            <span>{areAllSubItemsHidden ? t('展开细项') : t('收起细项')}</span>
           </button>
 
           {/* 画质形态组开关 */}
           <button
             type="button"
-            onClick={() => toggleGroupVisibility('quality_group')}
+            disabled={!hasQualityGroup}
+            onClick={() => hasQualityGroup && toggleGroupVisibility('quality_group')}
             className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] transition-all',
-              filter.hiddenGroupIds.has('quality_group')
-                ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
-                : 'bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400 font-medium'
+              !hasQualityGroup
+                ? 'opacity-40 cursor-not-allowed border-border/40 text-muted-foreground'
+                : filter.hiddenGroupIds.has('quality_group')
+                  ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
+                  : 'bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400 font-medium hover:bg-teal-500/20'
             )}
+            title={!hasQualityGroup ? t('当前文件无画质形态指标') : t('切换画质形态组显隐')}
           >
             <Sparkles className="w-3 h-3" />
             <span>{t('画质组')}</span>
@@ -646,13 +707,17 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           {/* 基础内容组开关 */}
           <button
             type="button"
-            onClick={() => toggleGroupVisibility('content')}
+            disabled={!hasContentGroup}
+            onClick={() => hasContentGroup && toggleGroupVisibility('content')}
             className={cn(
               'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] transition-all',
-              filter.hiddenGroupIds.has('content')
-                ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
-                : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 font-medium'
+              !hasContentGroup
+                ? 'opacity-40 cursor-not-allowed border-border/40 text-muted-foreground'
+                : filter.hiddenGroupIds.has('content')
+                  ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 font-medium hover:bg-amber-500/20'
             )}
+            title={!hasContentGroup ? t('当前文件无基础内容数据') : t('切换基础内容组显隐')}
           >
             <FileText className="w-3 h-3" />
             <span>{t('基础内容')}</span>
@@ -674,7 +739,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
       </div>
 
       {/* 3. 区块一：【本次分析物理耗时】 */}
-      <div className="rounded-xl border border-border/60 bg-muted/40 dark:bg-card/90 p-3.5 space-y-3 shadow-sm">
+      <div className="rounded-xl border border-border/60 bg-muted/40 dark:bg-card/90 p-3.5 space-y-3 shadow-sm text-left">
         <div className="text-xs font-semibold text-foreground flex items-center justify-between border-b border-border/40 pb-2">
           <span className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
@@ -688,9 +753,9 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         </div>
 
         {freshMetrics.groups.length > 0 ? (
-          <div className="flex flex-col @sm:flex-row items-center gap-4 pt-1">
+          <div className="flex flex-col @sm:flex-row items-start @sm:items-center gap-4 pt-1 w-full text-left">
             {/* SVG 同轴多轨道圆饼图 */}
-            <div className="flex flex-col items-center justify-center relative shrink-0 mx-auto">
+            <div className="flex flex-col items-center justify-center relative shrink-0 mx-auto @sm:mx-0">
               <svg viewBox="0 0 100 100" className="w-36 h-36 transform -rotate-90">
                 {freshTracks.map(track =>
                   track.slices.map(slice =>
@@ -700,7 +765,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                       track.radius,
                       track.strokeWidth,
                       slice.color,
-                      `fresh_trk_${track.key}_${slice.key}`,
+                      `frs_trk_${track.key}_${slice.key}`,
                       slice.label,
                       formatSeconds(slice.duration)
                     )
@@ -727,7 +792,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
 
       {/* 4. 区块二：【历史累计耗时 (全量归档)】 */}
       {archiveMetrics.groups.length > 0 && (
-        <div className="rounded-xl border border-border/40 bg-muted/20 p-3.5 space-y-3 shadow-sm">
+        <div className="rounded-xl border border-border/40 bg-muted/20 p-3.5 space-y-3 shadow-sm text-left">
           <div className="text-xs font-semibold text-foreground flex items-center justify-between border-b border-border/30 pb-2">
             <span className="flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-primary inline-block" />
@@ -740,9 +805,9 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
             </span>
           </div>
 
-          <div className="flex flex-col @sm:flex-row items-center gap-4 pt-1">
+          <div className="flex flex-col @sm:flex-row items-start @sm:items-center gap-4 pt-1 w-full text-left">
             {/* 归档 SVG 多轨道圆饼图 */}
-            <div className="flex flex-col items-center justify-center relative shrink-0 mx-auto">
+            <div className="flex flex-col items-center justify-center relative shrink-0 mx-auto @sm:mx-0">
               <svg viewBox="0 0 100 100" className="w-36 h-36 transform -rotate-90">
                 {archiveTracks.map(track =>
                   track.slices.map(slice =>
