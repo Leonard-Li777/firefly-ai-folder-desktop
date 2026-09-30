@@ -19,6 +19,7 @@ import * as path from 'node:path'
 import * as fs from 'node:fs'
 import { app, BrowserWindow } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS } from '@firefly/shared'
+import { ConfigOrchestrator } from '@app/electron/config/config-orchestrator'
 import { Tier2CircuitBreaker, Tier2CircuitState } from './tier2-circuit-breaker'
 
 /** Tier 2 引擎基准端口（与本地 AI 服务端口收敛一致：38400） */
@@ -39,6 +40,8 @@ const ENGINE_SERVICE_START_PATH = '/api/engine/start'
 const ENGINE_SERVICE_STOP_PATH = '/api/engine/stop'
 /** 引擎计算后端切换端点（写入 preferred_backend，重启服务后生效） */
 const ENGINE_SWITCH_PATH = '/api/engine/switch'
+/** 引擎全局思考模式端点（GET 读取 / POST 写入 config.json enable_thinking） */
+const ENGINE_THINKING_PATH = '/api/engine/thinking'
 
 /** 桥接请求超时（毫秒） */
 const STATUS_TIMEOUT_MS = 1500
@@ -163,6 +166,12 @@ export class EngineBridgeService {
   private lastBackendMatchType: 'best' | 'compatible' | 'fallback' | null = null
   /** 引擎列表拉取防抖标志（与模型计数同策略，避免并发重复拉取） */
   private engineListFetching = false
+  /** 引擎思考模式同步 in-flight Promise（并发调用共享同一次同步，均可 await 到完成） */
+  private thinkingSyncPromise: Promise<void> | null = null
+  /** 最近一次与引擎对齐的思考模式值（防止「引擎→桌面」回写再触发「桌面→引擎」死循环） */
+  private lastSyncedThinking: boolean | null = null
+  /** ENABLE_THINKING_MODE 变更订阅取消函数 */
+  private thinkingConfigUnsubscribe: (() => void) | null = null
   /** 内置模型元数据缓存（包含所有语言模型与 embedding 模型；权威来源 = engine /api/models/meta） */
   private builtinModelCatalog: Array<{ id: string; name: string; isEmbedding?: boolean }> | null = null
   /** 引擎模型元数据全量缓存（含 totalSize / vramRequiredGB / recommendedConfig 等，供 enrichAIStatus 匹配） */
@@ -192,6 +201,7 @@ export class EngineBridgeService {
 
   private constructor() {
     this.setupLifecycleHooks()
+    this.setupThinkingConfigSync()
     // 启动常驻状态轮询（3秒探活），自动同步外部引擎上线/下线及在引擎内切换模型
     this.startPolling(3000)
   }
@@ -216,6 +226,29 @@ export class EngineBridgeService {
     } catch (err) {
       // 生命周期钩子注册失败仅意味着退出回收依赖 Electron 默认行为，记日志便于排查残留进程
       logger.warn(LogCategory.SYSTEM, '[EngineBridge] 注册退出清理钩子失败:', err)
+    }
+  }
+
+  /**
+   * 订阅桌面端 ENABLE_THINKING_MODE 变更，双向对齐引擎思考模式：
+   * - 桌面设置/云端思考开关变更 → 推送到引擎 config.json（下次启动 llama-server 注入思考参数）
+   * - 引擎 UI 变更 → 由探活路径 pull 回写桌面（见 syncThinkingModeFromEngine）
+   */
+  private setupThinkingConfigSync(): void {
+    try {
+      this.thinkingConfigUnsubscribe = ConfigOrchestrator.getInstance().onValueChange<boolean>(
+        'ENABLE_THINKING_MODE',
+        value => {
+          const next = Boolean(value)
+          // 引擎→桌面回写触发的变更不再回推，避免死循环
+          if (this.lastSyncedThinking === next) {
+            return
+          }
+          void this.setThinkingMode(next)
+        }
+      )
+    } catch (err) {
+      logger.warn(LogCategory.SYSTEM, '[EngineBridge] 订阅思考模式配置失败:', err)
     }
   }
 
@@ -420,7 +453,6 @@ export class EngineBridgeService {
    */
   private async shouldEngineRun(): Promise<boolean> {
     try {
-      const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
       const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE') || 'local'
       return mode !== 'cloud' && mode !== 'disabled'
     } catch (err) {
@@ -607,6 +639,8 @@ export class EngineBridgeService {
     void this.refreshModelCount()
     // 异步刷新当前引擎适配类型（Footer「兼容模式」标记依据），不阻塞探活关键路径
     void this.refreshBackendMatchType()
+    // 异步对齐思考模式（引擎 UI 变更后 desktop 请求级/Footer 需感知），不阻塞探活关键路径
+    void this.syncThinkingModeFromEngine()
   }
 
   /**
@@ -1129,10 +1163,111 @@ export class EngineBridgeService {
   }
 
   /**
+   * 读取引擎全局思考模式（GET /api/engine/thinking）
+   */
+  public async getThinkingMode(): Promise<{ ok: boolean; enableThinking?: boolean; error?: string }> {
+    try {
+      const res = await fetch(`${this.baseUrl}${ENGINE_THINKING_PATH}`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+      })
+      const body = (await res.json().catch(() => ({}))) as { enableThinking?: boolean }
+      if (!res.ok) {
+        return { ok: false, error: `引擎返回 ${res.status}` }
+      }
+      return { ok: true, enableThinking: Boolean(body.enableThinking) }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      return { ok: false, error }
+    }
+  }
+
+  /**
+   * 写入引擎全局思考模式（POST /api/engine/thinking，持久化至引擎 config.json）
+   * 下次 startService 拉起 llama-server 时按该值注入思考/抑制参数
+   */
+  public async setThinkingMode(enableThinking: boolean): Promise<{ ok: boolean; error?: string }> {
+    try {
+      const res = await fetch(`${this.baseUrl}${ENGINE_THINKING_PATH}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enableThinking }),
+        signal: AbortSignal.timeout(STATUS_TIMEOUT_MS)
+      })
+      const body = (await res.json().catch(() => ({}))) as { success?: boolean; enableThinking?: boolean; error?: string }
+      const ok = res.ok && body.success !== false
+      if (ok) {
+        this.lastSyncedThinking = enableThinking
+        logger.info(LogCategory.SYSTEM, `[EngineBridge] 已同步思考模式至引擎: enable_thinking=${enableThinking}`)
+      } else {
+        logger.warn(LogCategory.SYSTEM, `[EngineBridge] 同步思考模式至引擎失败: ${body.error || res.status}`)
+      }
+      return { ok, error: ok ? undefined : body.error || `引擎返回 ${res.status}` }
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.SYSTEM, `[EngineBridge] 同步思考模式请求失败: ${error}`)
+      return { ok: false, error }
+    }
+  }
+
+  /**
+   * 从引擎拉取思考模式并回写桌面 ENABLE_THINKING_MODE（引擎 UI 变更感知）
+   *
+   * 请求级思考开关（http-client）与 Footer 展示均读 ENABLE_THINKING_MODE，
+   * 本地分析要真正吃到引擎思考能力，必须与引擎 config.json 的 enable_thinking 对齐。
+   */
+  public async syncThinkingModeFromEngine(): Promise<void> {
+    if (this.thinkingSyncPromise) {
+      return this.thinkingSyncPromise
+    }
+    this.thinkingSyncPromise = this.doSyncThinkingModeFromEngine().finally(() => {
+      this.thinkingSyncPromise = null
+    })
+    return this.thinkingSyncPromise
+  }
+
+  private async doSyncThinkingModeFromEngine(): Promise<void> {
+    try {
+      const orchestrator = ConfigOrchestrator.getInstance()
+      // 云端/禁用模式不覆盖桌面思考开关（该键同时是云端请求级开关；本地才以引擎 CLI 为权威）
+      const mode = orchestrator.getValue<string>('AI_SERVICE_MODE') || 'local'
+      if (mode !== 'local') {
+        return
+      }
+
+      const result = await this.getThinkingMode()
+      if (!result.ok || typeof result.enableThinking !== 'boolean') {
+        return
+      }
+      const engineValue = result.enableThinking
+      this.lastSyncedThinking = engineValue
+
+      const desktopValue = Boolean(orchestrator.getValue<boolean>('ENABLE_THINKING_MODE'))
+      if (desktopValue !== engineValue) {
+        // preventAutoReload: false —— 需触发 AIService 重载，使 http-client 请求级思考参数即时生效
+        await orchestrator.updateValue('ENABLE_THINKING_MODE', engineValue, {
+          source: 'runtime',
+          preventAutoReload: false
+        })
+        logger.info(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 已从引擎同步思考模式至桌面: ENABLE_THINKING_MODE=${engineValue}（原值 ${desktopValue}）`
+        )
+        this.broadcastStatus()
+      }
+    } catch (err) {
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 同步引擎思考模式失败（可容忍）:', err)
+    }
+  }
+
+  /**
    * 启动引擎侧 AI 推理服务（llama.cpp 子进程），不退出引擎应用本身
    * 对应引擎端 POST /api/engine/start
    */
   public async startService(options?: { mode?: 'language' | 'embedding'; modelId?: string }): Promise<{ ok: boolean; error?: string }> {
+    // 启动前对齐思考模式：CLI 启动参数以引擎 config.json 为准，先拉回桌面保证请求级一致；
+    // 若桌面配置与引擎不一致且桌面是用户刚改过的，setThinkingMode 路径会在配置变更时已推送。
+    await this.syncThinkingModeFromEngine()
     try {
       const res = await fetch(`${this.baseUrl}${ENGINE_SERVICE_START_PATH}`, {
         method: 'POST',
@@ -1159,8 +1294,11 @@ export class EngineBridgeService {
    * - 'embedding'：多模态嵌入模式（用于 Stage 5 高维修正 WeMM 向量嵌入）
    * 若当前未运行或运行的模型与目标意图不符，则按意图重新激活并启动
    */
-  public async ensureMode(mode: 'language' | 'embedding'): Promise<{ ok: boolean; error?: string }> {
-    const running = await this.ensureRunning({ mode })
+  public async ensureMode(
+    mode: 'language' | 'embedding',
+    options?: { force?: boolean }
+  ): Promise<{ ok: boolean; error?: string }> {
+    const running = await this.ensureRunning({ mode, force: options?.force })
     if (!running) {
       return { ok: false, error: 'AI引擎未运行且拉起失败' }
     }
@@ -1405,12 +1543,14 @@ export class EngineBridgeService {
   public stop(): void {
     this.stopPolling()
     this.stopDevBinaryWatch()
+    // 思考模式配置订阅保持进程级存活（stop 亦被单例测试复用，退订后无法恢复）
     this.killOwnProcess()
     this.activePort = TIER2_ENGINE_PORT
     this.spawnedBinarySignature = null
     this.lastRawStatus = null
     this.lastModelCount = null
     this.lastBackendMatchType = null
+    this.lastSyncedThinking = null
     // 清空模型元数据缓存，避免跨会话/测试复用陈旧目录
     this.modelMetaCache = null
     this.builtinModelCatalog = null
