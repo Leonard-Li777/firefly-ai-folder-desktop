@@ -118,6 +118,14 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const stats = rawStats as AnalysisStats
 
+  // 环境检测与开发者视图模式 (生产环境严格锁定 false，严禁泄露任何调试入口)
+  const isDevEnvironment = Boolean(
+    (import.meta as any)?.env?.DEV ||
+      (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production')
+  )
+  const [isDevMode, setIsDevMode] = useState(false)
+  const effectiveDevMode = isDevEnvironment && isDevMode
+
   // 1. 过滤与显隐状态管理
   const [filter, setFilter] = useState<FilterConfig>({
     hiddenGroupIds: new Set<string>(),
@@ -289,6 +297,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   const hasTagGroup = availableGroupIds.has('tag_group')
   const hasQualityGroup = availableGroupIds.has('quality_group')
   const hasContentGroup = availableGroupIds.has('content')
+  const hasSemanticFusionGroup = availableGroupIds.has('semantic_fusion')
 
   // 检查当前是否所有可用且包含子项的分组均已隐藏细项
   const areAllSubItemsHidden =
@@ -457,6 +466,11 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                           <span className="text-muted-foreground truncate flex items-center gap-1">
                             <span className="opacity-40">└</span>
                             {subItem.label}
+                            {effectiveDevMode && subItem.modelBadge && (
+                              <span className="text-[9px] text-primary/90 font-mono px-1 py-0.2 bg-primary/10 rounded border border-primary/20 shrink-0">
+                                {subItem.modelBadge}
+                              </span>
+                            )}
                             {subItem.executionType === 'sync' ? (
                               <span
                                 className="text-[9px] text-blue-400 opacity-75"
@@ -647,7 +661,26 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
       {/* 2. 快捷过滤控制胶囊栏 (Quick Filter Bar) */}
       <div className="flex flex-wrap items-center justify-between gap-1.5 p-2 rounded-lg bg-muted/30 border border-border/40 text-xs">
         <div className="flex flex-wrap items-center gap-1.5">
-          {/* 标签生成组开关 */}
+          {/* 基础内容组开关 */}
+          <button
+            type="button"
+            disabled={!hasContentGroup}
+            onClick={() => hasContentGroup && toggleGroupVisibility('content')}
+            className={cn(
+              'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] transition-all',
+              !hasContentGroup
+                ? 'opacity-40 cursor-not-allowed border-border/40 text-muted-foreground'
+                : filter.hiddenGroupIds.has('content')
+                  ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 font-medium hover:bg-amber-500/20'
+            )}
+            title={!hasContentGroup ? t('当前文件无基础内容数据') : t('切换基础内容组显隐')}
+          >
+            <FileText className="w-3 h-3" />
+            <span>{t('基础内容')}</span>
+          </button>
+
+          {/* 视觉标签组开关 */}
           <button
             type="button"
             disabled={!hasTagGroup}
@@ -660,10 +693,47 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                   ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
                   : 'bg-sky-500/10 border-sky-500/30 text-sky-600 dark:text-sky-400 font-medium hover:bg-sky-500/20'
             )}
-            title={!hasTagGroup ? t('当前文件未生成标签组数据') : t('切换标签组显隐')}
+            title={!hasTagGroup ? t('当前文件未生成标签组数据') : t('切换视觉标签组显隐')}
           >
             <Tag className="w-3 h-3" />
-            <span>{t('标签组')}</span>
+            <span>{t('视觉标签')}</span>
+          </button>
+
+          {/* 语义融合组开关 */}
+          {hasSemanticFusionGroup && (
+            <button
+              type="button"
+              onClick={() => toggleGroupVisibility('semantic_fusion')}
+              className={cn(
+                'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] transition-all',
+                filter.hiddenGroupIds.has('semantic_fusion')
+                  ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
+                  : 'bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400 font-medium hover:bg-purple-500/20'
+              )}
+              title={t('切换语义与融合组显隐')}
+            >
+              <Sparkles className="w-3 h-3" />
+              <span>{t('语义融合')}</span>
+            </button>
+          )}
+
+          {/* 画质形态组开关 */}
+          <button
+            type="button"
+            disabled={!hasQualityGroup}
+            onClick={() => hasQualityGroup && toggleGroupVisibility('quality_group')}
+            className={cn(
+              'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] transition-all',
+              !hasQualityGroup
+                ? 'opacity-40 cursor-not-allowed border-border/40 text-muted-foreground'
+                : filter.hiddenGroupIds.has('quality_group')
+                  ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
+                  : 'bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400 font-medium hover:bg-teal-500/20'
+            )}
+            title={!hasQualityGroup ? t('当前文件无画质形态指标') : t('切换画质形态组显隐')}
+          >
+            <Layers className="w-3 h-3" />
+            <span>{t('画质形态')}</span>
           </button>
 
           {/* 细项显示/隐藏开关 */}
@@ -684,58 +754,40 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
             <Layers className="w-3 h-3" />
             <span>{areAllSubItemsHidden ? t('展开细项') : t('收起细项')}</span>
           </button>
-
-          {/* 画质形态组开关 */}
-          <button
-            type="button"
-            disabled={!hasQualityGroup}
-            onClick={() => hasQualityGroup && toggleGroupVisibility('quality_group')}
-            className={cn(
-              'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] transition-all',
-              !hasQualityGroup
-                ? 'opacity-40 cursor-not-allowed border-border/40 text-muted-foreground'
-                : filter.hiddenGroupIds.has('quality_group')
-                  ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
-                  : 'bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400 font-medium hover:bg-teal-500/20'
-            )}
-            title={!hasQualityGroup ? t('当前文件无画质形态指标') : t('切换画质形态组显隐')}
-          >
-            <Sparkles className="w-3 h-3" />
-            <span>{t('画质组')}</span>
-          </button>
-
-          {/* 基础内容组开关 */}
-          <button
-            type="button"
-            disabled={!hasContentGroup}
-            onClick={() => hasContentGroup && toggleGroupVisibility('content')}
-            className={cn(
-              'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] transition-all',
-              !hasContentGroup
-                ? 'opacity-40 cursor-not-allowed border-border/40 text-muted-foreground'
-                : filter.hiddenGroupIds.has('content')
-                  ? 'bg-muted/40 border-border/40 text-muted-foreground line-through opacity-70'
-                  : 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400 font-medium hover:bg-amber-500/20'
-            )}
-            title={!hasContentGroup ? t('当前文件无基础内容数据') : t('切换基础内容组显隐')}
-          >
-            <FileText className="w-3 h-3" />
-            <span>{t('基础内容')}</span>
-          </button>
         </div>
 
-        {/* 重置过滤按钮 */}
-        {isFiltered && (
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="flex items-center gap-1 px-2 py-0.5 text-[11px] text-muted-foreground hover:text-foreground rounded transition-colors ml-auto"
-            title={t('重置所有显隐过滤')}
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span>{t('重置')}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-1.5 ml-auto">
+          {/* 开发环境专享调试切换开关 (生产环境坚决不渲染任何切换方式) */}
+          {isDevEnvironment && (
+            <button
+              type="button"
+              onClick={() => setIsDevMode(prev => !prev)}
+              className={cn(
+                'flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-mono transition-all',
+                effectiveDevMode
+                  ? 'bg-rose-500/15 border-rose-500/40 text-rose-600 dark:text-rose-400 font-semibold shadow-xs'
+                  : 'bg-muted/40 border-border/40 text-muted-foreground hover:text-foreground'
+              )}
+              title={t('切换开发模式调试视图 (显示底层模型与算子长尾瓶颈)')}
+            >
+              <span>🔬</span>
+              <span>{t('Dev模式')}</span>
+            </button>
+          )}
+
+          {/* 重置过滤按钮 */}
+          {isFiltered && (
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="flex items-center gap-1 px-2 py-0.5 text-[11px] text-muted-foreground hover:text-foreground rounded transition-colors"
+              title={t('重置所有显隐过滤')}
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>{t('重置')}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 3. 区块一：【本次分析物理耗时】 */}

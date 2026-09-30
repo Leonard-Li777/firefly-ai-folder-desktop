@@ -21,6 +21,7 @@ describe('analysis-time-utils: 耗时指标通用分组、过滤与物理拓扑�
   const mockStage2: MarkitdownBenchmark = {
     totalMs: 1500,
     magikaMs: 40,
+    docParseMs: 150,
     textMs: 120,
     ocrMs: 800,
     metadataMs: 60,
@@ -32,6 +33,10 @@ describe('analysis-time-utils: 耗时指标通用分组、过滤与物理拓扑�
     clipMutualMs: 400,
     ramMs: 950,
     nsfwMs: 150,
+    bekkoEmbedMs: 180,
+    keybertMs: 90,
+    slotSummaryMs: 60,
+    fusionMs: 40,
     aestheticMs: 500,
     watermarkMs: 80,
     // 动态新增未定义字段（开闭原则测试）
@@ -79,23 +84,37 @@ describe('analysis-time-utils: 耗时指标通用分组、过滤与物理拓扑�
     expect(qualityGroup?.items.some(i => i.key === 'aestheticMs')).toBe(true)
     expect(qualityGroup?.items.some(i => i.key === 'watermarkMs')).toBe(true)
 
+    // 检查语义与多模态融合组 (semantic_fusion)
+    const semanticGroup = result.groups.find(g => g.id === 'semantic_fusion')
+    expect(semanticGroup).toBeDefined()
+    expect(semanticGroup?.items.some(i => i.key === 'bekkoEmbedMs')).toBe(true)
+    expect(semanticGroup?.items.some(i => i.key === 'keybertMs')).toBe(true)
+    expect(semanticGroup?.items.some(i => i.key === 'slotSummaryMs')).toBe(true)
+    expect(semanticGroup?.items.some(i => i.key === 'fusionMs')).toBe(true)
+
     // 检查开闭原则动态增项 (other 组)
     const otherGroup = result.groups.find(g => g.id === 'other')
     expect(otherGroup).toBeDefined()
     expect(otherGroup?.items.some(i => i.key === 'audio_mfcc_ms')).toBe(true)
     expect(otherGroup?.items.some(i => i.key === 'custom_subtask_ms')).toBe(true)
 
-    // 检查封面图仅统计自身耗时 (Office 预转 PDF 已独立成项，不再合并)
+    // 检查基础内容组：封面图、AnyDoc 文档排版解析、Office 预转 PDF 与 Magika
     const contentGroup = result.groups.find(g => g.id === 'content')
     const thumbItem = contentGroup?.items.find(i => i.key === 'thumbnailMs')
     expect(thumbItem?.duration).toBe(200)
+    expect(thumbItem?.modelBadge).toBe('CoverRenderer')
+    const docParseItem = contentGroup?.items.find(i => i.key === 'docParseMs')
+    expect(docParseItem?.duration).toBe(150)
+    expect(docParseItem?.modelBadge).toBe('AnyDoc')
     // Office 预转 PDF 独立成项并标注 sync (串行前缀)
     const prePdfItem = contentGroup?.items.find(i => i.key === 'officePrePdfMs')
     expect(prePdfItem?.duration).toBe(100)
     expect(prePdfItem?.executionType).toBe('sync')
     // Magika 在分支分发前串行执行，标注 sync
     const magikaItem = contentGroup?.items.find(i => i.key === 'magikaMs')
+    expect(magikaItem?.duration).toBe(40)
     expect(magikaItem?.executionType).toBe('sync')
+    expect(magikaItem?.modelBadge).toBe('Magika')
   })
 
   it('2. 正确区分同步(⚙️ 串行)与异步(⚡ 并发)，并精确标注长尾瓶颈', () => {
@@ -373,6 +392,72 @@ describe('analysis-time-utils: 耗时指标通用分组、过滤与物理拓扑�
     expect(groupSingle?.items.length).toBe(1)
     expect(groupSingle?.items[0].key).toBe('tagMs_inference')
     expect(groupSingle?.items[0].isBottleneck).toBeFalsy()
+  })
+
+  it('13. 语义与多模态融合组独立显隐与子项收拢控制', () => {
+    // 隐藏整组
+    const hideSemanticGroup: FilterConfig = {
+      ...defaultFilter,
+      hiddenGroupIds: new Set(['semantic_fusion'])
+    }
+    const resHidden = computeGroupedMetrics(mockStage1, mockStage2, mockPhases, hideSemanticGroup, t)
+    expect(resHidden.groups.some(g => g.id === 'semantic_fusion')).toBe(false)
+
+    // 隐藏细项：收拢为汇总项
+    const hideSemanticSubItems: FilterConfig = {
+      ...defaultFilter,
+      hideSubItems: new Set(['semantic_fusion'])
+    }
+    const resCollapsed = computeGroupedMetrics(mockStage1, mockStage2, mockPhases, hideSemanticSubItems, t)
+    const collapsedGroup = resCollapsed.groups.find(g => g.id === 'semantic_fusion')
+    expect(collapsedGroup).toBeDefined()
+    expect(collapsedGroup?.items.length).toBe(1)
+    expect(collapsedGroup?.items[0].key).toBe('semantic_fusion_total')
+    expect(collapsedGroup?.items[0].isSubItem).toBe(false)
+  })
+
+  it('14. 底层模型 Badge 在各项指标上的精准覆盖', () => {
+    const res = computeGroupedMetrics(mockStage1, mockStage2, mockPhases, defaultFilter, t)
+    const contentGroup = res.groups.find(g => g.id === 'content')
+    const tagGroup = res.groups.find(g => g.id === 'tag_group')
+    const semanticGroup = res.groups.find(g => g.id === 'semantic_fusion')
+    const qualityGroup = res.groups.find(g => g.id === 'quality_group')
+
+    // 基础内容组
+    expect(contentGroup?.items.find(i => i.key === 'ocrMs')?.modelBadge).toBe('PP-OCRv6')
+    expect(contentGroup?.items.find(i => i.key === 'thumbnailMs')?.modelBadge).toBe('CoverRenderer')
+    expect(contentGroup?.items.find(i => i.key === 'docParseMs')?.modelBadge).toBe('AnyDoc')
+
+    // 视觉标签组
+    expect(tagGroup?.items.find(i => i.key === 'clipEmbedMs')?.modelBadge).toBe('ViT-B/16')
+    expect(tagGroup?.items.find(i => i.key === 'ramMs')?.modelBadge).toBe('Swin')
+
+    // 语义与多模态融合组
+    expect(semanticGroup?.items.find(i => i.key === 'bekkoEmbedMs')?.modelBadge).toBe('bekko-a8m')
+    expect(semanticGroup?.items.find(i => i.key === 'keybertMs')?.modelBadge).toBe('MMR')
+    expect(semanticGroup?.items.find(i => i.key === 'slotSummaryMs')?.modelBadge).toBe('SlotEngine')
+    expect(semanticGroup?.items.find(i => i.key === 'fusionMs')?.modelBadge).toBe('fused_tags')
+
+    // 画质与形态组
+    expect(qualityGroup?.items.find(i => i.key === 'aestheticMs')?.modelBadge).toBe('Aesthetic Predictor')
+    expect(qualityGroup?.items.find(i => i.key === 'watermarkMs')?.modelBadge).toBe('2D-FFT')
+  })
+
+  it('15. 同轴多环轨道构建完整覆盖 4 大业务组（含 semantic_fusion）', () => {
+    const res = computeGroupedMetrics(mockStage1, mockStage2, mockPhases, defaultFilter, t)
+    const tracks = buildCoaxialTracks(res, 'cpu', t)
+    const mainTrack = tracks.find(tr => tr.key === 'main_inner_track')
+    expect(mainTrack).toBeDefined()
+
+    // 主环切片应包含 4 大业务组的主切片
+    expect(mainTrack?.slices.some(s => s.key === 'stage2_content_main')).toBe(true)
+    expect(mainTrack?.slices.some(s => s.key === 'stage2_tag_group_main')).toBe(true)
+    expect(mainTrack?.slices.some(s => s.key === 'stage2_semantic_fusion_main')).toBe(true)
+    expect(mainTrack?.slices.some(s => s.key === 'stage2_quality_group_main')).toBe(true)
+
+    // 外环包含 semantic_fusion 子轨道
+    const semanticSubTracks = tracks.filter(tr => tr.key.startsWith('sub_semantic_fusion_'))
+    expect(semanticSubTracks.length).toBeGreaterThan(0)
   })
 })
 

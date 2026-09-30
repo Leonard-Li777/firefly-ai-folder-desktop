@@ -768,7 +768,6 @@ export function computeGroupedMetrics(
       }
     }
   }
-  }
 
   // ----------------------------------------------------
   // 3. 阶段 2 并发长尾瓶颈计算
@@ -926,8 +925,8 @@ export function buildCoaxialTracks(
   // 半径封顶保护: 极端多子任务时轨道可能突破 viewBox (50) 被裁切，
   // 超出上限后不再绘制外环，降级为仅图例展示
   const MAX_SUBTRACK_RADIUS = 44
-  let currentRadius = 28
   stage2Groups.forEach(g => {
+    let currentRadius = 28
     const angleInfo = groupAngleMap.get(g.id)
     if (!angleInfo || g.items.length <= 1) return
 
