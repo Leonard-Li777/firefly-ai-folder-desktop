@@ -336,6 +336,9 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
           const isCollapsed = filter.collapsedGroupIds.has(group.id)
           const isSubHidden = filter.hideSubItems.has(group.id)
           const hasSubItems = group.items.some(i => i.isSubItem)
+          // 生产模式下，视觉标签组、画质与形态组、语义与融合组的子项不允许展开
+          const DEV_ONLY_EXPANDABLE_GROUPS = new Set(['tag_group', 'quality_group', 'semantic_fusion'])
+          const canExpand = hasSubItems && (effectiveDevMode || !DEV_ONLY_EXPANDABLE_GROUPS.has(group.id))
 
           return (
             <div
@@ -345,7 +348,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
               {/* 分组标题行 */}
               <div className="flex items-center justify-between gap-1 text-xs">
                 <div className="flex items-center gap-1.5 min-w-0 text-left">
-                  {hasSubItems ? (
+                  {canExpand ? (
                     <button
                       type="button"
                       onClick={() => toggleGroupCollapse(group.id)}
@@ -433,8 +436,8 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                 </div>
               </div>
 
-              {/* 展开的子项树状列表 */}
-              {!isCollapsed && !isSubHidden && hasSubItems && (
+              {/* 展开的子项树状列表（生产模式下视觉标签组/画质与形态组/语义与融合组不渲染子项） */}
+              {!isCollapsed && !isSubHidden && canExpand && (
                 <div className="space-y-1 pl-4 pt-1 border-l border-border/40 ml-2">
                   {group.items.map(subItem => {
                     // 判断是否复用
