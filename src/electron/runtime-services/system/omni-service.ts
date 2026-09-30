@@ -400,6 +400,7 @@ export class OmniService {
   private maxRestartAttempts = 10
   private restartTimeout: NodeJS.Timeout | null = null
   private lastCoverDurationMs?: number
+  private coverDurationMap = new Map<string, number>()
 
   private constructor() {
     try {
@@ -1139,6 +1140,7 @@ export class OmniService {
       const durationHeader = res.headers.get('x-cover-duration-ms')
       const durationMs = durationHeader ? Number(durationHeader) : (Date.now() - tStart)
       this.lastCoverDurationMs = durationMs
+      this.coverDurationMap.set(path.resolve(filePath), durationMs)
       logger.debug(
         LogCategory.SYSTEM,
         `[OmniService] <<< GET /api/cover 响应成功 (${filePath}, 字节大小: ${buffer.length} B, 耗时: ${durationMs}ms)`
@@ -1164,8 +1166,19 @@ export class OmniService {
 
   /**
    * 获取最近一次由 Omni 引擎执行封面提取的物理耗时 (毫秒)
+   * 若指定 forFilePath，则精准返回该文件的耗时并即焚（防止后续未调用封面提取的文件污染），
+   * 若未指定，则降级返回全局 lastCoverDurationMs（兼容旧调用）。
    */
-  public getLastCoverDurationMs(): number | undefined {
+  public getLastCoverDurationMs(forFilePath?: string): number | undefined {
+    if (forFilePath) {
+      const resolved = path.resolve(forFilePath)
+      const duration = this.coverDurationMap.get(resolved)
+      if (duration !== undefined) {
+        this.coverDurationMap.delete(resolved)
+        return duration
+      }
+      return undefined
+    }
     return this.lastCoverDurationMs
   }
 

@@ -1555,7 +1555,7 @@ export class FileProcessor {
         ? (omniBm?.text_ms ?? (localTextMs || undefined))
         : undefined
       const stage2OcrMs = omniBm?.ocr_ms
-      const stage2ThumbMs = omniBm?.thumbnail_ms ?? omniService.getLastCoverDurationMs()
+      const stage2ThumbMs = omniBm?.thumbnail_ms ?? omniService.getLastCoverDurationMs(filePath)
 
       // 阶段 2 耗时为各项并行任务的最大耗时 (含标签多模态最大耗时)
       const calculatedMaxParallelTotalMs = Math.max(

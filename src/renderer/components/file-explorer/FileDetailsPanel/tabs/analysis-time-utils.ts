@@ -278,6 +278,7 @@ export function computeGroupedMetrics(
       const isSubItemsHidden = filter.hideSubItems.has('content')
       // Office 预转 PDF 作为串行前缀已独立成项，封面图渲染仅统计自身耗时
       const rawContentItems: SubtaskItem[] = [
+        // Magika 类型识别：在内容提取分支分发前串行执行，为后续分析提供确切类型识别
         {
           key: 'magikaMs',
           label: t('类型识别'),
@@ -290,6 +291,7 @@ export function computeGroupedMetrics(
           executionType: 'sync',
           weight: 21
         },
+        // Office 预转 PDF：针对 Office 格式的串行前置转换链路
         {
           key: 'officePrePdfMs',
           label: t('Office预转PDF'),
@@ -301,6 +303,7 @@ export function computeGroupedMetrics(
           executionType: 'sync',
           weight: 22
         },
+        // 物理流水线特性: AnyDoc 核心排版解析与文本/OCR并发执行
         {
           key: 'docParseMs',
           label: t('AnyDoc排版解析'),
@@ -475,6 +478,7 @@ export function computeGroupedMetrics(
         }
       }
 
+      // 物理流水线特性: clipEmbedMs 与 clipMutualMs 在同一任务内串行求和，与并行提取分支竞争
       // 父级 tagMs 耗时：如果原数据有 tagMs 优先，且保证 >= 关键串行路径及并发最大值
       const rawTagMs = getBenchmarkValue(contentBreakdown, 'tagMs')
       const embedMs = getBenchmarkValue(contentBreakdown, 'clipEmbedMs')
@@ -488,6 +492,7 @@ export function computeGroupedMetrics(
       if (effectiveTagDuration > 0 && !filter.hiddenKeys.has('tagMs')) {
         let finalTagItems: SubtaskItem[] = []
         if (isSubItemsHidden) {
+          // 仅保留父级汇总项（折叠模式）
           finalTagItems = [
             {
               key: 'tagMs',
@@ -539,14 +544,15 @@ export function computeGroupedMetrics(
     }
 
     // 2.3 语义与多模态融合组 (semantic_fusion)
+    // 物理流水线特性: 在底层 OmniTextEngine 与感知端点中，语义特征嵌入 -> 主题词抽取 -> 5W摘要命名 -> 多模态融合裁决具有严格的前后序依赖，构成完整的串行链，组耗时按累加和计算
     if (!filter.hiddenGroupIds.has('semantic_fusion')) {
       const isSubItemsHidden = filter.hideSubItems.has('semantic_fusion')
       const fusionSubItems: SubtaskItem[] = []
 
       const knownFusionKeys = [
         { key: 'bekkoEmbedMs', label: t('语义特征嵌入'), badge: 'bekko-a8m', color: '#8b5cf6', type: 'sync' as const, weight: 41 },
-        { key: 'keybertMs', label: t('主题词抽取'), badge: 'MMR', color: '#a855f7', type: 'async' as const, weight: 42 },
-        { key: 'slotSummaryMs', label: t('5W摘要重命名'), badge: 'SlotEngine', color: '#c084fc', type: 'async' as const, weight: 43 },
+        { key: 'keybertMs', label: t('主题词抽取'), badge: 'MMR', color: '#a855f7', type: 'sync' as const, weight: 42 },
+        { key: 'slotSummaryMs', label: t('5W摘要重命名'), badge: 'SlotEngine', color: '#c084fc', type: 'sync' as const, weight: 43 },
         { key: 'fusionMs', label: t('多模态融合裁决'), badge: 'fused_tags', color: '#6366f1', type: 'sync' as const, weight: 44 }
       ]
 
@@ -585,38 +591,32 @@ export function computeGroupedMetrics(
             groupId: 'semantic_fusion',
             parentKey: 'semantic_fusion',
             isSubItem: true,
-            executionType: 'async',
+            executionType: 'sync',
             weight: 45 + sfPaletteIdx
           })
         }
       }
 
       if (fusionSubItems.length > 0) {
-        const fusionMax = Math.max(...fusionSubItems.map(it => it.duration), 0)
+        // 串行链路按子任务累加和计算真实物理执行耗时
+        const fusionTotalDuration = fusionSubItems.reduce((acc, it) => acc + it.duration, 0)
         let finalFusionItems: SubtaskItem[] = []
         if (isSubItemsHidden) {
+          // 仅保留父级汇总项（折叠模式）
           finalFusionItems = [
             {
               key: 'semantic_fusion_total',
               label: t('语义与融合汇总'),
-              duration: fusionMax,
+              duration: fusionTotalDuration,
               color: '#8b5cf6',
               groupId: 'semantic_fusion',
               isSubItem: false,
-              executionType: 'async',
+              executionType: 'sync',
               weight: 40
             }
           ]
         } else {
           fusionSubItems.sort((a, b) => a.weight - b.weight)
-          if (fusionSubItems.length > 1) {
-            const maxFussionDur = Math.max(...fusionSubItems.map(it => it.duration))
-            fusionSubItems.forEach(it => {
-              if (it.duration === maxFussionDur && maxFussionDur > 0) {
-                it.isBottleneck = true
-              }
-            })
-          }
           finalFusionItems = fusionSubItems
         }
 
@@ -624,8 +624,8 @@ export function computeGroupedMetrics(
           id: 'semantic_fusion',
           label: t('语义与融合组'),
           color: '#8b5cf6',
-          executionType: 'async',
-          duration: fusionMax,
+          executionType: 'sync',
+          duration: fusionTotalDuration,
           items: finalFusionItems
         })
       }
@@ -728,6 +728,7 @@ export function computeGroupedMetrics(
     if (!filter.hiddenGroupIds.has('other')) {
       const otherSubItems: SubtaskItem[] = []
 
+      // 动态增项扫描: 经 classifySubtaskKey 兜底进入扩展算子组，确保未来任意新增算子均可自适应呈现
       let oPaletteIdx = 5
       for (const [rawKey, val] of Object.entries(contentBreakdown)) {
         if (!val || typeof val !== 'number' || val <= 0) continue

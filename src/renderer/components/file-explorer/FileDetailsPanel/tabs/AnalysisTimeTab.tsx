@@ -118,11 +118,8 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)
   const stats = rawStats as AnalysisStats
 
-  // 环境检测与开发者视图模式 (生产环境严格锁定 false，严禁泄露任何调试入口)
-  const isDevEnvironment = Boolean(
-    (import.meta as any)?.env?.DEV ||
-      (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production')
-  )
+  // 环境检测与开发者视图模式 (生产环境由编译期常量 __IS_DEV__ 强制锁定 false，严禁泄露任何调试入口与瓶颈标签)
+  const isDevEnvironment = Boolean(typeof __IS_DEV__ !== 'undefined' && __IS_DEV__)
   const [isDevMode, setIsDevMode] = useState(false)
   const effectiveDevMode = isDevEnvironment && isDevMode
 
@@ -391,8 +388,8 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {/* 长尾瓶颈标记 */}
-                  {group.isBottleneck && (
+                  {/* 长尾瓶颈标记 (仅开发调试模式下生效，生产环境严格不渲染) */}
+                  {effectiveDevMode && group.isBottleneck && (
                     <span className="text-[10px] px-1 py-0.2 bg-rose-500/10 text-rose-500 rounded border border-rose-500/20 font-bold animate-pulse">
                       ⚡ {t('瓶颈')}
                     </span>
@@ -490,7 +487,8 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                         </div>
 
                         <div className="flex items-center gap-1.5 shrink-0">
-                          {subItem.isBottleneck && (
+                          {/* 子项长尾标记 (仅开发调试模式下生效，生产环境严格不渲染) */}
+                          {effectiveDevMode && subItem.isBottleneck && (
                             <span className="text-[9px] px-1 bg-rose-500/10 text-rose-400 rounded">
                               {t('长尾')}
                             </span>
@@ -771,7 +769,7 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
               title={t('切换开发模式调试视图 (显示底层模型与算子长尾瓶颈)')}
             >
               <span>🔬</span>
-              <span>{t('Dev模式')}</span>
+              <span>{`Dev${t('模式')}`}</span>
             </button>
           )}
 
