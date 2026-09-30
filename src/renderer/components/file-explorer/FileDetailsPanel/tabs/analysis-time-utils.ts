@@ -278,7 +278,7 @@ export function computeGroupedMetrics(
   if (contentBreakdown) {
     // 2.1 基础内容组 (content)
     if (!filter.hiddenGroupIds.has('content')) {
-      const isSubItemsHidden = filter.hideSubItems.has('content')
+      const isSubItemsHidden = filter.hideSubItems.has('content') || filter.collapsedGroupIds?.has('content')
       // Office 预转 PDF 作为串行前缀已独立成项，封面图渲染仅统计自身耗时
       const rawContentItems: SubtaskItem[] = [
         // Magika 类型识别：在内容提取分支分发前串行执行，为后续分析提供确切类型识别
@@ -425,7 +425,7 @@ export function computeGroupedMetrics(
 
     // 2.2 视觉标签组 (tag_group)
     if (!filter.hiddenGroupIds.has('tag_group')) {
-      const isSubItemsHidden = filter.hideSubItems.has('tag_group')
+      const isSubItemsHidden = filter.hideSubItems.has('tag_group') || filter.collapsedGroupIds?.has('tag_group')
       const tagSubItems: SubtaskItem[] = []
 
       // 已知静态标签生成子项
@@ -551,7 +551,7 @@ export function computeGroupedMetrics(
     // 2.3 语义与多模态融合组 (semantic_fusion)
     // 物理流水线特性: 在底层 OmniTextEngine 与感知端点中，语义特征嵌入 -> 主题词抽取 -> 5W摘要命名 -> 多模态融合裁决具有严格的前后序依赖，构成完整的串行链，组耗时按累加和计算
     if (!filter.hiddenGroupIds.has('semantic_fusion')) {
-      const isSubItemsHidden = filter.hideSubItems.has('semantic_fusion')
+      const isSubItemsHidden = filter.hideSubItems.has('semantic_fusion') || filter.collapsedGroupIds?.has('semantic_fusion')
       const fusionSubItems: SubtaskItem[] = []
 
       const knownFusionKeys = [
@@ -638,7 +638,7 @@ export function computeGroupedMetrics(
 
     // 2.4 画质与形态组 (quality_group)
     if (!filter.hiddenGroupIds.has('quality_group')) {
-      const isSubItemsHidden = filter.hideSubItems.has('quality_group')
+      const isSubItemsHidden = filter.hideSubItems.has('quality_group') || filter.collapsedGroupIds?.has('quality_group')
       const qualitySubItems: SubtaskItem[] = []
 
       const knownQualityKeys = [

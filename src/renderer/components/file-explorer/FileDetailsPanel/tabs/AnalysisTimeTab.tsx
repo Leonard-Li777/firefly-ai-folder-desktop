@@ -235,6 +235,29 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
     stats.contentExtractionBreakdown ||
     stats.performance?.fresh?.contentExtractionBreakdown
 
+  // 生产模式下，视觉标签组、画质与形态组、语义与融合组的底层模型子项严禁展开与展示
+  const DEV_ONLY_EXPANDABLE_GROUPS = useMemo(
+    () => new Set(['tag_group', 'quality_group', 'semantic_fusion']),
+    []
+  )
+
+  // 计算生效的过滤配置：
+  // 1. UI 折叠的组在计算指标时同步视为隐藏细项（仅保留父级汇总，隐藏外环同轴弧，确保“不显示的项在饼图里也不显示”）
+  // 2. 生产模式下画质与形态组、语义与融合组、视觉标签组强制隐藏细项，严禁展开与在外环展示底层模型
+  const effectiveFilter = useMemo<FilterConfig>(() => {
+    const nextHideSub = new Set(filter.hideSubItems)
+    filter.collapsedGroupIds.forEach(id => nextHideSub.add(id))
+
+    if (!effectiveDevMode) {
+      DEV_ONLY_EXPANDABLE_GROUPS.forEach(id => nextHideSub.add(id))
+    }
+
+    return {
+      ...filter,
+      hideSubItems: nextHideSub
+    }
+  }, [filter, effectiveDevMode, DEV_ONLY_EXPANDABLE_GROUPS])
+
   // 3. 执行物理分组与动态开闭原则指标计算
   const freshMetrics = useMemo(
     () =>
@@ -242,10 +265,10 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         freshStage1Breakdown,
         freshBreakdown,
         fresh.phases || {},
-        filter,
+        effectiveFilter,
         t
       ),
-    [freshStage1Breakdown, freshBreakdown, fresh.phases, filter, activeLanguage]
+    [freshStage1Breakdown, freshBreakdown, fresh.phases, effectiveFilter, activeLanguage]
   )
 
   const archiveMetrics = useMemo(
@@ -254,10 +277,10 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
         archiveStage1Breakdown,
         archiveBreakdown,
         archive.phases || {},
-        filter,
+        effectiveFilter,
         t
       ),
-    [archiveStage1Breakdown, archiveBreakdown, archive.phases, filter, activeLanguage]
+    [archiveStage1Breakdown, archiveBreakdown, archive.phases, effectiveFilter, activeLanguage]
   )
 
   // 挂钟物理耗时：发生过滤时实时联动为当前可见项的物理耗时，未过滤时展示完整挂钟耗时
@@ -296,19 +319,28 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
   const hasContentGroup = availableGroupIds.has('content')
   const hasSemanticFusionGroup = availableGroupIds.has('semantic_fusion')
 
+  // 在生产模式下，不允许展开的分组不计入 groupsWithSubItems，确保顶部批量开关不会误操作受限组
+  const expandableGroupsWithSubItems = useMemo(() => {
+    if (effectiveDevMode) {
+      return groupsWithSubItems
+    }
+    return groupsWithSubItems.filter(id => !DEV_ONLY_EXPANDABLE_GROUPS.has(id))
+  }, [groupsWithSubItems, effectiveDevMode, DEV_ONLY_EXPANDABLE_GROUPS])
+
   // 检查当前是否所有可用且包含子项的分组均已隐藏细项
   const areAllSubItemsHidden =
-    groupsWithSubItems.length > 0 && groupsWithSubItems.every(id => filter.hideSubItems.has(id))
+    expandableGroupsWithSubItems.length > 0 &&
+    expandableGroupsWithSubItems.every(id => filter.hideSubItems.has(id) || filter.collapsedGroupIds.has(id))
 
   const toggleAllSubItems = () => {
     setFilter(prev => {
       const nextHideSub = new Set(prev.hideSubItems)
       if (areAllSubItemsHidden) {
         // 全部展开各组细项
-        groupsWithSubItems.forEach(id => nextHideSub.delete(id))
+        expandableGroupsWithSubItems.forEach(id => nextHideSub.delete(id))
       } else {
         // 全部隐藏各组细项
-        groupsWithSubItems.forEach(id => nextHideSub.add(id))
+        expandableGroupsWithSubItems.forEach(id => nextHideSub.add(id))
       }
       return { ...prev, hideSubItems: nextHideSub }
     })
@@ -334,10 +366,9 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
       <div className="w-full flex-1 space-y-2 text-left">
         {metrics.groups.map(group => {
           const isCollapsed = filter.collapsedGroupIds.has(group.id)
-          const isSubHidden = filter.hideSubItems.has(group.id)
+          const isSubHidden = effectiveFilter.hideSubItems.has(group.id)
           const hasSubItems = group.items.some(i => i.isSubItem)
           // 生产模式下，视觉标签组、画质与形态组、语义与融合组的子项不允许展开
-          const DEV_ONLY_EXPANDABLE_GROUPS = new Set(['tag_group', 'quality_group', 'semantic_fusion'])
           const canExpand = hasSubItems && (effectiveDevMode || !DEV_ONLY_EXPANDABLE_GROUPS.has(group.id))
 
           return (
@@ -407,8 +438,8 @@ export const AnalysisTimeTab: React.FC<AnalysisTimeTabProps> = ({
                     %)
                   </span>
 
-                  {/* 组内子项开关 (仅看父级 vs 展开子项) */}
-                  {hasSubItems && (
+                  {/* 组内子项开关 (仅看父级 vs 展开子项，生产模式受限组不展示) */}
+                  {canExpand && (
                     <button
                       type="button"
                       onClick={() => toggleSubItemsVisibility(group.id)}
