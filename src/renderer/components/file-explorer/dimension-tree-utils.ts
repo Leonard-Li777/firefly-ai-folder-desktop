@@ -261,10 +261,17 @@ export function buildDimensionTree(
           childTags
         } as DimensionTreeNode
       })
-      .filter(group => {
+      .filter((group, idx, arr) => {
         // 对于根级，如果其下没有子标签，则根级数据不应输出，也不应展示
         if (lvl === 0 && (!group.tags || group.tags.length === 0)) {
           return false
+        }
+        // 根级同名去重：相同名称的维度组仅保留第一个主干维度，彻底杜绝根级重复
+        if (lvl === 0 && group.name) {
+          const firstIdx = arr.findIndex(g => g.name === group.name)
+          if (firstIdx !== -1 && firstIdx !== idx) {
+            return false
+          }
         }
         return true
       })

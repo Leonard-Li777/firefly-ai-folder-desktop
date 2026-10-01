@@ -525,10 +525,20 @@ export class TagTreeQuery {
             }
           })
         : []
+      const seenDimNames = new Set<string>()
+      for (const g of groups) {
+        if (g.name) seenDimNames.add(g.name)
+      }
+
       for (const og of omniGroups) {
         const code = og.code
         if (!code || seenDimCodes.has(code)) continue
+        // 根级名称去重：杜绝出现同名重复的根级维度（以先入的受控/主库主干为准）
+        if (og.name && seenDimNames.has(og.name)) continue
+
         seenDimCodes.add(code)
+        if (og.name) seenDimNames.add(og.name)
+
         let tags = og.tags || []
         if (excludeExtensionDimension) {
           tags = tags.filter(t => !/扩展名|Extension/i.test(t.tagValue) && !/扩展名|Extension/i.test(t.code || ''))

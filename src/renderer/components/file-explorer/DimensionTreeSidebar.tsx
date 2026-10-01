@@ -862,10 +862,21 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     [isExportMode, toggleTagSelection]
   )
 
-  // 3. 递归构建维度树（严格过滤无子标签的根级组）
+  const handleVisibleAndHiddenTags = useCallback(
+    (group: DimensionGroup, childTags?: Map<string, DimensionTreeNode[]>) => {
+      return getVisibleAndHiddenTags(group, showEmptyTags, childTags)
+    },
+    [showEmptyTags]
+  )
+
+  // 3. 递归构建维度树（严格过滤在当前 showEmptyTags 模式下无有效子标签的根级组）
   const visibleGroups = useMemo(() => {
-    return buildDimensionTree(dimensionGroups).filter(group => group.tags && group.tags.length > 0)
-  }, [dimensionGroups])
+    const rawTree = buildDimensionTree(dimensionGroups)
+    return rawTree.filter(group => {
+      const { tagsToShow } = handleVisibleAndHiddenTags(group, group.childTags)
+      return tagsToShow && tagsToShow.length > 0
+    })
+  }, [dimensionGroups, handleVisibleAndHiddenTags])
 
   // 4. 自动清理不在当前维度树中的无效/陈旧幽灵标签键
   // 注意：此处不排除折叠的维度组（折叠只是临时 UI 状态，不代表标签失效），
@@ -999,12 +1010,6 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     }
   }, [visibleGroups, selectedTags, storageKey, collapsedDimensionGroups])
 
-  const handleVisibleAndHiddenTags = useCallback(
-    (group: DimensionGroup, childTags?: Map<string, DimensionTreeNode[]>) => {
-      return getVisibleAndHiddenTags(group, showEmptyTags, childTags)
-    },
-    [showEmptyTags]
-  )
 
   const [collapsedTags, setCollapsedTags] = useState<Set<string>>(() => new Set())
   const toggleTagExpand = useCallback((tagValue: string) => {
@@ -1168,8 +1173,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     maxScaleDepth
   ])
 
-  // 精准虚拟滚动计算：Header 36px, Tag 26px
-  const HEADER_HEIGHT = 36
+  // 精准虚拟滚动计算：Header 40px (32px + mb-2 8px), Tag 26px
+  const HEADER_HEIGHT = 40
   const TAG_HEIGHT = 26
 
   const { rowOffsets, totalContentHeight } = useMemo(() => {
@@ -1191,9 +1196,14 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       return { startIndex: 0, endIndex: 0, paddingTop: 0, paddingBottom: 0 }
     }
 
+    // 当列表总行数较少 (<= 150 行) 时，全量渲染，零虚拟切片，确保滚动平滑且 100% 杜绝任何白屏或子标签丢损
+    if (count <= 150) {
+      return { startIndex: 0, endIndex: count, paddingTop: 0, paddingBottom: 0 }
+    }
+
     // 关键保护：回滚到顶部（scrollTop <= 5）时绝对强制重置到索引 0
     if (scrollTop <= 5) {
-      const end = Math.min(count, Math.ceil(containerHeight / TAG_HEIGHT) + 10)
+      const end = Math.min(count, Math.ceil(containerHeight / TAG_HEIGHT) + 20)
       const top = 0
       const bottom = Math.max(0, totalContentHeight - rowOffsets[end])
       return { startIndex: 0, endIndex: end, paddingTop: top, paddingBottom: bottom }
@@ -1213,10 +1223,10 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       }
     }
 
-    // 向上缓冲 5 行
-    const start = Math.max(0, target - 5)
+    // 向上充分缓冲 15 行，杜绝向上滚动时的视觉残缺
+    const start = Math.max(0, target - 15)
 
-    // 二分查找视口底部对应索引，加上向下缓冲 8 行
+    // 二分查找视口底部对应索引，加上向下充分缓冲 20 行
     const viewBottom = scrollTop + containerHeight
     let endTarget = count
     low = start
@@ -1230,7 +1240,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         low = mid + 1
       }
     }
-    const end = Math.min(count, endTarget + 8)
+    const end = Math.min(count, endTarget + 20)
 
     const top = rowOffsets[start]
     const bottom = Math.max(0, totalContentHeight - rowOffsets[end])
