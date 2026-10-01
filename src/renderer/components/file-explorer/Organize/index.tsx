@@ -197,10 +197,13 @@ export const Organize: React.FC = () => {
   const hasClassifiedInTree = useMemo(() => {
     const tree = finalTree?.length ? finalTree : draftTree
     if (!Array.isArray(tree) || tree.length === 0) return false
+    const UNCLASSIFIED_NAME = '未归类'
+    const UNCLASSIFIED_ALIAS = '未分类'
+
     const checkNode = (nodes: any[]): boolean => {
       for (const node of nodes) {
         const isUnclass =
-          node.name === '未归类' || node.name === '未分类' || node.name === 'Unclassified'
+          node.name === UNCLASSIFIED_NAME || node.name === UNCLASSIFIED_ALIAS || node.name === 'Unclassified'
         if (
           !isUnclass &&
           ((node.files && node.files.length > 0) || (node.fileCount && node.fileCount > 0))

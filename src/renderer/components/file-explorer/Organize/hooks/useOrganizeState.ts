@@ -16,6 +16,8 @@ import { useTierStore } from '../../../../stores/tier-store'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { useOrganizeStore } from '../../../../stores/organize-store'
 
+const UNCLASSIFIED_NAME = '未归类'
+
 import { Stage, OrganizeMode, OrganizeOptions, ProgressInfo } from '../types'
 import {
   convertTreeForBackend,
@@ -337,7 +339,7 @@ export function useOrganizeState() {
       const collectClassified = (nodes: VirtualDirectoryNode[]) => {
         for (const node of nodes) {
           const isUnclass =
-            node.name === '未归类' || node.name === t('未归类') || node.name === 'Unclassified'
+            node.name === UNCLASSIFIED_NAME || node.name === t(UNCLASSIFIED_NAME) || node.name === 'Unclassified'
           if (!isUnclass && Array.isArray(node.files)) {
             for (const f of node.files) {
               const keys = getAllFileKeys(f)
@@ -456,7 +458,7 @@ export function useOrganizeState() {
         let tree = Array.isArray(res) ? res : res?.tree || []
 
         let unclassifiedNode = tree.find(
-          (n: any) => n.name === '未归类' || n.name === t('未归类') || n.name === 'Unclassified'
+          (n: any) => n.name === UNCLASSIFIED_NAME || n.name === t(UNCLASSIFIED_NAME) || n.name === 'Unclassified'
         )
         if (!unclassifiedNode) {
           unclassifiedNode = {
@@ -2042,7 +2044,7 @@ export function useOrganizeState() {
 
         if (formattedDeletedFiles.length > 0) {
           let unclassifiedNode = newTree.find(
-            n => n.name === '未归类' || n.name === t('未归类') || n.name === 'Unclassified'
+            n => n.name === UNCLASSIFIED_NAME || n.name === t(UNCLASSIFIED_NAME) || n.name === 'Unclassified'
           )
           if (!unclassifiedNode) {
             unclassifiedNode = {

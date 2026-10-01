@@ -11,8 +11,11 @@ import {
   isFileTypeDimension,
   isRuleSubdivisionDimension,
   isPanDimension as checkIsPanDimension,
-  filterDimensionTags
+  filterDimensionTags,
+  DIMENSION_CODES
 } from '@firefly/shared'
+
+const CONTENT_TAGS_DIM_NAME = '内容标签'
 import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
 
@@ -995,8 +998,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
     // 泛维度标签列：将“内容标签”维度（ID=28 或名称包含“内容标签”）放置到最后
     pan.sort((a, b) => {
-      const isAContent = a.id === 28 || a.name === '内容标签' || a.name?.includes('内容标签')
-      const isBContent = b.id === 28 || b.name === '内容标签' || b.name?.includes('内容标签')
+      const isAContent = a.id === 28 || (a as any).code === DIMENSION_CODES.CONTENT_TAGS || a.name === CONTENT_TAGS_DIM_NAME || a.name?.includes(CONTENT_TAGS_DIM_NAME)
+      const isBContent = b.id === 28 || (b as any).code === DIMENSION_CODES.CONTENT_TAGS || b.name === CONTENT_TAGS_DIM_NAME || b.name?.includes(CONTENT_TAGS_DIM_NAME)
       if (isAContent && !isBContent) return 1
       if (!isAContent && isBContent) return -1
       return 0

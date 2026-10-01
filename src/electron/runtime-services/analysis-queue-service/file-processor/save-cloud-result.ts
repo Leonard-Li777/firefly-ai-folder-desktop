@@ -13,9 +13,14 @@ import {
   isPanDimension,
   insertTagToDb,
   isTagProvenanceGroup,
-  type TagProvenanceGroup
+  type TagProvenanceGroup,
+  CONTROLLED_CONCEPTS,
+  DIMENSION_CODES,
+  getCanonicalConceptName
 } from '@firefly/shared'
 import { t } from '@app/languages'
+
+const CONTENT_TAGS_NAME = getCanonicalConceptName(CONTROLLED_CONCEPTS['内容标签']) || '内容标签'
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { databaseService } from '../../database/database-service'
 import { magikaService } from '../../system/magika-service'
@@ -309,7 +314,7 @@ export async function saveCloudResult(
         // 内容标签维度作为兜底路由目标（受控域契约，优先动态命中，兜底 dim.content）
         let contentDimCode = 'dim.content'
         for (const row of allDimRows) {
-          if (row.name === '内容标签' || row.name === t('内容标签')) {
+          if (row.code === DIMENSION_CODES.CONTENT_TAGS || row.name === CONTENT_TAGS_NAME || row.name === t(CONTENT_TAGS_NAME)) {
             contentDimCode = String(row.id)
             break
           }

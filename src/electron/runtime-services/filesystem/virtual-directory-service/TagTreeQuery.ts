@@ -468,6 +468,11 @@ export class TagTreeQuery {
           })
         }
 
+        // 对于根级，如果其下没有子标签，则根级数据不应输出，也不应展示
+        if (dimensionTags.length === 0) {
+          continue
+        }
+
         groups.push({
           id: legacyNumericId,
           name: aliasResolver(root.code, root.name),
@@ -482,8 +487,8 @@ export class TagTreeQuery {
       // 6. 合并 Omni 受控分类树（builtin / omw 不再入库主库，走 HTTP API 拉取树结构）
       const treeRes = await omniClient.getTaxonomyTree(locale)
       const omniGroups: Array<Omit<DimensionGroup, 'tags'> & { tags: DimensionTag[] }> = treeRes?.rootNodes
-        ? treeRes.rootNodes.map(root => {
-            const id = 0
+        ? treeRes.rootNodes.map((root, rootIdx) => {
+            const id = 10000 + rootIdx
             const tags: DimensionTag[] = []
             const collect = (node: OmniTaxonomyNode, parentCode: string, level: number) => {
               for (const child of node.children || []) {
@@ -498,7 +503,9 @@ export class TagTreeQuery {
                   level,
                   code,
                   viaParentCode: parentCode || root.code,
-                  isMultiSelect: false
+                  isMultiSelect: false,
+                  order: child.sortOrder,
+                  meta: { sort_order: child.sortOrder, order: child.sortOrder }
                 })
                 collect(child, code, level + 1)
               }
@@ -511,9 +518,10 @@ export class TagTreeQuery {
               tags,
               code: root.code,
               order: root.sortOrder,
+              sort_order: root.sortOrder,
               isMultiSelect: false,
-              meta: { source: root.source || 'builtin' },
-              metadata: { source: root.source || 'builtin' }
+              meta: { source: root.source || 'builtin', order: root.sortOrder, sort_order: root.sortOrder },
+              metadata: { source: root.source || 'builtin', order: root.sortOrder, sort_order: root.sortOrder }
             }
           })
         : []
@@ -528,6 +536,8 @@ export class TagTreeQuery {
         if (removeEmptyTags && !includeAllPresetTags) {
           tags = tags.filter(t => t.fileCount > 0)
         }
+        // 对于根级，如果其下没有子标签，则根级数据不应输出，也不应展示
+        if (tags.length === 0) continue
         groups.push({ ...og, tags })
       }
 

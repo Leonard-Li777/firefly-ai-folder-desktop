@@ -1,4 +1,6 @@
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, CONTROLLED_CONCEPTS, DIMENSION_CODES, getCanonicalConceptName } from '@firefly/shared'
+
+const FILE_QUALITY_NAME = getCanonicalConceptName(CONTROLLED_CONCEPTS['文件质量']) || '文件质量'
 import path from 'node:path'
 import { databaseService } from '../../database/database-service'
 import { virtualDirectoryService } from './VirtualDirectoryService'
@@ -147,8 +149,9 @@ export async function generateNameAndStrategyCandidates(
       const allTags: Array<{ name: string; fileCount: number }> = []
       for (const g of groups) {
         if (
-          g.name === '文件质量' ||
-          g.name.toLowerCase() === 'quality' ||
+          (g.code && (g.code === DIMENSION_CODES.DOCUMENT_QUALITY || g.code === DIMENSION_CODES.FILE_QUALITY)) ||
+          g.name === FILE_QUALITY_NAME ||
+          g.name?.toLowerCase() === 'quality' ||
           String(g.id) === 'file_quality' ||
           String(g.id) === 'quality'
         ) {

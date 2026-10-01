@@ -99,6 +99,11 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
     const isCollapsed = collapsedDimensionGroups.has(node.id)
     const isTopLevel = node.level === 0
 
+    // 对于根级，如果其下没有子标签，则根级数据不应输出，也不应展示
+    if (isTopLevel && tagsToShow.length === 0) {
+      return null
+    }
+
     return (
       <div key={`${node.id}-${parentTagValue || 'root'}`} className="dimension-group relative">
         {isTopLevel && (
@@ -590,6 +595,28 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   )
   const [currentTag, setCurrentTag] = useState<SelectedTag | null>(null)
 
+  // 标签树层级深度刻度状态 (1~10 刻度，ADR-0034 §4 推荐默认 3 级)
+  const [maxScaleDepth, setMaxScaleDepth] = useState<number>(() => {
+    if (storageKey) {
+      try {
+        const saved = localStorage.getItem(`${storageKey}_maxScaleDepth`)
+        if (saved) {
+          const val = Number(saved)
+          if (val >= 1 && val <= 10) return val
+        }
+      } catch {}
+    }
+    return 3
+  })
+
+  useEffect(() => {
+    if (storageKey) {
+      try {
+        localStorage.setItem(`${storageKey}_maxScaleDepth`, String(maxScaleDepth))
+      } catch {}
+    }
+  }, [storageKey, maxScaleDepth])
+
   const onSelectionChangeRef = useRef(onSelectionChange)
   useEffect(() => {
     onSelectionChangeRef.current = onSelectionChange
@@ -835,9 +862,9 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     [isExportMode, toggleTagSelection]
   )
 
-  // 3. 递归构建维度树
+  // 3. 递归构建维度树（严格过滤无子标签的根级组）
   const visibleGroups = useMemo(() => {
-    return buildDimensionTree(dimensionGroups)
+    return buildDimensionTree(dimensionGroups).filter(group => group.tags && group.tags.length > 0)
   }, [dimensionGroups])
 
   // 4. 自动清理不在当前维度树中的无效/陈旧幽灵标签键
@@ -1031,7 +1058,18 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       const isCollapsed = collapsedDimensionGroups.has(node.id)
       const isTopLevel = node.level === 0
 
+      // 与 getAllKeys（全选）共用同一份标签解析口径，确保选中态 key 集合完全一致
+      const tagsToUse = resolveTagsToUse(node, parentTagValue)
+
+      const { tagsToShow } = handleVisibleAndHiddenTags(
+        { ...node, tags: tagsToUse },
+        node.childTags
+      )
+
       if (isTopLevel) {
+        // 对于根级，如果其下没有子标签，则根级数据不应输出，也不应展示
+        if (tagsToShow.length === 0) return
+
         rows.push({
           id: `header-${node.id}`,
           type: 'header',
@@ -1041,14 +1079,6 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         })
         if (isCollapsed) return
       }
-
-      // 与 getAllKeys（全选）共用同一份标签解析口径，确保选中态 key 集合完全一致
-      const tagsToUse = resolveTagsToUse(node, parentTagValue)
-
-      const { tagsToShow } = handleVisibleAndHiddenTags(
-        { ...node, tags: tagsToUse },
-        node.childTags
-      )
 
       tagsToShow.forEach((tag, index) => {
         const isSelected = isTagSelected(tag.dimensionId, tag.tagValue, parentTagValue)
@@ -1078,23 +1108,48 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         const isTagExpanded = !collapsedTags.has(tag.tagValue)
         const currentChain = ancestorChain ? [...ancestorChain, tag.tagValue] : [tag.tagValue]
 
+        // 穿透提升计算 (ADR-0034 §4)：若深度达到刻度上限 (depth + 1 >= maxScaleDepth)，自动穿透汇聚所有更深层子后代的文件计数
+        let effectiveFileCount = tag.fileCount
+        if (hasChildDimensions && depth + 1 >= maxScaleDepth && childDimensions) {
+          const sumDescendantCount = (nodes: DimensionTreeNode[]): number => {
+            let total = 0
+            for (const cn of nodes) {
+              if (cn.tags) {
+                for (const ct of cn.tags) {
+                  total += ct.fileCount || 0
+                }
+              }
+              if (cn.childTags) {
+                for (const subList of cn.childTags.values()) {
+                  total += sumDescendantCount(subList)
+                }
+              }
+            }
+            return total
+          }
+          effectiveFileCount += sumDescendantCount(childDimensions)
+        }
+
+        const effectiveTag =
+          effectiveFileCount !== tag.fileCount ? { ...tag, fileCount: effectiveFileCount } : tag
+
         const rowId = `tag-${depth}-${currentChain.join('/')}-${tag.dimensionId}-${tag.tagValue}`
         rows.push({
           id: rowId,
           type: 'tag',
           node,
-          tag,
+          tag: effectiveTag,
           parentTagValue,
           ancestorChain: currentChain,
           isSelected,
-          isDisabled,
-          hasChildDimensions,
+          isDisabled: effectiveTag.fileCount === 0,
+          hasChildDimensions: hasChildDimensions && depth + 1 < maxScaleDepth,
           isTagExpanded,
           depth,
           isLastInGroup: index === tagsToShow.length - 1
         })
 
-        if (hasChildDimensions && isTagExpanded) {
+        if (hasChildDimensions && isTagExpanded && depth + 1 < maxScaleDepth) {
           childDimensions.forEach(childNode => {
             traverse(childNode, tag.tagValue, currentChain, depth + 1)
           })
@@ -1109,7 +1164,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     collapsedDimensionGroups,
     collapsedTags,
     isTagSelected,
-    handleVisibleAndHiddenTags
+    handleVisibleAndHiddenTags,
+    maxScaleDepth
   ])
 
   // 精准虚拟滚动计算：Header 36px, Tag 26px
@@ -1198,6 +1254,29 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
+      {/* 标签树层级深度刻度滑块 (1~10 刻度与穿透提升，ADR-0034 §4) */}
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/50 bg-muted/15 shrink-0 text-xs text-muted-foreground select-none">
+        <div className="flex items-center gap-1 min-w-0">
+          <MaterialIcon icon="tune" className="text-xs text-primary" />
+          <span className="text-[11px] font-medium text-foreground/80">{t('层级深度')}</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary font-bold">
+            {maxScaleDepth}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 flex-1 max-w-[100px] ml-2">
+          <input
+            type="range"
+            min={1}
+            max={10}
+            step={1}
+            value={maxScaleDepth}
+            onChange={e => setMaxScaleDepth(Number(e.target.value))}
+            className="w-full h-1 bg-muted-foreground/25 rounded-lg appearance-none cursor-pointer accent-primary"
+            title={t('拖动调整标签树显示深度 (1~10 级)')}
+          />
+        </div>
+      </div>
+
       {showSelectAll && (
         <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/20 shrink-0">
           <div className="flex items-center gap-1">

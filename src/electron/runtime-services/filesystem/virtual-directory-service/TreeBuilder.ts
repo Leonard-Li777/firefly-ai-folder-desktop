@@ -1,5 +1,7 @@
 import { VirtualDirectoryNode, VirtualDirectoryFileRow } from '@firefly/types'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, CONTROLLED_CONCEPTS, getCanonicalConceptName } from '@firefly/shared'
+
+const UNCLASSIFIED_NAME = getCanonicalConceptName(CONTROLLED_CONCEPTS['未归类']) || '未归类'
 
 export interface VirtualDirectoryProvider {
   listFiles(
@@ -74,10 +76,10 @@ export class TreeBuilder {
     // 将根级文件（如未归类或单组件路径文件）也组装合并入树节点中
     const resultTree = [...root.subdirectories]
     if (root.files.length > 0) {
-      let unclassifiedNode = resultTree.find(n => n.name === '未归类')
+      let unclassifiedNode = resultTree.find(n => n.name === UNCLASSIFIED_NAME)
       if (!unclassifiedNode) {
         unclassifiedNode = {
-          name: '未归类',
+          name: UNCLASSIFIED_NAME,
           parent: null,
           subdirectories: [],
           files: [],

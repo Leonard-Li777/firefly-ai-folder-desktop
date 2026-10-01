@@ -261,6 +261,13 @@ export function buildDimensionTree(
           childTags
         } as DimensionTreeNode
       })
+      .filter(group => {
+        // 对于根级，如果其下没有子标签，则根级数据不应输出，也不应展示
+        if (lvl === 0 && (!group.tags || group.tags.length === 0)) {
+          return false
+        }
+        return true
+      })
       .sort((a, b) => {
         if (lvl === 0) {
           // 第一层主干节点：严格执行三级动态权重排序

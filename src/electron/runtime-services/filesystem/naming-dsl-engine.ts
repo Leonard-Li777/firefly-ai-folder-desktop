@@ -363,15 +363,21 @@ export class NamingDSLEngine {
       const rawKey = String(metaKey).trim()
       const key = rawKey.toLowerCase()
 
-      const localizedRes = t('分辨率').toLowerCase()
-      const localizedDur = t('时长').toLowerCase()
-      const localizedPages = t('页数').toLowerCase()
-      const localizedCodec = t('编码').toLowerCase()
-      const localizedCodecFormat = t('编码格式').toLowerCase()
+      const SLOT_RESOLUTION = '分辨率'
+      const SLOT_DURATION = '时长'
+      const SLOT_PAGES = '页数'
+      const SLOT_CODEC = '编码'
+      const SLOT_CODEC_FORMAT = '编码格式'
+
+      const localizedRes = t(SLOT_RESOLUTION).toLowerCase()
+      const localizedDur = t(SLOT_DURATION).toLowerCase()
+      const localizedPages = t(SLOT_PAGES).toLowerCase()
+      const localizedCodec = t(SLOT_CODEC).toLowerCase()
+      const localizedCodecFormat = t(SLOT_CODEC_FORMAT).toLowerCase()
 
       // 1. 分辨率 (Resolution)
       if (
-        key === '分辨率' ||
+        key === SLOT_RESOLUTION ||
         key === 'resolution' ||
         key === 'res' ||
         key === 'imagesize' ||
@@ -441,7 +447,7 @@ export class NamingDSLEngine {
 
       // 2. 时长 (Duration)
       if (
-        key === '时长' ||
+        key === SLOT_DURATION ||
         key === 'duration' ||
         key === 'dur' ||
         key === 'trackduration' ||
@@ -483,7 +489,7 @@ export class NamingDSLEngine {
               lk === 'playtime' ||
               lk === 'duration_ms' ||
               lk === 'durationms' ||
-              lk === '时长' ||
+              lk === SLOT_DURATION ||
               lk === localizedDur
             ) {
               rawDur = v
@@ -538,7 +544,7 @@ export class NamingDSLEngine {
 
       // 3. 页数 (Pages / Page Count)
       if (
-        key === '页数' ||
+        key === SLOT_PAGES ||
         key === 'pages' ||
         key === 'page_count' ||
         key === 'pagecount' ||
@@ -571,7 +577,7 @@ export class NamingDSLEngine {
               lk === 'numberofpages' ||
               lk === 'slidecount' ||
               lk === 'sheetcount' ||
-              lk === '页数' ||
+              lk === SLOT_PAGES ||
               lk === localizedPages
             ) {
               pagesVal = v
@@ -595,9 +601,9 @@ export class NamingDSLEngine {
 
       // 4. 编码格式 (Codec / Media Format)
       if (
-        key === '编码' ||
+        key === SLOT_CODEC ||
         key === 'codec' ||
-        key === '编码格式' ||
+        key === SLOT_CODEC_FORMAT ||
         key === 'video_codec' ||
         key === 'videocodec' ||
         key === 'audio_codec' ||

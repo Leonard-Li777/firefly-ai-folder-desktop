@@ -18,6 +18,8 @@ import { t } from '@app/languages'
 import { captureEvent } from '../../../../lib/posthog'
 import { OrganizePreview, OrganizeProgress } from '../types'
 
+const UNCLASSIFIED_FILES_DIR_NAME = '未分类文件'
+
 /**
  * 虚拟目录整理逻辑 Hook
  * 处理一键整理、按虚拟目录整理和 AI 整理方案生成
@@ -141,10 +143,10 @@ export const useAnalyzedDirectoryFilter = (
 
     // 将被删除的文件移到"未分类文件"目录
     if (deletedFiles.length > 0) {
-      let unclassifiedDir = newDirectoryStructure.find(d => d.name === '未分类文件')
+      let unclassifiedDir = newDirectoryStructure.find(d => d.name === UNCLASSIFIED_FILES_DIR_NAME)
       if (!unclassifiedDir) {
         unclassifiedDir = {
-          name: '未分类文件',
+          name: UNCLASSIFIED_FILES_DIR_NAME,
           parent: '',
           files: [],
           fileCount: 0
@@ -289,7 +291,7 @@ export const useAnalyzedDirectoryFilter = (
 
       // 二次弹窗循环确认机制
       let finalStructure = structure
-      let unclassifiedDir = finalStructure.directories.find((d: any) => d.name === '未分类文件')
+      let unclassifiedDir = finalStructure.directories.find((d: any) => d.name === UNCLASSIFIED_FILES_DIR_NAME)
       let unclassifiedCount = unclassifiedDir?.files?.length || 0
 
       while (unclassifiedCount > 0) {
@@ -376,7 +378,7 @@ export const useAnalyzedDirectoryFilter = (
           }
 
           finalStructure = remedyResult
-          unclassifiedDir = finalStructure.directories.find((d: any) => d.name === '未分类文件')
+          unclassifiedDir = finalStructure.directories.find((d: any) => d.name === UNCLASSIFIED_FILES_DIR_NAME)
           unclassifiedCount = unclassifiedDir?.files?.length || 0
         } else {
           break

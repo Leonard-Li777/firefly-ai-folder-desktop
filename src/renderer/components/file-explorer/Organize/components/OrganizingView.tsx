@@ -10,6 +10,8 @@ import { VDirTree } from './VDirTree'
 import { Checkbox } from '../../../../components/ui/checkbox'
 import { recalculateNodeFileCounts } from '../utils/helpers'
 
+const UNCLASSIFIED_NAME = '未归类'
+
 export function OrganizingView({
   tree,
   progressInfo,
@@ -50,7 +52,7 @@ export function OrganizingView({
   const percent =
     progressInfo.total > 0 ? Math.round((progressInfo.current / progressInfo.total) * 100) : 0
 
-  const isUnclassifiedName = (name: string) => name === '未归类' || name === t('未归类')
+  const isUnclassifiedName = (name: string) => name === UNCLASSIFIED_NAME || name === t(UNCLASSIFIED_NAME)
 
   const filterPendingFilesOnly = React.useCallback(
     (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {

@@ -6,6 +6,14 @@ import { CATEGORY_EXT_MAP } from '@firefly/shared'
 import { DirectoryNode } from '@firefly/types/organize-types'
 import { t } from '@app/languages'
 
+const THEME_DIM_NAME = '题材'
+const GAME_TYPE_DIM_NAME = '游戏类型'
+const VIDEO_TAG_NAME = '视频'
+const MOVIE_TAG_NAME = '影视'
+const EBOOK_TAG_NAME = '电子书'
+const NOVEL_TAG_NAME = '小说'
+const GAME_ENTERTAINMENT_TAG_NAME = '游戏娱乐'
+
 interface DirectoryPreviewNode {
   name: string
   path: string[]
@@ -275,14 +283,14 @@ export const GenerateVirtualDirectoriesDialog: React.FC<GenerateVirtualDirectori
       if (!node.files) return
 
       const isThemeNode =
-        node.dimensionName === t('题材') ||
-        node.dimensionName === '题材' ||
+        node.dimensionName === t(THEME_DIM_NAME) ||
+        node.dimensionName === THEME_DIM_NAME ||
         node.dimensionName === 'Genre / Theme' ||
         (node.dimensionName &&
           (node.dimensionName.toLowerCase().includes('theme') ||
             node.dimensionName.toLowerCase().includes('genre'))) ||
-        node.dimensionName === t('游戏类型') ||
-        node.dimensionName === '游戏类型' ||
+        node.dimensionName === t(GAME_TYPE_DIM_NAME) ||
+        node.dimensionName === GAME_TYPE_DIM_NAME ||
         node.dimensionName === 'Game Type' ||
         (node.dimensionName &&
           (node.dimensionName.toLowerCase().includes('game type') ||
@@ -298,22 +306,22 @@ export const GenerateVirtualDirectoriesDialog: React.FC<GenerateVirtualDirectori
         if (parentNode) {
           const parentTagValue = parentNode.name
           const isVideoTag =
-            parentTagValue === t('视频') ||
-            parentTagValue === t('影视') ||
-            parentTagValue === '视频' ||
-            parentTagValue === '影视' ||
+            parentTagValue === t(VIDEO_TAG_NAME) ||
+            parentTagValue === t(MOVIE_TAG_NAME) ||
+            parentTagValue === VIDEO_TAG_NAME ||
+            parentTagValue === MOVIE_TAG_NAME ||
             parentTagValue.toLowerCase().includes('video') ||
             parentTagValue.toLowerCase().includes('movie')
           const isEbookTag =
-            parentTagValue === t('电子书') ||
-            parentTagValue === t('小说') ||
-            parentTagValue === '电子书' ||
-            parentTagValue === '小说' ||
+            parentTagValue === t(EBOOK_TAG_NAME) ||
+            parentTagValue === t(NOVEL_TAG_NAME) ||
+            parentTagValue === EBOOK_TAG_NAME ||
+            parentTagValue === NOVEL_TAG_NAME ||
             parentTagValue.toLowerCase().includes('ebook') ||
             parentTagValue.toLowerCase().includes('novel')
           const isGameTag =
-            parentTagValue === t('游戏娱乐') ||
-            parentTagValue === '游戏娱乐' ||
+            parentTagValue === t(GAME_ENTERTAINMENT_TAG_NAME) ||
+            parentTagValue === GAME_ENTERTAINMENT_TAG_NAME ||
             parentTagValue.toLowerCase().includes('game')
 
           if (isEbookTag) {

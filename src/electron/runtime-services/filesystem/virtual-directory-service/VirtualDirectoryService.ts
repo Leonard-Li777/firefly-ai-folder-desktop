@@ -8,7 +8,9 @@ import {
   DirectoryReorganizeResult,
   AIDirectoryStructure
 } from '@firefly/types'
-import { LogCategory, logger, sanitizeDirectoryName, HAC_FEATURE_FLAGS } from '@firefly/shared'
+import { LogCategory, logger, sanitizeDirectoryName, HAC_FEATURE_FLAGS, CONTROLLED_CONCEPTS, getCanonicalConceptName } from '@firefly/shared'
+
+const UNCLASSIFIED_NAME = getCanonicalConceptName(CONTROLLED_CONCEPTS['未归类']) || '未归类'
 import { t } from '@app/languages'
 import Database from 'better-sqlite3'
 import { databaseService } from '../../database/database-service'
@@ -227,7 +229,7 @@ export class VirtualDirectoryService {
         const dirParts = parts.slice(0, -1)
         let currentPath = ''
         for (const part of dirParts) {
-          if (!part || part === '.' || part === '未归类') continue
+          if (!part || part === '.' || part === UNCLASSIFIED_NAME) continue
           currentPath = currentPath ? `${currentPath}/${part}` : part
           dirSet.add(currentPath)
         }
@@ -602,9 +604,9 @@ export class VirtualDirectoryService {
         // 只要不是未归类开头、为空或占位符 .keep，均视为已归类完毕
         const isUnclassified =
           !rel ||
-          rel === '未归类' ||
-          rel.startsWith('未归类/') ||
-          rel.startsWith('未归类\\') ||
+          rel === UNCLASSIFIED_NAME ||
+          rel.startsWith(`${UNCLASSIFIED_NAME}/`) ||
+          rel.startsWith(`${UNCLASSIFIED_NAME}\\`) ||
           rel.endsWith('.keep')
         if (!isUnclassified) {
           classifiedFileIds.add(String(row.file_id))

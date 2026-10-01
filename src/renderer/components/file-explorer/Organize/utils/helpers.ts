@@ -2,6 +2,11 @@ import { VirtualDirectoryNode } from '@firefly/types'
 import { OrganizeMode } from '../types'
 import { t } from '@app/languages'
 
+const UNCLASSIFIED_NAME = '未归类'
+const UNKNOWN_NAME = '未知'
+const PROJECT_CORE_NAME = '项目核心'
+const CORE_PROJECT_NAME = '核心项目'
+
 /**
  * 富化整理树中的文件名称字段。
  *
@@ -85,8 +90,8 @@ export function isUnclassifiedNodeName(name?: string): boolean {
   if (!name) return true
   const trimmed = String(name).trim().toLowerCase()
   return (
-    trimmed === '未归类' ||
-    trimmed === t('未归类').trim().toLowerCase() ||
+    trimmed === UNCLASSIFIED_NAME ||
+    trimmed === t(UNCLASSIFIED_NAME).trim().toLowerCase() ||
     trimmed === 'unclassified'
   )
 }
@@ -329,13 +334,13 @@ export function sanitizeDirectoryName(name: string): string {
   }
 
   // 5. 过滤“未知”等无意义的名称
-  if (cleaned === t('未知') || cleaned === '未知') {
-    return '未归类'
+  if (cleaned === t(UNKNOWN_NAME) || cleaned === UNKNOWN_NAME) {
+    return UNCLASSIFIED_NAME
   }
 
   // 6. 过滤包含或纯文件扩展名拼接形式的不合规目录名（如 .bat .ps1、.txt、.jpg、file_type .bat 等）
   if (/(^|\s)\.[a-zA-Z0-9]+($|\s)/.test(cleaned)) {
-    return '未归类'
+    return UNCLASSIFIED_NAME
   }
 
   return cleaned
@@ -354,7 +359,7 @@ export function sanitizeTree(
       ? sanitizeTree(node.subdirectories, filterUnclassified)
       : []
 
-    const isUnclassified = cleanedName === '未归类' || cleanedName === t('未归类')
+    const isUnclassified = cleanedName === UNCLASSIFIED_NAME || cleanedName === t(UNCLASSIFIED_NAME)
 
     if (filterUnclassified && isUnclassified) {
       // 如果当前节点是不合规节点（如扩展名）被归为了「未归类」，但包含合法的子节点（如“文件”、“文档”），
@@ -633,7 +638,7 @@ export function parseStrategyToTree(strategyText: string): VirtualDirectoryNode[
         .trim()
     }
 
-    if (!content || content === '未归类' || content === '项目核心' || content === '核心项目')
+    if (!content || content === UNCLASSIFIED_NAME || content === PROJECT_CORE_NAME || content === CORE_PROJECT_NAME)
       continue
 
     const indent = line.length - line.trimStart().length

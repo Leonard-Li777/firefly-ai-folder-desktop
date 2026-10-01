@@ -18,6 +18,8 @@ import {
 } from '../utils/helpers'
 import { useSettingsStore } from '../../../../stores/settings-store'
 
+const UNCLASSIFIED_NAME = '未归类'
+
 export function DoneView({
   tree,
   organizeMode,
@@ -81,9 +83,9 @@ export function DoneView({
 
   const getConfigValue = useSettingsStore.getState().getConfigValue
   const swapFileNameDisplay = getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
-  const unclassifiedNode = tree.find(n => n.name === t('未归类') || n.name === '未归类')
+  const unclassifiedNode = tree.find(n => n.name === t(UNCLASSIFIED_NAME) || n.name === UNCLASSIFIED_NAME)
 
-  const isUnclassifiedName = (name: string) => name === '未归类' || name === t('未归类')
+  const isUnclassifiedName = (name: string) => name === UNCLASSIFIED_NAME || name === t(UNCLASSIFIED_NAME)
   const filterUnclassified = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] =>
     nodes
       .filter(n => !isUnclassifiedName(n.name))
@@ -91,10 +93,10 @@ export function DoneView({
         const subs = filterUnclassified(n.subdirectories || [])
         const cleanFiles = (n.files || []).filter(
           f =>
-            f.name !== '未归类' &&
-            f.name !== t('未归类') &&
-            f.smartName !== '未归类' &&
-            f.smartName !== t('未归类') &&
+            f.name !== UNCLASSIFIED_NAME &&
+            f.name !== t(UNCLASSIFIED_NAME) &&
+            f.smartName !== UNCLASSIFIED_NAME &&
+            f.smartName !== t(UNCLASSIFIED_NAME) &&
             !f.isUnclassified &&
             !f.unclassified
         )
@@ -172,7 +174,7 @@ export function DoneView({
     const keys = new Set<string>()
     const collect = (nodes: VirtualDirectoryNode[]) => {
       for (const n of nodes) {
-        if (n.name === '未归类' || n.name === t('未归类') || n.name === 'Unclassified') continue
+        if (n.name === UNCLASSIFIED_NAME || n.name === t(UNCLASSIFIED_NAME) || n.name === 'Unclassified') continue
         if (Array.isArray(n.files)) {
           for (const f of n.files) {
             for (const k of getAllFileKeys(f)) {

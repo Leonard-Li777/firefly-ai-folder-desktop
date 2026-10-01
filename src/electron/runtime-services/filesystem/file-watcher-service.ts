@@ -23,6 +23,8 @@ class FileWatcherService {
   private fileEventLogCounts: Map<string, number> = new Map()
   private fileEventLogOmitted: Map<string, number> = new Map()
 
+  private static readonly EVENT_TYPE_ADD = '新增'
+
   private logFileEvent(eventType: '修改' | '新增' | '删除', filePath: string): void {
     if (!this.fileEventLogTimers.has(eventType)) {
       this.fileEventLogCounts.set(eventType, 0)
@@ -41,7 +43,7 @@ class FileWatcherService {
 
     const count = this.fileEventLogCounts.get(eventType) || 0
     if (count < 5) {
-      const actionText = eventType === '新增' ? '新文件' : `文件${eventType}`
+      const actionText = eventType === FileWatcherService.EVENT_TYPE_ADD ? '新文件' : `文件${eventType}`
       logger.info(LogCategory.FILE_WATCHER, `检测到${actionText}: ${filePath}`)
       this.fileEventLogCounts.set(eventType, count + 1)
     } else {

@@ -102,53 +102,59 @@ function isTokenInTemplate(tokenValue: string, currentTemplate: string): boolean
   }
 
   // 2. 多模态元数据 {META:xxx}
+  const META_SLOT_RESOLUTION = '分辨率'
+  const META_SLOT_DURATION = '时长'
+  const META_SLOT_PAGES = '页数'
+  const META_SLOT_CODEC = '编码'
+  const META_SLOT_CODEC_FORMAT = '编码格式'
+
   if (cleanVal.startsWith('{META:')) {
     const metaKey = cleanVal.slice(6, -1).trim().toLowerCase()
     if (
-      metaKey === '分辨率' ||
+      metaKey === META_SLOT_RESOLUTION ||
       metaKey === 'resolution' ||
       metaKey === 'res' ||
-      metaKey === t('分辨率').toLowerCase()
+      metaKey === t(META_SLOT_RESOLUTION).toLowerCase()
     ) {
       return (
         tpl.includes('{meta:分辨率') ||
         tpl.includes('{meta:resolution') ||
         tpl.includes('{meta:res') ||
-        tpl.includes(`{meta:${t('分辨率').toLowerCase()}`)
+        tpl.includes(`{meta:${t(META_SLOT_RESOLUTION).toLowerCase()}`)
       )
     }
     if (
-      metaKey === '时长' ||
+      metaKey === META_SLOT_DURATION ||
       metaKey === 'duration' ||
       metaKey === 'dur' ||
-      metaKey === t('时长').toLowerCase()
+      metaKey === t(META_SLOT_DURATION).toLowerCase()
     ) {
       return (
         tpl.includes('{meta:时长') ||
         tpl.includes('{meta:duration') ||
         tpl.includes('{meta:dur') ||
-        tpl.includes(`{meta:${t('时长').toLowerCase()}`)
+        tpl.includes(`{meta:${t(META_SLOT_DURATION).toLowerCase()}`)
       )
     }
     if (
-      metaKey === '页数' ||
+      metaKey === META_SLOT_PAGES ||
       metaKey === 'pages' ||
       metaKey === 'page' ||
-      metaKey === t('页数').toLowerCase()
+      metaKey === t(META_SLOT_PAGES).toLowerCase()
     ) {
       return (
         tpl.includes('{meta:页数') ||
         tpl.includes('{meta:pages') ||
         tpl.includes('{meta:page') ||
-        tpl.includes(`{meta:${t('页数').toLowerCase()}`)
+        tpl.includes(`{meta:${t(META_SLOT_PAGES).toLowerCase()}`)
       )
     }
     if (
-      metaKey === '编码' ||
+      metaKey === META_SLOT_CODEC ||
       metaKey === 'codec' ||
-      metaKey === '编码格式' ||
-      metaKey === t('编码').toLowerCase() ||
-      metaKey === t('编码格式').toLowerCase()
+      metaKey === META_SLOT_CODEC_FORMAT ||
+      metaKey === t(META_SLOT_CODEC).toLowerCase() ||
+      metaKey === t(META_SLOT_CODEC_FORMAT).toLowerCase()
     ) {
       return (
         tpl.includes('{meta:编码') ||
