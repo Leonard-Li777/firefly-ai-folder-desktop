@@ -85,7 +85,27 @@ export const AIEngineConfigSettings: React.FC = () => {
   const loadSnapshot = useEngineStore(s => s.load)
   const [actionPending, setActionPending] = useState<string | null>(null)
   const aiServiceStatus = useAIServiceStore(s => s.status)
-  const isEngineFailed = !isCloudMode && aiServiceStatus === AIServiceStatus.ERROR
+  // 本地引擎异常判定（PRD-0045）：
+  // 1. 若本地引擎已就绪运行（snapshot?.raw?.status === 'ready'），绝对不属于引擎异常；
+  // 2. 若引擎明确上报 status === 'error' 或熔断器被触发开路（circuitState === 'open'），属于引擎异常；
+  // 3. 在引擎尚未就绪（status !== 'ready'）的前提下，AI 服务处于 ERROR 态才属于引擎异常。
+  const isEngineFailed =
+    !isCloudMode &&
+    snapshot?.raw?.status !== 'ready' &&
+    (snapshot?.raw?.status === 'error' ||
+      snapshot?.circuitState === 'open' ||
+      aiServiceStatus === AIServiceStatus.ERROR)
+
+  // 当本地引擎处于就绪态时，自动自愈清除陈旧的历史错误，避免状态滞留导致误报「引擎异常」
+  useEffect(() => {
+    if (!isCloudMode && snapshot?.raw?.status === 'ready') {
+      const store = useAIServiceStore.getState()
+      if (store.status === AIServiceStatus.ERROR) {
+        store.clearError()
+        store.updateStatus(AIServiceStatus.IDLE)
+      }
+    }
+  }, [isCloudMode, snapshot?.raw?.status])
 
   // 云端引擎状态面（PRD-0045）
   const cloudStarted = useCloudEngineStatusStore(s => s.cloudStarted)
@@ -314,18 +334,21 @@ export const AIEngineConfigSettings: React.FC = () => {
   const formatFriendlyModelName = (name?: string | null, rawModel?: string | null): string => {
     const candidate = name || rawModel
     if (!candidate) return '—'
-    if (name && (name.includes(' ') || /[\u4e00-\u9fa5]/.test(name))) {
+    if (name && (name.includes(' ') || /[\u4e00-\u9fa5（）]/.test(name))) {
       return name
     }
     const clean = candidate.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, '')
+    if (/minicpm5[-_]1b/i.test(clean)) {
+      return t('MiniCPM5 1B（较好•越狱）')
+    }
+    if (/minicpm5[-_]2b/i.test(clean)) {
+      return t('MiniCPM5 2B（高质量•高速）')
+    }
     if (/qwen3\.?5[-_]0\.8b/i.test(clean)) {
       return t('Qwen 3.5 0.8B (中文更佳)')
     }
     if (/lfm2\.?5[-_]1\.2b/i.test(clean)) {
       return t('LFM2.5 1.2B Instruct（英文更佳•高速）')
-    }
-    if (/minicpm5[-_]2b/i.test(clean)) {
-      return t('MiniCPM5 2B（高质量•高速）')
     }
     return name || clean
   }

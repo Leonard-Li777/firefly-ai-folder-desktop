@@ -188,13 +188,185 @@ export function sortTopLevelDimensionNodes<T extends SortWeightNode>(nodes: T[])
 }
 
 /**
- * 递归构建维度树（支持基于 triggerTags 的细粒度层级与顶层主干开放准入）
+ * 递归将组内的扁平标签集合（带有 level 和 viaParentCode）拆解为多级树形结构
+ */
+export function nestGroupTags(
+  group: DimensionGroup,
+  tags: DimensionTag[],
+  level: number,
+  maxScaleDepth: number = 3
+): { directTags: DimensionTag[]; childTagsMap: Map<string, DimensionTreeNode[]> } {
+  const childTagsMap = new Map<string, DimensionTreeNode[]>()
+  if (!tags || tags.length === 0) {
+    return { directTags: [], childTagsMap }
+  }
+
+  // 1. 构建 code -> tag 与 tagValue -> tag 快速索引
+  const tagByCode = new Map<string, DimensionTag>()
+  const tagByName = new Map<string, DimensionTag>()
+  const tagsByParent = new Map<string, DimensionTag[]>()
+
+  for (const t of tags) {
+    if (t.code) tagByCode.set(t.code, t)
+    if (t.tagValue) tagByName.set(t.tagValue, t)
+  }
+
+  // 2. 根据 viaParentCode 归类子标签
+  for (const t of tags) {
+    const parentKey = t.viaParentCode
+    if (parentKey && (tagByCode.has(parentKey) || tagByName.has(parentKey))) {
+      const list = tagsByParent.get(parentKey) || []
+      list.push(t)
+      tagsByParent.set(parentKey, list)
+    }
+  }
+
+  // 3. 确定当前层级的直属标签 (directTags)：
+  // 顶层直属标签优先由 level === 1 或 viaParentCode === group.code 确定
+  const directTags: DimensionTag[] = []
+  for (const t of tags) {
+    const parentKey = t.viaParentCode
+    const isLevel1 = t.level === 1 || parentKey === group.code || (!parentKey && (!t.level || t.level <= 1))
+    if (isLevel1) {
+      directTags.push(t)
+    }
+  }
+
+  // 若没有明确的 level 1 标签，兜底寻找最小 level 或无父级标签作为直属
+  if (directTags.length === 0) {
+    const minLevel = tags.reduce((min, t) => Math.min(min, t.level ?? 1), Infinity)
+    for (const t of tags) {
+      if ((t.level ?? 1) === minLevel) {
+        directTags.push(t)
+      }
+    }
+    if (directTags.length === 0) {
+      directTags.push(...tags)
+    }
+  }
+
+  // 递归收集任意父标签下的所有深层子孙标签（用于穿透提升，执行 Code 与名称双重去重）
+  function getAllDescendantTags(startTag: DimensionTag): DimensionTag[] {
+    const result: DimensionTag[] = []
+    const visitedCodes = new Set<string>()
+    const visitedNames = new Set<string>()
+
+    function collectAll(curr: DimensionTag) {
+      const keys = [curr.code, curr.tagValue].filter(Boolean) as string[]
+      for (const k of keys) {
+        const children = tagsByParent.get(k) || []
+        for (const child of children) {
+          const code = child.code || ''
+          const name = child.tagValue || ''
+          if (visitedCodes.has(code) || (name && visitedNames.has(name))) {
+            continue
+          }
+          if (code === curr.code || (name && name === curr.tagValue)) {
+            continue
+          }
+          if (code) visitedCodes.add(code)
+          if (name) visitedNames.add(name)
+          result.push(child)
+          collectAll(child)
+        }
+      }
+    }
+
+    collectAll(startTag)
+    return result
+  }
+
+  // 4. 递归根据 tagsByParent 构建深层多级子树（支持 ADR-0034 §4 刻度穿透提升）
+  function buildChildNode(parentTag: DimensionTag, currentDepth: number): DimensionTreeNode | null {
+    // 若当前层级深度达到或超过用户设定的刻度上限，则所有更深层子孙标签穿透提升（Pass-through Lift-up），
+    // 汇聚挂载在当前刻度父级节点下，且该层不再向下生成更深层孙级节点 (ADR-0034 §4)
+    if (currentDepth >= maxScaleDepth) {
+      const descendants = getAllDescendantTags(parentTag)
+      if (descendants.length === 0) return null
+
+      // 双重去重，优先保留有命中文件的标签或叶子标签
+      const seenLifted = new Set<string>()
+      const liftedTags: DimensionTag[] = []
+      for (const d of descendants) {
+        const key = d.code || d.tagValue
+        if (!seenLifted.has(key)) {
+          seenLifted.add(key)
+          liftedTags.push({
+            ...d,
+            viaParentCode: parentTag.code || parentTag.tagValue,
+            level: currentDepth + 1
+          })
+        }
+      }
+
+      return {
+        id: group.id * 10000 + currentDepth * 100 + (parentTag.order || 1),
+        name: parentTag.tagValue,
+        code: parentTag.code || `${group.code || group.id}.${parentTag.tagValue}`,
+        level: currentDepth,
+        tags: liftedTags,
+        childTags: undefined,
+        isMultiSelect: parentTag.isMultiSelect ?? false,
+        metadata: group.metadata
+      }
+    }
+
+    const directChildren: DimensionTag[] = []
+    const seen = new Set<string>()
+
+    const parentKeys = [parentTag.code, parentTag.tagValue].filter(Boolean) as string[]
+    for (const pk of parentKeys) {
+      const list = tagsByParent.get(pk) || []
+      for (const ct of list) {
+        const key = ct.code || ct.tagValue
+        if (!seen.has(key) && key !== parentTag.code && key !== parentTag.tagValue) {
+          seen.add(key)
+          directChildren.push(ct)
+        }
+      }
+    }
+
+    if (directChildren.length === 0) return null
+
+    const subChildTagsMap = new Map<string, DimensionTreeNode[]>()
+    directChildren.forEach((childTag) => {
+      const grandSub = buildChildNode(childTag, currentDepth + 1)
+      if (grandSub) {
+        subChildTagsMap.set(childTag.tagValue, [grandSub])
+      }
+    })
+
+    return {
+      id: group.id * 10000 + currentDepth * 100 + (parentTag.order || 1),
+      name: parentTag.tagValue,
+      code: parentTag.code || `${group.code || group.id}.${parentTag.tagValue}`,
+      level: currentDepth,
+      tags: directChildren,
+      childTags: subChildTagsMap.size > 0 ? subChildTagsMap : undefined,
+      isMultiSelect: parentTag.isMultiSelect ?? false,
+      metadata: group.metadata
+    }
+  }
+
+  directTags.forEach(parentTag => {
+    const subNode = buildChildNode(parentTag, 1)
+    if (subNode) {
+      childTagsMap.set(parentTag.tagValue, [subNode])
+    }
+  })
+
+  return { directTags, childTagsMap }
+}
+
+/**
+ * 递归构建维度树（支持基于 triggerTags 的细粒度层级与顶层主干开放准入，以及 maxScaleDepth 穿透提升）
  */
 export function buildDimensionTree(
   dimensionGroups: DimensionGroup[],
   parentId: number | null = null,
   parentTag: string | null = null,
-  level = 0
+  level = 0,
+  maxScaleDepth: number = 3
 ): DimensionTreeNode[] {
   // 预构建 parentId → groups 查找表和 hasChildren 集合，消除 O(n²)
   const map = new Map<number | null, DimensionGroup[]>()
@@ -242,15 +414,17 @@ export function buildDimensionTree(
 
     return currentLevelGroups
       .map(group => {
-        const hasChildren = childrenSet.has(group.id)
+        // 1. 拆解该维度组内部标签的父子多级关系 (viaParentCode / level / maxScaleDepth)
+        const { directTags, childTagsMap } = nestGroupTags(group, group.tags || [], lvl, maxScaleDepth)
 
-        let childTags: Map<string, DimensionTreeNode[]> | undefined
+        // 2. 关联外部细分维度组 (基于 triggerConditions / parentDimensionIds)
+        const hasChildren = childrenSet.has(group.id)
         if (hasChildren) {
-          childTags = new Map()
-          group.tags.forEach(tag => {
-            const children = recurse(group.id, tag.tagValue, lvl + 1)
-            if (children.length > 0) {
-              childTags!.set(tag.tagValue, children)
+          directTags.forEach(tag => {
+            const externalChildren = recurse(group.id, tag.tagValue, lvl + 1)
+            if (externalChildren.length > 0) {
+              const existing = childTagsMap.get(tag.tagValue) || []
+              childTagsMap.set(tag.tagValue, [...existing, ...externalChildren])
             }
           })
         }
@@ -258,19 +432,24 @@ export function buildDimensionTree(
         return {
           ...group,
           level: lvl,
-          childTags
+          tags: directTags,
+          childTags: childTagsMap.size > 0 ? childTagsMap : undefined
         } as DimensionTreeNode
       })
       .filter((group, idx, arr) => {
-        // 对于根级，如果其下没有子标签，则根级数据不应输出，也不应展示
-        if (lvl === 0 && (!group.tags || group.tags.length === 0)) {
-          return false
-        }
-        // 根级同名去重：相同名称的维度组仅保留第一个主干维度，彻底杜绝根级重复
-        if (lvl === 0 && group.name) {
-          const firstIdx = arr.findIndex(g => g.name === group.name)
-          if (firstIdx !== -1 && firstIdx !== idx) {
-            return false
+        // 根级同名/同Code去重：相同名称或Code的维度组仅保留第一个主干维度，彻底杜绝根级重复
+        if (lvl === 0) {
+          if (group.name) {
+            const firstIdxByName = arr.findIndex(g => g.name === group.name)
+            if (firstIdxByName !== -1 && firstIdxByName !== idx) {
+              return false
+            }
+          }
+          if (group.code) {
+            const firstIdxByCode = arr.findIndex(g => g.code === group.code)
+            if (firstIdxByCode !== -1 && firstIdxByCode !== idx) {
+              return false
+            }
           }
         }
         return true
@@ -290,18 +469,39 @@ export function buildDimensionTree(
 
 /**
  * 过滤函数：获取可见与不可见标签
+ * 支持多种重载调用签名：
+ * 1. (group, showEmptyTags, panDimensionIds, childTags)
+ * 2. (group, showEmptyTags, childTags)
+ * 3. (group, childTags)
  */
 export function getVisibleAndHiddenTags(
   group: DimensionGroup,
-  showEmptyTags: boolean,
-  childTags?: Map<string, DimensionTreeNode[]>
+  showEmptyTagsOrChildTags?: boolean | Map<string, DimensionTreeNode[]>,
+  panDimensionIdsOrChildTags?: number[] | Map<string, DimensionTreeNode[]>,
+  maybeChildTags?: Map<string, DimensionTreeNode[]>
 ) {
-  let visibleTags = group.tags.filter((tag: DimensionTag) => tag.fileCount > 0)
-  const hiddenTags = group.tags.filter((tag: DimensionTag) => tag.fileCount === 0)
+  let showEmptyTags = false
+  let panDimensionIds: number[] = []
+  let childTags: Map<string, DimensionTreeNode[]> | undefined
 
-  if (childTags) {
+  if (typeof showEmptyTagsOrChildTags === 'boolean') {
+    showEmptyTags = showEmptyTagsOrChildTags
+    if (Array.isArray(panDimensionIdsOrChildTags)) {
+      panDimensionIds = panDimensionIdsOrChildTags
+      childTags = maybeChildTags
+    } else if (panDimensionIdsOrChildTags instanceof Map) {
+      childTags = panDimensionIdsOrChildTags
+    }
+  } else if (showEmptyTagsOrChildTags instanceof Map) {
+    childTags = showEmptyTagsOrChildTags
+  }
+
+  let visibleTags = (group.tags || []).filter((tag: DimensionTag) => tag.fileCount > 0)
+  const hiddenTags = (group.tags || []).filter((tag: DimensionTag) => tag.fileCount === 0)
+
+  if (childTags instanceof Map) {
     hiddenTags.forEach(tag => {
-      const children = childTags.get(tag.tagValue)
+      const children = childTags!.get(tag.tagValue)
       if (
         children &&
         children.some(child => {
@@ -320,7 +520,8 @@ export function getVisibleAndHiddenTags(
     })
   }
 
-  if (isPanDimension(group)) {
+  const isPan = panDimensionIds.includes(group.id) || isPanDimension(group)
+  if (isPan) {
     visibleTags = visibleTags.sort((a, b) => b.fileCount - a.fileCount)
   }
 

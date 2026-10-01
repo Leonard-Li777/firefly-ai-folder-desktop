@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "comment": "标签准入闸门 · G1 词形层规则资源（spec tag-admissibility-filter-spec §3.1/§5.1/§6.9，ADR-0052）。运行时 Omni 引擎优先加载本文件，缺失时回退内置同源默认（omni-core/src/tag_admissibility.rs）。G1 是取码前的词形判据，零本体依赖。本资源**不按语言分表**：同一套字符类规则对 zh/en 同等生效（满足 P3 来源对称、P4 数据驱动）。规则：R-G1-01 非白名单文种 / R-G1-10 不可入列码位（一票否决）/ R-G1-11 单串多脚本混杂。",
+  "g1": {
+    "rule_ids": {
+      "non_whitelisted_script": "R-G1-01",
+      "forbidden_codepoint": "R-G1-10",
+      "mixed_exclusive_scripts": "R-G1-11"
+    },
+    "allowed_scripts": [
+      "Han",
+      "Hiragana",
+      "Katakana",
+      "Hangul",
+      "Latin",
+      "Cyrillic",
+      "Arabic"
+    ],
+    "neutral_chars": ["-", "_", "·"],
+    "forbidden_codepoint_classes": [
+      "replacement_char",
+      "control_c0",
+      "control_c1",
+      "private_use",
+      "unpaired_surrogate"
+    ],
+    "exclusive_script_pairs": [
+      ["Cyrillic", "Arabic"],
+      ["Han", "Cyrillic"],
+      ["Han", "Arabic"],
+      ["Hiragana", "Cyrillic"],
+      ["Hiragana", "Arabic"],
+      ["Katakana", "Cyrillic"],
+      ["Katakana", "Arabic"],
+      ["Hangul", "Cyrillic"],
+      ["Hangul", "Arabic"]
+    ],
+    "notes": {
+      "unpaired_surrogate": "Rust `&str` 由类型保证不含孤立代理项（代理项不是合法 char）；该类目为 TS/JS 侧（JS 字符串可含孤立代理项）与字节解码路径保留，Rust 侧属不可观测类目。",
+      "latin_cyrillic_excluded": "刻意**不**把 Latin↔Cyrillic / Latin↔Arabic 列为互斥对：品牌与外来词常合法混写（如 `МВидео`），误杀代价高于收益。互斥对仅取「CJK/日韩 × 西里尔/阿拉伯」与「西里尔 × 阿拉伯」这类现实中不会合法共现的组合。",
+      "evaluation_order": "R-G1-10 标为**一票否决**（spec §3.1 F25 / §5.1），故其判定优先于「按规则 ID 升序」的通用顺序——否则 R-G1-01 会先命中（U+FFFD / NUL / PUA 均不在任何白名单文种内），R-G1-10 永不触发，其存在意义（给出精确拒绝原因）落空。"
+    }
+  }
+}

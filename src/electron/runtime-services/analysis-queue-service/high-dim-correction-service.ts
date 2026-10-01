@@ -237,42 +237,15 @@ export class HighDimCorrectionService {
       ? await this.tagScorer.score(facts.textFacts, vector, facts.existingTags)
       : []
 
-    // 5W 二次提纯：仅当当前名称非人工命名时，才调用插槽引擎重新生成候选名与描述。
-    // 人工命名（namingSource === 'user'）时**不发起请求**，避免任何副作用与资源浪费。
-    let refinedSmartName: string | null = null
-    let refinedDescription: string | null = null
-    if (this.nameRefiner && isMachineGeneratedName(facts.namingSource)) {
-      try {
-        const refined = await this.nameRefiner.refine({
-          facts: facts.textFacts,
-          tags: highDimTags.map(t => ({
-            code: t.code,
-            parentCode: t.parentCode ?? '',
-            confidence: t.confidence
-          })),
-          fileName: item.name || ''
-        })
-        refinedSmartName = refined.smartName ?? null
-        refinedDescription = refined.description ?? null
-      } catch (e) {
-        // 提纯失败不阻断标签校准与向量入库：降级为「本次不更新名称/描述」
-        logger.warn(
-          LogCategory.ANALYSIS_QUEUE,
-          `[高维修正] 5W 名称提纯失败，保留原名称: ${item.name}`,
-          e
-        )
-      }
-    }
-
+    // Stage 5 彻底聚焦于受控标签的最终清洗去噪与 2048d 向量索引，
+    // 一次感知（Stage 1~4 perceive）定终身，严格保留原始 smartName 与 description 不变。
     const refined = applyHighDimCorrection({
       existingTags: facts.existingTags,
       highDimTags,
       minConfidence: HIGH_DIM_MIN_TAG_CONFIDENCE,
       currentSmartName: facts.smartName,
       currentDescription: facts.description,
-      namingSource: (facts.namingSource as SmartNameSource | null) ?? null,
-      refinedSmartName,
-      refinedDescription
+      namingSource: (facts.namingSource as SmartNameSource | null) ?? null
     })
 
     databaseService.applyHighDimCorrectionResult(fingerprint, {

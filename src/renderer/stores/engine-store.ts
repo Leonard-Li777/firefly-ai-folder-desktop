@@ -1,4 +1,7 @@
 import { create } from 'zustand'
+import { AIServiceStatus } from '@firefly/types'
+import { useAIServiceStore } from './ai-service-store'
+import { useModelStore } from './model-store'
 
 /**
  * 引擎桥接状态快照（渲染层视图，与主进程 EngineBridgeSnapshot 对齐，宽容解析）
@@ -36,6 +39,7 @@ export interface EngineBridgeSnapshotUI {
   /** 原始引擎状态（hardware 等 dashboard 增项经此透传） */
   raw?: {
     hardware?: { gpu_name?: string; is_integrated?: boolean; [key: string]: any } | null
+    status?: string
     [key: string]: any
   } | null
 }
@@ -49,6 +53,25 @@ interface EngineStoreState {
   load: () => Promise<void>
   /** 拉取初始快照并订阅主进程广播；返回取消订阅函数 */
   subscribe: () => () => void
+}
+
+/** 辅助：当底层推理引擎进入 ready 态时，自愈清除陈旧的历史错误并恢复就绪 */
+function healStaleAiServiceErrors(snap: EngineBridgeSnapshotUI | null | undefined): void {
+  if (snap?.raw?.status === 'ready') {
+    const aiStore = useAIServiceStore.getState()
+    if (aiStore.status === AIServiceStatus.ERROR) {
+      aiStore.clearError()
+      aiStore.updateStatus(AIServiceStatus.IDLE)
+    }
+    const modelStore = useModelStore.getState()
+    if (modelStore.serviceStatus === AIServiceStatus.ERROR && modelStore.modelMode !== 'cloud') {
+      useModelStore.setState({
+        serviceStatus: AIServiceStatus.IDLE,
+        lastError: null,
+        modelName: snap.modelName || modelStore.modelName
+      })
+    }
+  }
 }
 
 /**
@@ -67,8 +90,9 @@ export const useEngineStore = create<EngineStoreState>((set, get) => ({
     }
     set({ loading: true })
     try {
-      const snap = await window.electronAPI.engineBridge.getStatus()
-      set({ snapshot: snap as EngineBridgeSnapshotUI })
+      const snap = (await window.electronAPI.engineBridge.getStatus()) as EngineBridgeSnapshotUI
+      set({ snapshot: snap })
+      healStaleAiServiceErrors(snap)
     } catch (e) {
       console.error('加载引擎桥接状态失败:', e)
     } finally {
@@ -85,7 +109,9 @@ export const useEngineStore = create<EngineStoreState>((set, get) => ({
     let unsub: (() => void) | undefined
     try {
       unsub = bridge.onStatusChanged(payload => {
-        set({ snapshot: payload as EngineBridgeSnapshotUI, loading: false })
+        const snap = payload as EngineBridgeSnapshotUI
+        set({ snapshot: snap, loading: false })
+        healStaleAiServiceErrors(snap)
       })
     } catch (e) {
       console.error('订阅引擎桥接状态失败:', e)

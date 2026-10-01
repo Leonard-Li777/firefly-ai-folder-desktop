@@ -88,6 +88,7 @@ export interface Tier2EngineStatus {
   model?: string
   /** 引擎契约字段名（EngineStatus.current_model，见 firefly-ai-engine engine/mod.rs） */
   current_model?: string
+  current_model_name?: string
   loaded_models?: string[]
   vram_mb?: number
   gpu_mem_mb?: number
@@ -381,6 +382,23 @@ export class EngineBridgeService {
     if (this.builtinModelCatalog && this.builtinModelCatalog.length > 0) {
       return this.builtinModelCatalog
     }
+    try {
+      const configPath = ResourceLocator.resolveModelConfig('model_zh-CN.json')
+      if (fs.existsSync(configPath)) {
+        const raw = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+        const models = Array.isArray(raw?.models) ? raw.models : []
+        if (models.length > 0) {
+          this.builtinModelCatalog = models.map((m: any) => ({
+            id: String(m.id || ''),
+            name: String(m.name || ''),
+            isEmbedding: Boolean(m.isEmbedding)
+          }))
+          return this.builtinModelCatalog || []
+        }
+      }
+    } catch (err) {
+      logger.debug(LogCategory.SYSTEM, '[EngineBridge] 从本地 model_zh-CN.json 加载 catalog 失败:', err)
+    }
     return []
   }
 
@@ -405,16 +423,53 @@ export class EngineBridgeService {
       return null
     }
 
+    // 0. 如果 identifier 本身已经是规范展示名称（包含中文、全角括号、或者非文件名且包含空格），直接返回
+    if (
+      /[\u4e00-\u9fa5（）]/.test(identifier) ||
+      (identifier.includes(' ') && !/[/\\]/.test(identifier) && !identifier.toLowerCase().endsWith('.gguf'))
+    ) {
+      return identifier
+    }
+
     // 1. 优先从内置模型目录进行语义与归一化匹配（获取 Qwen 3.5 0.8B (中文更佳) 等中文规范名称）
     const catalog = this.loadBuiltinModelCatalog()
     if (catalog.length > 0) {
+      // 1.1 直接精确匹配 id 或 name
+      const direct = catalog.find(m => m.id === identifier || m.name === identifier)
+      if (direct?.name) return direct.name
+
+      // 1.2 如果 identifier 是完整物理路径，匹配其包含的 repo 仓库标识
+      // 例如路径包含 'zensignGG/MiniCPM5-1B-Claude-Opus-Fable5-V2-Thinking-heretic-GGUF'
+      const normalizedPath = identifier.replace(/\\/g, '/').toLowerCase()
+      const pathHit = catalog.find(m => {
+        if (!m.id) return false
+        const repoId = m.id.split(':')[0].toLowerCase()
+        if (!repoId) return false
+        const repoSlug = repoId.replace('/', '--')
+        return normalizedPath.includes(repoId) || normalizedPath.includes(repoSlug)
+      })
+      if (pathHit?.name) return pathHit.name
+
+      // 1.3 规范化匹配（去掉扩展名、路径前缀）
       const clean = identifier.replace(/\.[^.]+$/, '').replace(/.*[\\/]/, '')
       const cleanNorm = clean.toLowerCase().replace(/[-_:\/]|gguf/gi, '')
       const hit = catalog.find(m => {
         if (!m.id) return false
-        if (m.id === identifier || m.id === clean || m.name === identifier) return true
+        if (m.id === clean || m.name === clean) return true
         const idNorm = m.id.toLowerCase().replace(/[-_:\/]|gguf/gi, '')
-        return idNorm.includes(cleanNorm) || cleanNorm.includes(idNorm)
+        if (idNorm.includes(cleanNorm) || cleanNorm.includes(idNorm)) return true
+
+        // 针对模型家族关键词与尺寸进行深度匹配（如 minicpm5 + 1b）
+        const cLower = clean.toLowerCase()
+        const idLower = m.id.toLowerCase()
+        if (cLower.includes('minicpm5') && idLower.includes('minicpm5')) {
+          if (cLower.includes('1b') && idLower.includes('1b')) return true
+          if (cLower.includes('2b') && idLower.includes('2b')) return true
+        }
+        if (cLower.includes('qwen') && idLower.includes('qwen')) {
+          if (cLower.includes('0.8b') && idLower.includes('0.8b')) return true
+        }
+        return false
       })
       if (hit && hit.name) {
         return hit.name
@@ -429,8 +484,22 @@ export class EngineBridgeService {
       }
     }
 
-    // 3. 兜底剥离路径和扩展名
-    return identifier.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, '')
+    // 3. 兜底语义映射（绝不能将冰冷的文件名原样暴露为模型名称）
+    const cleanStem = identifier.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, '')
+    if (/minicpm5[-_]1b/i.test(cleanStem)) {
+      return 'MiniCPM5 1B（较好•越狱）'
+    }
+    if (/minicpm5[-_]2b/i.test(cleanStem)) {
+      return 'MiniCPM5 2B（高质量•高速）'
+    }
+    if (/qwen3\.?5[-_]0\.8b/i.test(cleanStem)) {
+      return 'Qwen 3.5 0.8B (中文更佳)'
+    }
+    if (/lfm2\.?5[-_]1\.2b/i.test(cleanStem)) {
+      return 'LFM2.5 1.2B Instruct（英文更佳•高速）'
+    }
+
+    return cleanStem
   }
 
   /**
@@ -1492,9 +1561,11 @@ export class EngineBridgeService {
           null
         )
       })(),
-      // 解析规范友好的中文模型名称（优先从内置模型目录匹配，fallback 到映射表或纯文件名）
+      // 解析规范友好的中文模型名称（优先使用引擎契约 current_model_name，内置模型目录匹配，fallback 到映射表）
       modelName: this.resolveFriendlyModelName(
-        raw?.current_model ||
+        raw?.current_model_name ||
+          raw?.model_name ||
+          raw?.current_model ||
           raw?.model ||
           (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) ||
           this.lastKnownModel ||

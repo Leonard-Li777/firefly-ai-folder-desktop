@@ -113,49 +113,28 @@ export function fuseHighDimTags(
 }
 
 /**
- * 应用高维修正：融合标签 + 按命名来源仲裁名称/描述。
+ * 应用高维修正：融合标签去噪与向量索引。
  *
- * 人工命名保护：`namingSource === 'user'` 时，无论 refinedSmartName / refinedDescription
- * 是否提供，都严格保留当前值并标记 skippedForUserNaming=true。
+ * 架构规范（Issue 0046 终局架构）：
+ * Stage 5 彻底聚焦于受控标签的最终清洗去噪与 2048d 向量索引，
+ * 一次感知（Stage 1~4 perceive）定终身，严格保留原始 smartName 与 description 不变。
  */
 export function applyHighDimCorrection(input: HighDimCorrectionInput): HighDimCorrectionResult {
   const tags = fuseHighDimTags(input.existingTags, input.highDimTags, input.minConfidence)
 
-  // 人工命名保护：命名来源为 user 时严格保留当前名称/描述，不做任何覆盖
-  if (!isMachineGeneratedName(input.namingSource)) {
-    return {
-      tags,
-      smartName: input.currentSmartName,
-      description: input.currentDescription,
-      smartNameUpdated: false,
-      descriptionUpdated: false,
-      skippedForUserNaming: true
-    }
-  }
-
-  const hasRefinedName =
-    typeof input.refinedSmartName === 'string' && input.refinedSmartName.trim().length > 0
-  const hasRefinedDescription =
-    typeof input.refinedDescription === 'string' && input.refinedDescription.trim().length > 0
-
-  const nextSmartName = hasRefinedName ? (input.refinedSmartName as string) : input.currentSmartName
-  const nextDescription = hasRefinedDescription
-    ? (input.refinedDescription as string)
-    : input.currentDescription
-
   return {
     tags,
-    smartName: nextSmartName,
-    description: nextDescription,
-    smartNameUpdated: hasRefinedName && nextSmartName !== input.currentSmartName,
-    descriptionUpdated: hasRefinedDescription && nextDescription !== input.currentDescription,
-    skippedForUserNaming: false
+    smartName: input.currentSmartName,
+    description: input.currentDescription,
+    smartNameUpdated: false,
+    descriptionUpdated: false,
+    skippedForUserNaming: !isMachineGeneratedName(input.namingSource)
   }
 }
 
 /**
- * 判定当前智能名称是否由机器 5W 生成（可被二次提纯）。
- * 显式 `user` 标记 → 不可覆盖；`machine` / null（未知，保守允许首次提纯）→ 可覆盖。
+ * 判定当前智能名称是否由机器生成。
+ * 显式 `user` 标记 → 人工命名；`machine` / null（未知）→ 机器生成。
  */
 export function isMachineGeneratedName(namingSource: SmartNameSource | null): boolean {
   return namingSource !== 'user'

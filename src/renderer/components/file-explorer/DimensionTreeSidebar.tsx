@@ -280,7 +280,8 @@ interface DimensionTreeRowProps {
     dimensionId: number,
     tagValue: string,
     parentTagValue?: string,
-    ancestorChain?: string[]
+    ancestorChain?: string[],
+    viaParentCode?: string
   ) => void
   handleTagClickInternal: (tag: any) => void
 }
@@ -400,7 +401,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     tag.dimensionId,
                     tag.tagValue,
                     row.parentTagValue,
-                    row.ancestorChain
+                    row.ancestorChain,
+                    tag.viaParentCode || undefined
                   )
                 }
               }}
@@ -414,7 +416,8 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     tag.dimensionId,
                     tag.tagValue,
                     row.parentTagValue,
-                    row.ancestorChain
+                    row.ancestorChain,
+                    tag.viaParentCode || undefined
                   )
                 }
                 className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
@@ -442,13 +445,16 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                   tag.dimensionId,
                   tag.tagValue,
                   row.parentTagValue,
-                  row.ancestorChain
+                  row.ancestorChain,
+                  tag.viaParentCode || undefined
                 )
               } else {
                 handleTagClickInternal({
                   dimensionId: tag.dimensionId,
                   dimensionName: tag.dimensionName,
                   tagValue: tag.tagValue,
+                  code: tag.code,
+                  viaParentCode: tag.viaParentCode || undefined,
                   level: tag.level,
                   parentTagValue: row.parentTagValue,
                   ancestorChain: row.ancestorChain
@@ -869,14 +875,14 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     [showEmptyTags]
   )
 
-  // 3. 递归构建维度树（严格过滤在当前 showEmptyTags 模式下无有效子标签的根级组）
+  // 3. 递归构建维度树（严格过滤在当前 showEmptyTags 模式下无有效子标签的根级组，且响应 maxScaleDepth 刻度穿透提升）
   const visibleGroups = useMemo(() => {
-    const rawTree = buildDimensionTree(dimensionGroups)
+    const rawTree = buildDimensionTree(dimensionGroups, null, null, 0, maxScaleDepth)
     return rawTree.filter(group => {
       const { tagsToShow } = handleVisibleAndHiddenTags(group, group.childTags)
       return tagsToShow && tagsToShow.length > 0
     })
-  }, [dimensionGroups, handleVisibleAndHiddenTags])
+  }, [dimensionGroups, handleVisibleAndHiddenTags, maxScaleDepth])
 
   // 4. 自动清理不在当前维度树中的无效/陈旧幽灵标签键
   // 注意：此处不排除折叠的维度组（折叠只是临时 UI 状态，不代表标签失效），
@@ -1086,7 +1092,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       }
 
       tagsToShow.forEach((tag, index) => {
-        const isSelected = isTagSelected(tag.dimensionId, tag.tagValue, parentTagValue)
+        const isSelected = isTagSelected(tag.dimensionId, tag.tagValue, parentTagValue, tag.viaParentCode ?? undefined)
         const isDisabled = tag.fileCount === 0
         const childDimensions = node.childTags?.get(tag.tagValue)
         const hasChildDimensions =
@@ -1113,30 +1119,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         const isTagExpanded = !collapsedTags.has(tag.tagValue)
         const currentChain = ancestorChain ? [...ancestorChain, tag.tagValue] : [tag.tagValue]
 
-        // 穿透提升计算 (ADR-0034 §4)：若深度达到刻度上限 (depth + 1 >= maxScaleDepth)，自动穿透汇聚所有更深层子后代的文件计数
-        let effectiveFileCount = tag.fileCount
-        if (hasChildDimensions && depth + 1 >= maxScaleDepth && childDimensions) {
-          const sumDescendantCount = (nodes: DimensionTreeNode[]): number => {
-            let total = 0
-            for (const cn of nodes) {
-              if (cn.tags) {
-                for (const ct of cn.tags) {
-                  total += ct.fileCount || 0
-                }
-              }
-              if (cn.childTags) {
-                for (const subList of cn.childTags.values()) {
-                  total += sumDescendantCount(subList)
-                }
-              }
-            }
-            return total
-          }
-          effectiveFileCount += sumDescendantCount(childDimensions)
-        }
-
-        const effectiveTag =
-          effectiveFileCount !== tag.fileCount ? { ...tag, fileCount: effectiveFileCount } : tag
+        const effectiveTag = tag
 
         const rowId = `tag-${depth}-${currentChain.join('/')}-${tag.dimensionId}-${tag.tagValue}`
         rows.push({
@@ -1148,13 +1131,13 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           ancestorChain: currentChain,
           isSelected,
           isDisabled: effectiveTag.fileCount === 0,
-          hasChildDimensions: hasChildDimensions && depth + 1 < maxScaleDepth,
+          hasChildDimensions,
           isTagExpanded,
           depth,
           isLastInGroup: index === tagsToShow.length - 1
         })
 
-        if (hasChildDimensions && isTagExpanded && depth + 1 < maxScaleDepth) {
+        if (hasChildDimensions && isTagExpanded) {
           childDimensions.forEach(childNode => {
             traverse(childNode, tag.tagValue, currentChain, depth + 1)
           })

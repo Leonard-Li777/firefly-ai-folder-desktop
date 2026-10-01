@@ -36,7 +36,6 @@ import { HighDimCorrectionService } from './high-dim-correction-service'
 import {
   createWemmEmbedder,
   createWemmTagScorer,
-  createOmniFiveWRefiner,
   createZvecVectorSink
 } from './high-dim-adapters'
 import { cloudSyncWorker } from '../ai/cloud-sync-worker'
@@ -237,7 +236,6 @@ export class AnalysisQueueService {
       this.highDimCorrectionService = new HighDimCorrectionService({
         embedder: wemmEmbedder,
         tagScorer: createWemmTagScorer(wemmEmbedder),
-        nameRefiner: createOmniFiveWRefiner(),
         vectorSink: createZvecVectorSink(),
         enqueueHighDim: (candidates, workspaceId) =>
           this.queueManager.enqueueHighDimBatch(candidates, workspaceId),

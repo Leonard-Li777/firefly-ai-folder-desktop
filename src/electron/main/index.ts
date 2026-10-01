@@ -177,20 +177,22 @@ if (debuggingPortArg) {
   if (portMatch && portMatch[1]) {
     app.commandLine.appendSwitch('remote-debugging-port', portMatch[1])
   }
+} else if (process.env.REMOTE_DEBUGGING_PORT) {
+  app.commandLine.appendSwitch('remote-debugging-port', process.env.REMOTE_DEBUGGING_PORT)
 } else if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
   // 查找当前 Worktree 专属隔离段内的空闲调试端口
   const isPortFreeSync = (port: number): boolean => {
     try {
-      const net = require('net')
-      const server = net.createServer()
-      server.unref()
-      let free = false
-      server.listen({ port, host: '127.0.0.1', exclusive: true })
-      free = true
-      server.close()
-      return free
+      if (process.platform === 'win32') {
+        const out = require('child_process').execSync('netstat -ano -p tcp', { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] })
+        const regex = new RegExp(`:${port}\\s+`)
+        return !regex.test(out)
+      } else {
+        const out = require('child_process').execSync(`lsof -i :${port}`, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] })
+        return !out || out.trim().length === 0
+      }
     } catch {
-      return false
+      return true
     }
   }
 
@@ -934,3 +936,4 @@ const handleProcessTermination = () => {
 }
 process.on('SIGINT', handleProcessTermination)
 process.on('SIGTERM', handleProcessTermination)
+

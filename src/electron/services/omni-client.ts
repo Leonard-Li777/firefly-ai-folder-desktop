@@ -128,41 +128,71 @@ export class OmniClient {
     return omniService.getBaseUrl()
   }
 
+  private static readonly TAXONOMY_CACHE_TTL = 300_000 // 5分钟TTL
+  private _taxonomyTreeCache = new Map<string, { data: OmniTaxonomyTreeResponse; time: number }>()
+
   private async request<T>(
     path: string,
     init?: RequestInit,
-    timeoutMs: number = DEFAULT_TIMEOUT_MS
+    timeoutMs: number = DEFAULT_TIMEOUT_MS,
+    retries: number = 2
   ): Promise<T | null> {
-    try {
-      await omniService.ensureRunning()
-      const res = await fetch(`${this.getBaseUrl()}${path}`, {
-        ...init,
-        headers: {
-          'Content-Type': 'application/json',
-          ...(init?.headers ?? {})
-        },
-        signal: AbortSignal.timeout(timeoutMs)
-      })
-      if (!res.ok) {
-        logger.warn(LogCategory.DIMENSION_SERVICE, `[OmniClient] HTTP ${res.status} ${path}`)
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        await omniService.ensureRunning()
+        const res = await fetch(`${this.getBaseUrl()}${path}`, {
+          ...init,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(init?.headers ?? {})
+          },
+          signal: AbortSignal.timeout(timeoutMs)
+        })
+        if (!res.ok) {
+          logger.warn(LogCategory.DIMENSION_SERVICE, `[OmniClient] HTTP ${res.status} ${path} (第 ${attempt + 1}/${retries + 1} 次尝试)`)
+          if (attempt < retries) {
+            await new Promise(r => setTimeout(r, 400 * (attempt + 1)))
+            continue
+          }
+          return null
+        }
+        return (await res.json()) as T
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        logger.debug(LogCategory.DIMENSION_SERVICE, `[OmniClient] 请求失败 ${path} (第 ${attempt + 1}/${retries + 1} 次尝试):`, msg)
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 400 * (attempt + 1)))
+          continue
+        }
         return null
       }
-      return (await res.json()) as T
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err)
-      logger.debug(LogCategory.DIMENSION_SERVICE, `[OmniClient] 请求失败 ${path}:`, msg)
-      return null
     }
+    return null
   }
 
   /**
    * 拉取分类树：GET /api/v1/taxonomy/tree?locale={lang}
-   * 供虚拟目录标签树渲染消费
+   * 供虚拟目录标签树渲染消费（内置 5 分钟轻量内存缓存与网络抖动过期降级兜底）
    */
   async getTaxonomyTree(locale = 'zh-CN', root?: string): Promise<OmniTaxonomyTreeResponse | null> {
+    const cacheKey = `${locale}::${root || ''}`
+    const cached = this._taxonomyTreeCache.get(cacheKey)
+    if (cached && Date.now() - cached.time < OmniClient.TAXONOMY_CACHE_TTL) {
+      return cached.data
+    }
     const params = new URLSearchParams({ locale })
     if (root) params.set('root', root)
-    return this.request<OmniTaxonomyTreeResponse>(`/api/v1/taxonomy/tree?${params.toString()}`)
+    const res = await this.request<OmniTaxonomyTreeResponse>(`/api/v1/taxonomy/tree?${params.toString()}`)
+    if (res && res.rootNodes && res.rootNodes.length > 0) {
+      this._taxonomyTreeCache.set(cacheKey, { data: res, time: Date.now() })
+      return res
+    }
+    // 降级兜底：若网络请求偶发失败但存在历史缓存，优先使用历史缓存，杜绝受控维度根坍塌
+    if (cached) {
+      logger.warn(LogCategory.DIMENSION_SERVICE, `[OmniClient] getTaxonomyTree 请求失败，降级使用历史缓存数据`)
+      return cached.data
+    }
+    return res
   }
 
   /**
