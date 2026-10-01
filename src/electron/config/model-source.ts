@@ -14,13 +14,13 @@ export const MODEL_CONFIG_SOURCE = () => ({
   models: [
     {
       id: 'unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL',
-      name: `Qwen 3.5 0.8B (${t('中文更佳')})`,
+      name: `Qwen 3.5 0.8B (${t('轻量识图')})`,
       company: 'unsloth',
       parameterSize: '0.8B',
       intelligenceLevel: 1,
-      totalSize: '558MB',
+      totalSize: '858MB',
       recommended: true,
-      description: t('极速轻量文本模型，适合低配及 CPU 环境，中文分析表现均衡。'),
+      description: t('智能最低，但能识图。'),
       source: 'modelscope',
       quantization: 'Q4_K_XL',
       isMultiModal: false,
@@ -37,82 +37,9 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
-      id: 'unsloth/Qwen3.5-0.8B-GGUF:UD-Q5_K_XL',
-      name: `Qwen 3.5 0.8B (${t('中文更佳')})`,
-      company: 'unsloth',
-      parameterSize: '0.8B',
-      intelligenceLevel: 1,
-      totalSize: '579MB',
-      recommended: true,
-      description: t('极速轻量文本模型，适合低配及 CPU 环境，中文分析表现均衡。'),
-      source: 'huggingface',
-      quantization: 'UD-Q5_K_XL',
-      isMultiModal: false,
-      contextLength: 131072,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'extreme',
-        quality: 'medium'
-      },
-      tags: [t('轻量'), t('支持CPU运行'), t('极速'), t('仅文本')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'unsloth/Qwen3.5-0.8B-GGUF:UD-Q6_K_XL',
-      name: `Qwen 3.5 0.8B (${t('轻量识图')})`,
-      company: 'unsloth',
-      parameterSize: '0.8B',
-      intelligenceLevel: 1,
-      totalSize: '976MB',
-      description: t('极致运行速度，适合极低配置环境，且支持图片分析，欠精准。'),
-      source: 'huggingface',
-      recommended: true,
-      isMultiModal: true,
-      contextLength: 131072,
-      performance: {
-        speed: 'extreme',
-        quality: 'medium'
-      },
-      tags: [t('GPU极速'), t('支持CPU运行'), t('多模态'), t('迷你')],
-      recommendedConfig: {
-        numCtx: 4096,
-        numPredict: 1048
-      },
-      capabilities: ['TEXT', 'IMAGE']
-    },
-    {
-      id: 'LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M',
-      dspark: 'LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M',
-      name: `LFM2.5 1.2B Instruct（${t('英文更佳')}•${t('高速')}）`,
-      company: 'LiquidAI',
-      parameterSize: '1.2B',
-      intelligenceLevel: 1,
-      totalSize: '873MB',
-      description: t('最新 LFM2.5 指令模型，文本分析高效，CPU 推理快速。'),
-      source: 'modelscope',
-      recommended: true,
-      isBuiltin: true,
-      quantization: 'Q4_K_M',
-      isMultiModal: false,
-      contextLength: 32768,
-      capabilities: ['TEXT'],
-      performance: {
-        speed: 'extreme',
-        quality: 'medium'
-      },
-      tags: [t('超快'), t('支持CPU运行'), t('仅文本'), t('英文更佳')],
-      recommendedConfig: {
-        numCtx: 4096,
-        numPredict: 1024
-      }
-    },
-    {
       id: 'OpenBMB/MiniCPM5-2B-gguf:Q4_K_M',
       // dspark: 'OpenBMB/MiniCPM5-2B-DSpark-GGUF',
-      name: `MiniCPM5 2B（${t('高质量')}•${t('高速')}）`,
+      name: `MiniCPM5 2B（${t('高质量')}•${t('小体积')}）`,
       company: 'OpenBMB',
       parameterSize: '2B',
       intelligenceLevel: 3,
@@ -137,7 +64,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
     {
       id: 'Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M',
       // dspark: 'openbmb/MiniCPM5-2B-DSpark-GGUF',
-      name: `MiniCPM5 2B（${t('高质量')}•${t('高速')}•${t('越狱')}）`,
+      name: `MiniCPM5 2B（${t('高质量')}•${t('越狱')}）`,
       company: 'Abiray',
       parameterSize: '2B',
       intelligenceLevel: 3,
@@ -154,6 +81,57 @@ export const MODEL_CONFIG_SOURCE = () => ({
         quality: 'high'
       },
       tags: [t('去限制'), t('越狱'), 'NSFW', t('仅文本'), t('中文更佳')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
+      // 仓库内无 mmproj 投影文件，故 totalSize 即单文件 688,066,944 B ≈ 656MB
+      id: 'mradermacher/MiniCPM5-1B-Uncensored-GGUF:Q4_K_M',
+      name: `MiniCPM5 1B（${t('较好')}•${t('越狱')}）`,
+      company: 'mradermacher',
+      parameterSize: '1B',
+      intelligenceLevel: 2,
+      totalSize: '656MB',
+      recommended: true,
+      description: t('MiniCPM5 1B 去审查越狱版本，体积极小，仅支持文本分析。'),
+      source: 'huggingface',
+      quantization: 'Q4_K_M',
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'extreme',
+        quality: 'medium'
+      },
+      tags: [t('去限制'), t('越狱'), 'NSFW', t('仅文本'), t('轻量'), t('支持CPU运行'), t('中文更佳')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
+      // 仓库内无 mmproj 投影文件，故 totalSize 即单文件 688,066,528 B ≈ 656MB
+      // 文件名 minicpm5_1b_heretic_q4km.gguf，量化标记为 Q4KM（无下划线），id 尾缀须与之匹配
+      id: 'zensignGG/MiniCPM5-1B-Claude-Opus-Fable5-V2-Thinking-heretic-GGUF:Q4KM',
+      name: `MiniCPM5 1B（${t('较好')}•${t('越狱')}）`,
+      company: 'zensignGG',
+      parameterSize: '1B',
+      intelligenceLevel: 2,
+      totalSize: '656MB',
+      recommended: true,
+      description: t('MiniCPM5 1B 越狱思考版本，仅支持文本分析。'),
+      source: 'modelscope',
+      quantization: 'Q4KM',
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'extreme',
+        quality: 'medium'
+      },
+      tags: [t('去限制'), t('越狱'), 'NSFW', t('仅文本'), t('轻量'), t('支持CPU运行')],
       recommendedConfig: {
         numCtx: 8192,
         numPredict: 2048
