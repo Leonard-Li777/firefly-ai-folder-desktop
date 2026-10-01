@@ -5,13 +5,13 @@
   "models": [
     {
       "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL",
-      "name": "Qwen 3.5 0.8B (Chinês é melhor)",
+      "name": "Qwen 3.5 0.8B (Reconhecimento de imagem leve)",
       "company": "unsloth",
       "parameterSize": "0.8B",
       "intelligenceLevel": 1,
-      "totalSize": "558MB",
+      "totalSize": "858MB",
       "recommended": true,
-      "description": "Modelo de texto extremamente rápido e leve, adequado para ambientes low-end e de CPU, com desempenho de análise chinês balanceado.",
+      "description": "A inteligência mais baixa, mas pode ler imagens.",
       "source": "modelscope",
       "quantization": "Q4_K_XL",
       "isMultiModal": false,
@@ -35,103 +35,8 @@
       }
     },
     {
-      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q5_K_XL",
-      "name": "Qwen 3.5 0.8B (Chinês é melhor)",
-      "company": "unsloth",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "579MB",
-      "recommended": true,
-      "description": "Modelo de texto extremamente rápido e leve, adequado para ambientes low-end e de CPU, com desempenho de análise chinês balanceado.",
-      "source": "huggingface",
-      "quantization": "UD-Q5_K_XL",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "Leve",
-        "Suporte à operação da CPU",
-        "Ultra-rápido",
-        "Somente texto"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q6_K_XL",
-      "name": "Qwen 3.5 0.8B (Reconhecimento de imagem leve)",
-      "company": "unsloth",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "976MB",
-      "description": "Velocidade de execução extrema, adequada para ambientes de configuração extremamente baixa e suporta análise de imagens, que é menos precisa.",
-      "source": "huggingface",
-      "recommended": true,
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "GPU extremamente rápida",
-        "Suporte à operação da CPU",
-        "Multimodal",
-        "Mini"
-      ],
-      "recommendedConfig": {
-        "numCtx": 4096,
-        "numPredict": 1048
-      },
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ]
-    },
-    {
-      "id": "LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M",
-      "dspark": "LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M",
-      "name": "LFM2.5 1.2B Instruct（Inglês é melhor•Alta velocidade）",
-      "company": "LiquidAI",
-      "parameterSize": "1.2B",
-      "intelligenceLevel": 1,
-      "totalSize": "873MB",
-      "description": "Mais recente modelo de instrução LFM2.5, análise de texto eficiente, inferência rápida em CPU.",
-      "source": "modelscope",
-      "recommended": true,
-      "isBuiltin": true,
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "Super rápido",
-        "Suporte à operação da CPU",
-        "Somente texto",
-        "Inglês é melhor"
-      ],
-      "recommendedConfig": {
-        "numCtx": 4096,
-        "numPredict": 1024
-      }
-    },
-    {
       "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
-      "name": "MiniCPM5 2B（Alta qualidade•Alta velocidade）",
+      "name": "MiniCPM5 2B（Alta qualidade•Tamanho pequeno）",
       "company": "OpenBMB",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
@@ -163,7 +68,7 @@
     },
     {
       "id": "Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（Alta qualidade•Alta velocidade•Fuga da prisão）",
+      "name": "MiniCPM5 2B（Alta qualidade•Fuga da prisão）",
       "company": "Abiray",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
@@ -187,6 +92,73 @@
         "NSFW",
         "Somente texto",
         "Chinês é melhor"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "mradermacher/MiniCPM5-1B-Uncensored-GGUF:Q4_K_M",
+      "name": "MiniCPM5 1B（Melhorar•Fuga da prisão）",
+      "company": "mradermacher",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "656MB",
+      "recommended": false,
+      "description": "MiniCPM5 1B é usado para revisar a versão desbloqueada. É muito pequeno e suporta apenas análise de texto.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "Limitar",
+        "Fuga da prisão",
+        "NSFW",
+        "Somente texto",
+        "Leve",
+        "Suporte à operação da CPU",
+        "Chinês é melhor"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "zensignGG/MiniCPM5-1B-Claude-Opus-Fable5-V2-Thinking-heretic-GGUF:Q4KM",
+      "name": "MiniCPM5 1B（Melhorar•Fuga da prisão）",
+      "company": "zensignGG",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "656MB",
+      "recommended": false,
+      "description": "A versão jailbreak MiniCPM5 1B suporta apenas análise de texto.",
+      "source": "modelscope",
+      "quantization": "Q4KM",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "Limitar",
+        "Fuga da prisão",
+        "NSFW",
+        "Somente texto",
+        "Leve",
+        "Suporte à operação da CPU"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

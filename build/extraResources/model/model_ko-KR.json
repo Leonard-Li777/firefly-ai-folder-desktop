@@ -5,13 +5,13 @@
   "models": [
     {
       "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL",
-      "name": "Qwen 3.5 0.8B (중국어가 더 낫다)",
+      "name": "Qwen 3.5 0.8B (경량 이미지 인식)",
       "company": "unsloth",
       "parameterSize": "0.8B",
       "intelligenceLevel": 1,
-      "totalSize": "558MB",
+      "totalSize": "858MB",
       "recommended": true,
-      "description": "균형 잡힌 중국어 분석 성능을 갖춘 로우엔드 및 CPU 환경에 적합한 매우 빠르고 가벼운 텍스트 모델입니다.",
+      "description": "지능은 가장 낮지만 그림을 읽을 수 있습니다.",
       "source": "modelscope",
       "quantization": "Q4_K_XL",
       "isMultiModal": false,
@@ -35,103 +35,8 @@
       }
     },
     {
-      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q5_K_XL",
-      "name": "Qwen 3.5 0.8B (중국어가 더 낫다)",
-      "company": "unsloth",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "579MB",
-      "recommended": true,
-      "description": "균형 잡힌 중국어 분석 성능을 갖춘 로우엔드 및 CPU 환경에 적합한 매우 빠르고 가벼운 텍스트 모델입니다.",
-      "source": "huggingface",
-      "quantization": "UD-Q5_K_XL",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "경량",
-        "CPU 작동 지원",
-        "초고속",
-        "텍스트만"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q6_K_XL",
-      "name": "Qwen 3.5 0.8B (경량 이미지 인식)",
-      "company": "unsloth",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "976MB",
-      "description": "극한의 실행 속도로 구성이 매우 낮은 환경에 적합하며 정확도가 떨어지는 이미지 분석을 지원합니다.",
-      "source": "huggingface",
-      "recommended": true,
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "매우 빠른 GPU",
-        "CPU 작동 지원",
-        "다중 모드",
-        "미니"
-      ],
-      "recommendedConfig": {
-        "numCtx": 4096,
-        "numPredict": 1048
-      },
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ]
-    },
-    {
-      "id": "LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M",
-      "dspark": "LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M",
-      "name": "LFM2.5 1.2B Instruct（영어가 더 좋아•고속）",
-      "company": "LiquidAI",
-      "parameterSize": "1.2B",
-      "intelligenceLevel": 1,
-      "totalSize": "873MB",
-      "description": "최신 LFM2.5 지시 모델, 텍스트 분석 효율적, CPU 추론 빠름.",
-      "source": "modelscope",
-      "recommended": true,
-      "isBuiltin": true,
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "엄청 빠르다",
-        "CPU 작동 지원",
-        "텍스트만",
-        "영어가 더 좋아"
-      ],
-      "recommendedConfig": {
-        "numCtx": 4096,
-        "numPredict": 1024
-      }
-    },
-    {
       "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
-      "name": "MiniCPM5 2B（고품질•고속）",
+      "name": "MiniCPM5 2B（고품질•작은 사이즈）",
       "company": "OpenBMB",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
@@ -163,7 +68,7 @@
     },
     {
       "id": "Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（고품질•고속•감옥 휴식）",
+      "name": "MiniCPM5 2B（고품질•감옥 휴식）",
       "company": "Abiray",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
@@ -187,6 +92,73 @@
         "NSFW",
         "텍스트만",
         "중국어가 더 낫다"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "mradermacher/MiniCPM5-1B-Uncensored-GGUF:Q4_K_M",
+      "name": "MiniCPM5 1B（더 나은•감옥 휴식）",
+      "company": "mradermacher",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "656MB",
+      "recommended": false,
+      "description": "MiniCPM5 1B는 탈옥 버전을 검토하는 데 사용됩니다. 매우 작으며 텍스트 분석만 지원합니다.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "제한하다",
+        "감옥 휴식",
+        "NSFW",
+        "텍스트만",
+        "경량",
+        "CPU 작동 지원",
+        "중국어가 더 낫다"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "zensignGG/MiniCPM5-1B-Claude-Opus-Fable5-V2-Thinking-heretic-GGUF:Q4KM",
+      "name": "MiniCPM5 1B（더 나은•감옥 휴식）",
+      "company": "zensignGG",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "656MB",
+      "recommended": false,
+      "description": "MiniCPM5 1B 탈옥 버전은 텍스트 분석만 지원합니다.",
+      "source": "modelscope",
+      "quantization": "Q4KM",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "제한하다",
+        "감옥 휴식",
+        "NSFW",
+        "텍스트만",
+        "경량",
+        "CPU 작동 지원"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

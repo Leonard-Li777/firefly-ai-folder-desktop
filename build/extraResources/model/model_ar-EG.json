@@ -5,13 +5,13 @@
   "models": [
     {
       "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q4_K_XL",
-      "name": "Qwen 3.5 0.8B (الصينية أفضل)",
+      "name": "Qwen 3.5 0.8B (التعرف على الصور خفيفة الوزن)",
       "company": "unsloth",
       "parameterSize": "0.8B",
       "intelligenceLevel": 1,
-      "totalSize": "558MB",
+      "totalSize": "858MB",
       "recommended": true,
-      "description": "نموذج نصي سريع للغاية وخفيف الوزن، ومناسب لبيئات وحدة المعالجة المركزية المنخفضة، مع أداء تحليل صيني متوازن.",
+      "description": "أقل نسبة ذكاء، لكنه يستطيع قراءة الصور.",
       "source": "modelscope",
       "quantization": "Q4_K_XL",
       "isMultiModal": false,
@@ -35,103 +35,8 @@
       }
     },
     {
-      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q5_K_XL",
-      "name": "Qwen 3.5 0.8B (الصينية أفضل)",
-      "company": "unsloth",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "579MB",
-      "recommended": true,
-      "description": "نموذج نصي سريع للغاية وخفيف الوزن، ومناسب لبيئات وحدة المعالجة المركزية المنخفضة، مع أداء تحليل صيني متوازن.",
-      "source": "huggingface",
-      "quantization": "UD-Q5_K_XL",
-      "isMultiModal": false,
-      "contextLength": 131072,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "خفيفة الوزن",
-        "دعم تشغيل وحدة المعالجة المركزية",
-        "فائق السرعة",
-        "النص فقط"
-      ],
-      "recommendedConfig": {
-        "numCtx": 8192,
-        "numPredict": 2048
-      }
-    },
-    {
-      "id": "unsloth/Qwen3.5-0.8B-GGUF:UD-Q6_K_XL",
-      "name": "Qwen 3.5 0.8B (التعرف على الصور خفيفة الوزن)",
-      "company": "unsloth",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "976MB",
-      "description": "سرعة تشغيل قصوى، مناسبة لبيئات التكوين المنخفضة للغاية، وتدعم تحليل الصور، وهو أقل دقة.",
-      "source": "huggingface",
-      "recommended": true,
-      "isMultiModal": true,
-      "contextLength": 131072,
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "GPU سريع للغاية",
-        "دعم تشغيل وحدة المعالجة المركزية",
-        "الوسائط المتعددة",
-        "mini"
-      ],
-      "recommendedConfig": {
-        "numCtx": 4096,
-        "numPredict": 1048
-      },
-      "capabilities": [
-        "TEXT",
-        "IMAGE"
-      ]
-    },
-    {
-      "id": "LiquidAI/LFM2.5-1.2B-Instruct-GGUF:Q4_K_M",
-      "dspark": "LiquidAI/LFM2.5-1.2B-Instruct-DSpark-Q4_K_M",
-      "name": "LFM2.5 1.2B Instruct（اللغة الإنجليزية أفضل•سرعة عالية）",
-      "company": "LiquidAI",
-      "parameterSize": "1.2B",
-      "intelligenceLevel": 1,
-      "totalSize": "873MB",
-      "description": "أحدث نموذج تعليمات LFM2.5، تحليل نصوص فعال، واستدلال سريع على معالج CPU.",
-      "source": "modelscope",
-      "recommended": true,
-      "isBuiltin": true,
-      "quantization": "Q4_K_M",
-      "isMultiModal": false,
-      "contextLength": 32768,
-      "capabilities": [
-        "TEXT"
-      ],
-      "performance": {
-        "speed": "extreme",
-        "quality": "medium"
-      },
-      "tags": [
-        "بسرعة فائقة",
-        "دعم تشغيل وحدة المعالجة المركزية",
-        "النص فقط",
-        "اللغة الإنجليزية أفضل"
-      ],
-      "recommendedConfig": {
-        "numCtx": 4096,
-        "numPredict": 1024
-      }
-    },
-    {
       "id": "OpenBMB/MiniCPM5-2B-gguf:Q4_K_M",
-      "name": "MiniCPM5 2B（جودة عالية•سرعة عالية）",
+      "name": "MiniCPM5 2B（جودة عالية•حجم صغير）",
       "company": "OpenBMB",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
@@ -163,7 +68,7 @@
     },
     {
       "id": "Abiray/MiniCPM5-2B-heretic-abliterated-GGUF:Q4_K_M",
-      "name": "MiniCPM5 2B（جودة عالية•سرعة عالية•كسر السجن）",
+      "name": "MiniCPM5 2B（جودة عالية•كسر السجن）",
       "company": "Abiray",
       "parameterSize": "2B",
       "intelligenceLevel": 3,
@@ -187,6 +92,73 @@
         "NSFW",
         "النص فقط",
         "الصينية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "mradermacher/MiniCPM5-1B-Uncensored-GGUF:Q4_K_M",
+      "name": "MiniCPM5 1B（أحسن•كسر السجن）",
+      "company": "mradermacher",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "656MB",
+      "recommended": false,
+      "description": "يتم استخدام MiniCPM5 1B لمراجعة الإصدار المكسور الحماية. إنه صغير جدًا ويدعم تحليل النص فقط.",
+      "source": "huggingface",
+      "quantization": "Q4_K_M",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "للحد",
+        "كسر السجن",
+        "NSFW",
+        "النص فقط",
+        "خفيفة الوزن",
+        "دعم تشغيل وحدة المعالجة المركزية",
+        "الصينية أفضل"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 2048
+      }
+    },
+    {
+      "id": "zensignGG/MiniCPM5-1B-Claude-Opus-Fable5-V2-Thinking-heretic-GGUF:Q4KM",
+      "name": "MiniCPM5 1B（أحسن•كسر السجن）",
+      "company": "zensignGG",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "656MB",
+      "recommended": false,
+      "description": "إصدار MiniCPM5 1B jailbreak يدعم فقط تحليل النص.",
+      "source": "modelscope",
+      "quantization": "Q4KM",
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "extreme",
+        "quality": "medium"
+      },
+      "tags": [
+        "للحد",
+        "كسر السجن",
+        "NSFW",
+        "النص فقط",
+        "خفيفة الوزن",
+        "دعم تشغيل وحدة المعالجة المركزية"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
