@@ -64,7 +64,7 @@
     "$files": [
       "src/renderer/components/organize/AIOrganizeProgressDialog.tsx(2764-2770)",
       "src/renderer/components/organize/ConfirmOrganizeDialog.tsx(6011-6017)",
-      "src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28411-28417)",
+      "src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28802-28808)",
       "src/renderer/components/organize/HacOrganizeDialog.tsx(6563-6569)",
       "src/renderer/components/organize/UndoHistoryDialog.tsx(2438-2444)"
     ],
@@ -979,7 +979,7 @@
     "de-DE": "Virtuelles Verzeichnis Stamm",
     "fr-FR": "Racine du répertoire virtuel",
     "ko-KR": "가상 디렉토리 루트",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6231-6240)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6458-6467)"],
     "$id": 4192
   },
   "扁平化文件列表": {
@@ -992,7 +992,7 @@
     "de-DE": "Gekachelte Dateiliste",
     "fr-FR": "Aplatir la liste des fichiers",
     "ko-KR": "파일 목록 평탄화",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6290-6301)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6517-6528)"],
     "$id": 4193
   },
   "{tag}标签目录": {
@@ -1005,99 +1005,8 @@
     "de-DE": "{tag} Tag-Verzeichnis",
     "fr-FR": "Dossier de tags {tag}",
     "ko-KR": "{tag} 태그 디렉토리",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(6909-6922)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(7136-7149)"],
     "$id": 4194
-  },
-  "题材": {
-    "en-US": "Theme",
-    "es-ES": "Tema",
-    "ar-EG": "سمة",
-    "pt-PT": "Tema",
-    "ru-RU": "тема",
-    "ja-JP": "テーマ",
-    "de-DE": "Thema",
-    "fr-FR": "Thème",
-    "ko-KR": "주제",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(9086-9092)"],
-    "$id": 4569
-  },
-  "游戏类型": {
-    "en-US": "Game type",
-    "es-ES": "Tipo de juego",
-    "ar-EG": "نوع اللعبة",
-    "pt-PT": "Tipo de jogo",
-    "ru-RU": "тип игры",
-    "ja-JP": "ゲームの種類",
-    "de-DE": "Spieltyp",
-    "fr-FR": "Type de jeu",
-    "ko-KR": "게임 유형",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(9387-9395)"],
-    "$id": 4570
-  },
-  "视频": {
-    "en-US": "Video",
-    "es-ES": "Video",
-    "ar-EG": "فيديو",
-    "pt-PT": "Vídeo",
-    "ru-RU": "видео",
-    "ja-JP": "ビデオ",
-    "de-DE": "Video",
-    "fr-FR": "Vidéo",
-    "ko-KR": "동영상",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10049-10055)"],
-    "$id": 4571
-  },
-  "影视": {
-    "en-US": "Film and television",
-    "es-ES": "Cine y televisión",
-    "ar-EG": "السينما والتلفزيون",
-    "pt-PT": "Cinema e televisão",
-    "ru-RU": "Кино и телевидение",
-    "ja-JP": "映画とテレビ",
-    "de-DE": "Film und Fernsehen",
-    "fr-FR": "Cinéma et télévision",
-    "ko-KR": "영화와 텔레비전",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10092-10098)"],
-    "$id": 4572
-  },
-  "电子书": {
-    "en-US": "E-book",
-    "es-ES": "Libro electrónico",
-    "ar-EG": "الكتاب الإلكتروني",
-    "pt-PT": "E-book",
-    "ru-RU": "электронная книга",
-    "ja-JP": "電子書籍",
-    "de-DE": "E-Book",
-    "fr-FR": "Livre électronique",
-    "ko-KR": "전자책",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10368-10375)"],
-    "$id": 4573
-  },
-  "小说": {
-    "en-US": "Novel",
-    "es-ES": "Novedoso",
-    "ar-EG": "رواية",
-    "pt-PT": "Romance",
-    "ru-RU": "роман",
-    "ja-JP": "小説",
-    "de-DE": "Roman",
-    "fr-FR": "Roman",
-    "ko-KR": "소설",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10412-10418)"],
-    "$id": 4574
-  },
-  "游戏娱乐": {
-    "en-US": "Games and entertainment",
-    "es-ES": "Juegos y entretenimiento",
-    "ar-EG": "الألعاب والترفيه",
-    "pt-PT": "Jogos e entretenimento",
-    "ru-RU": "Игры и развлечения",
-    "ja-JP": "ゲームとエンターテイメント",
-    "de-DE": "Spiele und Unterhaltung",
-    "fr-FR": "Jeux et divertissements",
-    "ko-KR": "게임 및 엔터테인먼트",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(10688-10696)"],
-    "$id": 4576
   },
   "{fileCount} 个文件": {
     "en-US": "{fileCount} Files",
@@ -1109,7 +1018,7 @@
     "de-DE": "{fileCount} Dateien",
     "fr-FR": "{fileCount} fichiers",
     "ko-KR": "{fileCount}개 파일",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(16699-16718)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(17090-17109)"],
     "$id": 4195
   },
   "导出虚拟目录预览": {
@@ -1122,7 +1031,7 @@
     "de-DE": "Virtuelle Verzeichnisvorschau generieren",
     "fr-FR": "Générer l'aperçu du répertoire virtuel",
     "ko-KR": "가상 디렉토리 미리보기 생성",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(18573-18585)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(18964-18976)"],
     "$id": 4196
   },
   "将创建 {count} 个虚拟目录": {
@@ -1135,7 +1044,7 @@
     "de-DE": "Es werden {count} virtuelle Verzeichnisse erstellt\r",
     "fr-FR": "{count} répertoires virtuels seront créés",
     "ko-KR": "{count}개의 가상 디렉토리가 생성됩니다",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19302-19323)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19693-19714)"],
     "$id": 4197
   },
   "共 {count} 个文件": {
@@ -1148,7 +1057,7 @@
     "de-DE": "Insgesamt {count} Dateien\r",
     "fr-FR": "{count} fichiers au total",
     "ko-KR": "총 {count}개의 파일",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19483-19500)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19874-19891)"],
     "$id": 4198
   },
   "文件列表预览（扁平化）：": {
@@ -1161,7 +1070,7 @@
     "de-DE": "Vorschau der Dateiliste (geglättet):\r",
     "fr-FR": "Aperçu de la liste des fichiers (aplati) :",
     "ko-KR": "파일 목록 미리보기(플랫 형식)：",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19783-19799)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(20174-20190)"],
     "$id": 4199
   },
   "目录结构预览：": {
@@ -1174,7 +1083,7 @@
     "de-DE": "Vorschau der Verzeichnisstruktur:\r",
     "fr-FR": "Aperçu de la structure des répertoires :",
     "ko-KR": "디렉토리 구조 미리보기：",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(19803-19814)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(20194-20205)"],
     "$id": 4200
   },
   "加载文件列表中...": {
@@ -1187,7 +1096,7 @@
     "de-DE": "Lade Dateiliste...\r",
     "fr-FR": "Chargement de la liste des fichiers...",
     "ko-KR": "파일 목록 로드 중...",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(20333-20347)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(20724-20738)"],
     "$id": 4201
   },
   "平铺到虚拟目录": {
@@ -1200,7 +1109,7 @@
     "de-DE": "In virtuelles Verzeichnis kacheln\r",
     "fr-FR": "Répartir dans les répertoires virtuels",
     "ko-KR": "가상 디렉토리로 평면화",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(22409-22420)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(22800-22811)"],
     "$id": 4202
   },
   "勾选后，隐藏所有目录层级，将所有文件展示为单一层级的纯文件列表（自动去重）": {
@@ -1213,7 +1122,7 @@
     "de-DE": "Wenn aktiviert, werden alle Verzeichnisebenen ausgeblendet und alle Dateien als einfache Einzel-Ebene-Liste angezeigt (automatische Duplikatentfernung)\r",
     "fr-FR": "Lorsque cette case est cochée, tous les niveaux de répertoires sont masqués, et tous les fichiers sont affichés comme une liste simple sans duplication automatique",
     "ko-KR": "선택하면 모든 디렉토리 계층을 숨기고 모든 파일을 단일 계층의 순수 파일 목록으로 표시합니다(자동 중복 제거)",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(22994-23035)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(23385-23426)"],
     "$id": 4203
   },
   "目录按勾选顺序嵌套": {
@@ -1226,7 +1135,7 @@
     "de-DE": "Verzeichnisse sind in der Kontrollreihenfolge verschachtelt",
     "fr-FR": "Les répertoires sont imbriqués dans l'ordre des chèques",
     "ko-KR": "디렉토리는 검사 순서대로 중첩됩니다.",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(23773-23786)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(24164-24177)"],
     "$id": 4686
   },
   "勾选后，点选的多个不同维度（分类）的标签将按点击顺序变成父子文件夹（如：{文件类型} > {文件用途}）。不选中时，它们将分别作为独立的一级文件夹并列显示{文件类型} {文件用途}。": {
@@ -1239,7 +1148,7 @@
     "de-DE": "Wenn diese Option aktiviert ist, werden die ausgewählten Tags aus verschiedenen Dimensionen (Kategorien) in der Reihenfolge des Anklickens zu übergeordneten und untergeordneten Ordnern (z. B.: {Dateityp} > {Verwendungszweck der Datei}). Wenn die Option nicht aktiviert ist, werden sie jeweils als eigenständige Ordner der ersten Ebene nebeneinander angezeigt {Dateityp} {Verwendungszweck der Datei}.",
     "fr-FR": "Une fois cochée, les étiquettes de différentes dimensions (catégories) sélectionnées deviendront des dossiers parent-enfant selon l'ordre de clic (par exemple : {Type de fichier} > {Usage du fichier}). Si non cochée, elles seront affichées séparément comme des dossiers de premier niveau {Type de fichier} {Usage du fichier}.",
     "ko-KR": "체크 시, 선택한 여러 개의 서로 다른 차원(분류) 태그는 클릭 순서에 따라 부모-자식 폴더로 변환됩니다 (예: {파일 유형} > {파일 용도}). 체크하지 않을 경우, 각각 독립된 1차 폴더로 나란히 표시됩니다 {파일 유형} {파일 용도}.",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(24376-24495)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(24767-24886)"],
     "$id": 2742
   },
   "文件去重": {
@@ -1252,7 +1161,7 @@
     "de-DE": "Datei-Duplikatentfernung\r",
     "fr-FR": "Suppression des doublons de fichiers",
     "ko-KR": "파일 중복 제거",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(25253-25261)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(25644-25652)"],
     "$id": 4204
   },
   "勾选后，同一文件在整个虚拟目录树中仅出现一次。采用\"后选优先\"原则：文件归属到最后勾选的标签目录（例如：先选A后选B，文件归入B目录）。未勾选时，文件可在多个标签目录下重复显示。": {
@@ -1265,7 +1174,7 @@
     "de-DE": "Wenn aktiviert, erscheint dieselbe Datei innerhalb des gesamten virtuellen Verzeichnisbaums nur einmal. Es gilt das Prinzip \"Später Auswahl hat Vorrang\": Die Datei gehört zu dem zuletzt ausgewählten Label-Verzeichnis (z. B. wenn zuerst A und dann B ausgewählt wird, wird die Datei dem Verzeichnis B zugeordnet). Wenn deaktiviert, können Dateien in mehreren Label-Verzeichnissen mehrfach angezeigt werden.",
     "fr-FR": "Lorsque cette case est cochée, chaque fichier n'apparaît qu'une seule fois dans l'arborescence virtuelle. Principe appliqué : « dernier choix prioritaire » : le fichier est affecté au dernier répertoire de tags coché (par exemple, si A est coché avant B, le fichier est affecté au répertoire B). Lorsque cette case n'est pas cochée, les fichiers peuvent apparaître plusieurs fois dans différents répertoires de tags.",
     "ko-KR": "선택하면 동일한 파일이 전체 가상 디렉토리 트리에서 한 번만 나타납니다. \"후선 투표 우선\" 원칙을 따릅니다: 파일은 마지막으로 선택한 태그 디렉토리에 속합니다(예: 먼저 A를 선택하고 B를 선택하면 파일은 B 디렉토리에 포함됨). 선택하지 않은 경우 하나의 파일이 여러 태그 디렉토리에 중복 표시될 수 있습니다.",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(25851-25968)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(26242-26359)"],
     "$id": 4205
   },
   "不生成空目录": {
@@ -1278,7 +1187,7 @@
     "de-DE": "Keine leeren Verzeichnisse erstellen",
     "fr-FR": "Ne pas générer les répertoires vides",
     "ko-KR": "빈 디렉토리 생성 안 함",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(26674-26684)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(27065-27075)"],
     "$id": 4206
   },
   "勾选后，预览和最终生成的虚拟目录都不会包含没有文件的空目录": {
@@ -1291,7 +1200,7 @@
     "de-DE": "Wenn aktiviert, werden weder in der Vorschau noch im endgültigen virtuellen Verzeichnis leere Verzeichnisse ohne Dateien enthalten sein",
     "fr-FR": "Lorsque cette case est cochée, les répertoires virtuels de prévisualisation et de génération finale n'incluront pas les répertoires vides sans fichiers",
     "ko-KR": "체크하면 미리보기 및 최종 생성된 가상 디렉토리에 파일이 없는 빈 디렉토리가 포함되지 않습니다",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(27258-27291)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(27649-27682)"],
     "$id": 4207
   },
   "生成后打开虚拟目录": {
@@ -1304,7 +1213,7 @@
     "de-DE": "Virtuelles Verzeichnis nach Erstellung öffnen",
     "fr-FR": "Ouvrir le répertoire virtuel après la génération",
     "ko-KR": "생성 후 가상 디렉토리 열기",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(27949-27962)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28340-28353)"],
     "$id": 4208
   },
   "确认生成": {
@@ -1317,7 +1226,7 @@
     "de-DE": "Erstellung bestätigen",
     "fr-FR": "Confirmer la génération",
     "ko-KR": "생성 확인",
-    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(28691-28699)"],
+    "$files": ["src/renderer/components/organize/GenerateVirtualDirectoriesDialog.tsx(29082-29090)"],
     "$id": 4209
   },
   "该功能正在数据源迁移中，暂不可用": {

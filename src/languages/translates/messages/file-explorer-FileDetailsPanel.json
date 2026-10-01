@@ -27,7 +27,9 @@
     "de-DE": "Dateiverwendungszweck",
     "fr-FR": "Utilisation du fichier",
     "ko-KR": "파일 용도",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(7474-7482)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(7474-7482)"
+    ],
     "$id": 8371
   },
   "质量评分": {
@@ -40,7 +42,9 @@
     "de-DE": "Qualitätsbewertung",
     "fr-FR": "Note de qualité",
     "ko-KR": "품질 평점",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(11131-11139)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(11131-11139)"
+    ],
     "$id": 8372
   },
   "OCR": {
@@ -53,7 +57,9 @@
     "de-DE": "OCR",
     "fr-FR": "Reconnaissance optique de caractères",
     "ko-KR": "OCR",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(11734-11741)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(11734-11741)"
+    ],
     "$id": 8461
   },
   "音频文本": {
@@ -66,7 +72,9 @@
     "de-DE": "Audiotext",
     "fr-FR": "Texte audio",
     "ko-KR": "오디오 텍스트",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12010-12018)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12010-12018)"
+    ],
     "$id": 19981
   },
   "歌词": {
@@ -79,7 +87,9 @@
     "de-DE": "Text",
     "fr-FR": "Paroles",
     "ko-KR": "가사",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12139-12145)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12139-12145)"
+    ],
     "$id": 19982
   },
   "内容摘要": {
@@ -92,7 +102,9 @@
     "de-DE": "Inhaltszusammenfassung",
     "fr-FR": "Résumé du contenu",
     "ko-KR": "내용 요약",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12352-12360)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(12352-12360)"
+    ],
     "$id": 8375
   },
   "元数据": {
@@ -105,7 +117,9 @@
     "de-DE": "Metadaten",
     "fr-FR": "Métadonnées",
     "ko-KR": "메타데이터",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(13102-13109)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(13102-13109)"
+    ],
     "$id": 8376
   },
   "耗时": {
@@ -118,7 +132,9 @@
     "de-DE": "Zeitaufwendig",
     "fr-FR": "Durée",
     "ko-KR": "소요 시간",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(13205-13211)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(13205-13211)"
+    ],
     "$id": 8377
   },
   "原文件丢失": {
@@ -131,7 +147,9 @@
     "de-DE": "Ursprüngliche Datei verloren gegangen",
     "fr-FR": "Fichier original manquant",
     "ko-KR": "원본 파일 손실됨",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14251-14260)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14251-14260)"
+    ],
     "$id": 8378
   },
   "关闭显示所有丢失文件": {
@@ -144,7 +162,9 @@
     "de-DE": "Schließen Sie die Anzeige aller verloren gegangenen Dateien",
     "fr-FR": "Fermer pour afficher tous les fichiers perdus",
     "ko-KR": "모든 손실 파일 표시 끄기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14590-14604)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(14590-14604)"
+    ],
     "$id": 8379
   },
   "最小单元": {
@@ -157,7 +177,9 @@
     "de-DE": "Kleinste Einheit",
     "fr-FR": "La plus petite unité",
     "ko-KR": "가장 작은 단위",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(15913-15921)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(15913-15921)"
+    ],
     "$id": 8380
   },
   "置信度": {
@@ -188,7 +210,9 @@
     "de-DE": "Bereits in Ordnung, die Dateien im Verzeichnis werden nicht einzeln analysiert.",
     "fr-FR": "Déjà ordonné, les fichiers dans le répertoire ne sont pas analysés individuellement",
     "ko-KR": "정렬됨, 디렉토리 내 파일은 하나씩 분석되지 않음",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(16491-16512)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(16491-16512)"
+    ],
     "$id": 8382
   },
   "关闭最小单元识别": {
@@ -201,7 +225,9 @@
     "de-DE": "Deaktivieren Sie die Erkennung der Mindesteinheit",
     "fr-FR": "Désactiver l'identification de l'unité minimale",
     "ko-KR": "최소 단위 인식 끄기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(17138-17150)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(17138-17150)"
+    ],
     "$id": 8383
   },
   "目录属性": {
@@ -214,7 +240,9 @@
     "de-DE": "Verzeichniseigenschaften",
     "fr-FR": "Propriétés du répertoire",
     "ko-KR": "디렉터리 속성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(21481-21489)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(21481-21489)"
+    ],
     "$id": 8384
   },
   "目录名": {
@@ -227,7 +255,9 @@
     "de-DE": "Verzeichnisname",
     "fr-FR": "Nom du répertoire",
     "ko-KR": "디렉토리 이름",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(21722-21729)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(21722-21729)"
+    ],
     "$id": 8385
   },
   "路径": {
@@ -240,7 +270,9 @@
     "de-DE": "Weg",
     "fr-FR": "Chemin",
     "ko-KR": "길",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22025-22031)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22025-22031)"
+    ],
     "$id": 8386
   },
   "文件数量": {
@@ -253,7 +285,9 @@
     "de-DE": "Anzahl der Dateien",
     "fr-FR": "Nombre de fichiers",
     "ko-KR": "파일 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22471-22479)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22471-22479)"
+    ],
     "$id": 8387
   },
   "个": {
@@ -284,7 +318,9 @@
     "de-DE": "Anzahl der Unterverzeichnisse",
     "fr-FR": "Nombre de sous-répertoires",
     "ko-KR": "하위 디렉터리 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22842-22851)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(22842-22851)"
+    ],
     "$id": 8389
   },
   "大小": {
@@ -297,7 +333,9 @@
     "de-DE": "Größe\r",
     "fr-FR": "Taille",
     "ko-KR": "크기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(23226-23232)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(23226-23232)"
+    ],
     "$id": 8390
   },
   "分析目录特征，以指导目录中文件的后续分析": {
@@ -310,7 +348,9 @@
     "de-DE": "Analysieren Sie Verzeichniseigenschaften, um die anschließende Analyse der Dateien im Verzeichnis zu steuern",
     "fr-FR": "Analyser les caractéristiques du répertoire pour guider l'analyse ultérieure des fichiers dans le répertoire",
     "ko-KR": "디렉터리 특성을 분석하여 디렉터리에 있는 파일의 후속 분석을 안내합니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24445-24469)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24445-24469)"
+    ],
     "$id": 8391
   },
   "分析中": {
@@ -323,7 +363,9 @@
     "de-DE": "Analysieren",
     "fr-FR": "En cours d'analyse",
     "ko-KR": "분석 중",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24969-24976)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(24969-24976)"
+    ],
     "$id": 8392
   },
   "目录画像": {
@@ -336,7 +378,9 @@
     "de-DE": "Katalogporträt",
     "fr-FR": "Portrait de catalogue",
     "ko-KR": "카탈로그 초상화",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25208-25216)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25208-25216)"
+    ],
     "$id": 8393
   },
   "分析整个目录中的文件": {
@@ -349,7 +393,9 @@
     "de-DE": "Analysieren Sie Dateien im gesamten Verzeichnis",
     "fr-FR": "Analyser les fichiers dans tout le répertoire",
     "ko-KR": "전체 디렉터리의 파일 분석",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25735-25749)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(25735-25749)"
+    ],
     "$id": 8394
   },
   "重新分析": {
@@ -394,7 +440,9 @@
     "de-DE": "In der Warteschlange",
     "fr-FR": "Dans la file d'attente",
     "ko-KR": "대기열에",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(27060-27067)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(27060-27067)"
+    ],
     "$id": 11279
   },
   "分析中...": {
@@ -407,7 +455,9 @@
     "de-DE": "Analyse läuft...",
     "fr-FR": "Analyse en cours...",
     "ko-KR": "분석 중...",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(27071-27081)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(27071-27081)"
+    ],
     "$id": 8397
   },
   "清空分析结果": {
@@ -420,7 +470,9 @@
     "de-DE": "Analyseergebnisse löschen",
     "fr-FR": "Effacer les résultats d'analyse",
     "ko-KR": "분석 결과 초기화",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(27952-27962)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(27952-27962)"
+    ],
     "$id": 8398
   },
   "确认清空分析结果？": {
@@ -433,7 +485,9 @@
     "de-DE": "Analyseergebnisse wirklich löschen?",
     "fr-FR": "Confirmer l'effacement des résultats d'analyse ?",
     "ko-KR": "분석 결과를 초기화하시겠습니까?",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28351-28364)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28351-28364)"
+    ],
     "$id": 8399
   },
   "此操作将删除该{category}的所有AI分析数据{sentens}，但不会删除{category}本身。": {
@@ -446,7 +500,9 @@
     "de-DE": "Diese Aktion entfernt alle KI-Analyse-Daten für {category}{sentens}, aber {category} selbst wird nicht gelöscht.",
     "fr-FR": "Cette opération supprimera toutes les données d'analyse AI de ce {category}{sentens}, mais ne supprimera pas le {category} lui-même.",
     "ko-KR": "이 작업은 {category}의 모든 AI 분석 데이터{sentens}를 삭제하지만, {category} 자체는 삭제하지 않습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28440-28498)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28440-28498)"
+    ],
     "$id": 8400
   },
   "目录": {
@@ -459,7 +515,9 @@
     "de-DE": "Verzeichnis",
     "fr-FR": "Répertoire",
     "ko-KR": "디렉토리",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28543-28549)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28543-28549)"
+    ],
     "$id": 8401
   },
   "文件": {
@@ -472,7 +530,9 @@
     "de-DE": "Datei",
     "fr-FR": "Fichier",
     "ko-KR": "파일",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28553-28559)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28553-28559)"
+    ],
     "$id": 8402
   },
   "（不包括目录内文件的分析数据）": {
@@ -485,7 +545,9 @@
     "de-DE": "(nicht einschließlich der Analyse-Daten in den Verzeichnisdateien)",
     "fr-FR": "(ne comprend pas les données d'analyse des fichiers dans les répertoires)",
     "ko-KR": "(디렉토리 내 파일의 분석 데이터 제외)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28621-28640)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28621-28640)"
+    ],
     "$id": 8403
   },
   "（包括摘要、标签、向量索引等）": {
@@ -498,7 +560,9 @@
     "de-DE": "(einschließlich Zusammenfassung, Tags, Vektorindex usw.)",
     "fr-FR": "(y compris le résumé, les étiquettes, l'indexation vectorielle, etc.)",
     "ko-KR": "(요약, 태그, 벡터 인덱스 등 포함)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28663-28682)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28663-28682)"
+    ],
     "$id": 8404
   },
   "清空后，您可以重新进行分析。": {
@@ -511,7 +575,9 @@
     "de-DE": "Nach dem Löschen können Sie eine erneute Analyse durchführen.",
     "fr-FR": "Après l'effacement, vous pourrez relancer une analyse.",
     "ko-KR": "초기화 후 다시 분석할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28763-28781)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(28763-28781)"
+    ],
     "$id": 8405
   },
   "取消": {
@@ -545,7 +611,9 @@
     "de-DE": "Löschen bestätigen",
     "fr-FR": "Confirmer l'effacement",
     "ko-KR": "초기화 확인",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(29302-29310)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/index.tsx(29302-29310)"
+    ],
     "$id": 8407
   },
   "智能文件名": {
@@ -578,7 +646,9 @@
     "de-DE": "Datum",
     "fr-FR": "Date",
     "ko-KR": "날짜",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(639-645)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(639-645)"
+    ],
     "$id": 10716
   },
   "文件类型前置，后接智能文件名与修改日期": {
@@ -591,7 +661,9 @@
     "de-DE": "Der Dateityp wird vorangestellt, gefolgt vom Namen der Smart-Datei und dem Änderungsdatum.",
     "fr-FR": "Le type de fichier est précédé du préfixe, suivi du nom du fichier intelligent et de la date de modification.",
     "ko-KR": "파일 형식 앞에는 스마트 파일 이름과 수정 날짜가 옵니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(736-759)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(736-759)"
+    ],
     "$id": 10717
   },
   "修改日期": {
@@ -620,7 +692,9 @@
     "de-DE": "Datumspräfix zur Erleichterung der Sortierung nach Zeit",
     "fr-FR": "Préfixe de date pour faciliter le tri par heure",
     "ko-KR": "시간별로 쉽게 정렬할 수 있는 날짜 접두사",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(881-897)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(881-897)"
+    ],
     "$id": 10719
   },
   "题材维度": {
@@ -633,7 +707,9 @@
     "de-DE": "Themendimension",
     "fr-FR": "Dimension thématique",
     "ko-KR": "테마 차원",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(924-932)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(924-932)"
+    ],
     "$id": 10720
   },
   "题材": {
@@ -663,7 +739,9 @@
     "de-DE": "Betreff-Tags werden vorangestellt, um die Klassifizierungsattribute zu verstärken",
     "fr-FR": "Les balises de sujet sont placées devant pour renforcer les attributs de classification",
     "ko-KR": "분류 속성을 강화하기 위해 제목 태그를 앞에 배치합니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1021-1038)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1021-1038)"
+    ],
     "$id": 10721
   },
   "作者": {
@@ -692,7 +770,9 @@
     "de-DE": "Präfix des Autors oder Erstellers",
     "fr-FR": "Préfixe d'auteur ou de créateur",
     "ko-KR": "작성자 또는 작성자 접두어",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1152-1164)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1152-1164)"
+    ],
     "$id": 10722
   },
   "分辨率": {
@@ -737,7 +817,9 @@
     "de-DE": "Multimodale medienspezifische Benennung",
     "fr-FR": "Dénomination spécifique aux médias multimodaux",
     "ko-KR": "다중 모드 미디어별 이름 지정",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1313-1326)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1313-1326)"
+    ],
     "$id": 10725
   },
   "创建日期": {
@@ -782,7 +864,9 @@
     "de-DE": "Behalten Sie den ursprünglichen Dateinamen und die dreistellige Seriennummer bei",
     "fr-FR": "Conservez le nom de fichier d'origine et le numéro de série à trois chiffres",
     "ko-KR": "원본 파일명과 3자리 일련번호를 유지하세요.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1471-1486)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1471-1486)"
+    ],
     "$id": 10728
   },
   "质量分": {
@@ -795,7 +879,9 @@
     "de-DE": "Qualitätspunkte",
     "fr-FR": "Points de qualité",
     "ko-KR": "품질 포인트",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1529-1536)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1529-1536)"
+    ],
     "$id": 10729
   },
   "标记 AI 质量评分": {
@@ -808,7 +894,9 @@
     "de-DE": "Kennzeichnen Sie den KI-Qualitätsfaktor",
     "fr-FR": "Signaler le niveau de qualité de l'IA",
     "ko-KR": "AI 품질평가점수 신고",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1609-1623)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1609-1623)"
+    ],
     "$id": 10730
   },
   "全维度属性组合": {
@@ -821,7 +909,9 @@
     "de-DE": "Volldimensionale Attributkombination",
     "fr-FR": "Combinaison d'attributs pleine dimension",
     "ko-KR": "전체 차원 속성 조합",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1647-1658)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1647-1658)"
+    ],
     "$id": 10731
   },
   "题材、名称、日期与序号复合命名": {
@@ -834,7 +924,9 @@
     "de-DE": "Zusammengesetzte Benennung aus Betreff, Name, Datum und Seriennummer",
     "fr-FR": "Dénomination composée du sujet, du nom, de la date et du numéro de série",
     "ko-KR": "주체, 이름, 날짜, 일련번호를 복합적으로 명명하는 것",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1757-1776)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(1757-1776)"
+    ],
     "$id": 10732
   },
   "应用到子目录": {
@@ -879,7 +971,9 @@
     "de-DE": "Vom übergeordneten Element erben",
     "fr-FR": "Hériter du parent",
     "ko-KR": "부모로부터 상속",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(3235-3243)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(3235-3243)"
+    ],
     "$id": 9904
   },
   "继承模式已更新": {
@@ -892,7 +986,9 @@
     "de-DE": "Der Vererbungsmodus wurde aktualisiert",
     "fr-FR": "Le mode héritage a été mis à jour",
     "ko-KR": "상속 모드가 업데이트되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(6107-6118)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(6107-6118)"
+    ],
     "$id": 9902
   },
   "更新继承模式失败": {
@@ -905,7 +1001,9 @@
     "de-DE": "Das Vererbungsschema konnte nicht aktualisiert werden",
     "fr-FR": "Échec de la mise à jour du schéma d'héritage",
     "ko-KR": "상속 스키마를 업데이트하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(6195-6207)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(6195-6207)"
+    ],
     "$id": 9903
   },
   "格式不符合要求：规则中必须包含“内容描述”或“描述”（例如：[领域]内容描述、内容描述_角色名）": {
@@ -918,7 +1016,9 @@
     "de-DE": "\"Format\" \"Format\" entspricht nicht den Anforderungen: Die Regel muss \"Inhaltsbeschreibung\" oder \"Beschreibung\" enthalten (z. B.: [domain] Inhaltsbeschreibung, Inhaltsbeschreibung_ Rollenname)",
     "fr-FR": "\"\"\"Format\" ne répond pas aux exigences: la règle doit contenir “description du contenu \" ou \"description\" (par exemple: description du contenu [domaine], description du contenu_nom du rôle)",
     "ko-KR": "\"형식\"이\"콘텐츠 설명\"또는\"설명\"을 포함해야 합니다(예:[도메인]콘텐츠 설명,콘텐츠 설명_역할 이름).",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(6822-6874)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(6822-6874)"
+    ],
     "$id": 11464
   },
   "智能文件名格式已更新": {
@@ -931,7 +1031,9 @@
     "de-DE": "Intelligentes Dateinamenformat aktualisiert",
     "fr-FR": "Format de nom de fichier intelligent mis à jour",
     "ko-KR": "스마트 파일 이름 형식이 업데이트되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7110-7124)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7110-7124)"
+    ],
     "$id": 8408
   },
   "保存失败，请重试": {
@@ -961,7 +1063,9 @@
     "de-DE": "Die KI-Analysestrategie wurde aktualisiert",
     "fr-FR": "La stratégie d'analyse de l'IA a été mise à jour",
     "ko-KR": "AI 분석 전략이 업데이트되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7771-7784)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(7771-7784)"
+    ],
     "$id": 8410
   },
   "已采纳AI建议并启用": {
@@ -1006,7 +1110,9 @@
     "de-DE": "Kopieren nicht möglich: Der für das Smartdateinamenformat erforderliche Inhalt wurde nicht gefunden",
     "fr-FR": "Impossible de copier: Le contenu requis pour le format de nom de fichier intelligent n'a pas été trouvé",
     "ko-KR": "복사할 수 없음:스마트 파일 이름 형식에 필요한 콘텐츠를 찾을 수 없습니다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10217-10240)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10217-10240)"
+    ],
     "$id": 11389
   },
   "格式要求已复制到剪贴板，已为您开启编辑模式": {
@@ -1019,7 +1125,9 @@
     "de-DE": "Die Formatanforderungen wurden in die Zwischenablage kopiert und der Bearbeitungsmodus für Sie aktiviert",
     "fr-FR": "Les exigences de format ont été copiées dans le presse-papiers et le mode d'édition a été activé pour vous",
     "ko-KR": "형식 요구 사항이 클립보드에 복사되었으며 편집 모드가 켜져 있습니다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10356-10381)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10356-10381)"
+    ],
     "$id": 11624
   },
   "复制失败，请重试": {
@@ -1032,7 +1140,9 @@
     "de-DE": "Kopieren fehlgeschlagen, bitte erneut versuchen.",
     "fr-FR": "Échec de la copie, veuillez réessayer",
     "ko-KR": "복사에 실패했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10670-10682)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(10670-10682)"
+    ],
     "$id": 11625
   },
   "智能文件名附加属性已更新": {
@@ -1045,7 +1155,9 @@
     "de-DE": "Intelligente Dateinamenanhänge aktualisiert",
     "fr-FR": "Pièces jointes de nom de fichier intelligentes mises à jour",
     "ko-KR": "스마트 파일 이름 첨부 파일이 업데이트되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11152-11168)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11152-11168)"
+    ],
     "$id": 10736
   },
   "已成功将命名模板应用至 {count} 个已分析文件": {
@@ -1058,7 +1170,9 @@
     "de-DE": "Die benannte Vorlage wurde erfolgreich auf {count} analysierte Dateien angewendet",
     "fr-FR": "Le modèle nommé a été appliqué avec succès à {count} fichiers analysés",
     "ko-KR": "{count} 구문 분석된 파일에 명명된 템플릿을 성공적으로 적용했습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11884-11914)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(11884-11914)"
+    ],
     "$id": 10737
   },
   "批量应用失败，请重试": {
@@ -1071,7 +1185,9 @@
     "de-DE": "Die Batch-Anwendung ist fehlgeschlagen. Bitte versuchen Sie es erneut",
     "fr-FR": "L'application par lots a échoué, veuillez réessayer",
     "ko-KR": "일괄 신청에 실패했습니다. 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(12546-12560)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(12546-12560)"
+    ],
     "$id": 10738
   },
   "路径:": {
@@ -1084,7 +1200,9 @@
     "de-DE": "Pfad:",
     "fr-FR": "Chemin :",
     "ko-KR": "경로:",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13286-13293)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13286-13293)"
+    ],
     "$id": 8411
   },
   "文件总数:": {
@@ -1097,7 +1215,9 @@
     "de-DE": "Gesamtzahl der Dateien:",
     "fr-FR": "Nombre total de fichiers :",
     "ko-KR": "총 파일 수:",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13483-13492)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13483-13492)"
+    ],
     "$id": 8412
   },
   "已分析:": {
@@ -1110,7 +1230,9 @@
     "de-DE": "Bereits analysiert:",
     "fr-FR": "Déjà analysé :",
     "ko-KR": "분석 완료:",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13659-13667)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13659-13667)"
+    ],
     "$id": 8413
   },
   "最后扫描:": {
@@ -1123,7 +1245,9 @@
     "de-DE": "Letzte Überprüfung:",
     "fr-FR": "Dernière analyse :",
     "ko-KR": "최근 스캔:",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13891-13900)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(13891-13900)"
+    ],
     "$id": 8414
   },
   "智能文件名格式": {
@@ -1136,7 +1260,9 @@
     "de-DE": "Format für intelligente Dateinamen",
     "fr-FR": "Format de nom de fichier intelligent",
     "ko-KR": "스마트 파일명 형식",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(14834-14845)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(14834-14845)"
+    ],
     "$id": 8424
   },
   "此处的配置将影响该目录中文件的智能文件名命名格式": {
@@ -1149,7 +1275,9 @@
     "de-DE": "Die hier vorgenommene Konfiguration wirkt sich auf das Namensformat für intelligente Dateinamen für Dateien in diesem Verzeichnis aus.",
     "fr-FR": "La configuration ici affectera le format de dénomination de nom de fichier intelligent pour les fichiers de ce répertoire.",
     "ko-KR": "여기의 구성은 이 디렉터리에 있는 파일의 스마트 파일 이름 명명 형식에 영향을 미칩니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(15507-15535)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(15507-15535)"
+    ],
     "$id": 8425
   },
   "编辑智能文件名格式": {
@@ -1162,7 +1290,9 @@
     "de-DE": "Bearbeiten Sie intelligente Dateinamenformate",
     "fr-FR": "Modifier les formats de noms de fichiers intelligents",
     "ko-KR": "스마트 파일 이름 형식 편집",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(15969-15982)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(15969-15982)"
+    ],
     "$id": 8426
   },
   "编辑": {
@@ -1209,7 +1339,9 @@
     "de-DE": "[Feld] Inhaltsbeschreibung",
     "fr-FR": "[Champ] Description du contenu",
     "ko-KR": "[필드] 콘텐츠 설명",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(18517-18529)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(18517-18529)"
+    ],
     "$id": 8427
   },
   "查看格式要求": {
@@ -1222,7 +1354,9 @@
     "de-DE": "Formatanforderungen anzeigen",
     "fr-FR": "Afficher les exigences de format",
     "ko-KR": "형식 요구사항 보기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(19260-19270)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(19260-19270)"
+    ],
     "$id": 8428
   },
   "智能文件名格式要求": {
@@ -1235,7 +1369,9 @@
     "de-DE": "Anforderungen an das Smart-Dateinamenformat",
     "fr-FR": "Exigences relatives au format de nom de fichier intelligent",
     "ko-KR": "스마트 파일 이름 형식 요구 사항",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(19703-19716)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(19703-19716)"
+    ],
     "$id": 11626
   },
   "支持以下命名规则，你可以自行编写关键词，由AI生成（取决于AI的遵循能力）": {
@@ -1248,7 +1384,9 @@
     "de-DE": "Die folgenden Benennungsregeln werden unterstützt. Sie können Ihre eigenen, von der KI generierten Schlüsselwörter schreiben (abhängig von der Fähigkeit der KI, ihnen zu folgen).",
     "fr-FR": "Les règles de dénomination suivantes sont prises en charge, vous pouvez écrire vos propres mots-clés, générés par l'IA (en fonction de la capacité de l'IA à suivre)",
     "ko-KR": "다음과 같은 명명 규칙이 지원됩니다. AI가 생성한 자신만의 키워드를 작성할 수 있습니다(AI의 따라가는 능력에 따라 다름).",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(19875-19952)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(19875-19952)"
+    ],
     "$id": 10745
   },
   "内容描述": {
@@ -1329,7 +1467,9 @@
     "de-DE": "Serienname",
     "fr-FR": "Nom de la série",
     "ko-KR": "시리즈명",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20402-20409)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20402-20409)"
+    ],
     "$id": 10746
   },
   "原文件名编号": {
@@ -1342,7 +1482,9 @@
     "de-DE": "Ursprüngliche Dateinamennummer",
     "fr-FR": "Numéro du nom de fichier d'origine",
     "ko-KR": "원본 파일 이름 번호",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20563-20573)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20563-20573)"
+    ],
     "$id": 10747
   },
   "状态": {
@@ -1355,7 +1497,9 @@
     "de-DE": "Status",
     "fr-FR": "Statut",
     "ko-KR": "상태",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20577-20583)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20577-20583)"
+    ],
     "$id": 10748
   },
   "版本": {
@@ -1368,7 +1512,9 @@
     "de-DE": "Version",
     "fr-FR": "Version",
     "ko-KR": "버전",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20711-20717)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(20711-20717)"
+    ],
     "$id": 10749
   },
   "年份": {
@@ -1398,7 +1544,9 @@
     "de-DE": "Einstufung",
     "fr-FR": "Classification",
     "ko-KR": "분류",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21013-21019)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21013-21019)"
+    ],
     "$id": 9455
   },
   "地名": {
@@ -1411,7 +1559,9 @@
     "de-DE": "Ortsname",
     "fr-FR": "Nom du lieu",
     "ko-KR": "지명",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21023-21029)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21023-21029)"
+    ],
     "$id": 10750
   },
   "分隔符提示：属性之间可以用下划线“_”或中划线“-”连接（例如：": {
@@ -1424,7 +1574,9 @@
     "de-DE": "Trennzeichenhinweis: Zwischen den Attributen können sie mit einem Unterstrich \"_\" oder einem Bindestrich \"-\" verbunden werden (z. B.:",
     "fr-FR": "Indicateur de séparateur : les propriétés peuvent être connectées par un soulignement « _ » ou un tiret « - » (par exemple :",
     "ko-KR": "구분자 힌트: 속성 사이에는 밑줄(\"_\")이나 대시(\"-\")로 연결할 수 있습니다(예:",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21306-21342)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21306-21342)"
+    ],
     "$id": 19498
   },
   "）": {
@@ -1437,7 +1589,9 @@
     "de-DE": ")",
     "fr-FR": ")",
     "ko-KR": ")",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21482-21487)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21482-21487)"
+    ],
     "$id": 19499
   },
   "规则中必须包含“内容描述”或“描述”，不符合格式要求的规则将自动还原为默认值": {
@@ -1450,7 +1604,9 @@
     "de-DE": "\"Inhaltsbeschreibung\" oder \"Beschreibung\" muss in die Regel aufgenommen werden, und Regeln, die die Formatanforderungen nicht erfüllen, werden automatisch auf die Standardwerte zurückgesetzt",
     "fr-FR": "“Description \" ou \"Description\" du contenu doit être inclus dans la règle, et les règles qui ne répondent pas aux exigences de format seront automatiquement restaurées aux valeurs par défaut",
     "ko-KR": "\"콘텐츠 설명\"또는\"설명\"규칙에 포함되어야 하며 형식 요구 사항을 충족하지 않는 규칙은 자동으로 기본값으로 복원됩니다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21676-21718)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(21676-21718)"
+    ],
     "$id": 11466
   },
   "保存中": {
@@ -1497,7 +1653,9 @@
     "de-DE": "Bitte konfigurieren Sie es zuerst, da dies Auswirkungen auf die intelligente Benennung von Dateien hat.",
     "fr-FR": "Veuillez d'abord le configurer, ce qui affectera la dénomination intelligente des fichiers.",
     "ko-KR": "파일의 지능적인 이름 지정에 영향을 미치는 구성을 먼저 구성하십시오.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23670-23688)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(23670-23688)"
+    ],
     "$id": 8432
   },
   "未配置正式智能文件名格式（可点击右上角编辑手动输入，或采纳下方 AI 建议）": {
@@ -1510,7 +1668,9 @@
     "de-DE": "Das formale Smart-Dateinamenformat ist nicht konfiguriert (Sie können auf die obere rechte Ecke klicken, um es zu bearbeiten und manuell einzugeben, oder die unten stehenden KI-Vorschläge übernehmen).",
     "fr-FR": "Le format formel du nom de fichier intelligent n'est pas configuré (vous pouvez cliquer sur le coin supérieur droit pour modifier et saisir manuellement, ou adopter les suggestions d'IA ci-dessous)",
     "ko-KR": "정식 스마트 파일 이름 형식이 구성되지 않았습니다. (오른쪽 상단을 클릭하여 수동으로 편집하고 입력하거나 아래 AI 제안을 채택할 수 있습니다.)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24204-24246)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24204-24246)"
+    ],
     "$id": 10751
   },
   "让外部 AI 帮生成格式": {
@@ -1523,7 +1683,9 @@
     "de-DE": "Lassen Sie externe KI bei der Generierung des Formats helfen",
     "fr-FR": "Laissez l'IA externe vous aider à générer le format",
     "ko-KR": "외부 인공 지능이 형식을 생성하는 데 도움이되도록하십시오",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24915-24931)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(24915-24931)"
+    ],
     "$id": 11628
   },
   "复制格式提示词发给豆包或 ChatGPT，并自动进入编辑模式": {
@@ -1536,7 +1698,9 @@
     "de-DE": "Kopieren Sie das Formataufforderungswort und senden Sie es an Bean Bag oder ChatGPT, und wechseln Sie automatisch in den Bearbeitungsmodus",
     "fr-FR": "Copiez le mot d'invite de format et envoyez-le à Bean bag ou ChatGPT, et entrez automatiquement en mode d'édition",
     "ko-KR": "형식 프롬프트 단어를 복사하여 빈백 또는 챗그펫으로 보내고 자동으로 편집 모드로 들어갑니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25330-25364)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25330-25364)"
+    ],
     "$id": 11629
   },
   "复制格式提示词": {
@@ -1549,7 +1713,9 @@
     "de-DE": "Formatanforderungen kopieren",
     "fr-FR": "Copier les exigences de format",
     "ko-KR": "형식 요구사항 복사",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25512-25523)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25512-25523)"
+    ],
     "$id": 11461
   },
   "可复制格式提示词发给豆包或 ChatGPT，由它按规范定制理想的规则模板，生成后直接贴入上方保存生效。": {
@@ -1562,7 +1728,9 @@
     "de-DE": "Das Formataufforderungswort kann kopiert und an Doubao oder ChatGPT gesendet werden, und die ideale Regelvorlage kann gemäß der Spezifikation angepasst werden. Nachdem es generiert wurde, kann es direkt oben eingefügt und gespeichert werden, um wirksam zu werden.",
     "fr-FR": "Le mot d'invite de format peut être copié et envoyé à Doubao ou ChatGPT, et le modèle de règle idéal peut être personnalisé selon les spécifications. Une fois généré, il peut être directement collé ci-dessus et enregistré pour prendre effet.",
     "ko-KR": "형식 프롬프트 단어를 복사하여 두바오 또는 채트그프트에 보낼 수 있으며 이상적인 규칙 템플릿은 사양에 따라 사용자 정의 할 수 있습니다. 이 생성 된 후,직접 위에 붙여 효과를 저장할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25712-25767)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25712-25767)"
+    ],
     "$id": 11630
   },
   "格式示例：": {
@@ -1575,7 +1743,9 @@
     "de-DE": "Formatbeispiel：",
     "fr-FR": "Exemple de format：",
     "ko-KR": "형식 예제：",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25984-25993)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(25984-25993)"
+    ],
     "$id": 11631
   },
   "可通过目录画像再次自动生成": {
@@ -1652,7 +1822,9 @@
     "de-DE": "Erweiterte Konfiguration",
     "fr-FR": "Configuration avancée",
     "ko-KR": "고급 구성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29709-29717)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29709-29717)"
+    ],
     "$id": 11632
   },
   "附加属性、AI分析策略": {
@@ -1665,7 +1837,9 @@
     "de-DE": "Zusätzliche Attribute, KI-Analysestrategie",
     "fr-FR": "Attributs supplémentaires, stratégie d'analyse de l'IA",
     "ko-KR": "추가 속성,인공 지능 분석 전략",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29845-29860)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(29845-29860)"
+    ],
     "$id": 11633
   },
   "收起": {
@@ -1678,7 +1852,9 @@
     "de-DE": "Schließen",
     "fr-FR": "Réduire",
     "ko-KR": "접기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30049-30055)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30049-30055)"
+    ],
     "$id": 11634
   },
   "展开": {
@@ -1691,7 +1867,9 @@
     "de-DE": "Expandieren",
     "fr-FR": "Développer",
     "ko-KR": "확장하다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30059-30065)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30059-30065)"
+    ],
     "$id": 11635
   },
   "智能文件名附加属性": {
@@ -1704,7 +1882,9 @@
     "de-DE": "Intelligente Dateinamenanhänge",
     "fr-FR": "Pièces jointes intelligentes aux noms de fichiers",
     "ko-KR": "스마트 파일 이름 첨부",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30853-30866)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(30853-30866)"
+    ],
     "$id": 10752
   },
   "在文件分析完毕后自动按该模板生成最终智能文件名，是AI生成的智能文件名的有力补充更快更可控。更多信息，请参考整理页面的批量更名功能": {
@@ -1717,7 +1897,9 @@
     "de-DE": "Nach Abschluss der Dateianalyse wird automatisch der endgültige Smart-Dateiname gemäß der Vorlage generiert. Dies ist eine leistungsstarke Ergänzung zum von AI generierten Smart-Dateinamen, der schneller und kontrollierbarer ist. Weitere Informationen finden Sie in der Batch-Umbenennungsfunktion der Organisationsseite.",
     "fr-FR": "Une fois l'analyse du fichier terminée, le nom de fichier intelligent final est automatiquement généré selon le modèle, qui est un complément puissant au nom de fichier intelligent généré par l'IA, qui est plus rapide et plus contrôlable. Pour plus d'informations, veuillez vous référer à la fonction de renommage par lots de la page de l'organisation.",
     "ko-KR": "파일 분석이 완료되면 템플릿에 따라 최종 스마트 파일 이름이 자동으로 생성됩니다. 이는 AI가 생성한 스마트 파일 이름을 강력하게 보완하여 더 빠르고 제어하기 쉽습니다. 자세한 내용은 기관 페이지의 일괄 이름 바꾸기 기능을 참고하세요.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(31505-31574)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(31505-31574)"
+    ],
     "$id": 10753
   },
   "编辑智能文件名附加属性": {
@@ -1730,7 +1912,9 @@
     "de-DE": "Bearbeiten Sie intelligente Dateinamenanhänge",
     "fr-FR": "Modifier les pièces jointes intelligentes des noms de fichiers",
     "ko-KR": "스마트 파일 이름 첨부 파일 편집",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(32188-32203)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(32188-32203)"
+    ],
     "$id": 10754
   },
   "载入预设:": {
@@ -1743,7 +1927,9 @@
     "de-DE": "Standard laden:",
     "fr-FR": "Charger par défaut :",
     "ko-KR": "기본값 로드:",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(35007-35016)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(35007-35016)"
+    ],
     "$id": 10755
   },
   "选择预设模板快速填入...": {
@@ -1756,7 +1942,9 @@
     "de-DE": "Wählen Sie eine voreingestellte Vorlage zum schnellen Ausfüllen ...",
     "fr-FR": "Choisissez un modèle prédéfini à remplir rapidement...",
     "ko-KR": "빠르게 작성하려면 미리 설정된 템플릿을 선택하세요.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(35974-35991)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(35974-35991)"
+    ],
     "$id": 10756
   },
   "清空模板 (不使用附加属性)": {
@@ -1769,7 +1957,9 @@
     "de-DE": "Klare Vorlage (keine zusätzlichen Attribute verwendet)",
     "fr-FR": "Modèle clair (aucun attribut supplémentaire utilisé)",
     "ko-KR": "템플릿 지우기(추가 속성이 사용되지 않음)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(36063-36081)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(36063-36081)"
+    ],
     "$id": 10757
   },
   "模板表达式 (支持自由手动编辑)": {
@@ -1782,7 +1972,9 @@
     "de-DE": "Vorlagenausdruck (unterstützt kostenlose manuelle Bearbeitung)",
     "fr-FR": "Expression de modèle (prend en charge l'édition manuelle gratuite)",
     "ko-KR": "템플릿 표현(무료 수동 편집 지원)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(36753-36773)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(36753-36773)"
+    ],
     "$id": 10758
   },
   "清空内容": {
@@ -1795,7 +1987,9 @@
     "de-DE": "Klarer Inhalt",
     "fr-FR": "Contenu clair",
     "ko-KR": "콘텐츠 지우기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(37384-37392)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(37384-37392)"
+    ],
     "$id": 10759
   },
   "例如: [{TAG:文件类型}]{SMART_NAME}_{MOD:YYYY-MM-DD}": {
@@ -1808,7 +2002,9 @@
     "de-DE": "Zum Beispiel: [{TAG:Dateityp}]{SMART_NAME}_{MOD:JJJJ-MM-TT}",
     "fr-FR": "Par exemple : [{TAG:Type de fichier}]{SMART_NAME}_{MOD:AAAA-MM-JJ}",
     "ko-KR": "예: [{TAG:파일 유형}]{SMART_NAME}_{MOD:YYYY-MM-DD}",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(37848-37897)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(37848-37897)"
+    ],
     "$id": 10760
   },
   "点击快捷插入标签至光标处": {
@@ -1821,7 +2017,9 @@
     "de-DE": "Klicken Sie, um schnell eine Beschriftung am Cursor einzufügen",
     "fr-FR": "Cliquez pour insérer rapidement une étiquette au curseur",
     "ko-KR": "커서에 레이블을 빠르게 삽입하려면 클릭하세요.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(38615-38631)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(38615-38631)"
+    ],
     "$id": 10761
   },
   "原始智能名": {
@@ -1834,7 +2032,9 @@
     "de-DE": "Ursprünglicher intelligenter Name",
     "fr-FR": "Nom intelligent d'origine",
     "ko-KR": "원래 스마트 이름",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(38854-38863)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(38854-38863)"
+    ],
     "$id": 10762
   },
   "双位序号": {
@@ -1847,7 +2047,9 @@
     "de-DE": "Zweistellige Seriennummer",
     "fr-FR": "Numéro de série à deux chiffres",
     "ko-KR": "두 자리 일련번호",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(39098-39106)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(39098-39106)"
+    ],
     "$id": 10763
   },
   "文件类型标签": {
@@ -1860,7 +2062,9 @@
     "de-DE": "Dateityp-Tag",
     "fr-FR": "Balise de type de fichier",
     "ko-KR": "파일 형식 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(39185-39195)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(39185-39195)"
+    ],
     "$id": 10764
   },
   "题材标签": {
@@ -1873,7 +2077,9 @@
     "de-DE": "Betreff-Tag",
     "fr-FR": "Balise d'objet",
     "ko-KR": "제목 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(39272-39280)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(39272-39280)"
+    ],
     "$id": 10765
   },
   "支持任意自定义前后缀、文字与 DSL 标签组合": {
@@ -1886,7 +2092,9 @@
     "de-DE": "Unterstützt jede Kombination aus benutzerdefinierten Suffixen, Text und DSL-Tags",
     "fr-FR": "Prend en charge toute combinaison de suffixes personnalisés, de texte et de balises DSL",
     "ko-KR": "사용자 정의 접미사, 텍스트 및 DSL 태그의 모든 조합을 지원합니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(40801-40828)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(40801-40828)"
+    ],
     "$id": 10766
   },
   "不使用附加模板 (仅保留原始智能名)": {
@@ -1899,7 +2107,9 @@
     "de-DE": "Es werden keine zusätzlichen Vorlagen verwendet (nur der ursprüngliche Smartname bleibt erhalten)",
     "fr-FR": "Aucun modèle supplémentaire n'est utilisé (seul le nom intelligent d'origine est conservé)",
     "ko-KR": "추가 템플릿은 사용되지 않습니다. (원래 스마트 이름만 유지됩니다.)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43843-43865)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(43843-43865)"
+    ],
     "$id": 10767
   },
   "自定义": {
@@ -1912,7 +2122,9 @@
     "de-DE": "Anpassen",
     "fr-FR": "Personnaliser",
     "ko-KR": "사용자 정의",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(44448-44455)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(44448-44455)"
+    ],
     "$id": 10768
   },
   "当前模板:": {
@@ -1925,7 +2137,9 @@
     "de-DE": "Aktuelle Vorlage:",
     "fr-FR": "Modèle actuel :",
     "ko-KR": "현재 템플릿:",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45007-45016)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45007-45016)"
+    ],
     "$id": 10769
   },
   "未启用附加模板，将直接采用 AI 输出的智能文件名": {
@@ -1938,7 +2152,9 @@
     "de-DE": "Wenn keine zusätzlichen Vorlagen aktiviert sind, wird der von AI ausgegebene Smart-Dateiname direkt verwendet.",
     "fr-FR": "Si des modèles supplémentaires ne sont pas activés, le nom de fichier intelligent généré par AI sera utilisé directement.",
     "ko-KR": "추가 템플릿이 활성화되지 않은 경우 AI가 출력한 스마트 파일 이름이 직접 사용됩니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45340-45369)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45340-45369)"
+    ],
     "$id": 10770
   },
   "为当前目录下已分析文件重新应用该命名模板": {
@@ -1951,7 +2167,9 @@
     "de-DE": "Wenden Sie die Benennungsvorlage erneut auf die analysierten Dateien im aktuellen Verzeichnis an",
     "fr-FR": "Réappliquer le modèle de dénomination aux fichiers analysés dans le répertoire actuel",
     "ko-KR": "현재 디렉터리의 분석된 파일에 명명 템플릿을 다시 적용합니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45993-46017)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(45993-46017)"
+    ],
     "$id": 10771
   },
   "应用中...": {
@@ -1964,7 +2182,9 @@
     "de-DE": "Bewerben...",
     "fr-FR": "Candidature...",
     "ko-KR": "신청 중...",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(46366-46376)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(46366-46376)"
+    ],
     "$id": 10772
   },
   "将附加属性应用至当前目录已分析文件": {
@@ -1977,7 +2197,9 @@
     "de-DE": "Wendet zusätzliche Eigenschaften auf analysierte Dateien im aktuellen Verzeichnis an",
     "fr-FR": "Applique des propriétés supplémentaires aux fichiers analysés dans le répertoire actuel",
     "ko-KR": "현재 디렉터리의 구문 분석된 파일에 추가 속성을 적용합니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(46380-46401)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(46380-46401)"
+    ],
     "$id": 10773
   },
   "AI分析策略": {
@@ -1990,7 +2212,9 @@
     "de-DE": "KI-Analysestrategie",
     "fr-FR": "Stratégie d'analyse de l'IA",
     "ko-KR": "AI 분석 전략",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(46988-46998)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(46988-46998)"
+    ],
     "$id": 8416
   },
   "置信度: ": {
@@ -2019,7 +2243,9 @@
     "de-DE": "Bearbeiten Sie die KI-Analysestrategie",
     "fr-FR": "Modifier la stratégie d'analyse de l'IA",
     "ko-KR": "AI 분석 전략 편집",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(47816-47828)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(47816-47828)"
+    ],
     "$id": 8418
   },
   "请输入AI分析策略，例如关注文件标签、元数据、内容大纲等要求...": {
@@ -2032,7 +2258,9 @@
     "de-DE": "Bitte geben Sie die KI-Analysestrategie ein, z. B. achten Sie auf Datei-Tags, Metadaten, Inhaltsgliederung und andere Anforderungen ...",
     "fr-FR": "Veuillez entrer la stratégie d'analyse de l'IA, par exemple en prêtant attention aux balises de fichiers, aux métadonnées, au aperçu du contenu et à d'autres exigences...",
     "ko-KR": "파일 태그, 메타데이터, 콘텐츠 개요 및 기타 요구 사항에 주의하는 등 AI 분석 전략을 입력하세요...",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(50593-50630)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(50593-50630)"
+    ],
     "$id": 10740
   },
   "影响AI文件分析结果如：标签、描述等": {
@@ -2045,7 +2273,9 @@
     "de-DE": "Beeinflusst die Ergebnisse der AI-Dateianalyse wie Tags, Beschreibungen usw.",
     "fr-FR": "Affecte les résultats de l'analyse des fichiers AI tels que : les balises, les descriptions, etc.",
     "ko-KR": "태그, 설명 등 AI 파일 분석 결과에 영향을 미칩니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(51476-51498)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(51476-51498)"
+    ],
     "$id": 8420
   },
   "未配置正式分析策略（可点击右上角编辑手动输入，或采纳下方 AI 建议）": {
@@ -2058,7 +2288,9 @@
     "de-DE": "Es ist keine formale Analysestrategie konfiguriert (Sie können auf die obere rechte Ecke klicken, um manuelle Eingaben zu bearbeiten, oder die unten stehenden KI-Vorschläge übernehmen).",
     "fr-FR": "Aucune stratégie d'analyse formelle n'est configurée (vous pouvez cliquer sur le coin supérieur droit pour modifier la saisie manuelle, ou adopter les suggestions d'IA ci-dessous)",
     "ko-KR": "공식적인 분석 전략이 구성되지 않았습니다. (오른쪽 상단을 클릭하여 수동 입력을 편집하거나 아래 AI 제안을 채택할 수 있습니다.)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(53733-53772)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(53733-53772)"
+    ],
     "$id": 10741
   },
   "推荐标签": {
@@ -2071,7 +2303,9 @@
     "de-DE": "Empfohlene Tags",
     "fr-FR": "Balises recommandées",
     "ko-KR": "추천 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(57073-57081)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(57073-57081)"
+    ],
     "$id": 8433
   },
   "文件类型分布": {
@@ -2084,7 +2318,9 @@
     "de-DE": "Verteilung der Dateitypen",
     "fr-FR": "Répartition des types de fichiers",
     "ko-KR": "파일 유형 분포",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(58388-58398)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(58388-58398)"
+    ],
     "$id": 8434
   },
   "特殊文件:": {
@@ -2097,7 +2333,9 @@
     "de-DE": "Spezielle Dateien:",
     "fr-FR": "Fichiers spéciaux :",
     "ko-KR": "특수 파일:",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(60040-60049)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(60040-60049)"
+    ],
     "$id": 8435
   },
   "分析时间:": {
@@ -2110,7 +2348,9 @@
     "de-DE": "Analysezeit:",
     "fr-FR": "Durée d'analyse :",
     "ko-KR": "분석 시간:",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(60769-60778)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/DirectoryProfileSection.tsx(60769-60778)"
+    ],
     "$id": 8436
   },
   "来自云端缓存": {
@@ -2155,7 +2395,9 @@
     "de-DE": "Fakten-Labels",
     "fr-FR": "Étiquettes factuelles",
     "ko-KR": "팩트 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(1908-1916)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(1908-1916)"
+    ],
     "$id": 19500
   },
   "融合标签": {
@@ -2168,7 +2410,9 @@
     "de-DE": "Fusions-Labels",
     "fr-FR": "Étiquettes fusionnées",
     "ko-KR": "융합 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(1933-1941)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(1933-1941)"
+    ],
     "$id": 19501
   },
   "视觉标签": {
@@ -2181,7 +2425,10 @@
     "de-DE": "Visuelle Labels",
     "fr-FR": "Étiquettes visuelles",
     "ko-KR": "비주얼 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(1959-1967)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(1959-1967)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(27917-27925)"
+    ],
     "$id": 19502
   },
   "AI 引擎标签": {
@@ -2194,7 +2441,9 @@
     "de-DE": "KI-Engine-Labels",
     "fr-FR": "Étiquettes du moteur IA",
     "ko-KR": "AI 엔진 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(1981-1992)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(1981-1992)"
+    ],
     "$id": 19503
   },
   "用户标签": {
@@ -2207,7 +2456,9 @@
     "de-DE": "Nutzer-Labels",
     "fr-FR": "Étiquettes utilisateur",
     "ko-KR": "사용자 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(2008-2016)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(2008-2016)"
+    ],
     "$id": 19504
   },
   "标签已删除": {
@@ -2220,7 +2471,9 @@
     "de-DE": "Tag gelöscht",
     "fr-FR": "Balise supprimée",
     "ko-KR": "태그가 삭제되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(4690-4699)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(4690-4699)"
+    ],
     "$id": 8439
   },
   "删除失败": {
@@ -2249,7 +2502,9 @@
     "de-DE": "Standardanalysemuster ohne Labels. Bitte wählen Sie ein anderes Analysemuster und analysieren Sie erneut.",
     "fr-FR": "Mode d'analyse standard sans étiquettes, veuillez sélectionner un autre mode d'analyse et réanalyser",
     "ko-KR": "표준 분석 모드에 태그가 없습니다. 다른 분석 모드를 선택하고 다시 분석하십시오.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(5348-5376)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/components/TagList.tsx(5348-5376)"
+    ],
     "$id": 19505
   },
   "目录画像分析完成": {
@@ -2262,7 +2517,9 @@
     "de-DE": "Katalogporträtanalyse abgeschlossen",
     "fr-FR": "Analyse du portrait du catalogue terminée",
     "ko-KR": "카탈로그 세로 분석 완료",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(5595-5607)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(5595-5607)"
+    ],
     "$id": 11455
   },
   "分析完成": {
@@ -2275,7 +2532,9 @@
     "de-DE": "Analyse abgeschlossen",
     "fr-FR": "Analyse terminée",
     "ko-KR": "분석 완료",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(5611-5619)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(5611-5619)"
+    ],
     "$id": 8487
   },
   "分析失败: {}": {
@@ -2288,7 +2547,9 @@
     "de-DE": "Analyse fehlgeschlagen: {}",
     "fr-FR": "Échec de l'analyse : {}",
     "ko-KR": "분석 실패: {}",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(5682-5694)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(5682-5694)"
+    ],
     "$id": 8488
   },
   "未知错误": {
@@ -2320,7 +2581,9 @@
     "de-DE": "Datei wurde zur Analysewarteschlange hinzugefügt, wird analysiert...",
     "fr-FR": "Fichier ajouté à la file d'attente d'analyse, en cours d'analyse...",
     "ko-KR": "파일이 분석 대기열에 추가되었으며 분석 중입니다...",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(7344-7365)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(7344-7365)"
+    ],
     "$id": 8490
   },
   "分析失败，请重试": {
@@ -2349,7 +2612,9 @@
     "de-DE": "{count} Elemente wurden zur Analysewarteschlange hinzugefügt",
     "fr-FR": "{count} éléments ont été ajoutés à la file d'attente d'analyse",
     "ko-KR": "{count} 항목이 분석 대기열에 추가되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8596-8620)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8596-8620)"
+    ],
     "$id": 8492
   },
   "该目录下没有可分析的内容": {
@@ -2362,7 +2627,9 @@
     "de-DE": "In diesem Verzeichnis sind keine analysierbaren Inhalte vorhanden",
     "fr-FR": "Il n'y a aucun contenu analysable dans ce répertoire",
     "ko-KR": "이 디렉터리에는 분석 가능한 콘텐츠가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8673-8689)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8673-8689)"
+    ],
     "$id": 8493
   },
   "批量分析失败: {error}": {
@@ -2375,7 +2642,9 @@
     "de-DE": "Batch-Analyse fehlgeschlagen: {error}",
     "fr-FR": "Échec de l'analyse par lots : {error}",
     "ko-KR": "일괄 분석 실패: {error}",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8895-8914)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(8895-8914)"
+    ],
     "$id": 8494
   },
   "已清空分析": {
@@ -2388,7 +2657,9 @@
     "de-DE": "Analyse gelöscht",
     "fr-FR": "Analyse effacée",
     "ko-KR": "분석이 완료되었습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9468-9477)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9468-9477)"
+    ],
     "$id": 8495
   },
   "服务器响应失败": {
@@ -2401,7 +2672,9 @@
     "de-DE": "Serverantwort fehlgeschlagen",
     "fr-FR": "Échec de la réponse du serveur",
     "ko-KR": "서버 응답에 실패했습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9638-9649)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(9638-9649)"
+    ],
     "$id": 8496
   },
   "清空分析失败: {error}": {
@@ -2430,7 +2703,9 @@
     "de-DE": "Verzeichnispfad kann nicht abgerufen werden, bitte aktualisieren und erneut versuchen",
     "fr-FR": "Impossible d'obtenir le chemin du répertoire, veuillez rafraîchir et réessayer",
     "ko-KR": "디렉터리 경로를 가져올 수 없습니다. 새로 고침 후 다시 시도하십시오",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10676-10695)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10676-10695)"
+    ],
     "$id": 8498
   },
   "目录重新分析完成": {
@@ -2443,7 +2718,9 @@
     "de-DE": "Verzeichnisneuanalyse abgeschlossen",
     "fr-FR": "Réanalyse du répertoire terminée",
     "ko-KR": "디렉터리 재분석 완료",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10860-10872)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(10860-10872)"
+    ],
     "$id": 8499
   },
   "已清空目录分析": {
@@ -2456,7 +2733,9 @@
     "de-DE": "Verzeichnisanalyse geleert",
     "fr-FR": "Analyse du répertoire vidée",
     "ko-KR": "디렉토리 분석 비우기 완료됨",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(11907-11918)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(11907-11918)"
+    ],
     "$id": 8500
   },
   "清空目录分析失败: {error}": {
@@ -2469,7 +2748,9 @@
     "de-DE": "Verzeichnisanalyse konnte nicht geleert werden: {error}",
     "fr-FR": "Échec du vidage de l'analyse du répertoire: {error}",
     "ko-KR": "디렉토리 분석 비우기 실패: {error}",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(12243-12264)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/hooks/useFileDetails.ts(12243-12264)"
+    ],
     "$id": 8501
   },
   "文件指纹": {
@@ -2482,7 +2763,9 @@
     "de-DE": "Datei-Fingerabdruck",
     "fr-FR": "Empreinte de fichier",
     "ko-KR": "파일 지문",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5039-5047)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5506-5514)"
+    ],
     "$id": 11356
   },
   "本地复用": {
@@ -2495,7 +2778,9 @@
     "de-DE": "Lokale Wiederverwendung",
     "fr-FR": "Réutilisation locale",
     "ko-KR": "지역 재사용",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5302-5310)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5775-5783)"
+    ],
     "$id": 11357
   },
   "云端复用": {
@@ -2508,7 +2793,9 @@
     "de-DE": "Cloud-Wiederverwendung",
     "fr-FR": "Réutilisation du cloud",
     "ko-KR": "클라우드 재사용",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(5564-5572)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(6043-6051)"
+    ],
     "$id": 11358
   },
   "阶段 1: 文件指纹与复用判定": {
@@ -2521,7 +2808,9 @@
     "de-DE": "Stufe 1: Datei-Fingerprinting und Wiederverwendungsbestimmung",
     "fr-FR": "Étape 1 : Prise d'empreintes digitales des fichiers et détermination de la réutilisation",
     "ko-KR": "1단계: 파일 핑거프린팅 및 재사용 결정",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(6298-6317)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(6783-6802)"
+    ],
     "$id": 11360
   },
   "类型识别": {
@@ -2534,7 +2823,9 @@
     "de-DE": "Typerkennung",
     "fr-FR": "Identification du type",
     "ko-KR": "유형 식별",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(6895-6903)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7499-7507)"
+    ],
     "$id": 9407
   },
   "Office预转PDF": {
@@ -2547,34 +2838,70 @@
     "de-DE": "Office-PDF vorkonvertieren",
     "fr-FR": "Office pré-convertir le PDF",
     "ko-KR": "Office 사전 변환 PDF",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7186-7201)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7919-7934)"
+    ],
     "$id": 20333
   },
-  "文本提取": {
-    "en-US": "Text extraction",
-    "es-ES": "Extracción de texto",
-    "ar-EG": "استخراج النص",
-    "pt-PT": "Extração de texto",
-    "ru-RU": "извлечение текста",
-    "ja-JP": "テキスト抽出",
-    "de-DE": "Textextraktion",
-    "fr-FR": "Extraction de texte",
-    "ko-KR": "텍스트 추출",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7482-7490)"],
-    "$id": 20334
+  "AnyDoc排版解析": {
+    "en-US": "AnyDoc Layout Parsing",
+    "es-ES": "Análisis de diseño AnyDoc",
+    "ar-EG": "تحليل وتخطيط AnyDoc",
+    "pt-PT": "Análise de layout do AnyDoc",
+    "ru-RU": "Разметка и анализ AnyDoc",
+    "ja-JP": "AnyDocレイアウト解析",
+    "de-DE": "AnyDoc Layout Analysis",
+    "fr-FR": "Analyse de mise en page AnyDoc",
+    "ko-KR": "AnyDoc 조판 분석",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8303-8317)"
+    ],
+    "$id": 20149
   },
-  "OCR识别": {
-    "en-US": "OCR recognition",
-    "es-ES": "Reconocimiento OCR",
-    "ar-EG": "التعرف الضوئي على الحروف",
-    "pt-PT": "Reconhecimento de OCR",
-    "ru-RU": "Распознавание OCR",
-    "ja-JP": "OCR認識",
-    "de-DE": "OCR-Erkennung",
-    "fr-FR": "Reconnaissance OCR",
-    "ko-KR": "OCR 인식",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(7763-7772)"],
-    "$id": 20335
+  "文本内容提取": {
+    "en-US": "Text Content Extraction",
+    "es-ES": "Extracción de contenido de texto",
+    "ar-EG": "استخراج محتوى النص",
+    "pt-PT": "Extração de conteúdo de texto",
+    "ru-RU": "Извлечение текстового контента",
+    "ja-JP": "テキスト内容抽出",
+    "de-DE": "Extraktion des Textinhalts",
+    "fr-FR": "Extraction de contenu texte",
+    "ko-KR": "텍스트 내용 추출",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8664-8674)"
+    ],
+    "$id": 20150
+  },
+  "OCR文字识别": {
+    "en-US": "OCR Text Recognition",
+    "es-ES": "Reconocimiento de texto por OCR",
+    "ar-EG": "التعرف البصري على الحروف (OCR)",
+    "pt-PT": "Reconhecimento de texto por OCR",
+    "ru-RU": "Распознавание текста по изобр��жениям (OCR)",
+    "ja-JP": "OCR文字認識",
+    "de-DE": "OCR-Zenerkennung",
+    "fr-FR": "Reconnaissance de texte par OCR",
+    "ko-KR": "OCR 텍스트 인식",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8984-8995)"
+    ],
+    "$id": 20151
+  },
+  "前置文本探活": {
+    "en-US": "Pre-Text Probing",
+    "es-ES": "Detección preliminar de texto",
+    "ar-EG": "استكشاف النص المسبق",
+    "pt-PT": "Descoberta prévia de texto",
+    "ru-RU": "Предварительная проверка наличия текста",
+    "ja-JP": "事前テキストの検出",
+    "de-DE": "Vorläufige Texterkennung",
+    "fr-FR": "Pré-identification du texte",
+    "ko-KR": "사전 텍스트 탐색",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9345-9355)"
+    ],
+    "$id": 20152
   },
   "元数据提取": {
     "en-US": "Metadata extraction",
@@ -2586,21 +2913,40 @@
     "de-DE": "Metadatenextraktion",
     "fr-FR": "Extraction de métadonnées",
     "ko-KR": "메타데이터 추출",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8049-8058)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9707-9716)"
+    ],
     "$id": 20336
   },
-  "封面图渲染": {
-    "en-US": "Cover image rendering",
-    "es-ES": "Representación de la imagen de portada",
-    "ar-EG": "تقديم صورة الغلاف",
-    "pt-PT": "Renderização da imagem da capa",
-    "ru-RU": "Рендеринг изображения обложки",
-    "ja-JP": "カバー画像のレンダリング",
-    "de-DE": "Coverbild-Rendering",
-    "fr-FR": "Rendu de l'image de couverture",
-    "ko-KR": "표지 이미지 렌더링",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8341-8350)"],
-    "$id": 20337
+  "文档封面提取": {
+    "en-US": "Document Cover Extraction",
+    "es-ES": "Extracción de portada del documento",
+    "ar-EG": "استخراج غلاف المستند",
+    "pt-PT": "Extração da capa do documento",
+    "ru-RU": "Извлечение обложки документа",
+    "ja-JP": "文書表紙の抽出",
+    "de-DE": "Extraktion des Dokumentcovers",
+    "fr-FR": "Extraction de la couverture du document",
+    "ko-KR": "문서 표지 추출",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(10070-10080)"
+    ],
+    "$id": 20153
+  },
+  "基础内容汇总": {
+    "en-US": "Basic Content Aggregation",
+    "es-ES": "Compilación de contenido básico",
+    "ar-EG": "تجميع المحتوى الأساسي",
+    "pt-PT": "Compilação de conteúdo básico",
+    "ru-RU": "Сводка основного контента",
+    "ja-JP": "基礎���容の集約",
+    "de-DE": "Zusammenfassung der Grundinhalte",
+    "fr-FR": "Compilation de contenu de base",
+    "ko-KR": "기본 내용 요약",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(10838-10848)"
+    ],
+    "$id": 20154
   },
   "基础内容组": {
     "en-US": "Basic content group",
@@ -2612,7 +2958,9 @@
     "de-DE": "Grundlegende Inhaltsgruppe",
     "fr-FR": "Groupe de contenu de base",
     "ko-KR": "기본 콘텐츠 그룹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(8910-8919)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(11518-11527)"
+    ],
     "$id": 20338
   },
   "CLIP视觉打标": {
@@ -2625,7 +2973,9 @@
     "de-DE": "Visuelle Markierung mit CLIP",
     "fr-FR": "Marquage visuel CLIP",
     "ko-KR": "CLIP 시각적 마킹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9351-9363)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12005-12017)"
+    ],
     "$id": 20339
   },
   "CLIP图像嵌入": {
@@ -2638,7 +2988,9 @@
     "de-DE": "CLIP-Bildeinbettung",
     "fr-FR": "Intégration d'images CLIP",
     "ko-KR": "CLIP 이미지 삽입",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9459-9471)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12132-12144)"
+    ],
     "$id": 20340
   },
   "CLIP互斥分类": {
@@ -2651,7 +3003,9 @@
     "de-DE": "CLIP schließt sich gegenseitig aus",
     "fr-FR": "Classification CLIP mutuellement exclusive",
     "ko-KR": "CLIP 상호 배타적 분류",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9567-9579)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12259-12271)"
+    ],
     "$id": 20341
   },
   "RAM++实体打标": {
@@ -2664,7 +3018,9 @@
     "de-DE": "RAM++-Entitätsmarkierung",
     "fr-FR": "Marquage d'entité RAM++",
     "ko-KR": "RAM++ 엔터티 마킹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9668-9681)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12360-12373)"
+    ],
     "$id": 20342
   },
   "NSFW敏感鉴定": {
@@ -2677,7 +3033,9 @@
     "de-DE": "NSFW-sensible Identifizierung",
     "fr-FR": "Identification sensible NSFW",
     "ko-KR": "NSFW 민감한 식별",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(9772-9784)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12479-12491)"
+    ],
     "$id": 20343
   },
   "标签生成总计": {
@@ -2690,21 +3048,130 @@
     "de-DE": "Gesamte Etikettengenerierung",
     "fr-FR": "Génération totale d'étiquettes",
     "ko-KR": "총 라벨 생성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(12284-12294)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(15027-15037)"
+    ],
     "$id": 20344
   },
-  "标签生成组": {
-    "en-US": "Tag generation group",
-    "es-ES": "Grupo de generación de etiquetas",
-    "ar-EG": "مجموعة توليد العلامات",
-    "pt-PT": "Grupo de geração de tags",
-    "ru-RU": "Группа создания тегов",
-    "ja-JP": "タグ生成グループ",
-    "de-DE": "Tag-Generierungsgruppe",
-    "fr-FR": "Groupe de génération de balises",
-    "ko-KR": "태그 생성 그룹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13040-13049)"],
-    "$id": 20345
+  "标签推理打标": {
+    "en-US": "Tag Inference & Labeling",
+    "es-ES": "Inferencia y etiquetado de etiquetas",
+    "ar-EG": "الاستدلال على الرموز وتحديد التصنيفات",
+    "pt-PT": "Roteamento e etiquetagem de tags",
+    "ru-RU": "Метки вывода посредством рендеринга",
+    "ja-JP": "タグ推論・付与",
+    "de-DE": "Inferenz und Beschriftung von Tags",
+    "fr-FR": "Déduction et étiquetage de libellés",
+    "ko-KR": "라벨 추론 마킹",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(15494-15504)"
+    ],
+    "$id": 20155
+  },
+  "视觉标签组": {
+    "en-US": "Visual Tag Group",
+    "es-ES": "Grupo de etiquetas visuales",
+    "ar-EG": "مجموعة الرموز البصرية",
+    "pt-PT": "Grupo de tags visuais",
+    "ru-RU": "Визуальные группы меток",
+    "ja-JP": "視覚タググループ",
+    "de-DE": "Visuelle Tag-Gruppen",
+    "fr-FR": "Groupe d'étiquettes visuelles",
+    "ko-KR": "시각적 레이블 그룹",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(16293-16302)"
+    ],
+    "$id": 20156
+  },
+  "语义特征嵌入": {
+    "en-US": "Semantic Feature Embedding",
+    "es-ES": "Inmersión de características semánticas",
+    "ar-EG": "تضمين الخصائص الدلالية",
+    "pt-PT": "Incorporação de características semânticas",
+    "ru-RU": "Встраивание семантических признаков",
+    "ja-JP": "セマンティック特徴の埋め込み",
+    "de-DE": "Semantische Feature-Einbettungen",
+    "fr-FR": "Intégration de caractéristiques sémantiques",
+    "ko-KR": "의미론적 특징 임베딩",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(16914-16924)"
+    ],
+    "$id": 20157
+  },
+  "主题词抽取": {
+    "en-US": "Topic Term Extraction",
+    "es-ES": "Extracción de palabras clave temáticas",
+    "ar-EG": "استخراج الكلمات الموضوعية",
+    "pt-PT": "Extração de palavras-chave",
+    "ru-RU": "Извлечение ключевых слов",
+    "ja-JP": "主題語の抽出",
+    "de-DE": "Extraktion von Schüsselwörtern",
+    "fr-FR": "Extraction de mots-clés thématiques",
+    "ko-KR": "주제어 추출",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(17037-17046)"
+    ],
+    "$id": 20158
+  },
+  "5W摘要重命名": {
+    "en-US": "5W Summary Renaming",
+    "es-ES": "Renombrado con resumen 5W",
+    "ar-EG": "إعادة تسمية ملخص 5W",
+    "pt-PT": "Renomeação com resumo 5W",
+    "ru-RU": "Переименование на основе 5W-краткого изложения",
+    "ja-JP": "5W要約による名称変更",
+    "de-DE": "5W-Zusammenfassung und Umbenennung",
+    "fr-FR": "Baptisation en résumé 5W",
+    "ko-KR": "5W 요약 이름 바꾸기",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(17157-17168)"
+    ],
+    "$id": 20159
+  },
+  "多模态融合裁决": {
+    "en-US": "Multimodal Fusion Arbitration",
+    "es-ES": "Arbitraje por fusión multimodal",
+    "ar-EG": "الحكم على دمج متعدد الوسائط",
+    "pt-PT": "Arbitragem por fusão multimodal",
+    "ru-RU": "Решение на основе мультимодального слияния",
+    "ja-JP": "マルチモーダル融合による裁定",
+    "de-DE": "Multimodaler Fusionsschlichtung",
+    "fr-FR": "Arbitrage de fusion multimodale",
+    "ko-KR": "다중 모드 융합 심사",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(17281-17292)"
+    ],
+    "$id": 20160
+  },
+  "语义与融合汇总": {
+    "en-US": "Semantic & Fusion Aggregation",
+    "es-ES": "Compilación semántica y de fusión",
+    "ar-EG": "التجميع الدلالي والدمج",
+    "pt-PT": "Compilação semântica e de fusão",
+    "ru-RU": "Сводка семантических признаков и слияния",
+    "ja-JP": "セマンティックと融合の集約",
+    "de-DE": "Semantische und Fusionierungszusammenfassung",
+    "fr-FR": "Compilation sémantique et de fusion",
+    "ko-KR": "의미론 및 융합 요약",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(19168-19179)"
+    ],
+    "$id": 20161
+  },
+  "语义与融合组": {
+    "en-US": "Semantic & Fusion Group",
+    "es-ES": "Grupo semántico y de fusión",
+    "ar-EG": "مجموعة الدلالات والدمج",
+    "pt-PT": "Grupo semântico e de fusão",
+    "ru-RU": "Группы семантических признаков и слияния",
+    "ja-JP": "セマンティックと融合グループ",
+    "de-DE": "Semantische und Fusionierungsgruppen",
+    "fr-FR": "Groupe sémantique et de fusion",
+    "ko-KR": "의미론 및 융합 그룹",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(19626-19636)"
+    ],
+    "$id": 20166
   },
   "美学画质评分": {
     "en-US": "Aesthetic quality rating",
@@ -2716,21 +3183,25 @@
     "de-DE": "Ästhetische Qualitätsbewertung",
     "fr-FR": "Cote de qualité esthétique",
     "ko-KR": "미적 품질 평가",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13493-13503)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(20131-20141)"
+    ],
     "$id": 20346
   },
-  "频域水印检测": {
-    "en-US": "Frequency domain watermark detection",
-    "es-ES": "Detección de marca de agua en el dominio de frecuencia",
-    "ar-EG": "كشف العلامة المائية لنطاق التردد",
-    "pt-PT": "Detecção de marca d'água no domínio de frequência",
-    "ru-RU": "Обнаружение водяных знаков в частотной области",
-    "ja-JP": "周波数領域のウォーターマーク検出",
-    "de-DE": "Erkennung von Wasserzeichen im Frequenzbereich",
-    "fr-FR": "Détection de filigrane dans le domaine fréquentiel",
-    "ko-KR": "주파수 영역 워터마크 감지",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13575-13585)"],
-    "$id": 20347
+  "频域盲水印检测": {
+    "en-US": "Frequency-Domain Blind Watermark Detection",
+    "es-ES": "Detección de marca de agua invisible en dominio de frecuencia",
+    "ar-EG": "الكشف عن العلامة المائية العمياء في مجال التردد",
+    "pt-PT": "Detecção de marca d'água cega no domínio da frequência",
+    "ru-RU": "Обнаружение стеганограмм (водяных знаков) в частотной области",
+    "ja-JP": "周波数領域ブラインドウォーターマーク検出",
+    "de-DE": "Blind-Wasserzeichen-Erkennung im Frequenzbereich",
+    "fr-FR": "Détection de filigrane aveugle dans le domaine fréquentiel",
+    "ko-KR": "주파수 영역 블라인드 워터마크 감지",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(20243-20254)"
+    ],
+    "$id": 20167
   },
   "打码检测": {
     "en-US": "Coding detection",
@@ -2742,21 +3213,10 @@
     "de-DE": "Codierungserkennung",
     "fr-FR": "Détection de codage",
     "ko-KR": "코딩 감지",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13654-13662)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(20340-20348)"
+    ],
     "$id": 20348
-  },
-  "文本探活": {
-    "en-US": "Text exploration",
-    "es-ES": "Exploración de texto",
-    "ar-EG": "استكشاف النص",
-    "pt-PT": "Exploração de texto",
-    "ru-RU": "исследование текста",
-    "ja-JP": "テキスト探索",
-    "de-DE": "Texterkundung",
-    "fr-FR": "Exploration de texte",
-    "ko-KR": "텍스트 탐색",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13735-13743)"],
-    "$id": 20349
   },
   "黑白全彩判定": {
     "en-US": "Black and white full color judgment",
@@ -2768,7 +3228,9 @@
     "de-DE": "Schwarzweiß-Vollfarbbeurteilung",
     "fr-FR": "Jugement en couleur noir et blanc",
     "ko-KR": "흑백 풀 컬러 판정",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(13808-13818)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(20430-20440)"
+    ],
     "$id": 20350
   },
   "画质与形态组": {
@@ -2782,8 +3244,8 @@
     "fr-FR": "Qualité d'image et groupe de forme",
     "ko-KR": "이미지 품질 및 양식 그룹",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(15540-15550)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(15988-15998)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(22213-22223)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(22971-22981)"
     ],
     "$id": 20351
   },
@@ -2797,7 +3259,9 @@
     "de-DE": "Erweiterte Betreibergruppe",
     "fr-FR": "Groupe d'opérateurs étendu",
     "ko-KR": "확장된 운영자 그룹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(17151-17160)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(24414-24423)"
+    ],
     "$id": 20352
   },
   "阶段 3: 质量评分": {
@@ -2811,8 +3275,8 @@
     "fr-FR": "Étape 3 : évaluation de la qualité",
     "ko-KR": "3단계: 품질 평가",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(21031-21045)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(16682-16696)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(28294-28308)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(20880-20894)"
     ],
     "$id": 20353
   },
@@ -2827,8 +3291,8 @@
     "fr-FR": "Étape 4 : Analyse dimensionnelle",
     "ko-KR": "4단계: 차원 분석",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(21121-21135)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(18556-18570)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(28384-28398)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(22773-22787)"
     ],
     "$id": 20354
   },
@@ -2842,7 +3306,9 @@
     "de-DE": "Hauptfach Bühnenphysik",
     "fr-FR": "Piste principale de physique de scène",
     "ko-KR": "무대 물리학 메인 트랙",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(21656-21667)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/analysis-time-utils.ts(28919-28930)"
+    ],
     "$id": 20355
   },
   "技术指标": {
@@ -2855,7 +3321,9 @@
     "de-DE": "Technische Kennzahlen",
     "fr-FR": "Indicateurs techniques",
     "ko-KR": "기술 지표",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(6950-6958)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(6950-6958)"
+    ],
     "$id": 8442
   },
   "美学评估": {
@@ -2868,7 +3336,9 @@
     "de-DE": "Ästhetische Bewertung",
     "fr-FR": "Évaluation esthétique",
     "ko-KR": "미적 평가",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(7399-7407)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(7399-7407)"
+    ],
     "$id": 8443
   },
   "内容价值": {
@@ -2881,7 +3351,9 @@
     "de-DE": "Inhaltlicher Wert",
     "fr-FR": "Valeur du contenu",
     "ko-KR": "내용 가치",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(7848-7856)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(7848-7856)"
+    ],
     "$id": 8444
   },
   "完整性": {
@@ -2894,7 +3366,9 @@
     "de-DE": "Vollständigkeit",
     "fr-FR": "Intégrité",
     "ko-KR": "완전성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(8295-8302)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(8295-8302)"
+    ],
     "$id": 8445
   },
   "时效性": {
@@ -2907,7 +3381,9 @@
     "de-DE": "Aktualität",
     "fr-FR": "Actualité",
     "ko-KR": "시의성",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(8746-8753)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(8746-8753)"
+    ],
     "$id": 8446
   },
   "暂无评分数据 (请点击下方\"重新分析\"获取)": {
@@ -2920,7 +3396,9 @@
     "de-DE": "Keine Bewertungsdaten vorhanden (bitte klicken Sie unten auf \"Neu analysieren\", um diese zu erhalten)",
     "fr-FR": "Aucune note disponible (veuillez cliquer sur \"Réanalyser\" ci-dessous pour obtenir la note)",
     "ko-KR": "평가 데이터 없음 (하단의 \"재분석\"을 클릭하여 가져오세요)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10043-10069)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10043-10069)"
+    ],
     "$id": 8447
   },
   "暂无 OCR 识别结果": {
@@ -2933,7 +3411,9 @@
     "de-DE": "Noch keine OCR-Erkennungsergebnisse",
     "fr-FR": "Aucun résultat de reconnaissance OCR pour l'instant",
     "ko-KR": "아직 OCR 인식 결과가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10434-10449)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10434-10449)"
+    ],
     "$id": 9545
   },
   "暂无语音转录文本": {
@@ -2946,7 +3426,9 @@
     "de-DE": "Noch kein Sprachtranskriptionstext",
     "fr-FR": "Pas encore de texte de transcription vocale",
     "ko-KR": "아직 음성 전사 텍스트가 없습니다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10735-10747)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10735-10747)"
+    ],
     "$id": 19983
   },
   "暂无歌词数据": {
@@ -2959,7 +3441,9 @@
     "de-DE": "Noch keine Textdaten",
     "fr-FR": "Pas encore de données sur les paroles",
     "ko-KR": "아직 가사 데이터가 없습니다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10949-10959)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(10949-10959)"
+    ],
     "$id": 19984
   },
   "类型标签": {
@@ -2972,7 +3456,9 @@
     "de-DE": "Typ-Tag",
     "fr-FR": "Étiquettes de type",
     "ko-KR": "유형 태그",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13884-13892)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13884-13892)"
+    ],
     "$id": 8448
   },
   "描述": {
@@ -2985,7 +3471,9 @@
     "de-DE": "Beschreiben",
     "fr-FR": "Décrire",
     "ko-KR": "설명하다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13958-13964)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(13958-13964)"
+    ],
     "$id": 8449
   },
   "MIME类型": {
@@ -2998,7 +3486,9 @@
     "de-DE": "MIME-Typ",
     "fr-FR": "Type MIME",
     "ko-KR": "MIME 유형",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14034-14044)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14034-14044)"
+    ],
     "$id": 8450
   },
   "扩展名": {
@@ -3011,7 +3501,9 @@
     "de-DE": "Verlängerung",
     "fr-FR": "Extension",
     "ko-KR": "확대",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14108-14115)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14108-14115)"
+    ],
     "$id": 8451
   },
   "文件分组": {
@@ -3024,7 +3516,9 @@
     "de-DE": "Dateigruppierung",
     "fr-FR": "Regroupement de fichiers",
     "ko-KR": "파일 그룹화",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14185-14193)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14185-14193)"
+    ],
     "$id": 8452
   },
   "是否文本": {
@@ -3037,7 +3531,9 @@
     "de-DE": "Ob Text",
     "fr-FR": "Que ce soit du texte",
     "ko-KR": "텍스트 여부",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14255-14263)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(14255-14263)"
+    ],
     "$id": 8453
   },
   "是": {
@@ -3082,7 +3578,9 @@
     "de-DE": "Textkodierung",
     "fr-FR": "Encodage de texte",
     "ko-KR": "텍스트 인코딩",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16848-16856)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16848-16856)"
+    ],
     "$id": 11247
   },
   "字符数": {
@@ -3095,7 +3593,9 @@
     "de-DE": "Anzahl der Zeichen",
     "fr-FR": "Nombre de caractères",
     "ko-KR": "문자 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16924-16931)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(16924-16931)"
+    ],
     "$id": 11248
   },
   "行数": {
@@ -3108,7 +3608,9 @@
     "de-DE": "Anzahl der Zeilen",
     "fr-FR": "Nombre de lignes",
     "ko-KR": "라인 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(17000-17006)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(17000-17006)"
+    ],
     "$id": 11249
   },
   "词数": {
@@ -3121,7 +3623,9 @@
     "de-DE": "Anzahl der Wörter",
     "fr-FR": "Nombre de mots",
     "ko-KR": "단어 수",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(17075-17081)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTabs.tsx(17075-17081)"
+    ],
     "$id": 11250
   },
   "展开子项": {
@@ -3134,7 +3638,9 @@
     "de-DE": "Erweitern Sie Kinder",
     "fr-FR": "Développer les enfants",
     "ko-KR": "하위 확장",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(8616-8624)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(12004-12012)"
+    ],
     "$id": 20356
   },
   "折叠子项": {
@@ -3147,7 +3653,9 @@
     "de-DE": "Kinder zusammenbrechen lassen",
     "fr-FR": "Réduire les enfants",
     "ko-KR": "하위 항목 접기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(8628-8636)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(12016-12024)"
+    ],
     "$id": 20357
   },
   "并发执行 (按最大耗时计)": {
@@ -3160,7 +3668,9 @@
     "de-DE": "Gleichzeitige Ausführung (basierend auf maximalem Zeitverbrauch)",
     "fr-FR": "Exécution simultanée (basée sur la consommation de temps maximale)",
     "ko-KR": "동시 실행 (최대 시간 소모 기준)",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(9578-9595)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(12975-12992)"
+    ],
     "$id": 20358
   },
   "并发": {
@@ -3173,7 +3683,9 @@
     "de-DE": "Gleichzeitig",
     "fr-FR": "Concurrent",
     "ko-KR": "경쟁 상대",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(9649-9655)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13046-13052)"
+    ],
     "$id": 20359
   },
   "串行执行 (按累加和计)": {
@@ -3187,9 +3699,9 @@
     "fr-FR": "Exécution en série (somme accumulée)",
     "ko-KR": "직렬 실행(누적 합계)",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(9901-9917)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(16874-16890)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(18748-18764)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13298-13314)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(21072-21088)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(22965-22981)"
     ],
     "$id": 20360
   },
@@ -3204,9 +3716,9 @@
     "fr-FR": "En série",
     "ko-KR": "연속물",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(9972-9978)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(16937-16943)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(18811-18817)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13369-13375)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(21135-21141)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(23028-23034)"
     ],
     "$id": 20361
   },
@@ -3220,7 +3732,9 @@
     "de-DE": "Engpass",
     "fr-FR": "Goulot",
     "ko-KR": "병목",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(10404-10410)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13844-13850)"
+    ],
     "$id": 20362
   },
   "显示各子项": {
@@ -3233,7 +3747,9 @@
     "de-DE": "Zeigen Sie jeden Unterpunkt an",
     "fr-FR": "Afficher chaque sous-élément",
     "ko-KR": "각 하위 항목 표시",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(11397-11406)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(14846-14855)"
+    ],
     "$id": 20363
   },
   "隐藏各子项": {
@@ -3246,7 +3762,9 @@
     "de-DE": "Elemente ausblenden",
     "fr-FR": "Masquer les éléments",
     "ko-KR": "항목 숨기기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(11410-11419)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(14859-14868)"
+    ],
     "$id": 20364
   },
   "隐藏此分组": {
@@ -3259,7 +3777,9 @@
     "de-DE": "Diese Gruppe ausblenden",
     "fr-FR": "Masquer ce groupe",
     "ko-KR": "이 그룹 숨기기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(11849-11858)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(15298-15307)"
+    ],
     "$id": 20365
   },
   "串行子步骤": {
@@ -3272,7 +3792,9 @@
     "de-DE": "Serielle Teilschritte",
     "fr-FR": "Sous-étapes en série",
     "ko-KR": "일련의 하위 단계",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13684-13693)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(17779-17788)"
+    ],
     "$id": 20366
   },
   "并发子任务": {
@@ -3285,7 +3807,9 @@
     "de-DE": "Gleichzeitige Teilaufgaben",
     "fr-FR": "Sous-tâches simultanées",
     "ko-KR": "동시 하위 작업",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(13991-14000)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(18086-18095)"
+    ],
     "$id": 20367
   },
   "长尾": {
@@ -3298,7 +3822,9 @@
     "de-DE": "Langer Schwanz",
     "fr-FR": "Longue queue",
     "ko-KR": "긴 꼬리",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(14465-14471)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(18644-18650)"
+    ],
     "$id": 20368
   },
   "复用": {
@@ -3312,9 +3838,9 @@
     "fr-FR": "Réutilisation",
     "ko-KR": "재사용",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(15134-15140)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(17724-17730)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(19601-19607)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(19313-19319)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(21922-21928)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(23818-23824)"
     ],
     "$id": 8485
   },
@@ -3328,7 +3854,9 @@
     "de-DE": "Dieses Element ausblenden",
     "fr-FR": "Masquer cet élément",
     "ko-KR": "이 항목 숨기기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(15599-15607)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(19778-19786)"
+    ],
     "$id": 20369
   },
   "分析时间": {
@@ -3341,7 +3869,9 @@
     "de-DE": "Analysezeit",
     "fr-FR": "Temps d'analyse",
     "ko-KR": "분석 시간",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(20209-20217)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(24426-24434)"
+    ],
     "$id": 8476
   },
   "同时": {
@@ -3354,7 +3884,9 @@
     "de-DE": "Gleichzeitig",
     "fr-FR": "En même temps",
     "ko-KR": "동시에",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(20847-20853)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(25064-25070)"
+    ],
     "$id": 9457
   },
   "顺序": {
@@ -3367,7 +3899,9 @@
     "de-DE": "Befehl",
     "fr-FR": "Commande",
     "ko-KR": "주문하다",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(21061-21067)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(25278-25284)"
+    ],
     "$id": 9458
   },
   "推理模型": {
@@ -3380,60 +3914,40 @@
     "de-DE": "Inferenzmodell",
     "fr-FR": "Modèle d'inférence",
     "ko-KR": "추론 모델",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(21426-21434)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(25643-25651)"
+    ],
     "$id": 8486
   },
-  "标签组": {
-    "en-US": "Tag group",
-    "es-ES": "Grupo de etiquetas",
-    "ar-EG": "مجموعة العلامات",
-    "pt-PT": "Grupo de tags",
-    "ru-RU": "группа тегов",
-    "ja-JP": "タググループ",
-    "de-DE": "Tag-Gruppe",
-    "fr-FR": "Groupe de balises",
-    "ko-KR": "태그 그룹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(22516-22523)"],
-    "$id": 20370
+  "当前文件无基础内容数据": {
+    "en-US": "No basic content data in current file",
+    "es-ES": "El archivo actual no tiene datos de contenido básico",
+    "ar-EG": "لا يحتوي الملف الحالي على بيانات المحتوى الأساسي",
+    "pt-PT": "O ficheiro atual não possui dados de conteúdo básico",
+    "ru-RU": "В текущем файле отсутствуют данные основного контента",
+    "ja-JP": "現在のファイルには基礎内容データがありません",
+    "de-DE": "Aktuelle Datei enthält keine Basisinhaltsdaten",
+    "fr-FR": "Le fichier actuel ne contient pas de données de contenu de base",
+    "ko-KR": "현재 파일에 기본 콘텐츠 데이터가 없습니다.",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(26913-26928)"
+    ],
+    "$id": 20378
   },
-  "看CLIP细项": {
-    "en-US": "See CLIP details",
-    "es-ES": "Ver detalles del CLIP",
-    "ar-EG": "انظر تفاصيل مقطع",
-    "pt-PT": "Veja detalhes do CLIP",
-    "ru-RU": "См. подробности CLIP",
-    "ja-JP": "クリップの詳細を参照",
-    "de-DE": "Siehe CLIP-Details",
-    "fr-FR": "Voir les détails du CLIP",
-    "ko-KR": "CLIP 세부정보 보기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(23193-23204)"],
-    "$id": 20371
-  },
-  "隐藏CLIP细项": {
-    "en-US": "Hide CLIP details",
-    "es-ES": "Ocultar detalles del CLIP",
-    "ar-EG": "إخفاء تفاصيل المقطع",
-    "pt-PT": "Ocultar detalhes do CLIP",
-    "ru-RU": "Скрыть детали CLIP",
-    "ja-JP": "クリップの詳細を非表示にする",
-    "de-DE": "CLIP-Details ausblenden",
-    "fr-FR": "Masquer les détails du CLIP",
-    "ko-KR": "CLIP 세부정보 숨기기",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(23208-23220)"],
-    "$id": 20372
-  },
-  "画质组": {
-    "en-US": "Image quality group",
-    "es-ES": "Grupo de calidad de imagen",
-    "ar-EG": "مجموعة جودة الصورة",
-    "pt-PT": "Grupo de qualidade de imagem",
-    "ru-RU": "Группа качества изображения",
-    "ja-JP": "画質グループ",
-    "de-DE": "Bildqualitätsgruppe",
-    "fr-FR": "Groupe Qualité d'image",
-    "ko-KR": "화질 그룹",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(23857-23864)"],
-    "$id": 20373
+  "切换基础内容组显隐": {
+    "en-US": "Toggle display of Basic Content Group",
+    "es-ES": "Alternar visibilidad del grupo de contenido básico",
+    "ar-EG": "التبديل بين إظهار وإخفاء مجموعة المحتوى الأساسي",
+    "pt-PT": "Alternar visibilidade do grupo de conteúdo básico",
+    "ru-RU": "Переключение видимости группы основного контента",
+    "ja-JP": "基礎内容グループの表示/非表示を切り替え",
+    "de-DE": "Schalten der Sichtbarkeit der Basisinhaltsgruppe",
+    "fr-FR": "Basculer la visibilité du groupe de contenu de base",
+    "ko-KR": "기본 콘텐츠 그룹 표시 및 숨기기 전환",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(26932-26945)"
+    ],
+    "$id": 20379
   },
   "基础内容": {
     "en-US": "Basic content",
@@ -3445,8 +3959,220 @@
     "de-DE": "Grundlegende Inhalte",
     "fr-FR": "Contenu de base",
     "ko-KR": "기본 콘텐츠",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(24493-24501)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(27024-27032)"
+    ],
     "$id": 20374
+  },
+  "当前文件未生成标签组数据": {
+    "en-US": "No tag group data generated in current file",
+    "es-ES": "El grupo de datos de etiquetas no se ha generado para el archivo actual",
+    "ar-EG": "لم يتم توليد بيانات مجموعة الرموز للملف الحالي",
+    "pt-PT": "O ficheiro atual não gerou dados do grupo de tags",
+    "ru-RU": "В текущем файле отсутствуют данные группы меток",
+    "ja-JP": "現在のファイルにはタググループデータが生成されていません",
+    "de-DE": "Aktuelle Datei enthält keine generierten Tag-Gruppensdaten",
+    "fr-FR": "Le groupe de libellés n'a pas été généré pour le fichier actuel",
+    "ko-KR": "현재 파일은 태그 그룹 데이터를 생성하지 않습니다.",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(27810-27826)"
+    ],
+    "$id": 20380
+  },
+  "切换视觉标签组显隐": {
+    "en-US": "Toggle display of Visual Tag Group",
+    "es-ES": "Alternar visibilidad del grupo de etiquetas visuales",
+    "ar-EG": "التبديل بين إظهار وإخفاء مجموعة الرموز البصرية",
+    "pt-PT": "Alternar visibilidade do grupo de tags visuais",
+    "ru-RU": "Переключение видимости визуальной группы меток",
+    "ja-JP": "視覚タググループの表示/非表示を切り替え",
+    "de-DE": "Schalten der Sichtbarkeit der visuellen Tag-Gruppen",
+    "fr-FR": "Basculer la visibilité du groupe de libellés visuels",
+    "ko-KR": "시각적 라벨 그룹 표시 및 숨기기 전환",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(27830-27843)"
+    ],
+    "$id": 20381
+  },
+  "切换语义与融合组显隐": {
+    "en-US": "Toggle display of Semantic & Fusion Group",
+    "es-ES": "Alternar visibilidad del grupo semántico y de fusión",
+    "ar-EG": "التبديل بين إظهار وإخفاء مجموعة الدلالات والدمج",
+    "pt-PT": "Alternar visibilidade do grupo semântico e de fusão",
+    "ru-RU": "Переключение видимости группы семантических признаков и слия��ия",
+    "ja-JP": "セマンティックと融合グループの表示/非表示を切り替え",
+    "de-DE": "Schalten der Sichtbarkeit der semantischen und fusionierten Gruppen",
+    "fr-FR": "Basculer la visibilité du groupe sémantique et de fusion",
+    "ko-KR": "의미 체계 및 융합 그룹 표시 및 숨김 전환",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(28599-28613)"
+    ],
+    "$id": 20382
+  },
+  "语义融合": {
+    "en-US": "Semantic Fusion",
+    "es-ES": "Fusión semántica",
+    "ar-EG": "دمج الدلالات",
+    "pt-PT": "Fusão semântica",
+    "ru-RU": "Семантическое слияние",
+    "ja-JP": "意味的融合",
+    "de-DE": "Semantische Fusion",
+    "fr-FR": "Fusion sémantique",
+    "ko-KR": "의미론적 융합",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(28698-28706)"
+    ],
+    "$id": 20383
+  },
+  "当前文件无画质形态指标": {
+    "en-US": "The current file has no visual quality mode indicator",
+    "es-ES": "El archivo actual no tiene métricas de forma de calidad de imagen",
+    "ar-EG": "لا يوجد مؤشر على شكل الجودة في الملف الحالي",
+    "pt-PT": "O ficheiro atual não tem indicadores de morfologia de qualidade de imagem",
+    "ru-RU": "В текущем файле отсутствуют индикаторы формата качества",
+    "ja-JP": "現在のファイルには画質状態指標はありません",
+    "de-DE": "Aktuelle Datei ohne Qualitätsform-Metriken",
+    "fr-FR": "Aucun indicateur de forme de qualité d'image dans le fichier actuel",
+    "ko-KR": "현재 파일에 화질 표시가 없습니다",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(29528-29543)"
+    ],
+    "$id": 20384
+  },
+  "切换画质形态组显隐": {
+    "en-US": "Toggle the visibility of visual quality mode groups",
+    "es-ES": "Alternar visibilidad del grupo de formas de calidad de imagen",
+    "ar-EG": "تبديل إظهار/إخفاء لمجموعة أشكال الجودة",
+    "pt-PT": "Alternar visibilidade do grupo de morfologia de qualidade de imagem",
+    "ru-RU": "Переключить видимость груп�� формата качества",
+    "ja-JP": "画質状態グループの表示/非表示を切り替え",
+    "de-DE": "Sichtbarkeit der Qualitätsformgruppen umschalten",
+    "fr-FR": "Basculer l'affichage des groupes de forme de qualité d'image",
+    "ko-KR": "이미지 품질 모드 그룹 표시 및 숨김 전환",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(29547-29560)"
+    ],
+    "$id": 20385
+  },
+  "画质形态": {
+    "en-US": "Visual Quality Mode",
+    "es-ES": "Formas de calidad de imagen",
+    "ar-EG": "شك�� الجودة",
+    "pt-PT": "Morfologia de qualidade de imagem",
+    "ru-RU": "Формат качества",
+    "ja-JP": "画質状態",
+    "de-DE": "Qualitätsform",
+    "fr-FR": "Forme de qualité d'image",
+    "ko-KR": "이미지 품질 양식",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(29637-29645)"
+    ],
+    "$id": 20386
+  },
+  "当前各分组暂无细分子项": {
+    "en-US": "No sub-items in the current groups",
+    "es-ES": "Actualmente, ningún grupo tiene subítems",
+    "ar-EG": "لا توجد عناصر فرعية حالية في أي من المجموعات",
+    "pt-PT": "Atualmente, nenhum dos grupos possui subdivisões",
+    "ru-RU": "В текущих группах нет детальных подпунктов",
+    "ja-JP": "��在の各グループには細分子項目がありません",
+    "de-DE": "Aktuelle Gruppen unterteilen in keine Untergruppen",
+    "fr-FR": "Aucun sous-élément détaillé dans les groupes actuels",
+    "ko-KR": "현재 각 그룹에 대한 하위 항목이 없습니다.",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(30428-30443)"
+    ],
+    "$id": 20387
+  },
+  "展开显示各分组细分子项": {
+    "en-US": "Expand to show sub-items of each group",
+    "es-ES": "Expandir para mostrar los subítems de cada grupo",
+    "ar-EG": "توسيع لعرض العناصر الفرعية في كل مجموعة",
+    "pt-PT": "Expandir para mostrar as subdivisões de cada grupo",
+    "ru-RU": "Развернуть для отображения детальных подпунктов групп",
+    "ja-JP": "各グループの細分子項目を展開表示",
+    "de-DE": "Aufklappen und Untergruppen anzeigen",
+    "fr-FR": "Déployer pour afficher les sous-éléments détaillés de chaque groupe",
+    "ko-KR": "확장하여 각 그룹의 하위 항목을 표시합니다.",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(30471-30486)"
+    ],
+    "$id": 20388
+  },
+  "收起隐藏各分组细分子项": {
+    "en-US": "Collapse to hide sub-items of each group",
+    "es-ES": "Plegar para ocultar los subítems de cada grupo",
+    "ar-EG": "طيّ لإخفاء العناصر الفرعية في كل مجموعة",
+    "pt-PT": "Recolher para ocultar as subdivisões de cada grupo",
+    "ru-RU": "Свернуть для скрытия детальных подпунктов групп",
+    "ja-JP": "各グループの細分子項目を折りたたみ非表示",
+    "de-DE": "Einklappen und Untergruppen ausblenden",
+    "fr-FR": "Replier pour masquer les sous-éléments détaillés de chaque groupe",
+    "ko-KR": "축소각 그룹의 하위 항목 숨기기",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(30490-30505)"
+    ],
+    "$id": 20389
+  },
+  "展开细项": {
+    "en-US": "Expand details",
+    "es-ES": "Expandir subítems",
+    "ar-EG": "توسيع العناصر الفرعية",
+    "pt-PT": "Expandir subdivisões",
+    "ru-RU": "Развернуть детали",
+    "ja-JP": "細分子項目を展開",
+    "de-DE": "Feinelemente aufklappen",
+    "fr-FR": "Déployer les détails",
+    "ko-KR": "세부정보 펼치기",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(30606-30614)"
+    ],
+    "$id": 20390
+  },
+  "收起细项": {
+    "en-US": "Collapse details",
+    "es-ES": "Plegar subítems",
+    "ar-EG": "طيّ العناصر الفرعية",
+    "pt-PT": "Recolher subdivisões",
+    "ru-RU": "Свернуть детали",
+    "ja-JP": "細分子項目を折りたたみ",
+    "de-DE": "Feinelemente einklappen",
+    "fr-FR": "Replier les détails",
+    "ko-KR": "세부정보 접기",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(30618-30626)"
+    ],
+    "$id": 20391
+  },
+  "切换开发模式调试视图 (显示底层模型与算子长尾瓶颈)": {
+    "en-US": "Toggle developer mode debug view (display low-level model and operator long-tail bottlenecks)",
+    "es-ES": "Alternar vista de depuración en modo de desarrollo (muestra cuellos de botella de cola larga en modelos y operadores de nivel inferior)",
+    "ar-EG": "تبديل وضع التصحيح لنموذج العرض (إظهار أوجه القصور طويلة الذيل في النماذج الأساسية والمشغلات)",
+    "pt-PT": "Alternar para modo de desenvolvimento com visualização de depuração (mostra gargalos de cauda longa nos operadores e modelos subjacentes)",
+    "ru-RU": "Переключить режим отладки (показывает узкие места в хвосте задержек базовых моделей и операторов)",
+    "ja-JP": "開発モードデバッグビューを切り替える（低層モデルと算子の長尾ボトルネックを表示）",
+    "de-DE": "Debug-Ansicht im Entwicklungsmodus umschalten (zeigt long-tail-Engpässe in Bottom-Up-Modellen und Operatoren)",
+    "fr-FR": "Basculer le mode développement pour la vue de débogage (affichage des goulots d'étranglement de la queue longue des modèles et opérateurs de base)",
+    "ko-KR": "개발 모드 디버깅 보기로 전환(기본 모델 및 연산자 롱테일 병목 현상 표시)",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(31340-31370)"
+    ],
+    "$id": 20392
+  },
+  "模式": {
+    "en-US": "Mode",
+    "es-ES": "Modo",
+    "ar-EG": "الوضع",
+    "pt-PT": "Modo",
+    "ru-RU": "Режим",
+    "ja-JP": "モード",
+    "de-DE": "Modus",
+    "fr-FR": "Mode",
+    "ko-KR": "모드  ",
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(31444-31450)"
+    ],
+    "$id": 20393
   },
   "重置所有显隐过滤": {
     "en-US": "Reset all visible and hidden filters",
@@ -3458,7 +4184,9 @@
     "de-DE": "Setzen Sie alle sichtbaren und ausgeblendeten Filter zurück",
     "fr-FR": "Réinitialiser tous les filtres visibles et masqués",
     "ko-KR": "보이는 필터와 숨겨진 필터를 모두 재설정하세요.",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(24843-24855)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(31800-31812)"
+    ],
     "$id": 20375
   },
   "重置": {
@@ -3471,7 +4199,9 @@
     "de-DE": "Zurücksetzen",
     "fr-FR": "Réinitialiser",
     "ko-KR": "재설정",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(24935-24941)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(31898-31904)"
+    ],
     "$id": 20376
   },
   "本次物理耗时": {
@@ -3484,7 +4214,9 @@
     "de-DE": "Physische Zeit dieser Ausführung",
     "fr-FR": "Temps physique de cette opération",
     "ko-KR": "이번 물리적 소요 시간",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(25420-25430)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(32412-32422)"
+    ],
     "$id": 8480
   },
   "阶段": {
@@ -3498,8 +4230,8 @@
     "fr-FR": "Étape",
     "ko-KR": "단계",
     "$files": [
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(26823-26829)",
-      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(29186-29192)"
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(33855-33861)",
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(36270-36276)"
     ],
     "$id": 8481
   },
@@ -3513,7 +4245,9 @@
     "de-DE": "Es sind noch keine sichtbaren Stufenindikatoren vorhanden (alle Indikatoren sind gefiltert und ausgeblendet)",
     "fr-FR": "Il n'y a pas encore d'indicateurs d'étape visibles (tous les indicateurs sont filtrés et masqués)",
     "ko-KR": "아직 눈에 보이는 단계 표시가 없습니다(모든 표시가 필터링되어 숨겨짐).",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(27285-27309)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(34317-34341)"
+    ],
     "$id": 20377
   },
   "历史累计耗时": {
@@ -3526,7 +4260,9 @@
     "de-DE": "Historische kumulierte aufgewendete Zeit",
     "fr-FR": "Temps cumulé historique passé",
     "ko-KR": "과거 누적 소요 시간",
-    "$files": ["src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(27818-27828)"],
+    "$files": [
+      "src/renderer/components/file-explorer/FileDetailsPanel/tabs/AnalysisTimeTab.tsx(34860-34870)"
+    ],
     "$id": 11362
   }
 }
