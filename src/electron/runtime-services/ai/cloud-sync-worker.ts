@@ -351,8 +351,6 @@ export class CloudSyncWorker {
           code: t.code,
           name: t.name,
           parent_codes: this.safeJsonParse(t.parent_codes, []),
-          materialized_paths: this.safeJsonParse(t.materialized_paths, []),
-          depth: typeof t.depth === 'number' ? t.depth : 1,
           file_groups: this.safeJsonParse(t.file_groups, []),
           source: t.source || 'expanded',
           meta: this.safeJsonParse(t.meta, {})

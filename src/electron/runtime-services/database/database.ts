@@ -185,8 +185,7 @@ export const GENESIS_V1_SCHEMA = `
     code               TEXT PRIMARY KEY,              -- 语言无关稳定标识 (如 _ext.topic.xxx, user.custom)
     name               TEXT NOT NULL,                 -- 当前语言本地化显示名
     parent_codes       TEXT NOT NULL DEFAULT '[]',    -- JSON 数组，记录所有直接父节点的 code (支持多父 DAG)
-    materialized_paths TEXT NOT NULL DEFAULT '[]',    -- JSON 对象数组: [ { "code_path": "...", "name_path": "...", } ... ]
-    depth              INTEGER NOT NULL DEFAULT 0,    -- 节点深度 (维度根=0, 直属子标签=1, ...)
+
     source             TEXT NOT NULL DEFAULT 'user'
                            CHECK (source IN ('expanded', 'user')),
     file_groups        TEXT,                          -- JSON 数组：格式分组约束 (全集为 FileGroup 完整枚举，优先级：优先按扩展名匹配字典，未命中由 Magika 补齐)
@@ -336,7 +335,7 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_path ON workspace_directories(path COLLATE NOCASE);
   CREATE INDEX IF NOT EXISTS idx_file_tags_name ON file_tags(name);
   CREATE INDEX IF NOT EXISTS idx_file_tags_source ON file_tags(source);
-  CREATE INDEX IF NOT EXISTS idx_file_tags_depth ON file_tags(depth);
+
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_tag ON file_tag_relations(tag_code, file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_parent ON file_tag_relations(via_parent_code, tag_code);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_code_path ON file_tag_relations(code_path);

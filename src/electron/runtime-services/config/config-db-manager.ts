@@ -504,9 +504,9 @@ export class ConfigDbManager {
     try {
       const rows = db
         .prepare(`
-          SELECT code, name, depth, description, file_groups, context_hints, meta
+          SELECT code, name, description, file_groups, context_hints, meta
           FROM file_tags
-          WHERE depth = 0
+          WHERE json_extract(meta, '$.isDimension') = 1
           ORDER BY code ASC
         `)
         .all() as Array<any>
@@ -540,7 +540,7 @@ export class ConfigDbManager {
       // 本地动态维度补充子标签名
       if (localDims.length > 0) {
         const getChildStmt = db.prepare(
-          `SELECT name FROM file_tags WHERE depth = 1 AND json_extract(parent_codes, '$[0]') = ?`
+          `SELECT name FROM file_tags WHERE json_extract(parent_codes, '$[0]') = ?`
         )
         for (const dim of localDims) {
           try {

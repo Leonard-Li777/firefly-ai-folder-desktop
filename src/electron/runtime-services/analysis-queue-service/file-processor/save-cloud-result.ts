@@ -384,17 +384,15 @@ export async function saveCloudResult(
                 lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
               })
               const codePath = localDimCode ? `/${localDimCode}/${tagCode}` : `/builtin.content_tags/${tagCode}`
-              const namePath = localDimCode ? `/${localDimCode}/${cleanName}` : `/内容标签/${cleanName}`
+              const namePath = localDimCode ? `/${localDimCode}/${cleanName}` : `/${CONTENT_TAGS_NAME}/${cleanName}`
               const depth = 2
-              const materializedPaths = JSON.stringify([{ code_path: codePath, name_path: namePath, depth }])
               db.prepare(
-                `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, materialized_paths, depth, file_groups, source, meta)
-                 VALUES (?, ?, ?, ?, 2, '[]', 'expanded', ?)`
+                `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, file_groups, source, meta)
+                 VALUES (?, ?, ?, '[]', 'expanded', ?)`
               ).run(
                 tagCode,
                 cleanName,
                 JSON.stringify([localDimCode || 'builtin.content_tags']),
-                materializedPaths,
                 JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 })
               )
               db.prepare(

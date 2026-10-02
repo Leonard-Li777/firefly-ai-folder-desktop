@@ -121,7 +121,8 @@
       "triggerConditions": [],
       "metadata": {
         "flag": {
-          "isPanDimension": true
+          "isPanDimension": true,
+          "requiresAI": true
         }
       }
     },
@@ -1064,7 +1065,8 @@
       "triggerConditions": [],
       "metadata": {
         "flag": {
-          "isPanDimension": true
+          "isPanDimension": true,
+          "requiresAI": true
         }
       }
     },

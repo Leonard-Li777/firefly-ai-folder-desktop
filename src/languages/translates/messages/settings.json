@@ -381,7 +381,7 @@
     "de-DE": "Der Vorgang ist fehlgeschlagen, bitte überprüfen Sie das Protokoll",
     "fr-FR": "L'opération a échoué, veuillez vérifier le journal",
     "ko-KR": "작업이 실패,로그를 확인하시기 바랍니다",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(8453-8467)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(9206-9220)"],
     "$id": 20099
   },
   "引擎异常": {
@@ -394,7 +394,7 @@
     "de-DE": "Motor Ausnahme",
     "fr-FR": "Exception de moteur",
     "ko-KR": "엔진 예외",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(9954-9962)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10707-10715)"],
     "$id": 11422
   },
   "已启动": {
@@ -407,7 +407,7 @@
     "de-DE": "Gestartet",
     "fr-FR": "Démarré",
     "ko-KR": "시작됨",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10003-10010)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10756-10763)"],
     "$id": 19433
   },
   "已连接": {
@@ -420,7 +420,7 @@
     "de-DE": "Verbunden",
     "fr-FR": "Connecté",
     "ko-KR": "연결됨",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10053-10060)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10806-10813)"],
     "$id": 20101
   },
   "检测中...": {
@@ -433,7 +433,7 @@
     "de-DE": "Wird erkannt …  ",
     "fr-FR": "Détection en cours...",
     "ko-KR": "감지 중...  ",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10103-10113)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10856-10866)"],
     "$id": 20100
   },
   "引擎未部署": {
@@ -446,7 +446,7 @@
     "de-DE": "Engine nicht installiert",
     "fr-FR": "Moteur non déployé",
     "ko-KR": "���진 미배포",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10159-10168)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10912-10921)"],
     "$id": 20102
   },
   "未连接": {
@@ -459,8 +459,34 @@
     "de-DE": "Nicht verbunden",
     "fr-FR": "Non connecté",
     "ko-KR": "미연결",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10202-10209)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(10955-10962)"],
     "$id": 20103
+  },
+  "MiniCPM5 1B（较好•越狱）": {
+    "en-US": "MiniCPM5 1B (Better • Jailbroken)",
+    "es-ES": "MiniCPM5 1B（mejor•evasión）",
+    "ar-EG": "ميني سي بي إم 5 1B (جيد • تجاوز الرقابة)",
+    "pt-PT": "MiniCPM5 1B (melhor • evasão)",
+    "ru-RU": "MiniCPM5 1B (лучше • джейлбрейк)",
+    "ja-JP": "MiniCPM5 1B（良好・越狱）",
+    "de-DE": "MiniCPM5 1B（较好•越狱）",
+    "fr-FR": "MiniCPM5 1B（较好•越狱）",
+    "ko-KR": "MiniCPM5 1B（较好•越狱）",
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13590-13612)"],
+    "$id": 20335
+  },
+  "MiniCPM5 2B（高质量•高速）": {
+    "en-US": "MiniCPM5 2B (High quality • Fast)",
+    "es-ES": "MiniCPM5 2B (Alta calidad • Alta velocidad)",
+    "ar-EG": "MiniCPM5 2B (جودة عالية • سريع)",
+    "pt-PT": "MiniCPM5 2B (alta qualidade • alta velocidade)",
+    "ru-RU": "MiniCPM5 2B (высокое качество·высокая скорость)",
+    "ja-JP": "MiniCPM5 2B（高品質•高速）",
+    "de-DE": "MiniCPM5 2B (hohe Qualität • hochgeschwindigkeits-)",
+    "fr-FR": "MiniCPM5 2B (haute qualité • haute vitesse)",
+    "ko-KR": "MiniCPM5 2B (고품질 • 고속)",
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13677-13700)"],
+    "$id": 19560
   },
   "Qwen 3.5 0.8B (中文更佳)": {
     "en-US": "Qwen 3.5 0.8B (Better Chinese performance)",
@@ -472,7 +498,7 @@
     "de-DE": "Qwen 3.5 0.8B (besser für Chinesisch)",
     "fr-FR": "Qwen 3.5 0.8B (meilleure prise en charge du chinois)",
     "ko-KR": "Qwen 3.5 0.8B (중국어 성능 우수)",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(12839-12863)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13769-13793)"],
     "$id": 19558
   },
   "LFM2.5 1.2B Instruct（英文更佳•高速）": {
@@ -485,21 +511,8 @@
     "de-DE": "LFM2.5 1.2B Instruct (besser für Englisch • hochgeschwindigkeits-)",
     "fr-FR": "LFM2.5 1.2B Instruct (meilleure prise en charge de l'anglais • haute vitesse)",
     "ko-KR": "LFM2.5 1.2B Instruct (영어 성능 우수 • 고속)",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(12931-12964)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13861-13894)"],
     "$id": 19559
-  },
-  "MiniCPM5 2B（高质量•高速）": {
-    "en-US": "MiniCPM5 2B (High quality • Fast)",
-    "es-ES": "MiniCPM5 2B (Alta calidad • Alta velocidad)",
-    "ar-EG": "MiniCPM5 2B (جودة عالية • سريع)",
-    "pt-PT": "MiniCPM5 2B (alta qualidade • alta velocidade)",
-    "ru-RU": "MiniCPM5 2B (высокое качество·высокая скорость)",
-    "ja-JP": "MiniCPM5 2B（高品質•高速）",
-    "de-DE": "MiniCPM5 2B (hohe Qualität • hochgeschwindigkeits-)",
-    "fr-FR": "MiniCPM5 2B (haute qualité • haute vitesse)",
-    "ko-KR": "MiniCPM5 2B (고품질 • 고속)",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13029-13052)"],
-    "$id": 19560
   },
   "萤核AI引擎启动失败，请从开始菜单手动打开萤核AI引擎后重试": {
     "en-US": "Firefly AI Engine failed to start. Please manually open the Firefly AI Engine from the Start Menu and try again.",
@@ -511,7 +524,7 @@
     "de-DE": "Das Starten der Firefly AI Folder-Engine ist fehlgeschlagen. Bitte öffnen Sie die Firefly AI Folder-Engine manuell über das Startmenü und versuchen Sie es erneut",
     "fr-FR": "Échec du démarrage du moteur IA Firefly, veuillez ouvrir manuellement le moteur IA Firefly depuis le menu Démarrer puis réessayer",
     "ko-KR": "Firefly AI 엔진 시작 실패. 시작 메뉴에서 Firefly AI 엔진을 수동으로 시작한 후 다시 시도하십시오",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13556-13590)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(14398-14432)"],
     "$id": 19434
   },
   "由萤核AI引擎独立开源应用提供支持硬件加速的本地AI服务，隐私安全离线使用。": {
@@ -524,7 +537,7 @@
     "de-DE": "Eine lokal ausgeführte KI-Dienstleistung mit Hardwarebeschleunigung, die von der eigenentwickelten und quelloffenen KI-Engine von Firefly AI Folder unterstützt wird und die datenschutzkonforme Offline-Nutzung sicherstellt.",
     "fr-FR": "Prise en charge par Firefly AI Folder, application open source indépendante offrant un service local accéléré par le matériel, utilisée hors ligne pour la confidentialité et la sécurité.",
     "ko-KR": "화이어핵 AI 엔진이 독립적으로 오픈소스화한 애플리케이션을 지원하며, 하드웨어 가속을 갖춘 로컬 AI 서비스로 프라��버시와 안전성을 보장하고 오프라인에서도 사용할 수 있습니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13718-13760)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(14560-14602)"],
     "$id": 19435
   },
   "连接其它第三方AI服务进行分析，提供更强语言认知能力，需保持网络连接。": {
@@ -537,7 +550,7 @@
     "de-DE": "Verbindung zu anderen KI-Diensten Dritter zur Analyse, um eine leistungsfähigere sprachliche Erkennungsfähigkeit zu bieten; hierfür muss eine Netzwerkverbindung bestehen.",
     "fr-FR": "Connectez d'autres services d'IA tiers pour une analyse, offrant de meilleures capacités de cognition linguistique. Une connexion réseau est requise.",
     "ko-KR": "기타 제3자 AI 서비스에 연결하여 분석을 수행하며, 더 강력한 언어 인지 기능을 제공합니다. 네트워크 연결 유지가 필요합니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(13775-13814)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(14617-14656)"],
     "$id": 19436
   },
   "开启高级AI引擎": {
@@ -551,8 +564,8 @@
     "fr-FR": "Activer le moteur IA avancé",
     "ko-KR": "고급 AI 엔진 활성화",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(16248-16260)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(16903-16915)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(17090-17102)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(17745-17757)"
     ],
     "$id": 19437
   },
@@ -566,7 +579,7 @@
     "de-DE": "Aktiviert",
     "fr-FR": "Activé",
     "ko-KR": "활성화됨",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16604-16611)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(17446-17453)"],
     "$id": 19438
   },
   "已停用": {
@@ -579,7 +592,7 @@
     "de-DE": "Deaktiviert",
     "fr-FR": "Désactivé",
     "ko-KR": "비활성화됨",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16615-16622)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(17457-17464)"],
     "$id": 19439
   },
   "选择生效引擎：开启后可以支持更佳的AI分析体验，禁用后仅使用基础AI引擎，不开启高级引擎占用资源": {
@@ -592,7 +605,7 @@
     "de-DE": "Auswahl der aktiven Engine: Wenn aktiviert, wird eine optimale KI-Analyse-Erfahrung unterstützt; wenn deaktiviert, wird nur die integrierte Basis-KI-Engine verwendet, und die hochwertige Engine beansprucht keine Ressourcen.",
     "fr-FR": "Moteur en cours d'utilisation : À l'activation, il prend en charge une expérience d'analyse IA supérieure. S'il est désactivé, uniquement le moteur IA de base est utilisé. L'activation du moteur avancé ne consomme pas de ressources.",
     "ko-KR": "사용할 엔진 선택: 활성화 시 보다 뛰어난 AI 분석 경험을 지원합니다. 비활성화 시 기본 AI 엔진만 사용되며, 고급 엔진이 비활성 상태에서는 리소스를 소모하지 않습니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(16741-16793)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(17583-17635)"],
     "$id": 19440
   },
   "已禁用高级AI引擎": {
@@ -605,7 +618,7 @@
     "de-DE": "Hochwertige KI-Engine ist deaktiviert.",
     "fr-FR": "Moteur IA avancé désactivé",
     "ko-KR": "고급 AI 엔진이 비활성화되었습니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(17551-17564)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(18393-18406)"],
     "$id": 19441
   },
   "AI增强分析已关闭，文件将由内置轻量基础AI引擎自动处理。": {
@@ -618,7 +631,7 @@
     "de-DE": "KI-gestützte Analyse ist ausgeschaltet; Dateien werden automatisch von der integrierten leichten Basis-KI-Engine verarbeitet.",
     "fr-FR": "L'analyse augmentée par l'IA est désactivée ; les fichiers seront traités automatiquement par le moteur IA intégré léger.",
     "ko-KR": "AI 강화 분석이 꺼져 있습니다. 파일은 내장된 경량 기본 AI 엔진에 의해 자동으로 처리됩니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(17687-17720)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(18529-18562)"],
     "$id": 19561
   },
   "优点": {
@@ -631,7 +644,7 @@
     "de-DE": "Vorteile",
     "fr-FR": "Avantages",
     "ko-KR": "장점",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(18161-18167)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19003-19009)"],
     "$id": 19562
   },
   "支持自动给文件打精准标签": {
@@ -644,7 +657,7 @@
     "de-DE": "Unterstützt die automatische und präzise Verschlagwortung von Dateien",
     "fr-FR": "Prise en charge de l'attribution automatique d'étiquettes précises aux fichiers",
     "ko-KR": "파일에는 자동적으로 정확한 태그를 지정할 수 있음",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(18296-18312)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19138-19154)"],
     "$id": 19563
   },
   "支持图文内容语义化搜索": {
@@ -657,7 +670,7 @@
     "de-DE": "Unterstützt die semantische Suche nach Bild- und Textinhalten",
     "fr-FR": "Prise en charge de la recherche sémantique du contenu texte et image",
     "ko-KR": "텍스트와 이미지 콘텐츠의 의미 기반 검색 지원",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(18338-18353)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19180-19195)"],
     "$id": 19564
   },
   "支持智能文件名和描述": {
@@ -670,7 +683,7 @@
     "de-DE": "Unterstützt intelligente Dateinamen und Beschreibungen",
     "fr-FR": "Prise en charge de noms de fichiers et de descriptions intelligents",
     "ko-KR": "지능형 파��� 이름 및 설명 지원",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(18379-18393)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19221-19235)"],
     "$id": 19565
   },
   "支持生成文件整理目录结构，支持按目录结构分类": {
@@ -683,7 +696,7 @@
     "de-DE": "Unterstützt die Generierung von Ordnungsstrukturen für Dateien und die Kategorisierung nach Verzeichnisstruktur",
     "fr-FR": "Prise en charge de la génération d'une structure de répertoires d'organisation des fichiers et de la classification selon cette structure",
     "ko-KR": "파일 정리를 위한 디렉터리 구조 생성 지원, 디렉터리 구조에 따른 분류 지원",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(18419-18445)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19261-19287)"],
     "$id": 19566
   },
   "轻量高速，支持所有硬件环境": {
@@ -696,7 +709,7 @@
     "de-DE": "Leichtgewichtig und schnell, unterstützt alle Hardwareumgebungen",
     "fr-FR": "Léger et rapide, compatible avec tous les environnements matériels",
     "ko-KR": "경량 및 고속, 모든 하드웨어 환경 지원",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(18471-18488)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19313-19330)"],
     "$id": 19567
   },
   "缺点": {
@@ -709,7 +722,7 @@
     "de-DE": "Nachteile",
     "fr-FR": "Inconvénients",
     "ko-KR": "단점",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19241-19247)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20083-20089)"],
     "$id": 19568
   },
   "智能文件名和描述有点机械感": {
@@ -722,7 +735,7 @@
     "de-DE": "Intelligente Dateinamen und Beschreibungen wirken etwas mechanisch",
     "fr-FR": "Les noms de fichiers et les descriptions intelligents ont un aspect légèrement mécanique",
     "ko-KR": "지능형 파일 이름 및 설명에 약간 기계적인 느낌이 있음",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19376-19393)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20218-20235)"],
     "$id": 19569
   },
   "不支持智能文件名和描述润色": {
@@ -735,7 +748,7 @@
     "de-DE": "Unterstützt keine Feinschliff/Veredelung intelligenter Dateinamen und Beschreibungen",
     "fr-FR": "Non pris en charge : le polissage des noms de fichiers et des descriptions intelligents",
     "ko-KR": "지능형 파일 이름 및 설명의 다듬기(리파이닝) 미지원",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19419-19436)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20261-20278)"],
     "$id": 19570
   },
   "不支持图片内容描述": {
@@ -748,7 +761,7 @@
     "de-DE": "Unterstützt keine Beschreibung von Bildinhalten",
     "fr-FR": "Non pris en charge : la description du contenu des images",
     "ko-KR": "이미지 콘텐츠 설명 미지원",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19462-19475)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20304-20317)"],
     "$id": 19571
   },
   "不支持文件质量按维度评分": {
@@ -761,7 +774,7 @@
     "de-DE": "Unterstützt keine Bewertung der Dateiformaten nach Dimensionen",
     "fr-FR": "Non pris en charge : l'évaluation de la qualité des fichiers par dimensions",
     "ko-KR": "파일 품질의 차원별 평가 미지원",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19501-19517)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20343-20359)"],
     "$id": 19572
   },
   "不支持搜索增强：不支持图文视频内容的高精度搜索，特别是完全不支持视频内容搜索": {
@@ -774,7 +787,7 @@
     "de-DE": "Unterstützt keine erweiterte Suche: Unterstützt keine hochpräzise Suche nach Bild-, Text- und Videoinhalten, insbesondere keine Videokontent-Suche",
     "fr-FR": "Non pris en charge : l'augmentation de la recherche. La recherche de haute précision du contenu texte, image et vidéo n'est pas prise en charge, en particulier la recherche du contenu vidéo est totalement absente",
     "ko-KR": "검색 기능 강화 미지원: 텍스트, 이미지, 비디오 콘텐츠의 고해상도 검색 미지원, 특히 비디오 콘텐츠 검색을 완전하게 지원하지 않음",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19543-19585)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20385-20427)"],
     "$id": 19573
   },
   "不支持生成多套文件整理方案": {
@@ -787,7 +800,7 @@
     "de-DE": "Die Erstellung mehrerer Dateiorganisationsschemata wird nicht unterstützt",
     "fr-FR": "La génération de plusieurs plans de classement de fichiers n'est pas prise en charge",
     "ko-KR": "여러 파일 정리 계획을 생성하는 것을 지원하지 않습니다",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(19611-19628)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20453-20470)"],
     "$id": 19574
   },
   "生效引擎": {
@@ -800,7 +813,7 @@
     "de-DE": "Aktiver Engine-Typ",
     "fr-FR": "Moteur actif",
     "ko-KR": "적용 엔진",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20366-20374)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(21208-21216)"],
     "$id": 19443
   },
   "萤核AI引擎": {
@@ -814,9 +827,9 @@
     "fr-FR": "Moteur AI Firefly",
     "ko-KR": "Firefly AI Folder 엔진",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(20524-20534)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(24602-24612)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(24639-24649)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(21366-21376)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(25444-25454)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(25481-25491)"
     ],
     "$id": 19444
   },
@@ -830,7 +843,7 @@
     "de-DE": "Cloud-basierte AI-Engine",
     "fr-FR": "Moteur IA cloud",
     "ko-KR": "클라우드 AI 엔진",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(20761-20771)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(21603-21613)"],
     "$id": 19445
   },
   "模型思考模式": {
@@ -843,7 +856,7 @@
     "de-DE": "Modelldenkenmodus",
     "fr-FR": "Mode de pensée modèle",
     "ko-KR": "모델 사고 모드",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22169-22179)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(23011-23021)"],
     "$id": 7738
   },
   "会增加耗时": {
@@ -856,7 +869,7 @@
     "de-DE": "Wird den Zeitverbrauch erhöhen",
     "fr-FR": "Augmentera la consommation de temps",
     "ko-KR": "시간 소모가 늘어나게 됩니다",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22392-22401)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(23234-23243)"],
     "$id": 8286
   },
   "开启后允许本地和云端模型开启思考模式，可能提升AI分析质量，但会大大增加响应时间。": {
@@ -869,7 +882,7 @@
     "de-DE": "Nach dem Einschalten können lokale und Cloud-Modelle in den Denkmodus wechseln, was möglicherweise die Qualität der KI-Analyse verbessert, aber auch die Reaktionszeit erheblich verlängert.",
     "fr-FR": "Après l'avoir activé, les modèles locaux et cloud sont autorisés à passer en mode réflexion, ce qui peut améliorer la qualité de l'analyse de l'IA, mais augmentera considérablement le temps de réponse.",
     "ko-KR": "이 기능을 켜면 로컬 및 클라우드 모델이 사고 모드를 시작할 수 있어 AI 분석 품질이 향상될 수 있지만 응답 시간이 크게 늘어납니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22631-22706)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(23473-23548)"],
     "$id": 7850
   },
   "不支持标记 Instruct 的模型。": {
@@ -882,7 +895,7 @@
     "de-DE": "Modelle mit dem Tag „Instruct“ werden nicht unterstützt.",
     "fr-FR": "Les modèles étiquetés Instruct ne sont pas pris en charge.",
     "ko-KR": "Instruct 태그가 지정된 모델은 지원되지 않습니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(22872-22895)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(23714-23737)"],
     "$id": 7741
   },
   "本地通信端口": {
@@ -895,7 +908,7 @@
     "de-DE": "Lokaler Kommunikationsport",
     "fr-FR": "Port de communication local",
     "ko-KR": "로컬 통신 ���트",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(25392-25402)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(26234-26244)"],
     "$id": 20107
   },
   "停止中...": {
@@ -904,11 +917,11 @@
     "ar-EG": "جارٍ الإيقاف...",
     "pt-PT": "A parar...",
     "ru-RU": "Остановка...",
-    "ja-JP": "停止中...",
+    "ja-JP": "停止中…",
     "de-DE": "Wird gestoppt ...",
     "fr-FR": "Arrêt en cours...",
     "ko-KR": "중지 중...",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(26353-26363)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(27195-27205)"],
     "$id": 19446
   },
   "停止服务": {
@@ -921,7 +934,7 @@
     "de-DE": "Service stoppen",
     "fr-FR": "Arrêter le service",
     "ko-KR": "서비스 중지",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(26367-26375)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(27209-27217)"],
     "$id": 19447
   },
   "启动中...": {
@@ -935,8 +948,8 @@
     "fr-FR": "Démarrage en cours...",
     "ko-KR": "시작 중...",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(26984-26994)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(33753-33763)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(27826-27836)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(34595-34605)"
     ],
     "$id": 20109
   },
@@ -950,7 +963,7 @@
     "de-DE": "Service starten",
     "fr-FR": "Démarrer le service",
     "ko-KR": "서비스 시작",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(26998-27006)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(27840-27848)"],
     "$id": 19448
   },
   "打开引擎管理面板": {
@@ -963,7 +976,7 @@
     "de-DE": "Engine-Verwaltungspanel öffnen",
     "fr-FR": "Ouvrir le panneau de gestion des moteurs",
     "ko-KR": "엔진 관리 패널 열기",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(27571-27583)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(28413-28425)"],
     "$id": 20108
   },
   "计算引擎": {
@@ -976,7 +989,7 @@
     "de-DE": "Berechnungs-Engine",
     "fr-FR": "Moteur de calcul",
     "ko-KR": "컴퓨팅 엔진",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(28292-28300)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(29134-29142)"],
     "$id": 19450
   },
   "未知": {
@@ -989,7 +1002,7 @@
     "de-DE": "Unbekannt",
     "fr-FR": "Inconnu",
     "ko-KR": "알려지지 않은",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(28715-28721)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(29557-29563)"],
     "$id": 10571
   },
   "离线": {
@@ -1002,7 +1015,7 @@
     "de-DE": "Offline",
     "fr-FR": "Hors ligne",
     "ko-KR": "오프라인",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(28756-28762)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(29598-29604)"],
     "$id": 20113
   },
   "已安装模型": {
@@ -1015,7 +1028,7 @@
     "de-DE": "Installierte Modelle",
     "fr-FR": "Modèles installés",
     "ko-KR": "설치된 모델",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(29105-29114)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(29947-29956)"],
     "$id": 19453
   },
   "个可用": {
@@ -1028,7 +1041,7 @@
     "de-DE": "Verfügbar",
     "fr-FR": "Disponibles",
     "ko-KR": "개 사용 가능",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(29366-29373)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(30208-30215)"],
     "$id": 19575
   },
   "当前模型": {
@@ -1041,7 +1054,7 @@
     "de-DE": "Aktuelles Modell",
     "fr-FR": "Modèle actuel",
     "ko-KR": "현재 모델",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(29863-29871)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(30705-30713)"],
     "$id": 19576
   },
   "引擎健康状况": {
@@ -1054,7 +1067,7 @@
     "de-DE": "Engine-Status",
     "fr-FR": "État de santé du moteur",
     "ko-KR": "엔진 상태",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(30523-30533)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(31365-31375)"],
     "$id": 19454
   },
   "引擎二进制已部署": {
@@ -1068,8 +1081,8 @@
     "fr-FR": "Le binaire du moteur est déployé",
     "ko-KR": "엔진 바이너리가 배포되었습니다",
     "$files": [
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(32126-32138)",
-      "src/renderer/components/settings/ai-engine-config-settings.tsx(34366-34378)"
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(32968-32980)",
+      "src/renderer/components/settings/ai-engine-config-settings.tsx(35208-35220)"
     ],
     "$id": 20118
   },
@@ -1083,7 +1096,7 @@
     "de-DE": "Kein Engine-Binary erkannt. Die Online-Analyse wird automatisch von der Basis-AI-Engine übernommen.",
     "fr-FR": "Binaire du moteur non détecté, l'analyse en ligne est automatiquement prise en charge par le moteur IA de base.",
     "ko-KR": "엔진 바이너리가 감지되지 않았습니다. 온라인 분석은 기본 AI 엔진에서 자동으로 수행됩니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(32169-32199)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(33011-33041)"],
     "$id": 19455
   },
   "萤核AI引擎未连接": {
@@ -1096,7 +1109,7 @@
     "de-DE": "Firefly AI Engine ist nicht verbunden",
     "fr-FR": "Le moteur Firefly AI Folder n'est pas connecté",
     "ko-KR": "Firefly AI Folder 엔진이 연결되지 않았습니다",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(32936-32949)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(33778-33791)"],
     "$id": 19456
   },
   "萤核AI引擎当前没有运行。点击下方按钮会自动启动引擎并打开引擎窗口。": {
@@ -1109,7 +1122,7 @@
     "de-DE": "Die Firefly AI Engine läuft derzeit nicht. Ein Klick auf die Schaltfläche unten startet die Engine automatisch und öffnet das Engine-Fenster.",
     "fr-FR": "Le moteur Firefly AI Folder n'est actuellement pas en cours d'exécution. Cliquez sur le bouton ci-dessous pour démarrer automatiquement le moteur et ouvrir la fenêtre du moteur.",
     "ko-KR": "Firefly AI Folder 엔진이 현재 실행되지 않습니다. 아래 버튼을 클릭하면 엔진이 자동으로 시작되고 엔진 창이 열립니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(33137-33175)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(33979-34017)"],
     "$id": 19457
   },
   "未检测到萤核AI引擎程序，请确认应用安装完整后重试；点击下方按钮会再次尝试启动。": {
@@ -1122,7 +1135,7 @@
     "de-DE": "Engineprogramm \"Firefly AI Engine\" nicht erkannt. Bitte stellen Sie sicher, dass die App vollständig installiert ist, und versuchen Sie es erneut. Klicken Sie auf die Schaltfläche unten, um den Start erneut zu versuchen.",
     "fr-FR": "Aucun moteur IA Firefly AI Folder n’a été détecté. Veuillez vous assurer que l’installation de l’application est complète, puis réessayer. Cliquez sur le bouton ci-dessous pour tenter de nouveau de le démarrer.",
     "ko-KR": "Firefly AI ​​엔진 프로그램이 감지되지 않았습니다. 애플리케이션이 완전히 설치되었는지 확인한 후 다시 시도하십시오. 다시 시작하려면 아래 버튼을 클릭하세요.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(33206-33250)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(34048-34092)"],
     "$id": 19458
   },
   "打开萤核AI引擎": {
@@ -1135,7 +1148,7 @@
     "de-DE": "\"Firefly AI Engine\" öffnen",
     "fr-FR": "Ouvrir le moteur IA Firefly AI Folder",
     "ko-KR": "Firefly AI Folder 엔진 열기",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(33767-33779)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(34609-34621)"],
     "$id": 19459
   },
   "未检测到引擎二进制": {
@@ -1148,7 +1161,7 @@
     "de-DE": "Kein Engine-Binary erkannt",
     "fr-FR": "Binaire du moteur non détecté",
     "ko-KR": "엔진 바이너리가 감지되지 않았습니다",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(34409-34422)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(35251-35264)"],
     "$id": 19577
   },
   "基础AI引擎自动兜底": {
@@ -1161,7 +1174,7 @@
     "de-DE": "Automatischer Fallback auf die Basis-AI-Engine",
     "fr-FR": "Repli automatique sur le moteur IA de base",
     "ko-KR": "기본 AI 엔진 자동 폴백",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(35132-35146)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(35974-35988)"],
     "$id": 19460
   },
   "当高级AI引擎（萤核AI引擎或云端）连续分析失败或未连接时，分析流水线将静默降级到基础AI引擎纯本地通道，确保文件仍可获得智能命名与标签，不会出现用户可见失败。": {
@@ -1174,7 +1187,7 @@
     "de-DE": "Wenn die erweiterte AI-Engine (Firefly AI Engine oder Cloud) wiederholt fehlerhaft analysiert oder nicht verbunden ist, wird die Analyse-Pipeline still auf den rein lokalen Kanal der Basis-AI-Engine heruntergestuft. So wird sichergestellt, dass Dateien weiterhin intelligent benannt und mit Tags versehen werden, ohne dass nutzerseitig sichtbare Fehler auftreten.",
     "fr-FR": "Lorsque le moteur IA avancé (moteur IA Firefly AI Folder ou nuage) échoue de manière répétée à analyser ou n’est pas connecté, le pipeline d’analyse se replie silencieusement sur le canal local pur du moteur IA de base, garantissant que les fichiers bénéficient toujours du nommage intelligent et de l’étiquetage, sans échec visible pour l’utilisateur.",
     "ko-KR": "고급 AI 엔진(Firefly AI Folder 엔진 또는 클라우드)에서 연례 분석 실패 또는 연결 실패가 발생하면, 분석 파이프라인은 기본 AI 엔진의 순수 로컬 채널로 무음으로 다운그레이드되어 파일이 여전히 지능형 네이밍 및 태그를 받을 수 있도록 하며, 사용자에게 노출되는 실패가 발생하지 않습니다.",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(35281-35391)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(36123-36233)"],
     "$id": 19461
   },
   "最近异常": {
@@ -1187,7 +1200,7 @@
     "de-DE": "Letzte Ausnahmen",
     "fr-FR": "Exceptions récentes",
     "ko-KR": "최근 예외",
-    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(35691-35699)"],
+    "$files": ["src/renderer/components/settings/ai-engine-config-settings.tsx(36533-36541)"],
     "$id": 20122
   },
   "获取模型列表": {

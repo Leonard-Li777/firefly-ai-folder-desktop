@@ -1369,8 +1369,8 @@ export class DatabaseService {
                 lookupExistingName: DeterministicCodeGenerator.createDbLookup(this._db!)
               })
               this._db!.prepare(
-                `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, materialized_paths, depth, file_groups, source, meta)
-                 VALUES (?, ?, ?, '[]', 2, '[]', 'expanded', ?)`
+                `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, file_groups, source, meta)
+                 VALUES (?, ?, ?, '[]', 'expanded', ?)`
               ).run(
                 code,
                 item.tagName,

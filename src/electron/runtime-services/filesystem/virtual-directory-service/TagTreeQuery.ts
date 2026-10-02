@@ -56,6 +56,7 @@ type HybridPageRef =
  */
 /** builtin.content_tags: parent_codes 为空数组的标签的逻辑父级 code */
 const CONTENT_TAGS_CODE = 'builtin.content_tags'
+const escapeLike = (s: string) => s.replace(/([%_\\])/g, '\\$1')
 
 export class TagTreeQuery {
   private dagMaterializer: DAGMaterializer
@@ -112,7 +113,7 @@ export class TagTreeQuery {
     // 1. 本地 file_tags 的 parent_codes 关系
     try {
       const rows = this.db
-        .prepare('SELECT code, parent_codes FROM file_tags WHERE depth > 0')
+        .prepare('SELECT code, parent_codes FROM file_tags')
         .all() as Array<{ code: string; parent_codes: string }>
       for (const row of rows) {
         let parents: string[] = []
@@ -172,7 +173,7 @@ export class TagTreeQuery {
 
     try {
       const rows = this.db
-        .prepare('SELECT code, parent_codes FROM file_tags WHERE depth > 0')
+        .prepare('SELECT code, parent_codes FROM file_tags')
         .all() as Array<{ code: string; parent_codes: string }>
       for (const row of rows) {
         let parents: string[] = []
@@ -291,51 +292,26 @@ export class TagTreeQuery {
   }
 
   /**
-   * 查找指定标签值（或代码）自身及其所有后代标签的 code 集合
+   * 获取指定标签节点的所有子孙节点 codes（包含其自身），用于多级标签树的子孙穿透统计。
    *
-   * 两步查询范式（#622）：
-   * Step 1: 在 file_tags 小表用 materialized_paths 前缀过滤得到 codes（json_each 仅扫几千行）
-   * Step 2: 调用方用 codes 走 idx_file_tag_relations_tag 索引查大表
-   *
-   * 彻底根除对百万级 file_tag_relations 执行 json_each / 递归 CTE LIKE 全扫的性能灾难。
+   * 实现：查询 file_tag_relations.code_path 列的前缀范围与路径段（走 idx_file_tag_relations_code_path 索引），
+   * 替代原 file_tags.materialized_paths JSON 的 json_each 扫描方案。
    */
   public getDescendantTagCodes(tagValueOrCode: string): string[] {
     try {
-      // 优先：直接命中 code 或 name，取其物化路径前缀做子树召回
+      // 先查 file_tags 确认节点存在，得到其 code
       const anchor = this.db
         .prepare(
-          `SELECT code, name, materialized_paths FROM file_tags
+          `SELECT code, name FROM file_tags
            WHERE code = ? OR name = ?
            LIMIT 1`
         )
         .get(tagValueOrCode, tagValueOrCode) as
-        | { code: string; name: string; materialized_paths: string }
+        | { code: string; name: string }
         | undefined
 
-      if (!anchor) {
-        // 未命中标签树节点：原样返回，交由调用方当字面量 code 使用
-        return [tagValueOrCode]
-      }
-
-      const paths = DAGMaterializer.parsePaths(anchor.materialized_paths)
-
-      // 物化路径缺失时，尝试现场修复一次再查
-      if (paths.length === 0) {
-        this.dagMaterializer.materializeTag(anchor.code)
-        const repaired = this.db
-          .prepare('SELECT materialized_paths FROM file_tags WHERE code = ?')
-          .pluck()
-          .get(anchor.code) as string | undefined
-        const repairedPaths = DAGMaterializer.parsePaths(repaired)
-        if (repairedPaths.length > 0) {
-          return this.collectSubtreeCodes(repairedPaths)
-        }
-      } else {
-        return this.collectSubtreeCodes(paths)
-      }
-
-      // 兜底：无物化路径时返回节点自身
-      return [anchor.code]
+      const targetCode = anchor?.code || tagValueOrCode
+      return this.collectSubtreeCodes(targetCode)
     } catch (err) {
       logger.warn(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 子树召回失败: ${tagValueOrCode}`, err)
       return [tagValueOrCode]
@@ -343,33 +319,103 @@ export class TagTreeQuery {
   }
 
   /**
-   * 对给定物化路径集合执行前缀扫描，收集子树全部 codes
+   * 基于 file_tag_relations.code_path 前缀/路径段查询收集子树全部 codes
+   * 走 idx_file_tag_relations_code_path 索引及 tag_code 覆盖索引，彻底替代 json_each(materialized_paths) 扫描
    */
-  private collectSubtreeCodes(
-    paths: Array<{ code_path: string; name_path: string }>
-  ): string[] {
+  private collectSubtreeCodes(tagCode: string): string[] {
     const codeSet = new Set<string>()
+    codeSet.add(tagCode)
 
-    for (const p of paths) {
-      // Step 1：file_tags 小表 json_each 前缀过滤（< 1ms）
-      const rows = this.db
+    try {
+      const escCode = escapeLike(tagCode)
+
+      // Step 1：查 file_tag_relations 中以该 tagCode 为路径段的所有后代 tag_code
+      // 场景覆盖：
+      // a) 根维度作为第一段：code_path = '/tagCode' OR code_path LIKE '/tagCode/%'
+      // b) 中间节点作为中间段：code_path LIKE '%/tagCode/%'
+      // c) 自身作为末尾段：code_path LIKE '%/tagCode'
+      const pathRows = this.db
         .prepare(
-          `SELECT code FROM file_tags
-           WHERE EXISTS (
-             SELECT 1 FROM json_each(materialized_paths)
-             WHERE json_extract(value, '$.code_path') = ?
-                OR json_extract(value, '$.code_path') LIKE ?
-           )`
+          `SELECT DISTINCT tag_code FROM file_tag_relations
+           WHERE (
+             code_path = ('/' || ?)
+             OR code_path LIKE ('/' || ? || '/%') ESCAPE '\\'
+             OR code_path LIKE ('%/' || ? || '/%') ESCAPE '\\'
+             OR code_path LIKE ('%/' || ?) ESCAPE '\\'
+           )
+           AND tag_code != ''`
         )
-        .pluck()
-        .all(p.code_path, `${p.code_path}/%`) as string[]
+        .all(tagCode, escCode, escCode, escCode) as Array<{ tag_code: string }>
 
-      for (const c of rows) {
-        codeSet.add(c)
+      for (const { tag_code } of pathRows) {
+        codeSet.add(tag_code)
       }
+
+      // Step 2：若当前 tagCode 自身在 file_tag_relations 中有直接关联（如叶子或非纯维度节点），
+      // 读取其所有已落库的完整 code_path，并以这些完整 code_path 为前缀做确定性前缀扫描
+      const selfRows = this.db
+        .prepare(
+          `SELECT DISTINCT code_path FROM file_tag_relations
+           WHERE tag_code = ? AND code_path != ''`
+        )
+        .all(tagCode) as Array<{ code_path: string }>
+
+      for (const { code_path: selfPath } of selfRows) {
+        const escSelfPath = escapeLike(selfPath)
+        const descendantRows = this.db
+          .prepare(
+            `SELECT DISTINCT tag_code FROM file_tag_relations
+             WHERE (code_path = ? OR code_path LIKE (? || '/%') ESCAPE '\\')
+               AND tag_code != ''`
+          )
+          .all(selfPath, escSelfPath) as Array<{ tag_code: string }>
+
+        for (const { tag_code } of descendantRows) {
+          codeSet.add(tag_code)
+        }
+      }
+
+      // Step 3：从 file_tags 本地表查询 DAG 的所有直属及递归子标签（如果存在拓扑登记）
+      // 保证尚未打标的新建子标签或空子分类也能被收集，维护树结构的完整拓扑
+      try {
+        const stmtChildTags = this.db.prepare(
+          `SELECT code, parent_codes FROM file_tags WHERE parent_codes != '[]' AND parent_codes != ''`
+        )
+        const allParentRows = stmtChildTags.all() as Array<{ code: string; parent_codes: string }>
+        const parentToChildren = new Map<string, string[]>()
+        for (const row of allParentRows) {
+          try {
+            const parents = JSON.parse(row.parent_codes) as string[]
+            if (Array.isArray(parents)) {
+              for (const p of parents) {
+                if (!parentToChildren.has(p)) parentToChildren.set(p, [])
+                parentToChildren.get(p)!.push(row.code)
+              }
+            }
+          } catch {}
+        }
+
+        const queue = [tagCode]
+        const visited = new Set<string>([tagCode])
+        while (queue.length > 0) {
+          const curr = queue.shift()!
+          const children = parentToChildren.get(curr)
+          if (children) {
+            for (const ch of children) {
+              if (!visited.has(ch)) {
+                visited.add(ch)
+                codeSet.add(ch)
+                queue.push(ch)
+              }
+            }
+          }
+        }
+      } catch {}
+    } catch (err) {
+      logger.warn(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] collectSubtreeCodes 失败: ${tagCode}`, err)
     }
 
-    return Array.from(codeSet)
+    return [...codeSet]
   }
 
   /**
@@ -516,15 +562,14 @@ export class TagTreeQuery {
       const dbStart = performance.now()
       let dimensionRoots = this.db
         .prepare(`
-          SELECT code, name, depth, file_groups, meta
+          SELECT code, name, file_groups, meta
           FROM file_tags
-          WHERE depth = 0 OR json_extract(meta, '$.isDimension') = 1
+          WHERE parent_codes = '[]' OR parent_codes IS NULL OR json_extract(meta, '$.isDimension') = 1 OR source = 'dimension'
           ORDER BY code ASC
         `)
         .all() as Array<{
           code: string
           name: string
-          depth: number
           file_groups: string | null
           meta: string
         }>
@@ -540,17 +585,15 @@ export class TagTreeQuery {
       // 2. 获取所有非根标签节点（#625：透出 code/parent_codes/meta 供前端纯树形状态机消费）
       const tagRows = this.db
         .prepare(`
-          SELECT code, name, parent_codes, materialized_paths, depth, file_groups, meta
+          SELECT code, name, parent_codes, file_groups, meta
           FROM file_tags
           WHERE (json_extract(meta, '$.isDimension') IS NULL OR json_extract(meta, '$.isDimension') = 0)
-          ORDER BY depth ASC, code ASC
+          ORDER BY code ASC
         `)
         .all() as Array<{
           code: string
           name: string
           parent_codes: string
-          materialized_paths?: string
-          depth: number
           file_groups: string | null
           meta: string
         }>
@@ -739,11 +782,10 @@ export class TagTreeQuery {
       // 建立 tagNameCountMap 与 tagNameFilesMap，用于名称层面的关联兜底
       const tagNameCountMap = new Map<string, number>()
       const tagNameFilesMap = new Map<string, Set<string>>()
-      // 建立动态子标签映射：parentCode -> Array<{ code, name, depth, meta, count }>
+      // 建立动态子标签映射：parentCode -> Array<{ code, name, meta, count }>
       const dynamicTagsByParent = new Map<string, Array<{
         code: string
         name: string
-        depth: number
         meta: any
         count: number
       }>>()
@@ -785,7 +827,6 @@ export class TagTreeQuery {
           dynamicTagsByParent.get(p)!.push({
             code: t.code,
             name: resolvedName,
-            depth: t.depth,
             meta: parsedMeta,
             count
           })
@@ -867,7 +908,7 @@ export class TagTreeQuery {
             dimensionName: aliasResolver(root.code, root.name),
             tagValue: aliasResolver(child.code, child.name),
             fileCount: aggregatedCount,
-            level: child.depth || 1,
+            level: 1,
             code: child.code,
             codePath: childCodePath,
             namePath: childNamePath,
@@ -912,7 +953,7 @@ export class TagTreeQuery {
         groups.push({
           id: legacyNumericId,
           name: aliasResolver(root.code, root.name),
-          level: root.depth,
+          level: 1,
           tags: dimensionTags,
           code: dimCode,
           isMultiSelect: dimMeta?.isMultiSelect === true,
@@ -1332,10 +1373,7 @@ export class TagTreeQuery {
 
           let parents: string[] = []
           try { parents = JSON.parse(t.parent_codes || '[]') } catch {}
-          const mPaths = [
-            ...DAGMaterializer.parsePaths((t as any).materialized_paths),
-            ...(tagChainsMap.get(t.code) || [])
-          ]
+          const mPaths = [...(tagChainsMap.get(t.code) || [])]
 
           contentCandidates.push({
             code: t.code,

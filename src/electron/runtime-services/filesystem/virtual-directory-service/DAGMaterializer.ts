@@ -1,25 +1,27 @@
 /**
- * DAG 物化路径维护器 (DAG Materializer)
+ * DAG 物化路径工具（精简版）
  *
- * 核心职责：
- * 1. 为新建/更新标签派生双存物化路径 (code_path + name_path)；
- * 2. 支持多父 DAG：每个直接父节点各派生一条可达路径；
- * 3. 供 TagTreeQuery 两步前缀查询直接消费，零运行时递归 CTE。
+ * 历史职责（已迁移）：
+ * - file_tags.materialized_paths 的写入与修复 → 该列已从 file_tags 删除
+ * - 子树前缀扫描 → 已迁移至 TagTreeQuery 基于 file_tag_relations.code_path 的纯前缀索引查询
+ *
+ * 当前职责（仅剩静态工具）：
+ * - MaterializedPath 类型导出（供 TagTreeQuery/omni-service 引用）
+ * - parsePaths：从任意 JSON 字符串解析路径数组（兼容存量 tagChainsMap 数据）
+ * - parseParentCodes：解析 parent_codes JSON 数组
+ * - deriveChildPaths：从父路径派生子路径（供外部逻辑复用）
  */
-
-import { LogCategory, logger } from '@firefly/shared'
 
 export interface MaterializedPath {
   code_path: string
   name_path: string
 }
 
+/** @deprecated 已移除 materialized_paths/depth 列，此接口仅供历史引用兼容 */
 export interface TagNodeRow {
   code: string
   name: string
   parent_codes: string
-  materialized_paths: string
-  depth: number
 }
 
 export class DAGMaterializer {
@@ -39,7 +41,8 @@ export class DAGMaterializer {
   }
 
   /**
-   * 解析 materialized_paths JSON 字符串为数组
+   * 解析物化路径 JSON 字符串为数组
+   * （兼容旧 file_tags.materialized_paths 列数据格式，现主要用于 tagChainsMap 解析）
    */
   static parsePaths(raw: string | null | undefined): MaterializedPath[] {
     if (!raw) return []
@@ -73,182 +76,34 @@ export class DAGMaterializer {
   }
 
   /**
-   * 为指定标签节点计算并回写物化路径
-   * @returns 计算得到的路径数组（失败返回空数组）
+   * @deprecated file_tags.materialized_paths 已删除，此方法为空操作兼容存根
+   * 子树查询请改用 TagTreeQuery.getDescendantTagCodes()
    */
-  materializeTag(tagCode: string): MaterializedPath[] {
-    try {
-      const row = this.db
-        .prepare('SELECT code, name, parent_codes, materialized_paths, depth FROM file_tags WHERE code = ?')
-        .get(tagCode) as TagNodeRow | undefined
-
-      if (!row) {
-        logger.warn(LogCategory.VIRTUAL_DIRECTORY, `[DAGMaterializer] 标签不存在: ${tagCode}`)
-        return []
-      }
-
-      const parentCodes = DAGMaterializer.parseParentCodes(row.parent_codes)
-
-      // 无父节点：根节点，路径为自身
-      if (parentCodes.length === 0) {
-        const paths: MaterializedPath[] = [
-          { code_path: `/${row.code}`, name_path: `/${row.name}` }
-        ]
-        this.writePaths(row.code, paths)
-        return paths
-      }
-
-      // 有父节点：从每个父节点的物化路径派生
-      const allPaths: MaterializedPath[] = []
-      const seen = new Set<string>()
-
-      for (const parentCode of parentCodes) {
-        const parentRow = this.db
-          .prepare('SELECT code, name, materialized_paths FROM file_tags WHERE code = ?')
-          .get(parentCode) as { code: string; name: string; materialized_paths: string } | undefined
-
-        if (!parentRow) {
-          logger.warn(
-            LogCategory.VIRTUAL_DIRECTORY,
-            `[DAGMaterializer] 父节点缺失: ${parentCode} (子: ${tagCode})`
-          )
-          continue
-        }
-
-        const parentPaths = DAGMaterializer.parsePaths(parentRow.materialized_paths)
-        const effectiveParentPaths =
-          parentPaths.length > 0
-            ? parentPaths
-            : [{ code_path: `/${parentRow.code}`, name_path: `/${parentRow.name}` }]
-
-        for (const p of DAGMaterializer.deriveChildPaths(effectiveParentPaths, row.code, row.name)) {
-          const key = p.code_path
-          if (!seen.has(key)) {
-            seen.add(key)
-            allPaths.push(p)
-          }
-        }
-      }
-
-      // 父节点全部缺失时兜底为根路径
-      if (allPaths.length === 0) {
-        allPaths.push({ code_path: `/${row.code}`, name_path: `/${row.name}` })
-      }
-
-      this.writePaths(row.code, allPaths)
-      return allPaths
-    } catch (err) {
-      logger.error(LogCategory.VIRTUAL_DIRECTORY, `[DAGMaterializer] 物化失败: ${tagCode}`, err)
-      return []
-    }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  materializeTag(_tagCode: string): MaterializedPath[] {
+    return []
   }
 
   /**
-   * 批量物化：对所有 materialized_paths 为空且有父引用的节点执行修复
-   * @returns 修复的节点数
+   * @deprecated file_tags.materialized_paths 已删除，此方法为空操作兼容存根
    */
   repairIncompletePaths(): number {
-    try {
-      const incomplete = this.db
-        .prepare(
-          `SELECT code FROM file_tags
-           WHERE parent_codes IS NOT NULL
-             AND parent_codes != '[]'
-             AND (materialized_paths IS NULL OR materialized_paths = '[]')`
-        )
-        .all() as Array<{ code: string }>
-
-      let repaired = 0
-      for (const row of incomplete) {
-        const paths = this.materializeTag(row.code)
-        if (paths.length > 0) repaired++
-      }
-
-      if (repaired > 0) {
-        logger.info(
-          LogCategory.VIRTUAL_DIRECTORY,
-          `[DAGMaterializer] 修复了 ${repaired} 个物化路径不完整的标签`
-        )
-      }
-      return repaired
-    } catch (err) {
-      logger.error(LogCategory.VIRTUAL_DIRECTORY, '[DAGMaterializer] 批量修复失败', err)
-      return 0
-    }
+    return 0
   }
 
   /**
-   * 用前缀查询获取子树内所有 tag codes（两步查询 Step 1）
-   * 仅扫描 file_tags 小表（几千行），json_each 耗时 < 1ms
+   * @deprecated 改用 TagTreeQuery.getDescendantTagCodes() 基于 file_tag_relations.code_path 查询
    */
-  getSubtreeCodesByPrefix(namePathPrefix: string): string[] {
-    try {
-      const normalized = namePathPrefix.endsWith('/')
-        ? namePathPrefix.slice(0, -1)
-        : namePathPrefix
-
-      const rows = this.db
-        .prepare(
-          `SELECT code FROM file_tags
-           WHERE EXISTS (
-             SELECT 1 FROM json_each(materialized_paths)
-             WHERE json_extract(value, '$.name_path') = ?
-                OR json_extract(value, '$.name_path') LIKE ?
-           )`
-        )
-        .pluck()
-        .all(normalized, `${normalized}/%`) as string[]
-
-      return rows
-    } catch (err) {
-      logger.error(
-        LogCategory.VIRTUAL_DIRECTORY,
-        `[DAGMaterializer] 前缀查询失败: ${namePathPrefix}`,
-        err
-      )
-      return []
-    }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getSubtreeCodesByPrefix(_namePathPrefix: string): string[] {
+    return []
   }
 
   /**
-   * 用 code_path 前缀查询获取子树内所有 tag codes
+   * @deprecated 改用 TagTreeQuery.getDescendantTagCodes() 基于 file_tag_relations.code_path 查询
    */
-  getSubtreeCodesByCodePrefix(codePathPrefix: string): string[] {
-    try {
-      const normalized = codePathPrefix.endsWith('/')
-        ? codePathPrefix.slice(0, -1)
-        : codePathPrefix
-
-      const rows = this.db
-        .prepare(
-          `SELECT code FROM file_tags
-           WHERE EXISTS (
-             SELECT 1 FROM json_each(materialized_paths)
-             WHERE json_extract(value, '$.code_path') = ?
-                OR json_extract(value, '$.code_path') LIKE ?
-           )`
-        )
-        .pluck()
-        .all(normalized, `${normalized}/%`) as string[]
-
-      return rows
-    } catch (err) {
-      logger.error(
-        LogCategory.VIRTUAL_DIRECTORY,
-        `[DAGMaterializer] code 前缀查询失败: ${codePathPrefix}`,
-        err
-      )
-      return []
-    }
-  }
-
-  private writePaths(code: string, paths: MaterializedPath[]): void {
-    try {
-      this.db
-        .prepare('UPDATE file_tags SET materialized_paths = ? WHERE code = ?')
-        .run(JSON.stringify(paths), code)
-    } catch (err) {
-      logger.error(LogCategory.VIRTUAL_DIRECTORY, `[DAGMaterializer] 写入路径失败: ${code}`, err)
-    }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getSubtreeCodesByCodePrefix(_codePathPrefix: string): string[] {
+    return []
   }
 }

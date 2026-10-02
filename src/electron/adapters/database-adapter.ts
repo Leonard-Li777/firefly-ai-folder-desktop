@@ -173,14 +173,12 @@ export class DatabaseAdapter implements IDatabaseAdapter {
         db.prepare(
           `
           INSERT OR IGNORE INTO file_tags (
-            code, name, parent_codes, materialized_paths, depth, file_groups, source, meta, description
-          ) VALUES (?, ?, '[]', ?, ?, ?, ?, ?, ?)
+            code, name, parent_codes, file_groups, source, meta, description
+          ) VALUES (?, ?, '[]', ?, ?, ?, ?)
         `
         ).run(
           code,
           dimension.name || code,
-          JSON.stringify([{ code_path: `/${code}`, name_path: `/${dimension.name || code}` }]),
-          dimension.level ?? 0,
           JSON.stringify(dimension.applicableFileTypes || []),
           dimension.isAIGenerated ? 'expanded' : 'builtin',
           JSON.stringify({

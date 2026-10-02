@@ -147,7 +147,8 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         triggerConditions: [],
         metadata: {
           flag: {
-            isPanDimension: true
+            isPanDimension: true,
+            requiresAI: true
           }
         }
       },
@@ -1090,7 +1091,8 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         triggerConditions: [],
         metadata: {
           flag: {
-            isPanDimension: true
+            isPanDimension: true,
+            requiresAI: true
           }
         }
       },

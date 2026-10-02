@@ -63,13 +63,13 @@ export function getRootGroupsWithChildren(db: Database.Database): TagRootGroup[]
     const roots = db
       .prepare(
         `
-        SELECT code, name, depth, description, meta
+        SELECT code, name, description, meta
         FROM file_tags root
         WHERE root.parent_codes IS NULL OR root.parent_codes = '[]'
-        ORDER BY root.depth ASC, root.code ASC
+        ORDER BY root.code ASC
       `
       )
-      .all() as Array<{ code: string; name: string; depth: number; description: string | null; meta: string | null }>
+      .all() as Array<{ code: string; name: string; description: string | null; meta: string | null }>
 
     if (roots.length === 0) return []
 
@@ -101,7 +101,7 @@ export function getRootGroupsWithChildren(db: Database.Database): TagRootGroup[]
     return roots.map(r => ({
       code: r.code,
       name: r.name,
-      depth: r.depth,
+      depth: 1,
       description: r.description,
       meta: r.meta,
       children: childrenByRoot.get(r.code) ?? []

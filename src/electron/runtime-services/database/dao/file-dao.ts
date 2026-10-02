@@ -320,16 +320,15 @@ export class FileDao {
       })
     })
 
-    // 创世 Baseline V1 起，维度层级不再来自 file_dimensions 表（已废弃），
-    // 而是由 file_tags 标签树自身的 depth 字段表达：depth=0 为维度根节点，depth 越大层级越深。
-    // 此处读取全部标签树节点的层级关系，用于对命中维度进行稳定排序。
+    // 创世 Baseline V1 起，维度层级不再来自 file_dimensions 表（已废弃）。
+    // 此处读取全部标签树节点用于对命中维度进行稳定排序。
     if (!this.dimensionsCache) {
       try {
         this.dimensionsCache = this.db
           .prepare(
-            `SELECT code AS id, depth AS level, description
+            `SELECT code AS id, description
              FROM file_tags
-             ORDER BY depth ASC, code ASC`
+             ORDER BY code ASC`
           )
           .all() as any[]
       } catch {
@@ -340,12 +339,12 @@ export class FileDao {
     const dimensions = this.dimensionsCache
     const sortedDimensionTags: Array<{ dimension: string; level: number; tags: any[] }> = []
 
-    // 维度根节点按 depth 升序优先输出
+    // 维度根节点按稳定顺序优先输出
     dimensions.forEach(dim => {
       if (dimensionTags[dim.id]) {
         sortedDimensionTags.push({
           dimension: dim.id,
-          level: dim.level,
+          level: 1,
           tags: dimensionTags[dim.id]
         })
         delete dimensionTags[dim.id]
