@@ -33,7 +33,9 @@
       "triggerConditions": [],
       "metadata": {
         "flag": {
-          "isRuleSubdivision": true
+          "isRuleSubdivision": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -65,7 +67,10 @@
       ],
       "triggerConditions": [],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
+        }
       }
     },
     {
@@ -94,7 +99,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -122,7 +128,8 @@
       "metadata": {
         "flag": {
           "isPanDimension": true,
-          "requiresAI": true
+          "isRequiresAI": true,
+          "isMultiSelect": false
         }
       }
     },
@@ -155,7 +162,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -198,7 +206,8 @@
       ],
       "metadata": {
         "flag": {
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -233,7 +242,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -267,7 +279,8 @@
       ],
       "metadata": {
         "flag": {
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -299,7 +312,9 @@
       ],
       "metadata": {
         "flag": {
-          "isRuleSubdivision": true
+          "isRuleSubdivision": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -333,7 +348,9 @@
       ],
       "metadata": {
         "flag": {
-          "isRuleSubdivision": true
+          "isRuleSubdivision": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -385,7 +402,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -420,7 +438,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -485,7 +504,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -520,7 +540,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -553,7 +574,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -590,7 +612,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isPanDimension": true
+          "isPanDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -627,7 +651,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -665,7 +690,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -699,7 +725,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -733,7 +762,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
+        }
       }
     },
     {
@@ -765,7 +797,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -809,7 +844,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -850,7 +888,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
+        }
       }
     },
     {
@@ -884,7 +925,8 @@
       ],
       "metadata": {
         "flag": {
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -977,7 +1019,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
+        }
       }
     },
     {
@@ -1019,7 +1064,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -1044,7 +1092,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1066,7 +1115,8 @@
       "metadata": {
         "flag": {
           "isPanDimension": true,
-          "requiresAI": true
+          "isRequiresAI": true,
+          "isMultiSelect": false
         }
       }
     },
@@ -1107,7 +1157,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
+        }
       }
     },
     {
@@ -1141,7 +1194,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1175,7 +1229,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1232,7 +1287,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1267,7 +1324,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1306,7 +1365,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1341,7 +1402,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1374,7 +1436,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1409,7 +1472,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1462,7 +1527,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1502,7 +1569,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1562,7 +1631,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1610,7 +1681,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1664,7 +1737,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1726,7 +1801,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1858,7 +1935,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1901,7 +1980,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1940,7 +2021,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -1972,7 +2055,9 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "isExtensionDimension": true
+          "isExtensionDimension": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2025,7 +2110,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2068,7 +2156,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2132,7 +2223,8 @@
       ],
       "metadata": {
         "flag": {
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2203,7 +2295,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
+        }
       }
     },
     {
@@ -2245,7 +2340,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2286,7 +2382,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2331,7 +2428,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2377,7 +2475,8 @@
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
-          "singleSelect": true
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2417,7 +2516,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2458,7 +2560,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2497,7 +2602,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2539,7 +2647,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2602,7 +2713,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2641,7 +2755,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2679,7 +2796,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2719,7 +2839,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2761,7 +2884,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2802,7 +2928,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -2837,8 +2966,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2875,8 +3005,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2911,8 +3042,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2945,8 +3077,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -2982,8 +3115,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -3019,8 +3153,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -3055,8 +3190,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -3092,8 +3228,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -3129,8 +3266,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -3165,8 +3303,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": false,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": true
         }
       }
     },
@@ -3199,8 +3338,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -3236,8 +3376,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": true,
-          "singleSelect": false,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": true
         }
       }
     },
@@ -3271,8 +3412,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": false
         }
       }
     },
@@ -3320,8 +3462,9 @@
       "metadata": {
         "flag": {
           "isPanDimension": false,
-          "singleSelect": true,
-          "isMicroService": true
+          "isMicroService": true,
+          "isRequiresAI": false,
+          "isMultiSelect": true
         }
       }
     },
@@ -3368,7 +3511,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3407,7 +3553,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3447,7 +3596,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3488,7 +3640,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3523,7 +3678,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3562,7 +3720,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3600,7 +3761,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3638,7 +3802,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3678,7 +3845,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3717,7 +3887,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3752,7 +3925,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     },
     {
@@ -3786,7 +3962,10 @@
         }
       ],
       "metadata": {
-        "flag": {}
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
       }
     }
   ]

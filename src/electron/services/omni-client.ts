@@ -332,6 +332,16 @@ export class OmniClient {
       body: JSON.stringify({ query, items })
     })
   }
+
+  /**
+   * 触发 Omni 热重载维度执行策略：POST /api/taxonomy/reload-policies (DEC-04)
+   * Omni 会重新从主库 system_config 只读读取 DIMENSION_POLICIES 并刷新内存索引
+   */
+  async reloadDimensionPolicies(): Promise<{ success: boolean; error?: string } | null> {
+    return this.request<{ success: boolean; error?: string }>('/api/taxonomy/reload-policies', {
+      method: 'POST'
+    })
+  }
 }
 
 export const omniClient = OmniClient.getInstance()

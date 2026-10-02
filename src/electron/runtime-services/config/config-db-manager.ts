@@ -6,7 +6,8 @@ import {
   getSharedSchemaName,
   isTestEnvironment,
   ResourceLocator,
-  updateRuntimeFileConstants
+  updateRuntimeFileConstants,
+  CONTROLLED_DIMENSION_ROOT_CODES
 } from '@firefly/shared'
 import { createSupabaseClient } from '../system/supabase-client-factory'
 import { WORKSPACE_CONSTANTS } from '@firefly/server'
@@ -251,16 +252,14 @@ export class ConfigDbManager {
   }
 
   /**
-   * 从 system-config_[lang].json 和 model_[lang].json 读取初始配置写入 system_config 表（先清空再导入）
+   * 从 system-config_[lang].json 和 model_[lang].json 读取初始配置写入 system_config 表（增量合并，DEC-03）
+   * 绝对禁止执行 DELETE FROM system_config，确保离线启动不丢失云端同步策略
    */
   private loadInitialSystemConfigToDb(db: Database.Database, language: string): void {
     try {
       const insertStmt = db.prepare(
-        `INSERT OR REPLACE INTO system_config (key, value, updated_at) VALUES (?, ?, ?)`
+        `INSERT OR IGNORE INTO system_config (key, value, updated_at) VALUES (?, ?, ?)`
       )
-
-      // 先清空表
-      db.prepare('DELETE FROM system_config').run()
 
       // 1. 加载 system-config_[lang].json
       const systemConfigPath = this.getConfigFilePath(`system-config_${language}.json`)
@@ -282,7 +281,7 @@ export class ConfigDbManager {
             })
           })()
 
-          logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功导入初始 system_config 数据`)
+          logger.info(LogCategory.CONFIG, `ConfigDbManager: 成功增量导入初始 system_config 数据`)
         } catch (err) {
           logger.error(
             LogCategory.CONFIG,
@@ -380,6 +379,42 @@ export class ConfigDbManager {
           LogCategory.CONFIG,
           `ConfigDbManager: 云端模型配置文件不存在: ${providersPresetPath}`
         )
+      }
+
+      // 3. 构建并写入初始 DIMENSION_POLICIES 策略项（DEC-03）
+      try {
+        const dimPath = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
+        const fallbackDimPath = ResourceLocator.resolveDimension('fileDimension_zh-CN.json')
+        const targetPath = fs.existsSync(dimPath) ? dimPath : fallbackDimPath
+        if (fs.existsSync(targetPath)) {
+          const raw = fs.readFileSync(targetPath, 'utf-8')
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed.file_dimensions)) {
+            const policiesMap: Record<string, any> = {}
+            for (const dim of parsed.file_dimensions) {
+              const dimCode = dim.code || (CONTROLLED_DIMENSION_ROOT_CODES as any)[dim.id]
+              if (dimCode) {
+                policiesMap[dimCode] = {
+                  id: dim.id,
+                  threshold: 0.60,
+                  applicableFileTypes: dim.applicableFileTypes || [],
+                  contextHints: dim.contextHints || [],
+                  metadata: {
+                    flag: {
+                      isPanDimension: Boolean(dim.metadata?.flag?.isPanDimension),
+                      isRequiresAI: Boolean(dim.metadata?.flag?.isRequiresAI ?? dim.metadata?.flag?.requiresAI),
+                      isMultiSelect: Boolean(dim.metadata?.flag?.isMultiSelect)
+                    }
+                  }
+                }
+              }
+            }
+            insertStmt.run('DIMENSION_POLICIES', JSON.stringify(policiesMap), now)
+            logger.info(LogCategory.CONFIG, 'ConfigDbManager: 成功增量导入初始 DIMENSION_POLICIES 数据')
+          }
+        }
+      } catch (policyErr) {
+        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 构建初始 DIMENSION_POLICIES 失败:', policyErr)
       }
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 system_config 失败:', error)
@@ -485,71 +520,158 @@ export class ConfigDbManager {
   }
 
   /**
-   * 获取维度数据
+   * 获取维度数据 (DEC-01 & DEC-03)
    *
-   * ADR-0038 / Issue #682：
-   * 从 file_tags 表直接查询维度（depth=0），不再依赖 TaxonomyAliasCache 内存总线。
-   * 受控/感知标签的展示名由数据库分表查询；动态维度直接读 file_tags。
+   * 修复 V4 创世主库物理表断层：
+   * 1. 优先从静态预置资源 fileDimension_{lang}.json 加载 79 个受控内建维度；
+   * 2. 读取主库 system_config.DIMENSION_POLICIES 动态策略，覆盖合并门限与 flag 标记（isRequiresAI, isMultiSelect 等）；
+   * 3. 补充数据库中动态创建的用户维度 (source IN ('expanded', 'user') 且 isDimension = 1)；
+   * 4. 彻底解决 Stage 3 获取维度列表为空、AI 打标失败的问题。
    */
   getFileDimensions(): Array<any> {
     if (this.fileDimensionsCache.length > 0) {
       return this.fileDimensionsCache
     }
 
-    const db = databaseService.db
-    if (!db) {
-      return []
-    }
-
     try {
-      const rows = db
-        .prepare(`
-          SELECT code, name, description, file_groups, context_hints, meta
-          FROM file_tags
-          WHERE json_extract(meta, '$.isDimension') = 1
-          ORDER BY code ASC
-        `)
-        .all() as Array<any>
+      const language = this.currentLanguage || 'zh-CN'
+      let dimPath = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
+      if (!fs.existsSync(dimPath)) {
+        dimPath = ResourceLocator.resolveDimension('fileDimension_zh-CN.json')
+      }
 
-      const localDims = (rows || []).map((r, idx) => {
-        let metaObj: any = {}
+      let dimensions: Array<any> = []
+      if (fs.existsSync(dimPath)) {
         try {
-          metaObj = JSON.parse(r.meta)
-        } catch {}
-        let aft: string[] = []
-        try {
-          aft = JSON.parse(r.file_groups || '[]')
-        } catch {}
-        let ch: string[] = []
-        try {
-          ch = JSON.parse(r.context_hints || '[]')
-        } catch {}
-        return {
-          id: idx + 1,
-          code: r.code,
-          name: r.name,
-          level: 1,
-          tags: [] as string[],
-          description: r.description,
-          applicable_file_types: aft,
-          context_hints: ch,
-          metadata: metaObj
-        }
-      });
-
-      // 本地动态维度补充子标签名
-      if (localDims.length > 0) {
-        const getChildStmt = db.prepare(
-          `SELECT name FROM file_tags WHERE json_extract(parent_codes, '$[0]') = ?`
-        )
-        for (const dim of localDims) {
-          try {
-            dim.tags = (getChildStmt.all(dim.code) as any[]).map(c => c.name)
-          } catch {}
+          const raw = fs.readFileSync(dimPath, 'utf-8')
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed.file_dimensions)) {
+            dimensions = parsed.file_dimensions.map((d: any) => {
+              const code = d.code || (CONTROLLED_DIMENSION_ROOT_CODES as any)[d.id] || ''
+              const aft = d.applicableFileTypes || d.applicable_file_types || []
+              const ch = d.contextHints || d.context_hints || []
+              return {
+                id: d.id,
+                code,
+                name: d.name,
+                level: d.level ?? 1,
+                tags: Array.isArray(d.tags) ? [...d.tags] : [],
+                description: d.description || '',
+                applicableFileTypes: aft,
+                applicable_file_types: aft,
+                contextHints: ch,
+                context_hints: ch,
+                triggerConditions: d.triggerConditions || [],
+                metadata: d.metadata || {}
+              }
+            })
+          }
+        } catch (readErr) {
+          logger.warn(
+            LogCategory.CONFIG,
+            `ConfigDbManager: 加载静态维度文件失败 ${dimPath}:`,
+            readErr
+          )
         }
       }
 
-      this.fileDimensionsCache = localDims
+      // 2. 从主库 system_config 读取动态策略 DIMENSION_POLICIES 并覆盖合并 (DEC-03)
+      const db = databaseService.db
+      let policies: Record<string, any> | null = null
+      if (db) {
+        try {
+          const row = db
+            .prepare(`SELECT value FROM system_config WHERE key = 'DIMENSION_POLICIES' LIMIT 1`)
+            .get() as { value: string } | undefined
+          if (row?.value) {
+            policies = JSON.parse(row.value)
+          }
+        } catch (policyErr) {
+          logger.warn(
+            LogCategory.CONFIG,
+            'ConfigDbManager: 读取 DIMENSION_POLICIES 失败:',
+            policyErr
+          )
+        }
+      }
+
+      if (policies && typeof policies === 'object') {
+        for (const dim of dimensions) {
+          const policy = policies[dim.code]
+          if (policy) {
+            if (policy.threshold !== undefined) {
+              dim.threshold = policy.threshold
+            }
+            if (policy.metadata?.flag) {
+              dim.metadata = dim.metadata || {}
+              dim.metadata.flag = {
+                ...dim.metadata.flag,
+                ...policy.metadata.flag
+              }
+            }
+          }
+        }
+      }
+
+      // 3. 补充数据库中动态创建的用户维度 (source IN ('expanded', 'user') 且 isDimension = 1)
+      if (db) {
+        try {
+          const dynamicRows = db
+            .prepare(
+              `
+              SELECT code, name, description, file_groups, context_hints, meta
+              FROM file_tags
+              WHERE json_extract(meta, '$.isDimension') = 1
+              ORDER BY code ASC
+            `
+            )
+            .all() as Array<any>
+
+          if (dynamicRows && dynamicRows.length > 0) {
+            const existingCodes = new Set(dimensions.map(d => d.code))
+            const getChildStmt = db.prepare(
+              `SELECT name FROM file_tags WHERE json_extract(parent_codes, '$[0]') = ?`
+            )
+            for (const r of dynamicRows) {
+              if (existingCodes.has(r.code)) continue
+              let metaObj: any = {}
+              try {
+                metaObj = JSON.parse(r.meta)
+              } catch {}
+              let aft: string[] = []
+              try {
+                aft = JSON.parse(r.file_groups || '[]')
+              } catch {}
+              let ch: string[] = []
+              try {
+                ch = JSON.parse(r.context_hints || '[]')
+              } catch {}
+              let childTags: string[] = []
+              try {
+                childTags = (getChildStmt.all(r.code) as any[]).map(c => c.name)
+              } catch {}
+
+              dimensions.push({
+                id: dimensions.length + 1,
+                code: r.code,
+                name: r.name,
+                level: 1,
+                tags: childTags,
+                description: r.description,
+                applicableFileTypes: aft,
+                applicable_file_types: aft,
+                contextHints: ch,
+                context_hints: ch,
+                metadata: metaObj
+              })
+            }
+          }
+        } catch (dynamicErr) {
+          logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 读取动态维度失败:', dynamicErr)
+        }
+      }
+
+      this.fileDimensionsCache = dimensions
       return this.fileDimensionsCache
     } catch (err) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 获取维度数据失败:', err)
@@ -692,6 +814,15 @@ export class ConfigDbManager {
         this.loadAllConfigsFromDb(db)
         logger.info(LogCategory.CONFIG, 'ConfigDbManager: 云端配置拉取与覆盖写入本地成功')
         this.broadcastConfigUpdate()
+
+        // 5. 触发 Omni 维度执行策略热重载 (DEC-04)
+        void omniClient.reloadDimensionPolicies().catch(err => {
+          logger.debug(
+            LogCategory.CONFIG,
+            'ConfigDbManager: 触发 Omni 策略热重载失败(非致命):',
+            err
+          )
+        })
         return
       } catch (error: any) {
         lastError = error

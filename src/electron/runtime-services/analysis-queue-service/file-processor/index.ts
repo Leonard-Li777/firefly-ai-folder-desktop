@@ -695,12 +695,14 @@ export class FileProcessor {
           }
         }
 
-        // 重新分析时清空原有标签：GPU 分支可能由串行队列在 initialStage >= 2 时直接进入，
-        // 会跳过 CPU 阶段的标签清理（deleteTagRelationsStmt），此处补齐以确保重新分析不残留旧标签
-        try {
-          this.deleteTagRelationsStmt.run(fileFingerprint)
-        } catch {
-          // 容错
+        // 重新分析时清空原有标签：仅当 forceReanalyze 为 true 时才真正清空，
+        // 正常阶段推进（CPU 阶段完成 Stage 2 后进入 GPU 阶段 Stage 3）绝不可清空原有标签
+        if (item.forceReanalyze === true) {
+          try {
+            this.deleteTagRelationsStmt.run(fileFingerprint)
+          } catch {
+            // 容错
+          }
         }
 
         const existingBasicData = this.getExistingBasicData(
@@ -777,6 +779,46 @@ export class FileProcessor {
           visualTags,
           textTags
         })
+
+        // 补捞 Stage 2 已持久化的标签，确保 GPU 阶段裁决时 Stage 2 标签不被冲掉，实现无损合并去重
+        if (!item.forceReanalyze && fileFingerprint) {
+          try {
+            const existingTagRows = db
+              .prepare(
+                `
+                SELECT r.tag_code, r.via_parent_code, r.tag_group, r.confidence, t.name as tag_name
+                FROM file_tag_relations r
+                LEFT JOIN file_tags t ON r.tag_code = t.code
+                WHERE r.file_fingerprint = ?
+              `
+              )
+              .all(fileFingerprint) as Array<any>
+
+            if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
+              const currentTags = preflightContext.groundTruthTags || []
+              for (const row of existingTagRows) {
+                const tagName = row.tag_name || row.tag_code
+                if (
+                  tagName &&
+                  !currentTags.some(t => t.code === row.tag_code || t.tagName === tagName)
+                ) {
+                  currentTags.push({
+                    tagName,
+                    confidence: typeof row.confidence === 'number' ? row.confidence : 0.85,
+                    tagCode: row.tag_code,
+                    code: row.tag_code,
+                    viaParentCode: row.via_parent_code,
+                    parentCodes: row.via_parent_code ? [row.via_parent_code] : undefined,
+                    group: row.tag_group || 'fused'
+                  })
+                }
+              }
+              preflightContext.groundTruthTags = currentTags
+            }
+          } catch (fetchErr) {
+            logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 回捞已存在标签失败:', fetchErr)
+          }
+        }
 
         baseMetadata = preflightContext.flattenedMetadata
         if (preflightContext.flattenedMetadata?.smart_name) {
