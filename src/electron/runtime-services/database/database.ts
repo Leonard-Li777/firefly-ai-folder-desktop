@@ -203,8 +203,9 @@ export const GENESIS_V1_SCHEMA = `
     file_fingerprint   TEXT NOT NULL,                 -- 核心引擎 32 位 Base62 文件内容指纹
     tag_code           TEXT NOT NULL,                 -- 业务软外键：允许 builtin.*/omw.*/_ext.*/user.*，由应用层校验
     via_parent_code    TEXT NOT NULL DEFAULT '',      -- 经由父级标签 code (ADR-0047：用于一词多义消歧与限定类型上下文；真根填 '')
-    parent_name_chain  TEXT NOT NULL DEFAULT '',      -- 完整父级标签名链 (如 "/主体类型/动物宠物/鸭子")
-    parent_code_chain  TEXT NOT NULL DEFAULT '',      -- 完整父级标签Code链 (如 "/builtin.subject_type/builtin.animal/omw.01846331.n")
+    code_path          TEXT NOT NULL DEFAULT '',      -- 完整物化代码路径 (如 "/builtin.file_type/builtin.image/builtin.subject_type/omw.01846331.n")
+    name_path          TEXT NOT NULL DEFAULT '',      -- 完整物化展示名路径 (如 "/文件类型/图片/主体类型/鸭子")
+    depth              INTEGER NOT NULL DEFAULT 1,    -- 物化路径层级深度 (1-based，根节点=1，直属子标签=2...)
     tag_group          TEXT NOT NULL DEFAULT '',      -- 标签来源分组 (ADR-0045)：fact/fused/visual/ai/user；列名不用 group，因其为 SQL 关键字
     confidence         REAL NOT NULL DEFAULT 1.0,     -- 分析置信度或物理事实权重 (0.0 ~ 1.0)
     source             TEXT DEFAULT 'ai'
@@ -338,6 +339,7 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_file_tags_depth ON file_tags(depth);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_tag ON file_tag_relations(tag_code, file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_parent ON file_tag_relations(via_parent_code, tag_code);
+  CREATE INDEX IF NOT EXISTS idx_file_tag_relations_code_path ON file_tag_relations(code_path);
   CREATE INDEX IF NOT EXISTS idx_vd_workspace ON virtual_directories(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_vd_updated ON virtual_directories(updated_at DESC);
   CREATE INDEX IF NOT EXISTS idx_vdf_fp ON virtual_directory_files(file_fingerprint);

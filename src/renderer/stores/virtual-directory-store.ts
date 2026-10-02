@@ -32,6 +32,8 @@ export interface TagTopologyNode {
   dimensionCode: string
   dimensionName: string
   level: number
+  codePath?: string
+  namePath?: string
 }
 
 interface VirtualDirectoryStore {
@@ -154,7 +156,9 @@ function buildTagTopology(groups: DimensionGroup[]): Map<string, TagTopologyNode
       isMultiSelect: dimIsMultiSelect,
       dimensionCode: dimCode,
       dimensionName: group.name,
-      level: group.level || 0
+      level: group.level || 0,
+      codePath: `/${dimCode}`,
+      namePath: `/${group.name}`
     })
 
     // 子标签
@@ -163,12 +167,14 @@ function buildTagTopology(groups: DimensionGroup[]): Map<string, TagTopologyNode
       topology.set(tagCode, {
         code: tagCode,
         name: tag.tagValue,
-        parentCode: tag.viaParentCode || dimCode,
+        parentCode: tag.viaParentCode || (tag as any).parentCode || dimCode,
         // 子标签自身的 isMultiSelect 控制其子节点；同父互斥由父节点的 isMultiSelect 决定
         isMultiSelect: tag.isMultiSelect === true,
         dimensionCode: dimCode,
         dimensionName: group.name,
-        level: tag.level || 1
+        level: tag.level || 1,
+        codePath: tag.codePath,
+        namePath: tag.namePath
       })
     }
   }
@@ -206,7 +212,11 @@ function codesToSelectedTags(
       tagValue: node.name,
       level: node.level,
       parentTagValue: parent?.name,
-      ancestorChain
+      ancestorChain,
+      code: node.code,
+      viaParentCode: node.parentCode || undefined,
+      codePath: node.codePath,
+      namePath: node.namePath
     })
   }
   return result

@@ -601,16 +601,16 @@ export class TagTreeQuery {
               tagSubClauses.push(`ftr.tag_code IN (${placeholders})`)
               filteredFingerprintsParams.push(...codes)
             }
-            const tagVal = ((st as any).tagValue || (st as any).name || (st as any).tagName || '').trim()
-            if (tagVal) {
-              tagSubClauses.push(`(ftr.parent_name_chain LIKE ('%/' || ? || '/%') ESCAPE '\\' OR ftr.parent_name_chain LIKE ('%/' || ?) ESCAPE '\\' OR ftr.parent_name_chain = ?)`)
-              const escVal = escapeLike(tagVal)
-              filteredFingerprintsParams.push(escVal, escVal, tagVal)
-            }
-            if (st.code) {
-              tagSubClauses.push(`(ftr.parent_code_chain LIKE ('%/' || ? || '/%') ESCAPE '\\' OR ftr.parent_code_chain LIKE ('%/' || ?) ESCAPE '\\' OR ftr.parent_code_chain = ?)`)
-              const escCode = escapeLike(st.code)
-              filteredFingerprintsParams.push(escCode, escCode, st.code)
+            const rawCodePath = ((st as any).codePath || (st as any).code_path || '').trim()
+            if (rawCodePath) {
+              tagSubClauses.push(`(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`)
+              const escPath = escapeLike(rawCodePath)
+              filteredFingerprintsParams.push(rawCodePath, escPath)
+            } else if (st.code) {
+              const targetPath = st.code.startsWith('/') ? st.code : `/${st.code}`
+              tagSubClauses.push(`(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`)
+              const escTarget = escapeLike(targetPath)
+              filteredFingerprintsParams.push(targetPath, escTarget)
             }
             if (tagSubClauses.length > 0) {
               clauses.push(`(${tagSubClauses.join(' OR ')})`)
@@ -635,16 +635,16 @@ export class TagTreeQuery {
               tagSubClauses.push(`ftr.tag_code IN (${placeholders})`)
               filteredFingerprintsParams.push(...codes)
             }
-            const tagVal = ((st as any).tagValue || (st as any).name || (st as any).tagName || '').trim()
-            if (tagVal) {
-              tagSubClauses.push(`(ftr.parent_name_chain LIKE ('%/' || ? || '/%') ESCAPE '\\' OR ftr.parent_name_chain LIKE ('%/' || ?) ESCAPE '\\' OR ftr.parent_name_chain = ?)`)
-              const escVal = escapeLike(tagVal)
-              filteredFingerprintsParams.push(escVal, escVal, tagVal)
-            }
-            if (st.code) {
-              tagSubClauses.push(`(ftr.parent_code_chain LIKE ('%/' || ? || '/%') ESCAPE '\\' OR ftr.parent_code_chain LIKE ('%/' || ?) ESCAPE '\\' OR ftr.parent_code_chain = ?)`)
-              const escCode = escapeLike(st.code)
-              filteredFingerprintsParams.push(escCode, escCode, st.code)
+            const rawCodePath = ((st as any).codePath || (st as any).code_path || '').trim()
+            if (rawCodePath) {
+              tagSubClauses.push(`(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`)
+              const escPath = escapeLike(rawCodePath)
+              filteredFingerprintsParams.push(rawCodePath, escPath)
+            } else if (st.code) {
+              const targetPath = st.code.startsWith('/') ? st.code : `/${st.code}`
+              tagSubClauses.push(`(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`)
+              const escTarget = escapeLike(targetPath)
+              filteredFingerprintsParams.push(targetPath, escTarget)
             }
             if (tagSubClauses.length > 0) {
               filteredFingerprintsSql += `
@@ -661,7 +661,7 @@ export class TagTreeQuery {
 
       // 4. 统计在有效文件集合下，每个 (tag_code, via_parent_code) 的文件命中集（V4 联合统计）
       const countQuery = `
-        SELECT ftr.tag_code, ftr.via_parent_code, ftr.file_fingerprint, ftr.parent_name_chain, ftr.parent_code_chain
+        SELECT ftr.tag_code, ftr.via_parent_code, ftr.file_fingerprint, ftr.code_path, ftr.name_path, ftr.depth
         FROM file_tag_relations ftr
         WHERE ftr.file_fingerprint IN (${filteredFingerprintsSql})
       `
@@ -670,8 +670,9 @@ export class TagTreeQuery {
         tag_code: string
         via_parent_code: string
         file_fingerprint: string
-        parent_name_chain?: string
-        parent_code_chain?: string
+        code_path?: string
+        name_path?: string
+        depth?: number
       }>
       dbQueryTime += performance.now() - countStartTime
 
@@ -693,13 +694,15 @@ export class TagTreeQuery {
         }
         tagParentFilesMap.get(parentKey)!.add(row.file_fingerprint)
 
-        if (row.parent_name_chain || row.parent_code_chain) {
+        const rowCodePath = row.code_path || ''
+        const rowNamePath = row.name_path || ''
+        if (rowCodePath || rowNamePath) {
           if (!tagChainsMap.has(row.tag_code)) {
             tagChainsMap.set(row.tag_code, [])
           }
           tagChainsMap.get(row.tag_code)!.push({
-            name_path: row.parent_name_chain || '',
-            code_path: row.parent_code_chain || ''
+            name_path: rowNamePath,
+            code_path: rowCodePath
           })
         }
       }
@@ -856,6 +859,8 @@ export class TagTreeQuery {
           }
 
           assignedCodes.add(child.code)
+          const childCodePath = tagChainsMap.get(child.code)?.[0]?.code_path || `/${dimCode}/${child.code}`
+          const childNamePath = tagChainsMap.get(child.code)?.[0]?.name_path || `/${aliasResolver(root.code, root.name)}/${aliasResolver(child.code, child.name)}`
           dimensionTags.push({
             dimensionId: legacyNumericId,
             dimensionCode: dimCode,
@@ -864,6 +869,8 @@ export class TagTreeQuery {
             fileCount: aggregatedCount,
             level: child.depth || 1,
             code: child.code,
+            codePath: childCodePath,
+            namePath: childNamePath,
             viaParentCode: childParentCodes[0] || dimCode,
             isMultiSelect: childMeta?.isMultiSelect === true
           })
@@ -875,6 +882,8 @@ export class TagTreeQuery {
           for (const sub of children) {
             if (dimensionTags.some(t => t.code === sub.code || t.tagValue === sub.name)) continue
             assignedCodes.add(sub.code)
+            const subCodePath = tagChainsMap.get(sub.code)?.[0]?.code_path || `/${dimCode}/${parentCodeKey}/${sub.code}`
+            const subNamePath = tagChainsMap.get(sub.code)?.[0]?.name_path || `/${aliasResolver(root.code, root.name)}/${sub.name}`
             dimensionTags.push({
               dimensionId: legacyNumericId,
               dimensionCode: dimCode,
@@ -883,6 +892,8 @@ export class TagTreeQuery {
               fileCount: sub.count,
               level: curLevel,
               code: sub.code,
+              codePath: subCodePath,
+              namePath: subNamePath,
               viaParentCode: parentCodeKey,
               isMultiSelect: sub.meta?.isMultiSelect === true
             })
@@ -983,7 +994,13 @@ export class TagTreeQuery {
 
             computeNodeSubtreeFiles(root)
 
-            const collect = (node: OmniTaxonomyNode, parentCode: string, level: number) => {
+            const collect = (
+              node: OmniTaxonomyNode,
+              parentCode: string,
+              level: number,
+              parentCodePath = `/${node.code}`,
+              parentNamePath = `/${node.name}`
+            ) => {
               // A. Omni 受控树定义的子节点
               for (const child of node.children || []) {
                 const code = child.code
@@ -995,6 +1012,8 @@ export class TagTreeQuery {
                 if (count === 0 && child.name && tagNameCountMap.has(child.name)) {
                   count = tagNameCountMap.get(child.name)!
                 }
+                const currentCodePath = `${parentCodePath}/${child.code}`
+                const currentNamePath = `${parentNamePath}/${child.name}`
                 tags.push({
                   dimensionId: id,
                   dimensionCode: root.code,
@@ -1003,15 +1022,22 @@ export class TagTreeQuery {
                   fileCount: count,
                   level,
                   code,
+                  codePath: currentCodePath,
+                  namePath: currentNamePath,
                   viaParentCode: parentCode || root.code,
                   isMultiSelect: false,
                   order: child.sortOrder,
                   meta: { sort_order: child.sortOrder, order: child.sortOrder }
                 })
-                collect(child, code, level + 1)
+                collect(child, code, level + 1, currentCodePath, currentNamePath)
               }
               // B. 本地数据库中归属于当前 node.code 的动态扩展标签（支持深层多级后代递归）
-              const collectDynamic = (parentCodeKey: string, curLevel: number) => {
+              const collectDynamic = (
+                parentCodeKey: string,
+                curLevel: number,
+                curCodePath: string,
+                curNamePath: string
+              ) => {
                 const dynChildren = dynamicTagsByParent.get(parentCodeKey) || []
                 for (const dyn of dynChildren) {
                   if (tags.some(t => t.code === dyn.code || t.tagValue === dyn.name)) {
@@ -1019,6 +1045,8 @@ export class TagTreeQuery {
                     continue
                   }
                   assignedCodes.add(dyn.code)
+                  const dynCodePath = tagChainsMap.get(dyn.code)?.[0]?.code_path || `${curCodePath}/${dyn.code}`
+                  const dynNamePath = tagChainsMap.get(dyn.code)?.[0]?.name_path || `${curNamePath}/${dyn.name}`
                   tags.push({
                     dimensionId: id,
                     dimensionCode: root.code,
@@ -1027,17 +1055,19 @@ export class TagTreeQuery {
                     fileCount: dyn.count,
                     level: curLevel,
                     code: dyn.code,
+                    codePath: dynCodePath,
+                    namePath: dynNamePath,
                     viaParentCode: parentCodeKey,
                     isMultiSelect: dyn.meta?.isMultiSelect === true,
                     order: 9999,
                     meta: dyn.meta
                   })
-                  collectDynamic(dyn.code, curLevel + 1)
+                  collectDynamic(dyn.code, curLevel + 1, dynCodePath, dynNamePath)
                 }
               }
-              collectDynamic(node.code, level)
+              collectDynamic(node.code, level, parentCodePath, parentNamePath)
             }
-            collect(root, root.code, 1)
+            collect(root, root.code, 1, `/${root.code}`, `/${root.name}`)
             return {
               id,
               name: root.name,
@@ -1465,6 +1495,8 @@ export class TagTreeQuery {
           const count = node.files.size
           if (removeEmptyTags && !includeAllPresetTags && count === 0) continue
 
+          const cCodePath = tagChainsMap.get(node.code)?.[0]?.code_path || `/builtin.content_tags/${node.code}`
+          const cNamePath = tagChainsMap.get(node.code)?.[0]?.name_path || `/${contentTagDisplayName}/${node.name}`
           contentDimTags.push({
             dimensionId: contentTagsDimId,
             dimensionCode: CONTENT_TAGS_CODE,
@@ -1473,6 +1505,8 @@ export class TagTreeQuery {
             fileCount: count,
             level: node.level,
             code: node.code,
+            codePath: cCodePath,
+            namePath: cNamePath,
             viaParentCode: node.parentKey,
             isMultiSelect: false,
             order: 9999
@@ -1659,16 +1693,16 @@ export class TagTreeQuery {
             tagSubClauses.push(`ftr.tag_code IN (${placeholders})`)
             queryParams.push(...codes)
           }
-          const tagVal = ((tag as any).tagValue || (tag as any).name || (tag as any).tagName || '').trim()
-          if (tagVal) {
-            tagSubClauses.push(`(ftr.parent_name_chain LIKE ('%/' || ? || '/%') ESCAPE '\\' OR ftr.parent_name_chain LIKE ('%/' || ?) ESCAPE '\\' OR ftr.parent_name_chain = ?)`)
-            const escVal = escapeLike(tagVal)
-            queryParams.push(escVal, escVal, tagVal)
-          }
-          if (tag.code) {
-            tagSubClauses.push(`(ftr.parent_code_chain LIKE ('%/' || ? || '/%') ESCAPE '\\' OR ftr.parent_code_chain LIKE ('%/' || ?) ESCAPE '\\' OR ftr.parent_code_chain = ?)`)
-            const escCode = escapeLike(tag.code)
-            queryParams.push(escCode, escCode, tag.code)
+          const rawCodePath = ((tag as any).codePath || (tag as any).code_path || '').trim()
+          if (rawCodePath) {
+            tagSubClauses.push(`(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`)
+            const escPath = escapeLike(rawCodePath)
+            queryParams.push(rawCodePath, escPath)
+          } else if (tag.code) {
+            const targetPath = tag.code.startsWith('/') ? tag.code : `/${tag.code}`
+            tagSubClauses.push(`(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`)
+            const escTarget = escapeLike(targetPath)
+            queryParams.push(targetPath, escTarget)
           }
           if (tagSubClauses.length > 0) {
             clauses.push(`(${tagSubClauses.join(' OR ')})`)
@@ -1691,16 +1725,16 @@ export class TagTreeQuery {
             tagSubClauses.push(`ftr.tag_code IN (${placeholders})`)
             queryParams.push(...codes)
           }
-          const tagVal = ((tag as any).tagValue || (tag as any).name || (tag as any).tagName || '').trim()
-          if (tagVal) {
-            tagSubClauses.push(`(ftr.parent_name_chain LIKE ('%/' || ? || '/%') ESCAPE '\\' OR ftr.parent_name_chain LIKE ('%/' || ?) ESCAPE '\\' OR ftr.parent_name_chain = ?)`)
-            const escVal = escapeLike(tagVal)
-            queryParams.push(escVal, escVal, tagVal)
-          }
-          if (tag.code) {
-            tagSubClauses.push(`(ftr.parent_code_chain LIKE ('%/' || ? || '/%') ESCAPE '\\' OR ftr.parent_code_chain LIKE ('%/' || ?) ESCAPE '\\' OR ftr.parent_code_chain = ?)`)
-            const escCode = escapeLike(tag.code)
-            queryParams.push(escCode, escCode, tag.code)
+          const rawCodePath = ((tag as any).codePath || (tag as any).code_path || '').trim()
+          if (rawCodePath) {
+            tagSubClauses.push(`(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`)
+            const escPath = escapeLike(rawCodePath)
+            queryParams.push(rawCodePath, escPath)
+          } else if (tag.code) {
+            const targetPath = tag.code.startsWith('/') ? tag.code : `/${tag.code}`
+            tagSubClauses.push(`(ftr.code_path = ? OR ftr.code_path LIKE (? || '/%') ESCAPE '\\')`)
+            const escTarget = escapeLike(targetPath)
+            queryParams.push(targetPath, escTarget)
           }
           if (tagSubClauses.length > 0) {
             whereClauses.push(`wf.file_fingerprint IN (

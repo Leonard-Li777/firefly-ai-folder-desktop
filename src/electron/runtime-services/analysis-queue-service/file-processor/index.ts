@@ -1,6 +1,5 @@
 import {
   AnalysisQueueItem,
-  DimensionExpansion,
   LanguageCode,
   MagikaFileCategory as MagikaCategory,
   MarkitdownBenchmark,

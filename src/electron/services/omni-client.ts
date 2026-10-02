@@ -22,6 +22,9 @@ export interface OmniTaxonomyNode {
   sortOrder: number
   fileCount?: number
   files?: string[]
+  codePath?: string
+  namePath?: string
+  depth?: number
   children: OmniTaxonomyNode[]
 }
 
