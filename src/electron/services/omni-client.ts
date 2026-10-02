@@ -20,6 +20,8 @@ export interface OmniTaxonomyNode {
   parentCodes: string[]
   source: string
   sortOrder: number
+  fileCount?: number
+  files?: string[]
   children: OmniTaxonomyNode[]
 }
 
@@ -128,7 +130,7 @@ export class OmniClient {
     return omniService.getBaseUrl()
   }
 
-  private static readonly TAXONOMY_CACHE_TTL = 300_000 // 5分钟TTL
+  private static readonly TAXONOMY_CACHE_TTL = 10_000 // 10秒TTL（防组件多重挂载并发重复请求，同时保证文件分析入库后敏捷刷新）
   private _taxonomyTreeCache = new Map<string, { data: OmniTaxonomyTreeResponse; time: number }>()
 
   private async request<T>(
@@ -170,18 +172,48 @@ export class OmniClient {
     return null
   }
 
+  /** 清除分类树内存缓存（文件分析入库后或强制刷新时调用） */
+  clearTaxonomyTreeCache(): void {
+    this._taxonomyTreeCache.clear()
+  }
+
   /**
-   * 拉取分类树：GET /api/v1/taxonomy/tree?locale={lang}
+   * 拉取分类树：GET /api/v1/taxonomy/tree?locale={lang}&db_path={dbPath}
    * 供虚拟目录标签树渲染消费（内置 5 分钟轻量内存缓存与网络抖动过期降级兜底）
+   * @param locale 语言代码，如 zh-CN
+   * @param root 可选限定子树根 code
+   * @param dbPath 主数据库路径，供 Omni 挂载只读关联
+   * @param options 可选作用域过滤参数（workspaceId / directoryPrefix / includeFiles）
    */
-  async getTaxonomyTree(locale = 'zh-CN', root?: string): Promise<OmniTaxonomyTreeResponse | null> {
-    const cacheKey = `${locale}::${root || ''}`
+  async getTaxonomyTree(
+    locale = 'zh-CN',
+    root?: string,
+    dbPath?: string,
+    options?: { workspaceId?: number | string; directoryPrefix?: string; includeFiles?: boolean }
+  ): Promise<OmniTaxonomyTreeResponse | null> {
+    const wsPart = options?.workspaceId !== undefined && options?.workspaceId !== null ? String(options.workspaceId) : ''
+    const dirPart = options?.directoryPrefix || ''
+    const incPart = options?.includeFiles ? '1' : '0'
+    const cacheKey = `${locale}::${root || ''}::${dbPath || ''}::${wsPart}::${dirPart}::${incPart}`
     const cached = this._taxonomyTreeCache.get(cacheKey)
     if (cached && Date.now() - cached.time < OmniClient.TAXONOMY_CACHE_TTL) {
       return cached.data
     }
     const params = new URLSearchParams({ locale })
     if (root) params.set('root', root)
+    if (dbPath) {
+      params.set('dbPath', dbPath)
+      params.set('db_path', dbPath)
+    }
+    if (wsPart) {
+      params.set('workspace_id', wsPart)
+    }
+    if (dirPart) {
+      params.set('directory_prefix', dirPart)
+    }
+    if (options?.includeFiles) {
+      params.set('include_files', 'true')
+    }
     const res = await this.request<OmniTaxonomyTreeResponse>(`/api/v1/taxonomy/tree?${params.toString()}`)
     if (res && res.rootNodes && res.rootNodes.length > 0) {
       this._taxonomyTreeCache.set(cacheKey, { data: res, time: Date.now() })

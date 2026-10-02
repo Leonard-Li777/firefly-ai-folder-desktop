@@ -289,6 +289,7 @@ export async function saveCloudResult(
         // 视图分组统一收口 TagTreeViewAdapter：根=parent_codes 为空，子节点多父全挂（禁首父推导）。
         const allDimRows = getRootGroupsWithChildren(db).map(r => ({
           id: r.code,
+          code: r.code,
           name: r.name,
           tags: JSON.stringify(r.children.map(c => c.name)),
           metadata: r.meta

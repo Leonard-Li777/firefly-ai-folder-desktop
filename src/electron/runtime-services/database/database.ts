@@ -203,6 +203,8 @@ export const GENESIS_V1_SCHEMA = `
     file_fingerprint   TEXT NOT NULL,                 -- 核心引擎 32 位 Base62 文件内容指纹
     tag_code           TEXT NOT NULL,                 -- 业务软外键：允许 builtin.*/omw.*/_ext.*/user.*，由应用层校验
     via_parent_code    TEXT NOT NULL DEFAULT '',      -- 经由父级标签 code (ADR-0047：用于一词多义消歧与限定类型上下文；真根填 '')
+    parent_name_chain  TEXT NOT NULL DEFAULT '',      -- 完整父级标签名链 (如 "/主体类型/动物宠物/鸭子")
+    parent_code_chain  TEXT NOT NULL DEFAULT '',      -- 完整父级标签Code链 (如 "/builtin.subject_type/builtin.animal/omw.01846331.n")
     tag_group          TEXT NOT NULL DEFAULT '',      -- 标签来源分组 (ADR-0045)：fact/fused/visual/ai/user；列名不用 group，因其为 SQL 关键字
     confidence         REAL NOT NULL DEFAULT 1.0,     -- 分析置信度或物理事实权重 (0.0 ~ 1.0)
     source             TEXT DEFAULT 'ai'

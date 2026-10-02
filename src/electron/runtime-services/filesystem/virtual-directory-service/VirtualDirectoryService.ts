@@ -10,7 +10,7 @@ import {
 } from '@firefly/types'
 import { LogCategory, logger, sanitizeDirectoryName, HAC_FEATURE_FLAGS, CONTROLLED_CONCEPTS, getCanonicalConceptName } from '@firefly/shared'
 
-const UNCLASSIFIED_NAME = getCanonicalConceptName(CONTROLLED_CONCEPTS['未归类']) || '未归类'
+const UNCLASSIFIED_NAME = getCanonicalConceptName((CONTROLLED_CONCEPTS as any)['未归类']) || '未归类'
 import { t } from '@app/languages'
 import Database from 'better-sqlite3'
 import { databaseService } from '../../database/database-service'

@@ -875,6 +875,7 @@ const electronAPI = {
       options?:
         | {
             workspaceDirectoryPath?: string
+            workspaceId?: number
             language?: string
             excludeExtensionDimension?: boolean
             removeEmptyTags?: boolean

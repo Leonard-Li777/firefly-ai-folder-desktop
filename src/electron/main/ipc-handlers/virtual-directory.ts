@@ -181,6 +181,7 @@ export function registerVirtualDirectoryIPCHandlers() {
       options?:
         | {
             workspaceDirectoryPath?: string
+            workspaceId?: number
             language?: string
             excludeExtensionDimension?: boolean
             removeEmptyTags?: boolean
@@ -200,6 +201,7 @@ export function registerVirtualDirectoryIPCHandlers() {
         'zh-CN'
       return await virtualDirectoryService.getDimensionGroups({
         workspaceDirectoryPath: opts.workspaceDirectoryPath,
+        workspaceId: opts.workspaceId,
         language: currentLanguage,
         excludeExtensionDimension: opts.excludeExtensionDimension,
         removeEmptyTags: opts.removeEmptyTags,

@@ -7,6 +7,8 @@ import { toast } from '../../../common/Toast'
 import { Button } from '../../../ui/button'
 import { LogCategory, logger, isValidNamingPattern } from '@firefly/shared'
 import { PersistentTooltip } from '../../../common/PersistentTooltip'
+import { useSettingsStore } from '../../../../stores/settings-store'
+import { SettingsCategory } from '@firefly/types'
 
 /**
  * 预设更名模板列表
@@ -77,6 +79,13 @@ const DirectoryProfileSectionComponent: React.FC<{
   workspaceDirectoryPath
 }) => {
     const { activeLanguage } = useVoerkaI18n(i18nScope)
+    const currentAnalysisMode = useSettingsStore(
+      s => (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'quick_name'
+    )
+    const isAiGenerationMode =
+      currentAnalysisMode === 'quick_name' || currentAnalysisMode === 'full'
+    const openSettings = useSettingsStore(s => s.openSettings)
+
     if (!analysisResult || !isDirAnalysis(analysisResult)) return null
 
     const ctx = analysisResult.contextAnalysis
@@ -201,7 +210,11 @@ const DirectoryProfileSectionComponent: React.FC<{
         await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
           namingPattern: trimmedVal
         })
-        toast.success(t('智能文件名格式已更新'))
+        toast.success(
+          !isAiGenerationMode
+            ? t('智能文件名格式已保存，将在切换为增强或全面分析后生效')
+            : t('智能文件名格式已更新')
+        )
         setEditingNamingPattern(false)
         if (onRefresh) onRefresh()
       } catch (error: any) {
@@ -220,7 +233,11 @@ const DirectoryProfileSectionComponent: React.FC<{
         await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
           analysisStrategy: analysisStrategyValue.trim()
         })
-        toast.success(t('AI分析策略已更新'))
+        toast.success(
+          !isAiGenerationMode
+            ? t('AI分析策略已保存，将在切换为增强或全面分析后生效')
+            : t('AI分析策略已更新')
+        )
         setEditingAnalysisStrategy(false)
         if (onRefresh) onRefresh()
       } catch (error: any) {
@@ -241,7 +258,11 @@ const DirectoryProfileSectionComponent: React.FC<{
         await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
           analysisStrategy: val
         })
-        toast.success(t('已采纳AI建议并启用'))
+        toast.success(
+          !isAiGenerationMode
+            ? t('已采纳AI建议并保存，将在切换为增强或全面分析后生效')
+            : t('已采纳AI建议并启用')
+        )
         setEditingAnalysisStrategy(false)
         if (onRefresh) onRefresh()
       } catch (error: any) {
@@ -262,7 +283,11 @@ const DirectoryProfileSectionComponent: React.FC<{
         await window.electronAPI!.updateDirectoryContextAnalysis(dirPath, {
           namingPattern: val
         })
-        toast.success(t('已采纳AI建议并启用'))
+        toast.success(
+          !isAiGenerationMode
+            ? t('已采纳AI建议并保存，将在切换为增强或全面分析后生效')
+            : t('已采纳AI建议并启用')
+        )
         setEditingNamingPattern(false)
         if (onRefresh) onRefresh()
       } catch (error: any) {
@@ -397,7 +422,7 @@ const DirectoryProfileSectionComponent: React.FC<{
                 {(ctx?.namingPattern !== undefined || ctx?.namingPattern_suggestion !== undefined) && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <h3 className="text-sm font-semibold text-foreground">
                           {t('智能文件名格式')}
                         </h3>
@@ -427,6 +452,26 @@ const DirectoryProfileSectionComponent: React.FC<{
                         <span>{editingNamingPattern ? t('取消') : t('编辑')}</span>
                       </button>
                     </div>
+
+                    {/* 未开启增强/全面分析时的提示条（警告色强调） */}
+                    {!isAiGenerationMode && (
+                      <div className="mb-2.5 p-2 rounded-md border border-amber-500/35 bg-amber-500/10 dark:bg-amber-500/15 flex items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <MaterialIcon icon="warning" className="text-sm text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                          <span className="truncate">
+                            {t('当前为标准分析模式。智能文件名格式在【增强分析】或【全面分析】下生效，支持提前配置。')}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => openSettings(SettingsCategory.ANALYSIS)}
+                          className="text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 hover:underline font-medium inline-flex items-center gap-0.5 flex-shrink-0 cursor-pointer"
+                        >
+                          <span>{t('切换分析模式')}</span>
+                          <MaterialIcon icon="arrow_forward" className="text-xs" />
+                        </button>
+                      </div>
+                    )}
 
                     {/* 继承模式控制 */}
                     <div className="flex items-center gap-3 text-xs mb-2">
@@ -934,15 +979,17 @@ const DirectoryProfileSectionComponent: React.FC<{
                       {(ctx?.analysisStrategy !== undefined || ctx?.analysisStrategy_suggestion !== undefined) && (
                         <div className="border-t border-border/30 pt-4">
                           <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-sm font-semibold text-foreground">
-                              {t('AI分析策略')}{' '}
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h3 className="text-sm font-semibold text-foreground">
+                                {t('AI分析策略')}
+                              </h3>
                               {ctx.confidence !== undefined && ctx.confidence !== null && (
-                                <span className="text-xs font-light text-muted-foreground ml-2">
+                                <span className="text-xs font-light text-muted-foreground ml-1">
                                   {t('置信度: ')}
                                   {(ctx.confidence * 100).toFixed(0)}%
                                 </span>
                               )}
-                            </h3>
+                            </div>
                             <button
                               onClick={() => {
                                 setAnalysisStrategyValue(ctx?.analysisStrategy || '')
@@ -958,6 +1005,26 @@ const DirectoryProfileSectionComponent: React.FC<{
                               <span>{editingAnalysisStrategy ? t('取消') : t('编辑')}</span>
                             </button>
                           </div>
+
+                          {/* 未开启增强/全面分析时的提示条（警告色强调） */}
+                          {!isAiGenerationMode && (
+                            <div className="mb-2.5 p-2 rounded-md border border-amber-500/35 bg-amber-500/10 dark:bg-amber-500/15 flex items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200">
+                              <div className="flex items-center gap-1.5 min-w-0">
+                                <MaterialIcon icon="warning" className="text-sm text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                                <span className="truncate">
+                                  {t('当前为标准分析模式。AI分析策略在【增强分析】或【全面分析】下生效，支持提前配置。')}
+                                </span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => openSettings(SettingsCategory.ANALYSIS)}
+                                className="text-amber-700 dark:text-amber-300 hover:text-amber-800 dark:hover:text-amber-200 hover:underline font-medium inline-flex items-center gap-0.5 flex-shrink-0 cursor-pointer"
+                              >
+                                <span>{t('切换分析模式')}</span>
+                                <MaterialIcon icon="arrow_forward" className="text-xs" />
+                              </button>
+                            </div>
+                          )}
 
                           {/* 继承模式控制 */}
                           <div className="flex items-center gap-3 text-xs mb-2">

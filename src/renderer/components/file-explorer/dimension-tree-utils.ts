@@ -211,13 +211,22 @@ export function nestGroupTags(
     if (t.tagValue) tagByName.set(t.tagValue, t)
   }
 
-  // 2. 根据 viaParentCode 归类子标签
+  // 2. 根据 viaParentCode 归类子标签（双向登记父节点的 code 与 tagValue 索引）
   for (const t of tags) {
     const parentKey = t.viaParentCode
-    if (parentKey && (tagByCode.has(parentKey) || tagByName.has(parentKey))) {
-      const list = tagsByParent.get(parentKey) || []
-      list.push(t)
-      tagsByParent.set(parentKey, list)
+    if (!parentKey) continue
+    const parentByCode = tagByCode.get(parentKey)
+    const parentByName = tagByName.get(parentKey)
+    const effectiveParent = parentByCode || parentByName
+    if (effectiveParent) {
+      const pKeys = new Set([parentKey, effectiveParent.code, effectiveParent.tagValue].filter(Boolean) as string[])
+      for (const pk of pKeys) {
+        const list = tagsByParent.get(pk) || []
+        if (!list.includes(t)) {
+          list.push(t)
+          tagsByParent.set(pk, list)
+        }
+      }
     }
   }
 
