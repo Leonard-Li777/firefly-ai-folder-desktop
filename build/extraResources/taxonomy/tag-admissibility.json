@@ -38,7 +38,9 @@
     "notes": {
       "unpaired_surrogate": "Rust `&str` 由类型保证不含孤立代理项（代理项不是合法 char）；该类目为 TS/JS 侧（JS 字符串可含孤立代理项）与字节解码路径保留，Rust 侧属不可观测类目。",
       "latin_cyrillic_excluded": "刻意**不**把 Latin↔Cyrillic / Latin↔Arabic 列为互斥对：品牌与外来词常合法混写（如 `МВидео`），误杀代价高于收益。互斥对仅取「CJK/日韩 × 西里尔/阿拉伯」与「西里尔 × 阿拉伯」这类现实中不会合法共现的组合。",
-      "evaluation_order": "R-G1-10 标为**一票否决**（spec §3.1 F25 / §5.1），故其判定优先于「按规则 ID 升序」的通用顺序——否则 R-G1-01 会先命中（U+FFFD / NUL / PUA 均不在任何白名单文种内），R-G1-10 永不触发，其存在意义（给出精确拒绝原因）落空。"
+      "evaluation_order": "R-G1-10 标为**一票否决**（spec §3.1 F25 / §5.1），故其判定优先于「按规则 ID 升序」的通用顺序——否则 R-G1-01 会先命中（U+FFFD / NUL / PUA 均不在任何白名单文种内），R-G1-10 永不触发，其存在意义（给出精确拒绝原因）落空。",
+      "script_range_subset": "Rust 侧 `Script::of` 用**显式区段枚举**，是 TS 参考实现（Unicode Script 属性类 `\\p{Script=Han}` 等）的真子集：未列出的已指派码位会被判「非白名单文种」。已按 S1 #705 第 1 轮审查（P2-1）补齐主干扩展区段（CJK Ext B–I、拉丁 Ext C/D/E、谚文 Jamo 扩展、西里尔 Ext-A）；若 TS 侧将来扩白名单，两侧必须同步改。",
+      "rg111_separator_superset": "R-G1-11 的「分隔符」实现取 `空白 + neutral_chars`（超集），比规范 N24/F26 文本的「空格/连字符」宽——刻意与 TS 参考实现字符类 `\\d\\-_·\\s` 对齐。该集合与 R-G1-01 的中性字符**同源**（同一 `neutral_chars`），改资源时两规则同步生效。"
     }
   }
 }
