@@ -192,6 +192,7 @@ export class EngineBridgeService {
   private pendingUpdateSince = 0
   /** 开发态二进制热更新轮询定时器 */
   private devBinaryWatchTimer: NodeJS.Timeout | null = null
+  private eventStreamAbortController: AbortController | null = null
   private listeners = new Set<(snapshot: EngineBridgeSnapshot) => void>()
   readonly circuitBreaker = new Tier2CircuitBreaker()
 
@@ -690,6 +691,7 @@ export class EngineBridgeService {
     const prevModel = this.lastRawStatus?.current_model || this.lastRawStatus?.model || this.lastKnownModel
     const currentModel = data.current_model || data.model || (data.loaded_models?.[0]) || null
     const modelChanged = currentModel !== null && currentModel !== prevModel
+    const statusChanged = data.status !== this.lastRawStatus?.status
     const wasOffline = this.lastRawStatus === null
 
     this.lastRawStatus = data
@@ -700,8 +702,8 @@ export class EngineBridgeService {
     // 探活成功即代表引擎在线：清掉历史启动超时等陈旧错误，避免「已就绪却仍显示超时」
     const hadError = this.lastError !== null
     this.lastError = null
-    // 状态变化（错误清除、模型切换、从离线恢复）时立即广播，无需等待后续异步操作
-    if (hadError || modelChanged || wasOffline) {
+    // 状态变化（错误清除、模型切换、运行状态 ready/processing 切换、从离线恢复）时立即广播，无需等待后续异步操作
+    if (hadError || modelChanged || statusChanged || wasOffline) {
       this.broadcastStatus()
     }
     // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径
@@ -710,6 +712,61 @@ export class EngineBridgeService {
     void this.refreshBackendMatchType()
     // 异步对齐思考模式（引擎 UI 变更后 desktop 请求级/Footer 需感知），不阻塞探活关键路径
     void this.syncThinkingModeFromEngine()
+    // 确保已连接 SSE 实时状态流（用于毫秒级捕获引擎 API 开始/完成状态）
+    this.ensureEventStream()
+  }
+
+  /**
+   * 建立与引擎 /api/engine/events 的 SSE 实时长连接，
+   * 使得引擎 API 开始/结束工作时的状态切换能够毫秒级推送到 desktop
+   */
+  private ensureEventStream(): void {
+    if (this.eventStreamAbortController) {
+      return
+    }
+    const ac = new AbortController()
+    this.eventStreamAbortController = ac
+    const url = `${this.baseUrl}/api/engine/events`
+
+    ;(async () => {
+      try {
+        const res = await fetch(url, { signal: ac.signal })
+        if (!res.ok || !res.body) {
+          this.eventStreamAbortController = null
+          return
+        }
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (!ac.signal.aborted) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            const trimmed = line.trim()
+            if (trimmed.startsWith('data:')) {
+              const jsonStr = trimmed.slice(5).trim()
+              if (jsonStr) {
+                try {
+                  const statusData = JSON.parse(jsonStr)
+                  this.applyStatus(statusData)
+                } catch {}
+              }
+            }
+          }
+        }
+      } catch (err: any) {
+        // 连接断开或异常重置 controller，等待后续探活自动重试
+      } finally {
+        if (this.eventStreamAbortController === ac) {
+          this.eventStreamAbortController = null
+        }
+      }
+    })().catch(() => {})
   }
 
   /**
@@ -1612,6 +1669,10 @@ export class EngineBridgeService {
    * 停止服务：停轮询、清理子进程、复位熔断器
    */
   public stop(): void {
+    if (this.eventStreamAbortController) {
+      this.eventStreamAbortController.abort()
+      this.eventStreamAbortController = null
+    }
     this.stopPolling()
     this.stopDevBinaryWatch()
     // 思考模式配置订阅保持进程级存活（stop 亦被单例测试复用，退订后无法恢复）

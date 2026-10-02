@@ -504,7 +504,11 @@ export function Footer() {
         return AIServiceStatus.STOPPED
       }
       if (engineSnapshot?.connected) {
-        if (serviceStatus === AIServiceStatus.PROCESSING) {
+        if (
+          serviceStatus === AIServiceStatus.PROCESSING ||
+          engineSnapshot.raw?.status === 'processing' ||
+          engineSnapshot.raw?.status === 'model_loading'
+        ) {
           return AIServiceStatus.PROCESSING
         }
         if (engineSnapshot.raw?.status === 'ready') {
