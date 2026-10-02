@@ -235,78 +235,6 @@ export class DatabaseAdapter implements IDatabaseAdapter {
       }
     }
 
-    /**
-     * 维度扩展操作
-     *
-     * 创世 Baseline V1：扩展标签直接以 `_ext.*` 自然主键写入 file_tags 标签树，
-     * 不再存在 dimension_expansions 提案表与审批流转。
-     */
-    this.dimensionExpansions = {
-      create: async (expansion: any): Promise<void> => {
-        const db = this.getDatabase()
-        const name = expansion.name
-        if (!name) return
-        const code = DeterministicCodeGenerator.generateUnique(name, 'zh-CN', {
-          lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
-        })
-        const parentCode = expansion.parentCode || expansion.parent_codes?.[0] || 'dim.content'
-        db.prepare(
-          `
-          INSERT OR IGNORE INTO file_tags (
-            code, name, parent_codes, materialized_paths, depth, file_groups, source, meta, description
-          ) VALUES (?, ?, ?, '[]', 2, '[]', 'expanded', ?, ?)
-        `
-        ).run(
-          code,
-          name,
-          JSON.stringify([parentCode]),
-          JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 }),
-          expansion.description || null
-        )
-      },
-
-      getById: async (expansionId: string): Promise<any | null> => {
-        const db = this.getDatabase()
-        const row = db.prepare('SELECT * FROM file_tags WHERE code = ?').get(expansionId) as any
-        return row || null
-      },
-
-      approve: async (expansionId: string): Promise<void> => {
-        // 扩展标签创建即生效，审批流转已随 dimension_expansions 表一并下线。
-        // 此处仅将同步状态标记为待推送，保持调用方契约兼容。
-        const db = this.getDatabase()
-        db.prepare(
-          `UPDATE file_tags
-           SET meta = json_set(COALESCE(NULLIF(meta, ''), '{}'), '$.syncStatus', 0)
-           WHERE code = ?`
-        ).run(expansionId)
-      },
-
-      reject: async (expansionId: string): Promise<void> => {
-        // 创世 Baseline V1：扩展标签直接写入标签树，拒绝即物理删除该节点及其关联。
-        const db = this.getDatabase()
-        db.transaction(() => {
-          db.prepare('DELETE FROM file_tag_relations WHERE tag_code = ?').run(expansionId)
-          db.prepare(`DELETE FROM file_tags WHERE code = ? AND source = 'expanded'`).run(expansionId)
-        })()
-      },
-
-      getPending: async (): Promise<any[]> => {
-        // 待同步的扩展标签（meta.syncStatus = 0）
-        const db = this.getDatabase()
-        return db
-          .prepare(
-            `
-            SELECT code AS id, name, parent_codes, depth, description, meta
-            FROM file_tags
-            WHERE source = 'expanded'
-              AND COALESCE(json_extract(NULLIF(meta, ''), '$.syncStatus'), 0) = 0
-            ORDER BY depth ASC, code ASC
-          `
-          )
-          .all()
-      }
-    }
   }
 
   /**
@@ -318,11 +246,6 @@ export class DatabaseAdapter implements IDatabaseAdapter {
    * 维度操作
    */
   dimensions: any
-
-  /**
-   * 维度扩展操作
-   */
-  dimensionExpansions: any
 
   /**
    * 按工作区 ID 获取文件

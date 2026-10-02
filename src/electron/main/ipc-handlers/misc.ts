@@ -589,16 +589,10 @@ export function registerMiscIPCHandlers() {
   ipcMain.handle('core-engine-get-dimensions', async (event, language: string) =>
     coreEngine?.getDimensions(language as any)
   )
-  ipcMain.handle('core-engine-approve-dimension-expansion', async (event, id: number) =>
-    coreEngine?.approveDimensionExpansion(id)
-  )
-  ipcMain.handle(
-    'core-engine-reject-dimension-expansion',
-    async (event, id: number, reason: string) => coreEngine?.rejectDimensionExpansion(id, reason)
-  )
-  ipcMain.handle('core-engine-get-pending-expansions', async () =>
-    coreEngine?.getPendingDimensionExpansions()
-  )
+  // 创世基线已废除维度扩展审批流，保留安全空实现防崩溃
+  ipcMain.handle('core-engine-approve-dimension-expansion', async () => {})
+  ipcMain.handle('core-engine-reject-dimension-expansion', async () => {})
+  ipcMain.handle('core-engine-get-pending-expansions', async () => [])
   ipcMain.handle('core-engine-is-initialized', () => coreEngine?.isInitialized() || false)
   ipcMain.handle('omni/getVersion', async () => {
     const { omniService } = await import('../../runtime-services/system/omni-service')
