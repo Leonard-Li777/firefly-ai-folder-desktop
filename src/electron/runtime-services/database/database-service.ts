@@ -590,6 +590,56 @@ export class DatabaseService {
         DROP TABLE IF EXISTS omw_synsets;
         DROP TABLE IF EXISTS omw_languages;
       `)
+
+      // 创世期过渡自愈：兼容已有旧库缺少物化路径字段 code_path / name_path / depth
+      const relationColumns = (
+        this._db.pragma('table_info(file_tag_relations)') as Array<{ name: string }>
+      ).map(col => col.name)
+      if (relationColumns.length > 0 && !relationColumns.includes('code_path')) {
+        logger.info(
+          LogCategory.DATABASE_SERVICE,
+          '检测到 file_tag_relations 缺少 code_path，执行无损列补齐自愈...'
+        )
+        this._db.exec(`
+          ALTER TABLE file_tag_relations ADD COLUMN code_path TEXT NOT NULL DEFAULT '';
+          ALTER TABLE file_tag_relations ADD COLUMN name_path TEXT NOT NULL DEFAULT '';
+          ALTER TABLE file_tag_relations ADD COLUMN depth INTEGER NOT NULL DEFAULT 1;
+          CREATE INDEX IF NOT EXISTS idx_file_tag_relations_code_path ON file_tag_relations(code_path);
+        `)
+        if (relationColumns.includes('parent_code_chain')) {
+          this._db.exec(`
+            UPDATE file_tag_relations
+            SET code_path = CASE
+                  WHEN parent_code_chain != '' THEN parent_code_chain
+                  WHEN via_parent_code != '' THEN '/' || via_parent_code || '/' || tag_code
+                  ELSE '/' || tag_code
+                END,
+                name_path = CASE
+                  WHEN parent_name_chain != '' THEN parent_name_chain
+                  ELSE ''
+                END,
+                depth = CASE
+                  WHEN parent_code_chain != '' THEN length(parent_code_chain) - length(replace(parent_code_chain, '/', ''))
+                  WHEN via_parent_code != '' THEN 2
+                  ELSE 1
+                END
+            WHERE code_path = '';
+          `)
+        } else {
+          this._db.exec(`
+            UPDATE file_tag_relations
+            SET code_path = CASE
+                  WHEN via_parent_code != '' THEN '/' || via_parent_code || '/' || tag_code
+                  ELSE '/' || tag_code
+                END,
+                depth = CASE
+                  WHEN via_parent_code != '' THEN 2
+                  ELSE 1
+                END
+            WHERE code_path = '';
+          `)
+        }
+      }
     } catch (error) {
       logger.warn(LogCategory.DATABASE_SERVICE, '确保兼容表结构自愈失败:', error)
     }
