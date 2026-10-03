@@ -1142,7 +1142,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
           flag: {
             isPanDimension: true,
             isRequiresAI: true,
-            isMultiSelect: false
+            isMultiSelect: true
           }
         }
       },

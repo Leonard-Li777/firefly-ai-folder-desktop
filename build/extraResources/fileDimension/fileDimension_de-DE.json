@@ -1116,7 +1116,7 @@
         "flag": {
           "isPanDimension": true,
           "isRequiresAI": true,
-          "isMultiSelect": false
+          "isMultiSelect": true
         }
       }
     },

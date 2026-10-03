@@ -383,34 +383,41 @@ export class ConfigDbManager {
 
       // 3. 构建并写入初始 DIMENSION_POLICIES 策略项（DEC-03）
       try {
-        const dimPath = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
-        const fallbackDimPath = ResourceLocator.resolveDimension('fileDimension_zh-CN.json')
-        const targetPath = fs.existsSync(dimPath) ? dimPath : fallbackDimPath
-        if (fs.existsSync(targetPath)) {
-          const raw = fs.readFileSync(targetPath, 'utf-8')
-          const parsed = JSON.parse(raw)
-          if (Array.isArray(parsed.file_dimensions)) {
-            const policiesMap: Record<string, any> = {}
-            for (const dim of parsed.file_dimensions) {
-              const dimCode = dim.code || (CONTROLLED_DIMENSION_ROOT_CODES as any)[dim.id]
-              if (dimCode) {
-                policiesMap[dimCode] = {
-                  id: dim.id,
-                  threshold: 0.60,
-                  applicableFileTypes: dim.applicableFileTypes || [],
-                  contextHints: dim.contextHints || [],
-                  metadata: {
-                    flag: {
-                      isPanDimension: Boolean(dim.metadata?.flag?.isPanDimension),
-                      isRequiresAI: Boolean(dim.metadata?.flag?.isRequiresAI ?? dim.metadata?.flag?.requiresAI),
-                      isMultiSelect: Boolean(dim.metadata?.flag?.isMultiSelect)
+        const presetPolicyPath = this.getConfigFilePath('dimension-policies.json')
+        if (fs.existsSync(presetPolicyPath)) {
+          const raw = fs.readFileSync(presetPolicyPath, 'utf-8')
+          insertStmt.run('DIMENSION_POLICIES', raw, now)
+          logger.info(LogCategory.CONFIG, 'ConfigDbManager: 成功从 preset 增量导入初始 DIMENSION_POLICIES 数据')
+        } else {
+          const dimPath = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
+          const fallbackDimPath = ResourceLocator.resolveDimension('fileDimension_zh-CN.json')
+          const targetPath = fs.existsSync(dimPath) ? dimPath : fallbackDimPath
+          if (fs.existsSync(targetPath)) {
+            const raw = fs.readFileSync(targetPath, 'utf-8')
+            const parsed = JSON.parse(raw)
+            if (Array.isArray(parsed.file_dimensions)) {
+              const policiesMap: Record<string, any> = {}
+              for (const dim of parsed.file_dimensions) {
+                const dimCode = dim.code || (CONTROLLED_DIMENSION_ROOT_CODES as any)[dim.id]
+                if (dimCode) {
+                  policiesMap[dimCode] = {
+                    id: dim.id,
+                    threshold: 0.60,
+                    applicableFileTypes: dim.applicableFileTypes || [],
+                    contextHints: dim.contextHints || [],
+                    metadata: {
+                      flag: {
+                        isPanDimension: Boolean(dim.metadata?.flag?.isPanDimension),
+                        isRequiresAI: Boolean(dim.metadata?.flag?.isRequiresAI ?? dim.metadata?.flag?.requiresAI),
+                        isMultiSelect: Boolean(dim.metadata?.flag?.isMultiSelect)
+                      }
                     }
                   }
                 }
               }
+              insertStmt.run('DIMENSION_POLICIES', JSON.stringify(policiesMap), now)
+              logger.info(LogCategory.CONFIG, 'ConfigDbManager: 成功增量导入初始 DIMENSION_POLICIES 数据')
             }
-            insertStmt.run('DIMENSION_POLICIES', JSON.stringify(policiesMap), now)
-            logger.info(LogCategory.CONFIG, 'ConfigDbManager: 成功增量导入初始 DIMENSION_POLICIES 数据')
           }
         }
       } catch (policyErr) {
