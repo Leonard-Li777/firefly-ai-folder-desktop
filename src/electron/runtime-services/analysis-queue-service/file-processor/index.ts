@@ -786,7 +786,8 @@ export class FileProcessor {
             const existingTagRows = db
               .prepare(
                 `
-                SELECT r.tag_code, r.via_parent_code, r.tag_group, r.confidence, t.name as tag_name
+                SELECT r.tag_code, r.via_parent_code, r.tag_group, r.confidence,
+                       r.code_path, r.name_path, r.depth, t.name as tag_name
                 FROM file_tag_relations r
                 LEFT JOIN file_tags t ON r.tag_code = t.code
                 WHERE r.file_fingerprint = ?
@@ -809,6 +810,9 @@ export class FileProcessor {
                     code: row.tag_code,
                     viaParentCode: row.via_parent_code,
                     parentCodes: row.via_parent_code ? [row.via_parent_code] : undefined,
+                    codePath: row.code_path,
+                    namePath: row.name_path,
+                    depth: typeof row.depth === 'number' ? row.depth : undefined,
                     group: row.tag_group || 'fused'
                   })
                 }

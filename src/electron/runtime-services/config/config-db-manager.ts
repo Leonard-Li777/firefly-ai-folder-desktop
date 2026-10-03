@@ -52,6 +52,9 @@ export class ConfigDbManager {
       return
     }
 
+    if (this.currentLanguage !== language) {
+      this.fileDimensionsCache = []
+    }
     this.currentLanguage = language
     const db = databaseService.db
     if (!db) {
@@ -523,6 +526,13 @@ export class ConfigDbManager {
       logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 读取 file_constants 失败:', err)
     }
 
+    this.fileDimensionsCache = []
+  }
+
+  /**
+   * 显式清空维度缓存，迫使下一次 getFileDimensions 从磁盘和数据库动态策略重新加载
+   */
+  invalidateDimensionCache(): void {
     this.fileDimensionsCache = []
   }
 

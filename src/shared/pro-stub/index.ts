@@ -22,6 +22,11 @@ export interface ProGroundTruthTag {
   viaParentName?: string
   viaParentCode?: string
   parentCodes?: string[]
+  codePath?: string
+  namePath?: string
+  depth?: number
+  parentNameChain?: string
+  parentCodeChain?: string
   group?: string
 }
 
