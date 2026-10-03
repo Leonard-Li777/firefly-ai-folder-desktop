@@ -219,14 +219,10 @@ export async function processLocalAnalysis(
       }
     }
 
-    await deps.dimensionAnalyzer.saveDimensionAnalysisResults(
-      fileFingerprint,
-      filePath,
-      dimResult,
-      processResult.metadata,
-      magikaCategory
-    )
+    // 标签持久化统一由外层 executeProTagReconciliation / TagReconciliationArbiter 权威仲裁并单事务原子持久化
+    // 杜绝此处双重写入及以 'fact' 组落库大模型语义标签的违规行为 (DEC-08 / Action-B)
   }
+
   timer.end('dimensionAnalysis')
 
   return { processResult, dimResult }

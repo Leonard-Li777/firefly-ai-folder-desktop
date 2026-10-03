@@ -297,7 +297,7 @@ export async function saveCloudResult(
         const officialDimNames = new Set(allDimRows.map(d => d.name))
         const dimMap = new Map<
           string,
-          { name: string; tags: Set<string>; metadata?: DimensionMetadata | string | null }
+          { code: string; name: string; tags: Set<string>; metadata?: DimensionMetadata | string | null }
         >()
         for (const row of allDimRows) {
           let tagList: string[] = []
@@ -307,6 +307,7 @@ export async function saveCloudResult(
             tagList = []
           }
           dimMap.set(String(row.id), {
+            code: row.code,
             name: row.name,
             tags: new Set(tagList.map(t => (typeof t === 'string' ? t.toLowerCase().trim() : ''))),
             metadata: row.metadata ?? undefined
@@ -346,11 +347,11 @@ export async function saveCloudResult(
             let localDimCode = CONTENT_DIM_CODE
             const dimInfo = dimMap.get(cloudDimCode)
             const lowerCleanName = cleanName.toLowerCase()
-            const isDimPan = (info?: { name: string; metadata?: DimensionMetadata | string | null }) =>
+            const isDimPan = (info?: { code: string; name: string; metadata?: DimensionMetadata | string | null }) =>
               info
                 ? isPanDimension({ id: 0, metadata: info.metadata }) ||
-                  info.name === t('作者') ||
-                  info.name === t('内容标签')
+                  info.code === DIMENSION_CODES.AUTHOR ||
+                  info.code === DIMENSION_CODES.CONTENT_TAGS
                 : false
 
             if (dimInfo) {
@@ -383,9 +384,11 @@ export async function saveCloudResult(
               const tagCode = DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
                 lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
               })
+              const dimDisplayName = dimInfo?.name || dimMap.get(localDimCode)?.name || CONTENT_TAGS_NAME
               const codePath = localDimCode ? `/${localDimCode}/${tagCode}` : `/builtin.content_tags/${tagCode}`
-              const namePath = localDimCode ? `/${localDimCode}/${cleanName}` : `/${CONTENT_TAGS_NAME}/${cleanName}`
+              const namePath = `/${dimDisplayName}/${cleanName}`
               const depth = 2
+
               db.prepare(
                 `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, file_groups, source, meta)
                  VALUES (?, ?, ?, '[]', 'expanded', ?)`
