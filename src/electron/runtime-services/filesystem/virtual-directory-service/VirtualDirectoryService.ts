@@ -128,8 +128,7 @@ export class VirtualDirectoryService {
       vd.source, 
       vd.icon, 
       vd.perspective, 
-      vd.ai_prompt AS aiPrompt, 
-      vd.ai_prompt AS rationale, 
+      vd.rationale, 
       vd.source_analyzed_directory_id AS sourceAnalyzedDirectoryId, 
       vd.created_at AS createdAt, 
       vd.updated_at AS updatedAt,
@@ -249,8 +248,7 @@ export class VirtualDirectoryService {
       vd.source, 
       vd.icon, 
       vd.perspective, 
-      vd.ai_prompt AS aiPrompt, 
-      vd.ai_prompt AS rationale, 
+      vd.rationale, 
       vd.source_analyzed_directory_id AS sourceAnalyzedDirectoryId, 
       vd.created_at AS createdAt, 
       vd.updated_at AS updatedAt,
@@ -284,7 +282,7 @@ export class VirtualDirectoryService {
       icon ||
       this._iconManager!.pickUniqueIcon(FOLDER_ICONS.filter(i => !EXCLUDED_FOLDER_ICONS.has(i)))
     const insert = this.db.prepare(
-      'INSERT INTO virtual_directories (workspace_id, name, strategy, source, icon, perspective, ai_prompt, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO virtual_directories (workspace_id, name, strategy, source, icon, perspective, rationale, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
     )
 
     // 同工作区内同名冲突时自动追加序号
@@ -372,8 +370,7 @@ export class VirtualDirectoryService {
 
     const columnMapping: Record<string, string> = {
       workspaceId: 'workspace_id',
-      aiPrompt: 'ai_prompt',
-      rationale: 'ai_prompt',
+      rationale: 'rationale',
       perspective: 'perspective',
       strategy: 'strategy',
       source: 'source',

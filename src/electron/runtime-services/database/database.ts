@@ -253,7 +253,7 @@ export const GENESIS_V1_SCHEMA = `
     perspective     TEXT,
     strategy        TEXT,
     source          TEXT    NOT NULL DEFAULT 'manual',
-    ai_prompt       TEXT,
+    rationale       TEXT,
     source_analyzed_directory_id INTEGER,
     sort_order      INTEGER DEFAULT 0,
     meta            TEXT    NOT NULL DEFAULT '{}',    -- 弹性元数据 (JSON)
