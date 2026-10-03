@@ -408,7 +408,7 @@ export class ConfigDbManager {
                     metadata: {
                       flag: {
                         isPanDimension: Boolean(dim.metadata?.flag?.isPanDimension),
-                        isRequiresAI: Boolean(dim.metadata?.flag?.isRequiresAI ?? dim.metadata?.flag?.requiresAI),
+                        isRequiresAI: Boolean(dim.metadata?.flag?.isRequiresAI),
                         isMultiSelect: Boolean(dim.metadata?.flag?.isMultiSelect)
                       }
                     }
