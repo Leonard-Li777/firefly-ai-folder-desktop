@@ -553,7 +553,17 @@ export interface TwoStageTagLookup {
   canonicalName?: string
 }
 
-/** 单分表反查：按 lemma 查 tag_code，omw.* > builtin.* > 其它 */
+/**
+ * 单分表反查：按 lemma 查 tag_code。
+ *
+ * 仲裁顺序**与 Rust 侧 `resolve_controlled_tag_code` 对齐**：
+ * `omw.* > hownet.* > builtin.* > 其它`（见 `omni-core/src/tag_identity.rs:742`）。
+ *
+ * 次级键 `is_canonical DESC, count DESC` 与 Rust 侧反查 SQL 一致
+ * （`omw_query.rs:442/468`、`omw_db.rs:101`）；末位 `tag_code ASC` 兜底，
+ * 保证 `is_canonical`/`count` 全 tie 时结果仍**确定**（GH #727：原实现仅按 3 档分层、
+ * 无次级键，同档多条 `omw.*` 时 `LIMIT 1` 取未定序任意行 → 反查非确定）。
+ */
 function queryTagCodeInTable(
   db: Database,
   table: string,
@@ -565,8 +575,12 @@ function queryTagCodeInTable(
        WHERE lemma = ?
        ORDER BY CASE
          WHEN tag_code LIKE 'omw.%' THEN 0
-         WHEN tag_code LIKE 'builtin.%' THEN 1
-         ELSE 2 END
+         WHEN tag_code LIKE 'hownet.%' THEN 1
+         WHEN tag_code LIKE 'builtin.%' THEN 2
+         ELSE 3 END,
+         is_canonical DESC,
+         count DESC,
+         tag_code ASC
        LIMIT 1`
     )
     .all(lemma) as { tag_code: string }[]
