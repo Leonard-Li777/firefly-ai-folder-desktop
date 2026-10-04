@@ -175,7 +175,7 @@
         "Image Extensions",
         "Photography",
         "Contract Instruments",
-        "Licenses and Permits",
+        "Certificates and Licenses",
         "Screenshot",
         "Design draft",
         "Poster Promotion",
@@ -2440,7 +2440,7 @@
       "tags": [
         "No watermark",
         "Light Watermark",
-        "There is watermark"
+        "Watermarked"
       ],
       "description": "The degree of watermark in the file content",
       "applicableFileTypes": [
@@ -2528,9 +2528,9 @@
       "level": 3,
       "tags": [
         "Premium Selection",
-        "Exposure is normal",
-        "Underexposure in Low Light",
-        "Blown-out highlights in backlighting",
+        "Normal Exposure",
+        "Underexposed in Low Light",
+        "Blown Highlights in Backlight",
         "High ISO Noise",
         "Blurry, unusable photos",
         "Out-of-Focus",
@@ -2642,7 +2642,7 @@
         {
           "parentDimension": "Image segmentation",
           "triggerTags": [
-            "Licenses and Permits"
+            "Certificates and Licenses"
           ]
         }
       ],
