@@ -22,7 +22,8 @@ import {
   createSecretHmac,
   toBase62,
   isGibberishOcrText,
-  isTagProvenanceGroup
+  isTagProvenanceGroup,
+  isTagAdmissible
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
@@ -2429,13 +2430,28 @@ export class FileProcessor {
           (r: any) => r.file_fingerprint === fingerprint
         )
         for (const rel of relations) {
-          const tag = this.mockData.file_tags.find((t: any) => (t.code && t.code === rel.tag_code) || t.id === rel.tag_id)
+          const tag = this.mockData.file_tags.find(
+            (t: any) =>
+              (t.code && t.code === rel.tag_code) ||
+              (t.id !== undefined && rel.tag_id !== undefined && t.id === rel.tag_id)
+          )
           if (tag) {
             const tagCode = tag.code || `user.${tag.name}`
             const viaParentCode = rel.via_parent_code || ''
             // mock 回灌须显式携带 tag_group，否则落 DEFAULT '' 不进属性面板分组视图；
             // 夹具未声明分组时按分析引擎产出归 'ai'（勿依赖 insertTagToDb 的 'fact' 缺省）
             const mockGroup = isTagProvenanceGroup(rel.tag_group) ? rel.tag_group : 'ai'
+
+            // (PRD-0057 S4 / GH #714) 旁路闸门：mock 回灌准入裁决
+            const verdict = isTagAdmissible({ name: tag.name, tagGroup: mockGroup })
+            if (verdict.outcome === 'rejected') {
+              logger.debug(
+                LogCategory.ANALYSIS_QUEUE,
+                `[tag-admissibility] ${verdict.rule} 拒绝 mock 标签入库: "${tag.name}" (${verdict.reason})`
+              )
+              continue
+            }
+
             // 漂移③修复：严格遵守 A/B 分离，file_tags.parent_codes 保留标签自身的稳定拓扑声明（若夹具已声明），
             // 严禁将单次标注关系的 viaParentCode 反向灌入 file_tags.parent_codes
             const tagParentCodes = tag.parent_codes || '[]'

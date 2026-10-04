@@ -172,6 +172,9 @@ export async function alignTagSemantics(
     omwSynsets: []
   }
 }
-
-
+export {
+  isTagAdmissible,
+  type TagAdmissibilityInput,
+  type TagAdmissibilityVerdict
+} from '@firefly/shared'
 

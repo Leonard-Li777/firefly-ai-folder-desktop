@@ -6,6 +6,7 @@ import {
   isTagProvenanceGroup,
   TAG_PROVENANCE_GROUPS,
   getCanonicalConceptName,
+  isTagAdmissible,
   type TagProvenanceGroup
 } from '@firefly/shared'
 import { t } from '@app/languages'
@@ -2097,12 +2098,34 @@ export class FileDao {
           protectedKeys.add(`${row.tag_code}\u0000${row.via_parent_code ?? ''}`)
         }
 
+        const selectTagNameStmt = this.db.prepare(
+          'SELECT name FROM file_tags WHERE code = ? LIMIT 1'
+        )
+
         for (const tag of result.tags || []) {
           if (!tag?.code) continue
           const viaParent = tag.viaParentCode ?? tag.parentCode ?? ''
           const key = `${tag.code}\u0000${viaParent}`
           // 高优先级来源关系原样保留（含 confidence），高维修正不越权改写其出处。
           if (protectedKeys.has(key)) continue
+
+          // (PRD-0057 S4 / GH #714) 旁路闸门：高维精修准入裁决
+          const tagName =
+            (tag as any).name ||
+            getCanonicalConceptName(tag.code) ||
+            (selectTagNameStmt.get(tag.code) as { name?: string } | undefined)?.name ||
+            readableCode(tag.code) ||
+            tag.code
+
+          const verdict = isTagAdmissible({ name: tagName, tagGroup: 'ai' })
+          if (verdict.outcome === 'rejected') {
+            logger.debug(
+              LogCategory.FILE_ANALYSIS,
+              `[tag-admissibility] ${verdict.rule} 拒绝高维精修标签入库: "${tagName}" (code: ${tag.code}, reason: ${verdict.reason})`
+            )
+            continue
+          }
+
           // tag_group='ai'：Stage 5 高维精修属 AI 派生标签（ADR-0045 词表中 fact/fused/visual 分别对应
           // 物理事实 / Omni 多模态融合 / 视觉引擎；高维修正不属其一，归入 ai）。
           // confidence 采用高维二次打分的真实值，不用 ADR-0045 的 ai 基准 0.60——

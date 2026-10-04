@@ -5,7 +5,7 @@ import type {
   Unit,
   UnitCreationData
 } from '@firefly/types'
-import { LogCategory, logger, isTestEnvironment, getCanonicalConceptName } from '@firefly/shared'
+import { LogCategory, logger, isTestEnvironment, getCanonicalConceptName, isTagAdmissible } from '@firefly/shared'
 import {
   findTagCodeTwoStage,
   getDatabaseConfig,
@@ -1455,13 +1455,15 @@ export class DatabaseService {
         }
 
         // 3. 遍历文件应用或解绑
-        const allAddTagItems: Array<{ tagCode: string; viaParentCode: string }> = []
+        const allAddTagItems: Array<{ tagCode: string; viaParentCode: string; tagName?: string }> = []
         for (const [key, code] of createdTagMap.entries()) {
-          const dimCode = key.split(':')[0] || ''
-          allAddTagItems.push({ tagCode: code, viaParentCode: dimCode })
+          const parts = key.split(':')
+          const dimCode = parts[0] || ''
+          const tagName = parts.slice(1).join(':')
+          allAddTagItems.push({ tagCode: code, viaParentCode: dimCode, tagName })
         }
         for (const rawId of operation.addTagIds || []) {
-          const found = this._db!.prepare('SELECT code, parent_codes FROM file_tags WHERE id = ? OR code = ?').get(rawId, String(rawId)) as { code: string; parent_codes?: string } | undefined
+          const found = this._db!.prepare('SELECT code, name, parent_codes FROM file_tags WHERE id = ? OR code = ?').get(rawId, String(rawId)) as { code: string; name?: string; parent_codes?: string } | undefined
           let viaParentCode = ''
           if (found?.parent_codes) {
             try {
@@ -1471,7 +1473,11 @@ export class DatabaseService {
               }
             } catch {}
           }
-          allAddTagItems.push({ tagCode: found?.code || String(rawId), viaParentCode })
+          allAddTagItems.push({
+            tagCode: found?.code || String(rawId),
+            viaParentCode,
+            tagName: found?.name
+          })
         }
 
         for (const fileId of operation.fileIds) {
@@ -1523,6 +1529,20 @@ export class DatabaseService {
                 "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, tag_group, confidence, sync_status, created_at) VALUES (?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
               )
               for (const item of allAddTagItems) {
+                // (PRD-0057 S4 / GH #714) 用户手动批量打标旁路闸门：
+                // 来源为 user，走豁免短路（isTagAdmissible 永不拒，断言全部放行）
+                const tagName = item.tagName || getCanonicalConceptName(item.tagCode) || item.tagCode
+                const verdict = isTagAdmissible({
+                  name: tagName,
+                  tagGroup: 'user'
+                })
+                if (verdict.outcome === 'rejected') {
+                  logger.debug(
+                    LogCategory.DATABASE_SERVICE,
+                    `[tag-admissibility] ${verdict.rule} 拒绝用户打标入库: "${tagName}" (${verdict.reason})`
+                  )
+                  continue
+                }
                 insertStmt.run(fp, item.tagCode, item.viaParentCode)
               }
             }
