@@ -313,8 +313,10 @@ export async function saveCloudResult(
             metadata: row.metadata ?? undefined
           })
         }
-        // 内容标签维度作为兜底路由目标（受控域契约，优先动态命中，兜底 dim.content）
-        let contentDimCode = 'dim.content'
+        // 内容标签维度作为兜底路由目标（受控域契约，优先动态命中）。
+        // GH #717：兜底值必须是受控 builtin.* code —— dim.content 已废除（spec §6.9.6），
+        // 失配时落 DIMENSION_CODES.CONTENT_TAGS（builtin.content_tags），与动态命中值同码域。
+        let contentDimCode: string = DIMENSION_CODES.CONTENT_TAGS
         for (const row of allDimRows) {
           if (row.code === DIMENSION_CODES.CONTENT_TAGS || row.name === CONTENT_TAGS_NAME || row.name === t(CONTENT_TAGS_NAME)) {
             contentDimCode = String(row.id)
