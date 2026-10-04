@@ -444,5 +444,64 @@
       "directories",
       "files"
     ]
+  },
+  "g2": {
+    "rule_ids": {
+      "allowed_pos": "R-G2-01",
+      "verb_adv_whitelist": "R-G2-02",
+      "verb_adv_reject": "R-G2-03",
+      "closed_pos_reject": "R-G2-04",
+      "cleaned_pos_reject": "R-G2-05",
+      "sememe_function_reject": "R-G2-06",
+      "dimension_source_reject": "R-G2-07",
+      "banned_lexfile_reject": "R-G2-08",
+      "user_exempt": "R-G2-09",
+      "fact_exempt": "R-G2-10"
+    },
+    "allowed_pos": [
+      "n",
+      "a",
+      "s"
+    ],
+    "verb_adv_pos": [
+      "v",
+      "r"
+    ],
+    "closed_pos": [
+      "m",
+      "q",
+      "p",
+      "c",
+      "u",
+      "y",
+      "o",
+      "h"
+    ],
+    "cleaned_pos": [
+      "w",
+      "g",
+      "b"
+    ],
+    "exempted_lemmas": {
+      "zh": [],
+      "en": []
+    },
+    "banned_sememe_keywords": [
+      "FuncWord|功能词",
+      "punc|标点"
+    ],
+    "banned_lexfiles": [
+      "adv.all",
+      "adj.pert"
+    ],
+    "notes": {
+      "evaluation_order": "豁免（user/fact）优先判定 → 命中即短路放行；其后按规则 ID 升序，首个命中即裁决。G1 拒绝即短路，不进 G2。",
+      "exempted_lemmas_source": "R-G2-02 动词/副词豁免白名单（spec §3.2/§5.2，可标注的优质动作或副词概念，缺省为空/按需配置）；严禁在代码中内置副本。",
+      "closed_pos_source": "R-G2-04 闭类词性拒绝（m数词/q量词/p介词/c连词/u助词/y代词/o拟声词/h疑问词）。",
+      "cleaned_pos_source": "R-G2-05 构建期清洗词性拒绝（w标点/g字母前缀/b单字）。",
+      "banned_sememe_source": "R-G2-06 语义要素含 FuncWord|功能词 或 punc|标点 即拒（HowNet 义原）。",
+      "dimension_source": "R-G2-07 source = 'dimension' 或命中受控维度根即拒（PRD-0051 受控维度与标签互斥律）。",
+      "banned_lexfile_source": "R-G2-08 adv.all 与 adj.pert 词类域即拒（PWN/OMW 关系形容词与全量副词剪枝）。"
+    }
   }
 }
