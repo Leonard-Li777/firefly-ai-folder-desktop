@@ -178,15 +178,15 @@
         "Certificates and Licenses",
         "Screenshot",
         "Design draft",
-        "Poster Promotion",
+        "Poster Promo",
         "Application Icon",
-        "Emoticons",
+        "Meme",
         "Medical Imaging",
-        "Drawing",
+        "Blueprint",
         "Comics",
         "Painting",
         "Text-in-Image",
-        "Image with No Text"
+        "Image without Text"
       ],
       "description": "Professional classification of image content",
       "applicableFileTypes": [
@@ -2236,7 +2236,7 @@
         "Joy",
         "Sad",
         "Cure",
-        "Causing Depression",
+        "Depressing",
         "Easy",
         "Nervous",
         "Move",
@@ -2535,7 +2535,7 @@
         "Blurry, unusable photos",
         "Out-of-Focus",
         "Jitter",
-        "Decoking",
+        "Defocused",
         "Motion Jitter",
         "Poor composition",
         "Severe color cast",
@@ -2727,12 +2727,12 @@
         "Beheading",
         "Dismemberment and Dismantling of a Corpse",
         "Bloody Massacre",
-        "Remains of a body",
-        "Torture and Cruel Treatment",
-        "A bloody mess",
-        "Extreme and Bizarre",
-        "Violent Terrorist Attacks",
-        "Self-harm and bloodletting"
+        "Corpse Remains",
+        "Torture",
+        "Flesh Mutilation",
+        "Hardcore Grotesque",
+        "Terror Tragedy",
+        "Self-Harm Bleeding"
       ],
       "description": "Subgenres of Gory, Violent, and Extreme Bizarre Content",
       "applicableFileTypes": [
@@ -2808,7 +2808,7 @@
       "level": 3,
       "tags": [
         "Drug Trafficking",
-        "Smugglers",
+        "Smuggling",
         "Firearms and Ammunition",
         "Money Laundering and Illegal Activities",
         "Telecom Fraud",
@@ -2895,11 +2895,11 @@
       "name": "Screenshot Breakdown",
       "level": 3,
       "tags": [
-        "Long Screenshot of a Webpage",
-        "Screenshots of the UI",
-        "Chat Screenshots",
+        "Long Webpage Screenshot",
+        "UI Screenshot",
+        "Chat Screenshot",
         "Code Screenshot",
-        "Game Screenshots",
+        "Game Screenshot",
         "Screenshot of payment receipt",
         "Screenshot of the system error message",
         "Screenshot of a social media post",
@@ -3126,7 +3126,7 @@
       "name": "Layout",
       "level": 2,
       "tags": [
-        "Plain text",
+        "Text Only",
         "Chart-based",
         "Mixed graphics and text",
         "Handwritten notes"
@@ -3242,7 +3242,7 @@
         "Single",
         "Double",
         "Group photo",
-        "Unmanned aerial mirror"
+        "Empty Scene"
       ],
       "description": "The number and composition of characters or core subjects in the picture",
       "applicableFileTypes": [
@@ -3694,7 +3694,7 @@
         "Sex slave",
         "Training and Restraint",
         "Rough sex",
-        "Rough sex",
+        "Hardcore Sex",
         "Hardcore Perversion",
         "Wax Play & Whip",
         "Specific fetish"
@@ -3861,7 +3861,7 @@
         "Oral sex",
         "Anal sex",
         "Facial & Swallowing",
-        "Private Photo Shoot",
+        "Boudoir Photo",
         "Temptation on the Edge",
         "Beautiful breasts and legs",
         "Virginity complex"

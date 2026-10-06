@@ -1101,7 +1101,7 @@
     "$id": 7279
   },
   "海报宣发": {
-    "en-US": "Poster Promotion",
+    "en-US": "Poster Promo",
     "es-ES": "Promoción y difusión de carteles",
     "ar-EG": "الترويج والإنشاء للملصقات",
     "pt-PT": "Divulgação de cartazes",
@@ -1127,7 +1127,7 @@
     "$id": 7280
   },
   "表情包": {
-    "en-US": "Emoticons",
+    "en-US": "Meme",
     "es-ES": "Emoticones",
     "ar-EG": "المشاعر",
     "pt-PT": "Emoticons",
@@ -1153,7 +1153,7 @@
     "$id": 7282
   },
   "图纸": {
-    "en-US": "Drawing",
+    "en-US": "Blueprint",
     "es-ES": "Dibujo",
     "ar-EG": "رسم",
     "pt-PT": "Desenho",
@@ -1225,7 +1225,7 @@
     "$id": 19642
   },
   "无字图": {
-    "en-US": "Image with No Text",
+    "en-US": "Image without Text",
     "es-ES": "Imagen sin texto",
     "ar-EG": "صورة بدون نص",
     "pt-PT": "Imagem sem texto",
@@ -6005,7 +6005,7 @@
     "$id": 7715
   },
   "致郁": {
-    "en-US": "Causing Depression",
+    "en-US": "Depressing",
     "es-ES": "Causando depresión",
     "ar-EG": "تسبب الاكتئاب",
     "pt-PT": "Causando depressão",
@@ -6917,7 +6917,7 @@
     "$id": 19679
   },
   "脱焦": {
-    "en-US": "Decoking",
+    "en-US": "Defocused",
     "es-ES": "Descoquización",
     "ar-EG": "إزالة الفحم",
     "pt-PT": "Descoqueamento",
@@ -7667,7 +7667,7 @@
     "$id": 19733
   },
   "尸体残骸": {
-    "en-US": "Remains of a body",
+    "en-US": "Corpse Remains",
     "es-ES": "Restos de cadáveres",
     "ar-EG": "بقايا الجثة",
     "pt-PT": "Restos mortais",
@@ -7680,7 +7680,7 @@
     "$id": 19734
   },
   "酷刑折磨": {
-    "en-US": "Torture and Cruel Treatment",
+    "en-US": "Torture",
     "es-ES": "Tortura y maltrato",
     "ar-EG": "التعذيب",
     "pt-PT": "Tortura e maus-tratos",
@@ -7693,7 +7693,7 @@
     "$id": 19735
   },
   "血肉模糊": {
-    "en-US": "A bloody mess",
+    "en-US": "Flesh Mutilation",
     "es-ES": "Hecho un amasijo de carne y sangre",
     "ar-EG": "جثث ممزقة",
     "pt-PT": "Redentado e ensanguentado",
@@ -7706,7 +7706,7 @@
     "$id": 19736
   },
   "重口猎奇": {
-    "en-US": "Extreme and Bizarre",
+    "en-US": "Hardcore Grotesque",
     "es-ES": "Contenido extremo y morboso",
     "ar-EG": "المحتوى الجريء والغريب",
     "pt-PT": "Conteiros excêntricos e insólitos",
@@ -7719,7 +7719,7 @@
     "$id": 19737
   },
   "暴恐惨案": {
-    "en-US": "Violent Terrorist Attacks",
+    "en-US": "Terror Tragedy",
     "es-ES": "Tragedia provocada por un atentado terrorista",
     "ar-EG": "مأساة العنف والإرهاب",
     "pt-PT": "Trágica tragédia de violência e terrorismo",
@@ -7732,7 +7732,7 @@
     "$id": 19738
   },
   "自残放血": {
-    "en-US": "Self-harm and bloodletting",
+    "en-US": "Self-Harm Bleeding",
     "es-ES": "Autolesiones con sangrado",
     "ar-EG": "إيذاء النفس عن طريق إراقة الدم",
     "pt-PT": "Autolesão com sangria",
@@ -7992,7 +7992,7 @@
     "$id": 19758
   },
   "走私贩私": {
-    "en-US": "Smugglers",
+    "en-US": "Smuggling",
     "es-ES": "Contrabando",
     "ar-EG": "التهريب",
     "pt-PT": "Contrabando",
@@ -8448,7 +8448,7 @@
     "$id": 19786
   },
   "网页长截图": {
-    "en-US": "Long Screenshot of a Webpage",
+    "en-US": "Long Webpage Screenshot",
     "es-ES": "Captura de pantalla larga de una página web",
     "ar-EG": "لقطة شاشة طويلة للصفحة الإلكترونية",
     "pt-PT": "Captura de ecrã longa da página web",
@@ -8461,7 +8461,7 @@
     "$id": 19787
   },
   "UI界面截图": {
-    "en-US": "Screenshots of the UI",
+    "en-US": "UI Screenshot",
     "es-ES": "Captura de pantalla de la interfaz de usuario",
     "ar-EG": "لقطة شاشة لواجهة المستخدم",
     "pt-PT": "Capturas de ecrã da interface do utilizador",
@@ -8474,7 +8474,7 @@
     "$id": 19788
   },
   "聊天截图": {
-    "en-US": "Chat Screenshots",
+    "en-US": "Chat Screenshot",
     "es-ES": "Capturas de pantalla de la conversación",
     "ar-EG": "لقطات من محادثة",
     "pt-PT": "Capturas de ecrã de conversas",
@@ -8500,7 +8500,7 @@
     "$id": 19790
   },
   "游戏截图": {
-    "en-US": "Game Screenshots",
+    "en-US": "Game Screenshot",
     "es-ES": "Capturas de pantalla del juego",
     "ar-EG": "لقطات من اللعبة",
     "pt-PT": "Imagens do jogo",
@@ -9280,7 +9280,7 @@
     "$id": 19849
   },
   "纯文字": {
-    "en-US": "Plain text",
+    "en-US": "Text Only",
     "es-ES": "Texto plano",
     "ar-EG": "نص عادي",
     "pt-PT": "Texto simples",
@@ -9683,7 +9683,7 @@
     "$id": 19880
   },
   "无人空镜": {
-    "en-US": "Unmanned aerial mirror",
+    "en-US": "Empty Scene",
     "es-ES": "Espejo aéreo no tripulado",
     "ar-EG": "مرآة جوية بدون طيار",
     "pt-PT": "Espelho aéreo não tripulado",
@@ -11519,7 +11519,7 @@
     "$id": 20259
   },
   "粗野性交": {
-    "en-US": "Rough sex",
+    "en-US": "Hardcore Sex",
     "es-ES": "Sexo duro",
     "ar-EG": "الجنس الخشن",
     "pt-PT": "Sexo violento",
@@ -12221,7 +12221,7 @@
     "$id": 20310
   },
   "私房写真": {
-    "en-US": "Private Photo Shoot",
+    "en-US": "Boudoir Photo",
     "es-ES": "Fotos privadas",
     "ar-EG": "صور خاصة",
     "pt-PT": "Fotografias particulares",
