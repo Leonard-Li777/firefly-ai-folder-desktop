@@ -721,6 +721,70 @@
         "numCtx": 8192,
         "numPredict": 512
       }
+    },
+    {
+      "id": "Qwen/Qwen3-Embedding-8B-GGUF:Q6_K",
+      "name": "Qwen3-Embedding 8B (Высокоточное встраивание)",
+      "company": "Qwen",
+      "parameterSize": "8B",
+      "intelligenceLevel": 4,
+      "totalSize": "5.79GB",
+      "recommended": false,
+      "description": "Модель встраивания текста Qwen3 8B, 4096-мерные плотные элементы, поддерживает высокоточное семантическое сопоставление текста и меток.",
+      "source": "huggingface",
+      "quantization": "Q6_K",
+      "isEmbedding": true,
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "Встраивания",
+        "Высокая точность",
+        "встраивание текста",
+        "4096 измерений"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 512
+      }
+    },
+    {
+      "id": "Qwen/Qwen3-Embedding-8B-GGUF:Q6_K",
+      "name": "Qwen3-Embedding 8B (Высокоточное встраивание)",
+      "company": "Qwen",
+      "parameterSize": "8B",
+      "intelligenceLevel": 4,
+      "totalSize": "5.79GB",
+      "recommended": false,
+      "description": "Модель встраивания текста Qwen3 8B, 4096-мерные плотные элементы, поддерживает высокоточное семантическое сопоставление текста и меток.",
+      "source": "modelscope",
+      "quantization": "Q6_K",
+      "isEmbedding": true,
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "Встраивания",
+        "Высокая точность",
+        "встраивание текста",
+        "4096 измерений"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 512
+      }
     }
   ]
 }

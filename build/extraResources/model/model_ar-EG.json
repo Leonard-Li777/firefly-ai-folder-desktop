@@ -721,6 +721,70 @@
         "numCtx": 8192,
         "numPredict": 512
       }
+    },
+    {
+      "id": "Qwen/Qwen3-Embedding-8B-GGUF:Q6_K",
+      "name": "Qwen3-Embedding 8B (تضمين عالي الدقة)",
+      "company": "Qwen",
+      "parameterSize": "8B",
+      "intelligenceLevel": 4,
+      "totalSize": "5.79GB",
+      "recommended": false,
+      "description": "نموذج تضمين النص Qwen3 8B، يتميز بميزات كثيفة ذات أبعاد 4096، ويدعم النص عالي الدقة والمطابقة الدلالية للتسمية.",
+      "source": "huggingface",
+      "quantization": "Q6_K",
+      "isEmbedding": true,
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "التضمين",
+        "دقة عالية",
+        "تضمين النص",
+        "4096 الأبعاد"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 512
+      }
+    },
+    {
+      "id": "Qwen/Qwen3-Embedding-8B-GGUF:Q6_K",
+      "name": "Qwen3-Embedding 8B (تضمين عالي الدقة)",
+      "company": "Qwen",
+      "parameterSize": "8B",
+      "intelligenceLevel": 4,
+      "totalSize": "5.79GB",
+      "recommended": false,
+      "description": "نموذج تضمين النص Qwen3 8B، يتميز بميزات كثيفة ذات أبعاد 4096، ويدعم النص عالي الدقة والمطابقة الدلالية للتسمية.",
+      "source": "modelscope",
+      "quantization": "Q6_K",
+      "isEmbedding": true,
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "التضمين",
+        "دقة عالية",
+        "تضمين النص",
+        "4096 الأبعاد"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 512
+      }
     }
   ]
 }

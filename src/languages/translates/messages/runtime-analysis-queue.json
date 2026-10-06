@@ -161,7 +161,7 @@
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(40312-40330)",
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10606-10624)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(80570-80588)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(83188-83206)"
     ],
     "$id": 2977
   },
@@ -190,7 +190,7 @@
     "ko-KR": "할당량 소진: 프라이빗 디렉토리 파일 {count} 개를 분석했으며, 현재 할당량은 {quota} 개 파일입니다. 친구 초대로 더 많은 한도를 해제할 수 있습니다.",
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(3448-3529)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(18182-18263)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(18202-18283)"
     ],
     "$id": 11053
   },
@@ -719,7 +719,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(80611-80638)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(83229-83256)"],
     "$id": 11054
   },
   "AI 服务未就绪": {
@@ -737,32 +737,6 @@
       "src/electron/runtime-services/analysis-queue-service/file-processor/process-quick-name-analysis.ts(1486-1498)"
     ],
     "$id": 8131
-  },
-  "作者": {
-    "en-US": "Author",
-    "es-ES": "Autor",
-    "ar-EG": "مؤلف",
-    "pt-PT": "Autor",
-    "ru-RU": "автор",
-    "ja-JP": "著者",
-    "de-DE": "Autor",
-    "fr-FR": "Auteur",
-    "ko-KR": "작가",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(13488-13494)"],
-    "$id": 19944
-  },
-  "内容标签": {
-    "en-US": "Content Tags",
-    "es-ES": "Etiquetas de contenido",
-    "ar-EG": "علامات المحتوى",
-    "pt-PT": "Tags de conteúdo",
-    "ru-RU": "теги контента",
-    "ja-JP": "コンテンツタグ",
-    "de-DE": "Inhalts-Tags",
-    "fr-FR": "Balises de contenu",
-    "ko-KR": "콘텐츠 태그",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/save-cloud-result.ts(13532-13540)"],
-    "$id": 19945
   },
   "无法获取文件路径记录": {
     "en-US": "Cannot retrieve file path records",

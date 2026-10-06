@@ -560,6 +560,60 @@ export const MODEL_CONFIG_SOURCE = () => ({
         numCtx: 8192,
         numPredict: 512
       }
+    },
+    {
+      // 仓库: https://huggingface.co/Qwen/Qwen3-Embedding-8B-GGUF/blob/main/Qwen3-Embedding-8B-Q6_K.gguf
+      // 文件大小: 6,214,476,096 B ≈ 5.79GB
+      id: 'Qwen/Qwen3-Embedding-8B-GGUF:Q6_K',
+      name: `Qwen3-Embedding 8B (${t('高精度嵌入')})`,
+      company: 'Qwen',
+      parameterSize: '8B',
+      intelligenceLevel: 4,
+      totalSize: '5.79GB',
+      recommended: false,
+      description: t('Qwen3 8B 文本嵌入模型，4096 维稠密特征，支持高精度文本与标签语义匹配。'),
+      source: 'huggingface',
+      quantization: 'Q6_K',
+      isEmbedding: true,
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'medium',
+        quality: 'very_high'
+      },
+      tags: [t('嵌入'), t('高精度'), t('文本嵌入'), t('4096维')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 512
+      }
+    },
+    {
+      // 镜像源: ModelScope Qwen/Qwen3-Embedding-8B-GGUF
+      // 文件大小: 6,214,476,096 B ≈ 5.79GB
+      id: 'Qwen/Qwen3-Embedding-8B-GGUF:Q6_K',
+      name: `Qwen3-Embedding 8B (${t('高精度嵌入')})`,
+      company: 'Qwen',
+      parameterSize: '8B',
+      intelligenceLevel: 4,
+      totalSize: '5.79GB',
+      recommended: false,
+      description: t('Qwen3 8B 文本嵌入模型，4096 维稠密特征，支持高精度文本与标签语义匹配。'),
+      source: 'modelscope',
+      quantization: 'Q6_K',
+      isEmbedding: true,
+      isMultiModal: false,
+      contextLength: 32768,
+      capabilities: ['TEXT'],
+      performance: {
+        speed: 'medium',
+        quality: 'very_high'
+      },
+      tags: [t('嵌入'), t('高精度'), t('文本嵌入'), t('4096维')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 512
+      }
     }
   ]
 })

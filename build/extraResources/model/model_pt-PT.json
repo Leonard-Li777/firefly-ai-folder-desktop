@@ -721,6 +721,70 @@
         "numCtx": 8192,
         "numPredict": 512
       }
+    },
+    {
+      "id": "Qwen/Qwen3-Embedding-8B-GGUF:Q6_K",
+      "name": "Qwen3-Embedding 8B (Incorporação de alta precisão)",
+      "company": "Qwen",
+      "parameterSize": "8B",
+      "intelligenceLevel": 4,
+      "totalSize": "5.79GB",
+      "recommended": false,
+      "description": "O modelo de incorporação de texto Qwen3 8B, recursos densos de 4096 dimensões, suporta texto de alta precisão e correspondência semântica de rótulo.",
+      "source": "huggingface",
+      "quantization": "Q6_K",
+      "isEmbedding": true,
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "Incorporação",
+        "Alta precisão",
+        "Incorporação de texto",
+        "4096 dimensões"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 512
+      }
+    },
+    {
+      "id": "Qwen/Qwen3-Embedding-8B-GGUF:Q6_K",
+      "name": "Qwen3-Embedding 8B (Incorporação de alta precisão)",
+      "company": "Qwen",
+      "parameterSize": "8B",
+      "intelligenceLevel": 4,
+      "totalSize": "5.79GB",
+      "recommended": false,
+      "description": "O modelo de incorporação de texto Qwen3 8B, recursos densos de 4096 dimensões, suporta texto de alta precisão e correspondência semântica de rótulo.",
+      "source": "modelscope",
+      "quantization": "Q6_K",
+      "isEmbedding": true,
+      "isMultiModal": false,
+      "contextLength": 32768,
+      "capabilities": [
+        "TEXT"
+      ],
+      "performance": {
+        "speed": "medium",
+        "quality": "very_high"
+      },
+      "tags": [
+        "Incorporação",
+        "Alta precisão",
+        "Incorporação de texto",
+        "4096 dimensões"
+      ],
+      "recommendedConfig": {
+        "numCtx": 8192,
+        "numPredict": 512
+      }
     }
   ]
 }

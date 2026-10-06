@@ -9,7 +9,7 @@
     "de-DE": "Hinzufügen des Arbeitsverzeichnisses fehlgeschlagen",
     "fr-FR": "Échec de l'ajout du répertoire de travail",
     "ko-KR": "작업 디렉터리 추가에 실패했습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(5706-5718)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(5776-5788)"],
     "$id": 8752
   },
   "暂无已保存的虚拟目录": {
@@ -22,7 +22,7 @@
     "de-DE": "Keine gespeicherten virtuellen Verzeichnisse vorhanden",
     "fr-FR": "Aucun répertoire virtuel sauvegardé pour le moment",
     "ko-KR": "저장된 가상 디렉토리가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6247-6261)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6317-6331)"],
     "$id": 8753
   },
   "请前往已分析页面勾选文件后点击立即整理": {
@@ -35,7 +35,7 @@
     "de-DE": "Bitte gehen Sie zur analysierten Seite, wählen Sie die Dateien aus und klicken Sie auf Jetzt organisieren",
     "fr-FR": "Veuillez vous rendre sur la page analysée, sélectionner les fichiers et cliquer sur Organiser maintenant",
     "ko-KR": "분석된 페이지로 이동하여 파일을 선택하고 지금 구성을 클릭하세요.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6288-6311)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6358-6381)"],
     "$id": 8754
   },
   "创建虚拟目录": {
@@ -49,7 +49,7 @@
     "fr-FR": "Créer un répertoire virtuel",
     "ko-KR": "가상 디렉터리 만들기",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6664-6674)",
+      "src/renderer/components/file-explorer/VirtualDirectory/index.tsx(6734-6744)",
       "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryTabs.tsx(10623-10633)"
     ],
     "$id": 8755
@@ -65,7 +65,7 @@
     "fr-FR": "Cette fonctionnalité est en cours de migration de source de données et est temporairement indisponible",
     "ko-KR": "해당 기능은 데이터 소스 마이그레이션 중이므로 일시적으로 사용할 수 없습니다",
     "$files": [
-      "src/renderer/components/file-explorer/VirtualDirectory/index.tsx(11672-11692)",
+      "src/renderer/components/file-explorer/VirtualDirectory/index.tsx(11698-11718)",
       "src/renderer/components/file-explorer/VirtualDirectory/components/ExportSelector.tsx(8814-8834)"
     ],
     "$id": 19507
@@ -80,125 +80,8 @@
     "de-DE": "Überprüfen Sie mindestens eine Datei",
     "fr-FR": "Vérifiez au moins un fichier",
     "ko-KR": "하나 이상의 파일을 확인하십시오.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(16357-16369)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/index.tsx(16383-16395)"],
     "$id": 11478
-  },
-  "文件目录": {
-    "en-US": "File directory",
-    "es-ES": "Directorio de archivos",
-    "ar-EG": "دليل الملفات",
-    "pt-PT": "Diretório de arquivos",
-    "ru-RU": "Каталог файлов",
-    "ja-JP": "ファイルディレクトリ",
-    "de-DE": "Dateiverzeichnis",
-    "fr-FR": "Répertoire de fichiers",
-    "ko-KR": "파일 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(5543-5551)"],
-    "$id": 8756
-  },
-  "分类维度": {
-    "en-US": "Classification dimension",
-    "es-ES": "Dimensión de clasificación",
-    "ar-EG": "البعد التصنيفي",
-    "pt-PT": "Dimensão de classificação",
-    "ru-RU": "Классификационное измерение",
-    "ja-JP": "分類次元",
-    "de-DE": "Klassifizierungsdimension",
-    "fr-FR": "Dimension de classement",
-    "ko-KR": "분류 차원",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(6130-6138)"],
-    "$id": 8757
-  },
-  "筛选模式": {
-    "en-US": "Filter mode",
-    "es-ES": "Modo de filtro",
-    "ar-EG": "وضع التصفية",
-    "pt-PT": "Modo de filtro",
-    "ru-RU": "режим фильтра",
-    "ja-JP": "フィルターモード",
-    "de-DE": "Filtermodus",
-    "fr-FR": "Mode filtre",
-    "ko-KR": "필터 모드",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(6554-6562)"],
-    "$id": 8758
-  },
-  "多选": {
-    "en-US": "Multiple choice",
-    "es-ES": "Opción múltiple",
-    "ar-EG": "الاختيار من متعدد",
-    "pt-PT": "Múltipla escolha",
-    "ru-RU": "Множественный выбор",
-    "ja-JP": "多肢選択",
-    "de-DE": "Multiple Choice",
-    "fr-FR": "Choix multiple",
-    "ko-KR": "객관식",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(6713-6719)"],
-    "$id": 8759
-  },
-  "打开文件失败: {message}": {
-    "en-US": "Failed to open file: {message}",
-    "es-ES": "No se pudo abrir el archivo: {message}",
-    "ar-EG": "فشل في فتح الملف: {message}",
-    "pt-PT": "Falha ao abrir o arquivo: {message}",
-    "ru-RU": "Не удалось открыть файл: {message}",
-    "ja-JP": "ファイルを開けませんでした: {message}",
-    "de-DE": "Datei konnte nicht geöffnet werden: {message}",
-    "fr-FR": "Échec de l'ouverture du fichier : {message}",
-    "ko-KR": "파일을 열지 못했습니다: {message}",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(15173-15194)"],
-    "$id": 8760
-  },
-  "加载中...": {
-    "en-US": "Loading...",
-    "es-ES": "Cargando...",
-    "ar-EG": "جاري التحميل...",
-    "pt-PT": "A carregar...",
-    "ru-RU": "Загрузка...",
-    "ja-JP": "読み込み中...",
-    "de-DE": "Wird geladen...\r",
-    "fr-FR": "Chargement en cours...",
-    "ko-KR": "불러오는 중...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(16637-16647)"],
-    "$id": 8761
-  },
-  "暂无维度数据": {
-    "en-US": "No dimension data yet",
-    "es-ES": "Aún no hay datos de dimensiones",
-    "ar-EG": "لا توجد بيانات البعد حتى الآن",
-    "pt-PT": "Ainda não há dados de dimensão",
-    "ru-RU": "Данных о размерах пока нет.",
-    "ja-JP": "寸法データがまだありません",
-    "de-DE": "Noch keine Dimensionsdaten",
-    "fr-FR": "Aucune donnée de dimension pour l'instant",
-    "ko-KR": "아직 측정기준 데이터가 없습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(16832-16842)"],
-    "$id": 8762
-  },
-  "{count} 个子目录": {
-    "en-US": "{count} subdirectory",
-    "es-ES": "{count} subdirectorio",
-    "ar-EG": "{count} الدليل الفرعي",
-    "pt-PT": "{count} subdiretório",
-    "ru-RU": "{count} подкаталог",
-    "ja-JP": "{count} サブディレクトリ",
-    "de-DE": "Unterverzeichnis {count}",
-    "fr-FR": "{count} sous-répertoire",
-    "ko-KR": "{count} 하위 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(17956-17972)"],
-    "$id": 8763
-  },
-  "{count} 个维度组": {
-    "en-US": "{count} dimension groups",
-    "es-ES": "{count} grupos de dimensiones",
-    "ar-EG": "{count} مجموعات الأبعاد",
-    "pt-PT": "{count} grupos de dimensões",
-    "ru-RU": "{count} группы измерений",
-    "ja-JP": "{count} ディメンション グループ",
-    "de-DE": "{count} Dimensionsgruppen",
-    "fr-FR": "{count} groupes de dimensions",
-    "ko-KR": "{count} 차원 그룹",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/DimensionTreeSidebar.tsx(18019-18035)"],
-    "$id": 8764
   },
   "重命名虚拟目录": {
     "en-US": "Rename virtual directory",
@@ -1191,6 +1074,110 @@
     "ko-KR": "내보내기 정리",
     "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(7814-7822)"],
     "$id": 8831
+  },
+  "文件目录": {
+    "en-US": "File directory",
+    "es-ES": "Directorio de archivos",
+    "ar-EG": "دليل الملفات",
+    "pt-PT": "Diretório de arquivos",
+    "ru-RU": "Каталог файлов",
+    "ja-JP": "ファイルディレクトリ",
+    "de-DE": "Dateiverzeichnis",
+    "fr-FR": "Répertoire de fichiers",
+    "ko-KR": "파일 디렉터리",
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(5038-5046)"],
+    "$id": 8756
+  },
+  "分类维度": {
+    "en-US": "Classification dimension",
+    "es-ES": "Dimensión de clasificación",
+    "ar-EG": "البعد التصنيفي",
+    "pt-PT": "Dimensão de classificação",
+    "ru-RU": "Классификационное измерение",
+    "ja-JP": "分類次元",
+    "de-DE": "Klassifizierungsdimension",
+    "fr-FR": "Dimension de classement",
+    "ko-KR": "분류 차원",
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(5611-5619)"],
+    "$id": 8757
+  },
+  "筛选模式": {
+    "en-US": "Filter mode",
+    "es-ES": "Modo de filtro",
+    "ar-EG": "وضع التصفية",
+    "pt-PT": "Modo de filtro",
+    "ru-RU": "режим фильтра",
+    "ja-JP": "フィルターモード",
+    "de-DE": "Filtermodus",
+    "fr-FR": "Mode filtre",
+    "ko-KR": "필터 모드",
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(6027-6035)"],
+    "$id": 8758
+  },
+  "多选": {
+    "en-US": "Multiple choice",
+    "es-ES": "Opción múltiple",
+    "ar-EG": "الاختيار من متعدد",
+    "pt-PT": "Múltipla escolha",
+    "ru-RU": "Множественный выбор",
+    "ja-JP": "多肢選択",
+    "de-DE": "Multiple Choice",
+    "fr-FR": "Choix multiple",
+    "ko-KR": "객관식",
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(6183-6189)"],
+    "$id": 8759
+  },
+  "加载中...": {
+    "en-US": "Loading...",
+    "es-ES": "Cargando...",
+    "ar-EG": "جاري التحميل...",
+    "pt-PT": "A carregar...",
+    "ru-RU": "Загрузка...",
+    "ja-JP": "読み込み中...",
+    "de-DE": "Wird geladen...\r",
+    "fr-FR": "Chargement en cours...",
+    "ko-KR": "불러오는 중...",
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(13694-13704)"],
+    "$id": 8761
+  },
+  "暂无维度数据": {
+    "en-US": "No dimension data yet",
+    "es-ES": "Aún no hay datos de dimensiones",
+    "ar-EG": "لا توجد بيانات البعد حتى الآن",
+    "pt-PT": "Ainda não há dados de dimensão",
+    "ru-RU": "Данных о размерах пока нет.",
+    "ja-JP": "寸法データがまだありません",
+    "de-DE": "Noch keine Dimensionsdaten",
+    "fr-FR": "Aucune donnée de dimension pour l'instant",
+    "ko-KR": "아직 측정기준 데이터가 없습니다.",
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(13885-13895)"],
+    "$id": 8762
+  },
+  "{count} 个子目录": {
+    "en-US": "{count} subdirectory",
+    "es-ES": "{count} subdirectorio",
+    "ar-EG": "{count} الدليل الفرعي",
+    "pt-PT": "{count} subdiretório",
+    "ru-RU": "{count} подкаталог",
+    "ja-JP": "{count} サブディレクトリ",
+    "de-DE": "Unterverzeichnis {count}",
+    "fr-FR": "{count} sous-répertoire",
+    "ko-KR": "{count} 하위 디렉터리",
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(14976-14992)"],
+    "$id": 8763
+  },
+  "{count} 个维度组": {
+    "en-US": "{count} dimension groups",
+    "es-ES": "{count} grupos de dimensiones",
+    "ar-EG": "{count} مجموعات الأبعاد",
+    "pt-PT": "{count} grupos de dimensões",
+    "ru-RU": "{count} группы измерений",
+    "ja-JP": "{count} ディメンション グループ",
+    "de-DE": "{count} Dimensionsgruppen",
+    "fr-FR": "{count} groupes de dimensions",
+    "ko-KR": "{count} 차원 그룹",
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectorySidebar.tsx(15038-15054)"],
+    "$id": 8764
   },
   "展开侧边栏": {
     "en-US": "Expand sidebar",

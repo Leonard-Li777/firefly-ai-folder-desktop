@@ -108,7 +108,7 @@
     "ko-KR": "전체 선택",
     "$files": [
       "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(19787-19793)",
-      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(45928-45934)",
+      "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(48421-48427)",
       "src/renderer/components/file-explorer/RealDirectory.tsx(41364-41370)"
     ],
     "$id": 3290
@@ -207,7 +207,7 @@
     "de-DE": "Hierarchietiefe",
     "fr-FR": "Profondeur de la hiérarchie",
     "ko-KR": "계층 구조 깊이",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(44562-44570)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(47055-47063)"],
     "$id": 20147
   },
   "拖动调整标签树显示深度 (1~10 级)": {
@@ -220,7 +220,7 @@
     "de-DE": "Ziehen Sie, um die Anzeigetiefe des Etikettenbaums anzupassen (Stufe 1–10).",
     "fr-FR": "Faites glisser pour ajuster la profondeur d'affichage de l'arborescence des étiquettes (niveau 1 ~ 10)",
     "ko-KR": "라벨 트리의 표시 깊이를 드래그하여 조정합니다(레벨 1~10).",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(45182-45206)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(47675-47699)"],
     "$id": 20148
   },
   "反选": {
@@ -233,7 +233,7 @@
     "de-DE": "Gegenwahl",
     "fr-FR": "Contre-élection",
     "ko-KR": "역선거",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(46471-46477)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(48964-48970)"],
     "$id": 7517
   },
   "并集": {
@@ -246,7 +246,7 @@
     "de-DE": "Union",
     "fr-FR": "Union",
     "ko-KR": "노동 조합",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(47142-47148)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(49540-49546)"],
     "$id": 7808
   },
   "交集": {
@@ -259,7 +259,7 @@
     "de-DE": "Überschneidung",
     "fr-FR": "Intersection",
     "ko-KR": "교차로",
-    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(47718-47724)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(50014-50020)"],
     "$id": 7809
   },
   "目录树": {
