@@ -365,10 +365,18 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
   // Handlers
   const handleTagClick = useCallback(
     (tag: SelectedTag) => {
+      const isSame =
+        selectedTags.length === 1 &&
+        selectedTags[0].dimensionId === tag.dimensionId &&
+        selectedTags[0].tagValue === tag.tagValue &&
+        selectedTags[0].parentTagValue === tag.parentTagValue &&
+        selectedTags[0].viaParentCode === tag.viaParentCode
       clearSelectedTags()
-      addSelectedTag(tag)
+      if (!isSame) {
+        addSelectedTag(tag)
+      }
     },
-    [clearSelectedTags, addSelectedTag]
+    [selectedTags, clearSelectedTags, addSelectedTag]
   )
 
   const handleToggleTagFromPanel = useCallback(

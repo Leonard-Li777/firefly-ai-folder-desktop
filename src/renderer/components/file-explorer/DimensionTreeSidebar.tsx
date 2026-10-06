@@ -12,14 +12,14 @@ import {
   getSelectedTagsFromSet
 } from './dimension-tree-utils'
 
-interface DimensionTreeSidebarProps {
+export interface DimensionTreeSidebarProps {
   dimensionGroups: DimensionGroup[]
-  showEmptyTags: boolean
+  showEmptyTags?: boolean
+  panDimensionIds?: number[]
   isExportMode?: boolean
   showSelectAll?: boolean
   storageKey?: string
   workspacePath?: string
-  unionMode?: UnionMode
   onSelectionChange?: (
     tags: Set<string>,
     reason: 'toggle' | 'selectAll' | 'invert' | 'clear',
@@ -518,7 +518,7 @@ const getAllKeys = (
       if (tag.fileCount === 0) return
       // 必须使用 tag.dimensionId 生成 key：渲染层 isTagSelected 的判断依据即为 tag.dimensionId，
       // contextualTags 场景下 tag.dimensionId 可能与 node.id 不同，用 node.id 会导致选中态匹配错位
-      const key = makeTagKey(tag.dimensionId, tag.tagValue, parentTag)
+      const key = makeTagKey(tag.dimensionId, tag.tagValue, parentTag, tag.viaParentCode ?? undefined)
       const currentChain = [...chain, tag.tagValue]
       keys.push({ key, ancestorChain: currentChain })
     })
@@ -536,29 +536,29 @@ const getAllKeys = (
 
 export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   dimensionGroups,
-  showEmptyTags,
+  showEmptyTags = false,
+  panDimensionIds = [],
   isExportMode = false,
   showSelectAll = false,
   storageKey,
   workspacePath,
-  unionMode: propsUnionMode,
   onSelectionChange,
   onModeChange,
   onTagClick,
   className,
-  initialUnionMode
+  initialUnionMode = 'union'
 }) => {
   // 1. Internal states
   const [selectedTags, setSelectedTags] = useState<Set<string>>(() => {
     if (storageKey && isExportMode) {
       try {
         const saved = localStorage.getItem(`${storageKey}_selectedTags`)
-        if (saved) return new Set(JSON.parse(saved))
+        if (saved) return new Set<string>(JSON.parse(saved))
       } catch (error) {
         console.error('Failed to load selected tags from localStorage:', error)
       }
     }
-    return new Set()
+    return new Set<string>()
   })
 
   const [selectionStack, setSelectionStack] = useState<string[]>(() => {
@@ -577,28 +577,34 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     if (storageKey && isExportMode) {
       try {
         const saved = localStorage.getItem(`${storageKey}_parentTagMap`)
-        if (saved) return new Map(JSON.parse(saved))
+        if (saved) return new Map<string, string[]>(JSON.parse(saved))
       } catch (error) {
         console.error('Failed to load parent tag map from localStorage:', error)
       }
     }
-    return new Map()
+    return new Map<string, string[]>()
   })
 
-  const [internalUnionMode, setInternalUnionMode] = useState<UnionMode>(
-    propsUnionMode || initialUnionMode || 'union'
-  )
-
-  const activeUnionMode = propsUnionMode ?? internalUnionMode
-
-  useEffect(() => {
-    if (propsUnionMode && propsUnionMode !== internalUnionMode) {
-      setInternalUnionMode(propsUnionMode)
+  const [unionMode, setUnionMode] = useState<UnionMode>(() => {
+    if (storageKey) {
+      try {
+        const saved = localStorage.getItem(`${storageKey}_unionMode`)
+        if (saved === 'union' || saved === 'intersection') return saved
+      } catch {}
     }
-  }, [propsUnionMode])
-  const [collapsedDimensionGroups, setCollapsedDimensionGroups] = useState<Set<number>>(
-    () => new Set()
-  )
+    return initialUnionMode
+  })
+
+  const [collapsedDimensionGroups, setCollapsedDimensionGroups] = useState<Set<number>>(() => {
+    if (storageKey) {
+      try {
+        const saved = localStorage.getItem(`${storageKey}_collapsedDimensionGroups`)
+        if (saved) return new Set<number>(JSON.parse(saved))
+      } catch {}
+    }
+    return new Set<number>()
+  })
+
   const [currentTag, setCurrentTag] = useState<SelectedTag | null>(null)
 
   // 标签树层级深度刻度状态 (1~10 刻度，ADR-0034 §4 推荐默认 3 级)
@@ -643,16 +649,54 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     selectedTags: Set<string>
     selectionStack: string[]
     parentTagMap: Map<string, string[]>
-  }>({ selectedTags: new Set(), selectionStack: [], parentTagMap: new Map() })
+  }>({
+    selectedTags: storageKey
+      ? (() => {
+          try {
+            const s = localStorage.getItem(`${storageKey}_selectedTags`)
+            return s ? new Set<string>(JSON.parse(s)) : new Set<string>()
+          } catch {
+            return new Set<string>()
+          }
+        })()
+      : new Set<string>(),
+    selectionStack: storageKey
+      ? (() => {
+          try {
+            const s = localStorage.getItem(`${storageKey}_selectionStack`)
+            return s ? (JSON.parse(s) as string[]) : []
+          } catch {
+            return []
+          }
+        })()
+      : [],
+    parentTagMap: storageKey
+      ? (() => {
+          try {
+            const s = localStorage.getItem(`${storageKey}_parentTagMap`)
+            return s ? new Map<string, string[]>(JSON.parse(s)) : new Map<string, string[]>()
+          } catch {
+            return new Map<string, string[]>()
+          }
+        })()
+      : new Map<string, string[]>()
+  })
+
+  const selectedTagsRef = useRef(selectedTags)
+  selectedTagsRef.current = selectedTags
+  const selectionStackRef = useRef(selectionStack)
+  selectionStackRef.current = selectionStack
+  const parentTagMapRef = useRef(parentTagMap)
+  parentTagMapRef.current = parentTagMap
 
   const prevIsExportModeRef = useRef(isExportMode)
   useEffect(() => {
     if (prevIsExportModeRef.current && !isExportMode) {
       // export → browse：保存多选标签，清空当前状态让单选模式独立运行
       savedExportTagsRef.current = {
-        selectedTags: new Set(selectedTags),
-        selectionStack: [...selectionStack],
-        parentTagMap: new Map(parentTagMap)
+        selectedTags: new Set(selectedTagsRef.current),
+        selectionStack: [...selectionStackRef.current],
+        parentTagMap: new Map(parentTagMapRef.current)
       }
       setSelectedTags(new Set())
       setSelectionStack([])
@@ -698,11 +742,18 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       setSelectionStack([])
       setParentTagMap(new Map())
       setCurrentTag(null)
+      savedExportTagsRef.current = {
+        selectedTags: new Set(),
+        selectionStack: [],
+        parentTagMap: new Map()
+      }
 
       if (storageKey) {
         localStorage.removeItem(`${storageKey}_selectedTags`)
         localStorage.removeItem(`${storageKey}_selectionStack`)
         localStorage.removeItem(`${storageKey}_parentTagMap`)
+        localStorage.removeItem(`${storageKey}_unionMode`)
+        localStorage.removeItem(`${storageKey}_collapsedDimensionGroups`)
       }
 
       if (onSelectionChangeRef.current) {
@@ -719,11 +770,18 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       setSelectionStack([])
       setParentTagMap(new Map())
       setCurrentTag(null)
+      savedExportTagsRef.current = {
+        selectedTags: new Set(),
+        selectionStack: [],
+        parentTagMap: new Map()
+      }
 
       if (storageKey) {
         localStorage.removeItem(`${storageKey}_selectedTags`)
         localStorage.removeItem(`${storageKey}_selectionStack`)
         localStorage.removeItem(`${storageKey}_parentTagMap`)
+        localStorage.removeItem(`${storageKey}_unionMode`)
+        localStorage.removeItem(`${storageKey}_collapsedDimensionGroups`)
       }
 
       if (onSelectionChangeRef.current) {
@@ -737,21 +795,49 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     }
   }, [storageKey])
 
-  // Notify parent on mount if there is any restored tag
+  // Notify parent on mount if there is any restored tag or unionMode
   useEffect(() => {
     if (onSelectionChangeRef.current && isExportMode && selectedTags.size > 0) {
       onSelectionChangeRef.current(selectedTags, 'toggle', parentTagMap)
     }
+    if (onModeChangeRef.current) {
+      onModeChangeRef.current(unionMode)
+    }
   }, [])
 
-  const toggleDimensionGroupCollapsed = useCallback((id: number) => {
-    setCollapsedDimensionGroups(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }, [])
+  const toggleDimensionGroupCollapsed = useCallback(
+    (id: number) => {
+      setCollapsedDimensionGroups(prev => {
+        const next = new Set(prev)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        if (storageKey) {
+          try {
+            localStorage.setItem(
+              `${storageKey}_collapsedDimensionGroups`,
+              JSON.stringify(Array.from(next))
+            )
+          } catch {}
+        }
+        return next
+      })
+    },
+    [storageKey]
+  )
+
+  const handleModeChangeInternal = useCallback(
+    (mode: UnionMode) => {
+      if (unionMode === mode) return
+      setUnionMode(mode)
+      if (storageKey) {
+        try {
+          localStorage.setItem(`${storageKey}_unionMode`, mode)
+        } catch {}
+      }
+      onModeChangeRef.current?.(mode)
+    },
+    [unionMode, storageKey]
+  )
 
   const isTagSelected = useCallback(
     (dimensionId: number, tagValue: string, parentTagValue?: string, viaParentCode?: string): boolean => {
@@ -870,9 +956,9 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
   const handleVisibleAndHiddenTags = useCallback(
     (group: DimensionGroup, childTags?: Map<string, DimensionTreeNode[]>) => {
-      return getVisibleAndHiddenTags(group, showEmptyTags, childTags)
+      return getVisibleAndHiddenTags(group, showEmptyTags, panDimensionIds, childTags)
     },
-    [showEmptyTags]
+    [showEmptyTags, panDimensionIds]
   )
 
   // 3. 递归构建维度树（严格过滤在当前 showEmptyTags 模式下无有效子标签的根级组，且响应 maxScaleDepth 刻度穿透提升）
@@ -955,19 +1041,17 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     setParentTagMap(newParentTagMap)
 
     if (storageKey) {
-      setTimeout(() => {
-        try {
-          localStorage.setItem(
-            `${storageKey}_selectedTags`,
-            JSON.stringify(Array.from(newSelected))
-          )
-          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(newStack))
-          localStorage.setItem(
-            `${storageKey}_parentTagMap`,
-            JSON.stringify(Array.from(newParentTagMap.entries()))
-          )
-        } catch {}
-      }, 0)
+      try {
+        localStorage.setItem(
+          `${storageKey}_selectedTags`,
+          JSON.stringify(Array.from(newSelected))
+        )
+        localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(newStack))
+        localStorage.setItem(
+          `${storageKey}_parentTagMap`,
+          JSON.stringify(Array.from(newParentTagMap.entries()))
+        )
+      } catch {}
     }
 
     if (onSelectionChangeRef.current) {
@@ -996,19 +1080,17 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     setParentTagMap(newParentTagMap)
 
     if (storageKey) {
-      setTimeout(() => {
-        try {
-          localStorage.setItem(
-            `${storageKey}_selectedTags`,
-            JSON.stringify(Array.from(newSelected))
-          )
-          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(newStack))
-          localStorage.setItem(
-            `${storageKey}_parentTagMap`,
-            JSON.stringify(Array.from(newParentTagMap.entries()))
-          )
-        } catch {}
-      }, 0)
+      try {
+        localStorage.setItem(
+          `${storageKey}_selectedTags`,
+          JSON.stringify(Array.from(newSelected))
+        )
+        localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(newStack))
+        localStorage.setItem(
+          `${storageKey}_parentTagMap`,
+          JSON.stringify(Array.from(newParentTagMap.entries()))
+        )
+      } catch {}
     }
 
     if (onSelectionChangeRef.current) {
@@ -1235,15 +1317,6 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     return flatRows.slice(startIndex, endIndex)
   }, [flatRows, startIndex, endIndex])
 
-  const handleUnionModeChangeInternal = useCallback(
-    (mode: UnionMode) => {
-      setInternalUnionMode(mode)
-      if (onModeChange) {
-        onModeChange(mode)
-      }
-    },
-    [onModeChange]
-  )
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
@@ -1298,13 +1371,10 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           </div>
           <div className="flex items-center border border-border/50 rounded-md overflow-hidden">
             <button
-              onClick={() => {
-                setInternalUnionMode('union')
-                if (onModeChange) onModeChange('union')
-              }}
+              onClick={() => handleModeChangeInternal('union')}
               className={cn(
                 'text-[9px] font-bold px-1.5 py-1 transition-all duration-200 cursor-pointer',
-                activeUnionMode === 'union'
+                unionMode === 'union'
                   ? 'bg-primary/20 text-primary'
                   : 'bg-transparent text-muted-foreground hover:bg-muted/50'
               )}
@@ -1312,13 +1382,10 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
               {t('并集')}
             </button>
             <button
-              onClick={() => {
-                setInternalUnionMode('intersection')
-                if (onModeChange) onModeChange('intersection')
-              }}
+              onClick={() => handleModeChangeInternal('intersection')}
               className={cn(
                 'text-[9px] font-bold px-1.5 py-1 transition-all duration-200 cursor-pointer',
-                activeUnionMode === 'intersection'
+                unionMode === 'intersection'
                   ? 'bg-primary/20 text-primary'
                   : 'bg-transparent text-muted-foreground hover:bg-muted/50'
               )}

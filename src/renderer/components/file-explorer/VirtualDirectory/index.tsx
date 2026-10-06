@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react'
 import { getFileNameFromPath, HAC_FEATURE_FLAGS } from '@firefly/shared'
 import { useVirtualDirectory } from './hooks/useVirtualDirectory'
-import { DimensionTreeSidebar } from './components/DimensionTreeSidebar'
+import { DimensionTreeSidebar } from '../DimensionTreeSidebar'
+import { VirtualDirectorySidebar } from './components/VirtualDirectorySidebar'
 import { DirectoryHeader } from '../DirectoryHeader'
 import { SplitPane } from '../../common/SplitPane'
 import { EmptyState } from '../../common/EmptyState'
@@ -227,7 +228,7 @@ export const VirtualDirectory: React.FC = () => {
               defaultSize: 288,
               minSize: 180,
               content: (
-                <DimensionTreeSidebar
+                <VirtualDirectorySidebar
                   virtualDirectories={virtualDirectories}
                   selectedId={selectedId}
                   setSelectedId={setSelectedId}
@@ -240,7 +241,6 @@ export const VirtualDirectory: React.FC = () => {
                   onSelectionChange={handleSelectionChange}
                   onModeChange={handleModeChange}
                   onTagClick={handleTagClick}
-                  selectedTags={selectedTags}
                   treeData={treeData}
                   rootNode={rootNode}
                   selectedNode={selectedNode}
