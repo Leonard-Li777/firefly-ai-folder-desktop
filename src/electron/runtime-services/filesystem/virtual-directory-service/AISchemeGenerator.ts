@@ -97,12 +97,13 @@ export class AISchemeGenerator {
         return null
       }
 
-      // 2. 收集 384d 密集向量与元数据 (按指纹建立一对多映射，支持同指纹副本文件完整归档)
+      // 2. 收集文件指纹与关键词元数据 (ADR-0054：向量不再存于本地 SQLite exif，传 embedding: [] 由 Omni 进程内从 zvec 384d 槽位直读)
       const docs: OmniClusterDocument[] = []
       const fileMap = new Map<string, Array<{ id: number; name: string; path: string }>>()
       const seenFp = new Set<string>()
 
       for (const row of targetRows) {
+        if (!row.file_fingerprint) continue
         const existing = fileMap.get(row.file_fingerprint) || []
         existing.push({
           id: row.id,
@@ -111,39 +112,31 @@ export class AISchemeGenerator {
         })
         fileMap.set(row.file_fingerprint, existing)
 
-        let embedding: number[] | null = null
-        let keywords: string[] = []
-
-        if (row.exif) {
-          try {
-            // exif 列是 BLOB（compressText 压缩），需用 decompressJson 解压
-            const meta = decompressJson<Record<string, any>>(row.exif)
-            if (meta && Array.isArray(meta.embedding_dense) && meta.embedding_dense.length === 384) {
-              embedding = meta.embedding_dense
-            } else if (meta && Array.isArray(meta.embeddingDense) && meta.embeddingDense.length === 384) {
-              embedding = meta.embeddingDense
-            }
-            if (meta && Array.isArray(meta.keywords)) {
-              keywords = meta.keywords
-            }
-          } catch {}
-        }
-
-        if (embedding && !seenFp.has(row.file_fingerprint)) {
+        if (!seenFp.has(row.file_fingerprint)) {
+          let keywords: string[] = []
+          if (row.exif) {
+            try {
+              // exif 列是 BLOB（compressText 压缩），需用 decompressJson 解压提取非向量元数据
+              const meta = decompressJson<Record<string, any>>(row.exif)
+              if (meta && Array.isArray(meta.keywords)) {
+                keywords = meta.keywords
+              }
+            } catch {}
+          }
           seenFp.add(row.file_fingerprint)
           docs.push({
             fingerprint: row.file_fingerprint,
-            embedding,
+            embedding: [],
             keywords
           })
         }
       }
 
-      // 如果有 384d 向量的文档不足 2 份，无法形成有效聚类，返回 null 降级
+      // 如果去重后候选文档不足 2 份，无法形成有效聚类，返回 null 降级
       if (docs.length < 2) {
         logger.info(
           LogCategory.FILE_ORGANIZATION,
-          `[HAC智能聚类] 具备密集向量的文档数(${docs.length})不足，平滑回退传统方案`
+          `[HAC智能聚类] 候选去重文档数(${docs.length})不足，平滑回退传统方案`
         )
         return null
       }

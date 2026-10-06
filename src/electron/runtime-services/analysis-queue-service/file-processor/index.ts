@@ -1775,9 +1775,14 @@ export class FileProcessor {
       // 平铺注入 metadata（更新 contentResult.metadata 与 fileInfo.metadata，供后续所有模式使用）
       contentResult.metadata = preflightContext.flattenedMetadata
 
-      // ADR-0038 / Issue #682：分析产出 dense 向量后写入 Omni zvec（废除 SQLite file_vectors）
+      if (!fileFingerprint || fileFingerprint.startsWith('temp_')) {
+        fileFingerprint = await calculateFileFingerprint(filePath)
+      }
+
+      // ADR-0038 / ADR-0054：分析产出 384d dense 向量后写入 Omni zvec（废除 SQLite file_vectors 与 exif 冗余）
       const denseEmbedding =
         (contentResult.metadata?.embedding_dense as number[] | undefined) ||
+        (contentResult.metadata?.embeddingDense as number[] | undefined) ||
         ((anydocResult?.perception as any)?.embedding_dense as number[] | undefined)
       if (fileFingerprint && !fileFingerprint.startsWith('temp_') && Array.isArray(denseEmbedding) && denseEmbedding.length > 0) {
         try {
@@ -1786,6 +1791,14 @@ export class FileProcessor {
         } catch (vecErr) {
           logger.debug(LogCategory.ANALYSIS_QUEUE, '[分析队列] Omni 向量 upsert 失败(非致命):', vecErr)
         }
+      }
+
+      // ADR-0054：本地 SQLite 零向量原则，写入 zvec 后立即从 metadata 剥离向量字段，杜绝污染 file_contents.exif
+      if (contentResult.metadata && typeof contentResult.metadata === 'object') {
+        delete (contentResult.metadata as Record<string, any>).embedding_dense
+        delete (contentResult.metadata as Record<string, any>).embeddingDense
+        delete (contentResult.metadata as Record<string, any>).embedding_wemm
+        delete (contentResult.metadata as Record<string, any>).embeddingWemm
       }
 
       const fileInfo: FileInfoInput = {
@@ -1808,10 +1821,6 @@ export class FileProcessor {
       })
 
       this.updateItemStatus(item.id, 'analyzing', 2)
-
-      if (!fileFingerprint || fileFingerprint.startsWith('temp_')) {
-        fileFingerprint = await calculateFileFingerprint(filePath)
-      }
 
       // 无论文件是否已存在，都使用 UPSERT 写入/更新 Magika 分类（category）及 description（来自多模态感知兜底）：
       // - simple 模式下 magikaCategory 来自本地 Magika CLI

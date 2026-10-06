@@ -763,6 +763,11 @@ export class FileDao {
           delete finalMetadata.archive
           delete finalMetadata.database
           delete finalMetadata.model
+          // ADR-0054：本地 SQLite 零向量原则，严禁向 file_contents.exif 写入任何向量数组（统一由 Omni zvec 托管）
+          delete finalMetadata.embedding_dense
+          delete finalMetadata.embeddingDense
+          delete finalMetadata.embedding_wemm
+          delete finalMetadata.embeddingWemm
         }
       }
 

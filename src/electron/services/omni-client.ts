@@ -78,6 +78,17 @@ export interface OmniVectorDeleteResponse {
   error?: string
 }
 
+export interface OmniVectorGetItem {
+  fileFingerprint: string
+  vector: number[]
+}
+
+export interface OmniVectorGetResponse {
+  vectors: OmniVectorGetItem[]
+  count: number
+  error?: string
+}
+
 /** 真实目录快速文件名检索命中项 */
 export interface OmniSearchFsItem {
   path: string
@@ -292,6 +303,21 @@ export class OmniClient {
         threshold
       })
     })
+  }
+
+  /**
+   * 批量按指纹与维度读取反量化向量：POST /api/v1/vector/get
+   */
+  async getVectors(
+    fileFingerprints: string[],
+    dim = 384,
+    timeoutMs = 10000
+  ): Promise<OmniVectorGetResponse | null> {
+    if (!fileFingerprints.length) return { vectors: [], count: 0 }
+    return this.request<OmniVectorGetResponse>('/api/v1/vector/get', {
+      method: 'POST',
+      body: JSON.stringify({ fileFingerprints, dim })
+    }, timeoutMs)
   }
 
   /** 批量删除向量：DELETE /api/v1/vector/delete */

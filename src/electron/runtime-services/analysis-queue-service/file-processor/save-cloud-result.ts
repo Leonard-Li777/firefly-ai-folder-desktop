@@ -222,6 +222,16 @@ export async function saveCloudResult(
         new Date(stats.atime).toISOString()
       )
 
+      // ADR-0054：本地 SQLite 零向量原则，严禁向 file_contents.exif 写入任何向量数组
+      let sanitizedMetadata = fileData.metadata || null
+      if (sanitizedMetadata && typeof sanitizedMetadata === 'object') {
+        sanitizedMetadata = { ...sanitizedMetadata }
+        delete sanitizedMetadata.embedding_dense
+        delete sanitizedMetadata.embeddingDense
+        delete sanitizedMetadata.embedding_wemm
+        delete sanitizedMetadata.embeddingWemm
+      }
+
       db.prepare(
         `
         INSERT INTO file_contents (
@@ -248,7 +258,7 @@ export async function saveCloudResult(
         compressText(multimodalContent),
         compressText(data.ocr || null),
         compressText(data.lrc || null),
-        compressJson(fileData.metadata || null),
+        compressJson(sanitizedMetadata),
         fileData.analysisStats,
         qualityScore,
         fileData.qualityConfidence,

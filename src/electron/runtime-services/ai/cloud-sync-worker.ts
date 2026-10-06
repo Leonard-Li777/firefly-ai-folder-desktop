@@ -378,6 +378,16 @@ export class CloudSyncWorker {
         const cloudContent =
           plainContent.length > maxTextLength ? plainContent.substring(0, maxTextLength) : plainContent
 
+        // ADR-0054：本地 SQLite 与云端双端零向量对齐（向量仅驻留端侧 zvec），
+        // 上行云端时防御性剥离可能残留的任何向量字段
+        const rawMeta = decompressJson(f.exif) ?? {}
+        if (rawMeta && typeof rawMeta === 'object') {
+          delete (rawMeta as any).embedding_dense
+          delete (rawMeta as any).embeddingDense
+          delete (rawMeta as any).embedding_wemm
+          delete (rawMeta as any).embeddingWemm
+        }
+
         return {
           file_fingerprint: f.file_fingerprint, // V2 架构：对齐云端 RPC 字段名
           smart_name: f.smart_name,
@@ -400,7 +410,7 @@ export class CloudSyncWorker {
           quality_reasoning: f.quality_reasoning,
           grouping_reason: f.grouping_reason,
           grouping_confidence: this.ensureReal(f.grouping_confidence, 0.5),
-          metadata: decompressJson(f.exif) ?? {},
+          metadata: rawMeta,
           analysis_stats: this.safeJsonParse(f.analysis_stats, null),
           multimodal_content: decompressText(f.multimodal_content) || null,
           last_analyzed_at: toUTCString(f.last_analyzed_at)
