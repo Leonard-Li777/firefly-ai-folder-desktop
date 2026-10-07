@@ -33,6 +33,13 @@ export class LlamaRuntimeAdapter implements ILlamaRuntimeAdapter {
     }>
     signal?: AbortSignal
     disableThinking?: boolean
+    /**
+     * 频率惩罚（对应 llama.cpp 的 `--repeat-penalty`）。
+     * 缺省不传时由下层沿用既有缺省值 1.1（H2 裁定：只补「可覆盖」能力，不改缺省值）。
+     */
+    frequency_penalty?: number
+    /** 存在惩罚。缺省不传时由下层沿用既有缺省值 0.3 */
+    presence_penalty?: number
   }): Promise<{
     success: boolean
     response?: string
@@ -159,6 +166,9 @@ export class LlamaRuntimeAdapter implements ILlamaRuntimeAdapter {
         messages: messages || [],
         temperature: request.temperature ?? 0.3,
         maxTokens: request.maxTokens ?? 2048,
+        // 采样惩罚项透传：未传时保持 undefined，交由 http-client 沿用缺省值（frequency 1.1）
+        frequency_penalty: request.frequency_penalty,
+        presence_penalty: request.presence_penalty,
         stream: false,
         json_schema: request.json_schema,
         response_format: request.response_format,
