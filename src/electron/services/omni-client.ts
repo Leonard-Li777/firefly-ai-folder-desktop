@@ -217,16 +217,15 @@ export class OmniClient {
     if (root) params.set('root', root)
     if (dbPath) {
       params.set('dbPath', dbPath)
-      params.set('db_path', dbPath)
     }
     if (wsPart) {
-      params.set('workspace_id', wsPart)
+      params.set('workspaceId', wsPart)
     }
     if (dirPart) {
-      params.set('directory_prefix', dirPart)
+      params.set('directoryPrefix', dirPart)
     }
     if (options?.includeFiles) {
-      params.set('include_files', 'true')
+      params.set('includeFiles', 'true')
     }
     const res = await this.request<OmniTaxonomyTreeResponse>(`/api/v1/taxonomy/tree?${params.toString()}`)
     if (res && res.rootNodes && res.rootNodes.length > 0) {

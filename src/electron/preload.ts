@@ -489,6 +489,10 @@ const electronAPI = {
     // FFmpeg检测
     detectFfmpeg: () => ipcRenderer.invoke('ffmpeg:check-installation'),
 
+    // ffprobe 外部依赖检测 (Issue #738 深度清理中心显式门禁)
+    detectFfprobe: (): Promise<{ available: boolean; path: string | null }> =>
+      ipcRenderer.invoke('ffmpeg:check-ffprobe'),
+
     // 打开外部链接
     openExternal: (url: string) => ipcRenderer.invoke('open-external', url),
 

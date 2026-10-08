@@ -16,9 +16,6 @@
     "ffmpeg": {
       "version": "master-20260827"
     },
-    "ffprobe": {
-      "version": "master-20260827"
-    },
     "geo": {
       "version": "20260825"
     },
@@ -34,11 +31,20 @@
     "LFM2.5-1.2B-Instruct-GGUF": {
       "version": "Q4_K_M"
     },
-    "audio-cpp": {
+    "onnxruntime-directml": {
+      "version": "1.28.0"
+    },
+    "sensevoice-onnx": {
+      "version": "int8"
+    },
+    "silero-vad": {
       "version": "1.0.0"
     },
-    "sensevoice-small": {
-      "version": "Q4_K"
+    "gtcrn": {
+      "version": "1.0.0"
+    },
+    "ced-mini": {
+      "version": "1.0.0"
     },
     "chinese-clip": {
       "version": "INT8"

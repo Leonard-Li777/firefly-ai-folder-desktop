@@ -1260,6 +1260,7 @@ export class DatabaseService {
         this._db!.prepare('DELETE FROM file_tag_relations').run()
         this._db!.prepare('DELETE FROM file_tags').run()
         this._db!.prepare('DELETE FROM analysis_queue').run()
+        this._db!.prepare('DELETE FROM file_video_chunks').run()
       })()
       logger.info(LogCategory.DATABASE_SERVICE, t('所有AI分析数据已重置'))
     } catch (error) {
@@ -1682,6 +1683,34 @@ export class DatabaseService {
     if (!Array.isArray(vector) || vector.length === 0) return false
     const res = await omniClient.upsertVector(fileFingerprint, vector)
     return !!res?.success
+  }
+
+  /**
+   * 批量写入视频时序切片记录
+   */
+  insertVideoChunks(
+    chunks: Array<{ fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number }>
+  ): void {
+    this.ensureInitialized()
+    this.fileDao!.insertVideoChunks(chunks)
+  }
+
+  /**
+   * 按指纹获取视频时序切片记录
+   */
+  getVideoChunks(
+    fileFingerprint: string
+  ): Array<{ id: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; createdAt: string }> {
+    this.ensureInitialized()
+    return this.fileDao!.getVideoChunks(fileFingerprint)
+  }
+
+  /**
+   * 按指纹删除视频时序切片记录
+   */
+  deleteVideoChunks(fileFingerprint: string): void {
+    this.ensureInitialized()
+    this.fileDao!.deleteVideoChunks(fileFingerprint)
   }
 }
 

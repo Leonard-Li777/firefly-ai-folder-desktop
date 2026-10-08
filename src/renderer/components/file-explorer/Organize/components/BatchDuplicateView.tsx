@@ -115,6 +115,33 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   const [streamingTotalCount, setStreamingTotalCount] = useState<number>(0)
   const [currentScanStage, setCurrentScanStage] = useState<string>('')
 
+  // Issue #738: 外部 ffprobe 可用性检测 —— 缺失时置灰"相似视频"与"视频优化转换"，杜绝静默 0 结果假阴性
+  const [ffprobeAvailable, setFfprobeAvailable] = useState<boolean>(true)
+
+  useEffect(() => {
+    let cancelled = false
+    const probe = async () => {
+      try {
+        const res = await window.electronAPI?.utils?.detectFfprobe?.()
+        if (!cancelled) setFfprobeAvailable(Boolean(res?.available))
+      } catch {
+        if (!cancelled) setFfprobeAvailable(false)
+      }
+    }
+    probe()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Issue #738: ffprobe 缺失时将视频类策略从默认勾选中剔除，保持 UI 与实际能力一致
+  useEffect(() => {
+    if (!ffprobeAvailable) {
+      setEnabledStrategies(prev => prev.filter(s => s !== 'video_phash' && s !== 'video_optimizer'))
+    }
+  }, [ffprobeAvailable])
+
+
   // 将批量处理执行状态即时同步给顶栏操作按钮
   useEffect(() => {
     if (onProcessingStateChange) {
@@ -219,6 +246,11 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
   }, [workspaceDirectoryPath])
 
   const toggleStrategy = (stratKey: string) => {
+    // Issue #738: 缺少外部 ffprobe 时禁止启用视频类策略，避免静默 0 结果假阴性
+    if (!ffprobeAvailable && (stratKey === 'video_phash' || stratKey === 'video_optimizer')) {
+      toast.warning(t('需安装外部 ffprobe 依赖'))
+      return
+    }
     const updated = enabledStrategies.includes(stratKey)
       ? enabledStrategies.filter(s => s !== stratKey)
       : [...enabledStrategies, stratKey]
@@ -789,7 +821,7 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     { key: 'exact_hash', label: t('精确内容一致'), icon: 'fingerprint', category: 'multimodal' },
     { key: 'image_phash', label: t('相似图片'), icon: 'image', category: 'multimodal' },
     { key: 'audio_hash', label: t('相似音乐'), icon: 'audiotrack', category: 'multimodal' },
-    { key: 'video_phash', label: t('相似视频'), icon: 'videocam', category: 'multimodal', warning: t('查找耗时较长') },
+    { key: 'video_phash', label: t('相似视频'), icon: 'videocam', category: 'multimodal', warning: t('查找耗时较长'), description: t('需安装外部 ffprobe 依赖'), disabled: !ffprobeAvailable },
     { key: 'text_simhash', label: t('文档语义相似'), icon: 'article', category: 'multimodal', disabled: true },
     { key: 'filename_heuristic', label: t('副本衍生文件'), icon: 'copy_all', category: 'multimodal', disabled: true },
 
@@ -804,8 +836,8 @@ export const BatchDuplicateView: React.FC<BatchDuplicateViewProps> = ({
     { key: 'bad_names', label: t('异常文件名'), icon: 'edit_attributes', category: 'anomaly' },
 
     { key: 'exif_remover', label: t('Exif隐私清理'), icon: 'privacy_tip', category: 'optimize', description: t('扫描图片中携带的 Exif 元数据（如 GPS 定位、拍摄器材、时间等隐私），清理后将另存为无隐私副本至 .VirtualDirectory/.cleaned_exif 目录，完全保留原文件。') },
-    { key: 'video_optimizer', label: t('视频优化转换'), icon: 'smart_display', category: 'optimize', warning: t('优化过程耗时较长'), description: t('采用 AV1/HEVC 高能效编码转码压缩视频，优化后将另存为高清轻量副本至 .VirtualDirectory/.video_optimizer 目录，完全保留原文件。') }
-  ], [])
+    { key: 'video_optimizer', label: t('视频优化转换'), icon: 'smart_display', category: 'optimize', warning: t('优化过程耗时较长'), description: t('采用 AV1/HEVC 高能效编码转码压缩视频，优化后将另存为高清轻量副本至 .VirtualDirectory/.video_optimizer 目录，完全保留原文件。'), disabled: !ffprobeAvailable }
+  ], [ffprobeAvailable])
 
   // 过滤后的组 (支持策略筛选和关键词搜索)
   const filteredGroups = useMemo(() => {

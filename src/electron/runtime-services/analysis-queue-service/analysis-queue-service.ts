@@ -844,8 +844,7 @@ export class AnalysisQueueService {
   /**
    * 推导当前队列意图模式：
    * - 队列中有待办任务时，按 pickNextPending 判定首选任务模式：
-   *   - 若首选为 high_dim_correction 且高维修正开启，返回 'embedding'
-   *   - 若首选为 普通分析，且启用 AI 阶段（quick_name/full），返回 'language'；标准分析模式无需语言模型，返回 null
+   *   - 若首选为普通分析且启用 AI 阶段（quick_name/full），返回 'language'；标准分析模式无需语言模型，返回 null
    * - 队列为空时：
    *   - 仅在启用 AI 阶段时预置 'language'，标准分析模式返回 null
    */

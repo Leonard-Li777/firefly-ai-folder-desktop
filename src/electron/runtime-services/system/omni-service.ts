@@ -603,11 +603,16 @@ export class OmniService {
 
       logger.info(LogCategory.SYSTEM, `[OmniService] 正在拉起 firefly-omni 守护进程 (Port: ${port}): ${exePath}`)
       const isDevMode = !app.isPackaged || process.env.NODE_ENV !== 'production'
-      const env = {
+      const onnxLibDir = ResourceLocator.resolveOnnxLibDir()
+      const env: Record<string, string | undefined> = {
         ...process.env,
         OMNI_PORT: String(port),
         OMNI_DEV_MODE: isDevMode ? '1' : '0',
         RUST_LOG: process.env.RUST_LOG || (isDevMode ? 'info,omni_vision=info,omni_server=info,omni_text=info' : 'warn')
+      }
+      if (onnxLibDir) {
+        env.FIREFLY_ONNX_DIR = onnxLibDir
+        logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 注入 ONNX 动态库目录 (FIREFLY_ONNX_DIR): ${onnxLibDir}`)
       }
 
       // 获取业务主库 SQLite 绝对路径与只读语义包路径，以两个独立参数透传给 Omni (ADR-0035 & ADR-0038)
@@ -715,8 +720,8 @@ export class OmniService {
 
       this.process = child
 
-      // 等待服务就绪探活 (最多 30 次 * 200ms = 6秒，容纳数据集冷启动时间)
-      for (let i = 0; i < 30; i++) {
+      // 等待服务就绪探活 (最多 75 次 * 200ms = 15秒，容纳 71.6 万条多语言别名冷启动解密热载时间)
+      for (let i = 0; i < 75; i++) {
         await new Promise(r => setTimeout(r, 200))
         if (await this.checkHealth()) {
           logger.info(LogCategory.SYSTEM, `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`)

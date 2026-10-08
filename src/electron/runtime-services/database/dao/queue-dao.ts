@@ -198,7 +198,7 @@ export class QueueDao {
 
   clearNonCompletedAnalysis(): void {
     try {
-      // 【清空队列】物理清空两类任务（analysis 与 high_dim_correction）
+      // 【清空队列】物理清空未完成任务
       this.db.prepare(`DELETE FROM analysis_queue WHERE status NOT IN ('completed')`).run()
     } catch (e: any) {
       // 如果表不存在，忽略错误（可能是全新安装还未创建表）

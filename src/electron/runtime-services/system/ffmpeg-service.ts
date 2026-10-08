@@ -184,6 +184,14 @@ export class FfmpegService extends EventEmitter {
   public async detectFfmpeg(): Promise<string | null> {
     return this.detectFfmpegSync()
   }
+
+  /**
+   * 异步检测外部 ffprobe 是否可用 (Issue #738 深度清理中心显式门禁)
+   * 返回可执行文件路径；未找到返回 null
+   */
+  public async detectFfprobe(): Promise<string | null> {
+    return this.getFfprobePath()
+  }
 }
 
 export const ffmpegService = FfmpegService.getInstance()

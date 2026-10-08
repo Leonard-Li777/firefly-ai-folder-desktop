@@ -276,7 +276,41 @@ export const GENESIS_V1_SCHEMA = `
     FOREIGN KEY (file_id) REFERENCES workspace_files(id) ON DELETE CASCADE
   );
 
-  -- 15. 待同步操作表
+  -- 15. 最小单元表（文件逻辑分组，如：一套漫画、一个项目的代码）
+  CREATE TABLE IF NOT EXISTS file_units (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 单元 ID
+    name TEXT NOT NULL,                          -- 单元名称
+    description TEXT,                            -- 单元逻辑描述
+    type TEXT NOT NULL,                          -- 单元类型：'album', 'series', 'collection' 等
+    path TEXT,                                   -- 单元对应的主要物理路径
+    grouping_reason TEXT DEFAULT 'collection',   -- 分组依据理由
+    grouping_confidence REAL DEFAULT 0.5,        -- 分组置信度
+    author TEXT,                                 -- 单元整体作者
+    title TEXT,                                  -- 单元标题
+    tags TEXT,                                   -- 单元级别标签 (JSON)
+    quality_score REAL,                          -- 单元整体质量分
+    parent_unit_id TEXT,                         -- 父单元 ID（支持嵌套）
+    is_analyzed BOOLEAN DEFAULT 0,               -- 是否已完成单元分析
+    analyzed_at DATETIME,                        -- 最后分析时间
+    analysis_error TEXT,                         -- 分析错误
+    workspace_id INTEGER NOT NULL,               -- 所属工作区
+    sync_status INTEGER NOT NULL DEFAULT 0,      -- 同步状态
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 创建时间
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 更新时间
+    FOREIGN KEY (workspace_id) REFERENCES workspaces(workspace_id) ON DELETE CASCADE
+  );
+
+  -- 16. 文件与最小单元关联表（物理文件到逻辑单元的多对多关联）
+  CREATE TABLE IF NOT EXISTS file_unit_relations (
+    file_id INTEGER NOT NULL,                    -- workspace_files 记录 ID
+    unit_id INTEGER NOT NULL,                    -- 逻辑单元 ID
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 关联时间
+    PRIMARY KEY (file_id, unit_id),
+    FOREIGN KEY (file_id) REFERENCES workspace_files(id) ON DELETE CASCADE,
+    FOREIGN KEY (unit_id) REFERENCES file_units(id) ON DELETE CASCADE
+  );
+
+  -- 17. 待同步操作表
   CREATE TABLE IF NOT EXISTS pending_firecore_operations (
     id TEXT PRIMARY KEY,
     operation_type TEXT NOT NULL,
@@ -302,6 +336,18 @@ export const GENESIS_V1_SCHEMA = `
     sync_status INTEGER NOT NULL DEFAULT 0,
     meta TEXT NOT NULL DEFAULT '{}',              -- 弹性元数据 (JSON)
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 16.5 视频时序切片元数据表 (EmbeddingGemma-2 视频时序切片与跳轴定位)
+  CREATE TABLE IF NOT EXISTS file_video_chunks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    file_fingerprint TEXT NOT NULL,
+    chunk_index INTEGER NOT NULL,
+    start_sec REAL NOT NULL,
+    end_sec REAL NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (file_fingerprint) REFERENCES files(file_fingerprint) ON DELETE CASCADE,
+    UNIQUE(file_fingerprint, chunk_index)
   );
 
 
@@ -346,6 +392,7 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, via_parent_code, confidence);
+  CREATE INDEX IF NOT EXISTS idx_file_video_chunks_fp ON file_video_chunks(file_fingerprint);
 
   -- 19. FTS 同步触发器（标准 FTS5：使用 DELETE WHERE rowid 进行原子安全同步）
   DROP TRIGGER IF EXISTS trg_files_fts_update;
@@ -456,8 +503,11 @@ export const migrations: IMigrationConfig[] = [
     up: GENESIS_V1_SCHEMA,
     // down 仅供开发期手动回滚参考；创世建库期（ADR-0038）直接删除数据库文件重建，不执行此脚本
     down: `
+      DROP TABLE IF EXISTS file_video_chunks;
       DROP TABLE IF EXISTS memory_cache;
       DROP TABLE IF EXISTS pending_firecore_operations;
+      DROP TABLE IF EXISTS file_unit_relations;
+      DROP TABLE IF EXISTS file_units;
       DROP TABLE IF EXISTS virtual_directory_files;
       DROP TABLE IF EXISTS virtual_directories;
       DROP TABLE IF EXISTS system_config;

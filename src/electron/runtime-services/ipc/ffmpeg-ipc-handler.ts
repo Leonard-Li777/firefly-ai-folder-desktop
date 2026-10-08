@@ -15,6 +15,17 @@ export function registerFfmpegIpcHandlers() {
     return await ffmpegService.detectFfmpegStatus()
   })
 
+  // 检测外部 ffprobe 可用性 (Issue #738 深度清理中心显式门禁)
+  ipcMain.handle('ffmpeg:check-ffprobe', async () => {
+    try {
+      const ffprobePath = await ffmpegService.detectFfprobe()
+      return { available: Boolean(ffprobePath), path: ffprobePath }
+    } catch (err: any) {
+      logger.warn(LogCategory.MAIN, `ffprobe 检测失败: ${err?.message}`)
+      return { available: false, path: null }
+    }
+  })
+
   // 开始安装 (网络自动下载已移除)
   ipcMain.handle('ffmpeg:install', async () => {
     const status = await ffmpegService.detectFfmpegStatus()

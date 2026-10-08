@@ -1,4 +1,5 @@
 import type { Database, Statement } from 'better-sqlite3'
+import type { VideoChunkRecord } from '@firefly/types'
 import {
   LogCategory,
   logger,
@@ -1991,6 +1992,61 @@ export class FileDao {
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '批量同步FTS标签失败', error)
     }
+  }
+
+  /**
+   * 批量写入视频时序切片记录（原子替换，防重分析切片缩容残留孤立脏数据）
+   */
+  insertVideoChunks(chunks: VideoChunkRecord[]): void {
+    if (!chunks || chunks.length === 0) return
+    const deleteStmt = this.db.prepare(`DELETE FROM file_video_chunks WHERE file_fingerprint = ?`)
+    const insertStmt = this.db.prepare(`
+      INSERT INTO file_video_chunks (file_fingerprint, chunk_index, start_sec, end_sec)
+      VALUES (?, ?, ?, ?)
+    `)
+    // 提取所有涉及的文件指纹
+    const fingerprints = Array.from(new Set(chunks.map(c => c.fileFingerprint)))
+    this.db.transaction(() => {
+      for (const fp of fingerprints) {
+        deleteStmt.run(fp)
+      }
+      for (const c of chunks) {
+        insertStmt.run(c.fileFingerprint, c.chunkIndex, c.startSec, c.endSec)
+      }
+    })()
+  }
+
+  /**
+   * 按文件指纹获取全部时序切片，按切片索引升序排序
+   */
+  getVideoChunks(
+    fileFingerprint: string
+  ): Array<{ id: number; fileFingerprint: string; chunkIndex: number; startSec: number; endSec: number; createdAt: string }> {
+    if (!fileFingerprint) return []
+    const rows = this.db
+      .prepare(
+        `SELECT id, file_fingerprint as fileFingerprint, chunk_index as chunkIndex, start_sec as startSec, end_sec as endSec, created_at as createdAt
+         FROM file_video_chunks
+         WHERE file_fingerprint = ?
+         ORDER BY chunk_index ASC`
+      )
+      .all(fileFingerprint) as Array<{
+      id: number
+      fileFingerprint: string
+      chunkIndex: number
+      startSec: number
+      endSec: number
+      createdAt: string
+    }>
+    return rows
+  }
+
+  /**
+   * 按文件指纹删除所有切片记录
+   */
+  deleteVideoChunks(fileFingerprint: string): void {
+    if (!fileFingerprint) return
+    this.db.prepare(`DELETE FROM file_video_chunks WHERE file_fingerprint = ?`).run(fileFingerprint)
   }
 }
 

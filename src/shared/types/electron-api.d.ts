@@ -533,6 +533,7 @@ declare global {
         writeFile: (filePath: string, content: string) => Promise<void>
         detectLibreOffice: () => Promise<LibreOfficeDetection>
         detectFfmpeg: () => Promise<any>
+        detectFfprobe: () => Promise<{ available: boolean; path: string | null }>
         openExternal: (url: string) => Promise<void>
         readFileBase64: (filePath: string) => Promise<string>
         readFileBuffer: (filePath: string) => Promise<Uint8Array>
