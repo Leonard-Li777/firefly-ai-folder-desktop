@@ -392,6 +392,9 @@ export class CloudSyncWorker {
           file_fingerprint: f.file_fingerprint, // V2 架构：对齐云端 RPC 字段名
           smart_name: f.smart_name,
           raw_smart_name: f.raw_smart_name || null,
+          // 智能名称双字段来源语义（与本地 GENESIS 列对齐，NULL 需如实上传以传播重置）
+          smart_name_source: f.smart_name_source ?? null,
+          smart_name_template_source: f.smart_name_template_source ?? null,
           size: f.size,
           extension: f.extension,
           type: f.extension,
