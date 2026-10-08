@@ -126,6 +126,199 @@ describe('dimension-tree-utils - 内容标签与多级深度穿透测试', () =>
   })
 })
 
+describe('dimension-tree-utils - 穿透提升跨分支同 Code 聚合 (ADR-0034 §4 / M-4)', () => {
+  const liftGroup: DimensionGroup = {
+    id: 28,
+    name: '内容标签',
+    level: 0,
+    tags: [],
+    code: 'builtin.content_tags',
+    isMultiSelect: false,
+    metadata: { isPanDimension: true, source: 'builtin' }
+  }
+
+  // 多分支同 Code 结构：甲 → (乙一, 乙二) → 交叉(builtin.x 两个分支实例)
+  const pJia = '/builtin.content_tags/builtin.a'
+  const pYi1 = `${pJia}/builtin.b1`
+  const pYi2 = `${pJia}/builtin.b2`
+  const pCross1 = `${pYi1}/builtin.x`
+  const pCross2 = `${pYi2}/builtin.x`
+
+  const multiBranchTags: DimensionTag[] = [
+    {
+      dimensionId: 28,
+      dimensionCode: 'builtin.content_tags',
+      dimensionName: '内容标签',
+      tagValue: '甲',
+      code: 'builtin.a',
+      viaParentCode: 'builtin.content_tags',
+      level: 1,
+      fileCount: 8,
+      codePath: pJia,
+      namePath: '/内容标签/甲',
+      isMultiSelect: false,
+      order: 9999
+    },
+    {
+      dimensionId: 28,
+      dimensionCode: 'builtin.content_tags',
+      dimensionName: '内容标签',
+      tagValue: '乙一',
+      code: 'builtin.b1',
+      viaParentCode: 'builtin.a',
+      level: 2,
+      fileCount: 8,
+      codePath: pYi1,
+      namePath: '/内容标签/甲/乙一',
+      isMultiSelect: false,
+      order: 9999
+    },
+    {
+      dimensionId: 28,
+      dimensionCode: 'builtin.content_tags',
+      dimensionName: '内容标签',
+      tagValue: '乙二',
+      code: 'builtin.b2',
+      viaParentCode: 'builtin.a',
+      level: 2,
+      fileCount: 8,
+      codePath: pYi2,
+      namePath: '/内容标签/甲/乙二',
+      isMultiSelect: false,
+      order: 9999
+    },
+    {
+      dimensionId: 28,
+      dimensionCode: 'builtin.content_tags',
+      dimensionName: '内容标签',
+      tagValue: '交叉',
+      code: 'builtin.x',
+      viaParentCode: 'builtin.b1',
+      level: 3,
+      fileCount: 8,
+      codePath: pCross1,
+      namePath: '/内容标签/甲/乙一/交叉',
+      isMultiSelect: false,
+      order: 9999
+    },
+    {
+      dimensionId: 28,
+      dimensionCode: 'builtin.content_tags',
+      dimensionName: '内容标签',
+      tagValue: '交叉',
+      code: 'builtin.x',
+      viaParentCode: 'builtin.b2',
+      level: 3,
+      fileCount: 8,
+      codePath: pCross2,
+      namePath: '/内容标签/甲/乙二/交叉',
+      isMultiSelect: false,
+      order: 9999
+    }
+  ]
+
+  it('刻度 1 时：跨分支同 Code 提升聚合为单行，fileCount 去重且保留全部分支 codePaths', () => {
+    const { directTags, childTagsMap } = nestGroupTags(liftGroup, multiBranchTags, 0, 1)
+
+    expect(directTags.length).toBe(1)
+    const l1Node = childTagsMap.get('甲')![0]
+
+    // 提升后仅保留一行「交叉」，另一分支实例被合并去重
+    const crossTags = l1Node.tags.filter(t => t.tagValue === '交叉')
+    expect(crossTags.length).toBe(1)
+
+    const merged = crossTags[0]
+    // 聚合路径集合必须完整覆盖两个分支，确保文件视野零丢失
+    expect(merged.codePaths).toEqual([pCross1, pCross2])
+    // 主路径保留首分支，供单值 codePath 消费方降级使用
+    expect(merged.codePath).toBe(pCross1)
+    // 同 Code 计数为全局口径：合并按去重语义取最大值，严禁相加虚高徽标
+    expect(merged.fileCount).toBe(8)
+    // 提升标签挂载到容器父级 (穿透提升 viaParentCode 重写)
+    expect(merged.viaParentCode).toBe('builtin.a')
+    expect(merged.level).toBe(2)
+
+    // 兄弟分支标签同样提升且路径完整保留（聚合顺序不作为断言口径）
+    expect(new Set(l1Node.tags.map(t => t.tagValue))).toEqual(new Set(['乙一', '乙二', '交叉']))
+    expect(l1Node.tags.find(t => t.tagValue === '乙一')!.codePath).toBe(pYi1)
+    expect(l1Node.tags.find(t => t.tagValue === '乙二')!.codePath).toBe(pYi2)
+    // 刻度 1 下不再生成更深节点
+    expect(l1Node.childTags).toBeUndefined()
+  })
+
+  it('刻度 10 时：未触发提升，两个分支实例各自独立保留（不跨层误聚合）', () => {
+    const { childTagsMap } = nestGroupTags(liftGroup, multiBranchTags, 0, 10)
+    const l1Node = childTagsMap.get('甲')![0]
+
+    // 未达刻度上限：乙一 / 乙二 仍为常规分支，不聚合
+    expect(l1Node.tags.map(t => t.tagValue)).toEqual(['乙一', '乙二'])
+
+    // 乙一 分支下的「交叉」保留自身物化路径，未被跨分支合并
+    const yi1Node = l1Node.childTags!.get('乙一')![0]
+    expect(yi1Node.tags.some(t => t.tagValue === '交叉' && t.codePath === pCross1)).toBe(true)
+    expect(yi1Node.tags.find(t => t.tagValue === '交叉')!.codePaths).toBeUndefined()
+
+    // 乙二 分支下的「交叉」同样独立保留
+    const yi2Node = l1Node.childTags!.get('乙二')![0]
+    expect(yi2Node.tags.some(t => t.tagValue === '交叉' && t.codePath === pCross2)).toBe(true)
+  })
+
+  it('多父 DAG 回环：提升遍历按对象身份防环终止，且不重复提升起始标签', () => {
+    const cycleTags: DimensionTag[] = [
+      {
+        dimensionId: 28,
+        dimensionCode: 'builtin.content_tags',
+        dimensionName: '内容标签',
+        tagValue: '环一',
+        code: 'builtin.loop1',
+        viaParentCode: 'builtin.content_tags',
+        level: 1,
+        fileCount: 2,
+        codePath: '/builtin.content_tags/builtin.loop1',
+        namePath: '/内容标签/环一',
+        isMultiSelect: false,
+        order: 9999
+      },
+      {
+        dimensionId: 28,
+        dimensionCode: 'builtin.content_tags',
+        dimensionName: '内容标签',
+        tagValue: '环二',
+        code: 'builtin.loop2',
+        viaParentCode: 'builtin.loop1',
+        level: 2,
+        fileCount: 2,
+        codePath: '/builtin.content_tags/builtin.loop1/builtin.loop2',
+        namePath: '/内容标签/环一/环二',
+        isMultiSelect: false,
+        order: 9999
+      },
+      {
+        // 脏数据/多父 DAG 极端场景：环二 反向挂载回 环一，形成 loop1 → loop2 → loop1 回环
+        dimensionId: 28,
+        dimensionCode: 'builtin.content_tags',
+        dimensionName: '内容标签',
+        tagValue: '环一',
+        code: 'builtin.loop1',
+        viaParentCode: 'builtin.loop2',
+        level: 3,
+        fileCount: 2,
+        codePath: '/builtin.content_tags/builtin.loop1/builtin.loop2/builtin.loop1',
+        namePath: '/内容标签/环一/环二/环一',
+        isMultiSelect: false,
+        order: 9999
+      }
+    ]
+
+    const { directTags, childTagsMap } = nestGroupTags(liftGroup, cycleTags, 0, 1)
+
+    expect(directTags.length).toBe(1)
+    const l1Node = childTagsMap.get('环一')![0]
+    // 防环遍历终止，且起始标签自身不被重复提升为子行
+    expect(l1Node.tags.map(t => t.tagValue)).toEqual(['环二'])
+  })
+})
+
 describe('dimension-tree-utils - makeTagKey & parseTagKey', () => {
   it('正确生成和解析无父标签 key', () => {
     const key = makeTagKey(1, '图片')
@@ -155,6 +348,21 @@ describe('dimension-tree-utils - makeTagKey & parseTagKey', () => {
     expect(parsed.parentTagValue).toBeUndefined()
     expect(parsed.viaParentCode).toBe('builtin.cat.architecture')
     expect(parsed.tagValue).toBe('文化场馆')
+    expect(parsed.isLifted).toBe(false)
+  })
+
+  it('穿透提升聚合行 key 打 liftCode 标记，解析后可与直系实例行区分 (ADR-0034 §4 / M-4)', () => {
+    const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
+    expect(liftedKey).toBe('7::liftCode:builtin.image::无码')
+    const parsed = parseTagKey(liftedKey)
+    expect(parsed.isLifted).toBe(true)
+    expect(parsed.viaParentCode).toBe('builtin.image')
+    expect(parsed.tagValue).toBe('无码')
+    expect(parsed.parentTagValue).toBeUndefined()
+
+    // 常规实例行 key 保持 parentCode 前缀，两者不得互相误判
+    const instanceKey = makeTagKey(7, '无码', undefined, 'builtin.image')
+    expect(parseTagKey(instanceKey).isLifted).toBe(false)
   })
 })
 
@@ -272,6 +480,284 @@ describe('dimension-tree-utils - getSelectedTagsFromSet', () => {
     expect(result.length).toBe(1)
     expect(result[0].parentTagValue).toBe('素材')
     expect(result[0].ancestorChain).toEqual(['素材', '图片'])
+  })
+
+  it('完整透传 codePath 与 namePath（M-2 修复）', () => {
+    const groupsWithPaths: DimensionGroup[] = [
+      {
+        id: 1,
+        name: '类型',
+        code: 'builtin.type',
+        level: 0,
+        tags: [
+          {
+            dimensionId: 1,
+            dimensionCode: 'builtin.type',
+            dimensionName: '类型',
+            tagValue: '图片',
+            code: 'builtin.image',
+            level: 1,
+            fileCount: 10,
+            codePath: '/builtin.file_type/builtin.image',
+            namePath: '/文件类型/图片',
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ]
+
+    const result = getSelectedTagsFromSet(new Set([makeTagKey(1, '图片')]), groupsWithPaths)
+    expect(result.length).toBe(1)
+    expect(result[0].codePath).toBe('/builtin.file_type/builtin.image')
+    expect(result[0].namePath).toBe('/文件类型/图片')
+  })
+
+  it('多父同名实例按 key 的 viaParentCode 精确消歧，取命中分支的物化路径', () => {
+    const multiParentGroups: DimensionGroup[] = [
+      {
+        id: 7,
+        name: '打码程度',
+        code: 'builtin.censorship',
+        level: 0,
+        tags: [
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.image',
+            level: 2,
+            fileCount: 7,
+            codePath: '/builtin.file_type/builtin.image/builtin.uncensored',
+            namePath: '/文件类型/图片/无码',
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.video',
+            level: 2,
+            fileCount: 5,
+            codePath: '/builtin.file_type/builtin.video/builtin.uncensored',
+            namePath: '/文件类型/视频/无码',
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ]
+
+    const videoKey = makeTagKey(7, '无码', undefined, 'builtin.video')
+    const result = getSelectedTagsFromSet(new Set([videoKey]), multiParentGroups)
+    expect(result.length).toBe(1)
+    expect(result[0].codePath).toBe('/builtin.file_type/builtin.video/builtin.uncensored')
+    expect(result[0].namePath).toBe('/文件类型/视频/无码')
+    // 精确命中单分支时严禁并集，否则 FileList 会跨分支召回污染徽标
+    expect(result[0].codePaths).toBeUndefined()
+  })
+
+  it('穿透提升聚合行（viaParentCode 无实例匹配）回退为全部分支 codePaths 并集', () => {
+    const liftedGroups: DimensionGroup[] = [
+      {
+        id: 7,
+        name: '打码程度',
+        code: 'builtin.censorship',
+        level: 0,
+        tags: [
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.image',
+            level: 2,
+            fileCount: 7,
+            codePath: '/builtin.file_type/builtin.image/builtin.uncensored',
+            namePath: '/文件类型/图片/无码',
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.video',
+            level: 2,
+            fileCount: 5,
+            codePath: '/builtin.file_type/builtin.video/builtin.uncensored',
+            namePath: '/文件类型/视频/无码',
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ]
+
+    // 提升行的 viaParentCode 被重写为容器父级，原始分支中无任何实例与之匹配
+    const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.file_type')
+    const result = getSelectedTagsFromSet(new Set([liftedKey]), liftedGroups)
+    expect(result.length).toBe(1)
+    expect(result[0].codePaths).toEqual([
+      '/builtin.file_type/builtin.image/builtin.uncensored',
+      '/builtin.file_type/builtin.video/builtin.uncensored'
+    ])
+    // 主路径保留首个实例，供单值消费方降级
+    expect(result[0].codePath).toBe('/builtin.file_type/builtin.image/builtin.uncensored')
+  })
+
+  // High-1 回归：聚合行 viaParentCode 重写后可能与容器直系真实实例的 key 撞车，
+  // 必须按 liftCode 标记分流，否则多选会漏掉深层分支的文件视野
+  it('liftCode 聚合行 key：即使组内存在同 viaParentCode 直系实例，也按容器子树取全分支并集', () => {
+    const directP = '/builtin.file_type/builtin.image/builtin.uncensored'
+    const deepP = '/builtin.file_type/builtin.image/builtin.manga/builtin.uncensored'
+    const collideGroups: DimensionGroup[] = [
+      {
+        id: 7,
+        name: '打码程度',
+        code: 'builtin.censorship',
+        level: 0,
+        tags: [
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '图片',
+            code: 'builtin.image',
+            level: 1,
+            fileCount: 12,
+            codePath: '/builtin.file_type/builtin.image',
+            namePath: '/文件类型/图片',
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '漫画',
+            code: 'builtin.manga',
+            viaParentCode: 'builtin.image',
+            level: 2,
+            fileCount: 6,
+            codePath: '/builtin.file_type/builtin.image/builtin.manga',
+            namePath: '/文件类型/图片/漫画',
+            isMultiSelect: false
+          },
+          {
+            // 直系实例：viaParentCode 与聚合行重写后的值相同（撞车场景）
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.image',
+            level: 2,
+            fileCount: 6,
+            codePath: directP,
+            namePath: '/文件类型/图片/无码',
+            isMultiSelect: false
+          },
+          {
+            // 深层实例：挂在漫画分支下
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.manga',
+            level: 3,
+            fileCount: 6,
+            codePath: deepP,
+            namePath: '/文件类型/图片/漫画/无码',
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ]
+
+    // 聚合行 key（liftCode）→ 容器子树闭包内全分支并集，与单选点击同一行一致
+    const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
+    const liftedResult = getSelectedTagsFromSet(new Set([liftedKey]), collideGroups)
+    expect(liftedResult.length).toBe(1)
+    expect(new Set(liftedResult[0].codePaths)).toEqual(new Set([directP, deepP]))
+    expect(liftedResult[0].viaParentCode).toBe('builtin.image')
+
+    // 与单选口径对齐：nestGroupTags 在刻度 1 下重建的聚合行必须给出同一组路径
+    const { childTagsMap } = nestGroupTags(collideGroups[0], collideGroups[0].tags, 0, 1)
+    const liftedNode = childTagsMap.get('图片')![0]
+    const aggRow = liftedNode.tags.find(t => t.tagValue === '无码')!
+    expect(new Set(aggRow.codePaths)).toEqual(new Set(liftedResult[0].codePaths))
+    expect(liftedResult[0].code).toBe(aggRow.code)
+    expect(liftedResult[0].codePath).toBe(aggRow.codePath)
+    expect(liftedResult[0].namePath).toBe(aggRow.namePath)
+
+    // 常规实例行 key（parentCode）仍走精确消歧，严禁并集污染徽标 (AC-4)
+    const instanceKey = makeTagKey(7, '无码', undefined, 'builtin.image')
+    const instanceResult = getSelectedTagsFromSet(new Set([instanceKey]), collideGroups)
+    expect(instanceResult[0].codePath).toBe(directP)
+    expect(instanceResult[0].codePaths).toBeUndefined()
+  })
+
+  // M-1 回归：提升聚合行只有单一物化路径（codePaths 单元素）时，多选也必须保留 codePaths，
+  // 否则后端回退 code 并集口径，与单选的 codePath 排他口径分叉（单/多选视野不再一致）
+  it('liftCode 聚合行单元素 codePaths：length=1 时多选仍保留 codePaths，与单选排他口径一致', () => {
+    const singleP = '/builtin.file_type/builtin.image/builtin.uncensored'
+    const singleGroups: DimensionGroup[] = [
+      {
+        id: 7,
+        name: '打码程度',
+        code: 'builtin.censorship',
+        level: 0,
+        tags: [
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '图片',
+            code: 'builtin.image',
+            level: 1,
+            fileCount: 12,
+            codePath: '/builtin.file_type/builtin.image',
+            namePath: '/文件类型/图片',
+            isMultiSelect: false
+          },
+          {
+            // 容器直系唯一实例：提升聚合后 codePaths 仅 1 个元素
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.image',
+            level: 2,
+            fileCount: 7,
+            codePath: singleP,
+            namePath: '/文件类型/图片/无码',
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ]
+
+    const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
+    const result = getSelectedTagsFromSet(new Set([liftedKey]), singleGroups)
+    expect(result.length).toBe(1)
+    expect(result[0].codePaths).toEqual([singleP])
+
+    // 与单选同口径：nestGroupTags 在刻度 1 下重建的聚合行给出同一组路径
+    const { childTagsMap } = nestGroupTags(singleGroups[0], singleGroups[0].tags, 0, 1)
+    const aggRow = childTagsMap.get('图片')![0].tags.find(t => t.tagValue === '无码')!
+    expect(aggRow.codePaths).toEqual([singleP])
+    expect(result[0].codePaths).toEqual(aggRow.codePaths)
+    expect(result[0].codePath).toBe(aggRow.codePath)
   })
 })
 

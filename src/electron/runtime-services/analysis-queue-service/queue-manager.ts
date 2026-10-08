@@ -9,7 +9,6 @@ import type {
   AnalysisTaskType,
   IIgnoreRule
 } from '@firefly/types'
-import { HIGH_DIM_CORRECTION_STAGE } from '@firefly/types'
 import { LogCategory, logger, isPathEqual, isSubPath } from '@firefly/shared'
 import { t } from '@app/languages'
 
@@ -19,31 +18,13 @@ import { shouldIgnoreFile } from '../analysis/analysis-ignore-service'
 import path from 'node:path'
 import fs from 'node:fs'
 
-/**
- * 抢占式挑选下一个待办项（Issue 0046 §4）。
- *
- * 契约：只要内存队列中存在任何 `task_type = 'analysis'` 的待办项，
- * 就绝不返回 `high_dim_correction`，保证高维修正任务在普通分析待办清零前自然挂起。
- * 同类型内按 id 升序（内存队列项不携带 `priority`，故此处只以 id 保证稳定次序；
- * SQL 侧另有 `priority DESC, id ASC` 的完整排序，见 `queue-dao.ts` 的 `PREEMPTIVE_ORDER_BY`）。
- *
- * 抽成纯函数便于单测与在并行/串行两条消费路径间复用，避免口径漂移。
- */
 export function pickNextPending(
-  items: AnalysisQueueItem[],
-  allowHighDim: boolean = true
+  items: AnalysisQueueItem[]
 ): AnalysisQueueItem | undefined {
   let best: AnalysisQueueItem | undefined
   for (const item of items) {
     if (item.status !== 'pending') continue
-    if (!allowHighDim && item.taskType === 'high_dim_correction') continue
-    if (!best) {
-      best = item
-      continue
-    }
-    const rank = item.taskType === 'high_dim_correction' ? 1 : 0
-    const bestRank = best.taskType === 'high_dim_correction' ? 1 : 0
-    if (rank < bestRank || (rank === bestRank && item.id < best.id)) {
+    if (!best || item.id < best.id) {
       best = item
     }
   }
@@ -138,8 +119,7 @@ export class QueueManager {
             }
           }
 
-          const taskType: AnalysisTaskType =
-            r.task_type === 'high_dim_correction' ? 'high_dim_correction' : 'analysis'
+          const taskType: AnalysisTaskType = 'analysis'
           const analysisStage = parsedStats ? Number(parsedStats.analysis_stage ?? 0) : undefined
 
           return {
@@ -151,8 +131,7 @@ export class QueueManager {
             type: fileExtension, // 文件扩展名，目录时为空
             itemType: itemType, // 'file' 或 'directory'
             taskType,
-            // 统一阶段编号（Issue 0046 §3）：高维修正恒为 Stage 5，普通分析取落库的 analysis_stage
-            stage: taskType === 'high_dim_correction' ? HIGH_DIM_CORRECTION_STAGE : analysisStage,
+            stage: analysisStage,
             status: r.status as 'pending' | 'analyzing' | 'completed' | 'failed',
             error: r.error ?? undefined,
             addedAt: r.created_at ? new Date(r.created_at).getTime() : Date.now(),
@@ -349,12 +328,10 @@ export class QueueManager {
           const shouldForceReanalyze =
             forceReanalyze ||
             exists.status === 'completed' ||
-            exists.status === 'failed' ||
-            exists.taskType === 'high_dim_correction'
+            exists.status === 'failed'
 
           if (shouldForceReanalyze) {
             const oldStatus = exists.status
-            const oldTaskType = exists.taskType
             exists.status = 'pending'
             exists.taskType = 'analysis'
             exists.stage = 1
@@ -366,14 +343,12 @@ export class QueueManager {
 
             const reason = forceReanalyze
               ? '用户强制重新分析'
-              : oldTaskType === 'high_dim_correction'
-                ? '从高维修正重置为基础分析'
-                : exists.status === 'failed'
-                  ? '失败重试'
-                  : '文件已分析成功'
+              : oldStatus === 'failed'
+                ? '失败重试'
+                : '文件已分析成功'
             logger.info(
               LogCategory.ANALYSIS_QUEUE,
-              `[分析队列] 文件已在队列中 (原状态: ${oldStatus}, 任务类型: ${oldTaskType})，${reason}，重置为 pending: ${file.nativePath}`
+              `[分析队列] 文件已在队列中 (原状态: ${oldStatus})，${reason}，重置为 pending: ${file.nativePath}`
             )
 
             const existingDbRow = db?.prepare('SELECT id FROM analysis_queue WHERE id = ?').get(exists.id)
@@ -749,9 +724,8 @@ export class QueueManager {
             size: dbItem.size ?? 0,
             type: dbItem.file_type || '',
             itemType: dbItem.item_type as 'file' | 'directory',
-            taskType: dbItem.task_type === 'high_dim_correction' ? 'high_dim_correction' : 'analysis',
-            stage:
-              dbItem.task_type === 'high_dim_correction' ? HIGH_DIM_CORRECTION_STAGE : undefined,
+            taskType: 'analysis',
+            stage: undefined,
             status: dbItem.status as any,
             error: dbItem.error || undefined,
             addedAt: dbItem.created_at ? new Date(dbItem.created_at).getTime() : Date.now(),
@@ -768,73 +742,6 @@ export class QueueManager {
 
   getQueue(): AnalysisQueueItem[] {
     return this.queue
-  }
-
-  /**
-   * 批量灌入 Stage 5 高维修正任务（Issue 0046 §4 工作区缓冲灌库）。
-   *
-   * 同时写库与入内存队列（调度器读取内存快照），并按 `path` 幂等去重，
-   * 避免分批扫描重复灌入。返回实际入队数量。
-   */
-  enqueueHighDimBatch(
-    candidates: Array<{
-      item_id: number
-      path: string
-      name: string
-      size: number
-      file_fingerprint: string
-    }>,
-    workspaceId: number
-  ): number {
-    if (!this.isInitialized) return 0
-    const now = Date.now()
-    const existingPaths = new Set(
-      this.queue.filter(i => i.taskType === 'high_dim_correction').map(i => i.path)
-    )
-    let added = 0
-
-    for (const c of candidates) {
-      if (!c.path || existingPaths.has(c.path)) continue
-      try {
-        const dbId = databaseService.enqueueAnalysisSync({
-          item_id: c.item_id,
-          item_type: 'file',
-          task_type: 'high_dim_correction',
-          status: 'pending',
-          progress: 0
-        })
-        this.queue.push({
-          id: Number(dbId),
-          workspaceId,
-          path: c.path,
-          name: c.name,
-          size: c.size ?? 0,
-          type: path.extname(c.path).toLowerCase(),
-          itemType: 'file',
-          taskType: 'high_dim_correction',
-          stage: HIGH_DIM_CORRECTION_STAGE,
-          status: 'pending',
-          fileFingerprint: c.file_fingerprint,
-          addedAt: now,
-          updatedAt: now,
-          progress: 0
-        })
-        existingPaths.add(c.path)
-        added++
-      } catch (e) {
-        logger.warn(
-          LogCategory.ANALYSIS_QUEUE,
-          `[分析队列] 灌入高维修正任务失败，跳过: ${c.path}`,
-          e
-        )
-      }
-    }
-
-    if (added > 0) {
-      this.persist()
-      this.emitUpdate()
-    }
-    return added
   }
 
   getIsInitialized(): boolean {

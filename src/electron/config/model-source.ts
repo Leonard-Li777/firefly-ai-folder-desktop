@@ -507,60 +507,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
         numPredict: 4096
       }
     },
-    {
-      // 模型文件位于仓库根目录，同目录含唯一投影文件 mmproj-WeMM-Embedding-2B-BF16.gguf
-      // totalSize = 主模型 (1,559,772,320 B) + 最小投影文件 (671,373,120 B) = 2.08GB
-      id: 'huangyusi/WeMM-Embedding-2B-GGUF:Q4_K_M',
-      name: `WeMM-Embedding 2B (${t('多模态嵌入')})`,
-      company: 'huangyusi',
-      parameterSize: '2B',
-      intelligenceLevel: 3,
-      totalSize: '2.08GB',
-      recommended: true,
-      description: t('支持萤核智能文件夹，图文视频语义搜索增强。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_M',
-      isEmbedding: true,
-      isMultiModal: true,
-      contextLength: 32768,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'fast',
-        quality: 'medium'
-      },
-      tags: [t('嵌入'), t('多模态'), t('低显存')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 512
-      }
-    },
-    {
-      // 同目录含唯一投影文件 mmproj-WeMM-Embedding-2B-BF16.gguf
-      // totalSize = 主模型 (1,559,772,320 B) + 最小投影文件 (671,373,120 B) = 2.08GB
-      id: 'Weidows/WeMM-Embedding-2B-GGUF:Q4_K_M',
-      name: `WeMM-Embedding 2B (${t('多模态嵌入')})`,
-      company: 'Weidows',
-      parameterSize: '2B',
-      intelligenceLevel: 3,
-      totalSize: '2.08GB',
-      recommended: true,
-      description: t('支持萤核智能文件夹，图文视频语义搜索增强。'),
-      source: 'huggingface',
-      quantization: 'Q4_K_M',
-      isEmbedding: true,
-      isMultiModal: true,
-      contextLength: 32768,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'fast',
-        quality: 'medium'
-      },
-      tags: [t('嵌入'), t('多模态'), t('低显存')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 512
-      }
-    },
+
     {
       // 仓库: https://huggingface.co/Qwen/Qwen3-Embedding-8B-GGUF/blob/main/Qwen3-Embedding-8B-Q6_K.gguf
       // 文件大小: 6,214,476,096 B ≈ 5.79GB

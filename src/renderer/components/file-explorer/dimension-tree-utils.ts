@@ -2,11 +2,30 @@ import { DimensionGroup, DimensionTag, SelectedTag } from '@firefly/types'
 import { isPanDimension } from '@firefly/shared'
 import { DimensionTreeNode } from './AnalyzedDirectory/types'
 
+/** key 父级段的「常规父标签 code」前缀 */
+const PARENT_CODE_PREFIX = 'parentCode:'
+/**
+ * key 父级段的「穿透提升聚合行」前缀 (ADR-0034 §4 / M-4)：
+ * 聚合行的 viaParentCode 被重写为提升容器，可能与容器直系真实实例的 key 撞车，
+ * 仅凭 viaParentCode 无法区分「聚合行」与「直系实例」，故在 key 中显式打标，
+ * 多选还原时聚合行走容器子树聚合口径、实例行走精确消歧口径，保证与单选 100% 一致。
+ */
+const LIFTED_PREFIX = 'liftCode:'
+
 /**
  * 生成标签唯一 key（包含父标签标识以区分同名标签，V4 优先由 viaParentCode 驱动）
+ * @param isLifted 是否为穿透提升聚合行（打 liftCode 标记，多选还原时按聚合口径处理）
  */
-export function makeTagKey(dimensionId: number, tagValue: string, parentTagValue?: string, viaParentCode?: string): string {
-  const parentIdStr = viaParentCode ? `parentCode:${viaParentCode}` : (parentTagValue || '')
+export function makeTagKey(
+  dimensionId: number,
+  tagValue: string,
+  parentTagValue?: string,
+  viaParentCode?: string,
+  isLifted: boolean = false
+): string {
+  const parentIdStr = viaParentCode
+    ? `${isLifted ? LIFTED_PREFIX : PARENT_CODE_PREFIX}${viaParentCode}`
+    : parentTagValue || ''
   return `${dimensionId}::${parentIdStr}::${tagValue}`
 }
 
@@ -16,12 +35,18 @@ export function makeTagKey(dimensionId: number, tagValue: string, parentTagValue
 export function parseTagKey(key: string) {
   const parts = key.split('::')
   const parentPart = parts[1] || ''
-  const isParentCode = parentPart.startsWith('parentCode:')
-  const viaParent = isParentCode ? parentPart.replace('parentCode:', '') : undefined
+  const isLifted = parentPart.startsWith(LIFTED_PREFIX)
+  const isParentCode = isLifted || parentPart.startsWith(PARENT_CODE_PREFIX)
+  const viaParent = isLifted
+    ? parentPart.slice(LIFTED_PREFIX.length)
+    : isParentCode
+      ? parentPart.slice(PARENT_CODE_PREFIX.length)
+      : undefined
   return {
     dimensionId: parseInt(parts[0], 10),
     parentTagValue: isParentCode ? undefined : (parentPart || undefined),
     viaParentCode: viaParent,
+    isLifted,
     tagValue: parts.slice(2).join('::')
   }
 }
@@ -188,19 +213,20 @@ export function sortTopLevelDimensionNodes<T extends SortWeightNode>(nodes: T[])
 }
 
 /**
- * 递归将组内的扁平标签集合（带有 level 和 viaParentCode）拆解为多级树形结构
+ * 标签父子索引（code/tagValue 双键登记）。
+ * 穿透提升（单选聚合行）与多选聚合还原必须共用同一份索引口径，否则两模式视野会分叉。
  */
-export function nestGroupTags(
-  group: DimensionGroup,
-  tags: DimensionTag[],
-  level: number,
-  maxScaleDepth: number = 3
-): { directTags: DimensionTag[]; childTagsMap: Map<string, DimensionTreeNode[]> } {
-  const childTagsMap = new Map<string, DimensionTreeNode[]>()
-  if (!tags || tags.length === 0) {
-    return { directTags: [], childTagsMap }
-  }
+interface TagParentIndex {
+  tagByCode: Map<string, DimensionTag>
+  tagByName: Map<string, DimensionTag>
+  tagsByParent: Map<string, DimensionTag[]>
+}
 
+/**
+ * 构建标签父子索引：根据 viaParentCode 归类子标签，
+ * 并双向登记父节点的 code 与 tagValue 索引（多父 DAG 下同名/同码实例均可被寻址）
+ */
+function buildTagParentIndex(tags: DimensionTag[]): TagParentIndex {
   // 1. 构建 code -> tag 与 tagValue -> tag 快速索引
   const tagByCode = new Map<string, DimensionTag>()
   const tagByName = new Map<string, DimensionTag>()
@@ -230,6 +256,103 @@ export function nestGroupTags(
     }
   }
 
+  return { tagByCode, tagByName, tagsByParent }
+}
+
+/**
+ * 递归收集任意父标签下的所有深层子孙标签（用于穿透提升）：
+ * 按对象身份防环遍历多父 DAG，保留同 Code/同名的全部分支实例，
+ * 合并去重延后至提升聚合阶段完成，确保跨分支物化路径集合 codePaths 零丢失
+ */
+function collectDescendantTags(startTag: DimensionTag, index: TagParentIndex): DimensionTag[] {
+  const result: DimensionTag[] = []
+  // 已访问实例集合：多父 DAG 中同一实例可能被多条分支同时到达，按对象身份去环保证终止
+  const visited = new Set<DimensionTag>([startTag])
+
+  function collectAll(curr: DimensionTag) {
+    const keys = [curr.code, curr.tagValue].filter(Boolean) as string[]
+    for (const k of keys) {
+      const children = index.tagsByParent.get(k) || []
+      for (const child of children) {
+        if (visited.has(child)) continue
+        // 起始标签自身被反向挂载（脏数据回环）时不重复提升为自身子行；
+        // 仅按「同一身份」判定（同 code，或双方均缺失 code 时才回退比同名），不误伤同名异码标签
+        const isSameIdentity = child.code
+          ? child.code === startTag.code
+          : !startTag.code && child.tagValue === startTag.tagValue
+        if (isSameIdentity) continue
+        visited.add(child)
+        result.push(child)
+        collectAll(child)
+      }
+    }
+  }
+
+  collectAll(startTag)
+  return result
+}
+
+/**
+ * 跨分支同名/同 Code 提升聚合 (ADR-0034 §4 / M-4)：
+ * 同一提升容器内不同分支命中同名或同 Code 时合并为单行——
+ * 1. fileCount 按「去重」语义取最大值（同 Code 计数为全局口径，相加会虚高树徽标并破坏 AC-4 一致性）；
+ * 2. 保留全部分支的物化路径集合 codePaths，确保点击提升标签后 FileList 文件视野零丢失；
+ * 3. codePath 保留首分支主路径，供单值消费方降级使用。
+ * @param containerTag 提升容器（真实父/逻辑父）标签，聚合行 viaParentCode 指回它
+ * @param containerLevel 聚合行挂载层级（提升容器行深度 + 1）
+ */
+function aggregateLiftedTags(
+  descendants: DimensionTag[],
+  containerTag: DimensionTag,
+  containerLevel: number
+): DimensionTag[] {
+  const liftedTags: DimensionTag[] = []
+  const liftedByCode = new Map<string, DimensionTag>()
+  const liftedByName = new Map<string, DimensionTag>()
+  for (const d of descendants) {
+    const existing =
+      (d.code ? liftedByCode.get(d.code) : undefined) ||
+      (d.tagValue ? liftedByName.get(d.tagValue) : undefined)
+    if (!existing) {
+      const merged: DimensionTag = {
+        ...d,
+        viaParentCode: containerTag.code || containerTag.tagValue,
+        level: containerLevel,
+        codePaths: d.codePath ? [d.codePath] : []
+      }
+      liftedTags.push(merged)
+      if (d.code) liftedByCode.set(d.code, merged)
+      if (d.tagValue) liftedByName.set(d.tagValue, merged)
+      continue
+    }
+    existing.fileCount = Math.max(existing.fileCount, d.fileCount)
+    if (d.codePath && !(existing.codePaths || []).includes(d.codePath)) {
+      existing.codePaths = [...(existing.codePaths || []), d.codePath]
+    }
+    if (d.code && !liftedByCode.has(d.code)) liftedByCode.set(d.code, existing)
+    if (d.tagValue && !liftedByName.has(d.tagValue)) liftedByName.set(d.tagValue, existing)
+  }
+  return liftedTags
+}
+
+/**
+ * 递归将组内的扁平标签集合（带有 level 和 viaParentCode）拆解为多级树形结构
+ */
+export function nestGroupTags(
+  group: DimensionGroup,
+  tags: DimensionTag[],
+  level: number,
+  maxScaleDepth: number = 3
+): { directTags: DimensionTag[]; childTagsMap: Map<string, DimensionTreeNode[]> } {
+  const childTagsMap = new Map<string, DimensionTreeNode[]>()
+  if (!tags || tags.length === 0) {
+    return { directTags: [], childTagsMap }
+  }
+
+  // 1-2. 构建 code/name 双键父子索引（与多选聚合还原共用同一口径）
+  const index = buildTagParentIndex(tags)
+  const { tagsByParent } = index
+
   // 3. 确定当前层级的直属标签 (directTags)：
   // 顶层直属标签优先由 level === 1 或 viaParentCode === group.code 确定
   const directTags: DimensionTag[] = []
@@ -254,59 +377,16 @@ export function nestGroupTags(
     }
   }
 
-  // 递归收集任意父标签下的所有深层子孙标签（用于穿透提升，执行 Code 与名称双重去重）
-  function getAllDescendantTags(startTag: DimensionTag): DimensionTag[] {
-    const result: DimensionTag[] = []
-    const visitedCodes = new Set<string>()
-    const visitedNames = new Set<string>()
-
-    function collectAll(curr: DimensionTag) {
-      const keys = [curr.code, curr.tagValue].filter(Boolean) as string[]
-      for (const k of keys) {
-        const children = tagsByParent.get(k) || []
-        for (const child of children) {
-          const code = child.code || ''
-          const name = child.tagValue || ''
-          if (visitedCodes.has(code) || (name && visitedNames.has(name))) {
-            continue
-          }
-          if (code === curr.code || (name && name === curr.tagValue)) {
-            continue
-          }
-          if (code) visitedCodes.add(code)
-          if (name) visitedNames.add(name)
-          result.push(child)
-          collectAll(child)
-        }
-      }
-    }
-
-    collectAll(startTag)
-    return result
-  }
-
   // 4. 递归根据 tagsByParent 构建深层多级子树（支持 ADR-0034 §4 刻度穿透提升）
   function buildChildNode(parentTag: DimensionTag, currentDepth: number): DimensionTreeNode | null {
     // 若当前层级深度达到或超过用户设定的刻度上限，则所有更深层子孙标签穿透提升（Pass-through Lift-up），
     // 汇聚挂载在当前刻度父级节点下，且该层不再向下生成更深层孙级节点 (ADR-0034 §4)
     if (currentDepth >= maxScaleDepth) {
-      const descendants = getAllDescendantTags(parentTag)
+      const descendants = collectDescendantTags(parentTag, index)
       if (descendants.length === 0) return null
 
-      // 双重去重，优先保留有命中文件的标签或叶子标签
-      const seenLifted = new Set<string>()
-      const liftedTags: DimensionTag[] = []
-      for (const d of descendants) {
-        const key = d.code || d.tagValue
-        if (!seenLifted.has(key)) {
-          seenLifted.add(key)
-          liftedTags.push({
-            ...d,
-            viaParentCode: parentTag.code || parentTag.tagValue,
-            level: currentDepth + 1
-          })
-        }
-      }
+      // 跨分支同名/同 Code 提升聚合 (ADR-0034 §4 / M-4)，聚合口径见 aggregateLiftedTags 注释
+      const liftedTags: DimensionTag[] = aggregateLiftedTags(descendants, parentTag, currentDepth + 1)
 
       return {
         id: group.id * 10000 + currentDepth * 100 + (parentTag.order || 1),
@@ -563,6 +643,33 @@ export function getSelectedTagsFromSet(
   })
 
   const results: SelectedTag[] = []
+
+  // 每个维度组惰性构建一次父子索引：聚合行还原必须与 nestGroupTags 同口径 (ADR-0034 §4)
+  const groupIndexCache = new Map<number, TagParentIndex>()
+
+  /**
+   * 重建穿透提升聚合行：以 key 中的 viaParentCode 为提升容器，在其子树闭包内
+   * 执行与 nestGroupTags 完全相同的「收集子孙 + 跨分支聚合」算法，
+   * 从而多选拿到的 code / codePath / codePaths 与单选点击同一行时 100% 一致。
+   */
+  const buildLiftedAggregateRow = (
+    group: DimensionGroup,
+    containerKey: string,
+    tagValue: string
+  ): DimensionTag | undefined => {
+    let index = groupIndexCache.get(group.id)
+    if (!index) {
+      index = buildTagParentIndex(group.tags || [])
+      groupIndexCache.set(group.id, index)
+    }
+    const containerTag = index.tagByCode.get(containerKey) || index.tagByName.get(containerKey)
+    if (!containerTag) return undefined
+    const descendants = collectDescendantTags(containerTag, index)
+    if (descendants.length === 0) return undefined
+    const lifted = aggregateLiftedTags(descendants, containerTag, containerTag.level + 1)
+    return lifted.find(t => t.tagValue === tagValue)
+  }
+
   for (const key of selectedTagsSet) {
     const parsed = parseTagKey(key)
     const { dimensionId, tagValue, parentTagValue: keyParentTagValue } = parsed
@@ -579,16 +686,52 @@ export function getSelectedTagsFromSet(
         ? ancestorChain[ancestorChain.length - 2]
         : undefined)
 
-    const tagItem = group.tags.find(t => t.tagValue === tagValue)
+    // 多父同名/同 Code 兄弟实例：优先用 key 中携带的 viaParentCode 精确消歧，
+    // 避免取到兄弟分支的 codePath / namePath 造成跨介质误召回 (M-2 修复)
+    const candidates = group.tags.filter(t => t.tagValue === tagValue)
+
+    // 穿透提升聚合行 (liftCode 标记 key)：聚合行的 viaParentCode 已被重写为提升容器，
+    // 可能与容器直系真实实例的 key 撞车，仅凭 viaParentCode 无法区分，故按 key 标记分流——
+    // 聚合行走「容器子树同算法重建」，与单选点击同一行的 codePaths 完全一致 (ADR-0034 §4 / M-4)。
+    const aggRow =
+      parsed.isLifted && parsed.viaParentCode
+        ? buildLiftedAggregateRow(group, parsed.viaParentCode, tagValue)
+        : undefined
+
+    const exactMatch = parsed.viaParentCode
+      ? candidates.find(t => (t.viaParentCode || undefined) === parsed.viaParentCode)
+      : undefined
+    const tagItem = aggRow || exactMatch || candidates[0]
 
     const effectiveViaParent =
       parsed.viaParentCode || tagItem?.viaParentCode || undefined
+
+    // 常规实例行严禁并集，否则 FileList 会跨分支召回污染树徽标 (AC-4)；
+    // 仅当 key 声明了 viaParentCode 却既非聚合行、又无实例匹配（数据漂移/陈旧 key）
+    // 时，才回退取全部分支物化路径并集，宁可多召回也不丢文件视野。
+    // distinctPaths 仅在回退分支内惰性计算（正常 key 不做无谓的 Set 分配）。
+    let codePaths: string[] | undefined
+    if (aggRow) {
+      // 判据取 length > 0 而非 > 1：正常数据下 codePaths[0] === codePath（经后端
+      // resolveTagMaterializedPaths 归一后 SQL 等价），且可堵住「首入列后代缺 codePath
+      // 导致 codePaths=[p] 单元素」角例下多选退化为 code 并集、与单选排他口径分叉的缺口 (M-1)；
+      // 空数组仍回退 codePath，语义不变。
+      codePaths = aggRow.codePaths && aggRow.codePaths.length > 0 ? aggRow.codePaths : undefined
+    } else if (parsed.viaParentCode && !exactMatch) {
+      const distinctPaths = [
+        ...new Set(candidates.map(t => t.codePath).filter((p): p is string => !!p))
+      ]
+      codePaths = distinctPaths.length > 1 ? distinctPaths : undefined
+    }
 
     results.push({
       dimensionId,
       dimensionName: group.name,
       tagValue,
       code: tagItem?.code,
+      codePath: tagItem?.codePath,
+      namePath: tagItem?.namePath,
+      ...(codePaths ? { codePaths } : {}),
       viaParentCode: effectiveViaParent,
       level: tagObj?.level || 0,
       ...(parentTagValue ? { parentTagValue } : {}),

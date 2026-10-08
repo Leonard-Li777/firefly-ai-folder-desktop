@@ -97,7 +97,6 @@ export const GENESIS_V1_SCHEMA = `
     smart_name TEXT,                             -- AI 生成或用户定义的智能名称
     raw_smart_name TEXT,                         -- 原始智能文件名（不带扩展名，未经模板包裹的 AI 核心名称）
     smart_name_source TEXT,                      -- 智能名称来源 (Issue 0046)：'machine'=机器 5W 生成 | 'user'=人工命名
-    high_dim_corrected BOOLEAN NOT NULL DEFAULT 0, -- 是否已完成 Stage 5 高维修正并落库 zvec 向量 (Issue 0046)
     description TEXT,                            -- AI 生成的文件描述
     size INTEGER NOT NULL DEFAULT 0,             -- 文件大小（字节）
     extension TEXT NOT NULL,                     -- 文件后缀名 (如 .png, .pdf)
@@ -164,8 +163,8 @@ export const GENESIS_V1_SCHEMA = `
     id INTEGER PRIMARY KEY AUTOINCREMENT,         -- 队列项唯一标识
     item_id INTEGER,                             -- 关联 ID（根据 item_type 决定是文件ID还是目录ID）
     item_type TEXT NOT NULL DEFAULT 'file',      -- 待分析项类型: 'file' | 'directory'
-    task_type TEXT NOT NULL DEFAULT 'analysis'   -- 任务类型: 'analysis'(Stage 1~4 普通文件分析) | 'high_dim_correction'(Stage 5 高维修正)
-                 CHECK (task_type IN ('analysis', 'high_dim_correction')),
+    task_type TEXT NOT NULL DEFAULT 'analysis'   -- 任务类型: 'analysis'(Stage 1~4 普通文件分析)
+                 CHECK (task_type IN ('analysis')),
     status TEXT NOT NULL DEFAULT 'pending',      -- 任务状态: 'pending', 'analyzing', 'completed', 'failed'
     progress INTEGER NOT NULL DEFAULT 0,          -- 分析进度 (0-100)
     error TEXT,                                  -- 最近一次运行的错误信息
@@ -345,8 +344,6 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_vdf_wfid ON virtual_directory_files(file_id);
   CREATE INDEX IF NOT EXISTS idx_pending_firecore_operations_status ON pending_firecore_operations(status);
   CREATE INDEX IF NOT EXISTS idx_analysis_queue_pending ON analysis_queue(status, priority DESC, created_at ASC);
-  -- 抢占式单队列调度覆盖索引 (Issue 0046 / CONTEXT.md 抢占式单队列调度)：按任务类型 + 状态检索，支撑 Stage 5 高维修正独立高速取件与硬优先序 0 排序扫描
-  CREATE INDEX IF NOT EXISTS idx_analysis_queue_task_status ON analysis_queue(status, task_type, priority DESC, id ASC);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_covering ON file_tag_relations(file_fingerprint, tag_code, via_parent_code, confidence);
 
   -- 19. FTS 同步触发器（标准 FTS5：使用 DELETE WHERE rowid 进行原子安全同步）

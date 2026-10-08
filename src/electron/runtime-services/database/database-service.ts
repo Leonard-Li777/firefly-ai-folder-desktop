@@ -606,39 +606,18 @@ export class DatabaseService {
           ALTER TABLE file_tag_relations ADD COLUMN depth INTEGER NOT NULL DEFAULT 1;
           CREATE INDEX IF NOT EXISTS idx_file_tag_relations_code_path ON file_tag_relations(code_path);
         `)
-        if (relationColumns.includes('parent_code_chain')) {
-          this._db.exec(`
-            UPDATE file_tag_relations
-            SET code_path = CASE
-                  WHEN parent_code_chain != '' THEN parent_code_chain
-                  WHEN via_parent_code != '' THEN '/' || via_parent_code || '/' || tag_code
-                  ELSE '/' || tag_code
-                END,
-                name_path = CASE
-                  WHEN parent_name_chain != '' THEN parent_name_chain
-                  ELSE ''
-                END,
-                depth = CASE
-                  WHEN parent_code_chain != '' THEN length(parent_code_chain) - length(replace(parent_code_chain, '/', ''))
-                  WHEN via_parent_code != '' THEN 2
-                  ELSE 1
-                END
-            WHERE code_path = '';
-          `)
-        } else {
-          this._db.exec(`
-            UPDATE file_tag_relations
-            SET code_path = CASE
-                  WHEN via_parent_code != '' THEN '/' || via_parent_code || '/' || tag_code
-                  ELSE '/' || tag_code
-                END,
-                depth = CASE
-                  WHEN via_parent_code != '' THEN 2
-                  ELSE 1
-                END
-            WHERE code_path = '';
-          `)
-        }
+        this._db.exec(`
+          UPDATE file_tag_relations
+          SET code_path = CASE
+                WHEN via_parent_code != '' THEN '/' || via_parent_code || '/' || tag_code
+                ELSE '/' || tag_code
+              END,
+              depth = CASE
+                WHEN via_parent_code != '' THEN 2
+                ELSE 1
+              END
+          WHERE code_path = '';
+        `)
       }
     } catch (error) {
       logger.warn(LogCategory.DATABASE_SERVICE, '确保兼容表结构自愈失败:', error)
@@ -915,25 +894,6 @@ export class DatabaseService {
     }
   }
 
-  /** 读取 Stage 5 高维修正所需的文件事实（Issue 0046 §5） */
-  getHighDimCorrectionFacts(fileFingerprint: string) {
-    return this.fileDao.getHighDimCorrectionFacts(fileFingerprint)
-  }
-
-  /** 原子落库高维修正结果（标签校准 + 名称/描述提纯 + 噪点标签剔除 + 标记已修正） */
-  applyHighDimCorrectionResult(
-    fileFingerprint: string,
-    result: {
-      tags: Array<{ code: string; parentCode?: string; confidence: number }>
-      smartName?: string | null
-      description?: string | null
-      smartNameUpdated?: boolean
-      descriptionUpdated?: boolean
-      pruneTagGroups?: string[]
-    }
-  ): void {
-    return this.fileDao.applyHighDimCorrectionResult(fileFingerprint, result)
-  }
   clearDimensionsCache(): void {
     if (this.fileDao) {
       this.fileDao.clearDimensionsCache()
@@ -1095,10 +1055,6 @@ export class DatabaseService {
   /** 抢占式提取队头待办任务（普通分析恒优先于高维修正，ADR-0046 / CONTEXT.md 抢占式单队列调度） */
   fetchNextQueueItem(taskType?: AnalysisTaskType) {
     return this.queueDao.fetchNextQueueItem(taskType)
-  }
-  /** 扫描工作区中「已分析但尚未高维修正」的文件（Stage 5 分批灌库） */
-  listHighDimCandidates(workspaceId: number, limit: number) {
-    return this.queueDao.listHighDimCandidates(workspaceId, limit)
   }
   async enqueueAnalysis(item: {
     item_id: number | null

@@ -16,9 +16,8 @@ export function registerEngineBridgeIPCHandlers() {
     // 直接调用 healthCheck() 向外部引擎发起实时状态查询
     const status = await engineBridgeService.healthCheck()
     if (status) {
-      // 更新缓存并广播，保持后续 getSnapshot() 一致
-      engineBridgeService['lastRawStatus'] = status
-      engineBridgeService.broadcastStatus()
+      // 统一经 applyStatus 写入状态、刷新缓存并按需广播，消除 lastRawStatus 直写绕过
+      engineBridgeService.applyStatus(status)
       return engineBridgeService.getSnapshot()
     }
     // 探活失败：清空缓存并广播离线

@@ -25,8 +25,6 @@ export interface ProGroundTruthTag {
   codePath?: string
   namePath?: string
   depth?: number
-  parentNameChain?: string
-  parentCodeChain?: string
   group?: string
 }
 

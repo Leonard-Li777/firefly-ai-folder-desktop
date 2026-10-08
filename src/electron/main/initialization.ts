@@ -108,6 +108,18 @@ export async function initializeHardwareDetection(wait = false): Promise<void> {
         )
       }
 
+      // 若未设置嵌入画像档位（首次运行），按硬件能力自适应推荐并持久化 (Spec §3.4.1)
+      const currentProfile = config.getValue('AI_EMBEDDING_PROFILE')
+      if (!currentProfile) {
+        const recommended =
+          hardwareDetectionService.getRecommendedEmbeddingProfile?.({
+            totalMemGB: resources.memory.total / (1024 * 1024 * 1024),
+            cpu: { cores: resources.cpu.cores }
+          }) || 'classic_light'
+        config.updateValue('AI_EMBEDDING_PROFILE', recommended)
+        logger.info(LogCategory.STARTUP, `[Profile] 首次启动自适应推荐嵌入画像档位: ${recommended}`)
+      }
+
       if (hasChanged || wait) {
         try {
           await cloudAnalysisService.syncFeatures()

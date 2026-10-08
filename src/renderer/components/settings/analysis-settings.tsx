@@ -24,13 +24,25 @@ import {
   ScanText,
   Sparkles,
   Trash2,
-  X
+  X,
+  Layers,
+  Cpu
 } from 'lucide-react'
 import React, { useEffect, useMemo, useState } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel
+} from '../ui/alert-dialog'
 import { IIgnoreRule, SettingsCategory } from '@firefly/types/settings-types'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
@@ -42,11 +54,6 @@ import i18nScope from '@app/languages'
 import { openExternalLink } from '../../lib/external-link'
 import { useSettingsStore } from '../../stores/settings-store'
 import { useVoerkaI18n } from '@voerkai18n/react'
-import { modelSourceToDownloadMirror, probeModelSource, type ModelSourceId } from '../../lib/model-source-probe'
-import {
-  HIGH_DIM_MODEL_FOCUS_KEYWORD,
-  HIGH_DIM_MODEL_KEYWORDS
-} from '@shared/constants/high-dim-correction'
 import { toast } from '../common/Toast'
 
 /**
@@ -165,94 +172,23 @@ export const AnalysisSettings: React.FC = () => {
     ? (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name')
     : 'simple'
 
-  // ── 高维修正（Stage 5，Issue 0046 §3）────────────────────────────────────
-  // 开关值来自统一配置中心；打开时探测引擎侧是否已安装 WeMM 模型，未就绪则展开引导警示条
-  const highDimCorrection = getConfigValue<boolean>('HIGH_DIMENSION_CORRECTION') ?? false
-  const [highDimModelMissing, setHighDimModelMissing] = useState(false)
-  // 引擎未运行 ≠ 模型未安装：两者都触发引导，但文案必须区分，
-  // 否则会把「引擎没开」误报成「模型没装」（用户会白跑一趟下载页）。
-  const [highDimEngineOffline, setHighDimEngineOffline] = useState(false)
-  const [checkingHighDimModel, setCheckingHighDimModel] = useState(false)
-  const [redirectingToEngine, setRedirectingToEngine] = useState(false)
+  // 多模态嵌入画像档位（二元档位契约）：classic_light (384d) vs gemma_unified (512d)
+  const embeddingProfile =
+    getConfigValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ?? 'classic_light'
+  const [pendingProfile, setPendingProfile] = useState<'classic_light' | 'gemma_unified' | null>(null)
 
-  // 探测模型安装状态与引擎可达性
-  const probeHighDimModel = React.useCallback(async () => {
-    if (!window.electronAPI?.engineBridge) return
-    setCheckingHighDimModel(true)
-    try {
-      const res = await window.electronAPI.engineBridge.checkModelsInstalled(
-        HIGH_DIM_MODEL_KEYWORDS
-      )
-      setHighDimModelMissing(!res.installed)
-      setHighDimEngineOffline(!res.reachable)
-    } catch {
-      setHighDimModelMissing(true)
-      setHighDimEngineOffline(true)
-    } finally {
-      setCheckingHighDimModel(false)
-    }
-  }, [])
-
-  // 模型安装探针：开启时立即探测；支持窗口重获焦点时刷新；若处于未就绪状态则轻量定时探活
-  useEffect(() => {
-    if (!highDimCorrection) {
-      setHighDimModelMissing(false)
-      setHighDimEngineOffline(false)
-      return
-    }
-
-    void probeHighDimModel()
-
-    // 用户在外部启动引擎或安装模型后切回桌面端，自动刷新探针状态
-    const handleFocus = () => {
-      void probeHighDimModel()
-    }
-    window.addEventListener('focus', handleFocus)
-
-    // 若当前检测到引擎未运行或模型缺失，每 5 秒自动重试探活一次，引擎启动后自动切换文案
-    const timer = setInterval(() => {
-      void probeHighDimModel()
-    }, 5000)
-
-    return () => {
-      window.removeEventListener('focus', handleFocus)
-      clearInterval(timer)
-    }
-  }, [highDimCorrection, probeHighDimModel])
-
-  /**
-   * 【打开萤核AI引擎】引导动作（Issue 0046 §3）：
-   * 1. 切换路由到「高级AI引擎配置」设置分类；
-   * 2. 网络探测（ModelScope / HuggingFace）并自动切换到可达源（落库 DOWNLOAD_MIRROR）；
-   * 3. 深链打开引擎模型面板，并携带目标模型与推荐源，由引擎前端滚动聚焦 + 呼吸高亮。
-   */
-  const handleOpenEngineForHighDim = async () => {
-    if (redirectingToEngine) return
-    setRedirectingToEngine(true)
-    try {
-      openSettings(SettingsCategory.AI_ENGINE_CONFIG)
-
-      let recommendedSource: ModelSourceId = 'modelscope'
-      try {
-        const probe = await probeModelSource()
-        recommendedSource = probe.source
-      } catch {
-        // 探测失败不阻塞引导：沿用当前下载镜像
-      }
-      updateConfigValue('DOWNLOAD_MIRROR', modelSourceToDownloadMirror(recommendedSource))
-
-      const res = await window.electronAPI.engineBridge.openUI({
-        panel: 'models',
-        focusModel: HIGH_DIM_MODEL_FOCUS_KEYWORD,
-        source: recommendedSource
-      })
-      if (res && res.ok === false) {
-        toast.error(t('打开萤核AI引擎失败，请确认AI引擎已正常启动'))
-      }
-    } finally {
-      setRedirectingToEngine(false)
-    }
+  const handleConfirmProfileSwitch = async () => {
+    if (!pendingProfile) return
+    const target = pendingProfile
+    setPendingProfile(null)
+    await updateConfigValue('AI_EMBEDDING_PROFILE', target)
+    captureEvent('切换嵌入模型档位', { profile: target })
+    toast.success(
+      t('已切换嵌入引擎档位并重启，新导入的文件将使用新档位索引')
+    )
   }
+
+
 
   // 为每个提示词设置独立的防抖更新
   useDebouncedPromptUpdater(unitPrompt, 'UNIT_RECOGNITION_PROMPT', getConfigValue, updateConfigValue)
@@ -679,75 +615,125 @@ export const AnalysisSettings: React.FC = () => {
         </div>
       </Card>
 
-      {/* 高维修正（Stage 5）：分析队列清空后由 WeMM-Embedding 2B 做 2048d 向量精修 */}
+      {/* 多模态嵌入运行时档位 (二元分级架构) */}
       <Card className="p-5">
         <div className="space-y-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-2.5 min-w-0">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                <Sparkles className="h-4 w-4" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <Label htmlFor="high-dimension-correction" className="text-base font-semibold leading-none">
-                    {t('开启视频搜索与标签修正（高维修正）')}
-                  </Label>
-                  <HelpTooltip
-                    content={t(
-                      '开启后，文件队列分析完成会自动进行高维修正：用 2048 维多模态向量二次校准标签与智能命名，并解锁以图搜图与视频自然语言搜索。'
-                    )}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                  {t(
-                    '对标签智能文件名描述等进行高维度向量修正，可以获得更准确的结果，此外还支持更精准的文件搜索，甚至支持视频内容用自然语言搜索。在文件队列分析完成后，自动进行高维修正，每个文件耗时约1秒；'
-                  )}
-                </p>
-              </div>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Layers className="h-4 w-4" />
             </div>
-            <Switch
-              id="high-dimension-correction"
-              checked={highDimCorrection}
-              onCheckedChange={checked => {
-                updateConfigValue('HIGH_DIMENSION_CORRECTION', checked)
-                captureEvent('切换高维修正', { enabled: checked })
-              }}
-            />
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <Label className="text-base font-semibold leading-none">{t('嵌入模型档位')}</Label>
+              <HelpTooltip
+                content={t(
+                  '配置图文向量与语义检索的嵌入特征模型。全模态标准档支持统一超球空间跨模态检索；极速轻量档内存开销极小。'
+                )}
+              />
+            </div>
           </div>
 
-          {/* 未安装 WeMM 模型预警（Issue 0046 §3） */}
-          {highDimCorrection && highDimModelMissing && (
-            <div className="flex flex-col gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5">
-              <div className="flex items-start gap-2 text-xs text-amber-700 dark:text-amber-300">
-                <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
-                <span className="leading-relaxed">
-                  {checkingHighDimModel
-                    ? t('正在检测 WeMM-Embedding 2B 多模态嵌入模型...')
-                    : highDimEngineOffline
-                      ? t(
-                          '未检测到萤核AI引擎正在运行，无法确认 WeMM-Embedding 2B 多模态嵌入模型是否已安装。高维修正依赖该模型，请先启动或安装萤核AI引擎。'
-                        )
-                      : t(
-                          '请前往萤核AI引擎安装 WeMM-Embedding 2B 多模态嵌入模型，否则高维修正无法生效。'
-                        )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* 极速轻量档 */}
+            <div
+              onClick={() => {
+                if (embeddingProfile !== 'classic_light') {
+                  setPendingProfile('classic_light')
+                }
+              }}
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                embeddingProfile === 'classic_light'
+                  ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                  : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+              }`}
+            >
+              <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
+                {t('384维 · 极速省电')}
+              </div>
+              {embeddingProfile === 'classic_light' && (
+                <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                  <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
+                </div>
+              )}
+              <div className="flex items-center justify-between pr-8">
+                <span
+                  className={`font-semibold text-sm ${
+                    embeddingProfile === 'classic_light' ? 'text-primary' : ''
+                  }`}
+                >
+                  {t('极速轻量档')}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
-                  disabled={redirectingToEngine}
-                  onClick={() => void handleOpenEngineForHighDim()}
-                >
-                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                  {t('打开萤核AI引擎')}
-                </Button>
-              </div>
+              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                {t(
+                  'Chinese-CLIP 视觉 + bekko-a8m 文本（384 维）。内存占用 < 80MB，适合 8GB 内存轻薄本或基础办公机型。'
+                )}
+              </p>
             </div>
-          )}
+
+            {/* 全模态标准档 */}
+            <div
+              onClick={() => {
+                if (embeddingProfile !== 'gemma_unified') {
+                  setPendingProfile('gemma_unified')
+                }
+              }}
+              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                embeddingProfile === 'gemma_unified'
+                  ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                  : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+              }`}
+            >
+              <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
+                {t('512维 · 统一跨模态')}
+              </div>
+              {embeddingProfile === 'gemma_unified' && (
+                <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
+                  <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
+                </div>
+              )}
+              <div className="flex items-center justify-between pr-8">
+                <span
+                  className={`font-semibold text-sm ${
+                    embeddingProfile === 'gemma_unified' ? 'text-primary' : ''
+                  }`}
+                >
+                  {t('全模态标准档')}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
+                {t(
+                  'EmbeddingGemma-2 端侧图文统一 MRL 512 维向量空间。支持跨模态对齐与高精度检索，推荐 16GB+ 内存或多核设备。'
+                )}
+              </p>
+            </div>
+          </div>
         </div>
       </Card>
+
+      {/* 档位切换确认弹窗 */}
+      <AlertDialog open={!!pendingProfile} onOpenChange={open => !open && setPendingProfile(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('确认切换嵌入引擎档位？')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                '切换嵌入引擎档位后，后台将自动重启 Omni 智能引擎，新导入的文件将使用新档位（{dim} 维）索引。已有历史向量资产将独立保留，不会被物理删除。',
+                {
+                  dim: pendingProfile === 'gemma_unified' ? 512 : 384
+                }
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('取消')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmProfileSwitch}>
+              {t('立即应用并重启')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
 
       {/* 文件内容提取：文档/OCR/音频等提取参数 */}
       <Card className="p-5">

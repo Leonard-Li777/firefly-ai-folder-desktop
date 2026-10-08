@@ -89,6 +89,10 @@ export interface Tier2EngineStatus {
   /** 引擎契约字段名（EngineStatus.current_model，见 firefly-ai-engine engine/mod.rs） */
   current_model?: string
   current_model_name?: string
+  /** 激活主语言模型槽位（{model_id}@{source} 或自动绑定时的本地物理路径，未激活为 null） */
+  active_language_model?: string | null
+  /** 激活嵌入向量模型槽位（{model_id}@{source} 或本地物理路径，未激活为 null） */
+  active_embedding_model?: string | null
   loaded_models?: string[]
   vram_mb?: number
   gpu_mem_mb?: number
@@ -124,7 +128,7 @@ export interface EngineBridgeSnapshot {
    * 未获取到引擎列表时为 null
    */
   backendMatchType: 'best' | 'compatible' | 'fallback' | null
-  /** 当前加载模型（原始路径/id，来自引擎契约 current_model） */
+  /** 当前激活模型（四级优先级推导，见 resolveDisplayModelPair：可能为引擎 current_model 原始路径/id，或内置目录条目 id 含量化后缀） */
   model: string | null
   /** 当前加载模型的展示名称（来自 /api/models 列表的 name 字段；未匹配时为 null） */
   modelName: string | null
@@ -504,6 +508,112 @@ export class EngineBridgeService {
   }
 
   /**
+   * 推导展示模型及其友好名称（对齐 firefly-ai-engine resolveDisplayModel 的权威优先级）：
+   *   P1 运行模型 —— 仅 ready/starting 态（停止态严禁使用残留 current_model）
+   *   P2 激活主语言模型槽位（active_language_model）
+   *   P3 激活嵌入向量模型槽位（active_embedding_model）
+   *   P4 兜底 —— 上次已知运行模型 → 本地首个已下载就绪模型
+   *
+   * 修复「引擎 UI 与 desktop Footer 模型状态不同步」：引擎切换到嵌入模型（如 WeMM）时
+   * current_model 可能为空而嵌入槽位已激活，旧逻辑 current_model → lastKnownModel →
+   * firstDownloadedModel 单链会滞留陈旧的语言模型名称。
+   */
+  private resolveDisplayModelPair(): { model: string | null; modelName: string | null } {
+    const raw = this.lastRawStatus
+    const isRunningOrStarting = raw?.status === 'ready' || raw?.status === 'starting'
+    const running =
+      raw?.current_model ||
+      raw?.model ||
+      (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) ||
+      null
+    const runningName = raw?.current_model_name || raw?.model_name || null
+
+    // P1：运行模型（仅实际运行态；停止态跳过，严禁使用残留 current_model）
+    if (isRunningOrStarting && running) {
+      return { model: running, modelName: runningName || this.resolveFriendlyModelName(running) }
+    }
+
+    // P2：激活主语言模型槽位
+    const langHit = raw?.active_language_model
+      ? this.matchSlotToCatalog(raw.active_language_model, 'language')
+      : null
+    if (langHit) {
+      return { model: langHit.id, modelName: langHit.name }
+    }
+
+    // P3：激活嵌入向量模型槽位
+    const embHit = raw?.active_embedding_model
+      ? this.matchSlotToCatalog(raw.active_embedding_model, 'embedding')
+      : null
+    if (embHit) {
+      return { model: embHit.id, modelName: embHit.name }
+    }
+
+    // P4：兜底 —— 上次已知运行模型 → 本地首个已下载就绪模型（引擎未启动服务时展示当前激活模型）
+    const fallback = this.lastKnownModel || this.firstDownloadedModel || null
+    return { model: fallback, modelName: this.resolveFriendlyModelName(fallback) }
+  }
+
+  /**
+   * 将引擎激活槽位值匹配到内置模型目录条目。
+   * 槽位值格式（firefly-ai-engine api.rs）：
+   * - 手动切换：`{model_id}@{source}`（source ∈ modelscope | huggingface）
+   * - 自动绑定：本地物理路径（如启动时自动检测绑定）
+   * 匹配口径对齐引擎端 matchModel（基名包含、路径 repo-id 包含），
+   * 并按槽位语义严格过滤（语言槽位只匹配非 embedding、嵌入槽位只匹配 embedding 模型）。
+   */
+  private matchSlotToCatalog(
+    slot: string,
+    prefer: 'language' | 'embedding'
+  ): { id: string; name: string } | null {
+    if (!slot) return null
+    const catalog = this.loadBuiltinModelCatalog()
+    if (catalog.length === 0) return null
+
+    const slotLower = slot.toLowerCase().replace(/\\/g, '/')
+    // {model_id}@{source} → model_id（model_id 本身不含 '@'）
+    const slotId = slotLower.split('@')[0]
+    const slotBase = slotId.replace(/.*\//, '').split(':')[0]
+    const norm = (s: string): string => s.replace(/[-_:./\\]|gguf/gi, '').toLowerCase()
+    const slotIdNorm = norm(slotId.replace(/.*\//, '').split(':')[0])
+    const slotStemNorm = norm(slot.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, ''))
+    const looksLikePath = slotLower.includes('.gguf') || slotLower.split('/').length >= 3
+
+    for (const entry of catalog) {
+      if (!entry.id) continue
+      // 槽位语义过滤（对齐引擎 resolveDisplayModel）：语言槽位只匹配非 embedding，嵌入槽位只匹配 embedding
+      const entryIsEmbedding = entry.isEmbedding === true
+      if (prefer === 'language' && entryIsEmbedding) continue
+      if (prefer === 'embedding' && !entryIsEmbedding) continue
+
+      const idLower = entry.id.toLowerCase()
+      const entryBase = idLower.replace(/.*\//, '').split(':')[0]
+      const entryBaseNorm = norm(entryBase)
+
+      const hit =
+        slotLower === entry.name.toLowerCase() ||
+        slotId === idLower ||
+        (slotBase.length > 3 &&
+          (slotBase === entryBase || slotBase.includes(entryBase) || entryBase.includes(slotBase))) ||
+        (slotIdNorm.length > 3 &&
+          (slotIdNorm === entryBaseNorm || slotIdNorm.includes(entryBaseNorm) || entryBaseNorm.includes(slotIdNorm))) ||
+        (slotStemNorm.length > 3 &&
+          (slotStemNorm === entryBaseNorm || slotStemNorm.includes(entryBaseNorm) || entryBaseNorm.includes(slotStemNorm))) ||
+        (looksLikePath &&
+          (() => {
+            const repoId = idLower.split(':')[0]
+            const repoSlug = repoId.replace(/\//g, '--')
+            return slotLower.includes(repoId) || (repoSlug !== repoId && slotLower.includes(repoSlug))
+          })())
+
+      if (hit) {
+        return { id: entry.id, name: entry.name }
+      }
+    }
+    return null
+  }
+
+  /**
    * 计算二进制签名（mtimeMs + size）。
    * 集成目录被 `engine:deploy:watch` 覆盖后签名必然变化，用于判断是否需要重启引擎。
    */
@@ -684,13 +794,17 @@ export class EngineBridgeService {
   }
 
   /** 采纳探活结果：刷新版本缓存与原始状态，并异步刷新模型计数 */
-  private applyStatus(data: Tier2EngineStatus): void {
+  public applyStatus(data: Tier2EngineStatus): void {
     if (typeof data.version === 'string' && data.version) {
       this.versionCache = data.version
     }
     const prevModel = this.lastRawStatus?.current_model || this.lastRawStatus?.model || this.lastKnownModel
     const currentModel = data.current_model || data.model || (data.loaded_models?.[0]) || null
     const modelChanged = currentModel !== null && currentModel !== prevModel
+    // 槽位变更检测：引擎 UI 切换嵌入/语言模型时 current_model 可能不变或置空，
+    // 若只检测 current_model 会漏播广播，渲染层只能等下个轮询 tick —— Footer 模型状态「不同步」的延迟根因
+    const langSlotChanged = (data.active_language_model || null) !== (this.lastRawStatus?.active_language_model || null)
+    const embSlotChanged = (data.active_embedding_model || null) !== (this.lastRawStatus?.active_embedding_model || null)
     const statusChanged = data.status !== this.lastRawStatus?.status
     const wasOffline = this.lastRawStatus === null
 
@@ -702,8 +816,8 @@ export class EngineBridgeService {
     // 探活成功即代表引擎在线：清掉历史启动超时等陈旧错误，避免「已就绪却仍显示超时」
     const hadError = this.lastError !== null
     this.lastError = null
-    // 状态变化（错误清除、模型切换、运行状态 ready/processing 切换、从离线恢复）时立即广播，无需等待后续异步操作
-    if (hadError || modelChanged || statusChanged || wasOffline) {
+    // 状态变化（错误清除、模型切换、激活槽位切换、运行状态 ready/processing 切换、从离线恢复）时立即广播，无需等待后续异步操作
+    if (hadError || modelChanged || langSlotChanged || embSlotChanged || statusChanged || wasOffline) {
       this.broadcastStatus()
     }
     // PRD-0044：探活成功后异步刷新已安装模型计数，不阻塞探活关键路径
@@ -1607,28 +1721,10 @@ export class EngineBridgeService {
       version: raw?.version || this.versionCache || null,
       backend: raw?.active_backend || raw?.backend || null,
       backendMatchType: raw ? this.lastBackendMatchType : null,
-      // 激活模型推导：引擎运行模型 -> 上次已知模型 -> 本地已下载首个就绪模型（引擎未启动服务时展示当前激活模型）
-      model: (() => {
-        return (
-          raw?.current_model ||
-          raw?.model ||
-          (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) ||
-          this.lastKnownModel ||
-          this.firstDownloadedModel ||
-          null
-        )
-      })(),
-      // 解析规范友好的中文模型名称（优先使用引擎契约 current_model_name，内置模型目录匹配，fallback 到映射表）
-      modelName: this.resolveFriendlyModelName(
-        raw?.current_model_name ||
-          raw?.model_name ||
-          raw?.current_model ||
-          raw?.model ||
-          (raw?.loaded_models && raw.loaded_models.length > 0 ? raw.loaded_models[0] : null) ||
-          this.lastKnownModel ||
-          this.firstDownloadedModel ||
-          null
-      ),
+      // 激活模型推导（对齐引擎 resolveDisplayModel 权威优先级：
+      // 运行模型（仅 ready/starting）-> 激活语言槽位 -> 激活嵌入槽位 -> 兜底），
+      // 避免引擎切换到嵌入模型（WeMM）时 desktop Footer 滞留陈旧语言模型名称
+      ...this.resolveDisplayModelPair(),
       // 引擎契约字段为 vram_usage_mb（兼容旧 vram_mb / gpu_mem_mb）
       vramMb: typeof raw?.vram_usage_mb === 'number' ? raw.vram_usage_mb : typeof raw?.vram_mb === 'number' ? raw.vram_mb : typeof raw?.gpu_mem_mb === 'number' ? raw.gpu_mem_mb : null,
       modelCount: raw ? this.lastModelCount : null,

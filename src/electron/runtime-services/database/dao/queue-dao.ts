@@ -1,16 +1,9 @@
 import type { Database } from 'better-sqlite3'
 
-/** 队列任务类型（单一队列表复用，见 ADR-0046 与 CONTEXT.md「抢占式单队列调度」） */
-export type AnalysisTaskType = 'analysis' | 'high_dim_correction'
+/** 队列任务类型（单一队列表复用） */
+export type AnalysisTaskType = 'analysis'
 
-/**
- * 抢占式硬优先级排序片段（Issue 0046；依据 ADR-0046 与 CONTEXT.md「抢占式单队列调度」）：
- * 普通文件分析（`analysis`）恒排在高维修正（`high_dim_correction`）之前，
- * 保证「只要存在任何普通分析待办，高维修正任务自然挂起不执行」。
- * 在 ASCII 字典序下 'analysis' < 'high_dim_correction' 严格等价于 CASE 表达式，
- * 且可直接利用覆盖索引 (status, task_type, priority DESC, id ASC) 实现 0 排序扫描。
- */
-const PREEMPTIVE_ORDER_BY = `q.task_type ASC, q.priority DESC, q.id ASC`
+const PREEMPTIVE_ORDER_BY = `q.priority DESC, q.id ASC`
 
 export class QueueDao {
   constructor(private db: Database) {}
@@ -254,53 +247,5 @@ export class QueueDao {
 
   deleteAnalysis(id: number): void {
     this.db.prepare(`DELETE FROM analysis_queue WHERE id = ?`).run(id)
-  }
-
-  /**
-   * 扫描工作区中「已分析但尚未进入 Stage 5 高维修正」的文件（Issue 0046 §4 工作区缓冲灌库）。
-   *
-   * 判定口径：
-   * - 路径级已完成分析（`workspace_files.is_analyzed = 1`）；
-   * - 内容级尚未高维修正（`files.high_dim_corrected = 0`，即尚未落库 zvec 向量）；
-   * - 该路径尚无任何 `high_dim_correction` 队列记录（pending/analyzing/failed/completed 一律排除，
-   *   避免失败项被重复灌库产生重复任务）。
-   *
-   * 返回按 `workspace_files.id` 升序的前 `limit` 条，供调用方分批（100~200/批）安全灌入队列表。
-   */
-  listHighDimCandidates(
-    workspaceId: number,
-    limit: number
-  ): Array<{ item_id: number; path: string; name: string; size: number; file_fingerprint: string }> {
-    try {
-      return this.db
-        .prepare(
-          `
-        SELECT wf.id AS item_id, wf.path AS path, wf.name AS name,
-               COALESCE(f.size, 0) AS size, wf.file_fingerprint AS file_fingerprint
-        FROM workspace_files wf
-        JOIN files f ON f.file_fingerprint = wf.file_fingerprint
-        WHERE wf.workspace_id = ?
-          AND wf.is_analyzed = 1
-          AND wf.file_fingerprint IS NOT NULL
-          AND COALESCE(f.high_dim_corrected, 0) = 0
-          AND wf.id NOT IN (
-            SELECT item_id FROM analysis_queue
-            WHERE task_type = 'high_dim_correction' AND item_type = 'file' AND item_id IS NOT NULL
-          )
-        ORDER BY wf.id ASC
-        LIMIT ?
-      `
-        )
-        .all(workspaceId, limit) as Array<{
-        item_id: number
-        path: string
-        name: string
-        size: number
-        file_fingerprint: string
-      }>
-    } catch (error: any) {
-      console.error('[QueueDao] 扫描高维修正候选文件失败:', error)
-      return []
-    }
   }
 }

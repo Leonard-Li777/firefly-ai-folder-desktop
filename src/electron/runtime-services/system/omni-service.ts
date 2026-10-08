@@ -447,6 +447,17 @@ export class OmniService {
             this.syncConfigFromDesktop().catch(() => {})
           })
         })
+
+        // 监听多模态嵌入档位变更，执行优雅热重启并切换运行时
+        orchestrator.onValueChange('AI_EMBEDDING_PROFILE' as any, async (newVal, oldVal) => {
+          if (newVal && oldVal && newVal !== oldVal) {
+            logger.info(
+              LogCategory.SYSTEM,
+              `[OmniService] 检测到 AI_EMBEDDING_PROFILE 变更 (${oldVal} -> ${newVal})，正在优雅重启 Omni 服务...`
+            )
+            await this.restart()
+          }
+        })
       }).catch(() => {})
     } catch {}
   }
@@ -627,6 +638,18 @@ export class OmniService {
         logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 语义包路径 (--pack-path): ${packPath}`)
       }
 
+      // 注入当前激活的多模态嵌入画像档位 (classic_light | gemma_unified) (Spec §3.4.1)
+      const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+      const embeddingProfile =
+        ConfigOrchestrator.getInstance().getValue<'classic_light' | 'gemma_unified'>(
+          'AI_EMBEDDING_PROFILE'
+        ) || 'classic_light'
+      spawnArgs.push('--embedding-profile', embeddingProfile)
+      logger.info(
+        LogCategory.SYSTEM,
+        `[OmniService] 🎯 嵌入画像档位 (--embedding-profile): ${embeddingProfile}`
+      )
+
       const child = spawn(exePath, spawnArgs, {
         env,
         stdio: ['pipe', 'pipe', 'pipe'],
@@ -742,6 +765,16 @@ export class OmniService {
       } catch {}
       this.process = null
     }
+  }
+
+  /**
+   * 优雅热重启 Omni 服务（档位变更或异常恢复）
+   */
+  public async restart(): Promise<boolean> {
+    logger.info(LogCategory.SYSTEM, '[OmniService] 正在优雅重启 Omni 服务进程...')
+    this.stop()
+    await new Promise(resolve => setTimeout(resolve, 600))
+    return await this.start()
   }
 
   /**
