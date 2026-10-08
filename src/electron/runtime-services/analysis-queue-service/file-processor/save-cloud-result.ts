@@ -14,13 +14,12 @@ import {
   insertTagToDb,
   isTagProvenanceGroup,
   type TagProvenanceGroup,
-  CONTROLLED_CONCEPTS,
   DIMENSION_CODES,
-  getCanonicalConceptName
+  CANONICAL_NAMES
 } from '@firefly/shared'
 import { t } from '@app/languages'
 
-const CONTENT_TAGS_NAME = getCanonicalConceptName(CONTROLLED_CONCEPTS['内容标签']) || '内容标签'
+const CONTENT_TAGS_NAME = CANONICAL_NAMES.CONTENT_TAGS
 import { DeterministicCodeGenerator } from '@firefly/core-engine'
 import { databaseService } from '../../database/database-service'
 import { magikaService } from '../../system/magika-service'
@@ -329,7 +328,7 @@ export async function saveCloudResult(
         // 失配时落 DIMENSION_CODES.CONTENT_TAGS（builtin.content_tags），与动态命中值同码域。
         let contentDimCode: string = DIMENSION_CODES.CONTENT_TAGS
         for (const row of allDimRows) {
-          if (row.code === DIMENSION_CODES.CONTENT_TAGS || row.name === CONTENT_TAGS_NAME || row.name === t(CONTENT_TAGS_NAME)) {
+          if (row.code === DIMENSION_CODES.CONTENT_TAGS || row.name === CONTENT_TAGS_NAME) {
             contentDimCode = String(row.id)
             break
           }

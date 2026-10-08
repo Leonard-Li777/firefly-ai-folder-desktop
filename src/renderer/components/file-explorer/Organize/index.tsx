@@ -38,6 +38,7 @@ import { OrganizingView } from './components/OrganizingView'
 import { DoneView } from './components/DoneView'
 import { SplitPane } from '../../common/SplitPane'
 import { OrganizeMode } from './types'
+import { isUnclassifiedNodeName } from './utils/helpers'
 
 export const Organize: React.FC = () => {
   useVoerkaI18n(i18nScope)
@@ -197,13 +198,12 @@ export const Organize: React.FC = () => {
   const hasClassifiedInTree = useMemo(() => {
     const tree = finalTree?.length ? finalTree : draftTree
     if (!Array.isArray(tree) || tree.length === 0) return false
-    const UNCLASSIFIED_NAME = '未归类'
     const UNCLASSIFIED_ALIAS = '未分类'
 
     const checkNode = (nodes: any[]): boolean => {
       for (const node of nodes) {
         const isUnclass =
-          node.name === UNCLASSIFIED_NAME || node.name === UNCLASSIFIED_ALIAS || node.name === 'Unclassified'
+          isUnclassifiedNodeName(node.name) || node.name === UNCLASSIFIED_ALIAS
         if (
           !isUnclass &&
           ((node.files && node.files.length > 0) || (node.fileCount && node.fileCount > 0))

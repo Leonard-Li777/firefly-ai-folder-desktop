@@ -17,6 +17,7 @@ import {
   extractSnippet,
   normalizeForCache,
   getCanonicalConceptName,
+  CANONICAL_NAMES,
   DIMENSION_CODES
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
@@ -1470,7 +1471,7 @@ export class TagTreeQuery {
                 const segments = rawPath
                   .split('/')
                   .map(s => s.trim())
-                  .filter(s => s && s !== '内容标签' && s !== CONTENT_TAGS_CODE)
+                  .filter(s => s && s !== CANONICAL_NAMES.CONTENT_TAGS && s !== CONTENT_TAGS_CODE)
                 if (segments.length >= 2) {
                   // 防击穿护栏：若路径首段命中受控根维度，严禁挂入内容标签！
                   const firstSeg = segments[0]

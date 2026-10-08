@@ -96,70 +96,52 @@ function isTokenInTemplate(tokenValue: string, currentTemplate: string): boolean
     const dimName = cleanVal.slice(5, -1).trim().toLowerCase()
     return (
       tpl.includes(`{tag:${dimName}}`) ||
-      tpl.includes(`{tag:${t(dimName).toLowerCase()}}`) ||
       tpl.includes(`tag:${dimName}`)
     )
   }
 
-  // 2. 多模态元数据 {META:xxx}
-  const META_SLOT_RESOLUTION = '分辨率'
-  const META_SLOT_DURATION = '时长'
-  const META_SLOT_PAGES = '页数'
-  const META_SLOT_CODEC = '编码'
-  const META_SLOT_CODEC_FORMAT = '编码格式'
+// DSL 元数据槽位规范名 (用于模板存在性校验与别名映射)
+const META_SLOT_NAMES = {
+  RESOLUTION: '分辨率',
+  DURATION: '时长',
+  PAGES: '页数',
+  CODEC: '编码',
+  CODEC_FORMAT: '编码格式'
+} as const
 
+  // 2. 多模态元数据 {META:xxx}
   if (cleanVal.startsWith('{META:')) {
     const metaKey = cleanVal.slice(6, -1).trim().toLowerCase()
-    if (
-      metaKey === META_SLOT_RESOLUTION ||
-      metaKey === 'resolution' ||
-      metaKey === 'res' ||
-      metaKey === t(META_SLOT_RESOLUTION).toLowerCase()
-    ) {
+    // locale-invariant-ok: DSL 占位符模板匹配
+    if (metaKey === META_SLOT_NAMES.RESOLUTION || metaKey === 'resolution' || metaKey === 'res') {
       return (
         tpl.includes('{meta:分辨率') ||
         tpl.includes('{meta:resolution') ||
-        tpl.includes('{meta:res') ||
-        tpl.includes(`{meta:${t(META_SLOT_RESOLUTION).toLowerCase()}`)
+        tpl.includes('{meta:res')
       )
     }
-    if (
-      metaKey === META_SLOT_DURATION ||
-      metaKey === 'duration' ||
-      metaKey === 'dur' ||
-      metaKey === t(META_SLOT_DURATION).toLowerCase()
-    ) {
+    // locale-invariant-ok: DSL 占位符模板匹配
+    if (metaKey === META_SLOT_NAMES.DURATION || metaKey === 'duration' || metaKey === 'dur') {
       return (
         tpl.includes('{meta:时长') ||
         tpl.includes('{meta:duration') ||
-        tpl.includes('{meta:dur') ||
-        tpl.includes(`{meta:${t(META_SLOT_DURATION).toLowerCase()}`)
+        tpl.includes('{meta:dur')
       )
     }
-    if (
-      metaKey === META_SLOT_PAGES ||
-      metaKey === 'pages' ||
-      metaKey === 'page' ||
-      metaKey === t(META_SLOT_PAGES).toLowerCase()
-    ) {
+    // locale-invariant-ok: DSL 占位符模板匹配
+    if (metaKey === META_SLOT_NAMES.PAGES || metaKey === 'pages' || metaKey === 'page') {
       return (
         tpl.includes('{meta:页数') ||
         tpl.includes('{meta:pages') ||
-        tpl.includes('{meta:page') ||
-        tpl.includes(`{meta:${t(META_SLOT_PAGES).toLowerCase()}`)
+        tpl.includes('{meta:page')
       )
     }
-    if (
-      metaKey === META_SLOT_CODEC ||
-      metaKey === 'codec' ||
-      metaKey === META_SLOT_CODEC_FORMAT ||
-      metaKey === t(META_SLOT_CODEC).toLowerCase() ||
-      metaKey === t(META_SLOT_CODEC_FORMAT).toLowerCase()
-    ) {
+    // locale-invariant-ok: DSL 占位符模板匹配
+    if (metaKey === META_SLOT_NAMES.CODEC || metaKey === 'codec' || metaKey === META_SLOT_NAMES.CODEC_FORMAT) {
       return (
         tpl.includes('{meta:编码') ||
         tpl.includes('{meta:codec') ||
-        tpl.includes(`{meta:${t('编码').toLowerCase()}`)
+        tpl.includes('{meta:编码格式')
       )
     }
     return tpl.includes(`{meta:${metaKey}`)
@@ -340,6 +322,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
 
     return [
       {
+        key: 'common',
         category: t('常用'),
         badgeColor: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
         tokens: [
@@ -418,6 +401,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
         ]
       },
       {
+        key: 'core',
         category: t('核心名称'),
         badgeColor: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
         tokens: [
@@ -466,6 +450,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
         ]
       },
       {
+        key: 'datetime',
         category: t('时间日期'),
         badgeColor: 'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',
         tokens: [
@@ -496,11 +481,13 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
         ]
       },
       {
+        key: 'dimension',
         category: t('分类维度'),
         badgeColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
         tokens: dimTokens
       },
       {
+        key: 'meta',
         category: t('无数据'),
         badgeColor: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
         tokens: [
@@ -531,6 +518,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
         ]
       },
       {
+        key: 'seq',
         category: t('自增序号'),
         badgeColor: 'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
         tokens: [
@@ -1212,13 +1200,13 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                     {/* 属性分类快捷 Tab 过滤栏 */}
                     <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5">
                       {[
-                        { id: t('常用'), label: t('常用'), icon: 'star' },
+                        { id: 'common', label: t('常用'), icon: 'star' },
                         { id: 'all', label: t('全部'), icon: 'apps' },
-                        { id: t('核心名称'), label: t('核心与作者'), icon: 'person' },
-                        { id: t('时间日期'), label: t('时间日期'), icon: 'calendar_today' },
-                        { id: t('分类维度'), label: t('分类维度'), icon: 'category' },
-                        { id: t('无数据'), label: t('无数据'), icon: 'aspect_ratio' },
-                        { id: t('自增序号'), label: t('自增序号'), icon: 'format_list_numbered' }
+                        { id: 'core', label: t('核心与作者'), icon: 'person' },
+                        { id: 'datetime', label: t('时间日期'), icon: 'calendar_today' },
+                        { id: 'dimension', label: t('分类维度'), icon: 'category' },
+                        { id: 'meta', label: t('无数据'), icon: 'aspect_ratio' },
+                        { id: 'seq', label: t('自增序号'), icon: 'format_list_numbered' }
                       ].map(tab => {
                         const isSelected = selectedTokenCategory === tab.id
                         return (
@@ -1245,8 +1233,8 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                     {(() => {
                       const visibleCategories = tokenCategories
                         .filter(cat => {
-                          if (selectedTokenCategory === 'all') return cat.category !== t('常用')
-                          return cat.category === selectedTokenCategory
+                          if (selectedTokenCategory === 'all') return cat.key !== 'common'
+                          return cat.key === selectedTokenCategory
                         })
                         .map(cat => ({
                           ...cat,

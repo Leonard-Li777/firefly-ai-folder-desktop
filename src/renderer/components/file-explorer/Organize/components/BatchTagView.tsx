@@ -12,10 +12,9 @@ import {
   isRuleSubdivisionDimension,
   isPanDimension as checkIsPanDimension,
   filterDimensionTags,
-  DIMENSION_CODES
+  DIMENSION_CODES,
+  CANONICAL_NAMES
 } from '@firefly/shared'
-
-const CONTENT_TAGS_DIM_NAME = '内容标签'
 import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
 
@@ -742,8 +741,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     result.sort((a, b) => {
       if (a.dimensionName !== b.dimensionName) {
         // 让“内容标签”排在最后
-        const isAContent = a.dimensionId === 28 || a.dimensionName === t('内容标签')
-        const isBContent = b.dimensionId === 28 || b.dimensionName === t('内容标签')
+        const isAContent = a.dimensionId === 28 || a.dimensionName === CANONICAL_NAMES.CONTENT_TAGS
+        const isBContent = b.dimensionId === 28 || b.dimensionName === CANONICAL_NAMES.CONTENT_TAGS
         if (isAContent && !isBContent) return 1
         if (!isAContent && isBContent) return -1
         return a.dimensionName.localeCompare(b.dimensionName, 'zh-CN')
@@ -998,8 +997,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
 
     // 泛维度标签列：将“内容标签”维度（ID=28 或名称包含“内容标签”）放置到最后
     pan.sort((a, b) => {
-      const isAContent = a.id === 28 || (a as any).code === DIMENSION_CODES.CONTENT_TAGS || a.name === CONTENT_TAGS_DIM_NAME || a.name?.includes(CONTENT_TAGS_DIM_NAME)
-      const isBContent = b.id === 28 || (b as any).code === DIMENSION_CODES.CONTENT_TAGS || b.name === CONTENT_TAGS_DIM_NAME || b.name?.includes(CONTENT_TAGS_DIM_NAME)
+      const isAContent = a.id === 28 || (a as any).code === DIMENSION_CODES.CONTENT_TAGS || a.name === CANONICAL_NAMES.CONTENT_TAGS || a.name?.includes(CANONICAL_NAMES.CONTENT_TAGS)
+      const isBContent = b.id === 28 || (b as any).code === DIMENSION_CODES.CONTENT_TAGS || b.name === CANONICAL_NAMES.CONTENT_TAGS || b.name?.includes(CANONICAL_NAMES.CONTENT_TAGS)
       if (isAContent && !isBContent) return 1
       if (!isAContent && isBContent) return -1
       return 0

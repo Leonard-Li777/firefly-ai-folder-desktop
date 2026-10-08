@@ -369,11 +369,11 @@ export class NamingDSLEngine {
       const SLOT_CODEC = '编码'
       const SLOT_CODEC_FORMAT = '编码格式'
 
-      const localizedRes = t(SLOT_RESOLUTION).toLowerCase()
-      const localizedDur = t(SLOT_DURATION).toLowerCase()
-      const localizedPages = t(SLOT_PAGES).toLowerCase()
-      const localizedCodec = t(SLOT_CODEC).toLowerCase()
-      const localizedCodecFormat = t(SLOT_CODEC_FORMAT).toLowerCase()
+      const localizedRes = t('分辨率').toLowerCase()
+      const localizedDur = t('时长').toLowerCase()
+      const localizedPages = t('页数').toLowerCase()
+      const localizedCodec = t('编码').toLowerCase()
+      const localizedCodecFormat = t('编码格式').toLowerCase()
 
       // 1. 分辨率 (Resolution)
       if (

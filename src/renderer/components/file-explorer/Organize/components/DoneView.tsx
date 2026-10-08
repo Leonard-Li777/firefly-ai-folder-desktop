@@ -14,11 +14,13 @@ import {
   sanitizeDirectoryName,
   countRealFiles,
   recalculateNodeFileCounts,
-  getAllFileKeys
+  getAllFileKeys,
+  isUnclassifiedNodeName
 } from '../utils/helpers'
 import { useSettingsStore } from '../../../../stores/settings-store'
+import { SENTINEL_NAMES } from '@firefly/shared'
 
-const UNCLASSIFIED_NAME = '未归类'
+const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 
 export function DoneView({
   tree,
@@ -83,9 +85,9 @@ export function DoneView({
 
   const getConfigValue = useSettingsStore.getState().getConfigValue
   const swapFileNameDisplay = getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
-  const unclassifiedNode = tree.find(n => n.name === t(UNCLASSIFIED_NAME) || n.name === UNCLASSIFIED_NAME)
+  const unclassifiedNode = tree.find(n => isUnclassifiedNodeName(n.name))
 
-  const isUnclassifiedName = (name: string) => name === UNCLASSIFIED_NAME || name === t(UNCLASSIFIED_NAME)
+  const isUnclassifiedName = (name: string) => isUnclassifiedNodeName(name)
   const filterUnclassified = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] =>
     nodes
       .filter(n => !isUnclassifiedName(n.name))
@@ -93,10 +95,8 @@ export function DoneView({
         const subs = filterUnclassified(n.subdirectories || [])
         const cleanFiles = (n.files || []).filter(
           f =>
-            f.name !== UNCLASSIFIED_NAME &&
-            f.name !== t(UNCLASSIFIED_NAME) &&
-            f.smartName !== UNCLASSIFIED_NAME &&
-            f.smartName !== t(UNCLASSIFIED_NAME) &&
+            !isUnclassifiedNodeName(f.name) &&
+            !isUnclassifiedNodeName(f.smartName) &&
             !f.isUnclassified &&
             !f.unclassified
         )
@@ -174,7 +174,7 @@ export function DoneView({
     const keys = new Set<string>()
     const collect = (nodes: VirtualDirectoryNode[]) => {
       for (const n of nodes) {
-        if (n.name === UNCLASSIFIED_NAME || n.name === t(UNCLASSIFIED_NAME) || n.name === 'Unclassified') continue
+        if (isUnclassifiedNodeName(n.name)) continue
         if (Array.isArray(n.files)) {
           for (const f of n.files) {
             for (const k of getAllFileKeys(f)) {

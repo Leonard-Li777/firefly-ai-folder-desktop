@@ -8,9 +8,10 @@ import { t } from '@app/languages'
 import { EmptyState } from '../../../common/EmptyState'
 import { VDirTree } from './VDirTree'
 import { Checkbox } from '../../../../components/ui/checkbox'
-import { recalculateNodeFileCounts } from '../utils/helpers'
+import { recalculateNodeFileCounts, isUnclassifiedNodeName } from '../utils/helpers'
+import { SENTINEL_NAMES } from '@firefly/shared'
 
-const UNCLASSIFIED_NAME = '未归类'
+const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 
 export function OrganizingView({
   tree,
@@ -52,7 +53,7 @@ export function OrganizingView({
   const percent =
     progressInfo.total > 0 ? Math.round((progressInfo.current / progressInfo.total) * 100) : 0
 
-  const isUnclassifiedName = (name: string) => name === UNCLASSIFIED_NAME || name === t(UNCLASSIFIED_NAME)
+  const isUnclassifiedName = (name: string) => isUnclassifiedNodeName(name)
 
   const filterPendingFilesOnly = React.useCallback(
     (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {

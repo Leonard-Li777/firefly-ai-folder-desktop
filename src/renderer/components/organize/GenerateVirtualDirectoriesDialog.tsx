@@ -283,18 +283,14 @@ export const GenerateVirtualDirectoriesDialog: React.FC<GenerateVirtualDirectori
       if (!node.files) return
 
       const isThemeNode =
-        node.dimensionName === t(THEME_DIM_NAME) ||
+        node.dimensionId === 3 ||
+        node.dimensionId === 4 ||
         node.dimensionName === THEME_DIM_NAME ||
-        node.dimensionName === 'Genre / Theme' ||
+        node.dimensionName === GAME_TYPE_DIM_NAME ||
         (node.dimensionName &&
           (node.dimensionName.toLowerCase().includes('theme') ||
-            node.dimensionName.toLowerCase().includes('genre'))) ||
-        node.dimensionName === t(GAME_TYPE_DIM_NAME) ||
-        node.dimensionName === GAME_TYPE_DIM_NAME ||
-        node.dimensionName === 'Game Type' ||
-        (node.dimensionName &&
-          (node.dimensionName.toLowerCase().includes('game type') ||
-            node.dimensionName.toLowerCase().includes('game genre')))
+            node.dimensionName.toLowerCase().includes('genre') ||
+            node.dimensionName.toLowerCase().includes('game')))
       if (!isThemeNode) return
 
       // 向上寻找父级或祖先节点的标签值，确定对应的物理文件分类
@@ -306,21 +302,16 @@ export const GenerateVirtualDirectoriesDialog: React.FC<GenerateVirtualDirectori
         if (parentNode) {
           const parentTagValue = parentNode.name
           const isVideoTag =
-            parentTagValue === t(VIDEO_TAG_NAME) ||
-            parentTagValue === t(MOVIE_TAG_NAME) ||
             parentTagValue === VIDEO_TAG_NAME ||
             parentTagValue === MOVIE_TAG_NAME ||
             parentTagValue.toLowerCase().includes('video') ||
             parentTagValue.toLowerCase().includes('movie')
           const isEbookTag =
-            parentTagValue === t(EBOOK_TAG_NAME) ||
-            parentTagValue === t(NOVEL_TAG_NAME) ||
             parentTagValue === EBOOK_TAG_NAME ||
             parentTagValue === NOVEL_TAG_NAME ||
             parentTagValue.toLowerCase().includes('ebook') ||
             parentTagValue.toLowerCase().includes('novel')
           const isGameTag =
-            parentTagValue === t(GAME_ENTERTAINMENT_TAG_NAME) ||
             parentTagValue === GAME_ENTERTAINMENT_TAG_NAME ||
             parentTagValue.toLowerCase().includes('game')
 

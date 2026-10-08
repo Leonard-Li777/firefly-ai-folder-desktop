@@ -1,9 +1,10 @@
 import { VirtualDirectoryNode } from '@firefly/types'
 import { OrganizeMode } from '../types'
 import { t } from '@app/languages'
+import { SENTINEL_NAMES } from '@firefly/shared'
 
-const UNCLASSIFIED_NAME = '未归类'
-const UNKNOWN_NAME = '未知'
+const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
+const UNKNOWN_NAME = SENTINEL_NAMES.UNKNOWN
 const PROJECT_CORE_NAME = '项目核心'
 const CORE_PROJECT_NAME = '核心项目'
 
@@ -90,8 +91,8 @@ export function isUnclassifiedNodeName(name?: string): boolean {
   if (!name) return true
   const trimmed = String(name).trim().toLowerCase()
   return (
-    trimmed === UNCLASSIFIED_NAME ||
-    trimmed === t(UNCLASSIFIED_NAME).trim().toLowerCase() ||
+    trimmed === UNCLASSIFIED_NAME.toLowerCase() ||
+    trimmed === t('未归类').trim().toLowerCase() || // locale-invariant-ok: 容错用户界面输入的本地化未归类别名
     trimmed === 'unclassified'
   )
 }
@@ -158,7 +159,7 @@ export function mergeTreesWithDraft(
       (node as any).unclassified
     ) {
       if (!unclassifiedResultNode) {
-        unclassifiedResultNode = { ...node, name: t('未归类'), isUnclassified: true } as any
+        unclassifiedResultNode = { ...node, name: UNCLASSIFIED_NAME, isUnclassified: true } as any
       } else {
         unclassifiedResultNode.files = mergeFiles(unclassifiedResultNode.files, node.files)
         unclassifiedResultNode.subdirectories = mergeTreesWithDraft(
@@ -183,7 +184,7 @@ export function mergeTreesWithDraft(
       (draftNode as any).unclassified
     ) {
       if (!unclassifiedDraftNode) {
-        unclassifiedDraftNode = { ...draftNode, name: t('未归类'), isUnclassified: true } as any
+        unclassifiedDraftNode = { ...draftNode, name: UNCLASSIFIED_NAME, isUnclassified: true } as any
       } else {
         unclassifiedDraftNode.files = mergeFiles(unclassifiedDraftNode.files, draftNode.files)
         unclassifiedDraftNode.subdirectories = mergeTreesWithDraft(
@@ -263,7 +264,7 @@ export function mergeTreesWithDraft(
     })
 
     mergedNodes.push({
-      name: t('未归类'),
+      name: UNCLASSIFIED_NAME,
       isUnclassified: true,
       parent: null,
       subdirectories: combinedUnclassifiedSubs,
@@ -296,7 +297,7 @@ export function getPerspectiveIcon(perspective: string): string {
 
 /** 清洗目录名：先移除非法特殊字符，再校验目录名长度（正常范围 1-40 字），保留正常范围的目录名 */
 export function sanitizeDirectoryName(name: string): string {
-  if (!name) return '未归类'
+  if (!name) return UNCLASSIFIED_NAME
   // 1. 先去掉非法特殊字符（使用 Unicode 属性转义 \p{L} 匹配所有语言字母，\p{N} 匹配数字）
   let cleaned = name.replace(/[^\p{L}\p{N}\s.\-_（）()【】\[\]]/gu, '').trim()
 
@@ -325,16 +326,16 @@ export function sanitizeDirectoryName(name: string): string {
 
   // 3. 如果清洗后为空，标记为未归类
   if (!cleaned) {
-    return '未归类'
+    return UNCLASSIFIED_NAME
   }
 
   // 4. 校验目录名长度在正常范围（1 ~ 40个字符），超出范围则视为不规范名称
   if (cleaned.length > 40) {
-    return '未归类'
+    return UNCLASSIFIED_NAME
   }
 
   // 5. 过滤“未知”等无意义的名称
-  if (cleaned === t(UNKNOWN_NAME) || cleaned === UNKNOWN_NAME) {
+  if (cleaned === UNKNOWN_NAME || cleaned === t('未知') || cleaned.toLowerCase() === 'unknown') { // locale-invariant-ok: 过滤未知目录名
     return UNCLASSIFIED_NAME
   }
 
@@ -359,7 +360,7 @@ export function sanitizeTree(
       ? sanitizeTree(node.subdirectories, filterUnclassified)
       : []
 
-    const isUnclassified = cleanedName === UNCLASSIFIED_NAME || cleanedName === t(UNCLASSIFIED_NAME)
+    const isUnclassified = isUnclassifiedNodeName(cleanedName)
 
     if (filterUnclassified && isUnclassified) {
       // 如果当前节点是不合规节点（如扩展名）被归为了「未归类」，但包含合法的子节点（如“文件”、“文档”），
@@ -500,7 +501,7 @@ export function collectAllFiles(
 
 /** 统计未归类文件数 */
 export function countUnclassified(tree: VirtualDirectoryNode[]): number {
-  const unclassifiedNode = tree.find(n => n.name === t('未归类'))
+  const unclassifiedNode = tree.find(n => isUnclassifiedNodeName(n.name))
   return unclassifiedNode?.fileCount || 0
 }
 
@@ -513,11 +514,9 @@ export function resetTreeToOutline(
 ): VirtualDirectoryNode[] {
   if (!Array.isArray(tree)) return []
 
-  const isUnclassifiedName = (name: string) => name === t('未归类')
-
   const cleanNodes = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
     return nodes
-      .filter(n => !isUnclassifiedName(n.name || ''))
+      .filter(n => !isUnclassifiedNodeName(n.name))
       .map(node => ({
         ...node,
         files: [],
@@ -528,7 +527,7 @@ export function resetTreeToOutline(
 
   const result = cleanNodes(tree)
   result.push({
-    name: t('未归类'),
+    name: UNCLASSIFIED_NAME,
     parent: null,
     subdirectories: [],
     files: [...toOrganizeFiles],
@@ -546,20 +545,18 @@ export function extractUnclassifiedFiles(tree: VirtualDirectoryNode[]): any[] {
     return result
   }
 
-  const isUnclassifiedName = (name: string) => name === t('未归类')
-
   const traverse = (nodes: VirtualDirectoryNode[], inUnclassifiedContext: boolean) => {
     if (!Array.isArray(nodes)) return
     for (const node of nodes) {
-      const isUnclassNode = inUnclassifiedContext || isUnclassifiedName(node.name || '')
+      const isUnclassNode = inUnclassifiedContext || isUnclassifiedNodeName(node.name)
       if (Array.isArray(node.files)) {
         for (const f of node.files) {
           if (
             isUnclassNode ||
             (f as any).isUnclassified ||
             (f as any).unclassified ||
-            isUnclassifiedName((f as any).name || '') ||
-            isUnclassifiedName((f as any).smartName || '')
+            (Boolean((f as any).name) && isUnclassifiedNodeName((f as any).name)) ||
+            (Boolean((f as any).smartName) && isUnclassifiedNodeName((f as any).smartName))
           ) {
             const rawId = (f as any).fileId ?? (f as any).id ?? 0
             const fileName =
@@ -716,9 +713,7 @@ export function mergeRescueResult(
     subdirectories: (node.subdirectories || []).map(cloneNode)
   })
 
-  const isUnclassNodeName = (name: string) => name === t('未归类')
-
-  const newTree = original.filter(n => !isUnclassNodeName(n.name)).map(cloneNode)
+  const newTree = original.filter(n => !isUnclassifiedNodeName(n.name)).map(cloneNode)
 
   // 2. 辅助函数：根据路径寻找或创建目录节点
   const findOrCreatePath = (
@@ -772,7 +767,7 @@ export function mergeRescueResult(
   // 3. 收集 rescued 树中所有被归类到非「未归类」节点的文件并合并
   const traverseRescued = (nodes: VirtualDirectoryNode[], pathParts: string[]) => {
     for (const node of nodes) {
-      if (isUnclassNodeName(node.name)) {
+      if (isUnclassifiedNodeName(node.name)) {
         continue
       }
       const currentPath = [...pathParts, node.name]
@@ -795,7 +790,7 @@ export function mergeRescueResult(
   const classifiedFileKeys = new Set<string>()
   const collectClassifiedKeys = (nodes: VirtualDirectoryNode[]) => {
     for (const node of nodes) {
-      if (isUnclassNodeName(node.name)) continue
+      if (isUnclassifiedNodeName(node.name)) continue
       if (Array.isArray(node.files)) {
         for (const f of node.files) {
           const keys = getAllFileKeys(f)
@@ -812,8 +807,8 @@ export function mergeRescueResult(
   collectClassifiedKeys(newTree)
 
   // 5. 过滤并精准合并「未归类」文件
-  const originalUnclassified = original.find(n => isUnclassNodeName(n.name))
-  const rescuedUnclassified = rescued.find(n => isUnclassNodeName(n.name))
+  const originalUnclassified = original.find(n => isUnclassifiedNodeName(n.name))
+  const rescuedUnclassified = rescued.find(n => isUnclassifiedNodeName(n.name))
 
   const candidateUnclassifiedFiles = [
     ...(rescuedUnclassified?.files || []),
@@ -842,7 +837,7 @@ export function mergeRescueResult(
   }
 
   newTree.push({
-    name: t('未归类'),
+    name: UNCLASSIFIED_NAME,
     parent: null,
     subdirectories: [],
     files: cleanUnclassifiedFiles,
@@ -955,9 +950,11 @@ export function parseStrategyToNodes(strategy: string): VirtualDirectoryNode[] {
       .trim()
     if (
       !cleanName ||
-      cleanName === t('未归类') ||
-      cleanName === t('项目核心') ||
-      cleanName === t('核心项目')
+      isUnclassifiedNodeName(cleanName) ||
+      cleanName === PROJECT_CORE_NAME ||
+      cleanName === CORE_PROJECT_NAME ||
+      cleanName === t('项目核心') || // locale-invariant-ok: 策略大纲解析过滤
+      cleanName === t('核心项目') // locale-invariant-ok: 策略大纲解析过滤
     )
       continue
     if (!rootNodes.some(n => n.name === cleanName)) {

@@ -964,7 +964,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
         errorMsg = match[1]
       }
 
-      if (errorMsg.includes('配额')) {
+      if (errorMsg.includes('配额')) { // locale-invariant-ok: 外部异常文本匹配 (D型)
         toast.error(errorMsg)
       } else if (errorMsg) {
         toast.error(t('分析失败：{error}', { error: errorMsg }))

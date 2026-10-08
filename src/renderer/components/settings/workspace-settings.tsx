@@ -266,7 +266,7 @@ export const MonitoringSettings: React.FC = () => {
       }
 
       // 配额错误显示友好消息
-      if (errorMsg.includes('配额')) {
+      if (errorMsg.includes('配额')) { // locale-invariant-ok: 外部异常文本匹配 (D型)
         toast.error(errorMsg)
       } else {
         console.error('加入分析队列失败:', error)

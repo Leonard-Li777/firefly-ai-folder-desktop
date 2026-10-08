@@ -418,7 +418,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
                       {uTheme.icon}
                     </span>
                     <span className={`text-sm font-semibold ${uTheme.color} ${uTheme.darkColor}`}>
-                      {t(uLabel)}
+                      {uLabel}
                     </span>
                     <span
                       className={`px-1.5 py-0.5 rounded-md text-[10px] font-semibold border ${uTheme.color} ${uTheme.darkColor} ${uTheme.border} ${uTheme.darkBorder} bg-white/80 dark:bg-gray-900/80`}

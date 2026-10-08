@@ -312,7 +312,7 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
             )}
           >
             <span className="material-icons text-[12px]">{unitTheme.icon}</span>
-            {t(unitLabel)}
+            {unitLabel}
           </span>
         </div>
       )}

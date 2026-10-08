@@ -318,7 +318,7 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
               title={unitTooltip}
             >
               <span className="material-icons text-[12px]">{unitTheme.icon}</span>
-              {t(unitLabel)}
+              {unitLabel}
             </span>
           )}
         </td>
@@ -581,7 +581,7 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
                           title={fileUnitTooltip}
                         >
                           <span className="material-icons text-[12px]">{fileUnitTheme.icon}</span>
-                          {t(fileUnitLabel)}
+                          {fileUnitLabel}
                         </span>
                       )
                     })()}

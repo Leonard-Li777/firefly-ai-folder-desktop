@@ -405,7 +405,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
                     title={unitTooltip}
                   >
                     <span className="material-icons text-[12px]">{unitTheme.icon}</span>
-                    {t(unitLabel)}
+                    {unitLabel}
                   </span>
                 )}
               </div>

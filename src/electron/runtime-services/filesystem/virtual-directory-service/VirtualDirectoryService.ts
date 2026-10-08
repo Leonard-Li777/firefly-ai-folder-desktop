@@ -8,9 +8,9 @@ import {
   DirectoryReorganizeResult,
   AIDirectoryStructure
 } from '@firefly/types'
-import { LogCategory, logger, sanitizeDirectoryName, HAC_FEATURE_FLAGS, CONTROLLED_CONCEPTS, getCanonicalConceptName } from '@firefly/shared'
+import { LogCategory, logger, sanitizeDirectoryName, HAC_FEATURE_FLAGS, SENTINEL_NAMES } from '@firefly/shared'
 
-const UNCLASSIFIED_NAME = getCanonicalConceptName((CONTROLLED_CONCEPTS as any)['未归类']) || '未归类'
+const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 import { t } from '@app/languages'
 import Database from 'better-sqlite3'
 import { databaseService } from '../../database/database-service'

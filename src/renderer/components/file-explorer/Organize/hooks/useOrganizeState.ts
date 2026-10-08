@@ -6,7 +6,7 @@ import {
   VirtualDirectoryNode,
   WorkspaceDirectory
 } from '@firefly/types'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, SENTINEL_NAMES } from '@firefly/shared'
 import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { toast } from '../../../common/Toast'
@@ -16,7 +16,7 @@ import { useTierStore } from '../../../../stores/tier-store'
 import { useSettingsStore } from '../../../../stores/settings-store'
 import { useOrganizeStore } from '../../../../stores/organize-store'
 
-const UNCLASSIFIED_NAME = '未归类'
+const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 
 import { Stage, OrganizeMode, OrganizeOptions, ProgressInfo } from '../types'
 import {
@@ -35,7 +35,8 @@ import {
   recalculateNodeFileCounts,
   getFileUniqueKey,
   countRealFiles,
-  getAllFileKeys
+  getAllFileKeys,
+  isUnclassifiedNodeName
 } from '../utils/helpers'
 
 import { exportTreeToFiles } from '../utils/exportTreeToFiles'
@@ -338,8 +339,7 @@ export function useOrganizeState() {
       const classifiedKeys = new Set<string>()
       const collectClassified = (nodes: VirtualDirectoryNode[]) => {
         for (const node of nodes) {
-          const isUnclass =
-            node.name === UNCLASSIFIED_NAME || node.name === t(UNCLASSIFIED_NAME) || node.name === 'Unclassified'
+          const isUnclass = isUnclassifiedNodeName(node.name)
           if (!isUnclass && Array.isArray(node.files)) {
             for (const f of node.files) {
               const keys = getAllFileKeys(f)
@@ -458,11 +458,11 @@ export function useOrganizeState() {
         let tree = Array.isArray(res) ? res : res?.tree || []
 
         let unclassifiedNode = tree.find(
-          (n: any) => n.name === UNCLASSIFIED_NAME || n.name === t(UNCLASSIFIED_NAME) || n.name === 'Unclassified'
+          (n: any) => isUnclassifiedNodeName(n.name)
         )
         if (!unclassifiedNode) {
           unclassifiedNode = {
-            name: t('未归类'),
+            name: UNCLASSIFIED_NAME,
             parent: null,
             subdirectories: [],
             files: [],
@@ -608,10 +608,10 @@ export function useOrganizeState() {
             }
           }
 
-          let unclassifiedNode = initialTree.find(n => n.name === t('未归类'))
+          let unclassifiedNode = initialTree.find(n => isUnclassifiedNodeName(n.name))
           if (!unclassifiedNode) {
             unclassifiedNode = {
-              name: t('未归类'),
+              name: UNCLASSIFIED_NAME,
               parent: null,
               subdirectories: [],
               files: [],
@@ -646,7 +646,7 @@ export function useOrganizeState() {
           const alreadyClassifiedKeys = new Set<string>()
           const collectClassifiedKeys = (nodes: VirtualDirectoryNode[]) => {
             for (const node of nodes) {
-              if (node.name === t('未归类')) continue
+              if (isUnclassifiedNodeName(node.name)) continue
               if (Array.isArray(node.files)) {
                 for (const f of node.files) {
                   const key = getFileUniqueKey(f)
@@ -940,10 +940,10 @@ export function useOrganizeState() {
         } else if (snapshotRes && typeof snapshotRes === 'object') {
           treeResult = Array.isArray(snapshotRes.tree) ? [...snapshotRes.tree] : []
           if (snapshotRes.rootNode?.rootFiles && snapshotRes.rootNode.rootFiles.length > 0) {
-            let unclass = treeResult.find(n => n.name === t('未归类'))
+            let unclass = treeResult.find(n => isUnclassifiedNodeName(n.name))
             if (!unclass) {
               unclass = {
-                name: t('未归类'),
+                name: UNCLASSIFIED_NAME,
                 parent: null,
                 subdirectories: [],
                 files: [],
@@ -2044,11 +2044,11 @@ export function useOrganizeState() {
 
         if (formattedDeletedFiles.length > 0) {
           let unclassifiedNode = newTree.find(
-            n => n.name === UNCLASSIFIED_NAME || n.name === t(UNCLASSIFIED_NAME) || n.name === 'Unclassified'
+            n => isUnclassifiedNodeName(n.name)
           )
           if (!unclassifiedNode) {
             unclassifiedNode = {
-              name: t('未归类'),
+              name: UNCLASSIFIED_NAME,
               parent: null,
               subdirectories: [],
               files: [],

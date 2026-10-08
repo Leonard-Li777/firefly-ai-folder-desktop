@@ -1,6 +1,6 @@
-import { LogCategory, logger, CONTROLLED_CONCEPTS, DIMENSION_CODES, getCanonicalConceptName } from '@firefly/shared'
+import { LogCategory, logger, DIMENSION_CODES, CANONICAL_NAMES } from '@firefly/shared'
 
-const FILE_QUALITY_NAME = getCanonicalConceptName(CONTROLLED_CONCEPTS['文件质量']) || '文件质量'
+const FILE_QUALITY_NAME = CANONICAL_NAMES.FILE_QUALITY
 import path from 'node:path'
 import { databaseService } from '../../database/database-service'
 import { virtualDirectoryService } from './VirtualDirectoryService'

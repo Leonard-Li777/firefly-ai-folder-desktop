@@ -1,7 +1,7 @@
 import { VirtualDirectoryNode, VirtualDirectoryFileRow } from '@firefly/types'
-import { LogCategory, logger, CONTROLLED_CONCEPTS, getCanonicalConceptName } from '@firefly/shared'
+import { LogCategory, logger, SENTINEL_NAMES } from '@firefly/shared'
 
-const UNCLASSIFIED_NAME = getCanonicalConceptName((CONTROLLED_CONCEPTS as any)['未归类']) || '未归类'
+const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 
 export interface VirtualDirectoryProvider {
   listFiles(
