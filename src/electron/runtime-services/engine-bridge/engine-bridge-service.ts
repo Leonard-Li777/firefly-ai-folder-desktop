@@ -154,6 +154,10 @@ export class EngineBridgeService {
   private isStarting = false
   private startPromise: Promise<boolean> | null = null
   private pollTimer: NodeJS.Timeout | null = null
+  /** 轮询探活单飞标志，避免全端口探测耗时超过轮询间隔时发生并发重入 */
+  private pollInFlight = false
+  /** 服务停止代际计数，每次 stop() 递增以拦截在途异步探活回写已停止状态 */
+  private stopEpoch = 0
   private lastRawStatus: Tier2EngineStatus | null = null
   private versionCache: string | null = null
   private lastError: string | null = null
@@ -179,6 +183,14 @@ export class EngineBridgeService {
   private thinkingConfigUnsubscribe: (() => void) | null = null
   /** 内置模型元数据缓存（包含所有语言模型与 embedding 模型；权威来源 = engine /api/models/meta） */
   private builtinModelCatalog: Array<{ id: string; name: string; isEmbedding?: boolean }> | null = null
+  /** 引擎 /api/models 模型列表缓存（随 refreshModelCount 更新，作为 matchSlotToCatalog 第二层匹配源） */
+  private downloadedModelCatalog: Array<{
+    id: string
+    name: string
+    localPath?: string
+    fileName?: string
+    isEmbedding?: boolean
+  }> = []
   /** 引擎模型元数据全量缓存（含 totalSize / vramRequiredGB / recommendedConfig 等，供 enrichAIStatus 匹配） */
   private modelMetaCache: { lang: string; models: any[]; fetchedAt: number } | null = null
   /** 模型计数刷新进行中的 Promise（并发调用共享同一刷新，await 可等待真正完成） */
@@ -555,59 +567,136 @@ export class EngineBridgeService {
   }
 
   /**
-   * 将引擎激活槽位值匹配到内置模型目录条目。
+   * 将引擎激活槽位值匹配到内置模型目录或已下载/自定义模型列表条目。
    * 槽位值格式（firefly-ai-engine api.rs）：
    * - 手动切换：`{model_id}@{source}`（source ∈ modelscope | huggingface）
    * - 自动绑定：本地物理路径（如启动时自动检测绑定）
-   * 匹配口径对齐引擎端 matchModel（基名包含、路径 repo-id 包含），
-   * 并按槽位语义严格过滤（语言槽位只匹配非 embedding、嵌入槽位只匹配 embedding 模型）。
+   * 匹配优先级（Two-Pass，先精确、后模糊，各阶段内按第一层内置目录 -> 第二层 /api/models 列表）：
+   * - Pass 1：ID / 名称精确匹配（防止第一层模糊基名截胡同底座或同仓库不同量化的自定义模型）
+   * - Pass 2：路径、localPath/fileName 与基名归一化模糊匹配（含显式量化标签冲突守卫与双向 >3 长度门禁）
+   * 槽位语义过滤对两层匹配源同等生效（语言槽位只匹配非 embedding、嵌入槽位只匹配 embedding 模型）。
    */
   private matchSlotToCatalog(
     slot: string,
     prefer: 'language' | 'embedding'
   ): { id: string; name: string } | null {
     if (!slot) return null
-    const catalog = this.loadBuiltinModelCatalog()
-    if (catalog.length === 0) return null
 
     const slotLower = slot.toLowerCase().replace(/\\/g, '/')
     // {model_id}@{source} → model_id（model_id 本身不含 '@'）
     const slotId = slotLower.split('@')[0]
+    const slotFileName = slotId.replace(/.*\//, '')
+    // 防护：mmproj 多模态投影器辅助文件严禁命中主语言模型或嵌入模型槽位
+    if (slotFileName.startsWith('mmproj')) return null
+
+    const layers: Array<
+      Array<{
+        id: string
+        name: string
+        localPath?: string
+        fileName?: string
+        isEmbedding?: boolean
+      }>
+    > = [this.loadBuiltinModelCatalog(), this.downloadedModelCatalog]
+
+    if (layers[0].length === 0 && layers[1].length === 0) return null
+
+    const matchesSlotType = (entry: {
+      id: string
+      name: string
+      fileName?: string
+      isEmbedding?: boolean
+    }): boolean => {
+      const entryIsEmbedding =
+        entry.isEmbedding === true ||
+        /wemm|embedding/i.test(entry.id) ||
+        /wemm|embedding/i.test(entry.name) ||
+        Boolean(entry.fileName && /wemm|embedding/i.test(entry.fileName))
+      return prefer === 'embedding' ? entryIsEmbedding : !entryIsEmbedding
+    }
+
+    // Pass 1：ID / 名称精确匹配（Layer 1 内置推荐目录 -> Layer 2 引擎 /api/models 列表）
+    for (const layer of layers) {
+      for (const entry of layer) {
+        if (!entry.id || !entry.name) continue
+        if (!matchesSlotType(entry)) continue
+        const idLower = entry.id.toLowerCase()
+        if (slotId === idLower || slotLower === entry.name.toLowerCase()) {
+          return { id: entry.id, name: entry.name }
+        }
+      }
+    }
+
+    // Pass 2：路径与基名归一化模糊匹配（Layer 1 内置推荐目录 -> Layer 2 引擎 /api/models 列表）
     const slotBase = slotId.replace(/.*\//, '').split(':')[0]
     const norm = (s: string): string => s.replace(/[-_:./\\]|gguf/gi, '').toLowerCase()
-    const slotIdNorm = norm(slotId.replace(/.*\//, '').split(':')[0])
-    const slotStemNorm = norm(slot.replace(/.*[\\/]/, '').replace(/\.[^.]+$/, ''))
+    const slotIdNorm = norm(slotBase)
+    const slotStemNorm = norm(slotFileName.replace(/\.[^.]+$/, ''))
     const looksLikePath = slotLower.includes('.gguf') || slotLower.split('/').length >= 3
 
-    for (const entry of catalog) {
-      if (!entry.id) continue
-      // 槽位语义过滤（对齐引擎 resolveDisplayModel）：语言槽位只匹配非 embedding，嵌入槽位只匹配 embedding
-      const entryIsEmbedding = entry.isEmbedding === true
-      if (prefer === 'language' && entryIsEmbedding) continue
-      if (prefer === 'embedding' && !entryIsEmbedding) continue
+    // 对称双向长度守卫：仅当双侧长度均 > 3 时才允许子串包含匹配，杜绝空串/短串 .includes("") 恒真
+    const fuzzyMatch = (a: string, b: string): boolean =>
+      a.length > 0 &&
+      b.length > 0 &&
+      (a === b || (a.length > 3 && b.length > 3 && (a.includes(b) || b.includes(a))))
 
-      const idLower = entry.id.toLowerCase()
-      const entryBase = idLower.replace(/.*\//, '').split(':')[0]
-      const entryBaseNorm = norm(entryBase)
+    // 提取显式量化标签（剔除 Windows 盘符前缀、路径与 .gguf 文件名后缀，统一去除 ud- 前缀）
+    const extractQuantTag = (rawId: string): string | null => {
+      const withoutDrive = rawId.replace(/^[a-z]:/i, '')
+      const colonIdx = withoutDrive.indexOf(':')
+      if (colonIdx < 0) return null
+      const tag = withoutDrive.slice(colonIdx + 1).trim().toLowerCase()
+      if (!tag || tag.endsWith('.gguf') || tag.includes('/')) return null
+      return tag.replace(/^ud[-_]/, '').replace(/_/g, '-')
+    }
+    const slotQuant = extractQuantTag(slotId)
 
-      const hit =
-        slotLower === entry.name.toLowerCase() ||
-        slotId === idLower ||
-        (slotBase.length > 3 &&
-          (slotBase === entryBase || slotBase.includes(entryBase) || entryBase.includes(slotBase))) ||
-        (slotIdNorm.length > 3 &&
-          (slotIdNorm === entryBaseNorm || slotIdNorm.includes(entryBaseNorm) || entryBaseNorm.includes(slotIdNorm))) ||
-        (slotStemNorm.length > 3 &&
-          (slotStemNorm === entryBaseNorm || slotStemNorm.includes(entryBaseNorm) || entryBaseNorm.includes(slotStemNorm))) ||
-        (looksLikePath &&
-          (() => {
-            const repoId = idLower.split(':')[0]
-            const repoSlug = repoId.replace(/\//g, '--')
-            return slotLower.includes(repoId) || (repoSlug !== repoId && slotLower.includes(repoSlug))
-          })())
+    for (const layer of layers) {
+      for (const entry of layer) {
+        if (!entry.id || !entry.name) continue
+        if (!matchesSlotType(entry)) continue
 
-      if (hit) {
-        return { id: entry.id, name: entry.name }
+        const idLower = entry.id.toLowerCase()
+        const entryQuant = extractQuantTag(idLower)
+        if (slotQuant && entryQuant && slotQuant !== entryQuant) continue
+
+        const entryBase = idLower.replace(/.*\//, '').split(':')[0]
+        const entryBaseNorm = norm(entryBase)
+
+        const lpLower = entry.localPath ? entry.localPath.toLowerCase().replace(/\\/g, '/') : ''
+        const fnLower = entry.fileName
+          ? entry.fileName.toLowerCase().replace(/\\/g, '/')
+          : lpLower
+            ? lpLower.replace(/.*\//, '')
+            : ''
+        const fnStem = fnLower ? fnLower.replace(/\.[^.]+$/, '') : ''
+        const fnStemNorm = fnStem ? norm(fnStem) : ''
+
+        const hit =
+          fuzzyMatch(slotBase, entryBase) ||
+          fuzzyMatch(slotIdNorm, entryBaseNorm) ||
+          fuzzyMatch(slotStemNorm, entryBaseNorm) ||
+          (looksLikePath &&
+            (() => {
+              const repoId = idLower.split(':')[0]
+              if (!repoId || repoId.length <= 3) return false
+              const repoSlug = repoId.replace(/\//g, '--')
+              return slotLower.includes(repoId) || (repoSlug !== repoId && slotLower.includes(repoSlug))
+            })()) ||
+          (lpLower.length > 0 &&
+            (slotLower === lpLower ||
+              (looksLikePath &&
+                lpLower.length > 3 &&
+                slotLower.length > 3 &&
+                (lpLower.includes(slotLower) || slotLower.includes(lpLower))))) ||
+          (fnLower.length > 0 && (slotLower === fnLower || slotFileName === fnLower)) ||
+          fuzzyMatch(slotBase, fnStem) ||
+          fuzzyMatch(slotIdNorm, fnStemNorm) ||
+          fuzzyMatch(slotStemNorm, fnStemNorm)
+
+        if (hit) {
+          return { id: entry.id, name: entry.name }
+        }
       }
     }
     return null
@@ -754,13 +843,17 @@ export class EngineBridgeService {
 
   /**
    * 探活：向 /api/engine/status 发起一次状态查询
-   * 每次失败都将计入熔断器（Tier 2 静默熔断）
+   * 默认每次失败都将计入熔断器（Tier 2 静默熔断）；后台轮询与启动等待可传入 `{ recordFailure: false }` 走裸探活。
    *
    * 基准端口不可达时会扫描 38400~38419，采纳引擎实际绑定的滑动端口，
    * 避免引擎顺延后 desktop 永久显示「未连接」。
    */
-  public async healthCheck(): Promise<Tier2EngineStatus | null> {
+  public async healthCheck(options?: { recordFailure?: boolean }): Promise<Tier2EngineStatus | null> {
+    const epoch = this.stopEpoch
     const data = await this.probeStatus(this.activePort, STATUS_TIMEOUT_MS)
+    if (epoch !== this.stopEpoch) {
+      return null
+    }
     if (data) {
       this.circuitBreaker.recordSuccess()
       this.applyStatus(data)
@@ -768,12 +861,17 @@ export class EngineBridgeService {
     }
 
     // 基准端口不可达：引擎可能因端口占用顺延绑定，扫描区间并采纳实际端口
-    if (await this.adoptRunningEnginePort()) {
+    if (await this.adoptRunningEnginePort(epoch)) {
       this.circuitBreaker.recordSuccess()
       return this.lastRawStatus
     }
+    if (epoch !== this.stopEpoch) {
+      return null
+    }
 
-    this.circuitBreaker.recordFailure()
+    if (options?.recordFailure !== false) {
+      this.circuitBreaker.recordFailure()
+    }
     return null
   }
 
@@ -828,6 +926,21 @@ export class EngineBridgeService {
     void this.syncThinkingModeFromEngine()
     // 确保已连接 SSE 实时状态流（用于毫秒级捕获引擎 API 开始/完成状态）
     this.ensureEventStream()
+  }
+
+  /**
+   * 采纳离线状态：清空原始状态缓存，中断 SSE 事件流，并在状态发生变化时按需广播离线
+   */
+  public applyOffline(): void {
+    if (this.eventStreamAbortController) {
+      this.eventStreamAbortController.abort()
+      this.eventStreamAbortController = null
+    }
+    const wasOnline = this.lastRawStatus !== null
+    this.lastRawStatus = null
+    if (wasOnline) {
+      this.broadcastStatus()
+    }
   }
 
   /**
@@ -888,12 +1001,18 @@ export class EngineBridgeService {
    * 引擎侧端口滑动（`config/store.rs`）对 desktop 不可见，不采纳就会一直「未连接」。
    * @returns 是否发现并采纳了可用端口
    */
-  private async adoptRunningEnginePort(): Promise<boolean> {
+  private async adoptRunningEnginePort(epoch: number = this.stopEpoch): Promise<boolean> {
     for (let port = TIER2_ENGINE_PORT; port < TIER2_ENGINE_PORT + PORT_SCAN_RANGE; port++) {
+      if (epoch !== this.stopEpoch) {
+        return false
+      }
       if (port === this.activePort) {
         continue
       }
       const status = await this.probeStatus(port, PORT_PROBE_TIMEOUT_MS)
+      if (epoch !== this.stopEpoch) {
+        return false
+      }
       if (status) {
         logger.info(
           LogCategory.SYSTEM,
@@ -945,6 +1064,7 @@ export class EngineBridgeService {
 
   private async doRefreshModelCount(): Promise<void> {
     try {
+      const prevPair = this.resolveDisplayModelPair()
       // 预热引擎模型元数据目录（model_*.json 权威落点在 engine，desktop 一律经引擎查询）
       await this.fetchModelMeta()
 
@@ -991,27 +1111,72 @@ export class EngineBridgeService {
         }
         this.lastTotalModelCount = builtinCount + customCount
 
-        // 3. 构建 id / localPath / fileName → name 映射，供快照查找当前模型展示名
+        // 3. 构建 id / localPath / fileName → name 映射及结构化缓存，供快照与槽位匹配使用
         if (Array.isArray(list)) {
           const map = new Map<string, string>()
+          const downloadedCatalog: Array<{
+            id: string
+            name: string
+            localPath?: string
+            fileName?: string
+            isEmbedding?: boolean
+          }> = []
           let firstDl: string | null = null
           for (const m of list) {
             if (!m) continue
             if (m.isDownloaded === true && !firstDl) {
               firstDl = m.localPath || m.id || m.fileName || m.name || null
             }
-            if (!m.name) continue
-            if (m.id) map.set(m.id, m.name)
-            if (m.localPath) map.set(m.localPath, m.name)
-            if (m.fileName) map.set(m.fileName, m.name)
+            if (!m.name || !String(m.name).trim()) continue
+            const name = String(m.name).trim()
+            const localPath =
+              typeof m.localPath === 'string' && m.localPath.trim() ? m.localPath.trim() : undefined
+            const rawId = typeof m.id === 'string' && m.id.trim() ? m.id.trim() : undefined
+            const idColonTail =
+              rawId && rawId.includes(':') ? rawId.split(':').slice(1).join(':').trim() : undefined
+            const fileName =
+              typeof m.fileName === 'string' && m.fileName.trim()
+                ? m.fileName.trim()
+                : localPath
+                  ? localPath.replace(/.*[/\\]/, '')
+                  : idColonTail && idColonTail.toLowerCase().endsWith('.gguf')
+                    ? idColonTail
+                    : undefined
+            const id = rawId || localPath || fileName || name
+
+            if (m.id) map.set(m.id, name)
+            if (localPath) map.set(localPath, name)
+            if (fileName) map.set(fileName, name)
+
+            // 排除 mmproj 多模态投影器辅助文件，避免误绑为主语言模型或嵌入模型
+            const lpBase = localPath ? localPath.replace(/.*[/\\]/, '') : ''
+            const isMmproj = [id, name, fileName || '', lpBase].some(
+              s => Boolean(s) && /mmproj/i.test(s)
+            )
+            if (!isMmproj) {
+              const isEmbedding =
+                m.isEmbedding === true ||
+                [id, name, fileName || ''].some(s => Boolean(s) && /wemm|embedding/i.test(s))
+              downloadedCatalog.push({
+                id,
+                name,
+                localPath,
+                fileName,
+                isEmbedding
+              })
+            }
           }
           this.lastModelNameMap = map
           this.firstDownloadedModel = firstDl
+          this.downloadedModelCatalog = downloadedCatalog
         }
+        const nextPair = this.resolveDisplayModelPair()
         if (
           prev !== this.lastModelCount ||
           prevTotal !== this.lastTotalModelCount ||
-          prevFirst !== this.firstDownloadedModel
+          prevFirst !== this.firstDownloadedModel ||
+          prevPair.model !== nextPair.model ||
+          prevPair.modelName !== nextPair.modelName
         ) {
           this.broadcastStatus()
         }
@@ -1175,8 +1340,7 @@ export class EngineBridgeService {
           `[EngineBridge] 引擎子进程已退出 (code=${code}, signal=${signal})`
         )
         this.process = null
-        this.lastRawStatus = null
-        this.broadcastStatus()
+        this.applyOffline()
       })
 
       // 等待引擎就绪（轮询 /api/engine/status）
@@ -1209,41 +1373,21 @@ export class EngineBridgeService {
   /**
    * 等待引擎 HTTP 就绪。
    *
-   * **不得走熔断器**：拉起后的启动窗口内探活失败是预期现象（引擎仍在初始化），
+   * **不得将启动期失败计入熔断器**：拉起后的启动窗口内探活失败是预期现象（引擎仍在初始化），
    * 若记入熔断器，3 次失败即 open，后续 canExecute()=false 会直接跳过探测，
-   * 表现为「引擎明明已就绪，desktop 仍报启动超时」。这里只做裸探活。
+   * 表现为「引擎明明已就绪，desktop 仍报启动超时」。这里统一走 `healthCheck({ recordFailure: false })` 裸探活。
    */
   private async waitForReady(limitMs: number): Promise<boolean> {
     const start = Date.now()
     while (Date.now() - start < limitMs) {
-      // 裸探活：不触碰熔断器，兼容基准端口与 38400~38419 滑动端口
-      let status = await this.probeStatus(this.activePort, STATUS_TIMEOUT_MS)
-      if (!status) {
-        status = await this.probeStatusForReady()
-      }
+      // 裸探活：失败不记入熔断器，成功复位熔断器并兼容基准端口与 38400~38419 滑动端口
+      const status = await this.healthCheck({ recordFailure: false })
       if (status) {
-        this.circuitBreaker.recordSuccess()
-        this.applyStatus(status)
         return true
       }
       await new Promise(resolve => setTimeout(resolve, 1200))
     }
     return false
-  }
-
-  /** 就绪等待专用滑动端口扫描（不触碰熔断器） */
-  private async probeStatusForReady(): Promise<Tier2EngineStatus | null> {
-    for (let port = TIER2_ENGINE_PORT; port < TIER2_ENGINE_PORT + PORT_SCAN_RANGE; port++) {
-      if (port === this.activePort) {
-        continue
-      }
-      const status = await this.probeStatus(port, PORT_PROBE_TIMEOUT_MS)
-      if (status) {
-        this.activePort = port
-        return status
-      }
-    }
-    return null
   }
 
   /**
@@ -1678,12 +1822,32 @@ export class EngineBridgeService {
     if (this.pollTimer) {
       clearInterval(this.pollTimer)
     }
-    this.pollTimer = setInterval(async () => {
-      if (this.circuitBreaker.canExecute()) {
-        await this.healthCheck()
+    this.pollInFlight = false
+    const timer = setInterval(async () => {
+      if (this.pollInFlight || this.isStarting) {
+        return
       }
-      this.broadcastStatus()
+      this.pollInFlight = true
+      try {
+        // 轮询走裸探活（脱离 canExecute 门控）：熔断 open 期仍探测基准端口与滑动端口以消除端口漂移自锁，
+        // 探活失败不记入熔断器（避免冲垮 half-open 重试窗口），探活成功在 healthCheck 内自动 recordSuccess()
+        const status = await this.healthCheck({ recordFailure: false })
+        if (this.pollTimer !== timer) {
+          return
+        }
+        if (!status && !this.isStarting) {
+          this.lastRawStatus = null
+        }
+        this.broadcastStatus()
+      } catch (err) {
+        logger.debug(LogCategory.SYSTEM, '[EngineBridge] 轮询 tick 异常:', err)
+      } finally {
+        if (this.pollTimer === timer) {
+          this.pollInFlight = false
+        }
+      }
     }, intervalMs)
+    this.pollTimer = timer
     this.pollTimer.unref?.()
   }
 
@@ -1695,6 +1859,7 @@ export class EngineBridgeService {
       clearInterval(this.pollTimer)
       this.pollTimer = null
     }
+    this.pollInFlight = false
   }
 
   /**
@@ -1765,6 +1930,7 @@ export class EngineBridgeService {
    * 停止服务：停轮询、清理子进程、复位熔断器
    */
   public stop(): void {
+    this.stopEpoch++
     if (this.eventStreamAbortController) {
       this.eventStreamAbortController.abort()
       this.eventStreamAbortController = null
@@ -1782,6 +1948,10 @@ export class EngineBridgeService {
     // 清空模型元数据缓存，避免跨会话/测试复用陈旧目录
     this.modelMetaCache = null
     this.builtinModelCatalog = null
+    this.downloadedModelCatalog = []
+    this.lastModelNameMap.clear()
+    this.firstDownloadedModel = null
+    this.lastKnownModel = null
     this.modelCountPromise = null
     this.circuitBreaker.reset()
   }

@@ -20,9 +20,8 @@ export function registerEngineBridgeIPCHandlers() {
       engineBridgeService.applyStatus(status)
       return engineBridgeService.getSnapshot()
     }
-    // 探活失败：清空缓存并广播离线
-    engineBridgeService['lastRawStatus'] = null
-    engineBridgeService.broadcastStatus()
+    // 探活失败：清空缓存并按需广播离线，消除私有属性下标访问
+    engineBridgeService.applyOffline()
     return engineBridgeService.getSnapshot()
   })
 
