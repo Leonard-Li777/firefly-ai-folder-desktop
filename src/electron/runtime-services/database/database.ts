@@ -187,7 +187,7 @@ export const GENESIS_V1_SCHEMA = `
     parent_codes       TEXT NOT NULL DEFAULT '[]',    -- JSON 数组，记录所有直接父节点的 code (支持多父 DAG)
 
     source             TEXT NOT NULL DEFAULT 'user'
-                           CHECK (source IN ('expanded', 'user')),
+                           CHECK (source IN ('expanded', 'user', 'dimension')),
     file_groups        TEXT,                          -- JSON 数组：格式分组约束 (全集为 FileGroup 完整枚举，优先级：优先按扩展名匹配字典，未命中由 Magika 补齐)
     context_hints      TEXT,                          -- JSON 数组 (上下文提取线索)
     description        TEXT,                          -- 业务功能或语义描述

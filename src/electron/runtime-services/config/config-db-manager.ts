@@ -1,5 +1,6 @@
 import { app } from 'electron'
 import * as fs from 'fs'
+import * as path from 'path'
 import {
   LogCategory,
   logger,
@@ -72,6 +73,9 @@ export class ConfigDbManager {
 
     try {
       this.loadFromJson(db, language)
+
+      // PRD-0059: 启动期异步预载维度数据源并物化到内存缓存
+      await this.preloadFileDimensions(language)
 
       this.initialized = true
       logger.info(LogCategory.CONFIG, `ConfigDbManager: 配置初始化成功 (语言: ${language})`)
@@ -384,47 +388,23 @@ export class ConfigDbManager {
         )
       }
 
-      // 3. 构建并写入初始 DIMENSION_POLICIES 策略项（DEC-03）
+      // 3. 构建并写入初始 DIMENSION_POLICIES 策略项（DEC-03 & PRD-0059）
       try {
-        const presetPolicyPath = this.getConfigFilePath('dimension-policies.json')
-        if (fs.existsSync(presetPolicyPath)) {
+        const presetPolicyPath = this.resolvePresetPolicyPath()
+        if (presetPolicyPath && fs.existsSync(presetPolicyPath)) {
           const raw = fs.readFileSync(presetPolicyPath, 'utf-8')
           insertStmt.run('DIMENSION_POLICIES', raw, now)
-          logger.info(LogCategory.CONFIG, 'ConfigDbManager: 成功从 preset 增量导入初始 DIMENSION_POLICIES 数据')
-        } else {
-          const dimPath = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
-          const fallbackDimPath = ResourceLocator.resolveDimension('fileDimension_zh-CN.json')
-          const targetPath = fs.existsSync(dimPath) ? dimPath : fallbackDimPath
-          if (fs.existsSync(targetPath)) {
-            const raw = fs.readFileSync(targetPath, 'utf-8')
-            const parsed = JSON.parse(raw)
-            if (Array.isArray(parsed.file_dimensions)) {
-              const policiesMap: Record<string, any> = {}
-              for (const dim of parsed.file_dimensions) {
-                const dimCode = dim.code || (CONTROLLED_DIMENSION_ROOT_CODES as any)[dim.id]
-                if (dimCode) {
-                  policiesMap[dimCode] = {
-                    id: dim.id,
-                    threshold: 0.60,
-                    applicableFileTypes: dim.applicableFileTypes || [],
-                    contextHints: dim.contextHints || [],
-                    metadata: {
-                      flag: {
-                        isPanDimension: Boolean(dim.metadata?.flag?.isPanDimension),
-                        isRequiresAI: Boolean(dim.metadata?.flag?.isRequiresAI),
-                        isMultiSelect: Boolean(dim.metadata?.flag?.isMultiSelect)
-                      }
-                    }
-                  }
-                }
-              }
-              insertStmt.run('DIMENSION_POLICIES', JSON.stringify(policiesMap), now)
-              logger.info(LogCategory.CONFIG, 'ConfigDbManager: 成功增量导入初始 DIMENSION_POLICIES 数据')
-            }
-          }
+          logger.info(
+            LogCategory.CONFIG,
+            'ConfigDbManager: 成功从 preset 增量导入初始 DIMENSION_POLICIES 数据'
+          )
         }
       } catch (policyErr) {
-        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 构建初始 DIMENSION_POLICIES 失败:', policyErr)
+        logger.warn(
+          LogCategory.CONFIG,
+          'ConfigDbManager: 写入初始 DIMENSION_POLICIES 失败:',
+          policyErr
+        )
       }
     } catch (error) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 导入初始 system_config 失败:', error)
@@ -537,13 +517,338 @@ export class ConfigDbManager {
   }
 
   /**
-   * 获取维度数据 (DEC-01 & DEC-03)
-   *
-   * 修复 V4 创世主库物理表断层：
-   * 1. 优先从静态预置资源 fileDimension_{lang}.json 加载 79 个受控内建维度；
-   * 2. 读取主库 system_config.DIMENSION_POLICIES 动态策略，覆盖合并门限与 flag 标记（isRequiresAI, isMultiSelect 等）；
-   * 3. 补充数据库中动态创建的用户维度 (source IN ('expanded', 'user') 且 isDimension = 1)；
-   * 4. 彻底解决 Stage 3 获取维度列表为空、AI 打标失败的问题。
+   * 5 个受控 OMW 根维度（当 identity 中尚未包含时补齐，达到权威全集 96 个受控维度）
+   */
+  private static readonly OMW_CONTROLLED_DIMENSIONS = [
+    { id: 201, code: 'omw.00202784.v', en: 'Action', zh: '动作', parentCodes: [] },
+    { id: 202, code: 'omw.00001740.a', en: 'State', zh: '状态', parentCodes: [] },
+    { id: 203, code: 'omw.03234306.n', en: 'Entity', zh: '实体', parentCodes: [] },
+    { id: 204, code: 'omw.13841863.n', en: 'Time', zh: '时间', parentCodes: [] },
+    { id: 205, code: 'omw.00001740.a.en', en: 'Description', zh: '描述', parentCodes: [] }
+  ]
+
+  /**
+   * 定位预置受控身份字典路径 (builtin-tag-identity.json)
+   */
+  private resolveBuiltinIdentityPath(): string | null {
+    const candidates = [
+      ResourceLocator.resolveResourcePath('presetResources/taxonomy/builtin-tag-identity.json'),
+      ResourceLocator.resolveResourcePath('taxonomy/builtin-tag-identity.json'),
+      path.resolve(process.cwd(), 'apps/desktop/build/presetResources/taxonomy/builtin-tag-identity.json'),
+      path.resolve(process.cwd(), 'build/presetResources/taxonomy/builtin-tag-identity.json'),
+      path.resolve(__dirname, '../../../../build/presetResources/taxonomy/builtin-tag-identity.json'),
+      path.resolve(__dirname, '../../../../../apps/desktop/build/presetResources/taxonomy/builtin-tag-identity.json')
+    ]
+    for (const p of candidates) {
+      if (fs.existsSync(p)) return p
+    }
+    return null
+  }
+
+  /**
+   * 定位预置维度策略文件路径 (dimension-policies.json)
+   */
+  private resolvePresetPolicyPath(): string | null {
+    const candidates = [
+      this.getConfigFilePath('dimension-policies.json'),
+      ResourceLocator.resolveResourcePath('configs/dimension-policies.json'),
+      path.resolve(process.cwd(), 'apps/desktop/build/extraResources/configs/dimension-policies.json'),
+      path.resolve(process.cwd(), 'build/extraResources/configs/dimension-policies.json')
+    ]
+    for (const p of candidates) {
+      if (fs.existsSync(p)) return p
+    }
+    return null
+  }
+
+  /**
+   * 从权威数据源构建受控维度列表（PRD-0059 核心架构重构）
+   * 1. 主源：内置受控事实源 (builtin-tag-identity.json + OMW 受控根维度)，以稳定 code 为唯一主键
+   * 2. 展示名：优先从当前语言 tag_aliases_{lang} 分表还原，回退别名表与 en/slug
+   * 3. 增量策略：从 system_config.DIMENSION_POLICIES 或 dimension-policies.json 合并门限与 flag
+   * 4. 用户维度：主库 file_tags WHERE source = 'dimension' 语义化追加 (弃用 isDimension)
+   */
+  loadDimensionsFromAuthority(language: string, db?: Database.Database): Array<any> {
+    const dimensions: Array<any> = []
+    const dimCodeSet = new Set<string>()
+
+    // 1. 尝试从当前语言分表加载规范展示名 (tag_code -> lemma WHERE is_canonical = 1)
+    const aliasMap = new Map<string, string>()
+    if (db) {
+      const table = resolveTagAliasesLangTable(language)
+      try {
+        const hasTable = db
+          .prepare(`SELECT 1 FROM sqlite_master WHERE type='table' AND name = ?`)
+          .get(table)
+        if (hasTable) {
+          const rows = db
+            .prepare(`SELECT tag_code, lemma FROM ${table} WHERE is_canonical = 1`)
+            .all() as Array<{ tag_code: string; lemma: string }>
+          for (const r of rows) {
+            aliasMap.set(r.tag_code, r.lemma)
+          }
+        }
+      } catch (err) {
+        logger.debug(
+          LogCategory.CONFIG,
+          `ConfigDbManager: 读取分表 ${table} 别名失败，降级本地别名:`,
+          err
+        )
+      }
+    }
+
+    // 2. 加载 DIMENSION_POLICIES 增量策略 (门限、适用格式、上下文线索、flags)
+    let policies: Record<string, any> = {}
+    if (db) {
+      try {
+        const row = db
+          .prepare(`SELECT value FROM system_config WHERE key = 'DIMENSION_POLICIES' LIMIT 1`)
+          .get() as { value: string } | undefined
+        if (row?.value) {
+          policies = JSON.parse(row.value)
+        }
+      } catch (policyErr) {
+        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 读取 DIMENSION_POLICIES 失败:', policyErr)
+      }
+    }
+    if (Object.keys(policies).length === 0) {
+      const presetPolicyPath = this.resolvePresetPolicyPath()
+      if (presetPolicyPath && fs.existsSync(presetPolicyPath)) {
+        try {
+          policies = JSON.parse(fs.readFileSync(presetPolicyPath, 'utf-8'))
+        } catch {}
+      }
+    }
+
+    // 辅助策略查找：优先按 code，其次按 id 查找策略项
+    const getPolicy = (code: string, id?: number) => {
+      if (policies[code]) return policies[code]
+      if (id !== undefined) {
+        for (const p of Object.values(policies)) {
+          if (p && typeof p === 'object' && p.id === id) return p
+        }
+      }
+      return undefined
+    }
+
+    // 3. 加载预置权威事实源 builtin-tag-identity.json
+    const identityPath = this.resolveBuiltinIdentityPath()
+    let identityData: any = null
+    if (identityPath && fs.existsSync(identityPath)) {
+      try {
+        identityData = JSON.parse(fs.readFileSync(identityPath, 'utf-8'))
+      } catch (err) {
+        logger.warn(LogCategory.CONFIG, `ConfigDbManager: 读取 builtin-tag-identity 失败:`, err)
+      }
+    }
+
+    if (identityData && Array.isArray(identityData.dimensions)) {
+      // 3.1 聚合子标签词表：按 dimId 或 parentCodes 聚合成 tags 数组
+      const dimTagsMap = new Map<number, string[]>()
+      const codeTagsMap = new Map<string, string[]>()
+      if (Array.isArray(identityData.tags)) {
+        for (const t of identityData.tags) {
+          const tagDisplay =
+            aliasMap.get(t.code) ||
+            t.aliases?.[language] ||
+            t.aliases?.['zh-CN'] ||
+            t.en ||
+            t.code
+          if (t.dimId !== undefined) {
+            const list = dimTagsMap.get(t.dimId) || []
+            list.push(tagDisplay)
+            dimTagsMap.set(t.dimId, list)
+          }
+          if (Array.isArray(t.parentCodes)) {
+            for (const p of t.parentCodes) {
+              const list = codeTagsMap.get(p) || []
+              list.push(tagDisplay)
+              codeTagsMap.set(p, list)
+            }
+          }
+        }
+      }
+
+      // 3.2 遍历构建受控维度
+      for (const d of identityData.dimensions) {
+        const code = d.code
+        if (!code || dimCodeSet.has(code)) continue
+        dimCodeSet.add(code)
+
+        const policy = getPolicy(code, d.dimId)
+        const dimName =
+          aliasMap.get(code) ||
+          d.aliases?.[language] ||
+          d.aliases?.['zh-CN'] ||
+          d.en ||
+          code
+
+        const aft = policy?.applicableFileTypes || policy?.applicable_file_types || ['*']
+        const ch = policy?.contextHints || policy?.context_hints || []
+        const threshold = policy?.threshold !== undefined ? policy.threshold : 0.6
+        const parentCodes = Array.isArray(d.parentCodes) ? [...d.parentCodes] : []
+        const depth =
+          d.depth !== undefined ? d.depth : parentCodes.length > 0 ? 2 : 1
+        const childTags = codeTagsMap.get(code) || dimTagsMap.get(d.dimId) || []
+
+        const isExtensionDim =
+          policy?.metadata?.flag?.isExtensionDimension !== undefined
+            ? Boolean(policy.metadata.flag.isExtensionDimension)
+            : Boolean(code.endsWith('_extensions') || code.endsWith('.extensions'))
+
+        const metaObj: any = {
+          flag: {
+            isPanDimension: Boolean(policy?.metadata?.flag?.isPanDimension),
+            isRequiresAI: Boolean(policy?.metadata?.flag?.isRequiresAI),
+            isMultiSelect: Boolean(policy?.metadata?.flag?.isMultiSelect),
+            isExtensionDimension: isExtensionDim
+          }
+        }
+
+        dimensions.push({
+          id: policy?.id ?? d.dimId,
+          code,
+          name: dimName,
+          level: depth,
+          depth,
+          tags: childTags,
+          description: '', // PRD-0059 AC-4: 维度元数据描述退役
+          applicableFileTypes: aft,
+          applicable_file_types: aft,
+          contextHints: ch,
+          context_hints: ch,
+          triggerConditions: d.triggerConditions || [],
+          parentCodes,
+          threshold,
+          metadata: metaObj
+        })
+      }
+    }
+
+    // 4. 补充受控 OMW 根维度（若尚未包含）以补齐权威全集 96 个受控维度
+    for (const omw of ConfigDbManager.OMW_CONTROLLED_DIMENSIONS) {
+      if (dimCodeSet.has(omw.code)) continue
+      dimCodeSet.add(omw.code)
+      const policy = getPolicy(omw.code, omw.id)
+      const dimName =
+        aliasMap.get(omw.code) ||
+        (language.startsWith('zh') ? omw.zh : omw.en)
+      const aft = policy?.applicableFileTypes || policy?.applicable_file_types || ['*']
+      const ch = policy?.contextHints || policy?.context_hints || []
+      const threshold = policy?.threshold !== undefined ? policy.threshold : 0.6
+      const metaObj: any = {
+        flag: {
+          isPanDimension: Boolean(policy?.metadata?.flag?.isPanDimension),
+          isRequiresAI: Boolean(policy?.metadata?.flag?.isRequiresAI),
+          isMultiSelect: Boolean(policy?.metadata?.flag?.isMultiSelect),
+          isExtensionDimension: Boolean(policy?.metadata?.flag?.isExtensionDimension)
+        }
+      }
+
+      dimensions.push({
+        id: policy?.id ?? omw.id,
+        code: omw.code,
+        name: dimName,
+        level: 1,
+        depth: 1,
+        tags: [],
+        description: '',
+        applicableFileTypes: aft,
+        applicable_file_types: aft,
+        contextHints: ch,
+        context_hints: ch,
+        triggerConditions: [],
+        parentCodes: omw.parentCodes,
+        threshold,
+        metadata: metaObj
+      })
+    }
+
+    // 5. 补充数据库中动态创建的用户维度 (PRD-0059 AC-5: source = 'dimension' 语义化，彻底弃用 isDimension)
+    if (db) {
+      try {
+        const dynamicRows = db
+          .prepare(
+            `
+            SELECT code, name, description, file_groups, context_hints, meta
+            FROM file_tags
+            WHERE source = 'dimension'
+            ORDER BY code ASC
+          `
+          )
+          .all() as Array<any>
+
+        if (dynamicRows && dynamicRows.length > 0) {
+          const getChildStmt = db.prepare(
+            `SELECT name FROM file_tags WHERE json_extract(parent_codes, '$[0]') = ?`
+          )
+          for (const r of dynamicRows) {
+            if (dimCodeSet.has(r.code)) continue
+            dimCodeSet.add(r.code)
+
+            let metaObj: any = {}
+            try {
+              metaObj = JSON.parse(r.meta)
+            } catch {}
+            let aft: string[] = []
+            try {
+              aft = JSON.parse(r.file_groups || '[]')
+            } catch {}
+            let ch: string[] = []
+            try {
+              ch = JSON.parse(r.context_hints || '[]')
+            } catch {}
+            let childTags: string[] = []
+            try {
+              childTags = (getChildStmt.all(r.code) as any[]).map(c => c.name)
+            } catch {}
+
+            dimensions.push({
+              id: dimensions.length + 1,
+              code: r.code,
+              name: r.name,
+              level: 1,
+              depth: 1,
+              tags: childTags,
+              description: r.description || '',
+              applicableFileTypes: aft,
+              applicable_file_types: aft,
+              contextHints: ch,
+              context_hints: ch,
+              parentCodes: [],
+              metadata: metaObj
+            })
+          }
+        }
+      } catch (dynamicErr) {
+        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 读取动态维度失败:', dynamicErr)
+      }
+    }
+
+    return dimensions
+  }
+
+  /**
+   * 启动期异步预载维度数据源并缓存 (PRD-0059)
+   */
+  async preloadFileDimensions(language: string): Promise<void> {
+    try {
+      const db = databaseService.db
+      const dims = this.loadDimensionsFromAuthority(language, db || undefined)
+      this.fileDimensionsCache = dims
+      logger.info(
+        LogCategory.CONFIG,
+        `ConfigDbManager: 维度数据源预载完成，共 ${dims.length} 个维度 (语言: ${language})`
+      )
+    } catch (err) {
+      logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 预载维度数据源异常:', err)
+    }
+  }
+
+  /**
+   * 获取维度数据 (PRD-0059 权威维度数据源重构)
+   * 1. 优先微秒级返回已预载并物化的内存缓存 fileDimensionsCache
+   * 2. 若未缓存 (离线/单测)，执行三级降级状态机从权威事实源同步组装并回填缓存
    */
   getFileDimensions(): Array<any> {
     if (this.fileDimensionsCache.length > 0) {
@@ -552,143 +857,9 @@ export class ConfigDbManager {
 
     try {
       const language = this.currentLanguage || 'zh-CN'
-      let dimPath = ResourceLocator.resolveDimension(`fileDimension_${language}.json`)
-      if (!fs.existsSync(dimPath)) {
-        dimPath = ResourceLocator.resolveDimension('fileDimension_zh-CN.json')
-      }
-
-      let dimensions: Array<any> = []
-      if (fs.existsSync(dimPath)) {
-        try {
-          const raw = fs.readFileSync(dimPath, 'utf-8')
-          const parsed = JSON.parse(raw)
-          if (Array.isArray(parsed.file_dimensions)) {
-            dimensions = parsed.file_dimensions.map((d: any) => {
-              const code = d.code || (CONTROLLED_DIMENSION_ROOT_CODES as any)[d.id] || ''
-              const aft = d.applicableFileTypes || d.applicable_file_types || []
-              const ch = d.contextHints || d.context_hints || []
-              return {
-                id: d.id,
-                code,
-                name: d.name,
-                level: d.level ?? 1,
-                tags: Array.isArray(d.tags) ? [...d.tags] : [],
-                description: d.description || '',
-                applicableFileTypes: aft,
-                applicable_file_types: aft,
-                contextHints: ch,
-                context_hints: ch,
-                triggerConditions: d.triggerConditions || [],
-                metadata: d.metadata || {}
-              }
-            })
-          }
-        } catch (readErr) {
-          logger.warn(
-            LogCategory.CONFIG,
-            `ConfigDbManager: 加载静态维度文件失败 ${dimPath}:`,
-            readErr
-          )
-        }
-      }
-
-      // 2. 从主库 system_config 读取动态策略 DIMENSION_POLICIES 并覆盖合并 (DEC-03)
       const db = databaseService.db
-      let policies: Record<string, any> | null = null
-      if (db) {
-        try {
-          const row = db
-            .prepare(`SELECT value FROM system_config WHERE key = 'DIMENSION_POLICIES' LIMIT 1`)
-            .get() as { value: string } | undefined
-          if (row?.value) {
-            policies = JSON.parse(row.value)
-          }
-        } catch (policyErr) {
-          logger.warn(
-            LogCategory.CONFIG,
-            'ConfigDbManager: 读取 DIMENSION_POLICIES 失败:',
-            policyErr
-          )
-        }
-      }
-
-      if (policies && typeof policies === 'object') {
-        for (const dim of dimensions) {
-          const policy = policies[dim.code]
-          if (policy) {
-            if (policy.threshold !== undefined) {
-              dim.threshold = policy.threshold
-            }
-            if (policy.metadata?.flag) {
-              dim.metadata = dim.metadata || {}
-              dim.metadata.flag = {
-                ...dim.metadata.flag,
-                ...policy.metadata.flag
-              }
-            }
-          }
-        }
-      }
-
-      // 3. 补充数据库中动态创建的用户维度 (source IN ('expanded', 'user') 且 isDimension = 1)
-      if (db) {
-        try {
-          const dynamicRows = db
-            .prepare(
-              `
-              SELECT code, name, description, file_groups, context_hints, meta
-              FROM file_tags
-              WHERE json_extract(meta, '$.isDimension') = 1
-              ORDER BY code ASC
-            `
-            )
-            .all() as Array<any>
-
-          if (dynamicRows && dynamicRows.length > 0) {
-            const existingCodes = new Set(dimensions.map(d => d.code))
-            const getChildStmt = db.prepare(
-              `SELECT name FROM file_tags WHERE json_extract(parent_codes, '$[0]') = ?`
-            )
-            for (const r of dynamicRows) {
-              if (existingCodes.has(r.code)) continue
-              let metaObj: any = {}
-              try {
-                metaObj = JSON.parse(r.meta)
-              } catch {}
-              let aft: string[] = []
-              try {
-                aft = JSON.parse(r.file_groups || '[]')
-              } catch {}
-              let ch: string[] = []
-              try {
-                ch = JSON.parse(r.context_hints || '[]')
-              } catch {}
-              let childTags: string[] = []
-              try {
-                childTags = (getChildStmt.all(r.code) as any[]).map(c => c.name)
-              } catch {}
-
-              dimensions.push({
-                id: dimensions.length + 1,
-                code: r.code,
-                name: r.name,
-                level: 1,
-                tags: childTags,
-                description: r.description,
-                applicableFileTypes: aft,
-                applicable_file_types: aft,
-                contextHints: ch,
-                context_hints: ch,
-                metadata: metaObj
-              })
-            }
-          }
-        } catch (dynamicErr) {
-          logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 读取动态维度失败:', dynamicErr)
-        }
-      }
-
-      this.fileDimensionsCache = dimensions
+      const dims = this.loadDimensionsFromAuthority(language, db || undefined)
+      this.fileDimensionsCache = dims
       return this.fileDimensionsCache
     } catch (err) {
       logger.error(LogCategory.CONFIG, 'ConfigDbManager: 获取维度数据失败:', err)
