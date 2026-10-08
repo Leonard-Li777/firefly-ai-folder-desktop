@@ -21,7 +21,7 @@ export function makeTagKey(
   tagValue: string,
   parentTagValue?: string,
   viaParentCode?: string,
-  isLifted: boolean = false
+  isLifted = false
 ): string {
   const parentIdStr = viaParentCode
     ? `${isLifted ? LIFTED_PREFIX : PARENT_CODE_PREFIX}${viaParentCode}`
