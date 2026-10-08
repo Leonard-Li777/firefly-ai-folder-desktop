@@ -80,6 +80,8 @@ jobs:
         run: |
           echo "🔄 正在检查并更新 firefly-omni 引擎到最新版本..."
           node pro/scripts/run.js update-preset-resources-lock.js --engine firefly-omni
+        env:
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: 提交并推回更新后的 lock.json
         shell: bash
@@ -252,6 +254,8 @@ jobs:
         run: |
           echo "📦 检查并准备多模态预置资源..."
           node scripts/download-multimodal-resources.js --resource chinese-clip,mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp || true
+        env:
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Setup Resources (Basic)
         shell: bash
@@ -265,6 +269,7 @@ jobs:
           AI_ENGINE: llama.cpp
           BUILD_ARCH: ${{ matrix.arch }}
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Verify extraResources (不多不少门禁)
         shell: bash
@@ -572,6 +577,8 @@ jobs:
         run: |
           echo "📦 检查并准备多模态预置资源..."
           node scripts/download-multimodal-resources.js --resource chinese-clip,mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp || true
+        env:
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Setup Resources (Basic)
         shell: bash
@@ -584,6 +591,7 @@ jobs:
         env:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Verify extraResources (不多不少门禁)
         shell: bash
@@ -904,6 +912,8 @@ jobs:
         run: |
           echo "📦 检查并准备多模态预置资源..."
           node scripts/download-multimodal-resources.js --resource chinese-clip,mobile-clip,nsfw-tiny,sensevoice-small,audio-cpp || true
+        env:
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Setup Resources (Basic)
         shell: bash
@@ -916,6 +926,7 @@ jobs:
         env:
           AI_ENGINE: llama.cpp
           FORCE_UPDATE_LLAMACPP: ${{ github.event.inputs.download_latest_llama || 'true' }}
+          GH_TOKEN: ${{ secrets.UNISOURCE_RELEASE_TOKEN || secrets.PRO_SUBMODULE_TOKEN || secrets.PRIVATE_MONOREPO_PAT || secrets.PAT || secrets.GH_PAT || secrets.GITHUB_TOKEN }}
 
       - name: Verify extraResources (不多不少门禁)
         shell: bash
