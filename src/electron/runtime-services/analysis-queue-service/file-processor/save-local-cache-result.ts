@@ -2,6 +2,8 @@ import {
   AnalysisQueueItem,
   MagikaFileCategory as MagikaCategory,
   MarkitdownBenchmark,
+  SmartNameSource,
+  SmartNameTemplateSource,
   Stage1Benchmark
 } from '@firefly/types'
 import {
@@ -38,7 +40,9 @@ export async function saveLocalAnalysisResult(
   markitdownBenchmark?: MarkitdownBenchmark | null,
   analysisStage?: number,
   cpuSkipped?: boolean,
-  stage1Benchmark?: Stage1Benchmark | null
+  stage1Benchmark?: Stage1Benchmark | null,
+  smartNameSource?: SmartNameSource | null,
+  smartNameTemplateSource?: SmartNameTemplateSource | null
 ): Promise<any> {
   const db = databaseService.db
   if (!db) throw new Error(t('数据库未初始化'))
@@ -148,6 +152,8 @@ export async function saveLocalAnalysisResult(
     contentHash: fileFingerprint,
     size: stats.size,
     smartName: enhancedSmartName,
+    smartNameSource: smartNameSource ?? null,
+    smartNameTemplateSource: smartNameTemplateSource ?? null,
     type: fileType,
     modifiedAt: stats.mtime.toISOString(),
     accessedAt: stats.atime.toISOString(),

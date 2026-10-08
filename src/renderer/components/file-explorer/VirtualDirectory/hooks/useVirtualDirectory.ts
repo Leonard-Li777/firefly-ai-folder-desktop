@@ -75,7 +75,9 @@ export const useVirtualDirectory = () => {
         prev.length === 1 &&
         prev[0].dimensionId === tag.dimensionId &&
         prev[0].tagValue === tag.tagValue &&
-        prev[0].parentTagValue === tag.parentTagValue
+        prev[0].parentTagValue === tag.parentTagValue &&
+        prev[0].viaParentCode === tag.viaParentCode &&
+        (prev[0].codePath ?? '') === (tag.codePath ?? '')
       return isSame ? [] : [tag]
     })
   }, [])

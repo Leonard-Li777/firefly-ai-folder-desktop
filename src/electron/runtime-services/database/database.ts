@@ -96,7 +96,8 @@ export const GENESIS_V1_SCHEMA = `
     file_fingerprint TEXT PRIMARY KEY,           -- 文件内容指纹 (Base62/32位)，作为全局唯一标识
     smart_name TEXT,                             -- AI 生成或用户定义的智能名称
     raw_smart_name TEXT,                         -- 原始智能文件名（不带扩展名，未经模板包裹的 AI 核心名称）
-    smart_name_source TEXT,                      -- 智能名称来源 (Issue 0046)：'machine'=机器 5W 生成 | 'user'=人工命名
+    smart_name_source TEXT,                      -- 智能名称「核心名来源」：'ai'=stage3 高级AI引擎语言模型(LLM)生成 | 'machine'=Omni 5W SlotEngine 造句生成 | NULL=原名/占位/重置
+    smart_name_template_source TEXT,             -- 智能名称「模板套用来源」（与核心名来源正交）：'template'=属性面板一键应用或分析期套用目录模板 | 'user'=批量文件命名处保存 | NULL=未套用模板
     description TEXT,                            -- AI 生成的文件描述
     size INTEGER NOT NULL DEFAULT 0,             -- 文件大小（字节）
     extension TEXT NOT NULL,                     -- 文件后缀名 (如 .png, .pdf)

@@ -655,18 +655,31 @@ export class FileDao {
         ? this.resolveUniqueSmartName(result.smartName, fileFingerprint, wf.workspace_id)
         : result.smartName
 
+    // 两个来源字段（核心名来源 / 模板套用来源）的刷新与「本次是否写入核心名」严格耦合：
+    // - 写入新核心名时：一并刷新 smart_name_source 与 smart_name_template_source（未提供即置 NULL，
+    //   因为新名重新决定了它的来源与是否被套模板，旧值已失效）；
+    // - 未写入核心名时（如仅更新 metadata / description）：保留库中既有来源，避免误清空。
+    const writeNameFlag = finalSmartName ? 1 : 0
+    const smartNameSourceValue = finalSmartName ? (result.smartNameSource ?? null) : null
+    const smartNameTemplateSourceValue = finalSmartName
+      ? (result.smartNameTemplateSource ?? null)
+      : null
+
     this.db.transaction(() => {
       const now = new Date().toISOString()
       this.db
         .prepare(
           `
         INSERT INTO files (
-          file_fingerprint, smart_name, raw_smart_name, size, extension, file_group,
+          file_fingerprint, smart_name, raw_smart_name, smart_name_source, smart_name_template_source,
+          size, extension, file_group,
           author, language, is_hit, last_hit_at, description, sync_status, created_at, modified_at, accessed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           smart_name = COALESCE(?, smart_name),
           raw_smart_name = COALESCE(?, raw_smart_name),
+          smart_name_source = CASE WHEN ? = 1 THEN ? ELSE smart_name_source END,
+          smart_name_template_source = CASE WHEN ? = 1 THEN ? ELSE smart_name_template_source END,
           size = COALESCE(?, size),
           extension = COALESCE(?, extension),
           file_group = COALESCE(?, file_group),
@@ -684,6 +697,8 @@ export class FileDao {
           fileFingerprint,
           finalSmartName || null,
           result.rawSmartName || null,
+          smartNameSourceValue,
+          smartNameTemplateSourceValue,
           result.size || 0,
           result.extension || 'file',
           result.fileGroup || null,
@@ -698,6 +713,10 @@ export class FileDao {
           now,
           finalSmartName || null,
           result.rawSmartName || null,
+          writeNameFlag,
+          smartNameSourceValue,
+          writeNameFlag,
+          smartNameTemplateSourceValue,
           result.size || null,
           result.extension || null,
           result.fileGroup || null,
@@ -1503,6 +1522,8 @@ export class FileDao {
             `
           UPDATE files
           SET smart_name = (SELECT name FROM workspace_files WHERE id = ?),
+              smart_name_source = NULL,
+              smart_name_template_source = NULL,
               description = NULL,
               author = NULL,
               language = NULL,

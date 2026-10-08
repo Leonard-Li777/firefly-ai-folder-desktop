@@ -46,7 +46,14 @@ interface DimensionTreeNodeProps {
   isExportMode: boolean
   collapsedDimensionGroups: Set<number>
   toggleDimensionGroupCollapsed: (groupId: number) => void
-  isTagSelected: (dimensionId: number, tagValue: string, parentTagValue?: string, viaParentCode?: string) => boolean
+  isTagSelected: (
+    dimensionId: number,
+    tagValue: string,
+    parentTagValue?: string,
+    viaParentCode?: string,
+    isLifted?: boolean,
+    codePath?: string
+  ) => boolean
   toggleTagSelection: (
     dimensionId: number,
     tagValue: string,
@@ -133,7 +140,14 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
         {!isCollapsed && (
           <div className={cn('relative', isTopLevel ? 'ml-5 mt-1' : 'ml-3')}>
             {tagsToShow.map((tag: DimensionTag, index: number) => {
-              const isSelected = isTagSelected(tag.dimensionId, tag.tagValue, parentTagValue, tag.viaParentCode || undefined)
+              const isSelected = isTagSelected(
+                tag.dimensionId,
+                tag.tagValue,
+                parentTagValue,
+                tag.viaParentCode || undefined,
+                tag.codePaths !== undefined,
+                tag.codePath
+              )
               const isDisabled = tag.fileCount === 0
               const childDimensions = node.childTags?.get(tag.tagValue)
               const hasChildDimensions = childDimensions && childDimensions.length > 0
@@ -242,6 +256,9 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                             dimensionName: tag.dimensionName,
                             tagValue: tag.tagValue,
                             code: tag.code,
+                            codePath: tag.codePath,
+                            namePath: tag.namePath,
+                            codePaths: tag.codePaths,
                             viaParentCode: tag.viaParentCode || undefined,
                             level: tag.level,
                             parentTagValue,
@@ -868,7 +885,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       tagValue: string,
       parentTagValue?: string,
       viaParentCode?: string,
-      isLifted?: boolean
+      isLifted?: boolean,
+      codePath?: string
     ): boolean => {
       if (isExportMode) {
         // 聚合行与直系实例行可能同父 code，key 必须带 liftCode 标记区分 (ADR-0034 §4 / M-4)
@@ -876,12 +894,20 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         return selectedTags.has(key)
       } else {
         const curParent = currentTag ? currentTag.viaParentCode : undefined
+        // 若两端均物化了 codePath，优先按 codePath 严格匹配，杜绝多父跨分支同名误高亮
+        const pathMatches =
+          !codePath || !currentTag?.codePath || currentTag.codePath === codePath
+        const liftMatches =
+          isLifted === undefined ||
+          (currentTag?.codePaths !== undefined) === isLifted
         return (
           currentTag !== null &&
           currentTag.dimensionId === dimensionId &&
           currentTag.tagValue === tagValue &&
           currentTag.parentTagValue === parentTagValue &&
-          (!viaParentCode || !curParent || curParent === viaParentCode)
+          (!viaParentCode || !curParent || curParent === viaParentCode) &&
+          pathMatches &&
+          liftMatches
         )
       }
     },
@@ -994,7 +1020,9 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
             prev.dimensionId === tag.dimensionId &&
             prev.tagValue === tag.tagValue &&
             prev.parentTagValue === tag.parentTagValue &&
-            prevViaParent === effectiveViaParent
+            prevViaParent === effectiveViaParent &&
+            (prev.codePath ?? '') === (tag.codePath ?? '') &&
+            (prev.codePaths !== undefined) === (tag.codePaths !== undefined)
 
           return isSame ? null : newTag
         })
@@ -1232,7 +1260,8 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           tag.tagValue,
           parentTagValue,
           tag.viaParentCode ?? undefined,
-          tag.codePaths !== undefined
+          tag.codePaths !== undefined,
+          tag.codePath
         )
         const isDisabled = tag.fileCount === 0
         const childDimensions = node.childTags?.get(tag.tagValue)

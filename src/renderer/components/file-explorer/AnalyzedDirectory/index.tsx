@@ -370,7 +370,8 @@ export const AnalyzedDirectory: React.FC<AnalyzedDirectoryProps> = () => {
         selectedTags[0].dimensionId === tag.dimensionId &&
         selectedTags[0].tagValue === tag.tagValue &&
         selectedTags[0].parentTagValue === tag.parentTagValue &&
-        selectedTags[0].viaParentCode === tag.viaParentCode
+        selectedTags[0].viaParentCode === tag.viaParentCode &&
+        (selectedTags[0].codePath ?? '') === (tag.codePath ?? '')
       clearSelectedTags()
       if (!isSame) {
         addSelectedTag(tag)

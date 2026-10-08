@@ -1173,11 +1173,13 @@ export class NamingDSLEngine {
       }
 
       // 仅更新 files 表中的 smart_name，严禁修改 path 和 name。
-      // smart_name_source='user'：本路径由用户在整理页显式发起批量更名（人工确认最终名称），
-      // 故标记为人工命名。Stage 5 高维修正（Issue 0046 §5）据此严格跳过，不覆盖人工名称。
+      // smart_name_template_source='user'：本路径由用户在整理页（批量文件命名处）显式发起
+      // 批量更名并保存最终名称，属于「模板套用维度」的人工保存；
+      // smart_name_source（核心名来源：'ai'/'machine'/NULL）与本路径无关，保持不动，
+      // 因为批量更名只改变外层展示名，不重新生成核心名。
       db.prepare(`
         UPDATE files
-        SET smart_name = ?, smart_name_source = 'user', modified_at = CURRENT_TIMESTAMP
+        SET smart_name = ?, smart_name_template_source = 'user', modified_at = CURRENT_TIMESTAMP
         WHERE file_fingerprint = ?
       `).run(newSmartName, wfRow.file_fingerprint)
 

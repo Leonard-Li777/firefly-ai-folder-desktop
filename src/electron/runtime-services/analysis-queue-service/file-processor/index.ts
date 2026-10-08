@@ -3,6 +3,7 @@ import {
   LanguageCode,
   MagikaFileCategory as MagikaCategory,
   MarkitdownBenchmark,
+  SmartNameSource,
   Stage1Benchmark
 } from '@firefly/types'
 import {
@@ -934,6 +935,13 @@ export class FileProcessor {
         this.updateItemStatus(item.id, 'analyzing', 98)
 
         const rawCoreSmartName = dimResult?.smartName || enhancedInfo.smartName || ''
+        // 核心名来源：stage3 高级AI引擎语言模型命名 → 'ai'；Omni 5W 造句 → 'machine'；
+        // 二者皆无（回退到原始文件名）→ null
+        const coreNameSource: SmartNameSource | null = dimResult?.smartName
+          ? 'ai'
+          : enhancedInfo.smartName
+            ? 'machine'
+            : null
         const origExt = path.extname(filePath).replace(/^\./, '')
         // rawSmartName 不需要带扩展名
         let coreSmartName = rawCoreSmartName
@@ -952,6 +960,7 @@ export class FileProcessor {
         ;(processResult as any).rawSmartName = coreSmartName
 
         // 检查当前目录或上级继承的生效命名模板
+        let appliedTemplate = false
         try {
           const parentDir = path.dirname(filePath)
           const { directoryContextService } = await import('../../../main/state')
@@ -981,6 +990,7 @@ export class FileProcessor {
             const rendered = NamingDSLEngine.renderTemplate(template, fileRenameContext, 1, true)
             if (rendered && rendered.trim()) {
               finalSmartName = rendered.trim()
+              appliedTemplate = true
             }
           }
         } catch (templateErr) {
@@ -1018,7 +1028,10 @@ export class FileProcessor {
           dimResult?.groupingConfidence,
           undefined, // markitdownBenchmark
           gpuCompletionStage,
-          cpuSkipped
+          cpuSkipped,
+          undefined, // stage1Benchmark
+          coreNameSource,
+          appliedTemplate ? 'template' : null
         )
 
         const existingMagikaGroup =
@@ -1602,7 +1615,7 @@ export class FileProcessor {
         : undefined
       const stage2OcrMs = omniBm?.ocr_ms
       // 先行消费即焚，防止 ?? 短路时 coverDurationMap 条目残留堆积
-      const coverDurationMs = omniService.getLastCoverDurationMs(filePath)
+      const coverDurationMs = omniService.getLastCoverDurationMs?.(filePath)
       const stage2ThumbMs = omniBm?.thumbnail_ms ?? coverDurationMs
 
       // 阶段 2 耗时为各项并行任务的最大耗时 (含标签多模态最大耗时)
@@ -1768,6 +1781,11 @@ export class FileProcessor {
       // 优先采用 Omni 原生多模态感知 / 级联仲裁给出的建议智能命名与内容描述 (Issue #631)
       const omniSmartName = anydocResult?.perception?.smart_name || preflightContext.flattenedMetadata?.smart_name
       const omniDescription = anydocResult?.perception?.content_description || preflightContext.flattenedMetadata?.one_sentence_desc || preflightContext.flattenedMetadata?.description
+      // CPU 阶段核心名是否来自 Omni 5W SlotEngine 造句：
+      // - 命中 → smart_name_source='machine'
+      // - 未命中（enhancedSmartName 仅为清洗后的原始文件名）→ NULL（占位/原名，无核心名来源）
+      // quick_name/full 模式下，后续 AI 阶段会以 'ai' 覆盖此值；simple 模式下此即终态。
+      const cpuNameIsMachine = !!(omniSmartName && omniSmartName.trim().length > 0)
       if (omniSmartName && omniSmartName.trim().length > 0) {
         enhancedSmartName = omniSmartName.trim()
       }
@@ -1829,16 +1847,18 @@ export class FileProcessor {
       // 导致文件属性面板元数据 Tab 的 Magika 字段缺失
       db.prepare(
         `
-        INSERT INTO files (file_fingerprint, smart_name, size, extension, file_group, description, created_at, modified_at, accessed_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO files (file_fingerprint, smart_name, smart_name_source, size, extension, file_group, description, created_at, modified_at, accessed_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           file_group = excluded.file_group,
           smart_name = COALESCE(excluded.smart_name, files.smart_name),
+          smart_name_source = CASE WHEN excluded.smart_name IS NOT NULL THEN excluded.smart_name_source ELSE files.smart_name_source END,
           description = COALESCE(excluded.description, files.description)
         `
       ).run(
         fileFingerprint,
         fileInfo.name,
+        cpuNameIsMachine ? 'machine' : null,
         stats.size,
         enhancedFileType,
         JSON.stringify(magikaCategory || { mime_type: getMimeType(enhancedFileType) }),
@@ -2020,7 +2040,11 @@ export class FileProcessor {
           markitdownBenchmark,
           simpleFinalStage,
           undefined,
-          stage1Benchmark
+          stage1Benchmark,
+          // simple（标准分析）模式核心名来自 Omni 5W 造句 → 'machine'；未命中（仅清洗原名）→ null。
+          // 本分支不套用目录命名模板，模板来源为 null。
+          cpuNameIsMachine ? 'machine' : null,
+          null
         )
 
         logger.info(
@@ -2143,7 +2167,11 @@ export class FileProcessor {
         markitdownBenchmark,
         analysisMode === 'quick_name' ? 3 : 4,
         cpuSkipped,
-        stage1Benchmark
+        stage1Benchmark,
+        // 核心名来源：stage3 LLM 命名为 'ai'，否则回退 Omni 5W 造句 'machine'，再否则原名 null。
+        // 本主流程 AI 分支不套用目录命名模板（模板套用仅发生在 GPU 复用分支），故模板来源为 null。
+        dimResult?.smartName ? 'ai' : cpuNameIsMachine ? 'machine' : null,
+        null
       )
 
       // 运行找补裁决器单点持久化：将 CPU 既定事实标签（含清洗后的作者、分类、扩展名）与 AI 推理标签合并，物理事实绝对覆盖，全量无损原子入库

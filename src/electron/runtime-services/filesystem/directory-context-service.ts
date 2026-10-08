@@ -1068,8 +1068,11 @@ export class DirectoryContextService {
       }
 
       let updatedCount = 0
+      // 属性面板「一键应用至已分析文件」属于「模板套用维度」：
+      // 标记 smart_name_template_source='template'；核心名来源 smart_name_source 保持不动，
+      // 因为本路径只重新包裹外层展示名，不重新生成核心名（raw_smart_name 不变）。
       const updateStmt = this.db.prepare(
-        'UPDATE files SET smart_name = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?'
+        'UPDATE files SET smart_name = ?, smart_name_template_source = ?, modified_at = CURRENT_TIMESTAMP WHERE file_fingerprint = ?'
       )
       const updateContentStmt = this.db.prepare(
         'UPDATE file_contents SET meta = ? WHERE file_fingerprint = ?'
@@ -1154,7 +1157,8 @@ export class DirectoryContextService {
 
           // 原始智能文件名已统一落 files.raw_smart_name 列，meta 中不再留存副本
           if (finalSmartNameWithExt && finalSmartNameWithExt !== row.smart_name) {
-            updateStmt.run(finalSmartNameWithExt, row.file_fingerprint)
+            // 应用了模板 → 'template'；模板为空（用户选择「不使用附加模板」回落核心名）→ NULL
+            updateStmt.run(finalSmartNameWithExt, template ? 'template' : null, row.file_fingerprint)
             updatedCount++
           }
         }

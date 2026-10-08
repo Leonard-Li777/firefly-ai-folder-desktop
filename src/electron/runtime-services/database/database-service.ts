@@ -791,6 +791,8 @@ export class DatabaseService {
             language = NULL,
             is_hit = 0,
             last_hit_at = NULL,
+            smart_name_source = NULL,
+            smart_name_template_source = NULL,
             smart_name = (SELECT name FROM workspace_files wf WHERE wf.file_fingerprint = files.file_fingerprint LIMIT 1)
         WHERE file_fingerprint IN (
           SELECT file_fingerprint
@@ -1252,7 +1254,7 @@ export class DatabaseService {
           `UPDATE workspace_files SET is_analyzed = 0, last_analyzed_at = NULL, analysis_error = NULL`
         ).run()
         this._db!.prepare(
-          `UPDATE files SET description = NULL, file_group = NULL, author = NULL, language = NULL, is_hit = 0, last_hit_at = NULL, smart_name = (SELECT name FROM workspace_files wf WHERE wf.file_fingerprint = files.file_fingerprint LIMIT 1)`
+          `UPDATE files SET description = NULL, file_group = NULL, author = NULL, language = NULL, is_hit = 0, last_hit_at = NULL, smart_name_source = NULL, smart_name_template_source = NULL, smart_name = (SELECT name FROM workspace_files wf WHERE wf.file_fingerprint = files.file_fingerprint LIMIT 1)`
         ).run()
         this._db!.prepare('DELETE FROM file_contents').run()
         this._db!.prepare('DELETE FROM file_tag_relations').run()

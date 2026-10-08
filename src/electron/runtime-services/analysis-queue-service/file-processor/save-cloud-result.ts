@@ -189,12 +189,13 @@ export async function saveCloudResult(
       db.prepare(
         `
         INSERT INTO files (
-          file_fingerprint, smart_name, description, size, extension, file_group,
+          file_fingerprint, smart_name, smart_name_source, description, size, extension, file_group,
           author, language, is_hit, last_hit_at, sync_status,
           created_at, modified_at, accessed_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, 'ai', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           smart_name = excluded.smart_name,
+          smart_name_source = 'ai',
           description = excluded.description,
           extension = excluded.extension,
           file_group = excluded.file_group,

@@ -733,7 +733,7 @@ export function getSelectedTagsFromSet(
       namePath: tagItem?.namePath,
       ...(codePaths ? { codePaths } : {}),
       viaParentCode: effectiveViaParent,
-      level: tagObj?.level || 0,
+      level: tagItem?.level ?? tagObj?.level ?? 0,
       ...(parentTagValue ? { parentTagValue } : {}),
       ...(ancestorChain && ancestorChain.length > 0 ? { ancestorChain } : {})
     })
