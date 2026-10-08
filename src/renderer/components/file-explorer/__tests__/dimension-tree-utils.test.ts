@@ -5,7 +5,9 @@ import {
   parseTagKey,
   buildDimensionTree,
   getVisibleAndHiddenTags,
-  getSelectedTagsFromSet
+  getSelectedTagsFromSet,
+  getAllKeys,
+  migrateTagKeysAcrossScale
 } from '../dimension-tree-utils'
 import { DimensionGroup, DimensionTag } from '@firefly/types'
 
@@ -761,3 +763,334 @@ describe('dimension-tree-utils - getSelectedTagsFromSet', () => {
   })
 })
 
+
+describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试', () => {
+  const directP = '/builtin.file_type/builtin.image/builtin.uncensored'
+  const deepP = '/builtin.file_type/builtin.image/builtin.manga/builtin.uncensored'
+
+  const collideGroups: DimensionGroup[] = [
+    {
+      id: 7,
+      name: '打码程度',
+      code: 'builtin.censorship',
+      level: 0,
+      tags: [
+        {
+          dimensionId: 7,
+          dimensionCode: 'builtin.censorship',
+          dimensionName: '打码程度',
+          tagValue: '图片',
+          code: 'builtin.image',
+          level: 1,
+          fileCount: 12,
+          codePath: '/builtin.file_type/builtin.image',
+          namePath: '/文件类型/图片',
+          isMultiSelect: false
+        },
+        {
+          dimensionId: 7,
+          dimensionCode: 'builtin.censorship',
+          dimensionName: '打码程度',
+          tagValue: '漫画',
+          code: 'builtin.manga',
+          viaParentCode: 'builtin.image',
+          level: 2,
+          fileCount: 6,
+          codePath: '/builtin.file_type/builtin.image/builtin.manga',
+          namePath: '/文件类型/图片/漫画',
+          isMultiSelect: false
+        },
+        {
+          dimensionId: 7,
+          dimensionCode: 'builtin.censorship',
+          dimensionName: '打码程度',
+          tagValue: '无码',
+          code: 'builtin.uncensored',
+          viaParentCode: 'builtin.image',
+          level: 2,
+          fileCount: 6,
+          codePath: directP,
+          namePath: '/文件类型/图片/无码',
+          isMultiSelect: false
+        },
+        {
+          dimensionId: 7,
+          dimensionCode: 'builtin.censorship',
+          dimensionName: '打码程度',
+          tagValue: '无码',
+          code: 'builtin.uncensored',
+          viaParentCode: 'builtin.manga',
+          level: 3,
+          fileCount: 6,
+          codePath: deepP,
+          namePath: '/文件类型/图片/漫画/无码',
+          isMultiSelect: false
+        }
+      ],
+      isMultiSelect: false
+    }
+  ]
+
+  it('AC-1: 刻度 1 提升聚合行 ➔ 刻度 3 展开为多实例行 (1:N 自愈)', () => {
+    // 刻度 1: 树折叠，无码被提升聚合
+    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
+    const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
+
+    // 刻度 3: 树展开
+    const scale3Tree = buildDimensionTree(collideGroups, null, null, 0, 3)
+
+    const result = migrateTagKeysAcrossScale({
+      prevSelected: new Set([liftedKey]),
+      prevStack: [liftedKey],
+      prevParentMap: new Map([[liftedKey, ['图片']]]),
+      currentVisibleGroups: scale3Tree,
+      masterDimensionGroups: collideGroups
+    })
+
+    const directInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.image', false)
+    const deepInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false)
+
+    expect(result.hasChanged).toBe(true)
+    expect(result.migratedSelected.has(directInstanceKey)).toBe(true)
+    expect(result.migratedSelected.has(deepInstanceKey)).toBe(true)
+    expect(result.migratedSelected.has(liftedKey)).toBe(false)
+    expect(result.migratedSelected.size).toBe(2)
+    expect(result.migratedStack).toContain(directInstanceKey)
+    expect(result.migratedStack).toContain(deepInstanceKey)
+  })
+
+  it('AC-2: 刻度 3 全量勾选实例 ➔ 刻度 1 折叠收敛为聚合行 (N:1 全覆盖收敛)', () => {
+    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
+
+    const directInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.image', false)
+    const deepInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false)
+    const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
+
+    const result = migrateTagKeysAcrossScale({
+      prevSelected: new Set([directInstanceKey, deepInstanceKey]),
+      prevStack: [directInstanceKey, deepInstanceKey],
+      prevParentMap: new Map([
+        [directInstanceKey, ['图片']],
+        [deepInstanceKey, ['图片', '漫画']]
+      ]),
+      currentVisibleGroups: scale1Tree,
+      masterDimensionGroups: collideGroups
+    })
+
+    expect(result.hasChanged).toBe(true)
+    expect(result.migratedSelected.size).toBe(1)
+    expect(result.migratedSelected.has(liftedKey)).toBe(true)
+    expect(result.migratedStack).toEqual([liftedKey])
+    expect(result.migratedParentMap.has(liftedKey)).toBe(true)
+  })
+
+  it('AC-2b: 多容器同名实例并发全覆盖折叠 (严防跨容器实例吞噬)', () => {
+    // 两个独立容器：图片 (builtin.image) 和 视频 (builtin.video)
+    // 容器 1 (图片) 下有漫画和直系两个无码实例；
+    // 容器 2 (视频) 下有短视频下的一个无码实例。
+    const multiContainerGroups: DimensionGroup[] = [
+      {
+        id: 7,
+        name: '打码程度',
+        code: 'builtin.censorship',
+        level: 0,
+        tags: [
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '图片',
+            code: 'builtin.image',
+            level: 1,
+            fileCount: 12,
+            codePath: '/builtin.file_type/builtin.image',
+            namePath: '/文件类型/图片',
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '漫画',
+            code: 'builtin.manga',
+            viaParentCode: 'builtin.image',
+            level: 2,
+            fileCount: 6,
+            codePath: '/builtin.file_type/builtin.image/builtin.manga',
+            namePath: '/文件类型/图片/漫画',
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.image',
+            level: 2,
+            fileCount: 6,
+            codePath: directP,
+            namePath: '/文件类型/图片/无码',
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.manga',
+            level: 3,
+            fileCount: 6,
+            codePath: deepP,
+            namePath: '/文件类型/图片/漫画/无码',
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '视频',
+            code: 'builtin.video',
+            level: 1,
+            fileCount: 8,
+            codePath: '/builtin.file_type/builtin.video',
+            namePath: '/文件类型/视频',
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '短视频',
+            code: 'builtin.short_video',
+            viaParentCode: 'builtin.video',
+            level: 2,
+            fileCount: 8,
+            codePath: '/builtin.file_type/builtin.video/builtin.short_video',
+            namePath: '/文件类型/视频/短视频',
+            isMultiSelect: false
+          },
+          {
+            dimensionId: 7,
+            dimensionCode: 'builtin.censorship',
+            dimensionName: '打码程度',
+            tagValue: '无码',
+            code: 'builtin.uncensored',
+            viaParentCode: 'builtin.short_video',
+            level: 3,
+            fileCount: 8,
+            codePath: '/builtin.file_type/builtin.video/builtin.short_video/builtin.uncensored',
+            namePath: '/文件类型/视频/短视频/无码',
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ]
+
+    const scale1Tree = buildDimensionTree(multiContainerGroups, null, null, 0, 1)
+
+    // 用户在展开态同时选中了：图片下的直系无码、图片漫画下的无码、以及视频短视频下的无码
+    const imageDirectKey = makeTagKey(7, '无码', undefined, 'builtin.image', false)
+    const imageDeepKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false)
+    const videoDeepKey = makeTagKey(7, '无码', undefined, 'builtin.short_video', false)
+
+    const imageLiftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
+    const videoLiftedKey = makeTagKey(7, '无码', undefined, 'builtin.video', true)
+
+    const result = migrateTagKeysAcrossScale({
+      prevSelected: new Set([imageDirectKey, imageDeepKey, videoDeepKey]),
+      prevStack: [imageDirectKey, imageDeepKey, videoDeepKey],
+      prevParentMap: new Map([
+        [imageDirectKey, ['图片']],
+        [imageDeepKey, ['图片', '漫画']],
+        [videoDeepKey, ['视频', '短视频']]
+      ]),
+      currentVisibleGroups: scale1Tree,
+      masterDimensionGroups: multiContainerGroups
+    })
+
+    expect(result.hasChanged).toBe(true)
+    // 两个容器的聚合行必须独立并存，绝不能因为同名而互相吞噬！
+    expect(result.migratedSelected.has(imageLiftedKey)).toBe(true)
+    expect(result.migratedSelected.has(videoLiftedKey)).toBe(true)
+    expect(result.migratedSelected.size).toBe(2)
+    expect(result.migratedStack).toContain(imageLiftedKey)
+    expect(result.migratedStack).toContain(videoLiftedKey)
+  })
+
+  it('AC-3: 部分选中严禁越界扩增 (Full-Coverage Invariant 核心门控)', () => {
+    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
+    const scale3Tree = buildDimensionTree(collideGroups, null, null, 0, 3)
+
+    // 用户在刻度 3 仅选中了漫画分支下的无码，未选中图片直系下的无码
+    const deepInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false)
+    const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
+
+    const collapseResult = migrateTagKeysAcrossScale({
+      prevSelected: new Set([deepInstanceKey]),
+      prevStack: [deepInstanceKey],
+      prevParentMap: new Map([[deepInstanceKey, ['图片', '漫画']]]),
+      currentVisibleGroups: scale1Tree,
+      masterDimensionGroups: collideGroups
+    })
+
+    // 严禁晋升聚合行！绝不可包含 liftedKey (否则范围越界扩增为全部分支)
+    expect(collapseResult.migratedSelected.has(liftedKey)).toBe(false)
+    // 严格保留原深层实例 key 作为深层保留态
+    expect(collapseResult.migratedSelected.has(deepInstanceKey)).toBe(true)
+    expect(collapseResult.migratedSelected.size).toBe(1)
+
+    // 再次从刻度 1 拖回刻度 3
+    const expandResult = migrateTagKeysAcrossScale({
+      prevSelected: collapseResult.migratedSelected,
+      prevStack: collapseResult.migratedStack,
+      prevParentMap: collapseResult.migratedParentMap,
+      currentVisibleGroups: scale3Tree,
+      masterDimensionGroups: collideGroups
+    })
+
+    // 依然精准且仅有深层实例行被选中，零扩散零越界
+    expect(expandResult.migratedSelected.has(deepInstanceKey)).toBe(true)
+    expect(expandResult.migratedSelected.size).toBe(1)
+  })
+
+  it('AC-4: 物理死标签/孤儿标签过滤', () => {
+    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
+    const orphanKey = makeTagKey(999, '已彻底删除的死标签', undefined, 'non_existent')
+
+    const result = migrateTagKeysAcrossScale({
+      prevSelected: new Set([orphanKey]),
+      prevStack: [orphanKey],
+      prevParentMap: new Map([[orphanKey, ['未知']]]),
+      currentVisibleGroups: scale1Tree,
+      masterDimensionGroups: collideGroups
+    })
+
+    expect(result.hasChanged).toBe(true)
+    expect(result.migratedSelected.size).toBe(0)
+    expect(result.migratedStack.length).toBe(0)
+  })
+
+  it('AC-5: 显式 isLifted 契约验证：聚合行打标与 key 生成', () => {
+    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
+    const { childTags } = scale1Tree[0]
+    expect(childTags).toBeDefined()
+
+    const l1Children = childTags!.get('图片')!
+    const liftedNode = l1Children[0]
+    const liftedTag = liftedNode.tags.find(t => t.tagValue === '无码')!
+
+    // 验证 aggregateLiftedTags 显式打上了 isLifted: true
+    expect(liftedTag.isLifted).toBe(true)
+
+    // 验证 getAllKeys 会根据 tag.isLifted === true 正确生成 liftCode 键
+    const allKeys = getAllKeys(scale1Tree)
+    const liftedKeyItem = allKeys.find(
+      item => item.key.includes('liftCode:builtin.image') && item.key.endsWith('::无码')
+    )
+    expect(liftedKeyItem).toBeDefined()
+    expect(liftedKeyItem!.key).toBe(makeTagKey(7, '无码', undefined, 'builtin.image', true))
+  })
+})

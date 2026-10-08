@@ -9,7 +9,10 @@ import {
   parseTagKey,
   buildDimensionTree,
   getVisibleAndHiddenTags,
-  getSelectedTagsFromSet
+  getSelectedTagsFromSet,
+  resolveTagsToUse,
+  getAllKeys,
+  migrateTagKeysAcrossScale
 } from './dimension-tree-utils'
 
 /**
@@ -59,7 +62,8 @@ interface DimensionTreeNodeProps {
     tagValue: string,
     parentTagValue?: string,
     ancestorChain?: string[],
-    viaParentCode?: string
+    viaParentCode?: string,
+    isLifted?: boolean
   ) => void
   getVisibleAndHiddenTags: (
     group: any,
@@ -145,7 +149,7 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                 tag.tagValue,
                 parentTagValue,
                 tag.viaParentCode || undefined,
-                tag.codePaths !== undefined,
+                tag.isLifted === true,
                 tag.codePath
               )
               const isDisabled = tag.fileCount === 0
@@ -205,7 +209,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                               tag.tagValue,
                               parentTagValue,
                               currentChain,
-                              tag.viaParentCode || undefined
+                              tag.viaParentCode || undefined,
+                              tag.isLifted === true
                             )
                           }
                         }}
@@ -220,7 +225,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                               tag.tagValue,
                               parentTagValue,
                               currentChain,
-                              tag.viaParentCode || undefined
+                              tag.viaParentCode || undefined,
+                              tag.isLifted === true
                             )
                           }
                           className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
@@ -248,7 +254,8 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                             tag.tagValue,
                             parentTagValue,
                             currentChain,
-                            tag.viaParentCode || undefined
+                            tag.viaParentCode || undefined,
+                            tag.isLifted === true
                           )
                         } else {
                           handleTagClick({
@@ -259,6 +266,7 @@ const DimensionTreeNodeComponent: React.FC<DimensionTreeNodeProps> = React.memo(
                             codePath: tag.codePath,
                             namePath: tag.namePath,
                             codePaths: tag.codePaths,
+                            isLifted: tag.isLifted === true,
                             viaParentCode: tag.viaParentCode || undefined,
                             level: tag.level,
                             parentTagValue,
@@ -429,7 +437,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     row.parentTagValue,
                     row.ancestorChain,
                     tag.viaParentCode || undefined,
-                    tag.codePaths !== undefined
+                    tag.isLifted === true
                   )
                 }
               }}
@@ -445,7 +453,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                     row.parentTagValue,
                     row.ancestorChain,
                     tag.viaParentCode || undefined,
-                    tag.codePaths !== undefined
+                    tag.isLifted === true
                   )
                 }
                 className="w-3.5 h-3.5 rounded border border-border/80 accent-primary cursor-pointer shrink-0"
@@ -475,7 +483,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                   row.parentTagValue,
                   row.ancestorChain,
                   tag.viaParentCode || undefined,
-                  tag.codePaths !== undefined
+                  tag.isLifted === true
                 )
               } else {
                 handleTagClickInternal({
@@ -487,6 +495,7 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
                   namePath: tag.namePath,
                   // 穿透提升跨分支聚合标签携带完整物化路径集合，保证 FileList 视野零丢失 (ADR-0034 §4 / M-4)
                   codePaths: tag.codePaths,
+                  isLifted: tag.isLifted === true,
                   viaParentCode: tag.viaParentCode || undefined,
                   level: tag.level,
                   parentTagValue: row.parentTagValue,
@@ -508,71 +517,6 @@ const DimensionTreeRow = React.memo<DimensionTreeRowProps>(
   }
 )
 DimensionTreeRow.displayName = 'DimensionTreeRow'
-
-/**
- * 解析节点在给定父标签上下文下实际要展示的标签集合。
- * 这是「渲染」与「全选」必须共用的唯一口径：
- * 当节点存在 contextualTags 且当前非扩展名维度时，实际展示的是上下文标签而非 node.tags。
- * 若两处口径不一致，会导致「点全选后标签样式变了，但每行 checkbox 未勾选」。
- */
-const resolveTagsToUse = (node: DimensionTreeNode, parentTagValue?: string) => {
-  let tagsToUse = node.tags
-  if (parentTagValue && node.contextualTags && node.contextualTags[parentTagValue]) {
-    const isL3Ext = /扩展名|Extension/i.test(node.name)
-    if (!isL3Ext) {
-      tagsToUse = node.contextualTags[parentTagValue]
-    }
-  }
-  return tagsToUse
-}
-
-/**
- * 递归收集树中所有「可被勾选」的标签 key。
- * 约束（必须与渲染层一致）：
- * 1. 标签集合取自 resolveTagsToUse（含 contextualTags 场景）；
- * 2. 跳过 fileCount === 0 的禁用标签（渲染层 checkbox 处于 disabled，无法勾选）；
- * 3. 跳过折叠维度组内的标签（渲染层未渲染，勾选后用户看不到任何反馈）。
- * 否则「全选」会写入一堆不会渲染出勾选态的 key，表现为「标签变全选样式但 checkbox 未勾选」。
- */
-const getAllKeys = (
-  nodes: DimensionTreeNode[],
-  parentTag?: string,
-  chain: string[] = [],
-  collapsedDimensionGroups?: Set<number>
-): { key: string; ancestorChain: string[] }[] => {
-  const keys: { key: string; ancestorChain: string[] }[] = []
-  nodes.forEach(node => {
-    // 折叠的维度组不渲染其标签，不应计入全选范围
-    if (node.level === 0 && collapsedDimensionGroups?.has(node.id)) return
-
-    const tagsToUse = resolveTagsToUse(node, parentTag)
-    tagsToUse.forEach(tag => {
-      // 与渲染层复选框 disabled 条件保持一致
-      if (tag.fileCount === 0) return
-      // 必须使用 tag.dimensionId 生成 key：渲染层 isTagSelected 的判断依据即为 tag.dimensionId，
-      // contextualTags 场景下 tag.dimensionId 可能与 node.id 不同，用 node.id 会导致选中态匹配错位；
-      // 带 codePaths 的穿透提升聚合行必须打 liftCode 标记，避免与容器直系实例 key 撞车 (ADR-0034 §4 / M-4)
-      const key = makeTagKey(
-        tag.dimensionId,
-        tag.tagValue,
-        parentTag,
-        tag.viaParentCode ?? undefined,
-        tag.codePaths !== undefined
-      )
-      const currentChain = [...chain, tag.tagValue]
-      keys.push({ key, ancestorChain: currentChain })
-    })
-    // 与渲染层一致：childTags 以当前节点实际展示的标签值作为父标签键递归
-    if (node.childTags) {
-      for (const [childParentTag, childNodes] of node.childTags) {
-        keys.push(
-          ...getAllKeys(childNodes, childParentTag, [...chain, childParentTag], collapsedDimensionGroups)
-        )
-      }
-    }
-  })
-  return keys
-}
 
 export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   dimensionGroups,
@@ -646,6 +590,9 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   })
 
   const [currentTag, setCurrentTag] = useState<SelectedTag | null>(null)
+
+  // 记录是否已完成初次挂载与外部持久化注入 (B-2 修复)
+  const isInitializedRef = useRef(false)
 
   // 标签树层级深度刻度状态 (1~10 刻度，ADR-0034 §4 推荐默认 3 级)
   const [maxScaleDepth, setMaxScaleDepth] = useState<number>(() => {
@@ -778,6 +725,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   const lastWorkspacePathRef = useRef(workspacePath)
   useEffect(() => {
     if (workspacePath !== lastWorkspacePathRef.current) {
+      isInitializedRef.current = false
       setSelectedTags(new Set())
       setSelectionStack([])
       setParentTagMap(new Map())
@@ -899,7 +847,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           !codePath || !currentTag?.codePath || currentTag.codePath === codePath
         const liftMatches =
           isLifted === undefined ||
-          (currentTag?.codePaths !== undefined) === isLifted
+          (currentTag?.isLifted === true) === isLifted
         return (
           currentTag !== null &&
           currentTag.dimensionId === dimensionId &&
@@ -983,6 +931,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
       namePath?: string
       /** 穿透提升跨分支聚合后的全部物化路径集合 (ADR-0034 §4 / M-4) */
       codePaths?: string[]
+      isLifted?: boolean
       viaParentCode?: string
       level: number
       parentTagValue?: string
@@ -996,7 +945,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           tag.parentTagValue,
           tag.ancestorChain,
           effectiveViaParent,
-          tag.codePaths !== undefined
+          tag.isLifted === true
         )
       } else {
         const newTag: SelectedTag = {
@@ -1007,6 +956,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           codePath: tag.codePath,
           namePath: tag.namePath,
           codePaths: tag.codePaths,
+          isLifted: tag.isLifted === true,
           viaParentCode: effectiveViaParent,
           level: tag.level,
           parentTagValue: tag.parentTagValue,
@@ -1022,7 +972,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
             prev.parentTagValue === tag.parentTagValue &&
             prevViaParent === effectiveViaParent &&
             (prev.codePath ?? '') === (tag.codePath ?? '') &&
-            (prev.codePaths !== undefined) === (tag.codePaths !== undefined)
+            (prev.isLifted === true) === (tag.isLifted === true)
 
           return isSame ? null : newTag
         })
@@ -1051,57 +1001,50 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
     })
   }, [dimensionGroups, handleVisibleAndHiddenTags, maxScaleDepth])
 
-  // 4. 自动清理不在当前维度树中的无效/陈旧幽灵标签键
-  // 注意：此处不排除折叠的维度组（折叠只是临时 UI 状态，不代表标签失效），
-  // 因此不传 collapsedDimensionGroups，仅按「标签是否存在且可勾选」判定有效性。
+  // 4. 单一收口的自愈与合法性同步管道（响应 maxScaleDepth 投影伸缩，遵循全覆盖不变式与物理死标签自愈）
   useEffect(() => {
+    // 初次挂载守卫：跳过空树自愈，防止 localStorage 恢复的选中态被空树清除 (B-2 修复)
+    if (!isInitializedRef.current) {
+      if (visibleGroups.length === 0) {
+        return
+      }
+      isInitializedRef.current = true
+    }
+
     if (selectedTags.size === 0) return
 
-    const validKeys = new Set(getAllKeys(visibleGroups).map(i => i.key))
-    let hasInvalid = false
-    const cleanSelected = new Set<string>()
-    const cleanStack: string[] = []
-    const cleanParentMap = new Map<string, string[]>()
-
-    selectedTags.forEach(key => {
-      if (validKeys.has(key)) {
-        cleanSelected.add(key)
-      } else {
-        hasInvalid = true
-      }
+    const result = migrateTagKeysAcrossScale({
+      prevSelected: selectedTags,
+      prevStack: selectionStack,
+      prevParentMap: parentTagMap,
+      currentVisibleGroups: visibleGroups,
+      masterDimensionGroups: dimensionGroups
     })
 
-    if (hasInvalid) {
-      selectionStack.forEach(key => {
-        if (validKeys.has(key)) cleanStack.push(key)
-      })
-      parentTagMap.forEach((chain, key) => {
-        if (validKeys.has(key)) cleanParentMap.set(key, chain)
-      })
-
-      setSelectedTags(cleanSelected)
-      setSelectionStack(cleanStack)
-      setParentTagMap(cleanParentMap)
+    if (result.hasChanged) {
+      setSelectedTags(result.migratedSelected)
+      setSelectionStack(result.migratedStack)
+      setParentTagMap(result.migratedParentMap)
 
       if (storageKey) {
         try {
           localStorage.setItem(
             `${storageKey}_selectedTags`,
-            JSON.stringify(Array.from(cleanSelected))
+            JSON.stringify(Array.from(result.migratedSelected))
           )
-          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(cleanStack))
+          localStorage.setItem(`${storageKey}_selectionStack`, JSON.stringify(result.migratedStack))
           localStorage.setItem(
             `${storageKey}_parentTagMap`,
-            JSON.stringify(Array.from(cleanParentMap.entries()))
+            JSON.stringify(Array.from(result.migratedParentMap.entries()))
           )
         } catch {}
       }
 
       if (onSelectionChangeRef.current && isExportMode) {
-        onSelectionChangeRef.current(cleanSelected, 'toggle', cleanParentMap)
+        onSelectionChangeRef.current(result.migratedSelected, 'toggle', result.migratedParentMap)
       }
     }
-  }, [visibleGroups, isExportMode, storageKey])
+  }, [visibleGroups, dimensionGroups, maxScaleDepth, isExportMode, storageKey])
 
   const handleSelectAll = useCallback(() => {
     const allItems = getAllKeys(visibleGroups, undefined, [], collapsedDimensionGroups)
@@ -1260,7 +1203,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
           tag.tagValue,
           parentTagValue,
           tag.viaParentCode ?? undefined,
-          tag.codePaths !== undefined,
+          tag.isLifted === true,
           tag.codePath
         )
         const isDisabled = tag.fileCount === 0

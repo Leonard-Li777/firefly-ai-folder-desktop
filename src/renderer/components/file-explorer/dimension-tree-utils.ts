@@ -318,7 +318,8 @@ function aggregateLiftedTags(
         ...d,
         viaParentCode: containerTag.code || containerTag.tagValue,
         level: containerLevel,
-        codePaths: d.codePath ? [d.codePath] : []
+        codePaths: d.codePath ? [d.codePath] : [],
+        isLifted: true
       }
       liftedTags.push(merged)
       if (d.code) liftedByCode.set(d.code, merged)
@@ -740,4 +741,306 @@ export function getSelectedTagsFromSet(
   }
 
   return results
+}
+
+/**
+ * 获取当前节点实际应当展示的标签集合。
+ * 当节点存在 contextualTags 且当前非扩展名维度时，实际展示的是上下文标签而非 node.tags。
+ */
+export function resolveTagsToUse(node: DimensionTreeNode, parentTagValue?: string): DimensionTag[] {
+  let tagsToUse = node.tags
+  if (parentTagValue && node.contextualTags && node.contextualTags[parentTagValue]) {
+    const isL3Ext = /扩展名|Extension/i.test(node.name)
+    if (!isL3Ext) {
+      tagsToUse = node.contextualTags[parentTagValue]
+    }
+  }
+  return tagsToUse
+}
+
+/**
+ * 递归收集树中所有「可被勾选」的标签 key。
+ * 约束（必须与渲染层一致）：
+ * 1. 标签集合取自 resolveTagsToUse（含 contextualTags 场景）；
+ * 2. 跳过 fileCount === 0 的禁用标签（渲染层 checkbox 处于 disabled，无法勾选）；
+ * 3. 跳过折叠维度组内的标签（渲染层未渲染，勾选后用户看不到任何反馈）。
+ */
+export function getAllKeys(
+  nodes: DimensionTreeNode[],
+  parentTag?: string,
+  chain: string[] = [],
+  collapsedDimensionGroups?: Set<number>
+): { key: string; ancestorChain: string[] }[] {
+  const keys: { key: string; ancestorChain: string[] }[] = []
+  nodes.forEach(node => {
+    // 折叠的维度组不渲染其标签，不应计入全选范围
+    if (node.level === 0 && collapsedDimensionGroups?.has(node.id)) return
+
+    const tagsToUse = resolveTagsToUse(node, parentTag)
+    tagsToUse.forEach(tag => {
+      if (tag.fileCount === 0) return
+      const key = makeTagKey(
+        tag.dimensionId,
+        tag.tagValue,
+        parentTag,
+        tag.viaParentCode ?? undefined,
+        tag.isLifted === true
+      )
+      const currentChain = [...chain, tag.tagValue]
+      keys.push({ key, ancestorChain: currentChain })
+    })
+
+    if (node.childTags) {
+      for (const [childParentTag, childNodes] of node.childTags) {
+        keys.push(
+          ...getAllKeys(childNodes, childParentTag, [...chain, childParentTag], collapsedDimensionGroups)
+        )
+      }
+    }
+  })
+  return keys
+}
+
+export interface ScaleMigrationParams {
+  prevSelected: Set<string>
+  prevStack: string[]
+  prevParentMap: Map<string, string[]>
+  currentVisibleGroups: DimensionTreeNode[]
+  masterDimensionGroups: DimensionGroup[]
+}
+
+export interface ScaleMigrationResult {
+  migratedSelected: Set<string>
+  migratedStack: string[]
+  migratedParentMap: Map<string, string[]>
+  hasChanged: boolean
+}
+
+/**
+ * 跨刻度滑块投影自愈迁移器 (纯函数，零副作用)
+ * 核心公理：全覆盖不变式 (Full-Coverage Invariant，B-1 彻底闭环)
+ * 1. 提升聚合 ➔ 实例展开 (1:N): 自动映射为展开后的所有对应实例行，并保持真实物理祖先链；
+ * 2. 实例展开 ➔ 提升折叠 (N:1): 当且仅当该容器下的所有展开实例行全部被勾选时，才收敛为聚合行；
+ *    若仅为部分选中 (Partial Selection)，严禁扩增为聚合行，严格保留原实例 key 作为深层保留态！
+ * 3. 物理死标签过滤: 仅清理在底层 masterDimensionGroups 中已被物理删除的孤儿 key。
+ */
+export function migrateTagKeysAcrossScale(params: ScaleMigrationParams): ScaleMigrationResult {
+  const {
+    prevSelected,
+    prevStack,
+    prevParentMap,
+    currentVisibleGroups,
+    masterDimensionGroups
+  } = params
+
+  if (prevSelected.size === 0) {
+    return {
+      migratedSelected: new Set(),
+      migratedStack: [],
+      migratedParentMap: new Map(),
+      hasChanged: false
+    }
+  }
+
+  // 1. 收集当前可见树中所有可被勾选的项
+  const visibleItems = getAllKeys(currentVisibleGroups)
+  const visibleItemMap = new Map<string, { key: string; ancestorChain: string[] }>()
+  for (const item of visibleItems) {
+    visibleItemMap.set(item.key, item)
+  }
+
+  // 2. 构建底层 master 维度组与索引
+  const masterGroupMap = new Map<number, DimensionGroup>()
+  const masterIndexMap = new Map<number, TagParentIndex>()
+  for (const g of masterDimensionGroups) {
+    masterGroupMap.set(g.id, g)
+    masterIndexMap.set(g.id, buildTagParentIndex(g.tags || []))
+  }
+
+  // 3. 构建当前可见树中聚合行与展开实例行的高速索引
+  const visibleLiftedByKey = new Map<string, { key: string; ancestorChain: string[] }>()
+  const visibleInstancesByContainerAndValue = new Map<
+    string,
+    Array<{ key: string; ancestorChain: string[] }>
+  >()
+
+  for (const item of visibleItems) {
+    const parsed = parseTagKey(item.key)
+    if (parsed.isLifted && parsed.viaParentCode) {
+      visibleLiftedByKey.set(
+        `${parsed.dimensionId}::${parsed.viaParentCode}::${parsed.tagValue}`,
+        item
+      )
+    } else if (!parsed.isLifted) {
+      const masterIndex = masterIndexMap.get(parsed.dimensionId)
+      // 遍历 item.ancestorChain 中的每个祖先（排除末尾自身标签值）
+      const ancestors = item.ancestorChain.slice(0, -1)
+      for (const ancName of ancestors) {
+        const ancObj = masterIndex?.tagByName.get(ancName) || masterIndex?.tagByCode.get(ancName)
+        const containerKeys = new Set<string>([ancName])
+        if (ancObj?.code) containerKeys.add(ancObj.code)
+        if (ancObj?.tagValue) containerKeys.add(ancObj.tagValue)
+
+        for (const cKey of containerKeys) {
+          const mapKey = `${parsed.dimensionId}::${cKey}::${parsed.tagValue}`
+          let list = visibleInstancesByContainerAndValue.get(mapKey)
+          if (!list) {
+            list = []
+            visibleInstancesByContainerAndValue.set(mapKey, list)
+          }
+          if (!list.some(i => i.key === item.key)) {
+            list.push(item)
+          }
+        }
+      }
+    }
+  }
+
+  const migratedSelected = new Set<string>()
+  const migratedStack: string[] = []
+  const migratedParentMap = new Map<string, string[]>()
+  let hasChanged = false
+
+  const collapsedHandledInstanceKeys = new Set<string>()
+  const handledPrevKeys = new Set<string>()
+
+  for (const oldKey of prevStack) {
+    if (!prevSelected.has(oldKey)) continue
+    handledPrevKeys.add(oldKey)
+    if (collapsedHandledInstanceKeys.has(oldKey)) {
+      hasChanged = true
+      continue
+    }
+
+    const parsed = parseTagKey(oldKey)
+    const masterGroup = masterGroupMap.get(parsed.dimensionId)
+    const masterIndex = masterIndexMap.get(parsed.dimensionId)
+
+    // ─── 规则 1: 在当前可见树中直接命中有效 key ───
+    if (visibleItemMap.has(oldKey)) {
+      migratedSelected.add(oldKey)
+      migratedStack.push(oldKey)
+      migratedParentMap.set(oldKey, visibleItemMap.get(oldKey)!.ancestorChain)
+      continue
+    }
+
+    // ─── 规则 2: 旧 key 是提升聚合行，当前树中不可视（树展开了，1:N 自愈） ───
+    if (parsed.isLifted && parsed.viaParentCode && masterGroup && masterIndex) {
+      const containerKey = parsed.viaParentCode
+      const containerTag = masterIndex.tagByCode.get(containerKey) || masterIndex.tagByName.get(containerKey)
+      if (containerTag) {
+        const mapKey = `${parsed.dimensionId}::${containerKey}::${parsed.tagValue}`
+        const visibleInstances = visibleInstancesByContainerAndValue.get(mapKey) || []
+
+        if (visibleInstances.length > 0) {
+          hasChanged = true
+          for (const inst of visibleInstances) {
+            if (!migratedSelected.has(inst.key)) {
+              migratedSelected.add(inst.key)
+              migratedStack.push(inst.key)
+              migratedParentMap.set(inst.key, inst.ancestorChain)
+            }
+          }
+          continue
+        }
+      }
+    }
+
+    // ─── 规则 3: 旧 key 是普通实例行，当前树中不可视（可能被折叠提升了，N:1 全覆盖收敛） ───
+    if (!parsed.isLifted && masterGroup && masterIndex) {
+      let handledByFullCoverageCollapse = false
+      for (const [mapKey, liftedItem] of visibleLiftedByKey.entries()) {
+        const [dimStr, containerKey, val] = mapKey.split('::')
+        if (parseInt(dimStr, 10) !== parsed.dimensionId || val !== parsed.tagValue) continue
+
+        const containerTag = masterIndex.tagByCode.get(containerKey) || masterIndex.tagByName.get(containerKey)
+        if (!containerTag) continue
+
+        const descendants = collectDescendantTags(containerTag, masterIndex)
+        const siblingInstances = descendants.filter(d => d.tagValue === parsed.tagValue)
+        if (siblingInstances.length === 0) continue
+
+        const isBelongToContainer = siblingInstances.some(
+          d => (d.viaParentCode || undefined) === parsed.viaParentCode
+        )
+        if (!isBelongToContainer) continue
+
+        // 【全覆盖不变式校验 (Full-Coverage Invariant)】
+        const allSiblingKeysInPrevSelected = siblingInstances.every(sib => {
+          for (const k of prevSelected) {
+            const p = parseTagKey(k)
+            if (p.dimensionId === parsed.dimensionId && p.tagValue === sib.tagValue) {
+              if (!p.isLifted && (p.viaParentCode === sib.viaParentCode || !sib.viaParentCode)) {
+                return true
+              }
+            }
+          }
+          return false
+        })
+
+        if (allSiblingKeysInPrevSelected) {
+          hasChanged = true
+          handledByFullCoverageCollapse = true
+          if (!migratedSelected.has(liftedItem.key)) {
+            migratedSelected.add(liftedItem.key)
+            migratedStack.push(liftedItem.key)
+            migratedParentMap.set(liftedItem.key, liftedItem.ancestorChain)
+          }
+          for (const k of prevSelected) {
+            const p = parseTagKey(k)
+            if (
+              p.dimensionId === parsed.dimensionId &&
+              p.tagValue === parsed.tagValue &&
+              !p.isLifted &&
+              siblingInstances.some(sib => (sib.viaParentCode || undefined) === p.viaParentCode)
+            ) {
+              collapsedHandledInstanceKeys.add(k)
+              handledPrevKeys.add(k)
+            }
+          }
+          break
+        }
+      }
+
+      if (handledByFullCoverageCollapse) {
+        continue
+      }
+
+      // 【部分勾选守卫 (Partial Selection Invariant)】
+      const physicalExists = masterGroup.tags?.some(t => t.tagValue === parsed.tagValue)
+      if (physicalExists) {
+        migratedSelected.add(oldKey)
+        migratedStack.push(oldKey)
+        if (prevParentMap.has(oldKey)) {
+          migratedParentMap.set(oldKey, prevParentMap.get(oldKey)!)
+        }
+        continue
+      }
+    }
+
+    // ─── 规则 4: 物理死标签过滤 ───
+    hasChanged = true
+  }
+
+  for (const oldKey of prevSelected) {
+    if (handledPrevKeys.has(oldKey) || collapsedHandledInstanceKeys.has(oldKey)) continue
+    if (!migratedSelected.has(oldKey)) {
+      const parsed = parseTagKey(oldKey)
+      const masterGroup = masterGroupMap.get(parsed.dimensionId)
+      if (masterGroup?.tags?.some(t => t.tagValue === parsed.tagValue)) {
+        migratedSelected.add(oldKey)
+        migratedStack.push(oldKey)
+        if (prevParentMap.has(oldKey)) {
+          migratedParentMap.set(oldKey, prevParentMap.get(oldKey)!)
+        }
+      }
+    }
+  }
+
+  return {
+    migratedSelected,
+    migratedStack,
+    migratedParentMap,
+    hasChanged: hasChanged || migratedSelected.size !== prevSelected.size
+  }
 }
