@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-09T11:18:50.832Z",
+  "generatedAt": "2026-10-09T18:50:14.200Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -131,8 +131,8 @@
       "source": "shared",
       "asset": {
         "name": "ced-mini-1.0.0.zip",
-        "sha256": "42620b4fd123a1c7c5d3b4746d9c5f1d23648def69b2d8f7eefed1c245da9f8d",
-        "size": 36144348,
+        "sha256": "8bb7d8779c136b382f979d9886f550b004aeb54d3893bb516369f710ae2f85f9",
+        "size": 7606756,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/ced-mini-1.0.0.zip"
       }
     },
