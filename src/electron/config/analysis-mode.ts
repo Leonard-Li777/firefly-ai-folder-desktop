@@ -28,8 +28,8 @@ import { logger, LogCategory } from '@firefly/shared'
 /** 分析模式（与 @firefly/types 的 ANALYSIS_MODE 保持一致） */
 export type AnalysisMode = 'simple' | 'quick_name' | 'full'
 
-/** 兜底模式：配置不可用时的保守取值，与全局默认值一致 */
-const FALLBACK_MODE: AnalysisMode = 'quick_name'
+/** 兜底模式：配置不可用时的保守取值，与全局默认值一致（开启高级AI引擎默认为全面分析） */
+const FALLBACK_MODE: AnalysisMode = 'full'
 
 /**
  * analysis_stage 的权威语义：

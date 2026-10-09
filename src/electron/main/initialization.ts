@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from 'electron'
+import * as os from 'os'
 import {
   logger,
   LogCategory,
@@ -110,21 +111,25 @@ export async function initializeHardwareDetection(wait = false): Promise<void> {
 
       // 若未显式设置嵌入画像档位（首次运行），按硬件能力自适应推荐并持久化 (Spec §3.4.1 & AC 4.2)
       if (!config.hasUserConfig('AI_EMBEDDING_PROFILE')) {
+        const memRaw = resources?.memory?.total || 0
+        const totalMemGB = memRaw > 1024 * 1024 ? memRaw / (1024 * 1024 * 1024) : memRaw / 1024
+        const cpuCores = resources?.cpu?.cores || os.cpus().length
+
         const settings =
           hardwareDetectionService.getRecommendedEmbeddingSettings?.({
-            totalMemGB: resources.memory.total / (1024 * 1024 * 1024),
-            cpu: { cores: resources.cpu.cores }
+            totalMemGB,
+            cpu: { cores: cpuCores }
           }) || {
-            profile: 'classic_light',
-            mrlDimension: 256,
-            videoFrameIntervalSeconds: 15.0
+            profile: totalMemGB >= 7.5 && cpuCores > 4 ? 'gemma_unified' : 'classic_light',
+            mrlDimension: totalMemGB >= 15.5 ? 768 : totalMemGB >= 7.5 ? 512 : 256,
+            videoFrameIntervalSeconds: totalMemGB >= 15.5 && cpuCores >= 8 ? 2.0 : 5.0
           }
         config.updateValue('AI_EMBEDDING_PROFILE', settings.profile)
         config.updateValue('EMBEDDING_MRL_DIMENSION', settings.mrlDimension)
         config.updateValue('VIDEO_FRAME_INTERVAL_SECONDS', settings.videoFrameIntervalSeconds)
         logger.info(
           LogCategory.STARTUP,
-          `[Profile] 首次启动自适应推荐嵌入画像: profile=${settings.profile}, mrl=${settings.mrlDimension}, interval=${settings.videoFrameIntervalSeconds}s`
+          `[Profile] 首次启动自适应推荐嵌入画像: profile=${settings.profile}, mrl=${settings.mrlDimension}, interval=${settings.videoFrameIntervalSeconds}s (内存: ${totalMemGB.toFixed(1)}GB, CPU: ${cpuCores}核)`
         )
       }
 

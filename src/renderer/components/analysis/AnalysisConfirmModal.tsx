@@ -70,10 +70,12 @@ export function AnalysisConfirmModal() {
   } = useAnalysisQueueStore()
 
   // 响应式读取当前分析模式，用于文案「未达到当前【全面分析】模式的要求」
-  const currentMode = useSettingsStore(
-    s => (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'quick_name'
-  )
-  const currentModeLabel = t(ANALYSIS_MODE_LABEL[currentMode] || '增强分析')
+  const currentMode = useSettingsStore(s => {
+    const isAdvancedAi = (s.config?.aiServiceMode ?? 'local') !== 'disabled'
+    if (!isAdvancedAi) return 'simple'
+    return (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'full'
+  })
+  const currentModeLabel = t(ANALYSIS_MODE_LABEL[currentMode] || '全面分析')
 
   const totalCount = pendingAddItems.length
   const analyzedCount = confirmModalFiles.length

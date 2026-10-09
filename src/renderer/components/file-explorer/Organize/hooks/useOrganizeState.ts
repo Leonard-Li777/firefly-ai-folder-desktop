@@ -2548,9 +2548,15 @@ export function useOrganizeState() {
             // 如果移除的标签属于泛维度（如作者 4、内容标签 28 等），同步清理 file_tags 库表定义
             if (changes.removeTags && changes.removeTags.length > 0 && window.electronAPI?.organizeBatch?.deleteTagGlobally) {
               for (const rt of changes.removeTags) {
-                if (rt.dimensionId === 4 || rt.dimensionId === 28) {
+                const dimIdentifier = rt.dimensionCode || (rt as any).dimensionId
+                if (
+                  dimIdentifier === 4 ||
+                  dimIdentifier === 28 ||
+                  dimIdentifier === 'builtin.author' ||
+                  dimIdentifier === 'builtin.content_tags'
+                ) {
                   try {
-                    await window.electronAPI.organizeBatch.deleteTagGlobally(rt.dimensionId, rt.tagName)
+                    await window.electronAPI.organizeBatch.deleteTagGlobally(dimIdentifier, rt.tagName)
                   } catch {
                     /* ignore */
                   }

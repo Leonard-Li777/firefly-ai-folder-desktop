@@ -14,11 +14,9 @@ import {
   FileX,
   Filter,
   FolderX,
-  Gauge,
   GitFork,
   HelpCircle,
   Info,
-  Lock,
   Plus,
   Save,
   ScanText,
@@ -165,12 +163,7 @@ export const AnalysisSettings: React.FC = () => {
   const [showIgnoreRuleList, setShowIgnoreRuleList] = useState(false)
   const [ruleFilter, setRuleFilter] = useState<'all' | 'custom' | 'system'>('all')
 
-  // 高级AI引擎（萤核/云端）是否已开启；disabled = 仅基础AI引擎
-  const isAdvancedAiEnabled = (config?.aiServiceMode ?? 'local') !== 'disabled'
-  // 高级AI引擎关闭时，增强/全面不可选，展示与生效模式统一回落为标准分析
-  const analysisMode = isAdvancedAiEnabled
-    ? (getConfigValue<string>('ANALYSIS_MODE') ?? 'quick_name')
-    : 'simple'
+  // 分析模式已简化逻辑：开启高级AI引擎默认为全面分析模式，否则为标准分析模式；增强分析为内部隐藏项，不支持用户配置，UI上隐藏选择卡片
 
   // 多模态嵌入画像档位（二元档位契约）：classic_light (384d) vs gemma_unified (512d)
   const embeddingProfile =
@@ -196,19 +189,53 @@ export const AnalysisSettings: React.FC = () => {
   useEffect(() => {
     window.electronAPI?.getRecommendedEmbeddingSettings?.()
       .then((rec: any) => {
-        if (rec) setRecommendedSettings(rec)
+        if (rec) {
+          setRecommendedSettings(rec)
+          // 若当前为初始态（尚未配置过 AI_EMBEDDING_PROFILE，仍为默认 classic_light，但硬件推荐为 gemma_unified），自动无缝对齐
+          const hasCustomProfile = config?.ai?.AI_EMBEDDING_PROFILE !== undefined
+          if (!hasCustomProfile && rec.profile === 'gemma_unified') {
+            updateConfigValue('AI_EMBEDDING_PROFILE', 'gemma_unified')
+            if (rec.mrlDimension) {
+              updateConfigValue('EMBEDDING_MRL_DIMENSION', rec.mrlDimension)
+            }
+            if (rec.videoFrameIntervalSeconds) {
+              updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', rec.videoFrameIntervalSeconds)
+              setLocalVideoInterval(rec.videoFrameIntervalSeconds)
+            }
+          }
+        }
       })
       .catch(() => {})
-  }, [])
+  }, [config])
 
   const handleConfirmProfileSwitch = async () => {
     if (!pendingProfile) return
     const target = pendingProfile
     setPendingProfile(null)
     await updateConfigValue('AI_EMBEDDING_PROFILE', target)
+    if (target === 'gemma_unified' && recommendedSettings?.mrlDimension) {
+      await updateConfigValue('EMBEDDING_MRL_DIMENSION', recommendedSettings.mrlDimension)
+    }
     captureEvent('切换嵌入模型档位', { profile: target })
     toast.success(
       t('已切换嵌入引擎档位并重启，新导入的文件将使用新档位索引')
+    )
+  }
+
+  const handleApplyHardwareRecommendations = async () => {
+    if (!recommendedSettings) return
+    if (embeddingProfile !== recommendedSettings.profile) {
+      setPendingProfile(recommendedSettings.profile)
+    }
+    await updateConfigValue('EMBEDDING_MRL_DIMENSION', recommendedSettings.mrlDimension)
+    await updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', recommendedSettings.videoFrameIntervalSeconds)
+    setLocalVideoInterval(recommendedSettings.videoFrameIntervalSeconds)
+    toast.success(
+      t('已同步硬件推荐配置（{profile} · {dim}维 · {interval}秒抽帧）', {
+        profile: recommendedSettings.profile === 'gemma_unified' ? t('全模态标准档') : t('极速轻量档'),
+        dim: recommendedSettings.mrlDimension,
+        interval: recommendedSettings.videoFrameIntervalSeconds
+      })
     )
   }
 
@@ -490,186 +517,35 @@ export const AnalysisSettings: React.FC = () => {
         <p className="text-sm text-muted-foreground">{t('配置分析模式、文件内容提取、提示词和忽略规则')}</p>
       </div>
 
-      {/* 选择分析模式 */}
-      <Card className="p-5">
-        <div className="space-y-4">
-          {/* 切换文件分析模式 */}
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Gauge className="h-4 w-4" />
-            </div>
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <Label className="text-base font-semibold leading-none">{t('选择分析模式')}</Label>
-              <HelpTooltip
-                content={t(
-                  '根据需求选择不同模式，全面分析耗时最长但精度最高；标准分析最快。增强分析与全面分析需开启高级AI引擎。'
-                )}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* 标准分析（原简单分类） */}
-            <div
-              onClick={() => {
-                updateConfigValue('ANALYSIS_MODE', 'simple')
-                captureEvent('切换分析模式', { mode: 'simple' })
-              }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                analysisMode === 'simple'
-                  ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
-                  : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
-              }`}
-            >
-              <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
-                {t('极速')}
-              </div>
-              {/* 选中勾选标记 */}
-              {analysisMode === 'simple' && (
-                <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
-                  <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
-                </div>
-              )}
-              <div className="flex items-center justify-between pr-8">
-                <span
-                  className={`font-semibold text-sm ${analysisMode === 'simple' ? 'text-primary' : ''}`}
-                >
-                  {t('标准分析')}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                {t('基于基础AI引擎高速获取文件标签、智能文件名和摘要')}
-              </p>
-            </div>
-
-            {/* 增强分析（原快速命名）—— 需开启高级AI引擎 */}
-            <div
-              onClick={() => {
-                if (!isAdvancedAiEnabled) return
-                updateConfigValue('ANALYSIS_MODE', 'quick_name')
-                captureEvent('切换分析模式', { mode: 'quick_name' })
-              }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${
-                !isAdvancedAiEnabled
-                  ? 'border-border bg-muted/20 opacity-60 cursor-not-allowed'
-                  : analysisMode === 'quick_name'
-                    ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20 cursor-pointer'
-                    : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer'
-              }`}
-            >
-              <div className="absolute top-0 right-0 text-[11px] font-semibold bg-muted text-muted-foreground px-2.5 py-0.5 rounded-bl-md">
-                {t('默认')}
-              </div>
-              {/* 选中勾选标记 */}
-              {isAdvancedAiEnabled && analysisMode === 'quick_name' && (
-                <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
-                  <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
-                </div>
-              )}
-              <div className="flex items-center justify-between pr-8">
-                <span
-                  className={`font-semibold text-sm ${
-                    isAdvancedAiEnabled && analysisMode === 'quick_name' ? 'text-primary' : ''
-                  }`}
-                >
-                  {t('增强分析')}
-                </span>
-                {!isAdvancedAiEnabled && <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                {t('【标准分析】+ 高级AI引擎修正和补充基础AI引擎分析结果')}
-              </p>
-              {!isAdvancedAiEnabled && (
-                <div className="flex items-center gap-1.5 mt-2.5 text-xs text-amber-600 dark:text-amber-400">
-                  <Lock className="h-3 w-3 shrink-0" />
-                  <button
-                    type="button"
-                    className="underline font-medium hover:text-amber-700"
-                    onClick={e => {
-                      e.stopPropagation()
-                      openSettings(SettingsCategory.AI_ENGINE_CONFIG)
-                    }}
-                  >
-                    {t('需开启高级AI引擎')}
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* 全面分析 —— 需开启高级AI引擎 */}
-            <div
-              onClick={() => {
-                if (!isAdvancedAiEnabled) return
-                updateConfigValue('ANALYSIS_MODE', 'full')
-                captureEvent('切换分析模式', { mode: 'full' })
-              }}
-              className={`relative overflow-hidden flex flex-col p-4 rounded-lg border-2 transition-all ${
-                !isAdvancedAiEnabled
-                  ? 'border-border bg-muted/20 opacity-60 cursor-not-allowed'
-                  : analysisMode === 'full'
-                    ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20 cursor-pointer'
-                    : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30 cursor-pointer'
-              }`}
-            >
-              <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
-                {t('推荐')}
-              </div>
-              {/* 选中勾选标记 */}
-              {isAdvancedAiEnabled && analysisMode === 'full' && (
-                <div className="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm">
-                  <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
-                </div>
-              )}
-              <div className="flex items-center justify-between pr-8">
-                <span
-                  className={`font-semibold text-sm ${
-                    isAdvancedAiEnabled && analysisMode === 'full' ? 'text-primary' : ''
-                  }`}
-                >
-                  {t('全面分析')}
-                </span>
-                {!isAdvancedAiEnabled && <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                {t(
-                  '【增强分析】+ 全面AI分析，包含质量评分与详细图片、音频、视频内容描述等'
-                )}
-              </p>
-              {!isAdvancedAiEnabled && (
-                <div className="flex items-center gap-1.5 mt-2.5 text-xs text-amber-600 dark:text-amber-400">
-                  <Lock className="h-3 w-3 shrink-0" />
-                  <button
-                    type="button"
-                    className="underline font-medium hover:text-amber-700"
-                    onClick={e => {
-                      e.stopPropagation()
-                      openSettings(SettingsCategory.AI_ENGINE_CONFIG)
-                    }}
-                  >
-                    {t('需开启高级AI引擎')}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-
       {/* 多模态嵌入运行时档位 (二元分级架构) */}
       <Card className="p-5">
         <div className="space-y-4">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <Layers className="h-4 w-4" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Layers className="h-4 w-4" />
+              </div>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Label className="text-base font-semibold leading-none">{t('嵌入模型档位')}</Label>
+                <HelpTooltip
+                  content={t(
+                    '配置图文向量与语义检索的嵌入特征模型。全模态标准档支持统一超球空间跨模态检索；极速轻量档内存开销极小。'
+                  )}
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <Label className="text-base font-semibold leading-none">{t('嵌入模型档位')}</Label>
-              <HelpTooltip
-                content={t(
-                  '配置图文向量与语义检索的嵌入特征模型。全模态标准档支持统一超球空间跨模态检索；极速轻量档内存开销极小。'
-                )}
-              />
-            </div>
+
+            {recommendedSettings && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs text-primary border-primary/30 hover:bg-primary/10"
+                onClick={handleApplyHardwareRecommendations}
+              >
+                <Sparkles className="h-3.5 w-3.5 mr-1 text-primary" />
+                {t('应用全套硬件推荐配置')}
+              </Button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -694,7 +570,7 @@ export const AnalysisSettings: React.FC = () => {
                   <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
                 </div>
               )}
-              <div className="flex items-center justify-between pr-8">
+              <div className="flex items-center gap-2 pr-8">
                 <span
                   className={`font-semibold text-sm ${
                     embeddingProfile === 'classic_light' ? 'text-primary' : ''
@@ -702,6 +578,11 @@ export const AnalysisSettings: React.FC = () => {
                 >
                   {t('极速轻量档')}
                 </span>
+                {recommendedSettings?.profile === 'classic_light' && (
+                  <span className="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium border border-blue-500/20">
+                    {t('硬件推荐')}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
                 {t(
@@ -731,7 +612,7 @@ export const AnalysisSettings: React.FC = () => {
                   <Check className="h-3 w-3 text-primary-foreground stroke-[2.5]" />
                 </div>
               )}
-              <div className="flex items-center justify-between pr-8">
+              <div className="flex items-center gap-2 pr-8">
                 <span
                   className={`font-semibold text-sm ${
                     embeddingProfile === 'gemma_unified' ? 'text-primary' : ''
@@ -739,6 +620,11 @@ export const AnalysisSettings: React.FC = () => {
                 >
                   {t('全模态标准档')}
                 </span>
+                {recommendedSettings?.profile === 'gemma_unified' && (
+                  <span className="text-[10px] bg-green-500/10 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded font-medium border border-green-500/20">
+                    {t('硬件推荐')}
+                  </span>
+                )}
               </div>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
                 {t(

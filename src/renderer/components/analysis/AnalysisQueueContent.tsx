@@ -548,9 +548,11 @@ export function AnalysisQueueContent({
   )
 
   // 响应式读取分析模式：用于按分析模式判断文件完成 stage
-  const analysisMode = useSettingsStore(
-    s => (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'quick_name'
-  )
+  const analysisMode = useSettingsStore(s => {
+    const isAdvancedAi = (s.config?.aiServiceMode ?? 'local') !== 'disabled'
+    if (!isAdvancedAi) return 'simple'
+    return (s.getConfigValue<string>('ANALYSIS_MODE') as string) ?? 'full'
+  })
 
   const [colWidths, setColWidths] = useState<ColumnWidths>(() => {
     const saved = localStorage.getItem('queue_col_widths')
