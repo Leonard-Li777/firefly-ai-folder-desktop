@@ -1,4 +1,4 @@
-import { LogCategory, logger, DIMENSION_CODES, CANONICAL_NAMES } from '@firefly/shared'
+import { LogCategory, logger, DIMENSION_CODES, CANONICAL_NAMES, getCanonicalConceptName } from '@firefly/shared'
 
 const FILE_QUALITY_NAME = CANONICAL_NAMES.FILE_QUALITY
 import path from 'node:path'
@@ -105,12 +105,19 @@ export async function generateNameAndStrategyCandidates(
           const fps = fpRows.map(r => r.file_fingerprint)
           const tagRows = db
             .prepare(
-              'SELECT DISTINCT ft.name FROM file_tags ft JOIN file_tag_relations ftr ON ft.code = ftr.tag_code WHERE ftr.file_fingerprint IN (' +
+              'SELECT DISTINCT COALESCE(ft.name, ftr.tag_code) as name FROM file_tag_relations ftr LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code WHERE ftr.file_fingerprint IN (' +
                 fps.map(() => '?').join(',') +
                 ')'
             )
             .all(...fps) as Array<{ name: string }>
-          selectedFileTagSet = new Set(tagRows.map(r => r.name))
+          selectedFileTagSet = new Set(
+            tagRows.map(r => {
+              if (r.name && r.name.includes('.')) {
+                return getCanonicalConceptName(r.name) || (r.name.split('.').pop() || r.name)
+              }
+              return r.name
+            })
+          )
         }
       }
 

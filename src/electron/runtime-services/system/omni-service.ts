@@ -146,7 +146,6 @@ export interface OmniResolveParentResponse {
   viaParentCode?: string
   parent_name: string
   confidence: number
-  materialized_paths?: Array<{ code_path: string; name_path: string }>
 }
 
 export type OmniRamTagItem = OmniTagChainItem

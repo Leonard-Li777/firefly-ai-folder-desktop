@@ -7,7 +7,7 @@ import {
   DirectoryReorganizeOptions,
   DirectoryReorganizeResult
 } from '@firefly/types'
-import { LogCategory, logger, DIMENSION_CODES, CANONICAL_NAMES } from '@firefly/shared'
+import { LogCategory, logger, DIMENSION_CODES, CANONICAL_NAMES, getCanonicalConceptName } from '@firefly/shared'
 
 const FILE_QUALITY_NAME = CANONICAL_NAMES.FILE_QUALITY
 import Database from 'better-sqlite3'
@@ -439,12 +439,19 @@ export class AISchemeGenerator {
             const fps = fpRows.map(r => r.file_fingerprint)
             const tagRows = this.provider.db
               .prepare(
-                'SELECT DISTINCT ft.name FROM file_tags ft JOIN file_tag_relations ftr ON ft.code = ftr.tag_code WHERE ftr.file_fingerprint IN (' +
+                'SELECT DISTINCT COALESCE(ft.name, ftr.tag_code) as name FROM file_tag_relations ftr LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code WHERE ftr.file_fingerprint IN (' +
                   fps.map(() => '?').join(',') +
                   ')'
               )
               .all(...fps) as Array<{ name: string }>
-            selectedFileTagSet = new Set(tagRows.map(r => r.name))
+            selectedFileTagSet = new Set(
+              tagRows.map(r => {
+                if (r.name && r.name.includes('.')) {
+                  return getCanonicalConceptName(r.name) || (r.name.split('.').pop() || r.name)
+                }
+                return r.name
+              })
+            )
           }
         }
 
@@ -696,9 +703,9 @@ export class AISchemeGenerator {
           const relations = this.provider.db
             .prepare(
               `
-              SELECT wf.id as file_id, ft.name as tag_name
+              SELECT wf.id as file_id, COALESCE(ft.name, ftr.tag_code) as tag_name
               FROM file_tag_relations ftr
-                     JOIN file_tags ft ON ft.code = ftr.tag_code
+                     LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
                      JOIN workspace_files wf ON wf.file_fingerprint = ftr.file_fingerprint
               WHERE wf.id IN (${placeholders})
             `
@@ -709,7 +716,11 @@ export class AISchemeGenerator {
             if (!fileTagMap.has(rel.file_id)) {
               fileTagMap.set(rel.file_id, [])
             }
-            fileTagMap.get(rel.file_id)!.push(rel.tag_name)
+            let name = rel.tag_name
+            if (name && name.includes('.')) {
+              name = getCanonicalConceptName(name) || (name.split('.').pop() || name)
+            }
+            fileTagMap.get(rel.file_id)!.push(name)
           }
         } catch (err) {
           logger.error(LogCategory.FILE_ORGANIZATION, '回填标签树文件时查询数据库失败:', err)

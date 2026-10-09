@@ -1,6 +1,8 @@
 import type { Database } from 'better-sqlite3'
-import { LogCategory, logger } from '@firefly/shared'
+import { LogCategory, logger, getCanonicalConceptName } from '@firefly/shared'
 import type { Unit, UnitCreationData } from '@firefly/types'
+import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import { databaseService } from '../database-service'
 import * as path from 'path'
 
 export class TagUnitDao {
@@ -199,11 +201,11 @@ export class TagUnitDao {
           ftr.depth           AS depth,
           ftr.confidence      AS confidence
         FROM file_tag_relations ftr
-        JOIN file_tags ft ON ft.code = ftr.tag_code
+        LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
         WHERE ftr.file_fingerprint = ?
       `
         )
-        .all(fileFingerprint) as Array<{ parent_codes: string | null } & Record<string, unknown>>
+        .all(fileFingerprint) as Array<{ name: string | null; code: string; parent_codes: string | null } & Record<string, unknown>>
       // 云端 `file_tags_private.parent_codes` 为 JSONB（数组），本地列是 TEXT（JSON 字符串）。
       // 为兑现「与云端 RPC 同形」契约，此处统一解析为数组；解析失败退回 `[]`（与列默认值一致）。
       return rows.map(row => {
@@ -214,7 +216,27 @@ export class TagUnitDao {
         } catch {
           parentCodes = []
         }
-        return { ...row, parent_codes: parentCodes }
+
+        let displayName = typeof row.name === 'string' && row.name ? row.name : ''
+        const code = String(row.code || '')
+        if (!displayName && code) {
+          const targetLocale =
+            ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+          const isZh = targetLocale.toLowerCase().startsWith('zh')
+          if (isZh) {
+            displayName = getCanonicalConceptName(code) || ''
+          }
+          if (!displayName) {
+            const displayMap = databaseService.resolveTagDisplayNames([code], targetLocale)
+            displayName = displayMap[code] || ''
+          }
+          if (!displayName || displayName === code) {
+            const parts = code.split('.')
+            displayName = parts[parts.length - 1] || code
+          }
+        }
+
+        return { ...row, name: displayName, parent_codes: parentCodes }
       })
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '获取文件标签失败', { error, fileFingerprint })

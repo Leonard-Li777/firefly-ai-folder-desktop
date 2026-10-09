@@ -24,7 +24,8 @@ import {
   toBase62,
   isGibberishOcrText,
   isTagProvenanceGroup,
-  isTagAdmissible
+  isTagAdmissible,
+  getCanonicalConceptName
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
@@ -791,7 +792,7 @@ export class FileProcessor {
                 SELECT r.tag_code, r.via_parent_code, r.tag_group, r.confidence,
                        r.code_path, r.name_path, r.depth, t.name as tag_name
                 FROM file_tag_relations r
-                LEFT JOIN file_tags t ON r.tag_code = t.code
+                LEFT JOIN file_tags_private t ON r.tag_code = t.code
                 WHERE r.file_fingerprint = ?
               `
               )
@@ -800,7 +801,18 @@ export class FileProcessor {
             if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
               const currentTags = preflightContext.groundTruthTags || []
               for (const row of existingTagRows) {
-                const tagName = row.tag_name || row.tag_code
+                let tagName = row.tag_name
+                if (!tagName && row.tag_code) {
+                  tagName = getCanonicalConceptName(row.tag_code) || ''
+                  if (!tagName) {
+                    const displayMap = databaseService.resolveTagDisplayNames([row.tag_code])
+                    tagName = displayMap[row.tag_code] || ''
+                  }
+                  if (!tagName) {
+                    const parts = row.tag_code.split('.')
+                    tagName = parts[parts.length - 1] || row.tag_code
+                  }
+                }
                 if (
                   tagName &&
                   !currentTags.some(t => t.code === row.tag_code || t.tagName === tagName)
@@ -2459,7 +2471,8 @@ export class FileProcessor {
       `
       ).run(fingerprint, workspaceId, directoryId, filePath, fileName, now, now, now, now, now, now)
 
-      if (this.mockData.file_tag_relations && this.mockData.file_tags) {
+      const mockTagsList = this.mockData.file_tags_private || this.mockData.file_tags
+      if (this.mockData.file_tag_relations && mockTagsList) {
         // 清理该文件的所有旧标签关联，避免多次 mock 累积过期数据
         db.prepare('DELETE FROM file_tag_relations WHERE file_fingerprint = ?').run(fingerprint)
 
@@ -2467,7 +2480,7 @@ export class FileProcessor {
           (r: any) => r.file_fingerprint === fingerprint
         )
         for (const rel of relations) {
-          const tag = this.mockData.file_tags.find(
+          const tag = mockTagsList.find(
             (t: any) =>
               (t.code && t.code === rel.tag_code) ||
               (t.id !== undefined && rel.tag_id !== undefined && t.id === rel.tag_id)
@@ -2489,10 +2502,10 @@ export class FileProcessor {
               continue
             }
 
-            // 漂移③修复：严格遵守 A/B 分离，file_tags.parent_codes 保留标签自身的稳定拓扑声明（若夹具已声明），
-            // 严禁将单次标注关系的 viaParentCode 反向灌入 file_tags.parent_codes
+            // 严格遵守 A/B 分离，file_tags_private.parent_codes 保留标签自身的稳定拓扑声明（若夹具已声明），
+            // 严禁将单次标注关系的 viaParentCode 反向灌入 file_tags_private.parent_codes
             const tagParentCodes = tag.parent_codes || '[]'
-            db.prepare('INSERT OR IGNORE INTO file_tags (code, name, parent_codes) VALUES (?, ?, ?)').run(
+            db.prepare('INSERT OR IGNORE INTO file_tags_private (code, name, parent_codes) VALUES (?, ?, ?)').run(
               tagCode,
               tag.name,
               tagParentCodes

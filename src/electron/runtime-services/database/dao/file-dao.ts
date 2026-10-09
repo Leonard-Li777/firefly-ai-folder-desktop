@@ -40,9 +40,9 @@ function readableCode(code: string): string {
 }
 
 /**
- * 受控标签展示名解析：本地 file_tags.name 优先，
+ * 受控标签展示名解析：本地 file_tags_private.name 优先，
  * 其次主库当前语言分表 tag_aliases_{lang}（DAO 层直查 SQL，替换 TaxonomyAliasCache 内存总线），最后 code 可读 slug 兜底。
- * 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags 表（file_tags.source CHECK 仅 expanded/user），
+ * 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags_private 表（file_tags_private.source CHECK 仅 expanded/user），
  * 其展示名须经语言分表 / Omni 语义包 tag_aliases 镜像解析。
  */
 function dimensionForCode(code: string, viaParentCode?: string | null): string {
@@ -65,10 +65,10 @@ export class FileDao {
    * 受控标签展示名解析（AOT 概念字典与主库当前语言分表 tag_aliases_{lang} 联合解析）
    * 1. 中文环境下，凡命中 AOT 受控权威词条（Canonical Concept）的受控代码，强制采用规范中文展示名；
    * 2. 本地语言分表 tag_aliases_{lang} 规范名（is_canonical=1）其次；
-   * 3. 本地 file_tags.name 再次（动态标签/扩展标签，中文环境下拦截过滤常见英文机器码）；
+   * 3. 本地 file_tags_private.name 再次（动态标签/扩展标签，中文环境下拦截过滤常见英文机器码）；
    * 4. 仍未命中时以受控词表或 code 的可读 slug 兜底，绝不暴露未处理的技术代码。
    * @param code 标签 code（受控 builtin.* / omw.* / dim.xxx 或本地动态标签）
-   * @param ftName 已从 file_tags 取到的本地展示名（无则传 null）
+   * @param ftName 已从 file_tags_private 取到的本地展示名（无则传 null）
    */
   private resolveDisplayName(code: string, ftName: string | null): string {
     if (!code) return ftName || ''
@@ -83,7 +83,7 @@ export class FileDao {
       if (canonical) return canonical
     }
 
-    // 2. 本地 file_tags.name（用于自定义标签、动态扩展标签）
+    // 2. 本地 file_tags_private.name（用于自定义标签、动态扩展标签）
     if (ftName) {
       return ftName
     }
@@ -280,9 +280,9 @@ export class FileDao {
       }
     }
 
-    // 创世 Baseline V1：以 code 自然主键 LEFT JOIN file_tags，彻底移除自增 id / dimension_id / tag_id 兼容分支。
+    // 创世 Baseline V1：以 code 自然主键 LEFT JOIN file_tags_private，彻底移除自增 id / dimension_id / tag_id 兼容分支。
     // 维度归属由单次标注关系经由的 via_parent_code 决定，无维度则为空（真根），严禁回退 parent_codes 首父。
-    // 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags 表（file_tags.source CHECK 仅 expanded/user），
+    // 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags_private 表（file_tags_private.source CHECK 仅 expanded/user），
     // 其展示名与维度归属经主库语言分表 tag_aliases_{lang} 直查解析（原 TaxonomyAliasCache 内存总线已按主设计废除），故不可使用内连接过滤。
     let tags: any[] = []
     if (fingerprint) {
@@ -297,7 +297,7 @@ export class FileDao {
             ftr.tag_group,
             ftr.confidence
           FROM file_tag_relations ftr
-          LEFT JOIN file_tags ft ON ft.code = ftr.tag_code
+          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = ?
         `
           )
@@ -326,7 +326,7 @@ export class FileDao {
         this.dimensionsCache = this.db
           .prepare(
             `SELECT code AS id, description
-             FROM file_tags
+             FROM file_tags_private
              ORDER BY code ASC`
           )
           .all() as any[]
@@ -1615,8 +1615,8 @@ export class FileDao {
       .all(workspaceId, limit) as any[]
 
     return rows.map(row => {
-      // 以 tag_code 自然主键 LEFT JOIN file_tags 获取维度标签（创世 Baseline V1）。
-      // 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags 表，其展示名与维度归属
+      // 以 tag_code 自然主键 LEFT JOIN file_tags_private 获取维度标签（创世 Baseline V1）。
+      // 受控标签（builtin.* / omw.* / dim.xxx）不落 file_tags_private 表，其展示名与维度归属
       // 与属性面板同源：统一走 resolveDisplayName / dimensionForCode（主库语言分表直查）。
       let tags: any[] = []
       try {
@@ -1628,7 +1628,7 @@ export class FileDao {
             ft.name as ft_name,
             ftr.via_parent_code
           FROM file_tag_relations ftr
-          LEFT JOIN file_tags ft ON ft.code = ftr.tag_code
+          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
         `
           )
@@ -1931,7 +1931,7 @@ export class FileDao {
       if (!row) return
 
       // FTS 倒排的 tags 列：受控标签展示名经主库语言分表 resolveDisplayName 解析（SQL 层无法访问该动态分表），
-      // 故在 JS 侧聚合：LEFT JOIN file_tags 取本地名，缺失时走 resolveDisplayName（语言分表 lemma → 可读 slug），
+      // 故在 JS 侧聚合：LEFT JOIN file_tags_private 取本地名，缺失时走 resolveDisplayName（语言分表 lemma → 可读 slug），
       // 保证"设计稿/如云西点"等感知标签展示名可被全文搜索命中。
       let tagsText = ''
       try {
@@ -1940,7 +1940,7 @@ export class FileDao {
             `
             SELECT ftr.tag_code as id, ft.name as ft_name
             FROM file_tag_relations ftr
-            LEFT JOIN file_tags ft ON ft.code = ftr.tag_code
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = ?
           `
           )

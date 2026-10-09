@@ -8,7 +8,7 @@ import {
   DirectoryReorganizeResult,
   AIDirectoryStructure
 } from '@firefly/types'
-import { LogCategory, logger, sanitizeDirectoryName, HAC_FEATURE_FLAGS, SENTINEL_NAMES } from '@firefly/shared'
+import { LogCategory, logger, sanitizeDirectoryName, HAC_FEATURE_FLAGS, SENTINEL_NAMES, getCanonicalConceptName } from '@firefly/shared'
 
 const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
 import { t } from '@app/languages'
@@ -503,9 +503,9 @@ export class VirtualDirectoryService {
           wf.last_analyzed_at as analyzedAt,
           wf.modified_at as modifiedAt,
           (
-            SELECT json_group_array(ft.name)
+            SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
             FROM file_tag_relations ftr
-            JOIN file_tags ft ON ft.code = ftr.tag_code
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = f.file_fingerprint
           ) as tags
         FROM virtual_directory_files vdf
@@ -555,8 +555,27 @@ export class VirtualDirectoryService {
         if (!showMissing && currentStatus === 0) {
           return null
         }
+        let normalizedTags = row.tags
+        if (typeof row.tags === 'string' && row.tags.includes('.')) {
+          try {
+            const arr = JSON.parse(row.tags) as string[]
+            if (Array.isArray(arr)) {
+              normalizedTags = JSON.stringify(
+                arr.map(item => {
+                  if (item && item.includes('.')) {
+                    return getCanonicalConceptName(item) || (item.split('.').pop() || item)
+                  }
+                  return item
+                })
+              )
+            }
+          } catch {
+            // keep original
+          }
+        }
         return {
           ...row,
+          tags: normalizedTags,
           status: currentStatus
         }
       })

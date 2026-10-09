@@ -4,6 +4,7 @@ import {
   DimensionGroupsResponse,
   GetDimensionGroupsOptions
 } from '@firefly/types'
+import { getCanonicalConceptName } from '@firefly/shared'
 import { TagTreeQuery } from '../virtual-directory-service/TagTreeQuery'
 
 /**
@@ -55,22 +56,39 @@ export class DimensionManager {
    */
   getFileTagsWithDimensions(
     fileId: string
-  ): Array<{ dimensionId: number; dimensionName: string; tagValue: string; level: number }> {
+  ): Array<{ dimensionId: string; dimensionName: string; tagValue: string; level: number }> {
     try {
-      return this.db
+      const rows = this.db
         .prepare(
           `
         SELECT 
-          ft.code as dimensionId, 
-          COALESCE(ft.parent_codes, 'default') as dimensionName, 
+          ftr.tag_code as code, 
+          COALESCE(ftr.via_parent_code, ft.parent_codes, 'default') as dimensionName, 
           ft.name as tagValue, 
           0 as level
         FROM file_tag_relations ftr
-        INNER JOIN file_tags ft ON ft.code = ftr.tag_code
+        LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
         WHERE ftr.file_fingerprint = ?
       `
         )
-        .all(fileId) as any[]
+        .all(fileId) as Array<{ code: string; dimensionName: string; tagValue: string | null; level: number }>
+
+      return rows.map(r => {
+        let tagValue = r.tagValue
+        if (!tagValue && r.code) {
+          tagValue = getCanonicalConceptName(r.code) || ''
+          if (!tagValue) {
+            const parts = r.code.split('.')
+            tagValue = parts[parts.length - 1] || r.code
+          }
+        }
+        return {
+          dimensionId: r.code,
+          dimensionName: r.dimensionName,
+          tagValue: tagValue || r.code,
+          level: r.level
+        }
+      })
     } catch {
       return []
     }

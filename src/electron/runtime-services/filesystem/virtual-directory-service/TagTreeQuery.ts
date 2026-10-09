@@ -22,7 +22,6 @@ import {
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
-import { DAGMaterializer } from './DAGMaterializer'
 import { decompressText } from '../../../utils/text-compressor'
 import { omniClient } from '../../../services/omni-client'
 import type { OmniTaxonomyNode } from '../../../services/omni-client'
@@ -60,7 +59,7 @@ type HybridPageRef =
  * 核心职责：
  * 1. 利用 SQLite 递归公共表表达式（Recursive CTE）实现标签树、后代节点与祖先链的瞬时检索；
  * 2. 高效下推文件与复合标签的筛选计算，杜绝在 Node.js 内存中递归拼装扩展名映射；
- * 3. 彻底消除魔法数字区间（102..117），全量依托 file_tags 树与 file_tag_relations 自然主键关联。
+ * 3. 彻底消除魔法数字区间（102..117），全量依托 file_tags_private 树与 file_tag_relations 自然主键关联。
  */
 /** builtin.content_tags: parent_codes 为空数组的标签的逻辑父级 code */
 const CONTENT_TAGS_CODE = 'builtin.content_tags'
@@ -79,7 +78,6 @@ const ROOT_DIMENSION_META: Record<string, { id: number; name: string }> = {
 const ROOT_DIMENSION_CODES = new Set<string>(Object.keys(ROOT_DIMENSION_META))
 
 export class TagTreeQuery {
-  private dagMaterializer: DAGMaterializer
   private hybridArbiter: HybridSearchArbiter
   private hybridSession: HybridSearchSession
   /**
@@ -100,7 +98,6 @@ export class TagTreeQuery {
     hybridArbiter?: HybridSearchArbiter
   ) {
     this.ensureSqlFunctions()
-    this.dagMaterializer = new DAGMaterializer(db)
     this.hybridArbiter = hybridArbiter ?? new HybridSearchArbiter(db)
     // 混合检索编排（ADR-0039）公开收口：Session 负责编排与回退策略，本类作为数据访问协作者注入
     this.hybridSession = new HybridSearchSession({
@@ -139,9 +136,9 @@ export class TagTreeQuery {
       map.get(parent)!.add(child)
     }
 
-    // 1. 本地 file_tags 的 parent_codes 关系
+    // 1. 本地 file_tags_private 的 parent_codes 关系
     try {
-      const rows = this.db.prepare('SELECT code, parent_codes FROM file_tags').all() as Array<{
+      const rows = this.db.prepare('SELECT code, parent_codes FROM file_tags_private').all() as Array<{
         code: string
         parent_codes: string
       }>
@@ -163,7 +160,7 @@ export class TagTreeQuery {
     } catch (err) {
       logger.warn(
         LogCategory.VIRTUAL_DIRECTORY,
-        '[TagTreeQuery] ensureFullChildrenMap: file_tags parent_codes 加载失败:',
+        '[TagTreeQuery] ensureFullChildrenMap: file_tags_private parent_codes 加载失败:',
         err
       )
     }
@@ -214,7 +211,7 @@ export class TagTreeQuery {
     }
 
     try {
-      const rows = this.db.prepare('SELECT code, parent_codes FROM file_tags').all() as Array<{
+      const rows = this.db.prepare('SELECT code, parent_codes FROM file_tags_private').all() as Array<{
         code: string
         parent_codes: string
       }>
@@ -236,7 +233,7 @@ export class TagTreeQuery {
     } catch (err) {
       logger.warn(
         LogCategory.VIRTUAL_DIRECTORY,
-        '[TagTreeQuery] ensureLocalChildrenMap: file_tags parent_codes 加载失败:',
+        '[TagTreeQuery] ensureLocalChildrenMap: file_tags_private parent_codes 加载失败:',
         err
       )
     }
@@ -357,14 +354,14 @@ export class TagTreeQuery {
    * 获取指定标签节点的所有子孙节点 codes（包含其自身），用于多级标签树的子孙穿透统计。
    *
    * 实现：查询 file_tag_relations.code_path 列的前缀范围与路径段（走 idx_file_tag_relations_code_path 索引），
-   * 替代原 file_tags.materialized_paths JSON 的 json_each 扫描方案。
+   * 替代原标签树扁平路径列的 json_each 全表扫描方案。
    */
   public getDescendantTagCodes(tagValueOrCode: string): string[] {
     try {
-      // 先查 file_tags 确认节点存在，得到其 code
+      // 先查 file_tags_private 确认节点存在，得到其 code
       const anchor = this.db
         .prepare(
-          `SELECT code, name FROM file_tags
+          `SELECT code, name FROM file_tags_private
            WHERE code = ? OR name = ?
            LIMIT 1`
         )
@@ -384,7 +381,7 @@ export class TagTreeQuery {
 
   /**
    * 基于 file_tag_relations.code_path 前缀/路径段查询收集子树全部 codes
-   * 走 idx_file_tag_relations_code_path 索引及 tag_code 覆盖索引，彻底替代 json_each(materialized_paths) 扫描
+   * 走 idx_file_tag_relations_code_path 索引及 tag_code 覆盖索引，彻底替代 json_each 全表扫描
    */
   private collectSubtreeCodes(tagCode: string): string[] {
     const codeSet = new Set<string>()
@@ -439,11 +436,11 @@ export class TagTreeQuery {
         }
       }
 
-      // Step 3：从 file_tags 本地表查询 DAG 的所有直属及递归子标签（如果存在拓扑登记）
+      // Step 3：从 file_tags_private 本地表查询 DAG 的所有直属及递归子标签（如果存在拓扑登记）
       // 保证尚未打标的新建子标签或空子分类也能被收集，维护树结构的完整拓扑
       try {
         const stmtChildTags = this.db.prepare(
-          `SELECT code, parent_codes FROM file_tags WHERE parent_codes != '[]' AND parent_codes != ''`
+          `SELECT code, parent_codes FROM file_tags_private WHERE parent_codes != '[]' AND parent_codes != ''`
         )
         const allParentRows = stmtChildTags.all() as Array<{ code: string; parent_codes: string }>
         const parentToChildren = new Map<string, string[]>()
@@ -514,13 +511,13 @@ export class TagTreeQuery {
       }
     }
 
-    // 2. 双轨动态映射：在 file_tags 中查找与该标签关联的所有动态扩展 code
+    // 2. 双轨动态映射：在 file_tags_private 中查找与该标签关联的所有动态扩展 code
     try {
       const candidates: Array<{ code: string }> = []
       if (tag.tagValue && tag.code) {
         const rows = this.db
           .prepare(
-            `SELECT DISTINCT code FROM file_tags
+            `SELECT DISTINCT code FROM file_tags_private
            WHERE name = ? OR code = ? OR parent_codes LIKE ? OR name LIKE ?`
           )
           .all(tag.tagValue, tag.code, `%${tag.code}%`, `%${tag.tagValue}%`) as Array<{
@@ -530,7 +527,7 @@ export class TagTreeQuery {
       } else if (tag.tagValue) {
         const rows = this.db
           .prepare(
-            `SELECT DISTINCT code FROM file_tags
+            `SELECT DISTINCT code FROM file_tags_private
            WHERE name = ? OR code = ? OR name LIKE ?`
           )
           .all(tag.tagValue, tag.tagValue, `%${tag.tagValue}%`) as Array<{ code: string }>
@@ -538,7 +535,7 @@ export class TagTreeQuery {
       } else if (tag.code) {
         const rows = this.db
           .prepare(
-            `SELECT DISTINCT code FROM file_tags
+            `SELECT DISTINCT code FROM file_tags_private
            WHERE code = ? OR parent_codes LIKE ?`
           )
           .all(tag.code, `%${tag.code}%`) as Array<{ code: string }>
@@ -647,13 +644,13 @@ export class TagTreeQuery {
       // 1. 获取所有维度根节点（本地动态标签：expanded/user；受控根节点来自 Omni 树）
       // PRD-0060 v2.2/v2.3：原 `json_extract(meta,'$.isDimension')=1` 与 `source='dimension'`
       // 两个条件已废除 ——「用户自定义维度」功能在代码中不存在（无创建入口 / 无写入者），
-      // 且 `file_tags.source` CHECK 已收紧为 ('expanded','user')。维度根判据只剩「无父」。
+      // 且 `file_tags_private.source` CHECK 已收紧为 ('expanded','user')。维度根判据只剩「无父」。
       const dbStart = performance.now()
       let dimensionRoots = this.db
         .prepare(
           `
           SELECT code, name, file_groups, meta
-          FROM file_tags
+          FROM file_tags_private
           WHERE parent_codes = '[]' OR parent_codes IS NULL
           ORDER BY code ASC
         `
@@ -678,7 +675,7 @@ export class TagTreeQuery {
         .prepare(
           `
           SELECT code, name, parent_codes, file_groups, meta
-          FROM file_tags
+          FROM file_tags_private
           ORDER BY code ASC
         `
         )
@@ -1546,7 +1543,7 @@ export class TagTreeQuery {
           name: string
           files: Set<string>
           parents: string[]
-          materializedPaths: Array<{ code_path: string; name_path: string }>
+          pathChains: Array<{ code_path: string; name_path: string }>
         }
 
         const contentCandidates: ContentCandidate[] = []
@@ -1568,7 +1565,7 @@ export class TagTreeQuery {
             name: resolvedName,
             files: new Set(selfFiles),
             parents,
-            materializedPaths: mPaths
+            pathChains: mPaths
           })
         }
 
@@ -1619,8 +1616,8 @@ export class TagTreeQuery {
           let assigned = false
 
           // 1. 优先：物化路径解析（支持 /建筑空间/文化场馆/博物馆 等明确层级链）
-          if (cand.materializedPaths.length > 0) {
-            for (const mp of cand.materializedPaths) {
+          if (cand.pathChains.length > 0) {
+            for (const mp of cand.pathChains) {
               const rawPath = mp.name_path || mp.code_path
               if (rawPath) {
                 const segments = rawPath
@@ -1974,8 +1971,8 @@ export class TagTreeQuery {
         OR wf.file_fingerprint IN (
           SELECT ftr.file_fingerprint
           FROM file_tag_relations ftr
-          JOIN file_tags ft ON ft.code = ftr.tag_code
-          WHERE ft.name LIKE ?
+          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+          WHERE ft.name LIKE ? OR ftr.name_path LIKE ?
         )
       )`)
 
@@ -2047,7 +2044,7 @@ export class TagTreeQuery {
    * 其次取 `codePath` / `code_path` 单值。空串与非字符串项被剔除并去重，
    * 保证绑定参数与 SQL 占位符严格一一对应。
    */
-  private resolveTagMaterializedPaths(tag: SelectedTag): string[] {
+  private resolveTagCodePaths(tag: SelectedTag): string[] {
     const rawPaths = (tag as any).codePaths
     const candidates: unknown[] =
       Array.isArray(rawPaths) && rawPaths.length > 0
@@ -2085,7 +2082,7 @@ export class TagTreeQuery {
    * @returns 过滤子句；无任何可用判据时返回 null
    */
   private buildTagFilterSubClause(tag: SelectedTag, params: any[]): string | null {
-    const rawPaths = this.resolveTagMaterializedPaths(tag)
+    const rawPaths = this.resolveTagCodePaths(tag)
     if (rawPaths.length > 0) {
       // 排他性物化路径前缀穿透：真实父与逻辑父均独占以自身及子孙前缀精准命中
       const pathClauses = rawPaths
@@ -2202,9 +2199,9 @@ export class TagTreeQuery {
           f.description as description,
           fc.multimodal_content,
           (
-            SELECT json_group_array(ft.name)
+            SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
             FROM file_tag_relations ftr
-            JOIN file_tags ft ON ft.code = ftr.tag_code
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = wf.file_fingerprint
           ) as dimension_tags
         FROM workspace_files wf
@@ -2336,9 +2333,9 @@ export class TagTreeQuery {
         f.description as description,
         fc.multimodal_content,
         (
-          SELECT json_group_array(ft.name)
+          SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
           FROM file_tag_relations ftr
-          JOIN file_tags ft ON ft.code = ftr.tag_code
+          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = wf.file_fingerprint
         ) as dimension_tags
       FROM workspace_files wf
@@ -2558,9 +2555,9 @@ export class TagTreeQuery {
           f.description as description,
           fc.multimodal_content,
           (
-            SELECT json_group_array(ft.name)
+            SELECT json_group_array(COALESCE(ft.name, ftr.tag_code))
             FROM file_tag_relations ftr
-            JOIN file_tags ft ON ft.code = ftr.tag_code
+            LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
             WHERE ftr.file_fingerprint = wf.file_fingerprint
           ) as dimension_tags
         FROM workspace_files wf
@@ -2680,6 +2677,16 @@ export class TagTreeQuery {
               err
             )
           }
+        }
+
+        if (Array.isArray(tags) && tags.length > 0) {
+          tags = tags.map(t => {
+            if (t && (t.startsWith('builtin.') || t.startsWith('omw.') || t.startsWith('hownet.'))) {
+              const canonical = getCanonicalConceptName(t)
+              return canonical || (t.split('.').pop() || t)
+            }
+            return t
+          })
         }
 
         return {

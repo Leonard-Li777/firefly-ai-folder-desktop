@@ -321,11 +321,27 @@ export async function saveCloudResult(
         const CONTENT_DIM_CODE = contentDimCode
 
         for (const tag of data.tags) {
-          if (typeof tag?.name !== 'string') continue
+          let tagName = typeof tag?.name === 'string' ? tag.name : ''
+          const tagCode = typeof tag?.code === 'string' ? tag.code.trim() : ''
+
+          // 若 name 为空但有 code，通过受控概念字典 / 本地语言分表反查母语展示名
+          if (!tagName && tagCode) {
+            const displayMap = databaseService.resolveTagDisplayNames([tagCode])
+            tagName = displayMap[tagCode] || ''
+            // 若仍无法反查出有意义的名称，以 code 尾部 slug 兜底
+            if (!tagName || tagName === tagCode) {
+              const parts = tagCode.split('.')
+              tagName = parts[parts.length - 1] || tagCode
+            }
+          }
+
+          if (!tagName && !tagCode) continue
+
           // 清洗顺序不能错：必须先清洗（去引号 "“”" 等非法字符），再校验维度名——
           // "“应用数据细分”" 清洗后为 "应用数据细分"，实为已有维度名，应被过滤而非入库
-          const cleanName = sanitizeAITagValue(tag.name).trim()
+          const cleanName = sanitizeAITagValue(tagName).trim()
           if (!cleanName || !isValidAITag(cleanName, officialDimNames)) continue
+
           // ADR-0045 票据 04：回灌须保留标签**原始**来源分组。读 RPC rpc_get_file_by_id 已返回
           // tag_group（与上行 payload、云端列、写入 RPC 同批落地）。
           // 缺失或非法一律落 ''（暂不分组，面板不展示该行），**绝不兜底为 'fact'**——
@@ -333,6 +349,7 @@ export async function saveCloudResult(
           const cloudGroup: TagProvenanceGroup | '' = isTagProvenanceGroup(tag.tag_group)
             ? tag.tag_group
             : ''
+
           try {
             // PRD-0060 v2.3 / 票 02 终稿口径：维度归属槽只认经由父 `via_parent_code`
             // （rpc_get_file_by_id 已返回该列，见 023_file_sync_rpc.sql:33-49）。
@@ -342,40 +359,29 @@ export async function saveCloudResult(
               typeof tag.via_parent_code === 'string' ? tag.via_parent_code.trim() : ''
             const localDimCode = viaParent || CONTENT_DIM_CODE
 
-            try {
-              // ADR-0045 票据 04：显式传入云端返回的原始分组（缺失/非法为 ''），
-              // 不再依赖 insertTagToDb 的 'fact' 缺省——那会把 AI / 融合标签错标成物理事实。
-              // 父码走显式 viaParentCode 参（第 6 参），不借道遗留 _dimensionId 槽。
-              insertTagToDb(db, fileFingerprint, cleanName, undefined, 0, localDimCode, cloudGroup)
-            } catch {
-              // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
-              const tagCode = DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
-                lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
-              })
+            const isControlled = Boolean(
+              tagCode &&
+              (tagCode.startsWith('builtin.') ||
+               tagCode.startsWith('omw.') ||
+               tagCode.startsWith('hownet.'))
+            )
+
+            if (isControlled) {
+              // PRD-0060 B-3b / D9 / AC-12：受控标签直写 file_tag_relations，
+              // 严禁调用 insertTagToDb 派生 _ext.*，严禁插入 file_tags_private，避免身份篡改与反向污染
               const dimDisplayName = dimNameByCode.get(localDimCode) || CONTENT_TAGS_NAME
-              const codePath = localDimCode
-                ? `/${localDimCode}/${tagCode}`
-                : `/builtin.content_tags/${tagCode}`
-              const namePath = `/${dimDisplayName}/${cleanName}`
-              const depth = 2
+              const codePath = typeof tag.code_path === 'string' && tag.code_path
+                ? tag.code_path
+                : (localDimCode ? `/${localDimCode}/${tagCode}` : `/builtin.content_tags/${tagCode}`)
+              const namePath = typeof tag.name_path === 'string' && tag.name_path
+                ? tag.name_path
+                : `/${dimDisplayName}/${cleanName}`
+              const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 2
+              const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
 
               db.prepare(
-                `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, file_groups, source, meta)
-                 VALUES (?, ?, ?, '[]', 'expanded', ?)`
-              ).run(
-                tagCode,
-                cleanName,
-                JSON.stringify([localDimCode || 'builtin.content_tags']),
-                JSON.stringify({
-                  isLeaf: true,
-                  isSystem: false,
-                  isMultiSelect: true,
-                  syncStatus: 0
-                })
-              )
-              db.prepare(
-                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, source, meta)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, 1.0, 'rule', ?)`
+                `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, source, sync_status, meta)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'rule', 2, ?)`
               ).run(
                 fileFingerprint,
                 tagCode,
@@ -384,8 +390,60 @@ export async function saveCloudResult(
                 namePath,
                 depth,
                 cloudGroup,
-                JSON.stringify({ syncStatus: 0 })
+                confidence,
+                JSON.stringify({ syncStatus: 2 })
               )
+            } else {
+              // 私有标签：可写入 file_tags_private 与 file_tag_relations
+              try {
+                // ADR-0045 票据 04：显式传入云端返回的原始分组（缺失/非法为 ''），
+                // 不再依赖 insertTagToDb 的 'fact' 缺省——那会把 AI / 融合标签错标成物理事实。
+                // 父码走显式 viaParentCode 参（第 6 参），不借道遗留 _dimensionId 槽。
+                insertTagToDb(db, fileFingerprint, cleanName, undefined, 0, localDimCode, cloudGroup)
+              } catch {
+                // 兜底：按离线确定性编码派生合法 code 并建立自然主键关联
+                const finalTagCode = tagCode || DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
+                  lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
+                })
+                const dimDisplayName = dimNameByCode.get(localDimCode) || CONTENT_TAGS_NAME
+                const codePath = typeof tag.code_path === 'string' && tag.code_path
+                  ? tag.code_path
+                  : (localDimCode ? `/${localDimCode}/${finalTagCode}` : `/builtin.content_tags/${finalTagCode}`)
+                const namePath = typeof tag.name_path === 'string' && tag.name_path
+                  ? tag.name_path
+                  : `/${dimDisplayName}/${cleanName}`
+                const depth = typeof tag.depth === 'number' && tag.depth > 0 ? tag.depth : 2
+                const confidence = typeof tag.confidence === 'number' ? tag.confidence : 1.0
+
+                db.prepare(
+                  `INSERT OR IGNORE INTO file_tags_private (code, name, parent_codes, file_groups, source, meta)
+                   VALUES (?, ?, ?, '[]', 'expanded', ?)`
+                ).run(
+                  finalTagCode,
+                  cleanName,
+                  JSON.stringify([localDimCode || 'builtin.content_tags']),
+                  JSON.stringify({
+                    isLeaf: true,
+                    isSystem: false,
+                    isMultiSelect: true,
+                    syncStatus: 0
+                  })
+                )
+                db.prepare(
+                  `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, source, meta)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'rule', ?)`
+                ).run(
+                  fileFingerprint,
+                  finalTagCode,
+                  localDimCode,
+                  codePath,
+                  namePath,
+                  depth,
+                  cloudGroup,
+                  confidence,
+                  JSON.stringify({ syncStatus: 0 })
+                )
+              }
             }
           } catch (tagError) {
             logger.warn(LogCategory.FILE_ANALYSIS, '[云端结果] 写入文件标签关系失败:', tagError)

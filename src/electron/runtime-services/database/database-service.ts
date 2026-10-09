@@ -65,7 +65,7 @@ export class DatabaseService {
       try {
         const row = this._db
           .prepare(
-            `SELECT code FROM file_tags
+            `SELECT code FROM file_tags_private
              WHERE name = ? AND (parent_codes IS NULL OR parent_codes = '[]')
              LIMIT 1`
           )
@@ -1258,7 +1258,7 @@ export class DatabaseService {
         ).run()
         this._db!.prepare('DELETE FROM file_contents').run()
         this._db!.prepare('DELETE FROM file_tag_relations').run()
-        this._db!.prepare('DELETE FROM file_tags').run()
+        this._db!.prepare('DELETE FROM file_tags_private').run()
         this._db!.prepare('DELETE FROM analysis_queue').run()
         this._db!.prepare('DELETE FROM file_video_chunks').run()
       })()
@@ -1313,7 +1313,7 @@ export class DatabaseService {
       this._db.transaction(() => {
         const tagRows = this._db!.prepare(
           `
-          SELECT code FROM file_tags
+          SELECT code FROM file_tags_private
           WHERE (code LIKE ? || '.%' OR json_extract(parent_codes, '$[0]') = ?)
             AND LOWER(TRIM(name)) = LOWER(TRIM(?))
         `
@@ -1323,7 +1323,7 @@ export class DatabaseService {
 
         for (const tag of tagRows) {
           this._db!.prepare('DELETE FROM file_tag_relations WHERE tag_code = ?').run(tag.code)
-          this._db!.prepare('DELETE FROM file_tags WHERE code = ?').run(tag.code)
+          this._db!.prepare('DELETE FROM file_tags_private WHERE code = ?').run(tag.code)
         }
       })()
 
@@ -1367,7 +1367,7 @@ export class DatabaseService {
 
             // 以 code 自然主键精确查找已有标签（同名视为同一标签，直接复用）
             const existingTag = this._db!.prepare(
-              'SELECT code FROM file_tags WHERE name = ? LIMIT 1'
+              'SELECT code FROM file_tags_private WHERE name = ? LIMIT 1'
             ).get(item.tagName) as { code: string } | undefined
 
             if (existingTag) {
@@ -1378,7 +1378,7 @@ export class DatabaseService {
                 lookupExistingName: DeterministicCodeGenerator.createDbLookup(this._db!)
               })
               this._db!.prepare(
-                `INSERT OR IGNORE INTO file_tags (code, name, parent_codes, file_groups, source, meta)
+                `INSERT OR IGNORE INTO file_tags_private (code, name, parent_codes, file_groups, source, meta)
                  VALUES (?, ?, ?, '[]', 'expanded', ?)`
               ).run(
                 code,
@@ -1394,7 +1394,7 @@ export class DatabaseService {
         // 2. 处理待移除标签 removeTags
         const resolvedRemoveTagCodes: string[] = []
         for (const rawId of operation.removeTagIds || []) {
-          const found = this._db!.prepare('SELECT code FROM file_tags WHERE id = ? OR code = ?').get(rawId, String(rawId)) as { code: string } | undefined
+          const found = this._db!.prepare('SELECT code FROM file_tags_private WHERE code = ?').get(String(rawId)) as { code: string } | undefined
           resolvedRemoveTagCodes.push(found?.code || String(rawId))
         }
 
@@ -1402,7 +1402,7 @@ export class DatabaseService {
           for (const item of operation.removeTags) {
             // 以 code 自然主键或标签名精确解析待移除标签
             const existingTag = this._db!.prepare(
-              'SELECT code FROM file_tags WHERE name = ? LIMIT 1'
+              'SELECT code FROM file_tags_private WHERE name = ? LIMIT 1'
             ).get(item.tagName) as { code: string } | undefined
 
             if (existingTag) {
@@ -1422,7 +1422,7 @@ export class DatabaseService {
           allAddTagItems.push({ tagCode: code, viaParentCode: dimCode, tagName })
         }
         for (const rawId of operation.addTagIds || []) {
-          const found = this._db!.prepare('SELECT code, name, parent_codes FROM file_tags WHERE id = ? OR code = ?').get(rawId, String(rawId)) as { code: string; name?: string; parent_codes?: string } | undefined
+          const found = this._db!.prepare('SELECT code, name, parent_codes FROM file_tags_private WHERE code = ?').get(String(rawId)) as { code: string; name?: string; parent_codes?: string } | undefined
           let viaParentCode = ''
           if (found?.parent_codes) {
             try {
@@ -1538,13 +1538,17 @@ export class DatabaseService {
    * 多语言展示层标签名解析器 (Tag Display Resolver)
    * ADR-0038 / Issue #682 / tag-aliases-lang-tables：
    * 1. 受控 + 动态标签展示名统一查主库当前语言分表 tag_aliases_{lang}（本地持久化镜像，零网络）；
-   * 2. 用户/扩展标签兜底读取本地 file_tags.name；
+   * 2. 用户/扩展标签兜底读取本地 file_tags_private.name；
    * 3. 彻底废除对 omw_lexical_entries 等只读语义表的裸 SQL 查询与 TaxonomyAliasCache 内存总线。
    *
    * @param tagCodes 需要解析显示名称的标签 code 数组
-   * @param locale 当前目标语言代码 (如 'zh-CN', 'en-US')
+   * @param locale 当前目标语言代码 (如 'zh-CN', 'en-US')，缺省为当前系统语言
    */
-  public resolveTagDisplayNames(tagCodes: string[], locale: string): Record<string, string> {
+  public getCurrentLanguage(): string {
+    return this.currentLanguage
+  }
+
+  public resolveTagDisplayNames(tagCodes: string[], locale?: string): Record<string, string> {
     const result: Record<string, string> = {}
     if (!tagCodes || tagCodes.length === 0) return result
     for (const code of tagCodes) {
@@ -1555,7 +1559,7 @@ export class DatabaseService {
     if (distinctCodes.length === 0) return result
 
     try {
-      const targetLocale = locale || 'zh-CN'
+      const targetLocale = locale || this.currentLanguage || 'zh-CN'
       const langTable = resolveTagAliasesLangTable(targetLocale)
       const isZh = targetLocale.toLowerCase().startsWith('zh')
 
@@ -1587,12 +1591,12 @@ export class DatabaseService {
         }
       }
 
-      // 2) 未命中分表时，以本地 file_tags.name（默认名）兜底
+      // 2) 未命中分表时，以本地 file_tags_private.name（默认名）兜底
       const stillMissing = distinctCodes.filter(c => result[c] === c)
       if (this._db && stillMissing.length > 0) {
         const tagPlaceholders = stillMissing.map(() => '?').join(',')
         const tagRows = this._db
-          .prepare(`SELECT code, name FROM file_tags WHERE code IN (${tagPlaceholders})`)
+          .prepare(`SELECT code, name FROM file_tags_private WHERE code IN (${tagPlaceholders})`)
           .all(...stillMissing) as { code: string; name: string }[]
         for (const row of tagRows) {
           if (row.name) {

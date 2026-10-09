@@ -246,7 +246,7 @@ export class CloudSyncWorker {
       // 【V4 自然主键直通架构】
       // Phase 0（维度/标签扩展提案同步）已彻底删除：
       // 本地已无 dimension_expansions / tag_expansions 表，且不再依赖云端自增 ID 回传覆盖。
-      // 扩展标签定义统一通过 Phase 2 的 file_tags (code 自然主键) 直接推送。
+      // 扩展标签定义统一通过 Phase 2 的 file_tags_private (code 自然主键) 直接推送。
       // ==================================================================================
 
       // ==================================================================================
@@ -339,7 +339,7 @@ export class CloudSyncWorker {
         .prepare(
           `
         SELECT DISTINCT ft.* FROM file_tag_relations ftr
-        JOIN file_tags ft ON ftr.tag_code = ft.code
+        JOIN file_tags_private ft ON ftr.tag_code = ft.code
         WHERE ftr.file_fingerprint IN (${fileIds.map(() => '?').join(',')})
       `
         )
@@ -360,7 +360,7 @@ export class CloudSyncWorker {
         // 按 code 原子更新本地标签定义同步状态
         const allTagCodes = relatedTags.map(t => t.code)
         db.prepare(
-          `UPDATE file_tags SET sync_status = 2 WHERE code IN (${allTagCodes.map(() => '?').join(',')})`
+          `UPDATE file_tags_private SET sync_status = 2 WHERE code IN (${allTagCodes.map(() => '?').join(',')})`
         ).run(...allTagCodes)
       }
 
@@ -502,7 +502,7 @@ export class CloudSyncWorker {
 
   // 【V4 自然主键直通架构】cleanupProcessedExpansions 已彻底删除。
   // 本地已不存在 dimension_expansions / tag_expansions 提案表，
-  // 扩展标签定义通过 file_tags(code 自然主键) 与云端 1:1 直通，无需任何提案清理流程。
+  // 扩展标签定义通过 file_tags_private(code 自然主键) 与云端 1:1 直通，无需任何提案清理流程。
 }
 
 export const cloudSyncWorker = CloudSyncWorker.getInstance()

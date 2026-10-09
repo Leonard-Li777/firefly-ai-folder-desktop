@@ -15,7 +15,8 @@ import {
   getFileCategory,
   validateAndNormalizeNamingPattern,
   isSubPath,
-  isPathEqual
+  isPathEqual,
+  getCanonicalConceptName
 } from '@firefly/shared'
 import { t } from '@app/languages'
 import { magikaService } from '../system/magika-service'
@@ -1103,24 +1104,43 @@ export class DirectoryContextService {
           }
 
           // 查询该文件的标签维度归属（票 02 终稿口径：只认经由父 `ftr.via_parent_code`；
-          // 为空即真根/无父，退自身 `ft.code`。严禁退读 `parent_codes[0]` 二次猜测。）
+          // 为空即真根/无父，退自身 `ftr.tag_code`。严禁退读 `parent_codes[0]` 二次猜测。）
           const tagsRows = this.db
             .prepare(
               `
               SELECT
                 ft.name,
-                COALESCE(NULLIF(ftr.via_parent_code, ''), ft.code) as dimension_code
+                ftr.tag_code,
+                COALESCE(NULLIF(ftr.via_parent_code, ''), ftr.tag_code) as dimension_code
               FROM file_tag_relations ftr
-              JOIN file_tags ft ON ft.code = ftr.tag_code
+              LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
               WHERE ftr.file_fingerprint = ?
             `
             )
-            .all(row.file_fingerprint) as Array<{ name: string; dimension_code: string }>
+            .all(row.file_fingerprint) as Array<{ name: string | null; tag_code: string; dimension_code: string }>
+
+          const targetLocale =
+            ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+          const isZh = targetLocale.toLowerCase().startsWith('zh')
 
           const dimensionTags: Record<string, string> = {}
           tagsRows.forEach(tr => {
-            if (tr.dimension_code && tr.name) {
-              dimensionTags[tr.dimension_code] = tr.name
+            let name = tr.name || ''
+            if (!name && tr.tag_code) {
+              if (isZh) {
+                name = getCanonicalConceptName(tr.tag_code) || ''
+              }
+              if (!name) {
+                const map = databaseService.resolveTagDisplayNames([tr.tag_code], targetLocale)
+                name = map[tr.tag_code] || ''
+              }
+              if (!name || name === tr.tag_code) {
+                const parts = tr.tag_code.split('.')
+                name = parts[parts.length - 1] || tr.tag_code
+              }
+            }
+            if (tr.dimension_code && name) {
+              dimensionTags[tr.dimension_code] = name
             }
           })
 

@@ -1,12 +1,36 @@
 import Database from 'better-sqlite3'
 import { SavedVirtualDirectory, FileInfoForAI } from '@firefly/types'
-import { LogCategory, logger, isDimensionApplicableToFile } from '@firefly/shared'
+import {
+  LogCategory,
+  logger,
+  isDimensionApplicableToFile,
+  getCanonicalConceptName,
+  CONTROLLED_CONCEPTS
+} from '@firefly/shared'
+import { databaseService } from '../../database/database-service'
+import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { t } from '@app/languages'
 import path from 'node:path'
 import { decompressJson } from '../../../utils/text-compressor'
 
 export class DatabaseHelper {
   constructor(private db: Database.Database) {}
+
+  private resolveTagName(code: string, fallbackName?: string | null): string {
+    if (fallbackName && typeof fallbackName === 'string') return fallbackName
+    if (!code) return ''
+    const targetLocale =
+      ConfigOrchestrator.getInstance().getValue<string>('DEFAULT_LANGUAGE') || 'zh-CN'
+    const isZh = targetLocale.toLowerCase().startsWith('zh')
+    if (isZh) {
+      const canonical = getCanonicalConceptName(code)
+      if (canonical) return canonical
+    }
+    const map = databaseService.resolveTagDisplayNames([code], targetLocale)
+    if (map[code] && map[code] !== code) return map[code]
+    const parts = code.split('.')
+    return parts[parts.length - 1] || code
+  }
 
   async getBatchedVirtualDirectoryFiles(
     workspaceDirectoryPath: string,
@@ -42,12 +66,13 @@ export class DatabaseHelper {
         wf.path,
         wf.name,
         f.smart_name as smartName,
-        COALESCE(NULLIF(ftr.via_parent_code, ''), ft.code) as dimension_code,
+        ftr.tag_code,
+        COALESCE(NULLIF(ftr.via_parent_code, ''), ftr.tag_code) as dimension_code,
         ft.name as tagName
       FROM workspace_files wf
       INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
       INNER JOIN file_tag_relations ftr ON ftr.file_fingerprint = f.file_fingerprint
-      INNER JOIN file_tags ft ON ft.code = ftr.tag_code
+      LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
       WHERE wf.is_analyzed = 1
         AND wf.workspace_id = ?
     `
@@ -67,7 +92,8 @@ export class DatabaseHelper {
           tags: new Set<string>()
         })
       }
-      filesById.get(row.id)!.tags.add(`${row.dimension_code}:${row.tagName}`)
+      const tagName = this.resolveTagName(row.tag_code, row.tagName)
+      filesById.get(row.id)!.tags.add(`${row.dimension_code}:${tagName}`)
     }
 
     for (const dir of virtualDirs) {
@@ -117,8 +143,6 @@ export class DatabaseHelper {
         f.smart_name as smartName
       FROM workspace_files wf
       INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
-      INNER JOIN file_tag_relations ftr ON ftr.file_fingerprint = f.file_fingerprint
-      INNER JOIN file_tags ft ON ft.code = ftr.tag_code
       WHERE wf.is_analyzed = 1
         AND wf.workspace_id = (
           SELECT workspace_id FROM workspaces WHERE path = ?
@@ -129,21 +153,23 @@ export class DatabaseHelper {
 
     for (let i = 0; i < selectedTags.length; i++) {
       const tag = selectedTags[i]
+      const conceptCode = (CONTROLLED_CONCEPTS as Record<string, string>)[tag.tagValue] || tag.tagValue
       // 维度归属统一走经由父 code（票 02 终稿口径，与上方 getBatchedVirtualDirectoryFiles 同源）：
-      // 只认 ftr.via_parent_code，为空即真根/无父退自身 ft.code；严禁退读 parent_codes[0]。
+      // 只认 ftr.via_parent_code，为空即真根/无父退自身 ftr.tag_code；严禁退读 parent_codes[0]。
       query += `
         AND EXISTS (
           SELECT 1 FROM file_tag_relations ftr${i}
-          INNER JOIN file_tags ft${i} ON ft${i}.code = ftr${i}.tag_code
+          LEFT JOIN file_tags_private ft${i} ON ft${i}.code = ftr${i}.tag_code
           WHERE ftr${i}.file_fingerprint = f.file_fingerprint
-            AND COALESCE(NULLIF(ftr${i}.via_parent_code, ''), ft${i}.code) = ?
+            AND COALESCE(NULLIF(ftr${i}.via_parent_code, ''), ftr${i}.tag_code) = ?
             AND (
-              LOWER(TRIM(ft${i}.name)) = LOWER(TRIM(?))
+              ftr${i}.tag_code = ?
+              OR LOWER(TRIM(ft${i}.name)) = LOWER(TRIM(?))
               OR LOWER(TRIM(REPLACE(ft${i}.name, '.', ''))) = LOWER(TRIM(REPLACE(?, '.', '')))
             )
         )
       `
-      params.push(tag.dimensionId, tag.tagValue, tag.tagValue)
+      params.push(tag.dimensionId, conceptCode, tag.tagValue, tag.tagValue)
     }
 
     const files = this.db.prepare(query).all(...params) as any[]
@@ -198,22 +224,24 @@ export class DatabaseHelper {
       const filesWithTags: FileInfoForAI[] = []
 
       for (const file of files) {
-        // 创世 Baseline V1：维度信息由 file_tags 标签树的父节点表达，
+        // 创世 Baseline V1：维度信息由 file_tags_private 标签树与 ftr.via_parent_code 表达，
         // 不再存在 file_dimensions 表与 dimension_id 列。
-        // 维度根节点（parent_codes 为空）视为维度容器；其余节点归属其首个父级所在维度。
+        // 维度根节点视为维度容器；其余节点归属其经由父级或首个父级所在维度。
         const dimensionTagsArray = this.db
           .prepare(
             `
           SELECT
             parent.name as dimensionName,
-            COALESCE(parent.code, ft.code) as dimension,
+            COALESCE(parent.code, NULLIF(ftr.via_parent_code, ''), ft.code) as dimension,
             ft.name as tag,
+            ftr.tag_code,
+            ftr.via_parent_code,
             json_extract(parent.meta, '$.applicableFileTypes') as applicableFileTypes
           FROM file_tag_relations ftr
-          INNER JOIN file_tags ft ON ft.code = ftr.tag_code
-          LEFT JOIN file_tags parent ON parent.code = json_extract(ft.parent_codes, '$[0]')
+          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+          LEFT JOIN file_tags_private parent ON parent.code = COALESCE(NULLIF(ftr.via_parent_code, ''), json_extract(ft.parent_codes, '$[0]'))
           WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
-            AND ft.parent_codes IS NOT NULL AND ft.parent_codes != '[]'
+            AND (ftr.via_parent_code != '' OR (ft.parent_codes IS NOT NULL AND ft.parent_codes != '[]'))
         `
           )
           .all(file.id) as any[]
@@ -221,11 +249,11 @@ export class DatabaseHelper {
         const contentTags = this.db
           .prepare(
             `
-          SELECT ft.name
+          SELECT ft.name, ftr.tag_code
           FROM file_tag_relations ftr
-          INNER JOIN file_tags ft ON ft.code = ftr.tag_code
+          LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
           WHERE ftr.file_fingerprint = (SELECT file_fingerprint FROM workspace_files WHERE id = ?)
-            AND (ft.parent_codes IS NULL OR ft.parent_codes = '[]')
+            AND (ftr.via_parent_code = '' AND (ft.parent_codes IS NULL OR ft.parent_codes = '[]'))
         `
           )
           .all(file.id) as any[]
@@ -264,18 +292,21 @@ export class DatabaseHelper {
           }
 
           if (isDimensionApplicableToFile(applicableTypes, file.path || file.name)) {
+            const dimName = this.resolveTagName(tItem.dimension, tItem.dimensionName) || String(tItem.dimension || '')
+            const tagVal = this.resolveTagName(tItem.tag_code, tItem.tag)
             formattedDimensionTags.push({
-              dimension: tItem.dimensionName || String(tItem.dimension || ''),
-              tag: tItem.tag
+              dimension: dimName,
+              tag: tagVal
             })
           }
         }
 
         for (const ct of contentTags) {
-          if (ct && ct.name) {
+          const ctName = this.resolveTagName(ct.tag_code, ct.name)
+          if (ctName) {
             formattedDimensionTags.push({
               dimension: t('内容标签'),
-              tag: ct.name
+              tag: ctName
             })
           }
         }

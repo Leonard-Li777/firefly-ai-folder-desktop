@@ -1281,9 +1281,9 @@ export class AnalysisQueueService {
             fc.quality_score, f.description, f.smart_name, f.author, f.language,
             fc.analysis_stats,
             (
-              SELECT GROUP_CONCAT(ft.name, ',')
+              SELECT GROUP_CONCAT(COALESCE(ft.name, ftr.tag_code), ',')
               FROM file_tag_relations ftr
-              JOIN file_tags ft ON ft.code = ftr.tag_code
+              LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
               WHERE ftr.file_fingerprint = wf.file_fingerprint
             ) as tags_str
           FROM workspace_files wf
@@ -1303,6 +1303,22 @@ export class AnalysisQueueService {
           analysis_stats: string | null
           tags_str: string | null
         }>
+
+        const allTagCodesToResolve: string[] = []
+        for (const row of rows) {
+          if (row.tags_str) {
+            for (const item of row.tags_str.split(',')) {
+              if (item.includes('.')) {
+                allTagCodesToResolve.push(item)
+              }
+            }
+          }
+        }
+        const resolvedNames =
+          allTagCodesToResolve.length > 0
+            ? databaseService.resolveTagDisplayNames(allTagCodesToResolve)
+            : {}
+
         for (const row of rows) {
           let stageValue = 0
           let completedMode: AnalysisMode | undefined
@@ -1341,7 +1357,15 @@ export class AnalysisQueueService {
             description: row.description || undefined,
             author: row.author || undefined,
             language: row.language || undefined,
-            tags: row.tags_str ? row.tags_str.split(',') : undefined,
+            tags: row.tags_str
+              ? row.tags_str
+                  .split(',')
+                  .map(
+                    item =>
+                      resolvedNames[item] ||
+                      (item.includes('.') ? item.split('.').pop()! : item)
+                  )
+              : undefined,
             isAnalyzed: analyzed,
             /** 相对当前模式的完成程度：analyzed=可跳过；insufficient=需要补全 */
             status: analyzed ? 'analyzed' : 'insufficient',

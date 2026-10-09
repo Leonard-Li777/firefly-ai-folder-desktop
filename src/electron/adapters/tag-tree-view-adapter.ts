@@ -64,7 +64,7 @@ export function getRootGroupsWithChildren(db: Database.Database): TagRootGroup[]
       .prepare(
         `
         SELECT code, name, description, meta
-        FROM file_tags root
+        FROM file_tags_private root
         WHERE root.parent_codes IS NULL OR root.parent_codes = '[]'
         ORDER BY root.code ASC
       `
@@ -78,7 +78,7 @@ export function getRootGroupsWithChildren(db: Database.Database): TagRootGroup[]
       .prepare(
         `
         SELECT child.code AS child_code, child.name AS child_name, parent.value AS parent_code
-        FROM file_tags child, json_each(child.parent_codes) parent
+        FROM file_tags_private child, json_each(child.parent_codes) parent
         WHERE child.parent_codes IS NOT NULL AND child.parent_codes != '[]'
       `
       )
