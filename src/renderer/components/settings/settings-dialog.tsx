@@ -166,7 +166,7 @@ export const SettingsDialog: React.FC = () => {
 
         <div className="flex flex-1 overflow-hidden">
           {/* 左侧导航 */}
-          <div className="w-56 border-r flex flex-col flex-shrink-0">
+          <div className="w-55 border-r flex flex-col flex-shrink-0">
             <div className="flex-1 overflow-y-auto no-scrollbar">
               <SettingsNavigation />
             </div>
