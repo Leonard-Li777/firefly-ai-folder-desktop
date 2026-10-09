@@ -270,7 +270,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 {!isAdvancedAiEnabled && <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
               </div>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                {t('【标准分析】+ 高级AI引擎修正和补充分析结果')}
+                {t('【标准分析】+ 高级AI引擎润色智能文件名和描述以及补充分析结果')}
               </p>
               {!isAdvancedAiEnabled && (
                 <div className="flex items-center gap-1.5 mt-2.5 text-xs text-amber-600 dark:text-amber-400">
@@ -415,11 +415,11 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed whitespace-pre-line">
-                {t(
-                  '【优势】分析飞快，内存占用极低（< 80MB），省电且机身不发热。\n【代价】仅支持文字与基础图片搜索，无法深度理解视频内容与对话。\n【适合】8GB 内存轻薄本、日常基础办公或电池供电场景。'
-                )}
-              </p>
+              <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
+                <div>{t('【优势】分析飞快，内存占用极低（< 80MB），省电且机身不发热。')}</div>
+                <div>{t('【代价】仅支持文字与基础图片搜索，无法深度理解视频内容与对话。')}</div>
+                <div>{t('【适合】8GB 内存轻薄本、日常基础办公或电池供电场景。')}</div>
+              </div>
             </div>
 
             {/* 全模态标准档 */}
@@ -457,11 +457,11 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   </span>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-2 leading-relaxed whitespace-pre-line">
-                {t(
-                  '【优势】看懂复杂画面细节与音视频对话，搜一句话即可秒级定位到视频片段。\n【代价】分析时会占用一定算力与内存（约 300~500MB）。\n【适合】16GB 及以上内存电脑，追求极致搜索与智能整理体验。'
-                )}
-              </p>
+              <div className="text-xs text-muted-foreground mt-2 leading-relaxed space-y-1">
+                <div>{t('【优势】看懂复杂画面细节与音视频对话，搜一句话即可秒级定位到视频片段。')}</div>
+                <div>{t('【代价】分析时会占用一定算力与内存（约 300~500MB）。')}</div>
+                <div>{t('【适合】16GB 及以上内存电脑，追求极致搜索与智能整理体验。')}</div>
+              </div>
             </div>
           </div>
 
@@ -521,9 +521,11 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug whitespace-pre-line">
-                        {t('【优势】极省磁盘，每文件仅约 1KB 索引，省 67% 存储空间。\n【代价】对极复杂细微描述的辨识度略有降低（约 95% 准确率）。\n【适合】磁盘空间紧张或 8GB 内存设备。')}
-                      </p>
+                      <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
+                        <div>{t('【优势】极省磁盘，每文件仅约 1KB 索引，省 67% 存储空间。')}</div>
+                        <div>{t('【代价】对极复杂细微描述的辨识度略有降低（约 95% 准确率）。')}</div>
+                        <div>{t('【适合】磁盘空间紧张或 8GB 内存设备。')}</div>
+                      </div>
                     </div>
                   </div>
 
@@ -551,9 +553,11 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug whitespace-pre-line">
-                        {t('【优势】速度与精度的黄金平衡，保留 98.5% 以上细节辨识能力。\n【代价】每文件约 2KB 索引空间。\n【适合】8GB ~ 16GB 主流电脑首选推荐。')}
-                      </p>
+                      <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
+                        <div>{t('【优势】速度与精度的黄金平衡，保留 98.5% 以上细节辨识能力。')}</div>
+                        <div>{t('【代价】每文件约 2KB 索引空间。')}</div>
+                        <div>{t('【适合】8GB ~ 16GB 主流电脑首选推荐。')}</div>
+                      </div>
                     </div>
                   </div>
 
@@ -581,9 +585,11 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug whitespace-pre-line">
-                        {t('【优势】满血最高精度，对模糊长句和音画视频内容细节匹配最佳。\n【代价】每文件约 3KB 索引空间，分析时需稍多内存。\n【适合】16GB / 32GB 及以上高性能电脑推荐。')}
-                      </p>
+                      <div className="text-[11px] text-muted-foreground mt-1.5 leading-snug space-y-1">
+                        <div>{t('【优势】满血最高精度，对模糊长句和音画视频内容细节匹配最佳。')}</div>
+                        <div>{t('【代价】每文件约 3KB 索引空间，分析时需稍多内存。')}</div>
+                        <div>{t('【适合】16GB / 32GB 及以上高性能电脑推荐。')}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -648,11 +654,10 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                     />
                   </div>
                 </div>
-                <p className="text-[11px] text-muted-foreground leading-relaxed whitespace-pre-line">
-                  {t(
-                    '【较短间隔（如 2.0 秒）】能精确定位视频中每一处画面细节，但长视频分析时间较长；\n【较长间隔（如 15.0 秒）】快速提取视频大意，极速省电，适合轻薄本。'
-                  )}
-                </p>
+                <div className="text-[11px] text-muted-foreground leading-relaxed space-y-1">
+                  <div>{t('【较短间隔（如 2.0 秒）】能精确定位视频中每一处画面细节，但长视频分析时间较长；')}</div>
+                  <div>{t('【较长间隔（如 15.0 秒）】快速提取视频大意，极速省电，适合轻薄本。')}</div>
+                </div>
               </div>
             </div>
           )}
