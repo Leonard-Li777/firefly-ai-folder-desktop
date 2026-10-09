@@ -714,7 +714,7 @@ export function getSelectedTagsFromSet(
     let codePaths: string[] | undefined
     if (aggRow) {
       // 判据取 length > 0 而非 > 1：正常数据下 codePaths[0] === codePath（经后端
-      // resolveTagMaterializedPaths 归一后 SQL 等价），且可堵住「首入列后代缺 codePath
+      // resolveTagCodePaths 归一后 SQL 等价），且可堵住「首入列后代缺 codePath
       // 导致 codePaths=[p] 单元素」角例下多选退化为 code 并集、与单选排他口径分叉的缺口 (M-1)；
       // 空数组仍回退 codePath，语义不变。
       codePaths = aggRow.codePaths && aggRow.codePaths.length > 0 ? aggRow.codePaths : undefined
