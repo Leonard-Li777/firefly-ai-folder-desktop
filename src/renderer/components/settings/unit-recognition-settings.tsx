@@ -3,6 +3,7 @@ import {
   GitFork,
   HelpCircle,
   Info,
+  Lock,
   RotateCcw,
   Sparkles
 } from 'lucide-react'
@@ -11,6 +12,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Button } from '../ui/button'
 import { Card } from '../ui/card'
 import { Label } from '../ui/label'
+import { SettingsCategory } from '@firefly/types'
 import { Switch } from '../ui/switch'
 import { Textarea } from '../ui/textarea'
 import { captureEvent } from '../../lib/posthog'
@@ -46,7 +48,12 @@ const HelpTooltip: React.FC<{ content: string }> = ({ content }) => {
 export const UnitRecognitionSettings: React.FC = () => {
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
+  const openSettings = useSettingsStore(s => s.openSettings)
   const { t } = useVoerkaI18n(i18nScope)
+
+  // 是否开启了高级AI引擎
+  const aiServiceMode = getConfigValue<string>('AI_SERVICE_MODE') ?? 'disabled'
+  const isAdvancedAiEnabled = aiServiceMode !== 'disabled'
 
   const isEnabled = getConfigValue<boolean>('ENABLE_UNIT_RECOGNITION') ?? false
   const [unitPrompt, setUnitPrompt] = useState<string>(
@@ -140,18 +147,23 @@ export const UnitRecognitionSettings: React.FC = () => {
       </Card>
 
       {/* 最小单元识别提示词卡片 */}
-      <Card className="p-5 space-y-3">
+      <Card className={`p-5 space-y-3 transition-opacity ${!isAdvancedAiEnabled || !isEnabled ? 'opacity-80 bg-muted/10' : ''}`}>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <Label htmlFor="unit-prompt" className="text-sm font-semibold">
                 {t('最小单元识别提示词')}
               </Label>
-              {!isEnabled && (
+              {!isAdvancedAiEnabled ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                  <Lock className="h-3 w-3" />
+                  {t('需开启高级AI引擎')}
+                </span>
+              ) : !isEnabled ? (
                 <span className="text-[11px] text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full font-medium">
                   {t('需开启上方开关方可生效')}
                 </span>
-              )}
+              ) : null}
             </div>
             <p className="text-xs text-muted-foreground">
               {t('定义什么样的文件集合应被视作一个整体单元，微调模型的识别判断')}
@@ -169,6 +181,25 @@ export const UnitRecognitionSettings: React.FC = () => {
             </Button>
           )}
         </div>
+
+        {/* 未开启高级AI引擎时呈现锁定说明与直达按钮 */}
+        {!isAdvancedAiEnabled && (
+          <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/[0.08] dark:bg-amber-500/[0.12] flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 min-w-0">
+              <Lock className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{t('自定义最小单元提示词依赖高级AI引擎的语言模型理解能力，当前未开启。')}</span>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 text-xs shrink-0 border-amber-500/30 text-amber-700 dark:text-amber-300 hover:bg-amber-500/10"
+              onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
+            >
+              {t('前往开启高级AI引擎')}
+            </Button>
+          </div>
+        )}
+
         <Textarea
           id="unit-prompt"
           placeholder={defaultPromptPlaceholder}
@@ -184,9 +215,21 @@ export const UnitRecognitionSettings: React.FC = () => {
           maxLength={1000}
         />
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="text-[11px] italic">
-            {unitPrompt ? t('已配置自定义提示词') : t('留空则使用默认提示词模板')}
-          </span>
+          {!isAdvancedAiEnabled ? (
+            <span className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1 font-medium">
+              <Lock className="h-3 w-3" />
+              {t('高级AI引擎未开启，提示词暂不生效')}
+            </span>
+          ) : !isEnabled ? (
+            <span className="text-[11px] text-amber-600 dark:text-amber-400 flex items-center gap-1 font-medium">
+              <Lock className="h-3 w-3" />
+              {t('上方开关未开启，提示词暂不生效')}
+            </span>
+          ) : (
+            <span className="text-[11px] italic">
+              {unitPrompt ? t('已配置自定义提示词') : t('留空则使用默认提示词模板')}
+            </span>
+          )}
           <span className={unitPrompt.length >= 1000 ? 'text-destructive font-medium' : ''}>
             {unitPrompt.length} / 1000 {t('字符')}
           </span>
