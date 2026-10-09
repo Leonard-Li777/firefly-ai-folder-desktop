@@ -776,9 +776,9 @@ export function Footer() {
         </button>
         <span className="text-xs text-muted-foreground/30 mx-1.5">|</span>
         <button
-          onClick={() => openSettings(SettingsCategory.ANALYSIS)}
+          onClick={() => openSettings(SettingsCategory.BASIC_AI_ENGINE_CONFIG)}
           className="text-xs text-muted-foreground opacity-60 hover:opacity-100 cursor-pointer transition-opacity"
-          title={t('点击打开分析设置')}
+          title={t('点击打开基础AI引擎配置')}
         >
           <span
             className={`font-bold px-1.5 py-0.5 rounded ${

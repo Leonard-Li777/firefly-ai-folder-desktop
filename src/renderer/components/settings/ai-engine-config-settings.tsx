@@ -459,7 +459,7 @@ export const AIEngineConfigSettings: React.FC = () => {
         />
       </div>
 
-      {/* 关闭态：仅显示禁用说明文案（优点 / 缺点分栏列举） */}
+      {/* 关闭态：基础引擎已有能力 vs 开启高级引擎可解锁能力对比 */}
       {!isEnabled && (
         <Card className="p-5 border-border/80 shadow-xs rounded-2xl bg-card">
           <div className="flex items-start gap-3.5">
@@ -472,11 +472,11 @@ export const AIEngineConfigSettings: React.FC = () => {
                 {t('AI增强分析已关闭，文件将由内置轻量基础AI引擎自动处理。')}
               </p>
               <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 优点列：绿色勾图标 */}
+                {/* 基础引擎保留能力列：绿色勾图标 */}
                 <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.04] p-3.5">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {t('优点')}
+                    <CircleCheck className="h-3.5 w-3.5" />
+                    {t('基础引擎保留能力')}
                   </div>
                   <ul className="mt-2 space-y-1.5">
                     {[
@@ -493,23 +493,21 @@ export const AIEngineConfigSettings: React.FC = () => {
                     ))}
                   </ul>
                 </div>
-                {/* 缺点列：红色叉图标 */}
-                <div className="rounded-xl border border-red-500/20 bg-red-500/[0.04] p-3.5">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400">
-                    <CircleAlert className="h-3.5 w-3.5" />
-                    {t('缺点')}
+                {/* 开启高级引擎可解锁能力列：高亮图标 */}
+                <div className="rounded-xl border border-primary/20 bg-primary/[0.04] p-3.5">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {t('开启高级引擎可解锁')}
                   </div>
                   <ul className="mt-2 space-y-1.5">
                     {[
-                      t('智能文件名和描述有点机械感'),
-                      t('不支持智能文件名和描述润色'),
-                      t('不支持图片内容描述'),
-                      t('不支持文件质量按维度评分'),
-                      t('不支持搜索增强：不支持图文视频内容的高精度搜索，特别是完全不支持视频内容搜索'),
-                      t('不支持生成多套文件整理方案')
+                      t('智能文件名和描述深度润色（告别机械感）'),
+                      t('图片与视觉内容的自然语言深度描述'),
+                      t('文件质量按专业维度智能评分'),
+                      t('生成多套文件整理方案供自由选择')
                     ].map(item => (
                       <li key={item} className="flex items-start gap-2 text-xs leading-relaxed text-foreground/80">
-                        <CircleX className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" />
+                        <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
                         <span>{item}</span>
                       </li>
                     ))}

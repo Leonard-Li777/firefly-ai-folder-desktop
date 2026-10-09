@@ -15,7 +15,11 @@ import React, { useState, useCallback, memo } from 'react'
 import { settingsCategories, useSettingsStore } from '../../stores/settings-store'
 
 import { AIEngineConfigSettings } from './ai-engine-config-settings'
-// PRD-0044：模型管理 tab（ai-model-settings）整体清退，与 AI引擎配置 合并为「高级AI引擎配置」
+import { BasicAIEngineConfigSettings } from './basic-ai-engine-config-settings'
+import { ContentExtractionSettings } from './content-extraction-settings'
+import { UnitRecognitionSettings } from './unit-recognition-settings'
+import { AdvancedAIPromptsSettings } from './advanced-ai-prompts-settings'
+import { AnalysisIgnoreRulesSettings } from './analysis-ignore-rules-settings'
 import { AnalysisSettings } from './analysis-settings'
 import { Button } from '../ui/button'
 import { FileDisplaySettings } from './file-display-settings'
@@ -27,8 +31,12 @@ import { t } from '@app/languages'
 
 const MemoizedInterfaceSettings = memo(InterfaceSettings)
 const MemoizedFileDisplaySettings = memo(FileDisplaySettings)
+const MemoizedBasicAIEngineConfigSettings = memo(BasicAIEngineConfigSettings)
 const MemoizedAIEngineConfigSettings = memo(AIEngineConfigSettings)
-const MemoizedAnalysisSettings = memo(AnalysisSettings)
+const MemoizedContentExtractionSettings = memo(ContentExtractionSettings)
+const MemoizedUnitRecognitionSettings = memo(UnitRecognitionSettings)
+const MemoizedAdvancedAIPromptsSettings = memo(AdvancedAIPromptsSettings)
+const MemoizedAnalysisIgnoreRulesSettings = memo(AnalysisIgnoreRulesSettings)
 const MemoizedMonitoringSettings = memo(MonitoringSettings)
 
 const CATEGORY_COMPONENTS: Array<{
@@ -37,8 +45,14 @@ const CATEGORY_COMPONENTS: Array<{
 }> = [
   { category: SettingsCategory.INTERFACE, Component: MemoizedInterfaceSettings },
   { category: SettingsCategory.FILE_DISPLAY, Component: MemoizedFileDisplaySettings },
+  { category: SettingsCategory.BASIC_AI_ENGINE_CONFIG, Component: MemoizedBasicAIEngineConfigSettings },
   { category: SettingsCategory.AI_ENGINE_CONFIG, Component: MemoizedAIEngineConfigSettings },
-  { category: SettingsCategory.ANALYSIS, Component: MemoizedAnalysisSettings },
+  { category: SettingsCategory.CONTENT_EXTRACTION, Component: MemoizedContentExtractionSettings },
+  { category: SettingsCategory.UNIT_RECOGNITION, Component: MemoizedUnitRecognitionSettings },
+  { category: SettingsCategory.ADVANCED_AI_PROMPTS, Component: MemoizedAdvancedAIPromptsSettings },
+  { category: SettingsCategory.ANALYSIS_IGNORE_RULES, Component: MemoizedAnalysisIgnoreRulesSettings },
+  // 保持旧 ANALYSIS 兼容映射
+  { category: SettingsCategory.ANALYSIS, Component: MemoizedContentExtractionSettings },
   { category: SettingsCategory.MONITORING, Component: MemoizedMonitoringSettings }
 ]
 
@@ -132,11 +146,15 @@ export const SettingsDialog: React.FC = () => {
     }
   }, [saveSettings, closeSettings])
 
+  React.useEffect(() => {
+    if (isOpen) {
+      logger.info(LogCategory.RENDERER, '[Settings Dialog] 渲染设置对话框')
+    }
+  }, [isOpen])
+
   if (!isOpen) {
     return null
   }
-
-  logger.info(LogCategory.RENDERER, '[Settings Dialog] 渲染设置对话框')
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && closeSettings()}>
@@ -148,7 +166,7 @@ export const SettingsDialog: React.FC = () => {
 
         <div className="flex flex-1 overflow-hidden">
           {/* 左侧导航 */}
-          <div className="w-55 border-r flex flex-col flex-shrink-0">
+          <div className="w-56 border-r flex flex-col flex-shrink-0">
             <div className="flex-1 overflow-y-auto no-scrollbar">
               <SettingsNavigation />
             </div>

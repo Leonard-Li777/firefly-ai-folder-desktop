@@ -443,7 +443,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
                       variant="outline"
                       size="sm"
                       className="mt-2 text-xs h-7 px-2.5 text-orange-600 dark:text-orange-400 border-orange-300/50 dark:border-orange-700/50 hover:bg-orange-500/10"
-                      onClick={() => openSettings(SettingsCategory.ANALYSIS)}
+                      onClick={() => openSettings(SettingsCategory.UNIT_RECOGNITION)}
                     >
                       <MaterialIcon icon="tune" className="text-xs mr-1" />
                       {t('关闭最小单元识别')}

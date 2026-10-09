@@ -765,7 +765,7 @@ export function AnalysisQueueContent({
             return (
               <span
                 className="text-xs text-primary/80 hover:text-primary cursor-pointer transition-colors hidden md:inline-block ml-1"
-                onClick={() => useSettingsStore.getState().openSettings(SettingsCategory.ANALYSIS)}
+                onClick={() => useSettingsStore.getState().openSettings(SettingsCategory.BASIC_AI_ENGINE_CONFIG)}
               >
                 {currentMode === 'simple' || currentMode === 'document'
                   ? t('结果简陋？切为【增强分析】或【全面分析】')

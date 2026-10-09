@@ -99,6 +99,12 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
     icon: 'folder_open',
     description: t('目录管理和自动监听')
   },
+  {
+    id: SettingsCategory.BASIC_AI_ENGINE_CONFIG,
+    name: t('基础AI引擎配置'),
+    icon: 'tune',
+    description: t('分析模式、嵌入模型与向量维度、视频切片抽帧')
+  },
   // PRD-0044：模型管理（AI_MODEL）分类清退，与 AI引擎配置 合并为唯一「高级AI引擎配置」tab
   {
     id: SettingsCategory.AI_ENGINE_CONFIG,
@@ -107,10 +113,28 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
     description: t('生效引擎选择、云端配置与思考模式')
   },
   {
-    id: SettingsCategory.ANALYSIS,
-    name: t('分析设置'),
-    icon: 'analytics',
-    description: t('忽略规则和分析参数')
+    id: SettingsCategory.CONTENT_EXTRACTION,
+    name: t('内容萃取设置'),
+    icon: 'boxes',
+    description: t('文本与文档提取、OCR精度和音频截取')
+  },
+  {
+    id: SettingsCategory.UNIT_RECOGNITION,
+    name: t('最小单元识别'),
+    icon: 'git_fork',
+    description: t('目录最小单元判定与单元识别提示词')
+  },
+  {
+    id: SettingsCategory.ADVANCED_AI_PROMPTS,
+    name: t('高级AI提示词'),
+    icon: 'sparkles',
+    description: t('质量评分与标签智能生成提示词')
+  },
+  {
+    id: SettingsCategory.ANALYSIS_IGNORE_RULES,
+    name: t('AI分析忽略规则'),
+    icon: 'filter',
+    description: t('文件与目录排除规则、查重保护')
   },
   {
     id: SettingsCategory.INTERFACE,
@@ -149,10 +173,15 @@ export const useSettingsStore = create<ISettingsState>()(
       },
 
       openSettings: async (category = SettingsCategory.MONITORING) => {
+        // 兼容旧 ANALYSIS 分类跳转，自动重定向到内容萃取设置
+        const targetCategory =
+          category === SettingsCategory.ANALYSIS
+            ? SettingsCategory.CONTENT_EXTRACTION
+            : category
         // 立即弹出设置对话框，杜绝 IPC 串行等待导致的界面卡顿与开窗延迟
         set({
           isOpen: true,
-          currentCategory: category,
+          currentCategory: targetCategory,
           error: null
         })
 
@@ -193,8 +222,12 @@ export const useSettingsStore = create<ISettingsState>()(
       },
 
       setCurrentCategory: category => {
+        const targetCategory =
+          category === SettingsCategory.ANALYSIS
+            ? SettingsCategory.CONTENT_EXTRACTION
+            : category
         set({
-          currentCategory: category,
+          currentCategory: targetCategory,
           error: null
         })
       },

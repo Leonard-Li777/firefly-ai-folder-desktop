@@ -10,8 +10,14 @@ const ICON_MAP: Record<string, string> = {
   palette: '🎨',
   view_list: '📋',
   psychology: '🧠',
+  settings_suggest: '✨',
   analytics: '📊',
-  folder_open: '📁'
+  folder_open: '📁',
+  tune: '🎛️',
+  boxes: '📦',
+  git_fork: '🔀',
+  sparkles: '✨',
+  filter: '🛡️'
 }
 
 function getIcon(iconName: string): string {
@@ -45,6 +51,7 @@ export const SettingsNavigation: React.FC = memo(() => {
               !isActive && 'hover:bg-muted/50'
             )}
             onClick={() => handleCategoryClick(category.id as SettingsCategory)}
+            title={`${category.name} - ${category.description}`}
           >
             <div className="flex items-start gap-3">
               <span className="text-lg shrink-0 mt-0.5">{getIcon(category.icon)}</span>
@@ -52,7 +59,7 @@ export const SettingsNavigation: React.FC = memo(() => {
                 <div className="font-medium text-sm">{category.name}</div>
                 <div
                   className={cn(
-                    'text-xs mt-1 line-clamp-2 transition-colors',
+                    'text-xs mt-1 line-clamp-1 transition-colors',
                     isActive ? 'text-primary-foreground/80' : 'text-secondary-foreground'
                   )}
                 >
