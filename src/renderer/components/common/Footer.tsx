@@ -308,7 +308,13 @@ export function Footer() {
     serviceStatus === AIServiceStatus.PENDING ||
     serviceStatus === AIServiceStatus.CONFIGURING
 
+  // 是否开启高级AI引擎（AI_SERVICE_MODE）：disabled = 仅基础AI引擎（Omni）生效
+  const isAdvancedAiEnabled = (config as any)?.AI_SERVICE_MODE !== 'disabled'
+
   const shouldShowRecommendation = useMemo(() => {
+    // 仅在已开启高级AI引擎且选择萤核AI引擎（本地模式）时才检测推荐；
+    // 高级AI引擎禁用/云端模式下不展示（基础AI引擎不涉及模型切换）
+    if (!isAdvancedAiEnabled) return false
     if (!hardwareInfo || modelMode !== 'local' || vramRequiredGB === undefined) return false
 
     // 服务切换/初始化期间不展示推荐，避免沿用旧模型信息造成误导
@@ -323,7 +329,7 @@ export function Footer() {
     // 如果 VRAM >= 4G 且当前选择的模型显存需求 <= 2G，显示推荐
     const totalVram = hardwareInfo.vramGB || 0
     return totalVram >= 4 && vramRequiredGB <= 2
-  }, [hardwareInfo, modelMode, vramRequiredGB, totalSizeBytes, isModelTransitioning])
+  }, [isAdvancedAiEnabled, hardwareInfo, modelMode, vramRequiredGB, totalSizeBytes, isModelTransitioning])
 
   // 控制推荐提示的显示，每次启动时显示，超过1分钟自动隐藏
   const [showRecommendation, setShowRecommendation] = useState(false)
@@ -498,8 +504,10 @@ export function Footer() {
   }
 
   // 本地模式下以 Tier 2 引擎真实运行态（engineSnapshot）为准驱动 Footer 状态
+  // 注意：高级AI引擎未开启（isAdvancedAiEnabled 已在上方计算）时，Tier 2 引擎探活离线属预期，
+  // 不应把状态强制覆盖为 STOPPED，直接回落展示基础AI引擎自身的状态（serviceStatus）。
   const effectiveStatus = useMemo(() => {
-    if (modelMode === 'local') {
+    if (modelMode === 'local' && isAdvancedAiEnabled) {
       if (engineOnline === false) {
         return AIServiceStatus.STOPPED
       }
@@ -522,21 +530,77 @@ export function Footer() {
       }
     }
     return serviceStatus
-  }, [modelMode, engineOnline, engineSnapshot, serviceStatus])
+  }, [modelMode, engineOnline, engineSnapshot, serviceStatus, isAdvancedAiEnabled])
 
   const aiServiceInfo = getFooterDisplay(effectiveStatus)
 
   // PRD-0043：本地模式下，Tier 2 引擎真实未在线时不得展示任何"模型就绪"类状态行
   // （状态数据来自 model-store，可能与引擎真实运行态脱钩，此处以 engineBridge 探活结果为准）。
   // 探活完成（engineOnline !== null）且离线时：云端模式不受影响，本地模式降级为未就绪提示。
+  // 高级AI引擎区分（AI_SERVICE_MODE）：
+  // - 未开启高级AI引擎（disabled）：基础AI引擎（Omni）即实际生效引擎，展示 Omni 启动/连接状态
+  // - 已开启高级AI引擎：文案明确标注"高级"二字，提示高级AI引擎未运行
+  // 高级AI引擎开启时（isAdvancedAiEnabled 已在上方计算），文案明确标注"高级"二字
   const effectiveAiServiceInfo =
-    engineOnline === false && modelMode === 'local'
+    engineOnline === false && modelMode === 'local' && isAdvancedAiEnabled
       ? {
-          text: t('AI 服务未就绪（本地 AI 引擎未运行）'),
+          text: t('高级AI引擎未运行，AI 服务未就绪'),
           icon: 'radio_button_unchecked',
           color: 'text-gray-400'
         }
       : aiServiceInfo
+
+  // 高级AI引擎禁用时：基础AI引擎（Omni）为实际生效引擎，Footer 展示其启动与连接状态
+  // Omni 主进程在状态跃迁点（启动就绪/退出/停止）主动推送 omni:status-changed，
+  // 渲染进程仅订阅推送 + 挂载时做一次初始查询，不做周期轮询
+  const [omniStatus, setOmniStatus] = useState<{ running: boolean; version: string | null } | null>(
+    null
+  )
+  useEffect(() => {
+    if (isAdvancedAiEnabled) {
+      setOmniStatus(null)
+      return
+    }
+    let cancelled = false
+    // 挂载时先做一次初始查询，避免等待下一次状态跃迁才能显示
+    window.electronAPI?.getOmniStatus?.().then(status => {
+      if (!cancelled && status) {
+        setOmniStatus(status)
+      }
+    })
+    // 订阅主进程主动推送
+    const unsub = window.electronAPI?.onOmniStatusChanged?.(status => {
+      if (!cancelled && status) {
+        setOmniStatus(status)
+      }
+    })
+    return () => {
+      cancelled = true
+      unsub?.()
+    }
+  }, [isAdvancedAiEnabled])
+
+  // 高级AI引擎禁用时的基础AI引擎（Omni）状态文案：探活成功 → 就绪，否则 → 未运行
+  const omniAiServiceInfo = useMemo(() => {
+    if (omniStatus?.running) {
+      return {
+        text: t('[基础AI引擎] Omni 服务就绪') + (omniStatus.version ? ` v${omniStatus.version}` : ''),
+        icon: 'check_circle',
+        color: 'text-green-500',
+        animate: undefined as string | undefined
+      }
+    }
+    return {
+      text: t('[基础AI引擎] Omni 服务未运行'),
+      icon: 'radio_button_unchecked',
+      color: 'text-gray-400',
+      animate: undefined as string | undefined
+    }
+  }, [omniStatus, activeLanguage])
+
+  // 最终展示状态：高级AI引擎禁用时以基础AI引擎（Omni）状态为准
+  const finalAiServiceInfo =
+    !isAdvancedAiEnabled && omniStatus !== null ? omniAiServiceInfo : effectiveAiServiceInfo
 
   // 注：PRD-0043 后"非最佳可用引擎"警告归属引擎应用（firefly-ai-engine）Footer 展示，
   // desktop 不再显示该警告（PRD-0049：BEST_ACCELERATION 记忆服务已清退）。
@@ -568,20 +632,20 @@ export function Footer() {
         <div className="flex items-center space-x-6 min-w-0">
           <div className="flex items-center space-x-2 group min-w-0">
             <MaterialIcon
-              icon={effectiveAiServiceInfo.icon}
-              className={`${effectiveAiServiceInfo.color} ${effectiveAiServiceInfo.animate || ''} text-sm`}
+              icon={finalAiServiceInfo.icon}
+              className={`${finalAiServiceInfo.color} ${finalAiServiceInfo.animate || ''} text-sm`}
             />
             {/* min-w-0 允许内部文字截断 */}
             <div className="min-w-0">
               <button
                 className={`${
-                  effectiveAiServiceInfo.color
+                  finalAiServiceInfo.color
                 } transition-all duration-200 hover:underline cursor-pointer truncate max-w-[480px] block`}
                 onClick={() => openSettings(SettingsCategory.AI_ENGINE_CONFIG)}
-                title={effectiveAiServiceInfo.text}
+                title={finalAiServiceInfo.text}
               >
                 {' '}
-                {effectiveAiServiceInfo.text}
+                {finalAiServiceInfo.text}
               </button>
               {/* min-w-0 保护：次级提示行在西文语种下可能很长，需允许截断而非撑破footer */}
               <div className="min-w-0">

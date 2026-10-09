@@ -1179,6 +1179,20 @@ const electronAPI = {
   // 获取 Omni 引擎版本号
   getOmniVersion: (): Promise<string> => ipcRenderer.invoke('omni/getVersion'),
 
+  // 获取基础AI引擎（Omni）状态：running = 进程探活成功，version = 引擎版本号
+  getOmniStatus: (): Promise<{ running: boolean; version: string | null }> =>
+    ipcRenderer.invoke('omni/getStatus'),
+
+  // 订阅基础AI引擎（Omni）状态主动推送（omni:status-changed），返回取消订阅函数
+  onOmniStatusChanged: (
+    callback: (status: { running: boolean; version: string | null }) => void
+  ): (() => void) => {
+    const handler = (_event: any, status: { running: boolean; version: string | null }) =>
+      callback(status)
+    ipcRenderer.on('omni:status-changed', handler)
+    return () => ipcRenderer.removeListener('omni:status-changed', handler)
+  },
+
   // 获取当前 Worktree 环境信息
   getWorktreeInfo: (): Promise<{
     worktreeName: string

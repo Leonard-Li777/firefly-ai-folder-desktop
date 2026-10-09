@@ -11,9 +11,33 @@
 import { ChildProcess, spawn } from 'node:child_process'
 import * as path from 'node:path'
 import * as fs from 'node:fs'
-import { app } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { ResourceLocator, logger, LogCategory, APP_PORTS, findAvailablePort } from '@firefly/shared'
 import { MagikaFileCategory } from '@firefly/types'
+
+/**
+ * 基础AI引擎（Omni）运行状态快照，主动推送至渲染进程（omni:status-changed）
+ */
+export interface OmniRuntimeStatus {
+  /** 进程探活是否成功 */
+  running: boolean
+  /** 引擎版本号（探活成功时返回） */
+  version: string | null
+}
+
+/**
+ * 向所有渲染窗口广播基础AI引擎（Omni）状态变更
+ * 由状态跃迁点（启动就绪/退出/停止）主动调用，渲染进程无需轮询
+ */
+export function broadcastOmniStatus(status: OmniRuntimeStatus): void {
+  try {
+    for (const win of BrowserWindow.getAllWindows()) {
+      if (!win.isDestroyed()) {
+        win.webContents.send('omni:status-changed', status)
+      }
+    }
+  } catch {}
+}
 
 export interface OmniBenchmarkResponse {
   total_ms: number
@@ -482,6 +506,22 @@ export class OmniService {
   }
 
   /**
+   * 探活并主动推送当前状态至渲染进程（omni:status-changed）
+   * 附带版本号缓存刷新，供 Footer 等展示基础AI引擎的启动/连接状态
+   */
+  private async pushStatus(): Promise<void> {
+    const running = await this.checkHealth()
+    let version: string | null = null
+    if (running) {
+      try {
+        const v = await this.getVersion()
+        version = v && v !== '0.1.0' ? v : null
+      } catch {}
+    }
+    broadcastOmniStatus({ running, version })
+  }
+
+  /**
    * 获取 Omni 引擎版本号
    */
   public async getVersion(): Promise<string> {
@@ -611,16 +651,16 @@ export class OmniService {
 
       logger.info(LogCategory.SYSTEM, `[OmniService] 正在拉起 firefly-omni 守护进程 (Port: ${port}): ${exePath}`)
       const isDevMode = !app.isPackaged || process.env.NODE_ENV !== 'production'
-      const onnxLibDir = ResourceLocator.resolveOnnxLibDir()
+      const binDir = path.dirname(exePath)
+      const existingPath = process.env.PATH || ''
+      const injectedPath = [binDir, existingPath].filter(Boolean).join(path.delimiter)
+
       const env: Record<string, string | undefined> = {
         ...process.env,
+        PATH: injectedPath,
         OMNI_PORT: String(port),
         OMNI_DEV_MODE: isDevMode ? '1' : '0',
         RUST_LOG: process.env.RUST_LOG || (isDevMode ? 'info,omni_vision=info,omni_server=info,omni_text=info' : 'warn')
-      }
-      if (onnxLibDir) {
-        env.FIREFLY_ONNX_DIR = onnxLibDir
-        logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 注入 ONNX 动态库目录 (FIREFLY_ONNX_DIR): ${onnxLibDir}`)
       }
 
       // 获取业务主库 SQLite 绝对路径与只读语义包路径，以两个独立参数透传给 Omni (ADR-0035 & ADR-0038)
@@ -672,6 +712,7 @@ export class OmniService {
       )
 
       const child = spawn(exePath, spawnArgs, {
+        cwd: binDir,
         env,
         stdio: ['pipe', 'pipe', 'pipe'],
         windowsHide: true
@@ -724,11 +765,15 @@ export class OmniService {
           processReaper.unregisterChild(child.pid)
         } catch {}
         this.process = null
+        // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
+        this.pushStatus().catch(() => {})
         // 子进程退出后，先检测是否对应端口上已有服务接管，若健康则直接接入，不触发重启
         const aliveAfterExit = await this.checkHealth()
         if (aliveAfterExit) {
           logger.info(LogCategory.SYSTEM, `[OmniService] ${this.actualPort} 端口已有外部服务接管，直接连接`)
           this.restartAttempts = 0
+          // 外部服务接管成功，推送"运行中"状态
+          this.pushStatus().catch(() => {})
           return
         }
         this.scheduleRestart()
@@ -745,11 +790,15 @@ export class OmniService {
           this.isStarting = false
           // 探活就绪后，立即同步一次当前配置（ENABLE_IMAGE_OCR, OCR_MODEL_SIZE 等）
           this.syncConfigFromDesktop().catch(() => {})
+          // 主动推送"运行中"状态至渲染进程（基础AI引擎 Footer 展示）
+          this.pushStatus().catch(() => {})
           return true
         }
       }
 
       this.isStarting = false
+      // 启动失败（探活超时），推送"未运行"状态
+      this.pushStatus().catch(() => {})
       return false
     } catch (err) {
       logger.error(LogCategory.SYSTEM, '[OmniService] 启动服务发生异常:', err)
@@ -786,6 +835,8 @@ export class OmniService {
       } catch {}
       this.process = null
     }
+    // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
+    broadcastOmniStatus({ running: false, version: null })
   }
 
   /**
@@ -1372,6 +1423,8 @@ export class OmniService {
           content_rating: json.content_rating,
           has_asr: json.has_asr ?? !!json.asr,
           asr_length: json.asr_length ?? json.asr?.length ?? 0,
+          asr: json.asr ?? null,
+          audio_events: json.audio_events || [],
           ocr_text_length: json.ocr_text?.length || 0,
           markdown_content: json.markdown_content,
           markdown_content_length: json.markdown_content?.length || 0,

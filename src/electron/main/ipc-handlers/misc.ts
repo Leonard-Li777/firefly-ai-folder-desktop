@@ -599,6 +599,19 @@ export function registerMiscIPCHandlers() {
     return await omniService.getVersion()
   })
 
+  // 获取基础AI引擎（Omni）状态：running = 进程探活成功，version = 引擎版本号
+  // 供 Footer 在高级AI引擎禁用时展示基础AI引擎的启动/连接状态
+  ipcMain.handle('omni/getStatus', async () => {
+    const { omniService } = await import('../../runtime-services/system/omni-service')
+    const running = await omniService.checkHealth()
+    let version: string | null = null
+    if (running) {
+      const v = await omniService.getVersion()
+      version = v && v !== '0.1.0' ? v : null
+    }
+    return { running, version }
+  })
+
   ipcMain.handle('system:write-diagnostic-log', async (event, filename: string, content: string) => {
     try {
       const { platformAdapter } = await import('@firefly/electron-llamaIndex-service')
