@@ -5,6 +5,7 @@ import {
   logger,
   isDimensionApplicableToFile,
   getCanonicalConceptName,
+  getControlledDimensionRootCode,
   CONTROLLED_CONCEPTS
 } from '@firefly/shared'
 import { databaseService } from '../../database/database-service'
@@ -100,13 +101,17 @@ export class DatabaseHelper {
       const selectedTags = dir.filter?.selectedTags
       if (!selectedTags || selectedTags.length === 0) continue
 
-      const dirTags = selectedTags.map(t => `${t.dimensionId}:${t.tagValue}`)
       const matchedFiles: Array<{ id: number; path: string; name: string; smartName?: string }> = []
 
       for (const file of filesById.values()) {
         let matched = true
-        for (const tag of dirTags) {
-          if (!file.tags.has(tag)) {
+        for (const tag of selectedTags) {
+          const dimCode =
+            (tag as any).dimensionCode ||
+            (tag as any).viaParentCode ||
+            getControlledDimensionRootCode(tag.dimensionId)
+          const key = `${dimCode}:${tag.tagValue}`
+          if (!file.tags.has(key)) {
             matched = false
             break
           }
@@ -156,6 +161,10 @@ export class DatabaseHelper {
       const conceptCode = (CONTROLLED_CONCEPTS as Record<string, string>)[tag.tagValue] || tag.tagValue
       // 维度归属统一走经由父 code（票 02 终稿口径，与上方 getBatchedVirtualDirectoryFiles 同源）：
       // 只认 ftr.via_parent_code，为空即真根/无父退自身 ftr.tag_code；严禁退读 parent_codes[0]。
+      const targetDimCode =
+        (tag as any).dimensionCode ||
+        (tag as any).viaParentCode ||
+        getControlledDimensionRootCode(tag.dimensionId)
       query += `
         AND EXISTS (
           SELECT 1 FROM file_tag_relations ftr${i}
@@ -169,7 +178,7 @@ export class DatabaseHelper {
             )
         )
       `
-      params.push(tag.dimensionId, conceptCode, tag.tagValue, tag.tagValue)
+      params.push(targetDimCode, conceptCode, tag.tagValue, tag.tagValue)
     }
 
     const files = this.db.prepare(query).all(...params) as any[]

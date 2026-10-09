@@ -25,7 +25,8 @@ import {
   isGibberishOcrText,
   isTagProvenanceGroup,
   isTagAdmissible,
-  getCanonicalConceptName
+  getCanonicalConceptName,
+  resolveRuntimeMaterializedPath
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
@@ -2510,9 +2511,31 @@ export class FileProcessor {
               tag.name,
               tagParentCodes
             )
+
+            // 运行时计算并记录整个链路的父级到 code_path 和 name_path
+            const relCodePath = typeof rel.code_path === 'string' && rel.code_path.trim() ? rel.code_path.trim() : ''
+            const relNamePath = typeof rel.name_path === 'string' && rel.name_path.trim() ? rel.name_path.trim() : ''
+            const relDepth = typeof rel.depth === 'number' && rel.depth > 0 ? rel.depth : 0
+
+            let finalCodePath = relCodePath
+            let finalNamePath = relNamePath
+            let finalDepth = relDepth
+
+            if (!finalCodePath || !finalNamePath) {
+              const materialized = resolveRuntimeMaterializedPath({
+                db,
+                tagCode,
+                viaParentCode,
+                tagName: tag.name
+              })
+              finalCodePath = finalCodePath || materialized.codePath
+              finalNamePath = finalNamePath || materialized.namePath
+              finalDepth = finalDepth || materialized.depth
+            }
+
             db.prepare(
-              `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, tag_group, confidence, sync_status) VALUES (?, ?, ?, ?, 1.0, 0)`
-            ).run(fingerprint, tagCode, viaParentCode, mockGroup)
+              `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, sync_status) VALUES (?, ?, ?, ?, ?, ?, ?, 1.0, 0)`
+            ).run(fingerprint, tagCode, viaParentCode, finalCodePath, finalNamePath, finalDepth, mockGroup)
           }
         }
       }

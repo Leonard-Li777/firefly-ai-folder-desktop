@@ -656,7 +656,7 @@ declare global {
         executeRename: (template: string, files: any[]) => Promise<any>
         getRandomTemplate: () => Promise<string>
         applyTags: (operation: any) => Promise<any>
-        deleteTagGlobally: (dimensionId: number, tagName: string) => Promise<boolean>
+        deleteTagGlobally: (dimensionId: number | string, tagName: string) => Promise<boolean>
         scanDuplicates: (options: any) => Promise<any[]>
         onScanProgress?: (callback: (data: any) => void) => () => void
         trashDuplicates: (filePaths: string[]) => Promise<any>
@@ -664,7 +664,7 @@ declare global {
         getEffectiveDirectoryConfig: (dirPath: string) => Promise<any>
       }
 
-      deleteTagGlobally: (dimensionId: number, tagName: string) => Promise<boolean>
+      deleteTagGlobally: (dimensionId: number | string, tagName: string) => Promise<boolean>
       getEffectiveDirectoryConfig: (dirPath: string) => Promise<any>
 
       // 整理真实目录相关

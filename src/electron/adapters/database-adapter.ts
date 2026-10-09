@@ -204,15 +204,24 @@ export class DatabaseAdapter implements IDatabaseAdapter {
           setClauses.push('description = ?')
           values.push(data.description)
         }
-        if (data.level !== undefined) {
-          setClauses.push('depth = ?')
-          values.push(data.level)
-        }
-        if (data.metadata !== undefined) {
+        if (data.metadata !== undefined || data.level !== undefined) {
+          const baseMeta =
+            typeof data.metadata === 'object' && data.metadata !== null
+              ? { ...data.metadata }
+              : typeof data.metadata === 'string'
+                ? (() => {
+                    try {
+                      return JSON.parse(data.metadata)
+                    } catch {
+                      return {}
+                    }
+                  })()
+                : {}
+          if (data.level !== undefined) {
+            baseMeta.level = data.level
+          }
           setClauses.push('meta = ?')
-          values.push(
-            typeof data.metadata === 'object' ? JSON.stringify(data.metadata) : data.metadata
-          )
+          values.push(JSON.stringify(baseMeta))
         }
         if (data.applicableFileTypes !== undefined) {
           setClauses.push('file_groups = ?')

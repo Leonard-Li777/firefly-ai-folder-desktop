@@ -5,7 +5,7 @@ import type {
   Unit,
   UnitCreationData
 } from '@firefly/types'
-import { LogCategory, logger, isTestEnvironment, getCanonicalConceptName, isTagAdmissible } from '@firefly/shared'
+import { LogCategory, logger, isTestEnvironment, getCanonicalConceptName, isTagAdmissible, resolveRuntimeMaterializedPath } from '@firefly/shared'
 import {
   findTagCodeTwoStage,
   getDatabaseConfig,
@@ -1361,9 +1361,12 @@ export class DatabaseService {
 
         if (combinedAddTags.length > 0) {
           for (const item of combinedAddTags) {
-            // 解析目标维度：优先使用传入的 code/ID，其次按维度名反查标签树根节点
-            let dimCode = this.resolveDimensionCode(item.dimensionId, item.dimensionName)
-            if (!dimCode) dimCode = 'content'
+            // 解析目标维度自然主键：优先使用显式 viaParentCode / dimensionCode，缺省回退 builtin.content_tags
+            let dimCode =
+              item.viaParentCode ||
+              item.dimensionCode ||
+              this.resolveDimensionCode((item as any).dimensionId, item.dimensionName) ||
+              'builtin.content_tags'
 
             // 以 code 自然主键精确查找已有标签（同名视为同一标签，直接复用）
             const existingTag = this._db!.prepare(
@@ -1391,12 +1394,8 @@ export class DatabaseService {
           }
         }
 
-        // 2. 处理待移除标签 removeTags
-        const resolvedRemoveTagCodes: string[] = []
-        for (const rawId of operation.removeTagIds || []) {
-          const found = this._db!.prepare('SELECT code FROM file_tags_private WHERE code = ?').get(String(rawId)) as { code: string } | undefined
-          resolvedRemoveTagCodes.push(found?.code || String(rawId))
-        }
+        // 2. 处理待移除标签 removeTags 与 removeTagCodes
+        const resolvedRemoveTagCodes: string[] = [...(operation.removeTagCodes || [])]
 
         if (operation.removeTags && operation.removeTags.length > 0) {
           for (const item of operation.removeTags) {
@@ -1407,6 +1406,8 @@ export class DatabaseService {
 
             if (existingTag) {
               resolvedRemoveTagCodes.push(existingTag.code)
+            } else if (item.tagCode) {
+              resolvedRemoveTagCodes.push(item.tagCode)
             } else {
               resolvedRemoveTagCodes.push(item.tagName)
             }
@@ -1421,8 +1422,8 @@ export class DatabaseService {
           const tagName = parts.slice(1).join(':')
           allAddTagItems.push({ tagCode: code, viaParentCode: dimCode, tagName })
         }
-        for (const rawId of operation.addTagIds || []) {
-          const found = this._db!.prepare('SELECT code, name, parent_codes FROM file_tags_private WHERE code = ?').get(String(rawId)) as { code: string; name?: string; parent_codes?: string } | undefined
+        for (const code of operation.addTagCodes || []) {
+          const found = this._db!.prepare('SELECT code, name, parent_codes FROM file_tags_private WHERE code = ?').get(code) as { code: string; name?: string; parent_codes?: string } | undefined
           let viaParentCode = ''
           if (found?.parent_codes) {
             try {
@@ -1433,9 +1434,9 @@ export class DatabaseService {
             } catch {}
           }
           allAddTagItems.push({
-            tagCode: found?.code || String(rawId),
+            tagCode: code,
             viaParentCode,
-            tagName: found?.name
+            tagName: found?.name || getCanonicalConceptName(code) || code
           })
         }
 
@@ -1481,11 +1482,11 @@ export class DatabaseService {
               continue
             }
 
-            // 添加标签关联（写入 via_parent_code 与 tag_group）
+            // 添加标签关联（写入 via_parent_code 与 tag_group，以及完整的 code_path, name_path, depth）
             // ADR-0045：本路径为用户手动批量打标，来源分组固定落 'user'
             if (allAddTagItems.length > 0) {
               const insertStmt = this._db!.prepare(
-                "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, tag_group, confidence, sync_status, created_at) VALUES (?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
+                "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'user', 1.0, 0, CURRENT_TIMESTAMP)"
               )
               for (const item of allAddTagItems) {
                 // (PRD-0057 S4 / GH #714) 用户手动批量打标旁路闸门：
@@ -1502,7 +1503,23 @@ export class DatabaseService {
                   )
                   continue
                 }
-                insertStmt.run(fp, item.tagCode, item.viaParentCode)
+
+                // 运行时计算整个父级链路的物化路径三元组 (code_path, name_path, depth)
+                const materialized = resolveRuntimeMaterializedPath({
+                  db: this._db!,
+                  tagCode: item.tagCode,
+                  viaParentCode: item.viaParentCode,
+                  tagName
+                })
+
+                insertStmt.run(
+                  fp,
+                  item.tagCode,
+                  item.viaParentCode,
+                  materialized.codePath,
+                  materialized.namePath,
+                  materialized.depth
+                )
               }
             }
 
