@@ -42,6 +42,8 @@ export function computeHighlightPercent(
   const safeEnd = Math.max(safeStart, Math.min(duration, endSec))
 
   const left = Math.max(0, Math.min(100, (safeStart / duration) * 100))
-  const width = Math.max(1, Math.min(100, ((safeEnd - safeStart) / duration) * 100))
+  const rawWidth = Math.max(1, Math.min(100, ((safeEnd - safeStart) / duration) * 100))
+  const width = Math.min(100 - left, rawWidth)
   return { left, width }
 }
+

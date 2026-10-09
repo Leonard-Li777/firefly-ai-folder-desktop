@@ -448,12 +448,21 @@ export class OmniService {
           })
         })
 
-        // 监听多模态嵌入档位变更，执行优雅热重启并切换运行时
+        // 监听多模态嵌入档位与 MRL 维度变更，执行优雅热重启并切换运行时
         orchestrator.onValueChange('AI_EMBEDDING_PROFILE' as any, async (newVal, oldVal) => {
           if (newVal && oldVal && newVal !== oldVal) {
             logger.info(
               LogCategory.SYSTEM,
               `[OmniService] 检测到 AI_EMBEDDING_PROFILE 变更 (${oldVal} -> ${newVal})，正在优雅重启 Omni 服务...`
+            )
+            await this.restart()
+          }
+        })
+        orchestrator.onValueChange('EMBEDDING_MRL_DIMENSION' as any, async (newVal, oldVal) => {
+          if (newVal && oldVal && newVal !== oldVal) {
+            logger.info(
+              LogCategory.SYSTEM,
+              `[OmniService] 检测到 EMBEDDING_MRL_DIMENSION 变更 (${oldVal} -> ${newVal})，正在优雅重启 Omni 服务...`
             )
             await this.restart()
           }
@@ -643,16 +652,24 @@ export class OmniService {
         logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 语义包路径 (--pack-path): ${packPath}`)
       }
 
-      // 注入当前激活的多模态嵌入画像档位 (classic_light | gemma_unified) (Spec §3.4.1)
+      // 注入当前激活的多模态嵌入画像档位 (classic_light | gemma_unified) 与 MRL 维度 (Spec §3.4.1)
       const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+      const configOrch = ConfigOrchestrator.getInstance()
       const embeddingProfile =
-        ConfigOrchestrator.getInstance().getValue<'classic_light' | 'gemma_unified'>(
+        configOrch.getValue<'classic_light' | 'gemma_unified'>(
           'AI_EMBEDDING_PROFILE'
         ) || 'classic_light'
       spawnArgs.push('--embedding-profile', embeddingProfile)
       logger.info(
         LogCategory.SYSTEM,
         `[OmniService] 🎯 嵌入画像档位 (--embedding-profile): ${embeddingProfile}`
+      )
+
+      const mrlDimension = configOrch.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
+      spawnArgs.push('--mrl-dimension', String(mrlDimension))
+      logger.info(
+        LogCategory.SYSTEM,
+        `[OmniService] 🎯 MRL 向量维度 (--mrl-dimension): ${mrlDimension}`
       )
 
       const child = spawn(exePath, spawnArgs, {

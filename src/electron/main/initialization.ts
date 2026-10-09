@@ -108,9 +108,8 @@ export async function initializeHardwareDetection(wait = false): Promise<void> {
         )
       }
 
-      // 若未设置嵌入画像档位（首次运行），按硬件能力自适应推荐并持久化 (Spec §3.4.1 & AC 4.2)
-      const currentProfile = config.getValue('AI_EMBEDDING_PROFILE')
-      if (!currentProfile) {
+      // 若未显式设置嵌入画像档位（首次运行），按硬件能力自适应推荐并持久化 (Spec §3.4.1 & AC 4.2)
+      if (!config.hasUserConfig('AI_EMBEDDING_PROFILE')) {
         const settings =
           hardwareDetectionService.getRecommendedEmbeddingSettings?.({
             totalMemGB: resources.memory.total / (1024 * 1024 * 1024),

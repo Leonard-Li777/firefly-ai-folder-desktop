@@ -328,6 +328,15 @@ export class ConfigOrchestrator extends EventEmitter {
   }
 
   /**
+   * 检查用户是否在本地持久化层显式配置了指定 key (而非仅回退默认值)
+   */
+  hasUserConfig(key: ConfigKey): boolean {
+    const metadata = CONFIG_METADATA[key]
+    if (!metadata) return false
+    return this.unifiedStore.has(metadata.path)
+  }
+
+  /**
    * 获取 TIER_CONSTANTS 配置（带类型安全）
    */
   getTierConstants(): TierConstants {

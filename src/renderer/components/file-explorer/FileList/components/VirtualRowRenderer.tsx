@@ -661,6 +661,13 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
   if (prevFile?.matchType !== nextFile?.matchType) return false
   if (prevFile?.similarity !== nextFile?.similarity) return false
   if (prevFile?.isUnanalyzed !== nextFile?.isUnanalyzed) return false
+  if (
+    prevFile?.matchedChunk?.startSec !== nextFile?.matchedChunk?.startSec ||
+    prevFile?.matchedChunk?.endSec !== nextFile?.matchedChunk?.endSec ||
+    prevFile?.matchedChunk?.similarity !== nextFile?.matchedChunk?.similarity
+  ) {
+    return false
+  }
 
   // activeItem 比对：若引用一致则直接跳过路径比对
   if (prevData.activeItem !== nextData.activeItem) {
