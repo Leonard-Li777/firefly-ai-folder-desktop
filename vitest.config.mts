@@ -46,6 +46,27 @@ export default defineConfig({
       exclude: ['node_modules/', 'tests/e2e/', 'tests/integration/', 'src/shared/types/']
     },
     teardownTimeout: 30000,
+    reporters: [
+      'default',
+      {
+        onInit(ctx: any) {
+          ;(this as any).ctx = ctx
+        },
+        onFinished(files?: any[], errors?: any[]) {
+          const ctx = (this as any).ctx
+          if (!ctx?.config?.watch) {
+            const hasError =
+              Boolean(errors && errors.length > 0) ||
+              Boolean(ctx?.state?.getCountOfFailedTests && ctx.state.getCountOfFailedTests() > 0) ||
+              Boolean(process.exitCode && process.exitCode !== 0) ||
+              Boolean(files?.some((f: any) => f.result?.state === 'fail'))
+            setTimeout(() => {
+              process.exit(hasError ? 1 : 0)
+            }, 300)
+          }
+        }
+      }
+    ],
     server: {
       deps: {
         inline: [
