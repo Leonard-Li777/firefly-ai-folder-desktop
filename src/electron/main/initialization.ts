@@ -688,6 +688,10 @@ export async function initializeFullServices(): Promise<void> {
 
       if (!shouldSkipAIServiceInTest() && typeof (service as any).setEnsureLocalServerHandler === 'function') {
         ;(service as any).setEnsureLocalServerHandler(async () => {
+          const mode = ConfigOrchestrator.getInstance().getValue<string>('AI_SERVICE_MODE')
+          if (mode === 'disabled' || mode === 'cloud') {
+            return false
+          }
           const { engineBridgeService } = await import('../runtime-services/engine-bridge')
           const targetMode = analysisQueueService.determineIntentMode() ?? 'language'
           const res = await engineBridgeService.ensureMode(targetMode, { force: true })

@@ -1239,12 +1239,21 @@ export class EngineBridgeService {
     if (options?.force) {
       // 显式启动视为用户意图，复位熔断器重新放行
       this.circuitBreaker.reset()
-    } else if (this.circuitBreaker.getState() === 'open') {
-      logger.warn(
-        LogCategory.SYSTEM,
-        '[EngineBridge] Tier 2 引擎处于熔断冷却期，跳过静默拉起（分析将降级到 Tier 1）'
-      )
-      return false
+    } else {
+      if (this.circuitBreaker.getState() === 'open') {
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[EngineBridge] Tier 2 引擎处于熔断冷却期，跳过静默拉起（分析将降级到 Tier 1）'
+        )
+        return false
+      }
+      if (!(await this.shouldEngineRun())) {
+        logger.info(
+          LogCategory.SYSTEM,
+          '[EngineBridge] 当前高级AI引擎已禁用或处于云端模式，跳过拉起'
+        )
+        return false
+      }
     }
 
     // 先探活复用（熔断器允许时）
@@ -1321,6 +1330,12 @@ export class EngineBridgeService {
       this.process = child
       child.unref()
 
+      // 登记进全局精准进程回收器
+      try {
+        const { processReaper } = require('../../main/process-reaper')
+        processReaper.registerChild(child.pid, 'firefly-ai-engine')
+      } catch {}
+
       // 记录本次拉起的二进制签名，并开启热更新监听：
       // engine:deploy:watch 覆盖集成目录产物后据此自动重启引擎
       this.spawnedBinarySignature = this.binarySignature(exePath)
@@ -1339,6 +1354,10 @@ export class EngineBridgeService {
           LogCategory.SYSTEM,
           `[EngineBridge] 引擎子进程已退出 (code=${code}, signal=${signal})`
         )
+        try {
+          const { processReaper } = require('../../main/process-reaper')
+          processReaper.unregisterChild(child.pid)
+        } catch {}
         this.process = null
         this.applyOffline()
       })
@@ -1530,19 +1549,35 @@ export class EngineBridgeService {
    * 请求引擎优雅退出（不影响引擎管理面板自启），随后清理自己拉起的进程
    */
   public async shutdown(): Promise<{ ok: boolean }> {
-    try {
-      await fetch(`${this.baseUrl}${ENGINE_SHUTDOWN_PATH}`, {
-        method: 'POST',
-        signal: AbortSignal.timeout(SHUTDOWN_TIMEOUT_MS)
-      })
-    } catch (err) {
-      // 引擎可能已下线或未运行，属可容忍降级；仍记 debug 便于排查优雅退出是否真正送达
-      logger.debug(LogCategory.SYSTEM, '[EngineBridge] shutdown 请求未送达（引擎可能未运行）:', err)
+    const tryPorts = [this.activePort]
+    if (this.activePort !== TIER2_ENGINE_PORT) {
+      tryPorts.push(TIER2_ENGINE_PORT)
+    }
+    for (const port of tryPorts) {
+      try {
+        await fetch(`http://127.0.0.1:${port}${ENGINE_SHUTDOWN_PATH}`, {
+          method: 'POST',
+          signal: AbortSignal.timeout(SHUTDOWN_TIMEOUT_MS)
+        })
+      } catch (err) {
+        // 引擎可能已下线或未运行，属可容忍降级；仍记 debug 便于排查优雅退出是否真正送达
+        logger.debug(LogCategory.SYSTEM, `[EngineBridge] shutdown 请求未送达端口 ${port}:`, err)
+      }
     }
     this.killOwnProcess()
+    // Windows 环境下保底确保 firefly-ai-engine.exe 进程完全清理
+    if (process.platform === 'win32') {
+      try {
+        const { spawnSync } = require('node:child_process')
+        spawnSync('taskkill', ['/F', '/T', '/IM', 'firefly-ai-engine.exe'], {
+          windowsHide: true,
+          stdio: 'ignore'
+        })
+      } catch {}
+    }
     // 引擎已请求退出，端口复位到基准值，下次拉起按默认端口协商
     this.activePort = TIER2_ENGINE_PORT
-    this.lastRawStatus = null
+    this.applyOffline()
     return { ok: true }
   }
 

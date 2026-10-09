@@ -41,6 +41,8 @@ export function registerAIServiceIPCHandlers() {
 
         if (initMode === 'cloud') {
           logger.info(LogCategory.MAIN, '[IPC] 云端模式：跳过本地 AI 引擎连接')
+        } else if (initMode === 'disabled') {
+          logger.info(LogCategory.MAIN, '[IPC] 禁用模式：跳过本地 AI 引擎连接与拉起')
         } else {
           // Tier 2 桥接零过渡：桌面端不再部署/拉起 llama-server 本地引擎，
           // 统一通过 engineBridge 探活并静默唤起外部 firefly-ai-engine

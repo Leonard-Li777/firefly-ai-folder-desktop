@@ -133,6 +133,10 @@ export const AIEngineConfigSettings: React.FC = () => {
     } else {
       updateConfigValue('AI_SERVICE_MODE', 'disabled')
       captureEvent('停用高级AI引擎')
+      // 显式调用 IPC 请求关闭高级AI引擎程序
+      if (typeof window.electronAPI?.engineBridge?.shutdown === 'function') {
+        window.electronAPI.engineBridge.shutdown().catch(() => {})
+      }
     }
   }
 
