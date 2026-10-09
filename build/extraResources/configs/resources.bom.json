@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-10-06T22:10:36.988Z",
+  "generatedAt": "2026-10-09T00:40:46.448Z",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources"
@@ -144,6 +144,16 @@
         "sha256": "ad6542687e942650a2b51e2e16c28983b54128ac68343574ccbb98ce07c4c002",
         "size": 2145177,
         "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/nsfw-tiny-1.0.0.zip"
+      }
+    },
+    "embeddinggemma-2-onnx": {
+      "version": "1.0.0",
+      "source": "shared",
+      "asset": {
+        "name": "embeddinggemma-2-onnx-1.0.0.zip",
+        "sha256": "833defb0a72fd6ee94eb28cebf0347f89569bd716ece2028f52e896c92a54716",
+        "size": 254002885,
+        "url": "https://github.com/Leonard-Li777/firefly-resources/releases/download/resources/embeddinggemma-2-onnx-1.0.0.zip"
       }
     }
   },

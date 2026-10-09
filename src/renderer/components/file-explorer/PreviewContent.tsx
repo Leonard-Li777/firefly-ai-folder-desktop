@@ -21,6 +21,10 @@ interface PreviewContentProps {
   isTextCapable: boolean
   /** 多模态描述内容 */
   multimodalContent?: string | null
+  /** 视频播放跳转时间戳（秒） */
+  currentTime?: number
+  /** 视频高亮时间区间 [startSec, endSec] */
+  highlightRange?: [number, number]
 }
 
 /**
@@ -35,7 +39,9 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
   rawTextContent,
   isTextLoading,
   isTextCapable,
-  multimodalContent
+  multimodalContent,
+  currentTime,
+  highlightRange
 }) => {
   const routeType = useMemo(() => {
     const res = getPreviewRouteType(extension)
@@ -94,6 +100,8 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
         fileName={fileName}
         extension={extension}
         multimodalContent={multimodalContent}
+        currentTime={currentTime}
+        highlightRange={highlightRange}
       />
     )
   }

@@ -24,6 +24,8 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
   const filePath = usePreviewOverlayStore(s => s.filePath)
   const fileName = usePreviewOverlayStore(s => s.fileName)
   const extension = usePreviewOverlayStore(s => s.extension)
+  const currentTime = usePreviewOverlayStore(s => s.currentTime)
+  const highlightRange = usePreviewOverlayStore(s => s.highlightRange)
   const activePageId = usePreviewOverlayStore(s => s.activePageId)
   const getPagePreviewFile = usePreviewOverlayStore(s => s.getPagePreviewFile)
   const closePreview = usePreviewOverlayStore(s => s.closePreview)
@@ -35,6 +37,8 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
   const previewFilePath = pageFile?.filePath || ''
   const previewFileName = pageFile?.fileName || (isActive ? fileName : '')
   const previewExtension = pageFile?.extension || (isActive ? extension : '')
+  const previewCurrentTime = pageFile?.currentTime ?? (isActive ? currentTime : undefined)
+  const previewHighlightRange = pageFile?.highlightRange ?? (isActive ? highlightRange : undefined)
 
   const { showRawText, setShowRawText, rawTextContent, isTextLoading, isTextCapable, showSwitch } =
     usePreviewContent({
@@ -92,6 +96,8 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
           isTextLoading={isTextLoading}
           isTextCapable={isTextCapable}
           multimodalContent={multimodalContent}
+          currentTime={previewCurrentTime}
+          highlightRange={previewHighlightRange}
         />
       </div>
     </div>

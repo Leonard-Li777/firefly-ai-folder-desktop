@@ -11,6 +11,10 @@ interface PagePreviewState {
   fileName?: string
   /** 该页面当前正在预览的扩展名 */
   extension?: string
+  /** 视频播放跳转时间戳（秒） */
+  currentTime?: number
+  /** 视频高亮时间区间 [startSec, endSec] */
+  highlightRange?: [number, number]
 }
 
 interface PreviewOverlayState {
@@ -18,13 +22,21 @@ interface PreviewOverlayState {
   filePath: string
   fileName: string
   extension: string
+  currentTime?: number
+  highlightRange?: [number, number]
   /** 兼容测试/单页的全局预览模式 */
   previewMode: PagePreviewMode
   /** 当前预览所属的页面标识 */
   activePageId: string
   /** 每个页面独立的预览状态（分栏/全屏/关闭） */
   pageStates: Record<string, PagePreviewState>
-  openPreview: (filePath: string, fileName: string, extension: string, pageId?: string) => void
+  openPreview: (
+    filePath: string,
+    fileName: string,
+    extension: string,
+    pageId?: string,
+    options?: { currentTime?: number; highlightRange?: [number, number] }
+  ) => void
   closePreview: (pageId?: string) => void
   clearPreview: (pageId?: string) => void
   togglePreviewMode: (pageId?: string) => void
@@ -33,7 +45,13 @@ interface PreviewOverlayState {
   /** 获取指定页面独立保存的预览文件信息（不受 activePageId 影响） */
   getPagePreviewFile: (
     pageId: string
-  ) => { filePath: string; fileName: string; extension: string } | null
+  ) => {
+    filePath: string
+    fileName: string
+    extension: string
+    currentTime?: number
+    highlightRange?: [number, number]
+  } | null
 }
 
 function getStorageKey(pageId: string): string {
@@ -92,24 +110,29 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
     return loaded
   },
 
-  openPreview: (filePath, fileName, extension, pageId = '') => {
+  openPreview: (filePath, fileName, extension, pageId = '', options) => {
     if (!pageId) {
       return
     }
     const state = get()
+    const currentTime = options?.currentTime
+    const highlightRange = options?.highlightRange
+
     // 优先读取显式设置的 state.previewMode（供单元测试/单页控制），否则按 pageStates/storage 规则
     const pageMode =
       state.previewMode !== 'split'
         ? state.previewMode
         : state.pageStates[pageId]?.mode || loadPagePreviewMode(pageId)
 
-    // 幂等防护：如果参数与状态完全一致，则直接返回，防范死循环
+    // 幂等防护：如果参数与状态完全一致（含时间戳），则直接返回，防范死循环
     if (
       state.filePath === filePath &&
       state.fileName === fileName &&
       state.extension === extension &&
       state.activePageId === pageId &&
+      state.currentTime === currentTime &&
       state.pageStates[pageId]?.filePath === filePath &&
+      state.pageStates[pageId]?.currentTime === currentTime &&
       (state.pageStates[pageId]?.mode === 'split' || !state.pageStates[pageId]) &&
       !state.isOpen
     ) {
@@ -122,6 +145,8 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
         filePath,
         fileName,
         extension,
+        currentTime,
+        highlightRange,
         activePageId: pageId,
         previewMode: 'fullscreen',
         // 同步写入页面独立状态
@@ -132,7 +157,9 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
             mode: 'fullscreen',
             filePath,
             fileName,
-            extension
+            extension,
+            currentTime,
+            highlightRange
           }
         }
       })
@@ -146,12 +173,22 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
         filePath,
         fileName,
         extension,
+        currentTime,
+        highlightRange,
         activePageId: pageId,
         previewMode: 'split',
         // 同步写入页面独立状态（filePath/fileName/extension 与全局同步，但各页面互不干扰）
         pageStates: {
           ...state.pageStates,
-          [pageId]: { ...state.pageStates[pageId], mode: 'split', filePath, fileName, extension }
+          [pageId]: {
+            ...state.pageStates[pageId],
+            mode: 'split',
+            filePath,
+            fileName,
+            extension,
+            currentTime,
+            highlightRange
+          }
         }
       })
     }
@@ -171,13 +208,22 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
         filePath: '',
         fileName: '',
         extension: '',
+        currentTime: undefined,
+        highlightRange: undefined,
         activePageId: '',
-        // 同步清空页面独立状态中的文件信息
+        // 同步清空页面独立状态中的文件信息与跳轴参数
         ...(targetPageId
           ? {
               pageStates: {
                 ...state.pageStates,
-                [targetPageId]: { mode: 'split', filePath: '', fileName: '', extension: '' }
+                [targetPageId]: {
+                  mode: 'split',
+                  filePath: '',
+                  fileName: '',
+                  extension: '',
+                  currentTime: undefined,
+                  highlightRange: undefined
+                }
               }
             }
           : {})
@@ -192,13 +238,22 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
         filePath: '',
         fileName: '',
         extension: '',
+        currentTime: undefined,
+        highlightRange: undefined,
         activePageId: '',
         ...(targetPageId
           ? {
               pageStates: {
                 ...state.pageStates,
-                // 清空文件信息，同时标记为 closed 模式
-                [targetPageId]: { mode: 'closed', filePath: '', fileName: '', extension: '' }
+                // 清空文件信息与跳轴参数，同时标记为 closed 模式
+                [targetPageId]: {
+                  mode: 'closed',
+                  filePath: '',
+                  fileName: '',
+                  extension: '',
+                  currentTime: undefined,
+                  highlightRange: undefined
+                }
               }
             }
           : {})
@@ -222,13 +277,22 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
       filePath: '',
       fileName: '',
       extension: '',
+      currentTime: undefined,
+      highlightRange: undefined,
       activePageId: pageId || '',
       // 同步清空页面独立状态中的文件信息
       ...(pageId
         ? {
             pageStates: {
               ...state.pageStates,
-              [pageId]: { ...state.pageStates[pageId], filePath: '', fileName: '', extension: '' }
+              [pageId]: {
+                ...state.pageStates[pageId],
+                filePath: '',
+                fileName: '',
+                extension: '',
+                currentTime: undefined,
+                highlightRange: undefined
+              }
             }
           }
         : {})
@@ -283,7 +347,9 @@ export const usePreviewOverlayStore = create<PreviewOverlayState>((set, get) => 
     return {
       filePath: pageState.filePath,
       fileName: pageState.fileName || '',
-      extension: pageState.extension || ''
+      extension: pageState.extension || '',
+      currentTime: pageState.currentTime,
+      highlightRange: pageState.highlightRange
     }
   }
 }))

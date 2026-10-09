@@ -5,6 +5,7 @@ import { t } from '@app/languages'
 import { toast } from '../../../common/Toast'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
 import { FileType } from '../types'
+import { formatVideoTimestamp } from '../../../../lib/video-preview-utils'
 
 /**
  * 搜索列表模式专用行高（卡片式排版，较普通列表行更高）
@@ -174,6 +175,15 @@ export const SearchListCard = React.memo(
             <span className="material-icons text-[12px]">{badge.icon}</span>
             {badgeLabel}
           </span>
+          {item.matchedChunk && (
+            <span
+              className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0"
+              title={t('匹配视频时间片段')}
+            >
+              <span className="material-icons text-[12px]">schedule</span>
+              {`${formatVideoTimestamp(item.matchedChunk.startSec)} - ${formatVideoTimestamp(item.matchedChunk.endSec)}`}
+            </span>
+          )}
           <span className="ml-auto flex items-center gap-2 text-xs text-foreground/60 shrink-0">
             <span>{item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : '-'}</span>
             <span className="w-16 text-right">{formatFileSize(item.size)}</span>

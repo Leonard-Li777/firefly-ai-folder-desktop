@@ -17,6 +17,13 @@ export interface FileType extends BaseFileType {
   similarity?: number
   /** 是否为尚未 AI 分析的文件（命中文件名） */
   isUnanalyzed?: boolean
+  /** 视频切片命中信息（跳轴搜索） */
+  matchedChunk?: {
+    chunkIndex: number
+    startSec: number
+    endSec: number
+    score?: number
+  }
 }
 
 export interface FileListProps {

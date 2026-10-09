@@ -177,6 +177,30 @@ export const AnalysisSettings: React.FC = () => {
     getConfigValue<'classic_light' | 'gemma_unified'>('AI_EMBEDDING_PROFILE') ?? 'classic_light'
   const [pendingProfile, setPendingProfile] = useState<'classic_light' | 'gemma_unified' | null>(null)
 
+  // MRL 多维度弹性降维 (256 | 512 | 768)
+  const mrlDimension =
+    getConfigValue<256 | 512 | 768>('EMBEDDING_MRL_DIMENSION') ?? 512
+
+  // 视频切片抽帧间隔（秒）
+  const [localVideoInterval, setLocalVideoInterval] = useState<number>(
+    getConfigValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 5.0
+  )
+
+  // 硬件自适应推荐状态
+  const [recommendedSettings, setRecommendedSettings] = useState<{
+    profile: 'classic_light' | 'gemma_unified'
+    mrlDimension: 256 | 512 | 768
+    videoFrameIntervalSeconds: number
+  } | null>(null)
+
+  useEffect(() => {
+    window.electronAPI?.getRecommendedEmbeddingSettings?.()
+      .then((rec: any) => {
+        if (rec) setRecommendedSettings(rec)
+      })
+      .catch(() => {})
+  }, [])
+
   const handleConfirmProfileSwitch = async () => {
     if (!pendingProfile) return
     const target = pendingProfile
@@ -187,6 +211,22 @@ export const AnalysisSettings: React.FC = () => {
       t('已切换嵌入引擎档位并重启，新导入的文件将使用新档位索引')
     )
   }
+
+  // 视频切片抽帧间隔防抖同步
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      const currentConfigValue = getConfigValue<number>('VIDEO_FRAME_INTERVAL_SECONDS') ?? 5.0
+      if (localVideoInterval !== currentConfigValue) {
+        updateConfigValue('VIDEO_FRAME_INTERVAL_SECONDS', localVideoInterval)
+        captureEvent('更新视频切片抽帧间隔', {
+          intervalSeconds: localVideoInterval
+        })
+      }
+    }, 500)
+
+    return () => clearTimeout(handler)
+  }, [localVideoInterval])
+
 
 
 
@@ -707,6 +747,193 @@ export const AnalysisSettings: React.FC = () => {
               </p>
             </div>
           </div>
+
+          {/* EmbeddingGemma-2 模式下的多模态进阶配置 */}
+          {embeddingProfile === 'gemma_unified' && (
+            <div className="mt-5 pt-4 border-t border-border/60 space-y-4">
+              {/* MRL 分析精度多档配置 */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-sm font-medium text-foreground">
+                      {t('MRL 分析精度与向量维度')}
+                    </Label>
+                    <HelpTooltip
+                      content={t(
+                        '基于 EmbeddingGemma-2 的 Matryoshka 嵌套表示学习特性，支持弹性裁剪向量维度。维度越低越节省存储与检索内存；维度越高匹配越精准。'
+                      )}
+                    />
+                  </div>
+                  {recommendedSettings?.mrlDimension && (
+                    <span className="text-[11px] text-muted-foreground">
+                      {t('硬件推荐精度：{dim} 维', { dim: recommendedSettings.mrlDimension })}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                  {/* 紧凑档 256 */}
+                  <div
+                    onClick={() => {
+                      if (mrlDimension !== 256) {
+                        updateConfigValue('EMBEDDING_MRL_DIMENSION', 256)
+                        toast.success(t('已将向量分析精度设为 256 维（紧凑档）'))
+                      }
+                    }}
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                      mrlDimension === 256
+                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                        : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs font-semibold ${mrlDimension === 256 ? 'text-primary' : ''}`}>
+                          {t('紧凑档（256维）')}
+                        </span>
+                        {recommendedSettings?.mrlDimension === 256 && (
+                          <span className="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium">
+                            {t('推荐')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
+                        {t('单向量仅 1.0KB，节省 67% 存储空间，适合磁盘紧张或 < 8GB 设备（~95% 相对准确率）。')}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 标准档 512 */}
+                  <div
+                    onClick={() => {
+                      if (mrlDimension !== 512) {
+                        updateConfigValue('EMBEDDING_MRL_DIMENSION', 512)
+                        toast.success(t('已将向量分析精度设为 512 维（标准档）'))
+                      }
+                    }}
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                      mrlDimension === 512
+                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                        : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs font-semibold ${mrlDimension === 512 ? 'text-primary' : ''}`}>
+                          {t('标准档（512维 · 黄金平衡）')}
+                        </span>
+                        {recommendedSettings?.mrlDimension === 512 && (
+                          <span className="text-[10px] bg-green-500/10 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded font-medium">
+                            {t('推荐')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
+                        {t('单向量 2.0KB，在精度与存储开销之间取得黄金平衡，保留 > 98.5% 表征能力。')}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 精准档 768 */}
+                  <div
+                    onClick={() => {
+                      if (mrlDimension !== 768) {
+                        updateConfigValue('EMBEDDING_MRL_DIMENSION', 768)
+                        toast.success(t('已将向量分析精度设为 768 维（精准档）'))
+                      }
+                    }}
+                    className={`relative p-3 rounded-lg border-2 cursor-pointer transition-all flex flex-col justify-between ${
+                      mrlDimension === 768
+                        ? 'border-primary bg-primary/10 shadow-sm ring-1 ring-primary/20'
+                        : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs font-semibold ${mrlDimension === 768 ? 'text-primary' : ''}`}>
+                          {t('精准档（768维）')}
+                        </span>
+                        {recommendedSettings?.mrlDimension === 768 && (
+                          <span className="text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-medium">
+                            {t('推荐')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1.5 leading-snug">
+                        {t('单向量 3.0KB，100% 原始端侧分辨率，细粒度图文与音画多模态区分度最高。')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 视频分析抽帧间隔滑块 */}
+              <div className="space-y-2 pt-2 border-t border-border/40">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Label htmlFor="video-interval-slider" className="text-sm font-medium text-foreground">
+                      {t('视频切片抽帧间隔')}
+                    </Label>
+                    <HelpTooltip
+                      content={t(
+                        '视频分析时提取帧画面的时间间隔（1.0 ~ 30.0 秒）。间隔越小，跳轴定位越精确但切片耗时更多；间隔越大，分析越快速。'
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {recommendedSettings?.videoFrameIntervalSeconds && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLocalVideoInterval(recommendedSettings.videoFrameIntervalSeconds)
+                        }}
+                        className="text-[11px] text-primary hover:underline transition-colors"
+                      >
+                        {t('恢复硬件推荐（{sec}秒）', { sec: recommendedSettings.videoFrameIntervalSeconds })}
+                      </button>
+                    )}
+                    <span className="text-xs font-mono font-medium text-foreground bg-muted px-2 py-0.5 rounded">
+                      {localVideoInterval.toFixed(1)} {t('秒')}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    id="video-interval-slider"
+                    type="range"
+                    min={1}
+                    max={30}
+                    step={1}
+                    value={localVideoInterval}
+                    onChange={e => setLocalVideoInterval(parseFloat(e.target.value))}
+                    className="w-full accent-primary cursor-pointer"
+                  />
+                  <div className="w-20 shrink-0">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={30}
+                      step={1}
+                      value={localVideoInterval}
+                      onChange={e => {
+                        const val = parseFloat(e.target.value)
+                        if (!isNaN(val)) {
+                          setLocalVideoInterval(Math.max(1, Math.min(30, val)))
+                        }
+                      }}
+                      className="h-8 text-xs text-right"
+                    />
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  {t(
+                    '抽帧间隔决定长视频的时空细粒度：低间隔（如 2.0s）支持动作级跳轴定位；高间隔（如 15.0s）兼顾轻薄本低功耗运行。'
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
 

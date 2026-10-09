@@ -503,6 +503,11 @@ declare global {
       // cancelModelDownload / deleteModel / migrateBuiltinModels / migrateFromOldPath）
       // 与模型下载事件声明随模型管理与本地下载链清退删除，模型身份归萤核AI引擎独占
       getHardwareInfo: () => Promise<HardwareInfo>
+      getRecommendedEmbeddingSettings: () => Promise<{
+        profile: 'classic_light' | 'gemma_unified'
+        mrlDimension: 256 | 512 | 768
+        videoFrameIntervalSeconds: number
+      }>
       onModelMigrationProgress: (callback: (message: string) => void) => () => void
 
       // 模型下载事件（PRD-0044 S5：onModelDownloadProgress/Complete/Error 已清退）

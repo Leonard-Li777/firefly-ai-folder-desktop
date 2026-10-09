@@ -332,6 +332,8 @@ const electronAPI = {
   // PRD-0044（S5）：模型管理 IPC（listModels / listModelsFast / getAllModels /
   // getBuiltinModelId / checkModelsStatus）随模型列表清退删除，模型身份归萤核AI引擎独占
   getHardwareInfo: (): Promise<any> => ipcRenderer.invoke('get-hardware-info'),
+  getRecommendedEmbeddingSettings: (): Promise<any> =>
+    ipcRenderer.invoke('get-recommended-embedding-settings'),
   getMachineId: (): Promise<string> => ipcRenderer.invoke('get-machine-id'),
   // PRD-0044（S5）：recommendModelsByHardware / getModelPath / deleteModel /
   // migrateBuiltinModels / migrateFromOldPath 随模型管理与本地下载链清退删除

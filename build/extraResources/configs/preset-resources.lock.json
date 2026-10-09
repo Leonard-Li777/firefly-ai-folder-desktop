@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updatedAt": "2026-10-06",
+  "updatedAt": "2026-10-09",
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources",
@@ -53,6 +53,9 @@
       "version": "INT8"
     },
     "nsfw-tiny": {
+      "version": "1.0.0"
+    },
+    "embeddinggemma-2-onnx": {
       "version": "1.0.0"
     }
   },

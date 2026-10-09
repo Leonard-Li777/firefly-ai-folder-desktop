@@ -415,6 +415,19 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                       filePath={currentFile.path}
                       fileName={currentFile.smartName || currentFile.name}
                       extension={currentFile.extension}
+                      currentTime={
+                        (currentFile as any).currentTime ??
+                        (currentFile as any).matchedChunk?.startSec
+                      }
+                      highlightRange={
+                        (currentFile as any).highlightRange ??
+                        ((currentFile as any).matchedChunk
+                          ? [
+                              (currentFile as any).matchedChunk.startSec,
+                              (currentFile as any).matchedChunk.endSec
+                            ]
+                          : undefined)
+                      }
                       onBack={() => setInternalActiveItem(null)}
                     />
                   ) : (

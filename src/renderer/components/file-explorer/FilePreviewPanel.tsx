@@ -16,6 +16,10 @@ interface FilePreviewPanelProps {
   fileName?: string
   /** 文件扩展名（可选），提供时直接用于路由判断，否则从 fileName 中提取 */
   extension?: string
+  /** 视频播放跳转时间戳（秒） */
+  currentTime?: number
+  /** 视频高亮时间区间 [startSec, endSec] */
+  highlightRange?: [number, number]
   /** Action on back button (optional), defaults to clearing internal state */
   onBack?: () => void
 }
@@ -32,6 +36,8 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
   filePath: externalFilePath,
   fileName: externalFileName,
   extension: externalExtension,
+  currentTime: externalCurrentTime,
+  highlightRange: externalHighlightRange,
   onBack
 }) => {
   const [previewFile, setPreviewFile] = useState<Record<string, unknown> | null>(null)
@@ -59,6 +65,22 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
   const extension = isControlled
     ? externalExtension || getExtFromPath(fileName) || getExtFromPath(filePath)
     : (previewFile?.extension as string) || getExtFromPath(fileName) || getExtFromPath(filePath)
+
+  const currentTime = isControlled
+    ? externalCurrentTime
+    : (previewFile?.currentTime as number | undefined) ??
+      ((previewFile?.matchedChunk as any)?.startSec as number | undefined)
+
+  const highlightRange: [number, number] | undefined = isControlled
+    ? externalHighlightRange
+    : (previewFile?.highlightRange as [number, number] | undefined) ??
+      ((previewFile?.matchedChunk as any)?.startSec !== undefined &&
+      (previewFile?.matchedChunk as any)?.endSec !== undefined
+        ? [
+            (previewFile?.matchedChunk as any).startSec,
+            (previewFile?.matchedChunk as any).endSec
+          ]
+        : undefined)
 
   // 使用公共的预览内容 hook
   const { showRawText, setShowRawText, rawTextContent, isTextLoading, isTextCapable, showSwitch } =
@@ -134,6 +156,8 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
               isTextLoading={isTextLoading}
               isTextCapable={isTextCapable}
               multimodalContent={multimodalContent}
+              currentTime={currentTime}
+              highlightRange={highlightRange}
             />
           </div>
         </div>

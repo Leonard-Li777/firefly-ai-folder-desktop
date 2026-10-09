@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 import { modelService } from '../../runtime-services/llama/model-service'
+import { hardwareDetectionService } from '../../runtime-services/system/hardware-detection-service'
 
 // PRD-0044（S5）：模型管理 IPC（list-models / list-models-fast / get-all-models /
 // get-builtin-model-id / check-models-status / recommend-models-by-hardware /
@@ -10,4 +11,10 @@ export function registerHardwareIPCHandlers() {
   ipcMain.handle('get-hardware-info', async () => {
     return await modelService.getHardwareInfo()
   })
+
+  // 硬件自适应推荐嵌入设置（EmbeddingGemma-2 / Classic Light）
+  ipcMain.handle('get-recommended-embedding-settings', async () => {
+    return await hardwareDetectionService.getRecommendedEmbeddingSettings?.()
+  })
 }
+

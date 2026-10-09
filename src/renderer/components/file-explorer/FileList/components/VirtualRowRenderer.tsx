@@ -209,7 +209,18 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
       if (routeType !== 'unsupported') {
         usePreviewOverlayStore
           .getState()
-          .openPreview(fileItem.path, fileItem.smartName || fileItem.name || '', ext, pageId)
+          .openPreview(
+            fileItem.path,
+            fileItem.smartName || fileItem.name || '',
+            ext,
+            pageId,
+            {
+              currentTime: fileItem.matchedChunk?.startSec,
+              highlightRange: fileItem.matchedChunk
+                ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
+                : undefined
+            }
+          )
       } else {
         window.electronAPI!.utils.openFileWithDefaultApp(fileItem.path).catch((error: Error) => {
           logger.error(LogCategory.RENDERER, '打开文件失败:', error)
@@ -221,13 +232,46 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
       }
     }
 
+    /** 搜索卡片单击：同步触发 onItemClick；若分栏处于开启状态 (split) 且支持预览则同步联动预览 */
+    const handleSearchCardClick = (i: number, e: React.MouseEvent) => {
+      onItemClick(i, e)
+      if (!fileItem.path) return
+
+      const splitState = usePreviewOverlayStore.getState()
+      const pageMode = pageId ? (splitState.pageStates[pageId]?.mode ?? 'split') : undefined
+      if (pageMode !== 'split') {
+        return
+      }
+
+      const ext =
+        fileItem.extension ||
+        getExtFromSmartName(fileItem.smartName || fileItem.name || '') ||
+        fileItem.path.split('.').pop() ||
+        ''
+      const routeType = getPreviewRouteType(ext)
+      if (routeType !== 'unsupported') {
+        splitState.openPreview(
+          fileItem.path,
+          fileItem.smartName || fileItem.name || '',
+          ext,
+          pageId,
+          {
+            currentTime: fileItem.matchedChunk?.startSec,
+            highlightRange: fileItem.matchedChunk
+              ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
+              : undefined
+          }
+        )
+      }
+    }
+
     return (
       <div style={{ width: totalWidth, height: '100%' }}>
         <SearchListCard
           item={fileItem}
           safeItemName={safeItemName}
           formatFileSize={formatFileSize}
-          onItemClick={onItemClick}
+          onItemClick={handleSearchCardClick}
           onContextMenu={onContextMenu}
           onDoubleClick={handleSearchCardDoubleClick}
           isSelected={isSelected}
@@ -271,7 +315,12 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
               ''
             const routeType = getPreviewRouteType(ext)
             if (routeType !== 'unsupported') {
-              splitState.openPreview(item.path, fileItem.smartName || item.name, ext, pageId)
+              splitState.openPreview(item.path, fileItem.smartName || item.name, ext, pageId, {
+                currentTime: fileItem.matchedChunk?.startSec,
+                highlightRange: fileItem.matchedChunk
+                  ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
+                  : undefined
+              })
             } else {
               logger.debug(
                 LogCategory.RENDERER,
@@ -299,7 +348,18 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
           if (routeType !== 'unsupported') {
             usePreviewOverlayStore
               .getState()
-              .openPreview(fileItem.path, fileItem.smartName || fileItem.name || '', ext, pageId)
+              .openPreview(
+                fileItem.path,
+                fileItem.smartName || fileItem.name || '',
+                ext,
+                pageId,
+                {
+                  currentTime: fileItem.matchedChunk?.startSec,
+                  highlightRange: fileItem.matchedChunk
+                    ? [fileItem.matchedChunk.startSec, fileItem.matchedChunk.endSec]
+                    : undefined
+                }
+              )
           } else {
             window.electronAPI!.utils.openFileWithDefaultApp(item.path).catch((error: Error) => {
               logger.error(LogCategory.RENDERER, '打开文件失败:', error)

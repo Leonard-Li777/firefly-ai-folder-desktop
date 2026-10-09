@@ -16,6 +16,8 @@ export const PreviewOverlay: React.FC = () => {
   const filePath = usePreviewOverlayStore(s => s.filePath)
   const fileName = usePreviewOverlayStore(s => s.fileName)
   const extension = usePreviewOverlayStore(s => s.extension)
+  const currentTime = usePreviewOverlayStore(s => s.currentTime)
+  const highlightRange = usePreviewOverlayStore(s => s.highlightRange)
   const activePageId = usePreviewOverlayStore(s => s.activePageId)
   const closePreview = usePreviewOverlayStore(s => s.closePreview)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -118,6 +120,8 @@ export const PreviewOverlay: React.FC = () => {
           isTextLoading={isTextLoading}
           isTextCapable={isTextCapable}
           multimodalContent={multimodalContent}
+          currentTime={currentTime}
+          highlightRange={highlightRange}
         />
       </div>
     </div>
