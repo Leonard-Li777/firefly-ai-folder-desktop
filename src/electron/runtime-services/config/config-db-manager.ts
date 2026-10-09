@@ -101,11 +101,8 @@ export class ConfigDbManager {
   async seedTagAliasesLangTable(db: Database.Database, language: string): Promise<void> {
     const table = resolveTagAliasesLangTable(language)
     const existingCnt =
-      (
-        db.prepare(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as
-          | { cnt: number }
-          | undefined
-      )?.cnt ?? 0
+      (db.prepare(`SELECT COUNT(*) AS cnt FROM ${table}`).get() as { cnt: number } | undefined)
+        ?.cnt ?? 0
 
     // 收集其它语言分表的 code 集（SQLite GLOB；不用 LIKE——其 '_' 是单字符通配会误匹配）
     const otherTables = (
@@ -119,9 +116,9 @@ export class ConfigDbManager {
     const sourceCodes = new Set<string>()
     for (const t of otherTables) {
       try {
-        const rows = db
-          .prepare(`SELECT DISTINCT tag_code FROM ${t}`)
-          .all() as Array<{ tag_code: string }>
+        const rows = db.prepare(`SELECT DISTINCT tag_code FROM ${t}`).all() as Array<{
+          tag_code: string
+        }>
         rows.forEach(r => sourceCodes.add(r.tag_code))
       } catch (err) {
         logger.warn(LogCategory.CONFIG, `ConfigDbManager: 读取历史分表 ${t} code 集失败:`, err)
@@ -449,9 +446,7 @@ export class ConfigDbManager {
     }
   }
 
-
   // 依据 ADR-0038 / PRD Issue #686：创世主库彻底废除 omw_* 与 hownet_* 导入，静态语义数据全量由只读语义包 semantic.pack 托管
-
 
   /**
    * 从本地 SQLite 读取全部数据到内存中
@@ -534,10 +529,19 @@ export class ConfigDbManager {
     const candidates = [
       ResourceLocator.resolveResourcePath('presetResources/taxonomy/builtin-tag-identity.json'),
       ResourceLocator.resolveResourcePath('taxonomy/builtin-tag-identity.json'),
-      path.resolve(process.cwd(), 'apps/desktop/build/presetResources/taxonomy/builtin-tag-identity.json'),
+      path.resolve(
+        process.cwd(),
+        'apps/desktop/build/presetResources/taxonomy/builtin-tag-identity.json'
+      ),
       path.resolve(process.cwd(), 'build/presetResources/taxonomy/builtin-tag-identity.json'),
-      path.resolve(__dirname, '../../../../build/presetResources/taxonomy/builtin-tag-identity.json'),
-      path.resolve(__dirname, '../../../../../apps/desktop/build/presetResources/taxonomy/builtin-tag-identity.json')
+      path.resolve(
+        __dirname,
+        '../../../../build/presetResources/taxonomy/builtin-tag-identity.json'
+      ),
+      path.resolve(
+        __dirname,
+        '../../../../../apps/desktop/build/presetResources/taxonomy/builtin-tag-identity.json'
+      )
     ]
     for (const p of candidates) {
       if (fs.existsSync(p)) return p
@@ -552,7 +556,10 @@ export class ConfigDbManager {
     const candidates = [
       this.getConfigFilePath('dimension-policies.json'),
       ResourceLocator.resolveResourcePath('configs/dimension-policies.json'),
-      path.resolve(process.cwd(), 'apps/desktop/build/extraResources/configs/dimension-policies.json'),
+      path.resolve(
+        process.cwd(),
+        'apps/desktop/build/extraResources/configs/dimension-policies.json'
+      ),
       path.resolve(process.cwd(), 'build/extraResources/configs/dimension-policies.json')
     ]
     for (const p of candidates) {
@@ -563,10 +570,18 @@ export class ConfigDbManager {
 
   /**
    * 从权威数据源构建受控维度列表（PRD-0059 核心架构重构）
+   *
+   * 【已裁定目标态（PRD-0059 v1.1 §1）】主源 = **本地 AOT 受控事实源**，不经 Omni HTTP 拉取：
+   *   · 桌面主进程严禁直接解密/挂载 `semantic.pack`（AGENTS.md 硬性契约）；
+   *   · Omni 侧亦未提供 `/api/v1/taxonomy/dimensions` 端点（全仓 0 命中，仅 `taxonomy/aliases`）；
+   *   · 故读取侧以随包分发的 `builtin-tag-identity.json`（+ OMW 根维度常量）为权威源，
+   *     展示名经 `tag_aliases_{lang}` 分表按 locale 还原 —— 即原设计中的「三级降级第 3 级」，
+   *     经裁定**升格为确定性主路径**（随包分发、无网络依赖、单测可复现）。
+   *
    * 1. 主源：内置受控事实源 (builtin-tag-identity.json + OMW 受控根维度)，以稳定 code 为唯一主键
    * 2. 展示名：优先从当前语言 tag_aliases_{lang} 分表还原，回退别名表与 en/slug
    * 3. 增量策略：从 system_config.DIMENSION_POLICIES 或 dimension-policies.json 合并门限与 flag
-   * 4. 用户维度：主库 file_tags WHERE source = 'dimension' 语义化追加 (弃用 isDimension)
+   * （原第 4 段「用户维度 source='dimension'」已删除 —— 该功能不存在，见函数尾部说明）
    */
   loadDimensionsFromAuthority(language: string, db?: Database.Database): Array<any> {
     const dimensions: Array<any> = []
@@ -649,11 +664,7 @@ export class ConfigDbManager {
       if (Array.isArray(identityData.tags)) {
         for (const t of identityData.tags) {
           const tagDisplay =
-            aliasMap.get(t.code) ||
-            t.aliases?.[language] ||
-            t.aliases?.['zh-CN'] ||
-            t.en ||
-            t.code
+            aliasMap.get(t.code) || t.aliases?.[language] || t.aliases?.['zh-CN'] || t.en || t.code
           if (t.dimId !== undefined) {
             const list = dimTagsMap.get(t.dimId) || []
             list.push(tagDisplay)
@@ -677,18 +688,13 @@ export class ConfigDbManager {
 
         const policy = getPolicy(code, d.dimId)
         const dimName =
-          aliasMap.get(code) ||
-          d.aliases?.[language] ||
-          d.aliases?.['zh-CN'] ||
-          d.en ||
-          code
+          aliasMap.get(code) || d.aliases?.[language] || d.aliases?.['zh-CN'] || d.en || code
 
         const aft = policy?.applicableFileTypes || policy?.applicable_file_types || ['*']
         const ch = policy?.contextHints || policy?.context_hints || []
         const threshold = policy?.threshold !== undefined ? policy.threshold : 0.6
         const parentCodes = Array.isArray(d.parentCodes) ? [...d.parentCodes] : []
-        const depth =
-          d.depth !== undefined ? d.depth : parentCodes.length > 0 ? 2 : 1
+        const depth = d.depth !== undefined ? d.depth : parentCodes.length > 0 ? 2 : 1
         const childTags = codeTagsMap.get(code) || dimTagsMap.get(d.dimId) || []
 
         const isExtensionDim =
@@ -730,9 +736,7 @@ export class ConfigDbManager {
       if (dimCodeSet.has(omw.code)) continue
       dimCodeSet.add(omw.code)
       const policy = getPolicy(omw.code, omw.id)
-      const dimName =
-        aliasMap.get(omw.code) ||
-        (language.startsWith('zh') ? omw.zh : omw.en)
+      const dimName = aliasMap.get(omw.code) || (language.startsWith('zh') ? omw.zh : omw.en)
       const aft = policy?.applicableFileTypes || policy?.applicable_file_types || ['*']
       const ch = policy?.contextHints || policy?.context_hints || []
       const threshold = policy?.threshold !== undefined ? policy.threshold : 0.6
@@ -764,66 +768,14 @@ export class ConfigDbManager {
       })
     }
 
-    // 5. 补充数据库中动态创建的用户维度 (PRD-0059 AC-5: source = 'dimension' 语义化，彻底弃用 isDimension)
-    if (db) {
-      try {
-        const dynamicRows = db
-          .prepare(
-            `
-            SELECT code, name, description, file_groups, context_hints, meta
-            FROM file_tags
-            WHERE source = 'dimension'
-            ORDER BY code ASC
-          `
-          )
-          .all() as Array<any>
-
-        if (dynamicRows && dynamicRows.length > 0) {
-          const getChildStmt = db.prepare(
-            `SELECT name FROM file_tags WHERE json_extract(parent_codes, '$[0]') = ?`
-          )
-          for (const r of dynamicRows) {
-            if (dimCodeSet.has(r.code)) continue
-            dimCodeSet.add(r.code)
-
-            let metaObj: any = {}
-            try {
-              metaObj = JSON.parse(r.meta)
-            } catch {}
-            let aft: string[] = []
-            try {
-              aft = JSON.parse(r.file_groups || '[]')
-            } catch {}
-            let ch: string[] = []
-            try {
-              ch = JSON.parse(r.context_hints || '[]')
-            } catch {}
-            let childTags: string[] = []
-            try {
-              childTags = (getChildStmt.all(r.code) as any[]).map(c => c.name)
-            } catch {}
-
-            dimensions.push({
-              id: dimensions.length + 1,
-              code: r.code,
-              name: r.name,
-              level: 1,
-              depth: 1,
-              tags: childTags,
-              description: r.description || '',
-              applicableFileTypes: aft,
-              applicable_file_types: aft,
-              contextHints: ch,
-              context_hints: ch,
-              parentCodes: [],
-              metadata: metaObj
-            })
-          }
-        }
-      } catch (dynamicErr) {
-        logger.warn(LogCategory.CONFIG, 'ConfigDbManager: 读取动态维度失败:', dynamicErr)
-      }
-    }
+    // 【已删除】原「5. 补充数据库中动态创建的用户维度（source='dimension'）」整段。
+    // 依据：PRD-0060 v2.2（'dimension' 移出 file_tags.source CHECK）与 PRD-0060 v2.3。
+    // 经全仓取证，「用户自定义维度」功能**在代码中不存在** ——
+    //   · 无创建入口：database-adapter.ts 的 dimensions.create 全仓零调用方；
+    //   · 无写入者：全仓 6 个 INSERT INTO file_tags 点，source 仅取 'builtin'/'expanded'/'user'；
+    //   · 无读取者：`file_tags.source` 已收紧为 ('expanded','user')。
+    // 该段恒返回空集，属纯死代码，故整段删除。loadDimensionsFromAuthority 收敛为三段式：
+    //   ① 内置受控事实源 builtin-tag-identity.json  ② 受控 OMW 根维度常量  ③ DIMENSION_POLICIES 策略覆盖
 
     return dimensions
   }

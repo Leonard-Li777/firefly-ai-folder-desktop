@@ -1,12 +1,7 @@
 import { app as electronApp } from 'electron'
 import path from 'path'
 import { decompressText } from '../../utils/text-compressor'
-import {
-  detectTagLanguage,
-  LogCategory,
-  logger,
-  SUPPORTED_LANGUAGES_KEY
-} from '@firefly/shared'
+import { detectTagLanguage, LogCategory, logger, SUPPORTED_LANGUAGES_KEY } from '@firefly/shared'
 import type { Database } from 'better-sqlite3'
 
 /**
@@ -181,17 +176,18 @@ export const GENESIS_V1_SCHEMA = `
   );
 
   -- 7. 用户动态标签维度体系表（仅 expanded/_ext.* 与 user 手建标签；builtin.*/omw.* 由 Omni 语义包托管）
-  CREATE TABLE IF NOT EXISTS file_tags (
+  CREATE TABLE IF NOT EXISTS file_tags_private (
     code               TEXT PRIMARY KEY,              -- 语言无关稳定标识 (如 _ext.topic.xxx, user.custom)
     name               TEXT NOT NULL,                 -- 当前语言本地化显示名
     parent_codes       TEXT NOT NULL DEFAULT '[]',    -- JSON 数组，记录所有直接父节点的 code (支持多父 DAG)
 
     source             TEXT NOT NULL DEFAULT 'user'
-                           CHECK (source IN ('expanded', 'user', 'dimension')),
+                           CHECK (source IN ('expanded', 'user')),
     file_groups        TEXT,                          -- JSON 数组：格式分组约束 (全集为 FileGroup 完整枚举，优先级：优先按扩展名匹配字典，未命中由 Magika 补齐)
     context_hints      TEXT,                          -- JSON 数组 (上下文提取线索)
     description        TEXT,                          -- 业务功能或语义描述
-    meta               TEXT NOT NULL DEFAULT '{}'     -- JSON 元数据: isDimension, isRuleSubdivision, isMultiSelect, color, icon 等（注：isPanDimension 真实存活在 fileDimension 配置 metadata.flag 域，非 file_tags.meta）
+    sync_status        INTEGER NOT NULL DEFAULT 0,    -- 同步状态: 0-待同步, 1-同步中, 2-已同步
+    meta               TEXT NOT NULL DEFAULT '{}'     -- JSON 元数据: isRuleSubdivision, isMultiSelect, color, icon 等（注：isDimension 标志位已废除，PRD-0060 v2.2；isPanDimension 真实存活在策略表 metadata.flag 域，非 file_tags.meta）
   );
 
   -- 8. 用户/扩展标签多语言别名（受控 builtin.*/omw.* 别名由语言分表 tag_aliases_{lang} 镜像）
@@ -379,8 +375,8 @@ export const GENESIS_V1_SCHEMA = `
   CREATE INDEX IF NOT EXISTS idx_workspace_files_status ON workspace_files(status);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_workspace_id ON workspace_directories(workspace_id);
   CREATE INDEX IF NOT EXISTS idx_workspace_directories_path ON workspace_directories(path COLLATE NOCASE);
-  CREATE INDEX IF NOT EXISTS idx_file_tags_name ON file_tags(name);
-  CREATE INDEX IF NOT EXISTS idx_file_tags_source ON file_tags(source);
+  CREATE INDEX IF NOT EXISTS idx_file_tags_private_name ON file_tags_private(name);
+  CREATE INDEX IF NOT EXISTS idx_file_tags_private_source ON file_tags_private(source);
 
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_tag ON file_tag_relations(tag_code, file_fingerprint);
   CREATE INDEX IF NOT EXISTS idx_file_tag_relations_parent ON file_tag_relations(via_parent_code, tag_code);
@@ -514,6 +510,7 @@ export const migrations: IMigrationConfig[] = [
       DROP TABLE IF EXISTS app_config;
       DROP TABLE IF EXISTS file_constants;
       DROP TABLE IF EXISTS file_tag_relations;
+      DROP TABLE IF EXISTS file_tags_private;
       DROP TABLE IF EXISTS file_tags;
       DROP TABLE IF EXISTS analysis_queue;
       DROP TABLE IF EXISTS workspace_files;
@@ -612,11 +609,7 @@ export interface TwoStageTagLookup {
  * 保证 `is_canonical`/`count` 全 tie 时结果仍**确定**（GH #727：原实现仅按 3 档分层、
  * 无次级键，同档多条 `omw.*` 时 `LIMIT 1` 取未定序任意行 → 反查非确定）。
  */
-function queryTagCodeInTable(
-  db: Database,
-  table: string,
-  lemma: string
-): { tagCode?: string } {
+function queryTagCodeInTable(db: Database, table: string, lemma: string): { tagCode?: string } {
   const rows = db
     .prepare(
       `SELECT tag_code FROM ${table}
@@ -757,4 +750,3 @@ export function registerDatabaseFunctions(db: any): void {
     // 忽略重复注册异常
   }
 }
-

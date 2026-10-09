@@ -1,5 +1,4 @@
 import { AnalysisQueueItem } from '@firefly/types'
-import type { DimensionMetadata } from '@firefly/types'
 import { getRootGroupsWithChildren } from '../../../adapters/tag-tree-view-adapter'
 import {
   LogCategory,
@@ -10,7 +9,6 @@ import {
   cleanSmartName,
   sanitizeAITagValue,
   isValidAITag,
-  isPanDimension,
   insertTagToDb,
   isTagProvenanceGroup,
   type TagProvenanceGroup,
@@ -305,31 +303,18 @@ export async function saveCloudResult(
           metadata: r.meta
         }))
         const officialDimNames = new Set(allDimRows.map(d => d.name))
-        const dimMap = new Map<
-          string,
-          { code: string; name: string; tags: Set<string>; metadata?: DimensionMetadata | string | null }
-        >()
+        // 维度 code → 展示名（仅用于兜底 INSERT 的 name_path 组装）
+        const dimNameByCode = new Map<string, string>()
         for (const row of allDimRows) {
-          let tagList: string[] = []
-          try {
-            tagList = JSON.parse(row.tags || '[]')
-          } catch {
-            tagList = []
-          }
-          dimMap.set(String(row.id), {
-            code: row.code,
-            name: row.name,
-            tags: new Set(tagList.map(t => (typeof t === 'string' ? t.toLowerCase().trim() : ''))),
-            metadata: row.metadata ?? undefined
-          })
+          dimNameByCode.set(row.code, row.name)
         }
-        // 内容标签维度作为兜底路由目标（受控域契约，优先动态命中）。
+        // 内容标签维度作为兜底路由目标（受控域契约）。
         // GH #717：兜底值必须是受控 builtin.* code —— dim.content 已废除（spec §6.9.6），
         // 失配时落 DIMENSION_CODES.CONTENT_TAGS（builtin.content_tags），与动态命中值同码域。
         let contentDimCode: string = DIMENSION_CODES.CONTENT_TAGS
         for (const row of allDimRows) {
           if (row.code === DIMENSION_CODES.CONTENT_TAGS || row.name === CONTENT_TAGS_NAME) {
-            contentDimCode = String(row.id)
+            contentDimCode = row.code
             break
           }
         }
@@ -349,42 +334,13 @@ export async function saveCloudResult(
             ? tag.tag_group
             : ''
           try {
-            // 云端回传的 dimension_id 为自然主键 code
-            const rawDim = tag.dimension_id
-            const cloudDimCode =
-              rawDim === undefined || rawDim === null || rawDim === ''
-                ? CONTENT_DIM_CODE
-                : String(rawDim)
-
-            let localDimCode = CONTENT_DIM_CODE
-            const dimInfo = dimMap.get(cloudDimCode)
-            const lowerCleanName = cleanName.toLowerCase()
-            const isDimPan = (info?: { code: string; name: string; metadata?: DimensionMetadata | string | null }) =>
-              info
-                ? isPanDimension({ id: 0, metadata: info.metadata }) ||
-                  info.code === DIMENSION_CODES.AUTHOR ||
-                  info.code === DIMENSION_CODES.CONTENT_TAGS
-                : false
-
-            if (dimInfo) {
-              if (isDimPan(dimInfo)) {
-                localDimCode = cloudDimCode
-              } else if (dimInfo.tags.has(lowerCleanName)) {
-                localDimCode = cloudDimCode
-              } else {
-                // 检查是否命中其他非泛维度的预设标签
-                let foundOtherDimCode: string | null = null
-                for (const [otherCode, otherInfo] of dimMap) {
-                  if (isDimPan(otherInfo)) continue
-                  if (otherInfo.tags.has(lowerCleanName)) {
-                    foundOtherDimCode = otherCode
-                    break
-                  }
-                }
-                // 未命中任何非泛维度预设标签，一律路由至内容标签维度
-                localDimCode = foundOtherDimCode ?? CONTENT_DIM_CODE
-              }
-            }
+            // PRD-0060 v2.3 / 票 02 终稿口径：维度归属槽只认经由父 `via_parent_code`
+            // （rpc_get_file_by_id 已返回该列，见 023_file_sync_rpc.sql:33-49）。
+            // 为空即真根/无父，回退内容标签维度（builtin.content_tags）。
+            // 严禁再读已废除的 `dimension_id`，也严禁退读 `parent_codes[0]` 二次猜测。
+            const viaParent =
+              typeof tag.via_parent_code === 'string' ? tag.via_parent_code.trim() : ''
+            const localDimCode = viaParent || CONTENT_DIM_CODE
 
             try {
               // ADR-0045 票据 04：显式传入云端返回的原始分组（缺失/非法为 ''），
@@ -396,8 +352,10 @@ export async function saveCloudResult(
               const tagCode = DeterministicCodeGenerator.generateUnique(cleanName, 'zh-CN', {
                 lookupExistingName: DeterministicCodeGenerator.createDbLookup(db)
               })
-              const dimDisplayName = dimInfo?.name || dimMap.get(localDimCode)?.name || CONTENT_TAGS_NAME
-              const codePath = localDimCode ? `/${localDimCode}/${tagCode}` : `/builtin.content_tags/${tagCode}`
+              const dimDisplayName = dimNameByCode.get(localDimCode) || CONTENT_TAGS_NAME
+              const codePath = localDimCode
+                ? `/${localDimCode}/${tagCode}`
+                : `/builtin.content_tags/${tagCode}`
               const namePath = `/${dimDisplayName}/${cleanName}`
               const depth = 2
 
@@ -408,7 +366,12 @@ export async function saveCloudResult(
                 tagCode,
                 cleanName,
                 JSON.stringify([localDimCode || 'builtin.content_tags']),
-                JSON.stringify({ isLeaf: true, isSystem: false, isMultiSelect: true, syncStatus: 0 })
+                JSON.stringify({
+                  isLeaf: true,
+                  isSystem: false,
+                  isMultiSelect: true,
+                  syncStatus: 0
+                })
               )
               db.prepare(
                 `INSERT OR IGNORE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, confidence, source, meta)

@@ -56,7 +56,7 @@ type HybridPageRef =
 
 /**
  * TagTreeQuery 深模块
- * 
+ *
  * 核心职责：
  * 1. 利用 SQLite 递归公共表表达式（Recursive CTE）实现标签树、后代节点与祖先链的瞬时检索；
  * 2. 高效下推文件与复合标签的筛选计算，杜绝在 Node.js 内存中递归拼装扩展名映射；
@@ -95,7 +95,10 @@ export class TagTreeQuery {
   /** Omni 受控树边是否已注入当前 _omniChildrenMap（获取 treeRes 后置 true，TTL 过期时随 map 重置为 false） */
   private _omniEdgesInjected = false
 
-  constructor(private db: Database.Database, hybridArbiter?: HybridSearchArbiter) {
+  constructor(
+    private db: Database.Database,
+    hybridArbiter?: HybridSearchArbiter
+  ) {
     this.ensureSqlFunctions()
     this.dagMaterializer = new DAGMaterializer(db)
     this.hybridArbiter = hybridArbiter ?? new HybridSearchArbiter(db)
@@ -104,9 +107,11 @@ export class TagTreeQuery {
       searchHybrid: this.hybridArbiter.searchHybrid.bind(this.hybridArbiter),
       fetchLegacySearchRefs: params => this.fetchLegacySearchRefs(params),
       fetchRowsByFingerprints: fps => this.fetchRowsByFingerprints(fps),
-      mapFilesToItems: (rows, ws, showMissing) => this.mapFilesToItems(rows, ws, showMissing ?? true),
+      mapFilesToItems: (rows, ws, showMissing) =>
+        this.mapFilesToItems(rows, ws, showMissing ?? true),
       fetchContentsForSearch: fps => this.fetchContentsForSearch(fps),
-      enrichSearchPage: (kw, refs, cand, contents) => this.enrichSearchPage(kw, refs, cand, contents),
+      enrichSearchPage: (kw, refs, cand, contents) =>
+        this.enrichSearchPage(kw, refs, cand, contents),
       synthesizeUnanalyzedItem: (ref, ws) => this.synthesizeUnanalyzedItem(ref, ws),
       fallbackPaged: params => this.getFilteredFilesPaged(params)
     })
@@ -119,7 +124,11 @@ export class TagTreeQuery {
    */
   public async ensureFullChildrenMap(locale = 'zh-CN'): Promise<Map<string, Set<string>>> {
     const now = Date.now()
-    if (this._omniChildrenMap && this._omniEdgesInjected && now - this._omniMapLoadedAt < TagTreeQuery.OMNI_MAP_TTL) {
+    if (
+      this._omniChildrenMap &&
+      this._omniEdgesInjected &&
+      now - this._omniMapLoadedAt < TagTreeQuery.OMNI_MAP_TTL
+    ) {
       return this._omniChildrenMap
     }
 
@@ -132,12 +141,17 @@ export class TagTreeQuery {
 
     // 1. 本地 file_tags 的 parent_codes 关系
     try {
-      const rows = this.db
-        .prepare('SELECT code, parent_codes FROM file_tags')
-        .all() as Array<{ code: string; parent_codes: string }>
+      const rows = this.db.prepare('SELECT code, parent_codes FROM file_tags').all() as Array<{
+        code: string
+        parent_codes: string
+      }>
       for (const row of rows) {
         let parents: string[] = []
-        try { parents = JSON.parse(row.parent_codes || '[]') } catch { parents = [] }
+        try {
+          parents = JSON.parse(row.parent_codes || '[]')
+        } catch {
+          parents = []
+        }
         if (parents.length === 0) {
           addEdge(CONTENT_TAGS_CODE, row.code)
         } else {
@@ -147,7 +161,11 @@ export class TagTreeQuery {
         }
       }
     } catch (err) {
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] ensureFullChildrenMap: file_tags parent_codes 加载失败:', err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] ensureFullChildrenMap: file_tags parent_codes 加载失败:',
+        err
+      )
     }
 
     // 2. Omni 受控树父子边（异步 HTTP，内置缓存保护）
@@ -167,7 +185,11 @@ export class TagTreeQuery {
         this._omniEdgesInjected = true
       }
     } catch (err) {
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] ensureFullChildrenMap: Omni 树边加载失败:', err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] ensureFullChildrenMap: Omni 树边加载失败:',
+        err
+      )
     }
 
     this._omniChildrenMap = map
@@ -192,12 +214,17 @@ export class TagTreeQuery {
     }
 
     try {
-      const rows = this.db
-        .prepare('SELECT code, parent_codes FROM file_tags')
-        .all() as Array<{ code: string; parent_codes: string }>
+      const rows = this.db.prepare('SELECT code, parent_codes FROM file_tags').all() as Array<{
+        code: string
+        parent_codes: string
+      }>
       for (const row of rows) {
         let parents: string[] = []
-        try { parents = JSON.parse(row.parent_codes || '[]') } catch { parents = [] }
+        try {
+          parents = JSON.parse(row.parent_codes || '[]')
+        } catch {
+          parents = []
+        }
         if (parents.length === 0) {
           addEdge(CONTENT_TAGS_CODE, row.code)
         } else {
@@ -207,7 +234,11 @@ export class TagTreeQuery {
         }
       }
     } catch (err) {
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] ensureLocalChildrenMap: file_tags parent_codes 加载失败:', err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] ensureLocalChildrenMap: file_tags parent_codes 加载失败:',
+        err
+      )
     }
 
     this._omniChildrenMap = map
@@ -268,7 +299,6 @@ export class TagTreeQuery {
     return result
   }
 
-
   private ensureSqlFunctions(): void {
     try {
       let ignoreRulesCache: any[] | null = null
@@ -285,13 +315,21 @@ export class TagTreeQuery {
           return shouldIgnoreFile(filePath, fileName, ignoreRulesCache) ? 1 : 0
         } catch (err) {
           // 忽略规则加载失败属可容忍降级：该文件按「不忽略」处理
-          logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] should_ignore_file 判定失败（${fileName}），按不忽略处理:`, err)
+          logger.debug(
+            LogCategory.VIRTUAL_DIRECTORY,
+            `[TagTreeQuery] should_ignore_file 判定失败（${fileName}），按不忽略处理:`,
+            err
+          )
           return 0
         }
       })
     } catch (err) {
       // 忽略已注册或 Mock 数据库环境中的错误（注册冲突属可容忍降级：SQL 函数缺省，查询回退不过滤）
-      logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 注册 should_ignore_file SQL 函数失败，忽略:', err)
+      logger.debug(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] 注册 should_ignore_file SQL 函数失败，忽略:',
+        err
+      )
     }
   }
 
@@ -305,7 +343,11 @@ export class TagTreeQuery {
       this._ftsAvailable = !!row
     } catch (err) {
       // FTS 探针失败属可容忍降级：回退 LIKE 检索路径
-      logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] files_fts 探针失败，按 FTS 不可用处理:', err)
+      logger.debug(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] files_fts 探针失败，按 FTS 不可用处理:',
+        err
+      )
       this._ftsAvailable = false
     }
     return this._ftsAvailable
@@ -326,14 +368,16 @@ export class TagTreeQuery {
            WHERE code = ? OR name = ?
            LIMIT 1`
         )
-        .get(tagValueOrCode, tagValueOrCode) as
-        | { code: string; name: string }
-        | undefined
+        .get(tagValueOrCode, tagValueOrCode) as { code: string; name: string } | undefined
 
       const targetCode = anchor?.code || tagValueOrCode
       return this.collectSubtreeCodes(targetCode)
     } catch (err) {
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 子树召回失败: ${tagValueOrCode}`, err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        `[TagTreeQuery] 子树召回失败: ${tagValueOrCode}`,
+        err
+      )
       return [tagValueOrCode]
     }
   }
@@ -432,7 +476,11 @@ export class TagTreeQuery {
         }
       } catch {}
     } catch (err) {
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] collectSubtreeCodes 失败: ${tagCode}`, err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        `[TagTreeQuery] collectSubtreeCodes 失败: ${tagCode}`,
+        err
+      )
     }
 
     return [...codeSet]
@@ -446,7 +494,11 @@ export class TagTreeQuery {
    * Omni 受控树骨干节点（如"图片"、"文档"等未落本地 file_tags 物化路径的节点）
    * 做跨源 BFS 子孙展开，保障父级标签点击可穿透召回全量后代文件。
    */
-  public resolveFilterTagCodes(tag: { code?: string; tagValue?: string; viaParentCode?: string }): string[] {
+  public resolveFilterTagCodes(tag: {
+    code?: string
+    tagValue?: string
+    viaParentCode?: string
+  }): string[] {
     const codeSet = new Set<string>()
     if (tag.code) codeSet.add(tag.code)
 
@@ -466,22 +518,30 @@ export class TagTreeQuery {
     try {
       const candidates: Array<{ code: string }> = []
       if (tag.tagValue && tag.code) {
-        const rows = this.db.prepare(
-          `SELECT DISTINCT code FROM file_tags
+        const rows = this.db
+          .prepare(
+            `SELECT DISTINCT code FROM file_tags
            WHERE name = ? OR code = ? OR parent_codes LIKE ? OR name LIKE ?`
-        ).all(tag.tagValue, tag.code, `%${tag.code}%`, `%${tag.tagValue}%`) as Array<{ code: string }>
+          )
+          .all(tag.tagValue, tag.code, `%${tag.code}%`, `%${tag.tagValue}%`) as Array<{
+          code: string
+        }>
         candidates.push(...rows)
       } else if (tag.tagValue) {
-        const rows = this.db.prepare(
-          `SELECT DISTINCT code FROM file_tags
+        const rows = this.db
+          .prepare(
+            `SELECT DISTINCT code FROM file_tags
            WHERE name = ? OR code = ? OR name LIKE ?`
-        ).all(tag.tagValue, tag.tagValue, `%${tag.tagValue}%`) as Array<{ code: string }>
+          )
+          .all(tag.tagValue, tag.tagValue, `%${tag.tagValue}%`) as Array<{ code: string }>
         candidates.push(...rows)
       } else if (tag.code) {
-        const rows = this.db.prepare(
-          `SELECT DISTINCT code FROM file_tags
+        const rows = this.db
+          .prepare(
+            `SELECT DISTINCT code FROM file_tags
            WHERE code = ? OR parent_codes LIKE ?`
-        ).all(tag.code, `%${tag.code}%`) as Array<{ code: string }>
+          )
+          .all(tag.code, `%${tag.code}%`) as Array<{ code: string }>
         candidates.push(...rows)
       }
 
@@ -495,7 +555,11 @@ export class TagTreeQuery {
         }
       }
     } catch (err) {
-      logger.warn(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] resolveFilterTagCodes 查询动态扩展标签失败:`, err)
+      logger.warn(
+        LogCategory.VIRTUAL_DIRECTORY,
+        `[TagTreeQuery] resolveFilterTagCodes 查询动态扩展标签失败:`,
+        err
+      )
     }
 
     // 3. 跨源 BFS：利用已预热的 Omni 邻接图展开子孙（含 builtin.* / omw.* / hownet.* 骨干节点）
@@ -532,7 +596,6 @@ export class TagTreeQuery {
     return Array.from(codeSet)
   }
 
-
   /**
    * 获取维度组导航树（含命中文件计数）
    * ADR-0038 / Issue #682：受控分类树由 Omni taxonomy/tree 提供，本地仅保留 expanded/user 动态标签
@@ -545,9 +608,7 @@ export class TagTreeQuery {
     let dbQueryTime = 0
 
     const opts: GetDimensionGroupsOptions =
-      typeof options === 'string'
-        ? { workspaceDirectoryPath: options, language }
-        : options || {}
+      typeof options === 'string' ? { workspaceDirectoryPath: options, language } : options || {}
 
     const {
       workspaceDirectoryPath,
@@ -572,27 +633,37 @@ export class TagTreeQuery {
 
       let showMissing = true
       try {
-        showMissing = ConfigOrchestrator.getInstance().getValue<boolean>('SHOW_MISSING_FILES') ?? true
+        showMissing =
+          ConfigOrchestrator.getInstance().getValue<boolean>('SHOW_MISSING_FILES') ?? true
       } catch (err) {
         // 配置中心未就绪属可容忍降级：按默认值显示缺失文件
-        logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 读取 SHOW_MISSING_FILES 失败，按默认 true 处理:', err)
+        logger.debug(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[TagTreeQuery] 读取 SHOW_MISSING_FILES 失败，按默认 true 处理:',
+          err
+        )
       }
 
       // 1. 获取所有维度根节点（本地动态标签：expanded/user；受控根节点来自 Omni 树）
+      // PRD-0060 v2.2/v2.3：原 `json_extract(meta,'$.isDimension')=1` 与 `source='dimension'`
+      // 两个条件已废除 ——「用户自定义维度」功能在代码中不存在（无创建入口 / 无写入者），
+      // 且 `file_tags.source` CHECK 已收紧为 ('expanded','user')。维度根判据只剩「无父」。
       const dbStart = performance.now()
       let dimensionRoots = this.db
-        .prepare(`
+        .prepare(
+          `
           SELECT code, name, file_groups, meta
           FROM file_tags
-          WHERE parent_codes = '[]' OR parent_codes IS NULL OR json_extract(meta, '$.isDimension') = 1 OR source = 'dimension'
+          WHERE parent_codes = '[]' OR parent_codes IS NULL
           ORDER BY code ASC
-        `)
+        `
+        )
         .all() as Array<{
-          code: string
-          name: string
-          file_groups: string | null
-          meta: string
-        }>
+        code: string
+        name: string
+        file_groups: string | null
+        meta: string
+      }>
       dbQueryTime += performance.now() - dbStart
 
       if (excludeExtensionDimension) {
@@ -601,22 +672,23 @@ export class TagTreeQuery {
         })
       }
 
-      // 2. 获取所有非根标签节点（#625：透出 code/parent_codes/meta 供前端纯树形状态机消费）
-      // 2. 获取所有非根标签节点（#625：透出 code/parent_codes/meta 供前端纯树形状态机消费）
+      // 2. 获取所有标签节点（#625：透出 code/parent_codes/meta 供前端纯树形状态机消费）
+      // 原 `isDimension IS NULL OR = 0` 过滤条件已废除（该标志位无写入者，条件恒真）。
       const tagRows = this.db
-        .prepare(`
+        .prepare(
+          `
           SELECT code, name, parent_codes, file_groups, meta
           FROM file_tags
-          WHERE (json_extract(meta, '$.isDimension') IS NULL OR json_extract(meta, '$.isDimension') = 0)
           ORDER BY code ASC
-        `)
+        `
+        )
         .all() as Array<{
-          code: string
-          name: string
-          parent_codes: string
-          file_groups: string | null
-          meta: string
-        }>
+        code: string
+        name: string
+        parent_codes: string
+        file_groups: string | null
+        meta: string
+      }>
 
       // 3. 构建当前工作区/选区内的有效文件指纹集
       let baseWhere = 'WHERE wf.is_analyzed = 1'
@@ -755,9 +827,16 @@ export class TagTreeQuery {
       if (aliasCodes.size > 0) {
         try {
           const { databaseService } = await import('@runtime/database/database-service')
-          Object.assign(aliasMap, databaseService.resolveTagDisplayNames(Array.from(aliasCodes), locale))
+          Object.assign(
+            aliasMap,
+            databaseService.resolveTagDisplayNames(Array.from(aliasCodes), locale)
+          )
         } catch (err) {
-          logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 批量标签展示名解析失败，回退 file_tags.name:', err)
+          logger.warn(
+            LogCategory.VIRTUAL_DIRECTORY,
+            '[TagTreeQuery] 批量标签展示名解析失败，回退 file_tags.name:',
+            err
+          )
         }
       }
       const aliasResolver = (code: string, fallbackName?: string): string => {
@@ -772,12 +851,15 @@ export class TagTreeQuery {
       const tagNameCountMap = new Map<string, number>()
       const tagNameFilesMap = new Map<string, Set<string>>()
       // 建立动态子标签映射：parentCode -> Array<{ code, name, meta, count }>
-      const dynamicTagsByParent = new Map<string, Array<{
-        code: string
-        name: string
-        meta: any
-        count: number
-      }>>()
+      const dynamicTagsByParent = new Map<
+        string,
+        Array<{
+          code: string
+          name: string
+          meta: any
+          count: number
+        }>
+      >()
 
       for (const t of tagRows) {
         const count = tagCountMap.get(t.code) || 0
@@ -812,7 +894,9 @@ export class TagTreeQuery {
             dynamicTagsByParent.set(p, [])
           }
           let parsedMeta = {}
-          try { parsedMeta = JSON.parse(t.meta || '{}') } catch {}
+          try {
+            parsedMeta = JSON.parse(t.meta || '{}')
+          } catch {}
           dynamicTagsByParent.get(p)!.push({
             code: t.code,
             name: resolvedName,
@@ -822,7 +906,6 @@ export class TagTreeQuery {
         }
       }
 
-
       for (const root of dimensionRoots) {
         const dimCode = root.code
         seenDimCodes.add(dimCode)
@@ -831,7 +914,11 @@ export class TagTreeQuery {
           dimMeta = JSON.parse(root.meta || '{}')
         } catch (err) {
           // meta 脏数据属可容忍降级：按空元数据处理
-          logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析维度根节点 meta 失败（${root.code}），按空对象处理:`, err)
+          logger.debug(
+            LogCategory.VIRTUAL_DIRECTORY,
+            `[TagTreeQuery] 解析维度根节点 meta 失败（${root.code}），按空对象处理:`,
+            err
+          )
         }
 
         // 匹配该维度下的直属子标签
@@ -841,7 +928,11 @@ export class TagTreeQuery {
             parentCodes = JSON.parse(t.parent_codes || '[]')
           } catch (err) {
             // parent_codes 脏数据属可容忍降级：视为无父，仅按 code 前缀匹配归属
-            logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析 parent_codes 失败（${t.code}），按空数组处理:`, err)
+            logger.debug(
+              LogCategory.VIRTUAL_DIRECTORY,
+              `[TagTreeQuery] 解析 parent_codes 失败（${t.code}），按空数组处理:`,
+              err
+            )
           }
           return parentCodes.includes(dimCode) || t.code.startsWith(`${dimCode}.`)
         })
@@ -860,14 +951,22 @@ export class TagTreeQuery {
             childMeta = JSON.parse(child.meta || '{}')
           } catch (err) {
             // meta 脏数据属可容忍降级：按空元数据处理
-            logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析子标签 meta 失败（${child.code}），按空对象处理:`, err)
+            logger.debug(
+              LogCategory.VIRTUAL_DIRECTORY,
+              `[TagTreeQuery] 解析子标签 meta 失败（${child.code}），按空对象处理:`,
+              err
+            )
           }
           let childParentCodes: string[] = []
           try {
             childParentCodes = JSON.parse(child.parent_codes || '[]')
           } catch (err) {
             // parent_codes 脏数据属可容忍降级：回退当前维度根作为父级
-            logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析子标签 parent_codes 失败（${child.code}），回退当前维度根:`, err)
+            logger.debug(
+              LogCategory.VIRTUAL_DIRECTORY,
+              `[TagTreeQuery] 解析子标签 parent_codes 失败（${child.code}），回退当前维度根:`,
+              err
+            )
           }
           const immediateParentCode = childParentCodes[0] || dimCode
 
@@ -889,8 +988,11 @@ export class TagTreeQuery {
           }
 
           assignedCodes.add(child.code)
-          const childCodePath = tagChainsMap.get(child.code)?.[0]?.code_path || `/${dimCode}/${child.code}`
-          const childNamePath = tagChainsMap.get(child.code)?.[0]?.name_path || `/${aliasResolver(root.code, root.name)}/${aliasResolver(child.code, child.name)}`
+          const childCodePath =
+            tagChainsMap.get(child.code)?.[0]?.code_path || `/${dimCode}/${child.code}`
+          const childNamePath =
+            tagChainsMap.get(child.code)?.[0]?.name_path ||
+            `/${aliasResolver(root.code, root.name)}/${aliasResolver(child.code, child.name)}`
           dimensionTags.push({
             dimensionId: legacyNumericId,
             dimensionCode: dimCode,
@@ -912,8 +1014,12 @@ export class TagTreeQuery {
           for (const sub of children) {
             if (dimensionTags.some(t => t.code === sub.code || t.tagValue === sub.name)) continue
             assignedCodes.add(sub.code)
-            const subCodePath = tagChainsMap.get(sub.code)?.[0]?.code_path || `/${dimCode}/${parentCodeKey}/${sub.code}`
-            const subNamePath = tagChainsMap.get(sub.code)?.[0]?.name_path || `/${aliasResolver(root.code, root.name)}/${sub.name}`
+            const subCodePath =
+              tagChainsMap.get(sub.code)?.[0]?.code_path ||
+              `/${dimCode}/${parentCodeKey}/${sub.code}`
+            const subNamePath =
+              tagChainsMap.get(sub.code)?.[0]?.name_path ||
+              `/${aliasResolver(root.code, root.name)}/${sub.name}`
             dimensionTags.push({
               dimensionId: legacyNumericId,
               dimensionCode: dimCode,
@@ -976,144 +1082,164 @@ export class TagTreeQuery {
         }
       }
 
-      const omniGroups: Array<Omit<DimensionGroup, 'tags'> & { tags: DimensionTag[] }> = treeRes?.rootNodes
-        ? treeRes.rootNodes.map((root, rootIdx) => {
-            const id = 10000 + rootIdx
-            const tags: DimensionTag[] = []
+      const omniGroups: Array<Omit<DimensionGroup, 'tags'> & { tags: DimensionTag[] }> =
+        treeRes?.rootNodes
+          ? treeRes.rootNodes.map((root, rootIdx) => {
+              const id = 10000 + rootIdx
+              const tags: DimensionTag[] = []
 
+              // 后序递归汇聚整棵子树的唯一下属文件集合（保证祖先节点包含全部子孙命中，避免父级 count=0 被误裁剪）
+              const nodeFilesMap = new Map<string, Set<string>>()
+              const computeNodeSubtreeFiles = (node: OmniTaxonomyNode): Set<string> => {
+                const fileSet = new Set<string>()
 
-            // 后序递归汇聚整棵子树的唯一下属文件集合（保证祖先节点包含全部子孙命中，避免父级 count=0 被误裁剪）
-            const nodeFilesMap = new Map<string, Set<string>>()
-            const computeNodeSubtreeFiles = (node: OmniTaxonomyNode): Set<string> => {
-              const fileSet = new Set<string>()
-
-              // 1. 本节点自身命中文件（基于当前工作区与目录作用域的 tagFilesMap）
-              const directFiles = tagFilesMap.get(node.code)
-              if (directFiles) {
-                for (const f of directFiles) fileSet.add(f)
-              }
-              if (node.name) {
-                const byName = tagNameFilesMap.get(node.name)
-                if (byName) {
-                  for (const f of byName) fileSet.add(f)
+                // 1. 本节点自身命中文件（基于当前工作区与目录作用域的 tagFilesMap）
+                const directFiles = tagFilesMap.get(node.code)
+                if (directFiles) {
+                  for (const f of directFiles) fileSet.add(f)
                 }
-              }
-
-              // 2. 本地数据库中归属于当前 node.code 的动态扩展标签（含多级递归）
-              const collectDynFiles = (pCode: string) => {
-                const dynList = dynamicTagsByParent.get(pCode) || []
-                for (const dyn of dynList) {
-                  const dynFiles = tagFilesMap.get(dyn.code)
-                  if (dynFiles) {
-                    for (const f of dynFiles) fileSet.add(f)
+                if (node.name) {
+                  const byName = tagNameFilesMap.get(node.name)
+                  if (byName) {
+                    for (const f of byName) fileSet.add(f)
                   }
-                  collectDynFiles(dyn.code)
                 }
-              }
-              collectDynFiles(node.code)
 
-              // 3. 递归汇聚全部子节点的下属文件集合
-              for (const child of node.children || []) {
-                const childSet = computeNodeSubtreeFiles(child)
-                for (const f of childSet) fileSet.add(f)
-              }
-
-              nodeFilesMap.set(node.code, fileSet)
-              return fileSet
-            }
-
-            computeNodeSubtreeFiles(root)
-
-            const collect = (
-              node: OmniTaxonomyNode,
-              parentCode: string,
-              level: number,
-              parentCodePath = `/${node.code}`,
-              parentNamePath = `/${node.name}`
-            ) => {
-              // A. Omni 受控树定义的子节点
-              for (const child of node.children || []) {
-                const code = child.code
-                assignedCodes.add(code)
-                const subtreeFiles = nodeFilesMap.get(code)
-                let count = subtreeFiles && subtreeFiles.size > 0
-                  ? subtreeFiles.size
-                  : (child.fileCount ?? tagParentCountMap.get(`${code}::${parentCode}`) ?? tagCountMap.get(code) ?? 0)
-                if (count === 0 && child.name && tagNameCountMap.has(child.name)) {
-                  count = tagNameCountMap.get(child.name)!
+                // 2. 本地数据库中归属于当前 node.code 的动态扩展标签（含多级递归）
+                const collectDynFiles = (pCode: string) => {
+                  const dynList = dynamicTagsByParent.get(pCode) || []
+                  for (const dyn of dynList) {
+                    const dynFiles = tagFilesMap.get(dyn.code)
+                    if (dynFiles) {
+                      for (const f of dynFiles) fileSet.add(f)
+                    }
+                    collectDynFiles(dyn.code)
+                  }
                 }
-                // 直通透传：优先采用 Omni 已物化的 codePath / namePath（spec §3.4.1），
-                // 仅在 Omni 未回填时按父链兜底拼接，杜绝「组装后打平再递归拼树」的双重损耗。
-                const currentCodePath = child.codePath || `${parentCodePath}/${child.code}`
-                const currentNamePath = child.namePath || `${parentNamePath}/${child.name}`
-                tags.push({
-                  dimensionId: id,
-                  dimensionCode: root.code,
-                  dimensionName: root.name,
-                  tagValue: child.name,
-                  fileCount: count,
-                  level,
-                  code,
-                  codePath: currentCodePath,
-                  namePath: currentNamePath,
-                  viaParentCode: parentCode || root.code,
-                  isMultiSelect: false,
-                  order: child.sortOrder,
-                  meta: { sort_order: child.sortOrder, order: child.sortOrder }
-                })
-                collect(child, code, level + 1, currentCodePath, currentNamePath)
+                collectDynFiles(node.code)
+
+                // 3. 递归汇聚全部子节点的下属文件集合
+                for (const child of node.children || []) {
+                  const childSet = computeNodeSubtreeFiles(child)
+                  for (const f of childSet) fileSet.add(f)
+                }
+
+                nodeFilesMap.set(node.code, fileSet)
+                return fileSet
               }
-              // B. 本地数据库中归属于当前 node.code 的动态扩展标签（支持深层多级后代递归）
-              const collectDynamic = (
-                parentCodeKey: string,
-                curLevel: number,
-                curCodePath: string,
-                curNamePath: string
+
+              computeNodeSubtreeFiles(root)
+
+              const collect = (
+                node: OmniTaxonomyNode,
+                parentCode: string,
+                level: number,
+                parentCodePath = `/${node.code}`,
+                parentNamePath = `/${node.name}`
               ) => {
-                const dynChildren = dynamicTagsByParent.get(parentCodeKey) || []
-                for (const dyn of dynChildren) {
-                  if (tags.some(t => t.code === dyn.code || t.tagValue === dyn.name)) {
-                    assignedCodes.add(dyn.code) // 同名已认领，避免落入孤儿池
-                    continue
+                // A. Omni 受控树定义的子节点
+                for (const child of node.children || []) {
+                  const code = child.code
+                  assignedCodes.add(code)
+                  const subtreeFiles = nodeFilesMap.get(code)
+                  let count =
+                    subtreeFiles && subtreeFiles.size > 0
+                      ? subtreeFiles.size
+                      : (child.fileCount ??
+                        tagParentCountMap.get(`${code}::${parentCode}`) ??
+                        tagCountMap.get(code) ??
+                        0)
+                  if (count === 0 && child.name && tagNameCountMap.has(child.name)) {
+                    count = tagNameCountMap.get(child.name)!
                   }
-                  assignedCodes.add(dyn.code)
-                  const dynCodePath = tagChainsMap.get(dyn.code)?.[0]?.code_path || `${curCodePath}/${dyn.code}`
-                  const dynNamePath = tagChainsMap.get(dyn.code)?.[0]?.name_path || `${curNamePath}/${dyn.name}`
+                  // 直通透传：优先采用 Omni 已物化的 codePath / namePath（spec §3.4.1），
+                  // 仅在 Omni 未回填时按父链兜底拼接，杜绝「组装后打平再递归拼树」的双重损耗。
+                  const currentCodePath = child.codePath || `${parentCodePath}/${child.code}`
+                  const currentNamePath = child.namePath || `${parentNamePath}/${child.name}`
                   tags.push({
                     dimensionId: id,
                     dimensionCode: root.code,
                     dimensionName: root.name,
-                    tagValue: dyn.name,
-                    fileCount: dyn.count,
-                    level: curLevel,
-                    code: dyn.code,
-                    codePath: dynCodePath,
-                    namePath: dynNamePath,
-                    viaParentCode: parentCodeKey,
-                    isMultiSelect: dyn.meta?.isMultiSelect === true,
-                    order: 9999,
-                    meta: dyn.meta
+                    tagValue: child.name,
+                    fileCount: count,
+                    level,
+                    code,
+                    codePath: currentCodePath,
+                    namePath: currentNamePath,
+                    viaParentCode: parentCode || root.code,
+                    isMultiSelect: false,
+                    order: child.sortOrder,
+                    meta: { sort_order: child.sortOrder, order: child.sortOrder }
                   })
-                  collectDynamic(dyn.code, curLevel + 1, dynCodePath, dynNamePath)
+                  collect(child, code, level + 1, currentCodePath, currentNamePath)
+                }
+                // B. 本地数据库中归属于当前 node.code 的动态扩展标签（支持深层多级后代递归）
+                const collectDynamic = (
+                  parentCodeKey: string,
+                  curLevel: number,
+                  curCodePath: string,
+                  curNamePath: string
+                ) => {
+                  const dynChildren = dynamicTagsByParent.get(parentCodeKey) || []
+                  for (const dyn of dynChildren) {
+                    if (tags.some(t => t.code === dyn.code || t.tagValue === dyn.name)) {
+                      assignedCodes.add(dyn.code) // 同名已认领，避免落入孤儿池
+                      continue
+                    }
+                    assignedCodes.add(dyn.code)
+                    const dynCodePath =
+                      tagChainsMap.get(dyn.code)?.[0]?.code_path || `${curCodePath}/${dyn.code}`
+                    const dynNamePath =
+                      tagChainsMap.get(dyn.code)?.[0]?.name_path || `${curNamePath}/${dyn.name}`
+                    tags.push({
+                      dimensionId: id,
+                      dimensionCode: root.code,
+                      dimensionName: root.name,
+                      tagValue: dyn.name,
+                      fileCount: dyn.count,
+                      level: curLevel,
+                      code: dyn.code,
+                      codePath: dynCodePath,
+                      namePath: dynNamePath,
+                      viaParentCode: parentCodeKey,
+                      isMultiSelect: dyn.meta?.isMultiSelect === true,
+                      order: 9999,
+                      meta: dyn.meta
+                    })
+                    collectDynamic(dyn.code, curLevel + 1, dynCodePath, dynNamePath)
+                  }
+                }
+                collectDynamic(node.code, level, parentCodePath, parentNamePath)
+              }
+              collect(
+                root,
+                root.code,
+                1,
+                root.codePath || `/${root.code}`,
+                root.namePath || `/${root.name}`
+              )
+              return {
+                id,
+                name: root.name,
+                level: 0,
+                tags,
+                code: root.code,
+                order: root.sortOrder,
+                sort_order: root.sortOrder,
+                isMultiSelect: false,
+                meta: {
+                  source: root.source || 'builtin',
+                  order: root.sortOrder,
+                  sort_order: root.sortOrder
+                },
+                metadata: {
+                  source: root.source || 'builtin',
+                  order: root.sortOrder,
+                  sort_order: root.sortOrder
                 }
               }
-              collectDynamic(node.code, level, parentCodePath, parentNamePath)
-            }
-            collect(root, root.code, 1, root.codePath || `/${root.code}`, root.namePath || `/${root.name}`)
-            return {
-              id,
-              name: root.name,
-              level: 0,
-              tags,
-              code: root.code,
-              order: root.sortOrder,
-              sort_order: root.sortOrder,
-              isMultiSelect: false,
-              meta: { source: root.source || 'builtin', order: root.sortOrder, sort_order: root.sortOrder },
-              metadata: { source: root.source || 'builtin', order: root.sortOrder, sort_order: root.sortOrder }
-            }
-          })
-        : []
+            })
+          : []
       const seenDimNames = new Set<string>()
       for (const g of groups) {
         if (g.name) seenDimNames.add(g.name)
@@ -1127,7 +1253,9 @@ export class TagTreeQuery {
 
         let tags = og.tags || []
         if (excludeExtensionDimension) {
-          tags = tags.filter(t => !/扩展名|Extension/i.test(t.tagValue) && !/扩展名|Extension/i.test(t.code || ''))
+          tags = tags.filter(
+            t => !/扩展名|Extension/i.test(t.tagValue) && !/扩展名|Extension/i.test(t.code || '')
+          )
         }
         if (removeEmptyTags && !includeAllPresetTags) {
           tags = tags.filter(t => t.fileCount > 0)
@@ -1196,13 +1324,14 @@ export class TagTreeQuery {
             const meta = ROOT_DIMENSION_META[rootCode]
             const displayName = aliasResolver(rootCode, meta?.name || rootCode)
             const newGroup: DimensionGroup = {
-              id: meta?.id || (10000 + finalGroups.length),
+              id: meta?.id || 10000 + finalGroups.length,
               name: displayName,
               level: 0,
               tags: [],
               code: rootCode,
               order: meta?.id || 9999,
-              isMultiSelect: rootCode === 'builtin.file_purpose' || rootCode === 'builtin.content_tags',
+              isMultiSelect:
+                rootCode === 'builtin.file_purpose' || rootCode === 'builtin.content_tags',
               meta: { source: 'builtin', order: meta?.id || 9999 },
               metadata: { source: 'builtin', order: meta?.id || 9999 }
             }
@@ -1262,7 +1391,8 @@ export class TagTreeQuery {
             // 命中已知受控细分映射
             const mappedRoot = WELL_KNOWN_PARENT_TO_ROOT[p]
             if (mappedRoot) {
-              const group = finalGroups.find(g => g.code === mappedRoot) || ensureRootDimensionGroup(mappedRoot)
+              const group =
+                finalGroups.find(g => g.code === mappedRoot) || ensureRootDimensionGroup(mappedRoot)
               if (group) {
                 return { targetGroup: group, parentCode: p, level: 2 }
               }
@@ -1271,7 +1401,8 @@ export class TagTreeQuery {
             // 命中 Omni 全量节点到根的映射
             if (omniCodeToRootCodeMap.has(p)) {
               const rootCode = omniCodeToRootCodeMap.get(p)!
-              const group = finalGroups.find(g => g.code === rootCode) || ensureRootDimensionGroup(rootCode)
+              const group =
+                finalGroups.find(g => g.code === rootCode) || ensureRootDimensionGroup(rootCode)
               if (group) {
                 return { targetGroup: group, parentCode: p, level: 2 }
               }
@@ -1281,7 +1412,9 @@ export class TagTreeQuery {
             const pRow = tagRows.find(r => r.code === p)
             if (pRow) {
               let pParents: string[] = []
-              try { pParents = JSON.parse(pRow.parent_codes || '[]') } catch {}
+              try {
+                pParents = JSON.parse(pRow.parent_codes || '[]')
+              } catch {}
               const traced = traceAncestorGroup(pParents, visited)
               if (traced) return traced
             }
@@ -1290,7 +1423,11 @@ export class TagTreeQuery {
         }
 
         // 收集受控维度内可被动态标签特化认领的代表性标签（如截图、照片、水印、摄影等）
-        const controlledStemMap: Array<{ stem: string; targetGroup: DimensionGroup; parentTag: DimensionTag }> = []
+        const controlledStemMap: Array<{
+          stem: string
+          targetGroup: DimensionGroup
+          parentTag: DimensionTag
+        }> = []
         for (const g of finalGroups) {
           if (g.code === CONTENT_TAGS_CODE) continue
           for (const t of g.tags || []) {
@@ -1307,11 +1444,15 @@ export class TagTreeQuery {
           if (assignedCodes.has(t.code)) continue
           const resolvedName = aliasResolver(t.code, t.name)
           const selfFiles = tagFilesMap.get(t.code) || new Set<string>()
-          const count = selfFiles.size > 0 ? selfFiles.size : (tagCountMap.get(t.code) || 0)
+          const count = selfFiles.size > 0 ? selfFiles.size : tagCountMap.get(t.code) || 0
           if (removeEmptyTags && !includeAllPresetTags && count === 0) continue
 
           let parents: string[] = []
-          try { parents = JSON.parse(t.parent_codes || '[]') } catch { parents = [] }
+          try {
+            parents = JSON.parse(t.parent_codes || '[]')
+          } catch {
+            parents = []
+          }
 
           // 1. 同名直接认领合并
           let matchedSameName: { group: DimensionGroup; tag: DimensionTag } | null = null
@@ -1338,8 +1479,12 @@ export class TagTreeQuery {
             assignedCodes.add(t.code)
             tagToGroupMap.set(t.code, targetGroup)
             tagLevelMap.set(t.code, effectiveLevel)
-            const tCodePath = tagChainsMap.get(t.code)?.[0]?.code_path || `/${targetGroup.code}/${effectiveParent === targetGroup.code ? t.code : `${effectiveParent}/${t.code}`}`
-            const tNamePath = tagChainsMap.get(t.code)?.[0]?.name_path || `/${targetGroup.name}/${effectiveParent === targetGroup.code ? resolvedName : `${aliasResolver(effectiveParent, effectiveParent)}/${resolvedName}`}`
+            const tCodePath =
+              tagChainsMap.get(t.code)?.[0]?.code_path ||
+              `/${targetGroup.code}/${effectiveParent === targetGroup.code ? t.code : `${effectiveParent}/${t.code}`}`
+            const tNamePath =
+              tagChainsMap.get(t.code)?.[0]?.name_path ||
+              `/${targetGroup.name}/${effectiveParent === targetGroup.code ? resolvedName : `${aliasResolver(effectiveParent, effectiveParent)}/${resolvedName}`}`
             targetGroup.tags.push({
               dimensionId: targetGroup.id,
               dimensionCode: targetGroup.code || '',
@@ -1371,8 +1516,12 @@ export class TagTreeQuery {
             assignedCodes.add(t.code)
             tagToGroupMap.set(t.code, targetGroup)
             tagLevelMap.set(t.code, nextLvl)
-            const tCodePath = tagChainsMap.get(t.code)?.[0]?.code_path || `/${targetGroup.code}/${parentTag.code || parentTag.tagValue}/${t.code}`
-            const tNamePath = tagChainsMap.get(t.code)?.[0]?.name_path || `/${targetGroup.name}/${parentTag.tagValue}/${resolvedName}`
+            const tCodePath =
+              tagChainsMap.get(t.code)?.[0]?.code_path ||
+              `/${targetGroup.code}/${parentTag.code || parentTag.tagValue}/${t.code}`
+            const tNamePath =
+              tagChainsMap.get(t.code)?.[0]?.name_path ||
+              `/${targetGroup.name}/${parentTag.tagValue}/${resolvedName}`
             targetGroup.tags.push({
               dimensionId: targetGroup.id,
               dimensionCode: targetGroup.code || '',
@@ -1405,11 +1554,13 @@ export class TagTreeQuery {
           if (assignedCodes.has(t.code)) continue
           const resolvedName = aliasResolver(t.code, t.name)
           const selfFiles = tagFilesMap.get(t.code) || new Set<string>()
-          const count = selfFiles.size > 0 ? selfFiles.size : (tagCountMap.get(t.code) || 0)
+          const count = selfFiles.size > 0 ? selfFiles.size : tagCountMap.get(t.code) || 0
           if (removeEmptyTags && !includeAllPresetTags && count === 0) continue
 
           let parents: string[] = []
-          try { parents = JSON.parse(t.parent_codes || '[]') } catch {}
+          try {
+            parents = JSON.parse(t.parent_codes || '[]')
+          } catch {}
           const mPaths = [...(tagChainsMap.get(t.code) || [])]
 
           contentCandidates.push({
@@ -1441,7 +1592,11 @@ export class TagTreeQuery {
           const key = code || name
           if (contentNodeMap.has(key)) {
             const existing = contentNodeMap.get(key)!
-            if (parentKey && parentKey !== CONTENT_TAGS_CODE && existing.parentKey === CONTENT_TAGS_CODE) {
+            if (
+              parentKey &&
+              parentKey !== CONTENT_TAGS_CODE &&
+              existing.parentKey === CONTENT_TAGS_CODE
+            ) {
               existing.parentKey = parentKey
               existing.level = level
             }
@@ -1476,7 +1631,10 @@ export class TagTreeQuery {
                   // 防击穿护栏：若路径首段命中受控根维度，严禁挂入内容标签！
                   const firstSeg = segments[0]
                   const matchedRootCode = Array.from(ROOT_DIMENSION_CODES).find(
-                    rc => rc === firstSeg || aliasResolver(rc, rc) === firstSeg || ROOT_DIMENSION_META[rc]?.name === firstSeg
+                    rc =>
+                      rc === firstSeg ||
+                      aliasResolver(rc, rc) === firstSeg ||
+                      ROOT_DIMENSION_META[rc]?.name === firstSeg
                   )
                   if (matchedRootCode && matchedRootCode !== CONTENT_TAGS_CODE) {
                     const rootGroup = ensureRootDimensionGroup(matchedRootCode)
@@ -1487,7 +1645,9 @@ export class TagTreeQuery {
                         const isLast = i === segments.length - 1
                         const segCode = isLast ? cand.code : `builtin.cat.${seg}`
                         const segName = aliasResolver(segCode, seg)
-                        let existingTag = rootGroup.tags.find(t => t.code === segCode || t.tagValue === segName)
+                        let existingTag = rootGroup.tags.find(
+                          t => t.code === segCode || t.tagValue === segName
+                        )
                         if (!existingTag) {
                           existingTag = {
                             dimensionId: rootGroup.id,
@@ -1540,7 +1700,9 @@ export class TagTreeQuery {
               if (ROOT_DIMENSION_CODES.has(pCode) && pCode !== CONTENT_TAGS_CODE) {
                 const rootGroup = ensureRootDimensionGroup(pCode)
                 if (rootGroup) {
-                  let existingTag = rootGroup.tags.find(t => t.code === cand.code || t.tagValue === cand.name)
+                  let existingTag = rootGroup.tags.find(
+                    t => t.code === cand.code || t.tagValue === cand.name
+                  )
                   if (!existingTag) {
                     rootGroup.tags.push({
                       dimensionId: rootGroup.id,
@@ -1562,7 +1724,12 @@ export class TagTreeQuery {
                   assigned = true
                 }
               } else {
-                const pNode = ensureContentNode(pCode, aliasResolver(pCode, pCode), CONTENT_TAGS_CODE, 1)
+                const pNode = ensureContentNode(
+                  pCode,
+                  aliasResolver(pCode, pCode),
+                  CONTENT_TAGS_CODE,
+                  1
+                )
                 const leafNode = ensureContentNode(cand.code, cand.name, pNode.code, 2)
                 for (const f of cand.files) leafNode.files.add(f)
                 assigned = true
@@ -1589,7 +1756,8 @@ export class TagTreeQuery {
             // 若长词以短词为词根且同属同级或待归属状态，建立直属父子链
             if (
               longNode.name.length > shortNode.name.length &&
-              (longNode.name.startsWith(shortNode.name) || longNode.name.endsWith(shortNode.name)) &&
+              (longNode.name.startsWith(shortNode.name) ||
+                longNode.name.endsWith(shortNode.name)) &&
               longNode.parentKey === shortNode.parentKey
             ) {
               longNode.parentKey = shortNode.code || shortNode.name
@@ -1609,7 +1777,10 @@ export class TagTreeQuery {
         }
 
         // 6. 后序遍历自底向上汇聚文件集合（保证祖先节点包含所有子孙命中，绝不因直接文件数为 0 被误剪）
-        const aggregateContentSubtreeFiles = (key: string, visited = new Set<string>()): Set<string> => {
+        const aggregateContentSubtreeFiles = (
+          key: string,
+          visited = new Set<string>()
+        ): Set<string> => {
           const files = new Set<string>()
           if (visited.has(key)) return files
           visited.add(key)
@@ -1638,8 +1809,10 @@ export class TagTreeQuery {
           const count = node.files.size
           if (removeEmptyTags && !includeAllPresetTags && count === 0) continue
 
-          const cCodePath = tagChainsMap.get(node.code)?.[0]?.code_path || `/builtin.content_tags/${node.code}`
-          const cNamePath = tagChainsMap.get(node.code)?.[0]?.name_path || `/${contentTagDisplayName}/${node.name}`
+          const cCodePath =
+            tagChainsMap.get(node.code)?.[0]?.code_path || `/builtin.content_tags/${node.code}`
+          const cNamePath =
+            tagChainsMap.get(node.code)?.[0]?.name_path || `/${contentTagDisplayName}/${node.name}`
           contentDimTags.push({
             dimensionId: contentTagsDimId,
             dimensionCode: CONTENT_TAGS_CODE,
@@ -1700,7 +1873,6 @@ export class TagTreeQuery {
         }
       }
 
-
       // 保证 6 大根维度按官方标准顺序优先排列，并过滤 tags 为空的组
       finalGroups.sort((a, b) => {
         const orderA = a.order !== undefined && a.order > 0 ? a.order : 999999
@@ -1716,7 +1888,6 @@ export class TagTreeQuery {
           totalTime: Math.round((performance.now() - startTime) * 100) / 100
         }
       }
-
     } catch (error) {
       logger.error(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 获取维度组失败:', error)
       return { groups: [] }
@@ -1745,7 +1916,11 @@ export class TagTreeQuery {
       showMissing = ConfigOrchestrator.getInstance().getValue<boolean>('SHOW_MISSING_FILES') ?? true
     } catch (err) {
       // 配置中心未就绪属可容忍降级：按默认值显示缺失文件
-      logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 读取 SHOW_MISSING_FILES 失败，按默认 true 处理:', err)
+      logger.debug(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] 读取 SHOW_MISSING_FILES 失败，按默认 true 处理:',
+        err
+      )
     }
 
     const whereClauses: string[] = ['should_ignore_file(wf.path, wf.name) = 0']
@@ -1949,9 +2124,7 @@ export class TagTreeQuery {
         workspaceDirectoryPath
       } = params
 
-
       const { whereClauses, queryParams, showMissing } = this.buildFilterQuery(params)
-
 
       const sortMap: Record<string, string> = {
         name: 'wf.name',
@@ -1968,7 +2141,8 @@ export class TagTreeQuery {
       const sortColumn = sortMap[sortBy] || 'wf.name'
       const safeSortOrder = sortOrder.toLowerCase() === 'desc' ? 'DESC' : 'ASC'
       const limit = params.limit !== undefined ? Math.max(0, params.limit) : Math.max(1, pageSize)
-      const offset = params.offset !== undefined ? Math.max(0, params.offset) : Math.max(0, (page - 1) * limit)
+      const offset =
+        params.offset !== undefined ? Math.max(0, params.offset) : Math.max(0, (page - 1) * limit)
 
       // 混合检索分支：存在非空搜索词时启用（ADR-0039 Hybrid Search Everything）
       // 编排委托 HybridSearchSession 公开收口：融合排序/去重/分页/回退策略在 Session 单点定义
@@ -2072,7 +2246,10 @@ export class TagTreeQuery {
     candidateByFp: Map<string, HybridRankedCandidate>,
     contentsByFp: Map<string, string>
   ): Promise<
-    Map<string, { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }>
+    Map<
+      string,
+      { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }
+    >
   > {
     const result = new Map<
       string,
@@ -2181,11 +2358,13 @@ export class TagTreeQuery {
     const placeholders = fileFingerprints.map(() => '?').join(',')
     try {
       const rows = this.db
-        .prepare(`
+        .prepare(
+          `
           SELECT file_fingerprint, content, multimodal_content, ocr, lrc
           FROM file_contents
           WHERE file_fingerprint IN (${placeholders})
-        `)
+        `
+        )
         .all(...fileFingerprints) as Array<{
         file_fingerprint: string
         content: string | Buffer | null
@@ -2261,9 +2440,7 @@ export class TagTreeQuery {
    * 任一步骤异常（如短关键词触发了 trigram FTS 语法错误）仅降级为空补充集，
    * 融合池仍保留仲裁结果，不影响搜索可用性。
    */
-  private fetchLegacySearchRefs(
-    params: FilterFilesParams
-  ): {
+  private fetchLegacySearchRefs(params: FilterFilesParams): {
     analyzed: Array<Extract<HybridPageRef, { kind: 'analyzed' }>>
     unanalyzed: Array<Extract<HybridPageRef, { kind: 'unanalyzed' }>>
   } {
@@ -2310,7 +2487,11 @@ export class TagTreeQuery {
         if (!r.path) continue
         if (r.is_analyzed) {
           if (r.file_fingerprint) {
-            analyzed.push({ kind: 'analyzed', fileFingerprint: r.file_fingerprint, hasLiteral: true })
+            analyzed.push({
+              kind: 'analyzed',
+              fileFingerprint: r.file_fingerprint,
+              hasLiteral: true
+            })
           }
         } else {
           unanalyzed.push({
@@ -2408,13 +2589,19 @@ export class TagTreeQuery {
     try {
       let showMissing = true
       try {
-        showMissing = ConfigOrchestrator.getInstance().getValue<boolean>('SHOW_MISSING_FILES') ?? true
+        showMissing =
+          ConfigOrchestrator.getInstance().getValue<boolean>('SHOW_MISSING_FILES') ?? true
       } catch (err) {
         // 配置中心未就绪属可容忍降级：按默认值显示缺失文件
-        logger.debug(LogCategory.VIRTUAL_DIRECTORY, '[TagTreeQuery] 读取 SHOW_MISSING_FILES 失败，按默认 true 处理:', err)
+        logger.debug(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[TagTreeQuery] 读取 SHOW_MISSING_FILES 失败，按默认 true 处理:',
+          err
+        )
       }
 
-      let query = 'SELECT COUNT(DISTINCT wf.id) as count FROM workspace_files wf WHERE wf.is_analyzed = 1'
+      let query =
+        'SELECT COUNT(DISTINCT wf.id) as count FROM workspace_files wf WHERE wf.is_analyzed = 1'
       const params: any[] = []
 
       if (!showMissing) {
@@ -2429,7 +2616,8 @@ export class TagTreeQuery {
         query += ' AND (wf.path LIKE ? OR wf.path = ?)'
         params.push(`${prefix}%`, workspaceDirectoryPath)
       } else {
-        query += " AND wf.workspace_id IN (SELECT workspace_id FROM workspaces WHERE type = 'PRIVATE')"
+        query +=
+          " AND wf.workspace_id IN (SELECT workspace_id FROM workspaces WHERE type = 'PRIVATE')"
       }
 
       const result = this.db.prepare(query).get(...params) as any
@@ -2480,10 +2668,17 @@ export class TagTreeQuery {
         let tags: string[] = []
         if (file.dimension_tags) {
           try {
-            tags = typeof file.dimension_tags === 'string' ? JSON.parse(file.dimension_tags) : file.dimension_tags
+            tags =
+              typeof file.dimension_tags === 'string'
+                ? JSON.parse(file.dimension_tags)
+                : file.dimension_tags
           } catch (err) {
             // 标签 JSON 脏数据属可容忍降级：该文件按无标签展示
-            logger.debug(LogCategory.VIRTUAL_DIRECTORY, `[TagTreeQuery] 解析 dimension_tags 失败（${file.name}），按空标签处理:`, err)
+            logger.debug(
+              LogCategory.VIRTUAL_DIRECTORY,
+              `[TagTreeQuery] 解析 dimension_tags 失败（${file.name}），按空标签处理:`,
+              err
+            )
           }
         }
 
@@ -2513,7 +2708,9 @@ export class TagTreeQuery {
           qualityScore: file.quality_score || undefined,
           description: file.description || undefined,
           thumbnailPath: file.thumbnail_path || undefined,
-          multimodalContent: file.multimodal_content ? decompressText(file.multimodal_content) || undefined : undefined,
+          multimodalContent: file.multimodal_content
+            ? decompressText(file.multimodal_content) || undefined
+            : undefined,
           relativePathPrefix: relativePathPrefix || undefined,
           author: file.author || undefined,
           language: file.language || undefined,

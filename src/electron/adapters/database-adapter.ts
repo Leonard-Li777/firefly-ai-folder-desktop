@@ -172,7 +172,7 @@ export class DatabaseAdapter implements IDatabaseAdapter {
         if (!code) return
         db.prepare(
           `
-          INSERT OR IGNORE INTO file_tags (
+          INSERT OR IGNORE INTO file_tags_private (
             code, name, parent_codes, file_groups, source, meta, description
           ) VALUES (?, ?, '[]', ?, ?, ?, ?)
         `
@@ -180,9 +180,8 @@ export class DatabaseAdapter implements IDatabaseAdapter {
           code,
           dimension.name || code,
           JSON.stringify(dimension.applicableFileTypes || []),
-          dimension.isAIGenerated ? 'expanded' : 'builtin',
+          dimension.isAIGenerated ? 'expanded' : 'user',
           JSON.stringify({
-            isDimension: true,
             isLeaf: false,
             isSystem: !dimension.isAIGenerated,
             isMultiSelect: true,
@@ -211,14 +210,16 @@ export class DatabaseAdapter implements IDatabaseAdapter {
         }
         if (data.metadata !== undefined) {
           setClauses.push('meta = ?')
-          values.push(typeof data.metadata === 'object' ? JSON.stringify(data.metadata) : data.metadata)
+          values.push(
+            typeof data.metadata === 'object' ? JSON.stringify(data.metadata) : data.metadata
+          )
         }
         if (data.applicableFileTypes !== undefined) {
           setClauses.push('file_groups = ?')
           values.push(JSON.stringify(data.applicableFileTypes))
         }
         if (setClauses.length === 0) return
-        db.prepare(`UPDATE file_tags SET ${setClauses.join(', ')} WHERE code = ?`).run(
+        db.prepare(`UPDATE file_tags_private SET ${setClauses.join(', ')} WHERE code = ?`).run(
           ...values,
           dimensionId
         )
@@ -226,13 +227,10 @@ export class DatabaseAdapter implements IDatabaseAdapter {
 
       getById: async (dimensionId: string): Promise<any | null> => {
         const db = this.getDatabase()
-        const row = db
-          .prepare('SELECT * FROM file_tags WHERE code = ?')
-          .get(dimensionId) as any
+        const row = db.prepare('SELECT * FROM file_tags_private WHERE code = ?').get(dimensionId) as any
         return row || null
       }
     }
-
   }
 
   /**

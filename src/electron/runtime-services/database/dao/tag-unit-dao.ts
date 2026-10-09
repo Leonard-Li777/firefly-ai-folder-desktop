@@ -180,24 +180,42 @@ export class TagUnitDao {
 
   async getFileTagsByFileId(fileFingerprint: string): Promise<any[]> {
     try {
-      // 创世 Baseline V1：以 code 自然主键直连 file_tags，
-      // dimension_id 取首个父级 code（维度根节点），便于调用方按维度归拢。
-      return this.db
+      // 创世 Baseline V1 / PRD-0060 v2.3：本地缓存回灌路径必须与云端 RPC
+      // `rpc_get_file_by_id`（scripts/cloud-config-sync/sql/02_rpc/023_file_sync_rpc.sql:33-49）
+      // 返回**同形**的 tags 行 —— 否则 saveCloudResult 必须同时兼容两种 shape。
+      // 维度归属槽只认经由父 `ftr.via_parent_code`（票 02 终稿口径：为空即真根/无父）；
+      // 严禁退读 `parent_codes[0]` 二次猜测，严禁再产出 `dimension_id`。
+      const rows = this.db
         .prepare(
           `
         SELECT
-          ft.code as id,
-          ft.name,
-          CASE
-            WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
-            ELSE json_extract(ft.parent_codes, '$[0]')
-          END as dimension_id
+          ftr.tag_code        AS code,
+          ft.name             AS name,
+          ftr.via_parent_code AS via_parent_code,
+          ftr.tag_group       AS tag_group,
+          ft.parent_codes     AS parent_codes,
+          ftr.code_path       AS code_path,
+          ftr.name_path       AS name_path,
+          ftr.depth           AS depth,
+          ftr.confidence      AS confidence
         FROM file_tag_relations ftr
         JOIN file_tags ft ON ft.code = ftr.tag_code
         WHERE ftr.file_fingerprint = ?
       `
         )
-        .all(fileFingerprint) as any[]
+        .all(fileFingerprint) as Array<{ parent_codes: string | null } & Record<string, unknown>>
+      // 云端 `file_tags_private.parent_codes` 为 JSONB（数组），本地列是 TEXT（JSON 字符串）。
+      // 为兑现「与云端 RPC 同形」契约，此处统一解析为数组；解析失败退回 `[]`（与列默认值一致）。
+      return rows.map(row => {
+        let parentCodes: unknown = []
+        try {
+          const parsed = JSON.parse(row.parent_codes ?? '[]')
+          parentCodes = Array.isArray(parsed) ? parsed : []
+        } catch {
+          parentCodes = []
+        }
+        return { ...row, parent_codes: parentCodes }
+      })
     } catch (error) {
       logger.error(LogCategory.DATABASE_SERVICE, '获取文件标签失败', { error, fileFingerprint })
       return []

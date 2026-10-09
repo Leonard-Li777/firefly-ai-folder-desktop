@@ -42,10 +42,7 @@ export class DatabaseHelper {
         wf.path,
         wf.name,
         f.smart_name as smartName,
-        CASE
-          WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
-          ELSE json_extract(ft.parent_codes, '$[0]')
-        END as dimension_id,
+        COALESCE(NULLIF(ftr.via_parent_code, ''), ft.code) as dimension_code,
         ft.name as tagName
       FROM workspace_files wf
       INNER JOIN files f ON wf.file_fingerprint = f.file_fingerprint
@@ -70,7 +67,7 @@ export class DatabaseHelper {
           tags: new Set<string>()
         })
       }
-      filesById.get(row.id)!.tags.add(`${row.dimension_id}:${row.tagName}`)
+      filesById.get(row.id)!.tags.add(`${row.dimension_code}:${row.tagName}`)
     }
 
     for (const dir of virtualDirs) {
@@ -132,13 +129,14 @@ export class DatabaseHelper {
 
     for (let i = 0; i < selectedTags.length; i++) {
       const tag = selectedTags[i]
-      // 维度归属通过父级 code 判定（创世 Baseline V1）
+      // 维度归属统一走经由父 code（票 02 终稿口径，与上方 getBatchedVirtualDirectoryFiles 同源）：
+      // 只认 ftr.via_parent_code，为空即真根/无父退自身 ft.code；严禁退读 parent_codes[0]。
       query += `
         AND EXISTS (
           SELECT 1 FROM file_tag_relations ftr${i}
           INNER JOIN file_tags ft${i} ON ft${i}.code = ftr${i}.tag_code
           WHERE ftr${i}.file_fingerprint = f.file_fingerprint
-            AND json_extract(ft${i}.parent_codes, '$[0]') = ?
+            AND COALESCE(NULLIF(ftr${i}.via_parent_code, ''), ft${i}.code) = ?
             AND (
               LOWER(TRIM(ft${i}.name)) = LOWER(TRIM(?))
               OR LOWER(TRIM(REPLACE(ft${i}.name, '.', ''))) = LOWER(TRIM(REPLACE(?, '.', '')))
@@ -245,7 +243,10 @@ export class DatabaseHelper {
         }
         rawSmartName = rawSmartName.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
         if (!rawSmartName) {
-          rawSmartName = path.basename(file.name || file.path || '', path.extname(file.name || file.path || ''))
+          rawSmartName = path.basename(
+            file.name || file.path || '',
+            path.extname(file.name || file.path || '')
+          )
         }
 
         const formattedDimensionTags: Array<{ dimension: string; tag: string }> = []

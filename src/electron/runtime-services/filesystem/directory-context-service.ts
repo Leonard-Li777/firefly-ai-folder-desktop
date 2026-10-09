@@ -241,13 +241,9 @@ export class DirectoryContextService {
         namingPattern_suggestion: normalizedNamingPatternSuggestion || '',
         // 正式生效的字段：默认不自动填入 AI 建议值，仅保留用户已设置/快照的值；需用户手动点击采纳
         analysisStrategy:
-          existing?.customConfigSnapshot?.analysisStrategy ||
-          existing?.analysisStrategy ||
-          '',
+          existing?.customConfigSnapshot?.analysisStrategy || existing?.analysisStrategy || '',
         namingPattern:
-          existing?.customConfigSnapshot?.namingPattern ||
-          existing?.namingPattern ||
-          '',
+          existing?.customConfigSnapshot?.namingPattern || existing?.namingPattern || '',
         // 始终保留已有重命名模板
         namingTemplate: existing?.namingTemplate !== undefined ? existing.namingTemplate : '',
         inheritMode,
@@ -893,9 +889,9 @@ export class DirectoryContextService {
    */
   private findAncestorDirectories(targetPath: string): string[] {
     try {
-      const rows = this.db
-        .prepare('SELECT path FROM workspace_directories')
-        .all() as Array<{ path: string }>
+      const rows = this.db.prepare('SELECT path FROM workspace_directories').all() as Array<{
+        path: string
+      }>
 
       return rows
         .map(r => r.path)
@@ -1012,7 +1008,8 @@ export class DirectoryContextService {
 
       // 查询所有已分析的文件
       const rows = this.db
-        .prepare(`
+        .prepare(
+          `
           SELECT 
             wf.id, wf.file_fingerprint, wf.path, wf.name, f.smart_name, f.extension, f.author, f.language, f.size,
             wf.created_at, wf.modified_at,
@@ -1021,7 +1018,8 @@ export class DirectoryContextService {
           JOIN files f ON wf.file_fingerprint = f.file_fingerprint
           LEFT JOIN file_contents fc ON wf.file_fingerprint = fc.file_fingerprint
           WHERE wf.is_analyzed = 1
-        `)
+        `
+        )
         .all() as any[]
 
       // 根据当前目录附加属性的继承模式筛选目标文件：
@@ -1084,8 +1082,7 @@ export class DirectoryContextService {
           let metadataObj: Record<string, any> = {}
           try {
             if (row.meta) {
-              metadataObj =
-                typeof row.meta === 'string' ? JSON.parse(row.meta) : row.meta
+              metadataObj = typeof row.meta === 'string' ? JSON.parse(row.meta) : row.meta
             }
           } catch {
             metadataObj = {}
@@ -1099,28 +1096,31 @@ export class DirectoryContextService {
           }
           rawSmartName = rawSmartName.replace(/\.[a-zA-Z0-9]{1,10}$/i, '').trim()
           if (!rawSmartName) {
-            rawSmartName = pathModule.basename(row.name || row.path || '', pathModule.extname(row.name || row.path || ''))
+            rawSmartName = pathModule.basename(
+              row.name || row.path || '',
+              pathModule.extname(row.name || row.path || '')
+            )
           }
 
-          // 查询该文件的标签维度（创世 Baseline V1：维度取首个父级 code）
+          // 查询该文件的标签维度归属（票 02 终稿口径：只认经由父 `ftr.via_parent_code`；
+          // 为空即真根/无父，退自身 `ft.code`。严禁退读 `parent_codes[0]` 二次猜测。）
           const tagsRows = this.db
-            .prepare(`
+            .prepare(
+              `
               SELECT
                 ft.name,
-                CASE
-                  WHEN ft.parent_codes IS NULL OR ft.parent_codes = '[]' THEN ft.code
-                  ELSE json_extract(ft.parent_codes, '$[0]')
-                END as dimension_id
+                COALESCE(NULLIF(ftr.via_parent_code, ''), ft.code) as dimension_code
               FROM file_tag_relations ftr
               JOIN file_tags ft ON ft.code = ftr.tag_code
               WHERE ftr.file_fingerprint = ?
-            `)
-            .all(row.file_fingerprint) as Array<{ name: string; dimension_id: string }>
+            `
+            )
+            .all(row.file_fingerprint) as Array<{ name: string; dimension_code: string }>
 
           const dimensionTags: Record<string, string> = {}
           tagsRows.forEach(tr => {
-            if (tr.dimension_id && tr.name) {
-              dimensionTags[tr.dimension_id] = tr.name
+            if (tr.dimension_code && tr.name) {
+              dimensionTags[tr.dimension_code] = tr.name
             }
           })
 
@@ -1135,14 +1135,15 @@ export class DirectoryContextService {
             modifiedAt: row.modified_at,
             createdAt: row.created_at,
             qualityScore: row.quality_score,
-            tags: tagsRows.map(tr => ({ dimensionName: tr.dimension_id, tagValue: tr.name })),
+            tags: tagsRows.map(tr => ({ dimensionName: tr.dimension_code, tagValue: tr.name })),
             dimensionTags,
             metadata: metadataObj,
             author: row.author,
             language: row.language
           }
 
-          const rowTemplate = (row as any).resolvedTemplate !== undefined ? (row as any).resolvedTemplate : template
+          const rowTemplate =
+            (row as any).resolvedTemplate !== undefined ? (row as any).resolvedTemplate : template
           let newSmartName = rawSmartName
           if (rowTemplate) {
             newSmartName = NamingDSLEngine.renderTemplate(rowTemplate, fileContext, i + 1, true)
@@ -1158,7 +1159,11 @@ export class DirectoryContextService {
           // 原始智能文件名已统一落 files.raw_smart_name 列，meta 中不再留存副本
           if (finalSmartNameWithExt && finalSmartNameWithExt !== row.smart_name) {
             // 应用了模板 → 'template'；模板为空（用户选择「不使用附加模板」回落核心名）→ NULL
-            updateStmt.run(finalSmartNameWithExt, template ? 'template' : null, row.file_fingerprint)
+            updateStmt.run(
+              finalSmartNameWithExt,
+              template ? 'template' : null,
+              row.file_fingerprint
+            )
             updatedCount++
           }
         }

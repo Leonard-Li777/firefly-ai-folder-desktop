@@ -80,7 +80,10 @@ export function buildBuiltinTagIdentity(input: {
     enTags.forEach((enName, tagIndex) => {
       const en = String(enName ?? '').trim()
       if (!en) {
-        throw new BuiltinIdentityError('EMPTY_EN_NAME', `empty en tag dim=${dim.id} idx=${tagIndex}`)
+        throw new BuiltinIdentityError(
+          'EMPTY_EN_NAME',
+          `empty en tag dim=${dim.id} idx=${tagIndex}`
+        )
       }
       const code = enBuiltinCode(en)
       const slugKey = CJK_RE.test(en)
@@ -150,7 +153,7 @@ export function buildBuiltinImportPlan(input: {
       source: 'builtin',
       dimId: item.dimId,
       tagIndex: item.tagIndex,
-      meta: { isDimension: false, sortOrder: item.tagIndex, enCanonicalName: item.en }
+      meta: { sortOrder: item.tagIndex, enCanonicalName: item.en }
     })
     for (const [locale, lemma] of Object.entries(item.aliases)) {
       aliases.push({
