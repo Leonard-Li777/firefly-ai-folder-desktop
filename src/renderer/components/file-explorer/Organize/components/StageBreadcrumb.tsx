@@ -50,8 +50,8 @@ export function StageBreadcrumb({
         organizeMode !== 'fine-organize'))
   )
 
-  // 根首页项
-  const homeStep = { key: 'root-mode-select' as Stage, label: t('首页'), icon: 'home' }
+  // 根整理首页项
+  const homeStep = { key: 'root-mode-select' as Stage, label: t('整理首页'), icon: 'home' }
 
   let steps: Array<{ key: Stage; label: string; icon: string }> = []
 
@@ -119,7 +119,11 @@ export function StageBreadcrumb({
         return (
           <React.Fragment key={step.key}>
             <span
-              title={step.label}
+              title={
+                isHome
+                  ? t('返回整理首页，查看功能概览并切换其他路径')
+                  : step.label
+              }
               onClick={() => {
                 if (isClickable) {
                   handleStageClick(step.key)
@@ -129,7 +133,7 @@ export function StageBreadcrumb({
                 'flex items-center gap-1 px-2.5 py-1 rounded-full font-semibold transition-all duration-200 min-w-0 shrink overflow-hidden select-none',
                 isClickable ? 'cursor-pointer' : 'cursor-not-allowed opacity-35',
                 isHome
-                  ? 'bg-primary text-primary-foreground shadow-md ring-1 ring-primary/40 hover:bg-primary/90 hover:shadow-lg'
+                  ? 'bg-primary text-primary-foreground shadow-md ring-1 ring-primary/40 hover:bg-primary/90 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]'
                   : isActive
                     ? 'bg-primary/20 text-primary shadow-xs ring-1 ring-primary/30 font-bold hover:bg-primary/25'
                     : isLit

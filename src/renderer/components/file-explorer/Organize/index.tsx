@@ -27,6 +27,7 @@ import { PaymentFlowDialog } from '../../tier/PaymentFlowDialog'
 import { useSettingsStore } from '../../../stores/settings-store'
 import { useOrganizeState } from './hooks/useOrganizeState'
 import { StageBreadcrumb } from './components/StageBreadcrumb'
+import { OrganizeSidebar } from './components/OrganizeSidebar'
 import { RootModeSelectView } from './components/RootModeSelectView'
 import { BatchRenameView } from './components/BatchRenameView'
 import { BatchTagView } from './components/BatchTagView'
@@ -633,6 +634,12 @@ export const Organize: React.FC = () => {
         </div>
 
         <div className="flex-1 flex overflow-hidden relative">
+          {/* 左侧常驻批量功能导航侧边栏 */}
+          <OrganizeSidebar
+            currentStage={stage}
+            onSelectStage={setStage}
+          />
+
           {isStandaloneStage ? (
             <div className="flex-1 flex flex-col overflow-hidden bg-background">
               {stage === 'batch-rename' && (
