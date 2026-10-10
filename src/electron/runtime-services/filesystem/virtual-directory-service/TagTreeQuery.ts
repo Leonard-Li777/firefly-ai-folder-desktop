@@ -63,16 +63,22 @@ type HybridPageRef =
  */
 /** builtin.content_tags: parent_codes 为空数组的标签的逻辑父级 code */
 const CONTENT_TAGS_CODE = 'builtin.content_tags'
+/** builtin.content_tags 恒定垫底序值（与 omni fast path / 回退路径 / 前端比较层的 9999 特例口径统一） */
+const CONTENT_TAGS_TAIL_ORDER = 9999
 const escapeLike = (s: string) => s.replace(/([%_\\])/g, '\\$1')
 
-/** 6 大受控根维度权威元数据定义（spec §2 原则 2） */
+/** 10 大受控根维度权威元数据定义（spec §2 原则 2） */
 const ROOT_DIMENSION_META: Record<string, { id: number; name: string }> = {
   [DIMENSION_CODES.FILE_TYPE]: { id: 1, name: '文件类型' },
   [DIMENSION_CODES.FILE_PURPOSE]: { id: 2, name: '文件用途' },
   [DIMENSION_CODES.FILE_SOURCE]: { id: 3, name: '文件来源' },
   [DIMENSION_CODES.AUTHOR]: { id: 4, name: '作者' },
+  [DIMENSION_CODES.LANGUAGE_SEGMENTATION]: { id: 16, name: '语言细分' },
+  [DIMENSION_CODES.SECURITY_LEVEL]: { id: 17, name: '安全等级' },
+  [DIMENSION_CODES.PROCESSING_STATUS]: { id: 18, name: '处理状态' },
   [DIMENSION_CODES.DOCUMENT_QUALITY]: { id: 27, name: '文件质量' },
-  [DIMENSION_CODES.CONTENT_TAGS]: { id: 28, name: '内容标签' }
+  [DIMENSION_CODES.CONTENT_TAGS]: { id: 28, name: '内容标签' },
+  [DIMENSION_CODES.CONTENT_RATING]: { id: 162, name: '内容分级' }
 }
 
 const ROOT_DIMENSION_CODES = new Set<string>(Object.keys(ROOT_DIMENSION_META))
@@ -1140,13 +1146,18 @@ export class TagTreeQuery {
                   assignedCodes.add(code)
                   const subtreeFiles = nodeFilesMap.get(code)
                   let count =
-                    subtreeFiles && subtreeFiles.size > 0
+                    subtreeFiles !== undefined
                       ? subtreeFiles.size
                       : (child.fileCount ??
                         tagParentCountMap.get(`${code}::${parentCode}`) ??
                         tagCountMap.get(code) ??
                         0)
-                  if (count === 0 && child.name && tagNameCountMap.has(child.name)) {
+                  if (
+                    subtreeFiles === undefined &&
+                    count === 0 &&
+                    child.name &&
+                    tagNameCountMap.has(child.name)
+                  ) {
                     count = tagNameCountMap.get(child.name)!
                   }
                   // 直通透传：优先采用 Omni 已物化的 codePath / namePath（spec §3.4.1），
@@ -1275,6 +1286,10 @@ export class TagTreeQuery {
 
       // 顶层主干根节点按 sort_order 升序排序
       groups.sort((a, b) => {
+        // builtin.content_tags 恒定垫底（无条件，优先于 order 档，与前端比较层口径统一）
+        const isTailA = a.code === CONTENT_TAGS_CODE
+        const isTailB = b.code === CONTENT_TAGS_CODE
+        if (isTailA !== isTailB) return isTailA ? 1 : -1
         const orderA = a.order !== undefined && a.order > 0 ? a.order : 999999
         const orderB = b.order !== undefined && b.order > 0 ? b.order : 999999
         return orderA - orderB
@@ -1345,7 +1360,11 @@ export class TagTreeQuery {
           'builtin.file_purpose': 'builtin.file_purpose',
           'builtin.file_source': 'builtin.file_source',
           'builtin.author': 'builtin.author',
+          'builtin.language_segmentation': 'builtin.language_segmentation',
+          'builtin.security_level': 'builtin.security_level',
+          'builtin.processing_status': 'builtin.processing_status',
           'builtin.document_quality': 'builtin.document_quality',
+          'builtin.content_rating': 'builtin.content_rating',
           'builtin.image_subdivision': 'builtin.file_type',
           'builtin.image_segmentation': 'builtin.file_type',
           'builtin.photo_subdivision': 'builtin.file_type',
@@ -1355,6 +1374,7 @@ export class TagTreeQuery {
           'builtin.manga_subdivision': 'builtin.file_type',
           'builtin.comic_segmentation': 'builtin.file_type',
           'builtin.porn_subdivision': 'builtin.file_type',
+          'builtin.erotic_scale': 'builtin.file_type',
           'builtin.watermark_level': 'builtin.file_type',
           'builtin.mosaic_level': 'builtin.file_type',
           'builtin.theme': 'builtin.file_type'
@@ -1833,8 +1853,11 @@ export class TagTreeQuery {
             level: 0,
             tags: contentDimTags,
             code: CONTENT_TAGS_CODE,
+            // 恒定垫底：与 omni fast path / 回退路径的 9999 特例口径统一（缺省时前端 id 回退会得到 28 误排前排）
+            order: CONTENT_TAGS_TAIL_ORDER,
             isMultiSelect: false,
-            metadata: { isPanDimension: true, source: 'builtin' }
+            meta: { source: 'builtin', order: CONTENT_TAGS_TAIL_ORDER },
+            metadata: { isPanDimension: true, source: 'builtin', order: CONTENT_TAGS_TAIL_ORDER }
           })
           logger.debug(
             LogCategory.VIRTUAL_DIRECTORY,

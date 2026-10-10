@@ -1,9 +1,14 @@
 import { DimensionGroup, DimensionTag, SelectedTag } from '@firefly/types'
-import { isPanDimension } from '@firefly/shared'
+import { isPanDimension, DIMENSION_CODES } from '@firefly/shared'
 import { DimensionTreeNode } from './AnalyzedDirectory/types'
 
 /** key 父级段的「常规父标签 code」前缀 */
 const PARENT_CODE_PREFIX = 'parentCode:'
+/**
+ * builtin.content_tags 根节点恒定垫底序值（与 omni fast path / 回退路径 / TagTreeQuery 虚拟注入的 9999 三处口径统一）。
+ * 虚拟注入组缺 order 时 id 回退会得到 28，受控根未全量到位时会误排前排，故比较层强制垫底。
+ */
+export const CONTENT_TAGS_TAIL_ORDER = 9999
 /**
  * key 父级段的「穿透提升聚合行」前缀 (ADR-0034 §4 / M-4)：
  * 聚合行的 viaParentCode 被重写为提升容器，可能与容器直系真实实例的 key 撞车，
@@ -72,7 +77,7 @@ export interface SortWeightNode {
 
 /**
  * 提取主干节点的三级权重元组：
- * 1. order: 内置顺序（升序优先，如 1 < 2 < 3）
+ * 1. order: 内置顺序（升序优先，如 1 < 2 < 3；仅 > 0 视为已设置，0 = 未设置）
  * 2. fileCount: 关联文件数（降序优先）
  * 3. omwCount: 语言学词频（降序优先）
  */
@@ -129,7 +134,13 @@ export function getTopLevelSortWeight(node: SortWeightNode): {
     orderVal = node.id
   }
 
-  const hasOrder = orderVal !== undefined && Number.isFinite(orderVal)
+  // 1.4 builtin.content_tags 恒定垫底特例（三处 9999 口径统一：omni fast path / omni 回退路径 / 本前端）
+  if (node.code === DIMENSION_CODES.CONTENT_TAGS) {
+    orderVal = CONTENT_TAGS_TAIL_ORDER
+  }
+
+  // 语义约定与后端一致：order/sort_order 仅在 > 0 时视为已设置，0 = 未设置（对齐 TagTreeQuery 与 taxonomy.rs 的 `order > 0` 判据）
+  const hasOrder = typeof orderVal === 'number' && Number.isFinite(orderVal) && orderVal > 0
   const order = hasOrder ? (orderVal as number) : Infinity
 
   // 2. fileCount 文件关联数提取（降序）
@@ -175,6 +186,13 @@ export function getTopLevelSortWeight(node: SortWeightNode): {
  * SortWeight = <builtin.meta.order (升序), file_count (降序), omw.meta.count (降序)>
  */
 export function compareTopLevelNodes(a: SortWeightNode, b: SortWeightNode): number {
+  // builtin.content_tags 恒定垫底（无条件，优先于全部权重档）：
+  // 仅靠 order=9999 不够——hasOrder 根永远排在未设置档之前，正序根稀少时会卡在未设置根之前；
+  // 与 omni fast path / 回退路径 / TagTreeQuery 出口的 9999 特例口径统一，但最终裁决以本判定为准
+  const isTailA = a.code === DIMENSION_CODES.CONTENT_TAGS
+  const isTailB = b.code === DIMENSION_CODES.CONTENT_TAGS
+  if (isTailA !== isTailB) return isTailA ? 1 : -1
+
   const wA = getTopLevelSortWeight(a)
   const wB = getTopLevelSortWeight(b)
 

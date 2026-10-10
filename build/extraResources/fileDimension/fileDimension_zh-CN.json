@@ -2347,20 +2347,16 @@
     },
     {
       "id": 123,
-      "name": "内容尺度",
+      "name": "色情分级",
       "level": 3,
       "tags": [
         "软色情",
         "半肉",
         "纯肉",
         "特殊XP",
-        "重度猎奇",
-        "PG-13",
-        "R-15",
-        "R-18",
-        "R-18G"
+        "重度猎奇"
       ],
-      "description": "文件内容的年龄适宜性分级",
+      "description": "色情内容的露骨程度与表现形式细分",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2658,7 +2654,6 @@
       "name": "敏感内容",
       "level": 2,
       "tags": [
-        "全年龄",
         "暴恐",
         "涉政",
         "违规",
@@ -3961,6 +3956,39 @@
           ]
         }
       ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 162,
+      "name": "内容分级",
+      "level": 1,
+      "tags": [
+        "全年龄",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "文件内容的年龄适宜性分级",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive",
+        "document"
+      ],
+      "contextHints": [
+        "年龄适宜性分级",
+        "内容分级",
+        "受众年龄审查"
+      ],
+      "triggerConditions": [],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

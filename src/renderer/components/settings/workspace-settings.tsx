@@ -30,6 +30,8 @@ import { EmptyFolderCleanupDialog } from '../organize/EmptyFolderCleanupDialog'
 import { RescanPreviewDialog } from './RescanPreviewDialog'
 import { t } from '@app/languages'
 import { formatFileSize, formatDateTime } from '@firefly/shared'
+import { useVirtualDirectoryStore } from '../../stores/virtual-directory-store'
+import { useAnalyzedDirectoryStore } from '../../stores/analyzed-directory-store'
 
 /**
  * 工作目录设置组件
@@ -177,9 +179,16 @@ export const MonitoringSettings: React.FC = () => {
       // 重新加载目录列表
       await loadWorkspaceDirectories()
 
-      // 清理虚拟目录的选中状态缓存并触发事件
+      // 清理虚拟目录与已分析目录的选中状态与数据缓存并触发事件
       localStorage.removeItem('virtualDir_selectedTags')
       localStorage.removeItem('virtualDir_selectionStack')
+      useVirtualDirectoryStore.getState().setDimensionGroups([])
+      useVirtualDirectoryStore.getState().clearSelection()
+      useVirtualDirectoryStore.getState().setFilteredFiles([])
+      useVirtualDirectoryStore.getState().setTotalFilesCount(0)
+      useAnalyzedDirectoryStore.getState().setDimensionGroups([])
+      useAnalyzedDirectoryStore.getState().clearSelectedTags()
+      useAnalyzedDirectoryStore.getState().setFilteredFiles([])
       window.dispatchEvent(new CustomEvent('workspace-reset'))
 
       console.log(`重置完成: ${currentDirectory.name}`)

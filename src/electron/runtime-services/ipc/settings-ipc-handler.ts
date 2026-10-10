@@ -13,6 +13,7 @@ import path from 'node:path'
 import { t } from '@app/languages'
 import { analysisQueueService } from '../analysis-queue-service'
 import { fileWatcherService } from '../filesystem/file-watcher-service'
+import { omniClient } from '../../services/omni-client'
 
 /** 校验忽略规则类型 */
 function isValidIgnoreRuleType(value: unknown): value is IIgnoreRule['type'] {
@@ -218,6 +219,7 @@ export function registerSettingsIPCHandlers(): void {
 
       if (directoryPath) {
         await databaseService.resetWorkspaceDirectoryAnalysis(directoryPath)
+        omniClient.clearTaxonomyTreeCache()
 
         // 通知渲染进程刷新
         BrowserWindow.getAllWindows().forEach(win => {
@@ -294,6 +296,7 @@ export function registerSettingsIPCHandlers(): void {
     try {
       logger.info(LogCategory.SETTING, '重置 AI 分析数据库...')
       await databaseService.resetAllAnalysisData()
+      omniClient.clearTaxonomyTreeCache()
 
       // 清理所有工作目录的 .VirtualDirectory (可选，但建议)
       const workspaces = await databaseService.getAllWorkspaceDirectories()

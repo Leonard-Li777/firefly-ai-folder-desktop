@@ -163,22 +163,34 @@ export const useAnalyzedDirectoryState = (
     const unsubscribe = window.electronAPI!.onWorkspaceDirectoriesUpdated?.(() => {
       logger.info(LogCategory.RENDERER, '工作目录已更新，重新加载...')
       loadWorkspaceDirectories()
+      if (currentWorkspaceDirectory) {
+        loadDimensionGroups()
+        loadFilteredFiles()
+      }
     })
     return () => {
       if (unsubscribe) unsubscribe()
     }
-  }, [])
+  }, [currentWorkspaceDirectory])
 
   // 监听工作目录重置事件
   useEffect(() => {
     const handleWorkspaceReset = () => {
-      logger.info(LogCategory.RENDERER, '收到工作目录重置事件')
+      logger.info(LogCategory.RENDERER, '收到工作目录重置事件，清空状态并重新加载...')
+      clearSelectedTags()
+      setDimensionGroups([])
+      setFilteredFiles([])
+      setAnalyzedFilesCount(0)
+      if (currentWorkspaceDirectory) {
+        loadDimensionGroups()
+        loadFilteredFiles()
+      }
     }
     window.addEventListener('workspace-reset', handleWorkspaceReset)
     return () => {
       window.removeEventListener('workspace-reset', handleWorkspaceReset)
     }
-  }, [])
+  }, [currentWorkspaceDirectory])
 
   // 监听忽略规则变更事件
   useEffect(() => {

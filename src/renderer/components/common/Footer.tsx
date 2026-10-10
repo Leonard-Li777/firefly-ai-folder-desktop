@@ -584,7 +584,7 @@ export function Footer() {
   const omniAiServiceInfo = useMemo(() => {
     if (omniStatus?.running) {
       return {
-        text: t('[基础AI引擎] Omni 服务就绪') + (omniStatus.version ? ` v${omniStatus.version}` : ''),
+        text: t('[基础AI引擎] Omni 服务就绪'),
         icon: 'check_circle',
         color: 'text-green-500',
         animate: undefined as string | undefined
