@@ -175,8 +175,8 @@
     "ko-KR": "알 수 없는 파일",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(38360-38368)",
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(28298-28306)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(26708-26716)"
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(28295-28303)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(29032-29040)"
     ],
     "$id": 8511
   },
@@ -374,9 +374,9 @@
     "ko-KR": "파일을 열지 못했습니다: {message}",
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(10653-10674)",
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(18598-18619)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(8304-8325)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(11782-11803)"
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(18595-18616)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(8625-8646)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(13840-13861)"
     ],
     "$id": 8526
   },
@@ -392,8 +392,8 @@
     "ko-KR": "손실됨",
     "$files": [
       "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(11782-11789)",
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(22332-22339)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(14982-14989)"
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(22329-22336)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(17040-17047)"
     ],
     "$id": 8527
   },
@@ -473,8 +473,8 @@
     "fr-FR": "Dossier",
     "ko-KR": "폴더",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(15162-15169)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(21006-21013)"
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(15159-15166)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(23061-23068)"
     ],
     "$id": 8533
   },
@@ -489,8 +489,8 @@
     "fr-FR": "Fichier",
     "ko-KR": "파일",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(29411-29417)",
-      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(21040-21046)"
+      "src/renderer/components/file-explorer/FileList/components/RowRenderer.tsx(29405-29411)",
+      "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(23095-23101)"
     ],
     "$id": 8534
   },
@@ -505,8 +505,8 @@
     "fr-FR": "Impossible de rejoindre la file d'attente d'analyse: {message}",
     "ko-KR": "분석 큐에 가입하지 못했습니다:{message}",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(3524-3547)",
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4272-4295)"
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(3600-3623)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4348-4371)"
     ],
     "$id": 20125
   },
@@ -521,11 +521,24 @@
     "fr-FR": "Déjà ajouté à la file d'attente d'analyse",
     "ko-KR": "분석 대기열에 이미 추가됨",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(3947-3958)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(4023-4034)",
       "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5119-5130)",
       "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5583-5594)"
     ],
     "$id": 8542
+  },
+  "匹配视频时间片段": {
+    "en-US": "Match video time segments",
+    "es-ES": "Fragmentos de video correspondientes",
+    "ar-EG": "مطابقة مقاطع الفيديو الزمنية",
+    "pt-PT": "Correspondência de segmentos de vídeo por tempo",
+    "ru-RU": "Сопоставление фрагментов времени в видео",
+    "ja-JP": "動画のタイムスタンプ区間を一致させる",
+    "de-DE": "Videosegmente übereinstimmen",
+    "fr-FR": "Correspondance avec des segments de temps de la vidéo",
+    "ko-KR": "비디오 시간 구간 매칭",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(6362-6374)"],
+    "$id": 20700
   },
   "尚未进行 AI 深度分析，命中文件名": {
     "en-US": "AI in-depth analysis has not been carried out, hit the file name",
@@ -537,7 +550,7 @@
     "de-DE": "AI eingehende Analyse wurde nicht durchgeführt, drücken Sie den Dateinamen",
     "fr-FR": "L'analyse approfondie de l'IA n'a pas été effectuée, appuyez sur le nom du fichier",
     "ko-KR": "인공 지능에 대한 심층 분석이 수행되지 않은,파일 이름을 누르십시오",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(6749-6771)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(7396-7418)"],
     "$id": 20126
   },
   "立即分析": {
@@ -551,7 +564,7 @@
     "fr-FR": "Analyser immédiatement",
     "ko-KR": "즉시 분석",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(7223-7231)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(7870-7878)",
       "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5356-5364)"
     ],
     "$id": 8544

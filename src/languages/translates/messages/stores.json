@@ -133,6 +133,32 @@
     "$files": ["src/renderer/stores/settings-store.ts(3151-3164)"],
     "$id": 3302
   },
+  "基础AI引擎配置": {
+    "en-US": "基础AI引擎配置",
+    "es-ES": "基础AI引擎配置",
+    "ar-EG": "基础AI引擎配置",
+    "pt-PT": "基础AI引擎配置",
+    "ru-RU": "基础AI引擎配置",
+    "ja-JP": "基础AI引擎配置",
+    "de-DE": "基础AI引擎配置",
+    "fr-FR": "基础AI引擎配置",
+    "ko-KR": "基础AI引擎配置",
+    "$files": ["src/renderer/stores/settings-store.ts(3238-3250)"],
+    "$id": 20499
+  },
+  "分析模式、嵌入模型与向量维度、视频切片抽帧": {
+    "en-US": "分析模式、嵌入模型与向量维度、视频切片抽帧",
+    "es-ES": "分析模式、嵌入模型与向量维度、视频切片抽帧",
+    "ar-EG": "分析模式、嵌入模型与向量维度、视频切片抽帧",
+    "pt-PT": "分析模式、嵌入模型与向量维度、视频切片抽帧",
+    "ru-RU": "分析模式、嵌入模型与向量维度、视频切片抽帧",
+    "ja-JP": "分析模式、嵌入模型与向量维度、视频切片抽帧",
+    "de-DE": "分析模式、嵌入模型与向量维度、视频切片抽帧",
+    "fr-FR": "分析模式、嵌入模型与向量维度、视频切片抽帧",
+    "ko-KR": "分析模式、嵌入模型与向量维度、视频切片抽帧",
+    "$files": ["src/renderer/stores/settings-store.ts(3290-3315)"],
+    "$id": 20500
+  },
   "高级AI引擎配置": {
     "en-US": "Advanced AI Engine Configuration",
     "es-ES": "Configuración del motor de IA avanzado",
@@ -143,7 +169,7 @@
     "de-DE": "Erweiterte KI-Engine-Konfiguration",
     "fr-FR": "Configuration du moteur IA avancé",
     "ko-KR": "고급 AI 엔진 구성",
-    "$files": ["src/renderer/stores/settings-store.ts(3294-3306)"],
+    "$files": ["src/renderer/stores/settings-store.ts(3445-3457)"],
     "$id": 19417
   },
   "生效引擎选择、云端配置与思考模式": {
@@ -156,34 +182,112 @@
     "de-DE": "Effektive Engine-Auswahl, Cloud-Konfiguration und Denkmodus",
     "fr-FR": "Sélection du moteur actif, configuration du cloud et mode de raisonnement",
     "ko-KR": "효과적인 엔진 선택, 클라우드 구성 및 사고 모드",
-    "$files": ["src/renderer/stores/settings-store.ts(3358-3378)"],
+    "$files": ["src/renderer/stores/settings-store.ts(3509-3529)"],
     "$id": 19418
   },
-  "分析设置": {
-    "en-US": "Analysis settings",
-    "es-ES": "Configuración de análisis",
-    "ar-EG": "إعدادات التحليل  ",
-    "pt-PT": "Definições de análise",
-    "ru-RU": "Настройки анализа  ",
-    "ja-JP": "分析設定",
-    "de-DE": "Analyseeinstellungen  ",
-    "fr-FR": "Paramètres d'analyse",
-    "ko-KR": "분석 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(3438-3446)"],
-    "$id": 5487
+  "内容萃取设置": {
+    "en-US": "内容萃取设置",
+    "es-ES": "内容萃取设置",
+    "ar-EG": "内容萃取设置",
+    "pt-PT": "内容萃取设置",
+    "ru-RU": "内容萃取设置",
+    "ja-JP": "内容萃取设置",
+    "de-DE": "内容萃取设置",
+    "fr-FR": "内容萃取设置",
+    "ko-KR": "内容萃取设置",
+    "$files": ["src/renderer/stores/settings-store.ts(3599-3609)"],
+    "$id": 20501
   },
-  "忽略规则和分析参数": {
-    "en-US": "Ignore Rules and Analysis Parameters",
-    "es-ES": "Reglas de omisión y parámetros de análisis",
-    "ar-EG": "قواعد التجاهل ومعاملات التحليل",
-    "pt-PT": "Regras de ignorar e parâmetros de análise",
-    "ru-RU": "Правила игнорирования и параметры анализа",
-    "ja-JP": "無視ルールと分析パラメータ",
-    "de-DE": "Ignorierregeln und Analyseparameter",
-    "fr-FR": "Règles d'ignorance et paramètres d'analyse",
-    "ko-KR": "무시 규칙 및 분석 매개변수",
-    "$files": ["src/renderer/stores/settings-store.ts(3491-3504)"],
-    "$id": 3300
+  "文本与文档提取、OCR精度和音频截取": {
+    "en-US": "文本与文档提取、OCR精度和音频截取",
+    "es-ES": "文本与文档提取、OCR精度和音频截取",
+    "ar-EG": "文本与文档提取、OCR精度和音频截取",
+    "pt-PT": "文本与文档提取、OCR精度和音频截取",
+    "ru-RU": "文本与文档提取、OCR精度和音频截取",
+    "ja-JP": "文本与文档提取、OCR精度和音频截取",
+    "de-DE": "文本与文档提取、OCR精度和音频截取",
+    "fr-FR": "文本与文档提取、OCR精度和音频截取",
+    "ko-KR": "文本与文档提取、OCR精度和音频截取",
+    "$files": ["src/renderer/stores/settings-store.ts(3650-3672)"],
+    "$id": 20502
+  },
+  "最小单元识别": {
+    "en-US": "最小单元识别",
+    "es-ES": "最小单元识别",
+    "ar-EG": "最小单元识别",
+    "pt-PT": "最小单元识别",
+    "ru-RU": "最小单元识别",
+    "ja-JP": "最小单元识别",
+    "de-DE": "最小单元识别",
+    "fr-FR": "最小单元识别",
+    "ko-KR": "最小单元识别",
+    "$files": ["src/renderer/stores/settings-store.ts(3740-3750)"],
+    "$id": 20503
+  },
+  "目录最小单元判定与单元识别提示词": {
+    "en-US": "目录最小单元判定与单元识别提示词",
+    "es-ES": "目录最小单元判定与单元识别提示词",
+    "ar-EG": "目录最小单元判定与单元识别提示词",
+    "pt-PT": "目录最小单元判定与单元识别提示词",
+    "ru-RU": "目录最小单元判定与单元识别提示词",
+    "ja-JP": "目录最小单元判定与单元识别提示词",
+    "de-DE": "目录最小单元判定与单元识别提示词",
+    "fr-FR": "目录最小单元判定与单元识别提示词",
+    "ko-KR": "目录最小单元判定与单元识别提示词",
+    "$files": ["src/renderer/stores/settings-store.ts(3794-3814)"],
+    "$id": 20504
+  },
+  "高级AI提示词": {
+    "en-US": "高级AI提示词",
+    "es-ES": "高级AI提示词",
+    "ar-EG": "高级AI提示词",
+    "pt-PT": "高级AI提示词",
+    "ru-RU": "高级AI提示词",
+    "ja-JP": "高级AI提示词",
+    "de-DE": "高级AI提示词",
+    "fr-FR": "高级AI提示词",
+    "ko-KR": "高级AI提示词",
+    "$files": ["src/renderer/stores/settings-store.ts(3885-3896)"],
+    "$id": 20505
+  },
+  "质量评分与标签智能生成提示词": {
+    "en-US": "质量评分与标签智能生成提示词",
+    "es-ES": "质量评分与标签智能生成提示词",
+    "ar-EG": "质量评分与标签智能生成提示词",
+    "pt-PT": "质量评分与标签智能生成提示词",
+    "ru-RU": "质量评分与标签智能生成提示词",
+    "ja-JP": "质量评分与标签智能生成提示词",
+    "de-DE": "质量评分与标签智能生成提示词",
+    "fr-FR": "质量评分与标签智能生成提示词",
+    "ko-KR": "质量评分与标签智能生成提示词",
+    "$files": ["src/renderer/stores/settings-store.ts(3940-3958)"],
+    "$id": 20506
+  },
+  "AI分析忽略规则": {
+    "en-US": "AI分析忽略规则",
+    "es-ES": "AI分析忽略规则",
+    "ar-EG": "AI分析忽略规则",
+    "pt-PT": "AI分析忽略规则",
+    "ru-RU": "AI分析忽略规则",
+    "ja-JP": "AI分析忽略规则",
+    "de-DE": "AI分析忽略规则",
+    "fr-FR": "AI分析忽略规则",
+    "ko-KR": "AI分析忽略规则",
+    "$files": ["src/renderer/stores/settings-store.ts(4031-4043)"],
+    "$id": 20507
+  },
+  "文件与目录排除规则、查重保护": {
+    "en-US": "文件与目录排除规则、查重保护",
+    "es-ES": "文件与目录排除规则、查重保护",
+    "ar-EG": "文件与目录排除规则、查重保护",
+    "pt-PT": "文件与目录排除规则、查重保护",
+    "ru-RU": "文件与目录排除规则、查重保护",
+    "ja-JP": "文件与目录排除规则、查重保护",
+    "de-DE": "文件与目录排除规则、查重保护",
+    "fr-FR": "文件与目录排除规则、查重保护",
+    "ko-KR": "文件与目录排除规则、查重保护",
+    "$files": ["src/renderer/stores/settings-store.ts(4085-4103)"],
+    "$id": 20508
   },
   "风格和语言": {
     "en-US": "Style and language",
@@ -195,7 +299,7 @@
     "de-DE": "Stil und Sprache",
     "fr-FR": "Style et langage",
     "ko-KR": "스타일과 언어",
-    "$files": ["src/renderer/stores/settings-store.ts(3565-3574)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4164-4173)"],
     "$id": 4272
   },
   "外观、语言和主题": {
@@ -208,7 +312,7 @@
     "de-DE": "Aussehen, Sprache und Design",
     "fr-FR": "Apparence, langue et thèmes",
     "ko-KR": "모습, 언어 및 테마",
-    "$files": ["src/renderer/stores/settings-store.ts(3617-3629)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4216-4228)"],
     "$id": 3295
   },
   "列表设置": {
@@ -221,7 +325,7 @@
     "de-DE": "Listeneinstellungen",
     "fr-FR": "Paramètres de la liste",
     "ko-KR": "목록 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(3693-3701)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4292-4300)"],
     "$id": 4273
   },
   "文件列表显示项": {
@@ -234,7 +338,7 @@
     "de-DE": "Anzeigeoptionen für Dateilisten",
     "fr-FR": "Éléments affichés dans la liste des fichiers",
     "ko-KR": "파일 목록 표시 항목",
-    "$files": ["src/renderer/stores/settings-store.ts(3746-3757)"],
+    "$files": ["src/renderer/stores/settings-store.ts(4345-4356)"],
     "$id": 3297
   },
   "保存设置失败": {
@@ -247,7 +351,7 @@
     "de-DE": "Speichern der Einstellungen fehlgeschlagen",
     "fr-FR": "Échec de la sauvegarde des paramètres",
     "ko-KR": "설정 저장 실패",
-    "$files": ["src/renderer/stores/settings-store.ts(6878-6888)"],
+    "$files": ["src/renderer/stores/settings-store.ts(7846-7856)"],
     "$id": 5491
   },
   "确认删除此工作目录？": {
@@ -260,7 +364,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich löschen?",
     "fr-FR": "Confirmer la suppression de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(9663-9677)"],
+    "$files": ["src/renderer/stores/settings-store.ts(10631-10645)"],
     "$id": 3303
   },
   "确认重置此工作目录？": {
@@ -273,7 +377,7 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich zurücksetzen?",
     "fr-FR": "Confirmer la réinitialisation de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(9985-9999)"],
+    "$files": ["src/renderer/stores/settings-store.ts(10953-10967)"],
     "$id": 3304
   },
   "不支持的语言设置": {
@@ -286,7 +390,7 @@
     "de-DE": "Nicht unterstützte Spracheinstellung",
     "fr-FR": "Paramètre de langue non pris en charge",
     "ko-KR": "지원되지 않는 언어 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(10454-10466)"],
+    "$files": ["src/renderer/stores/settings-store.ts(11422-11434)"],
     "$id": 5501
   },
   "交易失败，已归还扣币，原因：{reason}": {

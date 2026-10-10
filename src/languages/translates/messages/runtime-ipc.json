@@ -34,9 +34,9 @@
     "fr-FR": "Espace de travail introuvable",
     "ko-KR": "작업공간을 찾을 수 없습니다",
     "$files": [
-      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(4912-4922)",
-      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(7484-7494)",
-      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(7859-7869)"
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(4969-4979)",
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(7586-7596)",
+      "src/electron/runtime-services/ipc/settings-ipc-handler.ts(7961-7971)"
     ],
     "$id": 11062
   },
@@ -50,7 +50,7 @@
     "de-DE": "Löschen des Arbeitsverzeichnisses fehlgeschlagen, bitte erneut versuchen.",
     "fr-FR": "Échec de la suppression du répertoire de travail, veuillez réessayer",
     "ko-KR": "작업 디렉토리 삭제에 실패했습니다. 다시 시도해 주세요.",
-    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(6041-6057)"],
+    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(6098-6114)"],
     "$id": 8078
   },
   "未找到工作目录 ID: {workspaceId}": {
@@ -63,7 +63,7 @@
     "de-DE": "Arbeitsverzeichnis ID wurde nicht gefunden: {workspaceId}",
     "fr-FR": "ID du répertoire de travail non trouvé : {workspaceId}",
     "ko-KR": "작업 디렉토리 ID를 찾을 수 없음: {workspaceId}",
-    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(9009-9038)"],
+    "$files": ["src/electron/runtime-services/ipc/settings-ipc-handler.ts(9111-9140)"],
     "$id": 5969
   }
 }

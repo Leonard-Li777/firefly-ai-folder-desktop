@@ -33,15 +33,15 @@
       "src/electron/config/file-dimension-source.ts(47213-47221)",
       "src/electron/config/file-dimension-source.ts(48775-48783)",
       "src/electron/config/file-dimension-source.ts(49840-49848)",
-      "src/electron/config/file-dimension-source.ts(51574-51582)",
-      "src/electron/config/file-dimension-source.ts(52580-52588)",
-      "src/electron/config/file-dimension-source.ts(57696-57704)",
-      "src/electron/config/file-dimension-source.ts(63199-63207)",
-      "src/electron/config/file-dimension-source.ts(65629-65637)",
-      "src/electron/config/file-dimension-source.ts(67252-67260)",
-      "src/electron/config/file-dimension-source.ts(68894-68902)",
-      "src/electron/config/file-dimension-source.ts(70552-70560)",
-      "src/electron/config/file-dimension-source.ts(73986-73994)"
+      "src/electron/config/file-dimension-source.ts(51496-51504)",
+      "src/electron/config/file-dimension-source.ts(52502-52510)",
+      "src/electron/config/file-dimension-source.ts(57596-57604)",
+      "src/electron/config/file-dimension-source.ts(63099-63107)",
+      "src/electron/config/file-dimension-source.ts(65529-65537)",
+      "src/electron/config/file-dimension-source.ts(67152-67160)",
+      "src/electron/config/file-dimension-source.ts(68794-68802)",
+      "src/electron/config/file-dimension-source.ts(70452-70460)",
+      "src/electron/config/file-dimension-source.ts(73886-73894)"
     ],
     "$id": 7200
   },
@@ -76,7 +76,7 @@
       "src/electron/config/file-dimension-source.ts(890-896)",
       "src/electron/config/file-dimension-source.ts(9098-9104)",
       "src/electron/config/file-dimension-source.ts(26692-26698)",
-      "src/electron/config/file-dimension-source.ts(67306-67312)"
+      "src/electron/config/file-dimension-source.ts(67206-67212)"
     ],
     "$id": 7202
   },
@@ -98,7 +98,7 @@
       "src/electron/config/file-dimension-source.ts(44921-44928)",
       "src/electron/config/file-dimension-source.ts(47267-47274)",
       "src/electron/config/file-dimension-source.ts(48829-48836)",
-      "src/electron/config/file-dimension-source.ts(57750-57757)"
+      "src/electron/config/file-dimension-source.ts(57650-57657)"
     ],
     "$id": 7203
   },
@@ -119,15 +119,15 @@
       "src/electron/config/file-dimension-source.ts(47293-47299)",
       "src/electron/config/file-dimension-source.ts(48855-48861)",
       "src/electron/config/file-dimension-source.ts(49894-49900)",
-      "src/electron/config/file-dimension-source.ts(51628-51634)",
-      "src/electron/config/file-dimension-source.ts(52634-52640)",
-      "src/electron/config/file-dimension-source.ts(57776-57782)",
-      "src/electron/config/file-dimension-source.ts(63253-63259)",
-      "src/electron/config/file-dimension-source.ts(65683-65689)",
-      "src/electron/config/file-dimension-source.ts(67331-67337)",
-      "src/electron/config/file-dimension-source.ts(68948-68954)",
-      "src/electron/config/file-dimension-source.ts(70606-70612)",
-      "src/electron/config/file-dimension-source.ts(74040-74046)"
+      "src/electron/config/file-dimension-source.ts(51550-51556)",
+      "src/electron/config/file-dimension-source.ts(52556-52562)",
+      "src/electron/config/file-dimension-source.ts(57676-57682)",
+      "src/electron/config/file-dimension-source.ts(63153-63159)",
+      "src/electron/config/file-dimension-source.ts(65583-65589)",
+      "src/electron/config/file-dimension-source.ts(67231-67237)",
+      "src/electron/config/file-dimension-source.ts(68848-68854)",
+      "src/electron/config/file-dimension-source.ts(70506-70512)",
+      "src/electron/config/file-dimension-source.ts(73940-73946)"
     ],
     "$id": 7204
   },
@@ -146,9 +146,9 @@
       "src/electron/config/file-dimension-source.ts(5832-5838)",
       "src/electron/config/file-dimension-source.ts(9174-9180)",
       "src/electron/config/file-dimension-source.ts(13540-13546)",
-      "src/electron/config/file-dimension-source.ts(63278-63284)",
-      "src/electron/config/file-dimension-source.ts(68973-68979)",
-      "src/electron/config/file-dimension-source.ts(74065-74071)"
+      "src/electron/config/file-dimension-source.ts(63178-63184)",
+      "src/electron/config/file-dimension-source.ts(68873-68879)",
+      "src/electron/config/file-dimension-source.ts(73965-73971)"
     ],
     "$id": 7205
   },
@@ -501,7 +501,7 @@
     "ko-KR": "디자인 리소스",
     "$files": [
       "src/electron/config/file-dimension-source.ts(1834-1842)",
-      "src/electron/config/file-dimension-source.ts(65534-65542)"
+      "src/electron/config/file-dimension-source.ts(65434-65442)"
     ],
     "$id": 7227
   },
@@ -978,22 +978,22 @@
       "src/electron/config/file-dimension-source.ts(45002-45010)",
       "src/electron/config/file-dimension-source.ts(47373-47381)",
       "src/electron/config/file-dimension-source.ts(48935-48943)",
-      "src/electron/config/file-dimension-source.ts(51708-51716)",
-      "src/electron/config/file-dimension-source.ts(52714-52722)",
-      "src/electron/config/file-dimension-source.ts(53643-53651)",
-      "src/electron/config/file-dimension-source.ts(54583-54591)",
-      "src/electron/config/file-dimension-source.ts(55476-55484)",
-      "src/electron/config/file-dimension-source.ts(56429-56437)",
-      "src/electron/config/file-dimension-source.ts(57856-57864)",
-      "src/electron/config/file-dimension-source.ts(62468-62476)",
-      "src/electron/config/file-dimension-source.ts(64018-64026)",
-      "src/electron/config/file-dimension-source.ts(64864-64872)",
-      "src/electron/config/file-dimension-source.ts(66425-66433)",
-      "src/electron/config/file-dimension-source.ts(68100-68108)",
-      "src/electron/config/file-dimension-source.ts(69696-69704)",
-      "src/electron/config/file-dimension-source.ts(71314-71322)",
-      "src/electron/config/file-dimension-source.ts(72120-72128)",
-      "src/electron/config/file-dimension-source.ts(72929-72937)"
+      "src/electron/config/file-dimension-source.ts(51630-51638)",
+      "src/electron/config/file-dimension-source.ts(52636-52644)",
+      "src/electron/config/file-dimension-source.ts(53565-53573)",
+      "src/electron/config/file-dimension-source.ts(54505-54513)",
+      "src/electron/config/file-dimension-source.ts(55398-55406)",
+      "src/electron/config/file-dimension-source.ts(56351-56359)",
+      "src/electron/config/file-dimension-source.ts(57756-57764)",
+      "src/electron/config/file-dimension-source.ts(62368-62376)",
+      "src/electron/config/file-dimension-source.ts(63918-63926)",
+      "src/electron/config/file-dimension-source.ts(64764-64772)",
+      "src/electron/config/file-dimension-source.ts(66325-66333)",
+      "src/electron/config/file-dimension-source.ts(68000-68008)",
+      "src/electron/config/file-dimension-source.ts(69596-69604)",
+      "src/electron/config/file-dimension-source.ts(71214-71222)",
+      "src/electron/config/file-dimension-source.ts(72020-72028)",
+      "src/electron/config/file-dimension-source.ts(72829-72837)"
     ],
     "$id": 7276
   },
@@ -1026,14 +1026,14 @@
     "ko-KR": "사진술",
     "$files": [
       "src/electron/config/file-dimension-source.ts(4443-4451)",
-      "src/electron/config/file-dimension-source.ts(53697-53705)",
-      "src/electron/config/file-dimension-source.ts(54637-54645)",
-      "src/electron/config/file-dimension-source.ts(64072-64080)",
-      "src/electron/config/file-dimension-source.ts(64918-64926)",
-      "src/electron/config/file-dimension-source.ts(66479-66487)",
-      "src/electron/config/file-dimension-source.ts(69750-69758)",
-      "src/electron/config/file-dimension-source.ts(72174-72182)",
-      "src/electron/config/file-dimension-source.ts(72983-72991)"
+      "src/electron/config/file-dimension-source.ts(53619-53627)",
+      "src/electron/config/file-dimension-source.ts(54559-54567)",
+      "src/electron/config/file-dimension-source.ts(63972-63980)",
+      "src/electron/config/file-dimension-source.ts(64818-64826)",
+      "src/electron/config/file-dimension-source.ts(66379-66387)",
+      "src/electron/config/file-dimension-source.ts(69650-69658)",
+      "src/electron/config/file-dimension-source.ts(72074-72082)",
+      "src/electron/config/file-dimension-source.ts(72883-72891)"
     ],
     "$id": 7277
   },
@@ -1049,7 +1049,7 @@
     "ko-KR": "계약서 및 증서",
     "$files": [
       "src/electron/config/file-dimension-source.ts(4466-4474)",
-      "src/electron/config/file-dimension-source.ts(55530-55538)"
+      "src/electron/config/file-dimension-source.ts(55452-55460)"
     ],
     "$id": 19639
   },
@@ -1065,7 +1065,7 @@
     "ko-KR": "면허 및 허가증",
     "$files": [
       "src/electron/config/file-dimension-source.ts(4489-4495)",
-      "src/electron/config/file-dimension-source.ts(56483-56489)"
+      "src/electron/config/file-dimension-source.ts(56405-56411)"
     ],
     "$id": 19640
   },
@@ -1081,9 +1081,9 @@
     "ko-KR": "스크린샷",
     "$files": [
       "src/electron/config/file-dimension-source.ts(4510-4516)",
-      "src/electron/config/file-dimension-source.ts(62522-62528)",
-      "src/electron/config/file-dimension-source.ts(66506-66512)",
-      "src/electron/config/file-dimension-source.ts(68154-68160)"
+      "src/electron/config/file-dimension-source.ts(62422-62428)",
+      "src/electron/config/file-dimension-source.ts(66406-66412)",
+      "src/electron/config/file-dimension-source.ts(68054-68060)"
     ],
     "$id": 7278
   },
@@ -1182,11 +1182,11 @@
       "src/electron/config/file-dimension-source.ts(45056-45062)",
       "src/electron/config/file-dimension-source.ts(47427-47433)",
       "src/electron/config/file-dimension-source.ts(48989-48995)",
-      "src/electron/config/file-dimension-source.ts(51762-51768)",
-      "src/electron/config/file-dimension-source.ts(52768-52774)",
-      "src/electron/config/file-dimension-source.ts(57910-57916)",
-      "src/electron/config/file-dimension-source.ts(64099-64105)",
-      "src/electron/config/file-dimension-source.ts(69777-69783)"
+      "src/electron/config/file-dimension-source.ts(51684-51690)",
+      "src/electron/config/file-dimension-source.ts(52690-52696)",
+      "src/electron/config/file-dimension-source.ts(57810-57816)",
+      "src/electron/config/file-dimension-source.ts(63999-64005)",
+      "src/electron/config/file-dimension-source.ts(69677-69683)"
     ],
     "$id": 7284
   },
@@ -1202,9 +1202,9 @@
     "ko-KR": "그림",
     "$files": [
       "src/electron/config/file-dimension-source.ts(4686-4692)",
-      "src/electron/config/file-dimension-source.ts(64124-64130)",
-      "src/electron/config/file-dimension-source.ts(69802-69808)",
-      "src/electron/config/file-dimension-source.ts(72201-72207)"
+      "src/electron/config/file-dimension-source.ts(64024-64030)",
+      "src/electron/config/file-dimension-source.ts(69702-69708)",
+      "src/electron/config/file-dimension-source.ts(72101-72107)"
     ],
     "$id": 7285
   },
@@ -1220,7 +1220,7 @@
     "ko-KR": "글자가 있는 그림",
     "$files": [
       "src/electron/config/file-dimension-source.ts(4707-4714)",
-      "src/electron/config/file-dimension-source.ts(71368-71375)"
+      "src/electron/config/file-dimension-source.ts(71268-71275)"
     ],
     "$id": 19642
   },
@@ -1262,7 +1262,7 @@
     "ko-KR": "EXIF 데이터",
     "$files": [
       "src/electron/config/file-dimension-source.ts(4888-4898)",
-      "src/electron/config/file-dimension-source.ts(53500-53510)"
+      "src/electron/config/file-dimension-source.ts(53422-53432)"
     ],
     "$id": 7288
   },
@@ -1297,9 +1297,9 @@
       "src/electron/config/file-dimension-source.ts(47079-47087)",
       "src/electron/config/file-dimension-source.ts(48641-48649)",
       "src/electron/config/file-dimension-source.ts(49706-49714)",
-      "src/electron/config/file-dimension-source.ts(51440-51448)",
-      "src/electron/config/file-dimension-source.ts(52446-52454)",
-      "src/electron/config/file-dimension-source.ts(57562-57570)"
+      "src/electron/config/file-dimension-source.ts(51362-51370)",
+      "src/electron/config/file-dimension-source.ts(52368-52376)",
+      "src/electron/config/file-dimension-source.ts(57462-57470)"
     ],
     "$id": 7290
   },
@@ -1337,9 +1337,9 @@
       "src/electron/config/file-dimension-source.ts(47133-47139)",
       "src/electron/config/file-dimension-source.ts(48695-48701)",
       "src/electron/config/file-dimension-source.ts(49760-49766)",
-      "src/electron/config/file-dimension-source.ts(51494-51500)",
-      "src/electron/config/file-dimension-source.ts(52500-52506)",
-      "src/electron/config/file-dimension-source.ts(57616-57622)"
+      "src/electron/config/file-dimension-source.ts(51416-51422)",
+      "src/electron/config/file-dimension-source.ts(52422-52428)",
+      "src/electron/config/file-dimension-source.ts(57516-57522)"
     ],
     "$id": 7291
   },
@@ -1485,7 +1485,7 @@
       "src/electron/config/file-dimension-source.ts(37243-37251)",
       "src/electron/config/file-dimension-source.ts(46919-46927)",
       "src/electron/config/file-dimension-source.ts(48481-48489)",
-      "src/electron/config/file-dimension-source.ts(57402-57410)"
+      "src/electron/config/file-dimension-source.ts(57302-57310)"
     ],
     "$id": 7302
   },
@@ -1523,7 +1523,7 @@
       "src/electron/config/file-dimension-source.ts(23243-23249)",
       "src/electron/config/file-dimension-source.ts(46999-47005)",
       "src/electron/config/file-dimension-source.ts(48561-48567)",
-      "src/electron/config/file-dimension-source.ts(57482-57488)"
+      "src/electron/config/file-dimension-source.ts(57382-57388)"
     ],
     "$id": 7303
   },
@@ -1555,7 +1555,7 @@
       "src/electron/config/file-dimension-source.ts(10948-10955)",
       "src/electron/config/file-dimension-source.ts(46973-46980)",
       "src/electron/config/file-dimension-source.ts(48535-48542)",
-      "src/electron/config/file-dimension-source.ts(57456-57463)"
+      "src/electron/config/file-dimension-source.ts(57356-57363)"
     ],
     "$id": 7305
   },
@@ -2392,7 +2392,7 @@
       "src/electron/config/file-dimension-source.ts(43016-43025)",
       "src/electron/config/file-dimension-source.ts(46784-46793)",
       "src/electron/config/file-dimension-source.ts(48346-48355)",
-      "src/electron/config/file-dimension-source.ts(57267-57276)"
+      "src/electron/config/file-dimension-source.ts(57167-57176)"
     ],
     "$id": 7366
   },
@@ -2412,7 +2412,7 @@
       "src/electron/config/file-dimension-source.ts(22053-22059)",
       "src/electron/config/file-dimension-source.ts(46839-46845)",
       "src/electron/config/file-dimension-source.ts(48401-48407)",
-      "src/electron/config/file-dimension-source.ts(57322-57328)"
+      "src/electron/config/file-dimension-source.ts(57222-57228)"
     ],
     "$id": 7367
   },
@@ -3251,7 +3251,7 @@
     "ko-KR": "계약",
     "$files": [
       "src/electron/config/file-dimension-source.ts(17314-17320)",
-      "src/electron/config/file-dimension-source.ts(54923-54929)"
+      "src/electron/config/file-dimension-source.ts(54845-54851)"
     ],
     "$id": 7444
   },
@@ -3267,7 +3267,7 @@
     "ko-KR": "청구서",
     "$files": [
       "src/electron/config/file-dimension-source.ts(17335-17341)",
-      "src/electron/config/file-dimension-source.ts(54944-54950)"
+      "src/electron/config/file-dimension-source.ts(54866-54872)"
     ],
     "$id": 7445
   },
@@ -4297,9 +4297,9 @@
     "ko-KR": "춘화",
     "$files": [
       "src/electron/config/file-dimension-source.ts(21259-21265)",
-      "src/electron/config/file-dimension-source.ts(50782-50788)",
-      "src/electron/config/file-dimension-source.ts(56850-56856)",
-      "src/electron/config/file-dimension-source.ts(61559-61565)"
+      "src/electron/config/file-dimension-source.ts(50704-50710)",
+      "src/electron/config/file-dimension-source.ts(56750-56756)",
+      "src/electron/config/file-dimension-source.ts(61459-61465)"
     ],
     "$id": 7529
   },
@@ -6303,18 +6303,18 @@
     "$files": ["src/electron/config/file-dimension-source.ts(49611-49619)"],
     "$id": 7753
   },
-  "内容尺度": {
-    "en-US": "Content Scale",
-    "es-ES": "Escala de contenido",
-    "ar-EG": "مقياس المحتوى",
-    "pt-PT": "Escala de conteúdo",
-    "ru-RU": "масштаб контента",
-    "ja-JP": "コンテンツの規模",
-    "de-DE": "Inhaltsskala",
-    "fr-FR": "Échelle du contenu",
-    "ko-KR": "콘텐츠 규모",
+  "色情分级": {
+    "en-US": "Pornography Rating",
+    "es-ES": "Clasificación de contenido sexual",
+    "ar-EG": "تصنيف الإباحية",
+    "pt-PT": "Classificação de pornografia",
+    "ru-RU": "Рейтинг по эротичности",
+    "ja-JP": "ポルノ・レーティング",
+    "de-DE": "Altersfreigabe für Pornografie",
+    "fr-FR": "Classification de la pornographie",
+    "ko-KR": "포르노 등급",
     "$files": ["src/electron/config/file-dimension-source.ts(50156-50164)"],
-    "$id": 7758
+    "$id": 20494
   },
   "软色情": {
     "en-US": "Soft Porn",
@@ -6381,18 +6381,18 @@
     "$files": ["src/electron/config/file-dimension-source.ts(50300-50308)"],
     "$id": 7764
   },
-  "文件内容的年龄适宜性分级": {
-    "en-US": "Age appropriateness rating of file content",
-    "es-ES": "Clasificación de idoneidad para la edad del contenido del archivo",
-    "ar-EG": "تصنيف مدى ملاءمة محتوى الملف للعمر",
-    "pt-PT": "Classificação de adequação etária do conteúdo do arquivo",
-    "ru-RU": "Рейтинг соответствия содержимого файла возрасту",
-    "ja-JP": "ファイルコンテンツの年齢相応の評価",
-    "de-DE": "Alterseinstufung des Dateiinhalts",
-    "fr-FR": "Évaluation de l'adéquation à l'âge du contenu du fichier",
-    "ko-KR": "파일 콘텐츠의 연령 적합성 등급",
-    "$files": ["src/electron/config/file-dimension-source.ts(50426-50442)"],
-    "$id": 7765
+  "色情内容的露骨程度与表现形式细分": {
+    "en-US": "Detailed breakdown of explicitness and presentation of pornographic content",
+    "es-ES": "Grado de explícito y formas de presentación de contenido sexual",
+    "ar-EG": "تفصيل مستوى الصراحة وسبل عرض المحتوى الإباحي",
+    "pt-PT": "Grado de explícitude e forma de apresentação do conteúdo pornográfico",
+    "ru-RU": "Градация степени откровенности и форм подачи эротического контента",
+    "ja-JP": "ポルノ内容の露骨な程度および表現形式の細分化",
+    "de-DE": "Feinabstufung der Explizitheit und Darstellungsform von Pornografieinhalten",
+    "fr-FR": "Subdivision du degré et de la forme de la vulgarité des contenus pornographiques",
+    "ko-KR": "포르노 콘텐츠의 노골성 및 표현 방식 세분화",
+    "$files": ["src/electron/config/file-dimension-source.ts(50344-50364)"],
+    "$id": 20495
   },
   "内容审查": {
     "en-US": "Content moderation",
@@ -6405,9 +6405,9 @@
     "fr-FR": "Modération du contenu",
     "ko-KR": "콘텐츠 조정",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(50610-50618)",
-      "src/electron/config/file-dimension-source.ts(51322-51330)",
-      "src/electron/config/file-dimension-source.ts(52305-52313)"
+      "src/electron/config/file-dimension-source.ts(50532-50540)",
+      "src/electron/config/file-dimension-source.ts(51244-51252)",
+      "src/electron/config/file-dimension-source.ts(52227-52235)"
     ],
     "$id": 7766
   },
@@ -6422,9 +6422,9 @@
     "fr-FR": "Identification du classement",
     "ko-KR": "등급 식별",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(50633-50641)",
-      "src/electron/config/file-dimension-source.ts(51345-51353)",
-      "src/electron/config/file-dimension-source.ts(52328-52336)"
+      "src/electron/config/file-dimension-source.ts(50555-50563)",
+      "src/electron/config/file-dimension-source.ts(51267-51275)",
+      "src/electron/config/file-dimension-source.ts(52250-52258)"
     ],
     "$id": 7767
   },
@@ -6439,12 +6439,12 @@
     "fr-FR": "Contenu sensible",
     "ko-KR": "민감한 내용",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(50728-50736)",
-      "src/electron/config/file-dimension-source.ts(56708-56716)",
-      "src/electron/config/file-dimension-source.ts(58747-58755)",
-      "src/electron/config/file-dimension-source.ts(59621-59629)",
-      "src/electron/config/file-dimension-source.ts(60543-60551)",
-      "src/electron/config/file-dimension-source.ts(61505-61513)"
+      "src/electron/config/file-dimension-source.ts(50650-50658)",
+      "src/electron/config/file-dimension-source.ts(56630-56638)",
+      "src/electron/config/file-dimension-source.ts(58647-58655)",
+      "src/electron/config/file-dimension-source.ts(59521-59529)",
+      "src/electron/config/file-dimension-source.ts(60443-60451)",
+      "src/electron/config/file-dimension-source.ts(61405-61413)"
     ],
     "$id": 19654
   },
@@ -6458,7 +6458,7 @@
     "de-DE": "Codierungsebene",
     "fr-FR": "Niveau de codage",
     "ko-KR": "코딩 수준",
-    "$files": ["src/electron/config/file-dimension-source.ts(51044-51052)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(50966-50974)"],
     "$id": 7768
   },
   "无码": {
@@ -6471,7 +6471,7 @@
     "de-DE": "Unzensiert",
     "fr-FR": "Non censuré",
     "ko-KR": "무모자이크",
-    "$files": ["src/electron/config/file-dimension-source.ts(51101-51107)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(51023-51029)"],
     "$id": 7769
   },
   "薄码": {
@@ -6484,7 +6484,7 @@
     "de-DE": "Leichtes Mosaik",
     "fr-FR": "Mosaïque légère",
     "ko-KR": "엷은 모자이크",
-    "$files": ["src/electron/config/file-dimension-source.ts(51122-51128)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(51044-51050)"],
     "$id": 7770
   },
   "有码": {
@@ -6497,7 +6497,7 @@
     "de-DE": "Zensiert",
     "fr-FR": "Censuré",
     "ko-KR": "모자이크 있음",
-    "$files": ["src/electron/config/file-dimension-source.ts(51143-51149)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(51065-51071)"],
     "$id": 7777
   },
   "文件内容的打码程度": {
@@ -6510,7 +6510,7 @@
     "de-DE": "Mosaik-Zensurgrad des Dateiinhalts",
     "fr-FR": "Niveau de mosaïque de censure du contenu",
     "ko-KR": "파일 콘텐츠의 모자이크 처리 수준",
-    "$files": ["src/electron/config/file-dimension-source.ts(51185-51198)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(51107-51120)"],
     "$id": 7778
   },
   "水印程度": {
@@ -6523,7 +6523,7 @@
     "de-DE": "Wasserzeichenebene",
     "fr-FR": "Niveau de filigrane",
     "ko-KR": "워터마크 수준",
-    "$files": ["src/electron/config/file-dimension-source.ts(52024-52032)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(51946-51954)"],
     "$id": 7781
   },
   "无水印": {
@@ -6536,7 +6536,7 @@
     "de-DE": "Kein Wasserzeichen",
     "fr-FR": "Pas de filigrane",
     "ko-KR": "워터마크 없음",
-    "$files": ["src/electron/config/file-dimension-source.ts(52081-52088)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(52003-52010)"],
     "$id": 7782
   },
   "轻水印": {
@@ -6549,7 +6549,7 @@
     "de-DE": "Leichtes Wasserzeichen",
     "fr-FR": "Filigrane léger",
     "ko-KR": "라이트 워터마크",
-    "$files": ["src/electron/config/file-dimension-source.ts(52103-52110)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(52025-52032)"],
     "$id": 7783
   },
   "有水印": {
@@ -6562,7 +6562,7 @@
     "de-DE": "Es gibt ein Wasserzeichen",
     "fr-FR": "Il y a un filigrane",
     "ko-KR": "워터마크가 있습니다",
-    "$files": ["src/electron/config/file-dimension-source.ts(52125-52132)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(52047-52054)"],
     "$id": 7789
   },
   "文件内容的水印程度": {
@@ -6575,7 +6575,7 @@
     "de-DE": "Der Grad des Wasserzeichens im Dateiinhalt",
     "fr-FR": "Le degré de filigrane dans le contenu du fichier",
     "ko-KR": "파일 내용의 워터마크 정도",
-    "$files": ["src/electron/config/file-dimension-source.ts(52168-52181)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(52090-52103)"],
     "$id": 7790
   },
   "版权标识": {
@@ -6588,7 +6588,7 @@
     "de-DE": "Urheberrechtszeichen",
     "fr-FR": "Marque de droit d'auteur",
     "ko-KR": "저작권 표시",
-    "$files": ["src/electron/config/file-dimension-source.ts(52351-52359)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(52273-52281)"],
     "$id": 7813
   },
   "摄影照片细分": {
@@ -6601,7 +6601,7 @@
     "de-DE": "Unterteilung der Fotos",
     "fr-FR": "Catégories de photos",
     "ko-KR": "사진 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(53030-53040)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(52952-52962)"],
     "$id": 19655
   },
   "风景照": {
@@ -6614,7 +6614,7 @@
     "de-DE": "Landschaftsfotos",
     "fr-FR": "Photos de paysages",
     "ko-KR": "풍경 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53089-53096)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53011-53018)"],
     "$id": 19656
   },
   "人物照": {
@@ -6627,7 +6627,7 @@
     "de-DE": "Porträtfotos",
     "fr-FR": "Photos de personnes",
     "ko-KR": "인물 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53111-53118)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53033-53040)"],
     "$id": 19657
   },
   "婚纱照": {
@@ -6640,7 +6640,7 @@
     "de-DE": "Hochzeitsfotos",
     "fr-FR": "Photos de mariage",
     "ko-KR": "웨딩사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53133-53140)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53055-53062)"],
     "$id": 19658
   },
   "静物照": {
@@ -6653,7 +6653,7 @@
     "de-DE": "Stillleben",
     "fr-FR": "Photographie de nature morte",
     "ko-KR": "정물 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53155-53162)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53077-53084)"],
     "$id": 19659
   },
   "宠物照": {
@@ -6666,7 +6666,7 @@
     "de-DE": "Fotos von Haustieren",
     "fr-FR": "Photos d'animaux de compagnie",
     "ko-KR": "반려동물 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53177-53184)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53099-53106)"],
     "$id": 19660
   },
   "微距摄影": {
@@ -6679,7 +6679,7 @@
     "de-DE": "Makrofotografie",
     "fr-FR": "Photographie macro",
     "ko-KR": "접사 촬영",
-    "$files": ["src/electron/config/file-dimension-source.ts(53199-53207)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53121-53129)"],
     "$id": 19661
   },
   "夜景照": {
@@ -6692,7 +6692,7 @@
     "de-DE": "Nachtfotos",
     "fr-FR": "Photos de nuit",
     "ko-KR": "야경 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53222-53229)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53144-53151)"],
     "$id": 19662
   },
   "建筑摄影": {
@@ -6705,7 +6705,7 @@
     "de-DE": "Architekturfotografie",
     "fr-FR": "Photographie d'architecture",
     "ko-KR": "건축 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53244-53252)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53166-53174)"],
     "$id": 19663
   },
   "旅行照": {
@@ -6718,7 +6718,7 @@
     "de-DE": "Reisefotos",
     "fr-FR": "Photos de voyage",
     "ko-KR": "여행 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53267-53274)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53189-53196)"],
     "$id": 19664
   },
   "街拍抓拍": {
@@ -6731,7 +6731,7 @@
     "de-DE": "Straßenfotografie",
     "fr-FR": "Photos de rue prises sur le vif",
     "ko-KR": "거리 스냅 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53289-53297)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53211-53219)"],
     "$id": 19665
   },
   "人像写真": {
@@ -6744,7 +6744,7 @@
     "de-DE": "Porträtfotografie",
     "fr-FR": "Portraits",
     "ko-KR": "인물 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(53312-53320)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53234-53242)"],
     "$id": 19666
   },
   "航空航拍": {
@@ -6757,7 +6757,7 @@
     "de-DE": "Luftaufnahmen",
     "fr-FR": "Prise de vue aérienne",
     "ko-KR": "항공 촬영",
-    "$files": ["src/electron/config/file-dimension-source.ts(53335-53343)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53257-53265)"],
     "$id": 19667
   },
   "摄影照片的内容与题材专业细分": {
@@ -6770,7 +6770,7 @@
     "de-DE": "Fachliche Unterteilung der Inhalte und Themen der Fotografie",
     "fr-FR": "Classification professionnelle du contenu et des thèmes des photographies",
     "ko-KR": "사진의 내용과 주제에 따른 전문 분야 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(53379-53397)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53301-53319)"],
     "$id": 19668
   },
   "题材识别": {
@@ -6783,7 +6783,7 @@
     "de-DE": "Themenerkennung",
     "fr-FR": "Identification du thème",
     "ko-KR": "주제 식별",
-    "$files": ["src/electron/config/file-dimension-source.ts(53525-53533)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53447-53455)"],
     "$id": 19669
   },
   "场景感知": {
@@ -6796,7 +6796,7 @@
     "de-DE": "Umgebungserkennung",
     "fr-FR": "Reconnaissance de scène",
     "ko-KR": "상황 인식",
-    "$files": ["src/electron/config/file-dimension-source.ts(53548-53556)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53470-53478)"],
     "$id": 19670
   },
   "照片质量": {
@@ -6809,7 +6809,7 @@
     "de-DE": "Fotoqualität",
     "fr-FR": "Qualité des photos",
     "ko-KR": "사진 화질",
-    "$files": ["src/electron/config/file-dimension-source.ts(53924-53932)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53846-53854)"],
     "$id": 19671
   },
   "优质精选": {
@@ -6822,7 +6822,7 @@
     "de-DE": "Ausgewählte Spitzenqualität",
     "fr-FR": "Une sélection de qualité",
     "ko-KR": "엄선된 최고 품질",
-    "$files": ["src/electron/config/file-dimension-source.ts(53981-53989)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53903-53911)"],
     "$id": 19672
   },
   "曝光正常": {
@@ -6835,7 +6835,7 @@
     "de-DE": "Belichtung normal",
     "fr-FR": "Exposition normale",
     "ko-KR": "노출 정상",
-    "$files": ["src/electron/config/file-dimension-source.ts(54004-54012)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53926-53934)"],
     "$id": 19673
   },
   "暗光欠曝": {
@@ -6848,7 +6848,7 @@
     "de-DE": "Unterbelichtung bei schwachem Licht",
     "fr-FR": "Sous-exposition en basse lumière",
     "ko-KR": "저조도 노출 부족",
-    "$files": ["src/electron/config/file-dimension-source.ts(54027-54035)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53949-53957)"],
     "$id": 19674
   },
   "逆光死白": {
@@ -6861,7 +6861,7 @@
     "de-DE": "Blendendes Weiß im Gegenlicht",
     "fr-FR": "Blanc aveuglant à contre-jour",
     "ko-KR": "역광으로 인해 화면이 하얗게 씻겨 나감",
-    "$files": ["src/electron/config/file-dimension-source.ts(54050-54058)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53972-53980)"],
     "$id": 19675
   },
   "高ISO噪点": {
@@ -6874,7 +6874,7 @@
     "de-DE": "Rauschen bei hohen ISO-Werten",
     "fr-FR": "Bruit à haute sensibilité ISO",
     "ko-KR": "고 ISO 노이즈",
-    "$files": ["src/electron/config/file-dimension-source.ts(54073-54083)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(53995-54005)"],
     "$id": 19676
   },
   "模糊废片": {
@@ -6887,7 +6887,7 @@
     "de-DE": "Unscharfe, unbrauchbare Aufnahmen",
     "fr-FR": "Photos floues et ratées",
     "ko-KR": "흐릿한 실패한 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(54098-54106)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54020-54028)"],
     "$id": 19677
   },
   "虚焦": {
@@ -6900,7 +6900,7 @@
     "de-DE": "Unschärfe",
     "fr-FR": "Fausse mise au point",
     "ko-KR": "초점 불일치",
-    "$files": ["src/electron/config/file-dimension-source.ts(54121-54127)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54043-54049)"],
     "$id": 19678
   },
   "抖动": {
@@ -6913,7 +6913,7 @@
     "de-DE": "Zittern",
     "fr-FR": "Tremblement",
     "ko-KR": "진동",
-    "$files": ["src/electron/config/file-dimension-source.ts(54142-54148)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54064-54070)"],
     "$id": 19679
   },
   "脱焦": {
@@ -6926,7 +6926,7 @@
     "de-DE": "Entkokung",
     "fr-FR": "Dégraissage",
     "ko-KR": "코크스 제거",
-    "$files": ["src/electron/config/file-dimension-source.ts(54163-54169)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54085-54091)"],
     "$id": 19680
   },
   "运动抖动": {
@@ -6939,7 +6939,7 @@
     "de-DE": "Bewegungsunschärfe",
     "fr-FR": "Vibrations dues au mouvement",
     "ko-KR": "운동으로 인한 흔들림",
-    "$files": ["src/electron/config/file-dimension-source.ts(54184-54192)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54106-54114)"],
     "$id": 19681
   },
   "构图不良": {
@@ -6952,7 +6952,7 @@
     "de-DE": "Schlechte Bildkomposition",
     "fr-FR": "Mauvaise composition",
     "ko-KR": "구도가 좋지 않다",
-    "$files": ["src/electron/config/file-dimension-source.ts(54207-54215)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54129-54137)"],
     "$id": 19682
   },
   "色偏严重": {
@@ -6965,7 +6965,7 @@
     "de-DE": "Starke Farbabweichung",
     "fr-FR": "Une forte dérive chromatique",
     "ko-KR": "색 편차가 심하다",
-    "$files": ["src/electron/config/file-dimension-source.ts(54230-54238)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54152-54160)"],
     "$id": 19683
   },
   "方向错误": {
@@ -6978,7 +6978,7 @@
     "de-DE": "Falsche Richtung",
     "fr-FR": "Mauvaise direction",
     "ko-KR": "방향 오류",
-    "$files": ["src/electron/config/file-dimension-source.ts(54253-54261)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54175-54183)"],
     "$id": 19684
   },
   "画面倾斜": {
@@ -6991,7 +6991,7 @@
     "de-DE": "Das Bild ist schräg",
     "fr-FR": "L'image est inclinée",
     "ko-KR": "화면 기울기",
-    "$files": ["src/electron/config/file-dimension-source.ts(54276-54284)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54198-54206)"],
     "$id": 19685
   },
   "摄影照片的技术与画质状态评估": {
@@ -7004,7 +7004,7 @@
     "de-DE": "Technische Aspekte der Fotografie und Bewertung der Bildqualität",
     "fr-FR": "Évaluation des techniques photographiques et de la qualité d'image",
     "ko-KR": "사진 촬영 기술 및 화질 상태 평가",
-    "$files": ["src/electron/config/file-dimension-source.ts(54320-54338)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54242-54260)"],
     "$id": 19686
   },
   "画质检测": {
@@ -7017,7 +7017,7 @@
     "de-DE": "Bildqualitätsprüfung",
     "fr-FR": "Contrôle de la qualité d'image",
     "ko-KR": "화질 검사",
-    "$files": ["src/electron/config/file-dimension-source.ts(54441-54449)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54363-54371)"],
     "$id": 19687
   },
   "曝光分析": {
@@ -7030,7 +7030,7 @@
     "de-DE": "Belichtungsanalyse",
     "fr-FR": "Analyse de l'exposition",
     "ko-KR": "노출 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(54464-54472)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54386-54394)"],
     "$id": 19688
   },
   "清晰度评估": {
@@ -7043,7 +7043,7 @@
     "de-DE": "Bewertung der Bildschärfe",
     "fr-FR": "Évaluation de la netteté",
     "ko-KR": "선명도 평가",
-    "$files": ["src/electron/config/file-dimension-source.ts(54487-54496)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54409-54418)"],
     "$id": 19689
   },
   "合同票据细分": {
@@ -7056,7 +7056,7 @@
     "de-DE": "Aufschlüsselung der Vertragsdokumente",
     "fr-FR": "Ventilation des titres contractuels",
     "ko-KR": "계약 및 어음 세부 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(54864-54874)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54786-54796)"],
     "$id": 19690
   },
   "红头文件": {
@@ -7069,7 +7069,7 @@
     "de-DE": "Offizielles Schreiben",
     "fr-FR": "Document officiel",
     "ko-KR": "공식 문서",
-    "$files": ["src/electron/config/file-dimension-source.ts(54965-54973)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54887-54895)"],
     "$id": 19691
   },
   "论文": {
@@ -7082,7 +7082,7 @@
     "de-DE": "Abhandlung",
     "fr-FR": "Mémoire",
     "ko-KR": "논문",
-    "$files": ["src/electron/config/file-dimension-source.ts(54988-54994)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54910-54916)"],
     "$id": 19692
   },
   "收据": {
@@ -7095,7 +7095,7 @@
     "de-DE": "Quittung",
     "fr-FR": "Reçu",
     "ko-KR": "영수증",
-    "$files": ["src/electron/config/file-dimension-source.ts(55009-55015)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54931-54937)"],
     "$id": 19693
   },
   "对账单": {
@@ -7108,7 +7108,7 @@
     "de-DE": "Kontoauszug",
     "fr-FR": "Relevé de compte",
     "ko-KR": "명세서",
-    "$files": ["src/electron/config/file-dimension-source.ts(55030-55037)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54952-54959)"],
     "$id": 19694
   },
   "银行回单": {
@@ -7121,7 +7121,7 @@
     "de-DE": "Bankbeleg",
     "fr-FR": "Reçu bancaire",
     "ko-KR": "은행 거래 영수증",
-    "$files": ["src/electron/config/file-dimension-source.ts(55052-55060)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54974-54982)"],
     "$id": 19695
   },
   "采购订单": {
@@ -7134,7 +7134,7 @@
     "de-DE": "Bestellauftrag",
     "fr-FR": "Bon de commande",
     "ko-KR": "구매 주문서",
-    "$files": ["src/electron/config/file-dimension-source.ts(55075-55083)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(54997-55005)"],
     "$id": 19696
   },
   "报销凭证": {
@@ -7147,7 +7147,7 @@
     "de-DE": "Erstattungsbelege",
     "fr-FR": "Justificatifs de remboursement",
     "ko-KR": "경비 청구 증빙 서류",
-    "$files": ["src/electron/config/file-dimension-source.ts(55098-55106)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55020-55028)"],
     "$id": 19697
   },
   "保函协议": {
@@ -7160,7 +7160,7 @@
     "de-DE": "Garantievereinbarung",
     "fr-FR": "Contrat de garantie",
     "ko-KR": "보증서 계약서",
-    "$files": ["src/electron/config/file-dimension-source.ts(55121-55129)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55043-55051)"],
     "$id": 19698
   },
   "投标文件": {
@@ -7173,7 +7173,7 @@
     "de-DE": "Ausschreibungsunterlagen",
     "fr-FR": "Dossier d'appel d'offres",
     "ko-KR": "입찰서",
-    "$files": ["src/electron/config/file-dimension-source.ts(55144-55152)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55066-55074)"],
     "$id": 19699
   },
   "商务票据与法律文书的版式专业分类": {
@@ -7186,7 +7186,7 @@
     "de-DE": "Fachliche Klassifizierung der Layouts von Handelswechseln und Rechtsdokumenten",
     "fr-FR": "Classification professionnelle des formats des effets de commerce et des actes juridiques",
     "ko-KR": "상업 어음 및 법률 문서의 서식별 전문 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(55188-55208)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55110-55130)"],
     "$id": 19700
   },
   "版式识别": {
@@ -7199,7 +7199,7 @@
     "de-DE": "Erkennung von Schriftarten",
     "fr-FR": "Reconnaissance de la mise en page",
     "ko-KR": "레이아웃 인식",
-    "$files": ["src/electron/config/file-dimension-source.ts(55335-55343)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55257-55265)"],
     "$id": 19701
   },
   "公章印鉴": {
@@ -7212,7 +7212,7 @@
     "de-DE": "Offizielles Siegel",
     "fr-FR": "Sceau officiel",
     "ko-KR": "공인 도장",
-    "$files": ["src/electron/config/file-dimension-source.ts(55358-55366)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55280-55288)"],
     "$id": 19702
   },
   "财务表格": {
@@ -7225,7 +7225,7 @@
     "de-DE": "Finanztabellen",
     "fr-FR": "Tableaux financiers",
     "ko-KR": "재무 표",
-    "$files": ["src/electron/config/file-dimension-source.ts(55381-55389)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55303-55311)"],
     "$id": 19703
   },
   "证照细分": {
@@ -7238,7 +7238,7 @@
     "de-DE": "Unterteilung der Lizenzen und Genehmigungen",
     "fr-FR": "Classification des licences et certificats",
     "ko-KR": "면허 및 허가 세부 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(55757-55765)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55679-55687)"],
     "$id": 19704
   },
   "身份证": {
@@ -7251,7 +7251,7 @@
     "de-DE": "Personalausweis",
     "fr-FR": "Carte d'identité",
     "ko-KR": "주민등록증",
-    "$files": ["src/electron/config/file-dimension-source.ts(55814-55821)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55736-55743)"],
     "$id": 19705
   },
   "房产证": {
@@ -7264,7 +7264,7 @@
     "de-DE": "Eigentumsurkunde",
     "fr-FR": "Certificat de propriété",
     "ko-KR": "부동산 소유권 증명서",
-    "$files": ["src/electron/config/file-dimension-source.ts(55836-55843)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55758-55765)"],
     "$id": 19706
   },
   "护照": {
@@ -7277,7 +7277,7 @@
     "de-DE": "Reisepass",
     "fr-FR": "Passeport",
     "ko-KR": "여권",
-    "$files": ["src/electron/config/file-dimension-source.ts(55858-55864)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55780-55786)"],
     "$id": 19707
   },
   "驾驶证": {
@@ -7290,7 +7290,7 @@
     "de-DE": "Führerschein",
     "fr-FR": "Permis de conduire",
     "ko-KR": "운전면허증",
-    "$files": ["src/electron/config/file-dimension-source.ts(55879-55886)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55801-55808)"],
     "$id": 19708
   },
   "行驶证": {
@@ -7303,7 +7303,7 @@
     "de-DE": "Fahrzeugschein",
     "fr-FR": "Carte grise",
     "ko-KR": "차량 등록증",
-    "$files": ["src/electron/config/file-dimension-source.ts(55901-55908)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55823-55830)"],
     "$id": 19709
   },
   "车牌": {
@@ -7316,7 +7316,7 @@
     "de-DE": "Kennzeichen",
     "fr-FR": "Plaque d'immatriculation",
     "ko-KR": "차량 번호판",
-    "$files": ["src/electron/config/file-dimension-source.ts(55923-55929)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55845-55851)"],
     "$id": 19710
   },
   "银行卡": {
@@ -7329,7 +7329,7 @@
     "de-DE": "Bankkarte",
     "fr-FR": "Carte bancaire",
     "ko-KR": "은행 카드",
-    "$files": ["src/electron/config/file-dimension-source.ts(55944-55951)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55866-55873)"],
     "$id": 19711
   },
   "营业执照": {
@@ -7342,7 +7342,7 @@
     "de-DE": "Gewerbeschein",
     "fr-FR": "Licence commerciale",
     "ko-KR": "사업자등록증",
-    "$files": ["src/electron/config/file-dimension-source.ts(55966-55974)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55888-55896)"],
     "$id": 19712
   },
   "户口本": {
@@ -7355,7 +7355,7 @@
     "de-DE": "Meldebescheinigung",
     "fr-FR": "Carnet de famille",
     "ko-KR": "호적부",
-    "$files": ["src/electron/config/file-dimension-source.ts(55989-55996)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55911-55918)"],
     "$id": 19713
   },
   "毕业证": {
@@ -7368,7 +7368,7 @@
     "de-DE": "Abschlusszeugnis",
     "fr-FR": "Diplôme de fin d'études",
     "ko-KR": "졸업증명서",
-    "$files": ["src/electron/config/file-dimension-source.ts(56011-56018)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55933-55940)"],
     "$id": 19714
   },
   "学位证": {
@@ -7381,7 +7381,7 @@
     "de-DE": "Abschlusszeugnis",
     "fr-FR": "Diplôme universitaire",
     "ko-KR": "학위증",
-    "$files": ["src/electron/config/file-dimension-source.ts(56033-56040)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55955-55962)"],
     "$id": 19715
   },
   "工作证": {
@@ -7394,7 +7394,7 @@
     "de-DE": "Arbeitsausweis",
     "fr-FR": "Carte d'identité professionnelle",
     "ko-KR": "근무증",
-    "$files": ["src/electron/config/file-dimension-source.ts(56055-56062)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55977-55984)"],
     "$id": 19716
   },
   "结婚证": {
@@ -7407,7 +7407,7 @@
     "de-DE": "Heiratsurkunde",
     "fr-FR": "Certificat de mariage",
     "ko-KR": "결혼증명서",
-    "$files": ["src/electron/config/file-dimension-source.ts(56077-56084)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(55999-56006)"],
     "$id": 19717
   },
   "社保卡": {
@@ -7420,7 +7420,7 @@
     "de-DE": "Sozialversicherungskarte",
     "fr-FR": "Carte de sécurité sociale",
     "ko-KR": "사회보장카드",
-    "$files": ["src/electron/config/file-dimension-source.ts(56099-56106)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(56021-56028)"],
     "$id": 19718
   },
   "公民身份与官方凭证资质卡证分类": {
@@ -7433,7 +7433,7 @@
     "de-DE": "Staatsangehörigkeit und Klassifizierung von amtlichen Ausweisdokumenten und Berechtigungsnachweisen",
     "fr-FR": "Citoyenneté et classification des documents d'identité officiels et des cartes d'accréditation",
     "ko-KR": "시민권 및 공식 신분증·자격증·카드의 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(56142-56161)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(56064-56083)"],
     "$id": 19719
   },
   "卡证边框": {
@@ -7446,7 +7446,7 @@
     "de-DE": "Rahmen für Ausweise",
     "fr-FR": "Cadre de carte d'identité",
     "ko-KR": "카드 및 증서 테두리",
-    "$files": ["src/electron/config/file-dimension-source.ts(56288-56296)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(56210-56218)"],
     "$id": 19720
   },
   "防伪底纹": {
@@ -7459,7 +7459,7 @@
     "de-DE": "Sicherheitsmuster",
     "fr-FR": "Motif de fond anti-contrefaçon",
     "ko-KR": "위조 방지 배경 무늬",
-    "$files": ["src/electron/config/file-dimension-source.ts(56311-56319)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(56233-56241)"],
     "$id": 19721
   },
   "官方证件": {
@@ -7472,21 +7472,8 @@
     "de-DE": "Amtliche Dokumente",
     "fr-FR": "Documents officiels",
     "ko-KR": "공식 증명서",
-    "$files": ["src/electron/config/file-dimension-source.ts(56334-56342)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(56256-56264)"],
     "$id": 19722
-  },
-  "全年龄": {
-    "en-US": "All Ages",
-    "es-ES": "Todas las edades",
-    "ar-EG": "جميع الأعمار",
-    "pt-PT": "Todas as idades",
-    "ru-RU": "все возрасты",
-    "ja-JP": "すべての年齢",
-    "de-DE": "Alle Altersgruppen",
-    "fr-FR": "Tous les âges",
-    "ko-KR": "모든 연령대",
-    "$files": ["src/electron/config/file-dimension-source.ts(56765-56772)"],
-    "$id": 7759
   },
   "暴恐": {
     "en-US": "Violence & Terrorism",
@@ -7498,7 +7485,7 @@
     "de-DE": "Gewealth und Terrorismus",
     "fr-FR": "Violence et terrorisme",
     "ko-KR": "폭력과 혐오",
-    "$files": ["src/electron/config/file-dimension-source.ts(56787-56793)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(56687-56693)"],
     "$id": 19344
   },
   "涉政": {
@@ -7512,8 +7499,8 @@
     "fr-FR": "Liées à la politique",
     "ko-KR": "정치 관련",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(56808-56814)",
-      "src/electron/config/file-dimension-source.ts(59675-59681)"
+      "src/electron/config/file-dimension-source.ts(56708-56714)",
+      "src/electron/config/file-dimension-source.ts(59575-59581)"
     ],
     "$id": 19724
   },
@@ -7528,8 +7515,8 @@
     "fr-FR": "Infraction",
     "ko-KR": "규정 위반",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(56829-56835)",
-      "src/electron/config/file-dimension-source.ts(60597-60603)"
+      "src/electron/config/file-dimension-source.ts(56729-56735)",
+      "src/electron/config/file-dimension-source.ts(60497-60503)"
     ],
     "$id": 19725
   },
@@ -7543,7 +7530,7 @@
     "de-DE": "Beleidigungen",
     "fr-FR": "Injures",
     "ko-KR": "모욕",
-    "$files": ["src/electron/config/file-dimension-source.ts(56871-56877)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(56771-56777)"],
     "$id": 19345
   },
   "血腥": {
@@ -7557,8 +7544,8 @@
     "fr-FR": "Sanglant",
     "ko-KR": "피비린내",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(56892-56898)",
-      "src/electron/config/file-dimension-source.ts(58801-58807)"
+      "src/electron/config/file-dimension-source.ts(56792-56798)",
+      "src/electron/config/file-dimension-source.ts(58701-58707)"
     ],
     "$id": 19723
   },
@@ -7572,7 +7559,7 @@
     "de-DE": "Klassifizierung von Dokumenten nach Sensitivität und Compliance-Sicherheitsprüfung",
     "fr-FR": "Classification des documents en fonction du caractère sensible de leur contenu et des exigences de conformité et de sécurité",
     "ko-KR": "문서 내용의 민감도 및 규정 준수 보안 검토 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(56934-56954)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(56834-56854)"],
     "$id": 19726
   },
   "敏感内容审查": {
@@ -7585,7 +7572,7 @@
     "de-DE": "Prüfung sensibler Inhalte",
     "fr-FR": "Contrôle des contenus sensibles",
     "ko-KR": "민감한 콘텐츠 심사",
-    "$files": ["src/electron/config/file-dimension-source.ts(57122-57132)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(57022-57032)"],
     "$id": 19727
   },
   "合规安全检测": {
@@ -7598,7 +7585,7 @@
     "de-DE": "Prüfung der Einhaltung von Sicherheitsvorschriften",
     "fr-FR": "Contrôle de conformité et de sécurité",
     "ko-KR": "규정 준수 및 보안 검사",
-    "$files": ["src/electron/config/file-dimension-source.ts(57147-57157)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(57047-57057)"],
     "$id": 19728
   },
   "违规过滤": {
@@ -7611,7 +7598,7 @@
     "de-DE": "Filterung bei Verstößen",
     "fr-FR": "Filtrage non conforme",
     "ko-KR": "규정 위반 필터링",
-    "$files": ["src/electron/config/file-dimension-source.ts(57172-57180)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(57072-57080)"],
     "$id": 19729
   },
   "血腥细分": {
@@ -7624,7 +7611,7 @@
     "de-DE": "Blutige Segmentierung",
     "fr-FR": "Segmentation sanglante",
     "ko-KR": "피비린내 나는 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(58135-58143)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58035-58043)"],
     "$id": 19730
   },
   "断头斩首": {
@@ -7637,7 +7624,7 @@
     "de-DE": "Enthauptung",
     "fr-FR": "Décapitation",
     "ko-KR": "참수",
-    "$files": ["src/electron/config/file-dimension-source.ts(58192-58200)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58092-58100)"],
     "$id": 19731
   },
   "肢解碎尸": {
@@ -7650,7 +7637,7 @@
     "de-DE": "Zerstückelung und Zermahlung der Leiche",
     "fr-FR": "Démembrement et découpage des restes",
     "ko-KR": "사지를 절단하고 시신을 토막 내다",
-    "$files": ["src/electron/config/file-dimension-source.ts(58215-58223)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58115-58123)"],
     "$id": 19732
   },
   "血腥虐杀": {
@@ -7663,7 +7650,7 @@
     "de-DE": "Blutiges Massaker",
     "fr-FR": "Massacre sanglant",
     "ko-KR": "피비린내 나는 학살",
-    "$files": ["src/electron/config/file-dimension-source.ts(58238-58246)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58138-58146)"],
     "$id": 19733
   },
   "尸体残骸": {
@@ -7676,7 +7663,7 @@
     "de-DE": "Leichenreste",
     "fr-FR": "Restes de cadavres",
     "ko-KR": "시신의 잔해",
-    "$files": ["src/electron/config/file-dimension-source.ts(58261-58269)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58161-58169)"],
     "$id": 19734
   },
   "酷刑折磨": {
@@ -7689,7 +7676,7 @@
     "de-DE": "Folter",
     "fr-FR": "Torture et mauvais traitements",
     "ko-KR": "고문",
-    "$files": ["src/electron/config/file-dimension-source.ts(58284-58292)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58184-58192)"],
     "$id": 19735
   },
   "血肉模糊": {
@@ -7702,7 +7689,7 @@
     "de-DE": "Blut und Fleisch in einem Brei",
     "fr-FR": "En miettes",
     "ko-KR": "피투성이가 되어",
-    "$files": ["src/electron/config/file-dimension-source.ts(58307-58315)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58207-58215)"],
     "$id": 19736
   },
   "重口猎奇": {
@@ -7715,7 +7702,7 @@
     "de-DE": "Extrem und Kurioses",
     "fr-FR": "Extravagant et insolite",
     "ko-KR": "극단적이고 기이한",
-    "$files": ["src/electron/config/file-dimension-source.ts(58330-58338)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58230-58238)"],
     "$id": 19737
   },
   "暴恐惨案": {
@@ -7728,7 +7715,7 @@
     "de-DE": "Gewalttätige Terroranschläge",
     "fr-FR": "Attentats terroristes sanglants",
     "ko-KR": "테러 참사",
-    "$files": ["src/electron/config/file-dimension-source.ts(58353-58361)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58253-58261)"],
     "$id": 19738
   },
   "自残放血": {
@@ -7741,7 +7728,7 @@
     "de-DE": "Selbstverletzung durch Aderlass",
     "fr-FR": "Automutilation par saignée",
     "ko-KR": "자해로 인한 출혈",
-    "$files": ["src/electron/config/file-dimension-source.ts(58376-58384)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58276-58284)"],
     "$id": 19739
   },
   "血腥、暴力与重口猎奇题材细分": {
@@ -7754,7 +7741,7 @@
     "de-DE": "Subgenres mit blutigen, gewalttätigen und extrem makabren Themen",
     "fr-FR": "Sous-genres liés au sang, à la violence et aux thèmes macabres et extrêmes",
     "ko-KR": "피, 폭력 및 기괴한 소재의 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(58420-58438)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58320-58338)"],
     "$id": 19740
   },
   "暴力审查": {
@@ -7767,7 +7754,7 @@
     "de-DE": "Gewaltsame Zensur",
     "fr-FR": "Censure violente",
     "ko-KR": "폭력적인 검열",
-    "$files": ["src/electron/config/file-dimension-source.ts(58606-58614)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58506-58514)"],
     "$id": 19741
   },
   "血腥评级": {
@@ -7780,7 +7767,7 @@
     "de-DE": "Gewaltbewertung",
     "fr-FR": "Classification « sanglant »",
     "ko-KR": "폭력 등급",
-    "$files": ["src/electron/config/file-dimension-source.ts(58629-58637)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58529-58537)"],
     "$id": 19742
   },
   "猎奇检测": {
@@ -7793,7 +7780,7 @@
     "de-DE": "Kuriositäten-Test",
     "fr-FR": "Détection des phénomènes insolites",
     "ko-KR": "기이한 현상 탐지",
-    "$files": ["src/electron/config/file-dimension-source.ts(58652-58660)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58552-58560)"],
     "$id": 19743
   },
   "涉政细分": {
@@ -7806,7 +7793,7 @@
     "de-DE": "Politische Teilbereiche",
     "fr-FR": "Sous-secteur lié à la politique",
     "ko-KR": "정치 관련 세부 분야",
-    "$files": ["src/electron/config/file-dimension-source.ts(59026-59034)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58926-58934)"],
     "$id": 19744
   },
   "反党反政": {
@@ -7819,7 +7806,7 @@
     "de-DE": "Gegen die Partei und die Regierung",
     "fr-FR": "Anti-parti et anti-gouvernement",
     "ko-KR": "반당·반정부",
-    "$files": ["src/electron/config/file-dimension-source.ts(59083-59091)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(58983-58991)"],
     "$id": 19745
   },
   "颠覆政权": {
@@ -7832,7 +7819,7 @@
     "de-DE": "Sturz der Regierung",
     "fr-FR": "Renverser le régime",
     "ko-KR": "정권 전복",
-    "$files": ["src/electron/config/file-dimension-source.ts(59106-59114)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59006-59014)"],
     "$id": 19746
   },
   "分裂国家": {
@@ -7845,7 +7832,7 @@
     "de-DE": "Staatsspaltung",
     "fr-FR": "Séparation du pays",
     "ko-KR": "국가 분열",
-    "$files": ["src/electron/config/file-dimension-source.ts(59129-59137)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59029-59037)"],
     "$id": 19747
   },
   "恐怖主义": {
@@ -7858,7 +7845,7 @@
     "de-DE": "Terrorismus",
     "fr-FR": "Le terrorisme",
     "ko-KR": "테러리즘",
-    "$files": ["src/electron/config/file-dimension-source.ts(59152-59160)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59052-59060)"],
     "$id": 19748
   },
   "邪教组织": {
@@ -7871,7 +7858,7 @@
     "de-DE": "Sekte",
     "fr-FR": "Sectes",
     "ko-KR": "이단 단체",
-    "$files": ["src/electron/config/file-dimension-source.ts(59175-59183)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59075-59083)"],
     "$id": 19749
   },
   "暴乱动乱": {
@@ -7884,7 +7871,7 @@
     "de-DE": "Unruhen und Ausschreitungen",
     "fr-FR": "Émeutes et troubles",
     "ko-KR": "폭동과 소요",
-    "$files": ["src/electron/config/file-dimension-source.ts(59198-59206)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59098-59106)"],
     "$id": 19750
   },
   "宗教极端": {
@@ -7897,7 +7884,7 @@
     "de-DE": "Religiöser Extremismus",
     "fr-FR": "Extrémisme religieux",
     "ko-KR": "종교적 극단주의",
-    "$files": ["src/electron/config/file-dimension-source.ts(59221-59229)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59121-59129)"],
     "$id": 19751
   },
   "极端思潮": {
@@ -7910,7 +7897,7 @@
     "de-DE": "Extreme Strömungen",
     "fr-FR": "Courants d'extrême droite",
     "ko-KR": "극단적 사조",
-    "$files": ["src/electron/config/file-dimension-source.ts(59244-59252)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59144-59152)"],
     "$id": 19752
   },
   "政治敏感、国家安全与意识形态违规分类": {
@@ -7923,7 +7910,7 @@
     "de-DE": "Klassifizierung nach politischer Sensibilität, Verstößen gegen die nationale Sicherheit und ideologischen Verstößen",
     "fr-FR": "Classification des infractions liées à la sensibilité politique, à la sécurité nationale et à l'idéologie",
     "ko-KR": "정치적 민감성, 국가 안보 및 이념 위반 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(59288-59310)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59188-59210)"],
     "$id": 19753
   },
   "政治合规": {
@@ -7936,7 +7923,7 @@
     "de-DE": "Politische Compliance",
     "fr-FR": "Conformité politique",
     "ko-KR": "정치적 규정 준수",
-    "$files": ["src/electron/config/file-dimension-source.ts(59478-59486)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59378-59386)"],
     "$id": 19754
   },
   "敏感人物": {
@@ -7949,7 +7936,7 @@
     "de-DE": "Personen von besonderem Interesse",
     "fr-FR": "Personnes sensibles",
     "ko-KR": "민감한 인물",
-    "$files": ["src/electron/config/file-dimension-source.ts(59501-59509)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59401-59409)"],
     "$id": 19755
   },
   "意识形态审查": {
@@ -7962,7 +7949,7 @@
     "de-DE": "Ideologische Zensur",
     "fr-FR": "Censure idéologique",
     "ko-KR": "이데올로기 검열",
-    "$files": ["src/electron/config/file-dimension-source.ts(59524-59534)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59424-59434)"],
     "$id": 19756
   },
   "违规细分": {
@@ -7975,7 +7962,7 @@
     "de-DE": "Aufschlüsselung nach Verstößen",
     "fr-FR": "Répartition par infraction",
     "ko-KR": "규정 위반 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(59900-59908)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59800-59808)"],
     "$id": 19757
   },
   "毒品交易": {
@@ -7988,7 +7975,7 @@
     "de-DE": "Drogenhandel",
     "fr-FR": "Trafic de drogue",
     "ko-KR": "마약 거래",
-    "$files": ["src/electron/config/file-dimension-source.ts(59957-59965)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59857-59865)"],
     "$id": 19758
   },
   "走私贩私": {
@@ -8001,7 +7988,7 @@
     "de-DE": "Schmuggel",
     "fr-FR": "Contrebande",
     "ko-KR": "밀수, 밀수업자",
-    "$files": ["src/electron/config/file-dimension-source.ts(59980-59988)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59880-59888)"],
     "$id": 19759
   },
   "枪支弹药": {
@@ -8014,7 +8001,7 @@
     "de-DE": "Schusswaffen und Munition",
     "fr-FR": "Armes à feu et munitions",
     "ko-KR": "총기 및 탄약",
-    "$files": ["src/electron/config/file-dimension-source.ts(60003-60011)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59903-59911)"],
     "$id": 19760
   },
   "洗钱黑产": {
@@ -8027,7 +8014,7 @@
     "de-DE": "Geldwäsche und illegale Wirtschaftszweige",
     "fr-FR": "Réseaux criminels de blanchiment d'argent",
     "ko-KR": "자금세탁 불법 산업",
-    "$files": ["src/electron/config/file-dimension-source.ts(60026-60034)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59926-59934)"],
     "$id": 19761
   },
   "电信诈骗": {
@@ -8040,7 +8027,7 @@
     "de-DE": "Telekommunikationsbetrug",
     "fr-FR": "Escroqueries par téléphone",
     "ko-KR": "통신 사기",
-    "$files": ["src/electron/config/file-dimension-source.ts(60049-60057)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59949-59957)"],
     "$id": 19762
   },
   "暗网交易": {
@@ -8053,7 +8040,7 @@
     "de-DE": "Transaktionen im Darknet",
     "fr-FR": "Transactions sur le Dark Web",
     "ko-KR": "다크웹 거래",
-    "$files": ["src/electron/config/file-dimension-source.ts(60072-60080)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59972-59980)"],
     "$id": 19763
   },
   "网络赌博": {
@@ -8066,7 +8053,7 @@
     "de-DE": "Online-Glücksspiel",
     "fr-FR": "Jeux d'argent en ligne",
     "ko-KR": "온라인 도박",
-    "$files": ["src/electron/config/file-dimension-source.ts(60095-60103)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(59995-60003)"],
     "$id": 19764
   },
   "假冒伪劣": {
@@ -8079,7 +8066,7 @@
     "de-DE": "Fälschungen und minderwertige Produkte",
     "fr-FR": "Contrefaçons et produits de mauvaise qualité",
     "ko-KR": "위조 및 불량품",
-    "$files": ["src/electron/config/file-dimension-source.ts(60118-60126)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(60018-60026)"],
     "$id": 19765
   },
   "侵害未成年": {
@@ -8092,7 +8079,7 @@
     "de-DE": "Missbrauch von Minderjährigen",
     "fr-FR": "Abus sur mineurs",
     "ko-KR": "미성년자 성폭력",
-    "$files": ["src/electron/config/file-dimension-source.ts(60141-60150)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(60041-60050)"],
     "$id": 19766
   },
   "违禁物品": {
@@ -8105,7 +8092,7 @@
     "de-DE": "Verbotene Gegenstände",
     "fr-FR": "Objets interdits",
     "ko-KR": "금지 품목",
-    "$files": ["src/electron/config/file-dimension-source.ts(60165-60173)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(60065-60073)"],
     "$id": 19767
   },
   "法律法规禁止流通的违法违规物品与行为分类": {
@@ -8118,7 +8105,7 @@
     "de-DE": "Klassifizierung von Gegenständen und Handlungen, deren Inverkehrbringen gemäß den gesetzlichen Bestimmungen verboten ist",
     "fr-FR": "Classification des biens et des comportements illicites dont la circulation est interdite par la législation et la réglementation",
     "ko-KR": "법률 및 규정에 의해 유통이 금지된 불법·규정 위반 물품 및 행위의 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(60209-60233)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(60109-60133)"],
     "$id": 19768
   },
   "违法检测": {
@@ -8131,7 +8118,7 @@
     "de-DE": "Ermittlung von Rechtsverstößen",
     "fr-FR": "Contrôles illégaux",
     "ko-KR": "불법 검사",
-    "$files": ["src/electron/config/file-dimension-source.ts(60401-60409)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(60301-60309)"],
     "$id": 19769
   },
   "违禁品识别": {
@@ -8144,7 +8131,7 @@
     "de-DE": "Erkennung verbotener Gegenstände",
     "fr-FR": "Identification des articles interdits",
     "ko-KR": "금지 품목 식별",
-    "$files": ["src/electron/config/file-dimension-source.ts(60424-60433)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(60324-60333)"],
     "$id": 19770
   },
   "黑产过滤": {
@@ -8157,7 +8144,7 @@
     "de-DE": "Filterung illegaler Inhalte",
     "fr-FR": "Filtrage des activités illicites",
     "ko-KR": "불법 활동 차단",
-    "$files": ["src/electron/config/file-dimension-source.ts(60448-60456)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(60348-60356)"],
     "$id": 19771
   },
   "色情细分": {
@@ -8171,19 +8158,19 @@
     "fr-FR": "Segments du marché de la pornographie",
     "ko-KR": "포르노 장르 분류",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(60822-60830)",
-      "src/electron/config/file-dimension-source.ts(75118-75126)",
-      "src/electron/config/file-dimension-source.ts(76014-76022)",
-      "src/electron/config/file-dimension-source.ts(76927-76935)",
-      "src/electron/config/file-dimension-source.ts(77866-77874)",
-      "src/electron/config/file-dimension-source.ts(78669-78677)",
-      "src/electron/config/file-dimension-source.ts(79565-79573)",
-      "src/electron/config/file-dimension-source.ts(80443-80451)",
-      "src/electron/config/file-dimension-source.ts(81312-81320)",
-      "src/electron/config/file-dimension-source.ts(82236-82244)",
-      "src/electron/config/file-dimension-source.ts(83137-83145)",
-      "src/electron/config/file-dimension-source.ts(83946-83954)",
-      "src/electron/config/file-dimension-source.ts(84732-84740)"
+      "src/electron/config/file-dimension-source.ts(60722-60730)",
+      "src/electron/config/file-dimension-source.ts(75018-75026)",
+      "src/electron/config/file-dimension-source.ts(75914-75922)",
+      "src/electron/config/file-dimension-source.ts(76827-76835)",
+      "src/electron/config/file-dimension-source.ts(77766-77774)",
+      "src/electron/config/file-dimension-source.ts(78569-78577)",
+      "src/electron/config/file-dimension-source.ts(79465-79473)",
+      "src/electron/config/file-dimension-source.ts(80343-80351)",
+      "src/electron/config/file-dimension-source.ts(81212-81220)",
+      "src/electron/config/file-dimension-source.ts(82136-82144)",
+      "src/electron/config/file-dimension-source.ts(83037-83045)",
+      "src/electron/config/file-dimension-source.ts(83846-83854)",
+      "src/electron/config/file-dimension-source.ts(84632-84640)"
     ],
     "$id": 19772
   },
@@ -8198,8 +8185,8 @@
     "fr-FR": "Inceste familial",
     "ko-KR": "가족 근친상간",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(60879-60887)",
-      "src/electron/config/file-dimension-source.ts(75172-75180)"
+      "src/electron/config/file-dimension-source.ts(60779-60787)",
+      "src/electron/config/file-dimension-source.ts(75072-75080)"
     ],
     "$id": 20168
   },
@@ -8214,8 +8201,8 @@
     "fr-FR": "Convoitise extraconjugale",
     "ko-KR": "혼외정욕",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(60902-60910)",
-      "src/electron/config/file-dimension-source.ts(76068-76076)"
+      "src/electron/config/file-dimension-source.ts(60802-60810)",
+      "src/electron/config/file-dimension-source.ts(75968-75976)"
     ],
     "$id": 20169
   },
@@ -8230,8 +8217,8 @@
     "fr-FR": "Professeurs et étudiants du campus",
     "ko-KR": "캠퍼스 교사와 학생",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(60925-60933)",
-      "src/electron/config/file-dimension-source.ts(76981-76989)"
+      "src/electron/config/file-dimension-source.ts(60825-60833)",
+      "src/electron/config/file-dimension-source.ts(76881-76889)"
     ],
     "$id": 20170
   },
@@ -8246,8 +8233,8 @@
     "fr-FR": "Social au travail",
     "ko-KR": "직장 사회",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(60948-60956)",
-      "src/electron/config/file-dimension-source.ts(77920-77928)"
+      "src/electron/config/file-dimension-source.ts(60848-60856)",
+      "src/electron/config/file-dimension-source.ts(77820-77828)"
     ],
     "$id": 20171
   },
@@ -8262,8 +8249,8 @@
     "fr-FR": "Sexe de groupe",
     "ko-KR": "그룹 섹스",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(60971-60979)",
-      "src/electron/config/file-dimension-source.ts(78723-78731)"
+      "src/electron/config/file-dimension-source.ts(60871-60879)",
+      "src/electron/config/file-dimension-source.ts(78623-78631)"
     ],
     "$id": 20172
   },
@@ -8278,9 +8265,9 @@
     "fr-FR": "Entraînement sexuel",
     "ko-KR": "성교육",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(60994-61002)",
-      "src/electron/config/file-dimension-source.ts(79009-79017)",
-      "src/electron/config/file-dimension-source.ts(79619-79627)"
+      "src/electron/config/file-dimension-source.ts(60894-60902)",
+      "src/electron/config/file-dimension-source.ts(78909-78917)",
+      "src/electron/config/file-dimension-source.ts(79519-79527)"
     ],
     "$id": 20173
   },
@@ -8295,8 +8282,8 @@
     "fr-FR": "Lorgnant exposé",
     "ko-KR": "엿보는 노출",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(61017-61025)",
-      "src/electron/config/file-dimension-source.ts(80497-80505)"
+      "src/electron/config/file-dimension-source.ts(60917-60925)",
+      "src/electron/config/file-dimension-source.ts(80397-80405)"
     ],
     "$id": 20174
   },
@@ -8311,8 +8298,8 @@
     "fr-FR": "Uniforme professionnel",
     "ko-KR": "전문 유니폼",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(61040-61048)",
-      "src/electron/config/file-dimension-source.ts(81366-81374)"
+      "src/electron/config/file-dimension-source.ts(60940-60948)",
+      "src/electron/config/file-dimension-source.ts(81266-81274)"
     ],
     "$id": 20175
   },
@@ -8327,9 +8314,9 @@
     "fr-FR": "Thèmes littéraires",
     "ko-KR": "문학적 주제",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(61063-61071)",
-      "src/electron/config/file-dimension-source.ts(82095-82103)",
-      "src/electron/config/file-dimension-source.ts(82290-82298)"
+      "src/electron/config/file-dimension-source.ts(60963-60971)",
+      "src/electron/config/file-dimension-source.ts(81995-82003)",
+      "src/electron/config/file-dimension-source.ts(82190-82198)"
     ],
     "$id": 20176
   },
@@ -8344,8 +8331,8 @@
     "fr-FR": "Physiologie Érotique",
     "ko-KR": "에로틱 생리학",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(61086-61094)",
-      "src/electron/config/file-dimension-source.ts(83191-83199)"
+      "src/electron/config/file-dimension-source.ts(60986-60994)",
+      "src/electron/config/file-dimension-source.ts(83091-83099)"
     ],
     "$id": 20177
   },
@@ -8360,8 +8347,8 @@
     "fr-FR": "Agression involontaire",
     "ko-KR": "비자발적인 폭행",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(61109-61118)",
-      "src/electron/config/file-dimension-source.ts(84000-84009)"
+      "src/electron/config/file-dimension-source.ts(61009-61018)",
+      "src/electron/config/file-dimension-source.ts(83900-83909)"
     ],
     "$id": 20178
   },
@@ -8376,9 +8363,9 @@
     "fr-FR": "Orientations multiples",
     "ko-KR": "다양한 방향",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(61133-61141)",
-      "src/electron/config/file-dimension-source.ts(84591-84599)",
-      "src/electron/config/file-dimension-source.ts(84786-84794)"
+      "src/electron/config/file-dimension-source.ts(61033-61041)",
+      "src/electron/config/file-dimension-source.ts(84491-84499)",
+      "src/electron/config/file-dimension-source.ts(84686-84694)"
     ],
     "$id": 20179
   },
@@ -8392,7 +8379,7 @@
     "de-DE": "Aufteilung der Kernkategorien von Erwachsenenpornos und vertikalen Themen",
     "fr-FR": "Division des catégories principales de porno adulte et de thèmes verticaux",
     "ko-KR": "성인 포르노 및 수직 테마의 핵심 카테고리 구분",
-    "$files": ["src/electron/config/file-dimension-source.ts(61177-61196)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61077-61096)"],
     "$id": 20180
   },
   "成人审查": {
@@ -8405,7 +8392,7 @@
     "de-DE": "Altersprüfung",
     "fr-FR": "Contrôle de l'âge",
     "ko-KR": "성인 등급 심사",
-    "$files": ["src/electron/config/file-dimension-source.ts(61364-61372)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61264-61272)"],
     "$id": 19783
   },
   "题材分类": {
@@ -8418,7 +8405,7 @@
     "de-DE": "Themenklassifizierung",
     "fr-FR": "Classement des thèmes",
     "ko-KR": "테마 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(61387-61395)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61287-61295)"],
     "$id": 20181
   },
   "情色识别": {
@@ -8431,7 +8418,7 @@
     "de-DE": "Erotische Anerkennung",
     "fr-FR": "Reconnaissance érotique",
     "ko-KR": "에로틱 인식",
-    "$files": ["src/electron/config/file-dimension-source.ts(61410-61418)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61310-61318)"],
     "$id": 20182
   },
   "截图细分": {
@@ -8444,7 +8431,7 @@
     "de-DE": "Aufschlüsselung der Screenshots",
     "fr-FR": "Ventilation des captures d'écran",
     "ko-KR": "스크린샷 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(61784-61792)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61684-61692)"],
     "$id": 19786
   },
   "网页长截图": {
@@ -8457,7 +8444,7 @@
     "de-DE": "Langer Screenshot der Webseite",
     "fr-FR": "Capture d'écran longue d'une page Web",
     "ko-KR": "웹페이지 전체 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(61841-61850)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61741-61750)"],
     "$id": 19787
   },
   "UI界面截图": {
@@ -8470,7 +8457,7 @@
     "de-DE": "Screenshots der Benutzeroberfläche",
     "fr-FR": "Captures d'écran de l'interface utilisateur",
     "ko-KR": "UI 화면 캡처",
-    "$files": ["src/electron/config/file-dimension-source.ts(61865-61875)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61765-61775)"],
     "$id": 19788
   },
   "聊天截图": {
@@ -8483,7 +8470,7 @@
     "de-DE": "Screenshots aus dem Chat",
     "fr-FR": "Captures d'écran de conversation",
     "ko-KR": "채팅 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(61890-61898)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61790-61798)"],
     "$id": 19789
   },
   "代码截图": {
@@ -8496,7 +8483,7 @@
     "de-DE": "Code-Screenshot",
     "fr-FR": "Capture d'écran du code",
     "ko-KR": "코드 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(61913-61921)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61813-61821)"],
     "$id": 19790
   },
   "游戏截图": {
@@ -8509,7 +8496,7 @@
     "de-DE": "Screenshots aus dem Spiel",
     "fr-FR": "Captures d'écran du jeu",
     "ko-KR": "게임 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(61936-61944)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61836-61844)"],
     "$id": 19791
   },
   "支付凭证截图": {
@@ -8522,7 +8509,7 @@
     "de-DE": "Screenshot des Zahlungsbelegs",
     "fr-FR": "Capture d'écran du justificatif de paiement",
     "ko-KR": "결제 내역 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(61959-61969)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61859-61869)"],
     "$id": 19792
   },
   "系统报错截图": {
@@ -8535,7 +8522,7 @@
     "de-DE": "Screenshot des Systemfehlers",
     "fr-FR": "Capture d'écran de l'erreur système",
     "ko-KR": "시스템 오류 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(61984-61994)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61884-61894)"],
     "$id": 19793
   },
   "社交动态截图": {
@@ -8548,7 +8535,7 @@
     "de-DE": "Screenshot eines Social-Media-Beitrags",
     "fr-FR": "Capture d'écran d'une publication sur les réseaux sociaux",
     "ko-KR": "소셜 미디어 게시물 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(62009-62019)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61909-61919)"],
     "$id": 19794
   },
   "影视视频截图": {
@@ -8561,7 +8548,7 @@
     "de-DE": "Screenshots aus Filmen und Fernsehserien",
     "fr-FR": "Captures d'écran de films et de séries",
     "ko-KR": "영화 및 TV 영상 캡처",
-    "$files": ["src/electron/config/file-dimension-source.ts(62034-62044)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61934-61944)"],
     "$id": 19795
   },
   "文档截图": {
@@ -8574,7 +8561,7 @@
     "de-DE": "Screenshot aus dem Dokument",
     "fr-FR": "Capture d'écran du document",
     "ko-KR": "문서 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(62059-62067)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61959-61967)"],
     "$id": 19796
   },
   "地图导航截图": {
@@ -8587,7 +8574,7 @@
     "de-DE": "Screenshot der Karten-Navigation",
     "fr-FR": "Capture d'écran de la navigation sur la carte",
     "ko-KR": "지도 내비게이션 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(62082-62092)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(61982-61992)"],
     "$id": 19797
   },
   "终端控制台截图": {
@@ -8600,7 +8587,7 @@
     "de-DE": "Screenshot der Terminal-Konsole",
     "fr-FR": "Capture d'écran de la console de commande",
     "ko-KR": "터미널 콘솔 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(62107-62118)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62007-62018)"],
     "$id": 19798
   },
   "订单物流截图": {
@@ -8613,7 +8600,7 @@
     "de-DE": "Screenshot der Auftragslogistik",
     "fr-FR": "Capture d'écran de la logistique des commandes",
     "ko-KR": "주문 물류 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(62133-62143)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62033-62043)"],
     "$id": 19799
   },
   "桌面全屏截图": {
@@ -8626,7 +8613,7 @@
     "de-DE": "Vollbild-Screenshot des Desktops",
     "fr-FR": "Capture d'écran en plein écran du bureau",
     "ko-KR": "데스크톱 전체 화면 캡처",
-    "$files": ["src/electron/config/file-dimension-source.ts(62158-62168)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62058-62068)"],
     "$id": 19800
   },
   "各类屏幕捕获与截图内容的专业细分": {
@@ -8639,7 +8626,7 @@
     "de-DE": "Professionelle Unterteilung verschiedener Arten von Bildschirmaufnahmen und Screenshots",
     "fr-FR": "Classification professionnelle des différents types de captures d'écran et de contenus",
     "ko-KR": "다양한 화면 캡처 및 스크린샷 유형에 대한 전문적인 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(62204-62224)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62104-62124)"],
     "$id": 19801
   },
   "屏幕捕获": {
@@ -8652,7 +8639,7 @@
     "de-DE": "Bildschirmaufnahme",
     "fr-FR": "Capture d'écran",
     "ko-KR": "화면 캡처",
-    "$files": ["src/electron/config/file-dimension-source.ts(62327-62335)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62227-62235)"],
     "$id": 19802
   },
   "界面分析": {
@@ -8665,7 +8652,7 @@
     "de-DE": "Analyse der Benutzeroberfläche",
     "fr-FR": "Analyse de l'interface",
     "ko-KR": "인터페이스 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(62350-62358)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62250-62258)"],
     "$id": 19803
   },
   "截图识别": {
@@ -8678,7 +8665,7 @@
     "de-DE": "Erkennung von Screenshots",
     "fr-FR": "Reconnaissance d'images capturées",
     "ko-KR": "스크린샷 인식",
-    "$files": ["src/electron/config/file-dimension-source.ts(62373-62381)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62273-62281)"],
     "$id": 19804
   },
   "生成载体": {
@@ -8691,7 +8678,7 @@
     "de-DE": "Vektor generieren",
     "fr-FR": "Générer un vecteur",
     "ko-KR": "벡터 생성",
-    "$files": ["src/electron/config/file-dimension-source.ts(62747-62755)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62647-62655)"],
     "$id": 19805
   },
   "实拍": {
@@ -8704,7 +8691,7 @@
     "de-DE": "Echter Schuss",
     "fr-FR": "Tir réel",
     "ko-KR": "실제 샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(62804-62810)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62704-62710)"],
     "$id": 19806
   },
   "手绘": {
@@ -8717,7 +8704,7 @@
     "de-DE": "Handgezeichnet",
     "fr-FR": "Dessiné à la main",
     "ko-KR": "손으로 그린",
-    "$files": ["src/electron/config/file-dimension-source.ts(62825-62831)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62725-62731)"],
     "$id": 19807
   },
   "CG渲染": {
@@ -8730,7 +8717,7 @@
     "de-DE": "CG-Rendering",
     "fr-FR": "Rendu CG",
     "ko-KR": "CG렌더링",
-    "$files": ["src/electron/config/file-dimension-source.ts(62846-62854)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62746-62754)"],
     "$id": 19808
   },
   "AI生成": {
@@ -8743,7 +8730,7 @@
     "de-DE": "KI generiert",
     "fr-FR": "IA générée",
     "ko-KR": "AI 생성",
-    "$files": ["src/electron/config/file-dimension-source.ts(62869-62877)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62769-62777)"],
     "$id": 7703
   },
   "图像与视觉内容的物理生成方式与载体": {
@@ -8756,7 +8743,7 @@
     "de-DE": "Physische Erzeugungsmethoden und Träger von Bildern und visuellen Inhalten",
     "fr-FR": "Méthodes de génération physique et supports d'images et de contenus visuels",
     "ko-KR": "물리적 생성 방법과 이미지 및 시각적 콘텐츠의 전달자",
-    "$files": ["src/electron/config/file-dimension-source.ts(62913-62934)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62813-62834)"],
     "$id": 19809
   },
   "生成方式": {
@@ -8769,7 +8756,7 @@
     "de-DE": "Generierungsmethode",
     "fr-FR": "Méthode de génération",
     "ko-KR": "생성방식",
-    "$files": ["src/electron/config/file-dimension-source.ts(63058-63066)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62958-62966)"],
     "$id": 19810
   },
   "渲染类型": {
@@ -8782,7 +8769,7 @@
     "de-DE": "Rendering-Typ",
     "fr-FR": "Type de rendu",
     "ko-KR": "렌더링 유형",
-    "$files": ["src/electron/config/file-dimension-source.ts(63081-63089)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(62981-62989)"],
     "$id": 19811
   },
   "载体识别": {
@@ -8795,7 +8782,7 @@
     "de-DE": "Identifizierung des Spediteurs",
     "fr-FR": "Identification du transporteur",
     "ko-KR": "항공사 식별",
-    "$files": ["src/electron/config/file-dimension-source.ts(63104-63112)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63004-63012)"],
     "$id": 19812
   },
   "景别": {
@@ -8808,7 +8795,7 @@
     "de-DE": "Abschied von der Landschaft",
     "fr-FR": "Adieu paysage",
     "ko-KR": "풍경 작별 인사",
-    "$files": ["src/electron/config/file-dimension-source.ts(63572-63578)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63472-63478)"],
     "$id": 19813
   },
   "特写": {
@@ -8821,7 +8808,7 @@
     "de-DE": "Nahaufnahme",
     "fr-FR": "Gros plan",
     "ko-KR": "클로즈업",
-    "$files": ["src/electron/config/file-dimension-source.ts(63627-63633)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63527-63533)"],
     "$id": 19814
   },
   "半身": {
@@ -8834,7 +8821,7 @@
     "de-DE": "Halber Körper",
     "fr-FR": "Demi-corps",
     "ko-KR": "반신",
-    "$files": ["src/electron/config/file-dimension-source.ts(63648-63654)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63548-63554)"],
     "$id": 19815
   },
   "全身": {
@@ -8847,7 +8834,7 @@
     "de-DE": "Ganzen Körper",
     "fr-FR": "Tout le corps",
     "ko-KR": "전신",
-    "$files": ["src/electron/config/file-dimension-source.ts(63669-63675)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63569-63575)"],
     "$id": 19816
   },
   "全景": {
@@ -8860,7 +8847,7 @@
     "de-DE": "Panoramablick",
     "fr-FR": "Vue panoramique",
     "ko-KR": "파노라마 뷰",
-    "$files": ["src/electron/config/file-dimension-source.ts(63690-63696)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63590-63596)"],
     "$id": 19817
   },
   "微距": {
@@ -8873,7 +8860,7 @@
     "de-DE": "Makro",
     "fr-FR": "Macro",
     "ko-KR": "매크로",
-    "$files": ["src/electron/config/file-dimension-source.ts(63711-63717)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63611-63617)"],
     "$id": 19818
   },
   "摄影与美术作品的画幅取景范围与景别": {
@@ -8886,7 +8873,7 @@
     "de-DE": "Rahmenbereich und Szenerie von Fotografie und Kunstwerken",
     "fr-FR": "Gamme d'encadrement et de décors de photographies et d'œuvres d'art",
     "ko-KR": "사진 및 미술 작품의 프레임 범위와 풍경",
-    "$files": ["src/electron/config/file-dimension-source.ts(63753-63774)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63653-63674)"],
     "$id": 19819
   },
   "取景范围": {
@@ -8899,7 +8886,7 @@
     "de-DE": "Sichtweite",
     "fr-FR": "Portée de visualisation",
     "ko-KR": "시야 범위",
-    "$files": ["src/electron/config/file-dimension-source.ts(63877-63885)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63777-63785)"],
     "$id": 19820
   },
   "画幅构图": {
@@ -8912,7 +8899,7 @@
     "de-DE": "Rahmenkomposition",
     "fr-FR": "Composition du cadre",
     "ko-KR": "프레임 구성",
-    "$files": ["src/electron/config/file-dimension-source.ts(63900-63908)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63800-63808)"],
     "$id": 19821
   },
   "人物景别": {
@@ -8925,7 +8912,7 @@
     "de-DE": "Charakterszene",
     "fr-FR": "Scène de personnage",
     "ko-KR": "캐릭터 장면",
-    "$files": ["src/electron/config/file-dimension-source.ts(63923-63931)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(63823-63831)"],
     "$id": 19822
   },
   "光照": {
@@ -8938,7 +8925,7 @@
     "de-DE": "Beleuchtung",
     "fr-FR": "éclairage",
     "ko-KR": "조명",
-    "$files": ["src/electron/config/file-dimension-source.ts(64418-64424)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64318-64324)"],
     "$id": 19823
   },
   "日光": {
@@ -8951,7 +8938,7 @@
     "de-DE": "Sonnenlicht",
     "fr-FR": "Lumière du soleil",
     "ko-KR": "햇빛",
-    "$files": ["src/electron/config/file-dimension-source.ts(64473-64479)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64373-64379)"],
     "$id": 19824
   },
   "日落": {
@@ -8964,7 +8951,7 @@
     "de-DE": "Sonnenuntergang",
     "fr-FR": "Coucher de soleil",
     "ko-KR": "일몰",
-    "$files": ["src/electron/config/file-dimension-source.ts(64494-64500)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64394-64400)"],
     "$id": 19825
   },
   "夜景": {
@@ -8977,7 +8964,7 @@
     "de-DE": "Nachtansicht",
     "fr-FR": "Vue de nuit",
     "ko-KR": "야경",
-    "$files": ["src/electron/config/file-dimension-source.ts(64515-64521)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64415-64421)"],
     "$id": 19826
   },
   "暗光": {
@@ -8990,7 +8977,7 @@
     "de-DE": "Schwaches Licht",
     "fr-FR": "Pénombre",
     "ko-KR": "희미한 빛",
-    "$files": ["src/electron/config/file-dimension-source.ts(64536-64542)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64436-64442)"],
     "$id": 19827
   },
   "室内光": {
@@ -9003,7 +8990,7 @@
     "de-DE": "Innenlicht",
     "fr-FR": "Lumière intérieure",
     "ko-KR": "실내 조명",
-    "$files": ["src/electron/config/file-dimension-source.ts(64557-64564)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64457-64464)"],
     "$id": 19828
   },
   "摄影照片的环境光线与拍摄时间氛围": {
@@ -9016,7 +9003,7 @@
     "de-DE": "Umgebungslicht und Aufnahmezeitatmosphäre fotografischer Fotos",
     "fr-FR": "Lumière ambiante et atmosphère du temps de prise de vue des photos photographiques",
     "ko-KR": "사진 사진의 주변 조명 및 촬영 시간 분위기",
-    "$files": ["src/electron/config/file-dimension-source.ts(64600-64620)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64500-64520)"],
     "$id": 19829
   },
   "光线分析": {
@@ -9029,7 +9016,7 @@
     "de-DE": "Lichtanalyse",
     "fr-FR": "Analyse de la lumière",
     "ko-KR": "빛 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(64723-64731)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64623-64631)"],
     "$id": 19830
   },
   "拍摄时间": {
@@ -9042,7 +9029,7 @@
     "de-DE": "Aufnahmezeit",
     "fr-FR": "Temps de tournage",
     "ko-KR": "촬영 시간",
-    "$files": ["src/electron/config/file-dimension-source.ts(64746-64754)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64646-64654)"],
     "$id": 19831
   },
   "氛围识别": {
@@ -9055,7 +9042,7 @@
     "de-DE": "Atmosphärenerkennung",
     "fr-FR": "Reconnaissance de l'atmosphère",
     "ko-KR": "분위기 인식",
-    "$files": ["src/electron/config/file-dimension-source.ts(64769-64777)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(64669-64677)"],
     "$id": 19832
   },
   "背景": {
@@ -9068,7 +9055,7 @@
     "de-DE": "Hintergrund",
     "fr-FR": "Contexte",
     "ko-KR": "배경",
-    "$files": ["src/electron/config/file-dimension-source.ts(65214-65220)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65114-65120)"],
     "$id": 19833
   },
   "透明背景": {
@@ -9081,7 +9068,7 @@
     "de-DE": "Transparenter Hintergrund",
     "fr-FR": "Fond transparent",
     "ko-KR": "투명한 배경",
-    "$files": ["src/electron/config/file-dimension-source.ts(65269-65277)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65169-65177)"],
     "$id": 19834
   },
   "纯色背景": {
@@ -9094,7 +9081,7 @@
     "de-DE": "Einfarbiger Hintergrund",
     "fr-FR": "Fond de couleur unie",
     "ko-KR": "단색 배경",
-    "$files": ["src/electron/config/file-dimension-source.ts(65292-65300)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65192-65200)"],
     "$id": 19835
   },
   "实景背景": {
@@ -9107,7 +9094,7 @@
     "de-DE": "Live-Hintergrund",
     "fr-FR": "Fond en direct",
     "ko-KR": "라이브 배경",
-    "$files": ["src/electron/config/file-dimension-source.ts(65315-65323)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65215-65223)"],
     "$id": 19836
   },
   "图像设计资产与素材的背景通道与环境类型": {
@@ -9120,7 +9107,7 @@
     "de-DE": "Hintergrundkanäle und Umgebungstypen für Bilddesign-Assets und -Materialien",
     "fr-FR": "Canaux d'arrière-plan et types d'environnement pour les ressources et les matériaux de conception d'image",
     "ko-KR": "이미지 디자인 자산 및 자료에 대한 배경 채널 및 환경 유형",
-    "$files": ["src/electron/config/file-dimension-source.ts(65359-65382)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65259-65282)"],
     "$id": 19837
   },
   "Alpha通道": {
@@ -9133,7 +9120,7 @@
     "de-DE": "Alphakanal",
     "fr-FR": "Canal alpha",
     "ko-KR": "알파 채널",
-    "$files": ["src/electron/config/file-dimension-source.ts(65485-65496)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65385-65396)"],
     "$id": 19838
   },
   "背景抠图": {
@@ -9146,7 +9133,7 @@
     "de-DE": "Hintergrundausschnitt",
     "fr-FR": "Découpe d'arrière-plan",
     "ko-KR": "배경 컷아웃",
-    "$files": ["src/electron/config/file-dimension-source.ts(65511-65519)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65411-65419)"],
     "$id": 19839
   },
   "视角": {
@@ -9159,7 +9146,7 @@
     "de-DE": "Perspektive",
     "fr-FR": "Perspective",
     "ko-KR": "관점",
-    "$files": ["src/electron/config/file-dimension-source.ts(65977-65983)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65877-65883)"],
     "$id": 19840
   },
   "平视": {
@@ -9172,7 +9159,7 @@
     "de-DE": "Augenhöhe",
     "fr-FR": "Niveau des yeux",
     "ko-KR": "눈높이",
-    "$files": ["src/electron/config/file-dimension-source.ts(66032-66038)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65932-65938)"],
     "$id": 19841
   },
   "俯视": {
@@ -9185,7 +9172,7 @@
     "de-DE": "Nach unten schauen",
     "fr-FR": "Regardant vers le bas",
     "ko-KR": "아래를 내려다 보면서",
-    "$files": ["src/electron/config/file-dimension-source.ts(66053-66059)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65953-65959)"],
     "$id": 19842
   },
   "仰视": {
@@ -9198,7 +9185,7 @@
     "de-DE": "Nachschlagen",
     "fr-FR": "Chercher",
     "ko-KR": "찾다",
-    "$files": ["src/electron/config/file-dimension-source.ts(66074-66080)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65974-65980)"],
     "$id": 19843
   },
   "第一人称": {
@@ -9211,7 +9198,7 @@
     "de-DE": "Erste Person",
     "fr-FR": "Première personne",
     "ko-KR": "첫 번째 사람",
-    "$files": ["src/electron/config/file-dimension-source.ts(66095-66103)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(65995-66003)"],
     "$id": 19844
   },
   "拍摄与绘制镜头的透视角度与观察视角": {
@@ -9224,7 +9211,7 @@
     "de-DE": "Perspektivische Winkel und Betrachtungswinkel für Aufnahme- und Zeichnungsaufnahmen",
     "fr-FR": "Angles de perspective et angles de vision pour la prise de vue et le dessin",
     "ko-KR": "촬영 및 도면 촬영을 위한 원근 각도 및 시야각",
-    "$files": ["src/electron/config/file-dimension-source.ts(66139-66160)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66039-66060)"],
     "$id": 19845
   },
   "拍摄视角": {
@@ -9237,7 +9224,7 @@
     "de-DE": "Aufnahmewinkel",
     "fr-FR": "Angle de prise de vue",
     "ko-KR": "촬영 각도",
-    "$files": ["src/electron/config/file-dimension-source.ts(66284-66292)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66184-66192)"],
     "$id": 19846
   },
   "镜头透视": {
@@ -9250,7 +9237,7 @@
     "de-DE": "Linsenperspektive",
     "fr-FR": "Point de vue de l'objectif",
     "ko-KR": "렌즈 관점",
-    "$files": ["src/electron/config/file-dimension-source.ts(66307-66315)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66207-66215)"],
     "$id": 19847
   },
   "观察角度": {
@@ -9263,7 +9250,7 @@
     "de-DE": "Betrachtungswinkel",
     "fr-FR": "Angle de vision",
     "ko-KR": "시야각",
-    "$files": ["src/electron/config/file-dimension-source.ts(66330-66338)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66230-66238)"],
     "$id": 19848
   },
   "版面": {
@@ -9276,7 +9263,7 @@
     "de-DE": "Layout",
     "fr-FR": "Mise en page",
     "ko-KR": "공들여 나열한 것",
-    "$files": ["src/electron/config/file-dimension-source.ts(66800-66806)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66700-66706)"],
     "$id": 19849
   },
   "纯文字": {
@@ -9289,7 +9276,7 @@
     "de-DE": "Klartext",
     "fr-FR": "Texte brut",
     "ko-KR": "일반 텍스트",
-    "$files": ["src/electron/config/file-dimension-source.ts(66855-66862)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66755-66762)"],
     "$id": 19850
   },
   "图表为主": {
@@ -9302,7 +9289,7 @@
     "de-DE": "Diagrammbasiert",
     "fr-FR": "Basé sur un graphique",
     "ko-KR": "차트 기반",
-    "$files": ["src/electron/config/file-dimension-source.ts(66877-66885)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66777-66785)"],
     "$id": 19851
   },
   "图文混合": {
@@ -9315,7 +9302,7 @@
     "de-DE": "Gemischte Grafiken und Text",
     "fr-FR": "Graphiques et textes mixtes",
     "ko-KR": "혼합된 그래픽과 텍스트",
-    "$files": ["src/electron/config/file-dimension-source.ts(66900-66908)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66800-66808)"],
     "$id": 19852
   },
   "手写笔记": {
@@ -9328,7 +9315,7 @@
     "de-DE": "Handschriftliche Notizen",
     "fr-FR": "Notes manuscrites",
     "ko-KR": "손으로 쓴 메모",
-    "$files": ["src/electron/config/file-dimension-source.ts(66923-66931)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66823-66831)"],
     "$id": 19853
   },
   "文档与页面视觉版式排版构成": {
@@ -9341,7 +9328,7 @@
     "de-DE": "Visuelle Gestaltung des Dokument- und Seitenlayouts",
     "fr-FR": "Composition de la mise en page visuelle des documents et des pages",
     "ko-KR": "문서 및 페이지 시각적 레이아웃 구성",
-    "$files": ["src/electron/config/file-dimension-source.ts(66967-66984)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(66867-66884)"],
     "$id": 19854
   },
   "排版结构": {
@@ -9354,7 +9341,7 @@
     "de-DE": "Satzstruktur",
     "fr-FR": "Structure de composition",
     "ko-KR": "조판 구조",
-    "$files": ["src/electron/config/file-dimension-source.ts(67111-67119)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67011-67019)"],
     "$id": 19855
   },
   "版面分析": {
@@ -9367,7 +9354,7 @@
     "de-DE": "Layoutanalyse",
     "fr-FR": "Analyse de la mise en page",
     "ko-KR": "레이아웃 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(67134-67142)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67034-67042)"],
     "$id": 19856
   },
   "图文比例": {
@@ -9380,7 +9367,7 @@
     "de-DE": "Bild- und Textverhältnis",
     "fr-FR": "Rapport image et texte",
     "ko-KR": "그림과 텍스트 비율",
-    "$files": ["src/electron/config/file-dimension-source.ts(67157-67165)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67057-67065)"],
     "$id": 19857
   },
   "系统生态": {
@@ -9393,7 +9380,7 @@
     "de-DE": "Systemökologie",
     "fr-FR": "écologie du système",
     "ko-KR": "시스템 생태학",
-    "$files": ["src/electron/config/file-dimension-source.ts(67625-67633)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67525-67533)"],
     "$id": 19858
   },
   "Windows截图": {
@@ -9406,7 +9393,7 @@
     "de-DE": "Windows-Screenshot",
     "fr-FR": "Capture d'écran de Windows",
     "ko-KR": "윈도우 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(67682-67695)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67582-67595)"],
     "$id": 19859
   },
   "macOS截图": {
@@ -9419,7 +9406,7 @@
     "de-DE": "MacOS-Screenshots",
     "fr-FR": "Captures d'écran macOS",
     "ko-KR": "macOS 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(67710-67721)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67610-67621)"],
     "$id": 19860
   },
   "iOS截图": {
@@ -9432,7 +9419,7 @@
     "de-DE": "IOS-Screenshots",
     "fr-FR": "Captures d'écran iOS",
     "ko-KR": "iOS 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(67736-67745)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67636-67645)"],
     "$id": 19861
   },
   "Android截图": {
@@ -9445,7 +9432,7 @@
     "de-DE": "Android-Screenshot",
     "fr-FR": "Capture d'écran Android",
     "ko-KR": "안드로이드 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(67760-67773)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67660-67673)"],
     "$id": 19862
   },
   "Linux截图": {
@@ -9458,7 +9445,7 @@
     "de-DE": "Linux-Screenshot",
     "fr-FR": "Capture d'écran Linux",
     "ko-KR": "리눅스 스크린샷",
-    "$files": ["src/electron/config/file-dimension-source.ts(67788-67799)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67688-67699)"],
     "$id": 19863
   },
   "操作系统界面与终端设备生态来源细分": {
@@ -9471,7 +9458,7 @@
     "de-DE": "Betriebssystemschnittstelle und ökologische Quellensegmentierung des Endgeräts",
     "fr-FR": "Interface du système d'exploitation et segmentation des sources écologiques des terminaux",
     "ko-KR": "운영 체제 인터페이스 및 단말 장치 생태학적 소스 분할",
-    "$files": ["src/electron/config/file-dimension-source.ts(67835-67856)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67735-67756)"],
     "$id": 19864
   },
   "操作系统": {
@@ -9484,7 +9471,7 @@
     "de-DE": "Betriebssystem",
     "fr-FR": "Système opérateur",
     "ko-KR": "운영 체제",
-    "$files": ["src/electron/config/file-dimension-source.ts(67959-67967)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67859-67867)"],
     "$id": 19865
   },
   "界面风格": {
@@ -9497,7 +9484,7 @@
     "de-DE": "Schnittstellenstil",
     "fr-FR": "Style d'interface",
     "ko-KR": "인터페이스 스타일",
-    "$files": ["src/electron/config/file-dimension-source.ts(67982-67990)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67882-67890)"],
     "$id": 19866
   },
   "设备来源": {
@@ -9510,7 +9497,7 @@
     "de-DE": "Ausrüstungsquelle",
     "fr-FR": "Origine de l'équipement",
     "ko-KR": "장비 소스",
-    "$files": ["src/electron/config/file-dimension-source.ts(68005-68013)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(67905-67913)"],
     "$id": 19867
   },
   "画幅": {
@@ -9523,7 +9510,7 @@
     "de-DE": "Rahmen",
     "fr-FR": "Cadre",
     "ko-KR": "액자",
-    "$files": ["src/electron/config/file-dimension-source.ts(68448-68454)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(68348-68354)"],
     "$id": 19868
   },
   "横屏": {
@@ -9536,7 +9523,7 @@
     "de-DE": "Horizontaler Bildschirm",
     "fr-FR": "Écran horizontal",
     "ko-KR": "가로 화면",
-    "$files": ["src/electron/config/file-dimension-source.ts(68503-68509)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(68403-68409)"],
     "$id": 19869
   },
   "竖屏": {
@@ -9549,7 +9536,7 @@
     "de-DE": "Vertikaler Bildschirm",
     "fr-FR": "Écran vertical",
     "ko-KR": "세로 화면",
-    "$files": ["src/electron/config/file-dimension-source.ts(68524-68530)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(68424-68430)"],
     "$id": 19870
   },
   "正方形": {
@@ -9562,7 +9549,7 @@
     "de-DE": "Quadrat",
     "fr-FR": "Carré",
     "ko-KR": "정사각형",
-    "$files": ["src/electron/config/file-dimension-source.ts(68545-68552)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(68445-68452)"],
     "$id": 19871
   },
   "超宽长条": {
@@ -9575,7 +9562,7 @@
     "de-DE": "Extra breiter Streifen",
     "fr-FR": "Bande extra large",
     "ko-KR": "매우 넓은 스트립",
-    "$files": ["src/electron/config/file-dimension-source.ts(68567-68575)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(68467-68475)"],
     "$id": 19872
   },
   "画面的长宽比例与构图画幅走向": {
@@ -9588,7 +9575,7 @@
     "de-DE": "Das Seitenverhältnis des Bildes und die Richtung der Komposition",
     "fr-FR": "Le rapport hauteur/largeur de l'image et la direction de la composition",
     "ko-KR": "사진의 화면 비율과 구도의 방향",
-    "$files": ["src/electron/config/file-dimension-source.ts(68611-68629)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(68511-68529)"],
     "$id": 19873
   },
   "宽高比": {
@@ -9601,7 +9588,7 @@
     "de-DE": "Seitenverhältnis",
     "fr-FR": "Rapport hauteur/largeur",
     "ko-KR": "종횡비",
-    "$files": ["src/electron/config/file-dimension-source.ts(68753-68760)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(68653-68660)"],
     "$id": 19874
   },
   "分辨率分析": {
@@ -9614,7 +9601,7 @@
     "de-DE": "Auflösungsanalyse",
     "fr-FR": "Analyse de résolution",
     "ko-KR": "해상도 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(68775-68784)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(68675-68684)"],
     "$id": 19875
   },
   "画幅走向": {
@@ -9627,7 +9614,7 @@
     "de-DE": "Rahmenrichtung",
     "fr-FR": "Direction du cadre",
     "ko-KR": "프레임 방향",
-    "$files": ["src/electron/config/file-dimension-source.ts(68799-68807)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(68699-68707)"],
     "$id": 19876
   },
   "主体数量": {
@@ -9640,7 +9627,7 @@
     "de-DE": "Anzahl der Fächer",
     "fr-FR": "Nombre de sujets",
     "ko-KR": "과목 수",
-    "$files": ["src/electron/config/file-dimension-source.ts(69267-69275)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69167-69175)"],
     "$id": 19877
   },
   "单人": {
@@ -9653,7 +9640,7 @@
     "de-DE": "Einzel",
     "fr-FR": "Célibataire",
     "ko-KR": "하나의",
-    "$files": ["src/electron/config/file-dimension-source.ts(69324-69330)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69224-69230)"],
     "$id": 19878
   },
   "双人": {
@@ -9666,7 +9653,7 @@
     "de-DE": "Doppelt",
     "fr-FR": "Double",
     "ko-KR": "더블",
-    "$files": ["src/electron/config/file-dimension-source.ts(69345-69351)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69245-69251)"],
     "$id": 19879
   },
   "多人合影": {
@@ -9679,7 +9666,7 @@
     "de-DE": "Gruppenfoto",
     "fr-FR": "Photo de groupe",
     "ko-KR": "단체사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(69366-69374)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69266-69274)"],
     "$id": 19880
   },
   "无人空镜": {
@@ -9692,7 +9679,7 @@
     "de-DE": "Unbemannter Luftspiegel",
     "fr-FR": "Miroir aérien sans pilote",
     "ko-KR": "무인 공중거울",
-    "$files": ["src/electron/config/file-dimension-source.ts(69389-69397)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69289-69297)"],
     "$id": 19881
   },
   "画面中人物或核心主体的数量构成": {
@@ -9705,7 +9692,7 @@
     "de-DE": "Die Anzahl und Zusammensetzung der Charaktere oder Hauptthemen im Bild",
     "fr-FR": "Le nombre et la composition des personnages ou des sujets principaux de l'image",
     "ko-KR": "사진 속 인물이나 핵심 주제의 수와 구성",
-    "$files": ["src/electron/config/file-dimension-source.ts(69433-69452)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69333-69352)"],
     "$id": 19882
   },
   "主体计数": {
@@ -9718,7 +9705,7 @@
     "de-DE": "Anzahl der Betreffzeilen",
     "fr-FR": "Nombre de sujets",
     "ko-KR": "주제 수",
-    "$files": ["src/electron/config/file-dimension-source.ts(69555-69563)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69455-69463)"],
     "$id": 19883
   },
   "人像检测": {
@@ -9731,7 +9718,7 @@
     "de-DE": "Porträterkennung",
     "fr-FR": "Détection de portraits",
     "ko-KR": "인물 감지",
-    "$files": ["src/electron/config/file-dimension-source.ts(69578-69586)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69478-69486)"],
     "$id": 19884
   },
   "场景构成": {
@@ -9744,7 +9731,7 @@
     "de-DE": "Szenenkomposition",
     "fr-FR": "Composition de scène",
     "ko-KR": "장면 구성",
-    "$files": ["src/electron/config/file-dimension-source.ts(69601-69609)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69501-69509)"],
     "$id": 19885
   },
   "主体类型": {
@@ -9757,7 +9744,7 @@
     "de-DE": "Betrefftyp",
     "fr-FR": "Type de sujet",
     "ko-KR": "주제 유형",
-    "$files": ["src/electron/config/file-dimension-source.ts(70096-70104)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(69996-70004)"],
     "$id": 19886
   },
   "人物主体": {
@@ -9770,7 +9757,7 @@
     "de-DE": "Charakterthema",
     "fr-FR": "Sujet du personnage",
     "ko-KR": "캐릭터 주제",
-    "$files": ["src/electron/config/file-dimension-source.ts(70153-70161)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70053-70061)"],
     "$id": 19887
   },
   "动物宠物": {
@@ -9783,7 +9770,7 @@
     "de-DE": "Tierische Haustiere",
     "fr-FR": "Animaux de compagnie",
     "ko-KR": "동물 애완동물",
-    "$files": ["src/electron/config/file-dimension-source.ts(70176-70184)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70076-70084)"],
     "$id": 19888
   },
   "植物花草": {
@@ -9796,7 +9783,7 @@
     "de-DE": "Pflanzen und Blumen",
     "fr-FR": "Plantes et fleurs",
     "ko-KR": "식물과 꽃",
-    "$files": ["src/electron/config/file-dimension-source.ts(70199-70207)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70099-70107)"],
     "$id": 19889
   },
   "静物商品": {
@@ -9809,7 +9796,7 @@
     "de-DE": "Stillleben-Artikel",
     "fr-FR": "Marchandise de natures mortes",
     "ko-KR": "정물 상품",
-    "$files": ["src/electron/config/file-dimension-source.ts(70222-70230)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70122-70130)"],
     "$id": 19890
   },
   "环境建筑": {
@@ -9822,7 +9809,7 @@
     "de-DE": "Umweltarchitektur",
     "fr-FR": "Architecture environnementale",
     "ko-KR": "환경 건축",
-    "$files": ["src/electron/config/file-dimension-source.ts(70245-70253)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70145-70153)"],
     "$id": 19891
   },
   "画面中最核心的前景视觉焦点类型": {
@@ -9835,7 +9822,7 @@
     "de-DE": "Der Kerntyp des visuellen Vordergrundfokus im Bild",
     "fr-FR": "Le type principal de mise au point visuelle au premier plan dans l'image",
     "ko-KR": "사진의 전경 시각적 초점의 핵심 유형",
-    "$files": ["src/electron/config/file-dimension-source.ts(70289-70308)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70189-70208)"],
     "$id": 19892
   },
   "目标检测": {
@@ -9848,7 +9835,7 @@
     "de-DE": "Zielerkennung",
     "fr-FR": "Détection de cible",
     "ko-KR": "표적 탐지",
-    "$files": ["src/electron/config/file-dimension-source.ts(70411-70419)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70311-70319)"],
     "$id": 19893
   },
   "主体识别": {
@@ -9861,7 +9848,7 @@
     "de-DE": "Identifizierung des Subjekts",
     "fr-FR": "Identification du sujet",
     "ko-KR": "피험자 식별",
-    "$files": ["src/electron/config/file-dimension-source.ts(70434-70442)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70334-70342)"],
     "$id": 19894
   },
   "视觉焦点": {
@@ -9874,7 +9861,7 @@
     "de-DE": "Visueller Fokus",
     "fr-FR": "Mise au point visuelle",
     "ko-KR": "시각적 초점",
-    "$files": ["src/electron/config/file-dimension-source.ts(70457-70465)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70357-70365)"],
     "$id": 19895
   },
   "文字密度": {
@@ -9887,7 +9874,7 @@
     "de-DE": "Textdichte",
     "fr-FR": "Densité du texte",
     "ko-KR": "텍스트 밀도",
-    "$files": ["src/electron/config/file-dimension-source.ts(70899-70907)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70799-70807)"],
     "$id": 19896
   },
   "微量文本": {
@@ -9900,7 +9887,7 @@
     "de-DE": "Mikrotext",
     "fr-FR": "Microtexte",
     "ko-KR": "마이크로텍스트",
-    "$files": ["src/electron/config/file-dimension-source.ts(70956-70964)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70856-70864)"],
     "$id": 19897
   },
   "图文标题": {
@@ -9913,7 +9900,7 @@
     "de-DE": "Bild- und Texttitel",
     "fr-FR": "Titre de l'image et du texte",
     "ko-KR": "그림 및 텍스트 제목",
-    "$files": ["src/electron/config/file-dimension-source.ts(70979-70987)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70879-70887)"],
     "$id": 19898
   },
   "密集排版": {
@@ -9926,7 +9913,7 @@
     "de-DE": "Dichte Typografie",
     "fr-FR": "Typographie dense",
     "ko-KR": "조밀한 타이포그래피",
-    "$files": ["src/electron/config/file-dimension-source.ts(71002-71010)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70902-70910)"],
     "$id": 19899
   },
   "图像或页面中包含的文字量与版面密集度": {
@@ -9939,7 +9926,7 @@
     "de-DE": "Die Textmenge und die Layoutdichte, die in einem Bild oder einer Seite enthalten sind",
     "fr-FR": "La quantité de texte et la densité de la mise en page contenue dans une image ou une page",
     "ko-KR": "이미지나 페이지에 포함된 텍스트의 양과 레이아웃 밀도",
-    "$files": ["src/electron/config/file-dimension-source.ts(71046-71068)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(70946-70968)"],
     "$id": 19900
   },
   "OCR识别": {
@@ -9952,7 +9939,7 @@
     "de-DE": "OCR-Erkennung",
     "fr-FR": "Reconnaissance OCR",
     "ko-KR": "OCR 인식",
-    "$files": ["src/electron/config/file-dimension-source.ts(71171-71180)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71071-71080)"],
     "$id": 19901
   },
   "文本覆盖率": {
@@ -9965,7 +9952,7 @@
     "de-DE": "Textabdeckung",
     "fr-FR": "Couverture du texte",
     "ko-KR": "텍스트 범위",
-    "$files": ["src/electron/config/file-dimension-source.ts(71195-71204)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71095-71104)"],
     "$id": 19902
   },
   "文字排版": {
@@ -9978,7 +9965,7 @@
     "de-DE": "Textlayout",
     "fr-FR": "Disposition du texte",
     "ko-KR": "텍스트 레이아웃",
-    "$files": ["src/electron/config/file-dimension-source.ts(71219-71227)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71119-71127)"],
     "$id": 19903
   },
   "质感风格": {
@@ -9991,7 +9978,7 @@
     "de-DE": "Texturstil",
     "fr-FR": "Style de texture",
     "ko-KR": "텍스처 스타일",
-    "$files": ["src/electron/config/file-dimension-source.ts(71663-71671)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71563-71571)"],
     "$id": 19904
   },
   "扁平极简": {
@@ -10004,7 +9991,7 @@
     "de-DE": "Flach und minimalistisch",
     "fr-FR": "Plat et minimaliste",
     "ko-KR": "플랫하고 미니멀한",
-    "$files": ["src/electron/config/file-dimension-source.ts(71720-71728)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71620-71628)"],
     "$id": 19905
   },
   "写实拟真": {
@@ -10017,7 +10004,7 @@
     "de-DE": "Realistisch",
     "fr-FR": "Réaliste",
     "ko-KR": "현실적인",
-    "$files": ["src/electron/config/file-dimension-source.ts(71743-71751)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71643-71651)"],
     "$id": 19906
   },
   "复古胶片": {
@@ -10030,7 +10017,7 @@
     "de-DE": "Vintage-Film",
     "fr-FR": "Film vintage",
     "ko-KR": "빈티지 필름",
-    "$files": ["src/electron/config/file-dimension-source.ts(71766-71774)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71666-71674)"],
     "$id": 19907
   },
   "赛博朋克": {
@@ -10043,7 +10030,7 @@
     "de-DE": "Cyberpunk",
     "fr-FR": "Cyberpunk",
     "ko-KR": "사이버펑크",
-    "$files": ["src/electron/config/file-dimension-source.ts(71789-71797)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71689-71697)"],
     "$id": 19908
   },
   "水彩水墨": {
@@ -10056,7 +10043,7 @@
     "de-DE": "Aquarelltinte",
     "fr-FR": "Encre aquarelle",
     "ko-KR": "수채화 잉크",
-    "$files": ["src/electron/config/file-dimension-source.ts(71812-71820)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71712-71720)"],
     "$id": 19909
   },
   "视觉作品的美术基调与画面质感风格": {
@@ -10069,7 +10056,7 @@
     "de-DE": "Der künstlerische Ton- und Bildtexturstil visueller Werke",
     "fr-FR": "Le ton artistique et le style de texture d’image des œuvres visuelles",
     "ko-KR": "시각 작품의 예술적 톤과 그림 질감 스타일",
-    "$files": ["src/electron/config/file-dimension-source.ts(71856-71876)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71756-71776)"],
     "$id": 19910
   },
   "色彩风格": {
@@ -10082,7 +10069,7 @@
     "de-DE": "Farbstil",
     "fr-FR": "Style de couleur",
     "ko-KR": "색상 스타일",
-    "$files": ["src/electron/config/file-dimension-source.ts(71979-71987)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71879-71887)"],
     "$id": 19911
   },
   "质感渲染": {
@@ -10095,7 +10082,7 @@
     "de-DE": "Texturwiedergabe",
     "fr-FR": "Rendu des textures",
     "ko-KR": "텍스처 렌더링",
-    "$files": ["src/electron/config/file-dimension-source.ts(72002-72010)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71902-71910)"],
     "$id": 19912
   },
   "艺术格调": {
@@ -10108,7 +10095,7 @@
     "de-DE": "Künstlerischer Stil",
     "fr-FR": "Style artistique",
     "ko-KR": "예술적 스타일",
-    "$files": ["src/electron/config/file-dimension-source.ts(72025-72033)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(71925-71933)"],
     "$id": 19913
   },
   "时间季节": {
@@ -10121,7 +10108,7 @@
     "de-DE": "Zeit Jahreszeit",
     "fr-FR": "Temps saison",
     "ko-KR": "시간 시즌",
-    "$files": ["src/electron/config/file-dimension-source.ts(72493-72501)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(72393-72401)"],
     "$id": 19914
   },
   "春季花景": {
@@ -10134,7 +10121,7 @@
     "de-DE": "Frühlingsblumenszene",
     "fr-FR": "Scène de fleurs de printemps",
     "ko-KR": "봄 꽃 장면",
-    "$files": ["src/electron/config/file-dimension-source.ts(72550-72558)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(72450-72458)"],
     "$id": 19915
   },
   "夏季绿荫": {
@@ -10147,7 +10134,7 @@
     "de-DE": "Sommerschatten",
     "fr-FR": "Ombre d'été",
     "ko-KR": "여름 그늘",
-    "$files": ["src/electron/config/file-dimension-source.ts(72573-72581)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(72473-72481)"],
     "$id": 19916
   },
   "秋季金黄": {
@@ -10160,7 +10147,7 @@
     "de-DE": "Herbst golden",
     "fr-FR": "Automne doré",
     "ko-KR": "가을 황금",
-    "$files": ["src/electron/config/file-dimension-source.ts(72596-72604)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(72496-72504)"],
     "$id": 19917
   },
   "冬季雪景": {
@@ -10173,7 +10160,7 @@
     "de-DE": "Winterschneeszene",
     "fr-FR": "Scène de neige en hiver",
     "ko-KR": "겨울 설경",
-    "$files": ["src/electron/config/file-dimension-source.ts(72619-72627)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(72519-72527)"],
     "$id": 19918
   },
   "自然风光与户外旅行照片的季节时序特征": {
@@ -10186,7 +10173,7 @@
     "de-DE": "Saisonale zeitliche Merkmale von Naturlandschaften und Reisefotos im Freien",
     "fr-FR": "Caractéristiques saisonnières des paysages naturels et des photos de voyages en plein air",
     "ko-KR": "자연풍경과 야외여행사진의 계절적 시기적 특성",
-    "$files": ["src/electron/config/file-dimension-source.ts(72663-72685)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(72563-72585)"],
     "$id": 19919
   },
   "时序色彩": {
@@ -10199,7 +10186,7 @@
     "de-DE": "Farbe der Zeitreihe",
     "fr-FR": "Couleur de la série chronologique",
     "ko-KR": "시계열 색상",
-    "$files": ["src/electron/config/file-dimension-source.ts(72788-72796)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(72688-72696)"],
     "$id": 19920
   },
   "季节植物": {
@@ -10212,7 +10199,7 @@
     "de-DE": "Saisonale Pflanzen",
     "fr-FR": "Plantes de saison",
     "ko-KR": "계절 식물",
-    "$files": ["src/electron/config/file-dimension-source.ts(72811-72819)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(72711-72719)"],
     "$id": 19921
   },
   "气候特征": {
@@ -10225,7 +10212,7 @@
     "de-DE": "Klimaeigenschaften",
     "fr-FR": "Caractéristiques climatiques",
     "ko-KR": "기후 특성",
-    "$files": ["src/electron/config/file-dimension-source.ts(72834-72842)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(72734-72742)"],
     "$id": 19922
   },
   "主色调": {
@@ -10238,7 +10225,7 @@
     "de-DE": "Hauptfarbe",
     "fr-FR": "Couleur principale",
     "ko-KR": "메인 컬러",
-    "$files": ["src/electron/config/file-dimension-source.ts(73279-73286)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73179-73186)"],
     "$id": 19923
   },
   "暖色调": {
@@ -10251,7 +10238,7 @@
     "de-DE": "Warme Farben",
     "fr-FR": "Couleurs chaudes",
     "ko-KR": "난색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73335-73342)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73235-73242)"],
     "$id": 19924
   },
   "冷色调": {
@@ -10264,7 +10251,7 @@
     "de-DE": "Coole Farben",
     "fr-FR": "Couleurs fraîches",
     "ko-KR": "멋진 색상",
-    "$files": ["src/electron/config/file-dimension-source.ts(73357-73364)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73257-73264)"],
     "$id": 19925
   },
   "中性黑白灰": {
@@ -10277,7 +10264,7 @@
     "de-DE": "Neutrales Schwarz, Weiß und Grau",
     "fr-FR": "Noir neutre, blanc et gris",
     "ko-KR": "중성 검정색, 흰색 및 회색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73379-73388)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73279-73288)"],
     "$id": 19926
   },
   "高饱和鲜艳": {
@@ -10290,7 +10277,7 @@
     "de-DE": "Sehr gesättigt und lebendig",
     "fr-FR": "Très saturé et vif",
     "ko-KR": "채도가 높고 선명함",
-    "$files": ["src/electron/config/file-dimension-source.ts(73403-73412)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73303-73312)"],
     "$id": 19927
   },
   "红色": {
@@ -10303,7 +10290,7 @@
     "de-DE": "Rot",
     "fr-FR": "Rouge",
     "ko-KR": "빨간",
-    "$files": ["src/electron/config/file-dimension-source.ts(73427-73433)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73327-73333)"],
     "$id": 19928
   },
   "橙色": {
@@ -10316,7 +10303,7 @@
     "de-DE": "Orange Farbe",
     "fr-FR": "Couleur orange",
     "ko-KR": "오렌지색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73448-73454)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73348-73354)"],
     "$id": 19929
   },
   "黄色": {
@@ -10329,7 +10316,7 @@
     "de-DE": "Gelb",
     "fr-FR": "Jaune",
     "ko-KR": "노란색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73469-73475)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73369-73375)"],
     "$id": 19930
   },
   "绿色": {
@@ -10342,7 +10329,7 @@
     "de-DE": "Grün",
     "fr-FR": "Vert",
     "ko-KR": "녹색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73490-73496)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73390-73396)"],
     "$id": 19931
   },
   "青色": {
@@ -10355,7 +10342,7 @@
     "de-DE": "Cyan",
     "fr-FR": "Cyan",
     "ko-KR": "시안",
-    "$files": ["src/electron/config/file-dimension-source.ts(73511-73517)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73411-73417)"],
     "$id": 19932
   },
   "蓝色": {
@@ -10368,7 +10355,7 @@
     "de-DE": "Blau",
     "fr-FR": "Bleu",
     "ko-KR": "파란색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73532-73538)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73432-73438)"],
     "$id": 19933
   },
   "紫色": {
@@ -10381,7 +10368,7 @@
     "de-DE": "Lila",
     "fr-FR": "Violet",
     "ko-KR": "보라색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73553-73559)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73453-73459)"],
     "$id": 19934
   },
   "粉色": {
@@ -10394,7 +10381,7 @@
     "de-DE": "Rosa",
     "fr-FR": "Rose",
     "ko-KR": "핑크",
-    "$files": ["src/electron/config/file-dimension-source.ts(73574-73580)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73474-73480)"],
     "$id": 19935
   },
   "棕色": {
@@ -10407,7 +10394,7 @@
     "de-DE": "Braun",
     "fr-FR": "Marron",
     "ko-KR": "갈색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73595-73601)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73495-73501)"],
     "$id": 19936
   },
   "白色": {
@@ -10420,7 +10407,7 @@
     "de-DE": "Weiß",
     "fr-FR": "Blanc",
     "ko-KR": "화이트",
-    "$files": ["src/electron/config/file-dimension-source.ts(73616-73622)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73516-73522)"],
     "$id": 19937
   },
   "黑色": {
@@ -10433,7 +10420,7 @@
     "de-DE": "Schwarz",
     "fr-FR": "Noir",
     "ko-KR": "검정색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73637-73643)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73537-73543)"],
     "$id": 19938
   },
   "灰色": {
@@ -10446,7 +10433,7 @@
     "de-DE": "Grau",
     "fr-FR": "Gris",
     "ko-KR": "회색",
-    "$files": ["src/electron/config/file-dimension-source.ts(73658-73664)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73558-73564)"],
     "$id": 19939
   },
   "画面的整体主导色温与色彩基调倾向": {
@@ -10459,7 +10446,7 @@
     "de-DE": "Die insgesamt vorherrschende Farbtemperatur und Farbtontendenz des Bildes",
     "fr-FR": "La température de couleur dominante globale et la tendance des tons de couleur de l'image",
     "ko-KR": "사진의 전체적인 지배적인 색온도와 색조 경향",
-    "$files": ["src/electron/config/file-dimension-source.ts(73700-73720)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73600-73620)"],
     "$id": 19940
   },
   "色温分析": {
@@ -10472,7 +10459,7 @@
     "de-DE": "Farbtemperaturanalyse",
     "fr-FR": "Analyse de la température de couleur",
     "ko-KR": "색온도 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(73844-73852)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73744-73752)"],
     "$id": 19941
   },
   "色彩直方图": {
@@ -10485,7 +10472,7 @@
     "de-DE": "Farbhistogramm",
     "fr-FR": "Histogramme de couleur",
     "ko-KR": "색상 히스토그램",
-    "$files": ["src/electron/config/file-dimension-source.ts(73867-73876)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73767-73776)"],
     "$id": 19942
   },
   "色调倾向": {
@@ -10498,7 +10485,7 @@
     "de-DE": "Farbtontendenz",
     "fr-FR": "Tendance de teinte",
     "ko-KR": "색조 경향",
-    "$files": ["src/electron/config/file-dimension-source.ts(73891-73899)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(73791-73799)"],
     "$id": 19943
   },
   "家庭乱伦细分": {
@@ -10511,7 +10498,7 @@
     "de-DE": "Aufschlüsselung des Familieninzests",
     "fr-FR": "Répartition de l'inceste familial",
     "ko-KR": "가족 근친상간 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(74358-74368)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74258-74268)"],
     "$id": 20183
   },
   "近亲乱伦": {
@@ -10524,7 +10511,7 @@
     "de-DE": "Inzest",
     "fr-FR": "Inceste",
     "ko-KR": "근친 상간",
-    "$files": ["src/electron/config/file-dimension-source.ts(74417-74425)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74317-74325)"],
     "$id": 20184
   },
   "母子": {
@@ -10537,7 +10524,7 @@
     "de-DE": "Mutter und Sohn",
     "fr-FR": "Mère et fils",
     "ko-KR": "모자",
-    "$files": ["src/electron/config/file-dimension-source.ts(74440-74446)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74340-74346)"],
     "$id": 20185
   },
   "父女": {
@@ -10550,7 +10537,7 @@
     "de-DE": "Vater und Tochter",
     "fr-FR": "Père et fille",
     "ko-KR": "아버지와 딸",
-    "$files": ["src/electron/config/file-dimension-source.ts(74461-74467)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74361-74367)"],
     "$id": 20186
   },
   "兄妹": {
@@ -10563,7 +10550,7 @@
     "de-DE": "Bruder und Schwester",
     "fr-FR": "Frère et soeur",
     "ko-KR": "형제와 자매",
-    "$files": ["src/electron/config/file-dimension-source.ts(74482-74488)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74382-74388)"],
     "$id": 20187
   },
   "姐弟": {
@@ -10576,7 +10563,7 @@
     "de-DE": "Geschwister",
     "fr-FR": "Frères et sœurs",
     "ko-KR": "형제",
-    "$files": ["src/electron/config/file-dimension-source.ts(74503-74509)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74403-74409)"],
     "$id": 20188
   },
   "公公媳妇": {
@@ -10589,7 +10576,7 @@
     "de-DE": "Schwiegervater und Schwiegertochter",
     "fr-FR": "Beau-père et belle-fille",
     "ko-KR": "시아버지와 며느리",
-    "$files": ["src/electron/config/file-dimension-source.ts(74524-74532)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74424-74432)"],
     "$id": 20189
   },
   "婆媳": {
@@ -10602,7 +10589,7 @@
     "de-DE": "Schwiegermutter und Schwiegertochter",
     "fr-FR": "Belle-mère et belle-fille",
     "ko-KR": "시어머니와 며느리",
-    "$files": ["src/electron/config/file-dimension-source.ts(74547-74553)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74447-74453)"],
     "$id": 20190
   },
   "继父继母": {
@@ -10615,7 +10602,7 @@
     "de-DE": "Stiefvater, Stiefmutter",
     "fr-FR": "Beau-père, belle-mère",
     "ko-KR": "계부 계모",
-    "$files": ["src/electron/config/file-dimension-source.ts(74568-74576)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74468-74476)"],
     "$id": 20191
   },
   "岳父岳母": {
@@ -10628,7 +10615,7 @@
     "de-DE": "Schwiegervater und Schwiegermutter",
     "fr-FR": "Beau-père et belle-mère",
     "ko-KR": "시아버지와 시어머니",
-    "$files": ["src/electron/config/file-dimension-source.ts(74591-74599)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74491-74499)"],
     "$id": 20192
   },
   "小姨子": {
@@ -10641,7 +10628,7 @@
     "de-DE": "Schwägerin",
     "fr-FR": "Belle-sœur",
     "ko-KR": "처제",
-    "$files": ["src/electron/config/file-dimension-source.ts(74614-74621)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74514-74521)"],
     "$id": 20193
   },
   "姑侄": {
@@ -10654,7 +10641,7 @@
     "de-DE": "Tante und Neffe",
     "fr-FR": "Tante et neveu",
     "ko-KR": "이모와 조카",
-    "$files": ["src/electron/config/file-dimension-source.ts(74636-74642)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74536-74542)"],
     "$id": 20194
   },
   "叔侄": {
@@ -10667,7 +10654,7 @@
     "de-DE": "Onkel und Neffe",
     "fr-FR": "Oncle et neveu",
     "ko-KR": "삼촌과 조카",
-    "$files": ["src/electron/config/file-dimension-source.ts(74657-74663)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74557-74563)"],
     "$id": 20195
   },
   "舅甥": {
@@ -10680,7 +10667,7 @@
     "de-DE": "Mütterlicher Onkel und Neffe",
     "fr-FR": "Oncle maternel et neveu",
     "ko-KR": "외삼촌과 외조카",
-    "$files": ["src/electron/config/file-dimension-source.ts(74678-74684)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74578-74584)"],
     "$id": 20196
   },
   "表亲姻亲": {
@@ -10693,7 +10680,7 @@
     "de-DE": "Cousins ​​und Schwiegereltern",
     "fr-FR": "Beaux-cousins",
     "ko-KR": "사촌들",
-    "$files": ["src/electron/config/file-dimension-source.ts(74699-74707)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74599-74607)"],
     "$id": 20197
   },
   "嫂嫂": {
@@ -10706,7 +10693,7 @@
     "de-DE": "Frau des älteren Bruders",
     "fr-FR": "Femme du frère aîné",
     "ko-KR": "형수",
-    "$files": ["src/electron/config/file-dimension-source.ts(74722-74728)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74622-74628)"],
     "$id": 20198
   },
   "爷孙隔代": {
@@ -10719,7 +10706,7 @@
     "de-DE": "Großvater und Enkel trennten die Generationen",
     "fr-FR": "Grand-père et petit-fils ont séparé des générations",
     "ko-KR": "할아버지와 손자는 세대를 나누었습니다.",
-    "$files": ["src/electron/config/file-dimension-source.ts(74743-74751)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74643-74651)"],
     "$id": 20199
   },
   "近亲血缘、家庭辈分与禁忌伦理题材细分": {
@@ -10732,7 +10719,7 @@
     "de-DE": "Unterteilung der Themen Blutsverwandtschaft, Familienalter und tabuisierte Ethik",
     "fr-FR": "Subdivision de la consanguinité, de l'ancienneté familiale et des thèmes éthiques tabous",
     "ko-KR": "혈족, 가족 서열 및 금기의 윤리적 주제 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(74787-74809)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74687-74709)"],
     "$id": 20200
   },
   "近亲题材": {
@@ -10745,7 +10732,7 @@
     "de-DE": "Thema nahe Verwandte",
     "fr-FR": "Thème des proches",
     "ko-KR": "가까운 친척 테마",
-    "$files": ["src/electron/config/file-dimension-source.ts(74977-74985)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74877-74885)"],
     "$id": 20201
   },
   "伦理禁忌": {
@@ -10758,7 +10745,7 @@
     "de-DE": "Ethische Tabus",
     "fr-FR": "Tabous éthiques",
     "ko-KR": "윤리적 금기",
-    "$files": ["src/electron/config/file-dimension-source.ts(75000-75008)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74900-74908)"],
     "$id": 20202
   },
   "血缘叙事": {
@@ -10771,7 +10758,7 @@
     "de-DE": "Blut-Erzählung",
     "fr-FR": "Récit de sang",
     "ko-KR": "혈액 이야기",
-    "$files": ["src/electron/config/file-dimension-source.ts(75023-75031)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(74923-74931)"],
     "$id": 20203
   },
   "婚外情欲细分": {
@@ -10784,7 +10771,7 @@
     "de-DE": "Außerehelicher Lustzusammenbruch",
     "fr-FR": "Panne de désir extraconjugal",
     "ko-KR": "혼외 정욕 붕괴",
-    "$files": ["src/electron/config/file-dimension-source.ts(75399-75409)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75299-75309)"],
     "$id": 20204
   },
   "伴侣交换": {
@@ -10797,7 +10784,7 @@
     "de-DE": "Partnertausch",
     "fr-FR": "échange de partenaires",
     "ko-KR": "파트너 교환",
-    "$files": ["src/electron/config/file-dimension-source.ts(75458-75466)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75358-75366)"],
     "$id": 20205
   },
   "换妻": {
@@ -10810,7 +10797,7 @@
     "de-DE": "Frauentausch",
     "fr-FR": "Échange de femme",
     "ko-KR": "아내 교환",
-    "$files": ["src/electron/config/file-dimension-source.ts(75481-75487)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75381-75387)"],
     "$id": 20206
   },
   "偷情出轨": {
@@ -10823,7 +10810,7 @@
     "de-DE": "Schummeln",
     "fr-FR": "Tricherie",
     "ko-KR": "부정 행위",
-    "$files": ["src/electron/config/file-dimension-source.ts(75502-75510)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75402-75410)"],
     "$id": 20207
   },
   "人妻美妇": {
@@ -10836,7 +10823,7 @@
     "de-DE": "Schöne verheiratete Frau",
     "fr-FR": "Belle femme mariée",
     "ko-KR": "아름다운 결혼한 여자",
-    "$files": ["src/electron/config/file-dimension-source.ts(75525-75533)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75425-75433)"],
     "$id": 20208
   },
   "少妇熟女": {
@@ -10849,7 +10836,7 @@
     "de-DE": "Junge reife Frau",
     "fr-FR": "Jeune femme mûre",
     "ko-KR": "젊은 성숙한 여자",
-    "$files": ["src/electron/config/file-dimension-source.ts(75548-75556)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75448-75456)"],
     "$id": 20209
   },
   "情妇小三": {
@@ -10862,7 +10849,7 @@
     "de-DE": "Herrin Herrin",
     "fr-FR": "Maîtresse maîtresse",
     "ko-KR": "여주인",
-    "$files": ["src/electron/config/file-dimension-source.ts(75571-75579)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75471-75479)"],
     "$id": 20210
   },
   "主妇": {
@@ -10875,7 +10862,7 @@
     "de-DE": "Hausfrau",
     "fr-FR": "Ménagère",
     "ko-KR": "주부",
-    "$files": ["src/electron/config/file-dimension-source.ts(75594-75600)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75494-75500)"],
     "$id": 20211
   },
   "忘年之乐": {
@@ -10888,7 +10875,7 @@
     "de-DE": "Die Freude, das Jahr zu vergessen",
     "fr-FR": "La joie d'oublier l'année",
     "ko-KR": "한해를 잊은 기쁨",
-    "$files": ["src/electron/config/file-dimension-source.ts(75615-75623)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75515-75523)"],
     "$id": 20212
   },
   "纯洁恋情": {
@@ -10901,7 +10888,7 @@
     "de-DE": "Reine Liebe",
     "fr-FR": "Amour pur",
     "ko-KR": "순수한 사랑",
-    "$files": ["src/electron/config/file-dimension-source.ts(75638-75646)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75538-75546)"],
     "$id": 20213
   },
   "婚姻外情感契约、伴侣互换与人妻题材细分": {
@@ -10914,7 +10901,7 @@
     "de-DE": "Segmentierung außerehelicher emotionaler Verträge, Partneraustausch und Ehefrauenthemen",
     "fr-FR": "Segmentation des contrats émotionnels extraconjugaux, des échanges entre partenaires et des thèmes liés aux épouses",
     "ko-KR": "혼외정서계약, 파트너교류, 아내테마의 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(75682-75705)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75582-75605)"],
     "$id": 20214
   },
   "伴侣互换": {
@@ -10927,7 +10914,7 @@
     "de-DE": "Partnertausch",
     "fr-FR": "échange de partenaires",
     "ko-KR": "파트너 교환",
-    "$files": ["src/electron/config/file-dimension-source.ts(75873-75881)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75773-75781)"],
     "$id": 20215
   },
   "婚外隐秘": {
@@ -10940,7 +10927,7 @@
     "de-DE": "Außereheliche Geheimnisse",
     "fr-FR": "Secrets extraconjugaux",
     "ko-KR": "혼외 비밀",
-    "$files": ["src/electron/config/file-dimension-source.ts(75896-75904)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75796-75804)"],
     "$id": 20216
   },
   "人妻题材": {
@@ -10953,7 +10940,7 @@
     "de-DE": "Thema Frau",
     "fr-FR": "Thème de la femme",
     "ko-KR": "아내 테마",
-    "$files": ["src/electron/config/file-dimension-source.ts(75919-75927)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(75819-75827)"],
     "$id": 20217
   },
   "校园师生细分": {
@@ -10966,7 +10953,7 @@
     "de-DE": "Aufschlüsselung der Campus-Lehrer und -Studenten",
     "fr-FR": "Répartition des enseignants et des étudiants sur le campus",
     "ko-KR": "캠퍼스 교사와 학생 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(76295-76305)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76195-76205)"],
     "$id": 20218
   },
   "教师学生": {
@@ -10979,7 +10966,7 @@
     "de-DE": "Lehrerschüler",
     "fr-FR": "élève enseignant",
     "ko-KR": "선생님 학생",
-    "$files": ["src/electron/config/file-dimension-source.ts(76354-76362)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76254-76262)"],
     "$id": 20219
   },
   "女教师": {
@@ -10992,7 +10979,7 @@
     "de-DE": "Weibliche Lehrerin",
     "fr-FR": "Enseignante",
     "ko-KR": "여교사",
-    "$files": ["src/electron/config/file-dimension-source.ts(76377-76384)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76277-76284)"],
     "$id": 20220
   },
   "男老师": {
@@ -11005,7 +10992,7 @@
     "de-DE": "Männlicher Lehrer",
     "fr-FR": "Enseignant",
     "ko-KR": "남자 선생님",
-    "$files": ["src/electron/config/file-dimension-source.ts(76399-76406)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76299-76306)"],
     "$id": 20221
   },
   "女同学": {
@@ -11018,7 +11005,7 @@
     "de-DE": "Weibliche Klassenkameradin",
     "fr-FR": "Camarade de classe",
     "ko-KR": "여자 동급생",
-    "$files": ["src/electron/config/file-dimension-source.ts(76421-76428)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76321-76328)"],
     "$id": 20222
   },
   "学长学姐": {
@@ -11031,7 +11018,7 @@
     "de-DE": "ältere ältere Schwester",
     "fr-FR": "Sœur aînée",
     "ko-KR": "선배 언니",
-    "$files": ["src/electron/config/file-dimension-source.ts(76443-76451)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76343-76351)"],
     "$id": 20223
   },
   "学弟学妹": {
@@ -11044,7 +11031,7 @@
     "de-DE": "Unterschüler",
     "fr-FR": "Étudiants de la classe inférieure",
     "ko-KR": "저학년",
-    "$files": ["src/electron/config/file-dimension-source.ts(76466-76474)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76366-76374)"],
     "$id": 20224
   },
   "校花": {
@@ -11057,7 +11044,7 @@
     "de-DE": "Schulschönheit",
     "fr-FR": "Beauté de l'école",
     "ko-KR": "학교 미용",
-    "$files": ["src/electron/config/file-dimension-source.ts(76489-76495)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76389-76395)"],
     "$id": 20225
   },
   "大学生": {
@@ -11070,7 +11057,7 @@
     "de-DE": "Studierende",
     "fr-FR": "étudiant",
     "ko-KR": "대학생",
-    "$files": ["src/electron/config/file-dimension-source.ts(76510-76517)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76410-76417)"],
     "$id": 20226
   },
   "高中生": {
@@ -11083,7 +11070,7 @@
     "de-DE": "Gymnasiast",
     "fr-FR": "Lycéen",
     "ko-KR": "고등학생",
-    "$files": ["src/electron/config/file-dimension-source.ts(76532-76539)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76432-76439)"],
     "$id": 20227
   },
   "家庭教师": {
@@ -11096,7 +11083,7 @@
     "de-DE": "Tutor",
     "fr-FR": "Tuteur",
     "ko-KR": "가정 교사",
-    "$files": ["src/electron/config/file-dimension-source.ts(76554-76562)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76454-76462)"],
     "$id": 20228
   },
   "师生互动、青春校园与同窗题材细分": {
@@ -11109,7 +11096,7 @@
     "de-DE": "Themenaufschlüsselung: Lehrer-Schüler-Interaktion, Jugendcampus und Klassenkameraden",
     "fr-FR": "Répartition thématique de l'interaction enseignant-élève, du campus des jeunes et des camarades de classe",
     "ko-KR": "교사-학생 상호 작용, 청소년 캠퍼스 및 급우의 주제 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(76598-76618)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76498-76518)"],
     "$id": 20229
   },
   "师生叙事": {
@@ -11122,7 +11109,7 @@
     "de-DE": "Erzählung von Lehrern und Schülern",
     "fr-FR": "Récit de l'enseignant et de l'élève",
     "ko-KR": "선생님과 학생의 이야기",
-    "$files": ["src/electron/config/file-dimension-source.ts(76786-76794)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76686-76694)"],
     "$id": 20230
   },
   "校园青春": {
@@ -11135,7 +11122,7 @@
     "de-DE": "Campus-Jugend",
     "fr-FR": "Jeunesse du campus",
     "ko-KR": "캠퍼스 청소년",
-    "$files": ["src/electron/config/file-dimension-source.ts(76809-76817)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76709-76717)"],
     "$id": 20231
   },
   "同窗题材": {
@@ -11148,7 +11135,7 @@
     "de-DE": "Thema „Klassenkameraden“.",
     "fr-FR": "Thème des camarades de classe",
     "ko-KR": "동급생 테마",
-    "$files": ["src/electron/config/file-dimension-source.ts(76832-76840)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(76732-76740)"],
     "$id": 20232
   },
   "职场社交细分": {
@@ -11161,7 +11148,7 @@
     "de-DE": "Soziale Segmentierung am Arbeitsplatz",
     "fr-FR": "Segmentation sociale sur le lieu de travail",
     "ko-KR": "직장의 사회적 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(77208-77218)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77108-77118)"],
     "$id": 20233
   },
   "同事之间": {
@@ -11174,7 +11161,7 @@
     "de-DE": "Zwischen Kollegen",
     "fr-FR": "Entre collègues",
     "ko-KR": "동료들 사이에서",
-    "$files": ["src/electron/config/file-dimension-source.ts(77267-77275)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77167-77175)"],
     "$id": 20234
   },
   "女老板": {
@@ -11187,7 +11174,7 @@
     "de-DE": "Weibliche Chefin",
     "fr-FR": "Patronne",
     "ko-KR": "여자 상사",
-    "$files": ["src/electron/config/file-dimension-source.ts(77290-77297)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77190-77197)"],
     "$id": 20235
   },
   "男上司": {
@@ -11200,7 +11187,7 @@
     "de-DE": "Männlicher Chef",
     "fr-FR": "Patron masculin",
     "ko-KR": "남자 상사",
-    "$files": ["src/electron/config/file-dimension-source.ts(77312-77319)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77212-77219)"],
     "$id": 20236
   },
   "女秘书": {
@@ -11213,7 +11200,7 @@
     "de-DE": "Weibliche Sekretärin",
     "fr-FR": "Secrétaire féminine",
     "ko-KR": "여성 비서",
-    "$files": ["src/electron/config/file-dimension-source.ts(77334-77341)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77234-77241)"],
     "$id": 20237
   },
   "女邻居": {
@@ -11226,7 +11213,7 @@
     "de-DE": "Weibliche Nachbarin",
     "fr-FR": "Voisine",
     "ko-KR": "여자 이웃",
-    "$files": ["src/electron/config/file-dimension-source.ts(77356-77363)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77256-77263)"],
     "$id": 20238
   },
   "左邻右舍": {
@@ -11239,7 +11226,7 @@
     "de-DE": "Nachbarn",
     "fr-FR": "Voisins",
     "ko-KR": "이웃",
-    "$files": ["src/electron/config/file-dimension-source.ts(77378-77386)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77278-77286)"],
     "$id": 20239
   },
   "司机工友": {
@@ -11252,7 +11239,7 @@
     "de-DE": "Fahrerkollege",
     "fr-FR": "Collègue chauffeur",
     "ko-KR": "운전사 동료",
-    "$files": ["src/electron/config/file-dimension-source.ts(77401-77409)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77301-77309)"],
     "$id": 20240
   },
   "女佣": {
@@ -11265,7 +11252,7 @@
     "de-DE": "Dienstmädchen",
     "fr-FR": "Femme de ménage",
     "ko-KR": "하녀",
-    "$files": ["src/electron/config/file-dimension-source.ts(77424-77430)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77324-77330)"],
     "$id": 20241
   },
   "都市生活": {
@@ -11278,7 +11265,7 @@
     "de-DE": "Städtisches Leben",
     "fr-FR": "La vie urbaine",
     "ko-KR": "도시 생활",
-    "$files": ["src/electron/config/file-dimension-source.ts(77445-77453)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77345-77353)"],
     "$id": 20242
   },
   "乡间记趣": {
@@ -11291,7 +11278,7 @@
     "de-DE": "Landschaftsnotizen",
     "fr-FR": "Notes de campagne",
     "ko-KR": "시골 노트",
-    "$files": ["src/electron/config/file-dimension-source.ts(77468-77476)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77368-77376)"],
     "$id": 20243
   },
   "网络交友": {
@@ -11304,7 +11291,7 @@
     "de-DE": "Internet-Dating",
     "fr-FR": "Rencontres sur Internet",
     "ko-KR": "인터넷 데이트",
-    "$files": ["src/electron/config/file-dimension-source.ts(77491-77499)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77391-77399)"],
     "$id": 20244
   },
   "职场雇佣、社区邻里与生活社交圈层细分": {
@@ -11317,7 +11304,7 @@
     "de-DE": "Segmentierung der Beschäftigung am Arbeitsplatz, der Gemeindenachbarschaften und der sozialen Lebenskreise",
     "fr-FR": "Segmentation de l'emploi en milieu de travail, des quartiers communautaires et des cercles sociaux de vie",
     "ko-KR": "직장 고용, 지역 사회, 생활 사회 집단의 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(77535-77557)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77435-77457)"],
     "$id": 20245
   },
   "职场叙事": {
@@ -11330,7 +11317,7 @@
     "de-DE": "Erzählung am Arbeitsplatz",
     "fr-FR": "Récit du lieu de travail",
     "ko-KR": "직장 내러티브",
-    "$files": ["src/electron/config/file-dimension-source.ts(77725-77733)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77625-77633)"],
     "$id": 20246
   },
   "邻里生活": {
@@ -11343,7 +11330,7 @@
     "de-DE": "Nachbarschaftsleben",
     "fr-FR": "La vie de quartier",
     "ko-KR": "동네 생활",
-    "$files": ["src/electron/config/file-dimension-source.ts(77748-77756)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77648-77656)"],
     "$id": 20247
   },
   "社交关系": {
@@ -11356,7 +11343,7 @@
     "de-DE": "Soziale Beziehungen",
     "fr-FR": "Relations sociales",
     "ko-KR": "사회적 관계",
-    "$files": ["src/electron/config/file-dimension-source.ts(77771-77779)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(77671-77679)"],
     "$id": 20248
   },
   "多人群体细分": {
@@ -11369,7 +11356,7 @@
     "de-DE": "Segmentierung von Mehrpersonengruppen",
     "fr-FR": "Segmentation de groupes de plusieurs personnes",
     "ko-KR": "다중 사용자 그룹 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(78147-78157)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78047-78057)"],
     "$id": 20249
   },
   "群交": {
@@ -11382,7 +11369,7 @@
     "de-DE": "Orgie",
     "fr-FR": "Orgie",
     "ko-KR": "집합성교",
-    "$files": ["src/electron/config/file-dimension-source.ts(78224-78230)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78124-78130)"],
     "$id": 20250
   },
   "多伴侣聚会": {
@@ -11395,7 +11382,7 @@
     "de-DE": "Treffen mit mehreren Partnern",
     "fr-FR": "Rassemblement multipartenaire",
     "ko-KR": "다중 파트너 모임",
-    "$files": ["src/electron/config/file-dimension-source.ts(78245-78254)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78145-78154)"],
     "$id": 20251
   },
   "群体互动": {
@@ -11409,8 +11396,8 @@
     "fr-FR": "Interaction de groupe",
     "ko-KR": "그룹 상호 작용",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(78269-78277)",
-      "src/electron/config/file-dimension-source.ts(78551-78559)"
+      "src/electron/config/file-dimension-source.ts(78169-78177)",
+      "src/electron/config/file-dimension-source.ts(78451-78459)"
     ],
     "$id": 20252
   },
@@ -11424,7 +11411,7 @@
     "de-DE": "Mehrpersonenparty",
     "fr-FR": "Fête à plusieurs",
     "ko-KR": "다인 파티",
-    "$files": ["src/electron/config/file-dimension-source.ts(78292-78300)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78192-78200)"],
     "$id": 20253
   },
   "多主体协同、群体交互与多人互动题材细分": {
@@ -11437,7 +11424,7 @@
     "de-DE": "Themensegmentierung für Zusammenarbeit mit mehreren Agenten, Gruppeninteraktion und Interaktion mit mehreren Personen",
     "fr-FR": "Segmentation thématique de la collaboration multi-agents, de l'interaction de groupe et de l'interaction multi-personnes",
     "ko-KR": "다중 상담원 협업, 그룹 상호 작용 및 다자 상호 작용 주제 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(78336-78359)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78236-78259)"],
     "$id": 20254
   },
   "多主体互动": {
@@ -11450,7 +11437,7 @@
     "de-DE": "Interaktion mit mehreren Agenten",
     "fr-FR": "Interaction multi-agents",
     "ko-KR": "다중 에이전트 상호 작용",
-    "$files": ["src/electron/config/file-dimension-source.ts(78527-78536)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78427-78436)"],
     "$id": 20255
   },
   "聚会场景": {
@@ -11463,7 +11450,7 @@
     "de-DE": "Partyszene",
     "fr-FR": "Scène de fête",
     "ko-KR": "파티 장면",
-    "$files": ["src/electron/config/file-dimension-source.ts(78574-78582)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78474-78482)"],
     "$id": 20256
   },
   "性爱调教细分": {
@@ -11476,7 +11463,7 @@
     "de-DE": "Panne beim Sextraining",
     "fr-FR": "Répartition de l'entraînement sexuel",
     "ko-KR": "성교육 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(78950-78960)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78850-78860)"],
     "$id": 20257
   },
   "性奴隶": {
@@ -11489,7 +11476,7 @@
     "de-DE": "Sexsklavin",
     "fr-FR": "Esclave sexuelle",
     "ko-KR": "성노예",
-    "$files": ["src/electron/config/file-dimension-source.ts(79050-79057)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78950-78957)"],
     "$id": 20258
   },
   "调教拘束": {
@@ -11502,7 +11489,7 @@
     "de-DE": "Fetisch und Fesselung",
     "fr-FR": "Domination et bondage",
     "ko-KR": "조교 및 구속",
-    "$files": ["src/electron/config/file-dimension-source.ts(79072-79080)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78972-78980)"],
     "$id": 19778
   },
   "粗暴性爱": {
@@ -11515,7 +11502,7 @@
     "de-DE": "Harter Sex",
     "fr-FR": "Sexe violent",
     "ko-KR": "거친 섹스",
-    "$files": ["src/electron/config/file-dimension-source.ts(79095-79103)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(78995-79003)"],
     "$id": 20259
   },
   "粗野性交": {
@@ -11528,7 +11515,7 @@
     "de-DE": "Harter Sex",
     "fr-FR": "Sexe violent",
     "ko-KR": "거친 섹스",
-    "$files": ["src/electron/config/file-dimension-source.ts(79118-79126)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79018-79026)"],
     "$id": 20260
   },
   "重口变态": {
@@ -11541,7 +11528,7 @@
     "de-DE": "Schwerer Perverser",
     "fr-FR": "Pervers robuste",
     "ko-KR": "중장비 변태",
-    "$files": ["src/electron/config/file-dimension-source.ts(79141-79149)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79041-79049)"],
     "$id": 20261
   },
   "滴蜡皮鞭": {
@@ -11554,7 +11541,7 @@
     "de-DE": "Tropfende Wachspeitsche",
     "fr-FR": "Fouet à cire dégoulinant",
     "ko-KR": "떨어지는 왁스 채찍",
-    "$files": ["src/electron/config/file-dimension-source.ts(79164-79172)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79064-79072)"],
     "$id": 20262
   },
   "特定恋物": {
@@ -11567,7 +11554,7 @@
     "de-DE": "Spezifischer Fetisch",
     "fr-FR": "Fétiche spécifique",
     "ko-KR": "특정 페티쉬",
-    "$files": ["src/electron/config/file-dimension-source.ts(79187-79195)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79087-79095)"],
     "$id": 20263
   },
   "支配与顺从、亚文化癖好与重度对抗性爱细分": {
@@ -11580,7 +11567,7 @@
     "de-DE": "Dominanz und Unterwerfung, subkulturelle Fetische und ernsthafter konfrontativer Sex-Zusammenbruch",
     "fr-FR": "Domination et soumission, fétiches sous-culturels et graves ruptures sexuelles conflictuelles",
     "ko-KR": "지배와 복종, 하위문화 페티시와 심각한 대립적 성 붕괴",
-    "$files": ["src/electron/config/file-dimension-source.ts(79231-79255)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79131-79155)"],
     "$id": 20264
   },
   "亚文化调教": {
@@ -11593,7 +11580,7 @@
     "de-DE": "Subkulturtraining",
     "fr-FR": "Formation de sous-culture",
     "ko-KR": "서브컬쳐 트레이닝",
-    "$files": ["src/electron/config/file-dimension-source.ts(79423-79432)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79323-79332)"],
     "$id": 20265
   },
   "支配顺从": {
@@ -11606,7 +11593,7 @@
     "de-DE": "Dominant unterwürfig",
     "fr-FR": "Dominant soumis",
     "ko-KR": "지배적 복종",
-    "$files": ["src/electron/config/file-dimension-source.ts(79447-79455)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79347-79355)"],
     "$id": 20266
   },
   "重度对抗": {
@@ -11619,7 +11606,7 @@
     "de-DE": "Schwere Konfrontation",
     "fr-FR": "Lourd affrontement",
     "ko-KR": "무거운 대결",
-    "$files": ["src/electron/config/file-dimension-source.ts(79470-79478)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79370-79378)"],
     "$id": 20267
   },
   "窥视暴露细分": {
@@ -11632,7 +11619,7 @@
     "de-DE": "Peep Exponierte Segmentierung",
     "fr-FR": "Segmentation exposée",
     "ko-KR": "노출된 분할 살펴보기",
-    "$files": ["src/electron/config/file-dimension-source.ts(79846-79856)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79746-79756)"],
     "$id": 20268
   },
   "疯狂暴露": {
@@ -11645,7 +11632,7 @@
     "de-DE": "Verrückte Belichtung",
     "fr-FR": "Exposition folle",
     "ko-KR": "미친 노출",
-    "$files": ["src/electron/config/file-dimension-source.ts(79905-79913)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79805-79813)"],
     "$id": 20269
   },
   "公共空间暴露": {
@@ -11658,7 +11645,7 @@
     "de-DE": "Exposition im öffentlichen Raum",
     "fr-FR": "Exposition espace public",
     "ko-KR": "공공장소 노출",
-    "$files": ["src/electron/config/file-dimension-source.ts(79928-79938)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79828-79838)"],
     "$id": 20270
   },
   "户外露出": {
@@ -11671,7 +11658,7 @@
     "de-DE": "Im Freien ausgesetzt",
     "fr-FR": "Exposé à l'extérieur",
     "ko-KR": "옥외에 노출된",
-    "$files": ["src/electron/config/file-dimension-source.ts(79953-79961)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79853-79861)"],
     "$id": 20271
   },
   "车震": {
@@ -11684,7 +11671,7 @@
     "de-DE": "Autoschock",
     "fr-FR": "Choc de voiture",
     "ko-KR": "자동차 충격",
-    "$files": ["src/electron/config/file-dimension-source.ts(79976-79982)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79876-79882)"],
     "$id": 20272
   },
   "偷拍窥视": {
@@ -11697,7 +11684,7 @@
     "de-DE": "Heimliche Aufnahmen und Spionage",
     "fr-FR": "Filmer en cachette, espionner",
     "ko-KR": "몰래 촬영 및 엿보기",
-    "$files": ["src/electron/config/file-dimension-source.ts(79997-80005)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79897-79905)"],
     "$id": 19780
   },
   "隐私盗摄": {
@@ -11710,7 +11697,7 @@
     "de-DE": "Privatsphärenkamera",
     "fr-FR": "Caméra de confidentialité",
     "ko-KR": "프라이버시 카메라",
-    "$files": ["src/electron/config/file-dimension-source.ts(80020-80028)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79920-79928)"],
     "$id": 20273
   },
   "洗澡窥视": {
@@ -11723,7 +11710,7 @@
     "de-DE": "Badegucken",
     "fr-FR": "Lorgneur de bain",
     "ko-KR": "목욕 엿보는",
-    "$files": ["src/electron/config/file-dimension-source.ts(80043-80051)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79943-79951)"],
     "$id": 20274
   },
   "走光露底": {
@@ -11736,7 +11723,7 @@
     "de-DE": "Ausgesetzt",
     "fr-FR": "Exposé",
     "ko-KR": "노출된",
-    "$files": ["src/electron/config/file-dimension-source.ts(80066-80074)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(79966-79974)"],
     "$id": 20275
   },
   "公共空间暴露、户外展示与隐蔽窥视偷拍细分": {
@@ -11749,7 +11736,7 @@
     "de-DE": "Unterteilung in öffentliche Räume, Ausstellungen im Freien und verdecktes Spähen und ehrliche Fotografie",
     "fr-FR": "Subdivision de l'exposition de l'espace public, de l'exposition extérieure et de l'observation secrète et de la photographie franche",
     "ko-KR": "공공장소 노출, 옥외 전시, 은밀한 엿보기, 솔직한 사진 촬영 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(80110-80134)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80010-80034)"],
     "$id": 20276
   },
   "空间暴露": {
@@ -11762,7 +11749,7 @@
     "de-DE": "Räumliche Belichtung",
     "fr-FR": "Exposition spatiale",
     "ko-KR": "공간적 노출",
-    "$files": ["src/electron/config/file-dimension-source.ts(80302-80310)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80202-80210)"],
     "$id": 20277
   },
   "偷拍盗摄": {
@@ -11775,7 +11762,7 @@
     "de-DE": "Ehrliches Filmen",
     "fr-FR": "Tournage franc",
     "ko-KR": "솔직한 촬영",
-    "$files": ["src/electron/config/file-dimension-source.ts(80325-80333)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80225-80233)"],
     "$id": 20278
   },
   "户外展示": {
@@ -11788,7 +11775,7 @@
     "de-DE": "Außendarstellung",
     "fr-FR": "Affichage extérieur",
     "ko-KR": "옥외 전시",
-    "$files": ["src/electron/config/file-dimension-source.ts(80348-80356)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80248-80256)"],
     "$id": 20279
   },
   "职业制服细分": {
@@ -11801,7 +11788,7 @@
     "de-DE": "Professionelle einheitliche Segmentierung",
     "fr-FR": "Segmentation uniforme professionnelle",
     "ko-KR": "전문적인 유니폼 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(80724-80734)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80624-80634)"],
     "$id": 20280
   },
   "医生护士": {
@@ -11814,7 +11801,7 @@
     "de-DE": "Arzt, Krankenschwester",
     "fr-FR": "Médecin infirmière",
     "ko-KR": "의사 간호사",
-    "$files": ["src/electron/config/file-dimension-source.ts(80783-80791)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80683-80691)"],
     "$id": 20281
   },
   "妇产科": {
@@ -11827,7 +11814,7 @@
     "de-DE": "Geburtshilfe und Gynäkologie",
     "fr-FR": "Obstétrique et gynécologie",
     "ko-KR": "산부인과",
-    "$files": ["src/electron/config/file-dimension-source.ts(80806-80813)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80706-80713)"],
     "$id": 20282
   },
   "空姐": {
@@ -11840,7 +11827,7 @@
     "de-DE": "Flugbegleiterin",
     "fr-FR": "Hôtesse de l'air",
     "ko-KR": "항공사 스튜어디스",
-    "$files": ["src/electron/config/file-dimension-source.ts(80828-80834)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80728-80734)"],
     "$id": 20283
   },
   "女警": {
@@ -11853,7 +11840,7 @@
     "de-DE": "Polizeiangestellte",
     "fr-FR": "Femme policier",
     "ko-KR": "경찰",
-    "$files": ["src/electron/config/file-dimension-source.ts(80849-80855)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80749-80755)"],
     "$id": 20284
   },
   "模特车模": {
@@ -11866,7 +11853,7 @@
     "de-DE": "Mannequin-Automodell",
     "fr-FR": "Modèle de voiture mannequin",
     "ko-KR": "마네킹 자동차 모델",
-    "$files": ["src/electron/config/file-dimension-source.ts(80870-80878)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80770-80778)"],
     "$id": 20285
   },
   "舞女": {
@@ -11879,7 +11866,7 @@
     "de-DE": "Tanzendes Mädchen",
     "fr-FR": "Danseuse",
     "ko-KR": "춤추는 소녀",
-    "$files": ["src/electron/config/file-dimension-source.ts(80893-80899)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80793-80799)"],
     "$id": 20286
   },
   "商业涉黄": {
@@ -11892,7 +11879,7 @@
     "de-DE": "Kommerzielle Pornografie",
     "fr-FR": "Pornographie commerciale",
     "ko-KR": "상업 포르노",
-    "$files": ["src/electron/config/file-dimension-source.ts(80914-80922)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80814-80822)"],
     "$id": 20287
   },
   "援交嫖妓": {
@@ -11905,7 +11892,7 @@
     "de-DE": "Bezahltes Dating und Prostitution",
     "fr-FR": "Rencontres et prostitution rémunérées",
     "ko-KR": "유료 데이트 및 매춘",
-    "$files": ["src/electron/config/file-dimension-source.ts(80937-80945)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80837-80845)"],
     "$id": 20288
   },
   "行业特定职业、特定制服角色与人设细分": {
@@ -11918,7 +11905,7 @@
     "de-DE": "Branchenspezifische Berufe, spezifische einheitliche Rollen und Persönlichkeitssegmentierung",
     "fr-FR": "Professions spécifiques à l'industrie, rôles uniformes spécifiques et segmentation de la personnalité",
     "ko-KR": "산업별 직업, 특정 통일된 역할 및 성격 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(80981-81003)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(80881-80903)"],
     "$id": 20289
   },
   "制服人设": {
@@ -11931,7 +11918,7 @@
     "de-DE": "Einheitlicher Charakter",
     "fr-FR": "Caractère uniforme",
     "ko-KR": "획일적인 성격",
-    "$files": ["src/electron/config/file-dimension-source.ts(81171-81179)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81071-81079)"],
     "$id": 20290
   },
   "行业职业": {
@@ -11944,7 +11931,7 @@
     "de-DE": "Branchenberuf",
     "fr-FR": "Occupation de l'industrie",
     "ko-KR": "산업체 직업",
-    "$files": ["src/electron/config/file-dimension-source.ts(81194-81202)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81094-81102)"],
     "$id": 20291
   },
   "角色扮演": {
@@ -11957,7 +11944,7 @@
     "de-DE": "Rollenspiel",
     "fr-FR": "Jeu de rôle",
     "ko-KR": "역할극",
-    "$files": ["src/electron/config/file-dimension-source.ts(81217-81225)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81117-81125)"],
     "$id": 20292
   },
   "文学题材细分": {
@@ -11970,7 +11957,7 @@
     "de-DE": "Aufschlüsselung der literarischen Themen",
     "fr-FR": "Répartition des sujets littéraires",
     "ko-KR": "문학 주제 분석",
-    "$files": ["src/electron/config/file-dimension-source.ts(81593-81603)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81493-81503)"],
     "$id": 20293
   },
   "情色武侠": {
@@ -11983,7 +11970,7 @@
     "de-DE": "Erotische Kampfkünste",
     "fr-FR": "Arts martiaux érotiques",
     "ko-KR": "에로틱 무술",
-    "$files": ["src/electron/config/file-dimension-source.ts(81652-81660)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81552-81560)"],
     "$id": 20294
   },
   "古典情色": {
@@ -11996,7 +11983,7 @@
     "de-DE": "Klassische Erotik",
     "fr-FR": "Érotique classique",
     "ko-KR": "고전 에로티카",
-    "$files": ["src/electron/config/file-dimension-source.ts(81675-81683)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81575-81583)"],
     "$id": 20295
   },
   "历史情色": {
@@ -12009,7 +11996,7 @@
     "de-DE": "Historische Erotik",
     "fr-FR": "érotisme historique",
     "ko-KR": "역사적인 에로티카",
-    "$files": ["src/electron/config/file-dimension-source.ts(81698-81706)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81598-81606)"],
     "$id": 20296
   },
   "奇幻科幻": {
@@ -12022,7 +12009,7 @@
     "de-DE": "Fantasy-Science-Fiction",
     "fr-FR": "Science-fiction fantastique",
     "ko-KR": "판타지 SF",
-    "$files": ["src/electron/config/file-dimension-source.ts(81721-81729)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81621-81629)"],
     "$id": 20297
   },
   "午夜怪谈": {
@@ -12035,7 +12022,7 @@
     "de-DE": "Mitternachtsgeschichten",
     "fr-FR": "Histoires de minuit",
     "ko-KR": "자정 이야기",
-    "$files": ["src/electron/config/file-dimension-source.ts(81744-81752)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81644-81652)"],
     "$id": 20298
   },
   "当代都市": {
@@ -12048,7 +12035,7 @@
     "de-DE": "Zeitgenössische Stadt",
     "fr-FR": "Ville contemporaine",
     "ko-KR": "현대 도시",
-    "$files": ["src/electron/config/file-dimension-source.ts(81767-81775)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81667-81675)"],
     "$id": 20299
   },
   "游戏同人": {
@@ -12061,7 +12048,7 @@
     "de-DE": "Spielefan",
     "fr-FR": "Fan de jeu",
     "ko-KR": "게임 팬",
-    "$files": ["src/electron/config/file-dimension-source.ts(81790-81798)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81690-81698)"],
     "$id": 20300
   },
   "日本情色": {
@@ -12074,7 +12061,7 @@
     "de-DE": "Japanische Erotik",
     "fr-FR": "érotisme japonais",
     "ko-KR": "일본의 에로티카",
-    "$files": ["src/electron/config/file-dimension-source.ts(81813-81821)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81713-81721)"],
     "$id": 20301
   },
   "西洋情色": {
@@ -12087,7 +12074,7 @@
     "de-DE": "Westliche Erotik",
     "fr-FR": "L'érotisme occidental",
     "ko-KR": "서양 에로티카",
-    "$files": ["src/electron/config/file-dimension-source.ts(81836-81844)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81736-81744)"],
     "$id": 20302
   },
   "奇遇物语": {
@@ -12100,7 +12087,7 @@
     "de-DE": "Abenteuergeschichte",
     "fr-FR": "Histoire d'aventure",
     "ko-KR": "모험 이야기",
-    "$files": ["src/electron/config/file-dimension-source.ts(81859-81867)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81759-81767)"],
     "$id": 20303
   },
   "成人文学背景设定、时空背景与特定流派细分": {
@@ -12113,7 +12100,7 @@
     "de-DE": "Hintergrundeinstellungen der Erwachsenenliteratur, zeitlicher und räumlicher Hintergrund und spezifische Genreunterteilungen",
     "fr-FR": "Paramètres de base de la littérature pour adultes, contexte temporel et spatial et subdivisions de genre spécifiques",
     "ko-KR": "성인문학 배경 설정, 시공간 배경 및 특정 장르 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(81903-81927)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(81803-81827)"],
     "$id": 20304
   },
   "背景设定": {
@@ -12126,7 +12113,7 @@
     "de-DE": "Hintergrundeinstellungen",
     "fr-FR": "Paramètres d'arrière-plan",
     "ko-KR": "배경 설정",
-    "$files": ["src/electron/config/file-dimension-source.ts(82118-82126)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82018-82026)"],
     "$id": 20305
   },
   "文学流派": {
@@ -12139,7 +12126,7 @@
     "de-DE": "Literarisches Genre",
     "fr-FR": "Genre littéraire",
     "ko-KR": "문학 장르",
-    "$files": ["src/electron/config/file-dimension-source.ts(82141-82149)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82041-82049)"],
     "$id": 20306
   },
   "情欲生理细分": {
@@ -12152,7 +12139,7 @@
     "de-DE": "Physiologischer Zusammenbruch des Verlangens",
     "fr-FR": "Dégradation physiologique du désir",
     "ko-KR": "욕망의 생리적 붕괴",
-    "$files": ["src/electron/config/file-dimension-source.ts(82517-82527)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82417-82427)"],
     "$id": 20307
   },
   "露骨性行为": {
@@ -12165,7 +12152,7 @@
     "de-DE": "Explizite sexuelle Handlungen",
     "fr-FR": "Scènes de sexe explicites",
     "ko-KR": "노골적인 성행위",
-    "$files": ["src/electron/config/file-dimension-source.ts(82576-82585)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82476-82485)"],
     "$id": 19773
   },
   "自慰高潮": {
@@ -12178,7 +12165,7 @@
     "de-DE": "Orgasmus durch Selbstbefriedigung",
     "fr-FR": "Orgasme par masturbation",
     "ko-KR": "자위 오르가슴",
-    "$files": ["src/electron/config/file-dimension-source.ts(82600-82608)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82500-82508)"],
     "$id": 19774
   },
   "口交": {
@@ -12191,7 +12178,7 @@
     "de-DE": "Oralsex",
     "fr-FR": "Le sexe oral",
     "ko-KR": "오럴 섹스",
-    "$files": ["src/electron/config/file-dimension-source.ts(82623-82629)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82523-82529)"],
     "$id": 20308
   },
   "肛交": {
@@ -12204,7 +12191,7 @@
     "de-DE": "Analsex",
     "fr-FR": "Le sexe anal",
     "ko-KR": "애널 섹스",
-    "$files": ["src/electron/config/file-dimension-source.ts(82644-82650)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82544-82550)"],
     "$id": 20309
   },
   "颜射吞精": {
@@ -12217,7 +12204,7 @@
     "de-DE": "Gesichtssperma schlucken",
     "fr-FR": "Avaler du sperme sur le visage",
     "ko-KR": "얼굴의 정액을 삼키는",
-    "$files": ["src/electron/config/file-dimension-source.ts(82665-82673)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82565-82573)"],
     "$id": 20310
   },
   "私房写真": {
@@ -12230,7 +12217,7 @@
     "de-DE": "Private Fotos",
     "fr-FR": "Photos privées",
     "ko-KR": "비공개 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(82688-82696)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82588-82596)"],
     "$id": 19779
   },
   "擦边诱惑": {
@@ -12243,7 +12230,7 @@
     "de-DE": "Verlockung am Rande",
     "fr-FR": "Une séduction à la limite",
     "ko-KR": "아슬아슬한 유혹",
-    "$files": ["src/electron/config/file-dimension-source.ts(82711-82719)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82611-82619)"],
     "$id": 19776
   },
   "美乳美腿": {
@@ -12256,7 +12243,7 @@
     "de-DE": "Schöne Brüste und Beine",
     "fr-FR": "Beaux seins et jambes",
     "ko-KR": "가슴이랑 다리가 예뻐요",
-    "$files": ["src/electron/config/file-dimension-source.ts(82734-82742)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82634-82642)"],
     "$id": 20311
   },
   "处女情结": {
@@ -12269,7 +12256,7 @@
     "de-DE": "Jungfräulichkeitskomplex",
     "fr-FR": "Complexe de virginité",
     "ko-KR": "처녀성 콤플렉스",
-    "$files": ["src/electron/config/file-dimension-source.ts(82757-82765)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82657-82665)"],
     "$id": 20312
   },
   "生理行为动作、器官特写、性感写真与感官特征细分": {
@@ -12282,7 +12269,7 @@
     "de-DE": "Physiologische und Verhaltensbewegungen, Nahaufnahmen von Organen, sexy Fotos und Aufschlüsselung sensorischer Eigenschaften",
     "fr-FR": "Mouvements physiologiques et comportementaux, gros plans d'organes, photos sexy et décomposition des caractéristiques sensorielles",
     "ko-KR": "생리적, 행동적 움직임, 장기 클로즈업, 섹시한 사진, 감각 특성의 붕괴",
-    "$files": ["src/electron/config/file-dimension-source.ts(82801-82828)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82701-82728)"],
     "$id": 20313
   },
   "生理动作": {
@@ -12295,7 +12282,7 @@
     "de-DE": "Physiologische Handlungen",
     "fr-FR": "Actions physiologiques",
     "ko-KR": "생리적 작용",
-    "$files": ["src/electron/config/file-dimension-source.ts(82996-83004)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82896-82904)"],
     "$id": 20314
   },
   "器官特写": {
@@ -12308,7 +12295,7 @@
     "de-DE": "Nahaufnahme der Orgel",
     "fr-FR": "Gros plan sur l'orgue",
     "ko-KR": "장기 클로즈업",
-    "$files": ["src/electron/config/file-dimension-source.ts(83019-83027)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82919-82927)"],
     "$id": 20315
   },
   "性感写真": {
@@ -12321,7 +12308,7 @@
     "de-DE": "Sexy Foto",
     "fr-FR": "Photos sexy",
     "ko-KR": "섹시한 사진",
-    "$files": ["src/electron/config/file-dimension-source.ts(83042-83050)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(82942-82950)"],
     "$id": 20316
   },
   "非自愿侵犯细分": {
@@ -12334,7 +12321,7 @@
     "de-DE": "Zusammenbruch durch unfreiwillige Körperverletzung",
     "fr-FR": "Panne d'agression involontaire",
     "ko-KR": "무의식적인 폭행 붕괴",
-    "$files": ["src/electron/config/file-dimension-source.ts(83418-83429)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(83318-83329)"],
     "$id": 20317
   },
   "强暴强奸": {
@@ -12347,7 +12334,7 @@
     "de-DE": "Vergewaltigung Vergewaltigung",
     "fr-FR": "Viol viol",
     "ko-KR": "강간 강간",
-    "$files": ["src/electron/config/file-dimension-source.ts(83478-83486)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(83378-83386)"],
     "$id": 20318
   },
   "迷奸下药": {
@@ -12360,7 +12347,7 @@
     "de-DE": "Vergewaltigt und unter Drogen gesetzt",
     "fr-FR": "Violée et droguée",
     "ko-KR": "강간당하고 마약먹고",
-    "$files": ["src/electron/config/file-dimension-source.ts(83501-83509)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(83401-83409)"],
     "$id": 20319
   },
   "违背意愿": {
@@ -12374,8 +12361,8 @@
     "fr-FR": "Contre son gré",
     "ko-KR": "의사에 반하여",
     "$files": [
-      "src/electron/config/file-dimension-source.ts(83524-83532)",
-      "src/electron/config/file-dimension-source.ts(83805-83813)"
+      "src/electron/config/file-dimension-source.ts(83424-83432)",
+      "src/electron/config/file-dimension-source.ts(83705-83713)"
     ],
     "$id": 19781
   },
@@ -12389,7 +12376,7 @@
     "de-DE": "Gruppenvergewaltigung",
     "fr-FR": "Viol collectif",
     "ko-KR": "집단 성폭행",
-    "$files": ["src/electron/config/file-dimension-source.ts(83547-83555)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(83447-83455)"],
     "$id": 20320
   },
   "暴力胁迫": {
@@ -12402,7 +12389,7 @@
     "de-DE": "Gewalttätiger Zwang",
     "fr-FR": "Coercition violente",
     "ko-KR": "폭력적인 강압",
-    "$files": ["src/electron/config/file-dimension-source.ts(83570-83578)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(83470-83478)"],
     "$id": 20321
   },
   "非自愿强迫、侵害侵害与极端违规内容分类": {
@@ -12415,7 +12402,7 @@
     "de-DE": "Klassifizierung von unfreiwilliger Nötigung, Übergriffen und extremen Verstößen",
     "fr-FR": "Classification de la contrainte involontaire, de la violation et des violations extrêmes",
     "ko-KR": "비자발적 강요, 침해, 극단적 위반의 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(83614-83637)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(83514-83537)"],
     "$id": 20322
   },
   "侵害违规": {
@@ -12428,7 +12415,7 @@
     "de-DE": "Verstoß und Verletzung",
     "fr-FR": "Infraction et violation",
     "ko-KR": "침해 및 위반",
-    "$files": ["src/electron/config/file-dimension-source.ts(83828-83836)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(83728-83736)"],
     "$id": 20323
   },
   "强迫侵犯": {
@@ -12441,7 +12428,7 @@
     "de-DE": "Gewaltsamer Verstoß",
     "fr-FR": "Violation forcée",
     "ko-KR": "강제 위반",
-    "$files": ["src/electron/config/file-dimension-source.ts(83851-83859)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(83751-83759)"],
     "$id": 20324
   },
   "多元取向细分": {
@@ -12454,7 +12441,7 @@
     "de-DE": "Segmentierung mit mehreren Orientierungen",
     "fr-FR": "Segmentation à orientations multiples",
     "ko-KR": "다중 방향 분할",
-    "$files": ["src/electron/config/file-dimension-source.ts(84228-84238)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(84128-84138)"],
     "$id": 20325
   },
   "同性情色": {
@@ -12467,7 +12454,7 @@
     "de-DE": "Homoerotisch",
     "fr-FR": "Homérotique",
     "ko-KR": "동성애",
-    "$files": ["src/electron/config/file-dimension-source.ts(84287-84295)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(84187-84195)"],
     "$id": 20326
   },
   "女同百合": {
@@ -12480,7 +12467,7 @@
     "de-DE": "Lesbische Lilie",
     "fr-FR": "Lis lesbienne",
     "ko-KR": "레즈비언 백합",
-    "$files": ["src/electron/config/file-dimension-source.ts(84310-84318)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(84210-84218)"],
     "$id": 20327
   },
   "男同耽美": {
@@ -12493,7 +12480,7 @@
     "de-DE": "Schwule Schönheit",
     "fr-FR": "Beauté gay",
     "ko-KR": "게이 뷰티",
-    "$files": ["src/electron/config/file-dimension-source.ts(84333-84341)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(84233-84241)"],
     "$id": 20328
   },
   "跨性别": {
@@ -12506,7 +12493,7 @@
     "de-DE": "Transgender",
     "fr-FR": "Transgenre",
     "ko-KR": "트랜스젠더",
-    "$files": ["src/electron/config/file-dimension-source.ts(84356-84363)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(84256-84263)"],
     "$id": 20329
   },
   "多元性别认知、多元取向与特定性向题材细分": {
@@ -12519,7 +12506,7 @@
     "de-DE": "Unterschiedliche Geschlechterwahrnehmung, unterschiedliche Orientierungen und spezifische Segmentierung der sexuellen Orientierungsthemen",
     "fr-FR": "Cognition de genre diversifiée, orientations diverses et segmentation thématique spécifique de l'orientation sexuelle",
     "ko-KR": "다양한 성별 인식, 다양한 지향성, 구체적인 성적 지향성 테마 세분화",
-    "$files": ["src/electron/config/file-dimension-source.ts(84399-84423)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(84299-84323)"],
     "$id": 20330
   },
   "同性题材": {
@@ -12532,7 +12519,7 @@
     "de-DE": "Homosexuelle Themen",
     "fr-FR": "Thèmes homosexuels",
     "ko-KR": "동성애 주제",
-    "$files": ["src/electron/config/file-dimension-source.ts(84614-84622)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(84514-84522)"],
     "$id": 20331
   },
   "性向分类": {
@@ -12545,7 +12532,75 @@
     "de-DE": "Klassifizierung der sexuellen Orientierung",
     "fr-FR": "Classification de l'orientation sexuelle",
     "ko-KR": "성적 취향 분류",
-    "$files": ["src/electron/config/file-dimension-source.ts(84637-84645)"],
+    "$files": ["src/electron/config/file-dimension-source.ts(84537-84545)"],
     "$id": 20332
+  },
+  "内容分级": {
+    "en-US": "Content Rating",
+    "es-ES": "Clasificación de contenido",
+    "ar-EG": "تصنيف المحتوى",
+    "pt-PT": "Classificação de conteúdo",
+    "ru-RU": "Классификация контента",
+    "ja-JP": "コンテンツレーティング",
+    "de-DE": "Inhaltsbewertung",
+    "fr-FR": "Classement de contenus",
+    "ko-KR": "콘텐츠 등급",
+    "$files": [
+      "src/electron/config/file-dimension-source.ts(84913-84921)",
+      "src/electron/config/file-dimension-source.ts(85350-85358)"
+    ],
+    "$id": 20496
+  },
+  "全年龄": {
+    "en-US": "All Ages",
+    "es-ES": "Todas las edades",
+    "ar-EG": "جميع الأعمار",
+    "pt-PT": "Todas as idades",
+    "ru-RU": "все возрасты",
+    "ja-JP": "すべての年齢",
+    "de-DE": "Alle Altersgruppen",
+    "fr-FR": "Tous les âges",
+    "ko-KR": "모든 연령대",
+    "$files": ["src/electron/config/file-dimension-source.ts(84970-84977)"],
+    "$id": 7759
+  },
+  "文件内容的年龄适宜性分级": {
+    "en-US": "Age appropriateness rating of file content",
+    "es-ES": "Clasificación de idoneidad para la edad del contenido del archivo",
+    "ar-EG": "تصنيف مدى ملاءمة محتوى الملف للعمر",
+    "pt-PT": "Classificação de adequação etária do conteúdo do arquivo",
+    "ru-RU": "Рейтинг соответствия содержимого файла возрасту",
+    "ja-JP": "ファイルコンテンツの年齢相応の評価",
+    "de-DE": "Alterseinstufung des Dateiinhalts",
+    "fr-FR": "Évaluation de l'adéquation à l'âge du contenu du fichier",
+    "ko-KR": "파일 콘텐츠의 연령 적합성 등급",
+    "$files": ["src/electron/config/file-dimension-source.ts(85095-85111)"],
+    "$id": 7765
+  },
+  "年龄适宜性分级": {
+    "en-US": "Age-appropriateness Rating",
+    "es-ES": "Clasificación por aptitud de edad",
+    "ar-EG": "تصنيف الملاءمة العمرية",
+    "pt-PT": "Classificação de adequação por faixa etária",
+    "ru-RU": "Классификация по возрастному соответствию",
+    "ja-JP": "年齢適性レーティング",
+    "de-DE": "Altersgerechte Einstufung",
+    "fr-FR": "Classement par ��ge approprié",
+    "ko-KR": "연령별 적정성 등급",
+    "$files": ["src/electron/config/file-dimension-source.ts(85324-85335)"],
+    "$id": 20497
+  },
+  "受众年龄审查": {
+    "en-US": "Audience Age Review",
+    "es-ES": "Revisión de edad del público objetivo",
+    "ar-EG": "مراجعة العمر المستهدف للمتلقي",
+    "pt-PT": "Censura de idade do público",
+    "ru-RU": "Возрастная цензура для целевой аудитории",
+    "ja-JP": "視聴対象年齢審査",
+    "de-DE": "Zielauditorium nach Alter prüfen",
+    "fr-FR": "Vérification de l'âge du public cible",
+    "ko-KR": "수신 연령 심사",
+    "$files": ["src/electron/config/file-dimension-source.ts(85373-85383)"],
+    "$id": 20498
   }
 }

@@ -25,7 +25,7 @@
     "de-DE": "Datenbank nicht initialisiert",
     "fr-FR": "Base de données non initialisée",
     "ko-KR": "데이터베이스가 초기화되지 않았습니다.",
-    "$files": ["src/electron/adapters/database-adapter.ts(791-802)"],
+    "$files": ["src/electron/adapters/database-adapter.ts(765-776)"],
     "$id": 7669
   },
   "处理多模态文件失败 [{filePath}]: {errorMsg}": {
@@ -52,8 +52,8 @@
     "fr-FR": "Aucun modèle chargé",
     "ko-KR": "로드된 모델 없음",
     "$files": [
-      "src/electron/adapters/llama-runtime-adapter.ts(1459-1470)",
-      "src/electron/adapters/llama-runtime-adapter.ts(7587-7598)"
+      "src/electron/adapters/llama-runtime-adapter.ts(1678-1689)",
+      "src/electron/adapters/llama-runtime-adapter.ts(7986-7997)"
     ],
     "$id": 3540
   }

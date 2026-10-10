@@ -1361,7 +1361,7 @@
     "de-DE": "Der Name darf nicht leer sein",
     "fr-FR": "Le nom ne peut pas être vide",
     "ko-KR": "이름은 비워둘 수 없습니다",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13150-13160)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13268-13278)"],
     "$id": 8848
   },
   "名称包含非法字符": {
@@ -1374,7 +1374,7 @@
     "de-DE": "Der Name enthält ungültige Zeichen",
     "fr-FR": "Le nom contient des caractères illicites",
     "ko-KR": "이름에 잘못된 문자가 포함되었습니다",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13290-13302)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13408-13420)"],
     "$id": 8849
   },
   "重命名成功": {
@@ -1387,7 +1387,7 @@
     "de-DE": "Umbenennen erfolgreich",
     "fr-FR": "Renommer avec succès",
     "ko-KR": "이름 변경 성공",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13610-13619)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13728-13737)"],
     "$id": 8850
   },
   "重命名失败": {
@@ -1400,7 +1400,7 @@
     "de-DE": "Umbenennen fehlgeschlagen",
     "fr-FR": "Échec du changement de nom",
     "ko-KR": "이름 바꾸기 실패",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13709-13718)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13827-13836)"],
     "$id": 8851
   },
   "删除成功": {
@@ -1413,7 +1413,7 @@
     "de-DE": "Erfolgreich löschen",
     "fr-FR": "Suppression réussie",
     "ko-KR": "삭제가 완료되었습니다",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(13974-13982)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14092-14100)"],
     "$id": 8852
   },
   "删除失败": {
@@ -1426,7 +1426,7 @@
     "de-DE": "Das Löschen ist fehlgeschlagen",
     "fr-FR": "Échec de la suppression",
     "ko-KR": "삭제 실패",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14240-14248)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14358-14366)"],
     "$id": 8853
   },
   "正在跳转到整理页面...": {
@@ -1439,7 +1439,7 @@
     "de-DE": "Weiterleitung zur Organisationsseite...",
     "fr-FR": "Redirection vers la page de l'organisation...",
     "ko-KR": "조직 페이지로 리디렉션 중...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14406-14422)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/hooks/useVirtualDirectory.ts(14524-14540)"],
     "$id": 8854
   },
   "全部文件": {
