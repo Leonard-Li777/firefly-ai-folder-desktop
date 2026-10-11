@@ -154,6 +154,11 @@ export interface OmniTagChainItem {
   parent_codes?: string[]
   /** 打标引擎来源 (WP2a): clip | ram | physical | mutual_group | ocr | nsfw | quality | rule | metadata */
   engine?: string
+  code_path?: string
+  codePath?: string
+  name_path?: string
+  namePath?: string
+  depth?: number
 }
 
 export interface OmniResolveParentRequest {
