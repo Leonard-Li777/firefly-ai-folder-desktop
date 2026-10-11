@@ -417,7 +417,7 @@
     "ja-JP": "高度設定AIプロンプト",
     "de-DE": "Erweiterte KI-Prompts",
     "fr-FR": "Prompt IA avancé",
-    "ko-KR": "高级 AI 프롬프트",
+    "ko-KR": "고급 AI 프롬프트",
     "$files": [
       "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(3180-3191)"
     ],
@@ -653,7 +653,7 @@
     "ja-JP": "空欄の場合、デフォルトのプロンプトテンプレートが使用されます",
     "de-DE": "Bei Leerstand wird der Standard-Prompt-Template verwendet",
     "fr-FR": "Si laissé vide, le modèle de prompt par défaut sera utilisé",
-    "ko-KR": "빈欄으로 두면 기본 프롬프트 템플릿을 사용합니다",
+    "ko-KR": "기본 프롬프트 단어 템플릿을 사용하려면 비워 두세요.",
     "$files": [
       "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(7864-7880)",
       "src/renderer/components/settings/advanced-ai-prompts-settings.tsx(10331-10347)",
@@ -2490,7 +2490,7 @@
     "ja-JP": "【メリット】解析が極めて速く、メモリ使用量が極めて低い（< 80MB）ため、省電力で本体の発熱もありません。",
     "de-DE": "【Vorteile】Blitzschnelle Analyse, extrem niedriger Speicherverbrauch (< 80 MB), stromsparend und keine Überhitzung des Geräts.",
     "fr-FR": "【Avantages】Analyse ultra-rapide, occupation mémoire très faible (< 80 Mo), économie d'énergie et absence de surchauffe de l'appareil.",
-    "ko-KR": "【강점】분석 속도가 매우 빠르고, 메모리 점유량이极低(< 80MB)이며, 전력을 절약하고 기기의 발열이 없습니다.",
+    "ko-KR": "[장점] 분석이 빠르고, 메모리 사용량이 매우 낮으며(< 80MB), 절전 효과가 있고, 본체에 발열이 없습니다.",
     "$files": [
       "src/renderer/components/settings/basic-ai-engine-config-settings.tsx(17395-17432)"
     ],
@@ -2876,7 +2876,7 @@
     "es-ES": "Al analizar un vídeo largo, se captura una imagen cada pocos segundos. Cuanto más corto sea el intervalo, más preciso será el posicionamiento por segundos en los fragmentos de imagen del vídeo; cuanto mayor sea el intervalo, más eficiente y rápida será el análisis del vídeo en términos de consumo de batería.",
     "ar-EG": "عند تحليل مقاطع الفيديو الطويلة، تتم أخذ لقطة للفيديو كل بضع ثوانٍ. كلما كان الفاصل الزمني أقصر، أصبح تحديد المقطع الدقيق بالثانية أسهل؛ كلما كان الفاصل الزمني أطول، يصبح تحليل الفيديو أكثر توفيراً للطاقة وسرعةً.",
     "pt-PT": "Ao analisar vídeos longos, capte um fotograma a cada X segundos. Quanto menor o intervalo, mais precisamente pode localizar um segmento de vídeo a cada segundo; quanto maior o intervalo, mais rápido e com menor consumo de bateria fica a análise.",
-    "ru-RU": "При анализе длинных видео截取画面 через каждую несколько секунд. Чем короче интервал, тем точнее можно определить фрагмент видеопотока по секундам; чем длиннее интервал, тем экономнее и быстрее выполняется анализ видео.",
+    "ru-RU": "При анализе длинных видео скриншоты делаются каждые несколько секунд. Чем короче интервал, тем точнее можно расположить видеоклипы по секундам; чем длиннее интервал, тем экономнее и быстрее происходит анализ видео.",
     "ja-JP": "長尺動画の解析時には、数秒ごとにフレームをキャプチャします。間隔が短くなると、動画のシーンを秒単位でより正確に特定できますが、間隔が長くなると、動画解析により省エネかつ高速になります。",
     "de-DE": "Bei der Analyse langer Videos wird alle paar Sekunden ein Bildschirmabbild erfasst. Je kürzer das Intervall, desto präziser kann jeder einzelne Bildausschnitt des Videos auf Sekundenebene lokalisert werden; je länger das Intervall, desto stromsparender und schneller wird die Videoanalyse.",
     "fr-FR": "Lors de l'analyse de vidéos longues, les captures sont extraites toutes les quelques secondes. Plus l'intervalle est court, plus la localisation au niveau de la seconde des segments vidéo est précise ; plus l'intervalle est long, plus l'analyse est rapide et économe en énergie.",
@@ -3898,7 +3898,7 @@
     "$id": 20676
   },
   "极速OCR": {
-    "en-US": "极速OCR",
+    "en-US": "Extremely fast OCR",
     "es-ES": "OCR ultrarrápido",
     "ar-EG": "OCR فائق السرعة",
     "pt-PT": "OCR Ultra",
@@ -3913,7 +3913,7 @@
     "$id": 20677
   },
   "单图1~2秒内完成，适合大部分场景": {
-    "en-US": "单图1~2秒内完成，适合大部分场景",
+    "en-US": "A single image can be completed within 1 to 2 seconds, suitable for most scenarios.",
     "es-ES": "Se completa en 1~2 segundos por imagen, adecuado para la mayoría de los escenarios",
     "ar-EG": "إنجاز العمل خلال 1-2 ثوانٍ لكل صورة، مناسب لمعظم السيناريوهات",
     "pt-PT": "Concluído em 1 a 2 segundos por imagem, adequado para a maioria dos cenários",
@@ -3928,7 +3928,7 @@
     "$id": 20678
   },
   "高精度OCR": {
-    "en-US": "高精度OCR",
+    "en-US": "High-precision OCR",
     "es-ES": "OCR de alta precisión",
     "ar-EG": "OCR عالي الدقة",
     "pt-PT": "OCR de alta precisão",
@@ -3943,7 +3943,7 @@
     "$id": 20679
   },
   "单图2~4秒内完成，提高识别精度": {
-    "en-US": "单图2~4秒内完成，提高识别精度",
+    "en-US": "A single image can be completed within 2 to 4 seconds, improving recognition accuracy.",
     "es-ES": "Se completa en 2~4 segundos por imagen, mejora la precisión de reconocimiento",
     "ar-EG": "إنجاز العمل خلال 2-4 ثوانٍ لكل صورة، لزيادة دقة التعرف",
     "pt-PT": "Concluído em 2 a 4 segundos por imagem, aumentando a precisão do reconhecimento",
@@ -3958,7 +3958,7 @@
     "$id": 20680
   },
   "重新分析时复用数据": {
-    "en-US": "重新分析时复用数据",
+    "en-US": "Reuse data when reanalyzing",
     "es-ES": "Reutiliza los datos al reanar",
     "ar-EG": "إعادة استخدام البيانات أثناء إعادة التحليل",
     "pt-PT": "Reutilizar dados em nova análise",
@@ -3973,7 +3973,7 @@
     "$id": 20681
   },
   "如果文件有更新，请关闭此项，否则任意文件基础信息已存在则跳过该项信息获取，基础信息包括：文件类型、缩略图、元数据、文件内容": {
-    "en-US": "如果文件有更新，请关闭此项，否则任意文件基础信息已存在则跳过该项信息获取，基础信息包括：文件类型、缩略图、元数据、文件内容",
+    "en-US": "If the file has been updated, please turn off this item. Otherwise, if the basic information of any file already exists, skip this information acquisition. The basic information includes: file type, thumbnail, metadata, and file content.",
     "es-ES": "Si el archivo se ha actualizado, desactive esta opción; de lo contrario, si la información básica del archivo ya existe, omita la obtención de dicha información. La información básica incluye: tipo de archivo, miniatura, metadatos, contenido del archivo",
     "ar-EG": "إذا كانت هناك تحديثات للملفات، يرجى إلغاء تحديد هذا الخيار، وإلا فسيتم تخطي جمع معلومات هذا الخيار إذا كانت المعلومات الأساسية للملف موجودة بالفعل، وتشمل المعلومات الأساسية: نوع الملف، المصغرات، البيانات الوصفية، محتوى الملف",
     "pt-PT": "Se os ficheiros tiverem atualizações, desative esta opção; caso contrário, se as informações básicas de qualquer ficheiro já existirem, será ignorada a recolha dessas informações básicas, que incluem: tipo de ficheiro, miniatura, metadados e conteúdo do ficheiro",
@@ -3988,7 +3988,7 @@
     "$id": 20682
   },
   "分析提速，不会重新获取标准分析阶段的信息": {
-    "en-US": "分析提速，不会重新获取标准分析阶段的信息",
+    "en-US": "Analysis speedup; standard analysis stage information is not re-fetched",
     "es-ES": "Acelera el análisis y no volverá a obtener la información de la fase de análisis estándar",
     "ar-EG": "تسريع عملية التحليل، لن يتم إعادة جمع معلومات مرحلة التحليل القياسية",
     "pt-PT": "Acelera a análise, sem recolher novamente as informações da etapa de análise padrão",
@@ -4003,7 +4003,7 @@
     "$id": 20683
   },
   "示例：作为整体单元的文件集合特征为：文件命名带数字后缀的文件集合，例如：1.txt, 2.txt, 3.txt": {
-    "en-US": "示例：作为整体单元的文件集合特征为：文件命名带数字后缀的文件集合，例如：1.txt, 2.txt, 3.txt",
+    "en-US": "Example: The characteristic of a file collection as a whole unit is: a set of files named with numeric suffixes, for example: 1.txt, 2.txt, 3.txt",
     "es-ES": "Ejemplo: Característica de una colección de archivos como unidad global: conjuntos de archivos con sufijo numérico en el nombre del archivo, por ejemplo: 1.txt, 2.txt, 3.txt",
     "ar-EG": "مثال: خصائص مجموعات الملفات كمجموعة وحدة: مجموعات ملفات بأسماء تحمل لاحقة رقمية، مثال: 1.txt, 2.txt, 3.txt",
     "pt-PT": "Exemplo: Características de coleções de ficheiros consideradas como unidades globais: coleções de ficheiros com sufixo numérico no nome, por exemplo: 1.txt, 2.txt, 3.txt",
@@ -4018,7 +4018,7 @@
     "$id": 20684
   },
   "最小单元识别": {
-    "en-US": "最小单元识别",
+    "en-US": "Minimum Unit Recognition",
     "es-ES": "Identificación de unidades mínimas",
     "ar-EG": "تحديد أصغر وحدة",
     "pt-PT": "Identificação de unidades mínimas",
@@ -4033,7 +4033,7 @@
     "$id": 20685
   },
   "识别系列文件、音轨专辑、工程目录等整体单元，并支持自定义单元识别提示词": {
-    "en-US": "识别系列文件、音轨专辑、工程目录等整体单元，并支持自定义单元识别提示词",
+    "en-US": "Recognize overall units such as series files, audio track albums, project directories, etc., and support custom unit recognition prompt words",
     "es-ES": "Identifique unidades completas como archivos en serie, álbumes de pistas, directorios de proyectos, etc., y admita indicadores personalizados para la identificación de unidades",
     "ar-EG": "تحديد الوحدات الكاملة مثل الملفات المتسلسلة، وبومات المسارات الصوتية، ومجلدات المشاريع، مع دعم تلميحات مخصصة لتحديد الوحدات",
     "pt-PT": "Identificação de unidades globais, como ficheiros de séries, álbuns de faixas de áudio e diretórios de projetos, com suporte para palavras-chave de identificação de unidades personalizadas",
@@ -4048,7 +4048,7 @@
     "$id": 20686
   },
   "启用最小单元识别": {
-    "en-US": "启用最小单元识别",
+    "en-US": "Enable minimal unit recognition",
     "es-ES": "Activar identificación de unidades mínimas",
     "ar-EG": "تفعيل تحديد أصغر وحدة",
     "pt-PT": "Ativar identificação de unidades mínimas",
@@ -4063,7 +4063,7 @@
     "$id": 20687
   },
   "以下类别强制识别，无需开启：系统目录、软件安装目录、工程项目、游戏包、AI数据集/模型、缓存与LFS、虚拟环境": {
-    "en-US": "以下类别强制识别，无需开启：系统目录、软件安装目录、工程项目、游戏包、AI数据集/模型、缓存与LFS、虚拟环境",
+    "en-US": "The following categories are forced to be identified and do not need to be turned on: system directory, software installation directory, engineering projects, game packages, AI data sets/models, cache and LFS, virtual environment",
     "es-ES": "Las siguientes categorías se identifican de forma obligatoria y no es necesario activarlas: directorios del sistema, directorios de instalación de software, proyectos de ingeniería, paquetes de juegos, conjuntos de datos/modelos de IA, caché y LFS, entornos virtuales",
     "ar-EG": "الفئات التالية تُحدد بشكل إجباري دون الحاجة للتفعيل: المجلدات النظامية، ومجلدات تثبيت البرامج، ومشاريع هندسية، وحزم الألعاب، ومجموعات بيانات/نماذج الذكاء الاصطناعي، وكاش مع LFS، والبيئات الافتراضية",
     "pt-PT": "As seguintes categorias são identificadas de forma obrigatória, sem necessidade de ativação: diretórios do sistema, diretórios de instalação de software, projetos de engenharia, pacotes de jogos, conjuntos de dados/modelos de IA, caches e LFS, ambientes virtuais",
@@ -4078,7 +4078,7 @@
     "$id": 20688
   },
   "启用后，识别为最小单元的目录，跳过文件逐一分析": {
-    "en-US": "启用后，识别为最小单元的目录，跳过文件逐一分析",
+    "en-US": "When enabled, the directory is identified as the smallest unit and the files are skipped and analyzed one by one.",
     "es-ES": "Una vez activado, los directorios identificados como unidades mínimas omitirán el análisis individual de cada archivo",
     "ar-EG": "بعد التفعيل، يتم تجاوز التحليل الدقيق للـملفات للتُحدد كمجلدات بأصغر وحدة",
     "pt-PT": "Quando ativado, os diretórios identificados como unidades mínimas passam a ignorar a análise individual de ficheiros",
@@ -4093,7 +4093,7 @@
     "$id": 20689
   },
   "系列文件：连续编号的文档或图片（如 01.jpg, 02.jpg, 03.jpg）": {
-    "en-US": "系列文件：连续编号的文档或图片（如 01.jpg, 02.jpg, 03.jpg）",
+    "en-US": "Series files: consecutively numbered documents or pictures (such as 01.jpg, 02.jpg, 03.jpg)",
     "es-ES": "Archivos en serie: documentos o imágenes numerados consecutivamente (p. ej., 01.jpg, 02.jpg, 03.jpg)",
     "ar-EG": "الملفات المتسلسلة: مستندات أو صور مرقمة تسلسلياً (مثل 01.jpg، 02.jpg، 03.jpg)",
     "pt-PT": "Ficheiros de série: documentos ou imagens com numeração sequencial (ex.: 01.jpg, 02.jpg, 03.jpg)",
@@ -4108,7 +4108,7 @@
     "$id": 20690
   },
   "音频专辑：同一专辑的音轨文件集合（如 .flac, .mp3）": {
-    "en-US": "音频专辑：同一专辑的音轨文件集合（如 .flac, .mp3）",
+    "en-US": "Audio album: a collection of audio track files of the same album (such as .flac, .mp3)",
     "es-ES": "Álbum de audio: conjunto de archivos de pistas de un mismo álbum (como .flac, .mp3)",
     "ar-EG": "البوم الصوتي: مجموعة من ملفات المسارات الصوتية من نفس الألبوم (مثل .flac، .mp3)",
     "pt-PT": "Álbum de áudio: coleção de ficheiros de faixas do mesmo álbum (como .flac, .mp3)",
@@ -4123,7 +4123,7 @@
     "$id": 20691
   },
   "设计工程：含工程文件及资源目录的设计项目（如 .prproj、.aep、.blend）": {
-    "en-US": "设计工程：含工程文件及资源目录的设计项目（如 .prproj、.aep、.blend）",
+    "en-US": "Design project: a design project containing project files and resource directories (such as .prproj, .aep, .blend)",
     "es-ES": "Proyecto de diseño: proyecto de diseño que incluye archivos de proyecto y directorios de recursos (como .prproj, .aep, .blend)",
     "ar-EG": "مشروع التصميم: مشروع تصميم يتضمن ملفات المشاريع وموارد الأدلة (مثل .prproj، .aep، .blend)",
     "pt-PT": "Projeto de design: projeto de design com ficheiros de projeto e diretórios de recursos (como .prproj, .aep, .blend)",
@@ -4138,7 +4138,7 @@
     "$id": 20692
   },
   "提示：关闭后所有文件将独立分析，适用于需对每个文件单独生成描述和标签的场景": {
-    "en-US": "提示：关闭后所有文件将独立分析，适用于需对每个文件单独生成描述和标签的场景",
+    "en-US": "Tip: After closing, all files will be analyzed independently, which is suitable for scenarios where descriptions and labels need to be generated separately for each file.",
     "es-ES": "Sugerencia: al desactivarlo, todos los archivos se analizarán de forma independiente; aplicable a escenarios que requieran generar descripciones y etiquetas para cada archivo de forma individual",
     "ar-EG": "تنبيه: بعد الإيقاف، ستُحلَّل جميع الملفات بشكل مستقل، وهو مناسب للحالات التي تتطلب توليد أوصاف ووسوم بشكل منفرد لكل ملف",
     "pt-PT": "Dica: após ser desativado, todos os ficheiros serão analisados de forma independente, adequado para cenários em que cada ficheiro requer a geração individual de descrições e etiquetas",
@@ -4153,7 +4153,7 @@
     "$id": 20693
   },
   "最小单元识别提示词": {
-    "en-US": "最小单元识别提示词",
+    "en-US": "Minimum unit recognition prompt word",
     "es-ES": "Palabras clave de identificación de la unidad mínima",
     "ar-EG": "كلمة التلميح لتحديد الحد الأدنى من الوحدات",
     "pt-PT": "Palavra-chave para identificação de unidades mínimas",
@@ -4168,7 +4168,7 @@
     "$id": 20694
   },
   "需开启上方开关方可生效": {
-    "en-US": "需开启上方开关方可生效",
+    "en-US": "The upper switch needs to be turned on to take effect",
     "es-ES": "Debe activarse el interruptor superior para que surta efecto",
     "ar-EG": "يتطلب تفعيل المفتاح أعلاه ليصبح فعالاً",
     "pt-PT": "Necessário ativar a chave acima para ter efeito",
@@ -4183,7 +4183,7 @@
     "$id": 20695
   },
   "定义什么样的文件集合应被视作一个整体单元，微调模型的识别判断": {
-    "en-US": "定义什么样的文件集合应被视作一个整体单元，微调模型的识别判断",
+    "en-US": "Define what kind of file collection should be regarded as an overall unit and fine-tune the model's recognition judgment",
     "es-ES": "Define qué tipo de conjunto de archivos debe considerarse una unidad global para ajustar el criterio de identificación del modelo",
     "ar-EG": "تحديد أي مجموعة ملفات يجب اعتبارها وحدة متكاملة، لضبط تحديد نموذج التوليف",
     "pt-PT": "Definir que tipo de coleção de ficheiros deve ser considerada uma unidade de todo, ajustando os julgamentos de identificação do modelo",
@@ -4198,7 +4198,7 @@
     "$id": 20696
   },
   "自定义最小单元提示词依赖高级AI引擎的语言模型理解能力，当前未开启。": {
-    "en-US": "自定义最小单元提示词依赖高级AI引擎的语言模型理解能力，当前未开启。",
+    "en-US": "Customized minimum unit prompt words rely on the language model understanding capabilities of the advanced AI engine and are currently not enabled.",
     "es-ES": "Las sugerencias de unidad mínima personalizadas dependen de la capacidad de comprensión del modelo lingüístico del motor de IA avanzado, que actualmente no está activado.",
     "ar-EG": "تتطلب الكلمات المفتاحية المخصصة للوحدة الدنيا محرك ذكاء اصطناعي متقدمًا قادرًا على فهم نماذج اللغة، وهو غير مفعَّل حاليًا.",
     "pt-PT": "As a custom minimum unit, the prompt relies on the language model comprehension capability of the advanced AI engine, which is currently disabled.",
@@ -4213,7 +4213,7 @@
     "$id": 20697
   },
   "上方开关未开启，提示词暂不生效": {
-    "en-US": "上方开关未开启，提示词暂不生效",
+    "en-US": "The upper switch is not turned on, and the prompt words are temporarily ineffective.",
     "es-ES": "El interruptor de arriba no está activado; la sugerencia no es efectiva por ahora.",
     "ar-EG": "النظر في مفتاح أعلى الصفحة غير مفعَّل، ولا تُفعَّل الكلمات المفتاحية مؤقتًا.",
     "pt-PT": "The toggle above is off; the prompt is not currently in effect.",
@@ -4228,7 +4228,7 @@
     "$id": 20698
   },
   "作为最小单元识别的目录将被整体作为一个文件处理，避免产生过多碎片分析结果。": {
-    "en-US": "作为最小单元识别的目录将被整体作为一个文件处理，避免产生过多碎片分析结果。",
+    "en-US": "The directory identified as the smallest unit will be processed as a whole file to avoid excessive fragmentation analysis results.",
     "es-ES": "El directorio identificado como unidad mínima se tratará en su totalidad como un archivo, para evitar generar demasiados resultados de análisis fragmentados.",
     "ar-EG": "سيتم التعامل مع أي مجلد يُستخدَم كتعرف للوحدة الدنيا كملف واحد كامل، وذلك لتجنب توليد نتائج تحليل مفرقة بشكل مفرط.",
     "pt-PT": "Directories identified as minimum units are processed as a whole single file to avoid generating an excessive number of fragmented analysis results.",
