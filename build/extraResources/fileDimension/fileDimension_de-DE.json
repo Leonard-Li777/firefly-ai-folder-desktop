@@ -2347,20 +2347,16 @@
     },
     {
       "id": 123,
-      "name": "Inhaltsskala",
+      "name": "Altersfreigabe für Pornografie",
       "level": 3,
       "tags": [
         "Softporno",
         "Halbes Fleisch",
         "Reines Fleisch",
         "Spezielle XP",
-        "Große Neugier",
-        "PG-13",
-        "R-15",
-        "R-18",
-        "R-18G"
+        "Große Neugier"
       ],
-      "description": "Alterseinstufung des Dateiinhalts",
+      "description": "Feinabstufung der Explizitheit und Darstellungsform von Pornografieinhalten",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2658,7 +2654,6 @@
       "name": "Sensible Inhalte",
       "level": 2,
       "tags": [
-        "Alle Altersgruppen",
         "Gewealth und Terrorismus",
         "Politische Angelegenheiten",
         "Verstöße",
@@ -3961,6 +3956,39 @@
           ]
         }
       ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 162,
+      "name": "Inhaltsbewertung",
+      "level": 1,
+      "tags": [
+        "Alle Altersgruppen",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "Alterseinstufung des Dateiinhalts",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive",
+        "document"
+      ],
+      "contextHints": [
+        "Altersgerechte Einstufung",
+        "Inhaltsbewertung",
+        "Zielauditorium nach Alter prüfen"
+      ],
+      "triggerConditions": [],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

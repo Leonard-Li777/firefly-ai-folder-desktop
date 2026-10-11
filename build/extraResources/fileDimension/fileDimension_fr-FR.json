@@ -2347,20 +2347,16 @@
     },
     {
       "id": 123,
-      "name": "Échelle du contenu",
+      "name": "Classification de la pornographie",
       "level": 3,
       "tags": [
         "Porno doux",
         "Moitié de viande",
         "Viande pure",
         "XP spécial",
-        "Forte curiosité",
-        "PG-13",
-        "R-15",
-        "R-18",
-        "R-18G"
+        "Forte curiosité"
       ],
-      "description": "Évaluation de l'adéquation à l'âge du contenu du fichier",
+      "description": "Subdivision du degré et de la forme de la vulgarité des contenus pornographiques",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2658,7 +2654,6 @@
       "name": "Contenu sensible",
       "level": 2,
       "tags": [
-        "Tous les âges",
         "Violence et terrorisme",
         "Liées à la politique",
         "Infraction",
@@ -3961,6 +3956,39 @@
           ]
         }
       ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 162,
+      "name": "Classement de contenus",
+      "level": 1,
+      "tags": [
+        "Tous les âges",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "Évaluation de l'adéquation à l'âge du contenu du fichier",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive",
+        "document"
+      ],
+      "contextHints": [
+        "Classement par ��ge approprié",
+        "Classement de contenus",
+        "Vérification de l'âge du public cible"
+      ],
+      "triggerConditions": [],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

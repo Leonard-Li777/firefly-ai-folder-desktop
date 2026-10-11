@@ -2347,20 +2347,16 @@
     },
     {
       "id": 123,
-      "name": "콘텐츠 규모",
+      "name": "포르노 등급",
       "level": 3,
       "tags": [
         "소프트 포르노",
         "고기 반",
         "순수한 고기",
         "특별 XP",
-        "심한 호기심",
-        "PG-13",
-        "R-15",
-        "R-18",
-        "R-18G"
+        "심한 호기심"
       ],
-      "description": "파일 콘텐츠의 연령 적합성 등급",
+      "description": "포르노 콘텐츠의 노골성 및 표현 방식 세분화",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2658,7 +2654,6 @@
       "name": "민감한 내용",
       "level": 2,
       "tags": [
-        "모든 연령대",
         "폭력과 혐오",
         "정치 관련",
         "규정 위반",
@@ -3961,6 +3956,39 @@
           ]
         }
       ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 162,
+      "name": "콘텐츠 등급",
+      "level": 1,
+      "tags": [
+        "모든 연령대",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "파일 콘텐츠의 연령 적합성 등급",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive",
+        "document"
+      ],
+      "contextHints": [
+        "연령별 적정성 등급",
+        "콘텐츠 등급",
+        "수신 연령 심사"
+      ],
+      "triggerConditions": [],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

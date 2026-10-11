@@ -2347,20 +2347,16 @@
     },
     {
       "id": 123,
-      "name": "コンテンツの規模",
+      "name": "ポルノ・レーティング",
       "level": 3,
       "tags": [
         "ソフトポルノ",
         "ハーフ・エロ",
         "純粋な肉",
         "特別なXP",
-        "強い好奇心",
-        "PG-13",
-        "R-15",
-        "R-18",
-        "R-18G"
+        "強い好奇心"
       ],
-      "description": "ファイルコンテンツの年齢相応の評価",
+      "description": "ポルノ内容の露骨な程度および表現形式の細分化",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2658,7 +2654,6 @@
       "name": "機密コンテンツ",
       "level": 2,
       "tags": [
-        "すべての年齢",
         "暴力的なテロ",
         "政治的関与",
         "違反",
@@ -3961,6 +3956,39 @@
           ]
         }
       ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 162,
+      "name": "コンテンツレーティング",
+      "level": 1,
+      "tags": [
+        "すべての年齢",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "ファイルコンテンツの年齢相応の評価",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive",
+        "document"
+      ],
+      "contextHints": [
+        "年齢適性レーティング",
+        "コンテンツレーティング",
+        "視聴対象年齢審査"
+      ],
+      "triggerConditions": [],
       "metadata": {
         "flag": {
           "isRequiresAI": false,

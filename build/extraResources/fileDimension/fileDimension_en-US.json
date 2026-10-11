@@ -2347,20 +2347,16 @@
     },
     {
       "id": 123,
-      "name": "Content Scale",
+      "name": "Pornography Rating",
       "level": 3,
       "tags": [
         "Soft Porn",
         "Half Meat",
         "Pure Meat",
         "Special XP",
-        "Extreme Grotesque",
-        "PG-13",
-        "R-15",
-        "R-18",
-        "R-18G"
+        "Extreme Grotesque"
       ],
-      "description": "Age appropriateness rating of file content",
+      "description": "Detailed breakdown of explicitness and presentation of pornographic content",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -2658,7 +2654,6 @@
       "name": "Sensitive Content",
       "level": 2,
       "tags": [
-        "All Ages",
         "Violence & Terrorism",
         "Political Issues",
         "Violation",
@@ -3961,6 +3956,39 @@
           ]
         }
       ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 162,
+      "name": "Content Rating",
+      "level": 1,
+      "tags": [
+        "All Ages",
+        "PG-13",
+        "R-15",
+        "R-18",
+        "R-18G"
+      ],
+      "description": "Age appropriateness rating of file content",
+      "applicableFileTypes": [
+        "ebook",
+        "image",
+        "video",
+        "audio",
+        "archive",
+        "document"
+      ],
+      "contextHints": [
+        "Age-appropriateness Rating",
+        "Content Rating",
+        "Audience Age Review"
+      ],
+      "triggerConditions": [],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
