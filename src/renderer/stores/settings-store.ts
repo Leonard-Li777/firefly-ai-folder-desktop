@@ -73,9 +73,7 @@ interface ISettingsState {
   loadIgnoreRules: () => Promise<void>
   saveIgnoreRules: () => Promise<void>
   updateModelList: () => Promise<void>
-  isMigrating: boolean
-  migrationProgress: string
-  setMigrating: (isMigrating: boolean, progress?: string) => void
+  // PRD-0044（S5）：isMigrating / migrationProgress / setMigrating 随「内置模型迁移链」清退删除
   deleteWorkspaceDirectory: (workspaceId: number) => Promise<void>
   resetWorkspaceDirectory: (workspaceId: number) => Promise<void>
   validateSettings: () => ISettingsValidationResult
@@ -165,12 +163,6 @@ export const useSettingsStore = create<ISettingsState>()(
       originalConfig: null,
       ignoreRules: [],
       validationResult: null,
-      isMigrating: false,
-      migrationProgress: '',
-
-      setMigrating: (isMigrating, progress = '') => {
-        set({ isMigrating, migrationProgress: progress })
-      },
 
       openSettings: async (category = SettingsCategory.MONITORING) => {
         // 兼容旧 ANALYSIS 分类跳转，自动重定向到内容萃取设置

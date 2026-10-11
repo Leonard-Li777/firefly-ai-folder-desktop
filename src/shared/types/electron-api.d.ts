@@ -496,7 +496,7 @@ declare global {
       onAnalysisQueueUpdated: (callback: (payload: AnalysisQueue) => void) => () => void
       onDirectoryContextUpdated: (callback: (payload: { directoryPath: string; contextAnalysis: any }) => void) => () => void
       onModelStatusChanged: (callback: (payload: ModelStatusChange) => void) => () => void
-      onModelNotDownloaded: (callback: (payload: { modelId?: string }) => void) => () => void
+      // PRD-0044（S5）：onModelNotDownloaded 声明随「内置模型下载链」清退删除
 
       // PRD-0044（S5）：模型管理 IPC 声明（listModels / listModelsFast /
       // recommendModelsByHardware / isModelDownloaded / getModelPath / startModelDownload /
@@ -508,7 +508,7 @@ declare global {
         mrlDimension: 256 | 512 | 768
         videoFrameIntervalSeconds: number
       }>
-      onModelMigrationProgress: (callback: (message: string) => void) => () => void
+      // PRD-0044（S5）：onModelMigrationProgress 声明随「内置模型迁移链」清退删除
 
       // 模型下载事件（PRD-0044 S5：onModelDownloadProgress/Complete/Error 已清退）
       onSSLCertificateError: (callback: (event: Event) => void) => () => void

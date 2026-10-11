@@ -583,9 +583,10 @@ export async function initializeFullServices(): Promise<void> {
     }
 
     // PRD-0044：MODEL_STORAGE_PATH 配置键删除；内置元数据底座迁移按默认底座目录（userData/models）静默执行
+    // （迁移进度 IPC 已随「内置模型迁移链」清退，服务仅做文件迁移并写日志）
     const modelStoragePath = unifiedModelManager.getModelBaseDir()
     try {
-      await modelMigrationService.migrateModels(modelStoragePath, true)
+      await modelMigrationService.migrateModels(modelStoragePath)
     } catch (err) {
       logger.error(LogCategory.MAIN, '内置模型后台静默迁移失败:', err)
     }
@@ -813,15 +814,8 @@ export async function initializeFullServices(): Promise<void> {
         })
       })
 
-      service.onModelNotDownloaded(modelId => {
-        logger.info(LogCategory.MAIN, '检测到模型未下载，通知前端跳转到模型选择页面', { modelId })
-        const windows = BrowserWindow.getAllWindows()
-        windows.forEach(win => {
-          if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
-            win.webContents.send('model-not-downloaded', { modelId })
-          }
-        })
-      })
+      // PRD-0044（S5）：模型未下载通知链（onModelNotDownloaded → model-not-downloaded IPC）
+      // 随「内置模型下载链」清退删除：渲染侧强制跳转监听器已下线，模型存在性归萤核AI引擎自管
     }
 
     if (globalLlamaIndexService) {

@@ -156,31 +156,21 @@ if (typeof window !== 'undefined' && window.electronAPI) {
 
 /**
  * 欢迎向导状态接口
+ *
+ * PRD-0044：向导已收敛为「语言选择」单步，原模型模式选择与多步跳转能力
+ * （modelMode / setModelMode / nextStep / previousStep / goToStep / goToModelSelection）
+ * 随「模型目录合法检测」步骤一并清退，此处仅保留完成设置与首次运行标记。
  */
 interface IWelcomeState {
-  /** 当前步骤 */
-  currentStep: number
   /** 是否为首次运行 */
   isFirstRun: boolean
   /** 是否正在加载 */
   loading: boolean
-  /** 模型模式: 本地或云端 */
-  modelMode: 'local' | 'cloud'
 
-  /** 下一步 */
-  nextStep: () => void
-  /** 上一步 */
-  previousStep: () => void
-  /** 跳转到指定步骤 */
-  goToStep: (step: number) => void
-  /** 设置模型模式 */
-  setModelMode: (mode: 'local' | 'cloud') => void
   /** 完成设置 */
   completeSetup: () => void
   /** 设置首次运行状态 */
   setIsFirstRun: (isFirstRun: boolean) => void
-  /** 直接进入模型选择步骤（跳过语言选择） */
-  goToModelSelection: () => void
   /** 重置向导 */
   reset: () => void
 }
@@ -188,60 +178,9 @@ interface IWelcomeState {
 /**
  * 欢迎向导状态管理store
  */
-export const useWelcomeStore = create<IWelcomeState>()((set, get) => ({
-  currentStep: 1,
+export const useWelcomeStore = create<IWelcomeState>()(set => ({
   isFirstRun: false,
   loading: false,
-  modelMode: 'local',
-
-  nextStep: () => {
-    const { currentStep, modelMode } = get()
-    console.warn(`[WelcomeStore] nextStep 被调用, 当前步骤: ${currentStep}, 模式: ${modelMode}`)
-    console.trace()
-
-    // 如果是云端模式，在第二步（配置完成）后直接跳转到最后一步（第4步）
-    if (modelMode === 'cloud' && currentStep === 2) {
-      set({ currentStep: 4 })
-      return
-    }
-
-    if (currentStep < 4) {
-      set({ currentStep: currentStep + 1 })
-    }
-  },
-
-  previousStep: () => {
-    const { currentStep, modelMode } = get()
-    console.warn(`[WelcomeStore] previousStep 被调用, 当前步骤: ${currentStep}, 模式: ${modelMode}`)
-    console.trace()
-
-    // 如果是云端模式，从最后一步返回时跳转到第二步
-    if (modelMode === 'cloud' && currentStep === 4) {
-      set({ currentStep: 2 })
-      return
-    }
-
-    if (currentStep > 1) {
-      set({ currentStep: currentStep - 1 })
-    }
-  },
-
-  goToStep: (step: number) => {
-    console.warn(
-      `[WelcomeStore] goToStep 被调用, 目标步骤: ${step}, 当前步骤: ${get().currentStep}`
-    )
-    console.trace()
-    if (step >= 1 && step <= 4) {
-      set({ currentStep: step })
-    }
-  },
-
-  setModelMode: (mode: 'local' | 'cloud') => {
-    console.warn(
-      `[WelcomeStore] setModelMode 被调用, 目标模式: ${mode}, 当前模式: ${get().modelMode}`
-    )
-    set({ modelMode: mode })
-  },
 
   completeSetup: async () => {
     try {
@@ -258,10 +197,7 @@ export const useWelcomeStore = create<IWelcomeState>()((set, get) => ({
         })
       }
 
-      set({
-        isFirstRun: false
-        // 不在这里重置 currentStep，由 App.tsx 判定阶段并跳转
-      })
+      set({ isFirstRun: false })
 
       console.log('[WelcomeStore] 设置完成，标记为非首次运行')
     } catch (error) {
@@ -276,20 +212,11 @@ export const useWelcomeStore = create<IWelcomeState>()((set, get) => ({
     set({ isFirstRun })
   },
 
-  goToModelSelection: () => {
-    console.warn(`[WelcomeStore] goToModelSelection 被调用, 当前步骤: ${get().currentStep}`)
-    console.trace()
-    set({ currentStep: 2 })
-  },
-
   reset: () => {
     console.warn('[WelcomeStore] reset 被调用')
-    console.trace()
     set({
-      currentStep: 1,
       isFirstRun: false,
-      loading: false,
-      modelMode: 'local'
+      loading: false
     })
   }
 }))

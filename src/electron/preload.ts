@@ -313,15 +313,8 @@ const electronAPI = {
     return () => ipcRenderer.removeListener('ai-service:error', handler)
   },
 
-  onModelNotDownloaded: (callback: (payload: { modelId?: string }) => void) => {
-    const handler = (_event: any, payload: any) => {
-      callback(payload)
-    }
-    ipcRenderer.on('model-not-downloaded', handler)
-    return () => {
-      ipcRenderer.removeListener('model-not-downloaded', handler)
-    }
-  },
+  // PRD-0044（S5）：onModelNotDownloaded 随「内置模型下载链」清退删除
+  // （主进程侧 model-not-downloaded 事件已无发送方，模型存在性归萤核AI引擎自管）
 
   on: (channel: string, callback: (...args: any[]) => void) => {
     const handler = (_event: any, ...args: any[]) => callback(...args)
@@ -339,11 +332,8 @@ const electronAPI = {
   // migrateBuiltinModels / migrateFromOldPath 随模型管理与本地下载链清退删除
   getLlamaServerPort: (): Promise<number | null> => ipcRenderer.invoke('llama-server-port'),
 
-  onModelMigrationProgress: (callback: (message: string) => void) => {
-    const handler = (_event: any, message: string) => callback(message)
-    ipcRenderer.on('llama/model-migration-progress', handler)
-    return () => ipcRenderer.removeListener('llama/model-migration-progress', handler)
-  },
+  // PRD-0044（S5）：onModelMigrationProgress 随「内置模型迁移链」清退删除
+  // （llama/model-migration-progress 已无发送方）
 
   // PRD-0044（S5）：模型下载事件（onModelDownloadProgress / Complete / Error）
   // 随桌面端下载链清退删除，下载进度由萤核AI引擎自管
@@ -381,15 +371,9 @@ const electronAPI = {
     return () => ipcRenderer.removeListener('system:notification', handler)
   },
 
-  onInitialSetupStatus: (callback: (data: { status: string; message?: string }) => void) => {
-    const handler = (_event: any, data: { status: string; message?: string }) => callback(data)
-    ipcRenderer.on('system:initial-setup-status', handler)
-    return () => ipcRenderer.removeListener('system:initial-setup-status', handler)
-  },
-
-  setupOverlayReady: () => {
-    ipcRenderer.send('system:setup-overlay-ready')
-  },
+  // PRD-0044：安装遮罩链路（onInitialSetupStatus / setupOverlayReady 与
+  // system:initial-setup-status、system:setup-overlay-ready 两条 IPC）随
+  // 渲染进程 InitialSetupOverlay 一并清退删除
 
   // 授权相关
   license: {

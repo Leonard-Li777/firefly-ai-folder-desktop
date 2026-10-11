@@ -1,3 +1,8 @@
+// 【必须保持为第一条 import】在 logging-service / config-orchestrator 等模块「模块求值阶段」
+// 捕获 app.getPath('userData') 之前完成 userData 隔离，否则配置与日志会写入 Electron 默认
+// 共享裸目录，导致 clear:user-data 后语言确认状态残留、启动不再进入欢迎向导。
+// 详见 ./worktree-bootstrap.ts 的说明。
+import { worktreeInfo } from './worktree-bootstrap'
 import * as fs from 'node:fs'
 import fixPath from 'fix-path'
 
@@ -22,18 +27,18 @@ if (process.platform === 'darwin') {
 }
 
 // 后续逻辑...
-import { app, BrowserWindow, ipcMain, net, dialog, shell } from 'electron'
+import { app, BrowserWindow, net, dialog, shell } from 'electron'
 import * as path from 'node:path'
 import { logger, LogCategory, ErrorNormalizer, APP_PORTS, getWorktreeDebugPortBase } from '@firefly/shared'
 import { loggingService } from '../runtime-services/system/logging-service'
-import { initWorktreeEnvironment, touchActiveWorktree } from './worktree-env'
+import { touchActiveWorktree } from './worktree-env'
 import { processReaper } from './process-reaper'
 import { iconExtractorClient } from './icon-extractor-client'
 import { createWindow, getMainWindow } from './window'
 import { deepLinkManager } from './deep-link'
 
-// 1. 初始化 Worktree 实例环境与 userData 隔离
-const worktreeInfo = initWorktreeEnvironment()
+// 1. Worktree 实例环境与 userData 隔离已在 worktree-bootstrap 模块求值阶段完成
+// （见文件顶部第一条 import 的说明），此处仅输出启动实例信息。
 loggingService.info(LogCategory.STARTUP, `[Worktree] 启动实例: ${worktreeInfo.appName}, 数据目录: ${worktreeInfo.userDataDir}`)
 
 // 2. 启动前清理历史遗留的僵尸子进程
@@ -359,7 +364,6 @@ import {
 } from './initialization'
 import { trayService } from '../runtime-services/system/tray-service'
 import { setupIPCHandlers } from './ipc-handlers'
-import { t } from '@app/languages'
 import {
   earlyInitializationPromise,
   setEarlyInitializationPromise,
@@ -675,18 +679,11 @@ app.on('ready', async () => {
     `[App] 启动状态检测: isFirstRun=${isFirstRun}, isUpgrade=${isUpgrade} (Stored: ${storedVersion}, Current: ${currentVersion})`
   )
 
-  // 2. 如果需要初始安装/升级，则优先创建窗口并显示遮罩
-  let setupReadyPromise: Promise<void> | null = null
+  // 2. 如果需要初始安装/升级，则提前创建窗口
+  // PRD-0044：渲染进程的 InitialSetupOverlay 安装遮罩已清退，主进程不再等待
+  // system:setup-overlay-ready 就绪信号（该信号已无发送方），避免首启无谓等待 5s 超时
   if (isInitialSetupNeeded) {
-    logger.info(LogCategory.MAIN, '[App] 检测到首次运行或版本升级，提前创建窗口以显示安装遮罩')
-    setupReadyPromise = new Promise(resolve => {
-      ipcMain.once('system:setup-overlay-ready', () => {
-        logger.info(LogCategory.MAIN, '[App] 渲染进程安装遮罩已就绪')
-        resolve()
-      })
-      // 设置一个超时备份，防止渲染进程加载失败导致卡死
-      setTimeout(resolve, 5000)
-    })
+    logger.info(LogCategory.MAIN, '[App] 检测到首次运行或版本升级，提前创建窗口')
     createWindow()
   }
 
@@ -743,34 +740,17 @@ app.on('ready', async () => {
     logger.info(LogCategory.MAIN, '[App] 应用启动，进入配置阶段...')
 
     // 1. 初始化最小服务（所有环境通用）
-    // 如果是初始安装，我们会通过 IPC 发送进度
-    const notifyProgress = (status: string, message?: string) => {
-      if (isInitialSetupNeeded) {
-        BrowserWindow.getAllWindows().forEach(win => {
-          if (!win.isDestroyed()) {
-            win.webContents.send('system:initial-setup-status', { status, message })
-          }
-        })
-      }
-    }
-
-    // 等待渲染进程就绪后再发送第一个进度
-    if (setupReadyPromise) {
-      await setupReadyPromise
-    }
-
-    notifyProgress(
-      'preparing',
+    // PRD-0044：安装进度 IPC（system:initial-setup-status）随 InitialSetupOverlay 一并清退，
+    // 首启/升级进度改由主进程日志记录（渲染进程已无监听方）
+    logger.info(
+      LogCategory.MAIN,
       isFirstRun
-        ? t('正在准备首次启动安装...')
-        : t('正在从版本 {oldVersion} 升级到 {newVersion}...', {
-            oldVersion: storedVersion,
-            newVersion: currentVersion
-          })
+        ? '[App] 正在准备首次启动安装...'
+        : `[App] 正在从版本 ${storedVersion} 升级到 ${currentVersion}...`
     )
 
     await initializeMinimalServices({
-      onProgress: msg => notifyProgress('installing_engine', msg)
+      onProgress: msg => logger.info(LogCategory.MAIN, `[App] 安装进度: ${msg}`)
     })
 
     if (isInitialSetupNeeded) {
@@ -778,7 +758,6 @@ app.on('ready', async () => {
         VERSION: currentVersion,
         MIGRATION_VERSION: currentVersion
       })
-      notifyProgress('completed')
       logger.info(LogCategory.MAIN, '[App] 初始安装/升级任务已完成')
     }
 

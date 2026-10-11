@@ -28,15 +28,12 @@ import { WelcomeWizard } from './components/welcome/WelcomeWizard'
 // PRD-0044（S5）：InitialSetupOverlay / GpuDriverOverlay / ModelDownloadProgress / use-model-download
 // 等模型下载与本地切换残留 UI 已随「模型激活归萤核AI引擎独占」整体清退
 import { LicenseGateway } from './components/license/LicenseGateway'
-import { Loader2 } from 'lucide-react'
-import { Card } from './components/ui/card'
 import { t, i18nScope } from '@app/languages'
 import { useAIModelStore } from './stores/app-store'
 import { useModelStore } from './stores/model-store'
 import { useAIServiceInitialization } from './stores/ai-service-store'
 import { useSettingsStore } from './stores/settings-store'
 import { useTheme } from './components/ui/theme-provider'
-import { useConfigStore, useWelcomeStore } from './stores/config-store'
 import { usePreviewOverlayStore } from './stores/preview-overlay-store'
 import { useInvitation } from './hooks/useInvitation'
 import { useAnalyzedDirectoryStore } from './stores/analyzed-directory-store'
@@ -225,116 +222,18 @@ const App: React.FC = () => {
     canOffline?: boolean
   } | null>(null)
   const forceConfigFlagConsumedRef = useRef(false)
-  const isWelcomeCompletedRef = useRef(false)
   // PRD-0044（S5 提前摘除）：模型下载完成"立即激活"确认弹窗链删除，模型激活归萤核AI引擎独占
 
   // AI服务状态管理
   const { initializeAIService } = useAIServiceInitialization()
   const { isOpen: isErrorDialogOpen, closeDialog: closeErrorDialog } = useAIServiceErrorDialog()
-  const { isMigrating, setMigrating, migrationProgress, updateConfigValue } = useSettingsStore()
+  const { updateConfigValue } = useSettingsStore()
   const { filePath: previewFilePath } = usePreviewOverlayStore()
 
-  // 监听模型迁移进度
-  useEffect(() => {
-    if (!window.electronAPI?.onModelMigrationProgress) return
-
-    const unsubscribe = window.electronAPI.onModelMigrationProgress((message: string) => {
-      logger.info(LogCategory.RENDERER, '模型迁移进度:', message)
-
-      if (message === 'preparing') {
-        setMigrating(true, t('正在准备迁移模型...'))
-      } else if (
-        message === 'migrating-builtin-dir' ||
-        message.startsWith('migrating-builtin-file:')
-      ) {
-        setMigrating(true, t('正在迁移系统内置模型...'))
-      } else if (message.startsWith('migrating-selected-model:')) {
-        setMigrating(true, t('正在优先迁移当前选中的模型...'))
-      } else if (message.startsWith('builtin-completed:')) {
-        const countStr = message.split(':')[1] || '0'
-        const count = parseInt(countStr)
-        // 内置模型迁移完成，可以解除蒙版
-        setMigrating(false)
-        if (count > 0) {
-          toast.success(
-            t(
-              '核心模型迁移成功！还有 {count} 个模型将在后台继续迁移，你可以随时点击“刷新模型列表”查看状态。',
-              { count }
-            ),
-            10000
-          )
-        } else {
-          toast.success(t('核心模型迁移成功！'), 3000)
-        }
-      } else if (message === 'migration-finished') {
-        setMigrating(false)
-        toast.success(t('所有模型迁移任务已完成'))
-        window.dispatchEvent(new CustomEvent('app:model-migration-finished'))
-      } else if (message === 'migration-error') {
-        setMigrating(false)
-        toast.error(t('模型迁移过程中发生错误，请检查磁盘空间或权限'))
-      } else if (message.startsWith('background-migration:')) {
-        const remaining = message.split(':')[1]
-        logger.info(LogCategory.RENDERER, `后台正在迁移剩余模型，还剩 ${remaining} 个`)
-      } else if (message.startsWith('background-migration-success:')) {
-        const parts = message.split(':')
-        const count = parts[1]
-        const remaining = parts[2]
-        toast.info(
-          t('模型迁移进度：已完成 {count} 个，剩余 {remaining} 个', { count, remaining }),
-          3000
-        )
-      }
-    })
-
-    return () => {
-      if (unsubscribe) unsubscribe()
-    }
-  }, [setMigrating])
-
-  // 模型迁移蒙版超时兜底
-  // 兜底场景：理论上 builtin-completed / migration-finished / migration-error 三个事件之一必会到达，
-  // 但在极端情况下（如主进程文件操作被 Windows 文件锁永久挂起、IPC 事件丢失等），
-  // 蒙版可能永远不会消失。这里在 isMigrating 变为 true 时启动一个最长超时定时器，
-  // 超时后强制 setMigrating(false) 并提示用户，以避免界面永久卡死。
-  // 阈值选择 10 分钟：覆盖大模型文件（10GB+）在普通机械硬盘上跨盘复制的极端情况。
-  useEffect(() => {
-    if (!isMigrating) return
-
-    const MIGRATION_TIMEOUT_MS = 10 * 60 * 1000
-    const startedAt = Date.now()
-
-    logger.info(
-      LogCategory.RENDERER,
-      `[MigrationMask] 启动 ${MIGRATION_TIMEOUT_MS / 1000}s 超时兜底定时器`
-    )
-
-    const timeoutId = window.setTimeout(() => {
-      const stillMigrating = useSettingsStore.getState().isMigrating
-      if (!stillMigrating) return
-
-      const elapsedSec = Math.floor((Date.now() - startedAt) / 1000)
-      logger.warn(
-        LogCategory.RENDERER,
-        `[MigrationMask] 已等待 ${elapsedSec}s 未收到迁移结束事件，强制关闭蒙版`
-      )
-
-      setMigrating(false)
-      toast.error(
-        t(
-          '模型迁移耗时过长（已等待 {seconds} 秒），已自动关闭蒙版。请前往日志查看详情，或检查目标目录文件是否完整。',
-          {
-            seconds: elapsedSec
-          }
-        ),
-        10000
-      )
-    }, MIGRATION_TIMEOUT_MS)
-
-    return () => {
-      window.clearTimeout(timeoutId)
-    }
-  }, [isMigrating, setMigrating])
+  // PRD-0044（S5）：模型迁移进度监听与迁移蒙版超时兜底随「内置模型迁移链」整体清退删除。
+  // 依据：V4 已取消内置模型，模型下载/迁移完全归萤核AI引擎（engine 项目）自管；
+  // 且主进程迁移服务在启动路径恒以 silent=true 运行，`llama/model-migration-progress`
+  // 事件在真实运行中永不发送，渲染侧监听器与蒙版均为死链路。
 
   // PRD-0044（S5 提前摘除）：model-download-complete → 激活确认弹窗监听随激活链删除
   // （事件发送方已随 PRD-0042 llama 清退移除，监听器一并下线）
@@ -521,117 +420,10 @@ const App: React.FC = () => {
     initTheme()
   }, [setTheme])
 
-  // 监听模型未下载事件
-  useEffect(() => {
-    if (!window.electronAPI?.onModelNotDownloaded) {
-      logger.warn(LogCategory.RENDERER, 'onModelNotDownloaded API 不可用')
-      return
-    }
-
-    // 记录最后一次迁移完成的时间，用于解决 IPC 事件滞后导致的竞态条件
-    // 使用 ref 避免在闭包中捕获旧值
-    const lastMigrationEndTimeRef = { current: 0 }
-    const MIGRATION_COOLDOWN = 3000 // 3秒冷却时间
-
-    logger.info(LogCategory.RENDERER, '设置模型未下载事件监听器')
-    const unsubscribe = window.electronAPI.onModelNotDownloaded((payload: { modelId?: string }) => {
-      const state = useSettingsStore.getState()
-
-      // 0. 如果在当前生命周期内已经完成了欢迎向导，直接忽略可能滞后的未下载事件，防止强制重定向
-      if (isWelcomeCompletedRef.current) {
-        logger.warn(
-          LogCategory.RENDERER,
-          '欢迎向导已在当前生命周期内完成，忽略可能滞后的模型未下载事件，防止强制重定向',
-          payload
-        )
-        return
-      }
-
-      // 1. 如果当前正在迁移中，忽略此事件以防止跳转
-      if (state.isMigrating) {
-        logger.info(LogCategory.RENDERER, '正在迁移模型中，忽略模型未下载事件')
-        return
-      }
-
-      // 2. 如果刚结束迁移（在冷却时间内），也忽略此事件
-      // 这是为了解决：主进程在迁移中途或刚结束时触发了 reloadConfig 并由于文件尚未完全就绪发送了事件，
-      // 而该 IPC 事件到达渲染进程时，蒙版可能已经消失。
-      const now = Date.now()
-      if (now - lastMigrationEndTimeRef.current < MIGRATION_COOLDOWN) {
-        logger.info(LogCategory.RENDERER, '处于迁移冷却期内，忽略可能滞后的模型未下载事件')
-        return
-      }
-
-      // 关键修正：如果当前已经是云端模式，忽略本地模型的未下载事件
-      // 否则由于 LlamaServer 还在后台尝试启动，会错误触发跳转
-      const currentMode = state.getConfigValue<string>('AI_SERVICE_MODE')
-      if (currentMode === 'cloud') {
-        logger.info(LogCategory.RENDERER, '当前处于云端模式，忽略本地模型未下载事件', payload)
-        return
-      }
-
-      // 关键修正：如果正在进行下载或已下载完成（步骤5或6），忽略未下载事件
-      // 避免下载过程中主进程后台检测导致的竞态重定向
-      const welcomeStore = useWelcomeStore.getState()
-      if (startupPhase === 'config' && welcomeStore.currentStep === 4) {
-        logger.info(
-          LogCategory.RENDERER,
-          `当前处于欢迎向导步骤 ${welcomeStore.currentStep}，忽略未下载事件以避免重定向循环`
-        )
-        return
-      }
-
-      logger.warn(LogCategory.RENDERER, '★★★ 收到模型未下载事件，跳转到模型选择页面 ★★★', payload)
-      logger.warn(LogCategory.RENDERER, '当前启动阶段:', startupPhase)
-
-      // 核心修复：如果不是首次运行且已经进入应用（ready 或 initializing 阶段），不进行强制跳转到欢迎向导
-      // 而是显示提示信息，让用户在设置中处理。这能有效避免切换模型失败时被意外“踢回”欢迎向导的问题。
-      const isFirstRun = state.getConfigValue<boolean>('IS_FIRST_RUN')
-      if (!isFirstRun && startupPhase !== 'config') {
-        logger.warn(LogCategory.RENDERER, '模型未下载/加载失败，但由于不是首次运行，不进行强制跳转')
-        // 发送一个全局错误通知，引导用户去设置页面
-        toast.warning(
-          t('选中的模型文件不存在或加载失败，请在设置中重新配置。'),
-          10000,
-          'model-load-error',
-          {
-            label: t('去设置'),
-            // PRD-0044：模型管理 tab 已合并，跳链统一指向「高级AI引擎配置」
-            onClick: () => useSettingsStore.getState().openSettings(SettingsCategory.AI_ENGINE_CONFIG)
-          }
-        )
-        return
-      }
-
-      // 强制跳转到配置阶段，不管当前处于什么状态
-      if (startupPhase !== 'config') {
-        logger.warn(LogCategory.RENDERER, '强制跳转到配置阶段')
-        useWelcomeStore.getState().setModelMode('local')
-        useWelcomeStore.getState().goToStep(1)
-        setStartupPhase('config')
-        logger.warn(LogCategory.RENDERER, '已执行强制跳转，新的启动阶段: config')
-      } else {
-        logger.warn(LogCategory.RENDERER, '当前已在配置阶段，忽略未下载事件以保持当前步骤')
-      }
-    })
-
-    // 监听迁移状态变更，更新冷却时间
-    let prevIsMigrating = useSettingsStore.getState().isMigrating
-    const unsubMigrate = useSettingsStore.subscribe(state => {
-      const isMigrating = state.isMigrating
-      if (prevIsMigrating === true && isMigrating === false) {
-        lastMigrationEndTimeRef.current = Date.now()
-        logger.info(LogCategory.RENDERER, '模型迁移结束，进入事件冷却期')
-      }
-      prevIsMigrating = isMigrating
-    })
-
-    return () => {
-      logger.info(LogCategory.RENDERER, '清理模型未下载事件监听器')
-      if (unsubscribe) unsubscribe()
-      if (unsubMigrate) unsubMigrate()
-    }
-  }, [startupPhase])
+  // PRD-0044（S5）：模型未下载强制跳转链（含迁移冷却竞态处理）随「内置模型下载链」整体清退删除。
+  // 依据：V4 已取消内置模型，模型存在性与下载完全归萤核AI引擎自管；
+  // 且主进程侧 `modelNotDownloadedListeners` 从未被遍历、`notifyModelNotDownloaded` 从未被调用，
+  // `model-not-downloaded` 事件在真实运行中永不发送，本监听器及其强制跳转逻辑为死链路。
 
   // 监听系统通知 (来自主进程)
   useEffect(() => {
@@ -888,7 +680,6 @@ const App: React.FC = () => {
         <div className="h-screen w-screen relative">
           <WelcomeWizard
             onComplete={() => {
-              isWelcomeCompletedRef.current = true
               localStorage.setItem('languageConfirmed', 'true')
               // 立即进入初始化阶段，隐藏欢迎向导；后台异步执行授权/模型检查
               setStartupPhase('initializing')
@@ -1024,35 +815,7 @@ const App: React.FC = () => {
 
         {/* PRD-0044（S5 提前摘除）：模型激活确认对话框随激活链删除 */}
 
-        {/* 模型迁移蒙版 -仅在非配置阶段显示，欢迎向导有自己的内部蒙版处理 */}
-        {isMigrating && (startupPhase as string) !== 'config' && (
-          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-md">
-            <Card className="p-8 max-w-md w-full border-2 border-primary/20 shadow-2xl rounded-3xl bg-card animate-in fade-in zoom-in duration-300">
-              <div className="flex flex-col items-center text-center space-y-6">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse"></div>
-                  <div className="relative bg-primary/10 p-4 rounded-full">
-                    <Loader2 className="h-10 w-10 text-primary animate-spin" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-xl font-black tracking-tight text-foreground">
-                    {t('正在迁移模型')}
-                  </h3>
-                  <p className="text-sm text-muted-foreground font-medium px-4">
-                    {migrationProgress || t('正在准备迁移，请稍候...')}
-                  </p>
-                </div>
-                <div className="w-full bg-muted/30 rounded-full h-1.5 overflow-hidden">
-                  <div className="bg-primary h-full w-1/3 animate-[loading_2s_ease-in-out_infinite] rounded-full"></div>
-                </div>
-                <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest">
-                  {t('请勿关闭应用')}
-                </p>
-              </div>
-            </Card>
-          </div>
-        )}
+        {/* PRD-0044（S5）：模型迁移蒙版随「内置模型迁移链」清退删除（见文件上方说明） */}
       </div>
       <PreviewOverlay />
     </ErrorBoundary>
