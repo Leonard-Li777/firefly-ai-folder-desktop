@@ -174,7 +174,22 @@
         "那个",
         "那些",
         "那里",
-        "都"
+        "都",
+        "以后",
+        "以前",
+        "后来",
+        "当时",
+        "最近",
+        "平时",
+        "往往",
+        "经常",
+        "当然",
+        "确实",
+        "其实",
+        "一定",
+        "未必",
+        "还好",
+        "都行"
       ],
       "en": [
         "a",
@@ -458,7 +473,12 @@
       "dimension_source_reject": "R-G2-07",
       "banned_lexfile_reject": "R-G2-08",
       "user_exempt": "R-G2-09",
-      "fact_exempt": "R-G2-10"
+      "fact_exempt": "R-G2-10",
+      "shell_noun_reject": "R-G2-11",
+      "mental_verb_composite_reject": "R-G2-03B",
+      "clausal_verb_composite_reject": "R-G2-03C",
+      "relational_time_reject": "R-G2-12",
+      "function_residue_reject": "R-G2-13"
     },
     "allowed_pos": [
       "n",
@@ -492,9 +512,61 @@
         "看来",
         "希望",
         "好像",
-        "似乎"
+        "似乎",
+        "知道",
+        "明白",
+        "清楚",
+        "懂得",
+        "理解",
+        "同意",
+        "赞同",
+        "反对",
+        "认可",
+        "打算",
+        "决定",
+        "企图",
+        "发现",
+        "可以",
+        "能够",
+        "还好",
+        "回到",
+        "都行"
       ],
-      "en": []
+      "en": [
+        "know",
+        "think",
+        "agree",
+        "understand",
+        "believe",
+        "decide"
+      ]
+    },
+    "shell_nouns": {
+      "zh": [
+        "习惯",
+        "情况",
+        "问题",
+        "方式",
+        "方法",
+        "原因",
+        "结果",
+        "过程",
+        "状态",
+        "内容",
+        "意义",
+        "目的",
+        "现象",
+        "东西",
+        "事情"
+      ],
+      "en": [
+        "habit",
+        "situation",
+        "problem",
+        "method",
+        "process",
+        "result"
+      ]
     },
     "banned_sememe_keywords": [
       "FuncWord|功能词",
@@ -511,7 +583,8 @@
       "cleaned_pos_source": "R-G2-05 构建期清洗词性拒绝（w标点/g字母前缀/b单字）。",
       "banned_sememe_source": "R-G2-06 语义要素含 FuncWord|功能词 或 punc|标点 即拒（HowNet 义原）。",
       "dimension_source": "R-G2-07 source = 'dimension' 或命中受控维度根即拒（PRD-0051 受控维度与标签互斥律）。",
-      "banned_lexfile_source": "R-G2-08 adv.all 与 adj.pert 词类域即拒（PWN/OMW 关系形容词与全量副词剪枝）。"
+      "banned_lexfile_source": "R-G2-08 adv.all 与 adj.pert 词类域即拒（PWN/OMW 关系形容词与全量副词剪枝）。",
+      "shell_nouns_source": "R-G2-11 抽象空洞壳名词独立成标拦截（习惯/情况/问题/意义/目的等），禁止独立作为文件标签，但允许作为二元复合词中心语（如生活习惯/网络问题）。"
     }
   }
 }
