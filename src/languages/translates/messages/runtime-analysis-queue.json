@@ -161,7 +161,7 @@
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(33985-34003)",
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10606-10624)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(85200-85218)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(86506-86524)"
     ],
     "$id": 2977
   },
@@ -719,7 +719,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(85241-85268)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(86547-86574)"],
     "$id": 11054
   },
   "AI 服务未就绪": {
@@ -737,6 +737,32 @@
       "src/electron/runtime-services/analysis-queue-service/file-processor/process-quick-name-analysis.ts(1486-1498)"
     ],
     "$id": 8131
+  },
+  "概要": {
+    "en-US": "Summary",
+    "es-ES": "Resumen",
+    "ar-EG": "ملخص",
+    "pt-PT": "Resumo",
+    "ru-RU": "краткое содержание",
+    "ja-JP": "まとめ",
+    "de-DE": "Zusammenfassung",
+    "fr-FR": "Résumé",
+    "ko-KR": "요약",
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(6315-6321)"],
+    "$id": 20481
+  },
+  "正文": {
+    "en-US": "Body",
+    "es-ES": "Cuerpo principal",
+    "ar-EG": "المتن",
+    "pt-PT": "Conteúdo principal",
+    "ru-RU": "Основной текст",
+    "ja-JP": "正文",
+    "de-DE": "Text",
+    "fr-FR": "Corps",
+    "ko-KR": "본문",
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/process-local-analysis.ts(6431-6437)"],
+    "$id": 20482
   },
   "无法获取文件路径记录": {
     "en-US": "Cannot retrieve file path records",

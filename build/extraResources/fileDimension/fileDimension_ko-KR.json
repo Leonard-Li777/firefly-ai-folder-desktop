@@ -122,7 +122,7 @@
       "contextHints": [
         "메타데이터",
         "디지털 서명",
-        "양수표"
+        "워터마크"
       ],
       "triggerConditions": [],
       "metadata": {
@@ -139,7 +139,7 @@
       "level": 2,
       "tags": [
         "애플리케이션 데이터 확장",
-        "지름길",
+        "바로 가기",
         "재생목록",
         "기재",
         "도움말 문서"
@@ -183,7 +183,7 @@
         "이모티콘",
         "의료 영상",
         "그림",
-        "지세도",
+        "만화",
         "그림",
         "글자가 있는 그림",
         "글자가 없는 그림"
@@ -204,6 +204,43 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "디자인 초안",
+          "targetDimension": "파일 용도",
+          "targetTag": "디자인 리소스"
+        },
+        {
+          "sourceTag": "사진술",
+          "targetDimension": "파일 용도",
+          "targetTag": "창작 프로젝트"
+        },
+        {
+          "sourceTag": "계약서 및 증서",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "그림",
+          "targetDimension": "파일 용도",
+          "targetTag": "창작 프로젝트"
+        },
+        {
+          "sourceTag": "포스터 홍보",
+          "targetDimension": "파일 용도",
+          "targetTag": "창작 프로젝트"
+        },
+        {
+          "sourceTag": "그림",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "의료 영상",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -220,7 +257,7 @@
         "영화와 텔레비전",
         "교육용 비디오",
         "게임 상호작용",
-        "녹화 화면",
+        "화면 녹화",
         "짧은 영상",
         "감시 영상",
         "회의 영상"
@@ -239,6 +276,23 @@
           "triggerTags": [
             "동영상"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "교육용 비디오",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "게임 상호작용",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "회의 영상",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
         }
       ],
       "metadata": {
@@ -275,6 +329,23 @@
           "triggerTags": [
             "오디오"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "회의녹화",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "오디오북",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "팟캐스트",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
         }
       ],
       "metadata": {
@@ -324,11 +395,12 @@
       "level": 2,
       "tags": [
         "프로그램 확장",
-        "Windows",
-        "Linux",
-        "macOS",
-        "Android",
-        "iOS"
+        "개발 도구",
+        "비디오 제작",
+        "네트워크 통신 도구",
+        "시스템 운영 및 유지 보수",
+        "사무용 유틸리티",
+        "게임 프로그램"
       ],
       "description": "실행 파일 분류",
       "applicableFileTypes": [
@@ -346,6 +418,38 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "개발 도구",
+          "targetDimension": "파일 용도",
+          "targetTag": "도구 및 유틸리티"
+        },
+        {
+          "sourceTag": "비디오 제작",
+          "targetDimension": "파일 용도",
+          "targetTag": "창작 프로젝트"
+        },
+        {
+          "sourceTag": "네트워크 통신 도구",
+          "targetDimension": "파일 용도",
+          "targetTag": "도구 및 유틸리티"
+        },
+        {
+          "sourceTag": "시스템 운영 및 유지 보수",
+          "targetDimension": "파일 용도",
+          "targetTag": "시스템 유지 관리"
+        },
+        {
+          "sourceTag": "사무용 유틸리티",
+          "targetDimension": "파일 용도",
+          "targetTag": "도구 및 유틸리티"
+        },
+        {
+          "sourceTag": "게임 프로그램",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
@@ -355,25 +459,136 @@
       }
     },
     {
+      "id": 163,
+      "name": "운영 플랫폼",
+      "level": 2,
+      "tags": [
+        "Windows",
+        "macOS",
+        "Linux",
+        "Android",
+        "iOS",
+        "크로스 플랫폼"
+      ],
+      "description": "프로그램이 실행되는 운영 체제 및 아키텍처 플랫폼",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "PE 헤더 특징",
+        "ELF 헤더 특징",
+        "Mach-O 헤더 특징"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "실행 프로그램"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 164,
+      "name": "런타임 프레임워크",
+      "level": 2,
+      "tags": [
+        "네이티브 프로그램",
+        "Electron",
+        "Tauri",
+        "Qt",
+        "Flutter",
+        "Unity",
+        "PyInstaller",
+        ".NET",
+        "JVM"
+      ],
+      "description": "프로그램 종속성의 런타임 및 프레임 워크 특성",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "종속성 라이브러리 검색",
+        "포장 특성"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "실행 프로그램"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 165,
+      "name": "프로그램 능력 특성",
+      "level": 2,
+      "tags": [
+        "네트워크 접근",
+        "멀티미디어 지원",
+        "하드웨어 가속 & 3D 그래픽",
+        "커널 레벨 드라이버 상호작용",
+        "그래픽 사용자 인터페이스",
+        "명령줄 상호 작용",
+        "로컬 파일 I/O",
+        "데이터 암호화 & 보안"
+      ],
+      "description": "프로그램 기능 특성의 다 선택 표하기 차원",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "심볼 클러스터링",
+        "능력 탐지"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "파일 유형",
+          "triggerTags": [
+            "실행 프로그램"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
+        }
+      }
+    },
+    {
       "id": 11,
       "name": "언어 분할",
       "level": 2,
       "tags": [
-        "중국인",
+        "중국어",
         "영어",
         "일본어",
-        "프랑스 국민",
-        "러시아인",
-        "한국인",
-        "스페인 사람",
-        "독일 사람",
-        "포르투갈 인",
-        "아라비아 말",
-        "이탈리아 사람",
-        "네덜란드 사람",
+        "프랑스어",
+        "러시아어",
+        "한국어",
+        "스페인어",
+        "독일어",
+        "포르투갈어",
+        "아랍어",
+        "이탈리아어",
+        "네덜란드어",
         "태국어",
-        "베트남 사람",
-        "힌디 어"
+        "베트남어",
+        "힌디어"
       ],
       "description": "문서 내용의 자연어 분류",
       "applicableFileTypes": [
@@ -414,10 +629,10 @@
       "tags": [
         "시스템 파일 확장자",
         "구성 파일",
-        "통나무",
+        "로그",
         "은닉처",
         "임시 파일",
-        "운전하다"
+        "드라이버"
       ],
       "description": "주요 시스템 파일의 기능 분류",
       "applicableFileTypes": [
@@ -448,14 +663,14 @@
       "name": "출판현황",
       "level": 2,
       "tags": [
-        "별도의 책",
-        "직렬화 중",
+        "단행본",
+        "연재 중",
         "완전한",
-        "자르지 않은",
+        "무삭제",
         "추가의",
         "추천",
         "요약 버전",
-        "특별 메뉴"
+        "특전"
       ],
       "description": "문서의 발행 및 공개 현황",
       "applicableFileTypes": [
@@ -497,7 +712,7 @@
         {
           "parentDimension": "이미지 분할",
           "triggerTags": [
-            "지세도"
+            "만화"
           ]
         }
       ],
@@ -701,12 +916,12 @@
       "level": 2,
       "tags": [
         "공식 오리지널 버전",
-        "수정된 버전",
-        "금이 간 버전",
-        "그린 버전",
-        "휴대용 버전",
+        "포터블 버전",
+        "설치 프로그램",
+        "오픈 소스 소프트웨어",
+        "크랙 버전",
         "라이트 버전",
-        "중국어 버전"
+        "현지화 버전"
       ],
       "description": "소프트웨어의 라이센스 및 배포 특성",
       "applicableFileTypes": [
@@ -739,7 +954,7 @@
         "자연 경관",
         "도시 건축",
         "인문학적 활동",
-        "전 세계의 음식",
+        "세계 요리",
         "유적지",
         "야외 활동"
       ],
@@ -759,6 +974,38 @@
           "triggerTags": [
             "여행 기록"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "자연 경관",
+          "targetDimension": "파일 용도",
+          "targetTag": "여행 기록"
+        },
+        {
+          "sourceTag": "도시 건축",
+          "targetDimension": "파일 용도",
+          "targetTag": "여행 기록"
+        },
+        {
+          "sourceTag": "인문학적 활동",
+          "targetDimension": "파일 용도",
+          "targetTag": "여행 기록"
+        },
+        {
+          "sourceTag": "세계 요리",
+          "targetDimension": "파일 용도",
+          "targetTag": "여행 기록"
+        },
+        {
+          "sourceTag": "유적지",
+          "targetDimension": "파일 용도",
+          "targetTag": "여행 기록"
+        },
+        {
+          "sourceTag": "야외 활동",
+          "targetDimension": "파일 용도",
+          "targetTag": "여행 기록"
         }
       ],
       "metadata": {
@@ -794,6 +1041,38 @@
           "triggerTags": [
             "금융 파일"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "소득 바우처",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "지출 바우처",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "자산 증명",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "세금 서류",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "계약",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "청구서",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
         }
       ],
       "metadata": {
@@ -843,6 +1122,93 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "RPG",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "어드벤처 게임",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "퍼즐 및 추리",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "타워 디펜스",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "전략 게임",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "경영 시뮬레이션",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "연애 시뮬레이션",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "대전 및 e스포츠",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "MOBA",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "격투 게임",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "슈팅 게임",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "액션 게임",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "로그라이크",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "전원 / 농경 시뮬레이션",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "육성 시뮬레이션",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "레이싱 게임",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "오토메 게임",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -887,6 +1253,63 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "수학",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "물리학",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "화학",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "생물학",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "컴퓨터 과학",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "언어 학습",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "역사",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "예술 및 디자인",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "공학 및 기술",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "경제학",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "교육",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -901,7 +1324,7 @@
       "tags": [
         "전자책 확장",
         "소설",
-        "지세도",
+        "만화",
         "기술 서적",
         "잡지",
         "교과서",
@@ -923,6 +1346,18 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "교과서",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        },
+        {
+          "sourceTag": "기술 서적",
+          "targetDimension": "파일 용도",
+          "targetTag": "학습 자료"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -938,7 +1373,7 @@
         "로맨스",
         "공상 과학 소설",
         "마법",
-        "미결",
+        "서스펜스",
         "추리",
         "시간 여행",
         "시안샤",
@@ -947,7 +1382,7 @@
         "교정",
         "직장",
         "가족",
-        "우상",
+        "아이돌",
         "무술",
         "구성",
         "전기",
@@ -955,19 +1390,19 @@
         "경찰과 강도",
         "스릴러",
         "동화",
-        "생기",
+        "애니메이션",
         "기록",
         "자연",
         "인문학",
         "체육",
-        "치유법",
+        "힐링",
         "삶",
-        "여행하다",
+        "여행",
         "대중과학",
         "맛있는 음식",
         "촌극",
         "이상한 이야기",
-        "춘화",
+        "포르노",
         "훈련",
         "하렘",
         "단메이",
@@ -1125,7 +1560,7 @@
       "name": "가족 생활 세분화",
       "level": 2,
       "tags": [
-        "살고 싶은 집",
+        "주거",
         "홈쇼핑",
         "가정의학",
         "가족 문서",
@@ -1381,7 +1816,7 @@
         "구성 파일",
         "프로그래밍 언어",
         "프런트 엔드",
-        "후방"
+        "백엔드"
       ],
       "description": "소스 코드 파일 분류",
       "applicableFileTypes": [
@@ -1947,20 +2382,24 @@
       "level": 3,
       "tags": [
         "apk",
+        "app",
+        "bin",
         "class",
         "crx",
         "dex",
         "dll",
+        "dylib",
         "elf",
         "exe",
+        "msi",
         "o",
         "obj",
         "pyc",
         "pyo",
+        "so",
+        "sys",
         "swf",
-        "wasm",
-        "app",
-        "bin"
+        "wasm"
       ],
       "description": "실행 파일 확장자",
       "applicableFileTypes": [
@@ -2076,7 +2515,7 @@
         "풀 컬러",
         "검정색과 흰색",
         "동인지",
-        "비즈니스 저널"
+        "상업지"
       ],
       "description": "만화 콘텐츠의 타겟층 분류",
       "applicableFileTypes": [
@@ -2105,7 +2544,7 @@
         {
           "parentDimension": "이미지 분할",
           "triggerTags": [
-            "지세도"
+            "만화"
           ]
         }
       ],
@@ -2164,12 +2603,12 @@
     },
     {
       "id": 120,
-      "name": "작업 소스",
+      "name": "작품 출처",
       "level": 2,
       "tags": [
         "원래의",
         "동인",
-        "번역하다",
+        "번역",
         "공식 번역",
         "번역 팀",
         "기계 번역"
@@ -2217,7 +2656,7 @@
         {
           "parentDimension": "이미지 분할",
           "triggerTags": [
-            "지세도"
+            "만화"
           ]
         }
       ],
@@ -2235,11 +2674,11 @@
       "tags": [
         "기쁨",
         "슬픈",
-        "치유법",
+        "힐링",
         "우울증을 일으키는",
         "쉬운",
         "불안한",
-        "이동하다",
+        "감동",
         "노스탤지어",
         "욕구",
         "흥분한",
@@ -2247,7 +2686,7 @@
         "죄",
         "부도덕한 느낌",
         "창피",
-        "빼어나게 솟다"
+        "지배"
       ],
       "description": "문서 내용이 불러일으키는 정서적 분위기",
       "applicableFileTypes": [
@@ -2290,7 +2729,7 @@
         {
           "parentDimension": "이미지 분할",
           "triggerTags": [
-            "지세도"
+            "만화"
           ]
         }
       ],
@@ -2351,10 +2790,10 @@
       "level": 3,
       "tags": [
         "소프트 포르노",
-        "고기 반",
-        "순수한 고기",
+        "세미 누드",
+        "풀 누드",
         "특별 XP",
-        "심한 호기심"
+        "극단적 그로"
       ],
       "description": "포르노 콘텐츠의 노골성 및 표현 방식 세분화",
       "applicableFileTypes": [
@@ -2371,7 +2810,7 @@
         {
           "parentDimension": "민감한 내용",
           "triggerTags": [
-            "춘화"
+            "포르노"
           ]
         }
       ],
@@ -2385,7 +2824,7 @@
     },
     {
       "id": 124,
-      "name": "코딩 수준",
+      "name": "모자이크 수준",
       "level": 2,
       "tags": [
         "무모자이크",
@@ -2417,7 +2856,7 @@
         {
           "parentDimension": "이미지 분할",
           "triggerTags": [
-            "지세도"
+            "만화"
           ]
         }
       ],
@@ -2464,7 +2903,7 @@
         {
           "parentDimension": "이미지 분할",
           "triggerTags": [
-            "지세도"
+            "만화"
           ]
         }
       ],
@@ -2478,7 +2917,7 @@
     },
     {
       "id": 126,
-      "name": "사진 분류",
+      "name": "사진 카테고리",
       "level": 3,
       "tags": [
         "풍경 사진",
@@ -2511,6 +2950,18 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "여행 사진",
+          "targetDimension": "파일 용도",
+          "targetTag": "여행 기록"
+        },
+        {
+          "sourceTag": "웨딩사진",
+          "targetDimension": "파일 용도",
+          "targetTag": "가족 생활"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2526,12 +2977,12 @@
         "엄선된 최고 품질",
         "노출 정상",
         "저조도 노출 부족",
-        "역광으로 인해 화면이 하얗게 씻겨 나감",
+        "역광 화이트아웃",
         "고 ISO 노이즈",
         "흐릿한 실패한 사진",
         "초점 불일치",
-        "진동",
-        "코크스 제거",
+        "흔들림",
+        "포커스 아웃",
         "운동으로 인한 흔들림",
         "구도가 좋지 않다",
         "색 편차가 심하다",
@@ -2597,6 +3048,53 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "논문",
+          "targetDimension": "파일 용도",
+          "targetTag": "학술 연구"
+        },
+        {
+          "sourceTag": "영수증",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "명세서",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "은행 거래 영수증",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "구매 주문서",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "경비 청구 증빙 서류",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "보증서 계약서",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "입찰서",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "공식 문서",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2657,7 +3155,7 @@
         "폭력과 혐오",
         "정치 관련",
         "규정 위반",
-        "춘화",
+        "포르노",
         "모욕",
         "피비린내"
       ],
@@ -2703,7 +3201,7 @@
         {
           "parentDimension": "이미지 분할",
           "triggerTags": [
-            "지세도"
+            "만화"
           ]
         }
       ],
@@ -2850,8 +3348,8 @@
         "캠퍼스 교사와 학생",
         "직장 사회",
         "그룹 섹스",
-        "성교육",
-        "엿보는 노출",
+        "섹스 트레이닝",
+        "훔쳐보기 노출",
         "전문 유니폼",
         "문학적 주제",
         "에로틱 생리학",
@@ -2874,7 +3372,7 @@
         {
           "parentDimension": "민감한 내용",
           "triggerTags": [
-            "춘화"
+            "포르노"
           ]
         }
       ],
@@ -2922,6 +3420,28 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "게임 스크린샷",
+          "targetDimension": "파일 용도",
+          "targetTag": "게임 및 엔터테인먼트"
+        },
+        {
+          "sourceTag": "결제 내역 스크린샷",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "주문 물류 스크린샷",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        },
+        {
+          "sourceTag": "문서 스크린샷",
+          "targetDimension": "파일 용도",
+          "targetTag": "업무 문서"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2931,7 +3451,7 @@
     },
     {
       "id": 136,
-      "name": "벡터 생성",
+      "name": "생성 매체",
       "level": 2,
       "tags": [
         "실제 샷",
@@ -2947,7 +3467,7 @@
       "contextHints": [
         "생성방식",
         "렌더링 유형",
-        "항공사 식별"
+        "매체 식별"
       ],
       "triggerConditions": [
         {
@@ -2969,7 +3489,7 @@
     },
     {
       "id": 137,
-      "name": "풍경 작별 인사",
+      "name": "샷 크기",
       "level": 3,
       "tags": [
         "클로즈업",
@@ -2992,7 +3512,7 @@
           "parentDimension": "이미지 분할",
           "triggerTags": [
             "사진술",
-            "지세도",
+            "만화",
             "그림"
           ]
         }
@@ -3084,7 +3604,7 @@
       "level": 3,
       "tags": [
         "눈높이",
-        "아래를 내려다 보면서",
+        "부감",
         "찾다",
         "첫 번째 사람"
       ],
@@ -3118,7 +3638,7 @@
     },
     {
       "id": 141,
-      "name": "공들여 나열한 것",
+      "name": "레이아웃",
       "level": 2,
       "tags": [
         "일반 텍스트",
@@ -3193,7 +3713,7 @@
     },
     {
       "id": 143,
-      "name": "액자",
+      "name": "프레임",
       "level": 2,
       "tags": [
         "가로 화면",
@@ -3231,20 +3751,20 @@
     },
     {
       "id": 144,
-      "name": "과목 수",
+      "name": "피사체 수",
       "level": 3,
       "tags": [
         "하나의",
         "더블",
         "단체사진",
-        "무인 공중거울"
+        "빈 장면"
       ],
       "description": "사진 속 인물이나 핵심 주제의 수와 구성",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "주제 수",
+        "피사체 수",
         "인물 감지",
         "장면 구성"
       ],
@@ -3253,7 +3773,7 @@
           "parentDimension": "이미지 분할",
           "triggerTags": [
             "사진술",
-            "지세도",
+            "만화",
             "그림"
           ]
         }
@@ -3269,10 +3789,10 @@
     },
     {
       "id": 145,
-      "name": "주제 유형",
+      "name": "피사체 유형",
       "level": 2,
       "tags": [
-        "캐릭터 주제",
+        "인물 피사체",
         "동물 애완동물",
         "식물과 꽃",
         "정물 상품",
@@ -3284,7 +3804,7 @@
       ],
       "contextHints": [
         "표적 탐지",
-        "피험자 식별",
+        "피사체 식별",
         "시각적 초점"
       ],
       "triggerConditions": [
@@ -3419,7 +3939,7 @@
       "level": 2,
       "tags": [
         "난색",
-        "멋진 색상",
+        "차가운 색",
         "중성 검정색, 흰색 및 회색",
         "채도가 높고 선명함",
         "빨간",
@@ -3483,7 +4003,7 @@
         "외삼촌과 외조카",
         "사촌들",
         "형수",
-        "할아버지와 손자는 세대를 나누었습니다."
+        "조부와 손자(세대 차)"
       ],
       "description": "혈족, 가족 서열 및 금기의 윤리적 주제 세분화",
       "applicableFileTypes": [
@@ -3519,12 +4039,12 @@
       "tags": [
         "파트너 교환",
         "아내 교환",
-        "부정 행위",
+        "외도",
         "아름다운 결혼한 여자",
         "젊은 성숙한 여자",
-        "여주인",
+        "정부",
         "주부",
-        "한해를 잊은 기쁨",
+        "연상연하 로맨스",
         "순수한 사랑"
       ],
       "description": "혼외정서계약, 파트너교류, 아내테마의 세분화",
@@ -3559,11 +4079,11 @@
       "name": "캠퍼스 교사와 학생 분석",
       "level": 4,
       "tags": [
-        "선생님 학생",
+        "교사와 학생",
         "여교사",
         "남자 선생님",
         "여자 동급생",
-        "선배 언니",
+        "선배",
         "저학년",
         "학교 미용",
         "대학생",
@@ -3681,17 +4201,17 @@
     },
     {
       "id": 155,
-      "name": "성교육 분석",
+      "name": "섹스 트레이닝 분류",
       "level": 4,
       "tags": [
-        "성교육",
+        "섹스 트레이닝",
         "SM",
         "성노예",
         "조교 및 구속",
         "거친 섹스",
         "거친 섹스",
-        "중장비 변태",
-        "떨어지는 왁스 채찍",
+        "하드코어 변태",
+        "왁스 플레이 & 채찍",
         "특정 페티쉬"
       ],
       "description": "지배와 복종, 하위문화 페티시와 심각한 대립적 성 붕괴",
@@ -3710,7 +4230,7 @@
         {
           "parentDimension": "포르노 장르 분류",
           "triggerTags": [
-            "성교육"
+            "섹스 트레이닝"
           ]
         }
       ],
@@ -3723,17 +4243,17 @@
     },
     {
       "id": 156,
-      "name": "노출된 분할 살펴보기",
+      "name": "노출 사고 분할 살펴보기",
       "level": 4,
       "tags": [
-        "미친 노출",
+        "과감한 노출",
         "공공장소 노출",
-        "옥외에 노출된",
-        "자동차 충격",
+        "옥외에 노출 사고",
+        "차안 섹스",
         "몰래 촬영 및 엿보기",
-        "프라이버시 카메라",
-        "목욕 엿보는",
-        "노출된"
+        "몰래카메라",
+        "목욕 훔쳐보기",
+        "노출 사고"
       ],
       "description": "공공장소 노출, 옥외 전시, 은밀한 엿보기, 솔직한 사진 촬영 세분화",
       "applicableFileTypes": [
@@ -3744,14 +4264,14 @@
       ],
       "contextHints": [
         "공간적 노출",
-        "솔직한 촬영",
+        "몰래 촬영",
         "옥외 전시"
       ],
       "triggerConditions": [
         {
           "parentDimension": "포르노 장르 분류",
           "triggerTags": [
-            "엿보는 노출"
+            "훔쳐보기 노출"
           ]
         }
       ],
@@ -3767,12 +4287,12 @@
       "name": "전문적인 유니폼 세분화",
       "level": 4,
       "tags": [
-        "의사 간호사",
+        "의사와 간호사",
         "산부인과",
         "항공사 스튜어디스",
         "경찰",
-        "마네킹 자동차 모델",
-        "춤추는 소녀",
+        "모델·카모델",
+        "무희",
         "상업 포르노",
         "유료 데이트 및 매춘"
       ],
@@ -3784,7 +4304,7 @@
         "archive"
       ],
       "contextHints": [
-        "획일적인 성격",
+        "제복 캐릭터",
         "산업체 직업",
         "역할극"
       ],
@@ -3808,13 +4328,13 @@
       "name": "문학 주제 분석",
       "level": 4,
       "tags": [
-        "에로틱 무술",
+        "에로 무협",
         "고전 에로티카",
         "역사적인 에로티카",
         "판타지 SF",
         "자정 이야기",
         "현대 도시",
-        "게임 팬",
+        "게임 동인",
         "일본의 에로티카",
         "서양 에로티카",
         "모험 이야기"
@@ -3855,8 +4375,8 @@
         "자위 오르가슴",
         "오럴 섹스",
         "애널 섹스",
-        "얼굴의 정액을 삼키는",
-        "비공개 사진",
+        "얼굴사정 & 삼키기",
+        "프라이빗 사진",
         "아슬아슬한 유혹",
         "가슴이랑 다리가 예뻐요",
         "처녀성 콤플렉스"
@@ -3890,11 +4410,11 @@
     },
     {
       "id": 160,
-      "name": "무의식적인 폭행 붕괴",
+      "name": "비자발적 침해 분류",
       "level": 4,
       "tags": [
-        "강간 강간",
-        "강간당하고 마약먹고",
+        "강간 및 성폭행",
+        "약물 이용 성폭행",
         "의사에 반하여",
         "집단 성폭행",
         "폭력적인 강압"
@@ -3933,7 +4453,7 @@
       "tags": [
         "동성애",
         "레즈비언 백합",
-        "게이 뷰티",
+        "게이 야오이",
         "트랜스젠더"
       ],
       "description": "다양한 성별 인식, 다양한 지향성, 구체적인 성적 지향성 테마 세분화",

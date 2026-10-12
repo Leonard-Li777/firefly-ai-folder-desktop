@@ -9,125 +9,8 @@
     "de-DE": "Der Start der Anwendung wird vorbereitet...",
     "fr-FR": "Préparation du lancement de l'application...",
     "ko-KR": "애플리케이션 실행 준비 중...",
-    "$files": ["src/renderer/App.tsx(9031-9046)"],
+    "$files": ["src/renderer/App.tsx(8873-8888)"],
     "$id": 7602
-  },
-  "正在准备迁移模型...": {
-    "en-US": "Preparing to migrate model...",
-    "es-ES": "Preparándose para migrar el modelo...",
-    "ar-EG": "جارٍ التحضير لترحيل النموذج...",
-    "pt-PT": "Preparando para migrar o modelo...",
-    "ru-RU": "Подготовка к переносу модели...",
-    "ja-JP": "モデルの移行を準備しています...",
-    "de-DE": "Modellmigration wird vorbereitet...",
-    "fr-FR": "Préparation de la migration du modèle...",
-    "ko-KR": "모델 마이그레이션 준비 중...",
-    "$files": ["src/renderer/App.tsx(10010-10025)"],
-    "$id": 7605
-  },
-  "正在迁移系统内置模型...": {
-    "en-US": "Migrating system built-in models...",
-    "es-ES": "Migrando modelos integrados del sistema...",
-    "ar-EG": "ترحيل النماذج المضمنة في النظام...",
-    "pt-PT": "Migrando modelos integrados do sistema...",
-    "ru-RU": "Миграция встроенных моделей системы...",
-    "ja-JP": "システム組み込みモデルを移行しています...",
-    "de-DE": "Im System integrierte Modelle werden migriert...",
-    "fr-FR": "Migration des modèles intégrés au système...",
-    "ko-KR": "시스템 내장 모델 마이그레이션 중...",
-    "$files": ["src/renderer/App.tsx(10189-10206)"],
-    "$id": 7606
-  },
-  "正在优先迁移当前选中的模型...": {
-    "en-US": "Migrating the currently selected model first...",
-    "es-ES": "Migrando primero el modelo seleccionado actualmente...",
-    "ar-EG": "يتم الآن ترحيل النموذج المحدد حاليًا أولاً...",
-    "pt-PT": "Migrando primeiro o modelo atualmente selecionado...",
-    "ru-RU": "Сначала нужно перенести выбранную модель...",
-    "ja-JP": "現在選択されているモデルを最初に移行しています...",
-    "de-DE": "Zuerst wird das aktuell ausgewählte Modell migriert...",
-    "fr-FR": "Migration d'abord du modèle actuellement sélectionné...",
-    "ko-KR": "현재 선택한 모델을 먼저 마이그레이션하는 중...",
-    "$files": ["src/renderer/App.tsx(10306-10326)"],
-    "$id": 7607
-  },
-  "核心模型迁移成功！还有 {count} 个模型将在后台继续迁移，你可以随时点击“刷新模型列表”查看状态。": {
-    "en-US": "The core model migration was successful! There are {count} models that will continue to be migrated in the background. You can click \"Refresh Model List\" to check the status at any time.",
-    "es-ES": "¡La migración del modelo central fue exitosa! Hay {count} modelos que se seguirán migrando en segundo plano. Puede hacer clic en \"Actualizar lista de modelos\" para comprobar el estado en cualquier momento.",
-    "ar-EG": "كانت عملية ترحيل النموذج الأساسي ناجحة! هناك {count} نماذج سيستمر ترحيلها في الخلفية. يمكنك النقر فوق \"تحديث قائمة النماذج\" للتحقق من الحالة في أي وقت.",
-    "pt-PT": "A migração do modelo principal foi bem-sucedida! Existem modelos {count} que continuarão a ser migrados em segundo plano. Você pode clicar em \"Atualizar lista de modelos\" para verificar o status a qualquer momento.",
-    "ru-RU": "Миграция базовой модели прошла успешно! Некоторые модели ({count}) будут перенесены в фоновом режиме. Вы можете нажать «Обновить список моделей», чтобы проверить статус в любое время.",
-    "ja-JP": "コアモデルの移行は成功しました。バックグラウンドで引き続き移行される {count} モデルがあります。 「モデルリストを更新」をクリックすると、いつでもステータスを確認できます。",
-    "de-DE": "Die Migration des Kernmodells war erfolgreich! Es gibt {count} Modelle, die weiterhin im Hintergrund migriert werden. Sie können jederzeit auf „Modellliste aktualisieren“ klicken, um den Status zu überprüfen.",
-    "fr-FR": "La migration du modèle de base a été réussie ! Il existe {count} modèles qui continueront à être migrés en arrière-plan. Vous pouvez cliquer sur « Actualiser la liste des modèles » pour vérifier l'état à tout moment.",
-    "ko-KR": "핵심 모델 마이그레이션이 성공했습니다! 백그라운드에서 계속 마이그레이션되는 {count} 모델이 있습니다. 언제든지 \"모델 목록 새로 고침\"을 클릭하여 상태를 확인할 수 있습니다.",
-    "$files": ["src/renderer/App.tsx(10610-10682)"],
-    "$id": 7608
-  },
-  "核心模型迁移成功！": {
-    "en-US": "The core model migration was successful!",
-    "es-ES": "¡La migración del modelo central fue exitosa!",
-    "ar-EG": "كانت عملية ترحيل النموذج الأساسي ناجحة!",
-    "pt-PT": "A migração do modelo principal foi bem-sucedida!",
-    "ru-RU": "Миграция базовой модели прошла успешно!",
-    "ja-JP": "コアモデルの移行は成功しました。",
-    "de-DE": "Die Migration des Kernmodells war erfolgreich!",
-    "fr-FR": "La migration du modèle de base a été réussie !",
-    "ko-KR": "핵심 모델 마이그레이션이 성공했습니다!",
-    "$files": ["src/renderer/App.tsx(10800-10813)"],
-    "$id": 7609
-  },
-  "所有模型迁移任务已完成": {
-    "en-US": "All model migration tasks have been completed",
-    "es-ES": "Se han completado todas las tareas de migración del modelo.",
-    "ar-EG": "تم إكمال جميع مهام ترحيل النماذج",
-    "pt-PT": "Todas as tarefas de migração de modelo foram concluídas",
-    "ru-RU": "Все задачи по миграции модели выполнены.",
-    "ja-JP": "すべてのモデル移行タスクが完了しました",
-    "de-DE": "Alle Modellmigrationsaufgaben wurden abgeschlossen",
-    "fr-FR": "Toutes les tâches de migration du modèle ont été terminées",
-    "ko-KR": "모든 모델 마이그레이션 작업이 완료되었습니다.",
-    "$files": ["src/renderer/App.tsx(10939-10954)"],
-    "$id": 7610
-  },
-  "模型迁移过程中发生错误，请检查磁盘空间或权限": {
-    "en-US": "An error occurred during model migration, please check disk space or permissions",
-    "es-ES": "Se produjo un error durante la migración del modelo; verifique el espacio en disco o los permisos",
-    "ar-EG": "حدث خطأ أثناء ترحيل النموذج، يرجى التحقق من مساحة القرص أو الأذونات",
-    "pt-PT": "Ocorreu um erro durante a migração do modelo. Verifique o espaço em disco ou as permissões",
-    "ru-RU": "Во время миграции модели произошла ошибка. Проверьте место на диске или разрешения.",
-    "ja-JP": "モデルの移行中にエラーが発生しました。ディスク容量または権限を確認してください。",
-    "de-DE": "Bei der Modellmigration ist ein Fehler aufgetreten. Bitte überprüfen Sie den Speicherplatz oder die Berechtigungen",
-    "fr-FR": "Une erreur s'est produite lors de la migration du modèle, veuillez vérifier l'espace disque ou les autorisations",
-    "ko-KR": "모델 마이그레이션 중 오류가 발생했습니다. 디스크 공간이나 권한을 확인하세요.",
-    "$files": ["src/renderer/App.tsx(11137-11163)"],
-    "$id": 7611
-  },
-  "模型迁移进度：已完成 {count} 个，剩余 {remaining} 个": {
-    "en-US": "Model migration progress: {count} completed, {remaining} remaining",
-    "es-ES": "Progreso de la migración del modelo: {count} completado, {remaining} restante",
-    "ar-EG": "تقدم ترحيل النموذج: {count} اكتمل، {remaining} متبقي",
-    "pt-PT": "Progresso da migração do modelo: {count} concluído, {remaining} restante",
-    "ru-RU": "Ход миграции модели: {count} завершено, осталось {remaining}",
-    "ja-JP": "モデル移行の進行状況: {count} 完了、残り {remaining}",
-    "de-DE": "Modellmigrationsfortschritt: {count} abgeschlossen, {remaining} übrig",
-    "fr-FR": "Progression de la migration du modèle : {count} terminé, {remaining} restant",
-    "ko-KR": "모델 마이그레이션 진행률: {count} 완료, {remaining} 남음",
-    "$files": ["src/renderer/App.tsx(11570-11611)"],
-    "$id": 7612
-  },
-  "模型迁移耗时过长（已等待 {seconds} 秒），已自动关闭蒙版。请前往日志查看详情，或检查目标目录文件是否完整。": {
-    "en-US": "Model migration took too long (waited {seconds} seconds) and the mask was automatically turned off. Please go to the log to view details, or check whether the target directory file is complete.",
-    "es-ES": "La migración del modelo tardó demasiado (esperó {seconds} segundos) y la máscara se apagó automáticamente. Vaya al registro para ver los detalles o verifique si el archivo del directorio de destino está completo.",
-    "ar-EG": "استغرق ترحيل النموذج وقتًا طويلاً (انتظر {seconds} ثانية) وتم إيقاف تشغيل القناع تلقائيًا. يرجى الانتقال إلى السجل لعرض التفاصيل، أو التحقق من اكتمال ملف الدليل الهدف.",
-    "pt-PT": "A migração do modelo demorou muito (aguardou {seconds} segundos) e a máscara foi desativada automaticamente. Acesse o log para ver os detalhes ou verifique se o arquivo do diretório de destino está completo.",
-    "ru-RU": "Миграция модели заняла слишком много времени (ожидание {seconds} секунд), и маска была автоматически отключена. Перейдите в журнал, чтобы просмотреть подробную информацию, или проверьте, заполнен ли файл целевого каталога.",
-    "ja-JP": "モデルの移行に時間がかかりすぎたため ({seconds} 秒待機)、マスクが自動的にオフになりました。ログに移動して詳細を表示するか、ターゲット ディレクトリ ファイルが完了しているかどうかを確認してください。",
-    "de-DE": "Die Modellmigration hat zu lange gedauert ({seconds} Sekunden gewartet) und die Maske wurde automatisch deaktiviert. Bitte gehen Sie zum Protokoll, um Details anzuzeigen, oder überprüfen Sie, ob die Zielverzeichnisdatei vollständig ist.",
-    "fr-FR": "La migration du modèle a pris trop de temps (attendu {seconds} secondes) et le masque a été automatiquement désactivé. Veuillez accéder au journal pour afficher les détails ou vérifier si le fichier du répertoire cible est complet.",
-    "ko-KR": "모델 마이그레이션이 너무 오래 걸려서({seconds}초 동안 대기) 마스크가 자동으로 꺼졌습니다. 로그로 이동하여 세부정보를 보거나 대상 디렉터리 파일이 완전한지 확인하세요.",
-    "$files": ["src/renderer/App.tsx(12747-12821)"],
-    "$id": 7613
   },
   "正在检测应用配置...": {
     "en-US": "Detecting application configuration...",
@@ -139,7 +22,7 @@
     "de-DE": "Anwendungskonfiguration wird erkannt...",
     "fr-FR": "Détection de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성을 감지하는 중...",
-    "$files": ["src/renderer/App.tsx(13679-13694)"],
+    "$files": ["src/renderer/App.tsx(10276-10291)"],
     "$id": 7614
   },
   "正在验证授权状态...": {
@@ -152,34 +35,8 @@
     "de-DE": "Autorisierungsstatus wird überprüft...",
     "fr-FR": "Vérification de l'état d'autorisation...",
     "ko-KR": "승인 상태 확인 중...",
-    "$files": ["src/renderer/App.tsx(16303-16318)"],
+    "$files": ["src/renderer/App.tsx(12900-12915)"],
     "$id": 7615
-  },
-  "选中的模型文件不存在或加载失败，请在设置中重新配置。": {
-    "en-US": "The selected model file does not exist or fails to load. Please reconfigure it in the settings.",
-    "es-ES": "El archivo del modelo seleccionado no existe o no se carga. Vuelva a configurarlo en la configuración.",
-    "ar-EG": "ملف النموذج المحدد غير موجود أو فشل تحميله. يرجى إعادة تكوينه في الإعدادات.",
-    "pt-PT": "O arquivo de modelo selecionado não existe ou não é carregado. Por favor, reconfigure-o nas configurações.",
-    "ru-RU": "Выбранный файл модели не существует или не загружается. Пожалуйста, перенастройте его в настройках.",
-    "ja-JP": "選択したモデル ファイルが存在しないか、ロードできません。設定で再設定してください。",
-    "de-DE": "Die ausgewählte Modelldatei ist nicht vorhanden oder kann nicht geladen werden. Bitte konfigurieren Sie es in den Einstellungen neu.",
-    "fr-FR": "Le fichier de modèle sélectionné n'existe pas ou ne parvient pas à se charger. Veuillez le reconfigurer dans les paramètres.",
-    "ko-KR": "선택한 모델 파일이 존재하지 않거나 로드에 실패했습니다. 설정에서 다시 구성해 보세요.",
-    "$files": ["src/renderer/App.tsx(21914-21944)"],
-    "$id": 7616
-  },
-  "去设置": {
-    "en-US": "Go to settings",
-    "es-ES": "Ir a configuración",
-    "ar-EG": "انتقل إلى الإعدادات",
-    "pt-PT": "Vá para configurações",
-    "ru-RU": "Перейти в настройки",
-    "ja-JP": "設定に移動",
-    "de-DE": "Gehen Sie zu den Einstellungen",
-    "fr-FR": "Allez dans les paramètres",
-    "ko-KR": "설정으로 이동",
-    "$files": ["src/renderer/App.tsx(22029-22036)"],
-    "$id": 7617
   },
   "正在初始化应用环境...": {
     "en-US": "Initializing application environment...",
@@ -191,7 +48,7 @@
     "de-DE": "Anwendungsumgebung wird initialisiert...",
     "fr-FR": "Initialisation de l'environnement d'application...",
     "ko-KR": "애플리케이션 환경 초기화 중...",
-    "$files": ["src/renderer/App.tsx(28245-28261)"],
+    "$files": ["src/renderer/App.tsx(21148-21164)"],
     "$id": 7618
   },
   "正在初始化AI服务...": {
@@ -204,7 +61,7 @@
     "de-DE": "KI-Dienst wird initialisiert...",
     "fr-FR": "Initialisation du service IA...",
     "ko-KR": "AI 서비스 초기화 중...",
-    "$files": ["src/renderer/App.tsx(28408-28424)"],
+    "$files": ["src/renderer/App.tsx(21311-21327)"],
     "$id": 7619
   },
   "正在加载应用配置...": {
@@ -217,7 +74,7 @@
     "de-DE": "Anwendungskonfiguration wird geladen...",
     "fr-FR": "Chargement de la configuration de l'application...",
     "ko-KR": "애플리케이션 구성 로드 중...",
-    "$files": ["src/renderer/App.tsx(28695-28710)"],
+    "$files": ["src/renderer/App.tsx(21598-21613)"],
     "$id": 7620
   },
   "正在检查 AI 状态...": {
@@ -230,47 +87,8 @@
     "de-DE": "AI-Status wird überprüft...",
     "fr-FR": "Vérification de l'état de l'IA...",
     "ko-KR": "AI 상태를 확인하는 중...",
-    "$files": ["src/renderer/App.tsx(28763-28780)"],
+    "$files": ["src/renderer/App.tsx(21666-21683)"],
     "$id": 7621
-  },
-  "正在迁移模型": {
-    "en-US": "Migrating model",
-    "es-ES": "Modelo migratorio",
-    "ar-EG": "نموذج الهجرة",
-    "pt-PT": "Modelo de migração",
-    "ru-RU": "Миграция модели",
-    "ja-JP": "移行モデル",
-    "de-DE": "Migrationsmodell",
-    "fr-FR": "Migration du modèle",
-    "ko-KR": "모델 마이그레이션",
-    "$files": ["src/renderer/App.tsx(37957-37967)"],
-    "$id": 7626
-  },
-  "正在准备迁移，请稍候...": {
-    "en-US": "Preparing for migration, please wait...",
-    "es-ES": "Preparándose para la migración, espere...",
-    "ar-EG": "التحضير للترحيل، يرجى الانتظار...",
-    "pt-PT": "Preparando a migração, aguarde...",
-    "ru-RU": "Подготовка к миграции, пожалуйста, подождите...",
-    "ja-JP": "移行の準備中です。お待​​ちください...",
-    "de-DE": "Die Migration wird vorbereitet, bitte warten...",
-    "fr-FR": "Préparation de la migration, veuillez patienter...",
-    "ko-KR": "마이그레이션을 준비 중입니다. 잠시 기다려 주세요...",
-    "$files": ["src/renderer/App.tsx(38120-38137)"],
-    "$id": 7627
-  },
-  "请勿关闭应用": {
-    "en-US": "Don't close the app",
-    "es-ES": "No cierres la aplicación",
-    "ar-EG": "لا تغلق التطبيق",
-    "pt-PT": "Não feche o aplicativo",
-    "ru-RU": "Не закрывайте приложение",
-    "ja-JP": "アプリを閉じないでください",
-    "de-DE": "Schließen Sie die App nicht",
-    "fr-FR": "Ne fermez pas l'application",
-    "ko-KR": "앱을 닫지 마세요",
-    "$files": ["src/renderer/App.tsx(38549-38559)"],
-    "$id": 7628
   },
   "接口不存在": {
     "en-US": "Interface does not exist",

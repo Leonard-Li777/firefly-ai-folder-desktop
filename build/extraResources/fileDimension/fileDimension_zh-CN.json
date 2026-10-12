@@ -204,6 +204,43 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "设计稿",
+          "targetDimension": "文件用途",
+          "targetTag": "设计素材"
+        },
+        {
+          "sourceTag": "摄影照片",
+          "targetDimension": "文件用途",
+          "targetTag": "创意项目"
+        },
+        {
+          "sourceTag": "合同票据",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "绘画",
+          "targetDimension": "文件用途",
+          "targetTag": "创意项目"
+        },
+        {
+          "sourceTag": "海报宣发",
+          "targetDimension": "文件用途",
+          "targetTag": "创意项目"
+        },
+        {
+          "sourceTag": "图纸",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "医学影像",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -241,6 +278,23 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "教学视频",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "游戏互动",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "会议录像",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -275,6 +329,23 @@
           "triggerTags": [
             "音频"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "会议录音",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "有声书",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "播客",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
         }
       ],
       "metadata": {
@@ -324,11 +395,12 @@
       "level": 2,
       "tags": [
         "程序扩展名",
-        "Windows",
-        "Linux",
-        "macOS",
-        "Android",
-        "iOS"
+        "开发工具",
+        "影音创作",
+        "网络通信工具",
+        "系统运维",
+        "办公实用",
+        "游戏程序"
       ],
       "description": "可执行文件的分类",
       "applicableFileTypes": [
@@ -346,11 +418,154 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "开发工具",
+          "targetDimension": "文件用途",
+          "targetTag": "工具应用"
+        },
+        {
+          "sourceTag": "影音创作",
+          "targetDimension": "文件用途",
+          "targetTag": "创意项目"
+        },
+        {
+          "sourceTag": "网络通信工具",
+          "targetDimension": "文件用途",
+          "targetTag": "工具应用"
+        },
+        {
+          "sourceTag": "系统运维",
+          "targetDimension": "文件用途",
+          "targetTag": "系统维护"
+        },
+        {
+          "sourceTag": "办公实用",
+          "targetDimension": "文件用途",
+          "targetTag": "工具应用"
+        },
+        {
+          "sourceTag": "游戏程序",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
           "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 163,
+      "name": "运行平台",
+      "level": 2,
+      "tags": [
+        "Windows",
+        "macOS",
+        "Linux",
+        "Android",
+        "iOS",
+        "跨平台"
+      ],
+      "description": "程序运行的操作系统与架构平台",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "PE头特征",
+        "ELF头特征",
+        "Mach-O头特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "程序"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 164,
+      "name": "运行时框架",
+      "level": 2,
+      "tags": [
+        "原生程序",
+        "Electron",
+        "Tauri",
+        "Qt",
+        "Flutter",
+        "Unity",
+        "PyInstaller",
+        ".NET",
+        "JVM"
+      ],
+      "description": "程序依赖的运行时与框架特征",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "依赖库探测",
+        "打包特征"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "程序"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 165,
+      "name": "程序能力特征",
+      "level": 2,
+      "tags": [
+        "具备网络访问能力",
+        "多媒体音视频支持",
+        "硬件加速与3D图形",
+        "Kernel-Level Driver Interaction",
+        "图形用户界面",
+        "命令行交互",
+        "本地文件存储读写",
+        "数据加解密与安全运算"
+      ],
+      "description": "程序能力特征的多选标记维度",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "IAT符号聚类",
+        "能力探测"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "文件类型",
+          "triggerTags": [
+            "程序"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
         }
       }
     },
@@ -701,11 +916,11 @@
       "level": 2,
       "tags": [
         "官方原版",
-        "修改版",
-        "破解版",
-        "绿色版",
-        "便携版",
-        "精简版",
+        "绿色便携版",
+        "安装程序",
+        "开源软件",
+        "修改破解版",
+        "精简优化版",
         "汉化版"
       ],
       "description": "软件的授权与分发性质",
@@ -761,6 +976,38 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "自然景观",
+          "targetDimension": "文件用途",
+          "targetTag": "旅行记录"
+        },
+        {
+          "sourceTag": "城市建筑",
+          "targetDimension": "文件用途",
+          "targetTag": "旅行记录"
+        },
+        {
+          "sourceTag": "人文活动",
+          "targetDimension": "文件用途",
+          "targetTag": "旅行记录"
+        },
+        {
+          "sourceTag": "各地美食",
+          "targetDimension": "文件用途",
+          "targetTag": "旅行记录"
+        },
+        {
+          "sourceTag": "历史遗迹",
+          "targetDimension": "文件用途",
+          "targetTag": "旅行记录"
+        },
+        {
+          "sourceTag": "户外活动",
+          "targetDimension": "文件用途",
+          "targetTag": "旅行记录"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -794,6 +1041,38 @@
           "triggerTags": [
             "财务档案"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "收入凭证",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "支出凭证",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "资产证明",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "税务文件",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "合同",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "发票",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
         }
       ],
       "metadata": {
@@ -843,6 +1122,93 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "RPG",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "冒险",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "解谜",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "塔防",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "策略",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "经营",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "恋爱",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "竞技",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "MOBA",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "格斗",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "射击",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "动作",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "肉鸽",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "田园",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "养成",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "赛车",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "乙女",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -887,6 +1253,63 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "数学",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "物理",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "化学",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "生物",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "计算机科学",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "语言学习",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "历史",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "艺术设计",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "工程技术",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "经济学",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "教育",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -921,6 +1344,18 @@
           "triggerTags": [
             "电子书"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "教材",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
+        },
+        {
+          "sourceTag": "技术书籍",
+          "targetDimension": "文件用途",
+          "targetTag": "学习资料"
         }
       ],
       "metadata": {
@@ -1947,20 +2382,24 @@
       "level": 3,
       "tags": [
         "apk",
+        "app",
+        "bin",
         "class",
         "crx",
         "dex",
         "dll",
+        "dylib",
         "elf",
         "exe",
+        "msi",
         "o",
         "obj",
         "pyc",
         "pyo",
+        "so",
+        "sys",
         "swf",
-        "wasm",
-        "app",
-        "bin"
+        "wasm"
       ],
       "description": "可执行文件的扩展名",
       "applicableFileTypes": [
@@ -2511,6 +2950,18 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "旅行照",
+          "targetDimension": "文件用途",
+          "targetTag": "旅行记录"
+        },
+        {
+          "sourceTag": "婚纱照",
+          "targetDimension": "文件用途",
+          "targetTag": "家庭生活"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2595,6 +3046,53 @@
           "triggerTags": [
             "合同票据"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "论文",
+          "targetDimension": "文件用途",
+          "targetTag": "学术科研"
+        },
+        {
+          "sourceTag": "收据",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "对账单",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "银行回单",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "采购订单",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "报销凭证",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "保函协议",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "投标文件",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "红头文件",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
         }
       ],
       "metadata": {
@@ -2920,6 +3418,28 @@
           "triggerTags": [
             "截图"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "游戏截图",
+          "targetDimension": "文件用途",
+          "targetTag": "游戏娱乐"
+        },
+        {
+          "sourceTag": "支付凭证截图",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "订单物流截图",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
+        },
+        {
+          "sourceTag": "文档截图",
+          "targetDimension": "文件用途",
+          "targetTag": "工作文档"
         }
       ],
       "metadata": {

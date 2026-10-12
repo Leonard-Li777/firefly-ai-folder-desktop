@@ -576,7 +576,7 @@
     "ja-JP": "コミック",
     "de-DE": "Comics",
     "fr-FR": "Bandes dessinées",
-    "ko-KR": "지세도",
+    "ko-KR": "만화",
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10720-10726)",
       "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11522-11528)"
@@ -629,7 +629,7 @@
     "ja-JP": "連載中",
     "de-DE": "Serialisierung",
     "fr-FR": "Sérialisation",
-    "ko-KR": "직렬화 중",
+    "ko-KR": "연재 중",
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(10824-10831)",
       "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(11032-11039)"

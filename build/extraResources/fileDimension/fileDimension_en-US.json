@@ -174,7 +174,7 @@
       "tags": [
         "Image Extensions",
         "Photography",
-        "Contract Instruments",
+        "Contracts & Bills",
         "Certificates and Licenses",
         "Screenshot",
         "Design draft",
@@ -202,6 +202,43 @@
           "triggerTags": [
             "Image"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Design draft",
+          "targetDimension": "File Purpose",
+          "targetTag": "Design Assets"
+        },
+        {
+          "sourceTag": "Photography",
+          "targetDimension": "File Purpose",
+          "targetTag": "Creative Projects"
+        },
+        {
+          "sourceTag": "Contracts & Bills",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Painting",
+          "targetDimension": "File Purpose",
+          "targetTag": "Creative Projects"
+        },
+        {
+          "sourceTag": "Poster Promo",
+          "targetDimension": "File Purpose",
+          "targetTag": "Creative Projects"
+        },
+        {
+          "sourceTag": "Blueprint",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Medical Imaging",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
         }
       ],
       "metadata": {
@@ -241,6 +278,23 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Instructional video",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Game interaction",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Meeting video",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -275,6 +329,23 @@
           "triggerTags": [
             "Audio"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Meeting recording",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Audiobook",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Podcast",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
         }
       ],
       "metadata": {
@@ -324,11 +395,12 @@
       "level": 2,
       "tags": [
         "Program Extensions",
-        "Windows",
-        "Linux",
-        "macOS",
-        "Android",
-        "iOS"
+        "Development tools",
+        "Video creation",
+        "Network communication tools",
+        "System operation and maintenance",
+        "Office Utilities",
+        "Game program"
       ],
       "description": "Classification of executable files",
       "applicableFileTypes": [
@@ -346,11 +418,154 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Development tools",
+          "targetDimension": "File Purpose",
+          "targetTag": "Tools & Utilities"
+        },
+        {
+          "sourceTag": "Video creation",
+          "targetDimension": "File Purpose",
+          "targetTag": "Creative Projects"
+        },
+        {
+          "sourceTag": "Network communication tools",
+          "targetDimension": "File Purpose",
+          "targetTag": "Tools & Utilities"
+        },
+        {
+          "sourceTag": "System operation and maintenance",
+          "targetDimension": "File Purpose",
+          "targetTag": "System Maintenance"
+        },
+        {
+          "sourceTag": "Office Utilities",
+          "targetDimension": "File Purpose",
+          "targetTag": "Tools & Utilities"
+        },
+        {
+          "sourceTag": "Game program",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
           "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 163,
+      "name": "Operating platform",
+      "level": 2,
+      "tags": [
+        "Windows",
+        "macOS",
+        "Linux",
+        "Android",
+        "iOS",
+        "Cross-platform"
+      ],
+      "description": "The operating system and architecture platform on which the program runs",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "PE head features",
+        "ELF head features",
+        "Mach-O head features"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "File Type",
+          "triggerTags": [
+            "Executable Program"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 164,
+      "name": "Runtime framework",
+      "level": 2,
+      "tags": [
+        "Native program",
+        "Electron",
+        "Tauri",
+        "Qt",
+        "Flutter",
+        "Unity",
+        "PyInstaller",
+        ".NET",
+        "JVM"
+      ],
+      "description": "Runtime and framework characteristics of program dependencies",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Dependency library detection",
+        "Packaging characteristics"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "File Type",
+          "triggerTags": [
+            "Executable Program"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 165,
+      "name": "Program ability characteristics",
+      "level": 2,
+      "tags": [
+        "Network Access",
+        "Multimedia Support",
+        "Hardware Acceleration & 3D Graphics",
+        "Kernel-Level Driver Interaction",
+        "Graphical user interface",
+        "Command line interaction",
+        "Local File I/O",
+        "Data Encryption & Security"
+      ],
+      "description": "Multi-selection marking dimension of program capability characteristics",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "IAT symbol clustering",
+        "Ability detection"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "File Type",
+          "triggerTags": [
+            "Executable Program"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
         }
       }
     },
@@ -701,12 +916,12 @@
       "level": 2,
       "tags": [
         "Official original version",
-        "Modified version",
-        "Cracked version",
-        "Green version",
-        "Portable version",
-        "Lite version",
-        "Chinese version"
+        "Portable Version",
+        "Installation program",
+        "Open source software",
+        "Cracked Version",
+        "Lite Version",
+        "Localized Version"
       ],
       "description": "Licensing and distribution nature of software",
       "applicableFileTypes": [
@@ -739,7 +954,7 @@
         "Natural Landscape",
         "Urban Architecture",
         "Humanistic activities",
-        "Food from all over the world",
+        "World Cuisine",
         "Historical Sites",
         "Outdoor Activities"
       ],
@@ -759,6 +974,38 @@
           "triggerTags": [
             "Travel Records"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Natural Landscape",
+          "targetDimension": "File Purpose",
+          "targetTag": "Travel Records"
+        },
+        {
+          "sourceTag": "Urban Architecture",
+          "targetDimension": "File Purpose",
+          "targetTag": "Travel Records"
+        },
+        {
+          "sourceTag": "Humanistic activities",
+          "targetDimension": "File Purpose",
+          "targetTag": "Travel Records"
+        },
+        {
+          "sourceTag": "World Cuisine",
+          "targetDimension": "File Purpose",
+          "targetTag": "Travel Records"
+        },
+        {
+          "sourceTag": "Historical Sites",
+          "targetDimension": "File Purpose",
+          "targetTag": "Travel Records"
+        },
+        {
+          "sourceTag": "Outdoor Activities",
+          "targetDimension": "File Purpose",
+          "targetTag": "Travel Records"
         }
       ],
       "metadata": {
@@ -794,6 +1041,38 @@
           "triggerTags": [
             "Financial Files"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Income voucher",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Expenditure Voucher",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Proof of assets",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Tax Documents",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Contract",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Bill",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
         }
       ],
       "metadata": {
@@ -843,6 +1122,93 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "RPG",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Adventure Game",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Puzzle & Mystery",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Tower Defense",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Strategy",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Management & Simulation",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Romance / Dating Sim",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Esports & Competitive",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "MOBA",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Fighting Game",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Shooter Game",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Action Game",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Roguelike",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Farming & Pastoral",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Nurturing & Raising Sim",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Racing Game",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Otome Game",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -887,6 +1253,63 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Mathematics",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Physics",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Chemistry",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Biology",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Computer Science",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Language Learning",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "History",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Art & Design",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Engineering & Technology",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Economics",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Education",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -921,6 +1344,18 @@
           "triggerTags": [
             "E-Book"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Textbook",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
+        },
+        {
+          "sourceTag": "Technical Books",
+          "targetDimension": "File Purpose",
+          "targetTag": "Learning Materials"
         }
       ],
       "metadata": {
@@ -960,7 +1395,7 @@
         "Nature",
         "Humanities",
         "Physical Education",
-        "Cure",
+        "Healing",
         "Life",
         "Travel",
         "Popular science",
@@ -1381,7 +1816,7 @@
         "Configuration file",
         "Programming Language",
         "Front End",
-        "Rear End"
+        "Back End"
       ],
       "description": "Classification of source code files",
       "applicableFileTypes": [
@@ -1947,20 +2382,24 @@
       "level": 3,
       "tags": [
         "apk",
+        "app",
+        "bin",
         "class",
         "crx",
         "dex",
         "dll",
+        "dylib",
         "elf",
         "exe",
+        "msi",
         "o",
         "obj",
         "pyc",
         "pyo",
+        "so",
+        "sys",
         "swf",
-        "wasm",
-        "app",
-        "bin"
+        "wasm"
       ],
       "description": "Executable File Extensions",
       "applicableFileTypes": [
@@ -2063,7 +2502,7 @@
     },
     {
       "id": 118,
-      "name": "Comic segmentation",
+      "name": "Comic Categories",
       "level": 3,
       "tags": [
         "Shounen Comics",
@@ -2076,7 +2515,7 @@
         "Full Color",
         "Black and White",
         "Doujinshi",
-        "Business Journal"
+        "Commercial Manga"
       ],
       "description": "Target audience classification of comic content",
       "applicableFileTypes": [
@@ -2235,7 +2674,7 @@
       "tags": [
         "Joy",
         "Sad",
-        "Cure",
+        "Healing",
         "Depressing",
         "Easy",
         "Nervous",
@@ -2351,8 +2790,8 @@
       "level": 3,
       "tags": [
         "Soft Porn",
-        "Half Meat",
-        "Pure Meat",
+        "Semi-Explicit",
+        "Fully Explicit",
         "Special XP",
         "Extreme Grotesque"
       ],
@@ -2385,7 +2824,7 @@
     },
     {
       "id": 124,
-      "name": "Coding level",
+      "name": "Mosaic Censorship Level",
       "level": 2,
       "tags": [
         "Uncensored",
@@ -2478,13 +2917,13 @@
     },
     {
       "id": 126,
-      "name": "Photography Categories",
+      "name": "Photo Categories",
       "level": 3,
       "tags": [
         "Landscape Photos",
         "Portrait Photos",
         "Wedding Photos",
-        "Still Life Photography",
+        "Still Life Photo",
         "Pet Photos",
         "Macro Photography",
         "Nighttime Photos",
@@ -2509,6 +2948,18 @@
           "triggerTags": [
             "Photography"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Travel Photos",
+          "targetDimension": "File Purpose",
+          "targetTag": "Travel Records"
+        },
+        {
+          "sourceTag": "Wedding Photos",
+          "targetDimension": "File Purpose",
+          "targetTag": "Family life"
         }
       ],
       "metadata": {
@@ -2564,7 +3015,7 @@
     },
     {
       "id": 128,
-      "name": "Breakdown of Contracts and Bills",
+      "name": "Contracts & Bills Breakdown",
       "level": 3,
       "tags": [
         "Contract",
@@ -2593,8 +3044,55 @@
         {
           "parentDimension": "Image segmentation",
           "triggerTags": [
-            "Contract Instruments"
+            "Contracts & Bills"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Thesis",
+          "targetDimension": "File Purpose",
+          "targetTag": "Academic Research"
+        },
+        {
+          "sourceTag": "Receipt",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Statement of Account",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Bank Receipt",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Purchase Order",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Reimbursement Vouchers",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Letter of Guarantee Agreement",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Bid Documents",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Official Document",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
         }
       ],
       "metadata": {
@@ -2851,7 +3349,7 @@
         "Workplace social",
         "Group sex",
         "Sex training",
-        "Peeping exposed",
+        "Peeping Wardrobe Malfunction",
         "Professional uniform",
         "Literary themes",
         "Erotic Physiology",
@@ -2887,7 +3385,7 @@
     },
     {
       "id": 135,
-      "name": "Screenshot Breakdown",
+      "name": "Screenshot Categories",
       "level": 3,
       "tags": [
         "Long Webpage Screenshot",
@@ -2922,6 +3420,28 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Game Screenshot",
+          "targetDimension": "File Purpose",
+          "targetTag": "Gaming & Entertainment"
+        },
+        {
+          "sourceTag": "Screenshot of payment receipt",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Screenshots of Order Logistics",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        },
+        {
+          "sourceTag": "Document Screenshot",
+          "targetDimension": "File Purpose",
+          "targetTag": "Work Documents"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2931,7 +3451,7 @@
     },
     {
       "id": 136,
-      "name": "Generate vector",
+      "name": "Generation Medium",
       "level": 2,
       "tags": [
         "Real shot",
@@ -2969,7 +3489,7 @@
     },
     {
       "id": 137,
-      "name": "Scenery farewell",
+      "name": "Shot Size",
       "level": 3,
       "tags": [
         "Close-up",
@@ -2985,7 +3505,7 @@
       "contextHints": [
         "Viewing range",
         "Frame composition",
-        "Character scene"
+        "Character Shot Size"
       ],
       "triggerConditions": [
         {
@@ -3522,9 +4042,9 @@
         "Cheating",
         "Beautiful married woman",
         "Young mature woman",
-        "Mistress mistress",
+        "Mistress",
         "Housewife",
-        "The joy of forgetting the year",
+        "May-December Romance",
         "Pure love"
       ],
       "description": "Segmentation of extramarital emotional contracts, partner exchange and wife themes",
@@ -3563,7 +4083,7 @@
         "Female teacher",
         "Male teacher",
         "Female classmate",
-        "Senior senior sister",
+        "Senior Students",
         "Underclassmen",
         "School beauty",
         "College Student",
@@ -3723,17 +4243,17 @@
     },
     {
       "id": 156,
-      "name": "Peep Exposed Segmentation",
+      "name": "Peep Wardrobe Malfunction Segmentation",
       "level": 4,
       "tags": [
         "Extreme Public Exposure",
         "Public Exposure",
-        "Exposed outdoors",
+        "Wardrobe Malfunction outdoors",
         "Car Sex",
         "Covert Photography and Peeping",
         "Spy Camera & Peeping",
         "Voyeurism",
-        "Exposed"
+        "Wardrobe Malfunction"
       ],
       "description": "Subdivision of public exposure, outdoor display and covert peeping and candid photography",
       "applicableFileTypes": [
@@ -3751,7 +4271,7 @@
         {
           "parentDimension": "Pornography Subgenres",
           "triggerTags": [
-            "Peeping exposed"
+            "Peeping Wardrobe Malfunction"
           ]
         }
       ],
@@ -3814,7 +4334,7 @@
         "Fantasy science fiction",
         "Midnight stories",
         "Contemporary city",
-        "Game fan",
+        "Game Doujin",
         "Japanese erotica",
         "Western erotica",
         "Adventure story"

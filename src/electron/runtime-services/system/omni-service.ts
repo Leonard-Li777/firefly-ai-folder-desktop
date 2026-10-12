@@ -179,6 +179,21 @@ export interface OmniResolveParentResponse {
 
 export type OmniRamTagItem = OmniTagChainItem
 
+export interface BinaryAnalysisInfo {
+  format: string
+  architecture: string
+  product_name?: string
+  company_name?: string
+  file_description?: string
+  file_version?: string
+  legal_copyright?: string
+  signer_organization?: string
+  detected_framework_code?: string
+  capability_codes: string[]
+  category_code?: string
+  confidence_score: number
+}
+
 export interface OmniPerceptionResponse {
   file_path: string
   mime_type: string
@@ -187,6 +202,8 @@ export interface OmniPerceptionResponse {
   markdown_content: string
   ocr_text?: string
   metadata: Record<string, any>
+  author?: string
+  binary_info?: BinaryAnalysisInfo
 
   // 物理事实特征
   file_source?: string

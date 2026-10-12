@@ -7043,45 +7043,6 @@
     "$files": ["src/renderer/components/file-explorer/Organize/components/VDirTree.tsx(17188-17196)"],
     "$id": 8696
   },
-  "未知": {
-    "en-US": "Unknown",
-    "es-ES": "Desconocido",
-    "ar-EG": "غير معروف",
-    "pt-PT": "Desconhecido",
-    "ru-RU": "Неизвестно",
-    "ja-JP": "不明",
-    "de-DE": "Unbekannt",
-    "fr-FR": "Inconnu",
-    "ko-KR": "알 수 없음",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(11423-11429)"],
-    "$id": 20733
-  },
-  "项目核心": {
-    "en-US": "Project core",
-    "es-ES": "Núcleo del proyecto",
-    "ar-EG": "جوهر المشروع",
-    "pt-PT": "Núcleo do projeto",
-    "ru-RU": "Ядро проекта",
-    "ja-JP": "プロジェクトのコア",
-    "de-DE": "Projektkern",
-    "fr-FR": "Noyau du projet",
-    "ko-KR": "프로젝트 핵심",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(30340-30348)"],
-    "$id": 8698
-  },
-  "核心项目": {
-    "en-US": "Core projects",
-    "es-ES": "Proyectos centrales",
-    "ar-EG": "المشاريع الأساسية",
-    "pt-PT": "Projetos principais",
-    "ru-RU": "основные проекты",
-    "ja-JP": "コアプロジェクト",
-    "de-DE": "Kernprojekte",
-    "fr-FR": "Projets de base",
-    "ko-KR": "핵심 프로젝트",
-    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(30407-30415)"],
-    "$id": 8699
-  },
   "获取待整理文件列表失败，请查看日志确认": {
     "en-US": "Failed to obtain the list of files to be sorted, please check the log for confirmation.",
     "es-ES": "No se pudo obtener la lista de archivos para ordenar; consulte el registro para confirmarlo.",
@@ -7684,5 +7645,44 @@
     "ko-KR": "자동 검색이 완료되고 모든 파일이 분류되었습니다!",
     "$files": ["src/renderer/components/file-explorer/Organize/hooks/useOrganizeState.ts(102509-102529)"],
     "$id": 8731
+  },
+  "未知": {
+    "en-US": "Unknown",
+    "es-ES": "Desconocido",
+    "ar-EG": "غير معروف",
+    "pt-PT": "Desconhecido",
+    "ru-RU": "Неизвестно",
+    "ja-JP": "不明",
+    "de-DE": "Unbekannt",
+    "fr-FR": "Inconnu",
+    "ko-KR": "알 수 없음",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(11423-11429)"],
+    "$id": 20733
+  },
+  "项目核心": {
+    "en-US": "Project core",
+    "es-ES": "Núcleo del proyecto",
+    "ar-EG": "جوهر المشروع",
+    "pt-PT": "Núcleo do projeto",
+    "ru-RU": "Ядро проекта",
+    "ja-JP": "プロジェクトのコア",
+    "de-DE": "Projektkern",
+    "fr-FR": "Noyau du projet",
+    "ko-KR": "프로젝트 핵심",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(30340-30348)"],
+    "$id": 8698
+  },
+  "核心项目": {
+    "en-US": "Core projects",
+    "es-ES": "Proyectos centrales",
+    "ar-EG": "المشاريع الأساسية",
+    "pt-PT": "Projetos principais",
+    "ru-RU": "основные проекты",
+    "ja-JP": "コアプロジェクト",
+    "de-DE": "Kernprojekte",
+    "fr-FR": "Projets de base",
+    "ko-KR": "핵심 프로젝트",
+    "$files": ["src/renderer/components/file-explorer/Organize/utils/helpers.ts(30407-30415)"],
+    "$id": 8699
   }
 }

@@ -67,15 +67,12 @@ const CONTENT_TAGS_CODE = 'builtin.content_tags'
 const CONTENT_TAGS_TAIL_ORDER = 9999
 const escapeLike = (s: string) => s.replace(/([%_\\])/g, '\\$1')
 
-/** 10 大受控根维度权威元数据定义（spec §2 原则 2） */
+/** 7 大受控根维度权威元数据定义（SSOT: file-dimension-source.ts） */
 const ROOT_DIMENSION_META: Record<string, { id: number; name: string }> = {
   [DIMENSION_CODES.FILE_TYPE]: { id: 1, name: '文件类型' },
   [DIMENSION_CODES.FILE_PURPOSE]: { id: 2, name: '文件用途' },
   [DIMENSION_CODES.FILE_SOURCE]: { id: 3, name: '文件来源' },
   [DIMENSION_CODES.AUTHOR]: { id: 4, name: '作者' },
-  [DIMENSION_CODES.LANGUAGE_SEGMENTATION]: { id: 16, name: '语言细分' },
-  [DIMENSION_CODES.SECURITY_LEVEL]: { id: 17, name: '安全等级' },
-  [DIMENSION_CODES.PROCESSING_STATUS]: { id: 18, name: '处理状态' },
   [DIMENSION_CODES.DOCUMENT_QUALITY]: { id: 27, name: '文件质量' },
   [DIMENSION_CODES.CONTENT_TAGS]: { id: 28, name: '内容标签' },
   [DIMENSION_CODES.CONTENT_RATING]: { id: 162, name: '内容分级' }
@@ -1167,8 +1164,8 @@ export class TagTreeQuery {
                   tags.push({
                     dimensionId: id,
                     dimensionCode: root.code,
-                    dimensionName: root.name,
-                    tagValue: child.name,
+                    dimensionName: aliasResolver(root.code, root.name),
+                    tagValue: aliasResolver(child.code, child.name),
                     fileCount: count,
                     level,
                     code,
@@ -1202,7 +1199,7 @@ export class TagTreeQuery {
                     tags.push({
                       dimensionId: id,
                       dimensionCode: root.code,
-                      dimensionName: root.name,
+                      dimensionName: aliasResolver(root.code, root.name),
                       tagValue: dyn.name,
                       fileCount: dyn.count,
                       level: curLevel,
@@ -1219,16 +1216,17 @@ export class TagTreeQuery {
                 }
                 collectDynamic(node.code, level, parentCodePath, parentNamePath)
               }
+              const resolvedRootName = aliasResolver(root.code, root.name)
               collect(
                 root,
                 root.code,
                 1,
                 root.codePath || `/${root.code}`,
-                root.namePath || `/${root.name}`
+                root.namePath || `/${resolvedRootName}`
               )
               return {
                 id,
-                name: root.name,
+                name: resolvedRootName,
                 level: 0,
                 tags,
                 code: root.code,
@@ -1360,9 +1358,9 @@ export class TagTreeQuery {
           'builtin.file_purpose': 'builtin.file_purpose',
           'builtin.file_source': 'builtin.file_source',
           'builtin.author': 'builtin.author',
-          'builtin.language_segmentation': 'builtin.language_segmentation',
-          'builtin.security_level': 'builtin.security_level',
-          'builtin.processing_status': 'builtin.processing_status',
+          'builtin.language_segmentation': 'builtin.file_type',
+          'builtin.security_level': 'builtin.file_purpose',
+          'builtin.processing_status': 'builtin.file_purpose',
           'builtin.document_quality': 'builtin.document_quality',
           'builtin.content_rating': 'builtin.content_rating',
           'builtin.image_subdivision': 'builtin.file_type',

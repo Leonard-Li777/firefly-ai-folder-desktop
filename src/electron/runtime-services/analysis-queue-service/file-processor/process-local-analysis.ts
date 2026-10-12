@@ -166,21 +166,32 @@ export async function processLocalAnalysis(
 
   const existingDimensions = ConfigDbManager.getInstance().getFileDimensions()
 
-  // ========== 第五阶段：AI 标签维度分析 ==========
+  // ========== 第五阶段：AI 智能命名与维度标签分析 ==========
+  // 增强分析（quick_name）与全面分析（full）共用同一套「快速命名」提示词（QuickNamingSystemPrompt）。
+  // 全面分析相对增强分析只多出上方的「质量评分 + 多模态描述」一步：此处把该步产出的多模态描述
+  // 并入正文再交给命名模型，避免音频/视频（不传 filePath，无视觉直读）在命名时丢失多模态信息。
   timer.start('dimensionAnalysis')
-  const dimResult = await deps.dimensionAnalyzer.analyzeFileWithDimensions(
+  const namingContent =
+    (processResult.multimodalContent?.trim()
+      ? `\n**${t('概要')}**：${processResult.multimodalContent.trim()}\n`
+      : '') +
+    (processResult.content?.trim() ? `\n**${t('正文')}**：${processResult.content.trim()}\n` : '')
+
+  const dimResult = await deps.dimensionAnalyzer.quickAnalyzeFile(
     filePath,
     item.name,
     fileType,
     fileInfo.size,
-    processResult.content || '',
-    processResult.multimodalContent,
-    processResult.qualityScore || 3,
+    namingContent,
     processResult.metadata,
     existingDimensions,
     directoryContext,
     magikaCategory,
-    isSpeedy
+    isSpeedy,
+    // 全面分析额外携带质量评分：既是「全面 vs 增强」的判别位（传入即全面），也驱动「文件质量」
+    // 维度的确定性映射。沿用历史 `|| 3` 兜底：Stage 3 正常/降级均会给出 1~10 分，此处兜底仅防
+    // 极端缺值——若传 undefined 会被下游误判为「增强分析」而整体跳过质量分与 GPS 找补。
+    processResult.qualityScore ?? 3
   )
 
   if (dimResult) {

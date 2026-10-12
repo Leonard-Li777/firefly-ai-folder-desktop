@@ -1,30 +1,4 @@
 {
-  "正在准备首次启动安装...": {
-    "en-US": "Preparing to start installation for the first time...",
-    "es-ES": "Preparándose para iniciar la instalación por primera vez...",
-    "ar-EG": "التحضير لبدء التثبيت للمرة الأولى...",
-    "pt-PT": "Preparando para iniciar a instalação pela primeira vez...",
-    "ru-RU": "Подготовка к первому запуску установки...",
-    "ja-JP": "初めてインストールを開始する準備をしています...",
-    "de-DE": "Vorbereitungen für den ersten Installationsstart...",
-    "fr-FR": "Préparation du démarrage de l'installation pour la première fois...",
-    "ko-KR": "처음으로 설치 시작을 준비 중입니다...",
-    "$files": ["src/electron/main/index.ts(25969-25986)"],
-    "$id": 10169
-  },
-  "正在从版本 {oldVersion} 升级到 {newVersion}...": {
-    "en-US": "Upgrading from version {oldVersion} to {newVersion}...",
-    "es-ES": "Actualizando de la versión {oldVersion} a {newVersion}....",
-    "ar-EG": "جارٍ الترقية من الإصدار {oldVersion} إلى {newVersion}...",
-    "pt-PT": "Atualizando da versão {oldVersion} para {newVersion}...",
-    "ru-RU": "Обновление с версии {oldVersion} до {newVersion}...",
-    "ja-JP": "バージョン {oldVersion} から {newVersion} にアップグレードしています...",
-    "de-DE": "Upgrade von Version {oldVersion} auf {newVersion}...",
-    "fr-FR": "Mise à niveau de la version {oldVersion} vers {newVersion}...",
-    "ko-KR": "버전 {oldVersion}에서 {newVersion}로 업그레이드 중...",
-    "$files": ["src/electron/main/index.ts(25999-26041)"],
-    "$id": 10170
-  },
   "AI 引擎检查完成": {
     "en-US": "AI engine check completed",
     "es-ES": "Comprobación del motor de IA completada",

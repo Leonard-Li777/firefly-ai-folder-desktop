@@ -204,6 +204,43 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Designentwurf",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Designmaterialien"
+        },
+        {
+          "sourceTag": "Fotografie",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Kreativprojekte"
+        },
+        {
+          "sourceTag": "Vertragsdokumente",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Malerei",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Kreativprojekte"
+        },
+        {
+          "sourceTag": "Plakatwerbung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Kreativprojekte"
+        },
+        {
+          "sourceTag": "Zeichnung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Medizinische Bildgebung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -241,6 +278,23 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Lehrvideo",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Spielinteraktion",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Besprechungsvideo",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -275,6 +329,23 @@
           "triggerTags": [
             "Audio"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Besprechungsaufzeichnung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Hörbuch",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Podcast",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
         }
       ],
       "metadata": {
@@ -323,12 +394,13 @@
       "name": "Programmsegmentierung",
       "level": 2,
       "tags": [
-        "ProgrammDateiendungen",
-        "Windows",
-        "Linux",
-        "macOS",
-        "Android",
-        "iOS"
+        "Programm-Erweiterungen",
+        "Entwicklungstools",
+        "Videoerstellung",
+        "Netzwerk-Kommunikations-Tools",
+        "Betrieb und Wartung des Systems",
+        "Office Utilities",
+        "Spielprogramm"
       ],
       "description": "Klassifizierung ausführbarer Dateien",
       "applicableFileTypes": [
@@ -346,11 +418,154 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Entwicklungstools",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Werkzeuge und Dienstprogramme"
+        },
+        {
+          "sourceTag": "Videoerstellung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Kreativprojekte"
+        },
+        {
+          "sourceTag": "Netzwerk-Kommunikations-Tools",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Werkzeuge und Dienstprogramme"
+        },
+        {
+          "sourceTag": "Betrieb und Wartung des Systems",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Systemwartung"
+        },
+        {
+          "sourceTag": "Office Utilities",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Werkzeuge und Dienstprogramme"
+        },
+        {
+          "sourceTag": "Spielprogramm",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
           "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 163,
+      "name": "Betriebsplattform",
+      "level": 2,
+      "tags": [
+        "Windows",
+        "macOS",
+        "Linux",
+        "Android",
+        "iOS",
+        "Plattformübergreifende"
+      ],
+      "description": "Betriebssystem und Architekturplattform, auf der das Programm ausgeführt wird",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Eigenschaften des PE-Kopfes",
+        "Elfenkopf Eigenschaften",
+        "Mach-O kopf eigenschaften"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Dateityp",
+          "triggerTags": [
+            "Ausführbares Programm"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 164,
+      "name": "Laufzeit-Framework",
+      "level": 2,
+      "tags": [
+        "Natives Programm",
+        "Electron",
+        "Tauri",
+        "Qt",
+        "Flutter",
+        "Unity",
+        "PyInstaller",
+        ".NET",
+        "JVM"
+      ],
+      "description": "Laufzeit- und Framework-Eigenschaften von Programmabhängigkeiten",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Erkennung von Abhängigkeitsbibliotheken",
+        "Verpackungseigenschaften"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Dateityp",
+          "triggerTags": [
+            "Ausführbares Programm"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 165,
+      "name": "Eigenschaften der Programmfähigkeit",
+      "level": 2,
+      "tags": [
+        "Netzwerkzugriff",
+        "Multimedia Support",
+        "Hardwarebeschleunigung & 3D-Grafik",
+        "Kernel-Treiber Interaktion",
+        "Grafische Benutzeroberfläche",
+        "Befehlszeileninteraktion",
+        "Lokale Datei I/O",
+        "Datenverschlüsselung & Sicherheit"
+      ],
+      "description": "Mehrfachauswahl-Markierungsdimension der Programmfähigkeitsmerkmale",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Clustering von IAT-Symbolen",
+        "Fähigkeitserkennung"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Dateityp",
+          "triggerTags": [
+            "Ausführbares Programm"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
         }
       }
     },
@@ -591,7 +806,7 @@
       ],
       "contextHints": [
         "GPS-Koordinaten",
-        "Anerkennung als Wahrzeichen"
+        "Wahrzeichenerkennung"
       ],
       "triggerConditions": [
         {
@@ -701,12 +916,12 @@
       "level": 2,
       "tags": [
         "Offizielle Originalversion",
-        "Modifizierte Version",
-        "Cracked-Version",
-        "Grüne Version",
-        "Tragbare Version",
-        "Lite-Version",
-        "Chinesische Version"
+        "Portable Version",
+        "Installationsprogramm",
+        "Quelloffene Software",
+        "Gecrackte Version",
+        "Lite Version",
+        "Lokalisierte Version"
       ],
       "description": "Lizenzierungs- und Vertriebscharakter von Software",
       "applicableFileTypes": [
@@ -739,7 +954,7 @@
         "Natürliche Landschaft",
         "Stadtarchitektur",
         "Humanistische Aktivitäten",
-        "Essen aus aller Welt",
+        "Weltküche",
         "Historische Stätten",
         "Outdoor-Aktivitäten"
       ],
@@ -759,6 +974,38 @@
           "triggerTags": [
             "Reiseaufzeichnungen"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Natürliche Landschaft",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Reiseaufzeichnungen"
+        },
+        {
+          "sourceTag": "Stadtarchitektur",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Reiseaufzeichnungen"
+        },
+        {
+          "sourceTag": "Humanistische Aktivitäten",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Reiseaufzeichnungen"
+        },
+        {
+          "sourceTag": "Weltküche",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Reiseaufzeichnungen"
+        },
+        {
+          "sourceTag": "Historische Stätten",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Reiseaufzeichnungen"
+        },
+        {
+          "sourceTag": "Outdoor-Aktivitäten",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Reiseaufzeichnungen"
         }
       ],
       "metadata": {
@@ -794,6 +1041,38 @@
           "triggerTags": [
             "Finanzdateien"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Einkommensgutschein",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Ausgabenbeleg",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Vermögensnachweis",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Steuerunterlagen",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Vertrag",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Rechnung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
         }
       ],
       "metadata": {
@@ -843,6 +1122,93 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "RPG",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Abenteuerspiel",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Rätsel & Puzzle",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Tower Defense",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Strategiespiel",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Wirtschaftssimulation",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Romance / Dating-Sim",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Kompetitiv & Esports",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "MOBA",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Kampfspiel",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Shooter",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Actionspiel",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Roguelike",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Landleben & Bauernhof",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Pflege & Aufzucht",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Rennspiel",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Otome-Spiel",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -887,6 +1253,63 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Mathematik",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Physik",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Chemie",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Biologie",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Informatik",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Sprachenlernen",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Geschichte",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Kunst & Design",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Ingenieurwesen & Technologie",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Wirtschaftswissenschaften",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Bildung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -921,6 +1344,18 @@
           "triggerTags": [
             "E-Book"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Lehrbuch",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
+        },
+        {
+          "sourceTag": "Technische Bücher",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Lernmaterialien"
         }
       ],
       "metadata": {
@@ -962,7 +1397,7 @@
         "Sportunterricht",
         "Heilung",
         "Leben",
-        "Reisen",
+        "Reise",
         "Populärwissenschaft",
         "Gourmet-Essen",
         "Sketch",
@@ -1381,7 +1816,7 @@
         "Konfigurationsdatei",
         "Programmiersprache",
         "Frontend",
-        "Hinteres Ende"
+        "Backend"
       ],
       "description": "Klassifizierung von Quellcodedateien",
       "applicableFileTypes": [
@@ -1943,24 +2378,28 @@
     },
     {
       "id": 115,
-      "name": "ProgrammDateiendungen",
+      "name": "Programm-Erweiterungen",
       "level": 3,
       "tags": [
         "apk",
+        "app",
+        "bin",
         "class",
         "crx",
         "dex",
         "dll",
+        "dylib",
         "elf",
         "exe",
+        "msi",
         "o",
         "obj",
         "pyc",
         "pyo",
+        "so",
+        "sys",
         "swf",
-        "wasm",
-        "app",
-        "bin"
+        "wasm"
       ],
       "description": "Ausführbare Dateierweiterung",
       "applicableFileTypes": [
@@ -1973,7 +2412,7 @@
         {
           "parentDimension": "Programmsegmentierung",
           "triggerTags": [
-            "ProgrammDateiendungen"
+            "Programm-Erweiterungen"
           ]
         }
       ],
@@ -2164,12 +2603,12 @@
     },
     {
       "id": 120,
-      "name": "Quelle der Arbeit",
+      "name": "Quelle des Werks",
       "level": 2,
       "tags": [
         "Original",
         "Doujin",
-        "Übersetzen",
+        "Übersetzung",
         "Offizielle Übersetzung",
         "Übersetzungsgruppe",
         "Maschinenübersetzung"
@@ -2247,7 +2686,7 @@
         "Schuld",
         "Gefühl der Unmoral",
         "Scham",
-        "Dominieren"
+        "Dominanz"
       ],
       "description": "Die emotionale Atmosphäre, die durch den Inhalt des Dokuments hervorgerufen wird",
       "applicableFileTypes": [
@@ -2351,10 +2790,10 @@
       "level": 3,
       "tags": [
         "Softporno",
-        "Halbes Fleisch",
-        "Reines Fleisch",
+        "Halb-Nackt",
+        "Voll-Nackt",
         "Spezielle XP",
-        "Große Neugier"
+        "Extrem Grotesk"
       ],
       "description": "Feinabstufung der Explizitheit und Darstellungsform von Pornografieinhalten",
       "applicableFileTypes": [
@@ -2385,7 +2824,7 @@
     },
     {
       "id": 124,
-      "name": "Codierungsebene",
+      "name": "Mosaik-Zensur-Stufe",
       "level": 2,
       "tags": [
         "Unzensiert",
@@ -2478,13 +2917,13 @@
     },
     {
       "id": 126,
-      "name": "Unterteilung der Fotos",
+      "name": "Fotokategorien",
       "level": 3,
       "tags": [
         "Landschaftsfotos",
         "Porträtfotos",
         "Hochzeitsfotos",
-        "Stillleben",
+        "Stillleben Foto",
         "Fotos von Haustieren",
         "Makrofotografie",
         "Nachtfotos",
@@ -2511,6 +2950,18 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Reisefotos",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Reiseaufzeichnungen"
+        },
+        {
+          "sourceTag": "Hochzeitsfotos",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Familienleben"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2531,7 +2982,7 @@
         "Unscharfe, unbrauchbare Aufnahmen",
         "Unschärfe",
         "Zittern",
-        "Entkokung",
+        "Defokussiert",
         "Bewegungsunschärfe",
         "Schlechte Bildkomposition",
         "Starke Farbabweichung",
@@ -2564,7 +3015,7 @@
     },
     {
       "id": 128,
-      "name": "Aufschlüsselung der Vertragsdokumente",
+      "name": "Aufschlüsselung Verträge & Rechnungen",
       "level": 3,
       "tags": [
         "Vertrag",
@@ -2585,7 +3036,7 @@
         "document"
       ],
       "contextHints": [
-        "Erkennung von Schriftarten",
+        "Layout-Erkennung",
         "Offizielles Siegel",
         "Finanztabellen"
       ],
@@ -2595,6 +3046,53 @@
           "triggerTags": [
             "Vertragsdokumente"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Abhandlung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Wissenschaftliche Forschung"
+        },
+        {
+          "sourceTag": "Quittung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Kontoauszug",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Bankbeleg",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Bestellauftrag",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Erstattungsbelege",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Garantievereinbarung",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Ausschreibungsunterlagen",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Offizielles Schreiben",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
         }
       ],
       "metadata": {
@@ -2654,7 +3152,7 @@
       "name": "Sensible Inhalte",
       "level": 2,
       "tags": [
-        "Gewealth und Terrorismus",
+        "Gewalt und Terrorismus",
         "Politische Angelegenheiten",
         "Verstöße",
         "Pornographie",
@@ -2739,7 +3237,7 @@
       "contextHints": [
         "Gewaltsame Zensur",
         "Gewaltbewertung",
-        "Kuriositäten-Test"
+        "Grotesk-Erkennung"
       ],
       "triggerConditions": [
         {
@@ -2851,7 +3349,7 @@
         "Soziales am Arbeitsplatz",
         "Gruppensex",
         "Sexualtraining",
-        "Peeping ausgesetzt",
+        "Voyeurismus & Exhibitionismus",
         "Berufsuniform",
         "Literarische Themen",
         "Erotische Physiologie",
@@ -2868,7 +3366,7 @@
       "contextHints": [
         "Altersprüfung",
         "Themenklassifizierung",
-        "Erotische Anerkennung"
+        "Erotik-Erkennung"
       ],
       "triggerConditions": [
         {
@@ -2887,7 +3385,7 @@
     },
     {
       "id": 135,
-      "name": "Aufschlüsselung der Screenshots",
+      "name": "Screenshot-Kategorien",
       "level": 3,
       "tags": [
         "Langer Screenshot der Webseite",
@@ -2922,6 +3420,28 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Screenshots aus dem Spiel",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Spiele und Unterhaltung"
+        },
+        {
+          "sourceTag": "Screenshot des Zahlungsbelegs",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Screenshot der Auftragslogistik",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        },
+        {
+          "sourceTag": "Screenshot aus dem Dokument",
+          "targetDimension": "Verwendungszweck der Datei",
+          "targetTag": "Arbeitsdokumente"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2931,10 +3451,10 @@
     },
     {
       "id": 136,
-      "name": "Vektor generieren",
+      "name": "Generierungsmedium",
       "level": 2,
       "tags": [
-        "Echter Schuss",
+        "Echte Aufnahme",
         "Handgezeichnet",
         "CG-Rendering",
         "KI generiert"
@@ -2947,7 +3467,7 @@
       "contextHints": [
         "Generierungsmethode",
         "Rendering-Typ",
-        "Identifizierung des Spediteurs"
+        "Trägererkennung"
       ],
       "triggerConditions": [
         {
@@ -2969,7 +3489,7 @@
     },
     {
       "id": 137,
-      "name": "Abschied von der Landschaft",
+      "name": "Bildgröße",
       "level": 3,
       "tags": [
         "Nahaufnahme",
@@ -2985,7 +3505,7 @@
       "contextHints": [
         "Sichtweite",
         "Rahmenkomposition",
-        "Charakterszene"
+        "Personen-Bildgröße"
       ],
       "triggerConditions": [
         {
@@ -3050,7 +3570,7 @@
       "tags": [
         "Transparenter Hintergrund",
         "Einfarbiger Hintergrund",
-        "Live-Hintergrund"
+        "Realer Hintergrund"
       ],
       "description": "Hintergrundkanäle und Umgebungstypen für Bilddesign-Assets und -Materialien",
       "applicableFileTypes": [
@@ -3084,8 +3604,8 @@
       "level": 3,
       "tags": [
         "Augenhöhe",
-        "Nach unten schauen",
-        "Nachschlagen",
+        "Vogelperspektive",
+        "Froschperspektive",
         "Erste Person"
       ],
       "description": "Perspektivische Winkel und Betrachtungswinkel für Aufnahme- und Zeichnungsaufnahmen",
@@ -3231,20 +3751,20 @@
     },
     {
       "id": 144,
-      "name": "Anzahl der Fächer",
+      "name": "Anzahl der Motive",
       "level": 3,
       "tags": [
         "Einzel",
         "Doppelt",
         "Gruppenfoto",
-        "Unbemannter Luftspiegel"
+        "Leere Szene"
       ],
       "description": "Die Anzahl und Zusammensetzung der Charaktere oder Hauptthemen im Bild",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "Anzahl der Betreffzeilen",
+        "Motivanzahl",
         "Porträterkennung",
         "Szenenkomposition"
       ],
@@ -3269,13 +3789,13 @@
     },
     {
       "id": 145,
-      "name": "Betrefftyp",
+      "name": "Motivtyp",
       "level": 2,
       "tags": [
-        "Charakterthema",
+        "Personenmotiv",
         "Tierische Haustiere",
         "Pflanzen und Blumen",
-        "Stillleben-Artikel",
+        "Stillleben-Waren",
         "Umweltarchitektur"
       ],
       "description": "Der Kerntyp des visuellen Vordergrundfokus im Bild",
@@ -3379,12 +3899,12 @@
     },
     {
       "id": 148,
-      "name": "Zeit Jahreszeit",
+      "name": "Jahreszeit",
       "level": 3,
       "tags": [
         "Frühlingsblumenszene",
         "Sommerschatten",
-        "Herbst golden",
+        "Herbstgolden",
         "Winterschneeszene"
       ],
       "description": "Saisonale zeitliche Merkmale von Naturlandschaften und Reisefotos im Freien",
@@ -3514,17 +4034,17 @@
     },
     {
       "id": 151,
-      "name": "Außerehelicher Lustzusammenbruch",
+      "name": "Aufschlüsselung außerehelicher Lust",
       "level": 4,
       "tags": [
         "Partnertausch",
         "Frauentausch",
-        "Schummeln",
+        "Fremdgehen",
         "Schöne verheiratete Frau",
         "Junge reife Frau",
-        "Herrin Herrin",
+        "Mätresse",
         "Hausfrau",
-        "Die Freude, das Jahr zu vergessen",
+        "Altersunterschied-Liebe",
         "Reine Liebe"
       ],
       "description": "Segmentierung außerehelicher emotionaler Verträge, Partneraustausch und Ehefrauenthemen",
@@ -3559,12 +4079,12 @@
       "name": "Aufschlüsselung der Campus-Lehrer und -Studenten",
       "level": 4,
       "tags": [
-        "Lehrerschüler",
+        "Lehrer und Schüler",
         "Weibliche Lehrerin",
         "Männlicher Lehrer",
         "Weibliche Klassenkameradin",
-        "ältere ältere Schwester",
-        "Unterschüler",
+        "Ältere Mitschüler",
+        "Jüngere Mitschüler",
         "Schulschönheit",
         "Studierende",
         "Gymnasiast",
@@ -3681,17 +4201,17 @@
     },
     {
       "id": 155,
-      "name": "Panne beim Sextraining",
+      "name": "Aufschlüsselung Sex-Training",
       "level": 4,
       "tags": [
         "Sexualtraining",
         "SM",
         "Sexsklavin",
-        "Fetisch und Fesselung",
+        "Training und Fesselung",
         "Harter Sex",
         "Harter Sex",
-        "Schwerer Perverser",
-        "Tropfende Wachspeitsche",
+        "Hardcore-Perversion",
+        "Wax Play & Peitsche",
         "Spezifischer Fetisch"
       ],
       "description": "Dominanz und Unterwerfung, subkulturelle Fetische und ernsthafter konfrontativer Sex-Zusammenbruch",
@@ -3726,13 +4246,13 @@
       "name": "Peep Exponierte Segmentierung",
       "level": 4,
       "tags": [
-        "Verrückte Belichtung",
+        "Extreme Exhibition",
         "Exposition im öffentlichen Raum",
         "Im Freien ausgesetzt",
-        "Autoschock",
-        "Heimliche Aufnahmen und Spionage",
-        "Privatsphärenkamera",
-        "Badegucken",
+        "Sex im Auto",
+        "Verdeckte Aufnahmen und Voyeurismus",
+        "Spionagekamera",
+        "Voyeurismus",
         "Ausgesetzt"
       ],
       "description": "Unterteilung in öffentliche Räume, Ausstellungen im Freien und verdecktes Spähen und ehrliche Fotografie",
@@ -3744,14 +4264,14 @@
       ],
       "contextHints": [
         "Räumliche Belichtung",
-        "Ehrliches Filmen",
+        "Heimliche Aufnahmen",
         "Außendarstellung"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Erotik-Segmente",
           "triggerTags": [
-            "Peeping ausgesetzt"
+            "Voyeurismus & Exhibitionismus"
           ]
         }
       ],
@@ -3764,15 +4284,15 @@
     },
     {
       "id": 157,
-      "name": "Professionelle einheitliche Segmentierung",
+      "name": "Aufschlüsselung der Berufsuniformen",
       "level": 4,
       "tags": [
-        "Arzt, Krankenschwester",
+        "Arzt & Krankenschwester",
         "Geburtshilfe und Gynäkologie",
         "Flugbegleiterin",
         "Polizeiangestellte",
-        "Mannequin-Automodell",
-        "Tanzendes Mädchen",
+        "Model & Car Model",
+        "Tänzerin",
         "Kommerzielle Pornografie",
         "Bezahltes Dating und Prostitution"
       ],
@@ -3784,7 +4304,7 @@
         "archive"
       ],
       "contextHints": [
-        "Einheitlicher Charakter",
+        "Uniform-Charakter",
         "Branchenberuf",
         "Rollenspiel"
       ],
@@ -3808,13 +4328,13 @@
       "name": "Aufschlüsselung der literarischen Themen",
       "level": 4,
       "tags": [
-        "Erotische Kampfkünste",
+        "Erotisches Wuxia",
         "Klassische Erotik",
         "Historische Erotik",
         "Fantasy-Science-Fiction",
         "Mitternachtsgeschichten",
         "Zeitgenössische Stadt",
-        "Spielefan",
+        "Game-Doujin",
         "Japanische Erotik",
         "Westliche Erotik",
         "Abenteuergeschichte"
@@ -3848,15 +4368,15 @@
     },
     {
       "id": 159,
-      "name": "Physiologischer Zusammenbruch des Verlangens",
+      "name": "Aufschlüsselung der erotischen Physiologie",
       "level": 4,
       "tags": [
         "Explizite sexuelle Handlungen",
         "Orgasmus durch Selbstbefriedigung",
         "Oralsex",
         "Analsex",
-        "Gesichtssperma schlucken",
-        "Private Fotos",
+        "Gesichtsbesamung & Schlucken",
+        "Boudoir-Fotos",
         "Verlockung am Rande",
         "Schöne Brüste und Beine",
         "Jungfräulichkeitskomplex"
@@ -3870,7 +4390,7 @@
       ],
       "contextHints": [
         "Physiologische Handlungen",
-        "Nahaufnahme der Orgel",
+        "Nahaufnahme des Organs",
         "Sexy Foto"
       ],
       "triggerConditions": [
@@ -3890,11 +4410,11 @@
     },
     {
       "id": 160,
-      "name": "Zusammenbruch durch unfreiwillige Körperverletzung",
+      "name": "Aufschlüsselung unfreiwilliger Übergriffe",
       "level": 4,
       "tags": [
-        "Vergewaltigung Vergewaltigung",
-        "Vergewaltigt und unter Drogen gesetzt",
+        "Vergewaltigung und sexuelle Nötigung",
+        "Drogenunterstützte Vergewaltigung",
         "Gegen den Willen",
         "Gruppenvergewaltigung",
         "Gewalttätiger Zwang"
@@ -3932,8 +4452,8 @@
       "level": 4,
       "tags": [
         "Homoerotisch",
-        "Lesbische Lilie",
-        "Schwule Schönheit",
+        "Lesbisches Yuri",
+        "Gay Yaoi",
         "Transgender"
       ],
       "description": "Unterschiedliche Geschlechterwahrnehmung, unterschiedliche Orientierungen und spezifische Segmentierung der sexuellen Orientierungsthemen",

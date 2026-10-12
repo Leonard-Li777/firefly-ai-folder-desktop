@@ -174,7 +174,7 @@
       "tags": [
         "Extensão de imagem",
         "Fotografia",
-        "Títulos contratuais",
+        "Contratos e faturas",
         "Licenças e certificados",
         "Captura de tela",
         "Rascunho do projeto",
@@ -202,6 +202,43 @@
           "triggerTags": [
             "Imagem"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Rascunho do projeto",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Recursos de design"
+        },
+        {
+          "sourceTag": "Fotografia",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Projetos criativos"
+        },
+        {
+          "sourceTag": "Contratos e faturas",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Pintura",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Projetos criativos"
+        },
+        {
+          "sourceTag": "Divulgação de cartazes",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Projetos criativos"
+        },
+        {
+          "sourceTag": "Desenho",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Imagens médicas",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
         }
       ],
       "metadata": {
@@ -241,6 +278,23 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Vídeo instrutivo",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Interação do jogo",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Vídeo da reunião",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -275,6 +329,23 @@
           "triggerTags": [
             "Áudio"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Gravação de reunião",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Audiolivro",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Podcast",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
         }
       ],
       "metadata": {
@@ -324,11 +395,12 @@
       "level": 2,
       "tags": [
         "Extensão do programa",
-        "Windows",
-        "Linux",
-        "macOS",
-        "Android",
-        "iOS"
+        "Ferramentas de desenvolvimento",
+        "Criação de vídeo",
+        "Ferramentas de comunicação em rede",
+        "Operação e manutenção do sistema",
+        "Utilitários de Escritório",
+        "Programa de jogo"
       ],
       "description": "Classificação de arquivos executáveis",
       "applicableFileTypes": [
@@ -346,11 +418,154 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Ferramentas de desenvolvimento",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Ferramentas e utilitários"
+        },
+        {
+          "sourceTag": "Criação de vídeo",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Projetos criativos"
+        },
+        {
+          "sourceTag": "Ferramentas de comunicação em rede",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Ferramentas e utilitários"
+        },
+        {
+          "sourceTag": "Operação e manutenção do sistema",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Manutenção do sistema"
+        },
+        {
+          "sourceTag": "Utilitários de Escritório",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Ferramentas e utilitários"
+        },
+        {
+          "sourceTag": "Programa de jogo",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
           "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 163,
+      "name": "Plataforma operacional",
+      "level": 2,
+      "tags": [
+        "Windows",
+        "macOS",
+        "Linux",
+        "Android",
+        "iOS",
+        "Multiplataforma"
+      ],
+      "description": "O sistema operativo e a plataforma de arquitectura em que o programa é executado",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Características da cabeça do PE",
+        "Características da cabeça do elfo",
+        "Características da cabeça Mach-O"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Tipo de ficheiro",
+          "triggerTags": [
+            "Programa executável"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 164,
+      "name": "Estrutura de tempo de execução",
+      "level": 2,
+      "tags": [
+        "Programa nativo",
+        "Electron",
+        "Tauri",
+        "Qt",
+        "Flutter",
+        "Unity",
+        "PyInstaller",
+        ".NET",
+        "JVM"
+      ],
+      "description": "Características de tempo de execução e estrutura das dependências do programa",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Detecção da biblioteca de dependências",
+        "Características da embalagem"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Tipo de ficheiro",
+          "triggerTags": [
+            "Programa executável"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 165,
+      "name": "Características da capacidade do programa",
+      "level": 2,
+      "tags": [
+        "Acesso à Rede",
+        "Suporte Multimídia",
+        "Aceleração de Hardware & Gráficos 3D",
+        "Interação Driver Kernel",
+        "Interface gráfica do utilizador",
+        "Interação de linha de comando",
+        "E/S Arquivos Locais",
+        "Encriptação & Segurança"
+      ],
+      "description": "Marcação de selecção múltipla dimensão das características da capacidade do programa",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Agrupamento de símbolos IAT",
+        "Detecção de capacidade"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Tipo de ficheiro",
+          "triggerTags": [
+            "Programa executável"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
         }
       }
     },
@@ -417,7 +632,7 @@
         "Registro",
         "Esconderijo",
         "Arquivos temporários",
-        "Dirigir"
+        "Driver"
       ],
       "description": "Classificação funcional dos principais arquivos do sistema",
       "applicableFileTypes": [
@@ -453,7 +668,7 @@
         "Concluído",
         "Sem cortes",
         "Extra",
-        "Apresentou",
+        "Destaque",
         "Versão resumida",
         "Oferta especial"
       ],
@@ -701,12 +916,12 @@
       "level": 2,
       "tags": [
         "Versão original oficial",
-        "Versão modificada",
-        "Versão crackeada",
-        "Versão verde",
-        "Versão portátil",
-        "Versão leve",
-        "Versão chinesa"
+        "Versão Portátil",
+        "Programa de instalação",
+        "Software de código aberto",
+        "Versão Crackeada",
+        "Versão Lite",
+        "Versão Localizada"
       ],
       "description": "Natureza de licenciamento e distribuição de software",
       "applicableFileTypes": [
@@ -739,7 +954,7 @@
         "Paisagem natural",
         "Arquitetura urbana",
         "Atividades humanísticas",
-        "Comida de todo o mundo",
+        "Culinária Mundial",
         "Locais históricos",
         "Atividades ao ar livre"
       ],
@@ -759,6 +974,38 @@
           "triggerTags": [
             "Registos de viagem"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Paisagem natural",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Registos de viagem"
+        },
+        {
+          "sourceTag": "Arquitetura urbana",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Registos de viagem"
+        },
+        {
+          "sourceTag": "Atividades humanísticas",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Registos de viagem"
+        },
+        {
+          "sourceTag": "Culinária Mundial",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Registos de viagem"
+        },
+        {
+          "sourceTag": "Locais históricos",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Registos de viagem"
+        },
+        {
+          "sourceTag": "Atividades ao ar livre",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Registos de viagem"
         }
       ],
       "metadata": {
@@ -794,6 +1041,38 @@
           "triggerTags": [
             "Arquivos financeiros"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Comprovante de renda",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Comprovante de despesas",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Prova de ativos",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Documentos fiscais",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Contrato",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Conta",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
         }
       ],
       "metadata": {
@@ -843,6 +1122,93 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "RPG",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Jogo de aventura",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Puzzle e enigmas",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Defesa de torre",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Jogo de estratégia",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Gestão e simulação",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Romance e encontros",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Competitivo e Esports",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "MOBA",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Jogo de luta",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Jogo de tiro",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Jogo de ação",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Roguelike",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Quinta e vida no campo",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Criação e desenvolvimento",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Jogo de corridas",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Jogo Otome",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -887,6 +1253,63 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Matemática",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Física",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Química",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Biologia",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Ciência da computação",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Aprendizagem de línguas",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "História",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Arte e design",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Engenharia e tecnologia",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Economia",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Educação",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -923,6 +1346,18 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Livro didático",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        },
+        {
+          "sourceTag": "Livros técnicos",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Materiais de estudo"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -953,7 +1388,7 @@
         "Biografia",
         "Comédia",
         "Policiais e ladrões",
-        "Filme de ação",
+        "Suspense",
         "Conto de fadas",
         "Animação",
         "Registro",
@@ -1377,11 +1812,11 @@
       "level": 2,
       "tags": [
         "Extensão do código-fonte",
-        "Roteiro",
+        "Script",
         "Arquivo de configuração",
         "Linguagem de programação",
         "Front-end",
-        "Extremidade traseira"
+        "Back-end"
       ],
       "description": "Classificação de arquivos de código-fonte",
       "applicableFileTypes": [
@@ -1947,20 +2382,24 @@
       "level": 3,
       "tags": [
         "apk",
+        "app",
+        "bin",
         "class",
         "crx",
         "dex",
         "dll",
+        "dylib",
         "elf",
         "exe",
+        "msi",
         "o",
         "obj",
         "pyc",
         "pyo",
+        "so",
+        "sys",
         "swf",
-        "wasm",
-        "app",
-        "bin"
+        "wasm"
       ],
       "description": "Extensão de arquivo executável",
       "applicableFileTypes": [
@@ -2164,7 +2603,7 @@
     },
     {
       "id": 120,
-      "name": "Fonte de trabalho",
+      "name": "Fonte da obra",
       "level": 2,
       "tags": [
         "Original",
@@ -2247,7 +2686,7 @@
         "Culpa",
         "Sentimento de imoralidade",
         "Vergonha",
-        "Dominar"
+        "Dominante"
       ],
       "description": "A atmosfera emocional evocada pelo conteúdo do documento",
       "applicableFileTypes": [
@@ -2351,10 +2790,10 @@
       "level": 3,
       "tags": [
         "Pornografia suave",
-        "Meia carne",
-        "Carne pura",
+        "Semi-nu",
+        "Explícito",
         "EXP Especial",
-        "Curiosidade severa"
+        "Grotesco Extremo"
       ],
       "description": "Grado de explícitude e forma de apresentação do conteúdo pornográfico",
       "applicableFileTypes": [
@@ -2385,7 +2824,7 @@
     },
     {
       "id": 124,
-      "name": "Nível de codificação",
+      "name": "Nível de censura (mosaico)",
       "level": 2,
       "tags": [
         "Sem censura",
@@ -2478,13 +2917,13 @@
     },
     {
       "id": 126,
-      "name": "Segmentação das fotografias",
+      "name": "Categorias de Fotos",
       "level": 3,
       "tags": [
         "Fotografias de paisagens",
         "Fotografias de pessoas",
         "Fotografias de casamento",
-        "Fotografia de natureza morta",
+        "Foto Natureza Morta",
         "Fotografias de animais de estimação",
         "Fotografia macro",
         "Fotografias noturnas",
@@ -2511,6 +2950,18 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Fotografias de viagem",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Registos de viagem"
+        },
+        {
+          "sourceTag": "Fotografias de casamento",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Vida familiar"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2524,14 +2975,14 @@
       "level": 3,
       "tags": [
         "Seleção de alta qualidade",
-        "A exposição está normal",
+        "Exposição normal",
         "Sub-exposição em condições de pouca luz",
         "Branco excessivo devido ao contraluz",
         "Ruído em ISO elevado",
         "Fotografias desfocadas e sem valor",
         "Focagem falsa",
         "Oscilação",
-        "Descoqueamento",
+        "Desfocado",
         "Vibração durante o movimento",
         "Composição inadequada",
         "Desvio de cor grave",
@@ -2564,7 +3015,7 @@
     },
     {
       "id": 128,
-      "name": "Desagregação de contratos e títulos",
+      "name": "Desagregação Contratos e Faturas",
       "level": 3,
       "tags": [
         "Contrato",
@@ -2593,8 +3044,55 @@
         {
           "parentDimension": "Segmentação de imagens",
           "triggerTags": [
-            "Títulos contratuais"
+            "Contratos e faturas"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Artigo científico",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Pesquisa académica"
+        },
+        {
+          "sourceTag": "Recibo",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Extrato de conta",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Recibo bancário",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Ordem de compra",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Comprovativos de reembolso",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Acordo de Garantia",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Documentação do concurso",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Documento oficial",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
         }
       ],
       "metadata": {
@@ -2724,8 +3222,8 @@
         "Massacre sangrento",
         "Restos mortais",
         "Tortura e maus-tratos",
-        "Redentado e ensanguentado",
-        "Conteiros excêntricos e insólitos",
+        "Carne mutilada e ensanguentada",
+        "Grotesco Hardcore",
         "Trágica tragédia de violência e terrorismo",
         "Autolesão com sangria"
       ],
@@ -2851,7 +3349,7 @@
         "Ambiente de trabalho social",
         "Sexo em grupo",
         "Treinamento sexual",
-        "Espiando exposto",
+        "Voyeurismo e exibição",
         "Uniforme profissional",
         "Temas literários",
         "Fisiologia Erótica",
@@ -2887,7 +3385,7 @@
     },
     {
       "id": 135,
-      "name": "Desglose das capturas de ecrã",
+      "name": "Categorias de Capturas",
       "level": 3,
       "tags": [
         "Captura de ecrã longa da página web",
@@ -2922,6 +3420,28 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Imagens do jogo",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Jogos e entretenimento"
+        },
+        {
+          "sourceTag": "Captura de ecrã do comprovativo de pagamento",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Captura de ecrã da logística da encomenda",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        },
+        {
+          "sourceTag": "Captura de ecrã do documento",
+          "targetDimension": "Finalidade do ficheiro",
+          "targetTag": "Documentos de trabalho"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2931,10 +3451,10 @@
     },
     {
       "id": 136,
-      "name": "Gerar vetor",
+      "name": "Suporte de geração",
       "level": 2,
       "tags": [
-        "Tiro real",
+        "Captura real",
         "Desenhado à mão",
         "Renderização CG",
         "IA gerada"
@@ -2947,7 +3467,7 @@
       "contextHints": [
         "Método de geração",
         "Tipo de renderização",
-        "Identificação da transportadora"
+        "Identificação do suporte"
       ],
       "triggerConditions": [
         {
@@ -2969,7 +3489,7 @@
     },
     {
       "id": 137,
-      "name": "Despedida do cenário",
+      "name": "Tamanho do plano",
       "level": 3,
       "tags": [
         "Primeiro plano",
@@ -2985,7 +3505,7 @@
       "contextHints": [
         "Alcance de visualização",
         "Composição do quadro",
-        "Cena do personagem"
+        "Plano da personagem"
       ],
       "triggerConditions": [
         {
@@ -3050,7 +3570,7 @@
       "tags": [
         "Fundo transparente",
         "Fundo de cor sólida",
-        "Plano de fundo ao vivo"
+        "Fundo real"
       ],
       "description": "Canais de fundo e tipos de ambiente para ativos e materiais de design de imagem",
       "applicableFileTypes": [
@@ -3084,8 +3604,8 @@
       "level": 3,
       "tags": [
         "Nível dos olhos",
-        "Olhando para baixo",
-        "Olhe para cima",
+        "Ângulo picado",
+        "Contra-plongée",
         "Primeira pessoa"
       ],
       "description": "Ângulos de perspectiva e ângulos de visão para fotografar e desenhar fotos",
@@ -3094,7 +3614,7 @@
         "video"
       ],
       "contextHints": [
-        "ângulo de tiro",
+        "Ângulo de filmagem",
         "Perspectiva da lente",
         "ângulo de visão"
       ],
@@ -3231,20 +3751,20 @@
     },
     {
       "id": 144,
-      "name": "Número de assuntos",
+      "name": "Número de sujeitos",
       "level": 3,
       "tags": [
-        "Solteiro",
+        "Uma pessoa",
         "Dobro",
         "Foto do grupo",
-        "Espelho aéreo não tripulado"
+        "Cena vazia"
       ],
       "description": "O número e a composição dos personagens ou assuntos centrais da imagem",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "Contagem de assuntos",
+        "Contagem de sujeitos",
         "Detecção de retrato",
         "Composição de cena"
       ],
@@ -3269,10 +3789,10 @@
     },
     {
       "id": 145,
-      "name": "Tipo de assunto",
+      "name": "Tipo de sujeito",
       "level": 2,
       "tags": [
-        "Assunto do personagem",
+        "Sujeito da pessoa",
         "Animais de estimação",
         "Plantas e flores",
         "Mercadoria de natureza morta",
@@ -3284,7 +3804,7 @@
       ],
       "contextHints": [
         "Detecção de alvo",
-        "Identificação do assunto",
+        "Identificação do sujeito",
         "Foco visual"
       ],
       "triggerConditions": [
@@ -3419,7 +3939,7 @@
       "level": 2,
       "tags": [
         "Cores quentes",
-        "Cores legais",
+        "Cores frias",
         "Preto neutro, branco e cinza",
         "Altamente saturado e vívido",
         "Vermelho",
@@ -3514,17 +4034,17 @@
     },
     {
       "id": 151,
-      "name": "Colapso de luxúria extraconjugal",
+      "name": "Detalhamento da luxúria extraconjugal",
       "level": 4,
       "tags": [
         "Troca de parceiro",
         "Troca de esposa",
-        "Trapaceando",
+        "Traição",
         "Linda mulher casada",
         "Jovem mulher madura",
-        "Amante amante",
+        "Amante",
         "Dona de casa",
-        "A alegria de esquecer o ano",
+        "Romance com diferença de idade",
         "Amor puro"
       ],
       "description": "Segmentação de contratos afetivos extraconjugais, troca de parceiros e temas de esposas",
@@ -3559,12 +4079,12 @@
       "name": "Discriminação de professores e alunos do campus",
       "level": 4,
       "tags": [
-        "Professor estudante",
+        "Professor e aluno",
         "Professora",
         "Professor masculino",
         "Colega de classe",
-        "Irmã mais velha",
-        "Alunos do último ano",
+        "Colegas mais velhos",
+        "Alunos mais novos",
         "Beleza da escola",
         "Estudante universitário",
         "Estudante do ensino médio",
@@ -3687,11 +4207,11 @@
         "Treinamento sexual",
         "SM",
         "Escrava sexual",
-        "Dominação e Restrição",
+        "Treino e restrição",
         "Sexo violento",
         "Sexo violento",
-        "Pervertido pesado",
-        "Chicote de cera pingando",
+        "Perversão Hardcore",
+        "Cera e chicote",
         "Fetiche específico"
       ],
       "description": "Dominância e submissão, fetiches subculturais e graves conflitos sexuais",
@@ -3726,16 +4246,16 @@
       "name": "Peep Segmentação Exposta",
       "level": 4,
       "tags": [
-        "Exposição louca",
-        "Exposição em espaço público",
+        "Exibição extrema",
+        "Exibição pública",
         "Exposto ao ar livre",
-        "Choque de carro",
-        "Fotografar à socorta e espreitar",
-        "Câmera de privacidade",
-        "Espiando no banho",
-        "Expor"
+        "Sexo no carro",
+        "Fotografia oculta e voyeurisme",
+        "Câmera espiã",
+        "Voyeurismo",
+        "Descuido"
       ],
-      "description": "Subdivisão de exposição em espaço público, exibição ao ar livre e espionagem secreta e fotografia espontânea",
+      "description": "Subdivisão de Exibição pública, exibição ao ar livre e espionagem secreta e fotografia espontânea",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -3744,14 +4264,14 @@
       ],
       "contextHints": [
         "Exposição espacial",
-        "Filmagem sincera",
+        "Filmagem oculta",
         "Exibição ao ar livre"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Segmentos da indústria pornográfica",
           "triggerTags": [
-            "Espiando exposto"
+            "Voyeurismo e exibição"
           ]
         }
       ],
@@ -3767,12 +4287,12 @@
       "name": "Segmentação de uniformes profissionais",
       "level": 4,
       "tags": [
-        "Médico enfermeira",
+        "Médico e enfermeira",
         "Obstetrícia e Ginecologia",
         "Aeromoça",
         "Policial",
-        "Modelo de carro manequim",
-        "Garota dançando",
+        "Modelo e modelo de carro",
+        "Dançarina",
         "Pornografia comercial",
         "Namoro Pago e Prostituição"
       ],
@@ -3784,7 +4304,7 @@
         "archive"
       ],
       "contextHints": [
-        "Caráter uniforme",
+        "Personagem uniformizado",
         "Ocupação da indústria",
         "Jogo de representação"
       ],
@@ -3808,18 +4328,18 @@
       "name": "Análise do assunto literário",
       "level": 4,
       "tags": [
-        "Artes marciais eróticas",
+        "Wuxia erótico",
         "Erótica Clássica",
         "Erotismo histórico",
         "Ficção científica fantasia",
         "Histórias da meia-noite",
         "Cidade contemporânea",
-        "Fã de jogos",
+        "Doujin de jogos",
         "Erotismo japonês",
         "Erótica ocidental",
         "História de aventura"
       ],
-      "description": "Configurações de antecedentes da literatura adulta, antecedentes de tempo e espaço e subdivisões específicas de gênero",
+      "description": "Configurações de Fondo da literatura adulta, Fondo de tempo e espaço e subdivisões específicas de gênero",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -3848,15 +4368,15 @@
     },
     {
       "id": 159,
-      "name": "Colapso fisiológico do desejo",
+      "name": "Detalhamento da fisiologia erótica",
       "level": 4,
       "tags": [
         "Atos sexuais explícitos",
         "Orgasmo através da masturbação",
         "Sexo oral",
         "Sexo anal",
-        "Facial cum engolir",
-        "Fotografias particulares",
+        "Ejaculação facial e engolir",
+        "Fotos boudoir",
         "Sedução no limite",
         "Lindos seios e pernas",
         "Complexo de virgindade"
@@ -3890,13 +4410,13 @@
     },
     {
       "id": 160,
-      "name": "Colapso de agressão involuntária",
+      "name": "Detalhamento de agressões não consensuais",
       "level": 4,
       "tags": [
-        "Estupro estupro",
-        "Estuprada e drogada",
+        "Estupro e agressão sexual",
+        "Violação facilitada por drogas",
         "Contra a vontade",
-        "Assalto de estupro coletivo",
+        "Estupro coletivo",
         "Coerção violenta"
       ],
       "description": "Classificação de coerção involuntária, infração e violações extremas",
@@ -3908,7 +4428,7 @@
       ],
       "contextHints": [
         "Contra a vontade",
-        "Violação e violação",
+        "Infração e violação",
         "Violação forçada"
       ],
       "triggerConditions": [
@@ -3932,8 +4452,8 @@
       "level": 4,
       "tags": [
         "Homoerótico",
-        "Lírio lésbica",
-        "Beleza alegre",
+        "Yuri lésbico",
+        "Yaoi gay",
         "Transgênero"
       ],
       "description": "Cognição de gênero diversa, orientações diversas e segmentação temática de orientação sexual específica",

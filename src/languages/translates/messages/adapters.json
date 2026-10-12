@@ -38,7 +38,7 @@
     "de-DE": "Verarbeitung der multimodalen Datei fehlgeschlagen [{filePath}]: {errorMsg}",
     "fr-FR": "Échec du traitement du fichier multimodal [{filePath}] : {errorMsg}",
     "ko-KR": "멀티모달 파일 [{filePath}] 처리 실패: {errorMsg}",
-    "$files": ["src/electron/adapters/llama-index-ai-adapter.ts(10362-10400)"],
+    "$files": ["src/electron/adapters/llama-index-ai-adapter.ts(10838-10876)"],
     "$id": 4271
   },
   "没有加载的模型": {

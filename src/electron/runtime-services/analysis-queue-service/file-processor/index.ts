@@ -967,6 +967,9 @@ export class FileProcessor {
         if (!coreSmartName) {
           coreSmartName = path.basename(filePath, path.extname(filePath))
         }
+        if (!processResult.author && baseMetadata?.author) {
+          processResult.author = baseMetadata.author
+        }
         let finalSmartName = coreSmartName
 
         // 持久化 raw_smart_name（保留原始未经模板包裹、无扩展名的 AI 核心名称）——落 files.raw_smart_name 列
@@ -1059,7 +1062,7 @@ export class FileProcessor {
           fileFingerprint,
           preflightContext,
           dimResult,
-          authors: baseMetadata?.authors || baseMetadata?.document?.authors,
+          authors: (baseMetadata?.author ? [baseMetadata.author] : undefined) || baseMetadata?.authors || baseMetadata?.document?.authors,
           language: baseMetadata?.language,
           fileGroup: existingMagikaGroup,
           extension: path.extname(filePath).replace(/^\./, '').toLowerCase(),
@@ -1708,6 +1711,12 @@ export class FileProcessor {
           ...omniMetadata
         }
       }
+      if (anydocResult?.perception?.binary_info) {
+        contentResult.metadata.binary_info = anydocResult.perception.binary_info
+      }
+      if (anydocResult?.perception?.author) {
+        contentResult.metadata.author = anydocResult.perception.author
+      }
 
       logger.info(
         LogCategory.ANALYSIS_QUEUE,
@@ -1805,6 +1814,12 @@ export class FileProcessor {
 
       // 平铺注入 metadata（更新 contentResult.metadata 与 fileInfo.metadata，供后续所有模式使用）
       contentResult.metadata = preflightContext.flattenedMetadata
+      if (anydocResult?.perception?.binary_info && !contentResult.metadata.binary_info) {
+        contentResult.metadata.binary_info = anydocResult.perception.binary_info
+      }
+      if (anydocResult?.perception?.author && !contentResult.metadata.author) {
+        contentResult.metadata.author = anydocResult.perception.author
+      }
 
       if (!fileFingerprint || fileFingerprint.startsWith('temp_')) {
         fileFingerprint = await calculateFileFingerprint(filePath)
@@ -1853,19 +1868,25 @@ export class FileProcessor {
 
       this.updateItemStatus(item.id, 'analyzing', 2)
 
-      // 无论文件是否已存在，都使用 UPSERT 写入/更新 Magika 分类（category）及 description（来自多模态感知兜底）：
+      const resolvedAuthor =
+        anydocResult?.perception?.author ||
+        contentResult.metadata?.author ||
+        null
+
+      // 无论文件是否已存在，都使用 UPSERT 写入/更新 Magika 分类（category）、作者（author）及 description（来自多模态感知兜底）：
       // - simple 模式下 magikaCategory 来自本地 Magika CLI
       // - document/full 模式下 magikaCategory 来自 MarkitdownServer 的 serverResult.magika（或本地兜底）
       // 否则并行 CPU 阶段提前返回时，从 Server 获取的 magika 数据将无法落库，
       // 导致文件属性面板元数据 Tab 的 Magika 字段缺失
       db.prepare(
         `
-        INSERT INTO files (file_fingerprint, smart_name, smart_name_source, size, extension, file_group, description, created_at, modified_at, accessed_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO files (file_fingerprint, smart_name, smart_name_source, size, extension, file_group, author, description, created_at, modified_at, accessed_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           file_group = excluded.file_group,
           smart_name = COALESCE(excluded.smart_name, files.smart_name),
           smart_name_source = CASE WHEN excluded.smart_name IS NOT NULL THEN excluded.smart_name_source ELSE files.smart_name_source END,
+          author = COALESCE(excluded.author, files.author),
           description = COALESCE(excluded.description, files.description)
         `
       ).run(
@@ -1875,6 +1896,7 @@ export class FileProcessor {
         stats.size,
         enhancedFileType,
         JSON.stringify(magikaCategory || { mime_type: getMimeType(enhancedFileType) }),
+        resolvedAuthor,
         omniDescription || null,
         new Date(stats.birthtime).toISOString(),
         new Date(stats.mtime).toISOString(),
@@ -2019,6 +2041,7 @@ export class FileProcessor {
         const processResult = {
           content: contentResult.content,
           metadata: contentResult.metadata,
+          author: resolvedAuthor || undefined,
           description: omniDescription || undefined,
           qualityScore: null,
           qualityConfidence: null,
@@ -2071,7 +2094,7 @@ export class FileProcessor {
           fileFingerprint,
           preflightContext,
           dimResult: null,
-          authors: anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
+          authors: (resolvedAuthor ? [resolvedAuthor] : undefined) || anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
           language,
           fileGroup: magikaGroup,
           extension: effectiveExt,
@@ -2159,6 +2182,9 @@ export class FileProcessor {
       if (!processResult.description && omniDescription) {
         processResult.description = omniDescription
       }
+      if (!processResult.author && resolvedAuthor) {
+        processResult.author = resolvedAuthor
+      }
 
       this.updateItemStatus(item.id, 'analyzing', 98)
 
@@ -2193,7 +2219,7 @@ export class FileProcessor {
         fileFingerprint,
         preflightContext,
         dimResult,
-        authors: anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
+        authors: (resolvedAuthor ? [resolvedAuthor] : undefined) || anydocResult?.metadata?.authors || anydocResult?.metadata?.document?.authors,
         language,
         fileGroup: magikaGroup,
         extension: effectiveExt,

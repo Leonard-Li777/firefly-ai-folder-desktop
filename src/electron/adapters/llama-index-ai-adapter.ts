@@ -105,6 +105,18 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
     signal?: AbortSignal
     isSpeedy?: boolean
     disableThinking?: boolean
+    /**
+     * 频率惩罚（对应 llama.cpp 的 `--repeat-penalty`）。
+     * 缺省不传时由下层沿用既有缺省值 1.1；2026-10-12 用户裁定：快速命名与其余链路
+     * 统一使用该默认值（不再显式传 0 关闭重复惩罚）。
+     * 注意：本适配器是 Core Engine `ICoreEngineAdapters.llamaRuntime` 的实际注入实现
+     * （见 `adapters/index.ts::createCoreEngineAdapters`），**必须在此显式声明并透传**，
+     * 否则上游传值会在这一层被静默丢弃、回落到下层缺省 1.1
+     * （历史上曾因此让上游显式传入的 0 变成 no-op）。
+     */
+    frequency_penalty?: number
+    /** 存在惩罚。缺省不传时由下层沿用既有缺省值 0.3 */
+    presence_penalty?: number
   }): Promise<{
     success: boolean
     response?: any
@@ -396,7 +408,10 @@ export class LlamaIndexAIAdapter implements IAIAdapter, ILlamaRuntimeAdapter {
         signal: request.signal, // 透传中止信号，支持取消请求
         isSpeedy,
         fileFingerprint,
-        disableThinking: request.disableThinking
+        disableThinking: request.disableThinking,
+        // 采样惩罚项原样透传：未传时保持 undefined，交由 service-switch-manager 沿用缺省值（1.1 / 0.3）
+        frequency_penalty: request.frequency_penalty,
+        presence_penalty: request.presence_penalty
       })
       const processingTime = Date.now() - startTime
       // 创建副本以避免修改原始引用

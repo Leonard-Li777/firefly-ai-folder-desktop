@@ -155,6 +155,7 @@ export async function saveLocalAnalysisResult(
     smartNameSource: smartNameSource ?? null,
     smartNameTemplateSource: smartNameTemplateSource ?? null,
     type: fileType,
+    author: processResult.author ?? null,
     modifiedAt: stats.mtime.toISOString(),
     accessedAt: stats.atime.toISOString(),
     category: magikaCategory,

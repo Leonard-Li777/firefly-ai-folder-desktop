@@ -174,7 +174,7 @@
       "tags": [
         "画像拡張子",
         "写真",
-        "契約書の注意事項",
+        "契約書類",
         "ライセンス",
         "スクリーンショット",
         "デザイン案",
@@ -185,8 +185,8 @@
         "描画",
         "マンガ",
         "絵画",
-        "キャラクターの写真があります",
-        "単語マップなし"
+        "テキスト入り画像",
+        "テキストなし画像"
       ],
       "description": "画像コンテンツの専門的な分類",
       "applicableFileTypes": [
@@ -202,6 +202,43 @@
           "triggerTags": [
             "画像"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "デザイン案",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "デザイン素材"
+        },
+        {
+          "sourceTag": "写真",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "クリエイティブプロジェクト"
+        },
+        {
+          "sourceTag": "契約書類",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "絵画",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "クリエイティブプロジェクト"
+        },
+        {
+          "sourceTag": "プロモーションポスター",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "クリエイティブプロジェクト"
+        },
+        {
+          "sourceTag": "描画",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "医療画像処理",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
         }
       ],
       "metadata": {
@@ -220,7 +257,7 @@
         "映画とテレビ",
         "説明ビデオ",
         "ゲームのインタラクション",
-        "録画画面",
+        "画面録画",
         "短いビデオ",
         "監視ビデオ",
         "ミーティングビデオ"
@@ -239,6 +276,23 @@
           "triggerTags": [
             "動画"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "説明ビデオ",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "ゲームのインタラクション",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "ミーティングビデオ",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
         }
       ],
       "metadata": {
@@ -275,6 +329,23 @@
           "triggerTags": [
             "音声"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "会議の録音",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "オーディオブック",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "ポッドキャスト",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
         }
       ],
       "metadata": {
@@ -324,11 +395,12 @@
       "level": 2,
       "tags": [
         "プログラムの延長",
-        "Windows",
-        "Linux",
-        "macOS",
-        "Android",
-        "iOS"
+        "開発ツール",
+        "ビデオ作成",
+        "ネットワーク通信ツール",
+        "システムの運用-保守",
+        "オフィス ユーティリティ",
+        "ゲームプログラム"
       ],
       "description": "実行可能ファイルの分類",
       "applicableFileTypes": [
@@ -346,11 +418,154 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "開発ツール",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ツール・ユーティリティ"
+        },
+        {
+          "sourceTag": "ビデオ作成",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "クリエイティブプロジェクト"
+        },
+        {
+          "sourceTag": "ネットワーク通信ツール",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ツール・ユーティリティ"
+        },
+        {
+          "sourceTag": "システムの運用-保守",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "システムメンテナンス"
+        },
+        {
+          "sourceTag": "オフィス ユーティリティ",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ツール・ユーティリティ"
+        },
+        {
+          "sourceTag": "ゲームプログラム",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
           "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 163,
+      "name": "運営プラットフォーム",
+      "level": 2,
+      "tags": [
+        "Windows",
+        "macOS",
+        "Linux",
+        "Android",
+        "iOS",
+        "クロスプラットフォーム"
+      ],
+      "description": "プログラムが実行されるオペレーティングシステムとアーキテクチャプラットフォーム",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "PEの頭部の特徴",
+        "エルフヘッドの特徴",
+        "マッハ-Oの頭部の特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "実行プログラム"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 164,
+      "name": "ランタイムフレームワーク",
+      "level": 2,
+      "tags": [
+        "ネイティブプログラム",
+        "Electron",
+        "Tauri",
+        "Qt",
+        "Flutter",
+        "Unity",
+        "PyInstaller",
+        ".NET",
+        "JVM"
+      ],
+      "description": "プログラム依存性のランタイムとフレームワークの特性",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "依存ライブラリの検出",
+        "包装の特徴"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "実行プログラム"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 165,
+      "name": "プログラム能力特性",
+      "level": 2,
+      "tags": [
+        "ネットワーク アクセス",
+        "マルチメディア サポート",
+        "ハードウェア加速 & 3D グラフィックス",
+        "カーネル レベル ドライバー インタラクション",
+        "グラフィカルユーザインタフェース",
+        "コマンドラインの相互作用",
+        "ローカル ファイル I/O",
+        "データ暗号化 & セキュリティ"
+      ],
+      "description": "プログラム機能の特徴の複数の選択の印次元",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "IATシンボルクラスタリング",
+        "能力検出"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "ファイルの種類",
+          "triggerTags": [
+            "実行プログラム"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
         }
       }
     },
@@ -363,8 +578,8 @@
         "英語",
         "日本語",
         "フランス語",
-        "ロシア",
-        "韓国人",
+        "ロシア語",
+        "韓国語",
         "スペイン語",
         "ドイツ語",
         "ポルトガル語",
@@ -452,7 +667,7 @@
         "連載中",
         "完了",
         "ノーカット",
-        "余分な",
+        "番外編",
         "注目の",
         "短縮版",
         "特別オファー"
@@ -624,7 +839,7 @@
       "level": 2,
       "tags": [
         "公共",
-        "内面",
+        "内部",
         "機密",
         "極秘"
       ],
@@ -701,12 +916,12 @@
       "level": 2,
       "tags": [
         "公式オリジナルバージョン",
-        "修正版",
-        "クラック版",
-        "グリーンバージョン",
         "ポータブル版",
+        "インストールプログラム",
+        "オープンソースソフトウェア",
+        "クラック版",
         "ライト版",
-        "中国語版"
+        "ローカライズ版"
       ],
       "description": "ソフトウェアのライセンスと配布の性質",
       "applicableFileTypes": [
@@ -739,7 +954,7 @@
         "自然の風景",
         "都市建築",
         "人間味あふれる活動",
-        "世界中の食べ物",
+        "世界の料理",
         "史跡",
         "アウトドアアクティビティ"
       ],
@@ -759,6 +974,38 @@
           "triggerTags": [
             "旅行の記録"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "自然の風景",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "旅行の記録"
+        },
+        {
+          "sourceTag": "都市建築",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "旅行の記録"
+        },
+        {
+          "sourceTag": "人間味あふれる活動",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "旅行の記録"
+        },
+        {
+          "sourceTag": "世界の料理",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "旅行の記録"
+        },
+        {
+          "sourceTag": "史跡",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "旅行の記録"
+        },
+        {
+          "sourceTag": "アウトドアアクティビティ",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "旅行の記録"
         }
       ],
       "metadata": {
@@ -794,6 +1041,38 @@
           "triggerTags": [
             "財務ファイル"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "収入証明書",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "支出伝票",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "資産の証明",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "税務書類",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "契約",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "請求書",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
         }
       ],
       "metadata": {
@@ -843,6 +1122,93 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "RPG",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "アドベンチャー",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "パズル・謎解き",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "タワーディフェンス",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "ストラテジー",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "経営シミュレーション",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "恋愛シミュレーション",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "対戦・eスポーツ",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "MOBA",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "格闘ゲーム",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "シューティングゲーム",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "アクションゲーム",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "ローグライク",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "スローライフ・田園",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "育成シミュレーション",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "レースゲーム",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "乙女ゲーム",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -865,7 +1231,7 @@
         "アート・デザイン",
         "工学・技術",
         "経済学",
-        "教育する"
+        "教育"
       ],
       "description": "学習教材の分野分類",
       "applicableFileTypes": [
@@ -885,6 +1251,63 @@
           "triggerTags": [
             "学習・勉強資料"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "数学",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "物理学",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "化学薬品",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "生物学",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "コンピュータサイエンス",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "語学学習",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "歴史",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "アート・デザイン",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "工学・技術",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "経済学",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "教育",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
         }
       ],
       "metadata": {
@@ -921,6 +1344,18 @@
           "triggerTags": [
             "電子書籍"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "教科書",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
+        },
+        {
+          "sourceTag": "技術書",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学習・勉強資料"
         }
       ],
       "metadata": {
@@ -960,7 +1395,7 @@
         "自然(しぜん)",
         "人文科学",
         "スポーツ",
-        "治す",
+        "癒し",
         "人生",
         "旅",
         "ポピュラーサイエンス",
@@ -1125,10 +1560,10 @@
       "name": "家族生活の内訳",
       "level": 2,
       "tags": [
-        "ハウスレジデンス",
+        "住居",
         "ホームショッピング",
         "在宅医療",
-        "家族ID",
+        "家族の証明書",
         "子どもの教育",
         "毎日のハウスキーピング",
         "家庭料理"
@@ -1381,7 +1816,7 @@
         "設定ファイル",
         "プログラミング言語",
         "フロントエンド",
-        "後部"
+        "バックエンド"
       ],
       "description": "ソースコードファイルの分類",
       "applicableFileTypes": [
@@ -1947,20 +2382,24 @@
       "level": 3,
       "tags": [
         "apk",
+        "app",
+        "bin",
         "class",
         "crx",
         "dex",
         "dll",
+        "dylib",
         "elf",
         "exe",
+        "msi",
         "o",
         "obj",
         "pyc",
         "pyo",
+        "so",
+        "sys",
         "swf",
-        "wasm",
-        "app",
-        "bin"
+        "wasm"
       ],
       "description": "実行ファイルの拡張子",
       "applicableFileTypes": [
@@ -2076,7 +2515,7 @@
         "フルカラー",
         "黒と白",
         "同人誌",
-        "ビジネスジャーナル"
+        "商業誌"
       ],
       "description": "コミックコンテンツの対象読者分類",
       "applicableFileTypes": [
@@ -2164,7 +2603,7 @@
     },
     {
       "id": 120,
-      "name": "仕事のソース",
+      "name": "作品の出典",
       "level": 2,
       "tags": [
         "オリジナル",
@@ -2235,7 +2674,7 @@
       "tags": [
         "喜び",
         "悲しい",
-        "治す",
+        "癒し",
         "うつ病を引き起こす",
         "簡単",
         "神経質",
@@ -2247,7 +2686,7 @@
         "罪悪感",
         "背徳感",
         "恥",
-        "支配する"
+        "支配"
       ],
       "description": "文書の内容から醸し出される感情的な雰囲気",
       "applicableFileTypes": [
@@ -2351,10 +2790,10 @@
       "level": 3,
       "tags": [
         "ソフトポルノ",
-        "ハーフ・エロ",
-        "純粋な肉",
+        "セミヌード",
+        "フルヌード",
         "特別なXP",
-        "強い好奇心"
+        "極端なグロ"
       ],
       "description": "ポルノ内容の露骨な程度および表現形式の細分化",
       "applicableFileTypes": [
@@ -2369,7 +2808,7 @@
       ],
       "triggerConditions": [
         {
-          "parentDimension": "機密コンテンツ",
+          "parentDimension": "センシティブコンテンツ",
           "triggerTags": [
             "ポルノ"
           ]
@@ -2385,7 +2824,7 @@
     },
     {
       "id": 124,
-      "name": "コーディングレベル",
+      "name": "モザイク処理レベル",
       "level": 2,
       "tags": [
         "無修正",
@@ -2478,11 +2917,11 @@
     },
     {
       "id": 126,
-      "name": "写真写真の内訳",
+      "name": "写真カテゴリ",
       "level": 3,
       "tags": [
         "風景写真",
-        "キャラクター写真",
+        "人物写真",
         "ウェディングフォト",
         "静物写真",
         "ペット写真",
@@ -2494,13 +2933,13 @@
         "ポートレート",
         "航空写真"
       ],
-      "description": "写真の内容と主題の専門的な内訳写真の写真の内容と主題の専門的な内訳",
+      "description": "写真の内容と主題の専門的な内訳",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
         "EXIFデータ",
-        "対象認識",
+        "テーマ認識",
         "シーン認識"
       ],
       "triggerConditions": [
@@ -2509,6 +2948,18 @@
           "triggerTags": [
             "写真"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "旅行写真",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "旅行の記録"
+        },
+        {
+          "sourceTag": "ウェディングフォト",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "家族生活"
         }
       ],
       "metadata": {
@@ -2524,17 +2975,17 @@
       "level": 3,
       "tags": [
         "プレミアムセレクション",
-        "露出は正常です",
+        "露出正常",
         "暗い光の露出不足",
-        "バックライトデッドホワイト",
-        "高いISOノイズ",
-        "ファジィスクラップフィルム",
+        "逆光白飛び",
+        "高ISOノイズ",
+        "ぼやけた失敗写真",
         "ボケ",
         "ジッター",
         "デフォーカス",
-        "モーションジャイロ",
+        "モーションブレ",
         "構成が悪い",
-        "厳しい色の鋳造物",
+        "著しい色かぶり",
         "間違った方向",
         "画面の傾き"
       ],
@@ -2545,7 +2996,7 @@
       "contextHints": [
         "画質テスト",
         "露出分析",
-        "明快さの査定"
+        "鮮明度評価"
       ],
       "triggerConditions": [
         {
@@ -2564,12 +3015,12 @@
     },
     {
       "id": 128,
-      "name": "契約書の内訳",
+      "name": "契約・請求書の内訳",
       "level": 3,
       "tags": [
         "契約",
         "請求書",
-        "赤のヘッダファイル",
+        "公文書",
         "論文",
         "領収書",
         "文",
@@ -2593,8 +3044,55 @@
         {
           "parentDimension": "画像のセグメンテーション",
           "triggerTags": [
-            "契約書の注意事項"
+            "契約書類"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "論文",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "学術研究"
+        },
+        {
+          "sourceTag": "領収書",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "文",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "銀行領収書",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "発注書",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "払い戻しバウチャー",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "保証契約書",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "入札書類",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "公文書",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
         }
       ],
       "metadata": {
@@ -2606,7 +3104,7 @@
     },
     {
       "id": 129,
-      "name": "ライセンスの細分化",
+      "name": "証明書・免許の分類",
       "level": 3,
       "tags": [
         "IDカード",
@@ -2616,11 +3114,11 @@
         "運転免許証",
         "ナンバープレート",
         "銀行カード",
-        "ビジネスライセンス",
-        "口座簿",
+        "営業許可証",
+        "戸籍簿",
         "卒業証明書",
         "学位証明書",
-        "労働許可証",
+        "社員証",
         "結婚証明書",
         "社会保障カード"
       ],
@@ -2651,14 +3149,14 @@
     },
     {
       "id": 130,
-      "name": "機密コンテンツ",
+      "name": "センシティブコンテンツ",
       "level": 2,
       "tags": [
         "暴力的なテロ",
-        "政治的関与",
+        "政治関連",
         "違反",
         "ポルノ",
-        "乱用",
+        "暴言",
         "ブラッディ"
       ],
       "description": "機密性とコンプライアンスの分類文書コンテンツのセキュリティレビュー",
@@ -2716,7 +3214,7 @@
     },
     {
       "id": 131,
-      "name": "ブラッディ-ブレークダウン",
+      "name": "血腥カテゴリ",
       "level": 3,
       "tags": [
         "斬首された",
@@ -2725,9 +3223,9 @@
         "死体の残骸",
         "拷問",
         "肉と血",
-        "重い口の狩猟",
-        "暴力的なテロリストの悲劇",
-        "自己切断と流血"
+        "ハードコア・グロ",
+        "テロ惨劇",
+        "自傷・放血"
       ],
       "description": "血まみれの、暴力的で重い口の好奇心のテーマの内訳",
       "applicableFileTypes": [
@@ -2737,13 +3235,13 @@
         "archive"
       ],
       "contextHints": [
-        "暴力的なレビュー",
-        "血なまぐさい評価",
-        "好奇心の検出"
+        "暴力審査",
+        "血腥度評価",
+        "グロ検出"
       ],
       "triggerConditions": [
         {
-          "parentDimension": "機密コンテンツ",
+          "parentDimension": "センシティブコンテンツ",
           "triggerTags": [
             "ブラッディ"
           ]
@@ -2768,7 +3266,7 @@
         "カルト",
         "暴動と騒乱",
         "宗教的な極端さ",
-        "思考の極端な傾向"
+        "過激思想"
       ],
       "description": "政治的感受性、国家安全保障およびイデオロギー違反の分類",
       "applicableFileTypes": [
@@ -2779,14 +3277,14 @@
       ],
       "contextHints": [
         "政治コンプライアンス",
-        "敏感な人",
-        "イデオロギーレビュー"
+        "要注意人物",
+        "イデオロギー審査"
       ],
       "triggerConditions": [
         {
-          "parentDimension": "機密コンテンツ",
+          "parentDimension": "センシティブコンテンツ",
           "triggerTags": [
-            "政治的関与"
+            "政治関連"
           ]
         }
       ],
@@ -2805,13 +3303,13 @@
         "ドラッグトレード",
         "密輸",
         "銃と弾薬",
-        "マネーロンダリング黒生産",
+        "マネーロンダリング・違法産業",
         "テレコム詐欺",
         "ダークウェブ取引",
         "オンラインギャンブル",
-        "偽と見掛け倒し",
+        "偽造品・粗悪品",
         "未成年者を侵害する行為",
-        "禁止事項"
+        "禁制品"
       ],
       "description": "法令により流通が禁止されている違法-違法な物品-行為の分類",
       "applicableFileTypes": [
@@ -2821,13 +3319,13 @@
         "archive"
       ],
       "contextHints": [
-        "不正検出",
+        "違法行為の検出",
         "禁制品の識別",
-        "黒フィルター"
+        "違法活動フィルタ"
       ],
       "triggerConditions": [
         {
-          "parentDimension": "機密コンテンツ",
+          "parentDimension": "センシティブコンテンツ",
           "triggerTags": [
             "違反"
           ]
@@ -2866,13 +3364,13 @@
         "archive"
       ],
       "contextHints": [
-        "アダルトレビュー",
+        "成人向け審査",
         "テーマ分類",
         "エロ認識"
       ],
       "triggerConditions": [
         {
-          "parentDimension": "機密コンテンツ",
+          "parentDimension": "センシティブコンテンツ",
           "triggerTags": [
             "ポルノ"
           ]
@@ -2887,7 +3385,7 @@
     },
     {
       "id": 135,
-      "name": "スクリーンショットの内訳",
+      "name": "スクリーンショット カテゴリ",
       "level": 3,
       "tags": [
         "ウェブページのロングスクリーンショット",
@@ -2922,6 +3420,28 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "ゲームのスクリーンショット",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "ゲーム・エンタメ"
+        },
+        {
+          "sourceTag": "支払い伝票のスクリーンショット",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "注文物流スクリーンショット",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        },
+        {
+          "sourceTag": "ドキュメントのスクリーンショット",
+          "targetDimension": "ファイルの用途",
+          "targetTag": "作業ドキュメント"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2931,7 +3451,7 @@
     },
     {
       "id": 136,
-      "name": "キャリアを生成する",
+      "name": "生成媒体",
       "level": 2,
       "tags": [
         "リアルショット",
@@ -2947,7 +3467,7 @@
       "contextHints": [
         "生成方法",
         "レンダリングタイプ",
-        "キャリア識別"
+        "媒体識別"
       ],
       "triggerConditions": [
         {
@@ -2969,7 +3489,7 @@
     },
     {
       "id": 137,
-      "name": "景北",
+      "name": "ショットサイズ",
       "level": 3,
       "tags": [
         "クローズアップ",
@@ -2983,9 +3503,9 @@
         "image"
       ],
       "contextHints": [
-        "ビューファインダー",
+        "画角",
         "フレーム構成",
-        "キャラクターシーン"
+        "人物ショット"
       ],
       "triggerConditions": [
         {
@@ -3084,8 +3604,8 @@
       "level": 3,
       "tags": [
         "アイレベル",
-        "下を見る",
-        "ルックアップ",
+        "俯瞰",
+        "見上げる",
         "一人称"
       ],
       "description": "撮影レンズと描画レンズの遠近角と観察角",
@@ -3123,7 +3643,7 @@
       "tags": [
         "プレーンテキスト",
         "チャートベース",
-        "グラフィックミキシング",
+        "図とテキストの混在",
         "手書きメモ"
       ],
       "description": "ドキュメントとページの視覚的なレイアウト構成",
@@ -3231,20 +3751,20 @@
     },
     {
       "id": 144,
-      "name": "科目数",
+      "name": "被写体数",
       "level": 3,
       "tags": [
         "シングル",
         "ダブル",
         "複数の人の集合写真",
-        "無人航空機ミラー"
+        "無人（空鏡）"
       ],
       "description": "画像内の文字またはコア科目の数",
       "applicableFileTypes": [
         "image"
       ],
       "contextHints": [
-        "ボディ数",
+        "被写体数",
         "ポートレート検出",
         "シーン構成"
       ],
@@ -3269,10 +3789,10 @@
     },
     {
       "id": 145,
-      "name": "件名タイプ",
+      "name": "被写体タイプ",
       "level": 2,
       "tags": [
-        "キャラクター件名",
+        "人物被写体",
         "動物ペット",
         "植物-花",
         "静物グッズ",
@@ -3284,8 +3804,8 @@
       ],
       "contextHints": [
         "ターゲット検出",
-        "被験者の識別",
-        "視覚心"
+        "被写体識別",
+        "視覚的焦点"
       ],
       "triggerConditions": [
         {
@@ -3326,7 +3846,7 @@
         {
           "parentDimension": "画像のセグメンテーション",
           "triggerTags": [
-            "キャラクターの写真があります"
+            "テキスト入り画像"
           ]
         }
       ],
@@ -3483,7 +4003,7 @@
         "母方の叔父と甥",
         "義理のいとこ",
         "兄嫁",
-        "祖父と孫が世代を隔てた"
+        "祖父と孫（世代差）"
       ],
       "description": "血族関係、家族の年功序列、タブーとされる倫理的テーマの細分化",
       "applicableFileTypes": [
@@ -3519,12 +4039,12 @@
       "tags": [
         "パートナー交換",
         "妻のスワッピング",
-        "不正行為",
+        "不倫",
         "美しい人妻",
         "若い熟女",
-        "愛人 愛人",
+        "愛人",
         "主婦",
-        "年を忘れる楽しさ",
+        "年の差恋愛",
         "純愛"
       ],
       "description": "婚外の感情的契約、パートナー交換、妻のテーマの細分化",
@@ -3559,11 +4079,11 @@
       "name": "キャンパスの教師と学生の内訳",
       "level": 4,
       "tags": [
-        "先生生徒",
+        "教師と生徒",
         "女教師",
         "男性教師",
         "同級生の女子",
-        "先輩先輩お姉さん",
+        "先輩",
         "下級生",
         "学校の美しさ",
         "大学生",
@@ -3647,7 +4167,7 @@
       "level": 4,
       "tags": [
         "3P",
-        "クワイン",
+        "乱交",
         "マルチパートナーの集まり",
         "グループでの交流",
         "複数人パーティー"
@@ -3681,17 +4201,17 @@
     },
     {
       "id": 155,
-      "name": "セックストレーニングの内訳",
+      "name": "セックス調教の分類",
       "level": 4,
       "tags": [
         "セックストレーニング",
         "SM",
         "性奴隷",
-        "規律拘束",
+        "調教と拘束",
         "激しいセックス",
         "激しいセックス",
-        "ヘビーデューティーな変態",
-        "滴る蝋鞭",
+        "ハードコア変態",
+        "蝋燭プレイ & 鞭",
         "特定のフェチ"
       ],
       "description": "支配と服従、サブカルチャーのフェティッシュと深刻な対立的なセックスの崩壊",
@@ -3726,12 +4246,12 @@
       "name": "のぞき見露出セグメンテーション",
       "level": 4,
       "tags": [
-        "クレイジー露出",
+        "過激な露出",
         "公共空間での露出",
         "屋外で露出",
-        "車の衝撃",
-        "率直なのぞき見",
-        "プライバシーカメラ",
+        "車内セックス",
+        "盗撮と覗き見",
+        "盗撮カメラ",
         "お風呂のぞき",
         "露出"
       ],
@@ -3744,7 +4264,7 @@
       ],
       "contextHints": [
         "空間露出",
-        "率直な撮影",
+        "盗撮",
         "屋外ディスプレイ"
       ],
       "triggerConditions": [
@@ -3764,15 +4284,15 @@
     },
     {
       "id": 157,
-      "name": "プロフェッショナルな均一セグメンテーション",
+      "name": "職業制服の分類",
       "level": 4,
       "tags": [
-        "医師看護師",
+        "医師と看護師",
         "産婦人科",
         "航空会社のスチュワーデス",
         "婦人警官",
-        "マネキンの車のモデル",
-        "踊る女の子",
+        "モデル・カーモデル",
+        "踊り子",
         "商業ポルノ",
         "援助交際と売春"
       ],
@@ -3784,7 +4304,7 @@
         "archive"
       ],
       "contextHints": [
-        "均一なキャラクター",
+        "制服キャラ",
         "業界の職業",
         "ロールプレイング"
       ],
@@ -3808,13 +4328,13 @@
       "name": "文学科目の内訳",
       "level": 4,
       "tags": [
-        "エロ格闘技",
+        "エロ武侠",
         "クラシックエロティカ",
         "歴史的エロチカ",
-        "ファンタジーサイエンスフィクション",
+        "ファンタジー・SF",
         "真夜中の物語",
         "現代都市",
-        "ゲームファン",
+        "ゲーム同人",
         "日本のエロチカ",
         "西洋エロチカ",
         "冒険物語"
@@ -3848,7 +4368,7 @@
     },
     {
       "id": 159,
-      "name": "欲望の生理学的崩壊",
+      "name": "情欲生理の分類",
       "level": 4,
       "tags": [
         "露骨なセックス",
@@ -3856,7 +4376,7 @@
         "オーラルセックス",
         "アナルセックス",
         "顔射ごっくん",
-        "プライベート写真",
+        "ヌード写真",
         "エッジ誘惑",
         "美しい胸と脚",
         "処女コンプレックス"
@@ -3890,11 +4410,11 @@
     },
     {
       "id": 160,
-      "name": "非自発的暴行の内訳",
+      "name": "非合意侵犯の分類",
       "level": 4,
       "tags": [
-        "レイプ レイプ",
-        "レイプされて薬漬けにされた",
+        "レイプ・性暴力",
+        "薬物を用いた性暴力",
         "意志に反して",
         "集団強姦暴行",
         "暴力的な強制"
@@ -3931,9 +4451,9 @@
       "name": "複数の方向のセグメンテーション",
       "level": 4,
       "tags": [
-        "同性愛的",
-        "レズビアンのユリ",
-        "ゲイの美しさ",
+        "同性愛",
+        "レズビアン・百合",
+        "ゲイ・YAOI",
         "トランスジェンダー"
       ],
       "description": "多様な性別認知、多様な指向、特定の性的指向のテーマ分割",

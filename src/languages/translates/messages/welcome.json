@@ -61,7 +61,7 @@
     "de-DE": "Firefly AI Folder",
     "fr-FR": "Firefly AI Folder",
     "ko-KR": "Firefly AI Folder",
-    "$files": ["src/renderer/components/welcome/WelcomeWizard.tsx(834-845)"],
+    "$files": ["src/renderer/components/welcome/WelcomeWizard.tsx(944-955)"],
     "$id": 2978
   }
 }

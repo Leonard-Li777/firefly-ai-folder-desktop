@@ -174,7 +174,7 @@
       "tags": [
         "Extension d'image",
         "Photographie",
-        "Titres contractuels",
+        "Contrats et factures",
         "Licences et autorisations",
         "Capture d'écran",
         "Ébauche de conception",
@@ -202,6 +202,43 @@
           "triggerTags": [
             "Image"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Ébauche de conception",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Ressources de conception"
+        },
+        {
+          "sourceTag": "Photographie",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Projets créatifs"
+        },
+        {
+          "sourceTag": "Contrats et factures",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Peinture",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Projets créatifs"
+        },
+        {
+          "sourceTag": "Promotion par affiches",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Projets créatifs"
+        },
+        {
+          "sourceTag": "Dessin",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Imagerie médicale",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
         }
       ],
       "metadata": {
@@ -241,6 +278,23 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Vidéo pédagogique",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Interaction de jeu",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Vidéo de la réunion",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -275,6 +329,23 @@
           "triggerTags": [
             "Audio"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Enregistrement de la réunion",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Livre audio",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Podcast",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
         }
       ],
       "metadata": {
@@ -324,11 +395,12 @@
       "level": 2,
       "tags": [
         "Extension du programme",
-        "Windows",
-        "Linux",
-        "macOS",
-        "Android",
-        "iOS"
+        "Outils de développement",
+        "Création vidéo",
+        "Outils de communication réseau",
+        "Exploitation et maintenance du système",
+        "Utilitaires Bureau",
+        "Programme de jeu"
       ],
       "description": "Classification des fichiers exécutables",
       "applicableFileTypes": [
@@ -346,11 +418,154 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Outils de développement",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Outils et utilitaires"
+        },
+        {
+          "sourceTag": "Création vidéo",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Projets créatifs"
+        },
+        {
+          "sourceTag": "Outils de communication réseau",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Outils et utilitaires"
+        },
+        {
+          "sourceTag": "Exploitation et maintenance du système",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Maintenance système"
+        },
+        {
+          "sourceTag": "Utilitaires Bureau",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Outils et utilitaires"
+        },
+        {
+          "sourceTag": "Programme de jeu",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRuleSubdivision": true,
           "isRequiresAI": false,
           "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 163,
+      "name": "Plate-forme d'exploitation",
+      "level": 2,
+      "tags": [
+        "Windows",
+        "macOS",
+        "Linux",
+        "Android",
+        "iOS",
+        "Multiplateforme"
+      ],
+      "description": "Le système d'exploitation et la plate-forme d'architecture sur lesquels le programme s'exécute",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Caractéristiques de la tête PE",
+        "Caractéristiques de la tête d'ELFE",
+        "Caractéristiques de la tête Mach-O"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Type de fichier",
+          "triggerTags": [
+            "Programme exécutable"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 164,
+      "name": "Cadre d'exécution",
+      "level": 2,
+      "tags": [
+        "Programme natif",
+        "Electron",
+        "Tauri",
+        "Qt",
+        "Flutter",
+        "Unity",
+        "PyInstaller",
+        ".NET",
+        "JVM"
+      ],
+      "description": "Caractéristiques d'exécution et de structure des dépendances du programme",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Détection de bibliothèque de dépendances",
+        "Caractéristiques d'emballage"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Type de fichier",
+          "triggerTags": [
+            "Programme exécutable"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": false
+        }
+      }
+    },
+    {
+      "id": 165,
+      "name": "Caractéristiques de la capacité du programme",
+      "level": 2,
+      "tags": [
+        "Accès Réseau",
+        "Prise en Charge Multimédia",
+        "Accélération Matérielle & Graphiques 3D",
+        "Interaction Pilote Noyau",
+        "Interface utilisateur graphique",
+        "Interaction en ligne de commande",
+        "Lecture/Écriture Fichiers Locaux",
+        "Chiffrement & Sécurité"
+      ],
+      "description": "Dimension de marquage multi-sélection des caractéristiques de capacité du programme",
+      "applicableFileTypes": [
+        "executable"
+      ],
+      "contextHints": [
+        "Regroupement de symboles IAT",
+        "Détection de capacité"
+      ],
+      "triggerConditions": [
+        {
+          "parentDimension": "Type de fichier",
+          "triggerTags": [
+            "Programme exécutable"
+          ]
+        }
+      ],
+      "metadata": {
+        "flag": {
+          "isRequiresAI": false,
+          "isMultiSelect": true
         }
       }
     },
@@ -409,7 +624,7 @@
     },
     {
       "id": 12,
-      "name": "Panne des fichiers système",
+      "name": "Sous-catégories des fichiers système",
       "level": 2,
       "tags": [
         "Extension du fichier système",
@@ -591,7 +806,7 @@
       ],
       "contextHints": [
         "Coordonnées GPS",
-        "Reconnaissance historique"
+        "Reconnaissance de monuments"
       ],
       "triggerConditions": [
         {
@@ -701,12 +916,12 @@
       "level": 2,
       "tags": [
         "Version originale officielle",
-        "Version modifiée",
-        "Version crackée",
-        "Version verte",
-        "Version portable",
-        "Version allégée",
-        "Version chinoise"
+        "Version Portable",
+        "Programme d'installation",
+        "Logiciel libre",
+        "Version Crackée",
+        "Version Allégée",
+        "Version Localisée"
       ],
       "description": "Nature des licences et de la distribution des logiciels",
       "applicableFileTypes": [
@@ -739,7 +954,7 @@
         "Paysage naturel",
         "Architecture urbaine",
         "Activités humanistes",
-        "Des plats du monde entier",
+        "Cuisine du Monde",
         "Sites historiques",
         "Activités de plein air"
       ],
@@ -761,6 +976,38 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Paysage naturel",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Souvenirs de voyage"
+        },
+        {
+          "sourceTag": "Architecture urbaine",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Souvenirs de voyage"
+        },
+        {
+          "sourceTag": "Activités humanistes",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Souvenirs de voyage"
+        },
+        {
+          "sourceTag": "Cuisine du Monde",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Souvenirs de voyage"
+        },
+        {
+          "sourceTag": "Sites historiques",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Souvenirs de voyage"
+        },
+        {
+          "sourceTag": "Activités de plein air",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Souvenirs de voyage"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -777,7 +1024,7 @@
         "Bon de dépenses",
         "Preuve de patrimoine",
         "Documents fiscaux",
-        "Contracter",
+        "Contrat",
         "Facture"
       ],
       "description": "Type commercial de documents financiers",
@@ -794,6 +1041,38 @@
           "triggerTags": [
             "Dossiers financiers"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Chèque de revenu",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Bon de dépenses",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Preuve de patrimoine",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Documents fiscaux",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Contrat",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Facture",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
         }
       ],
       "metadata": {
@@ -843,6 +1122,93 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "RPG",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Jeu d'aventure",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Puzzle et réflexion",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Tower Defense",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Jeu de stratégie",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Gestion et simulation",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Romance et séduction",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Compétitif et Esports",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "MOBA",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Jeu de combat",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Jeu de tir",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Jeu d'action",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Roguelike",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Vie à la campagne / Ferme",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Simulation d'élevage et éducation",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Jeu de course",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Jeu Otome",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -887,6 +1253,63 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Mathématiques",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Physique",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Chimie",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Biologie",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Informatique",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Apprentissage des langues",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Histoire",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Art et design",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Ingénierie et technologie",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Économie",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Éducation",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -923,6 +1346,18 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Manuel",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        },
+        {
+          "sourceTag": "Livres techniques",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Matériel d'apprentissage"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -949,7 +1384,7 @@
         "Famille",
         "Idole",
         "Arts martiaux",
-        "Parcelle",
+        "Intrigue",
         "Biographie",
         "Comédie",
         "Flics et voleurs",
@@ -960,7 +1395,7 @@
         "Nature",
         "Sciences humaines",
         "Éducation physique",
-        "Guérir",
+        "Guérison",
         "Vie",
         "Voyage",
         "Science populaire",
@@ -1381,7 +1816,7 @@
         "Fichier de configuration",
         "Langage de programmation",
         "L'extrémité avant",
-        "Extrémité arrière"
+        "Back-end"
       ],
       "description": "Classification des fichiers de code source",
       "applicableFileTypes": [
@@ -1463,7 +1898,7 @@
       ],
       "triggerConditions": [
         {
-          "parentDimension": "Panne des fichiers système",
+          "parentDimension": "Sous-catégories des fichiers système",
           "triggerTags": [
             "Extension du fichier système"
           ]
@@ -1947,20 +2382,24 @@
       "level": 3,
       "tags": [
         "apk",
+        "app",
+        "bin",
         "class",
         "crx",
         "dex",
         "dll",
+        "dylib",
         "elf",
         "exe",
+        "msi",
         "o",
         "obj",
         "pyc",
         "pyo",
+        "so",
+        "sys",
         "swf",
-        "wasm",
-        "app",
-        "bin"
+        "wasm"
       ],
       "description": "Extension de fichier exécutable",
       "applicableFileTypes": [
@@ -2063,7 +2502,7 @@
     },
     {
       "id": 118,
-      "name": "Segmentation comique",
+      "name": "Catégories de mangas",
       "level": 3,
       "tags": [
         "Bandes dessinées shounen",
@@ -2164,7 +2603,7 @@
     },
     {
       "id": 120,
-      "name": "Origine du travail",
+      "name": "Origine de l'œuvre",
       "level": 2,
       "tags": [
         "Original",
@@ -2235,11 +2674,11 @@
       "tags": [
         "Joie",
         "Triste",
-        "Guérir",
+        "Guérison",
         "Provoquant une dépression",
         "Facile",
         "Nerveux",
-        "Se déplacer",
+        "Émouvant",
         "Nostalgie",
         "Désir",
         "Excité",
@@ -2247,7 +2686,7 @@
         "Culpabilité",
         "Sentiment d'immoralité",
         "Honte",
-        "Dominer"
+        "Domination"
       ],
       "description": "L'atmosphère émotionnelle évoquée par le contenu du document",
       "applicableFileTypes": [
@@ -2351,10 +2790,10 @@
       "level": 3,
       "tags": [
         "Porno doux",
-        "Moitié de viande",
-        "Viande pure",
+        "Semi-nu",
+        "Nu intégral",
         "XP spécial",
-        "Forte curiosité"
+        "Grotesque Extrême"
       ],
       "description": "Subdivision du degré et de la forme de la vulgarité des contenus pornographiques",
       "applicableFileTypes": [
@@ -2385,7 +2824,7 @@
     },
     {
       "id": 124,
-      "name": "Niveau de codage",
+      "name": "Niveau de censure (mosaïque)",
       "level": 2,
       "tags": [
         "Non censuré",
@@ -2478,13 +2917,13 @@
     },
     {
       "id": 126,
-      "name": "Catégories de photos",
+      "name": "Catégories Photo",
       "level": 3,
       "tags": [
         "Photos de paysages",
         "Photos de personnes",
         "Photos de mariage",
-        "Photographie de nature morte",
+        "Photo Nature Morte",
         "Photos d'animaux de compagnie",
         "Photographie macro",
         "Photos de nuit",
@@ -2511,6 +2950,18 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Photos de voyage",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Souvenirs de voyage"
+        },
+        {
+          "sourceTag": "Photos de mariage",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "La vie de famille"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2531,7 +2982,7 @@
         "Photos floues et ratées",
         "Fausse mise au point",
         "Tremblement",
-        "Dégraissage",
+        "Défocalisé",
         "Vibrations dues au mouvement",
         "Mauvaise composition",
         "Une forte dérive chromatique",
@@ -2564,10 +3015,10 @@
     },
     {
       "id": 128,
-      "name": "Ventilation des titres contractuels",
+      "name": "Ventilation Contrats & Factures",
       "level": 3,
       "tags": [
-        "Contracter",
+        "Contrat",
         "Facture",
         "Document officiel",
         "Mémoire",
@@ -2593,8 +3044,55 @@
         {
           "parentDimension": "Segmentation d'images",
           "triggerTags": [
-            "Titres contractuels"
+            "Contrats et factures"
           ]
+        }
+      ],
+      "tagImplications": [
+        {
+          "sourceTag": "Mémoire",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Recherche académique"
+        },
+        {
+          "sourceTag": "Reçu",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Relevé de compte",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Reçu bancaire",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Bon de commande",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Justificatifs de remboursement",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Contrat de garantie",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Dossier d'appel d'offres",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Document officiel",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
         }
       ],
       "metadata": {
@@ -2716,7 +3214,7 @@
     },
     {
       "id": 131,
-      "name": "Segmentation sanglante",
+      "name": "Catégories sanglantes",
       "level": 3,
       "tags": [
         "Décapitation",
@@ -2724,8 +3222,8 @@
         "Massacre sanglant",
         "Restes de cadavres",
         "Torture et mauvais traitements",
-        "En miettes",
-        "Extravagant et insolite",
+        "Chair mutilée",
+        "Grotesque Hardcore",
         "Attentats terroristes sanglants",
         "Automutilation par saignée"
       ],
@@ -2768,7 +3266,7 @@
         "Sectes",
         "Émeutes et troubles",
         "Extrémisme religieux",
-        "Courants d'extrême droite"
+        "Courants extrémistes"
       ],
       "description": "Classification des infractions liées à la sensibilité politique, à la sécurité nationale et à l'idéologie",
       "applicableFileTypes": [
@@ -2821,7 +3319,7 @@
         "archive"
       ],
       "contextHints": [
-        "Contrôles illégaux",
+        "Détection des infractions",
         "Identification des articles interdits",
         "Filtrage des activités illicites"
       ],
@@ -2851,7 +3349,7 @@
         "Social au travail",
         "Sexe de groupe",
         "Entraînement sexuel",
-        "Lorgnant exposé",
+        "Voyeurisme et exhibition",
         "Uniforme professionnel",
         "Thèmes littéraires",
         "Physiologie Érotique",
@@ -2887,7 +3385,7 @@
     },
     {
       "id": 135,
-      "name": "Ventilation des captures d'écran",
+      "name": "Catégories de Captures",
       "level": 3,
       "tags": [
         "Capture d'écran longue d'une page Web",
@@ -2922,6 +3420,28 @@
           ]
         }
       ],
+      "tagImplications": [
+        {
+          "sourceTag": "Captures d'écran du jeu",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Jeux et divertissements"
+        },
+        {
+          "sourceTag": "Capture d'écran du justificatif de paiement",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Capture d'écran de la logistique des commandes",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        },
+        {
+          "sourceTag": "Capture d'écran du document",
+          "targetDimension": "Utilisation du fichier",
+          "targetTag": "Documents de travail"
+        }
+      ],
       "metadata": {
         "flag": {
           "isRequiresAI": false,
@@ -2931,10 +3451,10 @@
     },
     {
       "id": 136,
-      "name": "Générer un vecteur",
+      "name": "Support de génération",
       "level": 2,
       "tags": [
-        "Tir réel",
+        "Prise de vue réelle",
         "Dessiné à la main",
         "Rendu CG",
         "IA générée"
@@ -2947,7 +3467,7 @@
       "contextHints": [
         "Méthode de génération",
         "Type de rendu",
-        "Identification du transporteur"
+        "Identification du support"
       ],
       "triggerConditions": [
         {
@@ -2969,7 +3489,7 @@
     },
     {
       "id": 137,
-      "name": "Adieu paysage",
+      "name": "Taille de plan",
       "level": 3,
       "tags": [
         "Gros plan",
@@ -2985,7 +3505,7 @@
       "contextHints": [
         "Portée de visualisation",
         "Composition du cadre",
-        "Scène de personnage"
+        "Cadrage du personnage"
       ],
       "triggerConditions": [
         {
@@ -3050,7 +3570,7 @@
       "tags": [
         "Fond transparent",
         "Fond de couleur unie",
-        "Fond en direct"
+        "Arrière-plan réel"
       ],
       "description": "Canaux d'arrière-plan et types d'environnement pour les ressources et les matériaux de conception d'image",
       "applicableFileTypes": [
@@ -3084,7 +3604,7 @@
       "level": 3,
       "tags": [
         "Niveau des yeux",
-        "Regardant vers le bas",
+        "Plongée",
         "Chercher",
         "Première personne"
       ],
@@ -3170,7 +3690,7 @@
         "image"
       ],
       "contextHints": [
-        "Système opérateur",
+        "Système d'exploitation",
         "Style d'interface",
         "Origine de l'équipement"
       ],
@@ -3234,10 +3754,10 @@
       "name": "Nombre de sujets",
       "level": 3,
       "tags": [
-        "Célibataire",
+        "Une personne",
         "Double",
         "Photo de groupe",
-        "Miroir aérien sans pilote"
+        "Scène vide"
       ],
       "description": "Le nombre et la composition des personnages ou des sujets principaux de l'image",
       "applicableFileTypes": [
@@ -3275,7 +3795,7 @@
         "Sujet du personnage",
         "Animaux de compagnie",
         "Plantes et fleurs",
-        "Marchandise de natures mortes",
+        "Produits en nature morte",
         "Architecture environnementale"
       ],
       "description": "Le type principal de mise au point visuelle au premier plan dans l'image",
@@ -3379,7 +3899,7 @@
     },
     {
       "id": 148,
-      "name": "Temps saison",
+      "name": "Saison",
       "level": 3,
       "tags": [
         "Scène de fleurs de printemps",
@@ -3483,7 +4003,7 @@
         "Oncle maternel et neveu",
         "Beaux-cousins",
         "Femme du frère aîné",
-        "Grand-père et petit-fils ont séparé des générations"
+        "Grand-père et petit-fils (écart de génération)"
       ],
       "description": "Subdivision de la consanguinité, de l'ancienneté familiale et des thèmes éthiques tabous",
       "applicableFileTypes": [
@@ -3514,17 +4034,17 @@
     },
     {
       "id": 151,
-      "name": "Panne de désir extraconjugal",
+      "name": "Répartition du désir extraconjugal",
       "level": 4,
       "tags": [
         "échange de partenaires",
         "Échange de femme",
-        "Tricherie",
+        "Infidélité",
         "Belle femme mariée",
         "Jeune femme mûre",
-        "Maîtresse maîtresse",
+        "Maîtresse",
         "Ménagère",
-        "La joie d'oublier l'année",
+        "Amour avec écart d'âge",
         "Amour pur"
       ],
       "description": "Segmentation des contrats émotionnels extraconjugaux, des échanges entre partenaires et des thèmes liés aux épouses",
@@ -3559,13 +4079,13 @@
       "name": "Répartition des enseignants et des étudiants sur le campus",
       "level": 4,
       "tags": [
-        "élève enseignant",
+        "Enseignant et élève",
         "Enseignante",
         "Enseignant",
         "Camarade de classe",
-        "Sœur aînée",
-        "Étudiants de la classe inférieure",
-        "Beauté de l'école",
+        "Étudiants plus âgés",
+        "Étudiants plus jeunes",
+        "La plus belle de l'école",
         "étudiant",
         "Lycéen",
         "Tuteur"
@@ -3687,10 +4207,10 @@
         "Entraînement sexuel",
         "SM",
         "Esclave sexuelle",
-        "Domination et bondage",
+        "Dressage et bondage",
         "Sexe violent",
         "Sexe violent",
-        "Pervers robuste",
+        "Perversion Hardcore",
         "Fouet à cire dégoulinant",
         "Fétiche spécifique"
       ],
@@ -3726,13 +4246,13 @@
       "name": "Segmentation exposée",
       "level": 4,
       "tags": [
-        "Exposition folle",
-        "Exposition espace public",
+        "Exhibition extrême",
+        "Exhibition en public",
         "Exposé à l'extérieur",
-        "Choc de voiture",
-        "Filmer en cachette, espionner",
-        "Caméra de confidentialité",
-        "Lorgneur de bain",
+        "Sexe en voiture",
+        "Photographie clandestine et voyeurisme",
+        "Caméra espion",
+        "Voyeurisme",
         "Exposé"
       ],
       "description": "Subdivision de l'exposition de l'espace public, de l'exposition extérieure et de l'observation secrète et de la photographie franche",
@@ -3744,14 +4264,14 @@
       ],
       "contextHints": [
         "Exposition spatiale",
-        "Tournage franc",
+        "Tournage clandestin",
         "Affichage extérieur"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Segments du marché de la pornographie",
           "triggerTags": [
-            "Lorgnant exposé"
+            "Voyeurisme et exhibition"
           ]
         }
       ],
@@ -3764,14 +4284,14 @@
     },
     {
       "id": 157,
-      "name": "Segmentation uniforme professionnelle",
+      "name": "Catégories d'uniformes professionnels",
       "level": 4,
       "tags": [
-        "Médecin infirmière",
+        "Médecin et infirmière",
         "Obstétrique et gynécologie",
         "Hôtesse de l'air",
         "Femme policier",
-        "Modèle de voiture mannequin",
+        "Mannequin et modèle auto",
         "Danseuse",
         "Pornographie commerciale",
         "Rencontres et prostitution rémunérées"
@@ -3784,7 +4304,7 @@
         "archive"
       ],
       "contextHints": [
-        "Caractère uniforme",
+        "Personnage en uniforme",
         "Occupation de l'industrie",
         "Jeu de rôle"
       ],
@@ -3808,13 +4328,13 @@
       "name": "Répartition des sujets littéraires",
       "level": 4,
       "tags": [
-        "Arts martiaux érotiques",
+        "Wuxia érotique",
         "Érotique classique",
         "érotisme historique",
         "Science-fiction fantastique",
         "Histoires de minuit",
         "Ville contemporaine",
-        "Fan de jeu",
+        "Doujin de jeu",
         "érotisme japonais",
         "L'érotisme occidental",
         "Histoire d'aventure"
@@ -3848,14 +4368,14 @@
     },
     {
       "id": 159,
-      "name": "Dégradation physiologique du désir",
+      "name": "Répartition de la physiologie érotique",
       "level": 4,
       "tags": [
         "Scènes de sexe explicites",
         "Orgasme par masturbation",
         "Le sexe oral",
         "Le sexe anal",
-        "Avaler du sperme sur le visage",
+        "Éjaculation faciale & avaler",
         "Photos privées",
         "Une séduction à la limite",
         "Beaux seins et jambes",
@@ -3870,7 +4390,7 @@
       ],
       "contextHints": [
         "Actions physiologiques",
-        "Gros plan sur l'orgue",
+        "Gros plan sur l'organe",
         "Photos sexy"
       ],
       "triggerConditions": [
@@ -3890,11 +4410,11 @@
     },
     {
       "id": 160,
-      "name": "Panne d'agression involontaire",
+      "name": "Répartition des agressions non consenties",
       "level": 4,
       "tags": [
-        "Viol viol",
-        "Violée et droguée",
+        "Viol et agression sexuelle",
+        "Viol sous emprise de drogues",
         "Contre son gré",
         "Viol collectif",
         "Coercition violente"
@@ -3932,8 +4452,8 @@
       "level": 4,
       "tags": [
         "Homérotique",
-        "Lis lesbienne",
-        "Beauté gay",
+        "Yuri lesbien",
+        "Yaoi gay",
         "Transgenre"
       ],
       "description": "Cognition de genre diversifiée, orientations diverses et segmentation thématique spécifique de l'orientation sexuelle",
