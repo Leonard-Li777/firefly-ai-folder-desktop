@@ -540,7 +540,7 @@
         "具备网络访问能力",
         "多媒体音视频支持",
         "硬件加速与3D图形",
-        "Kernel-Level Driver Interaction",
+        "底层驱动与内核交互",
         "图形用户界面",
         "命令行交互",
         "本地文件存储读写",
@@ -1185,16 +1185,6 @@
         },
         {
           "sourceTag": "肉鸽",
-          "targetDimension": "文件用途",
-          "targetTag": "游戏娱乐"
-        },
-        {
-          "sourceTag": "田园",
-          "targetDimension": "文件用途",
-          "targetTag": "游戏娱乐"
-        },
-        {
-          "sourceTag": "养成",
           "targetDimension": "文件用途",
           "targetTag": "游戏娱乐"
         },
@@ -3086,11 +3076,6 @@
         },
         {
           "sourceTag": "投标文件",
-          "targetDimension": "文件用途",
-          "targetTag": "工作文档"
-        },
-        {
-          "sourceTag": "红头文件",
           "targetDimension": "文件用途",
           "targetTag": "工作文档"
         }

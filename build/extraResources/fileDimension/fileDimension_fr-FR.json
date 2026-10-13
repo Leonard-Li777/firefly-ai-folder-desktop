@@ -540,7 +540,7 @@
         "Accès Réseau",
         "Prise en Charge Multimédia",
         "Accélération Matérielle & Graphiques 3D",
-        "Interaction Pilote Noyau",
+        "Interaction entre les pilotes de bas niveau et le noyau",
         "Interface utilisateur graphique",
         "Interaction en ligne de commande",
         "Lecture/Écriture Fichiers Locaux",
@@ -1185,16 +1185,6 @@
         },
         {
           "sourceTag": "Roguelike",
-          "targetDimension": "Utilisation du fichier",
-          "targetTag": "Jeux et divertissements"
-        },
-        {
-          "sourceTag": "Vie à la campagne / Ferme",
-          "targetDimension": "Utilisation du fichier",
-          "targetTag": "Jeux et divertissements"
-        },
-        {
-          "sourceTag": "Simulation d'élevage et éducation",
           "targetDimension": "Utilisation du fichier",
           "targetTag": "Jeux et divertissements"
         },
@@ -3086,11 +3076,6 @@
         },
         {
           "sourceTag": "Dossier d'appel d'offres",
-          "targetDimension": "Utilisation du fichier",
-          "targetTag": "Documents de travail"
-        },
-        {
-          "sourceTag": "Document officiel",
           "targetDimension": "Utilisation du fichier",
           "targetTag": "Documents de travail"
         }

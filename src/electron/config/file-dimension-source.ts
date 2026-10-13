@@ -247,6 +247,26 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             sourceTag: t('合同票据'),
             targetDimension: t('文件用途'),
             targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('绘画'),
+            targetDimension: t('文件用途'),
+            targetTag: t('创意项目')
+          },
+            {
+            sourceTag: t('海报宣发'),
+            targetDimension: t('文件用途'),
+            targetTag: t('创意项目')
+          },
+            {
+            sourceTag: t('图纸'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('医学影像'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
           }
           ],
         metadata: {
@@ -301,11 +321,6 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             sourceTag: t('会议录像'),
             targetDimension: t('文件用途'),
             targetTag: t('工作文档')
-          },
-            {
-            sourceTag: t('影视'),
-            targetDimension: t('文件用途'),
-            targetTag: t('游戏娱乐')
           }
           ],
         metadata: {
@@ -356,9 +371,9 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             targetTag: t('学习资料')
           },
             {
-            sourceTag: t('音乐'),
+            sourceTag: t('播客'),
             targetDimension: t('文件用途'),
-            targetTag: t('游戏娱乐')
+            targetTag: t('学习资料')
           }
           ],
         metadata: {
@@ -989,6 +1004,38 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
               ]
           }
           ],
+        tagImplications: [
+            {
+            sourceTag: t('自然景观'),
+            targetDimension: t('文件用途'),
+            targetTag: t('旅行记录')
+          },
+            {
+            sourceTag: t('城市建筑'),
+            targetDimension: t('文件用途'),
+            targetTag: t('旅行记录')
+          },
+            {
+            sourceTag: t('人文活动'),
+            targetDimension: t('文件用途'),
+            targetTag: t('旅行记录')
+          },
+            {
+            sourceTag: t('各地美食'),
+            targetDimension: t('文件用途'),
+            targetTag: t('旅行记录')
+          },
+            {
+            sourceTag: t('历史遗迹'),
+            targetDimension: t('文件用途'),
+            targetTag: t('旅行记录')
+          },
+            {
+            sourceTag: t('户外活动'),
+            targetDimension: t('文件用途'),
+            targetTag: t('旅行记录')
+          }
+          ],
         metadata: {
           flag: {
             isRequiresAI: false,
@@ -1022,6 +1069,38 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             triggerTags: [
                 t('财务档案')
               ]
+          }
+          ],
+        tagImplications: [
+            {
+            sourceTag: t('收入凭证'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('支出凭证'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('资产证明'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('税务文件'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('合同'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('发票'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
           }
           ],
         metadata: {
@@ -1071,6 +1150,83 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
               ]
           }
           ],
+        tagImplications: [
+            {
+            sourceTag: 'RPG',
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('冒险'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('解谜'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('塔防'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('策略'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('经营'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('恋爱'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('竞技'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: 'MOBA',
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('格斗'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('射击'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('动作'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('肉鸽'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('赛车'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('乙女'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          }
+          ],
         metadata: {
           flag: {
             isRequiresAI: false,
@@ -1113,6 +1269,63 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             triggerTags: [
                 t('学习资料')
               ]
+          }
+          ],
+        tagImplications: [
+            {
+            sourceTag: t('数学'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('物理'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('化学'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('生物'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('计算机科学'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('语言学习'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('历史'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('艺术设计'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('工程技术'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('经济学'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
+          },
+            {
+            sourceTag: t('教育'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学习资料')
           }
           ],
         metadata: {
@@ -1158,9 +1371,9 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             targetTag: t('学习资料')
           },
             {
-            sourceTag: t('小说'),
+            sourceTag: t('技术书籍'),
             targetDimension: t('文件用途'),
-            targetTag: t('游戏娱乐')
+            targetTag: t('学习资料')
           }
           ],
         metadata: {
@@ -2755,6 +2968,18 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
               ]
           }
           ],
+        tagImplications: [
+            {
+            sourceTag: t('旅行照'),
+            targetDimension: t('文件用途'),
+            targetTag: t('旅行记录')
+          },
+            {
+            sourceTag: t('婚纱照'),
+            targetDimension: t('文件用途'),
+            targetTag: t('家庭生活')
+          }
+          ],
         metadata: {
           flag: {
             isRequiresAI: false,
@@ -2839,6 +3064,48 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             triggerTags: [
                 t('合同票据')
               ]
+          }
+          ],
+        tagImplications: [
+            {
+            sourceTag: t('论文'),
+            targetDimension: t('文件用途'),
+            targetTag: t('学术科研')
+          },
+            {
+            sourceTag: t('收据'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('对账单'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('银行回单'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('采购订单'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('报销凭证'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('保函协议'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('投标文件'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
           }
           ],
         metadata: {
@@ -3164,6 +3431,28 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             triggerTags: [
                 t('截图')
               ]
+          }
+          ],
+        tagImplications: [
+            {
+            sourceTag: t('游戏截图'),
+            targetDimension: t('文件用途'),
+            targetTag: t('游戏娱乐')
+          },
+            {
+            sourceTag: t('支付凭证截图'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('订单物流截图'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
+          },
+            {
+            sourceTag: t('文档截图'),
+            targetDimension: t('文件用途'),
+            targetTag: t('工作文档')
           }
           ],
         metadata: {

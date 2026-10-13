@@ -540,7 +540,7 @@
         "Acceso a Red",
         "Soporte Multimedia",
         "Aceleración de Hardware & Gráficos 3D",
-        "Interacción Controlador Núcleo",
+        "Interacción del controlador subyacente con el kernel",
         "Interfaz gráfica de usuario",
         "Interacción con la línea de comandos",
         "E/S Archivos Locales",
@@ -1185,16 +1185,6 @@
         },
         {
           "sourceTag": "Roguelike",
-          "targetDimension": "Propósito del archivo",
-          "targetTag": "Juegos y entretenimiento"
-        },
-        {
-          "sourceTag": "Granja y vida rural",
-          "targetDimension": "Propósito del archivo",
-          "targetTag": "Juegos y entretenimiento"
-        },
-        {
-          "sourceTag": "Crianza y desarrollo",
           "targetDimension": "Propósito del archivo",
           "targetTag": "Juegos y entretenimiento"
         },
@@ -3086,11 +3076,6 @@
         },
         {
           "sourceTag": "Documentación de licitación",
-          "targetDimension": "Propósito del archivo",
-          "targetTag": "Documentos de trabajo"
-        },
-        {
-          "sourceTag": "Documento oficial",
           "targetDimension": "Propósito del archivo",
           "targetTag": "Documentos de trabajo"
         }

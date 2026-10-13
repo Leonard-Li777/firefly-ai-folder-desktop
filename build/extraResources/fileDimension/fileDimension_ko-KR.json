@@ -540,7 +540,7 @@
         "네트워크 접근",
         "멀티미디어 지원",
         "하드웨어 가속 & 3D 그래픽",
-        "커널 레벨 드라이버 상호작용",
+        "최하위 드라이버와 커널 상호작용",
         "그래픽 사용자 인터페이스",
         "명령줄 상호 작용",
         "로컬 파일 I/O",
@@ -1185,16 +1185,6 @@
         },
         {
           "sourceTag": "로그라이크",
-          "targetDimension": "파일 용도",
-          "targetTag": "게임 및 엔터테인먼트"
-        },
-        {
-          "sourceTag": "전원 / 농경 시뮬레이션",
-          "targetDimension": "파일 용도",
-          "targetTag": "게임 및 엔터테인먼트"
-        },
-        {
-          "sourceTag": "육성 시뮬레이션",
           "targetDimension": "파일 용도",
           "targetTag": "게임 및 엔터테인먼트"
         },
@@ -3086,11 +3076,6 @@
         },
         {
           "sourceTag": "입찰서",
-          "targetDimension": "파일 용도",
-          "targetTag": "업무 문서"
-        },
-        {
-          "sourceTag": "공식 문서",
           "targetDimension": "파일 용도",
           "targetTag": "업무 문서"
         }

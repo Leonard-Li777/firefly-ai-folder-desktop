@@ -540,7 +540,7 @@
         "Acesso à Rede",
         "Suporte Multimídia",
         "Aceleração de Hardware & Gráficos 3D",
-        "Interação Driver Kernel",
+        "Interação do driver de baixo nível com o kernel",
         "Interface gráfica do utilizador",
         "Interação de linha de comando",
         "E/S Arquivos Locais",
@@ -1185,16 +1185,6 @@
         },
         {
           "sourceTag": "Roguelike",
-          "targetDimension": "Finalidade do ficheiro",
-          "targetTag": "Jogos e entretenimento"
-        },
-        {
-          "sourceTag": "Quinta e vida no campo",
-          "targetDimension": "Finalidade do ficheiro",
-          "targetTag": "Jogos e entretenimento"
-        },
-        {
-          "sourceTag": "Criação e desenvolvimento",
           "targetDimension": "Finalidade do ficheiro",
           "targetTag": "Jogos e entretenimento"
         },
@@ -3086,11 +3076,6 @@
         },
         {
           "sourceTag": "Documentação do concurso",
-          "targetDimension": "Finalidade do ficheiro",
-          "targetTag": "Documentos de trabalho"
-        },
-        {
-          "sourceTag": "Documento oficial",
           "targetDimension": "Finalidade do ficheiro",
           "targetTag": "Documentos de trabalho"
         }
