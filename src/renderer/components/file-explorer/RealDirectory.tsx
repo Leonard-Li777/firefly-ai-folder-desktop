@@ -976,7 +976,7 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
     (layoutContext: any) => (
       <div className="flex-shrink-0 border-b border-border px-3 py-1.5 flex flex-wrap items-center justify-between bg-card gap-y-2 gap-x-3 min-h-[44px]">
         {/* 左侧：集成式导航胶囊与面包屑 */}
-        <div className="flex items-center space-x-2 flex-1 min-w-[200px]">
+        <div className="flex items-center space-x-2 flex-1 min-w-0">
           <div className="inline-flex items-center rounded-lg border border-border/60 bg-muted/20 p-0.5 shadow-2xs">
             <Button
               variant="ghost"

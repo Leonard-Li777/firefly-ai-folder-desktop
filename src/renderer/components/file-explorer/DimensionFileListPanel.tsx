@@ -430,10 +430,10 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
         refreshKey={refreshKey}
         renderToolbar={layoutContext => (
           <div className="px-3 py-1.5 border-b border-border bg-card flex items-center flex-wrap gap-y-1.5 flex-shrink-0 min-h-[44px]">
-            <div className="flex items-center space-x-2 text-foreground font-semibold text-sm min-w-[180px] overflow-hidden mr-2">
+            <div className="flex items-center space-x-2 text-foreground font-semibold text-sm flex-1 min-w-0 overflow-hidden mr-2">
               <div
                 className={cn(
-                  'flex items-center space-x-2 overflow-x-auto custom-scrollbar-hide pb-0.5'
+                  'flex items-center space-x-2 min-w-0 overflow-x-auto custom-scrollbar-hide pb-0.5'
                 )}
               >
                 {!isMultiSelectMode ? (

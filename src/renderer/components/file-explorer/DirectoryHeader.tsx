@@ -125,7 +125,6 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     const newsDropdownRef = useRef<HTMLDivElement | null>(null)
     const newsTimerRef = useRef<NodeJS.Timeout | null>(null)
     const headerRef = useRef<HTMLElement | null>(null)
-    const [isHubWrapped, setIsHubWrapped] = useState(false)
 
     const STEPS: Step[] = [
       { key: 'real', label: t('真实目录'), path: '/real-directory', icon: 'folder' },
@@ -183,22 +182,14 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
       fetchLicenseStatus()
     }, [])
 
-    // 动态监听 Header 宽度，判断空间是否不足以容纳 Hub + 最小 100px 的最新消息
+    // 动态监听 Header 高度，实时写回 CSS 变量 --app-header-height，使全局搜索浮层无缝贴合第二排下边缘
     useEffect(() => {
       const headerEl = headerRef.current
       if (!headerEl) return
 
       const updateWrapState = () => {
-        const width = headerEl.offsetWidth
         const height = headerEl.offsetHeight
         document.documentElement.style.setProperty('--app-header-height', `${height}px`)
-        // Logo(~190) + Hub(~720) + Search(~180) + Controls(~170) + Padding/Gap(~60) + MinNews(100) = ~1420px
-        const threshold = 1360
-        setIsHubWrapped(prev => {
-          if (!prev && width < threshold) return true
-          if (prev && width >= threshold + 20) return false
-          return prev
-        })
       }
 
       updateWrapState()
@@ -256,7 +247,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
     const isEnterprise = licenseType === 'ENTERPRISE'
 
-    // 轮播逻辑
+    // 轮播逻辑（最新资讯）
     useEffect(() => {
       if (latestNews.length <= 1) {
         if (newsTimerRef.current) clearInterval(newsTimerRef.current)
@@ -271,6 +262,32 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
         if (newsTimerRef.current) clearInterval(newsTimerRef.current)
       }
     }, [latestNews.length])
+
+    // 搜索框动态 Placeholder 候选列表（遵循国际化支持）
+    const SEARCH_PLACEHOLDERS = useMemo(
+      () => [
+        t('自然语言搜索文件...'),
+        t('支持搜索文本、图片、音频、视频...'),
+        t('支持搜索未分析和已分析文件...'),
+        t('示例：上个月签署的采购合同 pdf'),
+        t('示例：带红色印章的发票图片'),
+        t('示例：周会录音或产品需求会议纪要'),
+        t('示例：去年第四季度财务预算表 xlsx')
+      ],
+      [activeLanguage]
+    )
+
+    const [currentPlaceholderIndex, setCurrentPlaceholderIndex] = useState(0)
+
+    useEffect(() => {
+      const placeholderTimer = setInterval(() => {
+        setCurrentPlaceholderIndex(prev => (prev + 1) % SEARCH_PLACEHOLDERS.length)
+      }, 3600)
+
+      return () => {
+        clearInterval(placeholderTimer)
+      }
+    }, [SEARCH_PLACEHOLDERS.length])
 
     const handleNewsClick = (url: string | undefined) => {
       if (url) {
@@ -328,23 +345,15 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
       window.electronAPI!.window.close()
     }
 
-    // 当任何下拉菜单打开或搜索激活时，禁用拖拽，以便点击事件可以正常传播到关闭逻辑与输入处理
-    const isAnyDropdownOpen =
-      showDirectoryDropdown ||
-      isNewsDropdownOpen ||
-      isUserMenuOpen ||
-      showHistoryPopover ||
-      Boolean(globalSearchKeyword.trim())
+    // 仅当「带全屏点击拦截层的浮层」打开时禁用拖拽：此时需要让点击落到拦截层/关闭逻辑上。
+    // 严禁把「搜索框有内容」「搜索历史气泡展开」纳入判据：二者长期驻留（关键词会一直留在 store 里），
+    // 一旦纳入会让整个 Header 永久无法拖动；且搜索输入框与历史气泡自身已各自 no-drag，无需整体禁用。
+    const isAnyDropdownOpen = showDirectoryDropdown || isNewsDropdownOpen || isUserMenuOpen
 
     return (
       <header
         ref={headerRef}
-        className={cn(
-          'relative z-50 flex-shrink-0 bg-background/98 dark:bg-background/98 backdrop-blur-md border-b border-border/60 dark:border-border/40 px-4 py-2.5 shadow-sm w-full',
-          isHubWrapped
-            ? 'grid grid-cols-[auto_1fr_auto] items-center gap-y-2 gap-x-3'
-            : 'flex flex-row items-center justify-between gap-4 flex-nowrap'
-        )}
+        className="relative z-50 flex-shrink-0 bg-background/98 dark:bg-background/98 backdrop-blur-md border-b border-border/60 dark:border-border/40 shadow-sm w-full flex flex-col"
         style={{ WebkitAppRegion: isAnyDropdownOpen ? 'no-drag' : 'drag' } as React.CSSProperties}
       >
         {/* Dropdown Overlays */}
@@ -360,40 +369,174 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           />
         )}
 
-        {/* Left Side: Logo and Title */}
+        {/* 第一排：Logo + 标题 与 动态资讯 + 窗口控制 */}
         <div
-          className="flex items-center space-x-2 flex-shrink-0 order-1"
-          style={{ gridColumn: '1', gridRow: '1' }}
+          className="flex items-center justify-between px-4 py-2 w-full gap-4 flex-nowrap relative z-[105]"
+          style={{ WebkitAppRegion: isAnyDropdownOpen ? 'no-drag' : 'drag' } as React.CSSProperties}
         >
-          <img
-            src={logoIcon}
-            width={24}
-            height={24}
-            className="object-contain flex-shrink-0"
-            alt="logo"
-          />
-          <span className="text-base font-semibold text-foreground dark:text-foreground hidden sm:inline-block whitespace-nowrap">
-            {t('萤核智能文件夹')}
-          </span>
+          {/* Left Side: Logo and Title */}
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <img
+              src={logoIcon}
+              width={24}
+              height={24}
+              className="object-contain flex-shrink-0"
+              alt="logo"
+            />
+            <span className="text-base font-semibold text-foreground dark:text-foreground hidden sm:inline-block whitespace-nowrap">
+              {t('萤核智能文件夹')}
+            </span>
+          </div>
+
+          {/* Right Side: News & Controls */}
+          <div className="flex items-center justify-end space-x-3 flex-1 min-w-0 relative z-[105]">
+            {/* News Carousel: 默认左对齐、宽度自适应（文本多长才多长，超出溢出省略） */}
+            {!isEnterprise && (
+              <div
+                className="relative flex items-center text-xs text-primary transition-all duration-500 min-w-0 flex-1 justify-start"
+                ref={newsDropdownRef}
+                onPointerDown={e => e.stopPropagation()}
+              >
+                {latestNews.length > 0 ? (
+                  <>
+                    <div
+                      className={cn(
+                        'flex items-center gap-1.5 px-1 py-1 rounded-md animate-in fade-in duration-500 cursor-pointer max-w-full min-w-0 hover:opacity-85 transition-opacity',
+                        getLevelStyles(latestNews[currentNewsIndex]?.level).text
+                      )}
+                      style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+                      onClick={() => setIsNewsDropdownOpen(!isNewsDropdownOpen)}
+                    >
+                      <span
+                        className={cn(
+                          'flex h-1.5 w-1.5 rounded-full animate-pulse flex-shrink-0',
+                          getLevelStyles(latestNews[currentNewsIndex]?.level).dot
+                        )}
+                      />
+                      <span
+                        className="truncate font-medium min-w-0 text-left"
+                        title={latestNews[currentNewsIndex]?.text}
+                      >
+                        {latestNews[currentNewsIndex]?.text}
+                      </span>
+                      <MaterialIcon
+                        icon={isNewsDropdownOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
+                        className="text-base opacity-70 flex-shrink-0"
+                      />
+                    </div>
+
+                    {isNewsDropdownOpen && (
+                      <div
+                        className="absolute top-full left-0 mt-2 bg-popover border border-border rounded-md shadow-xl z-[120] py-1 min-w-[280px] max-w-[420px]"
+                        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+                      >
+                        <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground border-b border-border mb-1 uppercase tracking-wider">
+                          {t('最新动态')}
+                        </div>
+                        <div className="max-h-60 overflow-y-auto">
+                          {latestNews.map((news, index) => {
+                            const styles = getLevelStyles(news.level)
+                            return (
+                              <button
+                                key={index}
+                                className={cn(
+                                  'w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors group whitespace-nowrap',
+                                  news.url
+                                    ? 'cursor-pointer hover:bg-accent hover:text-accent-foreground'
+                                    : 'cursor-default',
+                                  'border-b border-border/50 last:border-none'
+                                )}
+                                onClick={() => handleNewsClick(news.url)}
+                              >
+                                <span
+                                  className={cn(
+                                    'flex h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0',
+                                    news.level
+                                      ? styles.dot
+                                      : index === currentNewsIndex
+                                        ? 'bg-primary animate-pulse'
+                                        : 'bg-muted-foreground/40'
+                                  )}
+                                />
+                                <div className="min-w-0">
+                                  <div className={cn('text-xs font-medium', news.level && styles.text)}>
+                                    {news.text}
+                                  </div>
+                                  {news.url && (
+                                    <div className="text-[10px] text-muted-foreground truncate opacity-60 transition-colors duration-200 group-hover:text-accent-foreground/70">
+                                      {news.url}
+                                    </div>
+                                  )}
+                                </div>
+                                {news.url && (
+                                  <MaterialIcon
+                                    icon="open_in_new"
+                                    className="text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity self-center"
+                                  />
+                                )}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <span className="truncate px-2">{t('AI 摘要功能已上线!')}</span>
+                )}
+              </div>
+            )}
+
+            {/* Controls Group */}
+            <div className="flex items-center space-x-3 flex-shrink-0">
+              {/* User Avatar Menu */}
+              <div data-no-drag className="no-drag flex-shrink-0" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+                <UserAvatarMenu onOpenChange={setIsUserMenuOpen} />
+              </div>
+
+              {/* Window Controls */}
+              <div
+                className="flex items-center space-x-1 pl-2 border-l border-border/40 dark:border-white/10 ml-1 flex-shrink-0"
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+              >
+                <button
+                  onClick={handleMinimize}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                  title={t('最小化')}
+                >
+                  <MaterialIcon
+                    icon="minimize"
+                    className="text-muted-foreground text-lg leading-none"
+                  />
+                </button>
+                <button
+                  onClick={handleMaximize}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
+                  title={isMaximized ? t('恢复') : t('最大化')}
+                >
+                  <MaterialIcon
+                    icon={isMaximized ? 'fullscreen_exit' : 'fullscreen'}
+                    className="text-muted-foreground text-lg leading-none"
+                  />
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer"
+                  title={t('关闭')}
+                >
+                  <MaterialIcon icon="close" className="text-muted-foreground text-lg leading-none" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Unified View Control Hub Container */}
-        <div
-          className={cn(
-            'min-w-0 flex-shrink-0 flex items-center',
-            isHubWrapped
-              ? 'w-full order-3 col-span-full gap-2.5 justify-start'
-              : 'mx-2 order-2 gap-2'
-          )}
-          style={isHubWrapped ? { gridRow: '2' } : undefined}
-        >
+        {/* 第二排：拉通背景、无圆角的统一 Hub 与弹性宽度自适应搜索框 */}
+        {/* 拖拽：本排不整体设 no-drag，条带空白处继承 header 的 drag；仅 Hub 与搜索框各自 no-drag */}
+        <div className="flex items-center w-full gap-6 px-4 py-1.5 border-t border-border/50 dark:border-white/[0.08] bg-muted/40 dark:bg-white/[0.03] shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)] relative z-[95]">
+          {/* Hub 区域：工作目录选择器 + 步骤指示器（移除独立外层胶囊与圆角，与第二排背景融为一体） */}
           <div
-            className="flex items-center rounded-full min-w-[700px] transition-all duration-300 relative z-[95]
-          bg-muted/50 dark:bg-white/[0.04]
-          border border-border/50 dark:border-white/[0.08]
-          shadow-[inset_0_1px_0_hsl(0_0%_100%/0.06),_0_1px_3px_hsl(0_0%_0%/0.08)]
-          dark:shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04),_0_1px_3px_hsl(0_0%_0%/0.2)]
-          p-1 gap-0.5"
+            className="flex items-center flex-shrink-0 gap-1"
             style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
           >
             {/* Directory Selector */}
@@ -683,13 +826,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
             </div>
           </div>
 
-          {/* Elevated Search Bar: Located right after Hub */}
+          {/* Elevated Search Bar: 右对齐（ml-auto 吸收剩余空间），弹性自适应宽度，与 Hub 保持 gap-6 最小间距 */}
           <div
             ref={searchContainerRef}
-            className="relative flex items-center flex-shrink-0 z-[95]"
+            className="relative flex items-center flex-1 min-w-[200px] max-w-2xl ml-auto z-[95]"
             style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
           >
-            <div className="relative flex items-center group">
+            <div className="relative flex items-center group w-full">
               <MaterialIcon
                 icon="search"
                 className={cn(
@@ -770,15 +913,17 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                   const val = e.currentTarget.value
                   setGlobalSearchKeyword(val)
                 }}
-                placeholder={t('全域搜索文件 (Ctrl+F)...')}
+                placeholder={SEARCH_PLACEHOLDERS[currentPlaceholderIndex]}
                 className={cn(
-                  'h-9 rounded-full pl-8.5 pr-8 text-xs transition-all duration-300 ease-out select-text',
-                  'bg-muted/40 dark:bg-white/[0.04]',
-                  'border border-border/50 dark:border-white/[0.08]',
-                  'shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)]',
-                  'text-foreground placeholder:text-muted-foreground/50',
-                  'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 focus:bg-background/95 dark:focus:bg-zinc-900/95 focus:shadow-sm',
-                  localSearchInput ? 'w-72 border-primary/40' : 'w-44 hover:w-56 focus:w-72'
+                  'w-full h-9 rounded-full pl-8.5 pr-8 text-xs transition-all duration-200 ease-out select-text',
+                  'bg-background/90 dark:bg-background/60',
+                  // 默认无边框：仅在聚焦或已输入搜索文本时高亮显示边框
+                  'border border-transparent',
+                  'text-foreground placeholder:text-muted-foreground/60',
+                  'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/60 focus:bg-background focus:shadow-md',
+                  // 已有搜索文本时常亮高亮（与聚焦态同款），便于一眼识别当前处于搜索状态
+                  localSearchInput.trim().length > 0 &&
+                    'border-primary/60 ring-2 ring-primary/20 shadow-md'
                 )}
                 title={t('全域混合搜索（支持未分析与已分析文件）')}
               />
@@ -806,7 +951,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
             {/* 轻量搜索历史气泡 */}
             {showHistoryPopover && historySuggestions.length > 0 && (
               <div
-                className="absolute top-full left-0 mt-2 w-72 bg-popover/95 dark:bg-zinc-900/95 backdrop-blur-md border border-border/70 dark:border-zinc-800 rounded-xl shadow-xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
+                className="absolute top-full left-0 mt-2 w-full min-w-[280px] bg-popover/95 dark:bg-zinc-900/95 backdrop-blur-md border border-border/70 dark:border-zinc-800 rounded-xl shadow-xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
                 style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
               >
                 <div className="px-3 py-1.5 flex items-center justify-between border-b border-border/40 text-[11px] text-muted-foreground select-none">
@@ -871,164 +1016,6 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
           </div>
         </div>
 
-        {/* Right Side: News & Controls */}
-        <div
-          className={cn(
-            'flex items-center relative z-[95]',
-            isHubWrapped
-              ? 'col-span-2 order-2 justify-between flex-1 min-w-0 pl-2'
-              : 'order-3 flex-1 min-w-0 justify-end space-x-3'
-          )}
-          style={isHubWrapped ? { gridColumn: '2 / -1', gridRow: '1' } : undefined}
-        >
-          {/* News Carousel */}
-          {!isEnterprise && (
-            <div
-              className={cn(
-                'relative flex items-center text-xs text-primary transition-all duration-500 min-w-0',
-                isHubWrapped
-                  ? 'flex-1 max-w-[600px] justify-start mr-4'
-                  : 'flex-initial min-w-[50px] max-w-[280px] 2xl:max-w-[420px]'
-              )}
-              ref={newsDropdownRef}
-              onPointerDown={e => e.stopPropagation()}
-            >
-              {latestNews.length > 0 ? (
-                <>
-                  <div
-                    className={cn(
-                      'flex items-center gap-1.5 px-2.5 py-1.5 rounded-full animate-in fade-in duration-500 cursor-pointer shadow-sm w-full min-w-0 overflow-hidden',
-                      getLevelStyles(latestNews[currentNewsIndex]?.level).bg,
-                      getLevelStyles(latestNews[currentNewsIndex]?.level).text,
-                      isNewsDropdownOpen
-                        ? cn('ring-1', getLevelStyles(latestNews[currentNewsIndex]?.level).ring)
-                        : ''
-                    )}
-                    style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-                    onClick={() => setIsNewsDropdownOpen(!isNewsDropdownOpen)}
-                  >
-                    <span
-                      className={cn(
-                        'flex h-1.5 w-1.5 rounded-full animate-pulse flex-shrink-0',
-                        getLevelStyles(latestNews[currentNewsIndex]?.level).dot
-                      )}
-                    />
-                    <span
-                      className="flex-1 truncate font-medium min-w-0"
-                      title={latestNews[currentNewsIndex]?.text}
-                    >
-                      {latestNews[currentNewsIndex]?.text}
-                    </span>
-                    <MaterialIcon
-                      icon={isNewsDropdownOpen ? 'arrow_drop_up' : 'arrow_drop_down'}
-                      className="text-base opacity-70 flex-shrink-0"
-                    />
-                  </div>
-
-                  {isNewsDropdownOpen && (
-                    <div
-                      className="absolute top-full right-0 mt-2 bg-popover border border-border rounded-md shadow-lg z-[100] py-1 min-w-[280px]"
-                      style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-                    >
-                      <div className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground border-b border-border mb-1 uppercase tracking-wider">
-                        {t('最新动态')}
-                      </div>
-                      <div className="max-h-60 overflow-y-auto">
-                        {latestNews.map((news, index) => {
-                          const styles = getLevelStyles(news.level)
-                          return (
-                            <button
-                              key={index}
-                              className={cn(
-                                'w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors group whitespace-nowrap',
-                                news.url
-                                  ? 'cursor-pointer hover:bg-accent hover:text-accent-foreground'
-                                  : 'cursor-default',
-                                'border-b border-border/50 last:border-none'
-                              )}
-                              onClick={() => handleNewsClick(news.url)}
-                            >
-                              <span
-                                className={cn(
-                                  'flex h-1.5 w-1.5 rounded-full mt-1.5 flex-shrink-0',
-                                  news.level
-                                    ? styles.dot
-                                    : index === currentNewsIndex
-                                      ? 'bg-primary animate-pulse'
-                                      : 'bg-muted-foreground/40'
-                                )}
-                              />
-                              <div className="min-w-0">
-                                <div className={cn('text-xs font-medium', news.level && styles.text)}>
-                                  {news.text}
-                                </div>
-                                {news.url && (
-                                  <div className="text-[10px] text-muted-foreground truncate opacity-60 transition-colors duration-200 group-hover:text-accent-foreground/70">
-                                    {news.url}
-                                  </div>
-                                )}
-                              </div>
-                              {news.url && (
-                                <MaterialIcon
-                                  icon="open_in_new"
-                                  className="text-sm text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity self-center"
-                                />
-                              )}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <span className="truncate px-2">{t('AI 摘要功能已上线!')}</span>
-              )}
-            </div>
-          )}
-
-          {/* Controls Group */}
-          <div className="flex items-center space-x-3 flex-shrink-0">
-            {/* User Avatar Menu */}
-            <div data-no-drag className="no-drag flex-shrink-0" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
-              <UserAvatarMenu onOpenChange={setIsUserMenuOpen} />
-            </div>
-
-            {/* Window Controls */}
-            <div
-              className="flex items-center space-x-1 pl-2 border-l border-border/40 dark:border-white/10 ml-1 flex-shrink-0"
-              style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-            >
-              <button
-                onClick={handleMinimize}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
-                title={t('最小化')}
-              >
-                <MaterialIcon
-                  icon="minimize"
-                  className="text-muted-foreground text-lg leading-none"
-                />
-              </button>
-              <button
-                onClick={handleMaximize}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer"
-                title={isMaximized ? t('恢复') : t('最大化')}
-              >
-                <MaterialIcon
-                  icon={isMaximized ? 'fullscreen_exit' : 'fullscreen'}
-                  className="text-muted-foreground text-lg leading-none"
-                />
-              </button>
-              <button
-                onClick={handleClose}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors cursor-pointer"
-                title={t('关闭')}
-              >
-                <MaterialIcon icon="close" className="text-muted-foreground text-lg leading-none" />
-              </button>
-            </div>
-          </div>
-        </div>
       </header>
     )
   }

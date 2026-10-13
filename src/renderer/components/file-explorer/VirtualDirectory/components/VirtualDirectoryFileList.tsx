@@ -100,7 +100,7 @@ export const VirtualDirectoryFileList: React.FC<VirtualDirectoryFileListProps> =
         onFileUpdated={loadTree}
         renderToolbar={layoutContext => (
           <div className="flex-shrink-0 border-b border-border px-3 py-1.5 flex flex-wrap items-center justify-between bg-card gap-y-2 gap-x-4">
-            <div className="flex items-center space-x-2 flex-1 min-w-[200px]">
+            <div className="flex items-center space-x-2 flex-1 min-w-0">
               <Button
                 variant="ghost"
                 size="sm"
