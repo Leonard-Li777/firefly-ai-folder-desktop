@@ -783,11 +783,12 @@ export class DatabaseService {
         `UPDATE workspace_files SET is_analyzed = 0, last_analyzed_at = NULL, analysis_error = NULL WHERE directory_id IN (SELECT id FROM workspace_directories WHERE path = ? OR path LIKE ?)`
       ).run(directoryPath, likePattern)
 
+      // 创世 Baseline V1：files 表无 category 列（V4 规范化后由 extension/file_group 承载，
+      // magika 类型识别改由标签树表达），故此处仅清空 AI 分析产物字段。
       this._db!.prepare(
         `
         UPDATE files
-        SET category = NULL,
-            description = NULL,
+        SET description = NULL,
             author = NULL,
             language = NULL,
             is_hit = 0,
@@ -1254,8 +1255,9 @@ export class DatabaseService {
         this._db!.prepare(
           `UPDATE workspace_files SET is_analyzed = 0, last_analyzed_at = NULL, analysis_error = NULL`
         ).run()
+        // 创世 Baseline V1：files 表无 category 列（V4 规范化后由 extension/file_group 承载）
         this._db!.prepare(
-          `UPDATE files SET category = NULL, description = NULL, file_group = NULL, author = NULL, language = NULL, is_hit = 0, last_hit_at = NULL, smart_name_source = NULL, smart_name_template_source = NULL, smart_name = (SELECT name FROM workspace_files wf WHERE wf.file_fingerprint = files.file_fingerprint LIMIT 1)`
+          `UPDATE files SET description = NULL, file_group = NULL, author = NULL, language = NULL, is_hit = 0, last_hit_at = NULL, smart_name_source = NULL, smart_name_template_source = NULL, smart_name = (SELECT name FROM workspace_files wf WHERE wf.file_fingerprint = files.file_fingerprint LIMIT 1)`
         ).run()
         this._db!.prepare('DELETE FROM file_contents').run()
         this._db!.prepare('DELETE FROM file_tag_relations').run()
