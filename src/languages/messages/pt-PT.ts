@@ -2690,7 +2690,7 @@ export default  {
     "11434": "Continuar: Complete estes {rest} ficheiros de acordo com o modo de análise actual, e as partes concluídas não serão extraídas repetidamente.",
     "11435": "Reanálise: todos os arquivos {total} são forçados a serem reanalisados (por exemplo, depois de alterar o modelo, você precisa executar novamente de acordo com o novo modelo).",
     "11436": "Reanalisar todos ({count})",
-    "11438": "Princípiodspark acceleration_dspark acceleration_dspark acceleration_dspark acceleration_dspark",
+    "11438": "[Aceleração DSpark] O modelo incorporado suporta a aceleração do modelo de amostragem especulativa DSpark",
     "11439": "Pronto (a aceleração está activada)",
     "11440": "Permitir a amostragem especulativa para acelerar significativamente a geração",
     "11441": "Reanalisar todos",

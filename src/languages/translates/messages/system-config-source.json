@@ -81,7 +81,7 @@
     "en-US": "【DSpark acceleration】 The built-in model supports DSpark speculative sampling model acceleration",
     "es-ES": "【Aceleración DSpark】 El modelo incorporado admite la aceleración del modelo de muestreo especulativo DSpark",
     "ar-EG": "- تسريع دسبارك - يدعم النموذج المدمج تسريع نموذج أخذ العينات المضاربة دسبارك",
-    "pt-PT": "Princípiodspark acceleration_dspark acceleration_dspark acceleration_dspark acceleration_dspark",
+    "pt-PT": "[Aceleração DSpark] O modelo incorporado suporta a aceleração do modelo de amostragem especulativa DSpark",
     "ru-RU": "【Ускорение DSpark】 Встроенная модель поддерживает ускорение модели спекулятивной выборки DSpark",
     "ja-JP": "【DSpark acceleration】内蔵モデルはDSpark投機的サンプリングモデルのアクセラレーションに対応しています",
     "de-DE": "【DSpark-Beschleunigung】 Das integrierte Modell unterstützt die Beschleunigung des spekulativen dspark-Sampling-Modells",
