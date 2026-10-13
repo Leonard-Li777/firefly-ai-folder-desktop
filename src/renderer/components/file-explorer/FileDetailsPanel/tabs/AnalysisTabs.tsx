@@ -9,6 +9,9 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { openExternalLink } from '../../../../lib/external-link'
 import { AnalysisTimeTab } from './AnalysisTimeTab'
+import { TTSActionGroup } from '../../../common/TTSActionGroup'
+import { HighlightText } from '../../../common/HighlightText'
+import { useSearchStore } from '../../../../stores/search-store'
 
 function extractAnchorMap(content: string): Map<string, string> {
   const map = new Map<string, string>()
@@ -41,7 +44,20 @@ function extractText(node: any): string {
   return ''
 }
 
-function makeMarkdownComponents(anchorMap: Map<string, string>) {
+function highlightChildren(children: any, tokens: string[]) {
+  if (!tokens || tokens.length === 0) return children
+  if (typeof children === 'string') {
+    return <HighlightText text={children} tokens={tokens} />
+  }
+  if (Array.isArray(children)) {
+    return children.map((c, idx) => (
+      <React.Fragment key={idx}>{highlightChildren(c, tokens)}</React.Fragment>
+    ))
+  }
+  return children
+}
+
+function makeMarkdownComponents(anchorMap: Map<string, string>, tokens: string[] = []) {
   const heading =
     (tag: string) =>
     ({ children, ...props }: any) => {
@@ -49,7 +65,7 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
       const Tag = tag as any
       return (
         <Tag id={id} {...props}>
-          {children}
+          {highlightChildren(children, tokens)}
         </Tag>
       )
     }
@@ -60,12 +76,12 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
     h4: heading('h4'),
     p: ({ children }: any) => (
       <p className="mb-2 text-sm leading-relaxed last:mb-0 break-words whitespace-pre-line">
-        {children}
+        {highlightChildren(children, tokens)}
       </p>
     ),
     blockquote: ({ children }: any) => (
       <blockquote className="border-l-4 border-primary/60 bg-muted/40 pl-3 py-1.5 my-2 text-sm italic text-muted-foreground rounded-r-md">
-        {children}
+        {highlightChildren(children, tokens)}
       </blockquote>
     ),
     ul: ({ children }: any) => (
@@ -74,9 +90,9 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
     ol: ({ children }: any) => (
       <ol className="list-decimal pl-5 space-y-1 mb-2 last:mb-0">{children}</ol>
     ),
-    li: ({ children }: any) => <li className="text-sm break-words">{children}</li>,
+    li: ({ children }: any) => <li className="text-sm break-words">{highlightChildren(children, tokens)}</li>,
     strong: ({ children }: any) => (
-      <strong className="font-bold text-foreground">{children}</strong>
+      <strong className="font-bold text-foreground">{highlightChildren(children, tokens)}</strong>
     ),
     code: ({ children }: any) => (
       <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">{children}</code>
@@ -104,8 +120,16 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
 }
 
 function SummaryMarkdown({ content, maskClass }: { content: string; maskClass?: string }) {
+  const tokens = useSearchStore(s => s.searchTokens)
+  const globalKeyword = useSearchStore(s => s.globalSearchKeyword)
+  const effectiveTokens = useMemo(() => {
+    if (tokens && tokens.length > 0) return tokens
+    if (globalKeyword && globalKeyword.trim()) return [globalKeyword.trim()]
+    return []
+  }, [tokens, globalKeyword])
+
   const anchorMap = useMemo(() => extractAnchorMap(content), [content])
-  const components = useMemo(() => makeMarkdownComponents(anchorMap), [anchorMap])
+  const components = useMemo(() => makeMarkdownComponents(anchorMap, effectiveTokens), [anchorMap, effectiveTokens])
   return (
     <div
       className={cn(
@@ -227,22 +251,50 @@ const AnalysisTabsComponent: React.FC<any> = ({
             )}
 
             {analysisResult.multimodalContent ? (
-              <div
-                className={cn(
-                  'text-xs text-foreground bg-muted/30 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed',
-                  maskClass
-                )}
-              >
-                {analysisResult.multimodalContent}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground font-medium">{t('多模态评估描述')}</span>
+                  <TTSActionGroup
+                    text={analysisResult.multimodalContent}
+                    textId={`quality-multimodal-${analysisResult.id || 'current'}`}
+                    filePath={analysisResult.path || analysisResult.filePath}
+                    fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
+                    fieldName="multimodalContent"
+                    defaultFileName="quality-description.wav"
+                    compact
+                  />
+                </div>
+                <div
+                  className={cn(
+                    'text-xs text-foreground bg-muted/30 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed',
+                    maskClass
+                  )}
+                >
+                  <HighlightText text={analysisResult.multimodalContent} />
+                </div>
               </div>
             ) : analysisResult.qualityReasoning ? (
-              <div
-                className={cn(
-                  'text-xs text-foreground bg-muted/30 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed',
-                  maskClass
-                )}
-              >
-                {analysisResult.qualityReasoning}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground font-medium">{t('评分推导说明')}</span>
+                  <TTSActionGroup
+                    text={analysisResult.qualityReasoning}
+                    textId={`quality-reasoning-${analysisResult.id || 'current'}`}
+                    filePath={analysisResult.path || analysisResult.filePath}
+                    fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
+                    fieldName="qualityReasoning"
+                    defaultFileName="quality-reasoning.wav"
+                    compact
+                  />
+                </div>
+                <div
+                  className={cn(
+                    'text-xs text-foreground bg-muted/30 p-3 rounded-md border border-border/50 whitespace-pre-wrap leading-relaxed',
+                    maskClass
+                  )}
+                >
+                  <HighlightText text={analysisResult.qualityReasoning} />
+                </div>
               </div>
             ) : (
               !analysisResult.qualityScore && (
@@ -253,38 +305,101 @@ const AnalysisTabsComponent: React.FC<any> = ({
             )}
           </div>
         )}
-        {activeTab === 'ocr' && (
-          <SummaryMarkdown
-            content={(() => {
-              if (analysisResult.ocr?.trim()) return analysisResult.ocr
-              if (analysisResult.content?.trim()) return analysisResult.content
-              return `> ${t('暂无 OCR 识别结果')}`
-            })()}
-            maskClass={maskClass}
-          />
-        )}
+        {activeTab === 'ocr' && (() => {
+          const ocrText = (analysisResult.ocr?.trim() || analysisResult.content?.trim()) || ''
+          return (
+            <div className="space-y-2">
+              {ocrText && (
+                <div className="flex justify-end">
+                  <TTSActionGroup
+                    text={ocrText}
+                    textId={`ocr-${analysisResult.id || 'current'}`}
+                    filePath={analysisResult.path || analysisResult.filePath}
+                    fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
+                    fieldName="ocr"
+                    defaultFileName="ocr-text.wav"
+                    compact
+                  />
+                </div>
+              )}
+              <SummaryMarkdown
+                content={ocrText || `> ${t('暂无 OCR 识别结果')}`}
+                maskClass={maskClass}
+              />
+            </div>
+          )
+        })()}
 
-        {activeTab === 'asr' && (
-          <SummaryMarkdown
-            content={
-              analysisResult.asr?.trim() ||
-              analysisResult.content?.trim() ||
-              `> ${t('暂无语音转录文本')}`
-            }
-            maskClass={maskClass}
-          />
-        )}
+        {activeTab === 'asr' && (() => {
+          const asrText = (analysisResult.asr?.trim() || analysisResult.content?.trim()) || ''
+          return (
+            <div className="space-y-2">
+              {asrText && (
+                <div className="flex justify-end">
+                  <TTSActionGroup
+                    text={asrText}
+                    textId={`asr-${analysisResult.id || 'current'}`}
+                    filePath={analysisResult.path || analysisResult.filePath}
+                    fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
+                    fieldName="asr"
+                    defaultFileName="asr-transcript.wav"
+                    compact
+                  />
+                </div>
+              )}
+              <SummaryMarkdown
+                content={asrText || `> ${t('暂无语音转录文本')}`}
+                maskClass={maskClass}
+              />
+            </div>
+          )
+        })()}
 
-        {activeTab === 'lrc' && (
-          <SummaryMarkdown
-            content={analysisResult.lrc?.trim() || `> ${t('暂无歌词数据')}`}
-            maskClass={maskClass}
-          />
-        )}
+        {activeTab === 'lrc' && (() => {
+          const lrcText = analysisResult.lrc?.trim() || ''
+          return (
+            <div className="space-y-2">
+              {lrcText && (
+                <div className="flex justify-end">
+                  <TTSActionGroup
+                    text={lrcText}
+                    textId={`lrc-${analysisResult.id || 'current'}`}
+                    filePath={analysisResult.path || analysisResult.filePath}
+                    fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
+                    fieldName="lrc"
+                    defaultFileName="lrc-lyrics.wav"
+                    isLrc={true}
+                    compact
+                  />
+                </div>
+              )}
+              <SummaryMarkdown
+                content={lrcText || `> ${t('暂无歌词数据')}`}
+                maskClass={maskClass}
+              />
+            </div>
+          )
+        })()}
 
         {activeTab === 'summary' && (
-          <SummaryMarkdown content={analysisResult.content} maskClass={maskClass} />
+          <div className="space-y-2">
+            {analysisResult.content && analysisResult.content.trim() && (
+              <div className="flex justify-end">
+                <TTSActionGroup
+                  text={analysisResult.content}
+                  textId={`summary-${analysisResult.id || 'current'}`}
+                  filePath={analysisResult.path || analysisResult.filePath}
+                  fileFingerprint={analysisResult.fileFingerprint || analysisResult.id}
+                  fieldName="summary"
+                  defaultFileName="document-summary.wav"
+                  compact
+                />
+              </div>
+            )}
+            <SummaryMarkdown content={analysisResult.content} maskClass={maskClass} />
+          </div>
         )}
+
         {activeTab === 'timing' && analysisResult.analysisStats && (
           <AnalysisTimeTab
             stats={analysisResult.analysisStats}
@@ -310,7 +425,7 @@ const AnalysisTabsComponent: React.FC<any> = ({
               }
 
               // 从 catObj 与 metadata 联合提取 7 项经典 Magika 项目
-              // 注意：仅使用 magika 数据源（files.category / file_contents.metadata），
+              // 注意：仅使用 magika 数据源（files.file_group / file_contents.metadata），
               // 不依赖 analysisResult.type（文件后缀名）与硬编码默认 mimeType，避免清空分析后残留展示
               const meta = analysisResult.metadata || {}
 

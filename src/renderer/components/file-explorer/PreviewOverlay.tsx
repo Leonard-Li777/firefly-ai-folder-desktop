@@ -108,6 +108,7 @@ export const PreviewOverlay: React.FC = () => {
         onToggleRawText={setShowRawText}
         showHint={true}
         hint={t('ESC 返回')}
+        textContent={rawTextContent}
       />
 
       <div className="flex-1 relative h-full overflow-hidden">

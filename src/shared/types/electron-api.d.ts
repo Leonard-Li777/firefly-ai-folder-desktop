@@ -433,6 +433,8 @@ declare global {
       // 文件操作
       getAllFiles: () => Promise<FileInfo[]>
       addFile: (file: FileInfo) => Promise<void>
+      searchWorkspaceFiles: (keyword: string, workspacePath: string) => Promise<FileItem[]>
+      tokenizeText: (text: string) => Promise<string[]>
 
       // AI分类
       classifyFile: (
@@ -768,6 +770,41 @@ declare global {
             releaseDate: string | null
           }) => void
         ) => () => void
+      }
+
+      // 离线语音合成 (TTS)
+      tts: {
+        synthesizeChunk: (text: string, sid: number, speed: number, sessionId?: number) => Promise<ArrayBuffer | null>
+        abortSession: (sessionId: number) => Promise<void>
+        saveWavFile: (defaultName: string, chunks: Uint8Array[]) => Promise<string | null>
+        getCachePath: (params: {
+          filePath?: string
+          fieldName?: string
+          fileFingerprint?: string
+          sid?: number
+          speed?: number
+        }) => Promise<string | null>
+        readWavMetadata: (wavPath: string) => Promise<{
+          completed: boolean
+          total: number
+          done: number
+          sid: number
+          speed: number
+          fingerprint?: string
+          fieldName?: string
+        } | null>
+        readWavFile: (wavPath: string) => Promise<ArrayBuffer | null>
+        appendWavChunk: (params: {
+          wavPath: string
+          chunkData: Uint8Array
+          chunkIndex: number
+          totalChunks: number
+          sid: number
+          speed: number
+          fileFingerprint?: string
+          fieldName?: string
+        }) => Promise<boolean>
+        locateWavFile: (wavPath: string) => Promise<boolean>
       }
     }
 

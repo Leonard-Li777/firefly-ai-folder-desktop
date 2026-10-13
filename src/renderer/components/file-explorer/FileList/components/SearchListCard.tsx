@@ -1,9 +1,10 @@
-import React from 'react'
+import React, { useState, useCallback } from 'react'
 import { formatDateTimeShort, logger, LogCategory } from '@firefly/shared'
-import { cn } from '../../../../lib/utils'
+import { MaterialIcon, cn } from '../../../../lib/utils'
 import { t } from '@app/languages'
 import { toast } from '../../../common/Toast'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
+import { HighlightText } from '../../../common/HighlightText'
 import { FileType } from '../types'
 import { formatVideoTimestamp } from '../../../../lib/video-preview-utils'
 
@@ -28,33 +29,6 @@ export const sanitizeSnippetHtml = (snippet?: string): string => {
   return escaped.replace(/&lt;mark&gt;/g, '<mark>').replace(/&lt;\/mark&gt;/g, '</mark>')
 }
 
-/** 匹配类型徽章的样式与文案配置 */
-const MATCH_BADGE_CONFIG: Record<
-  string,
-  { label: string; className: string; icon: string }
-> = {
-  exact: {
-    label: '字面匹配',
-    className: 'text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 border-emerald-300 dark:border-emerald-800',
-    icon: 'text_match'
-  },
-  fuzzy: {
-    label: '模糊匹配',
-    className: 'text-sky-600 dark:text-sky-400 bg-sky-100 dark:bg-sky-950/80 border-sky-300 dark:border-sky-800',
-    icon: 'manage_search'
-  },
-  semantic: {
-    label: '语义召回',
-    className: 'text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-950/80 border-violet-300 dark:border-violet-800',
-    icon: 'psychology'
-  },
-  unanalyzed: {
-    label: '未分析',
-    className: 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/80 border-amber-300 dark:border-amber-800',
-    icon: 'help_outline'
-  }
-}
-
 interface SearchListCardProps {
   item: FileType
   safeItemName: string
@@ -70,9 +44,10 @@ interface SearchListCardProps {
 
 /**
  * 搜索列表模式专属卡片：
- * - 元数据行：文件图标、智能名/文件名、匹配类型徽章、修改时间、大小
- * - 路径提示：物理路径
- * - 富正文摘要：已分析文件呈现 <mark> 高亮片段（XSS 安全转义），未分析文件提供“立即分析”插队按钮
+ * - 左侧：文件图标
+ * - 中间（弹性自适应）：智能文件名、文件真实路径、文件描述/正文切片
+ * - 右侧：仅在语义召回时展示召回 Label，修改时间和文件大小
+ * - 无横向滚动条，随窗口缩放自适应
  */
 export const SearchListCard = React.memo(
   ({
@@ -86,28 +61,39 @@ export const SearchListCard = React.memo(
     isActive,
     index
   }: SearchListCardProps) => {
+    const [isQueueSubmitting, setIsQueueSubmitting] = useState(false)
     const isUnanalyzed = Boolean(item.isUnanalyzed || item.matchType === 'unanalyzed')
-    const matchType = item.matchType || (isUnanalyzed ? 'unanalyzed' : 'exact')
-    const badge = MATCH_BADGE_CONFIG[matchType] || MATCH_BADGE_CONFIG.exact
 
-    // 语义召回徽章附加相似度百分比（0~1 → 0~100）
-    const badgeLabel =
-      matchType === 'semantic' && typeof item.similarity === 'number'
-        ? `${t(badge.label)} ${Math.round(Math.min(1, Math.max(0, item.similarity)) * 100)}%`
-        : t(badge.label)
+    // 仅基于有效语义召回时才打上标签，其他情况不打标签；
+    // 若相似度经计算为 0% 或负值，属于无相关性噪点，不应展示“语义召回 0%”
+    const rawPercent =
+      typeof item.similarity === 'number'
+        ? Math.round(Math.min(1, Math.max(0, item.similarity)) * 100)
+        : null
+
+    const hasValidSimilarity = typeof rawPercent === 'number' && rawPercent > 0
+    const isSemantic =
+      hasValidSimilarity ||
+      (item.matchType === 'semantic' && typeof item.similarity !== 'number')
+
+    const semanticLabel = hasValidSimilarity
+      ? `${t('语义召回')} ${rawPercent}%`
+      : t('语义召回')
 
     const primaryName = item.smartName || safeItemName
     const secondaryName = item.smartName && item.smartName !== safeItemName ? safeItemName : ''
 
     /** “立即分析”：将该文件插队至分析队列并给用户提示 */
-    const handleAnalyzeNow = (e: React.MouseEvent) => {
+    const handleAnalyzeNow = useCallback((e: React.MouseEvent) => {
       e.stopPropagation()
-      if (!item.path) return
+      if (!item.path || isQueueSubmitting) return
       const addFn = window.electronAPI?.addToAnalysisQueue
       if (typeof addFn !== 'function') {
         toast.error(t('加入分析队列失败: {message}', { message: 'IPC unavailable' }))
         return
       }
+
+      setIsQueueSubmitting(true)
       Promise.resolve(
         addFn(
           [
@@ -125,6 +111,7 @@ export const SearchListCard = React.memo(
           toast.success(t('已加入分析队列'))
         })
         .catch((err: unknown) => {
+          setIsQueueSubmitting(false)
           logger.error(LogCategory.RENDERER, '加入分析队列失败:', err)
           const message =
             err instanceof Error
@@ -132,109 +119,125 @@ export const SearchListCard = React.memo(
               : String(err)
           toast.error(t('加入分析队列失败: {message}', { message }))
         })
-    }
+    }, [item.path, item.name, item.size, item.extension, primaryName, isQueueSubmitting])
+
+    const isRowActive = Boolean(isSelected || isActive)
 
     return (
       <div
         className={cn(
-          'w-full h-full px-4 py-2 flex flex-col justify-center gap-1 border-b border-border/30 select-none search-list-card',
-          isUnanalyzed && 'bg-amber-500/5 dark:bg-amber-950/10',
-          isSelected || isActive
-            ? 'bg-primary/20 dark:bg-primary/30'
-            : 'hover:bg-secondary/60'
+          'w-full h-full px-4 py-2 flex items-start gap-3 border-b border-border/30 select-none transition-colors duration-150',
+          'search-list-card overflow-hidden',
+          isUnanalyzed && 'bg-amber-500/[0.02] dark:bg-amber-950/10',
+          isRowActive
+            ? 'bg-primary/10 dark:bg-primary/20 border-l-[3px] border-l-primary pl-[13px]'
+            : 'hover:bg-accent/40 dark:hover:bg-accent/30'
         )}
         data-index={index}
         onClick={e => onItemClick(index, e)}
         onDoubleClick={() => onDoubleClick?.()}
         onContextMenu={e => onContextMenu(e, item)}
       >
-        {/* 元数据行：图标 + 名称 + 匹配徽章 + 时间/大小 */}
-        <div className="flex items-center gap-2 min-w-0">
+        {/* 左侧：文件图标 */}
+        <div className="shrink-0 flex items-center justify-center pt-1">
           <SystemFileIcon
             path={item.path}
             extension={item.extension}
-            className="w-5 h-5 object-contain flex-shrink-0"
+            className="w-7 h-7 object-contain flex-shrink-0"
             fallback={
-              <span className="material-icons text-xl flex-shrink-0 text-primary">description</span>
+              <MaterialIcon icon="description" className="text-2xl flex-shrink-0 text-primary" />
             }
           />
-          <span className="font-medium truncate text-primary" title={primaryName}>
-            {primaryName}
-          </span>
-          {secondaryName && (
-            <span className="text-xs text-gray-400 truncate flex-shrink" title={secondaryName}>
-              {secondaryName}
-            </span>
-          )}
-          <span
-            className={cn(
-              'inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border shrink-0',
-              badge.className
-            )}
-          >
-            <span className="material-icons text-[12px]">{badge.icon}</span>
-            {badgeLabel}
-          </span>
-          {/* 若为字面/模糊匹配但同时命中了向量检索，并列展示独立的向量相似度徽章 */}
-          {matchType !== 'semantic' &&
-            typeof item.similarity === 'number' &&
-            item.similarity > 0 && (
-              <span
-                className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border shrink-0 text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-950/80 border-violet-300 dark:border-violet-800"
-                title={t('向量语义相似度')}
-              >
-                <span className="material-icons text-[12px]">psychology</span>
-                {`${t('相似度')} ${Math.round(Math.min(1, Math.max(0, item.similarity)) * 100)}%`}
-              </span>
-            )}
-          {item.matchedChunk && (
-            <span
-              className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0"
-              title={t('匹配视频时间片段')}
-            >
-              <span className="material-icons text-[12px]">schedule</span>
-              {`${formatVideoTimestamp(item.matchedChunk.startSec)} - ${formatVideoTimestamp(item.matchedChunk.endSec)}`}
-            </span>
-          )}
-          <span className="ml-auto flex items-center gap-2 text-xs text-foreground/60 shrink-0">
-            <span>{item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : '-'}</span>
-            <span className="w-16 text-right">{formatFileSize(item.size)}</span>
-          </span>
         </div>
 
-        {/* 路径提示：物理路径 */}
-        {item.path && (
-          <div
-            className="text-xs text-muted-foreground truncate"
-            title={item.path}
-          >
-            {item.path}
-          </div>
-        )}
-
-        {/* 富正文摘要区 */}
-        <div className="min-w-0 flex items-start gap-2">
-          {isUnanalyzed ? (
-            <>
-              <span className="text-xs text-amber-600 dark:text-amber-400 truncate">
-                {t('尚未进行 AI 深度分析，命中文件名')}
+        {/* 中间：智能文件名、真实路径、描述与切片（自适应宽度，溢出截断） */}
+        <div className="flex-1 min-w-0 flex flex-col justify-center gap-1 overflow-hidden">
+          {/* 1. 文件名 */}
+          <div className="flex items-center gap-1.5 min-w-0">
+            <HighlightText
+              text={primaryName}
+              className="text-[13px] font-semibold text-foreground tracking-tight truncate max-w-full"
+              title={primaryName}
+            />
+            {secondaryName && (
+              <span
+                className="text-[11px] text-muted-foreground/70 truncate shrink min-w-0"
+                title={t('原始文件名: {name}', { name: secondaryName })}
+              >
+                (<HighlightText text={secondaryName} />)
               </span>
+            )}
+          </div>
+
+          {/* 2. 文件真实路径 */}
+          {item.path && (
+            <div
+              className="text-[11px] font-mono text-muted-foreground/75 truncate"
+              title={item.path}
+            >
+              <HighlightText text={item.path} title={item.path} />
+            </div>
+          )}
+
+          {/* 3. 文件描述 / 正文切片 / 未分析提示（非废话，有内容才显示） */}
+          {isUnanalyzed ? (
+            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 min-w-0 truncate">
+              <span className="truncate">{t('尚未进行 AI 深度分析，命中文件名')}</span>
               <button
                 type="button"
-                className="ml-auto shrink-0 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 border border-primary/40 hover:border-primary/60 rounded px-2 py-0.5 transition-colors"
+                disabled={isQueueSubmitting}
+                className="shrink-0 inline-flex items-center gap-0.5 text-[11px] font-medium text-amber-700 dark:text-amber-300 hover:underline cursor-pointer disabled:opacity-50"
                 onClick={handleAnalyzeNow}
               >
-                <span className="material-icons text-[14px]">bolt</span>
-                {t('立即分析')}
+                <MaterialIcon icon="bolt" className="text-xs" />
+                <span>{isQueueSubmitting ? t('已提交') : t('立即分析')}</span>
               </button>
-            </>
+            </div>
           ) : item.snippet ? (
-            // snippet 已通过 sanitizeSnippetHtml 转义，仅保留受信任的 <mark> 标签
             <p
-              className="text-xs text-foreground/70 leading-5 line-clamp-2 [&_mark]:bg-yellow-300/70 [&_mark]:dark:bg-yellow-500/40 [&_mark]:text-inherit [&_mark]:rounded-sm [&_mark]:px-0.5"
+              className="text-xs text-foreground/80 leading-relaxed line-clamp-2 [&_mark]:bg-amber-300/60 [&_mark]:dark:bg-amber-400/30 [&_mark]:text-amber-950 [&_mark]:dark:text-amber-100 [&_mark]:font-semibold [&_mark]:rounded-sm [&_mark]:px-0.5 overflow-hidden"
               dangerouslySetInnerHTML={{ __html: sanitizeSnippetHtml(item.snippet) }}
             />
+          ) : item.description ? (
+            <p className="text-xs text-foreground/75 leading-relaxed line-clamp-2 truncate">
+              <HighlightText text={item.description} />
+            </p>
           ) : null}
+        </div>
+
+        {/* 右侧：召回 label（仅语义召回展示）、修改时间和文件大小 */}
+        <div className="shrink-0 flex flex-col items-end justify-between self-stretch text-xs pl-2 text-right">
+          {/* 召回 label：仅语义召回或视频匹配才显示 */}
+          <div className="flex items-center gap-1 justify-end min-h-[20px]">
+            {isSemantic && (
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border text-violet-700 dark:text-violet-300 bg-violet-50 dark:bg-violet-950/70 border-violet-200 dark:border-violet-800 shrink-0"
+                title={t('向量语义召回')}
+              >
+                <MaterialIcon icon="psychology" className="text-[11px]" />
+                <span>{semanticLabel}</span>
+              </span>
+            )}
+            {item.matchedChunk && (
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0"
+                title={t('匹配视频时间片段')}
+              >
+                <MaterialIcon icon="schedule" className="text-[11px]" />
+                <span>{`${formatVideoTimestamp(item.matchedChunk.startSec)} - ${formatVideoTimestamp(item.matchedChunk.endSec)}`}</span>
+              </span>
+            )}
+          </div>
+
+          {/* 修改时间与文件大小 */}
+          <div className="flex flex-col items-end gap-0.5 text-muted-foreground/75 mt-auto">
+            <span className="text-[11px]">
+              {item.modifiedAt ? formatDateTimeShort(item.modifiedAt) : '-'}
+            </span>
+            <span className="text-[11px] font-mono font-medium">
+              {formatFileSize(item.size)}
+            </span>
+          </div>
         </div>
       </div>
     )

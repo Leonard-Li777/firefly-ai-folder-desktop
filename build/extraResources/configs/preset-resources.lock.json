@@ -57,6 +57,9 @@
     },
     "embeddinggemma-2-onnx": {
       "version": "1.0.0"
+    },
+    "kokoro-multi-lang": {
+      "version": "1.1.0"
     }
   },
   "engines": {

@@ -17,6 +17,8 @@ interface SearchState {
   // 全局全域搜索
   globalSearchKeyword: string
   setGlobalSearchKeyword: (keyword: string) => void
+  searchTokens: string[]
+  setSearchTokens: (tokens: string[]) => void
   clearGlobalSearch: () => void
 
   // 浮层显示状态
@@ -54,6 +56,7 @@ interface SearchState {
 export const useSearchStore = create<SearchState>((set, get) => ({
   // 初始状态
   globalSearchKeyword: '',
+  searchTokens: [],
   isSearchOverlayOpen: false,
   realDirectoryKeyword: '',
   analyzedDirectoryKeyword: '',
@@ -68,10 +71,16 @@ export const useSearchStore = create<SearchState>((set, get) => ({
     })
   },
 
+  // 设置分词
+  setSearchTokens: (tokens: string[]) => {
+    set({ searchTokens: tokens })
+  },
+
   // 清除全局搜索
   clearGlobalSearch: () => {
     set({
       globalSearchKeyword: '',
+      searchTokens: [],
       isSearchOverlayOpen: false
     })
   },

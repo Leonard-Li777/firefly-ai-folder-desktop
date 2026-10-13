@@ -11,7 +11,7 @@ vi.mock('../runtime-services/system/omni-service', () => ({
 
 describe('OmniClient Taxonomy Tree API 契约测试', () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
+    vi.clearAllMocks()
     OmniClient.getInstance().clearTaxonomyTreeCache()
   })
 
@@ -65,4 +65,49 @@ describe('OmniClient Taxonomy Tree API 契约测试', () => {
     const uniqueKeys = new Set(keys)
     expect(keys.length).toBe(uniqueKeys.size)
   })
+
+  it('并发多次调用 getTaxonomyTree 应自动合并在途请求 (Singleflight)，仅发起 1 次底层 HTTP 请求', async () => {
+    const calledUrls: string[] = []
+    global.fetch = vi.fn().mockImplementation((url: string) => {
+      calledUrls.push(url)
+      // 模拟 50ms 网络延迟
+      return new Promise(resolve => {
+        setTimeout(() => {
+          resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              locale: 'zh-CN',
+              rootNodes: [{ code: 'builtin.file_type', name: '文件类型', children: [] }],
+              totalNodes: 1
+            })
+          })
+        }, 50)
+      })
+    })
+
+    const client = OmniClient.getInstance()
+    // 模拟 8 个并发组件同时触发 getTaxonomyTree
+    const promises = Array.from({ length: 8 }).map(() =>
+      client.getTaxonomyTree('zh-CN', undefined, 'C:\\test\\firefly.db', {
+        workspaceId: 101,
+        directoryPrefix: 'D:\\Music'
+      })
+    )
+
+    const results = await Promise.all(promises)
+
+    // 8 个结果全部成功且内容一致
+    expect(results).toHaveLength(8)
+    for (const r of results) {
+      expect(r?.rootNodes).toHaveLength(1)
+      expect(r?.rootNodes[0].code).toBe('builtin.file_type')
+    }
+
+    // 关键断言：即使并发 8 次触发，由于 In-Flight Request Coalescing，底层 /api/v1/taxonomy/tree HTTP 请求严格只有 1 次
+    const treeCalls = calledUrls.filter(u => u.includes('/api/v1/taxonomy/tree'))
+    expect(treeCalls).toHaveLength(1)
+  })
 })
+
+

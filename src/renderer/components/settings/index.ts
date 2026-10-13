@@ -18,3 +18,5 @@ export { AdvancedAIPromptsSettings } from './advanced-ai-prompts-settings'
 export { AnalysisIgnoreRulesSettings } from './analysis-ignore-rules-settings'
 export { AnalysisSettings } from './analysis-settings'
 export { MonitoringSettings } from './workspace-settings'
+export { TTSSettings } from './tts-settings'
+

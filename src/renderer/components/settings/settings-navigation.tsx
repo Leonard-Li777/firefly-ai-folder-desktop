@@ -17,7 +17,8 @@ const ICON_MAP: Record<string, string> = {
   boxes: '📦',
   git_fork: '🔀',
   sparkles: '✨',
-  filter: '🛡️'
+  filter: '🛡️',
+  record_voice_over: '🎙️'
 }
 
 function getIcon(iconName: string): string {

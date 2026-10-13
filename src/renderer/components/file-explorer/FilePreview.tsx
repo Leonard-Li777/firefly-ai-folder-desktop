@@ -10,6 +10,7 @@ import {
   clampVideoTime,
   computeHighlightPercent
 } from '../../lib/video-preview-utils'
+import { TTSActionGroup } from '../common/TTSActionGroup'
 
 interface FilePreviewProps {
   filePath: string
@@ -217,7 +218,17 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
             </div>
             {multimodalContent && (
               <div className="w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
-                <p className="text-[11px] text-muted-foreground mb-1 font-medium">{t('多模态描述')}</p>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
+                  <TTSActionGroup
+                    text={multimodalContent}
+                    textId={`image-multimodal-${filePath}`}
+                    filePath={filePath}
+                    fieldName="multimodalContent"
+                    defaultFileName={`${fileName}-description.wav`}
+                    compact
+                  />
+                </div>
                 <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
                   {multimodalContent}
                 </p>
@@ -291,7 +302,17 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
 
             {multimodalContent && (
               <div className="w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
-                <p className="text-[11px] text-muted-foreground mb-1 font-medium">{t('多模态描述')}</p>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
+                  <TTSActionGroup
+                    text={multimodalContent}
+                    textId={`video-multimodal-${filePath}`}
+                    filePath={filePath}
+                    fieldName="multimodalContent"
+                    defaultFileName={`${fileName}-description.wav`}
+                    compact
+                  />
+                </div>
                 <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
                   {multimodalContent}
                 </p>
@@ -351,6 +372,16 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 </button>
               </div>
             )}
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border/40 bg-muted/10 shrink-0">
+              <span className="text-xs text-muted-foreground font-mono truncate max-w-xs">{fileName}</span>
+              <TTSActionGroup
+                text={textContent}
+                textId={`filepreview-${filePath}`}
+                filePath={filePath}
+                fieldName="textContent"
+                defaultFileName={`${fileName}.wav`}
+              />
+            </div>
             <div className="flex-1 overflow-auto p-4 bg-muted/20">
               <pre className="text-[15px] whitespace-pre-wrap break-words text-foreground/90 dark:text-foreground/70 leading-8 tracking-wide font-sans selection:bg-primary/20">
                 {textContent}

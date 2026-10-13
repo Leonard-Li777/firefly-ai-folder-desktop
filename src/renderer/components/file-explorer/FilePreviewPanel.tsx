@@ -142,6 +142,7 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
             showHint={!isControlled}
             hint={t('ESC 关闭')}
             showModeToggle={!isControlled}
+            textContent={rawTextContent}
             onClose={handleBack}
           />
 

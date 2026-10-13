@@ -384,6 +384,20 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
     setReactWindowAvailable(true)
   }, [])
 
+  useLayoutEffect(() => {
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      if (rect.width > 0 && rect.height > 0) {
+        setContainerSize(prev => {
+          const w = Math.round(rect.width)
+          const h = Math.round(rect.height)
+          if (prev.width === w && prev.height === h) return prev
+          return { width: w, height: h }
+        })
+      }
+    }
+  }, [viewMode])
+
   useEffect(() => {
     if (!containerRef.current) return
     const observer = new ResizeObserver(entries => {
@@ -489,7 +503,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       t,
       columnWidths,
       totalWidth,
-      pageId
+      pageId,
+      containerWidth: containerSize.width
     }),
     [
       items,
@@ -516,7 +531,8 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
       viewMode,
       columnWidths,
       totalWidth,
-      pageId
+      pageId,
+      containerSize.width
     ]
   )
 
@@ -682,9 +698,9 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 rowCount={items.length}
                 rowHeight={SEARCH_LIST_ROW_HEIGHT}
                 width={containerSize.width || '100%'}
-                className="scrollbar-thin"
+                className="scrollbar-thin overflow-x-hidden"
                 listRef={listRef}
-                rowProps={{ data: { ...itemData, viewMode: 'search-list' } }}
+                rowProps={{ data: { ...itemData, viewMode: 'search-list', containerWidth: containerSize.width } }}
                 rowComponent={VirtualRowRenderer}
                 onScroll={onListScroll}
               />
@@ -694,10 +710,10 @@ export const FileList: React.FC<FileListProps & { onFirstRender?: () => void }> 
                 itemCount={items.length}
                 itemSize={SEARCH_LIST_ROW_HEIGHT}
                 width={containerSize.width || '100%'}
-                className="scrollbar-thin"
+                className="scrollbar-thin overflow-x-hidden"
                 ref={listRef}
                 outerRef={activeOuterRef}
-                itemData={{ ...itemData, viewMode: 'search-list' }}
+                itemData={{ ...itemData, viewMode: 'search-list', containerWidth: containerSize.width }}
                 onScroll={onListScroll}
               >
                 {VirtualRowRenderer}

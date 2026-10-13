@@ -25,6 +25,7 @@ import { Button } from '../ui/button'
 import { FileDisplaySettings } from './file-display-settings'
 import { InterfaceSettings } from './interface-settings'
 import { MonitoringSettings } from './workspace-settings'
+import { TTSSettings } from './tts-settings'
 import { SettingsCategory } from '@firefly/types'
 import { SettingsNavigation } from './settings-navigation'
 import { t } from '@app/languages'
@@ -38,6 +39,7 @@ const MemoizedUnitRecognitionSettings = memo(UnitRecognitionSettings)
 const MemoizedAdvancedAIPromptsSettings = memo(AdvancedAIPromptsSettings)
 const MemoizedAnalysisIgnoreRulesSettings = memo(AnalysisIgnoreRulesSettings)
 const MemoizedMonitoringSettings = memo(MonitoringSettings)
+const MemoizedTTSSettings = memo(TTSSettings)
 
 const CATEGORY_COMPONENTS: Array<{
   category: SettingsCategory
@@ -53,7 +55,8 @@ const CATEGORY_COMPONENTS: Array<{
   { category: SettingsCategory.ANALYSIS_IGNORE_RULES, Component: MemoizedAnalysisIgnoreRulesSettings },
   // 保持旧 ANALYSIS 兼容映射
   { category: SettingsCategory.ANALYSIS, Component: MemoizedContentExtractionSettings },
-  { category: SettingsCategory.MONITORING, Component: MemoizedMonitoringSettings }
+  { category: SettingsCategory.MONITORING, Component: MemoizedMonitoringSettings },
+  { category: SettingsCategory.TTS, Component: MemoizedTTSSettings }
 ]
 
 /**

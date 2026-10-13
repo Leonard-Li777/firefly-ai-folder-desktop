@@ -101,6 +101,16 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
         // 仅最新一次请求允许写回 State，防止慢响应覆盖快响应
         if (currentSeq === searchSeqRef.current) {
           setSearchResults(results || [])
+          const tokens = (results as any)?.tokens || []
+          if (tokens.length > 0) {
+            useSearchStore.getState().setSearchTokens(tokens)
+          } else if (window.electronAPI?.tokenizeText) {
+            window.electronAPI.tokenizeText(keyword).then(t => {
+              if (currentSeq === searchSeqRef.current && t && t.length > 0) {
+                useSearchStore.getState().setSearchTokens(t)
+              }
+            }).catch(() => {})
+          }
           useSearchStore.getState().addSearchHistory(keyword, 'global')
         }
       } catch (error) {
@@ -172,32 +182,36 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
       style={{ top: 'var(--app-header-height, 53px)' }}
     >
       {/* 顶部搜索状态与操作引导条 */}
-      <div className="flex-shrink-0 h-9 px-4 flex items-center justify-between border-b border-border/60 bg-muted/30 dark:bg-muted/20 text-xs">
-        <div className="flex items-center gap-2 min-w-0">
-          <MaterialIcon icon="search" className="text-primary text-base flex-shrink-0" />
-          <span className="text-muted-foreground whitespace-nowrap">
-            {t('全域搜索结果:')}
+      <div className="flex-shrink-0 h-9 px-4 flex items-center justify-between border-b border-border/60 bg-muted/40 dark:bg-muted/20 text-xs">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <MaterialIcon icon="travel_explore" className="text-primary text-base flex-shrink-0" />
+          <span className="text-muted-foreground whitespace-nowrap text-xs">
+            {t('全域搜索:')}
           </span>
-          <span className="font-semibold text-foreground truncate max-w-[240px]">
+          <span className="font-semibold text-foreground truncate max-w-[160px] sm:max-w-[280px] md:max-w-[400px]">
             "{keyword}"
           </span>
-          <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap">
+          <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap hidden sm:inline">
             {t('（共 {count} 项，包含未分析与已分析文件）', { count: searchResults.length })}
           </span>
+          <span className="text-muted-foreground/80 text-[11px] whitespace-nowrap sm:hidden">
+            {t('（{count} 项）', { count: searchResults.length })}
+          </span>
           {searchResults.length >= 500 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap">
-              {t('已展示前 500 项')}
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap shrink-0">
+              {t('前 500 项')}
             </span>
           )}
         </div>
 
         <button
           onClick={() => clearGlobalSearch()}
-          className="flex items-center gap-1 px-2 py-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent/70 transition-colors cursor-pointer select-none"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/80 active:scale-95 transition-all cursor-pointer select-none border border-border/40 shrink-0 ml-2"
           title={t('退出全域搜索 (ESC)')}
         >
           <MaterialIcon icon="close" className="text-sm" />
-          <span className="text-xs">{t('退出搜索 (ESC)')}</span>
+          <span className="text-xs font-medium">{t('退出搜索')}</span>
+          <kbd className="hidden sm:inline-block text-[10px] font-mono text-muted-foreground/70 bg-muted px-1 rounded border border-border/40">ESC</kbd>
         </button>
       </div>
 
@@ -223,6 +237,7 @@ export const GlobalSearchOverlay: React.FC<GlobalSearchOverlayProps> = ({
             showDetailsPanel={showDetailsPanel}
             onCloseDetailsPanel={() => setShowDetailsPanel(false)}
             pageId={PAGE_IDS.SEARCH_OVERLAY}
+            disableClientSort={true}
             isRealDirectory={true}
             showsmartName={true}
             showAnalysisStatus={true}

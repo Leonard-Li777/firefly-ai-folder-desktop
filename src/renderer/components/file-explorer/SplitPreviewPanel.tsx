@@ -84,6 +84,7 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
         showSwitch={showSwitch}
         showRawText={showRawText}
         onToggleRawText={setShowRawText}
+        textContent={rawTextContent}
       />
 
       <div className="flex-1 relative h-full mr-2 overflow-hidden">

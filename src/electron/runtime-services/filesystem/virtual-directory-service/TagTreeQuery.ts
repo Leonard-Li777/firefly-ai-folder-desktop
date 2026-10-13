@@ -110,8 +110,8 @@ export class TagTreeQuery {
       mapFilesToItems: (rows, ws, showMissing) =>
         this.mapFilesToItems(rows, ws, showMissing ?? true),
       fetchContentsForSearch: fps => this.fetchContentsForSearch(fps),
-      enrichSearchPage: (kw, refs, cand, contents) =>
-        this.enrichSearchPage(kw, refs, cand, contents),
+      enrichSearchPage: (kw, refs, cand, contents, descs) =>
+        this.enrichSearchPage(kw, refs, cand, contents, descs),
       synthesizeUnanalyzedItem: (ref, ws) => this.synthesizeUnanalyzedItem(ref, ws),
       fallbackPaged: params => this.getFilteredFilesPaged(params)
     })
@@ -2262,7 +2262,8 @@ export class TagTreeQuery {
     keyword: string,
     analyzedRefs: Array<Extract<HybridPageRef, { kind: 'analyzed' }>>,
     candidateByFp: Map<string, HybridRankedCandidate>,
-    contentsByFp: Map<string, string>
+    contentsByFp: Map<string, string>,
+    descriptionsByFp?: Map<string, string>
   ): Promise<
     Map<
       string,
@@ -2279,7 +2280,9 @@ export class TagTreeQuery {
     for (const ref of analyzedRefs) {
       const cand = candidateByFp.get(ref.fileFingerprint)
       const text = contentsByFp.get(ref.fileFingerprint) ?? ''
+      const desc = descriptionsByFp?.get(ref.fileFingerprint) ?? ''
       if (cand?.hasLiteral) {
+        // 优先在正文中提取高亮
         const highlight = extractSnippet(text, keyword, { escapeHtml: false })
         if (highlight.hitCount > 0) {
           result.set(ref.fileFingerprint, {
@@ -2290,8 +2293,23 @@ export class TagTreeQuery {
           })
           continue
         }
+        // 若正文无字面命中但文件描述存在字面命中，提取描述的高亮切片
+        if (desc) {
+          const descHighlight = extractSnippet(desc, keyword, { escapeHtml: false })
+          if (descHighlight.hitCount > 0) {
+            result.set(ref.fileFingerprint, {
+              snippet: descHighlight.snippet,
+              matchType: descHighlight.matchType,
+              similarity:
+                cand?.vecScore !== undefined ? Math.round(cand.vecScore * 100) / 100 : undefined
+            })
+            continue
+          }
+        }
       }
-      semanticBatch.push({ fileFingerprint: ref.fileFingerprint, text })
+      // 若正文为空但描述非空，语义对齐可使用描述文本作为语义输入
+      const semanticText = text.trim() ? text : desc
+      semanticBatch.push({ fileFingerprint: ref.fileFingerprint, text: semanticText })
     }
 
     // 无字面命中 → 段落级语义对齐

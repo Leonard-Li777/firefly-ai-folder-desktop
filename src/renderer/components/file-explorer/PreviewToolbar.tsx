@@ -5,6 +5,7 @@ import { Button } from '../ui/button'
 import { Switch } from '../ui/switch'
 import { Label } from '../ui/label'
 import { usePreviewOverlayStore } from '../../stores/preview-overlay-store'
+import { TTSActionGroup } from '../common/TTSActionGroup'
 
 interface PreviewToolbarProps {
   /** 页面标识，用于操作对应页面的预览状态 */
@@ -25,6 +26,8 @@ interface PreviewToolbarProps {
   hint?: string
   /** 是否显示模式切换按钮（全屏/分栏），新窗口模式不显示 */
   showModeToggle?: boolean
+  /** 当前预览的文本内容（若有则展示TTS朗读胶囊） */
+  textContent?: string | null
   /** 关闭按钮回调（可选），提供时优先调用，否则回退到 store 的 closePreview */
   onClose?: () => void
 }
@@ -43,6 +46,7 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
   showHint = false,
   hint,
   showModeToggle = true,
+  textContent,
   onClose
 }) => {
   const {
@@ -118,6 +122,19 @@ export const PreviewToolbar: React.FC<PreviewToolbarProps> = ({
             </Label>
           </div>
         )}
+        {/* TTS 语音朗读胶囊（文本文件自动呈现） */}
+        {textContent && textContent.trim() && (
+          <div className="mr-1 shrink-0">
+            <TTSActionGroup
+              text={textContent}
+              textId={targetFilePath || fileName}
+              filePath={targetFilePath}
+              fieldName="textContent"
+              defaultFileName={fileName ? `${fileName}.wav` : undefined}
+            />
+          </div>
+        )}
+
         {/* 可收缩按钮组 */}
         <Button
           variant="ghost"

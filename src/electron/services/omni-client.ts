@@ -146,6 +146,7 @@ export class OmniClient {
 
   private static readonly TAXONOMY_CACHE_TTL = 10_000 // 10秒TTL（防组件多重挂载并发重复请求，同时保证文件分析入库后敏捷刷新）
   private _taxonomyTreeCache = new Map<string, { data: OmniTaxonomyTreeResponse; time: number }>()
+  private _inFlightTaxonomyTree = new Map<string, Promise<OmniTaxonomyTreeResponse | null>>()
 
   private async request<T>(
     path: string,
@@ -189,6 +190,7 @@ export class OmniClient {
   /** 清除分类树内存缓存（文件分析入库后或强制刷新时调用） */
   clearTaxonomyTreeCache(): void {
     this._taxonomyTreeCache.clear()
+    this._inFlightTaxonomyTree.clear()
   }
 
   /**
@@ -213,31 +215,48 @@ export class OmniClient {
     if (cached && Date.now() - cached.time < OmniClient.TAXONOMY_CACHE_TTL) {
       return cached.data
     }
-    const params = new URLSearchParams({ locale })
-    if (root) params.set('root', root)
-    if (dbPath) {
-      params.set('dbPath', dbPath)
+
+    // 并发合并 (Singleflight / In-Flight Request Coalescing)：
+    // 若同一 cacheKey 的请求正在在途执行，直接复用该 Promise，彻底杜绝并发惊群击穿打向 Omni
+    const inFlight = this._inFlightTaxonomyTree.get(cacheKey)
+    if (inFlight) {
+      return inFlight
     }
-    if (wsPart) {
-      params.set('workspaceId', wsPart)
-    }
-    if (dirPart) {
-      params.set('directoryPrefix', dirPart)
-    }
-    if (options?.includeFiles) {
-      params.set('includeFiles', 'true')
-    }
-    const res = await this.request<OmniTaxonomyTreeResponse>(`/api/v1/taxonomy/tree?${params.toString()}`)
-    if (res && res.rootNodes && res.rootNodes.length > 0) {
-      this._taxonomyTreeCache.set(cacheKey, { data: res, time: Date.now() })
-      return res
-    }
-    // 降级兜底：若网络请求偶发失败但存在历史缓存，优先使用历史缓存，杜绝受控维度根坍塌
-    if (cached) {
-      logger.warn(LogCategory.DIMENSION_SERVICE, `[OmniClient] getTaxonomyTree 请求失败，降级使用历史缓存数据`)
-      return cached.data
-    }
-    return res
+
+    const fetchPromise = (async () => {
+      try {
+        const params = new URLSearchParams({ locale })
+        if (root) params.set('root', root)
+        if (dbPath) {
+          params.set('dbPath', dbPath)
+        }
+        if (wsPart) {
+          params.set('workspaceId', wsPart)
+        }
+        if (dirPart) {
+          params.set('directoryPrefix', dirPart)
+        }
+        if (options?.includeFiles) {
+          params.set('includeFiles', 'true')
+        }
+        const res = await this.request<OmniTaxonomyTreeResponse>(`/api/v1/taxonomy/tree?${params.toString()}`)
+        if (res && res.rootNodes && res.rootNodes.length > 0) {
+          this._taxonomyTreeCache.set(cacheKey, { data: res, time: Date.now() })
+          return res
+        }
+        // 降级兜底：若网络请求偶发失败但存在历史缓存，优先使用历史缓存，杜绝受控维度根坍塌
+        if (cached) {
+          logger.warn(LogCategory.DIMENSION_SERVICE, `[OmniClient] getTaxonomyTree 请求失败，降级使用历史缓存数据`)
+          return cached.data
+        }
+        return res
+      } finally {
+        this._inFlightTaxonomyTree.delete(cacheKey)
+      }
+    })()
+
+    this._inFlightTaxonomyTree.set(cacheKey, fetchPromise)
+    return fetchPromise
   }
 
   /**
@@ -367,6 +386,73 @@ export class OmniClient {
       method: 'POST'
     })
   }
+
+  /**
+   * 分句语音合成：POST /api/audio/tts/chunk
+   * 返回 WAV 格式的 ArrayBuffer，若失败或被取消返回 null
+   */
+  async synthesizeTTSChunk(
+    text: string,
+    sid: number,
+    speed: number,
+    signal?: AbortSignal
+  ): Promise<ArrayBuffer | null> {
+    try {
+      await omniService.ensureRunning()
+      const res = await fetch(`${this.getBaseUrl()}/api/audio/tts/chunk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text, sid, speed }),
+        signal
+      })
+      if (!res.ok) {
+        logger.warn(LogCategory.MAIN, `[OmniClient] TTS 合成失败 HTTP ${res.status}`)
+        return null
+      }
+      return await res.arrayBuffer()
+    } catch (err: unknown) {
+      if ((err as any)?.name === 'AbortError') {
+        logger.debug(LogCategory.MAIN, '[OmniClient] TTS 合成请求已中止')
+        return null
+      }
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.MAIN, '[OmniClient] TTS 合成请求异常:', msg)
+      return null
+    }
+  }
+
+  /**
+   * 获取 TTS 引擎状态：GET /api/audio/tts/status
+   */
+  async getTTSStatus(signal?: AbortSignal): Promise<{ ready: boolean; total_speakers: number; sample_rate: number } | null> {
+    return this.request<{ ready: boolean; total_speakers: number; sample_rate: number }>('/api/audio/tts/status', {
+      method: 'GET',
+      signal
+    })
+  }
+
+  /**
+   * 纯文本分词：POST /api/v1/text/tokenize
+   * 返回由 Omni 结巴搜索切词提取的 tokens 列表（失败时安全降级返回空数组）
+   */
+  async tokenizeText(text: string, signal?: AbortSignal): Promise<string[]> {
+    if (!text || !text.trim()) return []
+    try {
+      await omniService.ensureRunning()
+      const data = await this.request<{ tokens: string[] }>('/api/v1/text/tokenize', {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+        signal
+      })
+      return data?.tokens ?? []
+    } catch (err: unknown) {
+      logger.debug(LogCategory.MAIN, '[OmniClient] 文本分词降级:', err)
+      return []
+    }
+  }
 }
 
 export const omniClient = OmniClient.getInstance()
+

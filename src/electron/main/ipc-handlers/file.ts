@@ -7,7 +7,15 @@ import {
   loadIgnoreRules,
   shouldIgnoreFile
 } from '../../runtime-services/analysis/analysis-ignore-service'
-import { logger, LogCategory, getMimeTypeByExtension, normalizeForCache } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  getMimeTypeByExtension,
+  normalizeForCache,
+  tokenize,
+  isUsefulToken
+} from '@firefly/shared'
+import { omniClient } from '../../services/omni-client'
 import { t } from '@app/languages'
 import type { FileInfo, FileItem, DirectoryItem, WorkspaceDirectory } from '@firefly/types'
 import { virtualDirectoryService, syncedDirectories } from '../state'
@@ -61,17 +69,32 @@ export function registerFileIPCHandlers() {
           offset: 0
         })
         // 保持与原有文件系统搜索返回格式一致：id 使用文件路径
-        return result.items.map(item => ({
+        const items = result.items.map(item => ({
           ...item,
           id: item.path,
           isSelected: item.isSelected ?? false
         }))
+        // 将提取的分词结果附加到数组属性上，兼容原有数组类型
+        ;(items as any).tokens = result.tokens ?? []
+        return items
       } catch (error) {
         logger.error(LogCategory.MAIN, '全信息搜索工作区文件失败:', error)
         return []
       }
     }
   )
+
+  ipcMain.handle('tokenize-text', async (_event, text: string) => {
+    if (!text || !text.trim()) return []
+    try {
+      const omniTokens = await omniClient.tokenizeText(text)
+      const localTokens = tokenize(text).filter(isUsefulToken)
+      return Array.from(new Set([text.trim(), ...omniTokens, ...localTokens]))
+    } catch (error) {
+      logger.error(LogCategory.MAIN, '文本分词失败:', error)
+      return Array.from(new Set([text.trim(), ...tokenize(text)])).filter(isUsefulToken)
+    }
+  })
 
   ipcMain.handle('read-file-base64', async (event, filePath: string) => {
     try {

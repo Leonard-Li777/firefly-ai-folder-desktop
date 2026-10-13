@@ -12,6 +12,7 @@ import { useFileQueueState } from '../../../../stores/analysis-queue-store'
 import { useDragSelectStore } from '../../../../stores/drag-select-store'
 import { checkIsUnit, getUnitTypeLabel, getUnitTheme, getUnitTooltip } from '../utils'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
+import { HighlightText } from '../../../common/HighlightText'
 
 interface RowRendererProps {
   index: number
@@ -547,7 +548,7 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
                     className="font-medium cursor-pointer hover:text-primary dark:text-primary transition-colors truncate"
                     title={nameTooltip}
                   >
-                    {primaryName}
+                    <HighlightText text={primaryName} title={nameTooltip} />
                   </span>
                   {isLost && (
                     <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/80 px-1.5 py-0.5 rounded border border-red-300 dark:border-red-800 shrink-0">
@@ -597,11 +598,22 @@ export const RowRenderer = React.memo(({ index, style, data }: RowRendererProps)
                         : secondaryName
                     }
                   >
-                    {fileItem.relativePathPrefix
-                      ? window.electronAPI?.utils?.normalizePath(
-                          `${fileItem.relativePathPrefix}/${secondaryName}`
-                        )
-                      : secondaryName}
+                    <HighlightText
+                      text={
+                        fileItem.relativePathPrefix
+                          ? window.electronAPI?.utils?.normalizePath(
+                              `${fileItem.relativePathPrefix}/${secondaryName}`
+                            )
+                          : secondaryName
+                      }
+                      title={
+                        fileItem.relativePathPrefix
+                          ? window.electronAPI?.utils?.normalizePath(
+                              `${fileItem.relativePathPrefix}/${secondaryName}`
+                            )
+                          : secondaryName
+                      }
+                    />
                   </span>
                 ) : null}
               </div>

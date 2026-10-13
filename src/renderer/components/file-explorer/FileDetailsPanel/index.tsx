@@ -24,6 +24,8 @@ import { useSettingsStore } from '../../../stores/settings-store'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { openExternalLink } from '../../../lib/external-link'
+import { HighlightText } from '../../common/HighlightText'
+import { useSearchStore } from '../../../stores/search-store'
 
 function extractAnchorMap(content: string): Map<string, string> {
   const map = new Map<string, string>()
@@ -56,7 +58,20 @@ function extractText(node: any): string {
   return ''
 }
 
-function makeMarkdownComponents(anchorMap: Map<string, string>) {
+function highlightChildren(children: any, tokens: string[]) {
+  if (!tokens || tokens.length === 0) return children
+  if (typeof children === 'string') {
+    return <HighlightText text={children} tokens={tokens} />
+  }
+  if (Array.isArray(children)) {
+    return children.map((c, idx) => (
+      <React.Fragment key={idx}>{highlightChildren(c, tokens)}</React.Fragment>
+    ))
+  }
+  return children
+}
+
+function makeMarkdownComponents(anchorMap: Map<string, string>, tokens: string[] = []) {
   const heading =
     (tag: string) =>
     ({ children, ...props }: any) => {
@@ -64,7 +79,7 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
       const Tag = tag as any
       return (
         <Tag id={id} {...props}>
-          {children}
+          {highlightChildren(children, tokens)}
         </Tag>
       )
     }
@@ -75,7 +90,7 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
     h4: heading('h4'),
     p: ({ children }: any) => (
       <p className="mb-2 text-sm leading-relaxed last:mb-0 break-words whitespace-pre-line">
-        {children}
+        {highlightChildren(children, tokens)}
       </p>
     ),
     ul: ({ children }: any) => (
@@ -84,9 +99,9 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
     ol: ({ children }: any) => (
       <ol className="list-decimal pl-5 space-y-1 mb-2 last:mb-0">{children}</ol>
     ),
-    li: ({ children }: any) => <li className="text-sm break-words">{children}</li>,
+    li: ({ children }: any) => <li className="text-sm break-words">{highlightChildren(children, tokens)}</li>,
     strong: ({ children }: any) => (
-      <strong className="font-bold text-foreground">{children}</strong>
+      <strong className="font-bold text-foreground">{highlightChildren(children, tokens)}</strong>
     ),
     code: ({ children }: any) => (
       <code className="bg-muted px-1.5 py-0.5 rounded text-[11px] font-mono break-all whitespace-pre-wrap">{children}</code>
@@ -114,8 +129,16 @@ function makeMarkdownComponents(anchorMap: Map<string, string>) {
 }
 
 function MarkdownRenderer({ content, maskClass }: { content: string; maskClass?: string }) {
+  const tokens = useSearchStore(s => s.searchTokens)
+  const globalKeyword = useSearchStore(s => s.globalSearchKeyword)
+  const effectiveTokens = React.useMemo(() => {
+    if (tokens && tokens.length > 0) return tokens
+    if (globalKeyword && globalKeyword.trim()) return [globalKeyword.trim()]
+    return []
+  }, [tokens, globalKeyword])
+
   const anchorMap = React.useMemo(() => extractAnchorMap(content), [content])
-  const components = React.useMemo(() => makeMarkdownComponents(anchorMap), [anchorMap])
+  const components = React.useMemo(() => makeMarkdownComponents(anchorMap, effectiveTokens), [anchorMap, effectiveTokens])
   return (
     <div className={cn('break-words', maskClass)}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components as any}>
@@ -349,7 +372,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
     if (!isImageFile && !isAudioVideo && analysisResult.content?.trim()) {
       tabs.push({ id: 'summary', label: t('内容摘要'), icon: 'summarize' })
     }
-    // 元数据 tab：仅当存在实际元数据内容（file_contents.metadata）或 Magika 类型识别信息（files.category）时显示，
+    // 元数据 tab：仅当存在实际元数据内容（file_contents.metadata）或 Magika 类型识别信息（files.file_group）时显示，
     // 避免清空分析数据后仍残留空 tab
     const hasCategoryContent = Boolean(
       analysisResult.category &&
@@ -484,14 +507,14 @@ const FileDetailsPanelComponent: React.FC<any> = ({
                           className="font-semibold text-base mt-3 text-primary break-all cursor-text"
                           title={primary}
                         >
-                          {primary}
+                          <HighlightText text={primary} title={primary} />
                         </h2>
                         {secondary && (
                           <p
                             className="text-xs text-muted-foreground mt-1 break-all cursor-text"
                             title={secondary}
                           >
-                            {secondary}
+                            <HighlightText text={secondary} title={secondary} />
                           </p>
                         )}
                       </>
@@ -503,7 +526,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
                       className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
                       title={realName}
                     >
-                      {realName}
+                      <HighlightText text={realName} title={realName} />
                     </h2>
                   )
                 })()}
@@ -518,7 +541,7 @@ const FileDetailsPanelComponent: React.FC<any> = ({
                 className="font-semibold text-base mt-3 text-foreground break-all cursor-text"
                 title={item.name}
               >
-                {item.name}
+                <HighlightText text={item.name} title={item.name} />
               </h2>
             ) : null}
           {analysisResult && isDirAnalysis(analysisResult) && (

@@ -129,6 +129,12 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
     description: t('质量评分与标签智能生成提示词')
   },
   {
+    id: SettingsCategory.TTS,
+    name: t('语音合成 (TTS)'),
+    icon: 'record_voice_over',
+    description: t('Kokoro 离线多发音人音色库、默认语速与收藏管理')
+  },
+  {
     id: SettingsCategory.ANALYSIS_IGNORE_RULES,
     name: t('AI分析忽略规则'),
     icon: 'filter',

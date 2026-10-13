@@ -5,6 +5,7 @@ import { getPreviewRouteType } from '../../lib/preview-utils'
 import { FilePreview } from './FilePreview'
 import { FlyfishPreview } from './FlyfishPreview'
 import { SupportedFormats } from '../common/SupportedFormats'
+import { TTSActionGroup } from '../common/TTSActionGroup'
 import { logger, LogCategory } from '@firefly/shared'
 
 interface PreviewContentProps {
@@ -82,7 +83,17 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
         </div>
         {multimodalContent && (
           <div className="w-full max-w-2xl mx-auto my-4 px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
-            <p className="text-[11px] text-muted-foreground mb-1 font-medium">{t('多模态描述')}</p>
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
+              <TTSActionGroup
+                text={multimodalContent}
+                textId={`flyfish-multimodal-${filePath}`}
+                filePath={filePath}
+                fieldName="multimodalContent"
+                defaultFileName={`${fileName}-description.wav`}
+                compact
+              />
+            </div>
             <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
               {multimodalContent}
             </p>

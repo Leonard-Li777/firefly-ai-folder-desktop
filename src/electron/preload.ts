@@ -77,6 +77,9 @@ const electronAPI = {
   searchWorkspaceFiles: (keyword: string, workspacePath: string): Promise<FileItem[]> =>
     ipcRenderer.invoke('search-workspace-files', keyword, workspacePath),
 
+  tokenizeText: (text: string): Promise<string[]> =>
+    ipcRenderer.invoke('tokenize-text', text),
+
   // AI分类
   classifyFile: (
     filename: string,
@@ -1202,6 +1205,42 @@ const electronAPI = {
         ipcRenderer.removeListener('update:status-change', handler)
       }
     }
+  },
+
+  // 离线语音合成 (TTS)
+  tts: {
+    synthesizeChunk: (text: string, sid: number, speed: number, sessionId?: number): Promise<ArrayBuffer | null> =>
+      ipcRenderer.invoke('tts:synthesize-chunk', text, sid, speed, sessionId),
+    abortSession: (sessionId: number): Promise<void> =>
+      ipcRenderer.invoke('tts:abort-session', sessionId),
+    saveWavFile: (defaultName: string, chunks: Uint8Array[]): Promise<string | null> =>
+      ipcRenderer.invoke('tts:save-wav-file', defaultName, chunks),
+    getCachePath: (params: {
+      filePath?: string
+      fieldName?: string
+      fileFingerprint?: string
+      text?: string
+      sid?: number
+      speed?: number
+    }): Promise<string | null> =>
+      ipcRenderer.invoke('tts:get-cache-path', params),
+    readWavMetadata: (wavPath: string): Promise<any> =>
+      ipcRenderer.invoke('tts:read-wav-metadata', wavPath),
+    readWavFile: (wavPath: string): Promise<ArrayBuffer | null> =>
+      ipcRenderer.invoke('tts:read-wav-file', wavPath),
+    appendWavChunk: (params: {
+      wavPath: string
+      chunkData: Uint8Array
+      chunkIndex: number
+      totalChunks: number
+      sid: number
+      speed: number
+      fileFingerprint?: string
+      fieldName?: string
+    }): Promise<boolean> =>
+      ipcRenderer.invoke('tts:append-wav-chunk', params),
+    locateWavFile: (wavPath: string): Promise<boolean> =>
+      ipcRenderer.invoke('tts:locate-wav-file', wavPath)
   }
 }
 

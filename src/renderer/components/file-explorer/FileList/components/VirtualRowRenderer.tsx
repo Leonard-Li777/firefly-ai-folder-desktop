@@ -15,6 +15,7 @@ import { PageId } from '../../../../constants/page-ids'
 import { checkIsUnit, getUnitTypeLabel, getUnitTheme, getUnitTooltip } from '../utils'
 import { useFileQueueState } from '../../../../stores/analysis-queue-store'
 import { SystemFileIcon } from '../../../common/SystemFileIcon'
+import { HighlightText } from '../../../common/HighlightText'
 import { SearchListCard } from './SearchListCard'
 
 interface VirtualRowRendererInnerProps {
@@ -49,6 +50,7 @@ interface VirtualRowRendererInnerProps {
   viewMode?: string
   /** 搜索卡片双击打开回调（可选；缺省时由 Inner 回退预览/系统打开） */
   onFileDoubleClick?: (file: FileType) => void
+  containerWidth?: number
 }
 
 const areEqual = (
@@ -64,6 +66,7 @@ const areEqual = (
     prevProps.showsmartName !== nextProps.showsmartName ||
     prevProps.swapFileNameDisplay !== nextProps.swapFileNameDisplay ||
     prevProps.totalWidth !== nextProps.totalWidth ||
+    prevProps.containerWidth !== nextProps.containerWidth ||
     prevProps.item?.name !== nextProps.item?.name ||
     prevProps.fileItem?.smartName !== nextProps.fileItem?.smartName ||
     prevProps.fileItem?.description !== nextProps.fileItem?.description ||
@@ -266,7 +269,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
     }
 
     return (
-      <div style={{ width: totalWidth, height: '100%' }}>
+      <div className="w-full h-full overflow-hidden">
         <SearchListCard
           item={fileItem}
           safeItemName={safeItemName}
@@ -443,7 +446,7 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
                   className="font-medium truncate text-primary cursor-pointer transition-colors"
                   title={nameTooltip}
                 >
-                  {primaryName}
+                  <HighlightText text={primaryName} title={nameTooltip} />
                 </span>
                 {isLost && (
                   <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/80 px-1.5 py-0.5 rounded border border-red-300 dark:border-red-800 shrink-0">
@@ -480,11 +483,22 @@ const VirtualRowRendererInner = React.memo((props: VirtualRowRendererInnerProps)
                       : secondaryName
                   }
                 >
-                  {fileItem?.relativePathPrefix
-                    ? window.electronAPI?.utils?.normalizePath(
-                        `${fileItem.relativePathPrefix}/${secondaryName}`
-                      )
-                    : secondaryName}
+                  <HighlightText
+                    text={
+                      fileItem?.relativePathPrefix
+                        ? window.electronAPI?.utils?.normalizePath(
+                            `${fileItem.relativePathPrefix}/${secondaryName}`
+                          )
+                        : secondaryName
+                    }
+                    title={
+                      fileItem?.relativePathPrefix
+                        ? window.electronAPI?.utils?.normalizePath(
+                            `${fileItem.relativePathPrefix}/${secondaryName}`
+                          )
+                        : secondaryName
+                    }
+                  />
                 </span>
               ) : null}
             </div>
@@ -704,6 +718,7 @@ const areVirtualRowPropsEqual = (prevProps: RowRendererProps, nextProps: RowRend
   if (prevData.listRowHeight !== nextData.listRowHeight) return false
   if (prevData.listFontSize !== nextData.listFontSize) return false
   if (prevData.selectionEnabled !== nextData.selectionEnabled) return false
+  if (prevData.containerWidth !== nextData.containerWidth) return false
 
   if (prevData.columnWidths !== nextData.columnWidths) {
     const prevWidths = prevData.columnWidths || {}
@@ -762,9 +777,18 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
   const fileItem = !isDirectory ? (item as FileType) : null
   const tags = fileItem?.tags || []
   const safeItemName = item.name || t('未知文件')
+  const isSearchList = data.viewMode === 'search-list'
+  const effectiveWidth = isSearchList ? '100%' : totalWidth
 
   return (
-    <div style={{ ...style, width: totalWidth }}>
+    <div
+      style={{
+        ...style,
+        width: effectiveWidth,
+        maxWidth: isSearchList ? '100%' : undefined,
+        overflow: isSearchList ? 'hidden' : undefined
+      }}
+    >
       <VirtualRowRendererInner
         item={item}
         index={index}
@@ -789,7 +813,7 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
         isPathEqual={isPathEqual}
         tags={tags}
         columnWidths={columnWidths}
-        totalWidth={totalWidth}
+        totalWidth={isSearchList ? (data.containerWidth || totalWidth) : totalWidth}
         selectionEnabled={selectionEnabled}
         pageId={pageId}
         gridCardWidth={data.gridCardWidth}
@@ -797,6 +821,7 @@ export const VirtualRowRenderer = React.memo(({ index, style, data }: RowRendere
         // search-list 模式必须透传给 Inner，否则 SearchListCard 分支永不触发
         viewMode={data.viewMode}
         onFileDoubleClick={onFileDoubleClick}
+        containerWidth={data.containerWidth}
       />
     </div>
   )

@@ -105,4 +105,5 @@ export interface ListItemData {
   columnWidths: Record<string, number>
   totalWidth: number
   pageId?: PageId
+  containerWidth?: number
 }

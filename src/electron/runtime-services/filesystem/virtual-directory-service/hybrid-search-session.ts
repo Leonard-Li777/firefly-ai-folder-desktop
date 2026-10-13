@@ -2,7 +2,8 @@ import {
   FileItem,
   FilteredFilesResponse
 } from '@firefly/types'
-import { LogCategory, logger, normalizeForCache } from '@firefly/shared'
+import { LogCategory, logger, normalizeForCache, tokenize, isUsefulToken } from '@firefly/shared'
+import { omniClient } from '../../../services/omni-client'
 import {
   HybridRankedCandidate,
   HybridSearchArbiter,
@@ -40,7 +41,8 @@ export interface HybridSearchCollaborators {
     keyword: string,
     analyzedRefs: Array<Extract<HybridPageRef, { kind: 'analyzed' }>>,
     candidateByFp: Map<string, HybridRankedCandidate>,
-    contentsByFp: Map<string, string>
+    contentsByFp: Map<string, string>,
+    descriptionsByFp?: Map<string, string>
   ): Promise<Map<string, { snippet?: string; matchType: 'exact' | 'fuzzy' | 'semantic'; similarity?: number }>>
   /** 由 FS 未分析命中合成 FileItem */
   synthesizeUnanalyzedItem(ref: Extract<HybridPageRef, { kind: 'unanalyzed' }>, workspaceDirectoryPath?: string): FileItem
@@ -175,9 +177,18 @@ export class HybridSearchSession {
       const contentsByFp = analyzedFps.length
         ? this.collaborators.fetchContentsForSearch(analyzedFps)
         : new Map<string, string>()
-      dbQueryTime += performance.now() - contentStart
+      const descriptionsByFp = new Map<string, string>()
+      for (const [fp, item] of baseItems) {
+        if (item.description) descriptionsByFp.set(fp, item.description)
+      }
 
-      const enrichment = await this.collaborators.enrichSearchPage(keyword, analyzedRefs, candidateByFp, contentsByFp)
+      const enrichment = await this.collaborators.enrichSearchPage(
+        keyword,
+        analyzedRefs,
+        candidateByFp,
+        contentsByFp,
+        descriptionsByFp
+      )
 
       // 4. 保持融合顺序组装最终条目
       const items: FileItem[] = []
@@ -198,9 +209,19 @@ export class HybridSearchSession {
         }
       }
 
+      let searchTokens: string[] = []
+      try {
+        const omniTokens = await omniClient.tokenizeText(keyword)
+        const localTokens = tokenize(keyword).filter(isUsefulToken)
+        searchTokens = Array.from(new Set([keyword, ...omniTokens, ...localTokens]))
+      } catch {
+        searchTokens = Array.from(new Set([keyword, ...tokenize(keyword)])).filter(isUsefulToken)
+      }
+
       return {
         items,
         total,
+        tokens: searchTokens,
         performance: {
           dbQueryTime: Math.round(dbQueryTime * 100) / 100,
           totalTime: Math.round((performance.now() - startTime) * 100) / 100
