@@ -4,7 +4,6 @@ import { Button } from '../../../../components/ui/button'
 import { MaterialIcon } from '../../../../lib/utils'
 import { FileExplorerLayout } from '../../FileExplorerLayout'
 import { Breadcrumbs } from '../../Breadcrumbs'
-import { SearchBar } from '../../../common/SearchBar'
 import { PersistentTooltip } from '../../../common/PersistentTooltip'
 import { CardSizePopover } from '../../../common/CardSizePopover'
 import { MiniViewDisplaySettingsPopover } from '../../../common/MiniViewDisplaySettingsPopover'
@@ -146,16 +145,6 @@ export const VirtualDirectoryFileList: React.FC<VirtualDirectoryFileListProps> =
             </div>
 
             <div className="flex items-center space-x-2 text-foreground dark:text-foreground ml-auto">
-              <div className="flex-shrink-0 relative z-10 h-8 flex items-center mr-1">
-                <SearchBar
-                  type="virtual-directory"
-                  placeholder={t('搜索...')}
-                  onSearch={keyword => {
-                    setVirtualDirectoryKeyword(keyword)
-                  }}
-                  className="w-30 focus-within:w-80 transition-all duration-300"
-                />
-              </div>
               {/* 视图模式与显示设置 Mini 下拉弹窗 */}
               <MiniViewDisplaySettingsPopover
                 viewMode={layoutContext.viewMode}

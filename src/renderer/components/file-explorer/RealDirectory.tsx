@@ -4,7 +4,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, memo } from '
 
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
-import { SearchBar } from '../common/SearchBar'
 import { DirectoryHeader } from './DirectoryHeader'
 import { FileDetailsPanel } from './FileDetailsPanel/index'
 import { FileList } from './FileList'
@@ -1056,18 +1055,8 @@ export const RealDirectory: React.FC<RealDirectoryProps> = ({
           <div className="flex-1" />
         </div>
 
-        {/* 右侧：搜索、视图设置、一体化全选分析胶囊及工具 */}
+        {/* 右侧：视图设置、一体化全选分析胶囊及工具 */}
         <div className="flex items-center gap-2 text-foreground dark:text-foreground ml-auto">
-          {/* 搜索框 */}
-          <div className="flex-shrink-0 relative z-10 h-8 flex items-center">
-            <SearchBar
-              type="real-directory"
-              placeholder={t('搜索...')}
-              onSearch={handleSearch}
-              className="w-30 focus-within:w-80 transition-all duration-300"
-            />
-          </div>
-
           {/* 视图模式与显示设置 Mini 下拉弹窗 */}
           <MiniViewDisplaySettingsPopover
             viewMode={layoutContext.viewMode}

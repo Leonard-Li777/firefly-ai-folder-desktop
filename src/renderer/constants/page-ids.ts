@@ -16,7 +16,9 @@ export const PAGE_IDS = {
   /** Pro 开通页面 */
   PRO_ACTIVATION: 'pro-activation',
   /** 企业版开通页面 */
-  ENTERPRISE_ACTIVATION: 'enterprise-activation'
+  ENTERPRISE_ACTIVATION: 'enterprise-activation',
+  /** 全局搜索浮层页面 */
+  SEARCH_OVERLAY: 'search-overlay'
 } as const
 
 export type PageId = (typeof PAGE_IDS)[keyof typeof PAGE_IDS]

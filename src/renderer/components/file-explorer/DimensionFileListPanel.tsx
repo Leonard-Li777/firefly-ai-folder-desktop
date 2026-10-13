@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { SelectedTag, FileItem as FileType, UnionMode } from '@firefly/types'
 import { FileList } from './FileList'
-import { SearchBar } from '../common/SearchBar'
 import { Button } from '../ui/button'
 import { Checkbox } from '../ui/checkbox'
 import { MaterialIcon, cn } from '../../lib/utils'
@@ -90,7 +89,6 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
   const [filteredFiles, setFilteredFiles] = useState<FileType[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingMore, setIsLoadingMore] = useState(false)
-  const [searchKeyword, setSearchKeyword] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'size' | 'modified' | 'qualityScore'>('modified')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [totalFilesCount, setTotalFilesCount] = useState(0)
@@ -130,7 +128,6 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
           sortOrder,
           workspaceDirectoryPath,
           virtualDirectoryId,
-          searchKeyword,
           limit: PAGE_SIZE,
           offset: currentOffset,
           unionMode
@@ -156,7 +153,6 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
       sortOrder,
       workspaceDirectoryPath,
       virtualDirectoryId,
-      searchKeyword,
       unionMode
     ]
   )
@@ -176,7 +172,6 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
     sortOrder,
     workspaceDirectoryPath,
     virtualDirectoryId,
-    searchKeyword,
     refreshKey,
     currentPath,
     unionMode,
@@ -496,17 +491,6 @@ export const DimensionFileListPanel: React.FC<DimensionFileListPanelProps> = ({
             </div>
 
             <div className="flex items-center space-x-2 text-foreground ml-auto flex-shrink-0">
-              <div className="flex-shrink-0 relative z-10 h-8 flex items-center mr-1">
-                <SearchBar
-                  type="virtual-directory"
-                  placeholder={t('搜索...')}
-                  onSearch={kw => {
-                    if (selectedTags.length > 0) clearSelectedTags()
-                    setSearchKeyword(kw)
-                  }}
-                  className="w-30 focus-within:w-60 transition-all duration-300"
-                />
-              </div>
               {/* 视图模式与显示设置 Mini 下拉弹窗 */}
               <MiniViewDisplaySettingsPopover
                 viewMode={layoutContext.viewMode}

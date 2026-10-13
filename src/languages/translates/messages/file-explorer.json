@@ -64,7 +64,7 @@
     "de-DE": "Alle analysierten Dateien",
     "fr-FR": "Tous les fichiers analysés",
     "ko-KR": "모든 분석된 파일\r",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(15701-15712)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(15526-15537)"],
     "$id": 4111
   },
   "请在左侧勾选标签...": {
@@ -77,24 +77,8 @@
     "de-DE": "Bitte überprüfen Sie das Etikett auf der linken Seite...",
     "fr-FR": "Veuillez vérifier l'étiquette à gauche...",
     "ko-KR": "왼쪽 라벨을 확인해주세요.",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(16852-16867)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(16677-16692)"],
     "$id": 4303
-  },
-  "搜索...": {
-    "en-US": "Search...",
-    "es-ES": "Buscar...",
-    "ar-EG": "يبحث...",
-    "pt-PT": "Procurar...",
-    "ru-RU": "поиск...",
-    "ja-JP": "検索...",
-    "de-DE": "Suchen...",
-    "fr-FR": "Recherche...",
-    "ko-KR": "찾다...",
-    "$files": [
-      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(18687-18696)",
-      "src/renderer/components/file-explorer/RealDirectory.tsx(38618-38627)"
-    ],
-    "$id": 4676
   },
   "全选": {
     "en-US": "Select All",
@@ -107,9 +91,9 @@
     "fr-FR": "Tout sélectionner",
     "ko-KR": "전체 선택",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(19787-19793)",
+      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(19113-19119)",
       "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(49127-49133)",
-      "src/renderer/components/file-explorer/RealDirectory.tsx(41402-41408)"
+      "src/renderer/components/file-explorer/RealDirectory.tsx(40994-41000)"
     ],
     "$id": 3290
   },
@@ -123,7 +107,7 @@
     "de-DE": "Stapelsortierung ({count})",
     "fr-FR": "Tri par lots ({count})",
     "ko-KR": "일괄 정렬({count})",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(20275-20293)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(19601-19619)"],
     "$id": 9897
   },
   "批量整理": {
@@ -137,8 +121,8 @@
     "fr-FR": "Tri par lots",
     "ko-KR": "일괄 정렬",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(20355-20363)",
-      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(20875-20883)"
+      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(19681-19689)",
+      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(20201-20209)"
     ],
     "$id": 9899
   },
@@ -152,7 +136,7 @@
     "de-DE": "Geladene {loaded} / Gesamtzahl {total} Dateien",
     "fr-FR": "Fichiers {loaded} / Total {total} chargés",
     "ko-KR": "로드 된{loaded}/총{total}파일",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(21476-21508)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(20802-20834)"],
     "$id": 11640
   },
   "{count} 个文件": {
@@ -166,8 +150,8 @@
     "fr-FR": "{count} fichiers",
     "ko-KR": "{count}개 파일",
     "$files": [
-      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(21648-21663)",
-      "src/renderer/components/file-explorer/RealDirectory.tsx(49904-49919)"
+      "src/renderer/components/file-explorer/DimensionFileListPanel.tsx(20974-20989)",
+      "src/renderer/components/file-explorer/RealDirectory.tsx(49496-49511)"
     ],
     "$id": 10333
   },
@@ -181,7 +165,7 @@
     "de-DE": "Seite {current} / {total}",
     "fr-FR": "Page {current} / {total}",
     "ko-KR": "페이지__/__",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(22002-22029)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(21328-21355)"],
     "$id": 11641
   },
   "已选中 {count} 个文件": {
@@ -194,7 +178,7 @@
     "de-DE": "Ausgewählte {count} Dateien",
     "fr-FR": "Fichiers {count} sélectionnés",
     "ko-KR": "선택한{count}파일",
-    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(22655-22674)"],
+    "$files": ["src/renderer/components/file-explorer/DimensionFileListPanel.tsx(21981-22000)"],
     "$id": 11642
   },
   "层级深度": {
@@ -1099,9 +1083,9 @@
     "fr-FR": "Erreur inconnue",
     "ko-KR": "알 수 없는 오류",
     "$files": [
-      "src/renderer/components/file-explorer/RealDirectory.tsx(17298-17306)",
-      "src/renderer/components/file-explorer/RealDirectory.tsx(31126-31134)",
-      "src/renderer/components/file-explorer/RealDirectory.tsx(34134-34142)"
+      "src/renderer/components/file-explorer/RealDirectory.tsx(17249-17257)",
+      "src/renderer/components/file-explorer/RealDirectory.tsx(31077-31085)",
+      "src/renderer/components/file-explorer/RealDirectory.tsx(34085-34093)"
     ],
     "$id": 3972
   },
@@ -1115,7 +1099,7 @@
     "de-DE": "Verzeichnis konnte nicht gelesen werden: {message}",
     "fr-FR": "Échec de la lecture du répertoire : {message}",
     "ko-KR": "디렉터리를 읽지 못했습니다: {message}",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(17327-17348)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(17278-17299)"],
     "$id": 3321
   },
   "获取工作目录失败": {
@@ -1128,7 +1112,7 @@
     "de-DE": "Das Arbeitsverzeichnis konnte nicht abgerufen werden",
     "fr-FR": "Impossible d'obtenir le répertoire de travail",
     "ko-KR": "작업 디렉터리를 가져오지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(19058-19070)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(19009-19021)"],
     "$id": 3322
   },
   "设置当前工作目录失败": {
@@ -1141,7 +1125,7 @@
     "de-DE": "Das aktuelle Arbeitsverzeichnis konnte nicht festgelegt werden",
     "fr-FR": "Échec de la définition du répertoire de travail actuel",
     "ko-KR": "현재 작업 디렉터리를 설정하지 못했습니다.",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(23959-23973)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(23910-23924)"],
     "$id": 3327
   },
   "添加工作目录失败": {
@@ -1154,7 +1138,7 @@
     "de-DE": "Hinzufügen des Arbeitsverzeichnisses fehlgeschlagen",
     "fr-FR": "Échec de l'ajout du répertoire de travail",
     "ko-KR": "작업 디렉터리 추가에 실패했습니다.",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(26061-26073)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(26012-26024)"],
     "$id": 3389
   },
   "刷新文件列表失败: {message}": {
@@ -1167,7 +1151,7 @@
     "de-DE": "Dateiliste konnte nicht aktualisiert werden: {message}",
     "fr-FR": "Échec de l'actualisation de la liste des fichiers : {message}",
     "ko-KR": "파일 목록을 새로 고치지 못했습니다: {message}",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(31155-31178)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(31106-31129)"],
     "$id": 3328
   },
   "请先【全选】或【框选】您要分析的文件。小技巧：可以利用搜索过滤内容，再使用【全选】": {
@@ -1180,7 +1164,7 @@
     "de-DE": "Bitte [Alle auswählen] oder [Box auswählen] die Dateien auswählen, die Sie zuerst analysieren möchten. Tipp: Sie können die Suche zum Filtern von Inhalten verwenden und dann [Alle auswählen] verwenden.",
     "fr-FR": "Veuillez d'abord [Sélectionner tout] ou [Sélectionner la case] les fichiers que vous souhaitez analyser. Astuce : Vous pouvez utiliser la recherche pour filtrer le contenu, puis utiliser [Sélectionner tout]",
     "ko-KR": "먼저 분석하려는 파일을 [모두 선택] 또는 [박스 선택]하세요. 팁: 검색을 사용하여 콘텐츠를 필터링한 후 [모두 선택]을 사용할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(31518-31563)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(31469-31514)"],
     "$id": 4634
   },
   "分析失败：{error}": {
@@ -1193,7 +1177,7 @@
     "de-DE": "Analyse fehlgeschlagen: {error}",
     "fr-FR": "Échec de l'analyse : {error}",
     "ko-KR": "분석 실패: {error}",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(34458-34474)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(34409-34425)"],
     "$id": 3390
   },
   "后退 (Alt+Left / Backspace)": {
@@ -1206,7 +1190,7 @@
     "de-DE": "Zurück (Alt+Links/Rücktaste)",
     "fr-FR": "Retour (Alt+Gauche / Retour arrière)",
     "ko-KR": "뒤로(Alt+왼쪽/백스페이스)",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(35406-35435)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(35357-35386)"],
     "$id": 4297
   },
   "前进 (Alt+Right)": {
@@ -1219,7 +1203,7 @@
     "de-DE": "Vorwärts (Alt+Rechts)",
     "fr-FR": "Suivant (Alt+Droite)",
     "ko-KR": "앞으로(Alt+오른쪽)",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(35926-35944)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(35877-35895)"],
     "$id": 4298
   },
   "向上 (Alt+Up)": {
@@ -1232,7 +1216,7 @@
     "de-DE": "Nach oben (Alt+Nach oben)",
     "fr-FR": "Haut (Alt+Haut)",
     "ko-KR": "위쪽(Alt+위쪽)",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(36402-36417)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(36353-36368)"],
     "$id": 4299
   },
   "无法打开目录: {message}": {
@@ -1245,7 +1229,7 @@
     "de-DE": "Verzeichnis kann nicht geöffnet werden: {message}",
     "fr-FR": "Impossible d'ouvrir le répertoire : {message}",
     "ko-KR": "디렉터리를 열 수 없습니다: {message}",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(37999-38020)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(37950-37971)"],
     "$id": 3329
   },
   "在系统文件浏览器中打开": {
@@ -1258,7 +1242,7 @@
     "de-DE": "Im System-Dateibrowser öffnen",
     "fr-FR": "Ouvrir dans l'explorateur de fichiers du système",
     "ko-KR": "시스템 파일 탐색기에서 열기",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(38111-38126)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(38062-38077)"],
     "$id": 3435
   },
   "没有文件": {
@@ -1271,7 +1255,7 @@
     "de-DE": "Keine Dateien",
     "fr-FR": "Aucun fichier",
     "ko-KR": "파일 없음",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(40714-40722)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(40306-40314)"],
     "$id": 3289
   },
   "取消全选": {
@@ -1284,7 +1268,7 @@
     "de-DE": "Alle abwählen\r",
     "fr-FR": "Désélectionner tout",
     "ko-KR": "전체 선택 취소",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(40782-40790)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(40374-40382)"],
     "$id": 4052
   },
   "全选当前页面 (Ctrl+A)": {
@@ -1297,7 +1281,7 @@
     "de-DE": "Alles auf der aktuellen Seite auswählen (Strg+A)",
     "fr-FR": "Sélectionner tout sur la page actuelle (Ctrl+A)",
     "ko-KR": "현재 페이지 전체 선택 (Ctrl+A)",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(40815-40834)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(40407-40426)"],
     "$id": 11231
   },
   "已全选 ({count})": {
@@ -1310,7 +1294,7 @@
     "de-DE": "Alle ausgewählt ({count})",
     "fr-FR": "Tout sélectionné ({count})",
     "ko-KR": "전체 선택됨 ({count})",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(41468-41485)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(41060-41077)"],
     "$id": 11232
   },
   "已选 {count} 项": {
@@ -1324,8 +1308,9 @@
     "fr-FR": "{count} élément(s) sélectionné(s)",
     "ko-KR": "{count}개 선택됨",
     "$files": [
-      "src/renderer/components/file-explorer/RealDirectory.tsx(41543-41559)",
-      "src/renderer/components/file-explorer/RealDirectory.tsx(50818-50834)"
+      "src/renderer/components/file-explorer/RealDirectory.tsx(41135-41151)",
+      "src/renderer/components/file-explorer/RealDirectory.tsx(50410-50426)",
+      "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(8953-8969)"
     ],
     "$id": 11233
   },
@@ -1339,7 +1324,7 @@
     "de-DE": "Bitte markieren Sie zunächst die zu analysierenden Dateien durch Anklicken oder durch Markieren.",
     "fr-FR": "Veuillez d'abord cocher ou entourer les fichiers à analyser",
     "ko-KR": "먼저 분석할 파일을 체크하거나 드래그로 선택해 주세요",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(42535-42552)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(42127-42144)"],
     "$id": 11234
   },
   "批量分析选中的 {count} 个文件": {
@@ -1352,7 +1337,7 @@
     "de-DE": "Ausgewählte {count} Dateien im Stapelverfahren analysieren",
     "fr-FR": "Analyser en lot les {count} fichiers sélectionnés",
     "ko-KR": "선택된 {count}개 파일 일괄 분석",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(42575-42598)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(42167-42190)"],
     "$id": 11235
   },
   "批量分析": {
@@ -1365,7 +1350,7 @@
     "de-DE": "Chargenanalyse",
     "fr-FR": "Analyse par lots",
     "ko-KR": "배치 분석",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(42859-42867)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(42451-42459)"],
     "$id": 3330
   },
   "查看和管理文件分析进度": {
@@ -1378,7 +1363,7 @@
     "de-DE": "Anzeigen und Verwalten des Dateianalysefortschritts.",
     "fr-FR": "Afficher et gérer la progression de l'analyse des fichiers",
     "ko-KR": "파일 분석 진행 상황을 확인하고 관리할 수 있습니다",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(43344-43359)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(42936-42951)"],
     "$id": 4351
   },
   "队列已暂停 ({length}/{snapshotLength})": {
@@ -1391,7 +1376,7 @@
     "de-DE": "Warteschlange angehalten ({length}/{snapshotLength})",
     "fr-FR": "File d'attente suspendue ({length}/{snapshotLength})",
     "ko-KR": "큐가 일시 중지됨({length}/{snapshotLength})",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(44478-44515)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(44070-44107)"],
     "$id": 4632
   },
   "队列 ({length}/{snapshotLength})": {
@@ -1404,7 +1389,7 @@
     "de-DE": "Warteschlange ({length}/{snapshotLength})",
     "fr-FR": "File d'attente ({length}/{snapshotLength})",
     "ko-KR": "대기줄 ({length}/{snapshotLength})",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(44773-44807)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(44365-44399)"],
     "$id": 4637
   },
   "扫描并清理重复、临时与大文件，为 AI 分析瘦身提速": {
@@ -1417,7 +1402,7 @@
     "de-DE": "Duplikate, temporäre Dateien und große Dateien scannen und bereinigen, um die KI-Analyse schlanker und schneller zu machen",
     "fr-FR": "Scannez et nettoyez les doublons, fichiers temporaires et fichiers volumineux pour accélérer l’analyse par IA et optimiser le débit",
     "ko-KR": "중복, 임시 및 대용량 파일을 스캔하여 정리함으로써 AI 분석을 슬림화하고 속도를 높입니다",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(45814-45844)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(45406-45436)"],
     "$id": 11432
   },
   "目录瘦身": {
@@ -1430,7 +1415,7 @@
     "de-DE": "Ordner schlank halten",
     "fr-FR": "RÉDUCION DE DOSSIER",
     "ko-KR": "디렉터리 슬림화",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(45968-45976)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(45560-45568)"],
     "$id": 11392
   },
   "{count} 个文件夹": {
@@ -1443,7 +1428,7 @@
     "de-DE": "{count} Ordner",
     "fr-FR": "{count} dossier",
     "ko-KR": "파일 이름",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(49518-49534)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(49110-49126)"],
     "$id": 11447
   },
   "搜索中...": {
@@ -1456,7 +1441,7 @@
     "de-DE": "Suche...",
     "fr-FR": "Chercher...",
     "ko-KR": "검색...",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(50384-50394)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(49976-49986)"],
     "$id": 11448
   },
   "已按关键词跨目录搜索": {
@@ -1469,7 +1454,7 @@
     "de-DE": "Verzeichnisübergreifende Suche nach Stichworten",
     "fr-FR": "Recherche croisée par mot-clé",
     "ko-KR": "키워드로 디렉토리 간 검색",
-    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(50427-50441)"],
+    "$files": ["src/renderer/components/file-explorer/RealDirectory.tsx(50019-50033)"],
     "$id": 11449
   },
   "选择一个文件以预览": {
@@ -1536,5 +1521,122 @@
     "ko-KR": "현재 측정기준 라벨 아래에 일치하는 파일이 없습니다. 다른 측정기준 카테고리를 선택하세요.",
     "$files": ["src/renderer/components/file-explorer/FileExplorerLayout/index.tsx(12551-12579)"],
     "$id": 7515
+  },
+  "全域搜索结果:": {
+    "en-US": "Global search results:",
+    "es-ES": "Resultados de búsqueda globales:",
+    "ar-EG": "نتائج البحث العالمية:",
+    "pt-PT": "Resultados da pesquisa Global:",
+    "ru-RU": "Результаты глобального поиска:",
+    "ja-JP": "グローバル検索結果:",
+    "de-DE": "Globale Suchergebnisse:",
+    "fr-FR": "Résultats de la recherche globale:",
+    "ko-KR": "글로벌 검색 결과:",
+    "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(6117-6128)"],
+    "$id": 21031
+  },
+  "（共 {count} 项，包含未分析与已分析文件）": {
+    "en-US": "(A total of {count} items, including unanalyzed and analyzed files)",
+    "es-ES": "(Un total de {count} elementos, incluidos los archivos no analizados y analizados)",
+    "ar-EG": "(ما مجموعه {count} البنود ، بما في ذلك الملفات غير تحليلها وتحليلها)",
+    "pt-PT": "(Um total de {count} itens, incluindo ficheiros não analisados e analisados)",
+    "ru-RU": "(Всего {count} элементов, включая непроанализированные и проанализированные файлы)",
+    "ja-JP": "（未分析ファイルと分析ファイルを含む{count}項目の合計）",
+    "de-DE": "(Insgesamt {count} Elemente, einschließlich nicht analysierter und analysierter Dateien)",
+    "fr-FR": "(Un total de {count} éléments, y compris les fichiers non analysés et analysés)",
+    "ko-KR": "(분석되지 않은 파일 및 분석된 파일을 포함하여 총{count}항목)",
+    "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(6370-6399)"],
+    "$id": 21032
+  },
+  "已展示前 500 项": {
+    "en-US": "The top 500 items have been displayed",
+    "es-ES": "Se han mostrado los 500 artículos principales",
+    "ar-EG": "تم عرض أفضل 500 عنصر",
+    "pt-PT": "Os 500 principais itens foram exibidos",
+    "ru-RU": "Были показаны 500 лучших товаров",
+    "ja-JP": "上位500件が表示されました",
+    "de-DE": "Die Top 500 Artikel wurden angezeigt",
+    "fr-FR": "Les 500 meilleurs articles ont été affichés",
+    "ko-KR": "상위 500 개 항목이 표시되었습니다",
+    "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(6673-6687)"],
+    "$id": 21033
+  },
+  "退出全域搜索 (ESC)": {
+    "en-US": "Exit Global Search (ESC)",
+    "es-ES": "Salir de la búsqueda global (ESC)",
+    "ar-EG": "الخروج من البحث العالمي (خروج)",
+    "pt-PT": "Sair da Pesquisa Global (ESC)",
+    "ru-RU": "Выход из глобального поиска (ESC)",
+    "ja-JP": "グローバル検索を終了する(ESC)",
+    "de-DE": "Globale Suche beenden (ESC)",
+    "fr-FR": "Quitter la recherche globale (ESC)",
+    "ko-KR": "전역 검색 종료",
+    "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(6990-7006)"],
+    "$id": 21034
+  },
+  "退出搜索 (ESC)": {
+    "en-US": "Exit search (ESC)",
+    "es-ES": "Búsqueda de salida (ESC)",
+    "ar-EG": "خروج البحث (خروج)",
+    "pt-PT": "Pesquisa de saída (ESC)",
+    "ru-RU": "Поиск выхода (ESC)",
+    "ja-JP": "検索を終了する(ESC)",
+    "de-DE": "Suche beenden (ESC)",
+    "fr-FR": "Quitter la recherche (ESC)",
+    "ko-KR": "검색 종료",
+    "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(7116-7130)"],
+    "$id": 21035
+  },
+  "未选择工作目录": {
+    "en-US": "No working directory selected",
+    "es-ES": "No hay directorio de trabajo seleccionado",
+    "ar-EG": "لا يوجد دليل عمل محدد",
+    "pt-PT": "Nenhum directório de trabalho seleccionado",
+    "ru-RU": "Рабочий каталог не выбран",
+    "ja-JP": "作業ディレクトリが選択されていません",
+    "de-DE": "Kein Arbeitsverzeichnis ausgewählt",
+    "fr-FR": "Aucun répertoire de travail sélectionné",
+    "ko-KR": "선택한 작업 디렉터리 없음",
+    "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(7432-7443)"],
+    "$id": 21036
+  },
+  "请先在顶部导航栏选择有效的工作目录，即可开始全域混合搜索": {
+    "en-US": "Please select a valid working directory in the top navigation bar to start a global hybrid search",
+    "es-ES": "Seleccione un directorio de trabajo válido en la barra de navegación superior para iniciar una búsqueda híbrida global",
+    "ar-EG": "الرجاء تحديد دليل عمل صالح في شريط التنقل العلوي لبدء بحث هجين عالمي",
+    "pt-PT": "Selecione um diretório de trabalho válido na barra de navegação superior para iniciar uma pesquisa híbrida global",
+    "ru-RU": "Пожалуйста, выберите подходящий рабочий каталог на верхней панели навигации, чтобы начать глобальный гибридный поиск",
+    "ja-JP": "グローバルハイブリッド検索を開始するには、上部ナビゲーションバーで有効な作業ディレクトリを選択してください",
+    "de-DE": "Bitte wählen Sie ein gültiges Arbeitsverzeichnis in der oberen Navigationsleiste aus, um eine globale Hybridsuche zu starten",
+    "fr-FR": "Veuillez sélectionner un répertoire de travail valide dans la barre de navigation supérieure pour lancer une recherche hybride globale",
+    "ko-KR": "글로벌 하이브리드 검색을 시작하려면 상단 탐색 모음에서 유효한 작업 디렉터리를 선택하십시오",
+    "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(7471-7503)"],
+    "$id": 21037
+  },
+  "匹配文件: {count} 个": {
+    "en-US": "Matching files: {count} pcs",
+    "es-ES": "Archivos coincidentes: {count} pcs",
+    "ar-EG": "مطابقة الملفات: {count} جهاز كمبيوتر شخصى",
+    "pt-PT": "Ficheiros correspondentes: {count} pcs",
+    "ru-RU": "Соответствующие файлы: {count} шт.",
+    "ja-JP": "一致するファイル:{count}個",
+    "de-DE": "Passende Dateien: {count} pcs",
+    "fr-FR": "Fichiers correspondants: {count} pcs",
+    "ko-KR": "일치하는 파일:{count}개",
+    "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(8649-8668)"],
+    "$id": 21038
+  },
+  "提示: 结果已达到最大单次展示上限（500项）": {
+    "en-US": "Reminder: The result has reached the maximum single display limit (500 items)",
+    "es-ES": "Recordatorio: El resultado ha alcanzado el límite máximo de visualización individual (500 elementos)",
+    "ar-EG": "تذكير: وصلت النتيجة إلى الحد الأقصى للعرض الفردي (500 عنصر)",
+    "pt-PT": "Lembrete: o resultado atingiu o limite máximo de exibição única (500 itens)",
+    "ru-RU": "Напоминание: Результат достиг максимального значения для однократного отображения (500 элементов).",
+    "ja-JP": "リマインダー：結果は最大単一表示制限（500項目）に達しています",
+    "de-DE": "Erinnerung: Das Ergebnis hat das maximale Einzelanzeigelimit (500 Elemente) erreicht",
+    "fr-FR": "Rappel: Le résultat a atteint la limite maximale d'affichage unique (500 éléments)",
+    "ko-KR": "알림:결과가 최대 단일 디스플레이 제한(500 개 항목)에 도달했습니다.",
+    "$files": ["src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(9314-9341)"],
+    "$id": 21039
   }
 }

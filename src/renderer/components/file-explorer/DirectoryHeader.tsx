@@ -11,6 +11,7 @@ import i18nScope, { t } from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
 import { useConfigStore } from '../../stores/config-store'
 import { useTierStore } from '../../stores/tier-store'
+import { useSearchStore } from '../../stores/search-store'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAnalyzedDirectoryStore } from '../../stores/analyzed-directory-store'
 import { useSettingsStore } from '../../stores/settings-store'
@@ -50,11 +51,68 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
     const location = useLocation()
     const currentPath = location.pathname
     const [isMaximized, setIsMaximized] = useState(false)
-    const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false)
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
     const { hasNewFiles, setHasNewFiles, newFilesCount } = useAnalyzedDirectoryStore()
     const { computed_limits } = useTierStore()
     const [licenseType, setLicenseType] = useState<string | null>(null)
+
+    // 全域搜索状态与输入控制
+    const globalSearchKeyword = useSearchStore(state => state.globalSearchKeyword)
+    const setGlobalSearchKeyword = useSearchStore(state => state.setGlobalSearchKeyword)
+    const clearGlobalSearch = useSearchStore(state => state.clearGlobalSearch)
+    const searchHistory = useSearchStore(state => state.searchHistory)
+    const getSearchSuggestions = useSearchStore(state => state.getSearchSuggestions)
+    const addSearchHistory = useSearchStore(state => state.addSearchHistory)
+    const removeSearchHistoryByKeyword = useSearchStore(
+      state => state.removeSearchHistoryByKeyword
+    )
+    const clearSearchHistory = useSearchStore(state => state.clearSearchHistory)
+
+    const [localSearchInput, setLocalSearchInput] = useState(globalSearchKeyword)
+    const [showHistoryPopover, setShowHistoryPopover] = useState(false)
+    const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1)
+    const searchInputRef = useRef<HTMLInputElement | null>(null)
+    const searchContainerRef = useRef<HTMLDivElement | null>(null)
+    const isComposingRef = useRef(false)
+
+    // 计算当前匹配的搜索历史词（聚焦空输入时返回最近历史，有输入时返回模糊匹配历史）
+    const historySuggestions = useMemo(() => {
+      return getSearchSuggestions('global', localSearchInput)
+    }, [getSearchSuggestions, localSearchInput, searchHistory])
+
+    // 同步外部 globalSearchKeyword 变更（如清空或由其他操作重置）
+    useEffect(() => {
+      setLocalSearchInput(globalSearchKeyword)
+    }, [globalSearchKeyword])
+
+    // 全局快捷键监听 (Ctrl+F / Cmd+F)，带白名单与可见性守卫
+    useEffect(() => {
+      const handleGlobalKeyDown = (e: KeyboardEvent) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+          // 可见性守卫：若当前 Header 所在容器隐藏（非活跃 Keep-Alive 页面），忽略该快捷键
+          if (
+            searchInputRef.current?.closest('.opacity-0') ||
+            searchInputRef.current?.offsetParent === null
+          ) {
+            return
+          }
+          const activeEl = document.activeElement
+          const tagName = activeEl?.tagName
+          if (
+            tagName === 'INPUT' ||
+            tagName === 'TEXTAREA' ||
+            activeEl?.closest('.monaco-editor')
+          ) {
+            return
+          }
+          e.preventDefault()
+          searchInputRef.current?.focus()
+          searchInputRef.current?.select()
+        }
+      }
+      window.addEventListener('keydown', handleGlobalKeyDown)
+      return () => window.removeEventListener('keydown', handleGlobalKeyDown)
+    }, [])
 
     // 订阅语言变化，确保 useMemo 中缓存的翻译随语言切换更新
     const { activeLanguage } = useVoerkaI18n(i18nScope)
@@ -132,8 +190,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
 
       const updateWrapState = () => {
         const width = headerEl.offsetWidth
-        // Logo(~190) + Hub(~720) + Controls(~170) + Padding/Gap(~60) + MinNews(100) = ~1240px
-        const threshold = 1240
+        const height = headerEl.offsetHeight
+        document.documentElement.style.setProperty('--app-header-height', `${height}px`)
+        // Logo(~190) + Hub(~720) + Search(~180) + Controls(~170) + Padding/Gap(~60) + MinNews(100) = ~1420px
+        const threshold = 1360
         setIsHubWrapped(prev => {
           if (!prev && width < threshold) return true
           if (prev && width >= threshold + 20) return false
@@ -168,16 +228,31 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
         ) {
           setIsNewsDropdownOpen(false)
         }
+
+        if (
+          showHistoryPopover &&
+          searchContainerRef.current &&
+          !searchContainerRef.current.contains(event.target as Node)
+        ) {
+          setShowHistoryPopover(false)
+          setActiveSuggestionIndex(-1)
+        }
       }
 
-      if (showDirectoryDropdown || isNewsDropdownOpen) {
+      if (showDirectoryDropdown || isNewsDropdownOpen || showHistoryPopover) {
         document.addEventListener('pointerdown', handleClickOutside)
       }
 
       return () => {
         document.removeEventListener('pointerdown', handleClickOutside)
       }
-    }, [showDirectoryDropdown, isNewsDropdownOpen, onToggleDirectoryDropdown, dropdownRef])
+    }, [
+      showDirectoryDropdown,
+      isNewsDropdownOpen,
+      showHistoryPopover,
+      onToggleDirectoryDropdown,
+      dropdownRef
+    ])
 
     const isEnterprise = licenseType === 'ENTERPRISE'
 
@@ -253,9 +328,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
       window.electronAPI!.window.close()
     }
 
-    // 当任何下拉菜单打开时，禁用拖拽，以便点击事件可以正常传播到关闭逻辑
+    // 当任何下拉菜单打开或搜索激活时，禁用拖拽，以便点击事件可以正常传播到关闭逻辑与输入处理
     const isAnyDropdownOpen =
-      showDirectoryDropdown || isSearchDropdownOpen || isNewsDropdownOpen || isUserMenuOpen
+      showDirectoryDropdown ||
+      isNewsDropdownOpen ||
+      isUserMenuOpen ||
+      showHistoryPopover ||
+      Boolean(globalSearchKeyword.trim())
 
     return (
       <header
@@ -269,7 +348,7 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
         style={{ WebkitAppRegion: isAnyDropdownOpen ? 'no-drag' : 'drag' } as React.CSSProperties}
       >
         {/* Dropdown Overlays */}
-        {(showDirectoryDropdown || isSearchDropdownOpen || isNewsDropdownOpen) && (
+        {(showDirectoryDropdown || isNewsDropdownOpen) && (
           <div
             className="fixed inset-0 z-[90]"
             style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
@@ -301,10 +380,10 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
         {/* Unified View Control Hub Container */}
         <div
           className={cn(
-            'min-w-0 flex-shrink-0 flex justify-start',
+            'min-w-0 flex-shrink-0 flex items-center',
             isHubWrapped
-              ? 'w-full order-3 col-span-full'
-              : 'mx-2 order-2'
+              ? 'w-full order-3 col-span-full gap-2.5 justify-start'
+              : 'mx-2 order-2 gap-2'
           )}
           style={isHubWrapped ? { gridRow: '2' } : undefined}
         >
@@ -343,7 +422,13 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                         'hover:border-border/40 dark:hover:border-white/10'
                       ]
                 )}
-                onClick={() => onToggleDirectoryDropdown()}
+                onClick={() => {
+                  if (!showDirectoryDropdown && globalSearchKeyword) {
+                    clearGlobalSearch()
+                    setLocalSearchInput('')
+                  }
+                  onToggleDirectoryDropdown()
+                }}
                 title={t('当前工作目录: {name}，点击切换', {
                   name: currentWorkspaceDirectory?.name || t('未选择')
                 })}
@@ -591,10 +676,198 @@ export const DirectoryHeader: React.FC<DirectoryHeaderProps> = React.memo(
                 currentPath={currentStepPath}
                 onStepClick={path => {
                   if (path === '/analyzed-directory') setHasNewFiles(false)
+                  clearGlobalSearch()
                   navigate(path)
                 }}
               />
             </div>
+          </div>
+
+          {/* Elevated Search Bar: Located right after Hub */}
+          <div
+            ref={searchContainerRef}
+            className="relative flex items-center flex-shrink-0 z-[95]"
+            style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+          >
+            <div className="relative flex items-center group">
+              <MaterialIcon
+                icon="search"
+                className={cn(
+                  'absolute left-3 text-[17px] pointer-events-none transition-colors duration-200 z-10',
+                  localSearchInput
+                    ? 'text-primary'
+                    : 'text-muted-foreground/60 group-hover:text-muted-foreground'
+                )}
+              />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={localSearchInput}
+                onFocus={() => {
+                  setShowHistoryPopover(true)
+                  setActiveSuggestionIndex(-1)
+                }}
+                onChange={e => {
+                  const val = e.target.value
+                  setLocalSearchInput(val)
+                  setShowHistoryPopover(true)
+                  setActiveSuggestionIndex(-1)
+                  if (!isComposingRef.current) {
+                    setGlobalSearchKeyword(val)
+                  }
+                }}
+                onKeyDown={e => {
+                  if (showHistoryPopover && historySuggestions.length > 0) {
+                    if (e.key === 'ArrowDown') {
+                      e.preventDefault()
+                      setActiveSuggestionIndex(prev =>
+                        prev < historySuggestions.length - 1 ? prev + 1 : 0
+                      )
+                      return
+                    }
+                    if (e.key === 'ArrowUp') {
+                      e.preventDefault()
+                      setActiveSuggestionIndex(prev =>
+                        prev > 0 ? prev - 1 : historySuggestions.length - 1
+                      )
+                      return
+                    }
+                    if (e.key === 'Enter' && activeSuggestionIndex >= 0) {
+                      e.preventDefault()
+                      const chosen = historySuggestions[activeSuggestionIndex]
+                      setLocalSearchInput(chosen)
+                      setGlobalSearchKeyword(chosen)
+                      addSearchHistory(chosen, 'global')
+                      setShowHistoryPopover(false)
+                      setActiveSuggestionIndex(-1)
+                      return
+                    }
+                  }
+
+                  if (e.key === 'Enter') {
+                    if (localSearchInput.trim()) {
+                      addSearchHistory(localSearchInput.trim(), 'global')
+                    }
+                    setShowHistoryPopover(false)
+                    setActiveSuggestionIndex(-1)
+                    return
+                  }
+
+                  if (e.key === 'Escape') {
+                    e.preventDefault()
+                    setShowHistoryPopover(false)
+                    setActiveSuggestionIndex(-1)
+                    setLocalSearchInput('')
+                    clearGlobalSearch()
+                    searchInputRef.current?.blur()
+                  }
+                }}
+                onCompositionStart={() => {
+                  isComposingRef.current = true
+                }}
+                onCompositionEnd={e => {
+                  isComposingRef.current = false
+                  const val = e.currentTarget.value
+                  setGlobalSearchKeyword(val)
+                }}
+                placeholder={t('全域搜索文件 (Ctrl+F)...')}
+                className={cn(
+                  'h-9 rounded-full pl-8.5 pr-8 text-xs transition-all duration-300 ease-out select-text',
+                  'bg-muted/40 dark:bg-white/[0.04]',
+                  'border border-border/50 dark:border-white/[0.08]',
+                  'shadow-[inset_0_1px_0_hsl(0_0%_100%/0.04)]',
+                  'text-foreground placeholder:text-muted-foreground/50',
+                  'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 focus:bg-background/95 dark:focus:bg-zinc-900/95 focus:shadow-sm',
+                  localSearchInput ? 'w-72 border-primary/40' : 'w-44 hover:w-56 focus:w-72'
+                )}
+                title={t('全域混合搜索（支持未分析与已分析文件）')}
+              />
+              {localSearchInput ? (
+                <button
+                  onClick={() => {
+                    setLocalSearchInput('')
+                    clearGlobalSearch()
+                    setShowHistoryPopover(false)
+                    setActiveSuggestionIndex(-1)
+                    searchInputRef.current?.focus()
+                  }}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-muted transition-colors cursor-pointer z-10"
+                  title={t('清除搜索')}
+                >
+                  <MaterialIcon icon="close" className="text-[13px]" />
+                </button>
+              ) : (
+                <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-mono text-muted-foreground/40 bg-muted/40 dark:bg-white/[0.06] px-1.5 py-0.5 rounded border border-border/30 select-none pointer-events-none hidden sm:inline-flex z-10">
+                  Ctrl F
+                </kbd>
+              )}
+            </div>
+
+            {/* 轻量搜索历史气泡 */}
+            {showHistoryPopover && historySuggestions.length > 0 && (
+              <div
+                className="absolute top-full left-0 mt-2 w-72 bg-popover/95 dark:bg-zinc-900/95 backdrop-blur-md border border-border/70 dark:border-zinc-800 rounded-xl shadow-xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150"
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
+              >
+                <div className="px-3 py-1.5 flex items-center justify-between border-b border-border/40 text-[11px] text-muted-foreground select-none">
+                  <span>{localSearchInput.trim() ? t('匹配搜索历史') : t('最近搜索')}</span>
+                  <button
+                    type="button"
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => {
+                      clearSearchHistory()
+                      setShowHistoryPopover(false)
+                      setActiveSuggestionIndex(-1)
+                    }}
+                    className="hover:text-primary transition-colors cursor-pointer"
+                  >
+                    {t('清空')}
+                  </button>
+                </div>
+                <div className="max-h-56 overflow-y-auto py-1">
+                  {historySuggestions.map((suggestion, idx) => (
+                    <div
+                      key={suggestion}
+                      onMouseDown={e => e.preventDefault()}
+                      onClick={() => {
+                        setLocalSearchInput(suggestion)
+                        setGlobalSearchKeyword(suggestion)
+                        addSearchHistory(suggestion, 'global')
+                        setShowHistoryPopover(false)
+                        setActiveSuggestionIndex(-1)
+                        searchInputRef.current?.focus()
+                      }}
+                      className={cn(
+                        'px-3 py-1.5 flex items-center justify-between text-xs cursor-pointer transition-colors group select-none',
+                        activeSuggestionIndex === idx
+                          ? 'bg-accent text-accent-foreground font-medium'
+                          : 'hover:bg-accent/60 text-foreground'
+                      )}
+                    >
+                      <div className="flex items-center gap-2 min-w-0 flex-1 mr-2">
+                        <MaterialIcon
+                          icon="history"
+                          className="text-[14px] text-muted-foreground/60 shrink-0"
+                        />
+                        <span className="truncate">{suggestion}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={e => {
+                          e.stopPropagation()
+                          removeSearchHistoryByKeyword(suggestion)
+                        }}
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-opacity"
+                        title={t('删除此条历史')}
+                      >
+                        <MaterialIcon icon="close" className="text-[12px]" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

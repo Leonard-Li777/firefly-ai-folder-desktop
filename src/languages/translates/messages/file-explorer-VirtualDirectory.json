@@ -423,7 +423,7 @@
     "ko-KR": "{count}개 파일",
     "$files": [
       "src/renderer/components/file-explorer/VirtualDirectory/components/ExportPreviewPanel.tsx(8462-8477)",
-      "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(8154-8169)"
+      "src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(7650-7665)"
     ],
     "$id": 8790
   },
@@ -1007,7 +1007,7 @@
     "de-DE": "Zurück (Alt+Links/Rücktaste)",
     "fr-FR": "Retour (Alt+Gauche / Retour arrière)",
     "ko-KR": "뒤로(Alt+왼쪽/백스페이스)",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(4146-4175)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(4091-4120)"],
     "$id": 8826
   },
   "前进 (Alt+Right)": {
@@ -1020,7 +1020,7 @@
     "de-DE": "Vorwärts (Alt+Rechts)",
     "fr-FR": "Suivant (Alt+Droite)",
     "ko-KR": "앞으로(Alt+오른쪽)",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(4635-4653)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(4580-4598)"],
     "$id": 8827
   },
   "向上 (Alt+Up)": {
@@ -1033,21 +1033,8 @@
     "de-DE": "Nach oben (Alt+Nach oben)",
     "fr-FR": "Haut (Alt+Haut)",
     "ko-KR": "위쪽(Alt+위쪽)",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(5262-5277)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(5207-5222)"],
     "$id": 8828
-  },
-  "搜索...": {
-    "en-US": "Search...",
-    "es-ES": "Buscar...",
-    "ar-EG": "يبحث...",
-    "pt-PT": "Procurar...",
-    "ru-RU": "поиск...",
-    "ja-JP": "検索...",
-    "de-DE": "Suchen...",
-    "fr-FR": "Recherche...",
-    "ko-KR": "찾다...",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(6097-6106)"],
-    "$id": 8829
   },
   "对虚拟目录满意，可以选择导出": {
     "en-US": "When you are satisfied with the virtual directory, you can choose to export it",
@@ -1059,7 +1046,7 @@
     "de-DE": "Wenn Sie mit dem virtuellen Verzeichnis zufrieden sind, können Sie es exportieren",
     "fr-FR": "Lorsque vous êtes satisfait du répertoire virtuel, vous pouvez choisir de l'exporter",
     "ko-KR": "가상 디렉터리에 만족하면 내보내도록 선택할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(6822-6840)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(6318-6336)"],
     "$id": 8830
   },
   "导出整理": {
@@ -1072,7 +1059,7 @@
     "de-DE": "Exportieren und organisieren",
     "fr-FR": "Exporter et organiser",
     "ko-KR": "내보내기 정리",
-    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(7814-7822)"],
+    "$files": ["src/renderer/components/file-explorer/VirtualDirectory/components/VirtualDirectoryFileList.tsx(7310-7318)"],
     "$id": 8831
   },
   "文件目录": {
