@@ -189,7 +189,7 @@ export async function saveCloudResult(
           file_fingerprint, smart_name, smart_name_source, description, size, extension, file_group,
           author, language, is_hit, last_hit_at, sync_status,
           created_at, modified_at, accessed_at
-        ) VALUES (?, ?, 'ai', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, 'ai', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(file_fingerprint) DO UPDATE SET
           smart_name = excluded.smart_name,
           smart_name_source = 'ai',

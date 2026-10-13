@@ -225,7 +225,7 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
       const modelId = engineBridgeService.getSnapshot().model || ''
 
       // 构建假的 serviceConfig 来适配 detector
-      const modelConfig = this.findLocalModelConfig(modelId)
+      const modelConfig = this.resolveLocalModelConfig()
       const mmprojFile = modelConfig?.files?.find((f: any) => f.type === 'mmproj')
       const serviceConfig = {
         mode: 'local' as const,
@@ -276,12 +276,92 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
   /**
    * PRD-0044：按模型标识（id 或展示名）反查包内模型元数据；
    * 本地模型身份唯一真相为萤核AI引擎桥接快照，desktop 不再持久化 SELECTED_MODEL_ID
+   *
+   * ⚠️ 必须容忍「原始模型路径」形态。引擎桥接快照的 `model` 有两种形态
+   * （见 engine-bridge-service.resolveDisplayModelPair 的四级优先级）：
+   *   - 目录条目 id（P2/P3/P4，如 `OpenBMB/MiniCPM-V-4.6-gguf:Q4_K_M`）
+   *   - 引擎 current_model 原始路径（P1 运行态，如
+   *     `D:\llm\hub\models\OpenBMB\MiniCPM-V-4.6-gguf\MiniCPM-V-4_6-Q4_K_M.gguf`）
+   * 若只按 id / name 精确匹配，原始路径形态必然落空 ⇒ 返回 undefined ⇒
+   * `getCapabilities()` 的 `mmprojPath` 与 `capabilities` 双双为空 ⇒ 能力探测退化为
+   * 「无视觉」（supportsImage=false）⇒ 图片被误判为非多模态文件，永远拿不到
+   * multimodalContent。故此处补一级「路径形态」回退匹配。
    */
   private findLocalModelConfig(modelId: string): any | undefined {
     if (!modelId) return undefined
     unifiedModelManager.ensureLoaded()
-    return (unifiedModelManager.getModelById(modelId) ||
+    const direct = (unifiedModelManager.getModelById(modelId) ||
       unifiedModelManager.getAllModels().find(m => m.name === modelId)) as any
+    if (direct) return direct
+    return this.findLocalModelConfigByPathLike(modelId)
+  }
+
+  /**
+   * 解析「当前本地模型」在包内目录中的元数据。
+   *
+   * 依次尝试调用方显式指定标识 → 引擎快照的 `model` → 引擎快照的 `modelName`，
+   * 以覆盖快照 `model` 可能为原始路径的形态（见 findLocalModelConfig）。
+   *
+   * @param explicitModelId 调用方显式指定的模型标识（优先级最高）
+   */
+  private resolveLocalModelConfig(explicitModelId?: string): any | undefined {
+    const snapshot = engineBridgeService.getSnapshot()
+    const candidates = [explicitModelId, snapshot.model, snapshot.modelName].filter(
+      (v): v is string => typeof v === 'string' && v.length > 0
+    )
+    for (const candidate of candidates) {
+      const hit = this.findLocalModelConfig(candidate)
+      if (hit) return hit
+    }
+    return undefined
+  }
+
+  /**
+   * 「原始路径 / 文件名」形态 → 目录条目 的归一化回退匹配。
+   *
+   * 匹配顺序（均在归一化后的字符串上做确定性比较，不做相似度猜测）：
+   * 1. 目录条目 id 的 `owner/repo` 段（冒号前）整体出现于路径中，多个命中取最长者
+   *    （`d:/llm/hub/models/openbmb/minicpm-v-4.6-gguf/minicpm-v-4_6-q4_k_m.gguf`
+   *      ⊃ `openbmb/minicpm-v-4.6-gguf`）；
+   * 2. 否则退化为「基名去除非字母数字后相等」，覆盖同仓库但目录布局不同的下载。
+   *
+   * 之所以不做模糊匹配：MiniCPM5-2B 与 MiniCPM-V-4.6 这类同族不同底座的名字前缀高度
+   * 相似，模糊匹配会把它们误判为同一模型，反而把「无视觉」的模型错判为有视觉。
+   */
+  private findLocalModelConfigByPathLike(identifier: string): any | undefined {
+    unifiedModelManager.ensureLoaded()
+    const models = unifiedModelManager.getAllModels()
+    if (models.length === 0) return undefined
+
+    const normalized = identifier.replace(/\\/g, '/').toLowerCase()
+    const repoSegment = (id: string): string => String(id || '').split(':')[0].toLowerCase()
+    const canonical = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+
+    // 1) id 的 owner/repo 段整体出现于路径中（取最长命中，避免短 repo 抢先匹配）
+    let best: any
+    let bestRepoLength = 0
+    for (const model of models) {
+      const repo = repoSegment(model.id)
+      if (repo.length > bestRepoLength && repo.length > 3 && normalized.includes(repo)) {
+        best = model
+        bestRepoLength = repo.length
+      }
+    }
+    if (best) return best
+
+    // 2) 基名归一化相等
+    const basename = normalized.split('/').pop() || ''
+    const stem = canonical(basename.replace(/\.[^.]+$/, ''))
+    if (!stem) return undefined
+    return models.find(model => {
+      const ids = [model.id, model.downloadId].filter(
+        (v): v is string => typeof v === 'string' && v.length > 0
+      )
+      return ids.some(id => {
+        const tail = id.split(':')[0].split('/').pop() || ''
+        return canonical(tail) === stem
+      })
+    })
   }
 
   isMultiModalModel(modelId?: string): boolean {
@@ -298,7 +378,7 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
       // PRD-0044：本地模型身份真相 = 引擎桥接快照
       const currentModelId = modelId || engineBridgeService.getSnapshot().model || ''
       if (!currentModelId) return false
-      const modelConfig = this.findLocalModelConfig(currentModelId)
+      const modelConfig = this.resolveLocalModelConfig(modelId)
       if (!modelConfig) return false
 
       // Wait, detectLocalCapabilities is async, but isMultiModalModel is sync!
@@ -366,7 +446,7 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
       const modelId = engineBridgeService.getSnapshot().model || ''
       if (!modelId) return 4096
 
-      const modelConfig = this.findLocalModelConfig(modelId)
+      const modelConfig = this.resolveLocalModelConfig()
       if (!modelConfig) return 4096
 
       // 解析模型参数大小
@@ -417,7 +497,7 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
       const modelId = engineBridgeService.getSnapshot().model || ''
       if (!modelId) return 2048
 
-      const modelConfig = this.findLocalModelConfig(modelId)
+      const modelConfig = this.resolveLocalModelConfig()
       if (!modelConfig) return 2048
 
       // 解析模型参数大小
@@ -462,7 +542,7 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
       const modelId = engineBridgeService.getSnapshot().model || ''
       if (!modelId) return 0
 
-      const modelConfig = this.findLocalModelConfig(modelId)
+      const modelConfig = this.resolveLocalModelConfig()
       if (!modelConfig || !modelConfig.parameterSize) return 0
 
       return parseParameterSize(modelConfig.parameterSize)

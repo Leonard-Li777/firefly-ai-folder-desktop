@@ -72,6 +72,7 @@ import { processLocalAnalysis } from './process-local-analysis'
 import { classifyAnalysisError, tagErrorPhase, createTimeoutError } from './analysis-error-classifier'
 import { processQuickNameAnalysis } from './process-quick-name-analysis'
 import { saveLocalAnalysisResult } from './save-local-cache-result'
+import { resolveFileDescription } from './resolve-file-description'
 import { NamingDSLEngine } from '../../filesystem/naming-dsl-engine'
 
 /**
@@ -336,7 +337,7 @@ export class FileProcessor {
    * 指标与基础数据的对应关系：
    * - document / text / ocr：内容（OCR 结果落库时已合并进 content 保存）
    * - metadata：元数据（file_contents.meta）
-   * - magika：Magika 分类（files.category 或已恢复的 magikaCategory）
+   * - magika：Magika 分类（files.file_group 或已恢复的 magikaCategory）
    * - thumbnail：缩略图（workspace_files.thumbnail_path）
    *
    * @param indicators 期望提取的指标列表
@@ -944,6 +945,18 @@ export class FileProcessor {
           processResult = fullRes.processResult
           dimResult = fullRes.dimResult
         }
+
+        // GPU 复用分支：CPU 阶段已把 Omni 5W 造句 / 多模态融合轨的 content_description 写入
+        // files.description。此处按「AI 有依据则覆盖，AI 无依据（如非多模态模型看图片）则让位
+        // 视觉描述」的单一事实源解析最终描述（见 resolve-file-description.ts）。
+        // 判定不在此处内联，避免与主流程分支漂移（历史上正因漏做回填，AI 描述被 COALESCE 吞掉）。
+        // 本分支不传 omniDescription：返回 null 时由 file-dao 的 COALESCE(?, description)
+        // 保留 CPU 阶段已落库的 Omni 描述。
+        processResult.description =
+          resolveFileDescription({
+            aiDescription: dimResult?.description,
+            aiLacksVisualGrounding: dimResult?.lacksVisualGrounding
+          }) ?? undefined
 
         this.updateItemStatus(item.id, 'analyzing', 98)
 
@@ -2178,10 +2191,18 @@ export class FileProcessor {
         dimResult = fullRes.dimResult
       }
 
-      // 若 AI 生成的 description 为空，回退使用 Omni 原生多模态感知给出的内容描述
-      if (!processResult.description && omniDescription) {
-        processResult.description = omniDescription
-      }
+      // 解析最终落库的 description（单一事实源，见 resolve-file-description.ts）：
+      // AI 直读了画面（多模态模型 + 图片）或处理的是非图片文件时，其产出覆盖 CPU 阶段
+      // Omni 写下的 5W 造句描述（契约 §5.4）；
+      // 图片 + 非多模态模型时 AI 看不到画面，其 description 只是「信息不足」这类无依据推测，
+      // 必须让位 Omni 的视觉描述，否则会顶掉真实画面描述。
+      processResult.description =
+        resolveFileDescription({
+          aiDescription: dimResult?.description,
+          aiLacksVisualGrounding: dimResult?.lacksVisualGrounding,
+          omniDescription
+        }) ?? undefined
+
       if (!processResult.author && resolvedAuthor) {
         processResult.author = resolvedAuthor
       }
