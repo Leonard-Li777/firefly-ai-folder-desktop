@@ -594,18 +594,18 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   // 记录是否已完成初次挂载与外部持久化注入 (B-2 修复)
   const isInitializedRef = useRef(false)
 
-  // 标签树层级深度刻度状态 (1~10 刻度，ADR-0034 §4 推荐默认 3 级)
+  // 标签树层级深度刻度状态 (2~10 刻度，ADR-0034 §4 推荐默认 5 级，最小 2 级)
   const [maxScaleDepth, setMaxScaleDepth] = useState<number>(() => {
     if (storageKey) {
       try {
         const saved = localStorage.getItem(`${storageKey}_maxScaleDepth`)
         if (saved) {
           const val = Number(saved)
-          if (val >= 1 && val <= 10) return val
+          if (val >= 2 && val <= 10) return val
         }
       } catch {}
     }
-    return 3
+    return 5
   })
 
   useEffect(() => {
@@ -1165,6 +1165,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
   const flatRows = useMemo(() => {
     const rows: any[] = []
+    const seenRowIds = new Set<string>()
 
     function traverse(
       node: DimensionTreeNode,
@@ -1234,7 +1235,18 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
         const effectiveTag = tag
 
-        const rowId = `tag-${depth}-${currentChain.join('/')}-${tag.dimensionId}-${tag.tagValue}`
+        // ADR-0034 §4 / PRD-0058: 构造稳定且全局唯一的 rowId，结合 depth, currentChain, dimensionId 与 tag.code/tagValue
+        const codeOrVal = tag.code ? `${tag.code}_${tag.tagValue}` : tag.tagValue
+        let rowId = `tag-${depth}-${currentChain.join('/')}-${tag.dimensionId}-${codeOrVal}`
+        if (seenRowIds.has(rowId)) {
+          let disambiguateIndex = 1
+          while (seenRowIds.has(`${rowId}_${disambiguateIndex}`)) {
+            disambiguateIndex++
+          }
+          rowId = `${rowId}_${disambiguateIndex}`
+        }
+        seenRowIds.add(rowId)
+
         rows.push({
           id: rowId,
           type: 'tag',
@@ -1351,7 +1363,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
-      {/* 标签树层级深度刻度滑块 (1~10 刻度与穿透提升，ADR-0034 §4) */}
+      {/* 标签树层级深度刻度滑块 (2~10 刻度与穿透提升，ADR-0034 §4) */}
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/50 bg-muted/15 shrink-0 text-xs text-muted-foreground select-none">
         <div className="flex items-center gap-1 min-w-0">
           <MaterialIcon icon="tune" className="text-xs text-primary" />
@@ -1363,13 +1375,13 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         <div className="flex items-center gap-2 flex-1 max-w-[100px] ml-2">
           <input
             type="range"
-            min={1}
+            min={2}
             max={10}
             step={1}
             value={maxScaleDepth}
             onChange={e => setMaxScaleDepth(Number(e.target.value))}
             className="w-full h-1 bg-muted-foreground/25 rounded-lg appearance-none cursor-pointer accent-primary"
-            title={t('拖动调整标签树显示深度 (1~10 级)')}
+            title={t('拖动调整标签树显示深度 (2~10 级)')}
           />
         </div>
       </div>

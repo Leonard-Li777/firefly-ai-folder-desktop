@@ -87,8 +87,8 @@ describe('dimension-tree-utils - 内容标签与多级深度穿透测试', () =>
     expect(l3Node.tags[0].tagValue).toBe('博物馆')
   })
 
-  it('深度刻度 2 时：博物馆穿透提升到文化场馆节点下', () => {
-    const { directTags, childTagsMap } = nestGroupTags(contentGroup, sampleTags, 0, 2)
+  it('深度刻度 4 时：博物馆穿透提升到文化场馆节点下', () => {
+    const { directTags, childTagsMap } = nestGroupTags(contentGroup, sampleTags, 0, 4)
 
     expect(directTags.length).toBe(1)
     expect(directTags[0].tagValue).toBe('建筑空间')
@@ -98,20 +98,20 @@ describe('dimension-tree-utils - 内容标签与多级深度穿透测试', () =>
     const l1Node = l1Children![0]
     expect(l1Node.name).toBe('建筑空间')
 
-    // 在深度 2 下：文化场馆展开为二级节点
+    // 在深度 4 下：文化场馆展开为二级节点 (视觉深度 3)
     expect(l1Node.childTags).toBeDefined()
     const l2Children = l1Node.childTags!.get('文化场馆')
     expect(l2Children).toBeDefined()
     const l2Node = l2Children![0]
     expect(l2Node.name).toBe('文化场馆')
 
-    // 达到深度 2 限制，博物馆穿透提升挂载在文化场馆节点中
+    // 达到深度 4 限制，博物馆穿透提升挂载在文化场馆节点中 (视觉深度 4)
     expect(l2Node.childTags).toBeUndefined()
     expect(l2Node.tags.some(t => t.tagValue === '博物馆')).toBe(true)
   })
 
-  it('深度刻度 1 时：文化场馆与博物馆穿透提升到建筑空间下', () => {
-    const { directTags, childTagsMap } = nestGroupTags(contentGroup, sampleTags, 0, 1)
+  it('深度刻度 3 时：文化场馆与博物馆穿透提升到建筑空间下', () => {
+    const { directTags, childTagsMap } = nestGroupTags(contentGroup, sampleTags, 0, 3)
 
     expect(directTags.length).toBe(1)
     expect(directTags[0].tagValue).toBe('建筑空间')
@@ -121,10 +121,20 @@ describe('dimension-tree-utils - 内容标签与多级深度穿透测试', () =>
     const l1Node = l1Children![0]
     expect(l1Node.name).toBe('建筑空间')
 
-    // 达到深度 1 限制，文化场馆与博物馆均穿透提升挂载在建筑空间节点中
+    // 达到深度 3 限制，文化场馆与博物馆均穿透提升挂载在建筑空间节点中 (视觉深度 3)
     expect(l1Node.childTags).toBeUndefined()
     expect(l1Node.tags.some(t => t.tagValue === '文化场馆')).toBe(true)
     expect(l1Node.tags.some(t => t.tagValue === '博物馆')).toBe(true)
+  })
+
+  it('深度刻度 2 时：文化场馆与博物馆全量穿透提升平铺在 directTags 中，无展开子节点，总深度严格为 2', () => {
+    const { directTags, childTagsMap } = nestGroupTags(contentGroup, sampleTags, 0, 2)
+
+    // 根维度 Header (视觉深度 1)，直属标签层 (视觉深度 2)
+    // 刻度 2 时直属层即为最大深度，深层后代全量提升平铺在 directTags 中，不展开
+    expect(directTags.length).toBe(3)
+    expect(directTags.map(t => t.tagValue)).toEqual(['建筑空间', '文化场馆', '博物馆'])
+    expect(childTagsMap.size).toBe(0)
   })
 })
 
@@ -219,8 +229,8 @@ describe('dimension-tree-utils - 穿透提升跨分支同 Code 聚合 (ADR-0034 
     }
   ]
 
-  it('刻度 1 时：跨分支同 Code 提升聚合为单行，fileCount 去重且保留全部分支 codePaths', () => {
-    const { directTags, childTagsMap } = nestGroupTags(liftGroup, multiBranchTags, 0, 1)
+  it('刻度 3 时：跨分支同 Code 提升聚合为单行，fileCount 去重且保留全部分支 codePaths', () => {
+    const { directTags, childTagsMap } = nestGroupTags(liftGroup, multiBranchTags, 0, 3)
 
     expect(directTags.length).toBe(1)
     const l1Node = childTagsMap.get('甲')![0]
@@ -238,14 +248,22 @@ describe('dimension-tree-utils - 穿透提升跨分支同 Code 聚合 (ADR-0034 
     expect(merged.fileCount).toBe(8)
     // 提升标签挂载到容器父级 (穿透提升 viaParentCode 重写)
     expect(merged.viaParentCode).toBe('builtin.a')
-    expect(merged.level).toBe(2)
+    expect(merged.level).toBe(3)
 
     // 兄弟分支标签同样提升且路径完整保留（聚合顺序不作为断言口径）
     expect(new Set(l1Node.tags.map(t => t.tagValue))).toEqual(new Set(['乙一', '乙二', '交叉']))
     expect(l1Node.tags.find(t => t.tagValue === '乙一')!.codePath).toBe(pYi1)
     expect(l1Node.tags.find(t => t.tagValue === '乙二')!.codePath).toBe(pYi2)
-    // 刻度 1 下不再生成更深节点
+    // 刻度 3 下不再生成更深节点
     expect(l1Node.childTags).toBeUndefined()
+  })
+
+  it('刻度 2 时：跨分支深层后代全量提升平铺在 directTags 中，总深度为 2', () => {
+    const { directTags, childTagsMap } = nestGroupTags(liftGroup, multiBranchTags, 0, 2)
+
+    // 直属层已达最大深度 2，甲/乙一/乙二/交叉全部平铺在 directTags 中
+    expect(childTagsMap.size).toBe(0)
+    expect(new Set(directTags.map(t => t.tagValue))).toEqual(new Set(['甲', '乙一', '乙二', '交叉']))
   })
 
   it('刻度 10 时：未触发提升，两个分支实例各自独立保留（不跨层误聚合）', () => {
@@ -312,7 +330,7 @@ describe('dimension-tree-utils - 穿透提升跨分支同 Code 聚合 (ADR-0034 
       }
     ]
 
-    const { directTags, childTagsMap } = nestGroupTags(liftGroup, cycleTags, 0, 1)
+    const { directTags, childTagsMap } = nestGroupTags(liftGroup, cycleTags, 0, 3)
 
     expect(directTags.length).toBe(1)
     const l1Node = childTagsMap.get('环一')![0]
@@ -691,8 +709,8 @@ describe('dimension-tree-utils - getSelectedTagsFromSet', () => {
     expect(new Set(liftedResult[0].codePaths)).toEqual(new Set([directP, deepP]))
     expect(liftedResult[0].viaParentCode).toBe('builtin.image')
 
-    // 与单选口径对齐：nestGroupTags 在刻度 1 下重建的聚合行必须给出同一组路径
-    const { childTagsMap } = nestGroupTags(collideGroups[0], collideGroups[0].tags, 0, 1)
+    // 与单选口径对齐：nestGroupTags 在刻度 3 下重建的聚合行必须给出同一组路径
+    const { childTagsMap } = nestGroupTags(collideGroups[0], collideGroups[0].tags, 0, 3)
     const liftedNode = childTagsMap.get('图片')![0]
     const aggRow = liftedNode.tags.find(t => t.tagValue === '无码')!
     expect(new Set(aggRow.codePaths)).toEqual(new Set(liftedResult[0].codePaths))
@@ -754,8 +772,8 @@ describe('dimension-tree-utils - getSelectedTagsFromSet', () => {
     expect(result.length).toBe(1)
     expect(result[0].codePaths).toEqual([singleP])
 
-    // 与单选同口径：nestGroupTags 在刻度 1 下重建的聚合行给出同一组路径
-    const { childTagsMap } = nestGroupTags(singleGroups[0], singleGroups[0].tags, 0, 1)
+    // 与单选同口径：nestGroupTags 在刻度 3 下重建的聚合行给出同一组路径
+    const { childTagsMap } = nestGroupTags(singleGroups[0], singleGroups[0].tags, 0, 3)
     const aggRow = childTagsMap.get('图片')![0].tags.find(t => t.tagValue === '无码')!
     expect(aggRow.codePaths).toEqual([singleP])
     expect(result[0].codePaths).toEqual(aggRow.codePaths)
@@ -831,19 +849,19 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     }
   ]
 
-  it('AC-1: 刻度 1 提升聚合行 ➔ 刻度 3 展开为多实例行 (1:N 自愈)', () => {
-    // 刻度 1: 树折叠，无码被提升聚合
-    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
+  it('AC-1: 刻度 3 提升聚合行 ➔ 刻度 5 展开为多实例行 (1:N 自愈)', () => {
+    // 刻度 3: 树折叠，无码被提升聚合
+    const scale3Tree = buildDimensionTree(collideGroups, null, null, 0, 3)
     const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
 
-    // 刻度 3: 树展开
-    const scale3Tree = buildDimensionTree(collideGroups, null, null, 0, 3)
+    // 刻度 5: 树完全展开为多实例行
+    const scale5Tree = buildDimensionTree(collideGroups, null, null, 0, 5)
 
     const result = migrateTagKeysAcrossScale({
       prevSelected: new Set([liftedKey]),
       prevStack: [liftedKey],
       prevParentMap: new Map([[liftedKey, ['图片']]]),
-      currentVisibleGroups: scale3Tree,
+      currentVisibleGroups: scale5Tree,
       masterDimensionGroups: collideGroups
     })
 
@@ -859,8 +877,8 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     expect(result.migratedStack).toContain(deepInstanceKey)
   })
 
-  it('AC-2: 刻度 3 全量勾选实例 ➔ 刻度 1 折叠收敛为聚合行 (N:1 全覆盖收敛)', () => {
-    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
+  it('AC-2: 刻度 4 全量勾选实例 ➔ 刻度 3 折叠收敛为聚合行 (N:1 全覆盖收敛)', () => {
+    const scale3Tree = buildDimensionTree(collideGroups, null, null, 0, 3)
 
     const directInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.image', false)
     const deepInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false)
@@ -873,7 +891,7 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
         [directInstanceKey, ['图片']],
         [deepInstanceKey, ['图片', '漫画']]
       ]),
-      currentVisibleGroups: scale1Tree,
+      currentVisibleGroups: scale3Tree,
       masterDimensionGroups: collideGroups
     })
 
@@ -989,7 +1007,7 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
       }
     ]
 
-    const scale1Tree = buildDimensionTree(multiContainerGroups, null, null, 0, 1)
+    const scale3Tree = buildDimensionTree(multiContainerGroups, null, null, 0, 3)
 
     // 用户在展开态同时选中了：图片下的直系无码、图片漫画下的无码、以及视频短视频下的无码
     const imageDirectKey = makeTagKey(7, '无码', undefined, 'builtin.image', false)
@@ -1007,7 +1025,7 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
         [imageDeepKey, ['图片', '漫画']],
         [videoDeepKey, ['视频', '短视频']]
       ]),
-      currentVisibleGroups: scale1Tree,
+      currentVisibleGroups: scale3Tree,
       masterDimensionGroups: multiContainerGroups
     })
 
@@ -1021,10 +1039,10 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
   })
 
   it('AC-3: 部分选中严禁越界扩增 (Full-Coverage Invariant 核心门控)', () => {
-    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
     const scale3Tree = buildDimensionTree(collideGroups, null, null, 0, 3)
+    const scale5Tree = buildDimensionTree(collideGroups, null, null, 0, 5)
 
-    // 用户在刻度 3 仅选中了漫画分支下的无码，未选中图片直系下的无码
+    // 用户在完全展开态仅选中了漫画分支下的无码，未选中图片直系下的无码
     const deepInstanceKey = makeTagKey(7, '无码', undefined, 'builtin.manga', false)
     const liftedKey = makeTagKey(7, '无码', undefined, 'builtin.image', true)
 
@@ -1032,7 +1050,7 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
       prevSelected: new Set([deepInstanceKey]),
       prevStack: [deepInstanceKey],
       prevParentMap: new Map([[deepInstanceKey, ['图片', '漫画']]]),
-      currentVisibleGroups: scale1Tree,
+      currentVisibleGroups: scale3Tree,
       masterDimensionGroups: collideGroups
     })
 
@@ -1042,12 +1060,12 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     expect(collapseResult.migratedSelected.has(deepInstanceKey)).toBe(true)
     expect(collapseResult.migratedSelected.size).toBe(1)
 
-    // 再次从刻度 1 拖回刻度 3
+    // 再次从刻度 3 拖回完全展开态
     const expandResult = migrateTagKeysAcrossScale({
       prevSelected: collapseResult.migratedSelected,
       prevStack: collapseResult.migratedStack,
       prevParentMap: collapseResult.migratedParentMap,
-      currentVisibleGroups: scale3Tree,
+      currentVisibleGroups: scale5Tree,
       masterDimensionGroups: collideGroups
     })
 
@@ -1057,14 +1075,14 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
   })
 
   it('AC-4: 物理死标签/孤儿标签过滤', () => {
-    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
+    const scale3Tree = buildDimensionTree(collideGroups, null, null, 0, 3)
     const orphanKey = makeTagKey(999, '已彻底删除的死标签', undefined, 'non_existent')
 
     const result = migrateTagKeysAcrossScale({
       prevSelected: new Set([orphanKey]),
       prevStack: [orphanKey],
       prevParentMap: new Map([[orphanKey, ['未知']]]),
-      currentVisibleGroups: scale1Tree,
+      currentVisibleGroups: scale3Tree,
       masterDimensionGroups: collideGroups
     })
 
@@ -1074,8 +1092,8 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
   })
 
   it('AC-5: 显式 isLifted 契约验证：聚合行打标与 key 生成', () => {
-    const scale1Tree = buildDimensionTree(collideGroups, null, null, 0, 1)
-    const { childTags } = scale1Tree[0]
+    const scale3Tree = buildDimensionTree(collideGroups, null, null, 0, 3)
+    const { childTags } = scale3Tree[0]
     expect(childTags).toBeDefined()
 
     const l1Children = childTags!.get('图片')!
@@ -1086,11 +1104,93 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     expect(liftedTag.isLifted).toBe(true)
 
     // 验证 getAllKeys 会根据 tag.isLifted === true 正确生成 liftCode 键
-    const allKeys = getAllKeys(scale1Tree)
+    const allKeys = getAllKeys(scale3Tree)
     const liftedKeyItem = allKeys.find(
       item => item.key.includes('liftCode:builtin.image') && item.key.endsWith('::无码')
     )
     expect(liftedKeyItem).toBeDefined()
     expect(liftedKeyItem!.key).toBe(makeTagKey(7, '无码', undefined, 'builtin.image', true))
+  })
+
+  it('AC-6: 刻度 2 树形态验证：全量标签平铺在顶层直属 tags 中，childTags 完全为 undefined，总深度严格为 2', () => {
+    const scale2Tree = buildDimensionTree(collideGroups, null, null, 0, 2)
+    expect(scale2Tree.length).toBe(1)
+    const rootNode = scale2Tree[0]
+
+    // 刻度 2 下：直属层已达最大视觉深度 2，深层标签全量提升平铺在 tags 中
+    expect(rootNode.childTags).toBeUndefined()
+    expect(rootNode.tags.map(t => t.tagValue)).toEqual(['图片', '漫画', '无码'])
+  })
+
+  it('AC-7 (用户场景): 刻度 2 外部细分维度与标签全量平铺提升至根维度：文件类型 ➔ 文档、语言细分、中文', () => {
+    const fileTypeGroups: DimensionGroup[] = [
+      {
+        id: 1,
+        name: '文件类型',
+        code: 'builtin.file_type',
+        level: 0,
+        tags: [
+          {
+            dimensionId: 1,
+            dimensionCode: 'builtin.file_type',
+            dimensionName: '文件类型',
+            tagValue: '文档',
+            code: 'omw.document',
+            fileCount: 15,
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      },
+      {
+        id: 11,
+        name: '语言细分',
+        code: 'builtin.language_segmentation',
+        level: 1,
+        parentDimensionIds: [1],
+        triggerConditions: [
+          { parentDimension: '文件类型', triggerTags: ['文档'] }
+        ],
+        tags: [
+          {
+            dimensionId: 11,
+            dimensionCode: 'builtin.language_segmentation',
+            dimensionName: '语言细分',
+            tagValue: '中文',
+            code: 'omw.chinese',
+            fileCount: 10,
+            isMultiSelect: false
+          }
+        ],
+        isMultiSelect: false
+      }
+    ]
+
+    // 1. 当刻度为 2 时：
+    // 整棵树最大深度严格为 2，外部细分维度本身及其标签平铺提升至根维度直接展示
+    const treeScale2 = buildDimensionTree(fileTypeGroups, null, null, 0, 2)
+    expect(treeScale2.length).toBe(1)
+    const rootNode = treeScale2[0]
+
+    expect(rootNode.name).toBe('文件类型')
+    expect(rootNode.childTags).toBeUndefined()
+    // 平铺显示的树仅包含：文件类型/文档、文件类型/语言细分、文件类型/中文
+    expect(rootNode.tags.map(t => t.tagValue)).toEqual(['文档', '语言细分', '中文'])
+    expect(rootNode.tags.find(t => t.tagValue === '语言细分')!.isLifted).toBe(true)
+    expect(rootNode.tags.find(t => t.tagValue === '中文')!.isLifted).toBe(true)
+
+    // 2. 当刻度为 3 时：
+    // 允许深度展开，文档作为直属标签，下挂外部细分维度「语言细分」及其标签「中文」
+    const treeScale3 = buildDimensionTree(fileTypeGroups, null, null, 0, 3)
+    expect(treeScale3.length).toBe(1)
+    const rootNode3 = treeScale3[0]
+
+    expect(rootNode3.tags.map(t => t.tagValue)).toEqual(['文档'])
+    expect(rootNode3.childTags).toBeDefined()
+    const docChildren = rootNode3.childTags!.get('文档')
+    expect(docChildren).toBeDefined()
+    expect(docChildren!.length).toBe(1)
+    expect(docChildren![0].name).toBe('语言细分')
+    expect(docChildren![0].tags.map(t => t.tagValue)).toEqual(['中文'])
   })
 })

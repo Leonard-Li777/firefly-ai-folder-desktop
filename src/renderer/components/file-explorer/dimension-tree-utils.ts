@@ -242,7 +242,7 @@ interface TagParentIndex {
 
 /**
  * 构建标签父子索引：根据 viaParentCode 归类子标签，
- * 并双向登记父节点的 code 与 tagValue 索引（多父 DAG 下同名/同码实例均可被寻址）
+ * 优先精确按 Code 登记父子关系，杜绝跨异码同名标签错误广播子树
  */
 function buildTagParentIndex(tags: DimensionTag[]): TagParentIndex {
   // 1. 构建 code -> tag 与 tagValue -> tag 快速索引
@@ -255,20 +255,42 @@ function buildTagParentIndex(tags: DimensionTag[]): TagParentIndex {
     if (t.tagValue) tagByName.set(t.tagValue, t)
   }
 
-  // 2. 根据 viaParentCode 归类子标签（双向登记父节点的 code 与 tagValue 索引）
+  // 2. 根据 viaParentCode 归类子标签（机器码精确匹配优先）
   for (const t of tags) {
     const parentKey = t.viaParentCode
     if (!parentKey) continue
+
+    // 优先精确按 Code 查找父节点
     const parentByCode = tagByCode.get(parentKey)
-    const parentByName = tagByName.get(parentKey)
-    const effectiveParent = parentByCode || parentByName
-    if (effectiveParent) {
-      const pKeys = new Set([parentKey, effectiveParent.code, effectiveParent.tagValue].filter(Boolean) as string[])
+    if (parentByCode) {
+      // 父子关系是由确切机器码绑定的，严格仅在 parentKey 和 parentByCode.code 上登记，
+      // 严禁向 parentByCode.tagValue（自然语言名称）广播，防止同名异码节点错误继承子树
+      const pKeys = new Set([parentKey, parentByCode.code].filter(Boolean) as string[])
       for (const pk of pKeys) {
         const list = tagsByParent.get(pk) || []
         if (!list.includes(t)) {
           list.push(t)
           tagsByParent.set(pk, list)
+        }
+      }
+    } else {
+      // 仅在按 Code 找不到父节点时，说明 parentKey 可能是自然语言展示名，尝试按 tagByName 兜底查找
+      const parentByName = tagByName.get(parentKey)
+      if (parentByName) {
+        const pKeys = new Set([parentKey, parentByName.code, parentByName.tagValue].filter(Boolean) as string[])
+        for (const pk of pKeys) {
+          const list = tagsByParent.get(pk) || []
+          if (!list.includes(t)) {
+            list.push(t)
+            tagsByParent.set(pk, list)
+          }
+        }
+      } else {
+        // 如果都未找到映射实体，直接以原始 parentKey 登记
+        const list = tagsByParent.get(parentKey) || []
+        if (!list.includes(t)) {
+          list.push(t)
+          tagsByParent.set(parentKey, list)
         }
       }
     }
@@ -288,7 +310,10 @@ function collectDescendantTags(startTag: DimensionTag, index: TagParentIndex): D
   const visited = new Set<DimensionTag>([startTag])
 
   function collectAll(curr: DimensionTag) {
-    const keys = [curr.code, curr.tagValue].filter(Boolean) as string[]
+    // 优先以机器码查找直接子节点，缺失机器码时才以 tagValue 兜底
+    const keys = curr.code
+      ? [curr.code]
+      : ([curr.tagValue].filter(Boolean) as string[])
     for (const k of keys) {
       const children = index.tagsByParent.get(k) || []
       for (const child of children) {
@@ -361,7 +386,7 @@ export function nestGroupTags(
   group: DimensionGroup,
   tags: DimensionTag[],
   level: number,
-  maxScaleDepth: number = 3
+  maxScaleDepth: number = 5
 ): { directTags: DimensionTag[]; childTagsMap: Map<string, DimensionTreeNode[]> } {
   const childTagsMap = new Map<string, DimensionTreeNode[]>()
   if (!tags || tags.length === 0) {
@@ -372,46 +397,128 @@ export function nestGroupTags(
   const index = buildTagParentIndex(tags)
   const { tagsByParent } = index
 
-  // 3. 确定当前层级的直属标签 (directTags)：
+  // 3. 确定当前层级的直属候选标签 (rawDirectTags)：
   // 顶层直属标签优先由 level === 1 或 viaParentCode === group.code 确定
-  const directTags: DimensionTag[] = []
+  const rawDirectTags: DimensionTag[] = []
   for (const t of tags) {
     const parentKey = t.viaParentCode
     const isLevel1 = t.level === 1 || parentKey === group.code || (!parentKey && (!t.level || t.level <= 1))
     if (isLevel1) {
-      directTags.push(t)
+      rawDirectTags.push(t)
     }
   }
 
   // 若没有明确的 level 1 标签，兜底寻找最小 level 或无父级标签作为直属
-  if (directTags.length === 0) {
+  if (rawDirectTags.length === 0) {
     const minLevel = tags.reduce((min, t) => Math.min(min, t.level ?? 1), Infinity)
     for (const t of tags) {
       if ((t.level ?? 1) === minLevel) {
-        directTags.push(t)
+        rawDirectTags.push(t)
       }
     }
-    if (directTags.length === 0) {
-      directTags.push(...tags)
+    if (rawDirectTags.length === 0) {
+      rawDirectTags.push(...tags)
     }
   }
 
-  // 4. 递归根据 tagsByParent 构建深层多级子树（支持 ADR-0034 §4 刻度穿透提升）
-  function buildChildNode(parentTag: DimensionTag, currentDepth: number): DimensionTreeNode | null {
-    // 若当前层级深度达到或超过用户设定的刻度上限，则所有更深层子孙标签穿透提升（Pass-through Lift-up），
+  // 同级直属标签同名归并去重：
+  // 当同级下出现展示名相同（例如 builtin.source_code 与 hownet.000000194528.n 均为"源代码"）时，
+  // 归并为单节点，优先保留具有有效子树结构或更具权威受控代码的节点，并合并 fileCount 与物化路径
+  const directTagsMap = new Map<string, DimensionTag>()
+  for (const t of rawDirectTags) {
+    const key = t.tagValue || t.code || ''
+    if (!key) {
+      directTagsMap.set(String(Math.random()), t)
+      continue
+    }
+    const existing = directTagsMap.get(key)
+    if (!existing) {
+      directTagsMap.set(key, { ...t })
+      continue
+    }
+
+    // 冲突消歧与合并决策：
+    // 1. 判断谁拥有有效子标签（在 tagsByParent 中登记了子项）
+    const existingHasChildren = (tagsByParent.get(existing.code || '')?.length ?? 0) > 0
+    const currentHasChildren = (tagsByParent.get(t.code || '')?.length ?? 0) > 0
+
+    // 2. 谁作为主节点保留（带子树者优先，避免子树断连）
+    let primary = existing
+    let secondary = t
+    if (!existingHasChildren && currentHasChildren) {
+      primary = t
+      secondary = existing
+    }
+
+    // 3. 合并 fileCount 与物化路径
+    const mergedFileCount = Math.max(primary.fileCount, secondary.fileCount)
+    const mergedCodePaths = Array.from(
+      new Set([
+        ...(primary.codePaths || (primary.codePath ? [primary.codePath] : [])),
+        ...(secondary.codePaths || (secondary.codePath ? [secondary.codePath] : []))
+      ])
+    )
+
+    directTagsMap.set(key, {
+      ...primary,
+      fileCount: mergedFileCount,
+      codePaths: mergedCodePaths.length > 0 ? mergedCodePaths : undefined
+    })
+  }
+  const directTags: DimensionTag[] = Array.from(directTagsMap.values())
+
+  // 基础视觉深度：根级 (level === 0) 的直属标签视觉深度为 2
+  const baseVisualDepth = level + 2
+
+  // 4. 当 baseVisualDepth >= maxScaleDepth 时 (例如 maxScaleDepth <= 2)：
+  // 当前直属标签层已达最大允许视觉深度，所有更深层子孙标签全量穿透提升平铺到 directTags 中，且不再生成 childTagsMap
+  if (baseVisualDepth >= maxScaleDepth) {
+    const allDescendants: DimensionTag[] = []
+    for (const pt of directTags) {
+      const descendants = collectDescendantTags(pt, index)
+      allDescendants.push(...descendants)
+    }
+    if (allDescendants.length > 0) {
+      const dummyContainer: DimensionTag = {
+        dimensionId: group.id,
+        dimensionCode: group.code,
+        dimensionName: group.name,
+        tagValue: group.name,
+        code: group.code,
+        level: baseVisualDepth,
+        fileCount: 0,
+        isMultiSelect: false
+      }
+      const liftedTags = aggregateLiftedTags(allDescendants, dummyContainer, baseVisualDepth)
+      const existingKeys = new Set(directTags.map(t => t.code || t.tagValue))
+      for (const lt of liftedTags) {
+        const key = lt.code || lt.tagValue
+        if (!existingKeys.has(key)) {
+          existingKeys.add(key)
+          directTags.push(lt)
+        }
+      }
+    }
+    return { directTags, childTagsMap }
+  }
+
+  // 5. 当 baseVisualDepth < maxScaleDepth 时：
+  // 递归根据 tagsByParent 构建深层多级子树（支持 ADR-0034 §4 刻度穿透提升）
+  function buildChildNode(parentTag: DimensionTag, currentVisualDepth: number): DimensionTreeNode | null {
+    // 若当前层级视觉深度达到或超过用户设定的刻度上限，则所有更深层子孙标签穿透提升（Pass-through Lift-up），
     // 汇聚挂载在当前刻度父级节点下，且该层不再向下生成更深层孙级节点 (ADR-0034 §4)
-    if (currentDepth >= maxScaleDepth) {
+    if (currentVisualDepth >= maxScaleDepth) {
       const descendants = collectDescendantTags(parentTag, index)
       if (descendants.length === 0) return null
 
       // 跨分支同名/同 Code 提升聚合 (ADR-0034 §4 / M-4)，聚合口径见 aggregateLiftedTags 注释
-      const liftedTags: DimensionTag[] = aggregateLiftedTags(descendants, parentTag, currentDepth + 1)
+      const liftedTags: DimensionTag[] = aggregateLiftedTags(descendants, parentTag, currentVisualDepth)
 
       return {
-        id: group.id * 10000 + currentDepth * 100 + (parentTag.order || 1),
+        id: group.id * 10000 + currentVisualDepth * 100 + (parentTag.order || 1),
         name: parentTag.tagValue,
         code: parentTag.code || `${group.code || group.id}.${parentTag.tagValue}`,
-        level: currentDepth,
+        level: currentVisualDepth - 1,
         tags: liftedTags,
         childTags: undefined,
         isMultiSelect: parentTag.isMultiSelect ?? false,
@@ -422,7 +529,10 @@ export function nestGroupTags(
     const directChildren: DimensionTag[] = []
     const seen = new Set<string>()
 
-    const parentKeys = [parentTag.code, parentTag.tagValue].filter(Boolean) as string[]
+    // 优先按 parentTag.code 精确查找子节点，仅缺失 code 时才以 tagValue 兜底
+    const parentKeys = parentTag.code
+      ? [parentTag.code]
+      : ([parentTag.tagValue].filter(Boolean) as string[])
     for (const pk of parentKeys) {
       const list = tagsByParent.get(pk) || []
       for (const ct of list) {
@@ -438,17 +548,17 @@ export function nestGroupTags(
 
     const subChildTagsMap = new Map<string, DimensionTreeNode[]>()
     directChildren.forEach((childTag) => {
-      const grandSub = buildChildNode(childTag, currentDepth + 1)
+      const grandSub = buildChildNode(childTag, currentVisualDepth + 1)
       if (grandSub) {
         subChildTagsMap.set(childTag.tagValue, [grandSub])
       }
     })
 
     return {
-      id: group.id * 10000 + currentDepth * 100 + (parentTag.order || 1),
+      id: group.id * 10000 + currentVisualDepth * 100 + (parentTag.order || 1),
       name: parentTag.tagValue,
       code: parentTag.code || `${group.code || group.id}.${parentTag.tagValue}`,
-      level: currentDepth,
+      level: currentVisualDepth - 1,
       tags: directChildren,
       childTags: subChildTagsMap.size > 0 ? subChildTagsMap : undefined,
       isMultiSelect: parentTag.isMultiSelect ?? false,
@@ -457,7 +567,8 @@ export function nestGroupTags(
   }
 
   directTags.forEach(parentTag => {
-    const subNode = buildChildNode(parentTag, 1)
+    // 直属标签所在层为 baseVisualDepth，其展开的子节点所在视觉深度为 baseVisualDepth + 1 (即 3)
+    const subNode = buildChildNode(parentTag, baseVisualDepth + 1)
     if (subNode) {
       childTagsMap.set(parentTag.tagValue, [subNode])
     }
@@ -474,7 +585,7 @@ export function buildDimensionTree(
   parentId: number | null = null,
   parentTag: string | null = null,
   level = 0,
-  maxScaleDepth: number = 3
+  maxScaleDepth: number = 5
 ): DimensionTreeNode[] {
   // 预构建 parentId → groups 查找表和 hasChildren 集合，消除 O(n²)
   const map = new Map<number | null, DimensionGroup[]>()
@@ -527,14 +638,76 @@ export function buildDimensionTree(
 
         // 2. 关联外部细分维度组 (基于 triggerConditions / parentDimensionIds)
         const hasChildren = childrenSet.has(group.id)
+        const baseVisualDepth = lvl + 2
+
         if (hasChildren) {
-          directTags.forEach(tag => {
-            const externalChildren = recurse(group.id, tag.tagValue, lvl + 1)
-            if (externalChildren.length > 0) {
-              const existing = childTagsMap.get(tag.tagValue) || []
-              childTagsMap.set(tag.tagValue, [...existing, ...externalChildren])
-            }
-          })
+          if (baseVisualDepth >= maxScaleDepth) {
+            // 当前层已达最大允许视觉深度 (如 maxScaleDepth <= 2)：
+            // 外部细分维度及其标签严禁挂在深层 childTagsMap，必须穿透提升平铺在当前直属 directTags 列表中
+            const seenKeys = new Set(directTags.map(t => t.code || t.tagValue))
+            const initialDirectTags = [...directTags]
+
+            initialDirectTags.forEach(tag => {
+              const externalChildren = recurse(group.id, tag.tagValue, lvl + 1)
+              if (externalChildren.length > 0) {
+                // 递归收集外部子维度及其深层所有标签
+                function collectExtTreeTags(nodes: DimensionTreeNode[]) {
+                  for (const extNode of nodes) {
+                    // 2.1 外部子维度自身提升为标签项 (如 '语言细分')
+                    const extDimKey = extNode.code || `${group.code || group.id}.${extNode.name}`
+                    if (!seenKeys.has(extDimKey) && !seenKeys.has(extNode.name)) {
+                      seenKeys.add(extDimKey)
+                      seenKeys.add(extNode.name)
+                      directTags.push({
+                        dimensionId: extNode.id,
+                        dimensionCode: extNode.code || `builtin.dim.${extNode.id}`,
+                        dimensionName: extNode.name,
+                        tagValue: extNode.name,
+                        code: extDimKey,
+                        viaParentCode: group.code || group.name,
+                        level: baseVisualDepth,
+                        fileCount: (extNode.tags || []).reduce((sum, t) => sum + (t.fileCount || 0), 0),
+                        isMultiSelect: extNode.isMultiSelect ?? false,
+                        isLifted: true
+                      })
+                    }
+
+                    // 2.2 外部子维度包含的标签提升为直属标签 (如 '中文')
+                    for (const extTag of extNode.tags || []) {
+                      const tagKey = extTag.code || extTag.tagValue
+                      if (!seenKeys.has(tagKey)) {
+                        seenKeys.add(tagKey)
+                        directTags.push({
+                          ...extTag,
+                          viaParentCode: group.code || group.name,
+                          level: baseVisualDepth,
+                          isLifted: true
+                        })
+                      }
+                    }
+
+                    // 2.3 若外部维度下还有 childTags，递归收集
+                    if (extNode.childTags) {
+                      for (const subNodes of extNode.childTags.values()) {
+                        collectExtTreeTags(subNodes)
+                      }
+                    }
+                  }
+                }
+
+                collectExtTreeTags(externalChildren)
+              }
+            })
+          } else {
+            // 当前层未达最大深度：正常挂载到 childTagsMap 中
+            directTags.forEach(tag => {
+              const externalChildren = recurse(group.id, tag.tagValue, lvl + 1)
+              if (externalChildren.length > 0) {
+                const existing = childTagsMap.get(tag.tagValue) || []
+                childTagsMap.set(tag.tagValue, [...existing, ...externalChildren])
+              }
+            })
+          }
         }
 
         return {
