@@ -175,7 +175,7 @@
     "ko-KR": "알 수 없는 파일",
     "$files": [
       "src/renderer/components/file-explorer/FileList/index.tsx(38360-38368)",
-      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(28295-28303)",
+      "src/renderer/components/file-explorer/FileList/components/GridCell.tsx(28990-28998)",
       "src/renderer/components/file-explorer/FileList/components/VirtualRowRenderer.tsx(29032-29040)"
     ],
     "$id": 8511
@@ -397,6 +397,19 @@
     ],
     "$id": 8527
   },
+  "向量相似度": {
+    "en-US": "Vector similarity",
+    "es-ES": "Similitud vectorial",
+    "ar-EG": "تشابه المتجهات",
+    "pt-PT": "Similaridade vetorial",
+    "ru-RU": "Векторное сходство",
+    "ja-JP": "ベクトルの類似性",
+    "de-DE": "Vektorähnlichkeit",
+    "fr-FR": "Similarité vectorielle",
+    "ko-KR": "벡터 유사성",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/GridCell.tsx(12301-12310)"],
+    "$id": 21047
+  },
   "未知失败原因": {
     "en-US": "Unknown failure reason",
     "es-ES": "Causa de fallo desconocida",
@@ -527,6 +540,32 @@
     ],
     "$id": 8542
   },
+  "向量语义相似度": {
+    "en-US": "Vector semantic similarity",
+    "es-ES": "Similitud semántica vectorial",
+    "ar-EG": "التشابه الدلالي المتجه",
+    "pt-PT": "Similaridade semântica vetorial",
+    "ru-RU": "Векторное семантическое сходство",
+    "ja-JP": "ベクターセマンティック類似性",
+    "de-DE": "Semantische Ähnlichkeit von Vektoren",
+    "fr-FR": "Similarité sémantique vectorielle",
+    "ko-KR": "벡터 시맨틱 유사성",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(6522-6533)"],
+    "$id": 21048
+  },
+  "相似度": {
+    "en-US": "Similarity",
+    "es-ES": "Similitud",
+    "ar-EG": "التشابه",
+    "pt-PT": "Similaridade",
+    "ru-RU": "Сходство",
+    "ja-JP": "類似性",
+    "de-DE": "Ähnlichkeit",
+    "fr-FR": "Similarité",
+    "ko-KR": "유사성",
+    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(6654-6661)"],
+    "$id": 21049
+  },
   "匹配视频时间片段": {
     "en-US": "Match video time segments",
     "es-ES": "Fragmentos de video correspondientes",
@@ -537,7 +576,7 @@
     "de-DE": "Videosegmente übereinstimmen",
     "fr-FR": "Correspondance avec des segments de temps de la vidéo",
     "ko-KR": "비디오 시간 구간 매칭",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(6362-6374)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(7076-7088)"],
     "$id": 20700
   },
   "尚未进行 AI 深度分析，命中文件名": {
@@ -550,7 +589,7 @@
     "de-DE": "AI eingehende Analyse wurde nicht durchgeführt, drücken Sie den Dateinamen",
     "fr-FR": "L'analyse approfondie de l'IA n'a pas été effectuée, appuyez sur le nom du fichier",
     "ko-KR": "인공 지능에 대한 심층 분석이 수행되지 않은,파일 이름을 누르십시오",
-    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(7396-7418)"],
+    "$files": ["src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(8110-8132)"],
     "$id": 20126
   },
   "立即分析": {
@@ -564,7 +603,7 @@
     "fr-FR": "Analyser immédiatement",
     "ko-KR": "즉시 분석",
     "$files": [
-      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(7870-7878)",
+      "src/renderer/components/file-explorer/FileList/components/SearchListCard.tsx(8584-8592)",
       "src/renderer/components/file-explorer/FileList/hooks/useFileListContextMenu.ts(5356-5364)"
     ],
     "$id": 8544

@@ -297,6 +297,17 @@ export const GridCellInner = React.memo((props: GridCellInnerProps) => {
           </span>
         </div>
       )}
+      {!isLost && typeof fileItem?.similarity === 'number' && fileItem.similarity > 0 && (
+        <div className="absolute top-2 right-2 z-20 pointer-events-none">
+          <span
+            className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-violet-700 dark:text-violet-300 bg-violet-100/90 dark:bg-violet-950/90 px-1.5 py-0.5 rounded-md border border-violet-300 dark:border-violet-800 shadow-sm backdrop-blur-sm"
+            title={t('向量相似度')}
+          >
+            <span className="material-icons text-[11px]">psychology</span>
+            {`${Math.round(Math.min(1, Math.max(0, fileItem.similarity)) * 100)}%`}
+          </span>
+        </div>
+      )}
       {isUnit && unitTheme && (
         <div className="absolute top-2 left-2 z-20 pointer-events-none">
           <span

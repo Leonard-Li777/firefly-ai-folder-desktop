@@ -2284,7 +2284,9 @@ export class TagTreeQuery {
         if (highlight.hitCount > 0) {
           result.set(ref.fileFingerprint, {
             snippet: highlight.snippet,
-            matchType: highlight.matchType
+            matchType: highlight.matchType,
+            similarity:
+              cand?.vecScore !== undefined ? Math.round(cand.vecScore * 100) / 100 : undefined
           })
           continue
         }

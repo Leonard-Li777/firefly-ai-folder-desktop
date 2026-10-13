@@ -175,6 +175,18 @@ export const SearchListCard = React.memo(
             <span className="material-icons text-[12px]">{badge.icon}</span>
             {badgeLabel}
           </span>
+          {/* 若为字面/模糊匹配但同时命中了向量检索，并列展示独立的向量相似度徽章 */}
+          {matchType !== 'semantic' &&
+            typeof item.similarity === 'number' &&
+            item.similarity > 0 && (
+              <span
+                className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded border shrink-0 text-violet-600 dark:text-violet-400 bg-violet-100 dark:bg-violet-950/80 border-violet-300 dark:border-violet-800"
+                title={t('向量语义相似度')}
+              >
+                <span className="material-icons text-[12px]">psychology</span>
+                {`${t('相似度')} ${Math.round(Math.min(1, Math.max(0, item.similarity)) * 100)}%`}
+              </span>
+            )}
           {item.matchedChunk && (
             <span
               className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0"

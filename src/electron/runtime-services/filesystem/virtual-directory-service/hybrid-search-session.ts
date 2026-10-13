@@ -186,11 +186,12 @@ export class HybridSearchSession {
           const base = baseItems.get(ref.fileFingerprint)
           if (!base) continue
           const e = enrichment.get(ref.fileFingerprint)
+          const cand = candidateByFp.get(ref.fileFingerprint)
           items.push({
             ...base,
             snippet: e?.snippet,
             matchType: e?.matchType ?? (ref.hasLiteral ? 'fuzzy' : 'semantic'),
-            similarity: e?.similarity
+            similarity: e?.similarity ?? cand?.vecScore
           })
         } else {
           items.push(this.collaborators.synthesizeUnanalyzedItem(ref, workspaceDirectoryPath))
