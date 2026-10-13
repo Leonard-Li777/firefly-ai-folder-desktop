@@ -371,6 +371,7 @@ import {
   setActiveHardwareBackendCache
 } from './state'
 import { ConfigDbManager } from '../runtime-services/config/config-db-manager'
+import { omniClient } from '../services/omni-client'
 import { LanguageCode } from '@firefly/types'
 
 // =================================================================
@@ -585,6 +586,23 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
       try {
         await initDatabaseAndDependentServices(newLanguage as any, true)
         await analysisQueueService.reloadDatabase()
+
+        // 核心：在多语言切换完成后，按当前新语言全量重建 file_tag_relations.name_path，确保新语言下可直接复用物化路径
+        if (databaseService.db) {
+          try {
+            const rebuildResult = await databaseService.rebuildNamePathsForLanguage(newLanguage)
+            logger.info(
+              LogCategory.MAIN,
+              `[LanguageSwitch] 已按 ${newLanguage} 重建物化展示路径 name_path: 更新 ${rebuildResult.updatedCount} 行 (涉及 ${rebuildResult.distinctPathsCount} 条路径)`
+            )
+          } catch (rebuildErr) {
+            logger.error(LogCategory.MAIN, '[LanguageSwitch] 重建物化路径 name_path 失败:', rebuildErr)
+          }
+        }
+
+        // 清理 Desktop 客户端分类树内存缓存，保证后续标签树渲染即刻拉取新语言树
+        omniClient.clearTaxonomyTreeCache()
+
         // 数据库重建后，重新同步 UserTierDataManager
         const { userTierService } = await import('../runtime-services/user-tier/user-tier-service')
         const { SystemIdentityService } =
@@ -604,6 +622,7 @@ ConfigOrchestrator.getInstance().onValueChange<string>(
         omniService.reconnect(databaseService.getDbPath()).catch(err => {
           logger.warn(LogCategory.MAIN, 'Omni 语言切换热重连失败:', err)
         })
+
 
         BrowserWindow.getAllWindows().forEach(win => {
           win.webContents.send('database-switched', { language: newLanguage })

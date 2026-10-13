@@ -13,6 +13,7 @@ import {
   registerDatabaseFunctions,
   resolveTagAliasesLangTable
 } from './database'
+import { rebuildNamePaths, type RebuildNamePathsResult } from './name-path-rebuilder'
 import { omniClient } from '../../services/omni-client'
 
 import Database from 'better-sqlite3'
@@ -619,6 +620,17 @@ export class DatabaseService {
           WHERE code_path = '';
         `)
       }
+
+      // 创世期受控本体收敛自愈（PRD-0058）：将伪受控码 builtin.source_code 精确纠正为唯一权威码 hownet.000000194528.n（斜杠边界防子维度前缀误伤）
+      this._db.exec(`
+        UPDATE file_tag_relations
+        SET code_path = REPLACE(
+              REPLACE(code_path, '/builtin.source_code/', '/hownet.000000194528.n/'),
+              '/builtin.source_code', '/hownet.000000194528.n'
+            ),
+            via_parent_code = CASE WHEN via_parent_code = 'builtin.source_code' THEN 'hownet.000000194528.n' ELSE via_parent_code END
+        WHERE code_path LIKE '%/builtin.source_code/%' OR code_path LIKE '%/builtin.source_code' OR via_parent_code = 'builtin.source_code';
+      `)
     } catch (error) {
       logger.warn(LogCategory.DATABASE_SERVICE, '确保兼容表结构自愈失败:', error)
     }
@@ -1736,7 +1748,18 @@ export class DatabaseService {
     this.ensureInitialized()
     this.fileDao!.deleteVideoChunks(fileFingerprint)
   }
+
+  /**
+   * 切换语言时，按指定目标语言重建存量 file_tag_relations 中的 name_path 物化路径
+   */
+  public async rebuildNamePathsForLanguage(targetLocale: string): Promise<RebuildNamePathsResult> {
+    if (!this._db) {
+      return { distinctPathsCount: 0, updatedCount: 0 }
+    }
+    return rebuildNamePaths(this._db, targetLocale)
+  }
 }
+
 
 /** @deprecated 向量已由 Omni zvec 托管，类型保留仅为兼容外部引用 */
 export interface FileVectorRecord {
