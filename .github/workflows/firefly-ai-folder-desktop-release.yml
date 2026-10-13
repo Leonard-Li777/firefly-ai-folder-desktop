@@ -375,6 +375,14 @@ jobs:
           echo "🎉 macOS (${{ matrix.arch }}) 构建产物全部通过安装与启动验证，准备执行发布！"
 
 
+      - name: Generate Channel Update Manifest (macOS)
+        shell: bash
+        env:
+          BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
+        run: |
+          echo "📝 生成自动更新渠道清单..."
+          node pro/scripts/run.js generate-channel-manifest.js
+
       - name: Publish to Cloudflare R2
         shell: bash
         env:
@@ -409,7 +417,7 @@ jobs:
           FILES=()
           while IFS= read -r -d '' f; do
             FILES+=("$f")
-          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" \) -print0 2>/dev/null)
+          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" -o -name "*.yml" -o -name "*.yaml" -o -name "*.blockmap" \) -print0 2>/dev/null)
 
           if [ ${#FILES[@]} -gt 0 ]; then
             echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."
@@ -693,6 +701,14 @@ jobs:
           Write-Host "🎉 Windows 构建产物校验成功，准备执行后续发布！"
 
 
+      - name: Generate Channel Update Manifest (Windows)
+        shell: bash
+        env:
+          BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
+        run: |
+          echo "📝 生成包含 blockMapSize 的自动更新渠道清单..."
+          node pro/scripts/run.js generate-channel-manifest.js
+
       - name: Publish to Cloudflare R2
         shell: bash
         env:
@@ -726,7 +742,7 @@ jobs:
           FILES=()
           while IFS= read -r -d '' f; do
             FILES+=("$f")
-          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" \) -print0 2>/dev/null)
+          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" -o -name "*.yml" -o -name "*.yaml" -o -name "*.blockmap" \) -print0 2>/dev/null)
 
           if [ ${#FILES[@]} -gt 0 ]; then
             echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."
@@ -1029,6 +1045,14 @@ jobs:
           fi
 
 
+      - name: Generate Channel Update Manifest (Linux)
+        shell: bash
+        env:
+          BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
+        run: |
+          echo "📝 生成自动更新渠道清单..."
+          node pro/scripts/run.js generate-channel-manifest.js
+
       - name: Publish to Cloudflare R2
         shell: bash
         env:
@@ -1064,7 +1088,7 @@ jobs:
           FILES=()
           while IFS= read -r -d '' f; do
             FILES+=("$f")
-          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" \) -print0 2>/dev/null)
+          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" -o -name "*.yml" -o -name "*.yaml" -o -name "*.blockmap" \) -print0 2>/dev/null)
 
           if [ ${#FILES[@]} -gt 0 ]; then
             echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."

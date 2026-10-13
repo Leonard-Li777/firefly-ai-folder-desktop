@@ -1184,7 +1184,25 @@ const electronAPI = {
     isProd: boolean
     appName: string
     userDataDir: string
-  }> => ipcRenderer.invoke('app:getWorktreeInfo')
+  }> => ipcRenderer.invoke('app:getWorktreeInfo'),
+
+  // 自动更新
+  update: {
+    check: (manual?: boolean): Promise<any> => ipcRenderer.invoke('update:check', manual),
+    getState: (): Promise<any> => ipcRenderer.invoke('update:get-state'),
+    startDownload: (): Promise<boolean> => ipcRenderer.invoke('update:start-download'),
+    quitAndInstall: (): Promise<boolean> => ipcRenderer.invoke('update:quit-and-install'),
+    exitApp: (): Promise<boolean> => ipcRenderer.invoke('update:exit-app'),
+    onStatusChanged: (callback: (state: any) => void): (() => void) => {
+      const handler = (_event: any, state: any) => callback(state)
+      ipcRenderer.on('update:status-changed', handler)
+      ipcRenderer.on('update:status-change', handler)
+      return () => {
+        ipcRenderer.removeListener('update:status-changed', handler)
+        ipcRenderer.removeListener('update:status-change', handler)
+      }
+    }
+  }
 }
 
 // 类型定义

@@ -1,4 +1,46 @@
 {
+  "当前已是最新版本": {
+    "en-US": "当前已是最新版本",
+    "es-ES": "当前已是最新版本",
+    "ar-EG": "当前已是最新版本",
+    "pt-PT": "当前已是最新版本",
+    "ru-RU": "当前已是最新版本",
+    "ja-JP": "当前已是最新版本",
+    "de-DE": "当前已是最新版本",
+    "fr-FR": "当前已是最新版本",
+    "ko-KR": "当前已是最新版本",
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(1284-1296)"],
+    "$id": 21093
+  },
+  "发现新版本 v{version}": {
+    "en-US": "发现新版本 v{version}",
+    "es-ES": "发现新版本 v{version}",
+    "ar-EG": "发现新版本 v{version}",
+    "pt-PT": "发现新版本 v{version}",
+    "ru-RU": "发现新版本 v{version}",
+    "ja-JP": "发现新版本 v{version}",
+    "de-DE": "发现新版本 v{version}",
+    "fr-FR": "发现新版本 v{version}",
+    "ko-KR": "发现新版本 v{version}",
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(1443-1463)"],
+    "$id": 21094
+  },
+  "检查更新失败，请稍后重试": {
+    "en-US": "检查更新失败，请稍后重试",
+    "es-ES": "检查更新失败，请稍后重试",
+    "ar-EG": "检查更新失败，请稍后重试",
+    "pt-PT": "检查更新失败，请稍后重试",
+    "ru-RU": "检查更新失败，请稍后重试",
+    "ja-JP": "检查更新失败，请稍后重试",
+    "de-DE": "检查更新失败，请稍后重试",
+    "fr-FR": "检查更新失败，请稍后重试",
+    "ko-KR": "检查更新失败，请稍后重试",
+    "$files": [
+      "src/renderer/components/settings/about-dialog.tsx(1579-1595)",
+      "src/renderer/components/settings/about-dialog.tsx(1647-1663)"
+    ],
+    "$id": 21095
+  },
   "关于萤核智能文件夹": {
     "en-US": "About Firefly AI Folder",
     "es-ES": "Acerca de la Firefly AI Folder",
@@ -9,7 +51,7 @@
     "de-DE": "Über Firefly AI Folder",
     "fr-FR": "À propos du Firefly AI Folder",
     "ko-KR": "Firefly AI Folder 정보",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(999-1012)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(1920-1933)"],
     "$id": 10542
   },
   "萤核智能文件夹": {
@@ -22,7 +64,7 @@
     "de-DE": "Firefly AI Folder",
     "fr-FR": "Firefly AI Folder",
     "ko-KR": "Firefly AI Folder",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(1212-1223)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2133-2144)"],
     "$id": 10543
   },
   "版本 {version}": {
@@ -35,7 +77,7 @@
     "de-DE": "Version {version}",
     "fr-FR": "Version {version}",
     "ko-KR": "버전 {version}",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(1303-1319)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2224-2240)"],
     "$id": 10544
   },
   "引擎": {
@@ -48,7 +90,7 @@
     "de-DE": "Motor",
     "fr-FR": "Moteur",
     "ko-KR": "엔진",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(1477-1483)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2398-2404)"],
     "$id": 11240
   },
   "本地 AI 优先的智能虚拟文件管理系统": {
@@ -61,8 +103,34 @@
     "de-DE": "Lokales AI-first intelligentes virtuelles Dateiverwaltungssystem",
     "fr-FR": "Premier système de gestion de fichiers virtuels intelligent local basé sur l'IA",
     "ko-KR": "로컬 AI 우선 지능형 가상 파일 관리 시스템",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(1599-1622)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(2520-2543)"],
     "$id": 10545
+  },
+  "正在检查更新...": {
+    "en-US": "正在检查更新...",
+    "es-ES": "正在检查更新...",
+    "ar-EG": "正在检查更新...",
+    "pt-PT": "正在检查更新...",
+    "ru-RU": "正在检查更新...",
+    "ja-JP": "正在检查更新...",
+    "de-DE": "正在检查更新...",
+    "fr-FR": "正在检查更新...",
+    "ko-KR": "正在检查更新...",
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3177-3190)"],
+    "$id": 21096
+  },
+  "检查更新": {
+    "en-US": "检查更新",
+    "es-ES": "检查更新",
+    "ar-EG": "检查更新",
+    "pt-PT": "检查更新",
+    "ru-RU": "检查更新",
+    "ja-JP": "检查更新",
+    "de-DE": "检查更新",
+    "fr-FR": "检查更新",
+    "ko-KR": "检查更新",
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3194-3202)"],
+    "$id": 21097
   },
   "GitHub": {
     "en-US": "GitHub",
@@ -74,7 +142,7 @@
     "de-DE": "GitHub",
     "fr-FR": "GitHub",
     "ko-KR": "깃허브",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2064-2074)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(3878-3888)"],
     "$id": 10546
   },
   "官网": {
@@ -87,7 +155,7 @@
     "de-DE": "Offizielle Website",
     "fr-FR": "Site officiel",
     "ko-KR": "공식 홈페이지",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2351-2357)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4165-4171)"],
     "$id": 10547
   },
   "萤核智能文件夹由 萤核科技 开发并保留所有权利。": {
@@ -100,7 +168,7 @@
     "de-DE": "Firefly AI Folder wurde von Firefly Technology entwickelt und alle Rechte vorbehalten.",
     "fr-FR": "Firefly AI Folder est développé par Firefly Technology et tous droits réservés.",
     "ko-KR": "Firefly AI Folder는 Firefly Technology에서 개발했으며 모든 권리는 보유됩니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2540-2568)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4354-4382)"],
     "$id": 10548
   },
   "Copyright © 2026 萤核科技. All rights reserved.": {
@@ -113,7 +181,7 @@
     "de-DE": "Copyright © 2026 Firefly Technology. Alle Rechte vorbehalten.",
     "fr-FR": "Copyright © 2026 Technologie Firefly. Tous droits réservés.",
     "ko-KR": "저작권 © 2026 잉허 기술. 모든 권리 보유.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2592-2639)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4406-4453)"],
     "$id": 10549
   },
   "本软件桌面端核心业务逻辑基于 CC BY-NC-SA 4.0 许可证开源发布。": {
@@ -126,7 +194,7 @@
     "de-DE": "Die Kerngeschäftslogik der Desktop-Version dieser Software wird als Open Source auf Basis der CC BY-NC-SA 4.0-Lizenz veröffentlicht.",
     "fr-FR": "La logique métier de base de la version de bureau de ce logiciel est publiée en open source basée sur la licence CC BY-NC-SA 4.0.",
     "ko-KR": "이 소프트웨어 데스크톱 버전의 핵심 비즈니스 로직은 CC BY-NC-SA 4.0 라이선스를 기반으로 하는 오픈 소스로 출시됩니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2663-2706)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4477-4520)"],
     "$id": 10550
   },
   "用户隐私保护": {
@@ -139,7 +207,7 @@
     "de-DE": "Schutz der Privatsphäre der Benutzer",
     "fr-FR": "Protection de la vie privée des utilisateurs",
     "ko-KR": "사용자 개인정보 보호",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(2872-2882)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4686-4696)"],
     "$id": 10551
   },
   "所有 AI 分析在本地执行，私有目录不上传任何分析信息": {
@@ -152,7 +220,7 @@
     "de-DE": "Die gesamte KI-Analyse wird lokal durchgeführt und es werden keine Analyseinformationen in das private Verzeichnis hochgeladen.",
     "fr-FR": "Toutes les analyses d'IA sont effectuées localement et aucune information d'analyse n'est téléchargée dans le répertoire privé.",
     "ko-KR": "모든 AI 분석은 로컬에서 수행되며 분석 정보는 개인 디렉터리에 업로드되지 않습니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3002-3033)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4816-4847)"],
     "$id": 10552
   },
   "应用仅收集必要的脱敏错误日志，以修复bug改进用户体验": {
@@ -165,7 +233,7 @@
     "de-DE": "Die Anwendung sammelt nur die notwendigen desensibilisierten Fehlerprotokolle, um Fehler zu beheben und die Benutzererfahrung zu verbessern.",
     "fr-FR": "L'application collecte uniquement les journaux d'erreurs désensibilisés nécessaires pour corriger les bugs et améliorer l'expérience utilisateur.",
     "ko-KR": "애플리케이션은 버그를 수정하고 사용자 경험을 개선하기 위해 필요한 민감도 감소 오류 로그만 수집합니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3061-3092)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4875-4906)"],
     "$id": 7810
   },
   "企业版支持完全离线运行，保证最高级别的隐私保护": {
@@ -178,7 +246,7 @@
     "de-DE": "Die Enterprise-Version unterstützt den vollständigen Offline-Betrieb und gewährleistet ein Höchstmaß an Datenschutz.",
     "fr-FR": "La version entreprise prend en charge un fonctionnement hors ligne complet et garantit le plus haut niveau de protection de la vie privée.",
     "ko-KR": "엔터프라이즈 버전은 완전한 오프라인 작업을 지원하고 최고 수준의 개인 정보 보호를 보장합니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3120-3147)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4934-4961)"],
     "$id": 10554
   },
   "不会将任何数据共享给第三方": {
@@ -191,7 +259,7 @@
     "de-DE": "Es werden keine Daten an Dritte weitergegeben",
     "fr-FR": "Aucune donnée ne sera partagée avec des tiers",
     "ko-KR": "어떠한 데이터도 제3자와 공유되지 않습니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3175-3192)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(4989-5006)"],
     "$id": 10555
   },
   "核心业务逻辑开源可审查": {
@@ -204,7 +272,7 @@
     "de-DE": "Die Kerngeschäftslogik ist Open Source und überprüfbar",
     "fr-FR": "La logique métier de base est open source et peut être révisée",
     "ko-KR": "핵심 비즈니스 로직은 오픈 소스이며 검토 가능",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3220-3235)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(5034-5049)"],
     "$id": 10556
   },
   "开源第三方致谢 (Open Source Notices)": {
@@ -217,7 +285,7 @@
     "de-DE": "Hinweise zu Open Source",
     "fr-FR": "Avis sur les sources ouvertes",
     "ko-KR": "오픈 소스 공지",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3438-3471)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(5252-5285)"],
     "$id": 10557
   },
   "本软件在开发过程中使用并集成了以下第三方开源组件。对这些项目的开发者和社区表示由衷的感谢：": {
@@ -230,7 +298,7 @@
     "de-DE": "Diese Software verwendet und integriert während des Entwicklungsprozesses die folgenden Open-Source-Komponenten von Drittanbietern. Mein aufrichtiger Dank geht an die Entwickler und Communities dieser Projekte:",
     "fr-FR": "Ce logiciel utilise et intègre les composants open source tiers suivants pendant le processus de développement. Mes sincères remerciements aux développeurs et communautés de ces projets :",
     "ko-KR": "이 소프트웨어는 개발 프로세스 중에 다음과 같은 타사 오픈 소스 구성 요소를 사용하고 통합합니다. 이 프로젝트의 개발자와 커뮤니티에 진심으로 감사드립니다.",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3573-3640)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(5387-5454)"],
     "$id": 10558
   },
   "Flyfish Viewer": {
@@ -243,7 +311,7 @@
     "de-DE": "Flyfish-Betrachter",
     "fr-FR": "Vueur Flyfish",
     "ko-KR": "플라이피시 뷰어",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(3838-3856)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(5652-5670)"],
     "$id": 10559
   },
   "项目地址": {
@@ -257,9 +325,9 @@
     "fr-FR": "Adresse du projet",
     "ko-KR": "프로젝트 주소",
     "$files": [
-      "src/renderer/components/settings/about-dialog.tsx(3967-3975)",
-      "src/renderer/components/settings/about-dialog.tsx(4947-4955)",
-      "src/renderer/components/settings/about-dialog.tsx(5917-5925)"
+      "src/renderer/components/settings/about-dialog.tsx(5781-5789)",
+      "src/renderer/components/settings/about-dialog.tsx(6761-6769)",
+      "src/renderer/components/settings/about-dialog.tsx(7731-7739)"
     ],
     "$id": 10560
   },
@@ -274,9 +342,9 @@
     "fr-FR": "Illustrer",
     "ko-KR": "설명하다",
     "$files": [
-      "src/renderer/components/settings/about-dialog.tsx(4614-4620)",
-      "src/renderer/components/settings/about-dialog.tsx(5579-5585)",
-      "src/renderer/components/settings/about-dialog.tsx(6564-6570)"
+      "src/renderer/components/settings/about-dialog.tsx(6428-6434)",
+      "src/renderer/components/settings/about-dialog.tsx(7393-7399)",
+      "src/renderer/components/settings/about-dialog.tsx(8378-8384)"
     ],
     "$id": 10561
   },
@@ -290,7 +358,7 @@
     "de-DE": "Erweitertes Rendern der Dateivorschau",
     "fr-FR": "Rendu avancé d’aperçu de fichier",
     "ko-KR": "고급 파일 미리보기 렌더링",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(4625-4637)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(6439-6451)"],
     "$id": 10562
   },
   "高性能本地 AI 推理引擎": {
@@ -303,7 +371,7 @@
     "de-DE": "Leistungsstarke lokale KI-Inferenz-Engine",
     "fr-FR": "Moteur d'inférence d'IA locale hautes performances",
     "ko-KR": "고성능 로컬 AI 추론 엔진",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(5590-5607)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(7404-7421)"],
     "$id": 10563
   },
   "轻量级系统硬件信息采集工具": {
@@ -316,7 +384,7 @@
     "de-DE": "Leichtes Tool zur Erfassung von Systemhardwareinformationen",
     "fr-FR": "Outil léger de collecte d'informations sur le matériel du système",
     "ko-KR": "경량 시스템 하드웨어 정보 수집 도구",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(6575-6592)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(8389-8406)"],
     "$id": 7735
   },
   "关闭": {
@@ -329,7 +397,7 @@
     "de-DE": "Schließung",
     "fr-FR": "Fermeture",
     "ko-KR": "폐쇄",
-    "$files": ["src/renderer/components/settings/about-dialog.tsx(6833-6839)"],
+    "$files": ["src/renderer/components/settings/about-dialog.tsx(8647-8653)"],
     "$id": 10566
   },
   "示例：为喜剧故事多加分；为技术指标降低权重; 多模态内容描述着重人物关系, lrc翻译为{activeLanguage}": {

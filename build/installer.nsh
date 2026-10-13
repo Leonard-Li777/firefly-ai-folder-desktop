@@ -63,16 +63,23 @@
 
 ; 安装前检测 VC++ Redistributable 并关闭正在运行的应用
 !macro customInit
+    ${nsProcess::KillProcess} "firefly-ai-folder_v4_cn.exe" $R0
+    ${nsProcess::KillProcess} "firefly-ai-folder_v4_intl.exe" $R0
     ${nsProcess::KillProcess} "firefly-ai-folder-cn.exe" $R0
     ${nsProcess::KillProcess} "firefly-ai-folder-intl.exe" $R0
     ${nsProcess::KillProcess} "firefly-ai-folder.exe" $R0
     ${nsProcess::KillProcess} "Firefly-AI-Folder-CN.exe" $R0
     ${nsProcess::KillProcess} "Firefly-AI-Folder-INTL.exe" $R0
-    ${nsProcess::KillProcess} "llama-server.exe" $R1
-    ${nsProcess::KillProcess} "llamafile.exe" $R2
-    ${nsProcess::KillProcess} "fastfetch.exe" $R3
-    ${nsProcess::KillProcess} "llama-model-download.exe" $R4
+    ${nsProcess::KillProcess} "firefly-omni.exe" $R1
+    ${nsProcess::KillProcess} "llama-server.exe" $R2
+    ${nsProcess::KillProcess} "llamafile.exe" $R3
+    ${nsProcess::KillProcess} "fastfetch.exe" $R4
+    ${nsProcess::KillProcess} "ffmpeg.exe" $R5
+    ${nsProcess::KillProcess} "llama-model-download.exe" $R6
     Sleep 500
+
+    ; 如果是静默更新安装模式 (/S)，直接跳过交互式 VC++ 弹窗，防止安装挂死
+    IfSilent done 0
 
     ; 检测 VC++ 运行库 (MSVCP140.dll) 是否已安装
     ; 先检查 System32 (64位系统上64位DLL实际在 SysWOW64 中，但 System32 的 Sysnative 重定向也指向原生64位)

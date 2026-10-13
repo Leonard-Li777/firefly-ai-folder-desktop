@@ -721,6 +721,54 @@ declare global {
         appName: string
         userDataDir: string
       }>
+
+      // 客户端自动更新
+      update: {
+        check: (manual?: boolean) => Promise<{
+          status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'installing' | 'error'
+          currentVersion: string
+          latestVersion: string | null
+          minVersion: string | null
+          isMandatory: boolean
+          progress: { percent: number; transferred: number; total: number; bytesPerSecond: number } | null
+          error: string | null
+          currentTrack: 'r2' | 'github'
+          downloadedFilePath: string | null
+          releaseNotes: string | null
+          releaseDate: string | null
+        }>
+        getState: () => Promise<{
+          status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'installing' | 'error'
+          currentVersion: string
+          latestVersion: string | null
+          minVersion: string | null
+          isMandatory: boolean
+          progress: { percent: number; transferred: number; total: number; bytesPerSecond: number } | null
+          error: string | null
+          currentTrack: 'r2' | 'github'
+          downloadedFilePath: string | null
+          releaseNotes: string | null
+          releaseDate: string | null
+        }>
+        startDownload: () => Promise<boolean>
+        quitAndInstall: () => Promise<boolean>
+        exitApp: () => Promise<boolean>
+        onStatusChanged: (
+          callback: (state: {
+            status: 'idle' | 'checking' | 'available' | 'not-available' | 'downloading' | 'downloaded' | 'installing' | 'error'
+            currentVersion: string
+            latestVersion: string | null
+            minVersion: string | null
+            isMandatory: boolean
+            progress: { percent: number; transferred: number; total: number; bytesPerSecond: number } | null
+            error: string | null
+            currentTrack: 'r2' | 'github'
+            downloadedFilePath: string | null
+            releaseNotes: string | null
+            releaseDate: string | null
+          }) => void
+        ) => () => void
+      }
     }
 
     // 其他全局对象

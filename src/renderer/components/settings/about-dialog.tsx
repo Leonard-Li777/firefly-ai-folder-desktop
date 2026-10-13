@@ -13,6 +13,8 @@ interface AboutDialogProps {
 
 export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) => {
   const [omniVersion, setOmniVersion] = React.useState<string>('')
+  const [isCheckingUpdate, setIsCheckingUpdate] = React.useState(false)
+  const [updateFeedback, setUpdateFeedback] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     if (open && window.electronAPI?.getOmniVersion) {
@@ -24,6 +26,26 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) 
         .catch(() => {})
     }
   }, [open])
+
+  const handleCheckUpdate = async () => {
+    if (isCheckingUpdate || !window.electronAPI?.update) return
+    setIsCheckingUpdate(true)
+    setUpdateFeedback(null)
+    try {
+      const state = await window.electronAPI.update.check(true)
+      if (state.status === 'not-available') {
+        setUpdateFeedback(t('当前已是最新版本'))
+      } else if (state.status === 'available' || state.status === 'downloading' || state.status === 'downloaded') {
+        setUpdateFeedback(t('发现新版本 v{version}', { version: state.latestVersion || '' }))
+      } else if (state.status === 'error') {
+        setUpdateFeedback(t('检查更新失败，请稍后重试'))
+      }
+    } catch {
+      setUpdateFeedback(t('检查更新失败，请稍后重试'))
+    } finally {
+      setIsCheckingUpdate(false)
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,6 +67,28 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ open, onOpenChange }) 
             <p className="text-muted-foreground text-sm mt-1">
               {t('本地 AI 优先的智能虚拟文件管理系统')}
             </p>
+
+            {/* 检查更新按钮与状态 */}
+            <div className="mt-3 flex flex-col items-center justify-center space-y-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs px-3"
+                disabled={isCheckingUpdate}
+                onClick={handleCheckUpdate}
+              >
+                <MaterialIcon
+                  icon={isCheckingUpdate ? 'sync' : 'system_update_alt'}
+                  className={`mr-1.5 text-sm ${isCheckingUpdate ? 'animate-spin' : ''}`}
+                />
+                {isCheckingUpdate ? t('正在检查更新...') : t('检查更新')}
+              </Button>
+              {updateFeedback && (
+                <p className="text-xs text-muted-foreground animate-in fade-in duration-200">
+                  {updateFeedback}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* 链接 */}

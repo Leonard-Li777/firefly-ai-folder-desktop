@@ -1179,7 +1179,54 @@ const config: ForgeConfig = {
             }
           }
         }
+
+        // 生成 electron-updater 客户端所需的 resources/app-update.yml
+        try {
+          const manifestScriptPath = path.join(__dirname, 'pro/scripts/generate-channel-manifest.js')
+          if (fs.existsSync(manifestScriptPath)) {
+            const { writeAppUpdateYaml } = require(manifestScriptPath)
+            const appUpdatePath = writeAppUpdateYaml(resourcesDir, {
+              region: BUILD_REGION,
+              appName: APP_NAME
+            })
+            console.log(`[postPackage] ✅ 已生成 app-update.yml: ${appUpdatePath}`)
+          } else {
+            const channel = BUILD_REGION === 'INTL' ? 'intl' : 'cn'
+            const updaterCacheDirName = `${APP_NAME}-updater`
+            const content =
+              BUILD_REGION === 'INTL'
+                ? `provider: github\nowner: Leonard-Li777\nrepo: firefly-ai-folder-desktop\nchannel: ${channel}\nupdaterCacheDirName: ${updaterCacheDirName}\n`
+                : `provider: generic\nurl: https://download.iocn.cn/firefly-ai-folder\nchannel: ${channel}\nupdaterCacheDirName: ${updaterCacheDirName}\n`
+            fs.mkdirSync(resourcesDir, { recursive: true })
+            fs.writeFileSync(path.join(resourcesDir, 'app-update.yml'), content, 'utf8')
+            console.log(`[postPackage] ✅ 已使用内置模板生成 app-update.yml`)
+          }
+        } catch (err: any) {
+          console.warn(`[postPackage] ⚠️ 生成 app-update.yml 失败: ${err.message}`)
+        }
       }
+    },
+    // 构建安装包后生成包含精确 blockMapSize 与 minVersion 的渠道清单 (cn.yml / intl.yml)
+    postMake: async (_forgeConfig, makeResults) => {
+      try {
+        const manifestScriptPath = path.join(__dirname, 'pro/scripts/generate-channel-manifest.js')
+        if (fs.existsSync(manifestScriptPath)) {
+          const { generateChannelManifest } = require(manifestScriptPath)
+          const outDir = path.join(__dirname, 'out', 'make')
+          const result = generateChannelManifest({
+            outDir,
+            version: packageJson.version,
+            minVersion: process.env.MIN_UPDATE_VERSION || (packageJson as any).minUpdateVersion || '4.0.0',
+            region: BUILD_REGION
+          })
+          if (result) {
+            console.log(`[postMake] ✅ 已生成含 blockMapSize 的渠道更新清单: ${result.manifestPath}`)
+          }
+        }
+      } catch (err: any) {
+        console.warn(`[postMake] ⚠️ 生成渠道更新清单失败: ${err.message}`)
+      }
+      return makeResults
     },
     // macOS Universal 构建时清理预解压模板中的旧 _CodeSignature 目录，保证 x64 与 arm64 结构完全对称
     packageAfterExtract: async (_config, extractPath, _electronVersion, platform) => {
@@ -1513,7 +1560,7 @@ const config: ForgeConfig = {
           installerIcon: path.join(absAssetsDir, 'icon.ico'),
           uninstallerIcon: path.join(absAssetsDir, 'icon.ico'),
           artifactName: `${APP_NAME}-${packageJson.version}-setup-${process.arch}.exe`,
-          differentialPackage: false, // 禁用差分包生成，避免 2GB+ 大包构建时 makensis 内存映射 datablock 溢出
+          differentialPackage: true, // 开启差分包生成 (.blockmap)，安装包已控制在 1GB 安全水位线内
           displayLanguageSelector: false
         },
         getAppBuilderConfig: async () => ({
@@ -1533,7 +1580,7 @@ const config: ForgeConfig = {
             installerIcon: path.join(absAssetsDir, 'icon.ico'),
             uninstallerIcon: path.join(absAssetsDir, 'icon.ico'),
             artifactName: `${APP_NAME}-${packageJson.version}-setup-${process.arch}.exe`,
-            differentialPackage: false,
+            differentialPackage: true,
             displayLanguageSelector: false
           }
         })

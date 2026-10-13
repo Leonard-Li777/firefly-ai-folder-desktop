@@ -48,6 +48,7 @@ import { dataMigrationService } from '../runtime-services/system/data-migration-
 import { ConfigDbManager } from '../runtime-services/config/config-db-manager'
 import { createModelCapabilityAdapter } from '../adapters/model-capability-adapter'
 import * as path from 'path'
+import * as fs from 'fs'
 import {
   globalLlamaIndexService,
   setGlobalLlamaIndexService,
@@ -1021,8 +1022,34 @@ export async function initializeFullServices(): Promise<void> {
     logger.info(LogCategory.MAIN, '初始化阶段完成，所有服务已初始化')
     logger.info(LogCategory.MAIN, '开始同步云端配置...')
 
+    // 挂载自动更新服务 (支持双轨寻路与探针快速故障转移)
+    try {
+      const { autoUpdateService } = await import('../runtime-services/system/auto-update-service')
+      autoUpdateService.initialize()
+      logger.info(LogCategory.MAIN, '[AutoUpdate] 自动更新服务初始化成功')
+    } catch (updateErr: any) {
+      logger.warn(LogCategory.MAIN, '[AutoUpdate] 自动更新服务初始化失败:', updateErr.message)
+    }
+
+    // 启动期安全清理废弃旧临时文件与更新残余
+    try {
+      const userData = app.getPath('userData')
+      const updaterTempDir = path.join(userData, `${app.getName()}-updater`)
+      if (fs.existsSync(updaterTempDir)) {
+        const files = fs.readdirSync(updaterTempDir)
+        for (const f of files) {
+          if (f.startsWith('temp-') || f.endsWith('.tmp')) {
+            try {
+              fs.unlinkSync(path.join(updaterTempDir, f))
+            } catch {}
+          }
+        }
+      }
+    } catch {}
+
     logger.info(LogCategory.MAIN, '完整服务初始化完成')
   } catch (error) {
     logger.error(LogCategory.MAIN, '服务初始化失败:', error)
   }
 }
+

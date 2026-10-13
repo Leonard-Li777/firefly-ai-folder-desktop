@@ -40,6 +40,7 @@ import { useAnalyzedDirectoryStore } from './stores/analyzed-directory-store'
 import { useVirtualDirectoryStore } from './stores/virtual-directory-store'
 import { useTierStore } from './stores/tier-store'
 import { FirecoresRulesDialog } from './components/tier/FirecoresRulesDialog'
+import { UpdateNotification } from './components/update/UpdateNotification'
 // PRD-0044（S5 提前摘除）：模型激活确认对话框删除，AlertDialog/buttonVariants 导入随之下线
 
 type StartupPhase = 'determining' | 'setup' | 'config' | 'licensing' | 'initializing' | 'ready'
@@ -793,6 +794,7 @@ const App: React.FC = () => {
           onOpenChange={open => (open ? openRulesDialog() : closeRulesDialog())}
           defaultTab={rulesDefaultTab}
         />
+        <UpdateNotification />
 
         {/* AI服务错误对话框 */}
         <AIServiceErrorDialog
