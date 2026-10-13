@@ -3,7 +3,13 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { execSync } from 'child_process'
 import fixPath from 'fix-path'
-import { logger, LogCategory, toShortPathOnWindows } from '@firefly/shared'
+import {
+  logger,
+  LogCategory,
+  toShortPathOnWindows,
+  getFfmpegPath,
+  getFfprobePath
+} from '@firefly/shared'
 import { EventEmitter } from 'events'
 
 // 在 macOS 和 Linux 上修复 PATH 环境变量
@@ -82,48 +88,20 @@ export class FfmpegService extends EventEmitter {
    * 同步检测可用 FFmpeg (优先使用 extraResources/bin/ffmpeg 部署的二进制文件，与 Omni 共享统一资产)
    */
   public detectFfmpegSync(): string | null {
-    const isWin = process.platform === 'win32'
-    const exeName = isWin ? 'ffmpeg.exe' : 'ffmpeg'
-
-    // 1. 优先通过 ResourceLocator 检索 extraResources/bin/ffmpeg 目录
-    try {
-      const { ResourceLocator } = require('../filesystem/virtual-directory-service/utils')
-      const bin = ResourceLocator.resolveBin(`ffmpeg/${exeName}`) || ResourceLocator.resolveBin(exeName)
-      if (bin && fs.existsSync(bin)) {
-        return bin
-      }
-    } catch {}
-
-    // 2. 多候选标准部署路径兜底检索 (开发环境与打包环境)
-    const root = process.cwd()
-    const candidates = [
-      path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'ffmpeg', exeName),
-      path.join(root, 'build', 'extraResources', 'bin', 'ffmpeg', exeName),
-      path.join(root, 'apps', 'omni', 'build', 'extraResources', 'bin', 'ffmpeg', exeName),
-      path.join(root, 'extraResources', 'bin', 'ffmpeg', exeName)
-    ]
-
-    for (const cand of candidates) {
-      if (fs.existsSync(cand)) {
-        return cand
-      }
+    // 1. 优先使用 @firefly/shared 导出的统一路径解析 (ResourceLocator 与 系统 PATH 探测)
+    const resolved = getFfmpegPath()
+    if (resolved) {
+      return resolved
     }
 
-    // 3. 检查应用数据 bin 目录 (userData/bin/ffmpeg)
+    // 2. 检查应用数据 bin 目录 (userData/bin/ffmpeg)
     try {
+      const isWin = process.platform === 'win32'
+      const exeName = isWin ? 'ffmpeg.exe' : 'ffmpeg'
       const userDataPath = app.getPath('userData')
       const localPath = path.join(userDataPath, 'bin', exeName)
       if (fs.existsSync(localPath)) {
-        return localPath
-      }
-    } catch {}
-
-    // 4. 检查系统 PATH 环境变量 (where / which)
-    try {
-      const command = isWin ? 'where ffmpeg' : 'which ffmpeg'
-      const result = execSync(command).toString().trim().split('\n')[0]
-      if (result && fs.existsSync(result)) {
-        return result
+        return toShortPathOnWindows(localPath)
       }
     } catch {}
 
@@ -134,44 +112,20 @@ export class FfmpegService extends EventEmitter {
    * 获取 FFprobe 可执行文件路径
    */
   getFfprobePath(): string | null {
-    const isWin = process.platform === 'win32'
-    const exeName = isWin ? 'ffprobe.exe' : 'ffprobe'
-
-    try {
-      const { ResourceLocator } = require('../filesystem/virtual-directory-service/utils')
-      const bin = ResourceLocator.resolveBin(`ffprobe/${exeName}`) || ResourceLocator.resolveBin(exeName)
-      if (bin && fs.existsSync(bin)) {
-        return toShortPathOnWindows(bin)
-      }
-    } catch {}
-
-    const root = process.cwd()
-    const candidates = [
-      path.join(root, 'apps', 'desktop', 'build', 'extraResources', 'bin', 'ffprobe', exeName),
-      path.join(root, 'build', 'extraResources', 'bin', 'ffprobe', exeName),
-      path.join(root, 'apps', 'omni', 'build', 'extraResources', 'bin', 'ffprobe', exeName),
-      path.join(root, 'extraResources', 'bin', 'ffprobe', exeName)
-    ]
-
-    for (const cand of candidates) {
-      if (fs.existsSync(cand)) {
-        return toShortPathOnWindows(cand)
-      }
+    // 1. 优先使用 @firefly/shared 导出的统一路径解析
+    const resolved = getFfprobePath()
+    if (resolved) {
+      return resolved
     }
 
+    // 2. 检查应用数据 bin 目录 (userData/bin/ffprobe)
     try {
+      const isWin = process.platform === 'win32'
+      const exeName = isWin ? 'ffprobe.exe' : 'ffprobe'
       const userDataPath = app.getPath('userData')
       const localPath = path.join(userDataPath, 'bin', exeName)
       if (fs.existsSync(localPath)) {
         return toShortPathOnWindows(localPath)
-      }
-    } catch {}
-
-    try {
-      const command = isWin ? 'where ffprobe' : 'which ffprobe'
-      const result = execSync(command).toString().trim().split('\n')[0]
-      if (result && fs.existsSync(result)) {
-        return toShortPathOnWindows(result)
       }
     } catch {}
 
