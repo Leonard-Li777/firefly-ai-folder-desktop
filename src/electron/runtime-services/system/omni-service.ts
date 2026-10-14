@@ -756,8 +756,14 @@ export class OmniService {
         )
       }
 
+      // 剥离子进程输出中的 ANSI 转义序列（CSI，如 \x1b[2m26:42\x1b[0m \x1b[32m INFO\x1b[0m）。
+      // 引擎在强开 ANSI 或原生库（onnxruntime / sherpa C-API）直接着色输出时，这些控制
+      // 字符会随日志透传到渲染进程控制台与 app.log，表现为时间戳/级别前缀乱码。
+      const stripAnsi = (buf: Buffer): string =>
+        buf.toString().replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, '')
+
       child.stdout?.on('data', data => {
-        const str = data.toString().trim()
+        const str = stripAnsi(data).trim()
         if (str && !isCzkawkaDump(str)) {
           // 若子进程输出为 INFO 级别或包含多模态关键业务日志，以 info 输出至控制台；其余以 debug 输出
           const isInfoMsg = str.includes('INFO') || str.includes('[普遍语法造句') || str.includes('[双锚点融合') || str.includes('[OmniServer]') || str.includes('[prune_and_rank_tags]') || str.includes('[落选') || str.includes('[胜出')
@@ -770,7 +776,7 @@ export class OmniService {
       })
 
       child.stderr?.on('data', data => {
-        const str = data.toString().trim()
+        const str = stripAnsi(data).trim()
         if (str && !isCzkawkaDump(str)) {
           logger.warn(LogCategory.SYSTEM, `[Omni:err] ${str}`)
         }
