@@ -918,9 +918,77 @@ export function registerVirtualDirectoryIPCHandlers() {
         request.aiProfile || (rawProfile === 'gemma_unified' ? 'gemma_512' : 'bekko_384')
 
       const cosineService = PathCosineService.getInstance()
+      let injectedFileVectors = request.injectedFileVectors
+
+      // 当调用方未直接提供文件特征向量时，从数据库查出受控标签并池化为语义特征向量
+      if (!injectedFileVectors && request.fileIds && request.fileIds.length > 0) {
+        injectedFileVectors = {}
+        try {
+          const db = databaseService.db
+          if (db) {
+            const placeholders = request.fileIds.map(() => '?').join(',')
+            const rows = db
+              .prepare(
+                `
+              SELECT
+                wf.id AS file_id,
+                wf.name AS file_name,
+                ftr.tag_code AS code,
+                ftr.confidence AS weight
+              FROM workspace_files wf
+              LEFT JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
+              WHERE wf.id IN (${placeholders})
+            `
+              )
+              .all(...request.fileIds) as Array<{
+              file_id: number
+              file_name: string | null
+              code: string | null
+              weight: number | null
+            }>
+
+            const fileTagsMap: Record<number, Array<{ code: string; weight: number }>> = {}
+            const fileNamesMap: Record<number, string> = {}
+            for (const row of rows) {
+              if (row.file_name && !fileNamesMap[row.file_id]) {
+                fileNamesMap[row.file_id] = row.file_name
+              }
+              if (row.code) {
+                if (!fileTagsMap[row.file_id]) {
+                  fileTagsMap[row.file_id] = []
+                }
+                fileTagsMap[row.file_id].push({
+                  code: row.code,
+                  weight: typeof row.weight === 'number' ? row.weight : 1.0
+                })
+              }
+            }
+
+            const matchService = IdentityMatchService.getInstance()
+            const assets = matchService.loadAssets(activeProfile)
+            const dim = activeProfile === 'gemma_512' ? 512 : 384
+
+            for (const fId of request.fileIds) {
+              const tags = fileTagsMap[fId] || []
+              let vec = matchService.poolFileTagsEmbedding(tags, assets)
+              const isNonZero = vec && vec.some(v => Math.abs(v) > 1e-6)
+              if (!isNonZero) {
+                const fileName = fileNamesMap[fId] || `file_${fId}`
+                const projected = cosineService.generatePathVector(fileName, dim)
+                vec = Array.from(projected)
+              }
+              injectedFileVectors[fId] = vec
+            }
+          }
+        } catch (err) {
+          logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] 计算路径余弦时提取文件特征向量失败:', err)
+        }
+      }
+
       return cosineService.calculateFilePathsCosine({
         ...request,
-        aiProfile: activeProfile
+        aiProfile: activeProfile,
+        injectedFileVectors
       })
     }
   )
