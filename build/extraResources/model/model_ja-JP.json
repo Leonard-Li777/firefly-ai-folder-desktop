@@ -199,31 +199,35 @@
       }
     },
     {
-      "id": "ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M",
-      "name": "MiniCPM-V 4.6 (絵読み小型鋼鉄砲)",
-      "company": "OpenBMB",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "1.17GB",
+      "id": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M",
+      "dspark": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16",
+      "name": "MiniCPM-V 4.7 1B（絵読み小型鋼鉄砲•脱獄）",
+      "company": "dealignai",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "1.52GB",
       "recommended": true,
-      "description": "トップエンド側のマルチモーダル モデルは、OCR、オブジェクト認識、複雑なシーンの理解において非常に優れたパフォーマンスを発揮します。",
+      "description": "MiniCPM-V 4.7 1B 多模态识图去审查版本，支持文本与图像分析，可下载 DSpark 草稿模型加速推理。",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": true,
-      "contextLength": 32768,
+      "contextLength": 262144,
       "capabilities": [
         "TEXT",
         "IMAGE"
       ],
       "performance": {
         "speed": "fast",
-        "quality": "very_high"
+        "quality": "high"
       },
       "tags": [
+        "制限する",
+        "脱獄",
+        "NSFW",
         "マルチモーダル",
         "OCR",
-        "情景理解",
-        "トップ画像認識"
+        "DSpark",
+        "中国語のほうが上手い"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -231,31 +235,35 @@
       }
     },
     {
-      "id": "OpenBMB/MiniCPM-V-4.6-gguf:Q4_K_M",
-      "name": "MiniCPM-V 4.6 (絵読み小型鋼鉄砲)",
-      "company": "OpenBMB",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "1.53GB",
+      "id": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M",
+      "dspark": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16",
+      "name": "MiniCPM-V 4.7 1B（絵読み小型鋼鉄砲•脱獄）",
+      "company": "dealignai",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "1.52GB",
       "recommended": true,
-      "description": "トップエンド側のマルチモーダル モデルは、OCR、オブジェクト認識、複雑なシーンの理解において非常に優れたパフォーマンスを発揮します。",
+      "description": "MiniCPM-V 4.7 1B 多模态识图去审查版本，支持文本与图像分析，可下载 DSpark 草稿模型加速推理。",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": true,
-      "contextLength": 32768,
+      "contextLength": 262144,
       "capabilities": [
         "TEXT",
         "IMAGE"
       ],
       "performance": {
         "speed": "fast",
-        "quality": "very_high"
+        "quality": "high"
       },
       "tags": [
+        "制限する",
+        "脱獄",
+        "NSFW",
         "マルチモーダル",
         "OCR",
-        "情景理解",
-        "トップ画像認識"
+        "DSpark",
+        "中国語のほうが上手い"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

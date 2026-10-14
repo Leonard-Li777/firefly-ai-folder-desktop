@@ -199,31 +199,35 @@
       }
     },
     {
-      "id": "ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M",
-      "name": "MiniCPM-V 4.6 (그림을 읽는 소형 강철 대포)",
-      "company": "OpenBMB",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "1.17GB",
+      "id": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M",
+      "dspark": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16",
+      "name": "MiniCPM-V 4.7 1B（그림을 읽는 소형 강철 대포•감옥 휴식）",
+      "company": "dealignai",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "1.52GB",
       "recommended": true,
-      "description": "최고급 다중 모드 모델은 OCR, 객체 인식 및 복잡한 장면 이해에서 매우 뛰어난 성능을 발휘합니다.",
+      "description": "MiniCPM-V 4.7 1B 多模态识图去审查版本，支持文本与图像分析，可下载 DSpark 草稿模型加速推理。",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": true,
-      "contextLength": 32768,
+      "contextLength": 262144,
       "capabilities": [
         "TEXT",
         "IMAGE"
       ],
       "performance": {
         "speed": "fast",
-        "quality": "very_high"
+        "quality": "high"
       },
       "tags": [
+        "제한하다",
+        "감옥 휴식",
+        "NSFW",
         "다중 모드",
         "OCR",
-        "장면 이해",
-        "최고의 이미지 인식"
+        "DSpark",
+        "중국어가 더 낫다"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -231,31 +235,35 @@
       }
     },
     {
-      "id": "OpenBMB/MiniCPM-V-4.6-gguf:Q4_K_M",
-      "name": "MiniCPM-V 4.6 (그림을 읽는 소형 강철 대포)",
-      "company": "OpenBMB",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "1.53GB",
+      "id": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M",
+      "dspark": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16",
+      "name": "MiniCPM-V 4.7 1B（그림을 읽는 소형 강철 대포•감옥 휴식）",
+      "company": "dealignai",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "1.52GB",
       "recommended": true,
-      "description": "최고급 다중 모드 모델은 OCR, 객체 인식 및 복잡한 장면 이해에서 매우 뛰어난 성능을 발휘합니다.",
+      "description": "MiniCPM-V 4.7 1B 多模态识图去审查版本，支持文本与图像分析，可下载 DSpark 草稿模型加速推理。",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": true,
-      "contextLength": 32768,
+      "contextLength": 262144,
       "capabilities": [
         "TEXT",
         "IMAGE"
       ],
       "performance": {
         "speed": "fast",
-        "quality": "very_high"
+        "quality": "high"
       },
       "tags": [
+        "제한하다",
+        "감옥 휴식",
+        "NSFW",
         "다중 모드",
         "OCR",
-        "장면 이해",
-        "최고의 이미지 인식"
+        "DSpark",
+        "중국어가 더 낫다"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

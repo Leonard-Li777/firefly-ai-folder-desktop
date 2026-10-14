@@ -199,31 +199,35 @@
       }
     },
     {
-      "id": "ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M",
-      "name": "MiniCPM-V 4.6 (识图小钢炮)",
-      "company": "OpenBMB",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "1.17GB",
+      "id": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M",
+      "dspark": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16",
+      "name": "MiniCPM-V 4.7 1B（识图小钢炮•越狱）",
+      "company": "dealignai",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "1.52GB",
       "recommended": true,
-      "description": "顶级端侧多模态模型，在 OCR、物体识别、复杂场景理解方面表现极其优异。",
+      "description": "MiniCPM-V 4.7 1B 多模态识图去审查版本，支持文本与图像分析，可下载 DSpark 草稿模型加速推理。",
       "source": "huggingface",
       "quantization": "Q4_K_M",
       "isMultiModal": true,
-      "contextLength": 32768,
+      "contextLength": 262144,
       "capabilities": [
         "TEXT",
         "IMAGE"
       ],
       "performance": {
         "speed": "fast",
-        "quality": "very_high"
+        "quality": "high"
       },
       "tags": [
+        "去限制",
+        "越狱",
+        "NSFW",
         "多模态",
         "OCR",
-        "场景理解",
-        "顶级识图"
+        "DSpark",
+        "中文更佳"
       ],
       "recommendedConfig": {
         "numCtx": 8192,
@@ -231,31 +235,35 @@
       }
     },
     {
-      "id": "OpenBMB/MiniCPM-V-4.6-gguf:Q4_K_M",
-      "name": "MiniCPM-V 4.6 (识图小钢炮)",
-      "company": "OpenBMB",
-      "parameterSize": "0.8B",
-      "intelligenceLevel": 1,
-      "totalSize": "1.53GB",
+      "id": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M",
+      "dspark": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16",
+      "name": "MiniCPM-V 4.7 1B（识图小钢炮•越狱）",
+      "company": "dealignai",
+      "parameterSize": "1B",
+      "intelligenceLevel": 2,
+      "totalSize": "1.52GB",
       "recommended": true,
-      "description": "顶级端侧多模态模型，在 OCR、物体识别、复杂场景理解方面表现极其优异。",
+      "description": "MiniCPM-V 4.7 1B 多模态识图去审查版本，支持文本与图像分析，可下载 DSpark 草稿模型加速推理。",
       "source": "modelscope",
       "quantization": "Q4_K_M",
       "isMultiModal": true,
-      "contextLength": 32768,
+      "contextLength": 262144,
       "capabilities": [
         "TEXT",
         "IMAGE"
       ],
       "performance": {
         "speed": "fast",
-        "quality": "very_high"
+        "quality": "high"
       },
       "tags": [
+        "去限制",
+        "越狱",
+        "NSFW",
         "多模态",
         "OCR",
-        "场景理解",
-        "顶级识图"
+        "DSpark",
+        "中文更佳"
       ],
       "recommendedConfig": {
         "numCtx": 8192,

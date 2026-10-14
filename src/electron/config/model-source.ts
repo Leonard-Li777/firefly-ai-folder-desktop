@@ -162,60 +162,12 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
-      id: 'ggml-org/MiniCPM-V-4.6-GGUF:Q4_K_M',
-      name: `MiniCPM-V 4.6 (${t('识图小钢炮')})`,
-      company: 'OpenBMB',
-      parameterSize: '0.8B',
-      intelligenceLevel: 1,
-      totalSize: '1.17GB',
-      recommended: true,
-      description: t('顶级端侧多模态模型，在 OCR、物体识别、复杂场景理解方面表现极其优异。'),
-      source: 'huggingface',
-      quantization: 'Q4_K_M',
-      isMultiModal: true,
-      contextLength: 32768,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'fast',
-        quality: 'very_high'
-      },
-      tags: [t('多模态'), 'OCR', t('场景理解'), t('顶级识图')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
-      id: 'OpenBMB/MiniCPM-V-4.6-gguf:Q4_K_M',
-      name: `MiniCPM-V 4.6 (${t('识图小钢炮')})`,
-      company: 'OpenBMB',
-      parameterSize: '0.8B',
-      intelligenceLevel: 1,
-      totalSize: '1.53GB',
-      recommended: true,
-      description: t('顶级端侧多模态模型，在 OCR、物体识别、复杂场景理解方面表现极其优异。'),
-      source: 'modelscope',
-      quantization: 'Q4_K_M',
-      isMultiModal: true,
-      contextLength: 32768,
-      capabilities: ['TEXT', 'IMAGE'],
-      performance: {
-        speed: 'fast',
-        quality: 'very_high'
-      },
-      tags: [t('多模态'), 'OCR', t('场景理解'), t('顶级识图')],
-      recommendedConfig: {
-        numCtx: 8192,
-        numPredict: 2048
-      }
-    },
-    {
       // 同目录最小投影文件 mmproj-MiniCPM-V-4.7-1B-CRACK-f16-4x.gguf (899,679,360 B)
       // totalSize = 主模型 Q4_K_M (727,459,936 B) + 投影 (899,679,360 B) = 1,627,139,296 B ≈ 1.52GB
       // DSpark 草稿模型 MiniCPM-V-4.7-1B-CRACK-DSpark-BF16.gguf (438,065,792 B ≈ 0.41GB) 与主模型同仓库，需单独下载故未计入 totalSize
       id: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M',
       dspark: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16',
-      name: `MiniCPM-V 4.7 1B（${t('识图')}•${t('越狱')}）`,
+      name: `MiniCPM-V 4.7 1B（${t('识图小钢炮')}•${t('越狱')}）`,
       company: 'dealignai',
       parameterSize: '1B',
       intelligenceLevel: 2,
@@ -243,7 +195,7 @@ export const MODEL_CONFIG_SOURCE = () => ({
       // totalSize = 主模型 Q4_K_M (727,459,936 B) + 投影 (899,679,360 B) = 1,627,139,296 B ≈ 1.52GB
       id: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M',
       dspark: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16',
-      name: `MiniCPM-V 4.7 1B（${t('识图')}•${t('越狱')}）`,
+      name: `MiniCPM-V 4.7 1B（${t('识图小钢炮')}•${t('越狱')}）`,
       company: 'dealignai',
       parameterSize: '1B',
       intelligenceLevel: 2,
