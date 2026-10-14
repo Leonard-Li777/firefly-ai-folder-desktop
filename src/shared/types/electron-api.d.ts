@@ -681,6 +681,9 @@ declare global {
         ) => Promise<SavedVirtualDirectory[]>
         getSavedVirtualDirectoriesByPath: (workspaceDirectoryPath: string) => Promise<SavedVirtualDirectory[]>
         getAnalyzedFiles: (workspaceDirectoryPath: string) => Promise<FileInfo[]>
+        matchPerspectivesAndStructures: (request: any) => Promise<any>
+        calculateFilePathsCosine: (request: any) => Promise<any>
+        smartClusterHac: (params: any) => Promise<any>
         quickOrganize: (params: QuickOrganizeParams) => Promise<OrganizePreviewResult>
         generatePlan: (params: OrganizePlanParams) => Promise<AIGeneratedStructure>
         listSessions: (workspaceDirectoryPath: string) => Promise<OrganizeSession[]>
@@ -774,21 +777,39 @@ declare global {
 
       // 离线语音合成 (TTS)
       tts: {
-        synthesizeChunk: (text: string, sid: number, speed: number, sessionId?: number) => Promise<ArrayBuffer | null>
+        synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number) => Promise<ArrayBuffer | null>
         abortSession: (sessionId: number) => Promise<void>
+        listVoices: () => Promise<any[]>
+        analyzeVoiceFile: (filePath: string) => Promise<{
+          tempVoiceId: string
+          lang: 'zh' | 'en' | 'ja'
+          emotion: string
+          suggestedName: string
+          durationSec: number
+        }>
+        saveCustomVoice: (params: {
+          tempVoiceId: string
+          displayName: string
+          gender: 'male' | 'female' | 'child'
+          lang: 'zh' | 'en' | 'ja'
+          desc?: string
+        }) => Promise<{ success: boolean; voice?: any; error?: string }>
+        removeCustomVoice: (voiceId: string) => Promise<boolean>
         saveWavFile: (defaultName: string, chunks: Uint8Array[]) => Promise<string | null>
         getCachePath: (params: {
           filePath?: string
           fieldName?: string
           fileFingerprint?: string
           sid?: number
+          voiceId?: string | number
           speed?: number
         }) => Promise<string | null>
         readWavMetadata: (wavPath: string) => Promise<{
           completed: boolean
           total: number
           done: number
-          sid: number
+          sid?: number
+          voiceId?: string | number
           speed: number
           fingerprint?: string
           fieldName?: string
@@ -799,7 +820,8 @@ declare global {
           chunkData: Uint8Array
           chunkIndex: number
           totalChunks: number
-          sid: number
+          sid?: number
+          voiceId?: string | number
           speed: number
           fileFingerprint?: string
           fieldName?: string

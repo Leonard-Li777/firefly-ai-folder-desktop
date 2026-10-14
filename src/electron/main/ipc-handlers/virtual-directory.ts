@@ -19,7 +19,14 @@ import {
 import { checkLicenseAndNotify } from '../utils'
 import { LicenseStatus } from '../../runtime-services/system/license-service'
 import type { LanguageCode, PhysicalExportResult, SelectedTag } from '@firefly/types'
-import { UnitRecognitionService, loadPromptParagraph } from '@firefly/core-engine'
+import {
+  UnitRecognitionService,
+  loadPromptParagraph,
+  IdentityMatchService,
+  PathCosineService,
+  type MatchPerspectivesRequest,
+  type CalculateFilePathsCosineRequest
+} from '@firefly/core-engine'
 import { createCoreEngineAdapters } from '../../adapters'
 import fs from 'fs-extra'
 import path from 'node:path'
@@ -828,6 +835,134 @@ export function registerVirtualDirectoryIPCHandlers() {
       params.aiGeneratedStructure as any
     )
   })
+
+  ipcMain.handle(
+    'organize-real-directory/match-perspectives-and-structures',
+    async (event, request: MatchPerspectivesRequest) => {
+      const rawProfile =
+        ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE')
+      const activeProfile: 'bekko_384' | 'gemma_512' =
+        request.aiProfile || (rawProfile === 'gemma_unified' ? 'gemma_512' : 'bekko_384')
+
+      let fileTags = request.injectedFileTags
+      if (!fileTags && request.fileIds && request.fileIds.length > 0) {
+        fileTags = {}
+        try {
+          const db = databaseService.db
+          if (db) {
+            const placeholders = request.fileIds.map(() => '?').join(',')
+            const rows = db
+              .prepare(
+                `
+              SELECT
+                wf.id AS file_id,
+                ftr.tag_code AS code,
+                ftr.confidence AS weight
+              FROM file_tag_relations ftr
+              INNER JOIN workspace_files wf ON ftr.file_fingerprint = wf.file_fingerprint
+              WHERE wf.id IN (${placeholders})
+            `
+              )
+              .all(...request.fileIds) as Array<{
+              file_id: number
+              code: string
+              weight: number | null
+            }>
+
+            for (const row of rows) {
+              if (!fileTags[row.file_id]) {
+                fileTags[row.file_id] = []
+              }
+              fileTags[row.file_id].push({
+                code: row.code,
+                weight: typeof row.weight === 'number' ? row.weight : 1.0
+              })
+            }
+          }
+        } catch (err) {
+          logger.warn(LogCategory.FILE_ORGANIZATION, '[IPC] 获取文件受控标签失败，降级为空:', err)
+        }
+      }
+
+      const matchService = IdentityMatchService.getInstance()
+      return await matchService.matchPerspectivesAndStructures({
+        ...request,
+        aiProfile: activeProfile,
+        injectedFileTags: fileTags
+      })
+    }
+  )
+
+  ipcMain.handle(
+    'organize-real-directory/calculate-file-paths-cosine',
+    async (event, request: CalculateFilePathsCosineRequest) => {
+      const rawProfile =
+        ConfigOrchestrator.getInstance().getValue<string>('AI_EMBEDDING_PROFILE')
+      const activeProfile: 'bekko_384' | 'gemma_512' =
+        request.aiProfile || (rawProfile === 'gemma_unified' ? 'gemma_512' : 'bekko_384')
+
+      const cosineService = PathCosineService.getInstance()
+      return cosineService.calculateFilePathsCosine({
+        ...request,
+        aiProfile: activeProfile
+      })
+    }
+  )
+
+  ipcMain.handle(
+    'organize-real-directory/smart-cluster-hac',
+    async (
+      event,
+      params: {
+        workspaceId?: number
+        workspaceDirectoryPath?: string
+        fileIds?: number[]
+        prompt?: string
+        distanceThreshold?: number
+        maxLeafSize?: number
+      }
+    ) => {
+      const startTime = Date.now()
+      if (!virtualDirectoryService) throw new Error(t('虚拟目录服务未初始化'))
+
+      let wsId = params.workspaceId
+      if (!wsId && params.workspaceDirectoryPath) {
+        const ws = await databaseService.findRootWorkspaceDirectory(params.workspaceDirectoryPath)
+        if (ws) wsId = ws.id
+      }
+
+      if (!wsId) {
+        return {
+          success: false,
+          summary: t('缺少工作区 ID'),
+          directories: [],
+          durationMs: 0
+        }
+      }
+
+      const scheme = await virtualDirectoryService.generateHACClusterScheme(
+        wsId,
+        params.fileIds,
+        params.prompt
+      )
+
+      if (!scheme) {
+        return {
+          success: false,
+          summary: t('智能聚类执行失败或有效向量文件数不足'),
+          directories: [],
+          durationMs: Date.now() - startTime
+        }
+      }
+
+      return {
+        success: true,
+        summary: scheme.summary,
+        directories: scheme.directories || [],
+        durationMs: Date.now() - startTime
+      }
+    }
+  )
 
   ipcMain.handle('organize-real-directory/generate-plan', async (event, params: any) => {
     if (globalLlamaIndexService?.isSwitchingService()) {

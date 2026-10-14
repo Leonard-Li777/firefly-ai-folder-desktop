@@ -975,6 +975,12 @@ const electronAPI = {
       ),
     getAnalyzedFiles: (workspaceDirectoryPath: string) =>
       ipcRenderer.invoke('organize-real-directory/get-analyzed-files', workspaceDirectoryPath),
+    matchPerspectivesAndStructures: (request: any) =>
+      ipcRenderer.invoke('organize-real-directory/match-perspectives-and-structures', request),
+    calculateFilePathsCosine: (request: any) =>
+      ipcRenderer.invoke('organize-real-directory/calculate-file-paths-cosine', request),
+    smartClusterHac: (params: any) =>
+      ipcRenderer.invoke('organize-real-directory/smart-cluster-hac', params),
     quickOrganize: (params: { workspaceDirectoryPath: string; aiGeneratedStructure: any }) =>
       ipcRenderer.invoke('organize-real-directory/quick-organize', params),
     // 一键整理 - 生成整理方案
@@ -1209,10 +1215,30 @@ const electronAPI = {
 
   // 离线语音合成 (TTS)
   tts: {
-    synthesizeChunk: (text: string, sid: number, speed: number, sessionId?: number): Promise<ArrayBuffer | null> =>
-      ipcRenderer.invoke('tts:synthesize-chunk', text, sid, speed, sessionId),
+    synthesizeChunk: (text: string, voiceId: string | number, speed: number, sessionId?: number, sid?: number): Promise<ArrayBuffer | null> =>
+      ipcRenderer.invoke('tts:synthesize-chunk', text, voiceId, speed, sessionId, sid),
     abortSession: (sessionId: number): Promise<void> =>
       ipcRenderer.invoke('tts:abort-session', sessionId),
+    listVoices: (): Promise<any[]> =>
+      ipcRenderer.invoke('tts:list-voices'),
+    analyzeVoiceFile: (filePath: string): Promise<{
+      tempVoiceId: string
+      lang: 'zh' | 'en' | 'ja'
+      emotion: string
+      suggestedName: string
+      durationSec: number
+    }> =>
+      ipcRenderer.invoke('tts:analyze-voice-file', filePath),
+    saveCustomVoice: (params: {
+      tempVoiceId: string
+      displayName: string
+      gender: 'male' | 'female' | 'child'
+      lang: 'zh' | 'en' | 'ja'
+      desc?: string
+    }): Promise<{ success: boolean; voice?: any; error?: string }> =>
+      ipcRenderer.invoke('tts:save-custom-voice', params),
+    removeCustomVoice: (voiceId: string): Promise<boolean> =>
+      ipcRenderer.invoke('tts:remove-custom-voice', voiceId),
     saveWavFile: (defaultName: string, chunks: Uint8Array[]): Promise<string | null> =>
       ipcRenderer.invoke('tts:save-wav-file', defaultName, chunks),
     getCachePath: (params: {
@@ -1221,6 +1247,7 @@ const electronAPI = {
       fileFingerprint?: string
       text?: string
       sid?: number
+      voiceId?: string | number
       speed?: number
     }): Promise<string | null> =>
       ipcRenderer.invoke('tts:get-cache-path', params),
@@ -1233,7 +1260,8 @@ const electronAPI = {
       chunkData: Uint8Array
       chunkIndex: number
       totalChunks: number
-      sid: number
+      sid?: number
+      voiceId?: string | number
       speed: number
       fileFingerprint?: string
       fieldName?: string
