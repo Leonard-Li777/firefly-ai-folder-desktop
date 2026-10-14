@@ -432,6 +432,18 @@ export function registerTTSIPCHandlers(): void {
       return fallbackLocalSplitChunks(text)
     }
   )
+
+  // 14. 独立分片保存与落盘（即合成即写盘，支持乱序与内存减压）
+  ipcMain.handle('tts:save-chunk', async (_event, params: any): Promise<boolean> => {
+    return await ttsWavCacheService.saveChunk(params)
+  })
+
+  // 15. 独立分片读取（分片级断点与秒播复用）
+  ipcMain.handle('tts:read-chunk', async (_event, params: any): Promise<ArrayBuffer | null> => {
+    const buf = await ttsWavCacheService.readChunk(params)
+    if (!buf) return null
+    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer
+  })
 }
 
 /** 本地正则分句降级辅助函数 */

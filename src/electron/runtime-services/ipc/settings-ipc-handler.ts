@@ -158,14 +158,19 @@ export function registerSettingsIPCHandlers(): void {
         await fileWatcherService.stopWatching(workspaceId)
       }
 
-      // 步骤 1: 删除关联的 .VirtualDirectory 文件夹
+      // 步骤 1: 清理关联的 .VirtualDirectory 文件夹（显式保护并保留 .tts 音频资产目录）
       const virtualDirPath = path.join(directoryPath, '.VirtualDirectory')
       if (fs.existsSync(virtualDirPath)) {
         try {
-          await fs.promises.rm(virtualDirPath, { recursive: true, force: true })
-          logger.info(LogCategory.SETTING, '.VirtualDirectory 文件夹删除成功')
+          const entries = await fs.promises.readdir(virtualDirPath, { withFileTypes: true })
+          for (const entry of entries) {
+            if (entry.name === '.tts') continue // 保护 TTS 语音资产目录
+            const fullPath = path.join(virtualDirPath, entry.name)
+            await fs.promises.rm(fullPath, { recursive: true, force: true })
+          }
+          logger.info(LogCategory.SETTING, '.VirtualDirectory 清理成功（已保护 .tts 缓存）')
         } catch (fsError) {
-          logger.error(LogCategory.SETTING, '删除 .VirtualDirectory 失败:', fsError)
+          logger.error(LogCategory.SETTING, '清理 .VirtualDirectory 失败:', fsError)
         }
       }
 
@@ -298,15 +303,20 @@ export function registerSettingsIPCHandlers(): void {
       await databaseService.resetAllAnalysisData()
       omniClient.clearTaxonomyTreeCache()
 
-      // 清理所有工作目录的 .VirtualDirectory (可选，但建议)
+      // 清理所有工作目录的 .VirtualDirectory（显式保留 .tts 语音资产）
       const workspaces = await databaseService.getAllWorkspaceDirectories()
       for (const ws of workspaces) {
         const vdir = path.join(ws.path, '.VirtualDirectory')
         if (fs.existsSync(vdir)) {
           try {
-            await fs.promises.rm(vdir, { recursive: true, force: true })
+            const entries = await fs.promises.readdir(vdir, { withFileTypes: true })
+            for (const entry of entries) {
+              if (entry.name === '.tts') continue
+              const fullPath = path.join(vdir, entry.name)
+              await fs.promises.rm(fullPath, { recursive: true, force: true })
+            }
           } catch (e) {
-            logger.warn(LogCategory.MAIN, '[Settings] 删除工作区 .VirtualDirectory 失败:', vdir, e)
+            logger.warn(LogCategory.MAIN, '[Settings] 清理工作区 .VirtualDirectory 失败:', vdir, e)
           }
         }
       }

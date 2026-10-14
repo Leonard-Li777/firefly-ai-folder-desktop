@@ -511,7 +511,20 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
           cachedChunk.byteOffset,
           cachedChunk.byteOffset + cachedChunk.byteLength
         ) as ArrayBuffer
-      } else {
+      } else if (window.electronAPI?.tts?.readChunk) {
+        const diskChunk = await window.electronAPI.tts.readChunk({
+          filePath: options?.filePath,
+          fileFingerprint: options?.fileFingerprint,
+          fieldName: options?.fieldName,
+          displayName: targetDisplayName,
+          voiceId: targetVoiceId,
+          chunkIndex: targetSentenceIdx
+        })
+        if (diskChunk && diskChunk.byteLength > 44) {
+          baseBuffer = diskChunk
+        }
+      }
+      if (!baseBuffer) {
         baseBuffer = await window.electronAPI.tts.synthesizeChunk(
           chunkText,
           targetVoiceId,
@@ -615,19 +628,19 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       }
       cachedChunksMap.set(actualStartSentenceIdx, new Uint8Array(baseBuffer))
 
-      // 异步流式追加写入母本 WAV 磁盘缓存
-      if (base1xCachePath && window.electronAPI?.tts?.appendWavChunk) {
-        window.electronAPI.tts.appendWavChunk({
-          wavPath: base1xCachePath,
-          chunkData: new Uint8Array(baseBuffer),
+      // 异步分片独立落盘（路线 A：即合成即写盘，零内存驻留压力）
+      if (baseBuffer && baseBuffer.byteLength > 0 && window.electronAPI?.tts?.saveChunk) {
+        window.electronAPI.tts.saveChunk({
+          filePath: options?.filePath,
+          fileFingerprint: options?.fileFingerprint,
+          fieldName: options?.fieldName,
+          displayName: targetDisplayName,
+          voiceId: targetVoiceId,
+          sid: targetSid,
+          speed: targetSpeed,
           chunkIndex: targetSentenceIdx,
           totalChunks: currentCleanedChunks.length,
-          voiceId: targetVoiceId,
-          displayName: targetDisplayName,
-          sid: targetSid,
-          speed: 1.0,
-          fileFingerprint: options?.fileFingerprint,
-          fieldName: options?.fieldName
+          chunkData: new Uint8Array(baseBuffer)
         }).catch(() => {})
       }
 
@@ -644,7 +657,20 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
             cachedNext.byteOffset,
             cachedNext.byteOffset + cachedNext.byteLength
           ) as ArrayBuffer
-        } else {
+        } else if (window.electronAPI?.tts?.readChunk) {
+          const diskBuf = await window.electronAPI.tts.readChunk({
+            filePath: options?.filePath,
+            fileFingerprint: options?.fileFingerprint,
+            fieldName: options?.fieldName,
+            displayName: targetDisplayName,
+            voiceId: targetVoiceId,
+            chunkIndex: i
+          })
+          if (diskBuf && diskBuf.byteLength > 44) {
+            nextBaseBuffer = diskBuf
+          }
+        }
+        if (!nextBaseBuffer) {
           nextBaseBuffer = await window.electronAPI.tts.synthesizeChunk(
             nextChunkText,
             targetVoiceId,
@@ -660,25 +686,19 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         const nextChunkUint8 = new Uint8Array(nextBaseBuffer)
         cachedChunksMap.set(i, nextChunkUint8)
 
-        // 追加 1.0x 母本磁盘缓存
-        if (base1xCachePath && window.electronAPI?.tts?.appendWavChunk) {
-          window.electronAPI.tts.appendWavChunk({
-            wavPath: base1xCachePath,
-            chunkData: nextChunkUint8,
+        // 异步分片独立落盘（路线 A：即合成即写盘，集齐后自动无损流式合并并派生目标倍速）
+        if (window.electronAPI?.tts?.saveChunk) {
+          window.electronAPI.tts.saveChunk({
+            filePath: options?.filePath,
+            fileFingerprint: options?.fileFingerprint,
+            fieldName: options?.fieldName,
+            displayName: targetDisplayName,
+            voiceId: targetVoiceId,
+            sid: targetSid,
+            speed: targetSpeed,
             chunkIndex: i,
             totalChunks: currentCleanedChunks.length,
-            voiceId: targetVoiceId,
-            displayName: targetDisplayName,
-            sid: targetSid,
-            speed: 1.0,
-            fileFingerprint: options?.fileFingerprint,
-            fieldName: options?.fieldName
-          }).then(async (success) => {
-            if (success && i === currentCleanedChunks.length - 1 && Math.abs(targetSpeed - 1.0) >= 0.01 && targetCachePath && base1xCachePath) {
-              if (window.electronAPI?.tts?.deriveScaledWav) {
-                await window.electronAPI.tts.deriveScaledWav(base1xCachePath, targetCachePath, targetSpeed)
-              }
-            }
+            chunkData: nextChunkUint8
           }).catch(() => {})
         }
 
@@ -1102,15 +1122,39 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         }
 
         const chunkText = chunks[i]
-        // 核心声学架构：底层始终请求 1.0x 标准黄金基准音频合成，
-        // 沉淀最通用的 1.0x 基准母本；若用户选择其它语速，通过纯 Rust WSOLA 极速算法保音调派生播放
-        const baseBuffer = await window.electronAPI.tts.synthesizeChunk(
-          chunkText,
-          chosenVoiceId,
-          1.0,
-          thisSessionId,
-          chosenSid
-        )
+        let baseBuffer: ArrayBuffer | null = null
+
+        // 优先检查内存缓存与磁盘分片缓存
+        const cachedMem = cachedChunksMap.get(i)
+        if (cachedMem) {
+          baseBuffer = cachedMem.buffer.slice(
+            cachedMem.byteOffset,
+            cachedMem.byteOffset + cachedMem.byteLength
+          ) as ArrayBuffer
+        } else if (window.electronAPI?.tts?.readChunk) {
+          const diskBuf = await window.electronAPI.tts.readChunk({
+            filePath: options?.filePath,
+            fileFingerprint: options?.fileFingerprint,
+            fieldName: options?.fieldName,
+            displayName: chosenDisplayName,
+            voiceId: chosenVoiceId,
+            chunkIndex: i
+          })
+          if (diskBuf && diskBuf.byteLength > 44) {
+            baseBuffer = diskBuf
+          }
+        }
+
+        if (!baseBuffer) {
+          // 核心声学架构：底层请求 1.0x 基准母本合成，并通过纯 Rust WSOLA 极速算法派生任意目标倍速
+          baseBuffer = await window.electronAPI.tts.synthesizeChunk(
+            chunkText,
+            chosenVoiceId,
+            1.0,
+            thisSessionId,
+            chosenSid
+          )
+        }
 
         if (activeSessionId !== thisSessionId) {
           return
@@ -1134,28 +1178,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         const chunkUint8 = new Uint8Array(baseBuffer)
         cachedChunksMap.set(i, chunkUint8)
 
-        // 异步流式追加写入 1.0x 基准母本 WAV 缓存并原子刷新 meta Chunk
-        if (base1xCachePath && window.electronAPI?.tts?.appendWavChunk) {
-          window.electronAPI.tts.appendWavChunk({
-            wavPath: base1xCachePath,
-            chunkData: chunkUint8,
+        // 异步独立分片落盘（即合成即写盘，零内存驻留压力）
+        if (window.electronAPI?.tts?.saveChunk) {
+          window.electronAPI.tts.saveChunk({
+            filePath: options?.filePath,
+            fileFingerprint: options?.fileFingerprint,
+            fieldName: options?.fieldName,
+            displayName: chosenDisplayName,
+            voiceId: chosenVoiceId,
+            sid: chosenSid,
+            speed: chosenSpeed,
             chunkIndex: i,
             totalChunks: chunks.length,
-            voiceId: chosenVoiceId,
-            displayName: chosenDisplayName,
-            sid: chosenSid,
-            speed: 1.0,
-            fileFingerprint: options?.fileFingerprint,
-            fieldName: options?.fieldName
-          }).then(async (success) => {
-            // 当 1.0x 母本全部句子写入完成且当前语速非 1.0x 时，自动通过纯 Rust WSOLA 毫秒级派生目标倍速文件
-            if (success && i === chunks.length - 1 && Math.abs(chosenSpeed - 1.0) >= 0.01 && targetCachePath && base1xCachePath) {
-              if (window.electronAPI?.tts?.deriveScaledWav) {
-                await window.electronAPI.tts.deriveScaledWav(base1xCachePath, targetCachePath, chosenSpeed)
-              }
-            }
+            chunkData: chunkUint8
           }).catch(err => {
-            console.warn('[TTS] 追加写入 1.0x 基准音频失败:', err)
+            console.warn('[TTS] 保存独立分片异常:', err)
           })
         }
 
@@ -1329,16 +1366,22 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             const audioBuffer = await ctx.decodeAudioData(fullWavBuffer.slice(0))
             const totalDuration = audioBuffer.duration
 
-            // 计算目标句子的时间偏移量
-            let totalChars = 0
-            for (const c of currentCleanedChunks) {
-              totalChars += Math.max(1, c.length)
+            // 优先读取精准内嵌时间戳索引表 (Cue Table)，实现 0.0000s 误差级绝对精准定位！
+            let offset = 0
+            if (metadata.chunks && metadata.chunks[clampedIndex] && typeof metadata.chunks[clampedIndex].startTime === 'number') {
+              offset = metadata.chunks[clampedIndex].startTime
+            } else {
+              // 容错降级：按字符累积比例估算时间偏移量
+              let totalChars = 0
+              for (const c of currentCleanedChunks) {
+                totalChars += Math.max(1, c.length)
+              }
+              let accumulatedChars = 0
+              for (let i = 0; i < clampedIndex; i++) {
+                accumulatedChars += Math.max(1, currentCleanedChunks[i].length)
+              }
+              offset = (accumulatedChars / totalChars) * totalDuration
             }
-            let accumulatedChars = 0
-            for (let i = 0; i < clampedIndex; i++) {
-              accumulatedChars += Math.max(1, currentCleanedChunks[i].length)
-            }
-            const offset = (accumulatedChars / totalChars) * totalDuration
             const clampedOffset = Math.max(0, Math.min(Math.max(0, totalDuration - 0.05), offset))
 
             clearScheduledSources()
@@ -1378,7 +1421,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
     clearScheduledSources()
 
-    // 检查目标分句是否已有缓存
+    // 检查目标分句是否已有缓存 (内存或磁盘分片)
     let baseBuffer: ArrayBuffer | null = null
     const cached = cachedChunksMap.get(clampedIndex)
     if (cached) {
@@ -1386,7 +1429,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         cached.byteOffset,
         cached.byteOffset + cached.byteLength
       ) as ArrayBuffer
-    } else {
+    } else if (window.electronAPI?.tts?.readChunk) {
+      const diskChunk = await window.electronAPI.tts.readChunk({
+        filePath: options?.filePath,
+        fileFingerprint: options?.fileFingerprint,
+        fieldName: options?.fieldName,
+        displayName,
+        voiceId,
+        chunkIndex: clampedIndex
+      })
+      if (diskChunk && diskChunk.byteLength > 44) {
+        baseBuffer = diskChunk
+      }
+    }
+
+    if (!baseBuffer) {
       // 提示用户正在优先合成该片段
       toast.info(t('该片段正在合成中，请稍候...'), 3000, 'tts-seek-loading')
       set({ currentSentenceIndex: clampedIndex })
@@ -1398,6 +1455,23 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         thisSeekSession,
         sid
       )
+
+      if (baseBuffer && baseBuffer.byteLength > 0 && window.electronAPI?.tts?.saveChunk) {
+        window.electronAPI.tts.saveChunk({
+          filePath: options?.filePath,
+          fileFingerprint: options?.fileFingerprint,
+          fieldName: options?.fieldName,
+          displayName,
+          voiceId,
+          sid,
+          speed,
+          chunkIndex: clampedIndex,
+          totalChunks: currentCleanedChunks.length,
+          chunkData: new Uint8Array(baseBuffer)
+        }).catch(err => {
+          console.warn('[TTS Seek] 保存分片异常:', err)
+        })
+      }
     }
 
     if (activeSessionId !== thisSeekSession) return
@@ -1454,7 +1528,21 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             cachedNext.byteOffset,
             cachedNext.byteOffset + cachedNext.byteLength
           ) as ArrayBuffer
-        } else {
+        } else if (window.electronAPI?.tts?.readChunk) {
+          const diskBuf = await window.electronAPI.tts.readChunk({
+            filePath: options?.filePath,
+            fileFingerprint: options?.fileFingerprint,
+            fieldName: options?.fieldName,
+            displayName,
+            voiceId,
+            chunkIndex: i
+          })
+          if (diskBuf && diskBuf.byteLength > 44) {
+            nextBaseBuffer = diskBuf
+          }
+        }
+
+        if (!nextBaseBuffer) {
           nextBaseBuffer = await window.electronAPI.tts.synthesizeChunk(
             currentCleanedChunks[i],
             voiceId,
@@ -1462,6 +1550,22 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             thisSeekSession,
             sid
           )
+          if (nextBaseBuffer && nextBaseBuffer.byteLength > 0 && window.electronAPI?.tts?.saveChunk) {
+            window.electronAPI.tts.saveChunk({
+              filePath: options?.filePath,
+              fileFingerprint: options?.fileFingerprint,
+              fieldName: options?.fieldName,
+              displayName,
+              voiceId,
+              sid,
+              speed,
+              chunkIndex: i,
+              totalChunks: currentCleanedChunks.length,
+              chunkData: new Uint8Array(nextBaseBuffer)
+            }).catch(err => {
+              console.warn('[TTS Seek] 异步保存分片异常:', err)
+            })
+          }
         }
 
         if (activeSessionId !== thisSeekSession) return

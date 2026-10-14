@@ -846,6 +846,27 @@ declare global {
             language?: string
           }
         ) => Promise<string[]>
+        saveChunk: (params: {
+          filePath?: string
+          fileFingerprint?: string
+          fieldName?: string
+          displayName?: string
+          voiceId: string | number
+          sid?: number
+          speed?: number
+          chunkIndex: number
+          totalChunks: number
+          chunkData: Uint8Array | Buffer
+          duration?: number
+        }) => Promise<boolean>
+        readChunk: (params: {
+          filePath?: string
+          fileFingerprint?: string
+          fieldName?: string
+          displayName?: string
+          voiceId: string | number
+          chunkIndex: number
+        }) => Promise<ArrayBuffer | null>
       }
     }
 

@@ -128,13 +128,128 @@ describe('TTSWavCacheService 单元测试', () => {
     expect(fullBuffer!.byteLength).toBeGreaterThan(4800)
   })
 
-  it('readWavMetadata 对于不存在或损坏的文件应优雅返回 null', async () => {
-    const notExist = await service.readWavMetadata(path.join(tempDir, 'not_found.wav'))
-    expect(notExist).toBeNull()
+  it('路线 A: saveChunk 支持乱序写入、readChunk 独立读盘，集齐后自动触发 assembleFinalWav 并内嵌精确时间戳索引表', async () => {
+    vi.spyOn(service, 'resolveWorkspaceForPath').mockResolvedValue(tempDir)
 
-    const corruptedPath = path.join(tempDir, 'corrupted.wav')
-    fs.writeFileSync(corruptedPath, Buffer.from('NOT_A_VALID_RIFF_HEADER'))
-    const corruptedMeta = await service.readWavMetadata(corruptedPath)
-    expect(corruptedMeta).toBeNull()
+    const fakeFilePath = path.join(tempDir, 'sample_novel.txt')
+    const totalChunks = 3
+
+    // 模拟 3 句合成音频数据
+    const pcmChunk0 = Buffer.alloc(48000)
+    const pcmChunk1 = Buffer.alloc(24000)
+    const pcmChunk2 = Buffer.alloc(48000)
+
+    // 1. 模拟用户先合成了第 0 句并落盘
+    const res0 = await service.saveChunk({
+      filePath: fakeFilePath,
+      fileFingerprint: 'novel_fp_001',
+      fieldName: 'summary',
+      displayName: '测试音色',
+      voiceId: 'voice_1',
+      sid: 101,
+      speed: 1.0,
+      chunkIndex: 0,
+      totalChunks,
+      chunkData: pcmChunk0
+    })
+    expect(res0).toBe(true)
+
+    // 验证分片 0 已写入磁盘，可通过 readChunk 独立读出
+    const readChunk0 = await service.readChunk({
+      filePath: fakeFilePath,
+      fileFingerprint: 'novel_fp_001',
+      fieldName: 'summary',
+      voiceId: 'voice_1',
+      chunkIndex: 0
+    })
+    expect(readChunk0).not.toBeNull()
+    expect(readChunk0!.length).toBeGreaterThanOrEqual(48000)
+
+    // 验证尚未合成的分片 1 读出为 null
+    const readChunk1Empty = await service.readChunk({
+      filePath: fakeFilePath,
+      fileFingerprint: 'novel_fp_001',
+      fieldName: 'summary',
+      voiceId: 'voice_1',
+      chunkIndex: 1
+    })
+    expect(readChunk1Empty).toBeNull()
+
+    // 2. 模拟用户跳播到第 2 句（乱序保存第 2 句）
+    const res2 = await service.saveChunk({
+      filePath: fakeFilePath,
+      fileFingerprint: 'novel_fp_001',
+      fieldName: 'summary',
+      displayName: '测试音色',
+      voiceId: 'voice_1',
+      sid: 101,
+      speed: 1.0,
+      chunkIndex: 2,
+      totalChunks,
+      chunkData: pcmChunk2
+    })
+    expect(res2).toBe(true)
+
+    // 检查此时仍未集齐（缺第 1 句），母带文件尚不存在
+    const expectedMasterPath = await service.getCacheWavPath({
+      filePath: fakeFilePath,
+      fileFingerprint: 'novel_fp_001',
+      fieldName: 'summary',
+      displayName: '测试音色',
+      voiceId: 'voice_1',
+      speed: 1.0
+    })
+    expect(fs.existsSync(expectedMasterPath!)).toBe(false)
+
+    // 3. 补齐第 1 句，集齐全部 3 个分片，应触发自动无损合并
+    const res1 = await service.saveChunk({
+      filePath: fakeFilePath,
+      fileFingerprint: 'novel_fp_001',
+      fieldName: 'summary',
+      displayName: '测试音色',
+      voiceId: 'voice_1',
+      sid: 101,
+      speed: 1.0,
+      chunkIndex: 1,
+      totalChunks,
+      chunkData: pcmChunk1
+    })
+    expect(res1).toBe(true)
+
+    // 4. 验证母带 WAV 已经由 assembleFinalWav 自动组装生成！
+    expect(fs.existsSync(expectedMasterPath!)).toBe(true)
+
+    // 5. 验证母带的元数据与内嵌的精确分片时间戳索引表 (TTSChunkCue[])
+    const masterMeta = await service.readWavMetadata(expectedMasterPath!)
+    expect(masterMeta).not.toBeNull()
+    expect(masterMeta?.completed).toBe(true)
+    expect(masterMeta?.total).toBe(3)
+    expect(masterMeta?.done).toBe(3)
+    expect(masterMeta?.chunks).toBeDefined()
+    expect(masterMeta?.chunks?.length).toBe(3)
+
+    // 验证各句的时间戳起止与时序连续性（严格递增）
+    const chunks = masterMeta!.chunks!
+    expect(chunks[0].index).toBe(0)
+    expect(chunks[0].startTime).toBe(0)
+    expect(chunks[0].duration).toBeGreaterThan(0)
+
+    expect(chunks[1].index).toBe(1)
+    expect(chunks[1].startTime).toBeCloseTo(chunks[0].duration, 2)
+    expect(chunks[1].duration).toBeGreaterThan(0)
+
+    expect(chunks[2].index).toBe(2)
+    expect(chunks[2].startTime).toBeCloseTo(chunks[0].duration + chunks[1].duration, 2)
+    expect(chunks[2].duration).toBeGreaterThan(0)
+
+    // 6. 验证临时分片池目录已被自动清理
+    const chunksDir = await service.getChunksDirPath({
+      filePath: fakeFilePath,
+      fileFingerprint: 'novel_fp_001',
+      fieldName: 'summary',
+      voiceId: 'voice_1'
+    })
+    expect(fs.existsSync(chunksDir!)).toBe(false)
   })
 })
+

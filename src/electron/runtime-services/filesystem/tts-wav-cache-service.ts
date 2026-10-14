@@ -27,6 +27,24 @@ const execFileAsync = promisify(execFile)
 export const VIRTUAL_DIRECTORY_FOLDER = '.VirtualDirectory'
 export const TTS_CACHE_FOLDER = '.tts'
 
+/** 单个分句时间戳条目（供合并后整音频 0 误差秒切任意分句） */
+export interface TTSChunkCue {
+  index: number
+  startTime: number
+  duration: number
+}
+
+/** 分片池清单结构 */
+export interface TTSChunkManifest {
+  total: number
+  voiceId: string
+  displayName?: string
+  fileFingerprint?: string
+  fieldName?: string
+  completed: number[]
+  cues: Record<string, { duration: number }>
+}
+
 /** WAV 内嵌 meta 元数据结构 */
 export interface TTSWavMetadata {
   /** 是否全部句子合成完毕 */
@@ -46,6 +64,31 @@ export interface TTSWavMetadata {
   fingerprint?: string
   /** 字段标识 */
   fieldName?: string
+  /** 全文分句时间戳索引表（供合并后整音频 0 误差秒切任意分句） */
+  chunks?: TTSChunkCue[]
+}
+
+export interface SaveChunkParams {
+  filePath?: string
+  fileFingerprint?: string
+  fieldName?: string
+  displayName?: string
+  voiceId: string | number
+  sid?: number
+  speed?: number
+  chunkIndex: number
+  totalChunks: number
+  chunkData: Uint8Array | Buffer
+  duration?: number
+}
+
+export interface ReadChunkParams {
+  filePath?: string
+  fileFingerprint?: string
+  fieldName?: string
+  displayName?: string
+  voiceId: string | number
+  chunkIndex: number
 }
 
 export interface AppendWavChunkParams {
@@ -91,14 +134,10 @@ export class TTSWavCacheService {
       } catch {
         await fsPromises.mkdir(ttsDirPath, { recursive: true })
 
-        // 设置为隐藏目录（仅Windows）
+        // 设置为隐藏目录（仅Windows，保持内部缓存目录静默隐藏）
         if (process.platform === 'win32') {
           try {
             await execFileAsync('attrib', ['+h', ttsDirPath])
-            logger.info(
-              LogCategory.FILE_PROCESSOR,
-              `[TTS缓存服务] 已将 TTS 缓存目录设置为隐藏: ${ttsDirPath}`
-            )
           } catch (error) {
             logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 设置隐藏属性失败:`, error)
           }
@@ -358,7 +397,14 @@ export class TTSWavCacheService {
           displayName: baseMeta?.displayName,
           speed: targetSpeed,
           fingerprint: baseMeta?.fingerprint,
-          fieldName: baseMeta?.fieldName
+          fieldName: baseMeta?.fieldName,
+          chunks: baseMeta?.chunks
+            ? baseMeta.chunks.map(c => ({
+                index: c.index,
+                startTime: c.startTime / targetSpeed,
+                duration: c.duration / targetSpeed
+              }))
+            : undefined
         }
         finalScaledBuffer = this.injectOrUpdateMetaChunk(scaledBuffer, derivedMeta)
       } catch (metaErr) {
@@ -645,6 +691,339 @@ export class TTSWavCacheService {
     } catch (err) {
       logger.error(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 追加写入 WAV 失败:`, err)
       return false
+    }
+  }
+
+  /**
+   * 获取特定音频的分片缓存池目录路径
+   */
+  public async getChunksDirPath(params: {
+    filePath?: string
+    fileFingerprint?: string
+    fieldName?: string
+    displayName?: string
+    voiceId: string | number
+  }): Promise<string | null> {
+    const workspacePath = await this.resolveWorkspaceForPath(params.filePath)
+    if (!workspacePath) return null
+    await this.ensureTtsDirectory(workspacePath)
+    const ttsDir = this.getTtsDirPath(workspacePath)
+
+    const isPreview =
+      params.fieldName === 'audition' ||
+      params.fieldName === 'preview' ||
+      params.fileFingerprint === 'preview' ||
+      (params.fileFingerprint && params.fileFingerprint.startsWith('preview_'))
+
+    const fingerprint = isPreview
+      ? 'preview'
+      : this.resolveFileFingerprint(params.filePath, params.fileFingerprint, undefined, params.fieldName)
+
+    const safeVoice = String(params.voiceId || 'voice').replace(/[^a-zA-Z0-9_-]/g, '_')
+    // 优先匹配可能已存在的带 safeDisplay 的历史目录
+    if (params.displayName) {
+      const safeDisplay = String(params.displayName).replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_')
+      const legacyKey = `${fingerprint}_${safeDisplay}_${safeVoice}`
+      const legacyDir = path.join(ttsDir, '.chunks', legacyKey)
+      if (fs.existsSync(legacyDir)) {
+        return legacyDir
+      }
+    }
+    // 默认使用唯一确定的稳定分片池 key，避免 displayName 缺省或漂移导致分片池割裂
+    const baseKey = `${fingerprint}_${safeVoice}`
+    return path.join(ttsDir, '.chunks', baseKey)
+  }
+
+  /**
+   * 将分句 PCM 数据包装为标准 44 字节 WAV 容器
+   */
+  public wrapPcmAsWav(
+    pcmData: Buffer,
+    numChannels = 2,
+    sampleRate = 48000,
+    bitsPerSample = 16
+  ): Buffer {
+    const byteRate = sampleRate * numChannels * (bitsPerSample / 8)
+    const blockAlign = numChannels * (bitsPerSample / 8)
+    const dataSize = pcmData.length
+    const riffSize = 36 + dataSize
+
+    const header = Buffer.alloc(44)
+    header.write('RIFF', 0)
+    header.writeUInt32LE(riffSize, 4)
+    header.write('WAVE', 8)
+    header.write('fmt ', 12)
+    header.writeUInt32LE(16, 16)
+    header.writeUInt16LE(1, 20)
+    header.writeUInt16LE(numChannels, 22)
+    header.writeUInt32LE(sampleRate, 24)
+    header.writeUInt32LE(byteRate, 28)
+    header.writeUInt16LE(blockAlign, 32)
+    header.writeUInt16LE(bitsPerSample, 34)
+    header.write('data', 36)
+    header.writeUInt32LE(dataSize, 40)
+
+    return Buffer.concat([header, pcmData])
+  }
+
+  /**
+   * 计算 WAV Buffer 物理发音时长（秒）
+   */
+  public calculateWavDuration(wavBuffer: Buffer): number {
+    if (wavBuffer.length < 44) return 0
+    const numChannels = wavBuffer.readUInt16LE(22)
+    const sampleRate = wavBuffer.readUInt32LE(24)
+    const bitsPerSample = wavBuffer.readUInt16LE(34)
+    const dataSize = wavBuffer.length - 44
+    const bytesPerSec = sampleRate * numChannels * (bitsPerSample / 8)
+    return bytesPerSec > 0 ? dataSize / bytesPerSec : 0
+  }
+
+  /**
+   * 保存独立分片文件并原子更新清单（即合成即落盘，零内存驻留）
+   */
+  public async saveChunk(params: SaveChunkParams): Promise<boolean> {
+    try {
+      const chunksDir = await this.getChunksDirPath(params)
+      if (!chunksDir) return false
+      if (!fs.existsSync(chunksDir)) {
+        await fsPromises.mkdir(chunksDir, { recursive: true })
+      }
+
+      const chunkPath = path.join(chunksDir, `chunk_${params.chunkIndex}.wav`)
+      const inputBuffer = Buffer.isBuffer(params.chunkData)
+        ? params.chunkData
+        : Buffer.from(params.chunkData)
+
+      let wavBuffer = inputBuffer
+      if (inputBuffer.length > 44 && inputBuffer.toString('ascii', 0, 4) === 'RIFF') {
+        wavBuffer = inputBuffer
+      } else {
+        wavBuffer = this.wrapPcmAsWav(inputBuffer, 2, 48000, 16)
+      }
+
+      await fsPromises.writeFile(chunkPath, wavBuffer)
+
+      let duration = params.duration
+      if (!duration || duration <= 0) {
+        duration = this.calculateWavDuration(wavBuffer)
+      }
+
+      const manifestPath = path.join(chunksDir, 'manifest.json')
+      let manifest: TTSChunkManifest = {
+        total: params.totalChunks,
+        voiceId: String(params.voiceId),
+        displayName: params.displayName,
+        fileFingerprint: params.fileFingerprint,
+        fieldName: params.fieldName,
+        completed: [],
+        cues: {}
+      }
+
+      if (fs.existsSync(manifestPath)) {
+        try {
+          const raw = await fsPromises.readFile(manifestPath, 'utf-8')
+          manifest = JSON.parse(raw)
+        } catch {}
+      }
+
+      manifest.total = params.totalChunks
+      if (!manifest.completed.includes(params.chunkIndex)) {
+        manifest.completed.push(params.chunkIndex)
+        manifest.completed.sort((a, b) => a - b)
+      }
+      manifest.cues[String(params.chunkIndex)] = { duration }
+
+      await fsPromises.writeFile(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8')
+
+      // 若全部句子均已集齐无空洞，触发终态流式合并
+      if (manifest.completed.length >= params.totalChunks) {
+        const isAllPresent = Array.from({ length: params.totalChunks }, (_, i) => i).every(
+          idx => manifest.completed.includes(idx)
+        )
+        if (isAllPresent) {
+          logger.info(
+            LogCategory.FILE_PROCESSOR,
+            `[TTS缓存服务] 所有 ${params.totalChunks} 个分片已集齐，开始执行终态流式合并...`
+          )
+          await this.assembleFinalWav(chunksDir, manifest, params).catch(err => {
+            logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 自动合并完整 WAV 异常:`, err)
+          })
+        }
+      }
+
+      return true
+    } catch (err) {
+      logger.error(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 保存分片异常:`, err)
+      return false
+    }
+  }
+
+  /**
+   * 从分片池中读取指定分片音频
+   */
+  public async readChunk(params: ReadChunkParams): Promise<Buffer | null> {
+    try {
+      const chunksDir = await this.getChunksDirPath(params)
+      if (!chunksDir) return null
+      const chunkPath = path.join(chunksDir, `chunk_${params.chunkIndex}.wav`)
+      if (!fs.existsSync(chunkPath)) return null
+      return await fsPromises.readFile(chunkPath)
+    } catch (err) {
+      return null
+    }
+  }
+
+  /**
+   * 将分片池中的所有分片按 0..N-1 严格升序组装为自包含标准母带 WAV
+   * 并在 meta chunk 中注入精确的分片起止时间戳表 (Cue Table)
+   */
+  public async assembleFinalWav(
+    chunksDir: string,
+    manifest: TTSChunkManifest,
+    params: SaveChunkParams
+  ): Promise<string | null> {
+    try {
+      const total = manifest.total
+      const pcmList: Buffer[] = []
+      const cueList: TTSChunkCue[] = []
+      let currentTime = 0
+      let numChannels = 2
+      let sampleRate = 48000
+      let byteRate = 192000
+      let blockAlign = 4
+      let bitsPerSample = 16
+
+      for (let i = 0; i < total; i++) {
+        const chunkPath = path.join(chunksDir, `chunk_${i}.wav`)
+        if (!fs.existsSync(chunkPath)) {
+          logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 合并中断：缺失分片 ${chunkPath}`)
+          return null
+        }
+
+        const chunkBuffer = await fsPromises.readFile(chunkPath)
+        if (chunkBuffer.length < 44) continue
+
+        numChannels = chunkBuffer.readUInt16LE(22)
+        sampleRate = chunkBuffer.readUInt32LE(24)
+        byteRate = chunkBuffer.readUInt32LE(28)
+        blockAlign = chunkBuffer.readUInt16LE(32)
+        bitsPerSample = chunkBuffer.readUInt16LE(34)
+
+        const rawPcm = chunkBuffer.subarray(44)
+        const bytesPerSec = sampleRate * numChannels * (bitsPerSample / 8)
+        const duration = bytesPerSec > 0 ? rawPcm.length / bytesPerSec : 0
+
+        cueList.push({
+          index: i,
+          startTime: currentTime,
+          duration
+        })
+        currentTime += duration
+        pcmList.push(rawPcm)
+      }
+
+      const mergedPcm = Buffer.concat(pcmList)
+      const totalPcmBytes = mergedPcm.length
+      const pcmPadding = totalPcmBytes % 2 !== 0 ? 1 : 0
+
+      const metaObj: TTSWavMetadata = {
+        completed: true,
+        total,
+        done: total,
+        sid: params.sid,
+        voiceId: String(params.voiceId),
+        displayName: params.displayName,
+        speed: 1.0,
+        fingerprint: params.fileFingerprint,
+        fieldName: params.fieldName,
+        chunks: cueList
+      }
+
+      const metaJsonBuffer = Buffer.from(JSON.stringify(metaObj), 'utf-8')
+      const metaChunkSize = metaJsonBuffer.length
+      const metaPadding = metaChunkSize % 2 !== 0 ? 1 : 0
+
+      const riffTotalSize = 4 + 24 + 8 + totalPcmBytes + pcmPadding + 8 + metaChunkSize + metaPadding
+
+      const header = Buffer.alloc(44)
+      header.write('RIFF', 0)
+      header.writeUInt32LE(riffTotalSize, 4)
+      header.write('WAVE', 8)
+      header.write('fmt ', 12)
+      header.writeUInt32LE(16, 16)
+      header.writeUInt16LE(1, 20)
+      header.writeUInt16LE(numChannels, 22)
+      header.writeUInt32LE(sampleRate, 24)
+      header.writeUInt32LE(byteRate, 28)
+      header.writeUInt16LE(blockAlign, 32)
+      header.writeUInt16LE(bitsPerSample, 34)
+      header.write('data', 36)
+      header.writeUInt32LE(totalPcmBytes, 40)
+
+      const metaHeader = Buffer.alloc(8)
+      metaHeader.write('meta', 0)
+      metaHeader.writeUInt32LE(metaChunkSize, 4)
+
+      const finalBuffer = Buffer.concat([
+        header,
+        mergedPcm,
+        ...(pcmPadding ? [Buffer.alloc(1, 0)] : []),
+        metaHeader,
+        metaJsonBuffer,
+        ...(metaPadding ? [Buffer.alloc(1, 0)] : [])
+      ])
+
+      const workspacePath = await this.resolveWorkspaceForPath(params.filePath)
+      if (!workspacePath) return null
+      const ttsDir = this.getTtsDirPath(workspacePath)
+      const isPreview =
+        params.fieldName === 'audition' ||
+        params.fieldName === 'preview' ||
+        params.fileFingerprint === 'preview' ||
+        (params.fileFingerprint && params.fileFingerprint.startsWith('preview_'))
+
+      const fingerprint = isPreview
+        ? 'preview'
+        : this.resolveFileFingerprint(params.filePath, params.fileFingerprint, undefined, params.fieldName)
+
+      const standard1xName = this.generateCacheFileName(
+        fingerprint,
+        params.displayName || String(params.voiceId),
+        1.0,
+        params.voiceId
+      )
+      const standard1xPath = path.join(ttsDir, standard1xName)
+
+      await fsPromises.writeFile(standard1xPath, finalBuffer)
+      logger.info(
+        LogCategory.FILE_PROCESSOR,
+        `[TTS缓存服务] 成功组装完整 1.0x 母带 WAV 并嵌入 ${cueList.length} 条时间戳索引: ${standard1xName}`
+      )
+
+      // 若当前语速非 1.0x，同步派生目标倍速母带并等比缩放时间戳表
+      if (params.speed && Math.abs(params.speed - 1.0) >= 0.01) {
+        const targetSpeedName = this.generateCacheFileName(
+          fingerprint,
+          params.displayName || String(params.voiceId),
+          params.speed,
+          params.voiceId
+        )
+        const targetSpeedPath = path.join(ttsDir, targetSpeedName)
+        await this.deriveScaledWav(standard1xPath, targetSpeedPath, params.speed)
+      }
+
+      // 组装完成后安全清理临时分片池
+      try {
+        await fsPromises.rm(chunksDir, { recursive: true, force: true })
+      } catch (rmErr) {
+        logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 清理分片临时目录失败:`, rmErr)
+      }
+
+      return standard1xPath
+    } catch (err) {
+      logger.error(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 终态组装 WAV 失败:`, err)
+      return null
     }
   }
 

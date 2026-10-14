@@ -22,10 +22,15 @@ import type { EngineBridgeSnapshot } from './runtime-services/engine-bridge'
  */
 // 从 additionalArguments 读取打包状态（主进程传递）
 const isPackaged = process.argv.includes('--is-packaged=true')
+const regionArg = process.argv.find(arg => arg.startsWith('--app-region='))
+const appRegion: 'cn' | 'intl' = regionArg ? (regionArg.split('=')[1] as any) : 'intl'
 
 const electronAPI = {
   // 应用是否已打包
   isPackaged,
+
+  // 获取当前区域 ('cn' | 'intl')
+  getAppRegion: (): 'cn' | 'intl' => appRegion,
 
   // 系统日志
   onLogForwarded: (
@@ -1287,7 +1292,30 @@ const electronAPI = {
         maxChunkChars?: number
         language?: string
       }
-    ): Promise<string[]> => ipcRenderer.invoke('tts:split-chunks', text, options)
+    ): Promise<string[]> => ipcRenderer.invoke('tts:split-chunks', text, options),
+    saveChunk: (params: {
+      filePath?: string
+      fileFingerprint?: string
+      fieldName?: string
+      displayName?: string
+      voiceId: string | number
+      sid?: number
+      speed?: number
+      chunkIndex: number
+      totalChunks: number
+      chunkData: Uint8Array | Buffer
+      duration?: number
+    }): Promise<boolean> =>
+      ipcRenderer.invoke('tts:save-chunk', params),
+    readChunk: (params: {
+      filePath?: string
+      fileFingerprint?: string
+      fieldName?: string
+      displayName?: string
+      voiceId: string | number
+      chunkIndex: number
+    }): Promise<ArrayBuffer | null> =>
+      ipcRenderer.invoke('tts:read-chunk', params)
   }
 }
 
@@ -1295,6 +1323,7 @@ const electronAPI = {
 export type ElectronAPI = typeof electronAPI
 
 // 暴露API到渲染进程
+contextBridge.exposeInMainWorld('__APP_REGION__', appRegion)
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)
 
 // 暴露 AI 功能到渲染进程

@@ -105,6 +105,72 @@ const ANYDOC_SUPPORTED_EXTS = new Set([
   '.pdf'
 ])
 
+/**
+ * 从 Omni 感知结果中归一化提取 Magika 文件分类（规避跨版本字段漂移）
+ *
+ * 背景（2026-10-14 定性）：Omni `/api/perceive` 的分类结果在不同版本挂在三个不同位置：
+ *   1. `metadata.category`（早期约定，FileProcessor 历史唯一读取点）；
+ *   2. `metadata.magika`（Rust omni-extract / omni-server 现行实际输出键名）；
+ *   3. `perception.category` / `perception.magika`（感知根层直接平铺的形态）。
+ * 历史实现只读 1，命中率极低，导致：
+ *   - `[FileProcessor] Magika 分类识别完成: xxx (undefined)` —— magikaCategory 为 null
+ *     却仍打印（对象存在但 label/group 全空，模板字面量求值为 undefined）；
+ *   - `files.file_group` 退化为 `{mime_type, extensions}` 兜底，丢失 `group/label`，
+ *     进而使标签入库层的媒体领域判定（image/video/audio/ebook）与属性面板 Magika 字段静默失效。
+ *
+ * 归一化规则：按 1 → 2 → 3 顺序取第一个可用值；字符串按 JSON 解析；
+ * 命中对象须至少含 label / group / mime_type 之一，否则视为无效并继续回退。
+ *
+ * @param anydocResult anydocService.perceive 的返回结果
+ * @returns 归一化后的 Magika 分类对象；无可用分类时返回 null
+ */
+export function resolveOmniMagikaCategory(anydocResult: AnydocResult | null | undefined): MagikaCategory | null {
+  const metadata = anydocResult?.metadata as any
+  const perception = anydocResult?.perception as any
+
+  const rawCandidates: unknown[] = [
+    metadata?.category,
+    metadata?.magika,
+    perception?.category,
+    perception?.magika
+  ]
+
+  for (const raw of rawCandidates) {
+    if (!raw) continue
+
+    let parsed: unknown = raw
+    if (typeof raw === 'string') {
+      try {
+        parsed = JSON.parse(raw)
+      } catch {
+        continue
+      }
+    }
+
+    if (!parsed || typeof parsed !== 'object') continue
+    const cat = parsed as Partial<MagikaCategory> & Record<string, any>
+    const hasSignal = Boolean(cat.label || cat.group || cat.mime_type)
+    if (!hasSignal) continue
+
+    const rawExtensions = cat.extensions ?? cat.extension
+    return {
+      description: typeof cat.description === 'string' ? cat.description : '',
+      extensions: Array.isArray(rawExtensions)
+        ? rawExtensions.filter((e: unknown) => typeof e === 'string')
+        : typeof rawExtensions === 'string' && rawExtensions
+          ? [rawExtensions]
+          : [],
+      group: typeof cat.group === 'string' ? cat.group : '',
+      is_text: cat.is_text === true,
+      label: typeof cat.label === 'string' ? cat.label : '',
+      mime_type: typeof cat.mime_type === 'string' ? cat.mime_type : (cat.mimeType || ''),
+      score: typeof cat.score === 'number' ? cat.score : 0
+    }
+  }
+
+  return null
+}
+
 export function getFileStageFromDB(db: any, workspaceId: number, filePath: string): number {
   try {
     const row = db
@@ -386,6 +452,8 @@ export class FileProcessor {
     const deps = this.getDependencies()
     // slice-3 双层仲裁：Tier 1（Omni/预置数据）产出的可读命名，作为 Tier 2 AI 推理失败的静默保底
     let tier1FallbackName: string | null = null
+    let filePath: string | null = null
+    let currentWorkspaceId: number | null | undefined = null
     try {
       // 入口中止检查：用户点击暂停时，队列服务的 pause() 会 abort 当前 signal。
       // 必须在真正开始分析前检查一次，否则已排队的下一个文件仍会照常执行，
@@ -393,7 +461,7 @@ export class FileProcessor {
       this.throwIfAborted(signal)
 
       // V2.2 架构：优先从 item.path 获取，如果存在则通过 item_id 查询数据库
-      let filePath = (item as any).file_path || item.path
+      filePath = (item as any).file_path || item.path
       const itemId = (item as any).item_id
       const itemType = (item as any).item_type || 'file'
 
@@ -423,7 +491,7 @@ export class FileProcessor {
       }
 
       // 1. 获取工作空间归属：优先使用 item 携带的 ID，否则进行路径搜索
-      let currentWorkspaceId = item.workspaceId
+      currentWorkspaceId = item.workspaceId
       if (!currentWorkspaceId) {
         logger.debug(
           LogCategory.ANALYSIS_QUEUE,
@@ -1513,19 +1581,32 @@ export class FileProcessor {
       directoryContext = dirContext
 
       // 提取完成，更新 Magika 分类 (优先使用 Omni 提取返回的 Magika)
-      const omniCat = anydocResult?.metadata?.category
+      // 归一化读取 metadata.category / metadata.magika / perception.category / perception.magika，
+      // 规避 Omni 跨版本字段漂移导致分类恒为 undefined（详见 resolveOmniMagikaCategory 注释）
+      const omniCat = resolveOmniMagikaCategory(anydocResult)
       if (omniCat) {
-        magikaCategory = typeof omniCat === 'string' ? JSON.parse(omniCat) : omniCat
+        magikaCategory = omniCat
       }
 
       // 净化低置信度 Magika 结果，防止误判扩展名（如将 txt 识别为 ps1）
       magikaCategory = this.sanitizeMagikaCategory(magikaCategory, filePath)
 
       if (magikaCategory) {
-        logger.info(
-          LogCategory.ANALYSIS_QUEUE,
-          `[FileProcessor] Magika 分类识别完成: ${item.name} (${typeof magikaCategory === 'string' ? magikaCategory : magikaCategory.label || magikaCategory.group})`
-        )
+        const magikaLabel =
+          typeof magikaCategory === 'string' ? magikaCategory : magikaCategory.label || magikaCategory.group
+        // 分类对象存在却既无 label 也无 group：属 Omni 契约缺失的明确信号，必须显式告警，
+        // 严禁再以 "(undefined)" 静默打印 —— 该形态曾长期掩盖分类字段漂移。
+        if (!magikaLabel) {
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            `[FileProcessor] Magika 分类对象缺少 label/group，媒体分组事实将不可用: ${item.name} (${JSON.stringify(magikaCategory).slice(0, 200)})`
+          )
+        } else {
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[FileProcessor] Magika 分类识别完成: ${item.name} (${magikaLabel})`
+          )
+        }
       }
 
       // 组装内容：完全统一使用 Omni 提取的内容 (已在 Rust 原生端内完成文本层与 PP-OCRv6 融合)
@@ -1690,8 +1771,8 @@ export class FileProcessor {
 
       // 提取 Omni 元数据与 Magika 分类
       const omniMetadata = anydocResult?.metadata || {}
-      if (!magikaCategory && omniMetadata.category) {
-        magikaCategory = typeof omniMetadata.category === 'string' ? JSON.parse(omniMetadata.category) : omniMetadata.category
+      if (!magikaCategory) {
+        magikaCategory = resolveOmniMagikaCategory(anydocResult)
       }
 
       contentResult = {
@@ -1941,6 +2022,42 @@ export class FileProcessor {
         await databaseService.updateAnalysisStage(fileFingerprint, cpuCompletionStage)
       } catch (dbError) {
         logger.error(LogCategory.ANALYSIS_QUEUE, '[分析队列] 实时写入阶段状态失败:', dbError)
+      }
+
+      // ========== Stage 2 事实/融合/视觉标签即时落库（full / quick_name 专属） ==========
+      // 背景（2026-10-14 定性）：CPU 阶段结束时 Omni 感知的 fact_tags / fused_tags / visual_tags
+      // 已全部就绪（预检管线日志可证），但 full / quick_name 模式的标签落库点历史上只存在于
+      // **AI 阶段之后**（executeProTagReconciliation 在 processLocalAnalysis 成功返回后调用）。
+      // 一旦 AI 阶段失败并被 Tier 1 静默降级（如质量评分返回「缺少choices字段」），
+      // 该落库点被整段跳过，导致：
+      //   - file_tag_relations 全表为空（标签在内存里算完即丢弃，日志有、面板无）；
+      //   - workspace_files.is_analyzed 保持 0，属性面板按 is_analyzed 门控连「无标签」提示都不渲染。
+      // simple 模式本来就在本函数后半段落库，故此处仅补 full / quick_name，避免重复写入。
+      // GPU 阶段的裁决器会以「补捞已存在关联 + 无损合并」方式叠加 AI 标签，不会覆盖本批事实。
+      if ((analysisMode === 'full' || analysisMode === 'quick_name') && preflightContext) {
+        try {
+          executeProTagReconciliation({
+            db,
+            fileFingerprint,
+            preflightContext,
+            dimResult: null,
+            authors: resolvedAuthor ? [resolvedAuthor] : undefined,
+            language,
+            fileGroup:
+              typeof magikaCategory === 'string'
+                ? magikaCategory
+                : magikaCategory?.group || magikaCategory?.label || undefined,
+            extension: path.extname(filePath).replace(/^\./, '').toLowerCase(),
+            resolveControlledCode: (lemma: string) =>
+              databaseService.findTagCodeByLemma(lemma)?.tagCode
+          })
+        } catch (stage2SaveError) {
+          logger.warn(
+            LogCategory.ANALYSIS_QUEUE,
+            '[分析队列] Stage 2 标签即时落库失败（不阻断 AI 阶段）:',
+            stage2SaveError
+          )
+        }
       }
 
       if (phase === 'cpu') {
@@ -2309,6 +2426,24 @@ export class FileProcessor {
             LogCategory.ANALYSIS_QUEUE,
             `[分析队列] Tier 2 AI 推理失败，自动降级 Tier 1 命名兜底: ${item.name} -> ${tier1FallbackName}`
           )
+          // 补齐 is_analyzed：CPU 阶段的 Stage 2 事实/融合/视觉标签已即时落库（见上方落库块），
+          // 但属性面板的 <TagList> 以 analysisResult.isAnalyzed 为渲染门控，
+          // 而该值取自 workspace_files.is_analyzed。AI 降级路径历史上只更新队列状态，
+          // 导致「已持久化的标签」在面板上一个都不显示（日志有标签、面板无标签）。
+          // 自愈性：AI 阶段入口会按当前模式校验 stage 达标情况，
+          // 未达标（如 full 需 stage 4）则自动撤销本标记并交由下次 AI 阶段重新判定，
+          // 故此处补标不会把半成品永久固化为「已完成」。
+          try {
+            if (currentWorkspaceId && filePath) {
+              await databaseService.markFileAnalyzed(currentWorkspaceId, filePath)
+            }
+          } catch (markAnalyzedError) {
+            logger.warn(
+              LogCategory.ANALYSIS_QUEUE,
+              '[分析队列] Tier 1 降级后补齐已分析标记失败（不影响标签落库）:',
+              markAnalyzedError
+            )
+          }
           this.updateItemStatus(item.id, 'completed', 100, undefined, {
             analysisStage: 2
           })
