@@ -468,17 +468,9 @@ export const TTSSettings: React.FC = () => {
         <div>
           <h3 className="text-lg font-semibold mb-1 text-foreground">{t('离线语音合成 (TTS)')}</h3>
           <p className="text-sm text-muted-foreground">
-            {t('基于 MOSS-TTS 48kHz 高保真离线模型，支持多语言发音与零样本声音克隆')}
+            {t('48kHz 高保真离线模型，支持多语言发音与零样本声音克隆')}
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={handleOpenCloneDialog}
-          className="gap-1.5 shadow-xs cursor-pointer"
-        >
-          <Sparkles className="w-4 h-4" />
-          <span>{t('克隆新音色')}</span>
-        </Button>
       </div>
 
       {/* 1. 默认语速配置 */}
@@ -650,9 +642,19 @@ export const TTSSettings: React.FC = () => {
               {t('浏览 51 个精选音色及自定义克隆音色，试听并将喜欢的音色加入快捷收藏。')}
             </p>
           </div>
-          <span className="text-xs text-muted-foreground font-mono">
-            {filteredVoices.length} / {allVoices.length} {t('个音色')}
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <Button
+              type="button"
+              onClick={handleOpenCloneDialog}
+              className="gap-1.5 shadow-xs cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{t('克隆新音色')}</span>
+            </Button>
+            <span className="text-xs text-muted-foreground font-mono">
+              {filteredVoices.length} / {allVoices.length} {t('个音色')}
+            </span>
+          </div>
         </div>
 
         {/* 试听内容与多语言快捷切换 */}
@@ -683,7 +685,7 @@ export const TTSSettings: React.FC = () => {
               )}
             </div>
 
-            <div className="w-full sm:w-64 shrink-0">
+            <div className="shrink-0">
               <Select value={auditionLangCode} onValueChange={handleAuditionLangChange}>
                 <SelectTrigger className="w-full h-9 text-xs">
                   <SelectValue placeholder={t('选择语言')} />
@@ -695,9 +697,6 @@ export const TTSSettings: React.FC = () => {
                         <span className="flex items-center gap-1.5">
                           <span>{opt.flag}</span>
                           <span>{opt.label}</span>
-                        </span>
-                        <span className="text-[10px] px-1 py-0.2 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-medium">
-                          48kHz
                         </span>
                       </div>
                     </SelectItem>
@@ -749,6 +748,33 @@ export const TTSSettings: React.FC = () => {
             </Button>
             <Button
               type="button"
+              variant={groupFilter === 'female' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setGroupFilter('female')}
+              className="text-xs h-9 px-2.5"
+            >
+              {t('女声')}
+            </Button>
+            <Button
+              type="button"
+              variant={groupFilter === 'male' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setGroupFilter('male')}
+              className="text-xs h-9 px-2.5"
+            >
+              {t('男声')}
+            </Button>
+            <Button
+              type="button"
+              variant={groupFilter === 'child' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setGroupFilter('child')}
+              className="text-xs h-9 px-2.5"
+            >
+              {t('童声')}
+            </Button>
+            <Button
+              type="button"
               variant={groupFilter === 'zh' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setGroupFilter('zh')}
@@ -784,12 +810,12 @@ export const TTSSettings: React.FC = () => {
                 if (val && val !== 'all_langs') setGroupFilter(val)
               }}
             >
-              <SelectTrigger className="h-9 text-xs w-[110px]">
+              <SelectTrigger className="h-9 text-xs w-[80px]">
                 <SelectValue placeholder={t('更多语言')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all_langs" disabled className="text-xs text-muted-foreground">
-                  {t('更多语言筛选...')}
+                  {t('更多...')}
                 </SelectItem>
                 {AUDITION_LANGUAGE_OPTIONS.filter(opt => !['zh', 'en', 'ja'].includes(opt.langKey)).map(opt => (
                   <SelectItem key={opt.langKey} value={opt.langKey} className="text-xs">
@@ -801,33 +827,6 @@ export const TTSSettings: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              type="button"
-              variant={groupFilter === 'female' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setGroupFilter('female')}
-              className="text-xs h-9 px-2.5"
-            >
-              {t('女声')}
-            </Button>
-            <Button
-              type="button"
-              variant={groupFilter === 'male' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setGroupFilter('male')}
-              className="text-xs h-9 px-2.5"
-            >
-              {t('男声')}
-            </Button>
-            <Button
-              type="button"
-              variant={groupFilter === 'child' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setGroupFilter('child')}
-              className="text-xs h-9 px-2.5"
-            >
-              {t('童声')}
-            </Button>
           </div>
         </div>
 
@@ -977,7 +976,6 @@ export const TTSSettings: React.FC = () => {
           <div className="space-y-4 py-2 text-xs">
             {/* 文件选择区 */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-medium">{t('参考音频文件')}</Label>
               <div className="flex gap-2">
                 <Button
                   type="button"

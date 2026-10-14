@@ -552,6 +552,48 @@ export class OmniClient {
       return []
     }
   }
+
+  /**
+   * 智能分句切片：POST /api/audio/tts/split-chunks
+   */
+  async splitTTSChunks(
+    text: string,
+    options?: {
+      targetChunkChars?: number
+      minChunkChars?: number
+      maxChunkChars?: number
+      language?: string
+    },
+    signal?: AbortSignal
+  ): Promise<{ chunks: string[]; totalChunks: number; totalChars: number } | null> {
+    if (!text || !text.trim()) {
+      return { chunks: [], totalChunks: 0, totalChars: 0 }
+    }
+    try {
+      await omniService.ensureRunning()
+      return await this.request<{ chunks: string[]; totalChunks: number; totalChars: number }>(
+        '/api/audio/tts/split-chunks',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            text,
+            targetChunkChars: options?.targetChunkChars,
+            minChunkChars: options?.minChunkChars,
+            maxChunkChars: options?.maxChunkChars,
+            language: options?.language
+          }),
+          signal
+        }
+      )
+    } catch (err: unknown) {
+      if ((err as any)?.name === 'AbortError') {
+        logger.debug(LogCategory.MAIN, '[OmniClient] splitTTSChunks 请求已中止')
+        return null
+      }
+      logger.warn(LogCategory.MAIN, '[OmniClient] splitTTSChunks 请求异常:', err)
+      return null
+    }
+  }
 }
 
 export const omniClient = OmniClient.getInstance()

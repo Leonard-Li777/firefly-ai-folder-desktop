@@ -576,9 +576,19 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             : (matchedVoice?.sid ?? 63)
     const chosenSpeed = options?.speed !== undefined ? options.speed : ((config as any)?.ttsSpeed ?? 1.0)
 
-    // 文本清洗与分句切片
+    // 文本清洗与分句切片：优先调用 Omni 原生词性与自然换气智能分句，异常时平滑回退本地纯标点分句
     const cleaned = cleanTextForTTS(text, { isLrc: options?.isLrc })
-    const chunks = splitTextIntoChunks(cleaned)
+    let chunks: string[] = []
+    if (window.electronAPI?.tts?.splitTextChunks) {
+      try {
+        chunks = await window.electronAPI.tts.splitTextChunks(cleaned)
+      } catch (e) {
+        chunks = splitTextIntoChunks(cleaned)
+      }
+    }
+    if (!chunks || chunks.length === 0) {
+      chunks = splitTextIntoChunks(cleaned)
+    }
 
     if (chunks.length === 0) {
       set({ status: 'idle', errorMessage: '没有可朗读的有效文本内容' })

@@ -837,6 +837,15 @@ declare global {
           targetWavPath: string,
           targetSpeed: number
         ) => Promise<boolean>
+        splitTextChunks: (
+          text: string,
+          options?: {
+            targetChunkChars?: number
+            minChunkChars?: number
+            maxChunkChars?: number
+            language?: string
+          }
+        ) => Promise<string[]>
       }
     }
 

@@ -132,7 +132,7 @@ export const settingsCategories = (): ISettingsCategoryInfo[] => [
     id: SettingsCategory.TTS,
     name: t('语音合成 (TTS)'),
     icon: 'record_voice_over',
-    description: t('Kokoro 离线多发音人音色库、默认语速与收藏管理')
+    description: t('离线多发音人音色库、默认语速与收藏管理')
   },
   {
     id: SettingsCategory.ANALYSIS_IGNORE_RULES,

@@ -1278,7 +1278,16 @@ const electronAPI = {
       targetWavPath: string,
       targetSpeed: number
     ): Promise<boolean> =>
-      ipcRenderer.invoke('tts:derive-scaled-wav', baseWavPath, targetWavPath, targetSpeed)
+      ipcRenderer.invoke('tts:derive-scaled-wav', baseWavPath, targetWavPath, targetSpeed),
+    splitTextChunks: (
+      text: string,
+      options?: {
+        targetChunkChars?: number
+        minChunkChars?: number
+        maxChunkChars?: number
+        language?: string
+      }
+    ): Promise<string[]> => ipcRenderer.invoke('tts:split-chunks', text, options)
   }
 }
 

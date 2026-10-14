@@ -385,5 +385,74 @@ export function registerTTSIPCHandlers(): void {
       }
     }
   )
+
+  // 15. 智能文本分句切片：由 Omni 原生 jieba 词性与自然断句驱动，附带 300ms 超时优雅降级
+  ipcMain.handle(
+    'tts:split-chunks',
+    async (
+      _event,
+      text: string,
+      options?: {
+        targetChunkChars?: number
+        minChunkChars?: number
+        maxChunkChars?: number
+        language?: string
+      }
+    ): Promise<string[]> => {
+      if (!text || !text.trim()) return []
+
+      const abortController = new AbortController()
+      let timeoutId: NodeJS.Timeout | undefined
+      const timeoutPromise = new Promise<null>((resolve) => {
+        timeoutId = setTimeout(() => {
+          abortController.abort()
+          resolve(null)
+        }, 300)
+      })
+
+      try {
+        const res = await Promise.race([
+          omniClient.splitTTSChunks(text, options, abortController.signal),
+          timeoutPromise
+        ])
+        if (res && res.chunks && res.chunks.length > 0) {
+          return res.chunks
+        }
+      } catch (err: unknown) {
+        logger.warn(LogCategory.MAIN, '[TTS IPC] split-chunks 降级到本地正则分句:', err)
+      } finally {
+        if (timeoutId) clearTimeout(timeoutId)
+      }
+
+      // 降级兜底：遵守 AGENTS.md §2.9 显式记录警告并返回本地快速切分
+      logger.warn(
+        LogCategory.MAIN,
+        '[TTS IPC] split-chunks: Omni 服务不可用或超时(>300ms)，触发本地正则切分降级'
+      )
+      return fallbackLocalSplitChunks(text)
+    }
+  )
+}
+
+/** 本地正则分句降级辅助函数 */
+function fallbackLocalSplitChunks(text: string): string[] {
+  if (!text || !text.trim()) return []
+  const rawSentences = text.match(/[^。！？；\n\r.!?]+[。！？；\n\r.!?]*/g) || [text]
+  const chunks: string[] = []
+  let current = ''
+  for (const raw of rawSentences) {
+    const trimmed = raw.trim()
+    if (!trimmed) continue
+    if ((current + trimmed).length > 120 && current.length > 0) {
+      chunks.push(current.trim())
+      current = trimmed
+    } else {
+      current += trimmed
+    }
+  }
+  if (current.trim()) {
+    chunks.push(current.trim())
+  }
+  return chunks.length > 0 ? chunks : [text.trim()]
 }
 

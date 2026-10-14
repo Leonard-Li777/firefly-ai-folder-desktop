@@ -719,70 +719,70 @@ export const DEFAULT_AUDITION_TEXT = '你好，欢迎使用 Firefly AI Folder �
 export const AUDITION_LANGUAGE_OPTIONS = [
   {
     code: 'zh-CN',
-    label: '中文 (Chinese)',
+    label: '中文',
     flag: '🇨🇳',
     langKey: 'zh',
     defaultText: '你好，欢迎使用 Firefly AI Folder 驱动的下一代智能文件管理！'
   },
   {
     code: 'en-US',
-    label: 'English (US)',
+    label: 'English',
     flag: '🇺🇸',
     langKey: 'en',
     defaultText: 'Hello, welcome to next-generation smart file management powered by Firefly AI Folder!'
   },
   {
     code: 'ja-JP',
-    label: '日本語 (Japanese)',
+    label: '日本語',
     flag: '🇯🇵',
     langKey: 'ja',
     defaultText: 'こんにちは、Firefly AI Folder が駆動する次世代のスマートファイル管理へようこそ！'
   },
   {
     code: 'de-DE',
-    label: 'Deutsch (German)',
+    label: 'Deutsch',
     flag: '🇩🇪',
     langKey: 'de',
     defaultText: 'Hallo, willkommen beim intelligenten Dateimanagement der nächsten Generation mit Firefly AI Folder!'
   },
   {
     code: 'fr-FR',
-    label: 'Français (French)',
+    label: 'Français',
     flag: '🇫🇷',
     langKey: 'fr',
     defaultText: 'Bonjour, bienvenue dans la gestion de fichiers intelligente de nouvelle génération propulsée par Firefly AI Folder !'
   },
   {
     code: 'es-ES',
-    label: 'Español (Spanish)',
+    label: 'Español',
     flag: '🇪🇸',
     langKey: 'es',
     defaultText: '¡Hola, bienvenido a la gestión inteligente de archivos de próxima generación impulsada por Firefly AI Folder!'
   },
   {
     code: 'ko-KR',
-    label: '한국어 (Korean)',
+    label: '한국어',
     flag: '🇰🇷',
     langKey: 'ko',
     defaultText: '안녕하세요, Firefly AI Folder 가 구动하는 차세대 스마트 파일 관리에 오신 것을 환영합니다!'
   },
   {
     code: 'ru-RU',
-    label: 'Русский (Russian)',
+    label: 'Русский',
     flag: '🇷🇺',
     langKey: 'ru',
     defaultText: 'Здравствуйте, добро пожаловать в интеллектуальное управление файлами нового поколения на базе Firefly AI Folder!'
   },
   {
     code: 'ar-EG',
-    label: 'العربية (Arabic)',
+    label: 'العربية',
     flag: '🇸🇦',
     langKey: 'ar',
     defaultText: 'مرحبًا بك في الجيل القادم من إدارة الملفات الذكية المدعومة من Firefly AI Folder!'
   },
   {
     code: 'pt-PT',
-    label: 'Português (Portuguese)',
+    label: 'Português',
     flag: '🇵🇹',
     langKey: 'pt',
     defaultText: 'Olá, bem-vindo ao gerenciamento inteligente de arquivos de última geração com Firefly AI Folder!'
