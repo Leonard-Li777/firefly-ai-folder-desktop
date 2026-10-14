@@ -9,7 +9,9 @@
     "de-DE": "ElectronAPI.aiService.initialize nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.initialize n'est pas disponible",
     "ko-KR": "electronAPI.aiService.initialize를 사용할 수 없습니다",
-    "$files": ["src/renderer/stores/ai-service-store.ts(4272-4312)"],
+    "$files": [
+      "src/renderer/stores/ai-service-store.ts(4272-4312)"
+    ],
     "$id": 5455
   },
   "AI服务初始化失败": {
@@ -22,7 +24,9 @@
     "de-DE": "Initialisierung des KI-Dienstes fehlgeschlagen",
     "fr-FR": "Échec de l'initialisation du service IA",
     "ko-KR": "AI 서비스 초기화 실패",
-    "$files": ["src/renderer/stores/ai-service-store.ts(5727-5740)"],
+    "$files": [
+      "src/renderer/stores/ai-service-store.ts(5727-5740)"
+    ],
     "$id": 5458
   },
   "未知错误": {
@@ -52,7 +56,9 @@
     "de-DE": "ElectronAPI.aiService.onModelChanged nicht verfügbar",
     "fr-FR": "ElectronAPI.aiService.onModelChanged n'est pas disponible",
     "ko-KR": "electronAPI.aiService.onModelChanged 사용 불가",
-    "$files": ["src/renderer/stores/ai-service-store.ts(7466-7510)"],
+    "$files": [
+      "src/renderer/stores/ai-service-store.ts(7466-7510)"
+    ],
     "$id": 8128
   },
   "模型切换失败": {
@@ -65,7 +71,9 @@
     "de-DE": "Modellwechsel fehlgeschlagen",
     "fr-FR": "Échec du changement de modèle",
     "ko-KR": "모델 전환 실패",
-    "$files": ["src/renderer/stores/ai-service-store.ts(9368-9378)"],
+    "$files": [
+      "src/renderer/stores/ai-service-store.ts(9368-9378)"
+    ],
     "$id": 5462
   },
   "更新配置失败": {
@@ -78,7 +86,9 @@
     "de-DE": "Aktualisierung der Konfiguration fehlgeschlagen",
     "fr-FR": "Échec de la mise à jour de la configuration",
     "ko-KR": "구성 업데이트 실패",
-    "$files": ["src/renderer/stores/config-store.ts(2018-2028)"],
+    "$files": [
+      "src/renderer/stores/config-store.ts(2018-2028)"
+    ],
     "$id": 5465
   },
   "更新配置项失败": {
@@ -91,7 +101,9 @@
     "de-DE": "Aktualisierung der Konfigurationseinstellungen fehlgeschlagen",
     "fr-FR": "Échec de la mise à jour des paramètres de configuration",
     "ko-KR": "구성 항목 업데이트 실패",
-    "$files": ["src/renderer/stores/config-store.ts(2748-2759)"],
+    "$files": [
+      "src/renderer/stores/config-store.ts(2748-2759)"
+    ],
     "$id": 5466
   },
   "获取配置失败": {
@@ -104,7 +116,9 @@
     "de-DE": "Abrufen der Konfiguration fehlgeschlagen",
     "fr-FR": "Échec de la récupération de la configuration",
     "ko-KR": "구성 가져오기 실패",
-    "$files": ["src/renderer/stores/config-store.ts(3263-3273)"],
+    "$files": [
+      "src/renderer/stores/config-store.ts(3263-3273)"
+    ],
     "$id": 5467
   },
   "工作区": {
@@ -117,7 +131,9 @@
     "de-DE": "Arbeitsbereich",
     "fr-FR": "Espace de travail",
     "ko-KR": "작업 공간",
-    "$files": ["src/renderer/stores/settings-store.ts(3058-3065)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3058-3065)"
+    ],
     "$id": 3301
   },
   "目录管理和自动监听": {
@@ -130,7 +146,9 @@
     "de-DE": "Verzeichnisverwaltung und automatische Überwachung",
     "fr-FR": "Gestion des répertoires et surveillance automatique",
     "ko-KR": "디렉터리 관리 및 자동 감시",
-    "$files": ["src/renderer/stores/settings-store.ts(3112-3125)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3112-3125)"
+    ],
     "$id": 3302
   },
   "基础AI引擎配置": {
@@ -143,7 +161,9 @@
     "de-DE": "Grundlegende KI-Engine-Konfiguration",
     "fr-FR": "Configuration du moteur IA de base",
     "ko-KR": "기본 AI 엔진 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(3199-3211)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3199-3211)"
+    ],
     "$id": 20499
   },
   "分析模式、嵌入模型与向量维度、视频切片抽帧": {
@@ -156,7 +176,9 @@
     "de-DE": "Analysemode, Embedding-Modell und Vektordimension, Video-Slicing und Frame-Extraktion",
     "fr-FR": "Mode d'analyse, modèle d'intégration et dimensions vectorielles, extraction de frames de vidéos",
     "ko-KR": "분석 모드, 임베딩 모델과 벡터 차원, 비디오 슬라이스 프레임 추출",
-    "$files": ["src/renderer/stores/settings-store.ts(3251-3276)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3251-3276)"
+    ],
     "$id": 20500
   },
   "高级AI引擎配置": {
@@ -169,7 +191,9 @@
     "de-DE": "Erweiterte KI-Engine-Konfiguration",
     "fr-FR": "Configuration du moteur IA avancé",
     "ko-KR": "고급 AI 엔진 구성",
-    "$files": ["src/renderer/stores/settings-store.ts(3406-3418)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3406-3418)"
+    ],
     "$id": 19417
   },
   "生效引擎选择、云端配置与思考模式": {
@@ -182,7 +206,9 @@
     "de-DE": "Effektive Engine-Auswahl, Cloud-Konfiguration und Denkmodus",
     "fr-FR": "Sélection du moteur actif, configuration du cloud et mode de raisonnement",
     "ko-KR": "효과적인 엔진 선택, 클라우드 구성 및 사고 모드",
-    "$files": ["src/renderer/stores/settings-store.ts(3470-3490)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3470-3490)"
+    ],
     "$id": 19418
   },
   "内容萃取设置": {
@@ -195,7 +221,9 @@
     "de-DE": "Konfiguration der Inhaltsextraktion",
     "fr-FR": "Paramètres d'extraction de contenu",
     "ko-KR": "내용 추출 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(3560-3570)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3560-3570)"
+    ],
     "$id": 20501
   },
   "文本与文档提取、OCR精度和音频截取": {
@@ -208,7 +236,9 @@
     "de-DE": "Text- und Dokumentenextraktion, OCR-Genauigkeit und Audiobeschneidung",
     "fr-FR": "Extraction de texte et de documents, précision de l'OCR et capture audio",
     "ko-KR": "텍스트 및 문서 추출, OCR 정확도 및 오디오 캡처",
-    "$files": ["src/renderer/stores/settings-store.ts(3611-3633)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3611-3633)"
+    ],
     "$id": 20502
   },
   "最小单元识别": {
@@ -221,7 +251,9 @@
     "de-DE": "Erkennung der kleinsten Einheiten",
     "fr-FR": "Identification de la plus petite unité",
     "ko-KR": "최소 단위 식별",
-    "$files": ["src/renderer/stores/settings-store.ts(3701-3711)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3701-3711)"
+    ],
     "$id": 20503
   },
   "目录最小单元判定与单元识别提示词": {
@@ -234,7 +266,9 @@
     "de-DE": "Bestimmung der kleinsten Verzeichniseinheit und Eingabeaufforderung zur Einheitenidentifikation",
     "fr-FR": "Définition des unités minimales dans les répertoires et prompts d'identification des unités",
     "ko-KR": "상세목표 최소 단위 판정 및 단위 식별 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(3755-3775)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3755-3775)"
+    ],
     "$id": 20504
   },
   "高级AI提示词": {
@@ -247,7 +281,9 @@
     "de-DE": "Erweiterte KI-Eingabeaufforderungen",
     "fr-FR": "Prompts avancés IA",
     "ko-KR": "고급 AI 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(3846-3857)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3846-3857)"
+    ],
     "$id": 20505
   },
   "质量评分与标签智能生成提示词": {
@@ -260,8 +296,40 @@
     "de-DE": "Eingabeaufforderungen für intelligente Generierung von Qualitätsbewertungen und Labels",
     "fr-FR": "Prompts pour le score de qualité et la génération intelligente d'étiquettes",
     "ko-KR": "품질 점수 및 태그 스마트 생성 프롬프트",
-    "$files": ["src/renderer/stores/settings-store.ts(3901-3919)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3901-3919)"
+    ],
     "$id": 20506
+  },
+  "语音合成 (TTS)": {
+    "en-US": "Speech synthesis (TTS)",
+    "es-ES": "Síntesis de voz (TTS)",
+    "ar-EG": "توليف الكلام (تحويل النص إلى كلام)",
+    "pt-PT": "Síntese de fala (TTS)",
+    "ru-RU": "Синтез речи (TTS)",
+    "ja-JP": "音声合成（TTS）",
+    "de-DE": "Sprachsynthese (TTS)",
+    "fr-FR": "Synthèse vocale (TTS)",
+    "ko-KR": "음성 합성",
+    "$files": [
+      "src/renderer/stores/settings-store.ts(3974-3988)"
+    ],
+    "$id": 21213
+  },
+  "Kokoro 离线多发音人音色库、默认语速与收藏管理": {
+    "en-US": "Kokoro offline multi-speaker sound library, default speech rate and collection management",
+    "es-ES": "Biblioteca de sonido de múltiples altavoces sin conexión de Kokoro, velocidad de habla predeterminada y gestión de colecciones",
+    "ar-EG": "كوكورو حاليا مكتبة الصوت متعدد المتكلم ، ومعدل الكلام الافتراضي وإدارة جمع",
+    "pt-PT": "Biblioteca de som multi-alto-falante offline Kokoro, taxa de fala padrão e gerenciamento de coleta",
+    "ru-RU": "Автономная звуковая библиотека Kokoro с несколькими динамиками, скоростью речи по умолчанию и управлением коллекцией",
+    "ja-JP": "Kokoroオフラインマルチスピーカーサウンドライブラリ、デフォルトの音声レートとコレクション管理",
+    "de-DE": "Kokoro Offline-Soundbibliothek mit mehreren Lautsprechern, Standardsprachrate und Sammlungsverwaltung",
+    "fr-FR": "Bibliothèque de sons multi-haut-parleurs Kokoro hors ligne, débit vocal par défaut et gestion de la collection",
+    "ko-KR": "코코로 오프라인 멀티 스피커 사운드 라이브러리,기본 음성 속도 및 수집 관리",
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4041-4071)"
+    ],
+    "$id": 21214
   },
   "AI分析忽略规则": {
     "en-US": "AI Analysis Ignore Rules",
@@ -273,7 +341,9 @@
     "de-DE": "Ignorierregeln für KI-Analysen",
     "fr-FR": "Règles d'ignorance de l'analyse IA",
     "ko-KR": "AI 분석 무시 규칙",
-    "$files": ["src/renderer/stores/settings-store.ts(3992-4004)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4144-4156)"
+    ],
     "$id": 20507
   },
   "文件与目录排除规则、查重保护": {
@@ -286,7 +356,9 @@
     "de-DE": "Ausschlussregeln für Dateien und Verzeichnisse, Schutz vor Duplikatprüfung",
     "fr-FR": "Règles d'exclusion de fichiers et de répertoires, protection contre les doublons",
     "ko-KR": "파일 및 디렉터리 제외 규칙, 중복 체크 보호",
-    "$files": ["src/renderer/stores/settings-store.ts(4046-4064)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4198-4216)"
+    ],
     "$id": 20508
   },
   "风格和语言": {
@@ -299,7 +371,9 @@
     "de-DE": "Stil und Sprache",
     "fr-FR": "Style et langage",
     "ko-KR": "스타일과 언어",
-    "$files": ["src/renderer/stores/settings-store.ts(4125-4134)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4277-4286)"
+    ],
     "$id": 4272
   },
   "外观、语言和主题": {
@@ -312,7 +386,9 @@
     "de-DE": "Aussehen, Sprache und Design",
     "fr-FR": "Apparence, langue et thèmes",
     "ko-KR": "모습, 언어 및 테마",
-    "$files": ["src/renderer/stores/settings-store.ts(4177-4189)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4329-4341)"
+    ],
     "$id": 3295
   },
   "列表设置": {
@@ -325,7 +401,9 @@
     "de-DE": "Listeneinstellungen",
     "fr-FR": "Paramètres de la liste",
     "ko-KR": "목록 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(4253-4261)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4405-4413)"
+    ],
     "$id": 4273
   },
   "文件列表显示项": {
@@ -338,7 +416,9 @@
     "de-DE": "Anzeigeoptionen für Dateilisten",
     "fr-FR": "Éléments affichés dans la liste des fichiers",
     "ko-KR": "파일 목록 표시 항목",
-    "$files": ["src/renderer/stores/settings-store.ts(4306-4317)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(4458-4469)"
+    ],
     "$id": 3297
   },
   "保存设置失败": {
@@ -351,7 +431,9 @@
     "de-DE": "Speichern der Einstellungen fehlgeschlagen",
     "fr-FR": "Échec de la sauvegarde des paramètres",
     "ko-KR": "설정 저장 실패",
-    "$files": ["src/renderer/stores/settings-store.ts(7624-7634)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(7776-7786)"
+    ],
     "$id": 5491
   },
   "确认删除此工作目录？": {
@@ -364,7 +446,9 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich löschen?",
     "fr-FR": "Confirmer la suppression de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 삭제하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(10409-10423)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(10561-10575)"
+    ],
     "$id": 3303
   },
   "确认重置此工作目录？": {
@@ -377,7 +461,9 @@
     "de-DE": "Dieses Arbeitsverzeichnis wirklich zurücksetzen?",
     "fr-FR": "Confirmer la réinitialisation de ce répertoire de travail ?",
     "ko-KR": "이 작업 디렉터리를 재설정하시겠습니까?",
-    "$files": ["src/renderer/stores/settings-store.ts(10731-10745)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(10883-10897)"
+    ],
     "$id": 3304
   },
   "不支持的语言设置": {
@@ -390,7 +476,9 @@
     "de-DE": "Nicht unterstützte Spracheinstellung",
     "fr-FR": "Paramètre de langue non pris en charge",
     "ko-KR": "지원되지 않는 언어 설정",
-    "$files": ["src/renderer/stores/settings-store.ts(11200-11212)"],
+    "$files": [
+      "src/renderer/stores/settings-store.ts(11352-11364)"
+    ],
     "$id": 5501
   },
   "交易失败，已归还扣币，原因：{reason}": {
@@ -403,7 +491,9 @@
     "de-DE": "Die Transaktion ist fehlgeschlagen und die abgezogenen Firecores wurden zurückgegeben. Grund: {reason}",
     "fr-FR": "La transaction a échoué et les pièces déduites ont été restituées. Raison: {reason}",
     "ko-KR": "거래가 실패하여 차감된 코인이 반환되었습니다. 이유: {reason}",
-    "$files": ["src/renderer/stores/tier-store.ts(6048-6074)"],
+    "$files": [
+      "src/renderer/stores/tier-store.ts(6048-6074)"
+    ],
     "$id": 8873
   }
 }

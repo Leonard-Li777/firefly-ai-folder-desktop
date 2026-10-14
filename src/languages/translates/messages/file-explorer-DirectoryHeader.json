@@ -9,7 +9,9 @@
     "de-DE": "Echtes Verzeichnis",
     "fr-FR": "Vrai répertoire",
     "ko-KR": "실제 디렉토리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(5781-5789)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(5720-5728)"
+    ],
     "$id": 8277
   },
   "已分析": {
@@ -22,7 +24,9 @@
     "de-DE": "Analysiert\r",
     "fr-FR": "Analysé",
     "ko-KR": "분석 완료",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(5886-5893)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(5825-5832)"
+    ],
     "$id": 8278
   },
   "有新分析完成的文件，点击「已分析」查看": {
@@ -35,7 +39,9 @@
     "de-DE": "Wenn neu analysierte Dateien vorhanden sind, klicken Sie auf „Analysiert“, um sie anzuzeigen.",
     "fr-FR": "S'il y a des fichiers nouvellement analysés, cliquez sur \"Analysé\" pour les afficher.",
     "ko-KR": "새로 분석된 파일이 있으면 \"분석됨\"을 클릭하여 확인하세요.",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(6094-6117)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(6033-6056)"
+    ],
     "$id": 8281
   },
   "整理": {
@@ -48,7 +54,9 @@
     "de-DE": "Ordentlich",
     "fr-FR": "Rangé",
     "ko-KR": "정돈하다",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(6162-6168)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(6101-6107)"
+    ],
     "$id": 8284
   },
   "虚拟目录": {
@@ -61,7 +69,9 @@
     "de-DE": "Virtuelles Verzeichnis",
     "fr-FR": "Répertoire virtuel",
     "ko-KR": "가상 디렉터리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(6265-6273)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(6204-6212)"
+    ],
     "$id": 8289
   },
   "导出": {
@@ -74,7 +84,9 @@
     "de-DE": "Export",
     "fr-FR": "Exporter",
     "ko-KR": "내보내다",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(6404-6410)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(6343-6349)"
+    ],
     "$id": 8290
   },
   "对虚拟目录满意，可以选择导出": {
@@ -87,8 +99,115 @@
     "de-DE": "Wenn Sie mit dem virtuellen Verzeichnis zufrieden sind, können Sie es exportieren",
     "fr-FR": "Lorsque vous êtes satisfait du répertoire virtuel, vous pouvez choisir de l'exporter",
     "ko-KR": "가상 디렉터리에 만족하면 내보내도록 선택할 수 있습니다.",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(6623-6641)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(6562-6580)"
+    ],
     "$id": 8292
+  },
+  "自然语言搜索文件...": {
+    "en-US": "Search for files in natural language...",
+    "es-ES": "Búsqueda de archivos en lenguaje natural...",
+    "ar-EG": "البحث عن الملفات باللغة الطبيعية...",
+    "pt-PT": "Procurar ficheiros em linguagem natural...",
+    "ru-RU": "Выполняйте поиск файлов на естественном языке...",
+    "ja-JP": "自然言語でファイルを検索します。..",
+    "de-DE": "Suche nach Dateien in natürlicher Sprache...",
+    "fr-FR": "Recherchez des fichiers en langage naturel...",
+    "ko-KR": "자연 언어로 파일을 검색합니다...",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(9940-9955)"
+    ],
+    "$id": 21233
+  },
+  "支持搜索文本、图片、音频、视频...": {
+    "en-US": "Support search for text, pictures, audio, and video...",
+    "es-ES": "Admite la búsqueda de texto, imágenes, audio y video...",
+    "ar-EG": "دعم البحث عن النص والصور والصوت والفيديو...",
+    "pt-PT": "Suporte à pesquisa de texto, imagens, áudio e vídeo...",
+    "ru-RU": "Поддерживает поиск текста, изображений, аудио и видео...",
+    "ja-JP": "テキスト、写真、オーディオ、およびビデオの検索をサポートします。..",
+    "de-DE": "Unterstützt die Suche nach Text, Bildern, Audio und Video...",
+    "fr-FR": "Prise en charge de la recherche de texte, d'images, d'audio et de vidéo...",
+    "ko-KR": "텍스트,사진,오디오 및 비디오 검색을 지원합니다...",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(9967-9989)"
+    ],
+    "$id": 21234
+  },
+  "支持搜索未分析和已分析文件...": {
+    "en-US": "Support search for unanalyzed and analyzed files...",
+    "es-ES": "Admite la búsqueda de archivos no analizados y analizados...",
+    "ar-EG": "دعم البحث عن الملفات غير تحليلها وتحليلها...",
+    "pt-PT": "Suporte à pesquisa de arquivos não analisados e analisados...",
+    "ru-RU": "Поддерживает поиск неанализированных и проанализированных файлов...",
+    "ja-JP": "分析されていないファイルと分析されたファイルの検索をサポートします。..",
+    "de-DE": "Unterstützt die Suche nach nicht analysierten und analysierten Dateien...",
+    "fr-FR": "Prise en charge de la recherche de fichiers non analysés et analysés...",
+    "ko-KR": "분석되지 않은 분석 된 파일에 대한 검색을 지원합니다...",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(10001-10021)"
+    ],
+    "$id": 21235
+  },
+  "示例：上个月签署的采购合同 pdf": {
+    "en-US": "Example: The purchase contract signed last month pdf",
+    "es-ES": "Ejemplo: El contrato de compra firmado el mes pasado pdf",
+    "ar-EG": "مثال: عقد الشراء الموقع الشهر الماضي قوات الدفاع الشعبي",
+    "pt-PT": "Exemplo: o contrato de compra assinado no mês passado pdf",
+    "ru-RU": "Пример: Договор купли-продажи, подписанный в прошлом месяце. pdf",
+    "ja-JP": "例：先月署名された購入契約pdf",
+    "de-DE": "Beispiel: Der im letzten Monat unterzeichnete Kaufvertrag pdf",
+    "fr-FR": "Exemple: Le contrat d'achat signé le mois dernier pdf",
+    "ko-KR": "예:지난 달에 체결 된 구매 계약",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(10033-10054)"
+    ],
+    "$id": 21236
+  },
+  "示例：带红色印章的发票图片": {
+    "en-US": "Example: Invoice picture with red seal",
+    "es-ES": "Ejemplo: Imagen de factura con sello rojo",
+    "ar-EG": "مثال: صورة الفاتورة مع ختم أحمر",
+    "pt-PT": "Exemplo: Imagem Da factura com selo vermelho",
+    "ru-RU": "Пример: Изображение счета-фактуры с красной печатью",
+    "ja-JP": "例:赤いシールが付いているインボイス映像",
+    "de-DE": "Beispiel: Rechnungsbild mit rotem Siegel",
+    "fr-FR": "Exemple: Photo de facture avec sceau rouge",
+    "ko-KR": "예:빨간색 인감이있는 송장 사진",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(10066-10083)"
+    ],
+    "$id": 21237
+  },
+  "示例：周会录音或产品需求会议纪要": {
+    "en-US": "Example: Weekly meeting recording or product demand meeting minutes",
+    "es-ES": "Ejemplo: Grabación de reuniones semanales o actas de reuniones de demanda de productos",
+    "ar-EG": "مثال: تسجيل الاجتماع الأسبوعي أو محضر اجتماع طلب المنتج",
+    "pt-PT": "Exemplo: gravação semanal de reuniões ou atas de reuniões de procura de produtos",
+    "ru-RU": "Пример: Запись еженедельного совещания или протокол совещания по спросу на продукцию",
+    "ja-JP": "例:週次会議の記録または製品需要会議の議事録",
+    "de-DE": "Beispiel: Wöchentliche Besprechungsaufzeichnung oder Besprechungsprotokolle zur Produktnachfrage",
+    "fr-FR": "Exemple: Enregistrement d'une réunion hebdomadaire ou compte rendu d'une réunion sur la demande de produits",
+    "ko-KR": "예:주간 회의 기록 또는 제품 수요 회의록",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(10095-10115)"
+    ],
+    "$id": 21238
+  },
+  "示例：去年第四季度财务预算表 xlsx": {
+    "en-US": "Example: Financial budget statement xlsx for the fourth quarter of last year",
+    "es-ES": "Ejemplo: Estado de presupuesto financiero xlsx del cuarto trimestre del año pasado",
+    "ar-EG": "مثال: بيان الميزانية المالية للربع الرابع من العام الماضي",
+    "pt-PT": "Exemplo: demonstração orçamental Financeira xlsx relativa ao quarto trimestre do ano passado",
+    "ru-RU": "Пример: Финансовый отчет о бюджете xlsx за четвертый квартал прошлого года",
+    "ja-JP": "例：昨年第4四半期の財務予算書xlsx",
+    "de-DE": "Beispiel: Finanzbudgetabrechnung xlsx für das vierte Quartal des letzten Jahres",
+    "fr-FR": "Exemple: État financier du budget xlsx pour le quatrième trimestre de l'année dernière",
+    "ko-KR": "예:작년 4 분기 재무 예산 제표",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(10127-10150)"
+    ],
+    "$id": 21239
   },
   "无法打开链接": {
     "en-US": "Unable to open link",
@@ -100,7 +219,9 @@
     "de-DE": "Link kann nicht geöffnet werden",
     "fr-FR": "Impossible d'ouvrir le lien",
     "ko-KR": "링크를 열 수 없습니다",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(10368-10378)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(10689-10699)"
+    ],
     "$id": 8293
   },
   "萤核智能文件夹": {
@@ -113,8 +234,100 @@
     "de-DE": "Firefly AI Folder",
     "fr-FR": "Firefly AI Folder",
     "ko-KR": "Firefly AI Folder",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(13670-13681)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(14033-14044)"
+    ],
     "$id": 8294
+  },
+  "最新动态": {
+    "en-US": "Latest news",
+    "es-ES": "Últimas noticias",
+    "ar-EG": "آخر الأخبار",
+    "pt-PT": "Últimas notícias",
+    "ru-RU": "Последние новости",
+    "ja-JP": "最新ニュース",
+    "de-DE": "Neueste Nachrichten",
+    "fr-FR": "Dernières nouvelles",
+    "ko-KR": "최신 뉴스",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(16576-16584)"
+    ],
+    "$id": 8311
+  },
+  "AI 摘要功能已上线!": {
+    "en-US": "AI Summary feature is now available!",
+    "es-ES": "¡La función de resumen de IA ya está disponible!",
+    "ar-EG": "تم تشغيل ميزة ملخص الذكاء الاصطناعي!",
+    "pt-PT": "A funcionalidade de resumo de IA está agora disponível!",
+    "ru-RU": "Функция AI-аннотации уже запущена!",
+    "ja-JP": "AIサマリー機能がリリースされました！",
+    "de-DE": "KI-Zusammenfassungsfunktion ist jetzt verfügbar!",
+    "fr-FR": "La fonction de résumé IA est maintenant disponible !",
+    "ko-KR": "AI 요약 기능 출시!",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(19422-19437)"
+    ],
+    "$id": 8312
+  },
+  "最小化": {
+    "en-US": "Minimize",
+    "es-ES": "Minimizar",
+    "ar-EG": "تصغير",
+    "pt-PT": "Minimizar",
+    "ru-RU": "Свернуть",
+    "ja-JP": "最小化\r",
+    "de-DE": "Minimieren",
+    "fr-FR": "Réduire",
+    "ko-KR": "최소화",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(20420-20427)"
+    ],
+    "$id": 8313
+  },
+  "恢复": {
+    "en-US": "Restore",
+    "es-ES": "Restaurar",
+    "ar-EG": "استعادة",
+    "pt-PT": "Restaurar",
+    "ru-RU": "Восстановить",
+    "ja-JP": "復元",
+    "de-DE": "Wiederherstellen",
+    "fr-FR": "Restaurer",
+    "ko-KR": "복원",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(20916-20922)"
+    ],
+    "$id": 8314
+  },
+  "最大化": {
+    "en-US": "Maximize",
+    "es-ES": "Maximizar",
+    "ar-EG": "تكبير",
+    "pt-PT": "Maximizar",
+    "ru-RU": "Развернуть",
+    "ja-JP": "最大化\r",
+    "de-DE": "Maximieren",
+    "fr-FR": "Agrandir",
+    "ko-KR": "최대화",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(20926-20933)"
+    ],
+    "$id": 8315
+  },
+  "关闭": {
+    "en-US": "Close",
+    "es-ES": "Cerrar",
+    "ar-EG": "إغلاق",
+    "pt-PT": "Fechar",
+    "ru-RU": "Закрыть",
+    "ja-JP": "閉じる",
+    "de-DE": "Schließen",
+    "fr-FR": "Fermer",
+    "ko-KR": "닫기",
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(21453-21459)"
+    ],
+    "$id": 8316
   },
   "当前工作目录: {name}，点击切换": {
     "en-US": "Current working directory: {name}, click to switch",
@@ -126,7 +339,9 @@
     "de-DE": "Aktuelles Arbeitsverzeichnis: {name}, klicken Sie zum Wechseln",
     "fr-FR": "Répertoire de travail actuel : {name}, cliquez pour basculer",
     "ko-KR": "현재 작업 디렉터리: {name}, 클릭하여 전환",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(16218-16241)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(23875-23898)"
+    ],
     "$id": 8295
   },
   "未选择": {
@@ -140,8 +355,8 @@
     "fr-FR": "Non sélectionné",
     "ko-KR": "선택되지 않음",
     "$files": [
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(16305-16312)",
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(17152-17159)"
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(23962-23969)",
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(24809-24816)"
     ],
     "$id": 8296
   },
@@ -155,7 +370,9 @@
     "de-DE": "Kein Arbeitsverzeichnis vorhanden",
     "fr-FR": "Aucun répertoire de travail pour le moment",
     "ko-KR": "작업 디렉터리 없음",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(18248-18258)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(25905-25915)"
+    ],
     "$id": 8297
   },
   "已超出目录插槽限制，点击可激活": {
@@ -168,7 +385,9 @@
     "de-DE": "Das Verzeichnis-Slot-Limit wurde überschritten. Zum Aktivieren klicken",
     "fr-FR": "Limite d'emplacement de répertoire dépassée, cliquez pour activer",
     "ko-KR": "디렉터리 슬롯 한도를 초과했습니다. 활성화하려면 클릭하세요.",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(20829-20848)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(28486-28505)"
+    ],
     "$id": 8298
   },
   "切换到工作目录: {path}": {
@@ -181,7 +400,9 @@
     "de-DE": "Zu Arbeitsverzeichnis wechseln: {path}",
     "fr-FR": "Basculer vers le répertoire de travail : {path}",
     "ko-KR": "작업 디렉터리로 전환: {path}",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(20885-20904)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(28542-28561)"
+    ],
     "$id": 8299
   },
   "（极速）": {
@@ -194,7 +415,9 @@
     "de-DE": "（Extrem schnell）",
     "fr-FR": "(ultra-rapide)",
     "ko-KR": "(초고속)",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(22203-22211)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(29860-29868)"
+    ],
     "$id": 8300
   },
   "（私有）": {
@@ -207,7 +430,9 @@
     "de-DE": "（Privat）",
     "fr-FR": "(privé)",
     "ko-KR": "(비공개)",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(22488-22496)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(30145-30153)"
+    ],
     "$id": 8301
   },
   "添加新工作目录": {
@@ -220,7 +445,9 @@
     "de-DE": "Neues Arbeitsverzeichnis hinzufügen",
     "fr-FR": "Ajouter un nouveau répertoire de travail",
     "ko-KR": "새 작업 디렉터리 추가",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(24047-24058)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(31704-31715)"
+    ],
     "$id": 8302
   },
   "企业版暂不支持极速目录": {
@@ -233,7 +460,9 @@
     "de-DE": "Die Enterprise-Version unterstützt derzeit keine Speed-Verzeichnisse.",
     "fr-FR": "La version entreprise ne prend actuellement pas en charge les répertoires rapides.",
     "ko-KR": "엔터프라이즈 버전은 현재 속도 디렉터리를 지원하지 않습니다.",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(25283-25298)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(32940-32955)"
+    ],
     "$id": 8303
   },
   "创建极速目录（推荐）": {
@@ -246,7 +475,9 @@
     "de-DE": "Erstellen Sie ein Schnellverzeichnis (empfohlen)",
     "fr-FR": "Créez un répertoire rapide (recommandé)",
     "ko-KR": "빠른 디렉터리 생성(권장)",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(25302-25316)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(32959-32973)"
+    ],
     "$id": 8304
   },
   "极速目录": {
@@ -259,7 +490,9 @@
     "de-DE": "Geschwindigkeitsverzeichnis",
     "fr-FR": "Annuaire de vitesse",
     "ko-KR": "속도 디렉토리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(26806-26814)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(34463-34471)"
+    ],
     "$id": 8305
   },
   "共享分析数据，极速分析": {
@@ -273,8 +506,8 @@
     "fr-FR": "Partagez des données d’analyse pour une analyse extrêmement rapide",
     "ko-KR": "매우 빠른 분석을 위해 분석 데이터 공유",
     "$files": [
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(27079-27094)",
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(27148-27163)"
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(34736-34751)",
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(34805-34820)"
     ],
     "$id": 8306
   },
@@ -288,7 +521,9 @@
     "de-DE": "Privates Verzeichnis erstellen",
     "fr-FR": "Créer un répertoire privé",
     "ko-KR": "개인 디렉토리 생성",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(28019-28029)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(35676-35686)"
+    ],
     "$id": 8307
   },
   "私有目录": {
@@ -301,7 +536,9 @@
     "de-DE": "Privates Verzeichnis",
     "fr-FR": "Répertoire privé",
     "ko-KR": "개인 디렉토리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(29077-29085)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(36734-36742)"
+    ],
     "$id": 8308
   },
   "分析数据不上云，数据私密": {
@@ -315,8 +552,8 @@
     "fr-FR": "Les données d'analyse ne vont pas vers le cloud et les données sont privées",
     "ko-KR": "분석 데이터는 클라우드로 이동하지 않으며 데이터는 비공개입니다.",
     "$files": [
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(29374-29390)",
-      "src/renderer/components/file-explorer/DirectoryHeader.tsx(29444-29460)"
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(37031-37047)",
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(37101-37117)"
     ],
     "$id": 8309
   },
@@ -330,21 +567,10 @@
     "de-DE": "Arbeitsverzeichnisverwaltung",
     "fr-FR": "Gestion du répertoire de travail",
     "ko-KR": "작업 디렉토리 관리",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(30225-30235)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(37882-37892)"
+    ],
     "$id": 8310
-  },
-  "全域搜索文件 (Ctrl+F)...": {
-    "en-US": "Search for files globally (Ctrl+F)...",
-    "es-ES": "Busque archivos globalmente (Ctrl + F)...",
-    "ar-EG": "البحث عن الملفات على الصعيد العالمي (السيطرة+و)...",
-    "pt-PT": "Procurar ficheiros globalmente (Ctrl + F)...",
-    "ru-RU": "Выполните глобальный поиск файлов (Ctrl+F)...",
-    "ja-JP": "ファイルをグローバルに検索します（Ctrl+F）。..",
-    "de-DE": "Suchen Sie global nach Dateien (Strg + F)...",
-    "fr-FR": "Recherchez des fichiers globalement (Ctrl + F)...",
-    "ko-KR": "전 세계적으로 파일을 검색합니다...",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(34630-34652)"],
-    "$id": 21040
   },
   "全域混合搜索（支持未分析与已分析文件）": {
     "en-US": "Global hybrid search (support for unanalyzed and analyzed files)",
@@ -356,7 +582,9 @@
     "de-DE": "Globale Hybridsuche (Unterstützung für nicht analysierte und analysierte Dateien)",
     "fr-FR": "Recherche hybride globale (prise en charge des fichiers non analysés et analysés)",
     "ko-KR": "글로벌 하이브리드 검색(분석되지 않은 파일 및 분석된 파일 지원)",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(35364-35387)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(43136-43159)"
+    ],
     "$id": 21041
   },
   "清除搜索": {
@@ -369,7 +597,9 @@
     "de-DE": "Suche löschen",
     "fr-FR": "Effacer la recherche",
     "ko-KR": "검색 지우기",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(36022-36030)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(43794-43802)"
+    ],
     "$id": 21042
   },
   "匹配搜索历史": {
@@ -382,7 +612,9 @@
     "de-DE": "Passender Suchverlauf",
     "fr-FR": "Historique de recherche correspondant",
     "ko-KR": "검색 기록 일치",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(37206-37216)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(44994-45004)"
+    ],
     "$id": 21043
   },
   "最近搜索": {
@@ -395,7 +627,9 @@
     "de-DE": "Letzte Suchen",
     "fr-FR": "Recherches récentes",
     "ko-KR": "최근 검색",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(37220-37228)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(45008-45016)"
+    ],
     "$id": 21044
   },
   "清空": {
@@ -408,7 +642,9 @@
     "de-DE": "Leeren",
     "fr-FR": "Effacer",
     "ko-KR": "지우기",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(37697-37703)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(45485-45491)"
+    ],
     "$id": 21045
   },
   "删除此条历史": {
@@ -421,85 +657,9 @@
     "de-DE": "Diesen Verlauf löschen",
     "fr-FR": "Supprimer cet historique",
     "ko-KR": "이 기록 삭제",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(39739-39749)"],
+    "$files": [
+      "src/renderer/components/file-explorer/DirectoryHeader.tsx(47527-47537)"
+    ],
     "$id": 21046
-  },
-  "最新动态": {
-    "en-US": "Latest news",
-    "es-ES": "Últimas noticias",
-    "ar-EG": "آخر الأخبار",
-    "pt-PT": "Últimas notícias",
-    "ru-RU": "Последние новости",
-    "ja-JP": "最新ニュース",
-    "de-DE": "Neueste Nachrichten",
-    "fr-FR": "Dernières nouvelles",
-    "ko-KR": "최신 뉴스",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(43096-43104)"],
-    "$id": 8311
-  },
-  "AI 摘要功能已上线!": {
-    "en-US": "AI Summary feature is now available!",
-    "es-ES": "¡La función de resumen de IA ya está disponible!",
-    "ar-EG": "تم تشغيل ميزة ملخص الذكاء الاصطناعي!",
-    "pt-PT": "A funcionalidade de resumo de IA está agora disponível!",
-    "ru-RU": "Функция AI-аннотации уже запущена!",
-    "ja-JP": "AIサマリー機能がリリースされました！",
-    "de-DE": "KI-Zusammenfassungsfunktion ist jetzt verfügbar!",
-    "fr-FR": "La fonction de résumé IA est maintenant disponible !",
-    "ko-KR": "AI 요약 기능 출시!",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(45840-45855)"],
-    "$id": 8312
-  },
-  "最小化": {
-    "en-US": "Minimize",
-    "es-ES": "Minimizar",
-    "ar-EG": "تصغير",
-    "pt-PT": "Minimizar",
-    "ru-RU": "Свернуть",
-    "ja-JP": "最小化\r",
-    "de-DE": "Minimieren",
-    "fr-FR": "Réduire",
-    "ko-KR": "최소화",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(46802-46809)"],
-    "$id": 8313
-  },
-  "恢复": {
-    "en-US": "Restore",
-    "es-ES": "Restaurar",
-    "ar-EG": "استعادة",
-    "pt-PT": "Restaurar",
-    "ru-RU": "Восстановить",
-    "ja-JP": "復元",
-    "de-DE": "Wiederherstellen",
-    "fr-FR": "Restaurer",
-    "ko-KR": "복원",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(47278-47284)"],
-    "$id": 8314
-  },
-  "最大化": {
-    "en-US": "Maximize",
-    "es-ES": "Maximizar",
-    "ar-EG": "تكبير",
-    "pt-PT": "Maximizar",
-    "ru-RU": "Развернуть",
-    "ja-JP": "最大化\r",
-    "de-DE": "Maximieren",
-    "fr-FR": "Agrandir",
-    "ko-KR": "최대화",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(47288-47295)"],
-    "$id": 8315
-  },
-  "关闭": {
-    "en-US": "Close",
-    "es-ES": "Cerrar",
-    "ar-EG": "إغلاق",
-    "pt-PT": "Fechar",
-    "ru-RU": "Закрыть",
-    "ja-JP": "閉じる",
-    "de-DE": "Schließen",
-    "fr-FR": "Fermer",
-    "ko-KR": "닫기",
-    "$files": ["src/renderer/components/file-explorer/DirectoryHeader.tsx(47795-47801)"],
-    "$id": 8316
   }
 }

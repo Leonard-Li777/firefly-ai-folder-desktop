@@ -165,7 +165,7 @@
     "de-DE": "Unzureichende Berechtigungen für den Zugriff auf das Verzeichnis: {dirPath}",
     "fr-FR": "Permissions insuffisantes pour accéder au répertoire : {dirPath}",
     "ko-KR": "권한이 부족하여 디렉터리에 접근할 수 없습니다: {dirPath}",
-    "$files": ["src/electron/main/ipc-handlers/file.ts(11884-11910)"],
+    "$files": ["src/electron/main/ipc-handlers/file.ts(12618-12644)"],
     "$id": 8125
   },
   "目录不存在: {dirPath}": {
@@ -178,7 +178,7 @@
     "de-DE": "Das Verzeichnis existiert nicht: {dirPath}",
     "fr-FR": "Le répertoire n'existe pas : {dirPath}",
     "ko-KR": "디렉터리가 존재하지 않습니다: {dirPath}",
-    "$files": ["src/electron/main/ipc-handlers/file.ts(11982-12002)"],
+    "$files": ["src/electron/main/ipc-handlers/file.ts(12716-12736)"],
     "$id": 8126
   },
   "无法读取目录: {dirPath} ({errorDetail})": {
@@ -191,7 +191,7 @@
     "de-DE": "Verzeichnis kann nicht gelesen werden: {dirPath} ({errorDetail})",
     "fr-FR": "Impossible de lire le répertoire : {dirPath} ({errorDetail})",
     "ko-KR": "디렉터리를 읽을 수 없습니다: {dirPath} ({errorDetail})",
-    "$files": ["src/electron/main/ipc-handlers/file.ts(12067-12104)"],
+    "$files": ["src/electron/main/ipc-handlers/file.ts(12801-12838)"],
     "$id": 8127
   },
   "未在工作空间找到该文件信息": {
