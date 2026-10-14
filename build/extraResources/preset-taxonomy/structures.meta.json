@@ -1,0 +1,607 @@
+{
+  "version": "1.0.0",
+  "count": 13,
+  "dimensions": {
+    "bekko": 384,
+    "gemma": 512
+  },
+  "dtype": "float32",
+  "templates": [
+    {
+      "template_id": "tpl_ui_ux_standard",
+      "name": {
+        "zh-CN": "专业 UI/UX 设计素材库 (JD/PARA 规范版)",
+        "en-US": "Pro UI/UX Design Assets Repository (JD/PARA Compliant)",
+        "ja-JP": "プロフェッショナルUI/UXデザインアセットリポジトリ",
+        "ko-KR": "전문 UI/UX 디자인 애셋 저장소",
+        "de-DE": "Professionelles UI/UX Design Assets Repository",
+        "fr-FR": "Dépôt d'actifs de conception UI/UX professionnelle",
+        "es-ES": "Repositorio de recursos de diseño UI/UX profesional",
+        "ru-RU": "Профессиональный репозиторий дизайн-ассетов UI/UX",
+        "pt-BR": "Repositório profissional de recursos de design UI/UX",
+        "it-IT": "Repository professionale di asset di design UI/UX"
+      },
+      "description": {
+        "zh-CN": "基于项目与基础资产解耦的标准化设计团队工作流",
+        "en-US": "Standardized team workflow decoupling reusable design systems from projects",
+        "ja-JP": "Standardized team workflow decoupling reusable design systems from projects",
+        "ko-KR": "Standardized team workflow decoupling reusable design systems from projects",
+        "de-DE": "Standardized team workflow decoupling reusable design systems from projects",
+        "fr-FR": "Standardized team workflow decoupling reusable design systems from projects",
+        "es-ES": "Standardized team workflow decoupling reusable design systems from projects",
+        "ru-RU": "Standardized team workflow decoupling reusable design systems from projects",
+        "pt-BR": "Standardized team workflow decoupling reusable design systems from projects",
+        "it-IT": "Standardized team workflow decoupling reusable design systems from projects"
+      },
+      "target_identities": [
+        "id.designer.ui",
+        "id.designer.graphic",
+        "id.pm.product"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "10-设计规范与组件库/01-全局设计系统",
+        "10-设计规范与组件库/02-原子组件与模板",
+        "20-通用设计素材/01-图标素材与SVG",
+        "20-通用设计素材/02-高清位图与背景",
+        "30-项目交付/01-原型图与交互稿",
+        "30-项目交付/02-标注切图导出",
+        "40-设计灵感与竞品归档"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{ProjectName}_{AssetName}_v{Version}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_frontend_dev",
+      "name": {
+        "zh-CN": "现代前端与客户端工程工作流",
+        "en-US": "Modern Frontend & Client App Engineering Workflow",
+        "ja-JP": "モダンフロントエンド＆クライアントエンジニアリングワークフロー",
+        "ko-KR": "모던 프론트엔드 및 클라이언트 엔지니어링 워크플로우",
+        "de-DE": "Modernes Frontend- & Client-Entwicklungs-Workflow",
+        "fr-FR": "Flux d'ingénierie moderne frontend et client",
+        "es-ES": "Flujo de trabajo de ingeniería frontend y cliente moderno",
+        "ru-RU": "Современный рабочий процесс разработки frontend и клиентов",
+        "pt-BR": "Fluxo de engenharia frontend e cliente moderno",
+        "it-IT": "Workflow moderno di ingegneria frontend e client"
+      },
+      "description": {
+        "zh-CN": "包含构建包、静态资源、端侧测试与发布脚本的规范拓扑",
+        "en-US": "Structured directories for assets, builds, mock data, and test reports",
+        "ja-JP": "Structured directories for assets, builds, mock data, and test reports",
+        "ko-KR": "Structured directories for assets, builds, mock data, and test reports",
+        "de-DE": "Structured directories for assets, builds, mock data, and test reports",
+        "fr-FR": "Structured directories for assets, builds, mock data, and test reports",
+        "es-ES": "Structured directories for assets, builds, mock data, and test reports",
+        "ru-RU": "Structured directories for assets, builds, mock data, and test reports",
+        "pt-BR": "Structured directories for assets, builds, mock data, and test reports",
+        "it-IT": "Structured directories for assets, builds, mock data, and test reports"
+      },
+      "target_identities": [
+        "id.dev.frontend",
+        "id.dev.mobile",
+        "id.qa.tester"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-工程源码与组件/核心模块",
+        "02-静态资源/图标与多媒体",
+        "03-环境与接口配置/Mock与本地数据",
+        "04-编译打包交付/发布产物",
+        "05-测试报告与缺陷排查"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_backend_arch",
+      "name": {
+        "zh-CN": "后端微服务与系统架构工作流",
+        "en-US": "Backend Microservices & Cloud Architecture Workflow",
+        "ja-JP": "バックエンドマイクロサービス＆クラウドアーキテクチャ",
+        "ko-KR": "백엔드 마이크로서비스 및 클라우드 아키텍처 워크플로우",
+        "de-DE": "Backend-Mikroservices & Cloud-Architektur-Workflow",
+        "fr-FR": "Architecture backend et microservices cloud",
+        "es-ES": "Flujo de arquitectura en la nube y microservicios backend",
+        "ru-RU": "Рабочий процесс бэкенд-микросервисов и облачной архитектуры",
+        "pt-BR": "Fluxo de arquitetura em nuvem e microsserviços backend",
+        "it-IT": "Workflow di architettura cloud e microservizi backend"
+      },
+      "description": {
+        "zh-CN": "规范数据库迁移、API文档、K8s编排与压测日志结构",
+        "en-US": "Structured storage for DB migrations, API specs, K8s configs, and logs",
+        "ja-JP": "Structured storage for DB migrations, API specs, K8s configs, and logs",
+        "ko-KR": "Structured storage for DB migrations, API specs, K8s configs, and logs",
+        "de-DE": "Structured storage for DB migrations, API specs, K8s configs, and logs",
+        "fr-FR": "Structured storage for DB migrations, API specs, K8s configs, and logs",
+        "es-ES": "Structured storage for DB migrations, API specs, K8s configs, and logs",
+        "ru-RU": "Structured storage for DB migrations, API specs, K8s configs, and logs",
+        "pt-BR": "Structured storage for DB migrations, API specs, K8s configs, and logs",
+        "it-IT": "Structured storage for DB migrations, API specs, K8s configs, and logs"
+      },
+      "target_identities": [
+        "id.dev.backend",
+        "id.ops.sre"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-系统设计与API文档/接口契约",
+        "02-数据库管理/初始架构与迁移脚本",
+        "03-云原生配置/Docker与K8s编排",
+        "04-性能监控与排障/日志分析"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_para_universal",
+      "name": {
+        "zh-CN": "PARA 通用数字资产管理体系",
+        "en-US": "PARA Universal Knowledge & Asset Organization",
+        "ja-JP": "PARA 汎用デジタルアセット管理システム",
+        "ko-KR": "PARA 범용 디지털 애셋 관리 체계",
+        "de-DE": "PARA Universelles Wissens- & Asset-System",
+        "fr-FR": "Système universel d'organisation PARA",
+        "es-ES": "Sistema universal de organización de activos PARA",
+        "ru-RU": "Универсальная система организации знаний PARA",
+        "pt-BR": "Sistema universal de organização de ativos PARA",
+        "it-IT": "Sistema universale di organizzazione degli asset PARA"
+      },
+      "description": {
+        "zh-CN": "业界公认的最适合高频数字创作者与知识工作者的经典结构 (项目/领域/资源/归档)",
+        "en-US": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives",
+        "ja-JP": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives",
+        "ko-KR": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives",
+        "de-DE": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives",
+        "fr-FR": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives",
+        "es-ES": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives",
+        "ru-RU": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives",
+        "pt-BR": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives",
+        "it-IT": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives"
+      },
+      "target_identities": [
+        "id.pm.product",
+        "id.student.undergrad",
+        "id.ops.newmedia",
+        "id.life.digital_hoarder",
+        "id.marketing.planner",
+        "id.sales.bd"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-Projects (进行中项目)/当前重点攻坚",
+        "02-Areas (长期责任领域)/职业与个人成长",
+        "03-Resources (知识与素材库)/通识参考资料",
+        "04-Archives (历史封存归档)/已完成结项"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_johnny_decimal",
+      "name": {
+        "zh-CN": "Johnny.Decimal 十进制精准信息分类架构",
+        "en-US": "Johnny.Decimal Standard Decimal System",
+        "ja-JP": "Johnny.Decimal 10進法情報分類アーキテクチャ",
+        "ko-KR": "Johnny.Decimal 십진 분류 정보 체계",
+        "de-DE": "Johnny.Decimal Dezimalklassifikationssystem",
+        "fr-FR": "Système de classification décimale Johnny.Decimal",
+        "es-ES": "Sistema de clasificación decimal Johnny.Decimal",
+        "ru-RU": "Десятичная система классификации Johnny.Decimal",
+        "pt-BR": "Sistema de classificação decimal Johnny.Decimal",
+        "it-IT": "Sistema di classificazione decimale Johnny.Decimal"
+      },
+      "description": {
+        "zh-CN": "绝不迷路的十进制数字编号系统，适合行政、法务与严谨结构化档案",
+        "en-US": "Numerical indexed categories for high-precision institutional filing",
+        "ja-JP": "Numerical indexed categories for high-precision institutional filing",
+        "ko-KR": "Numerical indexed categories for high-precision institutional filing",
+        "de-DE": "Numerical indexed categories for high-precision institutional filing",
+        "fr-FR": "Numerical indexed categories for high-precision institutional filing",
+        "es-ES": "Numerical indexed categories for high-precision institutional filing",
+        "ru-RU": "Numerical indexed categories for high-precision institutional filing",
+        "pt-BR": "Numerical indexed categories for high-precision institutional filing",
+        "it-IT": "Numerical indexed categories for high-precision institutional filing"
+      },
+      "target_identities": [
+        "id.hr.admin",
+        "id.legal.compliance",
+        "id.finance.accountant",
+        "id.student.grad"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "10-19 组织治理与规章/11-公司制度",
+        "20-29 财务收支与税务/21-会计凭证",
+        "30-39 合同协议与法务/31-商业合同",
+        "40-49 资产采购与行政/41-固定资产"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_photography_pipeline",
+      "name": {
+        "zh-CN": "专业摄影前后端调色交付工作流",
+        "en-US": "Pro Photography Ingest, Retouch & Delivery Pipeline",
+        "ja-JP": "プロ写真撮影・レタッチ＆納品ワークフロー",
+        "ko-KR": "전문 사진 촬영, 보정 및 납품 파이프라인",
+        "de-DE": "Profi-Fotografie Aufnahme-, Retusche- & Lieferpipeline",
+        "fr-FR": "Flux professionnel de retouche et livraison photo",
+        "es-ES": "Flujo de trabajo profesional de retoque y entrega fotográfica",
+        "ru-RU": "Профессиональный рабочий процесс фотосъемки и ретуши",
+        "pt-BR": "Fluxo profissional de fotografia, retoque e entrega",
+        "it-IT": "Workflow professionale di fotografia, fotoritocco e consegna"
+      },
+      "description": {
+        "zh-CN": "从机身RAW导入、初筛挑片、工程修图到客户交付的全流程组织",
+        "en-US": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery",
+        "ja-JP": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery",
+        "ko-KR": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery",
+        "de-DE": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery",
+        "fr-FR": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery",
+        "es-ES": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery",
+        "ru-RU": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery",
+        "pt-BR": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery",
+        "it-IT": "Full pipeline from RAW ingest to culling, catalog editing, and client delivery"
+      },
+      "target_identities": [
+        "id.hobby.photographer",
+        "id.life.traveler"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-原始拍片RAW/按拍摄日期存储",
+        "02-精选入围Selected/初筛挑片",
+        "03-修图工程Catalogs/Lightroom与PS",
+        "04-客户交付Exports/高清成品",
+        "05-网络展示Web/压缩水印图"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Subject}_{Sequence}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_video_production",
+      "name": {
+        "zh-CN": "影视视听与自媒体剪辑工业管线",
+        "en-US": "Video Production & Editing Studio Pipeline",
+        "ja-JP": "映像制作＆動画編集スタジオパイプライン",
+        "ko-KR": "영상 제작 및 비디오 편집 스튜디오 파이프라인",
+        "de-DE": "Videoproduktion & Editing-Studio-Pipeline",
+        "fr-FR": "Pipeline de production vidéo et montage",
+        "es-ES": "Canalización de producción de video y montaje",
+        "ru-RU": "Рабочий процесс видеопроизводства и монтажа",
+        "pt-BR": "Pipeline de estúdio de produção e edição de vídeo",
+        "it-IT": "Pipeline di produzione e montaggio video"
+      },
+      "description": {
+        "zh-CN": "适配PR/FCPX/达芬奇剪辑管线，涵盖音画分离、字幕花字与多端输出",
+        "en-US": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers",
+        "ja-JP": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers",
+        "ko-KR": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers",
+        "de-DE": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers",
+        "fr-FR": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers",
+        "es-ES": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers",
+        "ru-RU": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers",
+        "pt-BR": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers",
+        "it-IT": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers"
+      },
+      "target_identities": [
+        "id.hobby.vlogger",
+        "id.designer.3d",
+        "id.hobby.podcaster"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-拍摄实录Footage/分机位原片",
+        "02-音频音效Audio/配乐BGM与人声录音",
+        "03-视觉包装Graphics/花字片头与转场特效",
+        "04-剪辑工程Projects/工程文件与自动备份",
+        "05-成片渲染Exports/全平台高清成片"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_academic_thesis",
+      "name": {
+        "zh-CN": "学术科研、开题与学位论文工作流",
+        "en-US": "Academic Research, Lab Data & Thesis Workflow",
+        "ja-JP": "学術研究・実験データ＆論文執筆ワークフロー",
+        "ko-KR": "학술 연구, 실험 데이터 및 학위 논문 워크플로우",
+        "de-DE": "Wissenschaftliche Forschung & Abschlussarbeits-Workflow",
+        "fr-FR": "Recherche académique, données de laboratoire et thèse",
+        "es-ES": "Investigación académica, datos de laboratorio y tesis",
+        "ru-RU": "Академические исследования, лабораторные данные и диссертация",
+        "pt-BR": "Pesquisa acadêmica, dados laboratoriais e tese",
+        "it-IT": "Ricerca accademica, dati di laboratorio e tesi"
+      },
+      "description": {
+        "zh-CN": "论文开题、文献精读、实验原始记录与学位论文答辩终稿归纳",
+        "en-US": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks",
+        "ja-JP": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks",
+        "ko-KR": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks",
+        "de-DE": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks",
+        "fr-FR": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks",
+        "es-ES": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks",
+        "ru-RU": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks",
+        "pt-BR": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks",
+        "it-IT": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks"
+      },
+      "target_identities": [
+        "id.student.grad",
+        "id.student.undergrad",
+        "id.student.exam"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-核心文献库/文献综述与高引论文",
+        "02-实验与调研数据/原始数据表与统计脚本",
+        "03-论文正文撰写/LaTeX源文件与插图",
+        "04-学术会议与答辩/汇报幻灯片PPT",
+        "05-审稿意见与最终定稿/归档PDF"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_finance_accounting",
+      "name": {
+        "zh-CN": "企业财务凭证与会计审计管理体系",
+        "en-US": "Corporate Finance Vouchers & Audit Taxonomy",
+        "ja-JP": "企業財務伝票＆会計監査管理システム",
+        "ko-KR": "기업 재무 전표 및 회계 감사 관리 체계",
+        "de-DE": "Finanzbelege & Buchhaltungsaudit-System",
+        "fr-FR": "Justificatifs financiers et gestion comptable",
+        "es-ES": "Comprobantes financieros y sistema de auditoría contable",
+        "ru-RU": "Финансовая документация и система бухгалтерского аудита",
+        "pt-BR": "Comprovantes financeiros e auditoria contábil",
+        "it-IT": "Giustificativi finanziari e sistema di revisione contabile"
+      },
+      "description": {
+        "zh-CN": "税务月结、发票票据、工资表与年报审计标准化归类",
+        "en-US": "Structured ledger storage for tax filings, payroll, and audit documentation",
+        "ja-JP": "Structured ledger storage for tax filings, payroll, and audit documentation",
+        "ko-KR": "Structured ledger storage for tax filings, payroll, and audit documentation",
+        "de-DE": "Structured ledger storage for tax filings, payroll, and audit documentation",
+        "fr-FR": "Structured ledger storage for tax filings, payroll, and audit documentation",
+        "es-ES": "Structured ledger storage for tax filings, payroll, and audit documentation",
+        "ru-RU": "Structured ledger storage for tax filings, payroll, and audit documentation",
+        "pt-BR": "Structured ledger storage for tax filings, payroll, and audit documentation",
+        "it-IT": "Structured ledger storage for tax filings, payroll, and audit documentation"
+      },
+      "target_identities": [
+        "id.finance.accountant"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-原始发票报销/按月凭证汇总",
+        "02-资金流水与银行对账/对账单明细",
+        "03-薪酬社保台账/工资发放表",
+        "04-税务申报与税单/纳税申报凭证",
+        "05-年度审计报告/经审计正式财报"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_family_household",
+      "name": {
+        "zh-CN": "家庭数字档案库与房产生活资产管理",
+        "en-US": "Family Household Archive & Life Assets Vault",
+        "ja-JP": "家族デジタルアーカイブ＆資産管理システム",
+        "ko-KR": "가정 디지털 아카이브 및 생활 자산 보관함",
+        "de-DE": "Familienarchiv & Lebensvermögen-Tresor",
+        "fr-FR": "Archives numériques familiales et coffre-fort d'actifs",
+        "es-ES": "Archivo digital familiar y baúl de activos de vida",
+        "ru-RU": "Семейный цифровой архив и хранилище активов",
+        "pt-BR": "Arquivo digital familiar e cofre de ativos de vida",
+        "it-IT": "Archivio digitale della famiglia e caveau dei beni di vita"
+      },
+      "description": {
+        "zh-CN": "家庭证件、房产购车合同、家电凭据、保单与健康医疗报告终身归档",
+        "en-US": "Long-term filing for identity docs, contracts, warranties, policies, and health",
+        "ja-JP": "Long-term filing for identity docs, contracts, warranties, policies, and health",
+        "ko-KR": "Long-term filing for identity docs, contracts, warranties, policies, and health",
+        "de-DE": "Long-term filing for identity docs, contracts, warranties, policies, and health",
+        "fr-FR": "Long-term filing for identity docs, contracts, warranties, policies, and health",
+        "es-ES": "Long-term filing for identity docs, contracts, warranties, policies, and health",
+        "ru-RU": "Long-term filing for identity docs, contracts, warranties, policies, and health",
+        "pt-BR": "Long-term filing for identity docs, contracts, warranties, policies, and health",
+        "it-IT": "Long-term filing for identity docs, contracts, warranties, policies, and health"
+      },
+      "target_identities": [
+        "id.life.homemaker"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-核心身份与证照/家庭成员电子证件",
+        "02-不动产与大件合同/购房购车签署协议",
+        "03-金融保险与保单/商业保险与理财合同",
+        "04-医疗健康档案/年度体检与就诊记录",
+        "05-生活电器与售后/电子发票与保修卡"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_newmedia_content",
+      "name": {
+        "zh-CN": "新媒体全渠道内容孵化与宣发工作流",
+        "en-US": "Multi-Channel Social Media Content Incubation Pipeline",
+        "ja-JP": "マルチチャネルソーシャルメディア運用ワークフロー",
+        "ko-KR": "멀티채널 소셜미디어 콘텐츠 인큐베이션 파이프라인",
+        "de-DE": "Multi-Channel-Social-Media-Inhalte-Pipeline",
+        "fr-FR": "Flux de création et diffusion de contenu multicanal",
+        "es-ES": "Canalización de incubación de contenido omnicanal",
+        "ru-RU": "Многоканальный рабочий процесс создания и дистрибуции контента",
+        "pt-BR": "Pipeline de criação de conteúdo social multicanal",
+        "it-IT": "Workflow multicanale per contenuti social media"
+      },
+      "description": {
+        "zh-CN": "从小红书、抖音、公众号到视频号的内容策划、视觉素材与数据复盘",
+        "en-US": "Integrated workflow covering brainstorming, graphic assets, and campaign reports",
+        "ja-JP": "Integrated workflow covering brainstorming, graphic assets, and campaign reports",
+        "ko-KR": "Integrated workflow covering brainstorming, graphic assets, and campaign reports",
+        "de-DE": "Integrated workflow covering brainstorming, graphic assets, and campaign reports",
+        "fr-FR": "Integrated workflow covering brainstorming, graphic assets, and campaign reports",
+        "es-ES": "Integrated workflow covering brainstorming, graphic assets, and campaign reports",
+        "ru-RU": "Integrated workflow covering brainstorming, graphic assets, and campaign reports",
+        "pt-BR": "Integrated workflow covering brainstorming, graphic assets, and campaign reports",
+        "it-IT": "Integrated workflow covering brainstorming, graphic assets, and campaign reports"
+      },
+      "target_identities": [
+        "id.ops.newmedia",
+        "id.marketing.planner"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-选题灵感与策划库/近期选题脚本",
+        "02-视觉与配图素材/封面图与正文排版素材",
+        "03-文案排版定稿/各平台最终发布稿",
+        "04-合作商单与合同/商务结案与合同",
+        "05-数据复盘与报告/月度流量转化分析"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_ecommerce_ops",
+      "name": {
+        "zh-CN": "电商全平台店铺运营与选品归档",
+        "en-US": "E-Commerce Multi-Store Ops & Sourcing Archive",
+        "ja-JP": "ECストア運営＆商品ソーシングアーカイブ",
+        "ko-KR": "이커머스 스토어 운영 및 소싱 아카이브",
+        "de-DE": "E-Commerce-Shop-Betrieb & Sourcing-Archiv",
+        "fr-FR": "Opérations de boutique e-commerce et approvisionnement",
+        "es-ES": "Operaciones de tienda de comercio electrónico y abastecimiento",
+        "ru-RU": "Управление магазинами электронной коммерции и закупками",
+        "pt-BR": "Operações de loja virtual e arquivo de compras",
+        "it-IT": "Gestione negozi e-commerce e archivio fornitori"
+      },
+      "description": {
+        "zh-CN": "电商选品打样、直通车投流物料、商品主图详情页与大促活动复盘",
+        "en-US": "Product samples, marketing creatives, product detail pages, and promotion audits",
+        "ja-JP": "Product samples, marketing creatives, product detail pages, and promotion audits",
+        "ko-KR": "Product samples, marketing creatives, product detail pages, and promotion audits",
+        "de-DE": "Product samples, marketing creatives, product detail pages, and promotion audits",
+        "fr-FR": "Product samples, marketing creatives, product detail pages, and promotion audits",
+        "es-ES": "Product samples, marketing creatives, product detail pages, and promotion audits",
+        "ru-RU": "Product samples, marketing creatives, product detail pages, and promotion audits",
+        "pt-BR": "Product samples, marketing creatives, product detail pages, and promotion audits",
+        "it-IT": "Product samples, marketing creatives, product detail pages, and promotion audits"
+      },
+      "target_identities": [
+        "id.ops.ecommerce"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-选品调研与样品/供应链样品评估",
+        "02-主图与详情页物料/高转产品设计大图",
+        "03-推广引流与活动申报/投流关键词与报表",
+        "04-仓储物流与对账/出入库单与快递对账",
+        "05-大促复盘与售后/好评维护与客诉分析"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_game_dev_assets",
+      "name": {
+        "zh-CN": "独立游戏开发与素材资源组织架构",
+        "en-US": "Indie Game Development & Asset Architecture",
+        "ja-JP": "インディーゲーム開発＆アセット整理アーキテクチャ",
+        "ko-KR": "인디 게임 개발 및 애셋 구성 아키텍처",
+        "de-DE": "Indie-Spielentwicklung & Asset-Architektur",
+        "fr-FR": "Développement de jeux indépendants et architecture d'actifs",
+        "es-ES": "Desarrollo de videojuegos independientes y arquitectura de recursos",
+        "ru-RU": "Разработка инди-игр и архитектура игровых ассетов",
+        "pt-BR": "Desenvolvimento de jogos indie e arquitetura de ativos",
+        "it-IT": "Sviluppo di videogiochi indipendenti e architettura degli asset"
+      },
+      "description": {
+        "zh-CN": "覆盖Unity/Unreal/Godot策划案、美术精灵图、音效音频与构建Demo包",
+        "en-US": "Organized game design docs, sprite sheets, audio, and playable builds",
+        "ja-JP": "Organized game design docs, sprite sheets, audio, and playable builds",
+        "ko-KR": "Organized game design docs, sprite sheets, audio, and playable builds",
+        "de-DE": "Organized game design docs, sprite sheets, audio, and playable builds",
+        "fr-FR": "Organized game design docs, sprite sheets, audio, and playable builds",
+        "es-ES": "Organized game design docs, sprite sheets, audio, and playable builds",
+        "ru-RU": "Organized game design docs, sprite sheets, audio, and playable builds",
+        "pt-BR": "Organized game design docs, sprite sheets, audio, and playable builds",
+        "it-IT": "Organized game design docs, sprite sheets, audio, and playable builds"
+      },
+      "target_identities": [
+        "id.hobby.gamer",
+        "id.designer.3d",
+        "id.dev.frontend"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-游戏设计文档GDD/世界观与数值表",
+        "02-美术精灵与材质2D-3D/模型与贴图",
+        "03-音频与环境音效Audio/打击音效与BGM",
+        "04-关卡与原型工程Level/场景与预制体",
+        "05-测试包发布Builds/试玩Demo与发行包"
+      ],
+      "naming_rules": {}
+    }
+  ]
+}
