@@ -222,7 +222,7 @@
     "ru-RU": "Перетащите курсор, чтобы настроить глубину отображения дерева надписей (уровень 2~10)",
     "ja-JP": "ドラッグしてラベルツリーの表示深さを調整します（レベル2〜10）",
     "de-DE": "Ziehen Sie, um die Anzeigetiefe des Etikettenbaums anzupassen (Stufe 2 ~ 10)",
-    "fr-FR": "拖动调整标签树显示深度 (2~10 级)",
+    "fr-FR": "Faites glisser pour ajuster la profondeur d'affichage de l'arborescence des étiquettes (niveau 2~10)",
     "ko-KR": "드래그하여 레이블 트리의 표시 깊이를 조정합니다(레벨 2~10).",
     "$files": [
       "src/renderer/components/file-explorer/DimensionTreeSidebar.tsx(48902-48926)"
@@ -1799,7 +1799,7 @@
     "ru-RU": "Выход из поиска",
     "ja-JP": "検索を終了する",
     "de-DE": "Suche beenden",
-    "fr-FR": "退出搜索",
+    "fr-FR": "Quitter la recherche",
     "ko-KR": "종료 검색",
     "$files": [
       "src/renderer/components/file-explorer/GlobalSearchOverlay/index.tsx(7913-7921)"

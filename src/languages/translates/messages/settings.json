@@ -137,13 +137,13 @@
   },
   "检查更新": {
     "en-US": "Check for updates",
-    "es-ES": "检查更新",
+    "es-ES": "Buscar actualizaciones",
     "ar-EG": "تحقق من وجود تحديثات",
     "pt-PT": "Verificar atualizações",
     "ru-RU": "Проверяйте наличие обновлений",
     "ja-JP": "更新の確認",
     "de-DE": "Nach Aktualisierungen suchen",
-    "fr-FR": "检查更新",
+    "fr-FR": "Vérifier les mises à jour",
     "ko-KR": "업데이트 확인",
     "$files": [
       "src/renderer/components/settings/about-dialog.tsx(3194-3202)"
@@ -4099,12 +4099,12 @@
   },
   "配置基于端侧离线模型的语音合成朗读倍率、默认发音人与音色库": {
     "en-US": "Configure the speech synthesis reading magnification, default pronunciation person and sound library based on the end-side offline model",
-    "es-ES": "配置基于端侧离线模型的语音合成朗读倍率、默认发音人与音色库",
+    "es-ES": "Configure la ampliación de lectura de síntesis de voz, la persona de pronunciación predeterminada y la biblioteca de sonidos según el modelo fuera de línea del extremo",
     "ar-EG": "قم بتكوين تكبير قراءة توليف الكلام وشخص النطق الافتراضي ومكتبة الصوت بناء على نموذج الجانب النهائي غير المتصل بالإنترنت",
-    "pt-PT": "配置基于端侧离线模型的语音合成朗读倍率、默认发音人与音色库",
+    "pt-PT": "Configure a ampliação da leitura da síntese de fala, a pronúncia padrão da pessoa e a biblioteca de sons com base no modelo off-line do lado final",
     "ru-RU": "Настройте увеличение для чтения при помощи синтеза речи, пользовательское произношение по умолчанию и звуковую библиотеку на основе конечной автономной модели",
     "ja-JP": "エンド側のオフラインモデルに基づいて、音声合成の読み取り倍率、デフォルトの発音の人とサウンドライブラリを設定します",
-    "de-DE": "配置基于端侧离线模型的语音合成朗读倍率、默认发音人与音色库",
+    "de-DE": "Konfigurieren Sie die Sprachsynthese-Lesevergrößerung, die Standardaussprache und die Soundbibliothek basierend auf dem endseitigen Offline-Modell",
     "fr-FR": "Configurez le grossissement de lecture de la synthèse vocale, la personne de prononciation par défaut et la bibliothèque de sons en fonction du modèle hors ligne côté extrémité",
     "ko-KR": "엔드 사이드 오프라인 모델을 기반으로 음성 합성 읽기 배율,기본 발음 사람과 사운드 라이브러리를 구성합니다",
     "$files": [
@@ -4114,10 +4114,10 @@
   },
   "默认朗读倍率": {
     "en-US": "Default reading magnification",
-    "es-ES": "默认朗读倍率",
+    "es-ES": "Ampliación de lectura predeterminada",
     "ar-EG": "تكبير القراءة الافتراضي",
     "pt-PT": "Ampliação de leitura padrão",
-    "ru-RU": "默认朗读倍率",
+    "ru-RU": "Увеличение показаний по умолчанию",
     "ja-JP": "デフォルトの読み取り倍率",
     "de-DE": "Standard-Lesevergrößerung",
     "fr-FR": "Grossissement de lecture par défaut",
@@ -4151,7 +4151,7 @@
     "ja-JP": "私のコレクション。",
     "de-DE": "Meine Sammlung.",
     "fr-FR": "Ma collection.",
-    "ko-KR": "我的收藏音色",
+    "ko-KR": "내 컬렉션.",
     "$files": [
       "src/renderer/components/settings/tts-settings.tsx(7119-7129)"
     ],
@@ -4160,10 +4160,10 @@
   "朗读胶囊下拉菜单中仅呈现收藏音色。默认朗读音色必须从收藏中选定。": {
     "en-US": "Only the favorite timbres are displayed in the drop-down menu of the reading capsule.The default reading tone must be selected from the collection.",
     "es-ES": "Solo los timbres favoritos se muestran en el menú desplegable de la cápsula de lectura.El tono de lectura predeterminado debe seleccionarse de la colección.",
-    "ar-EG": "朗读胶囊下拉菜单中仅呈现收藏音色。默认朗读音色必须从收藏中选定。",
+    "ar-EG": "يتم عرض الأجراس المفضلة فقط في القائمة المنسدلة لكبسولة القراءة.يجب تحديد نغمة القراءة الافتراضية من المجموعة.",
     "pt-PT": "Apenas os timbres favoritos são apresentados no menu pendente da cápsula de leitura.O tom de leitura predefinido deve ser seleccionado a partir da colecção.",
     "ru-RU": "В выпадающем меню капсулы для чтения отображаются только избранные тембры.Звуковой сигнал для чтения по умолчанию должен быть выбран из коллекции.",
-    "ja-JP": "朗读胶囊下拉菜单中仅呈现收藏音色。默认朗读音色必须从收藏中选定。",
+    "ja-JP": "読書カプセルのドロップダウンメニューには、お気に入りの音色のみが表示されます。既定の読み取りトーンは、コレクションから選択する必要があります。",
     "de-DE": "Im Dropdown-Menü der Lesekapsel werden nur die bevorzugten Klangfarben angezeigt.Der Standardleseton muss aus der Sammlung ausgewählt werden.",
     "fr-FR": "Seuls les timbres favoris sont affichés dans le menu déroulant de la capsule de lecture.La tonalité de lecture par défaut doit être sélectionnée dans la collection.",
     "ko-KR": "읽기 캡슐의 드롭다운 메뉴에는 좋아하는 음색만 표시됩니다.컬렉션에서 기본 읽기 톤을 선택해야 합니다.",
@@ -4179,7 +4179,7 @@
     "pt-PT": "Tom",
     "ru-RU": "Тон",
     "ja-JP": "トーン",
-    "de-DE": "个音色",
+    "de-DE": "Ton",
     "fr-FR": "Tonalité",
     "ko-KR": "음색",
     "$files": [
@@ -4212,7 +4212,7 @@
     "ja-JP": "英語",
     "de-DE": "Englischsprachig",
     "fr-FR": "Anglais",
-    "ko-KR": "英语",
+    "ko-KR": "영어",
     "$files": [
       "src/renderer/components/settings/tts-settings.tsx(9038-9044)",
       "src/renderer/components/settings/tts-settings.tsx(20066-20072)"
@@ -4220,7 +4220,7 @@
     "$id": 21248
   },
   "正在生成音频...": {
-    "en-US": "正在生成音频...",
+    "en-US": "Audio is being generated...",
     "es-ES": "Se está generando audio...",
     "ar-EG": "يتم إنشاء الصوت...",
     "pt-PT": "O áudio está a ser gerado...",
@@ -4256,7 +4256,7 @@
     "pt-PT": "Retomar a reprodução",
     "ru-RU": "Возобновить воспроизведение",
     "ja-JP": "再生を再開",
-    "de-DE": "恢复播放",
+    "de-DE": "Wiedergabe fortsetzen",
     "fr-FR": "Reprendre la lecture",
     "ko-KR": "재생 재개",
     "$files": [
@@ -4331,7 +4331,7 @@
     "pt-PT": "Todos os pronomes sound library",
     "ru-RU": "Звуковая библиотека всех произношений",
     "ja-JP": "すべての代名詞サウンドライブラリ",
-    "de-DE": "全部发音人音色库",
+    "de-DE": "Soundbibliothek für alle Sprecher",
     "fr-FR": "Bibliothèque de sons de tous les prononciateurs",
     "ko-KR": "모든 발음기 사운드 라이브러리",
     "$files": [
@@ -4490,14 +4490,14 @@
     "$id": 21266
   },
   "女": {
-    "en-US": "女",
+    "en-US": "Female",
     "es-ES": "Femenino",
     "ar-EG": "أنثى",
     "pt-PT": "Feminino",
     "ru-RU": "женщина",
     "ja-JP": "女性",
     "de-DE": "Weiblich",
-    "fr-FR": "女",
+    "fr-FR": "Femelle",
     "ko-KR": "여성",
     "$files": [
       "src/renderer/components/settings/tts-settings.tsx(18294-18299)"
@@ -4538,8 +4538,8 @@
     "en-US": "Male voice",
     "es-ES": "Voz masculina",
     "ar-EG": "صوت الذكور",
-    "pt-PT": "男声",
-    "ru-RU": "男声",
+    "pt-PT": "Voz masculina",
+    "ru-RU": "Мужской голос",
     "ja-JP": "男性の声",
     "de-DE": "Männerstimme",
     "fr-FR": "Voix masculine",
@@ -4550,7 +4550,7 @@
     "$id": 21270
   },
   "合成中": {
-    "en-US": "合成中",
+    "en-US": "Under synthesis",
     "es-ES": "En síntesis",
     "ar-EG": "تحت التوليف",
     "pt-PT": "Em síntese",
@@ -4599,7 +4599,7 @@
     "es-ES": "Audición",
     "ar-EG": "الاختبار",
     "pt-PT": "Audição",
-    "ru-RU": "试听",
+    "ru-RU": "прослушивание",
     "ja-JP": "オーディション",
     "de-DE": "Audition",
     "fr-FR": "Audition",
@@ -4641,11 +4641,11 @@
   },
   "未找到匹配的发音人音色": {
     "en-US": "No matching pronunciation person tone was found",
-    "es-ES": "未找到匹配的发音人音色",
+    "es-ES": "No se encontró un tono de persona de pronunciación coincidente",
     "ar-EG": "لم يتم العثور على نغمة مطابقة للنطق",
     "pt-PT": "Nenhuma pronúncia correspondente foi encontrada",
     "ru-RU": "Не найдено соответствующего произношению тона человека",
-    "ja-JP": "未找到匹配的发音人音色",
+    "ja-JP": "一致する発音の人の音が見つかりませんでした",
     "de-DE": "Es wurde kein passender Aussprachetonton gefunden",
     "fr-FR": "Aucune tonalité de personne de prononciation correspondante n'a été trouvée",
     "ko-KR": "일치하는 발음 사람 톤을 찾을 수 없습니다",
