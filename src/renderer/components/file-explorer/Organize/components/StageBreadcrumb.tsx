@@ -63,14 +63,25 @@ export function StageBreadcrumb({
     steps = [homeStep, { key: 'batch-duplicate', label: t('批量查重'), icon: 'content_copy' }]
   } else if (isDirectDone) {
     steps = [homeStep, { key: 'done', label: t('继续整理'), icon: 'check_circle' }]
+  } else if (stage === 'smart-clustering' || organizeMode === 'smart-clustering') {
+    steps = [
+      homeStep,
+      { key: 'mode-select', label: t('模式选择'), icon: 'auto_fix_high' },
+      { key: 'smart-clustering', label: t('智能聚类'), icon: 'hub' }
+    ]
   } else {
     // 默认整理主流程分支
+    const isIdentityMode = organizeMode === 'identity-blueprint'
     const organizeSteps: Array<{ key: Stage; label: string; icon: string }> = [
       homeStep,
-      { key: 'mode-select', label: t('批量整理'), icon: 'auto_fix_high' },
-      { key: 'candidates', label: t('选择方案'), icon: 'auto_awesome_motion' },
-      { key: 'structure', label: t('目录预览'), icon: 'folder_open' },
-      { key: 'organizing', label: t('整理中'), icon: 'auto_fix_high' },
+      { key: 'mode-select', label: t('模式选择'), icon: 'auto_fix_high' },
+      {
+        key: 'candidates',
+        label: isIdentityMode ? t('身份蓝图') : t('选择方案'),
+        icon: isIdentityMode ? 'psychology' : 'auto_awesome_motion'
+      },
+      { key: 'structure', label: t('目录微调'), icon: 'folder_open' },
+      { key: 'organizing', label: t('自动归类'), icon: 'auto_fix_high' },
       { key: 'done', label: t('完成'), icon: 'check_circle' }
     ]
 
@@ -87,6 +98,10 @@ export function StageBreadcrumb({
     if (key === stage) return true
     // 用户历史访问到达过的步骤点亮
     if (visitedStages.includes(key)) return true
+    // 智能聚类单 Stage
+    if (key === 'smart-clustering') {
+      return stage === 'smart-clustering' || visitedStages.includes('smart-clustering')
+    }
     // 批量整理在 organize 分支下若曾经选择过
     if (key === 'mode-select') {
       return visitedStages.includes('mode-select')

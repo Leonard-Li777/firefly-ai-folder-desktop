@@ -1,0 +1,172 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import React from 'react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import {
+  IdentityBlueprintSelectView,
+  RecommendedIdentityItem,
+  RecommendedStructureItem
+} from '../components/IdentityBlueprintSelectView'
+
+// Mock 语言包
+vi.mock('@app/languages', () => ({
+  t: (key: string, params?: any) => {
+    if (params && typeof params === 'object') {
+      let res = key
+      for (const k in params) {
+        res = res.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k])
+      }
+      return res
+    }
+    return key
+  },
+  $t: (key: string) => key,
+  Translate: ({ children }: any) => children,
+  i18nScope: { t: (s: string) => s, activeLanguage: 'zh-CN', defaultLanguage: 'zh-CN' },
+  default: { t: (s: string) => s, activeLanguage: 'zh-CN', defaultLanguage: 'zh-CN' }
+}))
+
+describe('IdentityBlueprintSelectView Component', () => {
+  const mockMatchPerspectives = vi.fn()
+  const mockSelectStructure = vi.fn()
+  const mockOnBack = vi.fn()
+
+  const mockIdentities: RecommendedIdentityItem[] = [
+    {
+      identityId: 'ui_designer',
+      domainId: 'domain_creative',
+      categoryId: 'cat_design',
+      name: 'UI设计师',
+      description: '负责界面视觉与用户交互规范',
+      score: 0.92,
+      breadcrumbs: ['创意与媒体', '视觉设计', 'UI设计师'],
+      taskTags: ['原型', '组件库', '设计规范'],
+      associatedTemplateIds: ['tpl_ui_design']
+    },
+    {
+      identityId: 'accountant',
+      domainId: 'domain_finance',
+      categoryId: 'cat_accounting',
+      name: '财务会计',
+      description: '负责财务凭证与税务审核',
+      score: 0.81,
+      breadcrumbs: ['商业与金融', '财务审计', '财务会计'],
+      taskTags: ['发票', '凭证', '报表'],
+      associatedTemplateIds: ['tpl_finance_accounting']
+    }
+  ]
+
+  const mockStructures: RecommendedStructureItem[] = [
+    {
+      templateId: 'tpl_ui_design',
+      name: 'UI/UX 设计全生命周期模板',
+      targetIdentities: ['ui_designer'],
+      paths: ['01_需求与调研/用户访谈', '02_设计资产/设计规范', '03_交付成果/高保真原型'],
+      score: 0.94,
+      rationale: '与当前选中的 UI设计师 强相关，覆盖完整设计流',
+      lifecycleStages: ['需求', '设计', '交付']
+    },
+    {
+      templateId: 'tpl_finance_accounting',
+      name: '标准财务会计归档模板',
+      targetIdentities: ['accountant'],
+      paths: ['01_原始凭证/发票收据', '02_月度报表/资产负债表'],
+      score: 0.83,
+      rationale: '适合财务凭证与报表归档'
+    }
+  ]
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+
+    mockMatchPerspectives.mockResolvedValue({
+      recommendedIdentities: mockIdentities,
+      recommendedStructures: mockStructures
+    })
+
+    ;(window as any).electronAPI = {
+      organizeRealDirectory: {
+        matchPerspectivesAndStructures: mockMatchPerspectives
+      }
+    }
+  })
+
+  it('首启应自动触发协同推荐，并展示身份与推荐结构卡片', async () => {
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        fileIds={[101, 102]}
+        onSelectStructure={mockSelectStructure}
+        onBack={mockOnBack}
+      />
+    )
+
+    expect(mockMatchPerspectives).toHaveBeenCalledWith({
+      workspaceId: 1,
+      fileIds: [101, 102],
+      naturalLanguagePrompt: '',
+      language: 'zh-CN'
+    })
+
+    await waitFor(() => {
+      // 检查身份树渲染
+      expect(screen.getByText('UI设计师')).toBeInTheDocument()
+      // 检查推荐结构卡片渲染
+      expect(screen.getByText('UI/UX 设计全生命周期模板')).toBeInTheDocument()
+      expect(screen.getByText('标准财务会计归档模板')).toBeInTheDocument()
+    })
+  })
+
+  it('用户输入自然语言意图并回车应重新触发协同匹配', async () => {
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSelectStructure={mockSelectStructure}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('UI设计师')).toBeInTheDocument()
+    })
+
+    const input = screen.getByPlaceholderText(/搜索身份或输入诉求/)
+    fireEvent.change(input, { target: { value: '摄影与短视频制作' } })
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' })
+
+    await waitFor(() => {
+      expect(mockMatchPerspectives).toHaveBeenCalledWith({
+        workspaceId: 1,
+        fileIds: [],
+        naturalLanguagePrompt: '摄影与短视频制作',
+        language: 'zh-CN'
+      })
+    })
+  })
+
+  it('点击结构卡片的“使用此结构”按钮应触发 onSelectStructure 回调', async () => {
+    render(
+      <IdentityBlueprintSelectView
+        workspaceId={1}
+        workspaceDirectoryPath="/test/workspace"
+        onSelectStructure={mockSelectStructure}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByText('UI/UX 设计全生命周期模板')).toBeInTheDocument()
+    })
+
+    const useBtns = screen.getAllByText('使用此结构')
+    expect(useBtns.length).toBeGreaterThan(0)
+    fireEvent.click(useBtns[0])
+
+    expect(mockSelectStructure).toHaveBeenCalledWith({
+      templateId: 'tpl_ui_design',
+      name: 'UI/UX 设计全生命周期模板',
+      paths: ['01_需求与调研/用户访谈', '02_设计资产/设计规范', '03_交付成果/高保真原型'],
+      rationale: '与当前选中的 UI设计师 强相关，覆盖完整设计流',
+      identities: []
+    })
+  })
+})

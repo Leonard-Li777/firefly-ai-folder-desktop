@@ -7,11 +7,18 @@ export type Stage =
   | 'batch-tag'
   | 'batch-duplicate'
   | 'mode-select'
+  | 'smart-clustering'
   | 'candidates'
   | 'structure'
   | 'organizing'
   | 'done'
-export type OrganizeMode = 'fast-organize' | 'fine-organize' | 'incremental-organize' | undefined
+export type OrganizeMode =
+  | 'smart-clustering'
+  | 'identity-blueprint'
+  | 'fast-organize'
+  | 'fine-organize'
+  | 'incremental-organize'
+  | undefined
 
 export interface OrganizeOptions {
   allowCreateNew: boolean

@@ -33,6 +33,8 @@ import { BatchRenameView } from './components/BatchRenameView'
 import { BatchTagView } from './components/BatchTagView'
 import { BatchDuplicateView } from './components/BatchDuplicateView'
 import { ModeSelectView } from './components/ModeSelectView'
+import { SmartClusteringView } from './components/SmartClusteringView'
+import { IdentityBlueprintSelectView } from './components/IdentityBlueprintSelectView'
 import { CandidatesView } from './components/CandidatesView'
 import { StructureView } from './components/StructureView'
 import { OrganizingView } from './components/OrganizingView'
@@ -40,6 +42,7 @@ import { DoneView } from './components/DoneView'
 import { SplitPane } from '../../common/SplitPane'
 import { OrganizeMode } from './types'
 import { isUnclassifiedNodeName } from './utils/helpers'
+import { pathsToDirectoryNodes } from './utils/treeFromPaths'
 
 export const Organize: React.FC = () => {
   useVoerkaI18n(i18nScope)
@@ -146,6 +149,7 @@ export const Organize: React.FC = () => {
     handleSelectDraftVDir,
     handleDeleteDraftVDir,
     resetOrganizeState,
+    loadVirtualDirectories,
     highFrequencyTags,
 
     // 批量预处理工作台操作
@@ -273,6 +277,61 @@ export const Organize: React.FC = () => {
       toast.error(t('复制失败，请重试'))
     }
   }, [toOrganizeFiles, highFrequencyTags, organizeMode])
+
+  const handleSaveSmartClusteringVDir = useCallback(
+    async (name: string, tree: any[]) => {
+      const wsId = currentWorkspaceDirectory?.id
+      if (!wsId) {
+        toast.error(t('缺少工作区信息，无法保存'))
+        return
+      }
+      try {
+        const vd = await window.electronAPI!.virtualDirectory.saveFromPlan(wsId, name, {
+          summary: t('端侧 HAC 智能聚类生成'),
+          directories: tree
+        })
+        window.dispatchEvent(
+          new CustomEvent('vdir:updated', { detail: { vdirId: vd?.id } })
+        )
+        toast.success(t('已保存虚拟目录：{name}', { name: vd?.name || name }))
+        await loadVirtualDirectories()
+        resetOrganizeState()
+        if (vd?.id) {
+          navigate(`/virtual-directory?id=${vd.id}`)
+        }
+      } catch (err: any) {
+        toast.error(t('保存虚拟目录失败：') + (err?.message || ''))
+      }
+    },
+    [currentWorkspaceDirectory?.id, loadVirtualDirectories, resetOrganizeState, navigate]
+  )
+
+  const handleSelectIdentityStructure = useCallback(
+    (structure: {
+      templateId: string
+      name: string
+      paths: string[]
+      rationale: string
+      identities: string[]
+    }) => {
+      const tree = pathsToDirectoryNodes(structure.paths)
+      const vdirName =
+        structure.identities.length > 0
+          ? `${structure.identities.join(' + ')} 整理`
+          : `${structure.name} 整理`
+
+      setDraft({
+        name: vdirName,
+        strategy: structure.templateId,
+        source: 'identity-blueprint',
+        perspective: structure.identities.join(', '),
+        rationale: structure.rationale
+      })
+      setDraftTree(tree)
+      setStage('structure')
+    },
+    [setDraft, setDraftTree, setStage]
+  )
 
   const isShowLocalAiBanner =
     isLocalMode && (stage === 'candidates' || stage === 'structure')
@@ -851,15 +910,35 @@ export const Organize: React.FC = () => {
                             />
                           )}
 
-                          {stage === 'candidates' && (
-                            <CandidatesView
-                              candidates={candidates}
-                              isLoading={isGeneratingCandidates}
-                              organizeMode={organizeMode}
-                              onSelectCandidate={handleSelectCandidate}
-                              isLimitPredict={isLimitPredict}
-                              onRegenerate={generateCandidates}
+                          {stage === 'smart-clustering' && (
+                            <SmartClusteringView
+                              workspaceId={currentWorkspaceDirectory?.id}
+                              workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
+                              fileIds={toOrganizeFiles.map(f => f.id)}
+                              onSaveVirtualDirectory={handleSaveSmartClusteringVDir}
+                              onBack={() => setStage('mode-select')}
                             />
+                          )}
+
+                          {stage === 'candidates' && (
+                            organizeMode === 'identity-blueprint' ? (
+                              <IdentityBlueprintSelectView
+                                workspaceId={currentWorkspaceDirectory?.id}
+                                workspaceDirectoryPath={currentWorkspaceDirectory?.path || ''}
+                                fileIds={toOrganizeFiles.map(f => f.id)}
+                                onSelectStructure={handleSelectIdentityStructure}
+                                onBack={() => setStage('mode-select')}
+                              />
+                            ) : (
+                              <CandidatesView
+                                candidates={candidates}
+                                isLoading={isGeneratingCandidates}
+                                organizeMode={organizeMode}
+                                onSelectCandidate={handleSelectCandidate}
+                                isLimitPredict={isLimitPredict}
+                                onRegenerate={generateCandidates}
+                              />
+                            )
                           )}
 
                           {stage === 'structure' && (

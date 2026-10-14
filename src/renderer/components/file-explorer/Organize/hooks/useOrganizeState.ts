@@ -1113,9 +1113,13 @@ export function useOrganizeState() {
       setCandidates([]) // 清空候选方案，触发重新生成
       setSelectedCandidate(null)
       isSavedRef.current = false
-      setStage('candidates')
+      if (mode === 'smart-clustering') {
+        setStage('smart-clustering')
+      } else {
+        setStage('candidates')
+      }
     },
-    [setCurrentVDir]
+    [setCurrentVDir, setDraft, setDraftTree, setFinalTree, setIncrementalFiles, setIncrementalVdId, setInitialDraftTree, setOrganizeMode, setSelectedCandidate, setStage]
   )
 
   // ─── 指导方案生成 ───────────────────────────────────────────────────────
@@ -2948,6 +2952,7 @@ export function useOrganizeState() {
     handleSelectDraftVDir,
     handleDeleteDraftVDir,
     resetOrganizeState,
+    loadVirtualDirectories,
     highFrequencyTags,
 
     // 批量预处理工作台操作
