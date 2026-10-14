@@ -9,7 +9,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import { MaterialIcon, cn } from '../../lib/utils'
 import { t } from '@app/languages'
-import { useTTSAudioStore } from '../../stores/tts-audio-store'
+import { useTTSAudioStore, getCurrentTTSChunks } from '../../stores/tts-audio-store'
 import { useConfigStore } from '../../stores/config-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { SettingsCategory } from '@firefly/types'
@@ -77,7 +77,8 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     setVoiceId,
     setSpeed,
     locateAudio,
-    exportAudio
+    exportAudio,
+    seekSentence
   } = useTTSAudioStore()
 
   // 挂载时拉取最新音色库（包含自定义克隆音色）
@@ -89,6 +90,12 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   const [showVoiceMenu, setShowVoiceMenu] = useState(false)
   const [showSpeedMenu, setShowSpeedMenu] = useState(false)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+
+  // 片段刻度进度条交互状态
+  const [isHoveringSlider, setIsHoveringSlider] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 
   const voiceRef = useRef<HTMLDivElement>(null)
   const speedRef = useRef<HTMLDivElement>(null)
@@ -121,6 +128,21 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   const isLoading = isThisActive && status === 'loading'
   const isPaused = isThisActive && status === 'paused'
   const isExporting = isThisActive && status === 'exporting'
+
+  // 当前刻度预览索引（拖动优先于悬浮，悬浮优先于当前播放句）
+  const previewIndex = isDragging && dragIndex !== null
+    ? dragIndex
+    : hoverIndex !== null
+      ? hoverIndex
+      : currentSentenceIndex
+
+  // 实时分句数据源供 Tooltip 气泡预览分句文本
+  const currentChunks = useMemo(() => {
+    if (isThisActive) {
+      return getCurrentTTSChunks()
+    }
+    return []
+  }, [isThisActive, status, currentSentenceIndex])
 
   // 解析收藏音色列表（以用户配置的收藏音色为准，严格清洗历史纯数字旧配置并去重防御）
   const favoriteVoices = useMemo(() => {
@@ -230,7 +252,7 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
 
           {!compact && (
             <span className="text-[11px] whitespace-nowrap">
-              {isPlaying && totalSentences > 0
+              {(isPlaying || isPaused) && totalSentences > 0
                 ? `${currentSentenceIndex + 1}/${totalSentences}`
                 : isPlaying
                   ? t('播放中')
@@ -240,6 +262,71 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
             </span>
           )}
         </button>
+
+        {/* 1.5 片段刻度进度条 (当分句数大于1且处于播放/暂停时展示) */}
+        {isThisActive && (isPlaying || isPaused) && totalSentences > 1 && (
+          <div
+            className="relative flex items-center px-2 py-1 group/slider"
+            onMouseEnter={() => setIsHoveringSlider(true)}
+            onMouseLeave={() => {
+              if (!isDragging) {
+                setIsHoveringSlider(false)
+                setHoverIndex(null)
+              }
+            }}
+          >
+            <input
+              type="range"
+              min={0}
+              max={totalSentences - 1}
+              step={1}
+              value={isDragging && dragIndex !== null ? dragIndex : currentSentenceIndex}
+              onMouseDown={() => setIsDragging(true)}
+              onTouchStart={() => setIsDragging(true)}
+              onInput={(e) => {
+                const val = Number((e.target as HTMLInputElement).value)
+                setDragIndex(val)
+                setHoverIndex(val)
+              }}
+              onChange={(e) => {
+                const val = Number((e.target as HTMLInputElement).value)
+                setDragIndex(val)
+                setIsDragging(false)
+                setIsHoveringSlider(false)
+                seekSentence(val).catch(() => {})
+              }}
+              onMouseUp={() => {
+                if (isDragging && dragIndex !== null) {
+                  setIsDragging(false)
+                  setIsHoveringSlider(false)
+                  seekSentence(dragIndex).catch(() => {})
+                }
+              }}
+              onTouchEnd={() => {
+                if (isDragging && dragIndex !== null) {
+                  setIsDragging(false)
+                  setIsHoveringSlider(false)
+                  seekSentence(dragIndex).catch(() => {})
+                }
+              }}
+              title={t('拖动切换朗读片段')}
+              className="w-16 sm:w-24 md:w-32 h-1.5 bg-muted/80 rounded-lg appearance-none cursor-pointer accent-primary focus:outline-none"
+            />
+
+            {/* 刻度悬浮/拖动预览 Tooltip 浮层 */}
+            {(isHoveringSlider || isDragging) && (
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 min-w-[200px] max-w-[280px] p-2.5 bg-popover/95 border border-border text-popover-foreground text-xs rounded-md shadow-xl pointer-events-none backdrop-blur-xs animate-in fade-in zoom-in-95 duration-150">
+                <div className="flex items-center justify-between font-medium text-[11px] text-primary pb-1 mb-1.5 border-b border-border/50">
+                  <span>{t('片段')} {previewIndex + 1} / {totalSentences}</span>
+                  <span className="text-[10px] text-muted-foreground font-normal">{t('拖动即播')}</span>
+                </div>
+                <div className="text-[11px] text-muted-foreground line-clamp-3 leading-relaxed break-all">
+                  {currentChunks[previewIndex] || t('正在准备分句...')}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 2. 收藏音色下拉菜单 */}
         <div className="relative" ref={voiceRef}>

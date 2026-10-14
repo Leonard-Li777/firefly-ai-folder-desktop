@@ -345,16 +345,85 @@ export class TTSWavCacheService {
         await fsPromises.mkdir(parentDir, { recursive: true })
       }
 
-      await fsPromises.writeFile(targetWavPath, scaledBuffer)
+      // 提取母本元数据并注入派生倍速与 completed 状态，确保通道 A 秒切接管能精准识别
+      let finalScaledBuffer = scaledBuffer
+      try {
+        const baseMeta = await this.readWavMetadata(baseWavPath)
+        const derivedMeta: TTSWavMetadata = {
+          completed: true,
+          total: baseMeta?.total ?? 1,
+          done: baseMeta?.total ?? 1,
+          sid: baseMeta?.sid,
+          voiceId: baseMeta?.voiceId,
+          displayName: baseMeta?.displayName,
+          speed: targetSpeed,
+          fingerprint: baseMeta?.fingerprint,
+          fieldName: baseMeta?.fieldName
+        }
+        finalScaledBuffer = this.injectOrUpdateMetaChunk(scaledBuffer, derivedMeta)
+      } catch (metaErr) {
+        logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 注入派生 WAV 元数据异常:`, metaErr)
+      }
+
+      await fsPromises.writeFile(targetWavPath, finalScaledBuffer)
       logger.info(
         LogCategory.FILE_PROCESSOR,
-        `[TTS缓存服务] 成功基于 1.0x 基准毫秒级派生 ${targetSpeed}x 音频: ${path.basename(targetWavPath)} (大小: ${scaledBuffer.length} 字节)`
+        `[TTS缓存服务] 成功基于 1.0x 基准毫秒级派生 ${targetSpeed}x 音频: ${path.basename(targetWavPath)} (大小: ${finalScaledBuffer.length} 字节)`
       )
       return true
     } catch (err) {
       logger.error(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 派生倍速音频异常:`, err)
       return false
     }
+  }
+
+  /**
+   * 将 meta 元数据注入或更新至 WAV Buffer 尾部，确保 RIFF 格式完全合规且自包含
+   */
+  public injectOrUpdateMetaChunk(wavBuffer: Buffer, meta: TTSWavMetadata): Buffer {
+    if (
+      wavBuffer.length < 44 ||
+      wavBuffer.toString('ascii', 0, 4) !== 'RIFF' ||
+      wavBuffer.toString('ascii', 8, 12) !== 'WAVE'
+    ) {
+      return wavBuffer
+    }
+
+    // 收集所有非 meta chunk 数据
+    const keptChunks: Buffer[] = []
+    let offset = 12
+    while (offset + 8 <= wavBuffer.length) {
+      const chunkId = wavBuffer.toString('ascii', offset, offset + 4)
+      const chunkSize = wavBuffer.readUInt32LE(offset + 4)
+      const chunkTotalLen = 8 + chunkSize + (chunkSize % 2)
+      const chunkEnd = Math.min(offset + chunkTotalLen, wavBuffer.length)
+
+      if (chunkId !== 'meta') {
+        keptChunks.push(wavBuffer.subarray(offset, chunkEnd))
+      }
+      offset = chunkEnd
+    }
+
+    const metaJsonBuffer = Buffer.from(JSON.stringify(meta), 'utf-8')
+    const metaChunkSize = metaJsonBuffer.length
+    const metaPadding = metaChunkSize % 2 !== 0 ? 1 : 0
+
+    const metaHeader = Buffer.alloc(8)
+    metaHeader.write('meta', 0)
+    metaHeader.writeUInt32LE(metaChunkSize, 4)
+
+    const chunksToCombine = [
+      wavBuffer.subarray(0, 12),
+      ...keptChunks,
+      metaHeader,
+      metaJsonBuffer,
+      ...(metaPadding ? [Buffer.alloc(1, 0)] : [])
+    ]
+    const finalBuffer = Buffer.concat(chunksToCombine)
+
+    // 重写 RIFF 总大小字段（总字节数 - 8）
+    finalBuffer.writeUInt32LE(finalBuffer.length - 8, 4)
+    return finalBuffer
   }
 
   /**

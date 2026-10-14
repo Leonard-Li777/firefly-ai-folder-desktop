@@ -89,6 +89,8 @@ export interface TTSAudioState {
   }) => Promise<boolean>
   /** 导出整段音频为本地 WAV 文件（向后兼容保留） */
   exportAudio: (defaultFileName?: string) => Promise<string | null>
+  /** 跳转至指定分句片段播放（支持优先合成插队） */
+  seekSentence: (targetIndex: number) => Promise<void>
 }
 
 // 内部闭包全局运行时实例
@@ -103,6 +105,11 @@ let currentCleanedChunks: string[] = []
 let progressTimer: ReturnType<typeof setInterval> | null = null
 let isAllChunksScheduled = false
 let isHotSwitchInProgress = false
+
+/** 获取当前正在播放文本的切片分句文本数组（供 UI 刻度预览 Tooltip 使用） */
+export function getCurrentTTSChunks(): string[] {
+  return currentCleanedChunks
+}
 let currentPlayOptions: {
   textId?: string
   filePath?: string
@@ -228,6 +235,25 @@ function getCurrentAudioProgress(): AudioProgressInfo {
   }
 
   // 模式 2：分句流式排程模式（包含 1 个或多个分句节点）
+  let totalDuration = 0
+  for (const s of scheduledSources) {
+    totalDuration += (s.endTime - s.startTime)
+  }
+
+  // 1. 若当前硬件时钟尚未到达首个排程节点的起播时间（启动微缓冲期，如前 0.05s），精准定位在首个排程节点的 index
+  if (now < scheduledSources[0].startTime) {
+    const first = scheduledSources[0]
+    return {
+      sentenceIndex: first.index,
+      elapsedInSentence: 0,
+      sentenceDuration: Math.max(0.01, first.endTime - first.startTime),
+      remainingInSentence: Math.max(0.01, first.endTime - first.startTime),
+      elapsedTotalTime: 0,
+      totalDuration
+    }
+  }
+
+  // 2. 查找当前正在发声的节点
   const active = scheduledSources.find(s => now >= s.startTime && now < s.endTime)
   if (active) {
     let elapsedTotalTime = 0
@@ -238,11 +264,6 @@ function getCurrentAudioProgress(): AudioProgressInfo {
         elapsedTotalTime += Math.max(0, now - s.startTime)
         break
       }
-    }
-
-    let totalDuration = 0
-    for (const s of scheduledSources) {
-      totalDuration += (s.endTime - s.startTime)
     }
 
     const sentenceDuration = Math.max(0.01, active.endTime - active.startTime)
@@ -259,11 +280,28 @@ function getCurrentAudioProgress(): AudioProgressInfo {
     }
   }
 
-  // 容错：当前时钟超出所有排程末尾
-  let totalDuration = 0
-  for (const s of scheduledSources) {
-    totalDuration += (s.endTime - s.startTime)
+  // 3. 若落在两个相邻排程节点的微小缝隙（gap），锁定紧接着起播的下一个节点的前一个节点，绝不跳至末尾
+  const nextNode = scheduledSources.find(s => s.startTime > now)
+  if (nextNode) {
+    const nextIdx = scheduledSources.indexOf(nextNode)
+    const prevNode = nextIdx > 0 ? scheduledSources[nextIdx - 1] : nextNode
+    let elapsedTotalTime = 0
+    for (const s of scheduledSources) {
+      if (s.index <= prevNode.index) {
+        elapsedTotalTime += (s.endTime - s.startTime)
+      }
+    }
+    return {
+      sentenceIndex: prevNode.index,
+      elapsedInSentence: prevNode.endTime - prevNode.startTime,
+      sentenceDuration: prevNode.endTime - prevNode.startTime,
+      remainingInSentence: 0,
+      elapsedTotalTime,
+      totalDuration
+    }
   }
+
+  // 4. 容错：仅当时钟真正越过所有排程末尾时，才定位至末尾节点
   const lastSource = scheduledSources[scheduledSources.length - 1]
   const lastIndex = lastSource ? lastSource.index : fallbackIndex
 
@@ -318,6 +356,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
   isHotSwitchInProgress = true
 
   // 3. 立即精准捕获切换前在旧音轨中的声学进度（分句索引与全文已播时长）
+  const wasPaused = store.status === 'paused'
   const initialProgress = getCurrentAudioProgress()
   const oldSpeed = changed.oldSpeed !== undefined ? changed.oldSpeed : store.speed
   const isVoiceChanged = changed.voiceId !== undefined
@@ -449,10 +488,12 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
 
       // 【通道 B：分句流式合成与平滑接力通道】
       // 1. 确定切入分句的目标索引：
-      //    - 若当前句剩余时长较短（< 1.0 秒），且存在下一句，则让旧音轨自然读完当前句，直接预合成下一句作为切入点，实现句尾气口自然接力；
+      //    - 若当前处于暂停状态，精准锁定当前停留的分句索引，绝不向后跳跃；
+      //    - 若处于播放中且当前句剩余时长较短（< 1.0 秒）且存在下一句，则让旧音轨自然读完当前句，直接预合成下一句作为切入点；
       //    - 否则以当前句作为切入点。
       let targetSentenceIdx = initialProgress.sentenceIndex
       const shouldHandoverAtNext =
+        !wasPaused &&
         initialProgress.remainingInSentence < 1.0 &&
         initialProgress.sentenceIndex + 1 < currentCleanedChunks.length
 
@@ -518,9 +559,9 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       // 在准备接管前，再次获取当前最新播放进度
       const latestProgress = getCurrentAudioProgress()
 
-      // 若在后台异步合成期间，旧音轨已经自然播放到了切入句之后，则顺延 targetSentenceIdx 防止时空倒流
+      // 若在后台异步合成期间，旧音轨已经自然播放到了切入句之后，则顺延 targetSentenceIdx 防止时空倒流（若原为暂停则严格固定在当前分句）
       let actualStartSentenceIdx = targetSentenceIdx
-      if (latestProgress.sentenceIndex > targetSentenceIdx) {
+      if (!wasPaused && latestProgress.sentenceIndex > targetSentenceIdx) {
         actualStartSentenceIdx = latestProgress.sentenceIndex
       }
 
@@ -751,8 +792,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     useSettingsStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
     useConfigStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
 
-    // 若当前正在播放，平滑热切新音色（不断音，合成好后自动无缝切入）
-    if (state.status === 'playing' || state.status === 'loading') {
+    // 若当前正在播放或暂停，平滑热切新音色（不断音，合成好后自动无缝切入，接续当前进度）
+    if (state.status === 'playing' || state.status === 'loading' || state.status === 'paused') {
       triggerHotSwitch({ voiceId, sid })
     }
   },
@@ -766,8 +807,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     useSettingsStore.getState().updateConfigValue('TTS_SPEED', speed).catch(() => {})
     useConfigStore.getState().updateConfigValue('TTS_SPEED', speed).catch(() => {})
 
-    // 若当前正在播放，平滑热切新倍速（不断音，通过纯 Rust WSOLA 极速派生并在合成后自动切换）
-    if (state.status === 'playing' || state.status === 'loading') {
+    // 若当前正在播放或暂停，平滑热切新倍速（不断音，通过纯 Rust WSOLA 极速派生并在合成后自动切换，接续当前进度）
+    if (state.status === 'playing' || state.status === 'loading' || state.status === 'paused') {
       triggerHotSwitch({ speed, oldSpeed })
     }
   },
@@ -835,8 +876,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         await state.resume()
         return
       }
-    } else if (state.status === 'playing' || state.status === 'loading') {
-      // 若当前正在播放同段文本但改变了音色或倍速，直接走平滑热切
+    } else if (state.status === 'playing' || state.status === 'loading' || state.status === 'paused') {
+      // 若当前正在播放或暂停同段文本但改变了音色或倍速，直接走平滑热切，接续当前进度
       const oldSpeed = state.speed
       if (options?.voiceId !== undefined) {
         const matched = getVoiceById(options.voiceId, get().allVoices)
@@ -1259,6 +1300,207 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       set({ status: previousStatus, errorMessage: '导出音频失败' })
       return null
     }
+  },
+
+  seekSentence: async (targetIndex: number) => {
+    const state = get()
+    if (!state.playingText || !currentCleanedChunks.length) return
+    const clampedIndex = Math.max(0, Math.min(targetIndex, currentCleanedChunks.length - 1))
+
+    const ctx = getOrCreateAudioContext()
+    if (ctx.state === 'suspended') {
+      await ctx.resume()
+    }
+
+    const options = currentPlayOptions
+    const voiceId = state.currentVoiceId || DEFAULT_VOICE_ID
+    const matchedVoice = getVoiceById(voiceId, state.allVoices)
+    const displayName = matchedVoice?.displayName || String(voiceId)
+    const sid = state.currentSid ?? 63
+    const speed = state.speed
+
+    // 1. 若当前文本已具备整段全量缓存文件，直接按字符比例换算时间毫秒级定位起播
+    if (state.currentCachePath && window.electronAPI?.tts?.readWavMetadata && window.electronAPI?.tts?.readWavFile) {
+      try {
+        const metadata = await window.electronAPI.tts.readWavMetadata(state.currentCachePath)
+        if (metadata && metadata.completed) {
+          const fullWavBuffer = await window.electronAPI.tts.readWavFile(state.currentCachePath)
+          if (fullWavBuffer && fullWavBuffer.byteLength > 44) {
+            const audioBuffer = await ctx.decodeAudioData(fullWavBuffer.slice(0))
+            const totalDuration = audioBuffer.duration
+
+            // 计算目标句子的时间偏移量
+            let totalChars = 0
+            for (const c of currentCleanedChunks) {
+              totalChars += Math.max(1, c.length)
+            }
+            let accumulatedChars = 0
+            for (let i = 0; i < clampedIndex; i++) {
+              accumulatedChars += Math.max(1, currentCleanedChunks[i].length)
+            }
+            const offset = (accumulatedChars / totalChars) * totalDuration
+            const clampedOffset = Math.max(0, Math.min(Math.max(0, totalDuration - 0.05), offset))
+
+            clearScheduledSources()
+            const startAt = ctx.currentTime + 0.02
+            const source = ctx.createBufferSource()
+            source.buffer = audioBuffer
+            source.playbackRate.value = 1.0
+            source.connect(ctx.destination)
+            source.start(startAt, clampedOffset)
+
+            const remaining = totalDuration - clampedOffset
+            scheduledSources.push({
+              source,
+              startTime: startAt,
+              endTime: startAt + remaining,
+              index: clampedIndex
+            })
+            nextStartTime = startAt + remaining
+            isAllChunksScheduled = true
+
+            set({ status: 'playing', currentSentenceIndex: clampedIndex })
+            ensureProgressMonitor()
+            return
+          }
+        }
+      } catch (err) {
+        console.warn('[TTS Seek] 全量音频跳转异常，回退分句流式通道:', err)
+      }
+    }
+
+    // 2. 分句流式合成模式下的片段跳转与插队优先合成
+    const thisSeekSession = ++sessionCounter
+    activeSessionId = thisSeekSession
+    if (window.electronAPI?.tts?.abortSession) {
+      window.electronAPI.tts.abortSession(thisSeekSession - 1).catch(() => {})
+    }
+
+    clearScheduledSources()
+
+    // 检查目标分句是否已有缓存
+    let baseBuffer: ArrayBuffer | null = null
+    const cached = cachedChunksMap.get(clampedIndex)
+    if (cached) {
+      baseBuffer = cached.buffer.slice(
+        cached.byteOffset,
+        cached.byteOffset + cached.byteLength
+      ) as ArrayBuffer
+    } else {
+      // 提示用户正在优先合成该片段
+      toast.info(t('该片段正在合成中，请稍候...'), 3000, 'tts-seek-loading')
+      set({ currentSentenceIndex: clampedIndex })
+
+      baseBuffer = await window.electronAPI.tts.synthesizeChunk(
+        currentCleanedChunks[clampedIndex],
+        voiceId,
+        1.0,
+        thisSeekSession,
+        sid
+      )
+    }
+
+    if (activeSessionId !== thisSeekSession) return
+    if (!baseBuffer || baseBuffer.byteLength === 0) {
+      toast.error(t('该片段合成失败，请稍后重试'), 3500, 'tts-seek-loading')
+      return
+    }
+
+    cachedChunksMap.set(clampedIndex, new Uint8Array(baseBuffer))
+
+    // 目标倍率 WSOLA 派生
+    let playbackBuffer: ArrayBuffer = baseBuffer
+    if (Math.abs(speed - 1.0) >= 0.01 && window.electronAPI?.tts?.scaleWav) {
+      const scaled = await window.electronAPI.tts.scaleWav(baseBuffer, speed)
+      if (scaled && scaled.byteLength > 44) {
+        playbackBuffer = scaled
+      }
+    }
+
+    if (activeSessionId !== thisSeekSession) return
+
+    const audioBuffer = await ctx.decodeAudioData(playbackBuffer.slice(0))
+    if (activeSessionId !== thisSeekSession) return
+
+    clearScheduledSources()
+    const startAt = ctx.currentTime + 0.02
+    const source = ctx.createBufferSource()
+    source.buffer = audioBuffer
+    source.playbackRate.value = 1.0
+    source.connect(ctx.destination)
+    source.start(startAt)
+
+    const endAt = startAt + audioBuffer.duration
+    scheduledSources.push({
+      source,
+      startTime: startAt,
+      endTime: endAt,
+      index: clampedIndex
+    })
+    nextStartTime = endAt
+
+    set({ status: 'playing', currentSentenceIndex: clampedIndex })
+    ensureProgressMonitor()
+
+    // 紧接着在后台流式合成目标句之后的剩余句子（clampedIndex + 1 到末尾）
+    ;(async () => {
+      for (let i = clampedIndex + 1; i < currentCleanedChunks.length; i++) {
+        if (activeSessionId !== thisSeekSession) return
+
+        let nextBaseBuffer: ArrayBuffer | null = null
+        const cachedNext = cachedChunksMap.get(i)
+        if (cachedNext) {
+          nextBaseBuffer = cachedNext.buffer.slice(
+            cachedNext.byteOffset,
+            cachedNext.byteOffset + cachedNext.byteLength
+          ) as ArrayBuffer
+        } else {
+          nextBaseBuffer = await window.electronAPI.tts.synthesizeChunk(
+            currentCleanedChunks[i],
+            voiceId,
+            1.0,
+            thisSeekSession,
+            sid
+          )
+        }
+
+        if (activeSessionId !== thisSeekSession) return
+        if (!nextBaseBuffer || nextBaseBuffer.byteLength === 0) continue
+
+        cachedChunksMap.set(i, new Uint8Array(nextBaseBuffer))
+
+        let nextPlaybackBuffer: ArrayBuffer = nextBaseBuffer
+        if (Math.abs(speed - 1.0) >= 0.01 && window.electronAPI?.tts?.scaleWav) {
+          const scaled = await window.electronAPI.tts.scaleWav(nextBaseBuffer, speed)
+          if (scaled && scaled.byteLength > 44) {
+            nextPlaybackBuffer = scaled
+          }
+        }
+
+        if (activeSessionId !== thisSeekSession) return
+        const nextAudioBuffer = await ctx.decodeAudioData(nextPlaybackBuffer.slice(0))
+        if (activeSessionId !== thisSeekSession) return
+
+        const nextSource = ctx.createBufferSource()
+        nextSource.buffer = nextAudioBuffer
+        nextSource.playbackRate.value = 1.0
+        nextSource.connect(ctx.destination)
+
+        const nextStartAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
+        nextSource.start(nextStartAt)
+        const nextEndAt = nextStartAt + nextAudioBuffer.duration
+        scheduledSources.push({
+          source: nextSource,
+          startTime: nextStartAt,
+          endTime: nextEndAt,
+          index: i
+        })
+        nextStartTime = nextEndAt
+      }
+      isAllChunksScheduled = true
+    })().catch(err => {
+      console.warn('[TTS Seek] 后续分句流式排程异常:', err)
+    })
   }
 }))
 
