@@ -12,7 +12,13 @@
 import { create } from 'zustand'
 import { cleanTextForTTS, splitTextIntoChunks } from '../lib/text-chunker'
 import { useConfigStore } from './config-store'
-import { getVoiceById, DEFAULT_VOICE_ID } from '../constants/tts-voices'
+import { useSettingsStore } from './settings-store'
+import {
+  getVoiceById,
+  DEFAULT_VOICE_ID,
+  PRESET_VOICES,
+  type VoiceMeta
+} from '../constants/tts-voices'
 import { toast } from '../components/common/Toast'
 import { t } from '@app/languages'
 
@@ -39,6 +45,10 @@ export interface TTSAudioState {
   currentCachePath: string | null
   /** 错误信息 */
   errorMessage: string | null
+  /** 全量可用音色列表（包含预置与用户克隆音色） */
+  allVoices: VoiceMeta[]
+  /** 刷新并拉取全量音色库（含自定义音色） */
+  refreshVoices: () => Promise<VoiceMeta[]>
 
   /** 播放/暂停切换 */
   play: (
@@ -152,7 +162,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       const targetVoiceId = useTTSAudioStore.getState().currentVoiceId
       const targetSid = useTTSAudioStore.getState().currentSid
       const targetSpeed = useTTSAudioStore.getState().speed
-      const matchedVoice = getVoiceById(targetVoiceId)
+      const matchedVoice = getVoiceById(targetVoiceId, useTTSAudioStore.getState().allVoices)
       const targetDisplayName = matchedVoice?.displayName || String(targetVoiceId)
       const options = currentPlayOptions
 
@@ -422,11 +432,48 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
   speed: 1.0,
   currentCachePath: null,
   errorMessage: null,
+  allVoices: PRESET_VOICES,
+
+  refreshVoices: async () => {
+    try {
+      if (typeof window !== 'undefined' && window.electronAPI?.tts?.listVoices) {
+        const list = await window.electronAPI.tts.listVoices()
+        if (Array.isArray(list) && list.length > 0) {
+          const mapped: VoiceMeta[] = list.map((item: any) => ({
+            id: String(item.id),
+            displayName: item.displayName || item.name || item.id,
+            gender: item.gender === 'male' || item.gender === 'child' ? item.gender : 'female',
+            lang: item.lang === 'en' || item.lang === 'ja' ? item.lang : 'zh',
+            desc: item.desc || (item.isCustom ? t('用户自定义克隆音色') : ''),
+            emotion: item.emotion,
+            isCustom: Boolean(item.isCustom),
+            recommended: Boolean(item.recommended)
+          }))
+          const seen = new Set<string>()
+          const uniqueList: VoiceMeta[] = []
+          for (const item of mapped) {
+            if (!seen.has(item.id)) {
+              seen.add(item.id)
+              uniqueList.push(item)
+            }
+          }
+          set({ allVoices: uniqueList })
+          return uniqueList
+        }
+      }
+    } catch (err) {
+      console.warn('[useTTSAudioStore] 加载自定义音色失败，回退预置音色库:', err)
+    }
+    set({ allVoices: PRESET_VOICES })
+    return PRESET_VOICES
+  },
 
   setSid: (sid: number) => {
-    const matched = getVoiceById(sid)
+    const state = get()
+    const matched = getVoiceById(sid, state.allVoices)
     const voiceId = matched?.id || String(sid)
     set({ currentSid: sid, currentVoiceId: voiceId })
+    useSettingsStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
     useConfigStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
   },
 
@@ -434,9 +481,10 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     const state = get()
     if (state.currentVoiceId === voiceId) return
 
-    const matched = getVoiceById(voiceId)
+    const matched = getVoiceById(voiceId, state.allVoices)
     const sid = matched?.sid ?? 63
     set({ currentVoiceId: voiceId, currentSid: sid })
+    useSettingsStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
     useConfigStore.getState().updateConfigValue('TTS_DEFAULT_VOICE_SID', voiceId).catch(() => {})
 
     // 若当前正在播放，平滑热切新音色（不断音，合成好后自动无缝切入）
@@ -450,6 +498,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     if (Math.abs(state.speed - speed) < 0.01) return
 
     set({ speed })
+    useSettingsStore.getState().updateConfigValue('TTS_SPEED', speed).catch(() => {})
     useConfigStore.getState().updateConfigValue('TTS_SPEED', speed).catch(() => {})
 
     // 若当前正在播放，平滑热切新倍速（不断音，通过纯 Rust WSOLA 极速派生并在合成后自动切换）
@@ -557,14 +606,14 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     activeSessionId = thisSessionId
 
     // 获取配置默认音色与语速
-    const config = useConfigStore.getState().config
+    const config = useSettingsStore.getState().config || useConfigStore.getState().config
     const chosenVoiceId =
       options?.voiceId !== undefined
         ? String(options.voiceId)
         : options?.sid !== undefined
           ? String(options.sid)
           : String((config as any)?.ttsDefaultVoiceId || (config as any)?.ttsDefaultVoiceSid || DEFAULT_VOICE_ID)
-    const matchedVoice = getVoiceById(chosenVoiceId)
+    const matchedVoice = getVoiceById(chosenVoiceId, get().allVoices)
     // 关键修复：优先采用解析出的音色真实专属 sid，彻底杜绝调用方传入 stale sid 污染导致不同音色发音恒同！
     const chosenSid =
       typeof matchedVoice?.sid === 'number'
@@ -599,7 +648,10 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     cachedChunksMap.clear()
 
     // 解析发音人显示名称与本地磁盘缓存目标路径（传入 text，纯文本/试听例句变化时指纹实时变化）
-    const chosenDisplayName = matchedVoice?.displayName || String(chosenVoiceId)
+    const isAudition = options?.textId?.startsWith('audition-') || options?.fieldName === 'audition'
+    const targetFingerprint = isAudition ? 'preview' : options?.fileFingerprint
+    const targetFieldName = isAudition ? 'audition' : options?.fieldName
+    const chosenDisplayName = options?.displayName || matchedVoice?.displayName || String(chosenVoiceId)
     let targetCachePath: string | null = null
     let base1xCachePath: string | null = null
 
@@ -607,8 +659,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       try {
         targetCachePath = await window.electronAPI.tts.getCachePath({
           filePath: options?.filePath,
-          fileFingerprint: options?.fileFingerprint,
-          fieldName: options?.fieldName,
+          fileFingerprint: targetFingerprint,
+          fieldName: targetFieldName,
           displayName: chosenDisplayName,
           text: text,
           voiceId: chosenVoiceId,
@@ -620,8 +672,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         if (Math.abs(chosenSpeed - 1.0) >= 0.01) {
           base1xCachePath = await window.electronAPI.tts.getCachePath({
             filePath: options?.filePath,
-            fileFingerprint: options?.fileFingerprint,
-            fieldName: options?.fieldName,
+            fileFingerprint: targetFingerprint,
+            fieldName: targetFieldName,
             displayName: chosenDisplayName,
             text: text,
             voiceId: chosenVoiceId,
@@ -905,7 +957,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     if (!wavPath && window.electronAPI?.tts?.getCachePath) {
       const state = get()
       const targetVoiceId = options?.voiceId ?? state.currentVoiceId
-      const matched = getVoiceById(targetVoiceId)
+      const matched = getVoiceById(targetVoiceId, state.allVoices)
       wavPath = await window.electronAPI.tts.getCachePath({
         filePath: options?.filePath,
         fileFingerprint: options?.fileFingerprint,
@@ -973,4 +1025,11 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     }
   }
 }))
+
+// 渲染进程启动时自动异步预热拉取全量音色（含自定义音色）
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    useTTSAudioStore.getState().refreshVoices().catch(() => {})
+  }, 0)
+}
 

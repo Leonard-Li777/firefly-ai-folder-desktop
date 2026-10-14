@@ -45,6 +45,13 @@ describe('TTSWavCacheService 单元测试', () => {
 
     const fileName2 = service.generateCacheFileName('fp987654', 'multimodalContent', 1.25, 0)
     expect(fileName2).toBe('fp987654_multimodalContent_1.25x_0.wav')
+
+    // 预览/试听音色：无文件指纹干扰，统一以 preview_ 开头
+    const fileNamePreview = service.generateCacheFileName('preview', '我的音色', 1.0, 'custom_12345')
+    expect(fileNamePreview).toBe('preview_我的音色_1x_custom_12345.wav')
+
+    const fileNamePreviewSpeed = service.generateCacheFileName('preview', 'Donald Trump', 1.5, 'donald_trump')
+    expect(fileNamePreviewSpeed).toBe('preview_Donald_Trump_1.5x_donald_trump.wav')
   })
 
   it('appendWavChunk 与 readWavMetadata: 支持单句创建与元数据解析', async () => {

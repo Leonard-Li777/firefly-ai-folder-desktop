@@ -98,43 +98,14 @@ export const TTSSettings: React.FC = () => {
     }
   }, [config.ttsFavoriteVoices, config.ttsDefaultVoiceSid, updateConfigValue])
 
-  // 2. 音色库数据源（结合预置音色与自定义音色）
-  const [allVoices, setAllVoices] = useState<VoiceMeta[]>(PRESET_VOICES)
+  // 2. 音色库数据源（与全局 ttsAudioStore 单一事实源对齐，结合预置音色与用户克隆音色）
+  const allVoicesFromStore = useTTSAudioStore(s => s.allVoices)
+  const allVoices = allVoicesFromStore && allVoicesFromStore.length > 0 ? allVoicesFromStore : PRESET_VOICES
 
-  // 刷新拉取音色库
+  // 刷新拉取音色库并同步全局 store
   const refreshVoices = useCallback(async () => {
-    try {
-      if (window.electronAPI?.tts?.listVoices) {
-        const list = await window.electronAPI.tts.listVoices()
-        if (Array.isArray(list) && list.length > 0) {
-          const mapped: VoiceMeta[] = list.map((item: any) => ({
-            id: String(item.id),
-            displayName: item.displayName || item.name || item.id,
-            gender: item.gender === 'male' || item.gender === 'child' ? item.gender : 'female',
-            lang: item.lang === 'en' || item.lang === 'ja' ? item.lang : 'zh',
-            desc: item.desc || (item.isCustom ? t('用户自定义克隆音色') : ''),
-            emotion: item.emotion,
-            isCustom: Boolean(item.isCustom),
-            recommended: Boolean(item.recommended)
-          }))
-          // 严格按 ID 去重，杜绝 React Key 重复冲突
-          const seen = new Set<string>()
-          const uniqueList: VoiceMeta[] = []
-          for (const item of mapped) {
-            if (!seen.has(item.id)) {
-              seen.add(item.id)
-              uniqueList.push(item)
-            }
-          }
-          setAllVoices(uniqueList)
-          return
-        }
-      }
-    } catch (err) {
-      console.warn('[TTSSettings] 加载自定义音色失败，回退预置音色库:', err)
-    }
-    setAllVoices(PRESET_VOICES)
-  }, [])
+    return await ttsAudioStore.refreshVoices()
+  }, [ttsAudioStore])
 
   useEffect(() => {
     refreshVoices()
@@ -449,11 +420,14 @@ export const TTSSettings: React.FC = () => {
           setAuditionVoiceId(null)
         }
       } else {
-        // 播放新音色或文本发生变化：以最新例句重新合成播放
+        // 播放新音色或文本发生变化：以最新例句重新合成播放（统一标记为 preview 试听）
         setAuditionVoiceId(voice.id)
         await ttsAudioStore.play(textToSpeak, {
           textId: `audition-${voice.id}`,
           voiceId: voice.id,
+          displayName: voice.displayName,
+          fieldName: 'audition',
+          fileFingerprint: 'preview',
           sid: voice.sid,
           speed: ttsSpeed
         })

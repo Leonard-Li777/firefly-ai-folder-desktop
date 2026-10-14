@@ -147,14 +147,19 @@ export class TTSWavCacheService {
 
   /**
    * 解析或生成文件内容指纹
-   */
+    */
   public resolveFileFingerprint(
     filePath?: string,
     fileFingerprint?: string,
-    text?: string
+    text?: string,
+    fieldName?: string
   ): string {
     if (fileFingerprint && fileFingerprint.trim()) {
       return fileFingerprint.trim()
+    }
+
+    if (fieldName === 'audition' || fieldName === 'preview') {
+      return 'preview'
     }
 
     if (filePath && filePath.trim()) {
@@ -185,8 +190,10 @@ export class TTSWavCacheService {
 
   /**
    * 生成规范缓存文件名
-   * 格式: {fileFingerprint}_{safeDisplayName}_{speed}x_{safeVoiceId}.wav
-   * 规范：文件指纹+发音人名+倍率+音色id.wav，每个语速与音色拥有独立落盘实体，各语速直接由语音合成端输出并复用，彻底摒弃 FFmpeg 转码
+   * 格式:
+   * 1. 实体文件朗读: {fileFingerprint}_{safeDisplayName}_{speed}x_{safeVoiceId}.wav
+   * 2. 音色预览/试听: preview_{safeDisplayName}_{speed}x_{safeVoiceId}.wav
+   * 规范：音色预览统一以 preview_ 开头，无文件指纹干扰；每个语速与音色拥有独立落盘实体，各语速直接由语音合成端输出并复用，彻底摒弃 FFmpeg 转码
    */
   public generateCacheFileName(
     fileFingerprint: string,
@@ -194,12 +201,17 @@ export class TTSWavCacheService {
     speed: number = 1.0,
     voiceId: string | number = 'lilihong_shejian'
   ): string {
+    const isPreview = !fileFingerprint || fileFingerprint === 'preview' || fileFingerprint.startsWith('preview_')
     const safeFingerprint = (fileFingerprint || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '_')
     const safeDisplayName = String(displayName || voiceId || 'voice').replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_')
     const speedStr = Number(speed || 1.0).toFixed(2).replace(/\.?0+$/, '')
     const safeVoice = String(
       voiceId !== undefined && voiceId !== null && voiceId !== '' ? voiceId : 'lilihong_shejian'
     ).replace(/[^a-zA-Z0-9_-]/g, '_')
+
+    if (isPreview) {
+      return `preview_${safeDisplayName}_${speedStr}x_${safeVoice}.wav`
+    }
     return `${safeFingerprint}_${safeDisplayName}_${speedStr}x_${safeVoice}.wav`
   }
 
@@ -223,16 +235,23 @@ export class TTSWavCacheService {
 
     await this.ensureTtsDirectory(workspacePath)
     const ttsDir = this.getTtsDirPath(workspacePath)
-    const fingerprint = this.resolveFileFingerprint(
-      params.filePath,
-      params.fileFingerprint,
-      params.text
-    )
+    const isPreviewMode =
+      params.fieldName === 'audition' ||
+      params.fieldName === 'preview' ||
+      params.fileFingerprint === 'preview'
+    const fingerprint = isPreviewMode
+      ? 'preview'
+      : this.resolveFileFingerprint(
+          params.filePath,
+          params.fileFingerprint,
+          params.text,
+          params.fieldName
+        )
     const voiceIdVal = params.voiceId !== undefined ? params.voiceId : (params.sid !== undefined ? params.sid : 'lilihong_shejian')
     const speedVal = params.speed !== undefined ? params.speed : 1.0
     const displayNameVal = params.displayName || String(voiceIdVal)
 
-    // 1. 优先按最新命名规范命中：{fileFingerprint}_{displayName}_{speed}x_{voiceId}.wav
+    // 1. 优先按最新命名规范命中：{fileFingerprint}_{displayName}_{speed}x_{voiceId}.wav 或 preview_{displayName}_{speed}x_{voiceId}.wav
     const standardName = this.generateCacheFileName(
       fingerprint,
       displayNameVal,

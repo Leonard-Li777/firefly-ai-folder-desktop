@@ -56,7 +56,8 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   className,
   compact = false
 }) => {
-  const config = useConfigStore(s => s.config)
+  // 从设置中心统一订阅配置，确保与设置面板收藏列表修改实时同步
+  const config = useSettingsStore(s => s.config)
   const ttsEnabled = (config as any)?.ttsEnabled ?? true
 
   const {
@@ -67,6 +68,8 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     currentSid,
     currentVoiceId,
     speed,
+    allVoices,
+    refreshVoices,
     play,
     pause,
     resume,
@@ -76,6 +79,11 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     locateAudio,
     exportAudio
   } = useTTSAudioStore()
+
+  // 挂载时拉取最新音色库（包含自定义克隆音色）
+  useEffect(() => {
+    refreshVoices().catch(() => {})
+  }, [refreshVoices])
 
   // 下拉菜单显隐控制
   const [showVoiceMenu, setShowVoiceMenu] = useState(false)
@@ -120,7 +128,7 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     let ids: string[] = DEFAULT_FAVORITE_VOICE_IDS
     if (Array.isArray(fromConfig) && fromConfig.length > 0) {
       const hasLegacyNumbers = fromConfig.some(
-        (v: any) => typeof v === 'number' || (!isNaN(Number(v)) && !PRESET_VOICES.some(p => p.id === String(v)))
+        (v: any) => typeof v === 'number' || (!isNaN(Number(v)) && !allVoices.some(p => p.id === String(v)))
       )
       if (!hasLegacyNumbers) {
         ids = fromConfig.map(String)
@@ -129,18 +137,18 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     const seen = new Set<string>()
     const result: VoiceMeta[] = []
     for (const id of ids) {
-      const v = getVoiceById(id)
+      const v = getVoiceById(id, allVoices)
       if (v && !seen.has(v.id)) {
         seen.add(v.id)
         result.push(v)
       }
     }
-    return result.length > 0 ? result : [PRESET_VOICES[0]]
-  }, [(config as any)?.ttsFavoriteVoices])
+    return result.length > 0 ? result : [allVoices[0] || PRESET_VOICES[0]]
+  }, [(config as any)?.ttsFavoriteVoices, allVoices])
 
   const activeVoice = useMemo(() => {
-    return getVoiceById(currentVoiceId || DEFAULT_VOICE_ID)
-  }, [currentVoiceId])
+    return getVoiceById(currentVoiceId || DEFAULT_VOICE_ID, allVoices)
+  }, [currentVoiceId, allVoices])
 
   // 若功能在设置中全局关闭，不渲染
   if (!ttsEnabled) {
@@ -239,8 +247,12 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
             type="button"
             onClick={e => {
               e.stopPropagation()
-              setShowVoiceMenu(!showVoiceMenu)
+              const nextShow = !showVoiceMenu
+              setShowVoiceMenu(nextShow)
               setShowSpeedMenu(false)
+              if (nextShow) {
+                refreshVoices().catch(() => {})
+              }
             }}
             title={t('切换朗读发音人')}
             className="flex items-center gap-0.5 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
@@ -250,7 +262,7 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
           </button>
 
           {showVoiceMenu && (
-            <div className="absolute left-0 top-full mt-1.5 z-50 min-w-[140px] rounded-md border border-border bg-popover p-1 shadow-md text-xs">
+            <div className="absolute left-0 top-full mt-1.5 z-50 min-w-[150px] rounded-md border border-border bg-popover p-1 shadow-md text-xs">
               <div className="px-2 py-1 text-[10px] text-muted-foreground font-medium border-b border-border/40">
                 {t('收藏音色')}
               </div>
@@ -269,9 +281,9 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
                       currentVoiceId === voice.id && 'font-medium text-primary bg-primary/10'
                     )}
                   >
-                    <span>{voice.displayName}</span>
-                    <span className="text-[10px] text-muted-foreground ml-2">
-                      {voice.lang === 'zh' ? '中文' : voice.lang === 'ja' ? '日文' : 'EN'}
+                    <span className="truncate max-w-[96px]">{voice.displayName}</span>
+                    <span className="text-[10px] text-muted-foreground ml-2 shrink-0">
+                      {voice.isCustom ? t('自定义') : voice.lang === 'zh' ? '中文' : voice.lang === 'ja' ? '日文' : 'EN'}
                     </span>
                   </button>
                 ))}

@@ -404,6 +404,20 @@ export const useSettingsStore = create<ISettingsState>()(
         }
         state.updateConfig(updates as Partial<AppConfig>, { internal: true })
 
+        // 防御性同步：若 useConfigStore 已初始化，同步更新其本地内存快照，杜绝跨 Store 状态分叉
+        try {
+          const { useConfigStore } = require('./config-store')
+          const configState = useConfigStore.getState()
+          if (configState && configState.config) {
+            useConfigStore.setState({
+              config: {
+                ...configState.config,
+                ...updates
+              }
+            })
+          }
+        } catch {}
+
         if (typeof window.electronAPI?.updateConfigValue === 'function') {
           await window.electronAPI.updateConfigValue(key, value, options)
         }
@@ -414,6 +428,35 @@ export const useSettingsStore = create<ISettingsState>()(
     }
   })
 )
+
+/**
+ * 订阅配置对象（settings 面板「改完不回显」的通用解药）
+ *
+ * 背景与根因：设置面板普遍用 `getConfigValue(key)` 在 render 阶段读配置，而该函数引用
+ * 在 store 创建后恒定不变 —— zustand 选择器 `s => s.getConfigValue` 的结果永远相等，
+ * 因此 config 被 `updateConfig` / `updateConfigValue` 替换成新对象时，组件**不会重渲染**，
+ * 界面停留在此次渲染时的旧快照上：开关拨了没反应、卡片选中态不切换，只有重开设置对话框
+ * （组件卸载重挂）才回显。
+ *
+ * 因此：凡在 render 阶段调用 `getConfigValue()` 的组件，必须在组件顶层调用本 Hook 订阅
+ * config，让配置对象替换时能够触发重渲染。
+ */
+export const useSettingsConfig = (): AppConfig => useSettingsStore(s => s.config)
+
+/**
+ * 读取单个 ConfigKey 并订阅其变化（新代码优先使用本 Hook，语义等价于
+ * 「订阅 config + getConfigValue」，但天然带重渲染能力）
+ */
+export const useConfigValue = <T = unknown>(key: ConfigKey): T | undefined => {
+  const config = useSettingsStore(s => s.config)
+  const rendererField = configKeyToRendererFieldMap[key]
+
+  // 与 getConfigValue 保持同一取值优先级：先映射的渲染进程字段，再原始 ConfigKey
+  if (rendererField && (config as any)?.[rendererField] !== undefined) {
+    return (config as any)[rendererField] as T
+  }
+  return (config as any)?.[key] as T | undefined
+}
 
 if (typeof window !== 'undefined' && window.electronAPI) {
   window.electronAPI
