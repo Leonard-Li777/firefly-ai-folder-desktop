@@ -39,7 +39,7 @@ export const CloudErrorCard: React.FC<CloudErrorCardProps> = ({ onRetest, retest
   if (!lastError) return null
 
   return (
-    <Card className="p-4 border-l-4 border-l-red-500/80 border-border/60 shadow-xs rounded-xl bg-card">
+    <Card className="p-4 border-l-4 border-l-red-500/80 border-border/60 shadow-xs rounded-xl bg-red-500/5 dark:bg-red-500/10">
       <div className="flex items-start gap-3">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20">
           <AlertTriangle className="h-4 w-4" />
