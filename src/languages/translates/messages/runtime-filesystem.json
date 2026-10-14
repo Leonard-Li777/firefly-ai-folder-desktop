@@ -838,7 +838,7 @@
     "de-DE": "Der entsprechende Arbeitsbereich kann nicht gefunden werden: {path}",
     "fr-FR": "L'espace de travail correspondant est introuvable : {path}",
     "ko-KR": "해당 작업공간을 찾을 수 없습니다: {path}",
-    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/index.ts(12702-12724)"],
+    "$files": ["src/electron/runtime-services/filesystem/organize-real-directory-service/index.ts(13206-13228)"],
     "$id": 4382
   },
   "选中的文件中没有AI分析过的文件，请先进行AI分析": {

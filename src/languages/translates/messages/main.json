@@ -103,10 +103,10 @@
     "$files": [
       "src/electron/main/ipc-handlers/ai-service.ts(15768-15783)",
       "src/electron/main/ipc-handlers/ai-service.ts(17667-17682)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(13904-13919)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(18025-18040)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(31328-31343)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(35192-35207)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(14493-14508)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(18614-18629)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(38850-38865)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(42714-42729)"
     ],
     "$id": 7900
   },
@@ -135,10 +135,10 @@
     "ko-KR": "AI 서비스를 초기화 중입니다. 나중에 다시 시도해 주세요.",
     "$files": [
       "src/electron/main/ipc-handlers/ai-service.ts(18413-18434)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(18454-18475)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(18809-18830)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(32017-32038)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(35611-35632)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(19043-19064)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(19398-19419)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(39539-39560)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(43133-43154)"
     ],
     "$id": 10179
   },
@@ -232,7 +232,7 @@
     "ko-KR": "알 수 없는 오류",
     "$files": [
       "src/electron/main/ipc-handlers/misc.ts(13329-13337)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(32984-32992)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(40506-40514)"
     ],
     "$id": 10180
   },
@@ -354,26 +354,27 @@
     "fr-FR": "Service d'annuaire virtuel non initialisé",
     "ko-KR": "가상 디렉터리 서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(6653-6667)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(16120-16134)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(16650-16664)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(17053-17067)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(20596-20610)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(21418-21432)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(21783-21797)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22055-22069)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22295-22309)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22577-22591)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(22897-22911)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(23233-23247)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(23543-23557)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(23805-23819)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24059-24073)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24328-24342)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24622-24636)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(24879-24893)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(25116-25130)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(25819-25833)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(7242-7256)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(16709-16723)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(17239-17253)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(17642-17656)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(21185-21199)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(22007-22021)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(22372-22386)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(22644-22658)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(22884-22898)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(23166-23180)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(23486-23500)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(23822-23836)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24132-24146)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24394-24408)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24648-24662)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(24917-24931)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25211-25225)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25468-25482)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(25705-25719)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(26408-26422)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(37505-37519)"
     ],
     "$id": 7678
   },
@@ -387,7 +388,7 @@
     "de-DE": "Virtuelles Verzeichnis existiert nicht",
     "fr-FR": "Le répertoire virtuel n'existe pas",
     "ko-KR": "가상 디렉터리가 존재하지 않습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(10718-10729)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(11307-11318)"],
     "$id": 7508
   },
   "工作目录不存在": {
@@ -400,7 +401,7 @@
     "de-DE": "Arbeitsverzeichnis existiert nicht",
     "fr-FR": "Le répertoire de travail n'existe pas",
     "ko-KR": "작업 디렉토리가 존재하지 않습니다",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(10887-10898)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(11476-11487)"],
     "$id": 7509
   },
   "真实目录服务未初始化": {
@@ -413,7 +414,7 @@
     "de-DE": "Echter Verzeichnisdienst nicht initialisiert",
     "fr-FR": "Service d'annuaire réel non initialisé",
     "ko-KR": "실제 디렉터리 서비스가 초기화되지 않았습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(12154-12168)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(12743-12757)"],
     "$id": 7510
   },
   "未设置工作目录": {
@@ -426,7 +427,7 @@
     "de-DE": "Kein Arbeitsverzeichnis festgelegt",
     "fr-FR": "Aucun répertoire de travail défini",
     "ko-KR": "작업 디렉터리가 설정되지 않았습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(25299-25310)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(25888-25899)"],
     "$id": 7679
   },
   "授权校验失败，请联网或激活企业版后再执行此操作": {
@@ -440,9 +441,9 @@
     "fr-FR": "La vérification de l'autorisation a échoué. Veuillez vous connecter à Internet ou activer la version entreprise avant d'effectuer cette opération.",
     "ko-KR": "승인 확인에 실패했습니다. 이 작업을 수행하기 전에 인터넷에 연결하거나 기업 버전을 활성화하십시오.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(25723-25750)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30687-30714)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(31579-31606)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(26312-26339)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(31276-31303)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(39101-39128)"
     ],
     "$id": 10185
   },
@@ -457,15 +458,15 @@
     "fr-FR": "Assembler un service d'annuaire réel non initialisé",
     "ko-KR": "실제 디렉터리 서비스 대조가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(26443-26459)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(27738-27754)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(28982-28998)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(29308-29324)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(29614-29630)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(29941-29957)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30256-30272)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(30781-30797)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(32161-32177)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(27032-27048)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(28327-28343)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(29571-29587)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(29897-29913)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(30203-30219)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(30530-30546)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(30845-30861)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(31370-31386)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(39683-39699)"
     ],
     "$id": 10186
   },
@@ -480,10 +481,36 @@
     "fr-FR": "Pas assez de grains de feu",
     "ko-KR": "Firecores이 부족해요",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(27147-27155)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(28625-28633)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(27736-27744)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(29214-29222)"
     ],
     "$id": 10184
+  },
+  "缺少工作区 ID": {
+    "en-US": "Missing workspace ID",
+    "es-ES": "Falta el ID del espacio de trabajo",
+    "ar-EG": "معرف مساحة العمل المفقود",
+    "pt-PT": "ID do espaço de trabalho ausente",
+    "ru-RU": "Отсутствует идентификатор рабочей области",
+    "ja-JP": "ワークスペースIDがありません",
+    "de-DE": "Fehlende Arbeitsbereich-ID",
+    "fr-FR": "ID d'espace de travail manquant",
+    "ko-KR": "누락 된 작업 공간 아이디",
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(37840-37852)"],
+    "$id": 21563
+  },
+  "智能聚类执行失败或有效向量文件数不足": {
+    "en-US": "Intelligent clustering execution failed or the number of valid vector files is insufficient",
+    "es-ES": "Error en la ejecución de la agrupación inteligente en clústeres o el número de archivos vectoriales válidos es insuficiente",
+    "ar-EG": "فشل تنفيذ التجميع الذكي أو أن عدد ملفات المتجهات الصالحة غير كاف",
+    "pt-PT": "Falha na execução do agrupamento inteligente ou o número de ficheiros vetoriais válidos é insuficiente",
+    "ru-RU": "Сбой при выполнении интеллектуальной кластеризации или недостаточное количество допустимых векторных файлов",
+    "ja-JP": "インテリジェントクラスタリングの実行に失敗したか、有効なベクターファイルの数が不足しています",
+    "de-DE": "Die Ausführung des intelligenten Clusters ist fehlgeschlagen oder die Anzahl der gültigen Vektordateien ist unzureichend",
+    "fr-FR": "L'exécution du clustering intelligent a échoué ou le nombre de fichiers vectoriels valides est insuffisant",
+    "ko-KR": "지능형 클러스터링 실행 실패 또는 유효한 벡터 파일 수가 부족합니다",
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(38169-38191)"],
+    "$id": 21564
   },
   "没有正在进行的任务": {
     "en-US": "No tasks in progress",
@@ -495,7 +522,7 @@
     "de-DE": "Keine Aufgaben in Bearbeitung",
     "fr-FR": "Aucune tâche en cours",
     "ko-KR": "진행 중인 작업이 없습니다.",
-    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(33511-33524)"],
+    "$files": ["src/electron/main/ipc-handlers/virtual-directory.ts(41033-41046)"],
     "$id": 10187
   },
   "服务未初始化": {
@@ -509,9 +536,9 @@
     "fr-FR": "Service non initialisé",
     "ko-KR": "서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(33737-33747)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(34175-34185)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(34611-34621)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(41259-41269)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(41697-41707)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(42133-42143)"
     ],
     "$id": 10188
   },
@@ -526,10 +553,10 @@
     "fr-FR": "Service de contexte d'annuaire non initialisé",
     "ko-KR": "디렉터리 컨텍스트 서비스가 초기화되지 않았습니다.",
     "$files": [
-      "src/electron/main/ipc-handlers/virtual-directory.ts(36238-36253)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(39636-39651)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(40746-40761)",
-      "src/electron/main/ipc-handlers/virtual-directory.ts(42041-42056)"
+      "src/electron/main/ipc-handlers/virtual-directory.ts(43760-43775)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(47158-47173)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(48268-48283)",
+      "src/electron/main/ipc-handlers/virtual-directory.ts(49563-49578)"
     ],
     "$id": 7680
   },

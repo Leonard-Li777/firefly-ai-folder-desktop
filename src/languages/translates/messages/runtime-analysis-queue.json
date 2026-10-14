@@ -161,7 +161,7 @@
     "$files": [
       "src/electron/runtime-services/analysis-queue-service/analysis-queue-service.ts(33985-34003)",
       "src/electron/runtime-services/analysis-queue-service/directory-processor.ts(10606-10624)",
-      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(85208-85226)"
+      "src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(85628-85646)"
     ],
     "$id": 2977
   },
@@ -719,7 +719,7 @@
     "de-DE": "Es wird empfohlen, die Anzahl der PDF-Analyseseiten zu reduzieren oder die OCR-Funktion auszuschalten",
     "fr-FR": "Il est recommandé de réduire le nombre de pages d'analyse PDF ou de désactiver la fonction OCR",
     "ko-KR": "PDF 분석 페이지 수를 줄이거나 OCR 기능을 끄는 것이 좋습니다",
-    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(85248-85275)"],
+    "$files": ["src/electron/runtime-services/analysis-queue-service/file-processor/index.ts(85668-85695)"],
     "$id": 11054
   },
   "AI 服务未就绪": {
