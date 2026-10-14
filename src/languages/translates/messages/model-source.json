@@ -148,7 +148,9 @@
     "$files": [
       "src/electron/config/model-source.ts(1713-1721)",
       "src/electron/config/model-source.ts(2494-2502)",
-      "src/electron/config/model-source.ts(3297-3305)"
+      "src/electron/config/model-source.ts(3297-3305)",
+      "src/electron/config/model-source.ts(5978-5986)",
+      "src/electron/config/model-source.ts(7071-7079)"
     ],
     "$id": 9657
   },
@@ -169,17 +171,21 @@
       "src/electron/config/model-source.ts(3247-3253)",
       "src/electron/config/model-source.ts(3672-3678)",
       "src/electron/config/model-source.ts(4133-4139)",
-      "src/electron/config/model-source.ts(7614-7620)",
-      "src/electron/config/model-source.ts(7631-7637)",
-      "src/electron/config/model-source.ts(9651-9657)",
-      "src/electron/config/model-source.ts(10125-10131)",
-      "src/electron/config/model-source.ts(10134-10140)",
-      "src/electron/config/model-source.ts(10554-10560)",
-      "src/electron/config/model-source.ts(11029-11035)",
-      "src/electron/config/model-source.ts(11038-11044)",
-      "src/electron/config/model-source.ts(13737-13743)",
-      "src/electron/config/model-source.ts(14223-14229)",
-      "src/electron/config/model-source.ts(14232-14238)"
+      "src/electron/config/model-source.ts(5434-5440)",
+      "src/electron/config/model-source.ts(5934-5940)",
+      "src/electron/config/model-source.ts(6528-6534)",
+      "src/electron/config/model-source.ts(7027-7033)",
+      "src/electron/config/model-source.ts(8438-8444)",
+      "src/electron/config/model-source.ts(8455-8461)",
+      "src/electron/config/model-source.ts(10475-10481)",
+      "src/electron/config/model-source.ts(10949-10955)",
+      "src/electron/config/model-source.ts(10958-10964)",
+      "src/electron/config/model-source.ts(11378-11384)",
+      "src/electron/config/model-source.ts(11853-11859)",
+      "src/electron/config/model-source.ts(11862-11868)",
+      "src/electron/config/model-source.ts(14561-14567)",
+      "src/electron/config/model-source.ts(15047-15053)",
+      "src/electron/config/model-source.ts(15056-15062)"
     ],
     "$id": 9620
   },
@@ -209,7 +215,9 @@
     "$files": [
       "src/electron/config/model-source.ts(2457-2464)",
       "src/electron/config/model-source.ts(3237-3244)",
-      "src/electron/config/model-source.ts(4123-4130)"
+      "src/electron/config/model-source.ts(4123-4130)",
+      "src/electron/config/model-source.ts(5924-5931)",
+      "src/electron/config/model-source.ts(7017-7024)"
     ],
     "$id": 9628
   },
@@ -267,7 +275,7 @@
     "ko-KR": "오디오 지원",
     "$files": [
       "src/electron/config/model-source.ts(4365-4373)",
-      "src/electron/config/model-source.ts(6444-6452)"
+      "src/electron/config/model-source.ts(7268-7276)"
     ],
     "$id": 9476
   },
@@ -283,7 +291,7 @@
     "ko-KR": "텍스트, 이미지 및 오디오 분석을 지원하는 Google의 원래 수량화 버전입니다.",
     "$files": [
       "src/electron/config/model-source.ts(4537-4564)",
-      "src/electron/config/model-source.ts(6617-6644)"
+      "src/electron/config/model-source.ts(7441-7468)"
     ],
     "$id": 9622
   },
@@ -299,19 +307,19 @@
     "ko-KR": "다중 모드",
     "$files": [
       "src/electron/config/model-source.ts(4829-4836)",
-      "src/electron/config/model-source.ts(5525-5532)",
-      "src/electron/config/model-source.ts(6219-6226)",
-      "src/electron/config/model-source.ts(6912-6919)",
-      "src/electron/config/model-source.ts(8332-8339)",
-      "src/electron/config/model-source.ts(9210-9217)",
-      "src/electron/config/model-source.ts(10151-10158)",
-      "src/electron/config/model-source.ts(11055-11062)",
-      "src/electron/config/model-source.ts(11927-11934)",
-      "src/electron/config/model-source.ts(12802-12809)",
-      "src/electron/config/model-source.ts(13485-13492)",
-      "src/electron/config/model-source.ts(14249-14256)",
-      "src/electron/config/model-source.ts(14924-14931)",
-      "src/electron/config/model-source.ts(15601-15608)"
+      "src/electron/config/model-source.ts(5951-5958)",
+      "src/electron/config/model-source.ts(7044-7051)",
+      "src/electron/config/model-source.ts(7736-7743)",
+      "src/electron/config/model-source.ts(9156-9163)",
+      "src/electron/config/model-source.ts(10034-10041)",
+      "src/electron/config/model-source.ts(10975-10982)",
+      "src/electron/config/model-source.ts(11879-11886)",
+      "src/electron/config/model-source.ts(12751-12758)",
+      "src/electron/config/model-source.ts(13626-13633)",
+      "src/electron/config/model-source.ts(14309-14316)",
+      "src/electron/config/model-source.ts(15073-15080)",
+      "src/electron/config/model-source.ts(15748-15755)",
+      "src/electron/config/model-source.ts(16425-16432)"
     ],
     "$id": 9613
   },
@@ -327,7 +335,7 @@
     "ko-KR": "속도",
     "$files": [
       "src/electron/config/model-source.ts(4839-4845)",
-      "src/electron/config/model-source.ts(6922-6928)"
+      "src/electron/config/model-source.ts(7746-7752)"
     ],
     "$id": 11251
   },
@@ -343,9 +351,9 @@
     "ko-KR": "오디오",
     "$files": [
       "src/electron/config/model-source.ts(4848-4854)",
-      "src/electron/config/model-source.ts(6931-6937)",
-      "src/electron/config/model-source.ts(8342-8348)",
-      "src/electron/config/model-source.ts(9220-9226)"
+      "src/electron/config/model-source.ts(7755-7761)",
+      "src/electron/config/model-source.ts(9166-9172)",
+      "src/electron/config/model-source.ts(10044-10050)"
     ],
     "$id": 9624
   },
@@ -361,12 +369,12 @@
     "ko-KR": "영어가 더 좋아",
     "$files": [
       "src/electron/config/model-source.ts(4857-4865)",
-      "src/electron/config/model-source.ts(6940-6948)",
-      "src/electron/config/model-source.ts(7640-7648)",
-      "src/electron/config/model-source.ts(8381-8389)",
-      "src/electron/config/model-source.ts(9259-9267)",
-      "src/electron/config/model-source.ts(14943-14951)",
-      "src/electron/config/model-source.ts(15620-15628)"
+      "src/electron/config/model-source.ts(7764-7772)",
+      "src/electron/config/model-source.ts(8464-8472)",
+      "src/electron/config/model-source.ts(9205-9213)",
+      "src/electron/config/model-source.ts(10083-10091)",
+      "src/electron/config/model-source.ts(15767-15775)",
+      "src/electron/config/model-source.ts(16444-16452)"
     ],
     "$id": 9625
   },
@@ -381,58 +389,26 @@
     "fr-FR": "Petit canon en acier à lecture d'images",
     "ko-KR": "그림을 읽는 소형 강철 대포",
     "$files": [
-      "src/electron/config/model-source.ts(5050-5059)",
-      "src/electron/config/model-source.ts(5745-5754)"
+      "src/electron/config/model-source.ts(5420-5429)",
+      "src/electron/config/model-source.ts(6514-6523)"
     ],
     "$id": 9481
   },
-  "顶级端侧多模态模型，在 OCR、物体识别、复杂场景理解方面表现极其优异。": {
-    "en-US": "The top end-side multi-modal model performs extremely well in OCR, object recognition, and complex scene understanding.",
-    "es-ES": "El modelo multimodal del extremo superior funciona extremadamente bien en OCR, reconocimiento de objetos y comprensión de escenas complejas.",
-    "ar-EG": "يعمل النموذج متعدد الوسائط على الجانب العلوي بشكل جيد للغاية في التعرف الضوئي على الحروف والتعرف على الكائنات وفهم المشهد المعقد.",
-    "pt-PT": "O modelo multimodal de ponta tem um desempenho extremamente bom em OCR, reconhecimento de objetos e compreensão de cenas complexas.",
-    "ru-RU": "Мультимодальная модель верхнего уровня очень хорошо справляется с оптическим распознаванием текста, распознаванием объектов и пониманием сложных сцен.",
-    "ja-JP": "トップエンド側のマルチモーダル モデルは、OCR、オブジェクト認識、複雑なシーンの理解において非常に優れたパフォーマンスを発揮します。",
-    "de-DE": "Das multimodale Top-End-Modell bietet eine hervorragende Leistung bei OCR, Objekterkennung und komplexem Szenenverständnis.",
-    "fr-FR": "Le modèle multimodal haut de gamme fonctionne extrêmement bien en matière d'OCR, de reconnaissance d'objets et de compréhension de scènes complexes.",
-    "ko-KR": "최고급 다중 모드 모델은 OCR, 객체 인식 및 복잡한 장면 이해에서 매우 뛰어난 성능을 발휘합니다.",
+  "MiniCPM-V 4.7 1B 多模态识图去审查版本，支持文本与图像分析，可下载 DSpark 草稿模型加速推理。": {
+    "en-US": "MiniCPM-V 4.7 1B multi-modal map recognition and review version, supports text and image analysis, and can download the DSpark draft model to accelerate reasoning.",
+    "es-ES": "Versión de revisión y reconocimiento de mapas multimodales MiniCPM-V 4.7 1B, admite análisis de texto e imágenes, y puede descargar el borrador del modelo DSpark para acelerar el razonamiento.",
+    "ar-EG": "مينيكبم-في 4.7 1 ب متعددة الوسائط خريطة الاعتراف ومراجعة الإصدار ، ويدعم تحليل النص والصورة ، ويمكن تحميل مشروع دسبارك نموذج لتسريع المنطق.",
+    "pt-PT": "MiniCPM-V 4.7 1B reconhecimento de mapas multimodais e versão de revisão, suporta análise de texto e imagem e pode baixar o modelo de rascunho DSpark para acelerar o raciocínio.",
+    "ru-RU": "MiniCPM-версия 4.7 1B для мультимодального распознавания и просмотра карт, поддерживает анализ текста и изображений и может загружать черновую модель DSpark для ускорения анализа.",
+    "ja-JP": "MiniCPM-V4.7 1bマルチモーダルマップ認識とレビューバージョンは、テキストと画像解析をサポートし、推論を加速するためにDSparkドラフトモデルをダウンロー",
+    "de-DE": "MiniCPM-V 4.7 1B multimodale Kartenerkennungs- und Überprüfungsversion, unterstützt Text- und Bildanalyse und kann das DSpark-Entwurfsmodell herunterladen, um das Denken zu beschleunigen.",
+    "fr-FR": "Version de reconnaissance et de révision de carte multimodale MiniCPM-V 4.7 1B, prend en charge l'analyse de texte et d'image et peut télécharger le modèle de brouillon DSpark pour accélérer le raisonnement.",
+    "ko-KR": "멀티 모달 맵 인식 및 검토 버전,텍스트 및 이미지 분석을 지원하며 추론을 가속화하기 위해 디스파크 초안 모델을 다운로드 할 수 있습니다.",
     "$files": [
-      "src/electron/config/model-source.ts(5225-5265)",
-      "src/electron/config/model-source.ts(5920-5960)"
+      "src/electron/config/model-source.ts(5606-5668)",
+      "src/electron/config/model-source.ts(6700-6762)"
     ],
-    "$id": 9645
-  },
-  "场景理解": {
-    "en-US": "Scene understanding",
-    "es-ES": "Comprensión de la escena",
-    "ar-EG": "فهم المشهد",
-    "pt-PT": "Compreensão da cena",
-    "ru-RU": "Понимание сцены",
-    "ja-JP": "情景理解",
-    "de-DE": "Szenenverständnis",
-    "fr-FR": "Compréhension de la scène",
-    "ko-KR": "장면 이해",
-    "$files": [
-      "src/electron/config/model-source.ts(5542-5550)",
-      "src/electron/config/model-source.ts(6236-6244)"
-    ],
-    "$id": 9646
-  },
-  "顶级识图": {
-    "en-US": "Top image recognition",
-    "es-ES": "Reconocimiento de imagen superior",
-    "ar-EG": "أعلى التعرف على الصور",
-    "pt-PT": "Reconhecimento de imagem superior",
-    "ru-RU": "Лучшее распознавание изображений",
-    "ja-JP": "トップ画像認識",
-    "de-DE": "Top Bilderkennung",
-    "fr-FR": "Reconnaissance d'image supérieure",
-    "ko-KR": "최고의 이미지 인식",
-    "$files": [
-      "src/electron/config/model-source.ts(5553-5561)",
-      "src/electron/config/model-source.ts(6247-6255)"
-    ],
-    "$id": 9647
+    "$id": 21555
   },
   "全能": {
     "en-US": "Almighty",
@@ -444,7 +420,7 @@
     "de-DE": "Allmächtig",
     "fr-FR": "Tout-Puissant",
     "ko-KR": "전능자",
-    "$files": ["src/electron/config/model-source.ts(7142-7148)"],
+    "$files": ["src/electron/config/model-source.ts(7966-7972)"],
     "$id": 9483
   },
   "APEX 特化去审查版，优化的 I-Mini 量化。": {
@@ -457,7 +433,7 @@
     "de-DE": "Auf APEX spezialisierte, dezensierte Version, optimierte I-Mini-Quantisierung.",
     "fr-FR": "Version décensurée spécialisée APEX, quantification I-Mini optimisée.",
     "ko-KR": "APEX 전문 무검열 버전, 최적화된 I-Mini 양자화.",
-    "$files": ["src/electron/config/model-source.ts(7313-7343)"],
+    "$files": ["src/electron/config/model-source.ts(8137-8167)"],
     "$id": 9664
   },
   "全能-主力": {
@@ -470,7 +446,7 @@
     "de-DE": "Allmächtig – Hauptkraft",
     "fr-FR": "Tout-Puissant - force principale",
     "ko-KR": "올마이티 - 주력",
-    "$files": ["src/electron/config/model-source.ts(7845-7854)"],
+    "$files": ["src/electron/config/model-source.ts(8669-8678)"],
     "$id": 9485
   },
   "统一多模态QAT量化版，MoE架构极致省显存，支持文本、图像和音频分析。": {
@@ -483,7 +459,7 @@
     "de-DE": "Die einheitliche multimodale QAT-Quantifizierungsversion, die MoE-Architektur spart extrem Videospeicher und unterstützt Text-, Bild- und Audioanalyse.",
     "fr-FR": "Version quantifiée QAT multimodale unifiée, l'architecture MoE économise considérablement la mémoire vidéo, prend en charge l'analyse de texte, d'image et d'audio.",
     "ko-KR": "통합 다중 모드 QAT 정량화 버전인 MoE 아키텍처는 비디오 메모리를 대폭 절약하고 텍스트, 이미지 및 오디오 분석을 지원합니다.",
-    "$files": ["src/electron/config/model-source.ts(8019-8059)"],
+    "$files": ["src/electron/config/model-source.ts(8843-8883)"],
     "$id": 9668
   },
   "QAT量化": {
@@ -497,8 +473,8 @@
     "fr-FR": "Quantification du QAT",
     "ko-KR": "QAT 정량화",
     "$files": [
-      "src/electron/config/model-source.ts(8351-8360)",
-      "src/electron/config/model-source.ts(9229-9238)"
+      "src/electron/config/model-source.ts(9175-9184)",
+      "src/electron/config/model-source.ts(10053-10062)"
     ],
     "$id": 9669
   },
@@ -513,8 +489,8 @@
     "fr-FR": "Très petite mémoire vidéo",
     "ko-KR": "매우 작은 비디오 메모리",
     "$files": [
-      "src/electron/config/model-source.ts(8370-8378)",
-      "src/electron/config/model-source.ts(9248-9256)"
+      "src/electron/config/model-source.ts(9194-9202)",
+      "src/electron/config/model-source.ts(10072-10080)"
     ],
     "$id": 9670
   },
@@ -528,7 +504,7 @@
     "de-DE": "Allround – hohe Geschwindigkeit",
     "fr-FR": "Polyvalent – ​​grande vitesse",
     "ko-KR": "만능 - 고속",
-    "$files": ["src/electron/config/model-source.ts(8732-8741)"],
+    "$files": ["src/electron/config/model-source.ts(9556-9565)"],
     "$id": 9486
   },
   "全能力，外加MTP技术提速，目前为止不二之选的模型。": {
@@ -541,7 +517,7 @@
     "de-DE": "Mit allen Funktionen und der MTP-Technologie für Geschwindigkeit ist es bei weitem das beste Modell, das Sie wählen können.",
     "fr-FR": "Avec toutes ses capacités, ainsi que la technologie MTP pour la vitesse, c'est de loin le meilleur modèle à choisir.",
     "ko-KR": "모든 기능과 속도를 위한 MTP 기술을 갖춘 이 제품은 단연 최고의 모델입니다.",
-    "$files": ["src/electron/config/model-source.ts(8906-8936)"],
+    "$files": ["src/electron/config/model-source.ts(9730-9760)"],
     "$id": 9672
   },
   "2比特": {
@@ -555,9 +531,9 @@
     "fr-FR": "2 bits",
     "ko-KR": "2비트",
     "$files": [
-      "src/electron/config/model-source.ts(9639-9646)",
-      "src/electron/config/model-source.ts(10115-10122)",
-      "src/electron/config/model-source.ts(11917-11924)"
+      "src/electron/config/model-source.ts(10463-10470)",
+      "src/electron/config/model-source.ts(10939-10946)",
+      "src/electron/config/model-source.ts(12741-12748)"
     ],
     "$id": 19538
   },
@@ -572,10 +548,10 @@
     "fr-FR": "Qwen3.8 de base à haute compression, taille minimale, compatible avec l'analyse de texte et d'images.",
     "ko-KR": "Qwen3.8 기반, 높은 압축률로 가장 작은 크기를 자랑하며 텍스트와 이미지 분석을 지원.",
     "$files": [
-      "src/electron/config/model-source.ts(9826-9858)",
-      "src/electron/config/model-source.ts(10729-10761)",
-      "src/electron/config/model-source.ts(11629-11661)",
-      "src/electron/config/model-source.ts(12503-12535)"
+      "src/electron/config/model-source.ts(10650-10682)",
+      "src/electron/config/model-source.ts(11553-11585)",
+      "src/electron/config/model-source.ts(12453-12485)",
+      "src/electron/config/model-source.ts(13327-13359)"
     ],
     "$id": 20162
   },
@@ -590,10 +566,10 @@
     "fr-FR": "Mémoire vidéo faible",
     "ko-KR": "비디오 메모리 부족",
     "$files": [
-      "src/electron/config/model-source.ts(10161-10168)",
-      "src/electron/config/model-source.ts(11065-11072)",
-      "src/electron/config/model-source.ts(11937-11944)",
-      "src/electron/config/model-source.ts(12812-12819)"
+      "src/electron/config/model-source.ts(10985-10992)",
+      "src/electron/config/model-source.ts(11889-11896)",
+      "src/electron/config/model-source.ts(12761-12768)",
+      "src/electron/config/model-source.ts(13636-13643)"
     ],
     "$id": 9638
   },
@@ -607,7 +583,7 @@
     "de-DE": "Super Kompression",
     "fr-FR": "Super-compression",
     "ko-KR": "슈퍼 압축",
-    "$files": ["src/electron/config/model-source.ts(10541-10549)"],
+    "$files": ["src/electron/config/model-source.ts(11365-11373)"],
     "$id": 9489
   },
   "1比特": {
@@ -621,8 +597,8 @@
     "fr-FR": "1-bit",
     "ko-KR": "1비트",
     "$files": [
-      "src/electron/config/model-source.ts(11019-11026)",
-      "src/electron/config/model-source.ts(12792-12799)"
+      "src/electron/config/model-source.ts(11843-11850)",
+      "src/electron/config/model-source.ts(13616-13623)"
     ],
     "$id": 9430
   },
@@ -636,7 +612,7 @@
     "de-DE": "2-Bit-Kompression",
     "fr-FR": "Compression 2 bits",
     "ko-KR": "2비트 압축",
-    "$files": ["src/electron/config/model-source.ts(11442-11451)"],
+    "$files": ["src/electron/config/model-source.ts(12266-12275)"],
     "$id": 20163
   },
   "高智能": {
@@ -650,8 +626,8 @@
     "fr-FR": "Haute intelligence",
     "ko-KR": "높은 지능",
     "$files": [
-      "src/electron/config/model-source.ts(11456-11463)",
-      "src/electron/config/model-source.ts(12330-12337)"
+      "src/electron/config/model-source.ts(12280-12287)",
+      "src/electron/config/model-source.ts(13154-13161)"
     ],
     "$id": 20164
   },
@@ -665,7 +641,7 @@
     "de-DE": "1-Bit-Kompression",
     "fr-FR": "Compression 1 bit",
     "ko-KR": "1비트 압���",
-    "$files": ["src/electron/config/model-source.ts(12316-12325)"],
+    "$files": ["src/electron/config/model-source.ts(13140-13149)"],
     "$id": 20165
   },
   "最强": {
@@ -679,8 +655,8 @@
     "fr-FR": "Le plus fort",
     "ko-KR": "가장 강한",
     "$files": [
-      "src/electron/config/model-source.ts(13002-13008)",
-      "src/electron/config/model-source.ts(13515-13521)"
+      "src/electron/config/model-source.ts(13826-13832)",
+      "src/electron/config/model-source.ts(14339-14345)"
     ],
     "$id": 11386
   },
@@ -694,7 +670,7 @@
     "de-DE": "Die offizielle Version der dynamischen UD-Quantisierung von unsloth mit extrem geringem Qualitätsverlust unterstützt Text- und Bildanalyse und erfordert einen größeren Videospeicher.",
     "fr-FR": "La version officielle de quantification dynamique UD d'unsloth, avec une perte de qualité extrêmement faible, prend en charge l'analyse de texte et d'image et nécessite une mémoire vidéo plus grande.",
     "ko-KR": "unsloth의 공식 UD 동적 양자화 버전은 품질 손실이 매우 낮고 텍스트 및 이미지 분석을 지원하며 더 큰 비디오 메모리가 필요합니다.",
-    "$files": ["src/electron/config/model-source.ts(13173-13222)"],
+    "$files": ["src/electron/config/model-source.ts(13997-14046)"],
     "$id": 11195
   },
   "大参数": {
@@ -708,8 +684,8 @@
     "fr-FR": "Grands paramètres",
     "ko-KR": "큰 매개변수",
     "$files": [
-      "src/electron/config/model-source.ts(13495-13502)",
-      "src/electron/config/model-source.ts(14259-14266)"
+      "src/electron/config/model-source.ts(14319-14326)",
+      "src/electron/config/model-source.ts(15083-15090)"
     ],
     "$id": 9662
   },
@@ -724,9 +700,9 @@
     "fr-FR": "Haute précision",
     "ko-KR": "높은 정밀도",
     "$files": [
-      "src/electron/config/model-source.ts(13505-13512)",
-      "src/electron/config/model-source.ts(16469-16476)",
-      "src/electron/config/model-source.ts(17286-17293)"
+      "src/electron/config/model-source.ts(14329-14336)",
+      "src/electron/config/model-source.ts(17293-17300)",
+      "src/electron/config/model-source.ts(18110-18117)"
     ],
     "$id": 9681
   },
@@ -740,7 +716,7 @@
     "de-DE": "Qwen3.8-27B stark zensurloser Version, P-Reihe-Quantifizierung behält höhere Genauigkeit in kritischen Tensoren, durchbringt Sicherheitskontrollen und unterstützt Bildanalyse.",
     "fr-FR": "Qwen3.8-27B version agressivement déverrouillée, le re-quantization de la série P conserve une précision plus élevée sur les tenseurs critiques, jailbreak et support de l'analyse de l'image.",
     "ko-KR": "Qwen3.8-27B aggressive de-review version, P-series re-quantization retains higher precision in key tensors, jailbreakable and supports image analysis.",
-    "$files": ["src/electron/config/model-source.ts(13910-13962)"],
+    "$files": ["src/electron/config/model-source.ts(14734-14786)"],
     "$id": 19376
   },
   "顶级": {
@@ -754,8 +730,8 @@
     "fr-FR": "Haut de gamme",
     "ko-KR": "최고급",
     "$files": [
-      "src/electron/config/model-source.ts(14458-14464)",
-      "src/electron/config/model-source.ts(15136-15142)"
+      "src/electron/config/model-source.ts(15282-15288)",
+      "src/electron/config/model-source.ts(15960-15966)"
     ],
     "$id": 11242
   },
@@ -770,8 +746,8 @@
     "fr-FR": "Modèle multimodal Ornith 1.5, prend en charge l'analyse de texte et d'images.",
     "ko-KR": "Ornith 1.5 멀티모달 모델, 텍스트 및 이미지 분석 지원.",
     "$files": [
-      "src/electron/config/model-source.ts(14630-14661)",
-      "src/electron/config/model-source.ts(15308-15339)"
+      "src/electron/config/model-source.ts(15454-15485)",
+      "src/electron/config/model-source.ts(16132-16163)"
     ],
     "$id": 11297
   },
@@ -786,8 +762,8 @@
     "fr-FR": "Reconnaissance d'images",
     "ko-KR": "이미지 인식",
     "$files": [
-      "src/electron/config/model-source.ts(14934-14940)",
-      "src/electron/config/model-source.ts(15611-15617)"
+      "src/electron/config/model-source.ts(15758-15764)",
+      "src/electron/config/model-source.ts(16435-16441)"
     ],
     "$id": 11298
   },
@@ -802,8 +778,8 @@
     "fr-FR": "Intégration de haute précision",
     "ko-KR": "고정밀 임베딩",
     "$files": [
-      "src/electron/config/model-source.ts(15965-15974)",
-      "src/electron/config/model-source.ts(16783-16792)"
+      "src/electron/config/model-source.ts(16789-16798)",
+      "src/electron/config/model-source.ts(17607-17616)"
     ],
     "$id": 20403
   },
@@ -818,8 +794,8 @@
     "fr-FR": "Le modèle d'intégration de texte Qwen3 8B, fonctionnalités denses en 4096 dimensions, prend en charge la correspondance sémantique de texte et d'étiquette de haute précision.",
     "ko-KR": "Qwen3 8B 텍스트 임베딩 모델, 4096차원 밀도 기능, 고정밀 텍스트 및 레이블 의미 일치를 지원합니다.",
     "$files": [
-      "src/electron/config/model-source.ts(16136-16182)",
-      "src/electron/config/model-source.ts(16954-17000)"
+      "src/electron/config/model-source.ts(16960-17006)",
+      "src/electron/config/model-source.ts(17778-17824)"
     ],
     "$id": 20404
   },
@@ -834,8 +810,8 @@
     "fr-FR": "Incrustations",
     "ko-KR": "임베딩",
     "$files": [
-      "src/electron/config/model-source.ts(16460-16466)",
-      "src/electron/config/model-source.ts(17277-17283)"
+      "src/electron/config/model-source.ts(17284-17290)",
+      "src/electron/config/model-source.ts(18101-18107)"
     ],
     "$id": 19415
   },
@@ -850,8 +826,8 @@
     "fr-FR": "Intégration de texte",
     "ko-KR": "텍스트 삽입",
     "$files": [
-      "src/electron/config/model-source.ts(16479-16487)",
-      "src/electron/config/model-source.ts(17296-17304)"
+      "src/electron/config/model-source.ts(17303-17311)",
+      "src/electron/config/model-source.ts(18120-18128)"
     ],
     "$id": 20405
   },
@@ -866,8 +842,8 @@
     "fr-FR": "4096 cotes",
     "ko-KR": "4096차원",
     "$files": [
-      "src/electron/config/model-source.ts(16490-16499)",
-      "src/electron/config/model-source.ts(17307-17316)"
+      "src/electron/config/model-source.ts(17314-17323)",
+      "src/electron/config/model-source.ts(18131-18140)"
     ],
     "$id": 20406
   }
