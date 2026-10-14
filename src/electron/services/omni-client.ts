@@ -449,14 +449,20 @@ export class OmniClient {
   } | null> {
     try {
       await omniService.ensureRunning()
-      return await this.request('/api/audio/analyze-voice', {
+      const res = await fetch(`${this.getBaseUrl()}/api/audio/analyze-voice`, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ file_path: filePath }),
-        signal
+        signal: signal || AbortSignal.timeout(60000)
       })
-    } catch (err) {
+      const data = (await res.json().catch(() => null)) as any
+      if (data) {
+        return data
+      }
+      return { success: false, error: `HTTP ${res.status} ${res.statusText}` }
+    } catch (err: any) {
       logger.warn(LogCategory.MAIN, '[OmniClient] analyzeVoice 失败:', err)
-      return null
+      return { success: false, error: err?.message || '请求 Omni 服务失败' }
     }
   }
 

@@ -40,11 +40,11 @@ describe('TTSWavCacheService 单元测试', () => {
   })
 
   it('generateCacheFileName 应生成符合标准母带规范的文件名', () => {
-    const fileName1 = service.generateCacheFileName('abc12345', 'summary', 44, 1.0)
-    expect(fileName1).toBe('abc12345_summary_44.wav')
+    const fileName1 = service.generateCacheFileName('abc12345', 'summary', 1.0, 44)
+    expect(fileName1).toBe('abc12345_summary_1x_44.wav')
 
-    const fileName2 = service.generateCacheFileName('fp987654', 'multimodalContent', 0, 1.25)
-    expect(fileName2).toBe('fp987654_multimodalContent_0.wav')
+    const fileName2 = service.generateCacheFileName('fp987654', 'multimodalContent', 1.25, 0)
+    expect(fileName2).toBe('fp987654_multimodalContent_1.25x_0.wav')
   })
 
   it('appendWavChunk 与 readWavMetadata: 支持单句创建与元数据解析', async () => {

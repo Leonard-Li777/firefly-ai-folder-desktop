@@ -197,7 +197,9 @@ export class TTSWavCacheService {
     const safeFingerprint = (fileFingerprint || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '_')
     const safeDisplayName = String(displayName || voiceId || 'voice').replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_')
     const speedStr = Number(speed || 1.0).toFixed(2).replace(/\.?0+$/, '')
-    const safeVoice = String(voiceId || 'lilihong_shejian').replace(/[^a-zA-Z0-9_-]/g, '_')
+    const safeVoice = String(
+      voiceId !== undefined && voiceId !== null && voiceId !== '' ? voiceId : 'lilihong_shejian'
+    ).replace(/[^a-zA-Z0-9_-]/g, '_')
     return `${safeFingerprint}_${safeDisplayName}_${speedStr}x_${safeVoice}.wav`
   }
 
