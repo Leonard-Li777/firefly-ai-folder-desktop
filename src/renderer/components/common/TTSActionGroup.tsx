@@ -13,7 +13,14 @@ import { useTTSAudioStore } from '../../stores/tts-audio-store'
 import { useConfigStore } from '../../stores/config-store'
 import { useSettingsStore } from '../../stores/settings-store'
 import { SettingsCategory } from '@firefly/types'
-import { getVoiceBySid, PRESET_VOICES } from '../../constants/tts-voices'
+import {
+  getVoiceById,
+  getVoiceBySid,
+  PRESET_VOICES,
+  type VoiceMeta,
+  DEFAULT_VOICE_ID,
+  DEFAULT_FAVORITE_VOICE_IDS
+} from '../../constants/tts-voices'
 
 export interface TTSActionGroupProps {
   /** 待朗读文本内容 */
@@ -50,7 +57,7 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   compact = false
 }) => {
   const config = useConfigStore(s => s.config)
-  const ttsEnabled = config?.ttsEnabled ?? true
+  const ttsEnabled = (config as any)?.ttsEnabled ?? true
 
   const {
     playingTextId,
@@ -58,11 +65,13 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
     currentSentenceIndex,
     totalSentences,
     currentSid,
+    currentVoiceId,
     speed,
     play,
     pause,
     resume,
     setSid,
+    setVoiceId,
     setSpeed,
     locateAudio,
     exportAudio
@@ -105,22 +114,33 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
   const isPaused = isThisActive && status === 'paused'
   const isExporting = isThisActive && status === 'exporting'
 
-  // 解析收藏音色列表（以用户配置的收藏音色为准，兜底预设）
-  const favoriteSids = useMemo(() => {
-    const fromConfig = config?.ttsFavoriteVoices
-    if (Array.isArray(fromConfig) && fromConfig.length > 0) {
-      return fromConfig
-    }
-    return [44, 49, 0, 11]
-  }, [config?.ttsFavoriteVoices])
-
+  // 解析收藏音色列表（以用户配置的收藏音色为准，严格清洗历史纯数字旧配置并去重防御）
   const favoriteVoices = useMemo(() => {
-    return favoriteSids.map(sid => getVoiceBySid(sid))
-  }, [favoriteSids])
+    const fromConfig = (config as any)?.ttsFavoriteVoices
+    let ids: string[] = DEFAULT_FAVORITE_VOICE_IDS
+    if (Array.isArray(fromConfig) && fromConfig.length > 0) {
+      const hasLegacyNumbers = fromConfig.some(
+        (v: any) => typeof v === 'number' || (!isNaN(Number(v)) && !PRESET_VOICES.some(p => p.id === String(v)))
+      )
+      if (!hasLegacyNumbers) {
+        ids = fromConfig.map(String)
+      }
+    }
+    const seen = new Set<string>()
+    const result: VoiceMeta[] = []
+    for (const id of ids) {
+      const v = getVoiceById(id)
+      if (v && !seen.has(v.id)) {
+        seen.add(v.id)
+        result.push(v)
+      }
+    }
+    return result.length > 0 ? result : [PRESET_VOICES[0]]
+  }, [(config as any)?.ttsFavoriteVoices])
 
   const activeVoice = useMemo(() => {
-    return getVoiceBySid(currentSid)
-  }, [currentSid])
+    return getVoiceById(currentVoiceId || DEFAULT_VOICE_ID)
+  }, [currentVoiceId])
 
   // 若功能在设置中全局关闭，不渲染
   if (!ttsEnabled) {
@@ -142,8 +162,10 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
         filePath,
         fileFingerprint,
         fieldName,
+        displayName: activeVoice.displayName,
         isLrc,
-        sid: currentSid,
+        voiceId: activeVoice.id,
+        sid: activeVoice.sid,
         speed
       })
     }
@@ -156,6 +178,8 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
       filePath,
       fileFingerprint,
       fieldName,
+      displayName: activeVoice.displayName,
+      voiceId: currentVoiceId,
       sid: currentSid,
       speed
     })
@@ -233,21 +257,21 @@ export const TTSActionGroup: React.FC<TTSActionGroupProps> = ({
               <div className="py-1 max-h-48 overflow-y-auto">
                 {favoriteVoices.map(voice => (
                   <button
-                    key={voice.sid}
+                    key={voice.id}
                     type="button"
                     onClick={e => {
                       e.stopPropagation()
-                      setSid(voice.sid)
+                      setVoiceId(voice.id)
                       setShowVoiceMenu(false)
                     }}
                     className={cn(
                       'w-full flex items-center justify-between px-2 py-1 text-left rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer text-xs',
-                      currentSid === voice.sid && 'font-medium text-primary bg-primary/10'
+                      currentVoiceId === voice.id && 'font-medium text-primary bg-primary/10'
                     )}
                   >
                     <span>{voice.displayName}</span>
                     <span className="text-[10px] text-muted-foreground ml-2">
-                      {voice.lang === 'zh' ? '中文' : 'EN'}
+                      {voice.lang === 'zh' ? '中文' : voice.lang === 'ja' ? '日文' : 'EN'}
                     </span>
                   </button>
                 ))}

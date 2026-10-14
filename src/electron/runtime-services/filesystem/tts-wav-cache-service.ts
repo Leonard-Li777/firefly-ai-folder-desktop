@@ -17,8 +17,9 @@ import * as crypto from 'node:crypto'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { shell } from 'electron'
-import { logger, LogCategory, isSubPath, getFfmpegPath } from '@firefly/shared'
+import { logger, LogCategory, isSubPath } from '@firefly/shared'
 import { databaseService } from '../database/database-service'
+import { omniClient } from '../../services/omni-client'
 
 const execFileAsync = promisify(execFile)
 
@@ -34,8 +35,11 @@ export interface TTSWavMetadata {
   total: number
   /** 当前已完成分句数 */
   done: number
-  /** 发音人 ID */
-  sid: number
+  /** 发音人 ID (兼容历史数字与当前字符串 voiceId) */
+  sid?: number
+  voiceId?: string
+  /** 发音人显示名称 */
+  displayName?: string
   /** 播放语速 */
   speed: number
   /** 文件指纹 */
@@ -50,7 +54,9 @@ export interface AppendWavChunkParams {
   chunkData: Uint8Array | Buffer
   chunkIndex: number
   totalChunks: number
-  sid: number
+  sid?: number
+  voiceId?: string | number
+  displayName?: string
   speed: number
   fileFingerprint?: string
   fieldName?: string
@@ -179,66 +185,33 @@ export class TTSWavCacheService {
 
   /**
    * 生成规范缓存文件名
-   * 格式: {fileFingerprint}_{fieldName}_{sid}.wav
-   * 规范：深度学习模型统一合成 1.0x 标准黄金母带，不同语速共享唯一物理缓存，彻底避免重复合成
+   * 格式: {fileFingerprint}_{safeDisplayName}_{speed}x_{safeVoiceId}.wav
+   * 规范：文件指纹+发音人名+倍率+音色id.wav，每个语速与音色拥有独立落盘实体，各语速直接由语音合成端输出并复用，彻底摒弃 FFmpeg 转码
    */
   public generateCacheFileName(
     fileFingerprint: string,
-    fieldName: string = 'textContent',
-    sid: number = 44,
-    _speed: number = 1.0
+    displayName: string = '李立宏',
+    speed: number = 1.0,
+    voiceId: string | number = 'lilihong_shejian'
   ): string {
-    const safeField = fieldName.replace(/[^a-zA-Z0-9_-]/g, '_')
-    return `${fileFingerprint}_${safeField}_${sid}.wav`
+    const safeFingerprint = (fileFingerprint || 'unknown').replace(/[^a-zA-Z0-9_-]/g, '_')
+    const safeDisplayName = String(displayName || voiceId || 'voice').replace(/[^a-zA-Z0-9_\u4e00-\u9fa5-]/g, '_')
+    const speedStr = Number(speed || 1.0).toFixed(2).replace(/\.?0+$/, '')
+    const safeVoice = String(voiceId || 'lilihong_shejian').replace(/[^a-zA-Z0-9_-]/g, '_')
+    return `${safeFingerprint}_${safeDisplayName}_${speedStr}x_${safeVoice}.wav`
   }
 
   /**
-   * 获取内置 FFmpeg 可执行文件路径
-   * 委托至 @firefly/shared 统一的 ResourceLocator 资源解析器
-   */
-  public getFfmpegPath(): string | null {
-    return getFfmpegPath()
-  }
-
-  /**
-   * 利用内置 FFmpeg 高保真（atempo 算法）转换 WAV 语速倍率（保音调、无失真）
-   */
-  public async convertWavSpeed(
-    inputWavPath: string,
-    outputWavPath: string,
-    targetSpeed: number
-  ): Promise<boolean> {
-    if (Math.abs(targetSpeed - 1.0) < 0.01) {
-      await fsPromises.copyFile(inputWavPath, outputWavPath)
-      return true
-    }
-    const ffmpegPath = getFfmpegPath()
-    if (!ffmpegPath) {
-      logger.warn(LogCategory.FILE_PROCESSOR, '[TTS缓存服务] 未找到内置 ffmpeg，回退直接复制')
-      await fsPromises.copyFile(inputWavPath, outputWavPath)
-      return false
-    }
-    const speed = Math.max(0.5, Math.min(2.0, targetSpeed))
-    await execFileAsync(ffmpegPath, [
-      '-y',
-      '-i',
-      inputWavPath,
-      '-filter:a',
-      `atempo=${speed}`,
-      outputWavPath
-    ])
-    return true
-  }
-
-  /**
-   * 获取缓存文件的完整绝对路径（优先标准母带，兼容历史旧格式）
+   * 获取缓存文件的完整绝对路径（优先按新命名规范匹配，并平滑兼容历史旧格式）
    */
   public async getCacheWavPath(params: {
     filePath?: string
     fieldName?: string
     fileFingerprint?: string
+    displayName?: string
     text?: string
     sid?: number
+    voiceId?: string | number
     speed?: number
   }): Promise<string | null> {
     const workspacePath = await this.resolveWorkspaceForPath(params.filePath)
@@ -253,28 +226,114 @@ export class TTSWavCacheService {
       params.fileFingerprint,
       params.text
     )
+    const voiceIdVal = params.voiceId !== undefined ? params.voiceId : (params.sid !== undefined ? params.sid : 'lilihong_shejian')
+    const speedVal = params.speed !== undefined ? params.speed : 1.0
+    const displayNameVal = params.displayName || String(voiceIdVal)
+
+    // 1. 优先按最新命名规范命中：{fileFingerprint}_{displayName}_{speed}x_{voiceId}.wav
     const standardName = this.generateCacheFileName(
       fingerprint,
-      params.fieldName,
-      params.sid ?? 44,
-      1.0
+      displayNameVal,
+      speedVal,
+      voiceIdVal
     )
     const standardPath = path.join(ttsDir, standardName)
     if (fs.existsSync(standardPath)) {
       return standardPath
     }
 
-    // 兼容历史旧格式（如带 _1x.wav）
-    if (params.speed) {
-      const speedStr = Number(params.speed).toFixed(2).replace(/\.?0+$/, '')
-      const legacyName = `${fingerprint}_${(params.fieldName || 'textContent').replace(/[^a-zA-Z0-9_-]/g, '_')}_${params.sid ?? 44}_${speedStr}x.wav`
+    // 2. 兼容历史带 fieldName 格式：{fileFingerprint}_{fieldName}_{voiceId}_{speed}x.wav
+    const speedStr = Number(speedVal).toFixed(2).replace(/\.?0+$/, '')
+    const safeField = (params.fieldName || 'textContent').replace(/[^a-zA-Z0-9_-]/g, '_')
+    const safeVoice = String(voiceIdVal).replace(/[^a-zA-Z0-9_-]/g, '_')
+    const legacySpeedName = `${fingerprint}_${safeField}_${safeVoice}_${speedStr}x.wav`
+    const legacySpeedPath = path.join(ttsDir, legacySpeedName)
+    if (fs.existsSync(legacySpeedPath)) {
+      return legacySpeedPath
+    }
+
+    // 3. 兼容历史无 speed 格式（仅当 1.0x 时）：{fileFingerprint}_{fieldName}_{voiceId}.wav
+    if (Math.abs(speedVal - 1.0) < 0.01) {
+      const legacyName = `${fingerprint}_${safeField}_${safeVoice}.wav`
       const legacyPath = path.join(ttsDir, legacyName)
       if (fs.existsSync(legacyPath)) {
         return legacyPath
       }
     }
 
+    // 4. 【核心创新】：若目标倍率非 1.0x，探测 1.0x 基准文件是否存在且已全部完成合成
+    // 若 1.0x 基准文件已就绪，立即通过纯 Rust WSOLA 极速算法在内存中（< 30ms）派生目标倍率文件并落盘，秒级就绪！
+    if (Math.abs(speedVal - 1.0) >= 0.01) {
+      const base1xCandidates = [
+        path.join(ttsDir, this.generateCacheFileName(fingerprint, displayNameVal, 1.0, voiceIdVal)),
+        path.join(ttsDir, `${fingerprint}_${safeField}_${safeVoice}_1x.wav`),
+        path.join(ttsDir, `${fingerprint}_${safeField}_${safeVoice}.wav`)
+      ]
+
+      for (const baseCandidate of base1xCandidates) {
+        if (fs.existsSync(baseCandidate)) {
+          const meta = await this.readWavMetadata(baseCandidate)
+          if (meta && meta.completed) {
+            const derived = await this.deriveScaledWav(baseCandidate, standardPath, speedVal)
+            if (derived) {
+              return standardPath
+            }
+          }
+        }
+      }
+    }
+
     return standardPath
+  }
+
+  /**
+   * 基于纯 Rust WSOLA 极速算法，将已有的 1.0x 基准 WAV 文件毫秒级派生为目标语速的新文件
+   * 自动保留并更新内嵌 meta chunk 中的 speed 字段，零 FFmpeg 外部进程依赖
+   */
+  public async deriveScaledWav(
+    baseWavPath: string,
+    targetWavPath: string,
+    targetSpeed: number
+  ): Promise<boolean> {
+    try {
+      if (!fs.existsSync(baseWavPath)) {
+        return false
+      }
+      const baseBuffer = await fsPromises.readFile(baseWavPath)
+      if (baseBuffer.length < 44) {
+        return false
+      }
+
+      // 如果目标倍率与基准几乎一致，直接复制
+      if (Math.abs(targetSpeed - 1.0) < 0.01) {
+        await fsPromises.copyFile(baseWavPath, targetWavPath)
+        return true
+      }
+
+      const scaledBuffer = await omniClient.scaleWavSpeed(baseBuffer, targetSpeed)
+      if (!scaledBuffer || scaledBuffer.length < 44) {
+        logger.warn(
+          LogCategory.FILE_PROCESSOR,
+          `[TTS缓存服务] WSOLA 派生音频失败或返回为空: ${baseWavPath} -> ${targetSpeed}x`
+        )
+        return false
+      }
+
+      const parentDir = path.dirname(targetWavPath)
+      if (!fs.existsSync(parentDir)) {
+        await fsPromises.mkdir(parentDir, { recursive: true })
+      }
+
+      await fsPromises.writeFile(targetWavPath, scaledBuffer)
+      logger.info(
+        LogCategory.FILE_PROCESSOR,
+        `[TTS缓存服务] 成功基于 1.0x 基准毫秒级派生 ${targetSpeed}x 音频: ${path.basename(targetWavPath)} (大小: ${scaledBuffer.length} 字节)`
+      )
+      return true
+    } catch (err) {
+      logger.error(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] 派生倍速音频异常:`, err)
+      return false
+    }
   }
 
   /**
@@ -357,17 +416,29 @@ export class TTSWavCacheService {
       chunkIndex,
       totalChunks,
       sid,
+      voiceId,
       speed,
       fileFingerprint,
       fieldName
     } = params
 
     try {
-      // 提取纯 PCM 裸数据（若包含 44 字节头部则剥离）
+      // 提取纯 PCM 裸数据与音频规格参数（若包含 44 字节头部则剥离）
       let rawPcm: Buffer
+      let numChannels = 2
+      let sampleRate = 48000
+      let byteRate = 192000
+      let blockAlign = 4
+      let bitsPerSample = 16
+
       const inputBuffer = Buffer.isBuffer(chunkData) ? chunkData : Buffer.from(chunkData)
       if (inputBuffer.length > 44 && inputBuffer.toString('ascii', 0, 4) === 'RIFF') {
         rawPcm = inputBuffer.subarray(44)
+        numChannels = inputBuffer.readUInt16LE(22)
+        sampleRate = inputBuffer.readUInt32LE(24)
+        byteRate = inputBuffer.readUInt32LE(28)
+        blockAlign = inputBuffer.readUInt16LE(32)
+        bitsPerSample = inputBuffer.readUInt16LE(34)
       } else {
         rawPcm = inputBuffer
       }
@@ -378,8 +449,8 @@ export class TTSWavCacheService {
 
       let existingPcm: Buffer = Buffer.alloc(0)
 
-      // 若文件已存在，解析提取已有完整的 PCM 数据
-      if (fs.existsSync(wavPath)) {
+      // 仅当 chunkIndex > 0 时才从已有文件中追加 PCM；若 chunkIndex === 0，必须作为新录制覆写重建
+      if (chunkIndex > 0 && fs.existsSync(wavPath)) {
         try {
           const oldFile = await fsPromises.readFile(wavPath)
           if (
@@ -415,11 +486,14 @@ export class TTSWavCacheService {
       // 构建更新后的 meta 元数据
       const doneCount = chunkIndex + 1
       const isCompleted = doneCount >= totalChunks
+      const resolvedVoiceId = voiceId !== undefined ? String(voiceId) : (sid !== undefined ? String(sid) : 'lilihong_shejian')
       const metaObj: TTSWavMetadata = {
         completed: isCompleted,
         total: totalChunks,
         done: doneCount,
-        sid,
+        sid: typeof sid === 'number' ? sid : (typeof voiceId === 'number' ? voiceId : undefined),
+        voiceId: resolvedVoiceId,
+        displayName: params.displayName,
         speed,
         fingerprint: fileFingerprint,
         fieldName
@@ -429,7 +503,7 @@ export class TTSWavCacheService {
       const metaChunkSize = metaJsonBuffer.length
       const metaPadding = metaChunkSize % 2 !== 0 ? 1 : 0
 
-      // 标准 44 字节 WAV 头部构建 (24000Hz, 16-bit Mono)
+      // 标准 44 字节 WAV 头部构建 (动态自适应采样率与声道，默认 48000Hz 立体声 16-bit)
       // 总 RIFF 大小 = 4(WAVE) + 24(fmt chunk) + 8(data header) + totalPcmBytes + pcmPadding + 8(meta header) + metaChunkSize + metaPadding
       const riffTotalSize = 4 + 24 + 8 + totalPcmBytes + pcmPadding + 8 + metaChunkSize + metaPadding
 
@@ -440,11 +514,11 @@ export class TTSWavCacheService {
       header.write('fmt ', 12)
       header.writeUInt32LE(16, 16) // PCM fmt size
       header.writeUInt16LE(1, 20) // AudioFormat: 1 (PCM)
-      header.writeUInt16LE(1, 22) // NumChannels: 1
-      header.writeUInt32LE(24000, 24) // SampleRate: 24000
-      header.writeUInt32LE(48000, 28) // ByteRate: 24000 * 1 * 2
-      header.writeUInt16LE(2, 32) // BlockAlign: 1 * 2
-      header.writeUInt16LE(16, 34) // BitsPerSample: 16
+      header.writeUInt16LE(numChannels, 22) // NumChannels
+      header.writeUInt32LE(sampleRate, 24) // SampleRate
+      header.writeUInt32LE(byteRate, 28) // ByteRate
+      header.writeUInt16LE(blockAlign, 32) // BlockAlign
+      header.writeUInt16LE(bitsPerSample, 34) // BitsPerSample
       header.write('data', 36)
       header.writeUInt32LE(totalPcmBytes, 40)
 

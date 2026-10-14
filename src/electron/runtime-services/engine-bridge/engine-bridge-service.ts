@@ -47,8 +47,16 @@ const ENGINE_THINKING_PATH = '/api/engine/thinking'
 const STATUS_TIMEOUT_MS = 1500
 const OPEN_UI_TIMEOUT_MS = 3000
 const SHUTDOWN_TIMEOUT_MS = 3000
-/** AI 服务启停动作超时（服务启动可能耗时较长） */
-const SERVICE_ACTION_TIMEOUT_MS = 15_000
+/**
+ * AI 服务启停动作超时（毫秒）。
+ *
+ * 必须**大于引擎侧的冷启动就绪预算**（firefly-ai-engine `engine/mod.rs` 的
+ * `LLAMA_READY_TIMEOUT_SECS = 120`），否则客户端会在引擎给出结论之前就 abort 掉请求。
+ * 实测 MiniCPM-V-4.6-Q4_K_M + mmproj、ctx=131072 在 RTX 3060 上冷载约 21.3s；
+ * 原 15s 会在模型就绪前中止请求，使 Desktop 误报「启动失败」——虽然引擎侧已改为
+ * 取消安全（断连只 detach 不取消，启动仍会跑完），但前端拿到的是假失败结论。
+ */
+const SERVICE_ACTION_TIMEOUT_MS = 130_000
 /**
  * 引擎端口滑动探测区间长度。
  * 引擎侧在 38400 被占用时会顺延绑定（38400~38419 首个可用端口，见 firefly-ai-engine `config/store.rs`），

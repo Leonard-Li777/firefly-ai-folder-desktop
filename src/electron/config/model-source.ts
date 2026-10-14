@@ -210,6 +210,62 @@ export const MODEL_CONFIG_SOURCE = () => ({
       }
     },
     {
+      // 同目录最小投影文件 mmproj-MiniCPM-V-4.7-1B-CRACK-f16-4x.gguf (899,679,360 B)
+      // totalSize = 主模型 Q4_K_M (727,459,936 B) + 投影 (899,679,360 B) = 1,627,139,296 B ≈ 1.52GB
+      // DSpark 草稿模型 MiniCPM-V-4.7-1B-CRACK-DSpark-BF16.gguf (438,065,792 B ≈ 0.41GB) 与主模型同仓库，需单独下载故未计入 totalSize
+      id: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M',
+      dspark: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16',
+      name: `MiniCPM-V 4.7 1B（${t('识图')}•${t('越狱')}）`,
+      company: 'dealignai',
+      parameterSize: '1B',
+      intelligenceLevel: 2,
+      totalSize: '1.52GB',
+      recommended: true,
+      description: t('MiniCPM-V 4.7 1B 多模态识图去审查版本，支持文本与图像分析，可下载 DSpark 草稿模型加速推理。'),
+      source: 'huggingface',
+      quantization: 'Q4_K_M',
+      isMultiModal: true,
+      contextLength: 262144,
+      capabilities: ['TEXT', 'IMAGE'],
+      performance: {
+        speed: 'fast',
+        quality: 'high'
+      },
+      tags: [t('去限制'), t('越狱'), 'NSFW', t('多模态'), 'OCR', 'DSpark', t('中文更佳')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
+      // 镜像源: ModelScope dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF（文件清单与大小同 HuggingFace 源）
+      // 同目录最小投影文件 mmproj-MiniCPM-V-4.7-1B-CRACK-f16-4x.gguf (899,679,360 B)
+      // totalSize = 主模型 Q4_K_M (727,459,936 B) + 投影 (899,679,360 B) = 1,627,139,296 B ≈ 1.52GB
+      id: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M',
+      dspark: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16',
+      name: `MiniCPM-V 4.7 1B（${t('识图')}•${t('越狱')}）`,
+      company: 'dealignai',
+      parameterSize: '1B',
+      intelligenceLevel: 2,
+      totalSize: '1.52GB',
+      recommended: true,
+      description: t('MiniCPM-V 4.7 1B 多模态识图去审查版本，支持文本与图像分析，可下载 DSpark 草稿模型加速推理。'),
+      source: 'modelscope',
+      quantization: 'Q4_K_M',
+      isMultiModal: true,
+      contextLength: 262144,
+      capabilities: ['TEXT', 'IMAGE'],
+      performance: {
+        speed: 'fast',
+        quality: 'high'
+      },
+      tags: [t('去限制'), t('越狱'), 'NSFW', t('多模态'), 'OCR', 'DSpark', t('中文更佳')],
+      recommendedConfig: {
+        numCtx: 8192,
+        numPredict: 2048
+      }
+    },
+    {
       id: 'unsloth/gemma-4-E4B-it-GGUF:UD-Q4_K_XL',
       name: `Gemma 4 E4B-it（${t('支持音频')}）`,
       company: 'Unsloth',

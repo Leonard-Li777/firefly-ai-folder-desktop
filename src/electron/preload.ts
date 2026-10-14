@@ -1223,7 +1223,7 @@ const electronAPI = {
       ipcRenderer.invoke('tts:list-voices'),
     analyzeVoiceFile: (filePath: string): Promise<{
       tempVoiceId: string
-      lang: 'zh' | 'en' | 'ja'
+      lang: string
       emotion: string
       suggestedName: string
       durationSec: number
@@ -1233,7 +1233,7 @@ const electronAPI = {
       tempVoiceId: string
       displayName: string
       gender: 'male' | 'female' | 'child'
-      lang: 'zh' | 'en' | 'ja'
+      lang: string
       desc?: string
     }): Promise<{ success: boolean; voice?: any; error?: string }> =>
       ipcRenderer.invoke('tts:save-custom-voice', params),
@@ -1245,6 +1245,7 @@ const electronAPI = {
       filePath?: string
       fieldName?: string
       fileFingerprint?: string
+      displayName?: string
       text?: string
       sid?: number
       voiceId?: string | number
@@ -1262,13 +1263,22 @@ const electronAPI = {
       totalChunks: number
       sid?: number
       voiceId?: string | number
+      displayName?: string
       speed: number
       fileFingerprint?: string
       fieldName?: string
     }): Promise<boolean> =>
       ipcRenderer.invoke('tts:append-wav-chunk', params),
     locateWavFile: (wavPath: string): Promise<boolean> =>
-      ipcRenderer.invoke('tts:locate-wav-file', wavPath)
+      ipcRenderer.invoke('tts:locate-wav-file', wavPath),
+    scaleWav: (wavBuffer: ArrayBuffer, speed: number): Promise<ArrayBuffer | null> =>
+      ipcRenderer.invoke('tts:scale-wav', wavBuffer, speed),
+    deriveScaledWav: (
+      baseWavPath: string,
+      targetWavPath: string,
+      targetSpeed: number
+    ): Promise<boolean> =>
+      ipcRenderer.invoke('tts:derive-scaled-wav', baseWavPath, targetWavPath, targetSpeed)
   }
 }
 

@@ -25,10 +25,16 @@ export type HybridPageRef =
 export interface HybridSearchCollaborators {
   /** 仲裁融合：FTS5 BM25 + Omni 向量 + 文件名提升（+FS 未分析命中） */
   searchHybrid: HybridSearchArbiter['searchHybrid']
-  /** 旧版 LIKE 全字段语义补充候选源（Hybrid Search Everything 兼容层） */
-  fetchLegacySearchRefs(params: FilterFilesParams): {
+  /**
+   * 字段覆盖补充候选源（LIKE 兜底，非历史遗留）：覆盖 `files_fts` 未索引字段
+   * （路径 / 扩展名 / 作者 / 语言 / 文件分类 / 标签物化路径）、trigram 短查询
+   * （<3 字符，如中文双字）以及主库未分析行。
+   * `failure` 非空表示本次补充查询失败（已降级为空补充集），由本模块按「检索降级」上报。
+   */
+  fetchFieldCoverageRefs(params: FilterFilesParams): {
     analyzed: Array<Extract<HybridPageRef, { kind: 'analyzed' }>>
     unanalyzed: Array<Extract<HybridPageRef, { kind: 'unanalyzed' }>>
+    failure?: string
   }
   /** 按指纹批量加载已分析文件明细行 */
   fetchRowsByFingerprints(fileFingerprints: string[]): any[]
@@ -54,9 +60,10 @@ export interface HybridSearchCollaborators {
  * HybridSearchSession 深模块（ADR-0039 / Ticket-2 检索编排公开收口）：
  * 混合检索的分页编排策略在此单点定义 ——
  * 1. 委托仲裁器融合 FTS5 BM25 + Omni 向量 + 文件名提升，真实目录模式追加 FS 未分析命中；
- * 2. 统一有序候选池（仲裁候选 → LIKE 兼容补充 → FS 未分析 → LIKE 未分析），指纹/路径去重；
+ * 2. 统一有序候选池（仲裁候选 → 字段覆盖补充 → FS 未分析 → 字段覆盖未分析），指纹/路径去重；
  * 3. 按融合顺序分页；当前页已分析候选补充富正文摘要；
  * 4. 任一步骤异常回退为去除搜索词的常规分页，保证搜索功能可用。
+ * 字段覆盖补充源的失败按「检索降级」显式上报（warn），不得静默降级。
  * 回退策略是本模块公开接口上的显式行为，可注入 fake 协作者直接测试。
  */
 export class HybridSearchSession {
@@ -97,8 +104,8 @@ export class HybridSearchSession {
 
       // 2. 统一有序引用（已分析候选在前，未分析命中追加尾部）：
       //    - 先取仲裁融合的高精度候选；
-      //    - 再用旧版 LIKE 全字段查询作为补充候选源，
-      //      保留路径/作者/语言/描述/标签等基础字段命中与 includeUnanalyzed 未分析行（Hybrid Search Everything 兼容层）；
+      //    - 再用字段覆盖补充源（LIKE 兜底）补回 FTS 未索引字段（路径/扩展名/作者/语言/
+      //      文件分类/标签物化路径）、trigram 短查询（<3 字符）命中与 includeUnanalyzed 未分析行；
       //    - FS 实时未分析命中追加最后。
       const seenFp = new Set<string>()
       const seenUnanalyzedPath = new Set<string>()
@@ -114,9 +121,18 @@ export class HybridSearchSession {
           hasLiteral: c.hasLiteral
         })
       }
-      // 2.2 旧 LIKE 全字段语义补充候选（已分析）
-      const legacyRefs = this.collaborators.fetchLegacySearchRefs(params)
-      for (const ref of legacyRefs.analyzed) {
+      // 2.2 字段覆盖补充候选（已分析）：覆盖 FTS 未索引字段与短查询，是仲裁三路之外的第四源
+      const fieldCoverageRefs = this.collaborators.fetchFieldCoverageRefs(params)
+      if (fieldCoverageRefs.failure) {
+        // 检索降级必须可观测：本源失败会让「FTS 未索引字段 / 短查询 / 未分析行」漏召回，
+        // 且漏召回不体现在 total 上，严禁静默降级（历史事故：占位符与绑定值不匹配被 warn 吞掉）。
+        logger.warn(
+          LogCategory.VIRTUAL_DIRECTORY,
+          '[HybridSearchSession] 字段覆盖补充候选源降级（FTS 未索引字段与短查询可能漏召回）:',
+          fieldCoverageRefs.failure
+        )
+      }
+      for (const ref of fieldCoverageRefs.analyzed) {
         if (!ref.fileFingerprint || seenFp.has(ref.fileFingerprint)) continue
         seenFp.add(ref.fileFingerprint)
         fullPool.push(ref)
@@ -134,8 +150,8 @@ export class HybridSearchSession {
           fileFingerprint: h.fileFingerprint
         })
       }
-      // 2.4 旧 LIKE 未分析行（includeUnanalyzed 语义兜底，路径去重避免与 FS 命中重复）
-      for (const ref of legacyRefs.unanalyzed) {
+      // 2.4 字段覆盖补充源的未分析行（includeUnanalyzed 语义兜底，路径去重避免与 FS 命中重复）
+      for (const ref of fieldCoverageRefs.unanalyzed) {
         if (ref.fileFingerprint && seenFp.has(ref.fileFingerprint)) continue
         const key = normalizeForCache(ref.path)
         if (seenUnanalyzedPath.has(key)) continue

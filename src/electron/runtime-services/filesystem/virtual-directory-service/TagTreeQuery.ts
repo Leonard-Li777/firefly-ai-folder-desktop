@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3'
 import path from 'node:path'
 import {
+  DimensionFlags,
   DimensionGroup,
   DimensionGroupsResponse,
   DimensionMetadata,
@@ -21,6 +22,7 @@ import {
   DIMENSION_CODES
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
+import { ConfigDbManager } from '../../config/config-db-manager'
 import { loadIgnoreRules, shouldIgnoreFile } from '../../analysis/analysis-ignore-service'
 import { decompressText } from '../../../utils/text-compressor'
 import { omniClient } from '../../../services/omni-client'
@@ -105,7 +107,7 @@ export class TagTreeQuery {
     // 混合检索编排（ADR-0039）公开收口：Session 负责编排与回退策略，本类作为数据访问协作者注入
     this.hybridSession = new HybridSearchSession({
       searchHybrid: this.hybridArbiter.searchHybrid.bind(this.hybridArbiter),
-      fetchLegacySearchRefs: params => this.fetchLegacySearchRefs(params),
+      fetchFieldCoverageRefs: params => this.fetchFieldCoverageRefs(params),
       fetchRowsByFingerprints: fps => this.fetchRowsByFingerprints(fps),
       mapFilesToItems: (rows, ws, showMissing) =>
         this.mapFilesToItems(rows, ws, showMissing ?? true),
@@ -1082,10 +1084,26 @@ export class TagTreeQuery {
         }
       }
 
+      // 本地统一配置管理器权威维度表（code -> 规范 id + metadata.flag）：
+      // omni 树自身不带策略元数据，前端的 flag 判定（isPanDimension / isFileTypeDimension …）
+      // 必须由本地配置管理器按 code 补齐，严禁改向 Omni 索取。
+      const authorityDimByCode = this.resolveAuthorityDimensionsByCode()
+      // 已占用的数值 ID（本地维度组 legacyNumericId）集合，避免与受控根维度规范 ID 冲突
+      const usedNumericIds = new Set<number>(groups.map(g => g.id))
+
       const omniGroups: Array<Omit<DimensionGroup, 'tags'> & { tags: DimensionTag[] }> =
         treeRes?.rootNodes
           ? treeRes.rootNodes.map((root, rootIdx) => {
-              const id = 10000 + rootIdx
+              // 受控根维度采用本地权威规范 ID（builtin.file_type=1 / content_tags=28 / content_rating=162 …），
+              // 使前端的 ID 兜底判定（如 isFileTypeDimension 的 `id === 1`）在 omni 组上同样成立；
+              // 仅当权威表缺失或该 ID 已被本地维度组占用时，才退回 10000 + 序号 的隔离区间。
+              const authority = authorityDimByCode.get(root.code)
+              const canonicalId = authority?.id ?? ROOT_DIMENSION_META[root.code]?.id
+              const id =
+                canonicalId !== undefined && !usedNumericIds.has(canonicalId)
+                  ? canonicalId
+                  : 10000 + rootIdx
+              usedNumericIds.add(id)
               const tags: DimensionTag[] = []
 
               // 后序递归汇聚整棵子树的唯一下属文件集合（保证祖先节点包含全部子孙命中，避免父级 count=0 被误裁剪）
@@ -1233,15 +1251,19 @@ export class TagTreeQuery {
                 order: root.sortOrder,
                 sort_order: root.sortOrder,
                 isMultiSelect: false,
+                // metadata.flag 来自本地统一配置管理器（ConfigDbManager）按 code 的权威策略，
+                // 缺失时保持原有无 flag 形态（前端退化为 ID 兜底判定）
                 meta: {
                   source: root.source || 'builtin',
                   order: root.sortOrder,
-                  sort_order: root.sortOrder
+                  sort_order: root.sortOrder,
+                  ...(authority?.flag ? { flag: authority.flag } : {})
                 },
                 metadata: {
                   source: root.source || 'builtin',
                   order: root.sortOrder,
-                  sort_order: root.sortOrder
+                  sort_order: root.sortOrder,
+                  ...(authority?.flag ? { flag: authority.flag } : {})
                 }
               }
             })
@@ -1913,6 +1935,41 @@ export class TagTreeQuery {
   }
 
   /**
+   * 读取本地统一配置管理器（ConfigDbManager）的受控维度权威表：`code -> { 规范 id, metadata.flag }`。
+   *
+   * 为什么必须走本地配置管理器：
+   * 1. Omni 分类树端点只回传 `code/name/source/sortOrder/codePath`，**不含任何策略元数据**，
+   *    向 Omni 索取 `metadata.flag` 是错误方向（其权威源不在 Omni）；
+   * 2. 策略元数据（门限、适用格式、`metadata.flag.isPanDimension / isRequiresAI / isMultiSelect`）
+   *    的单一事实源是本地 `system_config.DIMENSION_POLICIES`（回退 `dimension-policies.json`），
+   *    由 `ConfigDbManager.loadDimensionsFromAuthority` 按 code 组装并随 `getFileDimensions()` 暴露；
+   * 3. 前端 `isPanDimension` / `isFileTypeDimension` / `isExtensionDimension` / `isRuleSubdivisionDimension`
+   *    等判定全部读取 `metadata.flag`，缺失时只能退化到 ID 兜底 —— 故 omni 组必须补齐该字段。
+   *
+   * 降级：读取失败仅返回空表（omni 组保持原有无 flag 形态），绝不阻断维度组查询主链路。
+   */
+  private resolveAuthorityDimensionsByCode(): Map<string, { id?: number; flag?: DimensionFlags }> {
+    const authorityByCode = new Map<string, { id?: number; flag?: DimensionFlags }>()
+    try {
+      const dims = ConfigDbManager.getInstance().getFileDimensions()
+      for (const dim of dims || []) {
+        if (!dim?.code) continue
+        authorityByCode.set(dim.code, {
+          id: typeof dim.id === 'number' ? dim.id : undefined,
+          flag: dim.metadata?.flag
+        })
+      }
+    } catch (err) {
+      logger.debug(
+        LogCategory.VIRTUAL_DIRECTORY,
+        '[TagTreeQuery] 读取本地维度策略（ConfigDbManager）失败，omni 组按无 flag 降级:',
+        err
+      )
+    }
+    return authorityByCode
+  }
+
+  /**
    * 构建文件过滤 SQL 查询条件与参数
    */
   private buildFilterQuery(params: FilterFilesParams): {
@@ -1998,8 +2055,13 @@ export class TagTreeQuery {
       )`)
 
       if (ftsAvailable) {
+        // 绑定值个数必须与子句占位符严格一一对应：
+        // sanitizedQuery → files_fts MATCH ?；随后 10 个 likePattern 依次对应
+        // wf.name / f.smart_name / f.description / wf.path / f.extension /
+        // f.author / f.language / f.file_group / ft.name / ftr.name_path
         queryParams.push(
           sanitizedQuery,
+          likePattern,
           likePattern,
           likePattern,
           likePattern,
@@ -2011,7 +2073,9 @@ export class TagTreeQuery {
           likePattern
         )
       } else {
+        // 无 FTS 时子句仍有 10 个 LIKE 占位符，绑定值必须同为 10 个
         queryParams.push(
+          likePattern,
           likePattern,
           likePattern,
           likePattern,
@@ -2469,18 +2533,27 @@ export class TagTreeQuery {
   }
 
   /**
-   * 旧版 LIKE 全字段语义补充候选源（Hybrid Search Everything 兼容层）：
-   * 仲裁融合只覆盖 FTS5 BM25 / 向量 / 文件名提升，为保留路径、作者、语言、
-   * 描述、扩展名（f.extension）、分类（f.file_group）等基础字段以及标签名的
-   * LIKE 命中（含 includeUnanalyzed 未分析行），此处复用 buildFilterQuery
-   * （保留 searchKeyword 自身的 LIKE 条件）作为补充候选源，
+   * 字段覆盖补充候选源（LIKE 兜底）—— **非历史遗留代码，严禁按「legacy」语义删除**。
+   *
+   * 混合仲裁（FTS5 BM25 / 向量 / 文件名提升）存在三类只有本源能覆盖的召回缺口：
+   * 1. `files_fts` 未索引字段：`wf.path` / `f.extension` / `f.author` / `f.language` /
+   *    `f.file_group` / `ftr.name_path`（标签物化路径）；
+   * 2. trigram 分词短查询失效：查询词不足 3 字符时 FTS5 `MATCH` 恒为 0 命中
+   *    （实测「合同」「预算」等中文双字查询），仅 LIKE 可召回；
+   * 3. 主库未分析行兜底（`includeUnanalyzed`），FS 快轨只反映磁盘实况。
+   *
+   * 实现：复用 buildFilterQuery（保留 searchKeyword 自身的 LIKE 条件）作为补充候选源，
    * 按 sortBy 排序、单源容量封顶 HYBRID_SEARCH_POOL_SIZE。
-   * 任一步骤异常（如短关键词触发了 trigram FTS 语法错误）仅降级为空补充集，
-   * 融合池仍保留仲裁结果，不影响搜索可用性。
+   *
+   * 降级语义：任一步骤异常（如占位符与绑定值数量不匹配、trigram FTS 语法错误）时，
+   * 返回 `failure` 原因字符串交由调用方（HybridSearchSession）按「检索降级」上报，
+   * **不得静默吞掉** —— 本源失败会直接造成上述三类缺口漏召回，且不体现在 total 上。
    */
-  private fetchLegacySearchRefs(params: FilterFilesParams): {
+  private fetchFieldCoverageRefs(params: FilterFilesParams): {
     analyzed: Array<Extract<HybridPageRef, { kind: 'analyzed' }>>
     unanalyzed: Array<Extract<HybridPageRef, { kind: 'unanalyzed' }>>
+    /** 非空 = 本次补充候选查询失败（已降级为空补充集），值为失败原因 */
+    failure?: string
   } {
     const analyzed: Array<Extract<HybridPageRef, { kind: 'analyzed' }>> = []
     const unanalyzed: Array<Extract<HybridPageRef, { kind: 'unanalyzed' }>> = []
@@ -2542,11 +2615,8 @@ export class TagTreeQuery {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
-      logger.warn(
-        LogCategory.VIRTUAL_DIRECTORY,
-        '[TagTreeQuery] 旧 LIKE 全字段补充候选查询失败，仅保留仲裁融合结果:',
-        msg
-      )
+      // 失败原因随返回值上抛，由 HybridSearchSession 统一按「检索降级」上报（单一日志点）
+      return { analyzed, unanalyzed, failure: msg }
     }
     return { analyzed, unanalyzed }
   }

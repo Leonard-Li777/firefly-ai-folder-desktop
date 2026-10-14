@@ -389,22 +389,31 @@ export class OmniClient {
 
   /**
    * 分句语音合成：POST /api/audio/tts/chunk
-   * 返回 WAV 格式的 ArrayBuffer，若失败或被取消返回 null
+   * 返回 48kHz WAV 格式的 ArrayBuffer，若失败或被取消返回 null
    */
   async synthesizeTTSChunk(
     text: string,
-    sid: number,
+    voiceId: string | number,
     speed: number,
+    sid?: number,
     signal?: AbortSignal
   ): Promise<ArrayBuffer | null> {
     try {
       await omniService.ensureRunning()
+      const payload: Record<string, any> = {
+        text,
+        voice_id: String(voiceId),
+        speed
+      }
+      if (typeof sid === 'number') {
+        payload.sid = sid
+      }
       const res = await fetch(`${this.getBaseUrl()}/api/audio/tts/chunk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ text, sid, speed }),
+        body: JSON.stringify(payload),
         signal
       })
       if (!res.ok) {
@@ -424,13 +433,104 @@ export class OmniClient {
   }
 
   /**
+   * 音频声学特征分析与提取：POST /api/audio/analyze-voice
+   */
+  async analyzeVoice(
+    filePath: string,
+    signal?: AbortSignal
+  ): Promise<{
+    success: boolean
+    lang?: 'zh' | 'en' | 'ja'
+    emotion?: string
+    text?: string
+    frames?: number
+    codes?: number[][]
+    error?: string
+  } | null> {
+    try {
+      await omniService.ensureRunning()
+      return await this.request('/api/audio/analyze-voice', {
+        method: 'POST',
+        body: JSON.stringify({ file_path: filePath }),
+        signal
+      })
+    } catch (err) {
+      logger.warn(LogCategory.MAIN, '[OmniClient] analyzeVoice 失败:', err)
+      return null
+    }
+  }
+
+  /**
+   * 内存热注册用户自定义音色：POST /api/audio/tts/register-voice
+   */
+  async registerVoice(
+    voiceId: string,
+    frames: number,
+    codes: number[][],
+    signal?: AbortSignal
+  ): Promise<{ success: boolean; error?: string } | null> {
+    try {
+      await omniService.ensureRunning()
+      return await this.request('/api/audio/tts/register-voice', {
+        method: 'POST',
+        body: JSON.stringify({
+          voice_id: voiceId,
+          frames,
+          codes
+        }),
+        signal
+      })
+    } catch (err) {
+      logger.warn(LogCategory.MAIN, '[OmniClient] registerVoice 失败:', err)
+      return null
+    }
+  }
+
+  /**
    * 获取 TTS 引擎状态：GET /api/audio/tts/status
    */
-  async getTTSStatus(signal?: AbortSignal): Promise<{ ready: boolean; total_speakers: number; sample_rate: number } | null> {
-    return this.request<{ ready: boolean; total_speakers: number; sample_rate: number }>('/api/audio/tts/status', {
+  async getTTSStatus(signal?: AbortSignal): Promise<{ ready: boolean; total_voices?: number; sample_rate?: number; engine?: string } | null> {
+    return this.request<{ ready: boolean; total_voices?: number; sample_rate?: number; engine?: string }>('/api/audio/tts/status', {
       method: 'GET',
       signal
     })
+  }
+
+  /**
+   * 极速音频保音调倍速转换：POST /api/audio/tts/scale?speed=1.25
+   * 基于纯 Rust WSOLA 算法在内存中毫秒级（< 30ms）派生目标倍率 WAV
+   */
+  async scaleWavSpeed(
+    wavBuffer: Buffer | Uint8Array,
+    speed: number,
+    signal?: AbortSignal
+  ): Promise<Buffer | null> {
+    try {
+      await omniService.ensureRunning()
+      const url = `${this.getBaseUrl()}/api/audio/tts/scale?speed=${encodeURIComponent(speed)}`
+      const rawBuffer = Buffer.isBuffer(wavBuffer) ? wavBuffer : Buffer.from(wavBuffer)
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'audio/wav'
+        },
+        body: rawBuffer as unknown as BodyInit,
+        signal
+      })
+      if (!res.ok) {
+        logger.warn(LogCategory.MAIN, `[OmniClient] scaleWavSpeed 失败 HTTP ${res.status}`)
+        return null
+      }
+      const arrayBuf = await res.arrayBuffer()
+      return Buffer.from(arrayBuf)
+    } catch (err: unknown) {
+      if ((err as any)?.name === 'AbortError') {
+        logger.debug(LogCategory.MAIN, '[OmniClient] scaleWavSpeed 请求已中止')
+        return null
+      }
+      logger.warn(LogCategory.MAIN, '[OmniClient] scaleWavSpeed 请求异常:', err)
+      return null
+    }
   }
 
   /**

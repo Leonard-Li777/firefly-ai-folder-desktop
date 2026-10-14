@@ -445,6 +445,32 @@ export class OmniService {
   private restartTimeout: NodeJS.Timeout | null = null
   private lastCoverDurationMs?: number
   private coverDurationMap = new Map<string, number>()
+  private readyCallbacks: (() => void | Promise<void>)[] = []
+
+  /**
+   * 注册 Omni 服务启动/重启就绪回调
+   * 用于在 Omni 进程初次就绪或崩溃重启恢复时触发自定义音色重注册等动作
+   */
+  public onReady(callback: () => void | Promise<void>): void {
+    this.readyCallbacks.push(callback)
+    if (this.process && !this.process.killed && !this.isStarting) {
+      Promise.resolve(callback()).catch(err => {
+        logger.warn(LogCategory.SYSTEM, '[OmniService] onReady 回调执行异常:', err)
+      })
+    }
+  }
+
+  private notifyReady(): void {
+    for (const cb of this.readyCallbacks) {
+      try {
+        Promise.resolve(cb()).catch(err => {
+          logger.warn(LogCategory.SYSTEM, '[OmniService] onReady 回调执行异常:', err)
+        })
+      } catch (err) {
+        logger.warn(LogCategory.SYSTEM, '[OmniService] onReady 同步调用异常:', err)
+      }
+    }
+  }
 
   private constructor() {
     try {
@@ -668,6 +694,7 @@ export class OmniService {
         this.restartAttempts = 0
         this.isStarting = false
         this.syncConfigFromDesktop().catch(() => {})
+        this.notifyReady()
         return true
       }
 
@@ -820,6 +847,7 @@ export class OmniService {
           this.syncConfigFromDesktop().catch(() => {})
           // 主动推送"运行中"状态至渲染进程（基础AI引擎 Footer 展示）
           this.pushStatus().catch(() => {})
+          this.notifyReady()
           return true
         }
       }

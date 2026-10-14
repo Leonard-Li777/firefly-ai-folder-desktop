@@ -782,7 +782,7 @@ declare global {
         listVoices: () => Promise<any[]>
         analyzeVoiceFile: (filePath: string) => Promise<{
           tempVoiceId: string
-          lang: 'zh' | 'en' | 'ja'
+          lang: string
           emotion: string
           suggestedName: string
           durationSec: number
@@ -791,7 +791,7 @@ declare global {
           tempVoiceId: string
           displayName: string
           gender: 'male' | 'female' | 'child'
-          lang: 'zh' | 'en' | 'ja'
+          lang: string
           desc?: string
         }) => Promise<{ success: boolean; voice?: any; error?: string }>
         removeCustomVoice: (voiceId: string) => Promise<boolean>
@@ -800,6 +800,8 @@ declare global {
           filePath?: string
           fieldName?: string
           fileFingerprint?: string
+          displayName?: string
+          text?: string
           sid?: number
           voiceId?: string | number
           speed?: number
@@ -810,6 +812,7 @@ declare global {
           done: number
           sid?: number
           voiceId?: string | number
+          displayName?: string
           speed: number
           fingerprint?: string
           fieldName?: string
@@ -822,11 +825,18 @@ declare global {
           totalChunks: number
           sid?: number
           voiceId?: string | number
+          displayName?: string
           speed: number
           fileFingerprint?: string
           fieldName?: string
         }) => Promise<boolean>
         locateWavFile: (wavPath: string) => Promise<boolean>
+        scaleWav: (wavBuffer: ArrayBuffer, speed: number) => Promise<ArrayBuffer | null>
+        deriveScaledWav: (
+          baseWavPath: string,
+          targetWavPath: string,
+          targetSpeed: number
+        ) => Promise<boolean>
       }
     }
 

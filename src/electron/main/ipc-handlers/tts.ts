@@ -13,20 +13,22 @@ import { ipcMain, dialog, BrowserWindow } from 'electron'
 import { logger, LogCategory } from '@firefly/shared'
 import { omniClient } from '../../services/omni-client'
 import { ttsWavCacheService, TTSWavMetadata } from '../../runtime-services/filesystem/tts-wav-cache-service'
+import { voiceArchiveService } from '../../runtime-services/audio/voice-archive-service'
 
 /** 管理会话级活跃请求的 AbortController，键为 sessionId */
 const activeSessionControllers = new Map<number, Set<AbortController>>()
 
 export function registerTTSIPCHandlers(): void {
-  // 1. 单句语音合成
+  // 1. 单句语音合成（支持 voiceId 字符串或数字 sid）
   ipcMain.handle(
     'tts:synthesize-chunk',
     async (
       _event,
       text: string,
-      sid: number,
+      voiceId: string | number,
       speed: number,
-      sessionId?: number
+      sessionId?: number,
+      sid?: number
     ): Promise<ArrayBuffer | null> => {
       let controller: AbortController | undefined
 
@@ -43,8 +45,9 @@ export function registerTTSIPCHandlers(): void {
       try {
         const result = await omniClient.synthesizeTTSChunk(
           text,
-          sid,
+          voiceId,
           speed,
+          sid,
           controller?.signal
         )
         return result
@@ -116,7 +119,28 @@ export function registerTTSIPCHandlers(): void {
           }
         }
 
-        // 构建合并后的标准 44 字节 WAV 头部 (24000Hz, 16-bit Mono)
+        // 自适应提取音频格式规格（默认 48000Hz 立体声 16-bit）
+        let numChannels = 2
+        let sampleRate = 48000
+        let byteRate = 192000
+        let blockAlign = 4
+        let bitsPerSample = 16
+
+        for (const chunk of chunks) {
+          if (chunk.byteLength > 44) {
+            const buf = Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength)
+            if (buf.toString('ascii', 0, 4) === 'RIFF') {
+              numChannels = buf.readUInt16LE(22)
+              sampleRate = buf.readUInt32LE(24)
+              byteRate = buf.readUInt32LE(28)
+              blockAlign = buf.readUInt16LE(32)
+              bitsPerSample = buf.readUInt16LE(34)
+              break
+            }
+          }
+        }
+
+        // 构建合并后的标准 44 字节 WAV 头部
         const header = Buffer.alloc(44)
         header.write('RIFF', 0)
         header.writeUInt32LE(36 + totalPcmBytes, 4)
@@ -124,11 +148,11 @@ export function registerTTSIPCHandlers(): void {
         header.write('fmt ', 12)
         header.writeUInt32LE(16, 16) // PCM format subchunk size
         header.writeUInt16LE(1, 20) // AudioFormat: 1 (PCM)
-        header.writeUInt16LE(1, 22) // NumChannels: 1
-        header.writeUInt32LE(24000, 24) // SampleRate: 24000
-        header.writeUInt32LE(48000, 28) // ByteRate: 24000 * 1 * 2
-        header.writeUInt16LE(2, 32) // BlockAlign: 1 * 2
-        header.writeUInt16LE(16, 34) // BitsPerSample: 16
+        header.writeUInt16LE(numChannels, 22) // NumChannels
+        header.writeUInt32LE(sampleRate, 24) // SampleRate
+        header.writeUInt32LE(byteRate, 28) // ByteRate
+        header.writeUInt16LE(blockAlign, 32) // BlockAlign
+        header.writeUInt16LE(bitsPerSample, 34) // BitsPerSample
         header.write('data', 36)
         header.writeUInt32LE(totalPcmBytes, 40)
 
@@ -173,8 +197,10 @@ export function registerTTSIPCHandlers(): void {
         filePath?: string
         fieldName?: string
         fileFingerprint?: string
+        displayName?: string
         text?: string
         sid?: number
+        voiceId?: string | number
         speed?: number
       }
     ): Promise<string | null> => {
@@ -231,7 +257,9 @@ export function registerTTSIPCHandlers(): void {
         chunkData: Uint8Array
         chunkIndex: number
         totalChunks: number
-        sid: number
+        sid?: number
+        voiceId?: string | number
+        displayName?: string
         speed: number
         fileFingerprint?: string
         fieldName?: string
@@ -254,6 +282,105 @@ export function registerTTSIPCHandlers(): void {
         return ttsWavCacheService.locateWavFile(wavPath)
       } catch (err) {
         logger.warn(LogCategory.MAIN, '[TTS IPC] locate-wav-file 失败:', err)
+        return false
+      }
+    }
+  )
+
+  // 9. 获取所有可用音色列表（内置预置 + 用户自定义）
+  ipcMain.handle('tts:list-voices', async () => {
+    try {
+      return await voiceArchiveService.listVoices()
+    } catch (err) {
+      logger.error(LogCategory.MAIN, '[TTS IPC] list-voices 失败:', err)
+      return []
+    }
+  })
+
+  // 10. 上传并分析外部音频特征，返回签发 tempVoiceId 与自动识别标签
+  ipcMain.handle('tts:analyze-voice-file', async (_event, filePath: string) => {
+    try {
+      return await voiceArchiveService.analyzeVoiceFile(filePath)
+    } catch (err: any) {
+      logger.error(LogCategory.MAIN, '[TTS IPC] analyze-voice-file 失败:', err)
+      throw new Error(err?.message || '音频分析提取失败')
+    }
+  })
+
+  // 11. 确认保存自定义音色并写入单文件容器与注入 Omni
+  ipcMain.handle(
+    'tts:save-custom-voice',
+    async (
+      _event,
+      params: {
+        tempVoiceId: string
+        displayName: string
+        gender: 'male' | 'female' | 'child'
+        lang: string
+        desc?: string
+      }
+    ) => {
+      try {
+        return await voiceArchiveService.saveCustomVoice(params)
+      } catch (err: any) {
+        logger.error(LogCategory.MAIN, '[TTS IPC] save-custom-voice 失败:', err)
+        return { success: false, error: err?.message || '保存自定义音色失败' }
+      }
+    }
+  )
+
+  // 12. 删除自定义音色文件并级联处理配置兜底
+  ipcMain.handle('tts:remove-custom-voice', async (_event, voiceId: string): Promise<boolean> => {
+    try {
+      const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+      const orchestrator = ConfigOrchestrator.getInstance()
+      const defaultVoice = orchestrator.getValue<string>('TTS_DEFAULT_VOICE_ID' as any)
+      if (defaultVoice === voiceId) {
+        await orchestrator.updateValue('TTS_DEFAULT_VOICE_ID' as any, 'lilihong_shejian')
+        await orchestrator.updateValue('TTS_DEFAULT_VOICE_SID' as any, 'lilihong_shejian')
+      }
+      const favVoices = orchestrator.getValue<string[]>('TTS_FAVORITE_VOICES' as any) || []
+      if (favVoices.includes(voiceId)) {
+        await orchestrator.updateValue(
+          'TTS_FAVORITE_VOICES' as any,
+          favVoices.filter(id => id !== voiceId)
+        )
+      }
+      return await voiceArchiveService.removeCustomVoice(voiceId)
+    } catch (err) {
+      logger.error(LogCategory.MAIN, '[TTS IPC] remove-custom-voice 失败:', err)
+      return false
+    }
+  })
+
+  // 13. 极速保音调倍速转换：调用 Omni WSOLA 纯 Rust 内存算法
+  ipcMain.handle(
+    'tts:scale-wav',
+    async (_event, wavBuffer: ArrayBuffer, speed: number): Promise<ArrayBuffer | null> => {
+      try {
+        const res = await omniClient.scaleWavSpeed(Buffer.from(wavBuffer), speed)
+        if (!res) return null
+        return res.buffer.slice(res.byteOffset, res.byteOffset + res.byteLength) as ArrayBuffer
+      } catch (err) {
+        logger.warn(LogCategory.MAIN, '[TTS IPC] scale-wav 失败:', err)
+        return null
+      }
+    }
+  )
+
+  // 14. 极速从 1.0x 基准文件派生目标倍速文件
+  ipcMain.handle(
+    'tts:derive-scaled-wav',
+    async (
+      _event,
+      baseWavPath: string,
+      targetWavPath: string,
+      targetSpeed: number
+    ): Promise<boolean> => {
+      try {
+        return await ttsWavCacheService.deriveScaledWav(baseWavPath, targetWavPath, targetSpeed)
+      } catch (err) {
+        logger.warn(LogCategory.MAIN, '[TTS IPC] derive-scaled-wav 失败:', err)
         return false
       }
     }

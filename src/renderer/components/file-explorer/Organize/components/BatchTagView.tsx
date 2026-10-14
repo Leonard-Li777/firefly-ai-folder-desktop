@@ -42,6 +42,27 @@ export const isExtensionTag = (tagName: string) => {
 }
 
 /**
+ * 计算标签胶囊的 React key（渲染身份键，必须全局唯一）
+ *
+ * 受控分类树是 **DAG 而非严格树**：同一个 code / 同名标签会挂在多个父级下
+ * （如 builtin.chinese 同时挂在 文档/电子书/视频/音频 的语言细分下），其 `codePath` 各不相同，
+ * 服务端按父路径各留一条是**既有设计**（前端 dimension-tree-utils 提升聚合阶段依赖全部分支
+ * 收集 `codePaths`，保障跨分支文件视野零丢失），因此**严禁在此去重丢弃分支条目**。
+ *
+ * 但本组件既有的标签身份键 `${dimensionId}::${tagValue}` 无法区分这些分支条目，
+ * 直接用作 React key 会触发「Encountered two children with the same key」并造成重复胶囊；
+ * 故渲染 key 必须纳入 `codePath`（跨分支唯一）—— 仅在旧载荷缺 codePath/code 时退回数组下标兜底。
+ *
+ * 注意：三态状态与批量操作的身份键仍是 tag 级的 `${dimensionId}::${tagValue}`
+ * （批量打标按标签名生效，与分支路径无关），本函数仅用于 React 渲染 key。
+ */
+export const getTagPillKey = (
+  dimensionId: number,
+  tag: DimensionTag,
+  index: number
+): string => `${dimensionId}::${tag.tagValue}::${tag.codePath || tag.code || index}`
+
+/**
  * 单个标签胶囊组件 (React.memo)
  * 仅在其自身状态或聚焦拥有状态变化时重绘，杜绝点击文件时全量 1000+ 标签无效重绘与动画卡顿
  */
@@ -342,7 +363,7 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
           ))}
 
           {/* 已有标签列表 - 使用 React.memo 的 TagPill 极大提升交互性能 */}
-          {groupTags.map((tag: DimensionTag) => {
+          {groupTags.map((tag: DimensionTag, tagIndex: number) => {
             const tagKey = `${group.id}::${tag.tagValue}`
             const count = tagFileCounts[tag.tagValue] || 0
             const state = tagStates[tagKey] || 'initial'
@@ -355,7 +376,7 @@ const DimensionGroupCard: React.FC<DimensionGroupCardProps> = React.memo(
 
             return (
               <TagPill
-                key={tagKey}
+                key={getTagPillKey(group.id, tag, tagIndex)}
                 dimId={group.id}
                 tagName={tag.tagValue}
                 tagKey={tagKey}
@@ -582,6 +603,8 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
           !isExtensionTag(t.tagValue)
       )
 
+      // 注意：同一 code / 同名标签挂在多父级下（codePath 各异）是既有设计，**严禁在此归并去重**；
+      // 分支条目的 React key 唯一性由渲染层 getTagPillKey（纳入 codePath）保证。
       // 如果是泛维度，预先排序好 tags，避免每次组件渲染都重复执行 Array.sort
       const isPan = checkIsPanDimension(group)
       if (isPan) {

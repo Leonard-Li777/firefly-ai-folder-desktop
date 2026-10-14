@@ -73,6 +73,9 @@ export function cleanTextForTTS(text: string, options?: { isLrc?: boolean }): st
   // 统一清洗 Markdown 符号
   cleaned = stripMarkdown(cleaned)
 
+  // 修复非句末标点（如逗号、顿号、冒号等）后的排版软换行，合并为单句防断句失真
+  cleaned = cleaned.replace(/([，,、:：])\s*[\r\n]+\s*/g, '$1')
+
   // 替换连续空白字符，保留换行
   cleaned = cleaned.replace(/[ \t]+/g, ' ')
 
@@ -129,25 +132,6 @@ export function splitTextIntoChunks(text: string, maxChunkLength = 120): string[
     }
   }
 
-  // 4. 后处理合并过短的碎片断句（Kokoro 官方建议输入维持在合理区间，<15字断句易产生断气或机械失真）
-  const mergedChunks: string[] = []
-  let pendingBuffer = ''
-
-  for (const c of chunks) {
-    if (!pendingBuffer) {
-      pendingBuffer = c
-    } else if (pendingBuffer.length < 15 && pendingBuffer.length + c.length <= maxChunkLength) {
-      // 当前缓冲区字数过少，向后合并
-      pendingBuffer = pendingBuffer + ' ' + c
-    } else {
-      mergedChunks.push(pendingBuffer.trim())
-      pendingBuffer = c
-    }
-  }
-
-  if (pendingBuffer.trim()) {
-    mergedChunks.push(pendingBuffer.trim())
-  }
-
-  return mergedChunks
+  // 自然返回切分后的语义短句（杜绝强制空格拼接中文短句制造的停顿失真）
+  return chunks.map(c => c.trim()).filter(Boolean)
 }
