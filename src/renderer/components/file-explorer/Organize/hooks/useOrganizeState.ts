@@ -1473,7 +1473,14 @@ export function useOrganizeState() {
           candidatePaths
         })
 
-        const rawMatches = cosineRes?.matches || {}
+        let rawMatches = cosineRes?.matches
+        if (!rawMatches && cosineRes?.results) {
+          rawMatches = {}
+          for (const [fIdStr, res] of Object.entries(cosineRes.results)) {
+            rawMatches[Number(fIdStr)] = (res as any).candidates || []
+          }
+        }
+        rawMatches = rawMatches || {}
         useOrganizeStore.getState().setRawMatches(rawMatches)
         useOrganizeStore.getState().setFilesMap(filesMap)
 

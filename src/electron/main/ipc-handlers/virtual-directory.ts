@@ -926,41 +926,46 @@ export function registerVirtualDirectoryIPCHandlers() {
         try {
           const db = databaseService.db
           if (db) {
-            const placeholders = request.fileIds.map(() => '?').join(',')
-            const rows = db
-              .prepare(
-                `
-              SELECT
-                wf.id AS file_id,
-                wf.name AS file_name,
-                ftr.tag_code AS code,
-                ftr.confidence AS weight
-              FROM workspace_files wf
-              LEFT JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
-              WHERE wf.id IN (${placeholders})
-            `
-              )
-              .all(...request.fileIds) as Array<{
-              file_id: number
-              file_name: string | null
-              code: string | null
-              weight: number | null
-            }>
-
             const fileTagsMap: Record<number, Array<{ code: string; weight: number }>> = {}
             const fileNamesMap: Record<number, string> = {}
-            for (const row of rows) {
-              if (row.file_name && !fileNamesMap[row.file_id]) {
-                fileNamesMap[row.file_id] = row.file_name
-              }
-              if (row.code) {
-                if (!fileTagsMap[row.file_id]) {
-                  fileTagsMap[row.file_id] = []
+            const CHUNK_SIZE = 500
+
+            for (let i = 0; i < request.fileIds.length; i += CHUNK_SIZE) {
+              const chunk = request.fileIds.slice(i, i + CHUNK_SIZE)
+              const placeholders = chunk.map(() => '?').join(',')
+              const rows = db
+                .prepare(
+                  `
+                SELECT
+                  wf.id AS file_id,
+                  wf.name AS file_name,
+                  ftr.tag_code AS code,
+                  ftr.confidence AS weight
+                FROM workspace_files wf
+                LEFT JOIN file_tag_relations ftr ON ftr.file_fingerprint = wf.file_fingerprint
+                WHERE wf.id IN (${placeholders})
+              `
+                )
+                .all(...chunk) as Array<{
+                file_id: number
+                file_name: string | null
+                code: string | null
+                weight: number | null
+              }>
+
+              for (const row of rows) {
+                if (row.file_name && !fileNamesMap[row.file_id]) {
+                  fileNamesMap[row.file_id] = row.file_name
                 }
-                fileTagsMap[row.file_id].push({
-                  code: row.code,
-                  weight: typeof row.weight === 'number' ? row.weight : 1.0
-                })
+                if (row.code) {
+                  if (!fileTagsMap[row.file_id]) {
+                    fileTagsMap[row.file_id] = []
+                  }
+                  fileTagsMap[row.file_id].push({
+                    code: row.code,
+                    weight: typeof row.weight === 'number' ? row.weight : 1.0
+                  })
+                }
               }
             }
 
