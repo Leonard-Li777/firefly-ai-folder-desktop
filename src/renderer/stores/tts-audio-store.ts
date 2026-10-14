@@ -127,17 +127,18 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     set({ speed })
     useConfigStore.getState().updateConfigValue('TTS_SPEED', speed).catch(() => {})
 
-    // 动态无缝平滑调整当前正在播放的音频倍率，彻底避免切换倍率导致重新合成
-    if (audioContext && (get().status === 'playing' || get().status === 'paused')) {
-      const now = audioContext.currentTime
-      for (const item of scheduledSources) {
-        if (now < item.endTime) {
-          try {
-            item.source.playbackRate.setValueAtTime(speed, now)
-          } catch {
-            // 忽略已完成节点的异常
-          }
-        }
+    // 若当前正在播放，以用户选定的新语速重新合成与播放，确保由神经网络声学模型原生调速，杜绝变调童音
+    const state = get()
+    if (state.status === 'playing' || state.status === 'loading') {
+      const currentText = state.playingText
+      const currentTextId = state.playingTextId
+      const currentSid = state.currentSid
+      if (currentText) {
+        get().play(currentText, {
+          textId: currentTextId,
+          sid: currentSid,
+          speed: speed
+        })
       }
     }
   },
@@ -287,7 +288,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     if (targetCachePath && window.electronAPI?.tts?.readWavMetadata) {
       try {
         const metadata = await window.electronAPI.tts.readWavMetadata(targetCachePath)
-        if (metadata && metadata.completed) {
+        // 语速严格一致才命中，确保不同倍率拥有独立的纯正原音，杜绝变调
+        if (metadata && metadata.completed && (metadata.speed === undefined || Math.abs(metadata.speed - chosenSpeed) < 0.01)) {
           const fullWavBuffer = await window.electronAPI.tts.readWavFile(targetCachePath)
           if (fullWavBuffer && fullWavBuffer.byteLength > 44) {
             if (activeSessionId !== thisSessionId) return
@@ -297,12 +299,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
             const source = ctx.createBufferSource()
             source.buffer = audioBuffer
-            source.playbackRate.value = chosenSpeed
+            source.playbackRate.value = 1.0
             source.connect(ctx.destination)
 
             const startAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
             source.start(startAt)
-            const effectiveDuration = audioBuffer.duration / chosenSpeed
+            const effectiveDuration = audioBuffer.duration
             nextStartTime = startAt + effectiveDuration
             scheduledSources.push({
               source,
@@ -365,11 +367,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         }
 
         const chunkText = chunks[i]
-        // 核心架构规范：模型总是以 1.0x 标准黄金倍率合成母带，彻底杜绝切换倍率造成重复合成
+        // 关键声学设计：由 Kokoro 神经网络声学模型在生成阶段原生调速（变速不变调），
+        // 彻底杜绝播放端倍率重采样导致的音调上扬（变调童音/花栗鼠效应）
         const buffer = await window.electronAPI.tts.synthesizeChunk(
           chunkText,
           chosenSid,
-          1.0,
+          chosenSpeed,
           thisSessionId
         )
 
@@ -386,7 +389,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         // 缓存 WAV 原始块
         cachedChunksMap.set(i, chunkUint8)
 
-        // 异步流式追加写入本地 WAV 缓存并原子刷新 meta Chunk（标记 1.0 母带）
+        // 异步流式追加写入本地 WAV 缓存并原子刷新 meta Chunk（标记对应倍率）
         if (targetCachePath && window.electronAPI?.tts?.appendWavChunk) {
           window.electronAPI.tts.appendWavChunk({
             wavPath: targetCachePath,
@@ -394,7 +397,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             chunkIndex: i,
             totalChunks: chunks.length,
             sid: chosenSid,
-            speed: 1.0,
+            speed: chosenSpeed,
             fileFingerprint: options?.fileFingerprint,
             fieldName: options?.fieldName
           }).catch(err => {
@@ -409,16 +412,16 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           return
         }
 
-        // 时间戳预排程播放（以用户当前选择的倍率播放，动态缩放持续时长）
+        // 时间戳预排程播放（由于模型已原生变速且音调正常，此处 playbackRate 恒定为 1.0 忠实原音输出）
         const source = ctx.createBufferSource()
         source.buffer = audioBuffer
-        source.playbackRate.value = chosenSpeed
+        source.playbackRate.value = 1.0
         source.connect(ctx.destination)
 
         const startAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
         source.start(startAt)
 
-        const effectiveDuration = audioBuffer.duration / chosenSpeed
+        const effectiveDuration = audioBuffer.duration
         const endAt = startAt + effectiveDuration
         scheduledSources.push({
           source,
