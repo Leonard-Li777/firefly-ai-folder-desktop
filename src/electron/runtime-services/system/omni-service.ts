@@ -755,6 +755,28 @@ export class OmniService {
         }
       }
 
+      // omni-geo 地理数据集解析（与语义包同构的显式下发）：
+      // omni-server 的数据集发现链锚定在 exe 相对 <exe_dir>/../../build/extraResources/geo 与
+      // 少数 cwd 候选上，而资源统一装配流水线（consume-preset-resources + desktop
+      // setup-extra-resources）只产出 desktop 侧 extraResources/geo。开发态桌面以
+      // target/debug/firefly-omni.exe 的相对链落空 ⇒ 地理子系统静默软不可用
+      // （历史：geo-20260825 数据包已在本地但发现链够不着）。
+      // 此处复刻 --pack-path 模式，经 OMNI_GEO_DATA_PATH 环境变量显式下发（discover.rs
+      // 最高优先级即该环境变量）；解析不到则不下发，保持服务端原有发现链行为。
+      const candidateGeoPaths = [
+        ResourceLocator.resolveResourcePath('geo/geonames-compact.json'),
+        path.join(process.cwd(), 'apps/desktop/build/extraResources/geo/geonames-compact.json'),
+        path.join(process.cwd(), 'apps/omni/build/extraResources/geo/geonames-compact.json'),
+        path.join(process.cwd(), 'build/extraResources/geo/geonames-compact.json')
+      ]
+      let geoPath: string | null = null
+      for (const cand of candidateGeoPaths) {
+        if (cand && fs.existsSync(cand)) {
+          geoPath = cand
+          break
+        }
+      }
+
       const spawnArgs = ['serve', '-a', `127.0.0.1:${port}`]
       if (dbPath) {
         spawnArgs.push('--db-path', dbPath)
@@ -763,6 +785,15 @@ export class OmniService {
       if (packPath) {
         spawnArgs.push('--pack-path', packPath)
         logger.info(LogCategory.SYSTEM, `[OmniService] 🎯 语义包路径 (--pack-path): ${packPath}`)
+      }
+      if (geoPath) {
+        env.OMNI_GEO_DATA_PATH = geoPath
+        logger.info(LogCategory.SYSTEM, `[OmniService] 🌍 地理数据集路径 (OMNI_GEO_DATA_PATH): ${geoPath}`)
+      } else {
+        logger.warn(
+          LogCategory.SYSTEM,
+          '[OmniService] 未解析到 omni-geo 地理数据集（geo/geonames-compact.json），逆地理编码将以 available:false 软降级'
+        )
       }
 
       // 注入当前激活的多模态嵌入画像档位 (classic_light | gemma_unified) 与 MRL 维度 (Spec §3.4.1)
