@@ -62,6 +62,13 @@ interface OrganizeStoreState {
   hasRescueFailed: boolean
   options: OrganizeOptions
 
+  // ─── 身份蓝图 Stage 4 Done 双滑块与重塑状态 ───────────────────────────
+  rawMatches: Record<number | string, Array<{ path: string; score: number }>>
+  filesMap: Record<number | string, any>
+  userPinnedFileMap: Map<number | string, string[]>
+  thresholdScore: number
+  maxCandidatesPerFile: number
+
   setStage: (stage: Stage) => void
   setActiveBranch: (branch: OrganizeBranch) => void
   addVisitedStage: (stage: Stage) => void
@@ -90,6 +97,15 @@ interface OrganizeStoreState {
   setUnmatchedCount: (count: number) => void
   setHasRescueFailed: (failed: boolean) => void
   setOptions: (options: OrganizeOptions | ((prev: OrganizeOptions) => OrganizeOptions)) => void
+  setRawMatches: (matches: Record<number | string, Array<{ path: string; score: number }>>) => void
+  setFilesMap: (map: Record<number | string, any>) => void
+  setUserPinnedFileMap: (
+    mapOrUpdater:
+      | Map<number | string, string[]>
+      | ((prev: Map<number | string, string[]>) => Map<number | string, string[]>)
+  ) => void
+  setThresholdScore: (y: number) => void
+  setMaxCandidatesPerFile: (n: number) => void
   resetOrganizeState: () => void
 }
 
@@ -118,6 +134,12 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
   unmatchedCount: 0,
   hasRescueFailed: false,
   options: initialOptions,
+
+  rawMatches: {},
+  filesMap: {},
+  userPinnedFileMap: new Map(),
+  thresholdScore: 0.6,
+  maxCandidatesPerFile: 1,
 
   setStage: stage =>
     set(state => {
@@ -194,6 +216,18 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
       options: typeof options === 'function' ? options(state.options) : options
     })),
 
+  setRawMatches: rawMatches => set({ rawMatches }),
+  setFilesMap: filesMap => set({ filesMap }),
+  setUserPinnedFileMap: mapOrUpdater =>
+    set(state => ({
+      userPinnedFileMap:
+        typeof mapOrUpdater === 'function'
+          ? mapOrUpdater(state.userPinnedFileMap)
+          : mapOrUpdater
+    })),
+  setThresholdScore: thresholdScore => set({ thresholdScore }),
+  setMaxCandidatesPerFile: maxCandidatesPerFile => set({ maxCandidatesPerFile }),
+
   resetOrganizeState: () =>
     set({
       stage: 'root-mode-select',
@@ -209,6 +243,11 @@ export const useOrganizeStore = create<OrganizeStoreState>(set => ({
       finalTree: [],
       unmatchedCount: 0,
       hasRescueFailed: false,
-      options: initialOptions // initialOptions 中 skipEmptyDirs 已是 false
+      options: initialOptions,
+      rawMatches: {},
+      filesMap: {},
+      userPinnedFileMap: new Map(),
+      thresholdScore: 0.6,
+      maxCandidatesPerFile: 1
     })
 }))

@@ -91,7 +91,22 @@ export class OrganizeRealDirectoryService {
       `[A流程-导出真实目录] 开始导出真实目录, 文件总数=${files.length}`
     )
 
-    const fileOperations: FileOperation[] = files.map((file: any) => {
+    // 物理整理落盘多归属保护：同一文件若在多个虚拟目录分支下出现，仅对 Top-1 目标路径物理移动
+    const seenFileIds = new Set<number>()
+    const uniqueFiles: any[] = []
+    for (const f of files) {
+      if (seenFileIds.has(f.fileId)) {
+        logger.info(
+          LogCategory.FILE_ORGANIZATION,
+          `[exportVirtualDirectoryById] 物理整理多归属保护：文件已存在首选移动目标，跳过重复移动: fileId=${f.fileId}, relativePath=${f.relativePath}`
+        )
+        continue
+      }
+      seenFileIds.add(f.fileId)
+      uniqueFiles.push(f)
+    }
+
+    const fileOperations: FileOperation[] = uniqueFiles.map((file: any) => {
       const swapFileName =
         ConfigOrchestrator.getInstance().getValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
 

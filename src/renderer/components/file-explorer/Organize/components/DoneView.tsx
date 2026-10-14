@@ -18,6 +18,8 @@ import {
   isUnclassifiedNodeName
 } from '../utils/helpers'
 import { useSettingsStore } from '../../../../stores/settings-store'
+import { useOrganizeStore } from '../../../../stores/organize-store'
+import { reshapeDirectoryTree } from '../utils/reshape-directory-tree'
 import { SENTINEL_NAMES } from '@firefly/shared'
 
 const UNCLASSIFIED_NAME = SENTINEL_NAMES.UNCLASSIFIED
@@ -212,31 +214,134 @@ export function DoneView({
 
   const showUnclassified = unclassifiedFiles.length > 0
 
+  // ─── 身份蓝图 Stage 4 Done 双滑块与重塑状态接入 ───────────────────────────
+  const thresholdScore = useOrganizeStore(s => s.thresholdScore)
+  const setThresholdScore = useOrganizeStore(s => s.setThresholdScore)
+  const maxCandidatesPerFile = useOrganizeStore(s => s.maxCandidatesPerFile)
+  const setMaxCandidatesPerFile = useOrganizeStore(s => s.setMaxCandidatesPerFile)
+  const rawMatches = useOrganizeStore(s => s.rawMatches)
+  const filesMap = useOrganizeStore(s => s.filesMap)
+  const draftTree = useOrganizeStore(s => s.draftTree)
+  const userPinnedFileMap = useOrganizeStore(s => s.userPinnedFileMap)
+  const setFinalTree = useOrganizeStore(s => s.setFinalTree)
+  const setUnmatchedCount = useOrganizeStore(s => s.setUnmatchedCount)
+  const setUserPinnedFileMap = useOrganizeStore(s => s.setUserPinnedFileMap)
+
+  // 纯前端内存重塑处理函数
+  const handleReshape = React.useCallback(
+    (newY: number, newN: number) => {
+      if (!rawMatches || Object.keys(rawMatches).length === 0) return
+
+      const res = reshapeDirectoryTree({
+        baseTreeOutline: draftTree && draftTree.length > 0 ? draftTree : tree,
+        rawMatches,
+        filesMap,
+        y: newY,
+        n: newN,
+        userPinnedFileMap
+      })
+
+      setFinalTree(res.tree)
+      setUnmatchedCount(res.unclassifiedCount)
+    },
+    [draftTree, tree, rawMatches, filesMap, userPinnedFileMap, setFinalTree, setUnmatchedCount]
+  )
+
+  // 拦截文件微调事件，记录用户手动固定的路径映射 (Pinned 保护)
+  const handleMoveNodeOrFile = React.useCallback(
+    (draggedData: any, targetNodeKey: string) => {
+      const fileId = draggedData?.file?.id ?? draggedData?.file?.fileId
+      if (fileId != null) {
+        setUserPinnedFileMap(prev => {
+          const next = new Map(prev)
+          next.set(fileId, [targetNodeKey])
+          return next
+        })
+      }
+      if (onMoveNodeOrFile) {
+        onMoveNodeOrFile(draggedData, targetNodeKey)
+      }
+    },
+    [onMoveNodeOrFile, setUserPinnedFileMap]
+  )
+
   const renderRules = () => (
-    <div className="border-t border-border/80 bg-muted/5 p-4 space-y-3 shrink-0 mt-3 rounded-xl">
+    <div className="border-t border-border/80 bg-muted/5 p-4 space-y-4 shrink-0 mt-3 rounded-xl">
+      {/* 双滑块控制面板：及格线阈值 y 与多目录归属上限 n */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-3 border-b border-border/60">
+        {/* 及格线阈值滑块 y */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs font-semibold text-foreground/90">
+            <span className="flex items-center gap-1.5">
+              <MaterialIcon icon="tune" className="text-sm text-primary" />
+              <span>{t('及格线阈值 (Score Threshold)')}</span>
+            </span>
+            <span className="text-xs font-bold text-primary font-mono bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+              {Math.round((thresholdScore || 0.6) * 100)}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0.4}
+            max={0.9}
+            step={0.05}
+            value={thresholdScore || 0.6}
+            onChange={e => {
+              const val = parseFloat(e.target.value)
+              setThresholdScore(val)
+              handleReshape(val, maxCandidatesPerFile || 1)
+            }}
+            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+          />
+          <p className="text-[10px] text-muted-foreground leading-tight">
+            {t('低于及格线的文件将实时移入【未归类】，高于者归入对应目录')}
+          </p>
+        </div>
+
+        {/* 多目录归属上限滑块 n */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs font-semibold text-foreground/90">
+            <span className="flex items-center gap-1.5">
+              <MaterialIcon icon="layers" className="text-sm text-amber-500" />
+              <span>{t('多目录归属上限 (Max Folders)')}</span>
+            </span>
+            <span className="text-xs font-bold text-amber-600 dark:text-amber-400 font-mono bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+              {maxCandidatesPerFile || 1} {t('个目录')}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={5}
+            step={1}
+            value={maxCandidatesPerFile || 1}
+            onChange={e => {
+              const val = parseInt(e.target.value, 10)
+              setMaxCandidatesPerFile(val)
+              handleReshape(thresholdScore || 0.6, val)
+            }}
+            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-amber-500"
+          />
+          <p className="text-[10px] text-muted-foreground leading-tight">
+            {t('同一文件语义同时契合多个主题时允许展示的最大目录数量')}
+          </p>
+        </div>
+      </div>
+
       <div className="flex items-center gap-6 flex-wrap">
-        <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+        <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors select-none">
           <Checkbox
             checked={options.flattenToRoot}
             onCheckedChange={checked => setOptions(prev => ({ ...prev, flattenToRoot: !!checked }))}
           />
           <span>{t('平铺到根目录')}</span>
         </label>
-        <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+        <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors select-none">
           <Checkbox
             checked={options.skipEmptyDirs}
             onCheckedChange={checked => setOptions(prev => ({ ...prev, skipEmptyDirs: !!checked }))}
           />
           <span>{t('不生成空目录')}</span>
-        </label>
-        <label className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-          <Checkbox
-            checked={options.deduplicateFiles}
-            onCheckedChange={checked =>
-              setOptions(prev => ({ ...prev, deduplicateFiles: !!checked }))
-            }
-          />
-          <span>{t('文件去重')}</span>
         </label>
       </div>
     </div>
@@ -319,7 +424,7 @@ export function DoneView({
                                 onDeleteNode={onDeleteNode}
                                 onRenameNode={onRenameNode}
                                 onAddSubdir={onAddSubdir}
-                                onMoveNodeOrFile={onMoveNodeOrFile}
+                                onMoveNodeOrFile={handleMoveNodeOrFile}
                                 highFrequencyTags={highFrequencyTags}
                                 currentVDirId={currentVDir?.id}
                                 extraHeaderAction={
@@ -376,7 +481,7 @@ export function DoneView({
                                     icon={isRescuing && !isAutoRescuing ? 'sync' : 'auto_fix_high'}
                                     className={`text-xs ${isRescuing && !isAutoRescuing ? 'animate-spin' : ''}`}
                                   />
-                                  {isRescuing && !isAutoRescuing ? t('找补中...') : t('再找补一次')}
+                                  {isRescuing && !isAutoRescuing ? t('找补中...') : t('高级 AI 深度找补')}
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -480,7 +585,7 @@ export function DoneView({
                         onDeleteNode={onDeleteNode}
                         onRenameNode={onRenameNode}
                         onAddSubdir={onAddSubdir}
-                        onMoveNodeOrFile={onMoveNodeOrFile}
+                        onMoveNodeOrFile={handleMoveNodeOrFile}
                         highFrequencyTags={highFrequencyTags}
                         currentVDirId={currentVDir?.id}
                       />

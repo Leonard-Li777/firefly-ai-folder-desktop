@@ -970,3 +970,22 @@ export function parseStrategyToNodes(strategy: string): VirtualDirectoryNode[] {
   }
   return rootNodes
 }
+
+/** 递归提取虚拟目录树中所有有效分类目录的相对路径集合（忽略未归类节点） */
+export function extractCandidatePathsFromTree(
+  nodes: VirtualDirectoryNode[],
+  parentPath = ''
+): string[] {
+  const paths: string[] = []
+  if (!Array.isArray(nodes)) return paths
+  for (const node of nodes) {
+    if (isUnclassifiedNodeName(node.name)) continue
+    const currentPath = parentPath ? `${parentPath}/${node.name}` : node.name
+    paths.push(currentPath)
+    if (Array.isArray(node.subdirectories) && node.subdirectories.length > 0) {
+      paths.push(...extractCandidatePathsFromTree(node.subdirectories, currentPath))
+    }
+  }
+  return Array.from(new Set(paths))
+}
+

@@ -111,6 +111,7 @@ async function moveTreeToDirectory(tree: any[], targetDir: string): Promise<Phys
   let exportedCount = 0
   let failedCount = 0
   const failedFiles: string[] = []
+  const movedSourcePaths = new Set<string>()
 
   const walk = async (nodes: any[], currentPath: string) => {
     for (const node of nodes) {
@@ -123,9 +124,24 @@ async function moveTreeToDirectory(tree: any[], targetDir: string): Promise<Phys
       }
       for (const f of node.files || []) {
         const sourcePath = f.originalPath || f.path
-        if (!sourcePath || !(await fs.pathExists(sourcePath))) {
+        if (!sourcePath) {
           failedCount++
-          failedFiles.push(sourcePath || 'Unknown')
+          failedFiles.push('Unknown')
+          continue
+        }
+
+        // 物理整理落盘多归属保护：同一物理文件仅对 Top-1 路径执行物理移动，跳过后续多归属路径移动
+        if (movedSourcePaths.has(sourcePath)) {
+          logger.info(LogCategory.FILE_ORGANIZATION, '[moveTreeToDirectory] 多归属文件已在首选路径移动，跳过重复物理移动', {
+            sourcePath,
+            targetDir: dirPath
+          })
+          continue
+        }
+
+        if (!(await fs.pathExists(sourcePath))) {
+          failedCount++
+          failedFiles.push(sourcePath)
           continue
         }
         const swap =

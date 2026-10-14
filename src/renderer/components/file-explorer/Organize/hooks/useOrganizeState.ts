@@ -36,8 +36,10 @@ import {
   getFileUniqueKey,
   countRealFiles,
   getAllFileKeys,
-  isUnclassifiedNodeName
+  isUnclassifiedNodeName,
+  extractCandidatePathsFromTree
 } from '../utils/helpers'
+import { reshapeDirectoryTree } from '../utils/reshape-directory-tree'
 
 import { exportTreeToFiles } from '../utils/exportTreeToFiles'
 import { getUniqueVirtualDirectoryName } from '../../VirtualDirectory/utils/vdir-naming-utils'
@@ -1453,6 +1455,68 @@ export function useOrganizeState() {
         filesToOrganize = toOrganizeFiles
       }
 
+      // ─── 模式分支：身份蓝图（基于端侧离线向量余弦打分与内存重塑） ────────────
+      if (organizeMode === 'identity-blueprint') {
+        setProgressInfo({ current: 1, total: 2, message: t('正在计算路径余弦打分...') })
+
+        const candidatePaths = extractCandidatePathsFromTree(draftTree)
+        const fileIds = filesToOrganize.map((f: any) => f.id || f.fileId).filter(Boolean)
+        const filesMap: Record<number | string, any> = {}
+        for (const f of filesToOrganize) {
+          const fid = f.id != null ? f.id : (f as any).fileId
+          if (fid != null) filesMap[fid] = f
+        }
+
+        const cosineRes = await window.electronAPI!.organizeRealDirectory.calculateFilePathsCosine({
+          workspaceId: currentWorkspaceDirectory.id,
+          fileIds,
+          candidatePaths
+        })
+
+        const rawMatches = cosineRes?.matches || {}
+        useOrganizeStore.getState().setRawMatches(rawMatches)
+        useOrganizeStore.getState().setFilesMap(filesMap)
+
+        setProgressInfo({ current: 2, total: 2, message: t('正在生成重塑目录树...') })
+
+        const thresholdScore = useOrganizeStore.getState().thresholdScore || 0.6
+        const maxCandidatesPerFile = useOrganizeStore.getState().maxCandidatesPerFile || 1
+        const userPinnedFileMap = useOrganizeStore.getState().userPinnedFileMap
+
+        const reshaped = reshapeDirectoryTree({
+          baseTreeOutline: draftTree,
+          rawMatches,
+          filesMap,
+          y: thresholdScore,
+          n: maxCandidatesPerFile,
+          userPinnedFileMap
+        })
+
+        setFinalTree(reshaped.tree)
+        setDraftTree(reshaped.tree)
+        setUnmatchedCount(reshaped.unclassifiedCount)
+
+        if (vdirId) {
+          const finalFiles = extractFilesFromTree(reshaped.tree)
+          if (finalFiles.length > 0) {
+            try {
+              await window.electronAPI!.virtualDirectory.replaceFiles(vdirId, finalFiles)
+            } catch (err) {
+              logger.warn(LogCategory.FILE_ORGANIZATION, '整理终局结果落库失败:', err)
+            }
+          }
+          await window.electronAPI!.virtualDirectory.syncIncrementalDirectoryTree(
+            vdirId,
+            reshaped.tree
+          )
+          window.dispatchEvent(new CustomEvent('vdir:updated', { detail: { vdirId } }))
+        }
+
+        unsubProgress()
+        setStage('done')
+        return
+      }
+
       const isForceReorganize = isForceReorganizeRef.current
       isForceReorganizeRef.current = false
 
@@ -1684,7 +1748,7 @@ export function useOrganizeState() {
     // 后端返回的树只带了 smartName，缺少原始 name 字段
     processedTree = enrichTreeFileNames(processedTree, allWorkspaceFiles)
 
-    if (options.deduplicateFiles) {
+    if (options.deduplicateFiles && organizeMode !== 'identity-blueprint') {
       const seenFileIds = new Set<string | number>()
       const deduplicateNodeFiles = (nodes: VirtualDirectoryNode[]): VirtualDirectoryNode[] => {
         return nodes.map(node => {
