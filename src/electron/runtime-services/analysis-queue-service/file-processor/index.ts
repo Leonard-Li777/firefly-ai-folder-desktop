@@ -876,6 +876,8 @@ export class FileProcessor {
         })
 
         let directoryContext: any = null
+        // 目录上下文在并行流水线中的唯一获取位置：此时 CPU 阶段（stage1/stage2）已结束，
+        // 本处位于 AI 阶段（stage3/4）推理之前，符合「CPU 阶段不依赖目录语义」的架构约定。
         try {
           const parentDir = path.dirname(filePath)
           logger.info(
@@ -1393,38 +1395,13 @@ export class FileProcessor {
       const isImage = isCategory(effectiveVirtualPath, FileCategory.IMAGE)
       const isNativeImage = isImage && BROWSER_NATIVE_IMAGE_EXTS.includes(effectiveExt)
 
-      // ========== 目录上下文预获取 ==========
-      // 文件分析依赖目录分析数据；在内容提取前，先检查并获取目录上下文：
-      // - simple 模式：仅读取缓存/DB，不触发 AI 分析（避免增加耗时）
-      // - document/full 模式：若无缓存则触发目录 AI 分析，确保维度分析有足够上下文
-      try {
-        const parentDir = path.dirname(filePath)
-        if (analysisMode === 'simple') {
-          // simple 模式：仅读内存缓存，不触发 AI 分析
-          directoryContext = await this.analyzeDirectoryContext(
-            parentDir,
-            false,
-            true /* cacheOnly */
-          )
-        } else {
-          // document/full 模式：允许触发目录 AI 分析
-          directoryContext = await this.analyzeDirectoryContext(parentDir, false)
-        }
-        if (directoryContext) {
-          logger.info(LogCategory.ANALYSIS_QUEUE, `[目录上下文] 预获取目录上下文成功: ${parentDir}`)
-        } else {
-          logger.info(
-            LogCategory.ANALYSIS_QUEUE,
-            `[目录上下文] 目录上下文暂不可用（将跳过目录维度增强）: ${parentDir}`
-          )
-        }
-      } catch (dirCtxError) {
-        logger.warn(
-          LogCategory.ANALYSIS_QUEUE,
-          `[目录上下文] 预获取目录上下文失败（不影响文件分析）: ${filePath}`,
-          dirCtxError
-        )
-      }
+      // ========== 目录上下文不在 CPU 阶段获取（架构约束，勿移回此处） ==========
+      // CPU 阶段（stage1 基础身份 → stage2 内容提取）只做与文件自身相关的纯提取，
+      // 不依赖任何目录级语义，因此目录上下文一律推迟到 CPU 阶段结束之后、AI 阶段之前获取：
+      //   - 并行流水线：由本函数 phase === 'gpu' 分支在进入 AI 推理前统一获取
+      //   - 串行流水线：由本函数 AI 分析入口之前统一获取
+      // 历史实现曾在此处（stage1 与 stage2 之间）触发目录 AI 分析，使 CPU 阶段出现 AI 调用，
+      // 日志上表现为「阶段1完成后直接出现 AI 推理」，被误读为跳过 stage2；故移除。
 
       // ========== 第二阶段：内容提取与文本转换 ==========
       this.updateItemStatus(item.id, 'analyzing', 10, undefined, { analysisStage: 2 })
@@ -1475,9 +1452,10 @@ export class FileProcessor {
       let generatedThumbnailOutPath: string | undefined = undefined
 
       // 1. 缩略图与目录上下文并行决策
+      // 注意：此处 directoryContext 恒为 null —— 目录上下文已按架构约束推迟到 CPU 阶段
+      // （stage1/stage2）结束之后获取，不在内容提取（stage2）内触发，故此处仅作槽位占位。
       const [, dirContext, thumbPath] = await Promise.all([
         Promise.resolve(null),
-        // 目录上下文（已在提取前统一预获取，此处直接复用 directoryContext，无需重复分析）
         Promise.resolve(directoryContext),
 
         // 缩略图决策：对于图片格式生成本地缩略图，文档类若已有 thumbnailPath 直接复用
@@ -2133,6 +2111,31 @@ export class FileProcessor {
           analysisStage: cpuCompletionStage
         })
         return
+      }
+
+      // ========== 目录上下文获取（CPU 阶段已结束，AI 阶段尚未开始） ==========
+      // 位置约束（架构约定，勿移入 CPU 阶段）：
+      //   - 必须在 stage2 内容提取完成之后：CPU 阶段不依赖任何目录级语义
+      //   - 必须在 AI 阶段（stage3/4）推理之前：维度分析与智能命名需要目录上下文作为输入
+      // 本处覆盖串行流水线（phase === 'all'）路径；并行流水线由 phase === 'gpu' 分支自行获取。
+      // 执行到此必然是 quick_name / full 模式（simple 模式已在上方 return，不执行 AI 阶段）。
+      try {
+        const parentDir = path.dirname(filePath)
+        directoryContext = await this.analyzeDirectoryContext(parentDir, false)
+        if (directoryContext) {
+          logger.info(LogCategory.ANALYSIS_QUEUE, `[目录上下文] 预获取目录上下文成功: ${parentDir}`)
+        } else {
+          logger.info(
+            LogCategory.ANALYSIS_QUEUE,
+            `[目录上下文] 目录上下文暂不可用（将跳过目录维度增强）: ${parentDir}`
+          )
+        }
+      } catch (dirCtxError) {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          `[目录上下文] 预获取目录上下文失败（不影响文件分析）: ${filePath}`,
+          dirCtxError
+        )
       }
 
       // ========== AI 分析（full 完整模式 / quick_name 快速命名模式） ==========
