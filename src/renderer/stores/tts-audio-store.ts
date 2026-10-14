@@ -102,6 +102,7 @@ let cachedChunksMap = new Map<number, Uint8Array>() // chunkIndex -> Uint8Array
 let currentCleanedChunks: string[] = []
 let progressTimer: ReturnType<typeof setInterval> | null = null
 let isAllChunksScheduled = false
+let isHotSwitchInProgress = false
 let currentPlayOptions: {
   textId?: string
   filePath?: string
@@ -142,10 +143,71 @@ function stopProgressMonitor(): void {
 }
 
 /**
+ * 根据整体已播放时长与分句文本字符权重，推算当前正在发音的分句索引
+ * （用于整文件秒播或整音频秒切接管时，界面分句高亮随着时间自然流转）
+ */
+function calculateSentenceIndexByProgress(
+  elapsedTime: number,
+  totalDuration: number,
+  chunks: string[]
+): number {
+  if (!chunks.length || totalDuration <= 0) return 0
+  if (chunks.length === 1) return 0
+
+  const ratio = Math.max(0, Math.min(1, elapsedTime / totalDuration))
+  let totalChars = 0
+  for (const c of chunks) {
+    totalChars += Math.max(1, c.length)
+  }
+
+  let accumulated = 0
+  for (let i = 0; i < chunks.length; i++) {
+    accumulated += Math.max(1, chunks[i].length)
+    if (ratio <= accumulated / totalChars) {
+      return i
+    }
+  }
+  return chunks.length - 1
+}
+
+/**
+ * 确保播放进度轮询监测器处于活跃运行状态
+ */
+function ensureProgressMonitor(): void {
+  if (progressTimer) return
+  progressTimer = setInterval(() => {
+    if (!audioContext) return
+    const now = audioContext.currentTime
+    const active = scheduledSources.find(s => now >= s.startTime && now < s.endTime)
+    if (active) {
+      let sentenceIdx = active.index
+      if (scheduledSources.length === 1 && currentCleanedChunks.length > 1) {
+        const elapsed = now - active.startTime
+        const total = active.endTime - active.startTime
+        sentenceIdx = calculateSentenceIndexByProgress(elapsed, total, currentCleanedChunks)
+      }
+      if (sentenceIdx !== useTTSAudioStore.getState().currentSentenceIndex) {
+        useTTSAudioStore.setState({ currentSentenceIndex: sentenceIdx })
+      }
+    }
+    // 全部播放完毕检测：必须所有分句均已合成入队，当前无热切进行中，且播放时钟越过末尾！
+    if (
+      isAllChunksScheduled &&
+      !isHotSwitchInProgress &&
+      scheduledSources.length > 0 &&
+      now >= nextStartTime &&
+      useTTSAudioStore.getState().status === 'playing'
+    ) {
+      useTTSAudioStore.getState().stop()
+    }
+  }, 80)
+}
+
+/**
  * 核心特性：播放中平滑热切换（Hot Handover）
  * 保持当前音频在扬声器中连贯朗读的同时，在后台异步预合成新音色/新倍率切入点，完成后无缝自动接管播放
  */
-function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: number }) {
+function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: number; oldSpeed?: number }) {
   const store = useTTSAudioStore.getState()
   const text = store.playingText
   if (!text || !currentCleanedChunks.length) return
@@ -153,10 +215,39 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
   // 1. 给出 Toast 提示词，明确告知正在合成且合成后会自动切换
   toast.info(t('正在合成音频，合成后会自动切换'), 3500, 'tts-switching-voice')
 
-  // 2. 递增热切版本号（先前未完成的热切自动作废）
+  // 2. 递增热切版本号，并激活热切互斥标记，防止旧音轨结束误杀播放状态
   const switchId = ++hotSwitchCounter
+  isHotSwitchInProgress = true
 
-  // 3. 异步后台执行合成、派生与平滑切入
+  // 3. 立即精准捕获切换前在旧音轨中已播放的时长与当前分句（在任何异步 I/O 之前同步获取）
+  let playedDurationInOld = 0
+  let targetSentenceIdx = store.currentSentenceIndex
+  if (audioContext && scheduledSources.length > 0) {
+    const now = audioContext.currentTime
+    const active = scheduledSources.find(s => now >= s.startTime && now < s.endTime)
+    if (active) {
+      targetSentenceIdx = active.index
+      for (const s of scheduledSources) {
+        if (s.index < active.index) {
+          playedDurationInOld += (s.endTime - s.startTime)
+        } else if (s.index === active.index) {
+          playedDurationInOld += Math.max(0, now - s.startTime)
+          break
+        }
+      }
+    } else {
+      for (const s of scheduledSources) {
+        playedDurationInOld += (s.endTime - s.startTime)
+      }
+    }
+  }
+  if (targetSentenceIdx >= currentCleanedChunks.length) {
+    targetSentenceIdx = currentCleanedChunks.length - 1
+  }
+
+  const oldSpeed = changed.oldSpeed !== undefined ? changed.oldSpeed : store.speed
+
+  // 4. 异步后台执行合成、派生与平滑切入
   ;(async () => {
     try {
       const targetVoiceId = useTTSAudioStore.getState().currentVoiceId
@@ -166,20 +257,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       const targetDisplayName = matchedVoice?.displayName || String(targetVoiceId)
       const options = currentPlayOptions
 
-      // 获取当前正在发声的句子索引
-      let targetSentenceIdx = useTTSAudioStore.getState().currentSentenceIndex
-      if (audioContext && scheduledSources.length > 0) {
-        const now = audioContext.currentTime
-        const active = scheduledSources.find(s => now >= s.startTime && now < s.endTime)
-        if (active) {
-          targetSentenceIdx = active.index
-        }
-      }
-      if (targetSentenceIdx >= currentCleanedChunks.length) {
-        targetSentenceIdx = currentCleanedChunks.length - 1
-      }
-
-      // 解析新配置对应的目标落盘路径
+      // 解析新配置对应的目标落盘路径（若 1.0x 基准已就绪，getCachePath 将毫秒级派生目标倍率文件）
       let targetCachePath: string | null = null
       let base1xCachePath: string | null = null
       if (window.electronAPI?.tts?.getCachePath) {
@@ -213,6 +291,87 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         }
       }
 
+      // 检查任务版本号：若已被覆盖，安全退出
+      if (switchId !== hotSwitchCounter) {
+        return
+      }
+
+      // 【通道 A：整音频极速无缝接管通道】
+      // 若目标音频已全量落盘（如 WSOLA 毫秒级派生完成或历史完整缓存命中），直接读取并按精确时间偏移无缝接管
+      if (targetCachePath && window.electronAPI?.tts?.readWavMetadata && window.electronAPI?.tts?.readWavFile) {
+        try {
+          const metadata = await window.electronAPI.tts.readWavMetadata(targetCachePath)
+          const isSpeedMatch = metadata?.speed === undefined || Math.abs(metadata.speed - targetSpeed) < 0.01
+          if (metadata && metadata.completed && isSpeedMatch) {
+            const fullWavBuffer = await window.electronAPI.tts.readWavFile(targetCachePath)
+            if (fullWavBuffer && fullWavBuffer.byteLength > 44) {
+              if (switchId !== hotSwitchCounter) return
+
+              const ctx = getOrCreateAudioContext()
+              if (ctx.state === 'suspended') {
+                await ctx.resume()
+              }
+              const audioBuffer = await ctx.decodeAudioData(fullWavBuffer.slice(0))
+              if (switchId !== hotSwitchCounter) return
+
+              // 精确换算新音频播放偏移时间（原时间 * 原倍速 / 新倍速）
+              let newOffset = 0
+              if (oldSpeed > 0 && targetSpeed > 0) {
+                newOffset = (playedDurationInOld * oldSpeed) / targetSpeed
+              }
+              newOffset = Math.max(0, Math.min(Math.max(0, audioBuffer.duration - 0.05), newOffset))
+
+              // 终止旧会话与旧音轨排程
+              const oldSession = activeSessionId
+              const newSessionId = ++sessionCounter
+              activeSessionId = newSessionId
+
+              if (window.electronAPI?.tts?.abortSession) {
+                window.electronAPI.tts.abortSession(oldSession).catch(() => {})
+              }
+
+              clearScheduledSources()
+
+              // 新音频从当前硬件时钟 + 0.02s 起播，指定偏移量 newOffset
+              const startAt = ctx.currentTime + 0.02
+              const source = ctx.createBufferSource()
+              source.buffer = audioBuffer
+              source.playbackRate.value = 1.0
+              source.connect(ctx.destination)
+              source.start(startAt, newOffset)
+
+              const remainingDuration = audioBuffer.duration - newOffset
+              const endAt = startAt + remainingDuration
+              scheduledSources.push({
+                source,
+                startTime: startAt,
+                endTime: endAt,
+                index: targetSentenceIdx
+              })
+              nextStartTime = endAt
+              isAllChunksScheduled = true
+
+              // 更新 Store 状态
+              useTTSAudioStore.setState({
+                status: 'playing',
+                currentSentenceIndex: targetSentenceIdx,
+                currentCachePath: targetCachePath,
+                speed: targetSpeed,
+                currentVoiceId: targetVoiceId,
+                currentSid: targetSid
+              })
+
+              ensureProgressMonitor()
+              toast.success(t('已自动切换播放'), 2000, 'tts-switching-voice')
+              return
+            }
+          }
+        } catch (fastSwitchErr) {
+          console.warn('[TTS HotSwitch] 全量整音频极速接管失败，平滑回退分句流式通道:', fastSwitchErr)
+        }
+      }
+
+      // 【通道 B：分句流式合成与预热通道】
       // 准备切入句子的音频
       const chunkText = currentCleanedChunks[targetSentenceIdx]
       let baseBuffer: ArrayBuffer | null = null
@@ -234,8 +393,8 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         )
       }
 
-      // 检查任务版本号与播放器状态：若已被覆盖或已停止，直接丢弃
-      if (switchId !== hotSwitchCounter || useTTSAudioStore.getState().status === 'idle') {
+      // 检查任务版本号：若已被覆盖，直接丢弃
+      if (switchId !== hotSwitchCounter) {
         return
       }
 
@@ -254,7 +413,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         }
       }
 
-      if (switchId !== hotSwitchCounter || useTTSAudioStore.getState().status === 'idle') {
+      if (switchId !== hotSwitchCounter) {
         return
       }
 
@@ -265,7 +424,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       }
       const audioBuffer = await ctx.decodeAudioData(playbackBuffer.slice(0))
 
-      if (switchId !== hotSwitchCounter || useTTSAudioStore.getState().status === 'idle') {
+      if (switchId !== hotSwitchCounter) {
         return
       }
 
@@ -302,8 +461,13 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       useTTSAudioStore.setState({
         status: 'playing',
         currentSentenceIndex: targetSentenceIdx,
-        currentCachePath: targetCachePath
+        currentCachePath: targetCachePath,
+        speed: targetSpeed,
+        currentVoiceId: targetVoiceId,
+        currentSid: targetSid
       })
+
+      ensureProgressMonitor()
 
       // 弹出已自动切换提示
       toast.success(t('已自动切换播放'), 2000, 'tts-switching-voice')
@@ -417,6 +581,10 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
     } catch (err) {
       console.error('[TTS HotSwitch] 热切调度失败:', err)
       toast.error(t('切换音色失败，语音合成服务不可用'), 3500, 'tts-switching-voice')
+    } finally {
+      if (switchId === hotSwitchCounter) {
+        isHotSwitchInProgress = false
+      }
     }
   })()
 }
@@ -497,13 +665,14 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     const state = get()
     if (Math.abs(state.speed - speed) < 0.01) return
 
+    const oldSpeed = state.speed
     set({ speed })
     useSettingsStore.getState().updateConfigValue('TTS_SPEED', speed).catch(() => {})
     useConfigStore.getState().updateConfigValue('TTS_SPEED', speed).catch(() => {})
 
     // 若当前正在播放，平滑热切新倍速（不断音，通过纯 Rust WSOLA 极速派生并在合成后自动切换）
     if (state.status === 'playing' || state.status === 'loading') {
-      triggerHotSwitch({ speed })
+      triggerHotSwitch({ speed, oldSpeed })
     }
   },
 
@@ -521,26 +690,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       set({ status: 'playing' })
 
       // 重启进度监控
-      progressTimer = setInterval(() => {
-        if (!audioContext) return
-        const now = audioContext.currentTime
-        const active = scheduledSources.find(s => now >= s.startTime && now < s.endTime)
-        if (active && active.index !== get().currentSentenceIndex) {
-          set({ currentSentenceIndex: active.index })
-        }
-        if (
-          isAllChunksScheduled &&
-          scheduledSources.length > 0 &&
-          now >= nextStartTime &&
-          get().status === 'playing'
-        ) {
-          get().stop()
-        }
-      }, 100)
+      ensureProgressMonitor()
     }
   },
 
   stop: async () => {
+    isHotSwitchInProgress = false
     stopProgressMonitor()
     clearScheduledSources()
     isAllChunksScheduled = false
@@ -586,15 +741,16 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
       }
     } else if (state.status === 'playing' || state.status === 'loading') {
       // 若当前正在播放同段文本但改变了音色或倍速，直接走平滑热切
+      const oldSpeed = state.speed
       if (options?.voiceId !== undefined) {
-        const matched = getVoiceById(options.voiceId)
+        const matched = getVoiceById(options.voiceId, get().allVoices)
         set({ currentVoiceId: options.voiceId, currentSid: matched?.sid ?? 63 })
       }
       if (options?.speed !== undefined) {
         set({ speed: options.speed })
       }
       currentPlayOptions = options
-      triggerHotSwitch({ voiceId: options?.voiceId, sid: options?.sid, speed: options?.speed })
+      triggerHotSwitch({ voiceId: options?.voiceId, sid: options?.sid, speed: options?.speed, oldSpeed })
       return
     }
 
@@ -708,23 +864,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     nextStartTime = ctx.currentTime
 
     // 启动进度轮询监测
-    progressTimer = setInterval(() => {
-      if (!audioContext) return
-      const now = audioContext.currentTime
-      const active = scheduledSources.find(s => now >= s.startTime && now < s.endTime)
-      if (active && active.index !== get().currentSentenceIndex) {
-        set({ currentSentenceIndex: active.index })
-      }
-      // 全部播放完毕检测：必须所有分句均已合成入队，且播放时钟越过末尾，才允许自动结束！
-      if (
-        isAllChunksScheduled &&
-        scheduledSources.length > 0 &&
-        now >= nextStartTime &&
-        get().status === 'playing'
-      ) {
-        get().stop()
-      }
-    }, 80)
+    ensureProgressMonitor()
 
     // 4. 检查本地磁盘缓存：若已全部完成，直接读取完整本地 WAV 秒播
     if (targetCachePath && window.electronAPI?.tts?.readWavMetadata) {
