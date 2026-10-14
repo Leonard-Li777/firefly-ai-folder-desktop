@@ -143,31 +143,138 @@ function stopProgressMonitor(): void {
 }
 
 /**
- * 根据整体已播放时长与分句文本字符权重，推算当前正在发音的分句索引
- * （用于整文件秒播或整音频秒切接管时，界面分句高亮随着时间自然流转）
+ * 声学进度信息结构
  */
-function calculateSentenceIndexByProgress(
-  elapsedTime: number,
-  totalDuration: number,
-  chunks: string[]
-): number {
-  if (!chunks.length || totalDuration <= 0) return 0
-  if (chunks.length === 1) return 0
+interface AudioProgressInfo {
+  /** 当前正在播放的分句索引（0-indexed） */
+  sentenceIndex: number
+  /** 当前分句已播放时长（秒） */
+  elapsedInSentence: number
+  /** 当前分句总时长（秒） */
+  sentenceDuration: number
+  /** 当前分句剩余时长（秒） */
+  remainingInSentence: number
+  /** 全文已播放总时长（秒，在旧语速下） */
+  elapsedTotalTime: number
+  /** 全文总时长（秒，在旧语速下） */
+  totalDuration: number
+}
 
-  const ratio = Math.max(0, Math.min(1, elapsedTime / totalDuration))
-  let totalChars = 0
-  for (const c of chunks) {
-    totalChars += Math.max(1, c.length)
-  }
+/**
+ * 实时获取当前播放器的完整声学进度信息
+ * 严格适配【整文件秒播模式】与【分句流式排程模式】，消除整文件下 active.index === 0 导致的进度归零陷阱
+ */
+function getCurrentAudioProgress(): AudioProgressInfo {
+  const store = useTTSAudioStore.getState()
+  const maxIdx = Math.max(0, currentCleanedChunks.length - 1)
+  const fallbackIndex = Math.max(0, Math.min(store.currentSentenceIndex, maxIdx))
 
-  let accumulated = 0
-  for (let i = 0; i < chunks.length; i++) {
-    accumulated += Math.max(1, chunks[i].length)
-    if (ratio <= accumulated / totalChars) {
-      return i
+  if (!audioContext || scheduledSources.length === 0) {
+    return {
+      sentenceIndex: fallbackIndex,
+      elapsedInSentence: 0,
+      sentenceDuration: 0,
+      remainingInSentence: 0,
+      elapsedTotalTime: 0,
+      totalDuration: 0
     }
   }
-  return chunks.length - 1
+
+  const now = audioContext.currentTime
+
+  // 模式 1：整文件秒播模式（scheduledSources 仅 1 个整音频节点）
+  if (scheduledSources.length === 1 && currentCleanedChunks.length > 1) {
+    const single = scheduledSources[0]
+    const totalDuration = Math.max(0.01, single.endTime - single.startTime)
+    const elapsedTotalTime = Math.max(0, Math.min(totalDuration, now - single.startTime))
+
+    let totalChars = 0
+    for (const c of currentCleanedChunks) {
+      totalChars += Math.max(1, c.length)
+    }
+
+    const ratio = elapsedTotalTime / totalDuration
+    let sentenceIndex = 0
+    let accumulatedChars = 0
+    let sentenceStartTime = 0
+    let sentenceEndTime = totalDuration
+
+    for (let i = 0; i < currentCleanedChunks.length; i++) {
+      const chunkLen = Math.max(1, currentCleanedChunks[i].length)
+      const prevRatio = accumulatedChars / totalChars
+      accumulatedChars += chunkLen
+      const nextRatio = accumulatedChars / totalChars
+
+      if (ratio <= nextRatio || i === currentCleanedChunks.length - 1) {
+        sentenceIndex = i
+        sentenceStartTime = prevRatio * totalDuration
+        sentenceEndTime = nextRatio * totalDuration
+        break
+      }
+    }
+
+    const sentenceDuration = Math.max(0.01, sentenceEndTime - sentenceStartTime)
+    const elapsedInSentence = Math.max(0, Math.min(sentenceDuration, elapsedTotalTime - sentenceStartTime))
+    const remainingInSentence = Math.max(0, sentenceDuration - elapsedInSentence)
+
+    return {
+      sentenceIndex,
+      elapsedInSentence,
+      sentenceDuration,
+      remainingInSentence,
+      elapsedTotalTime,
+      totalDuration
+    }
+  }
+
+  // 模式 2：分句流式排程模式（包含 1 个或多个分句节点）
+  const active = scheduledSources.find(s => now >= s.startTime && now < s.endTime)
+  if (active) {
+    let elapsedTotalTime = 0
+    for (const s of scheduledSources) {
+      if (s.index < active.index) {
+        elapsedTotalTime += (s.endTime - s.startTime)
+      } else if (s.index === active.index) {
+        elapsedTotalTime += Math.max(0, now - s.startTime)
+        break
+      }
+    }
+
+    let totalDuration = 0
+    for (const s of scheduledSources) {
+      totalDuration += (s.endTime - s.startTime)
+    }
+
+    const sentenceDuration = Math.max(0.01, active.endTime - active.startTime)
+    const elapsedInSentence = Math.max(0, Math.min(sentenceDuration, now - active.startTime))
+    const remainingInSentence = Math.max(0, active.endTime - now)
+
+    return {
+      sentenceIndex: active.index,
+      elapsedInSentence,
+      sentenceDuration,
+      remainingInSentence,
+      elapsedTotalTime,
+      totalDuration
+    }
+  }
+
+  // 容错：当前时钟超出所有排程末尾
+  let totalDuration = 0
+  for (const s of scheduledSources) {
+    totalDuration += (s.endTime - s.startTime)
+  }
+  const lastSource = scheduledSources[scheduledSources.length - 1]
+  const lastIndex = lastSource ? lastSource.index : fallbackIndex
+
+  return {
+    sentenceIndex: lastIndex,
+    elapsedInSentence: lastSource ? (lastSource.endTime - lastSource.startTime) : 0,
+    sentenceDuration: lastSource ? (lastSource.endTime - lastSource.startTime) : 0,
+    remainingInSentence: 0,
+    elapsedTotalTime: totalDuration,
+    totalDuration
+  }
 }
 
 /**
@@ -177,25 +284,16 @@ function ensureProgressMonitor(): void {
   if (progressTimer) return
   progressTimer = setInterval(() => {
     if (!audioContext) return
-    const now = audioContext.currentTime
-    const active = scheduledSources.find(s => now >= s.startTime && now < s.endTime)
-    if (active) {
-      let sentenceIdx = active.index
-      if (scheduledSources.length === 1 && currentCleanedChunks.length > 1) {
-        const elapsed = now - active.startTime
-        const total = active.endTime - active.startTime
-        sentenceIdx = calculateSentenceIndexByProgress(elapsed, total, currentCleanedChunks)
-      }
-      if (sentenceIdx !== useTTSAudioStore.getState().currentSentenceIndex) {
-        useTTSAudioStore.setState({ currentSentenceIndex: sentenceIdx })
-      }
+    const prog = getCurrentAudioProgress()
+    if (prog.sentenceIndex !== useTTSAudioStore.getState().currentSentenceIndex) {
+      useTTSAudioStore.setState({ currentSentenceIndex: prog.sentenceIndex })
     }
     // 全部播放完毕检测：必须所有分句均已合成入队，当前无热切进行中，且播放时钟越过末尾！
     if (
       isAllChunksScheduled &&
       !isHotSwitchInProgress &&
       scheduledSources.length > 0 &&
-      now >= nextStartTime &&
+      audioContext.currentTime >= nextStartTime &&
       useTTSAudioStore.getState().status === 'playing'
     ) {
       useTTSAudioStore.getState().stop()
@@ -219,33 +317,10 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
   const switchId = ++hotSwitchCounter
   isHotSwitchInProgress = true
 
-  // 3. 立即精准捕获切换前在旧音轨中已播放的时长与当前分句（在任何异步 I/O 之前同步获取）
-  let playedDurationInOld = 0
-  let targetSentenceIdx = store.currentSentenceIndex
-  if (audioContext && scheduledSources.length > 0) {
-    const now = audioContext.currentTime
-    const active = scheduledSources.find(s => now >= s.startTime && now < s.endTime)
-    if (active) {
-      targetSentenceIdx = active.index
-      for (const s of scheduledSources) {
-        if (s.index < active.index) {
-          playedDurationInOld += (s.endTime - s.startTime)
-        } else if (s.index === active.index) {
-          playedDurationInOld += Math.max(0, now - s.startTime)
-          break
-        }
-      }
-    } else {
-      for (const s of scheduledSources) {
-        playedDurationInOld += (s.endTime - s.startTime)
-      }
-    }
-  }
-  if (targetSentenceIdx >= currentCleanedChunks.length) {
-    targetSentenceIdx = currentCleanedChunks.length - 1
-  }
-
+  // 3. 立即精准捕获切换前在旧音轨中的声学进度（分句索引与全文已播时长）
+  const initialProgress = getCurrentAudioProgress()
   const oldSpeed = changed.oldSpeed !== undefined ? changed.oldSpeed : store.speed
+  const isVoiceChanged = changed.voiceId !== undefined
 
   // 4. 异步后台执行合成、派生与平滑切入
   ;(async () => {
@@ -314,10 +389,11 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
               const audioBuffer = await ctx.decodeAudioData(fullWavBuffer.slice(0))
               if (switchId !== hotSwitchCounter) return
 
-              // 精确换算新音频播放偏移时间（原时间 * 原倍速 / 新倍速）
+              // 在切断旧音轨的前一刻，再次获取最新已播放时长与分句索引，消除异步 I/O 期间的微小时钟漂移
+              const currentProgress = getCurrentAudioProgress()
               let newOffset = 0
               if (oldSpeed > 0 && targetSpeed > 0) {
-                newOffset = (playedDurationInOld * oldSpeed) / targetSpeed
+                newOffset = (currentProgress.elapsedTotalTime * oldSpeed) / targetSpeed
               }
               newOffset = Math.max(0, Math.min(Math.max(0, audioBuffer.duration - 0.05), newOffset))
 
@@ -346,7 +422,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
                 source,
                 startTime: startAt,
                 endTime: endAt,
-                index: targetSentenceIdx
+                index: currentProgress.sentenceIndex
               })
               nextStartTime = endAt
               isAllChunksScheduled = true
@@ -354,7 +430,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
               // 更新 Store 状态
               useTTSAudioStore.setState({
                 status: 'playing',
-                currentSentenceIndex: targetSentenceIdx,
+                currentSentenceIndex: currentProgress.sentenceIndex,
                 currentCachePath: targetCachePath,
                 speed: targetSpeed,
                 currentVoiceId: targetVoiceId,
@@ -371,14 +447,25 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         }
       }
 
-      // 【通道 B：分句流式合成与预热通道】
-      // 准备切入句子的音频
+      // 【通道 B：分句流式合成与平滑接力通道】
+      // 1. 确定切入分句的目标索引：
+      //    - 若当前句剩余时长较短（< 1.0 秒），且存在下一句，则让旧音轨自然读完当前句，直接预合成下一句作为切入点，实现句尾气口自然接力；
+      //    - 否则以当前句作为切入点。
+      let targetSentenceIdx = initialProgress.sentenceIndex
+      const shouldHandoverAtNext =
+        initialProgress.remainingInSentence < 1.0 &&
+        initialProgress.sentenceIndex + 1 < currentCleanedChunks.length
+
+      if (shouldHandoverAtNext) {
+        targetSentenceIdx = initialProgress.sentenceIndex + 1
+      }
+
       const chunkText = currentCleanedChunks[targetSentenceIdx]
       let baseBuffer: ArrayBuffer | null = null
 
       // 若发音人未变（仅变语速），且内存中已有当前句 1.0x 母本，直接毫秒级复用
       const cachedChunk = cachedChunksMap.get(targetSentenceIdx)
-      if (changed.voiceId === undefined && cachedChunk) {
+      if (!isVoiceChanged && cachedChunk) {
         baseBuffer = cachedChunk.buffer.slice(
           cachedChunk.byteOffset,
           cachedChunk.byteOffset + cachedChunk.byteLength
@@ -428,7 +515,16 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         return
       }
 
-      // 【执行切入】：停止旧音轨，新音频立刻无缝接管播放
+      // 在准备接管前，再次获取当前最新播放进度
+      const latestProgress = getCurrentAudioProgress()
+
+      // 若在后台异步合成期间，旧音轨已经自然播放到了切入句之后，则顺延 targetSentenceIdx 防止时空倒流
+      let actualStartSentenceIdx = targetSentenceIdx
+      if (latestProgress.sentenceIndex > targetSentenceIdx) {
+        actualStartSentenceIdx = latestProgress.sentenceIndex
+      }
+
+      // 【执行切入】：停止旧会话
       const oldSession = activeSessionId
       const newSessionId = ++sessionCounter
       activeSessionId = newSessionId
@@ -440,7 +536,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       // 停止所有旧排程节点
       clearScheduledSources()
 
-      // 新音频从当前时钟 + 0.02s 立即起播
+      // 新音频从当前时钟 + 0.02s 立即起播切入句
       const startAt = ctx.currentTime + 0.02
       const source = ctx.createBufferSource()
       source.buffer = audioBuffer
@@ -453,14 +549,14 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
         source,
         startTime: startAt,
         endTime: endAt,
-        index: targetSentenceIdx
+        index: actualStartSentenceIdx
       })
       nextStartTime = endAt
 
       // 更新 Store 状态
       useTTSAudioStore.setState({
         status: 'playing',
-        currentSentenceIndex: targetSentenceIdx,
+        currentSentenceIndex: actualStartSentenceIdx,
         currentCachePath: targetCachePath,
         speed: targetSpeed,
         currentVoiceId: targetVoiceId,
@@ -473,10 +569,10 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       toast.success(t('已自动切换播放'), 2000, 'tts-switching-voice')
 
       // 若发音人发生变更，清空旧音色缓存池
-      if (changed.voiceId !== undefined) {
+      if (isVoiceChanged) {
         cachedChunksMap.clear()
       }
-      cachedChunksMap.set(targetSentenceIdx, new Uint8Array(baseBuffer))
+      cachedChunksMap.set(actualStartSentenceIdx, new Uint8Array(baseBuffer))
 
       // 异步流式追加写入母本 WAV 磁盘缓存
       if (base1xCachePath && window.electronAPI?.tts?.appendWavChunk) {
