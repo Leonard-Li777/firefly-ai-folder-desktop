@@ -656,6 +656,9 @@ export class OmniService {
       if (await this.checkHealth()) {
         return true
       }
+      if (this.isStarting && this.startPromise) {
+        return this.startPromise
+      }
     }
 
     if (this.startPromise) {
@@ -680,6 +683,28 @@ export class OmniService {
     }
 
     try {
+      // 探活检查：优先检查基准端口 38200 上是否已有外部或前序 Omni 服务正常响应，若有直接复用
+      this.actualPort = this.basePort
+      this.baseUrl = `http://127.0.0.1:${this.basePort}`
+      process.env.OMNI_ACTUAL_PORT = String(this.basePort)
+
+      const isAliveBase = await this.checkHealth()
+      if (isAliveBase) {
+        logger.info(LogCategory.SYSTEM, `[OmniService] 检测到已在 ${this.basePort} 运行的 Omni 服务 (${this.baseUrl})，直接连接复用，并同步最新配置`)
+        this.restartAttempts = 0
+        this.isStarting = false
+        this.syncConfigFromDesktop().catch(() => {})
+        this.notifyReady()
+        this.pushStatus().catch(() => {})
+        return true
+      }
+
+      // 若基准端口未通且存在旧的未退出子进程，先执行安全清理
+      if (this.process && !this.process.killed) {
+        this.stop()
+        await new Promise(r => setTimeout(r, 300))
+      }
+
       // 寻找可用端口（支持冷门段 38200~38219 自动滑动）
       const port = await findAvailablePort(this.basePort, APP_PORTS.MAX_ATTEMPTS)
       this.actualPort = port
@@ -819,7 +844,9 @@ export class OmniService {
           const { processReaper } = require('../../main/process-reaper')
           processReaper.unregisterChild(child.pid)
         } catch {}
-        this.process = null
+        if (this.process === child) {
+          this.process = null
+        }
         // 主动推送"未运行"状态至渲染进程（基础AI引擎 Footer 展示）
         this.pushStatus().catch(() => {})
         // 子进程退出后，先检测是否对应端口上已有服务接管，若健康则直接接入，不触发重启
@@ -836,8 +863,8 @@ export class OmniService {
 
       this.process = child
 
-      // 等待服务就绪探活 (最多 75 次 * 200ms = 15秒，容纳 71.6 万条多语言别名冷启动解密热载时间)
-      for (let i = 0; i < 75; i++) {
+      // 等待服务就绪探活 (最多 200 次 * 200ms = 40秒，容纳 71.6 万条多语言别名冷启动解密热载与 SenseVoice/MOSS-TTS 模型加载时间)
+      for (let i = 0; i < 200; i++) {
         await new Promise(r => setTimeout(r, 200))
         if (await this.checkHealth()) {
           logger.info(LogCategory.SYSTEM, `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`)
@@ -852,6 +879,8 @@ export class OmniService {
         }
       }
 
+      logger.error(LogCategory.SYSTEM, `[OmniService] firefly-omni 启动探活超时 (40s)，终止当前未就绪子进程`)
+      this.stop()
       this.isStarting = false
       // 启动失败（探活超时），推送"未运行"状态
       this.pushStatus().catch(() => {})

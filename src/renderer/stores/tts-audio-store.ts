@@ -231,6 +231,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
 
       if (!baseBuffer || baseBuffer.byteLength === 0) {
         console.warn('[TTS HotSwitch] 切入句合成失败')
+        toast.error(t('切换音色失败，语音合成服务不可用'), 3500, 'tts-switching-voice')
         return
       }
 
@@ -405,6 +406,7 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       isAllChunksScheduled = true
     } catch (err) {
       console.error('[TTS HotSwitch] 热切调度失败:', err)
+      toast.error(t('切换音色失败，语音合成服务不可用'), 3500, 'tts-switching-voice')
     }
   })()
 }
@@ -777,6 +779,16 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
         if (!baseBuffer || baseBuffer.byteLength === 0) {
           console.warn(`[TTS] 第 ${i + 1} 句合成失败或为空，跳过`)
+          if (scheduledSources.length === 0) {
+            // 首句合成失败，说明底层服务不可用或网络异常，立即终止并提示用户
+            set({
+              status: 'error',
+              errorMessage: '语音合成失败，请检查服务连接状态'
+            })
+            stopProgressMonitor()
+            toast.error(t('语音合成失败，请检查服务连接状态'), 4000, 'tts-error')
+            return
+          }
           continue
         }
 
@@ -863,6 +875,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           errorMessage: '语音合成未能生成有效音频'
         })
         stopProgressMonitor()
+        toast.error(t('语音合成未能生成有效音频，请稍后重试'), 4000, 'tts-error')
       }
     } catch (err: unknown) {
       if (activeSessionId === thisSessionId) {
@@ -872,6 +885,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           errorMessage: err instanceof Error ? err.message : '语音合成失败'
         })
         stopProgressMonitor()
+        toast.error(t('语音合成服务异常，请稍后重试'), 4000, 'tts-error')
       }
     }
   },
