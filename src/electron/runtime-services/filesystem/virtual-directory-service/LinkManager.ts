@@ -326,7 +326,7 @@ export class LinkManager {
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name)
         if (entry.isDirectory()) {
-          if (entry.name === THUMBNAIL_FOLDER) continue
+          if (entry.name === THUMBNAIL_FOLDER || entry.name === '.tts') continue
           await this.cleanupDirectoryRecursive(fullPath, analyzedFileNames, analyzedFilePaths)
           try {
             if (fs.readdirSync(fullPath).length === 0) fs.rmdirSync(fullPath)

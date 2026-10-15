@@ -71,6 +71,50 @@ async function saveIgnoreRulesToConfig(rules: IIgnoreRule[]): Promise<void> {
   }
 }
 
+/**
+ * 删除工作目录时彻底删除 .VirtualDirectory 文件夹
+ */
+export async function cleanupVirtualDirectoryOnDelete(directoryPath: string): Promise<void> {
+  const virtualDirPath = path.join(directoryPath, '.VirtualDirectory')
+  if (fs.existsSync(virtualDirPath)) {
+    try {
+      await fs.promises.rm(virtualDirPath, { recursive: true, force: true })
+      logger.info(LogCategory.SETTING, '删除工作目录：已彻底删除 .VirtualDirectory 文件夹:', virtualDirPath)
+    } catch (fsError) {
+      logger.warn(LogCategory.SETTING, '删除工作目录：删除 .VirtualDirectory 失败:', { virtualDirPath, fsError })
+    }
+  }
+}
+
+/**
+ * 清空/重置工作目录数据时清理 .VirtualDirectory 内部临时产物，
+ * 严格保留 .tts 与 .thumbnail 缓存目录，以便后续需要时复用
+ */
+export async function cleanupVirtualDirectoryOnReset(directoryPath: string): Promise<void> {
+  const virtualDirPath = path.join(directoryPath, '.VirtualDirectory')
+  if (!fs.existsSync(virtualDirPath)) return
+
+  try {
+    const entries = await fs.promises.readdir(virtualDirPath, { withFileTypes: true })
+    for (const entry of entries) {
+      // 清空工作目录数据时，必须保留 .tts 以及 .thumbnail 目录，以便后续复用
+      if (entry.name === '.tts' || entry.name === '.thumbnail') continue
+      const fullPath = path.join(virtualDirPath, entry.name)
+      await fs.promises.rm(fullPath, { recursive: true, force: true })
+    }
+    logger.info(
+      LogCategory.SETTING,
+      '重置工作目录数据：.VirtualDirectory 清理完成（已保留 .tts 与 .thumbnail 缓存）:',
+      directoryPath
+    )
+  } catch (fsError) {
+    logger.warn(LogCategory.SETTING, '重置工作目录数据：清理 .VirtualDirectory 失败:', {
+      directoryPath,
+      fsError
+    })
+  }
+}
+
 /** 注册设置相关的 IPC 处理器 */
 export function registerSettingsIPCHandlers(): void {
   // 获取 AI 分析忽略规则
@@ -158,21 +202,8 @@ export function registerSettingsIPCHandlers(): void {
         await fileWatcherService.stopWatching(workspaceId)
       }
 
-      // 步骤 1: 清理关联的 .VirtualDirectory 文件夹（显式保护并保留 .tts 音频资产目录）
-      const virtualDirPath = path.join(directoryPath, '.VirtualDirectory')
-      if (fs.existsSync(virtualDirPath)) {
-        try {
-          const entries = await fs.promises.readdir(virtualDirPath, { withFileTypes: true })
-          for (const entry of entries) {
-            if (entry.name === '.tts') continue // 保护 TTS 语音资产目录
-            const fullPath = path.join(virtualDirPath, entry.name)
-            await fs.promises.rm(fullPath, { recursive: true, force: true })
-          }
-          logger.info(LogCategory.SETTING, '.VirtualDirectory 清理成功（已保护 .tts 缓存）')
-        } catch (fsError) {
-          logger.error(LogCategory.SETTING, '清理 .VirtualDirectory 失败:', fsError)
-        }
-      }
+      // 步骤 1: 彻底物理删除工作目录下的 .VirtualDirectory 文件夹
+      await cleanupVirtualDirectoryOnDelete(directoryPath)
 
       // 步骤 2: 从数据库删除记录
       await databaseService.deleteWorkspaceDirectory(directoryPath)
@@ -225,6 +256,9 @@ export function registerSettingsIPCHandlers(): void {
       if (directoryPath) {
         await databaseService.resetWorkspaceDirectoryAnalysis(directoryPath)
         omniClient.clearTaxonomyTreeCache()
+
+        // 清理工作目录下的 .VirtualDirectory（严格保留 .tts 与 .thumbnail 缓存供后续复用）
+        await cleanupVirtualDirectoryOnReset(directoryPath)
 
         // 通知渲染进程刷新
         BrowserWindow.getAllWindows().forEach(win => {
@@ -303,22 +337,10 @@ export function registerSettingsIPCHandlers(): void {
       await databaseService.resetAllAnalysisData()
       omniClient.clearTaxonomyTreeCache()
 
-      // 清理所有工作目录的 .VirtualDirectory（显式保留 .tts 语音资产）
+      // 清理所有工作目录的 .VirtualDirectory（严格保留 .tts 与 .thumbnail 缓存供后续复用）
       const workspaces = await databaseService.getAllWorkspaceDirectories()
       for (const ws of workspaces) {
-        const vdir = path.join(ws.path, '.VirtualDirectory')
-        if (fs.existsSync(vdir)) {
-          try {
-            const entries = await fs.promises.readdir(vdir, { withFileTypes: true })
-            for (const entry of entries) {
-              if (entry.name === '.tts') continue
-              const fullPath = path.join(vdir, entry.name)
-              await fs.promises.rm(fullPath, { recursive: true, force: true })
-            }
-          } catch (e) {
-            logger.warn(LogCategory.MAIN, '[Settings] 清理工作区 .VirtualDirectory 失败:', vdir, e)
-          }
-        }
+        await cleanupVirtualDirectoryOnReset(ws.path)
       }
 
       return { success: true }

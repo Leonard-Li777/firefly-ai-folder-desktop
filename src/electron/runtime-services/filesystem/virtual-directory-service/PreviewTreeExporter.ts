@@ -85,7 +85,7 @@ export class PreviewTreeExporter {
 
     if (fs.existsSync(virtualDirPath)) {
       for (const item of fs.readdirSync(virtualDirPath)) {
-        if (item.startsWith('ReadMe_') || item === '.thumbnail') continue
+        if (item.startsWith('ReadMe_') || item === '.thumbnail' || item === '.tts') continue
         await fs.remove(path.join(virtualDirPath, item))
       }
     } else {

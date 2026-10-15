@@ -238,6 +238,7 @@ export interface OmniPerceptionResponse {
   morphology_tags?: string[]
   clip_tags?: string[]
   nsfw_tags?: string[]
+  nsfw_text_tags?: string[]
   ram_tags?: string[]
   morphology_high_confidence_tags?: string[]
   clip_high_confidence_tags?: string[]
