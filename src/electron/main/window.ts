@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import { pathToFileURL } from 'url'
 import { ConfigOrchestrator } from '../config/config-orchestrator'
 import { trayService } from '../runtime-services/system/tray-service'
+import { resolveAppRegion } from './worktree-env'
 
 const getSplashHtml = (imagePath: string) => `
 <!DOCTYPE html>
@@ -67,10 +68,8 @@ export const createWindow = () => {
     }
   })
 
-  const bootImageName =
-    typeof __BUILD_REGION__ !== 'undefined' && __BUILD_REGION__ === 'CN'
-      ? 'boot.jpg'
-      : 'boot_en.jpg'
+  const appRegion = resolveAppRegion()
+  const bootImageName = appRegion === 'cn' ? 'boot.jpg' : 'boot_en.jpg'
   const bootImagePath =
     ResourceLocator.resolveAsset(bootImageName) ||
     path.join(ResourceLocator.getBaseResourceDir(), 'assets', bootImageName)
@@ -106,6 +105,7 @@ export const createWindow = () => {
       sandbox: false,
       additionalArguments: [
         `--is-packaged=${app.isPackaged}`,
+        `--app-region=${appRegion}`,
         ...(process.env.IS_INTEGRATION_TEST === 'true' ? ['--integration-test=true'] : [])
       ]
     }
@@ -240,7 +240,7 @@ export const createPreviewWindow = (params: { filePath: string; extension: strin
       nodeIntegration: false,
       webSecurity: false,
       sandbox: false,
-      additionalArguments: [`--is-packaged=${app.isPackaged}`]
+      additionalArguments: [`--is-packaged=${app.isPackaged}`, `--app-region=${resolveAppRegion()}`]
     }
   })
 
@@ -312,7 +312,7 @@ export const createQueueWindow = (): BrowserWindow => {
       nodeIntegration: false,
       webSecurity: false,
       sandbox: false,
-      additionalArguments: [`--is-packaged=${app.isPackaged}`]
+      additionalArguments: [`--is-packaged=${app.isPackaged}`, `--app-region=${resolveAppRegion()}`]
     }
   })
 

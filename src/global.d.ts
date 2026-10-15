@@ -22,6 +22,7 @@ declare global {
     VITE_ENABLE_POSTHOG: string
     __IS_DEV__: boolean
     __IS_PROD__: boolean
+    __APP_REGION__?: 'cn' | 'intl'
     electronAPI: ElectronAPI
     electronLLM: any
     electronAi: any

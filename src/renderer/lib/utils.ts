@@ -8,7 +8,8 @@ export { MaterialIcon } from '../components/common/MaterialIcon'
  */
 export function getLocalPrice(prices: PriceEntry[]): PriceEntry | null {
   if (prices.length === 0) return null
-  const currency = __BUILD_REGION__ === 'CN' ? 'CNY' : 'USD'
+  const region = (window as any)?.__APP_REGION__ || (window as any)?.electronAPI?.getAppRegion?.() || 'intl'
+  const currency = String(region).toLowerCase() === 'cn' ? 'CNY' : 'USD'
   return prices.find(p => p.currency === currency) ?? prices[0]
 }
 

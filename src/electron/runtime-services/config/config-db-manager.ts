@@ -20,6 +20,7 @@ import { omniClient, OmniTagAliasRow } from '../../services/omni-client'
 import { userTierService } from '../user-tier/user-tier-service'
 import { BrowserWindow } from 'electron'
 import type Database from 'better-sqlite3'
+import { resolveAppRegion } from '../../main/worktree-env'
 // ADR-0038 / Issue #682 与主设计 §7/§8（Fix-03）：
 // 原 builtin identity / fileDimension 灌库链路（buildBuiltinTagIdentity / buildBuiltinImportPlan
 // / tag_aliases 单表 / file_tags source='builtin' 行）已随单体 tag_aliases 表一并废弃删除，
@@ -224,7 +225,7 @@ export class ConfigDbManager {
    */
   private loadInitialAppConfigToDb(db: Database.Database): void {
     try {
-      const region = __BUILD_REGION__.toLowerCase()
+      const region = resolveAppRegion()
       const configPath = this.getConfigFilePath(`app-config.${region}.json`)
 
       if (!fs.existsSync(configPath)) {

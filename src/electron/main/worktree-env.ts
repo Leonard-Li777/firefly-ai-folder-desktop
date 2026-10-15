@@ -167,6 +167,41 @@ function getAppMajorVersion(): string {
 }
 
 /**
+/**
+ * 统一解析当前客户端所属的区域（'cn' | 'intl'）
+ * 1. 优先读取主程序安装目录下的 app_env.json (由在线引导安装器写入)
+ * 2. 其次读取系统环境变量 APP_REGION 或 BUILD_REGION
+ * 3. 终极兜底：直接从 GitHub Release 下载母包裸跑或缺少配置时，严格默认国际版 ('intl')
+ */
+export function resolveAppRegion(): 'cn' | 'intl' {
+  // 1. 优先读取主程序安装目录下的 app_env.json (由引导安装器写入)
+  try {
+    const resourcesDir = process.resourcesPath || (app ? app.getAppPath() : '')
+    if (resourcesDir) {
+      const configPath = path.join(resourcesDir, '..', 'app_env.json')
+      if (fs.existsSync(configPath)) {
+        const content = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+        if (content?.region) {
+          const r = String(content.region).trim().toLowerCase()
+          if (r === 'cn') return 'cn'
+          if (r === 'intl' || r === 'global') return 'intl'
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[WorktreeEnv] 读取 app_env.json 失败，进入后续判定:', err)
+  }
+
+  // 2. 检查环境变量 (调试或 CLI 显式指定)
+  const envRegion = (process.env.APP_REGION || process.env.BUILD_REGION || '').trim().toLowerCase()
+  if (envRegion === 'cn') return 'cn'
+  if (envRegion === 'intl' || envRegion === 'global') return 'intl'
+
+  // 3. 终极兜底：未经过安装器注入，默认按国际版运行
+  return 'intl'
+}
+
+/**
  * 初始化并隔离当前 Worktree 实例的 app.name 与 userData 路径
  * 必须在 main/index.ts 顶部尽早调用！
  */
@@ -174,14 +209,8 @@ export function initWorktreeEnvironment(): WorktreeEnvInfo {
   if (cachedInfo) return cachedInfo
 
   let isProd = app.isPackaged || process.env.NODE_ENV === 'production'
-  // region 优先取构建期注入的 __BUILD_REGION__（打包 exe 运行时没有 BUILD_REGION 环境变量，
-  // 若只读 process.env 会错误回退到 'CN'，导致 intl 包把 userData 写进 firefly-ai-folder_v4_cn）
-  const rawRegion = (
-    typeof __BUILD_REGION__ !== 'undefined' && __BUILD_REGION__
-      ? __BUILD_REGION__
-      : process.env.BUILD_REGION || 'CN'
-  ).trim().toLowerCase()
-  const region = rawRegion === 'cn' ? 'cn' : 'intl'
+  // region 统一通过 resolveAppRegion() 动态解析（支持 app_env.json 注入与缺省 intl 兜底）
+  const region = resolveAppRegion()
 
   // 检查深链接中是否指明了环境
   try {

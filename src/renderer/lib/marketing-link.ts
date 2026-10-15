@@ -88,11 +88,14 @@ export function getOfficialSiteDomain(): string {
   if (config?.SITE_DOMAIN) {
     return config.SITE_DOMAIN
   }
-  // 根据构建版本区域判断
-  if (typeof __BUILD_REGION__ !== 'undefined' && __BUILD_REGION__ === 'INTL') {
-    return 'https://www.aifolder.net'
+  // 优先读取动态注入的区域标识，缺省兜底为国际版域名
+  const region = String(
+    (window as any)?.__APP_REGION__ || (window as any)?.electronAPI?.getAppRegion?.() || ''
+  ).toLowerCase()
+  if (region === 'cn') {
+    return 'https://aifolder.iocn.cn'
   }
-  return 'https://aifolder.iocn.cn'
+  return 'https://www.aifolder.net'
 }
 
 /**

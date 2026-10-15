@@ -7,6 +7,7 @@ import * as http from 'http'
 import semver from 'semver'
 import { autoUpdater, UpdateInfo } from 'electron-updater'
 import { logger, LogCategory, isTestEnvironment } from '@firefly/shared'
+import { resolveAppRegion } from '../../main/worktree-env'
 
 export type UpdateTrack = 'r2' | 'github'
 export type UpdateStatus =
@@ -78,8 +79,8 @@ export class AutoUpdateService {
       this.state.currentVersion = '4.0.0'
     }
 
-    const region = (process.env.BUILD_REGION || 'CN').toUpperCase()
-    this.state.currentTrack = region === 'INTL' ? 'github' : 'r2'
+    const region = resolveAppRegion()
+    this.state.currentTrack = region === 'intl' ? 'github' : 'r2'
   }
 
   public static getInstance(): AutoUpdateService {
@@ -146,7 +147,7 @@ export class AutoUpdateService {
    */
   public configureFeedUrl(track: UpdateTrack): void {
     this.state.currentTrack = track
-    const channel = (process.env.BUILD_REGION || 'CN').toUpperCase() === 'INTL' ? 'intl' : 'cn'
+    const channel = resolveAppRegion()
 
     try {
       if (track === 'r2') {
@@ -177,7 +178,7 @@ export class AutoUpdateService {
    * 检查网络连通性探针（2500ms 硬超时）
    */
   public async probeEndpoint(track: UpdateTrack): Promise<boolean> {
-    const channel = (process.env.BUILD_REGION || 'CN').toUpperCase() === 'INTL' ? 'intl' : 'cn'
+    const channel = resolveAppRegion()
     const probeUrl =
       track === 'r2'
         ? `${this.R2_BASE_URL}/${channel}.yml`

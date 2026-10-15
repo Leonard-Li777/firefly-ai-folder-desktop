@@ -27,6 +27,7 @@ import { vi } from 'vitest'
 ;(globalThis as unknown as { vi: typeof vi }).vi = vi
 ;(globalThis as any).__APP_VERSION__ = '2.2.0'
 ;(globalThis as any).__BUILD_REGION__ = 'CN'
+;(globalThis as any).__APP_REGION__ = 'CN'
 ;(globalThis as any).__AI_ENGINE__ = 'llama.cpp'
 ;(globalThis as any).__IS_DEV__ = true
 ;(globalThis as any).__IS_PROD__ = false
