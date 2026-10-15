@@ -200,7 +200,8 @@
     },
     {
       "id": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M",
-      "dspark": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16",
+      "dspark": "DSpark-BF16",
+      "mmproj": "f16",
       "name": "MiniCPM-V 4.7 1B（识图小钢炮•越狱）",
       "company": "dealignai",
       "parameterSize": "1B",
@@ -236,7 +237,8 @@
     },
     {
       "id": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M",
-      "dspark": "dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16",
+      "dspark": "DSpark-BF16",
+      "mmproj": "f16",
       "name": "MiniCPM-V 4.7 1B（识图小钢炮•越狱）",
       "company": "dealignai",
       "parameterSize": "1B",

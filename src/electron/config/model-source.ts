@@ -166,8 +166,8 @@ export const MODEL_CONFIG_SOURCE = () => ({
       // totalSize = 主模型 Q4_K_M (727,459,936 B) + 投影 (899,679,360 B) = 1,627,139,296 B ≈ 1.52GB
       // DSpark 草稿模型 MiniCPM-V-4.7-1B-CRACK-DSpark-BF16.gguf (438,065,792 B ≈ 0.41GB) 与主模型同仓库，需单独下载故未计入 totalSize
       id: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M',
-      dspark: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16',
-      mmproj: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:mmproj-MiniCPM-V-4.7-1B-CRACK-f16.gguf',
+      dspark: 'DSpark-BF16',
+      mmproj: 'f16',
       name: `MiniCPM-V 4.7 1B（${t('识图小钢炮')}•${t('越狱')}）`,
       company: 'dealignai',
       parameterSize: '1B',
@@ -195,8 +195,8 @@ export const MODEL_CONFIG_SOURCE = () => ({
       // 同目录最小投影文件 mmproj-MiniCPM-V-4.7-1B-CRACK-f16-4x.gguf (899,679,360 B)
       // totalSize = 主模型 Q4_K_M (727,459,936 B) + 投影 (899,679,360 B) = 1,627,139,296 B ≈ 1.52GB
       id: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:Q4_K_M',
-      dspark: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:DSpark-BF16',
-      mmproj: 'dealignai/MiniCPM-V-4.7-1B-CRACK-GGUF:mmproj-MiniCPM-V-4.7-1B-CRACK-f16.gguf',
+      dspark: 'DSpark-BF16',
+      mmproj: 'f16',
       name: `MiniCPM-V 4.7 1B（${t('识图小钢炮')}•${t('越狱')}）`,
       company: 'dealignai',
       parameterSize: '1B',
