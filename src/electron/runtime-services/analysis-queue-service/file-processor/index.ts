@@ -768,15 +768,16 @@ export class FileProcessor {
           }
         }
 
-        // 重新分析时清空原有标签：仅当 forceReanalyze 为 true 时才真正清空，
-        // 正常阶段推进（CPU 阶段完成 Stage 2 后进入 GPU 阶段 Stage 3）绝不可清空原有标签
-        if (item.forceReanalyze === true) {
-          try {
-            this.deleteTagRelationsStmt.run(fileFingerprint)
-          } catch {
-            // 容错
-          }
-        }
+        // ⚠️ 严禁在此处（AI / GPU 阶段）清空 file_tag_relations。
+        //
+        // 前科（面板无标签事故）：并行流水线的 CPU 与 GPU 是两次独立 processFile 调用且共享同一
+        // item，forceReanalyze 在 GPU 阶段仍为 true。原先此处按 forceReanalyze 清空，会把 CPU 阶段
+        // 刚落库的新标签全部删除；随后 AI 阶段失败并被 Tier 1 静默降级（不再重新落库），标签永久
+        // 丢失 —— 日志里 43 条标签「入库完成」、file_tags_private 节点也在，但 file_tag_relations
+        // 全表为空，属性面板因无标签而不渲染。
+        //
+        // 正确的清空时机是 CPU 阶段的 Stage 2 落库点之前（见下方「Stage 2 标签即时落库」段落），
+        // 那里「先清旧、再落新」，且同一轮分析内只执行一次。
 
         const existingBasicData = this.getExistingBasicData(
           db,
@@ -961,7 +962,17 @@ export class FileProcessor {
           )
         }
 
-        if (!deps.dimensionAnalyzer) throw new Error('AI 服务未就绪')
+        if (!deps.dimensionAnalyzer) {
+          // 显式上报缺失依赖，避免只留一句无上下文的「AI 服务未就绪」
+          // （典型成因：适配器装配失败导致 dimensionAnalyzer 从未被构造）
+          logger.error(
+            LogCategory.ANALYSIS_QUEUE,
+            `[分析队列] dimensionAnalyzer 缺失，无法进入 AI 阶段: ${item.name}` +
+              `（fileProcessor=${deps.fileProcessor ? 'ok' : 'missing'}）`
+          )
+          throw new Error('AI 服务未就绪')
+        }
+
 
         let processResult: any
         let dimResult: any
@@ -2036,6 +2047,18 @@ export class FileProcessor {
       // GPU 阶段的裁决器会以「补捞已存在关联 + 无损合并」方式叠加 AI 标签，不会覆盖本批事实。
       if ((analysisMode === 'full' || analysisMode === 'quick_name') && preflightContext) {
         try {
+          // 强制重新分析时清空该文件的旧标签关联：一次性动作，必须落在 CPU 阶段「落库之前」。
+          // 绝不可放在 AI（GPU）阶段 —— 并行流水线的 CPU 与 GPU 是两次独立 processFile 调用且
+          // 共享同一 item，forceReanalyze 在 GPU 阶段仍为 true，若在 GPU 阶段清空，会把 CPU 阶段
+          // 刚落库的新标签全部删除；随后 AI 阶段一旦失败并被 Tier 1 静默降级（不再重新落库），
+          // 标签将永久丢失，表现为「日志里标签齐全、属性面板一个标签都不显示」。
+          if (item.forceReanalyze === true) {
+            try {
+              this.deleteTagRelationsStmt.run(fileFingerprint)
+            } catch {
+              // 容错：清空失败不阻断后续落库（INSERT OR REPLACE 会覆盖同主键行）
+            }
+          }
           executeProTagReconciliation({
             db,
             fileFingerprint,

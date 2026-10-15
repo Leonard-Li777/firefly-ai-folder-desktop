@@ -106,9 +106,29 @@ export class AIAdapterFactory implements IAIAdapterFactory {
 
   /**
    * 创建LlamaIndex AI适配器
+   *
+   * 【不可回退为 `new LlamaIndexAIAdapter(this.getAIServiceInstance())`】
+   * 该写法会在 AI 服务单例尚未创建时**立刻抛错**，进而使整个
+   * `createCoreEngineAdapters()` 失败、`AnalysisQueueService` 闭包内
+   * 的 `dimensionAnalyzer` / `fileProcessorService` 永久为空，
+   * 此后每个文件都会以「AI 服务未就绪」失败（须重启应用才能恢复）。
+   * 运行期实证见 app.log 中 `[分析队列] 适配器创建失败` 的调用栈。
+   *
+   * `LlamaIndexAIAdapter` 的构造签名本就允许 null，且其内部
+   * `getService()` 在每次推理时都会重新尝试解析单例 —— 因此这里
+   * 传 null 是最小且正确的语义：适配器结构照常组装，AI 调用可用性
+   * 推迟到真实推理时判定，不再毒化整条适配器创建链路。
    */
   createLlamaAdapter(): LlamaIndexAIAdapter {
-    const llamaAdapter = new LlamaIndexAIAdapter(this.getAIServiceInstance())
+    const instance = LlamaIndexAIService.getInstance()
+    if (!instance) {
+      logger.warn(
+        LogCategory.AI_SERVICE,
+        '[AIAdapterFactory] AI服务单例尚未就绪，先组装适配器，延迟到推理时再解析'
+      )
+    }
+
+    const llamaAdapter = new LlamaIndexAIAdapter(instance ?? undefined)
 
     logger.debug(LogCategory.AI_SERVICE, '[AIAdapterFactory] LlamaIndex AI适配器已创建')
     return llamaAdapter

@@ -165,9 +165,17 @@ export class AnalysisQueueService {
 
   async initialize(): Promise<void> {
     if (this.isInitialized) return
-    if (this.initializePromise) return this.initializePromise
+    if (this.initializePromise) {
+      await this.initializePromise
+      // 上一次尝试若因适配器未就绪而失败，initializePromise 不可继续复用
+      // （否则后续 ensureInitialized() 会被旧 Promise 短路，重试永不可能发生）
+      if (!this.isInitialized) {
+        this.initializePromise = undefined
+      }
+      return this.initializePromise
+    }
 
-    this.initializePromise = (async () => {
+    const initPromise = (async () => {
       logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 开始初始化服务...')
 
       this.errorRecoveryConfig.maxRetries =
@@ -196,6 +204,11 @@ export class AnalysisQueueService {
       if (adapters) {
         this.reinitFromAdapters(adapters)
       }
+      // 适配器创建失败时，dimensionAnalyzer / fileProcessorService 会保持为空，
+      // 导致后续所有文件在 GPU 阶段以「AI 服务未就绪」失败且**永不重试**
+      // （initialize() 被 isInitialized 短路，须重启应用才能恢复）。
+      // 因此失败时不标记已初始化，允许 ensureInitialized() 在后续入口重入重试。
+      const adaptersReady = adapters !== null
 
       const db = databaseService.db
       if (db && adapters) {
@@ -222,11 +235,21 @@ export class AnalysisQueueService {
       await this.queueManager.loadFromDB()
       await this.queueManager.validateQueueConsistency()
 
-      this.isInitialized = true
-      logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 服务初始化完成')
+      // 仅当适配器就绪时才视为完成初始化；否则保留未初始化态，
+      // 让后续 ensureInitialized() 能重新走一遍装配（引擎后续拉起时即可恢复）。
+      this.isInitialized = adaptersReady
+      if (adaptersReady) {
+        logger.info(LogCategory.ANALYSIS_QUEUE, '[分析队列] 服务初始化完成')
+      } else {
+        logger.warn(
+          LogCategory.ANALYSIS_QUEUE,
+          '[分析队列] 适配器未就绪，跳过标记初始化完成（后续入口将重试装配）'
+        )
+      }
     })()
+    this.initializePromise = initPromise
 
-    await this.initializePromise
+    await initPromise
   }
 
   private reinitFromAdapters(adapters: any): void {
