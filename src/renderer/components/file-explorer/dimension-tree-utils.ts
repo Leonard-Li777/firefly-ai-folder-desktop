@@ -386,7 +386,7 @@ export function nestGroupTags(
   group: DimensionGroup,
   tags: DimensionTag[],
   level: number,
-  maxScaleDepth: number = 5
+  maxScaleDepth: number = 6
 ): { directTags: DimensionTag[]; childTagsMap: Map<string, DimensionTreeNode[]> } {
   const childTagsMap = new Map<string, DimensionTreeNode[]>()
   if (!tags || tags.length === 0) {
@@ -585,7 +585,7 @@ export function buildDimensionTree(
   parentId: number | null = null,
   parentTag: string | null = null,
   level = 0,
-  maxScaleDepth: number = 5
+  maxScaleDepth: number = 6
 ): DimensionTreeNode[] {
   // 预构建 parentId → groups 查找表和 hasChildren 集合，消除 O(n²)
   const map = new Map<number | null, DimensionGroup[]>()

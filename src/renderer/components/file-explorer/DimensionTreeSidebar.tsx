@@ -594,7 +594,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
   // 记录是否已完成初次挂载与外部持久化注入 (B-2 修复)
   const isInitializedRef = useRef(false)
 
-  // 标签树层级深度刻度状态 (2~10 刻度，ADR-0034 §4 推荐默认 5 级，最小 2 级)
+  // 标签树层级深度刻度状态 (2~10 刻度，ADR-0034 §4 推荐默认 6 级，最小 2 级)
   const [maxScaleDepth, setMaxScaleDepth] = useState<number>(() => {
     if (storageKey) {
       try {
@@ -605,7 +605,7 @@ export const DimensionTreeSidebar: React.FC<DimensionTreeSidebarProps> = ({
         }
       } catch {}
     }
-    return 5
+    return 6
   })
 
   useEffect(() => {
