@@ -36,7 +36,7 @@ const rawRegion = (process.env.BUILD_REGION || 'CN').trim().toLowerCase()
 const BUILD_REGION = rawRegion === 'cn' ? 'cn' : 'intl'
 const MAJOR_VERSION = 'v' + (String(packageJson.version || '4.0.0').match(/\d+/) ? String(packageJson.version).match(/\d+/)![0] : '4')
 const APP_NAME = `firefly-ai-folder_${MAJOR_VERSION}_${BUILD_REGION}`
-const EXECUTABLE_NAME = APP_NAME
+const EXECUTABLE_NAME = process.platform === 'win32' ? 'firefly-ai-folder' : APP_NAME
 const SHORTCUT_NAME = BUILD_REGION === 'cn' ? '萤核智能文件夹' : 'Firefly AI folder'
 // 存储需要打包的原生模块依赖
 let nativeModuleDependenciesToPackage: string[] = []
@@ -1538,13 +1538,13 @@ const config: ForgeConfig = {
   makers: [
     new MakerNSIS(
       {
-        name: APP_NAME,
-        productName: APP_NAME,
+        name: `firefly-ai-folder_${MAJOR_VERSION}`,
+        productName: 'firefly-ai-folder',
         authors: 'seaeye777',
-        exe: `${EXECUTABLE_NAME}.exe`,
-        executableName: EXECUTABLE_NAME,
+        exe: 'firefly-ai-folder.exe',
+        executableName: 'firefly-ai-folder',
         win: {
-          executableName: EXECUTABLE_NAME
+          executableName: 'firefly-ai-folder'
         },
         oneClick: false,
         allowToChangeInstallationDirectory: true,
@@ -1559,14 +1559,14 @@ const config: ForgeConfig = {
           shortcutName: SHORTCUT_NAME,
           installerIcon: path.join(absAssetsDir, 'icon.ico'),
           uninstallerIcon: path.join(absAssetsDir, 'icon.ico'),
-          artifactName: `${APP_NAME}-${packageJson.version}-setup-${process.arch}.exe`,
+          artifactName: `firefly-ai-folder-${packageJson.version}-setup-full-${process.arch}.exe`,
           differentialPackage: true, // 开启差分包生成 (.blockmap)，安装包已控制在 1GB 安全水位线内
           displayLanguageSelector: false
         },
         getAppBuilderConfig: async () => ({
-          productName: APP_NAME,
+          productName: 'firefly-ai-folder',
           win: {
-            executableName: EXECUTABLE_NAME
+            executableName: 'firefly-ai-folder'
           },
           nsis: {
             oneClick: false,
@@ -1579,7 +1579,7 @@ const config: ForgeConfig = {
             shortcutName: SHORTCUT_NAME,
             installerIcon: path.join(absAssetsDir, 'icon.ico'),
             uninstallerIcon: path.join(absAssetsDir, 'icon.ico'),
-            artifactName: `${APP_NAME}-${packageJson.version}-setup-${process.arch}.exe`,
+            artifactName: `firefly-ai-folder-${packageJson.version}-setup-full-${process.arch}.exe`,
             differentialPackage: true,
             displayLanguageSelector: false
           }

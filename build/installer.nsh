@@ -1,13 +1,22 @@
 ; 卸载时清理数据目录
 !macro customRemoveFiles
-    ; 根据当前安装器的 PRODUCT_NAME 判断区域，只删除对应的数据目录
-    StrCmp "${PRODUCT_NAME}" "firefly-ai-folder-cn" 0 checkIntlUninstall
+    ; 优先根据 .region_cn 哨兵或 PRODUCT_NAME 判断区域清理
+    IfFileExists "$INSTDIR\.region_cn" cleanCNUserData checkLegacyUserData
+    cleanCNUserData:
+        RMDir /r "$APPDATA\firefly-ai-folder_v4_cn"
         RMDir /r "$APPDATA\firefly-ai-folder-cn"
         Goto doneUserData
-    checkIntlUninstall:
-    StrCmp "${PRODUCT_NAME}" "firefly-ai-folder-intl" 0 doneUserData
-        RMDir /r "$APPDATA\firefly-ai-folder-intl"
+    checkLegacyUserData:
+        StrCmp "${PRODUCT_NAME}" "firefly-ai-folder-cn" 0 checkIntlUninstall
+            RMDir /r "$APPDATA\firefly-ai-folder_v4_cn"
+            RMDir /r "$APPDATA\firefly-ai-folder-cn"
+            Goto doneUserData
+        checkIntlUninstall:
+            RMDir /r "$APPDATA\firefly-ai-folder_v4_intl"
+            RMDir /r "$APPDATA\firefly-ai-folder-intl"
     doneUserData:
+    Delete "$INSTDIR\.region_cn"
+    Delete "$INSTDIR\app_env.json"
     ; 清理用户根目录下的 llamafile GPU 驱动
     Delete "$PROFILE\ggml-cuda.dll"
     Delete "$PROFILE\ggml-rocm.dll"
@@ -63,6 +72,7 @@
 
 ; 安装前检测 VC++ Redistributable 并关闭正在运行的应用
 !macro customInit
+    ${nsProcess::KillProcess} "firefly-ai-engine.exe" $R0
     ${nsProcess::KillProcess} "firefly-ai-folder_v4_cn.exe" $R0
     ${nsProcess::KillProcess} "firefly-ai-folder_v4_intl.exe" $R0
     ${nsProcess::KillProcess} "firefly-ai-folder-cn.exe" $R0
@@ -121,16 +131,25 @@
 
 ; 安装后写入语言选择记录
 !macro customInstall
-    ; 根据当前安装器的 PRODUCT_NAME 判断区域，写入对应的数据目录
-    StrCmp "${PRODUCT_NAME}" "firefly-ai-folder-cn" 0 checkIntlInstall
+    ; 优先根据 .region_cn 哨兵或 PRODUCT_NAME 判断区域，写入对应的数据目录
+    IfFileExists "$INSTDIR\.region_cn" writeCNLang checkLegacyLang
+    writeCNLang:
+        CreateDirectory "$APPDATA\firefly-ai-folder_v4_cn"
         CreateDirectory "$APPDATA\firefly-ai-folder-cn"
+        FileOpen $0 "$APPDATA\firefly-ai-folder_v4_cn\installer_language.txt" w
+        FileWrite $0 "$LANGUAGE"
+        FileClose $0
         FileOpen $0 "$APPDATA\firefly-ai-folder-cn\installer_language.txt" w
         FileWrite $0 "$LANGUAGE"
         FileClose $0
         Goto doneLang
-    checkIntlInstall:
-    StrCmp "${PRODUCT_NAME}" "firefly-ai-folder-intl" 0 doneLang
+    checkLegacyLang:
+        StrCmp "${PRODUCT_NAME}" "firefly-ai-folder-cn" writeCNLang 0
+        CreateDirectory "$APPDATA\firefly-ai-folder_v4_intl"
         CreateDirectory "$APPDATA\firefly-ai-folder-intl"
+        FileOpen $0 "$APPDATA\firefly-ai-folder_v4_intl\installer_language.txt" w
+        FileWrite $0 "$LANGUAGE"
+        FileClose $0
         FileOpen $0 "$APPDATA\firefly-ai-folder-intl\installer_language.txt" w
         FileWrite $0 "$LANGUAGE"
         FileClose $0
@@ -138,17 +157,31 @@
 
     SetOutPath "$INSTDIR"
 
-    ; 重新创建正确的快捷方式，确保指向的是当前平台的正确可执行文件，而非默认的 firefly-ai-folder.exe
-    IfFileExists "$INSTDIR\firefly-ai-folder-cn.exe" createCN
-    IfFileExists "$INSTDIR\firefly-ai-folder-intl.exe" createINTL
-    Goto doneCreate
+    ; 判定快捷方式显示名称
+    IfFileExists "$INSTDIR\.region_cn" createCNTitle checkLegacyTitle
+    createCNTitle:
+        StrCpy $R0 "萤核智能文件夹"
+        Goto doCreateShortcut
+    checkLegacyTitle:
+        StrCmp "${PRODUCT_NAME}" "firefly-ai-folder-cn" createCNTitle 0
+        StrCpy $R0 "Firefly AI folder"
 
-    createCN:
+    doCreateShortcut:
+        ; 优先创建指向统一母包 firefly-ai-folder.exe 的快捷方式，若不存在则回退兼容旧版可执行文件名
+        IfFileExists "$INSTDIR\firefly-ai-folder.exe" 0 checkLegacyExe
+        CreateShortCut "$SMPROGRAMS\$R0.lnk" "$INSTDIR\firefly-ai-folder.exe"
+        CreateShortCut "$DESKTOP\$R0.lnk" "$INSTDIR\firefly-ai-folder.exe"
+        Goto doneCreate
+
+    checkLegacyExe:
+        IfFileExists "$INSTDIR\firefly-ai-folder-cn.exe" legacyCN
+        IfFileExists "$INSTDIR\firefly-ai-folder-intl.exe" legacyINTL
+        Goto doneCreate
+    legacyCN:
         CreateShortCut "$SMPROGRAMS\萤核智能文件夹.lnk" "$INSTDIR\firefly-ai-folder-cn.exe"
         CreateShortCut "$DESKTOP\萤核智能文件夹.lnk" "$INSTDIR\firefly-ai-folder-cn.exe"
         Goto doneCreate
-
-    createINTL:
+    legacyINTL:
         CreateShortCut "$SMPROGRAMS\Firefly AI folder.lnk" "$INSTDIR\firefly-ai-folder-intl.exe"
         CreateShortCut "$DESKTOP\Firefly AI folder.lnk" "$INSTDIR\firefly-ai-folder-intl.exe"
         Goto doneCreate

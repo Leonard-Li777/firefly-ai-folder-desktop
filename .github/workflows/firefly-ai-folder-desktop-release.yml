@@ -706,8 +706,67 @@ jobs:
         env:
           BUILD_REGION: ${{ github.event.inputs.build_region || 'CN' }}
         run: |
-          echo "📝 生成包含 blockMapSize 的自动更新渠道清单..."
+          echo "📝 生成包含 blockMapSize 的自动更新渠道清单与在线引导器 INI..."
           node pro/scripts/run.js generate-channel-manifest.js
+
+      - name: Setup Inno Setup & Build Stubs
+        shell: pwsh
+        run: |
+          if (-not (Get-Command iscc -ErrorAction SilentlyContinue)) {
+            choco install innosetup --no-progress -y
+          }
+          if (-not (Test-Path "build/idp.iss")) {
+            Write-Host "📥 正在下载 InnoDownloadPlugin (IDP)..."
+            Invoke-WebRequest -Uri "https://github.com/mitrichsoftware/innodownloadplugin/releases/download/v1.5.1/idp-1.5.1.zip" -OutFile "idp.zip"
+            Expand-Archive "idp.zip" -DestinationPath "build" -Force
+          }
+
+          $version = node -p "require('./package.json').version"
+          $outDir = (Resolve-Path "out/make").Path
+
+          # 寻找编译好的全量母包并计算 SHA-256
+          $motherPkg = Get-ChildItem -Path "$outDir" -Filter "firefly-ai-folder-$version-setup-full-*.exe" | Select-Object -First 1
+          if (-not $motherPkg) {
+            $motherPkg = Get-ChildItem -Path "$outDir" -Recurse -Filter "firefly-ai-folder-*-setup-full-*.exe" | Select-Object -First 1
+          }
+          if (-not $motherPkg) {
+            $motherPkg = Get-ChildItem -Path "$outDir" -Recurse -Filter "*.exe" | Where-Object { $_.Name -notmatch "Setup-" -and $_.Name -match "firefly-ai-folder" } | Select-Object -First 1
+          }
+
+          $motherHash = ""
+          $motherFileName = "firefly-ai-folder-$version-setup-full-x64.exe"
+          if ($motherPkg) {
+            $motherFileName = $motherPkg.Name
+            $motherHash = (Get-FileHash -Path $motherPkg.FullName -Algorithm SHA256).Hash.ToLower()
+            Write-Host "🔒 锁定母包文件名: $motherFileName"
+            Write-Host "🔒 锁定母包 SHA-256: $motherHash"
+          } else {
+            Write-Warning "⚠️ 未能在本地找到母包，引导器将依赖在线清单拉取"
+          }
+
+          # 编译国内版引导器 (带最新版本在线探测 + 构建时回退)
+          iscc `
+            /DAPP_REGION=CN `
+            /DSHORTCUT_NAME="萤核智能文件夹" `
+            /DMANIFEST_URL="https://download.iocn.cn/firefly-ai-folder/latest-cn.ini" `
+            /DFALLBACK_DOWNLOAD_URL="https://download.iocn.cn/firefly-ai-folder/$version/$motherFileName" `
+            /DFALLBACK_SHA256="$motherHash" `
+            /O"$outDir" `
+            /F"Firefly-AI-Folder-Setup-CN" `
+            build/stub-installer.iss
+
+          # 编译海外版引导器 (带最新版本在线探测 + 构建时回退)
+          iscc `
+            /DAPP_REGION=GLOBAL `
+            /DSHORTCUT_NAME="Firefly AI folder" `
+            /DMANIFEST_URL="https://download.iocn.cn/firefly-ai-folder/latest-global.ini" `
+            /DFALLBACK_DOWNLOAD_URL="https://download.iocn.cn/firefly-ai-folder/$version/$motherFileName" `
+            /DFALLBACK_SHA256="$motherHash" `
+            /O"$outDir" `
+            /F"Firefly-AI-Folder-Setup-Global" `
+            build/stub-installer.iss
+
+          Write-Host "✅ 在线引导安装器编译完成！"
 
       - name: Publish to Cloudflare R2
         shell: bash
@@ -742,7 +801,7 @@ jobs:
           FILES=()
           while IFS= read -r -d '' f; do
             FILES+=("$f")
-          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" -o -name "*.yml" -o -name "*.yaml" -o -name "*.blockmap" \) -print0 2>/dev/null)
+          done < <(find out/make -type f \( -name "*.dmg" -o -name "*.pkg" -o -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.AppImage" -o -name "*.zip" -o -name "*.tar.gz" -o -name "RELEASES" -o -name "*.yml" -o -name "*.yaml" -o -name "*.blockmap" -o -name "*.ini" \) -print0 2>/dev/null)
 
           if [ ${#FILES[@]} -gt 0 ]; then
             echo "📤 正在上传 ${#FILES[@]} 个构建产物到 GitHub Release ($TAG)..."
