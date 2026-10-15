@@ -98,8 +98,29 @@ let audioContext: AudioContext | null = null
 let sessionCounter = 0
 let activeSessionId = 0
 let hotSwitchCounter = 0
+/** 单个已排程的音频播放节点 */
+interface ScheduledAudioSource {
+  source: AudioBufferSourceNode
+  startTime: number
+  endTime: number
+  index: number
+  /** 是否为全量母带播放节点（仅整音频秒播时为 true，分句流式排程恒为 false） */
+  isFullAudio?: boolean
+  /** 播放起点在全量母带内部的时间偏移量（秒） */
+  offsetInAudio?: number
+}
+
+/** 单个分句时间戳条目（供整音频 0 误差秒切任意分句） */
+interface TTSChunkCue {
+  index: number
+  startTime: number
+  duration: number
+}
+
+let scheduledSources: ScheduledAudioSource[] = []
 let nextStartTime = 0
-let scheduledSources: Array<{ source: AudioBufferSourceNode; startTime: number; endTime: number; index: number }> = []
+let currentMasterCues: TTSChunkCue[] | null = null
+let currentMasterTotalDuration = 0
 let cachedChunksMap = new Map<number, Uint8Array>() // chunkIndex -> Uint8Array
 let currentCleanedChunks: string[] = []
 let progressTimer: ReturnType<typeof setInterval> | null = null
@@ -140,6 +161,8 @@ function clearScheduledSources(): void {
     }
   }
   scheduledSources = []
+  currentMasterCues = null
+  currentMasterTotalDuration = 0
 }
 
 function stopProgressMonitor(): void {
@@ -189,22 +212,71 @@ function getCurrentAudioProgress(): AudioProgressInfo {
 
   const now = audioContext.currentTime
 
-  // 模式 1：整文件秒播模式（scheduledSources 仅 1 个整音频节点）
-  if (scheduledSources.length === 1 && currentCleanedChunks.length > 1) {
+  // 模式 1：整文件全量母带播放模式（仅当单节点且明确标记为整文件母带 isFullAudio: true 时才进入）
+  if (
+    scheduledSources.length === 1 &&
+    scheduledSources[0].isFullAudio === true &&
+    currentCleanedChunks.length > 1
+  ) {
     const single = scheduledSources[0]
-    const totalDuration = Math.max(0.01, single.endTime - single.startTime)
-    const elapsedTotalTime = Math.max(0, Math.min(totalDuration, now - single.startTime))
+    const nodeDuration = Math.max(0.01, single.endTime - single.startTime)
+    const elapsedInNode = Math.max(0, Math.min(nodeDuration, now - single.startTime))
+    const offset = single.offsetInAudio || 0
+    const audioElapsed = Math.max(0, elapsedInNode + offset)
 
+    // 优先使用路线 A 内嵌的精确分句时间戳索引表 (TTSChunkCue[])
+    if (currentMasterCues && currentMasterCues.length > 0) {
+      let sentenceIndex = 0
+      let sentenceStartTime = 0
+      let sentenceDuration = nodeDuration
+
+      for (let i = 0; i < currentMasterCues.length; i++) {
+        const cue = currentMasterCues[i]
+        const cueEnd = cue.startTime + cue.duration
+        if (audioElapsed >= cue.startTime && audioElapsed < cueEnd) {
+          sentenceIndex = cue.index
+          sentenceStartTime = cue.startTime
+          sentenceDuration = cue.duration
+          break
+        } else if (audioElapsed < cue.startTime && i > 0) {
+          sentenceIndex = currentMasterCues[i - 1].index
+          sentenceStartTime = currentMasterCues[i - 1].startTime
+          sentenceDuration = currentMasterCues[i - 1].duration
+          break
+        } else if (i === currentMasterCues.length - 1 && audioElapsed >= cue.startTime) {
+          sentenceIndex = cue.index
+          sentenceStartTime = cue.startTime
+          sentenceDuration = cue.duration
+          break
+        }
+      }
+
+      const elapsedInSentence = Math.max(0, Math.min(sentenceDuration, audioElapsed - sentenceStartTime))
+      const remainingInSentence = Math.max(0, sentenceDuration - elapsedInSentence)
+      const fullTotalDuration = currentMasterTotalDuration || (single.endTime - single.startTime)
+
+      return {
+        sentenceIndex,
+        elapsedInSentence,
+        sentenceDuration: Math.max(0.01, sentenceDuration),
+        remainingInSentence,
+        elapsedTotalTime: audioElapsed,
+        totalDuration: fullTotalDuration
+      }
+    }
+
+    // 容错兜底（极少数旧缓存未带时间戳表）：基于字数比例进行线性估算
     let totalChars = 0
     for (const c of currentCleanedChunks) {
       totalChars += Math.max(1, c.length)
     }
 
-    const ratio = elapsedTotalTime / totalDuration
+    const fullTotalDuration = currentMasterTotalDuration || (single.endTime - single.startTime)
+    const ratio = Math.min(1.0, audioElapsed / Math.max(0.01, fullTotalDuration))
     let sentenceIndex = 0
     let accumulatedChars = 0
     let sentenceStartTime = 0
-    let sentenceEndTime = totalDuration
+    let sentenceEndTime = fullTotalDuration
 
     for (let i = 0; i < currentCleanedChunks.length; i++) {
       const chunkLen = Math.max(1, currentCleanedChunks[i].length)
@@ -214,14 +286,14 @@ function getCurrentAudioProgress(): AudioProgressInfo {
 
       if (ratio <= nextRatio || i === currentCleanedChunks.length - 1) {
         sentenceIndex = i
-        sentenceStartTime = prevRatio * totalDuration
-        sentenceEndTime = nextRatio * totalDuration
+        sentenceStartTime = prevRatio * fullTotalDuration
+        sentenceEndTime = nextRatio * fullTotalDuration
         break
       }
     }
 
     const sentenceDuration = Math.max(0.01, sentenceEndTime - sentenceStartTime)
-    const elapsedInSentence = Math.max(0, Math.min(sentenceDuration, elapsedTotalTime - sentenceStartTime))
+    const elapsedInSentence = Math.max(0, Math.min(sentenceDuration, audioElapsed - sentenceStartTime))
     const remainingInSentence = Math.max(0, sentenceDuration - elapsedInSentence)
 
     return {
@@ -229,8 +301,8 @@ function getCurrentAudioProgress(): AudioProgressInfo {
       elapsedInSentence,
       sentenceDuration,
       remainingInSentence,
-      elapsedTotalTime,
-      totalDuration
+      elapsedTotalTime: audioElapsed,
+      totalDuration: fullTotalDuration
     }
   }
 
@@ -446,6 +518,8 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
               }
 
               clearScheduledSources()
+              currentMasterCues = metadata.chunks || null
+              currentMasterTotalDuration = audioBuffer.duration
 
               // 新音频从当前硬件时钟 + 0.02s 起播，指定偏移量 newOffset
               const startAt = ctx.currentTime + 0.02
@@ -461,7 +535,9 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
                 source,
                 startTime: startAt,
                 endTime: endAt,
-                index: currentProgress.sentenceIndex
+                index: currentProgress.sentenceIndex,
+                isFullAudio: true,
+                offsetInAudio: newOffset
               })
               nextStartTime = endAt
               isAllChunksScheduled = true
@@ -1036,6 +1112,10 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             const audioBuffer = await ctx.decodeAudioData(fullWavBuffer.slice(0))
             if (activeSessionId !== thisSessionId) return
 
+            clearScheduledSources()
+            currentMasterCues = metadata.chunks || null
+            currentMasterTotalDuration = audioBuffer.duration
+
             const source = ctx.createBufferSource()
             source.buffer = audioBuffer
             source.playbackRate.value = 1.0
@@ -1049,7 +1129,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
               source,
               startTime: startAt,
               endTime: nextStartTime,
-              index: 0
+              index: 0,
+              isFullAudio: true,
+              offsetInAudio: 0
             })
 
             isAllChunksScheduled = true
@@ -1385,6 +1467,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             const clampedOffset = Math.max(0, Math.min(Math.max(0, totalDuration - 0.05), offset))
 
             clearScheduledSources()
+            currentMasterCues = metadata.chunks || null
+            currentMasterTotalDuration = totalDuration
+
             const startAt = ctx.currentTime + 0.02
             const source = ctx.createBufferSource()
             source.buffer = audioBuffer
@@ -1397,7 +1482,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
               source,
               startTime: startAt,
               endTime: startAt + remaining,
-              index: clampedIndex
+              index: clampedIndex,
+              isFullAudio: true,
+              offsetInAudio: clampedOffset
             })
             nextStartTime = startAt + remaining
             isAllChunksScheduled = true
