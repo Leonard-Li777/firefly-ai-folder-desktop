@@ -89,7 +89,12 @@ export const useCloudEngineStatusStore = create<TCloudEngineStatusStore>()(
 
     extinguishForInvalidConfig: () => {
       logger.info(LogCategory.RENDERER, '[CloudEngineStatus] 配置失效，熄灭已启动')
-      set({ cloudStarted: false, cloudModelsFetched: false, cloudEngineFailed: false })
+      set({
+        cloudStarted: false,
+        cloudModelsFetched: false,
+        cloudEngineFailed: false,
+        cloudLastError: null
+      })
     },
 
     beginProbe: () => {
