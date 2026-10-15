@@ -103,8 +103,8 @@ function killPort(port: number): void {
       for (const pid of pids) {
         if (pid === '0') continue
         try {
-          spawnSync('taskkill', ['/F', '/PID', pid], { windowsHide: true })
-          console.log(`[vite-config] ✅ 已释放端口 ${port}，kill PID=${pid}`)
+          spawnSync('taskkill', ['/F', '/T', '/PID', pid], { windowsHide: true })
+          console.log(`[vite-config] ✅ 已释放端口 ${port}，kill 进程树 PID=${pid}`)
         } catch {
           /* 忽略单个 kill 失败 */
         }
