@@ -4,7 +4,7 @@
   "resourcePackage": {
     "repo": "Leonard-Li777/firefly-resources",
     "containerTag": "resources",
-    "branch": "main"
+    "branch": "tag-patch"
   },
   "resources": {
     "fastfetch": {
