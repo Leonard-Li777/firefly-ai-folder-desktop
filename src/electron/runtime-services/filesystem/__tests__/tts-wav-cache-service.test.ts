@@ -251,5 +251,69 @@ describe('TTSWavCacheService 单元测试', () => {
     })
     expect(fs.existsSync(chunksDir!)).toBe(false)
   })
+
+  it('saveChunk 与 readChunk: 支持文本指纹防错位校验', async () => {
+    vi.spyOn(service, 'resolveWorkspaceForPath').mockResolvedValue(tempDir)
+
+    const fakeFilePath = path.join(tempDir, 'sample_doc.txt')
+    fs.writeFileSync(fakeFilePath, 'hello world')
+    const params = {
+      filePath: fakeFilePath,
+      fileFingerprint: 'doc_fp_123',
+      fieldName: 'summary',
+      displayName: '测试音色',
+      voiceId: 'voice_abc',
+      chunkIndex: 0,
+      totalChunks: 5,
+      chunkData: Buffer.alloc(1920),
+      chunkText: '这是第一句测试文本。'
+    }
+
+    // 1. 保存携带文本的分片
+    const saveRes = await service.saveChunk(params)
+    expect(saveRes).toBe(true)
+
+    // 2. 使用相同文本读取：命中缓存
+    const readHit = await service.readChunk({
+      filePath: fakeFilePath,
+      fileFingerprint: 'doc_fp_123',
+      fieldName: 'summary',
+      voiceId: 'voice_abc',
+      chunkIndex: 0,
+      chunkText: '这是第一句测试文本。'
+    })
+    expect(readHit).not.toBeNull()
+
+    // 3. 使用不同文本读取（模拟分句切片升级后文本不一致）：防错位拦截，返回 null (未命中)
+    const readMiss = await service.readChunk({
+      filePath: fakeFilePath,
+      fileFingerprint: 'doc_fp_123',
+      fieldName: 'summary',
+      voiceId: 'voice_abc',
+      chunkIndex: 0,
+      chunkText: '这是算法升级后的全新合并文本。'
+    })
+    expect(readMiss).toBeNull()
+
+    // 4. 模拟无 manifest.json 的旧存量分片：当指定 chunkText 时严格判定为未命中重新合成
+    const chunksDir = await service.getChunksDirPath({
+      filePath: fakeFilePath,
+      fileFingerprint: 'doc_fp_123',
+      fieldName: 'summary',
+      voiceId: 'voice_abc'
+    })
+    const manifestPath = path.join(chunksDir!, 'manifest.json')
+    fs.unlinkSync(manifestPath)
+
+    const readWithoutManifest = await service.readChunk({
+      filePath: fakeFilePath,
+      fileFingerprint: 'doc_fp_123',
+      fieldName: 'summary',
+      voiceId: 'voice_abc',
+      chunkIndex: 0,
+      chunkText: '这是第一句测试文本。'
+    })
+    expect(readWithoutManifest).toBeNull()
+  })
 })
 

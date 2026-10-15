@@ -32,6 +32,7 @@ export interface TTSChunkCue {
   index: number
   startTime: number
   duration: number
+  textHash?: string
 }
 
 /** 分片池清单结构 */
@@ -42,7 +43,7 @@ export interface TTSChunkManifest {
   fileFingerprint?: string
   fieldName?: string
   completed: number[]
-  cues: Record<string, { duration: number }>
+  cues: Record<string, { duration: number; textHash?: string }>
 }
 
 /** WAV 内嵌 meta 元数据结构 */
@@ -80,6 +81,7 @@ export interface SaveChunkParams {
   totalChunks: number
   chunkData: Uint8Array | Buffer
   duration?: number
+  chunkText?: string
 }
 
 export interface ReadChunkParams {
@@ -89,6 +91,7 @@ export interface ReadChunkParams {
   displayName?: string
   voiceId: string | number
   chunkIndex: number
+  chunkText?: string
 }
 
 export interface AppendWavChunkParams {
@@ -832,7 +835,16 @@ export class TTSWavCacheService {
         manifest.completed.push(params.chunkIndex)
         manifest.completed.sort((a, b) => a - b)
       }
-      manifest.cues[String(params.chunkIndex)] = { duration }
+
+      let textHash: string | undefined
+      if (params.chunkText && params.chunkText.trim()) {
+        textHash = crypto.createHash('sha256').update(params.chunkText.trim()).digest('hex').slice(0, 16)
+      }
+
+      manifest.cues[String(params.chunkIndex)] = {
+        duration,
+        ...(textHash ? { textHash } : {})
+      }
 
       await fsPromises.writeFile(manifestPath, JSON.stringify(manifest, null, 2), 'utf-8')
 
@@ -861,6 +873,7 @@ export class TTSWavCacheService {
 
   /**
    * 从分片池中读取指定分片音频
+   * 若提供了 chunkText，将校验文本指纹，防分句切片升级后产生错位
    */
   public async readChunk(params: ReadChunkParams): Promise<Buffer | null> {
     try {
@@ -868,8 +881,47 @@ export class TTSWavCacheService {
       if (!chunksDir) return null
       const chunkPath = path.join(chunksDir, `chunk_${params.chunkIndex}.wav`)
       if (!fs.existsSync(chunkPath)) return null
+
+      // 若指定了 chunkText，严格比对 manifest.json 中的文本指纹（Cache Shield 防错位屏障）
+      if (params.chunkText && params.chunkText.trim()) {
+        const manifestPath = path.join(chunksDir, 'manifest.json')
+        if (!fs.existsSync(manifestPath)) {
+          logger.warn(
+            LogCategory.FILE_PROCESSOR,
+            `[TTS缓存服务] 分片 ${params.chunkIndex} 缺失 manifest.json，判定为未命中重新合成`
+          )
+          return null
+        }
+        try {
+          const raw = await fsPromises.readFile(manifestPath, 'utf-8')
+          const manifest = JSON.parse(raw) as TTSChunkManifest
+          const cue = manifest.cues?.[String(params.chunkIndex)]
+          const expectedHash = crypto
+            .createHash('sha256')
+            .update(params.chunkText.trim())
+            .digest('hex')
+            .slice(0, 16)
+
+          if (!cue?.textHash || cue.textHash !== expectedHash) {
+            logger.warn(
+              LogCategory.FILE_PROCESSOR,
+              `[TTS缓存服务] 分片 ${params.chunkIndex} 文本指纹缺失或不匹配 (缓存: ${cue?.textHash || 'none'}, 当前: ${expectedHash})，判定为未命中重新合成`
+            )
+            return null
+          }
+        } catch (manifestErr) {
+          logger.warn(
+            LogCategory.FILE_PROCESSOR,
+            `[TTS缓存服务] 读取 manifest.json 校验文本指纹失败:`,
+            manifestErr
+          )
+          return null
+        }
+      }
+
       return await fsPromises.readFile(chunkPath)
     } catch (err) {
+      logger.warn(LogCategory.FILE_PROCESSOR, `[TTS缓存服务] readChunk 异常:`, err)
       return null
     }
   }
@@ -917,7 +969,8 @@ export class TTSWavCacheService {
         cueList.push({
           index: i,
           startTime: currentTime,
-          duration
+          duration,
+          textHash: manifest.cues?.[String(i)]?.textHash
         })
         currentTime += duration
         pcmList.push(rawPcm)

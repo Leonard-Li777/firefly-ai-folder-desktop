@@ -858,6 +858,7 @@ declare global {
           totalChunks: number
           chunkData: Uint8Array | Buffer
           duration?: number
+          chunkText?: string
         }) => Promise<boolean>
         readChunk: (params: {
           filePath?: string
@@ -866,6 +867,7 @@ declare global {
           displayName?: string
           voiceId: string | number
           chunkIndex: number
+          chunkText?: string
         }) => Promise<ArrayBuffer | null>
       }
     }

@@ -433,35 +433,54 @@ export function registerTTSIPCHandlers(): void {
     }
   )
 
-  // 14. 独立分片保存与落盘（即合成即写盘，支持乱序与内存减压）
+  // 16. 独立分片保存与落盘（即合成即写盘，支持乱序与内存减压）
   ipcMain.handle('tts:save-chunk', async (_event, params: any): Promise<boolean> => {
-    return await ttsWavCacheService.saveChunk(params)
+    try {
+      return await ttsWavCacheService.saveChunk(params)
+    } catch (err) {
+      logger.warn(LogCategory.MAIN, '[TTS IPC] save-chunk 失败:', err)
+      return false
+    }
   })
 
-  // 15. 独立分片读取（分片级断点与秒播复用）
+  // 17. 独立分片读取（分片级断点与秒播复用）
   ipcMain.handle('tts:read-chunk', async (_event, params: any): Promise<ArrayBuffer | null> => {
-    const buf = await ttsWavCacheService.readChunk(params)
-    if (!buf) return null
-    return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer
+    try {
+      const buf = await ttsWavCacheService.readChunk(params)
+      if (!buf) return null
+      return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer
+    } catch (err) {
+      logger.warn(LogCategory.MAIN, '[TTS IPC] read-chunk 失败:', err)
+      return null
+    }
   })
 }
 
 /** 本地正则分句降级辅助函数 */
-function fallbackLocalSplitChunks(text: string): string[] {
+function fallbackLocalSplitChunks(text: string, minLen = 45, maxLen = 120): string[] {
   if (!text || !text.trim()) return []
   const rawSentences = text.match(/[^。！？；\n\r.!?]+[。！？；\n\r.!?]*/g) || [text]
   const chunks: string[] = []
   let current = ''
+
   for (const raw of rawSentences) {
     const trimmed = raw.trim()
     if (!trimmed) continue
-    if ((current + trimmed).length > 120 && current.length > 0) {
+
+    if (!current) {
+      current = trimmed
+      continue
+    }
+
+    // 若累积长度未达下限且尚未超过上限，贪婪合并后续短句；一旦达到下限且遇到新句，即切片输出
+    if (current.length < minLen && current.length + trimmed.length <= maxLen) {
+      current += trimmed
+    } else {
       chunks.push(current.trim())
       current = trimmed
-    } else {
-      current += trimmed
     }
   }
+
   if (current.trim()) {
     chunks.push(current.trim())
   }

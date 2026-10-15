@@ -1305,6 +1305,7 @@ const electronAPI = {
       totalChunks: number
       chunkData: Uint8Array | Buffer
       duration?: number
+      chunkText?: string
     }): Promise<boolean> =>
       ipcRenderer.invoke('tts:save-chunk', params),
     readChunk: (params: {
@@ -1314,6 +1315,7 @@ const electronAPI = {
       displayName?: string
       voiceId: string | number
       chunkIndex: number
+      chunkText?: string
     }): Promise<ArrayBuffer | null> =>
       ipcRenderer.invoke('tts:read-chunk', params)
   }

@@ -83,55 +83,84 @@ export function cleanTextForTTS(text: string, options?: { isLrc?: boolean }): st
 }
 
 /**
- * 将长文本拆解为若干自然短句，保留句末标点
+ * 将长文本拆解为若干饱满的自然短句序列，保留句末标点
+ * 核心优化：
+ * 1. 设立短句聚合下限（minChunkLength = 45），避免过碎切片引发自回归模型 RTF 倒挂（发声时长 < 推理时长导致断音等待）
+ * 2. 设立上限（maxChunkLength = 120），超长自然句按次级标点（逗号/分号/空格）平滑拆解
+ *
  * @param text 清洗后的纯文本
- * @param maxChunkLength 单句最大字符阈值（超过则按逗号二次切分，防推理超时）
+ * @param maxChunkLength 单句最大字符阈值（默认 120）
+ * @param minChunkLength 短句聚合下限阈值（默认 45）
  */
-export function splitTextIntoChunks(text: string, maxChunkLength = 120): string[] {
+export function splitTextIntoChunks(
+  text: string,
+  maxChunkLength = 120,
+  minChunkLength = 45
+): string[] {
   if (!text || !text.trim()) return []
 
   // 1. 基于句末标点正则初次切句：包含句号、问号、叹号、分号及换行符
   const rawSentences = text.match(/[^。！？；\n\r.!?]+[。！？；\n\r.!?]*/g) || [text]
 
-  const chunks: string[] = []
-
+  // 2. 将超长自然句先按逗号、顿号等次级停顿安全规整为初级片段
+  const normalizedPieces: string[] = []
   for (const raw of rawSentences) {
     const trimmed = raw.trim()
     if (!trimmed) continue
 
-    // 2. 若单句在阈值内，直接保留
     if (trimmed.length <= maxChunkLength) {
-      chunks.push(trimmed)
+      normalizedPieces.push(trimmed)
       continue
     }
 
-    // 3. 超过最大阈值，按逗号/空格等次级停顿符号二次拆分
+    // 超过最大阈值，按逗号/空格等次级停顿符号拆分
     const subMatches = trimmed.match(/[^，,、 ]+[，,、 ]*/g)
     if (!subMatches || subMatches.length === 1) {
-      // 无法通过逗号进一步切分（如无停顿超长单句），按硬长度分块
+      // 无法通过次级标点切分（无停顿超长单句），按硬长度分块
       let start = 0
       while (start < trimmed.length) {
-        chunks.push(trimmed.slice(start, start + maxChunkLength))
+        normalizedPieces.push(trimmed.slice(start, start + maxChunkLength))
         start += maxChunkLength
       }
       continue
     }
 
-    // 贪婪拼合次级短句，使其逼近 maxChunkLength
-    let currentBuffer = ''
+    let subBuffer = ''
     for (const sub of subMatches) {
-      if (currentBuffer.length + sub.length > maxChunkLength && currentBuffer.length > 0) {
-        chunks.push(currentBuffer.trim())
-        currentBuffer = sub
+      if (subBuffer.length + sub.length > maxChunkLength && subBuffer.length > 0) {
+        normalizedPieces.push(subBuffer.trim())
+        subBuffer = sub
       } else {
-        currentBuffer += sub
+        subBuffer += sub
       }
     }
-    if (currentBuffer.trim()) {
-      chunks.push(currentBuffer.trim())
+    if (subBuffer.trim()) {
+      normalizedPieces.push(subBuffer.trim())
     }
   }
 
-  // 自然返回切分后的语义短句（杜绝强制空格拼接中文短句制造的停顿失真）
+  // 3. 执行贪婪向上聚合：若当前片段未达 minChunkLength，继续合并后续片段，直至逼近饱和区间
+  const chunks: string[] = []
+  let currentBuffer = ''
+
+  for (const piece of normalizedPieces) {
+    if (!currentBuffer) {
+      currentBuffer = piece
+      continue
+    }
+
+    // 若累积长度未达下限且尚未超过上限，贪婪合并后续短句；一旦达到下限且遇到新句，即切片输出
+    if (currentBuffer.length < minChunkLength && currentBuffer.length + piece.length <= maxChunkLength) {
+      currentBuffer += piece
+    } else {
+      chunks.push(currentBuffer.trim())
+      currentBuffer = piece
+    }
+  }
+
+  if (currentBuffer.trim()) {
+    chunks.push(currentBuffer.trim())
+  }
+
   return chunks.map(c => c.trim()).filter(Boolean)
 }

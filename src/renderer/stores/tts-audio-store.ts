@@ -127,6 +127,54 @@ let progressTimer: ReturnType<typeof setInterval> | null = null
 let isAllChunksScheduled = false
 let isHotSwitchInProgress = false
 
+/** 预缓冲水线配置常数 */
+export const TTS_BUFFER_WATERMARK = {
+  /** 最小就绪分句数（常规至少预留 2 句） */
+  MIN_BUFFERED_CHUNKS: 2,
+  /** 最小声学安全时长（秒，累积音频时长达到 4.0 秒即可破格起播，单句超长时不强制等第二句） */
+  MIN_BUFFERED_DURATION_SEC: 4.0,
+  /** 单句合成超时熔断时间（毫秒，用于放行首句起播门禁） */
+  CHUNK_SYNTHESIZE_TIMEOUT_MS: 8000
+}
+
+/** 预缓冲就绪节点结构（存储已完成 WSOLA 派生且已 decodeAudioData 的纯内存 AudioBuffer） */
+export interface PrebufferedChunkItem {
+  index: number
+  buffer: AudioBuffer
+  baseBuffer: ArrayBuffer
+}
+
+/**
+ * 将蓄水池中的预缓冲分句原子批量压入 Web Audio 硬件时间轴
+ */
+function flushPrebufferedChunks(list: PrebufferedChunkItem[], ctx: AudioContext): void {
+  if (list.length === 0) return
+  let chainTime = Math.max(ctx.currentTime + 0.05, nextStartTime)
+
+  for (const item of list) {
+    const source = ctx.createBufferSource()
+    source.buffer = item.buffer
+    source.playbackRate.value = 1.0
+    source.connect(ctx.destination)
+    source.start(chainTime)
+
+    const duration = item.buffer.duration
+    const endAt = chainTime + duration
+    scheduledSources.push({
+      source,
+      startTime: chainTime,
+      endTime: endAt,
+      index: item.index,
+      isFullAudio: false
+    })
+    chainTime = endAt
+  }
+
+  nextStartTime = chainTime
+  useTTSAudioStore.setState({ status: 'playing' })
+  ensureProgressMonitor()
+}
+
 /** 获取当前正在播放文本的切片分句文本数组（供 UI 刻度预览 Tooltip 使用） */
 export function getCurrentTTSChunks(): string[] {
   return currentCleanedChunks
@@ -514,7 +562,9 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
               activeSessionId = newSessionId
 
               if (window.electronAPI?.tts?.abortSession) {
-                window.electronAPI.tts.abortSession(oldSession).catch(() => {})
+                window.electronAPI.tts.abortSession(oldSession).catch(err => {
+                  console.warn('[TTS HotSwitch] 中止旧会话异常 (通道 A):', err)
+                })
               }
 
               clearScheduledSources()
@@ -594,7 +644,8 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
           fieldName: options?.fieldName,
           displayName: targetDisplayName,
           voiceId: targetVoiceId,
-          chunkIndex: targetSentenceIdx
+          chunkIndex: targetSentenceIdx,
+          chunkText
         })
         if (diskChunk && diskChunk.byteLength > 44) {
           baseBuffer = diskChunk
@@ -660,7 +711,9 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
       activeSessionId = newSessionId
 
       if (window.electronAPI?.tts?.abortSession) {
-        window.electronAPI.tts.abortSession(oldSession).catch(() => {})
+        window.electronAPI.tts.abortSession(oldSession).catch(err => {
+          console.warn('[TTS HotSwitch] 中止旧会话异常:', err)
+        })
       }
 
       // 停止所有旧排程节点
@@ -716,8 +769,11 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
           speed: targetSpeed,
           chunkIndex: targetSentenceIdx,
           totalChunks: currentCleanedChunks.length,
-          chunkData: new Uint8Array(baseBuffer)
-        }).catch(() => {})
+          chunkData: new Uint8Array(baseBuffer),
+          chunkText: currentCleanedChunks[targetSentenceIdx]
+        }).catch(err => {
+          console.warn('[TTS HotSwitch] 异步保存切入句分片异常:', err)
+        })
       }
 
       // 紧接着在后台流式合成后续句子（targetSentenceIdx + 1 到全文结束）
@@ -740,7 +796,8 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
             fieldName: options?.fieldName,
             displayName: targetDisplayName,
             voiceId: targetVoiceId,
-            chunkIndex: i
+            chunkIndex: i,
+            chunkText: nextChunkText
           })
           if (diskBuf && diskBuf.byteLength > 44) {
             nextBaseBuffer = diskBuf
@@ -774,8 +831,11 @@ function triggerHotSwitch(changed: { voiceId?: string; sid?: number; speed?: num
             speed: targetSpeed,
             chunkIndex: i,
             totalChunks: currentCleanedChunks.length,
-            chunkData: nextChunkUint8
-          }).catch(() => {})
+            chunkData: nextChunkUint8,
+            chunkText: nextChunkText
+          }).catch(err => {
+            console.warn('[TTS HotSwitch] 异步保存后续分片异常:', err)
+          })
         }
 
         // 目标倍率 WSOLA
@@ -939,7 +999,9 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     nextStartTime = 0
 
     if (window.electronAPI?.tts?.abortSession) {
-      window.electronAPI.tts.abortSession(sidToAbort).catch(() => {})
+      window.electronAPI.tts.abortSession(sidToAbort).catch(err => {
+        console.warn('[TTS Stop] 中止会话异常:', err)
+      })
     }
 
     set({
@@ -1197,6 +1259,12 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         }
       }
 
+      // 预缓冲安全水线蓄水池
+      const readyBufferList: PrebufferedChunkItem[] = []
+      let totalBufferedDuration = 0
+      const remainingChunksCount = Math.max(1, chunks.length - startIndex)
+      let isWatermarkSatisfied = false
+
       for (let i = startIndex; i < chunks.length; i++) {
         if (activeSessionId !== thisSessionId) {
           // 会话已被中止
@@ -1206,7 +1274,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         const chunkText = chunks[i]
         let baseBuffer: ArrayBuffer | null = null
 
-        // 优先检查内存缓存与磁盘分片缓存
+        // 优先检查内存缓存与磁盘分片缓存（传递 chunkText 确保防错位校验）
         const cachedMem = cachedChunksMap.get(i)
         if (cachedMem) {
           baseBuffer = cachedMem.buffer.slice(
@@ -1220,7 +1288,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             fieldName: options?.fieldName,
             displayName: chosenDisplayName,
             voiceId: chosenVoiceId,
-            chunkIndex: i
+            chunkIndex: i,
+            chunkText
           })
           if (diskBuf && diskBuf.byteLength > 44) {
             baseBuffer = diskBuf
@@ -1229,13 +1298,41 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
         if (!baseBuffer) {
           // 核心声学架构：底层请求 1.0x 基准母本合成，并通过纯 Rust WSOLA 极速算法派生任意目标倍速
-          baseBuffer = await window.electronAPI.tts.synthesizeChunk(
+          const synthPromise = window.electronAPI.tts.synthesizeChunk(
             chunkText,
             chosenVoiceId,
             1.0,
             thisSessionId,
             chosenSid
           )
+
+          // 若起播门禁尚未放行且蓄水池已具备首句，在等待后续分句时注入 8000ms 超时门禁探测
+          if (!isWatermarkSatisfied && readyBufferList.length > 0) {
+            let timer: ReturnType<typeof setTimeout> | undefined
+            try {
+              const timeoutPromise = new Promise<null>((resolve) => {
+                timer = setTimeout(() => resolve(null), TTS_BUFFER_WATERMARK.CHUNK_SYNTHESIZE_TIMEOUT_MS)
+              })
+              const raceResult = await Promise.race([synthPromise, timeoutPromise])
+
+              if (raceResult === null) {
+                console.warn('[TTS] 预缓冲后续分句等待超时(>8000ms)，降级以首句立即放行起播')
+                // 放行起播门禁，原子压入已就绪首句
+                isWatermarkSatisfied = true
+                flushPrebufferedChunks(readyBufferList, ctx)
+                readyBufferList.length = 0
+                totalBufferedDuration = 0
+                // 后台继续等待该分句真实合成完毕，绝不跳过该句
+                baseBuffer = await synthPromise
+              } else {
+                baseBuffer = raceResult
+              }
+            } finally {
+              if (timer) clearTimeout(timer)
+            }
+          } else {
+            baseBuffer = await synthPromise
+          }
         }
 
         if (activeSessionId !== thisSessionId) {
@@ -1244,7 +1341,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
 
         if (!baseBuffer || baseBuffer.byteLength === 0) {
           console.warn(`[TTS] 第 ${i + 1} 句合成失败或为空，跳过`)
-          if (scheduledSources.length === 0) {
+          if (scheduledSources.length === 0 && readyBufferList.length === 0) {
             // 首句合成失败，说明底层服务不可用或网络异常，立即终止并提示用户
             set({
               status: 'error',
@@ -1260,7 +1357,7 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
         const chunkUint8 = new Uint8Array(baseBuffer)
         cachedChunksMap.set(i, chunkUint8)
 
-        // 异步独立分片落盘（即合成即写盘，零内存驻留压力）
+        // 异步独立分片落盘（传入 chunkText 确保 manifest 记录 sha256 文本指纹）
         if (window.electronAPI?.tts?.saveChunk) {
           window.electronAPI.tts.saveChunk({
             filePath: options?.filePath,
@@ -1272,7 +1369,8 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
             speed: chosenSpeed,
             chunkIndex: i,
             totalChunks: chunks.length,
-            chunkData: chunkUint8
+            chunkData: chunkUint8,
+            chunkText
           }).catch(err => {
             console.warn('[TTS] 保存独立分片异常:', err)
           })
@@ -1298,29 +1396,52 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
           return
         }
 
-        // 时间戳预排程播放（由于模型已原生变速且音调正常，此处 playbackRate 恒定为 1.0 忠实原音输出）
-        const source = ctx.createBufferSource()
-        source.buffer = audioBuffer
-        source.playbackRate.value = 1.0
-        source.connect(ctx.destination)
+        if (!isWatermarkSatisfied) {
+          // 预缓冲蓄水池入库
+          readyBufferList.push({
+            index: i,
+            buffer: audioBuffer,
+            baseBuffer
+          })
+          totalBufferedDuration += audioBuffer.duration
 
-        const startAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
-        source.start(startAt)
+          // 水线判定：条件 A（达标 2 句）或 条件 B（单句超长 >= 4.0s）或 条件 C（末尾自愈：所有剩余分句已蓄满）
+          const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
+          const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
+          const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
 
-        const effectiveDuration = audioBuffer.duration
-        const endAt = startAt + effectiveDuration
-        scheduledSources.push({
-          source,
-          startTime: startAt,
-          endTime: endAt,
-          index: i
-        })
-        nextStartTime = endAt
+          if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
+            isWatermarkSatisfied = true
+            flushPrebufferedChunks(readyBufferList, ctx)
+            readyBufferList.length = 0
+            totalBufferedDuration = 0
+          }
+        } else {
+          // 已放行起播状态：就绪即链式排程追加到硬件时间轴
+          const startAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
+          const source = ctx.createBufferSource()
+          source.buffer = audioBuffer
+          source.playbackRate.value = 1.0
+          source.connect(ctx.destination)
+          source.start(startAt)
 
-        // 首句成功排程后立即进入 playing 状态
-        if (get().status === 'loading') {
-          set({ status: 'playing' })
+          const effectiveDuration = audioBuffer.duration
+          const endAt = startAt + effectiveDuration
+          scheduledSources.push({
+            source,
+            startTime: startAt,
+            endTime: endAt,
+            index: i,
+            isFullAudio: false
+          })
+          nextStartTime = endAt
         }
+      }
+
+      // 兜底放行：若循环结束仍有未起播的缓冲分句，立即原子压入声卡
+      if (readyBufferList.length > 0 && activeSessionId === thisSessionId) {
+        flushPrebufferedChunks(readyBufferList, ctx)
+        readyBufferList.length = 0
       }
 
       // 标记当前文本所有分句已全部排程入队
@@ -1503,190 +1624,174 @@ export const useTTSAudioStore = create<TTSAudioState>()((set, get) => ({
     const thisSeekSession = ++sessionCounter
     activeSessionId = thisSeekSession
     if (window.electronAPI?.tts?.abortSession) {
-      window.electronAPI.tts.abortSession(thisSeekSession - 1).catch(() => {})
-    }
-
-    clearScheduledSources()
-
-    // 检查目标分句是否已有缓存 (内存或磁盘分片)
-    let baseBuffer: ArrayBuffer | null = null
-    const cached = cachedChunksMap.get(clampedIndex)
-    if (cached) {
-      baseBuffer = cached.buffer.slice(
-        cached.byteOffset,
-        cached.byteOffset + cached.byteLength
-      ) as ArrayBuffer
-    } else if (window.electronAPI?.tts?.readChunk) {
-      const diskChunk = await window.electronAPI.tts.readChunk({
-        filePath: options?.filePath,
-        fileFingerprint: options?.fileFingerprint,
-        fieldName: options?.fieldName,
-        displayName,
-        voiceId,
-        chunkIndex: clampedIndex
+      window.electronAPI.tts.abortSession(thisSeekSession - 1).catch(err => {
+        console.warn('[TTS Seek] 中止前序会话异常:', err)
       })
-      if (diskChunk && diskChunk.byteLength > 44) {
-        baseBuffer = diskChunk
-      }
     }
-
-    if (!baseBuffer) {
-      // 提示用户正在优先合成该片段
-      toast.info(t('该片段正在合成中，请稍候...'), 3000, 'tts-seek-loading')
-      set({ currentSentenceIndex: clampedIndex })
-
-      baseBuffer = await window.electronAPI.tts.synthesizeChunk(
-        currentCleanedChunks[clampedIndex],
-        voiceId,
-        1.0,
-        thisSeekSession,
-        sid
-      )
-
-      if (baseBuffer && baseBuffer.byteLength > 0 && window.electronAPI?.tts?.saveChunk) {
-        window.electronAPI.tts.saveChunk({
-          filePath: options?.filePath,
-          fileFingerprint: options?.fileFingerprint,
-          fieldName: options?.fieldName,
-          displayName,
-          voiceId,
-          sid,
-          speed,
-          chunkIndex: clampedIndex,
-          totalChunks: currentCleanedChunks.length,
-          chunkData: new Uint8Array(baseBuffer)
-        }).catch(err => {
-          console.warn('[TTS Seek] 保存分片异常:', err)
-        })
-      }
-    }
-
-    if (activeSessionId !== thisSeekSession) return
-    if (!baseBuffer || baseBuffer.byteLength === 0) {
-      toast.error(t('该片段合成失败，请稍后重试'), 3500, 'tts-seek-loading')
-      return
-    }
-
-    cachedChunksMap.set(clampedIndex, new Uint8Array(baseBuffer))
-
-    // 目标倍率 WSOLA 派生
-    let playbackBuffer: ArrayBuffer = baseBuffer
-    if (Math.abs(speed - 1.0) >= 0.01 && window.electronAPI?.tts?.scaleWav) {
-      const scaled = await window.electronAPI.tts.scaleWav(baseBuffer, speed)
-      if (scaled && scaled.byteLength > 44) {
-        playbackBuffer = scaled
-      }
-    }
-
-    if (activeSessionId !== thisSeekSession) return
-
-    const audioBuffer = await ctx.decodeAudioData(playbackBuffer.slice(0))
-    if (activeSessionId !== thisSeekSession) return
 
     clearScheduledSources()
-    const startAt = ctx.currentTime + 0.02
-    const source = ctx.createBufferSource()
-    source.buffer = audioBuffer
-    source.playbackRate.value = 1.0
-    source.connect(ctx.destination)
-    source.start(startAt)
+    nextStartTime = 0
+    isAllChunksScheduled = false
+    toast.info(t('该片段正在合成中，请稍候...'), 3000, 'tts-seek-loading')
+    set({ currentSentenceIndex: clampedIndex, status: 'loading' })
 
-    const endAt = startAt + audioBuffer.duration
-    scheduledSources.push({
-      source,
-      startTime: startAt,
-      endTime: endAt,
-      index: clampedIndex
-    })
-    nextStartTime = endAt
+    const readyBufferList: PrebufferedChunkItem[] = []
+    let totalBufferedDuration = 0
+    const remainingChunksCount = Math.max(1, currentCleanedChunks.length - clampedIndex)
+    let isWatermarkSatisfied = false
 
-    set({ status: 'playing', currentSentenceIndex: clampedIndex })
-    ensureProgressMonitor()
-
-    // 紧接着在后台流式合成目标句之后的剩余句子（clampedIndex + 1 到末尾）
     ;(async () => {
-      for (let i = clampedIndex + 1; i < currentCleanedChunks.length; i++) {
+      for (let i = clampedIndex; i < currentCleanedChunks.length; i++) {
         if (activeSessionId !== thisSeekSession) return
+        const chunkText = currentCleanedChunks[i]
+        let baseBuffer: ArrayBuffer | null = null
 
-        let nextBaseBuffer: ArrayBuffer | null = null
-        const cachedNext = cachedChunksMap.get(i)
-        if (cachedNext) {
-          nextBaseBuffer = cachedNext.buffer.slice(
-            cachedNext.byteOffset,
-            cachedNext.byteOffset + cachedNext.byteLength
+        // 优先检查内存缓存与磁盘分片缓存（传递 chunkText 确保防错位）
+        const cached = cachedChunksMap.get(i)
+        if (cached) {
+          baseBuffer = cached.buffer.slice(
+            cached.byteOffset,
+            cached.byteOffset + cached.byteLength
           ) as ArrayBuffer
         } else if (window.electronAPI?.tts?.readChunk) {
-          const diskBuf = await window.electronAPI.tts.readChunk({
+          const diskChunk = await window.electronAPI.tts.readChunk({
             filePath: options?.filePath,
             fileFingerprint: options?.fileFingerprint,
             fieldName: options?.fieldName,
             displayName,
             voiceId,
-            chunkIndex: i
+            chunkIndex: i,
+            chunkText
           })
-          if (diskBuf && diskBuf.byteLength > 44) {
-            nextBaseBuffer = diskBuf
+          if (diskChunk && diskChunk.byteLength > 44) {
+            baseBuffer = diskChunk
           }
         }
 
-        if (!nextBaseBuffer) {
-          nextBaseBuffer = await window.electronAPI.tts.synthesizeChunk(
-            currentCleanedChunks[i],
+        if (!baseBuffer) {
+          const synthPromise = window.electronAPI.tts.synthesizeChunk(
+            chunkText,
             voiceId,
             1.0,
             thisSeekSession,
             sid
           )
-          if (nextBaseBuffer && nextBaseBuffer.byteLength > 0 && window.electronAPI?.tts?.saveChunk) {
-            window.electronAPI.tts.saveChunk({
-              filePath: options?.filePath,
-              fileFingerprint: options?.fileFingerprint,
-              fieldName: options?.fieldName,
-              displayName,
-              voiceId,
-              sid,
-              speed,
-              chunkIndex: i,
-              totalChunks: currentCleanedChunks.length,
-              chunkData: new Uint8Array(nextBaseBuffer)
-            }).catch(err => {
-              console.warn('[TTS Seek] 异步保存分片异常:', err)
-            })
+
+          // 若起播门禁尚未放行且蓄水池已具备首句，注入 8000ms 超时门禁探测
+          if (!isWatermarkSatisfied && readyBufferList.length > 0) {
+            let timer: ReturnType<typeof setTimeout> | undefined
+            try {
+              const timeoutPromise = new Promise<null>((resolve) => {
+                timer = setTimeout(() => resolve(null), TTS_BUFFER_WATERMARK.CHUNK_SYNTHESIZE_TIMEOUT_MS)
+              })
+              const raceResult = await Promise.race([synthPromise, timeoutPromise])
+
+              if (raceResult === null) {
+                console.warn('[TTS Seek] 预缓冲后续分句等待超时(>8000ms)，降级以首句立即放行起播')
+                isWatermarkSatisfied = true
+                flushPrebufferedChunks(readyBufferList, ctx)
+                readyBufferList.length = 0
+                totalBufferedDuration = 0
+                baseBuffer = await synthPromise
+              } else {
+                baseBuffer = raceResult
+              }
+            } finally {
+              if (timer) clearTimeout(timer)
+            }
+          } else {
+            baseBuffer = await synthPromise
           }
         }
 
         if (activeSessionId !== thisSeekSession) return
-        if (!nextBaseBuffer || nextBaseBuffer.byteLength === 0) continue
+        if (!baseBuffer || baseBuffer.byteLength === 0) {
+          if (scheduledSources.length === 0 && readyBufferList.length === 0) {
+            toast.error(t('该片段合成失败，请稍后重试'), 3500, 'tts-seek-loading')
+            set({ status: 'idle' })
+            return
+          }
+          continue
+        }
 
-        cachedChunksMap.set(i, new Uint8Array(nextBaseBuffer))
+        const chunkUint8 = new Uint8Array(baseBuffer)
+        cachedChunksMap.set(i, chunkUint8)
 
-        let nextPlaybackBuffer: ArrayBuffer = nextBaseBuffer
+        // 异步分片独立落盘（传入 chunkText 确保防错位）
+        if (window.electronAPI?.tts?.saveChunk) {
+          window.electronAPI.tts.saveChunk({
+            filePath: options?.filePath,
+            fileFingerprint: options?.fileFingerprint,
+            fieldName: options?.fieldName,
+            displayName,
+            voiceId,
+            sid,
+            speed,
+            chunkIndex: i,
+            totalChunks: currentCleanedChunks.length,
+            chunkData: chunkUint8,
+            chunkText
+          }).catch(err => {
+            console.warn('[TTS Seek] 异步保存分片异常:', err)
+          })
+        }
+
+        // 目标倍率 WSOLA 派生
+        let playbackBuffer: ArrayBuffer = baseBuffer
         if (Math.abs(speed - 1.0) >= 0.01 && window.electronAPI?.tts?.scaleWav) {
-          const scaled = await window.electronAPI.tts.scaleWav(nextBaseBuffer, speed)
+          const scaled = await window.electronAPI.tts.scaleWav(baseBuffer, speed)
           if (scaled && scaled.byteLength > 44) {
-            nextPlaybackBuffer = scaled
+            playbackBuffer = scaled
           }
         }
 
         if (activeSessionId !== thisSeekSession) return
-        const nextAudioBuffer = await ctx.decodeAudioData(nextPlaybackBuffer.slice(0))
+        const audioBuffer = await ctx.decodeAudioData(playbackBuffer.slice(0))
         if (activeSessionId !== thisSeekSession) return
 
-        const nextSource = ctx.createBufferSource()
-        nextSource.buffer = nextAudioBuffer
-        nextSource.playbackRate.value = 1.0
-        nextSource.connect(ctx.destination)
+        if (!isWatermarkSatisfied) {
+          readyBufferList.push({
+            index: i,
+            buffer: audioBuffer,
+            baseBuffer
+          })
+          totalBufferedDuration += audioBuffer.duration
 
-        const nextStartAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
-        nextSource.start(nextStartAt)
-        const nextEndAt = nextStartAt + nextAudioBuffer.duration
-        scheduledSources.push({
-          source: nextSource,
-          startTime: nextStartAt,
-          endTime: nextEndAt,
-          index: i
-        })
-        nextStartTime = nextEndAt
+          // 水线判定：条件 A（达标 2 句）或 条件 B（单句超长 >= 4.0s）或 条件 C（末尾自愈：所有剩余分句已蓄满）
+          const satisfiesCount = readyBufferList.length >= Math.min(TTS_BUFFER_WATERMARK.MIN_BUFFERED_CHUNKS, remainingChunksCount)
+          const satisfiesDuration = totalBufferedDuration >= TTS_BUFFER_WATERMARK.MIN_BUFFERED_DURATION_SEC
+          const satisfiesAllRemaining = readyBufferList.length >= remainingChunksCount
+
+          if (satisfiesCount || satisfiesDuration || satisfiesAllRemaining) {
+            isWatermarkSatisfied = true
+            flushPrebufferedChunks(readyBufferList, ctx)
+            readyBufferList.length = 0
+            totalBufferedDuration = 0
+          }
+        } else {
+          // 已起播：就绪即链式排程追加
+          const nextStartAt = Math.max(ctx.currentTime + 0.05, nextStartTime)
+          const nextSource = ctx.createBufferSource()
+          nextSource.buffer = audioBuffer
+          nextSource.playbackRate.value = 1.0
+          nextSource.connect(ctx.destination)
+          nextSource.start(nextStartAt)
+
+          const nextEndAt = nextStartAt + audioBuffer.duration
+          scheduledSources.push({
+            source: nextSource,
+            startTime: nextStartAt,
+            endTime: nextEndAt,
+            index: i,
+            isFullAudio: false
+          })
+          nextStartTime = nextEndAt
+        }
+      }
+
+      if (readyBufferList.length > 0 && activeSessionId === thisSeekSession) {
+        flushPrebufferedChunks(readyBufferList, ctx)
+        readyBufferList.length = 0
       }
       isAllChunksScheduled = true
     })().catch(err => {
