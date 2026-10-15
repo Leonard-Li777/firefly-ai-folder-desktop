@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { toast } from '../common/Toast'
 import { logger, LogCategory } from '@firefly/shared'
 import type { CloudModelConfig, ProviderModel } from '@firefly/types'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
 import { useCloudModelConfigStore } from '../../stores/cloud-model-config-store'
 import { useCloudEngineStatusStore } from '../../stores/cloud-engine-status-store'
 import CloudModelConfigAPI from '../../api/cloud-model-config-api'
@@ -137,6 +137,9 @@ function formatModelInfo(model: ProviderPresetModel): { label: string; value: st
 
 export const CloudModelConfigSettings: React.FC = () => {
   const { t, activeLanguage } = useVoerkaI18n(i18nScope)
+  // 订阅配置对象：本组件在 render 阶段用 getConfigValue() 读值，仅订阅 language / 云端四键
+  // 不足以覆盖其余配置键，缺少订阅会导致修改后不重渲染，UI 不回显
+  useSettingsConfig()
   const language = useSettingsStore(s => s.config.language)
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)

@@ -8,7 +8,7 @@ import { Switch } from '../ui/switch'
 import { captureEvent } from '../../lib/posthog'
 import i18nScope from '@app/languages'
 import { useVoerkaI18n } from '@voerkai18n/react'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
 import { AIErrorType, AIServiceStatus } from '@firefly/types'
 import { ErrorNormalizer } from '@firefly/shared'
 import { useAIServiceStore } from '../../stores/ai-service-store'
@@ -54,6 +54,9 @@ const STATUS_ICON_MAP = {
  */
 export const AIEngineConfigSettings: React.FC = () => {
   const { t } = useVoerkaI18n(i18nScope)
+  // 订阅配置对象：本组件在 render 阶段用 getConfigValue() 读值，仅订阅 aiServiceMode /
+  // 云端四键不足以覆盖其余配置键，缺少订阅会导致修改后不重渲染，UI 不回显
+  useSettingsConfig()
   const aiServiceMode = useSettingsStore(s => s.config?.aiServiceMode)
   // 是否启用高级AI引擎：默认开启（未设置或不为 'disabled' 时均为开启态）
   const isEnabled = aiServiceMode !== 'disabled'
@@ -164,7 +167,12 @@ export const AIEngineConfigSettings: React.FC = () => {
     const baseUrl = (cloudBaseUrlCfg ?? getConfigValue<string>('AI_CLOUD_BASE_URL'))?.trim()
     // ollama 免 Key；模型列表路径不强制已选模型
     const basicallyValid = !!provider && (provider === 'ollama' || !!apiKey)
-    if (!basicallyValid) return
+    if (!basicallyValid) {
+      // 配置尚未完整（用户刚切到云端、还未选择服务商/填写 Key），
+      // 清除可能残留的旧错误卡，避免「还没做任何选择就突兀弹出错误详情」
+      useCloudEngineStatusStore.getState().clearCloudError()
+      return
+    }
 
     const probeConfig: CloudModelConfig = {
       provider: provider as string,

@@ -16,7 +16,7 @@ import {
   AlertDialogTitle
 } from '../ui/alert-dialog'
 import { Button } from '../ui/button'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
 import { useTheme } from '../ui/theme-provider'
 import type { LanguageCode } from '@firefly/types'
 import { toast } from '../common/Toast'
@@ -30,6 +30,9 @@ import { SUPPORTED_LANGUAGES } from '@firefly/shared'
  * 界面设置组件
  */
 export const InterfaceSettings: React.FC = () => {
+  // 订阅配置对象：本组件在 render 阶段用 getConfigValue() 读值，仅订阅 theme 不足以
+  // 覆盖语言/界面密度等键的变更，缺少订阅会导致修改后不重渲染，UI 不回显
+  useSettingsConfig()
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   const themeMode = useSettingsStore(s => (s.config?.ui as any)?.theme || (s.config as any)?.theme)

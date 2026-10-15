@@ -16,7 +16,7 @@ import { SUPPORTED_LANGUAGES } from '@firefly/shared'
 import { Textarea } from '../ui/textarea'
 import { captureEvent } from '../../lib/posthog'
 import i18nScope from '@app/languages'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
 import { useVoerkaI18n } from '@voerkai18n/react'
 
 /**
@@ -50,6 +50,9 @@ function useDebouncedPromptUpdater(
  * 高级AI提示词设置组件
  */
 export const AdvancedAIPromptsSettings: React.FC = () => {
+  // 订阅配置对象：本组件在 render 阶段用 getConfigValue() 读值，缺少订阅会导致
+  // 开关/提示词等修改后不重渲染，UI 不回显
+  useSettingsConfig()
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   const openSettings = useSettingsStore(s => s.openSettings)

@@ -25,8 +25,9 @@ const TreeNode: React.FC<{ node: VirtualDirectoryNode; level: number }> = ({ nod
   const [isExpanded, setIsExpanded] = useState(level < 1)
   const hasChildren = node.subdirectories && node.subdirectories.length > 0
   const hasFiles = node.files && node.files.length > 0
-  const getConfigValue = useSettingsStore.getState().getConfigValue
-  const swapFileNameDisplay = getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
+  // 订阅式读取：改用 getState() 快照会导致「列表设置」改动后本视图不重渲染
+  const swapFileNameDisplay =
+    useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
 
   // 结构容器（name=''）不显示UI，仅让子层标签增加缩进
   if (node.name === '') {

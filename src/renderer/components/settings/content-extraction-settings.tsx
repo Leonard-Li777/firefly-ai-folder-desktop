@@ -17,7 +17,7 @@ import { Switch } from '../ui/switch'
 import { captureEvent } from '../../lib/posthog'
 import i18nScope from '@app/languages'
 import { openExternalLink } from '../../lib/external-link'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
 import { useVoerkaI18n } from '@voerkai18n/react'
 
 /**
@@ -46,6 +46,9 @@ const HelpTooltip: React.FC<{ content: string }> = ({ content }) => {
  * 内容萃取设置组件
  */
 export const ContentExtractionSettings: React.FC = () => {
+  // 订阅配置对象：本组件在 render 阶段大量使用 getConfigValue() 读值，若不订阅 config，
+  // 开关（图片OCR / 复用数据）与卡片（OCR精度）改完后不会重渲染，UI 不回显
+  useSettingsConfig()
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   const { t } = useVoerkaI18n(i18nScope)

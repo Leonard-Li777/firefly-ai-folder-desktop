@@ -45,6 +45,16 @@ export function VDirTree({
 
   const inputRef = useRef<HTMLInputElement>(null)
 
+  /**
+   * 文件名显示顺序（订阅式读取）
+   *
+   * 旧实现在 `getLabel` 渲染回调里用 `useSettingsStore.getState().getConfigValue(...)` 取快照，
+   * 既不订阅也不重渲染 ⇒ 在「列表设置」里改动该项后，树节点标签要等下次无关重渲染才更新。
+   * 这里上提到组件顶层订阅，渲染回调直接复用。
+   */
+  const swapFileNameDisplay =
+    useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
+
   /** 计算目录节点的路径唯一 key */
   const dirKey = (node: any): string => {
     if (node.id) return String(node.id)
@@ -332,9 +342,7 @@ export function VDirTree({
 
             // 3. 常规节点展示
             if (node.isFile) {
-              const getConfigValue = useSettingsStore.getState().getConfigValue
-              const swap = getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
-              return swap
+              return swapFileNameDisplay
                 ? node._rawName || node._rawSmartName || ''
                 : node._rawSmartName || node._rawName || ''
             }

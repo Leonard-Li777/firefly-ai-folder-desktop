@@ -105,8 +105,9 @@ const DirectoryNodeItem: React.FC<DirectoryNodeItemProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true)
   const [isHovered, setIsHovered] = useState(false)
-  const getConfigValue = useSettingsStore.getState().getConfigValue
-  const swapFileNameDisplay = getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
+  // 订阅式读取：改用 getState() 快照会导致「列表设置」改动后本视图不重渲染
+  const swapFileNameDisplay =
+    useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
   // 支持临时构建的subdirectories字段（从parent链式结构转换而来）
   const nodeWithSubdirs = node as DirectoryNode & { subdirectories?: DirectoryNode[] }
   const hasSubdirectories =

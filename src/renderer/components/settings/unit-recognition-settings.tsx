@@ -17,7 +17,7 @@ import { Switch } from '../ui/switch'
 import { Textarea } from '../ui/textarea'
 import { captureEvent } from '../../lib/posthog'
 import i18nScope from '@app/languages'
-import { useSettingsStore } from '../../stores/settings-store'
+import { useSettingsConfig, useSettingsStore } from '../../stores/settings-store'
 import { useVoerkaI18n } from '@voerkai18n/react'
 
 /**
@@ -46,6 +46,9 @@ const HelpTooltip: React.FC<{ content: string }> = ({ content }) => {
  * 最小单元识别设置组件
  */
 export const UnitRecognitionSettings: React.FC = () => {
+  // 订阅配置对象：本组件在 render 阶段用 getConfigValue() 读值，缺少订阅会导致
+  // 开关（启用最小单元识别）等修改后不重渲染，UI 不回显
+  useSettingsConfig()
   const getConfigValue = useSettingsStore(s => s.getConfigValue)
   const updateConfigValue = useSettingsStore(s => s.updateConfigValue)
   const openSettings = useSettingsStore(s => s.openSettings)

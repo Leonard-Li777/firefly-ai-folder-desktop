@@ -85,8 +85,9 @@ export function DoneView({
     return set
   }, [toOrganizeFiles])
 
-  const getConfigValue = useSettingsStore.getState().getConfigValue
-  const swapFileNameDisplay = getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY') ?? false
+  // 订阅式读取：改用 getState() 快照会导致「列表设置」改动后本视图不重渲染
+  const swapFileNameDisplay =
+    useSettingsStore(s => s.getConfigValue<boolean>('SWAP_FILE_NAME_DISPLAY')) ?? false
   const unclassifiedNode = tree.find(n => isUnclassifiedNodeName(n.name))
 
   const isUnclassifiedName = (name: string) => isUnclassifiedNodeName(name)
