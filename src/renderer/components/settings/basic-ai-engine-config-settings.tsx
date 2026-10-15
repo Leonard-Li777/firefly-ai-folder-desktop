@@ -410,7 +410,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   {t('极速轻量档')}
                 </span>
                 {recommendedSettings?.profile === 'classic_light' && (
-                  <span className="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium border border-blue-500/20">
+                  <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                     {t('硬件推荐')}
                   </span>
                 )}
@@ -452,7 +452,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                   {t('全模态标准档')}
                 </span>
                 {recommendedSettings?.profile === 'gemma_unified' && (
-                  <span className="text-[10px] bg-green-500/10 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded font-medium border border-green-500/20">
+                  <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20">
                     {t('硬件推荐')}
                   </span>
                 )}
@@ -516,7 +516,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                           {t('紧凑省盘档（256维）')}
                         </span>
                         {recommendedSettings?.mrlDimension === 256 && (
-                          <span className="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium">
+                          <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400">
                             {t('推荐')}
                           </span>
                         )}
@@ -548,7 +548,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                           {t('标准平衡档（512维）')}
                         </span>
                         {recommendedSettings?.mrlDimension === 512 && (
-                          <span className="text-[10px] bg-green-500/10 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded font-medium">
+                          <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400">
                             {t('推荐')}
                           </span>
                         )}
@@ -580,7 +580,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                           {t('旗舰精准档（768维）')}
                         </span>
                         {recommendedSettings?.mrlDimension === 768 && (
-                          <span className="text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded font-medium">
+                          <span className="text-[9px] font-medium px-1 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400">
                             {t('推荐')}
                           </span>
                         )}

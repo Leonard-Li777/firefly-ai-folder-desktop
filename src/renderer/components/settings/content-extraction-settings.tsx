@@ -607,7 +607,7 @@ export const ContentExtractionSettings: React.FC = () => {
                       : 'border-border bg-card hover:border-primary/40 hover:bg-muted/30'
                   }`}
                 >
-                  <div className="absolute top-0 right-0 text-[11px] font-semibold bg-green-500 text-white px-2.5 py-0.5 rounded-bl-md shadow-sm dark:bg-green-600">
+                  <div className="absolute top-0 right-0 text-[9px] font-medium bg-green-500/15 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded-bl-md border border-green-500/20">
                     {t('推荐')}
                   </div>
                   {(getConfigValue<string>('OCR_MODEL_SIZE') ?? 'tiny') === 'tiny' && (
