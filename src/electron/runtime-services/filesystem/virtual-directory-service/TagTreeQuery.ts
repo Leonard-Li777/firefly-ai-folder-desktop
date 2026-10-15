@@ -19,7 +19,9 @@ import {
   normalizeForCache,
   getCanonicalConceptName,
   CANONICAL_NAMES,
-  DIMENSION_CODES
+  DIMENSION_CODES,
+  CONTROLLED_SUBDIMENSION_PARENTS_GENERATED,
+  resolveRootDimension
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { ConfigDbManager } from '../../config/config-db-manager'
@@ -1665,14 +1667,24 @@ export class TagTreeQuery {
                   .map(s => s.trim())
                   .filter(s => s && s !== CANONICAL_NAMES.CONTENT_TAGS && s !== CONTENT_TAGS_CODE)
                 if (segments.length >= 2) {
-                  // 防击穿护栏：若路径首段命中受控根维度，严禁挂入内容标签！
+                  // 防击穿护栏：若路径首段命中受控根维度或受控子维度，严禁挂入内容标签！
                   const firstSeg = segments[0]
-                  const matchedRootCode = Array.from(ROOT_DIMENSION_CODES).find(
+                  let matchedRootCode = Array.from(ROOT_DIMENSION_CODES).find(
                     rc =>
                       rc === firstSeg ||
                       aliasResolver(rc, rc) === firstSeg ||
                       ROOT_DIMENSION_META[rc]?.name === firstSeg
                   )
+                  if (!matchedRootCode) {
+                    // 若首段为受控子维度（如摄影照片细分、图片细分、文字密度等），溯源其一级受控根维度
+                    const mappedRoot =
+                      WELL_KNOWN_PARENT_TO_ROOT[firstSeg] ||
+                      resolveRootDimension(firstSeg) ||
+                      omniCodeToRootCodeMap.get(firstSeg)
+                    if (mappedRoot && ROOT_DIMENSION_CODES.has(mappedRoot)) {
+                      matchedRootCode = mappedRoot
+                    }
+                  }
                   if (matchedRootCode && matchedRootCode !== CONTENT_TAGS_CODE) {
                     const rootGroup = ensureRootDimensionGroup(matchedRootCode)
                     if (rootGroup) {
