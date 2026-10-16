@@ -1373,7 +1373,7 @@
         "Arbeitsplatz",
         "Familie",
         "Idol",
-        "Kampfkunst",
+        "Wuxia",
         "Handlung",
         "Biographie",
         "Komödie",
@@ -1396,7 +1396,7 @@
         "Ausbildung",
         "Harem",
         "Danmei",
-        "Oberherr",
+        "Herrischer CEO",
         "Ethik"
       ],
       "description": "Fachliche Einordnung von Sachverhalten",
@@ -2668,11 +2668,11 @@
         "Depressionen verursachen",
         "Einfach",
         "Nervös",
-        "Bewegen",
+        "Bewegend",
         "Nostalgie",
         "Wunsch",
         "Aufgeregt",
-        "Deprimieren",
+        "Unterdrückung",
         "Schuld",
         "Gefühl der Unmoral",
         "Scham",
@@ -2965,7 +2965,8 @@
       "level": 3,
       "tags": [
         "Ausgewählte Spitzenqualität",
-        "Belichtung normal",
+        "Leichte Unterbelichtung",
+        "Leichte Überbelichtung",
         "Unterbelichtung bei schwachem Licht",
         "Blendendes Weiß im Gegenlicht",
         "Rauschen bei hohen ISO-Werten",
@@ -3330,16 +3331,16 @@
       "tags": [
         "Familieninzest",
         "Außereheliche Lust",
-        "Campus-Lehrer und -Studenten",
-        "Soziales am Arbeitsplatz",
+        "Erotik zwischen Lehrer und Schüler",
+        "Erotik am Arbeitsplatz",
         "Gruppensex",
         "Sexualtraining",
         "Voyeurismus & Exhibitionismus",
-        "Berufsuniform",
-        "Literarische Themen",
+        "Verführung in Uniform",
+        "Erotische Literatur",
         "Erotische Physiologie",
         "Unfreiwilliger Angriff",
-        "Mehrere Ausrichtungen"
+        "Vielfältige sexuelle Orientierungen"
       ],
       "description": "Aufteilung der Kernkategorien von Erwachsenenpornos und vertikalen Themen",
       "applicableFileTypes": [
@@ -3974,21 +3975,21 @@
       "level": 4,
       "tags": [
         "Inzest",
-        "Mutter und Sohn",
-        "Vater und Tochter",
-        "Bruder und Schwester",
-        "Geschwister",
-        "Schwiegervater und Schwiegertochter",
-        "Schwiegermutter und Schwiegertochter",
-        "Stiefvater, Stiefmutter",
-        "Schwiegervater und Schwiegermutter",
-        "Schwägerin",
-        "Tante und Neffe",
-        "Onkel und Neffe",
-        "Mütterlicher Onkel und Neffe",
-        "Cousins ​​und Schwiegereltern",
-        "Frau des älteren Bruders",
-        "Großvater und Enkel trennten die Generationen"
+        "Mutter-Sohn-Erotik",
+        "Vater-Tochter-Erotik",
+        "Bruder und Schwester Erotik",
+        "Schwester und Bruder Erotik",
+        "Schwiegervater und Schwiegertochter Erotik",
+        "Schwiegermutter Erotik",
+        "Stiefvater Stiefmutter Erotik",
+        "Schwiegervater Schwiegermutter Erotik",
+        "Schwägerin Erotik",
+        "Tante und Neffe Erotik",
+        "Onkel und Neffe Erotik",
+        "Onkel und Neffe Erotik",
+        "Schwiegercousine Erotik",
+        "Schwägerin Erotik",
+        "Großvater und Enkel generationsübergreifende Erotik"
       ],
       "description": "Unterteilung der Themen Blutsverwandtschaft, Familienalter und tabuisierte Ethik",
       "applicableFileTypes": [
@@ -4023,14 +4024,13 @@
       "level": 4,
       "tags": [
         "Partnertausch",
-        "Frauentausch",
+        "Lust beim Frauentausch",
         "Fremdgehen",
-        "Schöne verheiratete Frau",
-        "Junge reife Frau",
-        "Mätresse",
-        "Hausfrau",
-        "Altersunterschied-Liebe",
-        "Reine Liebe"
+        "Erotik der schönen verheirateten Frau",
+        "Erotik mit jungen reifen Frauen",
+        "Erotik mit der Mätresse",
+        "Lust der Hausfrau",
+        "Erotik mit Altersunterschied"
       ],
       "description": "Segmentierung außerehelicher emotionaler Verträge, Partneraustausch und Ehefrauenthemen",
       "applicableFileTypes": [
@@ -4061,21 +4061,21 @@
     },
     {
       "id": 152,
-      "name": "Aufschlüsselung der Campus-Lehrer und -Studenten",
+      "name": "Aufschlüsselung der Erotik zwischen Lehrer und Schüler",
       "level": 4,
       "tags": [
-        "Lehrer und Schüler",
-        "Weibliche Lehrerin",
-        "Männlicher Lehrer",
-        "Weibliche Klassenkameradin",
-        "Ältere Mitschüler",
-        "Jüngere Mitschüler",
-        "Schulschönheit",
-        "Studierende",
-        "Gymnasiast",
-        "Tutor"
+        "Sex zwischen Lehrer und Schüler",
+        "Erotik mit der Lehrerin",
+        "Erotik mit dem Lehrer",
+        "Erotik mit der Mitschülerin",
+        "Erotik mit älteren Mitschülern",
+        "Erotik mit jüngeren Mitschülern",
+        "Erotik mit der Schulschönheit",
+        "Erotik mit Studierenden",
+        "Erotik mit Gymnasiasten",
+        "Erotik mit dem Tutor"
       ],
-      "description": "Themenaufschlüsselung: Lehrer-Schüler-Interaktion, Jugendcampus und Klassenkameraden",
+      "description": "Themenaufschlüsselung: Lust zwischen Lehrer und Schüler, Sex auf dem Jugendcampus und Erotik unter Klassenkameraden",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4083,15 +4083,15 @@
         "archive"
       ],
       "contextHints": [
-        "Erzählung von Lehrern und Schülern",
-        "Campus-Jugend",
-        "Thema „Klassenkameraden“."
+        "Lehrer-Schüler-Lust",
+        "Campus-Sex",
+        "Klassenkameraden-Erotik"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Erotik-Segmente",
           "triggerTags": [
-            "Campus-Lehrer und -Studenten"
+            "Erotik zwischen Lehrer und Schüler"
           ]
         }
       ],
@@ -4104,22 +4104,22 @@
     },
     {
       "id": 153,
-      "name": "Soziale Segmentierung am Arbeitsplatz",
+      "name": "Aufschlüsselung der Erotik am Arbeitsplatz",
       "level": 4,
       "tags": [
-        "Zwischen Kollegen",
-        "Weibliche Chefin",
-        "Männlicher Chef",
-        "Weibliche Sekretärin",
-        "Weibliche Nachbarin",
-        "Nachbarn",
-        "Fahrerkollege",
-        "Dienstmädchen",
-        "Städtisches Leben",
-        "Landschaftsnotizen",
-        "Internet-Dating"
+        "Lust zwischen Kollegen",
+        "Erotik mit der Chefin",
+        "Erotik mit dem Chef",
+        "Erotik mit der Sekretärin",
+        "Erotik mit der Nachbarin",
+        "Erotik zwischen Nachbarn",
+        "Erotik mit Fahrer und Kollegen",
+        "Erotik mit dem Dienstmädchen",
+        "Städtische Lust",
+        "Erotik auf dem Land",
+        "Lust im Internet"
       ],
-      "description": "Segmentierung der Beschäftigung am Arbeitsplatz, der Gemeindenachbarschaften und der sozialen Lebenskreise",
+      "description": "Aufteilung der erotischen Kreise am Arbeitsplatz, in der Nachbarschaft und in der sozialen Erotik",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4127,15 +4127,15 @@
         "archive"
       ],
       "contextHints": [
-        "Erzählung am Arbeitsplatz",
-        "Nachbarschaftsleben",
-        "Soziale Beziehungen"
+        "Lust am Arbeitsplatz",
+        "Erotik zwischen Nachbarn",
+        "Soziale Lust"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Erotik-Segmente",
           "triggerTags": [
-            "Soziales am Arbeitsplatz"
+            "Erotik am Arbeitsplatz"
           ]
         }
       ],
@@ -4153,9 +4153,9 @@
       "tags": [
         "3P",
         "Orgie",
-        "Treffen mit mehreren Partnern",
-        "Gruppeninteraktion",
-        "Mehrpersonenparty"
+        "Sexparty mit mehreren Partnern",
+        "Erotische Gruppeninteraktion",
+        "Sexparty mit mehreren Personen"
       ],
       "description": "Themensegmentierung für Zusammenarbeit mit mehreren Agenten, Gruppeninteraktion und Interaktion mit mehreren Personen",
       "applicableFileTypes": [
@@ -4165,9 +4165,9 @@
         "archive"
       ],
       "contextHints": [
-        "Interaktion mit mehreren Agenten",
-        "Gruppeninteraktion",
-        "Partyszene"
+        "Erotische Interaktion mit mehreren Agenten",
+        "Erotische Gruppeninteraktion",
+        "Sexparty-Szene"
       ],
       "triggerConditions": [
         {
@@ -4197,7 +4197,7 @@
         "Harter Sex",
         "Hardcore-Perversion",
         "Wax Play & Peitsche",
-        "Spezifischer Fetisch"
+        "Fetischistische sexuelle Neigung"
       ],
       "description": "Dominanz und Unterwerfung, subkulturelle Fetische und ernsthafter konfrontativer Sex-Zusammenbruch",
       "applicableFileTypes": [
@@ -4269,15 +4269,15 @@
     },
     {
       "id": 157,
-      "name": "Aufschlüsselung der Berufsuniformen",
+      "name": "Aufschlüsselung der Verführung in Uniform",
       "level": 4,
       "tags": [
-        "Arzt & Krankenschwester",
-        "Geburtshilfe und Gynäkologie",
-        "Flugbegleiterin",
-        "Polizeiangestellte",
-        "Model & Car Model",
-        "Tänzerin",
+        "Erotik von Arzt und Krankenschwester",
+        "Erotik in der Gynäkologie",
+        "Erotik mit der Flugbegleiterin",
+        "Erotik mit der Polizistin",
+        "Erotik mit Model und Car Model",
+        "Erotik mit der Tänzerin",
         "Kommerzielle Pornografie",
         "Bezahltes Dating und Prostitution"
       ],
@@ -4297,7 +4297,7 @@
         {
           "parentDimension": "Erotik-Segmente",
           "triggerTags": [
-            "Berufsuniform"
+            "Verführung in Uniform"
           ]
         }
       ],
@@ -4310,19 +4310,20 @@
     },
     {
       "id": 158,
-      "name": "Aufschlüsselung der literarischen Themen",
+      "name": "Unterkategorien der erotischen Literatur",
       "level": 4,
       "tags": [
         "Erotisches Wuxia",
         "Klassische Erotik",
         "Historische Erotik",
-        "Fantasy-Science-Fiction",
-        "Mitternachtsgeschichten",
-        "Zeitgenössische Stadt",
-        "Game-Doujin",
+        "Fantasy-Erotik",
+        "Sci-Fi-Erotik",
+        "Erotik mystischer Geschichten",
+        "Städtische Erotik",
+        "Erotik von Game-Doujins",
         "Japanische Erotik",
         "Westliche Erotik",
-        "Abenteuergeschichte"
+        "Erotische Begegnungen"
       ],
       "description": "Hintergrundeinstellungen der Erwachsenenliteratur, zeitlicher und räumlicher Hintergrund und spezifische Genreunterteilungen",
       "applicableFileTypes": [
@@ -4332,7 +4333,7 @@
         "archive"
       ],
       "contextHints": [
-        "Literarische Themen",
+        "Erotische Literatur",
         "Hintergrundeinstellungen",
         "Literarisches Genre"
       ],
@@ -4340,7 +4341,7 @@
         {
           "parentDimension": "Erotik-Segmente",
           "triggerTags": [
-            "Literarische Themen"
+            "Erotische Literatur"
           ]
         }
       ],
@@ -4404,7 +4405,7 @@
         "Gruppenvergewaltigung",
         "Gewalttätiger Zwang"
       ],
-      "description": "Klassifizierung von unfreiwilliger Nötigung, Übergriffen und extremen Verstößen",
+      "description": "Klassifizierung von unfreiwilliger Nötigung, Verletzung, Verletzung und extremen Verletzungsinhalten",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4433,13 +4434,13 @@
     },
     {
       "id": 161,
-      "name": "Segmentierung mit mehreren Orientierungen",
+      "name": "Unterkategorien der sexuellen Orientierungen",
       "level": 4,
       "tags": [
         "Homoerotisch",
-        "Lesbisches Yuri",
-        "Gay Yaoi",
-        "Transgender"
+        "Lesbische Yuri-Erotik",
+        "Schwule Yaoi-Erotik",
+        "Transgender-Erotik"
       ],
       "description": "Unterschiedliche Geschlechterwahrnehmung, unterschiedliche Orientierungen und spezifische Segmentierung der sexuellen Orientierungsthemen",
       "applicableFileTypes": [
@@ -4449,7 +4450,7 @@
         "archive"
       ],
       "contextHints": [
-        "Mehrere Ausrichtungen",
+        "Vielfältige sexuelle Orientierungen",
         "Homosexuelle Themen",
         "Klassifizierung der sexuellen Orientierung"
       ],
@@ -4457,7 +4458,7 @@
         {
           "parentDimension": "Erotik-Segmente",
           "triggerTags": [
-            "Mehrere Ausrichtungen"
+            "Vielfältige sexuelle Orientierungen"
           ]
         }
       ],

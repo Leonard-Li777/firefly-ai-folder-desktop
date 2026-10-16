@@ -1396,7 +1396,7 @@
         "Training",
         "Harem",
         "Danmei",
-        "Overlord",
+        "Domineering CEO",
         "Ethics"
       ],
       "description": "Professional classification of subject matter",
@@ -2965,7 +2965,8 @@
       "level": 3,
       "tags": [
         "Premium Selection",
-        "Normal Exposure",
+        "Slight Underexposure",
+        "Slight Overexposure",
         "Underexposed in Low Light",
         "Blown Highlights in Backlight",
         "High ISO Noise",
@@ -3330,16 +3331,16 @@
       "tags": [
         "Family incest",
         "Extramarital lust",
-        "Campus teachers and students",
-        "Workplace social",
+        "Teacher-Student Erotica",
+        "Workplace Erotica",
         "Group sex",
         "Sex training",
         "Peeping Wardrobe Malfunction",
-        "Professional uniform",
-        "Literary themes",
+        "Uniform Seduction",
+        "Erotic Literature",
         "Erotic Physiology",
         "Involuntary assault",
-        "Multiple orientations"
+        "Diverse Sexual Orientations"
       ],
       "description": "Division of core categories of adult porn and vertical themes",
       "applicableFileTypes": [
@@ -3974,21 +3975,21 @@
       "level": 4,
       "tags": [
         "Incest",
-        "Mother and son",
-        "Father and daughter",
-        "Brother and sister",
-        "Siblings",
-        "Father-in-law and daughter-in-law",
-        "Mother-in-law and daughter-in-law",
-        "Stepfather stepmother",
-        "Father-in-law and mother-in-law",
-        "Sister-in-law",
-        "Aunt and nephew",
-        "Uncle and nephew",
-        "Maternal Uncle and Nephew",
-        "Cousins ​​in-laws",
-        "Elder Brother's Wife",
-        "Grandfather and grandson separated generations"
+        "Mother and child erotica",
+        "Father-daughter erotica",
+        "Brother and sister erotica",
+        "Sister and brother erotica",
+        "Father-in-law and daughter-in-law erotic",
+        "Mother-in-law erotica",
+        "Stepfather stepmother erotic",
+        "Father-in-law mother-in-law erotica",
+        "Sister-in-law erotica",
+        "Aunt and nephew erotica",
+        "Uncle and nephew erotica",
+        "Uncle and nephew erotica",
+        "Cousin in-laws erotica",
+        "Sister-in-law erotica",
+        "Grandfather and grandson intergenerational erotica"
       ],
       "description": "Subdivision of consanguinity, family seniority and taboo ethical themes",
       "applicableFileTypes": [
@@ -4023,14 +4024,13 @@
       "level": 4,
       "tags": [
         "Partner swap",
-        "Wife swapping",
+        "Wife Swap Lust",
         "Cheating",
-        "Beautiful married woman",
-        "Young mature woman",
-        "Mistress",
-        "Housewife",
-        "May-December Romance",
-        "Pure love"
+        "Beautiful Married Woman Erotica",
+        "Young Mature Woman Erotica",
+        "Mistress Erotica",
+        "Housewife Lust",
+        "May-December Erotica"
       ],
       "description": "Segmentation of extramarital emotional contracts, partner exchange and wife themes",
       "applicableFileTypes": [
@@ -4061,21 +4061,21 @@
     },
     {
       "id": 152,
-      "name": "Campus teachers and students breakdown",
+      "name": "Teacher-Student Erotica Breakdown",
       "level": 4,
       "tags": [
-        "Teacher student",
-        "Female teacher",
-        "Male teacher",
-        "Female classmate",
-        "Senior Students",
-        "Underclassmen",
-        "School beauty",
-        "College Student",
-        "High school student",
-        "Tutor"
+        "Teacher-Student Sex",
+        "Female Teacher Erotica",
+        "Male Teacher Erotica",
+        "Female Classmate Erotica",
+        "Senior Students Erotica",
+        "Underclassmen Erotica",
+        "School Beauty Erotica",
+        "College Student Erotica",
+        "High School Student Erotica",
+        "Tutor Erotica"
       ],
-      "description": "Theme breakdown of teacher-student interaction, youth campus and classmates",
+      "description": "Theme breakdown of teacher-student lust, youthful campus sex and classmate erotica",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4083,15 +4083,15 @@
         "archive"
       ],
       "contextHints": [
-        "Teacher and student narrative",
-        "Campus youth",
-        "Classmates theme"
+        "Teacher-student lust",
+        "Campus sex",
+        "Classmate erotica"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
           "triggerTags": [
-            "Campus teachers and students"
+            "Teacher-Student Erotica"
           ]
         }
       ],
@@ -4104,22 +4104,22 @@
     },
     {
       "id": 153,
-      "name": "Workplace social segmentation",
+      "name": "Workplace Erotica Breakdown",
       "level": 4,
       "tags": [
-        "Between colleagues",
-        "Female boss",
-        "Male boss",
-        "Female secretary",
-        "Female neighbor",
-        "Neighbors",
-        "Driver coworker",
-        "Maid",
-        "Urban life",
-        "Countryside Notes",
-        "Internet dating"
+        "Colleague Lust",
+        "Female Boss Erotica",
+        "Male Boss Erotica",
+        "Female Secretary Erotica",
+        "Female Neighbor Erotica",
+        "Neighborhood Erotica",
+        "Driver & Coworker Erotica",
+        "Maid Erotica",
+        "Urban Lust",
+        "Countryside Erotica",
+        "Online Lust"
       ],
-      "description": "Segmentation of workplace employment, community neighborhoods and life social circles",
+      "description": "Breakdown of workplace erotic, neighborhood erotic and social erotic circles",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4127,15 +4127,15 @@
         "archive"
       ],
       "contextHints": [
-        "Workplace narrative",
-        "Neighborhood life",
-        "Social relations"
+        "Workplace lust",
+        "Neighborhood Erotica",
+        "Social lust"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Pornography Subgenres",
           "triggerTags": [
-            "Workplace social"
+            "Workplace Erotica"
           ]
         }
       ],
@@ -4153,9 +4153,9 @@
       "tags": [
         "3P",
         "Orgy",
-        "Multi-partner gathering",
-        "Group interaction",
-        "Multi-person party"
+        "Multi-partner Sex Party",
+        "Group Erotic Interaction",
+        "Multi-person Sex Party"
       ],
       "description": "Multi-agent collaboration, group interaction and multi-person interaction theme segmentation",
       "applicableFileTypes": [
@@ -4165,9 +4165,9 @@
         "archive"
       ],
       "contextHints": [
-        "Multi-agent interaction",
-        "Group interaction",
-        "Party scene"
+        "Multi-party Erotic Interaction",
+        "Group Erotic Interaction",
+        "Sex Party Scene"
       ],
       "triggerConditions": [
         {
@@ -4197,7 +4197,7 @@
         "Hardcore Sex",
         "Hardcore Perversion",
         "Wax Play & Whip",
-        "Specific fetish"
+        "Fetish Sexual Kink"
       ],
       "description": "Dominance and submission, subcultural fetishes and serious confrontational sex breakdown",
       "applicableFileTypes": [
@@ -4269,15 +4269,15 @@
     },
     {
       "id": 157,
-      "name": "Professional uniform segmentation",
+      "name": "Uniform Seduction Breakdown",
       "level": 4,
       "tags": [
-        "Doctor & Nurse Roleplay",
-        "Obstetrics and Gynecology",
-        "Airline stewardess",
-        "Policewoman",
-        "Mannequin car model",
-        "Dancing girl",
+        "Doctor & Nurse Erotica",
+        "OB/GYN Erotica",
+        "Stewardess Erotica",
+        "Policewoman Erotica",
+        "Model & Car Model Erotica",
+        "Dancing Girl Erotica",
         "Commercial pornography",
         "Paid Dating and Prostitution"
       ],
@@ -4297,7 +4297,7 @@
         {
           "parentDimension": "Pornography Subgenres",
           "triggerTags": [
-            "Professional uniform"
+            "Uniform Seduction"
           ]
         }
       ],
@@ -4310,19 +4310,20 @@
     },
     {
       "id": 158,
-      "name": "Literary subject breakdown",
+      "name": "Erotic Literature Subcategories",
       "level": 4,
       "tags": [
         "Erotic Wuxia",
         "Classical Erotica",
         "Historical erotica",
-        "Fantasy science fiction",
-        "Midnight stories",
-        "Contemporary city",
-        "Game Doujin",
-        "Japanese erotica",
-        "Western erotica",
-        "Adventure story"
+        "Fantasy Erotica",
+        "Sci-Fi Erotica",
+        "Supernatural Erotica",
+        "Urban Erotica",
+        "Game Doujin Erotica",
+        "Japanese-Style Erotica",
+        "Western Erotica",
+        "Erotic Encounters"
       ],
       "description": "Adult literature background settings, time and space background and specific genre subdivisions",
       "applicableFileTypes": [
@@ -4332,7 +4333,7 @@
         "archive"
       ],
       "contextHints": [
-        "Literary themes",
+        "Erotic Literature",
         "Background settings",
         "Literary genre"
       ],
@@ -4340,7 +4341,7 @@
         {
           "parentDimension": "Pornography Subgenres",
           "triggerTags": [
-            "Literary themes"
+            "Erotic Literature"
           ]
         }
       ],
@@ -4404,7 +4405,7 @@
         "Gang rape assault",
         "Violent coercion"
       ],
-      "description": "Classification of involuntary coercion, infringement and extreme violations",
+      "description": "Classification of involuntary coercion, infringement, violation and extreme violation content",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4433,13 +4434,13 @@
     },
     {
       "id": 161,
-      "name": "Multiple orientation segmentation",
+      "name": "Diverse Sexual Orientation Subcategories",
       "level": 4,
       "tags": [
         "Homoerotic",
-        "Lesbian Yuri",
-        "Gay Yaoi",
-        "Transgender"
+        "Lesbian yuri Erotica",
+        "Gay Yaoi Erotica",
+        "Transgender erotica"
       ],
       "description": "Diverse gender cognition, diverse orientations and specific sexual orientation theme segmentation",
       "applicableFileTypes": [
@@ -4449,7 +4450,7 @@
         "archive"
       ],
       "contextHints": [
-        "Multiple orientations",
+        "Diverse Sexual Orientations",
         "Homosexual themes",
         "Sexual orientation classification"
       ],
@@ -4457,7 +4458,7 @@
         {
           "parentDimension": "Pornography Subgenres",
           "triggerTags": [
-            "Multiple orientations"
+            "Diverse Sexual Orientations"
           ]
         }
       ],

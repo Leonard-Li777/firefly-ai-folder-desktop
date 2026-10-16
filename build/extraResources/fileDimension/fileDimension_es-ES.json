@@ -1366,14 +1366,14 @@
         "Suspense",
         "Razonamiento",
         "Viaje en el tiempo",
-        "Xi'anxia",
+        "Xianxia",
         "Historia",
         "Ciudad",
         "Campus",
         "Lugar de trabajo",
         "Familia",
         "Ídolo",
-        "Artes marciales",
+        "Wuxia",
         "Trama",
         "Biografía",
         "Comedia",
@@ -1396,7 +1396,7 @@
         "Capacitación",
         "Harén",
         "Danmei",
-        "Señor",
+        "Director dominante",
         "Ética"
       ],
       "description": "Clasificación profesional de la materia.",
@@ -2668,11 +2668,11 @@
         "Causando depresión",
         "Fácil",
         "Nervioso",
-        "Mover",
+        "Conmovedor",
         "Nostalgia",
         "Deseo",
         "Entusiasmado",
-        "Deprimir",
+        "Opresión",
         "Culpa",
         "Sentido de inmoralidad",
         "Vergüenza",
@@ -2965,7 +2965,8 @@
       "level": 3,
       "tags": [
         "Selección de primera calidad",
-        "Exposición correcta",
+        "Ligera subexposición",
+        "Ligera sobreexposición",
         "Subexposición en condiciones de poca luz",
         "Blanco cegador a contraluz",
         "Ruido a ISO alto",
@@ -3330,16 +3331,16 @@
       "tags": [
         "Incesto familiar",
         "Lujuria extramatrimonial",
-        "Profesores y estudiantes del campus.",
-        "Trabajo social",
+        "Erótica profesor-estudiante",
+        "Erótica en el trabajo",
         "Sexo en grupo",
         "Entrenamiento sexual",
         "Voyeurismo y exhibición",
-        "Uniforme profesional",
-        "Temas literarios",
+        "Seducción en uniforme",
+        "Literatura erótica",
         "Fisiología erótica",
         "Asalto involuntario",
-        "Múltiples orientaciones"
+        "Orientaciones sexuales diversas"
       ],
       "description": "División de categorías principales de pornografía para adultos y temas verticales.",
       "applicableFileTypes": [
@@ -3974,21 +3975,21 @@
       "level": 4,
       "tags": [
         "Incesto",
-        "Madre e hijo",
-        "Padre e hija",
-        "Hermanos",
-        "Hermanos",
-        "Suegro y nuera",
-        "Suegra y nuera",
-        "Padrastro madrastra",
-        "Suegro y suegra",
-        "Cuñada",
-        "Tia y sobrino",
-        "Tio y sobrino",
-        "Tío materno y sobrino",
-        "Primos suegros",
-        "Esposa del hermano mayor",
-        "Abuelo y nieto (diferencia de generación)"
+        "Erotismo de madre e hijo",
+        "Padre-hija erotica",
+        "Hermano y hermana erotica",
+        "Hermana y hermano erotica",
+        "Suegro y nuera erótico",
+        "Suegra erótica",
+        "Padrastro madrastra erótico",
+        "Suegro suegra erótica",
+        "Cuñada erótica",
+        "Tía y sobrino erotica",
+        "Tío y sobrino erotica",
+        "Tío y sobrino erotica",
+        "Primo suegros erotica",
+        "Cuñada erótica",
+        "Abuelo y nieto erotismo intergeneracional"
       ],
       "description": "Subdivisión de consanguinidad, antigüedad familiar y temas éticos tabú",
       "applicableFileTypes": [
@@ -4023,14 +4024,13 @@
       "level": 4,
       "tags": [
         "Intercambio de pareja",
-        "Intercambio de esposas",
+        "Lujuria del intercambio de esposas",
         "Infidelidad",
-        "Hermosa mujer casada",
-        "Joven madura",
-        "Amante",
-        "Ama de casa",
-        "Romance con diferencia de edad",
-        "Amor puro"
+        "Erótica de la hermosa mujer casada",
+        "Erótica de la joven madura",
+        "Erótica de la amante",
+        "Lujuria del ama de casa",
+        "Erótica con diferencia de edad"
       ],
       "description": "Segmentación de contratos emocionales extramatrimoniales, intercambio de pareja y temas de esposa.",
       "applicableFileTypes": [
@@ -4061,21 +4061,21 @@
     },
     {
       "id": 152,
-      "name": "Desglose de profesores y estudiantes del campus",
+      "name": "Desglose de la erótica profesor-estudiante",
       "level": 4,
       "tags": [
-        "Profesor y estudiante",
-        "Profesora",
-        "Profesor masculino",
-        "Compañera de clase",
-        "Estudiantes mayores",
-        "Estudiantes de primer año",
-        "Belleza escolar",
-        "Estudiante universitario",
-        "Estudiante de secundaria",
-        "Tutor"
+        "Sexo profesor-estudiante",
+        "Erótica de la profesora",
+        "Erótica del profesor",
+        "Erótica de la compañera de clase",
+        "Erótica de los estudiantes mayores",
+        "Erótica de los estudiantes más jóvenes",
+        "Erótica de la belleza de la escuela",
+        "Erótica estudiantil",
+        "Erótica de estudiantes de secundaria",
+        "Erótica con el tutor"
       ],
-      "description": "Desglose temático de la interacción profesor-alumno, campus juvenil y compañeros de clase",
+      "description": "Desglose temático del deseo profesor-alumno, el sexo en el campus juvenil y la erótica entre compañeros",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4083,15 +4083,15 @@
         "archive"
       ],
       "contextHints": [
-        "Narrativa de docentes y estudiantes",
-        "Juventud del campus",
-        "Tema de compañeros de clase"
+        "Lujuria profesor-alumno",
+        "Sexo en el campus",
+        "Erotismo de compañeros de clase"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Subgéneros del porno",
           "triggerTags": [
-            "Profesores y estudiantes del campus."
+            "Erótica profesor-estudiante"
           ]
         }
       ],
@@ -4104,22 +4104,22 @@
     },
     {
       "id": 153,
-      "name": "Segmentación social en el lugar de trabajo",
+      "name": "Desglose de la erótica en el trabajo",
       "level": 4,
       "tags": [
-        "Entre colegas",
-        "Jefa",
-        "Jefe masculino",
-        "Secretaria",
-        "Vecina",
-        "Vecinos",
-        "Compañero de trabajo conductor",
-        "Mucama",
-        "Vida urbana",
-        "Notas de campo",
-        "Citas por internet"
+        "Lujuria entre colegas",
+        "Erótica de la jefa",
+        "Erótica del jefe",
+        "Erótica de la secretaria",
+        "Erótica de la vecina",
+        "Erótica entre vecinos",
+        "Erótica del conductor y los compañeros",
+        "Erótica de la mucama",
+        "Lujuria urbana",
+        "Erótica rural",
+        "Lujuria en línea"
       ],
-      "description": "Segmentación del empleo laboral, barrios comunitarios y círculos sociales de vida.",
+      "description": "Desglose de los círculos eróticos del lugar de trabajo, del vecindario y sociales",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4127,15 +4127,15 @@
         "archive"
       ],
       "contextHints": [
-        "Narrativa del lugar de trabajo",
-        "Vida de barrio",
-        "Relaciones sociales"
+        "Lujuria en el lugar de trabajo",
+        "Erótica entre vecinos",
+        "Lujuria social"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Subgéneros del porno",
           "triggerTags": [
-            "Trabajo social"
+            "Erótica en el trabajo"
           ]
         }
       ],
@@ -4153,9 +4153,9 @@
       "tags": [
         "3P",
         "Orgía",
-        "Reunión de múltiples socios",
-        "Interacción grupal",
-        "Fiesta de varias personas"
+        "Fiesta de sexo de múltiples socios",
+        "Interacción erótica grupal",
+        "Fiesta de sexo de varias personas"
       ],
       "description": "Colaboración entre múltiples agentes, interacción grupal y segmentación temática de interacción entre varias personas.",
       "applicableFileTypes": [
@@ -4165,9 +4165,9 @@
         "archive"
       ],
       "contextHints": [
-        "Interacción multiagente",
-        "Interacción grupal",
-        "Escena de fiesta"
+        "Interacción erótica multiagente",
+        "Interacción erótica grupal",
+        "Escena de fiesta de sexo"
       ],
       "triggerConditions": [
         {
@@ -4197,7 +4197,7 @@
         "Sexo duro",
         "Perversión Extrema",
         "Cera y látigo",
-        "Fetiche específico"
+        "Perversión sexual fetichista"
       ],
       "description": "Dominación y sumisión, fetiches subculturales y grave ruptura sexual conflictiva",
       "applicableFileTypes": [
@@ -4269,15 +4269,15 @@
     },
     {
       "id": 157,
-      "name": "Categorías de uniformes profesionales",
+      "name": "Desglose de la seducción en uniforme",
       "level": 4,
       "tags": [
-        "Médico y enfermera",
-        "Obstetricia y Ginecología",
-        "Azafata de aerolínea",
-        "Mujer policía",
-        "Modelo y azafata de coche",
-        "Bailarina",
+        "Erótica médico y enfermera",
+        "Erótica ginecológica",
+        "Erótica de la azafata",
+        "Erótica de la mujer policía",
+        "Erótica de modelo y azafata de coche",
+        "Erótica de la bailarina",
         "Pornografía comercial",
         "Citas pagadas y prostitución"
       ],
@@ -4297,7 +4297,7 @@
         {
           "parentDimension": "Subgéneros del porno",
           "triggerTags": [
-            "Uniforme profesional"
+            "Seducción en uniforme"
           ]
         }
       ],
@@ -4310,19 +4310,20 @@
     },
     {
       "id": 158,
-      "name": "Desglose del tema literario",
+      "name": "Subcategorías de literatura erótica",
       "level": 4,
       "tags": [
         "Wuxia erótico",
         "Erótica clásica",
         "Erótica histórica",
-        "Fantasía ciencia ficción",
-        "Historias de medianoche",
-        "Ciudad contemporánea",
-        "Doujin de juegos",
-        "Erótica japonesa",
+        "Erótica fantástica",
+        "Erótica de ciencia ficción",
+        "Erótica sobrenatural",
+        "Erótica urbana",
+        "Erótica de doujins de juegos",
+        "Erótica de estilo japonés",
         "Erótica occidental",
-        "Historia de aventuras"
+        "Encuentros eróticos"
       ],
       "description": "Contextos de la literatura para adultos, Fondo en el tiempo y el espacio y subdivisiones de género específicas",
       "applicableFileTypes": [
@@ -4332,7 +4333,7 @@
         "archive"
       ],
       "contextHints": [
-        "Temas literarios",
+        "Literatura erótica",
         "Configuración de fondo",
         "Genero literario"
       ],
@@ -4340,7 +4341,7 @@
         {
           "parentDimension": "Subgéneros del porno",
           "triggerTags": [
-            "Temas literarios"
+            "Literatura erótica"
           ]
         }
       ],
@@ -4404,7 +4405,7 @@
         "Violación en grupo",
         "Coerción violenta"
       ],
-      "description": "Clasificación de coacción involuntaria, infracción y violaciones extremas",
+      "description": "Clasificación del contenido de coerción involuntaria, infracción, violación y violación extrema",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4433,13 +4434,13 @@
     },
     {
       "id": 161,
-      "name": "Segmentación de orientación múltiple",
+      "name": "Subcategorías de orientaciones sexuales",
       "level": 4,
       "tags": [
         "Homoerótico",
-        "Yuri lésbico",
-        "Yaoi gay",
-        "Transgénero"
+        "Erótica lesbiana yuri",
+        "Erótica gay yaoi",
+        "Erótica transgénero"
       ],
       "description": "Cognición de género diversa, orientaciones diversas y segmentación temática de orientación sexual específica",
       "applicableFileTypes": [
@@ -4449,7 +4450,7 @@
         "archive"
       ],
       "contextHints": [
-        "Múltiples orientaciones",
+        "Orientaciones sexuales diversas",
         "Temas homosexuales",
         "Clasificación de orientación sexual"
       ],
@@ -4457,7 +4458,7 @@
         {
           "parentDimension": "Subgéneros del porno",
           "triggerTags": [
-            "Múltiples orientaciones"
+            "Orientaciones sexuales diversas"
           ]
         }
       ],

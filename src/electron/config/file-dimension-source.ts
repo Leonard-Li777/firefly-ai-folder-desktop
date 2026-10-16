@@ -2993,7 +2993,8 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         level: 3,
         tags: [
             t('优质精选'),
-            t('曝光正常'),
+            t('轻微欠曝'),
+            t('轻微过曝'),
             t('暗光欠曝'),
             t('逆光死白'),
             t('高ISO噪点'),
@@ -3007,6 +3008,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             t('方向错误'),
             t('画面倾斜')
           ],
+
         description: t('摄影照片的技术与画质状态评估'),
         applicableFileTypes: [
             "image"
@@ -3358,16 +3360,16 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         tags: [
             t('家庭乱伦'),
             t('婚外情欲'),
-            t('校园师生'),
-            t('职场社交'),
+            t('师生情色'),
+            t('职场情色'),
             t('多人群交'),
             t('性爱调教'),
             t('窥视暴露'),
-            t('职业制服'),
-            t('文学题材'),
+            t('制服诱惑'),
+            t('情色文学'),
             t('情欲生理'),
             t('非自愿侵犯'),
-            t('多元取向')
+            t('多元性取向')
           ],
         description: t('成人色情与垂直题材核心门类划分'),
         applicableFileTypes: [
@@ -4002,21 +4004,21 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         level: 4,
         tags: [
             t('近亲乱伦'),
-            t('母子'),
-            t('父女'),
-            t('兄妹'),
-            t('姐弟'),
-            t('公公媳妇'),
-            t('婆媳'),
-            t('继父继母'),
-            t('岳父岳母'),
-            t('小姨子'),
-            t('姑侄'),
-            t('叔侄'),
-            t('舅甥'),
-            t('表亲姻亲'),
-            t('嫂嫂'),
-            t('爷孙隔代')
+            t('母子情色'),
+            t('父女情色'),
+            t('兄妹情色'),
+            t('姐弟情色'),
+            t('公公媳妇情色'),
+            t('婆媳情色'),
+            t('继父继母情色'),
+            t('岳父岳母情色'),
+            t('小姨子情色'),
+            t('姑侄情色'),
+            t('叔侄情色'),
+            t('舅甥情色'),
+            t('表亲姻亲情色'),
+            t('嫂嫂情色'),
+            t('爷孙隔代情色')
           ],
         description: t('近亲血缘、家庭辈分与禁忌伦理题材细分'),
         applicableFileTypes: [
@@ -4051,14 +4053,13 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         level: 4,
         tags: [
             t('伴侣交换'),
-            t('换妻'),
+            t('换妻情欲'),
             t('偷情出轨'),
-            t('人妻美妇'),
-            t('少妇熟女'),
-            t('情妇小三'),
-            t('主妇'),
-            t('忘年之乐'),
-            t('纯洁恋情')
+            t('人妻美妇情色'),
+            t('少妇熟女情色'),
+            t('情妇小三情色'),
+            t('主妇情欲'),
+            t('忘年之乐情色')
           ],
         description: t('婚姻外情感契约、伴侣互换与人妻题材细分'),
         applicableFileTypes: [
@@ -4089,21 +4090,21 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
       },
         {
         id: 152,
-        name: t('校园师生细分'),
+        name: t('师生情色细分'),
         level: 4,
         tags: [
-            t('教师学生'),
-            t('女教师'),
-            t('男老师'),
-            t('女同学'),
-            t('学长学姐'),
-            t('学弟学妹'),
-            t('校花'),
-            t('大学生'),
-            t('高中生'),
-            t('家庭教师')
+            t('师生性爱'),
+            t('女教师情色'),
+            t('男老师情色'),
+            t('女同学情色'),
+            t('学长学姐情色'),
+            t('学弟学妹情色'),
+            t('校花情色'),
+            t('大学生情色'),
+            t('高中生情色'),
+            t('家庭教师情色')
           ],
-        description: t('师生互动、青春校园与同窗题材细分'),
+        description: t('师生情欲、青春校园性爱与同窗情色题材细分'),
         applicableFileTypes: [
             "ebook",
             "image",
@@ -4111,15 +4112,15 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             "archive"
           ],
         contextHints: [
-            t('师生叙事'),
-            t('校园青春'),
-            t('同窗题材')
+            t('师生情欲'),
+            t('校园性爱'),
+            t('同窗情色')
           ],
         triggerConditions: [
             {
             parentDimension: t('色情细分'),
             triggerTags: [
-                t('校园师生')
+                t('师生情色')
               ]
           }
           ],
@@ -4132,22 +4133,22 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
       },
         {
         id: 153,
-        name: t('职场社交细分'),
+        name: t('职场情色细分'),
         level: 4,
         tags: [
-            t('同事之间'),
-            t('女老板'),
-            t('男上司'),
-            t('女秘书'),
-            t('女邻居'),
-            t('左邻右舍'),
-            t('司机工友'),
-            t('女佣'),
-            t('都市生活'),
-            t('乡间记趣'),
-            t('网络交友')
+            t('同事情欲'),
+            t('女老板情色'),
+            t('男上司情色'),
+            t('女秘书情色'),
+            t('女邻居情色'),
+            t('邻里情色'),
+            t('司机工友情色'),
+            t('女佣情色'),
+            t('都市情欲'),
+            t('乡间情色'),
+            t('网络情欲')
           ],
-        description: t('职场雇佣、社区邻里与生活社交圈层细分'),
+        description: t('职场情欲、邻里情色与社交情欲圈层细分'),
         applicableFileTypes: [
             "ebook",
             "image",
@@ -4155,15 +4156,15 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             "archive"
           ],
         contextHints: [
-            t('职场叙事'),
-            t('邻里生活'),
-            t('社交关系')
+            t('职场情欲'),
+            t('邻里情色'),
+            t('社交情欲')
           ],
         triggerConditions: [
             {
             parentDimension: t('色情细分'),
             triggerTags: [
-                t('职场社交')
+                t('职场情色')
               ]
           }
           ],
@@ -4181,9 +4182,9 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
         tags: [
             "3P",
             t('群交'),
-            t('多伴侣聚会'),
-            t('群体互动'),
-            t('多人派对')
+            t('多伴侣性爱聚会'),
+            t('群体色情互动'),
+            t('多人性派对')
           ],
         description: t('多主体协同、群体交互与多人互动题材细分'),
         applicableFileTypes: [
@@ -4193,9 +4194,9 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             "archive"
           ],
         contextHints: [
-            t('多主体互动'),
-            t('群体互动'),
-            t('聚会场景')
+            t('多主体色情互动'),
+            t('群体色情互动'),
+            t('性爱聚会场景')
           ],
         triggerConditions: [
             {
@@ -4225,7 +4226,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             t('粗野性交'),
             t('重口变态'),
             t('滴蜡皮鞭'),
-            t('特定恋物')
+            t('恋物性癖')
           ],
         description: t('支配与顺从、亚文化癖好与重度对抗性爱细分'),
         applicableFileTypes: [
@@ -4297,15 +4298,15 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
       },
         {
         id: 157,
-        name: t('职业制服细分'),
+        name: t('制服诱惑细分'),
         level: 4,
         tags: [
-            t('医生护士'),
-            t('妇产科'),
-            t('空姐'),
-            t('女警'),
-            t('模特车模'),
-            t('舞女'),
+            t('医生护士情色'),
+            t('妇产科情色'),
+            t('空姐情色'),
+            t('女警情色'),
+            t('模特车模情色'),
+            t('舞女情色'),
             t('商业涉黄'),
             t('援交嫖妓')
           ],
@@ -4325,7 +4326,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             {
             parentDimension: t('色情细分'),
             triggerTags: [
-                t('职业制服')
+                t('制服诱惑')
               ]
           }
           ],
@@ -4338,19 +4339,20 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
       },
         {
         id: 158,
-        name: t('文学题材细分'),
+        name: t('情色文学细分'),
         level: 4,
         tags: [
-            t('情色武侠'),
+            t('武侠情色'),
             t('古典情色'),
             t('历史情色'),
-            t('奇幻科幻'),
-            t('午夜怪谈'),
-            t('当代都市'),
-            t('游戏同人'),
-            t('日本情色'),
-            t('西洋情色'),
-            t('奇遇物语')
+            t('奇幻情色'),
+            t('科幻情色'),
+            t('怪谈情色'),
+            t('都市情色'),
+            t('游戏同人情色'),
+            t('日系情色'),
+            t('欧美情色'),
+            t('情色奇遇')
           ],
         description: t('成人文学背景设定、时空背景与特定流派细分'),
         applicableFileTypes: [
@@ -4360,7 +4362,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             "archive"
           ],
         contextHints: [
-            t('文学题材'),
+            t('情色文学'),
             t('背景设定'),
             t('文学流派')
           ],
@@ -4368,7 +4370,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             {
             parentDimension: t('色情细分'),
             triggerTags: [
-                t('文学题材')
+                t('情色文学')
               ]
           }
           ],
@@ -4432,7 +4434,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             t('轮奸侵犯'),
             t('暴力胁迫')
           ],
-        description: t('非自愿强迫、侵害侵害与极端违规内容分类'),
+        description: t('非自愿强迫、侵害违规与极端违规内容分类'),
         applicableFileTypes: [
             "ebook",
             "image",
@@ -4461,13 +4463,13 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
       },
         {
         id: 161,
-        name: t('多元取向细分'),
+        name: t('多元性取向细分'),
         level: 4,
         tags: [
             t('同性情色'),
-            t('女同百合'),
-            t('男同耽美'),
-            t('跨性别')
+            t('女同百合情色'),
+            t('男同耽美情色'),
+            t('跨性别情色')
           ],
         description: t('多元性别认知、多元取向与特定性向题材细分'),
         applicableFileTypes: [
@@ -4477,7 +4479,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             "archive"
           ],
         contextHints: [
-            t('多元取向'),
+            t('多元性取向'),
             t('同性题材'),
             t('性向分类')
           ],
@@ -4485,7 +4487,7 @@ export const FILE_DIMENSION_DATA: DimensionConfigSource = {
             {
             parentDimension: t('色情细分'),
             triggerTags: [
-                t('多元取向')
+                t('多元性取向')
               ]
           }
           ],

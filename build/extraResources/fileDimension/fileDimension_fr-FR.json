@@ -1373,7 +1373,7 @@
         "Lieu de travail",
         "Famille",
         "Idole",
-        "Arts martiaux",
+        "Wuxia",
         "Intrigue",
         "Biographie",
         "Comédie",
@@ -1395,8 +1395,8 @@
         "Pornographie",
         "Entraînement",
         "Harem",
-        "Dan Mei",
-        "Suzerain",
+        "Danmei",
+        "PDG dominateur",
         "Éthique"
       ],
       "description": "Classification professionnelle des matières",
@@ -2672,7 +2672,7 @@
         "Nostalgie",
         "Désir",
         "Excité",
-        "Déprimer",
+        "Oppression",
         "Culpabilité",
         "Sentiment d'immoralité",
         "Honte",
@@ -2965,7 +2965,8 @@
       "level": 3,
       "tags": [
         "Une sélection de qualité",
-        "Exposition normale",
+        "Légère sous-exposition",
+        "Légère sur-exposition",
         "Sous-exposition en basse lumière",
         "Blanc aveuglant à contre-jour",
         "Bruit à haute sensibilité ISO",
@@ -3330,16 +3331,16 @@
       "tags": [
         "Inceste familial",
         "Convoitise extraconjugale",
-        "Professeurs et étudiants du campus",
-        "Social au travail",
+        "Érotisme enseignant-élève",
+        "Érotisme en milieu professionnel",
         "Sexe de groupe",
         "Entraînement sexuel",
         "Voyeurisme et exhibition",
-        "Uniforme professionnel",
-        "Thèmes littéraires",
+        "Séduction en uniforme",
+        "Littérature érotique",
         "Physiologie Érotique",
         "Agression involontaire",
-        "Orientations multiples"
+        "Orientations sexuelles diverses"
       ],
       "description": "Division des catégories principales de porno adulte et de thèmes verticaux",
       "applicableFileTypes": [
@@ -3974,21 +3975,21 @@
       "level": 4,
       "tags": [
         "Inceste",
-        "Mère et fils",
-        "Père et fille",
-        "Frère et soeur",
-        "Frères et sœurs",
-        "Beau-père et belle-fille",
-        "Belle-mère et belle-fille",
-        "Beau-père, belle-mère",
-        "Beau-père et belle-mère",
-        "Belle-sœur",
-        "Tante et neveu",
-        "Oncle et neveu",
-        "Oncle maternel et neveu",
-        "Beaux-cousins",
-        "Femme du frère aîné",
-        "Grand-père et petit-fils (écart de génération)"
+        "Érotisme mère et enfant",
+        "Érotisme père-fille",
+        "Frère et soeur érotique",
+        "Soeur et frère érotique",
+        "Beau-père et belle-fille érotiques",
+        "Belle-mère érotique",
+        "Beau-père belle-mère érotique",
+        "Beau-père belle-mère érotisme",
+        "Belle-soeur érotique",
+        "Tante et neveu érotique",
+        "Oncle et neveu érotique",
+        "Oncle et neveu érotique",
+        "Belle-cousine érotique",
+        "Belle-soeur érotique",
+        "Érotisme intergénérationnel grand-père et petit-fils"
       ],
       "description": "Subdivision de la consanguinité, de l'ancienneté familiale et des thèmes éthiques tabous",
       "applicableFileTypes": [
@@ -4023,14 +4024,13 @@
       "level": 4,
       "tags": [
         "échange de partenaires",
-        "Échange de femme",
+        "Convoitise de l'échange de femmes",
         "Infidélité",
-        "Belle femme mariée",
-        "Jeune femme mûre",
-        "Maîtresse",
-        "Ménagère",
-        "Amour avec écart d'âge",
-        "Amour pur"
+        "Érotisme de la belle femme mariée",
+        "Érotisme de la jeune femme mûre",
+        "Érotisme de la maîtresse",
+        "Convoitise de la ménagère",
+        "Érotisme avec écart d'âge"
       ],
       "description": "Segmentation des contrats émotionnels extraconjugaux, des échanges entre partenaires et des thèmes liés aux épouses",
       "applicableFileTypes": [
@@ -4061,21 +4061,21 @@
     },
     {
       "id": 152,
-      "name": "Répartition des enseignants et des étudiants sur le campus",
+      "name": "Répartition de l'érotisme enseignant-élève",
       "level": 4,
       "tags": [
-        "Enseignant et élève",
-        "Enseignante",
-        "Enseignant",
-        "Camarade de classe",
-        "Étudiants plus âgés",
-        "Étudiants plus jeunes",
-        "La plus belle de l'école",
-        "étudiant",
-        "Lycéen",
-        "Tuteur"
+        "Sexe enseignant-élève",
+        "Érotisme de l'enseignante",
+        "Érotisme de l'enseignant",
+        "Érotisme de la camarade de classe",
+        "Érotisme des étudiants plus âgés",
+        "Érotisme des étudiants plus jeunes",
+        "Érotisme de la plus belle de l'école",
+        "Érotisme étudiant",
+        "Érotisme lycéen",
+        "Érotisme avec le tuteur"
       ],
-      "description": "Répartition thématique de l'interaction enseignant-élève, du campus des jeunes et des camarades de classe",
+      "description": "Répartition thématique du désir enseignant-élève, du sexe sur le campus et de l'érotisme des camarades",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4083,15 +4083,15 @@
         "archive"
       ],
       "contextHints": [
-        "Récit de l'enseignant et de l'élève",
-        "Jeunesse du campus",
-        "Thème des camarades de classe"
+        "Désir enseignant-étudiant",
+        "Sexe sur le campus",
+        "Camarade de classe érotique"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Segments du marché de la pornographie",
           "triggerTags": [
-            "Professeurs et étudiants du campus"
+            "Érotisme enseignant-élève"
           ]
         }
       ],
@@ -4104,22 +4104,22 @@
     },
     {
       "id": 153,
-      "name": "Segmentation sociale sur le lieu de travail",
+      "name": "Répartition de l'érotisme en milieu professionnel",
       "level": 4,
       "tags": [
-        "Entre collègues",
-        "Patronne",
-        "Patron masculin",
-        "Secrétaire féminine",
-        "Voisine",
-        "Voisins",
-        "Collègue chauffeur",
-        "Femme de ménage",
-        "La vie urbaine",
-        "Notes de campagne",
-        "Rencontres sur Internet"
+        "Convoitise des collègues",
+        "Érotisme de la patronne",
+        "Érotisme du patron",
+        "Érotisme de la secrétaire",
+        "Érotisme de la voisine",
+        "Érotisme entre voisins",
+        "Érotisme du chauffeur et des collègues",
+        "Érotisme de la femme de chambre",
+        "Convoitise urbaine",
+        "Érotisme rural",
+        "Convoitise en ligne"
       ],
-      "description": "Segmentation de l'emploi en milieu de travail, des quartiers communautaires et des cercles sociaux de vie",
+      "description": "Répartition des cercles érotiques sur le lieu de travail, érotiques de quartier et érotiques sociaux",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4127,15 +4127,15 @@
         "archive"
       ],
       "contextHints": [
-        "Récit du lieu de travail",
-        "La vie de quartier",
-        "Relations sociales"
+        "Luxure au travail",
+        "Érotisme entre voisins",
+        "Luxure sociale"
       ],
       "triggerConditions": [
         {
           "parentDimension": "Segments du marché de la pornographie",
           "triggerTags": [
-            "Social au travail"
+            "Érotisme en milieu professionnel"
           ]
         }
       ],
@@ -4153,9 +4153,9 @@
       "tags": [
         "3P",
         "Orgie",
-        "Rassemblement multipartenaire",
-        "Interaction de groupe",
-        "Fête à plusieurs"
+        "Fête de sexe multipartenaire",
+        "Interaction érotique de groupe",
+        "Fête de sexe à plusieurs"
       ],
       "description": "Segmentation thématique de la collaboration multi-agents, de l'interaction de groupe et de l'interaction multi-personnes",
       "applicableFileTypes": [
@@ -4165,9 +4165,9 @@
         "archive"
       ],
       "contextHints": [
-        "Interaction multi-agents",
-        "Interaction de groupe",
-        "Scène de fête"
+        "Interaction érotique multi-agents",
+        "Interaction érotique de groupe",
+        "Scène de fête de sexe"
       ],
       "triggerConditions": [
         {
@@ -4197,7 +4197,7 @@
         "Sexe violent",
         "Perversion Hardcore",
         "Fouet à cire dégoulinant",
-        "Fétiche spécifique"
+        "Pénchant sexuel fétichiste"
       ],
       "description": "Domination et soumission, fétiches sous-culturels et graves ruptures sexuelles conflictuelles",
       "applicableFileTypes": [
@@ -4269,15 +4269,15 @@
     },
     {
       "id": 157,
-      "name": "Catégories d'uniformes professionnels",
+      "name": "Répartition de la séduction en uniforme",
       "level": 4,
       "tags": [
-        "Médecin et infirmière",
-        "Obstétrique et gynécologie",
-        "Hôtesse de l'air",
-        "Femme policier",
-        "Mannequin et modèle auto",
-        "Danseuse",
+        "Érotisme médecin-infirmière",
+        "Érotisme en gynécologie",
+        "Érotisme de l'hôtesse de l'air",
+        "Érotisme de la femme policier",
+        "Érotisme mannequin et modèle auto",
+        "Érotisme de la danseuse",
         "Pornographie commerciale",
         "Rencontres et prostitution rémunérées"
       ],
@@ -4297,7 +4297,7 @@
         {
           "parentDimension": "Segments du marché de la pornographie",
           "triggerTags": [
-            "Uniforme professionnel"
+            "Séduction en uniforme"
           ]
         }
       ],
@@ -4310,19 +4310,20 @@
     },
     {
       "id": 158,
-      "name": "Répartition des sujets littéraires",
+      "name": "Sous-catégories de littérature érotique",
       "level": 4,
       "tags": [
         "Wuxia érotique",
         "Érotique classique",
         "érotisme historique",
-        "Science-fiction fantastique",
-        "Histoires de minuit",
-        "Ville contemporaine",
-        "Doujin de jeu",
-        "érotisme japonais",
-        "L'érotisme occidental",
-        "Histoire d'aventure"
+        "Érotisme fantastique",
+        "Érotisme de science-fiction",
+        "Érotisme surnaturel",
+        "Érotisme urbain",
+        "Érotisme des doujins de jeu",
+        "Érotisme de style japonais",
+        "Érotisme occidental",
+        "Rencontres érotiques"
       ],
       "description": "Paramètres de base de la littérature pour adultes, contexte temporel et spatial et subdivisions de genre spécifiques",
       "applicableFileTypes": [
@@ -4332,7 +4333,7 @@
         "archive"
       ],
       "contextHints": [
-        "Thèmes littéraires",
+        "Littérature érotique",
         "Paramètres d'arrière-plan",
         "Genre littéraire"
       ],
@@ -4340,7 +4341,7 @@
         {
           "parentDimension": "Segments du marché de la pornographie",
           "triggerTags": [
-            "Thèmes littéraires"
+            "Littérature érotique"
           ]
         }
       ],
@@ -4404,7 +4405,7 @@
         "Viol collectif",
         "Coercition violente"
       ],
-      "description": "Classification de la contrainte involontaire, de la violation et des violations extrêmes",
+      "description": "Classification du contenu de la contrainte involontaire, de la contrefaçon, de la violation et de la violation extrême",
       "applicableFileTypes": [
         "ebook",
         "image",
@@ -4433,13 +4434,13 @@
     },
     {
       "id": 161,
-      "name": "Segmentation à orientations multiples",
+      "name": "Sous-catégories des orientations sexuelles",
       "level": 4,
       "tags": [
         "Homérotique",
-        "Yuri lesbien",
-        "Yaoi gay",
-        "Transgenre"
+        "Érotisme lesbien yuri",
+        "Érotique gay yaoi",
+        "Érotisme transgenre"
       ],
       "description": "Cognition de genre diversifiée, orientations diverses et segmentation thématique spécifique de l'orientation sexuelle",
       "applicableFileTypes": [
@@ -4449,7 +4450,7 @@
         "archive"
       ],
       "contextHints": [
-        "Orientations multiples",
+        "Orientations sexuelles diverses",
         "Thèmes homosexuels",
         "Classification de l'orientation sexuelle"
       ],
@@ -4457,7 +4458,7 @@
         {
           "parentDimension": "Segments du marché de la pornographie",
           "triggerTags": [
-            "Orientations multiples"
+            "Orientations sexuelles diverses"
           ]
         }
       ],
