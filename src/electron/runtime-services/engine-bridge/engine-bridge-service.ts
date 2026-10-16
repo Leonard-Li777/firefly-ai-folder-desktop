@@ -230,6 +230,10 @@ export class EngineBridgeService {
     this.setupThinkingConfigSync()
     // 启动常驻状态轮询（3秒探活），自动同步外部引擎上线/下线及在引擎内切换模型
     this.startPolling(3000)
+    // 开发模式下开机常驻监听引擎二进制热更新（感知 engine:deploy:watch 重编译与部署）
+    if (this.isDevMode()) {
+      this.startDevBinaryWatch()
+    }
   }
 
   public static getInstance(): EngineBridgeService {
@@ -778,8 +782,8 @@ export class EngineBridgeService {
     if (this.isStarting) {
       return
     }
-    // 启动冷静期（15秒）：引擎刚启动不久，给其足够的稳定初始化时间，避免启动期抖动
-    if (this.lastSpawnedAt > 0 && Date.now() - this.lastSpawnedAt < 15_000) {
+    // 启动冷静期（15秒）：若子进程存在且刚启动不久，给其足够的稳定初始化时间，避免启动期抖动
+    if (this.process && this.lastSpawnedAt > 0 && Date.now() - this.lastSpawnedAt < 15_000) {
       return
     }
     const exePath = this.resolveEngineExecutable()
@@ -811,12 +815,19 @@ export class EngineBridgeService {
     this.pendingUpdateSince = 0
 
     if (previous === null) {
-      // 本服务未托管过引擎：可能是外部实例，不越权处理
+      // 本服务未托管过引擎：若当前有外部实例在跑，不越权处理
       if (this.lastRawStatus) {
         logger.warn(
           LogCategory.SYSTEM,
           '[EngineBridge] 检测到引擎二进制已更新，但当前实例非本服务拉起，需重启该实例后新版本才会生效'
         )
+      } else if (await this.shouldEngineRun()) {
+        logger.info(
+          LogCategory.SYSTEM,
+          `[EngineBridge] 检测到新部署的引擎二进制（${signature}），主动拉起`
+        )
+        await this.ensureRunning().catch(() => false)
+        this.broadcastStatus()
       }
       return
     }
@@ -1269,6 +1280,9 @@ export class EngineBridgeService {
       const status = await this.healthCheck()
       if (status) {
         logger.info(LogCategory.SYSTEM, `[EngineBridge] 复用已运行的 Tier 2 引擎 (${this.baseUrl})`)
+        if (this.isDevMode()) {
+          this.startDevBinaryWatch()
+        }
         this.broadcastStatus()
         return true
       }

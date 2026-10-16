@@ -109,6 +109,9 @@ export interface OmniPerceptionOptions {
   maxContentSizeKb?: number
   audioAnalysisDuration?: number
   timeoutMs?: number
+  /** 是否需要生成缩略图/封面（若已有则传 false，不要求生成） */
+  generateThumbnail?: boolean
+  enableCover?: boolean
 }
 
 export interface OmniPerceptionBenchmarkResponse {
@@ -448,6 +451,19 @@ export class OmniService {
   private coverDurationMap = new Map<string, number>()
   private readyCallbacks: (() => void | Promise<void>)[] = []
 
+  /** 开发态二进制热更新检测周期 (毫秒) */
+  private static readonly DEV_BINARY_WATCH_INTERVAL_MS = 3_000
+  /** 本服务已拉起二进制的签名 (mtimeMs:size) */
+  private spawnedBinarySignature: string | null = null
+  /** 最近一次成功拉起子进程的时间戳，用于启动冷静期保护 */
+  private lastSpawnedAt = 0
+  /** 热更新待确认的候选签名 */
+  private pendingUpdateSignature: string | null = null
+  /** 候选签名首次被发现的时间戳（用于防抖稳定期判断） */
+  private pendingUpdateSince = 0
+  /** 开发态二进制热更新轮询定时器 */
+  private devBinaryWatchTimer: NodeJS.Timeout | null = null
+
   /**
    * 注册 Omni 服务启动/重启就绪回调
    * 用于在 Omni 进程初次就绪或崩溃重启恢复时触发自定义音色重注册等动作
@@ -477,20 +493,26 @@ export class OmniService {
     try {
       if (app && typeof app.on === 'function') {
         app.on('will-quit', () => {
+          this.stopDevBinaryWatch()
           this.stop()
         })
         app.on('before-quit', () => {
+          this.stopDevBinaryWatch()
           this.stop()
         })
       }
 
       // 注册 Node.js 进程级退出事件（针对开发模式下 Ctrl+C 或终端被杀）
       const cleanExit = () => {
+        this.stopDevBinaryWatch()
         this.stop()
       }
       process.once('exit', cleanExit)
       process.once('SIGINT', cleanExit)
       process.once('SIGTERM', cleanExit)
+
+      // 开发模式下开机常驻监听 Omni 原生二进制热更新（感知 omni-build-to-desktop.js --watch 的重编译与部署）
+      this.startDevBinaryWatch()
       if (process.platform === 'win32') {
         process.once('message', (msg: any) => {
           if (msg === 'shutdown') {
@@ -604,6 +626,97 @@ export class OmniService {
   }
 
   /**
+   * 计算二进制签名（mtimeMs + size）。
+   * 集成目录被 `omni:deploy:watch` / `scripts/omni-build-to-desktop.js --watch` 覆盖后签名必然变化，用于判断是否需要重启引擎。
+   */
+  private binarySignature(exePath: string): string | null {
+    try {
+      const st = fs.statSync(exePath)
+      return `${st.mtimeMs}:${st.size}`
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * 启动开发态二进制热更新监听。
+   *
+   * `pnpm omni:deploy:watch` / `node scripts/omni-build-to-desktop.js --watch`
+   * 会在重编译后覆盖集成目录中的 exe。
+   * 这里周期比对签名，发现变化且持续稳定后自动重启 Omni 引擎。
+   * 生产环境不启动该监听（打包产物不会被就地覆盖）。
+   */
+  public startDevBinaryWatch(intervalMs: number = OmniService.DEV_BINARY_WATCH_INTERVAL_MS): void {
+    const isDev = !app.isPackaged || process.env.NODE_ENV !== 'production'
+    if (this.devBinaryWatchTimer || !isDev) {
+      return
+    }
+    this.devBinaryWatchTimer = setInterval(() => {
+      void this.checkBinaryUpdated()
+    }, intervalMs)
+    this.devBinaryWatchTimer.unref?.()
+    logger.info(
+      LogCategory.SYSTEM,
+      `[OmniService] 已开启 Omni 引擎二进制热更新监听（每 ${intervalMs}ms 比对部署产物）`
+    )
+  }
+
+  /** 停止开发态二进制热更新监听 */
+  public stopDevBinaryWatch(): void {
+    if (this.devBinaryWatchTimer) {
+      clearInterval(this.devBinaryWatchTimer)
+      this.devBinaryWatchTimer = null
+    }
+  }
+
+  /**
+   * 比对当前二进制签名与本服务拉起时的签名；变化且稳定后自动重启 Omni 引擎。
+   */
+  private async checkBinaryUpdated(): Promise<void> {
+    if (this.isStarting) {
+      return
+    }
+    // 启动冷静期（15秒）：若子进程存在且刚启动不久，给其足够的稳定初始化时间
+    if (this.process && this.lastSpawnedAt > 0 && Date.now() - this.lastSpawnedAt < 15_000) {
+      return
+    }
+    const exePath = this.resolveOmniExecutable()
+    if (!exePath) {
+      return
+    }
+    const signature = this.binarySignature(exePath)
+    if (!signature || signature === this.spawnedBinarySignature) {
+      this.pendingUpdateSignature = null
+      this.pendingUpdateSince = 0
+      return
+    }
+
+    // 首次检测到签名变更：进入待定状态，防抖保护
+    if (this.pendingUpdateSignature !== signature) {
+      this.pendingUpdateSignature = signature
+      this.pendingUpdateSince = Date.now()
+      return
+    }
+
+    // 连续两次检测到相同新签名，且持续稳定至少 3 秒（确保外部编译与文件复制彻底落盘）
+    if (Date.now() - this.pendingUpdateSince < 3_000) {
+      return
+    }
+
+    const previous = this.spawnedBinarySignature
+    this.spawnedBinarySignature = signature
+    this.pendingUpdateSignature = null
+    this.pendingUpdateSince = 0
+
+    logger.info(
+      LogCategory.SYSTEM,
+      `[OmniService] 🔄 检测到 Omni 引擎二进制产物更新（${previous ?? '初始'} → ${signature}），正在重新拉起...`
+    )
+    this.restartAttempts = 0
+    await this.restart()
+  }
+
+  /**
    * 定位 firefly-omni 可执行文件
    */
   public resolveOmniExecutable(): string | null {
@@ -694,6 +807,11 @@ export class OmniService {
         logger.info(LogCategory.SYSTEM, `[OmniService] 检测到已在 ${this.basePort} 运行的 Omni 服务 (${this.baseUrl})，直接连接复用，并同步最新配置`)
         this.restartAttempts = 0
         this.isStarting = false
+        this.spawnedBinarySignature = this.binarySignature(exePath)
+        this.lastSpawnedAt = Date.now()
+        this.pendingUpdateSignature = null
+        this.pendingUpdateSince = 0
+        this.startDevBinaryWatch()
         this.syncConfigFromDesktop().catch(() => {})
         this.notifyReady()
         this.pushStatus().catch(() => {})
@@ -719,6 +837,11 @@ export class OmniService {
         logger.info(LogCategory.SYSTEM, `[OmniService] 检测到已在 ${port} 运行的 Omni 服务 (${this.baseUrl})，直接连接复用，并同步最新配置`)
         this.restartAttempts = 0
         this.isStarting = false
+        this.spawnedBinarySignature = this.binarySignature(exePath)
+        this.lastSpawnedAt = Date.now()
+        this.pendingUpdateSignature = null
+        this.pendingUpdateSince = 0
+        this.startDevBinaryWatch()
         this.syncConfigFromDesktop().catch(() => {})
         this.notifyReady()
         return true
@@ -743,8 +866,8 @@ export class OmniService {
       const dbPath = databaseService.getDbPath()
 
       const candidatePackPaths = [
-        ResourceLocator.resolveResourcePath('semantic/semantic.pack'),
-        ResourceLocator.resolveResourcePath('presetResources/semantic/semantic.pack'),
+        ResourceLocator.resolveResourcePath?.('semantic/semantic.pack'),
+        ResourceLocator.resolveResourcePath?.('presetResources/semantic/semantic.pack'),
         path.join(process.cwd(), 'apps/desktop/build/extraResources/semantic/semantic.pack'),
         path.join(process.cwd(), 'apps/desktop/build/presetResources/semantic/semantic.pack')
       ]
@@ -765,7 +888,7 @@ export class OmniService {
       // 此处复刻 --pack-path 模式，经 OMNI_GEO_DATA_PATH 环境变量显式下发（discover.rs
       // 最高优先级即该环境变量）；解析不到则不下发，保持服务端原有发现链行为。
       const candidateGeoPaths = [
-        ResourceLocator.resolveResourcePath('geo/geonames-compact.json'),
+        ResourceLocator.resolveResourcePath?.('geo/geonames-compact.json'),
         path.join(process.cwd(), 'apps/desktop/build/extraResources/geo/geonames-compact.json'),
         path.join(process.cwd(), 'apps/omni/build/extraResources/geo/geonames-compact.json'),
         path.join(process.cwd(), 'build/extraResources/geo/geonames-compact.json')
@@ -798,24 +921,28 @@ export class OmniService {
       }
 
       // 注入当前激活的多模态嵌入画像档位 (classic_light | gemma_unified) 与 MRL 维度 (Spec §3.4.1)
-      const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
-      const configOrch = ConfigOrchestrator.getInstance()
-      const embeddingProfile =
-        configOrch.getValue<'classic_light' | 'gemma_unified'>(
-          'AI_EMBEDDING_PROFILE'
-        ) || 'classic_light'
-      spawnArgs.push('--embedding-profile', embeddingProfile)
-      logger.info(
-        LogCategory.SYSTEM,
-        `[OmniService] 🎯 嵌入画像档位 (--embedding-profile): ${embeddingProfile}`
-      )
+      try {
+        const { ConfigOrchestrator } = await import('../../config/config-orchestrator')
+        const configOrch = ConfigOrchestrator?.getInstance?.()
+        if (configOrch) {
+          const embeddingProfile =
+            configOrch.getValue<'classic_light' | 'gemma_unified'>(
+              'AI_EMBEDDING_PROFILE'
+            ) || 'classic_light'
+          spawnArgs.push('--embedding-profile', embeddingProfile)
+          logger.info(
+            LogCategory.SYSTEM,
+            `[OmniService] 🎯 嵌入画像档位 (--embedding-profile): ${embeddingProfile}`
+          )
 
-      const mrlDimension = configOrch.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
-      spawnArgs.push('--mrl-dimension', String(mrlDimension))
-      logger.info(
-        LogCategory.SYSTEM,
-        `[OmniService] 🎯 MRL 向量维度 (--mrl-dimension): ${mrlDimension}`
-      )
+          const mrlDimension = configOrch.getValue<number>('EMBEDDING_MRL_DIMENSION') || 512
+          spawnArgs.push('--mrl-dimension', String(mrlDimension))
+          logger.info(
+            LogCategory.SYSTEM,
+            `[OmniService] 🎯 MRL 向量维度 (--mrl-dimension): ${mrlDimension}`
+          )
+        }
+      } catch {}
 
       const child = spawn(exePath, spawnArgs, {
         cwd: binDir,
@@ -902,6 +1029,12 @@ export class OmniService {
           logger.info(LogCategory.SYSTEM, `[OmniService] firefly-omni 服务就绪并在 ${this.baseUrl} 正常监听`)
           this.restartAttempts = 0
           this.isStarting = false
+          // 探活就绪后，记录二进制签名，并开启开发态热更新监听
+          this.spawnedBinarySignature = this.binarySignature(exePath)
+          this.lastSpawnedAt = Date.now()
+          this.pendingUpdateSignature = null
+          this.pendingUpdateSince = 0
+          this.startDevBinaryWatch()
           // 探活就绪后，立即同步一次当前配置（ENABLE_IMAGE_OCR, OCR_MODEL_SIZE 等）
           this.syncConfigFromDesktop().catch(() => {})
           // 主动推送"运行中"状态至渲染进程（基础AI引擎 Footer 展示）
@@ -957,12 +1090,27 @@ export class OmniService {
   }
 
   /**
+   * 等待当前服务端口彻底释放（避免旧进程尚未完全退出时被误判为已存在而假活）
+   */
+  public async waitForPortReleased(limitMs: number = 3000): Promise<boolean> {
+    const tStart = Date.now()
+    while (Date.now() - tStart < limitMs) {
+      const alive = await this.checkHealth().catch(() => false)
+      if (!alive) {
+        return true
+      }
+      await new Promise(r => setTimeout(r, 100))
+    }
+    return !(await this.checkHealth().catch(() => false))
+  }
+
+  /**
    * 优雅热重启 Omni 服务（档位变更或异常恢复）
    */
   public async restart(): Promise<boolean> {
     logger.info(LogCategory.SYSTEM, '[OmniService] 正在优雅重启 Omni 服务进程...')
     this.stop()
-    await new Promise(resolve => setTimeout(resolve, 600))
+    await this.waitForPortReleased(3000)
     return await this.start()
   }
 
@@ -1335,10 +1483,32 @@ export class OmniService {
    * 支持 PDF, PSD, 视频 (MP4/MKV/MOV/AVI/WEBM), SVG, EPUB 等格式由 Omni Rust 引擎直接零拷贝渲染为 WebP
    * 不支持的格式服务端返回 204，此处直接返回 null 并平滑降级
    */
-  public async getFileCover(filePath: string): Promise<Buffer | null> {
+  public async getFileCover(
+    filePath: string,
+    options?: { skipIfExistsPath?: string; skipIfExists?: boolean }
+  ): Promise<Buffer | null> {
+    if (options?.skipIfExists) {
+      return null
+    }
+
+    if (options?.skipIfExistsPath) {
+      try {
+        const fs = await import('node:fs/promises')
+        await fs.access(options.skipIfExistsPath)
+        logger.info(
+          LogCategory.SYSTEM,
+          `[OmniService] 目标缩略图已存在于磁盘，跳过 Omni /api/cover 封面生成: ${options.skipIfExistsPath}`
+        )
+        return null
+      } catch {
+        // 文件不存在，继续执行后续生成
+      }
+    }
+
     await this.ensureRunning()
     const tStart = Date.now()
-    const url = `${this.baseUrl}/api/cover?path=${encodeURIComponent(filePath)}`
+    const skipQuery = options?.skipIfExists ? `&skip_if_exists=true` : ''
+    const url = `${this.baseUrl}/api/cover?path=${encodeURIComponent(filePath)}${skipQuery}`
     logger.debug(LogCategory.SYSTEM, `[OmniService] >>> GET /api/cover 请求发起 (${filePath})`)
 
     const doFetch = async () => {
@@ -1428,7 +1598,8 @@ export class OmniService {
       enable_geo_reverse: options?.enableGeoReverse ?? true,
       enable_text_analysis: options?.enableTextAnalysis,
       max_content_size_kb: options?.maxContentSizeKb,
-      audio_analysis_duration: options?.audioAnalysisDuration
+      audio_analysis_duration: options?.audioAnalysisDuration,
+      generate_thumbnail: options?.generateThumbnail ?? options?.enableCover
     }
     logger.debug(
       LogCategory.SYSTEM,
