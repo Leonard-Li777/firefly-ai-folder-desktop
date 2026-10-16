@@ -574,6 +574,41 @@ export function nestGroupTags(
     }
   })
 
+  // 跨层级同标签单一出现守卫（深层具象胜出，Spec v2.0 模块三）：
+  // 若某标签在深层子树中已经存在（例如 Level 5 链条中的「要求」），则从顶层直属标签 directTags 中滤除，
+  // 杜绝同一维度下同名/同 Code 标签在根下一级与深层分支同时重复呈现
+  if (childTagsMap.size > 0) {
+    const deepTagKeys = new Set<string>()
+    function collectDeepKeys(node: DimensionTreeNode) {
+      if (node.tags) {
+        for (const t of node.tags) {
+          if (t.code) deepTagKeys.add(t.code)
+          if (t.tagValue) deepTagKeys.add(t.tagValue)
+        }
+      }
+      if (node.childTags) {
+        for (const subList of node.childTags.values()) {
+          for (const sub of subList) {
+            collectDeepKeys(sub)
+          }
+        }
+      }
+    }
+    for (const subNodes of childTagsMap.values()) {
+      for (const node of subNodes) {
+        collectDeepKeys(node)
+      }
+    }
+
+    const filteredDirectTags = directTags.filter(t => {
+      const hasDeep = (t.code && deepTagKeys.has(t.code)) || (t.tagValue && deepTagKeys.has(t.tagValue))
+      return !hasDeep
+    })
+    if (filteredDirectTags.length > 0 || directTags.length === 0) {
+      return { directTags: filteredDirectTags, childTagsMap }
+    }
+  }
+
   return { directTags, childTagsMap }
 }
 

@@ -1193,4 +1193,82 @@ describe('migrateTagKeysAcrossScale 跨刻度自愈与全覆盖不变式测试',
     expect(docChildren![0].name).toBe('语言细分')
     expect(docChildren![0].tags.map(t => t.tagValue)).toEqual(['中文'])
   })
+
+  it('AC-3: 前端跨层级重影物理消除 (深层具象优先，顶层同名/同Code重影被剔除)', () => {
+    const group: DimensionGroup = {
+      id: 28,
+      name: '内容标签',
+      code: 'builtin.content_tags',
+      level: 0,
+      tags: [],
+      isMultiSelect: false
+    }
+
+    const tags: DimensionTag[] = [
+      // 顶层直接子标签（历史浅层记录）
+      {
+        dimensionId: 28,
+        dimensionCode: 'builtin.content_tags',
+        dimensionName: '内容标签',
+        tagValue: '要求',
+        code: 'omw.00754942.v',
+        viaParentCode: 'builtin.content_tags',
+        level: 1,
+        fileCount: 1,
+        isMultiSelect: false
+      },
+      // 另一个合法的顶层标签（确保 directTags 过滤后依然有其他标签）
+      {
+        dimensionId: 28,
+        dimensionCode: 'builtin.content_tags',
+        dimensionName: '内容标签',
+        tagValue: '传递',
+        code: 'omw.00742320.v',
+        viaParentCode: 'builtin.content_tags',
+        level: 1,
+        fileCount: 5,
+        isMultiSelect: false
+      },
+      // 中间层节点：拜托
+      {
+        dimensionId: 28,
+        dimensionCode: 'builtin.content_tags',
+        dimensionName: '内容标签',
+        tagValue: '拜托',
+        code: 'omw.00752764.v',
+        viaParentCode: 'omw.00742320.v',
+        level: 2,
+        fileCount: 3,
+        isMultiSelect: false
+      },
+      // 深层子节点：要求（挂在拜托之下）
+      {
+        dimensionId: 28,
+        dimensionCode: 'builtin.content_tags',
+        dimensionName: '内容标签',
+        tagValue: '要求',
+        code: 'omw.00754942.v',
+        viaParentCode: 'omw.00752764.v',
+        level: 3,
+        fileCount: 2,
+        isMultiSelect: false
+      }
+    ]
+
+    const { directTags, childTagsMap } = nestGroupTags(group, tags, 0, 6)
+
+    // 1. 顶层 directTags 中已剔除「要求」，仅保留「传递」
+    expect(directTags.map(t => t.tagValue)).toEqual(['传递'])
+    expect(directTags.some(t => t.code === 'omw.00754942.v')).toBe(false)
+
+    // 2. 「传递」展开后其 tags 包含「拜托」
+    const transmitSubs = childTagsMap.get('传递')
+    expect(transmitSubs).toBeDefined()
+    expect(transmitSubs![0].tags.some(t => t.tagValue === '拜托')).toBe(true)
+
+    // 3. 「拜托」下级节点包含深层具象的「要求」
+    const begSubs = transmitSubs![0].childTags?.get('拜托')
+    expect(begSubs).toBeDefined()
+    expect(begSubs![0].tags.some(t => t.tagValue === '要求' && t.code === 'omw.00754942.v')).toBe(true)
+  })
 })
