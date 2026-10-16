@@ -442,8 +442,24 @@
     "de-DE": "Audio wird synthetisiert und nach der Synthese automatisch umgeschaltet",
     "fr-FR": "L'audio est en cours de synthèse et il sera automatiquement commuté après la synthèse",
     "ko-KR": "오디오가 합성되고 있으며 합성 후 자동으로 전환됩니다",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(3895-3914)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(13951-13970)"],
     "$id": 21557
+  },
+  "已自动切换播放": {
+    "en-US": "Playback has been automatically switched",
+    "es-ES": "La reproducción se ha cambiado automáticamente",
+    "ar-EG": "تم تبديل التشغيل تلقائيا",
+    "pt-PT": "A reprodução foi comutada automaticamente",
+    "ru-RU": "Воспроизведение было переключено автоматически",
+    "ja-JP": "再生が自動的に切り替えられました",
+    "de-DE": "Die Wiedergabe wurde automatisch umgeschaltet",
+    "fr-FR": "La lecture a été automatiquement commutée",
+    "ko-KR": "재생이 자동으로 전환되었습니다",
+    "$files": [
+      "src/renderer/stores/tts-audio-store.ts(19427-19438)",
+      "src/renderer/stores/tts-audio-store.ts(23954-23965)"
+    ],
+    "$id": 21559
   },
   "切换音色失败，语音合成服务不可用": {
     "en-US": "The tone switching failed and the speech synthesis service is not available",
@@ -456,23 +472,23 @@
     "fr-FR": "La commutation de tonalité a échoué et le service de synthèse vocale n'est pas disponible",
     "ko-KR": "톤 전환에 실패하고 음성 합성 서비스를 사용할 수 없습니다",
     "$files": [
-      "src/renderer/stores/tts-audio-store.ts(7084-7104)",
-      "src/renderer/stores/tts-audio-store.ts(13115-13135)"
+      "src/renderer/stores/tts-audio-store.ts(21574-21594)",
+      "src/renderer/stores/tts-audio-store.ts(28508-28528)"
     ],
     "$id": 21558
   },
-  "已自动切换播放": {
-    "en-US": "Playback has been automatically switched",
-    "es-ES": "La reproducción se ha cambiado automáticamente",
-    "ar-EG": "تم تبديل التشغيل تلقائيا",
-    "pt-PT": "A reprodução foi comutada automaticamente",
-    "ru-RU": "Воспроизведение было переключено автоматически",
-    "ja-JP": "再生が自動的に切り替えられました",
-    "de-DE": "Die Wiedergabe wurde automatisch umgeschaltet",
-    "fr-FR": "La lecture a été automatiquement commutée",
-    "ko-KR": "재생이 자동으로 전환되었습니다",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(8998-9009)"],
-    "$id": 21559
+  "用户自定义克隆音色": {
+    "en-US": "User-defined clone tone",
+    "es-ES": "Tono de clonación definido por el usuario",
+    "ar-EG": "نغمة استنساخ المعرفة من قبل المستخدم",
+    "pt-PT": "Tom clone definido pelo utilizador",
+    "ru-RU": "Определяемый пользователем звуковой сигнал клонирования",
+    "ja-JP": "用户自定义克隆音色",
+    "de-DE": "Benutzerdefinierter Klontonwert",
+    "fr-FR": "Tonalité de clonage définie par l'utilisateur",
+    "ko-KR": "사용자 정의 클론 톤",
+    "$files": ["src/renderer/stores/tts-audio-store.ts(29633-29646)"],
+    "$id": 21644
   },
   "语音合成失败，请检查服务连接状态": {
     "en-US": "Speech synthesis failed, please check the service connection status",
@@ -484,7 +500,7 @@
     "de-DE": "Sprachsynthese fehlgeschlagen, bitte überprüfen Sie den Status der Dienstverbindung",
     "fr-FR": "La synthèse vocale a échoué, veuillez vérifier l'état de la connexion au service",
     "ko-KR": "음성 합성 실패,서비스 연결 상태를 확인하시기 바랍니다",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(25715-25735)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(45247-45267)"],
     "$id": 21560
   },
   "语音合成未能生成有效音频，请稍后重试": {
@@ -497,7 +513,7 @@
     "de-DE": "Sprachsynthese konnte kein gültiges Audio generieren, bitte versuchen Sie es später erneut",
     "fr-FR": "La synthèse vocale n'a pas réussi à générer un son valide, veuillez réessayer plus tard",
     "ko-KR": "음성 합성이 유효한 오디오를 생성하지 못했습니다.",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(28757-28779)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(48901-48923)"],
     "$id": 21561
   },
   "语音合成服务异常，请稍后重试": {
@@ -510,7 +526,33 @@
     "de-DE": "Der Sprachsynthesedienst ist abnormal, bitte versuchen Sie es später erneut",
     "fr-FR": "Le service de synthèse vocale est anormal, veuillez réessayer plus tard",
     "ko-KR": "음성 합성 서비스가 이상,나중에 다시 시도하십시오",
-    "$files": ["src/renderer/stores/tts-audio-store.ts(29101-29119)"],
+    "$files": ["src/renderer/stores/tts-audio-store.ts(49245-49263)"],
     "$id": 21562
+  },
+  "该片段正在合成中，请稍候...": {
+    "en-US": "This clip is being synthesized, please wait...",
+    "es-ES": "Este clip está siendo sintetizado, por favor espere...",
+    "ar-EG": "يتم تصنيع هذا المقطع ، يرجى الانتظار...",
+    "pt-PT": "Este clipe está sendo sintetizado, por favor aguarde...",
+    "ru-RU": "Этот клип синтезируется, пожалуйста, подождите...",
+    "ja-JP": "このクリップは合成されています、お待ちください。..",
+    "de-DE": "Dieser Clip wird synthetisiert, bitte warten...",
+    "fr-FR": "Ce clip est en cours de synthèse, veuillez patienter...",
+    "ko-KR": "이 클립은 합성되고,기다려주십시오...",
+    "$files": ["src/renderer/stores/tts-audio-store.ts(55176-55195)"],
+    "$id": 21645
+  },
+  "该片段合成失败，请稍后重试": {
+    "en-US": "The clip synthesis failed, please try again later",
+    "es-ES": "La síntesis del clip falló, inténtelo de nuevo más tarde",
+    "ar-EG": "فشل تركيب مقطع ، يرجى المحاولة مرة أخرى في وقت لاحق",
+    "pt-PT": "A síntese do clipe falhou, tente novamente mais tarde",
+    "ru-RU": "Не удалось выполнить синтез клипа, пожалуйста, повторите попытку позже",
+    "ja-JP": "クリップの合成に失敗しました。",
+    "de-DE": "Die Clipsynthese ist fehlgeschlagen, bitte versuchen Sie es später erneut",
+    "fr-FR": "La synthèse du clip a échoué, veuillez réessayer plus tard",
+    "ko-KR": "클립 합성에 실패,나중에 다시 시도하십시오",
+    "$files": ["src/renderer/stores/tts-audio-store.ts(58028-58045)"],
+    "$id": 21646
   }
 }

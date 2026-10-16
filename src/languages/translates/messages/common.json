@@ -2101,7 +2101,7 @@
     "de-DE": "Audiodateien wurden im Ordner gefunden",
     "fr-FR": "Les fichiers audio ont été localisés dans le dossier",
     "ko-KR": "오디오 파일이 폴더에 있습니다",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(4972-4988)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(5899-5915)"],
     "$id": 21215
   },
   "音频文件尚未生成，播放后将自动缓存": {
@@ -2114,7 +2114,7 @@
     "de-DE": "Die Audiodatei wurde noch nicht generiert und wird nach der Wiedergabe automatisch zwischengespeichert",
     "fr-FR": "Le fichier audio n'a pas encore été généré et sera automatiquement mis en cache après la lecture",
     "ko-KR": "오디오 파일은 아직 생성되지 않았으며 재생 후 자동으로 캐시됩니다",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(5026-5047)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(5953-5974)"],
     "$id": 21216
   },
   "暂停朗读": {
@@ -2127,7 +2127,7 @@
     "de-DE": "Leseunterbrechung",
     "fr-FR": "Pause lecture",
     "ko-KR": "읽기 일시 중지",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(5762-5770)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6689-6697)"],
     "$id": 21217
   },
   "继续朗读": {
@@ -2140,7 +2140,7 @@
     "de-DE": "Lesen Sie weiter laut",
     "fr-FR": "Continuez à lire à haute voix",
     "ko-KR": "소리내어 계속 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(5785-5793)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6712-6720)"],
     "$id": 21218
   },
   "语音朗读": {
@@ -2153,7 +2153,7 @@
     "de-DE": "Stimmenlesen",
     "fr-FR": "Lecture vocale",
     "ko-KR": "음성 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(5797-5805)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6724-6732)"],
     "$id": 21219
   },
   "播放中": {
@@ -2166,7 +2166,7 @@
     "de-DE": "Spielend",
     "fr-FR": "Jouer",
     "ko-KR": "재생",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6646-6653)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7587-7594)"],
     "$id": 21220
   },
   "暂停": {
@@ -2179,7 +2179,7 @@
     "de-DE": "Pausieren",
     "fr-FR": "Suspendre",
     "ko-KR": "일시 중지",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6706-6712)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7647-7653)"],
     "$id": 21221
   },
   "朗读": {
@@ -2192,8 +2192,60 @@
     "de-DE": "Vorlesen",
     "fr-FR": "Lire à haute voix",
     "ko-KR": "소리내어 읽기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(6736-6742)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7677-7683)"],
     "$id": 21222
+  },
+  "拖动切换朗读片段": {
+    "en-US": "Drag to switch the reading clip",
+    "es-ES": "Arrastre para cambiar el clip de lectura",
+    "ar-EG": "اسحب لتبديل مقطع القراءة",
+    "pt-PT": "Arraste para alternar o clipe de leitura",
+    "ru-RU": "Перетащите курсор, чтобы переключить режим чтения",
+    "ja-JP": "ドラッグして読み取りクリップを切り替えます",
+    "de-DE": "Ziehen Sie, um den Leseclip zu wechseln",
+    "fr-FR": "Faites glisser pour changer le clip de lecture",
+    "ko-KR": "드래그하여 읽기 클립 전환",
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9561-9573)"],
+    "$id": 21647
+  },
+  "片段": {
+    "en-US": "Fragment",
+    "es-ES": "Fragmento",
+    "ar-EG": "شظية",
+    "pt-PT": "Fragmento",
+    "ru-RU": "фрагмент",
+    "ja-JP": "断片",
+    "de-DE": "Fragment",
+    "fr-FR": "Fragment",
+    "ko-KR": "조각",
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10284-10290)"],
+    "$id": 21648
+  },
+  "拖动即播": {
+    "en-US": "Drag and play",
+    "es-ES": "Arrastra y juega",
+    "ar-EG": "السحب واللعب",
+    "pt-PT": "Arrastar e jogar",
+    "ru-RU": "Перетаскивай и играй",
+    "ja-JP": "ドラッグアンドプレイ",
+    "de-DE": "Ziehen und spielen",
+    "fr-FR": "Glisser et jouer",
+    "ko-KR": "드래그 앤 플레이",
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10421-10429)"],
+    "$id": 21649
+  },
+  "正在准备分句...": {
+    "en-US": "Preparing a clause...",
+    "es-ES": "Preparando una cláusula...",
+    "ar-EG": "إعداد بند...",
+    "pt-PT": "Preparar uma cláusula...",
+    "ru-RU": "Готовлю предложение...",
+    "ja-JP": "節を準備する。..",
+    "de-DE": "Vorbereitung einer Klausel...",
+    "fr-FR": "Préparer une clause...",
+    "ko-KR": "절 준비...",
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(10619-10632)"],
+    "$id": 21650
   },
   "切换朗读发音人": {
     "en-US": "Switch to read aloud pronouncer",
@@ -2205,7 +2257,7 @@
     "de-DE": "Wechseln Sie zum Vorlesesprecher",
     "fr-FR": "Basculer pour lire le prononciateur à haute voix",
     "ko-KR": "소리내어 발음기로 전환",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7100-7111)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11160-11171)"],
     "$id": 21223
   },
   "收藏音色": {
@@ -2218,8 +2270,21 @@
     "de-DE": "Kollektion tone",
     "fr-FR": "Ton de collection",
     "ko-KR": "컬렉션 톤",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(7793-7801)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11853-11861)"],
     "$id": 21224
+  },
+  "自定义": {
+    "en-US": "Custom",
+    "es-ES": "Personalizado",
+    "ar-EG": "مخصص",
+    "pt-PT": "Personalizado",
+    "ru-RU": "Пользовательские",
+    "ja-JP": "カスタム",
+    "de-DE": "Benutzerdefiniert",
+    "fr-FR": "Personnalisé",
+    "ko-KR": "사용자 지정",
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(12830-12837)"],
+    "$id": 21651
   },
   "管理音色与设置...": {
     "en-US": "Manage timbre and settings...",
@@ -2231,7 +2296,7 @@
     "de-DE": "Verwalten Sie Klangfarbe und Einstellungen...",
     "fr-FR": "Gérer le timbre et les paramètres...",
     "ko-KR": "음색 및 설정을 관리합니다...",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9339-9353)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13470-13484)"],
     "$id": 21225
   },
   "调节朗读语速": {
@@ -2244,7 +2309,7 @@
     "de-DE": "Passen Sie die Geschwindigkeit des Vorlesens an",
     "fr-FR": "Ajustez la vitesse de lecture à haute voix",
     "ko-KR": "소리내어 읽는 속도 조정",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(9761-9771)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(13892-13902)"],
     "$id": 21226
   },
   "在文件夹中定位音频文件": {
@@ -2257,7 +2322,7 @@
     "de-DE": "Audiodateien in Ordnern suchen",
     "fr-FR": "Localiser les fichiers audio dans des dossiers",
     "ko-KR": "폴더에서 오디오 파일 찾기",
-    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(11147-11162)"],
+    "$files": ["src/renderer/components/common/TTSActionGroup.tsx(15278-15293)"],
     "$id": 21227
   },
   "无法加载文件预览，请检查文件权限或格式。": {
@@ -2270,7 +2335,7 @@
     "de-DE": "Die Dateivorschau kann nicht geladen werden. Bitte überprüfen Sie die Dateiberechtigungen oder das Format.",
     "fr-FR": "Impossible de charger l'aperçu du fichier, veuillez vérifier les autorisations ou le format du fichier.",
     "ko-KR": "파일 미리보기를 로드할 수 없습니다. 파일 권한이나 형식을 확인하세요.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(11370-11394)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(11430-11454)"],
     "$id": 10223
   },
   "无法加载预览，请检查文件格式或重试。": {
@@ -2283,7 +2348,7 @@
     "de-DE": "Die Vorschau konnte nicht geladen werden. Bitte überprüfen Sie das Dateiformat oder versuchen Sie es erneut.",
     "fr-FR": "Impossible de charger l'aperçu, veuillez vérifier le format du fichier ou réessayer.",
     "ko-KR": "미리보기를 로드할 수 없습니다. 파일 형식을 확인하거나 다시 시도해 주세요.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(12194-12216)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(12254-12276)"],
     "$id": 10225
   },
   "预览加载失败": {
@@ -2296,7 +2361,7 @@
     "de-DE": "Die Vorschau konnte nicht geladen werden",
     "fr-FR": "L'aperçu n'a pas pu être chargé",
     "ko-KR": "미리보기를 로드하지 못했습니다.",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(14981-14991)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(15041-15051)"],
     "$id": 10226
   },
   "加载预览中...": {
@@ -2309,7 +2374,7 @@
     "de-DE": "Vorschau wird geladen...",
     "fr-FR": "Chargement de l'aperçu...",
     "ko-KR": "미리보기 로드 중...",
-    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(15762-15774)"],
+    "$files": ["src/renderer/components/common/FlyfishPreview/index.tsx(15844-15856)"],
     "$id": 10227
   }
 }
