@@ -11,7 +11,7 @@
     "ko-KR": "시사",
     "$files": [
       "src/renderer/components/preview/PreviewWindow.tsx(723-729)",
-      "src/renderer/components/preview/StandalonePreview.tsx(2687-2693)"
+      "src/renderer/components/preview/StandalonePreview.tsx(2819-2825)"
     ],
     "$id": 10530
   },
@@ -106,7 +106,7 @@
     "de-DE": "Original",
     "fr-FR": "Original",
     "ko-KR": "원래의",
-    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(2217-2223)"],
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(2349-2355)"],
     "$id": 10529
   },
   "默认程序打开": {
@@ -120,8 +120,8 @@
     "fr-FR": "Le programme par défaut s'ouvre",
     "ko-KR": "기본 프로그램이 열립니다",
     "$files": [
-      "src/renderer/components/preview/StandalonePreview.tsx(2987-2997)",
-      "src/renderer/components/preview/StandalonePreview.tsx(3144-3154)"
+      "src/renderer/components/preview/StandalonePreview.tsx(3119-3129)",
+      "src/renderer/components/preview/StandalonePreview.tsx(3276-3286)"
     ],
     "$id": 10531
   },
@@ -135,7 +135,7 @@
     "de-DE": "Schließung",
     "fr-FR": "Fermeture",
     "ko-KR": "폐쇄",
-    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(3385-3391)"],
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(3517-3523)"],
     "$id": 10532
   },
   "无法读取文件内容": {
@@ -148,7 +148,7 @@
     "de-DE": "Dateiinhalt kann nicht gelesen werden",
     "fr-FR": "Impossible de lire le contenu du fichier",
     "ko-KR": "파일 내용을 읽을 수 없습니다.",
-    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(4409-4421)"],
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(4607-4619)"],
     "$id": 10533
   },
   "当前文件类型暂不支持预览": {
@@ -161,7 +161,7 @@
     "de-DE": "Der aktuelle Dateityp unterstützt noch keine Vorschau",
     "fr-FR": "Le type de fichier actuel ne prend pas encore en charge l'aperçu",
     "ko-KR": "현재 파일 형식은 아직 미리보기를 지원하지 않습니다.",
-    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(5039-5055)"],
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(5281-5297)"],
     "$id": 10534
   },
   "文件扩展名": {
@@ -174,7 +174,7 @@
     "de-DE": "Dateierweiterung",
     "fr-FR": "Extension de fichier",
     "ko-KR": "파일 확장자",
-    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(5158-5167)"],
+    "$files": ["src/renderer/components/preview/StandalonePreview.tsx(5400-5409)"],
     "$id": 10535
   }
 }

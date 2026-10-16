@@ -698,8 +698,8 @@
     "fr-FR": "Lecture seule",
     "ko-KR": "읽기 전용",
     "$files": [
-      "src/renderer/components/organize/DirectoryTreePreview.tsx(4748-4754)",
-      "src/renderer/components/organize/DirectoryTreePreview.tsx(7099-7105)"
+      "src/renderer/components/organize/DirectoryTreePreview.tsx(4757-4763)",
+      "src/renderer/components/organize/DirectoryTreePreview.tsx(7108-7114)"
     ],
     "$id": 10541
   },
@@ -713,7 +713,7 @@
     "de-DE": "({count}) Dateien",
     "fr-FR": "{count} fichiers",
     "ko-KR": "({count})개 파일",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(4858-4875)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(4867-4884)"],
     "$id": 4173
   },
   "删除目录": {
@@ -726,7 +726,7 @@
     "de-DE": "Verzeichnis löschen",
     "fr-FR": "Supprimer le répertoire",
     "ko-KR": "디렉토리 삭제",
-    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(5480-5488)"],
+    "$files": ["src/renderer/components/organize/DirectoryTreePreview.tsx(5489-5497)"],
     "$id": 7725
   },
   "扫描失败: {message}": {
