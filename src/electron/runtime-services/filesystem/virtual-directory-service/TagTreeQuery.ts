@@ -1764,7 +1764,7 @@ export class TagTreeQuery {
                     // 若首段为受控子维度（如摄影照片细分、图片细分、文字密度等），溯源其一级受控根维度
                     const mappedRoot =
                       WELL_KNOWN_PARENT_TO_ROOT[firstSeg] ||
-                      resolveRootDimension(firstSeg) ||
+                      resolveSubdimensionRoot(firstSeg) ||
                       omniCodeToRootCodeMap.get(firstSeg)
                     if (mappedRoot && ROOT_DIMENSION_CODES.has(mappedRoot)) {
                       matchedRootCode = mappedRoot
@@ -1988,12 +1988,10 @@ export class TagTreeQuery {
       if (includeAllPresetTags && allAuthorityDims && allAuthorityDims.length > 0) {
         const groupById = new Map<number, DimensionGroup>()
         const groupByCode = new Map<string, DimensionGroup>()
-        const groupByName = new Map<string, DimensionGroup>()
 
         for (const g of finalGroups) {
           if (typeof g.id === 'number') groupById.set(g.id, g)
           if (g.code) groupByCode.set(g.code, g)
-          if (g.name) groupByName.set(g.name, g)
         }
 
         for (const authDim of allAuthorityDims) {
@@ -2012,11 +2010,10 @@ export class TagTreeQuery {
             continue
           }
 
-          // 寻找对应已存在的维度组
+          // 寻找对应已存在的维度组（严格按 code 或 id 精准匹配，杜绝按 name 模糊匹配避免同名子维度与根维度串扰）
           let targetGroup =
             (dimCode ? groupByCode.get(dimCode) : undefined) ||
-            (dimId !== undefined ? groupById.get(dimId) : undefined) ||
-            (dimName ? groupByName.get(dimName) : undefined)
+            (dimId !== undefined ? groupById.get(dimId) : undefined)
 
           if (!targetGroup) {
             // 如果该维度尚未在 finalGroups 中，则创建该维度组
@@ -2050,7 +2047,6 @@ export class TagTreeQuery {
             finalGroups.push(targetGroup)
             if (targetGroup.code) groupByCode.set(targetGroup.code, targetGroup)
             if (typeof targetGroup.id === 'number') groupById.set(targetGroup.id, targetGroup)
-            if (targetGroup.name) groupByName.set(targetGroup.name, targetGroup)
           } else {
             // 确保既有维度组上的 metadata.flag 包含权威配置中的 flag（如 isPanDimension）
             if (dimFlag) {
@@ -2073,6 +2069,7 @@ export class TagTreeQuery {
 
           // 如果该预置维度含有预置标签词表（dim.tags），补全未命中的预设标签（fileCount: 0）
           if (Array.isArray(authDim.tags) && authDim.tags.length > 0) {
+            // 1. 补全子维度自身独立卡片维度组中的预置标签
             if (!targetGroup.tags) targetGroup.tags = []
             const existingValues = new Set<string>()
             for (const t of targetGroup.tags) {
@@ -2104,6 +2101,46 @@ export class TagTreeQuery {
                 meta: { order: tagIdx + 1, sort_order: tagIdx + 1 }
               })
               existingValues.add(trimmed.toLowerCase())
+            }
+
+            // 2. 若该维度为受控子维度，同时将其预置标签同步补全至其所属的一级受控根维度组（如文件用途、文件类型等）
+            const rootDimCode = dimCode ? resolveSubdimensionRoot(dimCode) : undefined
+            if (rootDimCode && rootDimCode !== dimCode) {
+              const rootGroup = groupByCode.get(rootDimCode)
+              if (rootGroup) {
+                if (!rootGroup.tags) rootGroup.tags = []
+                const existingRootValues = new Set<string>()
+                for (const t of rootGroup.tags) {
+                  if (t.tagValue) existingRootValues.add(t.tagValue.toLowerCase())
+                  if (t.name) existingRootValues.add(String(t.name).toLowerCase())
+                }
+
+                for (let tagIdx = 0; tagIdx < authDim.tags.length; tagIdx++) {
+                  const presetTagName = authDim.tags[tagIdx]
+                  if (!presetTagName || typeof presetTagName !== 'string') continue
+                  const trimmed = presetTagName.trim()
+                  if (!trimmed || existingRootValues.has(trimmed.toLowerCase())) continue
+
+                  const tagCode = `${dimCode}.${trimmed}`
+                  const resolvedTagName = aliasResolver(tagCode, trimmed)
+                  rootGroup.tags.push({
+                    dimensionId: rootGroup.id,
+                    dimensionCode: rootGroup.code || '',
+                    dimensionName: rootGroup.name,
+                    tagValue: resolvedTagName,
+                    fileCount: 0,
+                    level: 2,
+                    code: tagCode,
+                    codePath: `/${rootGroup.code}/${dimCode}/${trimmed}`,
+                    namePath: `/${rootGroup.name}/${targetGroup.name}/${resolvedTagName}`,
+                    viaParentCode: dimCode,
+                    isMultiSelect: rootGroup.isMultiSelect ?? false,
+                    order: 9999,
+                    meta: { order: 9999, sort_order: 9999 }
+                  })
+                  existingRootValues.add(trimmed.toLowerCase())
+                }
+              }
             }
           }
         }
