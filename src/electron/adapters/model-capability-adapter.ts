@@ -222,22 +222,33 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
       return modelCapabilityDetector.detectCapabilities(serviceConfig)
     } else {
       // PRD-0044：本地分支模型身份改读引擎桥接快照的当前加载模型（原 SELECTED_MODEL_ID 已删除）
-      const modelId = engineBridgeService.getSnapshot().model || ''
+      const snapshot = engineBridgeService.getSnapshot()
+      const modelId = snapshot.model || ''
+      const modelName = snapshot.modelName || ''
 
       // 构建假的 serviceConfig 来适配 detector
       const modelConfig = this.resolveLocalModelConfig()
       const mmprojFile = modelConfig?.files?.find((f: any) => f.type === 'mmproj')
+      const mmprojPath =
+        (typeof modelConfig?.mmproj === 'string' ? modelConfig.mmproj : undefined) ||
+        modelConfig?.mmprojPath ||
+        mmprojFile?.name
+      const baseModelId = modelId.split(/[/\\]/).pop() || modelId
+      const isKnownVisionModel = /minicpm-v|qwen.*vl|llava|internvl|cogvlm|glm-4v|vision|omni/i.test(
+        `${baseModelId} ${modelName}`
+      )
+      const isMultiModal = isKnownVisionModel || modelConfig?.isMultiModal === true || !!mmprojPath
       const serviceConfig = {
         mode: 'local' as const,
         local: {
           modelId: modelId,
           modelPath: '',
-          mmprojPath: mmprojFile ? mmprojFile.name : undefined,
+          mmprojPath: mmprojPath,
           contextLength: modelConfig?.contextLength || 4096,
           contextSize: modelConfig?.contextLength || 4096,
           gpuLayers: 0,
           port: 0,
-          capabilities: modelConfig?.capabilities || []
+          capabilities: modelConfig?.capabilities || (isMultiModal ? ['TEXT', 'IMAGE'] : [])
         },
         cloud: { provider: '' as any, model: '', apiKey: '', baseUrl: '' },
         retryConfig: {
@@ -259,11 +270,29 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
       const filename = filePath || fileType
       const capabilities = await this.getCapabilities()
 
-      if (isCategory(filename, FileCategory.IMAGE) && isDecodableImage(filename)) {
-        return capabilities.supportsImage
+      const isImage =
+        fileType === 'image' ||
+        isCategory(filename, FileCategory.IMAGE) ||
+        isCategory(fileType, FileCategory.IMAGE)
+
+      if (isImage) {
+        if (fileType === 'image' || isDecodableImage(filename) || isDecodableImage(fileType)) {
+          return capabilities.supportsImage
+        }
+        return false
       }
-      if (isCategory(filename, FileCategory.AUDIO)) return capabilities.supportsAudio
-      if (isCategory(filename, FileCategory.VIDEO)) return capabilities.supportsVideo
+
+      const isAudio =
+        fileType === 'audio' ||
+        isCategory(filename, FileCategory.AUDIO) ||
+        isCategory(fileType, FileCategory.AUDIO)
+      if (isAudio) return capabilities.supportsAudio
+
+      const isVideo =
+        fileType === 'video' ||
+        isCategory(filename, FileCategory.VIDEO) ||
+        isCategory(fileType, FileCategory.VIDEO)
+      if (isVideo) return capabilities.supportsVideo
 
       // 默认都支持文本类
       return capabilities.supportsText
@@ -290,8 +319,10 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
   private findLocalModelConfig(modelId: string): any | undefined {
     if (!modelId) return undefined
     unifiedModelManager.ensureLoaded()
-    const direct = (unifiedModelManager.getModelById(modelId) ||
-      unifiedModelManager.getAllModels().find(m => m.name === modelId)) as any
+    const cleanId = modelId.split('@')[0]
+    const direct = (unifiedModelManager.getModelById(cleanId) ||
+      unifiedModelManager.getModelById(modelId) ||
+      unifiedModelManager.getAllModels().find(m => m.name === cleanId || m.name === modelId)) as any
     if (direct) return direct
     return this.findLocalModelConfigByPathLike(modelId)
   }
@@ -305,8 +336,11 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
    * @param explicitModelId 调用方显式指定的模型标识（优先级最高）
    */
   private resolveLocalModelConfig(explicitModelId?: string): any | undefined {
+    if (explicitModelId) {
+      return this.findLocalModelConfig(explicitModelId)
+    }
     const snapshot = engineBridgeService.getSnapshot()
-    const candidates = [explicitModelId, snapshot.model, snapshot.modelName].filter(
+    const candidates = [snapshot.model, snapshot.modelName].filter(
       (v): v is string => typeof v === 'string' && v.length > 0
     )
     for (const candidate of candidates) {
@@ -376,28 +410,59 @@ export class ModelCapabilityAdapter extends EventEmitter implements IModelCapabi
       return modelCapabilityDetector.isMultiModalCloudModel(provider, model || 'unknown')
     } else {
       // PRD-0044：本地模型身份真相 = 引擎桥接快照
-      const currentModelId = modelId || engineBridgeService.getSnapshot().model || ''
-      if (!currentModelId) return false
-      const modelConfig = this.resolveLocalModelConfig(modelId)
+      const snapshot = engineBridgeService.getSnapshot()
+      const currentModelId = modelId || snapshot.model || ''
+      const currentModelName = modelId
+        ? (this.resolveLocalModelConfig(modelId)?.name || '')
+        : (snapshot.modelName || '')
+      if (!currentModelId && !currentModelName) return false
+
+      // 视觉强特征保底判定（如 MiniCPM-V, Qwen-VL, LLaVA, InternVL, CogVLM, GLM-4V, Vision, Omni 等）
+      // 提取文件名防止绝对路径包含的目录名（如 firefly-omni 或 vision 目录）误触发正则
+      const baseModelId = currentModelId.split(/[/\\]/).pop() || currentModelId
+      const identifierForCheck = `${baseModelId} ${currentModelName}`
+      if (/minicpm-v|qwen.*vl|llava|internvl|cogvlm|glm-4v|vision|omni/i.test(identifierForCheck)) {
+        return true
+      }
+
+      const modelConfig = modelId
+        ? this.resolveLocalModelConfig(modelId)
+        : this.resolveLocalModelConfig()
       if (!modelConfig) return false
 
+      if (modelConfig.isMultiModal === true || modelConfig.mmproj) return true
       // Wait, detectLocalCapabilities is async, but isMultiModalModel is sync!
       // I can re-use modelCapabilityDetector.isMultiModalModel(modelConfig) which is sync!
       return modelCapabilityDetector.isMultiModalModel(modelConfig as any)
     }
   }
 
-  async isMultimodalFileType(fileType: string): Promise<boolean> {
+  async isMultimodalFileType(fileType: string, filePath?: string): Promise<boolean> {
     try {
-      const isMultimodal =
-        (isCategory(fileType, FileCategory.IMAGE) && isDecodableImage(fileType)) ||
-        isCategory(fileType, FileCategory.AUDIO) ||
+      const filename = filePath || fileType
+      const isImage =
+        fileType === 'image' ||
+        isCategory(filename, FileCategory.IMAGE) ||
+        isCategory(fileType, FileCategory.IMAGE)
+
+      const isDecodable = isImage ? (fileType === 'image' || isDecodableImage(filename) || isDecodableImage(fileType)) : false
+
+      const isAudio =
+        fileType === 'audio' ||
+        isCategory(filename, FileCategory.AUDIO) ||
+        isCategory(fileType, FileCategory.AUDIO)
+
+      const isVideo =
+        fileType === 'video' ||
+        isCategory(filename, FileCategory.VIDEO) ||
         isCategory(fileType, FileCategory.VIDEO)
+
+      const isMultimodal = (isImage && isDecodable) || isAudio || isVideo
 
       if (!isMultimodal) {
         return false
       }
-      return await this.checkFileTypeSupport(fileType)
+      return await this.checkFileTypeSupport(fileType, filePath)
     } catch (error) {
       logger.error(LogCategory.MODEL_CAPABILITY_ADAPTER, '检查多模态文件类型支持失败:', error)
       return false
