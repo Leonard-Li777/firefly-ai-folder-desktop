@@ -19,10 +19,11 @@ export interface FileType extends BaseFileType {
   isUnanalyzed?: boolean
   /** 视频切片命中信息（跳轴搜索） */
   matchedChunk?: {
-    chunkIndex: number
+    chunkIndex?: number
     startSec: number
     endSec: number
     score?: number
+    similarity?: number
   }
 }
 

@@ -16,6 +16,10 @@ import type { ConfigKey } from '@firefly/types/config-types'
 // PRD-0044（S5）：IModelRecommendation 类型导入随 recommendModelsByHardware IPC 清退删除
 // 仅类型导入（编译期擦除，不引入主进程运行时依赖），用于引擎桥 IPC 类型化（Fix-05）
 import type { EngineBridgeSnapshot } from './runtime-services/engine-bridge'
+import type {
+  DeepLinkTargetPayload,
+  LaunchOutcome
+} from './runtime-services/system/external-app-launcher'
 
 /**
  * 暴露给渲染进程的安全API
@@ -458,6 +462,10 @@ const electronAPI = {
     // 用系统默认程序打开文件
     openFileWithDefaultApp: (filePath: string) =>
       ipcRenderer.invoke('open-file-with-default-app', filePath),
+
+    // 在外部应用中精准定位打开（支持秒数/页码/行号）
+    launchExternalDeepLink: (payload: DeepLinkTargetPayload): Promise<LaunchOutcome> =>
+      ipcRenderer.invoke('system:launch-external-deeplink', payload),
 
     // 用系统文件浏览器打开目录
     openPathInExplorer: (dirPath: string) => ipcRenderer.invoke('open-path-in-explorer', dirPath),

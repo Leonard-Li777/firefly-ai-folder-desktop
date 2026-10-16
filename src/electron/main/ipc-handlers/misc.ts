@@ -18,6 +18,10 @@ import { t } from '@app/languages'
 import { coreEngine, fileCleanupService } from '../state'
 import { initializeHardwareDetection as initializeHardwareDetectionFn } from '../initialization'
 import { loadIgnoreRules } from '../../runtime-services/analysis/analysis-ignore-service'
+import {
+  externalAppLauncher,
+  type DeepLinkTargetPayload
+} from '../../runtime-services/system/external-app-launcher'
 
 export function registerMiscIPCHandlers() {
   ipcMain.handle('app:relaunch', async () => {
@@ -444,6 +448,44 @@ export function registerMiscIPCHandlers() {
     const result = await shell.openPath(filePath)
     if (result) throw new Error(result)
     return { success: true }
+  })
+  ipcMain.handle('system:launch-external-deeplink', async (_event, payload: DeepLinkTargetPayload) => {
+    if (
+      !payload ||
+      typeof payload !== 'object' ||
+      typeof payload.filePath !== 'string' ||
+      !payload.filePath.trim()
+    ) {
+      return {
+        success: false,
+        appUsed: 'system_default',
+        fallbackToDefault: false,
+        error: 'Invalid deep link payload: filePath is required and must be a non-empty string'
+      }
+    }
+    const sanitizedPayload: DeepLinkTargetPayload = {
+      filePath: payload.filePath.trim(),
+      category: payload.category,
+      seekSeconds:
+        typeof payload.seekSeconds === 'number' &&
+        Number.isFinite(payload.seekSeconds) &&
+        payload.seekSeconds >= 0
+          ? payload.seekSeconds
+          : undefined,
+      pageNumber:
+        typeof payload.pageNumber === 'number' &&
+        Number.isFinite(payload.pageNumber) &&
+        payload.pageNumber >= 1
+          ? Math.floor(payload.pageNumber)
+          : undefined,
+      lineNumber:
+        typeof payload.lineNumber === 'number' &&
+        Number.isFinite(payload.lineNumber) &&
+        payload.lineNumber >= 1
+          ? Math.floor(payload.lineNumber)
+          : undefined
+    }
+    return await externalAppLauncher.launch(sanitizedPayload)
   })
   ipcMain.handle('open-path-in-explorer', async (event, dirPath: string) => {
     const result = await shell.openPath(dirPath)

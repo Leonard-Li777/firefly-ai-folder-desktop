@@ -120,6 +120,31 @@ export const useFileListContextMenu = ({
           }
         }
       },
+      ...(!isDirectory
+        ? [
+            {
+              label: t('在外部应用中精准定位打开'),
+              icon: 'launch',
+              onClick: async () => {
+                try {
+                  const rawCat = (item as any).category
+                  const cat = typeof rawCat === 'object' && rawCat !== null ? rawCat.label : rawCat
+                  const outcome = await window.electronAPI!.utils.launchExternalDeepLink({
+                    filePath: item.path,
+                    category: cat || '',
+                    seekSeconds: (item as any).matchedChunk?.startSec
+                  })
+                  if (outcome.fallbackToDefault) {
+                    toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
+                  }
+                } catch (error: any) {
+                  logger.error(LogCategory.RENDERER, '外部深链定位打开失败:', error)
+                  toast.error(t('打开文件失败'))
+                }
+              }
+            } as ContextMenuItem
+          ]
+        : []),
       {
         label: t('复制文件路径'),
         icon: 'content_copy',

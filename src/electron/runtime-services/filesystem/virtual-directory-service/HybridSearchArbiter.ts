@@ -38,11 +38,12 @@ import { omniService } from '../../system/omni-service'
 
 /** RRF 平滑常量 K（避免 top-rank 分数悬殊、稳定融合放缩） */
 export const HYBRID_SEARCH_RRF_K = 60
-/** 加权 RRF 三路权重：FTS 字面 > 向量语义 > 文件名提升 */
+/** 加权 RRF 四路权重：精确标识符 > FTS 字面 > 向量语义 > 文件名提升 */
 export const HYBRID_SEARCH_WEIGHTS = {
   fts: 2.2,
   vector: 1.6,
-  name: 0.9
+  name: 0.9,
+  exact: 2.8
 } as const
 /** 单源候选池大小（FTS / 向量 / FS 各自的上限，也是融合池的上限） */
 export const HYBRID_SEARCH_POOL_SIZE = 200
@@ -56,6 +57,8 @@ export interface HybridRankedCandidate {
   ftsRank?: number
   /** 1-based 向量排名（经基础过滤后重排） */
   vecRank?: number
+  /** 1-based 精确标识符匹配排名 */
+  exactRank?: number
   /** 向量相似度（0~1） */
   vecScore?: number
   /** 文件名提升分（0~1） */
@@ -64,6 +67,13 @@ export interface HybridRankedCandidate {
   score: number
   /** 是否存在字面命中（FTS 命中或文件名全子串命中） */
   hasLiteral: boolean
+  /** 命中的视频时序切片（若命中条目为视频时序切片向量） */
+  matchedChunk?: {
+    chunkIndex: number
+    startSec: number
+    endSec: number
+    similarity?: number
+  }
 }
 
 /** 真实目录实时 FS 检索到的未分析文件命中 */
@@ -106,11 +116,86 @@ export interface HybridSearchContext {
 }
 
 /**
+ * 严格标识符特征探针（Strict Identifier Probe）
+ * 依据 Spec §3.3.1：
+ * 1. 中英混排纯净抽取：使用 match 直接抽取纯净子串，杜绝中文字串污染捕获；
+ * 2. 防日期误判：Hash 规则明确要求包含十六进制字母（[a-fA-F]），严禁将纯数字日期误判为短 Hash；
+ * 3. 显式排除公历年份与纯数字。
+ */
+export class IdentifierProbe {
+  // 1. 下划线编程变量与错误码 (支持 handle_auth_token, ERR_403, STATUS_TIMEOUT): 至少包含一个下划线且长度 >= 5
+  private static readonly RE_UNDERSCORE_IDENTIFIER = /[A-Za-z0-9]{2,}_[A-Za-z0-9_]{2,}/g
+
+  // 2. 发票号与业务流水单号 (支持多段连字符与后缀，绝不截断 INV-2026-088, PO-99120)
+  private static readonly RE_INVOICE_SERIAL = /[A-Za-z]{2,5}-\d{2,}(?:-[A-Za-z0-9]+)*/g
+
+  // 3. 严格小驼峰编程变量/函数 (前缀至少2个小写字母，紧随大写字母，排除 iPhone/iPad): getUserInfo, parseTokens
+  private static readonly RE_CAMEL_CASE = /\b[a-z]{2,}(?:[A-Z][a-z0-9]+)+\b/g
+
+  // 4. 标准 UUID 与十六进制短 Hash (要求至少包含一个十六进制字母 a-f，防止 20251016 等纯数字日期误判):
+  private static readonly RE_UUID = /[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}/g
+  private static readonly RE_HEX_HASH =
+    /\b(?=[0-9a-fA-F]{7,40}\b)(?=[0-9a-fA-F]*[a-fA-F])[0-9a-fA-F]+\b/g
+
+  /** 判定查询串中是否存在强标识符模式，返回抽取的纯净标识符列表 */
+  public static extractIdentifiers(query: string): string[] {
+    const trimmed = query.trim()
+    if (!trimmed) return []
+
+    // 显式排除公历年份与纯短数字 (如 2024, 2025, 2026)
+    if (/^\b(19|20)\d{2}\b$/.test(trimmed) || /^\d+$/.test(trimmed)) {
+      return []
+    }
+
+    const matches = new Set<string>()
+
+    // 使用 match 全局匹配直接抽取纯净子串，杜绝中英混排污染
+    const underscores = query.match(this.RE_UNDERSCORE_IDENTIFIER) || []
+    const invoices = query.match(this.RE_INVOICE_SERIAL) || []
+    const camelCases = query.match(this.RE_CAMEL_CASE) || []
+    const uuids = query.match(this.RE_UUID) || []
+
+    // 剔除已抽取的复合标识符与 UUID，避免将其子串误判为独立 Hash
+    let queryForHash = query
+    for (const token of [...uuids, ...invoices, ...underscores]) {
+      queryForHash = queryForHash.replace(token, ' ')
+    }
+    const hexHashes = queryForHash.match(this.RE_HEX_HASH) || []
+
+    for (const m of [...underscores, ...invoices, ...camelCases, ...uuids, ...hexHashes]) {
+      if (!/^\d+$/.test(m) && !/^(19|20)\d{2}$/.test(m)) {
+        matches.add(m)
+      }
+    }
+
+    return Array.from(matches)
+  }
+}
+
+/**
+ * 包装精确短语查询字符串，转义内部引号并包裹双引号
+ */
+export function formatExactPhraseQuery(id: string): string {
+  const safe = id.replace(/"/g, '""')
+  return `"${safe}"`
+}
+
+/**
  * 清洗 FTS5 MATCH 查询语法干扰字符，避免 trigram 索引语法异常
+ * 若输入为已转义且成对包装的精确短语查询（如 "INV-2026-088"），予以安全保留
  */
 export function sanitizeFtsQuery(query: string): string {
+  const trimmed = query.trim()
+  if (trimmed.startsWith('"') && trimmed.endsWith('"') && trimmed.length > 2) {
+    const inner = trimmed.slice(1, -1)
+    const innerQuotes = inner.match(/"/g)?.length ?? 0
+    if (innerQuotes === 0 || innerQuotes % 2 === 0) {
+      const safeInner = inner.replace(/[*^()]/g, ' ')
+      return `"${safeInner}"`
+    }
+  }
   const cleaned = query
-    .replace(/["*^()]/g, ' ')
+    .replace(/["*^()\-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
   return cleaned || query.trim()
@@ -128,14 +213,16 @@ export function rrfScore(rank: number | undefined, k: number = HYBRID_SEARCH_RRF
  * 加权 RRF 融合得分（纯函数，便于单测）
  */
 export function weightedRrfScore(
-  opts: { ftsRank?: number; vecRank?: number; nameBoost?: number },
-  weights: { fts: number; vector: number; name: number } = HYBRID_SEARCH_WEIGHTS,
+  opts: { ftsRank?: number; vecRank?: number; nameBoost?: number; exactRank?: number },
+  weights: { fts: number; vector: number; name: number; exact?: number } = HYBRID_SEARCH_WEIGHTS,
   k: number = HYBRID_SEARCH_RRF_K
 ): number {
+  const wExact = weights.exact ?? HYBRID_SEARCH_WEIGHTS.exact
   return (
     weights.fts * rrfScore(opts.ftsRank, k) +
     weights.vector * rrfScore(opts.vecRank, k) +
-    weights.name * (opts.nameBoost ?? 0)
+    weights.name * (opts.nameBoost ?? 0) +
+    wExact * rrfScore(opts.exactRank, k)
   )
 }
 
@@ -287,6 +374,12 @@ interface VectorMatch {
   fileFingerprint: string
   score: number
   rank: number
+  matchedChunk?: {
+    chunkIndex: number
+    startSec: number
+    endSec: number
+    similarity?: number
+  }
 }
 
 /**
@@ -327,13 +420,20 @@ export class HybridSearchArbiter {
 
     const failures: HybridSearchFailures = { fts: false, vector: false, fs: false }
 
-    // 1. FTS5 BM25 / Omni 向量 / 真实目录 FS 未分析三路信号并发拉取
+    // 1. FTS5 BM25 / Omni 向量 / 真实目录 FS 未分析三路信号并发拉取 + 精确标识符探针
     // 注：未提供 workspaceDirectoryPath 时不发起 FS 检索，且不视为 FS 故障
     const attemptedFs = !!workspaceDirectoryPath
     const fsPromise = attemptedFs
       ? this.queryFastFs(workspaceDirectoryPath!, keyword, poolSize)
       : Promise.resolve(null)
-    const [ftsResult, vectorResult, fsResult] = await Promise.all([
+    const identifiers = IdentifierProbe.extractIdentifiers(keyword)
+    const exactPromise =
+      identifiers.length > 0
+        ? Promise.resolve(
+            this.queryExactPhraseCandidates(identifiers, whereClauses, queryParams, poolSize)
+          )
+        : Promise.resolve([])
+    const [ftsResult, vectorResult, fsResult, exactResult] = await Promise.all([
       this.queryFtsCandidates(keyword, whereClauses, queryParams, poolSize),
       this.queryVectorCandidates(
         keyword,
@@ -342,21 +442,35 @@ export class HybridSearchArbiter {
         queryParams,
         poolSize
       ),
-      fsPromise
+      fsPromise,
+      exactPromise
     ])
 
     if (ftsResult === null) failures.fts = true
     const ftsRankMap = new Map<string, number>()
     for (const [idx, fp] of (ftsResult ?? []).entries()) ftsRankMap.set(fp, idx + 1)
 
+    const exactRankMap = new Map<string, number>()
+    for (const [idx, fp] of (exactResult ?? []).entries()) exactRankMap.set(fp, idx + 1)
+
     if (vectorResult === null) failures.vector = true
-    const vecRankMap = new Map<string, { rank: number; score: number }>()
-    for (const v of vectorResult ?? []) vecRankMap.set(v.fileFingerprint, { rank: v.rank, score: v.score })
+    const vecRankMap = new Map<
+      string,
+      { rank: number; score: number; matchedChunk?: VectorMatch['matchedChunk'] }
+    >()
+    for (const v of vectorResult ?? []) {
+      vecRankMap.set(v.fileFingerprint, {
+        rank: v.rank,
+        score: v.score,
+        matchedChunk: v.matchedChunk
+      })
+    }
 
     // 2. 汇聚候选指纹并加载文件名信息
     const fpSet = new Set<string>()
     for (const fp of ftsRankMap.keys()) fpSet.add(fp)
     for (const fp of vecRankMap.keys()) fpSet.add(fp)
+    for (const fp of exactRankMap.keys()) fpSet.add(fp)
     const nameMap = this.queryNameMap(Array.from(fpSet))
 
     // 3. 加权 RRF 融合 + 降序排序
@@ -364,21 +478,27 @@ export class HybridSearchArbiter {
     for (const fp of fpSet) {
       const ftsRank = ftsRankMap.get(fp)
       const vec = vecRankMap.get(fp)
+      const exactRank = exactRankMap.get(fp)
       const { name, smartName } = nameMap.get(fp) ?? {}
       const nameBoost = computeNameBoost(name, smartName, keyword)
       candidates.push({
         fileFingerprint: fp,
         ftsRank,
         vecRank: vec?.rank,
+        exactRank,
         vecScore: vec?.score,
         nameBoost,
-        score: weightedRrfScore({ ftsRank, vecRank: vec?.rank, nameBoost }),
-        hasLiteral: ftsRank !== undefined || nameBoost >= 1
+        score: weightedRrfScore({ ftsRank, vecRank: vec?.rank, nameBoost, exactRank }),
+        hasLiteral: exactRank !== undefined || ftsRank !== undefined || nameBoost >= 1,
+        matchedChunk: vec?.matchedChunk
       })
     }
     candidates.sort((a, b) => {
       const diff = b.score - a.score
       if (diff !== 0) return diff
+      const exactDiff =
+        (a.exactRank ?? Number.MAX_SAFE_INTEGER) - (b.exactRank ?? Number.MAX_SAFE_INTEGER)
+      if (exactDiff !== 0) return exactDiff
       const nameDiff = b.nameBoost - a.nameBoost
       if (nameDiff !== 0) return nameDiff
       const aMin = Math.min(a.ftsRank ?? Number.MAX_SAFE_INTEGER, a.vecRank ?? Number.MAX_SAFE_INTEGER)
@@ -462,6 +582,71 @@ export class HybridSearchArbiter {
     return this.fsBreaker.isOpen
   }
 
+  /** 精确标识符候选（按 FTS5 短语 BM25 + 文件名精确匹配），返回匹配指纹列表 */
+  private queryExactPhraseCandidates(
+    identifiers: string[],
+    whereClauses: string[],
+    queryParams: any[],
+    poolSize: number
+  ): string[] {
+    if (identifiers.length === 0) return []
+    try {
+      const ftsTable = this.db
+        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='files_fts'")
+        .get()
+      const results: string[] = []
+      const seen = new Set<string>()
+
+      const extraWhere = whereClauses.length > 0 ? `AND ${whereClauses.join(' AND ')}` : ''
+
+      for (const id of identifiers) {
+        if (ftsTable) {
+          const phraseQuery = sanitizeFtsQuery(formatExactPhraseQuery(id))
+          const rows = this.db
+            .prepare(`
+              SELECT f.file_fingerprint AS file_fingerprint
+              FROM files_fts
+              JOIN files f ON f.rowid = files_fts.rowid
+              JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
+              WHERE files_fts MATCH ?
+                ${extraWhere}
+              ORDER BY bm25(files_fts, ${HYBRID_BM25_COLUMN_WEIGHTS.join(', ')}) ASC
+              LIMIT ?
+            `)
+            .all(phraseQuery, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+          for (const r of rows) {
+            if (!seen.has(r.file_fingerprint)) {
+              seen.add(r.file_fingerprint)
+              results.push(r.file_fingerprint)
+            }
+          }
+        }
+
+        const nameRows = this.db
+          .prepare(`
+            SELECT wf.file_fingerprint AS file_fingerprint
+            FROM workspace_files wf
+            LEFT JOIN files f ON f.file_fingerprint = wf.file_fingerprint
+            WHERE (wf.name LIKE ? OR f.smart_name LIKE ?)
+              ${extraWhere}
+            LIMIT ?
+          `)
+          .all(`%${id}%`, `%${id}%`, ...queryParams, poolSize) as Array<{ file_fingerprint: string }>
+        for (const r of nameRows) {
+          if (!seen.has(r.file_fingerprint)) {
+            seen.add(r.file_fingerprint)
+            results.push(r.file_fingerprint)
+          }
+        }
+      }
+      return results.slice(0, poolSize)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 精确标识符候选查询失败: ', msg)
+      return []
+    }
+  }
+
   /** FTS5 快速字面候选（按 bm25 权重升序 = 相关度降序），返回 null 表示该路失败 */
   private queryFtsCandidates(
     keyword: string,
@@ -474,6 +659,7 @@ export class HybridSearchArbiter {
         .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='files_fts'")
         .get()
       if (!ftsTable) return []
+      const extraWhere = whereClauses.length > 0 ? `AND ${whereClauses.join(' AND ')}` : ''
       const rows = this.db
         .prepare(`
           SELECT f.file_fingerprint AS file_fingerprint
@@ -481,7 +667,7 @@ export class HybridSearchArbiter {
           JOIN files f ON f.rowid = files_fts.rowid
           JOIN workspace_files wf ON wf.file_fingerprint = f.file_fingerprint
           WHERE files_fts MATCH ?
-            AND ${whereClauses.join(' AND ')}
+            ${extraWhere}
           ORDER BY bm25(files_fts, ${HYBRID_BM25_COLUMN_WEIGHTS.join(', ')}) ASC
           LIMIT ?
         `)
@@ -526,17 +712,128 @@ export class HybridSearchArbiter {
       }
       this.vectorBreaker.recordSuccess()
 
-      // 与基础过滤条件取交集，并保持服务端相似度降序（即服务端返回顺序）重排 rank
+      // 1. 解析时序切片格式（如 `${parentFp}:c${chunkIndex}`），提取父文件指纹并向基础条件做交集过滤
+      const chunkPattern = /^(.+):c(\d+)$/
+      const parsedMatches: Array<{
+        rawFp: string
+        parentFp: string
+        chunkIndex?: number
+        score: number
+      }> = resp.matches.map(m => {
+        const match = m.fileFingerprint.match(chunkPattern)
+        if (match) {
+          return {
+            rawFp: m.fileFingerprint,
+            parentFp: match[1],
+            chunkIndex: parseInt(match[2], 10),
+            score: m.score
+          }
+        }
+        return {
+          rawFp: m.fileFingerprint,
+          parentFp: m.fileFingerprint,
+          score: m.score
+        }
+      })
+
+      const uniqueParentFps = Array.from(new Set(parsedMatches.map(p => p.parentFp)))
       const allowed = this.filterMembersFromBase(
-        resp.matches.map(m => m.fileFingerprint),
+        uniqueParentFps,
         whereClauses,
         queryParams
       )
-      const out: VectorMatch[] = []
-      for (const [idx, m] of resp.matches.entries()) {
-        if (allowed.has(m.fileFingerprint)) {
-          out.push({ fileFingerprint: m.fileFingerprint, score: m.score, rank: idx + 1 })
+
+      // 2. 按 parentFp 聚合并保留最高相似度得分与最高分切片索引
+      interface ParentAgg {
+        parentFp: string
+        bestScore: number
+        bestChunkIndex?: number
+        bestChunkScore?: number
+      }
+      const parentAggMap = new Map<string, ParentAgg>()
+      for (const m of parsedMatches) {
+        if (!allowed.has(m.parentFp)) continue
+        const existing = parentAggMap.get(m.parentFp)
+        if (!existing) {
+          parentAggMap.set(m.parentFp, {
+            parentFp: m.parentFp,
+            bestScore: m.score,
+            bestChunkIndex: m.chunkIndex,
+            bestChunkScore: m.chunkIndex !== undefined ? m.score : undefined
+          })
+        } else {
+          if (m.score > existing.bestScore) {
+            existing.bestScore = m.score
+          }
+          if (
+            m.chunkIndex !== undefined &&
+            (existing.bestChunkScore === undefined || m.score > existing.bestChunkScore)
+          ) {
+            existing.bestChunkIndex = m.chunkIndex
+            existing.bestChunkScore = m.score
+          }
         }
+      }
+
+      if (parentAggMap.size === 0) {
+        return []
+      }
+
+      // 按最高得分降序重排
+      const sortedParents = Array.from(parentAggMap.values()).sort(
+        (a, b) => b.bestScore - a.bestScore
+      )
+
+      // 3. 批量查询切片起止时间元数据
+      const parentsWithChunks = sortedParents.filter(p => p.bestChunkIndex !== undefined)
+      const chunkTimingMap = new Map<string, { startSec: number; endSec: number }>()
+      if (parentsWithChunks.length > 0) {
+        try {
+          const placeholders = parentsWithChunks.map(() => '?').join(',')
+          const rows = this.db
+            .prepare(
+              `SELECT file_fingerprint, chunk_index, start_sec, end_sec
+               FROM file_video_chunks
+               WHERE file_fingerprint IN (${placeholders})`
+            )
+            .all(...parentsWithChunks.map(p => p.parentFp)) as Array<{
+            file_fingerprint: string
+            chunk_index: number
+            start_sec: number
+            end_sec: number
+          }>
+          for (const r of rows) {
+            chunkTimingMap.set(`${r.file_fingerprint}:c${r.chunk_index}`, {
+              startSec: r.start_sec,
+              endSec: r.end_sec
+            })
+          }
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : String(err)
+          logger.warn(LogCategory.VIRTUAL_DIRECTORY, '[HybridSearchArbiter] 查询 file_video_chunks 失败: ', msg)
+        }
+      }
+
+      const out: VectorMatch[] = []
+      for (const [idx, p] of sortedParents.entries()) {
+        let matchedChunk: VectorMatch['matchedChunk']
+        if (p.bestChunkIndex !== undefined) {
+          const timing = chunkTimingMap.get(`${p.parentFp}:c${p.bestChunkIndex}`)
+          if (timing) {
+            matchedChunk = {
+              chunkIndex: p.bestChunkIndex,
+              startSec: timing.startSec,
+              endSec: timing.endSec,
+              similarity: p.bestChunkScore ?? p.bestScore
+            }
+          }
+        }
+        out.push({
+          fileFingerprint: p.parentFp,
+          score: p.bestScore,
+          rank: idx + 1,
+          matchedChunk
+        })
       }
       return out
     } catch (err: unknown) {
@@ -577,11 +874,12 @@ export class HybridSearchArbiter {
   ): Set<string> {
     if (fingerprints.length === 0) return new Set<string>()
     const placeholders = fingerprints.map(() => '?').join(',')
+    const extraWhere = whereClauses.length > 0 ? `AND ${whereClauses.join(' AND ')}` : ''
     const sql = `
       SELECT DISTINCT wf.file_fingerprint AS file_fingerprint
       FROM workspace_files wf
       WHERE wf.file_fingerprint IN (${placeholders})
-        AND ${whereClauses.join(' AND ')}
+        ${extraWhere}
     `
     try {
       const rows = this.db.prepare(sql).all(...fingerprints, ...queryParams) as Array<{

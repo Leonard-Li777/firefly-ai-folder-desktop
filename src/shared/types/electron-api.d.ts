@@ -23,6 +23,10 @@ import type { AIClassificationResult } from '@yonuc/types'
 
 // 导入统一的文件和目录类型
 import type { FileItem, DirectoryItem } from '@yonuc/types'
+import type {
+  DeepLinkTargetPayload,
+  LaunchOutcome
+} from '../../electron/runtime-services/system/external-app-launcher'
 
 // 导入统一的硬件信息类型
 import type { HardwareInfo } from '@yonuc/types'
@@ -536,6 +540,7 @@ declare global {
         getUserHomePath: () => Promise<string>
         joinPath: (basePath: string, relativePath: string) => Promise<string>
         openFileWithDefaultApp: (filePath: string) => Promise<void>
+        launchExternalDeepLink: (payload: DeepLinkTargetPayload) => Promise<LaunchOutcome>
         openPathInExplorer: (dirPath: string) => Promise<void>
         writeFile: (filePath: string, content: string) => Promise<void>
         detectLibreOffice: () => Promise<LibreOfficeDetection>

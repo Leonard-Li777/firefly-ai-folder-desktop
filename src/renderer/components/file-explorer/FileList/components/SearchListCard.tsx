@@ -220,8 +220,26 @@ export const SearchListCard = React.memo(
             )}
             {item.matchedChunk && (
               <span
-                className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0"
-                title={t('匹配视频时间片段')}
+                className="inline-flex items-center gap-1 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 shrink-0 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/80 transition-colors"
+                title={t('在外部应用中精准定位打开')}
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  try {
+                    const rawCat = (item as any).category
+                    const cat = typeof rawCat === 'object' && rawCat !== null ? rawCat.label : rawCat
+                    const outcome = await window.electronAPI!.utils.launchExternalDeepLink({
+                      filePath: item.path,
+                      category: cat || '',
+                      seekSeconds: item.matchedChunk!.startSec
+                    })
+                    if (outcome.fallbackToDefault) {
+                      toast.info(t('未检测到支持精准定位的外部应用，已按默认方式打开'))
+                    }
+                  } catch (error: any) {
+                    logger.error(LogCategory.RENDERER, '外部深链定位打开失败:', error)
+                    toast.error(t('打开文件失败'))
+                  }
+                }}
               >
                 <MaterialIcon icon="schedule" className="text-[11px]" />
                 <span>{`${formatVideoTimestamp(item.matchedChunk.startSec)} - ${formatVideoTimestamp(item.matchedChunk.endSec)}`}</span>

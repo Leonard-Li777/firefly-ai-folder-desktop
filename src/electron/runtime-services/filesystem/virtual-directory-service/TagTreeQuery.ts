@@ -1355,7 +1355,7 @@ export class TagTreeQuery {
           tags = tags.filter(t => t.fileCount > 0)
         }
         const isPan =
-          og.metadata?.flag?.isPanDimension === true ||
+          (typeof og.metadata === 'object' && og.metadata !== null ? (og.metadata as any).flag?.isPanDimension : false) === true ||
           (og.metadata as any)?.isPanDimension === true
         // 对于根级，如果其下没有子标签，且非批量预设模式下的泛维度，则根级数据不应输出，也不应展示
         if (tags.length === 0 && !(includeAllPresetTags && isPan)) continue
@@ -1392,7 +1392,7 @@ export class TagTreeQuery {
         if (g.code && dedupeCodes.has(g.code)) continue
         if (g.name && dedupeNames.has(g.name)) continue
         const isPan =
-          g.metadata?.flag?.isPanDimension === true ||
+          (typeof g.metadata === 'object' && g.metadata !== null ? (g.metadata as any).flag?.isPanDimension : false) === true ||
           (g.metadata as any)?.isPanDimension === true
         if ((!g.tags || g.tags.length === 0) && !(includeAllPresetTags && isPan)) continue
         if (g.code) dedupeCodes.add(g.code)
@@ -2011,9 +2011,14 @@ export class TagTreeQuery {
           }
 
           // 寻找对应已存在的维度组（严格按 code 或 id 精准匹配，杜绝按 name 模糊匹配避免同名子维度与根维度串扰）
-          let targetGroup =
-            (dimCode ? groupByCode.get(dimCode) : undefined) ||
-            (dimId !== undefined ? groupById.get(dimId) : undefined)
+          type ExtendedDimensionGroup = DimensionGroup & {
+            parentCodes?: string[]
+            rootCode?: string
+          }
+
+          let targetGroup: ExtendedDimensionGroup | undefined =
+            (dimCode ? (groupByCode.get(dimCode) as ExtendedDimensionGroup | undefined) : undefined) ||
+            (dimId !== undefined ? (groupById.get(dimId) as ExtendedDimensionGroup | undefined) : undefined)
 
           if (!targetGroup) {
             // 如果该维度尚未在 finalGroups 中，则创建该维度组
@@ -2022,50 +2027,71 @@ export class TagTreeQuery {
               dimId ??
               (dimCode && ROOT_DIMENSION_META[dimCode]?.id) ??
               (10000 + finalGroups.length)
-            targetGroup = {
+            const rootDimCode = dimCode ? resolveSubdimensionRoot(dimCode) : undefined
+            const newGroup: ExtendedDimensionGroup = {
               id: canonicalId,
               name: resolvedName,
-              level: 0,
+              level: authDim.depth || authDim.level || (rootDimCode && rootDimCode !== dimCode ? 2 : 1),
               tags: [],
               code: dimCode,
               order: canonicalId || 9999,
               sort_order: canonicalId || 9999,
               isMultiSelect: dimFlag?.isMultiSelect ?? false,
+              parentCodes: authDim.parentCodes || [],
+              rootCode: rootDimCode || dimCode,
               meta: {
                 source: 'builtin',
                 order: canonicalId || 9999,
                 sort_order: canonicalId || 9999,
+                parentCodes: authDim.parentCodes || [],
+                rootCode: rootDimCode || dimCode,
                 ...(dimFlag ? { flag: dimFlag } : {})
               },
               metadata: {
                 source: 'builtin',
                 order: canonicalId || 9999,
                 sort_order: canonicalId || 9999,
+                parentCodes: authDim.parentCodes || [],
+                rootCode: rootDimCode || dimCode,
                 ...(dimFlag ? { flag: dimFlag } : {})
               }
             }
-            finalGroups.push(targetGroup)
-            if (targetGroup.code) groupByCode.set(targetGroup.code, targetGroup)
-            if (typeof targetGroup.id === 'number') groupById.set(targetGroup.id, targetGroup)
+            targetGroup = newGroup
+            finalGroups.push(newGroup)
+            if (newGroup.code) groupByCode.set(newGroup.code, newGroup)
+            if (typeof newGroup.id === 'number') groupById.set(newGroup.id, newGroup)
           } else {
-            // 确保既有维度组上的 metadata.flag 包含权威配置中的 flag（如 isPanDimension）
+            // 确保既有维度组上的 metadata.flag 包含权威配置中的 flag（如 isPanDimension）以及父级关联
+            const rootDimCode = dimCode ? resolveSubdimensionRoot(dimCode) : undefined
+            if (authDim.parentCodes && (!targetGroup.parentCodes || targetGroup.parentCodes.length === 0)) {
+              targetGroup.parentCodes = authDim.parentCodes
+            }
+            if (rootDimCode && !targetGroup.rootCode) {
+              targetGroup.rootCode = rootDimCode
+            }
             if (dimFlag) {
+              const prevMeta = typeof targetGroup.metadata === 'object' && targetGroup.metadata !== null ? targetGroup.metadata : {}
+              const prevMetaFlag = typeof targetGroup.metadata === 'object' && targetGroup.metadata !== null ? (targetGroup.metadata as any).flag : undefined
               targetGroup.metadata = {
-                ...targetGroup.metadata,
+                ...prevMeta,
                 flag: {
-                  ...targetGroup.metadata?.flag,
+                  ...prevMetaFlag,
                   ...dimFlag
                 }
               }
+              const prevMetaObj = typeof targetGroup.meta === 'object' && targetGroup.meta !== null ? targetGroup.meta : {}
+              const prevMetaObjFlag = typeof targetGroup.meta === 'object' && targetGroup.meta !== null ? (targetGroup.meta as any).flag : undefined
               targetGroup.meta = {
-                ...targetGroup.meta,
+                ...prevMetaObj,
                 flag: {
-                  ...targetGroup.meta?.flag,
+                  ...prevMetaObjFlag,
                   ...dimFlag
                 }
               }
             }
           }
+
+          if (!targetGroup) continue
 
           // 如果该预置维度含有预置标签词表（dim.tags），补全未命中的预设标签（fileCount: 0）
           if (Array.isArray(authDim.tags) && authDim.tags.length > 0) {
@@ -2074,7 +2100,7 @@ export class TagTreeQuery {
             const existingValues = new Set<string>()
             for (const t of targetGroup.tags) {
               if (t.tagValue) existingValues.add(t.tagValue.toLowerCase())
-              if (t.name) existingValues.add(String(t.name).toLowerCase())
+              if ((t as any).name) existingValues.add(String((t as any).name).toLowerCase())
             }
 
             for (let tagIdx = 0; tagIdx < authDim.tags.length; tagIdx++) {
@@ -2103,45 +2129,7 @@ export class TagTreeQuery {
               existingValues.add(trimmed.toLowerCase())
             }
 
-            // 2. 若该维度为受控子维度，同时将其预置标签同步补全至其所属的一级受控根维度组（如文件用途、文件类型等）
-            const rootDimCode = dimCode ? resolveSubdimensionRoot(dimCode) : undefined
-            if (rootDimCode && rootDimCode !== dimCode) {
-              const rootGroup = groupByCode.get(rootDimCode)
-              if (rootGroup) {
-                if (!rootGroup.tags) rootGroup.tags = []
-                const existingRootValues = new Set<string>()
-                for (const t of rootGroup.tags) {
-                  if (t.tagValue) existingRootValues.add(t.tagValue.toLowerCase())
-                  if (t.name) existingRootValues.add(String(t.name).toLowerCase())
-                }
-
-                for (let tagIdx = 0; tagIdx < authDim.tags.length; tagIdx++) {
-                  const presetTagName = authDim.tags[tagIdx]
-                  if (!presetTagName || typeof presetTagName !== 'string') continue
-                  const trimmed = presetTagName.trim()
-                  if (!trimmed || existingRootValues.has(trimmed.toLowerCase())) continue
-
-                  const tagCode = `${dimCode}.${trimmed}`
-                  const resolvedTagName = aliasResolver(tagCode, trimmed)
-                  rootGroup.tags.push({
-                    dimensionId: rootGroup.id,
-                    dimensionCode: rootGroup.code || '',
-                    dimensionName: rootGroup.name,
-                    tagValue: resolvedTagName,
-                    fileCount: 0,
-                    level: 2,
-                    code: tagCode,
-                    codePath: `/${rootGroup.code}/${dimCode}/${trimmed}`,
-                    namePath: `/${rootGroup.name}/${targetGroup.name}/${resolvedTagName}`,
-                    viaParentCode: dimCode,
-                    isMultiSelect: rootGroup.isMultiSelect ?? false,
-                    order: 9999,
-                    meta: { order: 9999, sort_order: 9999 }
-                  })
-                  existingRootValues.add(trimmed.toLowerCase())
-                }
-              }
-            }
+            // 2. 注意：受控子维度的预置标签仅保留在子维度自身，严禁平铺 push 到所属一级受控根维度中（避免文件用途等卡片混入处理状态、安全等级等子标签）
           }
         }
       }
@@ -2183,11 +2171,39 @@ export class TagTreeQuery {
         const orderB = b.order !== undefined && b.order > 0 ? b.order : 999999
         return orderA - orderB
       })
+      // 判断是否属于敏感内容层级（敏感内容及下属所有细分、色情分级、内容分级等）
+      const isSensitiveDimension = (g: any): boolean => {
+        const code = g.code || ''
+        const id = Number(g.id)
+        const name = g.name || ''
+        if (
+          code === 'builtin.sensitive_content' ||
+          code === 'builtin.erotic_scale' ||
+          code === 'builtin.content_rating' ||
+          id === 130 || id === 123 || id === 162 ||
+          name.includes('敏感内容') ||
+          name.includes('色情分级') ||
+          name.includes('内容分级')
+        ) {
+          return true
+        }
+        if (id >= 131 && id <= 134) return true
+        if (id >= 150 && id <= 161) return true
+        if (code && resolveSubdimensionRoot(code) === 'builtin.sensitive_content') return true
+        return false
+      }
+
       const validGroups = finalGroups.filter(g => {
+        // 敏感内容维度的所有层级及标签隐蔽门禁：除非同维度的标签有一个及以上文件计数，否则全量隐藏不展示
+        if (isSensitiveDimension(g)) {
+          const hasFileHit = Array.isArray(g.tags) && g.tags.some(t => (t.fileCount || 0) > 0)
+          if (!hasFileHit) return false
+        }
+
         if (g.tags && g.tags.length > 0) return true
         // 当 includeAllPresetTags 为 true 时，泛维度即使 tags 为空也必须输出
         const isPan =
-          g.metadata?.flag?.isPanDimension === true ||
+          (typeof g.metadata === 'object' && g.metadata !== null ? (g.metadata as any).flag?.isPanDimension : false) === true ||
           (g.metadata as any)?.isPanDimension === true
         if (includeAllPresetTags && isPan) return true
         return false
