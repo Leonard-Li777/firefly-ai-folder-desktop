@@ -269,16 +269,52 @@ export class ThumbnailService {
   }
 
   /**
+   * 检查工作区磁盘中是否已存在指定文件指纹的缩略图
+   */
+  public async hasThumbnail(
+    workspaceDirectoryPath: string,
+    fileFingerprint: string
+  ): Promise<{ exists: boolean; relativePath: string; absolutePath: string }> {
+    const thumbnailFileName = this.generateThumbnailFileName(fileFingerprint)
+    const relativePath = path.join(VIRTUAL_DIRECTORY_FOLDER, THUMBNAIL_FOLDER, thumbnailFileName)
+    const absolutePath = path.join(workspaceDirectoryPath, relativePath)
+    try {
+      await fs.access(absolutePath)
+      return { exists: true, relativePath, absolutePath }
+    } catch {
+      return { exists: false, relativePath, absolutePath }
+    }
+  }
+
+  /**
    * 优先级2：使用 Omni 原生微服务引擎生成文档/多媒体预览缩略图
    */
-  private async generateThumbnailFallback(
+  public async generateThumbnailFallback(
     filePath: string,
     outputPath: string,
-    _fileId: string
+    _fileId?: string,
+    options?: { skipIfExists?: boolean }
   ): Promise<boolean> {
     try {
+      // 优先检查磁盘目标路径是否已经存在缩略图
+      try {
+        await fs.access(outputPath)
+        logger.info(
+          LogCategory.FILE_PROCESSOR,
+          `[缩略图服务] 目标缩略图已存在于磁盘，跳过 Omni 生成并直接复用: ${outputPath}`
+        )
+        return true
+      } catch {
+        // 缩略图不存在，继续请求生成
+      }
+
+      // 若指定了跳过已有生成，则直接退出
+      if (options?.skipIfExists) {
+        return false
+      }
+
       const { omniService } = await import('../system/omni-service')
-      const coverBuffer = await omniService.getFileCover(filePath)
+      const coverBuffer = await omniService.getFileCover(filePath, { skipIfExistsPath: outputPath })
       if (coverBuffer && coverBuffer.length > 0) {
         const fs = await import('node:fs/promises')
         await fs.mkdir(path.dirname(outputPath), { recursive: true })
@@ -351,6 +387,23 @@ export class ThumbnailService {
       const thumbnailAbsPath = path.join(thumbnailDir, thumbnailFileName)
 
       const relativePath = path.join(VIRTUAL_DIRECTORY_FOLDER, THUMBNAIL_FOLDER, thumbnailFileName)
+
+      // 0. 优先检查磁盘是否已存在该缩略图（复用既有缩略图，避免重复生成开销）
+      try {
+        await fs.access(thumbnailAbsPath)
+        logger.info(
+          LogCategory.FILE_PROCESSOR,
+          `[缩略图服务] 命中磁盘现有缩略图，直接复用: ${thumbnailAbsPath}`
+        )
+        return {
+          success: true,
+          relativePath,
+          absolutePath: thumbnailAbsPath,
+          method: 'sharp'
+        }
+      } catch {
+        // 文件不存在，继续执行后续生成流程
+      }
 
       // 优先级0: 如果是常规图像格式，直接使用 Sharp 以获得最佳稳定性和速度
       if (isCategory(filePath, FileCategory.IMAGE)) {

@@ -26,7 +26,8 @@ import {
   isTagProvenanceGroup,
   isTagAdmissible,
   getCanonicalConceptName,
-  resolveRuntimeMaterializedPath
+  resolveRuntimeMaterializedPath,
+  CONTROLLED_CONCEPTS
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import {
@@ -841,23 +842,11 @@ export class FileProcessor {
           language
         })
 
-        const preflightContext = executeProPreflight({
-          filePath,
-          fileName: item.name,
-          fileSize: currentStats.size,
-          fileCategory: enhancedInfo.fileType,
-          mimeType: effectiveMimeType,
-          contentPreview: existingBasicData.content ? existingBasicData.content.slice(0, 1000) : undefined,
-          metadata: baseMetadata,
-          stats: currentStats,
-          visualTags,
-          textTags
-        })
-
         // 补捞 Stage 2 已持久化的标签，确保 GPU 阶段裁决时 Stage 2 标签不被冲掉，实现无损合并去重
+        let existingTagRows: Array<any> = []
         if (!item.forceReanalyze && fileFingerprint) {
           try {
-            const existingTagRows = db
+            existingTagRows = db
               .prepare(
                 `
                 SELECT r.tag_code, r.via_parent_code, r.tag_group, r.confidence,
@@ -868,45 +857,83 @@ export class FileProcessor {
               `
               )
               .all(fileFingerprint) as Array<any>
-
-            if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
-              const currentTags = preflightContext.groundTruthTags || []
-              for (const row of existingTagRows) {
-                let tagName = row.tag_name
-                if (!tagName && row.tag_code) {
-                  tagName = getCanonicalConceptName(row.tag_code) || ''
-                  if (!tagName) {
-                    const displayMap = databaseService.resolveTagDisplayNames([row.tag_code])
-                    tagName = displayMap[row.tag_code] || ''
-                  }
-                  if (!tagName) {
-                    const parts = row.tag_code.split('.')
-                    tagName = parts[parts.length - 1] || row.tag_code
-                  }
-                }
-                if (
-                  tagName &&
-                  !currentTags.some(t => t.code === row.tag_code || t.tagName === tagName)
-                ) {
-                  currentTags.push({
-                    tagName,
-                    confidence: typeof row.confidence === 'number' ? row.confidence : 0.85,
-                    tagCode: row.tag_code,
-                    code: row.tag_code,
-                    viaParentCode: row.via_parent_code,
-                    parentCodes: row.via_parent_code ? [row.via_parent_code] : undefined,
-                    codePath: row.code_path,
-                    namePath: row.name_path,
-                    depth: typeof row.depth === 'number' ? row.depth : undefined,
-                    group: row.tag_group || 'fused'
-                  })
-                }
-              }
-              preflightContext.groundTruthTags = currentTags
-            }
           } catch (fetchErr) {
             logger.warn(LogCategory.ANALYSIS_QUEUE, '[分析队列] 回捞已存在标签失败:', fetchErr)
           }
+        }
+
+        // 双重保底：优先从 baseMetadata 恢复 omniPerception；
+        // 若缺失，从 Stage 2 已持久化的标签中反查内容分级（严禁缺失指标时回退生成全年龄冲掉 R-18）
+        let fallbackRating: string | undefined
+        if (!baseMetadata?.content_rating && Array.isArray(existingTagRows)) {
+          const existingCodes = new Set(existingTagRows.map(r => r.tag_code))
+          if (existingCodes.has(CONTROLLED_CONCEPTS['R-18G'])) fallbackRating = 'R-18G'
+          else if (existingCodes.has(CONTROLLED_CONCEPTS['R-18'])) fallbackRating = 'R-18'
+          else if (existingCodes.has(CONTROLLED_CONCEPTS['R-15'])) fallbackRating = 'R-15'
+          else if (existingCodes.has(CONTROLLED_CONCEPTS['PG-13'])) fallbackRating = 'PG-13'
+          else if (existingCodes.has(CONTROLLED_CONCEPTS['全年龄'])) fallbackRating = '全年龄'
+        }
+
+        const restoredOmniPerception: Record<string, any> = {
+          content_rating: baseMetadata?.content_rating || fallbackRating,
+          nsfw_tags: baseMetadata?.nsfw_tags,
+          nsfw_text_tags: baseMetadata?.nsfw_text_tags,
+          sensitive_types: baseMetadata?.sensitive_types,
+          security_level: baseMetadata?.security_level,
+          winning_hypothesis: baseMetadata?.winning_hypothesis,
+          smart_name: baseMetadata?.smart_name,
+          binary_info: baseMetadata?.binary_info,
+          author: baseMetadata?.author
+        }
+
+        const preflightContext = executeProPreflight({
+          filePath,
+          fileName: item.name,
+          fileSize: currentStats.size,
+          fileCategory: enhancedInfo.fileType,
+          mimeType: effectiveMimeType,
+          contentPreview: existingBasicData.content ? existingBasicData.content.slice(0, 1000) : undefined,
+          metadata: baseMetadata,
+          omniPerception: restoredOmniPerception,
+          stats: currentStats,
+          visualTags,
+          textTags
+        })
+
+        if (Array.isArray(existingTagRows) && existingTagRows.length > 0) {
+          const currentTags = preflightContext.groundTruthTags || []
+          for (const row of existingTagRows) {
+            let tagName = row.tag_name
+            if (!tagName && row.tag_code) {
+              tagName = getCanonicalConceptName(row.tag_code) || ''
+              if (!tagName) {
+                const displayMap = databaseService.resolveTagDisplayNames([row.tag_code])
+                tagName = displayMap[row.tag_code] || ''
+              }
+              if (!tagName) {
+                const parts = row.tag_code.split('.')
+                tagName = parts[parts.length - 1] || row.tag_code
+              }
+            }
+            if (
+              tagName &&
+              !currentTags.some(t => t.code === row.tag_code || t.tagName === tagName)
+            ) {
+              currentTags.push({
+                tagName,
+                confidence: typeof row.confidence === 'number' ? row.confidence : 0.85,
+                tagCode: row.tag_code,
+                code: row.tag_code,
+                viaParentCode: row.via_parent_code,
+                parentCodes: row.via_parent_code ? [row.via_parent_code] : undefined,
+                codePath: row.code_path,
+                namePath: row.name_path,
+                depth: typeof row.depth === 'number' ? row.depth : undefined,
+                group: row.tag_group || 'fused'
+              })
+            }
+          }
+          preflightContext.groundTruthTags = currentTags
         }
 
         baseMetadata = preflightContext.flattenedMetadata
@@ -1507,6 +1534,11 @@ export class FileProcessor {
       // 因此在启动提取前必须检查中止信号，确保用户点击暂停后不再开始新的提取任务。
       this.throwIfAborted(signal)
 
+      // 检查物理磁盘上是否已有缩略图（当清空工作目录数据后重新分析时，磁盘上的缩略图被保留）
+      const existingThumbCheck = rootWorkspaceDir
+        ? await thumbnailService.hasThumbnail(rootWorkspaceDir.path, fileFingerprint)
+        : { exists: false, relativePath: '', absolutePath: '' }
+
       const anydocStartTime = Date.now()
       const anydocResult: AnydocResult = await anydocService
         .perceive(filePath, {
@@ -1515,7 +1547,9 @@ export class FileProcessor {
           enableAudioTranscript: isAudioOrVideo ? true : undefined,
           audioAnalysisDuration: audioAnalysisDuration,
           // 显式激活 Tier 1 端侧纯 CPU 文本特征与 384d 向量提取 (Issue #631)
-          enableTextAnalysis: true
+          enableTextAnalysis: true,
+          // 若磁盘已存在缩略图，通知 Omni 无需生成缩略图封面
+          generateThumbnail: !existingThumbCheck.exists
         })
         .catch(err => {
           logger.warn(LogCategory.ANALYSIS_QUEUE, `[Omni/anydoc] 提取失败: ${err.message}`)
@@ -1540,6 +1574,11 @@ export class FileProcessor {
         // 缩略图决策：对于图片格式生成本地缩略图，文档类若已有 thumbnailPath 直接复用
         (async () => {
           if (existingBasicData.thumbnailPath) return existingBasicData.thumbnailPath
+
+          // 物理磁盘优先复用检查：若磁盘上已存在该文件指纹的缩略图，直接复用，不重复生成
+          if (existingThumbCheck.exists) {
+            return existingThumbCheck.relativePath
+          }
 
           if (isNativeImage) {
             // 浏览器原生格式：直接引用原图
@@ -1573,7 +1612,12 @@ export class FileProcessor {
                 rootWorkspaceDir.path
               )
               const outPath = path.join(thumbDir, `${fileFingerprint}.webp`)
-              const success = await (thumbnailService as any).generateThumbnailFallback(filePath, outPath, String(existingWorkspaceFile?.id || ''))
+              const success = await (thumbnailService as any).generateThumbnailFallback(
+                filePath,
+                outPath,
+                String(existingWorkspaceFile?.id || ''),
+                { skipIfExists: existingThumbCheck.exists }
+              )
               if (success) {
                 return path.relative(rootWorkspaceDir.path, outPath)
               }
@@ -1794,11 +1838,17 @@ export class FileProcessor {
           ...omniMetadata
         }
       }
-      if (anydocResult?.perception?.binary_info) {
-        contentResult.metadata.binary_info = anydocResult.perception.binary_info
-      }
-      if (anydocResult?.perception?.author) {
-        contentResult.metadata.author = anydocResult.perception.author
+      if (anydocResult?.perception) {
+        const p = anydocResult.perception
+        if (p.binary_info) contentResult.metadata.binary_info = p.binary_info
+        if (p.author) contentResult.metadata.author = p.author
+        if (p.content_rating) contentResult.metadata.content_rating = p.content_rating
+        if (Array.isArray(p.nsfw_tags)) contentResult.metadata.nsfw_tags = p.nsfw_tags
+        if (Array.isArray(p.nsfw_text_tags)) contentResult.metadata.nsfw_text_tags = p.nsfw_text_tags
+        if (Array.isArray(p.sensitive_types)) contentResult.metadata.sensitive_types = p.sensitive_types
+        if (p.security_level) contentResult.metadata.security_level = p.security_level
+        if (p.winning_hypothesis) contentResult.metadata.winning_hypothesis = p.winning_hypothesis
+        if (p.smart_name) contentResult.metadata.smart_name = p.smart_name
       }
 
       logger.info(
