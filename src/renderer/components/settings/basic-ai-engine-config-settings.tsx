@@ -270,7 +270,7 @@ export const BasicAIEngineConfigSettings: React.FC = () => {
                 {!isAdvancedAiEnabled && <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
               </div>
               <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-                {t('【标准分析】+ 高级AI引擎润色智能文件名和描述以及补充分析结果')}
+                {t('【标准分析】+ 高级AI引擎润色智能文件名和描述以及补充标签')}
               </p>
               {!isAdvancedAiEnabled && (
                 <div className="flex items-center gap-1.5 mt-2.5 text-xs text-amber-600 dark:text-amber-400">

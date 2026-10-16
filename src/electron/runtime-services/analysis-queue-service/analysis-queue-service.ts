@@ -41,6 +41,7 @@ import { DirectoryProcessor } from './directory-processor'
 import { FileProcessor, getFileStageFromDB, getFileAnalysisStateFromDB } from './file-processor'
 import path from 'node:path'
 import { engineBridgeService } from '../engine-bridge'
+import { isRenameProtectedExtension } from '../../utils/extension-rename-whitelist'
 
 class StageNotifier {
   private resolvers = new Map<number, () => void>()
@@ -1139,6 +1140,10 @@ export class AnalysisQueueService {
           // 跳过 extensions 为空数组的情况
           if (extensions.length === 0) continue
 
+          // 白名单门禁（ADR-0008）：macOS 文档软件专有格式（Keynote/Numbers/Pages 等）
+          // 物理上即 ZIP 压缩包，Magika 会判为 zip 而误入改名列表，此类扩展名绝不可改名
+          if (isRenameProtectedExtension(row.extension)) continue
+
           // 归一化比较：去除开头的点并转小写
           const currentType = row.extension.toLowerCase().replace(/^\./, '')
           const normalizedExtensions = extensions.map((e: string) =>
@@ -1232,6 +1237,16 @@ export class AnalysisQueueService {
             const row = db
               .prepare('SELECT smart_name, extension FROM files WHERE file_fingerprint = ?')
               .get(fileFingerprint) as { smart_name: string; extension: string } | undefined
+
+            // 纵深防护：白名单扩展名（macOS 文档专有 zip 内核格式，如 .key/.numbers/.pages）
+            // 即使经前端传入也拒绝改名，杜绝「先入列表后改名」的旁路
+            if (row && isRenameProtectedExtension(row.extension)) {
+              logger.warn(
+                LogCategory.ANALYSIS_QUEUE,
+                `[扩展名校准] 拒绝改名：${fileFingerprint} 的扩展名 ${row.extension} 受 macOS 文档格式白名单保护`
+              )
+              continue
+            }
 
             if (row) {
               const oldSmartName = row.smart_name || ''

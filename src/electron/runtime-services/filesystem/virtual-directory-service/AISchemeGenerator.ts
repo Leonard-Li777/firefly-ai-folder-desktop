@@ -7,7 +7,8 @@ import {
   DirectoryReorganizeOptions,
   DirectoryReorganizeResult
 } from '@firefly/types'
-import { LogCategory, logger, DIMENSION_CODES, CANONICAL_NAMES, getCanonicalConceptName } from '@firefly/shared'
+import { LogCategory, logger, DIMENSION_CODES, CANONICAL_NAMES, getCanonicalConceptName, isCandidateWordAdmissible } from '@firefly/shared'
+import { selectBestClusterFolderName, PathCosineService } from '@firefly/core-engine'
 
 const FILE_QUALITY_NAME = CANONICAL_NAMES.FILE_QUALITY
 import Database from 'better-sqlite3'
@@ -97,7 +98,96 @@ export class AISchemeGenerator {
         return null
       }
 
-      // 2. 收集文件指纹与关键词元数据 (ADR-0054：向量不再存于本地 SQLite exif，传 embedding: [] 由 Omni 进程内从 zvec 384d 槽位直读)
+      // 2. 批量聚合文件标签作为聚类关键词证据源 (ADR-0045 / ADR-0056)
+      const fpTagMap = new Map<string, string[]>()
+      const uniqueFps = Array.from(
+        new Set(targetRows.map(r => r.file_fingerprint).filter(Boolean))
+      )
+      const chunkSize = 500
+      for (let i = 0; i < uniqueFps.length; i += chunkSize) {
+        const chunk = uniqueFps.slice(i, i + chunkSize)
+        const placeholders = chunk.map(() => '?').join(',')
+        try {
+          const tagRows = this.provider.db
+            .prepare(`
+              SELECT ftr.file_fingerprint, COALESCE(ft.name, ftr.tag_code) as tag_name, ftr.name_path
+              FROM file_tag_relations ftr
+              LEFT JOIN file_tags_private ft ON ft.code = ftr.tag_code
+              WHERE ftr.file_fingerprint IN (${placeholders})
+            `)
+            .all(...chunk) as Array<{ file_fingerprint: string; tag_name: string; name_path: string }>
+
+          for (const rel of tagRows) {
+            let list = fpTagMap.get(rel.file_fingerprint)
+            if (!list) {
+              list = []
+              fpTagMap.set(rel.file_fingerprint, list)
+            }
+            let name = rel.tag_name
+            if (name && name.includes('.')) {
+              name = getCanonicalConceptName(name) || (name.split('.').pop() || name)
+            }
+            if (name && isCandidateWordAdmissible(name).admissible && !list.includes(name)) {
+              list.push(name)
+            }
+            if (rel.name_path) {
+              const segs = rel.name_path.split('/').filter(Boolean)
+              const leafSeg = segs[segs.length - 1]
+              if (leafSeg && isCandidateWordAdmissible(leafSeg).admissible && !list.includes(leafSeg)) {
+                list.push(leafSeg)
+              }
+            }
+          }
+        } catch (err) {
+          logger.warn(LogCategory.FILE_ORGANIZATION, '[HAC智能聚类] 查询文件标签元数据失败:', err)
+        }
+      }
+
+      // 兼顾兼容与单测：从 row.exif 中补充提取元数据关键词
+      for (const row of targetRows) {
+        if (!row.file_fingerprint) continue
+        let list = fpTagMap.get(row.file_fingerprint)
+        if (!list) {
+          list = []
+          fpTagMap.set(row.file_fingerprint, list)
+        }
+        if (row.exif) {
+          try {
+            let meta: any = null
+            if (typeof row.exif === 'string') {
+              try { meta = JSON.parse(row.exif) } catch {}
+            }
+            if (!meta) {
+              try { meta = decompressJson<Record<string, any>>(row.exif) } catch {}
+            }
+            if (meta && Array.isArray(meta.keywords)) {
+              for (const kw of meta.keywords) {
+                if (typeof kw === 'string' && kw.trim() && !list.includes(kw.trim())) {
+                  list.push(kw.trim())
+                }
+              }
+            }
+          } catch {}
+        }
+        // 仅当文件既无标签关系又无 exif 关键词时，以文件名/智能命名切词兜底
+        if (list.length === 0) {
+          const rawName = row.smart_name || row.name || ''
+          const baseName = path.parse(rawName).name
+          const tokens = baseName.split(/[\s_\-\.\(\)\[\]【】_—·，,]+/).filter(Boolean)
+          for (const tok of tokens) {
+            if (
+              tok.length >= 2 &&
+              tok.length <= 15 &&
+              isCandidateWordAdmissible(tok).admissible &&
+              !list.includes(tok)
+            ) {
+              list.push(tok)
+            }
+          }
+        }
+      }
+
+      // 收集文件指纹与关键词元数据 (ADR-0054：向量不再存于本地 SQLite exif，传 embedding: [] 由 Omni 进程内从 zvec 384d 槽位直读)
       const docs: OmniClusterDocument[] = []
       const fileMap = new Map<string, Array<{ id: number; name: string; path: string }>>()
       const seenFp = new Set<string>()
@@ -113,21 +203,11 @@ export class AISchemeGenerator {
         fileMap.set(row.file_fingerprint, existing)
 
         if (!seenFp.has(row.file_fingerprint)) {
-          let keywords: string[] = []
-          if (row.exif) {
-            try {
-              // exif 列是 BLOB（compressText 压缩），需用 decompressJson 解压提取非向量元数据
-              const meta = decompressJson<Record<string, any>>(row.exif)
-              if (meta && Array.isArray(meta.keywords)) {
-                keywords = meta.keywords
-              }
-            } catch {}
-          }
           seenFp.add(row.file_fingerprint)
           docs.push({
             fingerprint: row.file_fingerprint,
             embedding: [],
-            keywords
+            keywords: fpTagMap.get(row.file_fingerprint) || []
           })
         }
       }
@@ -141,7 +221,13 @@ export class AISchemeGenerator {
         return null
       }
 
-      // 3. 调用 Omni 原生端侧 HAC 聚类
+      // 3. 计算提示词向量并调用 Omni 原生端侧 HAC 聚类
+      let promptEmbedding: number[] | undefined
+      if (userPrompt && userPrompt.trim()) {
+        const vec = PathCosineService.getInstance().generatePathVector(userPrompt.trim(), 384)
+        promptEmbedding = Array.from(vec)
+      }
+
       logger.info(
         LogCategory.FILE_ORGANIZATION,
         `[HAC智能聚类] 正在调用 Omni 端侧 HAC 聚类引擎: 文档数=${docs.length}, prompt=${userPrompt || 'none'}`
@@ -167,11 +253,51 @@ export class AISchemeGenerator {
       )
 
       // 4. 将 OmniClusterTreeResult 转换为系统统一的 AIDirectoryStructure
+      // 并在有用户提示词时，基于提示词联合余弦打分优化每个簇的规范目录命名 (PRD-0058 / ADR-0056)
       const dirMap = new Map<string, DirectoryNode>()
 
       for (const cluster of clusters) {
-        const clusterPath =
-          cluster.path && cluster.path.length > 0 ? cluster.path : [cluster.folderName]
+        // 统计簇内全部文件的关键词频次
+        const kwFreq = new Map<string, number>()
+        for (const fp of cluster.fingerprints) {
+          const kws = fpTagMap.get(fp) || []
+          for (const kw of kws) {
+            kwFreq.set(kw, (kwFreq.get(kw) || 0) + 1)
+          }
+        }
+
+        const kwItems = Array.from(kwFreq.entries()).map(([keyword, count]) => {
+          const embedding = Array.from(
+            PathCosineService.getInstance().generatePathVector(keyword, 384)
+          )
+          return { keyword, count, embedding }
+        })
+
+        const scoringResult = selectBestClusterFolderName(kwItems, promptEmbedding)
+        const bestFolderName =
+          scoringResult.folderName && scoringResult.folderName !== '其他'
+            ? scoringResult.folderName
+            : cluster.folderName || '其他'
+
+        let clusterPath: string[]
+        // 若 Omni 已返回结构化多级路径且不全为"其他"，优先采纳 Omni 路径
+        if (
+          cluster.path &&
+          cluster.path.length > 0 &&
+          !cluster.path.every(p => p === '其他')
+        ) {
+          clusterPath = cluster.path
+        } else if (
+          scoringResult.rankedKeywords.length >= 2 &&
+          cluster.fingerprints.length >= 4
+        ) {
+          clusterPath = [
+            scoringResult.rankedKeywords[0].keyword,
+            scoringResult.rankedKeywords[1].keyword
+          ]
+        } else {
+          clusterPath = [bestFolderName]
+        }
 
         let currentParent = ''
         for (let i = 0; i < clusterPath.length; i++) {

@@ -55,9 +55,15 @@ export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
   const [showDirtyDialog, setShowDirtyDialog] = useState<boolean>(false)
   const [pendingPrompt, setPendingPrompt] = useState<string | null>(null)
 
+  const isFirstMount = React.useRef(true)
+  const currentRequestIdRef = React.useRef<number>(0)
+  const lastExecutedPromptRef = React.useRef<string | null>(null)
+
   // 执行聚类请求核心函数
   const executeClustering = useCallback(
     async (userPrompt: string) => {
+      const requestId = ++currentRequestIdRef.current
+      lastExecutedPromptRef.current = userPrompt.trim()
       setIsGenerating(true)
       setErrorMsg('')
       try {
@@ -67,6 +73,11 @@ export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
           fileIds,
           prompt: userPrompt.trim()
         })
+
+        // 若请求已过时（用户后续输入已触发新请求），丢弃该次响应
+        if (requestId !== currentRequestIdRef.current) {
+          return
+        }
 
         if (!res || !res.success) {
           setErrorMsg(res?.summary || t('智能聚类执行失败或有效向量文件数不足'))
@@ -80,9 +91,13 @@ export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
           setIsTreeDirty(false)
         }
       } catch (err: any) {
-        setErrorMsg(err?.message || t('智能聚类调用异常'))
+        if (requestId === currentRequestIdRef.current) {
+          setErrorMsg(err?.message || t('智能聚类调用异常'))
+        }
       } finally {
-        setIsGenerating(false)
+        if (requestId === currentRequestIdRef.current) {
+          setIsGenerating(false)
+        }
       }
     },
     [workspaceId, workspaceDirectoryPath, fileIds]
@@ -92,6 +107,23 @@ export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
   useEffect(() => {
     executeClustering('')
   }, [executeClustering])
+
+  // 输入提示词防抖自动聚类 (仅在非脏树状态下自动触发，防抖 600ms)
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false
+      return
+    }
+    if (isTreeDirty) {
+      return
+    }
+    const timer = setTimeout(() => {
+      if (prompt.trim() !== lastExecutedPromptRef.current) {
+        executeClustering(prompt)
+      }
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [prompt, isTreeDirty, executeClustering])
 
   // 用户请求触发聚类（带脏状态拦截）
   const handleRequestClustering = (targetPrompt: string) => {
@@ -298,7 +330,10 @@ export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
             {prompt && (
               <button
                 type="button"
-                onClick={() => handleRequestClustering('')}
+                onClick={() => {
+                  setPrompt('')
+                  handleRequestClustering('')
+                }}
                 className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 {t('清空')}
@@ -314,7 +349,7 @@ export const SmartClusteringView: React.FC<SmartClusteringViewProps> = ({
                 handleRequestClustering(prompt)
               }
             }}
-            placeholder={t('如：按年份和财务归类、项目文档归档... (回车立即聚类)')}
+            placeholder={t('如：按年份和财务归类、项目文档归档... (输入自动聚类或回车立即聚类)')}
             className="min-h-[90px] text-xs resize-none bg-background focus-visible:ring-1"
           />
           <Button

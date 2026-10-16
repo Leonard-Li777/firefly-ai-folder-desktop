@@ -15,6 +15,7 @@ import { databaseService } from '../database'
 import { ConfigOrchestrator } from '../../config/config-orchestrator'
 import { t } from '@app/languages'
 import { decompressJson, decompressText } from '../../utils/text-compressor'
+import { isRenameProtectedExtension } from '../../utils/extension-rename-whitelist'
 
 export class DuplicateDetectionService {
   /**
@@ -977,6 +978,18 @@ export class DuplicateDetectionService {
           details.push({ oldPath: filePath, newPath, message: '已按推荐名更名' })
         } else if (action === 'fix_extension') {
           // 2. 错误扩展名修正 (通过文件头嗅探真实格式，并在数据库中同步更新真实文件名与智能文件名的扩展名)
+          // 白名单门禁（ADR-0008）：macOS 文档软件专有格式（Keynote/Numbers/Pages 等）虽被
+          // PK 魔数嗅探为 zip，但扩展名绝不可改名，命中白名单直接跳过
+          if (isRenameProtectedExtension(path.extname(filePath))) {
+            processedPaths.push(filePath)
+            successCount++
+            details.push({
+              oldPath: filePath,
+              message: '扩展名受 macOS 文档格式白名单保护，跳过改名'
+            })
+            continue
+          }
+
           const dir = path.dirname(filePath)
           const nameWithoutExt = path.basename(filePath, path.extname(filePath))
           let properExt = ''

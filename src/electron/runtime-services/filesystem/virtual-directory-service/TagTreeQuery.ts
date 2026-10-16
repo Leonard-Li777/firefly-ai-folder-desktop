@@ -1086,10 +1086,13 @@ export class TagTreeQuery {
         }
       }
 
-      // 本地统一配置管理器权威维度表（code -> 规范 id + metadata.flag）：
+      // 本地统一配置管理器权威维度表（code/id -> 规范 id + metadata.flag）：
       // omni 树自身不带策略元数据，前端的 flag 判定（isPanDimension / isFileTypeDimension …）
-      // 必须由本地配置管理器按 code 补齐，严禁改向 Omni 索取。
-      const authorityDimByCode = this.resolveAuthorityDimensionsByCode()
+      // 必须由本地配置管理器按 code/id 补齐，严禁改向 Omni 索取。
+      const authorityDimsData = this.resolveAuthorityDimensions()
+      const authorityDimByCode = authorityDimsData.byCode
+      const authorityDimById = authorityDimsData.byId
+      const allAuthorityDims = authorityDimsData.all
       // 已占用的数值 ID（本地维度组 legacyNumericId）集合，避免与受控根维度规范 ID 冲突
       const usedNumericIds = new Set<number>(groups.map(g => g.id))
 
@@ -1099,7 +1102,11 @@ export class TagTreeQuery {
               // 受控根维度采用本地权威规范 ID（builtin.file_type=1 / content_tags=28 / content_rating=162 …），
               // 使前端的 ID 兜底判定（如 isFileTypeDimension 的 `id === 1`）在 omni 组上同样成立；
               // 仅当权威表缺失或该 ID 已被本地维度组占用时，才退回 10000 + 序号 的隔离区间。
-              const authority = authorityDimByCode.get(root.code)
+              const authority =
+                authorityDimByCode.get(root.code) ||
+                (ROOT_DIMENSION_META[root.code]?.id !== undefined
+                  ? authorityDimById.get(ROOT_DIMENSION_META[root.code].id)
+                  : undefined)
               const canonicalId = authority?.id ?? ROOT_DIMENSION_META[root.code]?.id
               const id =
                 canonicalId !== undefined && !usedNumericIds.has(canonicalId)
@@ -1290,8 +1297,11 @@ export class TagTreeQuery {
         if (removeEmptyTags && !includeAllPresetTags) {
           tags = tags.filter(t => t.fileCount > 0)
         }
-        // 对于根级，如果其下没有子标签，则根级数据不应输出，也不应展示
-        if (tags.length === 0) continue
+        const isPan =
+          og.metadata?.flag?.isPanDimension === true ||
+          (og.metadata as any)?.isPanDimension === true
+        // 对于根级，如果其下没有子标签，且非批量预设模式下的泛维度，则根级数据不应输出，也不应展示
+        if (tags.length === 0 && !(includeAllPresetTags && isPan)) continue
 
         seenDimCodes.add(code)
         if (og.name) seenDimNames.add(og.name)
@@ -1317,14 +1327,17 @@ export class TagTreeQuery {
         return orderA - orderB
       })
 
-      // 彻底消除任何根级重复（按 code 与 name 去重，且严格剔除 tags 为空的根级）
+      // 彻底消除任何根级重复（按 code 与 name 去重，且严格剔除 tags 为空的非泛维度根级）
       const finalGroups: DimensionGroup[] = []
       const dedupeCodes = new Set<string>()
       const dedupeNames = new Set<string>()
       for (const g of groups) {
         if (g.code && dedupeCodes.has(g.code)) continue
         if (g.name && dedupeNames.has(g.name)) continue
-        if (!g.tags || g.tags.length === 0) continue
+        const isPan =
+          g.metadata?.flag?.isPanDimension === true ||
+          (g.metadata as any)?.isPanDimension === true
+        if ((!g.tags || g.tags.length === 0) && !(includeAllPresetTags && isPan)) continue
         if (g.code) dedupeCodes.add(g.code)
         if (g.name) dedupeNames.add(g.name)
         finalGroups.push(g)
@@ -1357,6 +1370,10 @@ export class TagTreeQuery {
           if (!group) {
             const meta = ROOT_DIMENSION_META[rootCode]
             const displayName = aliasResolver(rootCode, meta?.name || rootCode)
+            const authority =
+              authorityDimByCode.get(rootCode) ||
+              (meta?.id !== undefined ? authorityDimById.get(meta.id) : undefined)
+            const flag = authority?.flag
             const newGroup: DimensionGroup = {
               id: meta?.id || 10000 + finalGroups.length,
               name: displayName,
@@ -1365,9 +1382,20 @@ export class TagTreeQuery {
               code: rootCode,
               order: meta?.id || 9999,
               isMultiSelect:
-                rootCode === 'builtin.file_purpose' || rootCode === 'builtin.content_tags',
-              meta: { source: 'builtin', order: meta?.id || 9999 },
-              metadata: { source: 'builtin', order: meta?.id || 9999 }
+                flag?.isMultiSelect ??
+                (rootCode === 'builtin.file_purpose' || rootCode === 'builtin.content_tags'),
+              meta: {
+                source: 'builtin',
+                order: meta?.id || 9999,
+                sort_order: meta?.id || 9999,
+                ...(flag ? { flag } : {})
+              },
+              metadata: {
+                source: 'builtin',
+                order: meta?.id || 9999,
+                sort_order: meta?.id || 9999,
+                ...(flag ? { flag } : {})
+              }
             }
             finalGroups.push(newGroup)
             tagToGroupMap.set(rootCode, newGroup)
@@ -1898,6 +1926,132 @@ export class TagTreeQuery {
         }
       }
 
+      // 8. 当 includeAllPresetTags 为 true 时（批量标签、维度管理等视图），
+      // 从本地权威配置管理器（ConfigDbManager）回填全部受控预置维度与标签（未命中文件时记为 0）
+      if (includeAllPresetTags && allAuthorityDims && allAuthorityDims.length > 0) {
+        const groupById = new Map<number, DimensionGroup>()
+        const groupByCode = new Map<string, DimensionGroup>()
+        const groupByName = new Map<string, DimensionGroup>()
+
+        for (const g of finalGroups) {
+          if (typeof g.id === 'number') groupById.set(g.id, g)
+          if (g.code) groupByCode.set(g.code, g)
+          if (g.name) groupByName.set(g.name, g)
+        }
+
+        for (const authDim of allAuthorityDims) {
+          const dimCode = authDim.code
+          const dimId = authDim.id
+          const dimName = authDim.name
+          const dimFlag = authDim.metadata?.flag || authDim.flag
+
+          // 排除扩展名维度
+          if (
+            excludeExtensionDimension &&
+            (dimFlag?.isExtensionDimension ||
+              /扩展名|Extension/i.test(dimCode || '') ||
+              /扩展名|Extension/i.test(dimName || ''))
+          ) {
+            continue
+          }
+
+          // 寻找对应已存在的维度组
+          let targetGroup =
+            (dimCode ? groupByCode.get(dimCode) : undefined) ||
+            (dimId !== undefined ? groupById.get(dimId) : undefined) ||
+            (dimName ? groupByName.get(dimName) : undefined)
+
+          if (!targetGroup) {
+            // 如果该维度尚未在 finalGroups 中，则创建该维度组
+            const resolvedName = aliasResolver(dimCode, dimName || dimCode)
+            const canonicalId =
+              dimId ??
+              (dimCode && ROOT_DIMENSION_META[dimCode]?.id) ??
+              (10000 + finalGroups.length)
+            targetGroup = {
+              id: canonicalId,
+              name: resolvedName,
+              level: 0,
+              tags: [],
+              code: dimCode,
+              order: canonicalId || 9999,
+              sort_order: canonicalId || 9999,
+              isMultiSelect: dimFlag?.isMultiSelect ?? false,
+              meta: {
+                source: 'builtin',
+                order: canonicalId || 9999,
+                sort_order: canonicalId || 9999,
+                ...(dimFlag ? { flag: dimFlag } : {})
+              },
+              metadata: {
+                source: 'builtin',
+                order: canonicalId || 9999,
+                sort_order: canonicalId || 9999,
+                ...(dimFlag ? { flag: dimFlag } : {})
+              }
+            }
+            finalGroups.push(targetGroup)
+            if (targetGroup.code) groupByCode.set(targetGroup.code, targetGroup)
+            if (typeof targetGroup.id === 'number') groupById.set(targetGroup.id, targetGroup)
+            if (targetGroup.name) groupByName.set(targetGroup.name, targetGroup)
+          } else {
+            // 确保既有维度组上的 metadata.flag 包含权威配置中的 flag（如 isPanDimension）
+            if (dimFlag) {
+              targetGroup.metadata = {
+                ...targetGroup.metadata,
+                flag: {
+                  ...targetGroup.metadata?.flag,
+                  ...dimFlag
+                }
+              }
+              targetGroup.meta = {
+                ...targetGroup.meta,
+                flag: {
+                  ...targetGroup.meta?.flag,
+                  ...dimFlag
+                }
+              }
+            }
+          }
+
+          // 如果该预置维度含有预置标签词表（dim.tags），补全未命中的预设标签（fileCount: 0）
+          if (Array.isArray(authDim.tags) && authDim.tags.length > 0) {
+            if (!targetGroup.tags) targetGroup.tags = []
+            const existingValues = new Set<string>()
+            for (const t of targetGroup.tags) {
+              if (t.tagValue) existingValues.add(t.tagValue.toLowerCase())
+              if (t.name) existingValues.add(String(t.name).toLowerCase())
+            }
+
+            for (let tagIdx = 0; tagIdx < authDim.tags.length; tagIdx++) {
+              const presetTagName = authDim.tags[tagIdx]
+              if (!presetTagName || typeof presetTagName !== 'string') continue
+              const trimmed = presetTagName.trim()
+              if (!trimmed || existingValues.has(trimmed.toLowerCase())) continue
+
+              const tagCode = `${targetGroup.code || `dim.${targetGroup.id}`}.${trimmed}`
+              const resolvedTagName = aliasResolver(tagCode, trimmed)
+              targetGroup.tags.push({
+                dimensionId: targetGroup.id,
+                dimensionCode: targetGroup.code || '',
+                dimensionName: targetGroup.name,
+                tagValue: resolvedTagName,
+                fileCount: 0,
+                level: 1,
+                code: tagCode,
+                codePath: `/${targetGroup.code || `dim.${targetGroup.id}`}/${trimmed}`,
+                namePath: `/${targetGroup.name}/${resolvedTagName}`,
+                viaParentCode: targetGroup.code || '',
+                isMultiSelect: targetGroup.isMultiSelect ?? false,
+                order: tagIdx + 1,
+                meta: { order: tagIdx + 1, sort_order: tagIdx + 1 }
+              })
+              existingValues.add(trimmed.toLowerCase())
+            }
+          }
+        }
+      }
+
       // 同步将所有维度组（含受控树、动态扩展标签与内容标签组）内的多级父子关系注入邻接图，
       // 确保点击任意父标签时右侧 FileList 均能递归穿透展开
       if (this._omniChildrenMap) {
@@ -1927,11 +2081,23 @@ export class TagTreeQuery {
 
       // 保证 6 大根维度按官方标准顺序优先排列，并过滤 tags 为空的组
       finalGroups.sort((a, b) => {
+        // builtin.content_tags 恒定垫底（无条件，优先于 order 档，与前端比较层口径统一）
+        const isTailA = a.code === CONTENT_TAGS_CODE
+        const isTailB = b.code === CONTENT_TAGS_CODE
+        if (isTailA !== isTailB) return isTailA ? 1 : -1
         const orderA = a.order !== undefined && a.order > 0 ? a.order : 999999
         const orderB = b.order !== undefined && b.order > 0 ? b.order : 999999
         return orderA - orderB
       })
-      const validGroups = finalGroups.filter(g => g.tags && g.tags.length > 0)
+      const validGroups = finalGroups.filter(g => {
+        if (g.tags && g.tags.length > 0) return true
+        // 当 includeAllPresetTags 为 true 时，泛维度即使 tags 为空也必须输出
+        const isPan =
+          g.metadata?.flag?.isPanDimension === true ||
+          (g.metadata as any)?.isPanDimension === true
+        if (includeAllPresetTags && isPan) return true
+        return false
+      })
 
       return {
         groups: validGroups,
@@ -1960,16 +2126,47 @@ export class TagTreeQuery {
    *
    * 降级：读取失败仅返回空表（omni 组保持原有无 flag 形态），绝不阻断维度组查询主链路。
    */
-  private resolveAuthorityDimensionsByCode(): Map<string, { id?: number; flag?: DimensionFlags }> {
-    const authorityByCode = new Map<string, { id?: number; flag?: DimensionFlags }>()
+  /**
+   * 读取本地统一配置管理器（ConfigDbManager）的受控维度权威表：`code/id -> { 规范 id, metadata.flag, tags, name }`。
+   *
+   * 为什么必须走本地配置管理器：
+   * 1. Omni 分类树端点只回传 `code/name/source/sortOrder/codePath`，**不含任何策略元数据**，
+   *    向 Omni 索取 `metadata.flag` 是错误方向（其权威源不在 Omni）；
+   * 2. 策略元数据（门限、适用格式、`metadata.flag.isPanDimension / isRequiresAI / isMultiSelect`）
+   *    的单一事实源是本地 `system_config.DIMENSION_POLICIES`（回退 `dimension-policies.json`），
+   *    由 `ConfigDbManager.loadDimensionsFromAuthority` 按 code 组装并随 `getFileDimensions()` 暴露；
+   * 3. 前端 `isPanDimension` / `isFileTypeDimension` / `isExtensionDimension` / `isRuleSubdivisionDimension`
+   *    等判定全部读取 `metadata.flag`，缺失时只能退化到 ID 兜底 —— 故 omni 组必须补齐该字段。
+   *
+   * 降级：读取失败仅返回空表（omni 组按无 flag 降级），绝不阻断维度组查询主链路。
+   */
+  private resolveAuthorityDimensions(): {
+    byCode: Map<string, { id?: number; flag?: DimensionFlags; tags?: string[]; name?: string; dim?: any }>
+    byId: Map<number, { id?: number; flag?: DimensionFlags; tags?: string[]; name?: string; dim?: any }>
+    all: any[]
+  } {
+    const byCode = new Map<string, any>()
+    const byId = new Map<number, any>()
+    let all: any[] = []
     try {
       const dims = ConfigDbManager.getInstance().getFileDimensions()
-      for (const dim of dims || []) {
-        if (!dim?.code) continue
-        authorityByCode.set(dim.code, {
+      all = dims || []
+      for (const dim of all) {
+        const item = {
           id: typeof dim.id === 'number' ? dim.id : undefined,
-          flag: dim.metadata?.flag
-        })
+          code: dim.code,
+          name: dim.name,
+          tags: dim.tags || [],
+          flag: dim.metadata?.flag,
+          metadata: dim.metadata,
+          dim
+        }
+        if (dim?.code) {
+          byCode.set(dim.code, item)
+        }
+        if (typeof dim?.id === 'number') {
+          byId.set(dim.id, item)
+        }
       }
     } catch (err) {
       logger.debug(
@@ -1978,7 +2175,12 @@ export class TagTreeQuery {
         err
       )
     }
-    return authorityByCode
+    return { byCode, byId, all }
+  }
+
+  private resolveAuthorityDimensionsByCode(): Map<string, { id?: number; flag?: DimensionFlags }> {
+    const { byCode } = this.resolveAuthorityDimensions()
+    return byCode
   }
 
   /**

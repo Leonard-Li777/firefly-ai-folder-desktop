@@ -9,6 +9,10 @@ import { toast } from '../../../common/Toast'
 import { SplitPane } from '../../../common/SplitPane'
 import { BatchRenamePreviewItem, DimensionGroup, FileInfoForAI } from '@firefly/types'
 import { isExtensionTriggerTagName } from '@firefly/shared'
+import {
+  getBatchRenameTokenCategories,
+  getCommonCategoriesPartitioned
+} from './batch-rename-tokens'
 
 /**
  * 常用/精选命名模板预置列表（与后端 NamingDSLEngine 多语言对齐）
@@ -300,249 +304,16 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
 
   // 中栏属性标签搜索与分类筛选，默认选中「常用」
   const [tokenSearch, setTokenSearch] = useState('')
-  const [selectedTokenCategory, setSelectedTokenCategory] = useState<string>(t('常用'))
+  const [selectedTokenCategory, setSelectedTokenCategory] = useState<string>('common')
 
   // 右栏视图设置与筛选
   const [rightViewMode, setRightViewMode] = useState<ViewMode>('card')
   const [filterTab, setFilterTab] = useState<FilterTab>('all')
   const [previewSearch, setPreviewSearch] = useState('')
 
-  // 快捷插值 Token 分类列表（全量接入 t() 多语言体系）
+  // 快捷插值 Token 分类列表（全量接入 t() 多语言体系与层级体系）
   const tokenCategories = useMemo(() => {
-    const dimTokens = (dimensionGroups || []).map(g => {
-      const dimLabel = t(g.name)
-      return {
-        label: dimLabel,
-        value: `{TAG:${dimLabel}}`,
-        desc: t('匹配该文件的「{name}」维度标签', { name: dimLabel }),
-        pillClass:
-          'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-      }
-    })
-
-    return [
-      {
-        key: 'common',
-        category: t('常用'),
-        badgeColor: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
-        tokens: [
-          {
-            label: t('智能文件名'),
-            value: '{SMART_NAME}',
-            desc: t('AI 解析提取的纯净核心命名'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          },
-          {
-            label: t('作者/创作者'),
-            value: '{AUTHOR}',
-            desc: t('内容作者标签 (如 [{AUTHOR}])'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          },
-          {
-            label: t('质量评分'),
-            value: '{QUALITY_SCORE}',
-            desc: t('AI 质量分值 (如 [Q{QUALITY_SCORE}])'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          },
-          {
-            label: t('修改日期(年-月-日)'),
-            value: '{MOD:YYYY-MM-DD}',
-            desc: t('文件最后修改日期 (如 2024-03-15)'),
-            pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20'
-          },
-          {
-            label: t('文件类型'),
-            value: `{TAG:${t('文件类型')}}`,
-            desc: t('匹配该文件的「文件类型」维度标签'),
-            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-          },
-          {
-            label: t('文件用途'),
-            value: `{TAG:${t('文件用途')}}`,
-            desc: t('匹配该文件的「文件用途」维度标签'),
-            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-          },
-          {
-            label: t('地理位置'),
-            value: `{TAG:${t('地理位置')}}`,
-            desc: t('匹配该文件的「地理位置」维度标签'),
-            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-          },
-          {
-            label: t('压缩包细分'),
-            value: `{TAG:${t('压缩包细分')}}`,
-            desc: t('匹配该文件的未加密压缩包/加密压缩包等属性'),
-            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-          },
-          {
-            label: t('画质等级'),
-            value: `{TAG:${t('画质等级')}}`,
-            desc: t('匹配该文件的「画质等级」维度标签'),
-            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-          },
-          {
-            label: t('题材'),
-            value: `{TAG:${t('题材')}}`,
-            desc: t('匹配该文件的「题材」维度标签'),
-            pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20'
-          },
-          {
-            label: t('四位序号(0001)'),
-            value: '{SEQ:0001}',
-            desc: t('四位补零自增序号 (0001, 0002...)'),
-            pillClass: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20'
-          },
-          {
-            label: t('时长'),
-            value: `{META:${t('时长')}}`,
-            desc: t('音视频时长 (如 03分25秒)'),
-            pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
-          }
-        ]
-      },
-      {
-        key: 'core',
-        category: t('核心名称'),
-        badgeColor: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20',
-        tokens: [
-          {
-            label: t('智能文件名'),
-            value: '{SMART_NAME}',
-            desc: t('AI 解析提取的纯净核心命名'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          },
-          {
-            label: t('原始文件名'),
-            value: '{ORIG_NAME}',
-            desc: t('文件在磁盘上的原始文件名（不含扩展名）'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          },
-          {
-            label: t('作者/创作者'),
-            value: '{AUTHOR}',
-            desc: t('内容作者标签 (如 [{AUTHOR}])'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          },
-          {
-            label: t('语言代码'),
-            value: '{LANG}',
-            desc: t('文档语言代码 (如 zh-CN, en)'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          },
-          {
-            label: t('质量评分'),
-            value: '{QUALITY_SCORE}',
-            desc: t('AI 质量分值 (如 [Q{QUALITY_SCORE}])'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          },
-          {
-            label: t('文件扩展名'),
-            value: '{EXT}',
-            desc: t('文件后缀扩展名（自动带点 .ext）'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          },
-          {
-            label: t('文件大小'),
-            value: '{SIZE}',
-            desc: t('友好文件大小 (如 12MB)'),
-            pillClass: 'border-blue-500/30 bg-blue-500/10 text-blue-700 dark:text-blue-300 hover:bg-blue-500/20'
-          }
-        ]
-      },
-      {
-        key: 'datetime',
-        category: t('时间日期'),
-        badgeColor: 'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20',
-        tokens: [
-          {
-            label: t('修改日期(年-月-日)'),
-            value: '{MOD:YYYY-MM-DD}',
-            desc: t('文件最后修改日期 (如 2024-03-15)'),
-            pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20'
-          },
-          {
-            label: t('修改时间(年月日时分)'),
-            value: '{MOD:YYYYMMDD_HHmm}',
-            desc: t('精确修改时间戳 (如 20240315_1430)'),
-            pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20'
-          },
-          {
-            label: t('创建日期(年-月-日)'),
-            value: '{CRE:YYYY-MM-DD}',
-            desc: t('文件创建日期 (如 2024-01-01)'),
-            pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20'
-          },
-          {
-            label: t('修改年份(YYYY)'),
-            value: '{MOD:YYYY}',
-            desc: t('四位修改年份 (如 2024)'),
-            pillClass: 'border-purple-500/30 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20'
-          }
-        ]
-      },
-      {
-        key: 'dimension',
-        category: t('分类维度'),
-        badgeColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-        tokens: dimTokens
-      },
-      {
-        key: 'meta',
-        category: t('无数据'),
-        badgeColor: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20',
-        tokens: [
-          {
-            label: t('分辨率'),
-            value: `{META:${t('分辨率')}}`,
-            desc: t('图片/视频分辨率 (如 1920x1080)'),
-            pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
-          },
-          {
-            label: t('时长'),
-            value: `{META:${t('时长')}}`,
-            desc: t('音视频时长 (如 03分25秒)'),
-            pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
-          },
-          {
-            label: t('页数'),
-            value: `{META:${t('页数')}}`,
-            desc: t('文档总页数 (如 15P)'),
-            pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
-          },
-          {
-            label: t('编码格式'),
-            value: `{META:${t('编码')}}`,
-            desc: t('媒体编码格式 (如 H264, AAC)'),
-            pillClass: 'border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
-          }
-        ]
-      },
-      {
-        key: 'seq',
-        category: t('自增序号'),
-        badgeColor: 'text-cyan-600 dark:text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
-        tokens: [
-          {
-            label: t('两位序号(01)'),
-            value: '{SEQ:01}',
-            desc: t('两位补零自增序号 (01, 02...)'),
-            pillClass: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20'
-          },
-          {
-            label: t('三位序号(001)'),
-            value: '{SEQ:001}',
-            desc: t('三位补零自增序号 (001, 002...)'),
-            pillClass: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20'
-          },
-          {
-            label: t('四位序号(0001)'),
-            value: '{SEQ:0001}',
-            desc: t('四位补零自增序号 (0001, 0002...)'),
-            pillClass: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-500/20'
-          }
-        ]
-      }
-    ]
+    return getBatchRenameTokenCategories(dimensionGroups, t)
   }, [dimensionGroups, activeLanguage])
 
   // 仅针对已分析文件进行批量更名预览与操作
@@ -1205,7 +976,7 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                         { id: 'core', label: t('核心与作者'), icon: 'person' },
                         { id: 'datetime', label: t('时间日期'), icon: 'calendar_today' },
                         { id: 'dimension', label: t('分类维度'), icon: 'category' },
-                        { id: 'meta', label: t('无数据'), icon: 'aspect_ratio' },
+                        { id: 'meta', label: t('元数据'), icon: 'aspect_ratio' },
                         { id: 'seq', label: t('自增序号'), icon: 'format_list_numbered' }
                       ].map(tab => {
                         const isSelected = selectedTokenCategory === tab.id
@@ -1231,11 +1002,16 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
 
                   <div className="flex-1 overflow-y-auto p-3.5 space-y-4">
                     {(() => {
-                      const visibleCategories = tokenCategories
-                        .filter(cat => {
-                          if (selectedTokenCategory === 'all') return cat.key !== 'common'
-                          return cat.key === selectedTokenCategory
-                        })
+                      let candidateCategories = tokenCategories
+                      if (selectedTokenCategory === 'common') {
+                        candidateCategories = getCommonCategoriesPartitioned(tokenCategories, t)
+                      } else if (selectedTokenCategory === 'all') {
+                        candidateCategories = tokenCategories
+                      } else {
+                        candidateCategories = tokenCategories.filter(cat => cat.key === selectedTokenCategory)
+                      }
+
+                      const visibleCategories = candidateCategories
                         .map(cat => ({
                           ...cat,
                           tokens: cat.tokens
@@ -1243,7 +1019,8 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                             .filter(t =>
                               tokenSearch.trim()
                                 ? t.label.toLowerCase().includes(tokenSearch.toLowerCase()) ||
-                                  t.value.toLowerCase().includes(tokenSearch.toLowerCase())
+                                  t.value.toLowerCase().includes(tokenSearch.toLowerCase()) ||
+                                  (t.parentName && t.parentName.toLowerCase().includes(tokenSearch.toLowerCase()))
                                 : true
                             )
                         }))
@@ -1276,21 +1053,35 @@ export const BatchRenameView: React.FC<BatchRenameViewProps> = ({
                             {cat.tokens.map((token, tIdx) => {
                               const isSelfNamed =
                                 token.value.startsWith('{TAG:') || token.value.startsWith('{META:')
+                              const hasParent = Boolean(token.parentName)
+                              const isLevel2 = token.level === 2
 
                               return (
                                 <button
                                   key={tIdx}
                                   type="button"
-                                  title={token.desc}
+                                  title={
+                                    token.parentName
+                                      ? t('所属「{parent}」维度: {desc}', { parent: token.parentName, desc: token.desc })
+                                      : token.desc
+                                  }
                                   onClick={() => handleInsertToken(token.value)}
                                   className={cn(
                                     'inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border transition-all duration-150',
                                     'hover:-translate-y-0.5 hover:shadow-2xs active:scale-95 cursor-pointer',
+                                    hasParent && 'border-dashed border-emerald-500/40 bg-emerald-500/5',
                                     token.pillClass || 'bg-muted/30 hover:bg-primary/15 border-border/40 text-foreground'
                                   )}
                                 >
                                   {isSelfNamed ? (
-                                    <span className="font-mono">{token.value}</span>
+                                    <span className="font-mono flex items-center gap-1">
+                                      {hasParent && (
+                                        <span className="text-[10px] text-muted-foreground font-sans select-none opacity-70">
+                                          {isLevel2 ? '└── ' : '└─ '}
+                                        </span>
+                                      )}
+                                      <span>{token.value}</span>
+                                    </span>
                                   ) : (
                                     <>
                                       <span>{token.label}</span>
