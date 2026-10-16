@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "count": 34,
+  "count": 60,
   "dimensions": {
     "bekko": 384,
     "gemma": 512
@@ -284,6 +284,101 @@
               "associated_template_ids": [
                 "tpl_para_universal",
                 "tpl_johnny_decimal"
+              ],
+              "domain_id": "domain_work_it",
+              "category_id": "cat_product_design"
+            },
+            {
+              "identity_id": "id.designer.industrial",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "工业与产品造型设计师",
+                "en-US": "Industrial & Product Form Designer",
+                "ja-JP": "プロダクト＆工業デザイナー",
+                "ko-KR": "산업 및 제품 디자이너",
+                "de-DE": "Industrie- & Produktdesigner",
+                "fr-FR": "Designer industriel et produit",
+                "es-ES": "Diseñador industrial y de producto",
+                "ru-RU": "Промышленный дизайнер",
+                "pt-BR": "Designer industrial e de produto",
+                "it-IT": "Designer industriale e di prodotto"
+              },
+              "description": {
+                "zh-CN": "负责硬件造型手绘、三维曲面建模 (Rhino/SolidWorks)、材料CMF与开模打样",
+                "en-US": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+                "ja-JP": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+                "ko-KR": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+                "de-DE": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+                "fr-FR": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+                "es-ES": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+                "ru-RU": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+                "pt-BR": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+                "it-IT": "Handles hardware 3D modeling, CMF specifications, and prototyping assets"
+              },
+              "aliases": [
+                "工业设计师",
+                "硬件造型师",
+                "CMF设计师",
+                "Industrial Designer"
+              ],
+              "task_tags": [
+                "builtin.design_assets",
+                "builtin.design_draft"
+              ],
+              "external_ids": {
+                "isco": "2163"
+              },
+              "associated_template_ids": [
+                "tpl_ui_ux_standard",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_work_it",
+              "category_id": "cat_product_design"
+            },
+            {
+              "identity_id": "id.researcher.ux",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "交互研究员与用户体验专家",
+                "en-US": "User Experience (UX) Researcher",
+                "ja-JP": "ユーザーエクスペリエンス（UX）リサーチャー",
+                "ko-KR": "사용자 경험(UX) 연구원",
+                "de-DE": "UX-Forscher",
+                "fr-FR": "Chercheur en expérience utilisateur (UX)",
+                "es-ES": "Investigador de experiencia de usuario (UX)",
+                "ru-RU": "UX-исследователь",
+                "pt-BR": "Pesquisador de experiência do usuário (UX)",
+                "it-IT": "Ricercatore di esperienza utente (UX)"
+              },
+              "description": {
+                "zh-CN": "负责用户深度访谈录音、可用性测试眼动数据、用户旅程地图与竞品分析报告",
+                "en-US": "Conducts user interviews, usability testing, and customer journey mapping",
+                "ja-JP": "Conducts user interviews, usability testing, and customer journey mapping",
+                "ko-KR": "Conducts user interviews, usability testing, and customer journey mapping",
+                "de-DE": "Conducts user interviews, usability testing, and customer journey mapping",
+                "fr-FR": "Conducts user interviews, usability testing, and customer journey mapping",
+                "es-ES": "Conducts user interviews, usability testing, and customer journey mapping",
+                "ru-RU": "Conducts user interviews, usability testing, and customer journey mapping",
+                "pt-BR": "Conducts user interviews, usability testing, and customer journey mapping",
+                "it-IT": "Conducts user interviews, usability testing, and customer journey mapping"
+              },
+              "aliases": [
+                "UX研究员",
+                "用户研究员",
+                "用研",
+                "User Researcher"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "omw.03234306.n",
+                "builtin.personal_notes"
+              ],
+              "external_ids": {
+                "isco": "2432"
+              },
+              "associated_template_ids": [
+                "tpl_ui_ux_standard",
+                "tpl_para_universal"
               ],
               "domain_id": "domain_work_it",
               "category_id": "cat_product_design"
@@ -583,6 +678,148 @@
               ],
               "domain_id": "domain_work_it",
               "category_id": "cat_engineering_dev"
+            },
+            {
+              "identity_id": "id.dev.fullstack",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "全栈开发工程师",
+                "en-US": "Full Stack Engineer",
+                "ja-JP": "フルスタックエンジニア",
+                "ko-KR": "풀스택 엔지니어",
+                "de-DE": "Full-Stack-Entwickler",
+                "fr-FR": "Ingénieur Full Stack",
+                "es-ES": "Ingeniero Full Stack",
+                "ru-RU": "Full Stack разработчик",
+                "pt-BR": "Engenheiro Full Stack",
+                "it-IT": "Ingegnere Full Stack"
+              },
+              "description": {
+                "zh-CN": "统揽端侧与服务端全流程交付、独立开发项目、数据库编排与持续部署",
+                "en-US": "Manages both frontend and backend development, databases, and deployment",
+                "ja-JP": "Manages both frontend and backend development, databases, and deployment",
+                "ko-KR": "Manages both frontend and backend development, databases, and deployment",
+                "de-DE": "Manages both frontend and backend development, databases, and deployment",
+                "fr-FR": "Manages both frontend and backend development, databases, and deployment",
+                "es-ES": "Manages both frontend and backend development, databases, and deployment",
+                "ru-RU": "Manages both frontend and backend development, databases, and deployment",
+                "pt-BR": "Manages both frontend and backend development, databases, and deployment",
+                "it-IT": "Manages both frontend and backend development, databases, and deployment"
+              },
+              "aliases": [
+                "全栈开发",
+                "独立开发者",
+                "FullStack Developer"
+              ],
+              "task_tags": [
+                "builtin.source_code",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2512"
+              },
+              "associated_template_ids": [
+                "tpl_frontend_dev",
+                "tpl_backend_arch",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_work_it",
+              "category_id": "cat_engineering_dev"
+            },
+            {
+              "identity_id": "id.dev.ai_ml",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "算法与AI/ML机器学习工程师",
+                "en-US": "AI/ML Machine Learning Engineer",
+                "ja-JP": "機械学習・AIアルゴリズムエンジニア",
+                "ko-KR": "AI/ML 머신러닝 엔지니어",
+                "de-DE": "KI/ML-Ingenieur für maschinelles Lernen",
+                "fr-FR": "Ingénieur IA et apprentissage automatique",
+                "es-ES": "Ingeniero de IA y aprendizaje automático",
+                "ru-RU": "Инженер машинного обучения и ИИ",
+                "pt-BR": "Engenheiro de IA e aprendizado de máquina",
+                "it-IT": "Ingegnere di intelligenza artificiale e machine learning"
+              },
+              "description": {
+                "zh-CN": "负责模型训练权重、数据清洗脚本、评测基准、Jupyter Notebook实验与LoRA微调",
+                "en-US": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+                "ja-JP": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+                "ko-KR": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+                "de-DE": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+                "fr-FR": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+                "es-ES": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+                "ru-RU": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+                "pt-BR": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+                "it-IT": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks"
+              },
+              "aliases": [
+                "AI工程师",
+                "算法工程师",
+                "大模型研究员",
+                "ML Engineer"
+              ],
+              "task_tags": [
+                "builtin.source_code",
+                "builtin.document_data",
+                "builtin.document_sheet"
+              ],
+              "external_ids": {
+                "isco": "2511"
+              },
+              "associated_template_ids": [
+                "tpl_backend_arch",
+                "tpl_academic_thesis"
+              ],
+              "domain_id": "domain_work_it",
+              "category_id": "cat_engineering_dev"
+            },
+            {
+              "identity_id": "id.dev.embedded",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "嵌入式与物联网(IoT)工程师",
+                "en-US": "Embedded Systems & IoT Engineer",
+                "ja-JP": "組み込み＆IoTエンジニア",
+                "ko-KR": "임베디드 및 IoT 엔지니어",
+                "de-DE": "Embedded- & IoT-Ingenieur",
+                "fr-FR": "Ingénieur systèmes embarqués et IoT",
+                "es-ES": "Ingeniero de sistemas embebidos e IoT",
+                "ru-RU": "Инженер встраиваемых систем и IoT",
+                "pt-BR": "Engenheiro de sistemas embarcados e IoT",
+                "it-IT": "Ingegnere di sistemi embedded e IoT"
+              },
+              "description": {
+                "zh-CN": "负责单片机底层固件 (C/C++)、原理图PCB、传感器数据包与通信协议调试",
+                "en-US": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+                "ja-JP": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+                "ko-KR": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+                "de-DE": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+                "fr-FR": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+                "es-ES": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+                "ru-RU": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+                "pt-BR": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+                "it-IT": "Develops firmware, schematics, sensor telemetry, and hardware drivers"
+              },
+              "aliases": [
+                "单片机工程师",
+                "固件工程师",
+                "硬件开发",
+                "IoT Developer"
+              ],
+              "task_tags": [
+                "builtin.source_code",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2152"
+              },
+              "associated_template_ids": [
+                "tpl_frontend_dev",
+                "tpl_backend_arch"
+              ],
+              "domain_id": "domain_work_it",
+              "category_id": "cat_engineering_dev"
             }
           ]
         }
@@ -813,6 +1050,150 @@
               ],
               "external_ids": {},
               "associated_template_ids": [
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_work_business",
+              "category_id": "cat_marketing_ops"
+            },
+            {
+              "identity_id": "id.ops.cross_border",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "跨境电商出海运营专家",
+                "en-US": "Cross-Border E-Commerce Specialist",
+                "ja-JP": "越境ECオペレーションスペシャリスト",
+                "ko-KR": "크로스보더 이커머스 전문가",
+                "de-DE": "Spezialist für grenzüberschreitenden E-Commerce",
+                "fr-FR": "Spécialiste du commerce électronique transfrontalier",
+                "es-ES": "Especialista en comercio electrónico transfronterizo",
+                "ru-RU": "Специалист по трансграничной электронной коммерции",
+                "pt-BR": "Especialista em comércio eletrônico transfronteiriço",
+                "it-IT": "Specialista di e-commerce transfrontaliero"
+              },
+              "description": {
+                "zh-CN": "负责亚马逊/TikTok/Shopee多语种Listing、海外仓发货物流、平台合规与选品表",
+                "en-US": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+                "ja-JP": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+                "ko-KR": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+                "de-DE": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+                "fr-FR": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+                "es-ES": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+                "ru-RU": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+                "pt-BR": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+                "it-IT": "Manages multi-lingual listings, overseas logistics, and platform compliance"
+              },
+              "aliases": [
+                "跨境电商",
+                "亚马逊运营",
+                "海外独立站",
+                "CrossBorder Ecom"
+              ],
+              "task_tags": [
+                "builtin.commercial",
+                "builtin.document_sheet",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "3322"
+              },
+              "associated_template_ids": [
+                "tpl_cross_border_ops",
+                "tpl_ecommerce_ops"
+              ],
+              "domain_id": "domain_work_business",
+              "category_id": "cat_marketing_ops"
+            },
+            {
+              "identity_id": "id.ops.private_domain",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "社群私域运营与用户增长官",
+                "en-US": "Community & Private Domain Operator",
+                "ja-JP": "コミュニティ＆プライベートドメイン運用スペシャリスト",
+                "ko-KR": "커뮤니티 및 사설 도메인 운영자",
+                "de-DE": "Community- & Private-Domain-Manager",
+                "fr-FR": "Gestionnaire de communauté et domaine privé",
+                "es-ES": "Gestor de comunidad y dominio privado",
+                "ru-RU": "Менеджер сообществ и приватных каналов",
+                "pt-BR": "Gestor de comunidade e domínio privado",
+                "it-IT": "Gestore di community e dominio privato"
+              },
+              "description": {
+                "zh-CN": "负责企微社群SOP话术、裂变营销物料、高净值用户分层标签与回访复盘",
+                "en-US": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+                "ja-JP": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+                "ko-KR": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+                "de-DE": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+                "fr-FR": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+                "es-ES": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+                "ru-RU": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+                "pt-BR": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+                "it-IT": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts"
+              },
+              "aliases": [
+                "私域运营",
+                "社群管家",
+                "用户运营",
+                "Community Manager"
+              ],
+              "task_tags": [
+                "builtin.social_media",
+                "builtin.document_data",
+                "builtin.commercial"
+              ],
+              "external_ids": {
+                "isco": "2431"
+              },
+              "associated_template_ids": [
+                "tpl_newmedia_content",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_work_business",
+              "category_id": "cat_marketing_ops"
+            },
+            {
+              "identity_id": "id.ops.sem_seo",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "搜索引擎优化与广告投放师 (SEO/SEM)",
+                "en-US": "SEO/SEM Performance Marketing Specialist",
+                "ja-JP": "SEO/SEMパフォーマンスマーケティング",
+                "ko-KR": "SEO/SEM 퍼포먼스 마케터",
+                "de-DE": "SEO/SEM-Marketing-Spezialist",
+                "fr-FR": "Spécialiste du référencement et de la publicité (SEO/SEM)",
+                "es-ES": "Especialista en SEO/SEM y publicidad digital",
+                "ru-RU": "Специалист по контекстной рекламе и SEO",
+                "pt-BR": "Especialista em SEO/SEM e mídia paga",
+                "it-IT": "Specialista SEO/SEM e performance marketing"
+              },
+              "description": {
+                "zh-CN": "分析搜索关键词热度、竞价账户ROI报表、落地页A/B测试与转化漏斗",
+                "en-US": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+                "ja-JP": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+                "ko-KR": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+                "de-DE": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+                "fr-FR": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+                "es-ES": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+                "ru-RU": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+                "pt-BR": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+                "it-IT": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels"
+              },
+              "aliases": [
+                "投放专员",
+                "广告优化师",
+                "SEO优化师",
+                "SEM Specialist"
+              ],
+              "task_tags": [
+                "builtin.document_sheet",
+                "builtin.commercial",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2431"
+              },
+              "associated_template_ids": [
+                "tpl_newmedia_content",
                 "tpl_para_universal"
               ],
               "domain_id": "domain_work_business",
@@ -1111,6 +1492,245 @@
               ],
               "domain_id": "domain_work_business",
               "category_id": "cat_finance_legal_hr"
+            },
+            {
+              "identity_id": "id.finance.auditor",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "财务审计师与税务筹划专家",
+                "en-US": "Financial Auditor & Tax Specialist",
+                "ja-JP": "会計監査人・税務スペシャリスト",
+                "ko-KR": "회계 감사관 및 세무 전문가",
+                "de-DE": "Finanzprüfer & Steuerspezialist",
+                "fr-FR": "Auditeur financier et fiscaliste",
+                "es-ES": "Auditor financiero y especialista fiscal",
+                "ru-RU": "Финансовый аудитор и налоговый консультант",
+                "pt-BR": "Auditor financeiro e especialista tributário",
+                "it-IT": "Revisore dei conti e fiscalista"
+              },
+              "description": {
+                "zh-CN": "负责审计底稿抽凭、纳税申报台账、内控风险自查与上市合规尽调",
+                "en-US": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+                "ja-JP": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+                "ko-KR": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+                "de-DE": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+                "fr-FR": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+                "es-ES": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+                "ru-RU": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+                "pt-BR": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+                "it-IT": "Conducts audit workpapers, tax filing schedules, and internal control audits"
+              },
+              "aliases": [
+                "审计师",
+                "CPA",
+                "税务师",
+                "Auditor"
+              ],
+              "task_tags": [
+                "builtin.finance",
+                "builtin.document_sheet",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2411"
+              },
+              "associated_template_ids": [
+                "tpl_finance_accounting",
+                "tpl_johnny_decimal"
+              ],
+              "domain_id": "domain_work_business",
+              "category_id": "cat_finance_legal_hr"
+            },
+            {
+              "identity_id": "id.legal.attorney",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "执业律师与诉讼法律顾问",
+                "en-US": "Practicing Attorney & Litigation Counsel",
+                "ja-JP": "弁護士・訴訟法律顧問",
+                "ko-KR": "변호사 및 소송 법률고문",
+                "de-DE": "Rechtsanwalt & Prozessvertreter",
+                "fr-FR": "Avocat plaidant et conseiller juridique",
+                "es-ES": "Abogado en ejercicio y asesor procesal",
+                "ru-RU": "Практикующий адвокат и судебный юрист",
+                "pt-BR": "Advogado e consultor contencioso",
+                "it-IT": "Avvocato e consulente legale contenzioso"
+              },
+              "description": {
+                "zh-CN": "负责民商事诉讼卷宗、证据目录编排、代理词出具与常年法律顾问答复",
+                "en-US": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+                "ja-JP": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+                "ko-KR": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+                "de-DE": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+                "fr-FR": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+                "es-ES": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+                "ru-RU": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+                "pt-BR": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+                "it-IT": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings"
+              },
+              "aliases": [
+                "律师",
+                "法律顾问",
+                "诉讼律师",
+                "Lawyer",
+                "Attorney"
+              ],
+              "task_tags": [
+                "builtin.hr_legal",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2611"
+              },
+              "associated_template_ids": [
+                "tpl_legal_case_dossier",
+                "tpl_johnny_decimal"
+              ],
+              "domain_id": "domain_work_business",
+              "category_id": "cat_finance_legal_hr"
+            },
+            {
+              "identity_id": "id.legal.ip_agent",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "知识产权与专利代理人",
+                "en-US": "Patent Attorney & IP Specialist",
+                "ja-JP": "弁理士・知的財産スペシャリスト",
+                "ko-KR": "변리사 및 지식재산 전문가",
+                "de-DE": "Patentanwalt & IP-Spezialist",
+                "fr-FR": "Conseil en propriété industrielle (Brevets & PI)",
+                "es-ES": "Agente de la propiedad industrial (Patentes)",
+                "ru-RU": "Патентный поверенный и эксперт по интеллектуальной собственности",
+                "pt-BR": "Agente de propriedade intelectual e patentes",
+                "it-IT": "Consulente in proprietà intellettuale e brevetti"
+              },
+              "description": {
+                "zh-CN": "负责发明专利交底书、商标检索公报、软著登记材料与侵权维权取证",
+                "en-US": "Prepares patent disclosures, trademark filings, and copyright documentation",
+                "ja-JP": "Prepares patent disclosures, trademark filings, and copyright documentation",
+                "ko-KR": "Prepares patent disclosures, trademark filings, and copyright documentation",
+                "de-DE": "Prepares patent disclosures, trademark filings, and copyright documentation",
+                "fr-FR": "Prepares patent disclosures, trademark filings, and copyright documentation",
+                "es-ES": "Prepares patent disclosures, trademark filings, and copyright documentation",
+                "ru-RU": "Prepares patent disclosures, trademark filings, and copyright documentation",
+                "pt-BR": "Prepares patent disclosures, trademark filings, and copyright documentation",
+                "it-IT": "Prepares patent disclosures, trademark filings, and copyright documentation"
+              },
+              "aliases": [
+                "专利代理师",
+                "商标代理人",
+                "IP顾问",
+                "Patent Agent"
+              ],
+              "task_tags": [
+                "builtin.hr_legal",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2612"
+              },
+              "associated_template_ids": [
+                "tpl_legal_case_dossier",
+                "tpl_johnny_decimal"
+              ],
+              "domain_id": "domain_work_business",
+              "category_id": "cat_finance_legal_hr"
+            },
+            {
+              "identity_id": "id.biz.consultant",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "管理咨询顾问与战略分析师",
+                "en-US": "Management Consultant & Strategy Analyst",
+                "ja-JP": "経営コンサルタント・戦略アナリスト",
+                "ko-KR": "경영 컨설턴트 및 전략 분석가",
+                "de-DE": "Unternehmensberater & Strategieanalyst",
+                "fr-FR": "Consultant en gestion et analyste stratégique",
+                "es-ES": "Consultor de gestión y analista estratégico",
+                "ru-RU": "Консультант по управлению и стратегический аналитик",
+                "pt-BR": "Consultor de gestão e analista estratégico",
+                "it-IT": "Consulente di direzione e analista strategico"
+              },
+              "description": {
+                "zh-CN": "负责行业研报梳理、商业计划书BP、组织变革诊断访谈与高管汇报PPT",
+                "en-US": "Develops market research reports, business plans, and executive slide decks",
+                "ja-JP": "Develops market research reports, business plans, and executive slide decks",
+                "ko-KR": "Develops market research reports, business plans, and executive slide decks",
+                "de-DE": "Develops market research reports, business plans, and executive slide decks",
+                "fr-FR": "Develops market research reports, business plans, and executive slide decks",
+                "es-ES": "Develops market research reports, business plans, and executive slide decks",
+                "ru-RU": "Develops market research reports, business plans, and executive slide decks",
+                "pt-BR": "Develops market research reports, business plans, and executive slide decks",
+                "it-IT": "Develops market research reports, business plans, and executive slide decks"
+              },
+              "aliases": [
+                "咨询顾问",
+                "战略规划",
+                "行业分析师",
+                "Management Consultant"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "builtin.document_sheet",
+                "builtin.commercial"
+              ],
+              "external_ids": {
+                "isco": "2421"
+              },
+              "associated_template_ids": [
+                "tpl_consulting_due_diligence",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_work_business",
+              "category_id": "cat_finance_legal_hr"
+            },
+            {
+              "identity_id": "id.mgmt.supply_chain",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "供应链与采购仓储主管",
+                "en-US": "Supply Chain & Procurement Manager",
+                "ja-JP": "サプライチェーン＆調達倉庫マネージャー",
+                "ko-KR": "공급망 및 구매물류 관리자",
+                "de-DE": "Supply-Chain- & Einkaufsleiter",
+                "fr-FR": "Responsable chaîne logistique et achats",
+                "es-ES": "Responsable de compras y cadena de suministro",
+                "ru-RU": "Руководитель цепи поставок и закупок",
+                "pt-BR": "Gerente de compras e cadeia de suprimentos",
+                "it-IT": "Responsabile acquisti e supply chain"
+              },
+              "description": {
+                "zh-CN": "管理供应商询比价单、采购框架协议、入库质检报表与安全库存周转率",
+                "en-US": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+                "ja-JP": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+                "ko-KR": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+                "de-DE": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+                "fr-FR": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+                "es-ES": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+                "ru-RU": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+                "pt-BR": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+                "it-IT": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC"
+              },
+              "aliases": [
+                "采购主管",
+                "供应链经理",
+                "仓储物流",
+                "Procurement Manager"
+              ],
+              "task_tags": [
+                "builtin.document_sheet",
+                "builtin.commercial",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "1324"
+              },
+              "associated_template_ids": [
+                "tpl_johnny_decimal",
+                "tpl_finance_accounting"
+              ],
+              "domain_id": "domain_work_business",
+              "category_id": "cat_finance_legal_hr"
             }
           ]
         }
@@ -1395,6 +2015,149 @@
               ],
               "domain_id": "domain_study_research",
               "category_id": "cat_academic_students"
+            },
+            {
+              "identity_id": "id.edu.k12_teacher",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "K12中小学教师与班主任",
+                "en-US": "K12 School Teacher & Class Advisor",
+                "ja-JP": "小・中・高校教師・クラス担任",
+                "ko-KR": "초중고 교사 및 담임교사",
+                "de-DE": "Lehrer & Klassenlehrer (Primar-/Sekundarstufe)",
+                "fr-FR": "Enseignant du primaire/secondaire et professeur principal",
+                "es-ES": "Profesor de primaria/secundaria y tutor",
+                "ru-RU": "Школьный учитель и классный руководитель",
+                "pt-BR": "Professor de ensino fundamental/médio e orientador",
+                "it-IT": "Insegnante di scuola primaria/secondaria e coordinatore"
+              },
+              "description": {
+                "zh-CN": "负责学科教案编写、课件PPT设计、单元试卷评测、班会家访记录与家校沟通档案",
+                "en-US": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+                "ja-JP": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+                "ko-KR": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+                "de-DE": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+                "fr-FR": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+                "es-ES": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+                "ru-RU": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+                "pt-BR": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+                "it-IT": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations"
+              },
+              "aliases": [
+                "中小学老师",
+                "班主任",
+                "学科老师",
+                "Teacher"
+              ],
+              "task_tags": [
+                "builtin.study_material",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2341"
+              },
+              "associated_template_ids": [
+                "tpl_teacher_lesson_prep",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_study_research",
+              "category_id": "cat_academic_students"
+            },
+            {
+              "identity_id": "id.edu.trainer",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "职业讲师与企业内训师",
+                "en-US": "Corporate Trainer & Vocational Instructor",
+                "ja-JP": "企業内研修講師・プロインストラクター",
+                "ko-KR": "기업 사내강사 및 직업 강사",
+                "de-DE": "Betrieblicher Ausbilder & Fachtrainer",
+                "fr-FR": "Formateur professionnel et d'entreprise",
+                "es-ES": "Formador corporativo e instructor profesional",
+                "ru-RU": "Корпоративный тренер и преподаватель курсов",
+                "pt-BR": "Instrutor corporativo e de capacitação",
+                "it-IT": "Formatore aziendale e docente professionista"
+              },
+              "description": {
+                "zh-CN": "负责课程体系大纲、实操演练手册、学员结训问卷与内训案例库积累",
+                "en-US": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+                "ja-JP": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+                "ko-KR": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+                "de-DE": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+                "fr-FR": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+                "es-ES": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+                "ru-RU": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+                "pt-BR": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+                "it-IT": "Designs training modules, workshop manuals, feedback surveys, and business cases"
+              },
+              "aliases": [
+                "培训讲师",
+                "内训师",
+                "讲师",
+                "Corporate Trainer"
+              ],
+              "task_tags": [
+                "builtin.study_material",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2424"
+              },
+              "associated_template_ids": [
+                "tpl_teacher_lesson_prep",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_study_research",
+              "category_id": "cat_academic_students"
+            },
+            {
+              "identity_id": "id.student.study_abroad",
+              "identity_type": "study",
+              "name": {
+                "zh-CN": "出国留学与国际考培学员",
+                "en-US": "Study Abroad Applicant & Test Prep Student",
+                "ja-JP": "留学準備生・国際試験受験生",
+                "ko-KR": "유학 준비생 및 국제 어학시험 수험생",
+                "de-DE": "Auslandsstudienbewerber & Sprachtestteilnehmer",
+                "fr-FR": "Candidat aux études à l'étranger et tests de langue",
+                "es-ES": "Aspirante a estudios en el extranjero y preparación de exámenes",
+                "ru-RU": "Абитуриент зарубежных вузов и слушатель языковых курсов",
+                "pt-BR": "Candidato a intercâmbio e exames internacionais",
+                "it-IT": "Candidato per studi all'estero e preparazione esami"
+              },
+              "description": {
+                "zh-CN": "整理托福雅思真题刷题笔试、文书PS/CV/推荐信、目标院校Offer与签证公证材料",
+                "en-US": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+                "ja-JP": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+                "ko-KR": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+                "de-DE": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+                "fr-FR": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+                "es-ES": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+                "ru-RU": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+                "pt-BR": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+                "it-IT": "Organizes language exam drills, personal statements, recommendation letters, and visa docs"
+              },
+              "aliases": [
+                "留学生",
+                "雅思备考",
+                "托福备考",
+                "留学申请",
+                "Applicant"
+              ],
+              "task_tags": [
+                "builtin.study_material",
+                "builtin.document_data",
+                "builtin.personal_notes"
+              ],
+              "external_ids": {
+                "isco": "2359"
+              },
+              "associated_template_ids": [
+                "tpl_academic_thesis",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_study_research",
+              "category_id": "cat_academic_students"
             }
           ]
         }
@@ -1628,6 +2391,102 @@
               ],
               "domain_id": "domain_life_hobby",
               "category_id": "cat_media_creation"
+            },
+            {
+              "identity_id": "id.creator.writer",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "影视编剧与自由撰稿人",
+                "en-US": "Screenwriter & Creative Author",
+                "ja-JP": "脚本家・クリエイティブライター",
+                "ko-KR": "시나리오 작가 및 자유 기고가",
+                "de-DE": "Drehbuchautor & Freier Schriftsteller",
+                "fr-FR": "Scénariste et auteur indépendant",
+                "es-ES": "Guionista y escritor creativo",
+                "ru-RU": "Сценарист и писатель",
+                "pt-BR": "Roteirista e escritor independente",
+                "it-IT": "Sceneggiatore e scrittore freelance"
+              },
+              "description": {
+                "zh-CN": "负责剧本大纲分场、人物小传与关系图谱、小说连载章节、采风灵感与出版合同",
+                "en-US": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+                "ja-JP": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+                "ko-KR": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+                "de-DE": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+                "fr-FR": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+                "es-ES": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+                "ru-RU": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+                "pt-BR": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+                "it-IT": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts"
+              },
+              "aliases": [
+                "编剧",
+                "作家",
+                "网络作者",
+                "自由撰稿人",
+                "Writer",
+                "Author"
+              ],
+              "task_tags": [
+                "builtin.document_data",
+                "builtin.personal_notes"
+              ],
+              "external_ids": {
+                "isco": "2641"
+              },
+              "associated_template_ids": [
+                "tpl_writing_publishing_pipeline",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_life_hobby",
+              "category_id": "cat_media_creation"
+            },
+            {
+              "identity_id": "id.creator.sound_designer",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "声音设计师与播客主编",
+                "en-US": "Sound Designer & Podcast Producer",
+                "ja-JP": "サウンドデザイナー・ポッドキャストプロデューサー",
+                "ko-KR": "사운드 디자이너 및 팟캐스트 프로듀서",
+                "de-DE": "Sounddesigner & Podcast-Produzent",
+                "fr-FR": "Concepteur sonore et producteur de podcasts",
+                "es-ES": "Diseñador de sonido y productor de podcasts",
+                "ru-RU": "Звукорежиссер и продюсер подкастов",
+                "pt-BR": "Designer de som e produtor de podcasts",
+                "it-IT": "Sound designer e produttore di podcast"
+              },
+              "description": {
+                "zh-CN": "负责环境拟音声效库、播客分集剪辑工程、片头片尾Jingle与多平台音频母带分发",
+                "en-US": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+                "ja-JP": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+                "ko-KR": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+                "de-DE": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+                "fr-FR": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+                "es-ES": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+                "ru-RU": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+                "pt-BR": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+                "it-IT": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio"
+              },
+              "aliases": [
+                "录音师",
+                "声音设计",
+                "播客制作人",
+                "Sound Designer"
+              ],
+              "task_tags": [
+                "omw.00543233.n",
+                "builtin.audio_track"
+              ],
+              "external_ids": {
+                "isco": "3521"
+              },
+              "associated_template_ids": [
+                "tpl_video_production",
+                "tpl_newmedia_content"
+              ],
+              "domain_id": "domain_life_hobby",
+              "category_id": "cat_media_creation"
             }
           ]
         },
@@ -1833,6 +2692,471 @@
               ],
               "domain_id": "domain_life_hobby",
               "category_id": "cat_lifestyle_home"
+            },
+            {
+              "identity_id": "id.life.minimalist",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "居家收纳与极简生活达人",
+                "en-US": "Home Organization & Minimalist Living",
+                "ja-JP": "収納整理・ミニマリスト生活エキスパート",
+                "ko-KR": "정리수납 및 미니멀 라이프 전문가",
+                "de-DE": "Wohnraumorganisation & Minimalist",
+                "fr-FR": "Organisation de la maison et mode de vie minimaliste",
+                "es-ES": "Organización del hogar y vida minimalista",
+                "ru-RU": "Эксперт по организации пространства и минимализму",
+                "pt-BR": "Organização do lar e vida minimalista",
+                "it-IT": "Organizzazione domestica e vita minimalista"
+              },
+              "description": {
+                "zh-CN": "负责家庭物品资产清单、断舍离日志、房屋装修保修手册与空间规划图纸",
+                "en-US": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+                "ja-JP": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+                "ko-KR": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+                "de-DE": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+                "fr-FR": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+                "es-ES": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+                "ru-RU": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+                "pt-BR": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+                "it-IT": "Maintains household inventory, decluttering logs, warranty manuals, and space plans"
+              },
+              "aliases": [
+                "整理收纳师",
+                "极简主义者",
+                "收纳达人"
+              ],
+              "task_tags": [
+                "builtin.family_archive",
+                "builtin.personal_notes"
+              ],
+              "external_ids": {
+                "isco": "5151"
+              },
+              "associated_template_ids": [
+                "tpl_family_household",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_life_hobby",
+              "category_id": "cat_lifestyle_home"
+            },
+            {
+              "identity_id": "id.life.pet_owner",
+              "identity_type": "life",
+              "name": {
+                "zh-CN": "爱宠家长与宠物成长健康管家",
+                "en-US": "Pet Parent & Veterinary Care Tracker",
+                "ja-JP": "ペットペアレント・健康管理トラッカー",
+                "ko-KR": "반려동물 양육자 및 건강 관리자",
+                "de-DE": "Haustierhalter & Tiergesundheitsmanager",
+                "fr-FR": "Propriétaire d'animaux et suivi vétérinaire",
+                "es-ES": "Dueño de mascotas y gestor de salud veterinaria",
+                "ru-RU": "Владелец домашних животных и дневник ухода",
+                "pt-BR": "Tutor de pets e gestor de cuidados veterinários",
+                "it-IT": "Proprietario di animali domestici e diario veterinario"
+              },
+              "description": {
+                "zh-CN": "记录宠物疫苗免疫本、驱虫用药周期表、血常规病历单与萌宠成长相册视频",
+                "en-US": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+                "ja-JP": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+                "ko-KR": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+                "de-DE": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+                "fr-FR": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+                "es-ES": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+                "ru-RU": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+                "pt-BR": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+                "it-IT": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives"
+              },
+              "aliases": [
+                "铲屎官",
+                "养宠达人",
+                "宠物家长",
+                "Pet Parent"
+              ],
+              "task_tags": [
+                "builtin.family_archive",
+                "builtin.health_data",
+                "builtin.photography"
+              ],
+              "external_ids": {
+                "isco": "5164"
+              },
+              "associated_template_ids": [
+                "tpl_family_household"
+              ],
+              "domain_id": "domain_life_hobby",
+              "category_id": "cat_lifestyle_home"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "domain_id": "domain_health_pro",
+      "domain_name": {
+        "zh-CN": "医疗健康 · 临床医学与专业工程",
+        "en-US": "Healthcare & Professional Engineering",
+        "ja-JP": "医療・健康・臨床医学・プロエンジニアリング",
+        "ko-KR": "의료 및 전문 엔지니어링",
+        "de-DE": "Gesundheitswesen & Fachingenieurwesen",
+        "fr-FR": "Santé et ingénierie professionnelle",
+        "es-ES": "Salud e ingeniería profesional",
+        "ru-RU": "Здравоохранение и профессиональная инженерия",
+        "pt-BR": "Saúde e engenharia profissional",
+        "it-IT": "Sanità e ingegneria professionale"
+      },
+      "description": {
+        "zh-CN": "覆盖临床医生、护理、心理健康、建筑与工程造价等高度专业严谨的场景",
+        "en-US": "Covers clinical medicine, nursing, psychology, architecture, and engineering",
+        "ja-JP": "覆盖临床医生、护理、心理健康、建筑与工程造价等高度专业严谨的场景",
+        "ko-KR": "覆盖临床医生、护理、心理健康、建筑与工程造价等高度专业严谨的场景",
+        "de-DE": "覆盖临床医生、护理、心理健康、建筑与工程造价等高度专业严谨的场景",
+        "fr-FR": "覆盖临床医生、护理、心理健康、建筑与工程造价等高度专业严谨的场景",
+        "es-ES": "覆盖临床医生、护理、心理健康、建筑与工程造价等高度专业严谨的场景",
+        "ru-RU": "覆盖临床医生、护理、心理健康、建筑与工程造价等高度专业严谨的场景",
+        "pt-BR": "覆盖临床医生、护理、心理健康、建筑与工程造价等高度专业严谨的场景",
+        "it-IT": "覆盖临床医生、护理、心理健康、建筑与工程造价等高度专业严谨的场景"
+      },
+      "categories": [
+        {
+          "category_id": "cat_healthcare_clinical",
+          "category_name": {
+            "zh-CN": "临床医疗与公共健康",
+            "en-US": "Clinical Medicine & Public Health",
+            "ja-JP": "臨床医療と公衆衛生",
+            "ko-KR": "임상 의학 및 공공 보건",
+            "de-DE": "Klinische Medizin & Öffentliche Gesundheit",
+            "fr-FR": "Médecine clinique et santé publique",
+            "es-ES": "Medicina clínica y salud pública",
+            "ru-RU": "Клиническая медицина и общественное здравоохранение",
+            "pt-BR": "Medicina clínica e saúde pública",
+            "it-IT": "Medicina clinica e salute pubblica"
+          },
+          "description": {
+            "zh-CN": "",
+            "en-US": "",
+            "ja-JP": "",
+            "ko-KR": "",
+            "de-DE": "",
+            "fr-FR": "",
+            "es-ES": "",
+            "ru-RU": "",
+            "pt-BR": "",
+            "it-IT": ""
+          },
+          "identities": [
+            {
+              "identity_id": "id.health.doctor",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "临床执业医师",
+                "en-US": "Clinical Physician",
+                "ja-JP": "臨床医師",
+                "ko-KR": "임상 의사",
+                "de-DE": "Klinischer Arzt",
+                "fr-FR": "Médecin clinicien",
+                "es-ES": "Médico clínico",
+                "ru-RU": "Клинический врач",
+                "pt-BR": "Médico clínico",
+                "it-IT": "Medico clinico"
+              },
+              "description": {
+                "zh-CN": "负责门诊查房、病例随访、医学文献检索、化验单解读与科研课题",
+                "en-US": "Manages patient case studies, diagnostic charts, and clinical research",
+                "ja-JP": "Manages patient case studies, diagnostic charts, and clinical research",
+                "ko-KR": "Manages patient case studies, diagnostic charts, and clinical research",
+                "de-DE": "Manages patient case studies, diagnostic charts, and clinical research",
+                "fr-FR": "Manages patient case studies, diagnostic charts, and clinical research",
+                "es-ES": "Manages patient case studies, diagnostic charts, and clinical research",
+                "ru-RU": "Manages patient case studies, diagnostic charts, and clinical research",
+                "pt-BR": "Manages patient case studies, diagnostic charts, and clinical research",
+                "it-IT": "Manages patient case studies, diagnostic charts, and clinical research"
+              },
+              "aliases": [
+                "主治医师",
+                "住院医",
+                "外科医生",
+                "内科医生",
+                "Doctor"
+              ],
+              "task_tags": [
+                "builtin.health_data",
+                "builtin.academic_paper",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2211",
+                "esco": "http://data.europa.eu/esco/occupation/general-practitioner"
+              },
+              "associated_template_ids": [
+                "tpl_clinical_medical_records",
+                "tpl_academic_thesis"
+              ],
+              "domain_id": "domain_health_pro",
+              "category_id": "cat_healthcare_clinical"
+            },
+            {
+              "identity_id": "id.health.nurse",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "注册护士与护理主管",
+                "en-US": "Registered Nurse",
+                "ja-JP": "正看護師",
+                "ko-KR": "간호사",
+                "de-DE": "Examinierte Pflegekraft",
+                "fr-FR": "Infirmier diplômé d'État",
+                "es-ES": "Enfermero colegiado",
+                "ru-RU": "Медицинская сестра",
+                "pt-BR": "Enfermeiro registrado",
+                "it-IT": "Infermiere professionale"
+              },
+              "description": {
+                "zh-CN": "负责护理交接班日志、医嘱执行单、患者健康宣教与院感记录",
+                "en-US": "Manages nursing logs, care plans, and patient education materials",
+                "ja-JP": "Manages nursing logs, care plans, and patient education materials",
+                "ko-KR": "Manages nursing logs, care plans, and patient education materials",
+                "de-DE": "Manages nursing logs, care plans, and patient education materials",
+                "fr-FR": "Manages nursing logs, care plans, and patient education materials",
+                "es-ES": "Manages nursing logs, care plans, and patient education materials",
+                "ru-RU": "Manages nursing logs, care plans, and patient education materials",
+                "pt-BR": "Manages nursing logs, care plans, and patient education materials",
+                "it-IT": "Manages nursing logs, care plans, and patient education materials"
+              },
+              "aliases": [
+                "护士长",
+                "责任护士",
+                "Nurse"
+              ],
+              "task_tags": [
+                "builtin.health_data",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2221"
+              },
+              "associated_template_ids": [
+                "tpl_clinical_medical_records"
+              ],
+              "domain_id": "domain_health_pro",
+              "category_id": "cat_healthcare_clinical"
+            },
+            {
+              "identity_id": "id.health.psychologist",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "心理咨询师与心理治疗师",
+                "en-US": "Psychologist & Therapist",
+                "ja-JP": "心理カウンセラー",
+                "ko-KR": "심리상담사",
+                "de-DE": "Psychologischer Berater & Therapeut",
+                "fr-FR": "Psychologue et thérapeute",
+                "es-ES": "Psicólogo y terapeuta",
+                "ru-RU": "Психолог и психотерапевт",
+                "pt-BR": "Psicólogo e terapeuta",
+                "it-IT": "Psicologo e terapeuta"
+              },
+              "description": {
+                "zh-CN": "负责咨询个案档案、量表评估报告、督导记录与疗愈方案",
+                "en-US": "Maintains counseling case files, assessment scales, and supervision records",
+                "ja-JP": "Maintains counseling case files, assessment scales, and supervision records",
+                "ko-KR": "Maintains counseling case files, assessment scales, and supervision records",
+                "de-DE": "Maintains counseling case files, assessment scales, and supervision records",
+                "fr-FR": "Maintains counseling case files, assessment scales, and supervision records",
+                "es-ES": "Maintains counseling case files, assessment scales, and supervision records",
+                "ru-RU": "Maintains counseling case files, assessment scales, and supervision records",
+                "pt-BR": "Maintains counseling case files, assessment scales, and supervision records",
+                "it-IT": "Maintains counseling case files, assessment scales, and supervision records"
+              },
+              "aliases": [
+                "心理医生",
+                "心理治疗师",
+                "Therapist",
+                "Counselor"
+              ],
+              "task_tags": [
+                "builtin.health_data",
+                "builtin.personal_notes",
+                "builtin.document_data"
+              ],
+              "external_ids": {
+                "isco": "2634"
+              },
+              "associated_template_ids": [
+                "tpl_wellness_health_portfolio",
+                "tpl_para_universal"
+              ],
+              "domain_id": "domain_health_pro",
+              "category_id": "cat_healthcare_clinical"
+            },
+            {
+              "identity_id": "id.health.nutritionist",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "注册营养师与健康管理师",
+                "en-US": "Registered Dietitian & Nutritionist",
+                "ja-JP": "管理栄養士",
+                "ko-KR": "영양사 및 건강관리사",
+                "de-DE": "Ernährungsberater",
+                "fr-FR": "Diététicien et nutritionniste",
+                "es-ES": "Dietista y nutricionista",
+                "ru-RU": "Диетолог и нутрициолог",
+                "pt-BR": "Nutricionista e gestor de saúde",
+                "it-IT": "Dietista e nutrizionista"
+              },
+              "description": {
+                "zh-CN": "制定膳食配餐计划、体成分监测报表、慢性病饮食干预与客户健康档案",
+                "en-US": "Creates meal plans, body composition reports, and client diet intervention files",
+                "ja-JP": "Creates meal plans, body composition reports, and client diet intervention files",
+                "ko-KR": "Creates meal plans, body composition reports, and client diet intervention files",
+                "de-DE": "Creates meal plans, body composition reports, and client diet intervention files",
+                "fr-FR": "Creates meal plans, body composition reports, and client diet intervention files",
+                "es-ES": "Creates meal plans, body composition reports, and client diet intervention files",
+                "ru-RU": "Creates meal plans, body composition reports, and client diet intervention files",
+                "pt-BR": "Creates meal plans, body composition reports, and client diet intervention files",
+                "it-IT": "Creates meal plans, body composition reports, and client diet intervention files"
+              },
+              "aliases": [
+                "营养师",
+                "健康顾问",
+                "Dietitian",
+                "Nutritionist"
+              ],
+              "task_tags": [
+                "builtin.health_data",
+                "builtin.document_sheet",
+                "builtin.personal_notes"
+              ],
+              "external_ids": {
+                "isco": "2265"
+              },
+              "associated_template_ids": [
+                "tpl_wellness_health_portfolio"
+              ],
+              "domain_id": "domain_health_pro",
+              "category_id": "cat_healthcare_clinical"
+            }
+          ]
+        },
+        {
+          "category_id": "cat_architecture_engineering",
+          "category_name": {
+            "zh-CN": "建筑设计与工程建造",
+            "en-US": "Architecture & Civil Engineering",
+            "ja-JP": "建築設計と土木工学",
+            "ko-KR": "건축 설계 및 토목 공학",
+            "de-DE": "Architektur & Bauingenieurwesen",
+            "fr-FR": "Architecture et génie civil",
+            "es-ES": "Arquitectura e ingeniería civil",
+            "ru-RU": "Архитектура и гражданское строительство",
+            "pt-BR": "Arquitetura e engenharia civil",
+            "it-IT": "Architettura e ingegneria civile"
+          },
+          "description": {
+            "zh-CN": "",
+            "en-US": "",
+            "ja-JP": "",
+            "ko-KR": "",
+            "de-DE": "",
+            "fr-FR": "",
+            "es-ES": "",
+            "ru-RU": "",
+            "pt-BR": "",
+            "it-IT": ""
+          },
+          "identities": [
+            {
+              "identity_id": "id.eng.architect",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "建筑师与室内方案设计师",
+                "en-US": "Architect & Interior Designer",
+                "ja-JP": "建築家・インテリアデザイナー",
+                "ko-KR": "건축가 및 인테리어 디자이너",
+                "de-DE": "Architekt & Innenarchitekt",
+                "fr-FR": "Architecte et designer d'intérieur",
+                "es-ES": "Arquitecto y diseñador de interiores",
+                "ru-RU": "Архитектор и дизайнер интерьеров",
+                "pt-BR": "Arquiteto e designer de interiores",
+                "it-IT": "Architetto e interior designer"
+              },
+              "description": {
+                "zh-CN": "管理CAD图纸、BIM模型、效果图渲染、施工图纸深化与选材清单",
+                "en-US": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+                "ja-JP": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+                "ko-KR": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+                "de-DE": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+                "fr-FR": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+                "es-ES": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+                "ru-RU": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+                "pt-BR": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+                "it-IT": "Manages CAD/BIM models, 3D renderings, and construction specifications"
+              },
+              "aliases": [
+                "空间设计师",
+                "室内设计师",
+                "方案主创",
+                "Architect"
+              ],
+              "task_tags": [
+                "builtin.design_assets",
+                "builtin.document_data",
+                "builtin.design_draft"
+              ],
+              "external_ids": {
+                "isco": "2161"
+              },
+              "associated_template_ids": [
+                "tpl_architectural_cad_design",
+                "tpl_ui_ux_standard"
+              ],
+              "domain_id": "domain_health_pro",
+              "category_id": "cat_architecture_engineering"
+            },
+            {
+              "identity_id": "id.eng.civil_engineer",
+              "identity_type": "profession",
+              "name": {
+                "zh-CN": "土木与结构造价工程师",
+                "en-US": "Civil & Structural Cost Engineer",
+                "ja-JP": "土木・構造積算エンジニア",
+                "ko-KR": "토목 및 구조 적산 엔지니어",
+                "de-DE": "Bauingenieur & Statiker",
+                "fr-FR": "Ingénieur génie civil et structure",
+                "es-ES": "Ingeniero civil y de estructuras",
+                "ru-RU": "Инженер-строитель и сметчик",
+                "pt-BR": "Engenheiro civil e de estruturas",
+                "it-IT": "Ingegnere civile e strutturale"
+              },
+              "description": {
+                "zh-CN": "管理结构受力计算书、工程量清单预算、施工现场监理与验收归档",
+                "en-US": "Handles structural calculations, bill of quantities, and construction logs",
+                "ja-JP": "Handles structural calculations, bill of quantities, and construction logs",
+                "ko-KR": "Handles structural calculations, bill of quantities, and construction logs",
+                "de-DE": "Handles structural calculations, bill of quantities, and construction logs",
+                "fr-FR": "Handles structural calculations, bill of quantities, and construction logs",
+                "es-ES": "Handles structural calculations, bill of quantities, and construction logs",
+                "ru-RU": "Handles structural calculations, bill of quantities, and construction logs",
+                "pt-BR": "Handles structural calculations, bill of quantities, and construction logs",
+                "it-IT": "Handles structural calculations, bill of quantities, and construction logs"
+              },
+              "aliases": [
+                "结构工程师",
+                "造价工程师",
+                "监理工程师"
+              ],
+              "task_tags": [
+                "builtin.document_sheet",
+                "builtin.document_data",
+                "builtin.finance"
+              ],
+              "external_ids": {
+                "isco": "2142"
+              },
+              "associated_template_ids": [
+                "tpl_architectural_cad_design",
+                "tpl_johnny_decimal"
+              ],
+              "domain_id": "domain_health_pro",
+              "category_id": "cat_architecture_engineering"
             }
           ]
         }
@@ -2063,6 +3387,101 @@
       "associated_template_ids": [
         "tpl_para_universal",
         "tpl_johnny_decimal"
+      ],
+      "domain_id": "domain_work_it",
+      "category_id": "cat_product_design"
+    },
+    {
+      "identity_id": "id.designer.industrial",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "工业与产品造型设计师",
+        "en-US": "Industrial & Product Form Designer",
+        "ja-JP": "プロダクト＆工業デザイナー",
+        "ko-KR": "산업 및 제품 디자이너",
+        "de-DE": "Industrie- & Produktdesigner",
+        "fr-FR": "Designer industriel et produit",
+        "es-ES": "Diseñador industrial y de producto",
+        "ru-RU": "Промышленный дизайнер",
+        "pt-BR": "Designer industrial e de produto",
+        "it-IT": "Designer industriale e di prodotto"
+      },
+      "description": {
+        "zh-CN": "负责硬件造型手绘、三维曲面建模 (Rhino/SolidWorks)、材料CMF与开模打样",
+        "en-US": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+        "ja-JP": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+        "ko-KR": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+        "de-DE": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+        "fr-FR": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+        "es-ES": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+        "ru-RU": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+        "pt-BR": "Handles hardware 3D modeling, CMF specifications, and prototyping assets",
+        "it-IT": "Handles hardware 3D modeling, CMF specifications, and prototyping assets"
+      },
+      "aliases": [
+        "工业设计师",
+        "硬件造型师",
+        "CMF设计师",
+        "Industrial Designer"
+      ],
+      "task_tags": [
+        "builtin.design_assets",
+        "builtin.design_draft"
+      ],
+      "external_ids": {
+        "isco": "2163"
+      },
+      "associated_template_ids": [
+        "tpl_ui_ux_standard",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_work_it",
+      "category_id": "cat_product_design"
+    },
+    {
+      "identity_id": "id.researcher.ux",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "交互研究员与用户体验专家",
+        "en-US": "User Experience (UX) Researcher",
+        "ja-JP": "ユーザーエクスペリエンス（UX）リサーチャー",
+        "ko-KR": "사용자 경험(UX) 연구원",
+        "de-DE": "UX-Forscher",
+        "fr-FR": "Chercheur en expérience utilisateur (UX)",
+        "es-ES": "Investigador de experiencia de usuario (UX)",
+        "ru-RU": "UX-исследователь",
+        "pt-BR": "Pesquisador de experiência do usuário (UX)",
+        "it-IT": "Ricercatore di esperienza utente (UX)"
+      },
+      "description": {
+        "zh-CN": "负责用户深度访谈录音、可用性测试眼动数据、用户旅程地图与竞品分析报告",
+        "en-US": "Conducts user interviews, usability testing, and customer journey mapping",
+        "ja-JP": "Conducts user interviews, usability testing, and customer journey mapping",
+        "ko-KR": "Conducts user interviews, usability testing, and customer journey mapping",
+        "de-DE": "Conducts user interviews, usability testing, and customer journey mapping",
+        "fr-FR": "Conducts user interviews, usability testing, and customer journey mapping",
+        "es-ES": "Conducts user interviews, usability testing, and customer journey mapping",
+        "ru-RU": "Conducts user interviews, usability testing, and customer journey mapping",
+        "pt-BR": "Conducts user interviews, usability testing, and customer journey mapping",
+        "it-IT": "Conducts user interviews, usability testing, and customer journey mapping"
+      },
+      "aliases": [
+        "UX研究员",
+        "用户研究员",
+        "用研",
+        "User Researcher"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "omw.03234306.n",
+        "builtin.personal_notes"
+      ],
+      "external_ids": {
+        "isco": "2432"
+      },
+      "associated_template_ids": [
+        "tpl_ui_ux_standard",
+        "tpl_para_universal"
       ],
       "domain_id": "domain_work_it",
       "category_id": "cat_product_design"
@@ -2335,6 +3754,148 @@
       "category_id": "cat_engineering_dev"
     },
     {
+      "identity_id": "id.dev.fullstack",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "全栈开发工程师",
+        "en-US": "Full Stack Engineer",
+        "ja-JP": "フルスタックエンジニア",
+        "ko-KR": "풀스택 엔지니어",
+        "de-DE": "Full-Stack-Entwickler",
+        "fr-FR": "Ingénieur Full Stack",
+        "es-ES": "Ingeniero Full Stack",
+        "ru-RU": "Full Stack разработчик",
+        "pt-BR": "Engenheiro Full Stack",
+        "it-IT": "Ingegnere Full Stack"
+      },
+      "description": {
+        "zh-CN": "统揽端侧与服务端全流程交付、独立开发项目、数据库编排与持续部署",
+        "en-US": "Manages both frontend and backend development, databases, and deployment",
+        "ja-JP": "Manages both frontend and backend development, databases, and deployment",
+        "ko-KR": "Manages both frontend and backend development, databases, and deployment",
+        "de-DE": "Manages both frontend and backend development, databases, and deployment",
+        "fr-FR": "Manages both frontend and backend development, databases, and deployment",
+        "es-ES": "Manages both frontend and backend development, databases, and deployment",
+        "ru-RU": "Manages both frontend and backend development, databases, and deployment",
+        "pt-BR": "Manages both frontend and backend development, databases, and deployment",
+        "it-IT": "Manages both frontend and backend development, databases, and deployment"
+      },
+      "aliases": [
+        "全栈开发",
+        "独立开发者",
+        "FullStack Developer"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2512"
+      },
+      "associated_template_ids": [
+        "tpl_frontend_dev",
+        "tpl_backend_arch",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_work_it",
+      "category_id": "cat_engineering_dev"
+    },
+    {
+      "identity_id": "id.dev.ai_ml",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "算法与AI/ML机器学习工程师",
+        "en-US": "AI/ML Machine Learning Engineer",
+        "ja-JP": "機械学習・AIアルゴリズムエンジニア",
+        "ko-KR": "AI/ML 머신러닝 엔지니어",
+        "de-DE": "KI/ML-Ingenieur für maschinelles Lernen",
+        "fr-FR": "Ingénieur IA et apprentissage automatique",
+        "es-ES": "Ingeniero de IA y aprendizaje automático",
+        "ru-RU": "Инженер машинного обучения и ИИ",
+        "pt-BR": "Engenheiro de IA e aprendizado de máquina",
+        "it-IT": "Ingegnere di intelligenza artificiale e machine learning"
+      },
+      "description": {
+        "zh-CN": "负责模型训练权重、数据清洗脚本、评测基准、Jupyter Notebook实验与LoRA微调",
+        "en-US": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+        "ja-JP": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+        "ko-KR": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+        "de-DE": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+        "fr-FR": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+        "es-ES": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+        "ru-RU": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+        "pt-BR": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks",
+        "it-IT": "Focuses on model weights, training scripts, benchmarks, and Jupyter notebooks"
+      },
+      "aliases": [
+        "AI工程师",
+        "算法工程师",
+        "大模型研究员",
+        "ML Engineer"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.document_data",
+        "builtin.document_sheet"
+      ],
+      "external_ids": {
+        "isco": "2511"
+      },
+      "associated_template_ids": [
+        "tpl_backend_arch",
+        "tpl_academic_thesis"
+      ],
+      "domain_id": "domain_work_it",
+      "category_id": "cat_engineering_dev"
+    },
+    {
+      "identity_id": "id.dev.embedded",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "嵌入式与物联网(IoT)工程师",
+        "en-US": "Embedded Systems & IoT Engineer",
+        "ja-JP": "組み込み＆IoTエンジニア",
+        "ko-KR": "임베디드 및 IoT 엔지니어",
+        "de-DE": "Embedded- & IoT-Ingenieur",
+        "fr-FR": "Ingénieur systèmes embarqués et IoT",
+        "es-ES": "Ingeniero de sistemas embebidos e IoT",
+        "ru-RU": "Инженер встраиваемых систем и IoT",
+        "pt-BR": "Engenheiro de sistemas embarcados e IoT",
+        "it-IT": "Ingegnere di sistemi embedded e IoT"
+      },
+      "description": {
+        "zh-CN": "负责单片机底层固件 (C/C++)、原理图PCB、传感器数据包与通信协议调试",
+        "en-US": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+        "ja-JP": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+        "ko-KR": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+        "de-DE": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+        "fr-FR": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+        "es-ES": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+        "ru-RU": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+        "pt-BR": "Develops firmware, schematics, sensor telemetry, and hardware drivers",
+        "it-IT": "Develops firmware, schematics, sensor telemetry, and hardware drivers"
+      },
+      "aliases": [
+        "单片机工程师",
+        "固件工程师",
+        "硬件开发",
+        "IoT Developer"
+      ],
+      "task_tags": [
+        "builtin.source_code",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2152"
+      },
+      "associated_template_ids": [
+        "tpl_frontend_dev",
+        "tpl_backend_arch"
+      ],
+      "domain_id": "domain_work_it",
+      "category_id": "cat_engineering_dev"
+    },
+    {
       "identity_id": "id.ops.newmedia",
       "identity_type": "profession",
       "name": {
@@ -2505,6 +4066,150 @@
       ],
       "external_ids": {},
       "associated_template_ids": [
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_work_business",
+      "category_id": "cat_marketing_ops"
+    },
+    {
+      "identity_id": "id.ops.cross_border",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "跨境电商出海运营专家",
+        "en-US": "Cross-Border E-Commerce Specialist",
+        "ja-JP": "越境ECオペレーションスペシャリスト",
+        "ko-KR": "크로스보더 이커머스 전문가",
+        "de-DE": "Spezialist für grenzüberschreitenden E-Commerce",
+        "fr-FR": "Spécialiste du commerce électronique transfrontalier",
+        "es-ES": "Especialista en comercio electrónico transfronterizo",
+        "ru-RU": "Специалист по трансграничной электронной коммерции",
+        "pt-BR": "Especialista em comércio eletrônico transfronteiriço",
+        "it-IT": "Specialista di e-commerce transfrontaliero"
+      },
+      "description": {
+        "zh-CN": "负责亚马逊/TikTok/Shopee多语种Listing、海外仓发货物流、平台合规与选品表",
+        "en-US": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+        "ja-JP": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+        "ko-KR": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+        "de-DE": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+        "fr-FR": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+        "es-ES": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+        "ru-RU": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+        "pt-BR": "Manages multi-lingual listings, overseas logistics, and platform compliance",
+        "it-IT": "Manages multi-lingual listings, overseas logistics, and platform compliance"
+      },
+      "aliases": [
+        "跨境电商",
+        "亚马逊运营",
+        "海外独立站",
+        "CrossBorder Ecom"
+      ],
+      "task_tags": [
+        "builtin.commercial",
+        "builtin.document_sheet",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "3322"
+      },
+      "associated_template_ids": [
+        "tpl_cross_border_ops",
+        "tpl_ecommerce_ops"
+      ],
+      "domain_id": "domain_work_business",
+      "category_id": "cat_marketing_ops"
+    },
+    {
+      "identity_id": "id.ops.private_domain",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "社群私域运营与用户增长官",
+        "en-US": "Community & Private Domain Operator",
+        "ja-JP": "コミュニティ＆プライベートドメイン運用スペシャリスト",
+        "ko-KR": "커뮤니티 및 사설 도메인 운영자",
+        "de-DE": "Community- & Private-Domain-Manager",
+        "fr-FR": "Gestionnaire de communauté et domaine privé",
+        "es-ES": "Gestor de comunidad y dominio privado",
+        "ru-RU": "Менеджер сообществ и приватных каналов",
+        "pt-BR": "Gestor de comunidade e domínio privado",
+        "it-IT": "Gestore di community e dominio privato"
+      },
+      "description": {
+        "zh-CN": "负责企微社群SOP话术、裂变营销物料、高净值用户分层标签与回访复盘",
+        "en-US": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+        "ja-JP": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+        "ko-KR": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+        "de-DE": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+        "fr-FR": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+        "es-ES": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+        "ru-RU": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+        "pt-BR": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts",
+        "it-IT": "Coordinates community SOPs, CRM tags, referral campaigns, and retention cohorts"
+      },
+      "aliases": [
+        "私域运营",
+        "社群管家",
+        "用户运营",
+        "Community Manager"
+      ],
+      "task_tags": [
+        "builtin.social_media",
+        "builtin.document_data",
+        "builtin.commercial"
+      ],
+      "external_ids": {
+        "isco": "2431"
+      },
+      "associated_template_ids": [
+        "tpl_newmedia_content",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_work_business",
+      "category_id": "cat_marketing_ops"
+    },
+    {
+      "identity_id": "id.ops.sem_seo",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "搜索引擎优化与广告投放师 (SEO/SEM)",
+        "en-US": "SEO/SEM Performance Marketing Specialist",
+        "ja-JP": "SEO/SEMパフォーマンスマーケティング",
+        "ko-KR": "SEO/SEM 퍼포먼스 마케터",
+        "de-DE": "SEO/SEM-Marketing-Spezialist",
+        "fr-FR": "Spécialiste du référencement et de la publicité (SEO/SEM)",
+        "es-ES": "Especialista en SEO/SEM y publicidad digital",
+        "ru-RU": "Специалист по контекстной рекламе и SEO",
+        "pt-BR": "Especialista em SEO/SEM e mídia paga",
+        "it-IT": "Specialista SEO/SEM e performance marketing"
+      },
+      "description": {
+        "zh-CN": "分析搜索关键词热度、竞价账户ROI报表、落地页A/B测试与转化漏斗",
+        "en-US": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+        "ja-JP": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+        "ko-KR": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+        "de-DE": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+        "fr-FR": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+        "es-ES": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+        "ru-RU": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+        "pt-BR": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels",
+        "it-IT": "Analyzes keyword traffic, ad spend ROI, landing page tests, and conversion funnels"
+      },
+      "aliases": [
+        "投放专员",
+        "广告优化师",
+        "SEO优化师",
+        "SEM Specialist"
+      ],
+      "task_tags": [
+        "builtin.document_sheet",
+        "builtin.commercial",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2431"
+      },
+      "associated_template_ids": [
+        "tpl_newmedia_content",
         "tpl_para_universal"
       ],
       "domain_id": "domain_work_business",
@@ -2776,6 +4481,245 @@
       "category_id": "cat_finance_legal_hr"
     },
     {
+      "identity_id": "id.finance.auditor",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "财务审计师与税务筹划专家",
+        "en-US": "Financial Auditor & Tax Specialist",
+        "ja-JP": "会計監査人・税務スペシャリスト",
+        "ko-KR": "회계 감사관 및 세무 전문가",
+        "de-DE": "Finanzprüfer & Steuerspezialist",
+        "fr-FR": "Auditeur financier et fiscaliste",
+        "es-ES": "Auditor financiero y especialista fiscal",
+        "ru-RU": "Финансовый аудитор и налоговый консультант",
+        "pt-BR": "Auditor financeiro e especialista tributário",
+        "it-IT": "Revisore dei conti e fiscalista"
+      },
+      "description": {
+        "zh-CN": "负责审计底稿抽凭、纳税申报台账、内控风险自查与上市合规尽调",
+        "en-US": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+        "ja-JP": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+        "ko-KR": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+        "de-DE": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+        "fr-FR": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+        "es-ES": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+        "ru-RU": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+        "pt-BR": "Conducts audit workpapers, tax filing schedules, and internal control audits",
+        "it-IT": "Conducts audit workpapers, tax filing schedules, and internal control audits"
+      },
+      "aliases": [
+        "审计师",
+        "CPA",
+        "税务师",
+        "Auditor"
+      ],
+      "task_tags": [
+        "builtin.finance",
+        "builtin.document_sheet",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2411"
+      },
+      "associated_template_ids": [
+        "tpl_finance_accounting",
+        "tpl_johnny_decimal"
+      ],
+      "domain_id": "domain_work_business",
+      "category_id": "cat_finance_legal_hr"
+    },
+    {
+      "identity_id": "id.legal.attorney",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "执业律师与诉讼法律顾问",
+        "en-US": "Practicing Attorney & Litigation Counsel",
+        "ja-JP": "弁護士・訴訟法律顧問",
+        "ko-KR": "변호사 및 소송 법률고문",
+        "de-DE": "Rechtsanwalt & Prozessvertreter",
+        "fr-FR": "Avocat plaidant et conseiller juridique",
+        "es-ES": "Abogado en ejercicio y asesor procesal",
+        "ru-RU": "Практикующий адвокат и судебный юрист",
+        "pt-BR": "Advogado e consultor contencioso",
+        "it-IT": "Avvocato e consulente legale contenzioso"
+      },
+      "description": {
+        "zh-CN": "负责民商事诉讼卷宗、证据目录编排、代理词出具与常年法律顾问答复",
+        "en-US": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+        "ja-JP": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+        "ko-KR": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+        "de-DE": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+        "fr-FR": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+        "es-ES": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+        "ru-RU": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+        "pt-BR": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings",
+        "it-IT": "Handles litigation dossiers, evidence checklists, legal briefs, and court filings"
+      },
+      "aliases": [
+        "律师",
+        "法律顾问",
+        "诉讼律师",
+        "Lawyer",
+        "Attorney"
+      ],
+      "task_tags": [
+        "builtin.hr_legal",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2611"
+      },
+      "associated_template_ids": [
+        "tpl_legal_case_dossier",
+        "tpl_johnny_decimal"
+      ],
+      "domain_id": "domain_work_business",
+      "category_id": "cat_finance_legal_hr"
+    },
+    {
+      "identity_id": "id.legal.ip_agent",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "知识产权与专利代理人",
+        "en-US": "Patent Attorney & IP Specialist",
+        "ja-JP": "弁理士・知的財産スペシャリスト",
+        "ko-KR": "변리사 및 지식재산 전문가",
+        "de-DE": "Patentanwalt & IP-Spezialist",
+        "fr-FR": "Conseil en propriété industrielle (Brevets & PI)",
+        "es-ES": "Agente de la propiedad industrial (Patentes)",
+        "ru-RU": "Патентный поверенный и эксперт по интеллектуальной собственности",
+        "pt-BR": "Agente de propriedade intelectual e patentes",
+        "it-IT": "Consulente in proprietà intellettuale e brevetti"
+      },
+      "description": {
+        "zh-CN": "负责发明专利交底书、商标检索公报、软著登记材料与侵权维权取证",
+        "en-US": "Prepares patent disclosures, trademark filings, and copyright documentation",
+        "ja-JP": "Prepares patent disclosures, trademark filings, and copyright documentation",
+        "ko-KR": "Prepares patent disclosures, trademark filings, and copyright documentation",
+        "de-DE": "Prepares patent disclosures, trademark filings, and copyright documentation",
+        "fr-FR": "Prepares patent disclosures, trademark filings, and copyright documentation",
+        "es-ES": "Prepares patent disclosures, trademark filings, and copyright documentation",
+        "ru-RU": "Prepares patent disclosures, trademark filings, and copyright documentation",
+        "pt-BR": "Prepares patent disclosures, trademark filings, and copyright documentation",
+        "it-IT": "Prepares patent disclosures, trademark filings, and copyright documentation"
+      },
+      "aliases": [
+        "专利代理师",
+        "商标代理人",
+        "IP顾问",
+        "Patent Agent"
+      ],
+      "task_tags": [
+        "builtin.hr_legal",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2612"
+      },
+      "associated_template_ids": [
+        "tpl_legal_case_dossier",
+        "tpl_johnny_decimal"
+      ],
+      "domain_id": "domain_work_business",
+      "category_id": "cat_finance_legal_hr"
+    },
+    {
+      "identity_id": "id.biz.consultant",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "管理咨询顾问与战略分析师",
+        "en-US": "Management Consultant & Strategy Analyst",
+        "ja-JP": "経営コンサルタント・戦略アナリスト",
+        "ko-KR": "경영 컨설턴트 및 전략 분석가",
+        "de-DE": "Unternehmensberater & Strategieanalyst",
+        "fr-FR": "Consultant en gestion et analyste stratégique",
+        "es-ES": "Consultor de gestión y analista estratégico",
+        "ru-RU": "Консультант по управлению и стратегический аналитик",
+        "pt-BR": "Consultor de gestão e analista estratégico",
+        "it-IT": "Consulente di direzione e analista strategico"
+      },
+      "description": {
+        "zh-CN": "负责行业研报梳理、商业计划书BP、组织变革诊断访谈与高管汇报PPT",
+        "en-US": "Develops market research reports, business plans, and executive slide decks",
+        "ja-JP": "Develops market research reports, business plans, and executive slide decks",
+        "ko-KR": "Develops market research reports, business plans, and executive slide decks",
+        "de-DE": "Develops market research reports, business plans, and executive slide decks",
+        "fr-FR": "Develops market research reports, business plans, and executive slide decks",
+        "es-ES": "Develops market research reports, business plans, and executive slide decks",
+        "ru-RU": "Develops market research reports, business plans, and executive slide decks",
+        "pt-BR": "Develops market research reports, business plans, and executive slide decks",
+        "it-IT": "Develops market research reports, business plans, and executive slide decks"
+      },
+      "aliases": [
+        "咨询顾问",
+        "战略规划",
+        "行业分析师",
+        "Management Consultant"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.document_sheet",
+        "builtin.commercial"
+      ],
+      "external_ids": {
+        "isco": "2421"
+      },
+      "associated_template_ids": [
+        "tpl_consulting_due_diligence",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_work_business",
+      "category_id": "cat_finance_legal_hr"
+    },
+    {
+      "identity_id": "id.mgmt.supply_chain",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "供应链与采购仓储主管",
+        "en-US": "Supply Chain & Procurement Manager",
+        "ja-JP": "サプライチェーン＆調達倉庫マネージャー",
+        "ko-KR": "공급망 및 구매물류 관리자",
+        "de-DE": "Supply-Chain- & Einkaufsleiter",
+        "fr-FR": "Responsable chaîne logistique et achats",
+        "es-ES": "Responsable de compras y cadena de suministro",
+        "ru-RU": "Руководитель цепи поставок и закупок",
+        "pt-BR": "Gerente de compras e cadeia de suprimentos",
+        "it-IT": "Responsabile acquisti e supply chain"
+      },
+      "description": {
+        "zh-CN": "管理供应商询比价单、采购框架协议、入库质检报表与安全库存周转率",
+        "en-US": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+        "ja-JP": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+        "ko-KR": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+        "de-DE": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+        "fr-FR": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+        "es-ES": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+        "ru-RU": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+        "pt-BR": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC",
+        "it-IT": "Manages vendor RFQs, purchasing agreements, inventory turns, and warehouse QC"
+      },
+      "aliases": [
+        "采购主管",
+        "供应链经理",
+        "仓储物流",
+        "Procurement Manager"
+      ],
+      "task_tags": [
+        "builtin.document_sheet",
+        "builtin.commercial",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "1324"
+      },
+      "associated_template_ids": [
+        "tpl_johnny_decimal",
+        "tpl_finance_accounting"
+      ],
+      "domain_id": "domain_work_business",
+      "category_id": "cat_finance_legal_hr"
+    },
+    {
       "identity_id": "id.student.undergrad",
       "identity_type": "study",
       "name": {
@@ -3002,6 +4946,149 @@
       "category_id": "cat_academic_students"
     },
     {
+      "identity_id": "id.edu.k12_teacher",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "K12中小学教师与班主任",
+        "en-US": "K12 School Teacher & Class Advisor",
+        "ja-JP": "小・中・高校教師・クラス担任",
+        "ko-KR": "초중고 교사 및 담임교사",
+        "de-DE": "Lehrer & Klassenlehrer (Primar-/Sekundarstufe)",
+        "fr-FR": "Enseignant du primaire/secondaire et professeur principal",
+        "es-ES": "Profesor de primaria/secundaria y tutor",
+        "ru-RU": "Школьный учитель и классный руководитель",
+        "pt-BR": "Professor de ensino fundamental/médio e orientador",
+        "it-IT": "Insegnante di scuola primaria/secondaria e coordinatore"
+      },
+      "description": {
+        "zh-CN": "负责学科教案编写、课件PPT设计、单元试卷评测、班会家访记录与家校沟通档案",
+        "en-US": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+        "ja-JP": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+        "ko-KR": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+        "de-DE": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+        "fr-FR": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+        "es-ES": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+        "ru-RU": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+        "pt-BR": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations",
+        "it-IT": "Prepares curriculum lesson plans, slide decks, exam papers, and student evaluations"
+      },
+      "aliases": [
+        "中小学老师",
+        "班主任",
+        "学科老师",
+        "Teacher"
+      ],
+      "task_tags": [
+        "builtin.study_material",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2341"
+      },
+      "associated_template_ids": [
+        "tpl_teacher_lesson_prep",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_study_research",
+      "category_id": "cat_academic_students"
+    },
+    {
+      "identity_id": "id.edu.trainer",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "职业讲师与企业内训师",
+        "en-US": "Corporate Trainer & Vocational Instructor",
+        "ja-JP": "企業内研修講師・プロインストラクター",
+        "ko-KR": "기업 사내강사 및 직업 강사",
+        "de-DE": "Betrieblicher Ausbilder & Fachtrainer",
+        "fr-FR": "Formateur professionnel et d'entreprise",
+        "es-ES": "Formador corporativo e instructor profesional",
+        "ru-RU": "Корпоративный тренер и преподаватель курсов",
+        "pt-BR": "Instrutor corporativo e de capacitação",
+        "it-IT": "Formatore aziendale e docente professionista"
+      },
+      "description": {
+        "zh-CN": "负责课程体系大纲、实操演练手册、学员结训问卷与内训案例库积累",
+        "en-US": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+        "ja-JP": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+        "ko-KR": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+        "de-DE": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+        "fr-FR": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+        "es-ES": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+        "ru-RU": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+        "pt-BR": "Designs training modules, workshop manuals, feedback surveys, and business cases",
+        "it-IT": "Designs training modules, workshop manuals, feedback surveys, and business cases"
+      },
+      "aliases": [
+        "培训讲师",
+        "内训师",
+        "讲师",
+        "Corporate Trainer"
+      ],
+      "task_tags": [
+        "builtin.study_material",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2424"
+      },
+      "associated_template_ids": [
+        "tpl_teacher_lesson_prep",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_study_research",
+      "category_id": "cat_academic_students"
+    },
+    {
+      "identity_id": "id.student.study_abroad",
+      "identity_type": "study",
+      "name": {
+        "zh-CN": "出国留学与国际考培学员",
+        "en-US": "Study Abroad Applicant & Test Prep Student",
+        "ja-JP": "留学準備生・国際試験受験生",
+        "ko-KR": "유학 준비생 및 국제 어학시험 수험생",
+        "de-DE": "Auslandsstudienbewerber & Sprachtestteilnehmer",
+        "fr-FR": "Candidat aux études à l'étranger et tests de langue",
+        "es-ES": "Aspirante a estudios en el extranjero y preparación de exámenes",
+        "ru-RU": "Абитуриент зарубежных вузов и слушатель языковых курсов",
+        "pt-BR": "Candidato a intercâmbio e exames internacionais",
+        "it-IT": "Candidato per studi all'estero e preparazione esami"
+      },
+      "description": {
+        "zh-CN": "整理托福雅思真题刷题笔试、文书PS/CV/推荐信、目标院校Offer与签证公证材料",
+        "en-US": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+        "ja-JP": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+        "ko-KR": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+        "de-DE": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+        "fr-FR": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+        "es-ES": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+        "ru-RU": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+        "pt-BR": "Organizes language exam drills, personal statements, recommendation letters, and visa docs",
+        "it-IT": "Organizes language exam drills, personal statements, recommendation letters, and visa docs"
+      },
+      "aliases": [
+        "留学生",
+        "雅思备考",
+        "托福备考",
+        "留学申请",
+        "Applicant"
+      ],
+      "task_tags": [
+        "builtin.study_material",
+        "builtin.document_data",
+        "builtin.personal_notes"
+      ],
+      "external_ids": {
+        "isco": "2359"
+      },
+      "associated_template_ids": [
+        "tpl_academic_thesis",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_study_research",
+      "category_id": "cat_academic_students"
+    },
+    {
       "identity_id": "id.hobby.photographer",
       "identity_type": "hobby",
       "name": {
@@ -3172,6 +5259,102 @@
       "external_ids": {},
       "associated_template_ids": [
         "tpl_game_dev_assets"
+      ],
+      "domain_id": "domain_life_hobby",
+      "category_id": "cat_media_creation"
+    },
+    {
+      "identity_id": "id.creator.writer",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "影视编剧与自由撰稿人",
+        "en-US": "Screenwriter & Creative Author",
+        "ja-JP": "脚本家・クリエイティブライター",
+        "ko-KR": "시나리오 작가 및 자유 기고가",
+        "de-DE": "Drehbuchautor & Freier Schriftsteller",
+        "fr-FR": "Scénariste et auteur indépendant",
+        "es-ES": "Guionista y escritor creativo",
+        "ru-RU": "Сценарист и писатель",
+        "pt-BR": "Roteirista e escritor independente",
+        "it-IT": "Sceneggiatore e scrittore freelance"
+      },
+      "description": {
+        "zh-CN": "负责剧本大纲分场、人物小传与关系图谱、小说连载章节、采风灵感与出版合同",
+        "en-US": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+        "ja-JP": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+        "ko-KR": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+        "de-DE": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+        "fr-FR": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+        "es-ES": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+        "ru-RU": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+        "pt-BR": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts",
+        "it-IT": "Drafts scene breakdowns, character bios, serialized chapters, and publishing contracts"
+      },
+      "aliases": [
+        "编剧",
+        "作家",
+        "网络作者",
+        "自由撰稿人",
+        "Writer",
+        "Author"
+      ],
+      "task_tags": [
+        "builtin.document_data",
+        "builtin.personal_notes"
+      ],
+      "external_ids": {
+        "isco": "2641"
+      },
+      "associated_template_ids": [
+        "tpl_writing_publishing_pipeline",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_life_hobby",
+      "category_id": "cat_media_creation"
+    },
+    {
+      "identity_id": "id.creator.sound_designer",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "声音设计师与播客主编",
+        "en-US": "Sound Designer & Podcast Producer",
+        "ja-JP": "サウンドデザイナー・ポッドキャストプロデューサー",
+        "ko-KR": "사운드 디자이너 및 팟캐스트 프로듀서",
+        "de-DE": "Sounddesigner & Podcast-Produzent",
+        "fr-FR": "Concepteur sonore et producteur de podcasts",
+        "es-ES": "Diseñador de sonido y productor de podcasts",
+        "ru-RU": "Звукорежиссер и продюсер подкастов",
+        "pt-BR": "Designer de som e produtor de podcasts",
+        "it-IT": "Sound designer e produttore di podcast"
+      },
+      "description": {
+        "zh-CN": "负责环境拟音声效库、播客分集剪辑工程、片头片尾Jingle与多平台音频母带分发",
+        "en-US": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+        "ja-JP": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+        "ko-KR": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+        "de-DE": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+        "fr-FR": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+        "es-ES": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+        "ru-RU": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+        "pt-BR": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio",
+        "it-IT": "Curates foley sound effects, DAW multi-track projects, voice tracks, and master audio"
+      },
+      "aliases": [
+        "录音师",
+        "声音设计",
+        "播客制作人",
+        "Sound Designer"
+      ],
+      "task_tags": [
+        "omw.00543233.n",
+        "builtin.audio_track"
+      ],
+      "external_ids": {
+        "isco": "3521"
+      },
+      "associated_template_ids": [
+        "tpl_video_production",
+        "tpl_newmedia_content"
       ],
       "domain_id": "domain_life_hobby",
       "category_id": "cat_media_creation"
@@ -3351,6 +5534,384 @@
       ],
       "domain_id": "domain_life_hobby",
       "category_id": "cat_lifestyle_home"
+    },
+    {
+      "identity_id": "id.life.minimalist",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "居家收纳与极简生活达人",
+        "en-US": "Home Organization & Minimalist Living",
+        "ja-JP": "収納整理・ミニマリスト生活エキスパート",
+        "ko-KR": "정리수납 및 미니멀 라이프 전문가",
+        "de-DE": "Wohnraumorganisation & Minimalist",
+        "fr-FR": "Organisation de la maison et mode de vie minimaliste",
+        "es-ES": "Organización del hogar y vida minimalista",
+        "ru-RU": "Эксперт по организации пространства и минимализму",
+        "pt-BR": "Organização do lar e vida minimalista",
+        "it-IT": "Organizzazione domestica e vita minimalista"
+      },
+      "description": {
+        "zh-CN": "负责家庭物品资产清单、断舍离日志、房屋装修保修手册与空间规划图纸",
+        "en-US": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+        "ja-JP": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+        "ko-KR": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+        "de-DE": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+        "fr-FR": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+        "es-ES": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+        "ru-RU": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+        "pt-BR": "Maintains household inventory, decluttering logs, warranty manuals, and space plans",
+        "it-IT": "Maintains household inventory, decluttering logs, warranty manuals, and space plans"
+      },
+      "aliases": [
+        "整理收纳师",
+        "极简主义者",
+        "收纳达人"
+      ],
+      "task_tags": [
+        "builtin.family_archive",
+        "builtin.personal_notes"
+      ],
+      "external_ids": {
+        "isco": "5151"
+      },
+      "associated_template_ids": [
+        "tpl_family_household",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_life_hobby",
+      "category_id": "cat_lifestyle_home"
+    },
+    {
+      "identity_id": "id.life.pet_owner",
+      "identity_type": "life",
+      "name": {
+        "zh-CN": "爱宠家长与宠物成长健康管家",
+        "en-US": "Pet Parent & Veterinary Care Tracker",
+        "ja-JP": "ペットペアレント・健康管理トラッカー",
+        "ko-KR": "반려동물 양육자 및 건강 관리자",
+        "de-DE": "Haustierhalter & Tiergesundheitsmanager",
+        "fr-FR": "Propriétaire d'animaux et suivi vétérinaire",
+        "es-ES": "Dueño de mascotas y gestor de salud veterinaria",
+        "ru-RU": "Владелец домашних животных и дневник ухода",
+        "pt-BR": "Tutor de pets e gestor de cuidados veterinários",
+        "it-IT": "Proprietario di animali domestici e diario veterinario"
+      },
+      "description": {
+        "zh-CN": "记录宠物疫苗免疫本、驱虫用药周期表、血常规病历单与萌宠成长相册视频",
+        "en-US": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+        "ja-JP": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+        "ko-KR": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+        "de-DE": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+        "fr-FR": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+        "es-ES": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+        "ru-RU": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+        "pt-BR": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives",
+        "it-IT": "Tracks pet immunization records, vet clinic receipts, medication schedules, and photo archives"
+      },
+      "aliases": [
+        "铲屎官",
+        "养宠达人",
+        "宠物家长",
+        "Pet Parent"
+      ],
+      "task_tags": [
+        "builtin.family_archive",
+        "builtin.health_data",
+        "builtin.photography"
+      ],
+      "external_ids": {
+        "isco": "5164"
+      },
+      "associated_template_ids": [
+        "tpl_family_household"
+      ],
+      "domain_id": "domain_life_hobby",
+      "category_id": "cat_lifestyle_home"
+    },
+    {
+      "identity_id": "id.health.doctor",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "临床执业医师",
+        "en-US": "Clinical Physician",
+        "ja-JP": "臨床医師",
+        "ko-KR": "임상 의사",
+        "de-DE": "Klinischer Arzt",
+        "fr-FR": "Médecin clinicien",
+        "es-ES": "Médico clínico",
+        "ru-RU": "Клинический врач",
+        "pt-BR": "Médico clínico",
+        "it-IT": "Medico clinico"
+      },
+      "description": {
+        "zh-CN": "负责门诊查房、病例随访、医学文献检索、化验单解读与科研课题",
+        "en-US": "Manages patient case studies, diagnostic charts, and clinical research",
+        "ja-JP": "Manages patient case studies, diagnostic charts, and clinical research",
+        "ko-KR": "Manages patient case studies, diagnostic charts, and clinical research",
+        "de-DE": "Manages patient case studies, diagnostic charts, and clinical research",
+        "fr-FR": "Manages patient case studies, diagnostic charts, and clinical research",
+        "es-ES": "Manages patient case studies, diagnostic charts, and clinical research",
+        "ru-RU": "Manages patient case studies, diagnostic charts, and clinical research",
+        "pt-BR": "Manages patient case studies, diagnostic charts, and clinical research",
+        "it-IT": "Manages patient case studies, diagnostic charts, and clinical research"
+      },
+      "aliases": [
+        "主治医师",
+        "住院医",
+        "外科医生",
+        "内科医生",
+        "Doctor"
+      ],
+      "task_tags": [
+        "builtin.health_data",
+        "builtin.academic_paper",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2211",
+        "esco": "http://data.europa.eu/esco/occupation/general-practitioner"
+      },
+      "associated_template_ids": [
+        "tpl_clinical_medical_records",
+        "tpl_academic_thesis"
+      ],
+      "domain_id": "domain_health_pro",
+      "category_id": "cat_healthcare_clinical"
+    },
+    {
+      "identity_id": "id.health.nurse",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "注册护士与护理主管",
+        "en-US": "Registered Nurse",
+        "ja-JP": "正看護師",
+        "ko-KR": "간호사",
+        "de-DE": "Examinierte Pflegekraft",
+        "fr-FR": "Infirmier diplômé d'État",
+        "es-ES": "Enfermero colegiado",
+        "ru-RU": "Медицинская сестра",
+        "pt-BR": "Enfermeiro registrado",
+        "it-IT": "Infermiere professionale"
+      },
+      "description": {
+        "zh-CN": "负责护理交接班日志、医嘱执行单、患者健康宣教与院感记录",
+        "en-US": "Manages nursing logs, care plans, and patient education materials",
+        "ja-JP": "Manages nursing logs, care plans, and patient education materials",
+        "ko-KR": "Manages nursing logs, care plans, and patient education materials",
+        "de-DE": "Manages nursing logs, care plans, and patient education materials",
+        "fr-FR": "Manages nursing logs, care plans, and patient education materials",
+        "es-ES": "Manages nursing logs, care plans, and patient education materials",
+        "ru-RU": "Manages nursing logs, care plans, and patient education materials",
+        "pt-BR": "Manages nursing logs, care plans, and patient education materials",
+        "it-IT": "Manages nursing logs, care plans, and patient education materials"
+      },
+      "aliases": [
+        "护士长",
+        "责任护士",
+        "Nurse"
+      ],
+      "task_tags": [
+        "builtin.health_data",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2221"
+      },
+      "associated_template_ids": [
+        "tpl_clinical_medical_records"
+      ],
+      "domain_id": "domain_health_pro",
+      "category_id": "cat_healthcare_clinical"
+    },
+    {
+      "identity_id": "id.health.psychologist",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "心理咨询师与心理治疗师",
+        "en-US": "Psychologist & Therapist",
+        "ja-JP": "心理カウンセラー",
+        "ko-KR": "심리상담사",
+        "de-DE": "Psychologischer Berater & Therapeut",
+        "fr-FR": "Psychologue et thérapeute",
+        "es-ES": "Psicólogo y terapeuta",
+        "ru-RU": "Психолог и психотерапевт",
+        "pt-BR": "Psicólogo e terapeuta",
+        "it-IT": "Psicologo e terapeuta"
+      },
+      "description": {
+        "zh-CN": "负责咨询个案档案、量表评估报告、督导记录与疗愈方案",
+        "en-US": "Maintains counseling case files, assessment scales, and supervision records",
+        "ja-JP": "Maintains counseling case files, assessment scales, and supervision records",
+        "ko-KR": "Maintains counseling case files, assessment scales, and supervision records",
+        "de-DE": "Maintains counseling case files, assessment scales, and supervision records",
+        "fr-FR": "Maintains counseling case files, assessment scales, and supervision records",
+        "es-ES": "Maintains counseling case files, assessment scales, and supervision records",
+        "ru-RU": "Maintains counseling case files, assessment scales, and supervision records",
+        "pt-BR": "Maintains counseling case files, assessment scales, and supervision records",
+        "it-IT": "Maintains counseling case files, assessment scales, and supervision records"
+      },
+      "aliases": [
+        "心理医生",
+        "心理治疗师",
+        "Therapist",
+        "Counselor"
+      ],
+      "task_tags": [
+        "builtin.health_data",
+        "builtin.personal_notes",
+        "builtin.document_data"
+      ],
+      "external_ids": {
+        "isco": "2634"
+      },
+      "associated_template_ids": [
+        "tpl_wellness_health_portfolio",
+        "tpl_para_universal"
+      ],
+      "domain_id": "domain_health_pro",
+      "category_id": "cat_healthcare_clinical"
+    },
+    {
+      "identity_id": "id.health.nutritionist",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "注册营养师与健康管理师",
+        "en-US": "Registered Dietitian & Nutritionist",
+        "ja-JP": "管理栄養士",
+        "ko-KR": "영양사 및 건강관리사",
+        "de-DE": "Ernährungsberater",
+        "fr-FR": "Diététicien et nutritionniste",
+        "es-ES": "Dietista y nutricionista",
+        "ru-RU": "Диетолог и нутрициолог",
+        "pt-BR": "Nutricionista e gestor de saúde",
+        "it-IT": "Dietista e nutrizionista"
+      },
+      "description": {
+        "zh-CN": "制定膳食配餐计划、体成分监测报表、慢性病饮食干预与客户健康档案",
+        "en-US": "Creates meal plans, body composition reports, and client diet intervention files",
+        "ja-JP": "Creates meal plans, body composition reports, and client diet intervention files",
+        "ko-KR": "Creates meal plans, body composition reports, and client diet intervention files",
+        "de-DE": "Creates meal plans, body composition reports, and client diet intervention files",
+        "fr-FR": "Creates meal plans, body composition reports, and client diet intervention files",
+        "es-ES": "Creates meal plans, body composition reports, and client diet intervention files",
+        "ru-RU": "Creates meal plans, body composition reports, and client diet intervention files",
+        "pt-BR": "Creates meal plans, body composition reports, and client diet intervention files",
+        "it-IT": "Creates meal plans, body composition reports, and client diet intervention files"
+      },
+      "aliases": [
+        "营养师",
+        "健康顾问",
+        "Dietitian",
+        "Nutritionist"
+      ],
+      "task_tags": [
+        "builtin.health_data",
+        "builtin.document_sheet",
+        "builtin.personal_notes"
+      ],
+      "external_ids": {
+        "isco": "2265"
+      },
+      "associated_template_ids": [
+        "tpl_wellness_health_portfolio"
+      ],
+      "domain_id": "domain_health_pro",
+      "category_id": "cat_healthcare_clinical"
+    },
+    {
+      "identity_id": "id.eng.architect",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "建筑师与室内方案设计师",
+        "en-US": "Architect & Interior Designer",
+        "ja-JP": "建築家・インテリアデザイナー",
+        "ko-KR": "건축가 및 인테리어 디자이너",
+        "de-DE": "Architekt & Innenarchitekt",
+        "fr-FR": "Architecte et designer d'intérieur",
+        "es-ES": "Arquitecto y diseñador de interiores",
+        "ru-RU": "Архитектор и дизайнер интерьеров",
+        "pt-BR": "Arquiteto e designer de interiores",
+        "it-IT": "Architetto e interior designer"
+      },
+      "description": {
+        "zh-CN": "管理CAD图纸、BIM模型、效果图渲染、施工图纸深化与选材清单",
+        "en-US": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+        "ja-JP": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+        "ko-KR": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+        "de-DE": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+        "fr-FR": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+        "es-ES": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+        "ru-RU": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+        "pt-BR": "Manages CAD/BIM models, 3D renderings, and construction specifications",
+        "it-IT": "Manages CAD/BIM models, 3D renderings, and construction specifications"
+      },
+      "aliases": [
+        "空间设计师",
+        "室内设计师",
+        "方案主创",
+        "Architect"
+      ],
+      "task_tags": [
+        "builtin.design_assets",
+        "builtin.document_data",
+        "builtin.design_draft"
+      ],
+      "external_ids": {
+        "isco": "2161"
+      },
+      "associated_template_ids": [
+        "tpl_architectural_cad_design",
+        "tpl_ui_ux_standard"
+      ],
+      "domain_id": "domain_health_pro",
+      "category_id": "cat_architecture_engineering"
+    },
+    {
+      "identity_id": "id.eng.civil_engineer",
+      "identity_type": "profession",
+      "name": {
+        "zh-CN": "土木与结构造价工程师",
+        "en-US": "Civil & Structural Cost Engineer",
+        "ja-JP": "土木・構造積算エンジニア",
+        "ko-KR": "토목 및 구조 적산 엔지니어",
+        "de-DE": "Bauingenieur & Statiker",
+        "fr-FR": "Ingénieur génie civil et structure",
+        "es-ES": "Ingeniero civil y de estructuras",
+        "ru-RU": "Инженер-строитель и сметчик",
+        "pt-BR": "Engenheiro civil e de estruturas",
+        "it-IT": "Ingegnere civile e strutturale"
+      },
+      "description": {
+        "zh-CN": "管理结构受力计算书、工程量清单预算、施工现场监理与验收归档",
+        "en-US": "Handles structural calculations, bill of quantities, and construction logs",
+        "ja-JP": "Handles structural calculations, bill of quantities, and construction logs",
+        "ko-KR": "Handles structural calculations, bill of quantities, and construction logs",
+        "de-DE": "Handles structural calculations, bill of quantities, and construction logs",
+        "fr-FR": "Handles structural calculations, bill of quantities, and construction logs",
+        "es-ES": "Handles structural calculations, bill of quantities, and construction logs",
+        "ru-RU": "Handles structural calculations, bill of quantities, and construction logs",
+        "pt-BR": "Handles structural calculations, bill of quantities, and construction logs",
+        "it-IT": "Handles structural calculations, bill of quantities, and construction logs"
+      },
+      "aliases": [
+        "结构工程师",
+        "造价工程师",
+        "监理工程师"
+      ],
+      "task_tags": [
+        "builtin.document_sheet",
+        "builtin.document_data",
+        "builtin.finance"
+      ],
+      "external_ids": {
+        "isco": "2142"
+      },
+      "associated_template_ids": [
+        "tpl_architectural_cad_design",
+        "tpl_johnny_decimal"
+      ],
+      "domain_id": "domain_health_pro",
+      "category_id": "cat_architecture_engineering"
     }
   ]
 }

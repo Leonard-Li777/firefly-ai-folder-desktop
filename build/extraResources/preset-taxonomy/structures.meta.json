@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "count": 13,
+  "count": 21,
   "dimensions": {
     "bekko": 384,
     "gemma": 512
@@ -600,6 +600,365 @@
         "03-音频与环境音效Audio/打击音效与BGM",
         "04-关卡与原型工程Level/场景与预制体",
         "05-测试包发布Builds/试玩Demo与发行包"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_cross_border_ops",
+      "name": {
+        "zh-CN": "跨境电商出海多店铺运营拓扑",
+        "en-US": "Cross-Border E-Commerce Multi-Store Ops Structure",
+        "ja-JP": "越境ECマルチストア運営トポロジー",
+        "ko-KR": "크로스보더 이커머스 다점포 운영 구조",
+        "de-DE": "Cross-Border E-Commerce Multi-Store Struktur",
+        "fr-FR": "Structure opérationnelle e-commerce transfrontalier",
+        "es-ES": "Estructura operativa de comercio electrónico transfronterizo",
+        "ru-RU": "Структура управления трансграничной электронной коммерцией",
+        "pt-BR": "Estrutura operacional de comércio eletrônico transfronteiriço",
+        "it-IT": "Struttura operativa e-commerce transfrontaliero multinegozio"
+      },
+      "description": {
+        "zh-CN": "覆盖多语言Listing商品图、头程报关与FBA海外仓单、站外引流推广与退换货核算",
+        "en-US": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements",
+        "ja-JP": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements",
+        "ko-KR": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements",
+        "de-DE": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements",
+        "fr-FR": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements",
+        "es-ES": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements",
+        "ru-RU": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements",
+        "pt-BR": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements",
+        "it-IT": "Organizes listings, customs declarations, FBA receipts, ads, and refund statements"
+      },
+      "target_identities": [
+        "id.ops.cross_border",
+        "id.ops.ecommerce",
+        "id.ops.sem_seo"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-产品刊登与多语Listing/主图与视频素材",
+        "02-海外仓与头程物流/清关报关与FBA单据",
+        "03-站内外营销与广告/红人合作推广",
+        "04-订单售后与财务对账/退换货与利润表"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_legal_case_dossier",
+      "name": {
+        "zh-CN": "律师诉讼卷宗与法务合规归档体系",
+        "en-US": "Legal Case Dossier & Corporate Compliance Archive",
+        "ja-JP": "訴訟事件記録＆企業法務コンプライアンス管理体系",
+        "ko-KR": "변호사 소송 기록 및 기업 법무 컴플라이언스 체계",
+        "de-DE": "Anwaltliche Fallakten & Compliance-Archiv",
+        "fr-FR": "Dossier de plaidoirie et archives de conformité juridique",
+        "es-ES": "Expediente de casos legales y archivo de cumplimiento",
+        "ru-RU": "Судебные досье и архив юридического соответствия",
+        "pt-BR": "Dossiê de casos jurídicos e conformidade corporativa",
+        "it-IT": "Fascicolo processuale e archivio di conformità legale"
+      },
+      "description": {
+        "zh-CN": "按当事人起诉状、原告证据链、庭审笔录、代理词、裁决判决书严谨归类",
+        "en-US": "Structured legal files by complaint, evidence chains, court hearings, and rulings",
+        "ja-JP": "Structured legal files by complaint, evidence chains, court hearings, and rulings",
+        "ko-KR": "Structured legal files by complaint, evidence chains, court hearings, and rulings",
+        "de-DE": "Structured legal files by complaint, evidence chains, court hearings, and rulings",
+        "fr-FR": "Structured legal files by complaint, evidence chains, court hearings, and rulings",
+        "es-ES": "Structured legal files by complaint, evidence chains, court hearings, and rulings",
+        "ru-RU": "Structured legal files by complaint, evidence chains, court hearings, and rulings",
+        "pt-BR": "Structured legal files by complaint, evidence chains, court hearings, and rulings",
+        "it-IT": "Structured legal files by complaint, evidence chains, court hearings, and rulings"
+      },
+      "target_identities": [
+        "id.legal.attorney",
+        "id.legal.compliance",
+        "id.legal.ip_agent"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-诉讼立案与文书/起诉状与答辩状",
+        "02-证据目录与原件/书证物证与鉴定",
+        "03-庭审笔录与代理意见/合议庭答辩",
+        "04-判决裁定与执行/生效文书与结案"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_clinical_medical_records",
+      "name": {
+        "zh-CN": "临床医疗病历随访与医学科研档案",
+        "en-US": "Clinical Patient Follow-up & Medical Research Archive",
+        "ja-JP": "臨床カルテフォローアップ＆医学研究アーカイブ",
+        "ko-KR": "임상 의무기록 추적 및 의학 연구 아카이브",
+        "de-DE": "Klinische Patientenakten & Medizinische Forschung",
+        "fr-FR": "Dossiers cliniques de suivi et recherche médicale",
+        "es-ES": "Seguimiento de historias clínicas e investigación médica",
+        "ru-RU": "Клинические истории болезни и медицинские исследования",
+        "pt-BR": "Acompanhamento clínico de pacientes e pesquisa médica",
+        "it-IT": "Cartelle cliniche di follow-up e ricerca medica"
+      },
+      "description": {
+        "zh-CN": "规范患者化验单影像报告、专病队列随访表、伦理审查批件与SCI论文草稿",
+        "en-US": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts",
+        "ja-JP": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts",
+        "ko-KR": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts",
+        "de-DE": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts",
+        "fr-FR": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts",
+        "es-ES": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts",
+        "ru-RU": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts",
+        "pt-BR": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts",
+        "it-IT": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts"
+      },
+      "target_identities": [
+        "id.health.doctor",
+        "id.health.nurse",
+        "id.student.grad"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-专病门诊与病例档案/检验化验报告",
+        "02-长期患者随访数据/队列随访问卷",
+        "03-科研伦理与实验方案/知情同意与批件",
+        "04-医学统计与论文撰写/图表与审稿意见"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_teacher_lesson_prep",
+      "name": {
+        "zh-CN": "中小学教师备课教案与班级教务工作流",
+        "en-US": "K12 Lesson Preparation & Classroom Management Workflow",
+        "ja-JP": "小・中・高校教案準備＆学級経営ワークフロー",
+        "ko-KR": "초중고 수업 준비 및 학급 운영 워크플로우",
+        "de-DE": "Unterrichtsvorbereitung & Klassenmanagement-Workflow",
+        "fr-FR": "Préparation des cours et gestion de classe",
+        "es-ES": "Planificación de clases y gestión del aula escolar",
+        "ru-RU": "Подготовка уроков и классное руководство",
+        "pt-BR": "Planejamento pedagógico e gestão de sala de aula",
+        "it-IT": "Preparazione lezioni e gestione della classe scolastica"
+      },
+      "description": {
+        "zh-CN": "包含教学大纲课件PPT、单元试卷与解析、公开课录像、家校互访沟通记录",
+        "en-US": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications",
+        "ja-JP": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications",
+        "ko-KR": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications",
+        "de-DE": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications",
+        "fr-FR": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications",
+        "es-ES": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications",
+        "ru-RU": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications",
+        "pt-BR": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications",
+        "it-IT": "Organizes lesson plans, slides, exams, open-class recordings, and parent communications"
+      },
+      "target_identities": [
+        "id.edu.k12_teacher",
+        "id.edu.trainer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-学科教学设计与课件/教案与演示PPT",
+        "02-练习题库与试卷评测/期中与期末真题",
+        "03-班级日常与学生成长/班会记录与家访",
+        "04-教师教研与专业进修/课题申报与公开课"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_consulting_due_diligence",
+      "name": {
+        "zh-CN": "管理咨询与投资商业尽调研究架构",
+        "en-US": "Management Consulting & Investment Due Diligence Structure",
+        "ja-JP": "経営コンサルティング＆投資DD調査フレームワーク",
+        "ko-KR": "경영 컨설팅 및 투자 실사(Due Diligence) 아키텍처",
+        "de-DE": "Managementberatung & Due-Diligence-Forschungsstruktur",
+        "fr-FR": "Conseil en gestion et due diligence d'investissement",
+        "es-ES": "Consultoría estratégica y diligencia debida de inversión",
+        "ru-RU": "Управленческий консалтинг и комплексная проверка (Due Diligence)",
+        "pt-BR": "Consultoria estratégica e due diligence de investimentos",
+        "it-IT": "Consulenza direzionale e due diligence per investimenti"
+      },
+      "description": {
+        "zh-CN": "涵盖行业宏观研报、标的企业财报梳理、高管专家访谈录音、战略建议汇报底稿",
+        "en-US": "Industry research, target financials, expert interview notes, and strategic deliverables",
+        "ja-JP": "Industry research, target financials, expert interview notes, and strategic deliverables",
+        "ko-KR": "Industry research, target financials, expert interview notes, and strategic deliverables",
+        "de-DE": "Industry research, target financials, expert interview notes, and strategic deliverables",
+        "fr-FR": "Industry research, target financials, expert interview notes, and strategic deliverables",
+        "es-ES": "Industry research, target financials, expert interview notes, and strategic deliverables",
+        "ru-RU": "Industry research, target financials, expert interview notes, and strategic deliverables",
+        "pt-BR": "Industry research, target financials, expert interview notes, and strategic deliverables",
+        "it-IT": "Industry research, target financials, expert interview notes, and strategic deliverables"
+      },
+      "target_identities": [
+        "id.biz.consultant",
+        "id.data.analyst",
+        "id.marketing.planner"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-宏观行业与竞品调研/第三方行研报告",
+        "02-标的企业财务与业务数据/财报与运营指标",
+        "03-专家访谈与内部访谈/纪要与观点抽取",
+        "04-战略建议与交付成果/汇报PPT与决议"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_architectural_cad_design",
+      "name": {
+        "zh-CN": "建筑方案设计与CAD工程施工图库",
+        "en-US": "Architectural Design & CAD Construction Drawing Repository",
+        "ja-JP": "建築基本設計＆CAD施工図面リポジトリ",
+        "ko-KR": "건축 설계 및 CAD 시공 도면 저장소",
+        "de-DE": "Architekturentwurf & CAD-Ausführungspläne",
+        "fr-FR": "Conception architecturale et plans d'exécution CAD",
+        "es-ES": "Diseño arquitectónico y planos de obra CAD",
+        "ru-RU": "Архитектурное проектирование и рабочие чертежи CAD",
+        "pt-BR": "Projeto arquitetônico e plantas de construção CAD",
+        "it-IT": "Progettazione architettonica e disegni esecutivi CAD"
+      },
+      "description": {
+        "zh-CN": "组织DWG/DXF总平面图、3D效果图渲染高精位图、结构力学计算书、工程预算清单",
+        "en-US": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities",
+        "ja-JP": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities",
+        "ko-KR": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities",
+        "de-DE": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities",
+        "fr-FR": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities",
+        "es-ES": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities",
+        "ru-RU": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities",
+        "pt-BR": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities",
+        "it-IT": "CAD floor plans, 3D renderings, structural calculations, and bill of quantities"
+      },
+      "target_identities": [
+        "id.eng.architect",
+        "id.eng.civil_engineer",
+        "id.designer.industrial"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-方案概念与效果图/概念手绘与3D渲染",
+        "02-施工深化CAD图纸/平立剖面与大样图",
+        "03-结构机电与力学计算/荷载分析报告",
+        "04-材料样板与工程造价/材料清单与概算"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_writing_publishing_pipeline",
+      "name": {
+        "zh-CN": "长篇小说与文学创作出版全流程",
+        "en-US": "Novel Writing & Literary Publishing Pipeline",
+        "ja-JP": "小説執筆＆文学出版パイプライン",
+        "ko-KR": "소설 집필 및 문학 출판 파이프라인",
+        "de-DE": "Buchmanuskript & Verlagsveröffentlichungs-Pipeline",
+        "fr-FR": "Écriture de roman et processus d'édition littéraire",
+        "es-ES": "Creación literaria y proceso de publicación de novelas",
+        "ru-RU": "Написание книг и процесс литературной публикации",
+        "pt-BR": "Escrita de romances e publicação literária",
+        "it-IT": "Scrittura di romanzi e pubblicazione editoriale"
+      },
+      "description": {
+        "zh-CN": "世界观大纲设定、角色小传关系图、分卷正文草稿、采风摄影资料与出版审校意见",
+        "en-US": "World-building lore, character bios, chapter drafts, and publisher review notes",
+        "ja-JP": "World-building lore, character bios, chapter drafts, and publisher review notes",
+        "ko-KR": "World-building lore, character bios, chapter drafts, and publisher review notes",
+        "de-DE": "World-building lore, character bios, chapter drafts, and publisher review notes",
+        "fr-FR": "World-building lore, character bios, chapter drafts, and publisher review notes",
+        "es-ES": "World-building lore, character bios, chapter drafts, and publisher review notes",
+        "ru-RU": "World-building lore, character bios, chapter drafts, and publisher review notes",
+        "pt-BR": "World-building lore, character bios, chapter drafts, and publisher review notes",
+        "it-IT": "World-building lore, character bios, chapter drafts, and publisher review notes"
+      },
+      "target_identities": [
+        "id.creator.writer",
+        "id.ops.newmedia",
+        "id.creator.freelance"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-世界观设定与人物档案/设定集与关系图",
+        "02-正文分卷草稿与定稿/第1-3卷章节正文",
+        "03-采风资料与灵感随笔/素材参考与剪报",
+        "04-出版申报与审校沟通/三审三校修改记录"
+      ],
+      "naming_rules": {}
+    },
+    {
+      "template_id": "tpl_wellness_health_portfolio",
+      "name": {
+        "zh-CN": "身心健康管理与营养调理个案档案",
+        "en-US": "Holistic Wellness & Nutrition Counseling Portfolio",
+        "ja-JP": "心身健康管理＆栄養カウンセリングポートフォリオ",
+        "ko-KR": "심신 건강관리 및 영양 코칭 포트폴리오",
+        "de-DE": "Ganzheitliche Gesundheit & Ernährungsberatung",
+        "fr-FR": "Gestion globale de la santé et conseil en nutrition",
+        "es-ES": "Gestión integral de la salud y asesoramiento nutricional",
+        "ru-RU": "Комплексное управление здоровьем и консультации по питанию",
+        "pt-BR": "Gestão holística da saúde e consultoria nutricional",
+        "it-IT": "Gestione olistica della salute e consulenza nutrizionale"
+      },
+      "description": {
+        "zh-CN": "记录来访者心理评估量表、定制膳食热量食谱、运动心率日志与复盘调理方案",
+        "en-US": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking",
+        "ja-JP": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking",
+        "ko-KR": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking",
+        "de-DE": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking",
+        "fr-FR": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking",
+        "es-ES": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking",
+        "ru-RU": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking",
+        "pt-BR": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking",
+        "it-IT": "Psychological assessments, customized diet plans, fitness logs, and wellness tracking"
+      },
+      "target_identities": [
+        "id.health.psychologist",
+        "id.health.nutritionist",
+        "id.life.fitness"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-个案评估与基础档案/知情同意与身心量表",
+        "02-定制膳食与营养方案/热量计算与阶段食谱",
+        "03-运动打卡与体征监测/体脂率与心率日志",
+        "04-阶段复盘与回访记录/调理效果对比总结"
       ],
       "naming_rules": {}
     }
