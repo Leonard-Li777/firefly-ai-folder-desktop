@@ -77,10 +77,11 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
           setRecommendedIdentities(idents)
           setRecommendedStructures(structs)
 
-          // 自动展开 Top-1 身份所在的领域和分类
+          // 默认展开所有领域，使全量分类与结构一览无余；同时展开 Top-1 推荐分类
           if (idents.length > 0) {
+            const allDomains = new Set(idents.map(i => i.domainId))
+            setExpandedDomains(allDomains)
             const top1 = idents[0]
-            setExpandedDomains(prev => new Set([...prev, top1.domainId]))
             setExpandedCategories(prev => new Set([...prev, top1.categoryId]))
           }
         }
@@ -177,6 +178,30 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
     const set = new Set(selectedIdentityIds)
     return recommendedIdentities.filter(i => set.has(i.identityId)).map(i => i.name)
   }, [selectedIdentityIds, recommendedIdentities])
+
+  // 一键全部展开 / 全部收起状态管理
+  const allDomainIds = useMemo(() => domainGroups.map(d => d.domainId), [domainGroups])
+  const allCategoryIds = useMemo(
+    () => domainGroups.flatMap(d => d.categories.map(c => c.categoryId)),
+    [domainGroups]
+  )
+  const isAllExpanded = useMemo(() => {
+    if (allDomainIds.length === 0) return false
+    return (
+      allDomainIds.every(id => expandedDomains.has(id)) &&
+      allCategoryIds.every(id => expandedCategories.has(id))
+    )
+  }, [allDomainIds, allCategoryIds, expandedDomains, expandedCategories])
+
+  const handleToggleAll = () => {
+    if (isAllExpanded) {
+      setExpandedDomains(new Set())
+      setExpandedCategories(new Set())
+    } else {
+      setExpandedDomains(new Set(allDomainIds))
+      setExpandedCategories(new Set(allCategoryIds))
+    }
+  }
 
   // 过滤或协同提升右侧结构卡片
   const displayStructures = useMemo(() => {
@@ -321,9 +346,20 @@ export const IdentityBlueprintSelectView: React.FC<IdentityBlueprintSelectViewPr
 
           {/* 身份树层级展示 */}
           <div className="space-y-2 pt-2 border-t border-border/40">
-            <span className="text-xs font-semibold text-foreground/80 block px-1">
-              {t('全量身份库 (支持多选组合)')}
-            </span>
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-semibold text-foreground/80">
+                {t('全量身份库 ({count} 个身份)', { count: recommendedIdentities.length })}
+              </span>
+              {recommendedIdentities.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleToggleAll}
+                  className="text-[11px] text-primary hover:text-primary/80 transition-colors font-medium select-none"
+                >
+                  {isAllExpanded ? t('全部折叠') : t('全部展开')}
+                </button>
+              )}
+            </div>
 
             <div className="space-y-2">
               {domainGroups.map(d => {
