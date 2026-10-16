@@ -20,8 +20,7 @@ import {
   getCanonicalConceptName,
   CANONICAL_NAMES,
   DIMENSION_CODES,
-  CONTROLLED_SUBDIMENSION_PARENTS_GENERATED,
-  resolveRootDimension
+  CONTROLLED_SUBDIMENSION_PARENTS_GENERATED
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { ConfigDbManager } from '../../config/config-db-manager'
@@ -83,6 +82,64 @@ const ROOT_DIMENSION_META: Record<string, { id: number; name: string }> = {
 }
 
 const ROOT_DIMENSION_CODES = new Set<string>(Object.keys(ROOT_DIMENSION_META))
+
+const WELL_KNOWN_PARENT_TO_ROOT: Record<string, string> = {
+  'builtin.file_type': 'builtin.file_type',
+  'builtin.file_purpose': 'builtin.file_purpose',
+  'builtin.file_source': 'builtin.file_source',
+  'builtin.author': 'builtin.author',
+  'builtin.language_segmentation': 'builtin.file_type',
+  'builtin.security_level': 'builtin.file_purpose',
+  'builtin.processing_status': 'builtin.file_purpose',
+  'builtin.financial_type': 'builtin.file_purpose',
+  'builtin.document_quality': 'builtin.document_quality',
+  'builtin.content_rating': 'builtin.content_rating',
+  'builtin.image_subdivision': 'builtin.file_type',
+  'builtin.image_segmentation': 'builtin.file_type',
+  'builtin.photo_subdivision': 'builtin.file_type',
+  'builtin.photography_categories': 'builtin.file_type',
+  'builtin.screenshot_breakdown': 'builtin.file_type',
+  'builtin.screenshot_subdivision': 'builtin.file_type',
+  'builtin.manga_subdivision': 'builtin.file_type',
+  'builtin.comic_segmentation': 'builtin.file_type',
+  'builtin.porn_subdivision': 'builtin.content_rating',
+  'builtin.erotic_scale': 'builtin.content_rating',
+  'builtin.sensitive_content': 'builtin.content_rating',
+  'builtin.bloody_segmentation': 'builtin.content_rating',
+  'builtin.political_subcategories': 'builtin.content_rating',
+  'builtin.violation_categories': 'builtin.content_rating',
+  'builtin.pornography_subgenres': 'builtin.content_rating',
+  'builtin.watermark_level': 'builtin.file_type',
+  'builtin.coding_level': 'builtin.file_type',
+  'builtin.mosaic_level': 'builtin.file_type',
+  'builtin.theme': 'builtin.file_type',
+  'builtin.game_platform': 'builtin.file_purpose',
+  'builtin.travel_content': 'builtin.file_purpose'
+}
+
+/**
+ * 递归求解任意受控子维度所归属的一级根维度代码（builtin.file_type, builtin.file_purpose 等）
+ */
+function resolveSubdimensionRoot(dimCode: string): string | undefined {
+  if (!dimCode) return undefined
+  if (ROOT_DIMENSION_CODES.has(dimCode)) return dimCode
+  if (WELL_KNOWN_PARENT_TO_ROOT[dimCode]) return WELL_KNOWN_PARENT_TO_ROOT[dimCode]
+
+  let cur = dimCode
+  const visited = new Set<string>()
+  while (cur && !visited.has(cur)) {
+    visited.add(cur)
+    if (ROOT_DIMENSION_CODES.has(cur)) return cur
+    if (WELL_KNOWN_PARENT_TO_ROOT[cur]) return WELL_KNOWN_PARENT_TO_ROOT[cur]
+    const mapped = CONTROLLED_SUBDIMENSION_PARENTS_GENERATED[cur]
+    if (mapped?.parentCode) {
+      cur = mapped.parentCode
+    } else {
+      break
+    }
+  }
+  return ROOT_DIMENSION_CODES.has(cur) ? cur : undefined
+}
 
 export class TagTreeQuery {
   private hybridArbiter: HybridSearchArbiter

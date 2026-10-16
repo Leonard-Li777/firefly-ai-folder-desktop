@@ -273,7 +273,12 @@ export class AISchemeGenerator {
           return { keyword, count, embedding }
         })
 
-        const scoringResult = selectBestClusterFolderName(kwItems, promptEmbedding)
+        const scoringResult = selectBestClusterFolderName(
+          kwItems,
+          promptEmbedding,
+          3.0,
+          userPrompt
+        )
         const bestFolderName =
           scoringResult.folderName && scoringResult.folderName !== '其他'
             ? scoringResult.folderName

@@ -696,7 +696,9 @@ export class ConfigDbManager {
         const threshold = policy?.threshold !== undefined ? policy.threshold : 0.6
         const parentCodes = Array.isArray(d.parentCodes) ? [...d.parentCodes] : []
         const depth = d.depth !== undefined ? d.depth : parentCodes.length > 0 ? 2 : 1
-        const childTags = codeTagsMap.get(code) || dimTagsMap.get(d.dimId) || []
+        const codeTags = codeTagsMap.get(code) || []
+        const dimTags = d.dimId !== undefined ? dimTagsMap.get(d.dimId) || [] : []
+        const childTags = Array.from(new Set([...codeTags, ...dimTags]))
 
         const isExtensionDim =
           policy?.metadata?.flag?.isExtensionDimension !== undefined
