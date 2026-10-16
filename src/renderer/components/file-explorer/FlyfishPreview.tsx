@@ -6,11 +6,21 @@ interface FlyfishPreviewProps {
   filePath: string
   fileName: string
   extension?: string
+  isPrivate?: boolean
 }
 
-export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({ filePath, fileName }) => {
+export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
+  filePath,
+  fileName,
+  isPrivate
+}) => {
   const { theme } = useTheme()
   return (
-    <Viewer filePath={filePath} fileName={fileName} theme={theme === 'auto' ? 'system' : theme} />
+    <Viewer
+      filePath={filePath}
+      fileName={fileName}
+      theme={theme === 'auto' ? 'system' : theme}
+      isPrivate={isPrivate}
+    />
   )
 }

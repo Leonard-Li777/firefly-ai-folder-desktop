@@ -5,6 +5,7 @@ import { PreviewToolbar } from './PreviewToolbar'
 import { PreviewContent } from './PreviewContent'
 import { usePreviewContent } from './hooks/usePreviewContent'
 import { useFileMultimodalContent } from './hooks/useFileMultimodalContent'
+import { useIsPrivateFile } from './hooks/useIsPrivateFile'
 
 interface FilePreviewPanelProps {
   className?: string
@@ -20,6 +21,10 @@ interface FilePreviewPanelProps {
   currentTime?: number
   /** 视频高亮时间区间 [startSec, endSec] */
   highlightRange?: [number, number]
+  /** 是否为私有工作目录（显式传入），未传入时通过所属工作区自动推断 */
+  isPrivate?: boolean
+  /** 工作目录类型（可选） */
+  workspaceDirectoryType?: 'SPEEDY' | 'PRIVATE' | 'VDIR'
   /** Action on back button (optional), defaults to clearing internal state */
   onBack?: () => void
 }
@@ -38,6 +43,8 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
   extension: externalExtension,
   currentTime: externalCurrentTime,
   highlightRange: externalHighlightRange,
+  isPrivate: externalIsPrivate,
+  workspaceDirectoryType,
   onBack
 }) => {
   const [previewFile, setPreviewFile] = useState<Record<string, unknown> | null>(null)
@@ -87,6 +94,11 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
     usePreviewContent({ filePath: filePath || '', fileName, extension: extension || '' })
 
   const { multimodalContent } = useFileMultimodalContent(filePath || '')
+  const isPrivateComputed = useIsPrivateFile({
+    filePath,
+    workspaceDirectoryType
+  })
+  const isPrivate = externalIsPrivate !== undefined ? externalIsPrivate : isPrivateComputed
 
   const handleBack = () => {
     onBack?.()
@@ -159,6 +171,8 @@ export const FilePreviewPanel: React.FC<FilePreviewPanelProps> = ({
               multimodalContent={multimodalContent}
               currentTime={currentTime}
               highlightRange={highlightRange}
+              isPrivate={isPrivate}
+              workspaceDirectoryType={workspaceDirectoryType}
             />
           </div>
         </div>

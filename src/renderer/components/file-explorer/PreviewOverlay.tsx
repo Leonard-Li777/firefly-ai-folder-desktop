@@ -5,6 +5,7 @@ import { PreviewToolbar } from './PreviewToolbar'
 import { PreviewContent } from './PreviewContent'
 import { usePreviewContent } from './hooks/usePreviewContent'
 import { useFileMultimodalContent } from './hooks/useFileMultimodalContent'
+import { useIsPrivateFile } from './hooks/useIsPrivateFile'
 
 /**
  * 全局文件预览覆盖层
@@ -26,6 +27,7 @@ export const PreviewOverlay: React.FC = () => {
     usePreviewContent({ filePath, fileName, extension })
 
   const { multimodalContent } = useFileMultimodalContent(filePath)
+  const isPrivate = useIsPrivateFile({ filePath })
 
   // 处理 ESC 键关闭预览（支持 iframe 内部按 ESC）
   const handleKeyDown = useCallback(
@@ -123,6 +125,7 @@ export const PreviewOverlay: React.FC = () => {
           multimodalContent={multimodalContent}
           currentTime={currentTime}
           highlightRange={highlightRange}
+          isPrivate={isPrivate}
         />
       </div>
     </div>

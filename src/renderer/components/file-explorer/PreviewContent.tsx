@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react'
 import { t } from '@app/languages'
-import { MaterialIcon } from '../../lib/utils'
+import { MaterialIcon, cn } from '../../lib/utils'
 import { getPreviewRouteType } from '../../lib/preview-utils'
 import { FilePreview } from './FilePreview'
 import { FlyfishPreview } from './FlyfishPreview'
 import { SupportedFormats } from '../common/SupportedFormats'
 import { TTSActionGroup } from '../common/TTSActionGroup'
 import { logger, LogCategory } from '@firefly/shared'
+import { useIsPrivateFile } from './hooks/useIsPrivateFile'
 
 interface PreviewContentProps {
   filePath: string
@@ -26,6 +27,10 @@ interface PreviewContentProps {
   currentTime?: number
   /** 视频高亮时间区间 [startSec, endSec] */
   highlightRange?: [number, number]
+  /** 是否为私有工作目录（显式传入），未传入时通过所属工作区自动推断 */
+  isPrivate?: boolean
+  /** 工作目录类型（可选） */
+  workspaceDirectoryType?: 'SPEEDY' | 'PRIVATE' | 'VDIR'
 }
 
 /**
@@ -42,8 +47,16 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
   isTextCapable,
   multimodalContent,
   currentTime,
-  highlightRange
+  highlightRange,
+  isPrivate: externalIsPrivate,
+  workspaceDirectoryType
 }) => {
+  const isPrivateComputed = useIsPrivateFile({
+    filePath,
+    workspaceDirectoryType
+  })
+  const isPrivate = externalIsPrivate !== undefined ? externalIsPrivate : isPrivateComputed
+
   const routeType = useMemo(() => {
     const res = getPreviewRouteType(extension)
     return res
@@ -60,7 +73,8 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
     }
     if (rawTextContent !== null) {
       return (
-        <div className="h-full w-full overflow-auto p-4 bg-muted/20">
+        /* 预览内容的正文区 */
+        <div className={cn('h-full w-full overflow-auto p-4 bg-muted/20', isPrivate && 'ph-no-capture')}>
           <pre className="text-[15px] whitespace-pre-wrap break-words text-foreground/90 dark:text-foreground/70 leading-8 tracking-wide font-sans selection:bg-primary/20">
             {rawTextContent}
           </pre>
@@ -78,11 +92,23 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
   if (routeType === 'flyfish') {
     return (
       <div className="w-full h-full flex flex-col overflow-y-auto">
-        <div className="w-full flex-1 min-h-[300px]">
-          <FlyfishPreview filePath={filePath} fileName={fileName} extension={extension} />
+        {/* 预览内容的正文区 */}
+        <div className={cn('w-full flex-1 min-h-[300px]', isPrivate && 'ph-no-capture')}>
+          <FlyfishPreview
+            filePath={filePath}
+            fileName={fileName}
+            extension={extension}
+            isPrivate={isPrivate}
+          />
         </div>
+        {/* 多模态描述文本区 */}
         {multimodalContent && (
-          <div className="w-full max-w-2xl mx-auto my-4 px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
+          <div
+            className={cn(
+              'w-full max-w-2xl mx-auto my-4 px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto',
+              isPrivate && 'ph-mask'
+            )}
+          >
             <div className="flex items-center justify-between mb-1.5">
               <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
               <TTSActionGroup
@@ -94,7 +120,12 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
                 compact
               />
             </div>
-            <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
+            <p
+              className={cn(
+                'text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed',
+                isPrivate && 'ph-mask'
+              )}
+            >
               {multimodalContent}
             </p>
           </div>
@@ -113,6 +144,8 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
         multimodalContent={multimodalContent}
         currentTime={currentTime}
         highlightRange={highlightRange}
+        isPrivate={isPrivate}
+        workspaceDirectoryType={workspaceDirectoryType}
       />
     )
   }
@@ -128,7 +161,8 @@ export const PreviewContent: React.FC<PreviewContentProps> = ({
     }
     if (rawTextContent !== null) {
       return (
-        <div className="h-full w-full overflow-auto p-4 bg-muted/20">
+        /* 预览内容的正文区 */
+        <div className={cn('h-full w-full overflow-auto p-4 bg-muted/20', isPrivate && 'ph-no-capture')}>
           <pre className="text-[15px] whitespace-pre-wrap break-words text-foreground/90 dark:text-foreground/70 leading-8 tracking-wide font-sans selection:bg-primary/20">
             {rawTextContent}
           </pre>

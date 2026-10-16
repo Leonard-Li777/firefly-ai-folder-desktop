@@ -4,7 +4,7 @@ import standardPreset from '@file-viewer/preset-standard'
 import { Loading } from '../Loading'
 import { ErrorBoundary } from '../ErrorBoundary'
 import { t } from '@app/languages'
-import { MaterialIcon } from '../../../lib/utils'
+import { MaterialIcon, cn } from '../../../lib/utils'
 import { useConfigStore } from '../../../stores/config-store'
 import { logger, LogCategory } from '@firefly/shared'
 
@@ -124,12 +124,15 @@ export interface FlyfishPreviewProps {
   filePath: string
   fileName: string
   theme?: 'light' | 'dark' | 'system'
+  /** 是否为私有工作区 */
+  isPrivate?: boolean
 }
 
 export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
   filePath,
   fileName,
-  theme = 'system'
+  theme = 'system',
+  isPrivate
 }) => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -350,7 +353,7 @@ export const FlyfishPreview: React.FC<FlyfishPreviewProps> = ({
   const isSpecialistReady = !isSpecialistFormat || specialistRenderers.length > 0
 
   return (
-    <div className="relative w-full h-full bg-background ph-no-capture">
+    <div className={cn('relative w-full h-full bg-background', isPrivate && 'ph-no-capture')}>
       <ErrorBoundary>
         {((loadMode === 'url' && !fileUrl) ||
           (loadMode === 'buffer' && !fileBuffer) ||

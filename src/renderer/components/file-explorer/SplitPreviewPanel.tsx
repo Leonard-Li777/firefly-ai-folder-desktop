@@ -6,6 +6,7 @@ import { PreviewToolbar } from './PreviewToolbar'
 import { PreviewContent } from './PreviewContent'
 import { usePreviewContent } from './hooks/usePreviewContent'
 import { useFileMultimodalContent } from './hooks/useFileMultimodalContent'
+import { useIsPrivateFile } from './hooks/useIsPrivateFile'
 import { SupportedFormats } from '../common/SupportedFormats'
 import { PageId } from '../../constants/page-ids'
 import { logger, LogCategory } from '@firefly/shared'
@@ -48,6 +49,7 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
     })
 
   const { multimodalContent } = useFileMultimodalContent(previewFilePath)
+  const isPrivate = useIsPrivateFile({ filePath: previewFilePath })
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -99,6 +101,7 @@ export const SplitPreviewPanel: React.FC<SplitPreviewPanelProps> = ({ pageId }) 
           multimodalContent={multimodalContent}
           currentTime={previewCurrentTime}
           highlightRange={previewHighlightRange}
+          isPrivate={isPrivate}
         />
       </div>
     </div>

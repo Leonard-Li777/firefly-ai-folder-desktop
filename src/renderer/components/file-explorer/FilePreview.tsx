@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 
 import { Button } from '../ui/button'
 import { EmptyState } from '../common/EmptyState'
-import { MaterialIcon } from '../../lib/utils'
+import { MaterialIcon, cn } from '../../lib/utils'
 import { t } from '@app/languages'
 import {
   formatVideoTimestamp,
@@ -11,6 +11,7 @@ import {
   computeHighlightPercent
 } from '../../lib/video-preview-utils'
 import { TTSActionGroup } from '../common/TTSActionGroup'
+import { useIsPrivateFile } from './hooks/useIsPrivateFile'
 
 interface FilePreviewProps {
   filePath: string
@@ -21,6 +22,10 @@ interface FilePreviewProps {
   currentTime?: number
   /** 视频切片高亮时间区间 [startSec, endSec] */
   highlightRange?: [number, number]
+  /** 是否为私有工作目录（显式传入），未传入时通过所属工作区自动推断 */
+  isPrivate?: boolean
+  /** 工作目录类型（可选） */
+  workspaceDirectoryType?: 'SPEEDY' | 'PRIVATE' | 'VDIR'
 }
 
 export const FilePreview: React.FC<FilePreviewProps> = ({
@@ -29,8 +34,15 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   extension,
   multimodalContent,
   currentTime,
-  highlightRange
+  highlightRange,
+  isPrivate: externalIsPrivate,
+  workspaceDirectoryType
 }) => {
+  const isPrivateComputed = useIsPrivateFile({
+    filePath,
+    workspaceDirectoryType
+  })
+  const isPrivate = externalIsPrivate !== undefined ? externalIsPrivate : isPrivateComputed
   const category = extension ? getFileCategory('file.' + extension) : getFileCategory(fileName)
   const [textContent, setTextContent] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -207,17 +219,24 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
   switch (category) {
     case FileCategory.IMAGE:
       return (
-        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center ph-no-capture preview-scrollbar">
+        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar">
           <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full">
-            <div className="flex items-center justify-center max-w-full">
+            {/* 预览内容的正文区 */}
+            <div className={cn('flex items-center justify-center max-w-full', isPrivate && 'ph-no-capture')}>
               <img
                 src={fileUrl}
                 alt={fileName}
                 className="max-w-full max-h-[70vh] object-contain shadow-lg rounded"
               />
             </div>
+            {/* 多模态描述文本区 */}
             {multimodalContent && (
-              <div className="w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
+              <div
+                className={cn(
+                  'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto',
+                  isPrivate && 'ph-mask'
+                )}
+              >
                 <div className="flex items-center justify-between mb-1.5">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
                   <TTSActionGroup
@@ -229,7 +248,12 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     compact
                   />
                 </div>
-                <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
+                <p
+                  className={cn(
+                    'text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed',
+                    isPrivate && 'ph-mask'
+                  )}
+                >
                   {multimodalContent}
                 </p>
               </div>
@@ -243,9 +267,15 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
       const hasHighlight = startSec !== undefined && endSec !== undefined && endSec > startSec
 
       return (
-        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center ph-no-capture preview-scrollbar">
+        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar">
           <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full">
-            <div className="flex flex-col items-center justify-center max-w-full w-full gap-2">
+            {/* 预览内容的正文区 */}
+            <div
+              className={cn(
+                'flex flex-col items-center justify-center max-w-full w-full gap-2',
+                isPrivate && 'ph-no-capture'
+              )}
+            >
               <video
                 ref={videoRef}
                 src={fileUrl}
@@ -300,8 +330,14 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
               )}
             </div>
 
+            {/* 多模态描述文本区 */}
             {multimodalContent && (
-              <div className="w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
+              <div
+                className={cn(
+                  'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto',
+                  isPrivate && 'ph-mask'
+                )}
+              >
                 <div className="flex items-center justify-between mb-1.5">
                   <p className="text-[11px] text-muted-foreground font-medium">{t('多模态描述')}</p>
                   <TTSActionGroup
@@ -313,7 +349,12 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     compact
                   />
                 </div>
-                <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
+                <p
+                  className={cn(
+                    'text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed',
+                    isPrivate && 'ph-mask'
+                  )}
+                >
                   {multimodalContent}
                 </p>
               </div>
@@ -324,16 +365,35 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     }
     case FileCategory.AUDIO:
       return (
-        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center ph-no-capture preview-scrollbar">
+        <div className="h-full w-full overflow-y-auto p-4 flex flex-col items-center preview-scrollbar">
           <div className="my-auto flex flex-col items-center gap-4 max-w-full w-full">
-            <MaterialIcon icon="audiotrack" className="text-8xl text-primary mb-2 shrink-0" />
-            <audio src={fileUrl} controls className="w-full max-w-md shrink-0">
-              {t('您的浏览器不支持音频播放')}
-            </audio>
+            {/* 预览内容的正文区 */}
+            <div
+              className={cn(
+                'flex flex-col items-center gap-2 max-w-md w-full shrink-0',
+                isPrivate && 'ph-no-capture'
+              )}
+            >
+              <MaterialIcon icon="audiotrack" className="text-8xl text-primary mb-2 shrink-0" />
+              <audio src={fileUrl} controls className="w-full shrink-0">
+                {t('您的浏览器不支持音频播放')}
+              </audio>
+            </div>
+            {/* 多模态描述文本区 */}
             {multimodalContent && (
-              <div className="w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto">
+              <div
+                className={cn(
+                  'w-full max-w-2xl px-4 py-3 bg-muted/40 rounded-lg border border-border/50 shrink-0 h-auto',
+                  isPrivate && 'ph-mask'
+                )}
+              >
                 <p className="text-[11px] text-muted-foreground mb-1 font-medium">{t('多模态描述')}</p>
-                <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed">
+                <p
+                  className={cn(
+                    'text-xs text-foreground/80 whitespace-pre-wrap break-words leading-relaxed',
+                    isPrivate && 'ph-mask'
+                  )}
+                >
                   {multimodalContent}
                 </p>
               </div>
@@ -347,7 +407,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
     default:
       if (textContent !== null) {
         return (
-          <div className="h-full flex flex-col overflow-hidden ph-no-capture">
+          <div className="h-full flex flex-col overflow-hidden">
             {isTruncated && (
               <div className="flex items-center justify-between px-6 py-2.5 bg-amber-500/10 border-b border-amber-500/20 text-[11px] text-amber-700 font-medium shrink-0">
                 <div className="flex items-center min-w-0">
@@ -382,7 +442,8 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                 defaultFileName={`${fileName}.wav`}
               />
             </div>
-            <div className="flex-1 overflow-auto p-4 bg-muted/20">
+            {/* 预览内容的正文区 */}
+            <div className={cn('flex-1 overflow-auto p-4 bg-muted/20', isPrivate && 'ph-no-capture')}>
               <pre className="text-[15px] whitespace-pre-wrap break-words text-foreground/90 dark:text-foreground/70 leading-8 tracking-wide font-sans selection:bg-primary/20">
                 {textContent}
               </pre>

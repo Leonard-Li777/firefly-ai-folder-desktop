@@ -415,6 +415,7 @@ export const FileExplorerLayout: React.FC<FileExplorerLayoutProps> = ({
                       filePath={currentFile.path}
                       fileName={currentFile.smartName || currentFile.name}
                       extension={currentFile.extension}
+                      workspaceDirectoryType={workspaceDirectoryType}
                       currentTime={
                         (currentFile as any).currentTime ??
                         (currentFile as any).matchedChunk?.startSec

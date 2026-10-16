@@ -5,7 +5,7 @@
  */
 import React, { useCallback } from 'react'
 import { t } from '@app/languages'
-import { MaterialIcon } from '../../lib/utils'
+import { MaterialIcon, cn } from '../../lib/utils'
 import { getPreviewRouteType } from '../../lib/preview-utils'
 import { usePreviewContent } from '../file-explorer/hooks/usePreviewContent'
 import { FlyfishPreview } from '../file-explorer/FlyfishPreview'
@@ -14,6 +14,7 @@ import { SupportedFormats } from '../common/SupportedFormats'
 import { ErrorBoundary } from '../common/ErrorBoundary'
 import { Label } from '../ui/label'
 import { Switch } from '../ui/switch'
+import { useIsPrivateFile } from '../file-explorer/hooks/useIsPrivateFile'
 
 const StandalonePreview: React.FC = () => {
   const params = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search)
@@ -22,6 +23,7 @@ const StandalonePreview: React.FC = () => {
   const ext = fileName.split('.').pop() || ''
 
   const routeType = getPreviewRouteType(ext)
+  const isPrivate = useIsPrivateFile({ filePath })
 
   const { showRawText, setShowRawText, rawTextContent, isTextLoading, isTextCapable, showSwitch } =
     usePreviewContent({ filePath, fileName, extension: ext })
@@ -93,7 +95,8 @@ const StandalonePreview: React.FC = () => {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             ) : rawTextContent !== null ? (
-              <div className="h-full w-full overflow-auto p-4 bg-muted/20">
+              /* 预览内容的正文区 */
+              <div className={cn('h-full w-full overflow-auto p-4 bg-muted/20', isPrivate && 'ph-no-capture')}>
                 <pre className="text-[15px] whitespace-pre-wrap break-words text-foreground/90 dark:text-foreground/70 leading-8 tracking-wide font-sans selection:bg-primary/20">
                   {rawTextContent}
                 </pre>
@@ -104,9 +107,9 @@ const StandalonePreview: React.FC = () => {
               </div>
             )
           ) : routeType === 'flyfish' ? (
-            <FlyfishPreview filePath={filePath} fileName={fileName} extension={ext} />
+            <FlyfishPreview filePath={filePath} fileName={fileName} extension={ext} isPrivate={isPrivate} />
           ) : routeType === 'native' ? (
-            <FilePreview filePath={filePath} fileName={fileName} extension={ext} />
+            <FilePreview filePath={filePath} fileName={fileName} extension={ext} isPrivate={isPrivate} />
           ) : (
             <div className="h-full flex flex-col items-center justify-start text-muted-foreground p-6 overflow-y-auto pt-8 select-none">
               <MaterialIcon icon="visibility_off" className="text-5xl mb-3 opacity-20 shrink-0" />
