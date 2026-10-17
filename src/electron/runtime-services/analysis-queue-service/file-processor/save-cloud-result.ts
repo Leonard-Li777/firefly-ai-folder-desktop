@@ -13,7 +13,8 @@ import {
   isTagProvenanceGroup,
   type TagProvenanceGroup,
   DIMENSION_CODES,
-  CANONICAL_NAMES
+  CANONICAL_NAMES,
+  concept
 } from '@firefly/shared'
 import { t } from '@app/languages'
 
@@ -421,7 +422,7 @@ export async function saveCloudResult(
                 ).run(
                   finalTagCode,
                   cleanName,
-                  JSON.stringify([localDimCode || 'builtin.content_tags']),
+                  JSON.stringify([localDimCode || concept('内容标签')]),
                   JSON.stringify({
                     isLeaf: true,
                     isSystem: false,

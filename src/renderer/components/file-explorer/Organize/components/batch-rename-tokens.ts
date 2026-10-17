@@ -1,5 +1,10 @@
 import { DimensionGroup } from '@firefly/types'
-import { concept } from '@firefly/shared'
+import {
+  concept,
+  CONTROLLED_DIMENSION_ROOT_CODES,
+  isControlledConcept,
+  getCanonicalConceptName
+} from '@firefly/shared'
 import { FILE_DIMENSION_DATA } from '@app/electron/config/file-dimension-source'
 
 export interface TokenItem {
@@ -38,457 +43,6 @@ export function getBatchRenameTokenCategories(
 ): TokenCategory[] {
   // ─── 1. 分类维度：从系统权威事实源动态组装全量受控维度体系 ──────────────
   const { dimensionTokens, dimensionTree } = buildDimensionSystem(dimensionGroups, t)
-
-  /* 废弃的手写旧常量已由 buildDimensionSystem 完全取代
-  const legacyTokens: TokenItem[] = [
-    // 根级：文件类型
-    {
-      label: t('文件类型'),
-      value: `{TAG:${t('文件类型')}}`,
-      desc: t('匹配该文件的「文件类型」根维度标签 (如图片/视频/文档等)'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      level: 0,
-      groupLabel: t('基础文件格式与细分')
-    },
-    // 文件类型 -> 图片细分分支
-    {
-      label: t('图片细分'),
-      value: `{TAG:${t('图片细分')}}`,
-      desc: t('匹配该文件的摄影照片/设计稿/截图/证照等细分属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('设计稿细分'),
-      value: `{TAG:${t('设计稿细分')}}`,
-      desc: t('匹配UI设计/平面设计/三维图等设计资产'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('图片细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('海报宣发细分'),
-      value: `{TAG:${t('海报宣发细分')}}`,
-      desc: t('匹配宣发海报/壁纸/横幅等图片'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('图片细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('摄影照片细分'),
-      value: `{TAG:${t('摄影照片细分')}}`,
-      desc: t('匹配人像/风景/实拍等摄影照片'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('图片细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('截图细分'),
-      value: `{TAG:${t('截图细分')}}`,
-      desc: t('匹配屏幕截图/操作记录等'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('图片细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('证照细分'),
-      value: `{TAG:${t('证照细分')}}`,
-      desc: t('匹配证件/执照/证书等图片'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('图片细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('合同票据细分'),
-      value: `{TAG:${t('合同票据细分')}}`,
-      desc: t('匹配发票/收据/合同签署影印件'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('图片细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('漫画细分'),
-      value: `{TAG:${t('漫画细分')}}`,
-      desc: t('匹配漫画/插画/连环画素材'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('图片细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-
-    // 文件类型 -> 影音媒体细分分支
-    {
-      label: t('视频细分'),
-      value: `{TAG:${t('视频细分')}}`,
-      desc: t('匹配影视/短视频/实况录屏/课程等属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('音频细分'),
-      value: `{TAG:${t('音频细分')}}`,
-      desc: t('匹配音乐歌曲/录音/有声书/音效等属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-
-    // 文件类型 -> 文档与文本分支（文本、文档本就是维度，既可作为层级组织也可作为文件名构成）
-    {
-      label: t('文本细分'),
-      value: `{TAG:${t('文本细分')}}`,
-      desc: t('匹配纯文本/日志/说明文档/配置文件等属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('文本扩展名'),
-      value: `{TAG:${t('文本扩展名')}}`,
-      desc: t('匹配.txt/.md/.log/.ini等文本类扩展名'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文本细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('文档细分'),
-      value: `{TAG:${t('文档细分')}}`,
-      desc: t('匹配办公文档/企划书/论文/报表等属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('文档扩展名'),
-      value: `{TAG:${t('文档扩展名')}}`,
-      desc: t('匹配.docx/.pdf/.pptx/.xlsx等文档扩展名'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文档细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('版面'),
-      value: `{TAG:${t('版面')}}`,
-      desc: t('匹配横版/竖版/双栏等文档与页面排版构成'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文档细分'),
-      level: 2,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('语言细分'),
-      value: `{TAG:${t('语言细分')}}`,
-      desc: t('匹配中文/英文/日文/法文等多语言属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('电子书细分'),
-      value: `{TAG:${t('电子书细分')}}`,
-      desc: t('匹配出版物/网络小说/技术手册电子书'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-
-    // 文件类型 -> 归档与工程资产分支
-    {
-      label: t('压缩包细分'),
-      value: `{TAG:${t('压缩包细分')}}`,
-      desc: t('匹配未加密压缩包/加密压缩包/分卷等属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('源代码细分'),
-      value: `{TAG:${t('源代码细分')}}`,
-      desc: t('匹配前端源码/后端程序/脚本工具等'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('字体细分'),
-      value: `{TAG:${t('字体细分')}}`,
-      desc: t('匹配中文字体/西文字体/图标字体等'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('模型细分'),
-      value: `{TAG:${t('模型细分')}}`,
-      desc: t('匹配3D资产模型/AI模型权重等'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('应用数据细分'),
-      value: `{TAG:${t('应用数据细分')}}`,
-      desc: t('匹配安装程序/配置数据/注册表等'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('数据库细分'),
-      value: `{TAG:${t('数据库细分')}}`,
-      desc: t('匹配本地数据库/备份导储文件'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('系统文件细分'),
-      value: `{TAG:${t('系统文件细分')}}`,
-      desc: t('匹配驱动程序/系统动态库等'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-    {
-      label: t('磁盘映像细分'),
-      value: `{TAG:${t('磁盘映像细分')}}`,
-      desc: t('匹配光盘镜像/系统安装盘映像等'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件类型'),
-      level: 1,
-      groupLabel: t('基础文件格式与细分')
-    },
-
-    // ─── 属性感知与多模态维度 ──────────────────────────────
-    {
-      label: t('画质等级'),
-      value: `{TAG:${t('画质等级')}}`,
-      desc: t('匹配标清/高清/4K/超清等画质等级属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      level: 0,
-      groupLabel: t('感知属性维度')
-    },
-    {
-      label: t('题材'),
-      value: `{TAG:${t('题材')}}`,
-      desc: t('匹配题材风格 (如商务/科幻/二次元/纪实等)'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      level: 0,
-      groupLabel: t('感知属性维度')
-    },
-    {
-      label: t('地理位置'),
-      value: `{TAG:${t('地理位置')}}`,
-      desc: t('匹配拍摄或记录发生的省份城市等地理位置'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      level: 0,
-      groupLabel: t('感知属性维度')
-    },
-
-    // ─── 核心业务与场景维度 ───────────────────────────────
-    // 根级：文件用途
-    {
-      label: t('文件用途'),
-      value: `{TAG:${t('文件用途')}}`,
-      desc: t('匹配工作文档/学习资料/游戏娱乐/创意项目等核心使用场景'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      level: 0,
-      groupLabel: t('业务与组织场景')
-    },
-    // 文件用途 -> 子维度体系
-    {
-      label: t('安全等级'),
-      value: `{TAG:${t('安全等级')}}`,
-      desc: t('匹配绝密/机密/秘密/内部/公开等保密级别'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件用途'),
-      level: 1,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('处理状态'),
-      value: `{TAG:${t('处理状态')}}`,
-      desc: t('匹配草稿/审阅中/已定稿/已归档等工作流状态'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件用途'),
-      level: 1,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('学科领域'),
-      value: `{TAG:${t('学科领域')}}`,
-      desc: t('匹配计算机/理工/人文社科/经管/医学等学科分类'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      parentName: t('文件用途'),
-      level: 1,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('财务类型'),
-      value: `{TAG:${t('财务类型')}}`,
-      desc: t('匹配报销/发票/账单/流水/预算等财务凭证属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件用途'),
-      level: 1,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('旅行内容'),
-      value: `{TAG:${t('旅行内容')}}`,
-      desc: t('匹配行程规划/交通凭证/游记攻略/照片记录'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件用途'),
-      level: 1,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('家庭生活细分'),
-      value: `{TAG:${t('家庭生活细分')}}`,
-      desc: t('匹配日常开销/健康医疗/育儿亲子/家居账单'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件用途'),
-      level: 1,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('游戏类型'),
-      value: `{TAG:${t('游戏类型')}}`,
-      desc: t('匹配RPG/动作/策略/射击/模拟等游戏分类'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件用途'),
-      level: 1,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('游戏平台'),
-      value: `{TAG:${t('游戏平台')}}`,
-      desc: t('匹配PC/主机/掌机/移动端等游戏运行硬件平台'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('文件用途'),
-      level: 1,
-      groupLabel: t('业务与组织场景')
-    },
-
-    // 根级：文件来源、作者、文件质量、内容分级
-    {
-      label: t('文件来源'),
-      value: `{TAG:${t('文件来源')}}`,
-      desc: t('匹配内部创作/网络下载/外部传输等来源属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: true,
-      level: 0,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('作者维度'),
-      value: `{TAG:${t('作者')}}`,
-      desc: t('匹配该文件的「作者」维度标签'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      level: 0,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('文件质量'),
-      value: `{TAG:${t('文件质量')}}`,
-      desc: t('匹配优质/良好/一般等质量等级属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      level: 0,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('内容标签'),
-      value: `{TAG:${t('内容标签')}}`,
-      desc: t('匹配开放式内容语义标签'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      level: 0,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('内容分级'),
-      value: `{TAG:${t('内容分级')}}`,
-      desc: t('匹配全年龄/限制级等内容分级属性'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      level: 0,
-      groupLabel: t('业务与组织场景')
-    },
-    {
-      label: t('敏感内容'),
-      value: `{TAG:${t('敏感内容')}}`,
-      desc: t('匹配合规安全审查分类 (如色情/血腥/涉政/违规)'),
-      pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: false,
-      parentName: t('内容分级'),
-      level: 1,
-      groupLabel: t('业务与组织场景')
-    }
-  ]
-  */
 
   // ─── 各独立功能大类 ──────────────────────────────────────────
   const coreCategory: TokenCategory = {
@@ -690,53 +244,80 @@ export function getCommonCategoriesPartitioned(
     .filter(cat => cat.tokens.length > 0)
 }
 
-// 1. 核心高频常用维度规范名称白名单（内部母语规范名集合，严禁在此包裹 t() 参与集合判定）
-const COMMON_CANONICAL_NAMES = new Set<string>([
-  '文件类型',
-  '文件用途',
-  '文件来源',
-  '作者',
-  '图片细分',
-  '视频细分',
-  '音频细分',
-  '文档细分',
-  '文本细分',
-  '压缩包细分',
-  '安全等级',
-  '处理状态',
-  '学科领域',
-  '作品来源',
-  '证照细分',
-  '摄影照片细分'
+// 1. 核心高频常用维度受控代码白名单（强类型单一事实源，基于 concept('...') 获取）
+const COMMON_DIMENSION_CODES = new Set<string>([
+  concept('文件类型'),
+  concept('文件用途'),
+  concept('文件来源'),
+  concept('作者'),
+  concept('图片细分'),
+  concept('视频细分'),
+  concept('音频细分'),
+  concept('文档细分'),
+  concept('文本细分'),
+  concept('压缩包细分'),
+  concept('安全等级'),
+  concept('处理状态'),
+  concept('学科领域'),
+  concept('作品来源'),
+  concept('证照细分'),
+  concept('摄影照片细分')
 ])
 
-// 2. 权威 7 大受控根维度规范名集合（母语单一事实源）
-const ROOT_CANONICAL_NAMES = new Set<string>([
-  '文件类型',
-  '文件用途',
-  '文件来源',
-  '作者',
-  '文件质量',
-  '内容标签',
-  '内容分级'
+// 2. 权威 7 大受控根维度受控代码集合（Genesis V1 创世基线规范）
+const ROOT_DIMENSION_CODES = new Set<string>([
+  concept('文件类型'),
+  concept('文件用途'),
+  concept('文件来源'),
+  concept('作者'),
+  concept('文件质量'),
+  concept('内容标签'),
+  concept('内容分级')
 ])
 
 interface RawDimensionEntry {
   rawName: string
   rawDesc?: string
   level: number
+  code?: string
 }
 
 /**
- * 敏感内容维度标识符判定：
- * 严格基于母语规范名与受控代码比对，严禁使用 t()
+ * 解析任意维度对象或标识符的规范受控代码
  */
+function resolveConceptCode(dim: { id?: number | string; code?: string; name?: string } | string | undefined): string | undefined {
+  if (!dim) return undefined
+  if (typeof dim === 'string') {
+    if (dim.startsWith('builtin.') || dim.startsWith('omw.') || dim.startsWith('hownet.')) {
+      return dim
+    }
+    return isControlledConcept(dim) ? concept(dim) : undefined
+  }
+  if (dim.code) return dim.code
+  const numId = Number(dim.id)
+  if (!isNaN(numId) && CONTROLLED_DIMENSION_ROOT_CODES[numId]) {
+    return CONTROLLED_DIMENSION_ROOT_CODES[numId]
+  }
+  if (dim.name) {
+    if (dim.name.startsWith('builtin.') || dim.name.startsWith('omw.') || dim.name.startsWith('hownet.')) {
+      return dim.name
+    }
+    if (isControlledConcept(dim.name)) {
+      return concept(dim.name)
+    }
+  }
+  return undefined
+}
+
+/**
+ * 敏感内容维度受控判定：
+ * 严格基于强类型受控代码比对，严禁使用自然语言中文或 t()
+ */
+const SENSITIVE_CONTENT_CODE = concept('敏感内容')
 const isSensitiveDimIdentifier = (identifier?: string): boolean => {
   if (!identifier) return false
-  return (
-    identifier === '敏感内容' || // locale-invariant-ok: 统一母语单一事实源比对
-    identifier === concept('敏感内容')
-  )
+  const c = resolveConceptCode(identifier)
+  return c === SENSITIVE_CONTENT_CODE
 }
 
 /**
@@ -793,7 +374,10 @@ export function buildDimensionSystem(
       // 规范层级匹配：若维度定义为 level 2，且父级中包含根维度，优先挂载于根维度（如「作品来源」作为二级维度归入「文件类型」）
       let chosenParents = validParents
       if (d.level === 2) {
-        const rootParents = validParents.filter(p => ROOT_CANONICAL_NAMES.has(p))
+        const rootParents = validParents.filter(p => {
+          const pCode = resolveConceptCode(p)
+          return Boolean(pCode && ROOT_DIMENSION_CODES.has(pCode))
+        })
         if (rootParents.length > 0) {
           chosenParents = rootParents
         }
@@ -855,12 +439,15 @@ export function buildDimensionSystem(
         ? t(primaryParentMap.get(rawName)!)
         : undefined
 
+    const tokenDimCode = resolveConceptCode(rawName)
+    const isCommon = Boolean(tokenDimCode && COMMON_DIMENSION_CODES.has(tokenDimCode))
+
     const item: TokenItem = {
       label: localizedName,
       value: tokenVal,
       desc,
       pillClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20',
-      isCommon: COMMON_CANONICAL_NAMES.has(rawName),
+      isCommon,
       parentName,
       level,
       groupLabel: t('分类维度')
@@ -909,15 +496,15 @@ export function buildDimensionSystem(
     }
   }
 
-  // 5. 权威 7 大受控根维度为顶层树干
+  // 5. 权威 7 大受控根维度为顶层树干（强类型受控概念对齐）
   const ROOT_CANONICAL_DEFINITIONS = [
-    { rawName: '文件类型', rawDesc: '文件的基础格式分类 (如文本/图片/视频/音频等)' },
-    { rawName: '文件用途', rawDesc: '文件的核心使用场景 (如工作文档/学习资料/游戏娱乐等)' },
-    { rawName: '文件来源', rawDesc: '文件的原始获取途径 (如本地创建/网络下载/设备导入等)' },
-    { rawName: '作者', rawDesc: '文件的创建者或贡献者' },
-    { rawName: '文件质量', rawDesc: '文件的品质与质量评分 (如优质/良好/一般等)' },
-    { rawName: '内容标签', rawDesc: '开放式语义与主题内容标签' },
-    { rawName: '内容分级', rawDesc: '合规安全审查与年龄受众分级' }
+    { code: concept('文件类型'), rawName: '文件类型', rawDesc: '文件的基础格式分类 (如文本/图片/视频/音频等)' },
+    { code: concept('文件用途'), rawName: '文件用途', rawDesc: '文件的核心使用场景 (如工作文档/学习资料/游戏娱乐等)' },
+    { code: concept('文件来源'), rawName: '文件来源', rawDesc: '文件的原始获取途径 (如本地创建/网络下载/设备导入等)' },
+    { code: concept('作者'), rawName: '作者', rawDesc: '文件的创建者或贡献者' },
+    { code: concept('文件质量'), rawName: '文件质量', rawDesc: '文件的品质与质量评分 (如优质/良好/一般等)' },
+    { code: concept('内容标签'), rawName: '内容标签', rawDesc: '开放式语义与主题内容标签' },
+    { code: concept('内容分级'), rawName: '内容分级', rawDesc: '合规安全审查与年龄受众分级' }
   ]
 
   const dimensionTree: DimensionTreeNode[] = []

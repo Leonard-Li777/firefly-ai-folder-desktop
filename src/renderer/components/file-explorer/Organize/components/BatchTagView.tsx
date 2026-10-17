@@ -16,7 +16,7 @@ import {
   concept,
   CANONICAL_NAMES,
   resolveRootDimension,
-  LEVEL_1_ROOT_CODES,
+  TOP_ROOT_CODES,
   CONTROLLED_SUBDIMENSION_PARENTS_GENERATED,
   CONTROLLED_DIMENSION_ROOT_CODES,
   isControlledConcept
@@ -46,11 +46,16 @@ export interface HierarchicalDimensionGroup {
  * 除非同维度的标签有一个及以上文件计数，那么可以展示同维度其它标签，否则都不展示。
  */
 export const isSensitiveDimension = (g: DimensionGroup): boolean => {
-  const code = (g as any).code || ''
-  const rootCode = (g as any).rootCode || ''
+  if (!g) return false
   const sensitiveConceptCode = concept('敏感内容')
   const ratingConceptCode = concept('内容分级')
   const eroticConceptCode = concept('色情分级')
+
+  const code =
+    (g as any).code ||
+    (g.id ? CONTROLLED_DIMENSION_ROOT_CODES[Number(g.id)] : undefined) ||
+    (isControlledConcept(g.name) ? concept(g.name) : undefined)
+  const rootCode = (g as any).rootCode
 
   if (
     code === sensitiveConceptCode ||
@@ -61,10 +66,22 @@ export const isSensitiveDimension = (g: DimensionGroup): boolean => {
   ) {
     return true
   }
-  const id = Number(g.id)
-  if (id === 130 || id === 123 || id === 162 || (id >= 131 && id <= 134) || (id >= 150 && id <= 161)) {
-    return true
+
+  // 自底向上回溯受控父维度链，彻底消除硬编码魔法数字
+  let curCode: string | undefined = code
+  const visited = new Set<string>()
+  while (curCode && !visited.has(curCode)) {
+    visited.add(curCode)
+    if (
+      curCode === sensitiveConceptCode ||
+      curCode === ratingConceptCode ||
+      curCode === eroticConceptCode
+    ) {
+      return true
+    }
+    curCode = CONTROLLED_SUBDIMENSION_PARENTS_GENERATED[curCode]?.parentCode
   }
+
   return false
 }
 
@@ -1220,8 +1237,7 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       if (
         isExtensionDimension(g) ||
         isFileTypeDimension(g) ||
-        g.id === 1 ||
-        isRuleSubdivisionDimension(g)
+        (isRuleSubdivisionDimension(g) && !isPanDimensionGroup(g, fullPresetGroups))
       ) {
         return false
       }
@@ -1453,12 +1469,14 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
     result.sort((a, b) => {
       if (a.dimensionName !== b.dimensionName) {
         // 让“内容标签”排在最后
-        const isAContent =
-          a.dimensionName === CANONICAL_NAMES.CONTENT_TAGS ||
-          (a.dimensionId ? CONTROLLED_DIMENSION_ROOT_CODES[a.dimensionId] === CONTENT_TAGS_CODE : false)
-        const isBContent =
-          b.dimensionName === CANONICAL_NAMES.CONTENT_TAGS ||
-          (b.dimensionId ? CONTROLLED_DIMENSION_ROOT_CODES[b.dimensionId] === CONTENT_TAGS_CODE : false)
+        const dimCodeA =
+          (a.dimensionId ? CONTROLLED_DIMENSION_ROOT_CODES[a.dimensionId] : undefined) ||
+          (isControlledConcept(a.dimensionName) ? concept(a.dimensionName as any) : undefined)
+        const dimCodeB =
+          (b.dimensionId ? CONTROLLED_DIMENSION_ROOT_CODES[b.dimensionId] : undefined) ||
+          (isControlledConcept(b.dimensionName) ? concept(b.dimensionName as any) : undefined)
+        const isAContent = dimCodeA === CONTENT_TAGS_CODE
+        const isBContent = dimCodeB === CONTENT_TAGS_CODE
         if (isAContent && !isBContent) return 1
         if (!isAContent && isBContent) return -1
         return a.dimensionName.localeCompare(b.dimensionName, 'zh-CN')
@@ -1568,8 +1586,9 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       try {
         const targetParentCode =
           targetGroup?.code ||
+          CONTROLLED_DIMENSION_ROOT_CODES[dimensionId] ||
           (targetGroup?.name && isControlledConcept(targetGroup.name) ? concept(targetGroup.name) : undefined) ||
-          'builtin.content_tags'
+          concept('内容标签')
 
         // 即时预检受控语义
         let meta: {
@@ -1697,8 +1716,9 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       // 提取未提交文本即时向 Omni 预检，严禁未鉴别直接保存
       const targetParentCode =
         targetGroup?.code ||
+        CONTROLLED_DIMENSION_ROOT_CODES[activeInputDimId] ||
         (targetGroup?.name && isControlledConcept(targetGroup.name) ? concept(targetGroup.name) : undefined) ||
-        'builtin.content_tags'
+        concept('内容标签')
 
       let meta: {
         isControlled: boolean
@@ -1914,12 +1934,18 @@ export const BatchTagView: React.FC<BatchTagViewProps> = ({
       }
     }
 
-    // 泛维度标签列：将“内容标签”维度（通过 CONTENT_TAGS_CODE / CANONICAL_NAMES）放置到最后
+    // 泛维度标签列：将“内容标签”维度（通过 CONTENT_TAGS_CODE）放置到最后
     pan.sort((a, b) => {
-      const codeA = (a as any).code || (a.id ? CONTROLLED_DIMENSION_ROOT_CODES[a.id] : undefined)
-      const codeB = (b as any).code || (b.id ? CONTROLLED_DIMENSION_ROOT_CODES[b.id] : undefined)
-      const isAContent = codeA === CONTENT_TAGS_CODE || a.name === CANONICAL_NAMES.CONTENT_TAGS
-      const isBContent = codeB === CONTENT_TAGS_CODE || b.name === CANONICAL_NAMES.CONTENT_TAGS
+      const codeA =
+        (a as any).code ||
+        (a.id ? CONTROLLED_DIMENSION_ROOT_CODES[a.id] : undefined) ||
+        (a.name && isControlledConcept(a.name) ? concept(a.name as any) : undefined)
+      const codeB =
+        (b as any).code ||
+        (b.id ? CONTROLLED_DIMENSION_ROOT_CODES[b.id] : undefined) ||
+        (b.name && isControlledConcept(b.name) ? concept(b.name as any) : undefined)
+      const isAContent = codeA === CONTENT_TAGS_CODE
+      const isBContent = codeB === CONTENT_TAGS_CODE
       if (isAContent && !isBContent) return 1
       if (!isAContent && isBContent) return -1
       return 0

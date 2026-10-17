@@ -184,7 +184,9 @@ export class DatabaseAdapter implements IDatabaseAdapter {
           JSON.stringify({
             isLeaf: false,
             isSystem: !dimension.isAIGenerated,
-            isMultiSelect: true,
+            // 严禁在此断言多选策略：权威源是 ConfigDbManager 的 dimension-policies
+            // （metadata.flag.isMultiSelect）。历史硬编码 true 会让维度根 meta 短路权威策略，
+            // 导致前端所有维度恒多选、单选互斥永不生效。需要自定义时由调用方 metadata 显式传入。
             ...(dimension.metadata || {})
           }),
           dimension.description || null

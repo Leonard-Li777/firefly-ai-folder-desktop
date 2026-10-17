@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "count": 32,
+  "count": 50,
   "dimensions": {
     "bekko": 384,
     "gemma": 512
@@ -34,9 +34,9 @@
         "it-IT": "Standardized team workflow decoupling reusable design systems from projects"
       },
       "target_identities": [
+        "id.researcher.ux",
         "id.designer.ui",
-        "id.designer.graphic",
-        "id.designer.illustrator"
+        "id.designer.graphic"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -84,10 +84,11 @@
         "it-IT": "Structured directories for assets, builds, mock data, and test reports"
       },
       "target_identities": [
+        "id.student.self_learner",
         "id.dev.frontend",
+        "id.dev.fullstack",
         "id.dev.mobile",
-        "id.qa.tester",
-        "id.dev.fullstack"
+        "id.qa.tester"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -132,8 +133,8 @@
       },
       "target_identities": [
         "id.dev.backend",
-        "id.ops.sre",
         "id.dev.fullstack",
+        "id.ops.sre",
         "id.dev.ai_ml",
         "id.dev.embedded"
       ],
@@ -178,40 +179,21 @@
         "it-IT": "Classic Tiago Forte framework: Projects, Areas, Resources, and Archives"
       },
       "target_identities": [
-        "id.designer.ui",
-        "id.designer.graphic",
-        "id.designer.illustrator",
-        "id.pm.product",
-        "id.designer.industrial",
-        "id.researcher.ux",
+        "id.scene.desktop_declutter",
+        "id.scene.downloads_triage",
+        "id.hobby.gamer",
+        "id.life.tech_geek",
+        "id.hobby.photographer",
+        "id.life.minimalist",
+        "id.life.fitness",
         "id.dev.frontend",
-        "id.dev.mobile",
-        "id.data.analyst",
-        "id.ops.sre",
-        "id.qa.tester",
-        "id.dev.fullstack",
-        "id.ops.newmedia",
-        "id.marketing.planner",
-        "id.creator.freelance",
-        "id.ops.private_domain",
-        "id.ops.sem_seo",
+        "id.pm.product",
+        "id.designer.ui",
+        "id.creator.writer",
         "id.sales.bd",
         "id.biz.consultant",
         "id.student.undergrad",
-        "id.student.self_learner",
         "id.edu.k12_teacher",
-        "id.edu.trainer",
-        "id.student.study_abroad",
-        "id.hobby.photographer",
-        "id.hobby.gamer",
-        "id.creator.writer",
-        "id.life.traveler",
-        "id.life.digital_hoarder",
-        "id.life.fitness",
-        "id.life.minimalist",
-        "id.life.pet_owner",
-        "id.health.psychologist",
-        "id.health.nutritionist",
         "id.eng.architect"
       ],
       "lifecycle_stages": [
@@ -255,20 +237,17 @@
         "it-IT": "Numerical indexed categories for high-precision institutional filing"
       },
       "target_identities": [
-        "id.dev.backend",
-        "id.finance.accountant",
-        "id.hr.admin",
-        "id.legal.compliance",
-        "id.finance.cashier",
-        "id.hr.recruiter",
-        "id.finance.auditor",
-        "id.legal.attorney",
-        "id.legal.ip_agent",
-        "id.mgmt.supply_chain",
-        "id.student.grad",
-        "id.researcher.faculty",
+        "id.scene.temporary_staging",
         "id.life.homemaker",
         "id.life.digital_hoarder",
+        "id.dev.backend",
+        "id.finance.accountant",
+        "id.finance.cashier",
+        "id.hr.admin",
+        "id.hr.recruiter",
+        "id.legal.attorney",
+        "id.researcher.faculty",
+        "id.student.grad",
         "id.eng.civil_engineer"
       ],
       "lifecycle_stages": [
@@ -359,10 +338,10 @@
         "it-IT": "Tailored for Premiere, Final Cut, and Resolve projects and asset tiers"
       },
       "target_identities": [
-        "id.designer.3d",
+        "id.life.audiophile_cinephile",
+        "id.creator.sound_designer",
         "id.hobby.vlogger",
-        "id.hobby.podcaster",
-        "id.creator.sound_designer"
+        "id.designer.3d"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -406,11 +385,10 @@
         "it-IT": "Comprehensive filing for literature reviews, datasets, LaTeX, and defense decks"
       },
       "target_identities": [
-        "id.dev.ai_ml",
-        "id.student.undergrad",
-        "id.student.grad",
-        "id.student.exam",
         "id.researcher.faculty",
+        "id.student.grad",
+        "id.student.undergrad",
+        "id.student.exam",
         "id.student.study_abroad",
         "id.health.doctor"
       ],
@@ -458,8 +436,7 @@
       "target_identities": [
         "id.finance.accountant",
         "id.finance.cashier",
-        "id.finance.auditor",
-        "id.mgmt.supply_chain"
+        "id.finance.auditor"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -504,8 +481,9 @@
       },
       "target_identities": [
         "id.life.homemaker",
-        "id.life.minimalist",
-        "id.life.pet_owner"
+        "id.life.pet_owner",
+        "id.life.cooking_foodie",
+        "id.life.minimalist"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -549,11 +527,9 @@
         "it-IT": "Integrated workflow covering brainstorming, graphic assets, and campaign reports"
       },
       "target_identities": [
-        "id.ops.newmedia",
-        "id.ops.private_domain",
         "id.hobby.vlogger",
-        "id.hobby.podcaster",
-        "id.creator.sound_designer"
+        "id.ops.newmedia",
+        "id.ops.private_domain"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -641,11 +617,7 @@
         "pt-BR": "Organized game design docs, sprite sheets, audio, and playable builds",
         "it-IT": "Organized game design docs, sprite sheets, audio, and playable builds"
       },
-      "target_identities": [
-        "id.designer.3d",
-        "id.dev.frontend",
-        "id.hobby.gamer"
-      ],
+      "target_identities": [],
       "lifecycle_stages": [
         "inbox",
         "in_progress",
@@ -779,9 +751,9 @@
         "it-IT": "Organizes diagnostic reports, cohort follow-ups, IRB approvals, and manuscripts"
       },
       "target_identities": [
-        "id.student.grad",
         "id.health.doctor",
-        "id.health.nurse"
+        "id.health.nurse",
+        "id.health.psychologist"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -870,6 +842,7 @@
       "target_identities": [
         "id.data.analyst",
         "id.marketing.planner",
+        "id.finance.auditor",
         "id.biz.consultant"
       ],
       "lifecycle_stages": [
@@ -1515,7 +1488,8 @@
         "it-IT": "Solo-business framework: client briefs, estimates, signed contracts, WIP deliverables, invoices, and portfolio"
       },
       "target_identities": [
-        "id.creator.freelance"
+        "id.creator.freelance",
+        "id.edu.trainer"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -1566,9 +1540,10 @@
         "it-IT": "Second brain for lifelong learners: inboxes, atomic literature/permanent notes, project practice, and reflections"
       },
       "target_identities": [
+        "id.life.novel_reader",
+        "id.life.digital_hoarder",
         "id.student.self_learner",
-        "id.student.exam",
-        "id.life.digital_hoarder"
+        "id.student.exam"
       ],
       "lifecycle_stages": [
         "inbox",
@@ -1589,6 +1564,879 @@
       ],
       "naming_rules": {
         "asset_pattern": "{YYYYMMDD}_{Topic}_{NoteTitle}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_gamer_library",
+      "name": {
+        "zh-CN": "游戏玩家综合数字娱乐库",
+        "en-US": "Video Game Library & Save Vault",
+        "ja-JP": "ゲーマー総合デジタルエンタメライブラリ",
+        "ko-KR": "게이머 종합 디지털 엔터테인먼트 라이브러리",
+        "de-DE": "Videospiele-Bibliothek & Spielstände-Vault",
+        "fr-FR": "Bibliothèque de jeux vidéo et sauvegardes",
+        "es-ES": "Biblioteca de videojuegos y baúl de partidas guardadas",
+        "ru-RU": "Игровая библиотека и хранилище сохранений",
+        "pt-BR": "Biblioteca de jogos e baú de saves",
+        "it-IT": "Libreria di videogiochi e archivio salvataggi"
+      },
+      "description": {
+        "zh-CN": "专为单机/主机玩家设计，涵盖游戏安装本体、本地通关存档备份、MOD补丁与汉化、精彩录屏及攻略Wiki",
+        "en-US": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs",
+        "ja-JP": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs",
+        "ko-KR": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs",
+        "de-DE": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs",
+        "fr-FR": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs",
+        "es-ES": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs",
+        "ru-RU": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs",
+        "pt-BR": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs",
+        "it-IT": "Designed for PC/console gamers to manage game saves, mods, game clips, screenshots, and walkthroughs"
+      },
+      "target_identities": [
+        "id.hobby.gamer",
+        "id.life.acg_fan"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-游戏本体与快捷启动/Steam与Epic游戏库",
+        "01-游戏本体与快捷启动/独立游戏与模拟器ROM",
+        "02-游戏存档与备份/Saves本地存档备份",
+        "02-游戏存档与备份/配置文件与画质优化Cfg",
+        "03-MOD模组与汉化补丁/热门游戏MOD与材质包",
+        "03-MOD模组与汉化补丁/汉化语言包与联机补丁",
+        "04-游戏截图与高光时刻/精彩击杀与通关录屏Video",
+        "04-游戏截图与高光时刻/4K超清游戏壁纸与截图Screenshot",
+        "05-通关攻略与Wiki资料/Boss攻略打法与全收集地图",
+        "05-通关攻略与Wiki资料/电子设定集与原画设定Artbook"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{GameTitle}_{DocType}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_novel_reading_library",
+      "name": {
+        "zh-CN": "小说网文与电子书全集书库",
+        "en-US": "Webnovel & Ebook Digital Library",
+        "ja-JP": "Web小説＆電子書籍デジタル文庫",
+        "ko-KR": "웹소설 및 전자책 디지털 도서관",
+        "de-DE": "Webroman- & E-Book-Digitalbibliothek",
+        "fr-FR": "Bibliothèque numérique de romans web et ebooks",
+        "es-ES": "Biblioteca digital de novelas web y libros electrónicos",
+        "ru-RU": "Библиотека сетевых романов и электронных книг",
+        "pt-BR": "Biblioteca digital de webnovels e e-books",
+        "it-IT": "Biblioteca digitale di webnovel ed e-book"
+      },
+      "description": {
+        "zh-CN": "专为小说读者与书友打造，分类收录网络小说连载、精排EPUB/TXT、出版物经典、轻小说与个人推书书单",
+        "en-US": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews",
+        "ja-JP": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews",
+        "ko-KR": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews",
+        "de-DE": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews",
+        "fr-FR": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews",
+        "es-ES": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews",
+        "ru-RU": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews",
+        "pt-BR": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews",
+        "it-IT": "Dedicated library for webnovel readers and book lovers to organize ebooks, series, and reviews"
+      },
+      "target_identities": [
+        "id.life.novel_reader"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "00-最近在读与待追更/连载网文最新章节更新",
+        "01-网络小说连载专区/玄幻修真与仙侠洪荒",
+        "01-网络小说连载专区/科幻未来与无限流系统",
+        "01-网络小说连载专区/都市职场与历史军事",
+        "02-经典出版物与名著/世界文学名著经典",
+        "02-经典出版物与名著/社科人文与哲学历史",
+        "03-轻小说与ACG番外/日系轻小说文库与插画EPUB",
+        "03-轻小说与ACG番外/同人二创与同人小说TXT",
+        "04-精校排版与Kindle推送/已校对精排EPUB_MOBI",
+        "05-读书笔记与书评书单/个人私藏推书单与五星书评"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{Author}_{BookTitle}_{Status}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_home_theater_audiophile",
+      "name": {
+        "zh-CN": "影音发烧友与家庭影院视听库",
+        "en-US": "Audiophile & Home Theater Vault",
+        "ja-JP": "オーディオファイル＆ホームシアター音響映像ライブラリ",
+        "ko-KR": "오디오파일 및 홈시어터 오디오비주얼 볼트",
+        "de-DE": "Audiophile & Heimkino-Mediathek",
+        "fr-FR": "Médiathèque audiophile et home-cinéma",
+        "es-ES": "Cine en casa y baúl de audio para audiófilos",
+        "ru-RU": "Медиатека аудиофила и домашнего кинотеатра",
+        "pt-BR": "Cineclube doméstico e acervo para audiófilos",
+        "it-IT": "Archivio multimediale per audiofili e home theater"
+      },
+      "description": {
+        "zh-CN": "汇集4K UHD HDR原盘蓝光电影、无损音乐FLAC/DSD、追剧剧集季集归档与双语外挂字幕",
+        "en-US": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles",
+        "ja-JP": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles",
+        "ko-KR": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles",
+        "de-DE": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles",
+        "fr-FR": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles",
+        "es-ES": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles",
+        "ru-RU": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles",
+        "pt-BR": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles",
+        "it-IT": "Collects 4K UHD Blu-ray remuxes, lossless music albums, TV seasons, and external subtitles"
+      },
+      "target_identities": [
+        "id.life.audiophile_cinephile"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-高清电影收藏/4K_UHD_HDR原盘蓝光电影",
+        "01-高清电影收藏/1080P经典重温与院线佳作",
+        "02-剧集追剧归档/美剧英剧全季收藏",
+        "02-剧集追剧归档/日剧韩剧与高分华语热剧",
+        "03-动漫番剧与剧场版/完结高分经典番剧",
+        "03-动漫番剧与剧场版/剧场版动画与OVA收藏",
+        "04-无损音乐发烧专区/FLAC_DSD无损母带专辑",
+        "04-无损音乐发烧专区/影视游戏原声大碟OST",
+        "05-字幕组与元数据刮削/中英双语特效外挂字幕",
+        "05-字幕组与元数据刮削/NFO刮削海报与演职员表"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{Title}.{Year}.{Resolution}.{AudioCodec}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_acg_anime_manga",
+      "name": {
+        "zh-CN": "二次元动漫与同人ACG收藏库",
+        "en-US": "Anime, Manga & ACG Collection Vault",
+        "ja-JP": "アニメ・マンガ・ACG同人コレクションアーカイブ",
+        "ko-KR": "애니메이션, 만화 및 ACG 컬렉션 볼트",
+        "de-DE": "Anime-, Manga- & ACG-Sammlungsarchiv",
+        "fr-FR": "Collection d'anime, manga et culture ACG",
+        "es-ES": "Colección de anime, manga y cultura ACG",
+        "ru-RU": "Коллекция аниме, манги и ACG",
+        "pt-BR": "Coleção de animes, mangás e acervo ACG",
+        "it-IT": "Collezione di anime, manga e cultura ACG"
+      },
+      "description": {
+        "zh-CN": "专为动漫爱好者与ACG同好打造，涵盖季度新番追番、高清漫画分卷、Pixiv插画壁纸、广播剧Drama与展会周边",
+        "en-US": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas",
+        "ja-JP": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas",
+        "ko-KR": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas",
+        "de-DE": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas",
+        "fr-FR": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas",
+        "es-ES": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas",
+        "ru-RU": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas",
+        "pt-BR": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas",
+        "it-IT": "Collection vault for anime series, digital manga volumes, illustration wallpapers, and audio dramas"
+      },
+      "target_identities": [
+        "id.life.acg_fan"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-新番连载追番/季度新番待看更新",
+        "02-电子漫画分卷/黑白分镜全卷漫画",
+        "02-电子漫画分卷/全彩条漫与网络连载",
+        "03-ACG高清插画壁纸/Pixiv精选画师画集",
+        "03-ACG高清插画壁纸/4K电脑壁纸与手机锁屏",
+        "04-广播剧与角色歌/Drama广播剧音频与翻译",
+        "04-广播剧与角色歌/动画OP_ED单曲与CharacterSong",
+        "05-周边与同人展会/ComicMarket同人志与周边清单"
+      ],
+      "naming_rules": {
+        "asset_pattern": "[{Group}]_{Title}_EP{Ep}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_pc_hardware_gear",
+      "name": {
+        "zh-CN": "数码硬件与电脑装机极客管理库",
+        "en-US": "PC Hardware & Tech Gear Vault",
+        "ja-JP": "自作PCハードウェア＆デジタルギア管理台帳",
+        "ko-KR": "PC 하드웨어 및 디지털 기어 매니지먼트 볼트",
+        "de-DE": "PC-Hardware & Tech-Gear-Verwaltung",
+        "fr-FR": "Gestionnaire de matériel PC et équipements high-tech",
+        "es-ES": "Gestión de hardware de PC y dispositivos tecnológicos",
+        "ru-RU": "Управление ПК-железом и гаджетами",
+        "pt-BR": "Gestão de hardware de PC e equipamentos tecnológicos",
+        "it-IT": "Gestione hardware PC e dispositivi tecnologici"
+      },
+      "description": {
+        "zh-CN": "收录装机方案配置单、主板显卡BIOS固件、外设按键宏、基准跑分截图与数码发票电子保修卡",
+        "en-US": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips",
+        "ja-JP": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips",
+        "ko-KR": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips",
+        "de-DE": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips",
+        "fr-FR": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips",
+        "es-ES": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips",
+        "ru-RU": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips",
+        "pt-BR": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips",
+        "it-IT": "Organizes PC DIY build specs, BIOS updates, peripheral macros, benchmark results, and warranty slips"
+      },
+      "target_identities": [
+        "id.life.tech_geek"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-装机方案与配置单/装机预算配置单与对账凭据",
+        "02-驱动程序与BIOS固件/主板显卡最新BIOS与固件",
+        "02-驱动程序与BIOS固件/网卡声卡蓝牙离线安装驱动",
+        "03-外设灯控与宏配置/键盘鼠标驱动与按键宏文件",
+        "04-压力测试与跑分基准/3DMark_Cinebench跑分截图",
+        "05-数码产品电子说明书/产品电子说明书与电子发票保修卡"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{Brand}_{DeviceName}_{DocType}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_cooking_recipes_vault",
+      "name": {
+        "zh-CN": "私房料理烹饪与美食烘焙食谱",
+        "en-US": "Culinary Recipes & Home Baking Vault",
+        "ja-JP": "手作り料理レシピ＆おうちベーカリーノート",
+        "ko-KR": "가정 요리 레시피 및 홈베이킹 볼트",
+        "de-DE": "Kochrezepte & Hausbäckerei-Archiv",
+        "fr-FR": "Recettes culinaires et carnet de pâtisserie",
+        "es-ES": "Recetas culinarias y repostería casera",
+        "ru-RU": "Кулинарные рецепты и домашняя выпечка",
+        "pt-BR": "Receitas culinárias e panificação caseira",
+        "it-IT": "Ricette culinarie e pasticceria casalinga"
+      },
+      "description": {
+        "zh-CN": "管理私房家常快手菜、西式烘焙配方表、养生靓汤清单、精选调饮鸡尾酒与美食探店打卡记录",
+        "en-US": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs",
+        "ja-JP": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs",
+        "ko-KR": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs",
+        "de-DE": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs",
+        "fr-FR": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs",
+        "es-ES": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs",
+        "ru-RU": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs",
+        "pt-BR": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs",
+        "it-IT": "Collects cooking recipes, baking ingredient ratios, wellness soups, cocktail mixes, and dining logs"
+      },
+      "target_identities": [
+        "id.life.cooking_foodie",
+        "id.health.nutritionist"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-家常热炒与主食/快手家常小炒步骤图解",
+        "01-家常热炒与主食/面点烘焙与秘制主食配方",
+        "02-西式烘焙与甜品/西点蛋糕与面包发酵配比",
+        "02-西式烘焙与甜品/下午茶饼干与甜品慕斯",
+        "03-养生煲汤与饮品调酒/滋补靓汤配料表与慢炖火候",
+        "03-养生煲汤与饮品调酒/特调鸡尾酒与手冲咖啡风味卡",
+        "04-厨房食材与调味清单/当季采购清单与调料品牌推荐",
+        "05-探店美食与私房菜单/城市美食探店打卡与宴客菜单"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{Cuisine}_{DishName}_Recipe.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_pet_care_diary",
+      "name": {
+        "zh-CN": "爱宠健康档案与萌宠成长日记",
+        "en-US": "Pet Health Record & Growth Diary",
+        "ja-JP": "ペットの健康手帳＆成長日記",
+        "ko-KR": "반려동물 건강기록부 및 성장 일기",
+        "de-DE": "Haustier-Gesundheitsakte & Wachstumstagebuch",
+        "fr-FR": "Dossier de santé et journal de croissance de l'animal",
+        "es-ES": "Cartilla de salud y diario de crecimiento de mascotas",
+        "ru-RU": "Медицинская карта и дневник питомца",
+        "pt-BR": "Prontuário de saúde e diário do pet",
+        "it-IT": "Libretto sanitario e diario di crescita del pet"
+      },
+      "description": {
+        "zh-CN": "全面记录宠物疫苗免疫簿、驱虫化验单、日常高清萌照、主粮成分评测与每月养宠开销记账",
+        "en-US": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses",
+        "ja-JP": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses",
+        "ko-KR": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses",
+        "de-DE": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses",
+        "fr-FR": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses",
+        "es-ES": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses",
+        "ru-RU": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses",
+        "pt-BR": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses",
+        "it-IT": "Tracks pet vaccination records, veterinary checkups, cute photo moments, diet reviews, and pet expenses"
+      },
+      "target_identities": [
+        "id.life.pet_owner"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-医疗健康与疫苗档案/疫苗接种本与体内外驱虫记录",
+        "01-医疗健康与疫苗档案/就诊病历单与化验血常规报告",
+        "02-萌宠日常高光相册/幼年期成长照片与萌照抓拍",
+        "02-萌宠日常高光相册/搞笑表情包与逗宠视频短片",
+        "03-科学喂养与口粮测评/主粮成分分析表与零食红黑榜",
+        "04-宠物开销与账单记账/每月口粮玩具与医疗花销明细",
+        "05-用品说明书与寄养出行/自动喂食器说明书与寄养协议"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{PetName}_{DocType}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_travel_outdoor_journey",
+      "name": {
+        "zh-CN": "旅行足迹规划与户外探险档案",
+        "en-US": "Travel Itinerary & Outdoor Exploration",
+        "ja-JP": "旅のしおり・アウトドア冒険アーカイブ",
+        "ko-KR": "여행 일정표 및 아웃도어 탐험 아카이브",
+        "de-DE": "Reiseroute & Outdoor-Erkundungsarchiv",
+        "fr-FR": "Itinéraires de voyage et archives d'aventures",
+        "es-ES": "Itinerarios de viaje y aventuras al aire libre",
+        "ru-RU": "Маршруты путешествий и дневник приключений",
+        "pt-BR": "Roteiros de viagem e diário de aventuras",
+        "it-IT": "Itinerari di viaggio e archivio avventure outdoor"
+      },
+      "description": {
+        "zh-CN": "涵盖自驾游路书、机票酒店订单凭单、相机RAW原始底片、精修风景照、GPX徒步轨迹与纪念票根",
+        "en-US": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs",
+        "ja-JP": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs",
+        "ko-KR": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs",
+        "de-DE": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs",
+        "fr-FR": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs",
+        "es-ES": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs",
+        "ru-RU": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs",
+        "pt-BR": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs",
+        "it-IT": "Organizes trip itineraries, flight/hotel bookings, camera RAW photos, edited views, GPX tracks, and ticket stubs"
+      },
+      "target_identities": [
+        "id.life.traveler"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-行程规划与路线攻略/详细行程路书与每日游玩打卡点",
+        "01-行程规划与路线攻略/机票高铁订单与酒店预订凭证",
+        "02-旅途摄影原片RAW/相机原始RAW格式底片",
+        "02-旅途摄影原片RAW/手机随手拍即时照片",
+        "03-精修成片与视频Vlog/调色精修照片与朋友圈九宫格",
+        "03-精修成片与视频Vlog/旅行Vlog剪辑工程与成片视频",
+        "04-户外轨迹与装备清单/徒步登山GPX轨迹文件",
+        "04-户外轨迹与装备清单/露营装备装包Checklist",
+        "05-门票票根与纪念旅行日记/电子票根扫码与旅行手账复盘"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Destination}_{Title}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_audio_sound_engineering",
+      "name": {
+        "zh-CN": "专业音乐制作与音效声音工程库",
+        "en-US": "Audio Engineering & Music Production",
+        "ja-JP": "プロ音響エンジニアリング＆音楽制作ライブラリ",
+        "ko-KR": "전문 오디오 엔지니어링 및 음악 제작 라이브러리",
+        "de-DE": "Audio-Engineering & Musikproduktionsbibliothek",
+        "fr-FR": "Ingénierie audio et production musicale",
+        "es-ES": "Ingeniería de sonido y producción musical",
+        "ru-RU": "Аудиоинженерия и музыкальный продакшн",
+        "pt-BR": "Engenharia de áudio e produção musical",
+        "it-IT": "Ingegneria audio e produzione musicale"
+      },
+      "description": {
+        "zh-CN": "支持DAW编曲宿主工程、采样音效库Loops、人声分轨干声、合成器音色预设、混音母带与商用版权",
+        "en-US": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses",
+        "ja-JP": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses",
+        "ko-KR": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses",
+        "de-DE": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses",
+        "fr-FR": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses",
+        "es-ES": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses",
+        "ru-RU": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses",
+        "pt-BR": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses",
+        "it-IT": "Manages DAW sessions, audio loops/samples, vocal stems, synth presets, mastered exports, and licenses"
+      },
+      "target_identities": [
+        "id.creator.sound_designer"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-DAW工程工程文件/Logic_Cubase_Ableton工程源码",
+        "02-采样包与合成器预设/OneShot单采样与Loop循环音色",
+        "02-采样包与合成器预设/血清Serum_Omnisphere音色预设",
+        "03-分轨录音与人声干声/录音棚人声干声VocalStem",
+        "03-分轨录音与人声干声/乐器分轨录音与MIDI伴奏",
+        "04-混音混响与母带导出/RoughMix草混试听Demo",
+        "04-混音混响与母带导出/Master24bit无损最终母带",
+        "05-商业版权与授权协议/商用音效授权证书与分账合同"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{TrackName}_{BPM}_{Key}_{Stage}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_graphic_brand_design",
+      "name": {
+        "zh-CN": "平面品牌与视觉物料设计管线",
+        "en-US": "Graphic & Brand Design Pipeline",
+        "ja-JP": "グラフィック＆ブランドデザイン制作パイプライン",
+        "ko-KR": "그래픽 및 브랜드 디자인 파이프라인",
+        "de-DE": "Grafik- & Brand-Design-Pipeline",
+        "fr-FR": "Pipeline de conception graphique et de marque",
+        "es-ES": "Canal de diseño gráfico y de marca",
+        "ru-RU": "Пайплайн графического и бренд-дизайна",
+        "pt-BR": "Fluxo de design gráfico e branding",
+        "it-IT": "Pipeline di progettazione grafica e di marca"
+      },
+      "description": {
+        "zh-CN": "规范管理企业VI视觉手册、印刷画册排版、CMYK印刷校色打样、商用矢量字体与品牌KV海报",
+        "en-US": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals",
+        "ja-JP": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals",
+        "ko-KR": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals",
+        "de-DE": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals",
+        "fr-FR": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals",
+        "es-ES": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals",
+        "ru-RU": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals",
+        "pt-BR": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals",
+        "it-IT": "Manages brand VI guidelines, print layouts, CMYK proofings, commercial fonts, and key visuals"
+      },
+      "target_identities": [
+        "id.designer.graphic",
+        "id.designer.illustrator"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-品牌VI手册与规范/企业VI基础规范手册PDF",
+        "01-品牌VI手册与规范/矢量Logo标志与标准色CMYK",
+        "02-印刷物料与画册排版/展架易拉宝与宣传折页InDesign",
+        "02-印刷物料与画册排版/印刷厂打样喷绘校色文件",
+        "03-商业海报与活动KV/节日促销海报与电商主图",
+        "04-商业字体与矢量素材/商用授权字体安装包",
+        "05-定稿交付与版权凭单/客户终审确认单与版权转让协议"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Client}_{AssetType}_v{Version}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_illustration_cg_art",
+      "name": {
+        "zh-CN": "商业插画原画与CG美术资产库",
+        "en-US": "Commercial Illustration & Concept Art Vault",
+        "ja-JP": "商業イラスト・コンセプトアート資産アーカイブ",
+        "ko-KR": "상업 일러스트 및 원화 CG 미술 자산 볼트",
+        "de-DE": "Kommerzielle Illustration & Concept-Art-Archiv",
+        "fr-FR": "Archives d'illustrations commerciales et concept art",
+        "es-ES": "Archivo de ilustraciones comerciales y concept art",
+        "ru-RU": "База коммерческой иллюстрации и концепт-арта",
+        "pt-BR": "Acervo de ilustração comercial e concept art",
+        "it-IT": "Archivio di illustrazioni commerciali e concept art"
+      },
+      "description": {
+        "zh-CN": "针对商业插画师与原画设计师，涵盖构图线稿草图、分层工程PSD/Procreate、专属笔刷与商用授权书",
+        "en-US": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses",
+        "ja-JP": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses",
+        "ko-KR": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses",
+        "de-DE": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses",
+        "fr-FR": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses",
+        "es-ES": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses",
+        "ru-RU": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses",
+        "pt-BR": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses",
+        "it-IT": "Covers sketches, layered PSD/Procreate projects, brush packs, character turnarounds, and licenses"
+      },
+      "target_identities": [
+        "id.designer.illustrator"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-草图线稿与构图构思/低保真草图脑暴与构图探索",
+        "02-分层工程文件PSD_Procreate/多图层分层上色原始工程",
+        "03-笔刷资产与纹理贴图/Photoshop特供笔刷与水彩肌理",
+        "04-角色三视图与立绘资产/角色拆件立绘与Live2D原画",
+        "05-高清展示成片与授权书/无水印4K商业成图与商用授权书"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{ProjectName}_{Character}_{Stage}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_mobile_app_dev",
+      "name": {
+        "zh-CN": "移动端 App 双端研发工程体系",
+        "en-US": "Mobile App Dual-Platform Engineering",
+        "ja-JP": "モバイルアプリ両OS開発エンジニアリング",
+        "ko-KR": "모바일 앱 양대 플랫폼 개발 엔지니어링",
+        "de-DE": "Mobile App Dual-Plattform-Entwicklung",
+        "fr-FR": "Ingénierie d'applications mobiles iOS & Android",
+        "es-ES": "Ingeniería de aplicaciones móviles multiplataforma",
+        "ru-RU": "Разработка мобильных приложений для iOS и Android",
+        "pt-BR": "Engenharia de aplicativos móveis multiplataforma",
+        "it-IT": "Ingegneria di app mobili per iOS e Android"
+      },
+      "description": {
+        "zh-CN": "支持iOS/Android原生与Flutter/RN跨平台，包含双端工程、开发者打包证书、商店提审截图与发布包",
+        "en-US": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds",
+        "ja-JP": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds",
+        "ko-KR": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds",
+        "de-DE": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds",
+        "fr-FR": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds",
+        "es-ES": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds",
+        "ru-RU": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds",
+        "pt-BR": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds",
+        "it-IT": "Covers iOS/Android native & Flutter projects, certificates, store submission materials, and APK/IPA builds"
+      },
+      "target_identities": [
+        "id.dev.mobile"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-iOS原生工程与源码/Xcode工程项目与CocoaPods依赖",
+        "02-Android原生工程与源码/AndroidStudio工程与Gradle配置",
+        "03-跨平台混合框架/Flutter或ReactNative源码组件",
+        "04-开发者证书与配置文件/苹果P12证书与描述文件MobileProvision",
+        "04-开发者证书与配置文件/安卓签名Keystore与JKS密钥",
+        "05-应用商店提审物料/AppStore五寸半截图与更新文案",
+        "05-应用商店提审物料/双端发布打包APK_AAB与IPA归档"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{AppName}_v{Version}_{BuildNum}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_cloud_native_sre",
+      "name": {
+        "zh-CN": "云原生 SRE 与生产运维体系",
+        "en-US": "Cloud Native SRE & DevOps Infrastructure",
+        "ja-JP": "クラウドネイティブSRE＆インフラ運用アーキテクチャ",
+        "ko-KR": "클라우드 네이티브 SRE 및 DevOps 인프라 체계",
+        "de-DE": "Cloud-Native-SRE- & DevOps-Infrastruktur",
+        "fr-FR": "Infrastructure SRE et DevOps cloud natif",
+        "es-ES": "Infraestructura SRE y DevOps nativa de la nube",
+        "ru-RU": "Cloud Native SRE и инфраструктура DevOps",
+        "pt-BR": "Infraestrutura SRE e DevOps nativa da nuvem",
+        "it-IT": "Infrastruttura SRE e DevOps cloud native"
+      },
+      "description": {
+        "zh-CN": "覆盖Kubernetes集群编排清单、Terraform/Ansible脚本、Prometheus告警看板与生产巡检故障复盘",
+        "en-US": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems",
+        "ja-JP": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems",
+        "ko-KR": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems",
+        "de-DE": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems",
+        "fr-FR": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems",
+        "es-ES": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems",
+        "ru-RU": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems",
+        "pt-BR": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems",
+        "it-IT": "Covers K8s manifests, Terraform IaC scripts, Prometheus alerts, Grafana dashboards, and postmortems"
+      },
+      "target_identities": [
+        "id.ops.sre"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-容器化与Kubernetes编排/K8s集群Deployment与Service清单",
+        "01-容器化与Kubernetes编排/Dockerfile与HelmCharts包",
+        "02-基础设施即代码IaC/Terraform与Ansible自动化剧本",
+        "03-监控告警与可观测性/Prometheus告警规则与Grafana看板",
+        "04-CI_CD流水线配置/GitLabCI与GitHubActions脚本",
+        "05-生产巡检与事故复盘/每月机房巡检报告与故障P0_P1复盘"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{Env}_{Cluster}_{Service}_{YYYYMMDD}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_supply_chain_logistics",
+      "name": {
+        "zh-CN": "企业供应链与采购仓储全景管线",
+        "en-US": "Supply Chain, Procurement & Logistics Vault",
+        "ja-JP": "サプライチェーン・調達・倉庫ロジスティクス全景",
+        "ko-KR": "공급망 관리, 구매 조달 및 물류 창고 파이프라인",
+        "de-DE": "Lieferkette, Beschaffung & Logistik-Pipeline",
+        "fr-FR": "Chaîne d'approvisionnement, achats et logistique",
+        "es-ES": "Cadena de suministro, compras y logística",
+        "ru-RU": "Цепочки поставок, закупки и складская логистика",
+        "pt-BR": "Cadeia de suprimentos, compras e logística",
+        "it-IT": "Supply chain, acquisti e logistica di magazzino"
+      },
+      "description": {
+        "zh-CN": "包含供应商准入考核表、采购订单PO合同、来料IQC质检单、WMS实物盘点与国际货运报关凭单",
+        "en-US": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs",
+        "ja-JP": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs",
+        "ko-KR": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs",
+        "de-DE": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs",
+        "fr-FR": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs",
+        "es-ES": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs",
+        "ru-RU": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs",
+        "pt-BR": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs",
+        "it-IT": "Manages vendor qualifications, purchase orders (PO), incoming QC reports, warehouse inventory, and customs"
+      },
+      "target_identities": [
+        "id.mgmt.supply_chain"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-供应商评审与准入/合格供应商名录与营业资质",
+        "02-采购订单与合同审批/采购合同PO与账期对账单",
+        "03-来料质检与验货报告/入库IQC质检单与不良品退换凭证",
+        "04-仓储WMS与库存盘点/安全库存预警与月末实物盘点表",
+        "05-干线物流与国际报关/国内货运提单与海运报关单据"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Vendor}_{DocType}_PO{PONumber}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_study_abroad_application",
+      "name": {
+        "zh-CN": "海外名校留学申请与签证全景规划",
+        "en-US": "Study Abroad & University Admissions Vault",
+        "ja-JP": "海外留学出願＆ビザ申請トータルプラン",
+        "ko-KR": "해외 유학 지원 및 비자 수속 종합 계획",
+        "de-DE": "Auslandsstudium & Visum-Bewerbungsportal",
+        "fr-FR": "Dossier de candidature d'études à l'étranger et visas",
+        "es-ES": "Estudios en el extranjero y solicitud de visados",
+        "ru-RU": "Поступление в зарубежные вузы и оформление виз",
+        "pt-BR": "Estudos no exterior e solicitação de vistos",
+        "it-IT": "Domande di studio all'estero e pratiche per visti"
+      },
+      "description": {
+        "zh-CN": "专为出国留学学子规划，收录择校方案清单、语言标化成绩、个人陈述PS/推荐信RL、中英成绩单与签证面签资料",
+        "en-US": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records",
+        "ja-JP": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records",
+        "ko-KR": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records",
+        "de-DE": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records",
+        "fr-FR": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records",
+        "es-ES": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records",
+        "ru-RU": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records",
+        "pt-BR": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records",
+        "it-IT": "Covers university selection lists, test scores, SOPs, recommendation letters, transcripts, and visa records"
+      },
+      "target_identities": [
+        "id.student.study_abroad"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-选校定位与专业匹配/目标院校梯度清单与申请要求",
+        "02-语言考试与标化成绩/雅思托福成绩单与GRE备考错题",
+        "03-文书创作与润色精修/个人陈述PS与简历CV终稿",
+        "03-文书创作与润色精修/教授推荐信RL与研究计划RP",
+        "04-官方成绩单与资产证明/大学中英文成绩单与银行存款证明",
+        "05-Offer录用与留学签证/录取通知书Offer与签证I20面签资料"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{University}_{Major}_{DocType}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_desktop_declutter",
+      "name": {
+        "zh-CN": "电脑桌面急救与高效分流体系",
+        "en-US": "Desktop Emergency Cleanup & Triage Vault",
+        "ja-JP": "デスクトップ緊急整理＆効率仕分け体系",
+        "ko-KR": "바탕화면 긴급 정리 및 효율적 분류 체계",
+        "de-DE": "Desktop-Notfallbereinigung & Triage-System",
+        "fr-FR": "Nettoyage d'urgence du bureau et système de tri",
+        "es-ES": "Limpieza de emergencia del escritorio y sistema de triaje",
+        "ru-RU": "Экстренная очистка рабочего стола и система сортировки",
+        "pt-BR": "Limpeza de emergência da área de trabalho e sistema de triagem",
+        "it-IT": "Pulizia di emergenza del desktop e sistema di smistamento"
+      },
+      "description": {
+        "zh-CN": "专为电脑桌面设计，快速收纳今日待办、当前工作草稿、临时截图、安装包与历史旧桌面备份",
+        "en-US": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups",
+        "ja-JP": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups",
+        "ko-KR": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups",
+        "de-DE": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups",
+        "fr-FR": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups",
+        "es-ES": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups",
+        "ru-RU": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups",
+        "pt-BR": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups",
+        "it-IT": "Designed for messy desktops to organize today's tasks, drafts, screenshots, setups, and desktop backups"
+      },
+      "target_identities": [
+        "id.scene.desktop_declutter"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "00-今日临时待办Today/待处理重要文件与备忘",
+        "01-进行中工作草稿/当前正在编辑处理的文档",
+        "02-截图与临时图片/快捷截图与参考图片",
+        "03-待归档重要资料/合同发票与证件电子单",
+        "04-安装包与压缩文件/软件安装包与解压临时包",
+        "99-旧桌面历史归档Archive/往期桌面历史备份归档"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Title}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_downloads_triage",
+      "name": {
+        "zh-CN": "下载目录全景分流与软件归档管线",
+        "en-US": "Downloads Comprehensive Triage & Archive Pipeline",
+        "ja-JP": "ダウンロードフォルダ全景仕分け＆アーカイブパイプライン",
+        "ko-KR": "다운로드 종합 분류 및 아카이브 파이프라인",
+        "de-DE": "Umfassende Download-Triage & Archiv-Pipeline",
+        "fr-FR": "Tri complet des téléchargements et pipeline d'archivage",
+        "es-ES": "Triaje integral de descargas y canal de archivo",
+        "ru-RU": "Полная сортировка загрузок и архивный пайплайн",
+        "pt-BR": "Triagem abrangente de downloads e pipeline de arquivamento",
+        "it-IT": "Smistamento completo dei download e pipeline di archiviazione"
+      },
+      "description": {
+        "zh-CN": "根据介质与用途全景分流：软件安装程序、办公文档、图片影音、压缩归档包，并设立过期清理缓冲期",
+        "en-US": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion",
+        "ja-JP": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion",
+        "ko-KR": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion",
+        "de-DE": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion",
+        "fr-FR": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion",
+        "es-ES": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion",
+        "ru-RU": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion",
+        "pt-BR": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion",
+        "it-IT": "Sorts downloads into applications, documents, media, and archives with an expired buffer for safe deletion"
+      },
+      "target_identities": [
+        "id.scene.downloads_triage"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "01-软件安装与驱动工具/应用程序安装包Setup",
+        "01-软件安装与驱动工具/系统补丁与驱动程序",
+        "02-日常工作与办公文档/PDF电子书与说明书",
+        "02-日常工作与办公文档/Word报表与Excel数据表格",
+        "03-网络媒体与图片音视频/高清壁纸与网页素材图片",
+        "03-网络媒体与图片音视频/下载音频与影视短片",
+        "04-压缩包与数据镜像/RAR_ZIP_7Z压缩归档包",
+        "04-压缩包与数据镜像/ISO光盘镜像与代码仓库Zip",
+        "05-待清理过期临时件/超过30天可安全删除清理"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Source}_{FileName}.{ext}"
+      }
+    },
+    {
+      "template_id": "tpl_inbox_staging_universal",
+      "name": {
+        "zh-CN": "GTD 个人收件箱与万能周转体系",
+        "en-US": "GTD Universal Inbox & File Staging System",
+        "ja-JP": "GTDユニバーサルインボックス＆ファイルステージング体系",
+        "ko-KR": "GTD 유니버설 인박스 및 파일 스테이징 시스템",
+        "de-DE": "GTD Universal Inbox & Datei-Bereitstellungssystem",
+        "fr-FR": "Système universel de boîte de réception GTD et transit",
+        "es-ES": "Bandeja de entrada universal GTD y sistema de tránsito",
+        "ru-RU": "Универсальный инбокс GTD и система файлового транзита",
+        "pt-BR": "Caixa de entrada universal GTD e sistema de trânsito",
+        "it-IT": "Inbox universale GTD e sistema di transito dei file"
+      },
+      "description": {
+        "zh-CN": "基于GTD工作法建立收集箱、待行动、等待跟进、随时参考与冷归档全生命周期中转",
+        "en-US": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive",
+        "ja-JP": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive",
+        "ko-KR": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive",
+        "de-DE": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive",
+        "fr-FR": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive",
+        "es-ES": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive",
+        "ru-RU": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive",
+        "pt-BR": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive",
+        "it-IT": "Builds GTD-based workflow: Inbox collection, Actions, Waiting, Reference, and Cold Archive"
+      },
+      "target_identities": [
+        "id.scene.temporary_staging"
+      ],
+      "lifecycle_stages": [
+        "inbox",
+        "in_progress",
+        "exported",
+        "archived"
+      ],
+      "paths": [
+        "00-收件箱Inbox/新进待分拣文件收集箱",
+        "01-行动执行Actions/本周需要处理完成的文件",
+        "02-等待跟进Waiting/等待他人反馈与外部审批",
+        "03-参考资料Reference/随时查阅的资料手册与指南",
+        "04-冷归档Archive/已完结事项与历史凭证备份"
+      ],
+      "naming_rules": {
+        "asset_pattern": "{YYYYMMDD}_{Context}_{Title}.{ext}"
       }
     }
   ]

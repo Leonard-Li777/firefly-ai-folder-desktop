@@ -22,7 +22,9 @@ import {
   DIMENSION_CODES,
   concept,
   resolveSubdimensionRoot,
-  getParentDimensionCodeOfTag
+  getParentDimensionCodeOfTag,
+  ROOT_DIMENSION_META,
+  TOP_ROOT_CODES
 } from '@firefly/shared'
 import { ConfigOrchestrator } from '../../../config/config-orchestrator'
 import { ConfigDbManager } from '../../config/config-db-manager'
@@ -72,18 +74,8 @@ const CONTENT_TAGS_CODE = concept('内容标签')
 const CONTENT_TAGS_TAIL_ORDER = 9999
 const escapeLike = (s: string) => s.replace(/([%_\\])/g, '\\$1')
 
-/** 7 大受控根维度权威元数据定义（SSOT: file-dimension-source.ts） */
-const ROOT_DIMENSION_META: Record<string, { id: number; name: string }> = {
-  [DIMENSION_CODES.FILE_TYPE]: { id: 1, name: '文件类型' },
-  [DIMENSION_CODES.FILE_PURPOSE]: { id: 2, name: '文件用途' },
-  [DIMENSION_CODES.FILE_SOURCE]: { id: 3, name: '文件来源' },
-  [DIMENSION_CODES.AUTHOR]: { id: 4, name: '作者' },
-  [DIMENSION_CODES.DOCUMENT_QUALITY]: { id: 27, name: '文件质量' },
-  [DIMENSION_CODES.CONTENT_TAGS]: { id: 28, name: '内容标签' },
-  [DIMENSION_CODES.CONTENT_RATING]: { id: 162, name: '内容分级' }
-}
-
-const ROOT_DIMENSION_CODES = new Set<string>(Object.keys(ROOT_DIMENSION_META))
+/** 全系统顶级受控根维度集合（SSOT 事实源派生自 @firefly/shared） */
+const ROOT_DIMENSION_CODES = TOP_ROOT_CODES
 
 export class TagTreeQuery {
   private hybridArbiter: HybridSearchArbiter
@@ -1068,21 +1060,33 @@ export class TagTreeQuery {
           continue
         }
 
+        // 多选策略唯一权威源 = 本地配置管理器（dimFlag，来自 dimension-policies.json）；
+        // DB 维度根 meta 仅在无权威策略时兜底，严禁用 || 合并。
+        // 历史事故：database-adapter 写根 meta 时硬编码 isMultiSelect:true，旧逻辑 `dimMeta || dimFlag`
+        // 会让硬编码恒短路权威策略 ⇒ 全部维度在前端恒多选、单选互斥永不生效。
+        const flagMultiSelect = dimFlag?.isMultiSelect
+        const metaMultiSelect = dimMeta?.isMultiSelect
+        const resolvedMultiSelect =
+          typeof flagMultiSelect === 'boolean'
+            ? flagMultiSelect
+            : typeof metaMultiSelect === 'boolean'
+              ? metaMultiSelect
+              : false
+        const mergedDimMeta = {
+          ...(dimMeta || {}),
+          isMultiSelect: resolvedMultiSelect,
+          ...(dimFlag ? { flag: dimFlag } : {})
+        }
+
         groups.push({
           id: canonicalId,
           name: aliasResolver(root.code, root.name),
           level: 1,
           tags: dimensionTags,
           code: dimCode,
-          isMultiSelect: dimMeta?.isMultiSelect === true || dimFlag?.isMultiSelect === true,
-          metadata: {
-            ...(dimMeta || {}),
-            ...(dimFlag ? { flag: dimFlag } : {})
-          },
-          meta: {
-            ...(dimMeta || {}),
-            ...(dimFlag ? { flag: dimFlag } : {})
-          }
+          isMultiSelect: resolvedMultiSelect,
+          metadata: { ...mergedDimMeta },
+          meta: { ...mergedDimMeta }
         })
       }
 
@@ -1411,7 +1415,9 @@ export class TagTreeQuery {
               order: meta?.id || 9999,
               isMultiSelect:
                 flag?.isMultiSelect ??
-                (rootCode === 'builtin.file_purpose' || rootCode === 'builtin.content_tags'),
+                (rootCode === concept('文件用途') ||
+                  rootCode === concept('内容标签') ||
+                  rootCode === concept('地理位置')),
               meta: {
                 source: 'builtin',
                 order: meta?.id || 9999,
@@ -1456,6 +1462,43 @@ export class TagTreeQuery {
               if (group) {
                 return { targetGroup: group, parentCode: p, level: 1 }
               }
+            }
+
+            // 命中泛维度（如地理位置），优先认领为独立卡片维度组，绝不向上回溯至文件类型
+            const authDim = authorityDimByCode.get(p)
+            const dimFlag = authDim?.flag || (authDim?.dim?.metadata?.flag as DimensionFlags | undefined)
+            if (dimFlag?.isPanDimension === true) {
+              let group = finalGroups.find(g => g.code === p)
+              if (!group) {
+                const displayName = aliasResolver(p, authDim?.name || p)
+                const newGroup: DimensionGroup = {
+                  id: authDim?.id || 10000 + finalGroups.length,
+                  name: displayName,
+                  level: 0,
+                  tags: [],
+                  code: p,
+                  order: authDim?.id || 9999,
+                  sort_order: authDim?.id || 9999,
+                  isMultiSelect: dimFlag.isMultiSelect ?? true,
+                  meta: {
+                    source: 'builtin',
+                    order: authDim?.id || 9999,
+                    sort_order: authDim?.id || 9999,
+                    ...(dimFlag ? { flag: dimFlag } : {})
+                  },
+                  metadata: {
+                    source: 'builtin',
+                    order: authDim?.id || 9999,
+                    sort_order: authDim?.id || 9999,
+                    ...(dimFlag ? { flag: dimFlag } : {})
+                  }
+                }
+                finalGroups.push(newGroup)
+                tagToGroupMap.set(p, newGroup)
+                dedupeCodes.add(p)
+                group = newGroup
+              }
+              return { targetGroup: group, parentCode: p, level: 1 }
             }
 
             // 命中已知受控细分映射
@@ -1549,12 +1592,22 @@ export class TagTreeQuery {
             assignedCodes.add(t.code)
             tagToGroupMap.set(t.code, targetGroup)
             tagLevelMap.set(t.code, effectiveLevel)
+            const rawCodePath = tagChainsMap.get(t.code)?.[0]?.code_path
+            const rawNamePath = tagChainsMap.get(t.code)?.[0]?.name_path
+            const geoCode = concept('地理位置')
+            const geoName = targetGroup.name
             const tCodePath =
-              tagChainsMap.get(t.code)?.[0]?.code_path ||
-              `/${targetGroup.code}/${effectiveParent === targetGroup.code ? t.code : `${effectiveParent}/${t.code}`}`
+              rawCodePath && rawCodePath.includes(targetGroup.code || '')
+                ? (targetGroup.code === geoCode && rawCodePath.includes(`/${geoCode}/`)
+                    ? rawCodePath.substring(rawCodePath.indexOf(`/${geoCode}/`))
+                    : rawCodePath)
+                : `/${targetGroup.code}/${effectiveParent === targetGroup.code ? t.code : `${effectiveParent}/${t.code}`}`
             const tNamePath =
-              tagChainsMap.get(t.code)?.[0]?.name_path ||
-              `/${targetGroup.name}/${effectiveParent === targetGroup.code ? resolvedName : `${aliasResolver(effectiveParent, effectiveParent)}/${resolvedName}`}`
+              rawNamePath && rawNamePath.includes(targetGroup.name)
+                ? (targetGroup.code === geoCode && rawNamePath.includes(`/${geoName}/`)
+                    ? rawNamePath.substring(rawNamePath.indexOf(`/${geoName}/`))
+                    : rawNamePath)
+                : `/${targetGroup.name}/${effectiveParent === targetGroup.code ? resolvedName : `${aliasResolver(effectiveParent, effectiveParent)}/${resolvedName}`}`
             targetGroup.tags.push({
               dimensionId: targetGroup.id,
               dimensionCode: targetGroup.code || '',
@@ -2068,10 +2121,17 @@ export class TagTreeQuery {
               targetGroup.rootCode = rootDimCode
             }
             if (dimFlag) {
+              // 权威策略覆盖既有维度组：多选策略同样以 flag 为准（修复根 meta 硬编码 true 的历史短路）
+              if (dimFlag.isMultiSelect !== undefined) {
+                targetGroup.isMultiSelect = dimFlag.isMultiSelect === true
+              }
               const prevMeta = typeof targetGroup.metadata === 'object' && targetGroup.metadata !== null ? targetGroup.metadata : {}
               const prevMetaFlag = typeof targetGroup.metadata === 'object' && targetGroup.metadata !== null ? (targetGroup.metadata as any).flag : undefined
               targetGroup.metadata = {
                 ...prevMeta,
+                ...(dimFlag.isMultiSelect !== undefined
+                  ? { isMultiSelect: dimFlag.isMultiSelect === true }
+                  : {}),
                 flag: {
                   ...prevMetaFlag,
                   ...dimFlag
@@ -2081,6 +2141,9 @@ export class TagTreeQuery {
               const prevMetaObjFlag = typeof targetGroup.meta === 'object' && targetGroup.meta !== null ? (targetGroup.meta as any).flag : undefined
               targetGroup.meta = {
                 ...prevMetaObj,
+                ...(dimFlag.isMultiSelect !== undefined
+                  ? { isMultiSelect: dimFlag.isMultiSelect === true }
+                  : {}),
                 flag: {
                   ...prevMetaObjFlag,
                   ...dimFlag

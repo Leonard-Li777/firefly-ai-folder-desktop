@@ -766,40 +766,80 @@ export class HybridSearchArbiter {
         queryParams
       )
 
-      // 2. 按 parentFp 聚合并保留最高相似度得分与最高分切片索引
+      // 2. 按 parentFp 聚合并保留最高相似度得分与优选切片索引
       interface ParentAgg {
         parentFp: string
         bestScore: number
         bestChunkIndex?: number
         bestChunkScore?: number
+        chunks: Array<{ chunkIndex: number; score: number }>
       }
       const parentAggMap = new Map<string, ParentAgg>()
       for (const m of parsedMatches) {
         if (!allowed.has(m.parentFp)) continue
-        const existing = parentAggMap.get(m.parentFp)
+        let existing = parentAggMap.get(m.parentFp)
         if (!existing) {
-          parentAggMap.set(m.parentFp, {
+          existing = {
             parentFp: m.parentFp,
             bestScore: m.score,
-            bestChunkIndex: m.chunkIndex,
-            bestChunkScore: m.chunkIndex !== undefined ? m.score : undefined
-          })
-        } else {
-          if (m.score > existing.bestScore) {
-            existing.bestScore = m.score
+            chunks: []
           }
-          if (
-            m.chunkIndex !== undefined &&
-            (existing.bestChunkScore === undefined || m.score > existing.bestChunkScore)
-          ) {
-            existing.bestChunkIndex = m.chunkIndex
-            existing.bestChunkScore = m.score
-          }
+          parentAggMap.set(m.parentFp, existing)
+        }
+        if (m.score > existing.bestScore) {
+          existing.bestScore = m.score
+        }
+        if (m.chunkIndex !== undefined) {
+          existing.chunks.push({ chunkIndex: m.chunkIndex, score: m.score })
         }
       }
 
       if (parentAggMap.size === 0) {
         return []
+      }
+
+      // 优选每个视频的最佳跳轴切片：
+      // 1. 获取该视频最高切片得分 maxChunkScore；
+      // 2. 筛选顶尖梯队切片 (score >= maxChunkScore - 0.035)；
+      // 3. 避开片头片尾极端转场或静止背景 (开篇前 15s 与尾部最后 12s)；
+      // 4. 优先选择具备时序连续性（前后相邻切片均高分相长）的动态实体高光切片！
+      for (const agg of parentAggMap.values()) {
+        if (agg.chunks.length === 0) continue
+        agg.chunks.sort((a, b) => b.score - a.score)
+        const maxChunkScore = agg.chunks[0].score
+        const eliteThreshold = maxChunkScore - 0.035
+        const eliteChunks = agg.chunks.filter(c => c.score >= eliteThreshold)
+
+        const totalChunksCount = agg.chunks.length
+        // 判定中段安全窗口：若切片数量充足 (>8)，避开片头前 4 个切片与片尾最后 3 个切片
+        const isMidWindow = (idx: number) => {
+          if (totalChunksCount <= 8) return true
+          return idx >= 4 && idx < totalChunksCount - 3
+        }
+
+        // 梯队内按时序连续性加权：若相邻切片（idx ± 1）同样处于顶尖梯队，视为高光事件连续展开
+        const eliteSet = new Set(eliteChunks.map(c => c.chunkIndex))
+        let bestCandidate = agg.chunks[0]
+        let bestClusteredScore = -1
+
+        for (const c of eliteChunks) {
+          if (!isMidWindow(c.chunkIndex)) continue
+          const hasPrev = eliteSet.has(c.chunkIndex - 1)
+          const hasNext = eliteSet.has(c.chunkIndex + 1)
+          // 连续切片簇赋予时序凝聚度加成 (+0.015)
+          const clusterBonus = (hasPrev ? 0.010 : 0) + (hasNext ? 0.010 : 0)
+          const effectiveScore = c.score + clusterBonus
+          if (effectiveScore > bestClusteredScore) {
+            bestClusteredScore = effectiveScore
+            bestCandidate = c
+          }
+        }
+
+        // 若中段无候选，回退至中段普通切片或全局最高切片
+        const chosen = bestClusteredScore > 0 ? bestCandidate : (eliteChunks.find(c => isMidWindow(c.chunkIndex)) ?? agg.chunks[0])
+
+        agg.bestChunkIndex = chosen.chunkIndex
+        agg.bestChunkScore = chosen.score
       }
 
       // 按最高得分降序重排

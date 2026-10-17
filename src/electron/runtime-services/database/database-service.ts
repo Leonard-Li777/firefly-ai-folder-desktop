@@ -15,7 +15,9 @@ import {
   CONTROLLED_CONCEPTS,
   CONTROLLED_DIMENSION_ROOT_CODES,
   concept,
-  isControlledConcept
+  isControlledConcept,
+  isControlledDimensionApplicableInDomain,
+  getParentDimensionCodeOfTag
 } from '@firefly/shared'
 import {
   findTagCodeTwoStage,
@@ -683,45 +685,6 @@ export class DatabaseService {
         DROP TABLE IF EXISTS omw_languages;
       `)
 
-      // 创世期过渡自愈：兼容已有旧库缺少物化路径字段 code_path / name_path / depth
-      const relationColumns = (
-        this._db.pragma('table_info(file_tag_relations)') as Array<{ name: string }>
-      ).map(col => col.name)
-      if (relationColumns.length > 0 && !relationColumns.includes('code_path')) {
-        logger.info(
-          LogCategory.DATABASE_SERVICE,
-          '检测到 file_tag_relations 缺少 code_path，执行无损列补齐自愈...'
-        )
-        this._db.exec(`
-          ALTER TABLE file_tag_relations ADD COLUMN code_path TEXT NOT NULL DEFAULT '';
-          ALTER TABLE file_tag_relations ADD COLUMN name_path TEXT NOT NULL DEFAULT '';
-          ALTER TABLE file_tag_relations ADD COLUMN depth INTEGER NOT NULL DEFAULT 1;
-          CREATE INDEX IF NOT EXISTS idx_file_tag_relations_code_path ON file_tag_relations(code_path);
-        `)
-        this._db.exec(`
-          UPDATE file_tag_relations
-          SET code_path = CASE
-                WHEN via_parent_code != '' THEN '/' || via_parent_code || '/' || tag_code
-                ELSE '/' || tag_code
-              END,
-              depth = CASE
-                WHEN via_parent_code != '' THEN 2
-                ELSE 1
-              END
-          WHERE code_path = '';
-        `)
-      }
-
-      // 创世期受控本体收敛自愈（PRD-0058）：将伪受控码 builtin.source_code 精确纠正为唯一权威码 hownet.000000194528.n（斜杠边界防子维度前缀误伤）
-      this._db.exec(`
-        UPDATE file_tag_relations
-        SET code_path = REPLACE(
-              REPLACE(code_path, '/builtin.source_code/', '/hownet.000000194528.n/'),
-              '/builtin.source_code', '/hownet.000000194528.n'
-            ),
-            via_parent_code = CASE WHEN via_parent_code = 'builtin.source_code' THEN 'hownet.000000194528.n' ELSE via_parent_code END
-        WHERE code_path LIKE '%/builtin.source_code/%' OR code_path LIKE '%/builtin.source_code' OR via_parent_code = 'builtin.source_code';
-      `)
     } catch (error) {
       logger.warn(LogCategory.DATABASE_SERVICE, '确保兼容表结构自愈失败:', error)
     }
@@ -1727,62 +1690,13 @@ export class DatabaseService {
         }
 
         // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
-        const isVisualExclusiveDimension = (dimCode: string, tagCode: string): boolean => {
-          const visualDimPrefixes = [
-            'builtin.coding_level',
-            'builtin.watermark_level',
-            'builtin.image_quality_level',
-            'builtin.picture_quality',
-            'builtin.frame',
-            'builtin.aspect_ratio',
-            'builtin.main_color',
-            'builtin.dominant_color',
-            'builtin.generation_medium',
-            'builtin.shot_size',
-            'builtin.photo_categories',
-            'builtin.photography_categories',
-            'builtin.image_subdivision',
-            'builtin.image_segmentation',
-            'builtin.video_segmentation',
-            // 兼容历史别名
-            'builtin.watermark',
-            'builtin.censorship',
-            'builtin.quality_level'
-          ]
-          const visualTagCodes = [
-            'builtin.uncensored',
-            'builtin.light_mosaic',
-            'builtin.censored',
-            'builtin.no_watermark',
-            'builtin.light_watermark',
-            'builtin.watermark',
-            'builtin.watermarked',
-            'builtin.4k',
-            'builtin.ultra_hd_1080p',
-            'builtin.high_definition_720p',
-            'builtin.standard_definition_480p',
-            'builtin.low_definition'
-          ]
-          return (
-            visualDimPrefixes.some(
-              p => dimCode === p || dimCode.startsWith(`${p}.`) || tagCode === p || tagCode.startsWith(`${p}.`)
-            ) || visualTagCodes.includes(tagCode)
-          )
-        }
-
-        const isNonVisualFile = (filePath: string): boolean => {
-          const lower = filePath.toLowerCase()
-          const nonVisualExts = [
-            // 音频
-            '.mp3', '.wav', '.flac', '.aac', '.m4a', '.ogg', '.opus', '.wma',
-            // 文档
-            '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', '.txt', '.md', '.epub',
-            // 代码
-            '.js', '.ts', '.tsx', '.jsx', '.py', '.rs', '.go', '.java', '.c', '.cpp', '.h', '.html', '.css', '.json', '.yaml', '.yml', '.sh',
-            // 压缩包
-            '.zip', '.rar', '.7z', '.tar', '.gz'
-          ]
-          return nonVisualExts.some(ext => lower.endsWith(ext))
+        const isVisualExclusiveDimension = (dimCode: string, tagCode: string, targetPath: string): boolean => {
+          const ctx = { filePath: targetPath }
+          const effectiveDim = dimCode || getParentDimensionCodeOfTag(tagCode)
+          if (effectiveDim && !isControlledDimensionApplicableInDomain(effectiveDim, ctx)) {
+            return true
+          }
+          return false
         }
 
         // 提前预计算当前批次待添加标签的物化路径三元组 (O(M) 缓存，杜绝热循环内部 O(N*M) 重复 SQL 查询)
@@ -1807,40 +1721,63 @@ export class DatabaseService {
           "INSERT OR REPLACE INTO file_tag_relations (file_fingerprint, tag_code, via_parent_code, code_path, name_path, depth, tag_group, source, confidence, sync_status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'user', 'user', 1.0, 0, CURRENT_TIMESTAMP)"
         )
 
+        // 预编译指纹与路径查询语句（杜绝循环内重复 prepare）
+        const selectWfByIdStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE id = ?')
+        const selectFilesByIdStmt = this._db!.prepare('SELECT file_fingerprint, path FROM files WHERE id = ?')
+        const selectFilesByFpStmt = this._db!.prepare('SELECT file_fingerprint, path FROM files WHERE file_fingerprint = ?')
+        const selectWfByPathStmt = this._db!.prepare('SELECT file_fingerprint, path FROM workspace_files WHERE path = ?')
+
+        // 预编译精准删除语句（杜绝循环内重复 prepare，对齐 Spec §3.6 性能铁律）
+        const dimDeleteStmts: Array<{ stmt: any; dimCode: string; params: string[] }> = []
+        for (const [dimCode, codeSet] of dimDeletePlansMap.entries()) {
+          if (codeSet.size > 0) {
+            const codes = Array.from(codeSet)
+            const placeholders = codes.map(() => '?').join(',')
+            const stmt = this._db!.prepare(
+              `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND via_parent_code = ? AND tag_code IN (${placeholders})`
+            )
+            dimDeleteStmts.push({ stmt, dimCode, params: codes })
+          }
+        }
+
+        let globalDeleteStmt: { stmt: any; params: string[] } | null = null
+        if (globalDeleteCodes.size > 0) {
+          const codes = Array.from(globalDeleteCodes)
+          const placeholders = codes.map(() => '?').join(',')
+          globalDeleteStmt = {
+            stmt: this._db!.prepare(
+              `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND tag_code IN (${placeholders})`
+            ),
+            params: codes
+          }
+        }
+
         for (const fileId of operation.fileIds) {
           try {
             let fp: string | undefined
             let filePath: string | undefined
 
             // 1. 优先从 workspace_files 按 id 查询指纹与路径（前端文件列表的主标识通常为 workspace_files.id）
-            const wfRow = this._db!.prepare(
-              'SELECT file_fingerprint, path FROM workspace_files WHERE id = ?'
-            ).get(fileId) as { file_fingerprint: string; path?: string } | undefined
+            const wfRow = selectWfByIdStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
 
             if (wfRow?.file_fingerprint) {
               fp = wfRow.file_fingerprint
               filePath = wfRow.path
             } else {
               // 2. 尝试从 files 表按 id 查询指纹与路径
-              const fileRow = this._db!.prepare(
-                'SELECT file_fingerprint, path FROM files WHERE id = ?'
-              ).get(fileId) as { file_fingerprint: string; path?: string } | undefined
+              const fileRow = selectFilesByIdStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
               if (fileRow?.file_fingerprint) {
                 fp = fileRow.file_fingerprint
                 filePath = fileRow.path
               } else {
                 // 3. 尝试作为 file_fingerprint 字符串本身查询
-                const fpRow = this._db!.prepare(
-                  'SELECT file_fingerprint, path FROM files WHERE file_fingerprint = ?'
-                ).get(fileId) as { file_fingerprint: string; path?: string } | undefined
+                const fpRow = selectFilesByFpStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
                 if (fpRow?.file_fingerprint) {
                   fp = fpRow.file_fingerprint
                   filePath = fpRow.path
                 } else {
                   // 4. 尝试作为 workspace_files 路径查询
-                  const pathRow = this._db!.prepare(
-                    'SELECT file_fingerprint, path FROM workspace_files WHERE path = ?'
-                  ).get(fileId) as { file_fingerprint: string; path?: string } | undefined
+                  const pathRow = selectWfByPathStmt.get(fileId) as { file_fingerprint: string; path?: string } | undefined
                   if (pathRow?.file_fingerprint) {
                     fp = pathRow.file_fingerprint
                     filePath = pathRow.path
@@ -1861,8 +1798,7 @@ export class DatabaseService {
                 // 全媒体领域排他门控铁律：非视觉介质（音频/文档/代码/压缩包）严禁挂载视觉专有维度与标签
                 if (
                   filePath &&
-                  isNonVisualFile(filePath) &&
-                  isVisualExclusiveDimension(item.viaParentCode, item.tagCode)
+                  isVisualExclusiveDimension(item.viaParentCode, item.tagCode, filePath)
                 ) {
                   logger.debug(
                     LogCategory.DATABASE_SERVICE,
@@ -1905,20 +1841,12 @@ export class DatabaseService {
             }
 
             // 移除标签关联（精准索引点删：有维度限定走带 via_parent_code，无维度限定走全局点删）
-            for (const [dimCode, codeSet] of dimDeletePlansMap.entries()) {
-              if (codeSet.size > 0) {
-                const placeholders = Array.from(codeSet).map(() => '?').join(',')
-                this._db!.prepare(
-                  `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND via_parent_code = ? AND tag_code IN (${placeholders})`
-                ).run(fp, dimCode, ...Array.from(codeSet))
-              }
+            for (const { stmt, dimCode, params } of dimDeleteStmts) {
+              stmt.run(fp, dimCode, ...params)
             }
 
-            if (globalDeleteCodes.size > 0) {
-              const placeholders = Array.from(globalDeleteCodes).map(() => '?').join(',')
-              this._db!.prepare(
-                `DELETE FROM file_tag_relations WHERE file_fingerprint = ? AND tag_code IN (${placeholders})`
-              ).run(fp, ...Array.from(globalDeleteCodes))
+            if (globalDeleteStmt) {
+              globalDeleteStmt.stmt.run(fp, ...globalDeleteStmt.params)
             }
 
             successCount++

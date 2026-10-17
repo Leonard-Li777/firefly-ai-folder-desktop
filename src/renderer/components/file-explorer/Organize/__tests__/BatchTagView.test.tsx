@@ -108,6 +108,15 @@ describe('BatchTagView 批量打标视图回归测试', () => {
       ]
     },
     {
+      id: 16,
+      name: '地理位置',
+      code: concept('地理位置'),
+      metadata: { flag: { isPanDimension: true, isRuleSubdivision: true } },
+      tags: [
+        { dimensionId: 16, tagValue: '地理位置', fileCount: 0 }
+      ]
+    },
+    {
       id: 28,
       name: '内容标签',
       code: concept('内容标签'),
@@ -449,5 +458,74 @@ describe('BatchTagView 批量打标视图回归测试', () => {
     // 输入框依然保持可见，严禁被假装成功清空
     expect(input).toBeInTheDocument()
     expect(input).toHaveValue('三体')
+  })
+
+  it('地理位置维度即使带有 isRuleSubdivision 标记，作为泛维度也绝不被过滤剔除，且能正常新建与保存标签', async () => {
+    const onSaveTagsMock = vi.fn()
+    const inspectMock = vi.fn().mockResolvedValue({
+      success: true,
+      results: [
+        {
+          tagName: '东京',
+          isControlled: false,
+          matchedParent: false,
+          code: null,
+          canonicalName: null,
+          parentCodes: []
+        }
+      ]
+    })
+    ;(window as any).electronAPI.organizeBatch.inspectControlledTags = inspectMock
+
+    render(
+      <BatchTagView
+        files={mockFiles}
+        dimensionGroups={[]}
+        onSaveTags={onSaveTagsMock}
+      />
+    )
+
+    await waitFor(() => {
+      expect(screen.getByTestId('section-pan-dimensions')).toBeInTheDocument()
+    })
+
+    // 右列泛维度中必须稳定展示「地理位置」卡片
+    const rightCol = screen.getByTestId('section-pan-dimensions')
+    expect(rightCol).toHaveTextContent('地理位置')
+
+    // 新建标签「东京」
+    const geoCard = screen.getByText('地理位置').closest('.space-y-3')
+    expect(geoCard).toBeInTheDocument()
+    const addBtn = within(geoCard!).getByText('新建标签')
+    fireEvent.click(addBtn)
+
+    const input = await waitFor(() => screen.getByPlaceholderText('输入新标签名...'))
+    fireEvent.change(input, { target: { value: '东京' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    await waitFor(() => {
+      expect(inspectMock).toHaveBeenCalledWith([
+        { tagName: '东京', targetParentCode: concept('地理位置') }
+      ])
+    })
+
+    // 点击保存全部修改（外部顶栏保存按钮通过隐藏触发器触发）
+    const saveTrigger = document.getElementById('btn-save-tags-trigger')
+    expect(saveTrigger).toBeInTheDocument()
+    fireEvent.click(saveTrigger!)
+
+    await waitFor(() => {
+      expect(onSaveTagsMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          newTags: expect.arrayContaining([
+            expect.objectContaining({
+              dimensionId: 16,
+              dimensionName: '地理位置',
+              tagName: '东京'
+            })
+          ])
+        })
+      )
+    })
   })
 })
